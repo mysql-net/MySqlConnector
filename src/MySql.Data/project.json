@@ -1,0 +1,34 @@
+{
+	"version": "0.1.0",
+	"authors": [
+		"Bradley Grainger"
+	],
+	"owners": [
+		"bgrainger"
+	],
+	"tags": [
+		"mysql"
+	],
+	"title": "MySqlConnector",
+	"copyright": "Copyright 2016 Bradley Grainger",
+	"licenseUrl": "http://www.gnu.org/licenses/lgpl.html",
+	"projectUrl": "https://github.com/bgrainger/MySqlConnector",
+	"description": "A Replacement for MySql.Data",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/bgrainger/MySqlConnector.git"
+	},
+	"compilationOptions": {
+		"warningsAsErrors": true
+  	},
+	"frameworks": {
+		"net40": {
+		},
+		"dotnet5.1": {
+			"dependencies": {
+				"System.Runtime": "4.0.21-*",
+				"System.Runtime.Extensions": "4.0.11-*"
+			}
+		}
+	}
+}
