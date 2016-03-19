@@ -1,0 +1,17 @@
+# ignore output folders
+bin/
+build/
+obj/
+packages/
+
+# ignore user-specific options/cache files
+project.lock.json
+_ReSharper.*
+TestResult.xml
+Thumbs.db
+*.csproj.user
+*.DotSettings.user
+*.[Rr]e[Ss]harper.user
+*.sln.cache
+*.suo
+*.xproj.user
