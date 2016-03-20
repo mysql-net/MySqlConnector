@@ -22,12 +22,13 @@
 		"warningsAsErrors": true
   	},
 	"frameworks": {
-		"net40": {
+		"net46": {
 		},
-		"dotnet5.1": {
+		"dnx451": {
 			"dependencies": {
+				"System.IO": "4.0.11-*",
 				"System.Runtime": "4.0.21-*",
-				"System.Runtime.Extensions": "4.0.11-*"
+				"System.Runtime.Extensions": "4.0.11-*",
 			}
 		}
 	}
