@@ -5,23 +5,17 @@ using System.Threading.Tasks;
 
 namespace MySql.Data.Serialization
 {
-	internal sealed class InitialHandshakePacket : Packet
+	internal sealed class InitialHandshakePacket
 	{
-		public static async Task<InitialHandshakePacket> ReadAsync(Stream stream, CancellationToken cancellationToken)
-		{
-			var reader = await AsyncStreamReader.CreateAsync(stream, cancellationToken);
-			var payloadReader = await reader.ReadPayloadAsync();
-			return new InitialHandshakePacket(payloadReader);
-		}
-
 		public ProtocolCapabilities ProtocolCapabilities { get; }
 
 		public byte[] AuthPluginData { get; }
+		public byte[] ServerVersion { get; }
 
 		internal InitialHandshakePacket(ByteArrayReader reader)
 		{
 			reader.ReadByte(c_protocolVersion);
-			var serverVersion = reader.ReadNullTerminatedByteString();
+			ServerVersion = reader.ReadNullTerminatedByteString();
 			var connectionId = reader.ReadInt32();
 			AuthPluginData = reader.ReadByteString(8);
 			reader.ReadByte(0);

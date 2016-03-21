@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MySql.Data.Serialization
 {
-    internal sealed class HandshakeResponse41Packet : Packet
+    internal sealed class HandshakeResponse41Packet
     {
 	    public static byte[] Create(InitialHandshakePacket handshake, string userName, string password, string database)
 	    {
@@ -99,17 +99,7 @@ namespace MySql.Data.Serialization
 		public byte[] ToBytes()
 		{
 			m_writer.Flush();
-			var payloadLength = (int) m_stream.Length;
-			var result = new byte[payloadLength + 4];
-
-			result[0] = (byte) ((payloadLength & 0xFF));
-			result[1] = (byte) ((payloadLength >> 8) & 0xFF);
-			result[2] = (byte) ((payloadLength >> 16) & 0xFF);
-			result[3] = 1;
-
-			m_stream.Position = 0;
-			m_stream.Read(result, 4, payloadLength);
-			return result;
+			return m_stream.ToArray();
 		}
 
 		readonly MemoryStream m_stream;
