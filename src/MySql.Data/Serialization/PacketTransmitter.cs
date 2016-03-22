@@ -31,6 +31,10 @@ namespace MySql.Data.Serialization
 		public Task<PayloadData> ReceiveReplyAsync(CancellationToken cancellationToken)
 			=> DoReceiveAsync(cancellationToken);
 
+		// Continues a conversation with the server by receiving a response to a packet sent with 'Send' or 'SendReply'.
+		public Task<PayloadData> TryReceiveReplyAsync(CancellationToken cancellationToken)
+			=> DoReceiveAsync(cancellationToken, optional: true);
+
 		// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
 		public Task SendReplyAsync(PayloadData payload, CancellationToken cancellationToken)
 			=> DoSendAsync(payload, cancellationToken);
@@ -59,9 +63,18 @@ namespace MySql.Data.Serialization
 			} while (bytesToSend == maxBytesToSend);
 		}
 
-		private async Task<PayloadData> DoReceiveAsync(CancellationToken cancellationToken)
+		private async Task<PayloadData> DoReceiveAsync(CancellationToken cancellationToken, bool optional = false)
 		{
-			await m_stream.ReadExactlyAsync(m_buffer, 0, 4, cancellationToken);
+			if (optional)
+			{
+				int bytesRead = await m_stream.ReadAvailableAsync(m_buffer, 0, 4, cancellationToken);
+				if (bytesRead < 4)
+					return null;
+			}
+			else
+			{
+				await m_stream.ReadExactlyAsync(m_buffer, 0, 4, cancellationToken);
+			}
 			int payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, 0, 3);
 			if (m_buffer[3] != (byte) (m_sequenceId & 0xFF))
 				throw new InvalidOperationException("Packet received out-of-order.");
