@@ -17,8 +17,8 @@ namespace MySql.Data.Serialization
 			    m_state = State.Closed;
 		    }
 			m_transmitter = null;
-			Dispose(ref m_stream);
-			Dispose(ref m_socket);
+			Utility.Dispose(ref m_stream);
+			Utility.Dispose(ref m_socket);
 	    }
 
 		public async Task ConnectAsync(string hostname, int port)
@@ -96,16 +96,6 @@ namespace MySql.Data.Serialization
 			Connected,
 			Closed,
 			Failed,
-	    }
-
-		private static void Dispose<T>(ref T disposable)
-			where T : class, IDisposable
-	    {
-		    if (disposable != null)
-		    {
-			    disposable.Dispose();
-			    disposable = null;
-		    }
 	    }
 
 	    State m_state;
