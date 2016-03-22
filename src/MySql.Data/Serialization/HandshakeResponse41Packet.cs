@@ -5,51 +5,52 @@ using System.Text;
 
 namespace MySql.Data.Serialization
 {
-    internal sealed class HandshakeResponse41Packet
-    {
-	    public static byte[] Create(InitialHandshakePacket handshake, string userName, string password, string database)
-	    {
+	internal sealed class HandshakeResponse41Packet
+	{
+		public static byte[] Create(InitialHandshakePacket handshake, string userName, string password, string database)
+		{
 			// TODO: verify server capabilities
 
 			var writer = new PayloadWriter();
 
-		    writer.WriteInt32((int) (
+			writer.WriteInt32((int) (
 				ProtocolCapabilities.Protocol41 |
 				ProtocolCapabilities.LongPassword |
 				ProtocolCapabilities.SecureConnection |
 				ProtocolCapabilities.PluginAuth |
 				ProtocolCapabilities.PluginAuthLengthEncodedClientData |
-				ProtocolCapabilities.ConnectWithDatabase));
+				(string.IsNullOrWhiteSpace(database) ? 0 : ProtocolCapabilities.ConnectWithDatabase)));
 			writer.WriteInt32(0x40000000);
-		    writer.WriteByte((byte) 46); // utf8mb4_bin
+			writer.WriteByte((byte) 46); // utf8mb4_bin
 			writer.Write(new byte[23]);
-		    writer.WriteNullTerminatedString(userName);
+			writer.WriteNullTerminatedString(userName);
 
-		    using (var sha1 = SHA1.Create())
-		    {
+			using (var sha1 = SHA1.Create())
+			{
 				var combined = new byte[40];
 				Array.Copy(handshake.AuthPluginData, combined, 20);
 
 				var passwordBytes = Encoding.UTF8.GetBytes(password);
-			    var hashedPassword = sha1.ComputeHash(passwordBytes);
+				var hashedPassword = sha1.ComputeHash(passwordBytes);
 
 				var doubleHashedPassword = sha1.ComputeHash(hashedPassword);
-			    Array.Copy(doubleHashedPassword, 0, combined, 20, 20);
+				Array.Copy(doubleHashedPassword, 0, combined, 20, 20);
 
-			    var xorBytes = sha1.ComputeHash(combined);
+				var xorBytes = sha1.ComputeHash(combined);
 
 				for (int i = 0; i < hashedPassword.Length; i++)
-				    hashedPassword[i] ^= xorBytes[i];
+					hashedPassword[i] ^= xorBytes[i];
 				writer.WriteLengthEncodedInteger(20);
-			    writer.Write(hashedPassword);
-		    }
+				writer.Write(hashedPassword);
+			}
 
-		    writer.WriteNullTerminatedString(database);
+			if (!string.IsNullOrWhiteSpace(database))
+				writer.WriteNullTerminatedString(database);
 
 			writer.WriteNullTerminatedString("mysql_native_password");
 
-		    return writer.ToBytes();
-	    }
+			return writer.ToBytes();
+		}
 	}
 
 	class PayloadWriter
