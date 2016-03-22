@@ -13,15 +13,15 @@ namespace MySql.Data.Serialization
 
 			var writer = new PayloadWriter();
 
-		    writer.Write((int) (
+		    writer.WriteInt32((int) (
 				ProtocolCapabilities.Protocol41 |
 				ProtocolCapabilities.LongPassword |
 				ProtocolCapabilities.SecureConnection |
 				ProtocolCapabilities.PluginAuth |
 				ProtocolCapabilities.PluginAuthLengthEncodedClientData |
 				ProtocolCapabilities.ConnectWithDatabase));
-			writer.Write(0x40000000);
-		    writer.Write((byte) 46); // utf8mb4_bin
+			writer.WriteInt32(0x40000000);
+		    writer.WriteByte((byte) 46); // utf8mb4_bin
 			writer.Write(new byte[23]);
 		    writer.WriteNullTerminatedString(userName);
 
@@ -60,9 +60,11 @@ namespace MySql.Data.Serialization
 			m_writer = new BinaryWriter(m_stream);
 		}
 
-		public void Write(byte value) => m_writer.Write(value);
-		public void Write(int value) => m_writer.Write(value);
+		public void WriteByte(byte value) => m_writer.Write(value);
+		public void WriteInt32(int value) => m_writer.Write(value);
+		public void WriteUInt32(uint value) => m_writer.Write(value);
 		public void Write(byte[] value) => m_writer.Write(value);
+		public void Write(ArraySegment<byte> value) => m_writer.Write(value.Array, value.Offset, value.Count);
 
 		public void WriteLengthEncodedInteger(ulong value)
 		{
