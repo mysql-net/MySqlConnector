@@ -6,33 +6,33 @@ using System.Threading.Tasks;
 
 namespace MySql.Data.Serialization
 {
-    internal sealed class MySqlSession : IDisposable
-    {
-	    public void Dispose()
-	    {
-		    if (m_state == State.Connected)
-		    {
+	internal sealed class MySqlSession : IDisposable
+	{
+		public void Dispose()
+		{
+			if (m_state == State.Connected)
+			{
 				m_transmitter.SendAsync(QuitPayload.Create(), CancellationToken.None).Wait();
 				m_transmitter.TryReceiveReplyAsync(CancellationToken.None).Wait();
-			    m_state = State.Closed;
-		    }
+				m_state = State.Closed;
+			}
 			m_transmitter = null;
 			Utility.Dispose(ref m_stream);
 			Utility.Dispose(ref m_socket);
-	    }
+		}
 
 		public async Task ConnectAsync(string hostname, int port)
-	    {
-		    m_socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+		{
+			m_socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 #if DNXCORE50
 			await m_socket.ConnectAsync(hostname, port);
 #else
 			await Task.Factory.FromAsync(m_socket.BeginConnect, m_socket.EndConnect, hostname, port, null);
 #endif
 			m_stream = new NetworkStream(m_socket, true);
-		    m_transmitter = new PacketTransmitter(m_stream);
+			m_transmitter = new PacketTransmitter(m_stream);
 			m_state = State.Connected;
-	    }
+		}
 
 		// Starts a new conversation with the server by sending the first packet.
 		public Task SendAsync(PayloadData payload, CancellationToken cancellationToken)
@@ -52,12 +52,12 @@ namespace MySql.Data.Serialization
 
 
 		private void VerifyConnected()
-	    {
-		    if (m_state == State.Closed)
-			    throw new ObjectDisposedException(nameof(MySqlSession));
+		{
+			if (m_state == State.Closed)
+				throw new ObjectDisposedException(nameof(MySqlSession));
 			if (m_state != State.Connected)
 				throw new InvalidOperationException("MySqlSession is not connected.");
-	    }
+		}
 
 		private async Task TryAsync<TArg>(Func<TArg, CancellationToken, Task> func, TArg arg, CancellationToken cancellationToken)
 		{
@@ -85,22 +85,22 @@ namespace MySql.Data.Serialization
 		}
 
 		private bool SetFailed()
-	    {
-		    m_state = State.Failed;
-		    return false;
-	    }
+		{
+			m_state = State.Failed;
+			return false;
+		}
 
-	    private enum State
-	    {
-		    Created,
+		private enum State
+		{
+			Created,
 			Connected,
 			Closed,
 			Failed,
-	    }
+		}
 
-	    State m_state;
+		State m_state;
 		Socket m_socket;
-	    Stream m_stream;
-	    PacketTransmitter m_transmitter;
-    }
+		Stream m_stream;
+		PacketTransmitter m_transmitter;
+	}
 }
