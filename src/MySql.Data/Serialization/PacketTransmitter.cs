@@ -63,7 +63,7 @@ namespace MySql.Data.Serialization
 		{
 			await m_stream.ReadExactlyAsync(m_buffer, 0, 4, cancellationToken);
 			int payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, 0, 3);
-			if (m_buffer[3] != m_sequenceId)
+			if (m_buffer[3] != (byte) (m_sequenceId & 0xFF))
 				throw new InvalidOperationException("Packet received out-of-order.");
 			m_sequenceId++;
 			if (payloadLength > m_buffer.Length)
