@@ -18,6 +18,11 @@ namespace MySql.Data
 		    m_offset = offset;
 	    }
 
+	    public ByteArrayReader(ArraySegment<byte> arraySegment)
+		    : this(arraySegment.Array, arraySegment.Offset, arraySegment.Count)
+	    {
+	    }
+
 		public byte ReadByte()
 		{
 			VerifyRead(1);
@@ -54,8 +59,40 @@ namespace MySql.Data
 		    return result;
 	    }
 
+		public uint ReadUInt32()
+		{
+			VerifyRead(4);
+			var result = BitConverter.ToUInt32(m_buffer, m_offset);
+			m_offset += 4;
+			return result;
+		}
+
+		public uint ReadFixedLengthUInt32(int length)
+		{
+			if (length <= 0 || length > 4)
+				throw new ArgumentOutOfRangeException(nameof(length));
+			VerifyRead(length);
+			uint result = 0;
+			for (int i = 0; i < length; i++)
+				result |= ((uint) m_buffer[m_offset + i]) << (8 * i);
+			m_offset += length;
+			return result;
+		}
+
+		public ulong ReadFixedLengthUInt64(int length)
+		{
+			if (length <= 0 || length > 8)
+				throw new ArgumentOutOfRangeException(nameof(length));
+			VerifyRead(length);
+			ulong result = 0;
+			for (int i = 0; i < length; i++)
+				result |= ((ulong) m_buffer[m_offset + i]) << (8 * i);
+			m_offset += length;
+			return result;
+		}
+
 		// TODO: Span<byte>
-	    public byte[] ReadNullTerminatedByteString()
+		public byte[] ReadNullTerminatedByteString()
 	    {
 		    int index = m_offset;
 		    while (index < m_maxOffset && m_buffer[index] != 0)
@@ -76,6 +113,32 @@ namespace MySql.Data
 		    m_offset += length;
 		    return result;
 	    }
+
+	    public ulong ReadLengthEncodedInteger()
+	    {
+		    byte encodedLength = m_buffer[m_offset++];
+		    switch (encodedLength)
+		    {
+			case 0xFC:
+				return ReadFixedLengthUInt32(2);
+			case 0xFD:
+				return ReadFixedLengthUInt32(3);
+			case 0xFE:
+				return ReadFixedLengthUInt64(8);
+			case 0xFF:
+				throw new FormatException("Length-encoded integer cannot have 0xFF prefix byte.");
+			default:
+			    return encodedLength;
+		    }
+		}
+
+		public ArraySegment<byte> ReadLengthEncodedByteString()
+		{
+			var length = checked((int) ReadLengthEncodedInteger());
+			var result = new ArraySegment<byte>(m_buffer, m_offset, m_offset + length);
+			m_offset += length;
+			return result;
+		}
 
 		public int BytesRemaining => m_maxOffset - m_offset ;
 
