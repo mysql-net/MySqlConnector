@@ -289,21 +289,6 @@ namespace MySql.Data.MySqlClient
 			throw new NotSupportedException();
 		}
 
-		public override Type GetProviderSpecificFieldType(int ordinal)
-		{
-			throw new NotSupportedException();
-		}
-
-		public override object GetProviderSpecificValue(int ordinal)
-		{
-			throw new NotSupportedException();
-		}
-
-		public override int GetProviderSpecificValues(object[] values)
-		{
-			throw new NotSupportedException();
-		}
-		
 		public override int VisibleFieldCount => FieldCount;
 
 		protected override void Dispose(bool disposing)
