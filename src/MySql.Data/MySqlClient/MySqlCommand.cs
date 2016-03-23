@@ -58,7 +58,7 @@ namespace MySql.Data.MySqlClient
 			=> ExecuteNonQueryAsync(CancellationToken.None).GetAwaiter().GetResult();
 
 		public override object ExecuteScalar()
-			=> ExecuteNonQueryAsync(CancellationToken.None).GetAwaiter().GetResult();
+			=> ExecuteScalarAsync(CancellationToken.None).GetAwaiter().GetResult();
 
 		public override void Prepare()
 		{	
