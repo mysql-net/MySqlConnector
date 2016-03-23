@@ -243,7 +243,26 @@ namespace MySql.Data.MySqlClient
 
 		public override Type GetFieldType(int ordinal)
 		{
-			throw new NotImplementedException();
+			VerifyHasResult();
+			if (ordinal < 0 || ordinal > m_columnDefinitions.Length)
+				throw new ArgumentOutOfRangeException(nameof(ordinal), Invariant($"value must be between 0 and {m_columnDefinitions.Length}."));
+
+			switch (m_columnDefinitions[ordinal].ColumnType)
+			{
+			case ColumnType.Int24:
+			case ColumnType.Long:
+				return typeof(int);
+
+			case ColumnType.String:
+			case ColumnType.VarString:
+				return typeof(string);
+
+			case ColumnType.Short:
+				return typeof(short);
+
+			default:
+				throw new NotImplementedException(Invariant($"GetFieldType for {m_columnDefinitions[ordinal].ColumnType} is not implemented"));
+			}
 		}
 
 		public override object GetValue(int ordinal)
