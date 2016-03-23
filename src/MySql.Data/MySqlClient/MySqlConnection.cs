@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.Serialization;
+using static System.FormattableString;
 
 namespace MySql.Data.MySqlClient
 {
@@ -51,7 +52,7 @@ namespace MySql.Data.MySqlClient
 		{
 			VerifyNotDisposed();
 			if (State != ConnectionState.Closed)
-				throw new InvalidOperationException($"Cannot Open when State is {State}.");
+				throw new InvalidOperationException(Invariant($"Cannot Open when State is {State}."));
 
 			var connectionStringBuilder = new MySqlConnectionStringBuilder { ConnectionString = ConnectionString };
 			m_database = connectionStringBuilder.Database;

@@ -22,11 +22,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data.Common;
-using System.Text.RegularExpressions;
 using System.Text;
 using System.Globalization;
+using static System.FormattableString;
 
 namespace MySql.Data.MySqlClient
 {
@@ -248,7 +247,7 @@ namespace MySql.Data.MySqlClient
 		{
 			MySqlConnectionStringOption option = options.Get(key);
 			if (option == null)
-				throw new ArgumentException($"Keyword not supported: {key}", nameof(key));
+				throw new ArgumentException(Invariant($"Keyword not supported: {key}"), nameof(key));
 			else
 				return option;
 		}
@@ -388,7 +387,7 @@ namespace MySql.Data.MySqlClient
 					if (string.Compare("yes", (string) value, StringComparison.OrdinalIgnoreCase) == 0) value = true;
 					else if (string.Compare("no", (string) value, StringComparison.OrdinalIgnoreCase) == 0) value = false;
 					else if (Boolean.TryParse(value.ToString(), out b)) value = b;
-					else throw new ArgumentException($"Value not correct for its type: {value}", nameof(value));
+					else throw new ArgumentException(Invariant($"Value not correct for its type: {value}"), nameof(value));
 					return;
 				}
 			}
@@ -407,7 +406,7 @@ namespace MySql.Data.MySqlClient
 			Int32 intVal32;
 			if (typeName.StartsWith("Int32") && Int32.TryParse(value.ToString(), out intVal32)) { value = intVal32; return; }
 
-			throw new ArgumentException($"Value not correct for its type: {value}", nameof(value));
+			throw new ArgumentException(Invariant($"Value not correct for its type: {value}"), nameof(value));
 		}
 
 		private bool ParseEnum(string requestedValue, out object value)
