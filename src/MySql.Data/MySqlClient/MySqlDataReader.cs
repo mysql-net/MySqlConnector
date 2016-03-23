@@ -251,11 +251,12 @@ namespace MySql.Data.MySqlClient
 			if (ordinal < 0 || ordinal > m_columnDefinitions.Length)
 				throw new ArgumentOutOfRangeException(nameof(ordinal), Invariant($"value must be between 0 and {m_columnDefinitions.Length}."));
 
+			var isUnsigned = m_columnDefinitions[ordinal].ColumnFlags.HasFlag(ColumnFlags.Unsigned);
 			switch (m_columnDefinitions[ordinal].ColumnType)
 			{
 			case ColumnType.Int24:
 			case ColumnType.Long:
-				return typeof(int);
+				return isUnsigned ? typeof(uint) : typeof(int);
 
 			case ColumnType.String:
 			case ColumnType.VarString:
@@ -279,11 +280,13 @@ namespace MySql.Data.MySqlClient
 				return DBNull.Value;
 
 			var data = new ArraySegment<byte>(m_currentRow, m_dataOffsets[ordinal], m_dataLengths[ordinal]);
+			var isUnsigned = m_columnDefinitions[ordinal].ColumnFlags.HasFlag(ColumnFlags.Unsigned);
 			switch (m_columnDefinitions[ordinal].ColumnType)
 			{
 			case ColumnType.Int24:
 			case ColumnType.Long:
-				return int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+				return isUnsigned ? (object) uint.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
+					int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
 			case ColumnType.String:
 			case ColumnType.VarString:
