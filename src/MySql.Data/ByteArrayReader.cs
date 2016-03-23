@@ -147,7 +147,7 @@ namespace MySql.Data
 		public ArraySegment<byte> ReadLengthEncodedByteString()
 		{
 			var length = checked((int) ReadLengthEncodedInteger());
-			var result = new ArraySegment<byte>(m_buffer, m_offset, m_offset + length);
+			var result = new ArraySegment<byte>(m_buffer, m_offset, length);
 			m_offset += length;
 			return result;
 		}
