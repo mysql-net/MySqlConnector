@@ -74,6 +74,9 @@
     <Compile Include="..\SideBySide.New\Constants.cs">
       <Link>Constants.cs</Link>
     </Compile>
+    <Compile Include="..\SideBySide.New\DatabaseFixture.cs">
+      <Link>DatabaseFixture.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
