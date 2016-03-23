@@ -1,4 +1,5 @@
 ﻿using System;
+using static System.FormattableString;
 
 namespace MySql.Data
 {
@@ -21,6 +22,17 @@ namespace MySql.Data
 		public ByteArrayReader(ArraySegment<byte> arraySegment)
 			: this(arraySegment.Array, arraySegment.Offset, arraySegment.Count)
 		{
+		}
+
+		public int Offset
+		{
+			get { return m_offset; }
+			set
+			{
+				if (value < 0 || value > m_maxOffset)
+					throw new ArgumentOutOfRangeException(nameof(value), Invariant($"value must be between 0 and {m_maxOffset}"));
+				m_offset = value;
+			}
 		}
 
 		public byte ReadByte()
