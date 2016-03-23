@@ -19,6 +19,9 @@ namespace MySql.Data.Serialization
 				ProtocolCapabilities.SecureConnection |
 				ProtocolCapabilities.PluginAuth |
 				ProtocolCapabilities.PluginAuthLengthEncodedClientData |
+				ProtocolCapabilities.MultiStatements |
+				ProtocolCapabilities.MultiResults |
+				ProtocolCapabilities.PreparedStatementMultiResults |
 				(string.IsNullOrWhiteSpace(database) ? 0 : ProtocolCapabilities.ConnectWithDatabase)));
 			writer.WriteInt32(0x40000000);
 			writer.WriteByte((byte) 46); // utf8mb4_bin

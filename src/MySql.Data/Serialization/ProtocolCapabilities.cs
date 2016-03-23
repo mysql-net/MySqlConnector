@@ -90,7 +90,7 @@ namespace MySql.Data.Serialization
 		/// <summary>
 		/// Can send multiple resultsets for COM_STMT_EXECUTE.
 		/// </summary>
-		PsMultiResults = 0x40000,
+		PreparedStatementMultiResults = 0x40000,
 
 		/// <summary>
 		/// Sends extra data in Initial Handshake Packet and supports the pluggable authentication protocol.
@@ -105,7 +105,7 @@ namespace MySql.Data.Serialization
 		/// <summary>
 		/// Understands length-encoded integer for auth response data in Protocol::HandshakeResponse41.
 		/// </summary>
-		PluginAuthLengthEncodedClientData = 0x00200000,
+		PluginAuthLengthEncodedClientData = 0x200000,
 
 		/// <summary>
 		/// Announces support for expired password extension.
