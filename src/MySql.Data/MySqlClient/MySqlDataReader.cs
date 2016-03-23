@@ -68,7 +68,7 @@ namespace MySql.Data.MySqlClient
 				var length = (int) reader.ReadLengthEncodedInteger();
 				m_dataLengths[column] = length;
 				m_dataOffsets[column] = length == 0xFB ? -1 : reader.Offset;
-				reader.Offset += length == 0xFB ? 1 : length;
+				reader.Offset += length == 0xFB ? 0 : length;
 			}
 
 			m_currentRow = payload.ArraySegment.Array;
