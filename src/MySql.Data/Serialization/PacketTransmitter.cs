@@ -80,7 +80,11 @@ namespace MySql.Data.Serialization
 			}
 			int payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, 0, 3);
 			if (m_buffer[3] != (byte) (m_sequenceId & 0xFF))
+			{
+				if (optional)
+					return null;
 				throw new InvalidOperationException(Invariant($"Packet received out-of-order. Expected {m_sequenceId & 0xFF}; got {m_buffer[3]}."));
+			}
 			m_sequenceId++;
 			if (payloadLength > m_buffer.Length)
 				throw new NotSupportedException("TODO: Can't read long payloads.");
