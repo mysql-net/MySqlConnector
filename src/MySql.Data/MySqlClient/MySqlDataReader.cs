@@ -48,41 +48,45 @@ namespace MySql.Data.MySqlClient
 		{
 			VerifyNotDisposed();
 
-			var payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
-
-			var reader = new ByteArrayReader(payload.ArraySegment);
-			var headerByte = reader.ReadByte();
-
-			if (headerByte == 0xFE)
-			{
-				int warningCount = reader.ReadUInt16();
-				var flags = (ServerStatus) reader.ReadUInt16();
-
-				m_state = flags.HasFlag(ServerStatus.MoreResultsExist) ? State.HasMoreData : State.NoMoreData;
+			// if we've already read past the end of this resultset, Read returns false
+			if (m_state == State.HasMoreData || m_state == State.NoMoreData)
 				return false;
-			}
 
-			reader.Offset--;
-			for (var column = 0; column < m_dataOffsets.Length; column++)
+			if (m_state != State.AlreadyReadFirstRow)
 			{
-				var length = (int) reader.ReadLengthEncodedInteger();
-				m_dataLengths[column] = length;
-				m_dataOffsets[column] = length == 0xFB ? -1 : reader.Offset;
-				reader.Offset += length == 0xFB ? 0 : length;
+				var payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+
+				var reader = new ByteArrayReader(payload.ArraySegment);
+				var headerByte = reader.ReadByte();
+
+				if (headerByte == 0xFE)
+				{
+					int warningCount = reader.ReadUInt16();
+					var flags = (ServerStatus) reader.ReadUInt16();
+
+					m_state = flags.HasFlag(ServerStatus.MoreResultsExist) ? State.HasMoreData : State.NoMoreData;
+					return false;
+				}
+
+				reader.Offset--;
+				for (var column = 0; column < m_dataOffsets.Length; column++)
+				{
+					var length = (int) reader.ReadLengthEncodedInteger();
+					m_dataLengths[column] = length;
+					m_dataOffsets[column] = length == 0xFB ? -1 : reader.Offset;
+					reader.Offset += length == 0xFB ? 0 : length;
+				}
+
+				m_currentRow = payload.ArraySegment.Array;
 			}
 
-			m_currentRow = payload.ArraySegment.Array;
 			m_state = State.ReadingRows;
-
 			return true;
 		}
 
 		public override bool IsClosed => m_command == null;
 
-		public override int RecordsAffected
-		{
-			get { throw new NotImplementedException(); }
-		}
+		public override int RecordsAffected => m_recordsAffected;
 
 		public override bool GetBoolean(int ordinal)
 		{
@@ -213,7 +217,7 @@ namespace MySql.Data.MySqlClient
 				{
 					if (Read())
 					{
-						m_state = State.PreReadFirstRow;
+						m_state = State.AlreadyReadFirstRow;
 						return true;
 					}
 					return false;
@@ -353,10 +357,12 @@ namespace MySql.Data.MySqlClient
 		{
 			var payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 
-			var firstByte = payload.ArraySegment.Array[0];
+			var firstByte = payload.ArraySegment.Array[payload.ArraySegment.Offset];
 			if (firstByte == 0)
 			{
-				throw new NotImplementedException("TODO: Handle OK");
+				var ok = OkPayload.Create(payload);
+				m_recordsAffected += ok.AffectedRowCount;
+				m_state = ok.ServerStatus.HasFlag(ServerStatus.MoreResultsExist) ? State.HasMoreData : State.NoMoreData;
 			}
 			else if (firstByte == 0xFB)
 			{
@@ -426,20 +432,17 @@ namespace MySql.Data.MySqlClient
 		{
 			None,
 			ReadResultSetHeader,
-			PreReadFirstRow,
+			AlreadyReadFirstRow,
 			ReadingRows,
 			HasMoreData,
 			NoMoreData,
 		}
 
-		static readonly Task<bool> s_canceledTask = CreateCanceledTask();
-		static readonly Task<bool> s_falseTask = Task.FromResult(false);
-		static readonly Task<bool> s_trueTask = Task.FromResult(true);
-
 		MySqlCommand m_command;
 		MySqlSession m_session;
 		State m_state;
 		readonly CommandBehavior m_behavior;
+		int m_recordsAffected;
 		int m_currentStatementIndex;
 		ColumnDefinitionPayload[] m_columnDefinitions;
 		int[] m_dataOffsets;
