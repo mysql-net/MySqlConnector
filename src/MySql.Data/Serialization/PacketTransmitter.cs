@@ -57,10 +57,10 @@ namespace MySql.Data.Serialization
 				SerializationUtility.WriteUInt32((uint) bytesToSend, m_buffer, 0, 3);
 				m_buffer[3] = (byte) m_sequenceId;
 				m_sequenceId++;
-				await m_stream.WriteAsync(m_buffer, 0, 4, cancellationToken);
+				await m_stream.WriteAsync(m_buffer, 0, 4, cancellationToken).ConfigureAwait(false);
 
 				// write payload
-				await m_stream.WriteAsync(data.Array, data.Offset + bytesSent, bytesToSend, cancellationToken);
+				await m_stream.WriteAsync(data.Array, data.Offset + bytesSent, bytesToSend, cancellationToken).ConfigureAwait(false);
 
 				bytesSent += bytesToSend;
 			} while (bytesToSend == maxBytesToSend);
@@ -70,13 +70,13 @@ namespace MySql.Data.Serialization
 		{
 			if (optional)
 			{
-				int bytesRead = await m_stream.ReadAvailableAsync(m_buffer, 0, 4, cancellationToken);
+				int bytesRead = await m_stream.ReadAvailableAsync(m_buffer, 0, 4, cancellationToken).ConfigureAwait(false);
 				if (bytesRead < 4)
 					return null;
 			}
 			else
 			{
-				await m_stream.ReadExactlyAsync(m_buffer, 0, 4, cancellationToken);
+				await m_stream.ReadExactlyAsync(m_buffer, 0, 4, cancellationToken).ConfigureAwait(false);
 			}
 			int payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, 0, 3);
 			if (m_buffer[3] != (byte) (m_sequenceId & 0xFF))
@@ -88,7 +88,7 @@ namespace MySql.Data.Serialization
 			m_sequenceId++;
 			if (payloadLength > m_buffer.Length)
 				throw new NotSupportedException("TODO: Can't read long payloads.");
-			await m_stream.ReadExactlyAsync(m_buffer, 0, payloadLength, cancellationToken);
+			await m_stream.ReadExactlyAsync(m_buffer, 0, payloadLength, cancellationToken).ConfigureAwait(false);
 
 			if (m_buffer[0] == 0xFF)
 			{

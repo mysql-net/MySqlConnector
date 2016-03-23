@@ -63,16 +63,16 @@ namespace MySql.Data.MySqlClient
 			try
 			{
 				m_session = new MySqlSession();
-				await m_session.ConnectAsync(connectionStringBuilder.Server, (int) connectionStringBuilder.Port);
-				var payload = await m_session.ReceiveAsync(cancellationToken);
+				await m_session.ConnectAsync(connectionStringBuilder.Server, (int) connectionStringBuilder.Port).ConfigureAwait(false);
+				var payload = await m_session.ReceiveAsync(cancellationToken).ConfigureAwait(false);
 				var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
 				var initialHandshake = new InitialHandshakePacket(reader);
 				m_serverVersion = Encoding.ASCII.GetString(initialHandshake.ServerVersion);
 
 				var response = HandshakeResponse41Packet.Create(initialHandshake, connectionStringBuilder.UserID, connectionStringBuilder.Password, connectionStringBuilder.Database);
 				payload = new PayloadData(new ArraySegment<byte>(response));
-				await m_session.SendReplyAsync(payload, cancellationToken);
-				await m_session.ReceiveReplyAsync(cancellationToken);
+				await m_session.SendReplyAsync(payload, cancellationToken).ConfigureAwait(false);
+				await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 				// TODO: Check success
 
 				SetState(ConnectionState.Open);

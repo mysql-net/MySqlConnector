@@ -25,9 +25,9 @@ namespace MySql.Data.Serialization
 		{
 			m_socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 #if DNXCORE50
-			await m_socket.ConnectAsync(hostname, port);
+			await m_socket.ConnectAsync(hostname, port).ConfigureAwait(false);
 #else
-			await Task.Factory.FromAsync(m_socket.BeginConnect, m_socket.EndConnect, hostname, port, null);
+			await Task.Factory.FromAsync(m_socket.BeginConnect, m_socket.EndConnect, hostname, port, null).ConfigureAwait(false);
 #endif
 			m_stream = new NetworkStream(m_socket, true);
 			m_transmitter = new PacketTransmitter(m_stream);
@@ -64,7 +64,7 @@ namespace MySql.Data.Serialization
 			VerifyConnected();
 			try
 			{
-				await func(arg, cancellationToken);
+				await func(arg, cancellationToken).ConfigureAwait(false);
 			}
 			catch (Exception) when (SetFailed())
 			{
@@ -76,7 +76,7 @@ namespace MySql.Data.Serialization
 			VerifyConnected();
 			try
 			{
-				return await func(cancellationToken);
+				return await func(cancellationToken).ConfigureAwait(false);
 			}
 			catch (Exception) when (SetFailed())
 			{

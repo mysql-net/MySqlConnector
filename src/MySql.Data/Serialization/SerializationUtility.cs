@@ -11,7 +11,7 @@ namespace MySql.Data.Serialization
 			int totalBytesRead = 0;
 			while (count > 0)
 			{
-				int bytesRead = await stream.ReadAsync(buffer, offset, count, cancellationToken);
+				int bytesRead = await stream.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
 				if (bytesRead == 0)
 					break;
 				totalBytesRead += bytesRead;
@@ -23,7 +23,7 @@ namespace MySql.Data.Serialization
 
 		public static async Task ReadExactlyAsync(this Stream stream, byte[] buffer, int offset, int count, CancellationToken cancellationToken)
 		{
-			var bytesRead = await stream.ReadAvailableAsync(buffer, offset, count, cancellationToken);
+			var bytesRead = await stream.ReadAvailableAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
 			if (bytesRead != count)
 				throw new EndOfStreamException();
 		}

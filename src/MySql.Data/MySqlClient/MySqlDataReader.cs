@@ -34,7 +34,7 @@ namespace MySql.Data.MySqlClient
 				throw new InvalidOperationException(Invariant($"Invalid state: {m_state}"));
 
 			Reset();
-			await ReadResultSetHeader(cancellationToken);
+			await ReadResultSetHeader(cancellationToken).ConfigureAwait(false);
 			return true;
 		}
 
@@ -48,7 +48,7 @@ namespace MySql.Data.MySqlClient
 		{
 			VerifyNotDisposed();
 
-			var payload = await m_session.ReceiveReplyAsync(cancellationToken);
+			var payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 
 			var reader = new ByteArrayReader(payload.ArraySegment);
 			var headerByte = reader.ReadByte();
@@ -338,7 +338,7 @@ namespace MySql.Data.MySqlClient
 		internal static async Task<DbDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, CancellationToken cancellationToken)
 		{
 			var dataReader = new MySqlDataReader(command, behavior);
-			await dataReader.ReadResultSetHeader(cancellationToken);
+			await dataReader.ReadResultSetHeader(cancellationToken).ConfigureAwait(false);
 			return dataReader;
 		}
 
@@ -351,7 +351,7 @@ namespace MySql.Data.MySqlClient
 
 		private async Task ReadResultSetHeader(CancellationToken cancellationToken)
 		{
-			var payload = await m_session.ReceiveReplyAsync(cancellationToken);
+			var payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 
 			var firstByte = payload.ArraySegment.Array[0];
 			if (firstByte == 0)
@@ -372,11 +372,11 @@ namespace MySql.Data.MySqlClient
 
 				for (var column = 0; column < m_columnDefinitions.Length; column++)
 				{
-					payload = await m_session.ReceiveReplyAsync(cancellationToken);
+					payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 					m_columnDefinitions[column] = ColumnDefinitionPayload.Create(payload);
 				}
 
-				payload = await m_session.ReceiveReplyAsync(cancellationToken);
+				payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 				if (payload.ArraySegment.Array[payload.ArraySegment.Offset] != 0xFE)
 					throw new FormatException("Expected EOF packet following column data.");
 

@@ -61,7 +61,7 @@ namespace MySql.Data.MySqlClient
 			=> ExecuteNonQueryAsync(CancellationToken.None).GetAwaiter().GetResult();
 
 		public override void Prepare()
-		{
+		{	
 			// NOTE: Prepared statements in MySQL are not currently supported.
 			// 1) Only a subset of statements are actually preparable by the server: http://dev.mysql.com/worklog/task/?id=2871
 			// 2) Although CLIENT_MULTI_STATEMENTS is supposed to mean that the Server "Can handle multiple statements per COM_QUERY and COM_STMT_PREPARE" (https://dev.mysql.com/doc/internals/en/capability-flags.html#flag-CLIENT_MULTI_STATEMENTS),
@@ -139,8 +139,8 @@ namespace MySql.Data.MySqlClient
 			var preparer = new MySqlStatementPreparer(CommandText, m_parameterCollection);
 			preparer.BindParameters();
 			var payload = new PayloadData(new ArraySegment<byte>(Payload.CreateEofStringPayload(CommandKind.Query, preparer.PreparedSql)));
-			await Session.SendAsync(payload, cancellationToken);
-			return await MySqlDataReader.CreateAsync(this, behavior, cancellationToken);
+			await Session.SendAsync(payload, cancellationToken).ConfigureAwait(false);
+			return await MySqlDataReader.CreateAsync(this, behavior, cancellationToken).ConfigureAwait(false);
 		}
 
 		protected override void Dispose(bool disposing)
