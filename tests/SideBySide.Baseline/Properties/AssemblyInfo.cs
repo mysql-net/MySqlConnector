@@ -4,4 +4,3 @@
 [assembly: AssemblyProduct("SideBySide.Baseline")]
 [assembly: AssemblyCopyright("Copyright 2016 Bradley Grainger")]
 [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyFileVersion("1.0.*")]
