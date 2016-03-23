@@ -1,7 +1,10 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
+using static System.FormattableString;
 
 namespace MySql.Data.Serialization
 {
@@ -77,11 +80,20 @@ namespace MySql.Data.Serialization
 			}
 			int payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, 0, 3);
 			if (m_buffer[3] != (byte) (m_sequenceId & 0xFF))
-				throw new InvalidOperationException("Packet received out-of-order.");
+				throw new InvalidOperationException(Invariant($"Packet received out-of-order. Expected {m_sequenceId & 0xFF}; got {m_buffer[3]}."));
 			m_sequenceId++;
 			if (payloadLength > m_buffer.Length)
 				throw new NotSupportedException("TODO: Can't read long payloads.");
 			await m_stream.ReadExactlyAsync(m_buffer, 0, payloadLength, cancellationToken);
+
+			if (m_buffer[0] == 0xFF)
+			{
+				var errorCode = (int) BitConverter.ToUInt16(m_buffer, 1);
+				var sqlState = Encoding.ASCII.GetString(m_buffer, 4, 5);
+				var message = Encoding.UTF8.GetString(m_buffer, 9, payloadLength - 9);
+				throw new MySqlException(errorCode, sqlState, message);
+			}
+
 			return new PayloadData(new ArraySegment<byte>(m_buffer, 0, payloadLength));
 		}
 
