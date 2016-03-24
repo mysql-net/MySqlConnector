@@ -9,6 +9,10 @@ is deemed important.
 The source code is all in the `SideBySide.New` folder, and added (as link) to the `SideBySide.Baseline`
 project.
 
+The tests require a local MySQL server (although this can be changed in `Constants.cs` to use
+a remote server). Create a user with the Login Name `mysqltest`, Password `mysqltest` and
+Role "DBManager".
+
 There are two ways to run the tests: command line and Visual Studio.
 
 ### Visual Studio 2015
