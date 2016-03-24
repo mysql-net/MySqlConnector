@@ -28,11 +28,53 @@ namespace MySql.Data.MySqlClient
 
 		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
 		{
-			throw new NotImplementedException();
+			if (State != ConnectionState.Open)
+				throw new InvalidOperationException("Connection is not open.");
+			if (CurrentTransaction != null)
+				throw new InvalidOperationException("Transactions may not be nested.");
+
+			string isolationLevelValue;
+			switch (isolationLevel)
+			{
+			case IsolationLevel.ReadUncommitted:
+				isolationLevelValue = "read uncommitted";
+				break;
+
+			case IsolationLevel.ReadCommitted:
+				isolationLevelValue = "read committed";
+				break;
+
+			case IsolationLevel.Unspecified:
+			// "In terms of the SQL:1992 transaction isolation levels, the default InnoDB level is REPEATABLE READ." - http://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-model.html
+			case IsolationLevel.RepeatableRead:
+				isolationLevelValue = "repeatable read";
+				break;
+
+			case IsolationLevel.Serializable:
+				isolationLevelValue = "serializable";
+				break;
+
+			case IsolationLevel.Chaos:
+			case IsolationLevel.Snapshot:
+			default:
+				throw new NotSupportedException(Invariant($"IsolationLevel.{isolationLevel} is not supported."));
+			}
+
+			using (var cmd = new MySqlCommand("set session transaction isolation level " + isolationLevelValue + "; start transaction;", this))
+				cmd.ExecuteNonQuery();
+
+			var transaction = new MySqlTransaction(this, isolationLevel);
+			CurrentTransaction = transaction;
+			return transaction;
 		}
 
 		public override void Close()
 		{
+			if (CurrentTransaction != null)
+			{
+				CurrentTransaction.Dispose();
+				CurrentTransaction = null;
+			}
 			Utility.Dispose(ref m_session);
 			SetState(ConnectionState.Closed);
 			m_isDisposed = true;
@@ -113,6 +155,8 @@ namespace MySql.Data.MySqlClient
 				return m_session;
 			}
 		}
+
+		internal MySqlTransaction CurrentTransaction { get; set; }
 
 		private void SetState(ConnectionState newState)
 		{
