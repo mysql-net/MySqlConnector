@@ -386,8 +386,7 @@ namespace MySql.Data.MySqlClient
 				}
 
 				payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
-				if (payload.ArraySegment.Array[payload.ArraySegment.Offset] != 0xFE)
-					throw new FormatException("Expected EOF packet following column data.");
+				EofPayload.Create(payload);
 
 				m_state = State.ReadResultSetHeader;
 			}
