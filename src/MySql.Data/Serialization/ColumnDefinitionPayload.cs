@@ -7,6 +7,7 @@ namespace MySql.Data.Serialization
 	{
 		public string Name { get; }
 		public CharacterSet CharacterSet { get; }
+		public int ColumnLength { get; }
 		public ColumnType ColumnType { get; }
 		public ColumnFlags ColumnFlags { get; }
 
@@ -21,7 +22,7 @@ namespace MySql.Data.Serialization
 			var physicalName = reader.ReadLengthEncodedByteString();
 			reader.ReadByte(0x0C); // length of fixed-length fields, always 0x0C
 			var characterSet = (CharacterSet) reader.ReadUInt16();
-			var columnLength = reader.ReadUInt32();
+			var columnLength = (int) reader.ReadUInt32();
 			var columnType = (ColumnType) reader.ReadByte();
 			var columnFlags = (ColumnFlags) reader.ReadUInt16();
 			reader.ReadByte(0);
@@ -35,13 +36,14 @@ namespace MySql.Data.Serialization
 
 			if (reader.BytesRemaining != 0)
 				throw new FormatException("Extra bytes at end of payload.");
-			return new ColumnDefinitionPayload(name, characterSet, columnType, columnFlags);
+			return new ColumnDefinitionPayload(name, characterSet, columnLength, columnType, columnFlags);
 		}
 
-		private ColumnDefinitionPayload(string name, CharacterSet characterSet, ColumnType columnType, ColumnFlags columnFlags)
+		private ColumnDefinitionPayload(string name, CharacterSet characterSet, int columnLength, ColumnType columnType, ColumnFlags columnFlags)
 		{
 			Name = name;
 			CharacterSet = characterSet;
+			ColumnLength = columnLength;
 			ColumnType = columnType;
 			ColumnFlags = columnFlags;
 		}

@@ -12,19 +12,37 @@ drop schema if exists datatypes;
 
 create schema datatypes;
 
+create table datatypes.bools(
+  rowid integer not null primary key auto_increment,
+  Boolean bool null,
+  TinyInt1 tinyint(1) null
+);
+
+insert into datatypes.bools(Boolean, TinyInt1)
+values
+  (null, null),
+  (0, 0),
+  (1, 1),
+  (false, false),
+  (true, true),
+  (-1, -1),
+  (123, 123);
+
 create table datatypes.numbers (
   rowid integer not null primary key auto_increment,
+  SByte tinyint null,
+  Byte tinyint unsigned null,
   Int32 int null,
   UInt32 int unsigned null
 );
 
-insert into datatypes.numbers(Int32, UInt32)
+insert into datatypes.numbers(SByte, Byte, Int32, UInt32)
 values
-  (null, null), # null
-  (0, 0), # zero
-  (-2147483648, 0), # minimum
-  (2147483647, 4294967295), # maximum
-  (123456789, 123456789);
+  (null, null, null, null), # null
+  (0, 0, 0, 0), # zero
+  (-128, 0, -2147483648, 0), # minimum
+  (127, 255, 2147483647, 4294967295), # maximum
+  (123, 123, 123456789, 123456789);
 
 create table datatypes.strings (
   rowid integer not null primary key auto_increment,

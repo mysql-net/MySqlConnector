@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -91,6 +87,11 @@ namespace MySql.Data.MySqlClient
 		public override bool GetBoolean(int ordinal)
 		{
 			return (bool) GetValue(ordinal);
+		}
+
+		public sbyte GetSByte(int ordinal)
+		{
+			return (sbyte) GetValue(ordinal);
 		}
 
 		public override byte GetByte(int ordinal)
@@ -254,6 +255,10 @@ namespace MySql.Data.MySqlClient
 			var isUnsigned = m_columnDefinitions[ordinal].ColumnFlags.HasFlag(ColumnFlags.Unsigned);
 			switch (m_columnDefinitions[ordinal].ColumnType)
 			{
+			case ColumnType.Tiny:
+				return m_columnDefinitions[ordinal].ColumnLength == 1 ? typeof(bool) :
+					isUnsigned ? typeof(byte) : typeof(sbyte);
+
 			case ColumnType.Int24:
 			case ColumnType.Long:
 				return isUnsigned ? typeof(uint) : typeof(int);
@@ -283,6 +288,12 @@ namespace MySql.Data.MySqlClient
 			var isUnsigned = m_columnDefinitions[ordinal].ColumnFlags.HasFlag(ColumnFlags.Unsigned);
 			switch (m_columnDefinitions[ordinal].ColumnType)
 			{
+			case ColumnType.Tiny:
+				var value = int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+				if (m_columnDefinitions[ordinal].ColumnLength == 1)
+					return value != 0;
+				return isUnsigned ? (object) (byte) value : (sbyte) value;
+
 			case ColumnType.Int24:
 			case ColumnType.Long:
 				return isUnsigned ? (object) uint.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
@@ -390,8 +401,6 @@ namespace MySql.Data.MySqlClient
 
 				m_state = State.ReadResultSetHeader;
 			}
-
-			m_currentStatementIndex++;
 		}
 
 
@@ -423,13 +432,6 @@ namespace MySql.Data.MySqlClient
 				throw new ObjectDisposedException(GetType().Name);
 		}
 
-		private static Task<bool> CreateCanceledTask()
-		{
-			var source = new TaskCompletionSource<bool>();
-			source.SetCanceled();
-			return source.Task;
-		}
-
 		private enum State
 		{
 			None,
@@ -445,7 +447,6 @@ namespace MySql.Data.MySqlClient
 		State m_state;
 		readonly CommandBehavior m_behavior;
 		int m_recordsAffected;
-		int m_currentStatementIndex;
 		ColumnDefinitionPayload[] m_columnDefinitions;
 		int[] m_dataOffsets;
 		int[] m_dataLengths;

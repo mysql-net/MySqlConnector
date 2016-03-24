@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Data.Common;
+using MySql.Data.MySqlClient;
 using Xunit;
 
-// Baseline MySql.Data will throw SqlNullValueException, which is an exception type related to SQL Server:
+// mysql-connector-net will throw SqlNullValueException, which is an exception type related to SQL Server:
 // "The exception that is thrown when the Value property of a System.Data.SqlTypes structure is set to null."
 // However, DbDataReader.GetString etc. are documented as throwing InvalidCastException: https://msdn.microsoft.com/en-us/library/system.data.common.dbdatareader.getstring.aspx
 // Additionally, that is what DbDataReader.GetFieldValue<T> throws. For consistency, we prefer InvalidCastException.
@@ -21,15 +22,41 @@ namespace SideBySide
 			m_database = database;
 		}
 
+#if BASELINE
+		[Theory(Skip = "Broken by https://bugs.mysql.com/bug.php?id=78917")]
+#else
 		[Theory]
-		[InlineData("Int32", new object[] { null, 0, int.MinValue, int.MaxValue, 123456789 })]
+#endif
+		[InlineData("Boolean", new object[] { null, false, true, false, true, true, true })]
+		[InlineData("TinyInt1", new object[] { null, false, true, false, true, true, true })]
+		public void QueryBoolean(string column, object[] expected)
+		{
+			DoQuery("bools", column, expected, reader => reader.GetBoolean(0));
+		}
+
+		[Theory]
+		[InlineData("SByte", new object[] { null, default(sbyte), sbyte.MinValue, sbyte.MaxValue, (sbyte) 123 })]
+		public void QuerySByte(string column, object[] expected)
+		{
+			DoQuery("numbers", column, expected, reader => ((MySqlDataReader) reader).GetSByte(0), baselineCoercedNullValue: default(sbyte));
+		}
+
+		[Theory]
+		[InlineData("Byte", new object[] { null, default(byte), byte.MinValue, byte.MaxValue, (byte) 123 })]
+		public void QueryByte(string column, object[] expected)
+		{
+			DoQuery("numbers", column, expected, reader => reader.GetByte(0), baselineCoercedNullValue: default(byte));
+		}
+
+		[Theory]
+		[InlineData("Int32", new object[] { null, default(int), int.MinValue, int.MaxValue, 123456789 })]
 		public void QueryInt32(string column, object[] expected)
 		{
 			DoQuery("numbers", column, expected, reader => reader.GetInt32(0));
 		}
 
 		[Theory]
-		[InlineData("UInt32", new object[] { null, 0u, uint.MinValue, uint.MaxValue, 123456789u })]
+		[InlineData("UInt32", new object[] { null, default(uint), uint.MinValue, uint.MaxValue, 123456789u })]
 		public void QueryUInt32(string column, object[] expected)
 		{
 			DoQuery<InvalidCastException>("numbers", column, expected, reader => reader.GetFieldValue<uint>(0));
@@ -44,12 +71,14 @@ namespace SideBySide
 			DoQuery("strings", column, expected, reader => reader.GetString(0));
 		}
 
-		private void DoQuery(string table, string column, object[] expected, Func<DbDataReader, object> getValue)
+		private void DoQuery(string table, string column, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null)
 		{
-			DoQuery<GetValueWhenNullException>(table, column, expected, getValue);
+			DoQuery<GetValueWhenNullException>(table, column, expected, getValue, baselineCoercedNullValue);
 		}
 
-		private void DoQuery<TException>(string table, string column, object[] expected, Func<DbDataReader, object> getValue)
+		// NOTE: baselineCoercedNullValue is to work around inconsistencies in mysql-connector-net; DBNull.Value will
+		// be coerced to 0 by some reader.GetX() methods, but not others.
+		private void DoQuery<TException>(string table, string column, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null)
 			where TException : Exception
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
@@ -63,7 +92,14 @@ namespace SideBySide
 						if (value == null)
 						{
 							Assert.Equal(DBNull.Value, reader.GetValue(0));
-							Assert.Throws<TException>(() => getValue(reader));
+#if BASELINE
+							if (baselineCoercedNullValue != null)
+								Assert.Equal(baselineCoercedNullValue, getValue(reader));
+							else
+								Assert.Throws<TException>(() => getValue(reader));
+#else
+							Assert.Throws<InvalidCastException>(() => getValue(reader));
+#endif
 						}
 						else
 						{
