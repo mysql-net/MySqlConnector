@@ -22,7 +22,7 @@ namespace MySql.Data.Serialization
 			var capabilityFlagsLow = reader.ReadUInt16();
 			if (reader.BytesRemaining > 0)
 			{
-				byte charSet = reader.ReadByte();
+				var charSet = (CharacterSet) reader.ReadByte();
 				ServerStatus status = (ServerStatus) reader.ReadInt16();
 				var capabilityFlagsHigh = reader.ReadUInt16();
 				ProtocolCapabilities = (ProtocolCapabilities) (capabilityFlagsHigh << 16 | capabilityFlagsLow);
