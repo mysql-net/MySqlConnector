@@ -11,7 +11,7 @@
 	"projectUrl": "https://github.com/bgrainger/MySqlConnector",
 	"compilationOptions": {
 		"warningsAsErrors": true
-  	},
+	},
 	"dependencies": {
 		"MySql.Data": {
 			"target": "project"

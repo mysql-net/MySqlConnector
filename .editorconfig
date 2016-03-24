@@ -1,0 +1,9 @@
+[*.cs]
+indent_style = tab
+indent_size = 4
+insert_final_newline = true
+
+[*.json]
+indent_style = tab
+indent_size = 2
+insert_final_newline = true

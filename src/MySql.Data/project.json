@@ -20,7 +20,7 @@
 	},
 	"compilationOptions": {
 		"warningsAsErrors": true
-  	},
+	},
 	"frameworks": {
 		"net46": {
 			"frameworkAssemblies": {
