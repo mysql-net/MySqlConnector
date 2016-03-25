@@ -91,6 +91,8 @@ namespace MySql.Data.MySqlClient
 			set { throw new NotSupportedException(); }
 		}
 
+		public long LastInsertedId { get; internal set; }
+
 		protected override DbConnection DbConnection { get; set; }
 		protected override DbParameterCollection DbParameterCollection => m_parameterCollection;
 		protected override DbTransaction DbTransaction { get; set; }
@@ -135,6 +137,7 @@ namespace MySql.Data.MySqlClient
 		{
 			VerifyValid();
 
+			LastInsertedId = -1;
 			var preparer = new MySqlStatementPreparer(CommandText, m_parameterCollection);
 			preparer.BindParameters();
 			var payload = new PayloadData(new ArraySegment<byte>(Payload.CreateEofStringPayload(CommandKind.Query, preparer.PreparedSql)));

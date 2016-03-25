@@ -421,6 +421,7 @@ namespace MySql.Data.MySqlClient
 			{
 				var ok = OkPayload.Create(payload);
 				m_recordsAffected += ok.AffectedRowCount;
+				m_command.LastInsertedId = ok.LastInsertId;
 				m_state = ok.ServerStatus.HasFlag(ServerStatus.MoreResultsExist) ? State.HasMoreData : State.NoMoreData;
 			}
 			else if (firstByte == 0xFB)
@@ -444,6 +445,7 @@ namespace MySql.Data.MySqlClient
 				payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 				EofPayload.Create(payload);
 
+				m_command.LastInsertedId = -1;
 				m_state = State.ReadResultSetHeader;
 			}
 		}
