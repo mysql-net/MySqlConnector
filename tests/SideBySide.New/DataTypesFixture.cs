@@ -57,6 +57,26 @@ values
   ('', '', ''),
   ('ASCII', 'ASCII', 'ASCII'),
   ('Ũńıċōđĕ', 'Lãtïñ', 'АБВГабвг');
+
+create table datatypes.blobs(
+  rowid integer not null primary key auto_increment,
+  `Binary` binary(100) null,
+  `VarBinary` varbinary(100) null,
+  `TinyBlob` tinyblob null,
+  `Blob` blob null,
+  `MediumBlob` mediumblob null,
+  `LongBlob` longblob null
+);
+
+insert into datatypes.blobs(`Binary`, `VarBinary`, `TinyBlob`, `Blob`, `MediumBlob`, `LongBlob`)
+values
+  (null, null, null, null, null, null),
+  (X'00112233445566778899AABBCCDDEEFF',
+    X'00112233445566778899AABBCCDDEEFF',
+    X'00112233445566778899AABBCCDDEEFF',
+    X'00112233445566778899AABBCCDDEEFF',
+    X'00112233445566778899AABBCCDDEEFF',
+    X'00112233445566778899AABBCCDDEEFF');
 ");
 	    }
 

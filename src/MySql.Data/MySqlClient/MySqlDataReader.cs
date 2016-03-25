@@ -101,7 +101,33 @@ namespace MySql.Data.MySqlClient
 
 		public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length)
 		{
-			throw new NotImplementedException();
+			VerifyRead();
+
+			if (m_dataOffsets[ordinal] == -1)
+				throw new InvalidCastException("Column is NULL.");
+
+			var column = m_columnDefinitions[ordinal];
+			var columnType = column.ColumnType;
+			if (!column.ColumnFlags.HasFlag(ColumnFlags.Binary) ||
+				(columnType != ColumnType.String && columnType != ColumnType.VarString && columnType != ColumnType.TinyBlob &&
+				columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob))
+			{
+				throw new InvalidCastException(Invariant($"Can't convert {columnType} to bytes."));
+			}
+
+			if (buffer == null)
+			{
+				// this isn't required by the DbDataReader.GetBytes API documentation, but is what mysql-connector-net does
+				// (as does SqlDataReader: http://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqldatareader.getbytes.aspx)
+				return m_dataLengths[ordinal];
+			}
+
+			if (bufferOffset + length > buffer.Length)
+				throw new ArgumentException("bufferOffset + length cannot exceed buffer.Length", nameof(length));
+
+			int lengthToCopy = Math.Min(m_dataLengths[ordinal] - (int) dataOffset, length);
+			Array.Copy(m_currentRow, checked((int) (m_dataOffsets[ordinal] + dataOffset)), buffer, bufferOffset, lengthToCopy);
+			return lengthToCopy;
 		}
 
 		public override char GetChar(int ordinal)
@@ -252,11 +278,12 @@ namespace MySql.Data.MySqlClient
 			if (ordinal < 0 || ordinal > m_columnDefinitions.Length)
 				throw new ArgumentOutOfRangeException(nameof(ordinal), Invariant($"value must be between 0 and {m_columnDefinitions.Length}."));
 
-			var isUnsigned = m_columnDefinitions[ordinal].ColumnFlags.HasFlag(ColumnFlags.Unsigned);
-			switch (m_columnDefinitions[ordinal].ColumnType)
+			var columnDefinition = m_columnDefinitions[ordinal];
+			var isUnsigned = columnDefinition.ColumnFlags.HasFlag(ColumnFlags.Unsigned);
+			switch (columnDefinition.ColumnType)
 			{
 			case ColumnType.Tiny:
-				return m_columnDefinitions[ordinal].ColumnLength == 1 ? typeof(bool) :
+				return columnDefinition.ColumnLength == 1 ? typeof(bool) :
 					isUnsigned ? typeof(byte) : typeof(sbyte);
 
 			case ColumnType.Int24:
@@ -265,13 +292,17 @@ namespace MySql.Data.MySqlClient
 
 			case ColumnType.String:
 			case ColumnType.VarString:
-				return typeof(string);
+			case ColumnType.TinyBlob:
+			case ColumnType.Blob:
+			case ColumnType.MediumBlob:
+			case ColumnType.LongBlob:
+				return columnDefinition.ColumnFlags.HasFlag(ColumnFlags.Binary) ? typeof(byte[]) : typeof(string);
 
 			case ColumnType.Short:
 				return typeof(short);
 
 			default:
-				throw new NotImplementedException(Invariant($"GetFieldType for {m_columnDefinitions[ordinal].ColumnType} is not implemented"));
+				throw new NotImplementedException(Invariant($"GetFieldType for {columnDefinition.ColumnType} is not implemented"));
 			}
 		}
 
@@ -285,12 +316,13 @@ namespace MySql.Data.MySqlClient
 				return DBNull.Value;
 
 			var data = new ArraySegment<byte>(m_currentRow, m_dataOffsets[ordinal], m_dataLengths[ordinal]);
-			var isUnsigned = m_columnDefinitions[ordinal].ColumnFlags.HasFlag(ColumnFlags.Unsigned);
-			switch (m_columnDefinitions[ordinal].ColumnType)
+			var columnDefinition = m_columnDefinitions[ordinal];
+			var isUnsigned = columnDefinition.ColumnFlags.HasFlag(ColumnFlags.Unsigned);
+			switch (columnDefinition.ColumnType)
 			{
 			case ColumnType.Tiny:
 				var value = int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
-				if (m_columnDefinitions[ordinal].ColumnLength == 1)
+				if (columnDefinition.ColumnLength == 1)
 					return value != 0;
 				return isUnsigned ? (object) (byte) value : (sbyte) value;
 
@@ -301,13 +333,26 @@ namespace MySql.Data.MySqlClient
 
 			case ColumnType.String:
 			case ColumnType.VarString:
-				return Encoding.UTF8.GetString(data);
+			case ColumnType.TinyBlob:
+			case ColumnType.Blob:
+			case ColumnType.MediumBlob:
+			case ColumnType.LongBlob:
+				if (columnDefinition.ColumnFlags.HasFlag(ColumnFlags.Binary))
+				{
+					var result = new byte[m_dataLengths[ordinal]];
+					Array.Copy(m_currentRow, m_dataOffsets[ordinal], result, 0, result.Length);
+					return result;
+				}
+				else
+				{
+					return Encoding.UTF8.GetString(data);
+				}
 
 			case ColumnType.Short:
 				return short.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
 			default:
-				throw new NotImplementedException(Invariant($"Reading {m_columnDefinitions[ordinal].ColumnType} not implemented"));
+				throw new NotImplementedException(Invariant($"Reading {columnDefinition.ColumnType} not implemented"));
 			}
 		}
 

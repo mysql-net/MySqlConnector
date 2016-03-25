@@ -71,6 +71,30 @@ namespace SideBySide
 			DoQuery("strings", column, expected, reader => reader.GetString(0));
 		}
 
+		[Theory]
+		[InlineData("Binary", 100)]
+		[InlineData("VarBinary", 0)]
+		[InlineData("TinyBlob", 0)]
+		[InlineData("Blob", 0)]
+		[InlineData("MediumBlob", 0)]
+		[InlineData("LongBlob", 0)]
+		public void QueryBlob(string column, int padLength)
+		{
+			var data = new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff };
+			if (data.Length < padLength)
+				Array.Resize(ref data, padLength);
+
+			DoQuery<NullReferenceException>("blobs", "`" + column + "`", new object[] { null, data }, GetBytes);
+		}
+
+		private static byte[] GetBytes(DbDataReader reader)
+		{
+			var size = reader.GetBytes(0, 0, null, 0, 0);
+			var result = new byte[size];
+			reader.GetBytes(0, 0, result, 0, result.Length);
+			return result;
+		}
+
 		private void DoQuery(string table, string column, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null)
 		{
 			DoQuery<GetValueWhenNullException>(table, column, expected, getValue, baselineCoercedNullValue);
