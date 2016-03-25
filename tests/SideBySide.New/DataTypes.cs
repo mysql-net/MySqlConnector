@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Data.Common;
+using System.Linq;
+using Dapper;
 using MySql.Data.MySqlClient;
 using Xunit;
+using static System.FormattableString;
 
 // mysql-connector-net will throw SqlNullValueException, which is an exception type related to SQL Server:
 // "The exception that is thrown when the Value property of a System.Data.SqlTypes structure is set to null."
@@ -85,6 +88,40 @@ namespace SideBySide
 				Array.Resize(ref data, padLength);
 
 			DoQuery<NullReferenceException>("blobs", "`" + column + "`", new object[] { null, data }, GetBytes);
+		}
+
+		[Theory]
+		[InlineData("TinyBlob", 255)]
+		[InlineData("Blob", 65535)]
+#if false
+		// MySQL has a default max_allowed_packet size of 4MB; without changing the server configuration, it's impossible
+		// to send more than 4MB of data.
+		[InlineData("MediumBlob", 16777216)]
+		[InlineData("LargeBlob", 67108864)]
+#endif
+		public void InsertLargeBlob(string column, int size)
+		{
+			var data = new byte[size];
+			for (int i = 0; i < data.Length; i++)
+				data[i] = (byte) (i % 256);
+
+			long lastInsertId;
+			using (var cmd = new MySqlCommand(Invariant($"insert into datatypes.blobs(`{column}`) values(?)"), m_database.Connection)
+			{
+				Parameters = { new MySqlParameter { Value = data } }
+			})
+			{
+				cmd.ExecuteNonQuery();
+				lastInsertId = cmd.LastInsertedId;
+			}
+
+			foreach (var queryResult in m_database.Connection.Query<byte[]>(Invariant($"select `{column}` from datatypes.blobs where rowid = @lastInsertId"), new { lastInsertId }))
+			{
+				Assert.Equal(data, queryResult);
+				break;
+			}
+
+			m_database.Connection.Execute(Invariant($"delete from datatypes.blobs where rowid = @lastInsertId"), new { lastInsertId });
 		}
 
 		private static byte[] GetBytes(DbDataReader reader)

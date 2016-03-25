@@ -86,19 +86,22 @@ namespace MySql.Data.Serialization
 				throw new InvalidOperationException(Invariant($"Packet received out-of-order. Expected {m_sequenceId & 0xFF}; got {m_buffer[3]}."));
 			}
 			m_sequenceId++;
-			if (payloadLength > m_buffer.Length)
-				throw new NotSupportedException("TODO: Can't read long payloads.");
-			await m_stream.ReadExactlyAsync(m_buffer, 0, payloadLength, cancellationToken).ConfigureAwait(false);
 
-			if (m_buffer[0] == 0xFF)
+			byte[] readData = m_buffer;
+			if (payloadLength > m_buffer.Length)
+				readData = new byte[payloadLength];
+
+			await m_stream.ReadExactlyAsync(readData, 0, payloadLength, cancellationToken).ConfigureAwait(false);
+
+			if (readData[0] == 0xFF)
 			{
-				var errorCode = (int) BitConverter.ToUInt16(m_buffer, 1);
-				var sqlState = Encoding.ASCII.GetString(m_buffer, 4, 5);
-				var message = Encoding.UTF8.GetString(m_buffer, 9, payloadLength - 9);
+				var errorCode = (int) BitConverter.ToUInt16(readData, 1);
+				var sqlState = Encoding.ASCII.GetString(readData, 4, 5);
+				var message = Encoding.UTF8.GetString(readData, 9, payloadLength - 9);
 				throw new MySqlException(errorCode, sqlState, message);
 			}
 
-			return new PayloadData(new ArraySegment<byte>(m_buffer, 0, payloadLength));
+			return new PayloadData(new ArraySegment<byte>(readData, 0, payloadLength));
 		}
 
 		readonly Stream m_stream;
