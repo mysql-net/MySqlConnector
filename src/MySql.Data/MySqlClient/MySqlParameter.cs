@@ -84,6 +84,14 @@ namespace MySql.Data.MySqlClient
 			{
 				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", Value);
 			}
+			else if (Value is byte[])
+			{
+				// TODO: use a _binary'...' string for more efficient data transmission
+				output.Append("X'");
+				foreach (var by in (byte[]) Value)
+					output.AppendFormat(CultureInfo.InvariantCulture, "{0:X2}", by);
+				output.Append("'");
+			}
 			else
 			{
 				throw new NotSupportedException(Invariant($"Parameter type {Value.GetType().Name} (DbType: {DbType}) not currently supported. Value: {Value}"));
