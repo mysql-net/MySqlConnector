@@ -66,6 +66,7 @@ namespace SideBySide
 		}
 
 		[Theory]
+		[InlineData("Int24", new object[] { null, default(int), -8388608, 8388607, 1234567 })]
 		[InlineData("Int32", new object[] { null, default(int), int.MinValue, int.MaxValue, 123456789 })]
 		public void QueryInt32(string column, object[] expected)
 		{
@@ -73,6 +74,7 @@ namespace SideBySide
 		}
 
 		[Theory]
+		[InlineData("UInt24", new object[] { null, default(uint), 0u, 16777215u, 1234567u })]
 		[InlineData("UInt32", new object[] { null, default(uint), uint.MinValue, uint.MaxValue, 123456789u })]
 		public void QueryUInt32(string column, object[] expected)
 		{
