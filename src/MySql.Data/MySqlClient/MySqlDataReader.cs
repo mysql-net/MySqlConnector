@@ -299,7 +299,7 @@ namespace MySql.Data.MySqlClient
 				return columnDefinition.ColumnFlags.HasFlag(ColumnFlags.Binary) ? typeof(byte[]) : typeof(string);
 
 			case ColumnType.Short:
-				return typeof(short);
+				return isUnsigned ? typeof(ushort) : typeof(short);
 
 			default:
 				throw new NotImplementedException(Invariant($"GetFieldType for {columnDefinition.ColumnType} is not implemented"));
@@ -349,7 +349,8 @@ namespace MySql.Data.MySqlClient
 				}
 
 			case ColumnType.Short:
-				return short.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+				return isUnsigned ? (object) ushort.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
+					short.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
 			default:
 				throw new NotImplementedException(Invariant($"Reading {columnDefinition.ColumnType} not implemented"));

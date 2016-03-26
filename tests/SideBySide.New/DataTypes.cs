@@ -52,6 +52,20 @@ namespace SideBySide
 		}
 
 		[Theory]
+		[InlineData("Int16", new object[] { null, default(short), short.MinValue, short.MaxValue, (short) 12345 })]
+		public void QueryInt16(string column, object[] expected)
+		{
+			DoQuery("numbers", column, expected, reader => reader.GetInt16(0));
+		}
+
+		[Theory]
+		[InlineData("UInt16", new object[] { null, default(ushort), ushort.MinValue, ushort.MaxValue, (ushort) 12345 })]
+		public void QueryUInt16(string column, object[] expected)
+		{
+			DoQuery<InvalidCastException>("numbers", column, expected, reader => reader.GetFieldValue<ushort>(0));
+		}
+
+		[Theory]
 		[InlineData("Int32", new object[] { null, default(int), int.MinValue, int.MaxValue, 123456789 })]
 		public void QueryInt32(string column, object[] expected)
 		{
