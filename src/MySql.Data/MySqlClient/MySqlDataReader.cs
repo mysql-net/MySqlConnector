@@ -290,6 +290,9 @@ namespace MySql.Data.MySqlClient
 			case ColumnType.Long:
 				return isUnsigned ? typeof(uint) : typeof(int);
 
+			case ColumnType.Longlong:
+				return isUnsigned ? typeof(ulong) : typeof(long);
+
 			case ColumnType.String:
 			case ColumnType.VarString:
 			case ColumnType.TinyBlob:
@@ -330,6 +333,10 @@ namespace MySql.Data.MySqlClient
 			case ColumnType.Long:
 				return isUnsigned ? (object) uint.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
 					int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+
+			case ColumnType.Longlong:
+				return isUnsigned ? (object) ulong.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
+					long.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
 			case ColumnType.String:
 			case ColumnType.VarString:

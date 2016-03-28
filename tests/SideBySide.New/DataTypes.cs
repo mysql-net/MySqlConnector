@@ -82,6 +82,20 @@ namespace SideBySide
 		}
 
 		[Theory]
+		[InlineData("Int64", new object[] { null, default(long), long.MinValue, long.MaxValue, 1234567890123456789 })]
+		public void QueryInt64(string column, object[] expected)
+		{
+			DoQuery("numbers", column, expected, reader => reader.GetInt64(0));
+		}
+
+		[Theory]
+		[InlineData("UInt64", new object[] { null, default(ulong), ulong.MinValue, ulong.MaxValue, 1234567890123456789u })]
+		public void QueryUInt64(string column, object[] expected)
+		{
+			DoQuery<InvalidCastException>("numbers", column, expected, reader => reader.GetFieldValue<ulong>(0));
+		}
+
+		[Theory]
 		[InlineData("utf8", new[] { null, "", "ASCII", "Ũńıċōđĕ" })]
 		[InlineData("latin1", new[] { null, "", "ASCII", "Lãtïñ" })]
 		[InlineData("cp1251", new[] { null, "", "ASCII", "АБВГабвг" })]

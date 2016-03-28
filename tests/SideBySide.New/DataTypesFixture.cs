@@ -37,16 +37,18 @@ create table datatypes.numbers (
   Int24 mediumint null,
   UInt24 mediumint unsigned null,
   Int32 int null,
-  UInt32 int unsigned null
+  UInt32 int unsigned null,
+  Int64 bigint null,
+  UInt64 bigint unsigned null
 );
 
-insert into datatypes.numbers(SByte, Byte, Int16, UInt16, Int24, UInt24, Int32, UInt32)
+insert into datatypes.numbers(SByte, Byte, Int16, UInt16, Int24, UInt24, Int32, UInt32, Int64, UInt64)
 values
-  (null, null, null, null, null, null, null, null), # null
-  (0, 0, 0, 0, 0, 0, 0, 0), # zero
-  (-128, 0, -32768, 0, -8388608, 0, -2147483648, 0), # minimum
-  (127, 255, 32767, 65535, 8388607, 16777215, 2147483647, 4294967295), # maximum
-  (123, 123, 12345, 12345, 1234567, 1234567, 123456789, 123456789);
+  (null, null, null, null, null, null, null, null, null, null), # null
+  (0, 0, 0, 0, 0, 0, 0, 0, 0, 0), # zero
+  (-128, 0, -32768, 0, -8388608, 0, -2147483648, 0, -9223372036854775808, 0), # minimum
+  (127, 255, 32767, 65535, 8388607, 16777215, 2147483647, 4294967295, 9223372036854775807, 18446744073709551615), # maximum
+  (123, 123, 12345, 12345, 1234567, 1234567, 123456789, 123456789, 1234567890123456789, 1234567890123456789);
 
 create table datatypes.strings (
   rowid integer not null primary key auto_increment,
