@@ -122,15 +122,16 @@ namespace MySql.Data.MySqlClient
 
 		public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
 		{
+			object result = null;
 			using (var reader = await ExecuteReaderAsync(CommandBehavior.SingleResult | CommandBehavior.SingleRow, cancellationToken).ConfigureAwait(false))
 			{
 				do
 				{
 					if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-						return reader.GetValue(0);
+						result = reader.GetValue(0);
 				} while (await reader.NextResultAsync(cancellationToken).ConfigureAwait(false));
 			}
-			return null;
+			return result;
 		}
 
 		protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)

@@ -22,8 +22,9 @@ namespace MySql.Data.MySqlClient
 		{
 			VerifyNotDisposed();
 
-			if (m_state == State.ReadingRows)
-				throw new NotImplementedException("TODO: Read until EOF");
+			while (m_state == State.ReadingRows)
+				await ReadAsync(cancellationToken).ConfigureAwait(false);
+
 			if (m_state == State.NoMoreData)
 				return false;
 			if (m_state != State.HasMoreData)
