@@ -80,7 +80,7 @@ namespace MySql.Data.MySqlClient
 				output.Append(((string) Value).Replace("\\", "\\\\").Replace("'", "\\'"));
 				output.Append('\'');
 			}
-			else if (Value is short || Value is int || Value is long || Value is ushort || Value is uint || Value is ulong)
+			else if (Value is byte || Value is sbyte || Value is short || Value is int || Value is long || Value is ushort || Value is uint || Value is ulong)
 			{
 				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", Value);
 			}
@@ -91,6 +91,10 @@ namespace MySql.Data.MySqlClient
 				foreach (var by in (byte[]) Value)
 					output.AppendFormat(CultureInfo.InvariantCulture, "{0:X2}", by);
 				output.Append("'");
+			}
+			else if (Value is bool)
+			{
+				output.Append(((bool) Value) ? "true" : "false");
 			}
 			else
 			{

@@ -174,7 +174,7 @@ namespace SideBySide
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = $"select {column} from datatypes.{table} order by rowid";
+				cmd.CommandText = Invariant($"select {column} from datatypes.{table} order by rowid");
 				using (var reader = cmd.ExecuteReader())
 				{
 					foreach (var value in expected)
@@ -201,6 +201,14 @@ namespace SideBySide
 					Assert.False(reader.Read());
 					Assert.False(reader.NextResult());
 				}
+
+				cmd.CommandText = Invariant($"select rowid from datatypes.{table} where {column} = @value");
+				var p = cmd.CreateParameter();
+				p.ParameterName = "@value";
+				p.Value = expected.Last();
+				cmd.Parameters.Add(p);
+				var result = cmd.ExecuteScalar();
+				Assert.Equal(Array.IndexOf(expected, p.Value) + 1, result);
 			}
 		}
 
