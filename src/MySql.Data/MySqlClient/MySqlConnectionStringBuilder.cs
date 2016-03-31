@@ -53,6 +53,12 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.AllowUserVariables.SetValue(this, value); }
 		}
 
+		public string CharacterSet
+		{
+			get { return MySqlConnectionStringOption.CharacterSet.GetValue(this); }
+			set { MySqlConnectionStringOption.CharacterSet.SetValue(this, value); }
+		}
+
 		public bool UseCompression
 		{
 			get { return MySqlConnectionStringOption.UseCompression.GetValue(this); }
@@ -91,6 +97,8 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<uint> Port;
 
 		public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
+
+		public static readonly MySqlConnectionStringOption<string> CharacterSet;
 
 		public static readonly MySqlConnectionStringOption<bool> UseCompression;
 
@@ -150,6 +158,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(AllowUserVariables = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "AllowUserVariables", "Allow User Variables" },
 				defaultValue: false));
+
+			AddOption(CharacterSet = new MySqlConnectionStringOption<string>(
+				keys: new[] { "CharSet", "Character Set", "CharacterSet" },
+				defaultValue: ""));
 
 			AddOption(UseCompression = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Compress", "Use Compression", "UseCompression" },
