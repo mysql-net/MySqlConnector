@@ -1,3 +1,8 @@
+# WARNING
+
+This is pre-release, alpha-quality software. There is no published NuGet package for it yet;
+you must compile from source (see below).
+
 # A Replacement for MySql.Data
 
 This is an independent implementation of the core of ADO.NET: `DbConnection`, `DbCommand`,
@@ -27,3 +32,17 @@ it will try not to be gratuitously incompatible.
 ## License
 
 This library is licensed under [LGPL v3](COPYING.LESSER.md).
+
+# Building
+
+This project still uses [dnvm/dnu/dnx, etc.](http://docs.asp.net/en/latest/getting-started/installing-on-windows.html) not
+the new [dotnet-cli](http://dotnet.github.io/).
+
+To build, clone the repo and execute:
+
+```
+dnu restore
+dnu build tests\SideBySide.New
+```
+
+To run the side-by-side tests, see [the instructions](tests/README.md).
