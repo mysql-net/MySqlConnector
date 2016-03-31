@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -119,6 +120,11 @@ namespace MySql.Data.MySqlClient
 
 				SetState(ConnectionState.Open);
 				success = true;
+			}
+			catch (SocketException ex)
+			{
+				SetState(ConnectionState.Closed);
+				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.", ex);
 			}
 			finally
 			{

@@ -12,6 +12,37 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void ConnectBadHost()
+		{
+			var csb = new MySqlConnectionStringBuilder
+			{
+				Server = "invalid.example.com",
+			};
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				Assert.Equal(ConnectionState.Closed, connection.State);
+				Assert.Throws<MySqlException>(() => connection.Open());
+				Assert.Equal(ConnectionState.Closed, connection.State);
+			}
+		}
+
+		[Fact]
+		public void ConnectBadPort()
+		{
+			var csb = new MySqlConnectionStringBuilder
+			{
+				Server = "localhost",
+				Port = 65000,
+			};
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				Assert.Equal(ConnectionState.Closed, connection.State);
+				Assert.Throws<MySqlException>(() => connection.Open());
+				Assert.Equal(ConnectionState.Closed, connection.State);
+			}
+		}
+
+		[Fact]
 		public void State()
 		{
 			using (var connection = new MySqlConnection(m_database.Connection.ConnectionString))

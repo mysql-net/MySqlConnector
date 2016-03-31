@@ -34,6 +34,5 @@ namespace SideBySide
 				Password = Constants.Password,
 			};
 		}
-
 	}
 }
