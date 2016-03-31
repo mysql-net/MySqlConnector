@@ -44,7 +44,7 @@ namespace MySql.Data
 		public void ReadByte(byte value)
 		{
 			if (ReadByte() != value)
-				throw new FormatException($"Expected to read 0x{value:X2} but got 0x{m_buffer[m_offset]:X2}");
+				throw new FormatException($"Expected to read 0x{value:X2} but got 0x{m_buffer[m_offset - 1]:X2}");
 		}
 
 		public short ReadInt16()
