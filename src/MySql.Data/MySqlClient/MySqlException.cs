@@ -5,7 +5,7 @@ namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlException : DbException
 	{
-		public int ErrorNumber { get; }
+		public int Number { get; }
 		public string SqlState { get; }
 
 		internal MySqlException(string message, Exception innerException)
@@ -21,7 +21,7 @@ namespace MySql.Data.MySqlClient
 		internal MySqlException(int errorNumber, string sqlState, string message, Exception innerException)
 			: base(message, innerException)
 		{
-			ErrorNumber = errorNumber;
+			Number = errorNumber;
 			SqlState = sqlState;
 		}
 	}
