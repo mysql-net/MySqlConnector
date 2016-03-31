@@ -53,16 +53,18 @@ values
 create table datatypes.strings (
   rowid integer not null primary key auto_increment,
   utf8 varchar(100) character set 'utf8mb4' null,
+  utf8bin varchar(100) character set utf8mb4 collate utf8mb4_bin null,
   latin1 varchar(100) character set 'latin1' null,
+  latin1bin varchar(100) character set latin1 collate latin1_bin null,
   cp1251 varchar(100) character set 'cp1251' null
 );
 
-insert into datatypes.strings(utf8, latin1, cp1251)
+insert into datatypes.strings(utf8, utf8bin, latin1, latin1bin, cp1251)
 values
-  (null, null, null),
-  ('', '', ''),
-  ('ASCII', 'ASCII', 'ASCII'),
-  ('Ũńıċōđĕ', 'Lãtïñ', 'АБВГабвг');
+  (null, null, null, null, null),
+  ('', '', '', '', ''),
+  ('ASCII', 'ASCII', 'ASCII', 'ASCII', 'ASCII'),
+  ('Ũńıċōđĕ', 'Ũńıċōđĕ', 'Lãtïñ', 'Lãtïñ', 'АБВГабвг');
 
 create table datatypes.blobs(
   rowid integer not null primary key auto_increment,

@@ -97,7 +97,9 @@ namespace SideBySide
 
 		[Theory]
 		[InlineData("utf8", new[] { null, "", "ASCII", "Ũńıċōđĕ" })]
+		[InlineData("utf8bin", new[] { null, "", "ASCII", "Ũńıċōđĕ" })]
 		[InlineData("latin1", new[] { null, "", "ASCII", "Lãtïñ" })]
+		[InlineData("latin1bin", new[] { null, "", "ASCII", "Lãtïñ" })]
 		[InlineData("cp1251", new[] { null, "", "ASCII", "АБВГабвг" })]
 		public void QueryString(string column, string[] expected)
 		{

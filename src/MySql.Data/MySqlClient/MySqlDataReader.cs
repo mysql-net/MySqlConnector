@@ -341,11 +341,12 @@ namespace MySql.Data.MySqlClient
 
 			case ColumnType.String:
 			case ColumnType.VarString:
+			case ColumnType.VarChar:
 			case ColumnType.TinyBlob:
 			case ColumnType.Blob:
 			case ColumnType.MediumBlob:
 			case ColumnType.LongBlob:
-				if (columnDefinition.ColumnFlags.HasFlag(ColumnFlags.Binary))
+				if (columnDefinition.CharacterSet == CharacterSet.Binary)
 				{
 					var result = new byte[m_dataLengths[ordinal]];
 					Array.Copy(m_currentRow, m_dataOffsets[ordinal], result, 0, result.Length);
