@@ -47,6 +47,12 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.Port.SetValue(this, value); }
 		}
 
+		public bool AllowUserVariables
+		{
+			get { return MySqlConnectionStringOption.AllowUserVariables.GetValue(this); }
+			set { MySqlConnectionStringOption.AllowUserVariables.SetValue(this, value); }
+		}
+
 		public bool UseCompression
 		{
 			get { return MySqlConnectionStringOption.UseCompression.GetValue(this); }
@@ -83,6 +89,8 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<string> Database;
 
 		public static readonly MySqlConnectionStringOption<uint> Port;
+
+		public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
 
 		public static readonly MySqlConnectionStringOption<bool> UseCompression;
 
@@ -138,6 +146,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(Port = new MySqlConnectionStringOption<uint>(
 				keys: new[] { "Port" },
 				defaultValue: 3306u));
+
+			AddOption(AllowUserVariables = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "AllowUserVariables", "Allow User Variables" },
+				defaultValue: false));
 
 			AddOption(UseCompression = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Compress", "Use Compression", "UseCompression" },

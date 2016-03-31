@@ -99,6 +99,7 @@ namespace MySql.Data.MySqlClient
 
 			var connectionStringBuilder = new MySqlConnectionStringBuilder { ConnectionString = ConnectionString };
 			m_database = connectionStringBuilder.Database;
+			AllowUserVariables = connectionStringBuilder.AllowUserVariables;
 
 			SetState(ConnectionState.Connecting);
 
@@ -163,6 +164,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		internal MySqlTransaction CurrentTransaction { get; set; }
+		internal bool AllowUserVariables { get; private set; }
 
 		private void SetState(ConnectionState newState)
 		{

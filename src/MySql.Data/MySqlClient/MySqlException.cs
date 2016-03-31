@@ -8,6 +8,11 @@ namespace MySql.Data.MySqlClient
 		public int Number { get; }
 		public string SqlState { get; }
 
+		internal MySqlException(string message)
+			: this(message, null)
+		{
+		}
+
 		internal MySqlException(string message, Exception innerException)
 			: this(0, null, message, innerException)
 		{

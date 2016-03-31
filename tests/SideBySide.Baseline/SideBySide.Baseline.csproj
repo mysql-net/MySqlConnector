@@ -87,6 +87,9 @@
     <Compile Include="..\SideBySide.New\DataTypesFixture.cs">
       <Link>DataTypesFixture.cs</Link>
     </Compile>
+    <Compile Include="..\SideBySide.New\QueryTests.cs">
+      <Link>QueryTests.cs</Link>
+    </Compile>
     <Compile Include="..\SideBySide.New\Transaction.cs">
       <Link>Transaction.cs</Link>
     </Compile>

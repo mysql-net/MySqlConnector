@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using static System.FormattableString;
 
 namespace MySql.Data.MySqlClient
 {
 	internal sealed class MySqlStatementPreparer
 	{
-		public MySqlStatementPreparer(string commandText, MySqlParameterCollection parameters)
+		public MySqlStatementPreparer(string commandText, MySqlParameterCollection parameters, StatementPreparerOptions options)
 		{
 			m_commandText = commandText;
 			m_parameters = parameters;
+			m_options = options;
 			m_hasBoundParameters = string.IsNullOrWhiteSpace(m_commandText);
 
 			m_namedParameters = new Dictionary<string, MySqlParameter>(StringComparer.OrdinalIgnoreCase);
@@ -47,8 +49,12 @@ namespace MySql.Data.MySqlClient
 
 			protected override void OnNamedParameter(int index, int length)
 			{
-				var parameterIndex = m_preparer.m_parameters.IndexOf(m_preparer.m_commandText.Substring(index, length));
-				DoAppendParameter(parameterIndex, index, length);
+				var parameterName = m_preparer.m_commandText.Substring(index, length);
+				var parameterIndex = m_preparer.m_parameters.IndexOf(parameterName);
+				if (parameterIndex != -1)
+					DoAppendParameter(parameterIndex, index, length);
+				else if (!m_preparer.m_options.HasFlag(StatementPreparerOptions.AllowUserVariables))
+					throw new MySqlException(Invariant($"Parameter '{parameterName}' must be defined."));
 			}
 
 			protected override void OnPositionalParameter(int index)
@@ -76,6 +82,7 @@ namespace MySql.Data.MySqlClient
 
 		readonly string m_commandText;
 		readonly MySqlParameterCollection m_parameters;
+		private readonly StatementPreparerOptions m_options;
 		readonly Dictionary<string, MySqlParameter> m_namedParameters;
 		bool m_hasBoundParameters;
 	}
