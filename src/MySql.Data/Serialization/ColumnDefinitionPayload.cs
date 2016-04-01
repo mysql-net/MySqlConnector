@@ -25,7 +25,7 @@ namespace MySql.Data.Serialization
 			var columnLength = (int) reader.ReadUInt32();
 			var columnType = (ColumnType) reader.ReadByte();
 			var columnFlags = (ColumnFlags) reader.ReadUInt16();
-			reader.ReadByte(0);
+			var decimals = reader.ReadByte(); // 0x00 for integers and static strings, 0x1f for dynamic strings, double, float, 0x00 to 0x51 for decimals
 			reader.ReadByte(0);
 			if (reader.BytesRemaining > 0)
 			{
