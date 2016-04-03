@@ -76,7 +76,12 @@ namespace MySql.Data.MySqlClient
 				CurrentTransaction.Dispose();
 				CurrentTransaction = null;
 			}
-			Utility.Dispose(ref m_session);
+			if (m_session != null)
+			{
+				if (!m_session.ReturnToPool())
+					m_session.Dispose();
+				m_session = null;
+			}
 			SetState(ConnectionState.Closed);
 			m_isDisposed = true;
 		}
@@ -106,18 +111,23 @@ namespace MySql.Data.MySqlClient
 			bool success = false;
 			try
 			{
-				m_session = new MySqlSession();
-				await m_session.ConnectAsync(connectionStringBuilder.Server, (int) connectionStringBuilder.Port).ConfigureAwait(false);
-				var payload = await m_session.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-				var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
-				var initialHandshake = new InitialHandshakePacket(reader);
-				m_serverVersion = Encoding.ASCII.GetString(initialHandshake.ServerVersion);
+				var pool = ConnectionPool.GetPool(connectionStringBuilder);
+				m_session = pool?.TryGetSession();
+				if (m_session == null)
+				{
+					m_session = new MySqlSession(pool);
+					await m_session.ConnectAsync(connectionStringBuilder.Server, (int) connectionStringBuilder.Port).ConfigureAwait(false);
+					var payload = await m_session.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+					var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
+					var initialHandshake = new InitialHandshakePacket(reader);
+					m_session.ServerVersion = Encoding.ASCII.GetString(initialHandshake.ServerVersion);
 
-				var response = HandshakeResponse41Packet.Create(initialHandshake, connectionStringBuilder.UserID, connectionStringBuilder.Password, connectionStringBuilder.Database);
-				payload = new PayloadData(new ArraySegment<byte>(response));
-				await m_session.SendReplyAsync(payload, cancellationToken).ConfigureAwait(false);
-				await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
-				// TODO: Check success
+					var response = HandshakeResponse41Packet.Create(initialHandshake, connectionStringBuilder.UserID, connectionStringBuilder.Password, connectionStringBuilder.Database);
+					payload = new PayloadData(new ArraySegment<byte>(response));
+					await m_session.SendReplyAsync(payload, cancellationToken).ConfigureAwait(false);
+					await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+					// TODO: Check success
+				}
 
 				SetState(ConnectionState.Open);
 				success = true;
@@ -142,7 +152,7 @@ namespace MySql.Data.MySqlClient
 
 		public override string DataSource => m_database;
 
-		public override string ServerVersion => m_serverVersion;
+		public override string ServerVersion => m_session.ServerVersion;
 
 		protected override DbCommand CreateDbCommand()
 		{
@@ -186,6 +196,5 @@ namespace MySql.Data.MySqlClient
 		ConnectionState m_connectionState;
 		bool m_isDisposed;
 		string m_database;
-		string m_serverVersion;
 	}
 }

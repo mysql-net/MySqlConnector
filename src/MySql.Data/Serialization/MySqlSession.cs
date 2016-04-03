@@ -3,11 +3,21 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
 
 namespace MySql.Data.Serialization
 {
 	internal sealed class MySqlSession : IDisposable
 	{
+		public MySqlSession(ConnectionPool pool)
+		{
+			Pool = pool;
+		}
+
+		public string ServerVersion { get; set; }
+		public ConnectionPool Pool { get; }
+		public bool ReturnToPool() => Pool != null && Pool.Return(this);
+
 		public void Dispose()
 		{
 			if (m_state == State.Connected)

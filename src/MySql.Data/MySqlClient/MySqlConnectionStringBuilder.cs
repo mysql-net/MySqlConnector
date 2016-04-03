@@ -65,6 +65,30 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.UseCompression.SetValue(this, value); }
 		}
 
+		public bool Pooling
+		{
+			get { return MySqlConnectionStringOption.Pooling.GetValue(this); }
+			set { MySqlConnectionStringOption.Pooling.SetValue(this, value); }
+		}
+
+		public bool ConnectionReset
+		{
+			get { return MySqlConnectionStringOption.ConnectionReset.GetValue(this); }
+			set { MySqlConnectionStringOption.ConnectionReset.SetValue(this, value); }
+		}
+
+		public uint MinimumPoolSize
+		{
+			get { return MySqlConnectionStringOption.MinimumPoolSize.GetValue(this); }
+			set { MySqlConnectionStringOption.MinimumPoolSize.SetValue(this, value); }
+		}
+
+		public uint MaximumPoolSize
+		{
+			get { return MySqlConnectionStringOption.MaximumPoolSize.GetValue(this); }
+			set { MySqlConnectionStringOption.MaximumPoolSize.SetValue(this, value); }
+		}
+
 		public override bool ContainsKey(string key)
 		{
 			var option = MySqlConnectionStringOption.TryGetOptionForKey(key);
@@ -87,20 +111,17 @@ namespace MySql.Data.MySqlClient
 	internal abstract class MySqlConnectionStringOption
 	{
 		public static readonly MySqlConnectionStringOption<string> Server;
-
 		public static readonly MySqlConnectionStringOption<string> UserID;
-
 		public static readonly MySqlConnectionStringOption<string> Password;
-
 		public static readonly MySqlConnectionStringOption<string> Database;
-
 		public static readonly MySqlConnectionStringOption<uint> Port;
-
 		public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
-
 		public static readonly MySqlConnectionStringOption<string> CharacterSet;
-
 		public static readonly MySqlConnectionStringOption<bool> UseCompression;
+		public static readonly MySqlConnectionStringOption<bool> Pooling;
+		public static readonly MySqlConnectionStringOption<bool> ConnectionReset;
+		public static readonly MySqlConnectionStringOption<uint> MinimumPoolSize;
+		public static readonly MySqlConnectionStringOption<uint> MaximumPoolSize;
 
 		public static MySqlConnectionStringOption TryGetOptionForKey(string key)
 		{
@@ -172,6 +193,28 @@ namespace MySql.Data.MySqlClient
 						throw new InvalidOperationException("Compression not supported.");
 					return value;
 				}));
+
+			AddOption(Pooling = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "Pooling" },
+				defaultValue: true));
+
+			AddOption(ConnectionReset = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "Connection Reset", "ConnectionReset" },
+				defaultValue: false));
+
+			AddOption(MinimumPoolSize = new MySqlConnectionStringOption<uint>(
+				keys: new[] { "Minimum Pool Size", "Min Pool Size", "MinimumPoolSize", "minpoolsize" },
+				defaultValue: 0,
+				coerce: value =>
+				{
+					if (value != 0)
+						throw new InvalidOperationException("Non-zero MinimumPoolSize not supported.");
+					return value;
+				}));
+
+			AddOption(MaximumPoolSize = new MySqlConnectionStringOption<uint>(
+				keys: new[] { "Maximum Pool Size", "Max Pool Size", "MaximumPoolSize", "maxpoolsize" },
+				defaultValue: 100));
 		}
 
 		static readonly Dictionary<string, MySqlConnectionStringOption> s_options;
