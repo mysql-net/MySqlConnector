@@ -13,7 +13,7 @@ namespace MySql.Data.Serialization
 		public PacketTransmitter(Stream stream)
 		{
 			m_stream = stream;
-			m_buffer = new byte[256];
+			m_buffer = new byte[1024];
 		}
 
 		// Starts a new conversation with the server by sending the first packet.
