@@ -57,10 +57,17 @@ namespace MySql.Data.Serialization
 				SerializationUtility.WriteUInt32((uint) bytesToSend, m_buffer, 0, 3);
 				m_buffer[3] = (byte) m_sequenceId;
 				m_sequenceId++;
-				await m_stream.WriteAsync(m_buffer, 0, 4, cancellationToken).ConfigureAwait(false);
 
-				// write payload
-				await m_stream.WriteAsync(data.Array, data.Offset + bytesSent, bytesToSend, cancellationToken).ConfigureAwait(false);
+				if (bytesToSend <= m_buffer.Length - 4)
+				{
+					Array.Copy(data.Array, data.Offset, m_buffer, 4, bytesToSend);
+					await m_stream.WriteAsync(m_buffer, 0, bytesToSend + 4, cancellationToken).ConfigureAwait(false);
+				}
+				else
+				{
+					await m_stream.WriteAsync(m_buffer, 0, 4, cancellationToken).ConfigureAwait(false);
+					await m_stream.WriteAsync(data.Array, data.Offset + bytesSent, bytesToSend, cancellationToken).ConfigureAwait(false);
+				}
 
 				bytesSent += bytesToSend;
 			} while (bytesToSend == maxBytesToSend);
