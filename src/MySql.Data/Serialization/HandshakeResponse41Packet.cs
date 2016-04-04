@@ -28,24 +28,9 @@ namespace MySql.Data.Serialization
 			writer.Write(new byte[23]);
 			writer.WriteNullTerminatedString(userName);
 
-			using (var sha1 = SHA1.Create())
-			{
-				var combined = new byte[40];
-				Array.Copy(handshake.AuthPluginData, combined, 20);
-
-				var passwordBytes = Encoding.UTF8.GetBytes(password);
-				var hashedPassword = sha1.ComputeHash(passwordBytes);
-
-				var doubleHashedPassword = sha1.ComputeHash(hashedPassword);
-				Array.Copy(doubleHashedPassword, 0, combined, 20, 20);
-
-				var xorBytes = sha1.ComputeHash(combined);
-
-				for (int i = 0; i < hashedPassword.Length; i++)
-					hashedPassword[i] ^= xorBytes[i];
-				writer.WriteLengthEncodedInteger(20);
-				writer.Write(hashedPassword);
-			}
+			writer.WriteLengthEncodedInteger(20);
+			var hashedPassword = AuthenticationUtility.HashPassword(handshake.AuthPluginData, 0, password);
+			writer.Write(hashedPassword);
 
 			if (!string.IsNullOrWhiteSpace(database))
 				writer.WriteNullTerminatedString(database);
