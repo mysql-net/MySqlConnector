@@ -396,7 +396,7 @@ namespace MySql.Data.MySqlClient
 					{
 						var dbConnection = m_command.Connection;
 						m_command.Dispose();
-						dbConnection.Dispose();
+						dbConnection.Close();
 					}
 
 					m_command = null;
