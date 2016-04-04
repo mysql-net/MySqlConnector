@@ -71,19 +71,7 @@ namespace MySql.Data.MySqlClient
 
 		public override void Close()
 		{
-			if (CurrentTransaction != null)
-			{
-				CurrentTransaction.Dispose();
-				CurrentTransaction = null;
-			}
-			if (m_session != null)
-			{
-				if (!m_session.ReturnToPool())
-					m_session.Dispose();
-				m_session = null;
-			}
-			SetState(ConnectionState.Closed);
-			m_isDisposed = true;
+			DoClose();
 		}
 
 		public override void ChangeDatabase(string databaseName)
@@ -164,6 +152,20 @@ namespace MySql.Data.MySqlClient
 			get { throw new NotImplementedException(); }
 		}
 
+		protected override void Dispose(bool disposing)
+		{
+			try
+			{
+				if (disposing)
+					DoClose();
+			}
+			finally
+			{
+				m_isDisposed = true;
+				base.Dispose(disposing);
+			}
+		}
+
 		internal MySqlSession Session
 		{
 			get
@@ -190,6 +192,25 @@ namespace MySql.Data.MySqlClient
 		{
 			if (m_isDisposed)
 				throw new ObjectDisposedException(GetType().Name);
+		}
+
+		private void DoClose()
+		{
+			if (m_connectionState != ConnectionState.Closed)
+			{
+				if (CurrentTransaction != null)
+				{
+					CurrentTransaction.Dispose();
+					CurrentTransaction = null;
+				}
+				if (m_session != null)
+				{
+					if (!m_session.ReturnToPool())
+						m_session.Dispose();
+					m_session = null;
+				}
+				SetState(ConnectionState.Closed);
+			}
 		}
 
 		MySqlSession m_session;
