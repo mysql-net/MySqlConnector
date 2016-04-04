@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Text;
 
 namespace MySql.Data.Serialization
 {
@@ -10,6 +8,7 @@ namespace MySql.Data.Serialization
 		public ProtocolCapabilities ProtocolCapabilities { get; }
 
 		public byte[] AuthPluginData { get; }
+		public string AuthPluginName { get; }
 		public byte[] ServerVersion { get; }
 
 		internal InitialHandshakePacket(ByteArrayReader reader)
@@ -36,13 +35,11 @@ namespace MySql.Data.Serialization
 					Array.Copy(authPluginData2, 0, concatenated, AuthPluginData.Length, authPluginData2.Length);
 					AuthPluginData = concatenated;
 				}
-				byte[] authPluginName = null;
 				if (ProtocolCapabilities.HasFlag(ProtocolCapabilities.PluginAuth))
-					authPluginName = reader.ReadNullTerminatedByteString();
+					AuthPluginName = Encoding.UTF8.GetString(reader.ReadNullTerminatedByteString());
 			}
 		}
 
 		const byte c_protocolVersion = 0x0A;
 	}
 }
-

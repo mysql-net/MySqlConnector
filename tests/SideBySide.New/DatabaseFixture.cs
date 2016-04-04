@@ -7,7 +7,7 @@ namespace SideBySide
 	{
 		public DatabaseFixture()
 		{
-			Connection = new MySqlConnection(CreateConnectionStringBuilder().ConnectionString);
+			Connection = new MySqlConnection(Constants.CreateConnectionStringBuilder().ConnectionString);
 		}
 
 		public MySqlConnection Connection { get; }
@@ -23,16 +23,6 @@ namespace SideBySide
 			{
 				Connection.Dispose();
 			}
-		}
-
-		private static MySqlConnectionStringBuilder CreateConnectionStringBuilder()
-		{
-			return new MySqlConnectionStringBuilder
-			{
-				Server = Constants.Server,
-				UserID = Constants.UserName,
-				Password = Constants.Password,
-			};
 		}
 	}
 }

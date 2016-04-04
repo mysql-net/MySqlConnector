@@ -108,6 +108,8 @@ namespace MySql.Data.MySqlClient
 					var payload = await m_session.ReceiveAsync(cancellationToken).ConfigureAwait(false);
 					var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
 					var initialHandshake = new InitialHandshakePacket(reader);
+					if (initialHandshake.AuthPluginName != "mysql_native_password")
+						throw new NotSupportedException("Only 'mysql_native_password' authentication method is supported.");
 					m_session.ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
 
 					var response = HandshakeResponse41Packet.Create(initialHandshake, connectionStringBuilder.UserID, connectionStringBuilder.Password, connectionStringBuilder.Database);
@@ -115,6 +117,31 @@ namespace MySql.Data.MySqlClient
 					await m_session.SendReplyAsync(payload, cancellationToken).ConfigureAwait(false);
 					await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 					// TODO: Check success
+				}
+				else if (connectionStringBuilder.ConnectionReset)
+				{
+					if (m_session.ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
+					{
+						await m_session.SendAsync(ResetConnectionPayload.Create(), cancellationToken);
+						var payload = await m_session.ReceiveReplyAsync(cancellationToken);
+						OkPayload.Create(payload);
+					}
+					else
+					{
+						// MySQL doesn't appear to accept a replayed hashed password (using the challenge from the initial handshake), so just send zeroes
+						// and expect to get a new challenge
+						var payload = ChangeUserPayload.Create(connectionStringBuilder.UserID, new byte[20], connectionStringBuilder.Database);
+						await m_session.SendAsync(payload, cancellationToken).ConfigureAwait(false);
+						payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+						var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload);
+						if (switchRequest.Name != "mysql_native_password")
+							throw new NotSupportedException("Only 'mysql_native_password' authentication method is supported.");
+						var hashedPassword = AuthenticationUtility.HashPassword(switchRequest.Data, 0, connectionStringBuilder.Password);
+						payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
+						await m_session.SendReplyAsync(payload, cancellationToken).ConfigureAwait(false);
+						payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+						OkPayload.Create(payload);
+					}
 				}
 
 				SetState(ConnectionState.Open);

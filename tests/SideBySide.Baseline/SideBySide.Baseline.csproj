@@ -72,6 +72,9 @@
     <Compile Include="..\SideBySide.New\ConnectAsync.cs">
       <Link>ConnectAsync.cs</Link>
     </Compile>
+    <Compile Include="..\SideBySide.New\ConnectionPool.cs">
+      <Link>ConnectionPool.cs</Link>
+    </Compile>
     <Compile Include="..\SideBySide.New\ConnectSync.cs">
       <Link>ConnectSync.cs</Link>
     </Compile>
