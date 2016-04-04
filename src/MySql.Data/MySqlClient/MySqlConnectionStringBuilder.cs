@@ -200,7 +200,7 @@ namespace MySql.Data.MySqlClient
 
 			AddOption(ConnectionReset = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Connection Reset", "ConnectionReset" },
-				defaultValue: false));
+				defaultValue: true));
 
 			AddOption(MinimumPoolSize = new MySqlConnectionStringOption<uint>(
 				keys: new[] { "Minimum Pool Size", "Min Pool Size", "MinimumPoolSize", "minpoolsize" },
