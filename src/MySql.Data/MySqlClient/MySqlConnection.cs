@@ -120,7 +120,7 @@ namespace MySql.Data.MySqlClient
 					var payload = await m_session.ReceiveAsync(cancellationToken).ConfigureAwait(false);
 					var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
 					var initialHandshake = new InitialHandshakePacket(reader);
-					m_session.ServerVersion = Encoding.ASCII.GetString(initialHandshake.ServerVersion);
+					m_session.ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
 
 					var response = HandshakeResponse41Packet.Create(initialHandshake, connectionStringBuilder.UserID, connectionStringBuilder.Password, connectionStringBuilder.Database);
 					payload = new PayloadData(new ArraySegment<byte>(response));
@@ -152,7 +152,7 @@ namespace MySql.Data.MySqlClient
 
 		public override string DataSource => m_database;
 
-		public override string ServerVersion => m_session.ServerVersion;
+		public override string ServerVersion => m_session.ServerVersion.OriginalString;
 
 		protected override DbCommand CreateDbCommand()
 		{

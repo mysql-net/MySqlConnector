@@ -14,7 +14,7 @@ namespace MySql.Data.Serialization
 			Pool = pool;
 		}
 
-		public string ServerVersion { get; set; }
+		public ServerVersion ServerVersion { get; set; }
 		public ConnectionPool Pool { get; }
 		public bool ReturnToPool() => Pool != null && Pool.Return(this);
 
