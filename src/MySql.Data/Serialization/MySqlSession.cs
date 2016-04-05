@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,10 +23,15 @@ namespace MySql.Data.Serialization
 			{
 				m_transmitter.SendAsync(QuitPayload.Create(), CancellationToken.None).Wait();
 				m_transmitter.TryReceiveReplyAsync(CancellationToken.None).Wait();
-				m_state = State.Closed;
 			}
 			m_transmitter = null;
-			Utility.Dispose(ref m_socket);
+			if (m_socket != null)
+			{
+				if (m_socket.Connected)
+					m_socket.Shutdown(SocketShutdown.Both);
+				Utility.Dispose(ref m_socket);
+			}
+			m_state = State.Closed;
 		}
 
 		public async Task ConnectAsync(string hostname, int port)
