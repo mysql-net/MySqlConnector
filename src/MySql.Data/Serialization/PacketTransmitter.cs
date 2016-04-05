@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -14,7 +15,7 @@ namespace MySql.Data.Serialization
 		{
 			m_socket = socket;
 			var socketEventArgs = new SocketAsyncEventArgs();
-			m_buffer = new byte[1024];
+			m_buffer = new byte[4096];
 			socketEventArgs.SetBuffer(m_buffer, 0, 0);
 			m_socketAwaitable = new SocketAwaitable(socketEventArgs);
 		}
@@ -82,17 +83,25 @@ namespace MySql.Data.Serialization
 
 		private async Task<PayloadData> DoReceiveAsync(CancellationToken cancellationToken, bool optional = false)
 		{
-			m_socketAwaitable.EventArgs.SetBuffer(0, 4);
-			if (optional)
+			// read packet header
+			int offset = 0;
+			int count = 4;
+			while (count > 0)
 			{
-				int bytesRead = await m_socket.ReadAvailableAsync(m_socketAwaitable, cancellationToken).ConfigureAwait(false);
-				if (bytesRead < 4)
-					return null;
+				m_socketAwaitable.EventArgs.SetBuffer(offset, count);
+				await m_socket.ReceiveAsync(m_socketAwaitable);
+				int bytesRead = m_socketAwaitable.EventArgs.BytesTransferred;
+				if (bytesRead <= 0)
+				{
+					if (optional)
+						return null;
+					throw new EndOfStreamException();
+				}
+				offset += bytesRead;
+				count -= bytesRead;
 			}
-			else
-			{
-				await m_socket.ReadExactlyAsync(m_socketAwaitable, cancellationToken).ConfigureAwait(false);
-			}
+
+			// decode packet header
 			int payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, 0, 3);
 			if (m_buffer[3] != (byte) (m_sequenceId & 0xFF))
 			{
@@ -102,6 +111,7 @@ namespace MySql.Data.Serialization
 			}
 			m_sequenceId++;
 
+			// allocate a larger buffer if necessary
 			byte[] readData = m_buffer;
 			if (payloadLength > m_buffer.Length)
 			{
@@ -109,12 +119,25 @@ namespace MySql.Data.Serialization
 				m_socketAwaitable.EventArgs.SetBuffer(readData, 0, 0);
 			}
 
-			m_socketAwaitable.EventArgs.SetBuffer(0, payloadLength);
-			await m_socket.ReadExactlyAsync(m_socketAwaitable, cancellationToken).ConfigureAwait(false);
+			// read payload
+			offset = 0;
+			count = payloadLength;
+			while (count > 0)
+			{
+				m_socketAwaitable.EventArgs.SetBuffer(offset, count);
+				await m_socket.ReceiveAsync(m_socketAwaitable);
+				int bytesRead = m_socketAwaitable.EventArgs.BytesTransferred;
+				if (bytesRead <= 0)
+					throw new EndOfStreamException();
+				offset += bytesRead;
+				count -= bytesRead;
+			}
 
+			// switch back to original buffer if a larger one was allocated
 			if (payloadLength > m_buffer.Length)
 				m_socketAwaitable.EventArgs.SetBuffer(m_buffer, 0, 0);
 
+			// check for error
 			if (readData[0] == 0xFF)
 			{
 				var errorCode = (int) BitConverter.ToUInt16(readData, 1);
