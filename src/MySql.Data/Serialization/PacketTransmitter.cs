@@ -1,5 +1,5 @@
 using System;
-using System.IO;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,10 +10,13 @@ namespace MySql.Data.Serialization
 {
 	internal sealed class PacketTransmitter
 	{
-		public PacketTransmitter(Stream stream)
+		public PacketTransmitter(Socket socket)
 		{
-			m_stream = stream;
+			m_socket = socket;
+			var socketEventArgs = new SocketAsyncEventArgs();
 			m_buffer = new byte[1024];
+			socketEventArgs.SetBuffer(m_buffer, 0, 0);
+			m_socketAwaitable = new SocketAwaitable(socketEventArgs);
 		}
 
 		// Starts a new conversation with the server by sending the first packet.
@@ -61,12 +64,16 @@ namespace MySql.Data.Serialization
 				if (bytesToSend <= m_buffer.Length - 4)
 				{
 					Array.Copy(data.Array, data.Offset, m_buffer, 4, bytesToSend);
-					await m_stream.WriteAsync(m_buffer, 0, bytesToSend + 4, cancellationToken).ConfigureAwait(false);
+					m_socketAwaitable.EventArgs.SetBuffer(0, bytesToSend + 4);
+					await m_socket.SendAsync(m_socketAwaitable);
 				}
 				else
 				{
-					await m_stream.WriteAsync(m_buffer, 0, 4, cancellationToken).ConfigureAwait(false);
-					await m_stream.WriteAsync(data.Array, data.Offset + bytesSent, bytesToSend, cancellationToken).ConfigureAwait(false);
+					m_socketAwaitable.EventArgs.SetBuffer(null, 0, 0);
+					m_socketAwaitable.EventArgs.BufferList = new[] { new ArraySegment<byte>(m_buffer, 0, 4), data };
+					await m_socket.SendAsync(m_socketAwaitable);
+					m_socketAwaitable.EventArgs.BufferList = null;
+					m_socketAwaitable.EventArgs.SetBuffer(m_buffer, 0, 0);
 				}
 
 				bytesSent += bytesToSend;
@@ -75,15 +82,16 @@ namespace MySql.Data.Serialization
 
 		private async Task<PayloadData> DoReceiveAsync(CancellationToken cancellationToken, bool optional = false)
 		{
+			m_socketAwaitable.EventArgs.SetBuffer(0, 4);
 			if (optional)
 			{
-				int bytesRead = await m_stream.ReadAvailableAsync(m_buffer, 0, 4, cancellationToken).ConfigureAwait(false);
+				int bytesRead = await m_socket.ReadAvailableAsync(m_socketAwaitable, cancellationToken).ConfigureAwait(false);
 				if (bytesRead < 4)
 					return null;
 			}
 			else
 			{
-				await m_stream.ReadExactlyAsync(m_buffer, 0, 4, cancellationToken).ConfigureAwait(false);
+				await m_socket.ReadExactlyAsync(m_socketAwaitable, cancellationToken).ConfigureAwait(false);
 			}
 			int payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, 0, 3);
 			if (m_buffer[3] != (byte) (m_sequenceId & 0xFF))
@@ -96,9 +104,16 @@ namespace MySql.Data.Serialization
 
 			byte[] readData = m_buffer;
 			if (payloadLength > m_buffer.Length)
+			{
 				readData = new byte[payloadLength];
+				m_socketAwaitable.EventArgs.SetBuffer(readData, 0, 0);
+			}
 
-			await m_stream.ReadExactlyAsync(readData, 0, payloadLength, cancellationToken).ConfigureAwait(false);
+			m_socketAwaitable.EventArgs.SetBuffer(0, payloadLength);
+			await m_socket.ReadExactlyAsync(m_socketAwaitable, cancellationToken).ConfigureAwait(false);
+
+			if (payloadLength > m_buffer.Length)
+				m_socketAwaitable.EventArgs.SetBuffer(m_buffer, 0, 0);
 
 			if (readData[0] == 0xFF)
 			{
@@ -111,8 +126,9 @@ namespace MySql.Data.Serialization
 			return new PayloadData(new ArraySegment<byte>(readData, 0, payloadLength));
 		}
 
-		readonly Stream m_stream;
-		readonly byte[] m_buffer;
+		readonly Socket m_socket;
+		readonly SocketAwaitable m_socketAwaitable;
 		int m_sequenceId;
+		readonly byte[] m_buffer;
 	}
 }

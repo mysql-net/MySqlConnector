@@ -27,7 +27,6 @@ namespace MySql.Data.Serialization
 				m_state = State.Closed;
 			}
 			m_transmitter = null;
-			Utility.Dispose(ref m_stream);
 			Utility.Dispose(ref m_socket);
 		}
 
@@ -39,8 +38,7 @@ namespace MySql.Data.Serialization
 #else
 			await Task.Factory.FromAsync(m_socket.BeginConnect, m_socket.EndConnect, hostname, port, null).ConfigureAwait(false);
 #endif
-			m_stream = new NetworkStream(m_socket, true);
-			m_transmitter = new PacketTransmitter(m_stream);
+			m_transmitter = new PacketTransmitter(m_socket);
 			m_state = State.Connected;
 		}
 
@@ -110,7 +108,6 @@ namespace MySql.Data.Serialization
 
 		State m_state;
 		Socket m_socket;
-		Stream m_stream;
 		PacketTransmitter m_transmitter;
 	}
 }
