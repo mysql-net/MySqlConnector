@@ -45,12 +45,34 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+		public static void ClearPools()
+		{
+			List<ConnectionPool> pools;
+			lock (s_lock)
+				pools = new List<ConnectionPool>(s_pools.Values);
+
+			foreach (var pool in pools)
+				pool.Clear();
+		}
+
 		private ConnectionPool(int minimumSize, int maximumSize)
 		{
 			m_lock = new object();
 			m_sessions = new Queue<MySqlSession>();
 			m_minimumSize = minimumSize;
 			m_maximumSize = maximumSize;
+		}
+
+		private void Clear()
+		{
+			lock (m_lock)
+			{
+				while (m_sessions.Count > 0)
+				{
+					var session = m_sessions.Dequeue();
+					session.Dispose();
+				}
+			}
 		}
 
 		static readonly object s_lock = new object();

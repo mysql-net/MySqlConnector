@@ -1,9 +1,10 @@
-﻿using MySql.Data.MySqlClient;
+﻿using System;
+using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace SideBySide.New
 {
-	public class ConnectionPool
+	public class ConnectionPool : IDisposable
 	{
 		[Theory]
 		[InlineData(false, 11, 0L)]
@@ -71,6 +72,13 @@ namespace SideBySide.New
 					Assert.Equal(expected, command.ExecuteScalar());
 				}
 			}
+		}
+
+		public void Dispose()
+		{
+#if !BASELINE
+			MySqlHelper.ClearConnectionPools();
+#endif
 		}
 	}
 }
