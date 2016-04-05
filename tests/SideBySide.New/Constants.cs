@@ -16,6 +16,7 @@ namespace SideBySide
 				Server = Server,
 				UserID = UserName,
 				Password = Password,
+				ConvertZeroDateTime = true,
 			};
 		}
 	}

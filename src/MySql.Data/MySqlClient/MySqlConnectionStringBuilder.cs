@@ -59,6 +59,12 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.CharacterSet.SetValue(this, value); }
 		}
 
+		public bool ConvertZeroDateTime
+		{
+			get { return MySqlConnectionStringOption.ConvertZeroDateTime.GetValue(this); }
+			set { MySqlConnectionStringOption.ConvertZeroDateTime.SetValue(this, value); }
+		}
+
 		public bool UseCompression
 		{
 			get { return MySqlConnectionStringOption.UseCompression.GetValue(this); }
@@ -117,6 +123,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<uint> Port;
 		public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
 		public static readonly MySqlConnectionStringOption<string> CharacterSet;
+		public static readonly MySqlConnectionStringOption<bool> ConvertZeroDateTime;
 		public static readonly MySqlConnectionStringOption<bool> UseCompression;
 		public static readonly MySqlConnectionStringOption<bool> Pooling;
 		public static readonly MySqlConnectionStringOption<bool> ConnectionReset;
@@ -183,6 +190,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(CharacterSet = new MySqlConnectionStringOption<string>(
 				keys: new[] { "CharSet", "Character Set", "CharacterSet" },
 				defaultValue: ""));
+
+			AddOption(ConvertZeroDateTime = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "Convert Zero Datetime", "ConvertZeroDateTime" },
+				defaultValue: false));
 
 			AddOption(UseCompression = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Compress", "Use Compression", "UseCompression" },

@@ -96,6 +96,21 @@ namespace MySql.Data.MySqlClient
 			{
 				output.Append(((bool) Value) ? "true" : "false");
 			}
+			else if (Value is DateTime)
+			{
+				output.AppendFormat(CultureInfo.InvariantCulture, "timestamp '{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}'", (DateTime) Value);
+			}
+			else if (Value is TimeSpan)
+			{
+				output.Append("time '");
+				var ts = (TimeSpan) Value;
+				if (ts.Ticks < 0)
+				{
+					output.Append('-');
+					ts = TimeSpan.FromTicks(-ts.Ticks);
+				}
+				output.AppendFormat(CultureInfo.InvariantCulture, "{0}:{1:mm':'ss'.'ffffff}'", ts.Days * 24 + ts.Hours, ts);
+			}
 			else
 			{
 				throw new NotSupportedException(Invariant($"Parameter type {Value.GetType().Name} (DbType: {DbType}) not currently supported. Value: {Value}"));

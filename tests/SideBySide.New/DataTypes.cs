@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using Dapper;
 using MySql.Data.MySqlClient;
@@ -104,6 +105,69 @@ namespace SideBySide
 		public void QueryString(string column, string[] expected)
 		{
 			DoQuery("strings", column, expected, reader => reader.GetString(0));
+		}
+
+		[Theory]
+		[InlineData("`Date`", new object[] { null, "1000 01 01", "9999 12 31", "0001 01 01", "2016 04 05" })]
+		[InlineData("`DateTime`", new object[] { null, "1000 01 01 0 0 0", "9999 12 31 23 59 59 999999", "0001 01 01 0 0 0", "2016 4 5 14 3 4 567890" })]
+		[InlineData("`Timestamp`", new object[] { null, "1970 01 01 0 0 1", "2038 1 18 3 14 7 999999", "0001 01 01 0 0 0", "2016 4 5 14 3 4 567890" })]
+		public void QueryDate(string column, object[] expected)
+		{
+			DoQuery("times", column, ConvertToDateTime(expected), reader => reader.GetDateTime(0));
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void QueryZeroDateTime(bool convertZeroDateTime)
+		{
+			var csb = Constants.CreateConnectionStringBuilder();
+			csb.ConvertZeroDateTime = convertZeroDateTime;
+			csb.Database = "datatypes";
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = @"select `Date`, `DateTime`, `Timestamp` from times where `Date` = 0;";
+					using (var reader = cmd.ExecuteReader())
+					{
+						Assert.True(reader.Read());
+						if (convertZeroDateTime)
+						{
+							Assert.Equal(DateTime.MinValue, reader.GetDateTime(0));
+							Assert.Equal(DateTime.MinValue, reader.GetDateTime(1));
+							Assert.Equal(DateTime.MinValue, reader.GetDateTime(2));
+						}
+						else
+						{
+#if BASELINE
+							Assert.Throws<MySql.Data.Types.MySqlConversionException>(() => reader.GetDateTime(0));
+							Assert.Throws<MySql.Data.Types.MySqlConversionException>(() => reader.GetDateTime(1));
+							Assert.Throws<MySql.Data.Types.MySqlConversionException>(() => reader.GetDateTime(2));
+#else
+							Assert.Throws<InvalidCastException>(() => reader.GetDateTime(0));
+							Assert.Throws<InvalidCastException>(() => reader.GetDateTime(1));
+							Assert.Throws<InvalidCastException>(() => reader.GetDateTime(2));
+#endif
+						}
+					}
+				}
+			}
+		}
+
+		[Theory]
+		[InlineData("`Time`", new object[] { null, "-838 -59 -59", "838 59 59", "0 0 0", "0 14 3 4 567890" })]
+		public void QueryTime(string column, object[] expected)
+		{
+			DoQuery<InvalidCastException>("times", column, ConvertToTimeSpan(expected), reader => reader.GetFieldValue<TimeSpan>(0));
+		}
+
+		[Theory]
+		[InlineData("`Year`", new object[] { null, 1901, 2155, 0, 2016 })]
+		public void QueryYear(string column, object[] expected)
+		{
+			DoQuery("times", column, expected, reader => reader.GetInt32(0));
 		}
 
 		[Theory]
@@ -212,6 +276,49 @@ namespace SideBySide
 				var result = cmd.ExecuteScalar();
 				Assert.Equal(Array.IndexOf(expected, p.Value) + 1, result);
 			}
+		}
+
+		private static object[] ConvertToDateTime(object[] input)
+		{
+			var output = new object[input.Length];
+			for (int i = 0; i < input.Length; i++)
+			{
+				var value = SplitAndParse(input[i]);
+				if (value?.Length == 3)
+					output[i] = new DateTime(value[0], value[1], value[2]);
+				else if (value?.Length == 6)
+					output[i] = new DateTime(value[0], value[1], value[2], value[3], value[4], value[5]);
+				else if (value?.Length == 7)
+					output[i] = new DateTime(value[0], value[1], value[2], value[3], value[4], value[5], value[6] / 1000).AddTicks(value[6] % 1000 * 10);
+			}
+			return output;
+		}
+
+		private static object[] ConvertToTimeSpan(object[] input)
+		{
+			var output = new object[input.Length];
+			for (int i = 0; i < input.Length; i++)
+			{
+				var value = SplitAndParse(input[i]);
+				if (value?.Length == 3)
+					output[i] = new TimeSpan(value[0], value[1], value[2]);
+				else if (value?.Length == 5)
+					output[i] = new TimeSpan(value[0], value[1], value[2], value[3], value[4] / 1000) + TimeSpan.FromTicks(value[4] % 1000 * 10);
+			}
+			return output;
+		}
+
+		private static int[] SplitAndParse(object obj)
+		{
+			var value = obj as string;
+			if (value == null)
+				return null;
+
+			var split = value.Split();
+			var output = new int[split.Length];
+			for (int i = 0; i < split.Length; i++)
+				output[i] = int.Parse(split[i], CultureInfo.InvariantCulture);
+			return output;
 		}
 
 		readonly DataTypesFixture m_database;

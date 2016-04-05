@@ -305,6 +305,17 @@ namespace MySql.Data.MySqlClient
 			case ColumnType.Short:
 				return isUnsigned ? typeof(ushort) : typeof(short);
 
+			case ColumnType.Date:
+			case ColumnType.DateTime:
+			case ColumnType.Timestamp:
+				return typeof(DateTime);
+
+			case ColumnType.Time:
+				return typeof(TimeSpan);
+
+			case ColumnType.Year:
+				return typeof(int);
+
 			default:
 				throw new NotImplementedException(Invariant($"GetFieldType for {columnDefinition.ColumnType} is not implemented"));
 			}
@@ -361,6 +372,17 @@ namespace MySql.Data.MySqlClient
 				return isUnsigned ? (object) ushort.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
 					short.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
+			case ColumnType.Date:
+			case ColumnType.DateTime:
+			case ColumnType.Timestamp:
+				return ParseDateTime(data);
+
+			case ColumnType.Time:
+				return ParseTimeSpan(data);
+
+			case ColumnType.Year:
+				return int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+
 			default:
 				throw new NotImplementedException(Invariant($"Reading {columnDefinition.ColumnType} not implemented"));
 			}
@@ -415,12 +437,62 @@ namespace MySql.Data.MySqlClient
 			return dataReader;
 		}
 
+		internal DateTime ParseDateTime(ArraySegment<byte> value)
+		{
+			var parts = Encoding.UTF8.GetString(value).Split('-', ' ', ':', '.');
+
+			var year = int.Parse(parts[0], CultureInfo.InvariantCulture);
+			var month = int.Parse(parts[1], CultureInfo.InvariantCulture);
+			var day = int.Parse(parts[2], CultureInfo.InvariantCulture);
+
+			if (year == 0 && month == 0 && day == 0)
+			{
+				if (Connection.ConvertZeroDateTime)
+					return DateTime.MinValue;
+				throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime.");
+			}
+
+			if (parts.Length == 3)
+				return new DateTime(year, month, day);
+
+			var hour = int.Parse(parts[3], CultureInfo.InvariantCulture);
+			var minute = int.Parse(parts[4], CultureInfo.InvariantCulture);
+			var second = int.Parse(parts[5], CultureInfo.InvariantCulture);
+			if (parts.Length == 6)
+				return new DateTime(year, month, day, hour, minute, second);
+
+			var microseconds = int.Parse(parts[6] + new string('0', 6 - parts[6].Length), CultureInfo.InvariantCulture);
+			return new DateTime(year, month, day, hour, minute, second, microseconds / 1000).AddTicks(microseconds % 1000 * 10);
+		}
+
+		internal static TimeSpan ParseTimeSpan(ArraySegment<byte> value)
+		{
+			var parts = Encoding.UTF8.GetString(value).Split(':', '.');
+
+			var hours = int.Parse(parts[0], CultureInfo.InvariantCulture);
+			var minutes = int.Parse(parts[1], CultureInfo.InvariantCulture);
+			if (hours < 0)
+				minutes = -minutes;
+			var seconds = int.Parse(parts[2], CultureInfo.InvariantCulture);
+			if (hours < 0)
+				seconds = -seconds;
+			if (parts.Length == 3)
+				return new TimeSpan(hours, minutes, seconds);
+
+			var microseconds = int.Parse(parts[3] + new string('0', 6 - parts[3].Length), CultureInfo.InvariantCulture);
+			if (hours < 0)
+				microseconds = -microseconds;
+			return new TimeSpan(0, hours, minutes, seconds, microseconds / 1000) + TimeSpan.FromTicks(microseconds % 1000 * 10);
+		}
+
 		private MySqlDataReader(MySqlCommand command, CommandBehavior behavior)
 		{
 			m_command = command;
-			m_session = ((MySqlConnection) m_command.Connection).Session;
+			m_session = Connection.Session;
 			m_behavior = behavior;
 		}
+
+		private MySqlConnection Connection => (MySqlConnection) m_command.Connection;
 
 		private async Task ReadResultSetHeader(CancellationToken cancellationToken)
 		{
@@ -459,7 +531,6 @@ namespace MySql.Data.MySqlClient
 				m_state = State.ReadResultSetHeader;
 			}
 		}
-
 
 		private void Reset()
 		{

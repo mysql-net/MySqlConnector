@@ -85,6 +85,22 @@ values
     X'00112233445566778899AABBCCDDEEFF',
     X'00112233445566778899AABBCCDDEEFF',
     X'00112233445566778899AABBCCDDEEFF');
+
+create table datatypes.times(
+  rowid integer not null primary key auto_increment,
+  `Date` date null,
+  `DateTime` datetime(6) null,
+  `Timestamp` timestamp(6) null,
+  `Time` time(6) null,
+  `Year` year null);
+
+insert into datatypes.times(`Date`, `DateTime`, `Timestamp`, `Time`, `Year`)
+values
+  (null, null, null, null, null),
+  (date '1000-01-01', timestamp '1000-01-01 00:00:00', timestamp '1970-01-01 00:00:01', time '-838:59:59' , 1901),
+  (date '9999-12-31', timestamp '9999-12-31 23:59:59.999999', '2038-01-18 03:14:07.999999', time '838:59:59.000', 2155), -- not actually maximum Timestamp value, due to TZ conversion
+  (date '0000-00-00', timestamp '0000-00-00 00:00:00' , timestamp '0000-00-00 00:00:00', time '00:00:00', 0),
+  (date '2016-04-05', timestamp '2016-04-05 14:03:04.56789', timestamp '2016-04-05 14:03:04.56789', time '14:03:04.56789', 2016);
 ");
 	    }
 
