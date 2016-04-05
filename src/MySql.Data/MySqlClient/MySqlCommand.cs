@@ -20,8 +20,8 @@ namespace MySql.Data.MySqlClient
 		{
 		}
 
-		public MySqlCommand(MySqlConnection connection)
-			: this(null, connection, null)
+		public MySqlCommand(MySqlConnection connection, MySqlTransaction transaction)
+			: this(null, connection, transaction)
 		{
 		}
 

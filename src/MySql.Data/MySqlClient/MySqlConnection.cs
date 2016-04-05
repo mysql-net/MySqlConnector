@@ -171,7 +171,7 @@ namespace MySql.Data.MySqlClient
 
 		protected override DbCommand CreateDbCommand()
 		{
-			return new MySqlCommand(this);
+			return new MySqlCommand(this, CurrentTransaction);
 		}
 
 		public override int ConnectionTimeout
