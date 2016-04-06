@@ -3,7 +3,7 @@
 	/// <summary>
 	/// MySQL character set codes.
 	/// </summary>
-	/// <remarks>Obtained from <c>SELECT id, collation_name FROM information_schema.collations ORDER BY id;</c> on MySQL 5.6.29.</remarks>
+	/// <remarks>Obtained from <c>SELECT id, collation_name FROM information_schema.collations ORDER BY id;</c> on MySQL 5.7.11.</remarks>
 	internal enum CharacterSet : ushort
 	{
 		None = 0,
@@ -226,5 +226,8 @@
 		Utf8Mb4CroatianCaseInsensitive = 245,
 		Utf8Mb4Unicode520CaseInsensitive = 246,
 		Utf8Mb4VietnameseCaseInsensitive = 247,
+		Gb18030ChineseCaseInsensitive = 248,
+		Gb18030Binary = 249,
+		Gb18030Unicode520CaseInsensitive = 250,
 	}
 }
