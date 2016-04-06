@@ -115,6 +115,10 @@ namespace MySql.Data.MySqlClient
 				}
 				output.AppendFormat(CultureInfo.InvariantCulture, "{0}:{1:mm':'ss'.'ffffff}'", ts.Days * 24 + ts.Hours, ts);
 			}
+			else if (Value is Guid)
+			{
+				output.AppendFormat("'{0:D}'", Value);
+			}
 			else
 			{
 				throw new NotSupportedException(Invariant($"Parameter type {Value.GetType().Name} (DbType: {DbType}) not currently supported. Value: {Value}"));

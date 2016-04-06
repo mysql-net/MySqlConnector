@@ -65,6 +65,12 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.ConvertZeroDateTime.SetValue(this, value); }
 		}
 
+		public bool OldGuids
+		{
+			get { return MySqlConnectionStringOption.OldGuids.GetValue(this); }
+			set { MySqlConnectionStringOption.OldGuids.SetValue(this, value); }
+		}
+
 		public bool UseCompression
 		{
 			get { return MySqlConnectionStringOption.UseCompression.GetValue(this); }
@@ -124,6 +130,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
 		public static readonly MySqlConnectionStringOption<string> CharacterSet;
 		public static readonly MySqlConnectionStringOption<bool> ConvertZeroDateTime;
+		public static readonly MySqlConnectionStringOption<bool> OldGuids;
 		public static readonly MySqlConnectionStringOption<bool> UseCompression;
 		public static readonly MySqlConnectionStringOption<bool> Pooling;
 		public static readonly MySqlConnectionStringOption<bool> ConnectionReset;
@@ -193,6 +200,10 @@ namespace MySql.Data.MySqlClient
 
 			AddOption(ConvertZeroDateTime = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Convert Zero Datetime", "ConvertZeroDateTime" },
+				defaultValue: false));
+
+			AddOption(OldGuids = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "Old Guids", "OldGuids" },
 				defaultValue: false));
 
 			AddOption(UseCompression = new MySqlConnectionStringOption<bool>(

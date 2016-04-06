@@ -74,15 +74,17 @@ create table datatypes.strings (
   utf8bin varchar(100) character set utf8mb4 collate utf8mb4_bin null,
   latin1 varchar(100) character set 'latin1' null,
   latin1bin varchar(100) character set latin1 collate latin1_bin null,
-  cp1251 varchar(100) character set 'cp1251' null
+  cp1251 varchar(100) character set 'cp1251' null,
+  guid char(36) null,
+  guidbin char(36) binary null
 );
 
-insert into datatypes.strings(utf8, utf8bin, latin1, latin1bin, cp1251)
+insert into datatypes.strings(utf8, utf8bin, latin1, latin1bin, cp1251, guid, guidbin)
 values
-  (null, null, null, null, null),
-  ('', '', '', '', ''),
-  ('ASCII', 'ASCII', 'ASCII', 'ASCII', 'ASCII'),
-  ('Ũńıċōđĕ', 'Ũńıċōđĕ', 'Lãtïñ', 'Lãtïñ', 'АБВГабвг');
+  (null, null, null, null, null, null, null),
+  ('', '', '', '', '', '00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000'),
+  ('ASCII', 'ASCII', 'ASCII', 'ASCII', 'ASCII', '00000000-0000-0000-c000-000000000046', '00000000-0000-0000-c000-000000000046'),
+  ('Ũńıċōđĕ', 'Ũńıċōđĕ', 'Lãtïñ', 'Lãtïñ', 'АБВГабвг', 'fd24a0e8-c3f2-4821-a456-35da2dc4bb8f', 'fd24a0e8-c3f2-4821-a456-35da2dc4bb8f');
 
 create table datatypes.blobs(
   rowid integer not null primary key auto_increment,
@@ -91,13 +93,15 @@ create table datatypes.blobs(
   `TinyBlob` tinyblob null,
   `Blob` blob null,
   `MediumBlob` mediumblob null,
-  `LongBlob` longblob null
+  `LongBlob` longblob null,
+  guidbin binary(16) null
 );
 
-insert into datatypes.blobs(`Binary`, `VarBinary`, `TinyBlob`, `Blob`, `MediumBlob`, `LongBlob`)
+insert into datatypes.blobs(`Binary`, `VarBinary`, `TinyBlob`, `Blob`, `MediumBlob`, `LongBlob`, guidbin)
 values
-  (null, null, null, null, null, null),
+  (null, null, null, null, null, null, null),
   (X'00112233445566778899AABBCCDDEEFF',
+    X'00112233445566778899AABBCCDDEEFF',
     X'00112233445566778899AABBCCDDEEFF',
     X'00112233445566778899AABBCCDDEEFF',
     X'00112233445566778899AABBCCDDEEFF',

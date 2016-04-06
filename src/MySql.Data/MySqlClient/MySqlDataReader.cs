@@ -295,12 +295,18 @@ namespace MySql.Data.MySqlClient
 				return isUnsigned ? typeof(ulong) : typeof(long);
 
 			case ColumnType.String:
+				if (!Connection.OldGuids && columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
+					return typeof(Guid);
+				goto case ColumnType.VarString;
+
 			case ColumnType.VarString:
 			case ColumnType.TinyBlob:
 			case ColumnType.Blob:
 			case ColumnType.MediumBlob:
 			case ColumnType.LongBlob:
-				return columnDefinition.ColumnFlags.HasFlag(ColumnFlags.Binary) ? typeof(byte[]) : typeof(string);
+				return columnDefinition.ColumnFlags.HasFlag(ColumnFlags.Binary) ?
+					(Connection.OldGuids && columnDefinition.ColumnLength == 16 ? typeof(Guid) : typeof(byte[])) :
+					typeof(string);
 
 			case ColumnType.Short:
 				return isUnsigned ? typeof(ushort) : typeof(short);
@@ -361,6 +367,10 @@ namespace MySql.Data.MySqlClient
 					long.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
 			case ColumnType.String:
+				if (!Connection.OldGuids && columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
+					return Guid.Parse(Encoding.UTF8.GetString(data));
+				goto case ColumnType.VarString;
+
 			case ColumnType.VarString:
 			case ColumnType.VarChar:
 			case ColumnType.TinyBlob:
@@ -371,12 +381,9 @@ namespace MySql.Data.MySqlClient
 				{
 					var result = new byte[m_dataLengths[ordinal]];
 					Array.Copy(m_currentRow, m_dataOffsets[ordinal], result, 0, result.Length);
-					return result;
+					return Connection.OldGuids && columnDefinition.ColumnLength == 16 ? (object) new Guid(result) : result;
 				}
-				else
-				{
-					return Encoding.UTF8.GetString(data);
-				}
+				return Encoding.UTF8.GetString(data);
 
 			case ColumnType.Short:
 				return isUnsigned ? (object) ushort.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :

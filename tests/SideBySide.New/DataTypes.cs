@@ -135,6 +135,76 @@ namespace SideBySide
 		}
 
 		[Theory]
+		[InlineData("guid", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f" })]
+		[InlineData("guidbin", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f" })]
+		public void QueryGuid(string column, object[] expected)
+		{
+			for (int i = 0; i < expected.Length; i++)
+				if (expected[i] != null)
+					expected[i] = Guid.Parse((string) expected[i]);
+#if BASELINE
+			DoQuery<MySqlException>("strings", column, expected, reader => reader.GetGuid(0));
+#else
+			DoQuery("strings", column, expected, reader => reader.GetGuid(0));
+#endif
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void QueryBinaryGuid(bool oldGuids)
+		{
+			var csb = Constants.CreateConnectionStringBuilder();
+			csb.OldGuids = oldGuids;
+			csb.Database = "datatypes";
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = @"select guidbin from blobs order by rowid;";
+					using (var reader = cmd.ExecuteReader())
+					{
+						Assert.True(reader.Read());
+						Assert.Equal(DBNull.Value, reader.GetValue(0));
+						Assert.True(reader.Read());
+						if (oldGuids)
+						{
+							var expected = new Guid(0x33221100, 0x5544, 0x7766, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF);
+							Assert.Equal(expected, reader.GetValue(0));
+							Assert.Equal(expected, reader.GetGuid(0));
+						}
+						else
+						{
+							var expected = new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+							Assert.Equal(expected, GetBytes(reader));
+							Assert.Equal(expected, reader.GetValue(0));
+						}
+						Assert.False(reader.Read());
+					}
+
+					cmd.CommandText = @"select guidbin from strings order by rowid;";
+					using (var reader = cmd.ExecuteReader())
+					{
+						Assert.True(reader.Read());
+						Assert.Equal(DBNull.Value, reader.GetValue(0));
+						Assert.True(reader.Read());
+						if (oldGuids)
+						{
+							Assert.Equal("00000000-0000-0000-0000-000000000000", reader.GetValue(0));
+							Assert.Equal("00000000-0000-0000-0000-000000000000", reader.GetString(0));
+						}
+						else
+						{
+							Assert.Equal(Guid.Empty, reader.GetValue(0));
+							Assert.Equal(Guid.Empty, reader.GetGuid(0));
+						}
+					}
+				}
+			}
+		}
+
+		[Theory]
 		[InlineData("`Date`", new object[] { null, "1000 01 01", "9999 12 31", "0001 01 01", "2016 04 05" })]
 		[InlineData("`DateTime`", new object[] { null, "1000 01 01 0 0 0", "9999 12 31 23 59 59 999999", "0001 01 01 0 0 0", "2016 4 5 14 3 4 567890" })]
 		[InlineData("`Timestamp`", new object[] { null, "1970 01 01 0 0 1", "2038 1 18 3 14 7 999999", "0001 01 01 0 0 0", "2016 4 5 14 3 4 567890" })]

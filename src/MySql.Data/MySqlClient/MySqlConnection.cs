@@ -94,6 +94,7 @@ namespace MySql.Data.MySqlClient
 			m_database = connectionStringBuilder.Database;
 			AllowUserVariables = connectionStringBuilder.AllowUserVariables;
 			ConvertZeroDateTime = connectionStringBuilder.ConvertZeroDateTime;
+			OldGuids = connectionStringBuilder.OldGuids;
 
 			SetState(ConnectionState.Connecting);
 
@@ -206,6 +207,7 @@ namespace MySql.Data.MySqlClient
 		internal MySqlTransaction CurrentTransaction { get; set; }
 		internal bool AllowUserVariables { get; private set; }
 		internal bool ConvertZeroDateTime { get; private set; }
+		internal bool OldGuids { get; private set; }
 
 		private void SetState(ConnectionState newState)
 		{
