@@ -93,8 +93,6 @@ namespace MySql.Data.MySqlClient
 
 			if (m_connectionStringBuilder.UseCompression)
 				throw new NotSupportedException("Compression not supported.");
-			if (m_connectionStringBuilder.MinimumPoolSize != 0)
-				throw new NotSupportedException("Non-zero MinimumPoolSize not supported.");
 
 			SetState(ConnectionState.Connecting);
 
