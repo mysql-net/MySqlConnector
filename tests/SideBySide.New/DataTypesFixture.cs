@@ -28,7 +28,7 @@ values
   (-1, -1),
   (123, 123);
 
-create table datatypes.numbers (
+create table datatypes.integers (
   rowid integer not null primary key auto_increment,
   SByte tinyint null,
   Byte tinyint unsigned null,
@@ -42,13 +42,29 @@ create table datatypes.numbers (
   UInt64 bigint unsigned null
 );
 
-insert into datatypes.numbers(SByte, Byte, Int16, UInt16, Int24, UInt24, Int32, UInt32, Int64, UInt64)
+insert into datatypes.integers(SByte, Byte, Int16, UInt16, Int24, UInt24, Int32, UInt32, Int64, UInt64)
 values
   (null, null, null, null, null, null, null, null, null, null), # null
   (0, 0, 0, 0, 0, 0, 0, 0, 0, 0), # zero
   (-128, 0, -32768, 0, -8388608, 0, -2147483648, 0, -9223372036854775808, 0), # minimum
   (127, 255, 32767, 65535, 8388607, 16777215, 2147483647, 4294967295, 9223372036854775807, 18446744073709551615), # maximum
   (123, 123, 12345, 12345, 1234567, 1234567, 123456789, 123456789, 1234567890123456789, 1234567890123456789);
+
+create table datatypes.reals(
+  rowid integer not null primary key auto_increment,
+  Single float null,
+  `Double` double null
+);
+
+insert into datatypes.reals(Single, `Double`)
+values
+  (null, null),
+  (0, 0),
+  (-3.402823466e38, -1.7976931348623157e308),
+  (-1.401298E-45, -4.94065645841247e-324),
+  (3.402823466e38, 1.7976931348623157e308),
+  (1.401298E-45, 4.94065645841247e-324);
+
 
 create table datatypes.strings (
   rowid integer not null primary key auto_increment,

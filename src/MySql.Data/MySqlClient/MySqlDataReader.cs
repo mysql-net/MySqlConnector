@@ -316,6 +316,12 @@ namespace MySql.Data.MySqlClient
 			case ColumnType.Year:
 				return typeof(int);
 
+			case ColumnType.Float:
+				return typeof(float);
+
+			case ColumnType.Double:
+				return typeof(double);
+
 			default:
 				throw new NotImplementedException(Invariant($"GetFieldType for {columnDefinition.ColumnType} is not implemented"));
 			}
@@ -382,6 +388,12 @@ namespace MySql.Data.MySqlClient
 
 			case ColumnType.Year:
 				return int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+
+			case ColumnType.Float:
+				return float.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+
+			case ColumnType.Double:
+				return double.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
 			default:
 				throw new NotImplementedException(Invariant($"Reading {columnDefinition.ColumnType} not implemented"));

@@ -96,6 +96,10 @@ namespace MySql.Data.MySqlClient
 			{
 				output.Append(((bool) Value) ? "true" : "false");
 			}
+			else if (Value is float || Value is double)
+			{
+				output.AppendFormat(CultureInfo.InvariantCulture, "{0:R}", Value);
+			}
 			else if (Value is DateTime)
 			{
 				output.AppendFormat(CultureInfo.InvariantCulture, "timestamp '{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}'", (DateTime) Value);

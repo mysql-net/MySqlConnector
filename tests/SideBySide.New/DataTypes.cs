@@ -42,28 +42,28 @@ namespace SideBySide
 		[InlineData("SByte", new object[] { null, default(sbyte), sbyte.MinValue, sbyte.MaxValue, (sbyte) 123 })]
 		public void QuerySByte(string column, object[] expected)
 		{
-			DoQuery("numbers", column, expected, reader => ((MySqlDataReader) reader).GetSByte(0), baselineCoercedNullValue: default(sbyte));
+			DoQuery("integers", column, expected, reader => ((MySqlDataReader) reader).GetSByte(0), baselineCoercedNullValue: default(sbyte));
 		}
 
 		[Theory]
 		[InlineData("Byte", new object[] { null, default(byte), byte.MinValue, byte.MaxValue, (byte) 123 })]
 		public void QueryByte(string column, object[] expected)
 		{
-			DoQuery("numbers", column, expected, reader => reader.GetByte(0), baselineCoercedNullValue: default(byte));
+			DoQuery("integers", column, expected, reader => reader.GetByte(0), baselineCoercedNullValue: default(byte));
 		}
 
 		[Theory]
 		[InlineData("Int16", new object[] { null, default(short), short.MinValue, short.MaxValue, (short) 12345 })]
 		public void QueryInt16(string column, object[] expected)
 		{
-			DoQuery("numbers", column, expected, reader => reader.GetInt16(0));
+			DoQuery("integers", column, expected, reader => reader.GetInt16(0));
 		}
 
 		[Theory]
 		[InlineData("UInt16", new object[] { null, default(ushort), ushort.MinValue, ushort.MaxValue, (ushort) 12345 })]
 		public void QueryUInt16(string column, object[] expected)
 		{
-			DoQuery<InvalidCastException>("numbers", column, expected, reader => reader.GetFieldValue<ushort>(0));
+			DoQuery<InvalidCastException>("integers", column, expected, reader => reader.GetFieldValue<ushort>(0));
 		}
 
 		[Theory]
@@ -71,7 +71,7 @@ namespace SideBySide
 		[InlineData("Int32", new object[] { null, default(int), int.MinValue, int.MaxValue, 123456789 })]
 		public void QueryInt32(string column, object[] expected)
 		{
-			DoQuery("numbers", column, expected, reader => reader.GetInt32(0));
+			DoQuery("integers", column, expected, reader => reader.GetInt32(0));
 		}
 
 		[Theory]
@@ -79,21 +79,35 @@ namespace SideBySide
 		[InlineData("UInt32", new object[] { null, default(uint), uint.MinValue, uint.MaxValue, 123456789u })]
 		public void QueryUInt32(string column, object[] expected)
 		{
-			DoQuery<InvalidCastException>("numbers", column, expected, reader => reader.GetFieldValue<uint>(0));
+			DoQuery<InvalidCastException>("integers", column, expected, reader => reader.GetFieldValue<uint>(0));
 		}
 
 		[Theory]
 		[InlineData("Int64", new object[] { null, default(long), long.MinValue, long.MaxValue, 1234567890123456789 })]
 		public void QueryInt64(string column, object[] expected)
 		{
-			DoQuery("numbers", column, expected, reader => reader.GetInt64(0));
+			DoQuery("integers", column, expected, reader => reader.GetInt64(0));
 		}
 
 		[Theory]
 		[InlineData("UInt64", new object[] { null, default(ulong), ulong.MinValue, ulong.MaxValue, 1234567890123456789u })]
 		public void QueryUInt64(string column, object[] expected)
 		{
-			DoQuery<InvalidCastException>("numbers", column, expected, reader => reader.GetFieldValue<ulong>(0));
+			DoQuery<InvalidCastException>("integers", column, expected, reader => reader.GetFieldValue<ulong>(0));
+		}
+
+		[Theory]
+		[InlineData("Single", new object[] { null, default(float), -3.40282e38f, -1.4013e-45f, 3.40282e38f, 1.4013e-45f })]
+		public void QueryFloat(string column, object[] expected)
+		{
+			DoQuery("reals", column, expected, reader => reader.GetFloat(0));
+		}
+
+		[Theory]
+		[InlineData("`Double`", new object[] { null, default(double), -1.7976931348623157e308, -5e-324, 1.7976931348623157e308, 5e-324 })]
+		public void QueryDouble(string column, object[] expected)
+		{
+			DoQuery("reals", column, expected, reader => reader.GetDouble(0));
 		}
 
 		[Theory]
@@ -267,6 +281,11 @@ namespace SideBySide
 					Assert.False(reader.Read());
 					Assert.False(reader.NextResult());
 				}
+
+				// don't perform exact queries for floating-point values; they may fail
+				// http://dev.mysql.com/doc/refman/5.7/en/problems-with-float.html
+				if (expected.Last() is float)
+					return;
 
 				cmd.CommandText = Invariant($"select rowid from datatypes.{table} where {column} = @value");
 				var p = cmd.CreateParameter();
