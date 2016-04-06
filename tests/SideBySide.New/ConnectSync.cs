@@ -42,6 +42,26 @@ namespace SideBySide
 			}
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void PersistSecurityInfo(bool persistSecurityInfo)
+		{
+			var csb = Constants.CreateConnectionStringBuilder();
+			csb.PersistSecurityInfo = persistSecurityInfo;
+			var connectionStringWithoutPassword = csb.ConnectionString.Replace("Password", "password").Replace(";password='test;key=\"val'", "");
+
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				Assert.Equal(csb.ConnectionString, connection.ConnectionString);
+				connection.Open();
+				if (persistSecurityInfo)
+					Assert.Equal(csb.ConnectionString, connection.ConnectionString);
+				else
+					Assert.Equal(connectionStringWithoutPassword, connection.ConnectionString);
+			}
+		}
+
 		[Fact]
 		public void State()
 		{

@@ -6,7 +6,7 @@ namespace SideBySide
 	{
 		public const string Server = "localhost";
 		public const string UserName = "mysqltest";
-		public const string Password = "mysqltest";
+		public const string Password = "test;key=\"val";
 		public const string ServerVersion = "5.7.11-log";
 
 		public static MySqlConnectionStringBuilder CreateConnectionStringBuilder()

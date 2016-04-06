@@ -14,6 +14,7 @@ namespace MySql.Data.MySqlClient
 	{
 		public MySqlConnection()
 		{
+			m_connectionStringBuilder = new MySqlConnectionStringBuilder();
 		}
 
 		public MySqlConnection(string connectionString)
@@ -90,29 +91,22 @@ namespace MySql.Data.MySqlClient
 			if (State != ConnectionState.Closed)
 				throw new InvalidOperationException(Invariant($"Cannot Open when State is {State}."));
 
-			var connectionStringBuilder = new MySqlConnectionStringBuilder { ConnectionString = ConnectionString };
-
-			if (connectionStringBuilder.UseCompression)
+			if (m_connectionStringBuilder.UseCompression)
 				throw new NotSupportedException("Compression not supported.");
-			if (connectionStringBuilder.MinimumPoolSize != 0)
+			if (m_connectionStringBuilder.MinimumPoolSize != 0)
 				throw new NotSupportedException("Non-zero MinimumPoolSize not supported.");
-
-			m_database = connectionStringBuilder.Database;
-			AllowUserVariables = connectionStringBuilder.AllowUserVariables;
-			ConvertZeroDateTime = connectionStringBuilder.ConvertZeroDateTime;
-			OldGuids = connectionStringBuilder.OldGuids;
 
 			SetState(ConnectionState.Connecting);
 
 			bool success = false;
 			try
 			{
-				var pool = ConnectionPool.GetPool(connectionStringBuilder);
+				var pool = ConnectionPool.GetPool(m_connectionStringBuilder);
 				m_session = pool?.TryGetSession();
 				if (m_session == null)
 				{
 					m_session = new MySqlSession(pool);
-					await m_session.ConnectAsync(connectionStringBuilder.Server, (int) connectionStringBuilder.Port).ConfigureAwait(false);
+					await m_session.ConnectAsync(m_connectionStringBuilder.Server, (int) m_connectionStringBuilder.Port).ConfigureAwait(false);
 					var payload = await m_session.ReceiveAsync(cancellationToken).ConfigureAwait(false);
 					var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
 					var initialHandshake = new InitialHandshakePacket(reader);
@@ -120,13 +114,13 @@ namespace MySql.Data.MySqlClient
 						throw new NotSupportedException("Only 'mysql_native_password' authentication method is supported.");
 					m_session.ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
 
-					var response = HandshakeResponse41Packet.Create(initialHandshake, connectionStringBuilder.UserID, connectionStringBuilder.Password, connectionStringBuilder.Database);
+					var response = HandshakeResponse41Packet.Create(initialHandshake, m_connectionStringBuilder.UserID, m_connectionStringBuilder.Password, m_database);
 					payload = new PayloadData(new ArraySegment<byte>(response));
 					await m_session.SendReplyAsync(payload, cancellationToken).ConfigureAwait(false);
 					await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 					// TODO: Check success
 				}
-				else if (connectionStringBuilder.ConnectionReset)
+				else if (m_connectionStringBuilder.ConnectionReset)
 				{
 					if (m_session.ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
 					{
@@ -138,13 +132,13 @@ namespace MySql.Data.MySqlClient
 					{
 						// MySQL doesn't appear to accept a replayed hashed password (using the challenge from the initial handshake), so just send zeroes
 						// and expect to get a new challenge
-						var payload = ChangeUserPayload.Create(connectionStringBuilder.UserID, new byte[20], connectionStringBuilder.Database);
+						var payload = ChangeUserPayload.Create(m_connectionStringBuilder.UserID, new byte[20], m_database);
 						await m_session.SendAsync(payload, cancellationToken).ConfigureAwait(false);
 						payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 						var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload);
 						if (switchRequest.Name != "mysql_native_password")
 							throw new NotSupportedException("Only 'mysql_native_password' authentication method is supported.");
-						var hashedPassword = AuthenticationUtility.HashPassword(switchRequest.Data, 0, connectionStringBuilder.Password);
+						var hashedPassword = AuthenticationUtility.HashPassword(switchRequest.Data, 0, m_connectionStringBuilder.Password);
 						payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
 						await m_session.SendReplyAsync(payload, cancellationToken).ConfigureAwait(false);
 						payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
@@ -152,6 +146,7 @@ namespace MySql.Data.MySqlClient
 					}
 				}
 
+				m_hasBeenOpened = true;
 				SetState(ConnectionState.Open);
 				success = true;
 			}
@@ -167,13 +162,23 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public override string ConnectionString { get; set; }
+		public override string ConnectionString {
+			get
+			{
+				return m_connectionStringBuilder.GetConnectionString(!m_hasBeenOpened || m_connectionStringBuilder.PersistSecurityInfo);
+			}
+			set
+			{
+				m_connectionStringBuilder = new MySqlConnectionStringBuilder(value);
+				m_database = m_connectionStringBuilder.Database;
+			}
+		}
 
 		public override string Database => m_database;
 
 		public override ConnectionState State => m_connectionState;
 
-		public override string DataSource => m_database;
+		public override string DataSource => m_connectionStringBuilder.Server;
 
 		public override string ServerVersion => m_session.ServerVersion.OriginalString;
 
@@ -211,9 +216,9 @@ namespace MySql.Data.MySqlClient
 		}
 
 		internal MySqlTransaction CurrentTransaction { get; set; }
-		internal bool AllowUserVariables { get; private set; }
-		internal bool ConvertZeroDateTime { get; private set; }
-		internal bool OldGuids { get; private set; }
+		internal bool AllowUserVariables => m_connectionStringBuilder.AllowUserVariables;
+		internal bool ConvertZeroDateTime => m_connectionStringBuilder.ConvertZeroDateTime;
+		internal bool OldGuids => m_connectionStringBuilder.OldGuids;
 
 		private void SetState(ConnectionState newState)
 		{
@@ -250,8 +255,10 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+		MySqlConnectionStringBuilder m_connectionStringBuilder;
 		MySqlSession m_session;
 		ConnectionState m_connectionState;
+		bool m_hasBeenOpened;
 		bool m_isDisposed;
 		string m_database;
 	}

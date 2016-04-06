@@ -71,6 +71,12 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.OldGuids.SetValue(this, value); }
 		}
 
+		public bool PersistSecurityInfo
+		{
+			get { return MySqlConnectionStringOption.PersistSecurityInfo.GetValue(this); }
+			set { MySqlConnectionStringOption.PersistSecurityInfo.SetValue(this, value); }
+		}
+
 		public bool UseCompression
 		{
 			get { return MySqlConnectionStringOption.UseCompression.GetValue(this); }
@@ -118,6 +124,19 @@ namespace MySql.Data.MySqlClient
 			get { return MySqlConnectionStringOption.GetOptionForKey(key).GetObject(this); }
 			set { base[MySqlConnectionStringOption.GetOptionForKey(key).Key] = Convert.ToString(value, CultureInfo.InvariantCulture); }
 		}
+
+		internal string GetConnectionString(bool includePassword)
+		{
+			if (includePassword)
+				return ConnectionString;
+
+			var csb = new MySqlConnectionStringBuilder(ConnectionString);
+			foreach (string key in Keys)
+				foreach (var passwordKey in MySqlConnectionStringOption.Password.Keys)
+					if (string.Equals(key, passwordKey, StringComparison.OrdinalIgnoreCase)) 
+						csb.Remove(key);
+			return csb.ConnectionString;
+		}
 	}
 
 	internal abstract class MySqlConnectionStringOption
@@ -131,6 +150,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<string> CharacterSet;
 		public static readonly MySqlConnectionStringOption<bool> ConvertZeroDateTime;
 		public static readonly MySqlConnectionStringOption<bool> OldGuids;
+		public static readonly MySqlConnectionStringOption<bool> PersistSecurityInfo;
 		public static readonly MySqlConnectionStringOption<bool> UseCompression;
 		public static readonly MySqlConnectionStringOption<bool> Pooling;
 		public static readonly MySqlConnectionStringOption<bool> ConnectionReset;
@@ -152,6 +172,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public string Key => m_keys[0];
+		public IReadOnlyList<string> Keys => m_keys;
 
 		public abstract object GetObject(MySqlConnectionStringBuilder builder);
 
@@ -204,6 +225,10 @@ namespace MySql.Data.MySqlClient
 
 			AddOption(OldGuids = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Old Guids", "OldGuids" },
+				defaultValue: false));
+
+			AddOption(PersistSecurityInfo = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "Persist Security Info", "PersistSecurityInfo" },
 				defaultValue: false));
 
 			AddOption(UseCompression = new MySqlConnectionStringOption<bool>(
