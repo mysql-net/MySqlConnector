@@ -523,39 +523,46 @@ namespace MySql.Data.MySqlClient
 
 		private async Task ReadResultSetHeader(CancellationToken cancellationToken)
 		{
-			var payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+			while (true)
+			{
+				var payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 
-			var firstByte = payload.ArraySegment.Array[payload.ArraySegment.Offset];
-			if (firstByte == 0)
-			{
-				var ok = OkPayload.Create(payload);
-				m_recordsAffected += ok.AffectedRowCount;
-				m_command.LastInsertedId = ok.LastInsertId;
-				m_state = ok.ServerStatus.HasFlag(ServerStatus.MoreResultsExist) ? State.HasMoreData : State.NoMoreData;
-			}
-			else if (firstByte == 0xFB)
-			{
-				throw new NotSupportedException("Don't support LOCAL_INFILE_Request");
-			}
-			else
-			{
-				var reader = new ByteArrayReader(payload.ArraySegment);
-				var columnCount = (int) reader.ReadLengthEncodedInteger();
-				m_columnDefinitions = new ColumnDefinitionPayload[columnCount];
-				m_dataOffsets = new int[columnCount];
-				m_dataLengths = new int[columnCount];
-
-				for (var column = 0; column < m_columnDefinitions.Length; column++)
+				var firstByte = payload.ArraySegment.Array[payload.ArraySegment.Offset];
+				if (firstByte == 0)
 				{
-					payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
-					m_columnDefinitions[column] = ColumnDefinitionPayload.Create(payload);
+					var ok = OkPayload.Create(payload);
+					m_recordsAffected += ok.AffectedRowCount;
+					m_command.LastInsertedId = ok.LastInsertId;
+					m_columnDefinitions = null;
+					m_state = ok.ServerStatus.HasFlag(ServerStatus.MoreResultsExist) ? State.HasMoreData : State.NoMoreData;
+					if (m_state == State.NoMoreData)
+						break;
 				}
+				else if (firstByte == 0xFB)
+				{
+					throw new NotSupportedException("Don't support LOCAL_INFILE_Request");
+				}
+				else
+				{
+					var reader = new ByteArrayReader(payload.ArraySegment);
+					var columnCount = (int) reader.ReadLengthEncodedInteger();
+					m_columnDefinitions = new ColumnDefinitionPayload[columnCount];
+					m_dataOffsets = new int[columnCount];
+					m_dataLengths = new int[columnCount];
 
-				payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
-				EofPayload.Create(payload);
+					for (var column = 0; column < m_columnDefinitions.Length; column++)
+					{
+						payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+						m_columnDefinitions[column] = ColumnDefinitionPayload.Create(payload);
+					}
 
-				m_command.LastInsertedId = -1;
-				m_state = State.ReadResultSetHeader;
+					payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+					EofPayload.Create(payload);
+
+					m_command.LastInsertedId = -1;
+					m_state = State.ReadResultSetHeader;
+					break;
+				}
 			}
 		}
 

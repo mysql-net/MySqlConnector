@@ -90,6 +90,9 @@
     <Compile Include="..\SideBySide.New\DataTypesFixture.cs">
       <Link>DataTypesFixture.cs</Link>
     </Compile>
+    <Compile Include="..\SideBySide.New\InsertTests.cs">
+      <Link>InsertTests.cs</Link>
+    </Compile>
     <Compile Include="..\SideBySide.New\QueryTests.cs">
       <Link>QueryTests.cs</Link>
     </Compile>
