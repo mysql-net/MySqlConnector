@@ -119,6 +119,30 @@ namespace MySql.Data.MySqlClient
 			{
 				output.AppendFormat("'{0:D}'", Value);
 			}
+			else if (DbType == DbType.Int16)
+			{
+				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", (short) Value);
+			}
+			else if (DbType == DbType.UInt16)
+			{
+				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", (ushort) Value);
+			}
+			else if (DbType == DbType.Int32)
+			{
+				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", (int) Value);
+			}
+			else if (DbType == DbType.UInt32)
+			{
+				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", (uint) Value);
+			}
+			else if (DbType == DbType.Int64)
+			{
+				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", (long) Value);
+			}
+			else if (DbType == DbType.UInt64)
+			{
+				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", (ulong) Value);
+			}
 			else
 			{
 				throw new NotSupportedException(Invariant($"Parameter type {Value.GetType().Name} (DbType: {DbType}) not currently supported. Value: {Value}"));
