@@ -208,13 +208,7 @@ namespace MySql.Data.MySqlClient
 
 			AddOption(UseCompression = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Compress", "Use Compression", "UseCompression" },
-				defaultValue: false,
-				coerce: value =>
-				{
-					if (value)
-						throw new InvalidOperationException("Compression not supported.");
-					return value;
-				}));
+				defaultValue: false));
 
 			AddOption(Pooling = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Pooling" },
@@ -226,13 +220,7 @@ namespace MySql.Data.MySqlClient
 
 			AddOption(MinimumPoolSize = new MySqlConnectionStringOption<uint>(
 				keys: new[] { "Minimum Pool Size", "Min Pool Size", "MinimumPoolSize", "minpoolsize" },
-				defaultValue: 0,
-				coerce: value =>
-				{
-					if (value != 0)
-						throw new InvalidOperationException("Non-zero MinimumPoolSize not supported.");
-					return value;
-				}));
+				defaultValue: 0));
 
 			AddOption(MaximumPoolSize = new MySqlConnectionStringOption<uint>(
 				keys: new[] { "Maximum Pool Size", "Max Pool Size", "MaximumPoolSize", "maxpoolsize" },
@@ -256,7 +244,7 @@ namespace MySql.Data.MySqlClient
 		public T GetValue(MySqlConnectionStringBuilder builder)
 		{
 			object objectValue;
-			return builder.TryGetValue(Key, out objectValue) ? (T) Convert.ChangeType(objectValue, typeof(T), CultureInfo.InvariantCulture) : m_defaultValue;
+			return builder.TryGetValue(Key, out objectValue) ? ChangeType(objectValue) : m_defaultValue;
 		}
 
 		public void SetValue(MySqlConnectionStringBuilder builder, T value)
@@ -267,6 +255,19 @@ namespace MySql.Data.MySqlClient
 		public override object GetObject(MySqlConnectionStringBuilder builder)
 		{
 			return GetValue(builder);
+		}
+
+		private static T ChangeType(object objectValue)
+		{
+			if (typeof(T) == typeof(bool) && objectValue is string)
+			{
+				if (string.Equals((string) objectValue, "yes", StringComparison.OrdinalIgnoreCase))
+					return (T) (object) true;
+				if (string.Equals((string) objectValue, "no", StringComparison.OrdinalIgnoreCase))
+					return (T) (object) false;
+			}
+
+			return (T) Convert.ChangeType(objectValue, typeof(T), CultureInfo.InvariantCulture);
 		}
 
 		readonly T m_defaultValue;

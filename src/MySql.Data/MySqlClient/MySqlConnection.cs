@@ -91,6 +91,12 @@ namespace MySql.Data.MySqlClient
 				throw new InvalidOperationException(Invariant($"Cannot Open when State is {State}."));
 
 			var connectionStringBuilder = new MySqlConnectionStringBuilder { ConnectionString = ConnectionString };
+
+			if (connectionStringBuilder.UseCompression)
+				throw new NotSupportedException("Compression not supported.");
+			if (connectionStringBuilder.MinimumPoolSize != 0)
+				throw new NotSupportedException("Non-zero MinimumPoolSize not supported.");
+
 			m_database = connectionStringBuilder.Database;
 			AllowUserVariables = connectionStringBuilder.AllowUserVariables;
 			ConvertZeroDateTime = connectionStringBuilder.ConvertZeroDateTime;

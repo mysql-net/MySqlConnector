@@ -69,6 +69,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\MySql.Data.Tests\MySqlConnectionStringBuilderTests.cs">
+      <Link>MySqlConnectionStringBuilderTests.cs</Link>
+    </Compile>
     <Compile Include="..\SideBySide.New\ConnectAsync.cs">
       <Link>ConnectAsync.cs</Link>
     </Compile>
