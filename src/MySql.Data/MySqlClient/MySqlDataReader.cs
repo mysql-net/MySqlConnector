@@ -294,6 +294,9 @@ namespace MySql.Data.MySqlClient
 			case ColumnType.Longlong:
 				return isUnsigned ? typeof(ulong) : typeof(long);
 
+			case ColumnType.Bit:
+				return typeof(ulong);
+
 			case ColumnType.String:
 				if (!Connection.OldGuids && columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
 					return typeof(Guid);
@@ -365,6 +368,13 @@ namespace MySql.Data.MySqlClient
 			case ColumnType.Longlong:
 				return isUnsigned ? (object) ulong.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
 					long.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+
+			case ColumnType.Bit:
+				// BIT column is transmitted as MSB byte array
+				ulong bitValue = 0;
+				for (int i = 0; i < m_dataLengths[ordinal]; i++)
+					bitValue = bitValue * 256 + m_currentRow[m_dataOffsets[ordinal] + i];
+				return bitValue;
 
 			case ColumnType.String:
 				if (!Connection.OldGuids && columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)

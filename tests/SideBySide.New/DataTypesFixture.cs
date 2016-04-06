@@ -28,6 +28,20 @@ values
   (-1, -1),
   (123, 123);
 
+create table datatypes.bits(
+  rowid integer not null primary key auto_increment,
+  Bit1 bit(1) null,
+  Bit32 bit(32) null,
+  Bit64 bit(64) null
+);
+
+insert into datatypes.bits(Bit1, Bit32, Bit64)
+values
+  (null, null, null),
+  (0, 0, 0),
+  (1, 1, 1),
+  (1, X'FFFFFFFF', X'FFFFFFFFFFFFFFFF');
+
 create table datatypes.integers (
   rowid integer not null primary key auto_increment,
   SByte tinyint null,

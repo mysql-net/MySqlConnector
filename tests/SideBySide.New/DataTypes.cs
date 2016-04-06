@@ -97,6 +97,15 @@ namespace SideBySide
 		}
 
 		[Theory]
+		[InlineData("Bit1", new object[] { null, 0UL, 1UL, 1UL })]
+		[InlineData("Bit32", new object[] { null, 0UL, 1UL, (ulong) uint.MaxValue })]
+		[InlineData("Bit64", new object[] { null, 0UL, 1UL, ulong.MaxValue })]
+		public void QueryBits(string column, object[] expected)
+		{
+			DoQuery<InvalidCastException>("bits", column, expected, reader => reader.GetFieldValue<ulong>(0));
+		}
+
+		[Theory]
 		[InlineData("Single", new object[] { null, default(float), -3.40282e38f, -1.4013e-45f, 3.40282e38f, 1.4013e-45f })]
 		public void QueryFloat(string column, object[] expected)
 		{
