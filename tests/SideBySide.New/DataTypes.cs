@@ -111,6 +111,19 @@ namespace SideBySide
 		}
 
 		[Theory]
+		[InlineData("SmallDecimal", new object[] { null, "0", "-999.99", "-0.01", "999.99", "0.01" })]
+		[InlineData("MediumDecimal", new object[] { null, "0", "-999999999999.99999999", "-0.00000001", "999999999999.99999999", "0.00000001" })]
+		// value exceeds the range of a decimal and cannot be deserialized
+		// [InlineData("BigDecimal", new object[] { null, "0", "-99999999999999999999.999999999999999999999999999999", "-0.000000000000000000000000000001", "99999999999999999999.999999999999999999999999999999", "0.000000000000000000000000000001" })]
+		public void QueryDecimal(string column, object[] expected)
+		{
+			for (int i = 0; i < expected.Length; i++)
+				if (expected[i] != null)
+					expected[i] = decimal.Parse((string) expected[i], CultureInfo.InvariantCulture);
+			DoQuery("reals", column, expected, reader => reader.GetDecimal(0));
+		}
+
+		[Theory]
 		[InlineData("utf8", new[] { null, "", "ASCII", "Ũńıċōđĕ" })]
 		[InlineData("utf8bin", new[] { null, "", "ASCII", "Ũńıċōđĕ" })]
 		[InlineData("latin1", new[] { null, "", "ASCII", "Lãtïñ" })]

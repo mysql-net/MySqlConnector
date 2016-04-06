@@ -80,7 +80,7 @@ namespace MySql.Data.MySqlClient
 				output.Append(((string) Value).Replace("\\", "\\\\").Replace("'", "\\'"));
 				output.Append('\'');
 			}
-			else if (Value is byte || Value is sbyte || Value is short || Value is int || Value is long || Value is ushort || Value is uint || Value is ulong)
+			else if (Value is byte || Value is sbyte || Value is short || Value is int || Value is long || Value is ushort || Value is uint || Value is ulong || Value is decimal)
 			{
 				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", Value);
 			}

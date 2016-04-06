@@ -183,7 +183,7 @@ namespace MySql.Data.MySqlClient
 
 		public override decimal GetDecimal(int ordinal)
 		{
-			throw new NotImplementedException();
+			return (decimal) GetValue(ordinal);
 		}
 
 		public override double GetDouble(int ordinal)
@@ -322,6 +322,10 @@ namespace MySql.Data.MySqlClient
 			case ColumnType.Double:
 				return typeof(double);
 
+			case ColumnType.Decimal:
+			case ColumnType.NewDecimal:
+				return typeof(decimal);
+
 			default:
 				throw new NotImplementedException(Invariant($"GetFieldType for {columnDefinition.ColumnType} is not implemented"));
 			}
@@ -394,6 +398,10 @@ namespace MySql.Data.MySqlClient
 
 			case ColumnType.Double:
 				return double.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+
+			case ColumnType.Decimal:
+			case ColumnType.NewDecimal:
+				return decimal.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
 			default:
 				throw new NotImplementedException(Invariant($"Reading {columnDefinition.ColumnType} not implemented"));
