@@ -68,10 +68,10 @@ namespace MySql.Data.MySqlClient
 				reader.Offset--;
 				for (var column = 0; column < m_dataOffsets.Length; column++)
 				{
-					var length = (int) reader.ReadLengthEncodedInteger();
-					m_dataLengths[column] = length;
-					m_dataOffsets[column] = length == 0xFB ? -1 : reader.Offset;
-					reader.Offset += length == 0xFB ? 0 : length;
+					var length = checked((int) ReadFieldLength(reader));
+					m_dataLengths[column] = length == -1 ? 0 : length;
+					m_dataOffsets[column] = length == -1 ? -1 : reader.Offset;
+					reader.Offset += m_dataLengths[column];
 				}
 
 				m_currentRow = payload.ArraySegment.Array;
@@ -602,6 +602,24 @@ namespace MySql.Data.MySqlClient
 		{
 			if (m_command == null)
 				throw new ObjectDisposedException(GetType().Name);
+		}
+
+		private static long ReadFieldLength(ByteArrayReader reader)
+		{
+			var leadByte = reader.ReadByte();
+			switch (leadByte)
+			{
+			case 0xFB:
+				return -1;
+			case 0xFC:
+				return reader.ReadFixedLengthUInt32(2);
+			case 0xFD:
+				return reader.ReadFixedLengthUInt32(3);
+			case 0xFE:
+				return checked((long) reader.ReadFixedLengthUInt64(8));
+			default:
+				return leadByte;
+			}
 		}
 
 		private enum State

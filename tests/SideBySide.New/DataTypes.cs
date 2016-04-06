@@ -133,19 +133,20 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData("utf8", new[] { null, "", "ASCII", "Ũńıċōđĕ" })]
-		[InlineData("utf8bin", new[] { null, "", "ASCII", "Ũńıċōđĕ" })]
-		[InlineData("latin1", new[] { null, "", "ASCII", "Lãtïñ" })]
-		[InlineData("latin1bin", new[] { null, "", "ASCII", "Lãtïñ" })]
-		[InlineData("cp1251", new[] { null, "", "ASCII", "АБВГабвг" })]
+		[InlineData("utf8", new[] { null, "", "ASCII", "Ũńıċōđĕ", c_251ByteString })]
+		[InlineData("utf8bin", new[] { null, "", "ASCII", "Ũńıċōđĕ", c_251ByteString })]
+		[InlineData("latin1", new[] { null, "", "ASCII", "Lãtïñ", c_251ByteString })]
+		[InlineData("latin1bin", new[] { null, "", "ASCII", "Lãtïñ", c_251ByteString })]
+		[InlineData("cp1251", new[] { null, "", "ASCII", "АБВГабвг", c_251ByteString })]
 		public void QueryString(string column, string[] expected)
 		{
 			DoQuery("strings", column, expected, reader => reader.GetString(0));
 		}
+		const string c_251ByteString = "This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating \"this field is null\". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.";
 
 		[Theory]
-		[InlineData("guid", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f" })]
-		[InlineData("guidbin", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f" })]
+		[InlineData("guid", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f", "6A0E0A40-6228-11D3-A996-0050041896C8" })]
+		[InlineData("guidbin", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f", "6A0E0A40-6228-11D3-A996-0050041896C8" })]
 		public void QueryGuid(string column, object[] expected)
 		{
 			for (int i = 0; i < expected.Length; i++)

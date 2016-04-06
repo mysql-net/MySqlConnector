@@ -84,11 +84,11 @@ values
 
 create table datatypes.strings (
   rowid integer not null primary key auto_increment,
-  utf8 varchar(100) character set 'utf8mb4' null,
-  utf8bin varchar(100) character set utf8mb4 collate utf8mb4_bin null,
-  latin1 varchar(100) character set 'latin1' null,
-  latin1bin varchar(100) character set latin1 collate latin1_bin null,
-  cp1251 varchar(100) character set 'cp1251' null,
+  utf8 varchar(300) character set 'utf8mb4' null,
+  utf8bin varchar(300) character set utf8mb4 collate utf8mb4_bin null,
+  latin1 varchar(300) character set 'latin1' null,
+  latin1bin varchar(300) character set latin1 collate latin1_bin null,
+  cp1251 varchar(300) character set 'cp1251' null,
   guid char(36) null,
   guidbin char(36) binary null
 );
@@ -98,7 +98,13 @@ values
   (null, null, null, null, null, null, null),
   ('', '', '', '', '', '00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000'),
   ('ASCII', 'ASCII', 'ASCII', 'ASCII', 'ASCII', '00000000-0000-0000-c000-000000000046', '00000000-0000-0000-c000-000000000046'),
-  ('Ũńıċōđĕ', 'Ũńıċōđĕ', 'Lãtïñ', 'Lãtïñ', 'АБВГабвг', 'fd24a0e8-c3f2-4821-a456-35da2dc4bb8f', 'fd24a0e8-c3f2-4821-a456-35da2dc4bb8f');
+  ('Ũńıċōđĕ', 'Ũńıċōđĕ', 'Lãtïñ', 'Lãtïñ', 'АБВГабвг', 'fd24a0e8-c3f2-4821-a456-35da2dc4bb8f', 'fd24a0e8-c3f2-4821-a456-35da2dc4bb8f'),
+  ('This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating ""this field is null"". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.',
+   'This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating ""this field is null"". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.',
+   'This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating ""this field is null"". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.',
+   'This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating ""this field is null"". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.',
+   'This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating ""this field is null"". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.',
+   '6a0e0a40-6228-11d3-a996-0050041896c8', '6a0e0a40-6228-11d3-a996-0050041896c8');
 
 create table datatypes.blobs(
   rowid integer not null primary key auto_increment,
