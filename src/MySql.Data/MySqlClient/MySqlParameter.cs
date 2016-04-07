@@ -30,7 +30,7 @@ namespace MySql.Data.MySqlClient
 			set { throw new NotSupportedException(); }
 		}
 
-#if !DNXCORE50
+#if !NETSTANDARD1_3
 		public override DataRowVersion SourceVersion
 		{
 			get { throw new NotSupportedException(); }

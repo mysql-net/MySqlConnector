@@ -16,26 +16,23 @@
 		"MySql.Data": {
 			"target": "project"
 		},
-		"xunit": "2.1.0"
+		"xunit": "2.1.0-*"
 	},
-	"commands": {
-		"test": "xunit.runner.dnx"
-	},
+	"testRunner": "xunit",
 	"frameworks": {
-		"net46": {
-			"frameworkAssemblies": {
-				"System.Runtime": "4.0.0.0",
-				"System.Threading.Tasks": "4.0.0.0"
-			}
-		},
-		"dnx46": {
-			"frameworkAssemblies": {
-				"System.Runtime": "4.0.0.0",
-				"System.Threading.Tasks": "4.0.0.0"
-			},
+		"netstandardapp1.5": {
 			"dependencies": {
-				"xunit.runner.dnx": "2.1.0-*"
-			}
+				"NETStandard.Library": "1.5.0-rc2-23931",
+				"dotnet-test-xunit": "1.0.0-dev-128011-22"
+			},
+			"imports": [
+				"dnxcore50",
+				"portable-net45+win8"
+			]
 		}
+	},
+	"runtimes": {
+		"win10-x64": { },
+		"win7-x64": { }
 	}
 }

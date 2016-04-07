@@ -1,4 +1,6 @@
-﻿using Dapper;
+﻿#if DAPPER
+using Dapper;
+#endif
 
 namespace SideBySide
 {

@@ -1,9 +1,11 @@
 ﻿using System;
+#if DAPPER
 using Dapper;
+#endif
 using MySql.Data.MySqlClient;
 using Xunit;
 
-namespace SideBySide.New
+namespace SideBySide
 {
 	public class Transaction : IClassFixture<TransactionFixture>
 	{

@@ -37,7 +37,7 @@ namespace MySql.Data.Serialization
 		public async Task ConnectAsync(string hostname, int port)
 		{
 			m_socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-#if DNXCORE50
+#if NETSTANDARD1_3
 			await m_socket.ConnectAsync(hostname, port).ConfigureAwait(false);
 #else
 			await Task.Factory.FromAsync(m_socket.BeginConnect, m_socket.EndConnect, hostname, port, null).ConfigureAwait(false);

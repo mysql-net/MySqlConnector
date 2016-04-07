@@ -3,21 +3,27 @@
 	"compilationOptions": {
 		"warningsAsErrors": true
 	},
-	"commands": {
-		"test": "xunit.runner.dnx"
-	},
 	"dependencies": {
 		"MySql.Data": {
 			"target": "project"
 		},
-		"Dapper": "1.50.0-beta8",
-		"xunit": "2.1.0",
-		"xunit.runner.dnx": "2.1.0-rc1-build204"
+		"xunit": "2.1.0-*"
 	},
+	"testRunner": "xunit",
 	"frameworks": {
-		"dnx46": {
-		},
-		"dnxcore50": {
+		"netstandardapp1.5": {
+			"dependencies": {
+				"NETStandard.Library": "1.5.0-rc2-23931",
+				"dotnet-test-xunit": "1.0.0-dev-128011-22"
+			},
+			"imports": [
+				"dnxcore50",
+				"portable-net45+win8"
+			]
 		}
+	},
+	"runtimes": {
+		"win10-x64": { },
+		"win7-x64": { }
 	}
 }

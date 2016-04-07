@@ -2,7 +2,9 @@
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
+#if DAPPER
 using Dapper;
+#endif
 using MySql.Data.MySqlClient;
 using Xunit;
 using static System.FormattableString;
@@ -318,13 +320,13 @@ namespace SideBySide
 				lastInsertId = cmd.LastInsertedId;
 			}
 
-			foreach (var queryResult in m_database.Connection.Query<byte[]>(Invariant($"select `{column}` from datatypes.blobs where rowid = @lastInsertId"), new { lastInsertId }))
+			foreach (var queryResult in m_database.Connection.Query<byte[]>(Invariant($"select `{column}` from datatypes.blobs where rowid = {lastInsertId}")))
 			{
 				Assert.Equal(data, queryResult);
 				break;
 			}
 
-			m_database.Connection.Execute(Invariant($"delete from datatypes.blobs where rowid = @lastInsertId"), new { lastInsertId });
+			m_database.Connection.Execute(Invariant($"delete from datatypes.blobs where rowid = {lastInsertId}"));
 		}
 
 		private static byte[] GetBytes(DbDataReader reader)

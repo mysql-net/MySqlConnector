@@ -1,6 +1,8 @@
-﻿using Dapper;
+﻿#if DAPPER
+using Dapper;
+#endif
 
-namespace SideBySide.New
+namespace SideBySide
 {
     public class TransactionFixture : DatabaseFixture
     {

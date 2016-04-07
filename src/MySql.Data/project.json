@@ -27,25 +27,23 @@
 				"System.Data": "4.0.0.0"
 			}
 		},
-		"dnx46": {
+		"netstandard1.3": {
+			"frameworkAssemblies": {
+			},
 			"dependencies": {
+				"System.Collections": "4.0.11-*",
 				"System.Data.Common": "4.0.1-*",
-				"System.IO": "4.0.11-*",
+				"System.Globalization": "4.0.11-*",
+				"System.IO": "4.1.0-*",
 				"System.Net.Sockets": "4.1.0-*",
+				"System.Runtime": "4.1.0-*",
+				"System.Runtime.Extensions": "4.1.0-*",
 				"System.Security.Cryptography.Algorithms": "4.0.0-*",
-				"System.Runtime": "4.0.21-*",
-				"System.Runtime.Extensions": "4.0.11-*"
-			}
-		},
-		"dnxcore50": {
-			"dependencies": {
-				"System.Data.Common": "4.0.1-*",
-				"System.IO": "4.0.11-*",
-				"System.Net.Sockets": "4.1.0-*",
-				"System.Runtime": "4.0.21-*",
-				"System.Runtime.Extensions": "4.0.11-*",
-				"System.Security.Cryptography.Algorithms": "4.0.0-*"
+				"System.Threading": "4.0.11-*"
 			}
 		}
+	},
+	"runtimes": {
+		"win7-x64" : { }
 	}
 }

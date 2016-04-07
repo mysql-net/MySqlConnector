@@ -1,7 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
 using Xunit;
 
-namespace SideBySide.New
+namespace SideBySide
 {
 	public class QueryTests : IClassFixture<DatabaseFixture>
 	{
