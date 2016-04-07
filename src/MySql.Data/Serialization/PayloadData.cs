@@ -10,5 +10,6 @@ namespace MySql.Data.Serialization
 		}
 
 		public ArraySegment<byte> ArraySegment { get; }
+		public byte HeaderByte => ArraySegment.Array[ArraySegment.Offset];
 	}
 }

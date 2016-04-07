@@ -7,10 +7,12 @@
 		public ServerStatus ServerStatus { get; set; }
 		public int WarningCount { get; set; }
 
+		public static byte Signature = 0x00;
+
 		public static OkPayload Create(PayloadData payload)
 		{
 			var reader = new ByteArrayReader(payload.ArraySegment);
-			reader.ReadByte(0);
+			reader.ReadByte(Signature);
 			var affectedRowCount = checked((int) reader.ReadLengthEncodedInteger());
 			var lastInsertId = checked((long) reader.ReadLengthEncodedInteger());
 			var serverStatus = (ServerStatus) reader.ReadUInt16();

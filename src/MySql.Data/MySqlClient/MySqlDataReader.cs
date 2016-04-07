@@ -53,19 +53,14 @@ namespace MySql.Data.MySqlClient
 			{
 				var payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 
-				var reader = new ByteArrayReader(payload.ArraySegment);
-				var headerByte = reader.ReadByte();
-
-				if (headerByte == 0xFE)
+				if (payload.HeaderByte == EofPayload.Signature)
 				{
-					int warningCount = reader.ReadUInt16();
-					var flags = (ServerStatus) reader.ReadUInt16();
-
-					m_state = flags.HasFlag(ServerStatus.MoreResultsExist) ? State.HasMoreData : State.NoMoreData;
+					var eof = EofPayload.Create(payload);
+					m_state = eof.ServerStatus.HasFlag(ServerStatus.MoreResultsExist) ? State.HasMoreData : State.NoMoreData;
 					return false;
 				}
 
-				reader.Offset--;
+				var reader = new ByteArrayReader(payload.ArraySegment);
 				for (var column = 0; column < m_dataOffsets.Length; column++)
 				{
 					var length = checked((int) ReadFieldLength(reader));
@@ -537,8 +532,8 @@ namespace MySql.Data.MySqlClient
 			{
 				var payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 
-				var firstByte = payload.ArraySegment.Array[payload.ArraySegment.Offset];
-				if (firstByte == 0)
+				var firstByte = payload.HeaderByte;
+				if (firstByte == OkPayload.Signature)
 				{
 					var ok = OkPayload.Create(payload);
 					m_recordsAffected += ok.AffectedRowCount;
