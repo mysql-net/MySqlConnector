@@ -31,5 +31,5 @@ To run the New tests:
 
 ```
 cd tests\SideBySide.New
-dnx test
+dotnet test
 ```

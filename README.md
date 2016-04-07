@@ -35,14 +35,13 @@ This library is licensed under [LGPL v3](COPYING.LESSER.md).
 
 # Building
 
-This project still uses [dnvm/dnu/dnx, etc.](http://docs.asp.net/en/latest/getting-started/installing-on-windows.html) not
-the new [dotnet-cli](http://dotnet.github.io/).
+Install the latest [dotnet-cli](http://dotnet.github.io/).
 
-To build, clone the repo and execute:
+To build and run the tests, clone the repo and execute:
 
 ```
-dnu restore
-dnu build tests\SideBySide.New
+dotnet restore
+dotnet test tests\MySql.Data.Tests
 ```
 
 To run the side-by-side tests, see [the instructions](tests/README.md).
