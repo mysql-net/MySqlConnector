@@ -1,7 +1,7 @@
 ﻿namespace MySql.Data.Serialization
 {
-    internal enum CommandKind
-    {
+	internal enum CommandKind
+	{
 		Quit = 1,
 		InitDatabase = 2,
 		Query = 3,
@@ -10,5 +10,5 @@
 		ExecuteStatement = 23,
 		CloseStatement = 25,
 		ResetConnection = 31,
-    }
+	}
 }

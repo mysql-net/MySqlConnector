@@ -4,7 +4,7 @@ namespace MySql.Data.Serialization
 {
 	[Flags]
 	internal enum ProtocolCapabilities
-    {
+	{
 		/// <summary>
 		/// Use the improved version of Old Password Authentication.
 		/// </summary>

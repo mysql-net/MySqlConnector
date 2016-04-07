@@ -4,7 +4,7 @@ namespace MySql.Data.Serialization
 {
 	// See https://dev.mysql.com/doc/internals/en/com-stmt-prepare-response.html#packet-COM_STMT_PREPARE_OK
 	internal class PrepareStatementOkPayload
-    {
+	{
 		public int ColumnCount { get; }
 		public int ParameterCount { get; }
 		public uint StatementId { get; }

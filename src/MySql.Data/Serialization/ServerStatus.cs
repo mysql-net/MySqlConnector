@@ -3,8 +3,8 @@
 namespace MySql.Data.Serialization
 {
 	[Flags]
-    internal enum ServerStatus : ushort
-    {
+	internal enum ServerStatus : ushort
+	{
 		/// <summary>
 		/// A transaction is active.
 		/// </summary>

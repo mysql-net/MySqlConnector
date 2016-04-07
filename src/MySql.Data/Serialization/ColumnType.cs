@@ -4,7 +4,7 @@
 	/// See <a href="https://dev.mysql.com/doc/internals/en/com-query-response.html#column-type">MySQL documentation</a>.
 	/// </summary>
 	internal enum ColumnType
-    {
+	{
 		Decimal = 0,
 		Tiny = 1,
 		Short = 2,
@@ -34,5 +34,5 @@
 		VarString = 0xFD,
 		String = 0xFE,
 		Geometry = 0xFF,
-    }
+	}
 }

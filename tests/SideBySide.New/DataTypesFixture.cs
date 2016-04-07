@@ -4,12 +4,12 @@ using Dapper;
 
 namespace SideBySide
 {
-    public class DataTypesFixture : DatabaseFixture
-    {
-	    public DataTypesFixture()
-	    {
-		    Connection.Open();
-		    Connection.Execute(@"
+	public class DataTypesFixture : DatabaseFixture
+	{
+		public DataTypesFixture()
+		{
+			Connection.Open();
+			Connection.Execute(@"
 drop schema if exists datatypes;
 
 create schema datatypes;
@@ -146,18 +146,18 @@ values
   (date '0000-00-00', timestamp '0000-00-00 00:00:00' , timestamp '0000-00-00 00:00:00', time '00:00:00', 0),
   (date '2016-04-05', timestamp '2016-04-05 14:03:04.56789', timestamp '2016-04-05 14:03:04.56789', time '14:03:04.56789', 2016);
 ");
-	    }
+		}
 
-	    protected override void Dispose(bool disposing)
-	    {
-		    try
-		    {
-			    // Connection.Execute("drop schema datatypes;");
-		    }
-		    finally
-		    {
-			    base.Dispose(disposing);
-		    }
-	    }
-    }
+		protected override void Dispose(bool disposing)
+		{
+			try
+			{
+				// Connection.Execute("drop schema datatypes;");
+			}
+			finally
+			{
+				base.Dispose(disposing);
+			}
+		}
+	}
 }

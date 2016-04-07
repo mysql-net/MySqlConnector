@@ -3,10 +3,10 @@ using System.Globalization;
 
 namespace MySql.Data.MySqlClient
 {
-    internal sealed class ServerVersion
-    {
-	    public ServerVersion(string versionString)
-	    {
+	internal sealed class ServerVersion
+	{
+		public ServerVersion(string versionString)
+		{
 			OriginalString = versionString;
 
 			var last = 0;
@@ -29,5 +29,5 @@ namespace MySql.Data.MySqlClient
 
 		public string OriginalString { get; }
 		public Version Version { get; }
-    }
+	}
 }
