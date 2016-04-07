@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
-using static System.FormattableString;
 
 namespace MySql.Data.Serialization
 {
@@ -107,7 +106,7 @@ namespace MySql.Data.Serialization
 			{
 				if (optional)
 					return null;
-				throw new InvalidOperationException(Invariant($"Packet received out-of-order. Expected {m_sequenceId & 0xFF}; got {m_buffer[3]}."));
+				throw new InvalidOperationException("Packet received out-of-order. Expected {0}; got {1}.".FormatInvariant(m_sequenceId & 0xFF, m_buffer[3]));
 			}
 			m_sequenceId++;
 

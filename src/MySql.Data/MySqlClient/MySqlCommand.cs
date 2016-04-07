@@ -4,7 +4,6 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.Serialization;
-using static System.FormattableString;
 
 namespace MySql.Data.MySqlClient
 {
@@ -176,7 +175,7 @@ namespace MySql.Data.MySqlClient
 			if (DbConnection == null)
 				throw new InvalidOperationException("Connection property must be non-null.");
 			if (DbConnection.State != ConnectionState.Open && DbConnection.State != ConnectionState.Connecting)
-				throw new InvalidOperationException(Invariant($"Connection must be Open; current state is {DbConnection.State}"));
+				throw new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(DbConnection.State));
 			if (DbTransaction != ((MySqlConnection) DbConnection).CurrentTransaction)
 				throw new InvalidOperationException("The transaction associated with this command is not the connection's active transaction.");
 			if (string.IsNullOrWhiteSpace(CommandText))

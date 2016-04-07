@@ -1,5 +1,4 @@
 ﻿using System;
-using static System.FormattableString;
 
 namespace MySql.Data.MySqlClient
 {
@@ -119,7 +118,7 @@ namespace MySql.Data.MySqlClient
 				else
 				{
 					if (state != State.Beginning && state != State.Statement)
-						throw new InvalidOperationException(Invariant($"Unexpected state: {state}"));
+						throw new InvalidOperationException("Unexpected state: {0}".FormatInvariant(state));
 
 					if (ch == '-')
 						state = State.Hyphen;

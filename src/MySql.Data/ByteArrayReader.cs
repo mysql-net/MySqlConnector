@@ -1,5 +1,4 @@
 ﻿using System;
-using static System.FormattableString;
 
 namespace MySql.Data
 {
@@ -30,7 +29,7 @@ namespace MySql.Data
 			set
 			{
 				if (value < 0 || value > m_maxOffset)
-					throw new ArgumentOutOfRangeException(nameof(value), Invariant($"value must be between 0 and {m_maxOffset}"));
+					throw new ArgumentOutOfRangeException(nameof(value), "value must be between 0 and {0}".FormatInvariant(m_maxOffset));
 				m_offset = value;
 			}
 		}
@@ -44,7 +43,7 @@ namespace MySql.Data
 		public void ReadByte(byte value)
 		{
 			if (ReadByte() != value)
-				throw new FormatException($"Expected to read 0x{value:X2} but got 0x{m_buffer[m_offset - 1]:X2}");
+				throw new FormatException("Expected to read 0x{0:X2} but got 0x{1:X2}".FormatInvariant(value, m_buffer[m_offset - 1]));
 		}
 
 		public short ReadInt16()
@@ -110,7 +109,7 @@ namespace MySql.Data
 			while (index < m_maxOffset && m_buffer[index] != 0)
 				index++;
 			if (index == m_maxOffset)
-				throw new FormatException($"Read past end of buffer looking for NUL.");
+				throw new FormatException("Read past end of buffer looking for NUL.");
 			byte[] substring = new byte[index - m_offset];
 			Array.Copy(m_buffer, m_offset, substring, 0, substring.Length);
 			m_offset = index + 1;

@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.Serialization;
-using static System.FormattableString;
 
 namespace MySql.Data.MySqlClient
 {
@@ -59,7 +58,7 @@ namespace MySql.Data.MySqlClient
 			case IsolationLevel.Chaos:
 			case IsolationLevel.Snapshot:
 			default:
-				throw new NotSupportedException(Invariant($"IsolationLevel.{isolationLevel} is not supported."));
+				throw new NotSupportedException("IsolationLevel.{0} is not supported.".FormatInvariant(isolationLevel));
 			}
 
 			using (var cmd = new MySqlCommand("set session transaction isolation level " + isolationLevelValue + "; start transaction;", this))
@@ -89,7 +88,7 @@ namespace MySql.Data.MySqlClient
 		{
 			VerifyNotDisposed();
 			if (State != ConnectionState.Closed)
-				throw new InvalidOperationException(Invariant($"Cannot Open when State is {State}."));
+				throw new InvalidOperationException("Cannot Open when State is {0}.".FormatInvariant(State));
 
 			if (m_connectionStringBuilder.UseCompression)
 				throw new NotSupportedException("Compression not supported.");

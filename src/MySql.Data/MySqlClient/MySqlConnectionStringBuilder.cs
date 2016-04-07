@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
-using static System.FormattableString;
 
 namespace MySql.Data.MySqlClient
 {
@@ -167,7 +166,7 @@ namespace MySql.Data.MySqlClient
 		{
 			var option = TryGetOptionForKey(key);
 			if (option == null)
-				throw new InvalidOperationException(Invariant($"Option '{key}' not supported."));
+				throw new InvalidOperationException("Option '{0}' not supported.".FormatInvariant(key));
 			return option;
 		}
 

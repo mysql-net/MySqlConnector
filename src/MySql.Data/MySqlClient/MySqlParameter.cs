@@ -3,7 +3,6 @@ using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.Text;
-using static System.FormattableString;
 
 namespace MySql.Data.MySqlClient
 {
@@ -145,7 +144,7 @@ namespace MySql.Data.MySqlClient
 			}
 			else
 			{
-				throw new NotSupportedException(Invariant($"Parameter type {Value.GetType().Name} (DbType: {DbType}) not currently supported. Value: {Value}"));
+				throw new NotSupportedException("Parameter type {0} (DbType: {1}) not currently supported. Value: {2}".FormatInvariant(Value.GetType().Name, DbType, Value));
 			}
 		}
 	}

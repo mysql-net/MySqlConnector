@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using static System.FormattableString;
 
 namespace MySql.Data.MySqlClient
 {
@@ -54,7 +53,7 @@ namespace MySql.Data.MySqlClient
 				if (parameterIndex != -1)
 					DoAppendParameter(parameterIndex, index, length);
 				else if (!m_preparer.m_options.HasFlag(StatementPreparerOptions.AllowUserVariables))
-					throw new MySqlException(Invariant($"Parameter '{parameterName}' must be defined."));
+					throw new MySqlException("Parameter '{0}' must be defined.".FormatInvariant(parameterName));
 			}
 
 			protected override void OnPositionalParameter(int index)

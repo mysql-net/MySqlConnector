@@ -86,6 +86,12 @@ namespace MySql.Data.MySqlClient
 			m_parameters.Insert(index, (MySqlParameter) value);
 		}
 
+#if NET45
+		public override bool IsFixedSize => false;
+		public override bool IsReadOnly => false;
+		public override bool IsSynchronized => false;
+#endif
+
 		public override void Remove(object value)
 		{
 			m_parameters.Remove((MySqlParameter) value);

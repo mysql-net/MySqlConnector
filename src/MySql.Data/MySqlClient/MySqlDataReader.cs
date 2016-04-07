@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.Serialization;
-using static System.FormattableString;
 
 namespace MySql.Data.MySqlClient
 {
@@ -28,7 +27,7 @@ namespace MySql.Data.MySqlClient
 			if (m_state == State.NoMoreData)
 				return false;
 			if (m_state != State.HasMoreData)
-				throw new InvalidOperationException(Invariant($"Invalid state: {m_state}"));
+				throw new InvalidOperationException("Invalid state: {0}".FormatInvariant(m_state));
 
 			Reset();
 			await ReadResultSetHeader(cancellationToken).ConfigureAwait(false);
@@ -108,7 +107,7 @@ namespace MySql.Data.MySqlClient
 				(columnType != ColumnType.String && columnType != ColumnType.VarString && columnType != ColumnType.TinyBlob &&
 				columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob))
 			{
-				throw new InvalidCastException(Invariant($"Can't convert {columnType} to bytes."));
+				throw new InvalidCastException("Can't convert {0} to bytes.".FormatInvariant(columnType));
 			}
 
 			if (buffer == null)
@@ -198,7 +197,7 @@ namespace MySql.Data.MySqlClient
 		{
 			VerifyHasResult();
 			if (ordinal < 0 || ordinal > m_columnDefinitions.Length)
-				throw new ArgumentOutOfRangeException(nameof(ordinal), Invariant($"value must be between 0 and {m_columnDefinitions.Length - 1}"));
+				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}".FormatInvariant(m_columnDefinitions.Length - 1));
 			return m_columnDefinitions[ordinal].Name;
 		}
 
@@ -260,7 +259,7 @@ namespace MySql.Data.MySqlClient
 			}
 
 			// TODO: Correct exception
-			throw new IndexOutOfRangeException(Invariant($"The column name '{name}' does not exist in the result set."));
+			throw new IndexOutOfRangeException("The column name '{0}' does not exist in the result set.".FormatInvariant(name));
 		}
 
 		public override string GetDataTypeName(int ordinal)
@@ -272,7 +271,7 @@ namespace MySql.Data.MySqlClient
 		{
 			VerifyHasResult();
 			if (ordinal < 0 || ordinal > m_columnDefinitions.Length)
-				throw new ArgumentOutOfRangeException(nameof(ordinal), Invariant($"value must be between 0 and {m_columnDefinitions.Length}."));
+				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(m_columnDefinitions.Length));
 
 			var columnDefinition = m_columnDefinitions[ordinal];
 			var isUnsigned = columnDefinition.ColumnFlags.HasFlag(ColumnFlags.Unsigned);
@@ -331,7 +330,7 @@ namespace MySql.Data.MySqlClient
 				return typeof(decimal);
 
 			default:
-				throw new NotImplementedException(Invariant($"GetFieldType for {columnDefinition.ColumnType} is not implemented"));
+				throw new NotImplementedException("GetFieldType for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));
 			}
 		}
 
@@ -339,7 +338,7 @@ namespace MySql.Data.MySqlClient
 		{
 			VerifyRead();
 			if (ordinal < 0 || ordinal > m_columnDefinitions.Length)
-				throw new ArgumentOutOfRangeException(nameof(ordinal), Invariant($"value must be between 0 and {m_columnDefinitions.Length}."));
+				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(m_columnDefinitions.Length));
 
 			if (m_dataOffsets[ordinal] == -1)
 				return DBNull.Value;
@@ -416,7 +415,7 @@ namespace MySql.Data.MySqlClient
 				return decimal.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
 			default:
-				throw new NotImplementedException(Invariant($"Reading {columnDefinition.ColumnType} not implemented"));
+				throw new NotImplementedException("Reading {0} not implemented".FormatInvariant(columnDefinition.ColumnType));
 			}
 		}
 
@@ -437,31 +436,45 @@ namespace MySql.Data.MySqlClient
 
 		public override int VisibleFieldCount => FieldCount;
 
+#if NET45
+		public override DataTable GetSchemaTable()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void Close()
+		{
+			DoClose();
+		}
+#endif
+
 		protected override void Dispose(bool disposing)
 		{
 			try
 			{
 				if (disposing)
-				{
-					Reset();
-					m_session = null;
-
-					if (m_behavior.HasFlag(CommandBehavior.CloseConnection))
-					{
-						var dbConnection = m_command.Connection;
-						m_command.Dispose();
-						dbConnection.Close();
-					}
-
-					m_command = null;
-				}
+					DoClose();
 			}
 			finally
 			{
 				base.Dispose(disposing);
 			}
 		}
-		
+
+		private void DoClose()
+		{
+			Reset();
+			m_session = null;
+
+			if (m_command != null && m_behavior.HasFlag(CommandBehavior.CloseConnection))
+			{
+				var dbConnection = m_command.Connection;
+				m_command.Dispose();
+				dbConnection.Close();
+			}
+			m_command = null;
+		}
+
 		internal static async Task<DbDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, CancellationToken cancellationToken)
 		{
 			var dataReader = new MySqlDataReader(command, behavior);
