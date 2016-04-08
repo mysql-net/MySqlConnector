@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,16 +36,48 @@ namespace MySql.Data.Serialization
 			m_state = State.Closed;
 		}
 
-		public async Task ConnectAsync(string hostname, int port)
+		public async Task<bool> ConnectAsync(IEnumerable<string> hostnames, int port)
 		{
-			m_socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+			foreach (var hostname in hostnames)
+			{
+				IPAddress[] ipAddresses;
+				try
+				{
+					ipAddresses = await Dns.GetHostAddressesAsync(hostname).ConfigureAwait(false);
+				}
+				catch (SocketException)
+				{
+					// name couldn't be resolved
+					continue;
+				}
+
+				// need to try IP Addresses one at a time: https://github.com/dotnet/corefx/issues/5829
+				foreach (var ipAddress in ipAddresses)
+				{
+					Socket socket = null;
+					try
+					{
+						socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 #if NETSTANDARD1_3
-			await m_socket.ConnectAsync(hostname, port).ConfigureAwait(false);
+						await socket.ConnectAsync(ipAddress, port).ConfigureAwait(false);
 #else
-			await Task.Factory.FromAsync(m_socket.BeginConnect, m_socket.EndConnect, hostname, port, null).ConfigureAwait(false);
+						await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, hostname, port, null).ConfigureAwait(false);
 #endif
-			m_transmitter = new PacketTransmitter(m_socket);
-			m_state = State.Connected;
+					}
+					catch (SocketException)
+					{
+						Utility.Dispose(ref socket);
+						continue;
+					}
+
+					m_socket = socket;
+					m_transmitter = new PacketTransmitter(m_socket);
+					m_state = State.Connected;
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		// Starts a new conversation with the server by sending the first packet.

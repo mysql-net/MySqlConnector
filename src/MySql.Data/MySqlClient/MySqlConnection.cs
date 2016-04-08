@@ -103,7 +103,13 @@ namespace MySql.Data.MySqlClient
 				if (m_session == null)
 				{
 					m_session = new MySqlSession(pool);
-					await m_session.ConnectAsync(m_connectionStringBuilder.Server, (int) m_connectionStringBuilder.Port).ConfigureAwait(false);
+					var connected = await m_session.ConnectAsync(m_connectionStringBuilder.Server.Split(','), (int) m_connectionStringBuilder.Port).ConfigureAwait(false);
+					if (!connected)
+					{
+						SetState(ConnectionState.Closed);
+						throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
+					}
+
 					var payload = await m_session.ReceiveAsync(cancellationToken).ConfigureAwait(false);
 					var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
 					var initialHandshake = new InitialHandshakePacket(reader);

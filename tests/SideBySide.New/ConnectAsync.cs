@@ -54,6 +54,28 @@ namespace SideBySide
 			}
 		}
 
+#if BASELINE
+		[Fact(Skip = "Doesn't implement \"Multiple hosts can be specified separated by commas.\" behavior as documented.")]
+#else
+		[Fact]
+#endif
+		public async Task ConnectMultipleHostNames()
+		{
+			var csb = new MySqlConnectionStringBuilder
+			{
+				Server = "www.mysql.com,invalid.example.net,localhost",
+				Port = 3306,
+				UserID = Constants.UserName,
+				Password = Constants.Password,
+			};
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				Assert.Equal(ConnectionState.Closed, connection.State);
+				await connection.OpenAsync();
+				Assert.Equal(ConnectionState.Open, connection.State);
+			}
+		}
+
 		[Fact]
 		public async Task ServerVersion()
 		{
