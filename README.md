@@ -13,6 +13,12 @@ databases from managed code, including support for libraries such as
 The official ADO.NET wrapper for MySQL can be found at
 [https://github.com/mysql/mysql-connector-net](https://github.com/mysql/mysql-connector-net).
 
+## Build Status
+
+Ubuntu 14.04 | Windows x64
+--- | ---
+[![Travis](https://img.shields.io/travis/bgrainger/MySql.Data.svg)](https://travis-ci.org/bgrainger/MySql.Data) | (none)
+
 ## Goals
 
 The goals of this project are:
