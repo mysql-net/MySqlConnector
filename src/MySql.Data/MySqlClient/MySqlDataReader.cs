@@ -40,36 +40,51 @@ namespace MySql.Data.MySqlClient
 			return ReadAsync(CancellationToken.None).GetAwaiter().GetResult();
 		}
 
-		public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
+		public override Task<bool> ReadAsync(CancellationToken cancellationToken)
 		{
 			VerifyNotDisposed();
 
 			// if we've already read past the end of this resultset, Read returns false
 			if (m_state == State.HasMoreData || m_state == State.NoMoreData)
-				return false;
+				return s_falseTask;
 
 			if (m_state != State.AlreadyReadFirstRow)
 			{
-				var payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
-
-				if (payload.HeaderByte == EofPayload.Signature)
-				{
-					var eof = EofPayload.Create(payload);
-					m_state = eof.ServerStatus.HasFlag(ServerStatus.MoreResultsExist) ? State.HasMoreData : State.NoMoreData;
-					return false;
-				}
-
-				var reader = new ByteArrayReader(payload.ArraySegment);
-				for (var column = 0; column < m_dataOffsets.Length; column++)
-				{
-					var length = checked((int) ReadFieldLength(reader));
-					m_dataLengths[column] = length == -1 ? 0 : length;
-					m_dataOffsets[column] = length == -1 ? -1 : reader.Offset;
-					reader.Offset += m_dataLengths[column];
-				}
-
-				m_currentRow = payload.ArraySegment.Array;
+				var payloadTask = m_session.ReceiveReplyAsync(cancellationToken);
+				if (payloadTask.Status == TaskStatus.RanToCompletion)
+					return ReadAsyncRemainder(payloadTask.Result) ? s_trueTask : s_falseTask;
+				return ReadAsyncAwaited(payloadTask);
 			}
+
+			m_state = State.ReadingRows;
+			return s_trueTask;
+		}
+
+		private async Task<bool> ReadAsyncAwaited(Task<PayloadData> payloadTask)
+		{
+			var payload = await payloadTask.ConfigureAwait(false);
+			return ReadAsyncRemainder(payload);
+		}
+
+		private bool ReadAsyncRemainder(PayloadData payload)
+		{
+			if (payload.HeaderByte == EofPayload.Signature)
+			{
+				var eof = EofPayload.Create(payload);
+				m_state = eof.ServerStatus.HasFlag(ServerStatus.MoreResultsExist) ? State.HasMoreData : State.NoMoreData;
+				return false;
+			}
+
+			var reader = new ByteArrayReader(payload.ArraySegment);
+			for (var column = 0; column < m_dataOffsets.Length; column++)
+			{
+				var length = checked((int) ReadFieldLength(reader));
+				m_dataLengths[column] = length == -1 ? 0 : length;
+				m_dataOffsets[column] = length == -1 ? -1 : reader.Offset;
+				reader.Offset += m_dataLengths[column];
+			}
+
+			m_currentRow = payload.ArraySegment.Array;
 
 			m_state = State.ReadingRows;
 			return true;
@@ -639,6 +654,9 @@ namespace MySql.Data.MySqlClient
 			HasMoreData,
 			NoMoreData,
 		}
+
+		static readonly Task<bool> s_falseTask = Task.FromResult(false);
+		static readonly Task<bool> s_trueTask = Task.FromResult(true);
 
 		MySqlCommand m_command;
 		MySqlSession m_session;
