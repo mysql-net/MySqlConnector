@@ -126,16 +126,26 @@ namespace MySql.Data.MySqlClient
 
 		internal string GetConnectionString(bool includePassword)
 		{
+			var connectionString = ConnectionString;
 			if (includePassword)
-				return ConnectionString;
+				return connectionString;
 
-			var csb = new MySqlConnectionStringBuilder(ConnectionString);
-			foreach (string key in Keys)
-				foreach (var passwordKey in MySqlConnectionStringOption.Password.Keys)
-					if (string.Equals(key, passwordKey, StringComparison.OrdinalIgnoreCase)) 
-						csb.Remove(key);
-			return csb.ConnectionString;
+			if (m_cachedConnectionString != connectionString)
+			{
+				var csb = new MySqlConnectionStringBuilder(connectionString);
+				foreach (string key in Keys)
+					foreach (var passwordKey in MySqlConnectionStringOption.Password.Keys)
+						if (string.Equals(key, passwordKey, StringComparison.OrdinalIgnoreCase))
+							csb.Remove(key);
+				m_cachedConnectionStringWithoutPassword = csb.ConnectionString;
+				m_cachedConnectionString = connectionString;
+			}
+
+			return m_cachedConnectionStringWithoutPassword;
 		}
+
+		string m_cachedConnectionString;
+		string m_cachedConnectionStringWithoutPassword;
 	}
 
 	internal abstract class MySqlConnectionStringOption
