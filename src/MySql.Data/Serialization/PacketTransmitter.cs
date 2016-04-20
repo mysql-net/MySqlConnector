@@ -82,10 +82,18 @@ namespace MySql.Data.Serialization
 
 		private async Task<PayloadData> DoReceiveAsync(CancellationToken cancellationToken, bool optional = false)
 		{
+			if (m_end - m_offset < 4)
+			{
+				if (m_end - m_offset > 0)
+					Array.Copy(m_buffer, m_offset, m_buffer, 0, m_end - m_offset);
+				m_end -= m_offset;
+				m_offset = 0;
+			}
+
 			// read packet header
-			int offset = 0;
-			int count = 4;
-			while (count > 0)
+			int offset = m_offset;
+			int count = m_buffer.Length - m_end;
+			while (m_end - m_offset < 4)
 			{
 				m_socketAwaitable.EventArgs.SetBuffer(offset, count);
 				await m_socket.ReceiveAsync(m_socketAwaitable);
@@ -97,30 +105,46 @@ namespace MySql.Data.Serialization
 					throw new EndOfStreamException();
 				}
 				offset += bytesRead;
+				m_end += bytesRead;
 				count -= bytesRead;
 			}
 
 			// decode packet header
-			int payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, 0, 3);
-			if (m_buffer[3] != (byte) (m_sequenceId & 0xFF))
+			int payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, m_offset, 3);
+			if (m_buffer[m_offset + 3] != (byte) (m_sequenceId & 0xFF))
 			{
 				if (optional)
 					return null;
 				throw new InvalidOperationException("Packet received out-of-order. Expected {0}; got {1}.".FormatInvariant(m_sequenceId & 0xFF, m_buffer[3]));
 			}
 			m_sequenceId++;
+			m_offset += 4;
 
-			// allocate a larger buffer if necessary
-			byte[] readData = m_buffer;
-			if (payloadLength > m_buffer.Length)
+			if (m_end - m_offset >= payloadLength)
 			{
-				readData = new byte[payloadLength];
-				m_socketAwaitable.EventArgs.SetBuffer(readData, 0, 0);
+				// check for error
+				if (m_buffer[m_offset] == 0xFF)
+				{
+					var errorCode = (int) BitConverter.ToUInt16(m_buffer, m_offset + 1);
+					var sqlState = Encoding.ASCII.GetString(m_buffer, m_offset + 4, 5);
+					var message = Encoding.UTF8.GetString(m_buffer, m_offset + 9, payloadLength - 9);
+					throw new MySqlException(errorCode, sqlState, message);
+				}
+
+				offset = m_offset;
+				m_offset += payloadLength;
+				return new PayloadData(new ArraySegment<byte>(m_buffer, offset, payloadLength));
 			}
 
+			// allocate a larger buffer if necessary
+			var readData = new byte[payloadLength];
+			Array.Copy(m_buffer, m_offset, readData, 0, m_end - m_offset);
+			m_socketAwaitable.EventArgs.SetBuffer(readData, 0, 0);
+
 			// read payload
-			offset = 0;
-			count = payloadLength;
+			offset = m_end - m_offset;
+			count = payloadLength - offset;
+			m_offset = m_end;
 			while (count > 0)
 			{
 				m_socketAwaitable.EventArgs.SetBuffer(offset, count);
@@ -133,8 +157,7 @@ namespace MySql.Data.Serialization
 			}
 
 			// switch back to original buffer if a larger one was allocated
-			if (payloadLength > m_buffer.Length)
-				m_socketAwaitable.EventArgs.SetBuffer(m_buffer, 0, 0);
+			m_socketAwaitable.EventArgs.SetBuffer(m_buffer, 0, 0);
 
 			// check for error
 			if (readData[0] == 0xFF)
@@ -152,5 +175,7 @@ namespace MySql.Data.Serialization
 		readonly SocketAwaitable m_socketAwaitable;
 		int m_sequenceId;
 		readonly byte[] m_buffer;
+		int m_offset;
+		int m_end;
 	}
 }
