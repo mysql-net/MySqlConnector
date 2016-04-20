@@ -105,35 +105,45 @@ namespace MySql.Data.Serialization
 				throw new InvalidOperationException("MySqlSession is not connected.");
 		}
 
-		private async Task TryAsync<TArg>(Func<TArg, CancellationToken, Task> func, TArg arg, CancellationToken cancellationToken)
+		private Task TryAsync<TArg>(Func<TArg, CancellationToken, Task> func, TArg arg, CancellationToken cancellationToken)
 		{
 			VerifyConnected();
-			try
-			{
-				await func(arg, cancellationToken).ConfigureAwait(false);
-			}
-			catch (Exception) when (SetFailed())
-			{
-			}
+			var task = func(arg, cancellationToken);
+			if (task.Status == TaskStatus.RanToCompletion)
+				return task;
+
+			return task.ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 		}
 
-		private async Task<TResult> TryAsync<TResult>(Func<CancellationToken, Task<TResult>> func, CancellationToken cancellationToken)
+		private void TryAsyncContinuation(Task task)
+		{
+			if (task.IsFaulted)
+				SetFailed();
+		}
+
+		private Task<TResult> TryAsync<TResult>(Func<CancellationToken, Task<TResult>> func, CancellationToken cancellationToken)
 		{
 			VerifyConnected();
-			try
+			var task = func(cancellationToken);
+			if (task.Status == TaskStatus.RanToCompletion)
+				return task;
+
+			return task.ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+		}
+
+		private TResult TryAsyncContinuation<TResult>(Task<TResult> task)
+		{
+			if (task.IsFaulted)
 			{
-				return await func(cancellationToken).ConfigureAwait(false);
-			}
-			catch (Exception) when (SetFailed())
-			{
+				SetFailed();
 				return default(TResult);
 			}
+			return task.Result;
 		}
 
-		private bool SetFailed()
+		private void SetFailed()
 		{
 			m_state = State.Failed;
-			return false;
 		}
 
 		private enum State
