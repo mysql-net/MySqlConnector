@@ -165,7 +165,8 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public override string ConnectionString {
+		public override string ConnectionString
+		{
 			get
 			{
 				return m_connectionStringBuilder.GetConnectionString(!m_hasBeenOpened || m_connectionStringBuilder.PersistSecurityInfo);
