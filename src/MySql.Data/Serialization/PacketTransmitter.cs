@@ -137,7 +137,9 @@ namespace MySql.Data.Serialization
 			}
 
 			// allocate a larger buffer if necessary
-			var readData = new byte[payloadLength];
+			var readData = m_buffer;
+			if (payloadLength > m_buffer.Length)
+				readData = new byte[payloadLength];
 			Array.Copy(m_buffer, m_offset, readData, 0, m_end - m_offset);
 			m_socketAwaitable.EventArgs.SetBuffer(readData, 0, 0);
 
@@ -157,7 +159,8 @@ namespace MySql.Data.Serialization
 			}
 
 			// switch back to original buffer if a larger one was allocated
-			m_socketAwaitable.EventArgs.SetBuffer(m_buffer, 0, 0);
+			if (payloadLength > m_buffer.Length)
+				m_socketAwaitable.EventArgs.SetBuffer(m_buffer, 0, 0);
 
 			// check for error
 			if (readData[0] == 0xFF)
