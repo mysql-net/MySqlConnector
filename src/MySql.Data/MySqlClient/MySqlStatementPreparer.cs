@@ -46,6 +46,11 @@ namespace MySql.Data.MySqlClient
 
 			public StringBuilder Output { get; }
 
+			protected override void OnBeforeParse(string sql)
+			{
+				Output.Capacity = sql.Length;
+			}
+
 			protected override void OnNamedParameter(int index, int length)
 			{
 				var parameterName = m_preparer.m_commandText.Substring(index, length);

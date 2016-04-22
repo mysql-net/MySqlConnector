@@ -9,6 +9,8 @@ namespace MySql.Data.MySqlClient
 			if (sql == null)
 				throw new ArgumentNullException(nameof(sql));
 
+			OnBeforeParse(sql);
+
 			int statementCount = 0;
 			int parameterStartIndex = -1;
 
@@ -160,6 +162,10 @@ namespace MySql.Data.MySqlClient
 			IncrementStatementCount(state, ref statementCount);
 			OnParsed();
 			return statementCount;
+		}
+
+		protected virtual void OnBeforeParse(string sql)
+		{
 		}
 
 		protected virtual void OnPositionalParameter(int index)
