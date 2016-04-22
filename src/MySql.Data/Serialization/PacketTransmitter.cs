@@ -63,7 +63,7 @@ namespace MySql.Data.Serialization
 
 				if (bytesToSend <= m_buffer.Length - 4)
 				{
-					Array.Copy(data.Array, data.Offset, m_buffer, 4, bytesToSend);
+					Buffer.BlockCopy(data.Array, data.Offset, m_buffer, 4, bytesToSend);
 					m_socketAwaitable.EventArgs.SetBuffer(0, bytesToSend + 4);
 					await m_socket.SendAsync(m_socketAwaitable);
 				}
@@ -85,7 +85,7 @@ namespace MySql.Data.Serialization
 			if (m_end - m_offset < 4)
 			{
 				if (m_end - m_offset > 0)
-					Array.Copy(m_buffer, m_offset, m_buffer, 0, m_end - m_offset);
+					Buffer.BlockCopy(m_buffer, m_offset, m_buffer, 0, m_end - m_offset);
 				m_end -= m_offset;
 				m_offset = 0;
 			}
@@ -140,7 +140,7 @@ namespace MySql.Data.Serialization
 			var readData = m_buffer;
 			if (payloadLength > m_buffer.Length)
 				readData = new byte[payloadLength];
-			Array.Copy(m_buffer, m_offset, readData, 0, m_end - m_offset);
+			Buffer.BlockCopy(m_buffer, m_offset, readData, 0, m_end - m_offset);
 			m_socketAwaitable.EventArgs.SetBuffer(readData, 0, 0);
 
 			// read payload

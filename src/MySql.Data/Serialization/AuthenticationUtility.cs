@@ -19,13 +19,13 @@ namespace MySql.Data.Serialization
 			using (var sha1 = SHA1.Create())
 			{
 				var combined = new byte[40];
-				Array.Copy(challenge, offset, combined, 0, 20);
+				Buffer.BlockCopy(challenge, offset, combined, 0, 20);
 
 				var passwordBytes = Encoding.UTF8.GetBytes(password);
 				var hashedPassword = sha1.ComputeHash(passwordBytes);
 
 				var doubleHashedPassword = sha1.ComputeHash(hashedPassword);
-				Array.Copy(doubleHashedPassword, 0, combined, 20, 20);
+				Buffer.BlockCopy(doubleHashedPassword, 0, combined, 20, 20);
 
 				var xorBytes = sha1.ComputeHash(combined);
 				for (int i = 0; i < hashedPassword.Length; i++)

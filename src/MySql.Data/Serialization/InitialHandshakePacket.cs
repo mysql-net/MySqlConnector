@@ -31,8 +31,8 @@ namespace MySql.Data.Serialization
 				{
 					var authPluginData2 = reader.ReadByteString(Math.Max(13, authPluginDataLength - 8));
 					var concatenated = new byte[AuthPluginData.Length + authPluginData2.Length];
-					Array.Copy(AuthPluginData, concatenated, AuthPluginData.Length);
-					Array.Copy(authPluginData2, 0, concatenated, AuthPluginData.Length, authPluginData2.Length);
+					Buffer.BlockCopy(AuthPluginData, 0, concatenated, 0, AuthPluginData.Length);
+					Buffer.BlockCopy(authPluginData2, 0, concatenated, AuthPluginData.Length, authPluginData2.Length);
 					AuthPluginData = concatenated;
 				}
 				if (ProtocolCapabilities.HasFlag(ProtocolCapabilities.PluginAuth))

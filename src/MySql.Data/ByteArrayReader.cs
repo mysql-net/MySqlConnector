@@ -111,7 +111,7 @@ namespace MySql.Data
 			if (index == m_maxOffset)
 				throw new FormatException("Read past end of buffer looking for NUL.");
 			byte[] substring = new byte[index - m_offset];
-			Array.Copy(m_buffer, m_offset, substring, 0, substring.Length);
+			Buffer.BlockCopy(m_buffer, m_offset, substring, 0, substring.Length);
 			m_offset = index + 1;
 			return substring;
 		}
@@ -120,7 +120,7 @@ namespace MySql.Data
 		{
 			VerifyRead(length);
 			var result = new byte[length];
-			Array.Copy(m_buffer, m_offset, result, 0, result.Length);
+			Buffer.BlockCopy(m_buffer, m_offset, result, 0, result.Length);
 			m_offset += length;
 			return result;
 		}

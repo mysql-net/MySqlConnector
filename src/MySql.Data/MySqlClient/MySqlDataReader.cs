@@ -136,7 +136,7 @@ namespace MySql.Data.MySqlClient
 				throw new ArgumentException("bufferOffset + length cannot exceed buffer.Length", nameof(length));
 
 			int lengthToCopy = Math.Min(m_dataLengths[ordinal] - (int) dataOffset, length);
-			Array.Copy(m_currentRow, checked((int) (m_dataOffsets[ordinal] + dataOffset)), buffer, bufferOffset, lengthToCopy);
+			Buffer.BlockCopy(m_currentRow, checked((int) (m_dataOffsets[ordinal] + dataOffset)), buffer, bufferOffset, lengthToCopy);
 			return lengthToCopy;
 		}
 
@@ -399,7 +399,7 @@ namespace MySql.Data.MySqlClient
 				if (columnDefinition.CharacterSet == CharacterSet.Binary)
 				{
 					var result = new byte[m_dataLengths[ordinal]];
-					Array.Copy(m_currentRow, m_dataOffsets[ordinal], result, 0, result.Length);
+					Buffer.BlockCopy(m_currentRow, m_dataOffsets[ordinal], result, 0, result.Length);
 					return Connection.OldGuids && columnDefinition.ColumnLength == 16 ? (object) new Guid(result) : result;
 				}
 				return Encoding.UTF8.GetString(data);
