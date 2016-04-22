@@ -91,7 +91,7 @@ namespace MySql.Data.Serialization
 			}
 
 			// read packet header
-			int offset = m_offset;
+			int offset = m_end;
 			int count = m_buffer.Length - m_end;
 			while (m_end - m_offset < 4)
 			{
