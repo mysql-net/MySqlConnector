@@ -139,15 +139,18 @@ namespace MySql.Data.Serialization
 			// allocate a larger buffer if necessary
 			var readData = m_buffer;
 			if (payloadLength > m_buffer.Length)
+			{
 				readData = new byte[payloadLength];
+				m_socketAwaitable.EventArgs.SetBuffer(readData, 0, 0);
+			}
 			Buffer.BlockCopy(m_buffer, m_offset, readData, 0, m_end - m_offset);
-			m_socketAwaitable.EventArgs.SetBuffer(readData, 0, 0);
+			m_end -= m_offset;
+			m_offset = 0;
 
 			// read payload
-			offset = m_end - m_offset;
-			count = payloadLength - offset;
-			m_offset = m_end;
-			while (count > 0)
+			offset = m_end;
+			count = readData.Length - m_end;
+			while (m_end < payloadLength)
 			{
 				m_socketAwaitable.EventArgs.SetBuffer(offset, count);
 				await m_socket.ReceiveAsync(m_socketAwaitable);
@@ -155,12 +158,16 @@ namespace MySql.Data.Serialization
 				if (bytesRead <= 0)
 					throw new EndOfStreamException();
 				offset += bytesRead;
+				m_end += bytesRead;
 				count -= bytesRead;
 			}
 
 			// switch back to original buffer if a larger one was allocated
 			if (payloadLength > m_buffer.Length)
+			{
 				m_socketAwaitable.EventArgs.SetBuffer(m_buffer, 0, 0);
+				m_end = 0;
+			}
 
 			// check for error
 			if (readData[0] == 0xFF)
@@ -170,6 +177,9 @@ namespace MySql.Data.Serialization
 				var message = Encoding.UTF8.GetString(readData, 9, payloadLength - 9);
 				throw new MySqlException(errorCode, sqlState, message);
 			}
+
+			if (payloadLength <= m_buffer.Length)
+				m_offset = payloadLength;
 
 			return new PayloadData(new ArraySegment<byte>(readData, 0, payloadLength));
 		}
