@@ -22,6 +22,11 @@
 		"warningsAsErrors": true
 	},
 	"frameworks": {
+		"net45": {
+			"frameworkAssemblies": {
+				"System.Data": "4.0.0.0",
+			}
+		},
 		"netstandard1.3": {
 			"frameworkAssemblies": {
 			},
