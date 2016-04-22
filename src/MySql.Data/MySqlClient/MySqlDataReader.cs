@@ -51,9 +51,9 @@ namespace MySql.Data.MySqlClient
 			if (m_state != State.AlreadyReadFirstRow)
 			{
 				var payloadTask = m_session.ReceiveReplyAsync(cancellationToken);
-				if (payloadTask.Status == TaskStatus.RanToCompletion)
+				if (payloadTask.IsCompletedSuccessfully)
 					return ReadAsyncRemainder(payloadTask.Result) ? s_trueTask : s_falseTask;
-				return ReadAsyncAwaited(payloadTask);
+				return ReadAsyncAwaited(payloadTask.AsTask());
 			}
 
 			m_state = State.ReadingRows;

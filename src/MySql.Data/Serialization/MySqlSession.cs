@@ -24,7 +24,7 @@ namespace MySql.Data.Serialization
 			if (m_state == State.Connected)
 			{
 				m_transmitter.SendAsync(QuitPayload.Create(), CancellationToken.None).Wait();
-				m_transmitter.TryReceiveReplyAsync(CancellationToken.None).Wait();
+				m_transmitter.TryReceiveReplyAsync(CancellationToken.None).AsTask().Wait();
 			}
 			m_transmitter = null;
 			if (m_socket != null)
@@ -85,11 +85,11 @@ namespace MySql.Data.Serialization
 			=> TryAsync(m_transmitter.SendAsync, payload, cancellationToken);
 
 		// Starts a new conversation with the server by receiving the first packet.
-		public Task<PayloadData> ReceiveAsync(CancellationToken cancellationToken)
+		public ValueTask<PayloadData> ReceiveAsync(CancellationToken cancellationToken)
 			=> TryAsync(m_transmitter.ReceiveAsync, cancellationToken);
 
 		// Continues a conversation with the server by receiving a response to a packet sent with 'Send' or 'SendReply'.
-		public Task<PayloadData> ReceiveReplyAsync(CancellationToken cancellationToken)
+		public ValueTask<PayloadData> ReceiveReplyAsync(CancellationToken cancellationToken)
 			=> TryAsync(m_transmitter.ReceiveReplyAsync, cancellationToken);
 
 		// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
@@ -121,14 +121,14 @@ namespace MySql.Data.Serialization
 				SetFailed();
 		}
 
-		private Task<TResult> TryAsync<TResult>(Func<CancellationToken, Task<TResult>> func, CancellationToken cancellationToken)
+		private ValueTask<TResult> TryAsync<TResult>(Func<CancellationToken, ValueTask<TResult>> func, CancellationToken cancellationToken)
 		{
 			VerifyConnected();
 			var task = func(cancellationToken);
-			if (task.Status == TaskStatus.RanToCompletion)
+			if (task.IsCompletedSuccessfully)
 				return task;
 
-			return task.ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+			return task.AsTask().ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 		}
 
 		private TResult TryAsyncContinuation<TResult>(Task<TResult> task)

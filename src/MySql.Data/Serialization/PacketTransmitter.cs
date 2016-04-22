@@ -27,18 +27,18 @@ namespace MySql.Data.Serialization
 		}
 
 		// Starts a new conversation with the server by receiving the first packet.
-		public Task<PayloadData> ReceiveAsync(CancellationToken cancellationToken)
+		public ValueTask<PayloadData> ReceiveAsync(CancellationToken cancellationToken)
 		{
 			m_sequenceId = 0;
 			return DoReceiveAsync(cancellationToken);
 		}
 
 		// Continues a conversation with the server by receiving a response to a packet sent with 'Send' or 'SendReply'.
-		public Task<PayloadData> ReceiveReplyAsync(CancellationToken cancellationToken)
+		public ValueTask<PayloadData> ReceiveReplyAsync(CancellationToken cancellationToken)
 			=> DoReceiveAsync(cancellationToken);
 
 		// Continues a conversation with the server by receiving a response to a packet sent with 'Send' or 'SendReply'.
-		public Task<PayloadData> TryReceiveReplyAsync(CancellationToken cancellationToken)
+		public ValueTask<PayloadData> TryReceiveReplyAsync(CancellationToken cancellationToken)
 			=> DoReceiveAsync(cancellationToken, optional: true);
 
 		// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
@@ -80,7 +80,42 @@ namespace MySql.Data.Serialization
 			} while (bytesToSend == maxBytesToSend);
 		}
 
-		private async Task<PayloadData> DoReceiveAsync(CancellationToken cancellationToken, bool optional = false)
+		private ValueTask<PayloadData> DoReceiveAsync(CancellationToken cancellationToken, bool optional = false)
+		{
+			if (m_end - m_offset > 4)
+			{
+				int payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, m_offset, 3);
+				if (m_end - m_offset >= payloadLength)
+				{
+					if (m_buffer[m_offset + 3] != (byte) (m_sequenceId & 0xFF))
+					{
+						if (optional)
+							return new ValueTask<PayloadData>(default(PayloadData));
+						throw new InvalidOperationException("Packet received out-of-order. Expected {0}; got {1}.".FormatInvariant(m_sequenceId & 0xFF, m_buffer[3]));
+					}
+					m_sequenceId++;
+					m_offset += 4;
+
+					var offset = m_offset;
+					m_offset += payloadLength;
+
+					// check for error
+					if (m_buffer[offset] == 0xFF)
+					{
+						var errorCode = (int) BitConverter.ToUInt16(m_buffer, offset + 1);
+						var sqlState = Encoding.ASCII.GetString(m_buffer, offset + 4, 5);
+						var message = Encoding.UTF8.GetString(m_buffer, offset + 9, payloadLength - 9);
+						throw new MySqlException(errorCode, sqlState, message);
+					}
+
+					return new ValueTask<PayloadData>(new PayloadData(new ArraySegment<byte>(m_buffer, offset, payloadLength)));
+				}
+			}
+
+			return new ValueTask<PayloadData>(DoReceiveAsync2(cancellationToken, optional));
+		}
+
+		private async Task<PayloadData> DoReceiveAsync2(CancellationToken cancellationToken, bool optional = false)
 		{
 			if (m_end - m_offset < 4)
 			{
