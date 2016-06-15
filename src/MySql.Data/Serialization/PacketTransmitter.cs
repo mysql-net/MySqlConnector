@@ -99,15 +99,6 @@ namespace MySql.Data.Serialization
 					var offset = m_offset;
 					m_offset += payloadLength;
 
-					// check for error
-					if (m_buffer[offset] == 0xFF)
-					{
-						var errorCode = (int) BitConverter.ToUInt16(m_buffer, offset + 1);
-						var sqlState = Encoding.ASCII.GetString(m_buffer, offset + 4, 5);
-						var message = Encoding.UTF8.GetString(m_buffer, offset + 9, payloadLength - 9);
-						throw new MySqlException(errorCode, sqlState, message);
-					}
-
 					return new ValueTask<PayloadData>(new PayloadData(new ArraySegment<byte>(m_buffer, offset, payloadLength)));
 				}
 			}
@@ -157,15 +148,6 @@ namespace MySql.Data.Serialization
 
 			if (m_end - m_offset >= payloadLength)
 			{
-				// check for error
-				if (m_buffer[m_offset] == 0xFF)
-				{
-					var errorCode = (int) BitConverter.ToUInt16(m_buffer, m_offset + 1);
-					var sqlState = Encoding.ASCII.GetString(m_buffer, m_offset + 4, 5);
-					var message = Encoding.UTF8.GetString(m_buffer, m_offset + 9, payloadLength - 9);
-					throw new MySqlException(errorCode, sqlState, message);
-				}
-
 				offset = m_offset;
 				m_offset += payloadLength;
 				return new PayloadData(new ArraySegment<byte>(m_buffer, offset, payloadLength));
@@ -202,15 +184,6 @@ namespace MySql.Data.Serialization
 			{
 				m_socketAwaitable.EventArgs.SetBuffer(m_buffer, 0, 0);
 				m_end = 0;
-			}
-
-			// check for error
-			if (readData[0] == 0xFF)
-			{
-				var errorCode = (int) BitConverter.ToUInt16(readData, 1);
-				var sqlState = Encoding.ASCII.GetString(readData, 4, 5);
-				var message = Encoding.UTF8.GetString(readData, 9, payloadLength - 9);
-				throw new MySqlException(errorCode, sqlState, message);
 			}
 
 			if (payloadLength <= m_buffer.Length)

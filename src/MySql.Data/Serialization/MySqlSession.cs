@@ -128,21 +128,35 @@ namespace MySql.Data.Serialization
 				SetFailed();
 		}
 
-		private ValueTask<TResult> TryAsync<TResult>(Func<CancellationToken, ValueTask<TResult>> func, CancellationToken cancellationToken)
+		private ValueTask<PayloadData> TryAsync(Func<CancellationToken, ValueTask<PayloadData>> func, CancellationToken cancellationToken)
 		{
 			VerifyConnected();
 			var task = func(cancellationToken);
 			if (task.IsCompletedSuccessfully)
-				return task;
+			{
+				if (task.Result.HeaderByte != ErrorPayload.Signature)
+					return task;
+
+				var exception = ErrorPayload.Create(task.Result).ToException();
+#if NETSTANDARD1_3
+				return Task.FromException<PayloadData>(exception);
+#else
+				var tcs = new TaskCompletionSource<PayloadData>();
+				tcs.SetException(exception);
+				return tcs.Task;
+#endif
+			}
 
 			return task.AsTask().ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 		}
 
-		private TResult TryAsyncContinuation<TResult>(Task<TResult> task)
+		private PayloadData TryAsyncContinuation(Task<PayloadData> task)
 		{
 			if (task.IsFaulted)
 				SetFailed();
-			return task.GetAwaiter().GetResult();
+			var payload = task.GetAwaiter().GetResult();
+			payload.ThrowIfError();
+			return payload;
 		}
 
 		private void SetFailed()
