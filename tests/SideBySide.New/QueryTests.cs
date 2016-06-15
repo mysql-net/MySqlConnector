@@ -13,7 +13,8 @@ namespace SideBySide
 		[Fact]
 		public void WithoutUserVariables()
 		{
-			var csb = new MySqlConnectionStringBuilder(m_database.Connection.ConnectionString) { AllowUserVariables = false };
+			var csb = Constants.CreateConnectionStringBuilder();
+			csb.AllowUserVariables = false;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				connection.Open();
@@ -26,7 +27,8 @@ namespace SideBySide
 		[Fact]
 		public void WithUserVariables()
 		{
-			var csb = new MySqlConnectionStringBuilder(m_database.Connection.ConnectionString) { AllowUserVariables = true };
+			var csb = Constants.CreateConnectionStringBuilder();
+			csb.AllowUserVariables = true;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				connection.Open();
