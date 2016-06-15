@@ -85,7 +85,7 @@ namespace MySql.Data.Serialization
 			if (m_end - m_offset > 4)
 			{
 				int payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, m_offset, 3);
-				if (m_end - m_offset >= payloadLength)
+				if (m_end - m_offset >= payloadLength + 4)
 				{
 					if (m_buffer[m_offset + 3] != (byte) (m_sequenceId & 0xFF))
 					{
