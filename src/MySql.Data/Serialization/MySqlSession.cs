@@ -134,11 +134,8 @@ namespace MySql.Data.Serialization
 		private TResult TryAsyncContinuation<TResult>(Task<TResult> task)
 		{
 			if (task.IsFaulted)
-			{
 				SetFailed();
-				return default(TResult);
-			}
-			return task.Result;
+			return task.GetAwaiter().GetResult();
 		}
 
 		private void SetFailed()

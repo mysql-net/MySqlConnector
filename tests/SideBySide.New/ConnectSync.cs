@@ -42,6 +42,18 @@ namespace SideBySide
 			}
 		}
 
+		[Fact]
+		public void ConnectBadPassword()
+		{
+			var csb = Constants.CreateConnectionStringBuilder();
+			csb.Password = "wrong";
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				Assert.Throws<MySqlException>(() => connection.Open());
+				Assert.Equal(ConnectionState.Closed, connection.State);
+			}
+		}
+
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]

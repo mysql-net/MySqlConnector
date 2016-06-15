@@ -44,6 +44,18 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public async Task ConnectBadPassword()
+		{
+			var csb = Constants.CreateConnectionStringBuilder();
+			csb.Password = "wrong";
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());
+				Assert.Equal(ConnectionState.Closed, connection.State);
+			}
+		}
+
+		[Fact]
 		public async Task State()
 		{
 			using (var connection = new MySqlConnection(m_database.Connection.ConnectionString))

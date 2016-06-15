@@ -153,6 +153,11 @@ namespace MySql.Data.MySqlClient
 				SetState(ConnectionState.Open);
 				success = true;
 			}
+			catch (MySqlException)
+			{
+				SetState(ConnectionState.Closed);
+				throw;
+			}
 			catch (SocketException ex)
 			{
 				SetState(ConnectionState.Closed);
