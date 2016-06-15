@@ -23,8 +23,15 @@ namespace MySql.Data.Serialization
 		{
 			if (m_state == State.Connected)
 			{
-				m_transmitter.SendAsync(QuitPayload.Create(), CancellationToken.None).Wait();
-				m_transmitter.TryReceiveReplyAsync(CancellationToken.None).AsTask().Wait();
+				try
+				{
+					m_transmitter.SendAsync(QuitPayload.Create(), CancellationToken.None).GetAwaiter().GetResult();
+					m_transmitter.TryReceiveReplyAsync(CancellationToken.None).AsTask().GetAwaiter().GetResult();
+				}
+				catch (SocketException)
+				{
+					// socket may have been closed during shutdown; ignore
+				}
 			}
 			m_transmitter = null;
 			if (m_socket != null)
