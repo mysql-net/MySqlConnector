@@ -13,12 +13,6 @@ provider for [MySQL](https://www.mysql.com/). It provides implementations of
 needed to query and update databases from managed code. It's compatible with
 popular data access libraries such as [Dapper](https://github.com/StackExchange/dapper-dot-net).
 
-## Build Status
-
-Ubuntu 14.04 | Windows x64
---- | ---
-[![Travis CI](https://img.shields.io/travis/bgrainger/MySql.Data.svg)](https://travis-ci.org/bgrainger/MySql.Data) | (none)
-
 ## Building
 
 Install the latest [dotnet-cli](http://dotnet.github.io/).
