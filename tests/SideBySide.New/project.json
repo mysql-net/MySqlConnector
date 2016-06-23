@@ -4,7 +4,7 @@
 		"warningsAsErrors": true
 	},
 	"dependencies": {
-		"MySql.Data": {
+		"MySqlConnector": {
 			"target": "project"
 		},
 		"xunit": "2.1.0",

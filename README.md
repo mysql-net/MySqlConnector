@@ -27,7 +27,7 @@ To build and run the tests, clone the repo and execute:
 
 ```
 dotnet restore
-dotnet test tests\MySql.Data.Tests
+dotnet test tests\MySqlConnector.Tests
 ```
 
 To run the side-by-side tests, see [the instructions](tests/README.md).

@@ -10,7 +10,7 @@ before_install:
 script:
   - dotnet restore
   - dotnet build tests/SideBySide.New
-  - cd tests/MySql.Data.Tests
+  - cd tests/MySqlConnector.Tests
   - dotnet restore
   - dotnet build
   - dotnet test

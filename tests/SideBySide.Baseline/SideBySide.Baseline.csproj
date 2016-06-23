@@ -69,7 +69,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\MySql.Data.Tests\MySqlConnectionStringBuilderTests.cs">
+    <Compile Include="..\MySqlConnector.Tests\MySqlConnectionStringBuilderTests.cs">
       <Link>MySqlConnectionStringBuilderTests.cs</Link>
     </Compile>
     <Compile Include="..\SideBySide.New\ConnectAsync.cs">
@@ -121,7 +121,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\..\packages\xunit.runner.visualstudio.2.1.0\build\net20\xunit.runner.visualstudio.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\xunit.runner.visualstudio.2.1.0\build\net20\xunit.runner.visualstudio.props'))" />
   </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
