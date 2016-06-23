@@ -16,7 +16,7 @@
 		"tags": [
 			"mysql"
 		],
-		"licenseUrl": "http://www.gnu.org/licenses/lgpl.html",
+		"licenseUrl": "https://opensource.org/licenses/MIT",
 		"projectUrl": "https://github.com/bgrainger/MySqlConnector",
 		"repository": {
 			"type": "git",

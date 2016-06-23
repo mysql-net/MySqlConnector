@@ -40,4 +40,4 @@ it will try not to be gratuitously incompatible.
 
 ## License
 
-This library is licensed under [LGPL v3](COPYING.LESSER.md).
+This library is licensed under the [MIT License](LICENSE).
