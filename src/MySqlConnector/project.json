@@ -1,28 +1,22 @@
 {
-	"version": "0.1.0",
-	"title": "MySqlConnector",
+	"version": "0.1.0-alpha01",
+	"title": "Async MySQL Connector",
 	"description": "A fully async MySQL ADO.NET provider for .NET and .NET Core",
 	"copyright": "Copyright 2016 Bradley Grainger",
 	"buildOptions": {
 		"warningsAsErrors": true
 	},
 	"packOptions": {
-		"authors": [
-			"Bradley Grainger"
-		],
-		"owners": [
-			"bgrainger"
-		],
-		"tags": [
-			"mysql"
-		],
+		"owners": [ "bgrainger" ],
+		"tags": [ "mysql", "async" ],
 		"licenseUrl": "https://opensource.org/licenses/MIT",
 		"projectUrl": "https://github.com/bgrainger/MySqlConnector",
 		"repository": {
 			"type": "git",
-			"url": "git://github.com/bgrainger/MySqlConnector.git"
+			"url": "https://github.com/bgrainger/MySqlConnector.git"
 		}
 	},
+	"authors": [ "Bradley Grainger" ],
 	"frameworks": {
 		"net45": {
 			"frameworkAssemblies": {
