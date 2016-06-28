@@ -1,0 +1,12 @@
+version: 1.0.{build}
+image: Visual Studio 2015
+configuration: Release
+install:
+- cmd: dotnet restore
+build_script:
+- cmd: >-
+    dotnet build src\MySqlConnector --configuration Release
+
+    dotnet build tests\SideBySide.New --configuration Release
+test_script:
+- cmd: dotnet test tests/MySqlConnector.Tests --configuration Release
