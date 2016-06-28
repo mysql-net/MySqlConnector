@@ -139,15 +139,16 @@ namespace MySql.Data.Serialization
 
 				var exception = ErrorPayload.Create(task.Result).ToException();
 #if NETSTANDARD1_3
-				return Task.FromException<PayloadData>(exception);
+				return new ValueTask<PayloadData>(Task.FromException<PayloadData>(exception));
 #else
 				var tcs = new TaskCompletionSource<PayloadData>();
 				tcs.SetException(exception);
-				return tcs.Task;
+				return new ValueTask<PayloadData>(tcs.Task);
 #endif
 			}
 
-			return task.AsTask().ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+			return new ValueTask<PayloadData>(task.AsTask()
+				.ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default));
 		}
 
 		private PayloadData TryAsyncContinuation(Task<PayloadData> task)
