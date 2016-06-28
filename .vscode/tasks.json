@@ -1,0 +1,18 @@
+{
+	"version": "0.1.0",
+	"command": "dotnet",
+	"isShellCommand": true,
+	"args": [],
+	"options": {
+		"cwd": "${workspaceRoot}\\tests\\MySqlConnector.Tests"
+	},
+	"tasks": [
+		{
+			"taskName": "build",
+			"args": [ ],
+			"isBuildCommand": true,
+			"showOutput": "silent",
+			"problemMatcher": "$msCompile"
+		}
+	]
+}
