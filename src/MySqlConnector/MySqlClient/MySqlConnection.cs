@@ -69,6 +69,13 @@ namespace MySql.Data.MySqlClient
 			return transaction;
 		}
 
+#if !NETSTANDARD1_3
+		public override void EnlistTransaction(System.Transactions.Transaction transaction)
+		{
+			throw new NotSupportedException("System.Transactions.Transaction is not supported. Use BeginTransaction instead.");
+		}
+#endif
+
 		public override void Close()
 		{
 			DoClose();
@@ -89,6 +96,10 @@ namespace MySql.Data.MySqlClient
 			VerifyNotDisposed();
 			if (State != ConnectionState.Closed)
 				throw new InvalidOperationException("Cannot Open when State is {0}.".FormatInvariant(State));
+#if !NETSTANDARD1_3
+			if (System.Transactions.Transaction.Current != null)
+				throw new NotSupportedException("Ambient transactions are not supported. Use BeginTransaction instead.");
+#endif
 
 			if (m_connectionStringBuilder.UseCompression)
 				throw new NotSupportedException("Compression not supported.");
