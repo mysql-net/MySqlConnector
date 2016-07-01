@@ -14,7 +14,18 @@ namespace MySql.Data.MySqlClient
 
 		public override bool IsNullable { get; set; }
 
-		public override string ParameterName { get; set; }
+		public override string ParameterName
+		{
+			get
+			{
+				return m_name;
+			}
+			set
+			{
+				m_name = value;
+				NormalizedParameterName = NormalizeParameterName(m_name);
+			}
+		}
 
 		public override int Size { get; set; }
 
@@ -45,27 +56,7 @@ namespace MySql.Data.MySqlClient
 			DbType = default(DbType);
 		}
 
-		internal bool ParameterNameMatches(string name)
-		{
-			if (string.IsNullOrEmpty(ParameterName) || string.IsNullOrEmpty(name))
-				return false;
-
-			int thisNameIndex = 0, thisNameLength = ParameterName.Length;
-			if (ParameterName[0] == '?' || ParameterName[0] == '@')
-			{
-				thisNameIndex++;
-				thisNameLength--;
-			}
-			int otherNameIndex = 0, otherNameLength = name.Length;
-			if (name[0] == '?' || name[0] == '@')
-			{
-				otherNameIndex++;
-				otherNameLength--;
-			}
-
-			return thisNameLength == otherNameLength &&
-				string.Compare(ParameterName, thisNameIndex, name, otherNameIndex, thisNameLength, StringComparison.OrdinalIgnoreCase) == 0;
-		}
+		internal string NormalizedParameterName { get; private set; }
 
 		internal void AppendSqlString(StringBuilder output)
 		{
@@ -147,5 +138,14 @@ namespace MySql.Data.MySqlClient
 				throw new NotSupportedException("Parameter type {0} (DbType: {1}) not currently supported. Value: {2}".FormatInvariant(Value.GetType().Name, DbType, Value));
 			}
 		}
+
+		internal static string NormalizeParameterName(string name)
+		{
+			return string.IsNullOrEmpty(name) ? name :
+				name[0] == '?' || name[0] == '@' ? name.Substring(1) :
+				name;
+		}
+
+		string m_name;
 	}
 }

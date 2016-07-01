@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 
 namespace MySql.Data.MySqlClient
 {
@@ -11,6 +12,7 @@ namespace MySql.Data.MySqlClient
 		internal MySqlParameterCollection()
 		{
 			m_parameters = new List<MySqlParameter>();
+			m_nameToIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 		}
 
 		public MySqlParameter Add(string parameterName, DbType dbType)
@@ -20,13 +22,13 @@ namespace MySql.Data.MySqlClient
 				ParameterName = parameterName,
 				DbType = dbType,
 			};
-			m_parameters.Add(parameter);
+			AddParameter(parameter);
 			return parameter;
 		}
 
 		public override int Add(object value)
 		{
-			m_parameters.Add((MySqlParameter) value);
+			AddParameter((MySqlParameter) value);
 			return m_parameters.Count - 1;
 		}
 
@@ -54,6 +56,7 @@ namespace MySql.Data.MySqlClient
 		public override void Clear()
 		{
 			m_parameters.Clear();
+			m_nameToIndex.Clear();
 		}
 
 		public override IEnumerator GetEnumerator()
@@ -68,7 +71,10 @@ namespace MySql.Data.MySqlClient
 
 		protected override DbParameter GetParameter(string parameterName)
 		{
-			return m_parameters[IndexOf(parameterName)];
+			var index = IndexOf(parameterName);
+			if (index == -1)
+				throw new ArgumentException("Parameter '{0}' not found in the collection".FormatInvariant(parameterName), nameof(parameterName));
+			return m_parameters[index];
 		}
 
 		public override int IndexOf(object value)
@@ -78,7 +84,11 @@ namespace MySql.Data.MySqlClient
 
 		public override int IndexOf(string parameterName)
 		{
-			return m_parameters.FindIndex(x => x.ParameterNameMatches(parameterName));
+			if (parameterName == null)
+				throw new ArgumentNullException(nameof(parameterName));
+			int index;
+			return m_nameToIndex.TryGetValue(MySqlParameter.NormalizeParameterName(parameterName), out index) &&
+				string.Equals(parameterName, m_parameters[index].ParameterName, StringComparison.OrdinalIgnoreCase) ? index : -1;
 		}
 
 		public override void Insert(int index, object value)
@@ -94,12 +104,21 @@ namespace MySql.Data.MySqlClient
 
 		public override void Remove(object value)
 		{
-			m_parameters.Remove((MySqlParameter) value);
+			RemoveAt(IndexOf(value));
 		}
 
 		public override void RemoveAt(int index)
 		{
+			var oldParameter = m_parameters[index];
+			if (oldParameter.NormalizedParameterName != null)
+				m_nameToIndex.Remove(oldParameter.NormalizedParameterName);
 			m_parameters.RemoveAt(index);
+
+			foreach (var pair in m_nameToIndex.ToList())
+			{
+				if (pair.Value > index)
+					m_nameToIndex[pair.Key] = pair.Value - 1;
+			}
 		}
 
 		public override void RemoveAt(string parameterName)
@@ -109,7 +128,13 @@ namespace MySql.Data.MySqlClient
 
 		protected override void SetParameter(int index, DbParameter value)
 		{
-			m_parameters[index] = (MySqlParameter) value;
+			var newParameter = (MySqlParameter) value;
+			var oldParameter = m_parameters[index];
+			if (oldParameter.NormalizedParameterName != null)
+				m_nameToIndex.Remove(oldParameter.NormalizedParameterName);
+			m_parameters[index] = newParameter;
+			if (newParameter.NormalizedParameterName != null)
+				m_nameToIndex.Add(newParameter.NormalizedParameterName, index);
 		}
 
 		protected override void SetParameter(string parameterName, DbParameter value)
@@ -117,10 +142,7 @@ namespace MySql.Data.MySqlClient
 			SetParameter(IndexOf(parameterName), value);
 		}
 
-		public override int Count
-		{
-			get { return m_parameters.Count; }
-		}
+		public override int Count => m_parameters.Count;
 
 		public override object SyncRoot
 		{
@@ -130,10 +152,28 @@ namespace MySql.Data.MySqlClient
 		public new MySqlParameter this[int index]
 		{
 			get { return m_parameters[index]; }
-			set { m_parameters[index] = value; }
+			set { SetParameter(index, value); }
+		}
+
+		// Finds the index of a parameter by name, regardless of whether 'parameterName' or the matching
+		// MySqlParameter.ParameterName has a leading '?' or '@'.
+		internal int FlexibleIndexOf(string parameterName)
+		{
+			if (parameterName == null)
+				throw new ArgumentNullException(nameof(parameterName));
+			int index;
+			return m_nameToIndex.TryGetValue(MySqlParameter.NormalizeParameterName(parameterName), out index) ? index : -1;
+		}
+
+		private void AddParameter(MySqlParameter parameter)
+		{
+			m_parameters.Add(parameter);
+			if (parameter.NormalizedParameterName != null)
+				m_nameToIndex[parameter.NormalizedParameterName] = m_parameters.Count - 1;
 		}
 
 		readonly List<MySqlParameter> m_parameters;
+		readonly Dictionary<string, int> m_nameToIndex;
 	}
 
 }

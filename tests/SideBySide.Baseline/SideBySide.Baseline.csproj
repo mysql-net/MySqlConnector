@@ -96,6 +96,9 @@
     <Compile Include="..\SideBySide.New\InsertTests.cs">
       <Link>InsertTests.cs</Link>
     </Compile>
+    <Compile Include="..\SideBySide.New\ParameterCollection.cs">
+      <Link>ParameterCollection.cs</Link>
+    </Compile>
     <Compile Include="..\SideBySide.New\QueryTests.cs">
       <Link>QueryTests.cs</Link>
     </Compile>

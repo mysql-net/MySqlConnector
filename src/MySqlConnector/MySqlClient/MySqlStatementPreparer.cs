@@ -54,7 +54,7 @@ namespace MySql.Data.MySqlClient
 			protected override void OnNamedParameter(int index, int length)
 			{
 				var parameterName = m_preparer.m_commandText.Substring(index, length);
-				var parameterIndex = m_preparer.m_parameters.IndexOf(parameterName);
+				var parameterIndex = m_preparer.m_parameters.FlexibleIndexOf(parameterName);
 				if (parameterIndex != -1)
 					DoAppendParameter(parameterIndex, index, length);
 				else if (!m_preparer.m_options.HasFlag(StatementPreparerOptions.AllowUserVariables))
