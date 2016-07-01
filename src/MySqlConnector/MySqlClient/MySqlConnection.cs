@@ -236,6 +236,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		internal MySqlTransaction CurrentTransaction { get; set; }
+		internal bool HasActiveReader { get; set; }
 		internal bool AllowUserVariables => m_connectionStringBuilder.AllowUserVariables;
 		internal bool ConvertZeroDateTime => m_connectionStringBuilder.ConvertZeroDateTime;
 		internal bool OldGuids => m_connectionStringBuilder.OldGuids;

@@ -136,14 +136,28 @@ namespace MySql.Data.MySqlClient
 		protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
 		{
 			VerifyValid();
+			Connection.HasActiveReader = true;
 
-			LastInsertedId = -1;
-			var connection = (MySqlConnection) DbConnection;
-			var preparer = new MySqlStatementPreparer(CommandText, m_parameterCollection, connection.AllowUserVariables ? StatementPreparerOptions.AllowUserVariables : StatementPreparerOptions.None);
-			preparer.BindParameters();
-			var payload = new PayloadData(new ArraySegment<byte>(Payload.CreateEofStringPayload(CommandKind.Query, preparer.PreparedSql)));
-			await Session.SendAsync(payload, cancellationToken).ConfigureAwait(false);
-			return await MySqlDataReader.CreateAsync(this, behavior, cancellationToken).ConfigureAwait(false);
+			MySqlDataReader reader = null;
+			try
+			{
+				LastInsertedId = -1;
+				var connection = (MySqlConnection) DbConnection;
+				var preparer = new MySqlStatementPreparer(CommandText, m_parameterCollection, connection.AllowUserVariables ? StatementPreparerOptions.AllowUserVariables : StatementPreparerOptions.None);
+				preparer.BindParameters();
+				var payload = new PayloadData(new ArraySegment<byte>(Payload.CreateEofStringPayload(CommandKind.Query, preparer.PreparedSql)));
+				await Session.SendAsync(payload, cancellationToken).ConfigureAwait(false);
+				reader = await MySqlDataReader.CreateAsync(this, behavior, cancellationToken).ConfigureAwait(false);
+				return reader;
+			}
+			finally
+			{
+				if (reader == null)
+				{
+					// received an error from MySQL and never created an active reader
+					Connection.HasActiveReader = false;
+				}
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -161,7 +175,8 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		private MySqlSession Session => ((MySqlConnection) DbConnection).Session;
+		internal new MySqlConnection Connection => (MySqlConnection) DbConnection;
+		private MySqlSession Session => Connection.Session;
 
 		private void VerifyNotDisposed()
 		{
@@ -176,10 +191,12 @@ namespace MySql.Data.MySqlClient
 				throw new InvalidOperationException("Connection property must be non-null.");
 			if (DbConnection.State != ConnectionState.Open && DbConnection.State != ConnectionState.Connecting)
 				throw new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(DbConnection.State));
-			if (DbTransaction != ((MySqlConnection) DbConnection).CurrentTransaction)
+			if (DbTransaction != Connection.CurrentTransaction)
 				throw new InvalidOperationException("The transaction associated with this command is not the connection's active transaction.");
 			if (string.IsNullOrWhiteSpace(CommandText))
 				throw new InvalidOperationException("CommandText must be specified");
+			if (Connection.HasActiveReader)
+				throw new MySqlException("There is already an open DataReader associated with this Connection which must be closed first.");
 		}
 
 		MySqlParameterCollection m_parameterCollection;

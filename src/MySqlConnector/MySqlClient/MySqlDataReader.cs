@@ -481,16 +481,20 @@ namespace MySql.Data.MySqlClient
 			Reset();
 			m_session = null;
 
-			if (m_command != null && m_behavior.HasFlag(CommandBehavior.CloseConnection))
+			if (m_command != null)
 			{
-				var dbConnection = m_command.Connection;
-				m_command.Dispose();
-				dbConnection.Close();
+				var connection = m_command.Connection;
+				connection.HasActiveReader = false;
+				if (m_behavior.HasFlag(CommandBehavior.CloseConnection))
+				{
+					m_command.Dispose();
+					connection.Close();
+				}
+				m_command = null;
 			}
-			m_command = null;
 		}
 
-		internal static async Task<DbDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, CancellationToken cancellationToken)
+		internal static async Task<MySqlDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, CancellationToken cancellationToken)
 		{
 			var dataReader = new MySqlDataReader(command, behavior);
 			await dataReader.ReadResultSetHeader(cancellationToken).ConfigureAwait(false);
