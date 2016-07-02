@@ -40,6 +40,29 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void NextResultBeforeRead()
+		{
+			var csb = Constants.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+
+				var cmd = connection.CreateCommand();
+				cmd.CommandText = @"drop schema if exists query_test;
+drop table if exists query_test.test;
+create schema query_test;
+create table query_test.test(id integer not null primary key auto_increment, value integer not null);
+insert into query_test.test (value) VALUES (1);
+";
+				cmd.ExecuteNonQuery();
+
+				cmd.CommandText = "select id, value FROM query_test.test;";
+				using (var reader = cmd.ExecuteReader())
+					Assert.Equal(false, reader.NextResult());
+			}
+		}
+
+		[Fact]
 		public async Task InvalidSql()
 		{
 			await m_database.Connection.OpenAsync();
@@ -65,7 +88,6 @@ create table invalid_sql.test(id integer not null primary key auto_increment);";
 				Assert.Equal(0L, await cmd.ExecuteScalarAsync());
 			}
 		}
-
 
 		[Fact]
 		public async Task MultipleReaders()
