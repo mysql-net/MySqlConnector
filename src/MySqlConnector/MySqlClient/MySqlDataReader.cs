@@ -21,7 +21,7 @@ namespace MySql.Data.MySqlClient
 		{
 			VerifyNotDisposed();
 
-			while (m_state == State.ReadResultSetHeader || m_state == State.ReadingRows)
+			while (m_state == State.ReadingRows || m_state == State.ReadResultSetHeader)
 				await ReadAsync(cancellationToken).ConfigureAwait(false);
 
 			if (m_state == State.NoMoreData)
