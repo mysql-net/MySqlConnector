@@ -478,6 +478,10 @@ namespace MySql.Data.MySqlClient
 
 		private void DoClose()
 		{
+			while (NextResult())
+			{
+			}
+
 			Reset();
 			m_session = null;
 

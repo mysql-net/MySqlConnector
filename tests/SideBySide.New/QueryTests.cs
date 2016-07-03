@@ -129,25 +129,18 @@ create table invalid_sql.test(id integer not null primary key auto_increment);";
 
 						Assert.Throws<MySqlException>(() => cmd2.ExecuteReader());
 						Assert.Throws<MySqlException>(() => cmd2.ExecuteScalar());
+
 #if NET45
-					reader1.Close();
-					using (var reader2 = cmd2.ExecuteReader())
-					{
-						// TODO: Remove this loop when disposing an incomplete reader cleans it up properly
-						while (reader2.Read())
+						reader1.Close();
+						using (var reader2 = cmd2.ExecuteReader())
 						{
 						}
-					}
-					Assert.Equal(1, cmd2.ExecuteScalar());
+						Assert.Equal(1, cmd2.ExecuteScalar());
 #endif
 					}
 
 					using (var reader2 = cmd2.ExecuteReader())
 					{
-						// TODO: Remove this loop when disposing an incomplete reader cleans it up properly
-						while (reader2.Read())
-						{
-						}
 					}
 					Assert.Equal(1, cmd2.ExecuteScalar());
 				}
