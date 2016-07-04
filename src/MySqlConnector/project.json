@@ -1,5 +1,5 @@
 {
-	"version": "0.1.0-alpha05",
+	"version": "0.1.0-alpha06",
 	"title": "Async MySQL Connector",
 	"description": "A fully async MySQL ADO.NET provider for .NET and .NET Core",
 	"copyright": "Copyright 2016 Bradley Grainger",
@@ -9,7 +9,7 @@
 	"packOptions": {
 		"owners": [ "bgrainger" ],
 		"tags": [ "mysql", "async" ],
-		"releaseNotes": "Throw MySqlException for concurrent usage.",
+		"releaseNotes": "Fix exception when not all rows are read.",
 		"licenseUrl": "https://opensource.org/licenses/MIT",
 		"projectUrl": "https://github.com/bgrainger/MySqlConnector",
 		"repository": {
