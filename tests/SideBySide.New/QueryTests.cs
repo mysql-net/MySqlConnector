@@ -147,6 +147,40 @@ create table invalid_sql.test(id integer not null primary key auto_increment);";
 			}
 		}
 
+		[Fact]
+		public async Task MultipleStatements()
+		{
+			var csb = Constants.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = @"drop schema if exists multiple_statements;
+						create schema multiple_statements;
+						create table multiple_statements.test(value1 int not null, value2 int not null, value3 int not null);
+						insert into multiple_statements.test(value1, value2, value3) values(1, 2, 3), (4, 5, 6), (7, 8, 9);";
+					await cmd.ExecuteNonQueryAsync();
+				}
+
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = @"select value1 from multiple_statements.test order by value1;
+						select value2 from multiple_statements.test order by value2;
+						select value3 from multiple_statements.test order by value3;";
+
+					using (var reader = await cmd.ExecuteReaderAsync())
+					{
+						Assert.True(await reader.NextResultAsync());
+						Assert.True(await reader.NextResultAsync());
+						Assert.True(await reader.ReadAsync());
+						Assert.Equal(3, reader.GetInt32(0));
+						Assert.False(await reader.NextResultAsync());
+					}
+				}
+			}
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }
