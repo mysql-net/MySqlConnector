@@ -138,7 +138,7 @@ namespace MySql.Data.MySqlClient
 				{
 					if (m_session.ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
 					{
-						await m_session.SendAsync(ResetConnectionPayload.Create(), cancellationToken);
+						await m_session.SendAsync(ResetConnectionPayload.Create(), cancellationToken).ConfigureAwait(false);
 						var payload = await m_session.ReceiveReplyAsync(cancellationToken);
 						OkPayload.Create(payload);
 					}
