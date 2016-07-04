@@ -560,7 +560,7 @@ namespace MySql.Data.MySqlClient
 			m_behavior = behavior;
 		}
 
-		private MySqlConnection Connection => (MySqlConnection) m_command.Connection;
+		private MySqlConnection Connection => m_command.Connection;
 
 		private async Task ReadResultSetHeader(CancellationToken cancellationToken)
 		{
