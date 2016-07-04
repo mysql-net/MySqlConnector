@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq;
-#if DAPPER
 using Dapper;
-#endif
 using Xunit;
 
 namespace SideBySide.New
@@ -15,7 +13,6 @@ namespace SideBySide.New
 			m_database.Connection.Execute(@"create schema if not exists test; drop table if exists test.test;");
 		}
 
-#if DAPPER
 		[Fact]
 		public void InsertWithDapper()
 		{
@@ -68,7 +65,6 @@ select last_insert_id();";
 			public Enum32? Enum32 { get; set; }
 			public Enum64? Enum64 { get; set; }
 		}
-#endif
 
 		readonly DatabaseFixture m_database;
 	}

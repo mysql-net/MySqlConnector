@@ -1,7 +1,5 @@
 ﻿using System;
-#if DAPPER
 using Dapper;
-#endif
 using MySql.Data.MySqlClient;
 using Xunit;
 

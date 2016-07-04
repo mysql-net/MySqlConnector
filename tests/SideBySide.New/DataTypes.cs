@@ -2,9 +2,7 @@
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
-#if DAPPER
 using Dapper;
-#endif
 using MySql.Data.MySqlClient;
 using Xunit;
 using static System.FormattableString;
