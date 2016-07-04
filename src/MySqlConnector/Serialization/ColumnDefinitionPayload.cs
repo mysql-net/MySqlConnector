@@ -47,6 +47,5 @@ namespace MySql.Data.Serialization
 			ColumnType = columnType;
 			ColumnFlags = columnFlags;
 		}
-
 	}
 }
