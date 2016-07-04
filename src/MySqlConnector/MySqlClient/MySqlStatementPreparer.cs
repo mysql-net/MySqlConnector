@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 
 namespace MySql.Data.MySqlClient
 {
@@ -12,13 +10,6 @@ namespace MySql.Data.MySqlClient
 			m_parameters = parameters;
 			m_options = options;
 			m_hasBoundParameters = string.IsNullOrWhiteSpace(m_commandText);
-
-			m_namedParameters = new Dictionary<string, MySqlParameter>(StringComparer.OrdinalIgnoreCase);
-			foreach (MySqlParameter parameter in parameters)
-			{
-				if (!string.IsNullOrWhiteSpace(parameter.ParameterName))
-					m_namedParameters.Add(parameter.ParameterName, parameter);
-			}
 		}
 
 		public void BindParameters()
@@ -86,8 +77,7 @@ namespace MySql.Data.MySqlClient
 
 		readonly string m_commandText;
 		readonly MySqlParameterCollection m_parameters;
-		private readonly StatementPreparerOptions m_options;
-		readonly Dictionary<string, MySqlParameter> m_namedParameters;
+		readonly StatementPreparerOptions m_options;
 		bool m_hasBoundParameters;
 	}
 }
