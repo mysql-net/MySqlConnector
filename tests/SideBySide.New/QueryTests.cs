@@ -1,14 +1,21 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace SideBySide
 {
-	public class QueryTests : IClassFixture<DatabaseFixture>
+	public class QueryTests : IClassFixture<DatabaseFixture>, IDisposable
 	{
 		public QueryTests(DatabaseFixture database)
 		{
 			m_database = database;
+			m_database.Connection.Open();
+		}
+
+		public void Dispose()
+		{
+			m_database.Connection.Close();
 		}
 
 		[Fact]
@@ -42,12 +49,8 @@ namespace SideBySide
 		[Fact]
 		public void NextResultBeforeRead()
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
-			using (var connection = new MySqlConnection(csb.ConnectionString))
+			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				connection.Open();
-
-				var cmd = connection.CreateCommand();
 				cmd.CommandText = @"drop schema if exists query_test;
 drop table if exists query_test.test;
 create schema query_test;
@@ -55,7 +58,10 @@ create table query_test.test(id integer not null primary key auto_increment, val
 insert into query_test.test (value) VALUES (1);
 ";
 				cmd.ExecuteNonQuery();
+			}
 
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
 				cmd.CommandText = "select id, value FROM query_test.test;";
 				using (var reader = cmd.ExecuteReader())
 					Assert.Equal(false, reader.NextResult());
@@ -65,7 +71,6 @@ insert into query_test.test (value) VALUES (1);
 		[Fact]
 		public async Task InvalidSql()
 		{
-			await m_database.Connection.OpenAsync();
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
 				cmd.CommandText = @"drop schema if exists invalid_sql;
@@ -92,91 +97,80 @@ create table invalid_sql.test(id integer not null primary key auto_increment);";
 		[Fact]
 		public async Task MultipleReaders()
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
-			using (var connection = new MySqlConnection(csb.ConnectionString))
+			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				await connection.OpenAsync();
+				cmd.CommandText = @"drop schema if exists multiple_readers;
+					create schema multiple_readers;
+					create table multiple_readers.test(id integer not null primary key auto_increment);
+					insert into multiple_readers.test(id) values(1), (2), (3);";
+				await cmd.ExecuteNonQueryAsync();
+			}
 
-				using (var cmd = connection.CreateCommand())
+			using (var cmd1 = m_database.Connection.CreateCommand())
+			using (var cmd2 = m_database.Connection.CreateCommand())
+			{
+				cmd1.CommandText = @"select id from multiple_readers.test;";
+				cmd2.CommandText = @"select id from multiple_readers.test order by id;";
+
+				using (var reader1 = await cmd1.ExecuteReaderAsync())
 				{
-					cmd.CommandText = @"drop schema if exists multiple_readers;
-						create schema multiple_readers;
-						create table multiple_readers.test(id integer not null primary key auto_increment);
-						insert into multiple_readers.test(id) values(1), (2), (3);";
-					await cmd.ExecuteNonQueryAsync();
-				}
-
-				using (var cmd1 = connection.CreateCommand())
-				using (var cmd2 = connection.CreateCommand())
-				{
-					cmd1.CommandText = @"select id from multiple_readers.test;";
-					cmd2.CommandText = @"select id from multiple_readers.test order by id;";
-
-					using (var reader1 = await cmd1.ExecuteReaderAsync())
+					Assert.Throws<MySqlException>(() => cmd2.ExecuteReader());
+					Assert.Throws<MySqlException>(() => cmd2.ExecuteScalar());
+					do
 					{
-						Assert.Throws<MySqlException>(() => cmd2.ExecuteReader());
-						Assert.Throws<MySqlException>(() => cmd2.ExecuteScalar());
-						do
+						while (await reader1.ReadAsync())
 						{
-							while (await reader1.ReadAsync())
-							{
-								Assert.Throws<MySqlException>(() => cmd2.ExecuteReader());
-								Assert.Throws<MySqlException>(() => cmd2.ExecuteScalar());
-							}
 							Assert.Throws<MySqlException>(() => cmd2.ExecuteReader());
 							Assert.Throws<MySqlException>(() => cmd2.ExecuteScalar());
-						} while (await reader1.NextResultAsync());
-
+						}
 						Assert.Throws<MySqlException>(() => cmd2.ExecuteReader());
 						Assert.Throws<MySqlException>(() => cmd2.ExecuteScalar());
+					} while (await reader1.NextResultAsync());
+
+					Assert.Throws<MySqlException>(() => cmd2.ExecuteReader());
+					Assert.Throws<MySqlException>(() => cmd2.ExecuteScalar());
 
 #if NET45
-						reader1.Close();
-						using (var reader2 = cmd2.ExecuteReader())
-						{
-						}
-						Assert.Equal(1, cmd2.ExecuteScalar());
-#endif
-					}
-
+					reader1.Close();
 					using (var reader2 = cmd2.ExecuteReader())
 					{
 					}
 					Assert.Equal(1, cmd2.ExecuteScalar());
+#endif
 				}
+
+				using (var reader2 = cmd2.ExecuteReader())
+				{
+				}
+				Assert.Equal(1, cmd2.ExecuteScalar());
 			}
 		}
 
 		[Fact]
 		public async Task MultipleStatements()
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
-			using (var connection = new MySqlConnection(csb.ConnectionString))
+			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				await connection.OpenAsync();
-				using (var cmd = connection.CreateCommand())
-				{
-					cmd.CommandText = @"drop schema if exists multiple_statements;
-						create schema multiple_statements;
-						create table multiple_statements.test(value1 int not null, value2 int not null, value3 int not null);
-						insert into multiple_statements.test(value1, value2, value3) values(1, 2, 3), (4, 5, 6), (7, 8, 9);";
-					await cmd.ExecuteNonQueryAsync();
-				}
+				cmd.CommandText = @"drop schema if exists multiple_statements;
+					create schema multiple_statements;
+					create table multiple_statements.test(value1 int not null, value2 int not null, value3 int not null);
+					insert into multiple_statements.test(value1, value2, value3) values(1, 2, 3), (4, 5, 6), (7, 8, 9);";
+				await cmd.ExecuteNonQueryAsync();
+			}
 
-				using (var cmd = connection.CreateCommand())
-				{
-					cmd.CommandText = @"select value1 from multiple_statements.test order by value1;
-						select value2 from multiple_statements.test order by value2;
-						select value3 from multiple_statements.test order by value3;";
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = @"select value1 from multiple_statements.test order by value1;
+					select value2 from multiple_statements.test order by value2;
+					select value3 from multiple_statements.test order by value3;";
 
-					using (var reader = await cmd.ExecuteReaderAsync())
-					{
-						Assert.True(await reader.NextResultAsync());
-						Assert.True(await reader.NextResultAsync());
-						Assert.True(await reader.ReadAsync());
-						Assert.Equal(3, reader.GetInt32(0));
-						Assert.False(await reader.NextResultAsync());
-					}
+				using (var reader = await cmd.ExecuteReaderAsync())
+				{
+					Assert.True(await reader.NextResultAsync());
+					Assert.True(await reader.NextResultAsync());
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal(3, reader.GetInt32(0));
+					Assert.False(await reader.NextResultAsync());
 				}
 			}
 		}
