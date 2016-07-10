@@ -109,7 +109,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[Fact(Skip = "Requires specific test DB server version.")]
 		public void ServerVersion()
 		{
 			using (var connection = new MySqlConnection(m_database.Connection.ConnectionString))
