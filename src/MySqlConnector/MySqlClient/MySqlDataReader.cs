@@ -26,8 +26,7 @@ namespace MySql.Data.MySqlClient
 
 			var oldState = m_state;
 			Reset();
-			m_state = State.NoMoreData;
-			if (oldState == State.NoMoreData)
+			if (oldState == State.NoMoreData || oldState == State.None)
 				return false;
 			if (oldState != State.HasMoreData)
 				throw new InvalidOperationException("Invalid state: {0}".FormatInvariant(oldState));
