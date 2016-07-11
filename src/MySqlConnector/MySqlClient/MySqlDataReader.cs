@@ -30,7 +30,7 @@ namespace MySql.Data.MySqlClient
 				throw new InvalidOperationException("Invalid state: {0}".FormatInvariant(m_state));
 
 			Reset();
-			await ReadResultSetHeader(cancellationToken).ConfigureAwait(false);
+			await ReadResultSetHeaderAsync(cancellationToken).ConfigureAwait(false);
 			return true;
 		}
 
@@ -501,7 +501,7 @@ namespace MySql.Data.MySqlClient
 		internal static async Task<MySqlDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, CancellationToken cancellationToken)
 		{
 			var dataReader = new MySqlDataReader(command, behavior);
-			await dataReader.ReadResultSetHeader(cancellationToken).ConfigureAwait(false);
+			await dataReader.ReadResultSetHeaderAsync(cancellationToken).ConfigureAwait(false);
 			return dataReader;
 		}
 
@@ -562,7 +562,7 @@ namespace MySql.Data.MySqlClient
 
 		private MySqlConnection Connection => m_command.Connection;
 
-		private async Task ReadResultSetHeader(CancellationToken cancellationToken)
+		private async Task ReadResultSetHeaderAsync(CancellationToken cancellationToken)
 		{
 			while (true)
 			{
