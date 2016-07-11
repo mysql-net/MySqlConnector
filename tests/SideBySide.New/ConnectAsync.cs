@@ -88,16 +88,6 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
-		public async Task ServerVersion()
-		{
-			using (var connection = new MySqlConnection(m_database.Connection.ConnectionString))
-			{
-				await connection.OpenAsync();
-				Assert.Equal(Constants.ServerVersion, connection.ServerVersion);
-			}
-		}
-
 		readonly DatabaseFixture m_database;
 	}
 }

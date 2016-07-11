@@ -109,16 +109,6 @@ namespace SideBySide
 			}
 		}
 
-		[Fact(Skip = "Requires specific test DB server version.")]
-		public void ServerVersion()
-		{
-			using (var connection = new MySqlConnection(m_database.Connection.ConnectionString))
-			{
-				connection.Open();
-				Assert.Equal(Constants.ServerVersion, connection.ServerVersion);
-			}
-		}
-
 		readonly DatabaseFixture m_database;
 	}
 }
