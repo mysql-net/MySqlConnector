@@ -61,7 +61,7 @@ namespace SideBySide
 		{
 			var csb = Constants.CreateConnectionStringBuilder();
 			csb.PersistSecurityInfo = persistSecurityInfo;
-			var connectionStringWithoutPassword = csb.ConnectionString.Replace("Password", "password").Replace(";password='test;key=\"val'", "");
+			var connectionStringWithoutPassword = csb.ConnectionString.Replace("Password", "password").Replace(";password='" + Constants.Password + "'", "");
 
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
