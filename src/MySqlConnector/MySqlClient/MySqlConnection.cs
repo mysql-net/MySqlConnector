@@ -261,7 +261,7 @@ namespace MySql.Data.MySqlClient
 
 		internal ValueTask<T> AdaptTask<T>(ValueTask<T> task)
 		{
-			if (!Synchronous)
+			if (!Synchronous || task.IsCompletedSuccessfully)
 				return task;
 
 			return new ValueTask<T>(task.AsTask().GetAwaiter().GetResult());
