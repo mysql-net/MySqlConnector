@@ -175,6 +175,53 @@ create table invalid_sql.test(id integer not null primary key auto_increment);";
 			}
 		}
 
+		[Fact]
+		public async Task GetName()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = @"drop schema if exists get_name;
+create schema get_name;
+create table get_name.test(id integer not null primary key, value text not null);
+insert into get_name.test (id, value) VALUES (1, 'one'), (2, 'two');
+";
+				cmd.ExecuteNonQuery();
+			}
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select id, value FROM get_name.test order by id;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.Equal("id", reader.GetName(0));
+					Assert.Equal("value", reader.GetName(1));
+					Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(2));
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal("id", reader.GetName(0));
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal("id", reader.GetName(0));
+					Assert.False(await reader.ReadAsync());
+					Assert.Equal("id", reader.GetName(0));
+
+					Assert.False(await reader.NextResultAsync());
+					Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(0));
+				}
+
+				cmd.CommandText = "select id, value FROM get_name.test where id > 10 order by id;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.Equal("id", reader.GetName(0));
+					Assert.Equal("value", reader.GetName(1));
+					Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(2));
+					Assert.False(await reader.ReadAsync());
+					Assert.Equal("id", reader.GetName(0));
+
+					Assert.False(await reader.NextResultAsync());
+					Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(0));
+				}
+			}
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }

@@ -24,12 +24,14 @@ namespace MySql.Data.MySqlClient
 			while (m_state == State.ReadingRows || m_state == State.ReadResultSetHeader)
 				await ReadAsync(cancellationToken).ConfigureAwait(false);
 
-			if (m_state == State.NoMoreData)
-				return false;
-			if (m_state != State.HasMoreData)
-				throw new InvalidOperationException("Invalid state: {0}".FormatInvariant(m_state));
-
+			var oldState = m_state;
 			Reset();
+			m_state = State.NoMoreData;
+			if (oldState == State.NoMoreData)
+				return false;
+			if (oldState != State.HasMoreData)
+				throw new InvalidOperationException("Invalid state: {0}".FormatInvariant(oldState));
+
 			await ReadResultSetHeader(cancellationToken).ConfigureAwait(false);
 			return true;
 		}
@@ -210,9 +212,10 @@ namespace MySql.Data.MySqlClient
 
 		public override string GetName(int ordinal)
 		{
-			VerifyHasResult();
+			if (m_columnDefinitions == null)
+				throw new IndexOutOfRangeException("There is no current result set.");
 			if (ordinal < 0 || ordinal > m_columnDefinitions.Length)
-				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}".FormatInvariant(m_columnDefinitions.Length - 1));
+				throw new IndexOutOfRangeException("value must be between 0 and {0}".FormatInvariant(m_columnDefinitions.Length - 1));
 			return m_columnDefinitions[ordinal].Name;
 		}
 
