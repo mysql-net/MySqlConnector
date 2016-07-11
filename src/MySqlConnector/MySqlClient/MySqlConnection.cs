@@ -114,14 +114,14 @@ namespace MySql.Data.MySqlClient
 				if (m_session == null)
 				{
 					m_session = new MySqlSession(pool);
-					var connected = await m_session.ConnectAsync(m_connectionStringBuilder.Server.Split(','), (int) m_connectionStringBuilder.Port).ConfigureAwait(false);
+					var connected = await AdaptTask(m_session.ConnectAsync(m_connectionStringBuilder.Server.Split(','), (int) m_connectionStringBuilder.Port)).ConfigureAwait(false);
 					if (!connected)
 					{
 						SetState(ConnectionState.Closed);
 						throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
 					}
 
-					var payload = await m_session.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+					var payload = await AdaptTask(m_session.ReceiveAsync(cancellationToken)).ConfigureAwait(false);
 					var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
 					var initialHandshake = new InitialHandshakePacket(reader);
 					if (initialHandshake.AuthPluginName != "mysql_native_password")
@@ -130,16 +130,16 @@ namespace MySql.Data.MySqlClient
 
 					var response = HandshakeResponse41Packet.Create(initialHandshake, m_connectionStringBuilder.UserID, m_connectionStringBuilder.Password, m_database);
 					payload = new PayloadData(new ArraySegment<byte>(response));
-					await m_session.SendReplyAsync(payload, cancellationToken).ConfigureAwait(false);
-					await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+					await AdaptTask(m_session.SendReplyAsync(payload, cancellationToken)).ConfigureAwait(false);
+					await AdaptTask(m_session.ReceiveReplyAsync(cancellationToken)).ConfigureAwait(false);
 					// TODO: Check success
 				}
 				else if (m_connectionStringBuilder.ConnectionReset)
 				{
 					if (m_session.ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
 					{
-						await m_session.SendAsync(ResetConnectionPayload.Create(), cancellationToken).ConfigureAwait(false);
-						var payload = await m_session.ReceiveReplyAsync(cancellationToken);
+						await AdaptTask(m_session.SendAsync(ResetConnectionPayload.Create(), cancellationToken)).ConfigureAwait(false);
+						var payload = await AdaptTask(m_session.ReceiveReplyAsync(cancellationToken));
 						OkPayload.Create(payload);
 					}
 					else
@@ -147,15 +147,15 @@ namespace MySql.Data.MySqlClient
 						// MySQL doesn't appear to accept a replayed hashed password (using the challenge from the initial handshake), so just send zeroes
 						// and expect to get a new challenge
 						var payload = ChangeUserPayload.Create(m_connectionStringBuilder.UserID, new byte[20], m_database);
-						await m_session.SendAsync(payload, cancellationToken).ConfigureAwait(false);
-						payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+						await AdaptTask(m_session.SendAsync(payload, cancellationToken)).ConfigureAwait(false);
+						payload = await AdaptTask(m_session.ReceiveReplyAsync(cancellationToken)).ConfigureAwait(false);
 						var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload);
 						if (switchRequest.Name != "mysql_native_password")
 							throw new NotSupportedException("Only 'mysql_native_password' authentication method is supported.");
 						var hashedPassword = AuthenticationUtility.HashPassword(switchRequest.Data, 0, m_connectionStringBuilder.Password);
 						payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
-						await m_session.SendReplyAsync(payload, cancellationToken).ConfigureAwait(false);
-						payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+						await AdaptTask(m_session.SendReplyAsync(payload, cancellationToken)).ConfigureAwait(false);
+						payload = await AdaptTask(m_session.ReceiveReplyAsync(cancellationToken)).ConfigureAwait(false);
 						OkPayload.Create(payload);
 					}
 				}
@@ -240,6 +240,32 @@ namespace MySql.Data.MySqlClient
 		internal bool AllowUserVariables => m_connectionStringBuilder.AllowUserVariables;
 		internal bool ConvertZeroDateTime => m_connectionStringBuilder.ConvertZeroDateTime;
 		internal bool OldGuids => m_connectionStringBuilder.OldGuids;
+		internal bool Synchronous => m_connectionStringBuilder.Synchronous;
+
+		internal Task AdaptTask(Task task)
+		{
+			if (!Synchronous)
+				return task;
+
+			task.GetAwaiter().GetResult();
+			return Task.FromResult<object>(null);
+		}
+
+		internal Task<T> AdaptTask<T>(Task<T> task)
+		{
+			if (!Synchronous)
+				return task;
+
+			return Task.FromResult(task.GetAwaiter().GetResult());
+		}
+
+		internal ValueTask<T> AdaptTask<T>(ValueTask<T> task)
+		{
+			if (!Synchronous)
+				return task;
+
+			return new ValueTask<T>(task.AsTask().GetAwaiter().GetResult());
+		}
 
 		private void SetState(ConnectionState newState)
 		{

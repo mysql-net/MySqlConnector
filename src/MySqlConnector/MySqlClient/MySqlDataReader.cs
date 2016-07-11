@@ -50,7 +50,7 @@ namespace MySql.Data.MySqlClient
 
 			if (m_state != State.AlreadyReadFirstRow)
 			{
-				var payloadTask = m_session.ReceiveReplyAsync(cancellationToken);
+				var payloadTask = Connection.AdaptTask(m_session.ReceiveReplyAsync(cancellationToken));
 				if (payloadTask.IsCompletedSuccessfully)
 					return ReadAsyncRemainder(payloadTask.Result) ? s_trueTask : s_falseTask;
 				return ReadAsyncAwaited(payloadTask.AsTask());
@@ -566,7 +566,7 @@ namespace MySql.Data.MySqlClient
 		{
 			while (true)
 			{
-				var payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+				var payload = await Connection.AdaptTask(m_session.ReceiveReplyAsync(cancellationToken)).ConfigureAwait(false);
 
 				var firstByte = payload.HeaderByte;
 				if (firstByte == OkPayload.Signature)
@@ -593,11 +593,11 @@ namespace MySql.Data.MySqlClient
 
 					for (var column = 0; column < m_columnDefinitions.Length; column++)
 					{
-						payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+						payload = await Connection.AdaptTask(m_session.ReceiveReplyAsync(cancellationToken)).ConfigureAwait(false);
 						m_columnDefinitions[column] = ColumnDefinitionPayload.Create(payload);
 					}
 
-					payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+					payload = await Connection.AdaptTask(m_session.ReceiveReplyAsync(cancellationToken)).ConfigureAwait(false);
 					EofPayload.Create(payload);
 
 					m_command.LastInsertedId = -1;
