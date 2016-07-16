@@ -7,5 +7,6 @@ namespace MySql.Data.MySqlClient
 	{
 		None = 0,
 		AllowUserVariables = 1,
+		OldGuids = 2,
 	}
 }

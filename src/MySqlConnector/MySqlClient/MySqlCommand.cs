@@ -143,7 +143,12 @@ namespace MySql.Data.MySqlClient
 			{
 				LastInsertedId = -1;
 				var connection = (MySqlConnection) DbConnection;
-				var preparer = new MySqlStatementPreparer(CommandText, m_parameterCollection, connection.AllowUserVariables ? StatementPreparerOptions.AllowUserVariables : StatementPreparerOptions.None);
+				var statementPreparerOptions = StatementPreparerOptions.None;
+				if (connection.AllowUserVariables)
+					statementPreparerOptions |= StatementPreparerOptions.AllowUserVariables;
+				if (connection.OldGuids)
+					statementPreparerOptions |= StatementPreparerOptions.OldGuids;
+				var preparer = new MySqlStatementPreparer(CommandText, m_parameterCollection, statementPreparerOptions);
 				preparer.BindParameters();
 				var payload = new PayloadData(new ArraySegment<byte>(Payload.CreateEofStringPayload(CommandKind.Query, preparer.PreparedSql)));
 				await Session.SendAsync(payload, cancellationToken).ConfigureAwait(false);

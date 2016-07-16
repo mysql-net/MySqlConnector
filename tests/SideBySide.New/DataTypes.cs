@@ -2,6 +2,7 @@
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -211,6 +212,23 @@ namespace SideBySide
 						}
 					}
 				}
+			}
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task QueryWithGuidParameter(bool oldGuids)
+		{
+			var csb = Constants.CreateConnectionStringBuilder();
+			csb.OldGuids = oldGuids;
+			csb.Database = "datatypes";
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await connection.OpenAsync().ConfigureAwait(false);
+				Assert.Equal(oldGuids? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from strings where guid = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
+				Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from strings where guidbin = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
+				Assert.Equal(oldGuids ? 1L : 0L, (await connection.QueryAsync<long>(@"select count(*) from blobs where guidbin = @guid", new { guid = new Guid(0x33221100, 0x5544, 0x7766, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF) }).ConfigureAwait(false)).SingleOrDefault());
 			}
 		}
 

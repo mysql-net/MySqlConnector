@@ -58,7 +58,7 @@ namespace MySql.Data.MySqlClient
 
 		internal string NormalizedParameterName { get; private set; }
 
-		internal void AppendSqlString(StringBuilder output)
+		internal void AppendSqlString(StringBuilder output, StatementPreparerOptions options)
 		{
 			if (Value == DBNull.Value)
 			{
@@ -107,7 +107,17 @@ namespace MySql.Data.MySqlClient
 			}
 			else if (Value is Guid)
 			{
-				output.AppendFormat("'{0:D}'", Value);
+				if (options.HasFlag(StatementPreparerOptions.OldGuids))
+				{
+					output.Append("X'");
+					foreach (var by in ((Guid) Value).ToByteArray())
+						output.AppendFormat(CultureInfo.InvariantCulture, "{0:X2}", by);
+					output.Append("'");
+				}
+				else
+				{
+					output.AppendFormat("'{0:D}'", Value);
+				}
 			}
 			else if (DbType == DbType.Int16)
 			{

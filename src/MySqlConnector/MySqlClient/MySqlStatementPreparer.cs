@@ -61,7 +61,7 @@ namespace MySql.Data.MySqlClient
 			private void DoAppendParameter(int parameterIndex, int textIndex, int textLength)
 			{
 				Output.Append(m_preparer.m_commandText, m_lastIndex, textIndex - m_lastIndex);
-				m_preparer.m_parameters[parameterIndex].AppendSqlString(Output);
+				m_preparer.m_parameters[parameterIndex].AppendSqlString(Output, m_preparer.m_options);
 				m_lastIndex = textIndex + textLength;
 			}
 
