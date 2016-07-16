@@ -46,7 +46,7 @@ namespace MySql.Data.MySqlClient
 			VerifyNotDisposed();
 
 			// if we've already read past the end of this resultset, Read returns false
-			if (m_state == State.HasMoreData || m_state == State.NoMoreData)
+			if (m_state == State.HasMoreData || m_state == State.NoMoreData || m_state == State.None)
 				return s_falseTask;
 
 			if (m_state != State.AlreadyReadFirstRow)

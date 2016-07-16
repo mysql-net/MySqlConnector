@@ -238,6 +238,26 @@ insert into get_name.test (id, value) VALUES (1, 'one'), (2, 'two');
 			}
 		}
 
+		[Fact]
+		public async Task MultipleStatementsWithInvalidSql()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = @"select 1; select 1 from mysql.abc; select 2;";
+				using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
+				{
+					Assert.True(await reader.ReadAsync().ConfigureAwait(false));
+					Assert.Equal(1, reader.GetInt32(0));
+					Assert.False(await reader.ReadAsync().ConfigureAwait(false));
+
+					await Assert.ThrowsAsync<MySqlException>(() => reader.NextResultAsync());
+					Assert.False(await reader.ReadAsync().ConfigureAwait(false));
+
+					Assert.False(await reader.NextResultAsync().ConfigureAwait(false));
+				}
+			}
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }
