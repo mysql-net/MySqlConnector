@@ -480,15 +480,15 @@ namespace MySql.Data.MySqlClient
 
 		private void DoClose()
 		{
-			while (NextResult())
-			{
-			}
-
-			Reset();
-			m_session = null;
-
 			if (m_command != null)
 			{
+				while (NextResult())
+				{
+				}
+
+				Reset();
+				m_session = null;
+
 				var connection = m_command.Connection;
 				connection.HasActiveReader = false;
 				if (m_behavior.HasFlag(CommandBehavior.CloseConnection))

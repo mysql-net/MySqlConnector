@@ -222,6 +222,22 @@ insert into get_name.test (id, value) VALUES (1, 'one'), (2, 'two');
 			}
 		}
 
+
+		[Fact]
+		public async Task DoubleDispose()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = @"select 1;";
+				using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
+				{
+					Assert.Equal(true, await reader.ReadAsync().ConfigureAwait(false));
+					reader.Dispose();
+					reader.Dispose();
+				}
+			}
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }
