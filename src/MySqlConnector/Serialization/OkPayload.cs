@@ -7,7 +7,7 @@
 		public ServerStatus ServerStatus { get; set; }
 		public int WarningCount { get; set; }
 
-		public static byte Signature = 0x00;
+		public const byte Signature = 0x00;
 
 		public static OkPayload Create(PayloadData payload)
 		{

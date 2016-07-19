@@ -7,7 +7,7 @@ namespace MySql.Data.Serialization
 		public string Name { get; }
 		public byte[] Data { get; }
 
-		public static byte Signature = 0xFE;
+		public const byte Signature = 0xFE;
 
 		public static AuthenticationMethodSwitchRequestPayload Create(PayloadData payload)
 		{
