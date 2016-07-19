@@ -1,5 +1,5 @@
 {
-	"version": "0.1.0-alpha08",
+	"version": "0.1.0-alpha09",
 	"title": "Async MySQL Connector",
 	"description": "A fully async MySQL ADO.NET provider for .NET and .NET Core",
 	"copyright": "Copyright 2016 Bradley Grainger",
@@ -9,7 +9,7 @@
 	"packOptions": {
 		"owners": [ "bgrainger" ],
 		"tags": [ "mysql", "async" ],
-		"releaseNotes": "Bug fixes (for GitHub issues #26 and #27).",
+		"releaseNotes": "Fix error reauthenticating against MariaDB (GitHub issue #28).",
 		"licenseUrl": "https://opensource.org/licenses/MIT",
 		"projectUrl": "https://github.com/bgrainger/MySqlConnector",
 		"repository": {
