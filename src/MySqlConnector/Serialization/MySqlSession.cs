@@ -16,6 +16,7 @@ namespace MySql.Data.Serialization
 		}
 
 		public ServerVersion ServerVersion { get; set; }
+		public byte[] AuthPluginData { get; set; }
 		public ConnectionPool Pool { get; }
 		public bool ReturnToPool() => Pool != null && Pool.Return(this);
 
