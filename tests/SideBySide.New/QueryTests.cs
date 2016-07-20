@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
 using MySql.Data.MySqlClient;
 using Xunit;
 
@@ -256,6 +258,46 @@ insert into get_name.test (id, value) VALUES (1, 'one'), (2, 'two');
 					Assert.False(await reader.NextResultAsync().ConfigureAwait(false));
 				}
 			}
+		}
+
+		[Fact]
+		public void DapperNullableBoolNullLast()
+		{
+			// adapted from https://github.com/StackExchange/dapper-dot-net/issues/552
+			m_database.Connection.Execute("drop schema if exists boolTest; create schema boolTest;");
+			m_database.Connection.Execute("create table boolTest.Test (Id int not null, IsBold BOOLEAN null );");
+			m_database.Connection.Execute("insert boolTest.Test (Id, IsBold) values (1,1);");
+			m_database.Connection.Execute("insert boolTest.Test (Id, IsBold) values (2,null);");
+
+			var rows = m_database.Connection.Query<BoolTest>("select * from boolTest.Test").ToDictionary(x => x.Id);
+
+			Assert.True(rows[1].IsBold);
+			Assert.Null(rows[2].IsBold);
+		}
+
+#if BASELINE
+		[Fact(Skip = "Broken by http://bugs.mysql.com/bug.php?id=82292")]
+#else
+		[Fact]
+#endif
+		public void DapperNullableBoolNullFirst()
+		{
+			// adapted from https://github.com/StackExchange/dapper-dot-net/issues/552
+			m_database.Connection.Execute("drop schema if exists boolTest; create schema boolTest;");
+			m_database.Connection.Execute("create table boolTest.Test (Id int not null, IsBold BOOLEAN null );");
+			m_database.Connection.Execute("insert boolTest.Test (Id, IsBold) values (2,null);");
+			m_database.Connection.Execute("insert boolTest.Test (Id, IsBold) values (1,1);");
+
+			var rows = m_database.Connection.Query<BoolTest>("select * from boolTest.Test").ToDictionary(x => x.Id);
+
+			Assert.True(rows[1].IsBold);
+			Assert.Null(rows[2].IsBold);
+		}
+
+		class BoolTest
+		{
+			public int Id { get; set; }
+			public bool? IsBold { get; set; }
 		}
 
 		readonly DatabaseFixture m_database;
