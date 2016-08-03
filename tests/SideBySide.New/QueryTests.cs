@@ -276,7 +276,7 @@ insert into get_name.test (id, value) VALUES (1, 'one'), (2, 'two');
 		}
 
 #if BASELINE
-		[Fact(Skip = "Broken by http://bugs.mysql.com/bug.php?id=82292")]
+		[Fact(Skip = "http://bugs.mysql.com/bug.php?id=82292")]
 #else
 		[Fact]
 #endif

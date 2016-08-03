@@ -28,7 +28,7 @@ namespace SideBySide
 		}
 
 #if BASELINE
-		[Theory(Skip = "Broken by https://bugs.mysql.com/bug.php?id=78917")]
+		[Theory(Skip = "https://bugs.mysql.com/bug.php?id=78917")]
 #else
 		[Theory]
 #endif
