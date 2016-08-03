@@ -294,6 +294,33 @@ insert into get_name.test (id, value) VALUES (1, 'one'), (2, 'two');
 			Assert.Null(rows[2].IsBold);
 		}
 
+#if BASELINE
+		[Fact(Skip = "https://bugs.mysql.com/bug.php?id=78760")]
+#else
+		[Fact]
+#endif
+		public void TabsAndNewLines()
+		{
+			m_database.Connection.Execute(@"drop schema if exists tabs;
+			create schema tabs;
+			create table tabs.test(
+				id bigint(20) not null primary key
+			);
+			insert into tabs.test(id) values(1);");
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select\ncount(*)\nfrom\ntabs.test;";
+				Assert.Equal(1L, (long) cmd.ExecuteScalar());
+			}
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select\tcount(*)\n\t\tfrom\ttabs.test;";
+				Assert.Equal(1L, (long) cmd.ExecuteScalar());
+			}
+		}
+
 		class BoolTest
 		{
 			public int Id { get; set; }
