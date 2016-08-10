@@ -16,6 +16,11 @@ namespace MySql.Data.Tests
 #else
 			Assert.Equal(true, csb.ConnectionReset);
 #endif
+#if BASELINE
+			Assert.False(csb.UseAffectedRows);
+#else
+			Assert.True(csb.UseAffectedRows);
+#endif
 			Assert.Equal(false, csb.ConvertZeroDateTime);
 			Assert.Equal("", csb.Database);
 			Assert.Equal(100u, csb.MaximumPoolSize);
@@ -33,7 +38,7 @@ namespace MySql.Data.Tests
 		[Fact]
 		public void ParseConnectionString()
 		{
-			var csb = new MySqlConnectionStringBuilder { ConnectionString = "Data Source=db-server;Port=1234;Uid=username;pwd=Pass1234;Initial Catalog=schema_name;Allow User Variables=true;Character Set=latin1;Convert Zero Datetime=true;Pooling=no;OldGuids=true;Compress=true;ConnectionReset=false;minpoolsize=5;maxpoolsize=15;persistsecurityinfo=yes" };
+			var csb = new MySqlConnectionStringBuilder { ConnectionString = "Data Source=db-server;Port=1234;Uid=username;pwd=Pass1234;Initial Catalog=schema_name;Allow User Variables=true;Character Set=latin1;Convert Zero Datetime=true;Pooling=no;OldGuids=true;Compress=true;ConnectionReset=false;minpoolsize=5;maxpoolsize=15;persistsecurityinfo=yes;useaffectedrows=false" };
 			Assert.Equal(true, csb.AllowUserVariables);
 			Assert.Equal("latin1", csb.CharacterSet);
 			Assert.Equal(false, csb.ConnectionReset);
@@ -47,6 +52,7 @@ namespace MySql.Data.Tests
 			Assert.Equal(false, csb.Pooling);
 			Assert.Equal(1234u, csb.Port);
 			Assert.Equal("db-server", csb.Server);
+			Assert.Equal(false, csb.UseAffectedRows);
 			Assert.Equal(true, csb.UseCompression);
 			Assert.Equal("username", csb.UserID);
 		}

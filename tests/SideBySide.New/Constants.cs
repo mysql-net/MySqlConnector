@@ -16,6 +16,7 @@ namespace SideBySide
 				UserID = UserName,
 				Password = Password,
 				ConvertZeroDateTime = true,
+				UseAffectedRows = true,
 			};
 		}
 	}

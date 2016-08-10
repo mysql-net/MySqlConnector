@@ -106,6 +106,12 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.MaximumPoolSize.SetValue(this, value); }
 		}
 
+		public bool UseAffectedRows
+		{
+			get { return MySqlConnectionStringOption.UseAffectedRows.GetValue(this); }
+			set { MySqlConnectionStringOption.UseAffectedRows.SetValue(this, value); }
+		}
+
 		public override bool ContainsKey(string key)
 		{
 			var option = MySqlConnectionStringOption.TryGetOptionForKey(key);
@@ -165,6 +171,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<bool> ConnectionReset;
 		public static readonly MySqlConnectionStringOption<uint> MinimumPoolSize;
 		public static readonly MySqlConnectionStringOption<uint> MaximumPoolSize;
+		public static readonly MySqlConnectionStringOption<bool> UseAffectedRows;
 
 		public static MySqlConnectionStringOption TryGetOptionForKey(string key)
 		{
@@ -259,6 +266,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(MaximumPoolSize = new MySqlConnectionStringOption<uint>(
 				keys: new[] { "Maximum Pool Size", "Max Pool Size", "MaximumPoolSize", "maxpoolsize" },
 				defaultValue: 100));
+
+			AddOption(UseAffectedRows = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "Use Affected Rows", "UseAffectedRows" },
+				defaultValue: true));
 		}
 
 		static readonly Dictionary<string, MySqlConnectionStringOption> s_options;

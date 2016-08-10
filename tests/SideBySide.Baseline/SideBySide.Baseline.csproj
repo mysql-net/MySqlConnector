@@ -108,6 +108,9 @@
     <Compile Include="..\SideBySide.New\TransactionFixture.cs">
       <Link>TransactionFixture.cs</Link>
     </Compile>
+    <Compile Include="..\SideBySide.New\UpdateTests.cs">
+      <Link>UpdateTests.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
