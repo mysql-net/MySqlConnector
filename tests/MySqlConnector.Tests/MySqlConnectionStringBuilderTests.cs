@@ -1,4 +1,5 @@
-﻿using MySql.Data.MySqlClient;
+﻿using System;
+using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace MySql.Data.Tests
@@ -56,5 +57,27 @@ namespace MySql.Data.Tests
 			Assert.Equal(true, csb.UseCompression);
 			Assert.Equal("username", csb.UserID);
 		}
+
+#if !BASELINE
+		[Fact]
+		public void UseCompressionNotSupported()
+		{
+			var csb = new MySqlConnectionStringBuilder
+			{
+				UseCompression = true,
+			};
+			Assert.Throws<NotSupportedException>(() => new MySqlConnection(csb.ConnectionString));
+		}
+
+		[Fact]
+		public void UseAffectedRowsNotSupported()
+		{
+			var csb = new MySqlConnectionStringBuilder
+			{
+				UseAffectedRows = false,
+			};
+			Assert.Throws<NotSupportedException>(() => new MySqlConnection(csb.ConnectionString));
+		}
+#endif
 	}
 }

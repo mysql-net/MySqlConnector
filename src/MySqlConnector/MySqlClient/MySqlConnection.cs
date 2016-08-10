@@ -101,11 +101,6 @@ namespace MySql.Data.MySqlClient
 				throw new NotSupportedException("Ambient transactions are not supported. Use BeginTransaction instead.");
 #endif
 
-			if (m_connectionStringBuilder.UseCompression)
-				throw new NotSupportedException("Compression not supported.");
-			if (!m_connectionStringBuilder.UseAffectedRows)
-				throw new NotSupportedException("UseAffectedRows=False is not supported.");
-
 			SetState(ConnectionState.Connecting);
 
 			bool success = false;
@@ -198,6 +193,11 @@ namespace MySql.Data.MySqlClient
 			{
 				m_connectionStringBuilder = new MySqlConnectionStringBuilder(value);
 				m_database = m_connectionStringBuilder.Database;
+
+				if (m_connectionStringBuilder.UseCompression)
+					throw new NotSupportedException("Compression=True is not supported.");
+				if (!m_connectionStringBuilder.UseAffectedRows)
+					throw new NotSupportedException("UseAffectedRows=False is not supported.");
 			}
 		}
 
