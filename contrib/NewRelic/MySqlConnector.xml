@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?><!-- Copyright (c) 2008-2014 New Relic, Inc.  All rights reserved. --><!--
+	When you edit this file, please use an XML aware editor (such as Visual Studio),
+	and pair with the companion file extension.xsd to minimize the
+	chance of introducing typos that may confuse the agent when it is run.
+--><extension xmlns="urn:newrelic-extension">
+	<instrumentation>
+
+		<!-- **************************  DATABASE INSTRUMENTATION  ***************************** -->
+
+		<!-- command methods -->
+		<tracerFactory name="NewRelic.Agent.Core.Tracer.Factories.Sql.DbCommandExecuteReaderTracerFactory">
+
+			<!-- MySqlConnector -->
+			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlCommand">
+				<exactMethodMatcher methodName="ExecuteReader" parameters="System.Data.CommandBehavior" />
+				<exactMethodMatcher methodName="ExecuteReaderAsync" parameters="System.Data.CommandBehavior,System.Threading.CancellationToken" />
+				<exactMethodMatcher methodName="ExecuteNonQuery" />
+				<exactMethodMatcher methodName="ExecuteNonQueryAsync" />
+				<exactMethodMatcher methodName="ExecuteScalar" />
+				<exactMethodMatcher methodName="ExecuteScalarAsync" />
+			</match>
+
+		</tracerFactory>
+
+		<!-- datareader methods -->
+		<tracerFactory name="NewRelic.Agent.Core.Tracer.Factories.Sql.DataReaderTracerFactory" level="1">
+
+			<!-- MySqlConnector -->
+			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlDataReader">
+				<exactMethodMatcher methodName="NextResult" />
+				<exactMethodMatcher methodName="NextResultAsync" />
+				<exactMethodMatcher methodName="Read" />
+				<exactMethodMatcher methodName="ReadAsync" />
+			</match>
+
+		</tracerFactory>
+
+		<!-- DbConnection.Open() -->
+		<tracerFactory>
+
+			<!-- MySqlConnector -->
+			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlConnection">
+				<exactMethodMatcher methodName="Open" />
+				<exactMethodMatcher methodName="OpenAsync" />
+			</match>
+
+		</tracerFactory>
+
+	</instrumentation>
+</extension>
