@@ -5,6 +5,7 @@
 		Quit = 1,
 		InitDatabase = 2,
 		Query = 3,
+		Ping = 14,
 		ChangeUser = 17,
 		PrepareStatement = 22,
 		ExecuteStatement = 23,
