@@ -22,7 +22,7 @@ namespace MySql.Data.Serialization
 
 		public void Dispose()
 		{
-			if (m_state == State.Connected)
+			if (m_transmitter != null)
 			{
 				try
 				{
@@ -33,8 +33,8 @@ namespace MySql.Data.Serialization
 				{
 					// socket may have been closed during shutdown; ignore
 				}
+				m_transmitter = null;
 			}
-			m_transmitter = null;
 			if (m_socket != null)
 			{
 				if (m_socket.Connected)
