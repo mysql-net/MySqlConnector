@@ -23,10 +23,7 @@ namespace MySql.Data.MySqlClient
 			ConnectionString = connectionString;
 		}
 
-		public new MySqlTransaction BeginTransaction()
-		{
-			return (MySqlTransaction) base.BeginTransaction();
-		}
+		public new MySqlTransaction BeginTransaction() => (MySqlTransaction) base.BeginTransaction();
 
 		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
 		{
@@ -77,20 +74,14 @@ namespace MySql.Data.MySqlClient
 		}
 #endif
 
-		public override void Close()
-		{
-			DoClose();
-		}
+		public override void Close() => DoClose();
 
 		public override void ChangeDatabase(string databaseName)
 		{
 			throw new NotImplementedException();
 		}
 
-		public override void Open()
-		{
-			OpenAsync(CancellationToken.None).GetAwaiter().GetResult();
-		}
+		public override void Open() => OpenAsync(CancellationToken.None).GetAwaiter().GetResult();
 
 		public override async Task OpenAsync(CancellationToken cancellationToken)
 		{
@@ -192,10 +183,7 @@ namespace MySql.Data.MySqlClient
 
 		public override string ServerVersion => m_session.ServerVersion.OriginalString;
 
-		protected override DbCommand CreateDbCommand()
-		{
-			return new MySqlCommand(this, CurrentTransaction);
-		}
+		protected override DbCommand CreateDbCommand() => new MySqlCommand(this, CurrentTransaction);
 
 #if !NETSTANDARD1_3
 		protected override DbProviderFactory DbProviderFactory => MySqlClientFactory.Instance;
