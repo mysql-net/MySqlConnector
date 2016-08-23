@@ -32,92 +32,96 @@ namespace SideBySide
 #else
 		[Theory]
 #endif
-		[InlineData("Boolean", new object[] { null, false, true, false, true, true, true })]
-		[InlineData("TinyInt1", new object[] { null, false, true, false, true, true, true })]
-		public void QueryBoolean(string column, object[] expected)
+		[InlineData("Boolean", "BOOL", new object[] { null, false, true, false, true, true, true })]
+		[InlineData("TinyInt1", "BOOL", new object[] { null, false, true, false, true, true, true })]
+		public void QueryBoolean(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("bools", column, expected, reader => reader.GetBoolean(0));
+			DoQuery("bools", column, dataTypeName, expected, reader => reader.GetBoolean(0));
 		}
 
 		[Theory]
-		[InlineData("SByte", new object[] { null, default(sbyte), sbyte.MinValue, sbyte.MaxValue, (sbyte) 123 })]
-		public void QuerySByte(string column, object[] expected)
+		[InlineData("SByte", "TINYINT", new object[] { null, default(sbyte), sbyte.MinValue, sbyte.MaxValue, (sbyte) 123 })]
+		public void QuerySByte(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("integers", column, expected, reader => ((MySqlDataReader) reader).GetSByte(0), baselineCoercedNullValue: default(sbyte));
+			DoQuery("integers", column, dataTypeName, expected, reader => ((MySqlDataReader) reader).GetSByte(0), baselineCoercedNullValue: default(sbyte));
 		}
 
 		[Theory]
-		[InlineData("Byte", new object[] { null, default(byte), byte.MinValue, byte.MaxValue, (byte) 123 })]
-		public void QueryByte(string column, object[] expected)
+		[InlineData("Byte", "TINYINT", new object[] { null, default(byte), byte.MinValue, byte.MaxValue, (byte) 123 })]
+		public void QueryByte(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("integers", column, expected, reader => reader.GetByte(0), baselineCoercedNullValue: default(byte));
+			DoQuery("integers", column, dataTypeName, expected, reader => reader.GetByte(0), baselineCoercedNullValue: default(byte));
 		}
 
 		[Theory]
-		[InlineData("Int16", new object[] { null, default(short), short.MinValue, short.MaxValue, (short) 12345 })]
-		public void QueryInt16(string column, object[] expected)
+		[InlineData("Int16", "SMALLINT", new object[] { null, default(short), short.MinValue, short.MaxValue, (short) 12345 })]
+		public void QueryInt16(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("integers", column, expected, reader => reader.GetInt16(0));
+			DoQuery("integers", column, dataTypeName, expected, reader => reader.GetInt16(0));
 		}
 
 		[Theory]
-		[InlineData("UInt16", new object[] { null, default(ushort), ushort.MinValue, ushort.MaxValue, (ushort) 12345 })]
-		public void QueryUInt16(string column, object[] expected)
+		[InlineData("UInt16", "SMALLINT", new object[] { null, default(ushort), ushort.MinValue, ushort.MaxValue, (ushort) 12345 })]
+		public void QueryUInt16(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery<InvalidCastException>("integers", column, expected, reader => reader.GetFieldValue<ushort>(0));
+			DoQuery<InvalidCastException>("integers", column, dataTypeName, expected, reader => reader.GetFieldValue<ushort>(0));
 		}
 
 		[Theory]
-		[InlineData("Int24", new object[] { null, default(int), -8388608, 8388607, 1234567 })]
-		[InlineData("Int32", new object[] { null, default(int), int.MinValue, int.MaxValue, 123456789 })]
-		public void QueryInt32(string column, object[] expected)
+		[InlineData("Int24", "MEDIUMINT", new object[] { null, default(int), -8388608, 8388607, 1234567 })]
+		[InlineData("Int32", "INT", new object[] { null, default(int), int.MinValue, int.MaxValue, 123456789 })]
+		public void QueryInt32(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("integers", column, expected, reader => reader.GetInt32(0));
+			DoQuery("integers", column, dataTypeName, expected, reader => reader.GetInt32(0));
 		}
 
 		[Theory]
-		[InlineData("UInt24", new object[] { null, default(uint), 0u, 16777215u, 1234567u })]
-		[InlineData("UInt32", new object[] { null, default(uint), uint.MinValue, uint.MaxValue, 123456789u })]
-		public void QueryUInt32(string column, object[] expected)
+		[InlineData("UInt24", "MEDIUMINT", new object[] { null, default(uint), 0u, 16777215u, 1234567u })]
+		[InlineData("UInt32", "INT", new object[] { null, default(uint), uint.MinValue, uint.MaxValue, 123456789u })]
+		public void QueryUInt32(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery<InvalidCastException>("integers", column, expected, reader => reader.GetFieldValue<uint>(0));
+#if BASELINE
+			// mysql-connector-int incorrectly returns "INT" for "MEDIUMINT UNSIGNED"
+			dataTypeName = "INT";
+#endif
+			DoQuery<InvalidCastException>("integers", column, dataTypeName, expected, reader => reader.GetFieldValue<uint>(0));
 		}
 
 		[Theory]
-		[InlineData("Int64", new object[] { null, default(long), long.MinValue, long.MaxValue, 1234567890123456789 })]
-		public void QueryInt64(string column, object[] expected)
+		[InlineData("Int64", "BIGINT", new object[] { null, default(long), long.MinValue, long.MaxValue, 1234567890123456789 })]
+		public void QueryInt64(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("integers", column, expected, reader => reader.GetInt64(0));
+			DoQuery("integers", column, dataTypeName, expected, reader => reader.GetInt64(0));
 		}
 
 		[Theory]
-		[InlineData("UInt64", new object[] { null, default(ulong), ulong.MinValue, ulong.MaxValue, 1234567890123456789u })]
-		public void QueryUInt64(string column, object[] expected)
+		[InlineData("UInt64", "BIGINT", new object[] { null, default(ulong), ulong.MinValue, ulong.MaxValue, 1234567890123456789u })]
+		public void QueryUInt64(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery<InvalidCastException>("integers", column, expected, reader => reader.GetFieldValue<ulong>(0));
+			DoQuery<InvalidCastException>("integers", column, dataTypeName, expected, reader => reader.GetFieldValue<ulong>(0));
 		}
 
 		[Theory]
-		[InlineData("Bit1", new object[] { null, 0UL, 1UL, 1UL })]
-		[InlineData("Bit32", new object[] { null, 0UL, 1UL, (ulong) uint.MaxValue })]
-		[InlineData("Bit64", new object[] { null, 0UL, 1UL, ulong.MaxValue })]
+		[InlineData("Bit1",  new object[] { null, 0UL, 1UL, 1UL })]
+		[InlineData("Bit32",  new object[] { null, 0UL, 1UL, (ulong) uint.MaxValue })]
+		[InlineData("Bit64",  new object[] { null, 0UL, 1UL, ulong.MaxValue })]
 		public void QueryBits(string column, object[] expected)
 		{
-			DoQuery<InvalidCastException>("bits", column, expected, reader => reader.GetFieldValue<ulong>(0));
+			DoQuery<InvalidCastException>("bits", column, "BIT", expected, reader => reader.GetFieldValue<ulong>(0));
 		}
 
 		[Theory]
-		[InlineData("Single", new object[] { null, default(float), -3.40282e38f, -1.4013e-45f, 3.40282e38f, 1.4013e-45f })]
-		public void QueryFloat(string column, object[] expected)
+		[InlineData("Single", "FLOAT", new object[] { null, default(float), -3.40282e38f, -1.4013e-45f, 3.40282e38f, 1.4013e-45f })]
+		public void QueryFloat(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("reals", column, expected, reader => reader.GetFloat(0));
+			DoQuery("reals", column, dataTypeName, expected, reader => reader.GetFloat(0));
 		}
 
 		[Theory]
-		[InlineData("`Double`", new object[] { null, default(double), -1.7976931348623157e308, -5e-324, 1.7976931348623157e308, 5e-324 })]
-		public void QueryDouble(string column, object[] expected)
+		[InlineData("`Double`", "DOUBLE", new object[] { null, default(double), -1.7976931348623157e308, -5e-324, 1.7976931348623157e308, 5e-324 })]
+		public void QueryDouble(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("reals", column, expected, reader => reader.GetDouble(0));
+			DoQuery("reals", column, dataTypeName, expected, reader => reader.GetDouble(0));
 		}
 
 		[Theory]
@@ -130,7 +134,7 @@ namespace SideBySide
 			for (int i = 0; i < expected.Length; i++)
 				if (expected[i] != null)
 					expected[i] = decimal.Parse((string) expected[i], CultureInfo.InvariantCulture);
-			DoQuery("reals", column, expected, reader => reader.GetDecimal(0));
+			DoQuery("reals", column, "DECIMAL", expected, reader => reader.GetDecimal(0));
 		}
 
 		[Theory]
@@ -141,22 +145,22 @@ namespace SideBySide
 		[InlineData("cp1251", new[] { null, "", "ASCII", "АБВГабвг", c_251ByteString })]
 		public void QueryString(string column, string[] expected)
 		{
-			DoQuery("strings", column, expected, reader => reader.GetString(0));
+			DoQuery("strings", column, "VARCHAR", expected, reader => reader.GetString(0));
 		}
 		const string c_251ByteString = "This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating \"this field is null\". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.";
 
 		[Theory]
-		[InlineData("guid", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f", "6A0E0A40-6228-11D3-A996-0050041896C8" })]
-		[InlineData("guidbin", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f", "6A0E0A40-6228-11D3-A996-0050041896C8" })]
-		public void QueryGuid(string column, object[] expected)
+		[InlineData("guid", "CHAR(36)", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f", "6A0E0A40-6228-11D3-A996-0050041896C8" })]
+		[InlineData("guidbin", "CHAR(36)", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f", "6A0E0A40-6228-11D3-A996-0050041896C8" })]
+		public void QueryGuid(string column, string dataTypeName, object[] expected)
 		{
 			for (int i = 0; i < expected.Length; i++)
 				if (expected[i] != null)
 					expected[i] = Guid.Parse((string) expected[i]);
 #if BASELINE
-			DoQuery<MySqlException>("strings", column, expected, reader => reader.GetGuid(0));
+			DoQuery<MySqlException>("strings", column, dataTypeName, expected, reader => reader.GetGuid(0));
 #else
-			DoQuery("strings", column, expected, reader => reader.GetGuid(0));
+			DoQuery("strings", column, dataTypeName, expected, reader => reader.GetGuid(0));
 #endif
 		}
 
@@ -233,12 +237,12 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData("`Date`", new object[] { null, "1000 01 01", "9999 12 31", "0001 01 01", "2016 04 05" })]
-		[InlineData("`DateTime`", new object[] { null, "1000 01 01 0 0 0", "9999 12 31 23 59 59 999999", "0001 01 01 0 0 0", "2016 4 5 14 3 4 567890" })]
-		[InlineData("`Timestamp`", new object[] { null, "1970 01 01 0 0 1", "2038 1 18 3 14 7 999999", "0001 01 01 0 0 0", "2016 4 5 14 3 4 567890" })]
-		public void QueryDate(string column, object[] expected)
+		[InlineData("`Date`", "DATE", new object[] { null, "1000 01 01", "9999 12 31", "0001 01 01", "2016 04 05" })]
+		[InlineData("`DateTime`", "DATETIME", new object[] { null, "1000 01 01 0 0 0", "9999 12 31 23 59 59 999999", "0001 01 01 0 0 0", "2016 4 5 14 3 4 567890" })]
+		[InlineData("`Timestamp`", "TIMESTAMP", new object[] { null, "1970 01 01 0 0 1", "2038 1 18 3 14 7 999999", "0001 01 01 0 0 0", "2016 4 5 14 3 4 567890" })]
+		public void QueryDate(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("times", column, ConvertToDateTime(expected), reader => reader.GetDateTime(0));
+			DoQuery("times", column, dataTypeName, ConvertToDateTime(expected), reader => reader.GetDateTime(0));
 		}
 
 		[Theory]
@@ -282,17 +286,21 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData("`Time`", new object[] { null, "-838 -59 -59", "838 59 59", "0 0 0", "0 14 3 4 567890" })]
-		public void QueryTime(string column, object[] expected)
+		[InlineData("`Time`", "TIME", new object[] { null, "-838 -59 -59", "838 59 59", "0 0 0", "0 14 3 4 567890" })]
+		public void QueryTime(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery<InvalidCastException>("times", column, ConvertToTimeSpan(expected), reader => reader.GetFieldValue<TimeSpan>(0));
+			DoQuery<InvalidCastException>("times", column, dataTypeName, ConvertToTimeSpan(expected), reader => reader.GetFieldValue<TimeSpan>(0));
 		}
 
 		[Theory]
-		[InlineData("`Year`", new object[] { null, 1901, 2155, 0, 2016 })]
-		public void QueryYear(string column, object[] expected)
+		[InlineData("`Year`", "YEAR", new object[] { null, 1901, 2155, 0, 2016 })]
+		public void QueryYear(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("times", column, expected, reader => reader.GetInt32(0));
+#if BASELINE
+			// mysql-connector-int incorrectly returns "INT" for "YEAR"
+			dataTypeName = "INT";
+#endif
+			DoQuery("times", column, dataTypeName, expected, reader => reader.GetInt32(0));
 		}
 
 		[Theory]
@@ -308,7 +316,7 @@ namespace SideBySide
 			if (data.Length < padLength)
 				Array.Resize(ref data, padLength);
 
-			DoQuery<NullReferenceException>("blobs", "`" + column + "`", new object[] { null, data }, GetBytes);
+			DoQuery<NullReferenceException>("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, GetBytes);
 		}
 
 		[Theory]
@@ -353,14 +361,14 @@ namespace SideBySide
 			return result;
 		}
 
-		private void DoQuery(string table, string column, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null)
+		private void DoQuery(string table, string column, string dataTypeName, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null)
 		{
-			DoQuery<GetValueWhenNullException>(table, column, expected, getValue, baselineCoercedNullValue);
+			DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, baselineCoercedNullValue);
 		}
 
 		// NOTE: baselineCoercedNullValue is to work around inconsistencies in mysql-connector-net; DBNull.Value will
 		// be coerced to 0 by some reader.GetX() methods, but not others.
-		private void DoQuery<TException>(string table, string column, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null)
+		private void DoQuery<TException>(string table, string column, string dataTypeName, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null)
 			where TException : Exception
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
@@ -368,6 +376,7 @@ namespace SideBySide
 				cmd.CommandText = Invariant($"select {column} from datatypes.{table} order by rowid");
 				using (var reader = cmd.ExecuteReader())
 				{
+					Assert.Equal(dataTypeName, reader.GetDataTypeName(0));
 					foreach (var value in expected)
 					{
 						Assert.True(reader.Read());

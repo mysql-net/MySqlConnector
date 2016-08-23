@@ -281,7 +281,70 @@ namespace MySql.Data.MySqlClient
 
 		public override string GetDataTypeName(int ordinal)
 		{
-			throw new NotImplementedException();
+			VerifyHasResult();
+			if (ordinal < 0 || ordinal > m_columnDefinitions.Length)
+				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(m_columnDefinitions.Length));
+
+			var columnDefinition = m_columnDefinitions[ordinal];
+			switch (columnDefinition.ColumnType)
+			{
+			case ColumnType.Tiny:
+				return columnDefinition.ColumnLength == 1 ? "BOOL" : "TINYINT";
+
+			case ColumnType.Short:
+				return "SMALLINT";
+
+			case ColumnType.Int24:
+				return "MEDIUMINT";
+
+			case ColumnType.Long:
+				return "INT";
+
+			case ColumnType.Longlong:
+				return "BIGINT";
+
+			case ColumnType.Bit:
+				return "BIT";
+
+			case ColumnType.String:
+				return columnDefinition.CharacterSet == CharacterSet.Binary ? "BLOB" :
+					string.Format(CultureInfo.InvariantCulture, "CHAR({0})", columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet));
+
+			case ColumnType.VarString:
+			case ColumnType.TinyBlob:
+			case ColumnType.Blob:
+			case ColumnType.MediumBlob:
+			case ColumnType.LongBlob:
+				return columnDefinition.CharacterSet == CharacterSet.Binary ? "BLOB" : "VARCHAR";
+
+			case ColumnType.Date:
+				return "DATE";
+
+			case ColumnType.DateTime:
+				return "DATETIME";
+
+			case ColumnType.Timestamp:
+				return "TIMESTAMP";
+
+			case ColumnType.Time:
+				return "TIME";
+
+			case ColumnType.Year:
+				return "YEAR";
+
+			case ColumnType.Float:
+				return "FLOAT";
+
+			case ColumnType.Double:
+				return "DOUBLE";
+
+			case ColumnType.Decimal:
+			case ColumnType.NewDecimal:
+				return "DECIMAL";
+
+			default:
+				throw new NotImplementedException("GetDataTypeName for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));
+			}
 		}
 
 		public override Type GetFieldType(int ordinal)
