@@ -381,7 +381,7 @@ namespace MySql.Data.MySqlClient
 			case ColumnType.Blob:
 			case ColumnType.MediumBlob:
 			case ColumnType.LongBlob:
-				return columnDefinition.ColumnFlags.HasFlag(ColumnFlags.Binary) ?
+				return columnDefinition.CharacterSet == CharacterSet.Binary ?
 					(Connection.OldGuids && columnDefinition.ColumnLength == 16 ? typeof(Guid) : typeof(byte[])) :
 					typeof(string);
 

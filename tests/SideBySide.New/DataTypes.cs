@@ -396,6 +396,7 @@ namespace SideBySide
 						{
 							Assert.Equal(value, reader.GetValue(0));
 							Assert.Equal(value, getValue(reader));
+							Assert.Equal(value.GetType(), reader.GetFieldType(0));
 						}
 					}
 					Assert.False(reader.Read());
