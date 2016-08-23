@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
@@ -273,6 +274,27 @@ insert into get_name.test (id, value) VALUES (1, 'one'), (2, 'two');
 
 			Assert.True(rows[1].IsBold);
 			Assert.Null(rows[2].IsBold);
+		}
+
+
+		[Fact]
+		public async Task GetEnumerator()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = @"drop schema if exists enumerator;
+					create schema enumerator;
+					create table enumerator.test(value text);
+					insert into enumerator.test(value) values('one'), ('two'), ('three'), ('four');";
+				await cmd.ExecuteNonQueryAsync();
+			}
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = @"select value from enumerator.test order by value asc;";
+				using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
+					Assert.Equal(new[] { "four", "one", "three", "two" }, reader.Cast<IDataRecord>().Select(x => x.GetString(0)));
+			}
 		}
 
 #if BASELINE

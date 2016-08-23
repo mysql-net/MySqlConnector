@@ -499,10 +499,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public override IEnumerator GetEnumerator()
-		{
-			throw new NotSupportedException();
-		}
+		public override IEnumerator GetEnumerator() => new DbEnumerator(this, closeReader: false);
 
 		public override int Depth
 		{
