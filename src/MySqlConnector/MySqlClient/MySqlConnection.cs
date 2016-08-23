@@ -197,6 +197,10 @@ namespace MySql.Data.MySqlClient
 			return new MySqlCommand(this, CurrentTransaction);
 		}
 
+#if !NETSTANDARD1_3
+		protected override DbProviderFactory DbProviderFactory => MySqlClientFactory.Instance;
+#endif
+
 		public override int ConnectionTimeout
 		{
 			get { throw new NotImplementedException(); }
