@@ -1,5 +1,5 @@
 {
-	"version": "0.1.0-alpha12",
+	"version": "0.1.0-alpha13",
 	"title": "Async MySQL Connector",
 	"description": "A fully async MySQL ADO.NET provider for .NET and .NET Core",
 	"copyright": "Copyright 2016 Bradley Grainger",
@@ -9,7 +9,7 @@
 	"packOptions": {
 		"owners": [ "bgrainger" ],
 		"tags": [ "mysql", "async" ],
-		"releaseNotes": "Fix NullReferenceException in MySqlSession.Dispose.",
+		"releaseNotes": "Implement DbProviderFactory, DbDataReader.GetEnumerator, DbDataReader.GetDataTypeName.",
 		"licenseUrl": "https://opensource.org/licenses/MIT",
 		"projectUrl": "https://github.com/bgrainger/MySqlConnector",
 		"repository": {
@@ -33,7 +33,7 @@
 			},
 			"dependencies": {
 				"System.Collections": "4.0.11-*",
-				"System.Data.Common": "4.0.1-*",
+				"System.Data.Common": "4.1.0-*",
 				"System.Globalization": "4.0.11-*",
 				"System.IO": "4.1.0-*",
 				"System.Linq": "4.1.0-*",
