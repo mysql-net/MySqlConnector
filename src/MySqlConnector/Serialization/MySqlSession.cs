@@ -65,7 +65,7 @@ namespace MySql.Data.Serialization
 					Socket socket = null;
 					try
 					{
-						socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+						socket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 #if NETSTANDARD1_3
 						await socket.ConnectAsync(ipAddress, port).ConfigureAwait(false);
 #else
