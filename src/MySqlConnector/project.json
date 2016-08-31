@@ -8,7 +8,7 @@
 	},
 	"packOptions": {
 		"owners": [ "bgrainger" ],
-		"tags": [ "mysql", "async" ],
+		"tags": [ "mysql", "async", "ado.net", "database", "netcore" ],
 		"releaseNotes": "Implement DbProviderFactory, DbDataReader.GetEnumerator, DbDataReader.GetDataTypeName.",
 		"licenseUrl": "https://opensource.org/licenses/MIT",
 		"projectUrl": "https://github.com/bgrainger/MySqlConnector",
