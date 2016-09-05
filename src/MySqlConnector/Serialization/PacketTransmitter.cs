@@ -68,7 +68,7 @@ namespace MySql.Data.Serialization
 				else
 				{
 					m_socketAwaitable.EventArgs.SetBuffer(null, 0, 0);
-					m_socketAwaitable.EventArgs.BufferList = new[] { new ArraySegment<byte>(m_buffer, 0, 4), data };
+					m_socketAwaitable.EventArgs.BufferList = new[] { new ArraySegment<byte>(m_buffer, 0, 4), new ArraySegment<byte>(data.Array, data.Offset + bytesSent, bytesToSend) };
 					await m_socket.SendAsync(m_socketAwaitable);
 					m_socketAwaitable.EventArgs.BufferList = null;
 					m_socketAwaitable.EventArgs.SetBuffer(m_buffer, 0, 0);
