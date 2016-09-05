@@ -126,7 +126,10 @@ namespace MySql.Data.Serialization
 		private void TryAsyncContinuation(Task task)
 		{
 			if (task.IsFaulted)
+			{
 				SetFailed();
+				task.GetAwaiter().GetResult();
+			}
 		}
 
 		private ValueTask<PayloadData> TryAsync(Func<CancellationToken, ValueTask<PayloadData>> func, CancellationToken cancellationToken)
