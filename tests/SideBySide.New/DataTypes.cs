@@ -325,8 +325,8 @@ namespace SideBySide
 #if false
 		// MySQL has a default max_allowed_packet size of 4MB; without changing the server configuration, it's impossible
 		// to send more than 4MB of data.
-		[InlineData("MediumBlob", 16777216)]
-		[InlineData("LargeBlob", 67108864)]
+		[InlineData("MediumBlob", 16777215)]
+		[InlineData("LongBlob", 67108864)]
 #endif
 		public void InsertLargeBlob(string column, int size)
 		{
