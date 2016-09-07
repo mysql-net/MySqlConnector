@@ -76,9 +76,7 @@ namespace SideBySide
 
 		public void Dispose()
 		{
-#if !BASELINE
-			MySqlHelper.ClearConnectionPools();
-#endif
+			MySqlConnection.ClearAllPools();
 		}
 	}
 }

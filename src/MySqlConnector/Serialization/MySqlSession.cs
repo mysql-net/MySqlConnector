@@ -22,12 +22,17 @@ namespace MySql.Data.Serialization
 
 		public void Dispose()
 		{
+			DisposeAsync(CancellationToken.None).GetAwaiter().GetResult();
+		}
+
+		public async Task DisposeAsync(CancellationToken cancellationToken)
+		{
 			if (m_transmitter != null)
 			{
 				try
 				{
-					m_transmitter.SendAsync(QuitPayload.Create(), CancellationToken.None).GetAwaiter().GetResult();
-					m_transmitter.TryReceiveReplyAsync(CancellationToken.None).AsTask().GetAwaiter().GetResult();
+					await m_transmitter.SendAsync(QuitPayload.Create(), cancellationToken).ConfigureAwait(false);
+					await m_transmitter.TryReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 				}
 				catch (SocketException)
 				{

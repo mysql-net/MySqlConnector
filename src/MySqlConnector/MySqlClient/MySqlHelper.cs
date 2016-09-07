@@ -1,7 +1,10 @@
-﻿namespace MySql.Data.MySqlClient
+﻿using System;
+
+namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlHelper
 	{
-		public static void ClearConnectionPools() => ConnectionPool.ClearPools();
+		[Obsolete("Use MySqlConnection.ClearAllPools or MySqlConnection.ClearAllPoolsAsync")]
+		public static void ClearConnectionPools() => MySqlConnection.ClearAllPools();
 	}
 }

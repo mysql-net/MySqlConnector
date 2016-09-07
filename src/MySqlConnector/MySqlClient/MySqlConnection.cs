@@ -100,7 +100,7 @@ namespace MySql.Data.MySqlClient
 			{
 				// get existing session from the pool if possible
 				var pool = ConnectionPool.GetPool(m_connectionStringBuilder);
-				m_session = pool?.TryGetSession();
+				m_session = pool == null ? null : await pool.TryGetSessionAsync(cancellationToken).ConfigureAwait(false);
 
 				if (m_session != null)
 				{
@@ -182,6 +182,22 @@ namespace MySql.Data.MySqlClient
 		public override string DataSource => m_connectionStringBuilder.Server;
 
 		public override string ServerVersion => m_session.ServerVersion.OriginalString;
+
+		public static void ClearPool(MySqlConnection connection) => ClearPoolAsync(connection, CancellationToken.None).GetAwaiter().GetResult();
+		public static void ClearAllPools() => ClearAllPoolsAsync(CancellationToken.None).GetAwaiter().GetResult();
+		public static Task ClearPoolAsync(MySqlConnection connection) => ClearPoolAsync(connection, CancellationToken.None);
+		public static Task ClearAllPoolsAsync() => ClearAllPoolsAsync(CancellationToken.None);
+		public static Task ClearAllPoolsAsync(CancellationToken cancellationToken) => ConnectionPool.ClearPoolsAsync(cancellationToken);
+
+		public static async Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken)
+		{
+			if (connection == null)
+				throw new ArgumentNullException(nameof(connection));
+
+			var pool = ConnectionPool.GetPool(connection.m_connectionStringBuilder);
+			if (pool != null)
+				await pool.ClearAsync(cancellationToken).ConfigureAwait(false);
+		}
 
 		protected override DbCommand CreateDbCommand() => new MySqlCommand(this, CurrentTransaction);
 
