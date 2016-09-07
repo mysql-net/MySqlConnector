@@ -159,14 +159,36 @@ namespace MySql.Data.MySqlClient
 		public override short GetInt16(int ordinal)
 		{
 			object value = GetValue(ordinal);
+			if (value is short)
+				return (short) value;
+
+			if (value is sbyte)
+				return (sbyte) value;
+			if (value is byte)
+				return (byte) value;
 			if (value is ushort)
 				return checked((short) (ushort) value);
+			if (value is int)
+				return checked((short) (int) value);
+			if (value is uint)
+				return checked((short) (uint) value);
+			if (value is long)
+				return checked((short) (long) value);
+			if (value is ulong)
+				return checked((short) (ulong) value);
 			return (short) value;
 		}
 
 		public override int GetInt32(int ordinal)
 		{
 			object value = GetValue(ordinal);
+			if (value is int)
+				return (int) value;
+
+			if (value is sbyte)
+				return (sbyte) value;
+			if (value is byte)
+				return (byte) value;
 			if (value is short)
 				return (short) value;
 			if (value is ushort)
@@ -183,8 +205,17 @@ namespace MySql.Data.MySqlClient
 		public override long GetInt64(int ordinal)
 		{
 			object value = GetValue(ordinal);
+			if (value is long)
+				return (long) value;
+
+			if (value is sbyte)
+				return (sbyte) value;
+			if (value is byte)
+				return (byte) value;
 			if (value is short)
 				return (short) value;
+			if (value is ushort)
+				return (ushort) value;
 			if (value is int)
 				return (int) value;
 			if (value is uint)
