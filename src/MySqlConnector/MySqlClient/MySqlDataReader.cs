@@ -283,7 +283,7 @@ namespace MySql.Data.MySqlClient
 			get
 			{
 				VerifyNotDisposed();
-				return m_columnDefinitions.Length;
+				return m_columnDefinitions?.Length ?? 0;
 			}
 		}
 
