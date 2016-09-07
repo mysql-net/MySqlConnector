@@ -61,7 +61,7 @@ namespace MySql.Data.Serialization
 
 				if (bytesToSend <= m_buffer.Length - 4)
 				{
-					Buffer.BlockCopy(data.Array, data.Offset, m_buffer, 4, bytesToSend);
+					Buffer.BlockCopy(data.Array, data.Offset + bytesSent, m_buffer, 4, bytesToSend);
 					m_socketAwaitable.EventArgs.SetBuffer(0, bytesToSend + 4);
 					await m_socket.SendAsync(m_socketAwaitable);
 				}
