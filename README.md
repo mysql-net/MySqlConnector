@@ -13,14 +13,19 @@ Ubuntu 14.04 | Windows x64
 This is an [ADO.NET](https://msdn.microsoft.com/en-us/library/e80y5yhx.aspx) data
 provider for [MySQL](https://www.mysql.com/). It provides implementations of
 `DbConnection`, `DbCommand`, `DbDataReader`, `DbTransaction`—the classes
-needed to query and update databases from managed code. It’s compatible with
-popular data access libraries such as [Dapper](https://github.com/StackExchange/dapper-dot-net).
+needed to query and update databases from managed code.
 
 This is a clean-room reimplementation of the [MySQL Protocol](https://dev.mysql.com/doc/internals/en/client-server-protocol.html)
 and is not based on the [official connector](https://github.com/mysql/mysql-connector-net). It’s
 fully async, supporting the async ADO.NET methods added in .NET 4.5 without blocking
 (or using `Task.Run` to run synchronous methods on a background thread). It’s also 100%
 compatible with .NET Core.
+
+This library is compatible with popular .NET ORMs including:
+
+* [Dapper](https://github.com/StackExchange/dapper-dot-net) ([NuGet](https://www.nuget.org/packages/Dapper))
+* [NReco.Data](https://github.com/nreco/data) ([NuGet](https://www.nuget.org/packages/NReco.Data))
+* [SimpleStack.Orm](https://github.com/SimpleStack/simplestack.orm) ([NuGet](https://www.nuget.org/packages/SimpleStack.Orm.MySQLConnector))
 
 ## Building
 
