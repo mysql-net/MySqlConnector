@@ -27,6 +27,85 @@ namespace SideBySide
 			m_database = database;
 		}
 
+		[Theory]
+		[InlineData("SByte", new[] { 1, 0, 0, 0, 0 }, new short[] { 0, 0, -128, 127, 123 })]
+		[InlineData("Byte", new[] { 1, 0, 0, 0, 0 }, new short[] { 0, 0, 0, 255, 123 })]
+		[InlineData("Int16", new[] { 1, 0, 0, 0, 0 }, new short[] { 0, 0, -32768, 32767, 12345 })]
+		[InlineData("UInt16", new[] { 1, 0, 0, 2, 0 }, new short[] { 0, 0, 0, 0, 12345 })]
+		[InlineData("Int24", new[] { 1, 0, 2, 2, 2 }, new short[] { 0, 0, 0, 0, 0 })]
+		[InlineData("UInt24", new[] { 1, 0, 0, 2, 2 }, new short[] { 0, 0, 0, 0, 0 })]
+		[InlineData("Int32", new[] { 1, 0, 2, 2, 2 }, new short[] { 0, 0, 0, 0, 0 })]
+		[InlineData("UInt32", new[] { 1, 0, 0, 2, 2 }, new short[] { 0, 0, 0, 0, 0 })]
+		[InlineData("Int64", new[] { 1, 0, 2, 2, 2 }, new short[] { 0, 0, 0, 0, 0 })]
+		[InlineData("UInt64", new[] { 1, 0, 0, 2, 2 }, new short[] { 0, 0, 0, 0, 0 })]
+		public async Task GetInt16(string column, int[] flags, short[] values)
+		{
+			await DoGetInt(column, (r, n) => r.GetInt16(n), flags, values).ConfigureAwait(false);
+		}
+
+		[Theory]
+		[InlineData("SByte", new[] { 1, 0, 0, 0, 0 }, new[] { 0, 0, -128, 127, 123 })]
+		[InlineData("Byte", new[] { 1, 0, 0, 0, 0 }, new[] { 0, 0, 0, 255, 123 })]
+		[InlineData("Int16", new[] { 1, 0, 0, 0, 0 }, new[] { 0, 0, -32768, 32767, 12345 })]
+		[InlineData("UInt16", new[] { 1, 0, 0, 0, 0 }, new[] { 0, 0, 0, 65535, 12345 })]
+		[InlineData("Int24", new[] { 1, 0, 0, 0, 0 }, new[] { 0, 0, -8388608, 8388607, 1234567 })]
+		[InlineData("UInt24", new[] { 1, 0, 0, 0, 0 }, new[] { 0, 0, 0, 16777215, 1234567 })]
+		[InlineData("Int32", new[] { 1, 0, 0, 0, 0 }, new[] { 0, 0, -2147483648, 2147483647, 123456789 })]
+		[InlineData("UInt32", new[] { 1, 0, 0, 2, 0 }, new[] { 0, 0, 0, 0, 123456789 })]
+		[InlineData("Int64", new[] { 1, 0, 2, 2, 2 }, new[] { 0, 0, 0, 0, 0 })]
+		[InlineData("UInt64", new[] { 1, 0, 0, 2, 2 }, new[] { 0, 0, 0, 0, 0 })]
+		public async Task GetInt32(string column, int[] flags, int[] values)
+		{
+			await DoGetInt(column, (r, n) => r.GetInt32(n), flags, values).ConfigureAwait(false);
+		}
+
+		[Theory]
+		[InlineData("SByte", new[] { 1, 0, 0, 0, 0 }, new[] { 0L, 0, -128, 127, 123 })]
+		[InlineData("Byte", new[] { 1, 0, 0, 0, 0 }, new[] { 0L, 0, 0, 255, 123 })]
+		[InlineData("Int16", new[] { 1, 0, 0, 0, 0 }, new[] { 0L, 0, -32768, 32767, 12345 })]
+		[InlineData("UInt16", new[] { 1, 0, 0, 0, 0 }, new[] { 0L, 0, 0, 65535, 12345 })]
+		[InlineData("Int24", new[] { 1, 0, 0, 0, 0 }, new[] { 0L, 0, -8388608, 8388607, 1234567 })]
+		[InlineData("UInt24", new[] { 1, 0, 0, 0, 0 }, new[] { 0L, 0, 0, 16777215, 1234567 })]
+		[InlineData("Int32", new[] { 1, 0, 0, 0, 0 }, new[] { 0L, 0, -2147483648, 2147483647, 123456789 })]
+		[InlineData("UInt32", new[] { 1, 0, 0, 0, 0 }, new[] { 0L, 0, 0, 4294967295L, 123456789 })]
+		[InlineData("Int64", new[] { 1, 0, 0, 0, 0 }, new[] { 0L, 0, -9223372036854775808, 9223372036854775807, 1234567890123456789 })]
+		[InlineData("UInt64", new[] { 1, 0, 0, 2, 0 }, new[] { 0L, 0, 0, 0, 1234567890123456789 })]
+		public async Task GetInt64(string column, int[] flags, long[] values)
+		{
+			await DoGetInt(column, (r, n) => r.GetInt64(n), flags, values).ConfigureAwait(false);
+		}
+
+		public async Task DoGetInt<T>(string column, Func<DbDataReader, int, T> getInt, int[] flags, T[] values)
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = Invariant($"select {column} from datatypes.integers order by rowid");
+				using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
+				{
+					for (int i = 0; i < flags.Length; i++)
+					{
+						Assert.True(await reader.ReadAsync().ConfigureAwait(false));
+						switch (flags[i])
+						{
+						case 0: // normal
+							Assert.Equal(values[i], getInt(reader, 0));
+							break;
+
+						case 1: // null
+							Assert.True(await reader.IsDBNullAsync(0).ConfigureAwait(false));
+							break;
+
+						case 2: // overflow
+							Assert.Throws<OverflowException>(() => getInt(reader, 0));
+							break;
+						}
+					}
+					Assert.False(await reader.ReadAsync().ConfigureAwait(false));
+					Assert.False(await reader.NextResultAsync().ConfigureAwait(false));
+				}
+			}
+		}
+
 #if BASELINE
 		[Theory(Skip = "https://bugs.mysql.com/bug.php?id=78917")]
 #else
