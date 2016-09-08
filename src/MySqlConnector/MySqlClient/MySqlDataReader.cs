@@ -152,8 +152,20 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public override Guid GetGuid(int ordinal)
-		{
-			return (Guid) GetValue(ordinal);
+		{            
+			object v = GetValue(i);
+            if (v is Guid)
+                return (Guid)v;
+            if (v is string)
+                return new Guid(v as string);
+            if (v is byte[])
+            {
+                byte[] bytes = (byte[])v;
+                if (bytes.Length == 16)
+                    return new Guid(bytes);
+            }
+            Throw(new MySqlException(Resources.ValueNotSupportedForGuid));
+            return Guid.Empty;
 		}
 
 		public override short GetInt16(int ordinal)
