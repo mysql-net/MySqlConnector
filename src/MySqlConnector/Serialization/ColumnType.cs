@@ -34,5 +34,7 @@
 		VarString = 0xFD,
 		String = 0xFE,
 		Geometry = 0xFF,
-	}
+        Json = 245,
+        Guid = 800
+    }
 }
