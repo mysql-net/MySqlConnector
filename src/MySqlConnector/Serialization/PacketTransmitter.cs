@@ -47,12 +47,11 @@ namespace MySql.Data.Serialization
 		{
 			var bytesSent = 0;
 			var data = payload.ArraySegment;
-			const int maxBytesToSend = 16777215;
 			int bytesToSend;
 			do
 			{
 				// break payload into packets of at most (2^24)-1 bytes
-				bytesToSend = Math.Min(data.Count - bytesSent, maxBytesToSend);
+				bytesToSend = Math.Min(data.Count - bytesSent, c_maxPacketSize);
 
 				// write four-byte packet header; https://dev.mysql.com/doc/internals/en/mysql-packet.html
 				SerializationUtility.WriteUInt32((uint) bytesToSend, m_buffer, 0, 3);
@@ -75,7 +74,7 @@ namespace MySql.Data.Serialization
 				}
 
 				bytesSent += bytesToSend;
-			} while (bytesToSend == maxBytesToSend);
+			} while (bytesToSend == c_maxPacketSize);
 		}
 
 		private ValueTask<PayloadData> DoReceiveAsync(CancellationToken cancellationToken, bool optional = false)
@@ -105,6 +104,30 @@ namespace MySql.Data.Serialization
 		}
 
 		private async Task<PayloadData> DoReceiveAsync2(CancellationToken cancellationToken, bool optional = false)
+		{
+			// common case: the payload is contained within one packet
+			var payload = await ReceivePacketAsync(cancellationToken, optional).ConfigureAwait(false);
+			if (payload == null || payload.ArraySegment.Count != c_maxPacketSize)
+				return payload;
+
+			// concatenate all the data, starting with the array from the first payload (ASSUME: we can take ownership of this array)
+			if (payload.ArraySegment.Offset != 0 || payload.ArraySegment.Count != payload.ArraySegment.Array.Length)
+				throw new InvalidOperationException("Expected to be able to reuse underlying array");
+			var payloadBytes = payload.ArraySegment.Array;
+
+			do
+			{
+				payload = await ReceivePacketAsync(cancellationToken, optional).ConfigureAwait(false);
+
+				var oldLength = payloadBytes.Length;
+				Array.Resize(ref payloadBytes, payloadBytes.Length + payload.ArraySegment.Count);
+				Buffer.BlockCopy(payload.ArraySegment.Array, payload.ArraySegment.Offset, payloadBytes, oldLength, payload.ArraySegment.Count);
+			} while (payload.ArraySegment.Count == c_maxPacketSize);
+
+			return new PayloadData(new ArraySegment<byte>(payloadBytes));
+		}
+
+		private async Task<PayloadData> ReceivePacketAsync(CancellationToken cancellationToken, bool optional)
 		{
 			if (m_end - m_offset < 4)
 			{
@@ -189,6 +212,8 @@ namespace MySql.Data.Serialization
 
 			return new PayloadData(new ArraySegment<byte>(readData, 0, payloadLength));
 		}
+
+		const int c_maxPacketSize = 16777215;
 
 		readonly Socket m_socket;
 		readonly SocketAwaitable m_socketAwaitable;
