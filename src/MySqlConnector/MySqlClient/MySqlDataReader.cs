@@ -153,7 +153,7 @@ namespace MySql.Data.MySqlClient
 
 		public override Guid GetGuid(int ordinal)
 		{            
-			object v = GetValue(i);
+			object v = GetValue(ordinal);
             if (v is Guid)
                 return (Guid)v;
             if (v is string)
@@ -164,7 +164,7 @@ namespace MySql.Data.MySqlClient
                 if (bytes.Length == 16)
                     return new Guid(bytes);
             }
-            Throw(new MySqlException(Resources.ValueNotSupportedForGuid));
+            throw new MySqlException("Value NotSupported For Guid");
             return Guid.Empty;
 		}
 
