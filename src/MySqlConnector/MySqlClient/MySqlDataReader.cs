@@ -154,15 +154,20 @@ namespace MySql.Data.MySqlClient
         public override Guid GetGuid(int ordinal)
         {
             var v = GetValue(ordinal);
-            if (v is Guid)
-                return (Guid)v;
-            if (v is string)
-                return new Guid(v as string);
-            if (v is byte[])
+            try
             {
-                byte[] bytes = (byte[])v;
-                if (bytes.Length == 16)
-                    return new Guid(bytes);
+                return (Guid)v;
+            }
+            catch
+            {
+                if (v is string)
+                    return new Guid(v as string);
+                if (v is byte[])
+                {
+                    byte[] bytes = (byte[])v;
+                    if (bytes.Length == 16)
+                        return new Guid(bytes);
+                }
             }
             throw new MySqlException("Value NotSupported For Guid");
         }
@@ -397,6 +402,12 @@ namespace MySql.Data.MySqlClient
                 case ColumnType.NewDecimal:
                     return "DECIMAL";
 
+                case ColumnType.Json:
+                    return "JSON";
+
+                case ColumnType.Guid:
+                    return "GUID";
+
                 default:
                     throw new NotImplementedException("GetDataTypeName for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));
             }
@@ -463,6 +474,11 @@ namespace MySql.Data.MySqlClient
                 case ColumnType.Decimal:
                 case ColumnType.NewDecimal:
                     return typeof(decimal);
+
+                case ColumnType.Guid:
+                    return typeof(Guid);
+
+                // TODO: Json type
 
                 default:
                     throw new NotImplementedException("GetFieldType for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));
@@ -554,6 +570,11 @@ namespace MySql.Data.MySqlClient
                 case ColumnType.Decimal:
                 case ColumnType.NewDecimal:
                     return decimal.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+
+                case ColumnType.Guid:
+                    return new Guid(data.Array);
+
+                // TODO: JsonObject<T>
 
                 default:
                     throw new NotImplementedException("Reading {0} not implemented".FormatInvariant(columnDefinition.ColumnType));
