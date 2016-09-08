@@ -165,7 +165,6 @@ namespace MySql.Data.MySqlClient
                     return new Guid(bytes);
             }
             throw new MySqlException("Value NotSupported For Guid");
-            return Guid.Empty;
 		}
 
 		public override short GetInt16(int ordinal)
