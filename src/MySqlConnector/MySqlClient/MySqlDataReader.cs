@@ -153,7 +153,19 @@ namespace MySql.Data.MySqlClient
 
 		public override Guid GetGuid(int ordinal)
 		{
-			return (Guid) GetValue(ordinal);
+			var value = GetValue(ordinal);
+			if (value is Guid)
+				return (Guid) value;
+
+			Guid guid;
+			if (Guid.TryParse(value as string, out guid))
+				return guid;
+
+			byte[] bytes = value as byte[];
+			if (bytes != null && bytes.Length == 16)
+				return new Guid(bytes);
+
+			throw new MySqlException("The value could not be converted to a GUID: {0}".FormatInvariant(value));
 		}
 
 		public override short GetInt16(int ordinal)

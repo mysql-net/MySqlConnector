@@ -143,6 +143,23 @@ values
   (date '9999-12-31', timestamp '9999-12-31 23:59:59.999999', '2038-01-18 03:14:07.999999', time '838:59:59.000', 2155), -- not actually maximum Timestamp value, due to TZ conversion
   (date '0000-00-00', timestamp '0000-00-00 00:00:00' , timestamp '0000-00-00 00:00:00', time '00:00:00', 0),
   (date '2016-04-05', timestamp '2016-04-05 14:03:04.56789', timestamp '2016-04-05 14:03:04.56789', time '14:03:04.56789', 2016);
+
+create table datatypes.guids (
+  rowid integer not null primary key auto_increment,
+  char38 char(38) null,
+  char38bin char(38) binary null,
+  `text` text null,
+  `blob` blob null
+);
+
+insert into datatypes.guids (char38, char38bin, `text`, `blob`)
+values
+  (null, null, null, null),
+  ('0', '0', '0', X'00'),
+  ('33221100-5544-7766-8899-aabbccddeeff', '33221100-5544-7766-8899-aabbccddeeff',
+    '33221100-5544-7766-8899-aabbccddeeff', X'00112233445566778899AABBCCDDEEFF'),
+  ('{33221100-5544-7766-8899-aabbccddeeff}', '{33221100-5544-7766-8899-aabbccddeeff}',
+    '{33221100-5544-7766-8899-aabbccddeeff}', X'00112233445566778899AABBCCDDEEFF');
 ");
 		}
 
