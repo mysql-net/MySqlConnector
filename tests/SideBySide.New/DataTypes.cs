@@ -460,8 +460,8 @@ namespace SideBySide
 		public void InsertLargeBlob(string column, int size)
 		{
 			var data = new byte[size];
-			for (int i = 0; i < data.Length; i++)
-				data[i] = (byte) (i % 256);
+			Random random = new Random(size);
+			random.NextBytes(data);
 
 			long lastInsertId;
 			using (var cmd = new MySqlCommand(Invariant($"insert into datatypes.blobs(`{column}`) values(?)"), m_database.Connection)
