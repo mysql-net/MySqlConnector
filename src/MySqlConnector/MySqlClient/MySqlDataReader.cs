@@ -3,6 +3,7 @@ using System.Collections;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,11 @@ namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlDataReader : DbDataReader
 	{
+	    public MySqlDataReader()
+	    {
+	        m_done_reading.Wait();
+	    }
+
 		public override bool NextResult()
 		{
 			return NextResultAsync(CancellationToken.None).GetAwaiter().GetResult();
@@ -97,7 +103,20 @@ namespace MySql.Data.MySqlClient
 
 		public override bool GetBoolean(int ordinal)
 		{
-			return (bool) GetValue(ordinal);
+		    object value = GetValue(ordinal);
+		    if (value is short)
+		        return (short) value != 0;
+		    if (value is ushort)
+		        return (ushort) value != 0;
+		    if (value is int)
+		        return (int) value != 0;
+		    if (value is uint)
+		        return (uint) value != 0;
+		    if (value is long)
+		        return (long) value != 0;
+		    if (value is ulong)
+		        return (ulong) value != 0;
+		    return (bool) value;
 		}
 
 		public sbyte GetSByte(int ordinal)
@@ -398,6 +417,9 @@ namespace MySql.Data.MySqlClient
 			case ColumnType.NewDecimal:
 				return "DECIMAL";
 
+			case ColumnType.Json:
+			    return "JSON";
+
 			default:
 				throw new NotImplementedException("GetDataTypeName for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));
 			}
@@ -437,6 +459,7 @@ namespace MySql.Data.MySqlClient
 			case ColumnType.Blob:
 			case ColumnType.MediumBlob:
 			case ColumnType.LongBlob:
+			case ColumnType.Json:
 				return columnDefinition.CharacterSet == CharacterSet.Binary ?
 					(Connection.OldGuids && columnDefinition.ColumnLength == 16 ? typeof(Guid) : typeof(byte[])) :
 					typeof(string);
@@ -517,6 +540,7 @@ namespace MySql.Data.MySqlClient
 			case ColumnType.Blob:
 			case ColumnType.MediumBlob:
 			case ColumnType.LongBlob:
+			case ColumnType.Json:
 				if (columnDefinition.CharacterSet == CharacterSet.Binary)
 				{
 					var result = new byte[m_dataLengths[ordinal]];
@@ -555,7 +579,32 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public override IEnumerator GetEnumerator() => new DbEnumerator(this, closeReader: false);
+	    public override T GetFieldValue<T>(int ordinal)
+	    {
+	        try
+	        {
+	            // try normal casting
+	            return base.GetFieldValue<T>(ordinal);
+	        }
+	        catch (InvalidCastException e)
+	        {
+	            try
+	            {
+	                // try casting using reflection; needed for json
+	                var dataParam = Expression.Parameter(typeof(byte[]), "data");
+	                var body = Expression.Block(Expression.Convert(dataParam, typeof(T)));
+	                var run = Expression.Lambda(body, dataParam).Compile();
+	                return (T)run.DynamicInvoke(GetValue(ordinal));
+	            }
+	            catch (Exception)
+	            {
+	                // throw original InvalidCastException
+	                throw e;
+	            }
+	        }
+	    }
+
+	    public override IEnumerator GetEnumerator() => new DbEnumerator(this, closeReader: false);
 
 		public override int Depth
 		{
@@ -781,12 +830,32 @@ namespace MySql.Data.MySqlClient
 			NoMoreData,
 		}
 
+	    public async Task WaitDoneReadingAsync(CancellationToken cancellationToken=default(CancellationToken))
+	    {
+	        cancellationToken.ThrowIfCancellationRequested();
+	        await m_done_reading.WaitAsync(cancellationToken).ConfigureAwait(false);
+	        m_done_reading.Release();
+	    }
+
 		static readonly Task<bool> s_falseTask = Task.FromResult(false);
 		static readonly Task<bool> s_trueTask = Task.FromResult(true);
 
 		MySqlCommand m_command;
 		MySqlSession m_session;
-		State m_state;
+	    SemaphoreSlim m_done_reading = new SemaphoreSlim(1);
+	    State _m_state;
+	    State m_state
+	    {
+	        get { return _m_state; }
+	        set
+	        {
+	            if (value == State.None || value == State.NoMoreData)
+	            {
+	                m_done_reading.Release();
+	            }
+	            _m_state = value;
+	        }
+	    }
 		readonly CommandBehavior m_behavior;
 		int m_recordsAffected;
 		ColumnDefinitionPayload[] m_columnDefinitions;
