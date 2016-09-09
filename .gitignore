@@ -16,3 +16,4 @@ Thumbs.db
 *.suo
 .vs/
 *.xproj.user
+.idea
