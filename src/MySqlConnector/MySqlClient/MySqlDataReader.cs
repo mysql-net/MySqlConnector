@@ -418,6 +418,9 @@ namespace MySql.Data.MySqlClient
 			case ColumnType.NewDecimal:
 				return "DECIMAL";
 
+			case ColumnType.Json:
+				return "JSON";
+
 			default:
 				throw new NotImplementedException("GetDataTypeName for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));
 			}
@@ -460,6 +463,9 @@ namespace MySql.Data.MySqlClient
 				return columnDefinition.CharacterSet == CharacterSet.Binary ?
 					(Connection.OldGuids && columnDefinition.ColumnLength == 16 ? typeof(Guid) : typeof(byte[])) :
 					typeof(string);
+
+			case ColumnType.Json:
+				return typeof(string);
 
 			case ColumnType.Short:
 				return isUnsigned ? typeof(ushort) : typeof(short);
@@ -543,6 +549,9 @@ namespace MySql.Data.MySqlClient
 					Buffer.BlockCopy(m_currentRow, m_dataOffsets[ordinal], result, 0, result.Length);
 					return Connection.OldGuids && columnDefinition.ColumnLength == 16 ? (object) new Guid(result) : result;
 				}
+				return Encoding.UTF8.GetString(data);
+
+			case ColumnType.Json:
 				return Encoding.UTF8.GetString(data);
 
 			case ColumnType.Short:

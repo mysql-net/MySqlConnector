@@ -2,6 +2,7 @@
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
@@ -176,7 +177,7 @@ namespace SideBySide
 		public void QueryUInt32(string column, string dataTypeName, object[] expected)
 		{
 #if BASELINE
-			// mysql-connector-int incorrectly returns "INT" for "MEDIUMINT UNSIGNED"
+			// mysql-connector-net incorrectly returns "INT" for "MEDIUMINT UNSIGNED"
 			dataTypeName = "INT";
 #endif
 			DoQuery<InvalidCastException>("integers", column, dataTypeName, expected, reader => reader.GetFieldValue<uint>(0));
@@ -209,7 +210,8 @@ namespace SideBySide
 		[InlineData("Single", "FLOAT", new object[] { null, default(float), -3.40282e38f, -1.4013e-45f, 3.40282e38f, 1.4013e-45f })]
 		public void QueryFloat(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("reals", column, dataTypeName, expected, reader => reader.GetFloat(0));
+			// don't perform exact queries for floating-point values; they may fail: http://dev.mysql.com/doc/refman/5.7/en/problems-with-float.html
+			DoQuery("reals", column, dataTypeName, expected, reader => reader.GetFloat(0), omitWhereTest: true);
 		}
 
 		[Theory]
@@ -438,7 +440,7 @@ namespace SideBySide
 		public void QueryYear(string column, string dataTypeName, object[] expected)
 		{
 #if BASELINE
-			// mysql-connector-int incorrectly returns "INT" for "YEAR"
+			// mysql-connector-net incorrectly returns "INT" for "YEAR"
 			dataTypeName = "INT";
 #endif
 			DoQuery("times", column, dataTypeName, expected, reader => reader.GetInt32(0));
@@ -498,6 +500,26 @@ namespace SideBySide
 			m_database.Connection.Execute(Invariant($"delete from datatypes.blobs where rowid = {lastInsertId}"));
 		}
 
+		[Theory]
+		[InlineData("Value", new[] { null, "NULL", "BOOLEAN", "ARRAY", "ARRAY", "ARRAY", "INTEGER", "INTEGER", "OBJECT", "OBJECT" })]
+		public void JsonType(string column, string[] expectedTypes)
+		{
+			var types = m_database.Connection.Query<string>(@"select JSON_TYPE(value) from datatypes.json_core order by rowid;").ToList();
+			Assert.Equal(expectedTypes, types);
+		}
+
+		[Theory]
+		[InlineData("value", new[] { null, "null", "true", "[]", "[0]", "[1]", "0", "1", "{}", "{\"a\": \"b\"}" })]
+		public void QueryJson(string column, string[] expected)
+		{
+			string dataTypeName = "JSON";
+#if BASELINE
+			// mysql-connector-net returns "VARCHAR" for "JSON"
+			dataTypeName = "VARCHAR";
+#endif
+			DoQuery("json_core", column, dataTypeName, expected, reader => reader.GetString(0), omitWhereTest: true);
+		}
+
 		private static byte[] GetBytes(DbDataReader reader)
 		{
 			var size = reader.GetBytes(0, 0, null, 0, 0);
@@ -506,14 +528,14 @@ namespace SideBySide
 			return result;
 		}
 
-		private void DoQuery(string table, string column, string dataTypeName, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null)
+		private void DoQuery(string table, string column, string dataTypeName, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null, bool omitWhereTest = false)
 		{
-			DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, baselineCoercedNullValue);
+			DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, baselineCoercedNullValue, omitWhereTest);
 		}
 
 		// NOTE: baselineCoercedNullValue is to work around inconsistencies in mysql-connector-net; DBNull.Value will
 		// be coerced to 0 by some reader.GetX() methods, but not others.
-		private void DoQuery<TException>(string table, string column, string dataTypeName, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null)
+		private void DoQuery<TException>(string table, string column, string dataTypeName, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null, bool omitWhereTest = false)
 			where TException : Exception
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
@@ -548,18 +570,16 @@ namespace SideBySide
 					Assert.False(reader.NextResult());
 				}
 
-				// don't perform exact queries for floating-point values; they may fail
-				// http://dev.mysql.com/doc/refman/5.7/en/problems-with-float.html
-				if (expected.Last() is float)
-					return;
-
-				cmd.CommandText = Invariant($"select rowid from datatypes.{table} where {column} = @value");
-				var p = cmd.CreateParameter();
-				p.ParameterName = "@value";
-				p.Value = expected.Last();
-				cmd.Parameters.Add(p);
-				var result = cmd.ExecuteScalar();
-				Assert.Equal(Array.IndexOf(expected, p.Value) + 1, result);
+				if (!omitWhereTest)
+				{
+					cmd.CommandText = Invariant($"select rowid from datatypes.{table} where {column} = @value");
+					var p = cmd.CreateParameter();
+					p.ParameterName = "@value";
+					p.Value = expected.Last();
+					cmd.Parameters.Add(p);
+					var result = cmd.ExecuteScalar();
+					Assert.Equal(Array.IndexOf(expected, p.Value) + 1, result);
+				}
 			}
 		}
 
