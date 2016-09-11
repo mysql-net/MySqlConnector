@@ -11,6 +11,7 @@ TestResult.xml
 Thumbs.db
 *.csproj.user
 *.DotSettings.user
+.idea
 *.[Rr]e[Ss]harper.user
 *.sln.cache
 *.suo
