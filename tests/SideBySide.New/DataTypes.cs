@@ -2,7 +2,6 @@
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
@@ -380,9 +379,9 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData("`Date`", "DATE", new object[] { null, "1000 01 01", "9999 12 31", "0001 01 01", "2016 04 05" })]
-		[InlineData("`DateTime`", "DATETIME", new object[] { null, "1000 01 01 0 0 0", "9999 12 31 23 59 59 999999", "0001 01 01 0 0 0", "2016 4 5 14 3 4 567890" })]
-		[InlineData("`Timestamp`", "TIMESTAMP", new object[] { null, "1970 01 01 0 0 1", "2038 1 18 3 14 7 999999", "0001 01 01 0 0 0", "2016 4 5 14 3 4 567890" })]
+		[InlineData("`Date`", "DATE", new object[] { null, "1000 01 01", "9999 12 31", null, "2016 04 05" })]
+		[InlineData("`DateTime`", "DATETIME", new object[] { null, "1000 01 01 0 0 0", "9999 12 31 23 59 59 999999", null, "2016 4 5 14 3 4 567890" })]
+		[InlineData("`Timestamp`", "TIMESTAMP", new object[] { null, "1970 01 01 0 0 1", "2038 1 18 3 14 7 999999", null, "2016 4 5 14 3 4 567890" })]
 		public void QueryDate(string column, string dataTypeName, object[] expected)
 		{
 			DoQuery("times", column, dataTypeName, ConvertToDateTime(expected), reader => reader.GetDateTime(0));
@@ -401,7 +400,7 @@ namespace SideBySide
 				connection.Open();
 				using (var cmd = connection.CreateCommand())
 				{
-					cmd.CommandText = @"select `Date`, `DateTime`, `Timestamp` from times where `Date` = 0;";
+					cmd.CommandText = @"select cast(0 as date), cast(0 as datetime);";
 					using (var reader = cmd.ExecuteReader())
 					{
 						Assert.True(reader.Read());
@@ -409,18 +408,15 @@ namespace SideBySide
 						{
 							Assert.Equal(DateTime.MinValue, reader.GetDateTime(0));
 							Assert.Equal(DateTime.MinValue, reader.GetDateTime(1));
-							Assert.Equal(DateTime.MinValue, reader.GetDateTime(2));
 						}
 						else
 						{
 #if BASELINE
 							Assert.Throws<MySql.Data.Types.MySqlConversionException>(() => reader.GetDateTime(0));
 							Assert.Throws<MySql.Data.Types.MySqlConversionException>(() => reader.GetDateTime(1));
-							Assert.Throws<MySql.Data.Types.MySqlConversionException>(() => reader.GetDateTime(2));
 #else
 							Assert.Throws<InvalidCastException>(() => reader.GetDateTime(0));
 							Assert.Throws<InvalidCastException>(() => reader.GetDateTime(1));
-							Assert.Throws<InvalidCastException>(() => reader.GetDateTime(2));
 #endif
 						}
 					}
