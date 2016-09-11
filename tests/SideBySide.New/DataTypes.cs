@@ -28,6 +28,22 @@ namespace SideBySide
 		}
 
 		[Theory]
+		[InlineData("SByte", new[] { 1, 0, 0, 0, 0 }, new[] { false, false, true, true, true })]
+		[InlineData("Byte", new[] { 1, 0, 0, 0, 0 }, new[] { false, false, false, true, true })]
+		[InlineData("Int16", new[] { 1, 0, 0, 0, 0 }, new[] { false, false, true, true, true })]
+		[InlineData("UInt16", new[] { 1, 0, 0, 0, 0 }, new[] { false, false, false, true, true })]
+		[InlineData("Int24", new[] { 1, 0, 0, 0, 0 }, new[] { false, false, true, true, true })]
+		[InlineData("UInt24", new[] { 1, 0, 0, 0, 0 }, new[] { false, false, false, true, true })]
+		[InlineData("Int32", new[] { 1, 0, 0, 0, 0 }, new[] { false, false, true, true, true })]
+		[InlineData("UInt32", new[] { 1, 0, 0, 0, 0 }, new[] { false, false, false, true, true })]
+		[InlineData("Int64", new[] { 1, 0, 0, 0, 0 }, new[] { false, false, true, true, true })]
+		[InlineData("UInt64", new[] { 1, 0, 0, 0, 0 }, new[] { false, false, false, true, true })]
+		public async Task GetBoolean(string column, int[] flags, bool[] values)
+		{
+			await DoGetValue(column, (r, n) => r.GetBoolean(n), flags, values).ConfigureAwait(false);
+		}
+
+		[Theory]
 		[InlineData("SByte", new[] { 1, 0, 0, 0, 0 }, new short[] { 0, 0, -128, 127, 123 })]
 		[InlineData("Byte", new[] { 1, 0, 0, 0, 0 }, new short[] { 0, 0, 0, 255, 123 })]
 		[InlineData("Int16", new[] { 1, 0, 0, 0, 0 }, new short[] { 0, 0, -32768, 32767, 12345 })]
@@ -40,7 +56,7 @@ namespace SideBySide
 		[InlineData("UInt64", new[] { 1, 0, 0, 2, 2 }, new short[] { 0, 0, 0, 0, 0 })]
 		public async Task GetInt16(string column, int[] flags, short[] values)
 		{
-			await DoGetInt(column, (r, n) => r.GetInt16(n), flags, values).ConfigureAwait(false);
+			await DoGetValue(column, (r, n) => r.GetInt16(n), flags, values).ConfigureAwait(false);
 		}
 
 		[Theory]
@@ -56,7 +72,7 @@ namespace SideBySide
 		[InlineData("UInt64", new[] { 1, 0, 0, 2, 2 }, new[] { 0, 0, 0, 0, 0 })]
 		public async Task GetInt32(string column, int[] flags, int[] values)
 		{
-			await DoGetInt(column, (r, n) => r.GetInt32(n), flags, values).ConfigureAwait(false);
+			await DoGetValue(column, (r, n) => r.GetInt32(n), flags, values).ConfigureAwait(false);
 		}
 
 		[Theory]
@@ -72,10 +88,10 @@ namespace SideBySide
 		[InlineData("UInt64", new[] { 1, 0, 0, 2, 0 }, new[] { 0L, 0, 0, 0, 1234567890123456789 })]
 		public async Task GetInt64(string column, int[] flags, long[] values)
 		{
-			await DoGetInt(column, (r, n) => r.GetInt64(n), flags, values).ConfigureAwait(false);
+			await DoGetValue(column, (r, n) => r.GetInt64(n), flags, values).ConfigureAwait(false);
 		}
 
-		public async Task DoGetInt<T>(string column, Func<DbDataReader, int, T> getInt, int[] flags, T[] values)
+		public async Task DoGetValue<T>(string column, Func<DbDataReader, int, T> getInt, int[] flags, T[] values)
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{

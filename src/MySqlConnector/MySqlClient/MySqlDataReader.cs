@@ -97,7 +97,27 @@ namespace MySql.Data.MySqlClient
 
 		public override bool GetBoolean(int ordinal)
 		{
-			return (bool) GetValue(ordinal);
+			var value = GetValue(ordinal);
+			if (value is bool)
+				return (bool) value;
+
+			if (value is sbyte)
+				return (sbyte) value != 0;
+			if (value is byte)
+				return (byte) value != 0;
+			if (value is short)
+				return (short) value != 0;
+			if (value is ushort)
+				return (ushort) value != 0;
+			if (value is int)
+				return (int) value != 0;
+			if (value is uint)
+				return (uint) value != 0;
+			if (value is long)
+				return (long) value != 0;
+			if (value is ulong)
+				return (ulong) value != 0;
+			return (bool) value;
 		}
 
 		public sbyte GetSByte(int ordinal)
