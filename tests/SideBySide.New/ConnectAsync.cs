@@ -88,6 +88,22 @@ namespace SideBySide
 			}
 		}
 
+		[Fact]
+		public async Task ConnectNoPassword()
+		{
+			var csb = new MySqlConnectionStringBuilder
+			{
+				Server = Constants.Server,
+				UserID = "no_password",
+			};
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				Assert.Equal(ConnectionState.Closed, connection.State);
+				await connection.OpenAsync().ConfigureAwait(false);
+				Assert.Equal(ConnectionState.Open, connection.State);
+			}
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }

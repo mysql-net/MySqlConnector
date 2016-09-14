@@ -1,5 +1,5 @@
 {
-	"version": "0.1.0-alpha19",
+	"version": "0.1.0-alpha20",
 	"title": "Async MySQL Connector",
 	"description": "A fully async MySQL ADO.NET provider for .NET and .NET Core",
 	"copyright": "Copyright 2016 Bradley Grainger",
@@ -9,7 +9,7 @@
 	"packOptions": {
 		"owners": [ "bgrainger" ],
 		"tags": [ "mysql", "async", "ado.net", "database", "netcore"  ],
-		"releaseNotes": "Support JSON data type (MySQL 5.7)",
+		"releaseNotes": "Allows users without passwords. (GitHub issue #53)",
 		"licenseUrl": "https://opensource.org/licenses/MIT",
 		"projectUrl": "https://github.com/bgrainger/MySqlConnector",
 		"repository": {

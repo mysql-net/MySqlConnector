@@ -12,6 +12,7 @@ before_install:
   - bash .travis.install-mysql-5.7.sh
   - |-
     mysql -u root -e "CREATE USER mysqltest IDENTIFIED BY 'test;key=\"val'; GRANT ALL ON *.* TO mysqltest;"
+    mysql -u root -e "CREATE USER no_password;"
   - sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
   - sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
   - sudo apt-get update

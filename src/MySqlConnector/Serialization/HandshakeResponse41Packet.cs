@@ -27,9 +27,16 @@ namespace MySql.Data.Serialization
 			writer.Write(new byte[23]);
 			writer.WriteNullTerminatedString(userName);
 
-			writer.WriteLengthEncodedInteger(20);
-			var hashedPassword = AuthenticationUtility.HashPassword(handshake.AuthPluginData, 0, password);
-			writer.Write(hashedPassword);
+			if (string.IsNullOrEmpty(password))
+			{
+				writer.WriteByte(0);
+			}
+			else
+			{
+				writer.WriteLengthEncodedInteger(20);
+				var hashedPassword = AuthenticationUtility.HashPassword(handshake.AuthPluginData, 0, password);
+				writer.Write(hashedPassword);
+			}
 
 			if (!string.IsNullOrWhiteSpace(database))
 				writer.WriteNullTerminatedString(database);
