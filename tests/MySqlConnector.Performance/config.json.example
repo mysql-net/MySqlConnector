@@ -1,0 +1,5 @@
+{
+    "Data": {
+      "ConnectionString": "server=127.0.0.1;user id=mysqltest;password='test;key=\"val';port=3306;database=mysqltest;"
+    }
+}

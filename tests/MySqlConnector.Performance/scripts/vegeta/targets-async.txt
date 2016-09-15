@@ -1,0 +1,7 @@
+POST http://localhost:5000/api/async
+Content-Type: application/json
+@insert.json
+
+GET http://localhost:5000/api/async
+GET http://localhost:5000/api/async
+GET http://localhost:5000/api/async
