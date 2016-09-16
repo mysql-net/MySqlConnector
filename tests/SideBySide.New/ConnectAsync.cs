@@ -75,7 +75,7 @@ namespace SideBySide
 		{
 			var csb = new MySqlConnectionStringBuilder
 			{
-				Server = "www.mysql.com,invalid.example.net,localhost",
+				Server = "invalid.example.net,localhost",
 				Port = 3306,
 				UserID = Constants.UserName,
 				Password = Constants.Password,
