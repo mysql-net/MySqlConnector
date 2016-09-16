@@ -44,9 +44,16 @@ namespace MySql.Data.Serialization
 			}
 			if (m_socket != null)
 			{
-				if (m_socket.Connected)
-					m_socket.Shutdown(SocketShutdown.Both);
-				Utility.Dispose(ref m_socket);
+				try
+				{
+					if (m_socket.Connected)
+						m_socket.Shutdown(SocketShutdown.Both);
+					m_socket.Dispose();
+				}
+				catch (SocketException)
+				{
+				}
+				m_socket = null;
 			}
 			m_state = State.Closed;
 		}
