@@ -1,4 +1,12 @@
-﻿using System.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
 
@@ -122,6 +130,25 @@ namespace SideBySide
 				Assert.Equal(ConnectionState.Closed, connection.State);
 				connection.Open();
 				Assert.Equal(ConnectionState.Open, connection.State);
+			}
+		}
+
+		[Fact(Skip = "Not yet implemented")]
+		public void ConnectTimeout()
+		{
+			var csb = new MySqlConnectionStringBuilder
+			{
+				Server = "www.mysql.com",
+				Pooling = false,
+				ConnectionTimeout = 3,
+			};
+
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				var stopwatch = Stopwatch.StartNew();
+				Assert.Throws<MySqlException>(() => connection.Open());
+				stopwatch.Stop();
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 2800, 3500);
 			}
 		}
 

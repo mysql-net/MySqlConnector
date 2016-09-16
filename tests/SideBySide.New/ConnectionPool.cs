@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
 
@@ -72,6 +77,75 @@ namespace SideBySide
 					Assert.Equal(expected, command.ExecuteScalar());
 				}
 			}
+		}
+
+		[Fact(Skip = "Not yet implemented")]
+		public async Task ExhaustConnectionPoolWithTimeout()
+		{
+			var csb = Constants.CreateConnectionStringBuilder();
+			csb.Pooling = true;
+			csb.MinimumPoolSize = 0;
+			csb.MaximumPoolSize = 3;
+			csb.ConnectionTimeout = 5;
+
+			var connections = new List<MySqlConnection>();
+
+			for (int i = 0; i < csb.MaximumPoolSize; i++)
+			{
+				var connection = new MySqlConnection(csb.ConnectionString);
+				await connection.OpenAsync().ConfigureAwait(false);
+				connections.Add(connection);
+			}
+
+			using (var extraConnection = new MySqlConnection(csb.ConnectionString))
+			{
+				var stopwatch = Stopwatch.StartNew();
+				Assert.Throws<MySqlException>(() => extraConnection.Open());
+				stopwatch.Stop();
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 4500, 5500);
+			}
+
+			foreach (var connection in connections)
+				connection.Dispose();
+		}
+
+		[Fact(Skip = "Not yet implemented")]
+		public async Task ExhaustConnectionPoolBeforeTimeout()
+		{
+			var csb = Constants.CreateConnectionStringBuilder();
+			csb.Pooling = true;
+			csb.MinimumPoolSize = 0;
+			csb.MaximumPoolSize = 3;
+			csb.ConnectionTimeout = 60;
+
+			var connections = new List<MySqlConnection>();
+
+			for (int i = 0; i < csb.MaximumPoolSize; i++)
+			{
+				var connection = new MySqlConnection(csb.ConnectionString);
+				await connection.OpenAsync().ConfigureAwait(false);
+				connections.Add(connection);
+			}
+
+			var closeTask = Task.Run(() =>
+			{
+				Thread.Sleep(5000);
+				connections[0].Dispose();
+				connections.RemoveAt(0);
+			});
+
+			using (var extraConnection = new MySqlConnection(csb.ConnectionString))
+			{
+				var stopwatch = Stopwatch.StartNew();
+				await extraConnection.OpenAsync().ConfigureAwait(false);
+				stopwatch.Stop();
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 4500, 7500);
+			}
+
+			closeTask.Wait();
+
+			foreach (var connection in connections)
+				connection.Dispose();
 		}
 
 		public void Dispose()
