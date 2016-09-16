@@ -60,7 +60,7 @@ namespace MySql.Data.Serialization
 
 		public async Task ConnectAsync(IEnumerable<string> hosts, int port, string userId, string password, string database, CancellationToken cancellationToken)
 		{
-			var connected = await OpenSocketAsync(hosts, port).ConfigureAwait(false);
+			var connected = await OpenSocketAsync(hosts, port, cancellationToken).ConfigureAwait(false);
 			if (!connected)
 				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
 
@@ -151,7 +151,7 @@ namespace MySql.Data.Serialization
 				throw new InvalidOperationException("MySqlSession is not connected.");
 		}
 
-		private async Task<bool> OpenSocketAsync(IEnumerable<string> hostnames, int port)
+		private async Task<bool> OpenSocketAsync(IEnumerable<string> hostnames, int port, CancellationToken cancellationToken)
 		{
 			foreach (var hostname in hostnames)
 			{
@@ -169,15 +169,27 @@ namespace MySql.Data.Serialization
 				// need to try IP Addresses one at a time: https://github.com/dotnet/corefx/issues/5829
 				foreach (var ipAddress in ipAddresses)
 				{
+					cancellationToken.ThrowIfCancellationRequested();
+
 					Socket socket = null;
 					try
 					{
 						socket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+						using (cancellationToken.Register(() => socket.Dispose()))
+						{
+							try
+							{
 #if NETSTANDARD1_3
-						await socket.ConnectAsync(ipAddress, port).ConfigureAwait(false);
+								await socket.ConnectAsync(ipAddress, port).ConfigureAwait(false);
 #else
-						await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, hostname, port, null).ConfigureAwait(false);
+								await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, hostname, port, null).ConfigureAwait(false);
 #endif
+							}
+							catch (ObjectDisposedException ex) when (cancellationToken.IsCancellationRequested)
+							{
+								throw new MySqlException("Connect Timeout expired.", ex);
+							}
+						}
 					}
 					catch (SocketException)
 					{

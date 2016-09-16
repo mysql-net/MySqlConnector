@@ -133,7 +133,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact(Skip = "Not yet implemented")]
+		[Fact]
 		public void ConnectTimeout()
 		{
 			var csb = new MySqlConnectionStringBuilder
