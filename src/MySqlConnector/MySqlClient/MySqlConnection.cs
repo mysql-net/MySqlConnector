@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
-using System.IO;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.Serialization;
@@ -105,35 +103,17 @@ namespace MySql.Data.MySqlClient
 				if (m_session != null)
 				{
 					// test that session is still valid and (optionally) reset it
-					if (!await TryPingAsync(m_session, cancellationToken).ConfigureAwait(false))
+					if (!await m_session.TryPingAsync(cancellationToken).ConfigureAwait(false))
 						Utility.Dispose(ref m_session);
 					else if (m_connectionStringBuilder.ConnectionReset)
-						await ResetConnectionAsync(cancellationToken).ConfigureAwait(false);
+						await m_session.ResetConnectionAsync(m_connectionStringBuilder.UserID, m_connectionStringBuilder.Password, m_database, cancellationToken).ConfigureAwait(false);
 				}
 
 				if (m_session == null)
 				{
 					m_session = new MySqlSession(pool);
-					var connected = await m_session.ConnectAsync(m_connectionStringBuilder.Server.Split(','), (int) m_connectionStringBuilder.Port).ConfigureAwait(false);
-					if (!connected)
-					{
-						SetState(ConnectionState.Closed);
-						throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
-					}
-
-					var payload = await m_session.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-					var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
-					var initialHandshake = new InitialHandshakePacket(reader);
-					if (initialHandshake.AuthPluginName != "mysql_native_password")
-						throw new NotSupportedException("Only 'mysql_native_password' authentication method is supported.");
-					m_session.ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
-					m_session.AuthPluginData = initialHandshake.AuthPluginData;
-
-					var response = HandshakeResponse41Packet.Create(initialHandshake, m_connectionStringBuilder.UserID, m_connectionStringBuilder.Password, m_database);
-					payload = new PayloadData(new ArraySegment<byte>(response));
-					await m_session.SendReplyAsync(payload, cancellationToken).ConfigureAwait(false);
-					await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
-					// TODO: Check success
+					await m_session.ConnectAsync(m_connectionStringBuilder.Server.Split(','), (int) m_connectionStringBuilder.Port, m_connectionStringBuilder.UserID,
+						m_connectionStringBuilder.Password, m_database, cancellationToken).ConfigureAwait(false);
 				}
 
 				m_hasBeenOpened = true;
@@ -272,55 +252,6 @@ namespace MySql.Data.MySqlClient
 				}
 				SetState(ConnectionState.Closed);
 			}
-		}
-
-		private async Task ResetConnectionAsync(CancellationToken cancellationToken)
-		{
-			if (m_session.ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
-			{
-				await m_session.SendAsync(ResetConnectionPayload.Create(), cancellationToken).ConfigureAwait(false);
-				var payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
-				OkPayload.Create(payload);
-			}
-			else
-			{
-				// optimistically hash the password with the challenge from the initial handshake (supported by MariaDB; doesn't appear to be supported by MySQL)
-				var hashedPassword = AuthenticationUtility.HashPassword(m_session.AuthPluginData, 0, m_connectionStringBuilder.Password);
-				var payload = ChangeUserPayload.Create(m_connectionStringBuilder.UserID, hashedPassword, m_database);
-				await m_session.SendAsync(payload, cancellationToken).ConfigureAwait(false);
-				payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
-				if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
-				{
-					// if the server didn't support the hashed password; rehash with the new challenge
-					var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload);
-					if (switchRequest.Name != "mysql_native_password")
-						throw new NotSupportedException("Only 'mysql_native_password' authentication method is supported.");
-					hashedPassword = AuthenticationUtility.HashPassword(switchRequest.Data, 0, m_connectionStringBuilder.Password);
-					payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
-					await m_session.SendReplyAsync(payload, cancellationToken).ConfigureAwait(false);
-					payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
-				}
-				OkPayload.Create(payload);
-			}
-		}
-
-		private static async Task<bool> TryPingAsync(MySqlSession session, CancellationToken cancellationToken)
-		{
-			await session.SendAsync(PingPayload.Create(), cancellationToken).ConfigureAwait(false);
-			try
-			{
-				var payload = await session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
-				OkPayload.Create(payload);
-				return true;
-			}
-			catch (EndOfStreamException)
-			{
-			}
-			catch (SocketException)
-			{
-			}
-
-			return false;
 		}
 
 		MySqlConnectionStringBuilder m_connectionStringBuilder;
