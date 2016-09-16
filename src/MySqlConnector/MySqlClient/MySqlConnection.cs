@@ -93,14 +93,12 @@ namespace MySql.Data.MySqlClient
 
 			SetState(ConnectionState.Connecting);
 
-			bool success = false;
 			try
 			{
-				await CreateSessionAsync(cancellationToken).ConfigureAwait(false);
+				m_session = await CreateSessionAsync(cancellationToken).ConfigureAwait(false);
 
 				m_hasBeenOpened = true;
 				SetState(ConnectionState.Open);
-				success = true;
 			}
 			catch (MySqlException)
 			{
@@ -111,11 +109,6 @@ namespace MySql.Data.MySqlClient
 			{
 				SetState(ConnectionState.Closed);
 				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.", ex);
-			}
-			finally
-			{
-				if (!success)
-					Utility.Dispose(ref m_session);
 			}
 		}
 
@@ -201,7 +194,7 @@ namespace MySql.Data.MySqlClient
 		internal bool ConvertZeroDateTime => m_connectionStringBuilder.ConvertZeroDateTime;
 		internal bool OldGuids => m_connectionStringBuilder.OldGuids;
 
-		private async Task CreateSessionAsync(CancellationToken externalCancellationToken)
+		private async Task<MySqlSession> CreateSessionAsync(CancellationToken externalCancellationToken)
 		{
 			var connectTimeout = m_connectionStringBuilder.ConnectionTimeout == 0 ? Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(checked((int) m_connectionStringBuilder.ConnectionTimeout));
 			using (var timeoutSource = new CancellationTokenSource(connectTimeout))
@@ -213,23 +206,7 @@ namespace MySql.Data.MySqlClient
 
 					// get existing session from the pool if possible
 					var pool = ConnectionPool.GetPool(m_connectionStringBuilder);
-					m_session = pool == null ? null : await pool.TryGetSessionAsync(cancellationToken).ConfigureAwait(false);
-
-					if (m_session != null)
-					{
-						// test that session is still valid and (optionally) reset it
-						if (!await m_session.TryPingAsync(cancellationToken).ConfigureAwait(false))
-							Utility.Dispose(ref m_session);
-						else if (m_connectionStringBuilder.ConnectionReset)
-							await m_session.ResetConnectionAsync(m_connectionStringBuilder.UserID, m_connectionStringBuilder.Password, m_database, cancellationToken).ConfigureAwait(false);
-					}
-
-					if (m_session == null)
-					{
-						m_session = new MySqlSession(pool);
-						await m_session.ConnectAsync(m_connectionStringBuilder.Server.Split(','), (int) m_connectionStringBuilder.Port, m_connectionStringBuilder.UserID,
-							m_connectionStringBuilder.Password, m_database, cancellationToken).ConfigureAwait(false);
-					}
+					return await pool.GetSessionAsync(cancellationToken).ConfigureAwait(false);
 				}
 				catch (OperationCanceledException ex) when (timeoutSource.IsCancellationRequested)
 				{
@@ -265,8 +242,7 @@ namespace MySql.Data.MySqlClient
 				}
 				if (m_session != null)
 				{
-					if (!m_session.ReturnToPool())
-						m_session.Dispose();
+					m_session.ReturnToPool();
 					m_session = null;
 				}
 				SetState(ConnectionState.Closed);

@@ -79,7 +79,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact(Skip = "Not yet implemented")]
+		[Fact]
 		public async Task ExhaustConnectionPoolWithTimeout()
 		{
 			var csb = Constants.CreateConnectionStringBuilder();
@@ -109,7 +109,7 @@ namespace SideBySide
 				connection.Dispose();
 		}
 
-		[Fact(Skip = "Not yet implemented")]
+		[Fact]
 		public async Task ExhaustConnectionPoolBeforeTimeout()
 		{
 			var csb = Constants.CreateConnectionStringBuilder();

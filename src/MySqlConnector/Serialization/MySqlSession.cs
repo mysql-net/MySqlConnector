@@ -10,7 +10,7 @@ using MySql.Data.MySqlClient;
 
 namespace MySql.Data.Serialization
 {
-	internal sealed class MySqlSession : IDisposable
+	internal sealed class MySqlSession
 	{
 		public MySqlSession(ConnectionPool pool)
 		{
@@ -20,12 +20,7 @@ namespace MySql.Data.Serialization
 		public ServerVersion ServerVersion { get; set; }
 		public byte[] AuthPluginData { get; set; }
 		public ConnectionPool Pool { get; }
-		public bool ReturnToPool() => Pool != null && Pool.Return(this);
-
-		public void Dispose()
-		{
-			DisposeAsync(CancellationToken.None).GetAwaiter().GetResult();
-		}
+		public void ReturnToPool() => Pool.Return(this);
 
 		public async Task DisposeAsync(CancellationToken cancellationToken)
 		{
