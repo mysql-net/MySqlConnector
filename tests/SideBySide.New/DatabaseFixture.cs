@@ -22,7 +22,6 @@ namespace SideBySide
 			if (disposing)
 			{
 				Connection.Dispose();
-				MySqlConnection.ClearAllPools();
 			}
 		}
 	}

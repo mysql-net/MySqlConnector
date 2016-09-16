@@ -20,7 +20,8 @@ namespace MySql.Data.Serialization
 		public ServerVersion ServerVersion { get; set; }
 		public byte[] AuthPluginData { get; set; }
 		public ConnectionPool Pool { get; }
-		public void ReturnToPool() => Pool.Return(this);
+
+		public void ReturnToPool() => Pool?.Return(this);
 
 		public async Task DisposeAsync(CancellationToken cancellationToken)
 		{
@@ -53,9 +54,9 @@ namespace MySql.Data.Serialization
 			m_state = State.Closed;
 		}
 
-		public async Task ConnectAsync(IEnumerable<string> hosts, int port, string userId, string password, string database, CancellationToken cancellationToken)
+		public async Task ConnectAsync(IEnumerable<string> hosts, int port, string userId, string password, string database, int timeoutSeconds, CancellationToken cancellationToken)
 		{
-			var connected = await OpenSocketAsync(hosts, port, cancellationToken).ConfigureAwait(false);
+			var connected = await OpenSocketAsync(hosts, port, timeoutSeconds).ConfigureAwait(false);
 			if (!connected)
 				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
 
@@ -146,8 +147,13 @@ namespace MySql.Data.Serialization
 				throw new InvalidOperationException("MySqlSession is not connected.");
 		}
 
-		private async Task<bool> OpenSocketAsync(IEnumerable<string> hostnames, int port, CancellationToken cancellationToken)
+		private async Task<bool> OpenSocketAsync(IEnumerable<string> hostnames, int port, int timeoutSeconds)
 		{
+			DateTime? connectTimeout = null;
+			if (timeoutSeconds > 0)
+			{
+				connectTimeout = DateTime.UtcNow + TimeSpan.FromSeconds(timeoutSeconds);
+			}
 			foreach (var hostname in hostnames)
 			{
 				IPAddress[] ipAddresses;
@@ -164,41 +170,44 @@ namespace MySql.Data.Serialization
 				// need to try IP Addresses one at a time: https://github.com/dotnet/corefx/issues/5829
 				foreach (var ipAddress in ipAddresses)
 				{
-					cancellationToken.ThrowIfCancellationRequested();
-
-					Socket socket = null;
+					var socket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 					try
 					{
-						socket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-						using (cancellationToken.Register(() => socket.Dispose()))
+						var connectTasks = new List<Task>
 						{
-							try
-							{
 #if NETSTANDARD1_3
-								await socket.ConnectAsync(ipAddress, port).ConfigureAwait(false);
+							socket.ConnectAsync(ipAddress, port)
 #else
-								await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, hostname, port, null).ConfigureAwait(false);
+							Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, hostname, port, null)
 #endif
-							}
-							catch (ObjectDisposedException ex) when (cancellationToken.IsCancellationRequested)
-							{
-								throw new MySqlException("Connect Timeout expired.", ex);
-							}
+						};
+						if (connectTimeout != null)
+						{
+							connectTasks.Add(Task.Delay((int)(connectTimeout.Value - DateTime.UtcNow).TotalMilliseconds));
 						}
+						await Task.WhenAny(connectTasks).ConfigureAwait(false);
+						if (socket.Connected)
+						{
+							m_socket = socket;
+							m_transmitter = new PacketTransmitter(m_socket);
+							m_state = State.Connected;
+							return true;
+						}
+						if (connectTimeout != null && DateTime.UtcNow > connectTimeout.Value)
+						{
+							socket.Dispose();
+							throw new MySqlException("Connect Timeout expired.");
+						}
+						// some other error occurred, continue on to next hostname
+						socket.Dispose();
+
 					}
 					catch (SocketException)
 					{
-						Utility.Dispose(ref socket);
-						continue;
+						socket.Dispose();
 					}
-
-					m_socket = socket;
-					m_transmitter = new PacketTransmitter(m_socket);
-					m_state = State.Connected;
-					return true;
 				}
 			}
-
 			return false;
 		}
 

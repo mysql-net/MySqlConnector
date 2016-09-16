@@ -9,7 +9,7 @@ using Xunit;
 
 namespace SideBySide
 {
-	public class ConnectionPool : IDisposable
+	public class ConnectionPool
 	{
 		[Theory]
 		[InlineData(false, 11, 0L)]
@@ -80,37 +80,7 @@ namespace SideBySide
 		}
 
 		[Fact]
-		public async Task ExhaustConnectionPoolWithTimeout()
-		{
-			var csb = Constants.CreateConnectionStringBuilder();
-			csb.Pooling = true;
-			csb.MinimumPoolSize = 0;
-			csb.MaximumPoolSize = 3;
-			csb.ConnectionTimeout = 5;
-
-			var connections = new List<MySqlConnection>();
-
-			for (int i = 0; i < csb.MaximumPoolSize; i++)
-			{
-				var connection = new MySqlConnection(csb.ConnectionString);
-				await connection.OpenAsync().ConfigureAwait(false);
-				connections.Add(connection);
-			}
-
-			using (var extraConnection = new MySqlConnection(csb.ConnectionString))
-			{
-				var stopwatch = Stopwatch.StartNew();
-				Assert.Throws<MySqlException>(() => extraConnection.Open());
-				stopwatch.Stop();
-				Assert.InRange(stopwatch.ElapsedMilliseconds, 4500, 5500);
-			}
-
-			foreach (var connection in connections)
-				connection.Dispose();
-		}
-
-		[Fact]
-		public async Task ExhaustConnectionPoolBeforeTimeout()
+		public async Task ExhaustConnectionPool()
 		{
 			var csb = Constants.CreateConnectionStringBuilder();
 			csb.Pooling = true;
@@ -148,9 +118,5 @@ namespace SideBySide
 				connection.Dispose();
 		}
 
-		public void Dispose()
-		{
-			MySqlConnection.ClearAllPools();
-		}
 	}
 }

@@ -194,24 +194,21 @@ namespace MySql.Data.MySqlClient
 		internal bool ConvertZeroDateTime => m_connectionStringBuilder.ConvertZeroDateTime;
 		internal bool OldGuids => m_connectionStringBuilder.OldGuids;
 
-		private async Task<MySqlSession> CreateSessionAsync(CancellationToken externalCancellationToken)
+		private async Task<MySqlSession> CreateSessionAsync(CancellationToken cancellationToken)
 		{
-			var connectTimeout = m_connectionStringBuilder.ConnectionTimeout == 0 ? Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(checked((int) m_connectionStringBuilder.ConnectionTimeout));
-			using (var timeoutSource = new CancellationTokenSource(connectTimeout))
-			using (var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(externalCancellationToken, timeoutSource.Token))
+			// get existing session from the pool if possible
+			if (m_connectionStringBuilder.Pooling)
 			{
-				try
-				{
-					var cancellationToken = linkedSource.Token;
-
-					// get existing session from the pool if possible
-					var pool = ConnectionPool.GetPool(m_connectionStringBuilder);
-					return await pool.GetSessionAsync(cancellationToken).ConfigureAwait(false);
-				}
-				catch (OperationCanceledException ex) when (timeoutSource.IsCancellationRequested)
-				{
-					throw new MySqlException("Connect Timeout expired.", ex);
-				}
+				var pool = ConnectionPool.GetPool(m_connectionStringBuilder);
+				// this returns an open session
+				return await pool.GetSessionAsync(cancellationToken).ConfigureAwait(false);
+			}
+			else
+			{
+				var session = new MySqlSession(null);
+				await session.ConnectAsync(m_connectionStringBuilder.Server.Split(','), (int) m_connectionStringBuilder.Port, m_connectionStringBuilder.UserID,
+					m_connectionStringBuilder.Password, m_connectionStringBuilder.Database, (int) m_connectionStringBuilder.ConnectionTimeout, cancellationToken).ConfigureAwait(false);
+				return session;
 			}
 		}
 
@@ -242,7 +239,10 @@ namespace MySql.Data.MySqlClient
 				}
 				if (m_session != null)
 				{
-					m_session.ReturnToPool();
+					if (m_connectionStringBuilder.Pooling)
+						m_session.ReturnToPool();
+					else
+						m_session.DisposeAsync(CancellationToken.None).GetAwaiter().GetResult();
 					m_session = null;
 				}
 				SetState(ConnectionState.Closed);
