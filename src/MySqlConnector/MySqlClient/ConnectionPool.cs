@@ -12,104 +12,96 @@ namespace MySql.Data.MySqlClient
 		{
 			AssertInvariants();
 
-			using (cancellationToken.Register(() =>
+			MySqlSession temporarySession = null;
+
+			try
 			{
-				// wake up all waiting threads if the cancellation token is cancelled
-				lock (m_lock)
-					Monitor.PulseAll(m_lock);
-			}))
-			{
-				MySqlSession temporarySession = null;
-
-				try
+				// keep looping until cancelled (timeout) or a session is retrieved
+				while (true)
 				{
-					// keep looping until cancelled (timeout) or a session is retrieved
-					while (true)
-					{
-						cancellationToken.ThrowIfCancellationRequested();
+					cancellationToken.ThrowIfCancellationRequested();
 
-						bool isNew;
-						AssertInvariants();
-
-						// grab an idle session, or take an available session, or block
-						lock (m_lock)
-						{
-							if (m_idleSessions.Count > 0)
-							{
-								temporarySession = m_idleSessions.Dequeue();
-								isNew = false;
-								m_temporary++;
-							}
-							else if (m_available > 0)
-							{
-								temporarySession = new MySqlSession(this);
-								isNew = true;
-								m_temporary++;
-								m_available--;
-							}
-							else
-							{
-								Monitor.Wait(m_lock);
-								continue;
-							}
-						}
-						AssertInvariants();
-
-						// asynchronously connect the session or verify that an idle session is valid
-						bool isValid;
-						if (isNew)
-						{
-							await temporarySession.ConnectAsync(m_server.Split(','), m_port, m_userId, m_password, m_database, cancellationToken).ConfigureAwait(false);
-							isValid = true;
-						}
-						else
-						{
-							isValid = await TryActivateIdleSessionAsync(temporarySession, cancellationToken).ConfigureAwait(false);
-						}
-
-						// if valid, return it
-						if (isValid)
-						{
-							lock (m_lock)
-							{
-								m_activeSessions.Add(temporarySession);
-								m_temporary--;
-
-								var session = temporarySession;
-								temporarySession = null;
-								return session;
-							}
-						}
-
-						// destroy this invalid temporary session and try again
-						lock (m_lock)
-						{
-							m_temporary--;
-							m_available++;
-							temporarySession = null;
-
-							Monitor.Pulse(m_lock);
-						}
-					}
-				}
-				catch
-				{
-					// clean up any local temporary session upon exception
-					lock (m_lock)
-					{
-						if (temporarySession != null)
-						{
-							m_temporary--;
-							m_available++;
-							Monitor.Pulse(m_lock);
-						}
-					}
-					throw;
-				}
-				finally
-				{
+					bool isNew = false;
 					AssertInvariants();
+
+					// grab an idle session or take an available session
+					using (await AcquireLockAsync(cancellationToken).ConfigureAwait(false))
+					{
+						if (m_idleSessions.Count > 0)
+						{
+							temporarySession = m_idleSessions.Dequeue();
+							isNew = false;
+							m_temporary++;
+						}
+						else if (m_available > 0)
+						{
+							temporarySession = new MySqlSession(this);
+							isNew = true;
+							m_temporary++;
+							m_available--;
+						}
+					}
+
+					if (temporarySession == null)
+					{
+						// no sessions available, try again soon
+						await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken).ConfigureAwait(false);
+						continue;
+					}
+
+					AssertInvariants();
+
+					// asynchronously connect the session or verify that an idle session is valid
+					bool isValid;
+					if (isNew)
+					{
+						await temporarySession.ConnectAsync(m_server.Split(','), m_port, m_userId, m_password, m_database, cancellationToken).ConfigureAwait(false);
+						isValid = true;
+					}
+					else
+					{
+						isValid = await TryActivateIdleSessionAsync(temporarySession, cancellationToken).ConfigureAwait(false);
+					}
+
+					// if valid, return it
+					if (isValid)
+					{
+						using (await AcquireLockAsync(cancellationToken).ConfigureAwait(false))
+						{
+							m_activeSessions.Add(temporarySession);
+							m_temporary--;
+
+							var session = temporarySession;
+							temporarySession = null;
+							return session;
+						}
+					}
+
+					// destroy this invalid temporary session and try again
+					using (await AcquireLockAsync(cancellationToken).ConfigureAwait(false))
+					{
+						m_temporary--;
+						m_available++;
+						temporarySession = null;
+					}
 				}
+			}
+			catch
+			{
+				// clean up any local temporary session upon exception
+				using (await AcquireLockAsync(cancellationToken).ConfigureAwait(false))
+				{
+					if (temporarySession != null)
+					{
+						m_temporary--;
+						m_available++;
+					}
+				}
+				throw;
+			}
+			finally
+			{
+				AssertInvariants();
 			}
 		}
 
@@ -131,7 +123,7 @@ namespace MySql.Data.MySqlClient
 		{
 			AssertInvariants();
 
-			lock (m_lock)
+			using (AcquireLock(CancellationToken.None))
 			{
 				if (!m_activeSessions.Remove(session))
 					throw new InvalidOperationException("Returned session wasn't active.");
@@ -143,23 +135,21 @@ namespace MySql.Data.MySqlClient
 			if (m_closeOnReturn)
 			{
 				session.DisposeAsync(CancellationToken.None).GetAwaiter().GetResult();
-				lock (m_lock)
+				using (AcquireLock(CancellationToken.None))
 				{
 					m_temporary--;
 					m_available++;
-					Monitor.Pulse(m_lock);
 				}
 			}
 			else
 			{
-				lock (m_lock)
+				using (AcquireLock(CancellationToken.None))
 				{
 					m_temporary--;
 					m_idleSessions.Enqueue(session);
-					Monitor.Pulse(m_lock);
 				}
 			}
-			
+
 			AssertInvariants();
 		}
 
@@ -173,7 +163,7 @@ namespace MySql.Data.MySqlClient
 
 				// get one idle session at a time and clean it up
 				AssertInvariants();
-				lock (m_lock)
+				using (await AcquireLockAsync(cancellationToken).ConfigureAwait(false))
 				{
 					if (m_idleSessions.Count > 0)
 					{
@@ -196,11 +186,10 @@ namespace MySql.Data.MySqlClient
 				finally
 				{
 					AssertInvariants();
-					lock (m_lock)
+					using (await AcquireLockAsync(cancellationToken).ConfigureAwait(false))
 					{
 						m_temporary--;
 						m_available++;
-						Monitor.Pulse(m_lock);
 					}
 					AssertInvariants();
 				}
@@ -249,7 +238,7 @@ namespace MySql.Data.MySqlClient
 			m_minimumSize = minimumSize;
 			m_maximumSize = maximumSize;
 
-			m_lock = new object();
+			m_lock = new SemaphoreSlim(1, 1);
 
 			m_idleSessions = new Queue<MySqlSession>();
 			m_activeSessions = new List<MySqlSession>();
@@ -259,7 +248,7 @@ namespace MySql.Data.MySqlClient
 
 		private void AssertInvariants()
 		{
-			lock (m_lock)
+			using (AcquireLock(CancellationToken.None))
 			{
 				// This invariant must always hold outside of the lock: the following values must sum to `m_maximumSize`:
 				//   - m_activeSessions.Count: the number of sessions that are held by clients
@@ -269,6 +258,38 @@ namespace MySql.Data.MySqlClient
 				if (m_activeSessions.Count + m_idleSessions.Count + m_available + m_temporary != m_maximumSize)
 					throw new InvalidOperationException("Invalid: Active:{0} Idle:{1} Avail:{2} Temp:{3} Max:{4}".FormatInvariant(m_activeSessions.Count, m_idleSessions.Count, m_available, m_temporary, m_maximumSize));
 			}
+		}
+
+
+		private LockReleaser AcquireLock(CancellationToken cancellationToken)
+		{
+			m_lock.Wait(cancellationToken);
+			return new LockReleaser(m_lock);
+		}
+
+		private async Task<LockReleaser> AcquireLockAsync(CancellationToken cancellationToken)
+		{
+			await m_lock.WaitAsync(cancellationToken).ConfigureAwait(false);
+			return new LockReleaser(m_lock);
+		}
+
+		private sealed class LockReleaser : IDisposable
+		{
+			public LockReleaser(SemaphoreSlim semaphore)
+			{
+				m_lock = semaphore;
+			}
+
+			public void Dispose()
+			{
+				if (m_lock != null)
+				{
+					m_lock.Release();
+					m_lock = null;
+				}
+			}
+
+			SemaphoreSlim m_lock;
 		}
 
 		static readonly object s_lock = new object();
@@ -283,7 +304,7 @@ namespace MySql.Data.MySqlClient
 		readonly bool m_closeOnReturn;
 		readonly int m_minimumSize;
 		readonly int m_maximumSize;
-		readonly object m_lock;
+		readonly SemaphoreSlim m_lock;
 		readonly List<MySqlSession> m_activeSessions;
 		readonly Queue<MySqlSession> m_idleSessions;
 		int m_available;
