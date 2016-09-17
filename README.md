@@ -27,6 +27,10 @@ This library is compatible with popular .NET ORMs including:
 * [NReco.Data](https://github.com/nreco/data) ([NuGet](https://www.nuget.org/packages/NReco.Data))
 * [SimpleStack.Orm](https://github.com/SimpleStack/simplestack.orm) ([NuGet](https://www.nuget.org/packages/SimpleStack.Orm.MySQLConnector))
 
+For Entity Framework support, use:
+
+* [Pomelo.EntityFrameworkCore.MySql](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql) ([NuGet](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql))
+
 ## Building
 
 Install the latest [.NET Core](https://www.microsoft.com/net/core).
