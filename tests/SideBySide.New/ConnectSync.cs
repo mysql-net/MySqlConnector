@@ -134,6 +134,29 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void ConnectionPoolNoPassword()
+		{
+			var csb = new MySqlConnectionStringBuilder
+			{
+				Server = Constants.Server,
+				UserID = "no_password",
+				Pooling = true,
+				MinimumPoolSize = 0,
+				MaximumPoolSize = 5,
+			};
+
+			for (int i = 0; i < 3; i++)
+			{
+				using (var connection = new MySqlConnection(csb.ConnectionString))
+				{
+					Assert.Equal(ConnectionState.Closed, connection.State);
+					connection.Open();
+					Assert.Equal(ConnectionState.Open, connection.State);
+				}
+			}
+		}
+
+		[Fact]
 		public void ConnectTimeout()
 		{
 			var csb = new MySqlConnectionStringBuilder
