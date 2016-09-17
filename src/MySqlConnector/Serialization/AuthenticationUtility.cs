@@ -6,6 +6,9 @@ namespace MySql.Data.Serialization
 {
 	internal static class AuthenticationUtility
 	{
+		public static byte[] CreateAuthenticationResponse(byte[] challenge, int offset, string password) =>
+			string.IsNullOrEmpty(password) ? s_emptyArray : HashPassword(challenge, offset, password);
+
 		/// <summary>
 		/// Hashes a password with the "Secure Password Authentication" method.
 		/// </summary>
@@ -34,5 +37,7 @@ namespace MySql.Data.Serialization
 				return hashedPassword;
 			}
 		}
+
+		static readonly byte[] s_emptyArray = new byte[0];
 	}
 }

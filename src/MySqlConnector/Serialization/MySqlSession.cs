@@ -85,7 +85,7 @@ namespace MySql.Data.Serialization
 			else
 			{
 				// optimistically hash the password with the challenge from the initial handshake (supported by MariaDB; doesn't appear to be supported by MySQL)
-				var hashedPassword = string.IsNullOrEmpty(password) ? new byte[0] : AuthenticationUtility.HashPassword(AuthPluginData, 0, password);
+				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, password);
 				var payload = ChangeUserPayload.Create(userId, hashedPassword, database);
 				await SendAsync(payload, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
@@ -95,7 +95,7 @@ namespace MySql.Data.Serialization
 					var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload);
 					if (switchRequest.Name != "mysql_native_password")
 						throw new NotSupportedException("Only 'mysql_native_password' authentication method is supported.");
-					hashedPassword = string.IsNullOrEmpty(password) ? new byte[0] : AuthenticationUtility.HashPassword(switchRequest.Data, 0, password);
+					hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(switchRequest.Data, 0, password);
 					payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
 					await SendReplyAsync(payload, cancellationToken).ConfigureAwait(false);
 					payload = await ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
