@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace SideBySide
 {
-	public class ConnectionPool : IDisposable
+	public class ConnectionPool
 	{
 		[Theory]
 		[InlineData(false, 11, 0L)]
@@ -74,9 +79,44 @@ namespace SideBySide
 			}
 		}
 
-		public void Dispose()
+		[Fact]
+		public async Task ExhaustConnectionPool()
 		{
-			MySqlConnection.ClearAllPools();
+			var csb = Constants.CreateConnectionStringBuilder();
+			csb.Pooling = true;
+			csb.MinimumPoolSize = 0;
+			csb.MaximumPoolSize = 3;
+			csb.ConnectionTimeout = 60;
+
+			var connections = new List<MySqlConnection>();
+
+			for (int i = 0; i < csb.MaximumPoolSize; i++)
+			{
+				var connection = new MySqlConnection(csb.ConnectionString);
+				await connection.OpenAsync().ConfigureAwait(false);
+				connections.Add(connection);
+			}
+
+			var closeTask = Task.Run(() =>
+			{
+				Thread.Sleep(5000);
+				connections[0].Dispose();
+				connections.RemoveAt(0);
+			});
+
+			using (var extraConnection = new MySqlConnection(csb.ConnectionString))
+			{
+				var stopwatch = Stopwatch.StartNew();
+				await extraConnection.OpenAsync().ConfigureAwait(false);
+				stopwatch.Stop();
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 4500, 7500);
+			}
+
+			closeTask.Wait();
+
+			foreach (var connection in connections)
+				connection.Dispose();
 		}
+
 	}
 }

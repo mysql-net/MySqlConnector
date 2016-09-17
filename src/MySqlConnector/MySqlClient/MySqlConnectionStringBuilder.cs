@@ -94,6 +94,12 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.ConnectionReset.SetValue(this, value); }
 		}
 
+		public uint ConnectionTimeout
+		{
+			get { return MySqlConnectionStringOption.ConnectionTimeout.GetValue(this); }
+			set { MySqlConnectionStringOption.ConnectionTimeout.SetValue(this, value); }
+		}
+
 		public uint MinimumPoolSize
 		{
 			get { return MySqlConnectionStringOption.MinimumPoolSize.GetValue(this); }
@@ -169,6 +175,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<bool> UseCompression;
 		public static readonly MySqlConnectionStringOption<bool> Pooling;
 		public static readonly MySqlConnectionStringOption<bool> ConnectionReset;
+		public static readonly MySqlConnectionStringOption<uint> ConnectionTimeout;
 		public static readonly MySqlConnectionStringOption<uint> MinimumPoolSize;
 		public static readonly MySqlConnectionStringOption<uint> MaximumPoolSize;
 		public static readonly MySqlConnectionStringOption<bool> UseAffectedRows;
@@ -258,6 +265,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(ConnectionReset = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Connection Reset", "ConnectionReset" },
 				defaultValue: true));
+
+			AddOption(ConnectionTimeout = new MySqlConnectionStringOption<uint>(
+				keys: new[] { "Connection Timeout", "ConnectionTimeout", "Connect Timeout" },
+				defaultValue: 15u));
 
 			AddOption(MinimumPoolSize = new MySqlConnectionStringOption<uint>(
 				keys: new[] { "Minimum Pool Size", "Min Pool Size", "MinimumPoolSize", "minpoolsize" },

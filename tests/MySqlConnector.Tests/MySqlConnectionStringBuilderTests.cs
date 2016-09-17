@@ -17,6 +17,7 @@ namespace MySql.Data.Tests
 #else
 			Assert.Equal(true, csb.ConnectionReset);
 #endif
+			Assert.Equal(15u, csb.ConnectionTimeout);
 #if BASELINE
 			Assert.False(csb.UseAffectedRows);
 #else
@@ -39,10 +40,11 @@ namespace MySql.Data.Tests
 		[Fact]
 		public void ParseConnectionString()
 		{
-			var csb = new MySqlConnectionStringBuilder { ConnectionString = "Data Source=db-server;Port=1234;Uid=username;pwd=Pass1234;Initial Catalog=schema_name;Allow User Variables=true;Character Set=latin1;Convert Zero Datetime=true;Pooling=no;OldGuids=true;Compress=true;ConnectionReset=false;minpoolsize=5;maxpoolsize=15;persistsecurityinfo=yes;useaffectedrows=false" };
+			var csb = new MySqlConnectionStringBuilder { ConnectionString = "Data Source=db-server;Port=1234;Uid=username;pwd=Pass1234;Initial Catalog=schema_name;Allow User Variables=true;Character Set=latin1;Convert Zero Datetime=true;Pooling=no;OldGuids=true;Compress=true;ConnectionReset=false;minpoolsize=5;maxpoolsize=15;persistsecurityinfo=yes;useaffectedrows=false;connect timeout=30" };
 			Assert.Equal(true, csb.AllowUserVariables);
 			Assert.Equal("latin1", csb.CharacterSet);
 			Assert.Equal(false, csb.ConnectionReset);
+			Assert.Equal(30u, csb.ConnectionTimeout);
 			Assert.Equal(true, csb.ConvertZeroDateTime);
 			Assert.Equal("schema_name", csb.Database);
 			Assert.Equal(15u, csb.MaximumPoolSize);
