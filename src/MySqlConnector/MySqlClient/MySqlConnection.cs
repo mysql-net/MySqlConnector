@@ -23,22 +23,16 @@ namespace MySql.Data.MySqlClient
 
 		public new MySqlTransaction BeginTransaction() => (MySqlTransaction) base.BeginTransaction();
 
-		public async Task<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
-		{
-			return await BeginDbTransactionAsync(IsolationLevel.Unspecified, cancellationToken).ConfigureAwait(false) as MySqlTransaction;
-		}
+		public Task<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
+			BeginDbTransactionAsync(IsolationLevel.Unspecified, cancellationToken);
 
-		public async Task<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))
-		{
-			return await BeginDbTransactionAsync(isolationLevel, cancellationToken).ConfigureAwait(false) as MySqlTransaction;
-		}
+		public Task<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken)) =>
+			BeginDbTransactionAsync(isolationLevel, cancellationToken);
 
-		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
-		{
-			return BeginDbTransactionAsync(isolationLevel).GetAwaiter().GetResult();
-		}
+		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) =>
+			BeginDbTransactionAsync(isolationLevel).GetAwaiter().GetResult();
 
-		private async Task<DbTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))
+		private async Task<MySqlTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			if (State != ConnectionState.Open)
 				throw new InvalidOperationException("Connection is not open.");
