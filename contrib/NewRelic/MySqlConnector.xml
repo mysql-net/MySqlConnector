@@ -13,11 +13,8 @@
 			<!-- MySqlConnector -->
 			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlCommand">
 				<exactMethodMatcher methodName="ExecuteReader" parameters="System.Data.CommandBehavior" />
-				<exactMethodMatcher methodName="ExecuteReaderAsync" parameters="System.Data.CommandBehavior,System.Threading.CancellationToken" />
 				<exactMethodMatcher methodName="ExecuteNonQuery" />
-				<exactMethodMatcher methodName="ExecuteNonQueryAsync" />
 				<exactMethodMatcher methodName="ExecuteScalar" />
-				<exactMethodMatcher methodName="ExecuteScalarAsync" />
 			</match>
 
 		</tracerFactory>
@@ -28,9 +25,7 @@
 			<!-- MySqlConnector -->
 			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlDataReader">
 				<exactMethodMatcher methodName="NextResult" />
-				<exactMethodMatcher methodName="NextResultAsync" />
 				<exactMethodMatcher methodName="Read" />
-				<exactMethodMatcher methodName="ReadAsync" />
 			</match>
 
 		</tracerFactory>
@@ -42,6 +37,21 @@
 			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlConnection">
 				<exactMethodMatcher methodName="Open" />
 				<exactMethodMatcher methodName="OpenAsync" />
+			</match>
+
+		</tracerFactory>
+
+		<tracerFactory name="NewRelic.Providers.Wrapper.CustomInstrumentationAsync.DefaultWrapperAsync">
+
+			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlCommand">
+				<exactMethodMatcher methodName="ExecuteReaderAsync" parameters="System.Data.CommandBehavior,System.Threading.CancellationToken" />
+				<exactMethodMatcher methodName="ExecuteNonQueryAsync" />
+				<exactMethodMatcher methodName="ExecuteScalarAsync" />
+			</match>
+
+			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlDataReader">
+				<exactMethodMatcher methodName="NextResultAsync" />
+				<exactMethodMatcher methodName="ReadAsync" />
 			</match>
 
 		</tracerFactory>
