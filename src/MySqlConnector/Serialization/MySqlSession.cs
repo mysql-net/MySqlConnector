@@ -219,15 +219,16 @@ namespace MySql.Data.Serialization
 			if (task.Status == TaskStatus.RanToCompletion)
 				return task;
 
-			return task.ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+			return TryAsyncContinuation(task);
 		}
 
-		private void TryAsyncContinuation(Task task)
+		private async Task TryAsyncContinuation(Task task)
 		{
+			await task.ConfigureAwait(false);
 			if (task.IsFaulted)
 			{
 				SetFailed();
-				task.GetAwaiter().GetResult();
+				await task.ConfigureAwait(false);
 			}
 		}
 
@@ -249,16 +250,15 @@ namespace MySql.Data.Serialization
 				return new ValueTask<PayloadData>(tcs.Task);
 #endif
 			}
-
-			return new ValueTask<PayloadData>(task.AsTask()
-				.ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default));
+			return new ValueTask<PayloadData>(TryAsyncContinuation(task.AsTask()));
 		}
 
-		private PayloadData TryAsyncContinuation(Task<PayloadData> task)
+		private async Task<PayloadData> TryAsyncContinuation(Task<PayloadData> task)
 		{
+			await task.ConfigureAwait(false);
 			if (task.IsFaulted)
 				SetFailed();
-			var payload = task.GetAwaiter().GetResult();
+			var payload = await task.ConfigureAwait(false);
 			payload.ThrowIfError();
 			return payload;
 		}
