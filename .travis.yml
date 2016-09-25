@@ -1,22 +1,15 @@
 sudo: required
 dist: trusty
-addons:
-  apt:
-    packages:
-    - mysql-server-5.6
-    - mysql-client-core-5.6
-    - mysql-client-5.6
-services: mysql
+services: docker
 
 before_install:
-  - bash .travis.install-mysql-5.7.sh
-  - |-
-    mysql -u root -e "CREATE USER mysqltest IDENTIFIED BY 'test;key=\"val'; GRANT ALL ON *.* TO mysqltest;"
-    mysql -u root -e "CREATE USER no_password;"
+  - docker pull mysql:5.7
+  - docker run --name mysql -e MYSQL_ROOT_PASSWORD='test' -p 3306:3306 -d mysql:5.7
   - sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
   - sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
   - sudo apt-get update
   - sudo apt-get install -y dotnet-dev-1.0.0-preview2-003121
+  - docker exec -it mysql mysql -uroot -ptest -e "CREATE USER 'mysqltest'@'%' IDENTIFIED BY 'test;key=\"val'; GRANT ALL ON *.* TO mysqltest; CREATE USER 'no_password'@'172.17.0.1';"
 
 script:
   - dotnet restore
