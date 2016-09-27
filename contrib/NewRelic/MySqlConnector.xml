@@ -19,8 +19,8 @@
 
 		</tracerFactory>
 
-		<!-- datareader methods -->
-		<tracerFactory name="NewRelic.Agent.Core.Tracer.Factories.Sql.DataReaderTracerFactory" level="1">
+        <!-- DataReader methods. DISABLED by default due to possible performance impact. Set enabled to "true" (or omit completely) to enable this instrumentation. -->
+		<tracerFactory name="NewRelic.Agent.Core.Tracer.Factories.Sql.DataReaderTracerFactory" level="1" enabled="false">
 
 			<!-- MySqlConnector -->
 			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlDataReader">
@@ -36,19 +36,20 @@
 			<!-- MySqlConnector -->
 			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlConnection">
 				<exactMethodMatcher methodName="Open" />
-				<exactMethodMatcher methodName="OpenAsync" />
+				<exactMethodMatcher methodName="OpenAsync" parameters="System.Threading.CancellationToken" />
 			</match>
 
 		</tracerFactory>
 
-		<tracerFactory name="NewRelic.Providers.Wrapper.CustomInstrumentationAsync.DefaultWrapperAsync">
-
+		<tracerFactory>
 			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlCommand">
 				<exactMethodMatcher methodName="ExecuteReaderAsync" parameters="System.Data.CommandBehavior,System.Threading.CancellationToken" />
-				<exactMethodMatcher methodName="ExecuteNonQueryAsync" />
-				<exactMethodMatcher methodName="ExecuteScalarAsync" />
+				<exactMethodMatcher methodName="ExecuteNonQueryAsync" parameters="System.Threading.CancellationToken" />
+				<exactMethodMatcher methodName="ExecuteScalarAsync" parameters="System.Threading.CancellationToken" />
 			</match>
+		</tracerFactory>
 
+		<tracerFactory enabled="false">
 			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlDataReader">
 				<exactMethodMatcher methodName="NextResultAsync" />
 				<exactMethodMatcher methodName="ReadAsync" />
