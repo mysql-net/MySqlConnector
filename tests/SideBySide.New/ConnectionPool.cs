@@ -118,5 +118,40 @@ namespace SideBySide
 				connection.Dispose();
 		}
 
+		[Fact]
+		public async Task CharacterSet()
+		{
+			var csb = Constants.CreateConnectionStringBuilder();
+			csb.Pooling = true;
+			csb.MinimumPoolSize = 0;
+			csb.MaximumPoolSize = 21; // use a uniqe pool size to create a unique connection string to force a unique pool to be created
+#if BASELINE
+			csb.CharacterSet = "utf8mb4";
+#endif
+
+			// verify that connection charset is the same when retrieving a connection from the pool
+			await CheckCharacterSetAsync(csb.ConnectionString).ConfigureAwait(false);
+			await CheckCharacterSetAsync(csb.ConnectionString).ConfigureAwait(false);
+			await CheckCharacterSetAsync(csb.ConnectionString).ConfigureAwait(false);
+		}
+
+		private async Task CheckCharacterSetAsync(string connectionString)
+		{
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				await connection.OpenAsync().ConfigureAwait(false);
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = @"select @@character_set_client, @@character_set_connection";
+					using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
+					{
+						Assert.True(await reader.ReadAsync().ConfigureAwait(false));
+						Assert.Equal("utf8mb4", reader.GetString(0));
+						Assert.Equal("utf8mb4", reader.GetString(1));
+						Assert.False(await reader.ReadAsync().ConfigureAwait(false));
+					}
+				}
+			}
+		}
 	}
 }

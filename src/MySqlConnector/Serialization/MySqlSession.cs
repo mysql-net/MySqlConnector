@@ -81,6 +81,12 @@ namespace MySql.Data.Serialization
 				await SendAsync(ResetConnectionPayload.Create(), cancellationToken).ConfigureAwait(false);
 				var payload = await ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
 				OkPayload.Create(payload);
+
+				// the "reset connection" packet also resets the connection charset, so we need to change that back to our default
+				payload = new PayloadData(new ArraySegment<byte>(Payload.CreateEofStringPayload(CommandKind.Query, "SET NAMES utf8mb4;")));
+				await SendAsync(payload, cancellationToken).ConfigureAwait(false);
+				payload = await ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+				OkPayload.Create(payload);
 			}
 			else
 			{
