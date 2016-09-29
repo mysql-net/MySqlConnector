@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +8,6 @@ namespace MySql.Data.MySqlClient
 {
 	internal sealed class ConnectionPool
 	{
-
 		public async Task<MySqlSession> GetSessionAsync(CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
@@ -44,7 +42,7 @@ namespace MySql.Data.MySqlClient
 				}
 
 				session = new MySqlSession(this);
-				await session.ConnectAsync(m_servers, m_port, m_userId, m_password, m_database, m_connectionTimeout, cancellationToken).ConfigureAwait(false);
+				await session.ConnectAsync(m_servers, m_port, m_userId, m_password, m_database, cancellationToken).ConfigureAwait(false);
 				return session;
 			}
 			catch
@@ -113,7 +111,7 @@ namespace MySql.Data.MySqlClient
 			if (!s_pools.TryGetValue(key, out pool))
 			{
 				pool = s_pools.GetOrAdd(key, new ConnectionPool(csb.Server.Split(','), (int) csb.Port, csb.UserID,
-						csb.Password, csb.Database, (int) csb.ConnectionTimeout, csb.ConnectionReset, (int)csb.MinimumPoolSize, (int) csb.MaximumPoolSize));
+						csb.Password, csb.Database, csb.ConnectionReset, (int)csb.MinimumPoolSize, (int) csb.MaximumPoolSize));
 			}
 			return pool;
 		}
@@ -126,7 +124,7 @@ namespace MySql.Data.MySqlClient
 				await pool.ClearAsync(cancellationToken).ConfigureAwait(false);
 		}
 
-		private ConnectionPool(IEnumerable<string> servers, int port, string userId, string password, string database, int connectionTimeout,
+		private ConnectionPool(IEnumerable<string> servers, int port, string userId, string password, string database,
 				bool resetConnections, int minimumSize, int maximumSize)
 		{
 			m_servers = servers;
@@ -134,7 +132,6 @@ namespace MySql.Data.MySqlClient
 			m_userId = userId;
 			m_password = password;
 			m_database = database;
-			m_connectionTimeout = connectionTimeout;
 			m_resetConnections = resetConnections;
 			m_minimumSize = minimumSize;
 			m_maximumSize = maximumSize;
@@ -155,7 +152,6 @@ namespace MySql.Data.MySqlClient
 		readonly string m_userId;
 		readonly string m_password;
 		readonly string m_database;
-		readonly int m_connectionTimeout;
 		readonly bool m_resetConnections;
 		readonly int m_minimumSize;
 		readonly int m_maximumSize;

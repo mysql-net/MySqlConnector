@@ -205,19 +205,32 @@ namespace MySql.Data.MySqlClient
 
 		private async Task<MySqlSession> CreateSessionAsync(CancellationToken cancellationToken)
 		{
-			// get existing session from the pool if possible
-			if (m_connectionStringBuilder.Pooling)
+			var connectTimeout = m_connectionStringBuilder.ConnectionTimeout == 0 ? Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(checked((int) m_connectionStringBuilder.ConnectionTimeout));
+			using (var timeoutSource = new CancellationTokenSource(connectTimeout))
+			using (var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token))
 			{
-				var pool = ConnectionPool.GetPool(m_connectionStringBuilder);
-				// this returns an open session
-				return await pool.GetSessionAsync(cancellationToken).ConfigureAwait(false);
-			}
-			else
-			{
-				var session = new MySqlSession(null);
-				await session.ConnectAsync(m_connectionStringBuilder.Server.Split(','), (int) m_connectionStringBuilder.Port, m_connectionStringBuilder.UserID,
-					m_connectionStringBuilder.Password, m_connectionStringBuilder.Database, (int) m_connectionStringBuilder.ConnectionTimeout, cancellationToken).ConfigureAwait(false);
-				return session;
+				try
+				{
+					// get existing session from the pool if possible
+					if (m_connectionStringBuilder.Pooling)
+					{
+						var pool = ConnectionPool.GetPool(m_connectionStringBuilder);
+
+						// this returns an open session
+						return await pool.GetSessionAsync(linkedSource.Token).ConfigureAwait(false);
+					}
+					else
+					{
+						var session = new MySqlSession(null);
+						await session.ConnectAsync(m_connectionStringBuilder.Server.Split(','), (int) m_connectionStringBuilder.Port, m_connectionStringBuilder.UserID,
+							m_connectionStringBuilder.Password, m_connectionStringBuilder.Database, linkedSource.Token).ConfigureAwait(false);
+						return session;
+					}
+				}
+				catch (OperationCanceledException ex) when (timeoutSource.IsCancellationRequested)
+				{
+					throw new MySqlException("Connect Timeout expired.", ex);
+				}
 			}
 		}
 
