@@ -201,7 +201,11 @@ namespace MySql.Data.Serialization
 								}
 								else
 								{
+#if NETSTANDARD1_3
+									await socket.ConnectAsync(ipAddress, port).ConfigureAwait(false);
+#else
 									socket.Connect(ipAddress, port);
+#endif
 								}
 							}
 							catch (ObjectDisposedException ex) when (cancellationToken.IsCancellationRequested)
