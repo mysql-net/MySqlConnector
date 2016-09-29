@@ -8,7 +8,7 @@ namespace MySql.Data.MySqlClient
 {
 	internal sealed class ConnectionPool
 	{
-		public async Task<MySqlSession> GetSessionAsync(CancellationToken cancellationToken)
+		public async Task<MySqlSession> GetSessionAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -24,17 +24,17 @@ namespace MySql.Data.MySqlClient
 				// check for a pooled session
 				if (m_sessions.TryDequeue(out session))
 				{
-					if (!await session.TryPingAsync(cancellationToken).ConfigureAwait(false))
+					if (!await session.TryPingAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
 					{
 						// session is not valid
-						await session.DisposeAsync(cancellationToken).ConfigureAwait(false);
+						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
 					else
 					{
 						// session is valid, reset if supported
 						if (m_resetConnections)
 						{
-							await session.ResetConnectionAsync(m_userId, m_password, m_database, cancellationToken).ConfigureAwait(false);
+							await session.ResetConnectionAsync(m_userId, m_password, m_database, ioBehavior, cancellationToken).ConfigureAwait(false);
 						}
 						// pooled session is ready to be used; return it
 						return session;
@@ -42,7 +42,7 @@ namespace MySql.Data.MySqlClient
 				}
 
 				session = new MySqlSession(this);
-				await session.ConnectAsync(m_servers, m_port, m_userId, m_password, m_database, cancellationToken).ConfigureAwait(false);
+				await session.ConnectAsync(m_servers, m_port, m_userId, m_password, m_database, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return session;
 			}
 			catch
@@ -64,7 +64,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public async Task ClearAsync(CancellationToken cancellationToken)
+		public async Task ClearAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			try
@@ -82,7 +82,7 @@ namespace MySql.Data.MySqlClient
 					MySqlSession session;
 					while (m_sessions.TryDequeue(out session))
 					{
-						tasks.Add(session.DisposeAsync(cancellationToken));
+						tasks.Add(session.DisposeAsync(ioBehavior, cancellationToken));
 					}
 					if (tasks.Count > 0)
 					{
@@ -116,12 +116,12 @@ namespace MySql.Data.MySqlClient
 			return pool;
 		}
 
-		public static async Task ClearPoolsAsync(CancellationToken cancellationToken)
+		public static async Task ClearPoolsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			var pools = new List<ConnectionPool>(s_pools.Values);
 
 			foreach (var pool in pools)
-				await pool.ClearAsync(cancellationToken).ConfigureAwait(false);
+				await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
 		private ConnectionPool(IEnumerable<string> servers, int port, string userId, string password, string database,

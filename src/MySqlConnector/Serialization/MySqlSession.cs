@@ -23,14 +23,14 @@ namespace MySql.Data.Serialization
 
 		public void ReturnToPool() => Pool?.Return(this);
 
-		public async Task DisposeAsync(CancellationToken cancellationToken)
+		public async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (m_transmitter != null)
 			{
 				try
 				{
-					await m_transmitter.SendAsync(QuitPayload.Create(), cancellationToken).ConfigureAwait(false);
-					await m_transmitter.TryReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+					await m_transmitter.SendAsync(QuitPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
+					await m_transmitter.TryReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				catch (SocketException)
 				{
@@ -54,13 +54,13 @@ namespace MySql.Data.Serialization
 			m_state = State.Closed;
 		}
 
-		public async Task ConnectAsync(IEnumerable<string> hosts, int port, string userId, string password, string database, CancellationToken cancellationToken)
+		public async Task ConnectAsync(IEnumerable<string> hosts, int port, string userId, string password, string database, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			var connected = await OpenSocketAsync(hosts, port, cancellationToken).ConfigureAwait(false);
+			var connected = await OpenSocketAsync(hosts, port, ioBehavior, cancellationToken).ConfigureAwait(false);
 			if (!connected)
 				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
 
-			var payload = await ReceiveAsync(cancellationToken).ConfigureAwait(false);
+			var payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
 			var initialHandshake = new InitialHandshakePacket(reader);
 			if (initialHandshake.AuthPluginName != "mysql_native_password")
@@ -70,22 +70,22 @@ namespace MySql.Data.Serialization
 
 			var response = HandshakeResponse41Packet.Create(initialHandshake, userId, password, database);
 			payload = new PayloadData(new ArraySegment<byte>(response));
-			await SendReplyAsync(payload, cancellationToken).ConfigureAwait(false);
-			await ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+			await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
-		public async Task ResetConnectionAsync(string userId, string password, string database, CancellationToken cancellationToken)
+		public async Task ResetConnectionAsync(string userId, string password, string database, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
 			{
-				await SendAsync(ResetConnectionPayload.Create(), cancellationToken).ConfigureAwait(false);
-				var payload = await ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+				await SendAsync(ResetConnectionPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
+				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				OkPayload.Create(payload);
 
 				// the "reset connection" packet also resets the connection charset, so we need to change that back to our default
 				payload = new PayloadData(new ArraySegment<byte>(Payload.CreateEofStringPayload(CommandKind.Query, "SET NAMES utf8mb4;")));
-				await SendAsync(payload, cancellationToken).ConfigureAwait(false);
-				payload = await ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+				await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				OkPayload.Create(payload);
 			}
 			else
@@ -93,8 +93,8 @@ namespace MySql.Data.Serialization
 				// optimistically hash the password with the challenge from the initial handshake (supported by MariaDB; doesn't appear to be supported by MySQL)
 				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, password);
 				var payload = ChangeUserPayload.Create(userId, hashedPassword, database);
-				await SendAsync(payload, cancellationToken).ConfigureAwait(false);
-				payload = await ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+				await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 				{
 					// if the server didn't support the hashed password; rehash with the new challenge
@@ -103,19 +103,19 @@ namespace MySql.Data.Serialization
 						throw new NotSupportedException("Only 'mysql_native_password' authentication method is supported.");
 					hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(switchRequest.Data, 0, password);
 					payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
-					await SendReplyAsync(payload, cancellationToken).ConfigureAwait(false);
-					payload = await ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+					await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				OkPayload.Create(payload);
 			}
 		}
 
-		public async Task<bool> TryPingAsync(CancellationToken cancellationToken)
+		public async Task<bool> TryPingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			await SendAsync(PingPayload.Create(), cancellationToken).ConfigureAwait(false);
+			await SendAsync(PingPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
 			try
 			{
-				var payload = await ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				OkPayload.Create(payload);
 				return true;
 			}
@@ -130,20 +130,20 @@ namespace MySql.Data.Serialization
 		}
 
 		// Starts a new conversation with the server by sending the first packet.
-		public Task SendAsync(PayloadData payload, CancellationToken cancellationToken)
-			=> TryAsync(m_transmitter.SendAsync, payload, cancellationToken);
+		public Task SendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+			=> TryAsync(m_transmitter.SendAsync, payload, ioBehavior, cancellationToken);
 
 		// Starts a new conversation with the server by receiving the first packet.
-		public ValueTask<PayloadData> ReceiveAsync(CancellationToken cancellationToken)
-			=> TryAsync(m_transmitter.ReceiveAsync, cancellationToken);
+		public ValueTask<PayloadData> ReceiveAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+			=> TryAsync(m_transmitter.ReceiveAsync, ioBehavior, cancellationToken);
 
 		// Continues a conversation with the server by receiving a response to a packet sent with 'Send' or 'SendReply'.
-		public ValueTask<PayloadData> ReceiveReplyAsync(CancellationToken cancellationToken)
-			=> TryAsync(m_transmitter.ReceiveReplyAsync, cancellationToken);
+		public ValueTask<PayloadData> ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+			=> TryAsync(m_transmitter.ReceiveReplyAsync, ioBehavior, cancellationToken);
 
 		// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
-		public Task SendReplyAsync(PayloadData payload, CancellationToken cancellationToken)
-			=> TryAsync(m_transmitter.SendReplyAsync, payload, cancellationToken);
+		public Task SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+			=> TryAsync(m_transmitter.SendReplyAsync, payload, ioBehavior, cancellationToken);
 
 		private void VerifyConnected()
 		{
@@ -153,14 +153,26 @@ namespace MySql.Data.Serialization
 				throw new InvalidOperationException("MySqlSession is not connected.");
 		}
 
-		private async Task<bool> OpenSocketAsync(IEnumerable<string> hostnames, int port, CancellationToken cancellationToken)
+		private async Task<bool> OpenSocketAsync(IEnumerable<string> hostnames, int port, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			foreach (var hostname in hostnames)
 			{
 				IPAddress[] ipAddresses;
 				try
 				{
+#if NETSTANDARD1_3
+					// Dns.GetHostAddresses isn't available until netstandard 2.0: https://github.com/dotnet/corefx/pull/11950
 					ipAddresses = await Dns.GetHostAddressesAsync(hostname).ConfigureAwait(false);
+#else
+					if (ioBehavior == IOBehavior.Asynchronous)
+					{
+						ipAddresses = await Dns.GetHostAddressesAsync(hostname).ConfigureAwait(false);
+					}
+					else
+					{
+						ipAddresses = Dns.GetHostAddresses(hostname);
+					}
+#endif
 				}
 				catch (SocketException)
 				{
@@ -179,11 +191,18 @@ namespace MySql.Data.Serialization
 						{
 							try
 							{
+								if (ioBehavior == IOBehavior.Asynchronous)
+								{
 #if NETSTANDARD1_3
-								await socket.ConnectAsync(ipAddress, port).ConfigureAwait(false);
+									await socket.ConnectAsync(ipAddress, port).ConfigureAwait(false);
 #else
-								await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, ipAddress, port, null).ConfigureAwait(false);
+									await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, ipAddress, port, null).ConfigureAwait(false);
 #endif
+								}
+								else
+								{
+									socket.Connect(ipAddress, port);
+								}
 							}
 							catch (ObjectDisposedException ex) when (cancellationToken.IsCancellationRequested)
 							{
@@ -206,10 +225,10 @@ namespace MySql.Data.Serialization
 			return false;
 		}
 
-		private Task TryAsync<TArg>(Func<TArg, CancellationToken, Task> func, TArg arg, CancellationToken cancellationToken)
+		private Task TryAsync<TArg>(Func<TArg, IOBehavior, CancellationToken, Task> func, TArg arg, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyConnected();
-			var task = func(arg, cancellationToken);
+			var task = func(arg, ioBehavior, cancellationToken);
 			if (task.Status == TaskStatus.RanToCompletion)
 				return task;
 
@@ -225,10 +244,10 @@ namespace MySql.Data.Serialization
 			}
 		}
 
-		private ValueTask<PayloadData> TryAsync(Func<CancellationToken, ValueTask<PayloadData>> func, CancellationToken cancellationToken)
+		private ValueTask<PayloadData> TryAsync(Func<IOBehavior, CancellationToken, ValueTask<PayloadData>> func, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyConnected();
-			var task = func(cancellationToken);
+			var task = func(ioBehavior, cancellationToken);
 			if (task.IsCompletedSuccessfully)
 			{
 				if (task.Result.HeaderByte != ErrorPayload.Signature)
