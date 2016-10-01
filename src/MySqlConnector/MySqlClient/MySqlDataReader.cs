@@ -69,7 +69,7 @@ namespace MySql.Data.MySqlClient
 
 		private bool ReadAsyncRemainder(PayloadData payload)
 		{
-			if (payload.HeaderByte == EofPayload.Signature)
+			if (EofPayload.IsEof(payload))
 			{
 				var eof = EofPayload.Create(payload);
 				m_state = eof.ServerStatus.HasFlag(ServerStatus.MoreResultsExist) ? State.HasMoreData : State.NoMoreData;
