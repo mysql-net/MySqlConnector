@@ -52,11 +52,11 @@ namespace MySql.Data.MySqlClient
 			throw new NotSupportedException("Use the Async overloads with a CancellationToken.");
 		}
 
-		public override int ExecuteNonQuery()
-			=> ExecuteNonQueryAsync(CancellationToken.None).GetAwaiter().GetResult();
+		public override int ExecuteNonQuery() =>
+			ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public override object ExecuteScalar()
-			=> ExecuteScalarAsync(CancellationToken.None).GetAwaiter().GetResult();
+		public override object ExecuteScalar() =>
+			ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public override void Prepare()
 		{
@@ -102,38 +102,47 @@ namespace MySql.Data.MySqlClient
 			return new MySqlParameter();
 		}
 
-		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
-			=> ExecuteDbDataReaderAsync(behavior, CancellationToken.None).GetAwaiter().GetResult();
+		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) =>
+			ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
+		public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) =>
+			ExecuteNonQueryAsync(IOBehavior.Asynchronous, cancellationToken);
+
+		internal async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			using (var reader = await ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
+			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false))
 			{
 				do
 				{
-					while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+					while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
 					{
 					}
-				} while (await reader.NextResultAsync(cancellationToken).ConfigureAwait(false));
+				} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
 				return reader.RecordsAffected;
 			}
 		}
 
-		public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
+		public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken) =>
+			ExecuteScalarAsync(IOBehavior.Asynchronous, cancellationToken);
+
+		internal async Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			object result = null;
-			using (var reader = await ExecuteReaderAsync(CommandBehavior.SingleResult | CommandBehavior.SingleRow, cancellationToken).ConfigureAwait(false))
+			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(CommandBehavior.SingleResult | CommandBehavior.SingleRow, ioBehavior, cancellationToken).ConfigureAwait(false))
 			{
 				do
 				{
-					if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+					if (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
 						result = reader.GetValue(0);
-				} while (await reader.NextResultAsync(cancellationToken).ConfigureAwait(false));
+				} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
 			}
 			return result;
 		}
 
-		protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken) =>
+			ExecuteReaderAsync(behavior, IOBehavior.Asynchronous, cancellationToken);
+
+		internal async Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyValid();
 			Connection.HasActiveReader = true;
@@ -151,8 +160,8 @@ namespace MySql.Data.MySqlClient
 				var preparer = new MySqlStatementPreparer(CommandText, m_parameterCollection, statementPreparerOptions);
 				preparer.BindParameters();
 				var payload = new PayloadData(new ArraySegment<byte>(Payload.CreateEofStringPayload(CommandKind.Query, preparer.PreparedSql)));
-				await Session.SendAsync(payload, cancellationToken).ConfigureAwait(false);
-				reader = await MySqlDataReader.CreateAsync(this, behavior, cancellationToken).ConfigureAwait(false);
+				await Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				reader = await MySqlDataReader.CreateAsync(this, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return reader;
 			}
 			finally
