@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
-using System.Globalization;
-using System.Text;
+using System.IO;
 
 namespace MySql.Data.MySqlClient
 {
@@ -58,90 +57,93 @@ namespace MySql.Data.MySqlClient
 
 		internal string NormalizedParameterName { get; private set; }
 
-		internal void AppendSqlString(StringBuilder output, StatementPreparerOptions options)
+		internal void AppendSqlString(BinaryWriter writer, StatementPreparerOptions options)
 		{
 			if (Value == DBNull.Value)
 			{
-				output.Append("NULL");
+				writer.WriteUtf8("NULL");
 			}
 			else if (Value is string)
 			{
-				output.Append('\'');
-				output.Append(((string) Value).Replace("\\", "\\\\").Replace("'", "\\'"));
-				output.Append('\'');
+				writer.Write((byte) '\'');
+				writer.WriteUtf8(((string) Value).Replace("\\", "\\\\").Replace("'", "\\'"));
+				writer.Write((byte) '\'');
 			}
 			else if (Value is byte || Value is sbyte || Value is short || Value is int || Value is long || Value is ushort || Value is uint || Value is ulong || Value is decimal)
 			{
-				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", Value);
+				writer.WriteUtf8("{0}".FormatInvariant(Value));
 			}
 			else if (Value is byte[])
 			{
 				// TODO: use a _binary'...' string for more efficient data transmission
-				output.Append("X'");
+				writer.WriteUtf8("_binary'");
 				foreach (var by in (byte[]) Value)
-					output.AppendFormat(CultureInfo.InvariantCulture, "{0:X2}", by);
-				output.Append("'");
+				{
+					if (by == 0x27 || by == 0x5C)
+						writer.Write((byte) 0x5C);
+					writer.Write(by);
+				}
+				writer.Write((byte) '\'');
 			}
 			else if (Value is bool)
 			{
-				output.Append(((bool) Value) ? "true" : "false");
+				writer.WriteUtf8(((bool) Value) ? "true" : "false");
 			}
 			else if (Value is float || Value is double)
 			{
-				output.AppendFormat(CultureInfo.InvariantCulture, "{0:R}", Value);
+				writer.WriteUtf8("{0:R}".FormatInvariant(Value));
 			}
 			else if (Value is DateTime)
 			{
-				output.AppendFormat(CultureInfo.InvariantCulture, "timestamp '{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}'", (DateTime) Value);
+				writer.WriteUtf8("timestamp '{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}'".FormatInvariant((DateTime) Value));
 			}
 			else if (Value is TimeSpan)
 			{
-				output.Append("time '");
+				writer.WriteUtf8("time '");
 				var ts = (TimeSpan) Value;
 				if (ts.Ticks < 0)
 				{
-					output.Append('-');
+					writer.Write((byte) '-');
 					ts = TimeSpan.FromTicks(-ts.Ticks);
 				}
-				output.AppendFormat(CultureInfo.InvariantCulture, "{0}:{1:mm':'ss'.'ffffff}'", ts.Days * 24 + ts.Hours, ts);
+				writer.WriteUtf8("{0}:{1:mm':'ss'.'ffffff}'".FormatInvariant(ts.Days * 24 + ts.Hours, ts));
 			}
 			else if (Value is Guid)
 			{
 				if (options.HasFlag(StatementPreparerOptions.OldGuids))
 				{
-					output.Append("X'");
-					foreach (var by in ((Guid) Value).ToByteArray())
-						output.AppendFormat(CultureInfo.InvariantCulture, "{0:X2}", by);
-					output.Append("'");
+					writer.WriteUtf8("_binary'");
+					writer.Write(((Guid) Value).ToByteArray());
+					writer.Write((byte) '\'');
 				}
 				else
 				{
-					output.AppendFormat("'{0:D}'", Value);
+					writer.WriteUtf8("'{0:D}'".FormatInvariant(Value));
 				}
 			}
 			else if (DbType == DbType.Int16)
 			{
-				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", (short) Value);
+				writer.WriteUtf8("{0}".FormatInvariant((short) Value));
 			}
 			else if (DbType == DbType.UInt16)
 			{
-				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", (ushort) Value);
+				writer.WriteUtf8("{0}".FormatInvariant((ushort) Value));
 			}
 			else if (DbType == DbType.Int32)
 			{
-				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", (int) Value);
+				writer.WriteUtf8("{0}".FormatInvariant((int) Value));
 			}
 			else if (DbType == DbType.UInt32)
 			{
-				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", (uint) Value);
+				writer.WriteUtf8("{0}".FormatInvariant((uint) Value));
 			}
 			else if (DbType == DbType.Int64)
 			{
-				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", (long) Value);
+				writer.WriteUtf8("{0}".FormatInvariant((long) Value));
 			}
 			else if (DbType == DbType.UInt64)
 			{
-				output.AppendFormat(CultureInfo.InvariantCulture, "{0}", (ulong) Value);
+				writer.WriteUtf8("{0}".FormatInvariant((ulong) Value));
 			}
 			else
 			{
