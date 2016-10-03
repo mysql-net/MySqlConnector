@@ -149,8 +149,7 @@ namespace MySql.Data.MySqlClient
 				if (connection.OldGuids)
 					statementPreparerOptions |= StatementPreparerOptions.OldGuids;
 				var preparer = new MySqlStatementPreparer(CommandText, m_parameterCollection, statementPreparerOptions);
-				preparer.BindParameters();
-				var payload = new PayloadData(new ArraySegment<byte>(Payload.CreateEofStringPayload(CommandKind.Query, preparer.PreparedSql)));
+				var payload = new PayloadData(preparer.ParseAndBindParameters());
 				await Session.SendAsync(payload, cancellationToken).ConfigureAwait(false);
 				reader = await MySqlDataReader.CreateAsync(this, behavior, cancellationToken).ConfigureAwait(false);
 				return reader;
