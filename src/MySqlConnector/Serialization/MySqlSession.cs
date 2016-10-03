@@ -24,6 +24,7 @@ namespace MySql.Data.Serialization
 		}
 
 		public ServerVersion ServerVersion { get; set; }
+		public int ConnectionId { get; set; }
 		public byte[] AuthPluginData { get; set; }
 		public ConnectionPool Pool { get; }
 		public int PoolGeneration { get; }
@@ -73,6 +74,7 @@ namespace MySql.Data.Serialization
 			if (initialHandshake.AuthPluginName != "mysql_native_password")
 				throw new NotSupportedException("Only 'mysql_native_password' authentication method is supported.");
 			ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
+			ConnectionId = initialHandshake.ConnectionId;
 			AuthPluginData = initialHandshake.AuthPluginData;
 
 			var response = HandshakeResponse41Packet.Create(initialHandshake, userId, password, database);

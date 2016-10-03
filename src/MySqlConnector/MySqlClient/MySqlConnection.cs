@@ -150,6 +150,8 @@ namespace MySql.Data.MySqlClient
 
 		public override string ServerVersion => m_session.ServerVersion.OriginalString;
 
+		public int ServerThread => m_session.ConnectionId;
+
 		public static void ClearPool(MySqlConnection connection) => ClearPoolAsync(connection, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		public static Task ClearPoolAsync(MySqlConnection connection) => ClearPoolAsync(connection, IOBehavior.Asynchronous, CancellationToken.None);
 		public static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken) => ClearPoolAsync(connection, IOBehavior.Asynchronous, cancellationToken);
