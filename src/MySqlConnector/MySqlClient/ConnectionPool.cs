@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,21 +13,21 @@ namespace MySql.Data.MySqlClient
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
-			// if the drain lock is held, connection draining is in progress
-			await m_drain_lock.WaitAsync(cancellationToken).ConfigureAwait(false);
-			m_drain_lock.Release();
-
 			// wait for an open slot
-			await m_session_semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+			if (ioBehavior == IOBehavior.Asynchronous)
+				await m_session_semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+			else
+				m_session_semaphore.Wait(cancellationToken);
+
 			try
 			{
 				MySqlSession session;
 				// check for a pooled session
 				if (m_sessions.TryDequeue(out session))
 				{
-					if (!await session.TryPingAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
+					if (session.PoolGeneration != m_generation || !await session.TryPingAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
 					{
-						// session is not valid
+						// session is either old or cannot communicate with the server
 						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
 					else
@@ -41,7 +42,7 @@ namespace MySql.Data.MySqlClient
 					}
 				}
 
-				session = new MySqlSession(this);
+				session = new MySqlSession(this, m_generation);
 				await session.ConnectAsync(m_servers, m_port, m_userId, m_password, m_database, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return session;
 			}
@@ -56,7 +57,10 @@ namespace MySql.Data.MySqlClient
 		{
 			try
 			{
-				m_sessions.Enqueue(session);
+				if (session.PoolGeneration == m_generation)
+					m_sessions.Enqueue(session);
+				else
+					session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).ConfigureAwait(false);
 			}
 			finally
 			{
@@ -66,37 +70,47 @@ namespace MySql.Data.MySqlClient
 
 		public async Task ClearAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			cancellationToken.ThrowIfCancellationRequested();
-			try
-			{
-				// don't let any new connections out of the pool
-				await m_drain_lock.WaitAsync(cancellationToken).ConfigureAwait(false);
+			// increment the generation of the connection pool
+			Interlocked.Increment(ref m_generation);
 
-				// acquire all of the session slots
-				for (var i = 0; i < m_maximumSize; i++)
+			var waitTimeout = TimeSpan.FromMilliseconds(10);
+			while (true)
+			{
+				// try to get an open slot; if this fails, connection pool is full and sessions will be disposed when returned to pool
+				if (ioBehavior == IOBehavior.Asynchronous)
 				{
-					await m_session_semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-					// clear all of the existing sessions
-					var tasks = new List<Task>();
-					MySqlSession session;
-					while (m_sessions.TryDequeue(out session))
-					{
-						tasks.Add(session.DisposeAsync(ioBehavior, cancellationToken));
-					}
-					if (tasks.Count > 0)
-					{
-						await Task.WhenAll(tasks).ConfigureAwait(false);
-					}
+					if (!await m_session_semaphore.WaitAsync(waitTimeout, cancellationToken).ConfigureAwait(false))
+						return;
 				}
-			}
-			finally
-			{
-				// release all of the session slots
-				m_session_semaphore.Release(m_maximumSize);
+				else
+				{
+					if (!m_session_semaphore.Wait(waitTimeout, cancellationToken))
+						return;
+				}
 
-				// release the master lock
-				m_drain_lock.Release();
+				try
+				{
+					MySqlSession session;
+					if (m_sessions.TryDequeue(out session))
+					{
+						if (session.PoolGeneration != m_generation)
+						{
+							// session generation does not match pool generation; dispose of it and continue iterating
+							await session.DisposeAsync(ioBehavior, cancellationToken);
+							continue;
+						}
+						else
+						{
+							// session generation matches pool generation; put it back in the queue and stop iterating
+							m_sessions.Enqueue(session);
+						}
+					}
+					return;
+				}
+				finally
+				{
+					m_session_semaphore.Release();
+				}
 			}
 		}
 
@@ -110,7 +124,7 @@ namespace MySql.Data.MySqlClient
 			ConnectionPool pool;
 			if (!s_pools.TryGetValue(key, out pool))
 			{
-				pool = s_pools.GetOrAdd(key, new ConnectionPool(csb.Server.Split(','), (int) csb.Port, csb.UserID,
+				pool = s_pools.GetOrAdd(key, newKey => new ConnectionPool(csb.Server.Split(','), (int) csb.Port, csb.UserID,
 						csb.Password, csb.Database, csb.ConnectionReset, (int)csb.MinimumPoolSize, (int) csb.MaximumPoolSize));
 			}
 			return pool;
@@ -125,7 +139,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		private ConnectionPool(IEnumerable<string> servers, int port, string userId, string password, string database,
-				bool resetConnections, int minimumSize, int maximumSize)
+			bool resetConnections, int minimumSize, int maximumSize)
 		{
 			m_servers = servers;
 			m_port = port;
@@ -136,14 +150,14 @@ namespace MySql.Data.MySqlClient
 			m_minimumSize = minimumSize;
 			m_maximumSize = maximumSize;
 
-			m_drain_lock = new SemaphoreSlim(1);
+			m_generation = 0;
 			m_session_semaphore = new SemaphoreSlim(m_maximumSize);
 			m_sessions = new ConcurrentQueue<MySqlSession>();
 		}
 
 		static readonly ConcurrentDictionary<string, ConnectionPool> s_pools = new ConcurrentDictionary<string, ConnectionPool>();
 
-		readonly SemaphoreSlim m_drain_lock;
+		int m_generation;
 		readonly SemaphoreSlim m_session_semaphore;
 		readonly ConcurrentQueue<MySqlSession> m_sessions;
 

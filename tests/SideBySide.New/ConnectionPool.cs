@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -183,5 +184,116 @@ namespace SideBySide
 				}
 			}
 		}
+
+		[Fact]
+		public async Task ClearConnectionPool()
+		{
+			var csb = Constants.CreateConnectionStringBuilder();
+			csb.Pooling = true;
+			csb.MinimumPoolSize = 0;
+			csb.MaximumPoolSize = 3;
+
+			var connections = new List<MySqlConnection>();
+
+			for (int i = 0; i < csb.MaximumPoolSize; i++)
+			{
+				var connection = new MySqlConnection(csb.ConnectionString);
+				connections.Add(connection);
+			}
+
+			Func<Task<HashSet<long>>> getConnectionIds = async () =>
+			{
+				var cids = await ConnectionIds(connections);
+				Assert.Equal(connections.Count, cids.Count);
+				return cids;
+			};
+
+			Func<Task> openConnections = async () =>
+			{
+				foreach (var connection in connections)
+				{
+					await connection.OpenAsync();
+				}
+			};
+
+			Action closeConnections = () =>
+			{
+				foreach (var connection in connections)
+				{
+					connection.Close();
+				}
+			};
+
+			// connections should all be disposed when returned to pool
+			await openConnections();
+			var connectionIds = await getConnectionIds();
+			await MySqlConnection.ClearPoolAsync(connections[0]);
+			closeConnections();
+			await openConnections();
+			var connectionIds2 = await getConnectionIds();
+			Assert.Empty(connectionIds.Intersect(connectionIds2));
+			closeConnections();
+
+			// connections should all be disposed in ClearPoolAsync
+			await MySqlConnection.ClearPoolAsync(connections[0]);
+			await openConnections();
+			var connectionIds3 = await getConnectionIds();
+			Assert.Empty(connectionIds2.Intersect(connectionIds3));
+			closeConnections();
+
+			// some connections may be disposed in ClearPoolAsync, others in OpenAsync
+			var clearTask = MySqlConnection.ClearPoolAsync(connections[0]);
+			await openConnections();
+			var connectionIds4 = await ConnectionIds(connections);
+			Assert.Empty(connectionIds3.Intersect(connectionIds4));
+			await clearTask;
+			closeConnections();
+
+			foreach (var connection in connections)
+				connection.Dispose();
+		}
+
+		private async Task<HashSet<long>> ConnectionIds(List<MySqlConnection> connections)
+		{
+			const string sleepCmd = "SELECT SLEEP(1.99)";
+			const string processListCmd = "SHOW FULL PROCESSLIST";
+
+			// sleep all connections except the last one
+			var tasks = new List<Task>();
+			DbCommand command;
+			for (var i = 0; i < connections.Count - 1; i++)
+			{
+				command = connections[i].CreateCommand();
+				command.CommandText = sleepCmd;
+				tasks.Add(command.ExecuteScalarAsync());
+			}
+
+			// allow sleep commands to execute
+			await Task.Delay(TimeSpan.FromSeconds(1));
+
+			// use last connection to SHOW FULL PROCESSLIST
+			command = connections[connections.Count - 1].CreateCommand();
+			command.CommandText = processListCmd;
+			var reader = await command.ExecuteReaderAsync();
+
+			// create a hash set of connection IDs
+			var connectionIds = new HashSet<long>();
+			while (await reader.ReadAsync())
+			{
+				// Id=0,User=1,Host=2,db=3,Command=4,Time=5,State=6,Info=7
+				var id = reader.GetFieldValue<long>(0);
+				var info = reader.GetFieldValue<object>(7) as string;
+				if (info == sleepCmd || info == processListCmd)
+				{
+					connectionIds.Add(id);
+				}
+			}
+			reader.Dispose();
+
+			// wait for the sleep commads
+			await Task.WhenAll(tasks);
+			return connectionIds;
+		}
+
 	}
 }

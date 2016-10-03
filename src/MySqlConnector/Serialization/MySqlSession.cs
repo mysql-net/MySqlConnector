@@ -12,14 +12,16 @@ namespace MySql.Data.Serialization
 {
 	internal sealed class MySqlSession
 	{
-		public MySqlSession(ConnectionPool pool)
+		public MySqlSession(ConnectionPool pool, int poolGeneration=0)
 		{
 			Pool = pool;
+			PoolGeneration = poolGeneration;
 		}
 
 		public ServerVersion ServerVersion { get; set; }
 		public byte[] AuthPluginData { get; set; }
 		public ConnectionPool Pool { get; }
+		public int PoolGeneration { get; }
 
 		public void ReturnToPool() => Pool?.Return(this);
 
