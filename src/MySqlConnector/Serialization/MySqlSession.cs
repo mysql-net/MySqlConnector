@@ -12,7 +12,12 @@ namespace MySql.Data.Serialization
 {
 	internal sealed class MySqlSession
 	{
-		public MySqlSession(ConnectionPool pool, int poolGeneration=0)
+		public MySqlSession()
+			: this(null, 0)
+		{
+		}
+
+		public MySqlSession(ConnectionPool pool, int poolGeneration)
 		{
 			Pool = pool;
 			PoolGeneration = poolGeneration;

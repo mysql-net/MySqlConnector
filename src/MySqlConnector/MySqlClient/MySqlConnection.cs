@@ -225,7 +225,7 @@ namespace MySql.Data.MySqlClient
 					}
 					else
 					{
-						var session = new MySqlSession(null);
+						var session = new MySqlSession();
 						await session.ConnectAsync(m_connectionStringBuilder.Server.Split(','), (int) m_connectionStringBuilder.Port, m_connectionStringBuilder.UserID,
 							m_connectionStringBuilder.Password, m_connectionStringBuilder.Database, ioBehavior, linkedSource.Token).ConfigureAwait(false);
 						return session;
