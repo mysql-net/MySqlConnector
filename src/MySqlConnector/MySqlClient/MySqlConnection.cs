@@ -24,15 +24,15 @@ namespace MySql.Data.MySqlClient
 		public new MySqlTransaction BeginTransaction() => (MySqlTransaction) base.BeginTransaction();
 
 		public Task<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
-			BeginDbTransactionAsync(IsolationLevel.Unspecified, cancellationToken);
+			BeginDbTransactionAsync(IsolationLevel.Unspecified, IOBehavior.Asynchronous, cancellationToken);
 
 		public Task<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken)) =>
-			BeginDbTransactionAsync(isolationLevel, cancellationToken);
+			BeginDbTransactionAsync(isolationLevel, IOBehavior.Asynchronous, cancellationToken);
 
 		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) =>
-			BeginDbTransactionAsync(isolationLevel).GetAwaiter().GetResult();
+			BeginDbTransactionAsync(isolationLevel, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		private async Task<MySqlTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))
+		private async Task<MySqlTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (State != ConnectionState.Open)
 				throw new InvalidOperationException("Connection is not open.");
@@ -67,7 +67,7 @@ namespace MySql.Data.MySqlClient
 			}
 
 			using (var cmd = new MySqlCommand("set session transaction isolation level " + isolationLevelValue + "; start transaction;", this))
-				await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+				await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			var transaction = new MySqlTransaction(this, isolationLevel);
 			CurrentTransaction = transaction;
@@ -88,9 +88,12 @@ namespace MySql.Data.MySqlClient
 			throw new NotImplementedException();
 		}
 
-		public override void Open() => OpenAsync(CancellationToken.None).GetAwaiter().GetResult();
+		public override void Open() => OpenAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public override async Task OpenAsync(CancellationToken cancellationToken)
+		public override Task OpenAsync(CancellationToken cancellationToken) =>
+			OpenAsync(IOBehavior.Asynchronous, cancellationToken);
+
+		private async Task OpenAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyNotDisposed();
 			if (State != ConnectionState.Closed)
@@ -104,7 +107,7 @@ namespace MySql.Data.MySqlClient
 
 			try
 			{
-				m_session = await CreateSessionAsync(cancellationToken).ConfigureAwait(false);
+				m_session = await CreateSessionAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				m_hasBeenOpened = true;
 				SetState(ConnectionState.Open);
@@ -147,20 +150,21 @@ namespace MySql.Data.MySqlClient
 
 		public override string ServerVersion => m_session.ServerVersion.OriginalString;
 
-		public static void ClearPool(MySqlConnection connection) => ClearPoolAsync(connection, CancellationToken.None).GetAwaiter().GetResult();
-		public static void ClearAllPools() => ClearAllPoolsAsync(CancellationToken.None).GetAwaiter().GetResult();
-		public static Task ClearPoolAsync(MySqlConnection connection) => ClearPoolAsync(connection, CancellationToken.None);
-		public static Task ClearAllPoolsAsync() => ClearAllPoolsAsync(CancellationToken.None);
-		public static Task ClearAllPoolsAsync(CancellationToken cancellationToken) => ConnectionPool.ClearPoolsAsync(cancellationToken);
+		public static void ClearPool(MySqlConnection connection) => ClearPoolAsync(connection, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public static Task ClearPoolAsync(MySqlConnection connection) => ClearPoolAsync(connection, IOBehavior.Asynchronous, CancellationToken.None);
+		public static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken) => ClearPoolAsync(connection, IOBehavior.Asynchronous, cancellationToken);
+		public static void ClearAllPools() => ConnectionPool.ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public static Task ClearAllPoolsAsync() => ConnectionPool.ClearPoolsAsync(IOBehavior.Asynchronous, CancellationToken.None);
+		public static Task ClearAllPoolsAsync(CancellationToken cancellationToken) => ConnectionPool.ClearPoolsAsync(IOBehavior.Asynchronous, cancellationToken);
 
-		public static async Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken)
+		private static async Task ClearPoolAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
 			var pool = ConnectionPool.GetPool(connection.m_connectionStringBuilder);
 			if (pool != null)
-				await pool.ClearAsync(cancellationToken).ConfigureAwait(false);
+				await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
 		protected override DbCommand CreateDbCommand() => new MySqlCommand(this, CurrentTransaction);
@@ -203,21 +207,34 @@ namespace MySql.Data.MySqlClient
 		internal bool ConvertZeroDateTime => m_connectionStringBuilder.ConvertZeroDateTime;
 		internal bool OldGuids => m_connectionStringBuilder.OldGuids;
 
-		private async Task<MySqlSession> CreateSessionAsync(CancellationToken cancellationToken)
+		private async Task<MySqlSession> CreateSessionAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			// get existing session from the pool if possible
-			if (m_connectionStringBuilder.Pooling)
+			var connectTimeout = m_connectionStringBuilder.ConnectionTimeout == 0 ? Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(checked((int) m_connectionStringBuilder.ConnectionTimeout));
+			using (var timeoutSource = new CancellationTokenSource(connectTimeout))
+			using (var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token))
 			{
-				var pool = ConnectionPool.GetPool(m_connectionStringBuilder);
-				// this returns an open session
-				return await pool.GetSessionAsync(cancellationToken).ConfigureAwait(false);
-			}
-			else
-			{
-				var session = new MySqlSession(null);
-				await session.ConnectAsync(m_connectionStringBuilder.Server.Split(','), (int) m_connectionStringBuilder.Port, m_connectionStringBuilder.UserID,
-					m_connectionStringBuilder.Password, m_connectionStringBuilder.Database, (int) m_connectionStringBuilder.ConnectionTimeout, cancellationToken).ConfigureAwait(false);
-				return session;
+				try
+				{
+					// get existing session from the pool if possible
+					if (m_connectionStringBuilder.Pooling)
+					{
+						var pool = ConnectionPool.GetPool(m_connectionStringBuilder);
+
+						// this returns an open session
+						return await pool.GetSessionAsync(ioBehavior, linkedSource.Token).ConfigureAwait(false);
+					}
+					else
+					{
+						var session = new MySqlSession(null);
+						await session.ConnectAsync(m_connectionStringBuilder.Server.Split(','), (int) m_connectionStringBuilder.Port, m_connectionStringBuilder.UserID,
+							m_connectionStringBuilder.Password, m_connectionStringBuilder.Database, ioBehavior, linkedSource.Token).ConfigureAwait(false);
+						return session;
+					}
+				}
+				catch (OperationCanceledException ex) when (timeoutSource.IsCancellationRequested)
+				{
+					throw new MySqlException("Connect Timeout expired.", ex);
+				}
 			}
 		}
 
@@ -251,7 +268,7 @@ namespace MySql.Data.MySqlClient
 					if (m_connectionStringBuilder.Pooling)
 						m_session.ReturnToPool();
 					else
-						m_session.DisposeAsync(CancellationToken.None).GetAwaiter().GetResult();
+						m_session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 					m_session = null;
 				}
 				SetState(ConnectionState.Closed);

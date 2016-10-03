@@ -12,17 +12,18 @@ namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlDataReader : DbDataReader
 	{
-		public override bool NextResult()
-		{
-			return NextResultAsync(CancellationToken.None).GetAwaiter().GetResult();
-		}
+		public override bool NextResult() =>
+			NextResultAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public override async Task<bool> NextResultAsync(CancellationToken cancellationToken)
+		public override Task<bool> NextResultAsync(CancellationToken cancellationToken) =>
+			NextResultAsync(IOBehavior.Asynchronous, cancellationToken);
+
+		internal async Task<bool> NextResultAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyNotDisposed();
 
 			while (m_state == State.ReadingRows || m_state == State.ReadResultSetHeader)
-				await ReadAsync(cancellationToken).ConfigureAwait(false);
+				await ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			var oldState = m_state;
 			Reset();
@@ -31,17 +32,20 @@ namespace MySql.Data.MySqlClient
 			if (oldState != State.HasMoreData)
 				throw new InvalidOperationException("Invalid state: {0}".FormatInvariant(oldState));
 
-			await ReadResultSetHeaderAsync(cancellationToken).ConfigureAwait(false);
+			await ReadResultSetHeaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			return true;
 		}
 
 		public override bool Read()
 		{
 			VerifyNotDisposed();
-			return ReadAsync(CancellationToken.None).GetAwaiter().GetResult();
+			return ReadAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		}
 
-		public override Task<bool> ReadAsync(CancellationToken cancellationToken)
+		public override Task<bool> ReadAsync(CancellationToken cancellationToken) =>
+			ReadAsync(IOBehavior.Asynchronous, cancellationToken);
+
+		internal Task<bool> ReadAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyNotDisposed();
 
@@ -51,7 +55,7 @@ namespace MySql.Data.MySqlClient
 
 			if (m_state != State.AlreadyReadFirstRow)
 			{
-				var payloadTask = m_session.ReceiveReplyAsync(cancellationToken);
+				var payloadTask = m_session.ReceiveReplyAsync(ioBehavior, cancellationToken);
 				if (payloadTask.IsCompletedSuccessfully)
 					return ReadAsyncRemainder(payloadTask.Result) ? s_trueTask : s_falseTask;
 				return ReadAsyncAwaited(payloadTask.AsTask());
@@ -645,10 +649,10 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		internal static async Task<MySqlDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, CancellationToken cancellationToken)
+		internal static async Task<MySqlDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			var dataReader = new MySqlDataReader(command, behavior);
-			await dataReader.ReadResultSetHeaderAsync(cancellationToken).ConfigureAwait(false);
+			await dataReader.ReadResultSetHeaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			return dataReader;
 		}
 
@@ -709,11 +713,11 @@ namespace MySql.Data.MySqlClient
 
 		private MySqlConnection Connection => m_command.Connection;
 
-		private async Task ReadResultSetHeaderAsync(CancellationToken cancellationToken)
+		private async Task ReadResultSetHeaderAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			while (true)
 			{
-				var payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+				var payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				var firstByte = payload.HeaderByte;
 				if (firstByte == OkPayload.Signature)
@@ -740,11 +744,11 @@ namespace MySql.Data.MySqlClient
 
 					for (var column = 0; column < m_columnDefinitions.Length; column++)
 					{
-						payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+						payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 						m_columnDefinitions[column] = ColumnDefinitionPayload.Create(payload);
 					}
 
-					payload = await m_session.ReceiveReplyAsync(cancellationToken).ConfigureAwait(false);
+					payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					EofPayload.Create(payload);
 
 					m_command.LastInsertedId = -1;

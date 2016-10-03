@@ -465,13 +465,41 @@ namespace SideBySide
 		[Theory]
 		[InlineData("TinyBlob", 255)]
 		[InlineData("Blob", 65535)]
+		public async Task InsertLargeBlobAsync(string column, int size)
+		{
+			var data = new byte[size];
+			Random random = new Random(size);
+			random.NextBytes(data);
+
+			long lastInsertId;
+			using (var cmd = new MySqlCommand(Invariant($"insert into datatypes.blobs(`{column}`) values(?)"), m_database.Connection)
+			{
+				Parameters = { new MySqlParameter { Value = data } }
+			})
+			{
+				await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+				lastInsertId = cmd.LastInsertedId;
+			}
+
+			foreach (var queryResult in await m_database.Connection.QueryAsync<byte[]>(Invariant($"select `{column}` from datatypes.blobs where rowid = {lastInsertId}")).ConfigureAwait(false))
+			{
+				Assert.Equal(data, queryResult);
+				break;
+			}
+
+			await m_database.Connection.ExecuteAsync(Invariant($"delete from datatypes.blobs where rowid = {lastInsertId}")).ConfigureAwait(false);
+		}
+
+		[Theory]
+		[InlineData("TinyBlob", 255)]
+		[InlineData("Blob", 65535)]
 #if false
 		// MySQL has a default max_allowed_packet size of 4MB; without changing the server configuration, it's impossible
 		// to send more than 4MB of data.
 		[InlineData("MediumBlob", 16777215)]
 		[InlineData("LongBlob", 67108864)]
 #endif
-		public void InsertLargeBlob(string column, int size)
+		public void InsertLargeBlobSync(string column, int size)
 		{
 			var data = new byte[size];
 			Random random = new Random(size);
