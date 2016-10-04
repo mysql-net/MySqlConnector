@@ -96,7 +96,7 @@ namespace MySql.Data.MySqlClient
 						if (session.PoolGeneration != m_generation)
 						{
 							// session generation does not match pool generation; dispose of it and continue iterating
-							await session.DisposeAsync(ioBehavior, cancellationToken);
+							await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 							continue;
 						}
 						else
