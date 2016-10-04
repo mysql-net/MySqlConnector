@@ -12,7 +12,7 @@ namespace MySql.Data.Serialization
 		{
 			m_socket = socket;
 			var socketEventArgs = new SocketAsyncEventArgs();
-			m_buffer = new byte[4096];
+			m_buffer = new byte[c_netBufferLength];
 			socketEventArgs.SetBuffer(m_buffer, 0, 0);
 			m_socketAwaitable = new SocketAwaitable(socketEventArgs);
 		}
@@ -249,6 +249,7 @@ namespace MySql.Data.Serialization
 		}
 
 		const int c_maxPacketSize = 16777215;
+		const int c_netBufferLength = 16384;
 
 		readonly Socket m_socket;
 		readonly SocketAwaitable m_socketAwaitable;
