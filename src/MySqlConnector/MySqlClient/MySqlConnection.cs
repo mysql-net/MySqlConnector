@@ -175,10 +175,7 @@ namespace MySql.Data.MySqlClient
 		protected override DbProviderFactory DbProviderFactory => MySqlClientFactory.Instance;
 #endif
 
-		public override int ConnectionTimeout
-		{
-			get { throw new NotImplementedException(); }
-		}
+		public override int ConnectionTimeout => (int) m_connectionStringBuilder.ConnectionTimeout;
 
 		protected override void Dispose(bool disposing)
 		{
