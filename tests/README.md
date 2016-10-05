@@ -11,7 +11,7 @@ project.
 
 The tests require a local MySQL server (although this can be changed in `Constants.cs` to use
 a remote server). Create a user with the Login Name `mysqltest`, Password `test;key="val` and
-Role "DBManager". Create another user with the Login Name `no_password`, Password blank and no Roles.
+Role "DBManager". Create another user with the Login Name `no_password`, no Password and no Roles.
 
 There are two ways to run the tests: command line and Visual Studio.
 
@@ -30,6 +30,5 @@ packages\xunit.runner.console.2.1.0\tools\xunit.console.exe tests\SideBySide.Bas
 To run the New tests:
 
 ```
-cd tests\SideBySide.New
-dotnet test
+dotnet test tests\SideBySide.New
 ```
