@@ -30,6 +30,5 @@ packages\xunit.runner.console.2.1.0\tools\xunit.console.exe tests\SideBySide.Bas
 To run the New tests:
 
 ```
-cd tests\SideBySide.New
-dotnet test
+dotnet test tests\SideBySide.New
 ```
