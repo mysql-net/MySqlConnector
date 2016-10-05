@@ -11,7 +11,7 @@ project.
 
 The tests require a local MySQL server (although this can be changed in `Constants.cs` to use
 a remote server). Create a user with the Login Name `mysqltest`, Password `test;key="val` and
-Role "DBManager".
+Role "DBManager". Create another user with the Login Name `no_password`, Password blank and no Roles.
 
 There are two ways to run the tests: command line and Visual Studio.
 
