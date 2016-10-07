@@ -465,8 +465,15 @@ namespace SideBySide
 		[Theory]
 		[InlineData("TinyBlob", 255)]
 		[InlineData("Blob", 65535)]
+		[InlineData("MediumBlob", 16777215)]
+		[InlineData("LongBlob", 67108864)]
 		public async Task InsertLargeBlobAsync(string column, int size)
 		{
+			// verify that this amount of data can be sent to MySQL successfully
+			var maxAllowedPacket = (await m_database.Connection.QueryAsync<int>("select @@max_allowed_packet").ConfigureAwait(false)).Single();
+			if (maxAllowedPacket < size)
+				return; // TODO: Use [SkippableFact]
+
 			var data = new byte[size];
 			Random random = new Random(size);
 			random.NextBytes(data);
@@ -493,14 +500,15 @@ namespace SideBySide
 		[Theory]
 		[InlineData("TinyBlob", 255)]
 		[InlineData("Blob", 65535)]
-#if false
-		// MySQL has a default max_allowed_packet size of 4MB; without changing the server configuration, it's impossible
-		// to send more than 4MB of data.
 		[InlineData("MediumBlob", 16777215)]
 		[InlineData("LongBlob", 67108864)]
-#endif
 		public void InsertLargeBlobSync(string column, int size)
 		{
+			// verify that this amount of data can be sent to MySQL successfully
+			var maxAllowedPacket = m_database.Connection.Query<int>("select @@max_allowed_packet").Single();
+			if (maxAllowedPacket < size)
+				return; // TODO: Use [SkippableFact]
+
 			var data = new byte[size];
 			Random random = new Random(size);
 			random.NextBytes(data);
