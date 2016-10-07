@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using MySql.Data.Serialization;
@@ -55,17 +56,17 @@ namespace MySql.Data.Protocol.Serialization
 
 	internal interface IByteReader
 	{
-		ValueTask<ArraySegment<byte>> ReadBytesAsync(IOBehavior ioBehavior);
+		ValueTask<int> ReadBytesAsync(byte[] buffer, int offset, int count, IOBehavior ioBehavior);
 	}
 
 	internal interface IPacketReader
 	{
-		ValueTask<Packet> ReadPacketAsync(IConversation conversation, IOBehavior ioBehavior);
+		ValueTask<Packet> ReadPacketAsync(ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior);
 	}
 
 	internal interface IPayloadReader
 	{
-		ValueTask<ArraySegment<byte>> ReadPayloadAsync(IConversation conversation, IOBehavior ioBehavior);
+		ValueTask<ArraySegment<byte>> ReadPayloadAsync(IConversation conversation, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior);
 	}
 
 	internal class PacketFormatter : IPayloadWriter
@@ -92,7 +93,56 @@ namespace MySql.Data.Protocol.Serialization
 			return writeTask;
 		}
 
-		const int MaxPacketSize = 16777215;
+		public const int MaxPacketSize = 16777215;
+	}
+
+	internal class PayloadReader : IPayloadReader
+	{
+		private readonly IPacketReader m_packetReader;
+
+		public PayloadReader(IPacketReader packetReader)
+		{
+			m_packetReader = packetReader;
+		}
+
+		public ValueTask<ArraySegment<byte>> ReadPayloadAsync(IConversation conversation, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) =>
+			ReadPayloadAsync(default(ArraySegment<byte>), conversation, protocolErrorBehavior, ioBehavior);
+
+		private ValueTask<ArraySegment<byte>> ReadPayloadAsync(ArraySegment<byte> previousPayloads, IConversation conversation, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+		{
+			return m_packetReader.ReadPacketAsync(protocolErrorBehavior, ioBehavior).ContinueWith(packet =>
+				Continue(previousPayloads, packet, conversation, protocolErrorBehavior, ioBehavior));
+		}
+
+		private ValueTask<ArraySegment<byte>> Continue(ArraySegment<byte> previousPayloads, Packet packet, IConversation conversation, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+		{
+			if (packet == null && protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
+				return default(ValueTask<ArraySegment<byte>>);
+
+			var sequenceNumber = conversation.GetNextSequenceNumber() % 256;
+			if (packet.SequenceNumber != sequenceNumber)
+			{
+				if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
+					return default(ValueTask<ArraySegment<byte>>);
+
+				var exception = new InvalidOperationException("Packet received out-of-order. Expected {0}; got {1}.".FormatInvariant(sequenceNumber, packet.SequenceNumber));
+				return ValueTaskExtensions.FromException<ArraySegment<byte>>(exception);
+			}
+
+			if (packet.Contents.Count < PacketFormatter.MaxPacketSize)
+				return new ValueTask<ArraySegment<byte>>(packet.Contents);
+
+			var previousPayloadsArray = previousPayloads.Array;
+			if (previousPayloadsArray == null)
+				previousPayloadsArray = new byte[PacketFormatter.MaxPacketSize + 1];
+			else
+				Array.Resize(ref previousPayloadsArray, previousPayloadsArray.Length * 2);
+
+			Buffer.BlockCopy(packet.Contents.Array, packet.Contents.Offset, previousPayloadsArray, previousPayloads.Offset + previousPayloads.Count, packet.Contents.Count);
+			previousPayloads = new ArraySegment<byte>(previousPayloadsArray, previousPayloads.Offset, previousPayloads.Count + packet.Contents.Count);
+
+			return ReadPayloadAsync(previousPayloads, conversation, protocolErrorBehavior, ioBehavior);
+		}
 	}
 
 	internal class PacketWriter : IPacketWriter
@@ -117,6 +167,61 @@ namespace MySql.Data.Protocol.Serialization
 				{
 					ArrayPool<byte>.Shared.Return(buffer);
 					return default(ValueTask<int>);
+				});
+		}
+	}
+
+	internal class PacketReader : IPacketReader
+	{
+		private readonly IByteReader m_byteReader;
+		private readonly byte[] m_buffer;
+
+		public PacketReader(IByteReader byteReader)
+		{
+			m_byteReader = byteReader;
+			m_buffer = new byte[16384];
+		}
+
+		public ValueTask<Packet> ReadPacketAsync(ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+		{
+			return ReadBytesAsync(m_buffer, 0, 4, ioBehavior)
+				.ContinueWith(headerBytesRead =>
+				{
+					if (headerBytesRead < 4)
+					{
+						return protocolErrorBehavior == ProtocolErrorBehavior.Throw ?
+							ValueTaskExtensions.FromException<Packet>(new EndOfStreamException()) :
+							default(ValueTask<Packet>);
+					}
+
+					var payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, 0, 3);
+					int sequenceNumber = m_buffer[3];
+
+					var buffer = payloadLength <= m_buffer.Length ? m_buffer : new byte[payloadLength];
+					return ReadBytesAsync(buffer, 0, payloadLength, ioBehavior)
+						.ContinueWith(payloadBytesRead =>
+						{
+							if (payloadBytesRead < payloadLength)
+							{
+								return protocolErrorBehavior == ProtocolErrorBehavior.Throw ?
+									ValueTaskExtensions.FromException<Packet>(new EndOfStreamException()) :
+									default(ValueTask<Packet>);
+							}
+
+							return new ValueTask<Packet>(new Packet(sequenceNumber, new ArraySegment<byte>(buffer, 0, payloadLength)));
+						});
+				});
+		}
+
+		private ValueTask<int> ReadBytesAsync(byte[] buffer, int offset, int count, IOBehavior ioBehavior)
+		{
+			return m_byteReader.ReadBytesAsync(buffer, offset, count, ioBehavior)
+				.ContinueWith(bytesRead =>
+				{
+					if (bytesRead == 0 || bytesRead == count)
+						return new ValueTask<int>(bytesRead);
+
+					return ReadBytesAsync(buffer, offset + bytesRead, count - bytesRead, ioBehavior);
 				});
 		}
 	}
@@ -154,12 +259,46 @@ namespace MySql.Data.Protocol.Serialization
 		}
 	}
 
+	internal class SocketByteReader : IByteReader
+	{
+		private readonly Socket m_socket;
+		private readonly SocketAwaitable m_socketAwaitable;
+
+		public SocketByteReader(Socket socket)
+		{
+			m_socket = socket;
+			var socketEventArgs = new SocketAsyncEventArgs();
+			m_socketAwaitable = new SocketAwaitable(socketEventArgs);
+		}
+
+		public ValueTask<int> ReadBytesAsync(byte[] buffer, int offset, int count, IOBehavior ioBehavior)
+		{
+			return ioBehavior == IOBehavior.Asynchronous ?
+				new ValueTask<int>(DoReadBytesAsync(buffer, offset, count)) :
+				new ValueTask<int>(m_socket.Receive(buffer, offset, count, SocketFlags.None));
+		}
+
+		public async Task<int> DoReadBytesAsync(byte[] buffer, int offset, int count)
+		{
+			m_socketAwaitable.EventArgs.SetBuffer(buffer, offset, count);
+			await m_socket.ReceiveAsync(m_socketAwaitable);
+			return m_socketAwaitable.EventArgs.BytesTransferred;
+		}
+	}
+
 	internal static class ValueTaskExtensions
 	{
 		public static ValueTask<TResult> ContinueWith<T, TResult>(this ValueTask<T> valueTask, Func<T, ValueTask<TResult>> continuation)
 		{
 			return valueTask.IsCompleted ? continuation(valueTask.Result) :
 				new ValueTask<TResult>(valueTask.AsTask().ContinueWith(task => continuation(task.Result).AsTask()).Unwrap());
+		}
+
+		public static ValueTask<T> FromException<T>(Exception exception)
+		{
+			var tcs = new TaskCompletionSource<T>();
+			tcs.SetException(exception);
+			return new ValueTask<T>(tcs.Task);
 		}
 	}
 }
