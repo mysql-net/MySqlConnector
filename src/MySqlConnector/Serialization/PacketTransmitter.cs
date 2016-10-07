@@ -15,19 +15,24 @@ namespace MySql.Data.Serialization
 			m_buffer = new byte[c_netBufferLength];
 			socketEventArgs.SetBuffer(m_buffer, 0, 0);
 			m_socketAwaitable = new SocketAwaitable(socketEventArgs);
+
+			var socketByteWriter = new SocketByteWriter(m_socket);
+			var packetWriter = new PacketWriter(socketByteWriter);
+			m_payloadWriter = new PacketFormatter(packetWriter);
+			m_conversation = new Conversation();
 		}
 
 		// Starts a new conversation with the server by sending the first packet.
-		public Task SendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public ValueTask<int> SendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			m_sequenceId = 0;
+			m_conversation.Reset();
 			return DoSendAsync(payload, ioBehavior, cancellationToken);
 		}
 
 		// Starts a new conversation with the server by receiving the first packet.
 		public ValueTask<PayloadData> ReceiveAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			m_sequenceId = 0;
+			m_conversation.Reset();
 			return DoReceiveAsync(ProtocolErrorBehavior.Throw, ioBehavior, cancellationToken);
 		}
 
@@ -40,57 +45,12 @@ namespace MySql.Data.Serialization
 			=> DoReceiveAsync(ProtocolErrorBehavior.Ignore, ioBehavior, cancellationToken);
 
 		// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
-		public Task SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public ValueTask<int> SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 			=> DoSendAsync(payload, ioBehavior, cancellationToken);
 
-		private async Task DoSendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private ValueTask<int> DoSendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			var bytesSent = 0;
-			var data = payload.ArraySegment;
-			int bytesToSend;
-			do
-			{
-				// break payload into packets of at most (2^24)-1 bytes
-				bytesToSend = Math.Min(data.Count - bytesSent, c_maxPacketSize);
-
-				// write four-byte packet header; https://dev.mysql.com/doc/internals/en/mysql-packet.html
-				SerializationUtility.WriteUInt32((uint) bytesToSend, m_buffer, 0, 3);
-				m_buffer[3] = (byte) m_sequenceId;
-				m_sequenceId++;
-
-				if (bytesToSend <= m_buffer.Length - 4)
-				{
-					Buffer.BlockCopy(data.Array, data.Offset + bytesSent, m_buffer, 4, bytesToSend);
-					var count = bytesToSend + 4;
-					if (ioBehavior == IOBehavior.Asynchronous)
-					{
-						m_socketAwaitable.EventArgs.SetBuffer(0, count);
-						await m_socket.SendAsync(m_socketAwaitable);
-					}
-					else
-					{
-						m_socket.Send(m_buffer, 0, count, SocketFlags.None);
-					}
-				}
-				else
-				{
-					if (ioBehavior == IOBehavior.Asynchronous)
-					{
-						m_socketAwaitable.EventArgs.SetBuffer(null, 0, 0);
-						m_socketAwaitable.EventArgs.BufferList = new[] { new ArraySegment<byte>(m_buffer, 0, 4), new ArraySegment<byte>(data.Array, data.Offset + bytesSent, bytesToSend) };
-						await m_socket.SendAsync(m_socketAwaitable);
-						m_socketAwaitable.EventArgs.BufferList = null;
-						m_socketAwaitable.EventArgs.SetBuffer(m_buffer, 0, 0);
-					}
-					else
-					{
-						m_socket.Send(m_buffer, 0, 4, SocketFlags.None);
-						m_socket.Send(data.Array, data.Offset + bytesSent, bytesToSend, SocketFlags.None);
-					}
-				}
-
-				bytesSent += bytesToSend;
-			} while (bytesToSend == c_maxPacketSize);
+			return m_payloadWriter.WritePayloadAsync(m_conversation, payload.ArraySegment, ioBehavior);
 		}
 
 		private ValueTask<PayloadData> DoReceiveAsync(ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -100,13 +60,13 @@ namespace MySql.Data.Serialization
 				int payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, m_offset, 3);
 				if (m_end - m_offset >= payloadLength + 4)
 				{
-					if (m_buffer[m_offset + 3] != (byte) (m_sequenceId & 0xFF))
+					var sequenceId = m_conversation.GetNextSequenceNumber();
+					if (m_buffer[m_offset + 3] != (byte) (sequenceId & 0xFF))
 					{
 						if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
 							return new ValueTask<PayloadData>(default(PayloadData));
-						throw new InvalidOperationException("Packet received out-of-order. Expected {0}; got {1}.".FormatInvariant(m_sequenceId & 0xFF, m_buffer[3]));
+						throw new InvalidOperationException("Packet received out-of-order. Expected {0}; got {1}.".FormatInvariant(sequenceId & 0xFF, m_buffer[3]));
 					}
-					m_sequenceId++;
 					m_offset += 4;
 
 					var offset = m_offset;
@@ -183,13 +143,13 @@ namespace MySql.Data.Serialization
 
 			// decode packet header
 			int payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, m_offset, 3);
-			if (m_buffer[m_offset + 3] != (byte) (m_sequenceId & 0xFF))
+			var sequenceId = m_conversation.GetNextSequenceNumber();
+			if (m_buffer[m_offset + 3] != (byte) (sequenceId & 0xFF))
 			{
 				if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
 					return null;
-				throw new InvalidOperationException("Packet received out-of-order. Expected {0}; got {1}.".FormatInvariant(m_sequenceId & 0xFF, m_buffer[3]));
+				throw new InvalidOperationException("Packet received out-of-order. Expected {0}; got {1}.".FormatInvariant(sequenceId & 0xFF, m_buffer[3]));
 			}
-			m_sequenceId++;
 			m_offset += 4;
 
 			if (m_end - m_offset >= payloadLength)
@@ -253,9 +213,10 @@ namespace MySql.Data.Serialization
 
 		readonly Socket m_socket;
 		readonly SocketAwaitable m_socketAwaitable;
-		int m_sequenceId;
 		readonly byte[] m_buffer;
 		int m_offset;
 		int m_end;
+		private PacketFormatter m_payloadWriter;
+		private Conversation m_conversation;
 	}
 }

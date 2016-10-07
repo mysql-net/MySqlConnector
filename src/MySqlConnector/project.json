@@ -25,6 +25,7 @@
 				"System.Transactions": "4.0.0.0"
 			},
 			"dependencies": {
+				"System.Buffers": "4.0.0",
 				"System.Threading.Tasks.Extensions": "4.0.0-*"
 			}
 		},
@@ -32,6 +33,7 @@
 			"frameworkAssemblies": {
 			},
 			"dependencies": {
+				"System.Buffers": "4.0.0",
 				"System.Collections.Concurrent": "4.0.12-*",
 				"System.Data.Common": "4.1.0-*",
 				"System.Globalization": "4.0.11-*",

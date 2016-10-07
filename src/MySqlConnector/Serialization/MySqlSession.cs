@@ -139,7 +139,7 @@ namespace MySql.Data.Serialization
 		}
 
 		// Starts a new conversation with the server by sending the first packet.
-		public Task SendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public ValueTask<int> SendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 			=> TryAsync(m_transmitter.SendAsync, payload, ioBehavior, cancellationToken);
 
 		// Starts a new conversation with the server by receiving the first packet.
@@ -151,7 +151,7 @@ namespace MySql.Data.Serialization
 			=> TryAsync(m_transmitter.ReceiveReplyAsync, ioBehavior, cancellationToken);
 
 		// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
-		public Task SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public ValueTask<int> SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 			=> TryAsync(m_transmitter.SendReplyAsync, payload, ioBehavior, cancellationToken);
 
 		private void VerifyConnected()
@@ -238,23 +238,25 @@ namespace MySql.Data.Serialization
 			return false;
 		}
 
-		private Task TryAsync<TArg>(Func<TArg, IOBehavior, CancellationToken, Task> func, TArg arg, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private ValueTask<int> TryAsync<TArg>(Func<TArg, IOBehavior, CancellationToken, ValueTask<int>> func, TArg arg, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyConnected();
 			var task = func(arg, ioBehavior, cancellationToken);
-			if (task.Status == TaskStatus.RanToCompletion)
+			if (task.IsCompletedSuccessfully)
 				return task;
 
-			return task.ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+			return new ValueTask<int>(task.AsTask()
+				.ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default));
 		}
 
-		private void TryAsyncContinuation(Task task)
+		private int TryAsyncContinuation(Task<int> task)
 		{
 			if (task.IsFaulted)
 			{
 				SetFailed();
 				task.GetAwaiter().GetResult();
 			}
+			return 0;
 		}
 
 		private ValueTask<PayloadData> TryAsync(Func<IOBehavior, CancellationToken, ValueTask<PayloadData>> func, IOBehavior ioBehavior, CancellationToken cancellationToken)
