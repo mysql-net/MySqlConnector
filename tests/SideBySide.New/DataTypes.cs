@@ -474,9 +474,7 @@ namespace SideBySide
 			if (maxAllowedPacket < size)
 				return; // TODO: Use [SkippableFact]
 
-			var data = new byte[size];
-			Random random = new Random(size);
-			random.NextBytes(data);
+			var data = CreateByteArray(size);
 
 			long lastInsertId;
 			using (var cmd = new MySqlCommand(Invariant($"insert into datatypes.blobs(`{column}`) values(?)"), m_database.Connection)
@@ -509,9 +507,7 @@ namespace SideBySide
 			if (maxAllowedPacket < size)
 				return; // TODO: Use [SkippableFact]
 
-			var data = new byte[size];
-			Random random = new Random(size);
-			random.NextBytes(data);
+			var data = CreateByteArray(size);
 
 			long lastInsertId;
 			using (var cmd = new MySqlCommand(Invariant($"insert into datatypes.blobs(`{column}`) values(?)"), m_database.Connection)
@@ -530,6 +526,19 @@ namespace SideBySide
 			}
 
 			m_database.Connection.Execute(Invariant($"delete from datatypes.blobs where rowid = {lastInsertId}"));
+		}
+
+		private static byte[] CreateByteArray(int size)
+		{
+			var data = new byte[size];
+			Random random = new Random(size);
+			random.NextBytes(data);
+
+			// ensure each byte value is used at least once
+			for (int i = 0; i < Math.Min(255, size); i++)
+				data[i] = (byte) i;
+
+			return data;
 		}
 
 		[Theory]
