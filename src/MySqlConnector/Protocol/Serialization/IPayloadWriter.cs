@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using MySql.Data.Serialization;
 
-namespace MySql.Data.Serialization
+namespace MySql.Data.Protocol.Serialization
 {
 	enum FlushBehavior
 	{
