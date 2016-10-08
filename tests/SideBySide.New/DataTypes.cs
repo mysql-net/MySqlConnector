@@ -545,20 +545,26 @@ namespace SideBySide
 		[InlineData("Value", new[] { null, "NULL", "BOOLEAN", "ARRAY", "ARRAY", "ARRAY", "INTEGER", "INTEGER", "OBJECT", "OBJECT" })]
 		public void JsonType(string column, string[] expectedTypes)
 		{
-			var types = m_database.Connection.Query<string>(@"select JSON_TYPE(value) from datatypes.json_core order by rowid;").ToList();
-			Assert.Equal(expectedTypes, types);
+			if (TestUtilities.SupportsJson(m_database.Connection.ServerVersion))
+			{
+				var types = m_database.Connection.Query<string>(@"select JSON_TYPE(value) from datatypes.json_core order by rowid;").ToList();
+				Assert.Equal(expectedTypes, types);
+			}
 		}
 
 		[Theory]
 		[InlineData("value", new[] { null, "null", "true", "[]", "[0]", "[1]", "0", "1", "{}", "{\"a\": \"b\"}" })]
 		public void QueryJson(string column, string[] expected)
 		{
-			string dataTypeName = "JSON";
+			if (TestUtilities.SupportsJson(m_database.Connection.ServerVersion))
+			{
+				string dataTypeName = "JSON";
 #if BASELINE
-			// mysql-connector-net returns "VARCHAR" for "JSON"
-			dataTypeName = "VARCHAR";
+				// mysql-connector-net returns "VARCHAR" for "JSON"
+				dataTypeName = "VARCHAR";
 #endif
-			DoQuery("json_core", column, dataTypeName, expected, reader => reader.GetString(0), omitWhereTest: true);
+				DoQuery("json_core", column, dataTypeName, expected, reader => reader.GetString(0), omitWhereTest: true);
+			}
 		}
 
 		private static byte[] GetBytes(DbDataReader reader)
