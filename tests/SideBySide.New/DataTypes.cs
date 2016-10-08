@@ -486,11 +486,8 @@ namespace SideBySide
 				lastInsertId = cmd.LastInsertedId;
 			}
 
-			foreach (var queryResult in await m_database.Connection.QueryAsync<byte[]>(Invariant($"select `{column}` from datatypes.blobs where rowid = {lastInsertId}")).ConfigureAwait(false))
-			{
-				Assert.Equal(data, queryResult);
-				break;
-			}
+			var queryResult = (await m_database.Connection.QueryAsync<byte[]>(Invariant($"select `{column}` from datatypes.blobs where rowid = {lastInsertId}")).ConfigureAwait(false)).Single();
+			TestUtilities.AssertEqual(data, queryResult);
 
 			await m_database.Connection.ExecuteAsync(Invariant($"delete from datatypes.blobs where rowid = {lastInsertId}")).ConfigureAwait(false);
 		}
@@ -519,11 +516,8 @@ namespace SideBySide
 				lastInsertId = cmd.LastInsertedId;
 			}
 
-			foreach (var queryResult in m_database.Connection.Query<byte[]>(Invariant($"select `{column}` from datatypes.blobs where rowid = {lastInsertId}")))
-			{
-				Assert.Equal(data, queryResult);
-				break;
-			}
+			var queryResult = m_database.Connection.Query<byte[]>(Invariant($"select `{column}` from datatypes.blobs where rowid = {lastInsertId}")).Single();
+			TestUtilities.AssertEqual(data, queryResult);
 
 			m_database.Connection.Execute(Invariant($"delete from datatypes.blobs where rowid = {lastInsertId}"));
 		}

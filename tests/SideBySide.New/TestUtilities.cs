@@ -1,10 +1,26 @@
 ﻿using System;
 using System.Globalization;
+using Xunit;
 
 namespace SideBySide
 {
 	public class TestUtilities
 	{
+		/// <summary>
+		/// Asserts that two byte arrays are equal. This method is much faster than xUnit's <code>Assert.Equal</code>.
+		/// </summary>
+		/// <param name="expected">The expected byte array.</param>
+		/// <param name="actual">The actual byte array.</param>
+		public static void AssertEqual(byte[] expected, byte[] actual)
+		{
+			Assert.Equal(expected.Length, actual.Length);
+			for (var i = 0; i < expected.Length; i++)
+			{
+				if (expected[i] != actual[i])
+					Assert.Equal(expected[i], actual[i]);
+			}
+		}
+
 		public static Version ParseServerVersion(string serverVersion)
 		{
 			// copied from MySql.Data.MySqlClient.ServerVersion
