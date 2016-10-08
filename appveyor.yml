@@ -12,8 +12,8 @@ build_script:
     dotnet build tests\SideBySide.New --configuration Release
 before_test:
 - cmd: |-
-    "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql.exe" -u root --password=Password12! -e "CREATE USER mysqltest IDENTIFIED BY 'test;key=\"val'; GRANT ALL ON *.* TO mysqltest;"
-    "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql.exe" -u root --password=Password12! -e "CREATE USER no_password;"
+    "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql.exe" -u root --password=Password12! -e "CREATE USER mysqltest IDENTIFIED BY 'test;key=\"val'; GRANT ALL ON *.* TO mysqltest; CREATE USER no_password;"
+    "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql.exe" -u root --password=Password12! -e "SET GLOBAL max_allowed_packet=104857600;"
 test_script:
 - cmd: |-
     dotnet test tests\MySqlConnector.Tests --configuration Release
