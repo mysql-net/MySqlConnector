@@ -129,19 +129,21 @@ namespace MySql.Data.Protocol.Serialization
 				return ValueTaskExtensions.FromException<ArraySegment<byte>>(exception);
 			}
 
-			if (packet.Contents.Count < PacketFormatter.MaxPacketSize)
+			var previousPayloadsArray = previousPayloads.Array;
+			if (previousPayloadsArray == null && packet.Contents.Count < PacketFormatter.MaxPacketSize)
 				return new ValueTask<ArraySegment<byte>>(packet.Contents);
 
-			var previousPayloadsArray = previousPayloads.Array;
 			if (previousPayloadsArray == null)
 				previousPayloadsArray = new byte[PacketFormatter.MaxPacketSize + 1];
-			else
+			else if (previousPayloads.Offset + previousPayloads.Count + packet.Contents.Count > previousPayloadsArray.Length)
 				Array.Resize(ref previousPayloadsArray, previousPayloadsArray.Length * 2);
 
 			Buffer.BlockCopy(packet.Contents.Array, packet.Contents.Offset, previousPayloadsArray, previousPayloads.Offset + previousPayloads.Count, packet.Contents.Count);
 			previousPayloads = new ArraySegment<byte>(previousPayloadsArray, previousPayloads.Offset, previousPayloads.Count + packet.Contents.Count);
 
-			return ReadPayloadAsync(previousPayloads, conversation, protocolErrorBehavior, ioBehavior);
+			return packet.Contents.Count < PacketFormatter.MaxPacketSize ?
+				new ValueTask<ArraySegment<byte>>(previousPayloads) :
+				ReadPayloadAsync(previousPayloads, conversation, protocolErrorBehavior, ioBehavior);
 		}
 	}
 
@@ -184,7 +186,7 @@ namespace MySql.Data.Protocol.Serialization
 
 		public ValueTask<Packet> ReadPacketAsync(ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
-			return ReadBytesAsync(m_buffer, 0, 4, ioBehavior)
+			return ReadBytesAsync(0, m_buffer, 0, 4, ioBehavior)
 				.ContinueWith(headerBytesRead =>
 				{
 					if (headerBytesRead < 4)
@@ -198,7 +200,7 @@ namespace MySql.Data.Protocol.Serialization
 					int sequenceNumber = m_buffer[3];
 
 					var buffer = payloadLength <= m_buffer.Length ? m_buffer : new byte[payloadLength];
-					return ReadBytesAsync(buffer, 0, payloadLength, ioBehavior)
+					return ReadBytesAsync(0, buffer, 0, payloadLength, ioBehavior)
 						.ContinueWith(payloadBytesRead =>
 						{
 							if (payloadBytesRead < payloadLength)
@@ -213,15 +215,15 @@ namespace MySql.Data.Protocol.Serialization
 				});
 		}
 
-		private ValueTask<int> ReadBytesAsync(byte[] buffer, int offset, int count, IOBehavior ioBehavior)
+		private ValueTask<int> ReadBytesAsync(int previousBytesRead, byte[] buffer, int offset, int count, IOBehavior ioBehavior)
 		{
 			return m_byteReader.ReadBytesAsync(buffer, offset, count, ioBehavior)
 				.ContinueWith(bytesRead =>
 				{
 					if (bytesRead == 0 || bytesRead == count)
-						return new ValueTask<int>(bytesRead);
+						return new ValueTask<int>(previousBytesRead + bytesRead);
 
-					return ReadBytesAsync(buffer, offset + bytesRead, count - bytesRead, ioBehavior);
+					return ReadBytesAsync(previousBytesRead + bytesRead, buffer, offset + bytesRead, count - bytesRead, ioBehavior);
 				});
 		}
 	}
