@@ -465,11 +465,16 @@ namespace SideBySide
 		[Theory]
 		[InlineData("TinyBlob", 255)]
 		[InlineData("Blob", 65535)]
+		[InlineData("MediumBlob", 16777215)]
+		[InlineData("LongBlob", 67108864)]
 		public async Task InsertLargeBlobAsync(string column, int size)
 		{
-			var data = new byte[size];
-			Random random = new Random(size);
-			random.NextBytes(data);
+			// verify that this amount of data can be sent to MySQL successfully
+			var maxAllowedPacket = (await m_database.Connection.QueryAsync<int>("select @@max_allowed_packet").ConfigureAwait(false)).Single();
+			if (maxAllowedPacket < size)
+				return; // TODO: Use [SkippableFact]
+
+			var data = CreateByteArray(size);
 
 			long lastInsertId;
 			using (var cmd = new MySqlCommand(Invariant($"insert into datatypes.blobs(`{column}`) values(?)"), m_database.Connection)
@@ -481,11 +486,8 @@ namespace SideBySide
 				lastInsertId = cmd.LastInsertedId;
 			}
 
-			foreach (var queryResult in await m_database.Connection.QueryAsync<byte[]>(Invariant($"select `{column}` from datatypes.blobs where rowid = {lastInsertId}")).ConfigureAwait(false))
-			{
-				Assert.Equal(data, queryResult);
-				break;
-			}
+			var queryResult = (await m_database.Connection.QueryAsync<byte[]>(Invariant($"select `{column}` from datatypes.blobs where rowid = {lastInsertId}")).ConfigureAwait(false)).Single();
+			TestUtilities.AssertEqual(data, queryResult);
 
 			await m_database.Connection.ExecuteAsync(Invariant($"delete from datatypes.blobs where rowid = {lastInsertId}")).ConfigureAwait(false);
 		}
@@ -493,17 +495,16 @@ namespace SideBySide
 		[Theory]
 		[InlineData("TinyBlob", 255)]
 		[InlineData("Blob", 65535)]
-#if false
-		// MySQL has a default max_allowed_packet size of 4MB; without changing the server configuration, it's impossible
-		// to send more than 4MB of data.
 		[InlineData("MediumBlob", 16777215)]
 		[InlineData("LongBlob", 67108864)]
-#endif
 		public void InsertLargeBlobSync(string column, int size)
 		{
-			var data = new byte[size];
-			Random random = new Random(size);
-			random.NextBytes(data);
+			// verify that this amount of data can be sent to MySQL successfully
+			var maxAllowedPacket = m_database.Connection.Query<int>("select @@max_allowed_packet").Single();
+			if (maxAllowedPacket < size)
+				return; // TODO: Use [SkippableFact]
+
+			var data = CreateByteArray(size);
 
 			long lastInsertId;
 			using (var cmd = new MySqlCommand(Invariant($"insert into datatypes.blobs(`{column}`) values(?)"), m_database.Connection)
@@ -515,33 +516,49 @@ namespace SideBySide
 				lastInsertId = cmd.LastInsertedId;
 			}
 
-			foreach (var queryResult in m_database.Connection.Query<byte[]>(Invariant($"select `{column}` from datatypes.blobs where rowid = {lastInsertId}")))
-			{
-				Assert.Equal(data, queryResult);
-				break;
-			}
+			var queryResult = m_database.Connection.Query<byte[]>(Invariant($"select `{column}` from datatypes.blobs where rowid = {lastInsertId}")).Single();
+			TestUtilities.AssertEqual(data, queryResult);
 
 			m_database.Connection.Execute(Invariant($"delete from datatypes.blobs where rowid = {lastInsertId}"));
+		}
+
+		private static byte[] CreateByteArray(int size)
+		{
+			var data = new byte[size];
+			Random random = new Random(size);
+			random.NextBytes(data);
+
+			// ensure each byte value is used at least once
+			for (int i = 0; i < Math.Min(255, size); i++)
+				data[i] = (byte) i;
+
+			return data;
 		}
 
 		[Theory]
 		[InlineData("Value", new[] { null, "NULL", "BOOLEAN", "ARRAY", "ARRAY", "ARRAY", "INTEGER", "INTEGER", "OBJECT", "OBJECT" })]
 		public void JsonType(string column, string[] expectedTypes)
 		{
-			var types = m_database.Connection.Query<string>(@"select JSON_TYPE(value) from datatypes.json_core order by rowid;").ToList();
-			Assert.Equal(expectedTypes, types);
+			if (TestUtilities.SupportsJson(m_database.Connection.ServerVersion))
+			{
+				var types = m_database.Connection.Query<string>(@"select JSON_TYPE(value) from datatypes.json_core order by rowid;").ToList();
+				Assert.Equal(expectedTypes, types);
+			}
 		}
 
 		[Theory]
 		[InlineData("value", new[] { null, "null", "true", "[]", "[0]", "[1]", "0", "1", "{}", "{\"a\": \"b\"}" })]
 		public void QueryJson(string column, string[] expected)
 		{
-			string dataTypeName = "JSON";
+			if (TestUtilities.SupportsJson(m_database.Connection.ServerVersion))
+			{
+				string dataTypeName = "JSON";
 #if BASELINE
-			// mysql-connector-net returns "VARCHAR" for "JSON"
-			dataTypeName = "VARCHAR";
+				// mysql-connector-net returns "VARCHAR" for "JSON"
+				dataTypeName = "VARCHAR";
 #endif
-			DoQuery("json_core", column, dataTypeName, expected, reader => reader.GetString(0), omitWhereTest: true);
+				DoQuery("json_core", column, dataTypeName, expected, reader => reader.GetString(0), omitWhereTest: true);
+			}
 		}
 
 		private static byte[] GetBytes(DbDataReader reader)

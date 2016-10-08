@@ -160,7 +160,11 @@ values
     '33221100-5544-7766-8899-aabbccddeeff', X'00112233445566778899AABBCCDDEEFF'),
   ('{33221100-5544-7766-8899-aabbccddeeff}', '{33221100-5544-7766-8899-aabbccddeeff}',
     '{33221100-5544-7766-8899-aabbccddeeff}', X'00112233445566778899AABBCCDDEEFF');
+");
 
+			if (TestUtilities.SupportsJson(Connection.ServerVersion))
+			{
+				Connection.Execute(@"
 create table datatypes.json_core (
   rowid integer not null primary key auto_increment,
   value json null
@@ -179,6 +183,7 @@ values
   ('{}'),
   ('{""a"": ""b""}');
 ");
+			}
 		}
 
 		protected override void Dispose(bool disposing)

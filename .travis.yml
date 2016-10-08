@@ -9,7 +9,7 @@ before_install:
   - sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
   - sudo apt-get update
   - sudo apt-get install -y dotnet-dev-1.0.0-preview2-003121
-  - docker exec -it mysql mysql -uroot -ptest -e "CREATE USER 'mysqltest'@'%' IDENTIFIED BY 'test;key=\"val'; GRANT ALL ON *.* TO mysqltest; CREATE USER 'no_password'@'172.17.0.1';"
+  - docker exec -it mysql mysql -uroot -ptest -e "CREATE USER 'mysqltest'@'%' IDENTIFIED BY 'test;key=\"val'; GRANT ALL ON *.* TO mysqltest; CREATE USER 'no_password'@'172.17.0.1'; SET GLOBAL max_allowed_packet=104857600;"
 
 script:
   - dotnet restore
