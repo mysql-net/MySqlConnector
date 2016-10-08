@@ -3,13 +3,11 @@ dist: trusty
 services: docker
 
 before_install:
-  - docker pull mysql:5.7
-  - docker run --name mysql -e MYSQL_ROOT_PASSWORD='test' -p 3306:3306 -d mysql:5.7
+  - chmod +x .ci/docker-run.sh && ./.ci/docker-run.sh
   - sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
   - sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
   - sudo apt-get update
   - sudo apt-get install -y dotnet-dev-1.0.0-preview2-003121
-  - docker exec -it mysql mysql -uroot -ptest -e "CREATE USER 'mysqltest'@'%' IDENTIFIED BY 'test;key=\"val'; GRANT ALL ON *.* TO mysqltest; CREATE USER 'no_password'@'172.17.0.1'; SET GLOBAL max_allowed_packet=104857600;"
 
 script:
   - dotnet restore
