@@ -24,10 +24,10 @@ namespace MySql.Data.MySqlClient
 		public new MySqlTransaction BeginTransaction() => (MySqlTransaction) base.BeginTransaction();
 
 		public Task<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
-			BeginDbTransactionAsync(IsolationLevel.Unspecified, IOBehavior.Asynchronous, cancellationToken);
+			BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, cancellationToken);
 
 		public Task<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken)) =>
-			BeginDbTransactionAsync(isolationLevel, IOBehavior.Asynchronous, cancellationToken);
+			BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, cancellationToken);
 
 		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) =>
 			BeginDbTransactionAsync(isolationLevel, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -91,7 +91,7 @@ namespace MySql.Data.MySqlClient
 		public override void Open() => OpenAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public override Task OpenAsync(CancellationToken cancellationToken) =>
-			OpenAsync(IOBehavior.Asynchronous, cancellationToken);
+			OpenAsync(AsyncIOBehavior, cancellationToken);
 
 		private async Task OpenAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -153,8 +153,8 @@ namespace MySql.Data.MySqlClient
 		public int ServerThread => m_session.ConnectionId;
 
 		public static void ClearPool(MySqlConnection connection) => ClearPoolAsync(connection, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-		public static Task ClearPoolAsync(MySqlConnection connection) => ClearPoolAsync(connection, IOBehavior.Asynchronous, CancellationToken.None);
-		public static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken) => ClearPoolAsync(connection, IOBehavior.Asynchronous, cancellationToken);
+		public static Task ClearPoolAsync(MySqlConnection connection) => ClearPoolAsync(connection, connection.AsyncIOBehavior, CancellationToken.None);
+		public static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken) => ClearPoolAsync(connection, connection.AsyncIOBehavior, cancellationToken);
 		public static void ClearAllPools() => ConnectionPool.ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		public static Task ClearAllPoolsAsync() => ConnectionPool.ClearPoolsAsync(IOBehavior.Asynchronous, CancellationToken.None);
 		public static Task ClearAllPoolsAsync(CancellationToken cancellationToken) => ConnectionPool.ClearPoolsAsync(IOBehavior.Asynchronous, cancellationToken);
@@ -205,6 +205,7 @@ namespace MySql.Data.MySqlClient
 		internal bool AllowUserVariables => m_connectionStringBuilder.AllowUserVariables;
 		internal bool ConvertZeroDateTime => m_connectionStringBuilder.ConvertZeroDateTime;
 		internal bool OldGuids => m_connectionStringBuilder.OldGuids;
+		internal IOBehavior AsyncIOBehavior => m_connectionStringBuilder.Synchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
 
 		private async Task<MySqlSession> CreateSessionAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{

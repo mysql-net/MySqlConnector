@@ -16,7 +16,7 @@ namespace MySql.Data.MySqlClient
 			NextResultAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public override Task<bool> NextResultAsync(CancellationToken cancellationToken) =>
-			NextResultAsync(IOBehavior.Asynchronous, cancellationToken);
+			NextResultAsync(m_command.Connection.AsyncIOBehavior, cancellationToken);
 
 		internal async Task<bool> NextResultAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -43,7 +43,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public override Task<bool> ReadAsync(CancellationToken cancellationToken) =>
-			ReadAsync(IOBehavior.Asynchronous, cancellationToken);
+			ReadAsync(m_command.Connection.AsyncIOBehavior, cancellationToken);
 
 		internal Task<bool> ReadAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{

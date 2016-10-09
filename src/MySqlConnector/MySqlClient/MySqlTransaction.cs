@@ -13,7 +13,7 @@ namespace MySql.Data.MySqlClient
 			CommitAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
-			CommitAsync(IOBehavior.Asynchronous, cancellationToken);
+			CommitAsync(m_connection.AsyncIOBehavior, cancellationToken);
 
 		internal async Task CommitAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -42,7 +42,7 @@ namespace MySql.Data.MySqlClient
 			RollbackAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public Task RollbackAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
-			RollbackAsync(IOBehavior.Asynchronous, cancellationToken);
+			RollbackAsync(m_connection.AsyncIOBehavior, cancellationToken);
 
 		internal async Task RollbackAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
