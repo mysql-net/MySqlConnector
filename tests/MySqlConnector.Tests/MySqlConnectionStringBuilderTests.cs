@@ -35,12 +35,21 @@ namespace MySql.Data.Tests
 			Assert.Equal("", csb.Server);
 			Assert.Equal(false, csb.UseCompression);
 			Assert.Equal("", csb.UserID);
+#if !BASELINE
+			Assert.Equal(false, csb.ForceSynchronous);
+#endif
 		}
 
 		[Fact]
 		public void ParseConnectionString()
 		{
-			var csb = new MySqlConnectionStringBuilder { ConnectionString = "Data Source=db-server;Port=1234;Uid=username;pwd=Pass1234;Initial Catalog=schema_name;Allow User Variables=true;Character Set=latin1;Convert Zero Datetime=true;Pooling=no;OldGuids=true;Compress=true;ConnectionReset=false;minpoolsize=5;maxpoolsize=15;persistsecurityinfo=yes;useaffectedrows=false;connect timeout=30" };
+			var csb = new MySqlConnectionStringBuilder
+			{
+				ConnectionString = "Data Source=db-server;Port=1234;Uid=username;pwd=Pass1234;Initial Catalog=schema_name;Allow User Variables=true;Character Set=latin1;Convert Zero Datetime=true;Pooling=no;OldGuids=true;Compress=true;ConnectionReset=false;minpoolsize=5;maxpoolsize=15;persistsecurityinfo=yes;useaffectedrows=false;connect timeout=30"
+#if !BASELINE
+					+ ";forcesynchronous=true"
+#endif
+			};
 			Assert.Equal(true, csb.AllowUserVariables);
 			Assert.Equal("latin1", csb.CharacterSet);
 			Assert.Equal(false, csb.ConnectionReset);
@@ -58,6 +67,9 @@ namespace MySql.Data.Tests
 			Assert.Equal(false, csb.UseAffectedRows);
 			Assert.Equal(true, csb.UseCompression);
 			Assert.Equal("username", csb.UserID);
+#if !BASELINE
+			Assert.Equal(true, csb.ForceSynchronous);
+#endif
 		}
 
 #if !BASELINE

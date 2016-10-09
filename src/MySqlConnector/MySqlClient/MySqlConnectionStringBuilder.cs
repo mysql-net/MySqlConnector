@@ -118,6 +118,12 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.UseAffectedRows.SetValue(this, value); }
 		}
 
+		public bool ForceSynchronous
+		{
+			get { return MySqlConnectionStringOption.ForceSynchronous.GetValue(this); }
+			set { MySqlConnectionStringOption.ForceSynchronous.SetValue(this, value); }
+		}
+
 		public override bool ContainsKey(string key)
 		{
 			var option = MySqlConnectionStringOption.TryGetOptionForKey(key);
@@ -179,6 +185,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<uint> MinimumPoolSize;
 		public static readonly MySqlConnectionStringOption<uint> MaximumPoolSize;
 		public static readonly MySqlConnectionStringOption<bool> UseAffectedRows;
+		public static readonly MySqlConnectionStringOption<bool> ForceSynchronous;
 
 		public static MySqlConnectionStringOption TryGetOptionForKey(string key)
 		{
@@ -281,6 +288,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(UseAffectedRows = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Use Affected Rows", "UseAffectedRows" },
 				defaultValue: true));
+
+			AddOption(ForceSynchronous = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "ForceSynchronous" },
+				defaultValue: false));
 		}
 
 		static readonly Dictionary<string, MySqlConnectionStringOption> s_options;

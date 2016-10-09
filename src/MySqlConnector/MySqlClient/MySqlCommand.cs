@@ -106,7 +106,7 @@ namespace MySql.Data.MySqlClient
 			ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) =>
-			ExecuteNonQueryAsync(IOBehavior.Asynchronous, cancellationToken);
+			ExecuteNonQueryAsync(Connection.AsyncIOBehavior, cancellationToken);
 
 		internal async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -123,7 +123,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken) =>
-			ExecuteScalarAsync(IOBehavior.Asynchronous, cancellationToken);
+			ExecuteScalarAsync(Connection.AsyncIOBehavior, cancellationToken);
 
 		internal async Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -140,7 +140,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken) =>
-			ExecuteReaderAsync(behavior, IOBehavior.Asynchronous, cancellationToken);
+			ExecuteReaderAsync(behavior, Connection.AsyncIOBehavior, cancellationToken);
 
 		internal async Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
