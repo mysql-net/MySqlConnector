@@ -22,7 +22,7 @@ namespace MySql.Data.Protocol.Serialization
 	{
 		public int GetNextSequenceNumber() => m_sequenceNumber++;
 
-		public void Reset() => m_sequenceNumber = 0;
+		public void StartNew() => m_sequenceNumber = 0;
 
 		private int m_sequenceNumber;
 	}
