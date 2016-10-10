@@ -34,20 +34,20 @@ namespace MySql.Data.Serialization
 
 		public async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			if (m_payloadReader != null && m_payloadWriter != null)
+			if (m_payloadHandler != null && m_payloadHandler != null)
 			{
 				try
 				{
 					m_conversation.StartNew();
-					await m_payloadWriter.WritePayloadAsync(m_conversation, QuitPayload.Create(), ioBehavior).ConfigureAwait(false);
-					await m_payloadReader.ReadPayloadAsync(m_conversation, ProtocolErrorBehavior.Ignore, ioBehavior).ConfigureAwait(false);
+					await m_payloadHandler.WritePayloadAsync(m_conversation, QuitPayload.Create(), ioBehavior).ConfigureAwait(false);
+					await m_payloadHandler.ReadPayloadAsync(m_conversation, ProtocolErrorBehavior.Ignore, ioBehavior).ConfigureAwait(false);
 				}
 				catch (SocketException)
 				{
 					// socket may have been closed during shutdown; ignore
 				}
-				m_payloadReader = null;
-				m_payloadWriter = null;
+				m_payloadHandler = null;
+				m_payloadHandler = null;
 			}
 			if (m_socket != null)
 			{
@@ -145,20 +145,20 @@ namespace MySql.Data.Serialization
 		public ValueTask<int> SendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			m_conversation.StartNew();
-			return TryAsync(m_payloadWriter.WritePayloadAsync, payload.ArraySegment, ioBehavior, cancellationToken);
+			return TryAsync(m_payloadHandler.WritePayloadAsync, payload.ArraySegment, ioBehavior, cancellationToken);
 		}
 
 		// Starts a new conversation with the server by receiving the first packet.
 		public ValueTask<PayloadData> ReceiveAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-			=> TryAsync(m_payloadReader.ReadPayloadAsync, ioBehavior, cancellationToken);
+			=> TryAsync(m_payloadHandler.ReadPayloadAsync, ioBehavior, cancellationToken);
 
 		// Continues a conversation with the server by receiving a response to a packet sent with 'Send' or 'SendReply'.
 		public ValueTask<PayloadData> ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-			=> TryAsync(m_payloadReader.ReadPayloadAsync, ioBehavior, cancellationToken);
+			=> TryAsync(m_payloadHandler.ReadPayloadAsync, ioBehavior, cancellationToken);
 
 		// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
 		public ValueTask<int> SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
-			=> TryAsync(m_payloadWriter.WritePayloadAsync, payload.ArraySegment, ioBehavior, cancellationToken);
+			=> TryAsync(m_payloadHandler.WritePayloadAsync, payload.ArraySegment, ioBehavior, cancellationToken);
 
 		private void VerifyConnected()
 		{
@@ -238,13 +238,9 @@ namespace MySql.Data.Serialization
 					m_socket = socket;
 					m_conversation = new Conversation();
 
-					var socketByteReader = new SocketByteReader(m_socket);
-					var packetReader = new PacketReader(socketByteReader);
-					m_payloadReader = new PayloadReader(packetReader);
-
-					var socketByteWriter = new SocketByteWriter(m_socket);
-					var packetWriter = new PacketWriter(socketByteWriter);
-					m_payloadWriter = new PacketFormatter(packetWriter);
+					var socketByteHandler = new SocketByteHandler(m_socket);
+					var packetHandler = new PacketHandler(socketByteHandler);
+					m_payloadHandler = new PayloadHandler(packetHandler);
 
 					m_state = State.Connected;
 					return true;
@@ -317,7 +313,6 @@ namespace MySql.Data.Serialization
 		State m_state;
 		Socket m_socket;
 		Conversation m_conversation;
-		IPayloadReader m_payloadReader;
-		IPayloadWriter m_payloadWriter;
+		IPayloadHandler m_payloadHandler;
 	}
 }
