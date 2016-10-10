@@ -1,5 +1,5 @@
 {
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"title": "Async MySQL Connector",
 	"description": "A fully async MySQL ADO.NET provider for .NET and .NET Core",
 	"copyright": "Copyright 2016 Bradley Grainger",
@@ -9,7 +9,7 @@
 	"packOptions": {
 		"owners": [ "bgrainger" ],
 		"tags": [ "mysql", "async", "ado.net", "database", "netcore"  ],
-		"releaseNotes": "Add MySqlConnectionStringBuilder.ForceSynchronous. (GitHub issue #91)",
+		"releaseNotes": "Provide more information for unsupported auth plugins.",
 		"licenseUrl": "https://opensource.org/licenses/MIT",
 		"projectUrl": "https://github.com/bgrainger/MySqlConnector",
 		"repository": {
