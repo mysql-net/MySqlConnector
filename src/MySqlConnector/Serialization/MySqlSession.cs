@@ -72,7 +72,7 @@ namespace MySql.Data.Serialization
 			var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
 			var initialHandshake = new InitialHandshakePacket(reader);
 			if (initialHandshake.AuthPluginName != "mysql_native_password")
-				throw new NotSupportedException("Only 'mysql_native_password' authentication method is supported.");
+				throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(initialHandshake.AuthPluginName));
 			ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
 			ConnectionId = initialHandshake.ConnectionId;
 			AuthPluginData = initialHandshake.AuthPluginData;
@@ -109,7 +109,7 @@ namespace MySql.Data.Serialization
 					// if the server didn't support the hashed password; rehash with the new challenge
 					var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload);
 					if (switchRequest.Name != "mysql_native_password")
-						throw new NotSupportedException("Only 'mysql_native_password' authentication method is supported.");
+						throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(switchRequest.Name));
 					hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(switchRequest.Data, 0, password);
 					payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
 					await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
