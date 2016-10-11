@@ -35,6 +35,9 @@ namespace MySql.Data.Tests
 			Assert.Equal("", csb.Server);
 			Assert.Equal(false, csb.UseCompression);
 			Assert.Equal("", csb.UserID);
+			Assert.Equal(SslMode.None, csb.SslMode);
+			Assert.Equal("", csb.CertificateFile);
+			Assert.Equal("", csb.CertificatePassword);
 #if !BASELINE
 			Assert.Equal(false, csb.ForceSynchronous);
 #endif
@@ -45,7 +48,7 @@ namespace MySql.Data.Tests
 		{
 			var csb = new MySqlConnectionStringBuilder
 			{
-				ConnectionString = "Data Source=db-server;Port=1234;Uid=username;pwd=Pass1234;Initial Catalog=schema_name;Allow User Variables=true;Character Set=latin1;Convert Zero Datetime=true;Pooling=no;OldGuids=true;Compress=true;ConnectionReset=false;minpoolsize=5;maxpoolsize=15;persistsecurityinfo=yes;useaffectedrows=false;connect timeout=30"
+				ConnectionString = "Data Source=db-server;Port=1234;Uid=username;pwd=Pass1234;Initial Catalog=schema_name;Allow User Variables=true;Character Set=latin1;Convert Zero Datetime=true;Pooling=no;OldGuids=true;Compress=true;ConnectionReset=false;minpoolsize=5;maxpoolsize=15;persistsecurityinfo=yes;useaffectedrows=false;connect timeout=30;ssl mode=verifyca;certificate file=file.pfx;certificate password=Pass1234"
 #if !BASELINE
 					+ ";forcesynchronous=true"
 #endif
@@ -67,6 +70,9 @@ namespace MySql.Data.Tests
 			Assert.Equal(false, csb.UseAffectedRows);
 			Assert.Equal(true, csb.UseCompression);
 			Assert.Equal("username", csb.UserID);
+			Assert.Equal(SslMode.VerifyCa, csb.SslMode);
+			Assert.Equal("file.pfx", csb.CertificateFile);
+			Assert.Equal("Pass1234", csb.CertificatePassword);
 #if !BASELINE
 			Assert.Equal(true, csb.ForceSynchronous);
 #endif
@@ -91,6 +97,13 @@ namespace MySql.Data.Tests
 				UseAffectedRows = false,
 			};
 			Assert.Throws<NotSupportedException>(() => new MySqlConnection(csb.ConnectionString));
+		}
+
+		[Fact]
+		public void SslModePreferredInvalidOperation()
+		{
+			var csb = new MySqlConnectionStringBuilder("ssl mode=preferred;");
+			Assert.Throws<InvalidOperationException>(() => csb.SslMode);
 		}
 #endif
 	}
