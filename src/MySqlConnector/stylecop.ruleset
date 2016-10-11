@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Custom Rules" ToolsVersion="14.0">
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <Rule Id="SA1003" Action="None" /><!-- Operator must not be followed by whitespace. -->
+    <Rule Id="SA1008" Action="None" /><!-- Opening parenthesis must not be preceded by a space. -->
+    <Rule Id="SA1009" Action="None" /><!-- Closing parenthesis must not be followed by a space. -->
+    <Rule Id="SA1027" Action="None" /><!-- Tabs must not be used. -->
+    <Rule Id="SA1101" Action="None" /><!-- Prefix local calls with this -->
+    <Rule Id="SA1117" Action="None" /><!-- The parameters must all be placed on the same line or each parameter must be placed on its own line. -->
+    <Rule Id="SA1122" Action="None" /><!-- Use string.Empty for empty strings -->
+    <Rule Id="SA1200" Action="None" /><!-- Using directive must appear within a namespace declaration -->
+    <Rule Id="SA1201" Action="None" /><!-- A field should not follow a property, etc. -->
+    <Rule Id="SA1202" Action="None" /><!-- (member order) -->
+    <Rule Id="SA1203" Action="None" /><!-- (member order) -->
+    <Rule Id="SA1204" Action="None" /><!-- (member order) -->
+    <Rule Id="SA1214" Action="None" /><!-- (member order) -->
+    <Rule Id="SA1303" Action="None" /><!-- Const field names must begin with upper-case letter. -->
+    <Rule Id="SA1308" Action="None" /><!-- Field must not begin with prefix -->
+    <Rule Id="SA1310" Action="None" /><!-- Field must not contain an underscore -->
+    <Rule Id="SA1311" Action="None" /><!-- Static readonly fields must begin with upper-case letter -->
+    <Rule Id="SA1400" Action="None" /><!-- Element 'm_maxOffset' must declare an access modifier -->
+    <Rule Id="SA1407" Action="None" /><!-- Arithmetic expressions must declare precedence -->
+    <Rule Id="SA1500" Action="None" /><!-- Braces for multi-line statements must not share line -->
+    <Rule Id="SA1503" Action="None" /><!-- Braces must not be omitted -->
+    <Rule Id="SA1512" Action="None" /><!-- Single-line comments must not be followed by blank line -->
+    <Rule Id="SA1513" Action="None" /><!-- Closing brace must be followed by blank line -->
+    <Rule Id="SA1516" Action="None" /><!-- Elements must be separated by blank line -->
+    <Rule Id="SA1633" Action="None" /><!-- The file header is missing or not located at the top of the file. -->
+    <Rule Id="SA1652" Action="None" /><!-- Enable XML documentation output -->
+    <Rule Id="SX1101" Action="Warning" /><!-- Do not prefix local calls with 'this.' -->
+  </Rules>
+</RuleSet>

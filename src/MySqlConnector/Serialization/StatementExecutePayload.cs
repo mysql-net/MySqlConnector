@@ -20,8 +20,10 @@ namespace MySql.Data.Serialization
 				{
 					byte nullBitmap = 0;
 					for (int i = 0; i < Math.Min(8, parameters.Count - parametersProcessed); i++)
+					{
 						if (parameters[parametersProcessed + i].IsNull)
 							nullBitmap |= (byte) (1 << i);
+					}
 					writer.WriteByte(nullBitmap);
 					parametersProcessed += 8;
 				}

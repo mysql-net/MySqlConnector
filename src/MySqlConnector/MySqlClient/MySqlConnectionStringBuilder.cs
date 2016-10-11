@@ -152,9 +152,13 @@ namespace MySql.Data.MySqlClient
 			{
 				var csb = new MySqlConnectionStringBuilder(connectionString);
 				foreach (string key in Keys)
+				{
 					foreach (var passwordKey in MySqlConnectionStringOption.Password.Keys)
+					{
 						if (string.Equals(key, passwordKey, StringComparison.OrdinalIgnoreCase))
 							csb.Remove(key);
+					}
+				}
 				m_cachedConnectionStringWithoutPassword = csb.ConnectionString;
 				m_cachedConnectionString = connectionString;
 			}
@@ -162,182 +166,182 @@ namespace MySql.Data.MySqlClient
 			return m_cachedConnectionStringWithoutPassword;
 		}
 
-		string m_cachedConnectionString;
-		string m_cachedConnectionStringWithoutPassword;
-	}
-
-	internal abstract class MySqlConnectionStringOption
-	{
-		public static readonly MySqlConnectionStringOption<string> Server;
-		public static readonly MySqlConnectionStringOption<string> UserID;
-		public static readonly MySqlConnectionStringOption<string> Password;
-		public static readonly MySqlConnectionStringOption<string> Database;
-		public static readonly MySqlConnectionStringOption<uint> Port;
-		public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
-		public static readonly MySqlConnectionStringOption<string> CharacterSet;
-		public static readonly MySqlConnectionStringOption<bool> ConvertZeroDateTime;
-		public static readonly MySqlConnectionStringOption<bool> OldGuids;
-		public static readonly MySqlConnectionStringOption<bool> PersistSecurityInfo;
-		public static readonly MySqlConnectionStringOption<bool> UseCompression;
-		public static readonly MySqlConnectionStringOption<bool> Pooling;
-		public static readonly MySqlConnectionStringOption<bool> ConnectionReset;
-		public static readonly MySqlConnectionStringOption<uint> ConnectionTimeout;
-		public static readonly MySqlConnectionStringOption<uint> MinimumPoolSize;
-		public static readonly MySqlConnectionStringOption<uint> MaximumPoolSize;
-		public static readonly MySqlConnectionStringOption<bool> UseAffectedRows;
-		public static readonly MySqlConnectionStringOption<bool> ForceSynchronous;
-
-		public static MySqlConnectionStringOption TryGetOptionForKey(string key)
+		private abstract class MySqlConnectionStringOption
 		{
-			MySqlConnectionStringOption option;
-			return s_options.TryGetValue(key, out option) ? option : null;
-		}
+			public static readonly MySqlConnectionStringOption<string> Server;
+			public static readonly MySqlConnectionStringOption<string> UserID;
+			public static readonly MySqlConnectionStringOption<string> Password;
+			public static readonly MySqlConnectionStringOption<string> Database;
+			public static readonly MySqlConnectionStringOption<uint> Port;
+			public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
+			public static readonly MySqlConnectionStringOption<string> CharacterSet;
+			public static readonly MySqlConnectionStringOption<bool> ConvertZeroDateTime;
+			public static readonly MySqlConnectionStringOption<bool> OldGuids;
+			public static readonly MySqlConnectionStringOption<bool> PersistSecurityInfo;
+			public static readonly MySqlConnectionStringOption<bool> UseCompression;
+			public static readonly MySqlConnectionStringOption<bool> Pooling;
+			public static readonly MySqlConnectionStringOption<bool> ConnectionReset;
+			public static readonly MySqlConnectionStringOption<uint> ConnectionTimeout;
+			public static readonly MySqlConnectionStringOption<uint> MinimumPoolSize;
+			public static readonly MySqlConnectionStringOption<uint> MaximumPoolSize;
+			public static readonly MySqlConnectionStringOption<bool> UseAffectedRows;
+			public static readonly MySqlConnectionStringOption<bool> ForceSynchronous;
 
-		public static MySqlConnectionStringOption GetOptionForKey(string key)
-		{
-			var option = TryGetOptionForKey(key);
-			if (option == null)
-				throw new InvalidOperationException("Option '{0}' not supported.".FormatInvariant(key));
-			return option;
-		}
-
-		public string Key => m_keys[0];
-		public IReadOnlyList<string> Keys => m_keys;
-
-		public abstract object GetObject(MySqlConnectionStringBuilder builder);
-
-		protected MySqlConnectionStringOption(IReadOnlyList<string> keys)
-		{
-			m_keys = keys;
-		}
-
-		private static void AddOption(MySqlConnectionStringOption option)
-		{
-			foreach (string key in option.m_keys)
-				s_options.Add(key, option);
-		}
-
-		static MySqlConnectionStringOption()
-		{
-			s_options = new Dictionary<string, MySqlConnectionStringOption>(StringComparer.OrdinalIgnoreCase);
-
-			AddOption(Server = new MySqlConnectionStringOption<string>(
-				keys: new[] { "Server", "Host", "Data Source", "DataSource", "Address", "Addr", "Network Address" },
-				defaultValue: ""));
-
-			AddOption(UserID = new MySqlConnectionStringOption<string>(
-				keys: new[] { "User Id", "UserID", "Username", "Uid", "User name", "User" },
-				defaultValue: ""));
-
-			AddOption(Password = new MySqlConnectionStringOption<string>(
-				keys: new[] { "Password", "pwd" },
-				defaultValue: ""));
-
-			AddOption(Database = new MySqlConnectionStringOption<string>(
-				keys: new[] { "Database", "Initial Catalog" },
-				defaultValue: ""));
-
-			AddOption(Port = new MySqlConnectionStringOption<uint>(
-				keys: new[] { "Port" },
-				defaultValue: 3306u));
-
-			AddOption(AllowUserVariables = new MySqlConnectionStringOption<bool>(
-				keys: new[] { "AllowUserVariables", "Allow User Variables" },
-				defaultValue: false));
-
-			AddOption(CharacterSet = new MySqlConnectionStringOption<string>(
-				keys: new[] { "CharSet", "Character Set", "CharacterSet" },
-				defaultValue: ""));
-
-			AddOption(ConvertZeroDateTime = new MySqlConnectionStringOption<bool>(
-				keys: new[] { "Convert Zero Datetime", "ConvertZeroDateTime" },
-				defaultValue: false));
-
-			AddOption(OldGuids = new MySqlConnectionStringOption<bool>(
-				keys: new[] { "Old Guids", "OldGuids" },
-				defaultValue: false));
-
-			AddOption(PersistSecurityInfo = new MySqlConnectionStringOption<bool>(
-				keys: new[] { "Persist Security Info", "PersistSecurityInfo" },
-				defaultValue: false));
-
-			AddOption(UseCompression = new MySqlConnectionStringOption<bool>(
-				keys: new[] { "Compress", "Use Compression", "UseCompression" },
-				defaultValue: false));
-
-			AddOption(Pooling = new MySqlConnectionStringOption<bool>(
-				keys: new[] { "Pooling" },
-				defaultValue: true));
-
-			AddOption(ConnectionReset = new MySqlConnectionStringOption<bool>(
-				keys: new[] { "Connection Reset", "ConnectionReset" },
-				defaultValue: true));
-
-			AddOption(ConnectionTimeout = new MySqlConnectionStringOption<uint>(
-				keys: new[] { "Connection Timeout", "ConnectionTimeout", "Connect Timeout" },
-				defaultValue: 15u));
-
-			AddOption(MinimumPoolSize = new MySqlConnectionStringOption<uint>(
-				keys: new[] { "Minimum Pool Size", "Min Pool Size", "MinimumPoolSize", "minpoolsize" },
-				defaultValue: 0));
-
-			AddOption(MaximumPoolSize = new MySqlConnectionStringOption<uint>(
-				keys: new[] { "Maximum Pool Size", "Max Pool Size", "MaximumPoolSize", "maxpoolsize" },
-				defaultValue: 100));
-
-			AddOption(UseAffectedRows = new MySqlConnectionStringOption<bool>(
-				keys: new[] { "Use Affected Rows", "UseAffectedRows" },
-				defaultValue: true));
-
-			AddOption(ForceSynchronous = new MySqlConnectionStringOption<bool>(
-				keys: new[] { "ForceSynchronous" },
-				defaultValue: false));
-		}
-
-		static readonly Dictionary<string, MySqlConnectionStringOption> s_options;
-
-		readonly IReadOnlyList<string> m_keys;
-	}
-
-	internal sealed class MySqlConnectionStringOption<T> : MySqlConnectionStringOption
-	{
-		public MySqlConnectionStringOption(IReadOnlyList<string> keys, T defaultValue, Func<T, T> coerce = null)
-			: base(keys)
-		{
-			m_defaultValue = defaultValue;
-			m_coerce = coerce;
-		}
-
-		public T GetValue(MySqlConnectionStringBuilder builder)
-		{
-			object objectValue;
-			return builder.TryGetValue(Key, out objectValue) ? ChangeType(objectValue) : m_defaultValue;
-		}
-
-		public void SetValue(MySqlConnectionStringBuilder builder, T value)
-		{
-			builder[Key] = m_coerce != null ? m_coerce(value) : value;
-		}
-
-		public override object GetObject(MySqlConnectionStringBuilder builder)
-		{
-			return GetValue(builder);
-		}
-
-		private static T ChangeType(object objectValue)
-		{
-			if (typeof(T) == typeof(bool) && objectValue is string)
+			public static MySqlConnectionStringOption TryGetOptionForKey(string key)
 			{
-				if (string.Equals((string) objectValue, "yes", StringComparison.OrdinalIgnoreCase))
-					return (T) (object) true;
-				if (string.Equals((string) objectValue, "no", StringComparison.OrdinalIgnoreCase))
-					return (T) (object) false;
+				MySqlConnectionStringOption option;
+				return s_options.TryGetValue(key, out option) ? option : null;
 			}
 
-			return (T) Convert.ChangeType(objectValue, typeof(T), CultureInfo.InvariantCulture);
+			public static MySqlConnectionStringOption GetOptionForKey(string key)
+			{
+				var option = TryGetOptionForKey(key);
+				if (option == null)
+					throw new InvalidOperationException("Option '{0}' not supported.".FormatInvariant(key));
+				return option;
+			}
+
+			public string Key => m_keys[0];
+			public IReadOnlyList<string> Keys => m_keys;
+
+			public abstract object GetObject(MySqlConnectionStringBuilder builder);
+
+			protected MySqlConnectionStringOption(IReadOnlyList<string> keys)
+			{
+				m_keys = keys;
+			}
+
+			private static void AddOption(MySqlConnectionStringOption option)
+			{
+				foreach (string key in option.m_keys)
+					s_options.Add(key, option);
+			}
+
+			static MySqlConnectionStringOption()
+			{
+				s_options = new Dictionary<string, MySqlConnectionStringOption>(StringComparer.OrdinalIgnoreCase);
+
+				AddOption(Server = new MySqlConnectionStringOption<string>(
+					keys: new[] { "Server", "Host", "Data Source", "DataSource", "Address", "Addr", "Network Address" },
+					defaultValue: ""));
+
+				AddOption(UserID = new MySqlConnectionStringOption<string>(
+					keys: new[] { "User Id", "UserID", "Username", "Uid", "User name", "User" },
+					defaultValue: ""));
+
+				AddOption(Password = new MySqlConnectionStringOption<string>(
+					keys: new[] { "Password", "pwd" },
+					defaultValue: ""));
+
+				AddOption(Database = new MySqlConnectionStringOption<string>(
+					keys: new[] { "Database", "Initial Catalog" },
+					defaultValue: ""));
+
+				AddOption(Port = new MySqlConnectionStringOption<uint>(
+					keys: new[] { "Port" },
+					defaultValue: 3306u));
+
+				AddOption(AllowUserVariables = new MySqlConnectionStringOption<bool>(
+					keys: new[] { "AllowUserVariables", "Allow User Variables" },
+					defaultValue: false));
+
+				AddOption(CharacterSet = new MySqlConnectionStringOption<string>(
+					keys: new[] { "CharSet", "Character Set", "CharacterSet" },
+					defaultValue: ""));
+
+				AddOption(ConvertZeroDateTime = new MySqlConnectionStringOption<bool>(
+					keys: new[] { "Convert Zero Datetime", "ConvertZeroDateTime" },
+					defaultValue: false));
+
+				AddOption(OldGuids = new MySqlConnectionStringOption<bool>(
+					keys: new[] { "Old Guids", "OldGuids" },
+					defaultValue: false));
+
+				AddOption(PersistSecurityInfo = new MySqlConnectionStringOption<bool>(
+					keys: new[] { "Persist Security Info", "PersistSecurityInfo" },
+					defaultValue: false));
+
+				AddOption(UseCompression = new MySqlConnectionStringOption<bool>(
+					keys: new[] { "Compress", "Use Compression", "UseCompression" },
+					defaultValue: false));
+
+				AddOption(Pooling = new MySqlConnectionStringOption<bool>(
+					keys: new[] { "Pooling" },
+					defaultValue: true));
+
+				AddOption(ConnectionReset = new MySqlConnectionStringOption<bool>(
+					keys: new[] { "Connection Reset", "ConnectionReset" },
+					defaultValue: true));
+
+				AddOption(ConnectionTimeout = new MySqlConnectionStringOption<uint>(
+					keys: new[] { "Connection Timeout", "ConnectionTimeout", "Connect Timeout" },
+					defaultValue: 15u));
+
+				AddOption(MinimumPoolSize = new MySqlConnectionStringOption<uint>(
+					keys: new[] { "Minimum Pool Size", "Min Pool Size", "MinimumPoolSize", "minpoolsize" },
+					defaultValue: 0));
+
+				AddOption(MaximumPoolSize = new MySqlConnectionStringOption<uint>(
+					keys: new[] { "Maximum Pool Size", "Max Pool Size", "MaximumPoolSize", "maxpoolsize" },
+					defaultValue: 100));
+
+				AddOption(UseAffectedRows = new MySqlConnectionStringOption<bool>(
+					keys: new[] { "Use Affected Rows", "UseAffectedRows" },
+					defaultValue: true));
+
+				AddOption(ForceSynchronous = new MySqlConnectionStringOption<bool>(
+					keys: new[] { "ForceSynchronous" },
+					defaultValue: false));
+			}
+
+			static readonly Dictionary<string, MySqlConnectionStringOption> s_options;
+
+			readonly IReadOnlyList<string> m_keys;
 		}
 
-		readonly T m_defaultValue;
-		readonly Func<T, T> m_coerce;
+		private sealed class MySqlConnectionStringOption<T> : MySqlConnectionStringOption
+		{
+			public MySqlConnectionStringOption(IReadOnlyList<string> keys, T defaultValue, Func<T, T> coerce = null)
+				: base(keys)
+			{
+				m_defaultValue = defaultValue;
+				m_coerce = coerce;
+			}
+
+			public T GetValue(MySqlConnectionStringBuilder builder)
+			{
+				object objectValue;
+				return builder.TryGetValue(Key, out objectValue) ? ChangeType(objectValue) : m_defaultValue;
+			}
+
+			public void SetValue(MySqlConnectionStringBuilder builder, T value)
+			{
+				builder[Key] = m_coerce != null ? m_coerce(value) : value;
+			}
+
+			public override object GetObject(MySqlConnectionStringBuilder builder)
+			{
+				return GetValue(builder);
+			}
+
+			private static T ChangeType(object objectValue)
+			{
+				if (typeof(T) == typeof(bool) && objectValue is string)
+				{
+					if (string.Equals((string) objectValue, "yes", StringComparison.OrdinalIgnoreCase))
+						return (T) (object) true;
+					if (string.Equals((string) objectValue, "no", StringComparison.OrdinalIgnoreCase))
+						return (T) (object) false;
+				}
+
+				return (T) Convert.ChangeType(objectValue, typeof(T), CultureInfo.InvariantCulture);
+			}
+
+			readonly T m_defaultValue;
+			readonly Func<T, T> m_coerce;
+		}
+
+		string m_cachedConnectionString;
+		string m_cachedConnectionStringWithoutPassword;
 	}
 }

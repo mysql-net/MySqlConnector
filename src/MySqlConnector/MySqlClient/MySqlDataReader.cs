@@ -310,6 +310,7 @@ namespace MySql.Data.MySqlClient
 		public override bool IsDBNull(int ordinal)
 		{
 			VerifyRead();
+
 			// TODO: Correct exception for invalid ordinal?
 			return m_dataOffsets[ordinal] == -1;
 		}

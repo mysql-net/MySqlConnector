@@ -25,7 +25,10 @@ namespace MySql.Data
 
 		public int Offset
 		{
-			get { return m_offset; }
+			get
+			{
+				return m_offset;
+			}
 			set
 			{
 				if (value < 0 || value > m_maxOffset)

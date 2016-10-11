@@ -175,5 +175,4 @@ namespace MySql.Data.MySqlClient
 		readonly List<MySqlParameter> m_parameters;
 		readonly Dictionary<string, int> m_nameToIndex;
 	}
-
 }
