@@ -8,9 +8,9 @@ before_install:
   - sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
   - sudo apt-get update
   - sudo apt-get install -y dotnet-dev-1.0.0-preview2-003121
-  - cp tests/SideBySide.New/config.json.example tests/SideBySide.New/config.json
 
 script:
   - dotnet restore
   - dotnet test tests/MySqlConnector.Tests --configuration Release
-  - dotnet test tests/SideBySide.New --configuration Release
+  - echo 'Executing tests with ssl mode=none' && cp tests/SideBySide.New/config.json.example tests/SideBySide.New/config.json && dotnet test tests/SideBySide.New --configuration Release
+  - echo 'Executing tests with ssl mode=required' && cp .ci/config.ssl.json tests/SideBySide.New/config.json && dotnet test tests/SideBySide.New --configuration Release
