@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Authentication;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,23 +52,26 @@ namespace MySql.Data.Serialization
 				}
 				m_payloadHandler = null;
 			}
-			if (m_socket != null)
+			if (m_tcpClient != null)
 			{
 				try
 				{
-					if (m_socket.Connected)
-						m_socket.Shutdown(SocketShutdown.Both);
-					m_socket.Dispose();
+#if NETSTANDARD1_3
+					m_tcpClient.Dispose();
+#else
+					m_tcpClient.Close();
+#endif
 				}
 				catch (SocketException)
 				{
 				}
-				m_socket = null;
+				m_tcpClient = null;
 			}
 			m_state = State.Closed;
 		}
 
-		public async Task ConnectAsync(IEnumerable<string> hosts, int port, string userId, string password, string database, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async Task ConnectAsync(IEnumerable<string> hosts, int port, string userId, string password, string database,
+			SslMode sslMode, string certificateFile, string certificatePassword, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			var connected = await OpenSocketAsync(hosts, port, ioBehavior, cancellationToken).ConfigureAwait(false);
 			if (!connected)
@@ -78,6 +85,80 @@ namespace MySql.Data.Serialization
 			ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
 			ConnectionId = initialHandshake.ConnectionId;
 			AuthPluginData = initialHandshake.AuthPluginData;
+
+			if (sslMode != SslMode.None)
+			{
+				X509Certificate2 certificate;
+				try
+				{
+					certificate = new X509Certificate2(certificateFile, certificatePassword);
+				}
+				catch (CryptographicException ex)
+				{
+					if (!File.Exists(certificateFile))
+						throw new MySqlException("Cannot find SSL Certificate File", ex);
+					throw new MySqlException("Either the SSL Certificate Password is incorrect or the SSL Certificate File is invalid", ex);
+				}
+
+				Func<object, string, X509CertificateCollection, X509Certificate, string[], X509Certificate> localCertificateCb =
+					(lcbSender, lcbTargetHost, lcbLocalCertificates, lcbRemoteCertificate, lcbAcceptableIssuers) => lcbLocalCertificates[0];
+
+				Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> remoteCertificateCb =
+					(rcbSender, rcbCertificate, rcbChain, rcbPolicyErrors) =>
+				{
+					switch (rcbPolicyErrors)
+					{
+						case SslPolicyErrors.None:
+							return true;
+						case SslPolicyErrors.RemoteCertificateNameMismatch:
+							return sslMode != SslMode.VerifyFull;
+						default:
+							return sslMode == SslMode.Required;
+					}
+				};
+
+				var sslStream = new SslStream(m_tcpClient.GetStream(), false,
+					new RemoteCertificateValidationCallback(remoteCertificateCb),
+					new LocalCertificateSelectionCallback(localCertificateCb));
+				var clientCertificates = new X509CertificateCollection { certificate };
+				var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
+				var checkCertificateRevocation = sslMode == SslMode.VerifyFull;
+
+				var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Packet.InitSsl(database)));
+				await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
+
+				try
+				{
+					if (ioBehavior == IOBehavior.Asynchronous)
+					{
+						await sslStream.AuthenticateAsClientAsync(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+					}
+					else
+					{
+#if NETSTANDARD1_3
+						await sslStream.AuthenticateAsClientAsync(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+#else
+						sslStream.AuthenticateAsClient(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation);
+#endif
+					}
+					var sslByteHandler = new SslByteHandler(sslStream);
+					m_payloadHandler.SetByteHandler(sslByteHandler);
+				}
+				catch (AuthenticationException ex)
+				{
+#if NETSTANDARD1_3
+					m_tcpClient.Dispose();
+#else
+					m_tcpClient.Close();
+#endif
+					m_conversation = null;
+					m_hostname = "";
+					m_payloadHandler = null;
+					m_state = State.Failed;
+					m_tcpClient = null;
+					throw new MySqlException("SSL Authentication Error", ex);
+				}
+			}
 
 			var response = HandshakeResponse41Packet.Create(initialHandshake, userId, password, database);
 			payload = new PayloadData(new ArraySegment<byte>(response));
@@ -200,28 +281,24 @@ namespace MySql.Data.Serialization
 				// need to try IP Addresses one at a time: https://github.com/dotnet/corefx/issues/5829
 				foreach (var ipAddress in ipAddresses)
 				{
-					Socket socket = null;
+					TcpClient tcpClient = null;
 					try
 					{
-						socket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-						using (cancellationToken.Register(() => socket.Dispose()))
+						tcpClient = new TcpClient(ipAddress.AddressFamily);
+						using (cancellationToken.Register(() => tcpClient?.Client?.Dispose()))
 						{
 							try
 							{
 								if (ioBehavior == IOBehavior.Asynchronous)
 								{
-#if NETSTANDARD1_3
-									await socket.ConnectAsync(ipAddress, port).ConfigureAwait(false);
-#else
-									await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, ipAddress, port, null).ConfigureAwait(false);
-#endif
+									await tcpClient.ConnectAsync(ipAddress, port).ConfigureAwait(false);
 								}
 								else
 								{
 #if NETSTANDARD1_3
-									await socket.ConnectAsync(ipAddress, port).ConfigureAwait(false);
+									await tcpClient.ConnectAsync(ipAddress, port).ConfigureAwait(false);
 #else
-									socket.Connect(ipAddress, port);
+									tcpClient.Connect(ipAddress, port);
 #endif
 								}
 							}
@@ -233,14 +310,15 @@ namespace MySql.Data.Serialization
 					}
 					catch (SocketException)
 					{
-						Utility.Dispose(ref socket);
+						tcpClient?.Client?.Dispose();
 						continue;
 					}
 
-					m_socket = socket;
+					m_hostname = hostname;
+					m_tcpClient = tcpClient;
 					m_conversation = new Conversation();
 
-					var socketByteHandler = new SocketByteHandler(m_socket);
+					var socketByteHandler = new SocketByteHandler(m_tcpClient.Client);
 					var packetHandler = new PacketHandler(socketByteHandler);
 					m_payloadHandler = new PayloadHandler(packetHandler);
 
@@ -313,7 +391,8 @@ namespace MySql.Data.Serialization
 		}
 
 		State m_state;
-		Socket m_socket;
+		string m_hostname;
+		TcpClient m_tcpClient;
 		Conversation m_conversation;
 		IPayloadHandler m_payloadHandler;
 	}

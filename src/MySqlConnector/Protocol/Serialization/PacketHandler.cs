@@ -8,10 +8,16 @@ namespace MySql.Data.Protocol.Serialization
 {
 	internal sealed class PacketHandler : IPacketHandler
 	{
+
 		public PacketHandler(IByteHandler byteHandler)
 		{
 			m_byteHandler = byteHandler;
 			m_buffer = new byte[16384];
+		}
+
+		public void SetByteHandler(IByteHandler byteHandler)
+		{
+			m_byteHandler = byteHandler;
 		}
 
 		public ValueTask<Packet> ReadPacketAsync(ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
@@ -73,7 +79,7 @@ namespace MySql.Data.Protocol.Serialization
 				});
 		}
 
-		private readonly IByteHandler m_byteHandler;
+		private IByteHandler m_byteHandler;
 		private readonly byte[] m_buffer;
 	}
 }

@@ -5,10 +5,8 @@ using MySql.Data.Serialization;
 
 namespace MySql.Data.Protocol.Serialization
 {
-	internal class SslByteHandler : IByteHandler
+	internal sealed class SslByteHandler : IByteHandler
 	{
-		private readonly SslStream m_sslStream;
-
 		public SslByteHandler(SslStream sslStream)
 		{
 			m_sslStream = sslStream;
@@ -23,7 +21,7 @@ namespace MySql.Data.Protocol.Serialization
 
 		public async Task<int> DoReadBytesAsync(byte[] buffer, int offset, int count)
 		{
-			return await m_sslStream.ReadAsync(buffer, offset, count);
+			return await m_sslStream.ReadAsync(buffer, offset, count).ConfigureAwait(false);
 		}
 
 		public ValueTask<int> WriteBytesAsync(ArraySegment<byte> payload, IOBehavior ioBehavior)
@@ -41,9 +39,10 @@ namespace MySql.Data.Protocol.Serialization
 
 		private async Task<int> DoWriteBytesAsync(ArraySegment<byte> payload)
 		{
-			await m_sslStream.ReadAsync(payload.Array, payload.Offset, payload.Count);
+			await m_sslStream.WriteAsync(payload.Array, payload.Offset, payload.Count).ConfigureAwait(false);
 			return default(int);
 		}
 
+		private readonly SslStream m_sslStream;
 	}
 }
