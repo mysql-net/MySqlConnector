@@ -10,7 +10,7 @@ using Xunit;
 
 namespace SideBySide
 {
-	public class ConnectionPool
+	public class ConnectionPool : IClassFixture<DatabaseFixture>
 	{
 		[Theory]
 		[InlineData(false, 11, 0L)]
@@ -24,7 +24,7 @@ namespace SideBySide
 #endif
 		public void ResetConnection(object connectionReset, int poolSize, long expected)
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.Pooling = true;
 			csb.MaximumPoolSize = (uint) poolSize; // use a different pool size to create a unique connection string to force a unique pool to be created
 
@@ -65,7 +65,7 @@ namespace SideBySide
 		[Fact]
 		public async Task ExhaustConnectionPool()
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.Pooling = true;
 			csb.MinimumPoolSize = 0;
 			csb.MaximumPoolSize = 3;
@@ -104,7 +104,7 @@ namespace SideBySide
 		[Fact]
 		public async Task ExhaustConnectionPoolWithTimeout()
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.Pooling = true;
 			csb.MinimumPoolSize = 0;
 			csb.MaximumPoolSize = 3;
@@ -134,7 +134,7 @@ namespace SideBySide
 		[Fact]
 		public async Task CharacterSet()
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.Pooling = true;
 			csb.MinimumPoolSize = 0;
 			csb.MaximumPoolSize = 21; // use a uniqe pool size to create a unique connection string to force a unique pool to be created
@@ -170,7 +170,7 @@ namespace SideBySide
 		[Fact]
 		public async Task ClearConnectionPool()
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.Pooling = true;
 			csb.MinimumPoolSize = 0;
 			csb.MaximumPoolSize = 3;

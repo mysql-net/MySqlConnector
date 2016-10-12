@@ -24,7 +24,7 @@ namespace SideBySide
 		[Fact]
 		public void WithoutUserVariables()
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.AllowUserVariables = false;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -38,7 +38,7 @@ namespace SideBySide
 		[Fact]
 		public void WithUserVariables()
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.AllowUserVariables = true;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{

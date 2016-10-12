@@ -166,7 +166,7 @@ values
     '{33221100-5544-7766-8899-aabbccddeeff}', X'00112233445566778899AABBCCDDEEFF');
 ");
 
-			if (TestUtilities.SupportsJson(Connection.ServerVersion))
+			if (AppConfig.SupportsJson)
 			{
 				Connection.Execute(@"
 drop table if exists datatypes_json_core;

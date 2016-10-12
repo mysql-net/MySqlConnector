@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
+using SideBySide.New;
 using Xunit;
 using static System.FormattableString;
 
@@ -261,7 +262,7 @@ namespace SideBySide
 		[InlineData(true)]
 		public void QueryBinaryGuid(bool oldGuids)
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.OldGuids = oldGuids;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -319,7 +320,7 @@ namespace SideBySide
 		[InlineData(true)]
 		public async Task QueryWithGuidParameter(bool oldGuids)
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.OldGuids = oldGuids;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -390,7 +391,7 @@ namespace SideBySide
 		[InlineData(true)]
 		public void QueryZeroDateTime(bool convertZeroDateTime)
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.ConvertZeroDateTime = convertZeroDateTime;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -532,30 +533,24 @@ namespace SideBySide
 			return data;
 		}
 
-		[Theory]
+		[JsonTheory]
 		[InlineData("Value", new[] { null, "NULL", "BOOLEAN", "ARRAY", "ARRAY", "ARRAY", "INTEGER", "INTEGER", "OBJECT", "OBJECT" })]
 		public void JsonType(string column, string[] expectedTypes)
 		{
-			if (TestUtilities.SupportsJson(m_database.Connection.ServerVersion))
-			{
-				var types = m_database.Connection.Query<string>(@"select JSON_TYPE(value) from datatypes_json_core order by rowid;").ToList();
-				Assert.Equal(expectedTypes, types);
-			}
+			var types = m_database.Connection.Query<string>(@"select JSON_TYPE(value) from datatypes_json_core order by rowid;").ToList();
+			Assert.Equal(expectedTypes, types);
 		}
 
-		[Theory]
+		[JsonTheory]
 		[InlineData("value", new[] { null, "null", "true", "[]", "[0]", "[1]", "0", "1", "{}", "{\"a\": \"b\"}" })]
 		public void QueryJson(string column, string[] expected)
 		{
-			if (TestUtilities.SupportsJson(m_database.Connection.ServerVersion))
-			{
-				string dataTypeName = "JSON";
+			string dataTypeName = "JSON";
 #if BASELINE
-				// mysql-connector-net returns "VARCHAR" for "JSON"
-				dataTypeName = "VARCHAR";
+			// mysql-connector-net returns "VARCHAR" for "JSON"
+			dataTypeName = "VARCHAR";
 #endif
-				DoQuery("json_core", column, dataTypeName, expected, reader => reader.GetString(0), omitWhereTest: true);
-			}
+			DoQuery("json_core", column, dataTypeName, expected, reader => reader.GetString(0), omitWhereTest: true);
 		}
 
 		private static byte[] GetBytes(DbDataReader reader)
