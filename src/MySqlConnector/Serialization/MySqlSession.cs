@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using MySql.Data.Protocol.Serialization;
 
 namespace MySql.Data.Serialization
 {
@@ -33,18 +34,19 @@ namespace MySql.Data.Serialization
 
 		public async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			if (m_transmitter != null)
+			if (m_payloadHandler != null)
 			{
 				try
 				{
-					await m_transmitter.SendAsync(QuitPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
-					await m_transmitter.TryReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					m_conversation.StartNew();
+					await m_payloadHandler.WritePayloadAsync(m_conversation, QuitPayload.Create(), ioBehavior).ConfigureAwait(false);
+					await m_payloadHandler.ReadPayloadAsync(m_conversation, ProtocolErrorBehavior.Ignore, ioBehavior).ConfigureAwait(false);
 				}
 				catch (SocketException)
 				{
 					// socket may have been closed during shutdown; ignore
 				}
-				m_transmitter = null;
+				m_payloadHandler = null;
 			}
 			if (m_socket != null)
 			{
@@ -139,20 +141,26 @@ namespace MySql.Data.Serialization
 		}
 
 		// Starts a new conversation with the server by sending the first packet.
-		public Task SendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
-			=> TryAsync(m_transmitter.SendAsync, payload, ioBehavior, cancellationToken);
+		public ValueTask<int> SendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			m_conversation.StartNew();
+			return TryAsync(m_payloadHandler.WritePayloadAsync, payload.ArraySegment, ioBehavior, cancellationToken);
+		}
 
 		// Starts a new conversation with the server by receiving the first packet.
 		public ValueTask<PayloadData> ReceiveAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-			=> TryAsync(m_transmitter.ReceiveAsync, ioBehavior, cancellationToken);
+		{
+			m_conversation.StartNew();
+			return TryAsync(m_payloadHandler.ReadPayloadAsync, ioBehavior, cancellationToken);
+		}
 
 		// Continues a conversation with the server by receiving a response to a packet sent with 'Send' or 'SendReply'.
-		public ValueTask<PayloadData> ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-			=> TryAsync(m_transmitter.ReceiveReplyAsync, ioBehavior, cancellationToken);
+		public ValueTask<PayloadData> ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) =>
+			TryAsync(m_payloadHandler.ReadPayloadAsync, ioBehavior, cancellationToken);
 
 		// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
-		public Task SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
-			=> TryAsync(m_transmitter.SendReplyAsync, payload, ioBehavior, cancellationToken);
+		public ValueTask<int> SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken) =>
+			TryAsync(m_payloadHandler.WritePayloadAsync, payload.ArraySegment, ioBehavior, cancellationToken);
 
 		private void VerifyConnected()
 		{
@@ -230,7 +238,12 @@ namespace MySql.Data.Serialization
 					}
 
 					m_socket = socket;
-					m_transmitter = new PacketTransmitter(m_socket);
+					m_conversation = new Conversation();
+
+					var socketByteHandler = new SocketByteHandler(m_socket);
+					var packetHandler = new PacketHandler(socketByteHandler);
+					m_payloadHandler = new PayloadHandler(packetHandler);
+
 					m_state = State.Connected;
 					return true;
 				}
@@ -238,53 +251,50 @@ namespace MySql.Data.Serialization
 			return false;
 		}
 
-		private Task TryAsync<TArg>(Func<TArg, IOBehavior, CancellationToken, Task> func, TArg arg, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private ValueTask<int> TryAsync<TArg>(Func<IConversation, TArg, IOBehavior, ValueTask<int>> func, TArg arg, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyConnected();
-			var task = func(arg, ioBehavior, cancellationToken);
-			if (task.Status == TaskStatus.RanToCompletion)
+			var task = func(m_conversation, arg, ioBehavior);
+			if (task.IsCompletedSuccessfully)
 				return task;
 
-			return task.ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+			return new ValueTask<int>(task.AsTask()
+				.ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default));
 		}
 
-		private void TryAsyncContinuation(Task task)
+		private int TryAsyncContinuation(Task<int> task)
 		{
 			if (task.IsFaulted)
 			{
 				SetFailed();
 				task.GetAwaiter().GetResult();
 			}
+			return 0;
 		}
 
-		private ValueTask<PayloadData> TryAsync(Func<IOBehavior, CancellationToken, ValueTask<PayloadData>> func, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private ValueTask<PayloadData> TryAsync(Func<IConversation, ProtocolErrorBehavior, IOBehavior, ValueTask<ArraySegment<byte>>> func, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyConnected();
-			var task = func(ioBehavior, cancellationToken);
+			var task = func(m_conversation, ProtocolErrorBehavior.Throw, ioBehavior);
 			if (task.IsCompletedSuccessfully)
 			{
-				if (task.Result.HeaderByte != ErrorPayload.Signature)
-					return task;
+				var payload = new PayloadData(task.Result);
+				if (payload.HeaderByte != ErrorPayload.Signature)
+					return new ValueTask<PayloadData>(payload);
 
-				var exception = ErrorPayload.Create(task.Result).ToException();
-#if NETSTANDARD1_3
-				return new ValueTask<PayloadData>(Task.FromException<PayloadData>(exception));
-#else
-				var tcs = new TaskCompletionSource<PayloadData>();
-				tcs.SetException(exception);
-				return new ValueTask<PayloadData>(tcs.Task);
-#endif
+				var exception = ErrorPayload.Create(payload).ToException();
+				return ValueTaskExtensions.FromException<PayloadData>(exception);
 			}
 
 			return new ValueTask<PayloadData>(task.AsTask()
 				.ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default));
 		}
 
-		private PayloadData TryAsyncContinuation(Task<PayloadData> task)
+		private PayloadData TryAsyncContinuation(Task<ArraySegment<byte>> task)
 		{
 			if (task.IsFaulted)
 				SetFailed();
-			var payload = task.GetAwaiter().GetResult();
+			var payload = new PayloadData(task.GetAwaiter().GetResult());
 			payload.ThrowIfError();
 			return payload;
 		}
@@ -304,6 +314,7 @@ namespace MySql.Data.Serialization
 
 		State m_state;
 		Socket m_socket;
-		PacketTransmitter m_transmitter;
+		Conversation m_conversation;
+		IPayloadHandler m_payloadHandler;
 	}
 }
