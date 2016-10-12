@@ -20,7 +20,7 @@ namespace SideBySide
 		private static int _configFirst;
 
 		private static IConfiguration ConfigBuilder { get; } = new ConfigurationBuilder()
-			.SetBasePath(Path.GetFileName(Directory.GetCurrentDirectory()) == "SideBySide.New" ? Directory.GetCurrentDirectory() :
+			.SetBasePath(File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config.json")) ? Directory.GetCurrentDirectory() :
 				Path.Combine(Directory.GetCurrentDirectory(), "tests", "SideBySide.New"))
 			.AddInMemoryCollection(DefaultConfig)
 			.AddJsonFile("config.json")
