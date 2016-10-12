@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
@@ -70,7 +71,7 @@ namespace SideBySide
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.PersistSecurityInfo = persistSecurityInfo;
-			var connectionStringWithoutPassword = csb.ConnectionString.Replace("Password", "password").Replace(";password='" + csb.Password + "'", "");
+			var connectionStringWithoutPassword = Regex.Replace(csb.ConnectionString, @"(?i)password='?" + Regex.Escape(csb.Password) + "'?;?", "");
 
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{

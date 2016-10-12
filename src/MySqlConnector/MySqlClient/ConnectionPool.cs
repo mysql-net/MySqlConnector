@@ -43,7 +43,7 @@ namespace MySql.Data.MySqlClient
 				}
 
 				session = new MySqlSession(this, m_generation);
-				await session.ConnectAsync(m_servers, m_port, m_userId, m_password, m_database, ioBehavior, cancellationToken).ConfigureAwait(false);
+				await session.ConnectAsync(m_servers, m_port, m_userId, m_password, m_database, m_sslMode, m_certificateFile, m_certificatePassword, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return session;
 			}
 			catch
@@ -124,8 +124,8 @@ namespace MySql.Data.MySqlClient
 			ConnectionPool pool;
 			if (!s_pools.TryGetValue(key, out pool))
 			{
-				pool = s_pools.GetOrAdd(key, newKey => new ConnectionPool(csb.Server.Split(','), (int) csb.Port, csb.UserID,
-						csb.Password, csb.Database, csb.ConnectionReset, (int)csb.MinimumPoolSize, (int) csb.MaximumPoolSize));
+				pool = s_pools.GetOrAdd(key, newKey => new ConnectionPool(csb.Server.Split(','), (int) csb.Port, csb.UserID, csb.Password, csb.Database,
+					csb.SslMode, csb.CertificateFile, csb.CertificatePassword, csb.ConnectionReset, (int)csb.MinimumPoolSize, (int) csb.MaximumPoolSize));
 			}
 			return pool;
 		}
@@ -138,8 +138,8 @@ namespace MySql.Data.MySqlClient
 				await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
-		private ConnectionPool(IEnumerable<string> servers, int port, string userId, string password, string database,
-			bool resetConnections, int minimumSize, int maximumSize)
+		private ConnectionPool(IEnumerable<string> servers, int port, string userId, string password, string database, SslMode sslMode,
+			string certificateFile, string certificatePassword, bool resetConnections, int minimumSize, int maximumSize)
 		{
 			m_servers = servers;
 			m_port = port;
@@ -147,6 +147,9 @@ namespace MySql.Data.MySqlClient
 			m_password = password;
 			m_database = database;
 			m_resetConnections = resetConnections;
+			m_sslMode = sslMode;
+			m_certificateFile = certificateFile;
+			m_certificatePassword = certificatePassword;
 			m_minimumSize = minimumSize;
 			m_maximumSize = maximumSize;
 
@@ -166,6 +169,9 @@ namespace MySql.Data.MySqlClient
 		readonly string m_userId;
 		readonly string m_password;
 		readonly string m_database;
+		readonly SslMode m_sslMode;
+		readonly string m_certificateFile;
+		readonly string m_certificatePassword;
 		readonly bool m_resetConnections;
 		readonly int m_minimumSize;
 		readonly int m_maximumSize;

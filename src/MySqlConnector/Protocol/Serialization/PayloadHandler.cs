@@ -11,6 +11,11 @@ namespace MySql.Data.Protocol.Serialization
 			m_packetHandler = packetHandler;
 		}
 
+		public void SetByteHandler(IByteHandler byteHandler)
+		{
+			m_packetHandler.SetByteHandler(byteHandler);
+		}
+
 		public ValueTask<ArraySegment<byte>> ReadPayloadAsync(IConversation conversation, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) =>
 			ReadPayloadAsync(default(ArraySegment<byte>), conversation, protocolErrorBehavior, ioBehavior);
 
