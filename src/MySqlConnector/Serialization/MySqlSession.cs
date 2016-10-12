@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -121,7 +122,12 @@ namespace MySql.Data.Serialization
 					new RemoteCertificateValidationCallback(remoteCertificateCb),
 					new LocalCertificateSelectionCallback(localCertificateCb));
 				var clientCertificates = new X509CertificateCollection { certificate };
-				var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
+
+				// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/bgrainger/MySqlConnector/pull/101
+				var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
+				if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+					sslProtocols |= SslProtocols.Tls12;
+
 				var checkCertificateRevocation = sslMode == SslMode.VerifyFull;
 
 				var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Packet.InitSsl(database)));

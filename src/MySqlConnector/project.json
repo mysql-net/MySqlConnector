@@ -26,6 +26,7 @@
 			},
 			"dependencies": {
 				"System.Buffers": "4.0.0",
+				"System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
 				"System.Threading.Tasks.Extensions": "4.0.0"
 			}
 		},
@@ -45,6 +46,7 @@
 				"System.Net.Sockets": "4.1.0",
 				"System.Runtime": "4.1.0",
 				"System.Runtime.Extensions": "4.1.0",
+				"System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
 				"System.Security.Cryptography.Algorithms": "4.2.0",
 				"System.Threading": "4.0.11",
 				"System.Threading.Tasks.Extensions": "4.0.0"
