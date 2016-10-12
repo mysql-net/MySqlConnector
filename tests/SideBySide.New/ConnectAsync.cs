@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using SideBySide.New;
 using Xunit;
 
 namespace SideBySide
@@ -46,7 +47,7 @@ namespace SideBySide
 		[Fact]
 		public async Task ConnectBadPassword()
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.Password = "wrong";
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -73,13 +74,9 @@ namespace SideBySide
 #endif
 		public async Task ConnectMultipleHostNames()
 		{
-			var csb = new MySqlConnectionStringBuilder
-			{
-				Server = "invalid.example.net,localhost",
-				Port = 3306,
-				UserID = Constants.UserName,
-				Password = Constants.Password,
-			};
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.Server = "invalid.example.net," + csb.Server;
+
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				Assert.Equal(ConnectionState.Closed, connection.State);
@@ -88,14 +85,14 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[PasswordlessUserFact]
 		public async Task ConnectNoPassword()
 		{
-			var csb = new MySqlConnectionStringBuilder
-			{
-				Server = Constants.Server,
-				UserID = "no_password",
-			};
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.UserID = AppConfig.PasswordlessUser;
+			csb.Password = "";
+			csb.Database = "";
+
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				Assert.Equal(ConnectionState.Closed, connection.State);

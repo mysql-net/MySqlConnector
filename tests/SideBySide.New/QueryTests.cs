@@ -24,7 +24,7 @@ namespace SideBySide
 		[Fact]
 		public void WithoutUserVariables()
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.AllowUserVariables = false;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -38,7 +38,7 @@ namespace SideBySide
 		[Fact]
 		public void WithUserVariables()
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.AllowUserVariables = true;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -54,18 +54,16 @@ namespace SideBySide
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"drop schema if exists query_test;
-drop table if exists query_test.test;
-create schema query_test;
-create table query_test.test(id integer not null primary key auto_increment, value integer not null);
-insert into query_test.test (value) VALUES (1);
+				cmd.CommandText = @"drop table if exists query_test;
+create table query_test(id integer not null primary key auto_increment, value integer not null);
+insert into query_test (value) VALUES (1);
 ";
 				cmd.ExecuteNonQuery();
 			}
 
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = "select id, value FROM query_test.test;";
+				cmd.CommandText = "select id, value FROM query_test;";
 				using (var reader = cmd.ExecuteReader())
 					Assert.Equal(false, reader.NextResult());
 			}
@@ -76,15 +74,14 @@ insert into query_test.test (value) VALUES (1);
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"drop schema if exists invalid_sql;
-create schema invalid_sql;
-create table invalid_sql.test(id integer not null primary key auto_increment);";
+				cmd.CommandText = @"drop table if exists query_invalid_sql;
+create table query_invalid_sql(id integer not null primary key auto_increment);";
 				await cmd.ExecuteNonQueryAsync();
 			}
 
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"select id from invalid_sql.test limit 1 where id is not null";
+				cmd.CommandText = @"select id from query_invalid_sql limit 1 where id is not null";
 				await Assert.ThrowsAsync<MySqlException>(() => cmd.ExecuteNonQueryAsync());
 				await Assert.ThrowsAsync<MySqlException>(() => cmd.ExecuteReaderAsync());
 				await Assert.ThrowsAsync<MySqlException>(() => cmd.ExecuteScalarAsync());
@@ -92,7 +89,7 @@ create table invalid_sql.test(id integer not null primary key auto_increment);";
 
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"select count(id) from invalid_sql.test";
+				cmd.CommandText = @"select count(id) from query_invalid_sql";
 				Assert.Equal(0L, await cmd.ExecuteScalarAsync());
 			}
 		}
@@ -102,18 +99,17 @@ create table invalid_sql.test(id integer not null primary key auto_increment);";
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"drop schema if exists multiple_readers;
-					create schema multiple_readers;
-					create table multiple_readers.test(id integer not null primary key auto_increment);
-					insert into multiple_readers.test(id) values(1), (2), (3);";
+				cmd.CommandText = @"drop table if exists query_multiple_readers;
+					create table query_multiple_readers(id integer not null primary key auto_increment);
+					insert into query_multiple_readers(id) values(1), (2), (3);";
 				await cmd.ExecuteNonQueryAsync();
 			}
 
 			using (var cmd1 = m_database.Connection.CreateCommand())
 			using (var cmd2 = m_database.Connection.CreateCommand())
 			{
-				cmd1.CommandText = @"select id from multiple_readers.test;";
-				cmd2.CommandText = @"select id from multiple_readers.test order by id;";
+				cmd1.CommandText = @"select id from query_multiple_readers;";
+				cmd2.CommandText = @"select id from query_multiple_readers order by id;";
 
 				using (var reader1 = await cmd1.ExecuteReaderAsync())
 				{
@@ -154,18 +150,17 @@ create table invalid_sql.test(id integer not null primary key auto_increment);";
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"drop schema if exists multiple_statements;
-					create schema multiple_statements;
-					create table multiple_statements.test(value1 int not null, value2 int not null, value3 int not null);
-					insert into multiple_statements.test(value1, value2, value3) values(1, 2, 3), (4, 5, 6), (7, 8, 9);";
+				cmd.CommandText = @"drop table if exists query_multiple_statements;
+					create table query_multiple_statements(value1 int not null, value2 int not null, value3 int not null);
+					insert into query_multiple_statements(value1, value2, value3) values(1, 2, 3), (4, 5, 6), (7, 8, 9);";
 				await cmd.ExecuteNonQueryAsync();
 			}
 
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"select value1 from multiple_statements.test order by value1;
-					select value2 from multiple_statements.test order by value2;
-					select value3 from multiple_statements.test order by value3;";
+				cmd.CommandText = @"select value1 from query_multiple_statements order by value1;
+					select value2 from query_multiple_statements order by value2;
+					select value3 from query_multiple_statements order by value3;";
 
 				using (var reader = await cmd.ExecuteReaderAsync())
 				{
@@ -183,17 +178,16 @@ create table invalid_sql.test(id integer not null primary key auto_increment);";
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"drop schema if exists get_name;
-create schema get_name;
-create table get_name.test(id integer not null primary key, value text not null);
-insert into get_name.test (id, value) VALUES (1, 'one'), (2, 'two');
+				cmd.CommandText = @"drop table if exists query_get_name;
+create table query_get_name(id integer not null primary key, value text not null);
+insert into query_get_name (id, value) VALUES (1, 'one'), (2, 'two');
 ";
 				cmd.ExecuteNonQuery();
 			}
 
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = "select id, value FROM get_name.test order by id;";
+				cmd.CommandText = "select id, value FROM query_get_name order by id;";
 				using (var reader = cmd.ExecuteReader())
 				{
 					Assert.Equal("id", reader.GetName(0));
@@ -210,7 +204,7 @@ insert into get_name.test (id, value) VALUES (1, 'one'), (2, 'two');
 					Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(0));
 				}
 
-				cmd.CommandText = "select id, value FROM get_name.test where id > 10 order by id;";
+				cmd.CommandText = "select id, value FROM query_get_name where id > 10 order by id;";
 				using (var reader = cmd.ExecuteReader())
 				{
 					Assert.Equal("id", reader.GetName(0));
@@ -265,12 +259,12 @@ insert into get_name.test (id, value) VALUES (1, 'one'), (2, 'two');
 		public void DapperNullableBoolNullLast()
 		{
 			// adapted from https://github.com/StackExchange/dapper-dot-net/issues/552
-			m_database.Connection.Execute("drop schema if exists boolTest; create schema boolTest;");
-			m_database.Connection.Execute("create table boolTest.Test (Id int not null, IsBold BOOLEAN null );");
-			m_database.Connection.Execute("insert boolTest.Test (Id, IsBold) values (1,1);");
-			m_database.Connection.Execute("insert boolTest.Test (Id, IsBold) values (2,null);");
+			m_database.Connection.Execute("drop table if exists query_bool_test;");
+			m_database.Connection.Execute("create table query_bool_test (Id int not null, IsBold BOOLEAN null );");
+			m_database.Connection.Execute("insert query_bool_test (Id, IsBold) values (1,1);");
+			m_database.Connection.Execute("insert query_bool_test (Id, IsBold) values (2,null);");
 
-			var rows = m_database.Connection.Query<BoolTest>("select * from boolTest.Test").ToDictionary(x => x.Id);
+			var rows = m_database.Connection.Query<BoolTest>("select * from query_bool_test").ToDictionary(x => x.Id);
 
 			Assert.True(rows[1].IsBold);
 			Assert.Null(rows[2].IsBold);
@@ -282,16 +276,15 @@ insert into get_name.test (id, value) VALUES (1, 'one'), (2, 'two');
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"drop schema if exists enumerator;
-					create schema enumerator;
-					create table enumerator.test(value text);
-					insert into enumerator.test(value) values('one'), ('two'), ('three'), ('four');";
+				cmd.CommandText = @"drop table if exists query_enumerator;
+					create table query_enumerator(value text);
+					insert into query_enumerator(value) values('one'), ('two'), ('three'), ('four');";
 				await cmd.ExecuteNonQueryAsync();
 			}
 
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"select value from enumerator.test order by value asc;";
+				cmd.CommandText = @"select value from query_enumerator order by value asc;";
 				using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
 					Assert.Equal(new[] { "four", "one", "three", "two" }, reader.Cast<IDataRecord>().Select(x => x.GetString(0)));
 			}
@@ -305,12 +298,12 @@ insert into get_name.test (id, value) VALUES (1, 'one'), (2, 'two');
 		public void DapperNullableBoolNullFirst()
 		{
 			// adapted from https://github.com/StackExchange/dapper-dot-net/issues/552
-			m_database.Connection.Execute("drop schema if exists boolTest; create schema boolTest;");
-			m_database.Connection.Execute("create table boolTest.Test (Id int not null, IsBold BOOLEAN null );");
-			m_database.Connection.Execute("insert boolTest.Test (Id, IsBold) values (2,null);");
-			m_database.Connection.Execute("insert boolTest.Test (Id, IsBold) values (1,1);");
+			m_database.Connection.Execute("drop table if exists query_dapper_bool_test;");
+			m_database.Connection.Execute("create table query_dapper_bool_test (Id int not null, IsBold BOOLEAN null );");
+			m_database.Connection.Execute("insert query_dapper_bool_test (Id, IsBold) values (2,null);");
+			m_database.Connection.Execute("insert query_dapper_bool_test (Id, IsBold) values (1,1);");
 
-			var rows = m_database.Connection.Query<BoolTest>("select * from boolTest.Test").ToDictionary(x => x.Id);
+			var rows = m_database.Connection.Query<BoolTest>("select * from query_dapper_bool_test").ToDictionary(x => x.Id);
 
 			Assert.True(rows[1].IsBold);
 			Assert.Null(rows[2].IsBold);
@@ -323,22 +316,21 @@ insert into get_name.test (id, value) VALUES (1, 'one'), (2, 'two');
 #endif
 		public void TabsAndNewLines()
 		{
-			m_database.Connection.Execute(@"drop schema if exists tabs;
-			create schema tabs;
-			create table tabs.test(
+			m_database.Connection.Execute(@"drop table if exists query_tabs;
+			create table query_tabs(
 				id bigint(20) not null primary key
 			);
-			insert into tabs.test(id) values(1);");
+			insert into query_tabs(id) values(1);");
 
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = "select\ncount(*)\nfrom\ntabs.test;";
+				cmd.CommandText = "select\ncount(*)\nfrom\nquery_tabs;";
 				Assert.Equal(1L, (long) cmd.ExecuteScalar());
 			}
 
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = "select\tcount(*)\n\t\tfrom\ttabs.test;";
+				cmd.CommandText = "select\tcount(*)\n\t\tfrom\tquery_tabs;";
 				Assert.Equal(1L, (long) cmd.ExecuteScalar());
 			}
 		}

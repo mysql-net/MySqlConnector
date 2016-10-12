@@ -9,9 +9,16 @@ is deemed important.
 The source code is all in the `SideBySide.New` folder, and added (as link) to the `SideBySide.Baseline`
 project.
 
-The tests require a local MySQL server (although this can be changed in `Constants.cs` to use
-a remote server). Create a user with the Login Name `mysqltest`, Password `test;key="val` and
-Role "DBManager". Create another user with the Login Name `no_password`, no Password and no Roles.
+The tests require a MySQL server.  Copy the file `SideBySide.New/config.json.example` to `SideBySide.New/config.json`.
+Then edit the `config.json` file in order to connect to your server:
+
+    Data.ConnectionString: The full MySql Connection String to your server.  You should specify a database name.
+        If the database does not exist, the test will attempt to create it.
+
+    Data.PasswordlessUser: Leave blank to disable passwordless user tests.  Otherwise, this should be a user
+        on your database with no Password and no Roles.
+
+    Data.SupportsJson: True if your MySql server supports JSON (5.7 and up), false otherwise.
 
 There are two ways to run the tests: command line and Visual Studio.
 

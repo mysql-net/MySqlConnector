@@ -12,6 +12,7 @@ build_script:
     dotnet build tests\SideBySide.New --configuration Release
 before_test:
 - cmd: |-
+    copy tests\SideBySide.New\config.json.example tests\SideBySide.New\config.json
     "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql.exe" -u root --password=Password12! < .ci\init.sql
 test_script:
 - cmd: |-

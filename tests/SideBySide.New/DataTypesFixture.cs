@@ -8,17 +8,14 @@ namespace SideBySide
 		{
 			Connection.Open();
 			Connection.Execute(@"
-drop schema if exists datatypes;
-
-create schema datatypes;
-
-create table datatypes.bools(
+drop table if exists datatypes_bools;
+create table datatypes_bools(
   rowid integer not null primary key auto_increment,
   Boolean bool null,
   TinyInt1 tinyint(1) null
 );
 
-insert into datatypes.bools(Boolean, TinyInt1)
+insert into datatypes_bools(Boolean, TinyInt1)
 values
   (null, null),
   (0, 0),
@@ -28,21 +25,23 @@ values
   (-1, -1),
   (123, 123);
 
-create table datatypes.bits(
+drop table if exists datatypes_bits;
+create table datatypes_bits(
   rowid integer not null primary key auto_increment,
   Bit1 bit(1) null,
   Bit32 bit(32) null,
   Bit64 bit(64) null
 );
 
-insert into datatypes.bits(Bit1, Bit32, Bit64)
+insert into datatypes_bits(Bit1, Bit32, Bit64)
 values
   (null, null, null),
   (0, 0, 0),
   (1, 1, 1),
   (1, X'FFFFFFFF', X'FFFFFFFFFFFFFFFF');
 
-create table datatypes.integers (
+drop table if exists datatypes_integers;
+create table datatypes_integers (
   rowid integer not null primary key auto_increment,
   SByte tinyint null,
   Byte tinyint unsigned null,
@@ -56,7 +55,7 @@ create table datatypes.integers (
   UInt64 bigint unsigned null
 );
 
-insert into datatypes.integers(SByte, Byte, Int16, UInt16, Int24, UInt24, Int32, UInt32, Int64, UInt64)
+insert into datatypes_integers(SByte, Byte, Int16, UInt16, Int24, UInt24, Int32, UInt32, Int64, UInt64)
 values
   (null, null, null, null, null, null, null, null, null, null), # null
   (0, 0, 0, 0, 0, 0, 0, 0, 0, 0), # zero
@@ -64,7 +63,8 @@ values
   (127, 255, 32767, 65535, 8388607, 16777215, 2147483647, 4294967295, 9223372036854775807, 18446744073709551615), # maximum
   (123, 123, 12345, 12345, 1234567, 1234567, 123456789, 123456789, 1234567890123456789, 1234567890123456789);
 
-create table datatypes.reals(
+drop table if exists datatypes_reals;
+create table datatypes_reals(
   rowid integer not null primary key auto_increment,
   Single float null,
   `Double` double null,
@@ -73,7 +73,7 @@ create table datatypes.reals(
   BigDecimal decimal(50, 30) null
 );
 
-insert into datatypes.reals(Single, `Double`, SmallDecimal, MediumDecimal, BigDecimal)
+insert into datatypes_reals(Single, `Double`, SmallDecimal, MediumDecimal, BigDecimal)
 values
   (null, null, null, null, null),
   (0, 0, 0, 0, 0),
@@ -82,7 +82,8 @@ values
   (3.402823466e38, 1.7976931348623157e308, 999.99, 999999999999.99999999, 99999999999999999999.999999999999999999999999999999),
   (1.401298E-45, 4.94065645841247e-324, 0.01, 0.00000001, 0.000000000000000000000000000001);
 
-create table datatypes.strings (
+drop table if exists datatypes_strings;
+create table datatypes_strings (
   rowid integer not null primary key auto_increment,
   utf8 varchar(300) character set 'utf8mb4' null,
   utf8bin varchar(300) character set utf8mb4 collate utf8mb4_bin null,
@@ -93,7 +94,7 @@ create table datatypes.strings (
   guidbin char(36) binary null
 );
 
-insert into datatypes.strings(utf8, utf8bin, latin1, latin1bin, cp1251, guid, guidbin)
+insert into datatypes_strings(utf8, utf8bin, latin1, latin1bin, cp1251, guid, guidbin)
 values
   (null, null, null, null, null, null, null),
   ('', '', '', '', '', '00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000'),
@@ -106,7 +107,8 @@ values
    'This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating ""this field is null"". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.',
    '6a0e0a40-6228-11d3-a996-0050041896c8', '6a0e0a40-6228-11d3-a996-0050041896c8');
 
-create table datatypes.blobs(
+drop table if exists datatypes_blobs;
+create table datatypes_blobs(
   rowid integer not null primary key auto_increment,
   `Binary` binary(100) null,
   `VarBinary` varbinary(100) null,
@@ -117,7 +119,7 @@ create table datatypes.blobs(
   guidbin binary(16) null
 );
 
-insert into datatypes.blobs(`Binary`, `VarBinary`, `TinyBlob`, `Blob`, `MediumBlob`, `LongBlob`, guidbin)
+insert into datatypes_blobs(`Binary`, `VarBinary`, `TinyBlob`, `Blob`, `MediumBlob`, `LongBlob`, guidbin)
 values
   (null, null, null, null, null, null, null),
   (X'00112233445566778899AABBCCDDEEFF',
@@ -128,7 +130,8 @@ values
     X'00112233445566778899AABBCCDDEEFF',
     X'00112233445566778899AABBCCDDEEFF');
 
-create table datatypes.times(
+drop table if exists datatypes_times;
+create table datatypes_times(
   rowid integer not null primary key auto_increment,
   `Date` date null,
   `DateTime` datetime(6) null,
@@ -136,7 +139,7 @@ create table datatypes.times(
   `Time` time(6) null,
   `Year` year null);
 
-insert into datatypes.times(`Date`, `DateTime`, `Timestamp`, `Time`, `Year`)
+insert into datatypes_times(`Date`, `DateTime`, `Timestamp`, `Time`, `Year`)
 values
   (null, null, null, null, null),
   (date '1000-01-01', timestamp '1000-01-01 00:00:00', timestamp '1970-01-01 00:00:01', time '-838:59:59' , 1901),
@@ -144,7 +147,8 @@ values
   (null, null, null, time '00:00:00', 0),
   (date '2016-04-05', timestamp '2016-04-05 14:03:04.56789', timestamp '2016-04-05 14:03:04.56789', time '14:03:04.56789', 2016);
 
-create table datatypes.guids (
+drop table if exists datatypes_guids;
+create table datatypes_guids (
   rowid integer not null primary key auto_increment,
   char38 char(38) null,
   char38bin char(38) binary null,
@@ -152,7 +156,7 @@ create table datatypes.guids (
   `blob` blob null
 );
 
-insert into datatypes.guids (char38, char38bin, `text`, `blob`)
+insert into datatypes_guids (char38, char38bin, `text`, `blob`)
 values
   (null, null, null, null),
   ('0', '0', '0', X'00'),
@@ -162,15 +166,16 @@ values
     '{33221100-5544-7766-8899-aabbccddeeff}', X'00112233445566778899AABBCCDDEEFF');
 ");
 
-			if (TestUtilities.SupportsJson(Connection.ServerVersion))
+			if (AppConfig.SupportsJson)
 			{
 				Connection.Execute(@"
-create table datatypes.json_core (
+drop table if exists datatypes_json_core;
+create table datatypes_json_core (
   rowid integer not null primary key auto_increment,
   value json null
 );
 
-insert into datatypes.json_core (value)
+insert into datatypes_json_core (value)
 values
   (null),
   ('null'),
@@ -183,18 +188,6 @@ values
   ('{}'),
   ('{""a"": ""b""}');
 ");
-			}
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			try
-			{
-				// Connection.Execute("drop schema datatypes;");
-			}
-			finally
-			{
-				base.Dispose(disposing);
 			}
 		}
 	}
