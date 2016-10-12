@@ -22,6 +22,7 @@ namespace MySql.Data.MySqlClient
 			try
 			{
 				MySqlSession session;
+
 				// check for a pooled session
 				if (m_sessions.TryDequeue(out session))
 				{
@@ -37,6 +38,7 @@ namespace MySql.Data.MySqlClient
 						{
 							await session.ResetConnectionAsync(m_userId, m_password, m_database, ioBehavior, cancellationToken).ConfigureAwait(false);
 						}
+
 						// pooled session is ready to be used; return it
 						return session;
 					}
@@ -125,7 +127,7 @@ namespace MySql.Data.MySqlClient
 			if (!s_pools.TryGetValue(key, out pool))
 			{
 				pool = s_pools.GetOrAdd(key, newKey => new ConnectionPool(csb.Server.Split(','), (int) csb.Port, csb.UserID,
-						csb.Password, csb.Database, csb.ConnectionReset, (int)csb.MinimumPoolSize, (int) csb.MaximumPoolSize));
+					csb.Password, csb.Database, csb.ConnectionReset, (int) csb.MinimumPoolSize, (int) csb.MaximumPoolSize));
 			}
 			return pool;
 		}

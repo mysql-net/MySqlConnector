@@ -123,15 +123,25 @@ namespace MySql.Data.MySqlClient
 						throw new InvalidOperationException("Unexpected state: {0}".FormatInvariant(state));
 
 					if (ch == '-')
+					{
 						state = State.Hyphen;
+					}
 					else if (ch == '/')
+					{
 						state = State.ForwardSlash;
+					}
 					else if (ch == '\'')
+					{
 						state = State.SingleQuotedString;
+					}
 					else if (ch == '"')
+					{
 						state = State.DoubleQuotedString;
+					}
 					else if (ch == '`')
+					{
 						state = State.BacktickQuotedString;
+					}
 					else if (ch == '?')
 					{
 						state = State.QuestionMark;
