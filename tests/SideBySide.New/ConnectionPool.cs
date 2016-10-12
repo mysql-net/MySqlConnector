@@ -28,24 +28,6 @@ namespace SideBySide
 			csb.Pooling = true;
 			csb.MaximumPoolSize = (uint) poolSize; // use a different pool size to create a unique connection string to force a unique pool to be created
 
-#if BASELINE
-			if (true.Equals(connectionReset))
-			{
-				using (var connection = new MySqlConnection(csb.ConnectionString))
-				{
-					connection.Open();
-					using (var command = connection.CreateCommand())
-					{
-						command.CommandText = "create schema if not exists test;";
-						command.ExecuteNonQuery();
-					}
-				}
-
-				// baseline connector needs to have a database specified in the connection string to reauth properly (which is how connection reset is implemented prior to MySQL 5.7.3)
-				csb.Database = "test";
-			}
-#endif
-
 			if (connectionReset != null)
 				csb.ConnectionReset = (bool) connectionReset;
 

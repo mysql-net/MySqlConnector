@@ -26,13 +26,13 @@ namespace SideBySide
 		[Fact]
 		public void Commit()
 		{
-			m_connection.Execute("delete from transactions.test");
+			m_connection.Execute("delete from transactions_test");
 			using (var trans = m_connection.BeginTransaction())
 			{
-				m_connection.Execute("insert into transactions.test values(1), (2)", transaction: trans);
+				m_connection.Execute("insert into transactions_test values(1), (2)", transaction: trans);
 				trans.Commit();
 			}
-			var results = m_connection.Query<int>(@"select value from transactions.test order by value;");
+			var results = m_connection.Query<int>(@"select value from transactions_test order by value;");
 			Assert.Equal(new[] { 1, 2 }, results);
 		}
 
@@ -40,13 +40,13 @@ namespace SideBySide
 		[Fact]
 		public async Task CommitAsync()
 		{
-			await m_connection.ExecuteAsync("delete from transactions.test").ConfigureAwait(false);
+			await m_connection.ExecuteAsync("delete from transactions_test").ConfigureAwait(false);
 			using (var trans = await m_connection.BeginTransactionAsync().ConfigureAwait(false))
 			{
-				await m_connection.ExecuteAsync("insert into transactions.test values(1), (2)", transaction: trans).ConfigureAwait(false);
+				await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
 				await trans.CommitAsync().ConfigureAwait(false);
 			}
-			var results = await m_connection.QueryAsync<int>(@"select value from transactions.test order by value;").ConfigureAwait(false);
+			var results = await m_connection.QueryAsync<int>(@"select value from transactions_test order by value;").ConfigureAwait(false);
 			Assert.Equal(new[] { 1, 2 }, results);
 		}
 #endif
@@ -54,13 +54,13 @@ namespace SideBySide
 		[Fact]
 		public void Rollback()
 		{
-			m_connection.Execute("delete from transactions.test");
+			m_connection.Execute("delete from transactions_test");
 			using (var trans = m_connection.BeginTransaction())
 			{
-				m_connection.Execute("insert into transactions.test values(1), (2)", transaction: trans);
+				m_connection.Execute("insert into transactions_test values(1), (2)", transaction: trans);
 				trans.Rollback();
 			}
-			var results = m_connection.Query<int>(@"select value from transactions.test order by value;");
+			var results = m_connection.Query<int>(@"select value from transactions_test order by value;");
 			Assert.Equal(new int[0], results);
 		}
 
@@ -68,13 +68,13 @@ namespace SideBySide
 		[Fact]
 		public async Task RollbackAsync()
 		{
-			await m_connection.ExecuteAsync("delete from transactions.test").ConfigureAwait(false);
+			await m_connection.ExecuteAsync("delete from transactions_test").ConfigureAwait(false);
 			using (var trans = await m_connection.BeginTransactionAsync().ConfigureAwait(false))
 			{
-				await m_connection.ExecuteAsync("insert into transactions.test values(1), (2)", transaction: trans).ConfigureAwait(false);
+				await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
 				await trans.RollbackAsync().ConfigureAwait(false);
 			}
-			var results = await m_connection.QueryAsync<int>(@"select value from transactions.test order by value;").ConfigureAwait(false);
+			var results = await m_connection.QueryAsync<int>(@"select value from transactions_test order by value;").ConfigureAwait(false);
 			Assert.Equal(new int[0], results);
 		}
 #endif
@@ -82,12 +82,12 @@ namespace SideBySide
 		[Fact]
 		public void NoCommit()
 		{
-			m_connection.Execute("delete from transactions.test");
+			m_connection.Execute("delete from transactions_test");
 			using (var trans = m_connection.BeginTransaction())
 			{
-				m_connection.Execute("insert into transactions.test values(1), (2)", transaction: trans);
+				m_connection.Execute("insert into transactions_test values(1), (2)", transaction: trans);
 			}
-			var results = m_connection.Query<int>(@"select value from transactions.test order by value;");
+			var results = m_connection.Query<int>(@"select value from transactions_test order by value;");
 			Assert.Equal(new int[0], results);
 		}
 

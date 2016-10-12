@@ -95,7 +95,7 @@ namespace SideBySide
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = Invariant($"select {column} from datatypes.integers order by rowid");
+				cmd.CommandText = Invariant($"select {column} from datatypes_integers order by rowid");
 				using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
 				{
 					for (int i = 0; i < flags.Length; i++)
@@ -263,13 +263,12 @@ namespace SideBySide
 		{
 			var csb = Constants.CreateConnectionStringBuilder();
 			csb.OldGuids = oldGuids;
-			csb.Database = "datatypes";
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				connection.Open();
 				using (var cmd = connection.CreateCommand())
 				{
-					cmd.CommandText = @"select guidbin from blobs order by rowid;";
+					cmd.CommandText = @"select guidbin from datatypes_blobs order by rowid;";
 					using (var reader = cmd.ExecuteReader())
 					{
 						Assert.True(reader.Read());
@@ -292,7 +291,7 @@ namespace SideBySide
 						Assert.False(reader.Read());
 					}
 
-					cmd.CommandText = @"select guidbin from strings order by rowid;";
+					cmd.CommandText = @"select guidbin from datatypes_strings order by rowid;";
 					using (var reader = cmd.ExecuteReader())
 					{
 						Assert.True(reader.Read());
@@ -322,13 +321,12 @@ namespace SideBySide
 		{
 			var csb = Constants.CreateConnectionStringBuilder();
 			csb.OldGuids = oldGuids;
-			csb.Database = "datatypes";
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				await connection.OpenAsync().ConfigureAwait(false);
-				Assert.Equal(oldGuids? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from strings where guid = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
-				Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from strings where guidbin = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
-				Assert.Equal(oldGuids ? 1L : 0L, (await connection.QueryAsync<long>(@"select count(*) from blobs where guidbin = @guid", new { guid = new Guid(0x33221100, 0x5544, 0x7766, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF) }).ConfigureAwait(false)).SingleOrDefault());
+				Assert.Equal(oldGuids? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guid = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
+				Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guidbin = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
+				Assert.Equal(oldGuids ? 1L : 0L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_blobs where guidbin = @guid", new { guid = new Guid(0x33221100, 0x5544, 0x7766, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF) }).ConfigureAwait(false)).SingleOrDefault());
 			}
 		}
 
@@ -341,7 +339,7 @@ namespace SideBySide
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = Invariant($"select `{column}` from datatypes.guids order by rowid");
+				cmd.CommandText = Invariant($"select `{column}` from datatypes_guids order by rowid");
 				using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
 				{
 					Assert.Equal(fieldType, reader.GetFieldType(0));
@@ -394,7 +392,6 @@ namespace SideBySide
 		{
 			var csb = Constants.CreateConnectionStringBuilder();
 			csb.ConvertZeroDateTime = convertZeroDateTime;
-			csb.Database = "datatypes";
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				connection.Open();
@@ -477,7 +474,7 @@ namespace SideBySide
 			var data = CreateByteArray(size);
 
 			long lastInsertId;
-			using (var cmd = new MySqlCommand(Invariant($"insert into datatypes.blobs(`{column}`) values(?)"), m_database.Connection)
+			using (var cmd = new MySqlCommand(Invariant($"insert into datatypes_blobs(`{column}`) values(?)"), m_database.Connection)
 			{
 				Parameters = { new MySqlParameter { Value = data } }
 			})
@@ -486,10 +483,10 @@ namespace SideBySide
 				lastInsertId = cmd.LastInsertedId;
 			}
 
-			var queryResult = (await m_database.Connection.QueryAsync<byte[]>(Invariant($"select `{column}` from datatypes.blobs where rowid = {lastInsertId}")).ConfigureAwait(false)).Single();
+			var queryResult = (await m_database.Connection.QueryAsync<byte[]>(Invariant($"select `{column}` from datatypes_blobs where rowid = {lastInsertId}")).ConfigureAwait(false)).Single();
 			TestUtilities.AssertEqual(data, queryResult);
 
-			await m_database.Connection.ExecuteAsync(Invariant($"delete from datatypes.blobs where rowid = {lastInsertId}")).ConfigureAwait(false);
+			await m_database.Connection.ExecuteAsync(Invariant($"delete from datatypes_blobs where rowid = {lastInsertId}")).ConfigureAwait(false);
 		}
 
 		[Theory]
@@ -507,7 +504,7 @@ namespace SideBySide
 			var data = CreateByteArray(size);
 
 			long lastInsertId;
-			using (var cmd = new MySqlCommand(Invariant($"insert into datatypes.blobs(`{column}`) values(?)"), m_database.Connection)
+			using (var cmd = new MySqlCommand(Invariant($"insert into datatypes_blobs(`{column}`) values(?)"), m_database.Connection)
 			{
 				Parameters = { new MySqlParameter { Value = data } }
 			})
@@ -516,10 +513,10 @@ namespace SideBySide
 				lastInsertId = cmd.LastInsertedId;
 			}
 
-			var queryResult = m_database.Connection.Query<byte[]>(Invariant($"select `{column}` from datatypes.blobs where rowid = {lastInsertId}")).Single();
+			var queryResult = m_database.Connection.Query<byte[]>(Invariant($"select `{column}` from datatypes_blobs where rowid = {lastInsertId}")).Single();
 			TestUtilities.AssertEqual(data, queryResult);
 
-			m_database.Connection.Execute(Invariant($"delete from datatypes.blobs where rowid = {lastInsertId}"));
+			m_database.Connection.Execute(Invariant($"delete from datatypes_blobs where rowid = {lastInsertId}"));
 		}
 
 		private static byte[] CreateByteArray(int size)
@@ -541,7 +538,7 @@ namespace SideBySide
 		{
 			if (TestUtilities.SupportsJson(m_database.Connection.ServerVersion))
 			{
-				var types = m_database.Connection.Query<string>(@"select JSON_TYPE(value) from datatypes.json_core order by rowid;").ToList();
+				var types = m_database.Connection.Query<string>(@"select JSON_TYPE(value) from datatypes_json_core order by rowid;").ToList();
 				Assert.Equal(expectedTypes, types);
 			}
 		}
@@ -581,7 +578,7 @@ namespace SideBySide
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = Invariant($"select {column} from datatypes.{table} order by rowid");
+				cmd.CommandText = Invariant($"select {column} from datatypes_{table} order by rowid");
 				using (var reader = cmd.ExecuteReader())
 				{
 					Assert.Equal(dataTypeName, reader.GetDataTypeName(0));
@@ -613,7 +610,7 @@ namespace SideBySide
 
 				if (!omitWhereTest)
 				{
-					cmd.CommandText = Invariant($"select rowid from datatypes.{table} where {column} = @value");
+					cmd.CommandText = Invariant($"select rowid from datatypes_{table} where {column} = @value");
 					var p = cmd.CreateParameter();
 					p.ParameterName = "@value";
 					p.Value = expected.Last();
