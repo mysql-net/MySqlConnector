@@ -138,7 +138,7 @@ namespace MySql.Data.MySqlClient
 				await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
-		private ConnectionPool(IEnumerable<string> servers, int port, string userId, string password, string database, SslMode sslMode,
+		private ConnectionPool(IEnumerable<string> servers, int port, string userId, string password, string database, MySqlSslMode sslMode,
 			string certificateFile, string certificatePassword, bool resetConnections, int minimumSize, int maximumSize)
 		{
 			m_servers = servers;
@@ -169,7 +169,7 @@ namespace MySql.Data.MySqlClient
 		readonly string m_userId;
 		readonly string m_password;
 		readonly string m_database;
-		readonly SslMode m_sslMode;
+		readonly MySqlSslMode m_sslMode;
 		readonly string m_certificateFile;
 		readonly string m_certificatePassword;
 		readonly bool m_resetConnections;
