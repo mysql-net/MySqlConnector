@@ -12,6 +12,10 @@ may leave the `MySqlConnection` in an unusable state.
 
 ## Release Notes
 
+### 0.4.0
+
+* Rename `SslMode` enum to `MySqlSslMode` (for compatibility with `MySql.Data`):[#102](https://github.com/bgrainger/MySqlConnector/pull/93).
+
 ### 0.3.0
 
 * Add SSL support and `SslMode` connection string option: [#88](https://github.com/bgrainger/MySqlConnector/issues/88).
