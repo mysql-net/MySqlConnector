@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using MySql.Data.Serialization;
 
 namespace MySql.Data.Protocol.Serialization
 {

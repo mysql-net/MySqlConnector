@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using MySql.Data.Serialization;
 
 namespace MySql.Data.Protocol.Serialization
 {
