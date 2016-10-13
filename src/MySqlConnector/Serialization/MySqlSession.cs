@@ -147,7 +147,7 @@ namespace MySql.Data.Serialization
 						sslStream.AuthenticateAsClient(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation);
 #endif
 					}
-					var sslByteHandler = new SslByteHandler(sslStream);
+					var sslByteHandler = new StreamByteHandler(sslStream);
 					m_payloadHandler.SetByteHandler(sslByteHandler);
 				}
 				catch (AuthenticationException ex)
