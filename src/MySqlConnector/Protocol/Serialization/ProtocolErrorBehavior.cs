@@ -1,4 +1,4 @@
-﻿namespace MySql.Data.Serialization
+﻿namespace MySql.Data.Protocol.Serialization
 {
 	/// <summary>
 	/// Specifies how to handle protocol errors.
