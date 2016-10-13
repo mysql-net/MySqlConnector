@@ -5,14 +5,6 @@ using System.Globalization;
 
 namespace MySql.Data.MySqlClient
 {
-	public enum SslMode
-	{
-		None,
-		Required,
-		VerifyCa,
-		VerifyFull,
-	}
-
 	public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	{
 		public MySqlConnectionStringBuilder()
@@ -90,7 +82,7 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.UseCompression.SetValue(this, value); }
 		}
 
-		public SslMode SslMode
+		public MySqlSslMode SslMode
 		{
 			get { return MySqlConnectionStringOption.SslMode.GetValue(this); }
 			set { MySqlConnectionStringOption.SslMode.SetValue(this, value); }
@@ -205,7 +197,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<bool> OldGuids;
 		public static readonly MySqlConnectionStringOption<bool> PersistSecurityInfo;
 		public static readonly MySqlConnectionStringOption<bool> UseCompression;
-		public static readonly MySqlConnectionStringOption<SslMode> SslMode;
+		public static readonly MySqlConnectionStringOption<MySqlSslMode> SslMode;
 		public static readonly MySqlConnectionStringOption<string> CertificateFile;
 		public static readonly MySqlConnectionStringOption<string> CertificatePassword;
 		public static readonly MySqlConnectionStringOption<bool> Pooling;
@@ -296,15 +288,15 @@ namespace MySql.Data.MySqlClient
 
 			AddOption(CertificateFile = new MySqlConnectionStringOption<string>(
 				keys: new[] { "CertificateFile", "Certificate File" },
-				defaultValue: ""));
+				defaultValue: null));
 
 			AddOption(CertificatePassword = new MySqlConnectionStringOption<string>(
 				keys: new[] { "CertificatePassword", "Certificate Password" },
-				defaultValue: ""));
+				defaultValue: null));
 
-			AddOption(SslMode = new MySqlConnectionStringOption<SslMode>(
+			AddOption(SslMode = new MySqlConnectionStringOption<MySqlSslMode>(
 				keys: new[] { "SSL Mode", "SslMode" },
-				defaultValue: MySqlClient.SslMode.None));
+				defaultValue: MySqlSslMode.None));
 
 			AddOption(Pooling = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Pooling" },
@@ -375,7 +367,7 @@ namespace MySql.Data.MySqlClient
 					return (T) (object) false;
 			}
 
-			if (typeof(T) == typeof(SslMode) && objectValue is string)
+			if (typeof(T) == typeof(MySqlSslMode) && objectValue is string)
 			{
 				foreach (var val in Enum.GetValues(typeof(T)))
 				{

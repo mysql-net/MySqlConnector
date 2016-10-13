@@ -35,9 +35,14 @@ namespace MySql.Data.Tests
 			Assert.Equal("", csb.Server);
 			Assert.Equal(false, csb.UseCompression);
 			Assert.Equal("", csb.UserID);
-			Assert.Equal(SslMode.None, csb.SslMode);
-			Assert.Equal("", csb.CertificateFile);
-			Assert.Equal("", csb.CertificatePassword);
+#if BASELINE
+			Assert.Equal(MySqlSslMode.Prefered, csb.SslMode);
+#else
+			// this library doesn't support MySQL's "Preferred" option
+			Assert.Equal(MySqlSslMode.None, csb.SslMode);
+#endif
+			Assert.Equal(null, csb.CertificateFile);
+			Assert.Equal(null, csb.CertificatePassword);
 #if !BASELINE
 			Assert.Equal(false, csb.ForceSynchronous);
 #endif
@@ -70,7 +75,7 @@ namespace MySql.Data.Tests
 			Assert.Equal(false, csb.UseAffectedRows);
 			Assert.Equal(true, csb.UseCompression);
 			Assert.Equal("username", csb.UserID);
-			Assert.Equal(SslMode.VerifyCa, csb.SslMode);
+			Assert.Equal(MySqlSslMode.VerifyCA, csb.SslMode);
 			Assert.Equal("file.pfx", csb.CertificateFile);
 			Assert.Equal("Pass1234", csb.CertificatePassword);
 #if !BASELINE

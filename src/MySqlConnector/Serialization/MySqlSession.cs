@@ -72,7 +72,7 @@ namespace MySql.Data.Serialization
 		}
 
 		public async Task ConnectAsync(IEnumerable<string> hosts, int port, string userId, string password, string database,
-			SslMode sslMode, string certificateFile, string certificatePassword, IOBehavior ioBehavior, CancellationToken cancellationToken)
+			MySqlSslMode sslMode, string certificateFile, string certificatePassword, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			var connected = await OpenSocketAsync(hosts, port, ioBehavior, cancellationToken).ConfigureAwait(false);
 			if (!connected)
@@ -87,7 +87,7 @@ namespace MySql.Data.Serialization
 			ConnectionId = initialHandshake.ConnectionId;
 			AuthPluginData = initialHandshake.AuthPluginData;
 
-			if (sslMode != SslMode.None)
+			if (sslMode != MySqlSslMode.None)
 			{
 				X509Certificate2 certificate;
 				try
@@ -112,9 +112,9 @@ namespace MySql.Data.Serialization
 						case SslPolicyErrors.None:
 							return true;
 						case SslPolicyErrors.RemoteCertificateNameMismatch:
-							return sslMode != SslMode.VerifyFull;
+							return sslMode != MySqlSslMode.VerifyFull;
 						default:
-							return sslMode == SslMode.Required;
+							return sslMode == MySqlSslMode.Required;
 					}
 				};
 
@@ -128,7 +128,7 @@ namespace MySql.Data.Serialization
 				if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 					sslProtocols |= SslProtocols.Tls12;
 
-				var checkCertificateRevocation = sslMode == SslMode.VerifyFull;
+				var checkCertificateRevocation = sslMode == MySqlSslMode.VerifyFull;
 
 				var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Packet.InitSsl(database)));
 				await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
