@@ -6,60 +6,51 @@ using MySql.Data.Serialization;
 
 namespace MySql.Data.Protocol.Serialization
 {
-	internal sealed class PacketHandler : IPacketHandler
+	internal sealed class PacketHandler
 	{
-
-		public PacketHandler(IByteHandler byteHandler)
+		public PacketHandler(IProtocolLayer protocolLayer)
 		{
-			m_byteHandler = byteHandler;
-			m_buffer = new byte[16384];
-		}
-
-		public void SetByteHandler(IByteHandler byteHandler)
-		{
-			m_byteHandler = byteHandler;
+			m_protocolLayer = protocolLayer;
 		}
 
 		public ValueTask<Packet> ReadPacketAsync(ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
-			return ReadBytesAsync(0, m_buffer, 0, 4, ioBehavior)
-				.ContinueWith(headerBytesRead =>
+			return m_protocolLayer.ReadAsync(4, protocolErrorBehavior, ioBehavior)
+				.ContinueWith(headerBytes =>
 				{
-					if (headerBytesRead < 4)
+					if (headerBytes.Count < 4)
 					{
 						return protocolErrorBehavior == ProtocolErrorBehavior.Throw ?
 							ValueTaskExtensions.FromException<Packet>(new EndOfStreamException()) :
 							default(ValueTask<Packet>);
 					}
 
-					var payloadLength = (int) SerializationUtility.ReadUInt32(m_buffer, 0, 3);
-					int sequenceNumber = m_buffer[3];
+					var payloadLength = (int) SerializationUtility.ReadUInt32(headerBytes.Array, headerBytes.Offset, 3);
+					int sequenceNumber = headerBytes.Array[headerBytes.Offset + 3];
 
-					var buffer = payloadLength <= m_buffer.Length ? m_buffer : new byte[payloadLength];
-					return ReadBytesAsync(0, buffer, 0, payloadLength, ioBehavior)
-						.ContinueWith(payloadBytesRead =>
+					return m_protocolLayer.ReadAsync(payloadLength, protocolErrorBehavior, ioBehavior)
+						.ContinueWith(payloadBytes =>
 						{
-							if (payloadBytesRead < payloadLength)
+							if (payloadBytes.Count < payloadLength)
 							{
 								return protocolErrorBehavior == ProtocolErrorBehavior.Throw ?
 									ValueTaskExtensions.FromException<Packet>(new EndOfStreamException()) :
 									default(ValueTask<Packet>);
 							}
 
-							return new ValueTask<Packet>(new Packet(sequenceNumber, new ArraySegment<byte>(buffer, 0, payloadLength)));
+							return new ValueTask<Packet>(new Packet(sequenceNumber, payloadBytes));
 						});
 				});
 		}
 
-		public ValueTask<int> WritePacketAsync(Packet packet, IOBehavior ioBehavior)
+		public ValueTask<int> WritePacketAsync(int sequenceNumber, ArraySegment<byte> contents, IOBehavior ioBehavior)
 		{
-			var packetLength = packet.Contents.Count;
-			var bufferLength = packetLength + 4;
+			var bufferLength = contents.Count + 4;
 			var buffer = ArrayPool<byte>.Shared.Rent(bufferLength);
-			SerializationUtility.WriteUInt32((uint) packetLength, buffer, 0, 3);
-			buffer[3] = (byte) packet.SequenceNumber;
-			Buffer.BlockCopy(packet.Contents.Array, packet.Contents.Offset, buffer, 4, packetLength);
-			return m_byteHandler.WriteBytesAsync(new ArraySegment<byte>(buffer, 0, bufferLength), ioBehavior)
+			SerializationUtility.WriteUInt32((uint) contents.Count, buffer, 0, 3);
+			buffer[3] = (byte) sequenceNumber;
+			Buffer.BlockCopy(contents.Array, contents.Offset, buffer, 4, contents.Count);
+			return m_protocolLayer.WriteAsync(new ArraySegment<byte>(buffer, 0, bufferLength), ioBehavior)
 				.ContinueWith(x =>
 				{
 					ArrayPool<byte>.Shared.Return(buffer);
@@ -67,19 +58,6 @@ namespace MySql.Data.Protocol.Serialization
 				});
 		}
 
-		private ValueTask<int> ReadBytesAsync(int previousBytesRead, byte[] buffer, int offset, int count, IOBehavior ioBehavior)
-		{
-			return m_byteHandler.ReadBytesAsync(buffer, offset, count, ioBehavior)
-				.ContinueWith(bytesRead =>
-				{
-					if (bytesRead == 0 || bytesRead == count)
-						return new ValueTask<int>(previousBytesRead + bytesRead);
-
-					return ReadBytesAsync(previousBytesRead + bytesRead, buffer, offset + bytesRead, count - bytesRead, ioBehavior);
-				});
-		}
-
-		private IByteHandler m_byteHandler;
-		private readonly byte[] m_buffer;
+		private readonly IProtocolLayer m_protocolLayer;
 	}
 }
