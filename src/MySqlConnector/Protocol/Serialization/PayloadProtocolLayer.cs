@@ -6,9 +6,9 @@ namespace MySql.Data.Protocol.Serialization
 	internal sealed class PayloadProtocolLayer : BaseProtocolLayer
 	{
 		public PayloadProtocolLayer(IProtocolLayer nextLayer)
-			: base(nextLayer)
+			: base(new BufferedReadProtocolLayer(nextLayer))
 		{
-			m_packetHandler = new PacketHandler(nextLayer);
+			m_packetHandler = new PacketHandler(NextLayer);
 		}
 
 		public override ValueTask<ArraySegment<byte>> ReadAsync(int? count, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
@@ -45,12 +45,6 @@ namespace MySql.Data.Protocol.Serialization
 		{
 			m_sequenceNumber = 0;
 			base.OnStartNewConveration();
-		}
-
-		protected override void OnNextLayerChanged()
-		{
-			m_packetHandler = new PacketHandler(NextLayer);
-			base.OnNextLayerChanged();
 		}
 
 		private ValueTask<ArraySegment<byte>> ReadPayloadAsync(ArraySegment<byte> previousPayloads, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
