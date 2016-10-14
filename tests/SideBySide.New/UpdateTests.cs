@@ -148,7 +148,7 @@ create table update_station (
 	externalWebsite text,
 	externalTitle text
 );
-insert into update_station values(1, 'name', 2, null, null, null, false, '2016-09-07 06:28:00', 'https://github.com/bgrainger/MySqlConnector/issues/44', 'Issue #44');
+insert into update_station values(1, 'name', 2, null, null, null, false, '2016-09-07 06:28:00', 'https://github.com/mysql-net/MySqlConnector/issues/44', 'Issue #44');
 ").ConfigureAwait(false);
 
 			var queryString = @"UPDATE update_station SET name=@name,stationType_SID=@stationType_SID,geoPosition_SID=@geoPosition_SID,service_start=@service_start,service_end=@service_end,deleted=@deleted,created_on=@created_on,externalWebsite=@externalWebsite,externalTitle=@externalTitle WHERE SID=@SID";

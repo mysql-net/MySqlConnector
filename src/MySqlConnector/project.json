@@ -11,10 +11,10 @@
 		"tags": [ "mysql", "async", "ado.net", "database", "netcore"  ],
 		"releaseNotes": "Fix MySqlSslMode enum type. (GitHub PR #102)",
 		"licenseUrl": "https://opensource.org/licenses/MIT",
-		"projectUrl": "https://github.com/bgrainger/MySqlConnector",
+		"projectUrl": "https://github.com/mysql-net/MySqlConnector",
 		"repository": {
 			"type": "git",
-			"url": "https://github.com/bgrainger/MySqlConnector.git"
+			"url": "https://github.com/mysql-net/MySqlConnector.git"
 		}
 	},
 	"authors": [ "Bradley Grainger", "Caleb Lloyd" ],

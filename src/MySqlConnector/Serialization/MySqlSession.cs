@@ -123,7 +123,7 @@ namespace MySql.Data.Serialization
 					new LocalCertificateSelectionCallback(localCertificateCb));
 				var clientCertificates = new X509CertificateCollection { certificate };
 
-				// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/bgrainger/MySqlConnector/pull/101
+				// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/mysql-net/MySqlConnector/pull/101
 				var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
 				if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 					sslProtocols |= SslProtocols.Tls12;
