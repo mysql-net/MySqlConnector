@@ -168,7 +168,8 @@ namespace MySql.Data.Serialization
 			var response = HandshakeResponse41Packet.Create(initialHandshake, userId, password, database);
 			payload = new PayloadData(new ArraySegment<byte>(response));
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-			await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			OkPayload.Create(payload);
 		}
 
 		public async Task ResetConnectionAsync(string userId, string password, string database, IOBehavior ioBehavior, CancellationToken cancellationToken)
