@@ -19,7 +19,18 @@ namespace MySql.Data.Protocol.Serialization
 
 		public abstract ValueTask<int> FlushAsync(IOBehavior ioBehavior);
 
-		public IProtocolLayer NextLayer { get; private set; }
+		public IProtocolLayer NextLayer
+		{
+			get
+			{
+				return m_nextLayer;
+			}
+			private set
+			{
+				m_nextLayer = value;
+				OnNextLayerChanged();
+			}
+		}
 
 		public void Inject(IProtocolLayer injectedLayer)
 		{
@@ -30,7 +41,6 @@ namespace MySql.Data.Protocol.Serialization
 			{
 				// upgrade from sockets to SSL
 				NextLayer = injectedLayer;
-				OnNextLayerChanged();
 			}
 			else if (NextLayer != null)
 			{
@@ -62,5 +72,7 @@ namespace MySql.Data.Protocol.Serialization
 		protected virtual void OnNextLayerChanged()
 		{
 		}
+
+		private IProtocolLayer m_nextLayer;
 	}
 }
