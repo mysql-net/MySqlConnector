@@ -19,5 +19,6 @@ before_test:
 test_script:
 - cmd: |-
     dotnet test tests\MySqlConnector.Tests --configuration Release
-    dotnet test tests\SideBySide.New --configuration Release
+    echo Executing tests with No Compression, No SSL && copy /y tests\SideBySide.New\config.json.example tests\SideBySide.New\config.json && dotnet test tests/SideBySide.New --configuration Release
+    echo Executing tests with Compression, No SSL && copy /y .ci\config.compression.json tests\SideBySide.New\config.json && dotnet test tests/SideBySide.New --configuration Release
     packages\xunit.runner.console.2.1.0\tools\xunit.console.exe tests\SideBySide.Baseline\bin\Release\SideBySide.Baseline.dll
