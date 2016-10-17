@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Api-rss on MySqlConnector: Async MySQL Driver for .NET and .NET Core</title>
+    <link>mysql-net.github.io/MySqlConnector/api/index.xml</link>
+    <description>Recent content in Api-rss on MySqlConnector: Async MySQL Driver for .NET and .NET Core</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Sun, 16 Oct 2016 00:00:00 +0000</lastBuildDate>
+    <atom:link href="mysql-net.github.io/MySqlConnector/api/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>DbConnection</title>
+      <link>/mysql-net.github.io/MySqlConnector/api/db-connection/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/mysql-net.github.io/MySqlConnector/api/db-connection/</guid>
+      <description>
+
+&lt;h1 id=&#34;db-connection&#34;&gt;DB Connection&lt;/h1&gt;
+
+&lt;p&gt;DB Connection&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>DbCommand</title>
+      <link>/mysql-net.github.io/MySqlConnector/api/db-command/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/mysql-net.github.io/MySqlConnector/api/db-command/</guid>
+      <description>
+
+&lt;h1 id=&#34;db-command&#34;&gt;DB Command&lt;/h1&gt;
+
+&lt;p&gt;DB Command&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Result Set</title>
+      <link>/mysql-net.github.io/MySqlConnector/api/result-set/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/mysql-net.github.io/MySqlConnector/api/result-set/</guid>
+      <description>
+
+&lt;h1 id=&#34;result-set&#34;&gt;Result Set&lt;/h1&gt;
+
+&lt;p&gt;Result Set&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Transaction</title>
+      <link>/mysql-net.github.io/MySqlConnector/api/transaction/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/mysql-net.github.io/MySqlConnector/api/transaction/</guid>
+      <description>
+
+&lt;h1 id=&#34;transaction&#34;&gt;Transaction&lt;/h1&gt;
+
+&lt;p&gt;Transaction&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

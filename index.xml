@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>MySqlConnector: Async MySQL Driver for .NET and .NET Core</title>
+    <link>mysql-net.github.io/MySqlConnector/index.xml</link>
+    <description>Recent content on MySqlConnector: Async MySQL Driver for .NET and .NET Core</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Sun, 16 Oct 2016 00:00:00 +0000</lastBuildDate>
+    <atom:link href="mysql-net.github.io/MySqlConnector/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>DbConnection</title>
+      <link>/mysql-net.github.io/MySqlConnector/api/db-connection/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/mysql-net.github.io/MySqlConnector/api/db-connection/</guid>
+      <description>
+
+&lt;h1 id=&#34;db-connection&#34;&gt;DB Connection&lt;/h1&gt;
+
+&lt;p&gt;DB Connection&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Home</title>
+      <link>/mysql-net.github.io/MySqlConnector/home/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/mysql-net.github.io/MySqlConnector/home/</guid>
+      <description>
+
+&lt;h1 id=&#34;home&#34;&gt;Home&lt;/h1&gt;
+
+&lt;p&gt;Here is some C# code&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;c#&#34;&gt;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using MySqlConnector.Performance.Models;
+
+namespace MySqlConnector.Performance.Controllers
+{
+    [Route(&#34;api/[controller]&#34;)]
+    public class AsyncController : Controller
+    {
+        // GET api/async
+        [HttpGet]
+        public async Task&lt;IActionResult&gt; Get()
+        {
+            using (var db = new AppDb())
+            {
+                await db.OpenAsync();
+                var cmd = BlogPost.LatestPosts(db);
+                var reader = await cmd.ExecuteReaderAsync();
+                var result = await BlogPost.ReadAllAsync(reader);
+                return new OkObjectResult(result);
+            }
+        }
+
+        // POST api/async
+        [HttpPost]
+        public async Task&lt;IActionResult&gt; Post([FromBody]BlogPost body)
+        {
+            using (var db = new AppDb())
+            {
+                await db.OpenAsync();
+                await BlogPost.InsertAsync(db, body);
+                return new OkObjectResult(body);
+            }
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Introduction</title>
+      <link>/mysql-net.github.io/MySqlConnector/overview/introduction/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/mysql-net.github.io/MySqlConnector/overview/introduction/</guid>
+      <description>
+
+&lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
+
+&lt;p&gt;Introduction&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Use with .NET Core MVC</title>
+      <link>/mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</guid>
+      <description>
+
+&lt;h1 id=&#34;net-core-mvc&#34;&gt;.NET Core MVC&lt;/h1&gt;
+
+&lt;p&gt;.NET Core MVC&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>DbCommand</title>
+      <link>/mysql-net.github.io/MySqlConnector/api/db-command/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/mysql-net.github.io/MySqlConnector/api/db-command/</guid>
+      <description>
+
+&lt;h1 id=&#34;db-command&#34;&gt;DB Command&lt;/h1&gt;
+
+&lt;p&gt;DB Command&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Installing</title>
+      <link>/mysql-net.github.io/MySqlConnector/overview/installing/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/mysql-net.github.io/MySqlConnector/overview/installing/</guid>
+      <description>
+
+&lt;h1 id=&#34;installing&#34;&gt;Installing&lt;/h1&gt;
+
+&lt;p&gt;Installing&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Configuration</title>
+      <link>/mysql-net.github.io/MySqlConnector/overview/configuration/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/mysql-net.github.io/MySqlConnector/overview/configuration/</guid>
+      <description>
+
+&lt;h1 id=&#34;configuration&#34;&gt;Configuration&lt;/h1&gt;
+
+&lt;p&gt;Configuration&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Connection Options</title>
+      <link>/mysql-net.github.io/MySqlConnector/connection-options/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/mysql-net.github.io/MySqlConnector/connection-options/</guid>
+      <description>
+
+&lt;h1 id=&#34;connection-options&#34;&gt;Connection Options&lt;/h1&gt;
+
+&lt;p&gt;Connection Options&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Result Set</title>
+      <link>/mysql-net.github.io/MySqlConnector/api/result-set/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/mysql-net.github.io/MySqlConnector/api/result-set/</guid>
+      <description>
+
+&lt;h1 id=&#34;result-set&#34;&gt;Result Set&lt;/h1&gt;
+
+&lt;p&gt;Result Set&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Transaction</title>
+      <link>/mysql-net.github.io/MySqlConnector/api/transaction/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/mysql-net.github.io/MySqlConnector/api/transaction/</guid>
+      <description>
+
+&lt;h1 id=&#34;transaction&#34;&gt;Transaction&lt;/h1&gt;
+
+&lt;p&gt;Transaction&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
