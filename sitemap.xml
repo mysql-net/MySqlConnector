@@ -2,57 +2,57 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>/</loc>
+    <loc>/MySqlConnector/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/api/db-connection/</loc>
+    <loc>/MySqlConnector/api/db-connection/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/home/</loc>
+    <loc>/MySqlConnector/home/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/overview/introduction/</loc>
+    <loc>/MySqlConnector/overview/introduction/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/tutorials/net-core-mvc/</loc>
+    <loc>/MySqlConnector/tutorials/net-core-mvc/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/api/db-command/</loc>
+    <loc>/MySqlConnector/api/db-command/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/overview/installing/</loc>
+    <loc>/MySqlConnector/overview/installing/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/overview/configuration/</loc>
+    <loc>/MySqlConnector/overview/configuration/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/connection-options/</loc>
+    <loc>/MySqlConnector/connection-options/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/api/result-set/</loc>
+    <loc>/MySqlConnector/api/result-set/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/api/transaction/</loc>
+    <loc>/MySqlConnector/api/transaction/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
