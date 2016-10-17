@@ -2,57 +2,57 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>/mysql-net.github.io/MySqlConnector/</loc>
+    <loc>/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/mysql-net.github.io/MySqlConnector/api/db-connection/</loc>
+    <loc>/api/db-connection/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/mysql-net.github.io/MySqlConnector/home/</loc>
+    <loc>/home/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/mysql-net.github.io/MySqlConnector/overview/introduction/</loc>
+    <loc>/overview/introduction/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</loc>
+    <loc>/tutorials/net-core-mvc/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/mysql-net.github.io/MySqlConnector/api/db-command/</loc>
+    <loc>/api/db-command/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/mysql-net.github.io/MySqlConnector/overview/installing/</loc>
+    <loc>/overview/installing/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/mysql-net.github.io/MySqlConnector/overview/configuration/</loc>
+    <loc>/overview/configuration/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/mysql-net.github.io/MySqlConnector/connection-options/</loc>
+    <loc>/connection-options/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/mysql-net.github.io/MySqlConnector/api/result-set/</loc>
+    <loc>/api/result-set/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/mysql-net.github.io/MySqlConnector/api/transaction/</loc>
+    <loc>/api/transaction/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   

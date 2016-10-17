@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>MySqlConnector: Async MySQL Driver for .NET and .NET Core</title>
-    <link>mysql-net.github.io/MySqlConnector/index.xml</link>
+    <link>/index.xml</link>
     <description>Recent content on MySqlConnector: Async MySQL Driver for .NET and .NET Core</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Sun, 16 Oct 2016 00:00:00 +0000</lastBuildDate>
-    <atom:link href="mysql-net.github.io/MySqlConnector/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>DbConnection</title>
-      <link>/mysql-net.github.io/MySqlConnector/api/db-connection/</link>
+      <link>/api/db-connection/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/mysql-net.github.io/MySqlConnector/api/db-connection/</guid>
+      <guid>/api/db-connection/</guid>
       <description>
 
 &lt;h1 id=&#34;db-connection&#34;&gt;DB Connection&lt;/h1&gt;
@@ -24,10 +24,10 @@
     
     <item>
       <title>Home</title>
-      <link>/mysql-net.github.io/MySqlConnector/home/</link>
+      <link>/home/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/mysql-net.github.io/MySqlConnector/home/</guid>
+      <guid>/home/</guid>
       <description>
 
 &lt;h1 id=&#34;home&#34;&gt;Home&lt;/h1&gt;
@@ -77,10 +77,10 @@ namespace MySqlConnector.Performance.Controllers
     
     <item>
       <title>Introduction</title>
-      <link>/mysql-net.github.io/MySqlConnector/overview/introduction/</link>
+      <link>/overview/introduction/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/mysql-net.github.io/MySqlConnector/overview/introduction/</guid>
+      <guid>/overview/introduction/</guid>
       <description>
 
 &lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
@@ -91,10 +91,10 @@ namespace MySqlConnector.Performance.Controllers
     
     <item>
       <title>Use with .NET Core MVC</title>
-      <link>/mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</link>
+      <link>/tutorials/net-core-mvc/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</guid>
+      <guid>/tutorials/net-core-mvc/</guid>
       <description>
 
 &lt;h1 id=&#34;net-core-mvc&#34;&gt;.NET Core MVC&lt;/h1&gt;
@@ -105,10 +105,10 @@ namespace MySqlConnector.Performance.Controllers
     
     <item>
       <title>DbCommand</title>
-      <link>/mysql-net.github.io/MySqlConnector/api/db-command/</link>
+      <link>/api/db-command/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/mysql-net.github.io/MySqlConnector/api/db-command/</guid>
+      <guid>/api/db-command/</guid>
       <description>
 
 &lt;h1 id=&#34;db-command&#34;&gt;DB Command&lt;/h1&gt;
@@ -119,10 +119,10 @@ namespace MySqlConnector.Performance.Controllers
     
     <item>
       <title>Installing</title>
-      <link>/mysql-net.github.io/MySqlConnector/overview/installing/</link>
+      <link>/overview/installing/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/mysql-net.github.io/MySqlConnector/overview/installing/</guid>
+      <guid>/overview/installing/</guid>
       <description>
 
 &lt;h1 id=&#34;installing&#34;&gt;Installing&lt;/h1&gt;
@@ -133,10 +133,10 @@ namespace MySqlConnector.Performance.Controllers
     
     <item>
       <title>Configuration</title>
-      <link>/mysql-net.github.io/MySqlConnector/overview/configuration/</link>
+      <link>/overview/configuration/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/mysql-net.github.io/MySqlConnector/overview/configuration/</guid>
+      <guid>/overview/configuration/</guid>
       <description>
 
 &lt;h1 id=&#34;configuration&#34;&gt;Configuration&lt;/h1&gt;
@@ -147,10 +147,10 @@ namespace MySqlConnector.Performance.Controllers
     
     <item>
       <title>Connection Options</title>
-      <link>/mysql-net.github.io/MySqlConnector/connection-options/</link>
+      <link>/connection-options/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/mysql-net.github.io/MySqlConnector/connection-options/</guid>
+      <guid>/connection-options/</guid>
       <description>
 
 &lt;h1 id=&#34;connection-options&#34;&gt;Connection Options&lt;/h1&gt;
@@ -161,10 +161,10 @@ namespace MySqlConnector.Performance.Controllers
     
     <item>
       <title>Result Set</title>
-      <link>/mysql-net.github.io/MySqlConnector/api/result-set/</link>
+      <link>/api/result-set/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/mysql-net.github.io/MySqlConnector/api/result-set/</guid>
+      <guid>/api/result-set/</guid>
       <description>
 
 &lt;h1 id=&#34;result-set&#34;&gt;Result Set&lt;/h1&gt;
@@ -175,10 +175,10 @@ namespace MySqlConnector.Performance.Controllers
     
     <item>
       <title>Transaction</title>
-      <link>/mysql-net.github.io/MySqlConnector/api/transaction/</link>
+      <link>/api/transaction/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/mysql-net.github.io/MySqlConnector/api/transaction/</guid>
+      <guid>/api/transaction/</guid>
       <description>
 
 &lt;h1 id=&#34;transaction&#34;&gt;Transaction&lt;/h1&gt;
