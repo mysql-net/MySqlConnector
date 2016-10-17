@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Overview-rss on MySqlConnector: Async MySQL Driver for .NET and .NET Core</title>
-    <link>mysql-net.github.io/MySqlConnector/overview/index.xml</link>
+    <link>/MySqlConnector/overview/index.xml</link>
     <description>Recent content in Overview-rss on MySqlConnector: Async MySQL Driver for .NET and .NET Core</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Sun, 16 Oct 2016 00:00:00 +0000</lastBuildDate>
-    <atom:link href="mysql-net.github.io/MySqlConnector/overview/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="/MySqlConnector/overview/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Introduction</title>
-      <link>/mysql-net.github.io/MySqlConnector/overview/introduction/</link>
+      <link>/MySqlConnector/overview/introduction/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/mysql-net.github.io/MySqlConnector/overview/introduction/</guid>
+      <guid>/MySqlConnector/overview/introduction/</guid>
       <description>
 
 &lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
@@ -24,10 +24,10 @@
     
     <item>
       <title>Installing</title>
-      <link>/mysql-net.github.io/MySqlConnector/overview/installing/</link>
+      <link>/MySqlConnector/overview/installing/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/mysql-net.github.io/MySqlConnector/overview/installing/</guid>
+      <guid>/MySqlConnector/overview/installing/</guid>
       <description>
 
 &lt;h1 id=&#34;installing&#34;&gt;Installing&lt;/h1&gt;
@@ -38,10 +38,10 @@
     
     <item>
       <title>Configuration</title>
-      <link>/mysql-net.github.io/MySqlConnector/overview/configuration/</link>
+      <link>/MySqlConnector/overview/configuration/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/mysql-net.github.io/MySqlConnector/overview/configuration/</guid>
+      <guid>/MySqlConnector/overview/configuration/</guid>
       <description>
 
 &lt;h1 id=&#34;configuration&#34;&gt;Configuration&lt;/h1&gt;
