@@ -1,0 +1,5 @@
+{{ define "main" }}
+    {{ range where .Data.Pages "Title" "Home" }}
+        {{ .Content }}
+    {{ end }}
+{{ end }}
