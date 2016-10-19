@@ -14,7 +14,7 @@ Home
 
 Here is some C# code
 
-<pre><code class="c#">
+```C#
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector.Performance.Models;
@@ -51,4 +51,4 @@ namespace MySqlConnector.Performance.Controllers
         }
     }
 }
-</code></pre>
+```
