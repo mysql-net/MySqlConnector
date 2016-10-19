@@ -1,0 +1,41 @@
+#navigation {
+    margin-top: 20px;
+}
+
+#navigation a > i:first-child {
+    width: 10px;
+    margin-right: 5px;
+}
+
+.submenu a {
+    background: #f5f5f5;
+    border-radius: 0;
+}
+
+.submenu a:hover, .submenu a:active,
+.submenu a.active, .submenu a.active:hover, .submenu a.active:active {
+    background: #44b5f6;
+    border-color: #44b5f6;
+    border-radius: 0;
+    color: #fff;
+}
+
+.submenu a > span {
+    margin-left: 20px;
+}
+
+#github{
+    color: #777;
+}
+
+pre{
+    padding: 0;
+}
+
+h1{
+    margin-bottom: 20px;
+}
+
+h2{
+    margin-bottom: 20px;
+}
