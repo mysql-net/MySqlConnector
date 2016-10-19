@@ -2,57 +2,57 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>/MySqlConnector/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/MySqlConnector/api/db-connection/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/api/db-connection/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/MySqlConnector/home/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/home/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/MySqlConnector/overview/introduction/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/introduction/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/MySqlConnector/tutorials/net-core-mvc/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/MySqlConnector/api/db-command/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/api/db-command/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/MySqlConnector/overview/installing/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/installing/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/MySqlConnector/overview/configuration/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/configuration/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/MySqlConnector/connection-options/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/connection-options/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/MySqlConnector/api/result-set/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/api/result-set/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/MySqlConnector/api/transaction/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/api/transaction/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   

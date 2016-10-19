@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>MySqlConnector: Async MySQL Driver for .NET and .NET Core</title>
-    <link>/MySqlConnector/index.xml</link>
+    <link>https://mysql-net.github.io/MySqlConnector/index.xml</link>
     <description>Recent content on MySqlConnector: Async MySQL Driver for .NET and .NET Core</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Sun, 16 Oct 2016 00:00:00 +0000</lastBuildDate>
-    <atom:link href="/MySqlConnector/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://mysql-net.github.io/MySqlConnector/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>DbConnection</title>
-      <link>/MySqlConnector/api/db-connection/</link>
+      <link>https://mysql-net.github.io/MySqlConnector/api/db-connection/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/MySqlConnector/api/db-connection/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/api/db-connection/</guid>
       <description>
 
 &lt;h1 id=&#34;db-connection&#34;&gt;DB Connection&lt;/h1&gt;
@@ -24,29 +24,28 @@
     
     <item>
       <title>Home</title>
-      <link>/MySqlConnector/home/</link>
+      <link>https://mysql-net.github.io/MySqlConnector/home/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/MySqlConnector/home/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/home/</guid>
       <description>
 
 &lt;h1 id=&#34;home&#34;&gt;Home&lt;/h1&gt;
 
 &lt;p&gt;Here is some C# code&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;c#&#34;&gt;
-using System.Threading.Tasks;
+&lt;pre&gt;&lt;code class=&#34;language-C#&#34;&gt;using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector.Performance.Models;
 
 namespace MySqlConnector.Performance.Controllers
 {
-    [Route(&#34;api/[controller]&#34;)]
+    [Route(&amp;quot;api/[controller]&amp;quot;)]
     public class AsyncController : Controller
     {
         // GET api/async
         [HttpGet]
-        public async Task&lt;IActionResult&gt; Get()
+        public async Task&amp;lt;IActionResult&amp;gt; Get()
         {
             using (var db = new AppDb())
             {
@@ -60,7 +59,7 @@ namespace MySqlConnector.Performance.Controllers
 
         // POST api/async
         [HttpPost]
-        public async Task&lt;IActionResult&gt; Post([FromBody]BlogPost body)
+        public async Task&amp;lt;IActionResult&amp;gt; Post([FromBody]BlogPost body)
         {
             using (var db = new AppDb())
             {
@@ -77,10 +76,10 @@ namespace MySqlConnector.Performance.Controllers
     
     <item>
       <title>Introduction</title>
-      <link>/MySqlConnector/overview/introduction/</link>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/introduction/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/MySqlConnector/overview/introduction/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/introduction/</guid>
       <description>
 
 &lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
@@ -91,10 +90,10 @@ namespace MySqlConnector.Performance.Controllers
     
     <item>
       <title>Use with .NET Core MVC</title>
-      <link>/MySqlConnector/tutorials/net-core-mvc/</link>
+      <link>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/MySqlConnector/tutorials/net-core-mvc/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</guid>
       <description>
 
 &lt;h1 id=&#34;net-core-mvc&#34;&gt;.NET Core MVC&lt;/h1&gt;
@@ -105,10 +104,10 @@ namespace MySqlConnector.Performance.Controllers
     
     <item>
       <title>DbCommand</title>
-      <link>/MySqlConnector/api/db-command/</link>
+      <link>https://mysql-net.github.io/MySqlConnector/api/db-command/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/MySqlConnector/api/db-command/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/api/db-command/</guid>
       <description>
 
 &lt;h1 id=&#34;db-command&#34;&gt;DB Command&lt;/h1&gt;
@@ -119,10 +118,10 @@ namespace MySqlConnector.Performance.Controllers
     
     <item>
       <title>Installing</title>
-      <link>/MySqlConnector/overview/installing/</link>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/installing/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/MySqlConnector/overview/installing/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/installing/</guid>
       <description>
 
 &lt;h1 id=&#34;installing&#34;&gt;Installing&lt;/h1&gt;
@@ -133,38 +132,175 @@ namespace MySqlConnector.Performance.Controllers
     
     <item>
       <title>Configuration</title>
-      <link>/MySqlConnector/overview/configuration/</link>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/configuration/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/MySqlConnector/overview/configuration/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/configuration/</guid>
       <description>
 
 &lt;h1 id=&#34;configuration&#34;&gt;Configuration&lt;/h1&gt;
 
-&lt;p&gt;Configuration&lt;/p&gt;
+&lt;p&gt;To connect to a database on &lt;code&gt;localhost&lt;/code&gt; port &lt;code&gt;3306&lt;/code&gt; with a user &lt;code&gt;mysqltest&lt;/code&gt;, password &lt;code&gt;test;key=\&amp;quot;val&lt;/code&gt;, and default schema &lt;code&gt;mysqldb&lt;/code&gt;, the connection string would be:&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;host=127.0.0.1;port=3306;user id=mysqltest;password=&#39;test;key=\&amp;quot;val&#39;;database=mysqldb;&lt;/code&gt;&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>Connection Options</title>
-      <link>/MySqlConnector/connection-options/</link>
+      <link>https://mysql-net.github.io/MySqlConnector/connection-options/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/MySqlConnector/connection-options/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/connection-options/</guid>
       <description>
 
 &lt;h1 id=&#34;connection-options&#34;&gt;Connection Options&lt;/h1&gt;
 
-&lt;p&gt;Connection Options&lt;/p&gt;
+&lt;p&gt;MySqlConnector supports a subset of Oracle&amp;rsquo;s &lt;a href=&#34;https://dev.mysql.com/doc/connector-net/en/connector-net-connection-options.html&#34;&gt;MySql.Data connection options&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;base-options&#34;&gt;Base Options&lt;/h2&gt;
+
+&lt;p&gt;These are the basic options that need to be defined to connect to a MySQL database.&lt;/p&gt;
+
+&lt;table class=&#34;table table-striped table-hover&#34;&gt;
+  &lt;thead&gt;
+    &lt;th style=&#34;width: 20%&#34;&gt;Name&lt;/th&gt;
+    &lt;th style=&#34;width: 10%&#34;&gt;Default&lt;/th&gt;
+    &lt;th style=&#34;width: 70%&#34;&gt;Descriotion&lt;/th&gt;
+  &lt;/thead&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Host, Server, Data Source, DataSource, Address, Addr, Network Address&lt;/td&gt;
+    &lt;td&gt;localhost&lt;/td&gt;
+    &lt;td&gt;The name or network address of the instance of MySQL to which to connect. Multiple hosts can be specified separated by commas. This can be useful where multiple MySQL servers are configured for replication and you are not concerned about the precise server you are connecting to. No attempt is made by the provider to synchronize writes to the database, so take care when using this option. Unix domain sockets are not presently supported.&lt;/td&gt;
+  &lt;/tr&gt;
+    &lt;tr&gt;
+    &lt;td&gt;Port&lt;/td&gt;
+    &lt;td&gt;3306&lt;/td&gt;
+    &lt;td&gt;The port MySQL is using to listen for connections.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;User Id, UserID, Username, Uid, User name, User&lt;/td&gt;
+    &lt;td&gt;&lt;/td&gt;
+    &lt;td&gt;The MySQL login account being used.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Password, pwd&lt;/td&gt;
+    &lt;td&gt;&lt;/td&gt;
+    &lt;td&gt;The password for the MySQL account being used.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Database, Initial Catalog&lt;/td&gt;
+    &lt;td&gt;&lt;/td&gt;
+    &lt;td&gt;The case-sensitive name of the database to use initially.  This is not required.&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&#34;ssl-tls-options&#34;&gt;SSL/TLS Options&lt;/h2&gt;
+
+&lt;p&gt;These are the options that need to be used in order to configure a connection to use SSL/TLS.&lt;/p&gt;
+
+&lt;table class=&#34;table table-striped table-hover&#34;&gt;
+  &lt;thead&gt;
+    &lt;th style=&#34;width: 20%&#34;&gt;Name&lt;/th&gt;
+    &lt;th style=&#34;width: 10%&#34;&gt;Default&lt;/th&gt;
+    &lt;th style=&#34;width: 70%&#34;&gt;Descriotion&lt;/th&gt;
+  &lt;/thead&gt;
+  &lt;tr&gt;
+    &lt;td&gt;SSL Mode, SslMode&lt;/td&gt;
+    &lt;td&gt;None&lt;/td&gt;
+    &lt;td&gt;This option has the following values:
+      &lt;ul&gt;
+        &lt;li&gt;&lt;b&gt;None&lt;/b&gt; - do not use SSL.&lt;/li&gt;
+        &lt;li&gt;&lt;b&gt;Required&lt;/b&gt; - Always use SSL. Deny connection if server does not support SSL.  Do not validate CA or hostname.&lt;/li&gt;
+        &lt;li&gt;&lt;b&gt;VerifyCA&lt;/b&gt; - Always use SSL. Validate the CA but tolerate hostname mismatch.&lt;/li&gt;
+        &lt;li&gt;&lt;b&gt;VerifyFull&lt;/b&gt; - Always use SSL. Validate CA and hostname.&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Certificate File, CertificateFile&lt;/td&gt;
+    &lt;td&gt;&lt;/td&gt;
+    &lt;td&gt;This option specifies the path to a certificate file in PKCS #12 format (.pfx). &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Certificate Password, CertificatePassword   &lt;/td&gt;
+    &lt;td&gt;&lt;/td&gt;
+    &lt;td&gt;Specifies a password that is used in conjunction with a certificate specified using the option CertificateFile.  Not required if the certificate file is not password protected.&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&#34;connection-pooling-options&#34;&gt;Connection Pooling Options&lt;/h2&gt;
+
+&lt;p&gt;Connection pooling is enabled by default.  These options are used to configure it.&lt;/p&gt;
+
+&lt;table class=&#34;table table-striped table-hover&#34;&gt;
+  &lt;thead&gt;
+    &lt;th style=&#34;width: 20%&#34;&gt;Name&lt;/th&gt;
+    &lt;th style=&#34;width: 10%&#34;&gt;Default&lt;/th&gt;
+    &lt;th style=&#34;width: 70%&#34;&gt;Descriotion&lt;/th&gt;
+  &lt;/thead&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Pooling&lt;/td&gt;
+    &lt;td&gt;true&lt;/td&gt;
+    &lt;td&gt;When true, the MySqlConnection object is drawn from the appropriate pool, or if necessary, is created and added to the appropriate pool. Recognized values are true, false, yes, and no.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Connection Reset, ConnectionReset   &lt;/td&gt;
+    &lt;td&gt;false&lt;/td&gt;
+    &lt;td&gt;If true, the connection state is reset when it is retrieved from the pool. The default value of false avoids making an additional server round trip when obtaining a connection, but the connection state is not reset.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Maximum Pool Size, Max Pool Size, MaximumPoolsize, maxpoolsize&lt;/td&gt;
+    &lt;td&gt;100&lt;/td&gt;
+    &lt;td&gt;The maximum number of connections allowed in the pool.&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&#34;other-options&#34;&gt;Other Options&lt;/h2&gt;
+
+&lt;p&gt;These are the other options that MySqlConnector supports.  They are set to sensible defaults and typically do not need to be tweaked.&lt;/p&gt;
+
+&lt;table class=&#34;table table-striped table-hover&#34;&gt;
+  &lt;thead&gt;
+    &lt;th style=&#34;width: 20%&#34;&gt;Name&lt;/th&gt;
+    &lt;th style=&#34;width: 10%&#34;&gt;Default&lt;/th&gt;
+    &lt;th style=&#34;width: 70%&#34;&gt;Descriotion&lt;/th&gt;
+  &lt;/thead&gt;
+  &lt;tr&gt;
+    &lt;td&gt;AllowUserVariables&lt;/td&gt;
+    &lt;td&gt;true&lt;/td&gt;
+    &lt;td&gt;Setting this to true indicates that the provider expects user variables in the SQL.&lt;/td&gt;
+  &lt;/tr&gt;
+    &lt;tr&gt;
+    &lt;td&gt;Connect Timeout, Connection Timeout, ConnectionTimeout&lt;/td&gt;
+    &lt;td&gt;15&lt;/td&gt;
+    &lt;td&gt;The length of time (in seconds) to wait for a connection to the server before terminating the attempt and generating an error.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Convert Zero Datetime, ConvertZeroDateTime&lt;/td&gt;
+    &lt;td&gt;false&lt;/td&gt;
+    &lt;td&gt;True to have MySqlDataReader.GetValue() and MySqlDataReader.GetDateTime() return DateTime.MinValue for date or datetime columns that have disallowed values.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Old Guids, OldGuids&lt;/td&gt;
+    &lt;td&gt;false&lt;/td&gt;
+    &lt;td&gt; The backend representation of a GUID type was changed from BINARY(16) to CHAR(36). This was done to allow developers to use the server function UUID() to populate a GUID table - UUID() generates a 36-character string. Developers of older applications can add &#39;Old Guids=true&#39; to the connection string to use a GUID of data type BINARY(16).&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Persist Security Info, PersistSecurityInfo&lt;/td&gt;
+    &lt;td&gt;false&lt;/td&gt;
+    &lt;td&gt;When set to false or no (strongly recommended), security-sensitive information, such as the password, is not returned as part of the connection if the connection is open or has ever been in an open state. Resetting the connection string resets all connection string values, including the password. Recognized values are true, false, yes, and no.&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
 </description>
     </item>
     
     <item>
       <title>Result Set</title>
-      <link>/MySqlConnector/api/result-set/</link>
+      <link>https://mysql-net.github.io/MySqlConnector/api/result-set/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/MySqlConnector/api/result-set/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/api/result-set/</guid>
       <description>
 
 &lt;h1 id=&#34;result-set&#34;&gt;Result Set&lt;/h1&gt;
@@ -175,10 +311,10 @@ namespace MySqlConnector.Performance.Controllers
     
     <item>
       <title>Transaction</title>
-      <link>/MySqlConnector/api/transaction/</link>
+      <link>https://mysql-net.github.io/MySqlConnector/api/transaction/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>/MySqlConnector/api/transaction/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/api/transaction/</guid>
       <description>
 
 &lt;h1 id=&#34;transaction&#34;&gt;Transaction&lt;/h1&gt;

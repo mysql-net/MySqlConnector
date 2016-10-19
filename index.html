@@ -28,7 +28,7 @@
     
     <meta name="generator" content="Hugo 0.17" />
     
-    <title>Hugo - MySqlConnector: Async MySQL Driver for .NET and .NET Core</title>
+    <title>MySqlConnector - MySqlConnector: Async MySQL Driver for .NET and .NET Core</title>
 
     <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="vendor/font-awesome/css/font-awesome.min.css" />
@@ -157,19 +157,18 @@
 
 <p>Here is some C# code</p>
 
-<pre><code class="c#">
-using System.Threading.Tasks;
+<pre><code class="language-C#">using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector.Performance.Models;
 
 namespace MySqlConnector.Performance.Controllers
 {
-    [Route("api/[controller]")]
+    [Route(&quot;api/[controller]&quot;)]
     public class AsyncController : Controller
     {
         // GET api/async
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task&lt;IActionResult&gt; Get()
         {
             using (var db = new AppDb())
             {
@@ -183,7 +182,7 @@ namespace MySqlConnector.Performance.Controllers
 
         // POST api/async
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]BlogPost body)
+        public async Task&lt;IActionResult&gt; Post([FromBody]BlogPost body)
         {
             using (var db = new AppDb())
             {
