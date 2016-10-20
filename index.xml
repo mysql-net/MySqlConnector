@@ -291,6 +291,11 @@ namespace MySqlConnector.Performance.Controllers
     &lt;td&gt;false&lt;/td&gt;
     &lt;td&gt;When set to false or no (strongly recommended), security-sensitive information, such as the password, is not returned as part of the connection if the connection is open or has ever been in an open state. Resetting the connection string resets all connection string values, including the password. Recognized values are true, false, yes, and no.&lt;/td&gt;
   &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Use Affected Rows, UseAffectedRows&lt;/td&gt;
+    &lt;td&gt;true&lt;/td&gt;
+    &lt;td&gt;When false, the connection reports found rows instead of changed (affected) rows.&lt;/td&gt;
+  &lt;/tr&gt;
 &lt;/table&gt;
 </description>
     </item>
