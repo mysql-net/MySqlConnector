@@ -87,7 +87,7 @@ namespace MySql.Data.Serialization
 			if (cs.SslMode != MySqlSslMode.None)
 				await InitSslAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 
-			var response = HandshakeResponse41Packet.Create(initialHandshake, cs.UserID, cs.Password, cs.Database);
+			var response = HandshakeResponse41Packet.Create(initialHandshake, cs);
 			payload = new PayloadData(new ArraySegment<byte>(response));
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -287,7 +287,7 @@ namespace MySql.Data.Serialization
 
 			var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
 
-			var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Packet.InitSsl(cs.Database)));
+			var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Packet.InitSsl(cs)));
 			await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			try

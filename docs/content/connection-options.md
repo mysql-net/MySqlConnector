@@ -150,4 +150,9 @@ These are the other options that MySqlConnector supports.  They are set to sensi
     <td>false</td>
     <td>When set to false or no (strongly recommended), security-sensitive information, such as the password, is not returned as part of the connection if the connection is open or has ever been in an open state. Resetting the connection string resets all connection string values, including the password. Recognized values are true, false, yes, and no.</td>
   </tr>
+  <tr>
+    <td>Use Affected Rows, UseAffectedRows</td>
+    <td>true</td>
+    <td>When false, the connection reports found rows instead of changed (affected) rows.</td>
+  </tr>
 </table>
