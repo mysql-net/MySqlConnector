@@ -85,71 +85,7 @@ namespace MySql.Data.Serialization
 			AuthPluginData = initialHandshake.AuthPluginData;
 
 			if (cs.SslMode != MySqlSslMode.None)
-			{
-				Func<object, string, X509CertificateCollection, X509Certificate, string[], X509Certificate> localCertificateCb =
-					(lcbSender, lcbTargetHost, lcbLocalCertificates, lcbRemoteCertificate, lcbAcceptableIssuers) => lcbLocalCertificates[0];
-
-				Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> remoteCertificateCb =
-					(rcbSender, rcbCertificate, rcbChain, rcbPolicyErrors) =>
-				{
-					switch (rcbPolicyErrors)
-					{
-						case SslPolicyErrors.None:
-							return true;
-						case SslPolicyErrors.RemoteCertificateNameMismatch:
-							return cs.SslMode != MySqlSslMode.VerifyFull;
-						default:
-							return cs.SslMode == MySqlSslMode.Required;
-					}
-				};
-
-				var sslStream = new SslStream(m_tcpClient.GetStream(), false,
-					new RemoteCertificateValidationCallback(remoteCertificateCb),
-					new LocalCertificateSelectionCallback(localCertificateCb));
-				var clientCertificates = new X509CertificateCollection { cs.Certificate };
-
-				// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/mysql-net/MySqlConnector/pull/101
-				var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
-				if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-					sslProtocols |= SslProtocols.Tls12;
-
-				var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
-
-				var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Packet.InitSsl(cs.Database)));
-				await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
-
-				try
-				{
-					if (ioBehavior == IOBehavior.Asynchronous)
-					{
-						await sslStream.AuthenticateAsClientAsync(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
-					}
-					else
-					{
-#if NETSTANDARD1_3
-						await sslStream.AuthenticateAsClientAsync(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
-#else
-						sslStream.AuthenticateAsClient(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation);
-#endif
-					}
-					var sslByteHandler = new SslByteHandler(sslStream);
-					m_payloadHandler.SetByteHandler(sslByteHandler);
-				}
-				catch (AuthenticationException ex)
-				{
-#if NETSTANDARD1_3
-					m_tcpClient.Dispose();
-#else
-					m_tcpClient.Close();
-#endif
-					m_conversation = null;
-					m_hostname = "";
-					m_payloadHandler = null;
-					m_state = State.Failed;
-					m_tcpClient = null;
-					throw new MySqlException("SSL Authentication Error", ex);
-				}
-			}
+				await InitSslAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			var response = HandshakeResponse41Packet.Create(initialHandshake, cs.UserID, cs.Password, cs.Database);
 			payload = new PayloadData(new ArraySegment<byte>(response));
@@ -318,6 +254,73 @@ namespace MySql.Data.Serialization
 				}
 			}
 			return false;
+		}
+
+		private async Task InitSslAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			Func<object, string, X509CertificateCollection, X509Certificate, string[], X509Certificate> localCertificateCb =
+				(lcbSender, lcbTargetHost, lcbLocalCertificates, lcbRemoteCertificate, lcbAcceptableIssuers) => lcbLocalCertificates[0];
+
+			Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> remoteCertificateCb =
+				(rcbSender, rcbCertificate, rcbChain, rcbPolicyErrors) =>
+				{
+					switch (rcbPolicyErrors)
+					{
+						case SslPolicyErrors.None:
+							return true;
+						case SslPolicyErrors.RemoteCertificateNameMismatch:
+							return cs.SslMode != MySqlSslMode.VerifyFull;
+						default:
+							return cs.SslMode == MySqlSslMode.Required;
+					}
+				};
+
+			var sslStream = new SslStream(m_tcpClient.GetStream(), false,
+				new RemoteCertificateValidationCallback(remoteCertificateCb),
+				new LocalCertificateSelectionCallback(localCertificateCb));
+			var clientCertificates = new X509CertificateCollection { cs.Certificate };
+
+			// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/mysql-net/MySqlConnector/pull/101
+			var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
+			if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+				sslProtocols |= SslProtocols.Tls12;
+
+			var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
+
+			var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Packet.InitSsl(cs.Database)));
+			await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
+
+			try
+			{
+				if (ioBehavior == IOBehavior.Asynchronous)
+				{
+					await sslStream.AuthenticateAsClientAsync(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+				}
+				else
+				{
+#if NETSTANDARD1_3
+						await sslStream.AuthenticateAsClientAsync(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+#else
+					sslStream.AuthenticateAsClient(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation);
+#endif
+				}
+				var sslByteHandler = new SslByteHandler(sslStream);
+				m_payloadHandler.SetByteHandler(sslByteHandler);
+			}
+			catch (AuthenticationException ex)
+			{
+#if NETSTANDARD1_3
+					m_tcpClient.Dispose();
+#else
+				m_tcpClient.Close();
+#endif
+				m_conversation = null;
+				m_hostname = "";
+				m_payloadHandler = null;
+				m_state = State.Failed;
+				m_tcpClient = null;
+				throw new MySqlException("SSL Authentication Error", ex);
+			}
 		}
 
 		private ValueTask<int> TryAsync<TArg>(Func<IConversation, TArg, IOBehavior, ValueTask<int>> func, TArg arg, IOBehavior ioBehavior, CancellationToken cancellationToken)
