@@ -51,13 +51,10 @@ namespace MySql.Data.Serialization
 			ForceSynchronous = csb.ForceSynchronous;
 			OldGuids = csb.OldGuids;
 			PersistSecurityInfo = csb.PersistSecurityInfo;
+			UseAffectedRows = csb.UseAffectedRows;
 
 			if (csb.UseCompression)
 				throw new NotSupportedException("Compression=True is not supported.");
-			UseAffectedRows = csb.UseAffectedRows;
-
-			if (!csb.UseAffectedRows)
-				throw new NotSupportedException("UseAffectedRows=False is not supported.");
 			UseCompression = csb.UseCompression;
 		}
 

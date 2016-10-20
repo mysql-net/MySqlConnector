@@ -95,16 +95,6 @@ namespace MySql.Data.Tests
 		}
 
 		[Fact]
-		public void UseAffectedRowsNotSupported()
-		{
-			var csb = new MySqlConnectionStringBuilder
-			{
-				UseAffectedRows = false,
-			};
-			Assert.Throws<NotSupportedException>(() => new MySqlConnection(csb.ConnectionString));
-		}
-
-		[Fact]
 		public void SslModePreferredInvalidOperation()
 		{
 			var csb = new MySqlConnectionStringBuilder("ssl mode=preferred;");

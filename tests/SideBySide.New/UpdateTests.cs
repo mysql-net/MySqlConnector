@@ -112,24 +112,33 @@ insert into update_rows_dapper (value) VALUES (1), (2), (1), (4);
 		}
 
 		[Theory]
-		[InlineData(1, 2)]
-		[InlineData(2, 1)]
-		[InlineData(3, 0)]
-		[InlineData(4, 0)]
-		public async Task UpdateRowsDapperAsync(int oldValue, int expectedRowsUpdated)
+		[InlineData(true, 1, 2)]
+		[InlineData(true, 2, 1)]
+		[InlineData(true, 3, 0)]
+		[InlineData(true, 4, 0)]
+		[InlineData(false, 1, 2)]
+		[InlineData(false, 2, 1)]
+		[InlineData(false, 3, 0)]
+		[InlineData(false, 4, 1)]
+		public async Task UpdateRowsDapperAsync(bool useAffectedRows, int oldValue, int expectedRowsUpdated)
 		{
-			using (var cmd = m_database.Connection.CreateCommand())
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.UseAffectedRows = useAffectedRows;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
-				cmd.CommandText = @"drop table if exists update_rows_dapper_async;
+				await connection.OpenAsync();
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = @"drop table if exists update_rows_dapper_async;
 create table update_rows_dapper_async(id integer not null primary key auto_increment, value integer not null);
 insert into update_rows_dapper_async (value) VALUES (1), (2), (1), (4);
 ";
-				cmd.ExecuteNonQuery();
+					cmd.ExecuteNonQuery();
+				}
+				var rowsAffected = await connection.ExecuteAsync(@"update update_rows_dapper_async set value = @newValue where value = @oldValue",
+					new { oldValue, newValue = 4 }).ConfigureAwait(false);
+				Assert.Equal(expectedRowsUpdated, rowsAffected);
 			}
-
-			var rowsAffected = await m_database.Connection.ExecuteAsync(@"update update_rows_dapper_async set value = @newValue where value = @oldValue",
-				new { oldValue, newValue = 4 }).ConfigureAwait(false);
-			Assert.Equal(expectedRowsUpdated, rowsAffected);
 		}
 
 		[Fact]
