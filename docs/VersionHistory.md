@@ -12,6 +12,10 @@ may leave the `MySqlConnection` in an unusable state.
 
 ## Release Notes
 
+### 0.5.0
+
+* Implement `UseAffectedRows` connection string option. (Note that the default value is `true`, unlike `MySql.Data`.)
+
 ### 0.4.0
 
 * Rename `SslMode` enum to `MySqlSslMode` (for compatibility with `MySql.Data`):[#102](https://github.com/mysql-net/MySqlConnector/pull/93).
