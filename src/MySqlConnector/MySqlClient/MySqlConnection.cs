@@ -12,7 +12,7 @@ namespace MySql.Data.MySqlClient
 	{
 		public MySqlConnection()
 		{
-			m_connectionStringBuilder = new MySqlConnectionStringBuilder();
+			ConnectionString = "";
 		}
 
 		public MySqlConnection(string connectionString)
@@ -128,25 +128,22 @@ namespace MySql.Data.MySqlClient
 		{
 			get
 			{
-				return m_connectionStringBuilder.GetConnectionString(!m_hasBeenOpened || m_connectionStringBuilder.PersistSecurityInfo);
+				return m_connectionStringBuilder.GetConnectionString(!m_hasBeenOpened || m_connectionSettings.PersistSecurityInfo);
 			}
 			set
 			{
+				if (m_hasBeenOpened)
+					throw new MySqlException("Cannot change connection string on a connection that has already been opened.");
 				m_connectionStringBuilder = new MySqlConnectionStringBuilder(value);
-				m_database = m_connectionStringBuilder.Database;
-
-				if (m_connectionStringBuilder.UseCompression)
-					throw new NotSupportedException("Compression=True is not supported.");
-				if (!m_connectionStringBuilder.UseAffectedRows)
-					throw new NotSupportedException("UseAffectedRows=False is not supported.");
+				m_connectionSettings = new ConnectionSettings(m_connectionStringBuilder);
 			}
 		}
 
-		public override string Database => m_database;
+		public override string Database => m_connectionSettings.Database;
 
 		public override ConnectionState State => m_connectionState;
 
-		public override string DataSource => m_connectionStringBuilder.Server;
+		public override string DataSource => string.Join(",", m_connectionSettings.Hostnames);
 
 		public override string ServerVersion => m_session.ServerVersion.OriginalString;
 
@@ -164,7 +161,7 @@ namespace MySql.Data.MySqlClient
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
-			var pool = ConnectionPool.GetPool(connection.m_connectionStringBuilder);
+			var pool = ConnectionPool.GetPool(connection.m_connectionSettings);
 			if (pool != null)
 				await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
@@ -175,7 +172,7 @@ namespace MySql.Data.MySqlClient
 		protected override DbProviderFactory DbProviderFactory => MySqlClientFactory.Instance;
 #endif
 
-		public override int ConnectionTimeout => (int) m_connectionStringBuilder.ConnectionTimeout;
+		public override int ConnectionTimeout => m_connectionSettings.ConnectionTimeout;
 
 		protected override void Dispose(bool disposing)
 		{
@@ -202,32 +199,30 @@ namespace MySql.Data.MySqlClient
 
 		internal MySqlTransaction CurrentTransaction { get; set; }
 		internal bool HasActiveReader { get; set; }
-		internal bool AllowUserVariables => m_connectionStringBuilder.AllowUserVariables;
-		internal bool ConvertZeroDateTime => m_connectionStringBuilder.ConvertZeroDateTime;
-		internal bool OldGuids => m_connectionStringBuilder.OldGuids;
-		internal IOBehavior AsyncIOBehavior => m_connectionStringBuilder.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
+		internal bool AllowUserVariables => m_connectionSettings.AllowUserVariables;
+		internal bool ConvertZeroDateTime => m_connectionSettings.ConvertZeroDateTime;
+		internal bool OldGuids => m_connectionSettings.OldGuids;
+		internal IOBehavior AsyncIOBehavior => m_connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
 
 		private async Task<MySqlSession> CreateSessionAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			var connectTimeout = m_connectionStringBuilder.ConnectionTimeout == 0 ? Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(checked((int) m_connectionStringBuilder.ConnectionTimeout));
+			var connectTimeout = m_connectionSettings.ConnectionTimeout == 0 ? Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(checked((int) m_connectionSettings.ConnectionTimeout));
 			using (var timeoutSource = new CancellationTokenSource(connectTimeout))
 			using (var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token))
 			{
 				try
 				{
 					// get existing session from the pool if possible
-					if (m_connectionStringBuilder.Pooling)
+					if (m_connectionSettings.Pooling)
 					{
-						var pool = ConnectionPool.GetPool(m_connectionStringBuilder);
-
+						var pool = ConnectionPool.GetPool(m_connectionSettings);
 						// this returns an open session
 						return await pool.GetSessionAsync(ioBehavior, linkedSource.Token).ConfigureAwait(false);
 					}
 					else
 					{
 						var session = new MySqlSession();
-						await session.ConnectAsync(m_connectionStringBuilder.Server.Split(','), (int) m_connectionStringBuilder.Port, m_connectionStringBuilder.UserID, m_connectionStringBuilder.Password, m_connectionStringBuilder.Database,
-							m_connectionStringBuilder.SslMode, m_connectionStringBuilder.CertificateFile, m_connectionStringBuilder.CertificatePassword, ioBehavior, linkedSource.Token).ConfigureAwait(false);
+						await session.ConnectAsync(m_connectionSettings, ioBehavior, linkedSource.Token).ConfigureAwait(false);
 						return session;
 					}
 				}
@@ -265,7 +260,7 @@ namespace MySql.Data.MySqlClient
 				}
 				if (m_session != null)
 				{
-					if (m_connectionStringBuilder.Pooling)
+					if (m_connectionSettings.Pooling)
 						m_session.ReturnToPool();
 					else
 						m_session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -276,10 +271,10 @@ namespace MySql.Data.MySqlClient
 		}
 
 		MySqlConnectionStringBuilder m_connectionStringBuilder;
+		ConnectionSettings m_connectionSettings;
 		MySqlSession m_session;
 		ConnectionState m_connectionState;
 		bool m_hasBeenOpened;
 		bool m_isDisposed;
-		string m_database;
 	}
 }

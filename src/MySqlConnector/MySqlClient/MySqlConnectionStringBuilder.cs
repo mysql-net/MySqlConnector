@@ -16,10 +16,17 @@ namespace MySql.Data.MySqlClient
 			ConnectionString = connectionString;
 		}
 
+		// Base Options
 		public string Server
 		{
 			get { return MySqlConnectionStringOption.Server.GetValue(this); }
 			set { MySqlConnectionStringOption.Server.SetValue(this, value); }
+		}
+
+		public uint Port
+		{
+			get { return MySqlConnectionStringOption.Port.GetValue(this); }
+			set { MySqlConnectionStringOption.Port.SetValue(this, value); }
 		}
 
 		public string UserID
@@ -40,48 +47,7 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.Database.SetValue(this, value); }
 		}
 
-		public uint Port
-		{
-			get { return MySqlConnectionStringOption.Port.GetValue(this); }
-			set { MySqlConnectionStringOption.Port.SetValue(this, value); }
-		}
-
-		public bool AllowUserVariables
-		{
-			get { return MySqlConnectionStringOption.AllowUserVariables.GetValue(this); }
-			set { MySqlConnectionStringOption.AllowUserVariables.SetValue(this, value); }
-		}
-
-		public string CharacterSet
-		{
-			get { return MySqlConnectionStringOption.CharacterSet.GetValue(this); }
-			set { MySqlConnectionStringOption.CharacterSet.SetValue(this, value); }
-		}
-
-		public bool ConvertZeroDateTime
-		{
-			get { return MySqlConnectionStringOption.ConvertZeroDateTime.GetValue(this); }
-			set { MySqlConnectionStringOption.ConvertZeroDateTime.SetValue(this, value); }
-		}
-
-		public bool OldGuids
-		{
-			get { return MySqlConnectionStringOption.OldGuids.GetValue(this); }
-			set { MySqlConnectionStringOption.OldGuids.SetValue(this, value); }
-		}
-
-		public bool PersistSecurityInfo
-		{
-			get { return MySqlConnectionStringOption.PersistSecurityInfo.GetValue(this); }
-			set { MySqlConnectionStringOption.PersistSecurityInfo.SetValue(this, value); }
-		}
-
-		public bool UseCompression
-		{
-			get { return MySqlConnectionStringOption.UseCompression.GetValue(this); }
-			set { MySqlConnectionStringOption.UseCompression.SetValue(this, value); }
-		}
-
+		// SSL/TLS Options
 		public MySqlSslMode SslMode
 		{
 			get { return MySqlConnectionStringOption.SslMode.GetValue(this); }
@@ -100,6 +66,7 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.CertificatePassword.SetValue(this, value); }
 		}
 
+		// Connection Pooling Options
 		public bool Pooling
 		{
 			get { return MySqlConnectionStringOption.Pooling.GetValue(this); }
@@ -110,12 +77,6 @@ namespace MySql.Data.MySqlClient
 		{
 			get { return MySqlConnectionStringOption.ConnectionReset.GetValue(this); }
 			set { MySqlConnectionStringOption.ConnectionReset.SetValue(this, value); }
-		}
-
-		public uint ConnectionTimeout
-		{
-			get { return MySqlConnectionStringOption.ConnectionTimeout.GetValue(this); }
-			set { MySqlConnectionStringOption.ConnectionTimeout.SetValue(this, value); }
 		}
 
 		public uint MinimumPoolSize
@@ -130,10 +91,29 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.MaximumPoolSize.SetValue(this, value); }
 		}
 
-		public bool UseAffectedRows
+		// Other Options
+		public bool AllowUserVariables
 		{
-			get { return MySqlConnectionStringOption.UseAffectedRows.GetValue(this); }
-			set { MySqlConnectionStringOption.UseAffectedRows.SetValue(this, value); }
+			get { return MySqlConnectionStringOption.AllowUserVariables.GetValue(this); }
+			set { MySqlConnectionStringOption.AllowUserVariables.SetValue(this, value); }
+		}
+
+		public string CharacterSet
+		{
+			get { return MySqlConnectionStringOption.CharacterSet.GetValue(this); }
+			set { MySqlConnectionStringOption.CharacterSet.SetValue(this, value); }
+		}
+
+		public uint ConnectionTimeout
+		{
+			get { return MySqlConnectionStringOption.ConnectionTimeout.GetValue(this); }
+			set { MySqlConnectionStringOption.ConnectionTimeout.SetValue(this, value); }
+		}
+
+		public bool ConvertZeroDateTime
+		{
+			get { return MySqlConnectionStringOption.ConvertZeroDateTime.GetValue(this); }
+			set { MySqlConnectionStringOption.ConvertZeroDateTime.SetValue(this, value); }
 		}
 
 		public bool ForceSynchronous
@@ -142,6 +122,31 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.ForceSynchronous.SetValue(this, value); }
 		}
 
+		public bool OldGuids
+		{
+			get { return MySqlConnectionStringOption.OldGuids.GetValue(this); }
+			set { MySqlConnectionStringOption.OldGuids.SetValue(this, value); }
+		}
+
+		public bool PersistSecurityInfo
+		{
+			get { return MySqlConnectionStringOption.PersistSecurityInfo.GetValue(this); }
+			set { MySqlConnectionStringOption.PersistSecurityInfo.SetValue(this, value); }
+		}
+
+		public bool UseAffectedRows
+		{
+			get { return MySqlConnectionStringOption.UseAffectedRows.GetValue(this); }
+			set { MySqlConnectionStringOption.UseAffectedRows.SetValue(this, value); }
+		}
+
+		public bool UseCompression
+		{
+			get { return MySqlConnectionStringOption.UseCompression.GetValue(this); }
+			set { MySqlConnectionStringOption.UseCompression.SetValue(this, value); }
+		}
+
+		// Other Methods
 		public override bool ContainsKey(string key)
 		{
 			var option = MySqlConnectionStringOption.TryGetOptionForKey(key);
@@ -186,27 +191,34 @@ namespace MySql.Data.MySqlClient
 
 	internal abstract class MySqlConnectionStringOption
 	{
+		// Base Options
 		public static readonly MySqlConnectionStringOption<string> Server;
+		public static readonly MySqlConnectionStringOption<uint> Port;
 		public static readonly MySqlConnectionStringOption<string> UserID;
 		public static readonly MySqlConnectionStringOption<string> Password;
 		public static readonly MySqlConnectionStringOption<string> Database;
-		public static readonly MySqlConnectionStringOption<uint> Port;
-		public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
-		public static readonly MySqlConnectionStringOption<string> CharacterSet;
-		public static readonly MySqlConnectionStringOption<bool> ConvertZeroDateTime;
-		public static readonly MySqlConnectionStringOption<bool> OldGuids;
-		public static readonly MySqlConnectionStringOption<bool> PersistSecurityInfo;
-		public static readonly MySqlConnectionStringOption<bool> UseCompression;
+
+		// SSL/TLS Options
 		public static readonly MySqlConnectionStringOption<MySqlSslMode> SslMode;
 		public static readonly MySqlConnectionStringOption<string> CertificateFile;
 		public static readonly MySqlConnectionStringOption<string> CertificatePassword;
+
+		// Connection Pooling Options
 		public static readonly MySqlConnectionStringOption<bool> Pooling;
 		public static readonly MySqlConnectionStringOption<bool> ConnectionReset;
-		public static readonly MySqlConnectionStringOption<uint> ConnectionTimeout;
 		public static readonly MySqlConnectionStringOption<uint> MinimumPoolSize;
 		public static readonly MySqlConnectionStringOption<uint> MaximumPoolSize;
-		public static readonly MySqlConnectionStringOption<bool> UseAffectedRows;
+
+		// Other Options
+		public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
+		public static readonly MySqlConnectionStringOption<string> CharacterSet;
+		public static readonly MySqlConnectionStringOption<uint> ConnectionTimeout;
+		public static readonly MySqlConnectionStringOption<bool> ConvertZeroDateTime;
 		public static readonly MySqlConnectionStringOption<bool> ForceSynchronous;
+		public static readonly MySqlConnectionStringOption<bool> OldGuids;
+		public static readonly MySqlConnectionStringOption<bool> PersistSecurityInfo;
+		public static readonly MySqlConnectionStringOption<bool> UseAffectedRows;
+		public static readonly MySqlConnectionStringOption<bool> UseCompression;
 
 		public static MySqlConnectionStringOption TryGetOptionForKey(string key)
 		{
@@ -242,9 +254,14 @@ namespace MySql.Data.MySqlClient
 		{
 			s_options = new Dictionary<string, MySqlConnectionStringOption>(StringComparer.OrdinalIgnoreCase);
 
+			// Base Options
 			AddOption(Server = new MySqlConnectionStringOption<string>(
 				keys: new[] { "Server", "Host", "Data Source", "DataSource", "Address", "Addr", "Network Address" },
 				defaultValue: ""));
+
+			AddOption(Port = new MySqlConnectionStringOption<uint>(
+				keys: new[] { "Port" },
+				defaultValue: 3306u));
 
 			AddOption(UserID = new MySqlConnectionStringOption<string>(
 				keys: new[] { "User Id", "UserID", "Username", "Uid", "User name", "User" },
@@ -258,10 +275,37 @@ namespace MySql.Data.MySqlClient
 				keys: new[] { "Database", "Initial Catalog" },
 				defaultValue: ""));
 
-			AddOption(Port = new MySqlConnectionStringOption<uint>(
-				keys: new[] { "Port" },
-				defaultValue: 3306u));
+			// SSL/TLS Options
+			AddOption(SslMode = new MySqlConnectionStringOption<MySqlSslMode>(
+				keys: new[] { "SSL Mode", "SslMode" },
+				defaultValue: MySqlSslMode.None));
 
+			AddOption(CertificateFile = new MySqlConnectionStringOption<string>(
+				keys: new[] { "CertificateFile", "Certificate File" },
+				defaultValue: null));
+
+			AddOption(CertificatePassword = new MySqlConnectionStringOption<string>(
+				keys: new[] { "CertificatePassword", "Certificate Password" },
+				defaultValue: null));
+
+			// Connection Pooling Options
+			AddOption(Pooling = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "Pooling" },
+				defaultValue: true));
+
+			AddOption(ConnectionReset = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "Connection Reset", "ConnectionReset" },
+				defaultValue: true));
+
+			AddOption(MinimumPoolSize = new MySqlConnectionStringOption<uint>(
+				keys: new[] { "Minimum Pool Size", "Min Pool Size", "MinimumPoolSize", "minpoolsize" },
+				defaultValue: 0));
+
+			AddOption(MaximumPoolSize = new MySqlConnectionStringOption<uint>(
+				keys: new[] { "Maximum Pool Size", "Max Pool Size", "MaximumPoolSize", "maxpoolsize" },
+				defaultValue: 100));
+
+			// Other Options
 			AddOption(AllowUserVariables = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "AllowUserVariables", "Allow User Variables" },
 				defaultValue: false));
@@ -270,8 +314,16 @@ namespace MySql.Data.MySqlClient
 				keys: new[] { "CharSet", "Character Set", "CharacterSet" },
 				defaultValue: ""));
 
+			AddOption(ConnectionTimeout = new MySqlConnectionStringOption<uint>(
+				keys: new[] { "Connection Timeout", "ConnectionTimeout", "Connect Timeout" },
+				defaultValue: 15u));
+
 			AddOption(ConvertZeroDateTime = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Convert Zero Datetime", "ConvertZeroDateTime" },
+				defaultValue: false));
+
+			AddOption(ForceSynchronous = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "ForceSynchronous" },
 				defaultValue: false));
 
 			AddOption(OldGuids = new MySqlConnectionStringOption<bool>(
@@ -282,48 +334,12 @@ namespace MySql.Data.MySqlClient
 				keys: new[] { "Persist Security Info", "PersistSecurityInfo" },
 				defaultValue: false));
 
-			AddOption(UseCompression = new MySqlConnectionStringOption<bool>(
-				keys: new[] { "Compress", "Use Compression", "UseCompression" },
-				defaultValue: false));
-
-			AddOption(CertificateFile = new MySqlConnectionStringOption<string>(
-				keys: new[] { "CertificateFile", "Certificate File" },
-				defaultValue: null));
-
-			AddOption(CertificatePassword = new MySqlConnectionStringOption<string>(
-				keys: new[] { "CertificatePassword", "Certificate Password" },
-				defaultValue: null));
-
-			AddOption(SslMode = new MySqlConnectionStringOption<MySqlSslMode>(
-				keys: new[] { "SSL Mode", "SslMode" },
-				defaultValue: MySqlSslMode.None));
-
-			AddOption(Pooling = new MySqlConnectionStringOption<bool>(
-				keys: new[] { "Pooling" },
-				defaultValue: true));
-
-			AddOption(ConnectionReset = new MySqlConnectionStringOption<bool>(
-				keys: new[] { "Connection Reset", "ConnectionReset" },
-				defaultValue: true));
-
-			AddOption(ConnectionTimeout = new MySqlConnectionStringOption<uint>(
-				keys: new[] { "Connection Timeout", "ConnectionTimeout", "Connect Timeout" },
-				defaultValue: 15u));
-
-			AddOption(MinimumPoolSize = new MySqlConnectionStringOption<uint>(
-				keys: new[] { "Minimum Pool Size", "Min Pool Size", "MinimumPoolSize", "minpoolsize" },
-				defaultValue: 0));
-
-			AddOption(MaximumPoolSize = new MySqlConnectionStringOption<uint>(
-				keys: new[] { "Maximum Pool Size", "Max Pool Size", "MaximumPoolSize", "maxpoolsize" },
-				defaultValue: 100));
-
 			AddOption(UseAffectedRows = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Use Affected Rows", "UseAffectedRows" },
 				defaultValue: true));
 
-			AddOption(ForceSynchronous = new MySqlConnectionStringOption<bool>(
-				keys: new[] { "ForceSynchronous" },
+			AddOption(UseCompression = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "Compress", "Use Compression", "UseCompression" },
 				defaultValue: false));
 		}
 

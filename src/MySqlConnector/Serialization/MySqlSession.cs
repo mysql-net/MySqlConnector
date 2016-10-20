@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -71,10 +69,9 @@ namespace MySql.Data.Serialization
 			m_state = State.Closed;
 		}
 
-		public async Task ConnectAsync(IEnumerable<string> hosts, int port, string userId, string password, string database,
-			MySqlSslMode sslMode, string certificateFile, string certificatePassword, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async Task ConnectAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			var connected = await OpenSocketAsync(hosts, port, ioBehavior, cancellationToken).ConfigureAwait(false);
+			var connected = await OpenSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 			if (!connected)
 				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
 
@@ -87,20 +84,8 @@ namespace MySql.Data.Serialization
 			ConnectionId = initialHandshake.ConnectionId;
 			AuthPluginData = initialHandshake.AuthPluginData;
 
-			if (sslMode != MySqlSslMode.None)
+			if (cs.SslMode != MySqlSslMode.None)
 			{
-				X509Certificate2 certificate;
-				try
-				{
-					certificate = new X509Certificate2(certificateFile, certificatePassword);
-				}
-				catch (CryptographicException ex)
-				{
-					if (!File.Exists(certificateFile))
-						throw new MySqlException("Cannot find SSL Certificate File", ex);
-					throw new MySqlException("Either the SSL Certificate Password is incorrect or the SSL Certificate File is invalid", ex);
-				}
-
 				Func<object, string, X509CertificateCollection, X509Certificate, string[], X509Certificate> localCertificateCb =
 					(lcbSender, lcbTargetHost, lcbLocalCertificates, lcbRemoteCertificate, lcbAcceptableIssuers) => lcbLocalCertificates[0];
 
@@ -112,25 +97,25 @@ namespace MySql.Data.Serialization
 						case SslPolicyErrors.None:
 							return true;
 						case SslPolicyErrors.RemoteCertificateNameMismatch:
-							return sslMode != MySqlSslMode.VerifyFull;
+							return cs.SslMode != MySqlSslMode.VerifyFull;
 						default:
-							return sslMode == MySqlSslMode.Required;
+							return cs.SslMode == MySqlSslMode.Required;
 					}
 				};
 
 				var sslStream = new SslStream(m_tcpClient.GetStream(), false,
 					new RemoteCertificateValidationCallback(remoteCertificateCb),
 					new LocalCertificateSelectionCallback(localCertificateCb));
-				var clientCertificates = new X509CertificateCollection { certificate };
+				var clientCertificates = new X509CertificateCollection { cs.Certificate };
 
 				// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/mysql-net/MySqlConnector/pull/101
 				var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
 				if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 					sslProtocols |= SslProtocols.Tls12;
 
-				var checkCertificateRevocation = sslMode == MySqlSslMode.VerifyFull;
+				var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
 
-				var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Packet.InitSsl(database)));
+				var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Packet.InitSsl(cs.Database)));
 				await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				try
@@ -166,13 +151,13 @@ namespace MySql.Data.Serialization
 				}
 			}
 
-			var response = HandshakeResponse41Packet.Create(initialHandshake, userId, password, database);
+			var response = HandshakeResponse41Packet.Create(initialHandshake, cs.UserID, cs.Password, cs.Database);
 			payload = new PayloadData(new ArraySegment<byte>(response));
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
-		public async Task ResetConnectionAsync(string userId, string password, string database, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async Task ResetConnectionAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
 			{
@@ -189,8 +174,8 @@ namespace MySql.Data.Serialization
 			else
 			{
 				// optimistically hash the password with the challenge from the initial handshake (supported by MariaDB; doesn't appear to be supported by MySQL)
-				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, password);
-				var payload = ChangeUserPayload.Create(userId, hashedPassword, database);
+				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
+				var payload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database);
 				await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
@@ -199,7 +184,7 @@ namespace MySql.Data.Serialization
 					var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload);
 					if (switchRequest.Name != "mysql_native_password")
 						throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(switchRequest.Name));
-					hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(switchRequest.Data, 0, password);
+					hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(switchRequest.Data, 0, cs.Password);
 					payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
 					await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -257,9 +242,9 @@ namespace MySql.Data.Serialization
 				throw new InvalidOperationException("MySqlSession is not connected.");
 		}
 
-		private async Task<bool> OpenSocketAsync(IEnumerable<string> hostnames, int port, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async Task<bool> OpenSocketAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			foreach (var hostname in hostnames)
+			foreach (var hostname in cs.Hostnames)
 			{
 				IPAddress[] ipAddresses;
 				try
@@ -297,14 +282,14 @@ namespace MySql.Data.Serialization
 							{
 								if (ioBehavior == IOBehavior.Asynchronous)
 								{
-									await tcpClient.ConnectAsync(ipAddress, port).ConfigureAwait(false);
+									await tcpClient.ConnectAsync(ipAddress, cs.Port).ConfigureAwait(false);
 								}
 								else
 								{
 #if NETSTANDARD1_3
-									await tcpClient.ConnectAsync(ipAddress, port).ConfigureAwait(false);
+									await tcpClient.ConnectAsync(ipAddress, cs.Port).ConfigureAwait(false);
 #else
-									tcpClient.Connect(ipAddress, port);
+									tcpClient.Connect(ipAddress, cs.Port);
 #endif
 								}
 							}
