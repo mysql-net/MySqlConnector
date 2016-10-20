@@ -15,9 +15,9 @@ namespace MySql.Data.MySqlClient
 
 			// wait for an open slot
 			if (ioBehavior == IOBehavior.Asynchronous)
-				await m_session_semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+				await m_sessionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 			else
-				m_session_semaphore.Wait(cancellationToken);
+				m_sessionSemaphore.Wait(cancellationToken);
 
 			try
 			{
@@ -33,9 +33,9 @@ namespace MySql.Data.MySqlClient
 					else
 					{
 						// session is valid, reset if supported
-						if (m_resetConnections)
+						if (m_connectionSettings.ConnectionReset)
 						{
-							await session.ResetConnectionAsync(m_userId, m_password, m_database, ioBehavior, cancellationToken).ConfigureAwait(false);
+							await session.ResetConnectionAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
 						}
 						// pooled session is ready to be used; return it
 						return session;
@@ -43,12 +43,12 @@ namespace MySql.Data.MySqlClient
 				}
 
 				session = new MySqlSession(this, m_generation);
-				await session.ConnectAsync(m_servers, m_port, m_userId, m_password, m_database, m_sslMode, m_certificateFile, m_certificatePassword, ioBehavior, cancellationToken).ConfigureAwait(false);
+				await session.ConnectAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return session;
 			}
 			catch
 			{
-				m_session_semaphore.Release();
+				m_sessionSemaphore.Release();
 				throw;
 			}
 		}
@@ -64,7 +64,7 @@ namespace MySql.Data.MySqlClient
 			}
 			finally
 			{
-				m_session_semaphore.Release();
+				m_sessionSemaphore.Release();
 			}
 		}
 
@@ -79,12 +79,12 @@ namespace MySql.Data.MySqlClient
 				// try to get an open slot; if this fails, connection pool is full and sessions will be disposed when returned to pool
 				if (ioBehavior == IOBehavior.Asynchronous)
 				{
-					if (!await m_session_semaphore.WaitAsync(waitTimeout, cancellationToken).ConfigureAwait(false))
+					if (!await m_sessionSemaphore.WaitAsync(waitTimeout, cancellationToken).ConfigureAwait(false))
 						return;
 				}
 				else
 				{
-					if (!m_session_semaphore.Wait(waitTimeout, cancellationToken))
+					if (!m_sessionSemaphore.Wait(waitTimeout, cancellationToken))
 						return;
 				}
 
@@ -109,23 +109,22 @@ namespace MySql.Data.MySqlClient
 				}
 				finally
 				{
-					m_session_semaphore.Release();
+					m_sessionSemaphore.Release();
 				}
 			}
 		}
 
-		public static ConnectionPool GetPool(MySqlConnectionStringBuilder csb)
+		public static ConnectionPool GetPool(ConnectionSettings cs)
 		{
-			if (!csb.Pooling)
+			if (!cs.Pooling)
 				return null;
 
-			var key = csb.ConnectionString;
+			var key = cs.ConnectionString;
 
 			ConnectionPool pool;
 			if (!s_pools.TryGetValue(key, out pool))
 			{
-				pool = s_pools.GetOrAdd(key, newKey => new ConnectionPool(csb.Server.Split(','), (int) csb.Port, csb.UserID, csb.Password, csb.Database,
-					csb.SslMode, csb.CertificateFile, csb.CertificatePassword, csb.ConnectionReset, (int)csb.MinimumPoolSize, (int) csb.MaximumPoolSize));
+				pool = s_pools.GetOrAdd(cs.ConnectionString, newKey => new ConnectionPool(cs));
 			}
 			return pool;
 		}
@@ -138,42 +137,19 @@ namespace MySql.Data.MySqlClient
 				await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
-		private ConnectionPool(IEnumerable<string> servers, int port, string userId, string password, string database, MySqlSslMode sslMode,
-			string certificateFile, string certificatePassword, bool resetConnections, int minimumSize, int maximumSize)
+		private ConnectionPool(ConnectionSettings cs)
 		{
-			m_servers = servers;
-			m_port = port;
-			m_userId = userId;
-			m_password = password;
-			m_database = database;
-			m_resetConnections = resetConnections;
-			m_sslMode = sslMode;
-			m_certificateFile = certificateFile;
-			m_certificatePassword = certificatePassword;
-			m_minimumSize = minimumSize;
-			m_maximumSize = maximumSize;
-
+			m_connectionSettings = cs;
 			m_generation = 0;
-			m_session_semaphore = new SemaphoreSlim(m_maximumSize);
+			m_sessionSemaphore = new SemaphoreSlim(cs.MaximumPoolSize);
 			m_sessions = new ConcurrentQueue<MySqlSession>();
 		}
 
 		static readonly ConcurrentDictionary<string, ConnectionPool> s_pools = new ConcurrentDictionary<string, ConnectionPool>();
 
 		int m_generation;
-		readonly SemaphoreSlim m_session_semaphore;
+		readonly SemaphoreSlim m_sessionSemaphore;
 		readonly ConcurrentQueue<MySqlSession> m_sessions;
-
-		readonly IEnumerable<string> m_servers;
-		readonly int m_port;
-		readonly string m_userId;
-		readonly string m_password;
-		readonly string m_database;
-		readonly MySqlSslMode m_sslMode;
-		readonly string m_certificateFile;
-		readonly string m_certificatePassword;
-		readonly bool m_resetConnections;
-		readonly int m_minimumSize;
-		readonly int m_maximumSize;
+		readonly ConnectionSettings m_connectionSettings;
 	}
 }
