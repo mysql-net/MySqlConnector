@@ -1,1 +1,2 @@
-* text=auto
+* text=auto eol=lf
+*.csproj text=auto eol=crlf
