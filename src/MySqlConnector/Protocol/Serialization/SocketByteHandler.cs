@@ -50,7 +50,15 @@ namespace MySql.Data.Protocol.Serialization
 
 		private async Task<int> DoWriteBytesAsync(ArraySegment<byte> payload)
 		{
-			m_socketAwaitable.EventArgs.SetBuffer(payload.Array, payload.Offset, payload.Count);
+			if (payload.Count <= m_buffer.Length)
+			{
+				Buffer.BlockCopy(payload.Array, payload.Offset, m_buffer, 0, payload.Count);
+				m_socketAwaitable.EventArgs.SetBuffer(m_buffer, 0, payload.Count);
+			}
+			else
+			{
+				m_socketAwaitable.EventArgs.SetBuffer(payload.Array, payload.Offset, payload.Count);
+			}
 			await m_socket.SendAsync(m_socketAwaitable);
 			return 0;
 		}
