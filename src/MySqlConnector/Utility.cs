@@ -25,6 +25,23 @@ namespace MySql.Data
 		public static string GetString(this Encoding encoding, ArraySegment<byte> arraySegment)
 			=> encoding.GetString(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
 
+#if NET45
+		public static bool TryGetBuffer(this MemoryStream memoryStream, out ArraySegment<byte> buffer)
+		{
+			try
+			{
+				var rawBuffer = memoryStream.GetBuffer();
+				buffer = new ArraySegment<byte>(rawBuffer, 0, checked((int) memoryStream.Length));
+				return true;
+			}
+			catch (UnauthorizedAccessException)
+			{
+				buffer = default(ArraySegment<byte>);
+				return false;
+			}
+		}
+#endif
+
 		public static void WriteUtf8(this BinaryWriter writer, string value) =>
 			WriteUtf8(writer, value, 0, value.Length);
 

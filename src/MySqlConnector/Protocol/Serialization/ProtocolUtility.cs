@@ -8,7 +8,7 @@ namespace MySql.Data.Protocol.Serialization
 {
     internal static class ProtocolUtility
     {
-		public static ValueTask<Packet> ReadPacketAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+		public static ValueTask<Packet> ReadPacketAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
 			return bufferedByteReader.ReadBytesAsync(byteHandler, 4, ioBehavior)
 				.ContinueWith(headerBytes =>
@@ -21,7 +21,17 @@ namespace MySql.Data.Protocol.Serialization
 					}
 
 					var payloadLength = (int) SerializationUtility.ReadUInt32(headerBytes.Array, headerBytes.Offset, 3);
-					int sequenceNumber = headerBytes.Array[headerBytes.Offset + 3];
+					int packetSequenceNumber = headerBytes.Array[headerBytes.Offset + 3];
+
+					var expectedSequenceNumber = getNextSequenceNumber() % 256;
+					if (packetSequenceNumber != expectedSequenceNumber)
+					{
+						if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
+							return default(ValueTask<Packet>);
+
+						var exception = new InvalidOperationException("Packet received out-of-order. Expected {0}; got {1}.".FormatInvariant(expectedSequenceNumber, packetSequenceNumber));
+						return ValueTaskExtensions.FromException<Packet>(exception);
+					}
 
 					return bufferedByteReader.ReadBytesAsync(byteHandler, payloadLength, ioBehavior)
 						.ContinueWith(payloadBytes =>
@@ -33,14 +43,14 @@ namespace MySql.Data.Protocol.Serialization
 									default(ValueTask<Packet>);
 							}
 
-							return new ValueTask<Packet>(new Packet(sequenceNumber, payloadBytes));
+							return new ValueTask<Packet>(new Packet(packetSequenceNumber, payloadBytes));
 						});
 				});
 		}
 
 		public static ValueTask<ArraySegment<byte>> ReadPayloadAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegment<byte> previousPayloads, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
-			return ReadPacketAsync(bufferedByteReader, byteHandler, protocolErrorBehavior, ioBehavior).ContinueWith(packet =>
+			return ReadPacketAsync(bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior).ContinueWith(packet =>
 				ContinueRead(bufferedByteReader, byteHandler, getNextSequenceNumber, previousPayloads, packet, protocolErrorBehavior, ioBehavior));
 		}
 
@@ -49,18 +59,8 @@ namespace MySql.Data.Protocol.Serialization
 			if (packet == null && protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
 				return default(ValueTask<ArraySegment<byte>>);
 
-			var sequenceNumber = getNextSequenceNumber() % 256;
-			if (packet.SequenceNumber != sequenceNumber)
-			{
-				if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
-					return default(ValueTask<ArraySegment<byte>>);
-
-				var exception = new InvalidOperationException("Packet received out-of-order. Expected {0}; got {1}.".FormatInvariant(sequenceNumber, packet.SequenceNumber));
-				return ValueTaskExtensions.FromException<ArraySegment<byte>>(exception);
-			}
-
 			var previousPayloadsArray = previousPayloads.Array;
-			if (previousPayloadsArray == null && packet.Contents.Count < ProtocolUtility.MaxPacketSize)
+			if (previousPayloadsArray == null && packet.Contents.Count < MaxPacketSize)
 				return new ValueTask<ArraySegment<byte>>(packet.Contents);
 
 			if (previousPayloadsArray == null)

@@ -21,6 +21,7 @@ namespace MySql.Data.Serialization
 				ProtocolCapabilities.PreparedStatementMultiResults |
 				(string.IsNullOrWhiteSpace(cs.Database) ? 0 : ProtocolCapabilities.ConnectWithDatabase) |
 				(cs.UseAffectedRows ? 0 : ProtocolCapabilities.FoundRows) |
+				(cs.UseCompression ? ProtocolCapabilities.Compress : ProtocolCapabilities.None) |
 				additionalCapabilities));
 			writer.WriteInt32(0x40000000);
 			writer.WriteByte((byte) CharacterSet.Utf8Mb4Binary);

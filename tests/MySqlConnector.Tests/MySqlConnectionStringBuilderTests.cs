@@ -85,16 +85,6 @@ namespace MySql.Data.Tests
 
 #if !BASELINE
 		[Fact]
-		public void UseCompressionNotSupported()
-		{
-			var csb = new MySqlConnectionStringBuilder
-			{
-				UseCompression = true,
-			};
-			Assert.Throws<NotSupportedException>(() => new MySqlConnection(csb.ConnectionString));
-		}
-
-		[Fact]
 		public void SslModePreferredInvalidOperation()
 		{
 			var csb = new MySqlConnectionStringBuilder("ssl mode=preferred;");

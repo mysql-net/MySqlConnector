@@ -83,6 +83,8 @@ namespace MySql.Data.Serialization
 			ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
 			ConnectionId = initialHandshake.ConnectionId;
 			AuthPluginData = initialHandshake.AuthPluginData;
+			if (cs.UseCompression && !initialHandshake.ProtocolCapabilities.HasFlag(ProtocolCapabilities.Compress))
+				cs = cs.WithUseCompression(false);
 
 			if (cs.SslMode != MySqlSslMode.None)
 				await InitSslAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -92,6 +94,9 @@ namespace MySql.Data.Serialization
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			OkPayload.Create(payload);
+
+			if (cs.UseCompression)
+				m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
 		}
 
 		public async Task ResetConnectionAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
