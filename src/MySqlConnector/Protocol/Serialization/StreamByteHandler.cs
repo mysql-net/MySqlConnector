@@ -9,26 +9,40 @@ namespace MySql.Data.Protocol.Serialization
 		public StreamByteHandler(Stream stream)
 		{
 			m_stream = stream;
+			m_buffer = new byte[16384];
 		}
 
-		public ValueTask<int> ReadBytesAsync(byte[] buffer, int offset, int count, IOBehavior ioBehavior)
+		public ValueTask<ArraySegment<byte>> ReadBytesAsync(int count, IOBehavior ioBehavior)
 		{
-			return ioBehavior == IOBehavior.Asynchronous ?
-				new ValueTask<int>(m_stream.ReadAsync(buffer, offset, count)) :
-				new ValueTask<int>(m_stream.Read(buffer, offset, count));
-		}
-
-		public ValueTask<int> WriteBytesAsync(ArraySegment<byte> payload, IOBehavior ioBehavior)
-		{
+			var buffer = count < m_buffer.Length ? m_buffer : new byte[count];
 			if (ioBehavior == IOBehavior.Asynchronous)
 			{
-				return new ValueTask<int>(DoWriteBytesAsync(payload));
+				return new ValueTask<ArraySegment<byte>>(DoReadBytesAsync(buffer, count));
 			}
 			else
 			{
-				m_stream.Write(payload.Array, payload.Offset, payload.Count);
-				return new ValueTask<int>(0);
+				var bytesRead = m_stream.Read(buffer, 0, count);
+				return new ValueTask<ArraySegment<byte>>(new ArraySegment<byte>(buffer, 0, bytesRead));
 			}
+		}
+
+		public ValueTask<int> WriteBytesAsync(ArraySegment<byte> data, IOBehavior ioBehavior)
+		{
+			if (ioBehavior == IOBehavior.Asynchronous)
+			{
+				return new ValueTask<int>(DoWriteBytesAsync(data));
+			}
+			else
+			{
+				m_stream.Write(data.Array, data.Offset, data.Count);
+				return default(ValueTask<int>);
+			}
+		}
+
+		private async Task<ArraySegment<byte>> DoReadBytesAsync(byte[] buffer, int count)
+		{
+			var bytesRead = await m_stream.ReadAsync(buffer, 0, count).ConfigureAwait(false);
+			return new ArraySegment<byte>(buffer, 0, bytesRead);
 		}
 
 		private async Task<int> DoWriteBytesAsync(ArraySegment<byte> payload)
@@ -37,6 +51,7 @@ namespace MySql.Data.Protocol.Serialization
 			return 0;
 		}
 
-		private readonly Stream m_stream;
+		readonly Stream m_stream;
+		readonly byte[] m_buffer;
 	}
 }

@@ -11,33 +11,41 @@ namespace MySql.Data.Protocol.Serialization
 			m_socket = socket;
 			var socketEventArgs = new SocketAsyncEventArgs();
 			m_socketAwaitable = new SocketAwaitable(socketEventArgs);
+			m_buffer = new byte[16384];
 		}
 
-		public ValueTask<int> ReadBytesAsync(byte[] buffer, int offset, int count, IOBehavior ioBehavior)
+		public ValueTask<ArraySegment<byte>> ReadBytesAsync(int count, IOBehavior ioBehavior)
 		{
-			return ioBehavior == IOBehavior.Asynchronous ?
-				new ValueTask<int>(DoReadBytesAsync(buffer, offset, count)) :
-				new ValueTask<int>(m_socket.Receive(buffer, offset, count, SocketFlags.None));
-		}
-
-		public ValueTask<int> WriteBytesAsync(ArraySegment<byte> payload, IOBehavior ioBehavior)
-		{
+			var buffer = count < m_buffer.Length ? m_buffer : new byte[count];
 			if (ioBehavior == IOBehavior.Asynchronous)
 			{
-				return new ValueTask<int>(DoWriteBytesAsync(payload));
+				return new ValueTask<ArraySegment<byte>>(DoReadBytesAsync(buffer, 0, count));
 			}
 			else
 			{
-				m_socket.Send(payload.Array, payload.Offset, payload.Count, SocketFlags.None);
+				var bytesRead = m_socket.Receive(buffer, 0, count, SocketFlags.None);
+				return new ValueTask<ArraySegment<byte>>(new ArraySegment<byte>(buffer, 0, bytesRead));
+			}
+		}
+
+		public ValueTask<int> WriteBytesAsync(ArraySegment<byte> data, IOBehavior ioBehavior)
+		{
+			if (ioBehavior == IOBehavior.Asynchronous)
+			{
+				return new ValueTask<int>(DoWriteBytesAsync(data));
+			}
+			else
+			{
+				m_socket.Send(data.Array, data.Offset, data.Count, SocketFlags.None);
 				return default(ValueTask<int>);
 			}
 		}
 
-		public async Task<int> DoReadBytesAsync(byte[] buffer, int offset, int count)
+		private async Task<ArraySegment<byte>> DoReadBytesAsync(byte[] buffer, int offset, int count)
 		{
 			m_socketAwaitable.EventArgs.SetBuffer(buffer, offset, count);
 			await m_socket.ReceiveAsync(m_socketAwaitable);
-			return m_socketAwaitable.EventArgs.BytesTransferred;
+			return new ArraySegment<byte>(buffer, 0, m_socketAwaitable.EventArgs.BytesTransferred);
 		}
 
 		private async Task<int> DoWriteBytesAsync(ArraySegment<byte> payload)
@@ -47,7 +55,8 @@ namespace MySql.Data.Protocol.Serialization
 			return 0;
 		}
 
-		private readonly Socket m_socket;
-		private readonly SocketAwaitable m_socketAwaitable;
+		readonly Socket m_socket;
+		readonly SocketAwaitable m_socketAwaitable;
+		readonly byte[] m_buffer;
 	}
 }
