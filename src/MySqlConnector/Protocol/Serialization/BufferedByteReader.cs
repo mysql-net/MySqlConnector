@@ -14,10 +14,12 @@ namespace MySql.Data.Protocol.Serialization
 				return new ValueTask<ArraySegment<byte>>(readBytes);
 			}
 
+			if (m_remainingData.Count == 0)
+				return ReadBytesAsync(byteHandler, default(ArraySegment<byte>), count, ioBehavior);
+
 			// save data from m_remainingData.Array because calling ReadAsync may invalidate it
 			var buffer = new byte[Math.Max(count, 16384)];
-			if (m_remainingData.Count > 0)
-				Buffer.BlockCopy(m_remainingData.Array, m_remainingData.Offset, buffer, 0, m_remainingData.Count);
+			Buffer.BlockCopy(m_remainingData.Array, m_remainingData.Offset, buffer, 0, m_remainingData.Count);
 			var previousReadBytes = new ArraySegment<byte>(buffer, 0, m_remainingData.Count);
 
 			return ReadBytesAsync(byteHandler, previousReadBytes, count, ioBehavior);
@@ -31,8 +33,16 @@ namespace MySql.Data.Protocol.Serialization
 					if (readBytes.Count == 0)
 						return new ValueTask<ArraySegment<byte>>(previousReadBytes);
 
+					if (previousReadBytes.Array == null && readBytes.Count >= count)
+					{
+						m_remainingData = new ArraySegment<byte>(readBytes.Array, readBytes.Offset + count, readBytes.Count - count);
+						return new ValueTask<ArraySegment<byte>>(new ArraySegment<byte>(readBytes.Array, readBytes.Offset, count));
+					}
+
 					var previousReadBytesArray = previousReadBytes.Array;
-					if (previousReadBytesArray.Length < previousReadBytes.Count + readBytes.Count)
+					if (previousReadBytesArray == null)
+						previousReadBytesArray = new byte[Math.Max(count, 16384)];
+					else if (previousReadBytesArray.Length < previousReadBytes.Count + readBytes.Count)
 						Array.Resize(ref previousReadBytesArray, Math.Max(previousReadBytesArray.Length * 2, previousReadBytes.Count + readBytes.Count));
 
 					Buffer.BlockCopy(readBytes.Array, readBytes.Offset, previousReadBytesArray, previousReadBytes.Offset + previousReadBytes.Count, readBytes.Count);
