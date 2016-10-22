@@ -1,4 +1,4 @@
-namespace MySql.Data.Serialization
+namespace MySql.Data.Protocol.Serialization
 {
 	/// <summary>
 	/// Specifies whether to perform synchronous or asynchronous I/O.

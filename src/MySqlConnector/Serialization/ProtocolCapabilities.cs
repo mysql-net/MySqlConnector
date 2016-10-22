@@ -6,6 +6,11 @@ namespace MySql.Data.Serialization
 	internal enum ProtocolCapabilities
 	{
 		/// <summary>
+		/// No specified capabilities.
+		/// </summary>
+		None = 0,
+
+		/// <summary>
 		/// Use the improved version of Old Password Authentication.
 		/// </summary>
 		LongPassword = 1,

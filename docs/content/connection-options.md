@@ -130,7 +130,14 @@ These are the other options that MySqlConnector supports.  They are set to sensi
     <td>true</td>
     <td>Setting this to true indicates that the provider expects user variables in the SQL.</td>
   </tr>
-    <tr>
+  <tr>
+    <td>Compress, Use Compression, UseCompression</td>
+    <td>false</td>
+    <td>If true (and if the server supports compression), compresses packets sent between client and server. This option is unlikely to be useful in
+      practice unless there is a high-latency or low-bandwidth network link between the application and the database server. You should measure
+      performance with and without this option to determine if it's beneficial in your environment.</td>
+  </tr>
+  <tr>
     <td>Connect Timeout, Connection Timeout, ConnectionTimeout</td>
     <td>15</td>
     <td>The length of time (in seconds) to wait for a connection to the server before terminating the attempt and generating an error.</td>

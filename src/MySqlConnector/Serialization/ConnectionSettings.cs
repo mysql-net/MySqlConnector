@@ -9,7 +9,7 @@ namespace MySql.Data.Serialization
 {
 	internal sealed class ConnectionSettings
 	{
-		internal ConnectionSettings(MySqlConnectionStringBuilder csb)
+		public ConnectionSettings(MySqlConnectionStringBuilder csb)
 		{
 			ConnectionString = csb.ConnectionString;
 
@@ -52,10 +52,33 @@ namespace MySql.Data.Serialization
 			OldGuids = csb.OldGuids;
 			PersistSecurityInfo = csb.PersistSecurityInfo;
 			UseAffectedRows = csb.UseAffectedRows;
-
-			if (csb.UseCompression)
-				throw new NotSupportedException("Compression=True is not supported.");
 			UseCompression = csb.UseCompression;
+		}
+
+		public ConnectionSettings WithUseCompression(bool useCompression) => new ConnectionSettings(this, useCompression);
+
+		private ConnectionSettings(ConnectionSettings other, bool? useCompression)
+		{
+			ConnectionString = other.ConnectionString;
+			Hostnames = other.Hostnames;
+			Port = other.Port;
+			UserID = other.UserID;
+			Password = other.Password;
+			Database = other.Database;
+			SslMode = other.SslMode;
+			Certificate = other.Certificate;
+			Pooling = other.Pooling;
+			ConnectionReset = other.ConnectionReset;
+			MinimumPoolSize = other.MinimumPoolSize;
+			MaximumPoolSize = other.MaximumPoolSize;
+			AllowUserVariables = other.AllowUserVariables;
+			ConnectionTimeout = other.ConnectionTimeout;
+			ConvertZeroDateTime = other.ConvertZeroDateTime;
+			ForceSynchronous = other.ForceSynchronous;
+			OldGuids = other.OldGuids;
+			PersistSecurityInfo = other.PersistSecurityInfo;
+			UseAffectedRows = other.UseAffectedRows;
+			UseCompression = useCompression ?? other.UseCompression;
 		}
 
 		internal readonly string ConnectionString;

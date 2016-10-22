@@ -12,8 +12,11 @@ before_install:
 script:
   - dotnet restore
   - dotnet test tests/MySqlConnector.Tests --configuration Release
-  - echo 'Executing tests with ssl mode=none' && cp tests/SideBySide.New/config.json.example tests/SideBySide.New/config.json && dotnet test tests/SideBySide.New --configuration Release
-  - echo 'Executing tests with ssl mode=required' && cp .ci/config.ssl.json tests/SideBySide.New/config.json && dotnet test tests/SideBySide.New --configuration Release
+  - dotnet build tests/SideBySide.New --configuration Release
+  - echo 'Executing tests with No Compression, No SSL' && cp tests/SideBySide.New/config.json.example tests/SideBySide.New/config.json && time dotnet test tests/SideBySide.New --configuration Release
+  - echo 'Executing tests with Compression, No SSL' && cp .ci/config.compression.json tests/SideBySide.New/config.json && time dotnet test tests/SideBySide.New --configuration Release
+  - echo 'Executing tests with No Compression, SSL' && cp .ci/config.ssl.json tests/SideBySide.New/config.json && time dotnet test tests/SideBySide.New --configuration Release
+  - echo 'Executing tests with Compression, SSL' && cp .ci/config.compression+ssl.json tests/SideBySide.New/config.json && time dotnet test tests/SideBySide.New --configuration Release
 
 after_script:
   - chmod +x .ci/build-docs.sh && ./.ci/build-docs.sh

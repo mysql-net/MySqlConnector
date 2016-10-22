@@ -41,9 +41,9 @@ namespace MySql.Data.Serialization
 			{
 				try
 				{
-					m_conversation.StartNew();
-					await m_payloadHandler.WritePayloadAsync(m_conversation, QuitPayload.Create(), ioBehavior).ConfigureAwait(false);
-					await m_payloadHandler.ReadPayloadAsync(m_conversation, ProtocolErrorBehavior.Ignore, ioBehavior).ConfigureAwait(false);
+					m_payloadHandler.StartNewConversation();
+					await m_payloadHandler.WritePayloadAsync(QuitPayload.Create(), ioBehavior).ConfigureAwait(false);
+					await m_payloadHandler.ReadPayloadAsync(ProtocolErrorBehavior.Ignore, ioBehavior).ConfigureAwait(false);
 				}
 				catch (SocketException)
 				{
@@ -83,6 +83,8 @@ namespace MySql.Data.Serialization
 			ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
 			ConnectionId = initialHandshake.ConnectionId;
 			AuthPluginData = initialHandshake.AuthPluginData;
+			if (cs.UseCompression && !initialHandshake.ProtocolCapabilities.HasFlag(ProtocolCapabilities.Compress))
+				cs = cs.WithUseCompression(false);
 
 			if (cs.SslMode != MySqlSslMode.None)
 				await InitSslAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -90,7 +92,11 @@ namespace MySql.Data.Serialization
 			var response = HandshakeResponse41Packet.Create(initialHandshake, cs);
 			payload = new PayloadData(new ArraySegment<byte>(response));
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-			await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			OkPayload.Create(payload);
+
+			if (cs.UseCompression)
+				m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
 		}
 
 		public async Task ResetConnectionAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -151,14 +157,14 @@ namespace MySql.Data.Serialization
 		// Starts a new conversation with the server by sending the first packet.
 		public ValueTask<int> SendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			m_conversation.StartNew();
+			m_payloadHandler.StartNewConversation();
 			return TryAsync(m_payloadHandler.WritePayloadAsync, payload.ArraySegment, ioBehavior, cancellationToken);
 		}
 
 		// Starts a new conversation with the server by receiving the first packet.
 		public ValueTask<PayloadData> ReceiveAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			m_conversation.StartNew();
+			m_payloadHandler.StartNewConversation();
 			return TryAsync(m_payloadHandler.ReadPayloadAsync, ioBehavior, cancellationToken);
 		}
 
@@ -243,11 +249,9 @@ namespace MySql.Data.Serialization
 
 					m_hostname = hostname;
 					m_tcpClient = tcpClient;
-					m_conversation = new Conversation();
 
 					var socketByteHandler = new SocketByteHandler(m_tcpClient.Client);
-					var packetHandler = new PacketHandler(socketByteHandler);
-					m_payloadHandler = new PayloadHandler(packetHandler);
+					m_payloadHandler = new StandardPayloadHandler(socketByteHandler);
 
 					m_state = State.Connected;
 					return true;
@@ -304,8 +308,8 @@ namespace MySql.Data.Serialization
 					sslStream.AuthenticateAsClient(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation);
 #endif
 				}
-				var sslByteHandler = new SslByteHandler(sslStream);
-				m_payloadHandler.SetByteHandler(sslByteHandler);
+				var sslByteHandler = new StreamByteHandler(sslStream);
+				m_payloadHandler.ByteHandler = sslByteHandler;
 			}
 			catch (AuthenticationException ex)
 			{
@@ -314,7 +318,6 @@ namespace MySql.Data.Serialization
 #else
 				m_tcpClient.Close();
 #endif
-				m_conversation = null;
 				m_hostname = "";
 				m_payloadHandler = null;
 				m_state = State.Failed;
@@ -323,10 +326,10 @@ namespace MySql.Data.Serialization
 			}
 		}
 
-		private ValueTask<int> TryAsync<TArg>(Func<IConversation, TArg, IOBehavior, ValueTask<int>> func, TArg arg, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private ValueTask<int> TryAsync<TArg>(Func<TArg, IOBehavior, ValueTask<int>> func, TArg arg, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyConnected();
-			var task = func(m_conversation, arg, ioBehavior);
+			var task = func(arg, ioBehavior);
 			if (task.IsCompletedSuccessfully)
 				return task;
 
@@ -344,10 +347,10 @@ namespace MySql.Data.Serialization
 			return 0;
 		}
 
-		private ValueTask<PayloadData> TryAsync(Func<IConversation, ProtocolErrorBehavior, IOBehavior, ValueTask<ArraySegment<byte>>> func, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private ValueTask<PayloadData> TryAsync(Func<ProtocolErrorBehavior, IOBehavior, ValueTask<ArraySegment<byte>>> func, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyConnected();
-			var task = func(m_conversation, ProtocolErrorBehavior.Throw, ioBehavior);
+			var task = func(ProtocolErrorBehavior.Throw, ioBehavior);
 			if (task.IsCompletedSuccessfully)
 			{
 				var payload = new PayloadData(task.Result);
@@ -387,7 +390,6 @@ namespace MySql.Data.Serialization
 		State m_state;
 		string m_hostname;
 		TcpClient m_tcpClient;
-		Conversation m_conversation;
 		IPayloadHandler m_payloadHandler;
 	}
 }
