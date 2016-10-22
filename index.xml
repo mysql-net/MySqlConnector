@@ -271,7 +271,14 @@ namespace MySqlConnector.Performance.Controllers
     &lt;td&gt;true&lt;/td&gt;
     &lt;td&gt;Setting this to true indicates that the provider expects user variables in the SQL.&lt;/td&gt;
   &lt;/tr&gt;
-    &lt;tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Compress, Use Compression, UseCompression&lt;/td&gt;
+    &lt;td&gt;false&lt;/td&gt;
+    &lt;td&gt;If true (and if the server supports compression), compresses packets sent between client and server. This option is unlikely to be useful in
+      practice unless there is a high-latency or low-bandwidth network link between the application and the database server. You should measure
+      performance with and without this option to determine if it&#39;s beneficial in your environment.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
     &lt;td&gt;Connect Timeout, Connection Timeout, ConnectionTimeout&lt;/td&gt;
     &lt;td&gt;15&lt;/td&gt;
     &lt;td&gt;The length of time (in seconds) to wait for a connection to the server before terminating the attempt and generating an error.&lt;/td&gt;
