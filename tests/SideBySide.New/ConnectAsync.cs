@@ -70,7 +70,7 @@ namespace SideBySide
 #if BASELINE
 		[Fact(Skip = "https://bugs.mysql.com/bug.php?id=81650")]
 #else
-		[Fact]
+		[TcpConnectionFact]
 #endif
 		public async Task ConnectMultipleHostNames()
 		{

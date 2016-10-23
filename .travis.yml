@@ -17,7 +17,7 @@ script:
   - echo 'Executing tests with Compression, No SSL' && cp .ci/config/config.compression.json tests/SideBySide.New/config.json && time dotnet test tests/SideBySide.New --configuration Release
   - echo 'Executing tests with No Compression, SSL' && cp .ci/config/config.ssl.json tests/SideBySide.New/config.json && time dotnet test tests/SideBySide.New --configuration Release
   - echo 'Executing tests with Compression, SSL' && cp .ci/config/config.compression+ssl.json tests/SideBySide.New/config.json && time dotnet test tests/SideBySide.New --configuration Release
+  - echo 'Executing tests with Unix Domain Socket, No Compression, No SSL' && cp .ci/config/config.uds.json tests/SideBySide.New/config.json && time dotnet test tests/SideBySide.New --configuration Release
 
 after_script:
   - chmod +x .ci/build-docs.sh && ./.ci/build-docs.sh
-
