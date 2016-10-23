@@ -49,31 +49,23 @@ namespace MySql.Data.Serialization
 				{
 					// socket may have been closed during shutdown; ignore
 				}
-				m_payloadHandler = null;
 			}
-			if (m_tcpClient != null)
-			{
-				try
-				{
-#if NETSTANDARD1_3
-					m_tcpClient.Dispose();
-#else
-					m_tcpClient.Close();
-#endif
-				}
-				catch (SocketException)
-				{
-				}
-				m_tcpClient = null;
-			}
+			ShutdownSocket();
 			m_state = State.Closed;
 		}
 
 		public async Task ConnectAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			var connected = await OpenSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+			var connected = false;
+			if (cs.ConnectionType == ConnectionType.Tcp)
+				connected = await OpenTcpSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+			else if (cs.ConnectionType == ConnectionType.Unix)
+				connected = await OpenUnixSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 			if (!connected)
 				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
+
+			var socketByteHandler = new SocketByteHandler(m_socket);
+			m_payloadHandler = new StandardPayloadHandler(socketByteHandler);
 
 			var payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
@@ -184,7 +176,7 @@ namespace MySql.Data.Serialization
 				throw new InvalidOperationException("MySqlSession is not connected.");
 		}
 
-		private async Task<bool> OpenSocketAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async Task<bool> OpenTcpSocketAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			foreach (var hostname in cs.Hostnames)
 			{
@@ -192,7 +184,7 @@ namespace MySql.Data.Serialization
 				try
 				{
 #if NETSTANDARD1_3
-					// Dns.GetHostAddresses isn't available until netstandard 2.0: https://github.com/dotnet/corefx/pull/11950
+// Dns.GetHostAddresses isn't available until netstandard 2.0: https://github.com/dotnet/corefx/pull/11950
 					ipAddresses = await Dns.GetHostAddressesAsync(hostname).ConfigureAwait(false);
 #else
 					if (ioBehavior == IOBehavior.Asynchronous)
@@ -249,14 +241,59 @@ namespace MySql.Data.Serialization
 
 					m_hostname = hostname;
 					m_tcpClient = tcpClient;
-
-					var socketByteHandler = new SocketByteHandler(m_tcpClient.Client);
-					m_payloadHandler = new StandardPayloadHandler(socketByteHandler);
+					m_socket = m_tcpClient.Client;
+					m_networkStream = m_tcpClient.GetStream();
 
 					m_state = State.Connected;
 					return true;
 				}
 			}
+			return false;
+		}
+
+		private async Task<bool> OpenUnixSocketAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.IP);
+			var unixEp = new UnixEndPoint(cs.UnixSocket);
+			try
+			{
+				using (cancellationToken.Register(() => socket.Dispose()))
+				{
+					try
+					{
+						if (ioBehavior == IOBehavior.Asynchronous)
+						{
+#if NETSTANDARD1_3
+							await socket.ConnectAsync(unixEp).ConfigureAwait(false);
+#else
+							await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, unixEp, null).ConfigureAwait(false);
+#endif
+						}
+						else
+						{
+							socket.Connect(unixEp);
+						}
+					}
+					catch (ObjectDisposedException ex) when (cancellationToken.IsCancellationRequested)
+					{
+						throw new MySqlException("Connect Timeout expired.", ex);
+					}
+				}
+			}
+			catch (SocketException)
+			{
+				socket.Dispose();
+			}
+
+			if (socket.Connected)
+			{
+				m_socket = socket;
+				m_networkStream = new NetworkStream(socket);
+
+				m_state = State.Connected;
+				return true;
+			}
+
 			return false;
 		}
 
@@ -279,7 +316,7 @@ namespace MySql.Data.Serialization
 					}
 				};
 
-			var sslStream = new SslStream(m_tcpClient.GetStream(), false,
+			var sslStream = new SslStream(m_networkStream, false,
 				new RemoteCertificateValidationCallback(remoteCertificateCb),
 				new LocalCertificateSelectionCallback(localCertificateCb));
 			var clientCertificates = new X509CertificateCollection { cs.Certificate };
@@ -313,16 +350,51 @@ namespace MySql.Data.Serialization
 			}
 			catch (AuthenticationException ex)
 			{
+				ShutdownSocket();
+				m_hostname = "";
+				m_state = State.Failed;
+				throw new MySqlException("SSL Authentication Error", ex);
+			}
+		}
+
+		private void ShutdownSocket()
+		{
+			m_payloadHandler = null;
+			if (m_networkStream != null)
+			{
+#if NETSTANDARD1_3
+				m_networkStream.Dispose();
+#else
+				m_networkStream.Close();
+#endif
+				m_networkStream = null;
+			}
+			if (m_tcpClient != null)
+			{
+				try
+				{
 #if NETSTANDARD1_3
 					m_tcpClient.Dispose();
 #else
-				m_tcpClient.Close();
+					m_tcpClient.Close();
 #endif
-				m_hostname = "";
-				m_payloadHandler = null;
-				m_state = State.Failed;
+				}
+				catch (SocketException)
+				{
+				}
 				m_tcpClient = null;
-				throw new MySqlException("SSL Authentication Error", ex);
+				m_socket = null;
+			}
+			else if (m_socket != null)
+			{
+				try
+				{
+					m_socket.Dispose();
+					m_socket = null;
+				}
+				catch (SocketException)
+				{
+				}
 			}
 		}
 
@@ -389,7 +461,10 @@ namespace MySql.Data.Serialization
 
 		State m_state;
 		string m_hostname;
+
 		TcpClient m_tcpClient;
+		Socket m_socket;
+		NetworkStream m_networkStream;
 		IPayloadHandler m_payloadHandler;
 	}
 }

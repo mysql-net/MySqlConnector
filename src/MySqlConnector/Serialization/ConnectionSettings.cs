@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using MySql.Data.MySqlClient;
@@ -14,8 +15,19 @@ namespace MySql.Data.Serialization
 			ConnectionString = csb.ConnectionString;
 
 			// Base Options
-			Hostnames = csb.Server.Split(',');
-			Port = (int) csb.Port;
+			if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (csb.Server.StartsWith("/") || csb.Server.StartsWith("./")))
+			{
+				if (!File.Exists(csb.Server))
+					throw new MySqlException("Cannot find Unix Socket at " + csb.Server);
+				ConnectionType = ConnectionType.Unix;
+				UnixSocket = Path.GetFullPath(csb.Server);
+			}
+			else
+			{
+				ConnectionType = ConnectionType.Tcp;
+				Hostnames = csb.Server.Split(',');
+				Port = (int) csb.Port;
+			}
 			UserID = csb.UserID;
 			Password = csb.Password;
 			Database = csb.Database;
@@ -59,18 +71,27 @@ namespace MySql.Data.Serialization
 
 		private ConnectionSettings(ConnectionSettings other, bool? useCompression)
 		{
+			// Base Options
 			ConnectionString = other.ConnectionString;
+			ConnectionType = other.ConnectionType;
 			Hostnames = other.Hostnames;
 			Port = other.Port;
+			UnixSocket = other.UnixSocket;
 			UserID = other.UserID;
 			Password = other.Password;
 			Database = other.Database;
+
+			// SSL/TLS Options
 			SslMode = other.SslMode;
 			Certificate = other.Certificate;
+
+			// Connection Pooling Options
 			Pooling = other.Pooling;
 			ConnectionReset = other.ConnectionReset;
 			MinimumPoolSize = other.MinimumPoolSize;
 			MaximumPoolSize = other.MaximumPoolSize;
+
+			// Other Options
 			AllowUserVariables = other.AllowUserVariables;
 			ConnectionTimeout = other.ConnectionTimeout;
 			ConvertZeroDateTime = other.ConvertZeroDateTime;
@@ -81,11 +102,12 @@ namespace MySql.Data.Serialization
 			UseCompression = useCompression ?? other.UseCompression;
 		}
 
-		internal readonly string ConnectionString;
-
 		// Base Options
+		internal readonly string ConnectionString;
+		internal readonly ConnectionType ConnectionType;
 		internal readonly IEnumerable<string> Hostnames;
 		internal readonly int Port;
+		internal readonly string UnixSocket;
 		internal readonly string UserID;
 		internal readonly string Password;
 		internal readonly string Database;

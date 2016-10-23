@@ -1,9 +1,13 @@
 #!/bin/bash
 cd $(dirname $0)
 
+sudo mkdir -p mysqld
+sudo chmod 777 mysqld
+
 docker pull mysql:5.7
 docker run -d \
-	-v $(pwd):/etc/mysql/conf.d \
+	-v $(pwd)/mysqld:/var/run/mysqld \
+	-v $(pwd)/server:/etc/mysql/conf.d \
 	-p 3306:3306 \
 	--name mysql \
 	-e MYSQL_ROOT_PASSWORD='test' \

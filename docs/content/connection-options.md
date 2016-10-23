@@ -27,7 +27,7 @@ These are the basic options that need to be defined to connect to a MySQL databa
   <tr>
     <td>Host, Server, Data Source, DataSource, Address, Addr, Network Address</td>
     <td>localhost</td>
-    <td>The name or network address of the instance of MySQL to which to connect. Multiple hosts can be specified separated by commas. This can be useful where multiple MySQL servers are configured for replication and you are not concerned about the precise server you are connecting to. No attempt is made by the provider to synchronize writes to the database, so take care when using this option. Unix domain sockets are not presently supported.</td>
+    <td>The name or network address of the instance of MySQL to which to connect. Multiple hosts can be specified separated by commas. This can be useful where multiple MySQL servers are configured for replication and you are not concerned about the precise server you are connecting to. No attempt is made by the provider to synchronize writes to the database, so take care when using this option. In Unix environment with Mono, this can be a fully qualified path to a MySQL socket file. With this configuration, the Unix socket is used instead of the TCP/IP socket. Currently, only a single socket name can be given, so accessing MySQL in a replicated environment using Unix sockets is not currently supported.</td>
   </tr>
     <tr>
     <td>Port</td>
