@@ -5,12 +5,18 @@
 * The behaviour of cancellation is not well-defined in this release; cancelling a query
 may leave the `MySqlConnection` in an unusable state.
 * Not all MySQL data types are supported.
-* Many `MySql.Data` connection string settings are not supported by this library.
-* Compression is not supported.
+* Many `MySql.Data` connection string settings are not supported by this library. See
+[Connection Options](https://mysql-net.github.io/MySqlConnector/connection-options/) for a list
+of supported options.
 * Stored Procedures aren't supported.
 * Only the "`mysql_native_password`" authentication plugin is supported.
 
 ## Release Notes
+
+### 0.6.0
+
+* Implement `UseCompression` connection string option: [#31](https://github.com/mysql-net/MySqlConnector/issues/31).
+* Add support for Unix domain sockets: [#118](https://github.com/mysql-net/MySqlConnector/issues/118).
 
 ### 0.5.0
 
