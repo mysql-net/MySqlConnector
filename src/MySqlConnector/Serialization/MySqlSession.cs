@@ -460,8 +460,7 @@ namespace MySql.Data.Serialization
 		}
 
 		State m_state;
-		string m_hostname;
-
+		string m_hostname = "";
 		TcpClient m_tcpClient;
 		Socket m_socket;
 		NetworkStream m_networkStream;
