@@ -60,7 +60,7 @@ namespace MySql.Data.Protocol.Serialization
 			{
 				int bytesToRead = Math.Min(m_remainingData.Count, count);
 				var result = new ArraySegment<byte>(m_remainingData.Array, m_remainingData.Offset, bytesToRead);
-				m_remainingData = new ArraySegment<byte>(m_remainingData.Array, m_remainingData.Offset + bytesToRead, m_remainingData.Count - bytesToRead);
+				m_remainingData = m_remainingData.Slice(bytesToRead);
 				return new ValueTask<ArraySegment<byte>>(result);
 			}
 
@@ -155,8 +155,8 @@ namespace MySql.Data.Protocol.Serialization
 								}
 							}
 
-							var result = new ArraySegment<byte>(m_remainingData.Array, m_remainingData.Offset, count);
-							m_remainingData = new ArraySegment<byte>(m_remainingData.Array, m_remainingData.Offset + count, m_remainingData.Count - count);
+							var result = m_remainingData.Slice(0, count);
+							m_remainingData = m_remainingData.Slice(count);
 							return new ValueTask<ArraySegment<byte>>(result);
 						});
 				});
@@ -202,7 +202,7 @@ namespace MySql.Data.Protocol.Serialization
 			{
 				// setting the length to 0 indicates sending uncompressed data
 				uncompressedLength = 0;
-				compressedData = new ArraySegment<byte>(remainingUncompressedData.Array, remainingUncompressedData.Offset, remainingUncompressedBytes);
+				compressedData = remainingUncompressedData.Slice(0, remainingUncompressedBytes);
 			}
 
 			var buffer = new byte[compressedData.Count + 7];
@@ -211,7 +211,7 @@ namespace MySql.Data.Protocol.Serialization
 			SerializationUtility.WriteUInt32(uncompressedLength, buffer, 4, 3);
 			Buffer.BlockCopy(compressedData.Array, compressedData.Offset, buffer, 7, compressedData.Count);
 
-			remainingUncompressedData = new ArraySegment<byte>(remainingUncompressedData.Array, remainingUncompressedData.Offset + remainingUncompressedBytes, remainingUncompressedData.Count - remainingUncompressedBytes);
+			remainingUncompressedData = remainingUncompressedData.Slice(remainingUncompressedBytes);
 			return m_byteHandler.WriteBytesAsync(new ArraySegment<byte>(buffer, 0, buffer.Length), ioBehavior)
 				.ContinueWith(_ => remainingUncompressedData.Count == 0 ? default(ValueTask<int>) :
 					CompressAndWrite(remainingUncompressedData, ioBehavior));

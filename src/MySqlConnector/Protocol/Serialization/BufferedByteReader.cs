@@ -9,8 +9,8 @@ namespace MySql.Data.Protocol.Serialization
 		{
 			if (m_remainingData.Count >= count)
 			{
-				var readBytes = new ArraySegment<byte>(m_remainingData.Array, m_remainingData.Offset, count);
-				m_remainingData = new ArraySegment<byte>(m_remainingData.Array, m_remainingData.Offset + count, m_remainingData.Count - count);
+				var readBytes = m_remainingData.Slice(0, count);
+				m_remainingData = m_remainingData.Slice(count);
 				return new ValueTask<ArraySegment<byte>>(readBytes);
 			}
 
@@ -35,8 +35,8 @@ namespace MySql.Data.Protocol.Serialization
 
 					if (previousReadBytes.Array == null && readBytes.Count >= count)
 					{
-						m_remainingData = new ArraySegment<byte>(readBytes.Array, readBytes.Offset + count, readBytes.Count - count);
-						return new ValueTask<ArraySegment<byte>>(new ArraySegment<byte>(readBytes.Array, readBytes.Offset, count));
+						m_remainingData = readBytes.Slice(count);
+						return new ValueTask<ArraySegment<byte>>(readBytes.Slice(0, count));
 					}
 
 					var previousReadBytesArray = previousReadBytes.Array;
@@ -50,8 +50,8 @@ namespace MySql.Data.Protocol.Serialization
 
 					if (previousReadBytes.Count >= count)
 					{
-						m_remainingData = new ArraySegment<byte>(previousReadBytes.Array, previousReadBytes.Offset + count, previousReadBytes.Count - count);
-						return new ValueTask<ArraySegment<byte>>(new ArraySegment<byte>(previousReadBytes.Array, previousReadBytes.Offset, count));
+						m_remainingData = previousReadBytes.Slice(count);
+						return new ValueTask<ArraySegment<byte>>(previousReadBytes.Slice(0, count));
 					}
 
 					return ReadBytesAsync(byteHandler, previousReadBytes, count, ioBehavior);

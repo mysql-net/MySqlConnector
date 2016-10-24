@@ -25,6 +25,25 @@ namespace MySql.Data
 		public static string GetString(this Encoding encoding, ArraySegment<byte> arraySegment)
 			=> encoding.GetString(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
 
+		/// <summary>
+		/// Returns a new <see cref="ArraySegment{T}"/> that starts at index <paramref name="index"/> into <paramref name="arraySegment"/>.
+		/// </summary>
+		/// <param name="arraySegment">The <see cref="ArraySegment{T}"/> from which to create a slice.</param>
+		/// <param name="index">The non-negative, zero-based starting index of the new slice (relative to <see cref="ArraySegment{T}.Offset"/> of <paramref name="arraySegment"/>.</param>
+		/// <returns>A new <see cref="ArraySegment{T}"/> starting at the <paramref name="index"/>th element of <paramref name="arraySegment"/> and continuing to the end of <paramref name="arraySegment"/>.</returns>
+		public static ArraySegment<T> Slice<T>(this ArraySegment<T> arraySegment, int index) =>
+			new ArraySegment<T>(arraySegment.Array, arraySegment.Offset + index, arraySegment.Count - index);
+
+		/// <summary>
+		/// Returns a new <see cref="ArraySegment{T}"/> that starts at index <paramref name="index"/> into <paramref name="arraySegment"/> and has a length of <paramref name="length"/>.
+		/// </summary>
+		/// <param name="arraySegment">The <see cref="ArraySegment{T}"/> from which to create a slice.</param>
+		/// <param name="index">The non-negative, zero-based starting index of the new slice (relative to <see cref="ArraySegment{T}.Offset"/> of <paramref name="arraySegment"/>.</param>
+		/// <param name="length">The non-negative length of the new slice.</param>
+		/// <returns>A new <see cref="ArraySegment{T}"/> of length <paramref name="length"/>, starting at the <paramref name="index"/>th element of <paramref name="arraySegment"/>.</returns>
+		public static ArraySegment<T> Slice<T>(this ArraySegment<T> arraySegment, int index, int length) =>
+			new ArraySegment<T>(arraySegment.Array, arraySegment.Offset + index, length);
+
 #if NET45
 		public static bool TryGetBuffer(this MemoryStream memoryStream, out ArraySegment<byte> buffer)
 		{
