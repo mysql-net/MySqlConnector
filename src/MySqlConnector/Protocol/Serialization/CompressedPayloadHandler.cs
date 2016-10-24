@@ -141,19 +141,12 @@ namespace MySql.Data.Protocol.Serialization
 									var bytesRead = decompressingStream.Read(uncompressedData, 0, uncompressedLength);
 									m_remainingData = new ArraySegment<byte>(uncompressedData, 0, bytesRead);
 
-									// compute Adler-32 checksum
-									int s1 = 1, s2 = 0;
-									for (int i = 0; i < bytesRead; i++)
-									{
-										s1 = (s1 + uncompressedData[i]) % 65521;
-										s2 = (s2 + s1) % 65521;
-									}
-
+									var checksum = ComputeAdler32Checksum(uncompressedData, 0, bytesRead);
 									int adlerStartOffset = payloadReadBytes.Offset + payloadReadBytes.Count - 4;
-									if (payloadReadBytes.Array[adlerStartOffset + 0] != ((s2 >> 8) & 0xFF) ||
-										payloadReadBytes.Array[adlerStartOffset + 1] != (s2 & 0xFF) ||
-										payloadReadBytes.Array[adlerStartOffset + 2] != ((s1 >> 8) & 0xFF) ||
-										payloadReadBytes.Array[adlerStartOffset + 3] != (s1 & 0xFF))
+									if (payloadReadBytes.Array[adlerStartOffset + 0] != ((checksum >> 24) & 0xFF) ||
+										payloadReadBytes.Array[adlerStartOffset + 1] != ((checksum >> 16) & 0xFF) ||
+										payloadReadBytes.Array[adlerStartOffset + 2] != ((checksum >> 8) & 0xFF) ||
+										payloadReadBytes.Array[adlerStartOffset + 3] != (checksum & 0xFF))
 									{
 										return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ?
 											default(ValueTask<ArraySegment<byte>>) :
@@ -192,19 +185,12 @@ namespace MySql.Data.Protocol.Serialization
 					using (var deflateStream = new DeflateStream(compressedStream, CompressionLevel.Optimal, leaveOpen: true))
 						deflateStream.Write(remainingUncompressedData.Array, remainingUncompressedData.Offset, remainingUncompressedBytes);
 
-					// compute Adler-32 checksum
-					int s1 = 1, s2 = 0;
-					for (int i = 0; i < remainingUncompressedBytes; i++)
-					{
-						s1 = (s1 + remainingUncompressedData.Array[remainingUncompressedData.Offset + i]) % 65521;
-						s2 = (s2 + s1) % 65521;
-					}
-
 					// write Adler-32 checksum to stream
-					compressedStream.WriteByte((byte) ((s2 >> 8) & 0xFF));
-					compressedStream.WriteByte((byte) (s2 & 0xFF));
-					compressedStream.WriteByte((byte) ((s1 >> 8) & 0xFF));
-					compressedStream.WriteByte((byte) (s1 & 0xFF));
+					var checksum = ComputeAdler32Checksum(remainingUncompressedData.Array, remainingUncompressedData.Offset, remainingUncompressedBytes);
+					compressedStream.WriteByte((byte) ((checksum >> 24) & 0xFF));
+					compressedStream.WriteByte((byte) ((checksum >> 16) & 0xFF));
+					compressedStream.WriteByte((byte) ((checksum >> 8) & 0xFF));
+					compressedStream.WriteByte((byte) (checksum & 0xFF));
 
 					if (!compressedStream.TryGetBuffer(out compressedData))
 						throw new InvalidOperationException("Couldn't get compressed stream buffer.");
@@ -229,6 +215,17 @@ namespace MySql.Data.Protocol.Serialization
 			return m_byteHandler.WriteBytesAsync(new ArraySegment<byte>(buffer, 0, buffer.Length), ioBehavior)
 				.ContinueWith(_ => remainingUncompressedData.Count == 0 ? default(ValueTask<int>) :
 					CompressAndWrite(remainingUncompressedData, ioBehavior));
+		}
+
+		private uint ComputeAdler32Checksum(byte[] data, int offset, int length)
+		{
+			int s1 = 1, s2 = 0;
+			for (int i = 0; i < length; i++)
+			{
+				s1 = (s1 + data[offset + i]) % 65521;
+				s2 = (s2 + s1) % 65521;
+			}
+			return (((uint) s2) << 16) | (uint) s1;
 		}
 
 		// CompressedByteHandler implements IByteHandler and delegates reading bytes back to the CompressedPayloadHandler class.
