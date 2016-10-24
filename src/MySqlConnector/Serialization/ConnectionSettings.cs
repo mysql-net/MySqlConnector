@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using MySql.Data.MySqlClient;
 
 namespace MySql.Data.Serialization
@@ -34,19 +31,8 @@ namespace MySql.Data.Serialization
 
 			// SSL/TLS Options
 			SslMode = csb.SslMode;
-			if (SslMode != MySqlSslMode.None)
-			{
-				try
-				{
-					Certificate = new X509Certificate2(csb.CertificateFile, csb.CertificatePassword);
-				}
-				catch (CryptographicException ex)
-				{
-					if (!File.Exists(csb.CertificateFile))
-						throw new MySqlException("Cannot find SSL Certificate File", ex);
-					throw new MySqlException("Either the SSL Certificate Password is incorrect or the SSL Certificate File is invalid", ex);
-				}
-			}
+			CertificateFile = csb.CertificateFile;
+			CertificatePassword = csb.CertificatePassword;
 
 			// Connection Pooling Options
 			Pooling = csb.Pooling;
@@ -83,7 +69,8 @@ namespace MySql.Data.Serialization
 
 			// SSL/TLS Options
 			SslMode = other.SslMode;
-			Certificate = other.Certificate;
+			CertificateFile = other.CertificateFile;
+			CertificatePassword = other.CertificatePassword;
 
 			// Connection Pooling Options
 			Pooling = other.Pooling;
@@ -114,7 +101,8 @@ namespace MySql.Data.Serialization
 
 		// SSL/TLS Options
 		internal readonly MySqlSslMode SslMode;
-		internal readonly X509Certificate2 Certificate;
+		internal readonly string CertificateFile;
+		internal readonly string CertificatePassword;
 
 		// Connection Pooling Options
 		internal readonly bool Pooling;
@@ -134,3 +122,4 @@ namespace MySql.Data.Serialization
 	}
 
 }
+

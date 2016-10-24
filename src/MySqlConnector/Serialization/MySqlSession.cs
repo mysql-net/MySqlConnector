@@ -5,6 +5,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -299,6 +300,18 @@ namespace MySql.Data.Serialization
 
 		private async Task InitSslAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			X509Certificate2 certificate;
+			try
+			{
+				certificate = new X509Certificate2(cs.CertificateFile, cs.CertificatePassword);
+			}
+			catch (CryptographicException ex)
+			{
+				if (!File.Exists(cs.CertificateFile))
+					throw new MySqlException("Cannot find SSL Certificate File", ex);
+				throw new MySqlException("Either the SSL Certificate Password is incorrect or the SSL Certificate File is invalid", ex);
+			}
+
 			Func<object, string, X509CertificateCollection, X509Certificate, string[], X509Certificate> localCertificateCb =
 				(lcbSender, lcbTargetHost, lcbLocalCertificates, lcbRemoteCertificate, lcbAcceptableIssuers) => lcbLocalCertificates[0];
 
@@ -319,7 +332,7 @@ namespace MySql.Data.Serialization
 			var sslStream = new SslStream(m_networkStream, false,
 				new RemoteCertificateValidationCallback(remoteCertificateCb),
 				new LocalCertificateSelectionCallback(localCertificateCb));
-			var clientCertificates = new X509CertificateCollection { cs.Certificate };
+			var clientCertificates = new X509CertificateCollection { certificate };
 
 			// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/mysql-net/MySqlConnector/pull/101
 			var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
