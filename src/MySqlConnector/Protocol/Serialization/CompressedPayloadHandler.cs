@@ -33,6 +33,7 @@ namespace MySql.Data.Protocol.Serialization
 
 		public ValueTask<int> WritePayloadAsync(ArraySegment<byte> payload, IOBehavior ioBehavior)
 		{
+			// break the payload up into (possibly more than one) uncompressed packets
 			return ProtocolUtility.WritePayloadAsync(m_uncompressedStreamByteHandler, GetNextUncompressedSequenceNumber, payload, ioBehavior).ContinueWith(_ =>
 			{
 				if (m_uncompressedStream.Length == 0)
@@ -45,6 +46,7 @@ namespace MySql.Data.Protocol.Serialization
 				return CompressAndWrite(uncompressedData, ioBehavior)
 					.ContinueWith(__ =>
 					{
+						// reset the uncompressed stream to accept more data
 						m_uncompressedStream.SetLength(0);
 						return default(ValueTask<int>);
 					});
@@ -53,6 +55,7 @@ namespace MySql.Data.Protocol.Serialization
 
 		private ValueTask<ArraySegment<byte>> ReadBytesAsync(int count, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
+			// satisfy the read from cache if possible
 			if (m_remainingData.Count > 0)
 			{
 				int bytesToRead = Math.Min(m_remainingData.Count, count);
@@ -61,6 +64,7 @@ namespace MySql.Data.Protocol.Serialization
 				return new ValueTask<ArraySegment<byte>>(result);
 			}
 
+			// read the compressed header (seven bytes)
 			return m_bufferedByteReader.ReadBytesAsync(m_byteHandler, 7, ioBehavior)
 				.ContinueWith(headerReadBytes =>
 				{
@@ -75,6 +79,7 @@ namespace MySql.Data.Protocol.Serialization
 					int packetSequenceNumber = headerReadBytes.Array[headerReadBytes.Offset + 3];
 					var uncompressedLength = (int) SerializationUtility.ReadUInt32(headerReadBytes.Array, headerReadBytes.Offset + 4, 3);
 
+					// verify the compressed packet sequence number
 					var expectedSequenceNumber = GetNextCompressedSequenceNumber() % 256;
 					if (packetSequenceNumber != expectedSequenceNumber)
 					{
@@ -85,11 +90,14 @@ namespace MySql.Data.Protocol.Serialization
 						return ValueTaskExtensions.FromException<ArraySegment<byte>>(exception);
 					}
 
-					// MySQL protocol hack: reset the uncompressed sequence number back to the sequence number of this compressed packet
+					// MySQL protocol resets the uncompressed sequence number back to the sequence number of this compressed packet.
+					// This isn't in the documentation, but the code explicitly notes that uncompressed packets are modified by compression:
+					//  - https://github.com/mysql/mysql-server/blob/c28e258157f39f25e044bb72e8bae1ff00989a3d/sql/net_serv.cc#L276
+					//  - https://github.com/mysql/mysql-server/blob/c28e258157f39f25e044bb72e8bae1ff00989a3d/sql/net_serv.cc#L225-L227
 					if (!m_isContinuationPacket)
 						m_uncompressedSequenceNumber = packetSequenceNumber;
 
-					// except when uncompressed packets need to be broken up across multiple compressed packets
+					// except this doesn't happen when uncompressed packets need to be broken up across multiple compressed packets
 					m_isContinuationPacket = payloadLength == ProtocolUtility.MaxPacketSize || uncompressedLength == ProtocolUtility.MaxPacketSize;
 
 					return m_bufferedByteReader.ReadBytesAsync(m_byteHandler, payloadLength, ioBehavior)
@@ -104,7 +112,7 @@ namespace MySql.Data.Protocol.Serialization
 
 							if (uncompressedLength == 0)
 							{
-								// uncompressed
+								// data is uncompressed
 								m_remainingData = payloadReadBytes;
 							}
 							else
@@ -122,8 +130,12 @@ namespace MySql.Data.Protocol.Serialization
 										ValueTaskExtensions.FromException<ArraySegment<byte>>(new NotSupportedException("Unsupported zlib header: {0:X2}{1:X2}".FormatInvariant(cmf, flg)));
 								}
 
+								// zlib format (https://www.ietf.org/rfc/rfc1950.txt) is: [two header bytes] [deflate-compressed data] [four-byte checksum]
+								// .NET implements the middle part with DeflateStream; need to handle header and checksum explicitly
+								const int headerSize = 2;
+								const int checksumSize = 4;
 								var uncompressedData = new byte[uncompressedLength];
-								using (var compressedStream = new MemoryStream(payloadReadBytes.Array, payloadReadBytes.Offset + 2, payloadReadBytes.Count - 6)) // TODO: handle zlib format correctly
+								using (var compressedStream = new MemoryStream(payloadReadBytes.Array, payloadReadBytes.Offset + headerSize, payloadReadBytes.Count - headerSize - checksumSize))
 								using (var decompressingStream = new DeflateStream(compressedStream, CompressionMode.Decompress))
 								{
 									var bytesRead = decompressingStream.Read(uncompressedData, 0, uncompressedLength);
@@ -219,6 +231,7 @@ namespace MySql.Data.Protocol.Serialization
 					CompressAndWrite(remainingUncompressedData, ioBehavior));
 		}
 
+		// CompressedByteHandler implements IByteHandler and delegates reading bytes back to the CompressedPayloadHandler class.
 		private class CompressedByteHandler : IByteHandler
 		{
 			public CompressedByteHandler(CompressedPayloadHandler compressedPayloadHandler, ProtocolErrorBehavior protocolErrorBehavior)
