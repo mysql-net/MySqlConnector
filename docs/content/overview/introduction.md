@@ -5,7 +5,6 @@ linktitle: Introduction
 menu:
   main:
     parent: getting started
-next: /overview/installing
 title: Introduction
 weight: 10
 ---
