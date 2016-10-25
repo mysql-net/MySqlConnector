@@ -4,11 +4,11 @@ date: 2016-10-16
 menu:
   main:
     parent: tutorials
-title: Use with .NET MVC
-weight: 30
+title: Best Practices
+weight: 10
 ---
 
-Use with .NET MVC
+Best Practices
 =============
 
-Use with .NET MVC
+Best Practices

@@ -25,36 +25,35 @@
     <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
     <!--end icons-->
-    
+
     {{ .Hugo.Generator }}
     {{ .Scratch.Add "title" "" }}{{ if isset .Site.Data.titles .Title }}{{ .Scratch.Set "title" (index .Site.Data.titles .Title).title }}{{ else }}{{ .Scratch.Set "title" .Title}}{{end}}
     <title>MySqlConnector - {{ .Scratch.Get "title" }}</title>
 
     <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="vendor/font-awesome/css/font-awesome.min.css" />
-    <link rel="stylesheet" type="text/css" href="vendor/highlightjs/css/monokai-sublime.css" />
+    <link rel="stylesheet" type="text/css" href="vendor/prism/css/prism.css" />
     <link rel="stylesheet" type="text/css"  href="css/style.css" rel="stylesheet" />
 
   </head>
 
   <body>
-  
+
     <nav class="navbar navbar-default">
         <div class="container">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="">
+            <div class="col-xs-8 navbar-mysqlc-logo">
+                <a href="">
                     <img alt="MySqlConnector" src="img/icons/favicon-32x32.png" />
                 </a>
-                <a class="navbar-brand" href="">
+                <a href="">
                     MySqlConnector
                 </a>
             </div>
-            <div class="navbar-right navbar-text">
-                <a id="github" href="https://github.com/mysql-net/MySqlConnector">
+            <div class="col-xs-4 navbar-mysqlc-gh">
+                <a href="https://github.com/mysql-net/MySqlConnector">
                     <i class="fa fa-github"></i> View on GitHub
                 </a>
             </div>
-        </div>
     </nav>
 
     <div class="container">

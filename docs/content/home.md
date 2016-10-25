@@ -14,7 +14,7 @@ Home
 
 Here is some C# code
 
-```C#
+```csharp
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector.Performance.Models;
