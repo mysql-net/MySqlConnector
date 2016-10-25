@@ -9,6 +9,20 @@
     <atom:link href="https://mysql-net.github.io/MySqlConnector/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>Best Practices</title>
+      <link>https://mysql-net.github.io/MySqlConnector/tutorials/best-practices/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/tutorials/best-practices/</guid>
+      <description>
+
+&lt;h1 id=&#34;best-practices&#34;&gt;Best Practices&lt;/h1&gt;
+
+&lt;p&gt;Best Practices&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>DbConnection</title>
       <link>https://mysql-net.github.io/MySqlConnector/api/db-connection/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
@@ -34,7 +48,7 @@
 
 &lt;p&gt;Here is some C# code&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-C#&#34;&gt;using System.Threading.Tasks;
+&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector.Performance.Models;
 
@@ -89,20 +103,6 @@ namespace MySqlConnector.Performance.Controllers
     </item>
     
     <item>
-      <title>Use with .NET Core MVC</title>
-      <link>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</link>
-      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</guid>
-      <description>
-
-&lt;h1 id=&#34;net-core-mvc&#34;&gt;.NET Core MVC&lt;/h1&gt;
-
-&lt;p&gt;.NET Core MVC&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
       <title>DbCommand</title>
       <link>https://mysql-net.github.io/MySqlConnector/api/db-command/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
@@ -127,6 +127,20 @@ namespace MySqlConnector.Performance.Controllers
 &lt;h1 id=&#34;installing&#34;&gt;Installing&lt;/h1&gt;
 
 &lt;p&gt;Installing&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Migrating from Connector/Net</title>
+      <link>https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/</guid>
+      <description>
+
+&lt;h1 id=&#34;migrating-from-connector-net&#34;&gt;Migrating from Connector/Net&lt;/h1&gt;
+
+&lt;p&gt;Migrating from Connector/Net&lt;/p&gt;
 </description>
     </item>
     
@@ -318,6 +332,20 @@ namespace MySqlConnector.Performance.Controllers
 &lt;h1 id=&#34;result-set&#34;&gt;Result Set&lt;/h1&gt;
 
 &lt;p&gt;Result Set&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Use with .NET MVC</title>
+      <link>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</guid>
+      <description>
+
+&lt;h1 id=&#34;use-with-net-mvc&#34;&gt;Use with .NET MVC&lt;/h1&gt;
+
+&lt;p&gt;Use with .NET MVC&lt;/p&gt;
 </description>
     </item>
     

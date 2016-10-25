@@ -7,6 +7,11 @@
   </url>
   
   <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/tutorials/best-practices/</loc>
+    <lastmod>2016-10-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://mysql-net.github.io/MySqlConnector/api/db-connection/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
@@ -22,17 +27,17 @@
   </url>
   
   <url>
-    <loc>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</loc>
-    <lastmod>2016-10-16T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://mysql-net.github.io/MySqlConnector/api/db-command/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://mysql-net.github.io/MySqlConnector/overview/installing/</loc>
+    <lastmod>2016-10-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
@@ -48,6 +53,11 @@
   
   <url>
     <loc>https://mysql-net.github.io/MySqlConnector/api/result-set/</loc>
+    <lastmod>2016-10-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   

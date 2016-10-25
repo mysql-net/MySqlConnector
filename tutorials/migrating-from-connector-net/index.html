@@ -28,7 +28,7 @@
 
     <meta name="generator" content="Hugo 0.17" />
     
-    <title>MySqlConnector - MySqlConnector: Async MySQL Driver for .NET and .NET Core</title>
+    <title>MySqlConnector - Migrating from Connector/Net</title>
 
     <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="vendor/font-awesome/css/font-awesome.min.css" />
@@ -63,7 +63,7 @@
     <div class="list-group" id="navigation">
 
         
-        <a class="list-group-item active" href="" data-parent="#navigation">
+        <a class="list-group-item" href="" data-parent="#navigation">
             <i class='fa fa-home'></i> <span>Home</span> 
         </a>
 
@@ -100,18 +100,18 @@
         
 
         
-        <a class="list-group-item" href="#nav-3" data-parent="#navigation" data-toggle="collapse">
+        <a class="list-group-item active" href="#nav-3" data-parent="#navigation" data-toggle="collapse">
             <i class='fa fa-lightbulb-o'></i> <span>Tutorials</span> <i class="fa fa-angle-down"></i>
         </a>
 
         
-        <div id="nav-3" class="submenu panel-collapse collapse ">
+        <div id="nav-3" class="submenu panel-collapse collapse  in">
             
             <a class="list-group-item" data-parent="#nav-3" href="/MySqlConnector/tutorials/best-practices/">
                 <span>Best Practices</span>
             </a>
             
-            <a class="list-group-item" data-parent="#nav-3" href="/MySqlConnector/tutorials/migrating-from-connector-net/">
+            <a class="list-group-item active" data-parent="#nav-3" href="/MySqlConnector/tutorials/migrating-from-connector-net/">
                 <span>Migrating from Connector/Net</span>
             </a>
             
@@ -157,52 +157,10 @@
 
 
 
-    
-        
 
-<h1 id="home">Home</h1>
+<h1 id="migrating-from-connector-net">Migrating from Connector/Net</h1>
 
-<p>Here is some C# code</p>
-
-<pre><code class="language-csharp">using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using MySqlConnector.Performance.Models;
-
-namespace MySqlConnector.Performance.Controllers
-{
-    [Route(&quot;api/[controller]&quot;)]
-    public class AsyncController : Controller
-    {
-        // GET api/async
-        [HttpGet]
-        public async Task&lt;IActionResult&gt; Get()
-        {
-            using (var db = new AppDb())
-            {
-                await db.OpenAsync();
-                var cmd = BlogPost.LatestPosts(db);
-                var reader = await cmd.ExecuteReaderAsync();
-                var result = await BlogPost.ReadAllAsync(reader);
-                return new OkObjectResult(result);
-            }
-        }
-
-        // POST api/async
-        [HttpPost]
-        public async Task&lt;IActionResult&gt; Post([FromBody]BlogPost body)
-        {
-            using (var db = new AppDb())
-            {
-                await db.OpenAsync();
-                await BlogPost.InsertAsync(db, body);
-                return new OkObjectResult(body);
-            }
-        }
-    }
-}
-</code></pre>
-
-    
+<p>Migrating from Connector/Net</p>
 
 
 
@@ -246,8 +204,24 @@ namespace MySqlConnector.Performance.Controllers
               
                 
                 
+                  
+                  
+            <div class="pull-left">
+              <a  href="/MySqlConnector/tutorials/best-practices/">
+                  <i class="fa fa-angle-left"></i> Best Practices
+              </a>
+            </div>
+                  
+                
                 
               
+                
+            <div class="pull-right">
+              <a  href="/MySqlConnector/tutorials/net-core-mvc/">
+                  Use with .NET MVC <i class="fa fa-angle-right"></i>
+              </a>
+            </div>
+                  
                 
                 
                 

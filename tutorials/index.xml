@@ -9,16 +9,44 @@
     <atom:link href="https://mysql-net.github.io/MySqlConnector/tutorials/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>Use with .NET Core MVC</title>
+      <title>Best Practices</title>
+      <link>https://mysql-net.github.io/MySqlConnector/tutorials/best-practices/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/tutorials/best-practices/</guid>
+      <description>
+
+&lt;h1 id=&#34;best-practices&#34;&gt;Best Practices&lt;/h1&gt;
+
+&lt;p&gt;Best Practices&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Migrating from Connector/Net</title>
+      <link>https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/</guid>
+      <description>
+
+&lt;h1 id=&#34;migrating-from-connector-net&#34;&gt;Migrating from Connector/Net&lt;/h1&gt;
+
+&lt;p&gt;Migrating from Connector/Net&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Use with .NET MVC</title>
       <link>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</guid>
       <description>
 
-&lt;h1 id=&#34;net-core-mvc&#34;&gt;.NET Core MVC&lt;/h1&gt;
+&lt;h1 id=&#34;use-with-net-mvc&#34;&gt;Use with .NET MVC&lt;/h1&gt;
 
-&lt;p&gt;.NET Core MVC&lt;/p&gt;
+&lt;p&gt;Use with .NET MVC&lt;/p&gt;
 </description>
     </item>
     
