@@ -8,7 +8,7 @@ namespace MySql.Data
 		public static ValueTask<TResult> ContinueWith<T, TResult>(this ValueTask<T> valueTask, Func<T, ValueTask<TResult>> continuation)
 		{
 			return valueTask.IsCompleted ? continuation(valueTask.Result) :
-				new ValueTask<TResult>(valueTask.AsTask().ContinueWith(task => continuation(task.Result).AsTask()).Unwrap());
+				new ValueTask<TResult>(valueTask.AsTask().ContinueWith(task => continuation(task.GetAwaiter().GetResult()).AsTask()).Unwrap());
 		}
 
 		public static ValueTask<T> FromException<T>(Exception exception)
