@@ -1,5 +1,5 @@
 {
-	"version": "0.6.0",
+	"version": "0.6.1",
 	"title": "Async MySQL Connector",
 	"description": "A fully async MySQL ADO.NET provider for .NET and .NET Core",
 	"copyright": "Copyright 2016 Bradley Grainger",
@@ -9,7 +9,7 @@
 	"packOptions": {
 		"owners": [ "bgrainger" ],
 		"tags": [ "mysql", "async", "ado.net", "database", "netcore"  ],
-		"releaseNotes": "Add support for Compression and Unix domain sockets. (GitHub issues #31, #118)",
+		"releaseNotes": "Fix exception in OpenAsync; fix SSL over Unix domain sockets. (GitHub issue #124)",
 		"licenseUrl": "https://opensource.org/licenses/MIT",
 		"projectUrl": "https://github.com/mysql-net/MySqlConnector",
 		"repository": {

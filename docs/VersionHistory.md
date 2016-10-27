@@ -13,6 +13,12 @@ of supported options.
 
 ## Release Notes
 
+### 0.6.1
+
+* Fix `AggregateException` going unhandled in `OpenAsync`: [#124](https://github.com/mysql-net/MySqlConnector/issues/124).
+* Fix SSL over Unix domain sockets.
+* Reduce allocations when using SSL certificates.
+
 ### 0.6.0
 
 * Implement `UseCompression` connection string option: [#31](https://github.com/mysql-net/MySqlConnector/issues/31).
