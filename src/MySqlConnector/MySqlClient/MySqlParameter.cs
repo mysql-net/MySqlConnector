@@ -59,7 +59,7 @@ namespace MySql.Data.MySqlClient
 
 		internal void AppendSqlString(BinaryWriter writer, StatementPreparerOptions options)
 		{
-			if (Value == DBNull.Value)
+			if (Value == null || Value == DBNull.Value)
 			{
 				writer.WriteUtf8("NULL");
 			}

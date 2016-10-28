@@ -219,6 +219,48 @@ insert into query_get_name (id, value) VALUES (1, 'one'), (2, 'two');
 			}
 		}
 
+		[Fact]
+		public async Task ParameterIsNull()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = @"drop table if exists query_null_parameter;
+create table query_null_parameter(id integer not null primary key, value text);
+insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, null);
+";
+				cmd.ExecuteNonQuery();
+			}
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select id, value FROM query_null_parameter where @parameter is null or value = @parameter order by id;";
+				cmd.Parameters.Add(new MySqlParameter { ParameterName = "@parameter", Value = "one" });
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal(1L, reader.GetInt64(0));
+					Assert.False(await reader.ReadAsync());
+					Assert.False(await reader.NextResultAsync());
+				}
+			}
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select id, value FROM query_null_parameter where @parameter is null or value = @parameter order by id;";
+				cmd.Parameters.Add(new MySqlParameter { ParameterName = "@parameter", Value = null });
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal(1L, reader.GetInt64(0));
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal(2L, reader.GetInt64(0));
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal(3L, reader.GetInt64(0));
+					Assert.False(await reader.ReadAsync());
+					Assert.False(await reader.NextResultAsync());
+				}
+			}
+		}
 
 		[Fact]
 		public async Task DoubleDispose()
