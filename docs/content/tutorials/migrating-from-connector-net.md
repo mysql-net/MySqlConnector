@@ -4,11 +4,11 @@ date: 2016-10-16
 menu:
   main:
     parent: tutorials
-title: Migrating from Connector/Net
+title: Migrating from Connector/NET
 weight: 20
 ---
 
-Migrating from Connector/Net
+Migrating from Connector/NET
 =============
 
-Migrating from Connector/Net
+Migrating from Connector/NET
