@@ -9,20 +9,6 @@
     <atom:link href="https://mysql-net.github.io/MySqlConnector/overview/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>Introduction</title>
-      <link>https://mysql-net.github.io/MySqlConnector/overview/introduction/</link>
-      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://mysql-net.github.io/MySqlConnector/overview/introduction/</guid>
-      <description>
-
-&lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
-
-&lt;p&gt;Introduction&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
       <title>Installing</title>
       <link>https://mysql-net.github.io/MySqlConnector/overview/installing/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
@@ -32,7 +18,22 @@
 
 &lt;h1 id=&#34;installing&#34;&gt;Installing&lt;/h1&gt;
 
-&lt;p&gt;Installing&lt;/p&gt;
+&lt;p&gt;The recommended way of installing MySqlConnector is through &lt;a href=&#34;https://www.nuget.org/packages/MySqlConnector/&#34;&gt;NuGet&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Step 1:&lt;/strong&gt; Add MySqlConnector to the dependencies in your &lt;code&gt;project.json&lt;/code&gt; file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
+  &amp;quot;title&amp;quot;: &amp;quot;My Application&amp;quot;,
+  &amp;quot;description&amp;quot;: &amp;quot;A great application&amp;quot;,
+  &amp;quot;dependencies&amp;quot;: {
+    &amp;quot;MySqlConnector&amp;quot;: &amp;quot;0.*&amp;quot;,
+    // other dependencies
+  },
+  // other config
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;Step 2:&lt;/strong&gt; Run the command &lt;code&gt;dotnet restore&lt;/code&gt;&lt;/p&gt;
 </description>
     </item>
     
@@ -46,9 +47,84 @@
 
 &lt;h1 id=&#34;configuration&#34;&gt;Configuration&lt;/h1&gt;
 
-&lt;p&gt;To connect to a database on &lt;code&gt;localhost&lt;/code&gt; port &lt;code&gt;3306&lt;/code&gt; with a user &lt;code&gt;mysqltest&lt;/code&gt;, password &lt;code&gt;test;key=\&amp;quot;val&lt;/code&gt;, and default schema &lt;code&gt;mysqldb&lt;/code&gt;, the connection string would be:&lt;/p&gt;
+&lt;p&gt;MySqlConnector uses a connection string in order to connect to your database.&lt;/p&gt;
 
-&lt;p&gt;&lt;code&gt;host=127.0.0.1;port=3306;user id=mysqltest;password=&#39;test;key=\&amp;quot;val&#39;;database=mysqldb;&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;To connect to a database on &lt;code&gt;localhost&lt;/code&gt; port &lt;code&gt;3306&lt;/code&gt; with a user &lt;code&gt;mysqltest&lt;/code&gt;, password &lt;code&gt;Password123&lt;/code&gt;, and default schema &lt;code&gt;mysqldb&lt;/code&gt;, the connection string would be:&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;host=127.0.0.1;port=3306;user id=mysqltest;password=Password123;database=mysqldb;&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;For all connection string options, view the &lt;a href=&#34;connection-options/&#34;&gt;Connection Options Reference&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;application-database-object-example&#34;&gt;Application Database Object Example&lt;/h3&gt;
+
+&lt;p&gt;It&amp;rsquo;s a good idea to use an IDisposable object that configures the connection string globally, and closes the connection automatically:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;public class AppDb : IDisposable
+{
+    public readonly MySqlConnection Connection;
+
+    public AppDb()
+    {
+        Connection = new MySqlConnection(&amp;quot;host=127.0.0.1;port=3306;user id=mysqltest;password=Password123;database=mysqldb;&amp;quot;);
+    }
+
+    public void Dispose()
+    {
+        Connection.Close();
+    }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Callers can use the Application Database Object object like so:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;public async Task AsyncMethod()
+{
+    using (var db = new AppDb())
+    {
+        await db.Connection.OpenAsync();
+        // db.Connection is open and ready to use
+    }
+    // db.Connection was closed by AppDb.Dispose
+}
+
+public void SyncMethod()
+{
+    using (var db = new AppDb())
+    {
+        db.Connection.Open();
+        // db.Connection is open and ready to use
+    }
+    // db.Connection was closed by AppDb.Dispose
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Use with ORMs</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</guid>
+      <description>
+
+&lt;h1 id=&#34;use-with-orms&#34;&gt;Use with ORMs&lt;/h1&gt;
+
+&lt;p&gt;This library is compatible with popular .NET ORMs including:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/StackExchange/dapper-dot-net&#34;&gt;Dapper&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/Dapper&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/nreco/data&#34;&gt;NReco.Data&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/NReco.Data&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/SimpleStack/simplestack.orm&#34;&gt;SimpleStack.Orm&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/SimpleStack.Orm.MySQLConnector&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;For Entity Framework support, use:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql&#34;&gt;Pomelo.EntityFrameworkCore.MySql&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
+&lt;/ul&gt;
 </description>
     </item>
     

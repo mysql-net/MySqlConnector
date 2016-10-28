@@ -22,7 +22,12 @@
   </url>
   
   <url>
-    <loc>https://mysql-net.github.io/MySqlConnector/overview/introduction/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/installing/</loc>
+    <lastmod>2016-10-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/configuration/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
@@ -32,17 +37,7 @@
   </url>
   
   <url>
-    <loc>https://mysql-net.github.io/MySqlConnector/overview/installing/</loc>
-    <lastmod>2016-10-16T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/</loc>
-    <lastmod>2016-10-16T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://mysql-net.github.io/MySqlConnector/overview/configuration/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
@@ -58,6 +53,11 @@
   
   <url>
     <loc>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</loc>
+    <lastmod>2016-10-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   

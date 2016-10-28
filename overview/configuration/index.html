@@ -77,16 +77,16 @@
         
         <div id="nav-1" class="submenu panel-collapse collapse  in">
             
-            <a class="list-group-item" data-parent="#nav-1" href="/MySqlConnector/overview/introduction/">
-                <span>Introduction</span>
-            </a>
-            
             <a class="list-group-item" data-parent="#nav-1" href="/MySqlConnector/overview/installing/">
                 <span>Installing</span>
             </a>
             
             <a class="list-group-item active" data-parent="#nav-1" href="/MySqlConnector/overview/configuration/">
                 <span>Configuration</span>
+            </a>
+            
+            <a class="list-group-item" data-parent="#nav-1" href="/MySqlConnector/overview/use-with-orms/">
+                <span>Use with ORMs</span>
             </a>
             
         </div>
@@ -112,7 +112,7 @@
             </a>
             
             <a class="list-group-item" data-parent="#nav-3" href="/MySqlConnector/tutorials/migrating-from-connector-net/">
-                <span>Migrating from Connector/Net</span>
+                <span>Migrating from Connector/NET</span>
             </a>
             
             <a class="list-group-item" data-parent="#nav-3" href="/MySqlConnector/tutorials/net-core-mvc/">
@@ -160,9 +160,58 @@
 
 <h1 id="configuration">Configuration</h1>
 
-<p>To connect to a database on <code>localhost</code> port <code>3306</code> with a user <code>mysqltest</code>, password <code>test;key=\&quot;val</code>, and default schema <code>mysqldb</code>, the connection string would be:</p>
+<p>MySqlConnector uses a connection string in order to connect to your database.</p>
 
-<p><code>host=127.0.0.1;port=3306;user id=mysqltest;password='test;key=\&quot;val';database=mysqldb;</code></p>
+<p>To connect to a database on <code>localhost</code> port <code>3306</code> with a user <code>mysqltest</code>, password <code>Password123</code>, and default schema <code>mysqldb</code>, the connection string would be:</p>
+
+<p><code>host=127.0.0.1;port=3306;user id=mysqltest;password=Password123;database=mysqldb;</code></p>
+
+<p>For all connection string options, view the <a href="connection-options/">Connection Options Reference</a></p>
+
+<h3 id="application-database-object-example">Application Database Object Example</h3>
+
+<p>It&rsquo;s a good idea to use an IDisposable object that configures the connection string globally, and closes the connection automatically:</p>
+
+<pre><code class="language-csharp">public class AppDb : IDisposable
+{
+    public readonly MySqlConnection Connection;
+
+    public AppDb()
+    {
+        Connection = new MySqlConnection(&quot;host=127.0.0.1;port=3306;user id=mysqltest;password=Password123;database=mysqldb;&quot;);
+    }
+
+    public void Dispose()
+    {
+        Connection.Close();
+    }
+}
+
+</code></pre>
+
+<p>Callers can use the Application Database Object object like so:</p>
+
+<pre><code class="language-csharp">public async Task AsyncMethod()
+{
+    using (var db = new AppDb())
+    {
+        await db.Connection.OpenAsync();
+        // db.Connection is open and ready to use
+    }
+    // db.Connection was closed by AppDb.Dispose
+}
+
+public void SyncMethod()
+{
+    using (var db = new AppDb())
+    {
+        db.Connection.Open();
+        // db.Connection is open and ready to use
+    }
+    // db.Connection was closed by AppDb.Dispose
+}
+
+</code></pre>
 
 
 
@@ -186,10 +235,6 @@
               
                 
                 
-                
-              
-                
-                
                   
                   
             <div class="pull-left">
@@ -198,6 +243,17 @@
               </a>
             </div>
                   
+                
+                
+              
+                
+            <div class="pull-right">
+              <a  href="/MySqlConnector/overview/use-with-orms/">
+                  Use with ORMs <i class="fa fa-angle-right"></i>
+              </a>
+            </div>
+                  
+                
                 
                 
               

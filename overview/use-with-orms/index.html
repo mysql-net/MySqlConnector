@@ -28,7 +28,7 @@
 
     <meta name="generator" content="Hugo 0.17" />
     
-    <title>MySqlConnector - Introduction</title>
+    <title>MySqlConnector - Use with ORMs</title>
 
     <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="vendor/font-awesome/css/font-awesome.min.css" />
@@ -77,16 +77,16 @@
         
         <div id="nav-1" class="submenu panel-collapse collapse  in">
             
-            <a class="list-group-item active" data-parent="#nav-1" href="/MySqlConnector/overview/introduction/">
-                <span>Introduction</span>
-            </a>
-            
             <a class="list-group-item" data-parent="#nav-1" href="/MySqlConnector/overview/installing/">
                 <span>Installing</span>
             </a>
             
             <a class="list-group-item" data-parent="#nav-1" href="/MySqlConnector/overview/configuration/">
                 <span>Configuration</span>
+            </a>
+            
+            <a class="list-group-item active" data-parent="#nav-1" href="/MySqlConnector/overview/use-with-orms/">
+                <span>Use with ORMs</span>
             </a>
             
         </div>
@@ -112,7 +112,7 @@
             </a>
             
             <a class="list-group-item" data-parent="#nav-3" href="/MySqlConnector/tutorials/migrating-from-connector-net/">
-                <span>Migrating from Connector/Net</span>
+                <span>Migrating from Connector/NET</span>
             </a>
             
             <a class="list-group-item" data-parent="#nav-3" href="/MySqlConnector/tutorials/net-core-mvc/">
@@ -158,9 +158,21 @@
 
 
 
-<h1 id="introduction">Introduction</h1>
+<h1 id="use-with-orms">Use with ORMs</h1>
 
-<p>Introduction</p>
+<p>This library is compatible with popular .NET ORMs including:</p>
+
+<ul>
+<li><a href="https://github.com/StackExchange/dapper-dot-net">Dapper</a> (<a href="https://www.nuget.org/packages/Dapper">NuGet</a>)</li>
+<li><a href="https://github.com/nreco/data">NReco.Data</a> (<a href="https://www.nuget.org/packages/NReco.Data">NuGet</a>)</li>
+<li><a href="https://github.com/SimpleStack/simplestack.orm">SimpleStack.Orm</a> (<a href="https://www.nuget.org/packages/SimpleStack.Orm.MySQLConnector">NuGet</a>)</li>
+</ul>
+
+<p>For Entity Framework support, use:</p>
+
+<ul>
+<li><a href="https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql">Pomelo.EntityFrameworkCore.MySql</a> (<a href="https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql">NuGet</a>)</li>
+</ul>
 
 
 
@@ -180,23 +192,22 @@
               
                 
                 
-                  
-                  
+                
+              
+                
                 
                 
               
                 
-            <div class="pull-right">
-              <a  href="/MySqlConnector/overview/installing/">
-                  Installing <i class="fa fa-angle-right"></i>
+                
+                  
+                  
+            <div class="pull-left">
+              <a  href="/MySqlConnector/overview/configuration/">
+                  <i class="fa fa-angle-left"></i> Configuration
               </a>
             </div>
                   
-                
-                
-                
-              
-                
                 
                 
               

@@ -46,59 +46,160 @@
 
 &lt;h1 id=&#34;home&#34;&gt;Home&lt;/h1&gt;
 
-&lt;p&gt;Here is some C# code&lt;/p&gt;
+&lt;p&gt;MySqlConnector is an &lt;a href=&#34;https://msdn.microsoft.com/en-us/library/e80y5yhx.aspx&#34;&gt;ADO.NET&lt;/a&gt; data
+provider for &lt;a href=&#34;https://www.mysql.com/&#34;&gt;MySQL&lt;/a&gt;. It provides implementations of
+&lt;code&gt;DbConnection&lt;/code&gt;, &lt;code&gt;DbCommand&lt;/code&gt;, &lt;code&gt;DbDataReader&lt;/code&gt;, &lt;code&gt;DbTransaction&lt;/code&gt; &amp;ndash; the classes
+needed to query and update databases from managed code.  Its features include:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using MySqlConnector.Performance.Models;
+&lt;ul&gt;
+&lt;li&gt;.NET Core Compatibility&lt;/li&gt;
+&lt;li&gt;Truly Asynchronous: async functions implement asynchronous I/O&lt;/li&gt;
+&lt;li&gt;High Performance: code is stress tested for performance bottlenecks&lt;/li&gt;
+&lt;li&gt;Lightweight: Library only implements ADO.NET core&lt;/li&gt;
+&lt;/ul&gt;
 
-namespace MySqlConnector.Performance.Controllers
-{
-    [Route(&amp;quot;api/[controller]&amp;quot;)]
-    public class AsyncController : Controller
-    {
-        // GET api/async
-        [HttpGet]
-        public async Task&amp;lt;IActionResult&amp;gt; Get()
-        {
-            using (var db = new AppDb())
-            {
-                await db.OpenAsync();
-                var cmd = BlogPost.LatestPosts(db);
-                var reader = await cmd.ExecuteReaderAsync();
-                var result = await BlogPost.ReadAllAsync(reader);
-                return new OkObjectResult(result);
-            }
-        }
+&lt;h3 id=&#34;why-use-mysql-over-oracle-s-connector-net&#34;&gt;Why use MySql over Oracle&amp;rsquo;s Connector/NET?&lt;/h3&gt;
 
-        // POST api/async
-        [HttpPost]
-        public async Task&amp;lt;IActionResult&amp;gt; Post([FromBody]BlogPost body)
-        {
-            using (var db = new AppDb())
-            {
-                await db.OpenAsync();
-                await BlogPost.InsertAsync(db, body);
-                return new OkObjectResult(body);
-            }
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;MySqlConnector is a clean-room reimplementation of the &lt;a href=&#34;https://dev.mysql.com/doc/internals/en/client-server-protocol.html&#34;&gt;MySQL Protocol&lt;/a&gt;
+and is not based on &lt;a href=&#34;https://github.com/mysql/mysql-connector-net&#34;&gt;Oracle&amp;rsquo;s Connector/NET&lt;/a&gt;.&lt;/p&gt;
+
+&lt;table class=&#34;table table-striped table-hover&#34; style=&#34;max-width: 650px&#34;&gt;
+  &lt;thead&gt;
+    &lt;th style=&#34;width:25%&#34;&gt;&lt;/th&gt;
+    &lt;th style=&#34;width:25%&#34;&gt;MySqlConnector&lt;/th&gt;
+    &lt;th style=&#34;width:25%&#34;&gt;Oracle&#39;s Connector/NET&lt;/th&gt;
+    &lt;th style=&#34;width:25%&#34;&gt;MySqlConnector Advantage&lt;/th&gt;
+  &lt;/thead&gt;
+  &lt;tr&gt;
+    &lt;td&gt;&lt;strong&gt;Async&lt;/strong&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;strong&gt;Fully asynchronous&lt;/strong&gt; I/O&lt;/td&gt;
+    &lt;td&gt;Async calls map to synchronous I/O&lt;/td&gt;
+    &lt;td&gt;Uses less thread pool threads&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;&lt;strong&gt;Development&lt;/strong&gt;&lt;/td&gt;
+    &lt;td&gt;
+      &lt;strong&gt;Open and Collaborative&lt;/strong&gt; Development on
+      &lt;a href=&#34;https://github.com/mysql/mysql-connector-net&#34;&gt;GitHub&lt;/a&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+      Closed Development Roadmap.  Code is viewable on
+      &lt;a href=&#34;https://github.com/mysql/mysql-connector-net&#34;&gt;GitHub&lt;/a&gt;,
+      some issues addressed in &lt;a href=&#34;http://forums.mysql.com/list.php?38&#34;&gt;Forums&lt;/a&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+      Get involved!  View
+      &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/projects/1&#34;&gt;our roadmap&lt;/a&gt;,
+      discuss &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues&#34;&gt;issues&lt;/a&gt;,
+      contribute &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/pulls&#34;&gt;pull requests&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;&lt;strong&gt;License&lt;/strong&gt;&lt;/td&gt;
+    &lt;td&gt;
+      The &lt;strong&gt;&lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/blob/master/LICENSE&#34;&gt;MIT License&lt;/a&gt;&lt;/strong&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+      &lt;a href=&#34;http://www.gnu.org/licenses/old-licenses/gpl-2.0.html&#34;&gt;GPLv2&lt;/a&gt;
+      with &lt;a href=&#34;http://www.mysql.com/about/legal/licensing/foss-exception/&#34;&gt;FOSS Exception&lt;/a&gt;
+    &lt;/td&gt;
+    &lt;td&gt;More Permissive&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
 </description>
     </item>
     
     <item>
-      <title>Introduction</title>
-      <link>https://mysql-net.github.io/MySqlConnector/overview/introduction/</link>
+      <title>Installing</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/installing/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://mysql-net.github.io/MySqlConnector/overview/introduction/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/installing/</guid>
       <description>
 
-&lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
+&lt;h1 id=&#34;installing&#34;&gt;Installing&lt;/h1&gt;
 
-&lt;p&gt;Introduction&lt;/p&gt;
+&lt;p&gt;The recommended way of installing MySqlConnector is through &lt;a href=&#34;https://www.nuget.org/packages/MySqlConnector/&#34;&gt;NuGet&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Step 1:&lt;/strong&gt; Add MySqlConnector to the dependencies in your &lt;code&gt;project.json&lt;/code&gt; file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
+  &amp;quot;title&amp;quot;: &amp;quot;My Application&amp;quot;,
+  &amp;quot;description&amp;quot;: &amp;quot;A great application&amp;quot;,
+  &amp;quot;dependencies&amp;quot;: {
+    &amp;quot;MySqlConnector&amp;quot;: &amp;quot;0.*&amp;quot;,
+    // other dependencies
+  },
+  // other config
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;Step 2:&lt;/strong&gt; Run the command &lt;code&gt;dotnet restore&lt;/code&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Configuration</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/configuration/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/configuration/</guid>
+      <description>
+
+&lt;h1 id=&#34;configuration&#34;&gt;Configuration&lt;/h1&gt;
+
+&lt;p&gt;MySqlConnector uses a connection string in order to connect to your database.&lt;/p&gt;
+
+&lt;p&gt;To connect to a database on &lt;code&gt;localhost&lt;/code&gt; port &lt;code&gt;3306&lt;/code&gt; with a user &lt;code&gt;mysqltest&lt;/code&gt;, password &lt;code&gt;Password123&lt;/code&gt;, and default schema &lt;code&gt;mysqldb&lt;/code&gt;, the connection string would be:&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;host=127.0.0.1;port=3306;user id=mysqltest;password=Password123;database=mysqldb;&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;For all connection string options, view the &lt;a href=&#34;connection-options/&#34;&gt;Connection Options Reference&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;application-database-object-example&#34;&gt;Application Database Object Example&lt;/h3&gt;
+
+&lt;p&gt;It&amp;rsquo;s a good idea to use an IDisposable object that configures the connection string globally, and closes the connection automatically:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;public class AppDb : IDisposable
+{
+    public readonly MySqlConnection Connection;
+
+    public AppDb()
+    {
+        Connection = new MySqlConnection(&amp;quot;host=127.0.0.1;port=3306;user id=mysqltest;password=Password123;database=mysqldb;&amp;quot;);
+    }
+
+    public void Dispose()
+    {
+        Connection.Close();
+    }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Callers can use the Application Database Object object like so:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;public async Task AsyncMethod()
+{
+    using (var db = new AppDb())
+    {
+        await db.Connection.OpenAsync();
+        // db.Connection is open and ready to use
+    }
+    // db.Connection was closed by AppDb.Dispose
+}
+
+public void SyncMethod()
+{
+    using (var db = new AppDb())
+    {
+        db.Connection.Open();
+        // db.Connection is open and ready to use
+    }
+    // db.Connection was closed by AppDb.Dispose
+}
+
+&lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
     
@@ -117,46 +218,16 @@ namespace MySqlConnector.Performance.Controllers
     </item>
     
     <item>
-      <title>Installing</title>
-      <link>https://mysql-net.github.io/MySqlConnector/overview/installing/</link>
-      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://mysql-net.github.io/MySqlConnector/overview/installing/</guid>
-      <description>
-
-&lt;h1 id=&#34;installing&#34;&gt;Installing&lt;/h1&gt;
-
-&lt;p&gt;Installing&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Migrating from Connector/Net</title>
+      <title>Migrating from Connector/NET</title>
       <link>https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/</guid>
       <description>
 
-&lt;h1 id=&#34;migrating-from-connector-net&#34;&gt;Migrating from Connector/Net&lt;/h1&gt;
+&lt;h1 id=&#34;migrating-from-connector-net&#34;&gt;Migrating from Connector/NET&lt;/h1&gt;
 
-&lt;p&gt;Migrating from Connector/Net&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Configuration</title>
-      <link>https://mysql-net.github.io/MySqlConnector/overview/configuration/</link>
-      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://mysql-net.github.io/MySqlConnector/overview/configuration/</guid>
-      <description>
-
-&lt;h1 id=&#34;configuration&#34;&gt;Configuration&lt;/h1&gt;
-
-&lt;p&gt;To connect to a database on &lt;code&gt;localhost&lt;/code&gt; port &lt;code&gt;3306&lt;/code&gt; with a user &lt;code&gt;mysqltest&lt;/code&gt;, password &lt;code&gt;test;key=\&amp;quot;val&lt;/code&gt;, and default schema &lt;code&gt;mysqldb&lt;/code&gt;, the connection string would be:&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;host=127.0.0.1;port=3306;user id=mysqltest;password=&#39;test;key=\&amp;quot;val&#39;;database=mysqldb;&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Migrating from Connector/NET&lt;/p&gt;
 </description>
     </item>
     
@@ -170,7 +241,7 @@ namespace MySqlConnector.Performance.Controllers
 
 &lt;h1 id=&#34;connection-options&#34;&gt;Connection Options&lt;/h1&gt;
 
-&lt;p&gt;MySqlConnector supports a subset of Oracle&amp;rsquo;s &lt;a href=&#34;https://dev.mysql.com/doc/connector-net/en/connector-net-connection-options.html&#34;&gt;MySql.Data connection options&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;MySqlConnector supports a subset of Oracle&amp;rsquo;s &lt;a href=&#34;https://dev.mysql.com/doc/connector-net/en/connector-net-connection-options.html&#34;&gt;Connector/NET connection options&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h2 id=&#34;base-options&#34;&gt;Base Options&lt;/h2&gt;
 
@@ -346,6 +417,32 @@ namespace MySqlConnector.Performance.Controllers
 &lt;h1 id=&#34;use-with-net-mvc&#34;&gt;Use with .NET MVC&lt;/h1&gt;
 
 &lt;p&gt;Use with .NET MVC&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Use with ORMs</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</guid>
+      <description>
+
+&lt;h1 id=&#34;use-with-orms&#34;&gt;Use with ORMs&lt;/h1&gt;
+
+&lt;p&gt;This library is compatible with popular .NET ORMs including:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/StackExchange/dapper-dot-net&#34;&gt;Dapper&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/Dapper&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/nreco/data&#34;&gt;NReco.Data&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/NReco.Data&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/SimpleStack/simplestack.orm&#34;&gt;SimpleStack.Orm&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/SimpleStack.Orm.MySQLConnector&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;For Entity Framework support, use:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql&#34;&gt;Pomelo.EntityFrameworkCore.MySql&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
+&lt;/ul&gt;
 </description>
     </item>
     
