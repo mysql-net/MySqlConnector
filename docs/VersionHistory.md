@@ -13,6 +13,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.6.2
+
+* Fix `NullReferenceException` when `MySqlParameter.Value == null`: [#126](https://github.com/mysql-net/MySqlConnector/issues/126).
+
 ### 0.6.1
 
 * Fix `AggregateException` going unhandled in `OpenAsync`: [#124](https://github.com/mysql-net/MySqlConnector/issues/124).
