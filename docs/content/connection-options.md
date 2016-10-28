@@ -11,7 +11,7 @@ menu:
 Connection Options
 ==================
 
-MySqlConnector supports a subset of Oracle's [MySql.Data connection options](https://dev.mysql.com/doc/connector-net/en/connector-net-connection-options.html).
+MySqlConnector supports a subset of Oracle's [Connector/NET connection options](https://dev.mysql.com/doc/connector-net/en/connector-net-connection-options.html).
 
 Base Options
 ------------
