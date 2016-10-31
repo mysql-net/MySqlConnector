@@ -9,58 +9,58 @@
     <atom:link href="https://mysql-net.github.io/MySqlConnector/api/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>DbConnection</title>
-      <link>https://mysql-net.github.io/MySqlConnector/api/db-connection/</link>
+      <title>MySqlDbConnection</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-db-connection/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://mysql-net.github.io/MySqlConnector/api/db-connection/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-db-connection/</guid>
       <description>
 
-&lt;h1 id=&#34;db-connection&#34;&gt;DB Connection&lt;/h1&gt;
+&lt;h1 id=&#34;mysqldbconnection&#34;&gt;MySqlDbConnection&lt;/h1&gt;
 
-&lt;p&gt;DB Connection&lt;/p&gt;
+&lt;p&gt;MySqlDbConnection&lt;/p&gt;
 </description>
     </item>
     
     <item>
-      <title>DbCommand</title>
-      <link>https://mysql-net.github.io/MySqlConnector/api/db-command/</link>
+      <title>MySqlDbCommand</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-db-command/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://mysql-net.github.io/MySqlConnector/api/db-command/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-db-command/</guid>
       <description>
 
-&lt;h1 id=&#34;db-command&#34;&gt;DB Command&lt;/h1&gt;
+&lt;h1 id=&#34;mysqldbcommand&#34;&gt;MySqlDbCommand&lt;/h1&gt;
 
-&lt;p&gt;DB Command&lt;/p&gt;
+&lt;p&gt;MySqlDbCommand&lt;/p&gt;
 </description>
     </item>
     
     <item>
-      <title>Result Set</title>
-      <link>https://mysql-net.github.io/MySqlConnector/api/result-set/</link>
+      <title>MySqlDbDataReader</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-db-data-reader/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://mysql-net.github.io/MySqlConnector/api/result-set/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-db-data-reader/</guid>
       <description>
 
-&lt;h1 id=&#34;result-set&#34;&gt;Result Set&lt;/h1&gt;
+&lt;h1 id=&#34;mysqldbdatareader&#34;&gt;MySqlDbDataReader&lt;/h1&gt;
 
-&lt;p&gt;Result Set&lt;/p&gt;
+&lt;p&gt;MySqlDbDataReader&lt;/p&gt;
 </description>
     </item>
     
     <item>
-      <title>Transaction</title>
-      <link>https://mysql-net.github.io/MySqlConnector/api/transaction/</link>
+      <title>MySqlDbTransaction</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-db-transaction/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://mysql-net.github.io/MySqlConnector/api/transaction/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-db-transaction/</guid>
       <description>
 
-&lt;h1 id=&#34;transaction&#34;&gt;Transaction&lt;/h1&gt;
+&lt;h1 id=&#34;mysqldbtransaction&#34;&gt;MySqlDbTransaction&lt;/h1&gt;
 
-&lt;p&gt;Transaction&lt;/p&gt;
+&lt;p&gt;MySqlDbTransaction&lt;/p&gt;
 </description>
     </item>
     

@@ -18,21 +18,159 @@
 
 &lt;h1 id=&#34;best-practices&#34;&gt;Best Practices&lt;/h1&gt;
 
-&lt;p&gt;Best Practices&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>DbConnection</title>
-      <link>https://mysql-net.github.io/MySqlConnector/api/db-connection/</link>
-      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://mysql-net.github.io/MySqlConnector/api/db-connection/</guid>
-      <description>
+&lt;h2 id=&#34;asynchronous-operation&#34;&gt;Asynchronous Operation&lt;/h2&gt;
 
-&lt;h1 id=&#34;db-connection&#34;&gt;DB Connection&lt;/h1&gt;
+&lt;p&gt;MySqlConnector is fully asynchronous, supporting the async ADO.NET methods added in .NET 4.5 without blocking
+or using &lt;code&gt;Task.Run&lt;/code&gt; to run synchronous methods on a background thread.  Programmers implementing MySqlConnector
+should be familiar with &lt;a href=&#34;https://msdn.microsoft.com/en-us/magazine/jj991977.aspx&#34;&gt;Async/Await - Best Practices in Asynchronous Programming&lt;/a&gt;.&lt;/p&gt;
 
-&lt;p&gt;DB Connection&lt;/p&gt;
+&lt;h3 id=&#34;always-use-async-when-possible&#34;&gt;Always Use Async when possible&lt;/h3&gt;
+
+&lt;table class=&#34;table table-bordered table-head-centered&#34; style=&#34;max-width: 650px&#34;&gt;
+  &lt;thead&gt;
+    &lt;th style=&#34;width:30%&#34;&gt;ADO.NET Class&lt;/th&gt;
+    &lt;th class=&#34;success&#34; style=&#34;width:40%&#34;&gt;Asynchronous Method&lt;br /&gt;(always use when possible)&lt;/th&gt;
+    &lt;th class=&#34;warning&#34; style=&#34;width:30%&#34;&gt;Synchronous Method&lt;br /&gt;(avoid when possible)&lt;/th&gt;
+  &lt;/thead&gt;
+  &lt;tr&gt;
+    &lt;td rowspan=&#34;2&#34; style=&#34;vertical-align:middle&#34;&gt;
+      &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbconnection&#34;&gt;DbConnection&lt;/a&gt;
+    &lt;/td&gt;
+    &lt;td&gt;OpenAsync&lt;/td&gt;
+    &lt;td&gt;Open&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;
+      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-db-connection&#34;&gt;MySqlDbConnection&lt;/a&gt;.BeginTransactionAsync
+    &lt;/td&gt;
+    &lt;td&gt;BeginTransaction&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td rowspan=&#34;3&#34; style=&#34;vertical-align:middle&#34;&gt;
+      &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbcommand&#34;&gt;DbCommand&lt;/a&gt;
+    &lt;/td&gt;
+    &lt;td&gt;ExecuteNonQueryAsync&lt;/td&gt;
+    &lt;td&gt;ExecuteNonQuery&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;ExecuteReaderAsync&lt;/td&gt;
+    &lt;td&gt;ExecuteReader&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;ExecuteScalarAsync&lt;/td&gt;
+    &lt;td&gt;ExecuteScalar&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td rowspan=&#34;4&#34; style=&#34;vertical-align:middle&#34;&gt;
+      &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbdatareader&#34;&gt;DbDataReader&lt;/a&gt;
+    &lt;/td&gt;
+    &lt;td&gt;GetFieldValueAsync&lt;/td&gt;
+    &lt;td&gt;GetFieldValue&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;IsDBNullAsync&lt;/td&gt;
+    &lt;td&gt;IsDBNull&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;NextResultAsync&lt;/td&gt;
+    &lt;td&gt;NextResult&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;ReadAsync&lt;/td&gt;
+    &lt;td&gt;Read&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td rowspan=&#34;2&#34; style=&#34;vertical-align:middle&#34;&gt;
+      &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbtransaction&#34;&gt;DbTransaction&lt;/a&gt;
+    &lt;/td&gt;
+    &lt;td&gt;
+      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-db-transaction&#34;&gt;MySqlDbTransaction&lt;/a&gt;.CommitAsync
+    &lt;/td&gt;
+    &lt;td&gt;Commit&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;
+      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-db-transaction&#34;&gt;MySqlDbTransaction&lt;/a&gt;.RollbackAsync
+    &lt;/td&gt;
+    &lt;td&gt;Rollback&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;p&gt;&lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;Async Transaction methods are not part of ADO.NET, they are provided by
+MySqlConnector to allow database code to remain fully asynchronous.&lt;/p&gt;
+
+&lt;h3 id=&#34;example-console-application&#34;&gt;Example Console Application&lt;/h3&gt;
+
+&lt;p&gt;In order to get the full benefit of asynchronous operation, every method in the call stack that eventually calls
+MySqlConnector should be implemented as an async method.  The exception is the &lt;code&gt;static void Main&lt;/code&gt; method in a Console Application.&lt;/p&gt;
+
+&lt;p&gt;Example assumes a &lt;a href=&#34;overview/configuration&#34;&gt;configured AppDb&lt;/a&gt; object in the &lt;code&gt;MySqlConnector.Examples&lt;/code&gt; namespace.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;using System.Threading.Tasks;
+using System.Collections.Generic;
+
+namespace MySqlConnector.Examples
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            MainAsync(args).GetAwaiter().GetResult();
+        }
+
+        public static async Task MainAsync(string[] args)
+        {
+            var tasks = new List&amp;lt;Task&amp;gt;();
+            for (var i=0; i&amp;lt;100; i++){
+                tasks.Add(Controllers.SleepOne());
+            }
+            // these 100 queries should all complete in around
+            // 1 second if &amp;quot;Max Pool Size=100&amp;quot; (the default)
+            await Task.WhenAll(tasks);
+        }
+    }
+
+    public class Controllers
+    {
+        public static async Task SleepOne()
+        {
+            using (var db = new AppDb())
+            {
+                await db.OpenAsync();
+                var cmd = db.Connection.CreateCommand();
+                cmd.CommandText = @&amp;quot;SELECT SLEEP(1)&amp;quot;;
+                await cmd.ExecuteNonQueryAsync();
+            }
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;synchronous-operation&#34;&gt;Synchronous Operation&lt;/h2&gt;
+
+&lt;div class=&#34;alert alert-warning&#34;&gt;
+  Using Synchronous Methods can have adverse effects on the managed thread pool and cause slowdowns or lock-ups
+  if not properly tuned.  The recommended approach is to use all Asynchronous Methods.
+&lt;/div&gt;
+
+&lt;p&gt;If you must use synchronous methods, ensure that your thread pool is at least the size of the number of
+concurrent connections you plan to support.  For example, if you are creating a web server using
+synchronous methods that needs to support serving 500 Requests Per Second, set the minimum thread
+pool size to 500.&lt;/p&gt;
+
+&lt;p&gt;Example &lt;code&gt;project.json&lt;/code&gt; configuration:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
+  &amp;quot;runtimeOptions&amp;quot;: {
+    &amp;quot;configProperties&amp;quot;: {
+      &amp;quot;System.GC.Server&amp;quot;: true,
+      &amp;quot;System.GC.Concurrent&amp;quot;: true,
+      &amp;quot;System.Threading.ThreadPool.MinThreads&amp;quot;: 500
+    }
+  },
+  // other config
+}
+&lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
     
@@ -139,6 +277,20 @@ and is not based on &lt;a href=&#34;https://github.com/mysql/mysql-connector-net
     </item>
     
     <item>
+      <title>MySqlDbConnection</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-db-connection/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-db-connection/</guid>
+      <description>
+
+&lt;h1 id=&#34;mysqldbconnection&#34;&gt;MySqlDbConnection&lt;/h1&gt;
+
+&lt;p&gt;MySqlDbConnection&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Configuration</title>
       <link>https://mysql-net.github.io/MySqlConnector/overview/configuration/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
@@ -204,20 +356,6 @@ public void SyncMethod()
     </item>
     
     <item>
-      <title>DbCommand</title>
-      <link>https://mysql-net.github.io/MySqlConnector/api/db-command/</link>
-      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://mysql-net.github.io/MySqlConnector/api/db-command/</guid>
-      <description>
-
-&lt;h1 id=&#34;db-command&#34;&gt;DB Command&lt;/h1&gt;
-
-&lt;p&gt;DB Command&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
       <title>Migrating from Connector/NET</title>
       <link>https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
@@ -228,6 +366,20 @@ public void SyncMethod()
 &lt;h1 id=&#34;migrating-from-connector-net&#34;&gt;Migrating from Connector/NET&lt;/h1&gt;
 
 &lt;p&gt;Migrating from Connector/NET&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>MySqlDbCommand</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-db-command/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-db-command/</guid>
+      <description>
+
+&lt;h1 id=&#34;mysqldbcommand&#34;&gt;MySqlDbCommand&lt;/h1&gt;
+
+&lt;p&gt;MySqlDbCommand&lt;/p&gt;
 </description>
     </item>
     
@@ -393,16 +545,16 @@ public void SyncMethod()
     </item>
     
     <item>
-      <title>Result Set</title>
-      <link>https://mysql-net.github.io/MySqlConnector/api/result-set/</link>
+      <title>MySqlDbDataReader</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-db-data-reader/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://mysql-net.github.io/MySqlConnector/api/result-set/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-db-data-reader/</guid>
       <description>
 
-&lt;h1 id=&#34;result-set&#34;&gt;Result Set&lt;/h1&gt;
+&lt;h1 id=&#34;mysqldbdatareader&#34;&gt;MySqlDbDataReader&lt;/h1&gt;
 
-&lt;p&gt;Result Set&lt;/p&gt;
+&lt;p&gt;MySqlDbDataReader&lt;/p&gt;
 </description>
     </item>
     
@@ -447,16 +599,16 @@ public void SyncMethod()
     </item>
     
     <item>
-      <title>Transaction</title>
-      <link>https://mysql-net.github.io/MySqlConnector/api/transaction/</link>
+      <title>MySqlDbTransaction</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-db-transaction/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://mysql-net.github.io/MySqlConnector/api/transaction/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-db-transaction/</guid>
       <description>
 
-&lt;h1 id=&#34;transaction&#34;&gt;Transaction&lt;/h1&gt;
+&lt;h1 id=&#34;mysqldbtransaction&#34;&gt;MySqlDbTransaction&lt;/h1&gt;
 
-&lt;p&gt;Transaction&lt;/p&gt;
+&lt;p&gt;MySqlDbTransaction&lt;/p&gt;
 </description>
     </item>
     
