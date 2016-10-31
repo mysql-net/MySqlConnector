@@ -95,7 +95,17 @@ h1 {
 }
 
 h2 {
+    margin-top: 30px;
     margin-bottom: 20px;
+}
+
+h3 {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.table-head-centered th {
+    text-align: center;
 }
 
 .footer {
