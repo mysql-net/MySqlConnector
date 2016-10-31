@@ -39,7 +39,7 @@
 
   <body>
 
-    <nav class="navbar navbar-default">
+    <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container">
             <div class="col-xs-8 navbar-mysqlc-logo">
                 <a href="">
@@ -60,7 +60,7 @@
         <div class="row">
             
 <div class="col-md-3">
-    <div class="list-group" id="navigation">
+    <div class="list-group" id="navigation" data-spy="affix" data-offset-top="0">
 
         
         <a class="list-group-item" href="" data-parent="#navigation">
@@ -251,6 +251,17 @@
         </div>
     </div>
     
+
+    <footer class="footer">
+      <div class="container-fluid">
+        <div class="row">
+          <div id="footerContent" class="col-sm-12">
+            Free and open source under the
+            <a href="https://github.com/mysql-net/MySqlConnector/blob/master/LICENSE">MIT License</a>
+          </div>
+        </div>
+      </div>
+    </footer>
 
     
     <script type="text/javascript" src="vendor/jquery/js/jquery-2.1.4.min.js"></script>
