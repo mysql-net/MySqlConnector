@@ -4,11 +4,11 @@ date: 2016-10-16
 menu:
   main:
     parent: api
-title: Result Set
+title: MySqlDbDataReader
 weight: 30
 ---
 
-Result Set
-==========
+MySqlDbDataReader
+=================
 
-Result Set
+MySqlDbDataReader

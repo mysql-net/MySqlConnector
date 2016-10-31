@@ -4,11 +4,11 @@ date: 2016-10-16
 menu:
   main:
     parent: api
-title: DbCommand
+title: MySqlDbCommand
 weight: 20
 ---
 
-DB Command
-==========
+MySqlDbCommand
+==============
 
-DB Command
+MySqlDbCommand
