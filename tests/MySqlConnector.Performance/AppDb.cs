@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 
 namespace MySqlConnector.Performance
@@ -10,7 +9,7 @@ namespace MySqlConnector.Performance
         {
             using (var db = new AppDb())
             {
-                db.Open();
+                db.Connection.Open();
                 var cmd = db.Connection.CreateCommand();
                 cmd.CommandText = @"
 DROP TABLE IF EXISTS `BlogPost`;
@@ -30,16 +29,6 @@ CREATE TABLE IF NOT EXISTS `BlogPost` (
         public AppDb()
         {
             Connection = new MySqlConnection(AppConfig.Config["Data:ConnectionString"]);
-        }
-
-        public void Open()
-        {
-            Connection.Open();
-        }
-
-        public async Task OpenAsync()
-        {
-            await Connection.OpenAsync();
         }
 
         public void Dispose()
