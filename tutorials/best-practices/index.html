@@ -280,10 +280,10 @@ namespace MySqlConnector.Examples
             {
                 await db.Connection.OpenAsync();
                 using (var cmd = db.Connection.CreateCommand())
-								{
+                {
                     cmd.CommandText = @&quot;SELECT SLEEP(1)&quot;;
                     await cmd.ExecuteNonQueryAsync();
-								}
+                }
             }
         }
     }
