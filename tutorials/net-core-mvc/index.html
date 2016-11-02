@@ -28,7 +28,7 @@
 
     <meta name="generator" content="Hugo 0.17" />
     
-    <title>MySqlConnector - Use with .NET MVC</title>
+    <title>MySqlConnector - Use with .NET Core MVC</title>
 
     <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="vendor/font-awesome/css/font-awesome.min.css" />
@@ -116,7 +116,7 @@
             </a>
             
             <a class="list-group-item active" data-parent="#nav-3" href="/MySqlConnector/tutorials/net-core-mvc/">
-                <span>Use with .NET MVC</span>
+                <span>Use with .NET Core MVC</span>
             </a>
             
         </div>
@@ -158,9 +158,517 @@
 
 
 
-<h1 id="use-with-net-mvc">Use with .NET MVC</h1>
+<h1 id="use-with-net-core-mvc">Use with .NET Core MVC</h1>
 
-<p>Use with .NET MVC</p>
+<p>This tutorial will walk through a basic .NET Core JSON API application that performs CRUD operations on
+blog posts.  The code in this tutorial comes is an adaptation of <a href="https://github.com/mysql-net/MySqlConnector/tree/master/tests/MySqlConnector.Performance">MySqlConnector.Performance</a>,
+the performance application that is used to stress test MySqlConnector.</p>
+
+<h3 id="initialize-mysql">Initialize MySQL</h3>
+
+<p>Create a MySQL database and copy the following SQL to create a table called <code>BlogPost</code>:</p>
+
+<pre><code class="language-txt">CREATE TABLE IF NOT EXISTS `BlogPost` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+  `Content` longtext,
+  `Title` longtext,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB;
+</code></pre>
+
+<h3 id="initialize-net-core-mvc">Initialize .NET Core MVC</h3>
+
+<p>Create a new directory for the project with a <code>project.json</code> file at the root:</p>
+
+<pre><code class="language-json">{
+  &quot;dependencies&quot;: {
+    &quot;Microsoft.AspNetCore.Mvc&quot;: &quot;1.0.0&quot;,
+    &quot;Microsoft.AspNetCore.Server.Kestrel&quot;: &quot;1.0.0&quot;,
+    &quot;Microsoft.Extensions.Configuration.EnvironmentVariables&quot;: &quot;1.0.0&quot;,
+    &quot;Microsoft.Extensions.Configuration.FileExtensions&quot;: &quot;1.0.0&quot;,
+    &quot;Microsoft.Extensions.Configuration.Json&quot;: &quot;1.0.0&quot;,
+    &quot;Microsoft.Extensions.Configuration.CommandLine&quot;: &quot;1.0.0&quot;,
+    &quot;Microsoft.Extensions.Logging&quot;: &quot;1.0.0&quot;,
+    &quot;Microsoft.Extensions.Logging.Console&quot;: &quot;1.0.0&quot;,
+    &quot;Microsoft.Extensions.Logging.Debug&quot;: &quot;1.0.0&quot;,
+    &quot;Microsoft.Extensions.Options.ConfigurationExtensions&quot;: &quot;1.0.0&quot;,
+    &quot;MySqlConnector&quot;: &quot;0.*&quot;
+  },
+
+  &quot;frameworks&quot;: {
+    &quot;netcoreapp1.0&quot;: {
+      &quot;dependencies&quot;: {
+        &quot;Microsoft.NETCore.App&quot;: {
+          &quot;type&quot;: &quot;platform&quot;,
+          &quot;version&quot;: &quot;1.0.0&quot;
+        }
+      }
+    }
+  },
+
+  &quot;runtimeOptions&quot;: {
+    &quot;gcServer&quot;: true
+  },
+
+  &quot;buildOptions&quot;: {
+    &quot;emitEntryPoint&quot;: true,
+    &quot;preserveCompilationContext&quot;: true
+  }
+}
+</code></pre>
+
+<p>Run the command <code>dotnet restore</code> in this directory.</p>
+
+<h3 id="add-configuration-files">Add Configuration Files</h3>
+
+<p>The first building block of our appplication is definig a couple JSON files to hold configuration:</p>
+
+<p><code>appsettings.json</code> holds .NET Core logging levels:</p>
+
+<pre><code class="language-json">{
+    &quot;Logging&quot;: {
+        &quot;IncludeScopes&quot;: false,
+        &quot;LogLevel&quot;: {
+            &quot;Default&quot;: &quot;Error&quot;,
+            &quot;System&quot;: &quot;Error&quot;,
+            &quot;Microsoft&quot;: &quot;Error&quot;
+        }
+    }
+}
+</code></pre>
+
+<p><code>config.json</code> holds the ADO.NET Connection String:</p>
+
+<pre><code class="language-json">{
+    &quot;Data&quot;: {
+        &quot;ConnectionString&quot;: &quot;server=127.0.0.1;user id=mysqltest;password=test;port=3306;database=blog;&quot;
+    }
+}
+</code></pre>
+
+<p><code>AppConfig.cs</code> is a static class that builds a Configuration object from these files:</p>
+
+<pre><code class="language-csharp">using System.IO;
+using Microsoft.Extensions.Configuration;
+
+namespace MySqlConnector.Performance
+{
+    public static class AppConfig
+    {
+        public static IConfigurationRoot Config = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile(&quot;appsettings.json&quot;)
+        .AddJsonFile(&quot;config.json&quot;)
+        .Build();
+    }
+}
+</code></pre>
+
+<p><code>AppDb.cs</code> is a disposable <a href="overview/configuration/">Application Database Object</a>, adapted to read the ConnectionString
+from the Configuration Object:</p>
+
+<pre><code class="language-csharp">using System;
+using MySql.Data.MySqlClient;
+
+namespace MySqlConnector.Performance
+{
+    public class AppDb : IDisposable
+    {
+
+        public MySqlConnection Connection;
+
+        public AppDb()
+        {
+            Connection = new MySqlConnection(AppConfig.Config[&quot;Data:ConnectionString&quot;]);
+        }
+
+        public void Dispose()
+        {
+            Connection.Close();
+        }
+    }
+}
+</code></pre>
+
+<h3 id="net-core-program-cs-and-startup-cs-files">.NET Core Program.cs and Startup.cs Files</h3>
+
+<p><code>Program.cs</code> contains the application entry point:</p>
+
+<pre><code class="language-csharp">using Microsoft.AspNetCore.Hosting;
+
+namespace MySqlConnector.Performance
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var host = new WebHostBuilder()
+                .UseKestrel()
+                .UseStartup&lt;Startup&gt;()
+                .Build();
+            host.Run();
+        }
+    }
+}
+</code></pre>
+
+<p><code>Startup.cs</code> contains runtime configuration and framework services:</p>
+
+<pre><code class="language-csharp">using System.Buffers;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+
+namespace MySqlConnector.Performance
+{
+    public class Startup
+    {
+        public Startup(IHostingEnvironment env)
+        {
+            Configuration = AppConfig.Config;
+        }
+
+        public IConfigurationRoot Configuration { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // Add framework services.
+            services.AddMvc(options =&gt;
+            {
+                options.OutputFormatters.Clear();
+                options.OutputFormatters.Add(new JsonOutputFormatter(new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                }, ArrayPool&lt;char&gt;.Shared));
+            });
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        {
+            loggerFactory.AddConsole(Configuration.GetSection(&quot;Logging&quot;));
+            loggerFactory.AddDebug();
+
+            app.UseMvc();
+        }
+    }
+}
+</code></pre>
+
+<p>Now our app is configured and we can focus on writing the core functionality!</p>
+
+<h3 id="models">Models</h3>
+
+<p><code>BlogPost.cs</code> represents a single Blog Post, and contains Insert, Update, and Delete methods.</p>
+
+<pre><code class="language-csharp">using System.Data;
+using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
+
+namespace MySqlConnector.Performance.Models
+{
+    public class BlogPost
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Content { get; set; }
+
+        [JsonIgnore]
+        public AppDb Db { get; set; }
+
+        public BlogPost(AppDb db=null)
+        {
+            Db = db;
+        }
+
+        public async Task InsertAsync()
+        {
+            var cmd = Db.Connection.CreateCommand() as MySqlCommand;
+            cmd.CommandText = @&quot;INSERT INTO `BlogPost` (`Title`, `Content`) VALUES (@title, @content);&quot;;
+            BindParams(cmd);
+            await cmd.ExecuteNonQueryAsync();
+            Id = (int) cmd.LastInsertedId;
+        }
+
+        public async Task UpdateAsync()
+        {
+            var cmd = Db.Connection.CreateCommand() as MySqlCommand;
+            cmd.CommandText = @&quot;UPDATE `BlogPost` SET `Title` = @title, `Content` = @content WHERE `Id` = @id;&quot;;
+            BindParams(cmd);
+            BindId(cmd);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task DeleteAsync()
+        {
+            var cmd = Db.Connection.CreateCommand() as MySqlCommand;
+            cmd.CommandText = @&quot;DELETE FROM `BlogPost` WHERE `Id` = @id;&quot;;
+            BindId(cmd);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        private void BindId(MySqlCommand cmd)
+        {
+            cmd.Parameters.Add(new MySqlParameter
+            {
+                ParameterName = &quot;@id&quot;,
+                DbType = DbType.Int32,
+                Value = Id,
+            });
+        }
+
+        private void BindParams(MySqlCommand cmd)
+        {
+            cmd.Parameters.Add(new MySqlParameter
+            {
+                ParameterName = &quot;@title&quot;,
+                DbType = DbType.String,
+                Value = Title,
+            });
+            cmd.Parameters.Add(new MySqlParameter
+            {
+                ParameterName = &quot;@content&quot;,
+                DbType = DbType.String,
+                Value = Content,
+            });
+        }
+
+    }
+}
+</code></pre>
+
+<p><code>BlogPostQuery.cs</code> contains commands to query Blog Posts from the database:</p>
+
+<pre><code class="language-csharp">using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
+
+namespace MySqlConnector.Performance.Models
+{
+    public class BlogPostQuery
+    {
+
+        public readonly AppDb Db;
+        public BlogPostQuery(AppDb db)
+        {
+            Db = db;
+        }
+
+        public async Task&lt;BlogPost&gt; FindOneAsync(int id)
+        {
+            var cmd = Db.Connection.CreateCommand() as MySqlCommand;
+            cmd.CommandText = @&quot;SELECT `Id`, `Title`, `Content` FROM `BlogPost` WHERE `Id` = @id&quot;;
+            cmd.Parameters.Add(new MySqlParameter
+            {
+                ParameterName = &quot;@id&quot;,
+                DbType = DbType.Int32,
+                Value = id,
+            });
+            var result = await ReadAllAsync(await cmd.ExecuteReaderAsync());
+            return result.Count &gt; 0 ? result[0] : null;
+        }
+
+        public async Task&lt;List&lt;BlogPost&gt;&gt; LatestPostsAsync()
+        {
+            var cmd = Db.Connection.CreateCommand();
+            cmd.CommandText = @&quot;SELECT `Id`, `Title`, `Content` FROM `BlogPost` ORDER BY `Id` DESC LIMIT 10;&quot;;
+            return await ReadAllAsync(await cmd.ExecuteReaderAsync());
+        }
+
+        public async Task DeleteAllAsync()
+        {
+            var txn = await Db.Connection.BeginTransactionAsync();
+            try
+            {
+                var cmd = Db.Connection.CreateCommand();
+                cmd.CommandText = @&quot;DELETE FROM `BlogPost`&quot;;
+                await cmd.ExecuteNonQueryAsync();
+                await txn.CommitAsync();
+            }
+            catch
+            {
+                await txn.RollbackAsync();
+                throw;
+            }
+        }
+
+        private async Task&lt;List&lt;BlogPost&gt;&gt; ReadAllAsync(DbDataReader reader)
+        {
+            var posts = new List&lt;BlogPost&gt;();
+            while (await reader.ReadAsync())
+            {
+                var post = new BlogPost(Db)
+                {
+                    Id = await reader.GetFieldValueAsync&lt;int&gt;(0),
+                    Title = await reader.GetFieldValueAsync&lt;string&gt;(1),
+                    Content = await reader.GetFieldValueAsync&lt;string&gt;(2)
+                };
+                posts.Add(post);
+            }
+            reader.Dispose();
+            return posts;
+        }
+    }
+}
+</code></pre>
+
+<h3 id="controller">Controller</h3>
+
+<p><code>AsyncController.cs</code> expose Async API Endpoints for CRUD operations on Blog Posts:</p>
+
+<pre><code class="language-csharp">using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using MySqlConnector.Performance.Models;
+
+namespace MySqlConnector.Performance.Controllers
+{
+    [Route(&quot;api/[controller]&quot;)]
+    public class AsyncController : Controller
+    {
+        // GET api/async
+        [HttpGet]
+        public async Task&lt;IActionResult&gt; GetLatest()
+        {
+            using (var db = new AppDb())
+            {
+                await db.Connection.OpenAsync();
+                var query = new BlogPostQuery(db);
+                var result = await query.LatestPostsAsync();
+                return new OkObjectResult(result);
+            }
+        }
+
+        // GET api/async/5
+        [HttpGet(&quot;{id}&quot;)]
+        public async Task&lt;IActionResult&gt; GetOne(int id)
+        {
+            using (var db = new AppDb())
+            {
+                await db.Connection.OpenAsync();
+                var query = new BlogPostQuery(db);
+                var result = await query.FindOneAsync(id);
+                if (result == null)
+                return new NotFoundResult();
+                return new OkObjectResult(result);
+            }
+        }
+
+        // POST api/async
+        [HttpPost]
+        public async Task&lt;IActionResult&gt; Post([FromBody]BlogPost body)
+        {
+            using (var db = new AppDb())
+            {
+                await db.Connection.OpenAsync();
+                body.Db = db;
+                await body.InsertAsync();
+                return new OkObjectResult(body);
+            }
+        }
+
+        // PUT api/async/5
+        [HttpPut(&quot;{id}&quot;)]
+        public async Task&lt;IActionResult&gt; PutOne(int id, [FromBody]BlogPost body)
+        {
+            using (var db = new AppDb())
+            {
+                await db.Connection.OpenAsync();
+                var query = new BlogPostQuery(db);
+                var result = await query.FindOneAsync(id);
+                if (result == null)
+                    return new NotFoundResult();
+                result.Title = body.Title;
+                result.Content = body.Content;
+                await result.UpdateAsync();
+                return new OkObjectResult(result);
+            }
+        }
+
+        // DELETE api/async/5
+        [HttpDelete(&quot;{id}&quot;)]
+        public async Task&lt;IActionResult&gt; DeleteOne(int id)
+        {
+            using (var db = new AppDb())
+            {
+                await db.Connection.OpenAsync();
+                var query = new BlogPostQuery(db);
+                var result = await query.FindOneAsync(id);
+                if (result == null)
+                    return new NotFoundResult();
+                await result.DeleteAsync();
+                return new OkResult();
+            }
+        }
+
+        // DELETE api/async
+        [HttpDelete]
+        public async Task&lt;IActionResult&gt; DeleteAll()
+        {
+            using (var db = new AppDb())
+            {
+                await db.Connection.OpenAsync();
+                var query = new BlogPostQuery(db);
+                await query.DeleteAllAsync();
+                return new OkResult();
+            }
+        }
+    }
+}
+</code></pre>
+
+<h3 id="run-the-app">Run the App</h3>
+
+<p>Congratulations, you should have a fully functional app at this point!  You should be able to run <code>dotnet run</code> to start your application.</p>
+
+<p>The following API Endpoints should work.  Note to set <code>Content-Type: application/json</code> headers on <code>POST</code> and <code>PUT</code> methods.</p>
+
+<pre><code class="language-txt">POST http://localhost:5000/api/async
+{ &quot;Title&quot;: &quot;One&quot;, &quot;Content&quot;: &quot;First Blog Post!&quot; }
+
+POST http://localhost:5000/api/async
+{ &quot;Title&quot;: &quot;Two&quot;, &quot;Content&quot;: &quot;Second Blog Post!&quot; }
+
+POST http://localhost:5000/api/async
+{ &quot;Title&quot;: &quot;Three&quot;, &quot;Content&quot;: &quot;Third Blog Post!&quot; }
+
+GET http://localhost:5000/api/async
+// Output:
+[
+    { &quot;Id&quot;: 3, &quot;Title&quot;: &quot;Three&quot;, &quot;Content&quot;: &quot;Third Blog Post!&quot; },
+    { &quot;Id&quot;: 2, &quot;Title&quot;: &quot;Two&quot;, &quot;Content&quot;: &quot;Second Blog Post!&quot; },
+    { &quot;Id&quot;: 1, &quot;Title&quot;: &quot;One&quot;, &quot;Content&quot;: &quot;First Blog Post!&quot;}
+]
+
+DELETE http://localhost:5000/api/async/1
+// blog post 1 is gone
+
+PUT http://localhost:5000/api/async/2
+{ &quot;Title&quot;: &quot;Two&quot;, &quot;Content&quot;: &quot;Second Blog Post Revised&quot; }
+
+GET http://localhost:5000/api/async
+// Output:
+[
+    { &quot;Id&quot;: 3, &quot;Title&quot;: &quot;Three&quot;, &quot;Content&quot;: &quot;Third Blog Post!&quot; },
+    { &quot;Id&quot;: 2, &quot;Title&quot;: &quot;Two&quot;, &quot;Content&quot;: &quot;Second Blog Post Revised&quot; },
+]
+
+DELETE http://localhost:5000/api/async
+// all blog posts are gone
+
+GET http://localhost:5000/api/async
+// Output:
+[]
+</code></pre>
+
+<p>If you would like to see all of this code and more on GitHub, check out <a href="https://github.com/mysql-net/MySqlConnector/tree/master/tests/MySqlConnector.Performance">MySqlConnector.Performance</a>.</p>
 
 
 
