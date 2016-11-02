@@ -136,10 +136,12 @@ namespace MySqlConnector.Examples
         {
             using (var db = new AppDb())
             {
-                await db.connection.OpenAsync();
-                var cmd = db.Connection.CreateCommand();
-                cmd.CommandText = @&amp;quot;SELECT SLEEP(1)&amp;quot;;
-                await cmd.ExecuteNonQueryAsync();
+                await db.Connection.OpenAsync();
+                using (var cmd = db.Connection.CreateCommand())
+								{
+                    cmd.CommandText = @&amp;quot;SELECT SLEEP(1)&amp;quot;;
+                    await cmd.ExecuteNonQueryAsync();
+								}
             }
         }
     }
