@@ -70,3 +70,4 @@ and is not based on [Oracle's Connector/NET](https://github.com/mysql/mysql-conn
     <td>More Permissive</td>
   </tr>
 </table>
+
