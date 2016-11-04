@@ -28,7 +28,7 @@
 
     <meta name="generator" content="Hugo 0.17" />
     
-    <title>MySqlConnector - MySqlDbDataReader</title>
+    <title>MySqlConnector - MySqlConnection</title>
 
     <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="vendor/font-awesome/css/font-awesome.min.css" />
@@ -130,20 +130,20 @@
         
         <div id="nav-4" class="submenu panel-collapse collapse  in">
             
-            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-db-connection/">
-                <span>MySqlDbConnection</span>
+            <a class="list-group-item active" data-parent="#nav-4" href="/MySqlConnector/api/mysql-connection/">
+                <span>MySqlConnection</span>
             </a>
             
-            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-db-command/">
-                <span>MySqlDbCommand</span>
+            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-command/">
+                <span>MySqlCommand</span>
             </a>
             
-            <a class="list-group-item active" data-parent="#nav-4" href="/MySqlConnector/api/mysql-db-data-reader/">
-                <span>MySqlDbDataReader</span>
+            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-data-reader/">
+                <span>MySqlDataReader</span>
             </a>
             
-            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-db-transaction/">
-                <span>MySqlDbTransaction</span>
+            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-transaction/">
+                <span>MySqlTransaction</span>
             </a>
             
         </div>
@@ -158,9 +158,86 @@
 
 
 
-<h1 id="mysqldbdatareader">MySqlDbDataReader</h1>
+<h1 id="mysqlconnection">MySqlConnection</h1>
 
-<p>MySqlDbDataReader</p>
+<p>MySqlConnection implements the <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbconnection">ADO.NET DbConnection class</a>,
+please refer to its documentation.</p>
+
+<p>Additionally, MySqlConnection provides the following public properties and methods that may be used:</p>
+
+<h3 id="constructors">Constructors</h3>
+
+<p><code>public MySqlConnection()</code></p>
+
+<p>Parameterless constructor</p>
+
+<hr />
+
+<p><code>public MySqlConnection(string connectionString)</code></p>
+
+<p>Constructor that set the connection string</p>
+
+<hr />
+
+<h3 id="additional-properties">Additional Properties</h3>
+
+<p><code>public int ServerThread</code></p>
+
+<p>Connection ID from MySQL Server</p>
+
+<hr />
+
+<h3 id="additional-instance-methods">Additional Instance Methods</h3>
+
+<p><code>public Task&lt;MySqlTransaction&gt; BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))</code></p>
+
+<p>Async version of BeginTransaction</p>
+
+<hr />
+
+<p><code>public Task&lt;MySqlTransaction&gt; BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))</code></p>
+
+<p>Async version of BeginTransaction that supports setting Isolation Level</p>
+
+<hr />
+
+<h3 id="additional-static-methods">Additional Static Methods</h3>
+
+<p><code>public static void ClearPool(MySqlConnection connection)</code></p>
+
+<p>Clears the connection pool that the connection belongs to</p>
+
+<hr />
+
+<p><code>public static Task ClearPoolAsync(MySqlConnection connection)</code></p>
+
+<p>Async version of ClearPool</p>
+
+<hr />
+
+<p><code>public static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken)</code></p>
+
+<p>Async version of ClearPool with cancellation token support</p>
+
+<hr />
+
+<p><code>public static void ClearAllPools()</code></p>
+
+<p>Clears all connection pools in the entire application</p>
+
+<hr />
+
+<p><code>public static Task ClearAllPoolsAsync()</code></p>
+
+<p>Async version of ClearAllPoolsAsync</p>
+
+<hr />
+
+<p><code>public static Task ClearAllPoolsAsync(CancellationToken cancellationToken)</code></p>
+
+<p>Async version of ClearAllPoolsAsync with cancellation token support</p>
+
+<hr />
 
 
 
@@ -211,32 +288,26 @@
               
                 
                 
-                
-              
-                
-                
-                
-              
-                
-                
                   
-                  
-            <div class="pull-left">
-              <a  href="/MySqlConnector/api/mysql-db-command/">
-                  <i class="fa fa-angle-left"></i> MySqlDbCommand
-              </a>
-            </div>
                   
                 
                 
               
                 
             <div class="pull-right">
-              <a  href="/MySqlConnector/api/mysql-db-transaction/">
-                  MySqlDbTransaction <i class="fa fa-angle-right"></i>
+              <a  href="/MySqlConnector/api/mysql-command/">
+                  MySqlCommand <i class="fa fa-angle-right"></i>
               </a>
             </div>
                   
+                
+                
+                
+              
+                
+                
+                
+              
                 
                 
                 

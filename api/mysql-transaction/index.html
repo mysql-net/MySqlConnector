@@ -28,7 +28,7 @@
 
     <meta name="generator" content="Hugo 0.17" />
     
-    <title>MySqlConnector - MySqlDbTransaction</title>
+    <title>MySqlConnector - MySqlTransaction</title>
 
     <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="vendor/font-awesome/css/font-awesome.min.css" />
@@ -130,20 +130,20 @@
         
         <div id="nav-4" class="submenu panel-collapse collapse  in">
             
-            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-db-connection/">
-                <span>MySqlDbConnection</span>
+            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-connection/">
+                <span>MySqlConnection</span>
             </a>
             
-            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-db-command/">
-                <span>MySqlDbCommand</span>
+            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-command/">
+                <span>MySqlCommand</span>
             </a>
             
-            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-db-data-reader/">
-                <span>MySqlDbDataReader</span>
+            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-data-reader/">
+                <span>MySqlDataReader</span>
             </a>
             
-            <a class="list-group-item active" data-parent="#nav-4" href="/MySqlConnector/api/mysql-db-transaction/">
-                <span>MySqlDbTransaction</span>
+            <a class="list-group-item active" data-parent="#nav-4" href="/MySqlConnector/api/mysql-transaction/">
+                <span>MySqlTransaction</span>
             </a>
             
         </div>
@@ -158,9 +158,26 @@
 
 
 
-<h1 id="mysqldbtransaction">MySqlDbTransaction</h1>
+<h1 id="mysqltransaction">MySqlTransaction</h1>
 
-<p>MySqlDbTransaction</p>
+<p>MySqlTransaction implements the <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbtransaction">ADO.NET DbTransaction class</a>,
+please refer to its documentation.</p>
+
+<p>Additionally, MySqlTransaction provides the following public properties and methods that may be used:</p>
+
+<h3 id="additional-instance-methods">Additional Instance Methods</h3>
+
+<p><code>public Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))</code></p>
+
+<p>Async version of Commit</p>
+
+<hr />
+
+<p><code>public Task RollbackAsync(CancellationToken cancellationToken = default(CancellationToken))</code></p>
+
+<p>Async version of Rollback</p>
+
+<hr />
 
 
 
@@ -226,8 +243,8 @@
                   
                   
             <div class="pull-left">
-              <a  href="/MySqlConnector/api/mysql-db-data-reader/">
-                  <i class="fa fa-angle-left"></i> MySqlDbDataReader
+              <a  href="/MySqlConnector/api/mysql-data-reader/">
+                  <i class="fa fa-angle-left"></i> MySqlDataReader
               </a>
             </div>
                   

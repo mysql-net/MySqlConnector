@@ -22,7 +22,7 @@
   </url>
   
   <url>
-    <loc>https://mysql-net.github.io/MySqlConnector/api/mysql-db-connection/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/api/mysql-connection/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
@@ -37,7 +37,7 @@
   </url>
   
   <url>
-    <loc>https://mysql-net.github.io/MySqlConnector/api/mysql-db-command/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/api/mysql-command/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
@@ -47,7 +47,7 @@
   </url>
   
   <url>
-    <loc>https://mysql-net.github.io/MySqlConnector/api/mysql-db-data-reader/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/api/mysql-data-reader/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
@@ -62,7 +62,7 @@
   </url>
   
   <url>
-    <loc>https://mysql-net.github.io/MySqlConnector/api/mysql-db-transaction/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/api/mysql-transaction/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   

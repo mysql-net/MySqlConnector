@@ -41,7 +41,7 @@ should be familiar with &lt;a href=&#34;https://msdn.microsoft.com/en-us/magazin
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;
-      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-db-connection&#34;&gt;MySqlDbConnection&lt;/a&gt;.BeginTransactionAsync
+      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-connection&#34;&gt;MySqlConnection&lt;/a&gt;.BeginTransactionAsync
     &lt;/td&gt;
     &lt;td&gt;BeginTransaction&lt;/td&gt;
   &lt;/tr&gt;
@@ -84,13 +84,13 @@ should be familiar with &lt;a href=&#34;https://msdn.microsoft.com/en-us/magazin
       &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbtransaction&#34;&gt;DbTransaction&lt;/a&gt;
     &lt;/td&gt;
     &lt;td&gt;
-      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-db-transaction&#34;&gt;MySqlDbTransaction&lt;/a&gt;.CommitAsync
+      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-transaction&#34;&gt;MySqlTransaction&lt;/a&gt;.CommitAsync
     &lt;/td&gt;
     &lt;td&gt;Commit&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;
-      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-db-transaction&#34;&gt;MySqlDbTransaction&lt;/a&gt;.RollbackAsync
+      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-transaction&#34;&gt;MySqlTransaction&lt;/a&gt;.RollbackAsync
     &lt;/td&gt;
     &lt;td&gt;Rollback&lt;/td&gt;
   &lt;/tr&gt;
@@ -186,7 +186,45 @@ pool size to 500.&lt;/p&gt;
 
 &lt;h1 id=&#34;migrating-from-connector-net&#34;&gt;Migrating from Connector/NET&lt;/h1&gt;
 
-&lt;p&gt;Migrating from Connector/NET&lt;/p&gt;
+&lt;h3 id=&#34;connection-string-differences&#34;&gt;Connection String Differences&lt;/h3&gt;
+
+&lt;p&gt;MySqlConnector has some different default connection string options:&lt;/p&gt;
+
+&lt;table class=&#34;table table-striped table-hover&#34;&gt;
+  &lt;thead&gt;
+    &lt;th style=&#34;width:20%&#34;&gt;Option&lt;/th&gt;
+    &lt;th style=&#34;width:20%&#34;&gt;MySqlConnector&lt;/th&gt;
+    &lt;th style=&#34;width:20%&#34;&gt;Oracle&#39;s Connector/NET&lt;/th&gt;
+    &lt;th style=&#34;width:40%&#34;&gt;Notes&lt;/th&gt;
+  &lt;/thead&gt;
+  &lt;tr&gt;
+    &lt;td&gt;&lt;code&gt;ConnectionReset&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;Default is &lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;Default is &lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;MySqlConnector takes an extra command to reset pooled connections by default so that the connection is always in a known state&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;&lt;code&gt;UseAffectedRows&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;Default is &lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;Default is &lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;This also affects the behavior of the &lt;code&gt;ROW_COUNT&lt;/code&gt; function.  &lt;code&gt;UseAffectedRows=true&lt;/code&gt; is the default in most other languages (C++, PHP, others)&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;&lt;code&gt;SslMode&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;code&gt;SslMode=Preferred&lt;/code&gt; is not supported&lt;/td&gt;
+    &lt;td&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;code&gt;SslMode=Preferred&lt;/code&gt; could mask a server misconfiguration.  Use &lt;code&gt;SslMode=required&lt;/code&gt; instead&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Some command line options that are supported in Connector/NET are not supported in MySqlConnector.  For a full list of options that are
+supported in MySqlConnector, see the &lt;a href=&#34;connection-options&#34;&gt;Connection Options&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;bugs-present-in-connector-net-that-are-fixed-in-mysqlconnector&#34;&gt;Bugs present in Connector/NET that are fixed in MySqlConnector&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Server&lt;/code&gt; connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds&lt;/li&gt;
+&lt;/ul&gt;
 </description>
     </item>
     

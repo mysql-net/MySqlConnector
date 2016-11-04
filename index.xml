@@ -41,7 +41,7 @@ should be familiar with &lt;a href=&#34;https://msdn.microsoft.com/en-us/magazin
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;
-      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-db-connection&#34;&gt;MySqlDbConnection&lt;/a&gt;.BeginTransactionAsync
+      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-connection&#34;&gt;MySqlConnection&lt;/a&gt;.BeginTransactionAsync
     &lt;/td&gt;
     &lt;td&gt;BeginTransaction&lt;/td&gt;
   &lt;/tr&gt;
@@ -84,13 +84,13 @@ should be familiar with &lt;a href=&#34;https://msdn.microsoft.com/en-us/magazin
       &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbtransaction&#34;&gt;DbTransaction&lt;/a&gt;
     &lt;/td&gt;
     &lt;td&gt;
-      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-db-transaction&#34;&gt;MySqlDbTransaction&lt;/a&gt;.CommitAsync
+      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-transaction&#34;&gt;MySqlTransaction&lt;/a&gt;.CommitAsync
     &lt;/td&gt;
     &lt;td&gt;Commit&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;
-      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-db-transaction&#34;&gt;MySqlDbTransaction&lt;/a&gt;.RollbackAsync
+      &lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;&lt;a href=&#34;api/mysql-transaction&#34;&gt;MySqlTransaction&lt;/a&gt;.RollbackAsync
     &lt;/td&gt;
     &lt;td&gt;Rollback&lt;/td&gt;
   &lt;/tr&gt;
@@ -220,7 +220,7 @@ and is not based on &lt;a href=&#34;https://github.com/mysql/mysql-connector-net
     &lt;td&gt;&lt;strong&gt;Development&lt;/strong&gt;&lt;/td&gt;
     &lt;td&gt;
       &lt;strong&gt;Open and Collaborative&lt;/strong&gt; Development on
-      &lt;a href=&#34;https://github.com/mysql/mysql-connector-net&#34;&gt;GitHub&lt;/a&gt;
+      &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector&#34;&gt;GitHub&lt;/a&gt;
     &lt;/td&gt;
     &lt;td&gt;
       Closed Development Roadmap.  Code is viewable on
@@ -279,16 +279,93 @@ and is not based on &lt;a href=&#34;https://github.com/mysql/mysql-connector-net
     </item>
     
     <item>
-      <title>MySqlDbConnection</title>
-      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-db-connection/</link>
+      <title>MySqlConnection</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-connection/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-db-connection/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-connection/</guid>
       <description>
 
-&lt;h1 id=&#34;mysqldbconnection&#34;&gt;MySqlDbConnection&lt;/h1&gt;
+&lt;h1 id=&#34;mysqlconnection&#34;&gt;MySqlConnection&lt;/h1&gt;
 
-&lt;p&gt;MySqlDbConnection&lt;/p&gt;
+&lt;p&gt;MySqlConnection implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbconnection&#34;&gt;ADO.NET DbConnection class&lt;/a&gt;,
+please refer to its documentation.&lt;/p&gt;
+
+&lt;p&gt;Additionally, MySqlConnection provides the following public properties and methods that may be used:&lt;/p&gt;
+
+&lt;h3 id=&#34;constructors&#34;&gt;Constructors&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;public MySqlConnection()&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Parameterless constructor&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public MySqlConnection(string connectionString)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Constructor that set the connection string&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&#34;additional-properties&#34;&gt;Additional Properties&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;public int ServerThread&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Connection ID from MySQL Server&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&#34;additional-instance-methods&#34;&gt;Additional Instance Methods&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;public Task&amp;lt;MySqlTransaction&amp;gt; BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Async version of BeginTransaction&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public Task&amp;lt;MySqlTransaction&amp;gt; BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Async version of BeginTransaction that supports setting Isolation Level&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&#34;additional-static-methods&#34;&gt;Additional Static Methods&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;public static void ClearPool(MySqlConnection connection)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Clears the connection pool that the connection belongs to&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public static Task ClearPoolAsync(MySqlConnection connection)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Async version of ClearPool&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Async version of ClearPool with cancellation token support&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public static void ClearAllPools()&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Clears all connection pools in the entire application&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public static Task ClearAllPoolsAsync()&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Async version of ClearAllPoolsAsync&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public static Task ClearAllPoolsAsync(CancellationToken cancellationToken)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Async version of ClearAllPoolsAsync with cancellation token support&lt;/p&gt;
+
+&lt;hr /&gt;
 </description>
     </item>
     
@@ -367,21 +444,102 @@ public void SyncMethod()
 
 &lt;h1 id=&#34;migrating-from-connector-net&#34;&gt;Migrating from Connector/NET&lt;/h1&gt;
 
-&lt;p&gt;Migrating from Connector/NET&lt;/p&gt;
+&lt;h3 id=&#34;connection-string-differences&#34;&gt;Connection String Differences&lt;/h3&gt;
+
+&lt;p&gt;MySqlConnector has some different default connection string options:&lt;/p&gt;
+
+&lt;table class=&#34;table table-striped table-hover&#34;&gt;
+  &lt;thead&gt;
+    &lt;th style=&#34;width:20%&#34;&gt;Option&lt;/th&gt;
+    &lt;th style=&#34;width:20%&#34;&gt;MySqlConnector&lt;/th&gt;
+    &lt;th style=&#34;width:20%&#34;&gt;Oracle&#39;s Connector/NET&lt;/th&gt;
+    &lt;th style=&#34;width:40%&#34;&gt;Notes&lt;/th&gt;
+  &lt;/thead&gt;
+  &lt;tr&gt;
+    &lt;td&gt;&lt;code&gt;ConnectionReset&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;Default is &lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;Default is &lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;MySqlConnector takes an extra command to reset pooled connections by default so that the connection is always in a known state&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;&lt;code&gt;UseAffectedRows&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;Default is &lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;Default is &lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;This also affects the behavior of the &lt;code&gt;ROW_COUNT&lt;/code&gt; function.  &lt;code&gt;UseAffectedRows=true&lt;/code&gt; is the default in most other languages (C++, PHP, others)&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;&lt;code&gt;SslMode&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;code&gt;SslMode=Preferred&lt;/code&gt; is not supported&lt;/td&gt;
+    &lt;td&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;code&gt;SslMode=Preferred&lt;/code&gt; could mask a server misconfiguration.  Use &lt;code&gt;SslMode=required&lt;/code&gt; instead&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Some command line options that are supported in Connector/NET are not supported in MySqlConnector.  For a full list of options that are
+supported in MySqlConnector, see the &lt;a href=&#34;connection-options&#34;&gt;Connection Options&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;bugs-present-in-connector-net-that-are-fixed-in-mysqlconnector&#34;&gt;Bugs present in Connector/NET that are fixed in MySqlConnector&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Server&lt;/code&gt; connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds&lt;/li&gt;
+&lt;/ul&gt;
 </description>
     </item>
     
     <item>
-      <title>MySqlDbCommand</title>
-      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-db-command/</link>
+      <title>MySqlCommand</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-command/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-db-command/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-command/</guid>
       <description>
 
-&lt;h1 id=&#34;mysqldbcommand&#34;&gt;MySqlDbCommand&lt;/h1&gt;
+&lt;h1 id=&#34;mysqlcommand&#34;&gt;MySqlCommand&lt;/h1&gt;
 
-&lt;p&gt;MySqlDbCommand&lt;/p&gt;
+&lt;p&gt;MySqlCommand implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbcommand&#34;&gt;ADO.NET DbCommand class&lt;/a&gt;,
+please refer to its documentation.&lt;/p&gt;
+
+&lt;p&gt;Additionally, MySqlCommand provides the following public properties and methods that may be used:&lt;/p&gt;
+
+&lt;h3 id=&#34;constructors&#34;&gt;Constructors&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;public MySqlCommand()&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Parameterless constructor&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public MySqlCommand(string commandText)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;constructor accepting command SQL&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public MySqlCommand(MySqlConnection connection, MySqlTransaction transaction)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;constructor accepting connection object and transaction object&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public MySqlCommand(string commandText, MySqlConnection connection)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;constructor accepting command SQL and connection object&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public MySqlCommand(string commandText, MySqlConnection connection, MySqlTransaction transaction)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;constructor accepting command SQL, connection object, and transaction object&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&#34;additional-properties&#34;&gt;Additional Properties&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;public long LastInsertedId&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Holds the value of the LastInsertedId after an SQL command inserting a row has been executed&lt;/p&gt;
+
+&lt;hr /&gt;
 </description>
     </item>
     
@@ -547,16 +705,27 @@ public void SyncMethod()
     </item>
     
     <item>
-      <title>MySqlDbDataReader</title>
-      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-db-data-reader/</link>
+      <title>MySqlDataReader</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-data-reader/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-db-data-reader/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-data-reader/</guid>
       <description>
 
-&lt;h1 id=&#34;mysqldbdatareader&#34;&gt;MySqlDbDataReader&lt;/h1&gt;
+&lt;h1 id=&#34;mysqldatareader&#34;&gt;MySqlDataReader&lt;/h1&gt;
 
-&lt;p&gt;MySqlDbDataReader&lt;/p&gt;
+&lt;p&gt;MySqlDataReader implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbdatareader&#34;&gt;ADO.NET DbDataReader class&lt;/a&gt;,
+please refer to its documentation.&lt;/p&gt;
+
+&lt;p&gt;Additionally, MySqlDataReader provides the following public properties and methods that may be used:&lt;/p&gt;
+
+&lt;h3 id=&#34;additional-instance-methods&#34;&gt;Additional Instance Methods&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;public sbyte GetSByte(int ordinal)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Gets the value of the specified column as an sbyte&lt;/p&gt;
+
+&lt;hr /&gt;
 </description>
     </item>
     
@@ -1109,16 +1278,33 @@ GET http://localhost:5000/api/async
     </item>
     
     <item>
-      <title>MySqlDbTransaction</title>
-      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-db-transaction/</link>
+      <title>MySqlTransaction</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-transaction/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-db-transaction/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-transaction/</guid>
       <description>
 
-&lt;h1 id=&#34;mysqldbtransaction&#34;&gt;MySqlDbTransaction&lt;/h1&gt;
+&lt;h1 id=&#34;mysqltransaction&#34;&gt;MySqlTransaction&lt;/h1&gt;
 
-&lt;p&gt;MySqlDbTransaction&lt;/p&gt;
+&lt;p&gt;MySqlTransaction implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbtransaction&#34;&gt;ADO.NET DbTransaction class&lt;/a&gt;,
+please refer to its documentation.&lt;/p&gt;
+
+&lt;p&gt;Additionally, MySqlTransaction provides the following public properties and methods that may be used:&lt;/p&gt;
+
+&lt;h3 id=&#34;additional-instance-methods&#34;&gt;Additional Instance Methods&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;public Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Async version of Commit&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public Task RollbackAsync(CancellationToken cancellationToken = default(CancellationToken))&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Async version of Rollback&lt;/p&gt;
+
+&lt;hr /&gt;
 </description>
     </item>
     
