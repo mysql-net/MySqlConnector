@@ -30,9 +30,9 @@
     {{ .Scratch.Add "title" "" }}{{ if isset .Site.Data.titles .Title }}{{ .Scratch.Set "title" (index .Site.Data.titles .Title).title }}{{ else }}{{ .Scratch.Set "title" .Title}}{{end}}
     <title>MySqlConnector - {{ .Scratch.Get "title" }}</title>
 
-    <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css" />
-    <link rel="stylesheet" type="text/css" href="vendor/font-awesome/css/font-awesome.min.css" />
-    <link rel="stylesheet" type="text/css" href="vendor/prism/css/prism.css" />
+    <link rel="stylesheet" type="text/css" href="assets/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="assets/font-awesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="assets/prism/css/prism.css" />
     <link rel="stylesheet" type="text/css"  href="css/style.css" rel="stylesheet" />
 
   </head>
