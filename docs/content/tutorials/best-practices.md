@@ -34,7 +34,7 @@ should be familiar with [Async/Await - Best Practices in Asynchronous Programmin
   </tr>
   <tr>
     <td>
-      <span class="text-danger">*</span><a href="api/mysql-db-connection">MySqlDbConnection</a>.BeginTransactionAsync
+      <span class="text-danger">*</span><a href="api/mysql-connection">MySqlConnection</a>.BeginTransactionAsync
     </td>
     <td>BeginTransaction</td>
   </tr>
@@ -77,13 +77,13 @@ should be familiar with [Async/Await - Best Practices in Asynchronous Programmin
       <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbtransaction">DbTransaction</a>
     </td>
     <td>
-      <span class="text-danger">*</span><a href="api/mysql-db-transaction">MySqlDbTransaction</a>.CommitAsync
+      <span class="text-danger">*</span><a href="api/mysql-transaction">MySqlTransaction</a>.CommitAsync
     </td>
     <td>Commit</td>
   </tr>
   <tr>
     <td>
-      <span class="text-danger">*</span><a href="api/mysql-db-transaction">MySqlDbTransaction</a>.RollbackAsync
+      <span class="text-danger">*</span><a href="api/mysql-transaction">MySqlTransaction</a>.RollbackAsync
     </td>
     <td>Rollback</td>
   </tr>

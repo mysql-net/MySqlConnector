@@ -44,7 +44,7 @@ and is not based on [Oracle's Connector/NET](https://github.com/mysql/mysql-conn
     <td><strong>Development</strong></td>
     <td>
       <strong>Open and Collaborative</strong> Development on
-      <a href="https://github.com/mysql/mysql-connector-net">GitHub</a>
+      <a href="https://github.com/mysql-net/MySqlConnector">GitHub</a>
     </td>
     <td>
       Closed Development Roadmap.  Code is viewable on
