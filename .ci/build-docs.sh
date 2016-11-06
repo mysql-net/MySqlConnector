@@ -30,6 +30,7 @@ git clone --depth=50 --branch=gh-pages git@github.com:mysql-net/MySqlConnector.g
 cd MySqlConnector
 rm -rf *
 mv ~/public/* .
+touch .nojekyll
 git add --all
 git commit -m "automatic docs update"
 git push
