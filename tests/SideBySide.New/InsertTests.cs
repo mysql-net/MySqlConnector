@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using MySql.Data.MySqlClient;
 using Dapper;
 using Xunit;
 
@@ -23,6 +24,41 @@ select last_insert_id();";
 			var rowids = m_database.Connection.Query<long>(query, new { text = "Test" });
 			foreach (var rowid in rowids)
 				Assert.Equal(1L, rowid);
+		}
+
+#if BASELINE
+		[Theory(Skip = "http://bugs.mysql.com/bug.php?id=70686")]
+#else
+		[Theory]
+#endif
+		[InlineData(3)]
+		[InlineData(6)]
+		public void InsertTime(int precision)
+		{
+			m_database.Connection.Execute($@"drop table if exists insert_time;
+create table insert_time(value TIME({precision}));");
+
+			try
+			{
+				m_database.Connection.Open();
+				using (var command = new MySqlCommand("INSERT INTO insert_time (value) VALUES (@Value);", m_database.Connection))
+				{
+					command.Parameters.Add(new MySqlParameter { ParameterName = "@value", Value = TimeSpan.FromMilliseconds(10) });
+					command.ExecuteNonQuery();
+				}
+
+				using (var command = new MySqlCommand("SELECT value FROM insert_time;", m_database.Connection))
+				using (var reader = command.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(TimeSpan.FromMilliseconds(10), reader.GetValue(0));
+					Assert.False(reader.Read());
+				}
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
 		}
 
 		[Fact]
