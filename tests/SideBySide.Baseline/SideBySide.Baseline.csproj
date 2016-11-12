@@ -157,6 +157,12 @@
     <Compile Include="..\SideBySide.New\QueryTests.cs">
       <Link>QueryTests.cs</Link>
     </Compile>
+    <Compile Include="..\SideBySide.New\StoredProcedureFixture.cs">
+      <Link>StoredProcedureFixture.cs</Link>
+    </Compile>
+    <Compile Include="..\SideBySide.New\StoredProcedureTests.cs">
+      <Link>StoredProcedureTests.cs</Link>
+    </Compile>
     <Compile Include="..\SideBySide.New\TestUtilities.cs">
       <Link>TestUtilities.cs</Link>
     </Compile>

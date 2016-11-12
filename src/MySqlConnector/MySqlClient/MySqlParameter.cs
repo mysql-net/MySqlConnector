@@ -7,6 +7,10 @@ namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlParameter : DbParameter
 	{
+		public MySqlParameter()
+		{
+		}
+
 		public override DbType DbType { get; set; }
 
 		public override ParameterDirection Direction { get; set; }
@@ -53,6 +57,22 @@ namespace MySql.Data.MySqlClient
 		public override void ResetDbType()
 		{
 			DbType = default(DbType);
+		}
+
+		internal MySqlParameter WithParameterName(string parameterName) => new MySqlParameter(this, parameterName);
+
+		private MySqlParameter(MySqlParameter other, string parameterName)
+		{
+			DbType = other.DbType;
+			Direction = other.Direction;
+			IsNullable = other.IsNullable;
+			Size = other.Size;
+			ParameterName = parameterName ?? other.ParameterName;
+			Value = other.Value;
+#if NETSTANDARD1_3
+			Precision = other.Precision;
+			Scale = other.Scale;
+#endif
 		}
 
 		internal string NormalizedParameterName { get; private set; }
@@ -153,9 +173,16 @@ namespace MySql.Data.MySqlClient
 
 		internal static string NormalizeParameterName(string name)
 		{
-			return string.IsNullOrEmpty(name) ? name :
-				name[0] == '?' || name[0] == '@' ? name.Substring(1) :
-				name;
+			name = name.Trim();
+
+			if ((name.StartsWith("@`", StringComparison.Ordinal) || name.StartsWith("?`", StringComparison.Ordinal)) && name.EndsWith("`", StringComparison.Ordinal))
+				return name.Substring(2, name.Length - 3).Replace("``", "`");
+			if ((name.StartsWith("@'", StringComparison.Ordinal) || name.StartsWith("?'", StringComparison.Ordinal)) && name.EndsWith("'", StringComparison.Ordinal))
+				return name.Substring(2, name.Length - 3).Replace("''", "'");
+			if ((name.StartsWith("@\"", StringComparison.Ordinal) || name.StartsWith("?\"", StringComparison.Ordinal)) && name.EndsWith("\"", StringComparison.Ordinal))
+				return name.Substring(2, name.Length - 3).Replace("\"\"", "\"");
+
+			return name.StartsWith("@", StringComparison.Ordinal) || name.StartsWith("?", StringComparison.Ordinal) ? name.Substring(1) : name;
 		}
 
 		string m_name;
