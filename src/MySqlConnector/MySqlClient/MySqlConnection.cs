@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient.Caches;
 using MySql.Data.Protocol.Serialization;
 using MySql.Data.Serialization;
 
@@ -198,6 +200,27 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+		internal async Task<CachedProcedure> GetCachedProcedure(IOBehavior ioBehavior, string name, CancellationToken cancellationToken)
+		{
+			if (State != ConnectionState.Open)
+				throw new InvalidOperationException("Connection is not open.");
+
+			if (m_session.ServerVersion.Version < ServerVersions.SupportsProcedureCache)
+				return null;
+
+			if (m_cachedProcedures == null)
+				m_cachedProcedures = new Dictionary<string, CachedProcedure>();
+
+			var normalized = NormalizedSchema.MustNormalize(name, Database);
+			CachedProcedure cachedProcedure;
+			if (!m_cachedProcedures.TryGetValue(normalized.FullyQualified, out cachedProcedure))
+			{
+				cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema, normalized.Component, cancellationToken).ConfigureAwait(false);
+				m_cachedProcedures[normalized.FullyQualified] = cachedProcedure;
+			}
+			return cachedProcedure;
+		}
+
 		internal MySqlTransaction CurrentTransaction { get; set; }
 		internal bool HasActiveReader { get; set; }
 		internal bool AllowUserVariables => m_connectionSettings.AllowUserVariables;
@@ -254,6 +277,7 @@ namespace MySql.Data.MySqlClient
 		{
 			if (m_connectionState != ConnectionState.Closed)
 			{
+				m_cachedProcedures = null;
 				if (CurrentTransaction != null)
 				{
 					CurrentTransaction.Dispose();
@@ -277,5 +301,6 @@ namespace MySql.Data.MySqlClient
 		ConnectionState m_connectionState;
 		bool m_hasBeenOpened;
 		bool m_isDisposed;
+		Dictionary<string, CachedProcedure> m_cachedProcedures;
 	}
 }

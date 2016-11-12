@@ -14,6 +14,7 @@ namespace SideBySide
 			new Dictionary<string, string>
 			{
 				["Data:NoPasswordUser"] = "",
+				["Data:SupportsCachedProcedures"] = "false",
 				["Data:SupportsJson"] = "false",
 			};
 
@@ -39,6 +40,8 @@ namespace SideBySide
 		public static string ConnectionString => Config.GetValue<string>("Data:ConnectionString");
 
 		public static string PasswordlessUser => Config.GetValue<string>("Data:PasswordlessUser");
+
+		public static bool SupportsCachedProcedures => Config.GetValue<bool>("Data:SupportsCachedProcedures");
 
 		public static bool SupportsJson => Config.GetValue<bool>("Data:SupportsJson");
 

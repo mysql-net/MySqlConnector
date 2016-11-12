@@ -641,6 +641,7 @@ namespace MySql.Data.MySqlClient
 
 				var connection = m_command.Connection;
 				connection.HasActiveReader = false;
+				m_command.ReaderClosed();
 				if (m_behavior.HasFlag(CommandBehavior.CloseConnection))
 				{
 					m_command.Dispose();
