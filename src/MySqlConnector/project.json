@@ -1,5 +1,5 @@
 {
-	"version": "0.6.2",
+	"version": "0.7.0",
 	"title": "Async MySQL Connector",
 	"description": "A fully async MySQL ADO.NET provider for .NET and .NET Core",
 	"copyright": "Copyright 2016 Bradley Grainger",
@@ -9,7 +9,7 @@
 	"packOptions": {
 		"owners": [ "bgrainger" ],
 		"tags": [ "mysql", "async", "ado.net", "database", "netcore"  ],
-		"releaseNotes": "Fix exception when using null-valued parameters. (GitHub issue #126)",
+		"releaseNotes": "Implement stored procedure support. (GitHub issue #19)",
 		"licenseUrl": "https://opensource.org/licenses/MIT",
 		"projectUrl": "https://github.com/mysql-net/MySqlConnector",
 		"repository": {
@@ -49,7 +49,7 @@
 				"System.Runtime.Extensions": "4.1.0",
 				"System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
 				"System.Security.Cryptography.Algorithms": "4.2.0",
-                "System.Text.RegularExpressions": "4.1.0",
+				"System.Text.RegularExpressions": "4.1.0",
 				"System.Threading": "4.0.11",
 				"System.Threading.Tasks.Extensions": "4.0.0"
 			}

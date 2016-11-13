@@ -13,6 +13,11 @@ of supported options.
 
 ## Release Notes
 
+### 0.7.0
+
+* Implement stored procedure support: [#19](https://github.com/mysql-net/MySqlConnector/issues/19).
+ * Known issue: `NextResult` incorrectly returns `true`, which may cause problems with Dapper's `QueryMultiple`: [#135](https://github.com/mysql-net/MySqlConnector/issues/135).
+
 ### 0.6.2
 
 * Fix `NullReferenceException` when `MySqlParameter.Value == null`: [#126](https://github.com/mysql-net/MySqlConnector/issues/126).
