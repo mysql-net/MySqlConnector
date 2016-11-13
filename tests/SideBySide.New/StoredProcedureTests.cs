@@ -266,7 +266,46 @@ namespace SideBySide
 					Assert.True(await reader.ReadAsync());
 					Assert.Equal("three", reader.GetString(0));
 					Assert.False(await reader.ReadAsync());
-					//Assert.False(await reader.NextResultAsync()); // <-- This passes on MySql.Data but not MySqlConnector, why?
+#if BASELINE
+					// https://github.com/mysql-net/MySqlConnector/issues/135
+					Assert.False(await reader.NextResultAsync());
+#endif
+				}
+			}
+		}
+
+		[Fact]
+		public async Task MultipleResultSets()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "multiple_result_sets";
+				cmd.CommandType = CommandType.StoredProcedure;
+				cmd.Parameters.Add(new MySqlParameter { ParameterName = "@pivot", Value = 4 });
+				using (var reader = await cmd.ExecuteReaderAsync())
+				{
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal("one", reader.GetString(0));
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal("three", reader.GetString(0));
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal("two", reader.GetString(0));
+					Assert.False(await reader.ReadAsync());
+					Assert.True(await reader.NextResultAsync());
+
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal("eight", reader.GetString(0));
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal("five", reader.GetString(0));
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal("seven", reader.GetString(0));
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal("six", reader.GetString(0));
+					Assert.False(await reader.ReadAsync());
+#if BASELINE
+					// https://github.com/mysql-net/MySqlConnector/issues/135
+					Assert.False(await reader.NextResultAsync());
+#endif
 				}
 			}
 		}

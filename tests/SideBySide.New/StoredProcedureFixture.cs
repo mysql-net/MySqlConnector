@@ -61,6 +61,12 @@ namespace SideBySide.New
 					where mod(value, factor) = 0
 					order by name;
 				end;");
+			Connection.Execute(@"drop procedure if exists multiple_result_sets;
+				create procedure multiple_result_sets (in pivot int)
+				begin
+					select name from sproc_multiple_rows where value < pivot order by name;
+					select name from sproc_multiple_rows where value > pivot order by name;
+				end;");
 			Connection.Execute(@"drop procedure if exists number_lister;
 				create procedure number_lister (inout high int)
 				begin
