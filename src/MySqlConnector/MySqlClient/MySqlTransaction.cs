@@ -3,17 +3,20 @@ using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
+using MySql.Data.Protocol.Serialization;
+using MySql.Data.Serialization;
 
 namespace MySql.Data.MySqlClient
 {
 	public class MySqlTransaction : DbTransaction
 	{
-		public override void Commit()
-		{
-			CommitAsync().GetAwaiter().GetResult();
-		}
+		public override void Commit() =>
+			CommitAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))
+		public Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
+			CommitAsync(m_connection.AsyncIOBehavior, cancellationToken);
+
+		internal async Task CommitAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyNotDisposed();
 			if (m_isFinished)
@@ -22,7 +25,7 @@ namespace MySql.Data.MySqlClient
 			if (m_connection.CurrentTransaction == this)
 			{
 				using (var cmd = new MySqlCommand("commit", m_connection, this))
-					await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+					await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				m_connection.CurrentTransaction = null;
 				m_isFinished = true;
 			}
@@ -36,12 +39,13 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public override void Rollback()
-		{
-			RollbackAsync().GetAwaiter().GetResult();
-		}
+		public override void Rollback() =>
+			RollbackAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public async Task RollbackAsync(CancellationToken cancellationToken = default(CancellationToken))
+		public Task RollbackAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
+			RollbackAsync(m_connection.AsyncIOBehavior, cancellationToken);
+
+		internal async Task RollbackAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyNotDisposed();
 			if (m_isFinished)
@@ -50,7 +54,7 @@ namespace MySql.Data.MySqlClient
 			if (m_connection.CurrentTransaction == this)
 			{
 				using (var cmd = new MySqlCommand("rollback", m_connection, this))
-					await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+					await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				m_connection.CurrentTransaction = null;
 				m_isFinished = true;
 			}
@@ -87,7 +91,6 @@ namespace MySql.Data.MySqlClient
 				base.Dispose(disposing);
 			}
 		}
-
 
 		internal MySqlTransaction(MySqlConnection connection, IsolationLevel isolationLevel)
 		{

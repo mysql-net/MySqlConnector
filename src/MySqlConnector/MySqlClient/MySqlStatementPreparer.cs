@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using System;
+using System.IO;
+using System.Text;
+using MySql.Data.Serialization;
 
 namespace MySql.Data.MySqlClient
 {
@@ -9,37 +12,40 @@ namespace MySql.Data.MySqlClient
 			m_commandText = commandText;
 			m_parameters = parameters;
 			m_options = options;
-			m_hasBoundParameters = string.IsNullOrWhiteSpace(m_commandText);
 		}
 
-		public void BindParameters()
+		public ArraySegment<byte> ParseAndBindParameters()
 		{
-			// check if already bound
-			if (m_hasBoundParameters)
-				return;
+			using (var stream = new MemoryStream(m_commandText.Length))
+			using (var writer = new BinaryWriter(stream, Encoding.UTF8))
+			{
+				writer.Write((byte) CommandKind.Query);
 
-			var parser = new ParameterSqlParser(this);
-			parser.Parse(m_commandText);
-			PreparedSql = parser.Output.ToString();
+				if (!string.IsNullOrWhiteSpace(m_commandText))
+				{
+					var parser = new ParameterSqlParser(this, writer);
+					parser.Parse(m_commandText);
+				}
 
-			m_hasBoundParameters = true;
+#if NETSTANDARD1_3
+				var array = stream.ToArray();
+#else
+				var array = stream.GetBuffer();
+#endif
+				return new ArraySegment<byte>(array, 0, checked((int) stream.Length));
+			}
 		}
-
-		public string PreparedSql { get; private set; }
 
 		private sealed class ParameterSqlParser : MySqlParser
 		{
-			public ParameterSqlParser(MySqlStatementPreparer preparer)
+			public ParameterSqlParser(MySqlStatementPreparer preparer, BinaryWriter writer)
 			{
 				m_preparer = preparer;
-				Output = new StringBuilder();
+				m_writer = writer;
 			}
-
-			public StringBuilder Output { get; }
 
 			protected override void OnBeforeParse(string sql)
 			{
-				Output.Capacity = sql.Length;
 			}
 
 			protected override void OnNamedParameter(int index, int length)
@@ -60,17 +66,23 @@ namespace MySql.Data.MySqlClient
 
 			private void DoAppendParameter(int parameterIndex, int textIndex, int textLength)
 			{
-				Output.Append(m_preparer.m_commandText, m_lastIndex, textIndex - m_lastIndex);
-				m_preparer.m_parameters[parameterIndex].AppendSqlString(Output, m_preparer.m_options);
+				AppendString(m_preparer.m_commandText, m_lastIndex, textIndex - m_lastIndex);
+				m_preparer.m_parameters[parameterIndex].AppendSqlString(m_writer, m_preparer.m_options);
 				m_lastIndex = textIndex + textLength;
 			}
 
 			protected override void OnParsed()
 			{
-				Output.Append(m_preparer.m_commandText, m_lastIndex, m_preparer.m_commandText.Length - m_lastIndex);
+				AppendString(m_preparer.m_commandText, m_lastIndex, m_preparer.m_commandText.Length - m_lastIndex);
+			}
+
+			private void AppendString(string value, int offset, int length)
+			{
+				m_writer.WriteUtf8(value, offset, length);
 			}
 
 			readonly MySqlStatementPreparer m_preparer;
+			readonly BinaryWriter m_writer;
 			int m_currentParameterIndex;
 			int m_lastIndex;
 		}
@@ -78,6 +90,5 @@ namespace MySql.Data.MySqlClient
 		readonly string m_commandText;
 		readonly MySqlParameterCollection m_parameters;
 		readonly StatementPreparerOptions m_options;
-		bool m_hasBoundParameters;
 	}
 }

@@ -1,0 +1,22 @@
+{{ $cur := . }}
+<div class="col-md-3">
+    <div class="list-group" id="navigation" data-spy="affix" data-offset-top="0">
+
+        {{ range $i, $el := .Site.Menus.main }}
+        <a class="list-group-item{{ if or ($cur.IsMenuCurrent "main" .) ($cur.HasMenuCurrent "main" .) (and (eq $i 0) ($cur.IsHome)) }} active{{ end }}" href="{{ if .HasChildren }}#nav-{{ $i }}{{ else }}{{ .URL }}{{ end }}" data-parent="#navigation"{{ if .HasChildren }} data-toggle="collapse"{{end}}>
+            {{ .Pre }} <span>{{ .Name }}</span> {{ if .HasChildren }}<i class="fa fa-angle-down"></i>{{ end }}
+        </a>
+
+        {{ if .HasChildren }}
+        <div id="nav-{{ $i }}" class="submenu panel-collapse collapse {{ if $cur.HasMenuCurrent "main" . }} in{{ end }}">
+            {{ range .Children }}
+            <a class="list-group-item{{ if $cur.IsMenuCurrent "main" . }} active{{ end }}" data-parent="#nav-{{$i}}" href="{{.URL}}">
+                <span>{{ .Name }}</span>
+            </a>
+            {{ end }}
+        </div>
+        {{ end }}
+
+        {{ end }}
+    </div>
+</div>

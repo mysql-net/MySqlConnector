@@ -6,10 +6,8 @@ namespace MySql.Data.Serialization
 {
 	internal sealed class HandshakeResponse41Packet
 	{
-		public static byte[] Create(InitialHandshakePacket handshake, string userName, string password, string database)
+		internal static PayloadWriter CapabilitiesPayload(ConnectionSettings cs, ProtocolCapabilities additionalCapabilities=0)
 		{
-			// TODO: verify server capabilities
-
 			var writer = new PayloadWriter();
 
 			writer.WriteInt32((int) (
@@ -21,19 +19,35 @@ namespace MySql.Data.Serialization
 				ProtocolCapabilities.MultiStatements |
 				ProtocolCapabilities.MultiResults |
 				ProtocolCapabilities.PreparedStatementMultiResults |
-                ProtocolCapabilities.LocalFiles |
-				(string.IsNullOrWhiteSpace(database) ? 0 : ProtocolCapabilities.ConnectWithDatabase)));
+				ProtocolCapabilities.LocalFiles |
+				(string.IsNullOrWhiteSpace(cs.Database) ? 0 : ProtocolCapabilities.ConnectWithDatabase) |
+				(cs.UseAffectedRows ? 0 : ProtocolCapabilities.FoundRows) |
+				(cs.UseCompression ? ProtocolCapabilities.Compress : ProtocolCapabilities.None) |
+				additionalCapabilities));
 			writer.WriteInt32(0x40000000);
 			writer.WriteByte((byte) CharacterSet.Utf8Mb4Binary);
 			writer.Write(new byte[23]);
-			writer.WriteNullTerminatedString(userName);
 
-			var authenticationResponse = AuthenticationUtility.CreateAuthenticationResponse(handshake.AuthPluginData, 0, password);
+			return writer;
+		}
+
+		public static byte[] InitSsl(ConnectionSettings cs)
+		{
+			return CapabilitiesPayload(cs, ProtocolCapabilities.Ssl).ToBytes();
+		}
+
+		public static byte[] Create(InitialHandshakePacket handshake, ConnectionSettings cs)
+		{
+			// TODO: verify server capabilities
+
+			var writer = CapabilitiesPayload(cs);
+			writer.WriteNullTerminatedString(cs.UserID);
+			var authenticationResponse = AuthenticationUtility.CreateAuthenticationResponse(handshake.AuthPluginData, 0, cs.Password);
 			writer.WriteByte((byte) authenticationResponse.Length);
 			writer.Write(authenticationResponse);
 
-			if (!string.IsNullOrWhiteSpace(database))
-				writer.WriteNullTerminatedString(database);
+			if (!string.IsNullOrWhiteSpace(cs.Database))
+				writer.WriteNullTerminatedString(cs.Database);
 
 			writer.WriteNullTerminatedString("mysql_native_password");
 

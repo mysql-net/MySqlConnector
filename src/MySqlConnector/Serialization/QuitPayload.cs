@@ -4,9 +4,9 @@ namespace MySql.Data.Serialization
 {
 	internal class QuitPayload
 	{
-		public static PayloadData Create()
+		public static ArraySegment<byte> Create()
 		{
-			return new PayloadData(new ArraySegment<byte>(new[] { (byte) CommandKind.Quit }));
+			return new ArraySegment<byte>(new[] { (byte) CommandKind.Quit });
 		}
 	}
 }

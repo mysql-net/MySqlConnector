@@ -29,17 +29,16 @@ namespace SideBySide
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"drop schema if exists update_int;
-create schema update_int;
-create table update_int.test(id integer not null primary key auto_increment, value integer not null);
-insert into update_int.test (value) VALUES (1), (2), (1), (4);
+				cmd.CommandText = @"drop table if exists update_rows_reader;
+create table update_rows_reader(id integer not null primary key auto_increment, value integer not null);
+insert into update_rows_reader (value) VALUES (1), (2), (1), (4);
 ";
 				cmd.ExecuteNonQuery();
 			}
 
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"update update_int.test set value = @newValue where value = @oldValue";
+				cmd.CommandText = @"update update_rows_reader set value = @newValue where value = @oldValue";
 				var p = cmd.CreateParameter();
 				p.ParameterName = "@oldValue";
 				p.Value = oldValue;
@@ -67,17 +66,16 @@ insert into update_int.test (value) VALUES (1), (2), (1), (4);
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"drop schema if exists update_int;
-create schema update_int;
-create table update_int.test(id integer not null primary key auto_increment, value integer not null);
-insert into update_int.test (value) VALUES (1), (2), (1), (4);
+				cmd.CommandText = @"drop table if exists update_rows_non_query;
+create table update_rows_non_query(id integer not null primary key auto_increment, value integer not null);
+insert into update_rows_non_query (value) VALUES (1), (2), (1), (4);
 ";
 				cmd.ExecuteNonQuery();
 			}
 
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"update update_int.test set value = @newValue where value = @oldValue";
+				cmd.CommandText = @"update update_rows_non_query set value = @newValue where value = @oldValue";
 				var p = cmd.CreateParameter();
 				p.ParameterName = "@oldValue";
 				p.Value = oldValue;
@@ -101,47 +99,53 @@ insert into update_int.test (value) VALUES (1), (2), (1), (4);
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"drop schema if exists update_int;
-create schema update_int;
-create table update_int.test(id integer not null primary key auto_increment, value integer not null);
-insert into update_int.test (value) VALUES (1), (2), (1), (4);
+				cmd.CommandText = @"drop table if exists update_rows_dapper;
+create table update_rows_dapper(id integer not null primary key auto_increment, value integer not null);
+insert into update_rows_dapper (value) VALUES (1), (2), (1), (4);
 ";
 				cmd.ExecuteNonQuery();
 			}
 
-			var rowsAffected = m_database.Connection.Execute(@"update update_int.test set value = @newValue where value = @oldValue",
+			var rowsAffected = m_database.Connection.Execute(@"update update_rows_dapper set value = @newValue where value = @oldValue",
 				new { oldValue, newValue = 4 });
 			Assert.Equal(expectedRowsUpdated, rowsAffected);
 		}
 
 		[Theory]
-		[InlineData(1, 2)]
-		[InlineData(2, 1)]
-		[InlineData(3, 0)]
-		[InlineData(4, 0)]
-		public async Task UpdateRowsDapperAsync(int oldValue, int expectedRowsUpdated)
+		[InlineData(true, 1, 2)]
+		[InlineData(true, 2, 1)]
+		[InlineData(true, 3, 0)]
+		[InlineData(true, 4, 0)]
+		[InlineData(false, 1, 2)]
+		[InlineData(false, 2, 1)]
+		[InlineData(false, 3, 0)]
+		[InlineData(false, 4, 1)]
+		public async Task UpdateRowsDapperAsync(bool useAffectedRows, int oldValue, int expectedRowsUpdated)
 		{
-			using (var cmd = m_database.Connection.CreateCommand())
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.UseAffectedRows = useAffectedRows;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
-				cmd.CommandText = @"drop schema if exists update_int;
-create schema update_int;
-create table update_int.test(id integer not null primary key auto_increment, value integer not null);
-insert into update_int.test (value) VALUES (1), (2), (1), (4);
+				await connection.OpenAsync();
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = @"drop table if exists update_rows_dapper_async;
+create table update_rows_dapper_async(id integer not null primary key auto_increment, value integer not null);
+insert into update_rows_dapper_async (value) VALUES (1), (2), (1), (4);
 ";
-				cmd.ExecuteNonQuery();
+					cmd.ExecuteNonQuery();
+				}
+				var rowsAffected = await connection.ExecuteAsync(@"update update_rows_dapper_async set value = @newValue where value = @oldValue",
+					new { oldValue, newValue = 4 }).ConfigureAwait(false);
+				Assert.Equal(expectedRowsUpdated, rowsAffected);
 			}
-
-			var rowsAffected = await m_database.Connection.ExecuteAsync(@"update update_int.test set value = @newValue where value = @oldValue",
-				new { oldValue, newValue = 4 }).ConfigureAwait(false);
-			Assert.Equal(expectedRowsUpdated, rowsAffected);
 		}
 
 		[Fact]
 		public async Task UpdateDapperNoColumnsWereSelected()
 		{
-			await m_database.Connection.ExecuteAsync(@"drop schema if exists station;
-create schema station;
-create table station.stations (
+			await m_database.Connection.ExecuteAsync(@"drop table if exists update_station;
+create table update_station (
 	SID bigint unsigned,
 	name text,
 	stationType_SID bigint unsigned not null,
@@ -153,10 +157,10 @@ create table station.stations (
 	externalWebsite text,
 	externalTitle text
 );
-insert into station.stations values(1, 'name', 2, null, null, null, false, '2016-09-07 06:28:00', 'https://github.com/bgrainger/MySqlConnector/issues/44', 'Issue #44');
+insert into update_station values(1, 'name', 2, null, null, null, false, '2016-09-07 06:28:00', 'https://github.com/mysql-net/MySqlConnector/issues/44', 'Issue #44');
 ").ConfigureAwait(false);
 
-			var queryString = @"UPDATE station.stations SET name=@name,stationType_SID=@stationType_SID,geoPosition_SID=@geoPosition_SID,service_start=@service_start,service_end=@service_end,deleted=@deleted,created_on=@created_on,externalWebsite=@externalWebsite,externalTitle=@externalTitle WHERE SID=@SID";
+			var queryString = @"UPDATE update_station SET name=@name,stationType_SID=@stationType_SID,geoPosition_SID=@geoPosition_SID,service_start=@service_start,service_end=@service_end,deleted=@deleted,created_on=@created_on,externalWebsite=@externalWebsite,externalTitle=@externalTitle WHERE SID=@SID";
 			var station = new Station
 			{
 				SID = 1,

@@ -3,15 +3,21 @@ dist: trusty
 services: docker
 
 before_install:
-  - docker pull mysql:5.7
-  - docker run --name mysql -e MYSQL_ROOT_PASSWORD='test' -p 3306:3306 -d mysql:5.7
+  - chmod +x .ci/docker-run.sh && ./.ci/docker-run.sh
   - sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
-  - sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
+  - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893
   - sudo apt-get update
-  - sudo apt-get install -y dotnet-dev-1.0.0-preview2-003121
-  - docker exec -it mysql mysql -uroot -ptest -e "CREATE USER 'mysqltest'@'%' IDENTIFIED BY 'test;key=\"val'; GRANT ALL ON *.* TO mysqltest; CREATE USER 'no_password'@'172.17.0.1';"
+  - sudo apt-get install -y dotnet-dev-1.0.0-preview2-003131
 
 script:
   - dotnet restore
   - dotnet test tests/MySqlConnector.Tests --configuration Release
-  - dotnet test tests/SideBySide.New --configuration Release
+  - dotnet build tests/SideBySide.New --configuration Release
+  - echo 'Executing tests with No Compression, No SSL' && cp tests/SideBySide.New/config.json.example tests/SideBySide.New/config.json && time dotnet test tests/SideBySide.New --configuration Release
+  - echo 'Executing tests with Compression, No SSL' && cp .ci/config/config.compression.json tests/SideBySide.New/config.json && time dotnet test tests/SideBySide.New --configuration Release
+  - echo 'Executing tests with No Compression, SSL' && cp .ci/config/config.ssl.json tests/SideBySide.New/config.json && time dotnet test tests/SideBySide.New --configuration Release
+  - echo 'Executing tests with Compression, SSL' && cp .ci/config/config.compression+ssl.json tests/SideBySide.New/config.json && time dotnet test tests/SideBySide.New --configuration Release
+  - echo 'Executing tests with Unix Domain Socket, No Compression, No SSL' && cp .ci/config/config.uds.json tests/SideBySide.New/config.json && time dotnet test tests/SideBySide.New --configuration Release
+
+after_script:
+  - chmod +x .ci/build-docs.sh && ./.ci/build-docs.sh

@@ -1,0 +1,8 @@
+{
+    "Data": {
+      "ConnectionString": "server=127.0.0.1;user id=ssltest;password=test;port=3306;database=mysqltest;ssl mode=required;certificate file=.ci/server/ssl-client.pfx;use compression=true;Use Affected Rows=true",
+      "PasswordlessUser": "no_password",
+      "SupportsCachedProcedures": true,
+      "SupportsJson": true
+    }
+}

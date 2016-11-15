@@ -3,7 +3,8 @@ using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
-using MySql.Data.Serialization;
+using MySql.Data.MySqlClient.CommandExecutors;
+using MySql.Data.Protocol.Serialization;
 
 namespace MySql.Data.MySqlClient
 {
@@ -35,6 +36,7 @@ namespace MySql.Data.MySqlClient
 			DbConnection = connection;
 			DbTransaction = transaction;
 			m_parameterCollection = new MySqlParameterCollection();
+			CommandType = CommandType.Text;
 		}
 
 		public new MySqlParameterCollection Parameters
@@ -52,11 +54,11 @@ namespace MySql.Data.MySqlClient
 			throw new NotSupportedException("Use the Async overloads with a CancellationToken.");
 		}
 
-		public override int ExecuteNonQuery()
-			=> ExecuteNonQueryAsync(CancellationToken.None).GetAwaiter().GetResult();
+		public override int ExecuteNonQuery() =>
+			ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public override object ExecuteScalar()
-			=> ExecuteScalarAsync(CancellationToken.None).GetAwaiter().GetResult();
+		public override object ExecuteScalar() =>
+			ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public override void Prepare()
 		{
@@ -73,12 +75,20 @@ namespace MySql.Data.MySqlClient
 		{
 			get
 			{
-				return CommandType.Text;
+				return m_commandType;
 			}
 			set
 			{
-				if (value != CommandType.Text)
-					throw new ArgumentException("CommandType must be Text.", nameof(value));
+				if (value != CommandType.Text && value != CommandType.StoredProcedure)
+					throw new ArgumentException("CommandType must be Text or StoredProcedure.", nameof(value));
+				if (value == m_commandType)
+					return;
+
+				m_commandType = value;
+				if (value == CommandType.Text)
+					m_commandExecutor = new TextCommandExecutor(this);
+				else if (value == CommandType.StoredProcedure)
+					m_commandExecutor = new StoredProcedureCommandExecutor(this);
 			}
 		}
 
@@ -102,67 +112,32 @@ namespace MySql.Data.MySqlClient
 			return new MySqlParameter();
 		}
 
-		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
-			=> ExecuteDbDataReaderAsync(behavior, CancellationToken.None).GetAwaiter().GetResult();
+		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) =>
+			ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
+		public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) =>
+			ExecuteNonQueryAsync(Connection.AsyncIOBehavior, cancellationToken);
+
+		internal async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			using (var reader = await ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
-			{
-				do
-				{
-					while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-					{
-					}
-				} while (await reader.NextResultAsync(cancellationToken).ConfigureAwait(false));
-				return reader.RecordsAffected;
-			}
+			return await m_commandExecutor.ExecuteNonQueryAsync(CommandText, m_parameterCollection, ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
-		public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
+		public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken) =>
+			ExecuteScalarAsync(Connection.AsyncIOBehavior, cancellationToken);
+
+		internal async Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			object result = null;
-			using (var reader = await ExecuteReaderAsync(CommandBehavior.SingleResult | CommandBehavior.SingleRow, cancellationToken).ConfigureAwait(false))
-			{
-				do
-				{
-					if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-						result = reader.GetValue(0);
-				} while (await reader.NextResultAsync(cancellationToken).ConfigureAwait(false));
-			}
-			return result;
+			return await m_commandExecutor.ExecuteScalarAsync(CommandText, m_parameterCollection, ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
-		protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
-		{
-			VerifyValid();
-			Connection.HasActiveReader = true;
+		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken) =>
+			ExecuteReaderAsync(behavior, Connection.AsyncIOBehavior, cancellationToken);
 
-			MySqlDataReader reader = null;
-			try
-			{
-				LastInsertedId = -1;
-				var connection = (MySqlConnection) DbConnection;
-				var statementPreparerOptions = StatementPreparerOptions.None;
-				if (connection.AllowUserVariables)
-					statementPreparerOptions |= StatementPreparerOptions.AllowUserVariables;
-				if (connection.OldGuids)
-					statementPreparerOptions |= StatementPreparerOptions.OldGuids;
-				var preparer = new MySqlStatementPreparer(CommandText, m_parameterCollection, statementPreparerOptions);
-				preparer.BindParameters();
-				var payload = new PayloadData(new ArraySegment<byte>(Payload.CreateEofStringPayload(CommandKind.Query, preparer.PreparedSql)));
-				await Session.SendAsync(payload, cancellationToken).ConfigureAwait(false);
-				reader = await MySqlDataReader.CreateAsync(this, behavior, cancellationToken).ConfigureAwait(false);
-				return reader;
-			}
-			finally
-			{
-				if (reader == null)
-				{
-					// received an error from MySQL and never created an active reader
-					Connection.HasActiveReader = false;
-				}
-			}
+		internal async Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior,
+			CancellationToken cancellationToken)
+		{
+			return await m_commandExecutor.ExecuteReaderAsync(CommandText, m_parameterCollection, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -181,7 +156,6 @@ namespace MySql.Data.MySqlClient
 		}
 
 		internal new MySqlConnection Connection => (MySqlConnection) DbConnection;
-		private MySqlSession Session => Connection.Session;
 
 		private void VerifyNotDisposed()
 		{
@@ -189,7 +163,7 @@ namespace MySql.Data.MySqlClient
 				throw new ObjectDisposedException(GetType().Name);
 		}
 
-		private void VerifyValid()
+		internal void VerifyValid()
 		{
 			VerifyNotDisposed();
 			if (DbConnection == null)
@@ -204,6 +178,14 @@ namespace MySql.Data.MySqlClient
 				throw new MySqlException("There is already an open DataReader associated with this Connection which must be closed first.");
 		}
 
+		internal void ReaderClosed()
+		{
+			var executor = m_commandExecutor as StoredProcedureCommandExecutor;
+			executor?.SetParams();
+		}
+
 		MySqlParameterCollection m_parameterCollection;
+		CommandType m_commandType;
+		ICommandExecutor m_commandExecutor;
 	}
 }

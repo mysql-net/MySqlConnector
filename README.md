@@ -1,12 +1,12 @@
 # Async MySQL Connector for .NET and .NET Core
 
+Complete documentation is available at the [MySqlConnector Documentation Website](https://mysql-net.github.io/MySqlConnector/).
+
 ## Build Status
 
-Ubuntu 14.04 | Windows x64
---- | ---
-[![Travis CI](https://img.shields.io/travis/bgrainger/MySqlConnector.svg)](https://travis-ci.org/bgrainger/MySqlConnector) | [![AppVeyor](https://img.shields.io/appveyor/ci/BradleyGrainger/mysql-data.svg)](https://ci.appveyor.com/project/BradleyGrainger/mysql-data)
-
-[![NuGet Pre Release](https://img.shields.io/nuget/vpre/MySqlConnector.svg)](https://www.nuget.org/packages/MySqlConnector/)
+Ubuntu 14.04 | Windows x64 | NuGet
+--- | --- | ---
+[![Travis CI](https://img.shields.io/travis/mysql-net/MySqlConnector/master.svg)](https://travis-ci.org/mysql-net/MySqlConnector) | [![AppVeyor](https://img.shields.io/appveyor/ci/mysqlnet/mysqlconnector/master.svg)](https://ci.appveyor.com/project/mysqlnet/mysqlconnector) | [![NuGet Pre Release](https://img.shields.io/nuget/vpre/MySqlConnector.svg)](https://www.nuget.org/packages/MySqlConnector/)
 
 ## About
 

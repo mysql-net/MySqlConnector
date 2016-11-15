@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace MySql.Data.MySqlClient
 {
-	public sealed class MySqlParameterCollection : DbParameterCollection
+	public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerable<MySqlParameter>
 	{
 		internal MySqlParameterCollection()
 		{
@@ -64,6 +64,11 @@ namespace MySql.Data.MySqlClient
 			return m_parameters.GetEnumerator();
 		}
 
+		IEnumerator<MySqlParameter> IEnumerable<MySqlParameter>.GetEnumerator()
+		{
+			return m_parameters.GetEnumerator();
+		}
+
 		protected override DbParameter GetParameter(int index)
 		{
 			return m_parameters[index];
@@ -84,11 +89,18 @@ namespace MySql.Data.MySqlClient
 
 		public override int IndexOf(string parameterName)
 		{
+			var index = NormalizedIndexOf(parameterName);
+			if (index == -1)
+				return -1;
+			return string.Equals(parameterName, m_parameters[index].ParameterName, StringComparison.OrdinalIgnoreCase) ? index : -1;
+		}
+
+		internal int NormalizedIndexOf(string parameterName)
+		{
 			if (parameterName == null)
 				throw new ArgumentNullException(nameof(parameterName));
 			int index;
-			return m_nameToIndex.TryGetValue(MySqlParameter.NormalizeParameterName(parameterName), out index) &&
-				string.Equals(parameterName, m_parameters[index].ParameterName, StringComparison.OrdinalIgnoreCase) ? index : -1;
+			return m_nameToIndex.TryGetValue(MySqlParameter.NormalizeParameterName(parameterName), out index) ? index : -1;
 		}
 
 		public override void Insert(int index, object value)

@@ -1,3 +1,2 @@
 [*.cs]
-end_of_line = crlf
 indent_style = space

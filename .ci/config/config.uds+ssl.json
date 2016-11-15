@@ -1,0 +1,8 @@
+{
+    "Data": {
+      "ConnectionString": "server=./.ci/mysqld/mysqld.sock;user id=ssltest;password=test;database=mysqltest;ssl mode=required;certificate file=.ci/server/ssl-client.pfx;Use Affected Rows=true",
+      "PasswordlessUser": "no_password",
+      "SupportsCachedProcedures": true,
+      "SupportsJson": true
+    }
+}

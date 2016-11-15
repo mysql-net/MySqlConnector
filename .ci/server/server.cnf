@@ -1,0 +1,7 @@
+# uses a seperate key for the server and clinet
+# this is how things should be run in production
+
+[mysqld]
+ssl-ca=/etc/mysql/conf.d/ssl-ca.pem
+ssl-cert=/etc/mysql/conf.d/ssl-server-cert.pem
+ssl-key=/etc/mysql/conf.d/ssl-server-key.pem

@@ -1,1 +1,14 @@
-* text=auto
+* text=auto eol=lf
+*.csproj text=auto eol=crlf
+
+*.enc binary
+*.eot binary
+*.ico binary
+*.jpg binary
+*.otf binary
+*.pem binary
+*.pfx binary
+*.png binary
+*.ttf binary
+*.woff binary
+*.woff2 binary

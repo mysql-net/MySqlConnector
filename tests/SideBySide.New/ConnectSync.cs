@@ -5,9 +5,11 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using SideBySide.New;
 using Xunit;
 
 namespace SideBySide
@@ -53,7 +55,7 @@ namespace SideBySide
 		[Fact]
 		public void ConnectBadPassword()
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.Password = "wrong";
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -67,9 +69,9 @@ namespace SideBySide
 		[InlineData(true)]
 		public void PersistSecurityInfo(bool persistSecurityInfo)
 		{
-			var csb = Constants.CreateConnectionStringBuilder();
+			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.PersistSecurityInfo = persistSecurityInfo;
-			var connectionStringWithoutPassword = csb.ConnectionString.Replace("Password", "password").Replace(";password='" + Constants.Password + "'", "");
+			var connectionStringWithoutPassword = Regex.Replace(csb.ConnectionString, @"(?i)password='?" + Regex.Escape(csb.Password) + "'?;?", "");
 
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -98,17 +100,13 @@ namespace SideBySide
 #if BASELINE
 		[Fact(Skip = "https://bugs.mysql.com/bug.php?id=81650")]
 #else
-		[Fact]
+		[TcpConnectionFact]
 #endif
 		public void ConnectMultipleHostNames()
 		{
-			var csb = new MySqlConnectionStringBuilder
-			{
-				Server = "invalid.example.net,localhost",
-				Port = 3306,
-				UserID = Constants.UserName,
-				Password = Constants.Password,
-			};
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.Server = "invalid.example.net," + csb.Server;
+
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				Assert.Equal(ConnectionState.Closed, connection.State);
@@ -117,14 +115,14 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[PasswordlessUserFact]
 		public void ConnectNoPassword()
 		{
-			var csb = new MySqlConnectionStringBuilder
-			{
-				Server = Constants.Server,
-				UserID = "no_password",
-			};
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.UserID = AppConfig.PasswordlessUser;
+			csb.Password = "";
+			csb.Database = "";
+
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				Assert.Equal(ConnectionState.Closed, connection.State);
@@ -133,17 +131,16 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[PasswordlessUserFact]
 		public void ConnectionPoolNoPassword()
 		{
-			var csb = new MySqlConnectionStringBuilder
-			{
-				Server = Constants.Server,
-				UserID = "no_password",
-				Pooling = true,
-				MinimumPoolSize = 0,
-				MaximumPoolSize = 5,
-			};
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.UserID = AppConfig.PasswordlessUser;
+			csb.Password = "";
+			csb.Database = "";
+			csb.Pooling = true;
+			csb.MinimumPoolSize = 0;
+			csb.MaximumPoolSize = 5;
 
 			for (int i = 0; i < 3; i++)
 			{

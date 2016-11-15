@@ -7,7 +7,20 @@ namespace SideBySide
 	{
 		public DatabaseFixture()
 		{
-			Connection = new MySqlConnection(Constants.CreateConnectionStringBuilder().ConnectionString);
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			var connectionString = csb.ConnectionString;
+			var database = csb.Database;
+			csb.Database = "";
+			using (var db = new MySqlConnection(csb.ConnectionString))
+			{
+				db.Open();
+				var cmd = db.CreateCommand();
+				cmd.CommandText = "create schema if not exists " + database;
+				cmd.ExecuteNonQuery();
+				db.Close();
+			}
+
+			Connection = new MySqlConnection(connectionString);
 		}
 
 		public MySqlConnection Connection { get; }

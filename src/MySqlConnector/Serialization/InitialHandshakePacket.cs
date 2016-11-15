@@ -7,15 +7,16 @@ namespace MySql.Data.Serialization
 	{
 		public ProtocolCapabilities ProtocolCapabilities { get; }
 
+		public byte[] ServerVersion { get; }
+		public int ConnectionId { get; }
 		public byte[] AuthPluginData { get; }
 		public string AuthPluginName { get; }
-		public byte[] ServerVersion { get; }
 
 		internal InitialHandshakePacket(ByteArrayReader reader)
 		{
 			reader.ReadByte(c_protocolVersion);
 			ServerVersion = reader.ReadNullTerminatedByteString();
-			var connectionId = reader.ReadInt32();
+			ConnectionId = reader.ReadInt32();
 			AuthPluginData = reader.ReadByteString(8);
 			reader.ReadByte(0);
 			var capabilityFlagsLow = reader.ReadUInt16();

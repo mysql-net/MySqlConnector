@@ -1,0 +1,31 @@
+title = "MySqlConnector: Async MySQL Driver for .NET and .NET Core"
+baseurl = "https://mysql-net.github.io/MySqlConnector/"
+MetaDataFormat = "yaml"
+pluralizeListTitles = false
+
+[blackfriday]
+  plainIDAnchors = true
+
+[params]
+  description = "Documentation for MySqlConnector: an Async MySQL Driver for .NET and .NET Core"
+  author = "MySqlConnector Authors"
+
+[taxonomies]
+  tag = "tags"
+  group = "groups"
+
+[[menu.main]]
+    name = "Getting Started"
+    identifier = "getting started"
+    pre = "<i class='fa fa-road'></i>"
+    weight = 20
+[[menu.main]]
+    name = "Tutorials"
+    identifier = "tutorials"
+    pre = "<i class='fa fa-lightbulb-o'></i>"
+    weight = 40
+[[menu.main]]
+    name = "API"
+    identifier = "api"
+    pre = "<i class='fa fa-file-text'></i>"
+    weight = 50

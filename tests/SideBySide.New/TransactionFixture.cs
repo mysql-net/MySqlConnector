@@ -8,11 +8,8 @@ namespace SideBySide
 		{
 			Connection.Open();
 			Connection.Execute(@"
-drop schema if exists transactions;
-
-create schema transactions;
-
-create table transactions.test(value integer null);
+drop table if exists transactions_test;
+create table transactions_test(value integer null);
 			");
 		}
 	}

@@ -22,7 +22,17 @@ namespace MySql.Data.Serialization
 			return new EofPayload(warningCount, serverStatus);
 		}
 
-		public const byte Signature = 0xFE;
+		/// <summary>
+		/// Returns <c>true</c> if <paramref name="payload"/> contains an <a href="https://dev.mysql.com/doc/internals/en/packet-EOF_Packet.html">EOF packet</a>.
+		/// Note that EOF packets can appear in places where a length-encoded integer (which starts with the same signature byte) may appear, so the length
+		/// has to be checked to verify that it is an EOF packet.
+		/// </summary>
+		/// <param name="payload">The payload to examine.</param>
+		/// <returns><c>true</c> if this is an EOF packet; otherwise, <c>false</c>.</returns>
+		public static bool IsEof(PayloadData payload) =>
+			payload.ArraySegment.Count > 0 && payload.ArraySegment.Count < 9 && payload.ArraySegment.Array[payload.ArraySegment.Offset] == Signature;
+
+		private const byte Signature = 0xFE;
 
 		private EofPayload(int warningCount, ServerStatus status)
 		{

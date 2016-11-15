@@ -1,25 +1,41 @@
 ﻿{
-	"version": "0.1.0",
-	"buildOptions": {
-		"warningsAsErrors": true
+	"version":"0.1.0",
+
+	"buildOptions":{
+    "preserveCompilationContext": true,
+		"warningsAsErrors":true
 	},
-	"dependencies": {
-		"MySqlConnector": {
-			"target": "project"
+
+	"dependencies":{
+		"Dapper":"1.50.2",
+		"dotnet-test-xunit":"2.2.0-preview2-build1029",
+		"Microsoft.Extensions.Configuration.Binder":"1.0.0",
+		"Microsoft.Extensions.Configuration.Json":"1.0.0",
+		"MySqlConnector":{
+			"target":"project"
 		},
-		"Dapper":  "1.50.0-*",
-		"xunit": "2.2.0-beta2-build3300",
-		"dotnet-test-xunit": "2.2.0-preview2-build1029"
+		"xunit":"2.2.0-beta2-build3300"
 	},
-	"testRunner": "xunit",
-	"frameworks": {
-		"netcoreapp1.0": {
-			"dependencies": {
-				"Microsoft.NETCore.App": {
-						"type": "platform",
-						"version": "1.0.0"
+
+	"testRunner":"xunit",
+
+	"frameworks":{
+		"netcoreapp1.0":{
+			"dependencies":{
+				"Microsoft.NETCore.App":{
+					"type":"platform",
+					"version":"1.0.0"
 				}
 			}
 		}
+	},
+
+	"runtimeOptions": {
+		"configProperties": {
+			"System.GC.Server": true,
+			"System.GC.Concurrent": true,
+			"System.Threading.ThreadPool.MinThreads": 8
+		}
 	}
+
 }
