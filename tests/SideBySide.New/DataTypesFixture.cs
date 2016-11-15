@@ -4,10 +4,12 @@ namespace SideBySide
 {
 	public class DataTypesFixture : DatabaseFixture
 	{
-		public DataTypesFixture()
+        public bool JsonSupported = false;
+
+        public DataTypesFixture()
 		{
-			Connection.Open();
-			Connection.Execute(@"
+
+            string DataTypesFixtureSql = @"
 drop schema if exists datatypes;
 
 create schema datatypes;
@@ -160,13 +162,17 @@ values
     '33221100-5544-7766-8899-aabbccddeeff', X'00112233445566778899AABBCCDDEEFF'),
   ('{33221100-5544-7766-8899-aabbccddeeff}', '{33221100-5544-7766-8899-aabbccddeeff}',
     '{33221100-5544-7766-8899-aabbccddeeff}', X'00112233445566778899AABBCCDDEEFF');
+";
 
+            if (this.JsonSupported)
+            {
+                DataTypesFixtureSql = DataTypesFixtureSql + @"
 create table datatypes.json_core (
   rowid integer not null primary key auto_increment,
   value json null
 );
 
-insert into datatypes.json_core (value)
+insert into datatypes.json_core(value)
 values
   (null),
   ('null'),
@@ -177,8 +183,12 @@ values
   ('0'),
   ('1'),
   ('{}'),
-  ('{""a"": ""b""}');
-");
+  ('{""a"": ""b""}');";
+
+            }
+
+            Connection.Open();
+            Connection.Execute(DataTypesFixtureSql);
 		}
 
 		protected override void Dispose(bool disposing)

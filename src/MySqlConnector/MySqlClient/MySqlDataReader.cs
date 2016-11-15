@@ -726,8 +726,9 @@ namespace MySql.Data.MySqlClient
 					if (m_state == State.NoMoreData)
 						break;
 				}
-				else if (firstByte == 0xFB)
+				else if (firstByte == LocalInfilePayload.Signature)
 				{
+                    var localInfile = LocalInfilePayload.Create(payload);
 					throw new NotSupportedException("Don't support LOCAL_INFILE_Request");
 				}
 				else
