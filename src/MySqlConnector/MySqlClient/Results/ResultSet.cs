@@ -40,9 +40,9 @@ namespace MySql.Data.MySqlClient.Results
 					RecordsAffected = ok.AffectedRowCount;
 					LastInsertId = ok.LastInsertId;
 					ColumnDefinitions = null;
-					State = ok.ServerStatus.HasFlag(ServerStatus.MoreResultsExist)
-						? ResultSetState.HasMoreData
-						: ResultSetState.NoMoreData;
+					State = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0
+						? ResultSetState.NoMoreData
+						: ResultSetState.HasMoreData;
 					if (State == ResultSetState.NoMoreData)
 						break;
 				}
@@ -145,7 +145,7 @@ namespace MySql.Data.MySqlClient.Results
 			if (EofPayload.IsEof(payload))
 			{
 				var eof = EofPayload.Create(payload);
-				BufferState = eof.ServerStatus.HasFlag(ServerStatus.MoreResultsExist) ? ResultSetState.HasMoreData : ResultSetState.NoMoreData;
+				BufferState = (eof.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
 				m_rowBuffered = null;
 				return null;
 			}
@@ -269,7 +269,7 @@ namespace MySql.Data.MySqlClient.Results
 				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
 
 			var columnDefinition = ColumnDefinitions[ordinal];
-			var isUnsigned = columnDefinition.ColumnFlags.HasFlag(ColumnFlags.Unsigned);
+			var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
 			switch (columnDefinition.ColumnType)
 			{
 				case ColumnType.Tiny:

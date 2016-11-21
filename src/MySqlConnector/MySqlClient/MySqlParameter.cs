@@ -130,7 +130,7 @@ namespace MySql.Data.MySqlClient
 			}
 			else if (Value is Guid)
 			{
-				if (options.HasFlag(StatementPreparerOptions.OldGuids))
+				if ((options & StatementPreparerOptions.OldGuids) != 0)
 				{
 					writer.WriteUtf8("_binary'");
 					writer.Write(((Guid) Value).ToByteArray());

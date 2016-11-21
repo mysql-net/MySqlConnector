@@ -57,7 +57,7 @@ namespace MySql.Data.MySqlClient.Results
 			m_dataOffsets = null;
 			m_payload = null;
 		}
-		
+
 		public bool GetBoolean(int ordinal)
 		{
 			var value = GetValue(ordinal);
@@ -100,7 +100,7 @@ namespace MySql.Data.MySqlClient.Results
 
 			var column = ResultSet.ColumnDefinitions[ordinal];
 			var columnType = column.ColumnType;
-			if (!column.ColumnFlags.HasFlag(ColumnFlags.Binary) ||
+			if ((column.ColumnFlags & ColumnFlags.Binary) == 0 ||
 			    (columnType != ColumnType.String && columnType != ColumnType.VarString && columnType != ColumnType.TinyBlob &&
 			     columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob))
 			{
@@ -286,7 +286,7 @@ namespace MySql.Data.MySqlClient.Results
 
 			var data = new ArraySegment<byte>(m_payload, m_dataOffsets[ordinal], m_dataLengths[ordinal]);
 			var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
-			var isUnsigned = columnDefinition.ColumnFlags.HasFlag(ColumnFlags.Unsigned);
+			var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
 			switch (columnDefinition.ColumnType)
 			{
 				case ColumnType.Tiny:

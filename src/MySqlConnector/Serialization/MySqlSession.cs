@@ -76,7 +76,7 @@ namespace MySql.Data.Serialization
 			ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
 			ConnectionId = initialHandshake.ConnectionId;
 			AuthPluginData = initialHandshake.AuthPluginData;
-			if (cs.UseCompression && !initialHandshake.ProtocolCapabilities.HasFlag(ProtocolCapabilities.Compress))
+			if (cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) == 0)
 				cs = cs.WithUseCompression(false);
 
 			if (cs.SslMode != MySqlSslMode.None)
