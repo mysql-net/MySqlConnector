@@ -8,10 +8,14 @@ may leave the `MySqlConnection` in an unusable state.
 * Many `MySql.Data` connection string settings are not supported by this library. See
 [Connection Options](https://mysql-net.github.io/MySqlConnector/connection-options/) for a list
 of supported options.
-* Stored Procedures aren't supported.
 * Only the "`mysql_native_password`" authentication plugin is supported.
 
 ## Release Notes
+
+### 0.7.1
+
+* Fix `NextResult` incorrectly returning `true`, which may cause problems with Dapper's `QueryMultiple`: [#135](https://github.com/mysql-net/MySqlConnector/issues/135).
+* Reduce memory usage related to `Enum.HasFlag`: [#137](https://github.com/mysql-net/MySqlConnector/issues/137).
 
 ### 0.7.0
 
