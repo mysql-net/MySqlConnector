@@ -266,10 +266,7 @@ namespace SideBySide
 					Assert.True(await reader.ReadAsync());
 					Assert.Equal("three", reader.GetString(0));
 					Assert.False(await reader.ReadAsync());
-#if BASELINE
-					// https://github.com/mysql-net/MySqlConnector/issues/135
 					Assert.False(await reader.NextResultAsync());
-#endif
 				}
 			}
 		}
@@ -302,10 +299,7 @@ namespace SideBySide
 					Assert.True(await reader.ReadAsync());
 					Assert.Equal("six", reader.GetString(0));
 					Assert.False(await reader.ReadAsync());
-#if BASELINE
-					// https://github.com/mysql-net/MySqlConnector/issues/135
 					Assert.False(await reader.NextResultAsync());
-#endif
 				}
 			}
 		}
