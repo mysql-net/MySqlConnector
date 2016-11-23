@@ -71,8 +71,16 @@ namespace MySql.Data.Serialization
 			var payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
 			var initialHandshake = new InitialHandshakePacket(reader);
-			if (initialHandshake.AuthPluginName != "mysql_native_password")
+
+			// if PluginAuth is supported, then use the specified auth plugin; else, fall back to protocol capabilities to determine the auth type to use
+			string authPluginName;
+			if ((initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
+				authPluginName = initialHandshake.AuthPluginName;
+			else
+				authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" : "mysql_native_password";
+			if (authPluginName != "mysql_native_password")
 				throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(initialHandshake.AuthPluginName));
+
 			ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
 			ConnectionId = initialHandshake.ConnectionId;
 			AuthPluginData = initialHandshake.AuthPluginData;
@@ -80,7 +88,7 @@ namespace MySql.Data.Serialization
 				cs = cs.WithUseCompression(false);
 
 			if (cs.SslMode != MySqlSslMode.None)
-				await InitSslAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+				await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			var response = HandshakeResponse41Packet.Create(initialHandshake, cs);
 			payload = new PayloadData(new ArraySegment<byte>(response));
@@ -298,7 +306,7 @@ namespace MySql.Data.Serialization
 			return false;
 		}
 
-		private async Task InitSslAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async Task InitSslAsync(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			X509Certificate2 certificate;
 			try
@@ -341,7 +349,7 @@ namespace MySql.Data.Serialization
 
 			var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
 
-			var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Packet.InitSsl(cs)));
+			var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Packet.InitSsl(serverCapabilities, cs)));
 			await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			try

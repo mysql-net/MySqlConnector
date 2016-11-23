@@ -12,6 +12,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.7.2
+
+* Fix authentication for MySQL Server 5.1: [#139](https://github.com/mysql-net/MySqlConnector/issues/139).
+
 ### 0.7.1
 
 * Fix `NextResult` incorrectly returning `true`, which may cause problems with Dapper's `QueryMultiple`: [#135](https://github.com/mysql-net/MySqlConnector/issues/135).

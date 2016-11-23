@@ -1,5 +1,5 @@
 {
-	"version": "0.7.1",
+	"version": "0.7.2",
 	"title": "Async MySQL Connector",
 	"description": "A fully async MySQL ADO.NET provider for .NET and .NET Core",
 	"copyright": "Copyright 2016 Bradley Grainger",
@@ -9,7 +9,7 @@
 	"packOptions": {
 		"owners": [ "bgrainger" ],
 		"tags": [ "mysql", "async", "ado.net", "database", "netcore"  ],
-		"releaseNotes": "Fix NextResult for stored procedures; reduce memory usage. (GitHub issues #135, #137)",
+		"releaseNotes": "Fix authentication for MySQL Server 5.1. (GitHub issues #139)",
 		"licenseUrl": "https://opensource.org/licenses/MIT",
 		"projectUrl": "https://github.com/mysql-net/MySqlConnector",
 		"repository": {

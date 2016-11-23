@@ -6,7 +6,6 @@ namespace MySql.Data.Serialization
 	internal sealed class InitialHandshakePacket
 	{
 		public ProtocolCapabilities ProtocolCapabilities { get; }
-
 		public byte[] ServerVersion { get; }
 		public int ConnectionId { get; }
 		public byte[] AuthPluginData { get; }
@@ -28,7 +27,7 @@ namespace MySql.Data.Serialization
 				ProtocolCapabilities = (ProtocolCapabilities) (capabilityFlagsHigh << 16 | capabilityFlagsLow);
 				var authPluginDataLength = reader.ReadByte();
 				var unused = reader.ReadByteString(10);
-				if ((ProtocolCapabilities & ProtocolCapabilities.SecureConnection) != 0 && authPluginDataLength > 0)
+				if ((ProtocolCapabilities & ProtocolCapabilities.SecureConnection) != 0)
 				{
 					var authPluginData2 = reader.ReadByteString(Math.Max(13, authPluginDataLength - 8));
 					var concatenated = new byte[AuthPluginData.Length + authPluginData2.Length];
