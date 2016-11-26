@@ -222,6 +222,7 @@ namespace MySql.Data.MySqlClient.Results
 				case ColumnType.String:
 					return columnDefinition.CharacterSet == CharacterSet.Binary ? "BLOB" :
 						(columnDefinition.ColumnFlags & ColumnFlags.Enum) != 0 ? "ENUM" :
+						(columnDefinition.ColumnFlags & ColumnFlags.Set) != 0 ? "SET" :
 						string.Format(CultureInfo.InvariantCulture, "CHAR({0})", columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet));
 
 				case ColumnType.VarString:

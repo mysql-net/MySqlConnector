@@ -95,6 +95,24 @@ values
   (3.402823466e38, 1.7976931348623157e308, 999.99, 999999999999.99999999, 99999999999999999999.999999999999999999999999999999),
   (1.401298E-45, 4.94065645841247e-324, 0.01, 0.00000001, 0.000000000000000000000000000001);
 
+drop table if exists datatypes_set;
+create table datatypes_set(
+	rowid integer not null primary key auto_increment,
+	value set('one', 'two', 'four') null
+);
+
+insert into datatypes_set(value)
+values
+	(null),
+	(''),
+	('one'),
+	('two'),
+	('one,two'),
+	('four'),
+	('one,four'),
+	('two,four'),
+	('one,two,four');
+
 drop table if exists datatypes_strings;
 create table datatypes_strings (
   rowid integer not null primary key auto_increment,

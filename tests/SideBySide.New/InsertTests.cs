@@ -106,8 +106,6 @@ create table insert_enum_value(rowid integer not null primary key auto_increment
 		[Fact]
 		public void InsertMySqlEnum()
 		{
-			//var actual = m_database.Connection.Query<MySqlColor>(@"select color from datatypes_enums order by rowid").ToList();
-		//	Assert.Equal(new[] { MySqlColor.Red, MySqlColor.Orange, MySqlColor.Green }, actual);
 			m_database.Connection.Execute(@"drop table if exists insert_mysql_enums;
 create table insert_mysql_enums(
 	rowid integer not null primary key auto_increment,
@@ -139,6 +137,18 @@ create table insert_mysql_enums(
 			Blue,
 			Indigo,
 			Violet
+		}
+
+		[Fact]
+		public void InsertMySqSet()
+		{
+			m_database.Connection.Execute(@"drop table if exists insert_mysql_set;
+create table insert_mysql_set(
+	rowid integer not null primary key auto_increment,
+	value set('one', 'two', 'four', 'eight') null
+);");
+			m_database.Connection.Execute(@"insert into insert_mysql_set(value) values('one'), ('two'), ('one,two'), ('four'), ('four,one'), ('four,two'), ('four,two,one'), ('eight');");
+			Assert.Equal(new[] { "one", "one,two", "one,four", "one,two,four" }, m_database.Connection.Query<string>(@"select value from insert_mysql_set where find_in_set('one', value) order by rowid"));
 		}
 
 		readonly DatabaseFixture m_database;
