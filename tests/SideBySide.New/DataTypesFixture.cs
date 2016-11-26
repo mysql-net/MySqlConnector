@@ -40,6 +40,19 @@ values
   (1, 1, 1),
   (1, X'FFFFFFFF', X'FFFFFFFFFFFFFFFF');
 
+drop table if exists datatypes_enums;
+create table datatypes_enums(
+	rowid integer not null primary key auto_increment,
+	size enum('x-small', 'small', 'medium', 'large', 'x-large'),
+	color enum('red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet') not null
+);
+
+insert into datatypes_enums(size, color)
+values
+	(null, 'red'),
+	('small', 'orange'),
+	('medium', 'green');
+
 drop table if exists datatypes_integers;
 create table datatypes_integers (
   rowid integer not null primary key auto_increment,

@@ -103,6 +103,44 @@ create table insert_enum_value(rowid integer not null primary key auto_increment
 			public Enum64? Enum64 { get; set; }
 		}
 
+		[Fact]
+		public void InsertMySqlEnum()
+		{
+			//var actual = m_database.Connection.Query<MySqlColor>(@"select color from datatypes_enums order by rowid").ToList();
+		//	Assert.Equal(new[] { MySqlColor.Red, MySqlColor.Orange, MySqlColor.Green }, actual);
+			m_database.Connection.Execute(@"drop table if exists insert_mysql_enums;
+create table insert_mysql_enums(
+	rowid integer not null primary key auto_increment,
+	size enum('x-small', 'small', 'medium', 'large', 'x-large'),
+	color enum('red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet') not null
+);");
+			m_database.Connection.Execute(@"insert into insert_mysql_enums(size, color) values(@size, @color);", new { size = MySqlSize.Large, color = MySqlColor.Blue });
+			Assert.Equal(new[] { "large" }, m_database.Connection.Query<string>(@"select size from insert_mysql_enums"));
+			Assert.Equal(new[] { "blue" }, m_database.Connection.Query<string>(@"select color from insert_mysql_enums"));
+		}
+
+		enum MySqlSize
+		{
+			None,
+			XSmall,
+			Small,
+			Medium,
+			Large,
+			XLarge
+		}
+
+		enum MySqlColor
+		{
+			None,
+			Red,
+			Orange,
+			Yellow,
+			Green,
+			Blue,
+			Indigo,
+			Violet
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }

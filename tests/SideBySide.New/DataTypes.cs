@@ -123,6 +123,18 @@ namespace SideBySide
 			}
 		}
 
+		[Theory]
+		[InlineData("size", "ENUM", new object[] { null, "small", "medium" })]
+		[InlineData("color", "ENUM", new object[] { "red", "orange", "green" })]
+		public void QueryEnum(string column, string dataTypeName, object[] expected)
+		{
+#if BASELINE
+			// mysql-connector-net incorrectly returns "VARCHAR" for "ENUM"
+			dataTypeName = "VARCHAR";
+#endif
+			DoQuery("enums", column, dataTypeName, expected, reader => reader.GetString(0));
+		}
+
 #if BASELINE
 		[Theory(Skip = "https://bugs.mysql.com/bug.php?id=78917")]
 #else
