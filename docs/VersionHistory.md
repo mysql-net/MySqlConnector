@@ -12,6 +12,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.7.3
+
+* Fix `GetDataTypeName` for `ENUM` and `SET` columns: [#52](https://github.com/mysql-net/MySqlConnector/issues/52), [#71](https://github.com/mysql-net/MySqlConnector/issues/71).
+
 ### 0.7.2
 
 * Fix authentication for MySQL Server 5.1: [#139](https://github.com/mysql-net/MySqlConnector/issues/139).
