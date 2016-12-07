@@ -48,6 +48,7 @@ namespace MySql.Data.Serialization
 			ConnectionTimeout = (int)csb.ConnectionTimeout;
 			ConvertZeroDateTime = csb.ConvertZeroDateTime;
 			ForceSynchronous = csb.ForceSynchronous;
+			Keepalive = csb.Keepalive;
 			OldGuids = csb.OldGuids;
 			PersistSecurityInfo = csb.PersistSecurityInfo;
 			UseAffectedRows = csb.UseAffectedRows;
@@ -84,6 +85,7 @@ namespace MySql.Data.Serialization
 			ConnectionTimeout = other.ConnectionTimeout;
 			ConvertZeroDateTime = other.ConvertZeroDateTime;
 			ForceSynchronous = other.ForceSynchronous;
+			Keepalive = other.Keepalive;
 			OldGuids = other.OldGuids;
 			PersistSecurityInfo = other.PersistSecurityInfo;
 			UseAffectedRows = other.UseAffectedRows;
@@ -116,6 +118,7 @@ namespace MySql.Data.Serialization
 		internal readonly int ConnectionTimeout;
 		internal readonly bool ConvertZeroDateTime;
 		internal readonly bool ForceSynchronous;
+		internal readonly uint Keepalive;
 		internal readonly bool OldGuids;
 		internal readonly bool PersistSecurityInfo;
 		internal readonly bool UseAffectedRows;
