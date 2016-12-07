@@ -12,10 +12,13 @@ of supported options.
 
 ## Release Notes
 
+### 0.8.0
+
+* Implement `Keep Alive` connection string option: [#132](https://github.com/mysql-net/MySqlConnector/issues/132).
+
 ### 0.7.4
 
 * Fix `Packet received out-of-order` exception with `UseCompression=true`: [#146](https://github.com/mysql-net/MySqlConnector/issues/146).
-
 
 ### 0.7.3
 
