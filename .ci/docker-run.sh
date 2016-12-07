@@ -8,7 +8,7 @@ docker pull mysql:5.7
 docker run -d \
 	-v $(pwd)/mysqld:/var/run/mysqld \
 	-v $(pwd)/server:/etc/mysql/conf.d \
-	-p 3306:3306 \
+	-p 3307:3306 \
 	--name mysql \
 	-e MYSQL_ROOT_PASSWORD='test' \
 	mysql:5.7
