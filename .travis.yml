@@ -3,21 +3,25 @@ dist: trusty
 services: docker
 
 before_install:
-  - chmod +x .ci/docker-run.sh && ./.ci/docker-run.sh
-  - sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
-  - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893
-  - sudo apt-get update
-  - sudo apt-get install -y dotnet-dev-1.0.0-preview2-003131
+- chmod +x .ci/docker-run.sh && ./.ci/docker-run.sh
+- sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
+- sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893
+- sudo apt-get update
+- sudo apt-get install -y dotnet-dev-1.0.0-preview2-003131
 
 script:
-  - dotnet restore
-  - dotnet test tests/MySqlConnector.Tests --configuration Release
-  - dotnet build tests/SideBySide.New --configuration Release
-  - echo 'Executing tests with No Compression, No SSL' && ./.ci/use-config.sh config.json 3307 && time dotnet test tests/SideBySide.New --configuration Release
-  - echo 'Executing tests with Compression, No SSL' && ./.ci/use-config.sh config.compression.json 3307 && time dotnet test tests/SideBySide.New --configuration Release
-  - echo 'Executing tests with No Compression, SSL' && ./.ci/use-config.sh config.ssl.json 3307 && time dotnet test tests/SideBySide.New --configuration Release
-  - echo 'Executing tests with Compression, SSL' && ./.ci/use-config.sh config.compression+ssl.json 3307 && time dotnet test tests/SideBySide.New --configuration Release
-  - echo 'Executing tests with Unix Domain Socket, No Compression, No SSL' && ./.ci/use-config.sh config.uds.json 3307 && time dotnet test tests/SideBySide.New --configuration Release
+- dotnet restore
+- dotnet test tests/MySqlConnector.Tests --configuration Release
+- dotnet build tests/SideBySide.New --configuration Release
+- echo 'Executing tests with No Compression, No SSL' && ./.ci/use-config.sh config.json 3307 && time dotnet test tests/SideBySide.New --configuration Release
+- echo 'Executing tests with Compression, No SSL' && ./.ci/use-config.sh config.compression.json 3307 && time dotnet test tests/SideBySide.New --configuration Release
+- echo 'Executing tests with No Compression, SSL' && ./.ci/use-config.sh config.ssl.json 3307 && time dotnet test tests/SideBySide.New --configuration Release
+- echo 'Executing tests with Compression, SSL' && ./.ci/use-config.sh config.compression+ssl.json 3307 && time dotnet test tests/SideBySide.New --configuration Release
+- echo 'Executing tests with Unix Domain Socket, No Compression, No SSL' && ./.ci/use-config.sh config.uds.json 3307 && time dotnet test tests/SideBySide.New --configuration Release
 
 after_script:
-  - chmod +x .ci/build-docs.sh && ./.ci/build-docs.sh
+- chmod +x .ci/build-docs.sh && ./.ci/build-docs.sh
+
+notifications:
+  slack:
+    secure: IHVnvL5z2g75VQt9qmJxpAyrbQQPA8VIaO0Of8q4p733E9aA4ZwuFDiqxXcamBbcFJeVPPq4xBTRPZNlTUyZt+No9oFaDnlIA1fKE/ksVH03SqrXwXO0k6toCqofb0/166+ijoe0m6IV7wfT8lvtgD9Lgd9y+M3Zh2NKXAlJasaOve8/pUOcgDqhfT5MST4RD1X4xdjcNnWifEQHACFWgYsM8bD5SrqbAYkHnUcZx0LnY7Cr2RwTUTFS5EN+lbSmy+uhE+JyYFT/5EBIcjLQql8QIHFanTtlGif5rosxb1Wot7pve6KWCGMUnM7FO5vmCbzeRC/kQZ4VGNQyFW8BrOTpOSOAPDfUvlIKuNsARkIYhHvLfjbNtjlcBuyrBKbuvLmGpYo7w+qUGimpi6xZTr3iq0cpb9OYhEtaF/upWI+p77kjjPYlXCg424zP+5SlTVBwCbOsUsKK/l1SjL8RBgpl/bgMTQ7jzEBO+zAWBW7H50d1edZ1IgyClVYbtwR0/gjJGndYyZLALf55x0FnYQkgCuPXU5egmdBiwQUZcRRcjgzY3s9tXLY2NHjI61Zt6IA4JoAugjH03VTo369gj641bLkH3ViVCLnvI6BPIaTsgjs+g6V00K+PT3+Vu9nnLd6eXc72V5QiWHPEMXyGTdnIYnHm9VvK7879c/W/aTM=
