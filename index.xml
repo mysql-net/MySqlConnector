@@ -686,6 +686,13 @@ please refer to its documentation.&lt;/p&gt;
     &lt;td&gt;True to have MySqlDataReader.GetValue() and MySqlDataReader.GetDateTime() return DateTime.MinValue for date or datetime columns that have disallowed values.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
+    &lt;td&gt;Keep Alive, Keepalive&lt;/td&gt;
+    &lt;td&gt;0&lt;/td&gt;
+    &lt;td&gt;TCP Keepalive idle time.  A value of 0 indicates that the OS Default keepalive settings are used.
+    On Windows, a value greater than 0 is the idle connection time, measured in seconds, before the first keepalive packet is sent.
+    Due to limitations in .NET Core, Unix-based Operating Systems will always use the OS Default keepalive settings.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
     &lt;td&gt;Old Guids, OldGuids&lt;/td&gt;
     &lt;td&gt;false&lt;/td&gt;
     &lt;td&gt; The backend representation of a GUID type was changed from BINARY(16) to CHAR(36). This was done to allow developers to use the server function UUID() to populate a GUID table - UUID() generates a 36-character string. Developers of older applications can add &#39;Old Guids=true&#39; to the connection string to use a GUID of data type BINARY(16).&lt;/td&gt;
