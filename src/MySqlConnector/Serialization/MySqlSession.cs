@@ -252,7 +252,7 @@ namespace MySql.Data.Serialization
 					m_tcpClient = tcpClient;
 					m_socket = m_tcpClient.Client;
 					m_networkStream = m_tcpClient.GetStream();
-
+					SerializationUtility.SetKeepalive(m_socket, cs.Keepalive);
 					m_state = State.Connected;
 					return true;
 				}
