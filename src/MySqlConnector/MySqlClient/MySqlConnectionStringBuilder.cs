@@ -122,6 +122,12 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.ForceSynchronous.SetValue(this, value); }
 		}
 
+		public uint Keepalive
+		{
+			get { return MySqlConnectionStringOption.Keepalive.GetValue(this); }
+			set { MySqlConnectionStringOption.Keepalive.SetValue(this, value); }
+		}
+
 		public bool OldGuids
 		{
 			get { return MySqlConnectionStringOption.OldGuids.GetValue(this); }
@@ -215,6 +221,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<uint> ConnectionTimeout;
 		public static readonly MySqlConnectionStringOption<bool> ConvertZeroDateTime;
 		public static readonly MySqlConnectionStringOption<bool> ForceSynchronous;
+		public static readonly MySqlConnectionStringOption<uint> Keepalive;
 		public static readonly MySqlConnectionStringOption<bool> OldGuids;
 		public static readonly MySqlConnectionStringOption<bool> PersistSecurityInfo;
 		public static readonly MySqlConnectionStringOption<bool> UseAffectedRows;
@@ -325,6 +332,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(ForceSynchronous = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "ForceSynchronous" },
 				defaultValue: false));
+
+			AddOption(Keepalive = new MySqlConnectionStringOption<uint>(
+				keys: new[] { "Keep Alive", "Keepalive" },
+				defaultValue: 0u));
 
 			AddOption(OldGuids = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Old Guids", "OldGuids" },

@@ -101,6 +101,19 @@ namespace SideBySide
 			}
 		}
 
+		[Fact]
+		public async Task ConnectKeepAlive()
+		{
+			// the goal of this test is to ensure that no exceptions are thrown
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.Keepalive = 1;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+				await Task.Delay(3000);
+			}
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }
