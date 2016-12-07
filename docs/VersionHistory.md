@@ -12,6 +12,11 @@ of supported options.
 
 ## Release Notes
 
+### 0.7.4
+
+* Fix `Packet received out-of-order` exception with `UseCompression=true`: [#146](https://github.com/mysql-net/MySqlConnector/issues/146).
+
+
 ### 0.7.3
 
 * Fix `GetDataTypeName` for `ENUM` and `SET` columns: [#52](https://github.com/mysql-net/MySqlConnector/issues/52), [#71](https://github.com/mysql-net/MySqlConnector/issues/71).
