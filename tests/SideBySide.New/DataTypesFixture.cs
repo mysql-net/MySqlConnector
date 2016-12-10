@@ -40,6 +40,19 @@ values
   (1, 1, 1),
   (1, X'FFFFFFFF', X'FFFFFFFFFFFFFFFF');
 
+drop table if exists datatypes_enums;
+create table datatypes_enums(
+	rowid integer not null primary key auto_increment,
+	size enum('x-small', 'small', 'medium', 'large', 'x-large'),
+	color enum('red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet') not null
+);
+
+insert into datatypes_enums(size, color)
+values
+	(null, 'red'),
+	('small', 'orange'),
+	('medium', 'green');
+
 drop table if exists datatypes_integers;
 create table datatypes_integers (
   rowid integer not null primary key auto_increment,
@@ -81,6 +94,24 @@ values
   (-1.401298E-45, -4.94065645841247e-324, -0.01, -0.00000001, -0.000000000000000000000000000001),
   (3.402823466e38, 1.7976931348623157e308, 999.99, 999999999999.99999999, 99999999999999999999.999999999999999999999999999999),
   (1.401298E-45, 4.94065645841247e-324, 0.01, 0.00000001, 0.000000000000000000000000000001);
+
+drop table if exists datatypes_set;
+create table datatypes_set(
+	rowid integer not null primary key auto_increment,
+	value set('one', 'two', 'four') null
+);
+
+insert into datatypes_set(value)
+values
+	(null),
+	(''),
+	('one'),
+	('two'),
+	('one,two'),
+	('four'),
+	('one,four'),
+	('two,four'),
+	('one,two,four');
 
 drop table if exists datatypes_strings;
 create table datatypes_strings (

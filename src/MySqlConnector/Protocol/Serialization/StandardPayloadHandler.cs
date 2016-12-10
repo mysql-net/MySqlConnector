@@ -28,7 +28,7 @@ namespace MySql.Data.Protocol.Serialization
 		}
 
 		public ValueTask<ArraySegment<byte>> ReadPayloadAsync(ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) =>
-			ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader, m_byteHandler, GetNextSequenceNumber, default(ArraySegment<byte>), protocolErrorBehavior, ioBehavior);
+			ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader, m_byteHandler, () => GetNextSequenceNumber(), default(ArraySegment<byte>), protocolErrorBehavior, ioBehavior);
 
 		public ValueTask<int> WritePayloadAsync(ArraySegment<byte> payload, IOBehavior ioBehavior) =>
 			ProtocolUtility.WritePayloadAsync(m_byteHandler, GetNextSequenceNumber, payload, ioBehavior);

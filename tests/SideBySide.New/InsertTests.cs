@@ -103,6 +103,54 @@ create table insert_enum_value(rowid integer not null primary key auto_increment
 			public Enum64? Enum64 { get; set; }
 		}
 
+		[Fact]
+		public void InsertMySqlEnum()
+		{
+			m_database.Connection.Execute(@"drop table if exists insert_mysql_enums;
+create table insert_mysql_enums(
+	rowid integer not null primary key auto_increment,
+	size enum('x-small', 'small', 'medium', 'large', 'x-large'),
+	color enum('red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet') not null
+);");
+			m_database.Connection.Execute(@"insert into insert_mysql_enums(size, color) values(@size, @color);", new { size = MySqlSize.Large, color = MySqlColor.Blue });
+			Assert.Equal(new[] { "large" }, m_database.Connection.Query<string>(@"select size from insert_mysql_enums"));
+			Assert.Equal(new[] { "blue" }, m_database.Connection.Query<string>(@"select color from insert_mysql_enums"));
+		}
+
+		enum MySqlSize
+		{
+			None,
+			XSmall,
+			Small,
+			Medium,
+			Large,
+			XLarge
+		}
+
+		enum MySqlColor
+		{
+			None,
+			Red,
+			Orange,
+			Yellow,
+			Green,
+			Blue,
+			Indigo,
+			Violet
+		}
+
+		[Fact]
+		public void InsertMySqSet()
+		{
+			m_database.Connection.Execute(@"drop table if exists insert_mysql_set;
+create table insert_mysql_set(
+	rowid integer not null primary key auto_increment,
+	value set('one', 'two', 'four', 'eight') null
+);");
+			m_database.Connection.Execute(@"insert into insert_mysql_set(value) values('one'), ('two'), ('one,two'), ('four'), ('four,one'), ('four,two'), ('four,two,one'), ('eight');");
+			Assert.Equal(new[] { "one", "one,two", "one,four", "one,two,four" }, m_database.Connection.Query<string>(@"select value from insert_mysql_set where find_in_set('one', value) order by rowid"));
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }

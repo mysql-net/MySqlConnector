@@ -8,7 +8,7 @@ namespace MySql.Data.Protocol.Serialization
 {
     internal static class ProtocolUtility
     {
-		public static ValueTask<Packet> ReadPacketAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+		public static ValueTask<Packet> ReadPacketAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int?> getNextSequenceNumber, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
 			return bufferedByteReader.ReadBytesAsync(byteHandler, 4, ioBehavior)
 				.ContinueWith(headerBytes =>
@@ -24,12 +24,12 @@ namespace MySql.Data.Protocol.Serialization
 					int packetSequenceNumber = headerBytes.Array[headerBytes.Offset + 3];
 
 					var expectedSequenceNumber = getNextSequenceNumber() % 256;
-					if (packetSequenceNumber != expectedSequenceNumber)
+					if (expectedSequenceNumber.HasValue && packetSequenceNumber != expectedSequenceNumber.Value)
 					{
 						if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
 							return default(ValueTask<Packet>);
 
-						var exception = new InvalidOperationException("Packet received out-of-order. Expected {0}; got {1}.".FormatInvariant(expectedSequenceNumber, packetSequenceNumber));
+						var exception = new InvalidOperationException("Packet received out-of-order. Expected {0}; got {1}.".FormatInvariant(expectedSequenceNumber.Value, packetSequenceNumber));
 						return ValueTaskExtensions.FromException<Packet>(exception);
 					}
 
@@ -48,13 +48,13 @@ namespace MySql.Data.Protocol.Serialization
 				});
 		}
 
-		public static ValueTask<ArraySegment<byte>> ReadPayloadAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegment<byte> previousPayloads, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+		public static ValueTask<ArraySegment<byte>> ReadPayloadAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int?> getNextSequenceNumber, ArraySegment<byte> previousPayloads, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
 			return ReadPacketAsync(bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior).ContinueWith(packet =>
 				ContinueRead(bufferedByteReader, byteHandler, getNextSequenceNumber, previousPayloads, packet, protocolErrorBehavior, ioBehavior));
 		}
 
-		private static ValueTask<ArraySegment<byte>> ContinueRead(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegment<byte> previousPayloads, Packet packet, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+		private static ValueTask<ArraySegment<byte>> ContinueRead(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int?> getNextSequenceNumber, ArraySegment<byte> previousPayloads, Packet packet, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
 			if (packet == null && protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
 				return default(ValueTask<ArraySegment<byte>>);

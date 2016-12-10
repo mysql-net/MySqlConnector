@@ -8,10 +8,30 @@ may leave the `MySqlConnection` in an unusable state.
 * Many `MySql.Data` connection string settings are not supported by this library. See
 [Connection Options](https://mysql-net.github.io/MySqlConnector/connection-options/) for a list
 of supported options.
-* Stored Procedures aren't supported.
 * Only the "`mysql_native_password`" authentication plugin is supported.
 
 ## Release Notes
+
+### 0.8.0
+
+* Implement `Keep Alive` connection string option: [#132](https://github.com/mysql-net/MySqlConnector/issues/132).
+
+### 0.7.4
+
+* Fix `Packet received out-of-order` exception with `UseCompression=true`: [#146](https://github.com/mysql-net/MySqlConnector/issues/146).
+
+### 0.7.3
+
+* Fix `GetDataTypeName` for `ENUM` and `SET` columns: [#52](https://github.com/mysql-net/MySqlConnector/issues/52), [#71](https://github.com/mysql-net/MySqlConnector/issues/71).
+
+### 0.7.2
+
+* Fix authentication for MySQL Server 5.1: [#139](https://github.com/mysql-net/MySqlConnector/issues/139).
+
+### 0.7.1
+
+* Fix `NextResult` incorrectly returning `true`, which may cause problems with Dapper's `QueryMultiple`: [#135](https://github.com/mysql-net/MySqlConnector/issues/135).
+* Reduce memory usage related to `Enum.HasFlag`: [#137](https://github.com/mysql-net/MySqlConnector/issues/137).
 
 ### 0.7.0
 

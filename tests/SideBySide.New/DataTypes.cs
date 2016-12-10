@@ -123,6 +123,29 @@ namespace SideBySide
 			}
 		}
 
+		[Theory]
+		[InlineData("size", "ENUM", new object[] { null, "small", "medium" })]
+		[InlineData("color", "ENUM", new object[] { "red", "orange", "green" })]
+		public void QueryEnum(string column, string dataTypeName, object[] expected)
+		{
+#if BASELINE
+			// mysql-connector-net incorrectly returns "VARCHAR" for "ENUM"
+			dataTypeName = "VARCHAR";
+#endif
+			DoQuery("enums", column, dataTypeName, expected, reader => reader.GetString(0));
+		}
+
+		[Theory]
+		[InlineData("value", "SET", new object[] { null, "", "one", "two", "one,two", "four", "one,four", "two,four", "one,two,four" })]
+		public void QuerySet(string column, string dataTypeName, object[] expected)
+		{
+#if BASELINE
+			// mysql-connector-net incorrectly returns "VARCHAR" for "ENUM"
+			dataTypeName = "VARCHAR";
+#endif
+			DoQuery("set", column, dataTypeName, expected, reader => reader.GetString(0));
+		}
+
 #if BASELINE
 		[Theory(Skip = "https://bugs.mysql.com/bug.php?id=78917")]
 #else

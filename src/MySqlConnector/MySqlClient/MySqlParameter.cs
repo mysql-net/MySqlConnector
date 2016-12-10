@@ -95,7 +95,6 @@ namespace MySql.Data.MySqlClient
 			}
 			else if (Value is byte[])
 			{
-				// TODO: use a _binary'...' string for more efficient data transmission
 				writer.WriteUtf8("_binary'");
 				foreach (var by in (byte[]) Value)
 				{
@@ -130,7 +129,7 @@ namespace MySql.Data.MySqlClient
 			}
 			else if (Value is Guid)
 			{
-				if (options.HasFlag(StatementPreparerOptions.OldGuids))
+				if ((options & StatementPreparerOptions.OldGuids) != 0)
 				{
 					writer.WriteUtf8("_binary'");
 					writer.Write(((Guid) Value).ToByteArray());

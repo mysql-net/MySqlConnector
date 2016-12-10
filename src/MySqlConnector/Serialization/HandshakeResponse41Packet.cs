@@ -6,7 +6,7 @@ namespace MySql.Data.Serialization
 {
 	internal sealed class HandshakeResponse41Packet
 	{
-		internal static PayloadWriter CapabilitiesPayload(ConnectionSettings cs, ProtocolCapabilities additionalCapabilities=0)
+		private static PayloadWriter CreateCapabilitiesPayload(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, ProtocolCapabilities additionalCapabilities=0)
 		{
 			var writer = new PayloadWriter();
 
@@ -14,8 +14,8 @@ namespace MySql.Data.Serialization
 				ProtocolCapabilities.Protocol41 |
 				ProtocolCapabilities.LongPassword |
 				ProtocolCapabilities.SecureConnection |
-				ProtocolCapabilities.PluginAuth |
-				ProtocolCapabilities.PluginAuthLengthEncodedClientData |
+				(serverCapabilities & ProtocolCapabilities.PluginAuth) |
+				(serverCapabilities & ProtocolCapabilities.PluginAuthLengthEncodedClientData) |
 				ProtocolCapabilities.MultiStatements |
 				ProtocolCapabilities.MultiResults |
 				ProtocolCapabilities.PreparedStatementMultiResults |
@@ -31,16 +31,16 @@ namespace MySql.Data.Serialization
 			return writer;
 		}
 
-		public static byte[] InitSsl(ConnectionSettings cs)
+		public static byte[] InitSsl(ProtocolCapabilities serverCapabilities, ConnectionSettings cs)
 		{
-			return CapabilitiesPayload(cs, ProtocolCapabilities.Ssl).ToBytes();
+			return CreateCapabilitiesPayload(serverCapabilities, cs, ProtocolCapabilities.Ssl).ToBytes();
 		}
 
 		public static byte[] Create(InitialHandshakePacket handshake, ConnectionSettings cs)
 		{
 			// TODO: verify server capabilities
 
-			var writer = CapabilitiesPayload(cs);
+			var writer = CreateCapabilitiesPayload(handshake.ProtocolCapabilities, cs);
 			writer.WriteNullTerminatedString(cs.UserID);
 			var authenticationResponse = AuthenticationUtility.CreateAuthenticationResponse(handshake.AuthPluginData, 0, cs.Password);
 			writer.WriteByte((byte) authenticationResponse.Length);
@@ -49,7 +49,8 @@ namespace MySql.Data.Serialization
 			if (!string.IsNullOrWhiteSpace(cs.Database))
 				writer.WriteNullTerminatedString(cs.Database);
 
-			writer.WriteNullTerminatedString("mysql_native_password");
+			if ((handshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
+				writer.WriteNullTerminatedString("mysql_native_password");
 
 			return writer.ToBytes();
 		}
