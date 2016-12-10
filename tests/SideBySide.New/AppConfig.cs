@@ -45,7 +45,11 @@ namespace SideBySide
 
 		public static bool SupportsJson => Config.GetValue<bool>("Data:SupportsJson");
 
-		public static MySqlConnectionStringBuilder CreateConnectionStringBuilder()
+        public static string MySqlBulkLoaderCsvFile => Config.GetValue<string>("Data:MySqlBulkLoaderCsvFile");
+        public static string MySqlBulkLoaderLocalCsvFile => Config.GetValue<string>("Data:MySqlBulkLoaderLocalCsvFile");
+        public static bool MySqlBulkLoaderRemoveTables => Config.GetValue<bool>("Data:MySqlBulkLoaderRemoveTables");
+
+        public static MySqlConnectionStringBuilder CreateConnectionStringBuilder()
 		{
 			return new MySqlConnectionStringBuilder(ConnectionString);
 		}

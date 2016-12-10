@@ -7,6 +7,7 @@ namespace MySql.Data.Serialization
     internal class LocalInfilePayload
     {
         public const byte Signature = 0xFB;
+        public const string InfileStreamPrefix = "@@INFILESTREAM";
         public string FileName { get; }
         public static LocalInfilePayload Create(PayloadData payload)
         {
@@ -14,8 +15,7 @@ namespace MySql.Data.Serialization
         }
         private LocalInfilePayload(PayloadData payload)
         {
-            
-            this.FileName = Encoding.ASCII.GetString(new ArraySegment<byte>(payload.ArraySegment.Array, payload.ArraySegment.Offset + 1, payload.ArraySegment.Count - 1));
+            this.FileName = Encoding.UTF8.GetString(new ArraySegment<byte>(payload.ArraySegment.Array, payload.ArraySegment.Offset + 1, payload.ArraySegment.Count - 1));
         }
     }
 }
