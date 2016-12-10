@@ -3,6 +3,7 @@ using System.Collections;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -735,8 +736,37 @@ namespace MySql.Data.MySqlClient
 				else if (firstByte == LocalInfilePayload.Signature)
 				{
                     var localInfile = LocalInfilePayload.Create(payload);
-					throw new NotSupportedException("Don't support LOCAL_INFILE_Request");
-				}
+                    Stream infileStream;
+                    try
+                    {
+                        if (localInfile.FileName.StartsWith(LocalInfilePayload.InfileStreamPrefix))
+                        {
+                            infileStream = MySqlBulkLoader.GetInfileStreamByKey(localInfile.FileName);
+                        }
+                        else
+                        {
+                            infileStream = new FileStream(localInfile.FileName, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
+                        }
+                        using (infileStream)
+                        {
+                            byte[] readBuffer = new byte[8192];
+                            int byteCount;
+                            while ((byteCount = await infileStream.ReadAsync(readBuffer, 0, 8192)) > 0)
+                            {
+                                payload = new PayloadData(new ArraySegment<byte>(readBuffer, 0, byteCount));
+                                await m_session.SendReplyAsync(payload, ioBehavior, cancellationToken);
+                            }
+                        }
+                    }
+                    catch (Exception exc)
+                    {
+                        throw new MySqlException("Error during LOAD DATA LOCAL INFILE", exc);
+                    }
+                    finally
+                    {
+                        await m_session.SendReplyAsync(EmptyPayload.Create(), ioBehavior, cancellationToken);
+                    }
+                }
 				else
 				{
 					var reader = new ByteArrayReader(payload.ArraySegment);
