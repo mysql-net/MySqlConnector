@@ -51,6 +51,7 @@ namespace MySql.Data.Serialization
 			Keepalive = csb.Keepalive;
 			OldGuids = csb.OldGuids;
 			PersistSecurityInfo = csb.PersistSecurityInfo;
+			TreatTinyAsBoolean = csb.TreatTinyAsBoolean;
 			UseAffectedRows = csb.UseAffectedRows;
 			UseCompression = csb.UseCompression;
 		}
@@ -88,6 +89,7 @@ namespace MySql.Data.Serialization
 			Keepalive = other.Keepalive;
 			OldGuids = other.OldGuids;
 			PersistSecurityInfo = other.PersistSecurityInfo;
+			TreatTinyAsBoolean = other.TreatTinyAsBoolean;
 			UseAffectedRows = other.UseAffectedRows;
 			UseCompression = useCompression ?? other.UseCompression;
 		}
@@ -121,6 +123,7 @@ namespace MySql.Data.Serialization
 		internal readonly uint Keepalive;
 		internal readonly bool OldGuids;
 		internal readonly bool PersistSecurityInfo;
+		internal readonly bool TreatTinyAsBoolean;
 		internal readonly bool UseAffectedRows;
 		internal readonly bool UseCompression;
 	}

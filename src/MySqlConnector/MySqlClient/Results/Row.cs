@@ -291,7 +291,7 @@ namespace MySql.Data.MySqlClient.Results
 			{
 				case ColumnType.Tiny:
 					var value = int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
-					if (columnDefinition.ColumnLength == 1)
+					if (Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1)
 						return value != 0;
 					return isUnsigned ? (object) (byte) value : (sbyte) value;
 

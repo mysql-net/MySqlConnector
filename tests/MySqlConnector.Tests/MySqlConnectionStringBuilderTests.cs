@@ -39,6 +39,7 @@ namespace MySql.Data.Tests
 #else
 			Assert.Equal(MySqlSslMode.None, csb.SslMode);
 #endif
+			Assert.Equal(true, csb.TreatTinyAsBoolean);
 			Assert.Equal(false, csb.UseCompression);
 			Assert.Equal("", csb.UserID);
 #if BASELINE
@@ -74,6 +75,7 @@ namespace MySql.Data.Tests
 				                   "Pooling=no;" +
 				                   "Port=1234;" +
 				                   "pwd=Pass1234;" +
+				                   "Treat Tiny As Boolean=false;" +
 				                   "ssl mode=verifyca;" +
 				                   "Uid=username;" +
 				                   "useaffectedrows=false"
@@ -98,6 +100,7 @@ namespace MySql.Data.Tests
 			Assert.Equal(false, csb.Pooling);
 			Assert.Equal(1234u, csb.Port);
 			Assert.Equal("db-server", csb.Server);
+			Assert.Equal(false, csb.TreatTinyAsBoolean);
 			Assert.Equal(MySqlSslMode.VerifyCA, csb.SslMode);
 			Assert.Equal(false, csb.UseAffectedRows);
 			Assert.Equal(true, csb.UseCompression);

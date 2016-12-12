@@ -159,6 +159,20 @@ namespace SideBySide
 		}
 
 		[Theory]
+		[InlineData("TinyInt1", "TINYINT", new object[] { null, (sbyte)0, (sbyte)1, (sbyte)0, (sbyte)1, (sbyte)-1, (sbyte)123 })]
+		[InlineData("Boolean", "TINYINT", new object[] { null, (sbyte)0, (sbyte)1, (sbyte)0, (sbyte)1, (sbyte)-1, (sbyte)123 })]
+		public void QueryTinyIntSbyte(string column, string dataTypeName, object[] expected)
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.TreatTinyAsBoolean = false;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+				DoQuery("bools", column, dataTypeName, expected, reader => ((MySqlDataReader) reader).GetSByte(0), baselineCoercedNullValue: default(sbyte), connection: connection);
+			}
+		}
+
+		[Theory]
 		[InlineData("SByte", "TINYINT", new object[] { null, default(sbyte), sbyte.MinValue, sbyte.MaxValue, (sbyte) 123 })]
 		public void QuerySByte(string column, string dataTypeName, object[] expected)
 		{
@@ -584,17 +598,18 @@ namespace SideBySide
 			return result;
 		}
 
-		private void DoQuery(string table, string column, string dataTypeName, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null, bool omitWhereTest = false)
+		private void DoQuery(string table, string column, string dataTypeName, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null, bool omitWhereTest = false, MySqlConnection connection=null)
 		{
-			DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, baselineCoercedNullValue, omitWhereTest);
+			DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, baselineCoercedNullValue, omitWhereTest, connection);
 		}
 
 		// NOTE: baselineCoercedNullValue is to work around inconsistencies in mysql-connector-net; DBNull.Value will
 		// be coerced to 0 by some reader.GetX() methods, but not others.
-		private void DoQuery<TException>(string table, string column, string dataTypeName, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null, bool omitWhereTest = false)
+		private void DoQuery<TException>(string table, string column, string dataTypeName, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null, bool omitWhereTest = false, MySqlConnection connection=null)
 			where TException : Exception
 		{
-			using (var cmd = m_database.Connection.CreateCommand())
+			connection = connection ?? m_database.Connection;
+			using (var cmd = connection.CreateCommand())
 			{
 				cmd.CommandText = Invariant($"select {column} from datatypes_{table} order by rowid");
 				using (var reader = cmd.ExecuteReader())
