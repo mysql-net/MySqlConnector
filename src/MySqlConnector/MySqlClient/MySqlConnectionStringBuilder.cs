@@ -140,6 +140,12 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.PersistSecurityInfo.SetValue(this, value); }
 		}
 
+		public bool TreatTinyAsBoolean
+		{
+			get { return MySqlConnectionStringOption.TreatTinyAsBoolean.GetValue(this); }
+			set { MySqlConnectionStringOption.TreatTinyAsBoolean.SetValue(this, value); }
+		}
+
 		public bool UseAffectedRows
 		{
 			get { return MySqlConnectionStringOption.UseAffectedRows.GetValue(this); }
@@ -224,6 +230,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<uint> Keepalive;
 		public static readonly MySqlConnectionStringOption<bool> OldGuids;
 		public static readonly MySqlConnectionStringOption<bool> PersistSecurityInfo;
+		public static readonly MySqlConnectionStringOption<bool> TreatTinyAsBoolean;
 		public static readonly MySqlConnectionStringOption<bool> UseAffectedRows;
 		public static readonly MySqlConnectionStringOption<bool> UseCompression;
 
@@ -344,6 +351,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(PersistSecurityInfo = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Persist Security Info", "PersistSecurityInfo" },
 				defaultValue: false));
+
+			AddOption(TreatTinyAsBoolean = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "Treat Tiny As Boolean", "TreatTinyAsBoolean" },
+				defaultValue: true));
 
 			AddOption(UseAffectedRows = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Use Affected Rows", "UseAffectedRows" },

@@ -226,6 +226,7 @@ namespace MySql.Data.MySqlClient
 		internal bool AllowUserVariables => m_connectionSettings.AllowUserVariables;
 		internal bool ConvertZeroDateTime => m_connectionSettings.ConvertZeroDateTime;
 		internal bool OldGuids => m_connectionSettings.OldGuids;
+		internal bool TreatTinyAsBoolean => m_connectionSettings.TreatTinyAsBoolean;
 		internal IOBehavior AsyncIOBehavior => m_connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
 
 		private async Task<MySqlSession> CreateSessionAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)

@@ -202,7 +202,7 @@ namespace MySql.Data.MySqlClient.Results
 			switch (columnDefinition.ColumnType)
 			{
 				case ColumnType.Tiny:
-					return columnDefinition.ColumnLength == 1 ? "BOOL" : "TINYINT";
+					return Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1 ? "BOOL" : "TINYINT";
 
 				case ColumnType.Short:
 					return "SMALLINT";
@@ -275,7 +275,7 @@ namespace MySql.Data.MySqlClient.Results
 			switch (columnDefinition.ColumnType)
 			{
 				case ColumnType.Tiny:
-					return columnDefinition.ColumnLength == 1 ? typeof(bool) :
+					return Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1 ? typeof(bool) :
 						isUnsigned ? typeof(byte) : typeof(sbyte);
 
 				case ColumnType.Int24:
