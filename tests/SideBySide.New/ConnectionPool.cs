@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -129,6 +128,35 @@ namespace SideBySide
 
 			foreach (var connection in connections)
 				connection.Dispose();
+		}
+
+		[Fact]
+		public async Task WaitTimeout()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.Pooling = true;
+			csb.MinimumPoolSize = 0;
+			csb.MaximumPoolSize = 1;
+			int serverThread;
+
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = "SET @@session.wait_timeout=3";
+					await cmd.ExecuteNonQueryAsync();
+				}
+				serverThread = connection.ServerThread;
+			}
+
+			await Task.Delay(TimeSpan.FromSeconds(5));
+
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+				Assert.NotEqual(serverThread, connection.ServerThread);
+			}
 		}
 
 		[Fact]
