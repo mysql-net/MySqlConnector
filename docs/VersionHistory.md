@@ -12,6 +12,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.9.0
+
+* Implement `Treat Tiny As Boolean` connection string option: [#141](https://github.com/mysql-net/MySqlConnector/issues/141).
+
 ### 0.8.0
 
 * Implement `Keep Alive` connection string option: [#132](https://github.com/mysql-net/MySqlConnector/issues/132).
