@@ -12,6 +12,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.9.1
+
+* Fix `SocketException` when calling `OpenAsync`: [#150](https://github.com/mysql-net/MySqlConnector/issues/150).
+
 ### 0.9.0
 
 * Implement `Treat Tiny As Boolean` connection string option: [#141](https://github.com/mysql-net/MySqlConnector/issues/141).

@@ -1,5 +1,5 @@
 {
-	"version": "0.9.0",
+	"version": "0.9.1",
 	"title": "Async MySQL Connector",
 	"description": "A fully async MySQL ADO.NET provider for .NET and .NET Core",
 	"copyright": "Copyright 2016 Bradley Grainger",
@@ -9,7 +9,7 @@
 	"packOptions": {
 		"owners": [ "bgrainger" ],
 		"tags": [ "mysql", "async", "ado.net", "database", "netcore"  ],
-		"releaseNotes": "Implement TreatTinyAsBoolean connection string option. (GitHub issue #141)",
+		"releaseNotes": "Fix SocketException when calling OpenAsync. (GitHub issue #150)",
 		"licenseUrl": "https://opensource.org/licenses/MIT",
 		"projectUrl": "https://github.com/mysql-net/MySqlConnector",
 		"repository": {
