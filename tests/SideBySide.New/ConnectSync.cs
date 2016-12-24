@@ -97,6 +97,19 @@ namespace SideBySide
 			}
 		}
 
+		[Fact]
+		public void DataSource()
+		{
+			using (var connection = new MySqlConnection())
+			{
+				Assert.Equal("", connection.DataSource);
+			}
+			using (var connection = new MySqlConnection(m_database.Connection.ConnectionString))
+			{
+				Assert.NotNull(connection.DataSource);
+			}
+		}
+
 #if BASELINE
 		[Fact(Skip = "https://bugs.mysql.com/bug.php?id=81650")]
 #else
