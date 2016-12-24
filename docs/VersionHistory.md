@@ -12,6 +12,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.9.2
+
+* Fix MySqlConnection.DataSource with Unix Domain Socket: [#152](https://github.com/mysql-net/MySqlConnector/issues/152).
+
 ### 0.9.1
 
 * Fix `SocketException` when calling `OpenAsync`: [#150](https://github.com/mysql-net/MySqlConnector/issues/150).
