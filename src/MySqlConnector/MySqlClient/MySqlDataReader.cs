@@ -179,7 +179,7 @@ namespace MySql.Data.MySqlClient
 
 		public override int VisibleFieldCount => FieldCount;
 
-#if NET45
+#if !NETSTANDARD1_3
 		public override DataTable GetSchemaTable()
 		{
 			throw new NotSupportedException();

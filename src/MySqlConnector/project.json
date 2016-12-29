@@ -19,10 +19,16 @@
 	},
 	"authors": [ "Bradley Grainger", "Caleb Lloyd" ],
 	"frameworks": {
-		"net45": {
+		"net451": {
 			"frameworkAssemblies": {
-				"System.Data": "4.0.0.0",
-				"System.Transactions": "4.0.0.0"
+				"System.Data": {
+					"version": "4.0.0.0",
+					"type": "build"
+				},
+				"System.Transactions": {
+					"version": "4.0.0.0",
+					"type": "build"
+				}
 			},
 			"dependencies": {
 				"System.Buffers": "4.0.0",
@@ -31,8 +37,6 @@
 			}
 		},
 		"netstandard1.3": {
-			"frameworkAssemblies": {
-			},
 			"dependencies": {
 				"System.Buffers": "4.0.0",
 				"System.Collections.Concurrent": "4.0.12",
