@@ -12,6 +12,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.10.0
+
+* Change minimum supported .NET Framework version to .NET 4.5.1.  [#154](https://github.com/mysql-net/MySqlConnector/issues/154).
+
 ### 0.9.2
 
 * Fix MySqlConnection.DataSource with Unix Domain Socket: [#152](https://github.com/mysql-net/MySqlConnector/issues/152).
