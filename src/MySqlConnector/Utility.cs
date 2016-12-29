@@ -44,7 +44,7 @@ namespace MySql.Data
 		public static ArraySegment<T> Slice<T>(this ArraySegment<T> arraySegment, int index, int length) =>
 			new ArraySegment<T>(arraySegment.Array, arraySegment.Offset + index, length);
 
-#if NET45
+#if !NETSTANDARD1_3
 		public static bool TryGetBuffer(this MemoryStream memoryStream, out ArraySegment<byte> buffer)
 		{
 			try
