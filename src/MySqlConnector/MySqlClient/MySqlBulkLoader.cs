@@ -41,8 +41,8 @@ namespace MySql.Data.MySqlClient
         {
             this.Connection = connection;
             this.Local = true;
-            this.FieldTerminator = "\t";
-            this.LineTerminator = "\n";
+            this.FieldTerminator = defaultFieldTerminator;
+            this.LineTerminator = defaultLineTerminator;
             this.FieldQuotationCharacter = '\0';
             this.ConflictOption = MySqlBulkLoaderConflictOption.None;
             this.Columns = new List<string>();
@@ -98,17 +98,17 @@ namespace MySql.Data.MySqlClient
             }
 
             StringBuilder sqlCommandFragment = new StringBuilder(string.Empty);
-            if (this.FieldTerminator != "\t")
+            if (this.FieldTerminator != defaultFieldTerminator)
             {
-                sqlCommandFragment.AppendFormat("TERMINATED BY '{0}' ", this.FieldTerminator);
+                sqlCommandFragment.AppendFormat("TERMINATED BY \'{0}\' ", this.FieldTerminator);
             }
             if (this.FieldQuotationCharacter != 0)
             {
-                sqlCommandFragment.AppendFormat("{0} ENCLOSED BY '{1}' ", (this.FieldQuotationOptional ? "OPTIONALLY" : ""), this.FieldQuotationCharacter);
+                sqlCommandFragment.AppendFormat("{0} ENCLOSED BY \'{1}\' ", (this.FieldQuotationOptional ? "OPTIONALLY" : ""), this.FieldQuotationCharacter);
             }
-            if (this.EscapeCharacter != '\\' && this.EscapeCharacter != 0)
+            if (this.EscapeCharacter != defaultEscapeCharacter && this.EscapeCharacter != 0)
             {
-                sqlCommandFragment.AppendFormat("ESCAPED BY '{0}' ", this.EscapeCharacter);
+                sqlCommandFragment.AppendFormat("ESCAPED BY \'{0}\' ", this.EscapeCharacter);
             }
             if (sqlCommandFragment.Length > 0)
             {
@@ -118,11 +118,11 @@ namespace MySql.Data.MySqlClient
             sqlCommandFragment.Clear();
             if (this.LinePrefix != null && this.LinePrefix.Length > 0)
             {
-                sqlCommandFragment.AppendFormat("STARTING BY '{0}' ", this.LinePrefix);
+                sqlCommandFragment.AppendFormat("STARTING BY \'{0}\' ", this.LinePrefix);
             }
-            if (this.LineTerminator != "\n")
+            if (this.LineTerminator != defaultLineTerminator)
             {
-                sqlCommandFragment.AppendFormat("TERMINATED BY '{0}' ", this.LineTerminator);
+                sqlCommandFragment.AppendFormat("TERMINATED BY \'{0}\' ", this.LineTerminator);
             }
             if (sqlCommandFragment.Length > 0)
             {
@@ -160,15 +160,11 @@ namespace MySql.Data.MySqlClient
             return LoadAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
         }
 
-        public async Task<int> LoadAsync()
-        {
-            return await LoadAsync(IOBehavior.Asynchronous, CancellationToken.None);
-        }
+        public Task<int> LoadAsync() =>
+            LoadAsync(IOBehavior.Asynchronous, CancellationToken.None);
 
-        public async Task<int> LoadAsync(CancellationToken cancellationToken)
-        {
-            return await LoadAsync(IOBehavior.Asynchronous, cancellationToken);
-        }
+        public Task<int> LoadAsync(CancellationToken cancellationToken)=> 
+            LoadAsync(IOBehavior.Asynchronous, cancellationToken);
 
         internal async Task<int> LoadAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
         {
@@ -200,7 +196,7 @@ namespace MySql.Data.MySqlClient
                 {
                     CommandTimeout = this.Timeout
                 };
-                recordsAffected = await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken);
+                recordsAffected = await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
