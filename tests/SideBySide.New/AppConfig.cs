@@ -47,6 +47,8 @@ namespace SideBySide
 
         public static string MySqlBulkLoaderCsvFile => Config.GetValue<string>("Data:MySqlBulkLoaderCsvFile");
         public static string MySqlBulkLoaderLocalCsvFile => Config.GetValue<string>("Data:MySqlBulkLoaderLocalCsvFile");
+        public static string MySqlBulkLoaderTsvFile => Config.GetValue<string>("Data:MySqlBulkLoaderTsvFile");
+        public static string MySqlBulkLoaderLocalTsvFile => Config.GetValue<string>("Data:MySqlBulkLoaderLocalTsvFile");
         public static bool MySqlBulkLoaderRemoveTables => Config.GetValue<bool>("Data:MySqlBulkLoaderRemoveTables");
 
         public static MySqlConnectionStringBuilder CreateConnectionStringBuilder()
