@@ -8,15 +8,25 @@ using Dapper;
 
 namespace SideBySide.New
 {
+    [Collection("BulkLoaderCollection")]
     public class LoadDataInfileAsync : IClassFixture<DatabaseFixture>
     {
         public LoadDataInfileAsync(DatabaseFixture database)
         {
             m_database = database;
+            //xUnit runs tests in different classes in parallel, so use different table names for the different test classes
+            string testClient;
+#if BASELINE
+            testClient = "Baseline";
+#else
+            testClient = "New";
+#endif
+            m_testTable = "test.LoadDataInfileAsyncTest" + testClient;
+
             m_initializeTable = @"
                 create schema if not exists test; 
-                drop table if exists test.LoadDataInfileAsyncTest; 
-                CREATE TABLE test.LoadDataInfileAsyncTest
+                drop table if exists " + m_testTable + @"; 
+                CREATE TABLE " + m_testTable + @"
                 (
 	                one int primary key
                     , ignore_one int
@@ -26,19 +36,18 @@ namespace SideBySide.New
                     , four datetime
                     , five blob
                 );";
-            m_removeTable = "drop table if exists test.LoadDataInfileAsyncTest;";
-            m_loadDataInfileCommand = "LOAD DATA{0} INFILE '{1}' INTO TABLE test.LoadDataInfileAsyncTest FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (one, two, three, four, five) SET five = UNHEX(five);";
+            m_removeTable = "drop table if exists " + m_testTable + @";";
+            m_loadDataInfileCommand = "LOAD DATA{0} INFILE '{1}' INTO TABLE " + m_testTable + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (one, two, three, four, five) SET five = UNHEX(five);";
         }
 
         [Fact]
         public async void CommandLoadCsvFile()
         {
-            await tableSemaphore.WaitAsync();
             try
             {
-                m_database.Connection.Execute(m_initializeTable);
+				await InitializeTestAsync();
 
-                string insertInlineCommand = string.Format(m_loadDataInfileCommand, "", AppConfig.MySqlBulkLoaderCsvFile.Replace("\\", "\\\\"));
+				string insertInlineCommand = string.Format(m_loadDataInfileCommand, "", AppConfig.MySqlBulkLoaderCsvFile.Replace("\\", "\\\\"));
                 MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
                 if (m_database.Connection.State != ConnectionState.Open) await m_database.Connection.OpenAsync();
                 int rowCount = await command.ExecuteNonQueryAsync();
@@ -47,19 +56,17 @@ namespace SideBySide.New
             }
             finally
             {
-                if (AppConfig.MySqlBulkLoaderRemoveTables) m_database.Connection.Execute(m_removeTable);
-                tableSemaphore.Release();
-            }
-        }
+				await FinalizeTestAsync();
+			}
+		}
         [Fact]
         public async void CommandLoadLocalCsvFile()
         {
-            await tableSemaphore.WaitAsync();
             try
             {
-                m_database.Connection.Execute(m_initializeTable);
+				await InitializeTestAsync();
 
-                string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL", AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
+				string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL", AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
                 MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
                 if (m_database.Connection.State != ConnectionState.Open) await m_database.Connection.OpenAsync();
                 int rowCount = await command.ExecuteNonQueryAsync();
@@ -68,13 +75,31 @@ namespace SideBySide.New
             }
             finally
             {
-                if (AppConfig.MySqlBulkLoaderRemoveTables) m_database.Connection.Execute(m_removeTable);
-                tableSemaphore.Release();
+				await FinalizeTestAsync();
             }
         }
 
-        readonly SemaphoreSlim tableSemaphore = new SemaphoreSlim(1, 1); //Use a semaphore to limit access to the load table to one test at a time
-        readonly DatabaseFixture m_database;
+		private async Task InitializeTestAsync()
+		{
+			MySqlConnection.ClearAllPools();
+			using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				await connection.ExecuteAsync(m_initializeTable);
+			}
+		}
+		private async Task FinalizeTestAsync()
+		{
+			if (AppConfig.MySqlBulkLoaderRemoveTables)
+			{
+				using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
+				{
+					await connection.ExecuteAsync(m_removeTable);
+				}
+			}
+		}
+
+		readonly DatabaseFixture m_database;
+        readonly string m_testTable;
         readonly string m_initializeTable;
         readonly string m_removeTable;
         readonly string m_loadDataInfileCommand;
