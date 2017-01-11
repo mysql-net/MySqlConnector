@@ -67,6 +67,7 @@ These are the options that need to be used in order to configure a connection to
     <td>None</td>
     <td>This option has the following values:
       <ul>
+        <li><b>Preferred</b> - this is the default. Use SSL if the server supports it.</li>
         <li><b>None</b> - do not use SSL.</li>
         <li><b>Required</b> - Always use SSL. Deny connection if server does not support SSL.  Do not validate CA or hostname.</li>
         <li><b>VerifyCA</b> - Always use SSL. Validate the CA but tolerate hostname mismatch.</li>

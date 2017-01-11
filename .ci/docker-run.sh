@@ -22,9 +22,9 @@ for i in `seq 1 30`; do
 	if [ $? -eq 0 ]; then
 		docker exec -it mysql mysql -ussltest -ptest \
 			--ssl-mode=REQUIRED \
-			--ssl-ca=/etc/mysql/conf.d/ssl-ca.pem \
-			--ssl-cert=/etc/mysql/conf.d/ssl-client-cert.pem \
-			--ssl-key=/etc/mysql/conf.d/ssl-client-key.pem \
+			--ssl-ca=/etc/mysql/conf.d/certs/ssl-ca-cert.pem \
+			--ssl-cert=/etc/mysql/conf.d/certs/ssl-client-cert.pem \
+			--ssl-key=/etc/mysql/conf.d/certs/ssl-client-key.pem \
 			-e "SELECT 1"
 		if [ $? -ne 0 ]; then
 			>&2 echo "Problem with SSL"

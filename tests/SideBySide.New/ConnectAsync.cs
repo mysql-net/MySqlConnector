@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.IO;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using SideBySide.New;
@@ -111,6 +112,70 @@ namespace SideBySide
 			{
 				await connection.OpenAsync();
 				await Task.Delay(3000);
+			}
+		}
+
+		[SslRequiredConnectionFact]
+		public async Task ConnectSslPreferred()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			string requiredSslVersion;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				using (var cmd = connection.CreateCommand())
+				{
+					await connection.OpenAsync();
+					cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
+					requiredSslVersion = (string)await cmd.ExecuteScalarAsync();
+				}
+			}
+			Assert.False(string.IsNullOrWhiteSpace(requiredSslVersion));
+
+			csb.SslMode = MySqlSslMode.Preferred;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				using (var cmd = connection.CreateCommand())
+				{
+					await connection.OpenAsync();
+					cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
+					var preferredSslVersion = (string)await cmd.ExecuteScalarAsync();
+					Assert.Equal(requiredSslVersion, preferredSslVersion);
+				}
+			}
+		}
+
+		[SslRequiredConnectionFact]
+		public async Task ConnectSslClientCertificate()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.CertificateFile = Path.Combine(AppConfig.CertsPath, "ssl-client.pfx");
+			csb.CertificatePassword = "";
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				using (var cmd = connection.CreateCommand())
+				{
+					await connection.OpenAsync();
+					cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
+					var sslVersion = (string)await cmd.ExecuteScalarAsync();
+					Assert.False(string.IsNullOrWhiteSpace(sslVersion));
+				}
+			}
+		}
+
+		[SslRequiredConnectionFact]
+		public async Task ConnectSslBadClientCertificate()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.CertificateFile = Path.Combine(AppConfig.CertsPath, "non-ca-client.pfx");
+			csb.CertificatePassword = "";
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+#if BASELINE
+				var exType = typeof(IOException);
+#else
+				var exType = typeof(MySqlException);
+#endif
+				await Assert.ThrowsAsync(exType, async () => await connection.OpenAsync());
 			}
 		}
 

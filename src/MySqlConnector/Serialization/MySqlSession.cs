@@ -87,8 +87,13 @@ namespace MySql.Data.Serialization
 			if (cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) == 0)
 				cs = cs.WithUseCompression(false);
 
-			if (cs.SslMode != MySqlSslMode.None)
+			var serverSupportsSsl = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Ssl) != 0;
+			if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
+			{
+				if (!serverSupportsSsl)
+					throw new MySqlException("Server does not support SSL");
 				await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+			}
 
 			var response = HandshakeResponse41Packet.Create(initialHandshake, cs);
 			payload = new PayloadData(new ArraySegment<byte>(response));
@@ -313,16 +318,20 @@ namespace MySql.Data.Serialization
 
 		private async Task InitSslAsync(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			X509Certificate2 certificate;
-			try
+			X509CertificateCollection clientCertificates = null;
+			if (cs.CertificateFile != null)
 			{
-				certificate = new X509Certificate2(cs.CertificateFile, cs.CertificatePassword);
-			}
-			catch (CryptographicException ex)
-			{
-				if (!File.Exists(cs.CertificateFile))
-					throw new MySqlException("Cannot find SSL Certificate File", ex);
-				throw new MySqlException("Either the SSL Certificate Password is incorrect or the SSL Certificate File is invalid", ex);
+				try
+				{
+					var certificate = new X509Certificate2(cs.CertificateFile, cs.CertificatePassword);
+					clientCertificates = new X509CertificateCollection {certificate};
+				}
+				catch (CryptographicException ex)
+				{
+					if (!File.Exists(cs.CertificateFile))
+						throw new MySqlException("Cannot find SSL Certificate File", ex);
+					throw new MySqlException("Either the SSL Certificate Password is incorrect or the SSL Certificate File is invalid", ex);
+				}
 			}
 
 			Func<object, string, X509CertificateCollection, X509Certificate, string[], X509Certificate> localCertificateCb =
@@ -338,14 +347,18 @@ namespace MySql.Data.Serialization
 						case SslPolicyErrors.RemoteCertificateNameMismatch:
 							return cs.SslMode != MySqlSslMode.VerifyFull;
 						default:
-							return cs.SslMode == MySqlSslMode.Required;
+							return cs.SslMode == MySqlSslMode.Preferred || cs.SslMode == MySqlSslMode.Required;
 					}
 				};
 
-			var sslStream = new SslStream(m_networkStream, false,
-				new RemoteCertificateValidationCallback(remoteCertificateCb),
-				new LocalCertificateSelectionCallback(localCertificateCb));
-			var clientCertificates = new X509CertificateCollection { certificate };
+			SslStream sslStream;
+			if (clientCertificates == null)
+				sslStream = new SslStream(m_networkStream, false,
+					new RemoteCertificateValidationCallback(remoteCertificateCb));
+			else
+				sslStream = new SslStream(m_networkStream, false,
+					new RemoteCertificateValidationCallback(remoteCertificateCb),
+					new LocalCertificateSelectionCallback(localCertificateCb));
 
 			// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/mysql-net/MySqlConnector/pull/101
 			var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
@@ -366,7 +379,7 @@ namespace MySql.Data.Serialization
 				else
 				{
 #if NETSTANDARD1_3
-						await sslStream.AuthenticateAsClientAsync(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+					await sslStream.AuthenticateAsClientAsync(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
 #else
 					sslStream.AuthenticateAsClient(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation);
 #endif
@@ -374,12 +387,16 @@ namespace MySql.Data.Serialization
 				var sslByteHandler = new StreamByteHandler(sslStream);
 				m_payloadHandler.ByteHandler = sslByteHandler;
 			}
-			catch (AuthenticationException ex)
+			catch (Exception ex)
 			{
 				ShutdownSocket();
 				m_hostname = "";
 				m_state = State.Failed;
-				throw new MySqlException("SSL Authentication Error", ex);
+				if (ex is AuthenticationException)
+					throw new MySqlException("SSL Authentication Error", ex);
+				if (ex is IOException && clientCertificates != null)
+					throw new MySqlException("MySQL Server rejected client certificate", ex);
+				throw;
 			}
 		}
 

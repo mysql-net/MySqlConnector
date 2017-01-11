@@ -18,11 +18,17 @@ namespace SideBySide
 				["Data:SupportsJson"] = "false",
 			};
 
+		public static string BasePath = File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config.json"))
+										|| new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SideBySide.New"
+											? Directory.GetCurrentDirectory()
+											: Path.Combine(Directory.GetCurrentDirectory(), "tests", "SideBySide.New");
+
+		public static string CertsPath = Path.GetFullPath(Path.Combine(BasePath, "..", "..", ".ci", "server", "certs"));
+
 		private static int _configFirst;
 
 		private static IConfiguration ConfigBuilder { get; } = new ConfigurationBuilder()
-			.SetBasePath(File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config.json")) || new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SideBySide.New"
-				? Directory.GetCurrentDirectory() : Path.Combine(Directory.GetCurrentDirectory(), "tests", "SideBySide.New"))
+			.SetBasePath(BasePath)
 			.AddInMemoryCollection(DefaultConfig)
 			.AddJsonFile("config.json")
 			.Build();
