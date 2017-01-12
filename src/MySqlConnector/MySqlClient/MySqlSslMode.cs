@@ -6,9 +6,14 @@
 	public enum MySqlSslMode
 	{
 		/// <summary>
-		/// Do not use SSL. This is the default.
+		/// Do not use SSL.
 		/// </summary>
 		None,
+
+		/// <summary>
+		/// Use SSL if the server supports it.
+		/// </summary>
+		Preferred,
 
 		/// <summary>
 		/// Always use SSL. Deny connection if server does not support SSL.

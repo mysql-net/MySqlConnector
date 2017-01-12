@@ -1,4 +1,5 @@
 ﻿using System;
+using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace SideBySide.New
@@ -38,6 +39,16 @@ namespace SideBySide.New
 			var csb = AppConfig.CreateConnectionStringBuilder();
 			if(csb.Server.StartsWith("/", StringComparison.Ordinal) || csb.Server.StartsWith("./", StringComparison.Ordinal))
 				Skip = "Not a TCP Connection";
+		}
+	}
+
+	public class SslRequiredConnectionFactAttribute : FactAttribute
+	{
+		public SslRequiredConnectionFactAttribute()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			if(csb.SslMode == MySqlSslMode.None || csb.SslMode == MySqlSslMode.Preferred)
+				Skip = "SSL not explicitly required";
 		}
 	}
 }

@@ -34,11 +34,7 @@ namespace MySql.Data.Tests
 			Assert.Equal(true, csb.Pooling);
 			Assert.Equal(3306u, csb.Port);
 			Assert.Equal("", csb.Server);
-#if BASELINE
-			Assert.Equal(MySqlSslMode.Prefered, csb.SslMode);
-#else
-			Assert.Equal(MySqlSslMode.None, csb.SslMode);
-#endif
+			Assert.Equal(MySqlSslMode.Preferred, csb.SslMode);
 			Assert.Equal(true, csb.TreatTinyAsBoolean);
 			Assert.Equal(false, csb.UseCompression);
 			Assert.Equal("", csb.UserID);
@@ -109,9 +105,9 @@ namespace MySql.Data.Tests
 
 #if !BASELINE
 		[Fact]
-		public void SslModePreferredInvalidOperation()
+		public void EnumInvalidOperation()
 		{
-			var csb = new MySqlConnectionStringBuilder("ssl mode=preferred;");
+			var csb = new MySqlConnectionStringBuilder("ssl mode=invalid;");
 			Assert.Throws<InvalidOperationException>(() => csb.SslMode);
 		}
 #endif

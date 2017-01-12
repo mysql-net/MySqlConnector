@@ -1,6 +1,6 @@
 {
     "Data": {
-      "ConnectionString": "server=./.ci/mysqld/mysqld.sock;user id=mysqltest;password='test;key=\"val';database=mysqltest;Use Affected Rows=true",
+      "ConnectionString": "server=./.ci/mysqld/mysqld.sock;user id=mysqltest;password='test;key=\"val';database=mysqltest;ssl mode=none;Use Affected Rows=true",
       "PasswordlessUser": "no_password",
       "SupportsCachedProcedures": true,
       "SupportsJson": true

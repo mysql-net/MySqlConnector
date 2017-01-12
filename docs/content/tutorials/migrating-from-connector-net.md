@@ -34,12 +34,6 @@ MySqlConnector has some different default connection string options:
     <td>Default is <code>false</code></td>
     <td>This also affects the behavior of the <code>ROW_COUNT</code> function.  <code>UseAffectedRows=true</code> is the default in most other languages (C++, PHP, others)</td>
   </tr>
-  <tr>
-    <td><code>SslMode</code></td>
-    <td><code>SslMode=Preferred</code> is not supported</td>
-    <td></td>
-    <td><code>SslMode=Preferred</code> could mask a server misconfiguration.  Use <code>SslMode=required</code> instead</td>
-  </tr>
 </table>
 
 Some command line options that are supported in Connector/NET are not supported in MySqlConnector.  For a full list of options that are

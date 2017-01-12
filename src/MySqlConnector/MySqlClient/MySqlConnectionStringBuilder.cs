@@ -292,7 +292,7 @@ namespace MySql.Data.MySqlClient
 			// SSL/TLS Options
 			AddOption(SslMode = new MySqlConnectionStringOption<MySqlSslMode>(
 				keys: new[] { "SSL Mode", "SslMode" },
-				defaultValue: MySqlSslMode.None));
+				defaultValue: MySqlSslMode.Preferred));
 
 			AddOption(CertificateFile = new MySqlConnectionStringOption<string>(
 				keys: new[] { "CertificateFile", "Certificate File" },
