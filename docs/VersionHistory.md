@@ -12,9 +12,13 @@ of supported options.
 
 ## Release Notes
 
+### 0.11.0
+
+* Implement the `SslMode=Preferred` connection string option and make it the default: [#158](https://github.com/mysql-net/MySqlConnector/pull/158).
+
 ### 0.10.0
 
-* Change minimum supported .NET Framework version to .NET 4.5.1.  [#154](https://github.com/mysql-net/MySqlConnector/issues/154).
+* Change minimum supported .NET Framework version to .NET 4.5.1: [#154](https://github.com/mysql-net/MySqlConnector/issues/154).
 
 ### 0.9.2
 
