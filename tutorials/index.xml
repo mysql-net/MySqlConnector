@@ -209,12 +209,6 @@ pool size to 500.&lt;/p&gt;
     &lt;td&gt;Default is &lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;This also affects the behavior of the &lt;code&gt;ROW_COUNT&lt;/code&gt; function.  &lt;code&gt;UseAffectedRows=true&lt;/code&gt; is the default in most other languages (C++, PHP, others)&lt;/td&gt;
   &lt;/tr&gt;
-  &lt;tr&gt;
-    &lt;td&gt;&lt;code&gt;SslMode&lt;/code&gt;&lt;/td&gt;
-    &lt;td&gt;&lt;code&gt;SslMode=Preferred&lt;/code&gt; is not supported&lt;/td&gt;
-    &lt;td&gt;&lt;/td&gt;
-    &lt;td&gt;&lt;code&gt;SslMode=Preferred&lt;/code&gt; could mask a server misconfiguration.  Use &lt;code&gt;SslMode=required&lt;/code&gt; instead&lt;/td&gt;
-  &lt;/tr&gt;
 &lt;/table&gt;
 
 &lt;p&gt;Some command line options that are supported in Connector/NET are not supported in MySqlConnector.  For a full list of options that are
