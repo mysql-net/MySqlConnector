@@ -12,6 +12,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.11.1
+
+* Handle `IOException` in `MySqlSession.DisposeAsync`: [#159](https://github.com/mysql-net/MySqlConnector/issues/159).
+
 ### 0.11.0
 
 * Implement the `SslMode=Preferred` connection string option and make it the default: [#158](https://github.com/mysql-net/MySqlConnector/pull/158).

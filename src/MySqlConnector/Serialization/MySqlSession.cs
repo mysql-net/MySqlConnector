@@ -40,15 +40,18 @@ namespace MySql.Data.Serialization
 		{
 			if (m_payloadHandler != null)
 			{
+				// attempt to gracefully close the connection, ignoring any errors (it may have been closed already by the server, etc.)
 				try
 				{
 					m_payloadHandler.StartNewConversation();
 					await m_payloadHandler.WritePayloadAsync(QuitPayload.Create(), ioBehavior).ConfigureAwait(false);
 					await m_payloadHandler.ReadPayloadAsync(ProtocolErrorBehavior.Ignore, ioBehavior).ConfigureAwait(false);
 				}
+				catch (IOException)
+				{
+				}
 				catch (SocketException)
 				{
-					// socket may have been closed during shutdown; ignore
 				}
 			}
 			ShutdownSocket();
