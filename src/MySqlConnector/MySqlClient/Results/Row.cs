@@ -169,6 +169,8 @@ namespace MySql.Data.MySqlClient.Results
 				return checked((short) (long) value);
 			if (value is ulong)
 				return checked((short) (ulong) value);
+			if (value is decimal)
+				return (short) (decimal) value;
 			return (short) value;
 		}
 
@@ -192,6 +194,8 @@ namespace MySql.Data.MySqlClient.Results
 				return checked((int) (long) value);
 			if (value is ulong)
 				return checked((int) (ulong) value);
+			if (value is decimal)
+				return (int) (decimal) value;
 			return (int) value;
 		}
 
@@ -215,6 +219,8 @@ namespace MySql.Data.MySqlClient.Results
 				return (uint) value;
 			if (value is ulong)
 				return checked((long) (ulong) value);
+			if (value is decimal)
+				return (long) (decimal) value;
 			return (long) value;
 		}
 
