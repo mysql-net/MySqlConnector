@@ -8,7 +8,7 @@ may leave the `MySqlConnection` in an unusable state.
 * Many `MySql.Data` connection string settings are not supported by this library. See
 [Connection Options](https://mysql-net.github.io/MySqlConnector/connection-options/) for a list
 of supported options.
-* Only the "`mysql_native_password`" authentication plugin is supported.
+* Only the "`mysql_native_password`" and "`mysql_old_password`" authentication plugins are supported.
 
 ## Release Notes
 
