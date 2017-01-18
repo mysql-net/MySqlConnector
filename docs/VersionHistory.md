@@ -12,6 +12,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.11.2
+
+* Fix InvalidCastException when using aggregate functions: [#54](https://github.com/mysql-net/MySqlConnector/issues/54).
+
 ### 0.11.1
 
 * Handle `IOException` in `MySqlSession.DisposeAsync`: [#159](https://github.com/mysql-net/MySqlConnector/issues/159).
