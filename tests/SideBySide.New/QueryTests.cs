@@ -309,7 +309,6 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			Assert.Null(rows[2].IsBold);
 		}
 
-
 		[Fact]
 		public async Task GetEnumerator()
 		{
@@ -371,6 +370,72 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			{
 				cmd.CommandText = "select\tcount(*)\n\t\tfrom\tquery_tabs;";
 				Assert.Equal(1L, (long) cmd.ExecuteScalar());
+			}
+		}
+
+		[Fact]
+		public void SumBytes()
+		{
+			m_database.Connection.Execute(@"drop table if exists sum_bytes;
+			create table sum_bytes(value tinyint unsigned not null);
+			insert into sum_bytes(value) values(0), (1), (2), (254), (255);");
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select sum(value) from sum_bytes";
+				Assert.Equal(512m, cmd.ExecuteScalar());
+
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(512m, reader.GetValue(0));
+					Assert.Equal(512, reader.GetInt32(0));
+				}
+			}
+		}
+
+		[Fact]
+		public void SumShorts()
+		{
+			m_database.Connection.Execute(@"drop table if exists sum_shorts;
+			create table sum_shorts(value smallint unsigned not null);
+			insert into sum_shorts(value) values(0), (1), (2), (32766), (32767);");
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select sum(value) from sum_shorts";
+				Assert.Equal(65536m, cmd.ExecuteScalar());
+
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(65536m, reader.GetValue(0));
+					Assert.Throws<OverflowException>(() => reader.GetInt16(0));
+					Assert.Equal(65536, reader.GetInt32(0));
+					Assert.Equal(65536L, reader.GetInt64(0));
+				}
+			}
+		}
+
+		[Fact]
+		public void SumInts()
+		{
+			m_database.Connection.Execute(@"drop table if exists sum_ints;
+			create table sum_ints(value int unsigned not null);
+			insert into sum_ints(value) values(0), (1), (2), (2147483646), (2147483647);");
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select sum(value) from sum_ints";
+				Assert.Equal(4294967296m, cmd.ExecuteScalar());
+
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(4294967296m, reader.GetValue(0));
+					Assert.Throws<OverflowException>(() => reader.GetInt32(0));
+					Assert.Equal(4294967296L, reader.GetInt64(0));
+				}
 			}
 		}
 
