@@ -17,7 +17,7 @@ namespace MySql.Data.Protocol.Serialization
 		public ValueTask<ArraySegment<byte>> ReadBytesAsync(int count, IOBehavior ioBehavior)
 		{
 			var buffer = count < m_buffer.Length ? m_buffer : new byte[count];
-			if (ioBehavior == IOBehavior.Asynchronous)
+			if (ioBehavior == IOBehavior.Asynchronous && m_socket.Available < count)
 			{
 				return new ValueTask<ArraySegment<byte>>(DoReadBytesAsync(buffer, 0, count));
 			}
