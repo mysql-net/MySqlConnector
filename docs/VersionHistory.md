@@ -12,9 +12,13 @@ of supported options.
 
 ## Release Notes
 
-### 0.11.4
+### 0.11.5
 
 * Further improve async and sync performance: [#164](https://github.com/mysql-net/MySqlConnector/issues/164).
+
+### 0.11.4
+
+* No changes in this release.
 
 ### 0.11.3
 
