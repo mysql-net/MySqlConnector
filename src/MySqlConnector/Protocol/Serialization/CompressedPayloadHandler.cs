@@ -14,6 +14,7 @@ namespace MySql.Data.Protocol.Serialization
 			m_uncompressedStreamByteHandler = new StreamByteHandler(m_uncompressedStream);
 			m_byteHandler = byteHandler;
 			m_bufferedByteReader = new BufferedByteReader();
+			m_compressedBufferedByteReader = new BufferedByteReader();
 		}
 
 		public void StartNewConversation()
@@ -53,26 +54,26 @@ namespace MySql.Data.Protocol.Serialization
 			});
 		}
 
-		private ValueTask<ArraySegment<byte>> ReadBytesAsync(int count, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+		private ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
 			// satisfy the read from cache if possible
 			if (m_remainingData.Count > 0)
 			{
-				int bytesToRead = Math.Min(m_remainingData.Count, count);
-				var result = new ArraySegment<byte>(m_remainingData.Array, m_remainingData.Offset, bytesToRead);
+				var bytesToRead = Math.Min(m_remainingData.Count, buffer.Count);
+				Buffer.BlockCopy(m_remainingData.Array, m_remainingData.Offset, buffer.Array, buffer.Offset, bytesToRead);
 				m_remainingData = m_remainingData.Slice(bytesToRead);
-				return new ValueTask<ArraySegment<byte>>(result);
+				return new ValueTask<int>(bytesToRead);
 			}
 
 			// read the compressed header (seven bytes)
-			return m_bufferedByteReader.ReadBytesAsync(m_byteHandler, 7, ioBehavior)
+			return m_compressedBufferedByteReader.ReadBytesAsync(m_byteHandler, 7, ioBehavior)
 				.ContinueWith(headerReadBytes =>
 				{
 					if (headerReadBytes.Count < 7)
 					{
 						return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ?
-							default(ValueTask<ArraySegment<byte>>) :
-							ValueTaskExtensions.FromException<ArraySegment<byte>>(new EndOfStreamException("Wanted to read 7 bytes but only read {0} when reading compressed packet header".FormatInvariant(headerReadBytes.Count)));
+							default(ValueTask<int>) :
+							ValueTaskExtensions.FromException<int>(new EndOfStreamException("Wanted to read 7 bytes but only read {0} when reading compressed packet header".FormatInvariant(headerReadBytes.Count)));
 					}
 
 					var payloadLength = (int) SerializationUtility.ReadUInt32(headerReadBytes.Array, headerReadBytes.Offset, 3);
@@ -84,10 +85,10 @@ namespace MySql.Data.Protocol.Serialization
 					if (packetSequenceNumber != expectedSequenceNumber)
 					{
 						if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
-							return default(ValueTask<ArraySegment<byte>>);
+							return default(ValueTask<int>);
 
 						var exception = new InvalidOperationException("Packet received out-of-order. Expected {0}; got {1}.".FormatInvariant(expectedSequenceNumber, packetSequenceNumber));
-						return ValueTaskExtensions.FromException<ArraySegment<byte>>(exception);
+						return ValueTaskExtensions.FromException<int>(exception);
 					}
 
 					// MySQL protocol resets the uncompressed sequence number back to the sequence number of this compressed packet.
@@ -100,14 +101,14 @@ namespace MySql.Data.Protocol.Serialization
 					// except this doesn't happen when uncompressed packets need to be broken up across multiple compressed packets
 					m_isContinuationPacket = payloadLength == ProtocolUtility.MaxPacketSize || uncompressedLength == ProtocolUtility.MaxPacketSize;
 
-					return m_bufferedByteReader.ReadBytesAsync(m_byteHandler, payloadLength, ioBehavior)
+					return m_compressedBufferedByteReader.ReadBytesAsync(m_byteHandler, payloadLength, ioBehavior)
 						.ContinueWith(payloadReadBytes =>
 						{
 							if (payloadReadBytes.Count < payloadLength)
 							{
 								return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ?
-									default(ValueTask<ArraySegment<byte>>) :
-									ValueTaskExtensions.FromException<ArraySegment<byte>>(new EndOfStreamException("Wanted to read {0} bytes but only read {1} when reading compressed payload".FormatInvariant(payloadLength, payloadReadBytes.Count)));
+									default(ValueTask<int>) :
+									ValueTaskExtensions.FromException<int>(new EndOfStreamException("Wanted to read {0} bytes but only read {1} when reading compressed payload".FormatInvariant(payloadLength, payloadReadBytes.Count)));
 							}
 
 							if (uncompressedLength == 0)
@@ -126,8 +127,8 @@ namespace MySql.Data.Protocol.Serialization
 									// FLG & 0x40: has preset dictionary (not supported)
 									// CMF*256+FLG is a multiple of 31: header checksum
 									return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ?
-										default(ValueTask<ArraySegment<byte>>) :
-										ValueTaskExtensions.FromException<ArraySegment<byte>>(new NotSupportedException("Unsupported zlib header: {0:X2}{1:X2}".FormatInvariant(cmf, flg)));
+										default(ValueTask<int>) :
+										ValueTaskExtensions.FromException<int>(new NotSupportedException("Unsupported zlib header: {0:X2}{1:X2}".FormatInvariant(cmf, flg)));
 								}
 
 								// zlib format (https://www.ietf.org/rfc/rfc1950.txt) is: [two header bytes] [deflate-compressed data] [four-byte checksum]
@@ -144,20 +145,22 @@ namespace MySql.Data.Protocol.Serialization
 									var checksum = ComputeAdler32Checksum(uncompressedData, 0, bytesRead);
 									int adlerStartOffset = payloadReadBytes.Offset + payloadReadBytes.Count - 4;
 									if (payloadReadBytes.Array[adlerStartOffset + 0] != ((checksum >> 24) & 0xFF) ||
-										payloadReadBytes.Array[adlerStartOffset + 1] != ((checksum >> 16) & 0xFF) ||
-										payloadReadBytes.Array[adlerStartOffset + 2] != ((checksum >> 8) & 0xFF) ||
-										payloadReadBytes.Array[adlerStartOffset + 3] != (checksum & 0xFF))
+									    payloadReadBytes.Array[adlerStartOffset + 1] != ((checksum >> 16) & 0xFF) ||
+									    payloadReadBytes.Array[adlerStartOffset + 2] != ((checksum >> 8) & 0xFF) ||
+									    payloadReadBytes.Array[adlerStartOffset + 3] != (checksum & 0xFF))
 									{
 										return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ?
-											default(ValueTask<ArraySegment<byte>>) :
-											ValueTaskExtensions.FromException<ArraySegment<byte>>(new NotSupportedException("Invalid Adler-32 checksum of uncompressed data."));
+											default(ValueTask<int>) :
+											ValueTaskExtensions.FromException<int>(new NotSupportedException("Invalid Adler-32 checksum of uncompressed data."));
 									}
 								}
 							}
 
-							var result = m_remainingData.Slice(0, count);
-							m_remainingData = m_remainingData.Slice(count);
-							return new ValueTask<ArraySegment<byte>>(result);
+							var bytesToRead = Math.Min(m_remainingData.Count, buffer.Count);
+							Buffer.BlockCopy(m_remainingData.Array, m_remainingData.Offset, buffer.Array, buffer.Offset, bytesToRead);
+							m_remainingData = m_remainingData.Slice(bytesToRead);
+							return new ValueTask<int>(bytesToRead);
+
 						});
 				});
 		}
@@ -237,8 +240,8 @@ namespace MySql.Data.Protocol.Serialization
 				m_protocolErrorBehavior = protocolErrorBehavior;
 			}
 
-			public ValueTask<ArraySegment<byte>> ReadBytesAsync(int count, IOBehavior ioBehavior) =>
-				m_compressedPayloadHandler.ReadBytesAsync(count, m_protocolErrorBehavior, ioBehavior);
+			public ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, IOBehavior ioBehavior) =>
+				m_compressedPayloadHandler.ReadBytesAsync(buffer, m_protocolErrorBehavior, ioBehavior);
 
 			public ValueTask<int> WriteBytesAsync(ArraySegment<byte> data, IOBehavior ioBehavior)
 			{
@@ -253,6 +256,7 @@ namespace MySql.Data.Protocol.Serialization
 		readonly IByteHandler m_uncompressedStreamByteHandler;
 		readonly IByteHandler m_byteHandler;
 		readonly BufferedByteReader m_bufferedByteReader;
+		readonly BufferedByteReader m_compressedBufferedByteReader;
 		int m_compressedSequenceNumber;
 		int m_uncompressedSequenceNumber;
 		ArraySegment<byte> m_remainingData;
