@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MySql.Data
@@ -96,5 +97,18 @@ namespace MySql.Data
 				}
 			}
 		}
-	}
+
+        public static bool IsWindows()
+        {
+            try
+            {
+                // OSPlatform.Windows is not supported on AWS Lambda
+                return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            }
+            catch (PlatformNotSupportedException)
+            {
+                return false;
+            }
+        }
+    }
 }

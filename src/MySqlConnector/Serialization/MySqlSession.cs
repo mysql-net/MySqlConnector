@@ -365,7 +365,7 @@ namespace MySql.Data.Serialization
 
 			// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/mysql-net/MySqlConnector/pull/101
 			var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
-			if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+			if (!Utility.IsWindows())
 				sslProtocols |= SslProtocols.Tls12;
 
 			var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
