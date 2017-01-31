@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
 using MySql.Data.MySqlClient;
 
 namespace MySql.Data.Serialization
