@@ -12,6 +12,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.11.6
+
+* Fix `PlatformNotSupportedException` on AWS Lambda: [#170](https://github.com/mysql-net/MySqlConnector/issues/170).
+
 ### 0.11.5
 
 * Further improve async and sync performance: [#164](https://github.com/mysql-net/MySqlConnector/issues/164).
