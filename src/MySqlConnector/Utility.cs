@@ -98,17 +98,17 @@ namespace MySql.Data
 			}
 		}
 
-        public static bool IsWindows()
-        {
-            try
-            {
-                // OSPlatform.Windows is not supported on AWS Lambda
-                return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            }
-            catch (PlatformNotSupportedException)
-            {
-                return false;
-            }
-        }
-    }
+		public static bool IsWindows()
+		{
+			try
+			{
+				// OSPlatform.Windows is not supported on AWS Lambda
+				return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+			}
+			catch (PlatformNotSupportedException)
+			{
+				return false;
+			}
+		}
+	}
 }
