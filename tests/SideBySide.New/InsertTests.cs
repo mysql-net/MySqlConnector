@@ -67,7 +67,8 @@ create table insert_time(value TIME({precision}));");
 		[Fact(Skip = "https://bugs.mysql.com/bug.php?id=73788")]
 #else
 		[Fact]
-#endif		public void InsertDateTimeOffset()
+#endif		
+		public void InsertDateTimeOffset()
 		{
 			m_database.Connection.Execute(@"drop table if exists insert_datetimeoffset;
 create table insert_datetimeoffset(rowid integer not null primary key auto_increment, datetimeoffset1 datetime null);");
