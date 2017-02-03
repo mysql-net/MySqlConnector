@@ -345,10 +345,8 @@ namespace MySql.Data.MySqlClient.Results
 
 				case ColumnType.Date:
 				case ColumnType.DateTime:
-					return ParseDateTime(data, DateTimeKind.Unspecified);
-
 				case ColumnType.Timestamp:
-					return ParseDateTime(data, DateTimeKind.Utc);
+					return ParseDateTime(data);
 
 				case ColumnType.Time:
 					return ParseTimeSpan(data);
@@ -371,7 +369,7 @@ namespace MySql.Data.MySqlClient.Results
 			}
 		}
 
-		private DateTime ParseDateTime(ArraySegment<byte> value, DateTimeKind kind)
+		private DateTime ParseDateTime(ArraySegment<byte> value)
 		{
 			var parts = Encoding.UTF8.GetString(value).Split('-', ' ', ':', '.');
 
@@ -387,16 +385,16 @@ namespace MySql.Data.MySqlClient.Results
 			}
 
 			if (parts.Length == 3)
-				return new DateTime(year, month, day, 0, 0, 0, kind);
+				return new DateTime(year, month, day);
 
 			var hour = int.Parse(parts[3], CultureInfo.InvariantCulture);
 			var minute = int.Parse(parts[4], CultureInfo.InvariantCulture);
 			var second = int.Parse(parts[5], CultureInfo.InvariantCulture);
 			if (parts.Length == 6)
-				return new DateTime(year, month, day, hour, minute, second, kind);
+				return new DateTime(year, month, day, hour, minute, second);
 
 			var microseconds = int.Parse(parts[6] + new string('0', 6 - parts[6].Length), CultureInfo.InvariantCulture);
-			return new DateTime(year, month, day, hour, minute, second, microseconds / 1000, kind).AddTicks(microseconds % 1000 * 10);
+			return new DateTime(year, month, day, hour, minute, second, microseconds / 1000).AddTicks(microseconds % 1000 * 10);
 		}
 
 		private static TimeSpan ParseTimeSpan(ArraySegment<byte> value)

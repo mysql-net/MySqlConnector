@@ -94,9 +94,11 @@ create table insert_datetimeoffset(rowid integer not null primary key auto_incre
 				m_database.Connection.Close();
 			}
 
-			var results = m_database.Connection.Query<DateTimeOffsetValues>(@"select datetimeoffset1 from insert_datetimeoffset order by rowid;").ToList();
-			Assert.Equal(1, results.Count);
-			Assert.Equal(value.datetimeoffset1, results[0].datetimeoffset1);
+			var datetime = m_database.Connection.ExecuteScalar<DateTime>(@"select datetimeoffset1 from insert_datetimeoffset order by rowid;");
+
+			DateTime.SpecifyKind(datetime, DateTimeKind.Utc);
+
+			Assert.Equal(value.datetimeoffset1.Value.UtcDateTime, datetime);
 		}
 
 		[Fact]
