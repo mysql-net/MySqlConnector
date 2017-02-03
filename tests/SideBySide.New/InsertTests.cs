@@ -71,7 +71,7 @@ create table insert_time(value TIME({precision}));");
 		public void InsertDateTimeOffset()
 		{
 			m_database.Connection.Execute(@"drop table if exists insert_datetimeoffset;
-create table insert_datetimeoffset(rowid integer not null primary key auto_increment, datetimeoffset1 timestamp null);");
+create table insert_datetimeoffset(rowid integer not null primary key auto_increment, datetimeoffset1 datetime null);");
 			var value = new DateTimeOffsetValues { datetimeoffset1 = new DateTimeOffset(2017, 1, 2, 3, 4, 5, TimeSpan.FromMinutes(678)) };
 
 			m_database.Connection.Open();
