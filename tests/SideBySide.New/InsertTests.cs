@@ -67,8 +67,8 @@ create table insert_time(value TIME({precision}));");
 		public void InsertDateTimeOffset()
 		{
 			m_database.Connection.Execute(@"drop table if exists insert_datetimeoffset;
-create table insert_datetimeoffset(rowid integer not null primary key auto_increment, datetimeoffset1 datetime(6) null);");
-			var value = new DateTimeOffsetValues { datetimeoffset1 = new DateTime(2017, 1, 2, 3, 4, 5, 6) };
+create table insert_datetimeoffset(rowid integer not null primary key auto_increment, datetimeoffset1 datetime null);");
+			var value = new DateTimeOffsetValues { datetimeoffset1 = new DateTime(2017, 1, 2, 3, 4, 5) };
 
 			m_database.Connection.Open();
 			try
