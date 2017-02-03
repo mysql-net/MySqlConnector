@@ -112,9 +112,14 @@ namespace MySql.Data.MySqlClient
 			{
 				writer.WriteUtf8("{0:R}".FormatInvariant(Value));
 			}
-			else if (Value is DateTime || Value is DateTimeOffset)
+			else if (Value is DateTime)
 			{
 				writer.WriteUtf8("timestamp '{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}'".FormatInvariant(Value));
+			}
+			else if (Value is DateTimeOffset)
+			{
+				// store as UTC in a DateTime column, as it will be read as such when deserialized
+				writer.WriteUtf8("timestamp '{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}'".FormatInvariant(((DateTimeOffset)Value).UtcDateTime));
 			}
 			else if (Value is TimeSpan)
 			{
