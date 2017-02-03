@@ -112,9 +112,9 @@ namespace MySql.Data.MySqlClient
 			{
 				writer.WriteUtf8("{0:R}".FormatInvariant(Value));
 			}
-			else if (Value is DateTime)
+			else if (Value is DateTime || Value is DateTimeOffset)
 			{
-				writer.WriteUtf8("timestamp '{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}'".FormatInvariant((DateTime) Value));
+				writer.WriteUtf8("timestamp '{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}'".FormatInvariant(Value));
 			}
 			else if (Value is TimeSpan)
 			{

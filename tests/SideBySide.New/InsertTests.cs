@@ -3,6 +3,7 @@ using System.Linq;
 using MySql.Data.MySqlClient;
 using Dapper;
 using Xunit;
+using System.Data;
 
 namespace SideBySide.New
 {
@@ -61,6 +62,39 @@ create table insert_time(value TIME({precision}));");
 			}
 		}
 
+
+		[Fact]
+		public void InsertDateTimeOffset()
+		{
+			m_database.Connection.Execute(@"drop table if exists insert_datetimeoffset;
+create table insert_datetimeoffset(rowid integer not null primary key auto_increment, datetimeoffset1 datetime(6) null);");
+			var value = new DateTimeOffsetValues { datetimeoffset1 = new DateTime(2017, 1, 2, 3, 4, 5, 6) };
+
+			m_database.Connection.Open();
+			try
+			{
+				using (var cmd = m_database.Connection.CreateCommand())
+				{
+					cmd.CommandText = @"insert into insert_datetimeoffset(datetimeoffset1) values(@datetimeoffset1);";
+					cmd.Parameters.Add(new MySqlParameter
+					{
+						ParameterName = "@datetimeoffset1",
+						DbType = DbType.DateTimeOffset,
+						Value = value.datetimeoffset1
+					});
+					cmd.ExecuteNonQuery();
+				}
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+
+			var results = m_database.Connection.Query<DateTimeOffsetValues>(@"select datetimeoffset1 from insert_datetimeoffset order by rowid;").ToList();
+			Assert.Equal(1, results.Count);
+			Assert.Equal(value.datetimeoffset1, results[0].datetimeoffset1);
+		}
+
 		[Fact]
 		public void InsertEnumValue()
 		{
@@ -95,6 +129,12 @@ create table insert_enum_value(rowid integer not null primary key auto_increment
 			Off,
 			On,
 		}
+
+		class DateTimeOffsetValues
+		{
+			public DateTimeOffset? datetimeoffset1 { get; set; }
+		}
+
 
 		class EnumValues
 		{
