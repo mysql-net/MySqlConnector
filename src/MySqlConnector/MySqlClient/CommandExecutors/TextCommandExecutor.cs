@@ -47,33 +47,18 @@ namespace MySql.Data.MySqlClient.CommandExecutors
 		public virtual async Task<DbDataReader> ExecuteReaderAsync(string commandText, MySqlParameterCollection parameterCollection,
 			CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			m_command.VerifyValid();
-			var connection = m_command.Connection;
-			connection.HasActiveReader = true;
-
-			MySqlDataReader reader = null;
-			try
-			{
-				m_command.LastInsertedId = -1;
-				var statementPreparerOptions = StatementPreparerOptions.None;
-				if (connection.AllowUserVariables || m_command.CommandType == CommandType.StoredProcedure)
-					statementPreparerOptions |= StatementPreparerOptions.AllowUserVariables;
-				if (connection.OldGuids)
-					statementPreparerOptions |= StatementPreparerOptions.OldGuids;
-				var preparer = new MySqlStatementPreparer(commandText, parameterCollection, statementPreparerOptions);
-				var payload = new PayloadData(preparer.ParseAndBindParameters());
-				await connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-				reader = await MySqlDataReader.CreateAsync(m_command, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
-				return reader;
-			}
-			finally
-			{
-				if (reader == null)
-				{
-					// received an error from MySQL and never created an active reader
-					connection.HasActiveReader = false;
-				}
-			}
+			m_command.LastInsertedId = -1;
+			var statementPreparerOptions = StatementPreparerOptions.None;
+			if (m_command.Connection.AllowUserVariables || m_command.CommandType == CommandType.StoredProcedure)
+				statementPreparerOptions |= StatementPreparerOptions.AllowUserVariables;
+			if (m_command.Connection.OldGuids)
+				statementPreparerOptions |= StatementPreparerOptions.OldGuids;
+			var preparer = new MySqlStatementPreparer(commandText, parameterCollection, statementPreparerOptions);
+			var payload = new PayloadData(preparer.ParseAndBindParameters());
+			await m_command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+			var reader = await MySqlDataReader.CreateAsync(m_command, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
+			m_command.Connection.HasActiveReader = true;
+			return reader;
 		}
 
 		readonly MySqlCommand m_command;
