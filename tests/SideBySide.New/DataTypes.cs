@@ -2,6 +2,7 @@
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
@@ -421,6 +422,9 @@ namespace SideBySide
 		public void QueryDate(string column, string dataTypeName, object[] expected)
 		{
 			DoQuery("times", column, dataTypeName, ConvertToDateTime(expected), reader => reader.GetDateTime(0));
+#if !BASELINE
+			DoQuery("times", column, dataTypeName, ConvertToDateTimeOffset(expected), reader => (reader as MySqlDataReader).GetDateTimeOffset(0), matchesDefaultType: false);
+#endif
 		}
 
 		[Theory]
@@ -436,13 +440,17 @@ namespace SideBySide
 				using (var cmd = connection.CreateCommand())
 				{
 					cmd.CommandText = @"select cast(0 as date), cast(0 as datetime);";
-					using (var reader = cmd.ExecuteReader())
+					using (var reader = cmd.ExecuteReader() as MySqlDataReader)
 					{
 						Assert.True(reader.Read());
 						if (convertZeroDateTime)
 						{
 							Assert.Equal(DateTime.MinValue, reader.GetDateTime(0));
 							Assert.Equal(DateTime.MinValue, reader.GetDateTime(1));
+#if !BASELINE
+							Assert.Equal(DateTimeOffset.MinValue, reader.GetDateTimeOffset(0));
+							Assert.Equal(DateTimeOffset.MinValue, reader.GetDateTimeOffset(1));
+#endif
 						}
 						else
 						{
@@ -452,6 +460,8 @@ namespace SideBySide
 #else
 							Assert.Throws<InvalidCastException>(() => reader.GetDateTime(0));
 							Assert.Throws<InvalidCastException>(() => reader.GetDateTime(1));
+							Assert.Throws<InvalidCastException>(() => reader.GetDateTimeOffset(0));
+							Assert.Throws<InvalidCastException>(() => reader.GetDateTimeOffset(1));
 #endif
 						}
 					}
@@ -598,14 +608,32 @@ namespace SideBySide
 			return result;
 		}
 
-		private void DoQuery(string table, string column, string dataTypeName, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null, bool omitWhereTest = false, MySqlConnection connection=null)
+		private void DoQuery(
+			string table,
+			string column,
+			string dataTypeName,
+			object[] expected,
+			Func<DbDataReader, object> getValue,
+			object baselineCoercedNullValue = null,
+			bool omitWhereTest = false,
+			bool matchesDefaultType = true,
+			MySqlConnection connection=null)
 		{
-			DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, baselineCoercedNullValue, omitWhereTest, connection);
+			DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, baselineCoercedNullValue, omitWhereTest, matchesDefaultType, connection);
 		}
 
 		// NOTE: baselineCoercedNullValue is to work around inconsistencies in mysql-connector-net; DBNull.Value will
 		// be coerced to 0 by some reader.GetX() methods, but not others.
-		private void DoQuery<TException>(string table, string column, string dataTypeName, object[] expected, Func<DbDataReader, object> getValue, object baselineCoercedNullValue = null, bool omitWhereTest = false, MySqlConnection connection=null)
+		private void DoQuery<TException>(
+			string table,
+			string column,
+			string dataTypeName,
+			object[] expected,
+			Func<DbDataReader, object> getValue,
+			object baselineCoercedNullValue = null,
+			bool omitWhereTest = false,
+			bool matchesDefaultType = true,
+			MySqlConnection connection=null)
 			where TException : Exception
 		{
 			connection = connection ?? m_database.Connection;
@@ -632,9 +660,33 @@ namespace SideBySide
 						}
 						else
 						{
-							Assert.Equal(value, reader.GetValue(0));
 							Assert.Equal(value, getValue(reader));
-							Assert.Equal(value.GetType(), reader.GetFieldType(0));
+
+							// test `reader.GetValue` and `reader.GetFieldType` if value matches default type
+							if (matchesDefaultType)
+							{
+								Assert.Equal(value, reader.GetValue(0));
+								Assert.Equal(value.GetType(), reader.GetFieldType(0));
+							}
+
+							// test `reader.GetFieldValue<value.GetType()>`
+							var syncMethod = typeof(MySqlDataReader)
+								.GetMethod("GetFieldValue")
+								.MakeGenericMethod(value.GetType());
+							Assert.Equal(value, syncMethod.Invoke(reader, new object[]{ 0 }));
+
+							// test `reader.GetFieldValueAsync<value.GetType()>`
+							var asyncMethod = typeof(MySqlDataReader)
+								.GetMethod("GetFieldValueAsync", new []{ typeof(int) })
+								.MakeGenericMethod(value.GetType());
+							var asyncMethodValue = asyncMethod.Invoke(reader, new object[]{ 0 });
+							var asyncMethodGetAwaiter = asyncMethodValue.GetType()
+								.GetMethod("GetAwaiter");
+							var asyncMethodGetAwaiterValue = asyncMethodGetAwaiter.Invoke(asyncMethodValue, new object[]{ });
+							var asyncMethodGetResult = asyncMethodGetAwaiterValue.GetType()
+								.GetMethod("GetResult");
+							var asyncMethodGetResultValue = asyncMethodGetResult.Invoke(asyncMethodGetAwaiterValue, new object[]{ });
+							Assert.Equal(value, asyncMethodGetResultValue);
 						}
 					}
 					Assert.False(reader.Read());
@@ -666,6 +718,18 @@ namespace SideBySide
 					output[i] = new DateTime(value[0], value[1], value[2], value[3], value[4], value[5]);
 				else if (value?.Length == 7)
 					output[i] = new DateTime(value[0], value[1], value[2], value[3], value[4], value[5], value[6] / 1000).AddTicks(value[6] % 1000 * 10);
+			}
+			return output;
+		}
+
+		private static object[] ConvertToDateTimeOffset(object[] input)
+		{
+			var output = new object[input.Length];
+			var dateTimes = ConvertToDateTime(input);
+			for (int i = 0; i < dateTimes.Length; i++)
+			{
+				if (dateTimes[i] != null)
+					output[i] = new DateTimeOffset(DateTime.SpecifyKind((DateTime)dateTimes[i], DateTimeKind.Utc));
 			}
 			return output;
 		}

@@ -169,6 +169,8 @@ namespace MySql.Data.MySqlClient
 
 		public override DateTime GetDateTime(int ordinal) => GetResultSet().GetCurrentRow().GetDateTime(ordinal);
 
+		public DateTimeOffset GetDateTimeOffset(int ordinal) => GetResultSet().GetCurrentRow().GetDateTimeOffset(ordinal);
+
 		public override string GetString(int ordinal) => GetResultSet().GetCurrentRow().GetString(ordinal);
 
 		public override decimal GetDecimal(int ordinal) => GetResultSet().GetCurrentRow().GetDecimal(ordinal);
@@ -190,6 +192,14 @@ namespace MySql.Data.MySqlClient
 			DoClose();
 		}
 #endif
+
+		public override T GetFieldValue<T>(int ordinal)
+		{
+			if (typeof(T) == typeof(DateTimeOffset))
+				return (T) Convert.ChangeType(GetDateTimeOffset(ordinal), typeof(T));
+
+			return base.GetFieldValue<T>(ordinal);
+		}
 
 		protected override void Dispose(bool disposing)
 		{

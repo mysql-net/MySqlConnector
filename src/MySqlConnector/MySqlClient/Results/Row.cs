@@ -229,6 +229,11 @@ namespace MySql.Data.MySqlClient.Results
 			return (DateTime) GetValue(ordinal);
 		}
 
+		public DateTimeOffset GetDateTimeOffset(int ordinal)
+		{
+			return new DateTimeOffset(DateTime.SpecifyKind(GetDateTime(ordinal), DateTimeKind.Utc));
+		}
+
 		public string GetString(int ordinal)
 		{
 			return (string) GetValue(ordinal);
