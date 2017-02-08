@@ -733,6 +733,12 @@ please refer to its documentation.&lt;/p&gt;
 &lt;p&gt;Gets the value of the specified column as an sbyte&lt;/p&gt;
 
 &lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public DateTimeOffset GetDateTimeOffset(int ordinal)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Gets the value of the specified column as a DateTimeOffset with an offset of 0&lt;/p&gt;
+
+&lt;hr /&gt;
 </description>
     </item>
     
