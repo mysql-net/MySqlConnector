@@ -12,6 +12,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.12.0
+
+* Add support for `DateTimeOffset`: [#172](https://github.com/mysql-net/MySqlConnector/issues/172), [#175](https://github.com/mysql-net/MySqlConnector/issues/175).
+
 ### 0.11.6
 
 * Fix `PlatformNotSupportedException` on AWS Lambda: [#170](https://github.com/mysql-net/MySqlConnector/issues/170).
