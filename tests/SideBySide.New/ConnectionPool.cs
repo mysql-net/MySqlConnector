@@ -137,6 +137,7 @@ namespace SideBySide
 			csb.Pooling = true;
 			csb.MinimumPoolSize = 0;
 			csb.MaximumPoolSize = 1;
+			csb.ConnectionReset = false;
 			int serverThread;
 
 			using (var connection = new MySqlConnection(csb.ConnectionString))
