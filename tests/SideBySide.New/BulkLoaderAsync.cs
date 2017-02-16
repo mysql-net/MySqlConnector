@@ -30,8 +30,8 @@ namespace SideBySide.New
 			m_testTable = "test.BulkLoaderAsyncTest" + testClient;
 
 			m_initializeTable = @"
-				create schema if not exists test; 
-				drop table if exists " + m_testTable + @"; 
+				create schema if not exists test;
+				drop table if exists " + m_testTable + @";
 				CREATE TABLE " + m_testTable + @"
 				(
 					one int primary key
@@ -51,7 +51,7 @@ namespace SideBySide.New
 ");
 		}
 
-		[Fact]
+		[BulkLoaderTsvFileFact]
 		public async Task BulkLoadTsvFile()
 		{
 			try
@@ -76,7 +76,8 @@ namespace SideBySide.New
 				await FinalizeTestAsync();
 			}
 		}
-		[Fact]
+
+		[BulkLoaderTsvFileFact]
 		public async Task BulkLoadLocalTsvFile()
 		{
 			try
@@ -101,7 +102,8 @@ namespace SideBySide.New
 				await FinalizeTestAsync();
 			}
 		}
-		[Fact]
+
+		[BulkLoaderTsvFileFact]
 		public async Task BulkLoadLocalTsvFileDoubleEscapedTerminators()
 		{
 			try
@@ -128,7 +130,8 @@ namespace SideBySide.New
 				await FinalizeTestAsync();
 			}
 		}
-		[Fact]
+
+		[BulkLoaderCsvFileFact]
 		public async Task BulkLoadCsvFile()
 		{
 			try
@@ -156,7 +159,8 @@ namespace SideBySide.New
 				await FinalizeTestAsync();
 			}
 		}
-		[Fact]
+
+		[BulkLoaderLocalCsvFileFact]
 		public async Task BulkLoadLocalCsvFile()
 		{
 			try
@@ -182,6 +186,7 @@ namespace SideBySide.New
 				await FinalizeTestAsync();
 			}
 		}
+
 		[Fact]
 		public async Task BulkLoadCsvFileNotFound()
 		{
@@ -230,6 +235,7 @@ namespace SideBySide.New
 				await FinalizeTestAsync();
 			}
 		}
+
 		[Fact]
 		public async Task BulkLoadLocalCsvFileNotFound()
 		{
@@ -316,7 +322,8 @@ namespace SideBySide.New
 				await FinalizeTestAsync();
 			}
 		}
-		[Fact]
+
+		[BulkLoaderLocalCsvFileFact]
 		public async Task BulkLoadMissingTableName()
 		{
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
@@ -345,7 +352,7 @@ namespace SideBySide.New
 		[Fact(Skip = "InfileStream not implemented")]
 		public void BulkLoadFileStreamInvalidOperation() {}
 #else
-		[Fact]
+		[BulkLoaderLocalCsvFileFact]
 		public async Task BulkLoadFileStreamInvalidOperation()
 		{
 			try
@@ -379,11 +386,12 @@ namespace SideBySide.New
 			}
 		}
 #endif
+
 #if BASELINE
 		[Fact(Skip = "InfileStream not implemented")]
 		public void BulkLoadLocalFileStream() {}
 #else
-		[Fact]
+		[BulkLoaderLocalCsvFileFact]
 		public async Task BulkLoadLocalFileStream()
 		{
 			try

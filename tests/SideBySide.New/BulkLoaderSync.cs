@@ -46,7 +46,7 @@ namespace SideBySide.New
 ");
 		}
 
-		[Fact]
+		[BulkLoaderTsvFileFact]
 		public void BulkLoadTsvFile()
 		{
 			try
@@ -68,7 +68,8 @@ namespace SideBySide.New
 				FinalizeTest();
 			}
 		}
-		[Fact]
+
+		[BulkLoaderTsvFileFact]
 		public void BulkLoadLocalTsvFile()
 		{
 			try
@@ -90,7 +91,8 @@ namespace SideBySide.New
 				FinalizeTest();
 			}
 		}
-		[Fact]
+
+		[BulkLoaderTsvFileFact]
 		public void BulkLoadLocalTsvFileDoubleEscapedTerminators()
 		{
 			try
@@ -114,7 +116,8 @@ namespace SideBySide.New
 				FinalizeTest();
 			}
 		}
-		[Fact]
+
+		[BulkLoaderCsvFileFact]
 		public void BulkLoadCsvFile()
 		{
 			try
@@ -140,7 +143,8 @@ namespace SideBySide.New
 				FinalizeTest();
 			}
 		}
-		[Fact]
+
+		[BulkLoaderLocalCsvFileFact]
 		public void BulkLoadLocalCsvFile()
 		{
 			try
@@ -166,6 +170,7 @@ namespace SideBySide.New
 				FinalizeTest();
 			}
 		}
+
 		[Fact]
 		public void BulkLoadCsvFileNotFound()
 		{
@@ -210,6 +215,7 @@ namespace SideBySide.New
 				FinalizeTest();
 			}
 		}
+
 		[Fact]
 		public void BulkLoadLocalCsvFileNotFound()
 		{
@@ -297,7 +303,8 @@ namespace SideBySide.New
 				FinalizeTest();
 			}
 		}
-		[Fact]
+
+		[BulkLoaderLocalCsvFileFact]
 		public void BulkLoadMissingTableName()
 		{
 			try
@@ -314,10 +321,10 @@ namespace SideBySide.New
 				bl.Expressions.Add("five = UNHEX(five)");
 				bl.Local = false;
 #if BASELINE
-			Assert.Throws<MySqlException>(() =>
-			{
-				int rowCount = bl.Load();
-			});
+				Assert.Throws<MySqlException>(() =>
+				{
+					int rowCount = bl.Load();
+				});
 #else
 				Assert.Throws<System.InvalidOperationException>(() =>
 				{
@@ -335,7 +342,7 @@ namespace SideBySide.New
 		[Fact(Skip = "InfileStream not implemented")]
 		public void BulkLoadFileStreamInvalidOperation() {}
 #else
-		[Fact]
+		[BulkLoaderLocalCsvFileFact]
 		public void BulkLoadFileStreamInvalidOperation()
 		{
 			try
@@ -371,7 +378,7 @@ namespace SideBySide.New
 		[Fact(Skip = "InfileStream not implemented")]
 		public void BulkLoadLocalFileStream() {}
 #else
-		[Fact]
+		[BulkLoaderLocalCsvFileFact]
 		public void BulkLoadLocalFileStream()
 		{
 			try

@@ -24,8 +24,8 @@ namespace SideBySide.New
 			m_testTable = "test.LoadDataInfileAsyncTest" + testClient;
 
 			m_initializeTable = @"
-				create schema if not exists test; 
-				drop table if exists " + m_testTable + @"; 
+				create schema if not exists test;
+				drop table if exists " + m_testTable + @";
 				CREATE TABLE " + m_testTable + @"
 				(
 					one int primary key
@@ -40,7 +40,7 @@ namespace SideBySide.New
 			m_loadDataInfileCommand = "LOAD DATA{0} INFILE '{1}' INTO TABLE " + m_testTable + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (one, two, three, four, five) SET five = UNHEX(five);";
 		}
 
-		[Fact]
+		[BulkLoaderCsvFileFact]
 		public async void CommandLoadCsvFile()
 		{
 			try
@@ -59,7 +59,8 @@ namespace SideBySide.New
 				await FinalizeTestAsync();
 			}
 		}
-		[Fact]
+
+		[BulkLoaderLocalCsvFileFact]
 		public async void CommandLoadLocalCsvFile()
 		{
 			try

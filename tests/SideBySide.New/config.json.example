@@ -3,9 +3,6 @@
       "ConnectionString": "server=127.0.0.1;user id=mysqltest;password='test;key=\"val';port=3306;database=mysqltest;Use Affected Rows=true",
       "PasswordlessUser": "no_password",
       "SupportsCachedProcedures": true,
-      "SupportsJson": true,
-      "MySqlBulkLoaderLocalCsvFile": "C:\\development\\MySqlConnector\\tests\\TestData\\LoadData_UTF8_BOM_Unix.CSV",
-      "MySqlBulkLoaderCsvFile": "C:\\ProgramData\\MySQL\\MySQL Server 5.6\\Uploads\\LoadData_UTF8_BOM_Unix.CSV",
-      "MySqlBulkLoaderRemoveTables": false
+      "SupportsJson": true
     }
 }
