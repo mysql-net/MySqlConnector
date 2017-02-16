@@ -61,7 +61,7 @@ namespace MySql.Data.MySqlClient
 				if (session.PoolGeneration == m_generation)
 					m_sessions.Enqueue(session);
 				else
-					session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).ConfigureAwait(false);
+					session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 			}
 			finally
 			{
