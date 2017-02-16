@@ -26,16 +26,14 @@ namespace MySql.Data.MySqlClient
 				// check for a pooled session
 				if (m_sessions.TryDequeue(out session))
 				{
-					if (session.PoolGeneration != m_generation || !await session.TryPingAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
-					{
-						// session is either old or cannot communicate with the server
-						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					}
-					else
+					if (session.PoolGeneration == m_generation && await session.MakeActiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
 					{
 						// pooled session is ready to be used; return it
 						return session;
 					}
+
+					// session is either old, failed to reset connection (if enabled), or cannot communicate with the server
+					await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 
 				session = new MySqlSession(this, m_generation);
@@ -51,28 +49,18 @@ namespace MySql.Data.MySqlClient
 
 		public void Return(MySqlSession session)
 		{
+			// IO in this method MUST be synchronous, since it is triggered by MySqlConnection.Dispose.  Async IO will cause lock-ups
 			try
 			{
-				var success = false;
-
 				if (session.PoolGeneration == m_generation)
 				{
-					try
-					{
-						// reset the connection upon returning it to the pool
-						if (m_connectionSettings.ConnectionReset)
-							session.ResetConnectionAsync(m_connectionSettings, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-						success = true;
-					}
-					catch (MySqlException)
-					{
-					}
-				}
-
-				if (success)
+					session.MakeIdle(m_connectionSettings, IOBehavior.Synchronous, CancellationToken.None);
 					m_sessions.Enqueue(session);
+				}
 				else
+				{
 					session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+				}
 			}
 			finally
 			{

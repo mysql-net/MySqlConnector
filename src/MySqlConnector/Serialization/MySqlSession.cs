@@ -107,7 +107,30 @@ namespace MySql.Data.Serialization
 				m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
 		}
 
-		public async Task ResetConnectionAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public void MakeIdle(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			if (cs.ConnectionReset)
+				m_resetConnectionTask = ResetConnectionAsync(cs, ioBehavior, cancellationToken);
+		}
+
+		public async Task<bool> MakeActiveAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			if (m_resetConnectionTask != null)
+			{
+				try
+				{
+					await m_resetConnectionTask.ConfigureAwait(false);
+				}
+				catch (MySqlException)
+				{
+					return false;
+				}
+			}
+
+			return await TryPingAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+		}
+
+		private async Task ResetConnectionAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
 			{
@@ -143,7 +166,7 @@ namespace MySql.Data.Serialization
 			}
 		}
 
-		public async Task<bool> TryPingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async Task<bool> TryPingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			// check if client socket is still connected
 			// http://stackoverflow.com/questions/2661764/how-to-check-if-a-socket-is-connected-disconnected-in-c
@@ -510,5 +533,6 @@ namespace MySql.Data.Serialization
 		Socket m_socket;
 		NetworkStream m_networkStream;
 		IPayloadHandler m_payloadHandler;
+		Task m_resetConnectionTask;
 	}
 }
