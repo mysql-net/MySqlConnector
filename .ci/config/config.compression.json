@@ -3,6 +3,8 @@
       "ConnectionString": "server=127.0.0.1;user id=mysqltest;password='test;key=\"val';port=3306;database=mysqltest;ssl mode=none;UseCompression=true;Use Affected Rows=true",
       "PasswordlessUser": "no_password",
       "SupportsCachedProcedures": true,
-      "SupportsJson": true
+      "SupportsJson": true,
+      "MySqlBulkLoaderLocalCsvFile": "%TESTDATA%/LoadData_UTF8_BOM_Unix.CSV",
+      "MySqlBulkLoaderLocalTsvFile": "%TESTDATA%/LoadData_UTF8_BOM_Unix.TSV"
     }
 }

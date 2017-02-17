@@ -25,6 +25,8 @@ namespace SideBySide
 
 		public static string CertsPath = Path.Combine(CodeRootPath, ".ci", "server", "certs");
 
+		public static string TestDataPath = Path.Combine(CodeRootPath, "tests", "TestData");
+
 		private static int _configFirst;
 
 		private static IConfiguration ConfigBuilder { get; } = new ConfigurationBuilder()
@@ -51,10 +53,10 @@ namespace SideBySide
 
 		public static bool SupportsJson => Config.GetValue<bool>("Data:SupportsJson");
 
-		public static string MySqlBulkLoaderCsvFile => Config.GetValue<string>("Data:MySqlBulkLoaderCsvFile");
-		public static string MySqlBulkLoaderLocalCsvFile => Config.GetValue<string>("Data:MySqlBulkLoaderLocalCsvFile");
-		public static string MySqlBulkLoaderTsvFile => Config.GetValue<string>("Data:MySqlBulkLoaderTsvFile");
-		public static string MySqlBulkLoaderLocalTsvFile => Config.GetValue<string>("Data:MySqlBulkLoaderLocalTsvFile");
+		public static string MySqlBulkLoaderCsvFile => ExpandVariables(Config.GetValue<string>("Data:MySqlBulkLoaderCsvFile"));
+		public static string MySqlBulkLoaderLocalCsvFile => ExpandVariables(Config.GetValue<string>("Data:MySqlBulkLoaderLocalCsvFile"));
+		public static string MySqlBulkLoaderTsvFile => ExpandVariables(Config.GetValue<string>("Data:MySqlBulkLoaderTsvFile"));
+		public static string MySqlBulkLoaderLocalTsvFile => ExpandVariables(Config.GetValue<string>("Data:MySqlBulkLoaderLocalTsvFile"));
 		public static bool MySqlBulkLoaderRemoveTables => Config.GetValue<bool>("Data:MySqlBulkLoaderRemoveTables");
 
 		public static MySqlConnectionStringBuilder CreateConnectionStringBuilder()
@@ -74,5 +76,7 @@ namespace SideBySide
 				directory = Path.GetDirectoryName(directory);
 			return directory;
 		}
+
+		private static string ExpandVariables(string value) => value?.Replace("%TESTDATA%", TestDataPath);
 	}
 }
