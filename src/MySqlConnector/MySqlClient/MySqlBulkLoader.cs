@@ -16,7 +16,8 @@ namespace MySql.Data.MySqlClient
         private const string defaultLineTerminator = "\n";
         private const char defaultEscapeCharacter = '\\';
 
-        private static Dictionary<string, Stream> InfileStreams = new Dictionary<string, Stream>();
+        private static readonly object s_lock = new object();
+        private static readonly Dictionary<string, Stream> s_streams = new Dictionary<string, Stream>();
 
         public string CharacterSet { get; set; }
         public List<string> Columns { get; }
@@ -181,7 +182,8 @@ namespace MySql.Data.MySqlClient
                     throw new InvalidOperationException("Cannot use InfileStream when Local is not true.");
                 }
                 string streamKey = string.Format("{0}:{1}", LocalInfilePayload.InfileStreamPrefix, Guid.NewGuid());
-                InfileStreams.Add(streamKey, InfileStream);
+                lock (s_lock)
+                    s_streams.Add(streamKey, InfileStream);
                 FileName = streamKey;
             }
             try
@@ -203,9 +205,14 @@ namespace MySql.Data.MySqlClient
             return recordsAffected;
         }
 
-        internal static Stream GetInfileStreamByKey(string streamKey)
+        internal static Stream GetAndRemoveStream(string streamKey)
         {
-            return InfileStreams[streamKey];
+            lock (s_lock)
+            {
+                var stream = s_streams[streamKey];
+                s_streams.Remove(streamKey);
+                return stream;
+            }
         }
     }
 }
