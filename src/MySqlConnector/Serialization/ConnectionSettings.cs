@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
 using MySql.Data.MySqlClient;
 
 namespace MySql.Data.Serialization
@@ -13,7 +12,7 @@ namespace MySql.Data.Serialization
 			ConnectionString = csb.ConnectionString;
 
 			// Base Options
-			if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (csb.Server.StartsWith("/", StringComparison.Ordinal) || csb.Server.StartsWith("./", StringComparison.Ordinal)))
+			if (!Utility.IsWindows() && (csb.Server.StartsWith("/", StringComparison.Ordinal) || csb.Server.StartsWith("./", StringComparison.Ordinal)))
 			{
 				if (!File.Exists(csb.Server))
 					throw new MySqlException("Cannot find Unix Socket at " + csb.Server);

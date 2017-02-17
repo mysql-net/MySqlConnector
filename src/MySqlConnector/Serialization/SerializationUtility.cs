@@ -1,6 +1,5 @@
 using System;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 
 namespace MySql.Data.Serialization
 {
@@ -61,7 +60,7 @@ namespace MySql.Data.Serialization
 
 			// If keepAliveTimeSeconds > 0, override keepalive options on the socket
 			const uint keepAliveIntervalMillis = 1000;
-			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+			if (Utility.IsWindows())
 			{
 				// http://stackoverflow.com/a/11834055/1419658
 				// Windows takes time in milliseconds

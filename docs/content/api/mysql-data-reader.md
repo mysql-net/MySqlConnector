@@ -22,3 +22,7 @@ Additionally, MySqlDataReader provides the following public properties and metho
 
 Gets the value of the specified column as an sbyte
 ***
+`public DateTimeOffset GetDateTimeOffset(int ordinal)`
+
+Gets the value of the specified column as a DateTimeOffset with an offset of 0
+***

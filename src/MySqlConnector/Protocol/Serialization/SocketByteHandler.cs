@@ -11,20 +11,18 @@ namespace MySql.Data.Protocol.Serialization
 			m_socket = socket;
 			var socketEventArgs = new SocketAsyncEventArgs();
 			m_socketAwaitable = new SocketAwaitable(socketEventArgs);
-			m_buffer = new byte[16384];
 		}
 
-		public ValueTask<ArraySegment<byte>> ReadBytesAsync(int count, IOBehavior ioBehavior)
+		public ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, IOBehavior ioBehavior)
 		{
-			var buffer = count < m_buffer.Length ? m_buffer : new byte[count];
 			if (ioBehavior == IOBehavior.Asynchronous)
 			{
-				return new ValueTask<ArraySegment<byte>>(DoReadBytesAsync(buffer, 0, count));
+				return new ValueTask<int>(DoReadBytesAsync(buffer));
 			}
 			else
 			{
-				var bytesRead = m_socket.Receive(buffer, 0, count, SocketFlags.None);
-				return new ValueTask<ArraySegment<byte>>(new ArraySegment<byte>(buffer, 0, bytesRead));
+				var bytesRead = m_socket.Receive(buffer.Array, buffer.Offset, buffer.Count, SocketFlags.None);
+				return new ValueTask<int>(bytesRead);
 			}
 		}
 
@@ -41,30 +39,21 @@ namespace MySql.Data.Protocol.Serialization
 			}
 		}
 
-		private async Task<ArraySegment<byte>> DoReadBytesAsync(byte[] buffer, int offset, int count)
+		private async Task<int> DoReadBytesAsync(ArraySegment<byte> buffer)
 		{
-			m_socketAwaitable.EventArgs.SetBuffer(buffer, offset, count);
+			m_socketAwaitable.EventArgs.SetBuffer(buffer.Array, buffer.Offset, buffer.Count);
 			await m_socket.ReceiveAsync(m_socketAwaitable);
-			return new ArraySegment<byte>(buffer, 0, m_socketAwaitable.EventArgs.BytesTransferred);
+			return m_socketAwaitable.EventArgs.BytesTransferred;
 		}
 
 		private async Task<int> DoWriteBytesAsync(ArraySegment<byte> payload)
 		{
-			if (payload.Count <= m_buffer.Length)
-			{
-				Buffer.BlockCopy(payload.Array, payload.Offset, m_buffer, 0, payload.Count);
-				m_socketAwaitable.EventArgs.SetBuffer(m_buffer, 0, payload.Count);
-			}
-			else
-			{
-				m_socketAwaitable.EventArgs.SetBuffer(payload.Array, payload.Offset, payload.Count);
-			}
+			m_socketAwaitable.EventArgs.SetBuffer(payload.Array, payload.Offset, payload.Count);
 			await m_socket.SendAsync(m_socketAwaitable);
 			return 0;
 		}
 
 		readonly Socket m_socket;
 		readonly SocketAwaitable m_socketAwaitable;
-		readonly byte[] m_buffer;
 	}
 }

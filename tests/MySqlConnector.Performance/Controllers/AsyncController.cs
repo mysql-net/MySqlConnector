@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using MySql.Data.MySqlClient;
 using MySqlConnector.Performance.Models;
 
 namespace MySqlConnector.Performance.Controllers
@@ -92,6 +94,69 @@ namespace MySqlConnector.Performance.Controllers
 				var query = new BlogPostQuery(db);
 				await query.DeleteAllAsync();
 				return new OkResult();
+			}
+		}
+
+		// GET api/async/bulkinsert/10000
+		[HttpGet("bulkinsert/{num}")]
+		public async Task<IActionResult> BulkInsert(int num)
+		{
+			using (var db = new AppDb())
+			{
+				var time = DateTime.Now;
+				await db.Connection.OpenAsync();
+				var txn = await db.Connection.BeginTransactionAsync();
+				try
+				{
+					for (var i = 0; i < num; i++)
+					{
+						var blogPost = new BlogPost
+						{
+							Db = db,
+							Title = "bulk",
+							Content = "bulk " + num
+						};
+						await blogPost.InsertAsync();
+					}
+				}
+				catch (Exception)
+				{
+					await txn.RollbackAsync();
+					throw;
+				}
+				await txn.CommitAsync();
+				var timing = $"Async: Inserted {num} records in " + (DateTime.Now - time);
+				Console.WriteLine(timing);
+				return new OkObjectResult(timing);
+			}
+		}
+
+		// GET api/async/bulkselect
+		[HttpGet("bulkselect/{num}")]
+		public async Task<IActionResult> BulkSelect(int num)
+		{
+			using (var db = new AppDb())
+			{
+				var time = DateTime.Now;
+				await db.Connection.OpenAsync();
+				var query = new BlogPostQuery(db);
+				var reader = await query.LatestPostsCmd(num).ExecuteReaderAsync();
+
+				var numRead = 0;
+				while (await reader.ReadAsync())
+				{
+					var post = new BlogPost(db)
+					{
+						Id = await reader.GetFieldValueAsync<int>(0),
+						Title = await reader.GetFieldValueAsync<string>(1),
+						Content = await reader.GetFieldValueAsync<string>(2)
+					};
+					numRead++;
+				}
+
+				var timing = $"Async: Read {numRead} records in " + (DateTime.Now - time);
+				Console.WriteLine(timing);
+				return new OkObjectResult(timing);
 			}
 		}
 	}

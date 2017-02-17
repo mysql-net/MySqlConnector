@@ -3,8 +3,9 @@ using System.Linq;
 using MySql.Data.MySqlClient;
 using Dapper;
 using Xunit;
+using System.Data;
 
-namespace SideBySide.New
+namespace SideBySide
 {
 	public class InsertTests : IClassFixture<DatabaseFixture>
 	{
@@ -61,6 +62,45 @@ create table insert_time(value TIME({precision}));");
 			}
 		}
 
+
+#if BASELINE
+		[Fact(Skip = "https://bugs.mysql.com/bug.php?id=73788")]
+#else
+		[Fact]
+#endif
+		public void InsertDateTimeOffset()
+		{
+			m_database.Connection.Execute(@"drop table if exists insert_datetimeoffset;
+create table insert_datetimeoffset(rowid integer not null primary key auto_increment, datetimeoffset1 datetime null);");
+			var value = new DateTimeOffsetValues { datetimeoffset1 = new DateTimeOffset(2017, 1, 2, 3, 4, 5, TimeSpan.FromMinutes(678)) };
+
+			m_database.Connection.Open();
+			try
+			{
+				using (var cmd = m_database.Connection.CreateCommand())
+				{
+					cmd.CommandText = @"insert into insert_datetimeoffset(datetimeoffset1) values(@datetimeoffset1);";
+					cmd.Parameters.Add(new MySqlParameter
+					{
+						ParameterName = "@datetimeoffset1",
+						DbType = DbType.DateTimeOffset,
+						Value = value.datetimeoffset1
+					});
+					cmd.ExecuteNonQuery();
+				}
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+
+			var datetime = m_database.Connection.ExecuteScalar<DateTime>(@"select datetimeoffset1 from insert_datetimeoffset order by rowid;");
+
+			DateTime.SpecifyKind(datetime, DateTimeKind.Utc);
+
+			Assert.Equal(value.datetimeoffset1.Value.UtcDateTime, datetime);
+		}
+
 		[Fact]
 		public void InsertEnumValue()
 		{
@@ -95,6 +135,12 @@ create table insert_enum_value(rowid integer not null primary key auto_increment
 			Off,
 			On,
 		}
+
+		class DateTimeOffsetValues
+		{
+			public DateTimeOffset? datetimeoffset1 { get; set; }
+		}
+
 
 		class EnumValues
 		{

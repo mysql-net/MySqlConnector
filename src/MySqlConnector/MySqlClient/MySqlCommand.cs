@@ -120,6 +120,7 @@ namespace MySql.Data.MySqlClient
 
 		internal async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			VerifyValid();
 			return await m_commandExecutor.ExecuteNonQueryAsync(CommandText, m_parameterCollection, ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
@@ -128,6 +129,7 @@ namespace MySql.Data.MySqlClient
 
 		internal async Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			VerifyValid();
 			return await m_commandExecutor.ExecuteScalarAsync(CommandText, m_parameterCollection, ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
@@ -137,6 +139,7 @@ namespace MySql.Data.MySqlClient
 		internal async Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior,
 			CancellationToken cancellationToken)
 		{
+			VerifyValid();
 			return await m_commandExecutor.ExecuteReaderAsync(CommandText, m_parameterCollection, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
@@ -163,7 +166,7 @@ namespace MySql.Data.MySqlClient
 				throw new ObjectDisposedException(GetType().Name);
 		}
 
-		internal void VerifyValid()
+		private void VerifyValid()
 		{
 			VerifyNotDisposed();
 			if (DbConnection == null)

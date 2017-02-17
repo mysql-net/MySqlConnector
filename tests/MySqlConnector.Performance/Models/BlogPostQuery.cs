@@ -14,7 +14,7 @@ namespace MySqlConnector.Performance.Models
 		{
 			Db = db;
 		}
-		
+
 		public BlogPost FindOne(int id)
 		{
 			var result = ReadAll(FindOneCmd(id).ExecuteReader());
@@ -29,12 +29,12 @@ namespace MySqlConnector.Performance.Models
 
 		public List<BlogPost> LatestPosts()
 		{
-			return ReadAll(LatestPostsCmd().ExecuteReader());
+			return ReadAll(LatestPostsCmd(10).ExecuteReader());
 		}
 
 		public async Task<List<BlogPost>> LatestPostsAsync()
 		{
-			return await ReadAllAsync(await LatestPostsCmd().ExecuteReaderAsync());
+			return await ReadAllAsync(await LatestPostsCmd(10).ExecuteReaderAsync());
 		}
 
 		public void DeleteAll()
@@ -80,10 +80,16 @@ namespace MySqlConnector.Performance.Models
 			return cmd as MySqlCommand;
 		}
 
-		private DbCommand LatestPostsCmd()
+		public DbCommand LatestPostsCmd(int limit)
 		{
 			var cmd = Db.Connection.CreateCommand();
-			cmd.CommandText = @"SELECT `Id`, `Title`, `Content` FROM `BlogPost` ORDER BY `Id` DESC LIMIT 10;";
+			cmd.CommandText = @"SELECT `Id`, `Title`, `Content` FROM `BlogPost` ORDER BY `Id` DESC LIMIT @limit;";
+			cmd.Parameters.Add(new MySqlParameter
+			{
+				ParameterName = "@limit",
+				DbType = DbType.Int32,
+				Value = limit,
+			});
 			return cmd as MySqlCommand;
 		}
 

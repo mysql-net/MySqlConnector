@@ -16,6 +16,10 @@ The application runs on http://localhost:5000 by default.  It drops and creates 
         "Content": "Post Content"
     }
 
+`GET  /api/async/bulkinsert/<num>` and `GET /api/sync/bulkinsert/<num>` Insert <num> blog posts serially in a transaction
+
+`GET  /api/async/bulkselect/<num>` and `GET /api/sync/bulkselect/<num>` Selects <num> blog posts and exhausts the datareader (make sure you have inserted <num> posts first with the bulkinsert endpoint)
+
 The `scripts` directory contains load testing scripts.  These scripts require that the  [Vegeta](https://github.com/tsenart/vegeta/releases) binary is installed and accessible in your PATH.  Here are examples of how to call the load testing scripts:
 
     # by default, runs 50 async queries per second for 5 seconds

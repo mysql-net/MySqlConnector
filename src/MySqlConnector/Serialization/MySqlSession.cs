@@ -3,7 +3,6 @@ using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -365,7 +364,7 @@ namespace MySql.Data.Serialization
 
 			// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/mysql-net/MySqlConnector/pull/101
 			var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
-			if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+			if (!Utility.IsWindows())
 				sslProtocols |= SslProtocols.Tls12;
 
 			var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;

@@ -1,6 +1,6 @@
 ﻿using Dapper;
 
-namespace SideBySide.New
+namespace SideBySide
 {
 	public class StoredProcedureFixture : DatabaseFixture
 	{

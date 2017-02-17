@@ -1,5 +1,5 @@
 {
-	"version": "0.11.2",
+	"version": "0.12.0",
 	"title": "Async MySQL Connector",
 	"description": "A fully async MySQL ADO.NET provider for .NET and .NET Core",
 	"copyright": "Copyright 2016 Bradley Grainger",
@@ -9,7 +9,7 @@
 	"packOptions": {
 		"owners": [ "bgrainger" ],
 		"tags": [ "mysql", "async", "ado.net", "database", "netcore"  ],
-		"releaseNotes": "Fix InvalidCastException when using aggregate functions. GitHub issue #54",
+		"releaseNotes": "Add DateTimeOffset support. GitHub issues #172, #175",
 		"licenseUrl": "https://opensource.org/licenses/MIT",
 		"projectUrl": "https://github.com/mysql-net/MySqlConnector",
 		"repository": {
