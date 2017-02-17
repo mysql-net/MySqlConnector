@@ -59,10 +59,10 @@ namespace MySql.Data.MySqlClient.Results
 						{
 							byte[] readBuffer = new byte[8192];
 							int byteCount;
-							while ((byteCount = await infileStream.ReadAsync(readBuffer, 0, 8192)) > 0)
+							while ((byteCount = await infileStream.ReadAsync(readBuffer, 0, 8192).ConfigureAwait(false)) > 0)
 							{
 								payload = new PayloadData(new ArraySegment<byte>(readBuffer, 0, byteCount));
-								await Session.SendReplyAsync(payload, ioBehavior, cancellationToken);
+								await Session.SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 							}
 						}
 					}
@@ -72,7 +72,7 @@ namespace MySql.Data.MySqlClient.Results
 						exception = new MySqlException("Error during LOAD DATA LOCAL INFILE", ex);
 					}
 
-					await Session.SendReplyAsync(EmptyPayload.Create(), ioBehavior, cancellationToken);
+					await Session.SendReplyAsync(EmptyPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				else
 				{
