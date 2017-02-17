@@ -5,7 +5,7 @@ using Dapper;
 using Xunit;
 using System.Data;
 
-namespace SideBySide.New
+namespace SideBySide
 {
 	public class InsertTests : IClassFixture<DatabaseFixture>
 	{

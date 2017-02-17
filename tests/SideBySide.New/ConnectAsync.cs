@@ -2,7 +2,6 @@
 using System.IO;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
-using SideBySide.New;
 using Xunit;
 
 namespace SideBySide

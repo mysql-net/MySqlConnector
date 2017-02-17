@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 
@@ -18,12 +19,11 @@ namespace SideBySide
 				["Data:SupportsJson"] = "false",
 			};
 
-		public static string BasePath = File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "config.json"))
-										|| new DirectoryInfo(Directory.GetCurrentDirectory()).Name == "SideBySide.New"
-											? Directory.GetCurrentDirectory()
-											: Path.Combine(Directory.GetCurrentDirectory(), "tests", "SideBySide.New");
+		private static string CodeRootPath = GetCodeRootPath();
 
-		public static string CertsPath = Path.GetFullPath(Path.Combine(BasePath, "..", "..", ".ci", "server", "certs"));
+		public static string BasePath = Path.Combine(CodeRootPath, "tests", "SideBySide.New");
+
+		public static string CertsPath = Path.Combine(CodeRootPath, ".ci", "server", "certs");
 
 		private static int _configFirst;
 
@@ -54,6 +54,19 @@ namespace SideBySide
 		public static MySqlConnectionStringBuilder CreateConnectionStringBuilder()
 		{
 			return new MySqlConnectionStringBuilder(ConnectionString);
+		}
+
+		private static string GetCodeRootPath()
+		{
+#if NET46
+			var currentAssembly = Assembly.GetExecutingAssembly();
+#else
+			var currentAssembly = typeof(AppConfig).GetTypeInfo().Assembly;
+#endif
+			var directory = new Uri(currentAssembly.CodeBase).LocalPath;
+			while (!string.Equals(Path.GetFileName(directory), "MySqlConnector", StringComparison.OrdinalIgnoreCase))
+				directory = Path.GetDirectoryName(directory);
+			return directory;
 		}
 	}
 }
