@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
-using Xunit.Abstractions;
 using Dapper;
 
 namespace SideBySide
@@ -12,12 +11,8 @@ namespace SideBySide
 	[Collection("BulkLoaderCollection")]
 	public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 	{
-		private readonly ITestOutputHelper output;
-
-		public BulkLoaderAsync(DatabaseFixture database, ITestOutputHelper output)
+		public BulkLoaderAsync(DatabaseFixture database)
 		{
-			this.output = output;
-
 			m_database = database;
 			//xUnit runs tests in different classes in parallel, so use different table names for the different test classes
 			string testClient;
@@ -28,7 +23,7 @@ namespace SideBySide
 #endif
 			m_testTable = "test.BulkLoaderAsyncTest" + testClient;
 
-			m_initializeTable = @"
+			var initializeTable = @"
 				create schema if not exists test;
 				drop table if exists " + m_testTable + @";
 				CREATE TABLE " + m_testTable + @"
@@ -41,7 +36,8 @@ namespace SideBySide
 					, four datetime
 					, five blob
 				) CHARACTER SET = UTF8;";
-			m_removeTable = "drop table if exists " + m_testTable + @";";
+			m_database.Connection.Execute(initializeTable);
+
 			m_memoryStreamBytes = System.Text.Encoding.UTF8.GetBytes(@"1,'two-1','three-1'
 2,'two-2','three-2'
 3,'two-3','three-3'
@@ -53,137 +49,92 @@ namespace SideBySide
 		[BulkLoaderTsvFileFact]
 		public async Task BulkLoadTsvFile()
 		{
-			try
+			using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
 			{
-				await InitializeTestAsync();
-
-				using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
-				{
-					MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-					bl.FileName = AppConfig.MySqlBulkLoaderTsvFile;
-					bl.TableName = m_testTable;
-					bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
-					bl.NumberOfLinesToSkip = 1;
-					bl.Expressions.Add("five = UNHEX(five)");
-					bl.Local = false;
-					int rowCount = await bl.LoadAsync();
-					Assert.Equal(20, rowCount);
-				}
-			}
-			finally
-			{
-				await FinalizeTestAsync();
+				MySqlBulkLoader bl = new MySqlBulkLoader(connection);
+				bl.FileName = AppConfig.MySqlBulkLoaderTsvFile;
+				bl.TableName = m_testTable;
+				bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
+				bl.NumberOfLinesToSkip = 1;
+				bl.Expressions.Add("five = UNHEX(five)");
+				bl.Local = false;
+				int rowCount = await bl.LoadAsync();
+				Assert.Equal(20, rowCount);
 			}
 		}
 
 		[BulkLoaderLocalTsvFileFact]
 		public async Task BulkLoadLocalTsvFile()
 		{
-			try
+			using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
 			{
-				await InitializeTestAsync();
-
-				using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
-				{
-					MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-					bl.FileName = AppConfig.MySqlBulkLoaderLocalTsvFile;
-					bl.TableName = m_testTable;
-					bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
-					bl.NumberOfLinesToSkip = 1;
-					bl.Expressions.Add("five = UNHEX(five)");
-					bl.Local = true;
-					int rowCount = await bl.LoadAsync();
-					Assert.Equal(20, rowCount);
-				}
-			}
-			finally
-			{
-				await FinalizeTestAsync();
+				MySqlBulkLoader bl = new MySqlBulkLoader(connection);
+				bl.FileName = AppConfig.MySqlBulkLoaderLocalTsvFile;
+				bl.TableName = m_testTable;
+				bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
+				bl.NumberOfLinesToSkip = 1;
+				bl.Expressions.Add("five = UNHEX(five)");
+				bl.Local = true;
+				int rowCount = await bl.LoadAsync();
+				Assert.Equal(20, rowCount);
 			}
 		}
 
 		[BulkLoaderLocalTsvFileFact]
 		public async Task BulkLoadLocalTsvFileDoubleEscapedTerminators()
 		{
-			try
+			using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
 			{
-				await InitializeTestAsync();
-
-				using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
-				{
-					MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-					bl.FileName = AppConfig.MySqlBulkLoaderLocalTsvFile;
-					bl.TableName = m_testTable;
-					bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
-					bl.NumberOfLinesToSkip = 1;
-					bl.Expressions.Add("five = UNHEX(five)");
-					bl.LineTerminator = "\\n";
-					bl.FieldTerminator = "\\t";
-					bl.Local = true;
-					int rowCount = await bl.LoadAsync();
-					Assert.Equal(20, rowCount);
-				}
-			}
-			finally
-			{
-				await FinalizeTestAsync();
+				MySqlBulkLoader bl = new MySqlBulkLoader(connection);
+				bl.FileName = AppConfig.MySqlBulkLoaderLocalTsvFile;
+				bl.TableName = m_testTable;
+				bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
+				bl.NumberOfLinesToSkip = 1;
+				bl.Expressions.Add("five = UNHEX(five)");
+				bl.LineTerminator = "\\n";
+				bl.FieldTerminator = "\\t";
+				bl.Local = true;
+				int rowCount = await bl.LoadAsync();
+				Assert.Equal(20, rowCount);
 			}
 		}
 
 		[BulkLoaderCsvFileFact]
 		public async Task BulkLoadCsvFile()
 		{
-			try
+			using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
 			{
-				await InitializeTestAsync();
-
-				using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
-				{
-					MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-					bl.FileName = AppConfig.MySqlBulkLoaderCsvFile;
-					bl.TableName = m_testTable;
-					bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
-					bl.NumberOfLinesToSkip = 1;
-					bl.FieldTerminator = ",";
-					bl.FieldQuotationCharacter = '"';
-					bl.FieldQuotationOptional = true;
-					bl.Expressions.Add("five = UNHEX(five)");
-					bl.Local = false;
-					int rowCount = await bl.LoadAsync();
-					Assert.Equal(20, rowCount);
-				}
-			}
-			finally
-			{
-				await FinalizeTestAsync();
-			}
-		}
-
-		[BulkLoaderLocalCsvFileFact]
-		public async Task BulkLoadLocalCsvFile()
-		{
-			try
-			{
-				await InitializeTestAsync();
-
-				MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
-				bl.FileName = AppConfig.MySqlBulkLoaderLocalCsvFile;
+				MySqlBulkLoader bl = new MySqlBulkLoader(connection);
+				bl.FileName = AppConfig.MySqlBulkLoaderCsvFile;
 				bl.TableName = m_testTable;
-				bl.CharacterSet = "UTF8";
 				bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 				bl.NumberOfLinesToSkip = 1;
 				bl.FieldTerminator = ",";
 				bl.FieldQuotationCharacter = '"';
 				bl.FieldQuotationOptional = true;
 				bl.Expressions.Add("five = UNHEX(five)");
-				bl.Local = true;
+				bl.Local = false;
 				int rowCount = await bl.LoadAsync();
 				Assert.Equal(20, rowCount);
 			}
-			finally
-			{
-				await FinalizeTestAsync();
-			}
+		}
+
+		[BulkLoaderLocalCsvFileFact]
+		public async Task BulkLoadLocalCsvFile()
+		{
+			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
+			bl.FileName = AppConfig.MySqlBulkLoaderLocalCsvFile;
+			bl.TableName = m_testTable;
+			bl.CharacterSet = "UTF8";
+			bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
+			bl.NumberOfLinesToSkip = 1;
+			bl.FieldTerminator = ",";
+			bl.FieldQuotationCharacter = '"';
+			bl.FieldQuotationOptional = true;
+			bl.Expressions.Add("five = UNHEX(five)");
+			bl.Local = true;
+			int rowCount = await bl.LoadAsync();
+			Assert.Equal(20, rowCount);
 		}
 
 		[Fact]
@@ -191,129 +142,102 @@ namespace SideBySide
 		{
 			var secureFilePath = m_database.Connection.Query<string>(@"select @@global.secure_file_priv;").FirstOrDefault() ?? "";
 
+			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
+			bl.FileName = Path.Combine(secureFilePath, AppConfig.MySqlBulkLoaderCsvFile + "-junk");
+			bl.TableName = m_testTable;
+			bl.CharacterSet = "UTF8";
+			bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
+			bl.NumberOfLinesToSkip = 1;
+			bl.FieldTerminator = ",";
+			bl.FieldQuotationCharacter = '"';
+			bl.FieldQuotationOptional = true;
+			bl.Expressions.Add("five = UNHEX(five)");
+			bl.Local = false;
 			try
 			{
-				await InitializeTestAsync();
-
-				MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
-				bl.FileName = Path.Combine(secureFilePath, AppConfig.MySqlBulkLoaderCsvFile + "-junk");
-				bl.TableName = m_testTable;
-				bl.CharacterSet = "UTF8";
-				bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
-				bl.NumberOfLinesToSkip = 1;
-				bl.FieldTerminator = ",";
-				bl.FieldQuotationCharacter = '"';
-				bl.FieldQuotationOptional = true;
-				bl.Expressions.Add("five = UNHEX(five)");
-				bl.Local = false;
-				try
-				{
- 					int rowCount = await bl.LoadAsync();
-				}
-				catch (MySqlException mySqlException)
-				{
-					if (mySqlException.InnerException != null)
-					{
-						Assert.IsType(typeof(System.IO.FileNotFoundException), mySqlException.InnerException);
-					}
-					else
-					{
-						Assert.Contains("Errcode: 2 - No such file or directory", mySqlException.Message);
-					}
-				}
+				int rowCount = await bl.LoadAsync();
 			}
-			finally
+			catch (MySqlException mySqlException)
 			{
-				await FinalizeTestAsync();
+				if (mySqlException.InnerException != null)
+				{
+					Assert.IsType(typeof(System.IO.FileNotFoundException), mySqlException.InnerException);
+				}
+				else
+				{
+					Assert.Contains("Errcode: 2 - No such file or directory", mySqlException.Message);
+				}
 			}
 		}
 
 		[Fact]
 		public async Task BulkLoadLocalCsvFileNotFound()
 		{
+			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
+			bl.Timeout = 3; //Set a short timeout for this test because the file not found exception takes a long time otherwise, the timeout does not change the result
+			bl.FileName = AppConfig.MySqlBulkLoaderLocalCsvFile + "-junk";
+			bl.TableName = m_testTable;
+			bl.CharacterSet = "UTF8";
+			bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
+			bl.NumberOfLinesToSkip = 1;
+			bl.FieldTerminator = ",";
+			bl.FieldQuotationCharacter = '"';
+			bl.FieldQuotationOptional = true;
+			bl.Expressions.Add("five = UNHEX(five)");
+			bl.Local = true;
 			try
 			{
-				await InitializeTestAsync();
-
-				MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
-				bl.Timeout = 3; //Set a short timeout for this test because the file not found exception takes a long time otherwise, the timeout does not change the result
-				bl.FileName = AppConfig.MySqlBulkLoaderLocalCsvFile + "-junk";
-				bl.TableName = m_testTable;
-				bl.CharacterSet = "UTF8";
-				bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
-				bl.NumberOfLinesToSkip = 1;
-				bl.FieldTerminator = ",";
-				bl.FieldQuotationCharacter = '"';
-				bl.FieldQuotationOptional = true;
-				bl.Expressions.Add("five = UNHEX(five)");
-				bl.Local = true;
-				try
-				{
-					int rowCount = await bl.LoadAsync();
-				}
-				catch (MySqlException mySqlException)
-				{
-					while (mySqlException.InnerException != null)
-					{
-						if (mySqlException.InnerException.GetType() == typeof(MySqlException))
-						{
-							mySqlException = (MySqlException)mySqlException.InnerException;
-						}
-						else
-						{
-							Assert.IsType(typeof(System.IO.FileNotFoundException), mySqlException.InnerException);
-							break;
-						}
-					}
-					if (mySqlException.InnerException == null)
-					{
-						Assert.IsType(typeof(System.IO.FileNotFoundException), mySqlException);
-					}
-				}
-				catch (Exception exception)
-				{
-					//We know that the exception is not a MySqlException, just use the assertion to fail the test
-					Assert.IsType(typeof(MySqlException), exception);
-				};
+				int rowCount = await bl.LoadAsync();
 			}
-			finally
+			catch (MySqlException mySqlException)
 			{
-				await FinalizeTestAsync();
+				while (mySqlException.InnerException != null)
+				{
+					if (mySqlException.InnerException.GetType() == typeof(MySqlException))
+					{
+						mySqlException = (MySqlException)mySqlException.InnerException;
+					}
+					else
+					{
+						Assert.IsType(typeof(System.IO.FileNotFoundException), mySqlException.InnerException);
+						break;
+					}
+				}
+				if (mySqlException.InnerException == null)
+				{
+					Assert.IsType(typeof(System.IO.FileNotFoundException), mySqlException);
+				}
 			}
+			catch (Exception exception)
+			{
+				//We know that the exception is not a MySqlException, just use the assertion to fail the test
+				Assert.IsType(typeof(MySqlException), exception);
+			};
 		}
 
 		[Fact]
 		public async Task BulkLoadMissingFileName()
 		{
-			try
-			{
-				await InitializeTestAsync();
-
-				MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
-				bl.TableName = m_testTable;
-				bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
-				bl.NumberOfLinesToSkip = 1;
-				bl.FieldTerminator = ",";
-				bl.FieldQuotationCharacter = '"';
-				bl.FieldQuotationOptional = true;
-				bl.Expressions.Add("five = UNHEX(five)");
-				bl.Local = false;
+			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
+			bl.TableName = m_testTable;
+			bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
+			bl.NumberOfLinesToSkip = 1;
+			bl.FieldTerminator = ",";
+			bl.FieldQuotationCharacter = '"';
+			bl.FieldQuotationOptional = true;
+			bl.Expressions.Add("five = UNHEX(five)");
+			bl.Local = false;
 #if BASELINE
-				await Assert.ThrowsAsync<System.NullReferenceException>(async () =>
-				{
-					int rowCount = await bl.LoadAsync();
-				});
-#else
-				await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
-				{
-					int rowCount = await bl.LoadAsync();
-				});
-#endif
-			}
-			finally
+			await Assert.ThrowsAsync<System.NullReferenceException>(async () =>
 			{
-				await FinalizeTestAsync();
-			}
+				int rowCount = await bl.LoadAsync();
+			});
+#else
+			await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
+			{
+				int rowCount = await bl.LoadAsync();
+			});
+#endif
 		}
 
 		[BulkLoaderLocalCsvFileFact]
@@ -348,34 +272,25 @@ namespace SideBySide
 		[BulkLoaderLocalCsvFileFact]
 		public async Task BulkLoadFileStreamInvalidOperation()
 		{
-			try
+			using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
 			{
-				await InitializeTestAsync();
-
-				using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
+				MySqlBulkLoader bl = new MySqlBulkLoader(connection);
+				using (var fileStream = new FileStream(AppConfig.MySqlBulkLoaderLocalCsvFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
 				{
-					MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-					using (var fileStream = new FileStream(AppConfig.MySqlBulkLoaderLocalCsvFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
+					bl.InfileStream = fileStream;
+					bl.TableName = m_testTable;
+					bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
+					bl.NumberOfLinesToSkip = 1;
+					bl.FieldTerminator = ",";
+					bl.FieldQuotationCharacter = '"';
+					bl.FieldQuotationOptional = true;
+					bl.Expressions.Add("five = UNHEX(five)");
+					bl.Local = false;
+					await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
 					{
-						bl.InfileStream = fileStream;
-						bl.TableName = m_testTable;
-						bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
-						bl.NumberOfLinesToSkip = 1;
-						bl.FieldTerminator = ",";
-						bl.FieldQuotationCharacter = '"';
-						bl.FieldQuotationOptional = true;
-						bl.Expressions.Add("five = UNHEX(five)");
-						bl.Local = false;
-						await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
-						{
-							int rowCount = await bl.LoadAsync();
-						});
-					}
+						int rowCount = await bl.LoadAsync();
+					});
 				}
-			}
-			finally
-			{
-				await FinalizeTestAsync();
 			}
 		}
 #endif
@@ -387,29 +302,20 @@ namespace SideBySide
 		[BulkLoaderLocalCsvFileFact]
 		public async Task BulkLoadLocalFileStream()
 		{
-			try
+			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
+			using (var fileStream = new FileStream(AppConfig.MySqlBulkLoaderLocalCsvFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
 			{
-				await InitializeTestAsync();
-
-				MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
-				using (var fileStream = new FileStream(AppConfig.MySqlBulkLoaderLocalCsvFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
-				{
-					bl.InfileStream = fileStream;
-					bl.TableName = m_testTable;
-					bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
-					bl.NumberOfLinesToSkip = 1;
-					bl.FieldTerminator = ",";
-					bl.FieldQuotationCharacter = '"';
-					bl.FieldQuotationOptional = true;
-					bl.Expressions.Add("five = UNHEX(five)");
-					bl.Local = true;
-					int rowCount = await bl.LoadAsync();
-					Assert.Equal(20, rowCount);
-				}
-			}
-			finally
-			{
-				await FinalizeTestAsync();
+				bl.InfileStream = fileStream;
+				bl.TableName = m_testTable;
+				bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
+				bl.NumberOfLinesToSkip = 1;
+				bl.FieldTerminator = ",";
+				bl.FieldQuotationCharacter = '"';
+				bl.FieldQuotationOptional = true;
+				bl.Expressions.Add("five = UNHEX(five)");
+				bl.Local = true;
+				int rowCount = await bl.LoadAsync();
+				Assert.Equal(20, rowCount);
 			}
 		}
 #endif
@@ -421,30 +327,21 @@ namespace SideBySide
 		[Fact]
 		public async Task BulkLoadMemoryStreamInvalidOperation()
 		{
-			try
+			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
+			using (var memoryStream = new MemoryStream(m_memoryStreamBytes, false))
 			{
-				await InitializeTestAsync();
-
-				MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
-				using (var memoryStream = new MemoryStream(m_memoryStreamBytes, false))
+				bl.InfileStream = memoryStream;
+				bl.TableName = m_testTable;
+				bl.Columns.AddRange(new string[] { "one", "two", "three" });
+				bl.NumberOfLinesToSkip = 0;
+				bl.FieldTerminator = ",";
+				bl.FieldQuotationCharacter = '"';
+				bl.FieldQuotationOptional = true;
+				bl.Local = false;
+				await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
 				{
-					bl.InfileStream = memoryStream;
-					bl.TableName = m_testTable;
-					bl.Columns.AddRange(new string[] { "one", "two", "three" });
-					bl.NumberOfLinesToSkip = 0;
-					bl.FieldTerminator = ",";
-					bl.FieldQuotationCharacter = '"';
-					bl.FieldQuotationOptional = true;
-					bl.Local = false;
-					await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
-					{
-						int rowCount = await bl.LoadAsync();
-					});
-				}
-			}
-			finally
-			{
-				await FinalizeTestAsync();
+					int rowCount = await bl.LoadAsync();
+				});
 			}
 		}
 #endif
@@ -456,56 +353,25 @@ namespace SideBySide
 		[Fact]
 		public async Task BulkLoadLocalMemoryStream()
 		{
-			try
+			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
+			using (var memoryStream = new MemoryStream(m_memoryStreamBytes, false))
 			{
-				await InitializeTestAsync();
-
-				MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
-				using (var memoryStream = new MemoryStream(m_memoryStreamBytes, false))
-				{
-					bl.InfileStream = memoryStream;
-					bl.TableName = m_testTable;
-					bl.Columns.AddRange(new string[] { "one", "two", "three" });
-					bl.NumberOfLinesToSkip = 0;
-					bl.FieldTerminator = ",";
-					bl.FieldQuotationCharacter = '"';
-					bl.FieldQuotationOptional = true;
-					bl.Local = true;
-					int rowCount = await bl.LoadAsync();
-					Assert.Equal(5, rowCount);
-				}
-			}
-			finally
-			{
-				await FinalizeTestAsync();
+				bl.InfileStream = memoryStream;
+				bl.TableName = m_testTable;
+				bl.Columns.AddRange(new string[] { "one", "two", "three" });
+				bl.NumberOfLinesToSkip = 0;
+				bl.FieldTerminator = ",";
+				bl.FieldQuotationCharacter = '"';
+				bl.FieldQuotationOptional = true;
+				bl.Local = true;
+				int rowCount = await bl.LoadAsync();
+				Assert.Equal(5, rowCount);
 			}
 		}
 #endif
 
-		private async Task InitializeTestAsync()
-		{
-			MySqlConnection.ClearAllPools();
-			using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
-			{
-				await connection.ExecuteAsync(m_initializeTable);
-			}
-		}
-
-		private async Task FinalizeTestAsync()
-		{
-			if (AppConfig.MySqlBulkLoaderRemoveTables)
-			{
-				using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
-				{
-					await connection.ExecuteAsync(m_removeTable);
-				}
-			}
-		}
-
 		readonly DatabaseFixture m_database;
 		readonly string m_testTable;
-		readonly string m_initializeTable;
-		readonly string m_removeTable;
 		readonly byte[] m_memoryStreamBytes;
 	}
 }

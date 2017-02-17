@@ -1,6 +1,4 @@
 ﻿using System.Data;
-using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -23,7 +21,7 @@ namespace SideBySide
 #endif
 			m_testTable = "test.LoadDataInfileAsyncTest" + testClient;
 
-			m_initializeTable = @"
+			var initializeTable = @"
 				create schema if not exists test;
 				drop table if exists " + m_testTable + @";
 				CREATE TABLE " + m_testTable + @"
@@ -36,73 +34,35 @@ namespace SideBySide
 					, four datetime
 					, five blob
 				);";
-			m_removeTable = "drop table if exists " + m_testTable + @";";
+			m_database.Connection.Execute(initializeTable);
+
 			m_loadDataInfileCommand = "LOAD DATA{0} INFILE '{1}' INTO TABLE " + m_testTable + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (one, two, three, four, five) SET five = UNHEX(five);";
 		}
 
 		[BulkLoaderCsvFileFact]
 		public async void CommandLoadCsvFile()
 		{
-			try
-			{
-				await InitializeTestAsync();
-
-				string insertInlineCommand = string.Format(m_loadDataInfileCommand, "", AppConfig.MySqlBulkLoaderCsvFile.Replace("\\", "\\\\"));
-				MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
-				if (m_database.Connection.State != ConnectionState.Open) await m_database.Connection.OpenAsync();
-				int rowCount = await command.ExecuteNonQueryAsync();
-				m_database.Connection.Close();
-				Assert.Equal(20, rowCount);
-			}
-			finally
-			{
-				await FinalizeTestAsync();
-			}
+			string insertInlineCommand = string.Format(m_loadDataInfileCommand, "", AppConfig.MySqlBulkLoaderCsvFile.Replace("\\", "\\\\"));
+			MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
+			if (m_database.Connection.State != ConnectionState.Open) await m_database.Connection.OpenAsync();
+			int rowCount = await command.ExecuteNonQueryAsync();
+			m_database.Connection.Close();
+			Assert.Equal(20, rowCount);
 		}
 
 		[BulkLoaderLocalCsvFileFact]
 		public async void CommandLoadLocalCsvFile()
 		{
-			try
-			{
-				await InitializeTestAsync();
-
-				string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL", AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
-				MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
-				if (m_database.Connection.State != ConnectionState.Open) await m_database.Connection.OpenAsync();
-				int rowCount = await command.ExecuteNonQueryAsync();
-				m_database.Connection.Close();
-				Assert.Equal(20, rowCount);
-			}
-			finally
-			{
-				await FinalizeTestAsync();
-			}
-		}
-
-		private async Task InitializeTestAsync()
-		{
-			MySqlConnection.ClearAllPools();
-			using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
-			{
-				await connection.ExecuteAsync(m_initializeTable);
-			}
-		}
-		private async Task FinalizeTestAsync()
-		{
-			if (AppConfig.MySqlBulkLoaderRemoveTables)
-			{
-				using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
-				{
-					await connection.ExecuteAsync(m_removeTable);
-				}
-			}
+			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL", AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
+			MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
+			if (m_database.Connection.State != ConnectionState.Open) await m_database.Connection.OpenAsync();
+			int rowCount = await command.ExecuteNonQueryAsync();
+			m_database.Connection.Close();
+			Assert.Equal(20, rowCount);
 		}
 
 		readonly DatabaseFixture m_database;
 		readonly string m_testTable;
-		readonly string m_initializeTable;
-		readonly string m_removeTable;
 		readonly string m_loadDataInfileCommand;
 	}
 }
