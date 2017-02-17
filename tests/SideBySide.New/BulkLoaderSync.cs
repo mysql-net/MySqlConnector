@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Data;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Linq;
 using MySql.Data.MySqlClient;
 using Xunit;
 using Dapper;
@@ -174,12 +172,14 @@ namespace SideBySide.New
 		[Fact]
 		public void BulkLoadCsvFileNotFound()
 		{
+			var secureFilePath = m_database.Connection.Query<string>(@"select @@global.secure_file_priv;").FirstOrDefault() ?? "";
+
 			try
 			{
 				InitializeTest();
 
 				MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
-				bl.FileName = AppConfig.MySqlBulkLoaderCsvFile + "-junk";
+				bl.FileName = Path.Combine(secureFilePath, AppConfig.MySqlBulkLoaderCsvFile + "-junk");
 				bl.TableName = m_testTable;
 				bl.CharacterSet = "UTF8";
 				bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
@@ -204,11 +204,6 @@ namespace SideBySide.New
 						Assert.Contains("Errcode: 2 - No such file or directory", mySqlException.Message);
 					}
 				}
-				catch (Exception exception)
-				{
-					//We know that the exception is not a MySqlException, just the assertion to fail the test
-					Assert.IsType(typeof(MySqlException), exception);
-				};
 			}
 			finally
 			{

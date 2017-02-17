@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Data;
 using System.IO;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -190,12 +189,14 @@ namespace SideBySide.New
 		[Fact]
 		public async Task BulkLoadCsvFileNotFound()
 		{
+			var secureFilePath = m_database.Connection.Query<string>(@"select @@global.secure_file_priv;").FirstOrDefault() ?? "";
+
 			try
 			{
 				await InitializeTestAsync();
 
 				MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
-				bl.FileName = AppConfig.MySqlBulkLoaderCsvFile + "-junk";
+				bl.FileName = Path.Combine(secureFilePath, AppConfig.MySqlBulkLoaderCsvFile + "-junk");
 				bl.TableName = m_testTable;
 				bl.CharacterSet = "UTF8";
 				bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
@@ -220,15 +221,6 @@ namespace SideBySide.New
 						Assert.Contains("Errcode: 2 - No such file or directory", mySqlException.Message);
 					}
 				}
-				catch (System.InvalidOperationException invalidOperationException)
-				{
-					Assert.IsType(typeof(System.InvalidOperationException), invalidOperationException);
-				}
-				catch (Exception exception)
-				{
-					//We know that the exception is not a MySqlException, just the assertion to fail the test
-					Assert.IsType(typeof(MySqlException), exception);
-				};
 			}
 			finally
 			{
@@ -289,6 +281,7 @@ namespace SideBySide.New
 				await FinalizeTestAsync();
 			}
 		}
+
 		[Fact]
 		public async Task BulkLoadMissingFileName()
 		{
@@ -306,10 +299,10 @@ namespace SideBySide.New
 				bl.Expressions.Add("five = UNHEX(five)");
 				bl.Local = false;
 #if BASELINE
-						await Assert.ThrowsAsync<System.NullReferenceException>(async () =>
-						{
-							int rowCount = await bl.LoadAsync();
-						});
+				await Assert.ThrowsAsync<System.NullReferenceException>(async () =>
+				{
+					int rowCount = await bl.LoadAsync();
+				});
 #else
 				await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
 				{
@@ -420,6 +413,7 @@ namespace SideBySide.New
 			}
 		}
 #endif
+
 #if BASELINE
 		[Fact(Skip = "InfileStream not implemented")]
 		public void BulkLoadMemoryStreamInvalidOperation() {}
@@ -454,6 +448,7 @@ namespace SideBySide.New
 			}
 		}
 #endif
+
 #if BASELINE
 		[Fact(Skip = "InfileStream not implemented")]
 		public void BulkLoadLocalMemoryStream() {}
@@ -495,6 +490,7 @@ namespace SideBySide.New
 				await connection.ExecuteAsync(m_initializeTable);
 			}
 		}
+
 		private async Task FinalizeTestAsync()
 		{
 			if (AppConfig.MySqlBulkLoaderRemoveTables)
