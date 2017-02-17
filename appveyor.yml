@@ -11,7 +11,6 @@ build_script:
 - cmd: |-
     dotnet build src\MySqlConnector --configuration Release
     dotnet build tests\SideBySide.New --configuration Release
-    copy .ci\config\config.json tests\SideBySide.New\config.json
     "C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe" /p:Configuration=Release /t:SideBySide_Baseline MySqlConnector.sln
 before_test:
 - cmd: |-
@@ -21,7 +20,7 @@ test_script:
     dotnet test tests\MySqlConnector.Tests --configuration Release
     echo Executing tests with No Compression, No SSL && copy /y .ci\config\config.json tests\SideBySide.New\config.json && dotnet test tests/SideBySide.New --configuration Release
     echo Executing tests with Compression, No SSL && copy /y .ci\config\config.compression.json tests\SideBySide.New\config.json && dotnet test tests/SideBySide.New --configuration Release
-    packages\xunit.runner.console.2.1.0\tools\xunit.console.exe tests\SideBySide.Baseline\bin\Release\SideBySide.Baseline.dll
+    echo Executing baseline tests with No Compression, No SSL && copy .ci\config\config.json tests\SideBySide.New\config.json && packages\xunit.runner.console.2.1.0\tools\xunit.console.exe tests\SideBySide.Baseline\bin\Release\SideBySide.Baseline.dll
 notifications:
 - provider: Slack
   incoming_webhook:
