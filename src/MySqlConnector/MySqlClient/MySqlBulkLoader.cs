@@ -39,19 +39,19 @@ namespace MySql.Data.MySqlClient
 
         public MySqlBulkLoader(MySqlConnection connection)
         {
-            this.Connection = connection;
-            this.Local = true;
-            this.FieldTerminator = defaultFieldTerminator;
-            this.LineTerminator = defaultLineTerminator;
-            this.FieldQuotationCharacter = '\0';
-            this.ConflictOption = MySqlBulkLoaderConflictOption.None;
-            this.Columns = new List<string>();
-            this.Expressions = new List<string>();
+            Connection = connection;
+            Local = true;
+            FieldTerminator = defaultFieldTerminator;
+            LineTerminator = defaultLineTerminator;
+            FieldQuotationCharacter = '\0';
+            ConflictOption = MySqlBulkLoaderConflictOption.None;
+            Columns = new List<string>();
+            Expressions = new List<string>();
         }
 
         private string BuildSqlCommand()
         {
-            if (string.IsNullOrWhiteSpace(this.FileName) || string.IsNullOrWhiteSpace(this.TableName))
+            if (string.IsNullOrWhiteSpace(FileName) || string.IsNullOrWhiteSpace(TableName))
             {
                 //This is intentionally a different exception to what is thrown by the baseline client because
                 //the baseline does not handle null or empty FileName and TableName.
@@ -62,53 +62,53 @@ namespace MySql.Data.MySqlClient
             }
 
             StringBuilder sqlCommandMain = new StringBuilder("LOAD DATA ");
-            if (this.Priority == MySqlBulkLoaderPriority.Low)
+            if (Priority == MySqlBulkLoaderPriority.Low)
             {
                 sqlCommandMain.Append("LOW_PRIORITY ");
             }
-            else if (this.Priority == MySqlBulkLoaderPriority.Concurrent)
+            else if (Priority == MySqlBulkLoaderPriority.Concurrent)
             {
                 sqlCommandMain.Append("CONCURRENT ");
             }
-            if (this.Local)
+            if (Local)
             {
                 sqlCommandMain.Append("LOCAL ");
             }
             sqlCommandMain.Append("INFILE ");
             if (System.IO.Path.DirectorySeparatorChar != '\\')
             {
-                sqlCommandMain.AppendFormat("'{0}' ", this.FileName);
+                sqlCommandMain.AppendFormat("'{0}' ", FileName);
             }
             else
             {
-                sqlCommandMain.AppendFormat("'{0}' ", this.FileName.Replace("\\", "\\\\"));
+                sqlCommandMain.AppendFormat("'{0}' ", FileName.Replace("\\", "\\\\"));
             }
-            if (this.ConflictOption == MySqlBulkLoaderConflictOption.Ignore)
+            if (ConflictOption == MySqlBulkLoaderConflictOption.Ignore)
             {
                 sqlCommandMain.Append("IGNORE ");
             }
-            else if (this.ConflictOption == MySqlBulkLoaderConflictOption.Replace)
+            else if (ConflictOption == MySqlBulkLoaderConflictOption.Replace)
             {
                 sqlCommandMain.Append("REPLACE ");
             }
-            sqlCommandMain.AppendFormat("INTO TABLE {0} ", this.TableName);
-            if (this.CharacterSet != null)
+            sqlCommandMain.AppendFormat("INTO TABLE {0} ", TableName);
+            if (CharacterSet != null)
             {
-                sqlCommandMain.AppendFormat("CHARACTER SET {0} ", this.CharacterSet);
+                sqlCommandMain.AppendFormat("CHARACTER SET {0} ", CharacterSet);
             }
 
             StringBuilder sqlCommandFragment = new StringBuilder(string.Empty);
-            if (this.FieldTerminator != defaultFieldTerminator)
+            if (FieldTerminator != defaultFieldTerminator)
             {
-                sqlCommandFragment.AppendFormat("TERMINATED BY \'{0}\' ", this.FieldTerminator);
+                sqlCommandFragment.AppendFormat("TERMINATED BY \'{0}\' ", FieldTerminator);
             }
-            if (this.FieldQuotationCharacter != 0)
+            if (FieldQuotationCharacter != 0)
             {
-                sqlCommandFragment.AppendFormat("{0} ENCLOSED BY \'{1}\' ", (this.FieldQuotationOptional ? "OPTIONALLY" : ""), this.FieldQuotationCharacter);
+                sqlCommandFragment.AppendFormat("{0} ENCLOSED BY \'{1}\' ", (FieldQuotationOptional ? "OPTIONALLY" : ""), FieldQuotationCharacter);
             }
-            if (this.EscapeCharacter != defaultEscapeCharacter && this.EscapeCharacter != 0)
+            if (EscapeCharacter != defaultEscapeCharacter && EscapeCharacter != 0)
             {
-                sqlCommandFragment.AppendFormat("ESCAPED BY \'{0}\' ", this.EscapeCharacter);
+                sqlCommandFragment.AppendFormat("ESCAPED BY \'{0}\' ", EscapeCharacter);
             }
             if (sqlCommandFragment.Length > 0)
             {
@@ -116,40 +116,40 @@ namespace MySql.Data.MySqlClient
             }
 
             sqlCommandFragment.Clear();
-            if (this.LinePrefix != null && this.LinePrefix.Length > 0)
+            if (LinePrefix != null && LinePrefix.Length > 0)
             {
-                sqlCommandFragment.AppendFormat("STARTING BY \'{0}\' ", this.LinePrefix);
+                sqlCommandFragment.AppendFormat("STARTING BY \'{0}\' ", LinePrefix);
             }
-            if (this.LineTerminator != defaultLineTerminator)
+            if (LineTerminator != defaultLineTerminator)
             {
-                sqlCommandFragment.AppendFormat("TERMINATED BY \'{0}\' ", this.LineTerminator);
+                sqlCommandFragment.AppendFormat("TERMINATED BY \'{0}\' ", LineTerminator);
             }
             if (sqlCommandFragment.Length > 0)
             {
                 sqlCommandMain.AppendFormat("LINES {0}", sqlCommandFragment.ToString());
             }
 
-            if (this.NumberOfLinesToSkip > 0)
+            if (NumberOfLinesToSkip > 0)
             {
-                sqlCommandMain.AppendFormat("IGNORE {0} LINES ", this.NumberOfLinesToSkip);
+                sqlCommandMain.AppendFormat("IGNORE {0} LINES ", NumberOfLinesToSkip);
             }
-            if (this.Columns.Count > 0)
+            if (Columns.Count > 0)
             {
                 sqlCommandMain.Append("(");
-                sqlCommandMain.Append(this.Columns[0]);
-                for (int i = 1; i < this.Columns.Count; i++)
+                sqlCommandMain.Append(Columns[0]);
+                for (int i = 1; i < Columns.Count; i++)
                 {
-                    sqlCommandMain.AppendFormat(",{0}", this.Columns[i]);
+                    sqlCommandMain.AppendFormat(",{0}", Columns[i]);
                 }
                 sqlCommandMain.Append(") ");
             }
-            if (this.Expressions.Count > 0)
+            if (Expressions.Count > 0)
             {
                 sqlCommandMain.Append("SET ");
-                sqlCommandMain.Append(this.Expressions[0]);
-                for (int j = 1; j < this.Expressions.Count; j++)
+                sqlCommandMain.Append(Expressions[0]);
+                for (int j = 1; j < Expressions.Count; j++)
                 {
-                    sqlCommandMain.AppendFormat(",{0}", this.Expressions[j]);
+                    sqlCommandMain.AppendFormat(",{0}", Expressions[j]);
                 }
             }
             return sqlCommandMain.ToString();
@@ -165,31 +165,31 @@ namespace MySql.Data.MySqlClient
         {
             int recordsAffected;
             bool closeConnection = false;
-            if (this.Connection == null)
+            if (Connection == null)
             {
                 throw new InvalidOperationException("Connection not set");
             }
-            if (this.Connection.State != ConnectionState.Open)
+            if (Connection.State != ConnectionState.Open)
             {
                 closeConnection = true;
-                this.Connection.Open();
+                Connection.Open();
             }
-            if (string.IsNullOrWhiteSpace(this.FileName) && this.InfileStream != null)
+            if (string.IsNullOrWhiteSpace(FileName) && InfileStream != null)
             {
-                if (!this.Local)
+                if (!Local)
                 {
                     throw new InvalidOperationException("Cannot use InfileStream when Local is not true.");
                 }
                 string streamKey = string.Format("{0}:{1}", LocalInfilePayload.InfileStreamPrefix, Guid.NewGuid());
-                InfileStreams.Add(streamKey, this.InfileStream);
-                this.FileName = streamKey;
+                InfileStreams.Add(streamKey, InfileStream);
+                FileName = streamKey;
             }
             try
             {
-                string commandString = this.BuildSqlCommand();
-                var cmd = new MySqlCommand(commandString, this.Connection)
+                string commandString = BuildSqlCommand();
+                var cmd = new MySqlCommand(commandString, Connection)
                 {
-                    CommandTimeout = this.Timeout
+                    CommandTimeout = Timeout
                 };
                 recordsAffected = await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
             }
@@ -197,7 +197,7 @@ namespace MySql.Data.MySqlClient
             {
                 if (closeConnection)
                 {
-                    this.Connection.Close();
+                    Connection.Close();
                 }
             }
             return recordsAffected;
