@@ -67,7 +67,7 @@ namespace SideBySide
 			}
 		}
 
-		[BulkLoaderTsvFileFact]
+		[BulkLoaderLocalTsvFileFact]
 		public void BulkLoadLocalTsvFile()
 		{
 			try
@@ -75,7 +75,7 @@ namespace SideBySide
 				InitializeTest();
 
 				MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
-				bl.FileName = AppConfig.MySqlBulkLoaderTsvFile;
+				bl.FileName = AppConfig.MySqlBulkLoaderLocalTsvFile;
 				bl.TableName = m_testTable;
 				bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 				bl.NumberOfLinesToSkip = 1;
@@ -90,7 +90,7 @@ namespace SideBySide
 			}
 		}
 
-		[BulkLoaderTsvFileFact]
+		[BulkLoaderLocalTsvFileFact]
 		public void BulkLoadLocalTsvFileDoubleEscapedTerminators()
 		{
 			try
@@ -98,7 +98,7 @@ namespace SideBySide
 				InitializeTest();
 
 				MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
-				bl.FileName = AppConfig.MySqlBulkLoaderTsvFile;
+				bl.FileName = AppConfig.MySqlBulkLoaderLocalTsvFile;
 				bl.TableName = m_testTable;
 				bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 				bl.NumberOfLinesToSkip = 1;
@@ -264,6 +264,7 @@ namespace SideBySide
 				FinalizeTest();
 			}
 		}
+
 		[Fact]
 		public void BulkLoadMissingFileName()
 		{

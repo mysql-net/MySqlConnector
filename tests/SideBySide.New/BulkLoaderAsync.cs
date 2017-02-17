@@ -76,7 +76,7 @@ namespace SideBySide
 			}
 		}
 
-		[BulkLoaderTsvFileFact]
+		[BulkLoaderLocalTsvFileFact]
 		public async Task BulkLoadLocalTsvFile()
 		{
 			try
@@ -86,7 +86,7 @@ namespace SideBySide
 				using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
 				{
 					MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-					bl.FileName = AppConfig.MySqlBulkLoaderTsvFile;
+					bl.FileName = AppConfig.MySqlBulkLoaderLocalTsvFile;
 					bl.TableName = m_testTable;
 					bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 					bl.NumberOfLinesToSkip = 1;
@@ -102,7 +102,7 @@ namespace SideBySide
 			}
 		}
 
-		[BulkLoaderTsvFileFact]
+		[BulkLoaderLocalTsvFileFact]
 		public async Task BulkLoadLocalTsvFileDoubleEscapedTerminators()
 		{
 			try
@@ -112,7 +112,7 @@ namespace SideBySide
 				using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
 				{
 					MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-					bl.FileName = AppConfig.MySqlBulkLoaderTsvFile;
+					bl.FileName = AppConfig.MySqlBulkLoaderLocalTsvFile;
 					bl.TableName = m_testTable;
 					bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 					bl.NumberOfLinesToSkip = 1;
