@@ -155,18 +155,13 @@ namespace MySql.Data.MySqlClient
             return sqlCommandMain.ToString();
         }
 
-        public int Load()
-        {
-            return LoadAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-        }
+        public int Load() => LoadAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-        public Task<int> LoadAsync() =>
-            LoadAsync(IOBehavior.Asynchronous, CancellationToken.None);
+        public Task<int> LoadAsync() => LoadAsync(IOBehavior.Asynchronous, CancellationToken.None);
 
-        public Task<int> LoadAsync(CancellationToken cancellationToken)=> 
-            LoadAsync(IOBehavior.Asynchronous, cancellationToken);
+        public Task<int> LoadAsync(CancellationToken cancellationToken) => LoadAsync(IOBehavior.Asynchronous, cancellationToken);
 
-        internal async Task<int> LoadAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+        private async Task<int> LoadAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
         {
             int recordsAffected;
             bool closeConnection = false;
