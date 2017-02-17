@@ -53,7 +53,7 @@ namespace MySql.Data.MySqlClient.Results
 					try
 					{
 						var localInfile = LocalInfilePayload.Create(payload);
-						using (var stream = localInfile.FileName.StartsWith(LocalInfilePayload.InfileStreamPrefix, StringComparison.Ordinal) ?
+						using (var stream = localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal) ?
 							MySqlBulkLoader.GetAndRemoveStream(localInfile.FileName) :
 							File.OpenRead(localInfile.FileName))
 						{

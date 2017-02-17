@@ -181,10 +181,9 @@ namespace MySql.Data.MySqlClient
                 {
                     throw new InvalidOperationException("Cannot use InfileStream when Local is not true.");
                 }
-                string streamKey = string.Format("{0}:{1}", LocalInfilePayload.InfileStreamPrefix, Guid.NewGuid());
+                FileName = StreamPrefix + Guid.NewGuid().ToString("N");
                 lock (s_lock)
-                    s_streams.Add(streamKey, InfileStream);
-                FileName = streamKey;
+                    s_streams.Add(FileName, InfileStream);
             }
             try
             {
@@ -204,6 +203,8 @@ namespace MySql.Data.MySqlClient
             }
             return recordsAffected;
         }
+
+        internal const string StreamPrefix = ":STREAM:";
 
         internal static Stream GetAndRemoveStream(string streamKey)
         {
