@@ -29,6 +29,7 @@ namespace MySql.Data.MySqlClient.Results
 			m_readBuffer.Clear();
 			m_row = null;
 			m_rowBuffered = null;
+			MySqlException exception = null;
 
 			while (true)
 			{
@@ -49,19 +50,12 @@ namespace MySql.Data.MySqlClient.Results
 				}
 				else if (firstByte == LocalInfilePayload.Signature)
 				{
-					var localInfile = LocalInfilePayload.Create(payload);
-					Stream infileStream;
 					try
 					{
-						if (localInfile.FileName.StartsWith(LocalInfilePayload.InfileStreamPrefix, StringComparison.Ordinal))
-						{
-							infileStream = MySqlBulkLoader.GetInfileStreamByKey(localInfile.FileName);
-						}
-						else
-						{
-							infileStream = new FileStream(localInfile.FileName, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
-						}
-						using (infileStream)
+						var localInfile = LocalInfilePayload.Create(payload);
+						using (var infileStream = localInfile.FileName.StartsWith(LocalInfilePayload.InfileStreamPrefix, StringComparison.Ordinal) ?
+							MySqlBulkLoader.GetInfileStreamByKey(localInfile.FileName) :
+							File.OpenRead(localInfile.FileName))
 						{
 							byte[] readBuffer = new byte[8192];
 							int byteCount;
@@ -72,14 +66,13 @@ namespace MySql.Data.MySqlClient.Results
 							}
 						}
 					}
-					catch (Exception exc)
+					catch (Exception ex)
 					{
-						throw new MySqlException("Error during LOAD DATA LOCAL INFILE", exc);
+						// store the exception, to be thrown after reading the response packet from the server
+						exception = new MySqlException("Error during LOAD DATA LOCAL INFILE", ex);
 					}
-					finally
-					{
-						await Session.SendReplyAsync(EmptyPayload.Create(), ioBehavior, cancellationToken);
-					}
+
+					await Session.SendReplyAsync(EmptyPayload.Create(), ioBehavior, cancellationToken);
 				}
 				else
 				{
@@ -104,6 +97,10 @@ namespace MySql.Data.MySqlClient.Results
 				}
 			}
 			BufferState = State;
+
+			if (exception != null)
+				throw exception;
+
 			return this;
 		}
 
