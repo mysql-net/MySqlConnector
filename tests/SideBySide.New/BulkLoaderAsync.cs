@@ -7,7 +7,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Dapper;
 
-namespace SideBySide.New
+namespace SideBySide
 {
 	[Collection("BulkLoaderCollection")]
 	public class BulkLoaderAsync : IClassFixture<DatabaseFixture>

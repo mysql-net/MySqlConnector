@@ -6,7 +6,7 @@ using MySql.Data.MySqlClient;
 using Xunit;
 using Dapper;
 
-namespace SideBySide.New
+namespace SideBySide
 {
 	[Collection("BulkLoaderCollection")]
 	public class LoadDataInfileSync : IClassFixture<DatabaseFixture>
