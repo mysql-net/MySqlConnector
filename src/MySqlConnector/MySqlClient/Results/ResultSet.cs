@@ -53,7 +53,7 @@ namespace MySql.Data.MySqlClient.Results
 					Stream infileStream;
 					try
 					{
-						if (localInfile.FileName.StartsWith(LocalInfilePayload.InfileStreamPrefix))
+						if (localInfile.FileName.StartsWith(LocalInfilePayload.InfileStreamPrefix, StringComparison.Ordinal))
 						{
 							infileStream = MySqlBulkLoader.GetInfileStreamByKey(localInfile.FileName);
 						}
