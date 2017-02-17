@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
-using SideBySide.New;
 using Xunit;
 using static System.FormattableString;
 
