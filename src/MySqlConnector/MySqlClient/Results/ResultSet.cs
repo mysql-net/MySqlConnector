@@ -57,9 +57,9 @@ namespace MySql.Data.MySqlClient.Results
 							MySqlBulkLoader.GetAndRemoveStream(localInfile.FileName) :
 							File.OpenRead(localInfile.FileName))
 						{
-							byte[] readBuffer = new byte[8192];
+							byte[] readBuffer = new byte[65536];
 							int byteCount;
-							while ((byteCount = await stream.ReadAsync(readBuffer, 0, 8192).ConfigureAwait(false)) > 0)
+							while ((byteCount = await stream.ReadAsync(readBuffer, 0, readBuffer.Length).ConfigureAwait(false)) > 0)
 							{
 								payload = new PayloadData(new ArraySegment<byte>(readBuffer, 0, byteCount));
 								await Session.SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
