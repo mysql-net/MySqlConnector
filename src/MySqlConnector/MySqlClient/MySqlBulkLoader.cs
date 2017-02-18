@@ -28,13 +28,25 @@ namespace MySql.Data.MySqlClient
         public char FieldQuotationCharacter { get; set; }
         public bool FieldQuotationOptional { get; set; }
         public string FieldTerminator { get; set; }
+
+        /// <summary>
+        /// The name of the local (if <see cref="Local"/> is <c>true</c>) or remote (otherwise) file to load.
+        /// Either this or <see cref="SourceStream"/> must be set.
+        /// </summary>
         public string FileName { get; set; }
-        public Stream InfileStream { get; set; }
+
         public string LinePrefix { get; set; }
         public string LineTerminator { get; set; }
         public bool Local { get; set; }
         public int NumberOfLinesToSkip { get; set; }
         public MySqlBulkLoaderPriority Priority { get; set; }
+
+        /// <summary>
+        /// A <see cref="Stream"/> containing the data to load. Either this or <see cref="FileName"/> must be set.
+        /// The <see cref="Local"/> property must be <c>true</c> if this is set.
+        /// </summary>
+        public Stream SourceStream { get; set; }
+
         public string TableName { get; set; }
         public int Timeout { get; set; }
 
@@ -52,16 +64,6 @@ namespace MySql.Data.MySqlClient
 
         private string BuildSqlCommand()
         {
-            if (string.IsNullOrWhiteSpace(FileName) || string.IsNullOrWhiteSpace(TableName))
-            {
-                //This is intentionally a different exception to what is thrown by the baseline client because
-                //the baseline does not handle null or empty FileName and TableName.
-                //The baseline client simply tries to use the given values, resulting in a NullReferenceException for
-                //a null FileName, a MySqlException with an inner FileStream exception for an empty FileName,
-                //and a MySqlException with a syntax error if the TableName is null or empty.
-                throw new InvalidOperationException("FileName or InfileStream, and TableName are required.");
-            }
-
             StringBuilder sqlCommandMain = new StringBuilder("LOAD DATA ");
             if (Priority == MySqlBulkLoaderPriority.Low)
             {
@@ -164,44 +166,53 @@ namespace MySql.Data.MySqlClient
 
         private async Task<int> LoadAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
         {
-            int recordsAffected;
-            bool closeConnection = false;
             if (Connection == null)
-            {
                 throw new InvalidOperationException("Connection not set");
+
+            if (!string.IsNullOrWhiteSpace(FileName) && SourceStream != null)
+                throw new InvalidOperationException("Cannot set both FileName and SourceStream");
+
+            if (string.IsNullOrWhiteSpace(FileName) && SourceStream != null)
+            {
+                if (!Local)
+                    throw new InvalidOperationException("Cannot use SourceStream when Local is not true.");
+
+                FileName = StreamPrefix + Guid.NewGuid().ToString("N");
+                lock (s_lock)
+                    s_streams.Add(FileName, SourceStream);
             }
+
+            if (string.IsNullOrWhiteSpace(FileName) || string.IsNullOrWhiteSpace(TableName))
+            {
+                // This is intentionally a different exception to what is thrown by MySql.Data because
+                // it does not handle null or empty FileName and TableName.
+                // The baseline client simply tries to use the given values, resulting in a NullReferenceException for
+                // a null FileName, a MySqlException with an inner FileStream exception for an empty FileName,
+                // and a MySqlException with a syntax error if the TableName is null or empty.
+                throw new InvalidOperationException("FileName or SourceStream, and TableName are required.");
+            }
+
+            bool closeConnection = false;
             if (Connection.State != ConnectionState.Open)
             {
                 closeConnection = true;
                 Connection.Open();
             }
-            if (string.IsNullOrWhiteSpace(FileName) && InfileStream != null)
-            {
-                if (!Local)
-                {
-                    throw new InvalidOperationException("Cannot use InfileStream when Local is not true.");
-                }
-                FileName = StreamPrefix + Guid.NewGuid().ToString("N");
-                lock (s_lock)
-                    s_streams.Add(FileName, InfileStream);
-            }
+
             try
             {
-                string commandString = BuildSqlCommand();
+                var commandString = BuildSqlCommand();
                 var cmd = new MySqlCommand(commandString, Connection)
                 {
                     CommandTimeout = Timeout
                 };
-                recordsAffected = await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+                return await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
                 if (closeConnection)
-                {
                     Connection.Close();
-                }
             }
-            return recordsAffected;
         }
 
         internal const string StreamPrefix = ":STREAM:";

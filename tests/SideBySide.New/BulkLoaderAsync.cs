@@ -266,7 +266,7 @@ namespace SideBySide
 		}
 
 #if BASELINE
-		[Fact(Skip = "InfileStream not implemented")]
+		[Fact(Skip = "SourceStream not implemented")]
 		public void BulkLoadFileStreamInvalidOperation() {}
 #else
 		[BulkLoaderLocalCsvFileFact]
@@ -277,7 +277,7 @@ namespace SideBySide
 				MySqlBulkLoader bl = new MySqlBulkLoader(connection);
 				using (var fileStream = new FileStream(AppConfig.MySqlBulkLoaderLocalCsvFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
 				{
-					bl.InfileStream = fileStream;
+					bl.SourceStream = fileStream;
 					bl.TableName = m_testTable;
 					bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 					bl.NumberOfLinesToSkip = 1;
@@ -296,7 +296,7 @@ namespace SideBySide
 #endif
 
 #if BASELINE
-		[Fact(Skip = "InfileStream not implemented")]
+		[Fact(Skip = "SourceStream not implemented")]
 		public void BulkLoadLocalFileStream() {}
 #else
 		[BulkLoaderLocalCsvFileFact]
@@ -305,7 +305,7 @@ namespace SideBySide
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
 			using (var fileStream = new FileStream(AppConfig.MySqlBulkLoaderLocalCsvFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
 			{
-				bl.InfileStream = fileStream;
+				bl.SourceStream = fileStream;
 				bl.TableName = m_testTable;
 				bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 				bl.NumberOfLinesToSkip = 1;
@@ -321,7 +321,7 @@ namespace SideBySide
 #endif
 
 #if BASELINE
-		[Fact(Skip = "InfileStream not implemented")]
+		[Fact(Skip = "SourceStream not implemented")]
 		public void BulkLoadMemoryStreamInvalidOperation() {}
 #else
 		[Fact]
@@ -330,7 +330,7 @@ namespace SideBySide
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
 			using (var memoryStream = new MemoryStream(m_memoryStreamBytes, false))
 			{
-				bl.InfileStream = memoryStream;
+				bl.SourceStream = memoryStream;
 				bl.TableName = m_testTable;
 				bl.Columns.AddRange(new string[] { "one", "two", "three" });
 				bl.NumberOfLinesToSkip = 0;
@@ -347,7 +347,7 @@ namespace SideBySide
 #endif
 
 #if BASELINE
-		[Fact(Skip = "InfileStream not implemented")]
+		[Fact(Skip = "SourceStream not implemented")]
 		public void BulkLoadLocalMemoryStream() {}
 #else
 		[Fact]
@@ -356,7 +356,7 @@ namespace SideBySide
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
 			using (var memoryStream = new MemoryStream(m_memoryStreamBytes, false))
 			{
-				bl.InfileStream = memoryStream;
+				bl.SourceStream = memoryStream;
 				bl.TableName = m_testTable;
 				bl.Columns.AddRange(new string[] { "one", "two", "three" });
 				bl.NumberOfLinesToSkip = 0;
