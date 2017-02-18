@@ -130,6 +130,12 @@
     <Compile Include="..\SideBySide.New\Attributes.cs">
       <Link>Attributes.cs</Link>
     </Compile>
+    <Compile Include="..\SideBySide.New\BulkLoaderAsync.cs">
+      <Link>BulkLoaderAsync.cs</Link>
+    </Compile>
+    <Compile Include="..\SideBySide.New\BulkLoaderSync.cs">
+      <Link>BulkLoaderSync.cs</Link>
+    </Compile>
     <Compile Include="..\SideBySide.New\ConnectAsync.cs">
       <Link>ConnectAsync.cs</Link>
     </Compile>
@@ -150,6 +156,12 @@
     </Compile>
     <Compile Include="..\SideBySide.New\InsertTests.cs">
       <Link>InsertTests.cs</Link>
+    </Compile>
+    <Compile Include="..\SideBySide.New\LoadDataInfileAsync.cs">
+      <Link>LoadDataInfileAsync.cs</Link>
+    </Compile>
+    <Compile Include="..\SideBySide.New\LoadDataInfileSync.cs">
+      <Link>LoadDataInfileSync.cs</Link>
     </Compile>
     <Compile Include="..\SideBySide.New\ParameterCollection.cs">
       <Link>ParameterCollection.cs</Link>

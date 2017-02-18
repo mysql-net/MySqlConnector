@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.Protocol.Serialization;
@@ -46,9 +47,39 @@ namespace MySql.Data.MySqlClient.Results
 					if (State == ResultSetState.NoMoreData)
 						break;
 				}
-				else if (firstByte == 0xFB)
+				else if (firstByte == LocalInfilePayload.Signature)
 				{
-					throw new NotSupportedException("Don't support LOCAL_INFILE_Request");
+					var localInfile = LocalInfilePayload.Create(payload);
+					Stream infileStream;
+					try
+					{
+						if (localInfile.FileName.StartsWith(LocalInfilePayload.InfileStreamPrefix))
+						{
+							infileStream = MySqlBulkLoader.GetInfileStreamByKey(localInfile.FileName);
+						}
+						else
+						{
+							infileStream = new FileStream(localInfile.FileName, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
+						}
+						using (infileStream)
+						{
+							byte[] readBuffer = new byte[8192];
+							int byteCount;
+							while ((byteCount = await infileStream.ReadAsync(readBuffer, 0, 8192)) > 0)
+							{
+								payload = new PayloadData(new ArraySegment<byte>(readBuffer, 0, byteCount));
+								await Session.SendReplyAsync(payload, ioBehavior, cancellationToken);
+							}
+						}
+					}
+					catch (Exception exc)
+					{
+						throw new MySqlException("Error during LOAD DATA LOCAL INFILE", exc);
+					}
+					finally
+					{
+						await Session.SendReplyAsync(EmptyPayload.Create(), ioBehavior, cancellationToken);
+					}
 				}
 				else
 				{

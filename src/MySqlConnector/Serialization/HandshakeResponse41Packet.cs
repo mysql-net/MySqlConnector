@@ -19,6 +19,7 @@ namespace MySql.Data.Serialization
 				ProtocolCapabilities.MultiStatements |
 				ProtocolCapabilities.MultiResults |
 				ProtocolCapabilities.PreparedStatementMultiResults |
+				ProtocolCapabilities.LocalFiles |
 				(string.IsNullOrWhiteSpace(cs.Database) ? 0 : ProtocolCapabilities.ConnectWithDatabase) |
 				(cs.UseAffectedRows ? 0 : ProtocolCapabilities.FoundRows) |
 				(cs.UseCompression ? ProtocolCapabilities.Compress : ProtocolCapabilities.None) |
