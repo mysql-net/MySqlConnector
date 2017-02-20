@@ -13,19 +13,11 @@ namespace SideBySide
 		public BulkLoaderSync(DatabaseFixture database)
 		{
 			m_database = database;
-			//xUnit runs tests in different classes in parallel, so use different table names for the different test classes
-			string testClient;
-#if BASELINE
-			testClient = "Baseline";
-#else
-			testClient = "New";
-#endif
-			m_testTable = "test.BulkLoaderSyncTest" + testClient;
 
-			var initializeTable = @"
-				create schema if not exists test;
-				drop table if exists " + m_testTable + @";
-				CREATE TABLE " + m_testTable + @"
+			m_testTable = "BulkLoaderSyncTest";
+			var initializeTable = $@"
+				drop table if exists {m_testTable};
+				create table {m_testTable}
 				(
 					one int primary key
 					, ignore_one int
