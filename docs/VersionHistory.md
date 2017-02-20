@@ -12,6 +12,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.13.0
+
+* Add `MySqlBulkLoader`: [#15](https://github.com/mysql-net/MySqlConnector/issues/15).
+
 ### 0.12.0
 
 * Add support for `DateTimeOffset`: [#172](https://github.com/mysql-net/MySqlConnector/issues/172), [#175](https://github.com/mysql-net/MySqlConnector/issues/175).
