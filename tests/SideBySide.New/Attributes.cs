@@ -29,7 +29,42 @@ namespace SideBySide
 			if(string.IsNullOrWhiteSpace(AppConfig.PasswordlessUser))
 				Skip = "No passwordless user";
 		}
+	}
 
+	public class BulkLoaderCsvFileFactAttribute : FactAttribute
+	{
+		public BulkLoaderCsvFileFactAttribute()
+		{
+			if(string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderCsvFile))
+				Skip = "No bulk loader CSV file specified";
+		}
+	}
+
+	public class BulkLoaderTsvFileFactAttribute : FactAttribute
+	{
+		public BulkLoaderTsvFileFactAttribute()
+		{
+			if(string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderTsvFile))
+				Skip = "No bulk loader TSV file specified";
+		}
+	}
+
+	public class BulkLoaderLocalCsvFileFactAttribute : FactAttribute
+	{
+		public BulkLoaderLocalCsvFileFactAttribute()
+		{
+			if(string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderLocalCsvFile))
+				Skip = "No bulk loader local CSV file specified";
+		}
+	}
+
+	public class BulkLoaderLocalTsvFileFactAttribute : FactAttribute
+	{
+		public BulkLoaderLocalTsvFileFactAttribute()
+		{
+			if(string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderLocalTsvFile))
+				Skip = "No bulk loader local TSV file specified";
+		}
 	}
 
 	public class TcpConnectionFactAttribute : FactAttribute

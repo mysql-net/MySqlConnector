@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.Protocol.Serialization;
@@ -28,6 +29,7 @@ namespace MySql.Data.MySqlClient.Results
 			m_readBuffer.Clear();
 			m_row = null;
 			m_rowBuffered = null;
+			MySqlException exception = null;
 
 			while (true)
 			{
@@ -46,9 +48,31 @@ namespace MySql.Data.MySqlClient.Results
 					if (State == ResultSetState.NoMoreData)
 						break;
 				}
-				else if (firstByte == 0xFB)
+				else if (firstByte == LocalInfilePayload.Signature)
 				{
-					throw new NotSupportedException("Don't support LOCAL_INFILE_Request");
+					try
+					{
+						var localInfile = LocalInfilePayload.Create(payload);
+						using (var stream = localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal) ?
+							MySqlBulkLoader.GetAndRemoveStream(localInfile.FileName) :
+							File.OpenRead(localInfile.FileName))
+						{
+							byte[] readBuffer = new byte[65536];
+							int byteCount;
+							while ((byteCount = await stream.ReadAsync(readBuffer, 0, readBuffer.Length).ConfigureAwait(false)) > 0)
+							{
+								payload = new PayloadData(new ArraySegment<byte>(readBuffer, 0, byteCount));
+								await Session.SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+							}
+						}
+					}
+					catch (Exception ex)
+					{
+						// store the exception, to be thrown after reading the response packet from the server
+						exception = new MySqlException("Error during LOAD DATA LOCAL INFILE", ex);
+					}
+
+					await Session.SendReplyAsync(EmptyPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				else
 				{
@@ -73,6 +97,10 @@ namespace MySql.Data.MySqlClient.Results
 				}
 			}
 			BufferState = State;
+
+			if (exception != null)
+				throw exception;
+
 			return this;
 		}
 
