@@ -24,10 +24,10 @@ namespace SideBySide
 					, three varchar(200)
 					, four datetime
 					, five blob
-				);";
+				) character set = utf8mb4;";
 			m_database.Connection.Execute(initializeTable);
 
-			m_loadDataInfileCommand = "LOAD DATA{0} INFILE '{1}' INTO TABLE " + m_testTable + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (one, two, three, four, five) SET five = UNHEX(five);";
+			m_loadDataInfileCommand = "LOAD DATA{0} INFILE '{1}' INTO TABLE " + m_testTable + " CHARACTER SET UTF8MB4 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (one, two, three, four, five) SET five = UNHEX(five);";
 		}
 
 		[BulkLoaderCsvFileFact]
