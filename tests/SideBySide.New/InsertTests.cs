@@ -37,6 +37,26 @@ create table insert_ai(rowid integer not null primary key auto_increment, text v
 		}
 
 		[Fact]
+		public void LastInsertedIdExplicitStart()
+		{
+			m_database.Connection.Execute(@"drop table if exists insert_ai_2;
+create table insert_ai_2(rowid integer not null primary key auto_increment, text varchar(100) not null) auto_increment = 1234;");
+			try
+			{
+				m_database.Connection.Open();
+				using (var command = new MySqlCommand("insert into insert_ai_2(text) values('test');", m_database.Connection))
+				{
+					command.ExecuteNonQuery();
+					Assert.Equal(command.LastInsertedId, 1234L);
+				}
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+		}
+
+		[Fact]
 		public void InsertWithDapper()
 		{
 			m_database.Connection.Execute(@"drop table if exists insert_dapper;
