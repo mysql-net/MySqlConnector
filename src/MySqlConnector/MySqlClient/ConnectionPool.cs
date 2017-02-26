@@ -33,11 +33,6 @@ namespace MySql.Data.MySqlClient
 					}
 					else
 					{
-						// session is valid, reset if supported
-						if (m_connectionSettings.ConnectionReset)
-						{
-							await session.ResetConnectionAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
-						}
 						// pooled session is ready to be used; return it
 						return session;
 					}
@@ -58,10 +53,26 @@ namespace MySql.Data.MySqlClient
 		{
 			try
 			{
+				var success = false;
+
 				if (session.PoolGeneration == m_generation)
+				{
+					try
+					{
+						// reset the connection upon returning it to the pool
+						if (m_connectionSettings.ConnectionReset)
+							session.ResetConnectionAsync(m_connectionSettings, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+						success = true;
+					}
+					catch (MySqlException)
+					{
+					}
+				}
+
+				if (success)
 					m_sessions.Enqueue(session);
 				else
-					session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).ConfigureAwait(false);
+					session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 			}
 			finally
 			{
