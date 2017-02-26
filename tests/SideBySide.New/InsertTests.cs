@@ -4,6 +4,7 @@ using MySql.Data.MySqlClient;
 using Dapper;
 using Xunit;
 using System.Data;
+using System.Threading.Tasks;
 
 namespace SideBySide
 {
@@ -12,6 +13,27 @@ namespace SideBySide
 		public InsertTests(DatabaseFixture database)
 		{
 			m_database = database;
+		}
+
+		[Fact]
+		public async Task LastInsertedId()
+		{
+			await m_database.Connection.ExecuteAsync(@"drop table if exists insert_ai;
+create table insert_ai(rowid integer not null primary key auto_increment, text varchar(100) not null);");
+			try
+			{
+				await m_database.Connection.OpenAsync();
+				using (var command = new MySqlCommand("INSERT INTO insert_ai (text) VALUES (@text);", m_database.Connection))
+				{
+					command.Parameters.Add(new MySqlParameter { ParameterName = "@text", Value = "test" });
+					await command.ExecuteNonQueryAsync();
+					Assert.Equal(command.LastInsertedId, 1L);
+				}
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
 		}
 
 		[Fact]
