@@ -2,14 +2,10 @@
 
 ## Side-by-side Tests
 
-The `SideBySide.Baseline` and `SideBySide.New` projects are intended to verify that the new
-MySql.Data implementation is equivalent to the official ADO.NET connector in places where that
-is deemed important.
+The `SideBySide` project is intended to verify that the new MySql.Data implementation
+is equivalent to the official ADO.NET connector in places where that is deemed important.
 
-The source code is all in the `SideBySide.New` folder, and added (as link) to the `SideBySide.Baseline`
-project.
-
-The tests require a MySQL server.  Copy the file `SideBySide.New/config.json.example` to `SideBySide.New/config.json`.
+The tests require a MySQL server.  Copy the file `SideBySide/config.json.example` to `SideBySide/config.json`.
 Then edit the `config.json` file in order to connect to your server:
 
     Data.ConnectionString: The full MySql Connection String to your server.  You should specify a database name.
@@ -22,20 +18,20 @@ Then edit the `config.json` file in order to connect to your server:
 
 There are two ways to run the tests: command line and Visual Studio.
 
-### Visual Studio 2015
+### Visual Studio 2017
 
 After building the solution, you should see a list of tests in the Test Explorer.  Click "Run All" to run them.
 
 ### Command Line
 
-To run the Baseline tests:
+To run the New tests against MySqlConnector:
 
 ```
-packages\xunit.runner.console.2.1.0\tools\xunit.console.exe tests\SideBySide.Baseline\bin\Debug\SideBySide.Baseline.dll
+dotnet restore; dotnet test
 ```
 
-To run the New tests:
+To run the Baseline tests against MySql.Data:
 
 ```
-dotnet test tests\SideBySide.New
+dotnet restore /p:Configuration=Baseline; dotnet test -c Baseline
 ```

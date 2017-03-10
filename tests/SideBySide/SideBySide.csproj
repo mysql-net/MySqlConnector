@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+ <PropertyGroup Condition=" '$(Configuration)' != 'Baseline' ">
+    <TargetFrameworks>netcoreapp1.1.1;net462</TargetFrameworks>
+  </PropertyGroup>
+
+ <PropertyGroup Condition=" '$(Configuration)' == 'Baseline' ">
+    <TargetFrameworks>net462</TargetFrameworks>
+    <DefineConstants>BASELINE</DefineConstants>
+  </PropertyGroup>
+
+ <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <AssemblyName>SideBySide</AssemblyName>
+    <PackageId>SideBySide</PackageId>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+  </PropertyGroup>
+
+ <ItemGroup>
+    <!--testing packages-->
+    <PackageReference Include="Microsoft.DotNet.InternalAbstractions" Version="1.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
+    <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="15.0.0-*" />
+    <PackageReference Include="xunit" Version="2.2.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+    <!--app packages-->
+    <PackageReference Include="Dapper" Version="1.50.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Configuration)' != 'Baseline' ">
+    <ProjectReference Include="..\..\src\MySqlConnector\MySqlConnector.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Configuration)' == 'Baseline' ">
+    <PackageReference Include="MySql.Data" Version="6.9.8" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>

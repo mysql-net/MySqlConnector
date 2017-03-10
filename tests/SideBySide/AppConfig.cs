@@ -21,7 +21,7 @@ namespace SideBySide
 
 		private static string CodeRootPath = GetCodeRootPath();
 
-		public static string BasePath = Path.Combine(CodeRootPath, "tests", "SideBySide.New");
+		public static string BasePath = Path.Combine(CodeRootPath, "tests", "SideBySide");
 
 		public static string CertsPath = Path.Combine(CodeRootPath, ".ci", "server", "certs");
 

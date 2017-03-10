@@ -2,7 +2,7 @@
 cd $(dirname $0)/config
 
 display_usage() {
-    echo -e "\nUsage:\n$0 [config.json script] [port]\n"
+    echo -e "\nUsage:\n$0 [config.json script] [host] [port]\n"
 }
 
 # check whether user had supplied -h or --help . If yes display usage
@@ -13,7 +13,7 @@ then
 fi
 
 # check number of arguments
-if [ $# -le 1 ]
+if [ $# -eq 0 ]
 then
     display_usage
     exit 1
@@ -26,6 +26,15 @@ then
     exit 1
 fi
 
-cp $1 ../../tests/SideBySide.New/config.json
-sed -i "s/3306/$2/g" ../../tests/SideBySide.New/config.json
+cp $1 ../../tests/SideBySide/config.json
+
+if [ $# -ge 2 ]
+then
+    sed -i "s/127.0.0.1/$2/g" ../../tests/SideBySide/config.json
+fi
+
+if [ $# -ge 3 ]
+then
+    sed -i "s/3306/$3/g" ../../tests/SideBySide/config.json
+fi
 
