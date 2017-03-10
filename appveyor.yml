@@ -1,26 +1,12 @@
-version: 1.0.{build}
-image: Visual Studio 2015
-configuration: Release
 services:
-  - mysql
-install:
-- cmd: |-
-    dotnet restore
-    nuget restore tests\SideBySide.Baseline\packages.config -SolutionDirectory .
+- mysql
 build_script:
-- cmd: |-
-    dotnet build src\MySqlConnector --configuration Release
-    dotnet build tests\SideBySide.New --configuration Release
-    "C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe" /p:Configuration=Release /t:SideBySide_Baseline MySqlConnector.sln
+- ps: .\.ci\build.ps1
 before_test:
 - cmd: |-
     "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql.exe" -u root --password=Password12! < .ci\server\init.sql
 test_script:
-- cmd: |-
-    dotnet test tests\MySqlConnector.Tests --configuration Release
-    echo Executing tests with No Compression, No SSL && copy /y .ci\config\config.json tests\SideBySide.New\config.json && dotnet test tests/SideBySide.New --configuration Release
-    echo Executing tests with Compression, No SSL && copy /y .ci\config\config.compression.json tests\SideBySide.New\config.json && dotnet test tests/SideBySide.New --configuration Release
-    echo Executing baseline tests with No Compression, No SSL && copy .ci\config\config.json tests\SideBySide.New\config.json && packages\xunit.runner.console.2.1.0\tools\xunit.console.exe tests\SideBySide.Baseline\bin\Release\SideBySide.Baseline.dll
+- ps: .\.ci\test.ps1
 notifications:
 - provider: Slack
   incoming_webhook:
