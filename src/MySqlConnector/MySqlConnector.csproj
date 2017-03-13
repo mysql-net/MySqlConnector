@@ -29,20 +29,20 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Buffers" Version="4.0.0" />
-    <PackageReference Include="System.Collections.Concurrent" Version="4.0.12" />
-    <PackageReference Include="System.Data.Common" Version="4.1.0" />
-    <PackageReference Include="System.IO" Version="4.1.0" />
-    <PackageReference Include="System.IO.Compression" Version="4.1.0" />
-    <PackageReference Include="System.IO.FileSystem" Version="4.0.1" />
-    <PackageReference Include="System.Linq" Version="4.1.0" />
-    <PackageReference Include="System.Net.NameResolution" Version="4.0.0" />
-    <PackageReference Include="System.Net.Security" Version="4.0.0" />
-    <PackageReference Include="System.Net.Sockets" Version="4.1.0" />
-    <PackageReference Include="System.Runtime.Extensions" Version="4.1.0" />
-    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.0.0" />
-    <PackageReference Include="System.Text.RegularExpressions" Version="4.1.0" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.0.0" />
+    <PackageReference Include="System.Buffers" Version="4.3.0" />
+    <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
+    <PackageReference Include="System.Data.Common" Version="4.3.0" />
+    <PackageReference Include="System.IO" Version="4.3.0" />
+    <PackageReference Include="System.IO.Compression" Version="4.3.0" />
+    <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
+    <PackageReference Include="System.Linq" Version="4.3.0" />
+    <PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
+    <PackageReference Include="System.Net.Security" Version="4.3.0" />
+    <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Extensions" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
