@@ -12,6 +12,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.14.0
+
+* Update `System.*` package references: [#190](https://github.com/mysql-net/MySqlConnector/issues/190).
+
 ### 0.13.0
 
 * Add `MySqlBulkLoader`: [#15](https://github.com/mysql-net/MySqlConnector/issues/15).

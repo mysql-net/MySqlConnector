@@ -4,14 +4,14 @@
     <Description>A fully async MySQL ADO.NET provider for .NET and .NET Core</Description>
     <Copyright>Copyright 2016 Bradley Grainger</Copyright>
     <AssemblyTitle>Async MySQL Connector</AssemblyTitle>
-    <VersionPrefix>0.13.0</VersionPrefix>
+    <VersionPrefix>0.14.0</VersionPrefix>
     <Authors>Bradley Grainger;Caleb Lloyd</Authors>
     <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyName>MySqlConnector</AssemblyName>
     <PackageId>MySqlConnector</PackageId>
     <PackageTags>mysql;async;ado.net;database;netcore</PackageTags>
-    <PackageReleaseNotes>Add MySqlBulkLoader. GitHub issue #15</PackageReleaseNotes>
+    <PackageReleaseNotes>Update System.* package references.</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/mysql-net/MySqlConnector</PackageProjectUrl>
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
