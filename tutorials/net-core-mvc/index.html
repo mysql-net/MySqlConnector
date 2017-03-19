@@ -503,17 +503,19 @@ namespace MySqlConnector.Performance.Models
         private async Task&lt;List&lt;BlogPost&gt;&gt; ReadAllAsync(DbDataReader reader)
         {
             var posts = new List&lt;BlogPost&gt;();
-            while (await reader.ReadAsync())
+            using (reader)
             {
-                var post = new BlogPost(Db)
+                while (await reader.ReadAsync())
                 {
-                    Id = await reader.GetFieldValueAsync&lt;int&gt;(0),
-                    Title = await reader.GetFieldValueAsync&lt;string&gt;(1),
-                    Content = await reader.GetFieldValueAsync&lt;string&gt;(2)
-                };
-                posts.Add(post);
+                    var post = new BlogPost(Db)
+                    {
+                        Id = await reader.GetFieldValueAsync&lt;int&gt;(0),
+                        Title = await reader.GetFieldValueAsync&lt;string&gt;(1),
+                        Content = await reader.GetFieldValueAsync&lt;string&gt;(2)
+                    };
+                    posts.Add(post);
+                }
             }
-            reader.Dispose();
             return posts;
         }
     }
