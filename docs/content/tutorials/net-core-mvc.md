@@ -354,17 +354,19 @@ namespace MySqlConnector.Performance.Models
         private async Task<List<BlogPost>> ReadAllAsync(DbDataReader reader)
         {
             var posts = new List<BlogPost>();
-            while (await reader.ReadAsync())
+            using (reader)
             {
-                var post = new BlogPost(Db)
+                while (await reader.ReadAsync())
                 {
-                    Id = await reader.GetFieldValueAsync<int>(0),
-                    Title = await reader.GetFieldValueAsync<string>(1),
-                    Content = await reader.GetFieldValueAsync<string>(2)
-                };
-                posts.Add(post);
+                    var post = new BlogPost(Db)
+                    {
+                        Id = await reader.GetFieldValueAsync<int>(0),
+                        Title = await reader.GetFieldValueAsync<string>(1),
+                        Content = await reader.GetFieldValueAsync<string>(2)
+                    };
+                    posts.Add(post);
+                }
             }
-            reader.Dispose();
             return posts;
         }
     }
