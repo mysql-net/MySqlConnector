@@ -12,6 +12,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.14.1
+
+* Fix exception when `MySqlDataReader` isn't disposed: [#196](https://github.com/mysql-net/MySqlConnector/issues/196).
+
 ### 0.14.0
 
 * Update `System.*` package references: [#190](https://github.com/mysql-net/MySqlConnector/issues/190).
