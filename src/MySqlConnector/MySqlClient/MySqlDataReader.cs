@@ -250,7 +250,7 @@ namespace MySql.Data.MySqlClient
 				m_nextResultSetBuffer.Clear();
 
 				var connection = Command.Connection;
-				connection.HasActiveReader = false;
+				connection.ActiveReader = null;
 				Command.ReaderClosed();
 				if ((m_behavior & CommandBehavior.CloseConnection) != 0)
 				{

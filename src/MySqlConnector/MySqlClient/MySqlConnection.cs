@@ -224,7 +224,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		internal MySqlTransaction CurrentTransaction { get; set; }
-		internal bool HasActiveReader { get; set; }
+		internal MySqlDataReader ActiveReader { get; set; }
 		internal bool AllowUserVariables => m_connectionSettings.AllowUserVariables;
 		internal bool ConvertZeroDateTime => m_connectionSettings.ConvertZeroDateTime;
 		internal bool OldGuids => m_connectionSettings.OldGuids;
@@ -281,6 +281,10 @@ namespace MySql.Data.MySqlClient
 			if (m_connectionState != ConnectionState.Closed)
 			{
 				m_cachedProcedures = null;
+				if (ActiveReader != null){
+					ActiveReader.Dispose();
+					ActiveReader = null;
+				}
 				if (CurrentTransaction != null)
 				{
 					CurrentTransaction.Dispose();

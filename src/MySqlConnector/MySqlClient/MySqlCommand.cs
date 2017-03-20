@@ -177,7 +177,7 @@ namespace MySql.Data.MySqlClient
 				throw new InvalidOperationException("The transaction associated with this command is not the connection's active transaction.");
 			if (string.IsNullOrWhiteSpace(CommandText))
 				throw new InvalidOperationException("CommandText must be specified");
-			if (Connection.HasActiveReader)
+			if (Connection.ActiveReader != null)
 				throw new MySqlException("There is already an open DataReader associated with this Connection which must be closed first.");
 		}
 

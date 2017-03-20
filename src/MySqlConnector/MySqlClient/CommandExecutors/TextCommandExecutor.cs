@@ -57,7 +57,7 @@ namespace MySql.Data.MySqlClient.CommandExecutors
 			var payload = new PayloadData(preparer.ParseAndBindParameters());
 			await m_command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			var reader = await MySqlDataReader.CreateAsync(m_command, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
-			m_command.Connection.HasActiveReader = true;
+			m_command.Connection.ActiveReader = reader;
 			return reader;
 		}
 
