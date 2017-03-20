@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
@@ -439,10 +441,77 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			}
 		}
 
+		[Fact]
+		public void UseReaderWithoutDisposing()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.MaximumPoolSize = 8;
+
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Execute(@"drop table if exists dispose_reader;
+					create table dispose_reader(value int not null);
+					insert into dispose_reader(value) values(0), (1), (2), (3), (4), (5), (6), (7), (8), (9), (10);");
+			}
+
+			var threads = new List<Thread>();
+			var threadData = new UseReaderWithoutDisposingThreadData(new List<Exception>(), csb);
+			for (int i = 0; i < csb.MaximumPoolSize + 4; i++)
+			{
+				var thread = new Thread(UseReaderWithoutDisposingThread);
+				threads.Add(thread);
+				thread.Start(threadData);
+			}
+			foreach (var thread in threads)
+				thread.Join();
+			foreach (var ex in threadData.Exceptions)
+				throw ex;
+		}
+
+		private void UseReaderWithoutDisposingThread(object obj)
+		{
+			var data = (UseReaderWithoutDisposingThreadData) obj;
+
+			try
+			{
+				for (int i = 0; i < 100; i++)
+				{
+					using (var connection = new MySqlConnection(data.ConnectionStringBuilder.ConnectionString))
+					{
+						connection.Open();
+						using (var cmd = connection.CreateCommand())
+						{
+							cmd.CommandText = @"select * from dispose_reader;";
+							var reader = cmd.ExecuteReader();
+							reader.Read();
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				lock (data)
+					data.Exceptions.Add(ex);
+			}
+		}
+
 		class BoolTest
 		{
 			public int Id { get; set; }
 			public bool? IsBold { get; set; }
+		}
+
+		class UseReaderWithoutDisposingThreadData
+		{
+			public UseReaderWithoutDisposingThreadData(List<Exception> exceptions, MySqlConnectionStringBuilder csb)
+			{
+				Exceptions = exceptions;
+				ConnectionStringBuilder = csb;
+			}
+
+			public List<Exception> Exceptions { get; }
+
+			public MySqlConnectionStringBuilder ConnectionStringBuilder { get; }
 		}
 
 		readonly DatabaseFixture m_database;
