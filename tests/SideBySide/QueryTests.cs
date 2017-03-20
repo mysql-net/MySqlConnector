@@ -143,6 +143,37 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 		}
 
 		[Fact]
+		public async Task UndisposedReader()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = @"drop table if exists query_undisposed_reader;
+					create table query_undisposed_reader(id integer not null primary key auto_increment);
+					insert into query_undisposed_reader(id) values(1), (2), (3);";
+				await cmd.ExecuteNonQueryAsync();
+			}
+
+			using (var cmd1 = m_database.Connection.CreateCommand())
+			using (var cmd2 = m_database.Connection.CreateCommand())
+			{
+				var commandText = @"select id from query_undisposed_reader order by id;";
+				cmd1.CommandText = commandText;
+				cmd2.CommandText = commandText;
+
+				var reader1 = await cmd1.ExecuteReaderAsync();
+				Assert.Equal(true, reader1.Read());
+				Assert.Equal(1, reader1.GetInt32(0));
+
+				m_database.Connection.Close();
+				m_database.Connection.Open();
+
+				var reader2 = await cmd1.ExecuteReaderAsync();
+				Assert.Equal(true, reader2.Read());
+				Assert.Equal(1, reader2.GetInt32(0));
+			}
+		}
+
+		[Fact]
 		public async Task MultipleStatements()
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
