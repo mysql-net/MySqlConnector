@@ -157,7 +157,8 @@ namespace SideBySide
 				}
 				else
 				{
-					Assert.Contains("Errcode: 2 - No such file or directory", mySqlException.Message);
+					Assert.Contains("Errcode: 2 ", mySqlException.Message);
+					Assert.Contains("No such file or directory", mySqlException.Message);
 				}
 			}
 		}
