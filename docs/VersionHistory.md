@@ -12,6 +12,10 @@ of supported options.
 
 ## Release Notes
 
+### 0.15.1
+
+* Fix `NullReferenceException` in `MySqlConnection.Database`: [#205](https://github.com/mysql-net/MySqlConnector/issues/201).
+
 ### 0.15.0
 
 * Implement `MySqlConnection.ChangeDatabase`: [#201](https://github.com/mysql-net/MySqlConnector/issues/201).
