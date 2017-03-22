@@ -77,6 +77,15 @@ namespace SideBySide
 		}
 	}
 
+	public class SecondaryDatabaseRequiredFactAttribute : FactAttribute
+	{
+		public SecondaryDatabaseRequiredFactAttribute()
+		{
+			if (string.IsNullOrEmpty(AppConfig.SecondaryDatabase))
+				Skip = "No SecondaryDatabase specified.";
+		}
+	}
+
 	public class SslRequiredConnectionFactAttribute : FactAttribute
 	{
 		public SslRequiredConnectionFactAttribute()

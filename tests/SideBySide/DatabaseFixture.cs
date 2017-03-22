@@ -14,9 +14,17 @@ namespace SideBySide
 			using (var db = new MySqlConnection(csb.ConnectionString))
 			{
 				db.Open();
-				var cmd = db.CreateCommand();
-				cmd.CommandText = "create schema if not exists " + database;
-				cmd.ExecuteNonQuery();
+				using (var cmd = db.CreateCommand())
+				{
+					cmd.CommandText = $"create schema if not exists {database};";
+					cmd.ExecuteNonQuery();
+
+					if (!string.IsNullOrEmpty(AppConfig.SecondaryDatabase))
+					{
+						cmd.CommandText = $"create schema if not exists {AppConfig.SecondaryDatabase};";
+						cmd.ExecuteNonQuery();
+					}
+				}
 				db.Close();
 			}
 

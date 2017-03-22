@@ -49,6 +49,8 @@ namespace SideBySide
 
 		public static string PasswordlessUser => Config.GetValue<string>("Data:PasswordlessUser");
 
+		public static string SecondaryDatabase => Config.GetValue<string>("Data:SecondaryDatabase");
+
 		public static bool SupportsCachedProcedures => Config.GetValue<bool>("Data:SupportsCachedProcedures");
 
 		public static bool SupportsJson => Config.GetValue<bool>("Data:SupportsJson");
