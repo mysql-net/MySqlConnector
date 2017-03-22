@@ -67,6 +67,16 @@ namespace SideBySide
 		}
 	}
 
+	public class UnbufferedResultSetsFactAttribute : FactAttribute
+	{
+		public UnbufferedResultSetsFactAttribute()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			if(csb.BufferResultSets == true)
+				Skip = "Do not run when BufferResultSets are used";
+		}
+	}
+
 	public class TcpConnectionFactAttribute : FactAttribute
 	{
 		public TcpConnectionFactAttribute()

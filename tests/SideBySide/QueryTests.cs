@@ -96,7 +96,7 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 			}
 		}
 
-		[Fact]
+		[UnbufferedResultSetsFact]
 		public async Task MultipleReaders()
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
@@ -140,6 +140,59 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 					{
 					}
 					Assert.Equal(1, cmd2.ExecuteScalar());
+				}
+			}
+		}
+
+#if BASELINE
+		[Fact(Skip = "Does not support BufferResultSets")]
+#else
+		[Fact]
+#endif
+		public async Task MultipleBufferedReaders()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.BufferResultSets = true;
+
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = @"drop table if exists query_multiple_buffered_readers;
+						create table query_multiple_buffered_readers(id integer not null primary key auto_increment);
+						insert into query_multiple_buffered_readers(id) values(1), (2), (3);";
+					await cmd.ExecuteNonQueryAsync();
+				}
+
+				using (var cmd1 = connection.CreateCommand())
+				using (var cmd2 = connection.CreateCommand())
+				{
+					var commandText = @"select id from query_multiple_buffered_readers order by id ASC;
+						select id from query_multiple_buffered_readers order by id DESC;";
+					cmd1.CommandText = commandText;
+					cmd2.CommandText = commandText;
+
+					var readers = new[]{ await cmd1.ExecuteReaderAsync(), await cmd2.ExecuteReaderAsync() };
+					foreach (var reader in readers){
+						Assert.Equal(true, await reader.ReadAsync());
+						Assert.Equal(1, reader.GetInt32(0));
+						Assert.Equal(true, await reader.ReadAsync());
+						Assert.Equal(2, reader.GetInt32(0));
+						Assert.Equal(true, await reader.ReadAsync());
+						Assert.Equal(3, reader.GetInt32(0));
+						Assert.Equal(false, await reader.ReadAsync());
+						Assert.Equal(true, await reader.NextResultAsync());
+
+						Assert.Equal(true, await reader.ReadAsync());
+						Assert.Equal(3, reader.GetInt32(0));
+						Assert.Equal(true, await reader.ReadAsync());
+						Assert.Equal(2, reader.GetInt32(0));
+						Assert.Equal(true, await reader.ReadAsync());
+						Assert.Equal(1, reader.GetInt32(0));
+						Assert.Equal(false, await reader.ReadAsync());
+						Assert.Equal(false, await reader.NextResultAsync());
+					}
 				}
 			}
 		}

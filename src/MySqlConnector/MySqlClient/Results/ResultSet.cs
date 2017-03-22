@@ -31,75 +31,85 @@ namespace MySql.Data.MySqlClient.Results
 			m_rowBuffered = null;
 			MySqlException exception = null;
 
-			while (true)
+			try
 			{
-				var payload = await Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				while (true)
+				{
+					var payload = await Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
-				var firstByte = payload.HeaderByte;
-				if (firstByte == OkPayload.Signature)
-				{
-					var ok = OkPayload.Create(payload);
-					RecordsAffected = ok.AffectedRowCount;
-					LastInsertId = ok.LastInsertId;
-					ColumnDefinitions = null;
-					State = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0
-						? ResultSetState.NoMoreData
-						: ResultSetState.HasMoreData;
-					if (State == ResultSetState.NoMoreData)
-						break;
-				}
-				else if (firstByte == LocalInfilePayload.Signature)
-				{
-					try
+					var firstByte = payload.HeaderByte;
+					if (firstByte == OkPayload.Signature)
 					{
-						var localInfile = LocalInfilePayload.Create(payload);
-						using (var stream = localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal) ?
-							MySqlBulkLoader.GetAndRemoveStream(localInfile.FileName) :
-							File.OpenRead(localInfile.FileName))
+						var ok = OkPayload.Create(payload);
+						RecordsAffected = ok.AffectedRowCount;
+						LastInsertId = ok.LastInsertId;
+						ColumnDefinitions = null;
+						State = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0
+							? ResultSetState.NoMoreData
+							: ResultSetState.HasMoreData;
+						if (State == ResultSetState.NoMoreData)
+							break;
+					}
+					else if (firstByte == LocalInfilePayload.Signature)
+					{
+						try
 						{
-							byte[] readBuffer = new byte[65536];
-							int byteCount;
-							while ((byteCount = await stream.ReadAsync(readBuffer, 0, readBuffer.Length).ConfigureAwait(false)) > 0)
+							var localInfile = LocalInfilePayload.Create(payload);
+							using (var stream = localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal) ?
+								MySqlBulkLoader.GetAndRemoveStream(localInfile.FileName) :
+								File.OpenRead(localInfile.FileName))
 							{
-								payload = new PayloadData(new ArraySegment<byte>(readBuffer, 0, byteCount));
-								await Session.SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+								byte[] readBuffer = new byte[65536];
+								int byteCount;
+								while ((byteCount = await stream.ReadAsync(readBuffer, 0, readBuffer.Length).ConfigureAwait(false)) > 0)
+								{
+									payload = new PayloadData(new ArraySegment<byte>(readBuffer, 0, byteCount));
+									await Session.SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+								}
 							}
 						}
-					}
-					catch (Exception ex)
-					{
-						// store the exception, to be thrown after reading the response packet from the server
-						exception = new MySqlException("Error during LOAD DATA LOCAL INFILE", ex);
-					}
+						catch (Exception ex)
+						{
+							// store the exception, to be thrown after reading the response packet from the server
+							exception = new MySqlException("Error during LOAD DATA LOCAL INFILE", ex);
+						}
 
-					await Session.SendReplyAsync(EmptyPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
-				}
-				else
-				{
-					var reader = new ByteArrayReader(payload.ArraySegment);
-					var columnCount = (int) reader.ReadLengthEncodedInteger();
-					ColumnDefinitions = new ColumnDefinitionPayload[columnCount];
-					m_dataOffsets = new int[columnCount];
-					m_dataLengths = new int[columnCount];
-
-					for (var column = 0; column < ColumnDefinitions.Length; column++)
+						await Session.SendReplyAsync(EmptyPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
+					}
+					else
 					{
+						var reader = new ByteArrayReader(payload.ArraySegment);
+						var columnCount = (int) reader.ReadLengthEncodedInteger();
+						ColumnDefinitions = new ColumnDefinitionPayload[columnCount];
+						m_dataOffsets = new int[columnCount];
+						m_dataLengths = new int[columnCount];
+
+						for (var column = 0; column < ColumnDefinitions.Length; column++)
+						{
+							payload = await Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+							ColumnDefinitions[column] = ColumnDefinitionPayload.Create(payload);
+						}
+
 						payload = await Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-						ColumnDefinitions[column] = ColumnDefinitionPayload.Create(payload);
+						EofPayload.Create(payload);
+
+						LastInsertId = -1;
+						State = ResultSetState.ReadResultSetHeader;
+						break;
 					}
-
-					payload = await Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					EofPayload.Create(payload);
-
-					LastInsertId = -1;
-					State = ResultSetState.ReadResultSetHeader;
-					break;
 				}
-			}
-			BufferState = State;
 
-			if (exception != null)
-				throw exception;
+				if (exception != null)
+					throw exception;
+			}
+			catch (Exception ex)
+			{
+				ReadResultSetHeaderException = ex;
+			}
+			finally
+			{
+				BufferState = State;
+			}
 
 			return this;
 		}
@@ -384,6 +394,7 @@ namespace MySql.Data.MySqlClient.Results
 		}
 
 		public readonly MySqlDataReader DataReader;
+		public Exception ReadResultSetHeaderException { get; private set; }
 		public MySqlCommand Command => DataReader.Command;
 		public MySqlConnection Connection => DataReader.Connection;
 		public MySqlSession Session => DataReader.Session;
