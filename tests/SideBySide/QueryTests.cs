@@ -152,7 +152,9 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 		public async Task MultipleBufferedReaders()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
+#if !BASELINE
 			csb.BufferResultSets = true;
+#endif
 
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
