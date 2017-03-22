@@ -23,6 +23,7 @@ namespace MySql.Data.Tests
 			Assert.Equal(false, csb.ConvertZeroDateTime);
 			Assert.Equal("", csb.Database);
 #if !BASELINE
+			Assert.Equal(false, csb.BufferResultSets);
 			Assert.Equal(false, csb.ForceSynchronous);
 #endif
 			Assert.Equal(0u, csb.Keepalive);
@@ -61,6 +62,7 @@ namespace MySql.Data.Tests
 				                   "ConnectionReset=false;" +
 				                   "Convert Zero Datetime=true;" +
 #if !BASELINE
+				                   "bufferresultsets=true;" +
 				                   "forcesynchronous=true;" +
 #endif
 				                   "Keep Alive=90;" +
@@ -85,6 +87,7 @@ namespace MySql.Data.Tests
 			Assert.Equal(true, csb.ConvertZeroDateTime);
 			Assert.Equal("schema_name", csb.Database);
 #if !BASELINE
+			Assert.Equal(true, csb.BufferResultSets);
 			Assert.Equal(true, csb.ForceSynchronous);
 #endif
 			Assert.Equal(90u, csb.Keepalive);
