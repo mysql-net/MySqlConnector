@@ -659,9 +659,15 @@ please refer to its documentation.&lt;/p&gt;
     &lt;th style=&#34;width: 70%&#34;&gt;Descriotion&lt;/th&gt;
   &lt;/thead&gt;
   &lt;tr&gt;
-    &lt;td&gt;AllowUserVariables&lt;/td&gt;
-    &lt;td&gt;true&lt;/td&gt;
+    &lt;td&gt;AllowUserVariables, Allow User Variables&lt;/td&gt;
+    &lt;td&gt;false&lt;/td&gt;
     &lt;td&gt;Setting this to true indicates that the provider expects user variables in the SQL.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;BufferResultSets, Buffer Result Sets&lt;/td&gt;
+    &lt;td&gt;false&lt;/td&gt;
+    &lt;td&gt;Setting this to true immediately buffers all result sets to memory upon calling ExecuteReader/ExecuteReaderAsync.  This will allow the connection
+      to execute another statement while still holding the original postion of the reader.  Do not use when result sets are bigger than available memory.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Compress, Use Compression, UseCompression&lt;/td&gt;
