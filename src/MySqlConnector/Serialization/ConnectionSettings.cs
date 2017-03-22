@@ -44,6 +44,7 @@ namespace MySql.Data.Serialization
 
 			// Other Options
 			AllowUserVariables = csb.AllowUserVariables;
+			BufferResultSets = csb.BufferResultSets;
 			ConnectionTimeout = (int)csb.ConnectionTimeout;
 			ConvertZeroDateTime = csb.ConvertZeroDateTime;
 			ForceSynchronous = csb.ForceSynchronous;
@@ -82,6 +83,7 @@ namespace MySql.Data.Serialization
 
 			// Other Options
 			AllowUserVariables = other.AllowUserVariables;
+			BufferResultSets = other.BufferResultSets;
 			ConnectionTimeout = other.ConnectionTimeout;
 			ConvertZeroDateTime = other.ConvertZeroDateTime;
 			ForceSynchronous = other.ForceSynchronous;
@@ -116,6 +118,7 @@ namespace MySql.Data.Serialization
 
 		// Other Options
 		internal readonly bool AllowUserVariables;
+		internal readonly bool BufferResultSets;
 		internal readonly int ConnectionTimeout;
 		internal readonly bool ConvertZeroDateTime;
 		internal readonly bool ForceSynchronous;

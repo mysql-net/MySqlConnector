@@ -69,6 +69,9 @@ namespace MySql.Data.MySqlClient
 
 		private void ActivateResultSet(ResultSet resultSet)
 		{
+			if (resultSet.ReadResultSetHeaderException != null)
+				throw resultSet.ReadResultSetHeaderException;
+
 			Command.LastInsertedId = resultSet.LastInsertId;
 			m_recordsAffected += resultSet.RecordsAffected;
 		}
@@ -222,6 +225,12 @@ namespace MySql.Data.MySqlClient
 		{
 			var dataReader = new MySqlDataReader(command, behavior);
 			await dataReader.ReadFirstResultSetAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			command.Connection.ActiveReader = dataReader;
+			if (command.Connection.BufferResultSets)
+			{
+				while (await dataReader.BufferNextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false) != null);
+				command.Connection.ActiveReader = null;
+			}
 			return dataReader;
 		}
 
@@ -250,7 +259,8 @@ namespace MySql.Data.MySqlClient
 				m_nextResultSetBuffer.Clear();
 
 				var connection = Command.Connection;
-				connection.ActiveReader = null;
+				if (connection.ActiveReader == this)
+					connection.ActiveReader = null;
 				Command.ReaderClosed();
 				if ((m_behavior & CommandBehavior.CloseConnection) != 0)
 				{

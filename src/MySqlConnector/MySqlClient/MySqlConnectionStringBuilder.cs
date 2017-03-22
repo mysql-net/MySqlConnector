@@ -98,6 +98,12 @@ namespace MySql.Data.MySqlClient
 			set { MySqlConnectionStringOption.AllowUserVariables.SetValue(this, value); }
 		}
 
+		public bool BufferResultSets
+		{
+			get { return MySqlConnectionStringOption.BufferResultSets.GetValue(this); }
+			set { MySqlConnectionStringOption.BufferResultSets.SetValue(this, value); }
+		}
+
 		public string CharacterSet
 		{
 			get { return MySqlConnectionStringOption.CharacterSet.GetValue(this); }
@@ -223,6 +229,7 @@ namespace MySql.Data.MySqlClient
 
 		// Other Options
 		public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
+		public static readonly MySqlConnectionStringOption<bool> BufferResultSets;
 		public static readonly MySqlConnectionStringOption<string> CharacterSet;
 		public static readonly MySqlConnectionStringOption<uint> ConnectionTimeout;
 		public static readonly MySqlConnectionStringOption<bool> ConvertZeroDateTime;
@@ -322,6 +329,10 @@ namespace MySql.Data.MySqlClient
 			// Other Options
 			AddOption(AllowUserVariables = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "AllowUserVariables", "Allow User Variables" },
+				defaultValue: false));
+
+			AddOption(BufferResultSets = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "BufferResultSets", "Buffer Result Sets" },
 				defaultValue: false));
 
 			AddOption(CharacterSet = new MySqlConnectionStringOption<string>(

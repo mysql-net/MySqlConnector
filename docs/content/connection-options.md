@@ -127,9 +127,15 @@ These are the other options that MySqlConnector supports.  They are set to sensi
     <th style="width: 70%">Descriotion</th>
   </thead>
   <tr>
-    <td>AllowUserVariables</td>
-    <td>true</td>
+    <td>AllowUserVariables, Allow User Variables</td>
+    <td>false</td>
     <td>Setting this to true indicates that the provider expects user variables in the SQL.</td>
+  </tr>
+  <tr>
+    <td>BufferResultSets, Buffer Result Sets</td>
+    <td>false</td>
+    <td>Setting this to true immediately buffers all result sets to memory upon calling ExecuteReader/ExecuteReaderAsync.  This will allow the connection
+      to execute another statement while still holding the original postion of the reader.  Do not use when result sets are bigger than available memory.</td>
   </tr>
   <tr>
     <td>Compress, Use Compression, UseCompression</td>

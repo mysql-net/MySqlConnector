@@ -52,6 +52,7 @@ namespace MySql.Data.MySqlClient.Results
 				ArrayPool<int>.Shared.Return(m_dataLengths);
 				ArrayPool<int>.Shared.Return(m_dataOffsets);
 				ArrayPool<byte>.Shared.Return(m_payload);
+				m_buffered = false;
 			}
 			m_dataLengths = null;
 			m_dataOffsets = null;
