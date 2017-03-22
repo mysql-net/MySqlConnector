@@ -12,6 +12,11 @@ of supported options.
 
 ## Release Notes
 
+### 0.15.0
+
+* Implement `MySqlConnection.ChangeDatabase`: [#201](https://github.com/mysql-net/MySqlConnector/issues/201).
+* Add `Buffer Result Sets` connection string option: [#202](https://github.com/mysql-net/MySqlConnector/issues/202).
+
 ### 0.14.1
 
 * Fix exception when `MySqlDataReader` isn't disposed: [#196](https://github.com/mysql-net/MySqlConnector/issues/196).

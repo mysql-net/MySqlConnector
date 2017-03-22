@@ -4,14 +4,14 @@
     <Description>A fully async MySQL ADO.NET provider for .NET and .NET Core</Description>
     <Copyright>Copyright 2016 Bradley Grainger</Copyright>
     <AssemblyTitle>Async MySQL Connector</AssemblyTitle>
-    <VersionPrefix>0.14.1</VersionPrefix>
+    <VersionPrefix>0.15.0</VersionPrefix>
     <Authors>Bradley Grainger;Caleb Lloyd</Authors>
     <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyName>MySqlConnector</AssemblyName>
     <PackageId>MySqlConnector</PackageId>
     <PackageTags>mysql;async;ado.net;database;netcore</PackageTags>
-    <PackageReleaseNotes>Fix exception when Reader isn't disposed: GitHub issue #196.</PackageReleaseNotes>
+    <PackageReleaseNotes>Add BufferResultSets; implement ChangeDatabase: GitHub issues #201, #202.</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/mysql-net/MySqlConnector</PackageProjectUrl>
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
