@@ -86,9 +86,24 @@ namespace MySql.Data.MySqlClient
 
 		public override void Close() => DoClose();
 
-		public override void ChangeDatabase(string databaseName)
+		public override void ChangeDatabase(string databaseName) => ChangeDatabaseAsync(IOBehavior.Synchronous, databaseName, CancellationToken.None).GetAwaiter().GetResult();
+		public Task ChangeDatabaseAsync(string databaseName) => ChangeDatabaseAsync(IOBehavior.Asynchronous, databaseName, CancellationToken.None);
+		public Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken) => ChangeDatabaseAsync(IOBehavior.Asynchronous, databaseName, CancellationToken.None);
+
+		private async Task ChangeDatabaseAsync(IOBehavior ioBehavior, string databaseName, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			if (string.IsNullOrWhiteSpace(databaseName))
+			throw new ArgumentException("Database name is not valid.", nameof(databaseName));
+
+			if (State != ConnectionState.Open)
+				throw new InvalidOperationException("Connection is not open.");
+
+			CloseDatabase();
+
+			await m_session.SendAsync(InitDatabasePayload.Create(databaseName), ioBehavior, cancellationToken).ConfigureAwait(false);
+			var payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			OkPayload.Create(payload);
+			m_session.DatabaseOverride = databaseName;
 		}
 
 		public override void Open() => OpenAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -142,7 +157,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public override string Database => m_connectionSettings.Database;
+		public override string Database => m_session.DatabaseOverride ?? m_connectionSettings.Database;
 
 		public override ConnectionState State => m_connectionState;
 
@@ -281,16 +296,7 @@ namespace MySql.Data.MySqlClient
 		{
 			if (m_connectionState != ConnectionState.Closed)
 			{
-				m_cachedProcedures = null;
-				if (ActiveReader != null){
-					ActiveReader.Dispose();
-					ActiveReader = null;
-				}
-				if (CurrentTransaction != null)
-				{
-					CurrentTransaction.Dispose();
-					CurrentTransaction = null;
-				}
+				CloseDatabase();
 				if (m_session != null)
 				{
 					if (m_connectionSettings.Pooling)
@@ -300,6 +306,21 @@ namespace MySql.Data.MySqlClient
 					m_session = null;
 				}
 				SetState(ConnectionState.Closed);
+			}
+		}
+
+		private void CloseDatabase()
+		{
+			m_cachedProcedures = null;
+			if (ActiveReader != null)
+			{
+				ActiveReader.Dispose();
+				ActiveReader = null;
+			}
+			if (CurrentTransaction != null)
+			{
+				CurrentTransaction.Dispose();
+				CurrentTransaction = null;
 			}
 		}
 

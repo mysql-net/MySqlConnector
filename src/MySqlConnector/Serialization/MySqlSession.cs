@@ -32,6 +32,7 @@ namespace MySql.Data.Serialization
 		public byte[] AuthPluginData { get; set; }
 		public ConnectionPool Pool { get; }
 		public int PoolGeneration { get; }
+		public string DatabaseOverride { get; set; }
 
 		public void ReturnToPool() => Pool?.Return(this);
 

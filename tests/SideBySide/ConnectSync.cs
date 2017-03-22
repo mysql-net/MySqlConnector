@@ -184,6 +184,95 @@ namespace SideBySide
 			}
 		}
 
+		[SecondaryDatabaseRequiredFact]
+		public void ChangeDatabase()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+
+				Assert.Equal(csb.Database, connection.Database);
+				Assert.Equal(csb.Database, QueryCurrentDatabase(connection));
+
+				connection.ChangeDatabase(AppConfig.SecondaryDatabase);
+
+				Assert.Equal(AppConfig.SecondaryDatabase, connection.Database);
+				Assert.Equal(AppConfig.SecondaryDatabase, QueryCurrentDatabase(connection));
+			}
+		}
+
+		[SecondaryDatabaseRequiredFact]
+		public void ChangeDatabaseNotOpen()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				Assert.Throws<InvalidOperationException>(() => connection.ChangeDatabase(AppConfig.SecondaryDatabase));
+			}
+		}
+
+		[SecondaryDatabaseRequiredFact]
+		public void ChangeDatabaseNull()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				Assert.Throws<ArgumentException>(() => connection.ChangeDatabase(null));
+				Assert.Throws<ArgumentException>(() => connection.ChangeDatabase(""));
+			}
+		}
+
+		[SecondaryDatabaseRequiredFact]
+		public void ChangeDatabaseInvalidName()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+
+				Assert.Throws<MySqlException>(() => connection.ChangeDatabase($"not_a_real_database_1234"));
+
+				Assert.Equal(ConnectionState.Open, connection.State);
+				Assert.Equal(csb.Database, connection.Database);
+				Assert.Equal(csb.Database, QueryCurrentDatabase(connection));
+			}
+		}
+
+		[SecondaryDatabaseRequiredFact]
+		public void ChangeDatabaseConnectionPooling()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.Pooling = true;
+			csb.MinimumPoolSize = 0;
+			csb.MaximumPoolSize = 6;
+
+			for (int i = 0; i < csb.MaximumPoolSize * 2; i++)
+			{
+				using (var connection = new MySqlConnection(csb.ConnectionString))
+				{
+					connection.Open();
+
+					Assert.Equal(csb.Database, connection.Database);
+					Assert.Equal(csb.Database, QueryCurrentDatabase(connection));
+
+					connection.ChangeDatabase(AppConfig.SecondaryDatabase);
+
+					Assert.Equal(AppConfig.SecondaryDatabase, connection.Database);
+					Assert.Equal(AppConfig.SecondaryDatabase, QueryCurrentDatabase(connection));
+				}
+			}
+		}
+
+		private static string QueryCurrentDatabase(MySqlConnection connection)
+		{
+			using (var cmd = connection.CreateCommand())
+			{
+				cmd.CommandText = "SELECT DATABASE()";
+				return (string) cmd.ExecuteScalar();
+			}
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }

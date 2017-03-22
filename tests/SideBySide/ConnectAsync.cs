@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.IO;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
@@ -178,6 +179,103 @@ namespace SideBySide
 			}
 		}
 
+		[SecondaryDatabaseRequiredFact]
+		public async Task ChangeDatabase()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+
+				Assert.Equal(csb.Database, connection.Database);
+				Assert.Equal(csb.Database, await QueryCurrentDatabaseAsync(connection));
+
+				await connection.ChangeDatabaseAsync(AppConfig.SecondaryDatabase);
+
+				Assert.Equal(AppConfig.SecondaryDatabase, connection.Database);
+				Assert.Equal(AppConfig.SecondaryDatabase, await QueryCurrentDatabaseAsync(connection));
+			}
+		}
+
+		[SecondaryDatabaseRequiredFact]
+		public async Task ChangeDatabaseNotOpen()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await Assert.ThrowsAsync<InvalidOperationException>(() => connection.ChangeDatabaseAsync(AppConfig.SecondaryDatabase));
+			}
+		}
+
+		[SecondaryDatabaseRequiredFact]
+		public async Task ChangeDatabaseNull()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await Assert.ThrowsAsync<ArgumentException>(() => connection.ChangeDatabaseAsync(null));
+				await Assert.ThrowsAsync<ArgumentException>(() => connection.ChangeDatabaseAsync(""));
+			}
+		}
+
+		[SecondaryDatabaseRequiredFact]
+		public async Task ChangeDatabaseInvalidName()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+
+				await Assert.ThrowsAsync<MySqlException>(() => connection.ChangeDatabaseAsync($"not_a_real_database_1234"));
+
+				Assert.Equal(ConnectionState.Open, connection.State);
+				Assert.Equal(csb.Database, connection.Database);
+				Assert.Equal(csb.Database, await QueryCurrentDatabaseAsync(connection));
+			}
+		}
+
+		[SecondaryDatabaseRequiredFact]
+		public async Task ChangeDatabaseConnectionPooling()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.Pooling = true;
+			csb.MinimumPoolSize = 0;
+			csb.MaximumPoolSize = 6;
+
+			for (int i = 0; i < csb.MaximumPoolSize * 2; i++)
+			{
+				using (var connection = new MySqlConnection(csb.ConnectionString))
+				{
+					await connection.OpenAsync();
+
+					Assert.Equal(csb.Database, connection.Database);
+					Assert.Equal(csb.Database, await QueryCurrentDatabaseAsync(connection));
+
+					await connection.ChangeDatabaseAsync(AppConfig.SecondaryDatabase);
+
+					Assert.Equal(AppConfig.SecondaryDatabase, connection.Database);
+					Assert.Equal(AppConfig.SecondaryDatabase, await QueryCurrentDatabaseAsync(connection));
+				}
+			}
+		}
+
+		private static async Task<string> QueryCurrentDatabaseAsync(MySqlConnection connection)
+		{
+			using (var cmd = connection.CreateCommand())
+			{
+				cmd.CommandText = "SELECT DATABASE()";
+				return (string) await cmd.ExecuteScalarAsync();
+			}
+		}
+
 		readonly DatabaseFixture m_database;
 	}
+
+#if BASELINE
+	internal static class BaselineConnectionHelpers
+	{
+		// Baseline connector capitalizes the 'B' in 'Database'
+		public static Task ChangeDatabaseAsync(this MySqlConnection connection, string databaseName) => connection.ChangeDataBaseAsync(databaseName);
+	}
+#endif
 }
