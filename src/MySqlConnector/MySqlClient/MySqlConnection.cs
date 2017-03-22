@@ -157,7 +157,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public override string Database => m_session.DatabaseOverride ?? m_connectionSettings.Database;
+		public override string Database => m_session?.DatabaseOverride ?? m_connectionSettings.Database;
 
 		public override ConnectionState State => m_connectionState;
 

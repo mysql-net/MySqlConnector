@@ -179,6 +179,21 @@ namespace SideBySide
 			}
 		}
 
+		[Fact]
+		public async Task ConnectionDatabase()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				Assert.Equal(csb.Database, connection.Database);
+
+				await connection.OpenAsync();
+
+				Assert.Equal(csb.Database, connection.Database);
+				Assert.Equal(csb.Database, await QueryCurrentDatabaseAsync(connection));
+			}
+		}
+
 		[SecondaryDatabaseRequiredFact]
 		public async Task ChangeDatabase()
 		{
