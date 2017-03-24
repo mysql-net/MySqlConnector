@@ -7,6 +7,8 @@ before_test:
     "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql.exe" -u root --password=Password12! < .ci\server\init.sql
 test_script:
 - ps: .\.ci\test.ps1
+after_test:
+- cmd: dotnet pack src\MySqlConnector\MySqlConnector.csproj --configuration Release
 notifications:
 - provider: Slack
   incoming_webhook:
