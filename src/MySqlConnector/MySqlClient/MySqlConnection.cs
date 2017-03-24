@@ -93,8 +93,7 @@ namespace MySql.Data.MySqlClient
 		private async Task ChangeDatabaseAsync(IOBehavior ioBehavior, string databaseName, CancellationToken cancellationToken)
 		{
 			if (string.IsNullOrWhiteSpace(databaseName))
-			throw new ArgumentException("Database name is not valid.", nameof(databaseName));
-
+				throw new ArgumentException("Database name is not valid.", nameof(databaseName));
 			if (State != ConnectionState.Open)
 				throw new InvalidOperationException("Connection is not open.");
 
