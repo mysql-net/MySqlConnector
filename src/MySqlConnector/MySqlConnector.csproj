@@ -4,14 +4,14 @@
     <Description>A fully async MySQL ADO.NET provider for .NET and .NET Core</Description>
     <Copyright>Copyright 2016 Bradley Grainger</Copyright>
     <AssemblyTitle>Async MySQL Connector</AssemblyTitle>
-    <VersionPrefix>0.15.1</VersionPrefix>
+    <VersionPrefix>0.15.2</VersionPrefix>
     <Authors>Bradley Grainger;Caleb Lloyd</Authors>
     <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyName>MySqlConnector</AssemblyName>
     <PackageId>MySqlConnector</PackageId>
     <PackageTags>mysql;async;ado.net;database;netcore</PackageTags>
-    <PackageReleaseNotes>Fix NullReferenceException in MySqlConnection.Database: GitHub issue #205.</PackageReleaseNotes>
+    <PackageReleaseNotes>Include help on AllowUserVariables in exception message: GitHub issue #206.</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/mysql-net/MySqlConnector</PackageProjectUrl>
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
