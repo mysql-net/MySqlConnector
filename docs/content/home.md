@@ -38,7 +38,7 @@ and is not based on [Oracle's Connector/NET](https://github.com/mysql/mysql-conn
     <td><strong>Async</strong></td>
     <td><strong>Fully asynchronous</strong> I/O</td>
     <td>Async calls map to synchronous I/O</td>
-    <td>Uses less thread pool threads</td>
+    <td>Uses fewer thread pool threads</td>
   </tr>
   <tr>
     <td><strong>Development</strong></td>
