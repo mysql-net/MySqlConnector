@@ -214,7 +214,7 @@ and is not based on &lt;a href=&#34;https://github.com/mysql/mysql-connector-net
     &lt;td&gt;&lt;strong&gt;Async&lt;/strong&gt;&lt;/td&gt;
     &lt;td&gt;&lt;strong&gt;Fully asynchronous&lt;/strong&gt; I/O&lt;/td&gt;
     &lt;td&gt;Async calls map to synchronous I/O&lt;/td&gt;
-    &lt;td&gt;Uses less thread pool threads&lt;/td&gt;
+    &lt;td&gt;Uses fewer thread pool threads&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;&lt;strong&gt;Development&lt;/strong&gt;&lt;/td&gt;
