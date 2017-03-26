@@ -55,7 +55,7 @@ namespace MySql.Data.MySqlClient
 				if (parameterIndex != -1)
 					DoAppendParameter(parameterIndex, index, length);
 				else if ((m_preparer.m_options & StatementPreparerOptions.AllowUserVariables) == 0)
-					throw new MySqlException("Parameter '{0}' must be defined.".FormatInvariant(parameterName));
+					throw new MySqlException("Parameter '{0}' must be defined. To use this as a variable, set 'Allow User Variables=true' in the connection string.".FormatInvariant(parameterName));
 			}
 
 			protected override void OnPositionalParameter(int index)
