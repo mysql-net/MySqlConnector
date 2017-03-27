@@ -11,7 +11,7 @@
     <AssemblyName>MySqlConnector</AssemblyName>
     <PackageId>MySqlConnector</PackageId>
     <PackageTags>mysql;async;ado.net;database;netcore</PackageTags>
-    <PackageReleaseNotes>Include help on AllowUserVariables in exception message: GitHub issue #206.</PackageReleaseNotes>
+    <PackageReleaseNotes>https://mysql-net.github.io/MySqlConnector/overview/version-history/</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/mysql-net/MySqlConnector</PackageProjectUrl>
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>

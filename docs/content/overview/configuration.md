@@ -5,7 +5,7 @@ menu:
   main:
     parent: getting started
 title: Configuration
-weight: 20
+weight: 40
 ---
 
 Configuration
