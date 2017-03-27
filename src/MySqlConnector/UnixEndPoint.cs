@@ -37,8 +37,7 @@ using System.Text;
 
 namespace MySql.Data
 {
-
-	public class UnixEndPoint : EndPoint
+	internal sealed class UnixEndPoint : EndPoint
 	{
 		string filename;
 
