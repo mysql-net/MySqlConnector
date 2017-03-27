@@ -28,7 +28,7 @@
 
     <meta name="generator" content="Hugo 0.17" />
     
-    <title>MySqlConnector - Migrating from Connector/NET</title>
+    <title>MySqlConnector - Known Issues</title>
 
     <link rel="stylesheet" type="text/css" href="assets/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="assets/font-awesome/css/font-awesome.min.css" />
@@ -70,18 +70,18 @@
         
 
         
-        <a class="list-group-item" href="#nav-1" data-parent="#navigation" data-toggle="collapse">
+        <a class="list-group-item active" href="#nav-1" data-parent="#navigation" data-toggle="collapse">
             <i class='fa fa-road'></i> <span>Getting Started</span> <i class="fa fa-angle-down"></i>
         </a>
 
         
-        <div id="nav-1" class="submenu panel-collapse collapse ">
+        <div id="nav-1" class="submenu panel-collapse collapse  in">
             
             <a class="list-group-item" data-parent="#nav-1" href="/MySqlConnector/overview/installing/">
                 <span>Installing</span>
             </a>
             
-            <a class="list-group-item" data-parent="#nav-1" href="/MySqlConnector/overview/known-issues/">
+            <a class="list-group-item active" data-parent="#nav-1" href="/MySqlConnector/overview/known-issues/">
                 <span>Known Issues</span>
             </a>
             
@@ -108,18 +108,18 @@
         
 
         
-        <a class="list-group-item active" href="#nav-3" data-parent="#navigation" data-toggle="collapse">
+        <a class="list-group-item" href="#nav-3" data-parent="#navigation" data-toggle="collapse">
             <i class='fa fa-lightbulb-o'></i> <span>Tutorials</span> <i class="fa fa-angle-down"></i>
         </a>
 
         
-        <div id="nav-3" class="submenu panel-collapse collapse  in">
+        <div id="nav-3" class="submenu panel-collapse collapse ">
             
             <a class="list-group-item" data-parent="#nav-3" href="/MySqlConnector/tutorials/best-practices/">
                 <span>Best Practices</span>
             </a>
             
-            <a class="list-group-item active" data-parent="#nav-3" href="/MySqlConnector/tutorials/migrating-from-connector-net/">
+            <a class="list-group-item" data-parent="#nav-3" href="/MySqlConnector/tutorials/migrating-from-connector-net/">
                 <span>Migrating from Connector/NET</span>
             </a>
             
@@ -166,40 +166,15 @@
 
 
 
-<h1 id="migrating-from-connector-net">Migrating from Connector/NET</h1>
-
-<h3 id="connection-string-differences">Connection String Differences</h3>
-
-<p>MySqlConnector has some different default connection string options:</p>
-
-<table class="table table-striped table-hover">
-  <thead>
-    <th style="width:20%">Option</th>
-    <th style="width:20%">MySqlConnector</th>
-    <th style="width:20%">Oracle's Connector/NET</th>
-    <th style="width:40%">Notes</th>
-  </thead>
-  <tr>
-    <td><code>ConnectionReset</code></td>
-    <td>Default is <code>true</code></td>
-    <td>Default is <code>false</code></td>
-    <td>MySqlConnector takes an extra command to reset pooled connections by default so that the connection is always in a known state</td>
-  </tr>
-  <tr>
-    <td><code>UseAffectedRows</code></td>
-    <td>Default is <code>true</code></td>
-    <td>Default is <code>false</code></td>
-    <td>This also affects the behavior of the <code>ROW_COUNT</code> function.  <code>UseAffectedRows=true</code> is the default in most other languages (C++, PHP, others)</td>
-  </tr>
-</table>
-
-<p>Some command line options that are supported in Connector/NET are not supported in MySqlConnector.  For a full list of options that are
-supported in MySqlConnector, see the <a href="connection-options">Connection Options</a></p>
-
-<h3 id="bugs-present-in-connector-net-that-are-fixed-in-mysqlconnector">Bugs present in Connector/NET that are fixed in MySqlConnector</h3>
+<h1 id="known-issues">Known Issues</h1>
 
 <ul>
-<li><code>Server</code> connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds</li>
+<li>The behaviour of cancellation is not well-defined in this release; cancelling a query
+may leave the <code>MySqlConnection</code> in an unusable state.</li>
+<li>Not all MySQL data types are supported.</li>
+<li>Many <code>MySql.Data</code> connection string settings are not supported by this library. See
+<a href="connection-options/">Connection Options</a> for a list of supported options.</li>
+<li>Only the <code>mysql_native_password</code> and <code>mysql_old_password</code> authentication plugins are supported.</li>
 </ul>
 
 
@@ -219,39 +194,11 @@ supported in MySqlConnector, see the <a href="connection-options">Connection Opt
               
                 
                 
-                
-              
-                
-                
-                
-              
-                
-                
-                
-              
-                
-                
-                
-              
-            
-              
-              
-              
-            
-              
-              
-              
-                
-                
-                
-              
-                
-                
                   
                   
             <div class="pull-left">
-              <a  href="/MySqlConnector/tutorials/best-practices/">
-                  <i class="fa fa-angle-left"></i> Best Practices
+              <a  href="/MySqlConnector/overview/installing/">
+                  <i class="fa fa-angle-left"></i> Installing
               </a>
             </div>
                   
@@ -260,11 +207,39 @@ supported in MySqlConnector, see the <a href="connection-options">Connection Opt
               
                 
             <div class="pull-right">
-              <a  href="/MySqlConnector/tutorials/net-core-mvc/">
-                  Use with .NET Core MVC <i class="fa fa-angle-right"></i>
+              <a  href="/MySqlConnector/overview/version-history/">
+                  Version History <i class="fa fa-angle-right"></i>
               </a>
             </div>
                   
+                
+                
+                
+              
+                
+                
+                
+              
+                
+                
+                
+              
+            
+              
+              
+              
+            
+              
+              
+              
+                
+                
+                
+              
+                
+                
+                
+              
                 
                 
                 

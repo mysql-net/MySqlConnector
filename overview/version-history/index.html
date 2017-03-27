@@ -28,7 +28,7 @@
 
     <meta name="generator" content="Hugo 0.17" />
     
-    <title>MySqlConnector - Use with ORMs</title>
+    <title>MySqlConnector - Version History</title>
 
     <link rel="stylesheet" type="text/css" href="assets/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="assets/font-awesome/css/font-awesome.min.css" />
@@ -85,7 +85,7 @@
                 <span>Known Issues</span>
             </a>
             
-            <a class="list-group-item" data-parent="#nav-1" href="/MySqlConnector/overview/version-history/">
+            <a class="list-group-item active" data-parent="#nav-1" href="/MySqlConnector/overview/version-history/">
                 <span>Version History</span>
             </a>
             
@@ -93,7 +93,7 @@
                 <span>Configuration</span>
             </a>
             
-            <a class="list-group-item active" data-parent="#nav-1" href="/MySqlConnector/overview/use-with-orms/">
+            <a class="list-group-item" data-parent="#nav-1" href="/MySqlConnector/overview/use-with-orms/">
                 <span>Use with ORMs</span>
             </a>
             
@@ -166,20 +166,214 @@
 
 
 
-<h1 id="use-with-orms">Use with ORMs</h1>
+<h1 id="version-history">Version History</h1>
 
-<p>This library is compatible with popular .NET ORMs including:</p>
+<h3 id="0-15-2">0.15.2</h3>
 
 <ul>
-<li><a href="https://github.com/StackExchange/dapper-dot-net">Dapper</a> (<a href="https://www.nuget.org/packages/Dapper">NuGet</a>)</li>
-<li><a href="https://github.com/nreco/data">NReco.Data</a> (<a href="https://www.nuget.org/packages/NReco.Data">NuGet</a>)</li>
-<li><a href="https://github.com/SimpleStack/simplestack.orm">SimpleStack.Orm</a> (<a href="https://www.nuget.org/packages/SimpleStack.Orm.MySQLConnector">NuGet</a>)</li>
+<li>Include help on <code>AllowUserVariables</code> in exception message: <a href="https://github.com/mysql-net/MySqlConnector/issues/206">#206</a>.</li>
 </ul>
 
-<p>For Entity Framework support, use:</p>
+<h3 id="0-15-1">0.15.1</h3>
 
 <ul>
-<li><a href="https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql">Pomelo.EntityFrameworkCore.MySql</a> (<a href="https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql">NuGet</a>)</li>
+<li>Fix <code>NullReferenceException</code> in <code>MySqlConnection.Database</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/205">#205</a>.</li>
+</ul>
+
+<h3 id="0-15-0">0.15.0</h3>
+
+<ul>
+<li>Implement <code>MySqlConnection.ChangeDatabase</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/201">#201</a>.</li>
+<li>Add <code>Buffer Result Sets</code> connection string option: <a href="https://github.com/mysql-net/MySqlConnector/issues/202">#202</a>.</li>
+</ul>
+
+<h3 id="0-14-1">0.14.1</h3>
+
+<ul>
+<li>Fix exception when <code>MySqlDataReader</code> isn&rsquo;t disposed: <a href="https://github.com/mysql-net/MySqlConnector/issues/196">#196</a>.</li>
+</ul>
+
+<h3 id="0-14-0">0.14.0</h3>
+
+<ul>
+<li>Update <code>System.*</code> package references: <a href="https://github.com/mysql-net/MySqlConnector/issues/190">#190</a>.</li>
+</ul>
+
+<h3 id="0-13-0">0.13.0</h3>
+
+<ul>
+<li>Add <code>MySqlBulkLoader</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/15">#15</a>.</li>
+</ul>
+
+<h3 id="0-12-0">0.12.0</h3>
+
+<ul>
+<li>Add support for <code>DateTimeOffset</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/172">#172</a>, <a href="https://github.com/mysql-net/MySqlConnector/issues/175">#175</a>.</li>
+</ul>
+
+<h3 id="0-11-6">0.11.6</h3>
+
+<ul>
+<li>Fix <code>PlatformNotSupportedException</code> on AWS Lambda: <a href="https://github.com/mysql-net/MySqlConnector/issues/170">#170</a>.</li>
+</ul>
+
+<h3 id="0-11-5">0.11.5</h3>
+
+<ul>
+<li>Further improve async and sync performance: <a href="https://github.com/mysql-net/MySqlConnector/issues/164">#164</a>.</li>
+</ul>
+
+<h3 id="0-11-4">0.11.4</h3>
+
+<ul>
+<li>No changes in this release.</li>
+</ul>
+
+<h3 id="0-11-3">0.11.3</h3>
+
+<ul>
+<li>Improve async performance: <a href="https://github.com/mysql-net/MySqlConnector/issues/164">#164</a>.</li>
+</ul>
+
+<h3 id="0-11-2">0.11.2</h3>
+
+<ul>
+<li>Fix InvalidCastException when using aggregate functions: <a href="https://github.com/mysql-net/MySqlConnector/issues/54">#54</a>.</li>
+</ul>
+
+<h3 id="0-11-1">0.11.1</h3>
+
+<ul>
+<li>Handle <code>IOException</code> in <code>MySqlSession.DisposeAsync</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/159">#159</a>.</li>
+</ul>
+
+<h3 id="0-11-0">0.11.0</h3>
+
+<ul>
+<li>Implement the <code>SslMode=Preferred</code> connection string option and make it the default: <a href="https://github.com/mysql-net/MySqlConnector/pull/158">#158</a>.</li>
+</ul>
+
+<h3 id="0-10-0">0.10.0</h3>
+
+<ul>
+<li>Change minimum supported .NET Framework version to .NET 4.5.1: <a href="https://github.com/mysql-net/MySqlConnector/issues/154">#154</a>.</li>
+</ul>
+
+<h3 id="0-9-2">0.9.2</h3>
+
+<ul>
+<li>Fix MySqlConnection.DataSource with Unix Domain Socket: <a href="https://github.com/mysql-net/MySqlConnector/issues/152">#152</a>.</li>
+</ul>
+
+<h3 id="0-9-1">0.9.1</h3>
+
+<ul>
+<li>Fix <code>SocketException</code> when calling <code>OpenAsync</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/150">#150</a>.</li>
+</ul>
+
+<h3 id="0-9-0">0.9.0</h3>
+
+<ul>
+<li>Implement <code>Treat Tiny As Boolean</code> connection string option: <a href="https://github.com/mysql-net/MySqlConnector/issues/141">#141</a>.</li>
+</ul>
+
+<h3 id="0-8-0">0.8.0</h3>
+
+<ul>
+<li>Implement <code>Keep Alive</code> connection string option: <a href="https://github.com/mysql-net/MySqlConnector/issues/132">#132</a>.</li>
+</ul>
+
+<h3 id="0-7-4">0.7.4</h3>
+
+<ul>
+<li>Fix <code>Packet received out-of-order</code> exception with <code>UseCompression=true</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/146">#146</a>.</li>
+</ul>
+
+<h3 id="0-7-3">0.7.3</h3>
+
+<ul>
+<li>Fix <code>GetDataTypeName</code> for <code>ENUM</code> and <code>SET</code> columns: <a href="https://github.com/mysql-net/MySqlConnector/issues/52">#52</a>, <a href="https://github.com/mysql-net/MySqlConnector/issues/71">#71</a>.</li>
+</ul>
+
+<h3 id="0-7-2">0.7.2</h3>
+
+<ul>
+<li>Fix authentication for MySQL Server 5.1: <a href="https://github.com/mysql-net/MySqlConnector/issues/139">#139</a>.</li>
+</ul>
+
+<h3 id="0-7-1">0.7.1</h3>
+
+<ul>
+<li>Fix <code>NextResult</code> incorrectly returning <code>true</code>, which may cause problems with Dapper&rsquo;s <code>QueryMultiple</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/135">#135</a>.</li>
+<li>Reduce memory usage related to <code>Enum.HasFlag</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/137">#137</a>.</li>
+</ul>
+
+<h3 id="0-7-0">0.7.0</h3>
+
+<ul>
+<li>Implement stored procedure support: <a href="https://github.com/mysql-net/MySqlConnector/issues/19">#19</a>.
+
+<ul>
+<li>Known issue: <code>NextResult</code> incorrectly returns <code>true</code>, which may cause problems with Dapper&rsquo;s <code>QueryMultiple</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/135">#135</a>.</li>
+</ul></li>
+</ul>
+
+<h3 id="0-6-2">0.6.2</h3>
+
+<ul>
+<li>Fix <code>NullReferenceException</code> when <code>MySqlParameter.Value == null</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/126">#126</a>.</li>
+</ul>
+
+<h3 id="0-6-1">0.6.1</h3>
+
+<ul>
+<li>Fix <code>AggregateException</code> going unhandled in <code>OpenAsync</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/124">#124</a>.</li>
+<li>Fix SSL over Unix domain sockets.</li>
+<li>Reduce allocations when using SSL certificates.</li>
+</ul>
+
+<h3 id="0-6-0">0.6.0</h3>
+
+<ul>
+<li>Implement <code>UseCompression</code> connection string option: <a href="https://github.com/mysql-net/MySqlConnector/issues/31">#31</a>.</li>
+<li>Add support for Unix domain sockets: <a href="https://github.com/mysql-net/MySqlConnector/issues/118">#118</a>.</li>
+</ul>
+
+<h3 id="0-5-0">0.5.0</h3>
+
+<ul>
+<li>Implement <code>UseAffectedRows</code> connection string option. (Note that the default value is <code>true</code>, unlike <code>MySql.Data</code>.)</li>
+</ul>
+
+<h3 id="0-4-0">0.4.0</h3>
+
+<ul>
+<li>Rename <code>SslMode</code> enum to <code>MySqlSslMode</code> (for compatibility with <code>MySql.Data</code>):<a href="https://github.com/mysql-net/MySqlConnector/pull/93">#102</a>.</li>
+</ul>
+
+<h3 id="0-3-0">0.3.0</h3>
+
+<ul>
+<li>Add SSL support and <code>SslMode</code> connection string option: <a href="https://github.com/mysql-net/MySqlConnector/issues/88">#88</a>.</li>
+<li>Rewrite protocol serialization layer to support SSL and make adding compression easier: <a href="https://github.com/mysql-net/MySqlConnector/pull/93">#93</a>.</li>
+</ul>
+
+<h3 id="0-2-1">0.2.1</h3>
+
+<ul>
+<li>Add more diagnostics for unsupported auth plugins.</li>
+</ul>
+
+<h3 id="0-2-0">0.2.0</h3>
+
+<ul>
+<li>Add <code>MySqlConnectionStringBuilder.ForceSynchronous</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/91">#91</a>.</li>
+</ul>
+
+<h3 id="0-1-0">0.1.0</h3>
+
+<ul>
+<li>First non-alpha release. Supports core data access scenarios with common ORMs.</li>
 </ul>
 
 
@@ -203,22 +397,29 @@
               
                 
                 
-                
-              
-                
-                
-                
-              
-                
-                
                   
                   
             <div class="pull-left">
-              <a  href="/MySqlConnector/overview/configuration/">
-                  <i class="fa fa-angle-left"></i> Configuration
+              <a  href="/MySqlConnector/overview/known-issues/">
+                  <i class="fa fa-angle-left"></i> Known Issues
               </a>
             </div>
                   
+                
+                
+              
+                
+            <div class="pull-right">
+              <a  href="/MySqlConnector/overview/configuration/">
+                  Configuration <i class="fa fa-angle-right"></i>
+              </a>
+            </div>
+                  
+                
+                
+                
+              
+                
                 
                 
               

@@ -370,67 +370,23 @@ please refer to its documentation.&lt;/p&gt;
     </item>
     
     <item>
-      <title>Configuration</title>
-      <link>https://mysql-net.github.io/MySqlConnector/overview/configuration/</link>
-      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      <title>Known Issues</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/known-issues/</link>
+      <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://mysql-net.github.io/MySqlConnector/overview/configuration/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/known-issues/</guid>
       <description>
 
-&lt;h1 id=&#34;configuration&#34;&gt;Configuration&lt;/h1&gt;
+&lt;h1 id=&#34;known-issues&#34;&gt;Known Issues&lt;/h1&gt;
 
-&lt;p&gt;MySqlConnector uses a connection string in order to connect to your database.&lt;/p&gt;
-
-&lt;p&gt;To connect to a database on &lt;code&gt;localhost&lt;/code&gt; port &lt;code&gt;3306&lt;/code&gt; with a user &lt;code&gt;mysqltest&lt;/code&gt;, password &lt;code&gt;Password123&lt;/code&gt;, and default schema &lt;code&gt;mysqldb&lt;/code&gt;, the connection string would be:&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;host=127.0.0.1;port=3306;user id=mysqltest;password=Password123;database=mysqldb;&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;For all connection string options, view the &lt;a href=&#34;connection-options/&#34;&gt;Connection Options Reference&lt;/a&gt;&lt;/p&gt;
-
-&lt;h3 id=&#34;application-database-object-example&#34;&gt;Application Database Object Example&lt;/h3&gt;
-
-&lt;p&gt;It&amp;rsquo;s a good idea to use an IDisposable object that configures the connection string globally, and closes the connection automatically:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;public class AppDb : IDisposable
-{
-    public readonly MySqlConnection Connection;
-
-    public AppDb()
-    {
-        Connection = new MySqlConnection(&amp;quot;host=127.0.0.1;port=3306;user id=mysqltest;password=Password123;database=mysqldb;&amp;quot;);
-    }
-
-    public void Dispose()
-    {
-        Connection.Close();
-    }
-}
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Callers can use the Application Database Object object like so:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;public async Task AsyncMethod()
-{
-    using (var db = new AppDb())
-    {
-        await db.Connection.OpenAsync();
-        // db.Connection is open and ready to use
-    }
-    // db.Connection was closed by AppDb.Dispose
-}
-
-public void SyncMethod()
-{
-    using (var db = new AppDb())
-    {
-        db.Connection.Open();
-        // db.Connection is open and ready to use
-    }
-    // db.Connection was closed by AppDb.Dispose
-}
-
-&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;The behaviour of cancellation is not well-defined in this release; cancelling a query
+may leave the &lt;code&gt;MySqlConnection&lt;/code&gt; in an unusable state.&lt;/li&gt;
+&lt;li&gt;Not all MySQL data types are supported.&lt;/li&gt;
+&lt;li&gt;Many &lt;code&gt;MySql.Data&lt;/code&gt; connection string settings are not supported by this library. See
+&lt;a href=&#34;connection-options/&#34;&gt;Connection Options&lt;/a&gt; for a list of supported options.&lt;/li&gt;
+&lt;li&gt;Only the &lt;code&gt;mysql_native_password&lt;/code&gt; and &lt;code&gt;mysql_old_password&lt;/code&gt; authentication plugins are supported.&lt;/li&gt;
+&lt;/ul&gt;
 </description>
     </item>
     
@@ -534,6 +490,226 @@ please refer to its documentation.&lt;/p&gt;
 &lt;p&gt;Holds the value of the LastInsertedId after an SQL command inserting a row has been executed&lt;/p&gt;
 
 &lt;hr /&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Version History</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/version-history/</link>
+      <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
+      <description>
+
+&lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
+
+&lt;h3 id=&#34;0-15-2&#34;&gt;0.15.2&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Include help on &lt;code&gt;AllowUserVariables&lt;/code&gt; in exception message: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/206&#34;&gt;#206&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-15-1&#34;&gt;0.15.1&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix &lt;code&gt;NullReferenceException&lt;/code&gt; in &lt;code&gt;MySqlConnection.Database&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/205&#34;&gt;#205&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-15-0&#34;&gt;0.15.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Implement &lt;code&gt;MySqlConnection.ChangeDatabase&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/201&#34;&gt;#201&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Add &lt;code&gt;Buffer Result Sets&lt;/code&gt; connection string option: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/202&#34;&gt;#202&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-14-1&#34;&gt;0.14.1&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix exception when &lt;code&gt;MySqlDataReader&lt;/code&gt; isn&amp;rsquo;t disposed: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/196&#34;&gt;#196&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-14-0&#34;&gt;0.14.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Update &lt;code&gt;System.*&lt;/code&gt; package references: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/190&#34;&gt;#190&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-13-0&#34;&gt;0.13.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Add &lt;code&gt;MySqlBulkLoader&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/15&#34;&gt;#15&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-12-0&#34;&gt;0.12.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Add support for &lt;code&gt;DateTimeOffset&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/172&#34;&gt;#172&lt;/a&gt;, &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/175&#34;&gt;#175&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-11-6&#34;&gt;0.11.6&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix &lt;code&gt;PlatformNotSupportedException&lt;/code&gt; on AWS Lambda: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/170&#34;&gt;#170&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-11-5&#34;&gt;0.11.5&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Further improve async and sync performance: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/164&#34;&gt;#164&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-11-4&#34;&gt;0.11.4&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;No changes in this release.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-11-3&#34;&gt;0.11.3&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Improve async performance: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/164&#34;&gt;#164&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-11-2&#34;&gt;0.11.2&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix InvalidCastException when using aggregate functions: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/54&#34;&gt;#54&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-11-1&#34;&gt;0.11.1&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Handle &lt;code&gt;IOException&lt;/code&gt; in &lt;code&gt;MySqlSession.DisposeAsync&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/159&#34;&gt;#159&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-11-0&#34;&gt;0.11.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Implement the &lt;code&gt;SslMode=Preferred&lt;/code&gt; connection string option and make it the default: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/pull/158&#34;&gt;#158&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-10-0&#34;&gt;0.10.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Change minimum supported .NET Framework version to .NET 4.5.1: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/154&#34;&gt;#154&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-9-2&#34;&gt;0.9.2&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix MySqlConnection.DataSource with Unix Domain Socket: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/152&#34;&gt;#152&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-9-1&#34;&gt;0.9.1&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix &lt;code&gt;SocketException&lt;/code&gt; when calling &lt;code&gt;OpenAsync&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/150&#34;&gt;#150&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-9-0&#34;&gt;0.9.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Implement &lt;code&gt;Treat Tiny As Boolean&lt;/code&gt; connection string option: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/141&#34;&gt;#141&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-8-0&#34;&gt;0.8.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Implement &lt;code&gt;Keep Alive&lt;/code&gt; connection string option: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/132&#34;&gt;#132&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-7-4&#34;&gt;0.7.4&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix &lt;code&gt;Packet received out-of-order&lt;/code&gt; exception with &lt;code&gt;UseCompression=true&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/146&#34;&gt;#146&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-7-3&#34;&gt;0.7.3&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix &lt;code&gt;GetDataTypeName&lt;/code&gt; for &lt;code&gt;ENUM&lt;/code&gt; and &lt;code&gt;SET&lt;/code&gt; columns: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/52&#34;&gt;#52&lt;/a&gt;, &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/71&#34;&gt;#71&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-7-2&#34;&gt;0.7.2&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix authentication for MySQL Server 5.1: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/139&#34;&gt;#139&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-7-1&#34;&gt;0.7.1&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix &lt;code&gt;NextResult&lt;/code&gt; incorrectly returning &lt;code&gt;true&lt;/code&gt;, which may cause problems with Dapper&amp;rsquo;s &lt;code&gt;QueryMultiple&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/135&#34;&gt;#135&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Reduce memory usage related to &lt;code&gt;Enum.HasFlag&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/137&#34;&gt;#137&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-7-0&#34;&gt;0.7.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Implement stored procedure support: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/19&#34;&gt;#19&lt;/a&gt;.
+
+&lt;ul&gt;
+&lt;li&gt;Known issue: &lt;code&gt;NextResult&lt;/code&gt; incorrectly returns &lt;code&gt;true&lt;/code&gt;, which may cause problems with Dapper&amp;rsquo;s &lt;code&gt;QueryMultiple&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/135&#34;&gt;#135&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-6-2&#34;&gt;0.6.2&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix &lt;code&gt;NullReferenceException&lt;/code&gt; when &lt;code&gt;MySqlParameter.Value == null&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/126&#34;&gt;#126&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-6-1&#34;&gt;0.6.1&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix &lt;code&gt;AggregateException&lt;/code&gt; going unhandled in &lt;code&gt;OpenAsync&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/124&#34;&gt;#124&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fix SSL over Unix domain sockets.&lt;/li&gt;
+&lt;li&gt;Reduce allocations when using SSL certificates.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-6-0&#34;&gt;0.6.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Implement &lt;code&gt;UseCompression&lt;/code&gt; connection string option: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/31&#34;&gt;#31&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Add support for Unix domain sockets: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/118&#34;&gt;#118&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-5-0&#34;&gt;0.5.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Implement &lt;code&gt;UseAffectedRows&lt;/code&gt; connection string option. (Note that the default value is &lt;code&gt;true&lt;/code&gt;, unlike &lt;code&gt;MySql.Data&lt;/code&gt;.)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-4-0&#34;&gt;0.4.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Rename &lt;code&gt;SslMode&lt;/code&gt; enum to &lt;code&gt;MySqlSslMode&lt;/code&gt; (for compatibility with &lt;code&gt;MySql.Data&lt;/code&gt;):&lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/pull/93&#34;&gt;#102&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-3-0&#34;&gt;0.3.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Add SSL support and &lt;code&gt;SslMode&lt;/code&gt; connection string option: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/88&#34;&gt;#88&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Rewrite protocol serialization layer to support SSL and make adding compression easier: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/pull/93&#34;&gt;#93&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-2-1&#34;&gt;0.2.1&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Add more diagnostics for unsupported auth plugins.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-2-0&#34;&gt;0.2.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Add &lt;code&gt;MySqlConnectionStringBuilder.ForceSynchronous&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/91&#34;&gt;#91&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;0-1-0&#34;&gt;0.1.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;First non-alpha release. Supports core data access scenarios with common ORMs.&lt;/li&gt;
+&lt;/ul&gt;
 </description>
     </item>
     
@@ -1273,28 +1449,67 @@ GET http://localhost:5000/api/async
     </item>
     
     <item>
-      <title>Use with ORMs</title>
-      <link>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</link>
+      <title>Configuration</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/configuration/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</guid>
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/configuration/</guid>
       <description>
 
-&lt;h1 id=&#34;use-with-orms&#34;&gt;Use with ORMs&lt;/h1&gt;
+&lt;h1 id=&#34;configuration&#34;&gt;Configuration&lt;/h1&gt;
 
-&lt;p&gt;This library is compatible with popular .NET ORMs including:&lt;/p&gt;
+&lt;p&gt;MySqlConnector uses a connection string in order to connect to your database.&lt;/p&gt;
 
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/StackExchange/dapper-dot-net&#34;&gt;Dapper&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/Dapper&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nreco/data&#34;&gt;NReco.Data&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/NReco.Data&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/SimpleStack/simplestack.orm&#34;&gt;SimpleStack.Orm&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/SimpleStack.Orm.MySQLConnector&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;To connect to a database on &lt;code&gt;localhost&lt;/code&gt; port &lt;code&gt;3306&lt;/code&gt; with a user &lt;code&gt;mysqltest&lt;/code&gt;, password &lt;code&gt;Password123&lt;/code&gt;, and default schema &lt;code&gt;mysqldb&lt;/code&gt;, the connection string would be:&lt;/p&gt;
 
-&lt;p&gt;For Entity Framework support, use:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;host=127.0.0.1;port=3306;user id=mysqltest;password=Password123;database=mysqldb;&lt;/code&gt;&lt;/p&gt;
 
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql&#34;&gt;Pomelo.EntityFrameworkCore.MySql&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
-&lt;/ul&gt;
+&lt;p&gt;For all connection string options, view the &lt;a href=&#34;connection-options/&#34;&gt;Connection Options Reference&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;application-database-object-example&#34;&gt;Application Database Object Example&lt;/h3&gt;
+
+&lt;p&gt;It&amp;rsquo;s a good idea to use an IDisposable object that configures the connection string globally, and closes the connection automatically:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;public class AppDb : IDisposable
+{
+    public readonly MySqlConnection Connection;
+
+    public AppDb()
+    {
+        Connection = new MySqlConnection(&amp;quot;host=127.0.0.1;port=3306;user id=mysqltest;password=Password123;database=mysqldb;&amp;quot;);
+    }
+
+    public void Dispose()
+    {
+        Connection.Close();
+    }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Callers can use the Application Database Object object like so:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;public async Task AsyncMethod()
+{
+    using (var db = new AppDb())
+    {
+        await db.Connection.OpenAsync();
+        // db.Connection is open and ready to use
+    }
+    // db.Connection was closed by AppDb.Dispose
+}
+
+public void SyncMethod()
+{
+    using (var db = new AppDb())
+    {
+        db.Connection.Open();
+        // db.Connection is open and ready to use
+    }
+    // db.Connection was closed by AppDb.Dispose
+}
+
+&lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
     
@@ -1326,6 +1541,32 @@ please refer to its documentation.&lt;/p&gt;
 &lt;p&gt;Async version of Rollback&lt;/p&gt;
 
 &lt;hr /&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Use with ORMs</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</guid>
+      <description>
+
+&lt;h1 id=&#34;use-with-orms&#34;&gt;Use with ORMs&lt;/h1&gt;
+
+&lt;p&gt;This library is compatible with popular .NET ORMs including:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/StackExchange/dapper-dot-net&#34;&gt;Dapper&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/Dapper&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/nreco/data&#34;&gt;NReco.Data&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/NReco.Data&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/SimpleStack/simplestack.orm&#34;&gt;SimpleStack.Orm&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/SimpleStack.Orm.MySQLConnector&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;For Entity Framework support, use:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql&#34;&gt;Pomelo.EntityFrameworkCore.MySql&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
+&lt;/ul&gt;
 </description>
     </item>
     

@@ -27,8 +27,8 @@
   </url>
   
   <url>
-    <loc>https://mysql-net.github.io/MySqlConnector/overview/configuration/</loc>
-    <lastmod>2016-10-16T00:00:00+00:00</lastmod>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/known-issues/</loc>
+    <lastmod>2017-03-27T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -39,6 +39,11 @@
   <url>
     <loc>https://mysql-net.github.io/MySqlConnector/api/mysql-command/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/version-history/</loc>
+    <lastmod>2017-03-27T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -57,12 +62,17 @@
   </url>
   
   <url>
-    <loc>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</loc>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/configuration/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>https://mysql-net.github.io/MySqlConnector/api/mysql-transaction/</loc>
+    <lastmod>2016-10-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</loc>
     <lastmod>2016-10-16T00:00:00+00:00</lastmod>
   </url>
   
