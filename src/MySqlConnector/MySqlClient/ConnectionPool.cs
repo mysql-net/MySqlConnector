@@ -69,13 +69,16 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public async Task ClearAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async Task TrimAsync(IOBehavior ioBehavior, int connectionsToKeep, CancellationToken cancellationToken)
 		{
+			if (m_sessions.Count <= connectionsToKeep)
+				return;
+
 			// increment the generation of the connection pool
 			Interlocked.Increment(ref m_generation);
 
 			var waitTimeout = TimeSpan.FromMilliseconds(10);
-			while (true)
+			while (m_sessions.Count <= connectionsToKeep)
 			{
 				// try to get an open slot; if this fails, connection pool is full and sessions will be disposed when returned to pool
 				if (ioBehavior == IOBehavior.Asynchronous)
@@ -130,12 +133,12 @@ namespace MySql.Data.MySqlClient
 			return pool;
 		}
 
-		public static async Task ClearPoolsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public static async Task TrimPoolsAsync(IOBehavior ioBehavior, int connectionsToKeep, CancellationToken cancellationToken)
 		{
 			var pools = new List<ConnectionPool>(s_pools.Values);
 
 			foreach (var pool in pools)
-				await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				await pool.TrimAsync(ioBehavior, connectionsToKeep, cancellationToken).ConfigureAwait(false);
 		}
 
 		private ConnectionPool(ConnectionSettings cs)
