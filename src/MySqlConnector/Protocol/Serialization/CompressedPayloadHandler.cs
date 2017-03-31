@@ -2,6 +2,7 @@
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
 using MySql.Data.Serialization;
 
 namespace MySql.Data.Protocol.Serialization
@@ -87,7 +88,7 @@ namespace MySql.Data.Protocol.Serialization
 						if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
 							return default(ValueTask<int>);
 
-						var exception = new InvalidOperationException("Packet received out-of-order. Expected {0}; got {1}.".FormatInvariant(expectedSequenceNumber, packetSequenceNumber));
+						var exception = MySqlProtocolException.CreateForPacketOutOfOrder(expectedSequenceNumber, packetSequenceNumber);
 						return ValueTaskExtensions.FromException<int>(exception);
 					}
 

@@ -447,7 +447,16 @@ namespace MySql.Data.Serialization
 		private ValueTask<int> TryAsync<TArg>(Func<TArg, IOBehavior, ValueTask<int>> func, TArg arg, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyConnected();
-			var task = func(arg, ioBehavior);
+			ValueTask<int> task;
+			try
+			{
+				task = func(arg, ioBehavior);
+			}
+			catch (Exception ex)
+			{
+				task = ValueTaskExtensions.FromException<int>(ex);
+			}
+
 			if (task.IsCompletedSuccessfully)
 				return task;
 
@@ -468,7 +477,16 @@ namespace MySql.Data.Serialization
 		private ValueTask<PayloadData> TryAsync(Func<ProtocolErrorBehavior, IOBehavior, ValueTask<ArraySegment<byte>>> func, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyConnected();
-			var task = func(ProtocolErrorBehavior.Throw, ioBehavior);
+			ValueTask<ArraySegment<byte>> task;
+			try
+			{
+				task = func(ProtocolErrorBehavior.Throw, ioBehavior);
+			}
+			catch (Exception ex)
+			{
+				task = ValueTaskExtensions.FromException<ArraySegment<byte>>(ex);
+			}
+
 			if (task.IsCompletedSuccessfully)
 			{
 				var payload = new PayloadData(task.Result);

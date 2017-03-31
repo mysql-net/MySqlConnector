@@ -29,7 +29,6 @@ namespace MySql.Data.MySqlClient.Results
 			m_readBuffer.Clear();
 			m_row = null;
 			m_rowBuffered = null;
-			MySqlException exception = null;
 
 			try
 			{
@@ -71,7 +70,7 @@ namespace MySql.Data.MySqlClient.Results
 						catch (Exception ex)
 						{
 							// store the exception, to be thrown after reading the response packet from the server
-							exception = new MySqlException("Error during LOAD DATA LOCAL INFILE", ex);
+							ReadResultSetHeaderException = new MySqlException("Error during LOAD DATA LOCAL INFILE", ex);
 						}
 
 						await Session.SendReplyAsync(EmptyPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -98,9 +97,6 @@ namespace MySql.Data.MySqlClient.Results
 						break;
 					}
 				}
-
-				if (exception != null)
-					throw exception;
 			}
 			catch (Exception ex)
 			{

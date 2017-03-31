@@ -510,30 +510,50 @@ namespace SideBySide
 		[InlineData("TinyBlob", 255)]
 		[InlineData("Blob", 65535)]
 		[InlineData("MediumBlob", 16777215)]
+		[InlineData("LongBlob", 33554432)]
 		[InlineData("LongBlob", 67108864)]
+		[InlineData("LongBlob", 134217728)]
 		public async Task InsertLargeBlobAsync(string column, int size)
 		{
-			// verify that this amount of data can be sent to MySQL successfully
-			var maxAllowedPacket = (await m_database.Connection.QueryAsync<int>("select @@max_allowed_packet").ConfigureAwait(false)).Single();
-			if (maxAllowedPacket < size)
-				return; // TODO: Use [SkippableFact]
-
-			var data = CreateByteArray(size);
-
-			long lastInsertId;
-			using (var cmd = new MySqlCommand(Invariant($"insert into datatypes_blobs(`{column}`) values(?)"), m_database.Connection)
+			// NOTE: MySQL Server will reset the connection when it receives an oversize packet, so we need to create a test-specific connection here
+			using (var connection = new MySqlConnection(AppConfig.CreateConnectionStringBuilder().ConnectionString))
 			{
-				Parameters = { new MySqlParameter { Value = data } }
-			})
-			{
-				await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-				lastInsertId = cmd.LastInsertedId;
+				await connection.OpenAsync();
+
+				// verify that this amount of data can be sent to MySQL successfully
+				var maxAllowedPacket = (await connection.QueryAsync<int>("select @@max_allowed_packet").ConfigureAwait(false)).Single();
+				var shouldFail = maxAllowedPacket < size + 100;
+
+				var data = CreateByteArray(size);
+
+				long lastInsertId;
+				using (var cmd = new MySqlCommand(Invariant($"insert into datatypes_blobs(`{column}`) values(?)"), connection)
+				{
+					Parameters = { new MySqlParameter { Value = data } }
+				})
+				{
+					try
+					{
+						await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+						lastInsertId = cmd.LastInsertedId;
+						Assert.False(shouldFail);
+					}
+					catch (MySqlException ex)
+					{
+						lastInsertId = -1;
+						Assert.True(shouldFail);
+						Assert.Contains("packet", ex.Message);
+					}
+				}
+
+				if (!shouldFail)
+				{
+					var queryResult = (await connection.QueryAsync<byte[]>(Invariant($"select `{column}` from datatypes_blobs where rowid = {lastInsertId}")).ConfigureAwait(false)).Single();
+					TestUtilities.AssertEqual(data, queryResult);
+
+					await connection.ExecuteAsync(Invariant($"delete from datatypes_blobs where rowid = {lastInsertId}")).ConfigureAwait(false);
+				}
 			}
-
-			var queryResult = (await m_database.Connection.QueryAsync<byte[]>(Invariant($"select `{column}` from datatypes_blobs where rowid = {lastInsertId}")).ConfigureAwait(false)).Single();
-			TestUtilities.AssertEqual(data, queryResult);
-
-			await m_database.Connection.ExecuteAsync(Invariant($"delete from datatypes_blobs where rowid = {lastInsertId}")).ConfigureAwait(false);
 		}
 
 		[Theory]
@@ -543,27 +563,44 @@ namespace SideBySide
 		[InlineData("LongBlob", 67108864)]
 		public void InsertLargeBlobSync(string column, int size)
 		{
-			// verify that this amount of data can be sent to MySQL successfully
-			var maxAllowedPacket = m_database.Connection.Query<int>("select @@max_allowed_packet").Single();
-			if (maxAllowedPacket < size)
-				return; // TODO: Use [SkippableFact]
-
-			var data = CreateByteArray(size);
-
-			long lastInsertId;
-			using (var cmd = new MySqlCommand(Invariant($"insert into datatypes_blobs(`{column}`) values(?)"), m_database.Connection)
+			// NOTE: MySQL Server will reset the connection when it receives an oversize packet, so we need to create a test-specific connection here
+			using (var connection = new MySqlConnection(AppConfig.CreateConnectionStringBuilder().ConnectionString))
 			{
-				Parameters = { new MySqlParameter { Value = data } }
-			})
-			{
-				cmd.ExecuteNonQuery();
-				lastInsertId = cmd.LastInsertedId;
+				connection.Open();
+
+				// verify that this amount of data can be sent to MySQL successfully
+				var maxAllowedPacket = m_database.Connection.Query<int>("select @@max_allowed_packet").Single();
+				var shouldFail = maxAllowedPacket < size + 100;
+
+				var data = CreateByteArray(size);
+
+				long lastInsertId;
+				using (var cmd = new MySqlCommand(Invariant($"insert into datatypes_blobs(`{column}`) values(?)"), connection)
+				{
+					Parameters = { new MySqlParameter { Value = data } }
+				})
+				{
+					try
+					{
+						cmd.ExecuteNonQuery();
+						lastInsertId = cmd.LastInsertedId;
+					}
+					catch (MySqlException ex)
+					{
+						lastInsertId = -1;
+						Assert.True(shouldFail);
+						Assert.Contains("packet", ex.Message);
+					}
+				}
+
+				if (!shouldFail)
+				{
+					var queryResult = connection.Query<byte[]>(Invariant($"select `{column}` from datatypes_blobs where rowid = {lastInsertId}")).Single();
+					TestUtilities.AssertEqual(data, queryResult);
+
+					connection.Execute(Invariant($"delete from datatypes_blobs where rowid = {lastInsertId}"));
+				}
 			}
-
-			var queryResult = m_database.Connection.Query<byte[]>(Invariant($"select `{column}` from datatypes_blobs where rowid = {lastInsertId}")).Single();
-			TestUtilities.AssertEqual(data, queryResult);
-
-			m_database.Connection.Execute(Invariant($"delete from datatypes_blobs where rowid = {lastInsertId}"));
 		}
 
 		private static byte[] CreateByteArray(int size)
