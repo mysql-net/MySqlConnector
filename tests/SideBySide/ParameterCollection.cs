@@ -133,6 +133,9 @@ namespace SideBySide
 			Assert.Equal(-1, m_parameterCollection.IndexOf("@Test1"));
 			Assert.Equal(0, m_parameterCollection.IndexOf("@Test3"));
 			Assert.Equal(1, m_parameterCollection.IndexOf("@Test2"));
+			m_parameterCollection.AddWithValue("@Test4", 2);
+			Assert.Equal(2, m_parameterCollection.IndexOf("@Test4"));
+			Assert.Equal(3, m_parameterCollection.Count);
 		}
 
 		MySqlCommand m_command;
