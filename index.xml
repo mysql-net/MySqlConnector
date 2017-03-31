@@ -503,6 +503,12 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-16-0&#34;&gt;0.16.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Implement &lt;code&gt;MySqlParameterCollection.AddWithValue&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/127&#34;&gt;#127&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-15-2&#34;&gt;0.15.2&lt;/h3&gt;
 
 &lt;ul&gt;
