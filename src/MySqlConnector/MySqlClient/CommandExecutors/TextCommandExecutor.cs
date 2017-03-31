@@ -63,7 +63,7 @@ namespace MySql.Data.MySqlClient.CommandExecutors
 				await m_command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await MySqlDataReader.CreateAsync(m_command, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
-			catch (Exception ex) when (payload.ArraySegment.Count > 4194304 && (ex is SocketException || ex is IOException))
+			catch (Exception ex) when (payload.ArraySegment.Count > 4194304 && (ex is SocketException || ex is IOException || ex is MySqlProtocolException))
 			{
 				// the default MySQL Server value for max_allowed_packet (in MySQL 5.7) is 4MiB: https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_allowed_packet
 				// use "decimal megabytes" (to round up) when creating the exception message
