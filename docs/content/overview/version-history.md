@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.16.1
+
+* Throw a better exception when `max_allowed_packet` is exceeded: [#40](https://github.com/mysql-net/MySqlConnector/issues/40).
+
 ### 0.16.0
 
 * Implement `MySqlParameterCollection.AddWithValue`: [#127](https://github.com/mysql-net/MySqlConnector/issues/127).
