@@ -1,5 +1,8 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Data.Common;
+using System.IO;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.Protocol.Serialization;
@@ -55,8 +58,18 @@ namespace MySql.Data.MySqlClient.CommandExecutors
 				statementPreparerOptions |= StatementPreparerOptions.OldGuids;
 			var preparer = new MySqlStatementPreparer(commandText, parameterCollection, statementPreparerOptions);
 			var payload = new PayloadData(preparer.ParseAndBindParameters());
-			await m_command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-			return await MySqlDataReader.CreateAsync(m_command, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
+			try
+			{
+				await m_command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				return await MySqlDataReader.CreateAsync(m_command, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
+			}
+			catch (Exception ex) when (payload.ArraySegment.Count > 4194304 && (ex is SocketException || ex is IOException))
+			{
+				// the default MySQL Server value for max_allowed_packet (in MySQL 5.7) is 4MiB: https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_allowed_packet
+				// use "decimal megabytes" (to round up) when creating the exception message
+				int megabytes = payload.ArraySegment.Count / 1000000;
+				throw new MySqlException("Error submitting {0}MB packet; ensure 'max_allowed_packet' is greater than {0}MB.".FormatInvariant(megabytes), ex);
+			}
 		}
 
 		readonly MySqlCommand m_command;
