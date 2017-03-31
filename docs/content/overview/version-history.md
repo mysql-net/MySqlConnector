@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.16.0
+
+* Implement `MySqlParameterCollection.AddWithValue`: [#127](https://github.com/mysql-net/MySqlConnector/issues/127).
+
 ### 0.15.2
 
 * Include help on `AllowUserVariables` in exception message: [#206](https://github.com/mysql-net/MySqlConnector/issues/206).
