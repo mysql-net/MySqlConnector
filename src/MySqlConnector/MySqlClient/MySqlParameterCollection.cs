@@ -38,6 +38,17 @@ namespace MySql.Data.MySqlClient
 				Add(obj);
 		}
 
+		public MySqlParameter AddWithValue(string parameterName, object value)
+		{
+			var parameter = new MySqlParameter
+			{
+				ParameterName = parameterName,
+				Value = value
+			};
+			AddParameter(parameter);
+			return parameter;
+		}
+
 		public override bool Contains(object value)
 		{
 			return m_parameters.Contains((MySqlParameter) value);
