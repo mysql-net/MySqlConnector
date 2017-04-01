@@ -26,8 +26,8 @@ namespace MySql.Data.Protocol.Serialization
 
 		public IByteHandler ByteHandler
 		{
-			get { return m_byteHandler; }
-			set { throw new NotSupportedException(); }
+			get => m_byteHandler;
+			set => throw new NotSupportedException();
 		}
 
 		public ValueTask<ArraySegment<byte>> ReadPayloadAsync(ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) =>

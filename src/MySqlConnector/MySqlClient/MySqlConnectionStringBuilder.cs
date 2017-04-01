@@ -19,149 +19,149 @@ namespace MySql.Data.MySqlClient
 		// Base Options
 		public string Server
 		{
-			get { return MySqlConnectionStringOption.Server.GetValue(this); }
-			set { MySqlConnectionStringOption.Server.SetValue(this, value); }
+			get => MySqlConnectionStringOption.Server.GetValue(this);
+			set => MySqlConnectionStringOption.Server.SetValue(this, value);
 		}
 
 		public uint Port
 		{
-			get { return MySqlConnectionStringOption.Port.GetValue(this); }
-			set { MySqlConnectionStringOption.Port.SetValue(this, value); }
+			get => MySqlConnectionStringOption.Port.GetValue(this);
+			set => MySqlConnectionStringOption.Port.SetValue(this, value);
 		}
 
 		public string UserID
 		{
-			get { return MySqlConnectionStringOption.UserID.GetValue(this); }
-			set { MySqlConnectionStringOption.UserID.SetValue(this, value); }
+			get => MySqlConnectionStringOption.UserID.GetValue(this);
+			set => MySqlConnectionStringOption.UserID.SetValue(this, value);
 		}
 
 		public string Password
 		{
-			get { return MySqlConnectionStringOption.Password.GetValue(this); }
-			set { MySqlConnectionStringOption.Password.SetValue(this, value); }
+			get => MySqlConnectionStringOption.Password.GetValue(this);
+			set => MySqlConnectionStringOption.Password.SetValue(this, value);
 		}
 
 		public string Database
 		{
-			get { return MySqlConnectionStringOption.Database.GetValue(this); }
-			set { MySqlConnectionStringOption.Database.SetValue(this, value); }
+			get => MySqlConnectionStringOption.Database.GetValue(this);
+			set => MySqlConnectionStringOption.Database.SetValue(this, value);
 		}
 
 		// SSL/TLS Options
 		public MySqlSslMode SslMode
 		{
-			get { return MySqlConnectionStringOption.SslMode.GetValue(this); }
-			set { MySqlConnectionStringOption.SslMode.SetValue(this, value); }
+			get => MySqlConnectionStringOption.SslMode.GetValue(this);
+			set => MySqlConnectionStringOption.SslMode.SetValue(this, value);
 		}
 
 		public string CertificateFile
 		{
-			get { return MySqlConnectionStringOption.CertificateFile.GetValue(this); }
-			set { MySqlConnectionStringOption.CertificateFile.SetValue(this, value); }
+			get => MySqlConnectionStringOption.CertificateFile.GetValue(this);
+			set => MySqlConnectionStringOption.CertificateFile.SetValue(this, value);
 		}
 
 		public string CertificatePassword
 		{
-			get { return MySqlConnectionStringOption.CertificatePassword.GetValue(this); }
-			set { MySqlConnectionStringOption.CertificatePassword.SetValue(this, value); }
+			get => MySqlConnectionStringOption.CertificatePassword.GetValue(this);
+			set => MySqlConnectionStringOption.CertificatePassword.SetValue(this, value);
 		}
 
 		// Connection Pooling Options
 		public bool Pooling
 		{
-			get { return MySqlConnectionStringOption.Pooling.GetValue(this); }
-			set { MySqlConnectionStringOption.Pooling.SetValue(this, value); }
+			get => MySqlConnectionStringOption.Pooling.GetValue(this);
+			set => MySqlConnectionStringOption.Pooling.SetValue(this, value);
 		}
 
 		public bool ConnectionReset
 		{
-			get { return MySqlConnectionStringOption.ConnectionReset.GetValue(this); }
-			set { MySqlConnectionStringOption.ConnectionReset.SetValue(this, value); }
+			get => MySqlConnectionStringOption.ConnectionReset.GetValue(this);
+			set => MySqlConnectionStringOption.ConnectionReset.SetValue(this, value);
 		}
 
 		public uint MinimumPoolSize
 		{
-			get { return MySqlConnectionStringOption.MinimumPoolSize.GetValue(this); }
-			set { MySqlConnectionStringOption.MinimumPoolSize.SetValue(this, value); }
+			get => MySqlConnectionStringOption.MinimumPoolSize.GetValue(this);
+			set => MySqlConnectionStringOption.MinimumPoolSize.SetValue(this, value);
 		}
 
 		public uint MaximumPoolSize
 		{
-			get { return MySqlConnectionStringOption.MaximumPoolSize.GetValue(this); }
-			set { MySqlConnectionStringOption.MaximumPoolSize.SetValue(this, value); }
+			get => MySqlConnectionStringOption.MaximumPoolSize.GetValue(this);
+			set => MySqlConnectionStringOption.MaximumPoolSize.SetValue(this, value);
 		}
 
 		// Other Options
 		public bool AllowUserVariables
 		{
-			get { return MySqlConnectionStringOption.AllowUserVariables.GetValue(this); }
-			set { MySqlConnectionStringOption.AllowUserVariables.SetValue(this, value); }
+			get => MySqlConnectionStringOption.AllowUserVariables.GetValue(this);
+			set => MySqlConnectionStringOption.AllowUserVariables.SetValue(this, value);
 		}
 
 		public bool BufferResultSets
 		{
-			get { return MySqlConnectionStringOption.BufferResultSets.GetValue(this); }
-			set { MySqlConnectionStringOption.BufferResultSets.SetValue(this, value); }
+			get => MySqlConnectionStringOption.BufferResultSets.GetValue(this);
+			set => MySqlConnectionStringOption.BufferResultSets.SetValue(this, value);
 		}
 
 		public string CharacterSet
 		{
-			get { return MySqlConnectionStringOption.CharacterSet.GetValue(this); }
-			set { MySqlConnectionStringOption.CharacterSet.SetValue(this, value); }
+			get => MySqlConnectionStringOption.CharacterSet.GetValue(this);
+			set => MySqlConnectionStringOption.CharacterSet.SetValue(this, value);
 		}
 
 		public uint ConnectionTimeout
 		{
-			get { return MySqlConnectionStringOption.ConnectionTimeout.GetValue(this); }
-			set { MySqlConnectionStringOption.ConnectionTimeout.SetValue(this, value); }
+			get => MySqlConnectionStringOption.ConnectionTimeout.GetValue(this);
+			set => MySqlConnectionStringOption.ConnectionTimeout.SetValue(this, value);
 		}
 
 		public bool ConvertZeroDateTime
 		{
-			get { return MySqlConnectionStringOption.ConvertZeroDateTime.GetValue(this); }
-			set { MySqlConnectionStringOption.ConvertZeroDateTime.SetValue(this, value); }
+			get => MySqlConnectionStringOption.ConvertZeroDateTime.GetValue(this);
+			set => MySqlConnectionStringOption.ConvertZeroDateTime.SetValue(this, value);
 		}
 
 		public bool ForceSynchronous
 		{
-			get { return MySqlConnectionStringOption.ForceSynchronous.GetValue(this); }
-			set { MySqlConnectionStringOption.ForceSynchronous.SetValue(this, value); }
+			get => MySqlConnectionStringOption.ForceSynchronous.GetValue(this);
+			set => MySqlConnectionStringOption.ForceSynchronous.SetValue(this, value);
 		}
 
 		public uint Keepalive
 		{
-			get { return MySqlConnectionStringOption.Keepalive.GetValue(this); }
-			set { MySqlConnectionStringOption.Keepalive.SetValue(this, value); }
+			get => MySqlConnectionStringOption.Keepalive.GetValue(this);
+			set => MySqlConnectionStringOption.Keepalive.SetValue(this, value);
 		}
 
 		public bool OldGuids
 		{
-			get { return MySqlConnectionStringOption.OldGuids.GetValue(this); }
-			set { MySqlConnectionStringOption.OldGuids.SetValue(this, value); }
+			get => MySqlConnectionStringOption.OldGuids.GetValue(this);
+			set => MySqlConnectionStringOption.OldGuids.SetValue(this, value);
 		}
 
 		public bool PersistSecurityInfo
 		{
-			get { return MySqlConnectionStringOption.PersistSecurityInfo.GetValue(this); }
-			set { MySqlConnectionStringOption.PersistSecurityInfo.SetValue(this, value); }
+			get => MySqlConnectionStringOption.PersistSecurityInfo.GetValue(this);
+			set => MySqlConnectionStringOption.PersistSecurityInfo.SetValue(this, value);
 		}
 
 		public bool TreatTinyAsBoolean
 		{
-			get { return MySqlConnectionStringOption.TreatTinyAsBoolean.GetValue(this); }
-			set { MySqlConnectionStringOption.TreatTinyAsBoolean.SetValue(this, value); }
+			get => MySqlConnectionStringOption.TreatTinyAsBoolean.GetValue(this);
+			set => MySqlConnectionStringOption.TreatTinyAsBoolean.SetValue(this, value);
 		}
 
 		public bool UseAffectedRows
 		{
-			get { return MySqlConnectionStringOption.UseAffectedRows.GetValue(this); }
-			set { MySqlConnectionStringOption.UseAffectedRows.SetValue(this, value); }
+			get => MySqlConnectionStringOption.UseAffectedRows.GetValue(this);
+			set => MySqlConnectionStringOption.UseAffectedRows.SetValue(this, value);
 		}
 
 		public bool UseCompression
 		{
-			get { return MySqlConnectionStringOption.UseCompression.GetValue(this); }
-			set { MySqlConnectionStringOption.UseCompression.SetValue(this, value); }
+			get => MySqlConnectionStringOption.UseCompression.GetValue(this);
+			set => MySqlConnectionStringOption.UseCompression.SetValue(this, value);
 		}
 
 		// Other Methods
@@ -179,8 +179,8 @@ namespace MySql.Data.MySqlClient
 
 		public override object this[string key]
 		{
-			get { return MySqlConnectionStringOption.GetOptionForKey(key).GetObject(this); }
-			set { base[MySqlConnectionStringOption.GetOptionForKey(key).Key] = Convert.ToString(value, CultureInfo.InvariantCulture); }
+			get => MySqlConnectionStringOption.GetOptionForKey(key).GetObject(this);
+			set => base[MySqlConnectionStringOption.GetOptionForKey(key).Key] = Convert.ToString(value, CultureInfo.InvariantCulture);
 		}
 
 		internal string GetConnectionString(bool includePassword)

@@ -18,8 +18,8 @@ namespace MySql.Data
 
 		public int Offset
 		{
-			get { return m_offset; }
-			set { m_offset = value >= 0 && value <= m_maxOffset ? value : throw new ArgumentOutOfRangeException(nameof(value), "value must be between 0 and {0}".FormatInvariant(m_maxOffset)); }
+			get => m_offset;
+			set => m_offset = value >= 0 && value <= m_maxOffset ? value : throw new ArgumentOutOfRangeException(nameof(value), "value must be between 0 and {0}".FormatInvariant(m_maxOffset));
 		}
 
 		public byte ReadByte()

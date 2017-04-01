@@ -17,7 +17,7 @@ namespace MySql.Data.Protocol.Serialization
 
 		public IByteHandler ByteHandler
 		{
-			get { return m_byteHandler; }
+			get => m_byteHandler;
 			set
 			{
 				m_byteHandler = value ?? throw new ArgumentNullException(nameof(value));

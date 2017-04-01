@@ -166,15 +166,12 @@ namespace MySql.Data.MySqlClient
 
 		public override int Count => m_parameters.Count;
 
-		public override object SyncRoot
-		{
-			get { throw new NotSupportedException(); }
-		}
+		public override object SyncRoot => throw new NotSupportedException();
 
 		public new MySqlParameter this[int index]
 		{
-			get { return m_parameters[index]; }
-			set { SetParameter(index, value); }
+			get => m_parameters[index];
+			set => SetParameter(index, value);
 		}
 
 		// Finds the index of a parameter by name, regardless of whether 'parameterName' or the matching
