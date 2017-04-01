@@ -109,15 +109,13 @@ namespace MySql.Data.MySqlClient.Types
 
 		internal DbTypeMapping GetDbTypeMapping(Type clrType)
 		{
-			DbTypeMapping dbTypeMapping;
-			m_dbTypeMappingsByClrType.TryGetValue(clrType, out dbTypeMapping);
+			m_dbTypeMappingsByClrType.TryGetValue(clrType, out var dbTypeMapping);
 			return dbTypeMapping;
 		}
 
 		internal DbTypeMapping GetDbTypeMapping(DbType dbType)
 		{
-			DbTypeMapping dbTypeMapping;
-			m_dbTypeMappingsByDbType.TryGetValue(dbType, out dbTypeMapping);
+			m_dbTypeMappingsByDbType.TryGetValue(dbType, out var dbTypeMapping);
 			return dbTypeMapping;
 		}
 
@@ -128,8 +126,7 @@ namespace MySql.Data.MySqlClient.Types
 
 		internal ColumnTypeMapping GetColumnTypeMapping(string columnTypeName, bool unsigned=false, int length=0)
 		{
-			ColumnTypeMapping columnTypeMapping;
-			if (!m_columnTypeMappingLookup.TryGetValue(ColumnTypeMapping.CreateLookupKey(columnTypeName, unsigned, length), out columnTypeMapping) && length != 0)
+			if (!m_columnTypeMappingLookup.TryGetValue(ColumnTypeMapping.CreateLookupKey(columnTypeName, unsigned, length), out var columnTypeMapping) && length != 0)
 				m_columnTypeMappingLookup.TryGetValue(ColumnTypeMapping.CreateLookupKey(columnTypeName, unsigned, 0), out columnTypeMapping);
 			return columnTypeMapping;
 		}

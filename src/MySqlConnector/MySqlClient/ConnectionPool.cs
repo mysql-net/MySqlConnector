@@ -22,9 +22,8 @@ namespace MySql.Data.MySqlClient
 
 			try
 			{
-				MySqlSession session;
 				// check for a pooled session
-				if (m_sessions.TryDequeue(out session))
+				if (m_sessions.TryDequeue(out var session))
 				{
 					if (session.PoolGeneration != m_generation || !await session.TryPingAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
 					{
@@ -91,8 +90,7 @@ namespace MySql.Data.MySqlClient
 
 				try
 				{
-					MySqlSession session;
-					if (m_sessions.TryDequeue(out session))
+					if (m_sessions.TryDequeue(out var session))
 					{
 						if (session.PoolGeneration != m_generation)
 						{
@@ -122,8 +120,7 @@ namespace MySql.Data.MySqlClient
 
 			var key = cs.ConnectionString;
 
-			ConnectionPool pool;
-			if (!s_pools.TryGetValue(key, out pool))
+			if (!s_pools.TryGetValue(key, out var pool))
 			{
 				pool = s_pools.GetOrAdd(cs.ConnectionString, newKey => new ConnectionPool(cs));
 			}

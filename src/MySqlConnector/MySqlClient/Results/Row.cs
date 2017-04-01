@@ -139,8 +139,7 @@ namespace MySql.Data.MySqlClient.Results
 			if (value is Guid)
 				return (Guid) value;
 
-			Guid guid;
-			if (Guid.TryParse(value as string, out guid))
+			if (Guid.TryParse(value as string, out var guid))
 				return guid;
 
 			byte[] bytes = value as byte[];

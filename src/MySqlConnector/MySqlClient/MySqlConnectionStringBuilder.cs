@@ -241,11 +241,8 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<bool> UseAffectedRows;
 		public static readonly MySqlConnectionStringOption<bool> UseCompression;
 
-		public static MySqlConnectionStringOption TryGetOptionForKey(string key)
-		{
-			MySqlConnectionStringOption option;
-			return s_options.TryGetValue(key, out option) ? option : null;
-		}
+		public static MySqlConnectionStringOption TryGetOptionForKey(string key) =>
+			s_options.TryGetValue(key, out var option) ? option : null;
 
 		public static MySqlConnectionStringOption GetOptionForKey(string key)
 		{
@@ -390,11 +387,8 @@ namespace MySql.Data.MySqlClient
 			m_coerce = coerce;
 		}
 
-		public T GetValue(MySqlConnectionStringBuilder builder)
-		{
-			object objectValue;
-			return builder.TryGetValue(Key, out objectValue) ? ChangeType(objectValue) : m_defaultValue;
-		}
+		public T GetValue(MySqlConnectionStringBuilder builder) =>
+			builder.TryGetValue(Key, out var objectValue) ? ChangeType(objectValue) : m_defaultValue;
 
 		public void SetValue(MySqlConnectionStringBuilder builder, T value)
 		{

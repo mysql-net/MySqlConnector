@@ -41,8 +41,7 @@ namespace MySql.Data.Protocol.Serialization
 				if (m_uncompressedStream.Length == 0)
 					return default(ValueTask<int>);
 
-				ArraySegment<byte> uncompressedData;
-				if (!m_uncompressedStream.TryGetBuffer(out uncompressedData))
+				if (!m_uncompressedStream.TryGetBuffer(out var uncompressedData))
 					throw new InvalidOperationException("Couldn't get uncompressed stream buffer.");
 
 				return CompressAndWrite(uncompressedData, ioBehavior)

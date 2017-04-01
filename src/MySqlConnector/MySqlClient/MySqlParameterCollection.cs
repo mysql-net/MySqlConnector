@@ -110,8 +110,7 @@ namespace MySql.Data.MySqlClient
 		{
 			if (parameterName == null)
 				throw new ArgumentNullException(nameof(parameterName));
-			int index;
-			return m_nameToIndex.TryGetValue(MySqlParameter.NormalizeParameterName(parameterName), out index) ? index : -1;
+			return m_nameToIndex.TryGetValue(MySqlParameter.NormalizeParameterName(parameterName), out var index) ? index : -1;
 		}
 
 		public override void Insert(int index, object value)
@@ -184,8 +183,7 @@ namespace MySql.Data.MySqlClient
 		{
 			if (parameterName == null)
 				throw new ArgumentNullException(nameof(parameterName));
-			int index;
-			return m_nameToIndex.TryGetValue(MySqlParameter.NormalizeParameterName(parameterName), out index) ? index : -1;
+			return m_nameToIndex.TryGetValue(MySqlParameter.NormalizeParameterName(parameterName), out var index) ? index : -1;
 		}
 
 		private void AddParameter(MySqlParameter parameter)

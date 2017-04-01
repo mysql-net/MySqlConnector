@@ -228,8 +228,7 @@ namespace MySql.Data.MySqlClient
 				m_cachedProcedures = new Dictionary<string, CachedProcedure>();
 
 			var normalized = NormalizedSchema.MustNormalize(name, Database);
-			CachedProcedure cachedProcedure;
-			if (!m_cachedProcedures.TryGetValue(normalized.FullyQualified, out cachedProcedure))
+			if (!m_cachedProcedures.TryGetValue(normalized.FullyQualified, out var cachedProcedure))
 			{
 				cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema, normalized.Component, cancellationToken).ConfigureAwait(false);
 				m_cachedProcedures[normalized.FullyQualified] = cachedProcedure;
