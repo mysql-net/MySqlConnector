@@ -162,42 +162,38 @@ namespace MySql.Data.MySqlClient.Results
 			if (BufferState == ResultSetState.HasMoreData || BufferState == ResultSetState.NoMoreData || BufferState == ResultSetState.None)
 				return new ValueTask<Row>((Row)null);
 
-			var payloadTask = Session.ReceiveReplyAsync(ioBehavior, cancellationToken);
-			return payloadTask.IsCompletedSuccessfully
-				? new ValueTask<Row>(ScanRowAsyncRemainder(row, payloadTask.Result))
-				: new ValueTask<Row>(ScanRowAsyncAwaited(row, payloadTask.AsTask()));
-		}
+			var payloadValueTask = Session.ReceiveReplyAsync(ioBehavior, cancellationToken);
+			return payloadValueTask.IsCompletedSuccessfully
+				? new ValueTask<Row>(ScanRowAsyncRemainder(payloadValueTask.Result))
+				: new ValueTask<Row>(ScanRowAsyncAwaited(payloadValueTask.AsTask()));
 
-		private async Task<Row> ScanRowAsyncAwaited(Row row, Task<PayloadData> payloadTask)
-		{
-			var payload = await payloadTask.ConfigureAwait(false);
-			return ScanRowAsyncRemainder(row, payload);
-		}
+			async Task<Row> ScanRowAsyncAwaited(Task<PayloadData> payloadTask) => ScanRowAsyncRemainder(await payloadTask.ConfigureAwait(false));
 
-		private Row ScanRowAsyncRemainder(Row row, PayloadData payload)
-		{
-			if (EofPayload.IsEof(payload))
+			Row ScanRowAsyncRemainder(PayloadData payload)
 			{
-				var eof = EofPayload.Create(payload);
-				BufferState = (eof.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
-				m_rowBuffered = null;
-				return null;
-			}
+				if (EofPayload.IsEof(payload))
+				{
+					var eof = EofPayload.Create(payload);
+					BufferState = (eof.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
+					m_rowBuffered = null;
+					return null;
+				}
 
-			var reader = new ByteArrayReader(payload.ArraySegment);
-			for (var column = 0; column < m_dataOffsets.Length; column++)
-			{
-				var length = checked((int) ReadFieldLength(reader));
-				m_dataLengths[column] = length == -1 ? 0 : length;
-				m_dataOffsets[column] = length == -1 ? -1 : reader.Offset;
-				reader.Offset += m_dataLengths[column];
-			}
+				var reader = new ByteArrayReader(payload.ArraySegment);
+				for (var column = 0; column < m_dataOffsets.Length; column++)
+				{
+					var length = checked((int) ReadFieldLength(reader));
+					m_dataLengths[column] = length == -1 ? 0 : length;
+					m_dataOffsets[column] = length == -1 ? -1 : reader.Offset;
+					reader.Offset += m_dataLengths[column];
+				}
 
-			if (row == null)
-				row = new Row(this);
-			row.SetData(m_dataLengths, m_dataOffsets, payload.ArraySegment.Array);
-			m_rowBuffered = row;
-			return row;
+				if (row == null)
+					row = new Row(this);
+				row.SetData(m_dataLengths, m_dataOffsets, payload.ArraySegment.Array);
+				m_rowBuffered = row;
+				return row;
+			}
 		}
 
 		private static long ReadFieldLength(ByteArrayReader reader)
