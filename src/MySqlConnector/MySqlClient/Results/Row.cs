@@ -8,10 +8,7 @@ namespace MySql.Data.MySqlClient.Results
 {
 	internal class Row : IDisposable
 	{
-		public Row(ResultSet resultSet)
-		{
-			ResultSet = resultSet;
-		}
+		public Row(ResultSet resultSet) => ResultSet = resultSet;
 
 		public void SetData(int[] dataLengths, int[] dataOffsets, byte[] payload)
 		{
@@ -40,10 +37,7 @@ namespace MySql.Data.MySqlClient.Results
 			m_buffered = true;
 		}
 
-		public void Dispose()
-		{
-			ClearData();
-		}
+		public void Dispose() => ClearData();
 
 		public void ClearData()
 		{
@@ -84,15 +78,9 @@ namespace MySql.Data.MySqlClient.Results
 			return (bool) value;
 		}
 
-		public sbyte GetSByte(int ordinal)
-		{
-			return (sbyte) GetValue(ordinal);
-		}
+		public sbyte GetSByte(int ordinal) => (sbyte) GetValue(ordinal);
 
-		public byte GetByte(int ordinal)
-		{
-			return (byte) GetValue(ordinal);
-		}
+		public byte GetByte(int ordinal) => (byte) GetValue(ordinal);
 
 		public long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length)
 		{
@@ -123,10 +111,7 @@ namespace MySql.Data.MySqlClient.Results
 			return lengthToCopy;
 		}
 
-		public char GetChar(int ordinal)
-		{
-			return (char) GetValue(ordinal);
-		}
+		public char GetChar(int ordinal) => (char) GetValue(ordinal);
 
 		public long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) => throw new NotImplementedException();
 
@@ -220,25 +205,13 @@ namespace MySql.Data.MySqlClient.Results
 			return (long) value;
 		}
 
-		public DateTime GetDateTime(int ordinal)
-		{
-			return (DateTime) GetValue(ordinal);
-		}
+		public DateTime GetDateTime(int ordinal) => (DateTime) GetValue(ordinal);
 
-		public DateTimeOffset GetDateTimeOffset(int ordinal)
-		{
-			return new DateTimeOffset(DateTime.SpecifyKind(GetDateTime(ordinal), DateTimeKind.Utc));
-		}
+		public DateTimeOffset GetDateTimeOffset(int ordinal) => new DateTimeOffset(DateTime.SpecifyKind(GetDateTime(ordinal), DateTimeKind.Utc));
 
-		public string GetString(int ordinal)
-		{
-			return (string) GetValue(ordinal);
-		}
+		public string GetString(int ordinal) => (string) GetValue(ordinal);
 
-		public decimal GetDecimal(int ordinal)
-		{
-			return (decimal) GetValue(ordinal);
-		}
+		public decimal GetDecimal(int ordinal) => (decimal) GetValue(ordinal);
 
 		public double GetDouble(int ordinal)
 		{
@@ -246,10 +219,7 @@ namespace MySql.Data.MySqlClient.Results
 			return value is float floatValue ? floatValue : (double) value;
 		}
 
-		public float GetFloat(int ordinal)
-		{
-			return (float) GetValue(ordinal);
-		}
+		public float GetFloat(int ordinal) => (float) GetValue(ordinal);
 
 		public int GetValues(object[] values)
 		{
@@ -259,11 +229,7 @@ namespace MySql.Data.MySqlClient.Results
 			return count;
 		}
 
-		public bool IsDBNull(int ordinal)
-		{
-			// TODO: Correct exception for invalid ordinal?
-			return m_dataOffsets[ordinal] == -1;
-		}
+		public bool IsDBNull(int ordinal) => m_dataOffsets[ordinal] == -1;
 
 		public object this[int ordinal] => GetValue(ordinal);
 

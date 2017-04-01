@@ -18,13 +18,11 @@ namespace MySql.Data
 			}
 		}
 
-		public static string FormatInvariant(this string format, params object[] args)
-		{
-			return string.Format(CultureInfo.InvariantCulture, format, args);
-		}
+		public static string FormatInvariant(this string format, params object[] args) =>
+			string.Format(CultureInfo.InvariantCulture, format, args);
 
-		public static string GetString(this Encoding encoding, ArraySegment<byte> arraySegment)
-			=> encoding.GetString(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
+		public static string GetString(this Encoding encoding, ArraySegment<byte> arraySegment) =>
+			encoding.GetString(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
 
 		/// <summary>
 		/// Returns a new <see cref="ArraySegment{T}"/> that starts at index <paramref name="index"/> into <paramref name="arraySegment"/>.

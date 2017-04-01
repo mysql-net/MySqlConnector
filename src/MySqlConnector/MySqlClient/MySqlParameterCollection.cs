@@ -49,20 +49,11 @@ namespace MySql.Data.MySqlClient
 			return parameter;
 		}
 
-		public override bool Contains(object value)
-		{
-			return m_parameters.Contains((MySqlParameter) value);
-		}
+		public override bool Contains(object value) => m_parameters.Contains((MySqlParameter) value);
 
-		public override bool Contains(string value)
-		{
-			return IndexOf(value) != -1;
-		}
+		public override bool Contains(string value) => IndexOf(value) != -1;
 
-		public override void CopyTo(Array array, int index)
-		{
-			throw new NotSupportedException();
-		}
+		public override void CopyTo(Array array, int index) => throw new NotSupportedException();
 
 		public override void Clear()
 		{
@@ -70,20 +61,11 @@ namespace MySql.Data.MySqlClient
 			m_nameToIndex.Clear();
 		}
 
-		public override IEnumerator GetEnumerator()
-		{
-			return m_parameters.GetEnumerator();
-		}
+		public override IEnumerator GetEnumerator() => m_parameters.GetEnumerator();
 
-		IEnumerator<MySqlParameter> IEnumerable<MySqlParameter>.GetEnumerator()
-		{
-			return m_parameters.GetEnumerator();
-		}
+		IEnumerator<MySqlParameter> IEnumerable<MySqlParameter>.GetEnumerator() => m_parameters.GetEnumerator();
 
-		protected override DbParameter GetParameter(int index)
-		{
-			return m_parameters[index];
-		}
+		protected override DbParameter GetParameter(int index) => m_parameters[index];
 
 		protected override DbParameter GetParameter(string parameterName)
 		{
@@ -93,10 +75,7 @@ namespace MySql.Data.MySqlClient
 			return m_parameters[index];
 		}
 
-		public override int IndexOf(object value)
-		{
-			return m_parameters.IndexOf((MySqlParameter) value);
-		}
+		public override int IndexOf(object value) => m_parameters.IndexOf((MySqlParameter) value);
 
 		public override int IndexOf(string parameterName)
 		{
@@ -113,10 +92,7 @@ namespace MySql.Data.MySqlClient
 			return m_nameToIndex.TryGetValue(MySqlParameter.NormalizeParameterName(parameterName), out var index) ? index : -1;
 		}
 
-		public override void Insert(int index, object value)
-		{
-			m_parameters.Insert(index, (MySqlParameter) value);
-		}
+		public override void Insert(int index, object value) => m_parameters.Insert(index, (MySqlParameter) value);
 
 #if !NETSTANDARD1_3
 		public override bool IsFixedSize => false;
@@ -124,10 +100,7 @@ namespace MySql.Data.MySqlClient
 		public override bool IsSynchronized => false;
 #endif
 
-		public override void Remove(object value)
-		{
-			RemoveAt(IndexOf(value));
-		}
+		public override void Remove(object value) => RemoveAt(IndexOf(value));
 
 		public override void RemoveAt(int index)
 		{
@@ -143,10 +116,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public override void RemoveAt(string parameterName)
-		{
-			RemoveAt(IndexOf(parameterName));
-		}
+		public override void RemoveAt(string parameterName) => RemoveAt(IndexOf(parameterName));
 
 		protected override void SetParameter(int index, DbParameter value)
 		{
@@ -159,10 +129,7 @@ namespace MySql.Data.MySqlClient
 				m_nameToIndex.Add(newParameter.NormalizedParameterName, index);
 		}
 
-		protected override void SetParameter(string parameterName, DbParameter value)
-		{
-			SetParameter(IndexOf(parameterName), value);
-		}
+		protected override void SetParameter(string parameterName, DbParameter value) => SetParameter(IndexOf(parameterName), value);
 
 		public override int Count => m_parameters.Count;
 
