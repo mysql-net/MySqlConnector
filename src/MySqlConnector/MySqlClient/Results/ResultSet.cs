@@ -384,9 +384,7 @@ namespace MySql.Data.MySqlClient.Results
 		{
 			if (State != ResultSetState.ReadingRows)
 				throw new InvalidOperationException("Read must be called first.");
-			if (m_row == null)
-				throw new InvalidOperationException("There is no current row.");
-			return m_row;
+			return m_row ?? throw new InvalidOperationException("There is no current row.");
 		}
 
 		public readonly MySqlDataReader DataReader;

@@ -11,10 +11,7 @@ namespace MySql.Data
 	{
 		public SocketAwaitable(SocketAsyncEventArgs eventArgs)
 		{
-			if (eventArgs == null)
-				throw new ArgumentNullException(nameof(eventArgs));
-
-			EventArgs = eventArgs;
+			EventArgs = eventArgs ?? throw new ArgumentNullException(nameof(eventArgs));
 			eventArgs.Completed += (s, e) => (m_continuation ?? Interlocked.CompareExchange(ref m_continuation, s_sentinel, null))?.Invoke();
 		}
 

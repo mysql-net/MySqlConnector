@@ -128,10 +128,7 @@ namespace MySql.Data.MySqlClient.Results
 			return (char) GetValue(ordinal);
 		}
 
-		public long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length)
-		{
-			throw new NotImplementedException();
-		}
+		public long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) => throw new NotImplementedException();
 
 		public Guid GetGuid(int ordinal)
 		{

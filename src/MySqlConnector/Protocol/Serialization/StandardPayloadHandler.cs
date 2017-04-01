@@ -20,9 +20,7 @@ namespace MySql.Data.Protocol.Serialization
 			get { return m_byteHandler; }
 			set
 			{
-				if (value == null)
-					throw new ArgumentNullException(nameof(value));
-				m_byteHandler = value;
+				m_byteHandler = value ?? throw new ArgumentNullException(nameof(value));
 				m_bufferedByteReader = new BufferedByteReader();
 			}
 		}

@@ -6,10 +6,7 @@ namespace MySql.Data.MySqlClient
 	{
 		public int Parse(string sql)
 		{
-			if (sql == null)
-				throw new ArgumentNullException(nameof(sql));
-
-			OnBeforeParse(sql);
+			OnBeforeParse(sql ?? throw new ArgumentNullException(nameof(sql)));
 
 			int statementCount = 0;
 			int parameterStartIndex = -1;

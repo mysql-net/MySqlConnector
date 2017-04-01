@@ -244,13 +244,8 @@ namespace MySql.Data.MySqlClient
 		public static MySqlConnectionStringOption TryGetOptionForKey(string key) =>
 			s_options.TryGetValue(key, out var option) ? option : null;
 
-		public static MySqlConnectionStringOption GetOptionForKey(string key)
-		{
-			var option = TryGetOptionForKey(key);
-			if (option == null)
-				throw new InvalidOperationException("Option '{0}' not supported.".FormatInvariant(key));
-			return option;
-		}
+		public static MySqlConnectionStringOption GetOptionForKey(string key) =>
+			TryGetOptionForKey(key) ?? throw new InvalidOperationException("Option '{0}' not supported.".FormatInvariant(key));
 
 		public string Key => m_keys[0];
 		public IReadOnlyList<string> Keys => m_keys;

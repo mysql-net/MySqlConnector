@@ -6,16 +6,9 @@ namespace MySql.Data
 	{
 		public ByteArrayReader(byte[] buffer, int offset, int length)
 		{
-			if (buffer == null)
-				throw new ArgumentNullException(nameof(buffer));
-			if (offset < 0)
-				throw new ArgumentOutOfRangeException(nameof(offset));
-			if (offset + length > buffer.Length)
-				throw new ArgumentOutOfRangeException(nameof(length));
-
-			m_buffer = buffer;
-			m_maxOffset = offset + length;
-			m_offset = offset;
+			m_buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
+			m_offset = offset >= 0 ? offset : throw new ArgumentOutOfRangeException(nameof(offset));
+			m_maxOffset = offset + length <= m_buffer.Length ? offset + length : throw new ArgumentOutOfRangeException(nameof(length));
 		}
 
 		public ByteArrayReader(ArraySegment<byte> arraySegment)
@@ -26,12 +19,7 @@ namespace MySql.Data
 		public int Offset
 		{
 			get { return m_offset; }
-			set
-			{
-				if (value < 0 || value > m_maxOffset)
-					throw new ArgumentOutOfRangeException(nameof(value), "value must be between 0 and {0}".FormatInvariant(m_maxOffset));
-				m_offset = value;
-			}
+			set { m_offset = value >= 0 && value <= m_maxOffset ? value : throw new ArgumentOutOfRangeException(nameof(value), "value must be between 0 and {0}".FormatInvariant(m_maxOffset)); }
 		}
 
 		public byte ReadByte()
