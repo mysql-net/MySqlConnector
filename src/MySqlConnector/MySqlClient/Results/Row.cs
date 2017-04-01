@@ -133,14 +133,13 @@ namespace MySql.Data.MySqlClient.Results
 		public Guid GetGuid(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			if (value is Guid)
-				return (Guid) value;
-
-			if (Guid.TryParse(value as string, out var guid))
+			if (value is Guid guid)
 				return guid;
 
-			byte[] bytes = value as byte[];
-			if (bytes != null && bytes.Length == 16)
+			if (value is string stringValue && Guid.TryParse(stringValue, out guid))
+				return guid;
+
+			if (value is byte[] bytes && bytes.Length == 16)
 				return new Guid(bytes);
 
 			throw new MySqlException("The value could not be converted to a GUID: {0}".FormatInvariant(value));
@@ -244,9 +243,7 @@ namespace MySql.Data.MySqlClient.Results
 		public double GetDouble(int ordinal)
 		{
 			object value = GetValue(ordinal);
-			if (value is float)
-				return (float) value;
-			return (double) value;
+			return value is float floatValue ? floatValue : (double) value;
 		}
 
 		public float GetFloat(int ordinal)

@@ -397,19 +397,19 @@ namespace MySql.Data.MySqlClient
 
 		private static T ChangeType(object objectValue)
 		{
-			if (typeof(T) == typeof(bool) && objectValue is string)
+			if (typeof(T) == typeof(bool) && objectValue is string booleanString)
 			{
-				if (string.Equals((string) objectValue, "yes", StringComparison.OrdinalIgnoreCase))
+				if (string.Equals(booleanString, "yes", StringComparison.OrdinalIgnoreCase))
 					return (T) (object) true;
-				if (string.Equals((string) objectValue, "no", StringComparison.OrdinalIgnoreCase))
+				if (string.Equals(booleanString, "no", StringComparison.OrdinalIgnoreCase))
 					return (T) (object) false;
 			}
 
-			if (typeof(T) == typeof(MySqlSslMode) && objectValue is string)
+			if (typeof(T) == typeof(MySqlSslMode) && objectValue is string sslModeString)
 			{
 				foreach (var val in Enum.GetValues(typeof(T)))
 				{
-					if (string.Equals((string) objectValue, val.ToString(), StringComparison.OrdinalIgnoreCase))
+					if (string.Equals(sslModeString, val.ToString(), StringComparison.OrdinalIgnoreCase))
 						return (T) val;
 				}
 				throw new InvalidOperationException("Value '{0}' not supported for option '{1}'.".FormatInvariant(objectValue, typeof(T).Name));

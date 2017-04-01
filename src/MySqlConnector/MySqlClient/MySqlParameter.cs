@@ -83,20 +83,20 @@ namespace MySql.Data.MySqlClient
 			{
 				writer.WriteUtf8("NULL");
 			}
-			else if (Value is string)
+			else if (Value is string stringValue)
 			{
 				writer.Write((byte) '\'');
-				writer.WriteUtf8(((string) Value).Replace("\\", "\\\\").Replace("'", "\\'"));
+				writer.WriteUtf8(stringValue.Replace("\\", "\\\\").Replace("'", "\\'"));
 				writer.Write((byte) '\'');
 			}
 			else if (Value is byte || Value is sbyte || Value is short || Value is int || Value is long || Value is ushort || Value is uint || Value is ulong || Value is decimal)
 			{
 				writer.WriteUtf8("{0}".FormatInvariant(Value));
 			}
-			else if (Value is byte[])
+			else if (Value is byte[] byteArrayValue)
 			{
 				writer.WriteUtf8("_binary'");
-				foreach (var by in (byte[]) Value)
+				foreach (var by in byteArrayValue)
 				{
 					if (by == 0x27 || by == 0x5C)
 						writer.Write((byte) 0x5C);
@@ -104,9 +104,9 @@ namespace MySql.Data.MySqlClient
 				}
 				writer.Write((byte) '\'');
 			}
-			else if (Value is bool)
+			else if (Value is bool boolValue)
 			{
-				writer.WriteUtf8(((bool) Value) ? "true" : "false");
+				writer.WriteUtf8(boolValue ? "true" : "false");
 			}
 			else if (Value is float || Value is double)
 			{
@@ -116,15 +116,14 @@ namespace MySql.Data.MySqlClient
 			{
 				writer.WriteUtf8("timestamp '{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}'".FormatInvariant(Value));
 			}
-			else if (Value is DateTimeOffset)
+			else if (Value is DateTimeOffset dateTimeOffsetValue)
 			{
 				// store as UTC as it will be read as such when deserialized from a timespan column
-				writer.WriteUtf8("timestamp '{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}'".FormatInvariant(((DateTimeOffset)Value).UtcDateTime));
+				writer.WriteUtf8("timestamp '{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}'".FormatInvariant(dateTimeOffsetValue.UtcDateTime));
 			}
-			else if (Value is TimeSpan)
+			else if (Value is TimeSpan ts)
 			{
 				writer.WriteUtf8("time '");
-				var ts = (TimeSpan) Value;
 				if (ts.Ticks < 0)
 				{
 					writer.Write((byte) '-');
@@ -132,17 +131,17 @@ namespace MySql.Data.MySqlClient
 				}
 				writer.WriteUtf8("{0}:{1:mm':'ss'.'ffffff}'".FormatInvariant(ts.Days * 24 + ts.Hours, ts));
 			}
-			else if (Value is Guid)
+			else if (Value is Guid guidValue)
 			{
 				if ((options & StatementPreparerOptions.OldGuids) != 0)
 				{
 					writer.WriteUtf8("_binary'");
-					writer.Write(((Guid) Value).ToByteArray());
+					writer.Write(guidValue.ToByteArray());
 					writer.Write((byte) '\'');
 				}
 				else
 				{
-					writer.WriteUtf8("'{0:D}'".FormatInvariant(Value));
+					writer.WriteUtf8("'{0:D}'".FormatInvariant(guidValue));
 				}
 			}
 			else if (DbType == DbType.Int16)
