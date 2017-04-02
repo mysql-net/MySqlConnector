@@ -36,6 +36,8 @@ namespace MySql.Data.Serialization
 
 		public void ReturnToPool() => Pool?.Return(this);
 
+		public bool IsConnected => m_state == State.Connected;
+
 		public async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (m_payloadHandler != null)

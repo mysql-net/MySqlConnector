@@ -519,6 +519,7 @@ namespace SideBySide
 			using (var connection = new MySqlConnection(AppConfig.CreateConnectionStringBuilder().ConnectionString))
 			{
 				await connection.OpenAsync();
+				var transaction = await connection.BeginTransactionAsync();
 
 				// verify that this amount of data can be sent to MySQL successfully
 				var maxAllowedPacket = (await connection.QueryAsync<int>("select @@max_allowed_packet").ConfigureAwait(false)).Single();
@@ -527,7 +528,7 @@ namespace SideBySide
 				var data = CreateByteArray(size);
 
 				long lastInsertId;
-				using (var cmd = new MySqlCommand(Invariant($"insert into datatypes_blobs(`{column}`) values(?)"), connection)
+				using (var cmd = new MySqlCommand(Invariant($"insert into datatypes_blobs(`{column}`) values(?)"), connection, transaction)
 				{
 					Parameters = { new MySqlParameter { Value = data } }
 				})
@@ -567,6 +568,7 @@ namespace SideBySide
 			using (var connection = new MySqlConnection(AppConfig.CreateConnectionStringBuilder().ConnectionString))
 			{
 				connection.Open();
+				var transaction = connection.BeginTransaction();
 
 				// verify that this amount of data can be sent to MySQL successfully
 				var maxAllowedPacket = m_database.Connection.Query<int>("select @@max_allowed_packet").Single();
@@ -575,7 +577,7 @@ namespace SideBySide
 				var data = CreateByteArray(size);
 
 				long lastInsertId;
-				using (var cmd = new MySqlCommand(Invariant($"insert into datatypes_blobs(`{column}`) values(?)"), connection)
+				using (var cmd = new MySqlCommand(Invariant($"insert into datatypes_blobs(`{column}`) values(?)"), connection, transaction)
 				{
 					Parameters = { new MySqlParameter { Value = data } }
 				})
