@@ -93,10 +93,21 @@ namespace MySql.Data.MySqlClient
 			{
 				writer.WriteUtf8("{0}".FormatInvariant(Value));
 			}
-			else if (Value is byte[])
+			else if (Value is byte[] byteArray)
 			{
-				writer.WriteUtf8("_binary'");
+				// determine the number of bytes to be written
+				const string c_prefix = "_binary'";
+				var length = byteArray.Length + c_prefix.Length + 1;
 				foreach (var by in (byte[]) Value)
+				{
+					if (by == 0x27 || by == 0x5C)
+						length++;
+				}
+
+				((MemoryStream) writer.BaseStream).Capacity = (int) writer.BaseStream.Length + length;
+
+				writer.WriteUtf8(c_prefix);
+				foreach (var by in byteArray)
 				{
 					if (by == 0x27 || by == 0x5C)
 						writer.Write((byte) 0x5C);
