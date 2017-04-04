@@ -57,7 +57,7 @@ namespace MySql.Data.MySqlClient
 		{
 			try
 			{
-				if (session.PoolGeneration == m_generation && session.DatabaseOverride == null)
+				if (session.IsConnected && session.PoolGeneration == m_generation && session.DatabaseOverride == null)
 					m_sessions.Enqueue(session);
 				else
 					session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).ConfigureAwait(false);

@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Title>MySQL Connector</Title>
     <Description>A fully async MySQL ADO.NET provider for .NET and .NET Core</Description>
     <Copyright>Copyright 2016 Bradley Grainger</Copyright>
     <AssemblyTitle>Async MySQL Connector</AssemblyTitle>
-    <VersionPrefix>0.16.1</VersionPrefix>
+    <VersionPrefix>0.16.2</VersionPrefix>
     <Authors>Bradley Grainger;Caleb Lloyd</Authors>
     <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -14,6 +15,7 @@
     <PackageReleaseNotes>https://mysql-net.github.io/MySqlConnector/overview/version-history/</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/mysql-net/MySqlConnector</PackageProjectUrl>
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageIconUrl>https://mysql-net.github.io/MySqlConnector/img/logo.png</PackageIconUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/mysql-net/MySqlConnector.git</RepositoryUrl>
   </PropertyGroup>

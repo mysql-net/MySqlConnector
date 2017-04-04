@@ -95,7 +95,18 @@ namespace MySql.Data.MySqlClient
 			}
 			else if (Value is byte[] byteArrayValue)
 			{
-				writer.WriteUtf8("_binary'");
+				// determine the number of bytes to be written
+				const string c_prefix = "_binary'";
+				var length = byteArrayValue.Length + c_prefix.Length + 1;
+				foreach (var by in byteArrayValue)
+				{
+					if (by == 0x27 || by == 0x5C)
+						length++;
+				}
+
+				((MemoryStream) writer.BaseStream).Capacity = (int) writer.BaseStream.Length + length;
+
+				writer.WriteUtf8(c_prefix);
 				foreach (var by in byteArrayValue)
 				{
 					if (by == 0x27 || by == 0x5C)

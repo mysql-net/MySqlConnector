@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.16.2
+
+* Fix exceptions when server resets the connection: [#221](https://github.com/mysql-net/MySqlConnector/issues/221).
+
 ### 0.16.1
 
 * Throw a better exception when `max_allowed_packet` is exceeded: [#40](https://github.com/mysql-net/MySqlConnector/issues/40).

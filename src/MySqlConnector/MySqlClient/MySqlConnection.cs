@@ -287,16 +287,22 @@ namespace MySql.Data.MySqlClient
 		{
 			if (m_connectionState != ConnectionState.Closed)
 			{
-				CloseDatabase();
-				if (m_session != null)
+				try
 				{
-					if (m_connectionSettings.Pooling)
-						m_session.ReturnToPool();
-					else
-						m_session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-					m_session = null;
+					CloseDatabase();
 				}
-				SetState(ConnectionState.Closed);
+				finally
+				{
+					if (m_session != null)
+					{
+						if (m_connectionSettings.Pooling)
+							m_session.ReturnToPool();
+						else
+							m_session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+						m_session = null;
+					}
+					SetState(ConnectionState.Closed);
+				}
 			}
 		}
 
@@ -308,7 +314,7 @@ namespace MySql.Data.MySqlClient
 				ActiveReader.Dispose();
 				ActiveReader = null;
 			}
-			if (CurrentTransaction != null)
+			if (CurrentTransaction != null && m_session.IsConnected)
 			{
 				CurrentTransaction.Dispose();
 				CurrentTransaction = null;
