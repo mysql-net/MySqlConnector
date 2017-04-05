@@ -5,18 +5,18 @@ using Xunit;
 
 namespace SideBySide
 {
-    public class ParameterCollection : IDisposable
-    {
-	    public ParameterCollection()
-	    {
-		    m_command = new MySqlCommand();
+	public class ParameterCollection : IDisposable
+	{
+		public ParameterCollection()
+		{
+			m_command = new MySqlCommand();
 			m_parameterCollection = m_command.Parameters;
 		}
 
-	    public void Dispose()
-	    {
-		    m_command.Dispose();
-	    }
+		public void Dispose()
+		{
+			m_command.Dispose();
+		}
 
 		[Theory]
 		[InlineData("Baz", 0)]
@@ -33,12 +33,12 @@ namespace SideBySide
 		[InlineData("?Bar", -1)]
 		[InlineData("", -1)]
 		public void FindByName(string parameterName, int position)
-	    {
-		    m_parameterCollection.Add(new MySqlParameter { ParameterName = "Baz", Value = 0 });
+		{
+			m_parameterCollection.Add(new MySqlParameter { ParameterName = "Baz", Value = 0 });
 			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test", Value = 1 });
 			m_parameterCollection.Add(new MySqlParameter { ParameterName = "?Foo", Value = 2 });
-		    int index = m_parameterCollection.IndexOf(parameterName);
-		    Assert.Equal(position, index);
+			int index = m_parameterCollection.IndexOf(parameterName);
+			Assert.Equal(position, index);
 			Assert.Equal(position != -1, m_parameterCollection.Contains(parameterName));
 
 			string expectedParameterName = parameterName;
@@ -60,7 +60,31 @@ namespace SideBySide
 				Assert.NotNull(parameter);
 				Assert.Equal(expectedParameterName, parameter.ParameterName);
 			}
-	    }
+		}
+
+		[Theory]
+		[InlineData("@test")]
+		[InlineData("@Test")]
+		[InlineData("@tEsT")]
+		[InlineData("@TEST")]
+		public void FindByNameIgnoringCase(string parameterName)
+		{
+			m_parameterCollection.AddWithValue("@Test", 1);
+			Assert.Equal(1, m_parameterCollection.Count);
+
+			Assert.True(m_parameterCollection.Contains(parameterName));
+			Assert.Equal(0, m_parameterCollection.IndexOf(parameterName));
+
+			var parameter = m_parameterCollection[parameterName];
+			Assert.Equal("@Test", parameter.ParameterName);
+			Assert.Equal(1, parameter.Value);
+
+			parameter = m_parameterCollection[0];
+			Assert.Equal("@Test", parameter.ParameterName);
+
+			m_parameterCollection.RemoveAt(parameterName);
+			Assert.Equal(0, m_parameterCollection.Count);
+		}
 
 		[Fact]
 		public void IndexOfNull()
@@ -82,17 +106,17 @@ namespace SideBySide
 		}
 
 		[Fact]
-	    public void RemoveAtIndex()
-	    {
+		public void RemoveAtIndex()
+		{
 			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
 			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
 			Assert.Equal(0, m_parameterCollection.IndexOf("@Test1"));
 			Assert.Equal(1, m_parameterCollection.IndexOf("@Test2"));
-		    m_parameterCollection.RemoveAt(0);
-		    Assert.Equal(1, m_parameterCollection.Count);
+			m_parameterCollection.RemoveAt(0);
+			Assert.Equal(1, m_parameterCollection.Count);
 			Assert.Equal(-1, m_parameterCollection.IndexOf("@Test1"));
 			Assert.Equal(0, m_parameterCollection.IndexOf("@Test2"));
-	    }
+		}
 
 		[Fact]
 		public void RemoveAtString()
@@ -122,8 +146,8 @@ namespace SideBySide
 		}
 
 		[Fact]
-	    public void SetParameterString()
-	    {
+		public void SetParameterString()
+		{
 			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
 			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
 			Assert.Equal(0, m_parameterCollection.IndexOf("@Test1"));

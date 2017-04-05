@@ -85,11 +85,12 @@ namespace MySql.Data.MySqlClient
 			return string.Equals(parameterName, m_parameters[index].ParameterName, StringComparison.OrdinalIgnoreCase) ? index : -1;
 		}
 
+		// Finds the index of a parameter by name, regardless of whether 'parameterName' or the matching
+		// MySqlParameter.ParameterName has a leading '?' or '@'.
 		internal int NormalizedIndexOf(string parameterName)
 		{
-			if (parameterName == null)
-				throw new ArgumentNullException(nameof(parameterName));
-			return m_nameToIndex.TryGetValue(MySqlParameter.NormalizeParameterName(parameterName), out var index) ? index : -1;
+			var normalizedName = MySqlParameter.NormalizeParameterName(parameterName ?? throw new ArgumentNullException(nameof(parameterName)));
+			return m_nameToIndex.TryGetValue(normalizedName, out var index) ? index : -1;
 		}
 
 		public override void Insert(int index, object value) => m_parameters.Insert(index, (MySqlParameter) value);
@@ -139,15 +140,6 @@ namespace MySql.Data.MySqlClient
 		{
 			get => m_parameters[index];
 			set => SetParameter(index, value);
-		}
-
-		// Finds the index of a parameter by name, regardless of whether 'parameterName' or the matching
-		// MySqlParameter.ParameterName has a leading '?' or '@'.
-		internal int FlexibleIndexOf(string parameterName)
-		{
-			if (parameterName == null)
-				throw new ArgumentNullException(nameof(parameterName));
-			return m_nameToIndex.TryGetValue(MySqlParameter.NormalizeParameterName(parameterName), out var index) ? index : -1;
 		}
 
 		private void AddParameter(MySqlParameter parameter)
