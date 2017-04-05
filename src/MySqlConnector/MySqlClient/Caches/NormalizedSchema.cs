@@ -17,9 +17,9 @@ namespace MySql.Data.MySqlClient.Caches
 		{
 			var normalized = new NormalizedSchema(name, defaultSchema);
 			if (normalized.Component == null)
-				throw new ArgumentException("Could not determine function/procedure name", name);
-			if (normalized.Component == null)
-				throw new ArgumentException("Could not determine schema", name);
+				throw new ArgumentException("Could not determine function/procedure name", nameof(name));
+			if (normalized.Schema == null)
+				throw new ArgumentException("Could not determine schema", nameof(defaultSchema));
 			return normalized;
 		}
 
