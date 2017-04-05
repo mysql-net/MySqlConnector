@@ -15,14 +15,15 @@ namespace MySql.Data.Protocol.Serialization
 
 		public ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, IOBehavior ioBehavior)
 		{
-			if (ioBehavior == IOBehavior.Asynchronous)
+			return (ioBehavior == IOBehavior.Asynchronous) ?
+				new ValueTask<int>(DoReadBytesAsync(buffer)) :
+				new ValueTask<int>(m_socket.Receive(buffer.Array, buffer.Offset, buffer.Count, SocketFlags.None));
+
+			async Task<int> DoReadBytesAsync(ArraySegment<byte> buffer_)
 			{
-				return new ValueTask<int>(DoReadBytesAsync(buffer));
-			}
-			else
-			{
-				var bytesRead = m_socket.Receive(buffer.Array, buffer.Offset, buffer.Count, SocketFlags.None);
-				return new ValueTask<int>(bytesRead);
+				m_socketAwaitable.EventArgs.SetBuffer(buffer_.Array, buffer_.Offset, buffer_.Count);
+				await m_socket.ReceiveAsync(m_socketAwaitable);
+				return m_socketAwaitable.EventArgs.BytesTransferred;
 			}
 		}
 
@@ -37,20 +38,13 @@ namespace MySql.Data.Protocol.Serialization
 				m_socket.Send(data.Array, data.Offset, data.Count, SocketFlags.None);
 				return default(ValueTask<int>);
 			}
-		}
 
-		private async Task<int> DoReadBytesAsync(ArraySegment<byte> buffer)
-		{
-			m_socketAwaitable.EventArgs.SetBuffer(buffer.Array, buffer.Offset, buffer.Count);
-			await m_socket.ReceiveAsync(m_socketAwaitable);
-			return m_socketAwaitable.EventArgs.BytesTransferred;
-		}
-
-		private async Task<int> DoWriteBytesAsync(ArraySegment<byte> payload)
-		{
-			m_socketAwaitable.EventArgs.SetBuffer(payload.Array, payload.Offset, payload.Count);
-			await m_socket.SendAsync(m_socketAwaitable);
-			return 0;
+			async Task<int> DoWriteBytesAsync(ArraySegment<byte> data_)
+			{
+				m_socketAwaitable.EventArgs.SetBuffer(data_.Array, data_.Offset, data_.Count);
+				await m_socket.SendAsync(m_socketAwaitable);
+				return 0;
+			}
 		}
 
 		readonly Socket m_socket;

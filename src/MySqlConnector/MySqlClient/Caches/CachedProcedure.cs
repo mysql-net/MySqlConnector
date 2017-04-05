@@ -67,16 +67,12 @@ namespace MySql.Data.MySqlClient.Caches
 				MySqlParameter alignParam;
 				if (cachedParam.Direction == ParameterDirection.ReturnValue)
 				{
-					if (returnParam == null)
-						throw new InvalidOperationException($"Attempt to call stored function {FullyQualified} without specifying a return parameter");
-					alignParam = returnParam;
+					alignParam = returnParam ?? throw new InvalidOperationException($"Attempt to call stored function {FullyQualified} without specifying a return parameter");
 				}
 				else
 				{
 					var index = parameterCollection.NormalizedIndexOf(cachedParam.Name);
-					if (index == -1)
-						throw new ArgumentException($"Parameter '{cachedParam.Name}' not found in the collection.");
-					alignParam = parameterCollection[index];
+					alignParam = index >= 0 ? parameterCollection[index] : throw new ArgumentException($"Parameter '{cachedParam.Name}' not found in the collection.");
 				}
 
 				if (alignParam.Direction == default(ParameterDirection))

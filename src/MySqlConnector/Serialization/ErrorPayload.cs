@@ -10,10 +10,7 @@ namespace MySql.Data.Serialization
 		public string State { get; }
 		public string Message { get; }
 
-		public MySqlException ToException()
-		{
-			return new MySqlException(ErrorCode, State, Message);
-		}
+		public MySqlException ToException() => new MySqlException(ErrorCode, State, Message);
 
 		public static ErrorPayload Create(PayloadData payload)
 		{

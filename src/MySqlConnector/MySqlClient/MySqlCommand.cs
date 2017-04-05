@@ -181,11 +181,7 @@ namespace MySql.Data.MySqlClient
 				throw new MySqlException("There is already an open DataReader associated with this Connection which must be closed first.");
 		}
 
-		internal void ReaderClosed()
-		{
-			var executor = m_commandExecutor as StoredProcedureCommandExecutor;
-			executor?.SetParams();
-		}
+		internal void ReaderClosed() => (m_commandExecutor as StoredProcedureCommandExecutor)?.SetParams();
 
 		MySqlParameterCollection m_parameterCollection;
 		CommandType m_commandType;

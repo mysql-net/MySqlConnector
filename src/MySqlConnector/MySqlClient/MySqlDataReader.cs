@@ -160,15 +160,9 @@ namespace MySql.Data.MySqlClient
 
 		public override IEnumerator GetEnumerator() => new DbEnumerator(this, closeReader: false);
 
-		public override int Depth
-		{
-			get { throw new NotSupportedException(); }
-		}
+		public override int Depth => throw new NotSupportedException();
 
-		protected override DbDataReader GetDbDataReader(int ordinal)
-		{
-			throw new NotSupportedException();
-		}
+		protected override DbDataReader GetDbDataReader(int ordinal) => throw new NotSupportedException();
 
 		public override DateTime GetDateTime(int ordinal) => GetResultSet().GetCurrentRow().GetDateTime(ordinal);
 
@@ -185,10 +179,7 @@ namespace MySql.Data.MySqlClient
 		public override int VisibleFieldCount => FieldCount;
 
 #if !NETSTANDARD1_3
-		public override DataTable GetSchemaTable()
-		{
-			throw new NotSupportedException();
-		}
+		public override DataTable GetSchemaTable() => throw new NotSupportedException();
 
 		public override void Close()
 		{
@@ -280,9 +271,7 @@ namespace MySql.Data.MySqlClient
 		private ResultSet GetResultSet()
 		{
 			VerifyNotDisposed();
-			if (m_resultSet == null)
-				throw new InvalidOperationException("There is no current result set.");
-			return m_resultSet;
+			return m_resultSet ?? throw new InvalidOperationException("There is no current result set.");
 		}
 
 		readonly CommandBehavior m_behavior;

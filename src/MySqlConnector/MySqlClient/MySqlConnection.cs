@@ -14,15 +14,11 @@ namespace MySql.Data.MySqlClient
 	public sealed class MySqlConnection : DbConnection
 	{
 		public MySqlConnection()
+			: this("")
 		{
-			ConnectionString = "";
 		}
 
-		public MySqlConnection(string connectionString)
-			: this()
-		{
-			ConnectionString = connectionString;
-		}
+		public MySqlConnection(string connectionString) => ConnectionString = connectionString;
 
 		public new MySqlTransaction BeginTransaction() => (MySqlTransaction) base.BeginTransaction();
 
@@ -143,10 +139,7 @@ namespace MySql.Data.MySqlClient
 
 		public override string ConnectionString
 		{
-			get
-			{
-				return m_connectionStringBuilder.GetConnectionString(!m_hasBeenOpened || m_connectionSettings.PersistSecurityInfo);
-			}
+			get => m_connectionStringBuilder.GetConnectionString(!m_hasBeenOpened || m_connectionSettings.PersistSecurityInfo);
 			set
 			{
 				if (m_hasBeenOpened)
@@ -228,8 +221,7 @@ namespace MySql.Data.MySqlClient
 				m_cachedProcedures = new Dictionary<string, CachedProcedure>();
 
 			var normalized = NormalizedSchema.MustNormalize(name, Database);
-			CachedProcedure cachedProcedure;
-			if (!m_cachedProcedures.TryGetValue(normalized.FullyQualified, out cachedProcedure))
+			if (!m_cachedProcedures.TryGetValue(normalized.FullyQualified, out var cachedProcedure))
 			{
 				cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema, normalized.Component, cancellationToken).ConfigureAwait(false);
 				m_cachedProcedures[normalized.FullyQualified] = cachedProcedure;

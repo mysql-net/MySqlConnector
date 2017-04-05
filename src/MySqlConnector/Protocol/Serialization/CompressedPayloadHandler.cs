@@ -26,8 +26,8 @@ namespace MySql.Data.Protocol.Serialization
 
 		public IByteHandler ByteHandler
 		{
-			get { return m_byteHandler; }
-			set { throw new NotSupportedException(); }
+			get => m_byteHandler;
+			set => throw new NotSupportedException();
 		}
 
 		public ValueTask<ArraySegment<byte>> ReadPayloadAsync(ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) =>
@@ -41,8 +41,7 @@ namespace MySql.Data.Protocol.Serialization
 				if (m_uncompressedStream.Length == 0)
 					return default(ValueTask<int>);
 
-				ArraySegment<byte> uncompressedData;
-				if (!m_uncompressedStream.TryGetBuffer(out uncompressedData))
+				if (!m_uncompressedStream.TryGetBuffer(out var uncompressedData))
 					throw new InvalidOperationException("Couldn't get uncompressed stream buffer.");
 
 				return CompressAndWrite(uncompressedData, ioBehavior)
@@ -244,10 +243,7 @@ namespace MySql.Data.Protocol.Serialization
 			public ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, IOBehavior ioBehavior) =>
 				m_compressedPayloadHandler.ReadBytesAsync(buffer, m_protocolErrorBehavior, ioBehavior);
 
-			public ValueTask<int> WriteBytesAsync(ArraySegment<byte> data, IOBehavior ioBehavior)
-			{
-				throw new NotSupportedException();
-			}
+			public ValueTask<int> WriteBytesAsync(ArraySegment<byte> data, IOBehavior ioBehavior) => throw new NotSupportedException();
 
 			readonly CompressedPayloadHandler m_compressedPayloadHandler;
 			readonly ProtocolErrorBehavior m_protocolErrorBehavior;

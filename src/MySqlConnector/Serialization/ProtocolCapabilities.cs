@@ -85,46 +85,46 @@ namespace MySql.Data.Serialization
 		/// <summary>
 		/// Can handle multiple statements per COM_QUERY and COM_STMT_PREPARE.
 		/// </summary>
-		MultiStatements = 0x10000,
+		MultiStatements = 0x1_0000,
 
 		/// <summary>
 		/// Can send multiple resultsets for COM_QUERY.
 		/// </summary>
-		MultiResults = 0x20000,
+		MultiResults = 0x2_0000,
 
 		/// <summary>
 		/// Can send multiple resultsets for COM_STMT_EXECUTE.
 		/// </summary>
-		PreparedStatementMultiResults = 0x40000,
+		PreparedStatementMultiResults = 0x4_0000,
 
 		/// <summary>
 		/// Sends extra data in Initial Handshake Packet and supports the pluggable authentication protocol.
 		/// </summary>
-		PluginAuth = 0x80000,
+		PluginAuth = 0x8_0000,
 
 		/// <summary>
 		/// Permits connection attributes in Protocol::HandshakeResponse41.
 		/// </summary>
-		ConnectAttributes = 0x100000,
+		ConnectAttributes = 0x10_0000,
 
 		/// <summary>
 		/// Understands length-encoded integer for auth response data in Protocol::HandshakeResponse41.
 		/// </summary>
-		PluginAuthLengthEncodedClientData = 0x200000,
+		PluginAuthLengthEncodedClientData = 0x20_0000,
 
 		/// <summary>
 		/// Announces support for expired password extension.
 		/// </summary>
-		CanHandleExpiredPasswords = 0x400000,
+		CanHandleExpiredPasswords = 0x40_0000,
 
 		/// <summary>
 		/// Can set SERVER_SESSION_STATE_CHANGED in the Status Flags and send session-state change data after a OK packet.
 		/// </summary>
-		SessionTrack = 0x800000,
+		SessionTrack = 0x80_0000,
 
 		/// <summary>
 		/// Can send OK after a Text Resultset.
 		/// </summary>
-		DeprecateEof = 0x1000000,
+		DeprecateEof = 0x100_0000,
 	}
 }
