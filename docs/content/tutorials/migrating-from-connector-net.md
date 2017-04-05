@@ -41,4 +41,10 @@ supported in MySqlConnector, see the [Connection Options](connection-options)
 
 ### Bugs present in Connector/NET that are fixed in MySqlConnector
 
-- `Server` connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds
+* [#70111](https://bugs.mysql.com/bug.php?id=70111): `Async` methods execute synchronously
+* [#70686](https://bugs.mysql.com/bug.php?id=70686): `TIME(3)` and `TIME(6)` fields serialize milliseconds incorrectly
+* [#73788](https://bugs.mysql.com/bug.php?id=73788): Can't use `DateTimeOffset`
+* [#77421](https://bugs.mysql.com/bug.php?id=77421): Connection is not reset when pulled from the connection pool
+* [#78760](https://bugs.mysql.com/bug.php?id=78760): Error when using tabs and newlines in SQL statements
+* [#78917](https://bugs.mysql.com/bug.php?id=78917): `TINYINT(1)` values start being returned as `sbyte` after `NULL`
+* [#81650](https://bugs.mysql.com/bug.php?id=81650): `Server` connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds
