@@ -199,7 +199,13 @@ supported in MySqlConnector, see the <a href="connection-options">Connection Opt
 <h3 id="bugs-present-in-connector-net-that-are-fixed-in-mysqlconnector">Bugs present in Connector/NET that are fixed in MySqlConnector</h3>
 
 <ul>
-<li><code>Server</code> connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=70111">#70111</a>: <code>Async</code> methods execute synchronously</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=70686">#70686</a>: <code>TIME(3)</code> and <code>TIME(6)</code> fields serialize milliseconds incorrectly</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=73788">#73788</a>: Can&rsquo;t use <code>DateTimeOffset</code></li>
+<li><a href="https://bugs.mysql.com/bug.php?id=77421">#77421</a>: Connection is not reset when pulled from the connection pool</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=78760">#78760</a>: Error when using tabs and newlines in SQL statements</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=78917">#78917</a>: <code>TINYINT(1)</code> values start being returned as <code>sbyte</code> after <code>NULL</code></li>
+<li><a href="https://bugs.mysql.com/bug.php?id=81650">#81650</a>: <code>Server</code> connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds</li>
 </ul>
 
 
