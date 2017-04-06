@@ -258,6 +258,11 @@
     <td>When true, the MySqlConnection object is drawn from the appropriate pool, or if necessary, is created and added to the appropriate pool. Recognized values are true, false, yes, and no.</td>
   </tr>
   <tr>
+    <td>Connection Lifetime, ConnectionLifeTime</td>
+    <td>0</td>
+    <td>When a connection is returned to the pool, its creation time is compared with the current time, and the connection is destroyed if that time span (in seconds) exceeds the value specified by Connection Lifetime. This is useful in clustered configurations to force load balancing between a running server and a server just brought online. A value of zero (0) causes pooled connections to have the maximum connection timeout.</td>
+  </tr>
+  <tr>
     <td>Connection Reset, ConnectionReset   </td>
     <td>false</td>
     <td>If true, the connection state is reset when it is retrieved from the pool. The default value of false avoids making an additional server round trip when obtaining a connection, but the connection state is not reset.</td>
