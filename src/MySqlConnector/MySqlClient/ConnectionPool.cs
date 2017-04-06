@@ -53,11 +53,26 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+		private bool SessionIsHealthy(MySqlSession session)
+		{
+			if (!session.IsConnected)
+				return false;
+			if (session.PoolGeneration != m_generation)
+				return false;
+			if (session.DatabaseOverride != null)
+				return false;
+			if (m_connectionSettings.ConnectionLifeTime > 0
+			    && (DateTime.UtcNow - session.CreatedUtc).TotalSeconds >= m_connectionSettings.ConnectionLifeTime)
+				return false;
+
+			return true;
+		}
+
 		public void Return(MySqlSession session)
 		{
 			try
 			{
-				if (session.IsConnected && session.PoolGeneration == m_generation && session.DatabaseOverride == null)
+				if (SessionIsHealthy(session))
 					m_sessions.Enqueue(session);
 				else
 					session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).ConfigureAwait(false);

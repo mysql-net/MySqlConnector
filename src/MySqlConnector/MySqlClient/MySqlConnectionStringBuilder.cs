@@ -73,6 +73,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.Pooling.SetValue(this, value);
 		}
 
+		public uint ConnectionLifeTime
+		{
+			get => MySqlConnectionStringOption.ConnectionLifeTime.GetValue(this);
+			set => MySqlConnectionStringOption.ConnectionLifeTime.SetValue(this, value);
+		}
+
 		public bool ConnectionReset
 		{
 			get => MySqlConnectionStringOption.ConnectionReset.GetValue(this);
@@ -223,6 +229,7 @@ namespace MySql.Data.MySqlClient
 
 		// Connection Pooling Options
 		public static readonly MySqlConnectionStringOption<bool> Pooling;
+		public static readonly MySqlConnectionStringOption<uint> ConnectionLifeTime;
 		public static readonly MySqlConnectionStringOption<bool> ConnectionReset;
 		public static readonly MySqlConnectionStringOption<uint> MinimumPoolSize;
 		public static readonly MySqlConnectionStringOption<uint> MaximumPoolSize;
@@ -305,6 +312,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(Pooling = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Pooling" },
 				defaultValue: true));
+
+			AddOption(ConnectionLifeTime = new MySqlConnectionStringOption<uint>(
+				keys: new[] { "Connection Lifetime", "ConnectionLifeTime" },
+				defaultValue: 0));
 
 			AddOption(ConnectionReset = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Connection Reset", "ConnectionReset" },

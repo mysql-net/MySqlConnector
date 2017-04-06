@@ -17,6 +17,7 @@ namespace MySql.Data.Tests
 #if BASELINE
 			Assert.Equal(false, csb.ConnectionReset);
 #else
+			Assert.Equal(0u, csb.ConnectionLifeTime);
 			Assert.Equal(true, csb.ConnectionReset);
 #endif
 			Assert.Equal(15u, csb.ConnectionTimeout);
@@ -59,6 +60,7 @@ namespace MySql.Data.Tests
 				                   "Character Set=latin1;" +
 				                   "Compress=true;" +
 				                   "connect timeout=30;" +
+				                   "connection lifetime=15;" +
 				                   "ConnectionReset=false;" +
 				                   "Convert Zero Datetime=true;" +
 #if !BASELINE
@@ -82,6 +84,7 @@ namespace MySql.Data.Tests
 			Assert.Equal("file.pfx", csb.CertificateFile);
 			Assert.Equal("Pass1234", csb.CertificatePassword);
 			Assert.Equal("latin1", csb.CharacterSet);
+			Assert.Equal(15u, csb.ConnectionLifeTime);
 			Assert.Equal(false, csb.ConnectionReset);
 			Assert.Equal(30u, csb.ConnectionTimeout);
 			Assert.Equal(true, csb.ConvertZeroDateTime);

@@ -23,6 +23,7 @@ namespace MySql.Data.Serialization
 
 		public MySqlSession(ConnectionPool pool, int poolGeneration)
 		{
+			CreatedUtc = DateTime.UtcNow;
 			Pool = pool;
 			PoolGeneration = poolGeneration;
 		}
@@ -30,6 +31,7 @@ namespace MySql.Data.Serialization
 		public ServerVersion ServerVersion { get; set; }
 		public int ConnectionId { get; set; }
 		public byte[] AuthPluginData { get; set; }
+		public DateTime CreatedUtc { get; }
 		public ConnectionPool Pool { get; }
 		public int PoolGeneration { get; }
 		public string DatabaseOverride { get; set; }

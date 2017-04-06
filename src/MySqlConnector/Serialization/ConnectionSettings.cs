@@ -36,6 +36,7 @@ namespace MySql.Data.Serialization
 
 			// Connection Pooling Options
 			Pooling = csb.Pooling;
+			ConnectionLifeTime = (int)csb.ConnectionLifeTime;
 			ConnectionReset = csb.ConnectionReset;
 			if (csb.MinimumPoolSize > csb.MaximumPoolSize)
 				throw new MySqlException("MaximumPoolSize must be greater than or equal to MinimumPoolSize");
@@ -77,6 +78,7 @@ namespace MySql.Data.Serialization
 
 			// Connection Pooling Options
 			Pooling = other.Pooling;
+			ConnectionLifeTime = other.ConnectionLifeTime;
 			ConnectionReset = other.ConnectionReset;
 			MinimumPoolSize = other.MinimumPoolSize;
 			MaximumPoolSize = other.MaximumPoolSize;
@@ -112,6 +114,7 @@ namespace MySql.Data.Serialization
 
 		// Connection Pooling Options
 		internal readonly bool Pooling;
+		internal readonly int ConnectionLifeTime;
 		internal readonly bool ConnectionReset;
 		internal readonly int MinimumPoolSize;
 		internal readonly int MaximumPoolSize;
