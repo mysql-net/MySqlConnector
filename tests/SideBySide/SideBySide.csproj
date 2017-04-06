@@ -15,8 +15,9 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <AssemblyName>SideBySide</AssemblyName>
     <PackageId>SideBySide</PackageId>
-    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <ServerGarbageCollection>true</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+    <ThreadPoolMinThreads>64</ThreadPoolMinThreads>
   </PropertyGroup>
 
  <ItemGroup>
