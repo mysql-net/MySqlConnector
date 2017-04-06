@@ -512,7 +512,6 @@ namespace SideBySide
 		[InlineData("MediumBlob", 16777215)]
 		[InlineData("LongBlob", 33554432)]
 		[InlineData("LongBlob", 67108864)]
-		[InlineData("LongBlob", 134217728)]
 		public async Task InsertLargeBlobAsync(string column, int size)
 		{
 			// NOTE: MySQL Server will reset the connection when it receives an oversize packet, so we need to create a test-specific connection here
