@@ -12,6 +12,7 @@ if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
 
+echo "Executing connection string tests"
 dotnet test tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj -c Release
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
@@ -27,6 +28,13 @@ if ($LASTEXITCODE -ne 0){
 echo "Executing tests with Compression, No SSL"
 Copy-Item -Force .ci\config\config.compression.json tests\SideBySide\config.json
 dotnet test tests\SideBySide\SideBySide.csproj -c Release
+if ($LASTEXITCODE -ne 0){
+    exit $LASTEXITCODE;
+}
+
+echo "Executing baseline connection string tests"
+dotnet restore tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj /p:Configuration=Baseline
+dotnet test tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj -c Baseline
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
