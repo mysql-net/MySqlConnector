@@ -161,21 +161,24 @@ namespace MySql.Data.MySqlClient
 
 		public int ServerThread => m_session.ConnectionId;
 
-		public static void ClearPool(MySqlConnection connection) => ClearPoolAsync(connection, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-		public static Task ClearPoolAsync(MySqlConnection connection) => ClearPoolAsync(connection, connection.AsyncIOBehavior, CancellationToken.None);
-		public static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken) => ClearPoolAsync(connection, connection.AsyncIOBehavior, cancellationToken);
-		public static void ClearAllPools() => ConnectionPool.ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-		public static Task ClearAllPoolsAsync() => ConnectionPool.ClearPoolsAsync(IOBehavior.Asynchronous, CancellationToken.None);
-		public static Task ClearAllPoolsAsync(CancellationToken cancellationToken) => ConnectionPool.ClearPoolsAsync(IOBehavior.Asynchronous, cancellationToken);
+		public static void ClearPool(MySqlConnection connection) => TrimPoolAsync(connection, IOBehavior.Synchronous, 0, CancellationToken.None).GetAwaiter().GetResult();
+		public static Task ClearPoolAsync(MySqlConnection connection) => TrimPoolAsync(connection, connection.AsyncIOBehavior, 0, CancellationToken.None);
+		public static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken) => TrimPoolAsync(connection, connection.AsyncIOBehavior, 0, cancellationToken);
+		public static void ClearAllPools() => ConnectionPool.TrimPoolsAsync(IOBehavior.Synchronous, 0, CancellationToken.None).GetAwaiter().GetResult();
+		public static Task ClearAllPoolsAsync() => ConnectionPool.TrimPoolsAsync(IOBehavior.Asynchronous, 0, CancellationToken.None);
+		public static Task ClearAllPoolsAsync(CancellationToken cancellationToken) => ConnectionPool.TrimPoolsAsync(IOBehavior.Asynchronous, 0, cancellationToken);
 
-		private static async Task ClearPoolAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public static Task TrimPoolAsync(MySqlConnection connection, int connectionsToKeep, CancellationToken cancellationToken) => TrimPoolAsync(connection, connection.AsyncIOBehavior, connectionsToKeep, cancellationToken);
+		public static Task TrimAllPoolsAsync(int connectionsToKeep, CancellationToken cancellationToken) => ConnectionPool.TrimPoolsAsync(IOBehavior.Asynchronous, connectionsToKeep, cancellationToken);
+
+		private static async Task TrimPoolAsync(MySqlConnection connection, IOBehavior ioBehavior, int connectionsToKeep, CancellationToken cancellationToken)
 		{
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
 			var pool = ConnectionPool.GetPool(connection.m_connectionSettings);
 			if (pool != null)
-				await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				await pool.TrimAsync(ioBehavior, connectionsToKeep, cancellationToken).ConfigureAwait(false);
 		}
 
 		protected override DbCommand CreateDbCommand() => new MySqlCommand(this, CurrentTransaction);
