@@ -34,9 +34,14 @@ namespace MySql.Data.Serialization
 		public DateTime CreatedUtc { get; }
 		public ConnectionPool Pool { get; }
 		public int PoolGeneration { get; }
+		public DateTime LastReturnedUtc { get; private set; }
 		public string DatabaseOverride { get; set; }
 
-		public void ReturnToPool() => Pool?.Return(this);
+		public void ReturnToPool()
+		{
+			LastReturnedUtc = DateTime.UtcNow;
+			Pool?.Return(this);
+		}
 
 		public bool IsConnected => m_state == State.Connected;
 
