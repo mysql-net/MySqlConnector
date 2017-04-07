@@ -41,6 +41,10 @@
     <PackageReference Include="MySql.Data" Version="6.9.8" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(Configuration)' != 'Debug' ">
+    <Compile Remove="DebugOnlyTests.cs" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />

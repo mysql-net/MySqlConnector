@@ -215,7 +215,11 @@ namespace MySql.Data.MySqlClient
 		}
 
 		static readonly ConcurrentDictionary<string, ConnectionPool> s_pools = new ConcurrentDictionary<string, ConnectionPool>();
+#if DEBUG
+		static readonly TimeSpan ReaperInterval = TimeSpan.FromSeconds(1);
+#else
 		static readonly TimeSpan ReaperInterval = TimeSpan.FromMinutes(1);
+#endif
 		static readonly Task Reaper = Task.Run(async () => {
 			while (true)
 			{

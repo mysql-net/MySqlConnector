@@ -36,6 +36,10 @@
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.3.0" />
   </ItemGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DefineConstants>DEBUG</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Update="MySqlClient\MySqlCommand.cs">
       <SubType>Component</SubType>

@@ -18,6 +18,7 @@ script:
 - dotnet test tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj -c Release -f netcoreapp1.1.1
 - dotnet build tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp1.1.1
 - echo 'Executing tests with No Compression, No SSL' && ./.ci/use-config.sh config.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp1.1.1
+- echo 'Executing Debug Only tests' && time dotnet test tests/SideBySide/SideBySide.csproj -c Debug -f netcoreapp1.1.1 --filter "FullyQualifiedName~SideBySide.DebugOnlyTests"
 - echo 'Executing tests with Compression, No SSL' && ./.ci/use-config.sh config.compression.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp1.1.1
 - echo 'Executing tests with No Compression, SSL' && ./.ci/use-config.sh config.ssl.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp1.1.1
 - echo 'Executing tests with Compression, SSL' && ./.ci/use-config.sh config.compression+ssl.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp1.1.1
