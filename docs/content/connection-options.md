@@ -106,7 +106,7 @@ Connection pooling is enabled by default.  These options are used to configure i
   <tr>
     <td>Connection Lifetime, ConnectionLifeTime</td>
     <td>0</td>
-    <td>When a connection is returned to the pool, its creation time is compared with the current time, and the connection is destroyed if that time span (in seconds) exceeds the value specified by Connection Lifetime. This is useful in clustered configurations to force load balancing between a running server and a server just brought online. A value of zero (0) causes pooled connections to have the maximum connection timeout.</td>
+    <td>When a connection is returned to the pool, its creation time is compared with the current time, and the connection is destroyed if that time span (in seconds) exceeds the value specified by Connection Lifetime. This is useful in clustered configurations to force load balancing between a running server and a server just brought online. A value of zero (0) means pooled connections will never incur a ConnectionLifeTime timeout.</td>
   </tr>
   <tr>
     <td>Connection Reset, ConnectionReset	</td>
@@ -114,9 +114,19 @@ Connection pooling is enabled by default.  These options are used to configure i
     <td>If true, the connection state is reset when it is retrieved from the pool. The default value of false avoids making an additional server round trip when obtaining a connection, but the connection state is not reset.</td>
   </tr>
   <tr>
+    <td>Connection Idle Timeout, ConnectionIdleTimeout</td>
+    <td>180</td>
+    <td>The amount of time in seconds that a connection can remain idle in the pool. Any connection that is idle for longer is subject to being closed by a background task that runs every minute, unless there are only MinimumPoolSize connections left in the pool. A value of zero (0) means pooled connections will never incur a ConnectionIdleTimeout.</td>
+  </tr>
+  <tr>
     <td>Maximum Pool Size, Max Pool Size, MaximumPoolsize, maxpoolsize</td>
     <td>100</td>
     <td>The maximum number of connections allowed in the pool.</td>
+  </tr>
+  <tr>
+    <td>Minimum Pool Size, Min Pool Size, MinimumPoolSize, minpoolsize</td>
+    <td>0</td>
+    <td>The minimum number of connections to leave in the pool if ConnectionIdleTimeout is reached.</td>
   </tr>
 </table>
 
