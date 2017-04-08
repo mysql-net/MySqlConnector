@@ -24,6 +24,11 @@ dotnet test tests\SideBySide\SideBySide.csproj -c Release
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
+echo "Executing Debug Only tests"
+dotnet test tests\SideBySide\SideBySide.csproj -c Debug --filter "FullyQualifiedName~SideBySide.DebugOnlyTests"
+if ($LASTEXITCODE -ne 0){
+    exit $LASTEXITCODE;
+}
 
 echo "Executing tests with Compression, No SSL"
 Copy-Item -Force .ci\config\config.compression.json tests\SideBySide\config.json
