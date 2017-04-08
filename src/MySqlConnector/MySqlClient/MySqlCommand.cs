@@ -48,11 +48,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public override void Cancel()
-		{
-			// documentation says this shouldn't throw (but just fail silently), but for now make it explicit that this doesn't work
-			throw new NotSupportedException("Use the Async overloads with a CancellationToken.");
-		}
+		public override void Cancel() => Connection.Cancel(this);
 
 		public override int ExecuteNonQuery() =>
 			ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();

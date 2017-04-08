@@ -167,7 +167,18 @@ namespace MySql.Data.MySqlClient.Results
 				? new ValueTask<Row>(ScanRowAsyncRemainder(payloadValueTask.Result))
 				: new ValueTask<Row>(ScanRowAsyncAwaited(payloadValueTask.AsTask()));
 
-			async Task<Row> ScanRowAsyncAwaited(Task<PayloadData> payloadTask) => ScanRowAsyncRemainder(await payloadTask.ConfigureAwait(false));
+			async Task<Row> ScanRowAsyncAwaited(Task<PayloadData> payloadTask)
+			{
+				try
+				{
+					return ScanRowAsyncRemainder(await payloadTask.ConfigureAwait(false));
+				}
+				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted)
+				{
+					BufferState = State = ResultSetState.NoMoreData;
+					throw;
+				}
+			}
 
 			Row ScanRowAsyncRemainder(PayloadData payload)
 			{

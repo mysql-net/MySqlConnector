@@ -36,6 +36,7 @@ namespace MySql.Data.Serialization
 		public ConnectionPool Pool { get; }
 		public int PoolGeneration { get; }
 		public string DatabaseOverride { get; set; }
+		public IPAddress IPAddress => (m_tcpClient?.Client.RemoteEndPoint as IPEndPoint)?.Address;
 
 		public void ReturnToPool() => Pool?.Return(this);
 
@@ -48,15 +49,58 @@ namespace MySql.Data.Serialization
 			}
 		}
 
-		public void StartQuerying()
+		public bool TryStartCancel(MySqlCommand command)
 		{
 			lock (m_lock)
 			{
-				if (m_state == State.Querying)
+				if (m_activeCommand != command)
+					return false;
+				VerifyState(State.Querying, State.CancelingQuery);
+				if (m_state != State.Querying)
+					return false;
+				m_state = State.CancelingQuery;
+			}
+
+			return true;
+		}
+
+		public void DoCancel(MySqlCommand commandToCancel, MySqlCommand killCommand)
+		{
+			lock (m_lock)
+			{
+				if (m_activeCommand != commandToCancel)
+					return;
+
+				// NOTE: This command is executed while holding the lock to prevent race conditions during asynchronous cancellation.
+				// For example, if the lock weren't held, the current command could finish and the other thread could set m_activeCommand
+				// to null, then start executing a new command. By the time this "KILL QUERY" command reached the server, the wrong
+				// command would be killed (because "KILL QUERY" specifies the connection whose command should be killed, not
+				// a unique identifier of the command itself). As a mitigation, we set the CommandTimeout to a low value to avoid
+				// blocking the other thread for an extended duration.
+				killCommand.CommandTimeout = 3;
+				killCommand.ExecuteNonQuery();
+			}
+		}
+
+		public void AbortCancel(MySqlCommand command)
+		{
+			lock (m_lock)
+			{
+				if (m_activeCommand == command && m_state == State.CancelingQuery)
+					m_state = State.Querying;
+			}
+		}
+
+		public void StartQuerying(MySqlCommand command)
+		{
+			lock (m_lock)
+			{
+				if (m_state == State.Querying || m_state == State.CancelingQuery)
 					throw new MySqlException("There is already an open DataReader associated with this Connection which must be closed first.");
 
 				VerifyState(State.Connected);
 				m_state = State.Querying;
+				m_activeCommand = command;
 			}
 		}
 
@@ -64,7 +108,7 @@ namespace MySql.Data.Serialization
 
 		public void SetActiveReader(MySqlDataReader dataReader)
 		{
-			VerifyState(State.Querying);
+			VerifyState(State.Querying, State.CancelingQuery);
 			if (dataReader == null)
 				throw new ArgumentNullException(nameof(dataReader));
 			if (m_activeReader != null)
@@ -76,9 +120,10 @@ namespace MySql.Data.Serialization
 		{
 			lock (m_lock)
 			{
-				VerifyState(State.Querying);
+				VerifyState(State.Querying, State.CancelingQuery);
 				m_state = State.Connected;
 				m_activeReader = null;
+				m_activeCommand = null;
 			}
 		}
 
@@ -634,6 +679,7 @@ namespace MySql.Data.Serialization
 		Socket m_socket;
 		NetworkStream m_networkStream;
 		IPayloadHandler m_payloadHandler;
+		MySqlCommand m_activeCommand;
 		MySqlDataReader m_activeReader;
 	}
 }

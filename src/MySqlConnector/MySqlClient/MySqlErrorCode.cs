@@ -9,5 +9,10 @@ namespace MySql.Data.MySqlClient
 		/// You have an error in your SQL syntax (ER_PARSE_ERROR).
 		/// </summary>
 		ParseError = 1064,
+
+		/// <summary>
+		/// Query execution was interrupted (ER_QUERY_INTERRUPTED).
+		/// </summary>
+		QueryInterrupted = 1317,
 	}
 }

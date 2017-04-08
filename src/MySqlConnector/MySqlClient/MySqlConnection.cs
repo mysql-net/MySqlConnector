@@ -209,6 +209,37 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+		internal void Cancel(MySqlCommand command)
+		{
+			var session = Session;
+			if (!session.TryStartCancel(command))
+				return;
+
+			try
+			{
+				// open a dedicated connection to the server to kill the active query
+				var csb = new MySqlConnectionStringBuilder(m_connectionStringBuilder.GetConnectionString(includePassword: true));
+				csb.Pooling = false;
+				if (m_session.IPAddress != null)
+					csb.Server = m_session.IPAddress.ToString();
+				csb.ConnectionTimeout = 3u;
+
+				using (var connection = new MySqlConnection(csb.ConnectionString))
+				{
+					connection.Open();
+					using (var killCommand = new MySqlCommand("KILL QUERY {0}".FormatInvariant(command.Connection.ServerThread), connection))
+					{
+						session.DoCancel(command, killCommand);
+					}
+				}
+			}
+			catch (MySqlException)
+			{
+				// cancelling the query failed; setting the state back to 'Querying' will allow another call to 'Cancel' to try again
+				session.AbortCancel(command);
+			}
+		}
+
 		internal async Task<CachedProcedure> GetCachedProcedure(IOBehavior ioBehavior, string name, CancellationToken cancellationToken)
 		{
 			if (State != ConnectionState.Open)
