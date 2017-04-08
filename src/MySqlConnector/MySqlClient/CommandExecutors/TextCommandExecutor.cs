@@ -50,6 +50,7 @@ namespace MySql.Data.MySqlClient.CommandExecutors
 		public virtual async Task<DbDataReader> ExecuteReaderAsync(string commandText, MySqlParameterCollection parameterCollection,
 			CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			m_command.Connection.Session.StartQuerying();
 			m_command.LastInsertedId = -1;
 			var statementPreparerOptions = StatementPreparerOptions.None;
 			if (m_command.Connection.AllowUserVariables || m_command.CommandType == CommandType.StoredProcedure)

@@ -230,7 +230,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		internal MySqlTransaction CurrentTransaction { get; set; }
-		internal MySqlDataReader ActiveReader { get; set; }
+		internal MySqlDataReader ActiveReader => m_session.ActiveReader;
 		internal bool AllowUserVariables => m_connectionSettings.AllowUserVariables;
 		internal bool BufferResultSets => m_connectionSettings.BufferResultSets;
 		internal bool ConvertZeroDateTime => m_connectionSettings.ConvertZeroDateTime;
@@ -309,11 +309,8 @@ namespace MySql.Data.MySqlClient
 		private void CloseDatabase()
 		{
 			m_cachedProcedures = null;
-			if (ActiveReader != null)
-			{
-				ActiveReader.Dispose();
-				ActiveReader = null;
-			}
+			if (Session.ActiveReader != null)
+				Session.ActiveReader.Dispose();
 			if (CurrentTransaction != null && m_session.IsConnected)
 			{
 				CurrentTransaction.Dispose();

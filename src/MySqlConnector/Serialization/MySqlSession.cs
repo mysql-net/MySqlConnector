@@ -23,6 +23,7 @@ namespace MySql.Data.Serialization
 
 		public MySqlSession(ConnectionPool pool, int poolGeneration)
 		{
+			m_lock = new object();
 			CreatedUtc = DateTime.UtcNow;
 			Pool = pool;
 			PoolGeneration = poolGeneration;
@@ -38,13 +39,59 @@ namespace MySql.Data.Serialization
 
 		public void ReturnToPool() => Pool?.Return(this);
 
-		public bool IsConnected => m_state == State.Connected;
+		public bool IsConnected
+		{
+			get
+			{
+				lock (m_lock)
+					return m_state == State.Connected;
+			}
+		}
+
+		public void StartQuerying()
+		{
+			lock (m_lock)
+			{
+				if (m_state == State.Querying)
+					throw new MySqlException("There is already an open DataReader associated with this Connection which must be closed first.");
+
+				VerifyState(State.Connected);
+				m_state = State.Querying;
+			}
+		}
+
+		public MySqlDataReader ActiveReader => m_activeReader;
+
+		public void SetActiveReader(MySqlDataReader dataReader)
+		{
+			VerifyState(State.Querying);
+			if (dataReader == null)
+				throw new ArgumentNullException(nameof(dataReader));
+			if (m_activeReader != null)
+				throw new InvalidOperationException("Can't replace active reader.");
+			m_activeReader = dataReader;
+		}
+
+		public void FinishQuerying()
+		{
+			lock (m_lock)
+			{
+				VerifyState(State.Querying);
+				m_state = State.Connected;
+				m_activeReader = null;
+			}
+		}
 
 		public async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (m_payloadHandler != null)
 			{
 				// attempt to gracefully close the connection, ignoring any errors (it may have been closed already by the server, etc.)
+				lock (m_lock)
+				{
+					VerifyState(State.Connected, State.Failed);
+					m_state = State.Closing;
+				}
 				try
 				{
 					m_payloadHandler.StartNewConversation();
@@ -59,18 +106,28 @@ namespace MySql.Data.Serialization
 				}
 			}
 			ShutdownSocket();
-			m_state = State.Closed;
+			lock (m_lock)
+				m_state = State.Closed;
 		}
 
 		public async Task ConnectAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			lock (m_lock)
+			{
+				VerifyState(State.Created);
+				m_state = State.Connecting;
+			}
 			var connected = false;
 			if (cs.ConnectionType == ConnectionType.Tcp)
 				connected = await OpenTcpSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 			else if (cs.ConnectionType == ConnectionType.Unix)
 				connected = await OpenUnixSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 			if (!connected)
+			{
+				lock (m_lock)
+					m_state = State.Failed;
 				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
+			}
 
 			var socketByteHandler = new SocketByteHandler(m_socket);
 			m_payloadHandler = new StandardPayloadHandler(socketByteHandler);
@@ -114,6 +171,7 @@ namespace MySql.Data.Serialization
 
 		public async Task ResetConnectionAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			VerifyState(State.Connected);
 			if (ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
 			{
 				await SendAsync(ResetConnectionPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -150,6 +208,8 @@ namespace MySql.Data.Serialization
 
 		public async Task<bool> TryPingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			VerifyState(State.Connected);
+
 			// check if client socket is still connected
 			// http://stackoverflow.com/questions/2661764/how-to-check-if-a-socket-is-connected-disconnected-in-c
 			if (m_socket.Poll(1, SelectMode.SelectRead) && m_socket.Available == 0)
@@ -169,6 +229,7 @@ namespace MySql.Data.Serialization
 			{
 			}
 
+			VerifyState(State.Failed);
 			return false;
 		}
 
@@ -196,10 +257,13 @@ namespace MySql.Data.Serialization
 
 		private void VerifyConnected()
 		{
-			if (m_state == State.Closed)
-				throw new ObjectDisposedException(nameof(MySqlSession));
-			if (m_state != State.Connected)
-				throw new InvalidOperationException("MySqlSession is not connected.");
+			lock (m_lock)
+			{
+				if (m_state == State.Closed)
+					throw new ObjectDisposedException(nameof(MySqlSession));
+				if (m_state != State.Connected && m_state != State.Querying && m_state != State.CancelingQuery && m_state != State.Closing)
+					throw new InvalidOperationException("MySqlSession is not connected.");
+			}
 		}
 
 		private async Task<bool> OpenTcpSocketAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -270,7 +334,8 @@ namespace MySql.Data.Serialization
 					m_socket = m_tcpClient.Client;
 					m_networkStream = m_tcpClient.GetStream();
 					SerializationUtility.SetKeepalive(m_socket, cs.Keepalive);
-					m_state = State.Connected;
+					lock (m_lock)
+						m_state = State.Connected;
 					return true;
 				}
 			}
@@ -316,7 +381,8 @@ namespace MySql.Data.Serialization
 				m_socket = socket;
 				m_networkStream = new NetworkStream(socket);
 
-				m_state = State.Connected;
+				lock (m_lock)
+					m_state = State.Connected;
 				return true;
 			}
 
@@ -398,7 +464,8 @@ namespace MySql.Data.Serialization
 			{
 				ShutdownSocket();
 				m_hostname = "";
-				m_state = State.Failed;
+				lock (m_lock)
+					m_state = State.Failed;
 				if (ex is AuthenticationException)
 					throw new MySqlException("SSL Authentication Error", ex);
 				if (ex is IOException && clientCertificates != null)
@@ -450,10 +517,10 @@ namespace MySql.Data.Serialization
 
 		private ValueTask<int> TryAsync<TArg>(Func<TArg, IOBehavior, ValueTask<int>> func, TArg arg, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			VerifyConnected();
 			ValueTask<int> task;
 			try
 			{
+				VerifyConnected();
 				task = func(arg, ioBehavior);
 			}
 			catch (Exception ex)
@@ -480,10 +547,10 @@ namespace MySql.Data.Serialization
 
 		private ValueTask<PayloadData> TryAsync(Func<ProtocolErrorBehavior, IOBehavior, ValueTask<ArraySegment<byte>>> func, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			VerifyConnected();
 			ValueTask<ArraySegment<byte>> task;
 			try
 			{
+				VerifyConnected();
 				task = func(ProtocolErrorBehavior.Throw, ioBehavior);
 			}
 			catch (Exception ex)
@@ -516,22 +583,57 @@ namespace MySql.Data.Serialization
 
 		private void SetFailed()
 		{
-			m_state = State.Failed;
+			lock (m_lock)
+				m_state = State.Failed;
+		}
+
+
+		private void VerifyState(State state)
+		{
+			if (m_state != state)
+				throw new InvalidOperationException("Expected state to be {0} but was {1}.".FormatInvariant(state, m_state));
+		}
+
+		private void VerifyState(State state1, State state2)
+		{
+			if (m_state != state1 && m_state != state2)
+				throw new InvalidOperationException("Expected state to be ({0}|{1}) but was {2}.".FormatInvariant(state1, state2, m_state));
 		}
 
 		private enum State
 		{
+			// The session has been created; no connection has been made.
 			Created,
+
+			// The session is attempting to connect to a server.
+			Connecting,
+
+			// The session is connected to a server; there is no active query.
 			Connected,
+
+			// The session is connected to a server and a query is being made.
+			Querying,
+
+			// The session is connected to a server and the active query is being cancelled.
+			CancelingQuery,
+
+			// The session is closing.
+			Closing,
+
+			// The session is closed.
 			Closed,
+
+			// An unexpected error occurred; the session is in an unusable state.
 			Failed,
 		}
 
+		readonly object m_lock;
 		State m_state;
 		string m_hostname = "";
 		TcpClient m_tcpClient;
 		Socket m_socket;
 		NetworkStream m_networkStream;
 		IPayloadHandler m_payloadHandler;
+		MySqlDataReader m_activeReader;
 	}
 }
