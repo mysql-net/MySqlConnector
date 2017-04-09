@@ -224,6 +224,7 @@ supported in MySqlConnector, see the &lt;a href=&#34;connection-options&#34;&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=78760&#34;&gt;#78760&lt;/a&gt;: Error when using tabs and newlines in SQL statements&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=78917&#34;&gt;#78917&lt;/a&gt;: &lt;code&gt;TINYINT(1)&lt;/code&gt; values start being returned as &lt;code&gt;sbyte&lt;/code&gt; after &lt;code&gt;NULL&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=81650&#34;&gt;#81650&lt;/a&gt;: &lt;code&gt;Server&lt;/code&gt; connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=84220&#34;&gt;#84220&lt;/a&gt;: Cannot call a stored procedure with &lt;code&gt;.&lt;/code&gt; in its name&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
