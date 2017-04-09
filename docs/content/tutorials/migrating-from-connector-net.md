@@ -48,3 +48,4 @@ supported in MySqlConnector, see the [Connection Options](connection-options)
 * [#78760](https://bugs.mysql.com/bug.php?id=78760): Error when using tabs and newlines in SQL statements
 * [#78917](https://bugs.mysql.com/bug.php?id=78917): `TINYINT(1)` values start being returned as `sbyte` after `NULL`
 * [#81650](https://bugs.mysql.com/bug.php?id=81650): `Server` connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds
+* [#84220](https://bugs.mysql.com/bug.php?id=84220): Cannot call a stored procedure with `.` in its name

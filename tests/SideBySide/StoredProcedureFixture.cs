@@ -80,6 +80,11 @@ namespace SideBySide
 					END WHILE;
 					SET high = high + 1;
 				end;");
+			Connection.Execute(@"drop procedure if exists `dotted.name`;
+				create procedure `dotted.name`()
+				begin
+					select 1, 2, 3;
+				end;");
 		}
 	}
 }

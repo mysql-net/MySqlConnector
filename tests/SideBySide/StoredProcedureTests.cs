@@ -337,6 +337,31 @@ namespace SideBySide
 			}
 		}
 
+		[Theory
+#if BASELINE
+			(Skip = "https://bugs.mysql.com/bug.php?id=84220")
+#endif
+		]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task DottedName(bool useDatabaseName)
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = (useDatabaseName ? $"{m_database.Connection.Database}." : "") + "`dotted.name`";
+				cmd.CommandType = CommandType.StoredProcedure;
+				using (var reader = await cmd.ExecuteReaderAsync())
+				{
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal(1, reader.GetInt32(0));
+					Assert.Equal(2, reader.GetInt32(1));
+					Assert.Equal(3, reader.GetInt32(2));
+					Assert.False(await reader.ReadAsync());
+					Assert.False(await reader.NextResultAsync());
+				}
+			}
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }
