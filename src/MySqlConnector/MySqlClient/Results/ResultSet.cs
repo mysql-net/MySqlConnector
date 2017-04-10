@@ -16,7 +16,7 @@ namespace MySql.Data.MySqlClient.Results
 			DataReader = dataReader;
 		}
 
-		public async Task<ResultSet> ReadResultSetHeaderAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async Task<ResultSet> ReadResultSetHeaderAsync(IOBehavior ioBehavior)
 		{
 			// ResultSet can be re-used, so initialize everything
 			BufferState = ResultSetState.None;
@@ -34,7 +34,7 @@ namespace MySql.Data.MySqlClient.Results
 			{
 				while (true)
 				{
-					var payload = await Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					var payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 
 					var firstByte = payload.HeaderByte;
 					if (firstByte == OkPayload.Signature)
@@ -63,7 +63,7 @@ namespace MySql.Data.MySqlClient.Results
 								while ((byteCount = await stream.ReadAsync(readBuffer, 0, readBuffer.Length).ConfigureAwait(false)) > 0)
 								{
 									payload = new PayloadData(new ArraySegment<byte>(readBuffer, 0, byteCount));
-									await Session.SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+									await Session.SendReplyAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
 								}
 							}
 						}
@@ -73,7 +73,7 @@ namespace MySql.Data.MySqlClient.Results
 							ReadResultSetHeaderException = new MySqlException("Error during LOAD DATA LOCAL INFILE", ex);
 						}
 
-						await Session.SendReplyAsync(EmptyPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
+						await Session.SendReplyAsync(EmptyPayload.Create(), ioBehavior, CancellationToken.None).ConfigureAwait(false);
 					}
 					else
 					{
@@ -85,11 +85,11 @@ namespace MySql.Data.MySqlClient.Results
 
 						for (var column = 0; column < ColumnDefinitions.Length; column++)
 						{
-							payload = await Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+							payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 							ColumnDefinitions[column] = ColumnDefinitionPayload.Create(payload);
 						}
 
-						payload = await Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 						EofPayload.Create(payload);
 
 						LastInsertId = -1;

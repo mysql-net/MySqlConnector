@@ -112,7 +112,7 @@ namespace MySql.Data.MySqlClient
 			{
 				try
 				{
-					m_resultSetBuffered = await resultSet.ReadResultSetHeaderAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+					m_resultSetBuffered = await resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
 					return m_resultSetBuffered;
 				}
 				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted)
@@ -224,17 +224,17 @@ namespace MySql.Data.MySqlClient
 		internal MySqlConnection Connection => Command?.Connection;
 		internal MySqlSession Session => Command?.Connection.Session;
 
-		internal static async Task<MySqlDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		internal static async Task<MySqlDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, IOBehavior ioBehavior)
 		{
 			var dataReader = new MySqlDataReader(command, behavior);
 			command.Connection.Session.SetActiveReader(dataReader);
 
 			try
 			{
-				await dataReader.ReadFirstResultSetAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				await dataReader.ReadFirstResultSetAsync(ioBehavior).ConfigureAwait(false);
 				if (command.Connection.BufferResultSets)
 				{
-					while (await dataReader.BufferNextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false) != null)
+					while (await dataReader.BufferNextResultAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false) != null)
 					{
 					}
 				}
@@ -252,9 +252,9 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		internal async Task ReadFirstResultSetAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		internal async Task ReadFirstResultSetAsync(IOBehavior ioBehavior)
 		{
-			m_resultSet = await new ResultSet(this).ReadResultSetHeaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			m_resultSet = await new ResultSet(this).ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
 			ActivateResultSet(m_resultSet);
 			m_resultSetBuffered = m_resultSet;
 		}

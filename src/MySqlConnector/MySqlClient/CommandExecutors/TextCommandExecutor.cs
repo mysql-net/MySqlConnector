@@ -65,7 +65,7 @@ namespace MySql.Data.MySqlClient.CommandExecutors
 				try
 				{
 					await m_command.Connection.Session.SendAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
-					return await MySqlDataReader.CreateAsync(m_command, behavior, ioBehavior, CancellationToken.None).ConfigureAwait(false);
+					return await MySqlDataReader.CreateAsync(m_command, behavior, ioBehavior).ConfigureAwait(false);
 				}
 				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
 				{
