@@ -108,8 +108,20 @@ namespace MySql.Data.MySqlClient
 
 		private async Task<ResultSet> ScanResultSetAsyncAwaited(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
 		{
-			m_resultSetBuffered = await resultSet.ReadResultSetHeaderAsync(ioBehavior, cancellationToken);
-			return m_resultSetBuffered;
+			using (cancellationToken.Register(Command.Cancel))
+			{
+				try
+				{
+					m_resultSetBuffered = await resultSet.ReadResultSetHeaderAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+					return m_resultSetBuffered;
+				}
+				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted)
+				{
+					m_resultSetBuffered = null;
+					cancellationToken.ThrowIfCancellationRequested();
+					throw;
+				}
+			}
 		}
 
 		public override string GetName(int ordinal) => GetResultSet().GetName(ordinal);

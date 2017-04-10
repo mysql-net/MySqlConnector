@@ -162,12 +162,15 @@ namespace MySql.Data.MySqlClient.Results
 			if (BufferState == ResultSetState.HasMoreData || BufferState == ResultSetState.NoMoreData || BufferState == ResultSetState.None)
 				return new ValueTask<Row>((Row)null);
 
-			var payloadValueTask = Session.ReceiveReplyAsync(ioBehavior, cancellationToken);
-			return payloadValueTask.IsCompletedSuccessfully
-				? new ValueTask<Row>(ScanRowAsyncRemainder(payloadValueTask.Result))
-				: new ValueTask<Row>(ScanRowAsyncAwaited(payloadValueTask.AsTask()));
+			using (cancellationToken.Register(Command.Cancel))
+			{
+				var payloadValueTask = Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None);
+				return payloadValueTask.IsCompletedSuccessfully
+					? new ValueTask<Row>(ScanRowAsyncRemainder(payloadValueTask.Result))
+					: new ValueTask<Row>(ScanRowAsyncAwaited(payloadValueTask.AsTask(), cancellationToken));
+			}
 
-			async Task<Row> ScanRowAsyncAwaited(Task<PayloadData> payloadTask)
+			async Task<Row> ScanRowAsyncAwaited(Task<PayloadData> payloadTask, CancellationToken token)
 			{
 				try
 				{
@@ -176,6 +179,7 @@ namespace MySql.Data.MySqlClient.Results
 				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted)
 				{
 					BufferState = State = ResultSetState.NoMoreData;
+					token.ThrowIfCancellationRequested();
 					throw;
 				}
 			}
