@@ -581,6 +581,59 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			}
 		}
 
+		[Fact]
+		public void ParameterDefaults()
+		{
+			var parameter = new MySqlParameter();
+			Assert.Equal(DbType.AnsiString, parameter.DbType);
+			Assert.Equal(ParameterDirection.Input, parameter.Direction);
+			Assert.False(parameter.IsNullable);
+			Assert.Null(parameter.ParameterName);
+			Assert.Equal(0, parameter.Precision);
+			Assert.Equal(0, parameter.Scale);
+			Assert.Equal(0, parameter.Size);
+			Assert.Null(parameter.Value);
+		}
+
+		[Fact]
+		public void InputOutputParameter()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "set @param = 1234";
+
+				cmd.Parameters.Add(new MySqlParameter
+				{
+					ParameterName = "@param",
+					Direction = ParameterDirection.InputOutput,
+					Value = 123,
+				});
+
+				Assert.Throws<MySqlException>(() => cmd.ExecuteNonQuery());
+
+				// Issue #231: Assert.Equal(1234, cmd.Parameters["@param"].Value);
+			}
+		}
+
+		[Fact]
+		public void OutputParameter()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "set @param = 1234";
+
+				cmd.Parameters.Add(new MySqlParameter
+				{
+					ParameterName = "@param",
+					Direction = ParameterDirection.Output,
+				});
+
+				Assert.Throws<MySqlException>(() => cmd.ExecuteNonQuery());
+
+				// Issue #231: Assert.Equal(1234, cmd.Parameters["@param"].Value);
+			}
+		}
+
 		class BoolTest
 		{
 			public int Id { get; set; }

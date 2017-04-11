@@ -56,6 +56,8 @@ namespace MySql.Data.MySqlClient.CommandExecutors
 				statementPreparerOptions |= StatementPreparerOptions.AllowUserVariables;
 			if (m_command.Connection.OldGuids)
 				statementPreparerOptions |= StatementPreparerOptions.OldGuids;
+			if (m_command.CommandType == CommandType.StoredProcedure)
+				statementPreparerOptions |= StatementPreparerOptions.AllowOutputParameters;
 			var preparer = new MySqlStatementPreparer(commandText, parameterCollection, statementPreparerOptions);
 			var payload = new PayloadData(preparer.ParseAndBindParameters());
 			try
