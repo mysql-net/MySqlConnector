@@ -22,6 +22,7 @@ Version History
 ### 0.16.0
 
 * Implement `MySqlParameterCollection.AddWithValue`: [#127](https://github.com/mysql-net/MySqlConnector/issues/127).
+* Thanks to [michi84o](https://github.com/michi84o) for contributions to this release.
 
 ### 0.15.2
 
@@ -47,14 +48,17 @@ Version History
 ### 0.13.0
 
 * Add `MySqlBulkLoader`: [#15](https://github.com/mysql-net/MySqlConnector/issues/15).
+* Thanks to [gitsno](https://github.com/michi84o) for contributions to this release.
 
 ### 0.12.0
 
 * Add support for `DateTimeOffset`: [#172](https://github.com/mysql-net/MySqlConnector/issues/172), [#175](https://github.com/mysql-net/MySqlConnector/issues/175).
+* Thanks to [Sébastien Ros](https://github.com/sebastienros) for contributions to this release.
 
 ### 0.11.6
 
 * Fix `PlatformNotSupportedException` on AWS Lambda: [#170](https://github.com/mysql-net/MySqlConnector/issues/170).
+* Thanks to [Sebastian](https://github.com/SebastianC) for contributions to this release.
 
 ### 0.11.5
 
@@ -157,6 +161,7 @@ Version History
 ### 0.2.0
 
 * Add `MySqlConnectionStringBuilder.ForceSynchronous`: [#91](https://github.com/mysql-net/MySqlConnector/issues/91).
+* Thanks to [Ed Ball](https://github.com/ejball) for contributions to this release.
 
 ### 0.1.0
 
