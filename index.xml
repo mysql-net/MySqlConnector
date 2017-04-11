@@ -526,6 +526,7 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;Implement &lt;code&gt;MySqlParameterCollection.AddWithValue&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/127&#34;&gt;#127&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Thanks to &lt;a href=&#34;https://github.com/michi84o&#34;&gt;michi84o&lt;/a&gt; for contributions to this release.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h3 id=&#34;0-15-2&#34;&gt;0.15.2&lt;/h3&gt;
@@ -563,18 +564,21 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;Add &lt;code&gt;MySqlBulkLoader&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/15&#34;&gt;#15&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Thanks to &lt;a href=&#34;https://github.com/michi84o&#34;&gt;gitsno&lt;/a&gt; for contributions to this release.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h3 id=&#34;0-12-0&#34;&gt;0.12.0&lt;/h3&gt;
 
 &lt;ul&gt;
 &lt;li&gt;Add support for &lt;code&gt;DateTimeOffset&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/172&#34;&gt;#172&lt;/a&gt;, &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/175&#34;&gt;#175&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Thanks to &lt;a href=&#34;https://github.com/sebastienros&#34;&gt;Sébastien Ros&lt;/a&gt; for contributions to this release.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h3 id=&#34;0-11-6&#34;&gt;0.11.6&lt;/h3&gt;
 
 &lt;ul&gt;
 &lt;li&gt;Fix &lt;code&gt;PlatformNotSupportedException&lt;/code&gt; on AWS Lambda: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/170&#34;&gt;#170&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Thanks to &lt;a href=&#34;https://github.com/SebastianC&#34;&gt;Sebastian&lt;/a&gt; for contributions to this release.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h3 id=&#34;0-11-5&#34;&gt;0.11.5&lt;/h3&gt;
@@ -728,6 +732,7 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;Add &lt;code&gt;MySqlConnectionStringBuilder.ForceSynchronous&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/91&#34;&gt;#91&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Thanks to &lt;a href=&#34;https://github.com/ejball&#34;&gt;Ed Ball&lt;/a&gt; for contributions to this release.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h3 id=&#34;0-1-0&#34;&gt;0.1.0&lt;/h3&gt;
