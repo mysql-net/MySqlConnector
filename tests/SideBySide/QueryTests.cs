@@ -84,9 +84,37 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
 				cmd.CommandText = @"select id from query_invalid_sql limit 1 where id is not null";
-				await Assert.ThrowsAsync<MySqlException>(() => cmd.ExecuteNonQueryAsync());
-				await Assert.ThrowsAsync<MySqlException>(() => cmd.ExecuteReaderAsync());
-				await Assert.ThrowsAsync<MySqlException>(() => cmd.ExecuteScalarAsync());
+				try
+				{
+					await cmd.ExecuteNonQueryAsync();
+					Assert.True(false, "Exception should have been thrown.");
+				}
+				catch (MySqlException ex)
+				{
+					Assert.Equal((int) MySqlErrorCode.ParseError, ex.Number);
+				}
+
+				try
+				{
+					using (var reader = await cmd.ExecuteReaderAsync())
+					{
+					}
+					Assert.True(false, "Exception should have been thrown.");
+				}
+				catch (MySqlException ex)
+				{
+					Assert.Equal((int) MySqlErrorCode.ParseError, ex.Number);
+				}
+
+				try
+				{
+					await cmd.ExecuteScalarAsync();
+					Assert.True(false, "Exception should have been thrown.");
+				}
+				catch (MySqlException ex)
+				{
+					Assert.Equal((int) MySqlErrorCode.ParseError, ex.Number);
+				}
 			}
 
 			using (var cmd = m_database.Connection.CreateCommand())

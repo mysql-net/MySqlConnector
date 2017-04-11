@@ -48,11 +48,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public override void Cancel()
-		{
-			// documentation says this shouldn't throw (but just fail silently), but for now make it explicit that this doesn't work
-			throw new NotSupportedException("Use the Async overloads with a CancellationToken.");
-		}
+		public override void Cancel() => Connection.Cancel(this);
 
 		public override int ExecuteNonQuery() =>
 			ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -177,8 +173,6 @@ namespace MySql.Data.MySqlClient
 				throw new InvalidOperationException("The transaction associated with this command is not the connection's active transaction.");
 			if (string.IsNullOrWhiteSpace(CommandText))
 				throw new InvalidOperationException("CommandText must be specified");
-			if (Connection.ActiveReader != null)
-				throw new MySqlException("There is already an open DataReader associated with this Connection which must be closed first.");
 		}
 
 		internal void ReaderClosed() => (m_commandExecutor as StoredProcedureCommandExecutor)?.SetParams();

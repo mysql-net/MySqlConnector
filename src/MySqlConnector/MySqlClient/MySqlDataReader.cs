@@ -108,8 +108,20 @@ namespace MySql.Data.MySqlClient
 
 		private async Task<ResultSet> ScanResultSetAsyncAwaited(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
 		{
-			m_resultSetBuffered = await resultSet.ReadResultSetHeaderAsync(ioBehavior, cancellationToken);
-			return m_resultSetBuffered;
+			using (cancellationToken.Register(Command.Cancel))
+			{
+				try
+				{
+					m_resultSetBuffered = await resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
+					return m_resultSetBuffered;
+				}
+				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted)
+				{
+					m_resultSetBuffered = null;
+					cancellationToken.ThrowIfCancellationRequested();
+					throw;
+				}
+			}
 		}
 
 		public override string GetName(int ordinal) => GetResultSet().GetName(ordinal);
@@ -212,22 +224,37 @@ namespace MySql.Data.MySqlClient
 		internal MySqlConnection Connection => Command?.Connection;
 		internal MySqlSession Session => Command?.Connection.Session;
 
-		internal static async Task<MySqlDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		internal static async Task<MySqlDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, IOBehavior ioBehavior)
 		{
 			var dataReader = new MySqlDataReader(command, behavior);
-			await dataReader.ReadFirstResultSetAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			command.Connection.ActiveReader = dataReader;
-			if (command.Connection.BufferResultSets)
+			command.Connection.Session.SetActiveReader(dataReader);
+
+			try
 			{
-				while (await dataReader.BufferNextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false) != null);
-				command.Connection.ActiveReader = null;
+				await dataReader.ReadFirstResultSetAsync(ioBehavior).ConfigureAwait(false);
+				if (command.Connection.BufferResultSets)
+				{
+					while (await dataReader.BufferNextResultAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false) != null)
+					{
+					}
+				}
+				return dataReader;
 			}
-			return dataReader;
+			catch (Exception)
+			{
+				dataReader.Dispose();
+				throw;
+			}
+			finally
+			{
+				if (command.Connection.BufferResultSets)
+					command.Connection.Session.FinishQuerying();
+			}
 		}
 
-		internal async Task ReadFirstResultSetAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		internal async Task ReadFirstResultSetAsync(IOBehavior ioBehavior)
 		{
-			m_resultSet = await new ResultSet(this).ReadResultSetHeaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			m_resultSet = await new ResultSet(this).ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
 			ActivateResultSet(m_resultSet);
 			m_resultSetBuffered = m_resultSet;
 		}
@@ -242,16 +269,24 @@ namespace MySql.Data.MySqlClient
 		{
 			if (Command != null)
 			{
-				while (NextResult())
+				try
 				{
+					while (NextResult())
+					{
+					}
 				}
+				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted)
+				{
+					// ignore "Query execution was interrupted" exceptions when closing a data reader
+				}
+
 				m_resultSet = null;
 				m_resultSetBuffered = null;
 				m_nextResultSetBuffer.Clear();
 
 				var connection = Command.Connection;
-				if (connection.ActiveReader == this)
-					connection.ActiveReader = null;
+				if (!connection.BufferResultSets)
+					connection.Session.FinishQuerying();
 				Command.ReaderClosed();
 				if ((m_behavior & CommandBehavior.CloseConnection) != 0)
 				{
