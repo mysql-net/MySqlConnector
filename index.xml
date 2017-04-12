@@ -380,11 +380,8 @@ please refer to its documentation.&lt;/p&gt;
 &lt;h1 id=&#34;known-issues&#34;&gt;Known Issues&lt;/h1&gt;
 
 &lt;ul&gt;
-&lt;li&gt;The behaviour of cancellation is not well-defined in this release; cancelling a query
-may leave the &lt;code&gt;MySqlConnection&lt;/code&gt; in an unusable state.&lt;/li&gt;
 &lt;li&gt;Not all MySQL data types are supported.&lt;/li&gt;
-&lt;li&gt;Many &lt;code&gt;MySql.Data&lt;/code&gt; connection string settings are not supported by this library. See
-&lt;a href=&#34;connection-options/&#34;&gt;Connection Options&lt;/a&gt; for a list of supported options.&lt;/li&gt;
+&lt;li&gt;Many &lt;code&gt;MySql.Data&lt;/code&gt; connection string settings are not supported by this library. See &lt;a href=&#34;connection-options/&#34;&gt;Connection Options&lt;/a&gt; for a list of supported options.&lt;/li&gt;
 &lt;li&gt;Only the &lt;code&gt;mysql_native_password&lt;/code&gt; and &lt;code&gt;mysql_old_password&lt;/code&gt; authentication plugins are supported.&lt;/li&gt;
 &lt;/ul&gt;
 </description>
@@ -513,6 +510,19 @@ please refer to its documentation.&lt;/p&gt;
       <description>
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
+
+&lt;h3 id=&#34;0-17-0&#34;&gt;0.17.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Implement cancellation of the active reader: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/3&#34;&gt;#3&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Add &lt;code&gt;MySqlErrorCode&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/232&#34;&gt;#232&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Implement a connection pool reaper to close idle connections: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/217&#34;&gt;#217&lt;/a&gt;.
+
+&lt;ul&gt;
+&lt;li&gt;Add &lt;code&gt;ConnectionIdleTimeout&lt;/code&gt; connection string option: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/218&#34;&gt;#218&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Implement &lt;code&gt;ConnectionLifeTime&lt;/code&gt; connection string option: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/212&#34;&gt;#212&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;h3 id=&#34;0-16-2&#34;&gt;0.16.2&lt;/h3&gt;
 
