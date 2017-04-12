@@ -52,13 +52,51 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void ConnectBadDatabase()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.Database = "wrong_database";
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				try
+				{
+					connection.Open();
+					Assert.True(false);
+				}
+				catch (MySqlException ex)
+				{
+#if BASELINE
+					// https://bugs.mysql.com/bug.php?id=78426
+					Assert.NotNull(ex);
+#else
+					Assert.Equal((int) MySqlErrorCode.UnknownDatabase, ex.Number);
+#endif
+				}
+				Assert.Equal(ConnectionState.Closed, connection.State);
+			}
+		}
+
+		[Fact]
 		public void ConnectBadPassword()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.Password = "wrong";
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
-				Assert.Throws<MySqlException>(() => connection.Open());
+				try
+				{
+					connection.Open();
+					Assert.True(false);
+				}
+				catch (MySqlException ex)
+				{
+#if BASELINE
+					// https://bugs.mysql.com/bug.php?id=73610
+					Assert.NotNull(ex);
+#else
+					Assert.Equal((int) MySqlErrorCode.AccessDenied, ex.Number);
+#endif
+				}
 				Assert.Equal(ConnectionState.Closed, connection.State);
 			}
 		}
