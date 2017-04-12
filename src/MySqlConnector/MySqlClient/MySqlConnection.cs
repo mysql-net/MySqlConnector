@@ -20,6 +20,11 @@ namespace MySql.Data.MySqlClient
 
 		public MySqlConnection(string connectionString) => ConnectionString = connectionString;
 
+		public MySqlConnection(MySqlConnectionStringBuilder connectionStringBuilder)
+		{
+			SetConnectionSettings(connectionStringBuilder);
+		}
+
 		public new MySqlTransaction BeginTransaction() => (MySqlTransaction) base.BeginTransaction();
 
 		public Task<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
@@ -144,8 +149,8 @@ namespace MySql.Data.MySqlClient
 			{
 				if (m_hasBeenOpened)
 					throw new MySqlException("Cannot change connection string on a connection that has already been opened.");
-				m_connectionStringBuilder = new MySqlConnectionStringBuilder(value);
-				m_connectionSettings = new ConnectionSettings(m_connectionStringBuilder);
+
+				SetConnectionSettings(new MySqlConnectionStringBuilder(value));
 			}
 		}
 
@@ -347,6 +352,12 @@ namespace MySql.Data.MySqlClient
 				CurrentTransaction.Dispose();
 				CurrentTransaction = null;
 			}
+		}
+
+		private void SetConnectionSettings(MySqlConnectionStringBuilder connectionStringBuilder)
+		{
+			m_connectionStringBuilder = connectionStringBuilder;
+			m_connectionSettings = new ConnectionSettings(m_connectionStringBuilder);
 		}
 
 		MySqlConnectionStringBuilder m_connectionStringBuilder;
