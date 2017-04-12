@@ -218,8 +218,8 @@ namespace MySql.Data.MySqlClient
 		internal MySqlConnectionStringBuilder Clone()
 		{
 			var clone = new MySqlConnectionStringBuilder();
-			foreach (KeyValuePair<string, object> a in this)
-				clone.Add(a.Key, a.Value);
+			foreach (KeyValuePair<string, object> option in this)
+				clone.Add(option.Key, option.Value);
 
 			return clone;
 		}
