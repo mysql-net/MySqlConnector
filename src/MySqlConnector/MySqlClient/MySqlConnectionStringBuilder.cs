@@ -215,6 +215,15 @@ namespace MySql.Data.MySqlClient
 			return m_cachedConnectionStringWithoutPassword;
 		}
 
+		internal MySqlConnectionStringBuilder Clone()
+		{
+			var clone = new MySqlConnectionStringBuilder();
+			foreach (KeyValuePair<string, object> a in this)
+				clone.Add(a.Key, a.Value);
+
+			return clone;
+		}
+
 		string m_cachedConnectionString;
 		string m_cachedConnectionStringWithoutPassword;
 	}

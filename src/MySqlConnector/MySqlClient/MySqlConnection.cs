@@ -22,7 +22,10 @@ namespace MySql.Data.MySqlClient
 
 		public MySqlConnection(MySqlConnectionStringBuilder connectionStringBuilder)
 		{
-			SetConnectionSettings(connectionStringBuilder);
+			if (connectionStringBuilder == null)
+				throw new ArgumentNullException(nameof(connectionStringBuilder));
+
+			SetConnectionSettings(connectionStringBuilder.Clone());
 		}
 
 		public new MySqlTransaction BeginTransaction() => (MySqlTransaction) base.BeginTransaction();
