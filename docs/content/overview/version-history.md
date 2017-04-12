@@ -11,6 +11,14 @@ weight: 30
 Version History
 ===============
 
+### 0.17.0
+
+* Implement cancellation of the active reader: [#3](https://github.com/mysql-net/MySqlConnector/issues/3).
+* Add `MySqlErrorCode`: [#232](https://github.com/mysql-net/MySqlConnector/issues/232).
+* Implement a connection pool reaper to close idle connections: [#217](https://github.com/mysql-net/MySqlConnector/issues/217).
+ * Add `ConnectionIdleTimeout` connection string option: [#218](https://github.com/mysql-net/MySqlConnector/issues/218).
+* Implement `ConnectionLifeTime` connection string option: [#212](https://github.com/mysql-net/MySqlConnector/issues/212).
+
 ### 0.16.2
 
 * Fix exceptions when server resets the connection: [#221](https://github.com/mysql-net/MySqlConnector/issues/221).
