@@ -13,7 +13,19 @@ namespace MySql.Data.MySqlClient
 
 		public override DbType DbType { get; set; }
 
-		public override ParameterDirection Direction { get; set; }
+		public override ParameterDirection Direction
+		{
+			get => m_direction.GetValueOrDefault(ParameterDirection.Input);
+			set
+			{
+				if (value != ParameterDirection.Input && value != ParameterDirection.Output &&
+					value != ParameterDirection.InputOutput && value != ParameterDirection.ReturnValue)
+				{
+					throw new ArgumentOutOfRangeException(nameof(value), "{0} is not a supported value for ParameterDirection".FormatInvariant(value));
+				}
+				m_direction = value;
+			}
+		}
 
 		public override bool IsNullable { get; set; }
 
@@ -64,7 +76,7 @@ namespace MySql.Data.MySqlClient
 		private MySqlParameter(MySqlParameter other, string parameterName)
 		{
 			DbType = other.DbType;
-			Direction = other.Direction;
+			m_direction = other.m_direction;
 			IsNullable = other.IsNullable;
 			Size = other.Size;
 			ParameterName = parameterName ?? other.ParameterName;
@@ -74,6 +86,8 @@ namespace MySql.Data.MySqlClient
 			Scale = other.Scale;
 #endif
 		}
+
+		internal bool HasSetDirection => m_direction.HasValue;
 
 		internal string NormalizedParameterName { get; private set; }
 
@@ -200,5 +214,6 @@ namespace MySql.Data.MySqlClient
 		}
 
 		string m_name;
+		ParameterDirection? m_direction;
 	}
 }

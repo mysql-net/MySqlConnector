@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.IO;
 using System.Text;
 using MySql.Data.Serialization;
@@ -67,6 +68,9 @@ namespace MySql.Data.MySqlClient
 			private void DoAppendParameter(int parameterIndex, int textIndex, int textLength)
 			{
 				AppendString(m_preparer.m_commandText, m_lastIndex, textIndex - m_lastIndex);
+				var parameter = m_preparer.m_parameters[parameterIndex];
+				if (parameter.Direction != ParameterDirection.Input && (m_preparer.m_options & StatementPreparerOptions.AllowOutputParameters) == 0)
+					throw new MySqlException("Only ParameterDirection.Input is supported when CommandType is Text (parameter name: {0})".FormatInvariant(parameter.ParameterName));
 				m_preparer.m_parameters[parameterIndex].AppendSqlString(m_writer, m_preparer.m_options);
 				m_lastIndex = textIndex + textLength;
 			}

@@ -75,7 +75,7 @@ namespace MySql.Data.MySqlClient.Caches
 					alignParam = index >= 0 ? parameterCollection[index] : throw new ArgumentException($"Parameter '{cachedParam.Name}' not found in the collection.");
 				}
 
-				if (alignParam.Direction == default(ParameterDirection))
+				if (!alignParam.HasSetDirection)
 					alignParam.Direction = cachedParam.Direction;
 				if (alignParam.DbType == default(DbType))
 					alignParam.DbType = cachedParam.DbType;
