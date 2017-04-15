@@ -39,8 +39,16 @@ MySqlConnector has some different default connection string options:
 Some command line options that are supported in Connector/NET are not supported in MySqlConnector.  For a full list of options that are
 supported in MySqlConnector, see the [Connection Options](connection-options)
 
+### TransactionScope
+
+MySqlConnector adds full distributed transaction support (for client code using [`TransactionScope`](https://msdn.microsoft.com/en-us/library/system.transactions.transactionscope.aspx)),
+while Connector/NET uses regular database transactions. As a result, code that uses `TransactionScope`
+may execute differently with MySqlConnector. To get Connector/NET-compatible behavior, remove
+`TransactionScope` and use `BeginTransaction`/`Commit` directly.
+
 ### Bugs present in Connector/NET that are fixed in MySqlConnector
 
+* [#37283](https://bugs.mysql.com/bug.php?id=37283), [#70587](https://bugs.mysql.com/bug.php?id=70587): Distributed transactions are not supported
 * [#66476](https://bugs.mysql.com/bug.php?id=66476): Connection pool uses queue instead of stack
 * [#70111](https://bugs.mysql.com/bug.php?id=70111): `Async` methods execute synchronously
 * [#70686](https://bugs.mysql.com/bug.php?id=70686): `TIME(3)` and `TIME(6)` fields serialize milliseconds incorrectly

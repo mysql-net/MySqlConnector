@@ -37,6 +37,10 @@ namespace MySql.Data.MySqlClient
 				throw new InvalidOperationException("Connection is not open.");
 			if (CurrentTransaction != null)
 				throw new InvalidOperationException("Transactions may not be nested.");
+#if !NETSTANDARD1_3
+			if (m_xaTransaction != null)
+				throw new InvalidOperationException("Cannot begin a transaction when already enlisted in a transaction.");
+#endif
 
 			string isolationLevelValue;
 			switch (isolationLevel)
@@ -76,8 +80,32 @@ namespace MySql.Data.MySqlClient
 #if !NETSTANDARD1_3
 		public override void EnlistTransaction(System.Transactions.Transaction transaction)
 		{
-			throw new NotSupportedException("System.Transactions.Transaction is not supported. Use BeginTransaction instead.");
+			if (m_xaTransaction != null)
+				throw new MySqlException("Already enlisted in a Transaction.");
+			if (CurrentTransaction != null)
+				throw new InvalidOperationException("Can't enlist in a Transaction when there is an active MySqlTransaction.");
+
+			if (transaction != null)
+			{
+				m_xaTransaction = new MySqlXaTransaction(this);
+				m_xaTransaction.Start(transaction);
+			}
 		}
+
+		internal void UnenlistTransaction(MySqlXaTransaction xaTransaction)
+		{
+			if (!object.ReferenceEquals(xaTransaction, m_xaTransaction))
+				throw new InvalidOperationException("Active transaction is not the one being unenlisted from.");
+			m_xaTransaction = null;
+
+			if (m_shouldCloseWhenUnenlisted)
+			{
+				m_shouldCloseWhenUnenlisted = false;
+				Close();
+			}
+		}
+
+		MySqlXaTransaction m_xaTransaction;
 #endif
 
 		public override void Close() => DoClose();
@@ -111,10 +139,6 @@ namespace MySql.Data.MySqlClient
 			VerifyNotDisposed();
 			if (State != ConnectionState.Closed)
 				throw new InvalidOperationException("Cannot Open when State is {0}.".FormatInvariant(State));
-#if !NETSTANDARD1_3
-			if (System.Transactions.Transaction.Current != null)
-				throw new NotSupportedException("Ambient transactions are not supported. Use BeginTransaction instead.");
-#endif
 
 			SetState(ConnectionState.Connecting);
 
@@ -135,6 +159,11 @@ namespace MySql.Data.MySqlClient
 				SetState(ConnectionState.Closed);
 				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.", ex);
 			}
+
+#if !NETSTANDARD1_3
+			if (System.Transactions.Transaction.Current != null)
+				EnlistTransaction(System.Transactions.Transaction.Current);
+#endif
 		}
 
 		public override string ConnectionString
@@ -195,7 +224,7 @@ namespace MySql.Data.MySqlClient
 			}
 			finally
 			{
-				m_isDisposed = true;
+				m_isDisposed = !m_shouldCloseWhenUnenlisted;
 				base.Dispose(disposing);
 			}
 		}
@@ -316,6 +345,19 @@ namespace MySql.Data.MySqlClient
 
 		private void DoClose()
 		{
+#if !NETSTANDARD1_3
+			// If participating in a distributed transaction, keep the connection open so we can commit or rollback.
+			// This handles the common pattern of disposing a connection before disposing a TransactionScope (e.g., nested using blocks)
+			if (m_xaTransaction != null)
+			{
+				m_shouldCloseWhenUnenlisted = true;
+				return;
+			}
+#else
+			// fix "field is never assigned" compiler error
+			m_shouldCloseWhenUnenlisted = false;
+#endif
+
 			if (m_connectionState != ConnectionState.Closed)
 			{
 				try
@@ -355,6 +397,7 @@ namespace MySql.Data.MySqlClient
 		ConnectionState m_connectionState;
 		bool m_hasBeenOpened;
 		bool m_isDisposed;
+		bool m_shouldCloseWhenUnenlisted;
 		Dictionary<string, CachedProcedure> m_cachedProcedures;
 	}
 }
