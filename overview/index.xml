@@ -65,6 +65,15 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-18-0&#34;&gt;0.18.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Support &lt;a href=&#34;https://msdn.microsoft.com/en-us/library/ee818755.aspx&#34;&gt;&lt;code&gt;System.Transactions&lt;/code&gt; transaction processing&lt;/a&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/13&#34;&gt;#13&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Add &lt;code&gt;AutoEnlist&lt;/code&gt; connection string option: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/pull/241&#34;&gt;#241&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Throw better exception for unsupported &lt;code&gt;ParameterDirection&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/234&#34;&gt;#234&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fix &lt;code&gt;StackOverflowException&lt;/code&gt; reading a large blob: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/239&#34;&gt;#239&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-17-0&#34;&gt;0.17.0&lt;/h3&gt;
 
 &lt;ul&gt;

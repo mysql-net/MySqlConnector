@@ -196,9 +196,17 @@
 <p>Some command line options that are supported in Connector/NET are not supported in MySqlConnector.  For a full list of options that are
 supported in MySqlConnector, see the <a href="connection-options">Connection Options</a></p>
 
+<h3 id="transactionscope">TransactionScope</h3>
+
+<p>MySqlConnector adds full distributed transaction support (for client code using <a href="https://msdn.microsoft.com/en-us/library/system.transactions.transactionscope.aspx"><code>TransactionScope</code></a>),
+while Connector/NET uses regular database transactions. As a result, code that uses <code>TransactionScope</code>
+may execute differently with MySqlConnector. To get Connector/NET-compatible behavior, remove
+<code>TransactionScope</code> and use <code>BeginTransaction</code>/<code>Commit</code> directly.</p>
+
 <h3 id="bugs-present-in-connector-net-that-are-fixed-in-mysqlconnector">Bugs present in Connector/NET that are fixed in MySqlConnector</h3>
 
 <ul>
+<li><a href="https://bugs.mysql.com/bug.php?id=37283">#37283</a>, <a href="https://bugs.mysql.com/bug.php?id=70587">#70587</a>: Distributed transactions are not supported</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=66476">#66476</a>: Connection pool uses queue instead of stack</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=70111">#70111</a>: <code>Async</code> methods execute synchronously</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=70686">#70686</a>: <code>TIME(3)</code> and <code>TIME(6)</code> fields serialize milliseconds incorrectly</li>

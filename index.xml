@@ -425,9 +425,17 @@ please refer to its documentation.&lt;/p&gt;
 &lt;p&gt;Some command line options that are supported in Connector/NET are not supported in MySqlConnector.  For a full list of options that are
 supported in MySqlConnector, see the &lt;a href=&#34;connection-options&#34;&gt;Connection Options&lt;/a&gt;&lt;/p&gt;
 
+&lt;h3 id=&#34;transactionscope&#34;&gt;TransactionScope&lt;/h3&gt;
+
+&lt;p&gt;MySqlConnector adds full distributed transaction support (for client code using &lt;a href=&#34;https://msdn.microsoft.com/en-us/library/system.transactions.transactionscope.aspx&#34;&gt;&lt;code&gt;TransactionScope&lt;/code&gt;&lt;/a&gt;),
+while Connector/NET uses regular database transactions. As a result, code that uses &lt;code&gt;TransactionScope&lt;/code&gt;
+may execute differently with MySqlConnector. To get Connector/NET-compatible behavior, remove
+&lt;code&gt;TransactionScope&lt;/code&gt; and use &lt;code&gt;BeginTransaction&lt;/code&gt;/&lt;code&gt;Commit&lt;/code&gt; directly.&lt;/p&gt;
+
 &lt;h3 id=&#34;bugs-present-in-connector-net-that-are-fixed-in-mysqlconnector&#34;&gt;Bugs present in Connector/NET that are fixed in MySqlConnector&lt;/h3&gt;
 
 &lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=37283&#34;&gt;#37283&lt;/a&gt;, &lt;a href=&#34;https://bugs.mysql.com/bug.php?id=70587&#34;&gt;#70587&lt;/a&gt;: Distributed transactions are not supported&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=66476&#34;&gt;#66476&lt;/a&gt;: Connection pool uses queue instead of stack&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=70111&#34;&gt;#70111&lt;/a&gt;: &lt;code&gt;Async&lt;/code&gt; methods execute synchronously&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=70686&#34;&gt;#70686&lt;/a&gt;: &lt;code&gt;TIME(3)&lt;/code&gt; and &lt;code&gt;TIME(6)&lt;/code&gt; fields serialize milliseconds incorrectly&lt;/li&gt;
@@ -513,6 +521,15 @@ please refer to its documentation.&lt;/p&gt;
       <description>
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
+
+&lt;h3 id=&#34;0-18-0&#34;&gt;0.18.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Support &lt;a href=&#34;https://msdn.microsoft.com/en-us/library/ee818755.aspx&#34;&gt;&lt;code&gt;System.Transactions&lt;/code&gt; transaction processing&lt;/a&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/13&#34;&gt;#13&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Add &lt;code&gt;AutoEnlist&lt;/code&gt; connection string option: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/pull/241&#34;&gt;#241&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Throw better exception for unsupported &lt;code&gt;ParameterDirection&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/234&#34;&gt;#234&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fix &lt;code&gt;StackOverflowException&lt;/code&gt; reading a large blob: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/239&#34;&gt;#239&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;h3 id=&#34;0-17-0&#34;&gt;0.17.0&lt;/h3&gt;
 
