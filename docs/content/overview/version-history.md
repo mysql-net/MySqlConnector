@@ -11,6 +11,13 @@ weight: 30
 Version History
 ===============
 
+### 0.18.0
+
+* Support [`System.Transactions` transaction processing](https://msdn.microsoft.com/en-us/library/ee818755.aspx): [#13](https://github.com/mysql-net/MySqlConnector/issues/13).
+* Add `AutoEnlist` connection string option: [#241](https://github.com/mysql-net/MySqlConnector/pull/241).
+* Throw better exception for unsupported `ParameterDirection`: [#234](https://github.com/mysql-net/MySqlConnector/issues/234).
+* Fix `StackOverflowException` reading a large blob: [#239](https://github.com/mysql-net/MySqlConnector/issues/239).
+
 ### 0.17.0
 
 * Implement cancellation of the active reader: [#3](https://github.com/mysql-net/MySqlConnector/issues/3).

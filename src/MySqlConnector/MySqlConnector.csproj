@@ -3,9 +3,9 @@
   <PropertyGroup>
     <Title>MySQL Connector</Title>
     <Description>A fully async MySQL ADO.NET provider for .NET and .NET Core</Description>
-    <Copyright>Copyright 2016 Bradley Grainger</Copyright>
+    <Copyright>Copyright 2016–2017 Bradley Grainger</Copyright>
     <AssemblyTitle>Async MySQL Connector</AssemblyTitle>
-    <VersionPrefix>0.17.0</VersionPrefix>
+    <VersionPrefix>0.18.0</VersionPrefix>
     <Authors>Bradley Grainger;Caleb Lloyd</Authors>
     <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
