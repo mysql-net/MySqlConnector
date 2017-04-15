@@ -11,6 +11,7 @@ namespace MySql.Data.Tests
 		{
 			var csb = new MySqlConnectionStringBuilder();
 			Assert.Equal(false, csb.AllowUserVariables);
+			Assert.Equal(true, csb.AutoEnlist);
 			Assert.Equal(null, csb.CertificateFile);
 			Assert.Equal(null, csb.CertificatePassword);
 			Assert.Equal("", csb.CharacterSet);
@@ -54,35 +55,37 @@ namespace MySql.Data.Tests
 			var csb = new MySqlConnectionStringBuilder
 			{
 				ConnectionString = "Data Source=db-server;" +
-				                   "Initial Catalog=schema_name;" +
-				                   "Allow User Variables=true;" +
-				                   "certificate file=file.pfx;" +
-				                   "certificate password=Pass1234;" +
-				                   "Character Set=latin1;" +
-				                   "Compress=true;" +
-				                   "connect timeout=30;" +
-				                   "connection lifetime=15;" +
-				                   "ConnectionReset=false;" +
-				                   "Convert Zero Datetime=true;" +
+					"Initial Catalog=schema_name;" +
+					"Allow User Variables=true;" +
+					"auto enlist=False;" +
+					"certificate file=file.pfx;" +
+					"certificate password=Pass1234;" +
+					"Character Set=latin1;" +
+					"Compress=true;" +
+					"connect timeout=30;" +
+					"connection lifetime=15;" +
+					"ConnectionReset=false;" +
+					"Convert Zero Datetime=true;" +
 #if !BASELINE
-				                   "connectionidletimeout=30;" +
-				                   "bufferresultsets=true;" +
-				                   "forcesynchronous=true;" +
+					"connectionidletimeout=30;" +
+					"bufferresultsets=true;" +
+					"forcesynchronous=true;" +
 #endif
-				                   "Keep Alive=90;" +
-				                   "minpoolsize=5;" +
-				                   "maxpoolsize=15;" +
-				                   "OldGuids=true;" +
-				                   "persistsecurityinfo=yes;" +
-				                   "Pooling=no;" +
-				                   "Port=1234;" +
-				                   "pwd=Pass1234;" +
-				                   "Treat Tiny As Boolean=false;" +
-				                   "ssl mode=verifyca;" +
-				                   "Uid=username;" +
-				                   "useaffectedrows=false"
+					"Keep Alive=90;" +
+					"minpoolsize=5;" +
+					"maxpoolsize=15;" +
+					"OldGuids=true;" +
+					"persistsecurityinfo=yes;" +
+					"Pooling=no;" +
+					"Port=1234;" +
+					"pwd=Pass1234;" +
+					"Treat Tiny As Boolean=false;" +
+					"ssl mode=verifyca;" +
+					"Uid=username;" +
+					"useaffectedrows=false"
 			};
 			Assert.Equal(true, csb.AllowUserVariables);
+			Assert.Equal(false, csb.AutoEnlist);
 			Assert.Equal("file.pfx", csb.CertificateFile);
 			Assert.Equal("Pass1234", csb.CertificatePassword);
 			Assert.Equal("latin1", csb.CharacterSet);

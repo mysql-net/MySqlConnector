@@ -110,6 +110,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.AllowUserVariables.SetValue(this, value);
 		}
 
+		public bool AutoEnlist
+		{
+			get => MySqlConnectionStringOption.AutoEnlist.GetValue(this);
+			set => MySqlConnectionStringOption.AutoEnlist.SetValue(this, value);
+		}
+
 		public bool BufferResultSets
 		{
 			get => MySqlConnectionStringOption.BufferResultSets.GetValue(this);
@@ -243,6 +249,7 @@ namespace MySql.Data.MySqlClient
 
 		// Other Options
 		public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
+		public static readonly MySqlConnectionStringOption<bool> AutoEnlist;
 		public static readonly MySqlConnectionStringOption<bool> BufferResultSets;
 		public static readonly MySqlConnectionStringOption<string> CharacterSet;
 		public static readonly MySqlConnectionStringOption<uint> ConnectionTimeout;
@@ -344,6 +351,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(AllowUserVariables = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "AllowUserVariables", "Allow User Variables" },
 				defaultValue: false));
+
+			AddOption(AutoEnlist = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "AutoEnlist", "Auto Enlist" },
+				defaultValue: true));
 
 			AddOption(BufferResultSets = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "BufferResultSets", "Buffer Result Sets" },

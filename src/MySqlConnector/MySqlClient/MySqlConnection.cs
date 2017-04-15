@@ -161,7 +161,7 @@ namespace MySql.Data.MySqlClient
 			}
 
 #if !NETSTANDARD1_3
-			if (System.Transactions.Transaction.Current != null)
+			if (m_connectionSettings.AutoEnlist && System.Transactions.Transaction.Current != null)
 				EnlistTransaction(System.Transactions.Transaction.Current);
 #endif
 		}

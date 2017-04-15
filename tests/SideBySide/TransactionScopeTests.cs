@@ -195,6 +195,57 @@ namespace SideBySide
 			Assert.Equal(new[] { 1, 2 }, values);
 		}
 
+		[Fact]
+		public void AutoEnlistFalseWithCommit()
+		{
+			m_database.Connection.Execute(@"drop table if exists transaction_scope_test;
+				create table transaction_scope_test(value integer not null);");
+
+			using (var transactionScope = new TransactionScope())
+			using (var conn = new MySqlConnection(AppConfig.ConnectionString + ";auto enlist=false"))
+			{
+				conn.Open();
+				using (var dbTransaction = conn.BeginTransaction())
+				{
+					conn.Execute("insert into transaction_scope_test(value) values(1), (2);");
+
+					dbTransaction.Commit();
+					transactionScope.Complete();
+				}
+			}
+
+			var values = m_database.Connection.Query<int>(@"select value from transaction_scope_test order by value;").ToList();
+			Assert.Equal(new[] { 1, 2 }, values);
+		}
+
+		[Fact]
+		public void AutoEnlistFalseWithoutCommit()
+		{
+			m_database.Connection.Execute(@"drop table if exists transaction_scope_test;
+				create table transaction_scope_test(value integer not null);");
+
+			using (var transactionScope = new TransactionScope())
+			using (var conn = new MySqlConnection(AppConfig.ConnectionString + ";auto enlist=false"))
+			{
+				conn.Open();
+				using (var dbTransaction = conn.BeginTransaction())
+				{
+					conn.Execute("insert into transaction_scope_test(value) values(1), (2);");
+
+#if BASELINE
+					// With Connector/NET a MySqlTransaction can't roll back after TransactionScope has been completed;
+					// workaround is to explicitly dispose it first. In MySqlConnector (with AutoEnlist=false) they have
+					// independent lifetimes.
+					dbTransaction.Dispose();
+#endif
+					transactionScope.Complete();
+				}
+			}
+
+			var values = m_database.Connection.Query<int>(@"select value from transaction_scope_test order by value;").ToList();
+			Assert.Equal(new int[0], values);
+		}
+
 		[Fact
 #if BASELINE
 		(Skip = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")
