@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'Baseline' ">
-    <PackageReference Include="MySql.Data" Version="6.9.8" />
+    <PackageReference Include="MySql.Data" Version="6.9.9" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'Debug' ">
