@@ -41,9 +41,13 @@ namespace MySql.Data.Serialization
 			case CharacterSet.Utf8Mb4Binary:
 			case CharacterSet.Utf8Mb4GeneralCaseInsensitive:
 			case CharacterSet.Utf8Mb4UnicodeCaseInsensitive:
+			case CharacterSet.Utf8Mb4Unicode520CaseInsensitive:
+			case CharacterSet.Utf8Mb4Uca900AccentInsensitiveCaseInsensitive:
+			case CharacterSet.Utf8Mb4Uca900AccentSensitiveCaseSensitive:
 			case CharacterSet.Utf32Binary:
 			case CharacterSet.Utf32GeneralCaseInsensitive:
 			case CharacterSet.Utf32UnicodeCaseInsensitive:
+			case CharacterSet.Utf32Unicode520CaseInsensitive:
 				return 4;
 
 			default:
