@@ -1,3 +1,4 @@
+image: Visual Studio 2017
 services:
 - mysql
 build_script:

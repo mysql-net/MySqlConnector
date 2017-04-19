@@ -61,7 +61,7 @@ if (!(Test-Path $buildFolder)) {
     }
 }
 
-$dotnetVersion = "1.0.0"
+$dotnetVersion = "1.0.3"
 $dotnetChannel = "rel-1.0.0"
 $dotnetSharedRuntimeVersion = "1.1.1"
 $dotnetSharedRuntimeChannel = "rel-1.0.0"

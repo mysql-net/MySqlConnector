@@ -1,4 +1,5 @@
 # ignore output folders
+BenchmarkDotNet.Artifacts/
 bin/
 build/
 obj/

@@ -51,3 +51,12 @@ dotnet test tests\SideBySide\SideBySide.csproj -c Baseline
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
+
+echo "Building Benchmark"
+
+& "nuget.exe" restore tests\Benchmark\Benchmark.sln
+& "msbuild.exe" tests\Benchmark\Benchmark.sln /p:Configuration=Release
+if ($LASTEXITCODE -ne 0){
+    exit $LASTEXITCODE;
+}
+.\tests\Benchmark\bin\Release\Benchmark.exe
