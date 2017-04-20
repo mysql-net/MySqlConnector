@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 
 namespace MySql.Data.Serialization
 {
-	internal class PayloadData
+	internal struct PayloadData
 	{
 		public PayloadData(ArraySegment<byte> data)
 		{

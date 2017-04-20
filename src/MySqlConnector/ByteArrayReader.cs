@@ -2,7 +2,7 @@
 
 namespace MySql.Data
 {
-	internal sealed class ByteArrayReader
+	internal struct ByteArrayReader
 	{
 		public ByteArrayReader(byte[] buffer, int offset, int length)
 		{
@@ -118,6 +118,8 @@ namespace MySql.Data
 			byte encodedLength = m_buffer[m_offset++];
 			switch (encodedLength)
 			{
+			case 0xFB:
+				throw new FormatException("Length-encoded integer cannot have 0xFB prefix byte.");
 			case 0xFC:
 				return ReadFixedLengthUInt32(2);
 			case 0xFD:
@@ -129,6 +131,17 @@ namespace MySql.Data
 			default:
 				return encodedLength;
 			}
+		}
+
+		public int ReadLengthEncodedIntegerOrNull()
+		{
+			if (m_buffer[m_offset] == 0xFB)
+			{
+				// "NULL is sent as 0xfb" (https://dev.mysql.com/doc/internals/en/com-query-response.html#packet-ProtocolText::ResultsetRow)
+				m_offset++;
+				return -1;
+			}
+			return checked((int) ReadLengthEncodedInteger());
 		}
 
 		public ArraySegment<byte> ReadLengthEncodedByteString()

@@ -197,7 +197,7 @@ namespace MySql.Data.MySqlClient.Results
 				var reader = new ByteArrayReader(payload.ArraySegment);
 				for (var column = 0; column < m_dataOffsets.Length; column++)
 				{
-					var length = checked((int) ReadFieldLength(reader));
+					var length = reader.ReadLengthEncodedIntegerOrNull();
 					m_dataLengths[column] = length == -1 ? 0 : length;
 					m_dataOffsets[column] = length == -1 ? -1 : reader.Offset;
 					reader.Offset += m_dataLengths[column];
@@ -208,24 +208,6 @@ namespace MySql.Data.MySqlClient.Results
 				row.SetData(m_dataLengths, m_dataOffsets, payload.ArraySegment.Array);
 				m_rowBuffered = row;
 				return row;
-			}
-		}
-
-		private static long ReadFieldLength(ByteArrayReader reader)
-		{
-			var leadByte = reader.ReadByte();
-			switch (leadByte)
-			{
-				case 0xFB:
-					return -1;
-				case 0xFC:
-					return reader.ReadFixedLengthUInt32(2);
-				case 0xFD:
-					return reader.ReadFixedLengthUInt32(3);
-				case 0xFE:
-					return checked((long) reader.ReadFixedLengthUInt64(8));
-				default:
-					return leadByte;
 			}
 		}
 
