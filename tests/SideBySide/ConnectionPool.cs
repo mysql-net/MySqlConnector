@@ -123,7 +123,7 @@ namespace SideBySide
 				var stopwatch = Stopwatch.StartNew();
 				Assert.Throws<MySqlException>(() => extraConnection.Open());
 				stopwatch.Stop();
-				Assert.InRange(stopwatch.ElapsedMilliseconds, 4500, 5500);
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 4500, 6000);
 			}
 
 			foreach (var connection in connections)

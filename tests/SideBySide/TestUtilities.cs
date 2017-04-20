@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using Xunit;
 
@@ -19,6 +20,16 @@ namespace SideBySide
 				if (expected[i] != actual[i])
 					Assert.Equal(expected[i], actual[i]);
 			}
+		}
+
+		/// <summary>
+		/// Asserts that <paramref name="stopwatch"/> is in the range [minimumMilliseconds, minimumMilliseconds + lengthMilliseconds].
+		/// </summary>
+		/// <remarks>This method applies a scaling factor for delays encountered under Continuous Integration environments.</remarks>
+		public static void AssertDuration(Stopwatch stopwatch, int minimumMilliseconds, int lengthMilliseconds)
+		{
+			var elapsed = stopwatch.ElapsedMilliseconds;
+			Assert.InRange(elapsed, minimumMilliseconds, minimumMilliseconds + lengthMilliseconds * AppConfig.TimeoutDelayFactor);
 		}
 
 		public static Version ParseServerVersion(string serverVersion)

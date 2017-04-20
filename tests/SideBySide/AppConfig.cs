@@ -65,6 +65,10 @@ namespace SideBySide
 			return new MySqlConnectionStringBuilder(ConnectionString);
 		}
 
+		// tests can run extremely slowly on Appveyor (and slightly slower under Travis)
+		public static int TimeoutDelayFactor { get; } = Environment.GetEnvironmentVariable("APPVEYOR") == "True" ? 6 :
+			Environment.GetEnvironmentVariable("TRAVIS") == "true" ? 3 : 1;
+
 		private static string GetCodeRootPath()
 		{
 #if NET46

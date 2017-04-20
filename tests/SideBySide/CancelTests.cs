@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
@@ -112,7 +111,7 @@ namespace SideBySide
 						Assert.Equal((int) MySqlErrorCode.QueryInterrupted, ex.Number);
 					}
 					Assert.False(reader.NextResult());
-					Assert.InRange(stopwatch.ElapsedMilliseconds, 0, 1000 * c_ciDelayFactor);
+					TestUtilities.AssertDuration(stopwatch, 0, 1000);
 					Assert.InRange(rows, 0, 10000000);
 				}
 			}
@@ -174,7 +173,7 @@ namespace SideBySide
 				stopwatch = Stopwatch.StartNew();
 			}
 			stopwatch.Stop();
-			Assert.InRange(stopwatch.ElapsedMilliseconds, 0, 1000 * c_ciDelayFactor);
+			TestUtilities.AssertDuration(stopwatch, 0, 1000);
 		}
 
 #if !BASELINE
@@ -294,7 +293,7 @@ namespace SideBySide
 				var stopwatch = Stopwatch.StartNew();
 				using (var reader = await cmd.ExecuteReaderAsync(cts.Token))
 				{
-					Assert.InRange(stopwatch.ElapsedMilliseconds, 450, 750 * c_ciDelayFactor);
+					TestUtilities.AssertDuration(stopwatch, 450, 300);
 
 					var rows = 0;
 					try
@@ -329,7 +328,7 @@ namespace SideBySide
 					// the call to NextResult should block until the token is cancelled
 					var stopwatch = Stopwatch.StartNew();
 					Assert.True(await reader.NextResultAsync(cts.Token));
-					Assert.InRange(stopwatch.ElapsedMilliseconds, 450, 750 * c_ciDelayFactor);
+					TestUtilities.AssertDuration(stopwatch, 450, 300);
 
 					int rows = 0;
 					try
@@ -392,10 +391,6 @@ namespace SideBySide
 		// takes a long time to return any rows
 		const string c_slowQuery = @"select * from integers a join integers b join integers c join integers d join integers e join integers f join integers g join integers h
 where sqrt(a.value) + sqrt(b.value) + sqrt(c.value) + sqrt(d.value) + sqrt(e.value) + sqrt(f.value) + sqrt(g.value) + sqrt(h.value) = 20;";
-
-		// tests can run extremely slowly on Appveyor (and slightly slower under Travis)
-		static readonly int c_ciDelayFactor = Environment.GetEnvironmentVariable("APPVEYOR") == "True" ? 10 :
-			Environment.GetEnvironmentVariable("TRAVIS") == "true" ? 3 : 1;
 
 		readonly DatabaseFixture m_database;
 	}
