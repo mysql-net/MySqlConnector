@@ -37,7 +37,6 @@ namespace MySql.Data.MySqlClient
 			DbTransaction = transaction;
 			m_parameterCollection = new MySqlParameterCollection();
 			CommandType = CommandType.Text;
-			CancelAction = Cancel;
 		}
 
 		public new MySqlParameterCollection Parameters
@@ -50,8 +49,6 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public override void Cancel() => Connection.Cancel(this);
-
-		internal Action CancelAction { get; private set; }
 
 		public override int ExecuteNonQuery() =>
 			ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -159,6 +156,23 @@ namespace MySql.Data.MySqlClient
 
 		internal new MySqlConnection Connection => (MySqlConnection) DbConnection;
 
+		/// <summary>
+		/// Registers <see cref="Cancel"/> as a callback with <paramref name="token"/> if cancellation is supported.
+		/// </summary>
+		/// <param name="token">The <see cref="CancellationToken"/>.</param>
+		/// <returns>An object that must be disposed to revoke the cancellation registration.</returns>
+		/// <remarks>This method is more efficient than calling <code>token.Register(Command.Cancel)</code> because it avoids
+		/// unnecessary allocations.</remarks>
+		internal IDisposable RegisterCancel(CancellationToken token)
+		{
+			if (!token.CanBeCanceled)
+				return null;
+
+			if (m_cancelAction == null)
+				m_cancelAction = Cancel;
+			return token.Register(m_cancelAction);
+		}
+
 		private void VerifyNotDisposed()
 		{
 			if (m_parameterCollection == null)
@@ -183,5 +197,6 @@ namespace MySql.Data.MySqlClient
 		MySqlParameterCollection m_parameterCollection;
 		CommandType m_commandType;
 		ICommandExecutor m_commandExecutor;
+		Action m_cancelAction;
 	}
 }

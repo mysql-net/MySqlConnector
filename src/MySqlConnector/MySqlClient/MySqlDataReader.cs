@@ -108,7 +108,7 @@ namespace MySql.Data.MySqlClient
 
 		private async Task<ResultSet> ScanResultSetAsyncAwaited(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
 		{
-			using (cancellationToken.Register(Command.CancelAction))
+			using (Command.RegisterCancel(cancellationToken))
 			{
 				try
 				{
