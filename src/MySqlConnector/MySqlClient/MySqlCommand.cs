@@ -37,6 +37,7 @@ namespace MySql.Data.MySqlClient
 			DbTransaction = transaction;
 			m_parameterCollection = new MySqlParameterCollection();
 			CommandType = CommandType.Text;
+			CancelAction = Cancel;
 		}
 
 		public new MySqlParameterCollection Parameters
@@ -49,6 +50,8 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public override void Cancel() => Connection.Cancel(this);
+
+		internal Action CancelAction { get; private set; }
 
 		public override int ExecuteNonQuery() =>
 			ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
