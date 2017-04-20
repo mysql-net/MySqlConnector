@@ -8,6 +8,7 @@ namespace MySql.Data.Protocol.Serialization
 		public StandardPayloadHandler(IByteHandler byteHandler)
 		{
 			ByteHandler = byteHandler;
+			m_getNextSequenceNumber = () => m_sequenceNumber++;
 		}
 
 		public void StartNewConversation()
@@ -26,13 +27,12 @@ namespace MySql.Data.Protocol.Serialization
 		}
 
 		public ValueTask<ArraySegment<byte>> ReadPayloadAsync(ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) =>
-			ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader, m_byteHandler, () => GetNextSequenceNumber(), default(ArraySegment<byte>), protocolErrorBehavior, ioBehavior);
+			ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader, m_byteHandler, m_getNextSequenceNumber, default(ArraySegment<byte>), protocolErrorBehavior, ioBehavior);
 
 		public ValueTask<int> WritePayloadAsync(ArraySegment<byte> payload, IOBehavior ioBehavior) =>
-			ProtocolUtility.WritePayloadAsync(m_byteHandler, GetNextSequenceNumber, payload, ioBehavior);
+			ProtocolUtility.WritePayloadAsync(m_byteHandler, m_getNextSequenceNumber, payload, ioBehavior);
 
-		private int GetNextSequenceNumber() => m_sequenceNumber++;
-
+		readonly Func<int> m_getNextSequenceNumber;
 		IByteHandler m_byteHandler;
 		BufferedByteReader m_bufferedByteReader;
 		int m_sequenceNumber;
