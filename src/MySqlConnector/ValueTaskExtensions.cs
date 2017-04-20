@@ -11,11 +11,6 @@ namespace MySql.Data
 				new ValueTask<TResult>(valueTask.AsTask().ContinueWith(task => continuation(task.GetAwaiter().GetResult()).AsTask()).Unwrap());
 		}
 
-		public static ValueTask<T> FromException<T>(Exception exception)
-		{
-			var tcs = new TaskCompletionSource<T>();
-			tcs.SetException(exception);
-			return new ValueTask<T>(tcs.Task);
-		}
+		public static ValueTask<T> FromException<T>(Exception exception) => new ValueTask<T>(Utility.TaskFromException<T>(exception));
 	}
 }

@@ -114,30 +114,23 @@ namespace MySql.Data.MySqlClient
 		public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) =>
 			ExecuteNonQueryAsync(Connection.AsyncIOBehavior, cancellationToken);
 
-		internal async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-		{
-			VerifyValid();
-			return await m_commandExecutor.ExecuteNonQueryAsync(CommandText, m_parameterCollection, ioBehavior, cancellationToken).ConfigureAwait(false);
-		}
+		internal Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) =>
+			!IsValid(out var exception) ? Utility.TaskFromException<int>(exception) :
+				m_commandExecutor.ExecuteNonQueryAsync(CommandText, m_parameterCollection, ioBehavior, cancellationToken);
 
 		public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken) =>
 			ExecuteScalarAsync(Connection.AsyncIOBehavior, cancellationToken);
 
-		internal async Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-		{
-			VerifyValid();
-			return await m_commandExecutor.ExecuteScalarAsync(CommandText, m_parameterCollection, ioBehavior, cancellationToken).ConfigureAwait(false);
-		}
+		internal Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) =>
+			!IsValid(out var exception) ? Utility.TaskFromException<object>(exception) :
+				m_commandExecutor.ExecuteScalarAsync(CommandText, m_parameterCollection, ioBehavior, cancellationToken);
 
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken) =>
 			ExecuteReaderAsync(behavior, Connection.AsyncIOBehavior, cancellationToken);
 
-		internal async Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior,
-			CancellationToken cancellationToken)
-		{
-			VerifyValid();
-			return await m_commandExecutor.ExecuteReaderAsync(CommandText, m_parameterCollection, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
-		}
+		internal Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken) =>
+			!IsValid(out var exception) ? Utility.TaskFromException<DbDataReader>(exception) :
+				m_commandExecutor.ExecuteReaderAsync(CommandText, m_parameterCollection, behavior, ioBehavior, cancellationToken);
 
 		protected override void Dispose(bool disposing)
 		{
@@ -181,15 +174,25 @@ namespace MySql.Data.MySqlClient
 
 		private void VerifyValid()
 		{
-			VerifyNotDisposed();
-			if (DbConnection == null)
-				throw new InvalidOperationException("Connection property must be non-null.");
-			if (DbConnection.State != ConnectionState.Open && DbConnection.State != ConnectionState.Connecting)
-				throw new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(DbConnection.State));
-			if (DbTransaction != Connection.CurrentTransaction)
-				throw new InvalidOperationException("The transaction associated with this command is not the connection's active transaction.");
-			if (string.IsNullOrWhiteSpace(CommandText))
-				throw new InvalidOperationException("CommandText must be specified");
+			Exception exception;
+			if (!IsValid(out exception))
+				throw exception;
+		}
+
+		private bool IsValid(out Exception exception)
+		{
+			exception = null;
+			if (m_parameterCollection == null)
+				exception = new ObjectDisposedException(GetType().Name);
+			else if (DbConnection == null)
+				exception = new InvalidOperationException("Connection property must be non-null.");
+			else if (DbConnection.State != ConnectionState.Open && DbConnection.State != ConnectionState.Connecting)
+				exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(DbConnection.State));
+			else if (DbTransaction != Connection.CurrentTransaction)
+				exception = new InvalidOperationException("The transaction associated with this command is not the connection's active transaction.");
+			else if (string.IsNullOrWhiteSpace(CommandText))
+				exception = new InvalidOperationException("CommandText must be specified");
+			return exception == null;
 		}
 
 		internal void ReaderClosed() => (m_commandExecutor as StoredProcedureCommandExecutor)?.SetParams();
