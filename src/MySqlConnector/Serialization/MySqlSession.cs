@@ -260,11 +260,7 @@ namespace MySql.Data.Serialization
 		{
 			VerifyState(State.Connected);
 
-			// check if client socket is still connected
-			// http://stackoverflow.com/questions/2661764/how-to-check-if-a-socket-is-connected-disconnected-in-c
-			if (m_socket.Poll(1, SelectMode.SelectRead) && m_socket.Available == 0)
-				return false;
-			// client socket is still connected, send ping payload to verify server socket is still connected
+			// send ping payload to verify client and server socket are still connected
 			try
 			{
 				await SendAsync(PingPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
