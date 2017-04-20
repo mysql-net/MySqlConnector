@@ -17,7 +17,7 @@ namespace MySql.Data.MySqlClient
 
 		public ArraySegment<byte> ParseAndBindParameters()
 		{
-			using (var stream = new MemoryStream(m_commandText.Length))
+			using (var stream = new MemoryStream(m_commandText.Length + 1))
 			using (var writer = new BinaryWriter(stream, Encoding.UTF8))
 			{
 				writer.Write((byte) CommandKind.Query);
