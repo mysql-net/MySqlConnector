@@ -287,23 +287,62 @@ namespace MySql.Data.Serialization
 		public ValueTask<int> SendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			m_payloadHandler.StartNewConversation();
-			return TryAsync(m_payloadHandler.WritePayloadAsync, payload.ArraySegment, ioBehavior, cancellationToken);
+			return SendReplyAsync(payload, ioBehavior, cancellationToken);
 		}
 
 		// Starts a new conversation with the server by receiving the first packet.
 		public ValueTask<PayloadData> ReceiveAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			m_payloadHandler.StartNewConversation();
-			return TryAsync(m_payloadHandler.ReadPayloadAsync, ioBehavior, cancellationToken);
+			return ReceiveReplyAsync(ioBehavior, cancellationToken);
 		}
 
 		// Continues a conversation with the server by receiving a response to a packet sent with 'Send' or 'SendReply'.
-		public ValueTask<PayloadData> ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) =>
-			TryAsync(m_payloadHandler.ReadPayloadAsync, ioBehavior, cancellationToken);
+		public ValueTask<PayloadData> ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			ValueTask<ArraySegment<byte>> task;
+			try
+			{
+				VerifyConnected();
+				task = m_payloadHandler.ReadPayloadAsync(ProtocolErrorBehavior.Throw, ioBehavior);
+			}
+			catch (Exception ex)
+			{
+				task = ValueTaskExtensions.FromException<ArraySegment<byte>>(ex);
+			}
+
+			if (task.IsCompletedSuccessfully)
+			{
+				var payload = new PayloadData(task.Result);
+				if (payload.HeaderByte != ErrorPayload.Signature)
+					return new ValueTask<PayloadData>(payload);
+
+				var exception = ErrorPayload.Create(payload).ToException();
+				return ValueTaskExtensions.FromException<PayloadData>(exception);
+			}
+
+			return new ValueTask<PayloadData>(task.AsTask().ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default));
+		}
 
 		// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
-		public ValueTask<int> SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken) =>
-			TryAsync(m_payloadHandler.WritePayloadAsync, payload.ArraySegment, ioBehavior, cancellationToken);
+		public ValueTask<int> SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			ValueTask<int> task;
+			try
+			{
+				VerifyConnected();
+				task = m_payloadHandler.WritePayloadAsync(payload.ArraySegment, ioBehavior);
+			}
+			catch (Exception ex)
+			{
+				task = ValueTaskExtensions.FromException<int>(ex);
+			}
+
+			if (task.IsCompletedSuccessfully)
+				return task;
+
+			return new ValueTask<int>(task.AsTask().ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default));
+		}
 
 		private void VerifyConnected()
 		{
@@ -565,26 +604,6 @@ namespace MySql.Data.Serialization
 			}
 		}
 
-		private ValueTask<int> TryAsync<TArg>(Func<TArg, IOBehavior, ValueTask<int>> func, TArg arg, IOBehavior ioBehavior, CancellationToken cancellationToken)
-		{
-			ValueTask<int> task;
-			try
-			{
-				VerifyConnected();
-				task = func(arg, ioBehavior);
-			}
-			catch (Exception ex)
-			{
-				task = ValueTaskExtensions.FromException<int>(ex);
-			}
-
-			if (task.IsCompletedSuccessfully)
-				return task;
-
-			return new ValueTask<int>(task.AsTask()
-				.ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default));
-		}
-
 		private int TryAsyncContinuation(Task<int> task)
 		{
 			if (task.IsFaulted)
@@ -593,33 +612,6 @@ namespace MySql.Data.Serialization
 				task.GetAwaiter().GetResult();
 			}
 			return 0;
-		}
-
-		private ValueTask<PayloadData> TryAsync(Func<ProtocolErrorBehavior, IOBehavior, ValueTask<ArraySegment<byte>>> func, IOBehavior ioBehavior, CancellationToken cancellationToken)
-		{
-			ValueTask<ArraySegment<byte>> task;
-			try
-			{
-				VerifyConnected();
-				task = func(ProtocolErrorBehavior.Throw, ioBehavior);
-			}
-			catch (Exception ex)
-			{
-				task = ValueTaskExtensions.FromException<ArraySegment<byte>>(ex);
-			}
-
-			if (task.IsCompletedSuccessfully)
-			{
-				var payload = new PayloadData(task.Result);
-				if (payload.HeaderByte != ErrorPayload.Signature)
-					return new ValueTask<PayloadData>(payload);
-
-				var exception = ErrorPayload.Create(payload).ToException();
-				return ValueTaskExtensions.FromException<PayloadData>(exception);
-			}
-
-			return new ValueTask<PayloadData>(task.AsTask()
-				.ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default));
 		}
 
 		private PayloadData TryAsyncContinuation(Task<ArraySegment<byte>> task)
