@@ -7,8 +7,8 @@ using MySql.Data.Serialization;
 
 namespace MySql.Data.Protocol.Serialization
 {
-    internal static class ProtocolUtility
-    {
+	internal static class ProtocolUtility
+	{
 		public static ValueTask<Packet> ReadPacketAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
 			var headerBytesTask = bufferedByteReader.ReadBytesAsync(byteHandler, 4, ioBehavior);
@@ -135,14 +135,25 @@ namespace MySql.Data.Protocol.Serialization
 			SerializationUtility.WriteUInt32((uint) contents.Count, buffer, 0, 3);
 			buffer[3] = (byte) sequenceNumber;
 			Buffer.BlockCopy(contents.Array, contents.Offset, buffer, 4, contents.Count);
-			return byteHandler.WriteBytesAsync(new ArraySegment<byte>(buffer, 0, bufferLength), ioBehavior)
-				.ContinueWith(x =>
+			var task = byteHandler.WriteBytesAsync(new ArraySegment<byte>(buffer, 0, bufferLength), ioBehavior);
+			if (task.IsCompletedSuccessfully)
+			{
+				ArrayPool<byte>.Shared.Return(buffer);
+				return default(ValueTask<int>);
+			}
+			return AddContinuation(task, buffer);
+
+			// NOTE: use a local function (with no captures) to defer creation of lambda objects
+			ValueTask<int> AddContinuation(ValueTask<int> task_, byte[] buffer_)
+			{
+				return task_.ContinueWith(x =>
 				{
-					ArrayPool<byte>.Shared.Return(buffer);
+					ArrayPool<byte>.Shared.Return(buffer_);
 					return default(ValueTask<int>);
 				});
+			}
 		}
 
-	    public const int MaxPacketSize = 16777215;
-    }
+		public const int MaxPacketSize = 16777215;
+	}
 }
