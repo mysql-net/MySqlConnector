@@ -116,16 +116,20 @@ namespace MySql.Data.Protocol.Serialization
 
 		public static ValueTask<int> WritePayloadAsync(IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegment<byte> payload, IOBehavior ioBehavior)
 		{
-			if (payload.Count <= MaxPacketSize)
-				return WritePacketAsync(byteHandler, getNextSequenceNumber(), payload, ioBehavior);
+			return payload.Count <= MaxPacketSize ? WritePacketAsync(byteHandler, getNextSequenceNumber(), payload, ioBehavior) :
+				CreateTask(byteHandler, getNextSequenceNumber, payload, ioBehavior);
 
-			var writeTask = default(ValueTask<int>);
-			for (var bytesSent = 0; bytesSent < payload.Count; bytesSent += MaxPacketSize)
+			// NOTE: use a local function (with no captures) to defer creation of lambda objects
+			ValueTask<int> CreateTask(IByteHandler byteHandler_, Func<int> getNextSequenceNumber_, ArraySegment<byte> payload_, IOBehavior ioBehavior_)
 			{
-				var contents = new ArraySegment<byte>(payload.Array, payload.Offset + bytesSent, Math.Min(MaxPacketSize, payload.Count - bytesSent));
-				writeTask = writeTask.ContinueWith(x => WritePacketAsync(byteHandler, getNextSequenceNumber(), contents, ioBehavior));
+				var writeTask = default(ValueTask<int>);
+				for (var bytesSent = 0; bytesSent < payload_.Count; bytesSent += MaxPacketSize)
+				{
+					var contents = new ArraySegment<byte>(payload_.Array, payload_.Offset + bytesSent, Math.Min(MaxPacketSize, payload_.Count - bytesSent));
+					writeTask = writeTask.ContinueWith(x => WritePacketAsync(byteHandler_, getNextSequenceNumber_(), contents, ioBehavior_));
+				}
+				return writeTask;
 			}
-			return writeTask;
 		}
 
 		public static ValueTask<int> WritePacketAsync(IByteHandler byteHandler, int sequenceNumber, ArraySegment<byte> contents, IOBehavior ioBehavior)
