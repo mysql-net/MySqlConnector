@@ -228,6 +228,18 @@ namespace SideBySide
 			}
 		}
 
+		[Fact]
+		public async Task CancelCompletedCommand()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = @"select 1;";
+
+				using (await cmd.ExecuteReaderAsync().ConfigureAwait(false))
+					cmd.Cancel();
+			}
+		}
+
 		[UnbufferedResultSetsFact]
 		public async Task CancelHugeQueryWithTokenAfterExecuteReader()
 		{

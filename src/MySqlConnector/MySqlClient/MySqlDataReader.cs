@@ -287,6 +287,24 @@ namespace MySql.Data.MySqlClient
 				var connection = Command.Connection;
 				if (!connection.BufferResultSets)
 					connection.Session.FinishQuerying();
+
+				if (Command.IsCanceled)
+				{
+					// KILL QUERY will kill a subsequent query if the command it was intended to cancel has already completed.
+					// In order to handle this case, we issue a dummy query to catch the QueryInterrupted exception.
+					// See https://bugs.mysql.com/bug.php?id=45679
+					var killClearCommand = new MySqlCommand("SELECT * FROM fake_table LIMIT 0;", connection);
+					try
+					{
+						killClearCommand.ExecuteReader();
+					}
+					catch (MySqlException ex)
+					{
+						if (ex.Number != (int) MySqlErrorCode.QueryInterrupted && ex.Number != (int) MySqlErrorCode.NoSuchTable)
+							throw;
+					}
+				}
+
 				Command.ReaderClosed();
 				if ((m_behavior & CommandBehavior.CloseConnection) != 0)
 				{

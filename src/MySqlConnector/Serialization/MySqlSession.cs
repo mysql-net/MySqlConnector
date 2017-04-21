@@ -84,6 +84,8 @@ namespace MySql.Data.Serialization
 				// blocking the other thread for an extended duration.
 				killCommand.CommandTimeout = 3;
 				killCommand.ExecuteNonQuery();
+
+				commandToCancel.IsCanceled = true;
 			}
 		}
 
