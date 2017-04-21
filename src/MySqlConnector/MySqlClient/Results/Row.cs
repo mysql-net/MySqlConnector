@@ -10,7 +10,7 @@ namespace MySql.Data.MySqlClient.Results
 	{
 		public Row(ResultSet resultSet) => ResultSet = resultSet;
 
-		public void SetData(int[] dataLengths, int[] dataOffsets, byte[] payload)
+		public void SetData(int[] dataLengths, int[] dataOffsets, ArraySegment<byte> payload)
 		{
 			m_dataLengths = dataLengths;
 			m_dataOffsets = dataOffsets;
@@ -21,36 +21,35 @@ namespace MySql.Data.MySqlClient.Results
 		{
 			// by default, m_payload, m_dataLengths, and m_dataOffsets are re-used to save allocations
 			// if the row is going to be buffered, we need to copy them
+			// since m_payload can span multiple rows, offests must recalculated to include only this row
 
-			var bufferDataLengths = ArrayPool<int>.Shared.Rent(m_dataLengths.Length);
+			var bufferDataLengths = new int[m_dataLengths.Length];
 			Buffer.BlockCopy(m_dataLengths, 0, bufferDataLengths, 0, m_dataLengths.Length * sizeof(int));
 			m_dataLengths = bufferDataLengths;
 
-			var bufferedDataOffsets = ArrayPool<int>.Shared.Rent(m_dataOffsets.Length);
-			Buffer.BlockCopy(m_dataOffsets, 0, bufferedDataOffsets, 0, m_dataOffsets.Length * sizeof(int));
-			m_dataOffsets = bufferedDataOffsets;
+			var bufferDataOffsets = new int[m_dataOffsets.Length];
+			for (var i = 0; i < m_dataOffsets.Length; i++)
+			{
+				// a -1 offset denotes null, only adjust positive offsets
+				if (m_dataOffsets[i] >= 0)
+					bufferDataOffsets[i] = m_dataOffsets[i] - m_payload.Offset;
+				else
+					bufferDataOffsets[i] = m_dataOffsets[i];
+			}
+			m_dataOffsets = bufferDataOffsets;
 
-			var bufferedPayload = ArrayPool<byte>.Shared.Rent(m_payload.Length);
-			Buffer.BlockCopy(m_payload, 0, bufferedPayload, 0, m_payload.Length);
-			m_payload = bufferedPayload;
-
-			m_buffered = true;
+			var bufferedPayload = new byte[m_payload.Count];
+			Buffer.BlockCopy(m_payload.Array, m_payload.Offset, bufferedPayload, 0, m_payload.Count);
+			m_payload = new ArraySegment<byte>(bufferedPayload);
 		}
 
 		public void Dispose() => ClearData();
 
 		public void ClearData()
 		{
-			if (m_buffered)
-			{
-				ArrayPool<int>.Shared.Return(m_dataLengths);
-				ArrayPool<int>.Shared.Return(m_dataOffsets);
-				ArrayPool<byte>.Shared.Return(m_payload);
-				m_buffered = false;
-			}
 			m_dataLengths = null;
 			m_dataOffsets = null;
-			m_payload = null;
+			m_payload = default(ArraySegment<byte>);
 		}
 
 		public bool GetBoolean(int ordinal)
@@ -107,7 +106,7 @@ namespace MySql.Data.MySqlClient.Results
 				throw new ArgumentException("bufferOffset + length cannot exceed buffer.Length", nameof(length));
 
 			int lengthToCopy = Math.Min(m_dataLengths[ordinal] - (int) dataOffset, length);
-			Buffer.BlockCopy(m_payload, checked((int) (m_dataOffsets[ordinal] + dataOffset)), buffer, bufferOffset, lengthToCopy);
+			Buffer.BlockCopy(m_payload.Array, checked((int) (m_dataOffsets[ordinal] + dataOffset)), buffer, bufferOffset, lengthToCopy);
 			return lengthToCopy;
 		}
 
@@ -255,7 +254,7 @@ namespace MySql.Data.MySqlClient.Results
 			if (m_dataOffsets[ordinal] == -1)
 				return DBNull.Value;
 
-			var data = new ArraySegment<byte>(m_payload, m_dataOffsets[ordinal], m_dataLengths[ordinal]);
+			var data = new ArraySegment<byte>(m_payload.Array, m_dataOffsets[ordinal], m_dataLengths[ordinal]);
 			var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
 			var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
 			switch (columnDefinition.ColumnType)
@@ -279,7 +278,7 @@ namespace MySql.Data.MySqlClient.Results
 					// BIT column is transmitted as MSB byte array
 					ulong bitValue = 0;
 					for (int i = 0; i < m_dataLengths[ordinal]; i++)
-						bitValue = bitValue * 256 + m_payload[m_dataOffsets[ordinal] + i];
+						bitValue = bitValue * 256 + m_payload.Array[m_dataOffsets[ordinal] + i];
 					return bitValue;
 
 				case ColumnType.String:
@@ -296,7 +295,7 @@ namespace MySql.Data.MySqlClient.Results
 					if (columnDefinition.CharacterSet == CharacterSet.Binary)
 					{
 						var result = new byte[m_dataLengths[ordinal]];
-						Buffer.BlockCopy(m_payload, m_dataOffsets[ordinal], result, 0, result.Length);
+						Buffer.BlockCopy(m_payload.Array, m_dataOffsets[ordinal], result, 0, result.Length);
 						return Connection.OldGuids && columnDefinition.ColumnLength == 16 ? (object) new Guid(result) : result;
 					}
 					return Encoding.UTF8.GetString(data);
@@ -385,10 +384,8 @@ namespace MySql.Data.MySqlClient.Results
 		public readonly ResultSet ResultSet;
 		public MySqlConnection Connection => ResultSet.Connection;
 
-		byte[] m_payload;
+		ArraySegment<byte> m_payload;
 		int[] m_dataLengths;
 		int[] m_dataOffsets;
-		bool m_buffered;
-
 	}
 }

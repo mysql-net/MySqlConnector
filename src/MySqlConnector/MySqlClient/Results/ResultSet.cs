@@ -205,7 +205,7 @@ namespace MySql.Data.MySqlClient.Results
 
 				if (row == null)
 					row = new Row(this);
-				row.SetData(m_dataLengths, m_dataOffsets, payload.ArraySegment.Array);
+				row.SetData(m_dataLengths, m_dataOffsets, payload.ArraySegment);
 				m_rowBuffered = row;
 				return row;
 			}
