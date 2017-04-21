@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.18.2
+
+* Fix excessive memory usage with `BufferResultSets=true`: [#244](https://github.com/mysql-net/MySqlConnector/issues/244).
+
 ### 0.18.1
 
 * Support new MySQL Server 8.0.1 collations: [#242](https://github.com/mysql-net/MySqlConnector/issues/242).
