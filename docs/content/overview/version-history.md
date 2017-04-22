@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.18.3
+
+* Fix query interrupted exception after canceling a completed query: [#248](https://github.com/mysql-net/MySqlConnector/pull/248).
+* Thanks to [Adam Poit](https://github.com/adampoit) for contributions to this release.
+
 ### 0.18.2
 
 * Fix excessive memory usage with `BufferResultSets=true`: [#244](https://github.com/mysql-net/MySqlConnector/issues/244).
