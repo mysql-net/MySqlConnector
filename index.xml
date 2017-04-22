@@ -522,6 +522,13 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-18-3&#34;&gt;0.18.3&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix query interrupted exception after canceling a completed query: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/pull/248&#34;&gt;#248&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Thanks to &lt;a href=&#34;https://github.com/adampoit&#34;&gt;Adam Poit&lt;/a&gt; for contributions to this release.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-18-2&#34;&gt;0.18.2&lt;/h3&gt;
 
 &lt;ul&gt;
