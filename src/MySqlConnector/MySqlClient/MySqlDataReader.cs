@@ -287,6 +287,7 @@ namespace MySql.Data.MySqlClient
 				var connection = Command.Connection;
 				if (!connection.BufferResultSets)
 					connection.Session.FinishQuerying();
+
 				Command.ReaderClosed();
 				if ((m_behavior & CommandBehavior.CloseConnection) != 0)
 				{
