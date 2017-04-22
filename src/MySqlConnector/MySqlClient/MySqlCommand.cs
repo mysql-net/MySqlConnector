@@ -66,7 +66,6 @@ namespace MySql.Data.MySqlClient
 
 		public override string CommandText { get; set; }
 		public override int CommandTimeout { get; set; }
-		public bool	IsCanceled { get; internal set; }
 
 		public override CommandType CommandType
 		{

@@ -84,8 +84,6 @@ namespace MySql.Data.Serialization
 				// blocking the other thread for an extended duration.
 				killCommand.CommandTimeout = 3;
 				killCommand.ExecuteNonQuery();
-
-				commandToCancel.IsCanceled = true;
 			}
 		}
 
@@ -125,9 +123,30 @@ namespace MySql.Data.Serialization
 
 		public void FinishQuerying()
 		{
+			bool clearConnection = false;
 			lock (m_lock)
 			{
-				VerifyState(State.Querying, State.CancelingQuery);
+				if (m_state == State.CancelingQuery)
+				{
+					m_state = State.ClearingPendingCancellation;
+					clearConnection = true;
+				}
+			}
+
+			if (clearConnection)
+			{
+				// KILL QUERY will kill a subsequent query if the command it was intended to cancel has already completed.
+				// In order to handle this case, we issue a dummy query that will consume the pending cancellation.
+				// See https://bugs.mysql.com/bug.php?id=45679
+				var payload = new PayloadData(new ArraySegment<byte>(PayloadUtilities.CreateEofStringPayload(CommandKind.Query, "DO SLEEP(0);")));
+				SendAsync(payload, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+				payload = ReceiveReplyAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+				OkPayload.Create(payload);
+			}
+
+			lock (m_lock)
+			{
+				VerifyState(State.Querying, State.ClearingPendingCancellation);
 				m_state = State.Connected;
 				m_activeReader = null;
 				m_activeCommand = null;
@@ -313,7 +332,7 @@ namespace MySql.Data.Serialization
 			{
 				if (m_state == State.Closed)
 					throw new ObjectDisposedException(nameof(MySqlSession));
-				if (m_state != State.Connected && m_state != State.Querying && m_state != State.CancelingQuery && m_state != State.Closing)
+				if (m_state != State.Connected && m_state != State.Querying && m_state != State.CancelingQuery && m_state != State.ClearingPendingCancellation && m_state != State.Closing)
 					throw new InvalidOperationException("MySqlSession is not connected.");
 			}
 		}
@@ -668,6 +687,9 @@ namespace MySql.Data.Serialization
 
 			// The session is connected to a server and the active query is being cancelled.
 			CancelingQuery,
+
+			// A cancellation is pending on the server and needs to be cleared.
+			ClearingPendingCancellation,
 
 			// The session is closing.
 			Closing,

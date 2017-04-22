@@ -251,6 +251,28 @@ create table cancel_completed_command (
 
 				await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 			}
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select value from cancel_completed_command where id = 1;";
+				var value = (string) await cmd.ExecuteScalarAsync();
+				Assert.Equal("value", value);
+			}
+		}
+
+		[Fact]
+		public void ImplicitCancelWithDapper()
+		{
+			m_database.Connection.Execute(@"drop table if exists cancel_completed_command;
+create table cancel_completed_command(id integer not null primary key, value text null);");
+
+			// a query that returns 0 fields will cause Dapper to cancel the command
+			m_database.Connection.Query<int>("insert into cancel_completed_command(id, value) values (1, null);");
+
+			m_database.Connection.Execute("update cancel_completed_command set value = 'value' where id = 1;");
+
+			var value = m_database.Connection.Query<string>(@"select value from cancel_completed_command where id = 1").FirstOrDefault();
+			Assert.Equal("value", value);
 		}
 
 		[UnbufferedResultSetsFact]
