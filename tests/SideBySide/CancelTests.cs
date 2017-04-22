@@ -231,12 +231,25 @@ namespace SideBySide
 		[Fact]
 		public async Task CancelCompletedCommand()
 		{
+			await m_database.Connection.ExecuteAsync(@"drop table if exists cancel_completed_command;
+create table cancel_completed_command (
+	id bigint unsigned,
+	value varchar(45)
+);").ConfigureAwait(false);
+
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = @"select 1;";
+				cmd.CommandText = @"insert into cancel_completed_command (id, value) values (1, null);";
 
 				using (await cmd.ExecuteReaderAsync().ConfigureAwait(false))
 					cmd.Cancel();
+			}
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = @"update cancel_completed_command SET value = ""value"" where id = 1;";
+
+				await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 			}
 		}
 
