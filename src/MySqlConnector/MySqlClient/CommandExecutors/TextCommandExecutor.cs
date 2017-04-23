@@ -51,7 +51,7 @@ namespace MySql.Data.MySqlClient.CommandExecutors
 			CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
-			using (cancellationToken.Register(m_command.Cancel))
+			using (m_command.RegisterCancel(cancellationToken))
 			{
 				m_command.Connection.Session.StartQuerying(m_command);
 				m_command.LastInsertedId = -1;

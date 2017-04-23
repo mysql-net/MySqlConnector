@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace MySql.Data
 {
@@ -42,6 +43,17 @@ namespace MySql.Data
 		/// <returns>A new <see cref="ArraySegment{T}"/> of length <paramref name="length"/>, starting at the <paramref name="index"/>th element of <paramref name="arraySegment"/>.</returns>
 		public static ArraySegment<T> Slice<T>(this ArraySegment<T> arraySegment, int index, int length) =>
 			new ArraySegment<T>(arraySegment.Array, arraySegment.Offset + index, length);
+
+#if !NETSTANDARD1_3
+		public static Task<T> TaskFromException<T>(Exception exception)
+		{
+			var tcs = new TaskCompletionSource<T>();
+			tcs.SetException(exception);
+			return tcs.Task;
+		}
+#else
+		public static Task<T> TaskFromException<T>(Exception exception) => Task.FromException<T>(exception);
+#endif
 
 #if !NETSTANDARD1_3
 		public static bool TryGetBuffer(this MemoryStream memoryStream, out ArraySegment<byte> buffer)
