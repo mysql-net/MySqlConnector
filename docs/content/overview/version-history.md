@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.19.0
+
+* Improve performance of common scenarios: [#245](https://github.com/mysql-net/MySqlConnector/pull/245).
+
 ### 0.18.3
 
 * Fix query interrupted exception after canceling a completed query: [#248](https://github.com/mysql-net/MySqlConnector/pull/248).
