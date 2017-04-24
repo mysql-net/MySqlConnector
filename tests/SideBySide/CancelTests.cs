@@ -340,7 +340,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 				var stopwatch = Stopwatch.StartNew();
 				using (var reader = await cmd.ExecuteReaderAsync(cts.Token))
 				{
-					TestUtilities.AssertDuration(stopwatch, 450, 300);
+					TestUtilities.AssertDuration(stopwatch, 450, 400);
 
 					var rows = 0;
 					try
