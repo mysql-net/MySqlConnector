@@ -58,13 +58,19 @@ namespace MySql.Data.Protocol.Serialization
 				protocolErrorBehavior == ProtocolErrorBehavior.Throw ? ValueTaskExtensions.FromException<Packet>(new EndOfStreamException()) :
 				default(ValueTask<Packet>);
 
-		public static ValueTask<ArraySegment<byte>> ReadPayloadAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegment<byte> previousPayloads, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+		public static ValueTask<ArraySegment<byte>> ReadPayloadAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegmentHolder<byte> cache, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+		{
+			cache.Clear();
+			return DoReadPayloadAsync(bufferedByteReader, byteHandler, getNextSequenceNumber, cache, protocolErrorBehavior, ioBehavior);
+		}
+
+		private static ValueTask<ArraySegment<byte>> DoReadPayloadAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegmentHolder<byte> previousPayloads, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
 			var readPacketTask = ReadPacketAsync(bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior);
 			while (readPacketTask.IsCompleted)
 			{
 				ValueTask<ArraySegment<byte>> result;
-				if (HasReadPayload(ref previousPayloads, readPacketTask.Result, protocolErrorBehavior, out result))
+				if (HasReadPayload(previousPayloads, readPacketTask.Result, protocolErrorBehavior, out result))
 					return result;
 
 				readPacketTask = ReadPacketAsync(bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior);
@@ -73,15 +79,15 @@ namespace MySql.Data.Protocol.Serialization
 			return AddContinuation(readPacketTask, bufferedByteReader, byteHandler, getNextSequenceNumber, previousPayloads, protocolErrorBehavior, ioBehavior);
 
 			// NOTE: use a local function (with no captures) to defer creation of lambda objects
-			ValueTask<ArraySegment<byte>> AddContinuation(ValueTask<Packet> readPacketTask_, BufferedByteReader bufferedByteReader_, IByteHandler byteHandler_, Func<int> getNextSequenceNumber_, ArraySegment<byte> previousPayloads_, ProtocolErrorBehavior protocolErrorBehavior_, IOBehavior ioBehavior_)
+			ValueTask<ArraySegment<byte>> AddContinuation(ValueTask<Packet> readPacketTask_, BufferedByteReader bufferedByteReader_, IByteHandler byteHandler_, Func<int> getNextSequenceNumber_, ArraySegmentHolder<byte> previousPayloads_, ProtocolErrorBehavior protocolErrorBehavior_, IOBehavior ioBehavior_)
 			{
 				return readPacketTask_.ContinueWith(packet =>
-					HasReadPayload(ref previousPayloads_, packet, protocolErrorBehavior_, out var result_) ? result_ :
-						ReadPayloadAsync(bufferedByteReader_, byteHandler_, getNextSequenceNumber_, previousPayloads_, protocolErrorBehavior_, ioBehavior_));
+					HasReadPayload(previousPayloads_, packet, protocolErrorBehavior_, out var result_) ? result_ :
+						DoReadPayloadAsync(bufferedByteReader_, byteHandler_, getNextSequenceNumber_, previousPayloads_, protocolErrorBehavior_, ioBehavior_));
 			}
 		}
 
-		private static bool HasReadPayload(ref ArraySegment<byte> previousPayloads, Packet packet, ProtocolErrorBehavior protocolErrorBehavior, out ValueTask<ArraySegment<byte>> result)
+		private static bool HasReadPayload(ArraySegmentHolder<byte> previousPayloads, Packet packet, ProtocolErrorBehavior protocolErrorBehavior, out ValueTask<ArraySegment<byte>> result)
 		{
 			if (packet == null && protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
 			{
@@ -89,24 +95,24 @@ namespace MySql.Data.Protocol.Serialization
 				return true;
 			}
 
-			var previousPayloadsArray = previousPayloads.Array;
-			if (previousPayloadsArray == null && packet.Contents.Count < MaxPacketSize)
+			if (previousPayloads.Count == 0 && packet.Contents.Count < MaxPacketSize)
 			{
 				result = new ValueTask<ArraySegment<byte>>(packet.Contents);
 				return true;
 			}
 
+			var previousPayloadsArray = previousPayloads.Array;
 			if (previousPayloadsArray == null)
 				previousPayloadsArray = new byte[ProtocolUtility.MaxPacketSize + 1];
 			else if (previousPayloads.Offset + previousPayloads.Count + packet.Contents.Count > previousPayloadsArray.Length)
 				Array.Resize(ref previousPayloadsArray, previousPayloadsArray.Length * 2);
 
 			Buffer.BlockCopy(packet.Contents.Array, packet.Contents.Offset, previousPayloadsArray, previousPayloads.Offset + previousPayloads.Count, packet.Contents.Count);
-			previousPayloads = new ArraySegment<byte>(previousPayloadsArray, previousPayloads.Offset, previousPayloads.Count + packet.Contents.Count);
+			previousPayloads.ArraySegment = new ArraySegment<byte>(previousPayloadsArray, previousPayloads.Offset, previousPayloads.Count + packet.Contents.Count);
 
 			if (packet.Contents.Count < ProtocolUtility.MaxPacketSize)
 			{
-				result = new ValueTask<ArraySegment<byte>>(previousPayloads);
+				result = new ValueTask<ArraySegment<byte>>(previousPayloads.ArraySegment);
 				return true;
 			}
 
