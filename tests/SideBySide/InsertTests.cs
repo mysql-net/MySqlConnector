@@ -37,6 +37,29 @@ create table insert_ai(rowid integer not null primary key auto_increment, text v
 		}
 
 		[Fact]
+		public async Task RowsAffected()
+		{
+			await m_database.Connection.ExecuteAsync(@"drop table if exists insert_rows_affected;
+create table insert_rows_affected(id integer not null primary key auto_increment, value text null);");
+
+			try
+			{
+				await m_database.Connection.OpenAsync();
+				using (var command = new MySqlCommand(@"
+INSERT INTO insert_rows_affected (value) VALUES (null);
+INSERT INTO insert_rows_affected (value) VALUES (null);", m_database.Connection))
+				{
+					var rowsAffected = await command.ExecuteNonQueryAsync();
+					Assert.Equal(2, rowsAffected);
+				}
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+		}
+
+		[Fact]
 		public void LastInsertedIdExplicitStart()
 		{
 			m_database.Connection.Execute(@"drop table if exists insert_ai_2;

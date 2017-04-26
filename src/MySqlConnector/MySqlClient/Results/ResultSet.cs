@@ -40,7 +40,7 @@ namespace MySql.Data.MySqlClient.Results
 					if (firstByte == OkPayload.Signature)
 					{
 						var ok = OkPayload.Create(payload);
-						RecordsAffected = ok.AffectedRowCount;
+						RecordsAffected += ok.AffectedRowCount;
 						LastInsertId = ok.LastInsertId;
 						ColumnDefinitions = null;
 						State = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0
