@@ -24,6 +24,7 @@ namespace MySql.Data.Serialization
 		public MySqlSession(ConnectionPool pool, int poolGeneration)
 		{
 			m_lock = new object();
+			m_payloadCache = new ArraySegmentHolder<byte>();
 			CreatedUtc = DateTime.UtcNow;
 			Pool = pool;
 			PoolGeneration = poolGeneration;
@@ -167,7 +168,7 @@ namespace MySql.Data.Serialization
 				{
 					m_payloadHandler.StartNewConversation();
 					await m_payloadHandler.WritePayloadAsync(QuitPayload.Create(), ioBehavior).ConfigureAwait(false);
-					await m_payloadHandler.ReadPayloadAsync(ProtocolErrorBehavior.Ignore, ioBehavior).ConfigureAwait(false);
+					await m_payloadHandler.ReadPayloadAsync(m_payloadCache, ProtocolErrorBehavior.Ignore, ioBehavior).ConfigureAwait(false);
 				}
 				catch (IOException)
 				{
@@ -321,7 +322,7 @@ namespace MySql.Data.Serialization
 			try
 			{
 				VerifyConnected();
-				task = m_payloadHandler.ReadPayloadAsync(ProtocolErrorBehavior.Throw, ioBehavior);
+				task = m_payloadHandler.ReadPayloadAsync(m_payloadCache, ProtocolErrorBehavior.Throw, ioBehavior);
 			}
 			catch (Exception ex)
 			{
@@ -690,6 +691,7 @@ namespace MySql.Data.Serialization
 		}
 
 		readonly object m_lock;
+		readonly ArraySegmentHolder<byte> m_payloadCache;
 		State m_state;
 		string m_hostname = "";
 		TcpClient m_tcpClient;

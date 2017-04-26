@@ -30,8 +30,8 @@ namespace MySql.Data.Protocol.Serialization
 			set => throw new NotSupportedException();
 		}
 
-		public ValueTask<ArraySegment<byte>> ReadPayloadAsync(ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) =>
-			ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader, new CompressedByteHandler(this, protocolErrorBehavior), () => -1, default(ArraySegment<byte>), protocolErrorBehavior, ioBehavior);
+		public ValueTask<ArraySegment<byte>> ReadPayloadAsync(ArraySegmentHolder<byte> cache, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) =>
+			ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader, new CompressedByteHandler(this, protocolErrorBehavior), () => -1, cache, protocolErrorBehavior, ioBehavior);
 
 		public ValueTask<int> WritePayloadAsync(ArraySegment<byte> payload, IOBehavior ioBehavior)
 		{
