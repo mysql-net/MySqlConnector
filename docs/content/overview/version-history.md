@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.19.1
+
+* Fix incorrect return value from `ExecuteNonQuery`: [#250](https://github.com/mysql-net/MySqlConnector/pull/250).
+* Improve performance when retrieving large BLOBs: [#249](https://github.com/mysql-net/MySqlConnector/pull/249).
+* Thanks to [Adam Poit](https://github.com/adampoit) for contributions to this release.
+
 ### 0.19.0
 
 * Improve performance of common scenarios: [#245](https://github.com/mysql-net/MySqlConnector/pull/245).
