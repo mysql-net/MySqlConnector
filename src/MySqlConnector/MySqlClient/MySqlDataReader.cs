@@ -269,18 +269,21 @@ namespace MySql.Data.MySqlClient
 		{
 			if (Command != null)
 			{
-				try
+				if (m_resultSet != null)
 				{
-					while (NextResult())
+					try
 					{
+						while (NextResult())
+						{
+						}
 					}
-				}
-				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted)
-				{
-					// ignore "Query execution was interrupted" exceptions when closing a data reader
+					catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted)
+					{
+						// ignore "Query execution was interrupted" exceptions when closing a data reader
+					}
+					m_resultSet = null;
 				}
 
-				m_resultSet = null;
 				m_resultSetBuffered = null;
 				m_nextResultSetBuffer.Clear();
 
