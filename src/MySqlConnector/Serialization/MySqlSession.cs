@@ -17,19 +17,21 @@ namespace MySql.Data.Serialization
 	internal sealed class MySqlSession
 	{
 		public MySqlSession()
-			: this(null, 0)
+			: this(null, 0, 0)
 		{
 		}
 
-		public MySqlSession(ConnectionPool pool, int poolGeneration)
+		public MySqlSession(ConnectionPool pool, int poolGeneration, int id)
 		{
 			m_lock = new object();
 			m_payloadCache = new ArraySegmentHolder<byte>();
+			Id = id;
 			CreatedUtc = DateTime.UtcNow;
 			Pool = pool;
 			PoolGeneration = poolGeneration;
 		}
 
+		public int Id { get; }
 		public ServerVersion ServerVersion { get; set; }
 		public int ConnectionId { get; set; }
 		public byte[] AuthPluginData { get; set; }

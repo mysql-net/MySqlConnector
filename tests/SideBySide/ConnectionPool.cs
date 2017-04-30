@@ -131,6 +131,26 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void LeakConnections()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.Pooling = true;
+			csb.MinimumPoolSize = 0;
+			csb.MaximumPoolSize = 6;
+			csb.ConnectionTimeout = 3u;
+
+			for (int i = 0; i < csb.MaximumPoolSize + 2; i++)
+			{
+				var connection = new MySqlConnection(csb.ConnectionString);
+				connection.Open();
+
+				// have to GC for leaked connections to be removed from the pool
+				GC.Collect();
+			}
+		}
+
+
+		[Fact]
 		public async Task WaitTimeout()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();

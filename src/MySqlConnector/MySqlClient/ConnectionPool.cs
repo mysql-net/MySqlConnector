@@ -14,7 +14,13 @@ namespace MySql.Data.MySqlClient
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
-			// wait for an open slot
+			// if all sessions are used, see if any have been leaked and can be recovered
+			// check at most once per second (although this isn't enforced via a mutex so multiple threads might block
+			// on the lock in RecoverLeakedSessions in high-concurrency situations
+			if (m_sessionSemaphore.CurrentCount == 0 && unchecked(((uint) Environment.TickCount) - m_lastRecoveryTime) >= 1000u)
+				RecoverLeakedSessions();
+
+			// wait for an open slot (until the cancellationToken is cancelled, which is typically due to timeout)
 			if (ioBehavior == IOBehavior.Asynchronous)
 				await m_sessionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 			else
@@ -46,14 +52,19 @@ namespace MySql.Data.MySqlClient
 						{
 							await session.ResetConnectionAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
 						}
+
 						// pooled session is ready to be used; return it
+						lock (m_leasedSessions)
+							m_leasedSessions.Add(session.Id, new WeakReference<MySqlSession>(session));
 						return session;
 					}
 				}
 
 				// create a new session
-				session = new MySqlSession(this, m_generation);
+				session = new MySqlSession(this, m_generation, Interlocked.Increment(ref m_lastId));
 				await session.ConnectAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
+				lock (m_leasedSessions)
+					m_leasedSessions.Add(session.Id, new WeakReference<MySqlSession>(session));
 				return session;
 			}
 			catch
@@ -82,6 +93,8 @@ namespace MySql.Data.MySqlClient
 		{
 			try
 			{
+				lock (m_leasedSessions)
+					m_leasedSessions.Remove(session.Id);
 				if (SessionIsHealthy(session))
 					lock (m_sessions)
 						m_sessions.AddFirst(session);
@@ -103,9 +116,34 @@ namespace MySql.Data.MySqlClient
 
 		public async Task ReapAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			RecoverLeakedSessions();
 			if (m_connectionSettings.ConnectionIdleTimeout == 0)
 				return;
 			await CleanPoolAsync(ioBehavior, session => (DateTime.UtcNow - session.LastReturnedUtc).TotalSeconds >= m_connectionSettings.ConnectionIdleTimeout, true, cancellationToken).ConfigureAwait(false);
+		}
+
+		/// <summary>
+		/// Examines all the <see cref="WeakReference{MySqlSession}"/> in <see cref="m_leasedSessions"/> to determine if any
+		/// <see cref="MySqlSession"/> objects have been garbage-collected. If so, assumes that the related <see cref="MySqlConnection"/>
+		/// was not properly disposed but the associated server connection has been closed (by the finalizer). Releases the semaphore
+		/// once for each leaked session to allow new client connections to be made.
+		/// </summary>
+		private void RecoverLeakedSessions()
+		{
+			var recoveredIds = new List<int>();
+			lock (m_leasedSessions)
+			{
+				m_lastRecoveryTime = unchecked((uint) Environment.TickCount);
+				foreach (var pair in m_leasedSessions)
+				{
+					if (!pair.Value.TryGetTarget(out var _))
+						recoveredIds.Add(pair.Key);
+				}
+				foreach (var id in recoveredIds)
+					m_leasedSessions.Remove(id);
+			}
+			if (recoveredIds.Count > 0)
+				m_sessionSemaphore.Release(recoveredIds.Count);
 		}
 
 		private async Task CleanPoolAsync(IOBehavior ioBehavior, Func<MySqlSession, bool> shouldCleanFn, bool respectMinPoolSize, CancellationToken cancellationToken)
@@ -212,6 +250,7 @@ namespace MySql.Data.MySqlClient
 			m_cleanSemaphore = new SemaphoreSlim(1);
 			m_sessionSemaphore = new SemaphoreSlim(cs.MaximumPoolSize);
 			m_sessions = new LinkedList<MySqlSession>();
+			m_leasedSessions = new Dictionary<int, WeakReference<MySqlSession>>();
 		}
 
 		static readonly ConcurrentDictionary<string, ConnectionPool> s_pools = new ConcurrentDictionary<string, ConnectionPool>();
@@ -241,5 +280,8 @@ namespace MySql.Data.MySqlClient
 		readonly SemaphoreSlim m_sessionSemaphore;
 		readonly LinkedList<MySqlSession> m_sessions;
 		readonly ConnectionSettings m_connectionSettings;
+		readonly Dictionary<int, WeakReference<MySqlSession>> m_leasedSessions;
+		int m_lastId;
+		uint m_lastRecoveryTime;
 	}
 }
