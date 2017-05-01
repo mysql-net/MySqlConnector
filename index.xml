@@ -522,6 +522,13 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-19-2&#34;&gt;0.19.2&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix connection pool exhaustion if connections aren&amp;rsquo;t disposed: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/251&#34;&gt;#251&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fix potential &lt;code&gt;NullReferenceException&lt;/code&gt; in &lt;code&gt;MySqlDataReader.Dispose&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-19-1&#34;&gt;0.19.1&lt;/h3&gt;
 
 &lt;ul&gt;
