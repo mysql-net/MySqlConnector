@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.19.2
+
+* Fix connection pool exhaustion if connections aren't disposed: [#251](https://github.com/mysql-net/MySqlConnector/issues/251).
+* Fix potential `NullReferenceException` in `MySqlDataReader.Dispose`.
+
 ### 0.19.1
 
 * Fix incorrect return value from `ExecuteNonQuery`: [#250](https://github.com/mysql-net/MySqlConnector/pull/250).
