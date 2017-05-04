@@ -662,6 +662,52 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			}
 		}
 
+		[Fact]
+		public void EnumParameter()
+		{
+			m_database.Connection.Execute(@"drop table if exists enum_test;
+create table enum_test(id integer not null primary key, value text not null);
+insert into enum_test (id, value) VALUES (1002, 'no'), (1003, 'yes');
+");
+
+			using (var command = new MySqlCommand("select * from enum_test where id = @ID;", m_database.Connection))
+			{
+				command.Parameters.AddWithValue("@ID", MySqlErrorCode.No);
+				using (var reader = command.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal((int) MySqlErrorCode.No, reader.GetInt32(0));
+					Assert.Equal("no", reader.GetString(1));
+					Assert.False(reader.Read());
+				}
+			}
+		}
+
+		[Fact
+#if BASELINE
+			(Skip = "https://bugs.mysql.com/bug.php?id=84701")
+#endif
+		]
+		public void Int64EnumParameter()
+		{
+			m_database.Connection.Execute(@"drop table if exists long_enum_test;
+create table long_enum_test(id bigint not null primary key, value integer not null);
+insert into long_enum_test (id, value) VALUES (0x7FFFFFFFFFFFFFFF, 1);
+");
+
+			using (var command = new MySqlCommand("select * from long_enum_test where id = @ID;", m_database.Connection))
+			{
+				command.Parameters.AddWithValue("@ID", TestLongEnum.Value);
+				using (var reader = command.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(long.MaxValue, reader.GetInt64(0));
+					Assert.Equal(1, reader.GetInt32(1));
+					Assert.False(reader.Read());
+				}
+			}
+		}
+
 		class BoolTest
 		{
 			public int Id { get; set; }
@@ -679,6 +725,11 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			public List<Exception> Exceptions { get; }
 
 			public MySqlConnectionStringBuilder ConnectionStringBuilder { get; }
+		}
+
+		enum TestLongEnum : long
+		{
+			Value = long.MaxValue,
 		}
 
 		readonly DatabaseFixture m_database;

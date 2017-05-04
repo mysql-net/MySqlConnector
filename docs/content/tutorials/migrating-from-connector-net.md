@@ -63,4 +63,5 @@ may execute differently with MySqlConnector. To get Connector/NET-compatible beh
 * [#81650](https://bugs.mysql.com/bug.php?id=81650): `Server` connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds
 * [#83229](https://bugs.mysql.com/bug.php?id=83329): "Unknown command" exception inserting large blob with UseCompression=True
 * [#84220](https://bugs.mysql.com/bug.php?id=84220): Cannot call a stored procedure with `.` in its name
+* [#84701](https://bugs.mysql.com/bug.php?id=84701): Can't create a paramter using a 64-bit enum with a value greater than int.MaxValue
 * [#85185](https://bugs.mysql.com/bug.php?id=85185): `ConnectionReset=True` does not preserve connection charset

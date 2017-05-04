@@ -193,6 +193,10 @@ namespace MySql.Data.MySqlClient
 			{
 				writer.WriteUtf8("{0}".FormatInvariant((ulong) Value));
 			}
+			else if (Value is Enum)
+			{
+				writer.WriteUtf8("{0:d}".FormatInvariant(Value));
+			}
 			else
 			{
 				throw new NotSupportedException("Parameter type {0} (DbType: {1}) not currently supported. Value: {2}".FormatInvariant(Value.GetType().Name, DbType, Value));
