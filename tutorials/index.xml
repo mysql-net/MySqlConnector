@@ -239,6 +239,7 @@ may execute differently with MySqlConnector. To get Connector/NET-compatible beh
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=81650&#34;&gt;#81650&lt;/a&gt;: &lt;code&gt;Server&lt;/code&gt; connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=83329&#34;&gt;#83229&lt;/a&gt;: &amp;ldquo;Unknown command&amp;rdquo; exception inserting large blob with UseCompression=True&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=84220&#34;&gt;#84220&lt;/a&gt;: Cannot call a stored procedure with &lt;code&gt;.&lt;/code&gt; in its name&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=84701&#34;&gt;#84701&lt;/a&gt;: Can&amp;rsquo;t create a paramter using a 64-bit enum with a value greater than int.MaxValue&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=85185&#34;&gt;#85185&lt;/a&gt;: &lt;code&gt;ConnectionReset=True&lt;/code&gt; does not preserve connection charset&lt;/li&gt;
 &lt;/ul&gt;
 </description>
