@@ -436,6 +436,7 @@ may execute differently with MySqlConnector. To get Connector/NET-compatible beh
 
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=37283&#34;&gt;#37283&lt;/a&gt;, &lt;a href=&#34;https://bugs.mysql.com/bug.php?id=70587&#34;&gt;#70587&lt;/a&gt;: Distributed transactions are not supported&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=50773&#34;&gt;#50773&lt;/a&gt;: Can&amp;rsquo;t use multiple connections within one TransactionScope&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=66476&#34;&gt;#66476&lt;/a&gt;: Connection pool uses queue instead of stack&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=70111&#34;&gt;#70111&lt;/a&gt;: &lt;code&gt;Async&lt;/code&gt; methods execute synchronously&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=70686&#34;&gt;#70686&lt;/a&gt;: &lt;code&gt;TIME(3)&lt;/code&gt; and &lt;code&gt;TIME(6)&lt;/code&gt; fields serialize milliseconds incorrectly&lt;/li&gt;
@@ -447,6 +448,7 @@ may execute differently with MySqlConnector. To get Connector/NET-compatible beh
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=78426&#34;&gt;#78426&lt;/a&gt;: Unknown database exception has wrong number&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=78760&#34;&gt;#78760&lt;/a&gt;: Error when using tabs and newlines in SQL statements&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=78917&#34;&gt;#78917&lt;/a&gt;, &lt;a href=&#34;https://bugs.mysql.com/bug.php?id=79196&#34;&gt;#79196&lt;/a&gt;, &lt;a href=&#34;https://bugs.mysql.com/bug.php?id=82292&#34;&gt;#82292&lt;/a&gt;: &lt;code&gt;TINYINT(1)&lt;/code&gt; values start being returned as &lt;code&gt;sbyte&lt;/code&gt; after &lt;code&gt;NULL&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=80030&#34;&gt;#80030&lt;/a&gt;: Slow to connect with pooling disabled&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=81650&#34;&gt;#81650&lt;/a&gt;: &lt;code&gt;Server&lt;/code&gt; connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=83329&#34;&gt;#83229&lt;/a&gt;: &amp;ldquo;Unknown command&amp;rdquo; exception inserting large blob with UseCompression=True&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=84220&#34;&gt;#84220&lt;/a&gt;: Cannot call a stored procedure with &lt;code&gt;.&lt;/code&gt; in its name&lt;/li&gt;
