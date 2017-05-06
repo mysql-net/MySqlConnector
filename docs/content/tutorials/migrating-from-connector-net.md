@@ -49,6 +49,7 @@ may execute differently with MySqlConnector. To get Connector/NET-compatible beh
 ### Bugs present in Connector/NET that are fixed in MySqlConnector
 
 * [#37283](https://bugs.mysql.com/bug.php?id=37283), [#70587](https://bugs.mysql.com/bug.php?id=70587): Distributed transactions are not supported
+* [#50773](https://bugs.mysql.com/bug.php?id=50773): Can't use multiple connections within one TransactionScope
 * [#66476](https://bugs.mysql.com/bug.php?id=66476): Connection pool uses queue instead of stack
 * [#70111](https://bugs.mysql.com/bug.php?id=70111): `Async` methods execute synchronously
 * [#70686](https://bugs.mysql.com/bug.php?id=70686): `TIME(3)` and `TIME(6)` fields serialize milliseconds incorrectly
@@ -60,6 +61,7 @@ may execute differently with MySqlConnector. To get Connector/NET-compatible beh
 * [#78426](https://bugs.mysql.com/bug.php?id=78426): Unknown database exception has wrong number
 * [#78760](https://bugs.mysql.com/bug.php?id=78760): Error when using tabs and newlines in SQL statements
 * [#78917](https://bugs.mysql.com/bug.php?id=78917), [#79196](https://bugs.mysql.com/bug.php?id=79196), [#82292](https://bugs.mysql.com/bug.php?id=82292): `TINYINT(1)` values start being returned as `sbyte` after `NULL`
+* [#80030](https://bugs.mysql.com/bug.php?id=80030): Slow to connect with pooling disabled
 * [#81650](https://bugs.mysql.com/bug.php?id=81650): `Server` connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds
 * [#83229](https://bugs.mysql.com/bug.php?id=83329): "Unknown command" exception inserting large blob with UseCompression=True
 * [#84220](https://bugs.mysql.com/bug.php?id=84220): Cannot call a stored procedure with `.` in its name
