@@ -118,13 +118,21 @@ namespace MySqlConnector.Performance.Controllers
 						};
 						await blogPost.InsertAsync();
 					}
+#if BASELINE
+					txn.Commit();
+#else
+					await txn.CommitAsync();
+#endif
 				}
 				catch (Exception)
 				{
+#if BASELINE
+					txn.Rollback();
+#else
 					await txn.RollbackAsync();
+#endif
 					throw;
 				}
-				await txn.CommitAsync();
 				var timing = $"Async: Inserted {num} records in " + (DateTime.Now - time);
 				Console.WriteLine(timing);
 				return new OkObjectResult(timing);

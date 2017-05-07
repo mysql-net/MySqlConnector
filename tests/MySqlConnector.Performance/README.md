@@ -1,6 +1,22 @@
 Performance Tests
 =================
 
+## Concurrency Testing
+
+To run concurrency tests, execute the following command
+
+```
+dotnet run concurrency [iterations] [concurrency] [operations]
+```
+
+For example, the following command will run 3 iterations using 100 concurrent connections and 10 operations in each concurrency test:
+
+```
+dotnet run concurrency 3 100 10
+```
+
+## HTTP Load Testing
+
 The `MySqlConnector.Performance` project runs a .NET Core MVC API application that is intended to be used to load test asynchronous and synchronous MySqlConnector methods.
 
 You first must configure your MySql Database.  Open the `config.json.example` file, configure the connection string, and save it as `config.json`.  Now you can run the application with `dotnet run`.
@@ -31,3 +47,17 @@ The `scripts` directory contains load testing scripts.  These scripts require th
 
     # run 50 sync queries per second for 1 minute on windows
     ./stress.ps1 50 1m sync
+
+## Baseline Tests
+
+To run the Baseline tests against MySql.Data, first restore the project to include MySql.Data:
+
+```
+dotnet restore /p:Configuration=Baseline
+```
+
+Next, run use `dotnet -c Baseline` when running any dotnet commands.  Example:
+
+```
+dotnet run -c Baseline concurrency 3 100 10
+```

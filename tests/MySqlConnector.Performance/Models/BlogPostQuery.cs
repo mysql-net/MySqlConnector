@@ -58,11 +58,19 @@ namespace MySqlConnector.Performance.Models
 			try
 			{
 				await DeleteAllCmd().ExecuteNonQueryAsync();
+#if BASELINE
+				txn.Commit();
+#else
 				await txn.CommitAsync();
+#endif
 			}
 			catch
 			{
+#if BASELINE
+				txn.Rollback();
+#else
 				await txn.RollbackAsync();
+#endif
 				throw;
 			}
 		}
