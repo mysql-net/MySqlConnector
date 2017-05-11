@@ -264,8 +264,8 @@
   </tr>
   <tr>
     <td>Connection Reset, ConnectionReset   </td>
-    <td>false</td>
-    <td>If true, the connection state is reset when it is retrieved from the pool. The default value of false avoids making an additional server round trip when obtaining a connection, but the connection state is not reset.</td>
+    <td><code>true</code></td>
+    <td>If <code>true</code>, the connection state is reset when it is retrieved from the pool. The default value of <code>true</code> ensures that the connection is in the same state whether it's newly created or retrieved from the pool. A value of <code>false</code> avoids making an additional server round trip when obtaining a connection, but the connection state is not reset, meaning that session variables and other session state changes from any previous use of the connection are carried over.</td>
   </tr>
   <tr>
     <td>Connection Idle Timeout, ConnectionIdleTimeout</td>
