@@ -382,8 +382,7 @@ namespace MySql.Data.MySqlClient
 		private void CloseDatabase()
 		{
 			m_cachedProcedures = null;
-			if (Session.ActiveReader != null)
-				Session.ActiveReader.Dispose();
+			Session?.ActiveReader?.Dispose();
 			if (CurrentTransaction != null && m_session.IsConnected)
 			{
 				CurrentTransaction.Dispose();
