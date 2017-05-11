@@ -65,6 +65,16 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-19-3&#34;&gt;0.19.3&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix authentication against Azure Database for MySQL: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/259&#34;&gt;#259&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Support enum parameter values: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/255&#34;&gt;#255&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fix &lt;code&gt;CancellationToken&lt;/code&gt; being ignored by &lt;code&gt;ChangeDatabaseAsync&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/pull/253&#34;&gt;#253&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fix &lt;code&gt;NullReferenceException&lt;/code&gt; being thrown from &lt;code&gt;MySqlConnection.CloseDatabase&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Thanks to &lt;a href=&#34;https://github.com/Nicholi&#34;&gt;Nicholas Schell&lt;/a&gt; for contributions to this release.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-19-2&#34;&gt;0.19.2&lt;/h3&gt;
 
 &lt;ul&gt;
