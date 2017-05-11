@@ -11,6 +11,14 @@ weight: 30
 Version History
 ===============
 
+### 0.19.3
+
+* Fix authentication against Azure Database for MySQL: [#259](https://github.com/mysql-net/MySqlConnector/issues/259).
+* Support enum parameter values: [#255](https://github.com/mysql-net/MySqlConnector/issues/255).
+* Fix `CancellationToken` being ignored by `ChangeDatabaseAsync`: [#253](https://github.com/mysql-net/MySqlConnector/pull/253).
+* Fix `NullReferenceException` being thrown from `MySqlConnection.CloseDatabase`.
+* Thanks to [Nicholas Schell](https://github.com/Nicholi) for contributions to this release.
+
 ### 0.19.2
 
 * Fix connection pool exhaustion if connections aren't disposed: [#251](https://github.com/mysql-net/MySqlConnector/issues/251).
