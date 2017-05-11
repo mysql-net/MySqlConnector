@@ -237,6 +237,14 @@ namespace MySql.Data.Serialization
 			payload = new PayloadData(new ArraySegment<byte>(response));
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
+			// if server doesn't support the authentication fast path, it will send a new challenge
+			if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
+			{
+				await SwitchAuthenticationAsync(payload, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			}
+
 			OkPayload.Create(payload);
 
 			if (cs.UseCompression)
@@ -267,17 +275,23 @@ namespace MySql.Data.Serialization
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 				{
-					// if the server didn't support the hashed password; rehash with the new challenge
-					var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload);
-					if (switchRequest.Name != "mysql_native_password")
-						throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(switchRequest.Name));
-					hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(switchRequest.Data, 0, cs.Password);
-					payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
-					await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+					await SwitchAuthenticationAsync(payload, cs, ioBehavior, cancellationToken);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				OkPayload.Create(payload);
 			}
+		}
+
+		private async Task SwitchAuthenticationAsync(PayloadData payload, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			// if the server didn't support the hashed password; rehash with the new challenge
+			var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload);
+			if (switchRequest.Name != "mysql_native_password")
+				throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(switchRequest.Name));
+			AuthPluginData = switchRequest.Data;
+			var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
+			payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
+			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
 		public async Task<bool> TryPingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
