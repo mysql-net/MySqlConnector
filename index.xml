@@ -525,6 +525,12 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-19-4&#34;&gt;0.19.4&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix &lt;code&gt;NotImplementedException&lt;/code&gt; in &lt;code&gt;GetFieldType&lt;/code&gt; and &lt;code&gt;GetDataTypeName&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/261&#34;&gt;#261&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-19-3&#34;&gt;0.19.3&lt;/h3&gt;
 
 &lt;ul&gt;
