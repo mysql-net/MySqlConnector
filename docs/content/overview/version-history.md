@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.19.4
+
+* Fix `NotImplementedException` in `GetFieldType` and `GetDataTypeName`: [#261](https://github.com/mysql-net/MySqlConnector/issues/261).
+
 ### 0.19.3
 
 * Fix authentication against Azure Database for MySQL: [#259](https://github.com/mysql-net/MySqlConnector/issues/259).
