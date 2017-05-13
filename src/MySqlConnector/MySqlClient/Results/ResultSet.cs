@@ -287,6 +287,10 @@ namespace MySql.Data.MySqlClient.Results
 				case ColumnType.Json:
 					return "JSON";
 
+				case ColumnType.Null:
+					// not a valid data type name, but only happens when there is no way to infer the type of the column, e.g., "SELECT NULL;"
+					return "NULL";
+
 				default:
 					throw new NotImplementedException("GetDataTypeName for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));
 			}
@@ -355,6 +359,9 @@ namespace MySql.Data.MySqlClient.Results
 				case ColumnType.Decimal:
 				case ColumnType.NewDecimal:
 					return typeof(decimal);
+
+				case ColumnType.Null:
+					return typeof(object);
 
 				default:
 					throw new NotImplementedException("GetFieldType for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));

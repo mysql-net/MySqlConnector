@@ -582,6 +582,65 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 				throw ex;
 		}
 
+		[Theory]
+#if BASELINE
+		[InlineData("null", typeof(string))]
+#else
+		[InlineData("null", typeof(object))]
+#endif
+		[InlineData("cast(null as char)", typeof(string))]
+		[InlineData("1", typeof(long))]
+		[InlineData("cast(1 as unsigned)", typeof(ulong))]
+		[InlineData("1.0", typeof(decimal))]
+		[InlineData("'text'", typeof(string))]
+		[InlineData("cast('text' as char(4))", typeof(string))]
+		[InlineData("cast('2000-01-02' as date)", typeof(DateTime))]
+		[InlineData("cast('2000-01-02 13:45:56' as datetime)", typeof(DateTime))]
+		[InlineData("cast('13:45:56' as time)", typeof(TimeSpan))]
+		[InlineData("_binary'00112233'", typeof(byte[]))]
+		[InlineData("sqrt(2)", typeof(double))]
+		public void GetFieldType(string value, Type expectedType)
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select " + value + ";";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(expectedType, reader.GetFieldType(0));
+				}
+			}
+		}
+
+		[Theory]
+#if BASELINE
+		[InlineData("null", "VARCHAR")]
+#else
+		[InlineData("null", "NULL")]
+#endif
+		[InlineData("cast(null as char)", "VARCHAR")]
+		[InlineData("1", "BIGINT")]
+		[InlineData("cast(1 as unsigned)", "BIGINT")]
+		[InlineData("1.0", "DECIMAL")]
+		[InlineData("'text'", "VARCHAR")]
+		[InlineData("cast('2000-01-02' as date)", "DATE")]
+		[InlineData("cast('2000-01-02 13:45:56' as datetime)", "DATETIME")]
+		[InlineData("cast('13:45:56' as time)", "TIME")]
+		[InlineData("_binary'00112233'", "BLOB")]
+		[InlineData("sqrt(2)", "DOUBLE")]
+		public void GetDataTypeName(string value, string expectedDataType)
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select " + value + ";";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(expectedDataType, reader.GetDataTypeName(0));
+				}
+			}
+		}
+
 		private void UseReaderWithoutDisposingThread(object obj)
 		{
 			var data = (UseReaderWithoutDisposingThreadData) obj;
