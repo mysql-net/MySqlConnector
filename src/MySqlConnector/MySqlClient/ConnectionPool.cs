@@ -47,12 +47,6 @@ namespace MySql.Data.MySqlClient
 					}
 					else
 					{
-						// session is valid, reset if supported
-						if (m_connectionSettings.ConnectionReset)
-						{
-							await session.ResetConnectionAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
-						}
-
 						// pooled session is ready to be used; return it
 						lock (m_leasedSessions)
 							m_leasedSessions.Add(session.Id, new WeakReference<MySqlSession>(session));
@@ -91,15 +85,47 @@ namespace MySql.Data.MySqlClient
 
 		public void Return(MySqlSession session)
 		{
+			// NOTE: deliberately calling 'async void' method so that first part runs synchronously, but remainder gets queued
+			// to an I/O completion thread to run in the background
+			ReturnAsync(session);
+		}
+
+		private async void ReturnAsync(MySqlSession session)
+		{
+			var succeeded = false;
 			try
 			{
-				lock (m_leasedSessions)
-					m_leasedSessions.Remove(session.Id);
-				if (SessionIsHealthy(session))
-					lock (m_sessions)
-						m_sessions.AddFirst(session);
-				else
-					session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).ConfigureAwait(false);
+				try
+				{
+					lock (m_leasedSessions)
+						m_leasedSessions.Remove(session.Id);
+
+					if (SessionIsHealthy(session))
+					{
+						if (m_connectionSettings.ConnectionReset)
+							await session.ResetConnectionAsync(m_connectionSettings, IOBehavior.Asynchronous, CancellationToken.None).ConfigureAwait(false);
+
+						lock (m_sessions)
+							m_sessions.AddFirst(session);
+						succeeded = true;
+					}
+				}
+				catch (Exception)
+				{
+					// session will be disposed below
+				}
+
+				if (!succeeded)
+				{
+					// clean up the session, ignoring any errors
+					try
+					{
+						await session.DisposeAsync(IOBehavior.Asynchronous, CancellationToken.None).ConfigureAwait(false);
+					}
+					catch (Exception)
+					{
+					}
+				}
 			}
 			finally
 			{
