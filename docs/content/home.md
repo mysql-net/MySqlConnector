@@ -53,7 +53,7 @@ and is not based on [Oracle's Connector/NET](https://github.com/mysql/mysql-conn
     </td>
     <td>
       Get involved!  View
-      <a href="https://github.com/mysql-net/MySqlConnector/projects/1">our roadmap</a>,
+      <a href="https://github.com/mysql-net/MySqlConnector/milestones">our roadmap</a>,
       discuss <a href="https://github.com/mysql-net/MySqlConnector/issues">issues</a>,
       contribute <a href="https://github.com/mysql-net/MySqlConnector/pulls">pull requests</a>
     </td>
