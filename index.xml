@@ -526,6 +526,14 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-19-5&#34;&gt;0.19.5&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix duration of transaction isolation level: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/263&#34;&gt;#263&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fix crash sending a GUID containing &lt;code&gt;0x27&lt;/code&gt; or &lt;code&gt;0x5C&lt;/code&gt; when &lt;code&gt;OldGuids=true&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/pull/265&#34;&gt;#265&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Thanks to &lt;a href=&#34;https://github.com/adampoit&#34;&gt;Adam Poit&lt;/a&gt; for contributions to this release.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-19-4&#34;&gt;0.19.4&lt;/h3&gt;
 
 &lt;ul&gt;
