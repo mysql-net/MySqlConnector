@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.19.5
+
+* Fix duration of transaction isolation level: [#263](https://github.com/mysql-net/MySqlConnector/issues/263).
+* Fix crash sending a GUID containing `0x27` or `0x5C` when `OldGuids=true`: [#265](https://github.com/mysql-net/MySqlConnector/pull/265).
+* Thanks to [Adam Poit](https://github.com/adampoit) for contributions to this release.
+
 ### 0.19.4
 
 * Fix `NotImplementedException` in `GetFieldType` and `GetDataTypeName`: [#261](https://github.com/mysql-net/MySqlConnector/issues/261).
