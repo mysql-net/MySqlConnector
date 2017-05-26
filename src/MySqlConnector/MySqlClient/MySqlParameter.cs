@@ -161,7 +161,12 @@ namespace MySql.Data.MySqlClient
 				if ((options & StatementPreparerOptions.OldGuids) != 0)
 				{
 					writer.WriteUtf8("_binary'");
-					writer.Write(guidValue.ToByteArray());
+					foreach (var by in guidValue.ToByteArray())
+					{
+						if (by == 0x27 || by == 0x5C)
+							writer.Write((byte) 0x5C);
+						writer.Write(by);
+					}
 					writer.Write((byte) '\'');
 				}
 				else

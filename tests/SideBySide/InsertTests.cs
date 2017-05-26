@@ -167,6 +167,38 @@ create table insert_datetimeoffset(rowid integer not null primary key auto_incre
 		}
 
 		[Fact]
+		public void InsertOldGuid()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.OldGuids = true;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+				connection.Execute(@"drop table if exists old_guids;
+create table old_guids(id integer not null primary key auto_increment, guid binary(16) null);");
+
+				var guid = new Guid(1, 2, 3, 0x27, 0x5C, 0x7B, 0x7D, 0x22, 0x25, 0x26, 0x2C);
+
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = @"insert into old_guids(guid) values(@guid)";
+					var parameter = cmd.CreateParameter();
+					parameter.ParameterName = "@guid";
+					parameter.Value = guid;
+					cmd.Parameters.Add(parameter);
+					cmd.ExecuteNonQuery();
+				}
+
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = @"select guid from old_guids;";
+					var selected = (Guid) cmd.ExecuteScalar();
+					Assert.Equal(guid, selected);
+				}
+			}
+		}
+
+		[Fact]
 		public void InsertEnumValue()
 		{
 			m_database.Connection.Execute(@"drop table if exists insert_enum_value;
