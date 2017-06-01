@@ -38,21 +38,17 @@ namespace SideBySide
 					command.CommandText = "select @@autocommit;";
 					Assert.Equal(1L, command.ExecuteScalar());
 				}
-			}
 
-			using (var connection = new MySqlConnection(csb.ConnectionString))
-			{
-				connection.Open();
+				ReopenSameConnection(connection);
+
 				using (var command = connection.CreateCommand())
 				{
 					command.CommandText = "SET autocommit=0;";
 					command.ExecuteNonQuery();
 				}
-			}
 
-			using (var connection = new MySqlConnection(csb.ConnectionString))
-			{
-				connection.Open();
+				ReopenSameConnection(connection);
+
 				using (var command = connection.CreateCommand())
 				{
 					command.CommandText = "select @@autocommit;";
@@ -157,6 +153,7 @@ namespace SideBySide
 			csb.Pooling = true;
 			csb.MinimumPoolSize = 0;
 			csb.MaximumPoolSize = 1;
+			csb.ConnectionReset = false;
 			int serverThread;
 
 			using (var connection = new MySqlConnection(csb.ConnectionString))
@@ -321,7 +318,19 @@ namespace SideBySide
 #endif
 		}
 
-		private static HashSet<long> GetConnectionIds(IEnumerable<MySqlConnection> connections)
-			=> new HashSet<long>(connections.Select(x => (long) x.ServerThread));
+		private static void ReopenSameConnection(MySqlConnection connection)
+		{
+			var sw = Stopwatch.StartNew();
+			var serverThread = connection.ServerThread;
+			do
+			{
+				connection.Close();
+				connection.Open();
+			} while (connection.ServerThread != serverThread && sw.ElapsedMilliseconds < 5000);
+			Assert.Equal(serverThread, connection.ServerThread);
+		}
+
+		private static HashSet<long> GetConnectionIds(IEnumerable<MySqlConnection> connections) =>
+			new HashSet<long>(connections.Select(x => (long) x.ServerThread));
 	}
 }
