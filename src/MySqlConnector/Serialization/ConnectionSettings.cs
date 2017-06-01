@@ -59,50 +59,6 @@ namespace MySql.Data.Serialization
 			UseCompression = csb.UseCompression;
 		}
 
-		public ConnectionSettings WithSecureConnection(bool isSecureConnection) => new ConnectionSettings(this, isSecureConnection: isSecureConnection);
-		public ConnectionSettings WithUseCompression(bool useCompression) => new ConnectionSettings(this, useCompression: useCompression);
-
-		private ConnectionSettings(ConnectionSettings other, bool? useCompression = null, bool? isSecureConnection = null)
-		{
-			// Base Options
-			ConnectionString = other.ConnectionString;
-			ConnectionType = other.ConnectionType;
-			Hostnames = other.Hostnames;
-			Port = other.Port;
-			UnixSocket = other.UnixSocket;
-			UserID = other.UserID;
-			Password = other.Password;
-			Database = other.Database;
-
-			// SSL/TLS Options
-			SslMode = other.SslMode;
-			CertificateFile = other.CertificateFile;
-			CertificatePassword = other.CertificatePassword;
-			IsSecureConnection = isSecureConnection ?? other.IsSecureConnection;
-
-			// Connection Pooling Options
-			Pooling = other.Pooling;
-			ConnectionLifeTime = other.ConnectionLifeTime;
-			ConnectionReset = other.ConnectionReset;
-			ConnectionIdleTimeout = other.ConnectionIdleTimeout;
-			MinimumPoolSize = other.MinimumPoolSize;
-			MaximumPoolSize = other.MaximumPoolSize;
-
-			// Other Options
-			AllowUserVariables = other.AllowUserVariables;
-			AutoEnlist = other.AutoEnlist;
-			BufferResultSets = other.BufferResultSets;
-			ConnectionTimeout = other.ConnectionTimeout;
-			ConvertZeroDateTime = other.ConvertZeroDateTime;
-			ForceSynchronous = other.ForceSynchronous;
-			Keepalive = other.Keepalive;
-			OldGuids = other.OldGuids;
-			PersistSecurityInfo = other.PersistSecurityInfo;
-			TreatTinyAsBoolean = other.TreatTinyAsBoolean;
-			UseAffectedRows = other.UseAffectedRows;
-			UseCompression = useCompression ?? other.UseCompression;
-		}
-
 		// Base Options
 		internal readonly string ConnectionString;
 		internal readonly ConnectionType ConnectionType;
@@ -117,7 +73,6 @@ namespace MySql.Data.Serialization
 		internal readonly MySqlSslMode SslMode;
 		internal readonly string CertificateFile;
 		internal readonly string CertificatePassword;
-		internal readonly bool IsSecureConnection;
 
 		// Connection Pooling Options
 		internal readonly bool Pooling;

@@ -222,8 +222,7 @@ namespace MySql.Data.Serialization
 			ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
 			ConnectionId = initialHandshake.ConnectionId;
 			AuthPluginData = initialHandshake.AuthPluginData;
-			if (cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) == 0)
-				cs = cs.WithUseCompression(false);
+			m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
 
 			var serverSupportsSsl = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Ssl) != 0;
 			if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
@@ -231,10 +230,9 @@ namespace MySql.Data.Serialization
 				if (!serverSupportsSsl)
 					throw new MySqlException("Server does not support SSL");
 				await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
-				cs = cs.WithSecureConnection(true);
 			}
 
-			var response = HandshakeResponse41Packet.Create(initialHandshake, cs);
+			var response = HandshakeResponse41Packet.Create(initialHandshake, cs, m_useCompression);
 			payload = new PayloadData(new ArraySegment<byte>(response));
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -242,13 +240,13 @@ namespace MySql.Data.Serialization
 			// if server doesn't support the authentication fast path, it will send a new challenge
 			if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 			{
-				await SwitchAuthenticationAsync(payload, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+				await SwitchAuthenticationAsync(payload, cs.Password, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 
 			OkPayload.Create(payload);
 
-			if (cs.UseCompression)
+			if (m_useCompression)
 				m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
 		}
 
@@ -276,14 +274,14 @@ namespace MySql.Data.Serialization
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 				{
-					await SwitchAuthenticationAsync(payload, cs, ioBehavior, cancellationToken);
+					await SwitchAuthenticationAsync(payload, cs.Password, ioBehavior, cancellationToken);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				OkPayload.Create(payload);
 			}
 		}
 
-		private async Task SwitchAuthenticationAsync(PayloadData payload, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async Task SwitchAuthenticationAsync(PayloadData payload, string password, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			// if the server didn't support the hashed password; rehash with the new challenge
 			var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload);
@@ -291,15 +289,15 @@ namespace MySql.Data.Serialization
 			{
 			case "mysql_native_password":
 				AuthPluginData = switchRequest.Data;
-				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
+				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, password);
 				payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				break;
 
 			case "mysql_clear_password":
-				if (!cs.IsSecureConnection)
+				if (!m_isSecureConnection)
 					throw new MySqlException("Authentication method '{0}' requires a secure connection.".FormatInvariant(switchRequest.Name));
-				payload = new PayloadData(new ArraySegment<byte>(Encoding.UTF8.GetBytes(cs.Password)));
+				payload = new PayloadData(new ArraySegment<byte>(Encoding.UTF8.GetBytes(password)));
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				break;
 
@@ -577,7 +575,7 @@ namespace MySql.Data.Serialization
 
 			var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
 
-			var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Packet.InitSsl(serverCapabilities, cs)));
+			var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Packet.InitSsl(serverCapabilities, cs, m_useCompression)));
 			await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			try
@@ -596,6 +594,7 @@ namespace MySql.Data.Serialization
 				}
 				var sslByteHandler = new StreamByteHandler(sslStream);
 				m_payloadHandler.ByteHandler = sslByteHandler;
+				m_isSecureConnection = true;
 			}
 			catch (Exception ex)
 			{
@@ -730,5 +729,7 @@ namespace MySql.Data.Serialization
 		IPayloadHandler m_payloadHandler;
 		MySqlCommand m_activeCommand;
 		MySqlDataReader m_activeReader;
+		bool m_useCompression;
+		bool m_isSecureConnection;
 	}
 }

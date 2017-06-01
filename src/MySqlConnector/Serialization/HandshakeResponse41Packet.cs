@@ -2,7 +2,7 @@
 {
 	internal sealed class HandshakeResponse41Packet
 	{
-		private static PayloadWriter CreateCapabilitiesPayload(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, ProtocolCapabilities additionalCapabilities=0)
+		private static PayloadWriter CreateCapabilitiesPayload(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, bool useCompression, ProtocolCapabilities additionalCapabilities=0)
 		{
 			var writer = new PayloadWriter();
 
@@ -18,7 +18,7 @@
 				ProtocolCapabilities.LocalFiles |
 				(string.IsNullOrWhiteSpace(cs.Database) ? 0 : ProtocolCapabilities.ConnectWithDatabase) |
 				(cs.UseAffectedRows ? 0 : ProtocolCapabilities.FoundRows) |
-				(cs.UseCompression ? ProtocolCapabilities.Compress : ProtocolCapabilities.None) |
+				(useCompression ? ProtocolCapabilities.Compress : ProtocolCapabilities.None) |
 				additionalCapabilities));
 			writer.WriteInt32(0x4000_0000);
 			writer.WriteByte((byte) CharacterSet.Utf8Mb4Binary);
@@ -27,16 +27,16 @@
 			return writer;
 		}
 
-		public static byte[] InitSsl(ProtocolCapabilities serverCapabilities, ConnectionSettings cs)
+		public static byte[] InitSsl(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, bool useCompression)
 		{
-			return CreateCapabilitiesPayload(serverCapabilities, cs, ProtocolCapabilities.Ssl).ToBytes();
+			return CreateCapabilitiesPayload(serverCapabilities, cs, useCompression, ProtocolCapabilities.Ssl).ToBytes();
 		}
 
-		public static byte[] Create(InitialHandshakePacket handshake, ConnectionSettings cs)
+		public static byte[] Create(InitialHandshakePacket handshake, ConnectionSettings cs, bool useCompression)
 		{
 			// TODO: verify server capabilities
 
-			var writer = CreateCapabilitiesPayload(handshake.ProtocolCapabilities, cs);
+			var writer = CreateCapabilitiesPayload(handshake.ProtocolCapabilities, cs, useCompression);
 			writer.WriteNullTerminatedString(cs.UserID);
 			var authenticationResponse = AuthenticationUtility.CreateAuthenticationResponse(handshake.AuthPluginData, 0, cs.Password);
 			writer.WriteByte((byte) authenticationResponse.Length);
