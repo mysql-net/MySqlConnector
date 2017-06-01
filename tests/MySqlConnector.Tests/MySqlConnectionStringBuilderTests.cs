@@ -123,5 +123,25 @@ namespace MySql.Data.Tests
 			Assert.Throws<InvalidOperationException>(() => csb.SslMode);
 		}
 #endif
+
+		[Fact]
+		public void CloneConnectionStringBuilder()
+		{
+			var csb = new MySqlConnectionStringBuilder
+			{
+				Port = 12345,
+				Database = "database",
+				OldGuids = true,
+				SslMode = MySqlSslMode.VerifyFull
+			};
+
+			var clone = csb.Clone();
+
+			Assert.Equal(csb.Port, clone.Port);
+			Assert.Equal(csb.Database, clone.Database);
+			Assert.Equal(csb.OldGuids, clone.OldGuids);
+			Assert.Equal(csb.SslMode, clone.SslMode);
+		}
 	}
 }
+
