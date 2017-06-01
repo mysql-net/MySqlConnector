@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.20.0
+
+* Support [Amazon RDS](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html) [IAM Authentication](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html): [#268](https://github.com/mysql-net/MySqlConnector/issues/268).
+
 ### 0.19.5
 
 * Fix duration of transaction isolation level: [#263](https://github.com/mysql-net/MySqlConnector/issues/263).
