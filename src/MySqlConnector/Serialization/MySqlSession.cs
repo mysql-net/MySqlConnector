@@ -231,6 +231,7 @@ namespace MySql.Data.Serialization
 				if (!serverSupportsSsl)
 					throw new MySqlException("Server does not support SSL");
 				await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+				cs = cs.WithSecureConnection(true);
 			}
 
 			var response = HandshakeResponse41Packet.Create(initialHandshake, cs);
@@ -286,12 +287,25 @@ namespace MySql.Data.Serialization
 		{
 			// if the server didn't support the hashed password; rehash with the new challenge
 			var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload);
-			if (switchRequest.Name != "mysql_native_password")
+			switch (switchRequest.Name)
+			{
+			case "mysql_native_password":
+				AuthPluginData = switchRequest.Data;
+				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
+				payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
+				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				break;
+
+			case "mysql_clear_password":
+				if (!cs.IsSecureConnection)
+					throw new MySqlException("Authentication method '{0}' requires a secure connection.".FormatInvariant(switchRequest.Name));
+				payload = new PayloadData(new ArraySegment<byte>(Encoding.UTF8.GetBytes(cs.Password)));
+				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				break;
+
+			default:
 				throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(switchRequest.Name));
-			AuthPluginData = switchRequest.Data;
-			var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
-			payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
-			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+			}
 		}
 
 		public async Task<bool> TryPingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)

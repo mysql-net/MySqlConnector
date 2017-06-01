@@ -59,9 +59,10 @@ namespace MySql.Data.Serialization
 			UseCompression = csb.UseCompression;
 		}
 
-		public ConnectionSettings WithUseCompression(bool useCompression) => new ConnectionSettings(this, useCompression);
+		public ConnectionSettings WithSecureConnection(bool isSecureConnection) => new ConnectionSettings(this, isSecureConnection: isSecureConnection);
+		public ConnectionSettings WithUseCompression(bool useCompression) => new ConnectionSettings(this, useCompression: useCompression);
 
-		private ConnectionSettings(ConnectionSettings other, bool? useCompression)
+		private ConnectionSettings(ConnectionSettings other, bool? useCompression = null, bool? isSecureConnection = null)
 		{
 			// Base Options
 			ConnectionString = other.ConnectionString;
@@ -77,6 +78,7 @@ namespace MySql.Data.Serialization
 			SslMode = other.SslMode;
 			CertificateFile = other.CertificateFile;
 			CertificatePassword = other.CertificatePassword;
+			IsSecureConnection = isSecureConnection ?? other.IsSecureConnection;
 
 			// Connection Pooling Options
 			Pooling = other.Pooling;
@@ -115,6 +117,7 @@ namespace MySql.Data.Serialization
 		internal readonly MySqlSslMode SslMode;
 		internal readonly string CertificateFile;
 		internal readonly string CertificatePassword;
+		internal readonly bool IsSecureConnection;
 
 		// Connection Pooling Options
 		internal readonly bool Pooling;
