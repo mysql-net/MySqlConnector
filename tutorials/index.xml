@@ -61,13 +61,9 @@ should be familiar with &lt;a href=&#34;https://msdn.microsoft.com/en-us/magazin
     &lt;td&gt;ExecuteScalar&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-    &lt;td rowspan=&#34;4&#34; style=&#34;vertical-align:middle&#34;&gt;
+    &lt;td rowspan=&#34;3&#34; style=&#34;vertical-align:middle&#34;&gt;
       &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbdatareader&#34;&gt;DbDataReader&lt;/a&gt;
     &lt;/td&gt;
-    &lt;td&gt;GetFieldValueAsync&lt;/td&gt;
-    &lt;td&gt;GetFieldValue&lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
     &lt;td&gt;IsDBNullAsync&lt;/td&gt;
     &lt;td&gt;IsDBNull&lt;/td&gt;
   &lt;/tr&gt;
@@ -98,6 +94,13 @@ should be familiar with &lt;a href=&#34;https://msdn.microsoft.com/en-us/magazin
 
 &lt;p&gt;&lt;span class=&#34;text-danger&#34;&gt;*&lt;/span&gt;Async Transaction methods are not part of ADO.NET, they are provided by
 MySqlConnector to allow database code to remain fully asynchronous.&lt;/p&gt;
+
+&lt;h3 id=&#34;exception-dbdatareader-getfieldvalueasync&#34;&gt;Exception: DbDataReader.GetFieldValueAsync&lt;/h3&gt;
+
+&lt;p&gt;Once &lt;code&gt;DbDataReader.ReadAsync&lt;/code&gt; (or &lt;code&gt;DbDataReader.Read&lt;/code&gt;) has returned &lt;code&gt;true&lt;/code&gt;, the full contents of the current
+row are will be memory. Calling &lt;code&gt;GetFieldValue&amp;lt;T&amp;gt;&lt;/code&gt; will return the value immediately (without blocking on I/O).
+It will have higher performance than &lt;code&gt;GetFieldValueAsync&amp;lt;T&amp;gt;&lt;/code&gt; because it doesn&amp;rsquo;t have to allocate a &lt;code&gt;Task&amp;lt;T&amp;gt;&lt;/code&gt;
+to store the result. There is no performance benefit to using the &lt;code&gt;DbDataReader.GetFieldValueAsync&amp;lt;T&amp;gt;&lt;/code&gt; method.&lt;/p&gt;
 
 &lt;h3 id=&#34;example-console-application&#34;&gt;Example Console Application&lt;/h3&gt;
 

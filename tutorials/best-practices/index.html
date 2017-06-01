@@ -211,13 +211,9 @@ should be familiar with <a href="https://msdn.microsoft.com/en-us/magazine/jj991
     <td>ExecuteScalar</td>
   </tr>
   <tr>
-    <td rowspan="4" style="vertical-align:middle">
+    <td rowspan="3" style="vertical-align:middle">
       <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbdatareader">DbDataReader</a>
     </td>
-    <td>GetFieldValueAsync</td>
-    <td>GetFieldValue</td>
-  </tr>
-  <tr>
     <td>IsDBNullAsync</td>
     <td>IsDBNull</td>
   </tr>
@@ -248,6 +244,13 @@ should be familiar with <a href="https://msdn.microsoft.com/en-us/magazine/jj991
 
 <p><span class="text-danger">*</span>Async Transaction methods are not part of ADO.NET, they are provided by
 MySqlConnector to allow database code to remain fully asynchronous.</p>
+
+<h3 id="exception-dbdatareader-getfieldvalueasync">Exception: DbDataReader.GetFieldValueAsync</h3>
+
+<p>Once <code>DbDataReader.ReadAsync</code> (or <code>DbDataReader.Read</code>) has returned <code>true</code>, the full contents of the current
+row are will be memory. Calling <code>GetFieldValue&lt;T&gt;</code> will return the value immediately (without blocking on I/O).
+It will have higher performance than <code>GetFieldValueAsync&lt;T&gt;</code> because it doesn&rsquo;t have to allocate a <code>Task&lt;T&gt;</code>
+to store the result. There is no performance benefit to using the <code>DbDataReader.GetFieldValueAsync&lt;T&gt;</code> method.</p>
 
 <h3 id="example-console-application">Example Console Application</h3>
 

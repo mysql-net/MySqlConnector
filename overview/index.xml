@@ -65,6 +65,12 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-20-0&#34;&gt;0.20.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Support &lt;a href=&#34;http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html&#34;&gt;Amazon RDS&lt;/a&gt; &lt;a href=&#34;http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html&#34;&gt;IAM Authentication&lt;/a&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/268&#34;&gt;#268&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-19-5&#34;&gt;0.19.5&lt;/h3&gt;
 
 &lt;ul&gt;
