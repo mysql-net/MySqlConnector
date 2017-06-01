@@ -65,6 +65,12 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-20-1&#34;&gt;0.20.1&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix bug retrieving a connection from the pool when using Amazon IAM Authentication: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/269&#34;&gt;#269&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-20-0&#34;&gt;0.20.0&lt;/h3&gt;
 
 &lt;ul&gt;
