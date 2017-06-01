@@ -60,41 +60,40 @@ namespace MySql.Data.Serialization
 		}
 
 		// Base Options
-		internal readonly string ConnectionString;
-		internal readonly ConnectionType ConnectionType;
-		internal readonly IEnumerable<string> Hostnames;
-		internal readonly int Port;
-		internal readonly string UnixSocket;
-		internal readonly string UserID;
-		internal readonly string Password;
-		internal readonly string Database;
+		public string ConnectionString { get; }
+		public ConnectionType ConnectionType { get; }
+		public IEnumerable<string> Hostnames { get; }
+		public int Port { get; }
+		public string UnixSocket { get; }
+		public string UserID { get; }
+		public string Password { get; }
+		public string Database { get; }
 
 		// SSL/TLS Options
-		internal readonly MySqlSslMode SslMode;
-		internal readonly string CertificateFile;
-		internal readonly string CertificatePassword;
+		public MySqlSslMode SslMode { get; }
+		public string CertificateFile { get; }
+		public string CertificatePassword { get; }
 
 		// Connection Pooling Options
-		internal readonly bool Pooling;
-		internal readonly int ConnectionLifeTime;
-		internal readonly bool ConnectionReset;
-		internal readonly int ConnectionIdleTimeout;
-		internal readonly int MinimumPoolSize;
-		internal readonly int MaximumPoolSize;
+		public bool Pooling { get; }
+		public int ConnectionLifeTime { get; }
+		public bool ConnectionReset { get; }
+		public int ConnectionIdleTimeout { get; }
+		public int MinimumPoolSize { get; }
+		public int MaximumPoolSize { get; }
 
 		// Other Options
-		internal readonly bool AllowUserVariables;
-		internal readonly bool AutoEnlist;
-		internal readonly bool BufferResultSets;
-		internal readonly int ConnectionTimeout;
-		internal readonly bool ConvertZeroDateTime;
-		internal readonly bool ForceSynchronous;
-		internal readonly uint Keepalive;
-		internal readonly bool OldGuids;
-		internal readonly bool PersistSecurityInfo;
-		internal readonly bool TreatTinyAsBoolean;
-		internal readonly bool UseAffectedRows;
-		internal readonly bool UseCompression;
+		public bool AllowUserVariables { get; }
+		public bool AutoEnlist { get; }
+		public bool BufferResultSets { get; }
+		public int ConnectionTimeout { get; }
+		public bool ConvertZeroDateTime { get; }
+		public bool ForceSynchronous { get; }
+		public uint Keepalive { get; }
+		public bool OldGuids { get; }
+		public bool PersistSecurityInfo { get; }
+		public bool TreatTinyAsBoolean { get; }
+		public bool UseAffectedRows { get; }
+		public bool UseCompression { get; }
 	}
-
 }
