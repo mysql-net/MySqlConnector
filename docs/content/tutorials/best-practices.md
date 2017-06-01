@@ -54,13 +54,9 @@ should be familiar with [Async/Await - Best Practices in Asynchronous Programmin
     <td>ExecuteScalar</td>
   </tr>
   <tr>
-    <td rowspan="4" style="vertical-align:middle">
+    <td rowspan="3" style="vertical-align:middle">
       <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbdatareader">DbDataReader</a>
     </td>
-    <td>GetFieldValueAsync</td>
-    <td>GetFieldValue</td>
-  </tr>
-  <tr>
     <td>IsDBNullAsync</td>
     <td>IsDBNull</td>
   </tr>
@@ -91,6 +87,13 @@ should be familiar with [Async/Await - Best Practices in Asynchronous Programmin
 
 <span class="text-danger">*</span>Async Transaction methods are not part of ADO.NET, they are provided by
 MySqlConnector to allow database code to remain fully asynchronous.
+
+### Exception: DbDataReader.GetFieldValueAsync
+
+Once `DbDataReader.ReadAsync` (or `DbDataReader.Read`) has returned `true`, the full contents of the current
+row are will be memory. Calling `GetFieldValue<T>` will return the value immediately (without blocking on I/O).
+It will have higher performance than `GetFieldValueAsync<T>` because it doesn't have to allocate a `Task<T>`
+to store the result. There is no performance benefit to using the `DbDataReader.GetFieldValueAsync<T>` method.
 
 ### Example Console Application
 
