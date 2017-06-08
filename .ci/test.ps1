@@ -1,5 +1,3 @@
-﻿$ErrorActionPreference = "Stop"
-
 # restore
 dotnet restore
 if ($LASTEXITCODE -ne 0){

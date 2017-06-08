@@ -1,4 +1,3 @@
-#if !NETCOREAPP1_1_1
 using System;
 using System.Linq;
 using System.Transactions;
@@ -317,4 +316,3 @@ namespace SideBySide
 		DatabaseFixture m_database;
 	}
 }
-#endif

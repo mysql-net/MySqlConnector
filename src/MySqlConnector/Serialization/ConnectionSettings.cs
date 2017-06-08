@@ -95,5 +95,30 @@ namespace MySql.Data.Serialization
 		public bool TreatTinyAsBoolean { get; }
 		public bool UseAffectedRows { get; }
 		public bool UseCompression { get; }
+
+		// Helper Functions
+		private int? _connectionTimeoutMilliseconds;
+		public int ConnectionTimeoutMilliseconds
+		{
+			get
+			{
+				if (!_connectionTimeoutMilliseconds.HasValue)
+				{
+					try
+					{
+						checked
+						{
+							_connectionTimeoutMilliseconds = ConnectionTimeout * 1000;
+						}
+					}
+					catch (OverflowException)
+					{
+						_connectionTimeoutMilliseconds = Int32.MaxValue;
+					}
+				}
+				return _connectionTimeoutMilliseconds.Value;
+			}
+		}
+
 	}
 }

@@ -203,8 +203,12 @@ namespace MySql.Data.Serialization
 				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
 			}
 
-			var socketByteHandler = new SocketByteHandler(m_socket);
-			m_payloadHandler = new StandardPayloadHandler(socketByteHandler);
+#if NETSTANDARD2_0
+ 			var byteHandler = new StreamByteHandler(m_networkStream);
+#else
+			var byteHandler = new SocketByteHandler(m_socket);
+#endif
+			m_payloadHandler = new StandardPayloadHandler(byteHandler);
 
 			var payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
@@ -321,6 +325,9 @@ namespace MySql.Data.Serialization
 			catch (EndOfStreamException)
 			{
 			}
+			catch (IOException)
+			{
+			}
 			catch (SocketException)
 			{
 			}
@@ -435,6 +442,7 @@ namespace MySql.Data.Serialization
 					try
 					{
 						tcpClient = new TcpClient(ipAddress.AddressFamily);
+
 						using (cancellationToken.Register(() => tcpClient?.Client?.Dispose()))
 						{
 							try
@@ -448,7 +456,21 @@ namespace MySql.Data.Serialization
 #if NETSTANDARD1_3
 									await tcpClient.ConnectAsync(ipAddress, cs.Port).ConfigureAwait(false);
 #else
-									tcpClient.Connect(ipAddress, cs.Port);
+									if (Utility.IsWindows())
+									{
+										tcpClient.Connect(ipAddress, cs.Port);
+									}
+									else
+									{
+										// non-windows platforms block on synchronous connect, use send/receive timeouts: https://github.com/dotnet/corefx/issues/20954
+										var originalSendTimeout = tcpClient.Client.SendTimeout;
+										var originalReceiveTimeout = tcpClient.Client.ReceiveTimeout;
+										tcpClient.Client.SendTimeout = cs.ConnectionTimeoutMilliseconds;
+										tcpClient.Client.ReceiveTimeout = cs.ConnectionTimeoutMilliseconds;
+										tcpClient.Connect(ipAddress, cs.Port);
+										tcpClient.Client.SendTimeout = originalSendTimeout;
+										tcpClient.Client.ReceiveTimeout = originalReceiveTimeout;
+									}
 #endif
 								}
 							}
