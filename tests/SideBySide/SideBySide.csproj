@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
  <PropertyGroup Condition=" '$(Configuration)' != 'Baseline' ">
-    <TargetFrameworks>netcoreapp1.1.1;net462</TargetFrameworks>
+    <TargetFrameworks>net462;netcoreapp1.1.2;netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
 
  <PropertyGroup Condition=" '$(Configuration)' == 'Baseline' ">
@@ -33,6 +33,14 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.1" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+    <Reference Include="System.Transactions" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
+    <PackageReference Include="NETStandard.Library.NETFramework" Version="2.0.0-*" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(Configuration)' != 'Baseline' ">
     <ProjectReference Include="..\..\src\MySqlConnector\MySqlConnector.csproj" />
   </ItemGroup>
@@ -43,6 +51,10 @@
 
   <ItemGroup Condition=" '$(Configuration)' != 'Debug' ">
     <Compile Remove="DebugOnlyTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1.2' ">
+    <Compile Remove="TransactionScopeTests.cs" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">

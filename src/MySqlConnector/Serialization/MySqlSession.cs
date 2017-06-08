@@ -203,8 +203,12 @@ namespace MySql.Data.Serialization
 				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
 			}
 
-			var socketByteHandler = new SocketByteHandler(m_socket);
-			m_payloadHandler = new StandardPayloadHandler(socketByteHandler);
+#if NETSTANDARD2_0
+ 			var byteHandler = new StreamByteHandler(m_networkStream);
+#else
+			var byteHandler = new SocketByteHandler(m_socket);
+#endif
+			m_payloadHandler = new StandardPayloadHandler(byteHandler);
 
 			var payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
@@ -319,6 +323,9 @@ namespace MySql.Data.Serialization
 				return true;
 			}
 			catch (EndOfStreamException)
+			{
+			}
+			catch (IOException)
 			{
 			}
 			catch (SocketException)
