@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
@@ -176,6 +177,25 @@ namespace SideBySide
 				var exType = typeof(MySqlException);
 #endif
 				await Assert.ThrowsAsync(exType, async () => await connection.OpenAsync());
+			}
+		}
+
+		[Fact]
+		public async Task ConnectTimeoutAsync()
+		{
+			var csb = new MySqlConnectionStringBuilder
+			{
+				Server = "www.mysql.com",
+				Pooling = false,
+				ConnectionTimeout = 3,
+			};
+
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				var stopwatch = Stopwatch.StartNew();
+				await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+				stopwatch.Stop();
+				TestUtilities.AssertDuration(stopwatch, 2900, 500);
 			}
 		}
 

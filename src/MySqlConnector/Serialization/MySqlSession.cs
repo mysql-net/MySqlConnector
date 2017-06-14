@@ -442,6 +442,7 @@ namespace MySql.Data.Serialization
 					try
 					{
 						tcpClient = new TcpClient(ipAddress.AddressFamily);
+
 						using (cancellationToken.Register(() => tcpClient?.Client?.Dispose()))
 						{
 							try
@@ -455,7 +456,21 @@ namespace MySql.Data.Serialization
 #if NETSTANDARD1_3
 									await tcpClient.ConnectAsync(ipAddress, cs.Port).ConfigureAwait(false);
 #else
-									tcpClient.Connect(ipAddress, cs.Port);
+									if (Utility.IsWindows())
+									{
+										tcpClient.Connect(ipAddress, cs.Port);
+									}
+									else
+									{
+										// non-windows platforms block on synchronous connect, use send/receive timeouts: https://github.com/dotnet/corefx/issues/20954
+										var originalSendTimeout = tcpClient.Client.SendTimeout;
+										var originalReceiveTimeout = tcpClient.Client.ReceiveTimeout;
+										tcpClient.Client.SendTimeout = cs.ConnectionTimeoutMilliseconds;
+										tcpClient.Client.ReceiveTimeout = cs.ConnectionTimeoutMilliseconds;
+										tcpClient.Connect(ipAddress, cs.Port);
+										tcpClient.Client.SendTimeout = originalSendTimeout;
+										tcpClient.Client.ReceiveTimeout = originalReceiveTimeout;
+									}
 #endif
 								}
 							}
