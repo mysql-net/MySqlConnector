@@ -11,19 +11,20 @@ before_install:
 - sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
 - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893
 - sudo apt-get update
-- sudo apt-get install -y dotnet-dev-2.0.0-preview1-005977
+- sudo apt-get install -y dotnet-dev-2.0.0-preview1-005977 dotnet-sharedframework-microsoft.netcore.app-1.1.2
 
 script:
 - dotnet restore
 - dotnet test tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj -c Release -f netcoreapp2.0
 - dotnet build tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0
-- echo 'Executing tests with No Compression, No SSL' && ./.ci/use-config.sh config.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0
-- echo 'Executing Debug Only tests' && time dotnet test tests/SideBySide/SideBySide.csproj -c Debug -f netcoreapp2.0 --filter "FullyQualifiedName~SideBySide.DebugOnlyTests"
-- echo 'Executing tests with Compression, No SSL' && ./.ci/use-config.sh config.compression.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0
-- echo 'Executing tests with No Compression, SSL' && ./.ci/use-config.sh config.ssl.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0
-- echo 'Executing tests with Compression, SSL' && ./.ci/use-config.sh config.compression+ssl.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0
-- echo 'Executing tests with Unix Domain Socket, No Compression, No SSL' && ./.ci/use-config.sh config.uds.json && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0
-- echo 'Executing tests with Buffering, No Compression, No SSL' && ./.ci/use-config.sh config.buffer.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp1.1.2 tests with No Compression, No SSL' && ./.ci/use-config.sh config.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp1.1.2
+- echo 'Executing netcoreapp2.0 tests with No Compression, No SSL' && ./.ci/use-config.sh config.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp2.0 Debug Only tests' && time dotnet test tests/SideBySide/SideBySide.csproj -c Debug -f netcoreapp2.0 --filter "FullyQualifiedName~SideBySide.DebugOnlyTests"
+- echo 'Executing netcoreapp2.0 tests with Compression, No SSL' && ./.ci/use-config.sh config.compression.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp2.0 tests with No Compression, SSL' && ./.ci/use-config.sh config.ssl.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp2.0 tests with Compression, SSL' && ./.ci/use-config.sh config.compression+ssl.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp2.0 tests with Unix Domain Socket, No Compression, No SSL' && ./.ci/use-config.sh config.uds.json && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp2.0 tests with Buffering, No Compression, No SSL' && ./.ci/use-config.sh config.buffer.json 172.17.0.1 3307 && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0
 
 after_script:
 - chmod +x .ci/build-docs.sh && ./.ci/build-docs.sh
