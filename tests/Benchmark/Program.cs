@@ -1,17 +1,17 @@
-﻿extern alias MySqlData;
-extern alias MySqlConnector;
-using System;
+﻿using System;
 using System.Data.Common;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Exporters;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Toolchains.CsProj;
 using BenchmarkDotNet.Validators;
-using OldMySqlConnection = MySqlData.MySql.Data.MySqlClient.MySqlConnection;
-using NewMySqlConnection = MySqlConnector.MySql.Data.MySqlClient.MySqlConnection;
+using MySql.Data.MySqlClient;
 
 namespace Benchmark
 {
@@ -24,6 +24,8 @@ namespace Benchmark
 				.With(JitOptimizationsValidator.FailOnError)
 				.With(MemoryDiagnoser.Default)
 				.With(StatisticColumn.AllStatistics)
+				.With(Job.Default.With(Runtime.Clr).With(Jit.RyuJit).With(Platform.X64).With(CsProjClassicNetToolchain.Net462))
+				.With(Job.Default.With(Runtime.Core).With(CsProjCoreToolchain.NetCoreApp11))
 				.With(DefaultExporters.Csv);
 
 			var summary = BenchmarkRunner.Run<MySqlClient>(customConfig);
@@ -33,35 +35,15 @@ namespace Benchmark
 
 	public class MySqlClient
 	{
-		[Setup]
-		public void Setup()
+		[GlobalSetup]
+		public void GlobalSetup()
 		{
-			using (var oldConnection = new OldMySqlConnection(s_connectionString))
+			using (var connection = new MySqlConnection(s_connectionString))
 			{
-				oldConnection.Open();
-				RunSetupSql(oldConnection);
-			}
-
-			using (var newConnection = new NewMySqlConnection(s_connectionString))
-			{
-				newConnection.Open();
-				RunSetupSql(newConnection);
-			}
-
-			s_connectionString += ";database=benchmark";
-
-			m_oldConnection = new OldMySqlConnection(s_connectionString);
-			m_oldConnection.Open();
-
-			m_newConnection = new NewMySqlConnection(s_connectionString);
-			m_newConnection.Open();
-		}
-
-		private void RunSetupSql(DbConnection connection)
-		{
-			using (var cmd = connection.CreateCommand())
-			{
-				cmd.CommandText = @"
+				connection.Open();
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = @"
 create schema if not exists benchmark;
 
 drop table if exists benchmark.integers;
@@ -70,17 +52,23 @@ insert into benchmark.integers(value) values (0),(1),(2),(3),(4),(5),(6),(7),(8)
 
 drop table if exists benchmark.blobs;
 create table benchmark.blobs(
-  rowid integer not null primary key auto_increment,
-  `Blob` longblob null
+rowid integer not null primary key auto_increment,
+`Blob` longblob null
 );
 insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 
-				// larger blobs make the tests run much slower
-				AddBlobParameter(cmd, "@Blob1", 100000);
-				AddBlobParameter(cmd, "@Blob2", 1000000);
+					// larger blobs make the tests run much slower
+					AddBlobParameter(cmd, "@Blob1", 100000);
+					AddBlobParameter(cmd, "@Blob2", 1000000);
 
-				cmd.ExecuteNonQuery();
+					cmd.ExecuteNonQuery();
+				}
 			}
+
+			s_connectionString += ";database=benchmark";
+
+			m_connection = new MySqlConnection(s_connectionString);
+			m_connection.Open();
 		}
 
 		private static void AddBlobParameter(DbCommand command, string name, int size)
@@ -96,40 +84,34 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 			command.Parameters.Add(parameter);
 		}
 
-		[Benchmark] public Task OpenFromPoolOldAsync() => OpenFromPoolAsync(m_oldConnection);
-		[Benchmark] public void OpenFromPoolOldSync() => OpenFromPoolSync(m_oldConnection);
-		[Benchmark] public Task OpenFromPoolNewAsync() => OpenFromPoolAsync(m_newConnection);
-		[Benchmark] public void OpenFromPoolNewSync() => OpenFromPoolSync(m_newConnection);
-
-		private static async Task OpenFromPoolAsync(DbConnection connection)
+		[Benchmark]
+		public async Task OpenFromPoolAsync()
 		{
-			connection.Close();
-			await connection.OpenAsync();
+			m_connection.Close();
+			await m_connection.OpenAsync();
 		}
 
-		private static void OpenFromPoolSync(DbConnection connection)
+		[Benchmark]
+		public void OpenFromPoolSync()
 		{
-			connection.Close();
-			connection.Open();
+			m_connection.Close();
+			m_connection.Open();
 		}
 
-		[Benchmark] public Task ExecuteScalarOldAsync() => ExecuteScalarAsync(m_oldConnection);
-		[Benchmark] public void ExecuteScalarOldSync() => ExecuteScalarSync(m_oldConnection);
-		[Benchmark] public Task ExecuteScalarNewAsync() => ExecuteScalarAsync(m_newConnection);
-		[Benchmark] public void ExecuteScalarNewSync() => ExecuteScalarSync(m_newConnection);
-
-		private static async Task ExecuteScalarAsync(DbConnection connection)
+		[Benchmark]
+		public async Task ExecuteScalarAsync()
 		{
-			using (var cmd = connection.CreateCommand())
+			using (var cmd = m_connection.CreateCommand())
 			{
 				cmd.CommandText = c_executeScalarSql;
 				await cmd.ExecuteScalarAsync();
 			}
 		}
 
-		private static void ExecuteScalarSync(DbConnection connection)
+		[Benchmark]
+		public void ExecuteScalarSync()
 		{
-			using (var cmd = connection.CreateCommand())
+			using (var cmd = m_connection.CreateCommand())
 			{
 				cmd.CommandText = c_executeScalarSql;
 				cmd.ExecuteScalar();
@@ -138,23 +120,19 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 
 		private const string c_executeScalarSql = "select max(value) from integers;";
 
-		[Benchmark] public Task ReadBlobsOldAsync() => ReadAllRowsAsync(m_oldConnection, c_readBlobsSql);
-		[Benchmark] public void ReadBlobsOldSync() => ReadAllRowsSync(m_oldConnection, c_readBlobsSql);
-		[Benchmark] public Task ReadBlobsNewAsync() => ReadAllRowsAsync(m_newConnection, c_readBlobsSql);
-		[Benchmark] public void ReadBlobsNewSync() => ReadAllRowsSync(m_newConnection, c_readBlobsSql);
+		[Benchmark] public Task ReadBlobsAsync() => ReadAllRowsAsync(c_readBlobsSql);
+		[Benchmark] public void ReadBlobsSync() => ReadAllRowsSync(c_readBlobsSql);
 
 		private const string c_readBlobsSql = "select `Blob` from blobs;";
 
-		[Benchmark] public Task ManyRowsOldAsync() => ReadAllRowsAsync(m_oldConnection, c_manyRowsSql);
-		[Benchmark] public void ManyRowsOldSync() => ReadAllRowsSync(m_oldConnection, c_manyRowsSql);
-		[Benchmark] public Task ManyRowsNewAsync() => ReadAllRowsAsync(m_newConnection, c_manyRowsSql);
-		[Benchmark] public void ManyRowsNewSync() => ReadAllRowsSync(m_newConnection, c_manyRowsSql);
+		[Benchmark] public Task ManyRowsAsync() => ReadAllRowsAsync(c_manyRowsSql);
+		[Benchmark] public void ManyRowsSync() => ReadAllRowsSync(c_manyRowsSql);
 
 		private const string c_manyRowsSql = "select * from integers a join integers b; select * from integers a join integers b join integers c;";
 
-		private static async Task ReadAllRowsAsync(DbConnection connection, string sql)
+		private async Task ReadAllRowsAsync(string sql)
 		{
-			using (var cmd = connection.CreateCommand())
+			using (var cmd = m_connection.CreateCommand())
 			{
 				cmd.CommandText = sql;
 				using (var reader = await cmd.ExecuteReaderAsync())
@@ -169,9 +147,9 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 			}
 		}
 
-		private static void ReadAllRowsSync(DbConnection connection, string sql)
+		private void ReadAllRowsSync(string sql)
 		{
-			using (var cmd = connection.CreateCommand())
+			using (var cmd = m_connection.CreateCommand())
 			{
 				cmd.CommandText = sql;
 				using (var reader = cmd.ExecuteReader())
@@ -187,12 +165,8 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 		}
 
 		// TODO: move to config file
-		// NOTE: Without "Connection Reset=true" here, Connector/NET doesn't reset the connection, which is buggy but 8x faster
-		//       With "Connection Reset=true" here, Connector/NET is affected by https://bugs.mysql.com/bug.php?id=80030 and is 48x slower
-		//       We opt for the incorrect-but-faster implementation here so the benchmarks don't take as long (and give something to aim for)
 		static string s_connectionString = "server=127.0.0.1;user id=mysqltest;password='test;key=\"val';port=3306;ssl mode=none;Use Affected Rows=true";
 
-		private OldMySqlConnection m_oldConnection;
-		private NewMySqlConnection m_newConnection;
+		MySqlConnection m_connection;
 	}
 }

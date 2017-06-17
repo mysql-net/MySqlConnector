@@ -1,4 +1,4 @@
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 
 # restore
 dotnet restore
@@ -54,9 +54,8 @@ if ($LASTEXITCODE -ne 0){
 
 echo "Building Benchmark"
 
-& "nuget.exe" restore tests\Benchmark\Benchmark.sln
-& "msbuild.exe" tests\Benchmark\Benchmark.sln /p:Configuration=Release
+dotnet restore tests\Benchmark\Benchmark.csproj
+dotnet run -p tests\Benchmark\Benchmark.csproj -c Release -f net462
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
-.\tests\Benchmark\bin\Release\Benchmark.exe
