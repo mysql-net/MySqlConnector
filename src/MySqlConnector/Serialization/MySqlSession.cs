@@ -598,6 +598,7 @@ namespace MySql.Data.Serialization
 			}
 			catch (Exception ex)
 			{
+				sslStream.Dispose();
 				ShutdownSocket();
 				m_hostname = "";
 				lock (m_lock)
@@ -612,7 +613,7 @@ namespace MySql.Data.Serialization
 
 		private void ShutdownSocket()
 		{
-			m_payloadHandler = null;
+			Utility.Dispose(ref m_payloadHandler);
 			Utility.Dispose(ref m_networkStream);
 			SafeDispose(ref m_tcpClient);
 			SafeDispose(ref m_socket);

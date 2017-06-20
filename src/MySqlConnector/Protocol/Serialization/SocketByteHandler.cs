@@ -13,6 +13,8 @@ namespace MySql.Data.Protocol.Serialization
 			m_socketAwaitable = new SocketAwaitable(socketEventArgs);
 		}
 
+		public void Dispose() => m_socketAwaitable.EventArgs.Dispose();
+
 		public ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, IOBehavior ioBehavior)
 		{
 			return (ioBehavior == IOBehavior.Asynchronous) ?

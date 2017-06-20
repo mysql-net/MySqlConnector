@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace MySql.Data.Protocol.Serialization
 {
-	internal interface IByteHandler
+	internal interface IByteHandler : IDisposable
 	{
 		/// <summary>
 		/// Reads data from this byte handler.

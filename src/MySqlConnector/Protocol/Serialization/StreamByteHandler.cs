@@ -11,6 +11,8 @@ namespace MySql.Data.Protocol.Serialization
 			m_stream = stream;
 		}
 
+		public void Dispose() => m_stream.Dispose();
+
 		public ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, IOBehavior ioBehavior)
 		{
 			return (ioBehavior == IOBehavior.Asynchronous) ?

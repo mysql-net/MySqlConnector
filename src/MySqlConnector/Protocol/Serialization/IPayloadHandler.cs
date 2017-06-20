@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace MySql.Data.Protocol.Serialization
 {
-	internal interface IPayloadHandler
+	internal interface IPayloadHandler : IDisposable
 	{
 		/// <summary>
 		/// Starts a new "conversation" with the MySQL Server. This resets the "<a href="https://dev.mysql.com/doc/internals/en/sequence-id.html">sequence id</a>"

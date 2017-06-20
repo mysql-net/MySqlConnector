@@ -11,6 +11,12 @@ namespace MySql.Data.Protocol.Serialization
 			m_getNextSequenceNumber = () => m_sequenceNumber++;
 		}
 
+		public void Dispose()
+		{
+			m_bufferedByteReader = null;
+			Utility.Dispose(ref m_byteHandler);
+		}
+
 		public void StartNewConversation()
 		{
 			m_sequenceNumber = 0;
