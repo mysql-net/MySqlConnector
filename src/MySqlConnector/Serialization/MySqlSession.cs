@@ -613,41 +613,30 @@ namespace MySql.Data.Serialization
 		private void ShutdownSocket()
 		{
 			m_payloadHandler = null;
-			if (m_networkStream != null)
-			{
-#if NETSTANDARD1_3
-				m_networkStream.Dispose();
-#else
-				m_networkStream.Close();
-#endif
-				m_networkStream = null;
-			}
-			if (m_tcpClient != null)
+			Utility.Dispose(ref m_networkStream);
+			SafeDispose(ref m_tcpClient);
+			SafeDispose(ref m_socket);
+		}
+
+		/// <summary>
+		/// Disposes and sets <paramref name="disposable"/> to <c>null</c>, ignoring any
+		/// <see cref="SocketException"/> that is thrown.
+		/// </summary>
+		/// <typeparam name="T">An <see cref="IDisposable"/> type.</typeparam>
+		/// <param name="disposable">The object to dispose.</param>
+		private static void SafeDispose<T>(ref T disposable)
+			where T : class, IDisposable
+		{
+			if (disposable != null)
 			{
 				try
 				{
-#if NETSTANDARD1_3
-					m_tcpClient.Dispose();
-#else
-					m_tcpClient.Close();
-#endif
+					disposable.Dispose();
 				}
 				catch (SocketException)
 				{
 				}
-				m_tcpClient = null;
-				m_socket = null;
-			}
-			else if (m_socket != null)
-			{
-				try
-				{
-					m_socket.Dispose();
-					m_socket = null;
-				}
-				catch (SocketException)
-				{
-				}
+				disposable = null;
 			}
 		}
 
@@ -675,7 +664,6 @@ namespace MySql.Data.Serialization
 			lock (m_lock)
 				m_state = State.Failed;
 		}
-
 
 		private void VerifyState(State state)
 		{
