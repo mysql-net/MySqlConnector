@@ -65,6 +65,12 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-20-2&#34;&gt;0.20.2&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix bugs where objects holding unmanaged resources weren&amp;rsquo;t disposed: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/275&#34;&gt;#275&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-20-1&#34;&gt;0.20.1&lt;/h3&gt;
 
 &lt;ul&gt;
