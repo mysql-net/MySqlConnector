@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.20.2
+
+* Fix bugs where objects holding unmanaged resources weren't disposed: [#275](https://github.com/mysql-net/MySqlConnector/issues/275).
+
 ### 0.20.1
 
 * Fix bug retrieving a connection from the pool when using Amazon IAM Authentication: [#269](https://github.com/mysql-net/MySqlConnector/issues/269).
