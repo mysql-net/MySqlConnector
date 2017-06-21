@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.21.0
+
+* Add `MySqlHelper.EscapeString`: [#277](https://github.com/mysql-net/MySqlConnector/issues/277).
+
 ### 0.20.2
 
 * Fix bugs where objects holding unmanaged resources weren't disposed: [#275](https://github.com/mysql-net/MySqlConnector/issues/275).
