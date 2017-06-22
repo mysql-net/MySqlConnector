@@ -24,15 +24,14 @@ namespace MySql.Data.MySqlClient
 				{
 					if (sb == null)
 						sb = new StringBuilder();
-					if (i > last - 1)
-						sb.Append(value, last + 1, i - last - 1);
+					sb.Append(value, last + 1, i - (last + 1));
 					sb.Append('\\');
 					sb.Append(value[i]);
 					last = i;
 				}
 			}
-			if (sb != null && last < value.Length - 1)
-				sb.Append(value, last + 1, value.Length - last - 1);
+			if (sb != null)
+				sb.Append(value, last + 1, value.Length - (last + 1));
 
 			return sb?.ToString() ?? value;
 		}
