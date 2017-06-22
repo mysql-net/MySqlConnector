@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Title>MySQL Connector</Title>
-    <Description>A fully async MySQL ADO.NET provider for .NET and .NET Core</Description>
+    <Description>Async MySQL ADO.NET provider</Description>
     <Copyright>Copyright 2016–2017 Bradley Grainger</Copyright>
     <AssemblyTitle>Async MySQL Connector</AssemblyTitle>
     <VersionPrefix>0.21.0</VersionPrefix>
