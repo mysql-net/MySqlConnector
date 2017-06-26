@@ -66,6 +66,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.CertificatePassword.SetValue(this, value);
 		}
 
+		public string CACertificateFile
+		{
+			get => MySqlConnectionStringOption.CACertificateFile.GetValue(this);
+			set => MySqlConnectionStringOption.CACertificateFile.SetValue(this, value);
+		}
+
 		// Connection Pooling Options
 		public bool Pooling
 		{
@@ -238,6 +244,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<MySqlSslMode> SslMode;
 		public static readonly MySqlConnectionStringOption<string> CertificateFile;
 		public static readonly MySqlConnectionStringOption<string> CertificatePassword;
+		public static readonly MySqlConnectionStringOption<string> CACertificateFile;
 
 		// Connection Pooling Options
 		public static readonly MySqlConnectionStringOption<bool> Pooling;
@@ -320,6 +327,10 @@ namespace MySql.Data.MySqlClient
 
 			AddOption(CertificatePassword = new MySqlConnectionStringOption<string>(
 				keys: new[] { "CertificatePassword", "Certificate Password" },
+				defaultValue: null));
+
+			AddOption(CACertificateFile = new MySqlConnectionStringOption<string>(
+				keys: new[] { "CACertificateFile", "CA Certificate File" },
 				defaultValue: null));
 
 			// Connection Pooling Options

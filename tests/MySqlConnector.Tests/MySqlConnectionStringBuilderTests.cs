@@ -28,6 +28,7 @@ namespace MySql.Data.Tests
 			Assert.Equal(false, csb.BufferResultSets);
 			Assert.Equal(180u, csb.ConnectionIdleTimeout);
 			Assert.Equal(false, csb.ForceSynchronous);
+			Assert.Equal(null, csb.CACertificateFile);
 #endif
 			Assert.Equal(0u, csb.Keepalive);
 			Assert.Equal(100u, csb.MaximumPoolSize);
@@ -70,6 +71,7 @@ namespace MySql.Data.Tests
 					"connectionidletimeout=30;" +
 					"bufferresultsets=true;" +
 					"forcesynchronous=true;" +
+				    "ca certificate file=ca.pem;" +
 #endif
 					"Keep Alive=90;" +
 					"minpoolsize=5;" +
@@ -98,6 +100,7 @@ namespace MySql.Data.Tests
 			Assert.Equal(true, csb.BufferResultSets);
 			Assert.Equal(30u, csb.ConnectionIdleTimeout);
 			Assert.Equal(true, csb.ForceSynchronous);
+			Assert.Equal("ca.pem", csb.CACertificateFile);
 #endif
 			Assert.Equal(90u, csb.Keepalive);
 			Assert.Equal(15u, csb.MaximumPoolSize);

@@ -107,4 +107,14 @@ namespace SideBySide
 				Skip = "SSL not explicitly required";
 		}
 	}
+
+	public class SslRequiredConnectionTheoryAttribute : TheoryAttribute
+	{
+		public SslRequiredConnectionTheoryAttribute()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			if(csb.SslMode == MySqlSslMode.None || csb.SslMode == MySqlSslMode.Preferred)
+				Skip = "SSL not explicitly required";
+		}
+	}
 }
