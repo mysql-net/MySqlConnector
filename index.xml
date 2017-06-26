@@ -948,12 +948,17 @@ please refer to its documentation.&lt;/p&gt;
   &lt;tr&gt;
     &lt;td&gt;Certificate File, CertificateFile&lt;/td&gt;
     &lt;td&gt;&lt;/td&gt;
-    &lt;td&gt;This option specifies the path to a certificate file in PKCS #12 format (.pfx). &lt;/td&gt;
+    &lt;td&gt;This option specifies the path to a certificate file in a PEM Encoded (.pem) or PKCS #12 (.pfx) format. &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Certificate Password, CertificatePassword   &lt;/td&gt;
     &lt;td&gt;&lt;/td&gt;
     &lt;td&gt;Specifies a password that is used in conjunction with a certificate specified using the option CertificateFile.  Not required if the certificate file is not password protected.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;CA Certificate File, CACertificateFile&lt;/td&gt;
+    &lt;td&gt;&lt;/td&gt;
+    &lt;td&gt;This option specifies the path to a CA certificate file in a PEM Encoded (.pem) format.  This should be used in with &lt;code&gt;SslMode=VerifyCA&lt;/code&gt; or &lt;code&gt;SslMode=VerifyFull&lt;/code&gt; to enable verification of a CA certificate that is not trusted by the Operating System&#39;s certificate store.&lt;/td&gt;
   &lt;/tr&gt;
 &lt;/table&gt;
 
