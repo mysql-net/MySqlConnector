@@ -537,36 +537,66 @@ namespace MySql.Data.Serialization
 				catch (CryptographicException ex)
 				{
 					if (!File.Exists(cs.CertificateFile))
-						throw new MySqlException("Cannot find SSL Certificate File", ex);
-					throw new MySqlException("Either the SSL Certificate Password is incorrect or the SSL Certificate File is invalid", ex);
+						throw new MySqlException("Cannot find Certificate File", ex);
+					throw new MySqlException("Either the Certificate Password is incorrect or the Certificate File is invalid", ex);
 				}
 			}
 
-			Func<object, string, X509CertificateCollection, X509Certificate, string[], X509Certificate> localCertificateCb =
-				(lcbSender, lcbTargetHost, lcbLocalCertificates, lcbRemoteCertificate, lcbAcceptableIssuers) => lcbLocalCertificates[0];
-
-			Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> remoteCertificateCb =
-				(rcbSender, rcbCertificate, rcbChain, rcbPolicyErrors) =>
+			X509Chain caCertificateChain = null;
+			if (cs.CACertificateFile != null)
+			{
+				try
 				{
-					switch (rcbPolicyErrors)
+					var caCertificate = new X509Certificate2(cs.CACertificateFile);
+					caCertificateChain = new X509Chain
 					{
-						case SslPolicyErrors.None:
-							return true;
-						case SslPolicyErrors.RemoteCertificateNameMismatch:
-							return cs.SslMode != MySqlSslMode.VerifyFull;
-						default:
-							return cs.SslMode == MySqlSslMode.Preferred || cs.SslMode == MySqlSslMode.Required;
+						ChainPolicy =
+						{
+							RevocationMode = X509RevocationMode.NoCheck,
+							VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority
+						}
+					};
+					caCertificateChain.ChainPolicy.ExtraStore.Add(caCertificate);
+				}
+				catch (CryptographicException ex)
+				{
+					if (!File.Exists(cs.CACertificateFile))
+						throw new MySqlException("Cannot find CA Certificate File", ex);
+					throw new MySqlException("The CA Certificate File is invalid", ex);
+				}
+			}
+
+			X509Certificate LocalCertificateCb(object lcbSender, string lcbTargetHost, X509CertificateCollection lcbLocalCertificates, X509Certificate lcbRemoteCertificate, string[] lcbAcceptableIssuers) => lcbLocalCertificates[0];
+
+			bool RemoteCertificateCb(object rcbSender, X509Certificate rcbCertificate, X509Chain rcbChain, SslPolicyErrors rcbPolicyErrors)
+			{
+				if (cs.SslMode == MySqlSslMode.Preferred || cs.SslMode == MySqlSslMode.Required)
+					return true;
+
+				if ((rcbPolicyErrors & SslPolicyErrors.RemoteCertificateChainErrors) != 0 && caCertificateChain != null)
+				{
+					if (caCertificateChain.Build((X509Certificate2) rcbCertificate))
+					{
+						var chainStatus = caCertificateChain.ChainStatus[0].Status & ~X509ChainStatusFlags.UntrustedRoot;
+						if (chainStatus == X509ChainStatusFlags.NoError)
+							rcbPolicyErrors &= ~SslPolicyErrors.RemoteCertificateChainErrors;
 					}
-				};
+				}
+
+				if (cs.SslMode == MySqlSslMode.VerifyCA)
+					rcbPolicyErrors &= ~SslPolicyErrors.RemoteCertificateNameMismatch;
+
+				return rcbPolicyErrors == SslPolicyErrors.None;
+			}
 
 			SslStream sslStream;
 			if (clientCertificates == null)
 				sslStream = new SslStream(m_networkStream, false,
-					new RemoteCertificateValidationCallback(remoteCertificateCb));
+					new RemoteCertificateValidationCallback((Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool>) RemoteCertificateCb));
 			else
 				sslStream = new SslStream(m_networkStream, false,
-					new RemoteCertificateValidationCallback(remoteCertificateCb),
-					new LocalCertificateSelectionCallback(localCertificateCb));
+					new RemoteCertificateValidationCallback((Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool>) RemoteCertificateCb),
+					new LocalCertificateSelectionCallback((Func<object, string, X509CertificateCollection, X509Certificate, string[], X509Certificate>) LocalCertificateCb));
 
 			// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/mysql-net/MySqlConnector/pull/101
 			var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
