@@ -375,7 +375,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 					// the call to NextResult should block until the token is cancelled
 					var stopwatch = Stopwatch.StartNew();
 					Assert.True(await reader.NextResultAsync(cts.Token));
-					TestUtilities.AssertDuration(stopwatch, 450, 300);
+					TestUtilities.AssertDuration(stopwatch, 450, 400);
 
 					int rows = 0;
 					try
