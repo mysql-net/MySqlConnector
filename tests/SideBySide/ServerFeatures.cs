@@ -9,5 +9,6 @@ namespace SideBySide
 		Json = 1,
 		StoredProcedures = 2,
 		Sha256Password = 4,
+		OpenSsl = 8,
 	}
 }

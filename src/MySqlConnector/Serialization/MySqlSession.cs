@@ -302,14 +302,52 @@ namespace MySql.Data.Serialization
 				break;
 
 			case "sha256_password":
-				if (!m_isSecureConnection)
-					throw new NotImplementedException("Authentication method '{0}' requires a secure connection.".FormatInvariant(switchRequest.Name));
-
-				// send plaintext password with a NUL terminator
+				// add NUL terminator to password
 				var passwordBytes = Encoding.UTF8.GetBytes(password);
 				Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
-				payload = new PayloadData(new ArraySegment<byte>(passwordBytes));
-				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+
+				if (!m_isSecureConnection && passwordBytes.Length > 1)
+				{
+#if NET451
+					throw new MySqlException("Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
+#else
+					// request the RSA public key
+					await SendReplyAsync(new PayloadData(new ArraySegment<byte>(new byte[] { 0x01 }, 0, 1)), ioBehavior, cancellationToken).ConfigureAwait(false);
+					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload);
+					var publicKey = Encoding.ASCII.GetString(publicKeyPayload.Data);
+
+					// load the RSA public key
+					RSA rsa;
+					try
+					{
+						rsa = Utility.DecodeX509PublicKey(publicKey);
+					}
+					catch (Exception ex)
+					{
+						throw new MySqlException("Couldn't load server's RSA public key; try using a secure connection instead.", ex);
+					}
+
+					using (rsa)
+					{
+						// XOR the password bytes with the challenge
+						AuthPluginData = Utility.TrimZeroByte(switchRequest.Data);
+						for (int i = 0; i < passwordBytes.Length; i++)
+							passwordBytes[i] ^= AuthPluginData[i % AuthPluginData.Length];
+
+						// encrypt with RSA public key
+						var encryptedPassword = rsa.Encrypt(passwordBytes, RSAEncryptionPadding.OaepSHA1);
+						payload = new PayloadData(new ArraySegment<byte>(encryptedPassword));
+						await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+					}
+#endif
+				}
+				else
+				{
+					// send plaintext password
+					payload = new PayloadData(new ArraySegment<byte>(passwordBytes));
+					await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
 				break;
 
 			default:

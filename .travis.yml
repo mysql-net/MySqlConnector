@@ -8,10 +8,10 @@ env:
     FEATURES=Json,StoredProcedures,Sha256Password
   - IMAGE=percona:5.7
     NAME=percona
-    FEATURES=Json,StoredProcedures,Sha256Password
+    FEATURES=Json,StoredProcedures,Sha256Password,OpenSsl
   - IMAGE=mariadb:10.3
     NAME=mariadb
-    FEATURES=StoredProcedures
+    FEATURES=StoredProcedures,OpenSsl
 
 before_install:
 - .ci/docker-run.sh $IMAGE $NAME 3307 $FEATURES

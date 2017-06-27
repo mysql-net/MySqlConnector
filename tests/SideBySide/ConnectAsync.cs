@@ -233,7 +233,16 @@ namespace SideBySide
 			var csb = AppConfig.CreateSha256ConnectionStringBuilder();
 			csb.SslMode = MySqlSslMode.None;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+#if BASELINE || NET451
 				await Assert.ThrowsAsync<NotImplementedException>(() => connection.OpenAsync());
+#else
+				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.OpenSsl))
+					await connection.OpenAsync();
+				else
+					await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());
+#endif
+			}
 		}
 
 		readonly DatabaseFixture m_database;
