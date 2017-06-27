@@ -216,7 +216,7 @@ namespace MySql.Data.Serialization
 				authPluginName = initialHandshake.AuthPluginName;
 			else
 				authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" : "mysql_native_password";
-			if (authPluginName != "mysql_native_password")
+			if (authPluginName != "mysql_native_password" && authPluginName != "sha256_password")
 				throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(initialHandshake.AuthPluginName));
 
 			ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
@@ -298,6 +298,17 @@ namespace MySql.Data.Serialization
 				if (!m_isSecureConnection)
 					throw new MySqlException("Authentication method '{0}' requires a secure connection.".FormatInvariant(switchRequest.Name));
 				payload = new PayloadData(new ArraySegment<byte>(Encoding.UTF8.GetBytes(password)));
+				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				break;
+
+			case "sha256_password":
+				if (!m_isSecureConnection)
+					throw new NotImplementedException("Authentication method '{0}' requires a secure connection.".FormatInvariant(switchRequest.Name));
+
+				// send plaintext password with a NUL terminator
+				var passwordBytes = Encoding.UTF8.GetBytes(password);
+				Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
+				payload = new PayloadData(new ArraySegment<byte>(passwordBytes));
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				break;
 

@@ -326,6 +326,23 @@ namespace SideBySide
 			}
 		}
 
+		[RequiresFeatureFact(ServerFeatures.Sha256Password, RequiresSsl = true)]
+		public void Sha256WithSecureConnection()
+		{
+			var csb = AppConfig.CreateSha256ConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+				connection.Open();
+		}
+
+		[RequiresFeatureFact(ServerFeatures.Sha256Password)]
+		public void Sha256WithoutSecureConnection()
+		{
+			var csb = AppConfig.CreateSha256ConnectionStringBuilder();
+			csb.SslMode = MySqlSslMode.None;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+				Assert.Throws<NotImplementedException>(() => connection.Open());
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }

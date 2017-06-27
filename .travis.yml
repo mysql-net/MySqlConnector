@@ -5,16 +5,16 @@ services: docker
 env:
   - IMAGE=mysql:5.7
     NAME=mysql
-    FEATURES=Json,StoredProcedures
+    FEATURES=Json,StoredProcedures,Sha256Password
   - IMAGE=percona:5.7
     NAME=percona
-    FEATURES=Json,StoredProcedures
+    FEATURES=Json,StoredProcedures,Sha256Password
   - IMAGE=mariadb:10.3
     NAME=mariadb
     FEATURES=StoredProcedures
 
 before_install:
-- .ci/docker-run.sh $IMAGE $NAME 3307
+- .ci/docker-run.sh $IMAGE $NAME 3307 $FEATURES
 - sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
 - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893
 - sudo apt-get update
