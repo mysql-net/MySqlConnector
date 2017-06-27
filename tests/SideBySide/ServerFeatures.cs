@@ -10,5 +10,6 @@ namespace SideBySide
 		StoredProcedures = 2,
 		Sha256Password = 4,
 		OpenSsl = 8,
+		LargePackets = 16,
 	}
 }

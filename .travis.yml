@@ -3,15 +3,18 @@ dist: trusty
 services: docker
 
 env:
+  - IMAGE=mysql:5.6
+    NAME=mysql
+    FEATURES=StoredProcedures
   - IMAGE=mysql:5.7
     NAME=mysql
-    FEATURES=Json,StoredProcedures,Sha256Password
+    FEATURES=Json,StoredProcedures,Sha256Password,LargePackets
   - IMAGE=percona:5.7
     NAME=percona
-    FEATURES=Json,StoredProcedures,Sha256Password,OpenSsl
+    FEATURES=Json,StoredProcedures,Sha256Password,OpenSsl,LargePackets
   - IMAGE=mariadb:10.3
     NAME=mariadb
-    FEATURES=StoredProcedures,OpenSsl
+    FEATURES=StoredProcedures,OpenSsl,LargePackets
 
 before_install:
 - .ci/docker-run.sh $IMAGE $NAME 3307 $FEATURES
