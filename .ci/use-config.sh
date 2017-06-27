@@ -2,7 +2,7 @@
 cd $(dirname $0)/config
 
 display_usage() {
-    echo -e "\nUsage:\n$0 [config.json script] [host] [port] [name] [supports json]\n"
+    echo -e "\nUsage:\n$0 [config.json script] [host] [port] [name] [features]\n"
 }
 
 # check whether user had supplied -h or --help . If yes display usage
@@ -45,5 +45,5 @@ fi
 
 if [ $# -ge 5 ]
 then
-    sed -i "s/\"SupportsJson\": true/\"SupportsJson\": $5/g" ../../tests/SideBySide/config.json
+    sed -i "s/\"SupportedFeatures\": \".*\"/\"SupportedFeatures\": \"$5\"/g" ../../tests/SideBySide/config.json
 fi

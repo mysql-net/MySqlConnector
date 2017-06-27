@@ -617,7 +617,7 @@ namespace SideBySide
 			return data;
 		}
 
-		[JsonTheory]
+		[RequiresFeatureTheory(ServerFeatures.Json)]
 		[InlineData("Value", new[] { null, "NULL", "BOOLEAN", "ARRAY", "ARRAY", "ARRAY", "INTEGER", "INTEGER", "OBJECT", "OBJECT" })]
 		public void JsonType(string column, string[] expectedTypes)
 		{
@@ -625,7 +625,7 @@ namespace SideBySide
 			Assert.Equal(expectedTypes, types);
 		}
 
-		[JsonTheory]
+		[RequiresFeatureTheory(ServerFeatures.Json)]
 		[InlineData("value", new[] { null, "null", "true", "[]", "[0]", "[1]", "0", "1", "{}", "{\"a\": \"b\"}" })]
 		public void QueryJson(string column, string[] expected)
 		{

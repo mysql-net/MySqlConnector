@@ -1,6 +1,4 @@
-﻿using System;
-using System.Data;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -14,7 +12,7 @@ namespace SideBySide
 			m_database = database;
 		}
 
-		[SslRequiredConnectionFact]
+		[RequiresFeatureFact(RequiresSsl = true)]
 		public async Task ConnectSslPreferred()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -43,7 +41,7 @@ namespace SideBySide
 			}
 		}
 
-		[SslRequiredConnectionTheory]
+		[RequiresFeatureTheory(RequiresSsl = true)]
 		[InlineData("ssl-client.pfx", null, null)]
 		[InlineData("ssl-client-pw-test.pfx", "test", null)]
 		[InlineData("ssl-client-cert.pem", null, null)]
@@ -76,7 +74,7 @@ namespace SideBySide
 			}
 		}
 
-		[SslRequiredConnectionFact]
+		[RequiresFeatureFact(RequiresSsl = true)]
 		public async Task ConnectSslBadClientCertificate()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -96,7 +94,7 @@ namespace SideBySide
 #if BASELINE
 		[Fact(Skip = "MySql.Data does not support CACertificateFile")]
 #else
-		[SslRequiredConnectionFact]
+		[RequiresFeatureFact(RequiresSsl = true)]
 #endif
 		public async Task ConnectSslBadCaCertificate()
 		{

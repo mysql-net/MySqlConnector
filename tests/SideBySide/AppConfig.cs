@@ -51,9 +51,9 @@ namespace SideBySide
 
 		public static string SecondaryDatabase => Config.GetValue<string>("Data:SecondaryDatabase");
 
-		public static bool SupportsCachedProcedures => Config.GetValue<bool>("Data:SupportsCachedProcedures");
+		public static ServerFeatures SupportedFeatures => (ServerFeatures) Enum.Parse(typeof(ServerFeatures), Config.GetValue<string>("Data:SupportedFeatures"));
 
-		public static bool SupportsJson => Config.GetValue<bool>("Data:SupportsJson");
+		public static bool SupportsJson => SupportedFeatures.HasFlag(ServerFeatures.Json);
 
 		public static string MySqlBulkLoaderCsvFile => ExpandVariables(Config.GetValue<string>("Data:MySqlBulkLoaderCsvFile"));
 		public static string MySqlBulkLoaderLocalCsvFile => ExpandVariables(Config.GetValue<string>("Data:MySqlBulkLoaderLocalCsvFile"));
