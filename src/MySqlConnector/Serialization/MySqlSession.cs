@@ -370,6 +370,9 @@ namespace MySql.Data.Serialization
 			catch (EndOfStreamException)
 			{
 			}
+			catch (IOException)
+			{
+			}
 			catch (SocketException)
 			{
 			}
