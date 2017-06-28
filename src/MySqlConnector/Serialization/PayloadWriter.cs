@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text;
 
@@ -53,7 +53,9 @@ namespace MySql.Data.Serialization
 		public byte[] ToBytes()
 		{
 			m_writer.Flush();
-			return m_stream.ToArray();
+			using (m_writer)
+			using (m_stream)
+				return m_stream.ToArray();
 		}
 
 		readonly MemoryStream m_stream;

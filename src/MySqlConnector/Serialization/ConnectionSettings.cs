@@ -33,6 +33,7 @@ namespace MySql.Data.Serialization
 			SslMode = csb.SslMode;
 			CertificateFile = csb.CertificateFile;
 			CertificatePassword = csb.CertificatePassword;
+			CACertificateFile = csb.CACertificateFile;
 
 			// Connection Pooling Options
 			Pooling = csb.Pooling;
@@ -73,6 +74,7 @@ namespace MySql.Data.Serialization
 		public MySqlSslMode SslMode { get; }
 		public string CertificateFile { get; }
 		public string CertificatePassword { get; }
+		public string CACertificateFile { get; }
 
 		// Connection Pooling Options
 		public bool Pooling { get; }

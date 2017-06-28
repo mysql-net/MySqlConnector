@@ -78,12 +78,17 @@ These are the options that need to be used in order to configure a connection to
   <tr>
     <td>Certificate File, CertificateFile</td>
     <td></td>
-    <td>This option specifies the path to a certificate file in PKCS #12 format (.pfx). </td>
+    <td>This option specifies the path to a certificate file in a PEM Encoded (.pem) or PKCS #12 (.pfx) format. </td>
   </tr>
   <tr>
     <td>Certificate Password, CertificatePassword	</td>
     <td></td>
     <td>Specifies a password that is used in conjunction with a certificate specified using the option CertificateFile.  Not required if the certificate file is not password protected.</td>
+  </tr>
+  <tr>
+    <td>CA Certificate File, CACertificateFile</td>
+    <td></td>
+    <td>This option specifies the path to a CA certificate file in a PEM Encoded (.pem) format.  This should be used in with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the Operating System's certificate store.</td>
   </tr>
 </table>
 

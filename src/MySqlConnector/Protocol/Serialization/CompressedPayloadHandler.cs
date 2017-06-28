@@ -7,7 +7,7 @@ using MySql.Data.Serialization;
 
 namespace MySql.Data.Protocol.Serialization
 {
-	internal class CompressedPayloadHandler : IPayloadHandler
+	internal sealed class CompressedPayloadHandler : IPayloadHandler
 	{
 		public CompressedPayloadHandler(IByteHandler byteHandler)
 		{
@@ -16,6 +16,13 @@ namespace MySql.Data.Protocol.Serialization
 			m_byteHandler = byteHandler;
 			m_bufferedByteReader = new BufferedByteReader();
 			m_compressedBufferedByteReader = new BufferedByteReader();
+		}
+
+		public void Dispose()
+		{
+			Utility.Dispose(ref m_byteHandler);
+			Utility.Dispose(ref m_uncompressedStreamByteHandler);
+			Utility.Dispose(ref m_uncompressedStream);
 		}
 
 		public void StartNewConversation()
@@ -30,8 +37,11 @@ namespace MySql.Data.Protocol.Serialization
 			set => throw new NotSupportedException();
 		}
 
-		public ValueTask<ArraySegment<byte>> ReadPayloadAsync(ArraySegmentHolder<byte> cache, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) =>
-			ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader, new CompressedByteHandler(this, protocolErrorBehavior), () => -1, cache, protocolErrorBehavior, ioBehavior);
+		public ValueTask<ArraySegment<byte>> ReadPayloadAsync(ArraySegmentHolder<byte> cache, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+		{
+			using (var compressedByteHandler = new CompressedByteHandler(this, protocolErrorBehavior))
+				return ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader, compressedByteHandler, () => -1, cache, protocolErrorBehavior, ioBehavior);
+		}
 
 		public ValueTask<int> WritePayloadAsync(ArraySegment<byte> payload, IOBehavior ioBehavior)
 		{
@@ -232,12 +242,16 @@ namespace MySql.Data.Protocol.Serialization
 		}
 
 		// CompressedByteHandler implements IByteHandler and delegates reading bytes back to the CompressedPayloadHandler class.
-		private class CompressedByteHandler : IByteHandler
+		private sealed class CompressedByteHandler : IByteHandler
 		{
 			public CompressedByteHandler(CompressedPayloadHandler compressedPayloadHandler, ProtocolErrorBehavior protocolErrorBehavior)
 			{
 				m_compressedPayloadHandler = compressedPayloadHandler;
 				m_protocolErrorBehavior = protocolErrorBehavior;
+			}
+
+			public void Dispose()
+			{
 			}
 
 			public ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, IOBehavior ioBehavior) =>
@@ -249,9 +263,9 @@ namespace MySql.Data.Protocol.Serialization
 			readonly ProtocolErrorBehavior m_protocolErrorBehavior;
 		}
 
-		readonly MemoryStream m_uncompressedStream;
-		readonly IByteHandler m_uncompressedStreamByteHandler;
-		readonly IByteHandler m_byteHandler;
+		MemoryStream m_uncompressedStream;
+		IByteHandler m_uncompressedStreamByteHandler;
+		IByteHandler m_byteHandler;
 		readonly BufferedByteReader m_bufferedByteReader;
 		readonly BufferedByteReader m_compressedBufferedByteReader;
 		int m_compressedSequenceNumber;

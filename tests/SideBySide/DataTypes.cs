@@ -520,11 +520,8 @@ namespace SideBySide
 				await connection.OpenAsync();
 				var transaction = await connection.BeginTransactionAsync();
 
-				// verify that this amount of data can be sent to MySQL successfully
-				var maxAllowedPacket = (await connection.QueryAsync<int>("select @@max_allowed_packet").ConfigureAwait(false)).Single();
-				var shouldFail = maxAllowedPacket < size + 100;
-
 				var data = CreateByteArray(size);
+				var isSupported = size < 1048576 || AppConfig.SupportedFeatures.HasFlag(ServerFeatures.LargePackets);
 
 				long lastInsertId;
 				using (var cmd = new MySqlCommand(Invariant($"insert into datatypes_blobs(`{column}`) values(?)"), connection, transaction)
@@ -536,17 +533,17 @@ namespace SideBySide
 					{
 						await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 						lastInsertId = cmd.LastInsertedId;
-						Assert.False(shouldFail);
+						Assert.True(isSupported);
 					}
 					catch (MySqlException ex)
 					{
 						lastInsertId = -1;
-						Assert.True(shouldFail);
-						Assert.Contains("packet", ex.Message);
+						Assert.False(isSupported);
+						Assert.True(ex.Message.IndexOf("packet") >= 0 || ex.Message.IndexOf("innodb_log_file_size") >= 0);
 					}
 				}
 
-				if (!shouldFail)
+				if (isSupported)
 				{
 					var queryResult = (await connection.QueryAsync<byte[]>(Invariant($"select `{column}` from datatypes_blobs where rowid = {lastInsertId}")).ConfigureAwait(false)).Single();
 					TestUtilities.AssertEqual(data, queryResult);
@@ -569,11 +566,8 @@ namespace SideBySide
 				connection.Open();
 				var transaction = connection.BeginTransaction();
 
-				// verify that this amount of data can be sent to MySQL successfully
-				var maxAllowedPacket = m_database.Connection.Query<int>("select @@max_allowed_packet").Single();
-				var shouldFail = maxAllowedPacket < size + 100;
-
 				var data = CreateByteArray(size);
+				var isSupported = size < 1048576 || AppConfig.SupportedFeatures.HasFlag(ServerFeatures.LargePackets);
 
 				long lastInsertId;
 				using (var cmd = new MySqlCommand(Invariant($"insert into datatypes_blobs(`{column}`) values(?)"), connection, transaction)
@@ -585,16 +579,17 @@ namespace SideBySide
 					{
 						cmd.ExecuteNonQuery();
 						lastInsertId = cmd.LastInsertedId;
+						Assert.True(isSupported);
 					}
 					catch (MySqlException ex)
 					{
 						lastInsertId = -1;
-						Assert.True(shouldFail);
-						Assert.Contains("packet", ex.Message);
+						Assert.False(isSupported);
+						Assert.True(ex.Message.IndexOf("packet") >= 0 || ex.Message.IndexOf("innodb_log_file_size") >= 0);
 					}
 				}
 
-				if (!shouldFail)
+				if (isSupported)
 				{
 					var queryResult = connection.Query<byte[]>(Invariant($"select `{column}` from datatypes_blobs where rowid = {lastInsertId}")).Single();
 					TestUtilities.AssertEqual(data, queryResult);
@@ -617,7 +612,7 @@ namespace SideBySide
 			return data;
 		}
 
-		[JsonTheory]
+		[RequiresFeatureTheory(ServerFeatures.Json)]
 		[InlineData("Value", new[] { null, "NULL", "BOOLEAN", "ARRAY", "ARRAY", "ARRAY", "INTEGER", "INTEGER", "OBJECT", "OBJECT" })]
 		public void JsonType(string column, string[] expectedTypes)
 		{
@@ -625,7 +620,7 @@ namespace SideBySide
 			Assert.Equal(expectedTypes, types);
 		}
 
-		[JsonTheory]
+		[RequiresFeatureTheory(ServerFeatures.Json)]
 		[InlineData("value", new[] { null, "null", "true", "[]", "[0]", "[1]", "0", "1", "{}", "{\"a\": \"b\"}" })]
 		public void QueryJson(string column, string[] expected)
 		{

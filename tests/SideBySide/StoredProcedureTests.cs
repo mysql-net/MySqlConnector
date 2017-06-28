@@ -55,7 +55,7 @@ namespace SideBySide
 			}
 		}
 
-		[CachedProcedureTheory]
+		[RequiresFeatureTheory(ServerFeatures.StoredProcedures)]
 		[InlineData("FUNCTION")]
 		[InlineData("PROCEDURE")]
 		public async Task StoredProcedureEchoException(string procedureType)
@@ -138,7 +138,7 @@ namespace SideBySide
 			}
 		}
 
-		[CachedProcedureTheory]
+		[RequiresFeatureTheory(ServerFeatures.StoredProcedures)]
 		[InlineData("NonQuery")]
 		[InlineData("Scalar")]
 		[InlineData("Reader")]

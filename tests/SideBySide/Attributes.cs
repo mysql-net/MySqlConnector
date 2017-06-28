@@ -4,22 +4,64 @@ using Xunit;
 
 namespace SideBySide
 {
-	public class CachedProcedureTheoryAttribute : TheoryAttribute
+	public class RequiresFeatureFactAttribute : FactAttribute
 	{
-		public CachedProcedureTheoryAttribute()
+		public RequiresFeatureFactAttribute()
 		{
-			if(!AppConfig.SupportsCachedProcedures)
-				Skip = "No Cached Procedure Support";
 		}
+
+		public RequiresFeatureFactAttribute(ServerFeatures features)
+		{
+			if ((AppConfig.SupportedFeatures & features) != features)
+				Skip = "Doesn't support " + features;
+		}
+
+		public bool RequiresSsl
+		{
+			get => m_requiresSsl;
+			set
+			{
+				m_requiresSsl = value;
+				if (m_requiresSsl)
+				{
+					var csb = AppConfig.CreateConnectionStringBuilder();
+					if (csb.SslMode == MySqlSslMode.None || csb.SslMode == MySqlSslMode.Preferred)
+						Skip = "SSL not explicitly required";
+				}
+			}
+		}
+
+		private bool m_requiresSsl;
 	}
 
-	public class JsonTheoryAttribute : TheoryAttribute
+	public class RequiresFeatureTheoryAttribute : TheoryAttribute
 	{
-		public JsonTheoryAttribute()
+		public RequiresFeatureTheoryAttribute()
 		{
-			if(!AppConfig.SupportsJson)
-				Skip = "No JSON Support";
 		}
+
+		public RequiresFeatureTheoryAttribute(ServerFeatures features)
+		{
+			if ((AppConfig.SupportedFeatures & features) != features)
+				Skip = "Doesn't support " + features;
+		}
+
+		public bool RequiresSsl
+		{
+			get => m_requiresSsl;
+			set
+			{
+				m_requiresSsl = value;
+				if (m_requiresSsl)
+				{
+					var csb = AppConfig.CreateConnectionStringBuilder();
+					if (csb.SslMode == MySqlSslMode.None || csb.SslMode == MySqlSslMode.Preferred)
+						Skip = "SSL not explicitly required";
+				}
+			}
+		}
+
+		private bool m_requiresSsl;
 	}
 
 	public class PasswordlessUserFactAttribute : FactAttribute
@@ -95,16 +137,6 @@ namespace SideBySide
 		{
 			if (string.IsNullOrEmpty(AppConfig.SecondaryDatabase))
 				Skip = "No SecondaryDatabase specified.";
-		}
-	}
-
-	public class SslRequiredConnectionFactAttribute : FactAttribute
-	{
-		public SslRequiredConnectionFactAttribute()
-		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
-			if(csb.SslMode == MySqlSslMode.None || csb.SslMode == MySqlSslMode.Preferred)
-				Skip = "SSL not explicitly required";
 		}
 	}
 }

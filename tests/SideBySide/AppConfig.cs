@@ -51,18 +51,24 @@ namespace SideBySide
 
 		public static string SecondaryDatabase => Config.GetValue<string>("Data:SecondaryDatabase");
 
-		public static bool SupportsCachedProcedures => Config.GetValue<bool>("Data:SupportsCachedProcedures");
+		public static ServerFeatures SupportedFeatures => (ServerFeatures) Enum.Parse(typeof(ServerFeatures), Config.GetValue<string>("Data:SupportedFeatures"));
 
-		public static bool SupportsJson => Config.GetValue<bool>("Data:SupportsJson");
+		public static bool SupportsJson => SupportedFeatures.HasFlag(ServerFeatures.Json);
 
 		public static string MySqlBulkLoaderCsvFile => ExpandVariables(Config.GetValue<string>("Data:MySqlBulkLoaderCsvFile"));
 		public static string MySqlBulkLoaderLocalCsvFile => ExpandVariables(Config.GetValue<string>("Data:MySqlBulkLoaderLocalCsvFile"));
 		public static string MySqlBulkLoaderTsvFile => ExpandVariables(Config.GetValue<string>("Data:MySqlBulkLoaderTsvFile"));
 		public static string MySqlBulkLoaderLocalTsvFile => ExpandVariables(Config.GetValue<string>("Data:MySqlBulkLoaderLocalTsvFile"));
 
-		public static MySqlConnectionStringBuilder CreateConnectionStringBuilder()
+		public static MySqlConnectionStringBuilder CreateConnectionStringBuilder() => new MySqlConnectionStringBuilder(ConnectionString);
+
+		public static MySqlConnectionStringBuilder CreateSha256ConnectionStringBuilder()
 		{
-			return new MySqlConnectionStringBuilder(ConnectionString);
+			var csb = CreateConnectionStringBuilder();
+			csb.UserID = "sha256user";
+			csb.Password = "Sh@256Pa55";
+			csb.Database = null;
+			return csb;
 		}
 
 		// tests can run much slower in CI environments

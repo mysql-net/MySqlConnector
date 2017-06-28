@@ -116,70 +116,6 @@ namespace SideBySide
 			}
 		}
 
-		[SslRequiredConnectionFact]
-		public async Task ConnectSslPreferred()
-		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
-			string requiredSslVersion;
-			using (var connection = new MySqlConnection(csb.ConnectionString))
-			{
-				using (var cmd = connection.CreateCommand())
-				{
-					await connection.OpenAsync();
-					cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
-					requiredSslVersion = (string)await cmd.ExecuteScalarAsync();
-				}
-			}
-			Assert.False(string.IsNullOrWhiteSpace(requiredSslVersion));
-
-			csb.SslMode = MySqlSslMode.Preferred;
-			using (var connection = new MySqlConnection(csb.ConnectionString))
-			{
-				using (var cmd = connection.CreateCommand())
-				{
-					await connection.OpenAsync();
-					cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
-					var preferredSslVersion = (string)await cmd.ExecuteScalarAsync();
-					Assert.Equal(requiredSslVersion, preferredSslVersion);
-				}
-			}
-		}
-
-		[SslRequiredConnectionFact]
-		public async Task ConnectSslClientCertificate()
-		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
-			csb.CertificateFile = Path.Combine(AppConfig.CertsPath, "ssl-client.pfx");
-			csb.CertificatePassword = "";
-			using (var connection = new MySqlConnection(csb.ConnectionString))
-			{
-				using (var cmd = connection.CreateCommand())
-				{
-					await connection.OpenAsync();
-					cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
-					var sslVersion = (string)await cmd.ExecuteScalarAsync();
-					Assert.False(string.IsNullOrWhiteSpace(sslVersion));
-				}
-			}
-		}
-
-		[SslRequiredConnectionFact]
-		public async Task ConnectSslBadClientCertificate()
-		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
-			csb.CertificateFile = Path.Combine(AppConfig.CertsPath, "non-ca-client.pfx");
-			csb.CertificatePassword = "";
-			using (var connection = new MySqlConnection(csb.ConnectionString))
-			{
-#if BASELINE
-				var exType = typeof(IOException);
-#else
-				var exType = typeof(MySqlException);
-#endif
-				await Assert.ThrowsAsync(exType, async () => await connection.OpenAsync());
-			}
-		}
-
 		[Fact]
 		public async Task ConnectTimeoutAsync()
 		{
@@ -300,6 +236,32 @@ namespace SideBySide
 			{
 				cmd.CommandText = "SELECT DATABASE()";
 				return (string) await cmd.ExecuteScalarAsync();
+			}
+		}
+
+		[RequiresFeatureFact(ServerFeatures.Sha256Password, RequiresSsl = true)]
+		public async Task Sha256WithSecureConnection()
+		{
+			var csb = AppConfig.CreateSha256ConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+				await connection.OpenAsync();
+		}
+
+		[RequiresFeatureFact(ServerFeatures.Sha256Password)]
+		public async Task Sha256WithoutSecureConnection()
+		{
+			var csb = AppConfig.CreateSha256ConnectionStringBuilder();
+			csb.SslMode = MySqlSslMode.None;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+#if BASELINE || NET451
+				await Assert.ThrowsAsync<NotImplementedException>(() => connection.OpenAsync());
+#else
+				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.OpenSsl))
+					await connection.OpenAsync();
+				else
+					await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());
+#endif
 			}
 		}
 

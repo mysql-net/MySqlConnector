@@ -220,7 +220,7 @@ namespace MySql.Data.Serialization
 				authPluginName = initialHandshake.AuthPluginName;
 			else
 				authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" : "mysql_native_password";
-			if (authPluginName != "mysql_native_password")
+			if (authPluginName != "mysql_native_password" && authPluginName != "sha256_password")
 				throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(initialHandshake.AuthPluginName));
 
 			ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
@@ -303,6 +303,55 @@ namespace MySql.Data.Serialization
 					throw new MySqlException("Authentication method '{0}' requires a secure connection.".FormatInvariant(switchRequest.Name));
 				payload = new PayloadData(new ArraySegment<byte>(Encoding.UTF8.GetBytes(password)));
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				break;
+
+			case "sha256_password":
+				// add NUL terminator to password
+				var passwordBytes = Encoding.UTF8.GetBytes(password);
+				Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
+
+				if (!m_isSecureConnection && passwordBytes.Length > 1)
+				{
+#if NET451
+					throw new MySqlException("Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
+#else
+					// request the RSA public key
+					await SendReplyAsync(new PayloadData(new ArraySegment<byte>(new byte[] { 0x01 }, 0, 1)), ioBehavior, cancellationToken).ConfigureAwait(false);
+					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload);
+					var publicKey = Encoding.ASCII.GetString(publicKeyPayload.Data);
+
+					// load the RSA public key
+					RSA rsa;
+					try
+					{
+						rsa = Utility.DecodeX509PublicKey(publicKey);
+					}
+					catch (Exception ex)
+					{
+						throw new MySqlException("Couldn't load server's RSA public key; try using a secure connection instead.", ex);
+					}
+
+					using (rsa)
+					{
+						// XOR the password bytes with the challenge
+						AuthPluginData = Utility.TrimZeroByte(switchRequest.Data);
+						for (int i = 0; i < passwordBytes.Length; i++)
+							passwordBytes[i] ^= AuthPluginData[i % AuthPluginData.Length];
+
+						// encrypt with RSA public key
+						var encryptedPassword = rsa.Encrypt(passwordBytes, RSAEncryptionPadding.OaepSHA1);
+						payload = new PayloadData(new ArraySegment<byte>(encryptedPassword));
+						await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+					}
+#endif
+				}
+				else
+				{
+					// send plaintext password
+					payload = new PayloadData(new ArraySegment<byte>(passwordBytes));
+					await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
 				break;
 
 			default:
@@ -559,36 +608,66 @@ namespace MySql.Data.Serialization
 				catch (CryptographicException ex)
 				{
 					if (!File.Exists(cs.CertificateFile))
-						throw new MySqlException("Cannot find SSL Certificate File", ex);
-					throw new MySqlException("Either the SSL Certificate Password is incorrect or the SSL Certificate File is invalid", ex);
+						throw new MySqlException("Cannot find Certificate File", ex);
+					throw new MySqlException("Either the Certificate Password is incorrect or the Certificate File is invalid", ex);
 				}
 			}
 
-			Func<object, string, X509CertificateCollection, X509Certificate, string[], X509Certificate> localCertificateCb =
-				(lcbSender, lcbTargetHost, lcbLocalCertificates, lcbRemoteCertificate, lcbAcceptableIssuers) => lcbLocalCertificates[0];
-
-			Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool> remoteCertificateCb =
-				(rcbSender, rcbCertificate, rcbChain, rcbPolicyErrors) =>
+			X509Chain caCertificateChain = null;
+			if (cs.CACertificateFile != null)
+			{
+				try
 				{
-					switch (rcbPolicyErrors)
+					var caCertificate = new X509Certificate2(cs.CACertificateFile);
+					caCertificateChain = new X509Chain
 					{
-						case SslPolicyErrors.None:
-							return true;
-						case SslPolicyErrors.RemoteCertificateNameMismatch:
-							return cs.SslMode != MySqlSslMode.VerifyFull;
-						default:
-							return cs.SslMode == MySqlSslMode.Preferred || cs.SslMode == MySqlSslMode.Required;
+						ChainPolicy =
+						{
+							RevocationMode = X509RevocationMode.NoCheck,
+							VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority
+						}
+					};
+					caCertificateChain.ChainPolicy.ExtraStore.Add(caCertificate);
+				}
+				catch (CryptographicException ex)
+				{
+					if (!File.Exists(cs.CACertificateFile))
+						throw new MySqlException("Cannot find CA Certificate File", ex);
+					throw new MySqlException("The CA Certificate File is invalid", ex);
+				}
+			}
+
+			X509Certificate LocalCertificateCb(object lcbSender, string lcbTargetHost, X509CertificateCollection lcbLocalCertificates, X509Certificate lcbRemoteCertificate, string[] lcbAcceptableIssuers) => lcbLocalCertificates[0];
+
+			bool RemoteCertificateCb(object rcbSender, X509Certificate rcbCertificate, X509Chain rcbChain, SslPolicyErrors rcbPolicyErrors)
+			{
+				if (cs.SslMode == MySqlSslMode.Preferred || cs.SslMode == MySqlSslMode.Required)
+					return true;
+
+				if ((rcbPolicyErrors & SslPolicyErrors.RemoteCertificateChainErrors) != 0 && caCertificateChain != null)
+				{
+					if (caCertificateChain.Build((X509Certificate2) rcbCertificate))
+					{
+						var chainStatus = caCertificateChain.ChainStatus[0].Status & ~X509ChainStatusFlags.UntrustedRoot;
+						if (chainStatus == X509ChainStatusFlags.NoError)
+							rcbPolicyErrors &= ~SslPolicyErrors.RemoteCertificateChainErrors;
 					}
-				};
+				}
+
+				if (cs.SslMode == MySqlSslMode.VerifyCA)
+					rcbPolicyErrors &= ~SslPolicyErrors.RemoteCertificateNameMismatch;
+
+				return rcbPolicyErrors == SslPolicyErrors.None;
+			}
 
 			SslStream sslStream;
 			if (clientCertificates == null)
 				sslStream = new SslStream(m_networkStream, false,
-					new RemoteCertificateValidationCallback(remoteCertificateCb));
+					new RemoteCertificateValidationCallback((Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool>) RemoteCertificateCb));
 			else
 				sslStream = new SslStream(m_networkStream, false,
-					new RemoteCertificateValidationCallback(remoteCertificateCb),
-					new LocalCertificateSelectionCallback(localCertificateCb));
+					new RemoteCertificateValidationCallback((Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool>) RemoteCertificateCb),
+					new LocalCertificateSelectionCallback((Func<object, string, X509CertificateCollection, X509Certificate, string[], X509Certificate>) LocalCertificateCb));
 
 			// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/mysql-net/MySqlConnector/pull/101
 			var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
@@ -620,6 +699,7 @@ namespace MySql.Data.Serialization
 			}
 			catch (Exception ex)
 			{
+				sslStream.Dispose();
 				ShutdownSocket();
 				m_hostname = "";
 				lock (m_lock)
@@ -634,42 +714,31 @@ namespace MySql.Data.Serialization
 
 		private void ShutdownSocket()
 		{
-			m_payloadHandler = null;
-			if (m_networkStream != null)
-			{
-#if NETSTANDARD1_3
-				m_networkStream.Dispose();
-#else
-				m_networkStream.Close();
-#endif
-				m_networkStream = null;
-			}
-			if (m_tcpClient != null)
+			Utility.Dispose(ref m_payloadHandler);
+			Utility.Dispose(ref m_networkStream);
+			SafeDispose(ref m_tcpClient);
+			SafeDispose(ref m_socket);
+		}
+
+		/// <summary>
+		/// Disposes and sets <paramref name="disposable"/> to <c>null</c>, ignoring any
+		/// <see cref="SocketException"/> that is thrown.
+		/// </summary>
+		/// <typeparam name="T">An <see cref="IDisposable"/> type.</typeparam>
+		/// <param name="disposable">The object to dispose.</param>
+		private static void SafeDispose<T>(ref T disposable)
+			where T : class, IDisposable
+		{
+			if (disposable != null)
 			{
 				try
 				{
-#if NETSTANDARD1_3
-					m_tcpClient.Dispose();
-#else
-					m_tcpClient.Close();
-#endif
+					disposable.Dispose();
 				}
 				catch (SocketException)
 				{
 				}
-				m_tcpClient = null;
-				m_socket = null;
-			}
-			else if (m_socket != null)
-			{
-				try
-				{
-					m_socket.Dispose();
-					m_socket = null;
-				}
-				catch (SocketException)
-				{
-				}
+				disposable = null;
 			}
 		}
 
@@ -697,7 +766,6 @@ namespace MySql.Data.Serialization
 			lock (m_lock)
 				m_state = State.Failed;
 		}
-
 
 		private void VerifyState(State state)
 		{
