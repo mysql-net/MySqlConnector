@@ -311,7 +311,7 @@ namespace MySql.Data.MySqlClient
 					{
 						var pool = ConnectionPool.GetPool(m_connectionSettings);
 						// this returns an open session
-						return await pool.GetSessionAsync(ioBehavior, linkedSource.Token).ConfigureAwait(false);
+						return await pool.GetSessionAsync(this, ioBehavior, linkedSource.Token).ConfigureAwait(false);
 					}
 					else
 					{

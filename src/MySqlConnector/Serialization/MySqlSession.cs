@@ -41,6 +41,7 @@ namespace MySql.Data.Serialization
 		public DateTime LastReturnedUtc { get; private set; }
 		public string DatabaseOverride { get; set; }
 		public IPAddress IPAddress => (m_tcpClient?.Client.RemoteEndPoint as IPEndPoint)?.Address;
+		public WeakReference<MySqlConnection> OwningConnection { get; set; }
 
 		public void ReturnToPool()
 		{
