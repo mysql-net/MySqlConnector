@@ -585,6 +585,9 @@ namespace MySql.Data.Serialization
 				try
 				{
 					var certificate = new X509Certificate2(cs.CertificateFile, cs.CertificatePassword);
+#if !NET451
+					m_clientCertificate = certificate;
+#endif
 					clientCertificates = new X509CertificateCollection {certificate};
 				}
 				catch (CryptographicException ex)
@@ -601,6 +604,9 @@ namespace MySql.Data.Serialization
 				try
 				{
 					var caCertificate = new X509Certificate2(cs.CACertificateFile);
+#if !NET451
+					m_serverCertificate = caCertificate;
+#endif
 					caCertificateChain = new X509Chain
 					{
 						ChainPolicy =
@@ -619,9 +625,9 @@ namespace MySql.Data.Serialization
 				}
 			}
 
-			X509Certificate LocalCertificateCb(object lcbSender, string lcbTargetHost, X509CertificateCollection lcbLocalCertificates, X509Certificate lcbRemoteCertificate, string[] lcbAcceptableIssuers) => lcbLocalCertificates[0];
+			X509Certificate ValidateLocalCertificate(object lcbSender, string lcbTargetHost, X509CertificateCollection lcbLocalCertificates, X509Certificate lcbRemoteCertificate, string[] lcbAcceptableIssuers) => lcbLocalCertificates[0];
 
-			bool RemoteCertificateCb(object rcbSender, X509Certificate rcbCertificate, X509Chain rcbChain, SslPolicyErrors rcbPolicyErrors)
+			bool ValidateRemoteCertificate(object rcbSender, X509Certificate rcbCertificate, X509Chain rcbChain, SslPolicyErrors rcbPolicyErrors)
 			{
 				if (cs.SslMode == MySqlSslMode.Preferred || cs.SslMode == MySqlSslMode.Required)
 					return true;
@@ -644,12 +650,9 @@ namespace MySql.Data.Serialization
 
 			SslStream sslStream;
 			if (clientCertificates == null)
-				sslStream = new SslStream(m_networkStream, false,
-					new RemoteCertificateValidationCallback((Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool>) RemoteCertificateCb));
+				sslStream = new SslStream(m_networkStream, false, ValidateRemoteCertificate);
 			else
-				sslStream = new SslStream(m_networkStream, false,
-					new RemoteCertificateValidationCallback((Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool>) RemoteCertificateCb),
-					new LocalCertificateSelectionCallback((Func<object, string, X509CertificateCollection, X509Certificate, string[], X509Certificate>) LocalCertificateCb));
+				sslStream = new SslStream(m_networkStream, false, ValidateRemoteCertificate, ValidateLocalCertificate);
 
 			// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/mysql-net/MySqlConnector/pull/101
 			var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
@@ -700,6 +703,10 @@ namespace MySql.Data.Serialization
 			Utility.Dispose(ref m_networkStream);
 			SafeDispose(ref m_tcpClient);
 			SafeDispose(ref m_socket);
+#if !NET451
+			Utility.Dispose(ref m_clientCertificate);
+			Utility.Dispose(ref m_serverCertificate);
+#endif
 		}
 
 		/// <summary>
@@ -798,6 +805,10 @@ namespace MySql.Data.Serialization
 		TcpClient m_tcpClient;
 		Socket m_socket;
 		NetworkStream m_networkStream;
+#if !NET451
+		IDisposable m_clientCertificate;
+		IDisposable m_serverCertificate;
+#endif
 		IPayloadHandler m_payloadHandler;
 		MySqlCommand m_activeCommand;
 		MySqlDataReader m_activeReader;
