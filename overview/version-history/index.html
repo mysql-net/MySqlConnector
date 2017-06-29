@@ -168,6 +168,16 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-22-0">0.22.0</h3>
+
+<ul>
+<li>Add server certificate validation via <code>MySqlConnectionStringBuilder.CACertificateFile</code>: <a href="https://github.com/mysql-net/MySqlConnector/pull/280">#280</a>.</li>
+<li>Support <code>sha256_password</code> authentication: <a href="https://github.com/mysql-net/MySqlConnector/issues/281">#281</a>.</li>
+<li>Ignore <code>IOException</code> in <code>TryPingAsync</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/289">#289</a>.</li>
+<li>Fix &ldquo;Aborted connection&rdquo; server errors when <code>MySqlConnection</code> isn&rsquo;t disposed: <a href="https://github.com/mysql-net/MySqlConnector/issues/290">#290</a>.</li>
+<li>Run integration tests on MySQL Server 5.6, MySQL Server 5.7, MariaDB 10.3, Percona Server 5.7.</li>
+</ul>
+
 <h3 id="0-21-0">0.21.0</h3>
 
 <ul>

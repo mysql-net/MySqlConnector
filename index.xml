@@ -529,6 +529,16 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-22-0&#34;&gt;0.22.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Add server certificate validation via &lt;code&gt;MySqlConnectionStringBuilder.CACertificateFile&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/pull/280&#34;&gt;#280&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Support &lt;code&gt;sha256_password&lt;/code&gt; authentication: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/281&#34;&gt;#281&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Ignore &lt;code&gt;IOException&lt;/code&gt; in &lt;code&gt;TryPingAsync&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/289&#34;&gt;#289&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fix &amp;ldquo;Aborted connection&amp;rdquo; server errors when &lt;code&gt;MySqlConnection&lt;/code&gt; isn&amp;rsquo;t disposed: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/290&#34;&gt;#290&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Run integration tests on MySQL Server 5.6, MySQL Server 5.7, MariaDB 10.3, Percona Server 5.7.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-21-0&#34;&gt;0.21.0&lt;/h3&gt;
 
 &lt;ul&gt;
