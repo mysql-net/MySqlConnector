@@ -1,8 +1,13 @@
-{
+﻿{
     "Data": {
       "ConnectionString": "server=127.0.0.1;user id=mysqltest;password='test;key=\"val';port=3306;database=mysqltest;Use Affected Rows=true",
       "PasswordlessUser": "no_password",
       "SupportsCachedProcedures": true,
-      "SupportsJson": true
+      "SupportsJson": true,
+
+      "CertificatesPath": "C:\\work\\MySqlConnector\\.ci\\server\\certs",
+
+      "TestData": "C:/work/MySqlConnector/tests/TestData",
+      "RemoteTestData": "/var/lib/mysql-files"
     }
 }
