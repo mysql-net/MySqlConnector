@@ -19,13 +19,10 @@ namespace SideBySide
 				["Data:SupportsJson"] = "false",
 			};
 
-		public static string CertsPath => Config.GetValue<string>("Data:CertificatesPath")
-			// normalize path to whatever the system prefers
-			.Replace('\\', Path.DirectorySeparatorChar)
-			.Replace('/', Path.DirectorySeparatorChar);
+		public static string CertsPath => Path.GetFullPath(Config.GetValue<string>("Data:CertificatesPath"));
 
-		public static string TestDataPath => Config.GetValue<string>("Data:TestData");
-		public static string RemoteTestDataPath => Config.GetValue<string>("Data:RemoteTestData");
+		public static string TestDataPath => Path.GetFullPath(Config.GetValue<string>("Data:TestData"));
+		public static string RemoteTestDataPath => Path.GetFullPath(Config.GetValue<string>("Data:RemoteTestData"));
 
 		private static int _configFirst;
 
