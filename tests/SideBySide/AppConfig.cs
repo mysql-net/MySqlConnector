@@ -54,10 +54,10 @@ namespace SideBySide
 
 		public static bool SupportsJson => SupportedFeatures.HasFlag(ServerFeatures.Json);
 
-		public static string MySqlBulkLoaderCsvFile => ExpandRemoteVariables(Config.GetValue<string>("Data:MySqlBulkLoaderCsvFile"));
-		public static string MySqlBulkLoaderLocalCsvFile => ExpandLocalVariables(Config.GetValue<string>("Data:MySqlBulkLoaderLocalCsvFile"));
-		public static string MySqlBulkLoaderTsvFile => ExpandRemoteVariables(Config.GetValue<string>("Data:MySqlBulkLoaderTsvFile"));
-		public static string MySqlBulkLoaderLocalTsvFile => ExpandLocalVariables(Config.GetValue<string>("Data:MySqlBulkLoaderLocalTsvFile"));
+		public static string MySqlBulkLoaderCsvFile => ExpandVariables(Config.GetValue<string>("Data:MySqlBulkLoaderCsvFile"));
+		public static string MySqlBulkLoaderLocalCsvFile => ExpandVariables(Config.GetValue<string>("Data:MySqlBulkLoaderLocalCsvFile"));
+		public static string MySqlBulkLoaderTsvFile => ExpandVariables(Config.GetValue<string>("Data:MySqlBulkLoaderTsvFile"));
+		public static string MySqlBulkLoaderLocalTsvFile => ExpandVariables(Config.GetValue<string>("Data:MySqlBulkLoaderLocalTsvFile"));
 
 		public static MySqlConnectionStringBuilder CreateConnectionStringBuilder() => new MySqlConnectionStringBuilder(ConnectionString);
 
@@ -73,8 +73,6 @@ namespace SideBySide
 		// tests can run much slower in CI environments
 		public static int TimeoutDelayFactor { get; } = (Environment.GetEnvironmentVariable("APPVEYOR") == "True" || Environment.GetEnvironmentVariable("TRAVIS") == "true") ? 6 : 1;
 
-		private static string ExpandVariables(string value, string replacement) => value?.Replace("%TESTDATA%", replacement);
-		private static string ExpandLocalVariables(string value) => ExpandVariables(value, TestDataPath);
-		private static string ExpandRemoteVariables(string value) => ExpandVariables(value, RemoteTestDataPath);
+		private static string ExpandVariables(string value) => value?.Replace("%TESTDATA%", TestDataPath).Replace("%REMOTETESTDATA%", RemoteTestDataPath);
 	}
 }
