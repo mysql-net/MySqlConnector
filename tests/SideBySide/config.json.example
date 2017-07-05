@@ -5,7 +5,7 @@
       "SupportsCachedProcedures": true,
       "SupportsJson": true,
 
-      "CertificatesPath": "C:\\work\\MySqlConnector\\.ci\\server\\certs",
+      "CertificatesPath": "C:/work/MySqlConnector/.ci/server/certs",
 
       "TestData": "C:/work/MySqlConnector/tests/TestData",
       "RemoteTestData": "/var/lib/mysql-files"

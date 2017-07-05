@@ -9,6 +9,6 @@
       "MySqlBulkLoaderLocalCsvFile": "%TESTDATA%/LoadData_UTF8_BOM_Unix.CSV",
       "MySqlBulkLoaderLocalTsvFile": "%TESTDATA%/LoadData_UTF8_BOM_Unix.TSV",
 
-      "CertificatesPath": "..\\..\\..\\..\\..\\.ci\\server\\certs"
+      "CertificatesPath": "../../../../../.ci/server/certs"
     }
 }
