@@ -19,18 +19,14 @@ namespace SideBySide
 				["Data:SupportsJson"] = "false",
 			};
 
-		private static string CodeRootPath = GetCodeRootPath();
+		public static string CertsPath => Path.GetFullPath(Config.GetValue<string>("Data:CertificatesPath"));
 
-		public static string BasePath = Path.Combine(CodeRootPath, "tests", "SideBySide");
-
-		public static string CertsPath = Path.Combine(CodeRootPath, ".ci", "server", "certs");
-
-		public static string TestDataPath = Path.Combine(CodeRootPath, "tests", "TestData");
+		public static string TestDataPath => Path.GetFullPath(Config.GetValue<string>("Data:TestData"));
+		public static string RemoteTestDataPath => Path.GetFullPath(Config.GetValue<string>("Data:RemoteTestData"));
 
 		private static int _configFirst;
 
 		private static IConfiguration ConfigBuilder { get; } = new ConfigurationBuilder()
-			.SetBasePath(BasePath)
 			.AddInMemoryCollection(DefaultConfig)
 			.AddJsonFile("config.json")
 			.Build();
@@ -74,19 +70,6 @@ namespace SideBySide
 		// tests can run much slower in CI environments
 		public static int TimeoutDelayFactor { get; } = (Environment.GetEnvironmentVariable("APPVEYOR") == "True" || Environment.GetEnvironmentVariable("TRAVIS") == "true") ? 6 : 1;
 
-		private static string GetCodeRootPath()
-		{
-#if NET46
-			var currentAssembly = Assembly.GetExecutingAssembly();
-#else
-			var currentAssembly = typeof(AppConfig).GetTypeInfo().Assembly;
-#endif
-			var directory = new Uri(currentAssembly.CodeBase).LocalPath;
-			while (!string.Equals(Path.GetFileName(directory), "MySqlConnector", StringComparison.OrdinalIgnoreCase))
-				directory = Path.GetDirectoryName(directory);
-			return directory;
-		}
-
-		private static string ExpandVariables(string value) => value?.Replace("%TESTDATA%", TestDataPath);
+		private static string ExpandVariables(string value) => value?.Replace("%TESTDATA%", TestDataPath).Replace("%REMOTETESTDATA%", RemoteTestDataPath);
 	}
 }

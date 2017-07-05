@@ -4,6 +4,8 @@
       "PasswordlessUser": "no_password",
       "SecondaryDatabase": "testdb2",
       "SupportedFeatures": "Json,StoredProcedures,Sha256Password,LargePackets",
+
+      "TestData": "../../../../TestData",
       "MySqlBulkLoaderLocalCsvFile": "%TESTDATA%/LoadData_UTF8_BOM_Unix.CSV",
       "MySqlBulkLoaderLocalTsvFile": "%TESTDATA%/LoadData_UTF8_BOM_Unix.TSV"
     }
