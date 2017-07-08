@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -233,7 +237,11 @@ namespace MySql.Data.Serialization
 				await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 
-			var response = HandshakeResponse41Packet.Create(initialHandshake, cs, m_useCompression);
+			m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
+			if (m_supportsConnectionAttributes && s_connectionAttributes == null)
+				s_connectionAttributes = CreateConnectionAttributes();
+
+			var response = HandshakeResponse41Packet.Create(initialHandshake, cs, m_useCompression, m_supportsConnectionAttributes ? s_connectionAttributes : null);
 			payload = new PayloadData(new ArraySegment<byte>(response));
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -270,7 +278,7 @@ namespace MySql.Data.Serialization
 			{
 				// optimistically hash the password with the challenge from the initial handshake (supported by MariaDB; doesn't appear to be supported by MySQL)
 				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
-				var payload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database);
+				var payload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database, m_supportsConnectionAttributes ? s_connectionAttributes : null);
 				await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
@@ -768,6 +776,46 @@ namespace MySql.Data.Serialization
 				throw new InvalidOperationException("Expected state to be ({0}|{1}) but was {2}.".FormatInvariant(state1, state2, m_state));
 		}
 
+		private static byte[] CreateConnectionAttributes()
+		{
+			var attributesWriter = new PayloadWriter();
+			attributesWriter.WriteLengthEncodedString("_client_name");
+			attributesWriter.WriteLengthEncodedString("MySqlConnector");
+			attributesWriter.WriteLengthEncodedString("_client_version");
+			attributesWriter.WriteLengthEncodedString(typeof(MySqlSession).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion);
+			try
+			{
+				var os = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Windows" :
+					RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "Linux" :
+						RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "macOS" : null;
+				var osDetails = RuntimeInformation.OSDescription;
+				var platform = RuntimeInformation.ProcessArchitecture.ToString();
+				if (os != null)
+				{
+					attributesWriter.WriteLengthEncodedString("_os");
+					attributesWriter.WriteLengthEncodedString(os);
+				}
+				attributesWriter.WriteLengthEncodedString("_os_details");
+				attributesWriter.WriteLengthEncodedString(osDetails);
+				attributesWriter.WriteLengthEncodedString("_platform");
+				attributesWriter.WriteLengthEncodedString(platform);
+			}
+			catch (PlatformNotSupportedException)
+			{
+			}
+			using (var process = Process.GetCurrentProcess())
+			{
+				attributesWriter.WriteLengthEncodedString("_pid");
+				attributesWriter.WriteLengthEncodedString(process.Id.ToString(CultureInfo.InvariantCulture));
+			}
+			var connectionAttributes = attributesWriter.ToBytes();
+
+			var writer = new PayloadWriter();
+			writer.WriteLengthEncodedInteger((ulong) connectionAttributes.Length);
+			writer.Write(connectionAttributes);
+			return writer.ToBytes();
+		}
+
 		private enum State
 		{
 			// The session has been created; no connection has been made.
@@ -798,6 +846,8 @@ namespace MySql.Data.Serialization
 			Failed,
 		}
 
+		static byte[] s_connectionAttributes;
+
 		readonly object m_lock;
 		readonly ArraySegmentHolder<byte> m_payloadCache;
 		State m_state;
@@ -814,5 +864,6 @@ namespace MySql.Data.Serialization
 		MySqlDataReader m_activeReader;
 		bool m_useCompression;
 		bool m_isSecureConnection;
+		bool m_supportsConnectionAttributes;
 	}
 }
