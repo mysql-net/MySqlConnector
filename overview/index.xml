@@ -65,6 +65,14 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-23-0&#34;&gt;0.23.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Support .NET 4.5: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/295&#34;&gt;#295&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Send client connection attributes: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/293&#34;&gt;#293&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Dispose &lt;code&gt;X509Certificate2&lt;/code&gt; objects (.NET 4.6 and later): &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/275&#34;&gt;#275&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-22-0&#34;&gt;0.22.0&lt;/h3&gt;
 
 &lt;ul&gt;
