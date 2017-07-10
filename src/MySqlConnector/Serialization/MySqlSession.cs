@@ -317,7 +317,7 @@ namespace MySql.Data.Serialization
 
 				if (!m_isSecureConnection && passwordBytes.Length > 1)
 				{
-#if NET451
+#if NET45
 					throw new MySqlException("Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
 #else
 					// request the RSA public key
@@ -593,7 +593,7 @@ namespace MySql.Data.Serialization
 				try
 				{
 					var certificate = new X509Certificate2(cs.CertificateFile, cs.CertificatePassword);
-#if !NET451
+#if !NET45
 					m_clientCertificate = certificate;
 #endif
 					clientCertificates = new X509CertificateCollection {certificate};
@@ -612,7 +612,7 @@ namespace MySql.Data.Serialization
 				try
 				{
 					var caCertificate = new X509Certificate2(cs.CACertificateFile);
-#if !NET451
+#if !NET45
 					m_serverCertificate = caCertificate;
 #endif
 					caCertificateChain = new X509Chain
@@ -711,7 +711,7 @@ namespace MySql.Data.Serialization
 			Utility.Dispose(ref m_networkStream);
 			SafeDispose(ref m_tcpClient);
 			SafeDispose(ref m_socket);
-#if !NET451
+#if !NET45
 			Utility.Dispose(ref m_clientCertificate);
 			Utility.Dispose(ref m_serverCertificate);
 #endif
@@ -855,7 +855,7 @@ namespace MySql.Data.Serialization
 		TcpClient m_tcpClient;
 		Socket m_socket;
 		NetworkStream m_networkStream;
-#if !NET451
+#if !NET45
 		IDisposable m_clientCertificate;
 		IDisposable m_serverCertificate;
 #endif

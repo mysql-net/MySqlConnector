@@ -7,7 +7,7 @@
     <AssemblyTitle>Async MySQL Connector</AssemblyTitle>
     <VersionPrefix>0.22.0</VersionPrefix>
     <Authors>Bradley Grainger;Caleb Lloyd</Authors>
-    <TargetFrameworks>net451;net46;netstandard1.3</TargetFrameworks>
+    <TargetFrameworks>net45;net46;netstandard1.3</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyName>MySqlConnector</AssemblyName>
     <PackageId>MySqlConnector</PackageId>
@@ -20,7 +20,7 @@
     <RepositoryUrl>https://github.com/mysql-net/MySqlConnector.git</RepositoryUrl>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' OR '$(TargetFramework)' == 'net46' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'net46' ">
     <PackageReference Include="System.Buffers" Version="4.0.0" />
     <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.0.0" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.0.0" />
