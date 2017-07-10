@@ -283,7 +283,7 @@ namespace MySql.Data.Serialization
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 				{
-					await SwitchAuthenticationAsync(payload, cs.Password, ioBehavior, cancellationToken);
+					await SwitchAuthenticationAsync(payload, cs.Password, ioBehavior, cancellationToken).ConfigureAwait(false);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				OkPayload.Create(payload);
