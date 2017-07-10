@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.23.0
+
+* Support .NET 4.5: [#295](https://github.com/mysql-net/MySqlConnector/issues/295).
+* Send client connection attributes: [#293](https://github.com/mysql-net/MySqlConnector/issues/293).
+* Dispose `X509Certificate2` objects (.NET 4.6 and later): [#275](https://github.com/mysql-net/MySqlConnector/issues/275).
+
 ### 0.22.0
 
 * Add server certificate validation via `MySqlConnectionStringBuilder.CACertificateFile`: [#280](https://github.com/mysql-net/MySqlConnector/pull/280).
