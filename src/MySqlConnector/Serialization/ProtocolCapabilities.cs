@@ -105,7 +105,7 @@ namespace MySql.Data.Serialization
 		/// <summary>
 		/// Permits connection attributes in Protocol::HandshakeResponse41.
 		/// </summary>
-		ConnectAttributes = 0x10_0000,
+		ConnectionAttributes = 0x10_0000,
 
 		/// <summary>
 		/// Understands length-encoded integer for auth response data in Protocol::HandshakeResponse41.

@@ -19,6 +19,7 @@
 				(string.IsNullOrWhiteSpace(cs.Database) ? 0 : ProtocolCapabilities.ConnectWithDatabase) |
 				(cs.UseAffectedRows ? 0 : ProtocolCapabilities.FoundRows) |
 				(useCompression ? ProtocolCapabilities.Compress : ProtocolCapabilities.None) |
+				(serverCapabilities & ProtocolCapabilities.ConnectionAttributes) |
 				additionalCapabilities));
 			writer.WriteInt32(0x4000_0000);
 			writer.WriteByte((byte) CharacterSet.Utf8Mb4Binary);
@@ -32,10 +33,9 @@
 			return CreateCapabilitiesPayload(serverCapabilities, cs, useCompression, ProtocolCapabilities.Ssl).ToBytes();
 		}
 
-		public static byte[] Create(InitialHandshakePacket handshake, ConnectionSettings cs, bool useCompression)
+		public static byte[] Create(InitialHandshakePacket handshake, ConnectionSettings cs, bool useCompression, byte[] connectionAttributes)
 		{
 			// TODO: verify server capabilities
-
 			var writer = CreateCapabilitiesPayload(handshake.ProtocolCapabilities, cs, useCompression);
 			writer.WriteNullTerminatedString(cs.UserID);
 			var authenticationResponse = AuthenticationUtility.CreateAuthenticationResponse(handshake.AuthPluginData, 0, cs.Password);
@@ -47,6 +47,9 @@
 
 			if ((handshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
 				writer.WriteNullTerminatedString("mysql_native_password");
+
+			if (connectionAttributes != null)
+				writer.Write(connectionAttributes);
 
 			return writer.ToBytes();
 		}

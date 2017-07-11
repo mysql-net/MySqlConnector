@@ -4,7 +4,7 @@ namespace MySql.Data.Serialization
 {
 	internal class ChangeUserPayload
 	{
-		public static PayloadData Create(string user, byte[] authResponse, string schemaName)
+		public static PayloadData Create(string user, byte[] authResponse, string schemaName, byte[] connectionAttributes)
 		{
 			var writer = new PayloadWriter();
 
@@ -16,6 +16,8 @@ namespace MySql.Data.Serialization
 			writer.WriteByte((byte) CharacterSet.Utf8Mb4Binary);
 			writer.WriteByte(0);
 			writer.WriteNullTerminatedString("mysql_native_password");
+			if (connectionAttributes != null)
+				writer.Write(connectionAttributes);
 
 			return new PayloadData(new ArraySegment<byte>(writer.ToBytes()));
 		}

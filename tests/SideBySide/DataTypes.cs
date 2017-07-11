@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
 using Xunit;
-using static System.FormattableString;
 
 // mysql-connector-net will throw SqlNullValueException, which is an exception type related to SQL Server:
 // "The exception that is thrown when the Value property of a System.Data.SqlTypes structure is set to null."
@@ -96,7 +95,7 @@ namespace SideBySide
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = Invariant($"select {column} from datatypes_integers order by rowid");
+				cmd.CommandText = $"select {column} from datatypes_integers order by rowid";
 				using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
 				{
 					for (int i = 0; i < flags.Length; i++)
@@ -377,7 +376,7 @@ namespace SideBySide
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
-				cmd.CommandText = Invariant($"select `{column}` from datatypes_guids order by rowid");
+				cmd.CommandText = $"select `{column}` from datatypes_guids order by rowid";
 				using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
 				{
 					Assert.Equal(fieldType, reader.GetFieldType(0));
@@ -524,7 +523,7 @@ namespace SideBySide
 				var isSupported = size < 1048576 || AppConfig.SupportedFeatures.HasFlag(ServerFeatures.LargePackets);
 
 				long lastInsertId;
-				using (var cmd = new MySqlCommand(Invariant($"insert into datatypes_blobs(`{column}`) values(?)"), connection, transaction)
+				using (var cmd = new MySqlCommand($"insert into datatypes_blobs(`{column}`) values(?)", connection, transaction)
 				{
 					Parameters = { new MySqlParameter { Value = data } }
 				})
@@ -545,10 +544,10 @@ namespace SideBySide
 
 				if (isSupported)
 				{
-					var queryResult = (await connection.QueryAsync<byte[]>(Invariant($"select `{column}` from datatypes_blobs where rowid = {lastInsertId}")).ConfigureAwait(false)).Single();
+					var queryResult = (await connection.QueryAsync<byte[]>($"select `{column}` from datatypes_blobs where rowid = {lastInsertId}").ConfigureAwait(false)).Single();
 					TestUtilities.AssertEqual(data, queryResult);
 
-					await connection.ExecuteAsync(Invariant($"delete from datatypes_blobs where rowid = {lastInsertId}")).ConfigureAwait(false);
+					await connection.ExecuteAsync($"delete from datatypes_blobs where rowid = {lastInsertId}").ConfigureAwait(false);
 				}
 			}
 		}
@@ -570,7 +569,7 @@ namespace SideBySide
 				var isSupported = size < 1048576 || AppConfig.SupportedFeatures.HasFlag(ServerFeatures.LargePackets);
 
 				long lastInsertId;
-				using (var cmd = new MySqlCommand(Invariant($"insert into datatypes_blobs(`{column}`) values(?)"), connection, transaction)
+				using (var cmd = new MySqlCommand($"insert into datatypes_blobs(`{column}`) values(?)", connection, transaction)
 				{
 					Parameters = { new MySqlParameter { Value = data } }
 				})
@@ -591,10 +590,10 @@ namespace SideBySide
 
 				if (isSupported)
 				{
-					var queryResult = connection.Query<byte[]>(Invariant($"select `{column}` from datatypes_blobs where rowid = {lastInsertId}")).Single();
+					var queryResult = connection.Query<byte[]>($"select `{column}` from datatypes_blobs where rowid = {lastInsertId}").Single();
 					TestUtilities.AssertEqual(data, queryResult);
 
-					connection.Execute(Invariant($"delete from datatypes_blobs where rowid = {lastInsertId}"));
+					connection.Execute($"delete from datatypes_blobs where rowid = {lastInsertId}");
 				}
 			}
 		}
@@ -671,7 +670,7 @@ namespace SideBySide
 			connection = connection ?? m_database.Connection;
 			using (var cmd = connection.CreateCommand())
 			{
-				cmd.CommandText = Invariant($"select {column} from datatypes_{table} order by rowid");
+				cmd.CommandText = $"select {column} from datatypes_{table} order by rowid";
 				using (var reader = cmd.ExecuteReader())
 				{
 					Assert.Equal(dataTypeName, reader.GetDataTypeName(0));
@@ -727,7 +726,7 @@ namespace SideBySide
 
 				if (!omitWhereTest)
 				{
-					cmd.CommandText = Invariant($"select rowid from datatypes_{table} where {column} = @value");
+					cmd.CommandText = $"select rowid from datatypes_{table} where {column} = @value";
 					var p = cmd.CreateParameter();
 					p.ParameterName = "@value";
 					p.Value = expected.Last();

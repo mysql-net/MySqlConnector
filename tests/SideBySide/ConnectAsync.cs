@@ -254,7 +254,7 @@ namespace SideBySide
 			csb.SslMode = MySqlSslMode.None;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
-#if BASELINE || NET451
+#if BASELINE || NET45
 				await Assert.ThrowsAsync<NotImplementedException>(() => connection.OpenAsync());
 #else
 				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.OpenSsl))

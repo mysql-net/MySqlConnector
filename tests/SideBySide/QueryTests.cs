@@ -159,11 +159,7 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 					Assert.Throws<MySqlException>(() => cmd2.ExecuteReader());
 					Assert.Throws<MySqlException>(() => cmd2.ExecuteScalar());
 
-#if NET451
-					reader1.Close();
-#else
 					reader1.Dispose();
-#endif
 					using (cmd2.ExecuteReader())
 					{
 					}

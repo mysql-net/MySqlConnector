@@ -43,6 +43,13 @@ namespace MySql.Data.Serialization
 			}
 		}
 
+		public void WriteLengthEncodedString(string value)
+		{
+			var bytes = Encoding.UTF8.GetBytes(value);
+			WriteLengthEncodedInteger((ulong) bytes.Length);
+			m_writer.Write(bytes);
+		}
+
 		public void WriteNullTerminatedString(string value)
 		{
 			var bytes = Encoding.UTF8.GetBytes(value);

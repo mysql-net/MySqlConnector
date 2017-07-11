@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -41,6 +45,7 @@ namespace MySql.Data.Serialization
 		public DateTime LastReturnedUtc { get; private set; }
 		public string DatabaseOverride { get; set; }
 		public IPAddress IPAddress => (m_tcpClient?.Client.RemoteEndPoint as IPEndPoint)?.Address;
+		public WeakReference<MySqlConnection> OwningConnection { get; set; }
 
 		public void ReturnToPool()
 		{
@@ -236,7 +241,11 @@ namespace MySql.Data.Serialization
 				await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 
-			var response = HandshakeResponse41Packet.Create(initialHandshake, cs, m_useCompression);
+			m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
+			if (m_supportsConnectionAttributes && s_connectionAttributes == null)
+				s_connectionAttributes = CreateConnectionAttributes();
+
+			var response = HandshakeResponse41Packet.Create(initialHandshake, cs, m_useCompression, m_supportsConnectionAttributes ? s_connectionAttributes : null);
 			payload = new PayloadData(new ArraySegment<byte>(response));
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -273,12 +282,12 @@ namespace MySql.Data.Serialization
 			{
 				// optimistically hash the password with the challenge from the initial handshake (supported by MariaDB; doesn't appear to be supported by MySQL)
 				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
-				var payload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database);
+				var payload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database, m_supportsConnectionAttributes ? s_connectionAttributes : null);
 				await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 				{
-					await SwitchAuthenticationAsync(payload, cs.Password, ioBehavior, cancellationToken);
+					await SwitchAuthenticationAsync(payload, cs.Password, ioBehavior, cancellationToken).ConfigureAwait(false);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				OkPayload.Create(payload);
@@ -312,7 +321,7 @@ namespace MySql.Data.Serialization
 
 				if (!m_isSecureConnection && passwordBytes.Length > 1)
 				{
-#if NET451
+#if NET45
 					throw new MySqlException("Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
 #else
 					// request the RSA public key
@@ -603,6 +612,9 @@ namespace MySql.Data.Serialization
 				try
 				{
 					var certificate = new X509Certificate2(cs.CertificateFile, cs.CertificatePassword);
+#if !NET45
+					m_clientCertificate = certificate;
+#endif
 					clientCertificates = new X509CertificateCollection {certificate};
 				}
 				catch (CryptographicException ex)
@@ -619,6 +631,9 @@ namespace MySql.Data.Serialization
 				try
 				{
 					var caCertificate = new X509Certificate2(cs.CACertificateFile);
+#if !NET45
+					m_serverCertificate = caCertificate;
+#endif
 					caCertificateChain = new X509Chain
 					{
 						ChainPolicy =
@@ -637,9 +652,9 @@ namespace MySql.Data.Serialization
 				}
 			}
 
-			X509Certificate LocalCertificateCb(object lcbSender, string lcbTargetHost, X509CertificateCollection lcbLocalCertificates, X509Certificate lcbRemoteCertificate, string[] lcbAcceptableIssuers) => lcbLocalCertificates[0];
+			X509Certificate ValidateLocalCertificate(object lcbSender, string lcbTargetHost, X509CertificateCollection lcbLocalCertificates, X509Certificate lcbRemoteCertificate, string[] lcbAcceptableIssuers) => lcbLocalCertificates[0];
 
-			bool RemoteCertificateCb(object rcbSender, X509Certificate rcbCertificate, X509Chain rcbChain, SslPolicyErrors rcbPolicyErrors)
+			bool ValidateRemoteCertificate(object rcbSender, X509Certificate rcbCertificate, X509Chain rcbChain, SslPolicyErrors rcbPolicyErrors)
 			{
 				if (cs.SslMode == MySqlSslMode.Preferred || cs.SslMode == MySqlSslMode.Required)
 					return true;
@@ -662,12 +677,9 @@ namespace MySql.Data.Serialization
 
 			SslStream sslStream;
 			if (clientCertificates == null)
-				sslStream = new SslStream(m_networkStream, false,
-					new RemoteCertificateValidationCallback((Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool>) RemoteCertificateCb));
+				sslStream = new SslStream(m_networkStream, false, ValidateRemoteCertificate);
 			else
-				sslStream = new SslStream(m_networkStream, false,
-					new RemoteCertificateValidationCallback((Func<object, X509Certificate, X509Chain, SslPolicyErrors, bool>) RemoteCertificateCb),
-					new LocalCertificateSelectionCallback((Func<object, string, X509CertificateCollection, X509Certificate, string[], X509Certificate>) LocalCertificateCb));
+				sslStream = new SslStream(m_networkStream, false, ValidateRemoteCertificate, ValidateLocalCertificate);
 
 			// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/mysql-net/MySqlConnector/pull/101
 			var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
@@ -718,6 +730,10 @@ namespace MySql.Data.Serialization
 			Utility.Dispose(ref m_networkStream);
 			SafeDispose(ref m_tcpClient);
 			SafeDispose(ref m_socket);
+#if !NET45
+			Utility.Dispose(ref m_clientCertificate);
+			Utility.Dispose(ref m_serverCertificate);
+#endif
 		}
 
 		/// <summary>
@@ -779,6 +795,46 @@ namespace MySql.Data.Serialization
 				throw new InvalidOperationException("Expected state to be ({0}|{1}) but was {2}.".FormatInvariant(state1, state2, m_state));
 		}
 
+		private static byte[] CreateConnectionAttributes()
+		{
+			var attributesWriter = new PayloadWriter();
+			attributesWriter.WriteLengthEncodedString("_client_name");
+			attributesWriter.WriteLengthEncodedString("MySqlConnector");
+			attributesWriter.WriteLengthEncodedString("_client_version");
+			attributesWriter.WriteLengthEncodedString(typeof(MySqlSession).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion);
+			try
+			{
+				var os = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Windows" :
+					RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "Linux" :
+						RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "macOS" : null;
+				var osDetails = RuntimeInformation.OSDescription;
+				var platform = RuntimeInformation.ProcessArchitecture.ToString();
+				if (os != null)
+				{
+					attributesWriter.WriteLengthEncodedString("_os");
+					attributesWriter.WriteLengthEncodedString(os);
+				}
+				attributesWriter.WriteLengthEncodedString("_os_details");
+				attributesWriter.WriteLengthEncodedString(osDetails);
+				attributesWriter.WriteLengthEncodedString("_platform");
+				attributesWriter.WriteLengthEncodedString(platform);
+			}
+			catch (PlatformNotSupportedException)
+			{
+			}
+			using (var process = Process.GetCurrentProcess())
+			{
+				attributesWriter.WriteLengthEncodedString("_pid");
+				attributesWriter.WriteLengthEncodedString(process.Id.ToString(CultureInfo.InvariantCulture));
+			}
+			var connectionAttributes = attributesWriter.ToBytes();
+
+			var writer = new PayloadWriter();
+			writer.WriteLengthEncodedInteger((ulong) connectionAttributes.Length);
+			writer.Write(connectionAttributes);
+			return writer.ToBytes();
+		}
+
 		private enum State
 		{
 			// The session has been created; no connection has been made.
@@ -809,6 +865,8 @@ namespace MySql.Data.Serialization
 			Failed,
 		}
 
+		static byte[] s_connectionAttributes;
+
 		readonly object m_lock;
 		readonly ArraySegmentHolder<byte> m_payloadCache;
 		State m_state;
@@ -816,10 +874,15 @@ namespace MySql.Data.Serialization
 		TcpClient m_tcpClient;
 		Socket m_socket;
 		NetworkStream m_networkStream;
+#if !NET45
+		IDisposable m_clientCertificate;
+		IDisposable m_serverCertificate;
+#endif
 		IPayloadHandler m_payloadHandler;
 		MySqlCommand m_activeCommand;
 		MySqlDataReader m_activeReader;
 		bool m_useCompression;
 		bool m_isSecureConnection;
+		bool m_supportsConnectionAttributes;
 	}
 }

@@ -10,7 +10,7 @@ namespace MySql.Data.MySqlClient
 {
 	internal sealed class ConnectionPool
 	{
-		public async Task<MySqlSession> GetSessionAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async Task<MySqlSession> GetSessionAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -54,8 +54,9 @@ namespace MySql.Data.MySqlClient
 						}
 
 						// pooled session is ready to be used; return it
+						session.OwningConnection = new WeakReference<MySqlConnection>(connection);
 						lock (m_leasedSessions)
-							m_leasedSessions.Add(session.Id, new WeakReference<MySqlSession>(session));
+							m_leasedSessions.Add(session.Id, session);
 						return session;
 					}
 				}
@@ -63,8 +64,9 @@ namespace MySql.Data.MySqlClient
 				// create a new session
 				session = new MySqlSession(this, m_generation, Interlocked.Increment(ref m_lastId));
 				await session.ConnectAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
+				session.OwningConnection = new WeakReference<MySqlConnection>(connection);
 				lock (m_leasedSessions)
-					m_leasedSessions.Add(session.Id, new WeakReference<MySqlSession>(session));
+					m_leasedSessions.Add(session.Id, session);
 				return session;
 			}
 			catch
@@ -95,6 +97,7 @@ namespace MySql.Data.MySqlClient
 			{
 				lock (m_leasedSessions)
 					m_leasedSessions.Remove(session.Id);
+				session.OwningConnection = null;
 				if (SessionIsHealthy(session))
 					lock (m_sessions)
 						m_sessions.AddFirst(session);
@@ -111,6 +114,7 @@ namespace MySql.Data.MySqlClient
 		{
 			// increment the generation of the connection pool
 			Interlocked.Increment(ref m_generation);
+			RecoverLeakedSessions();
 			await CleanPoolAsync(ioBehavior, session => session.PoolGeneration != m_generation, false, cancellationToken).ConfigureAwait(false);
 		}
 
@@ -123,27 +127,25 @@ namespace MySql.Data.MySqlClient
 		}
 
 		/// <summary>
-		/// Examines all the <see cref="WeakReference{MySqlSession}"/> in <see cref="m_leasedSessions"/> to determine if any
-		/// <see cref="MySqlSession"/> objects have been garbage-collected. If so, assumes that the related <see cref="MySqlConnection"/>
-		/// was not properly disposed but the associated server connection has been closed (by the finalizer). Releases the semaphore
-		/// once for each leaked session to allow new client connections to be made.
+		/// Examines all the <see cref="MySqlSession"/> objects in <see cref="m_leasedSessions"/> to determine if any
+		/// have an owning <see cref="MySqlConnection"/> that has been garbage-collected. If so, assumes that the connection 
+		/// was not properly disposed and returns the session to the pool.
 		/// </summary>
 		private void RecoverLeakedSessions()
 		{
-			var recoveredIds = new List<int>();
+			var recoveredSessions = new List<MySqlSession>();
 			lock (m_leasedSessions)
 			{
 				m_lastRecoveryTime = unchecked((uint) Environment.TickCount);
 				foreach (var pair in m_leasedSessions)
 				{
-					if (!pair.Value.TryGetTarget(out var _))
-						recoveredIds.Add(pair.Key);
+					var session = pair.Value;
+					if (!session.OwningConnection.TryGetTarget(out var _))
+						recoveredSessions.Add(session);
 				}
-				foreach (var id in recoveredIds)
-					m_leasedSessions.Remove(id);
 			}
-			if (recoveredIds.Count > 0)
-				m_sessionSemaphore.Release(recoveredIds.Count);
+			foreach (var session in recoveredSessions)
+				session.ReturnToPool();
 		}
 
 		private async Task CleanPoolAsync(IOBehavior ioBehavior, Func<MySqlSession, bool> shouldCleanFn, bool respectMinPoolSize, CancellationToken cancellationToken)
@@ -250,7 +252,7 @@ namespace MySql.Data.MySqlClient
 			m_cleanSemaphore = new SemaphoreSlim(1);
 			m_sessionSemaphore = new SemaphoreSlim(cs.MaximumPoolSize);
 			m_sessions = new LinkedList<MySqlSession>();
-			m_leasedSessions = new Dictionary<int, WeakReference<MySqlSession>>();
+			m_leasedSessions = new Dictionary<int, MySqlSession>();
 		}
 
 		static readonly ConcurrentDictionary<string, ConnectionPool> s_pools = new ConcurrentDictionary<string, ConnectionPool>();
@@ -280,7 +282,7 @@ namespace MySql.Data.MySqlClient
 		readonly SemaphoreSlim m_sessionSemaphore;
 		readonly LinkedList<MySqlSession> m_sessions;
 		readonly ConnectionSettings m_connectionSettings;
-		readonly Dictionary<int, WeakReference<MySqlSession>> m_leasedSessions;
+		readonly Dictionary<int, MySqlSession> m_leasedSessions;
 		int m_lastId;
 		uint m_lastRecoveryTime;
 	}
