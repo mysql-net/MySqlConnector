@@ -46,6 +46,7 @@ namespace MySql.Data.Serialization
 			MaximumPoolSize = (int)csb.MaximumPoolSize;
 
 			// Other Options
+			AllowPublicKeyRetrieval = csb.AllowPublicKeyRetrieval;
 			AllowUserVariables = csb.AllowUserVariables;
 			AutoEnlist = csb.AutoEnlist;
 			BufferResultSets = csb.BufferResultSets;
@@ -55,6 +56,7 @@ namespace MySql.Data.Serialization
 			Keepalive = csb.Keepalive;
 			OldGuids = csb.OldGuids;
 			PersistSecurityInfo = csb.PersistSecurityInfo;
+			ServerRsaPublicKeyFile = csb.ServerRsaPublicKeyFile;
 			TreatTinyAsBoolean = csb.TreatTinyAsBoolean;
 			UseAffectedRows = csb.UseAffectedRows;
 			UseCompression = csb.UseCompression;
@@ -85,6 +87,7 @@ namespace MySql.Data.Serialization
 		public int MaximumPoolSize { get; }
 
 		// Other Options
+		public bool AllowPublicKeyRetrieval { get; }
 		public bool AllowUserVariables { get; }
 		public bool AutoEnlist { get; }
 		public bool BufferResultSets { get; }
@@ -94,6 +97,7 @@ namespace MySql.Data.Serialization
 		public uint Keepalive { get; }
 		public bool OldGuids { get; }
 		public bool PersistSecurityInfo { get; }
+		public string ServerRsaPublicKeyFile { get; }
 		public bool TreatTinyAsBoolean { get; }
 		public bool UseAffectedRows { get; }
 		public bool UseCompression { get; }
