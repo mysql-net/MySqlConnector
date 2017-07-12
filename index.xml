@@ -1033,6 +1033,14 @@ please refer to its documentation.&lt;/p&gt;
     &lt;th style=&#34;width: 70%&#34;&gt;Descriotion&lt;/th&gt;
   &lt;/thead&gt;
   &lt;tr&gt;
+    &lt;td&gt;AllowPublicKeyRetrieval, Allow Public Key Retrieval&lt;/td&gt;
+    &lt;td&gt;false&lt;/td&gt;
+    &lt;td&gt;If the user account uses `sha256_password` authentication, the password must be protected during transmission; TLS is the preferred mechanism for this,
+      but if it is not available then RSA public key encryption will be used. To specify the server&#39;s RSA public key, use the `ServerRSAPublicKeyFile` connection
+      string setting, or set `AllowPublicKeyRetrieval=True` to allow the client to automatically request the public key from the server. Note that `AllowPublicKeyRetrieval=True`
+      could allow a malicious proxy to perform a MITM attack to get the plaintext password, so it is `False` by default and must be explicitly enabled.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
     &lt;td&gt;AllowUserVariables, Allow User Variables&lt;/td&gt;
     &lt;td&gt;false&lt;/td&gt;
     &lt;td&gt;Setting this to true indicates that the provider expects user variables in the SQL.&lt;/td&gt;
@@ -1076,6 +1084,11 @@ please refer to its documentation.&lt;/p&gt;
     &lt;td&gt;Persist Security Info, PersistSecurityInfo&lt;/td&gt;
     &lt;td&gt;false&lt;/td&gt;
     &lt;td&gt;When set to false or no (strongly recommended), security-sensitive information, such as the password, is not returned as part of the connection if the connection is open or has ever been in an open state. Resetting the connection string resets all connection string values, including the password. Recognized values are true, false, yes, and no.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;ServerRSAPublicKeyFile, Server RSA Public Key File&lt;/td&gt;
+    &lt;td&gt;&lt;/td&gt;
+    &lt;td&gt;For `sha256_password` authentication. See comments under `AllowPublicKeyRetrieval`.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Treat Tiny As Boolean, TreatTinyAsBoolean&lt;/td&gt;
