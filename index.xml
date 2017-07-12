@@ -1035,10 +1035,10 @@ please refer to its documentation.&lt;/p&gt;
   &lt;tr&gt;
     &lt;td&gt;AllowPublicKeyRetrieval, Allow Public Key Retrieval&lt;/td&gt;
     &lt;td&gt;false&lt;/td&gt;
-    &lt;td&gt;If the user account uses `sha256_password` authentication, the password must be protected during transmission; TLS is the preferred mechanism for this,
-      but if it is not available then RSA public key encryption will be used. To specify the server&#39;s RSA public key, use the `ServerRSAPublicKeyFile` connection
-      string setting, or set `AllowPublicKeyRetrieval=True` to allow the client to automatically request the public key from the server. Note that `AllowPublicKeyRetrieval=True`
-      could allow a malicious proxy to perform a MITM attack to get the plaintext password, so it is `False` by default and must be explicitly enabled.&lt;/td&gt;
+    &lt;td&gt;If the user account uses &lt;code&gt;sha256_password&lt;/code&gt; authentication, the password must be protected during transmission; TLS is the preferred mechanism for this,
+      but if it is not available then RSA public key encryption will be used. To specify the server&#39;s RSA public key, use the &lt;code&gt;ServerRSAPublicKeyFile&lt;/code&gt; connection
+      string setting, or set &lt;code&gt;AllowPublicKeyRetrieval=True&lt;/code&gt; to allow the client to automatically request the public key from the server. Note that &lt;code&gt;AllowPublicKeyRetrieval=True&lt;/code&gt;
+      could allow a malicious proxy to perform a MITM attack to get the plaintext password, so it is &lt;code&gt;False&lt;/code&gt; by default and must be explicitly enabled.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;AllowUserVariables, Allow User Variables&lt;/td&gt;
@@ -1088,7 +1088,7 @@ please refer to its documentation.&lt;/p&gt;
   &lt;tr&gt;
     &lt;td&gt;ServerRSAPublicKeyFile, Server RSA Public Key File&lt;/td&gt;
     &lt;td&gt;&lt;/td&gt;
-    &lt;td&gt;For `sha256_password` authentication. See comments under `AllowPublicKeyRetrieval`.&lt;/td&gt;
+    &lt;td&gt;For &lt;code&gt;sha256_password&lt;/code&gt; authentication. See comments under &lt;code&gt;AllowPublicKeyRetrieval&lt;/code&gt;.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Treat Tiny As Boolean, TreatTinyAsBoolean&lt;/td&gt;
