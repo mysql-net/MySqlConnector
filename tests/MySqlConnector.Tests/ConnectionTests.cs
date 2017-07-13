@@ -62,6 +62,34 @@ namespace MySqlConnector.Tests
 			}
 		}
 
+		[Theory]
+		[InlineData(2u, 3u, true)]
+		[InlineData(180u, 3u, false)]
+		public async Task ConnectionLifeTime(uint lifeTime, uint delaySeconds, bool shouldTimeout)
+		{
+			m_csb.Pooling = true;
+			m_csb.MinimumPoolSize = 0;
+			m_csb.MaximumPoolSize = 1;
+			m_csb.ConnectionLifeTime = lifeTime;
+			int serverThread;
+
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+				serverThread = connection.ServerThread;
+				await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+			}
+
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+				if (shouldTimeout)
+					Assert.NotEqual(serverThread, connection.ServerThread);
+				else
+					Assert.Equal(serverThread, connection.ServerThread);
+			}
+		}
+
 		private static async Task WaitForConditionAsync<T>(T expected, Func<T> getValue)
 		{
 			var sw = Stopwatch.StartNew();

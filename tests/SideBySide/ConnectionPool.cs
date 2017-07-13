@@ -205,35 +205,6 @@ namespace SideBySide
 			}
 		}
 
-		[Theory]
-		[InlineData(2u, 3u, true)]
-		[InlineData(180u, 3u, false)]
-		public async Task ConnectionLifeTime(uint lifeTime, uint delaySeconds, bool shouldTimeout)
-		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
-			csb.Pooling = true;
-			csb.MinimumPoolSize = 0;
-			csb.MaximumPoolSize = 1;
-			csb.ConnectionLifeTime = lifeTime;
-			int serverThread;
-
-			using (var connection = new MySqlConnection(csb.ConnectionString))
-			{
-				await connection.OpenAsync();
-				serverThread = connection.ServerThread;
-				await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
-			}
-
-			using (var connection = new MySqlConnection(csb.ConnectionString))
-			{
-				await connection.OpenAsync();
-				if (shouldTimeout)
-					Assert.NotEqual(serverThread, connection.ServerThread);
-				else
-					Assert.Equal(serverThread, connection.ServerThread);
-			}
-		}
-
 		[Fact]
 		public async Task CharacterSet()
 		{
