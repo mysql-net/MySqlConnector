@@ -168,6 +168,18 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-24-0">0.24.0</h3>
+
+<ul>
+<li><strong>Breaking</strong> Add <code>AllowPublicKeyRetrieval</code> connection string setting, defaulted to <code>false</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/286">#286</a>.
+
+<ul>
+<li>Add <code>ServerRSAPublicKeyFile</code> connection string setting.</li>
+</ul></li>
+<li>Fix hang in <code>MySqlDataReader.Dispose</code> if function threw an exception: <a href="https://github.com/mysql-net/MySqlConnector/issues/299">#299</a>.</li>
+<li>Fix <code>InvalidOperationException</code> if <code>MySqlBulkLoader</code> is used inside a transaction: <a href="https://github.com/mysql-net/MySqlConnector/issues/300">#300</a>.</li>
+</ul>
+
 <h3 id="0-23-0">0.23.0</h3>
 
 <ul>

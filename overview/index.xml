@@ -65,6 +65,18 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-24-0&#34;&gt;0.24.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Breaking&lt;/strong&gt; Add &lt;code&gt;AllowPublicKeyRetrieval&lt;/code&gt; connection string setting, defaulted to &lt;code&gt;false&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/286&#34;&gt;#286&lt;/a&gt;.
+
+&lt;ul&gt;
+&lt;li&gt;Add &lt;code&gt;ServerRSAPublicKeyFile&lt;/code&gt; connection string setting.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Fix hang in &lt;code&gt;MySqlDataReader.Dispose&lt;/code&gt; if function threw an exception: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/299&#34;&gt;#299&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fix &lt;code&gt;InvalidOperationException&lt;/code&gt; if &lt;code&gt;MySqlBulkLoader&lt;/code&gt; is used inside a transaction: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/300&#34;&gt;#300&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-23-0&#34;&gt;0.23.0&lt;/h3&gt;
 
 &lt;ul&gt;
