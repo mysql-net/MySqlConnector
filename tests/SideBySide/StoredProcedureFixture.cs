@@ -14,6 +14,14 @@ namespace SideBySide
 				BEGIN
 					RETURN name;
 				END");
+			Connection.Execute(@"DROP FUNCTION IF EXISTS failing_function;
+				CREATE FUNCTION failing_function()
+				RETURNS INT
+				BEGIN
+					DECLARE v1 INT;
+					SELECT c1 FROM table_that_does_not_exist INTO v1;
+					RETURN v1;
+				END");
 			Connection.Execute(@"DROP PROCEDURE IF EXISTS echop;
 				CREATE PROCEDURE echop(
 					IN name VARCHAR(63)
