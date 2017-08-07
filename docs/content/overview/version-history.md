@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.24.1
+
+* Recover leaked sessions when `MySqlDataReader` isn't disposed: [#306](https://github.com/mysql-net/MySqlConnector/issues/306).
+
 ### 0.24.0
 
 * **Breaking** Add `AllowPublicKeyRetrieval` connection string setting, defaulted to `false`: [#286](https://github.com/mysql-net/MySqlConnector/issues/286).
