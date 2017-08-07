@@ -529,6 +529,12 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-24-1&#34;&gt;0.24.1&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Recover leaked sessions when &lt;code&gt;MySqlDataReader&lt;/code&gt; isn&amp;rsquo;t disposed: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/306&#34;&gt;#306&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-24-0&#34;&gt;0.24.0&lt;/h3&gt;
 
 &lt;ul&gt;
