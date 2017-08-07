@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using Microsoft.Extensions.Configuration;
 
 using MySql.Data.MySqlClient;
@@ -20,22 +19,12 @@ namespace SideBySide
 
 		public static string CertsPath => Path.GetFullPath(Config.GetValue<string>("Data:CertificatesPath"));
 
-		private static int _configFirst;
-
 		private static IConfiguration ConfigBuilder { get; } = new ConfigurationBuilder()
 			.AddInMemoryCollection(DefaultConfig)
 			.AddJsonFile("config.json")
 			.Build();
 
-		public static IConfiguration Config
-		{
-			get
-			{
-				if (Interlocked.Exchange(ref _configFirst, 1) == 0)
-					Console.WriteLine("Config Read");
-				return ConfigBuilder;
-			}
-		}
+		public static IConfiguration Config => ConfigBuilder;
 
 		public static string ConnectionString => Config.GetValue<string>("Data:ConnectionString");
 
@@ -64,6 +53,6 @@ namespace SideBySide
 		}
 
 		// tests can run much slower in CI environments
-		public static int TimeoutDelayFactor { get; } = (Environment.GetEnvironmentVariable("APPVEYOR") == "True" || Environment.GetEnvironmentVariable("TRAVIS") == "true") ? 6 : 1;
+		public static int TimeoutDelayFactor { get; } = Environment.GetEnvironmentVariable("APPVEYOR") == "True" || Environment.GetEnvironmentVariable("TRAVIS") == "true" ? 6 : 1;
 	}
 }
