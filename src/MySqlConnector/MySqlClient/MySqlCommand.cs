@@ -172,13 +172,6 @@ namespace MySql.Data.MySqlClient
 				throw new ObjectDisposedException(GetType().Name);
 		}
 
-		private void VerifyValid()
-		{
-			Exception exception;
-			if (!IsValid(out exception))
-				throw exception;
-		}
-
 		private bool IsValid(out Exception exception)
 		{
 			exception = null;
