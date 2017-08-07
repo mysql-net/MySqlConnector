@@ -32,6 +32,7 @@ namespace MySql.Data.MySqlClient
 
 		public MySqlCommand(string commandText, MySqlConnection connection, MySqlTransaction transaction)
 		{
+			CommandId = Interlocked.Increment(ref s_commandId);
 			CommandText = commandText;
 			DbConnection = connection;
 			DbTransaction = transaction;
@@ -166,6 +167,8 @@ namespace MySql.Data.MySqlClient
 			return token.Register(m_cancelAction);
 		}
 
+		internal int CommandId { get; }
+
 		private void VerifyNotDisposed()
 		{
 			if (m_parameterCollection == null)
@@ -189,6 +192,8 @@ namespace MySql.Data.MySqlClient
 		}
 
 		internal void ReaderClosed() => (m_commandExecutor as StoredProcedureCommandExecutor)?.SetParams();
+
+		static int s_commandId = 1;
 
 		MySqlParameterCollection m_parameterCollection;
 		CommandType m_commandType;

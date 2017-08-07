@@ -66,7 +66,7 @@ namespace MySql.Data.Serialization
 		{
 			lock (m_lock)
 			{
-				if (m_activeCommand != command)
+				if (m_activeCommandId != command.CommandId)
 					return false;
 				VerifyState(State.Querying, State.CancelingQuery);
 				if (m_state != State.Querying)
@@ -81,12 +81,12 @@ namespace MySql.Data.Serialization
 		{
 			lock (m_lock)
 			{
-				if (m_activeCommand != commandToCancel)
+				if (m_activeCommandId != commandToCancel.CommandId)
 					return;
 
 				// NOTE: This command is executed while holding the lock to prevent race conditions during asynchronous cancellation.
-				// For example, if the lock weren't held, the current command could finish and the other thread could set m_activeCommand
-				// to null, then start executing a new command. By the time this "KILL QUERY" command reached the server, the wrong
+				// For example, if the lock weren't held, the current command could finish and the other thread could set m_activeCommandId
+				// to zero, then start executing a new command. By the time this "KILL QUERY" command reached the server, the wrong
 				// command would be killed (because "KILL QUERY" specifies the connection whose command should be killed, not
 				// a unique identifier of the command itself). As a mitigation, we set the CommandTimeout to a low value to avoid
 				// blocking the other thread for an extended duration.
@@ -99,7 +99,7 @@ namespace MySql.Data.Serialization
 		{
 			lock (m_lock)
 			{
-				if (m_activeCommand == command && m_state == State.CancelingQuery)
+				if (m_activeCommandId == command.CommandId && m_state == State.CancelingQuery)
 					m_state = State.Querying;
 			}
 		}
@@ -113,20 +113,8 @@ namespace MySql.Data.Serialization
 
 				VerifyState(State.Connected);
 				m_state = State.Querying;
-				m_activeCommand = command;
+				m_activeCommandId = command.CommandId;
 			}
-		}
-
-		public MySqlDataReader ActiveReader => m_activeReader;
-
-		public void SetActiveReader(MySqlDataReader dataReader)
-		{
-			VerifyState(State.Querying, State.CancelingQuery);
-			if (dataReader == null)
-				throw new ArgumentNullException(nameof(dataReader));
-			if (m_activeReader != null)
-				throw new InvalidOperationException("Can't replace active reader.");
-			m_activeReader = dataReader;
 		}
 
 		public void FinishQuerying()
@@ -156,8 +144,7 @@ namespace MySql.Data.Serialization
 			{
 				VerifyState(State.Querying, State.ClearingPendingCancellation);
 				m_state = State.Connected;
-				m_activeReader = null;
-				m_activeCommand = null;
+				m_activeCommandId = 0;
 			}
 		}
 
@@ -879,8 +866,7 @@ namespace MySql.Data.Serialization
 		IDisposable m_serverCertificate;
 #endif
 		IPayloadHandler m_payloadHandler;
-		MySqlCommand m_activeCommand;
-		MySqlDataReader m_activeReader;
+		int m_activeCommandId;
 		bool m_useCompression;
 		bool m_isSecureConnection;
 		bool m_supportsConnectionAttributes;
