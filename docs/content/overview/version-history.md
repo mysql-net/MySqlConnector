@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.24.2
+
+* Fix leaked session when a `MySqlException` is thrown because a query contains a user-defined variable and `Allow User Variables=false`: [#305](https://github.com/mysql-net/MySqlConnector/issues/305).
+
 ### 0.24.1
 
 * Recover leaked sessions when `MySqlDataReader` isn't disposed: [#306](https://github.com/mysql-net/MySqlConnector/issues/306).

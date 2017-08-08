@@ -5,7 +5,7 @@
     <Description>Async MySQL ADO.NET provider</Description>
     <Copyright>Copyright 2016–2017 Bradley Grainger</Copyright>
     <AssemblyTitle>Async MySQL Connector</AssemblyTitle>
-    <VersionPrefix>0.24.1</VersionPrefix>
+    <VersionPrefix>0.24.2</VersionPrefix>
     <Authors>Bradley Grainger;Caleb Lloyd</Authors>
     <TargetFrameworks>net45;net46;netstandard1.3</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
