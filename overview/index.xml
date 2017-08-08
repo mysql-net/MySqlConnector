@@ -65,6 +65,12 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-24-2&#34;&gt;0.24.2&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix leaked session when a &lt;code&gt;MySqlException&lt;/code&gt; is thrown because a query contains a user-defined variable and &lt;code&gt;Allow User Variables=false&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/305&#34;&gt;#305&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-24-1&#34;&gt;0.24.1&lt;/h3&gt;
 
 &lt;ul&gt;
