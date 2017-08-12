@@ -227,7 +227,7 @@ namespace MySql.Data.MySqlClient
 		internal static async Task<MySqlDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, IOBehavior ioBehavior)
 		{
 			var dataReader = new MySqlDataReader(command, behavior);
-			command.Connection.Session.SetActiveReader(dataReader);
+			command.Connection.SetActiveReader(dataReader);
 
 			try
 			{
@@ -248,7 +248,7 @@ namespace MySql.Data.MySqlClient
 			finally
 			{
 				if (command.Connection.BufferResultSets)
-					command.Connection.Session.FinishQuerying();
+					command.Connection.FinishQuerying();
 			}
 		}
 
@@ -289,7 +289,7 @@ namespace MySql.Data.MySqlClient
 
 				var connection = Command.Connection;
 				if (!connection.BufferResultSets)
-					connection.Session.FinishQuerying();
+					connection.FinishQuerying();
 
 				Command.ReaderClosed();
 				if ((m_behavior & CommandBehavior.CloseConnection) != 0)

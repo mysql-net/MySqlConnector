@@ -51,19 +51,11 @@ namespace MySql.Data.MySqlClient.CommandExecutors
 			CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
+			var payload = CreateQueryPayload(commandText, parameterCollection);
 			using (m_command.RegisterCancel(cancellationToken))
 			{
 				m_command.Connection.Session.StartQuerying(m_command);
 				m_command.LastInsertedId = -1;
-				var statementPreparerOptions = StatementPreparerOptions.None;
-				if (m_command.Connection.AllowUserVariables || m_command.CommandType == CommandType.StoredProcedure)
-					statementPreparerOptions |= StatementPreparerOptions.AllowUserVariables;
-				if (m_command.Connection.OldGuids)
-					statementPreparerOptions |= StatementPreparerOptions.OldGuids;
-				if (m_command.CommandType == CommandType.StoredProcedure)
-					statementPreparerOptions |= StatementPreparerOptions.AllowOutputParameters;
-				var preparer = new MySqlStatementPreparer(commandText, parameterCollection, statementPreparerOptions);
-				var payload = new PayloadData(preparer.ParseAndBindParameters());
 				try
 				{
 					await m_command.Connection.Session.SendAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
@@ -81,6 +73,19 @@ namespace MySql.Data.MySqlClient.CommandExecutors
 					throw new MySqlException("Error submitting {0}MB packet; ensure 'max_allowed_packet' is greater than {0}MB.".FormatInvariant(megabytes), ex);
 				}
 			}
+		}
+
+		private PayloadData CreateQueryPayload(string commandText, MySqlParameterCollection parameterCollection)
+		{
+			var statementPreparerOptions = StatementPreparerOptions.None;
+			if (m_command.Connection.AllowUserVariables || m_command.CommandType == CommandType.StoredProcedure)
+				statementPreparerOptions |= StatementPreparerOptions.AllowUserVariables;
+			if (m_command.Connection.OldGuids)
+				statementPreparerOptions |= StatementPreparerOptions.OldGuids;
+			if (m_command.CommandType == CommandType.StoredProcedure)
+				statementPreparerOptions |= StatementPreparerOptions.AllowOutputParameters;
+			var preparer = new MySqlStatementPreparer(commandText, parameterCollection, statementPreparerOptions);
+			return new PayloadData(preparer.ParseAndBindParameters());
 		}
 
 		readonly MySqlCommand m_command;

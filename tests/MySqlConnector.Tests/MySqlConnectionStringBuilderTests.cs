@@ -10,6 +10,9 @@ namespace MySql.Data.Tests
 		public void Defaults()
 		{
 			var csb = new MySqlConnectionStringBuilder();
+#if !BASELINE
+			Assert.Equal(false, csb.AllowPublicKeyRetrieval);
+#endif
 			Assert.Equal(false, csb.AllowUserVariables);
 			Assert.Equal(true, csb.AutoEnlist);
 			Assert.Equal(null, csb.CertificateFile);
@@ -39,6 +42,9 @@ namespace MySql.Data.Tests
 			Assert.Equal(true, csb.Pooling);
 			Assert.Equal(3306u, csb.Port);
 			Assert.Equal("", csb.Server);
+#if !BASELINE
+			Assert.Equal(null, csb.ServerRsaPublicKeyFile);
+#endif
 			Assert.Equal(MySqlSslMode.Preferred, csb.SslMode);
 			Assert.Equal(true, csb.TreatTinyAsBoolean);
 			Assert.Equal(false, csb.UseCompression);
@@ -71,7 +77,9 @@ namespace MySql.Data.Tests
 					"connectionidletimeout=30;" +
 					"bufferresultsets=true;" +
 					"forcesynchronous=true;" +
-				    "ca certificate file=ca.pem;" +
+					"ca certificate file=ca.pem;" +
+					"allow public key retrieval = true;" +
+					"server rsa public key file=rsa.pem;" +
 #endif
 					"Keep Alive=90;" +
 					"minpoolsize=5;" +
@@ -101,6 +109,8 @@ namespace MySql.Data.Tests
 			Assert.Equal(30u, csb.ConnectionIdleTimeout);
 			Assert.Equal(true, csb.ForceSynchronous);
 			Assert.Equal("ca.pem", csb.CACertificateFile);
+			Assert.Equal(true, csb.AllowPublicKeyRetrieval);
+			Assert.Equal("rsa.pem", csb.ServerRsaPublicKeyFile);
 #endif
 			Assert.Equal(90u, csb.Keepalive);
 			Assert.Equal(15u, csb.MaximumPoolSize);

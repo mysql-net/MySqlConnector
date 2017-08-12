@@ -55,6 +55,49 @@ namespace SideBySide
 			}
 		}
 
+		[Fact]
+		public void CallFailingFunction()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			using (var command = connection.CreateCommand())
+			{
+				connection.Open();
+
+				command.CommandType = CommandType.StoredProcedure;
+				command.CommandText = "failing_function";
+
+				var returnParameter = command.CreateParameter();
+				returnParameter.DbType = DbType.Int32;
+				returnParameter.Direction = ParameterDirection.ReturnValue;
+				command.Parameters.Add(returnParameter);
+
+				Assert.Throws<MySqlException>(() => command.ExecuteNonQuery());
+			}
+		}
+
+		[Fact]
+		public void CallFailingFunctionInTransaction()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using (var transaction = connection.BeginTransaction())
+				using (var command = connection.CreateCommand())
+				{
+					command.CommandType = CommandType.StoredProcedure;
+					command.CommandText = "failing_function";
+
+					var returnParameter = command.CreateParameter();
+					returnParameter.DbType = DbType.Int32;
+					returnParameter.Direction = ParameterDirection.ReturnValue;
+					command.Parameters.Add(returnParameter);
+
+					Assert.Throws<MySqlException>(() => command.ExecuteNonQuery());
+					transaction.Commit();
+				}
+			}
+		}
+
 		[RequiresFeatureTheory(ServerFeatures.StoredProcedures)]
 		[InlineData("FUNCTION")]
 		[InlineData("PROCEDURE")]

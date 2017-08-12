@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
@@ -76,10 +77,17 @@ namespace MySql.Data.MySqlClient.CommandExecutors
 			}
 
 			var reader = (MySqlDataReader) await base.ExecuteReaderAsync(commandText, inParams, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
-			if (returnParam != null && await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
-				returnParam.Value = reader.GetValue(0);
-
-			return reader;
+			try
+			{
+				if (returnParam != null && await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
+					returnParam.Value = reader.GetValue(0);
+				return reader;
+			}
+			catch (Exception)
+			{
+				reader.Dispose();
+				throw;
+			}
 		}
 
 		internal void SetParams()

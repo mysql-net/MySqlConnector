@@ -147,6 +147,14 @@ These are the other options that MySqlConnector supports.  They are set to sensi
     <th style="width: 70%">Descriotion</th>
   </thead>
   <tr>
+    <td>AllowPublicKeyRetrieval, Allow Public Key Retrieval</td>
+    <td>false</td>
+    <td>If the user account uses <code>sha256_password</code> authentication, the password must be protected during transmission; TLS is the preferred mechanism for this,
+      but if it is not available then RSA public key encryption will be used. To specify the server's RSA public key, use the <code>ServerRSAPublicKeyFile</code> connection
+      string setting, or set <code>AllowPublicKeyRetrieval=True</code> to allow the client to automatically request the public key from the server. Note that <code>AllowPublicKeyRetrieval=True</code>
+      could allow a malicious proxy to perform a MITM attack to get the plaintext password, so it is <code>False</code> by default and must be explicitly enabled.</td>
+  </tr>
+  <tr>
     <td>AllowUserVariables, Allow User Variables</td>
     <td>false</td>
     <td>Setting this to true indicates that the provider expects user variables in the SQL.</td>
@@ -190,6 +198,11 @@ These are the other options that MySqlConnector supports.  They are set to sensi
     <td>Persist Security Info, PersistSecurityInfo</td>
     <td>false</td>
     <td>When set to false or no (strongly recommended), security-sensitive information, such as the password, is not returned as part of the connection if the connection is open or has ever been in an open state. Resetting the connection string resets all connection string values, including the password. Recognized values are true, false, yes, and no.</td>
+  </tr>
+  <tr>
+    <td>ServerRSAPublicKeyFile, Server RSA Public Key File</td>
+    <td></td>
+    <td>For <code>sha256_password</code> authentication. See comments under <code>AllowPublicKeyRetrieval</code>.</td>
   </tr>
   <tr>
     <td>Treat Tiny As Boolean, TreatTinyAsBoolean</td>
