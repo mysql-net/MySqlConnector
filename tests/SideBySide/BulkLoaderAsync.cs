@@ -209,6 +209,78 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public async Task BulkLoadLocalCsvFileInTransactionWithCommit()
+		{
+			try
+			{
+				await m_database.Connection.OpenAsync();
+				using (var transaction = m_database.Connection.BeginTransaction())
+				{
+					var bulkLoader = new MySqlBulkLoader(m_database.Connection)
+					{
+						FileName = AppConfig.MySqlBulkLoaderLocalCsvFile,
+						TableName = m_testTable,
+						CharacterSet = "UTF8",
+						NumberOfLinesToSkip = 1,
+						FieldTerminator = ",",
+						FieldQuotationCharacter = '"',
+						FieldQuotationOptional = true,
+						Local = true,
+					};
+					bulkLoader.Expressions.Add("five = UNHEX(five)");
+					bulkLoader.Columns.AddRange(new[] { "one", "two", "three", "four", "five" });
+
+					var rowCount = await bulkLoader.LoadAsync();
+					Assert.Equal(20, rowCount);
+
+					transaction.Commit();
+				}
+
+				Assert.Equal(20, await m_database.Connection.ExecuteScalarAsync<int>($@"select count(*) from {m_testTable};"));
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+		}
+
+		[Fact]
+		public async Task BulkLoadLocalCsvFileInTransactionWithRollback()
+		{
+			try
+			{
+				await m_database.Connection.OpenAsync();
+				using (var transaction = m_database.Connection.BeginTransaction())
+				{
+					var bulkLoader = new MySqlBulkLoader(m_database.Connection)
+					{
+						FileName = AppConfig.MySqlBulkLoaderLocalCsvFile,
+						TableName = m_testTable,
+						CharacterSet = "UTF8",
+						NumberOfLinesToSkip = 1,
+						FieldTerminator = ",",
+						FieldQuotationCharacter = '"',
+						FieldQuotationOptional = true,
+						Local = true,
+					};
+					bulkLoader.Expressions.Add("five = UNHEX(five)");
+					bulkLoader.Columns.AddRange(new[] { "one", "two", "three", "four", "five" });
+
+					var rowCount = await bulkLoader.LoadAsync();
+					Assert.Equal(20, rowCount);
+
+					transaction.Rollback();
+				}
+
+				Assert.Equal(0, await m_database.Connection.ExecuteScalarAsync<int>($@"select count(*) from {m_testTable};"));
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+		}
+
+		[Fact]
 		public async Task BulkLoadMissingFileName()
 		{
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);

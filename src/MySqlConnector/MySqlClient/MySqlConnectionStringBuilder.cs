@@ -110,6 +110,12 @@ namespace MySql.Data.MySqlClient
 		}
 
 		// Other Options
+		public bool AllowPublicKeyRetrieval
+		{
+			get => MySqlConnectionStringOption.AllowPublicKeyRetrieval.GetValue(this);
+			set => MySqlConnectionStringOption.AllowPublicKeyRetrieval.SetValue(this, value);
+		}
+
 		public bool AllowUserVariables
 		{
 			get => MySqlConnectionStringOption.AllowUserVariables.GetValue(this);
@@ -168,6 +174,12 @@ namespace MySql.Data.MySqlClient
 		{
 			get => MySqlConnectionStringOption.PersistSecurityInfo.GetValue(this);
 			set => MySqlConnectionStringOption.PersistSecurityInfo.SetValue(this, value);
+		}
+
+		public string ServerRsaPublicKeyFile
+		{
+			get => MySqlConnectionStringOption.ServerRsaPublicKeyFile.GetValue(this);
+			set => MySqlConnectionStringOption.ServerRsaPublicKeyFile.SetValue(this, value);
 		}
 
 		public bool TreatTinyAsBoolean
@@ -255,6 +267,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<uint> MaximumPoolSize;
 
 		// Other Options
+		public static readonly MySqlConnectionStringOption<bool> AllowPublicKeyRetrieval;
 		public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
 		public static readonly MySqlConnectionStringOption<bool> AutoEnlist;
 		public static readonly MySqlConnectionStringOption<bool> BufferResultSets;
@@ -265,6 +278,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<uint> Keepalive;
 		public static readonly MySqlConnectionStringOption<bool> OldGuids;
 		public static readonly MySqlConnectionStringOption<bool> PersistSecurityInfo;
+		public static readonly MySqlConnectionStringOption<string> ServerRsaPublicKeyFile;
 		public static readonly MySqlConnectionStringOption<bool> TreatTinyAsBoolean;
 		public static readonly MySqlConnectionStringOption<bool> UseAffectedRows;
 		public static readonly MySqlConnectionStringOption<bool> UseCompression;
@@ -359,6 +373,10 @@ namespace MySql.Data.MySqlClient
 				defaultValue: 100));
 
 			// Other Options
+			AddOption(AllowPublicKeyRetrieval = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "AllowPublicKeyRetrieval", "Allow Public Key Retrieval" },
+				defaultValue: false));
+
 			AddOption(AllowUserVariables = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "AllowUserVariables", "Allow User Variables" },
 				defaultValue: false));
@@ -398,6 +416,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(PersistSecurityInfo = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Persist Security Info", "PersistSecurityInfo" },
 				defaultValue: false));
+
+			AddOption(ServerRsaPublicKeyFile = new MySqlConnectionStringOption<string>(
+				keys: new[] { "ServerRSAPublicKeyFile", "Server RSA Public Key File" },
+				defaultValue: null));
 
 			AddOption(TreatTinyAsBoolean = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Treat Tiny As Boolean", "TreatTinyAsBoolean" },

@@ -5,7 +5,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MySql.Data.Serialization;
 using MySql.Data.Protocol.Serialization;
 
 namespace MySql.Data.MySqlClient
@@ -23,6 +22,7 @@ namespace MySql.Data.MySqlClient
         public List<string> Columns { get; }
         public MySqlBulkLoaderConflictOption ConflictOption { get; set; }
         public MySqlConnection Connection { get; set; }
+		public MySqlTransaction Transaction { get; set; }
         public char EscapeCharacter { get; set; }
         public List<string> Expressions { get; }
         public char FieldQuotationCharacter { get; set; }
@@ -60,6 +60,7 @@ namespace MySql.Data.MySqlClient
             ConflictOption = MySqlBulkLoaderConflictOption.None;
             Columns = new List<string>();
             Expressions = new List<string>();
+	        Transaction = connection.CurrentTransaction;
         }
 
         private string BuildSqlCommand()
@@ -182,9 +183,9 @@ namespace MySql.Data.MySqlClient
             try
             {
                 var commandString = BuildSqlCommand();
-                var cmd = new MySqlCommand(commandString, Connection)
+                var cmd = new MySqlCommand(commandString, Connection, Transaction)
                 {
-                    CommandTimeout = Timeout
+                    CommandTimeout = Timeout,
                 };
                 return await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
             }

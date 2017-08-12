@@ -149,6 +149,32 @@ namespace SideBySide
 			}
 		}
 
+#if BASELINE
+		[Fact(Skip = "Throws MySqlException - error connecting: Timeout expired")]
+#else
+		[Fact]
+#endif
+		public void LeakReaders()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.Pooling = true;
+			csb.MinimumPoolSize = 0;
+			csb.MaximumPoolSize = 6;
+			csb.ConnectionTimeout = 3u;
+
+			for (int i = 0; i < csb.MaximumPoolSize + 2; i++)
+			{
+				var connection = new MySqlConnection(csb.ConnectionString);
+				connection.Open();
+				var cmd = connection.CreateCommand();
+				cmd.CommandText = "SELECT 1";
+				var reader = cmd.ExecuteReader();
+				Assert.True(reader.Read());
+
+				// have to GC for leaked connections to be removed from the pool
+				GC.Collect();
+			}
+		}
 
 		[Fact]
 		public async Task WaitTimeout()

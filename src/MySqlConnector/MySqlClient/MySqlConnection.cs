@@ -290,13 +290,27 @@ namespace MySql.Data.MySqlClient
 		}
 
 		internal MySqlTransaction CurrentTransaction { get; set; }
-		internal MySqlDataReader ActiveReader => m_session.ActiveReader;
 		internal bool AllowUserVariables => m_connectionSettings.AllowUserVariables;
 		internal bool BufferResultSets => m_connectionSettings.BufferResultSets;
 		internal bool ConvertZeroDateTime => m_connectionSettings.ConvertZeroDateTime;
 		internal bool OldGuids => m_connectionSettings.OldGuids;
 		internal bool TreatTinyAsBoolean => m_connectionSettings.TreatTinyAsBoolean;
 		internal IOBehavior AsyncIOBehavior => m_connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
+
+		internal void SetActiveReader(MySqlDataReader dataReader)
+		{
+			if (dataReader == null)
+				throw new ArgumentNullException(nameof(dataReader));
+			if (m_activeReader != null)
+				throw new InvalidOperationException("Can't replace active reader.");
+			m_activeReader = dataReader;
+		}
+
+		internal void FinishQuerying()
+		{
+			m_session.FinishQuerying();
+			m_activeReader = null;
+		}
 
 		private async Task<MySqlSession> CreateSessionAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -382,7 +396,7 @@ namespace MySql.Data.MySqlClient
 		private void CloseDatabase()
 		{
 			m_cachedProcedures = null;
-			Session?.ActiveReader?.Dispose();
+			m_activeReader?.Dispose();
 			if (CurrentTransaction != null && m_session.IsConnected)
 			{
 				CurrentTransaction.Dispose();
@@ -398,5 +412,6 @@ namespace MySql.Data.MySqlClient
 		bool m_isDisposed;
 		bool m_shouldCloseWhenUnenlisted;
 		Dictionary<string, CachedProcedure> m_cachedProcedures;
+		MySqlDataReader m_activeReader;
 	}
 }
