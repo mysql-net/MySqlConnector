@@ -24,8 +24,9 @@ namespace Benchmark
 				.With(JitOptimizationsValidator.FailOnError)
 				.With(MemoryDiagnoser.Default)
 				.With(StatisticColumn.AllStatistics)
-				.With(Job.Default.With(Runtime.Clr).With(Jit.RyuJit).With(Platform.X64).With(CsProjClassicNetToolchain.Net462))
-				.With(Job.Default.With(Runtime.Core).With(CsProjCoreToolchain.NetCoreApp11))
+				.With(Job.Default.With(Runtime.Clr).With(Jit.RyuJit).With(Platform.X64).With(CsProjClassicNetToolchain.Net462).WithId("net462"))
+				.With(Job.Default.With(Runtime.Core).With(CsProjCoreToolchain.NetCoreApp11).WithId("netcore11"))
+				.With(Job.Default.With(Runtime.Core).With(CsProjCoreToolchain.NetCoreApp20).WithId("netcore20"))
 				.With(DefaultExporters.Csv);
 
 			var summary = BenchmarkRunner.Run<MySqlClient>(customConfig);

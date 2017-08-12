@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Condition=" '$(Configuration)' != 'Baseline' ">
-    <TargetFrameworks>netcoreapp1.1.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
 
  <PropertyGroup Condition=" '$(Configuration)' == 'Baseline' ">
