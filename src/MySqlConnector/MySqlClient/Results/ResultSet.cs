@@ -172,16 +172,19 @@ namespace MySql.Data.MySqlClient.Results
 
 			async Task<Row> ScanRowAsyncAwaited(Task<PayloadData> payloadTask, CancellationToken token)
 			{
+				PayloadData payloadData;
 				try
 				{
-					return ScanRowAsyncRemainder(await payloadTask.ConfigureAwait(false));
+					payloadData = await payloadTask.ConfigureAwait(false);
 				}
-				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted)
+				catch (MySqlException ex)
 				{
 					BufferState = State = ResultSetState.NoMoreData;
-					token.ThrowIfCancellationRequested();
+					if (ex.Number == (int) MySqlErrorCode.QueryInterrupted)
+						token.ThrowIfCancellationRequested();
 					throw;
 				}
+				return ScanRowAsyncRemainder(payloadData);
 			}
 
 			Row ScanRowAsyncRemainder(PayloadData payload)

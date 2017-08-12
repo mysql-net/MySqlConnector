@@ -4,10 +4,6 @@
       "PasswordlessUser": "no_password",
       "SupportsCachedProcedures": true,
       "SupportsJson": true,
-
-      "CertificatesPath": "C:/work/MySqlConnector/.ci/server/certs",
-
-      "TestData": "C:/work/MySqlConnector/tests/TestData",
-      "RemoteTestData": "/var/lib/mysql-files"
+      "CertificatesPath": "C:/work/MySqlConnector/.ci/server/certs"
     }
 }

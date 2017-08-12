@@ -11,6 +11,21 @@ weight: 30
 Version History
 ===============
 
+### 0.24.2
+
+* Fix leaked session when a `MySqlException` is thrown because a query contains a user-defined variable and `Allow User Variables=false`: [#305](https://github.com/mysql-net/MySqlConnector/issues/305).
+
+### 0.24.1
+
+* Recover leaked sessions when `MySqlDataReader` isn't disposed: [#306](https://github.com/mysql-net/MySqlConnector/issues/306).
+
+### 0.24.0
+
+* **Breaking** Add `AllowPublicKeyRetrieval` connection string setting, defaulted to `false`: [#286](https://github.com/mysql-net/MySqlConnector/issues/286).
+  * Add `ServerRSAPublicKeyFile` connection string setting.
+* Fix hang in `MySqlDataReader.Dispose` if function threw an exception: [#299](https://github.com/mysql-net/MySqlConnector/issues/299).
+* Fix `InvalidOperationException` if `MySqlBulkLoader` is used inside a transaction: [#300](https://github.com/mysql-net/MySqlConnector/issues/300).
+
 ### 0.23.0
 
 * Support .NET 4.5: [#295](https://github.com/mysql-net/MySqlConnector/issues/295).

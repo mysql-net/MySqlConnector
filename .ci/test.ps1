@@ -49,11 +49,3 @@ dotnet test tests\SideBySide\SideBySide.csproj -c Baseline
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
-
-echo "Building Benchmark"
-
-dotnet restore tests\Benchmark\Benchmark.csproj
-dotnet run -p tests\Benchmark\Benchmark.csproj -c Release -f net462
-if ($LASTEXITCODE -ne 0){
-    exit $LASTEXITCODE;
-}
