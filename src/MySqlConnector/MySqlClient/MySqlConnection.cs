@@ -314,7 +314,7 @@ namespace MySql.Data.MySqlClient
 
 		private async Task<MySqlSession> CreateSessionAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			var connectTimeout = m_connectionSettings.ConnectionTimeout == 0 ? Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(checked((int) m_connectionSettings.ConnectionTimeout));
+			var connectTimeout = m_connectionSettings.ConnectionTimeout == 0 ? Timeout.InfiniteTimeSpan : TimeSpan.FromMilliseconds(m_connectionSettings.ConnectionTimeoutMilliseconds);
 			using (var timeoutSource = new CancellationTokenSource(connectTimeout))
 			using (var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token))
 			{

@@ -31,7 +31,7 @@ function DownloadWithRetry([string] $url, [string] $downloadLocation, [int] $ret
 $repoFolder = Join-Path $PSScriptRoot ..
 $env:REPO_FOLDER = $repoFolder
 
-$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/1.0.0-msbuild-rtm.zip"
+$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/2.0.0-preview2.zip"
 if ($env:KOREBUILD_ZIP)
 {
     $koreBuildZip=$env:KOREBUILD_ZIP
@@ -61,10 +61,9 @@ if (!(Test-Path $buildFolder)) {
     }
 }
 
-$dotnetVersion = "1.0.3"
-$dotnetChannel = "rel-1.0.0"
-$dotnetSharedRuntimeVersion = "1.1.1"
-$dotnetSharedRuntimeChannel = "rel-1.0.0"
+$dotnetArch = 'x64'
+$dotnetChannel = "preview"
+$dotnetVersion = "2.0.0-preview2-006497"
 
 $dotnetLocalInstallFolder = $env:DOTNET_INSTALL_DIR
 if (!$dotnetLocalInstallFolder)
@@ -72,10 +71,21 @@ if (!$dotnetLocalInstallFolder)
     $dotnetLocalInstallFolder = "$env:LOCALAPPDATA\Microsoft\dotnet\"
 }
 
-& "$buildFolder\dotnet\dotnet-install.ps1" -Channel $dotnetChannel -Version $dotnetVersion -Architecture x64
-# Avoid redownloading the CLI if it's already installed.
-$sharedRuntimePath = [IO.Path]::Combine($dotnetLocalInstallFolder, 'shared', 'Microsoft.NETCore.App', $dotnetSharedRuntimeVersion)
-if (!(Test-Path $sharedRuntimePath))
+function InstallSharedRuntime([string] $version, [string] $channel)
 {
-    & "$buildFolder\dotnet\dotnet-install.ps1" -Channel $dotnetSharedRuntimeChannel -SharedRuntime -Version $dotnetSharedRuntimeVersion -Architecture x64
+    $sharedRuntimePath = [IO.Path]::Combine($dotnetLocalInstallFolder, 'shared', 'Microsoft.NETCore.App', $version)
+    # Avoid redownloading the CLI if it's already installed.
+    if (!(Test-Path $sharedRuntimePath))
+    {
+        & "$buildFolder\dotnet\dotnet-install.ps1" -Channel $channel `
+            -SharedRuntime `
+            -Version $version `
+            -Architecture $dotnetArch `
+            -InstallDir $dotnetLocalInstallFolder
+    }
 }
+
+& "$buildFolder\dotnet\dotnet-install.ps1" -Channel $dotnetChannel -Version $dotnetVersion -Architecture $dotnetArch
+InstallSharedRuntime -version "1.1.2" -channel "release/1.1.0"
+
+dotnet --info
