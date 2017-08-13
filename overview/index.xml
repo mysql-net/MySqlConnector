@@ -65,6 +65,12 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-25-0&#34;&gt;0.25.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Add &lt;code&gt;netstandard2.0&lt;/code&gt; compile target: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/270&#34;&gt;#270&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-24-2&#34;&gt;0.24.2&lt;/h3&gt;
 
 &lt;ul&gt;
