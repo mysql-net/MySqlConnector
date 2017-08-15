@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -149,7 +149,7 @@ namespace MySql.Data
 		public static ArraySegment<T> Slice<T>(this ArraySegment<T> arraySegment, int index, int length) =>
 			new ArraySegment<T>(arraySegment.Array, arraySegment.Offset + index, length);
 
-#if !NETSTANDARD1_3
+#if NET45
 		public static Task<T> TaskFromException<T>(Exception exception)
 		{
 			var tcs = new TaskCompletionSource<T>();
@@ -167,7 +167,7 @@ namespace MySql.Data
 			return value;
 		}
 
-#if !NETSTANDARD1_3
+#if NET45
 		public static bool TryGetBuffer(this MemoryStream memoryStream, out ArraySegment<byte> buffer)
 		{
 			try
