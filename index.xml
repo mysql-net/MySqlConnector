@@ -529,6 +529,12 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-25-1&#34;&gt;0.25.1&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Prevent exception being thrown from &lt;code&gt;MySqlSession.DisposeAsync&lt;/code&gt;, which could cause leaked connections: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/305&#34;&gt;#305&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-25-0&#34;&gt;0.25.0&lt;/h3&gt;
 
 &lt;ul&gt;
