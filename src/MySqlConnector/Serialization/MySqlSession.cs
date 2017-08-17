@@ -153,22 +153,28 @@ namespace MySql.Data.Serialization
 			if (m_payloadHandler != null)
 			{
 				// attempt to gracefully close the connection, ignoring any errors (it may have been closed already by the server, etc.)
+				State state;
 				lock (m_lock)
 				{
-					VerifyState(State.Connected, State.Failed);
-					m_state = State.Closing;
+					if (m_state == State.Connected || m_state == State.Failed)
+						m_state = State.Closing;
+					state = m_state;
 				}
-				try
+
+				if (state == State.Closing)
 				{
-					m_payloadHandler.StartNewConversation();
-					await m_payloadHandler.WritePayloadAsync(QuitPayload.Create(), ioBehavior).ConfigureAwait(false);
-					await m_payloadHandler.ReadPayloadAsync(m_payloadCache, ProtocolErrorBehavior.Ignore, ioBehavior).ConfigureAwait(false);
-				}
-				catch (IOException)
-				{
-				}
-				catch (SocketException)
-				{
+					try
+					{
+						m_payloadHandler.StartNewConversation();
+						await m_payloadHandler.WritePayloadAsync(QuitPayload.Create(), ioBehavior).ConfigureAwait(false);
+						await m_payloadHandler.ReadPayloadAsync(m_payloadCache, ProtocolErrorBehavior.Ignore, ioBehavior).ConfigureAwait(false);
+					}
+					catch (IOException)
+					{
+					}
+					catch (SocketException)
+					{
+					}
 				}
 			}
 			ShutdownSocket();
@@ -195,11 +201,7 @@ namespace MySql.Data.Serialization
 				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
 			}
 
-#if NETSTANDARD2_0
- 			var byteHandler = new StreamByteHandler(m_networkStream);
-#else
 			var byteHandler = new SocketByteHandler(m_socket);
-#endif
 			m_payloadHandler = new StandardPayloadHandler(byteHandler);
 
 			var payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
