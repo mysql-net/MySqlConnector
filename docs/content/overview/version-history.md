@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.25.1
+
+* Prevent exception being thrown from `MySqlSession.DisposeAsync`, which could cause leaked connections: [#305](https://github.com/mysql-net/MySqlConnector/issues/305).
+
 ### 0.25.0
 
 * Add `netstandard2.0` compile target: [#270](https://github.com/mysql-net/MySqlConnector/issues/270).
