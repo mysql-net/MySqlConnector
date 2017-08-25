@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.26.0
+
+* Add convenience methods that return derived types: [#313](https://github.com/mysql-net/MySqlConnector/issues/313).
+
 ### 0.25.1
 
 * Prevent exception being thrown from `MySqlSession.DisposeAsync`, which could cause leaked connections: [#305](https://github.com/mysql-net/MySqlConnector/issues/305).
