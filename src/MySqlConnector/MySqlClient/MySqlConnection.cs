@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -21,6 +21,8 @@ namespace MySql.Data.MySqlClient
 		public MySqlConnection(string connectionString) => ConnectionString = connectionString;
 
 		public new MySqlTransaction BeginTransaction() => (MySqlTransaction) base.BeginTransaction();
+
+		public new MySqlTransaction BeginTransaction(IsolationLevel isolationLevel) => (MySqlTransaction) base.BeginTransaction(isolationLevel);
 
 		public Task<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
 			BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, cancellationToken);
@@ -128,6 +130,8 @@ namespace MySql.Data.MySqlClient
 			OkPayload.Create(payload);
 			m_session.DatabaseOverride = databaseName;
 		}
+
+		public new MySqlCommand CreateCommand() => (MySqlCommand) base.CreateCommand();
 
 		public override void Open() => OpenAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 

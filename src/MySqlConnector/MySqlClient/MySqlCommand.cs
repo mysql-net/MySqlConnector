@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
@@ -34,8 +34,8 @@ namespace MySql.Data.MySqlClient
 		{
 			CommandId = Interlocked.Increment(ref s_commandId);
 			CommandText = commandText;
-			DbConnection = connection;
-			DbTransaction = transaction;
+			Connection = connection;
+			Transaction = transaction;
 			m_parameterCollection = new MySqlParameterCollection();
 			CommandType = CommandType.Text;
 		}
@@ -49,6 +49,8 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+		public new MySqlParameter CreateParameter() => (MySqlParameter) base.CreateParameter();
+
 		public override void Cancel() => Connection.Cancel(this);
 
 		public override int ExecuteNonQuery() =>
@@ -56,6 +58,10 @@ namespace MySql.Data.MySqlClient
 
 		public override object ExecuteScalar() =>
 			ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+
+		public new MySqlDataReader ExecuteReader() => (MySqlDataReader) base.ExecuteReader();
+
+		public new MySqlDataReader ExecuteReader(CommandBehavior commandBehavior) => (MySqlDataReader) base.ExecuteReader(commandBehavior);
 
 		public override void Prepare()
 		{
@@ -67,6 +73,8 @@ namespace MySql.Data.MySqlClient
 
 		public override string CommandText { get; set; }
 		public override int CommandTimeout { get; set; }
+		public new MySqlConnection Connection { get; set; }
+		public new MySqlTransaction Transaction { get; set; }
 
 		public override CommandType CommandType
 		{
@@ -99,9 +107,19 @@ namespace MySql.Data.MySqlClient
 
 		public long LastInsertedId { get; internal set; }
 
-		protected override DbConnection DbConnection { get; set; }
+		protected override DbConnection DbConnection
+		{
+			get => Connection;
+			set => Connection = (MySqlConnection) value;
+		}
+
 		protected override DbParameterCollection DbParameterCollection => m_parameterCollection;
-		protected override DbTransaction DbTransaction { get; set; }
+
+		protected override DbTransaction DbTransaction
+		{
+			get => Transaction;
+			set => Transaction = (MySqlTransaction) value;
+		}
 
 		protected override DbParameter CreateDbParameter()
 		{
@@ -148,8 +166,6 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		internal new MySqlConnection Connection => (MySqlConnection) DbConnection;
-
 		/// <summary>
 		/// Registers <see cref="Cancel"/> as a callback with <paramref name="token"/> if cancellation is supported.
 		/// </summary>
@@ -180,11 +196,11 @@ namespace MySql.Data.MySqlClient
 			exception = null;
 			if (m_parameterCollection == null)
 				exception = new ObjectDisposedException(GetType().Name);
-			else if (DbConnection == null)
+			else if (Connection == null)
 				exception = new InvalidOperationException("Connection property must be non-null.");
-			else if (DbConnection.State != ConnectionState.Open && DbConnection.State != ConnectionState.Connecting)
-				exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(DbConnection.State));
-			else if (DbTransaction != Connection.CurrentTransaction)
+			else if (Connection.State != ConnectionState.Open && Connection.State != ConnectionState.Connecting)
+				exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
+			else if (Transaction != Connection.CurrentTransaction)
 				exception = new InvalidOperationException("The transaction associated with this command is not the connection's active transaction.");
 			else if (string.IsNullOrWhiteSpace(CommandText))
 				exception = new InvalidOperationException("CommandText must be specified");

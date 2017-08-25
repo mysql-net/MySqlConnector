@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -140,6 +140,12 @@ namespace MySql.Data.MySqlClient
 		{
 			get => m_parameters[index];
 			set => SetParameter(index, value);
+		}
+
+		public new MySqlParameter this[string name]
+		{
+			get => (MySqlParameter) GetParameter(name);
+			set => SetParameter(name, value);
 		}
 
 		private void AddParameter(MySqlParameter parameter)

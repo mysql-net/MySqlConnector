@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -760,6 +760,38 @@ insert into long_enum_test (id, value) VALUES (0x7FFFFFFFFFFFFFFF, 1);
 					Assert.Equal(1, reader.GetInt32(1));
 					Assert.False(reader.Read());
 				}
+			}
+		}
+
+		[Fact]
+		public void ReturnDerivedTypes()
+		{
+			using (MySqlTransaction transaction = m_database.Connection.BeginTransaction())
+			using (MySqlCommand command = m_database.Connection.CreateCommand())
+			{
+				command.CommandText = "select @param + @param2";
+
+				MySqlParameter parameter = command.CreateParameter();
+				parameter.ParameterName = "param";
+				parameter.Value = 1;
+				MySqlParameterCollection parameterCollection = command.Parameters;
+				parameterCollection.Add(parameter);
+
+				MySqlParameter parameter2 = parameterCollection.AddWithValue("param2", 2);
+
+				MySqlParameter parameterB = parameterCollection[0];
+				Assert.Same(parameter, parameterB);
+				MySqlParameter parameter2B = parameterCollection["param2"];
+				Assert.Same(parameter2, parameter2B);
+
+				using (MySqlDataReader reader = command.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(3L, reader.GetValue(0));
+					Assert.False(reader.Read());
+				}
+
+				transaction.Rollback();
 			}
 		}
 
