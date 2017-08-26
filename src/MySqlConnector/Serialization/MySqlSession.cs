@@ -242,8 +242,18 @@ namespace MySql.Data.Serialization
 			// if server doesn't support the authentication fast path, it will send a new challenge
 			if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 			{
-				await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				if (payload.ArraySegment.Count == 1)
+				{
+					// Single 0xfe byte of the payload means it's an Old Authentication Method Switch Request Packet.
+					// See http://imysql.com/mysql-internal-manual/connection-phase-packets.html
+					// It's old protocol so MySqlConnector doesn't support it.
+					throw new NotSupportedException("Old Authentication Method Switch is not supported. Use new password hash format of 41-byte in MySQL server, not old format of 16-byte.");
+				}
+				else
+				{
+					await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
 			}
 
 			OkPayload.Create(payload);
