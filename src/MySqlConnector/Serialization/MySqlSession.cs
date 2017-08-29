@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -242,18 +242,8 @@ namespace MySql.Data.Serialization
 			// if server doesn't support the authentication fast path, it will send a new challenge
 			if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 			{
-				if (payload.ArraySegment.Count == 1)
-				{
-					// Single 0xfe byte of the payload means it's an Old Authentication Method Switch Request Packet.
-					// See http://imysql.com/mysql-internal-manual/connection-phase-packets.html
-					// It's old protocol so MySqlConnector doesn't support it.
-					throw new NotSupportedException("Old Authentication Method Switch is not supported. Use new password hash format of 41-byte in MySQL server, not old format of 16-byte.");
-				}
-				else
-				{
-					await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				}
+				await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 
 			OkPayload.Create(payload);
@@ -380,6 +370,9 @@ namespace MySql.Data.Serialization
 					await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				break;
+
+			case "mysql_old_password":
+				throw new NotSupportedException("'MySQL Server is requesting the insecure pre-4.1 auth mechanism (mysql_old_password). The user password must be upgraded; see https://dev.mysql.com/doc/refman/5.7/en/account-upgrades.html.");
 
 			default:
 				throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(switchRequest.Name));
