@@ -65,6 +65,14 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-26-1&#34;&gt;0.26.1&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Throw better exception when MySQL Server sends an old authentication method switch request packet: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/pull/316&#34;&gt;#316&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Capture InnerException in &lt;code&gt;ActivateResultSet&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Thanks to &lt;a href=&#34;https://github.com/kobake&#34;&gt;kobake&lt;/a&gt; for contributions to this release.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-26-0&#34;&gt;0.26.0&lt;/h3&gt;
 
 &lt;ul&gt;
