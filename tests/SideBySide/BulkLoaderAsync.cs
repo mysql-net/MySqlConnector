@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -149,16 +149,15 @@ namespace SideBySide
 			{
 				int rowCount = await bl.LoadAsync();
 			}
-			catch (MySqlException mySqlException)
+			catch (Exception exception)
 			{
-				if (mySqlException.InnerException != null)
+				while (exception.InnerException != null)
+					exception = exception.InnerException;
+
+				if (!(exception is FileNotFoundException))
 				{
-					Assert.IsType(typeof(System.IO.FileNotFoundException), mySqlException.InnerException);
-				}
-				else
-				{
-					Assert.Contains("Errcode: 2 ", mySqlException.Message);
-					Assert.Contains("No such file or directory", mySqlException.Message);
+					Assert.Contains("Errcode: 2 ", exception.Message);
+					Assert.Contains("No such file or directory", exception.Message);
 				}
 			}
 		}

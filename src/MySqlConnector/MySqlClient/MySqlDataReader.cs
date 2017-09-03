@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -70,7 +70,11 @@ namespace MySql.Data.MySqlClient
 		private void ActivateResultSet(ResultSet resultSet)
 		{
 			if (resultSet.ReadResultSetHeaderException != null)
-				throw resultSet.ReadResultSetHeaderException;
+			{
+				throw resultSet.ReadResultSetHeaderException is MySqlException mySqlException ?
+					new MySqlException(mySqlException.Number, mySqlException.SqlState, mySqlException.Message, mySqlException) :
+					resultSet.ReadResultSetHeaderException;
+			}
 
 			Command.LastInsertedId = resultSet.LastInsertId;
 			m_recordsAffected += resultSet.RecordsAffected;
