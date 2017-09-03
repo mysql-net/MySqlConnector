@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.26.1
+
+* Throw better exception when MySQL Server sends an old authentication method switch request packet: [#316](https://github.com/mysql-net/MySqlConnector/pull/316).
+* Capture InnerException in `ActivateResultSet`.
+* Thanks to [kobake](https://github.com/kobake) for contributions to this release.
+
 ### 0.26.0
 
 * Add convenience methods that return derived types: [#313](https://github.com/mysql-net/MySqlConnector/issues/313).
