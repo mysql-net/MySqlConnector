@@ -12,7 +12,7 @@ env:
   - IMAGE=percona:5.7
     NAME=percona
     FEATURES=Json,StoredProcedures,Sha256Password,OpenSsl,LargePackets
-  - IMAGE=mariadb:10.3
+  - IMAGE=mariadb:10.2
     NAME=mariadb
     FEATURES=StoredProcedures,OpenSsl,LargePackets
 
