@@ -168,6 +168,15 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-26-2">0.26.2</h3>
+
+<ul>
+<li>Support <code>CLIENT_DEPRECATE_EOF</code> flag: <a href="https://github.com/mysql-net/MySqlConnector/issues/322">#322</a>.</li>
+<li>Throw better exception when a malformed packet is detected.</li>
+<li>Don&rsquo;t allow sessions in an error state to be put back into the pool.</li>
+<li>Remove unsupported <code>CLIENT_PS_MULTI_RESULTS</code> flag (sent during connection handshaking).</li>
+</ul>
+
 <h3 id="0-26-1">0.26.1</h3>
 
 <ul>

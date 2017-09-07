@@ -65,6 +65,15 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-26-2&#34;&gt;0.26.2&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Support &lt;code&gt;CLIENT_DEPRECATE_EOF&lt;/code&gt; flag: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/322&#34;&gt;#322&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Throw better exception when a malformed packet is detected.&lt;/li&gt;
+&lt;li&gt;Don&amp;rsquo;t allow sessions in an error state to be put back into the pool.&lt;/li&gt;
+&lt;li&gt;Remove unsupported &lt;code&gt;CLIENT_PS_MULTI_RESULTS&lt;/code&gt; flag (sent during connection handshaking).&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-26-1&#34;&gt;0.26.1&lt;/h3&gt;
 
 &lt;ul&gt;
