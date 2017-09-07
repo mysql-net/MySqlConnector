@@ -79,6 +79,9 @@ namespace MySql.Data.MySqlClient.Results
 					{
 						var reader = new ByteArrayReader(payload.ArraySegment);
 						var columnCount = (int) reader.ReadLengthEncodedInteger();
+						if (reader.BytesRemaining != 0)
+							throw new MySqlException("Unexpected data at end of column_count packet; see https://github.com/mysql-net/MySqlConnector/issues/324");
+
 						ColumnDefinitions = new ColumnDefinitionPayload[columnCount];
 						m_dataOffsets = new int[columnCount];
 						m_dataLengths = new int[columnCount];
