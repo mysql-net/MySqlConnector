@@ -71,7 +71,14 @@ namespace MySql.Data.MySqlClient
 		{
 			if (resultSet.ReadResultSetHeaderException != null)
 			{
-				throw resultSet.ReadResultSetHeaderException is MySqlException mySqlException ?
+				var mySqlException = resultSet.ReadResultSetHeaderException as MySqlException;
+
+				// for any exception not created from an ErrorPayload, mark the session as failed (because we can't guarantee that all data
+				// has been read from the connection and that the socket is still usable)
+				if (mySqlException?.SqlState == null)
+					Command.Connection.Session.SetFailed();
+
+				throw mySqlException != null ?
 					new MySqlException(mySqlException.Number, mySqlException.SqlState, mySqlException.Message, mySqlException) :
 					resultSet.ReadResultSetHeaderException;
 			}

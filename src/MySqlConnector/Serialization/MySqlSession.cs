@@ -142,8 +142,10 @@ namespace MySql.Data.Serialization
 
 			lock (m_lock)
 			{
-				VerifyState(State.Querying, State.ClearingPendingCancellation);
-				m_state = State.Connected;
+				if (m_state == State.Querying || m_state == State.ClearingPendingCancellation)
+					m_state = State.Connected;
+				else
+					VerifyState(State.Failed);
 				m_activeCommandId = 0;
 			}
 		}
@@ -788,7 +790,7 @@ namespace MySql.Data.Serialization
 			return payload;
 		}
 
-		private void SetFailed()
+		internal void SetFailed()
 		{
 			lock (m_lock)
 				m_state = State.Failed;
