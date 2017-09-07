@@ -11,6 +11,13 @@ weight: 30
 Version History
 ===============
 
+### 0.26.2
+
+* Support `CLIENT_DEPRECATE_EOF` flag: [#322](https://github.com/mysql-net/MySqlConnector/issues/322).
+* Throw better exception when a malformed packet is detected.
+* Don't allow sessions in an error state to be put back into the pool.
+* Remove unsupported `CLIENT_PS_MULTI_RESULTS` flag (sent during connection handshaking).
+
 ### 0.26.1
 
 * Throw better exception when MySQL Server sends an old authentication method switch request packet: [#316](https://github.com/mysql-net/MySqlConnector/pull/316).
