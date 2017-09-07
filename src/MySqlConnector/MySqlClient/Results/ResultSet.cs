@@ -92,8 +92,11 @@ namespace MySql.Data.MySqlClient.Results
 							ColumnDefinitions[column] = ColumnDefinitionPayload.Create(payload);
 						}
 
-						payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-						EofPayload.Create(payload);
+						if (!Session.SupportsDeprecateEof)
+						{
+							payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+							EofPayload.Create(payload);
+						}
 
 						LastInsertId = -1;
 						State = ResultSetState.ReadResultSetHeader;
@@ -192,12 +195,22 @@ namespace MySql.Data.MySqlClient.Results
 
 			Row ScanRowAsyncRemainder(PayloadData payload)
 			{
-				if (EofPayload.IsEof(payload))
+				if (payload.HeaderByte == EofPayload.Signature)
 				{
-					var eof = EofPayload.Create(payload);
-					BufferState = (eof.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
-					m_rowBuffered = null;
-					return null;
+					if (Session.SupportsDeprecateEof && OkPayload.IsOk(payload, Session.SupportsDeprecateEof))
+					{
+						var ok = OkPayload.Create(payload, Session.SupportsDeprecateEof);
+						BufferState = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
+						m_rowBuffered = null;
+						return null;
+					}
+					if (!Session.SupportsDeprecateEof && EofPayload.IsEof(payload))
+					{
+						var eof = EofPayload.Create(payload);
+						BufferState = (eof.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
+						m_rowBuffered = null;
+						return null;
+					}
 				}
 
 				var reader = new ByteArrayReader(payload.ArraySegment);

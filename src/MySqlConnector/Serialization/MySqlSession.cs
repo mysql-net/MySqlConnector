@@ -46,6 +46,7 @@ namespace MySql.Data.Serialization
 		public string DatabaseOverride { get; set; }
 		public IPAddress IPAddress => (m_tcpClient?.Client.RemoteEndPoint as IPEndPoint)?.Address;
 		public WeakReference<MySqlConnection> OwningConnection { get; set; }
+		public bool SupportsDeprecateEof => m_supportsDeprecateEof;
 
 		public void ReturnToPool()
 		{
@@ -235,6 +236,8 @@ namespace MySql.Data.Serialization
 			m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
 			if (m_supportsConnectionAttributes && s_connectionAttributes == null)
 				s_connectionAttributes = CreateConnectionAttributes();
+
+			m_supportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
 
 			var response = HandshakeResponse41Packet.Create(initialHandshake, cs, m_useCompression, m_supportsConnectionAttributes ? s_connectionAttributes : null);
 			payload = new PayloadData(new ArraySegment<byte>(response));
@@ -896,5 +899,6 @@ namespace MySql.Data.Serialization
 		bool m_useCompression;
 		bool m_isSecureConnection;
 		bool m_supportsConnectionAttributes;
+		bool m_supportsDeprecateEof;
 	}
 }

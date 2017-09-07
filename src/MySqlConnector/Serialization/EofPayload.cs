@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace MySql.Data.Serialization
 {
@@ -32,7 +32,7 @@ namespace MySql.Data.Serialization
 		public static bool IsEof(PayloadData payload) =>
 			payload.ArraySegment.Count > 0 && payload.ArraySegment.Count < 9 && payload.ArraySegment.Array[payload.ArraySegment.Offset] == Signature;
 
-		private const byte Signature = 0xFE;
+		public const byte Signature = 0xFE;
 
 		private EofPayload(int warningCount, ServerStatus status)
 		{

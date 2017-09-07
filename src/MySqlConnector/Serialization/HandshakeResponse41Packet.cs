@@ -1,4 +1,4 @@
-﻿namespace MySql.Data.Serialization
+namespace MySql.Data.Serialization
 {
 	internal sealed class HandshakeResponse41Packet
 	{
@@ -20,6 +20,7 @@
 				(cs.UseAffectedRows ? 0 : ProtocolCapabilities.FoundRows) |
 				(useCompression ? ProtocolCapabilities.Compress : ProtocolCapabilities.None) |
 				(serverCapabilities & ProtocolCapabilities.ConnectionAttributes) |
+				(serverCapabilities & ProtocolCapabilities.DeprecateEof) |
 				additionalCapabilities));
 			writer.WriteInt32(0x4000_0000);
 			writer.WriteByte((byte) CharacterSet.Utf8Mb4Binary);
