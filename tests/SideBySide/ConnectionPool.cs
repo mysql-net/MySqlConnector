@@ -173,6 +173,9 @@ namespace SideBySide
 
 				// have to GC for leaked connections to be removed from the pool
 				GC.Collect();
+
+				// HACK: have to sleep (so that RecoverLeakedSessions is called in ConnectionPool.GetSessionAsync?)
+				Thread.Sleep(250);
 			}
 		}
 
