@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
@@ -41,14 +42,39 @@ namespace MySqlConnector.Tests
 							break;
 
 						case CommandKind.Ping:
-						case CommandKind.Query:
 						case CommandKind.ResetConnection:
+							await SendAsync(stream, 1, WriteOk);
+							break;
+
+						case CommandKind.Query:
+							var query = Encoding.UTF8.GetString(bytes, 1, bytes.Length - 1);
+							Match match;
+							if (query == "SET NAMES utf8mb4 COLLATE utf8mb4_bin;")
+							{
 								await SendAsync(stream, 1, WriteOk);
+							}
+							else if ((match = Regex.Match(query, @"^SELECT ([0-9]+)(;|$)")).Success)
+							{
+								var number = match.Groups[1].Value;
+								var data = new byte[number.Length + 1];
+								data[0] = (byte) number.Length;
+								Encoding.UTF8.GetBytes(number, 0, number.Length, data, 1);
+
+								await SendAsync(stream, 1, x => x.Write((byte) 1)); // one column
+								await SendAsync(stream, 2, x => x.Write(new byte[] { 3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x5F, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 8, 0x81, 0, 0, 0, 0 })); // column definition
+								await SendAsync(stream, 3, x => x.Write(new byte[] { 0xFE, 0, 0, 2, 0 })); // EOF
+								await SendAsync(stream, 4, x => x.Write(data));
+								await SendAsync(stream, 5, x => x.Write(new byte[] { 0xFE, 0, 0, 2, 0 })); // EOF
+							}
+							else
+							{
+								await SendAsync(stream, 1, x => WriteError(x, "Unhandled query: " + query));
+							}
 							break;
 
 						default:
 							Console.WriteLine("** UNHANDLED ** {0}", (CommandKind) bytes[0]);
-							await SendAsync(stream, 1, WriteError);
+							await SendAsync(stream, 1, x => WriteError(x));
 							break;
 						}
 					}
@@ -142,12 +168,12 @@ namespace MySqlConnector.Tests
 			writer.Write((ushort) 0); // warning count
 		}
 
-		private static void WriteError(BinaryWriter writer)
+		private static void WriteError(BinaryWriter writer, string message = "An unknown error occurred")
 		{
 			writer.Write((byte) 0xFF); // signature
 			writer.Write((ushort) MySqlErrorCode.UnknownError); // error code
 			writer.WriteRaw("#ERROR");
-			writer.WriteRaw("An unknown error occurred");
+			writer.WriteRaw(message);
 		}
 
 		readonly FakeMySqlServer m_server;

@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -87,6 +88,32 @@ namespace MySqlConnector.Tests
 					Assert.NotEqual(serverThread, connection.ServerThread);
 				else
 					Assert.Equal(serverThread, connection.ServerThread);
+			}
+		}
+
+		[Fact]
+		public void LeakReaders()
+		{
+			m_csb.Pooling = true;
+			m_csb.MinimumPoolSize = 0;
+			m_csb.MaximumPoolSize = 6;
+			m_csb.ConnectionTimeout = 30u;
+
+			for (var i = 0; i < m_csb.MaximumPoolSize + 2; i++)
+			{
+				var connection = new MySqlConnection(m_csb.ConnectionString);
+				connection.Open();
+
+				var cmd = connection.CreateCommand();
+				cmd.CommandText = "SELECT 1;";
+				var reader = cmd.ExecuteReader();
+				Assert.True(reader.Read());
+
+				// have to GC for leaked connections to be removed from the pool
+				GC.Collect();
+
+				// HACK: have to sleep (so that RecoverLeakedSessions is called in ConnectionPool.GetSessionAsync)
+				Thread.Sleep(250);
 			}
 		}
 
