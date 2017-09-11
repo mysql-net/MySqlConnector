@@ -25,7 +25,7 @@ before_install:
 
 script:
 - dotnet restore
-- dotnet test tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj -c Release -f netcoreapp2.0
+- pushd tests/MySqlConnector.Tests && dotnet xunit -c Release && popd
 - dotnet build tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0
 - echo 'Executing netcoreapp1.1.2 tests with No Compression, No SSL' && ./.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp1.1.2
 - echo 'Executing netcoreapp2.0 tests with No Compression, No SSL' && ./.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet test tests/SideBySide/SideBySide.csproj -c Release -f netcoreapp2.0

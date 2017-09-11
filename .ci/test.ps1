@@ -10,11 +10,13 @@ if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
 
-echo "Executing connection string tests"
-dotnet test tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj -c Release
+echo "Executing unit tests"
+pushd tests\MySqlConnector.Tests
+dotnet xunit -c Release
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
+popd
 
 echo "Executing tests with No Compression, No SSL"
 Copy-Item -Force .ci\config\config.json tests\SideBySide\config.json
