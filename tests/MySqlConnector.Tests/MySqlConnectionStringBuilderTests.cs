@@ -11,43 +11,43 @@ namespace MySql.Data.Tests
 		{
 			var csb = new MySqlConnectionStringBuilder();
 #if !BASELINE
-			Assert.Equal(false, csb.AllowPublicKeyRetrieval);
+			Assert.False(csb.AllowPublicKeyRetrieval);
 #endif
-			Assert.Equal(false, csb.AllowUserVariables);
-			Assert.Equal(true, csb.AutoEnlist);
-			Assert.Equal(null, csb.CertificateFile);
-			Assert.Equal(null, csb.CertificatePassword);
+			Assert.False(csb.AllowUserVariables);
+			Assert.True(csb.AutoEnlist);
+			Assert.Null(csb.CertificateFile);
+			Assert.Null(csb.CertificatePassword);
 			Assert.Equal("", csb.CharacterSet);
 #if BASELINE
-			Assert.Equal(false, csb.ConnectionReset);
+			Assert.False(csb.ConnectionReset);
 #else
 			Assert.Equal(0u, csb.ConnectionLifeTime);
-			Assert.Equal(true, csb.ConnectionReset);
+			Assert.True(csb.ConnectionReset);
 #endif
 			Assert.Equal(15u, csb.ConnectionTimeout);
-			Assert.Equal(false, csb.ConvertZeroDateTime);
+			Assert.False(csb.ConvertZeroDateTime);
 			Assert.Equal("", csb.Database);
 #if !BASELINE
-			Assert.Equal(false, csb.BufferResultSets);
+			Assert.False(csb.BufferResultSets);
 			Assert.Equal(180u, csb.ConnectionIdleTimeout);
-			Assert.Equal(false, csb.ForceSynchronous);
-			Assert.Equal(null, csb.CACertificateFile);
+			Assert.False(csb.ForceSynchronous);
+			Assert.Null(csb.CACertificateFile);
 #endif
 			Assert.Equal(0u, csb.Keepalive);
 			Assert.Equal(100u, csb.MaximumPoolSize);
 			Assert.Equal(0u, csb.MinimumPoolSize);
 			Assert.Equal("", csb.Password);
-			Assert.Equal(false, csb.OldGuids);
-			Assert.Equal(false, csb.PersistSecurityInfo);
-			Assert.Equal(true, csb.Pooling);
+			Assert.False(csb.OldGuids);
+			Assert.False(csb.PersistSecurityInfo);
+			Assert.True(csb.Pooling);
 			Assert.Equal(3306u, csb.Port);
 			Assert.Equal("", csb.Server);
 #if !BASELINE
-			Assert.Equal(null, csb.ServerRsaPublicKeyFile);
+			Assert.Null(csb.ServerRsaPublicKeyFile);
 #endif
 			Assert.Equal(MySqlSslMode.Preferred, csb.SslMode);
-			Assert.Equal(true, csb.TreatTinyAsBoolean);
-			Assert.Equal(false, csb.UseCompression);
+			Assert.True(csb.TreatTinyAsBoolean);
+			Assert.False(csb.UseCompression);
 			Assert.Equal("", csb.UserID);
 #if BASELINE
 			Assert.False(csb.UseAffectedRows);
@@ -94,37 +94,37 @@ namespace MySql.Data.Tests
 					"Uid=username;" +
 					"useaffectedrows=false"
 			};
-			Assert.Equal(true, csb.AllowUserVariables);
-			Assert.Equal(false, csb.AutoEnlist);
+			Assert.True(csb.AllowUserVariables);
+			Assert.False(csb.AutoEnlist);
 			Assert.Equal("file.pfx", csb.CertificateFile);
 			Assert.Equal("Pass1234", csb.CertificatePassword);
 			Assert.Equal("latin1", csb.CharacterSet);
 			Assert.Equal(15u, csb.ConnectionLifeTime);
-			Assert.Equal(false, csb.ConnectionReset);
+			Assert.False(csb.ConnectionReset);
 			Assert.Equal(30u, csb.ConnectionTimeout);
-			Assert.Equal(true, csb.ConvertZeroDateTime);
+			Assert.True(csb.ConvertZeroDateTime);
 			Assert.Equal("schema_name", csb.Database);
 #if !BASELINE
-			Assert.Equal(true, csb.BufferResultSets);
+			Assert.True(csb.BufferResultSets);
 			Assert.Equal(30u, csb.ConnectionIdleTimeout);
-			Assert.Equal(true, csb.ForceSynchronous);
+			Assert.True(csb.ForceSynchronous);
 			Assert.Equal("ca.pem", csb.CACertificateFile);
-			Assert.Equal(true, csb.AllowPublicKeyRetrieval);
+			Assert.True(csb.AllowPublicKeyRetrieval);
 			Assert.Equal("rsa.pem", csb.ServerRsaPublicKeyFile);
 #endif
 			Assert.Equal(90u, csb.Keepalive);
 			Assert.Equal(15u, csb.MaximumPoolSize);
 			Assert.Equal(5u, csb.MinimumPoolSize);
 			Assert.Equal("Pass1234", csb.Password);
-			Assert.Equal(true, csb.OldGuids);
-			Assert.Equal(true, csb.PersistSecurityInfo);
-			Assert.Equal(false, csb.Pooling);
+			Assert.True(csb.OldGuids);
+			Assert.True(csb.PersistSecurityInfo);
+			Assert.False(csb.Pooling);
 			Assert.Equal(1234u, csb.Port);
 			Assert.Equal("db-server", csb.Server);
-			Assert.Equal(false, csb.TreatTinyAsBoolean);
+			Assert.False(csb.TreatTinyAsBoolean);
 			Assert.Equal(MySqlSslMode.VerifyCA, csb.SslMode);
-			Assert.Equal(false, csb.UseAffectedRows);
-			Assert.Equal(true, csb.UseCompression);
+			Assert.False(csb.UseAffectedRows);
+			Assert.True(csb.UseCompression);
 			Assert.Equal("username", csb.UserID);
 		}
 

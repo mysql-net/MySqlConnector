@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
@@ -166,7 +166,7 @@ namespace SideBySide
 			using (var gridReader = m_database.Connection.QueryMultiple(@"select 1; " + c_hugeQuery))
 			{
 				var first = gridReader.Read<int>().ToList();
-				Assert.Equal(1, first.Count);
+				Assert.Single(first);
 				Assert.Equal(1, first[0]);
 
 				// don't read the second result set; disposing the GridReader should Cancel the command

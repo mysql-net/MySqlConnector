@@ -13,7 +13,6 @@ namespace MySql.Data.Tests
 		[InlineData("\u07FF", new byte[] { 0xDF, 0xBF })]
 		[InlineData("\u0800", new byte[] { 0xE0, 0xA0, 0x80 })]
 		[InlineData("\uFFFF", new byte[] { 0xEF, 0xBF, 0xBF })]
-		[InlineData("\uFFFF", new byte[] { 0xEF, 0xBF, 0xBF })]
 		[InlineData("\U00010000", new byte[] { 0xF0, 0x90, 0x80, 0x80 })]
 		[InlineData("\U0010FFF0\U0010FFF1", new byte[] { 0xF4, 0x8F, 0xBF, 0xB0, 0xF4, 0x8F, 0xBF, 0xB1 })]
 	    public void Encode(string input, byte[] expected)

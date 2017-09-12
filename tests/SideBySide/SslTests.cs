@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -106,7 +106,7 @@ namespace SideBySide
 #endif
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
-				await Assert.ThrowsAsync(typeof(MySqlException), async () => await connection.OpenAsync());
+				await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
 			}
 		}
 

@@ -67,7 +67,7 @@ insert into query_test (value) VALUES (1);
 			{
 				cmd.CommandText = "select id, value FROM query_test;";
 				using (var reader = cmd.ExecuteReader())
-					Assert.Equal(false, reader.NextResult());
+					Assert.False(reader.NextResult());
 			}
 		}
 
@@ -201,23 +201,23 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 
 					var readers = new[]{ await cmd1.ExecuteReaderAsync(), await cmd2.ExecuteReaderAsync() };
 					foreach (var reader in readers){
-						Assert.Equal(true, await reader.ReadAsync());
+						Assert.True(await reader.ReadAsync());
 						Assert.Equal(1, reader.GetInt32(0));
-						Assert.Equal(true, await reader.ReadAsync());
+						Assert.True(await reader.ReadAsync());
 						Assert.Equal(2, reader.GetInt32(0));
-						Assert.Equal(true, await reader.ReadAsync());
+						Assert.True(await reader.ReadAsync());
 						Assert.Equal(3, reader.GetInt32(0));
-						Assert.Equal(false, await reader.ReadAsync());
-						Assert.Equal(true, await reader.NextResultAsync());
+						Assert.False(await reader.ReadAsync());
+						Assert.True(await reader.NextResultAsync());
 
-						Assert.Equal(true, await reader.ReadAsync());
+						Assert.True(await reader.ReadAsync());
 						Assert.Equal(3, reader.GetInt32(0));
-						Assert.Equal(true, await reader.ReadAsync());
+						Assert.True(await reader.ReadAsync());
 						Assert.Equal(2, reader.GetInt32(0));
-						Assert.Equal(true, await reader.ReadAsync());
+						Assert.True(await reader.ReadAsync());
 						Assert.Equal(1, reader.GetInt32(0));
-						Assert.Equal(false, await reader.ReadAsync());
-						Assert.Equal(false, await reader.NextResultAsync());
+						Assert.False(await reader.ReadAsync());
+						Assert.False(await reader.NextResultAsync());
 					}
 				}
 			}
@@ -242,14 +242,14 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 				cmd2.CommandText = commandText;
 
 				var reader1 = await cmd1.ExecuteReaderAsync();
-				Assert.Equal(true, reader1.Read());
+				Assert.True(reader1.Read());
 				Assert.Equal(1, reader1.GetInt32(0));
 
 				m_database.Connection.Close();
 				m_database.Connection.Open();
 
 				var reader2 = await cmd1.ExecuteReaderAsync();
-				Assert.Equal(true, reader2.Read());
+				Assert.True(reader2.Read());
 				Assert.Equal(1, reader2.GetInt32(0));
 			}
 		}
@@ -379,7 +379,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 				cmd.CommandText = @"select 1;";
 				using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
 				{
-					Assert.Equal(true, await reader.ReadAsync().ConfigureAwait(false));
+					Assert.True(await reader.ReadAsync().ConfigureAwait(false));
 					reader.Dispose();
 					reader.Dispose();
 				}

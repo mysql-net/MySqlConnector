@@ -191,19 +191,19 @@ namespace SideBySide
 					}
 					else
 					{
-						Assert.IsType(typeof(System.IO.FileNotFoundException), mySqlException.InnerException);
+						Assert.IsType<System.IO.FileNotFoundException>(mySqlException.InnerException);
 						break;
 					}
 				}
 				if (mySqlException.InnerException == null)
 				{
-					Assert.IsType(typeof(System.IO.FileNotFoundException), mySqlException);
+					Assert.IsType<System.IO.FileNotFoundException>(mySqlException);
 				}
 			}
 			catch (Exception exception)
 			{
 				//We know that the exception is not a MySqlException, just use the assertion to fail the test
-				Assert.IsType(typeof(MySqlException), exception);
+				Assert.IsType<MySqlException>(exception);
 			};
 		}
 
