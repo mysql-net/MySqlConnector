@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
@@ -91,7 +91,7 @@ namespace SideBySide
 			await DoGetValue(column, (r, n) => r.GetInt64(n), flags, values).ConfigureAwait(false);
 		}
 
-		public async Task DoGetValue<T>(string column, Func<DbDataReader, int, T> getInt, int[] flags, T[] values)
+		private async Task DoGetValue<T>(string column, Func<DbDataReader, int, T> getInt, int[] flags, T[] values)
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
@@ -612,8 +612,8 @@ namespace SideBySide
 		}
 
 		[RequiresFeatureTheory(ServerFeatures.Json)]
-		[InlineData("Value", new[] { null, "NULL", "BOOLEAN", "ARRAY", "ARRAY", "ARRAY", "INTEGER", "INTEGER", "OBJECT", "OBJECT" })]
-		public void JsonType(string column, string[] expectedTypes)
+		[InlineData(new object[] { new[] { null, "NULL", "BOOLEAN", "ARRAY", "ARRAY", "ARRAY", "INTEGER", "INTEGER", "OBJECT", "OBJECT" }})]
+		public void JsonType(string[] expectedTypes)
 		{
 			var types = m_database.Connection.Query<string>(@"select JSON_TYPE(value) from datatypes_json_core order by rowid;").ToList();
 			Assert.Equal(expectedTypes, types);

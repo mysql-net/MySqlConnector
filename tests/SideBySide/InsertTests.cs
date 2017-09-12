@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using MySql.Data.MySqlClient;
 using Dapper;
@@ -27,7 +27,7 @@ create table insert_ai(rowid integer not null primary key auto_increment, text v
 				{
 					command.Parameters.Add(new MySqlParameter { ParameterName = "@text", Value = "test" });
 					await command.ExecuteNonQueryAsync();
-					Assert.Equal(command.LastInsertedId, 1L);
+					Assert.Equal(1L, command.LastInsertedId);
 				}
 			}
 			finally
@@ -70,7 +70,7 @@ create table insert_ai_2(rowid integer not null primary key auto_increment, text
 				using (var command = new MySqlCommand("insert into insert_ai_2(text) values('test');", m_database.Connection))
 				{
 					command.ExecuteNonQuery();
-					Assert.Equal(command.LastInsertedId, 1234L);
+					Assert.Equal(1234L, command.LastInsertedId);
 				}
 			}
 			finally
@@ -207,9 +207,9 @@ create table insert_enum_value(rowid integer not null primary key auto_increment
 				new { e16a = default(Enum16?), e32a = default(Enum32?), e64a = default(Enum64?), e16b = Enum16.On, e32b = Enum32.Off, e64b = Enum64.On });
 			var results = m_database.Connection.Query<EnumValues>(@"select Enum16, Enum32, Enum64 from insert_enum_value order by rowid;").ToList();
 			Assert.Equal(2, results.Count);
-			Assert.Equal(null, results[0].Enum16);
-			Assert.Equal(null, results[0].Enum32);
-			Assert.Equal(null, results[0].Enum64);
+			Assert.Null(results[0].Enum16);
+			Assert.Null(results[0].Enum32);
+			Assert.Null(results[0].Enum64);
 			Assert.Equal(Enum16.On, results[1].Enum16);
 			Assert.Equal(Enum32.Off, results[1].Enum32);
 			Assert.Equal(Enum64.On, results[1].Enum64);

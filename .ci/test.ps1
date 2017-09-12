@@ -18,24 +18,28 @@ if ($LASTEXITCODE -ne 0){
 }
 popd
 
+pushd .\tests\SideBySide
+
 echo "Executing tests with No Compression, No SSL"
-Copy-Item -Force .ci\config\config.json tests\SideBySide\config.json
-dotnet test tests\SideBySide\SideBySide.csproj -c Release
+Copy-Item -Force ..\..\.ci\config\config.json config.json
+dotnet xunit -c Release
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
 echo "Executing Debug Only tests"
-dotnet test tests\SideBySide\SideBySide.csproj -c Debug --filter "FullyQualifiedName~SideBySide.DebugOnlyTests"
+dotnet xunit -c Debug -class SideBySide.DebugOnlyTests
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
 
 echo "Executing tests with Compression, No SSL"
-Copy-Item -Force .ci\config\config.compression.json tests\SideBySide\config.json
-dotnet test tests\SideBySide\SideBySide.csproj -c Release
+Copy-Item -Force ..\..\.ci\config\config.compression.json config.json
+dotnet xunit -c Release
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
+
+popd
 
 echo "Executing baseline connection string tests"
 dotnet restore tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj /p:Configuration=Baseline

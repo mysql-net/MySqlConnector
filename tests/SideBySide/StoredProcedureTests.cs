@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
@@ -109,9 +109,9 @@ namespace SideBySide
 				cmd.CommandType = CommandType.StoredProcedure;
 
 				if (procedureType == "FUNCTION")
-					await Assert.ThrowsAsync(typeof(InvalidOperationException), async () => await cmd.ExecuteNonQueryAsync());
+					await Assert.ThrowsAsync<InvalidOperationException>(async () => await cmd.ExecuteNonQueryAsync());
 				else
-					await Assert.ThrowsAsync(typeof(ArgumentException), async () => await cmd.ExecuteNonQueryAsync());
+					await Assert.ThrowsAsync<ArgumentException>(async () => await cmd.ExecuteNonQueryAsync());
 			}
 		}
 
