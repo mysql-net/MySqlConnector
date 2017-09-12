@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -29,6 +29,7 @@ namespace MySql.Data.MySqlClient.Results
 			m_readBuffer.Clear();
 			m_row = null;
 			m_rowBuffered = null;
+			m_hasRows = false;
 
 			try
 			{
@@ -226,6 +227,7 @@ namespace MySql.Data.MySqlClient.Results
 					row = new Row(this);
 				row.SetData(m_dataLengths, m_dataOffsets, payload.ArraySegment);
 				m_rowBuffered = row;
+				m_hasRows = true;
 				return row;
 			}
 		}
@@ -395,7 +397,7 @@ namespace MySql.Data.MySqlClient.Results
 			{
 				if (BufferState == ResultSetState.ReadResultSetHeader)
 					return BufferReadAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult() != null;
-				return BufferState == ResultSetState.ReadingRows;
+				return m_hasRows;
 			}
 		}
 
@@ -423,5 +425,6 @@ namespace MySql.Data.MySqlClient.Results
 		readonly Queue<Row> m_readBuffer = new Queue<Row>();
 		Row m_row;
 		Row m_rowBuffered;
+		bool m_hasRows;
 	}
 }

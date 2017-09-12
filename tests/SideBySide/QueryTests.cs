@@ -795,6 +795,41 @@ insert into long_enum_test (id, value) VALUES (0x7FFFFFFFFFFFFFFF, 1);
 			}
 		}
 
+		[Theory]
+		[InlineData(new[] { 1 }, new[] { true })]
+		[InlineData(new[] { 4 }, new[] { false })]
+		[InlineData(new[] { 1, 2 }, new[] { true, true })]
+		[InlineData(new[] { 1, 4 }, new[] { true, false })]
+		[InlineData(new[] { 4, 1 }, new[] { false, true })]
+		[InlineData(new[] { 4, 5 }, new[] { false, false })]
+		public void HasRows(int[] values, bool[] expecteds)
+		{
+			m_database.Connection.Execute(@"drop table if exists has_rows;
+create table has_rows(value int not null);
+insert into has_rows(value) values(1),(2),(3);");
+
+			var sql = "";
+			foreach (var value in values)
+				sql += $"select * from has_rows where value = {value};";
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = sql;
+				using (var reader = cmd.ExecuteReader())
+				{
+					for (int i = 0; i < expecteds.Length; i++)
+					{
+						Assert.Equal(expecteds[i], reader.HasRows);
+						Assert.Equal(expecteds[i], reader.Read());
+						Assert.False(reader.Read());
+						Assert.Equal(expecteds[i], reader.HasRows);
+
+						Assert.Equal(i != expecteds.Length - 1, reader.NextResult());
+					}
+				}
+			}
+		}
+
 		class BoolTest
 		{
 			public int Id { get; set; }
