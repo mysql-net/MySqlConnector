@@ -257,42 +257,39 @@ namespace MySql.Data.Serialization
 				m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
 		}
 
-		private async Task ResetConnectionAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
-		{
-			VerifyState(State.Connected);
-			if (ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
-			{
-				await SendAsync(ResetConnectionPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
-				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				OkPayload.Create(payload);
-
-				// the "reset connection" packet also resets the connection charset, so we need to change that back to our default
-				payload = new PayloadData(new ArraySegment<byte>(PayloadUtilities.CreateEofStringPayload(CommandKind.Query, "SET NAMES utf8mb4 COLLATE utf8mb4_bin;")));
-				await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				OkPayload.Create(payload);
-			}
-			else
-			{
-				// optimistically hash the password with the challenge from the initial handshake (supported by MariaDB; doesn't appear to be supported by MySQL)
-				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
-				var payload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database, m_supportsConnectionAttributes ? s_connectionAttributes : null);
-				await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
-				{
-					await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				}
-				OkPayload.Create(payload);
-			}
-		}
-
 		public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			VerifyState(State.Connected);
+
 			try
 			{
-				await ResetConnectionAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+				if (ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
+				{
+					await SendAsync(ResetConnectionPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
+					var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					OkPayload.Create(payload);
+
+					// the "reset connection" packet also resets the connection charset, so we need to change that back to our default
+					payload = new PayloadData(new ArraySegment<byte>(PayloadUtilities.CreateEofStringPayload(CommandKind.Query, "SET NAMES utf8mb4 COLLATE utf8mb4_bin;")));
+					await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					OkPayload.Create(payload);
+				}
+				else
+				{
+					// optimistically hash the password with the challenge from the initial handshake (supported by MariaDB; doesn't appear to be supported by MySQL)
+					var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
+					var payload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database, m_supportsConnectionAttributes ? s_connectionAttributes : null);
+					await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
+					{
+						await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+						payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					}
+					OkPayload.Create(payload);
+				}
+
 				return true;
 			}
 			catch (EndOfStreamException)
