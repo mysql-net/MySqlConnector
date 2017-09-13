@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
@@ -50,17 +50,7 @@ namespace MySql.Data.MySqlClient
 					{
 						if (m_connectionSettings.ConnectionReset)
 						{
-							try
-							{
-								// Depending on the server (Aurora?), this can randomly fail when re-authenticating to the server.
-								// If it does, we can just pretend it didn't happen and continue with creating a new session below.
-								await session.ResetConnectionAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
-								reuseSession = true;
-							}
-							catch (Exception)
-							{
-								reuseSession = false;
-							}
+							reuseSession = await session.TryResetConnectionAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
 						}
 						else
 						{

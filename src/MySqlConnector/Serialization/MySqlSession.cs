@@ -257,7 +257,7 @@ namespace MySql.Data.Serialization
 				m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
 		}
 
-		public async Task ResetConnectionAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async Task ResetConnectionAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyState(State.Connected);
 			if (ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
@@ -286,6 +286,26 @@ namespace MySql.Data.Serialization
 				}
 				OkPayload.Create(payload);
 			}
+		}
+
+		public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			try
+			{
+				await ResetConnectionAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+				return true;
+			}
+			catch (EndOfStreamException)
+			{
+			}
+			catch (IOException)
+			{
+			}
+			catch (SocketException)
+			{
+			}
+
+			return false;
 		}
 
 		private async Task SwitchAuthenticationAsync(ConnectionSettings cs, PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
