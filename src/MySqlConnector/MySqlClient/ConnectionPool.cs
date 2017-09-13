@@ -40,16 +40,14 @@ namespace MySql.Data.MySqlClient
 				}
 				if (session != null)
 				{
-					if (session.PoolGeneration != m_generation || !await session.TryPingAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
+					bool reuseSession;
+
+					if (session.PoolGeneration != m_generation)
 					{
-						// session is either old or cannot communicate with the server
-						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						reuseSession = false;
 					}
 					else
 					{
-						bool resetFailed = false;
-
-						// session is valid, reset if supported
 						if (m_connectionSettings.ConnectionReset)
 						{
 							try
@@ -57,23 +55,31 @@ namespace MySql.Data.MySqlClient
 								// Depending on the server (Aurora?), this can randomly fail when re-authenticating to the server.
 								// If it does, we can just pretend it didn't happen and continue with creating a new session below.
 								await session.ResetConnectionAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
+								reuseSession = true;
 							}
-							catch
+							catch (Exception)
 							{
-								resetFailed = true;
-
-								await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+								reuseSession = false;
 							}
 						}
-
-						if (!resetFailed)
+						else
 						{
-							// pooled session is ready to be used; return it
-							session.OwningConnection = new WeakReference<MySqlConnection>(connection);
-							lock (m_leasedSessions)
-								m_leasedSessions.Add(session.Id, session);
-							return session;
+							reuseSession = await session.TryPingAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 						}
+					}
+
+					if (!reuseSession)
+					{
+						// session is either old or cannot communicate with the server
+						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					}
+					else
+					{
+						// pooled session is ready to be used; return it
+						session.OwningConnection = new WeakReference<MySqlConnection>(connection);
+						lock (m_leasedSessions)
+							m_leasedSessions.Add(session.Id, session);
+						return session;
 					}
 				}
 
