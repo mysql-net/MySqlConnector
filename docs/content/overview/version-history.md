@@ -1,5 +1,5 @@
 ---
-lastmod: 2017-03-27
+lastmod: 2017-09-13
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,13 @@ weight: 30
 
 Version History
 ===============
+
+### 0.26.3
+
+* Fix `HasRows` incorrectly returning `false` after all rows have been read: [#327](https://github.com/mysql-net/MySqlConnector/issues/327).
+* Fix `EndOfStreamException` when reusing a pooled connection with Amazon Aurora.
+* Update `System.*` dependencies to 4.3.0 for .NET 4.5 and .NET 4.6 packages.
+* Thanks to [Brad Nabholz](https://github.com/bnabholz) for contributions to this release.
 
 ### 0.26.2
 
