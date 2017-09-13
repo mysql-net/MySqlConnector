@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.26.4
+
+* Fix overly-broad exception handler introduced in 0.26.3.
+* Improve efficiency of code added in 0.26.3.
+
 ### 0.26.3
 
 * Fix `HasRows` incorrectly returning `false` after all rows have been read: [#327](https://github.com/mysql-net/MySqlConnector/issues/327).
