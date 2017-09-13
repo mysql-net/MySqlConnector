@@ -15,6 +15,7 @@ Version History
 
 * Fix `HasRows` incorrectly returning `false` after all rows have been read: [#327](https://github.com/mysql-net/MySqlConnector/issues/327).
 * Fix `EndOfStreamException` when reusing a pooled connection with Amazon Aurora.
+* Reduce network roundtrips when opening a pooled connection (with the default settings of `Pooling=True;Connection Reset=true`); see [#258](https://github.com/mysql-net/MySqlConnector/issues/258).
 * Update `System.*` dependencies to 4.3.0 for .NET 4.5 and .NET 4.6 packages.
 * Thanks to [Brad Nabholz](https://github.com/bnabholz) for contributions to this release.
 
