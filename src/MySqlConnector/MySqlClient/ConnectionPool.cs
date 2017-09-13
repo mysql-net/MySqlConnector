@@ -47,17 +47,33 @@ namespace MySql.Data.MySqlClient
 					}
 					else
 					{
+						bool resetFailed = false;
+
 						// session is valid, reset if supported
 						if (m_connectionSettings.ConnectionReset)
 						{
-							await session.ResetConnectionAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
+							try
+							{
+								// Depending on the server (Aurora?), this can randomly fail when re-authenticating to the server.
+								// If it does, we can just pretend it didn't happen and continue with creating a new session below.
+								await session.ResetConnectionAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
+							}
+							catch
+							{
+								resetFailed = true;
+
+								await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+							}
 						}
 
-						// pooled session is ready to be used; return it
-						session.OwningConnection = new WeakReference<MySqlConnection>(connection);
-						lock (m_leasedSessions)
-							m_leasedSessions.Add(session.Id, session);
-						return session;
+						if (!resetFailed)
+						{
+							// pooled session is ready to be used; return it
+							session.OwningConnection = new WeakReference<MySqlConnection>(connection);
+							lock (m_leasedSessions)
+								m_leasedSessions.Add(session.Id, session);
+							return session;
+						}
 					}
 				}
 
