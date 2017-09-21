@@ -33,7 +33,10 @@ docker run -d \
 	-p $PORT:3306 \
 	--name $NAME \
 	-e MYSQL_ROOT_PASSWORD='test' \
-	$IMAGE
+	$IMAGE \
+  --log-bin-trust-function-creators=1 \
+  --local-infile=1 \
+  --secure-file-priv=/var/tmp
 
 for i in `seq 1 30`; do
 	# wait for mysql to come up
