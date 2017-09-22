@@ -23,10 +23,23 @@ MySqlConnector has some different default connection string options:
     <th style="width:40%">Notes</th>
   </thead>
   <tr>
+    <td><code>AllowPublicKeyRetrieval</code></td>
+    <td>Default is <code>false</code></td>
+    <td>(not configurable)</td>
+    <td>When using <code>sha256_password</code> authentication, this option allows the RSA public key to be retrieved from the server
+    (when not using a secure connection). It's <code>false</code> by default to avoid disclosing the password to a malicious proxy.</td>
+  </tr>
+  <tr>
     <td><code>ConnectionReset</code></td>
     <td>Default is <code>true</code></td>
     <td>Default is <code>false</code></td>
     <td>MySqlConnector takes an extra command to reset pooled connections by default so that the connection is always in a known state</td>
+  </tr>
+  <tr>
+    <td><code>ServerRSAPublicKeyFile</code></td>
+    <td>(no default)</td>
+    <td>(not configurable)</td>
+    <td>Specify the server's RSA public key to allow <code>sha256_password</code> authentication over an insecure connection.</td>
   </tr>
   <tr>
     <td><code>UseAffectedRows</code></td>
@@ -37,7 +50,7 @@ MySqlConnector has some different default connection string options:
 </table>
 
 Some command line options that are supported in Connector/NET are not supported in MySqlConnector.  For a full list of options that are
-supported in MySqlConnector, see the [Connection Options](connection-options)
+supported in MySqlConnector, see the [Connection Options](connection-options).
 
 ### TransactionScope
 
