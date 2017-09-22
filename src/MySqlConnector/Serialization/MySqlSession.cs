@@ -170,7 +170,6 @@ namespace MySql.Data.Serialization
 					{
 						m_payloadHandler.StartNewConversation();
 						await m_payloadHandler.WritePayloadAsync(QuitPayload.Create(), ioBehavior).ConfigureAwait(false);
-						await m_payloadHandler.ReadPayloadAsync(m_payloadCache, ProtocolErrorBehavior.Ignore, ioBehavior).ConfigureAwait(false);
 					}
 					catch (IOException)
 					{
