@@ -33,7 +33,16 @@ namespace MySqlConnector.Tests
 					var keepRunning = true;
 					while (keepRunning)
 					{
-						var bytes = await ReadPayloadAsync(stream, token);
+						byte[] bytes;
+						try
+						{
+							bytes = await ReadPayloadAsync(stream, token);
+						}
+						catch (EndOfStreamException)
+						{
+							break;
+						}
+
 						switch ((CommandKind) bytes[0])
 						{
 						case CommandKind.Quit:
@@ -118,8 +127,13 @@ namespace MySqlConnector.Tests
 		private static async Task<byte[]> ReadBytesAsync(Stream stream, int count, CancellationToken token)
 		{
 			var bytes = new byte[count];
-			for (var bytesRead = 0; bytesRead < count;)
-				bytesRead += await stream.ReadAsync(bytes, bytesRead, count - bytesRead, token);
+			for (var totalBytesRead = 0; totalBytesRead < count;)
+			{
+				var bytesRead = await stream.ReadAsync(bytes, totalBytesRead, count - totalBytesRead, token);
+				if (bytesRead == 0)
+					throw new EndOfStreamException();
+				totalBytesRead += bytesRead;
+			}
 			return bytes;
 		}
 
