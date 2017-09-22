@@ -180,10 +180,23 @@
     <th style="width:40%">Notes</th>
   </thead>
   <tr>
+    <td><code>AllowPublicKeyRetrieval</code></td>
+    <td>Default is <code>false</code></td>
+    <td>(not configurable)</td>
+    <td>When using <code>sha256_password</code> authentication, this option allows the RSA public key to be retrieved from the server
+    (when not using a secure connection). It's <code>false</code> by default to avoid disclosing the password to a malicious proxy.</td>
+  </tr>
+  <tr>
     <td><code>ConnectionReset</code></td>
     <td>Default is <code>true</code></td>
     <td>Default is <code>false</code></td>
     <td>MySqlConnector takes an extra command to reset pooled connections by default so that the connection is always in a known state</td>
+  </tr>
+  <tr>
+    <td><code>ServerRSAPublicKeyFile</code></td>
+    <td>(no default)</td>
+    <td>(not configurable)</td>
+    <td>Specify the server's RSA public key to allow <code>sha256_password</code> authentication over an insecure connection.</td>
   </tr>
   <tr>
     <td><code>UseAffectedRows</code></td>
@@ -194,7 +207,7 @@
 </table>
 
 <p>Some command line options that are supported in Connector/NET are not supported in MySqlConnector.  For a full list of options that are
-supported in MySqlConnector, see the <a href="connection-options">Connection Options</a></p>
+supported in MySqlConnector, see the <a href="connection-options">Connection Options</a>.</p>
 
 <h3 id="transactionscope">TransactionScope</h3>
 
@@ -202,6 +215,17 @@ supported in MySqlConnector, see the <a href="connection-options">Connection Opt
 while Connector/NET uses regular database transactions. As a result, code that uses <code>TransactionScope</code>
 may execute differently with MySqlConnector. To get Connector/NET-compatible behavior, remove
 <code>TransactionScope</code> and use <code>BeginTransaction</code>/<code>Commit</code> directly.</p>
+
+<h3 id="mysqlconnection">MySqlConnection</h3>
+
+<p>Connector/NET allows a <code>MySqlConnection</code> object to be reused after it has been disposed. MySqlConnector requires a new <code>MySqlConnection</code>
+object to be created. See <a href="https://github.com/mysql-net/MySqlConnector/issues/331">#331</a> for more details.</p>
+
+<h3 id="mysqlcommand">MySqlCommand</h3>
+
+<p>Connector/NET allows a command to be executed even when <code>MySqlCommand.Transaction</code> references a commited, rolled back, or
+disposed <code>MySqlTransaction</code>. MySqlConnector will throw an <code>InvalidOperationException</code> if the <code>MySqlCommand.Transaction</code>
+property doesn&rsquo;t reference the active transaction. See <a href="https://github.com/mysql-net/MySqlConnector/issues/333">#333</a> for more details.</p>
 
 <h3 id="bugs-present-in-connector-net-that-are-fixed-in-mysqlconnector">Bugs present in Connector/NET that are fixed in MySqlConnector</h3>
 

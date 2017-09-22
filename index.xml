@@ -412,10 +412,23 @@ please refer to its documentation.&lt;/p&gt;
     &lt;th style=&#34;width:40%&#34;&gt;Notes&lt;/th&gt;
   &lt;/thead&gt;
   &lt;tr&gt;
+    &lt;td&gt;&lt;code&gt;AllowPublicKeyRetrieval&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;Default is &lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;(not configurable)&lt;/td&gt;
+    &lt;td&gt;When using &lt;code&gt;sha256_password&lt;/code&gt; authentication, this option allows the RSA public key to be retrieved from the server
+    (when not using a secure connection). It&#39;s &lt;code&gt;false&lt;/code&gt; by default to avoid disclosing the password to a malicious proxy.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
     &lt;td&gt;&lt;code&gt;ConnectionReset&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;Default is &lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;Default is &lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;MySqlConnector takes an extra command to reset pooled connections by default so that the connection is always in a known state&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;&lt;code&gt;ServerRSAPublicKeyFile&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;(no default)&lt;/td&gt;
+    &lt;td&gt;(not configurable)&lt;/td&gt;
+    &lt;td&gt;Specify the server&#39;s RSA public key to allow &lt;code&gt;sha256_password&lt;/code&gt; authentication over an insecure connection.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;&lt;code&gt;UseAffectedRows&lt;/code&gt;&lt;/td&gt;
@@ -426,7 +439,7 @@ please refer to its documentation.&lt;/p&gt;
 &lt;/table&gt;
 
 &lt;p&gt;Some command line options that are supported in Connector/NET are not supported in MySqlConnector.  For a full list of options that are
-supported in MySqlConnector, see the &lt;a href=&#34;connection-options&#34;&gt;Connection Options&lt;/a&gt;&lt;/p&gt;
+supported in MySqlConnector, see the &lt;a href=&#34;connection-options&#34;&gt;Connection Options&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h3 id=&#34;transactionscope&#34;&gt;TransactionScope&lt;/h3&gt;
 
@@ -434,6 +447,17 @@ supported in MySqlConnector, see the &lt;a href=&#34;connection-options&#34;&gt;
 while Connector/NET uses regular database transactions. As a result, code that uses &lt;code&gt;TransactionScope&lt;/code&gt;
 may execute differently with MySqlConnector. To get Connector/NET-compatible behavior, remove
 &lt;code&gt;TransactionScope&lt;/code&gt; and use &lt;code&gt;BeginTransaction&lt;/code&gt;/&lt;code&gt;Commit&lt;/code&gt; directly.&lt;/p&gt;
+
+&lt;h3 id=&#34;mysqlconnection&#34;&gt;MySqlConnection&lt;/h3&gt;
+
+&lt;p&gt;Connector/NET allows a &lt;code&gt;MySqlConnection&lt;/code&gt; object to be reused after it has been disposed. MySqlConnector requires a new &lt;code&gt;MySqlConnection&lt;/code&gt;
+object to be created. See &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/331&#34;&gt;#331&lt;/a&gt; for more details.&lt;/p&gt;
+
+&lt;h3 id=&#34;mysqlcommand&#34;&gt;MySqlCommand&lt;/h3&gt;
+
+&lt;p&gt;Connector/NET allows a command to be executed even when &lt;code&gt;MySqlCommand.Transaction&lt;/code&gt; references a commited, rolled back, or
+disposed &lt;code&gt;MySqlTransaction&lt;/code&gt;. MySqlConnector will throw an &lt;code&gt;InvalidOperationException&lt;/code&gt; if the &lt;code&gt;MySqlCommand.Transaction&lt;/code&gt;
+property doesn&amp;rsquo;t reference the active transaction. See &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/333&#34;&gt;#333&lt;/a&gt; for more details.&lt;/p&gt;
 
 &lt;h3 id=&#34;bugs-present-in-connector-net-that-are-fixed-in-mysqlconnector&#34;&gt;Bugs present in Connector/NET that are fixed in MySqlConnector&lt;/h3&gt;
 
@@ -1035,7 +1059,7 @@ please refer to its documentation.&lt;/p&gt;
   &lt;/thead&gt;
   &lt;tr&gt;
     &lt;td&gt;SSL Mode, SslMode&lt;/td&gt;
-    &lt;td&gt;None&lt;/td&gt;
+    &lt;td&gt;Preferred&lt;/td&gt;
     &lt;td&gt;This option has the following values:
       &lt;ul&gt;
         &lt;li&gt;&lt;b&gt;Preferred&lt;/b&gt; - this is the default. Use SSL if the server supports it.&lt;/li&gt;
