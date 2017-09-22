@@ -529,6 +529,13 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-26-5&#34;&gt;0.26.5&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix hang closing connection with ClearDB on Azure: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/330&#34;&gt;#330&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Thanks to &lt;a href=&#34;https://github.com/ktos&#34;&gt;Marcin Badurowicz&lt;/a&gt; for contributions to this release.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-26-4&#34;&gt;0.26.4&lt;/h3&gt;
 
 &lt;ul&gt;
