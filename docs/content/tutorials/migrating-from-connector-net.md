@@ -46,6 +46,17 @@ while Connector/NET uses regular database transactions. As a result, code that u
 may execute differently with MySqlConnector. To get Connector/NET-compatible behavior, remove
 `TransactionScope` and use `BeginTransaction`/`Commit` directly.
 
+### MySqlConnection
+
+Connector/NET allows a `MySqlConnection` object to be reused after it has been disposed. MySqlConnector requires a new `MySqlConnection`
+object to be created. See [#331](https://github.com/mysql-net/MySqlConnector/issues/331) for more details.
+
+### MySqlCommand
+
+Connector/NET allows a command to be executed even when `MySqlCommand.Transaction` references a commited, rolled back, or
+disposed `MySqlTransaction`. MySqlConnector will throw an `InvalidOperationException` if the `MySqlCommand.Transaction`
+property doesn't reference the active transaction. See [#333](https://github.com/mysql-net/MySqlConnector/issues/333) for more details.
+
 ### Bugs present in Connector/NET that are fixed in MySqlConnector
 
 * [#37283](https://bugs.mysql.com/bug.php?id=37283), [#70587](https://bugs.mysql.com/bug.php?id=70587): Distributed transactions are not supported
