@@ -28,7 +28,7 @@
 
   <ItemGroup Condition=" '$(Configuration)' == 'Baseline' ">
     <PackageReference Include="MySql.Data" Version="6.9.9" />
-    <Compile Remove="NormalizeTests.cs;TypeMapperTests.cs;Utf8Tests.cs" />
+    <Compile Remove="ConnectionTests.cs;FakeMySqlServer.cs;FakeMySqlServerConnection.cs;NormalizeTests.cs;TypeMapperTests.cs;Utf8Tests.cs" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
