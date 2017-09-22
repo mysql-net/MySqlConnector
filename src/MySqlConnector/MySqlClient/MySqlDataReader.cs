@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient.Results;
@@ -202,7 +203,15 @@ namespace MySql.Data.MySqlClient
 		public override int VisibleFieldCount => FieldCount;
 
 #if !NETSTANDARD1_3
-		public override DataTable GetSchemaTable() => throw new NotSupportedException();
+		public override DataTable GetSchemaTable()
+		{
+			if (m_schemaTable == null)
+			{
+				m_schemaTable = BuildSchemaTable();
+			}
+
+			return m_schemaTable;
+		}
 
 		public override void Close()
 		{
@@ -270,6 +279,100 @@ namespace MySql.Data.MySqlClient
 			m_resultSetBuffered = m_resultSet;
 		}
 
+#if !NETSTANDARD1_3
+		internal DataTable BuildSchemaTable()
+		{
+			var colDefinitions = GetResultSet().ColumnDefinitions;
+			DataTable schemaTable = new DataTable("SchemaTable");
+			schemaTable.Locale = CultureInfo.InvariantCulture;
+			schemaTable.MinimumCapacity = colDefinitions.Length;
+
+			var columnName = new DataColumn(SchemaTableColumn.ColumnName, typeof(string));
+			var ordinal = new DataColumn(SchemaTableColumn.ColumnOrdinal, typeof(int));
+			var size = new DataColumn(SchemaTableColumn.ColumnSize, typeof(int));
+			var precision = new DataColumn(SchemaTableColumn.NumericPrecision, typeof(short));
+			var scale = new DataColumn(SchemaTableColumn.NumericScale, typeof(short));
+			var dataType = new DataColumn(SchemaTableColumn.DataType, typeof(System.Type));
+			var providerType = new DataColumn(SchemaTableColumn.ProviderType, typeof(int));
+			var isLong = new DataColumn(SchemaTableColumn.IsLong, typeof(bool));
+			var allowDBNull = new DataColumn(SchemaTableColumn.AllowDBNull, typeof(bool));
+			var isReadOnly = new DataColumn(SchemaTableOptionalColumn.IsReadOnly, typeof(bool));
+			var isRowVersion = new DataColumn(SchemaTableOptionalColumn.IsRowVersion, typeof(bool));
+			var isUnique = new DataColumn(SchemaTableColumn.IsUnique, typeof(bool));
+			var isKey = new DataColumn(SchemaTableColumn.IsKey, typeof(bool));
+			var isAutoIncrement = new DataColumn(SchemaTableOptionalColumn.IsAutoIncrement, typeof(bool));
+			var isHidden = new DataColumn(SchemaTableOptionalColumn.IsHidden, typeof(bool));
+			var baseCatalogName = new DataColumn(SchemaTableOptionalColumn.BaseCatalogName, typeof(string));
+			var baseSchemaName = new DataColumn(SchemaTableColumn.BaseSchemaName, typeof(string));
+			var baseTableName = new DataColumn(SchemaTableColumn.BaseTableName, typeof(string));
+			var baseColumnName = new DataColumn(SchemaTableColumn.BaseColumnName, typeof(string));
+			var isAliased = new DataColumn(SchemaTableColumn.IsAliased, typeof(bool));
+			var isExpression = new DataColumn(SchemaTableColumn.IsExpression, typeof(bool));
+			var isIdentity = new DataColumn("IsIdentity", typeof(bool));
+			ordinal.DefaultValue = 0;
+			isLong.DefaultValue = false;
+
+			// must maintain order for backward compatibility
+			var columns = schemaTable.Columns;
+			columns.Add(columnName);
+			columns.Add(ordinal);
+			columns.Add(size);
+			columns.Add(precision);
+			columns.Add(scale);
+			columns.Add(isUnique);
+			columns.Add(isKey);
+			columns.Add(baseCatalogName);
+			columns.Add(baseColumnName);
+			columns.Add(baseSchemaName);
+			columns.Add(baseTableName);
+			columns.Add(dataType);
+			columns.Add(allowDBNull);
+			columns.Add(providerType);
+			columns.Add(isAliased);
+			columns.Add(isExpression);
+			columns.Add(isIdentity);
+			columns.Add(isAutoIncrement);
+			columns.Add(isRowVersion);
+			columns.Add(isHidden);
+			columns.Add(isLong);
+			columns.Add(isReadOnly);
+
+			for (var i = 0; i < colDefinitions.Length; ++i)
+			{
+				var col = colDefinitions[i];
+				var schemaRow = schemaTable.NewRow();
+				schemaRow[columnName] = col.Name;
+				schemaRow[ordinal] = i;
+				schemaRow[size] = col.ColumnType.IsString() ? col.ColumnLength / col.CharacterSet.MaxLength() : col.ColumnLength;
+				schemaRow[dataType] = col.GetDataType(Connection.TreatTinyAsBoolean, Connection.OldGuids);
+				schemaRow[providerType] = col.ColumnType;
+				schemaRow[isLong] = col.ColumnLength > 255 && ((col.ColumnFlags & ColumnFlags.Blob) != 0 || col.ColumnType.IsBlob());
+				schemaRow[isKey] = (col.ColumnFlags & ColumnFlags.PrimaryKey) != 0;
+				schemaRow[allowDBNull] = (col.ColumnFlags & ColumnFlags.NotNull) == 0;
+				if (col.ColumnType.IsDecimal())
+				{
+					schemaRow[precision] = col.ColumnLength - 2 + ((col.ColumnFlags & ColumnFlags.Unsigned) != 0 ? 1 : 0);
+					schemaRow[scale] = col.Decimals;
+				}
+
+				schemaRow[baseSchemaName] = col.SchemaName;
+				schemaRow[baseTableName] = col.PhysicalTable;
+				schemaRow[baseColumnName] = col.PhysicalName;
+				schemaRow[isUnique] = false;
+				schemaRow[isRowVersion] = false;
+				schemaRow[isReadOnly] = false;
+
+				// To be consist with Orcale MySQL connector, set baseCatelogName to null and do not set isAliased, isExpression, isIdentity, isHidden value.
+				schemaRow[baseCatalogName] = null;
+
+				schemaTable.Rows.Add(schemaRow);
+				schemaRow.AcceptChanges();
+			}
+
+			return schemaTable;
+		}
+#endif
+
 		private MySqlDataReader(MySqlCommand command, CommandBehavior behavior)
 		{
 			Command = command;
@@ -328,6 +431,9 @@ namespace MySql.Data.MySqlClient
 		int m_recordsAffected;
 		ResultSet m_resultSet;
 		ResultSet m_resultSetBuffered;
+#if !NETSTANDARD1_3
+		DataTable m_schemaTable;
+#endif
 		readonly Queue<ResultSet> m_nextResultSetBuffer = new Queue<ResultSet>();
 	}
 }

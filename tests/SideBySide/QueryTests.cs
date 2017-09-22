@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -794,6 +794,37 @@ insert into long_enum_test (id, value) VALUES (0x7FFFFFFFFFFFFFFF, 1);
 				transaction.Rollback();
 			}
 		}
+
+#if !NETCOREAPP1_1_2
+		[Fact]
+		public void GetSchemaTable()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+				using (MySqlCommand command = connection.CreateCommand())
+				{
+					command.CommandText = "select Host, ssl_cipher, max_connections, plugin, authentication_string, password_last_changed from mysql.user limit 1";
+					using (MySqlDataReader reader = command.ExecuteReader())
+					{
+						var table = reader.GetSchemaTable();
+						var rows = table.Rows;
+						Assert.Equal("Host", rows[0]["ColumnName"]);
+						Assert.Equal(0, rows[0]["ColumnOrdinal"]);
+						Assert.True((bool) rows[0]["IsKey"]);
+						Assert.Equal(typeof(string), (Type)rows[0]["DataType"]);
+						Assert.Equal(65535, rows[1]["ColumnSize"]);
+						Assert.True((bool) rows[1]["IsLong"]);
+						Assert.Equal(typeof(uint), (Type) rows[2]["DataType"]);
+						Assert.Equal(256, rows[3]["ColumnSize"]);
+						Assert.True((bool) rows[4]["AllowDBNull"]);
+						Assert.Equal(typeof(DateTime), (Type) rows[5]["DataType"]);
+					}
+				}
+			}
+		}
+#endif
 
 		[Theory]
 		[InlineData(new[] { 1 }, new[] { true })]

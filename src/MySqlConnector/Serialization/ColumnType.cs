@@ -36,4 +36,22 @@
 		String = 0xFE,
 		Geometry = 0xFF,
 	}
+
+	internal static partial class Extensions
+	{
+		public static bool IsBlob(this ColumnType type)
+		{
+			return type >= ColumnType.TinyBlob && type <= ColumnType.Blob;
+		}
+
+		public static bool IsString(this ColumnType type)
+		{
+			return type == ColumnType.VarChar || type == ColumnType.VarString || type == ColumnType.String;
+		}
+
+		public static bool IsDecimal(this ColumnType type)
+		{
+			return type == ColumnType.Decimal || type == ColumnType.NewDecimal;
+		}
+	}
 }
