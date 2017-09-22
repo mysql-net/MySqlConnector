@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.26.5
+
+* Fix hang closing connection with ClearDB on Azure: [#330](https://github.com/mysql-net/MySqlConnector/issues/330).
+* Thanks to [Marcin Badurowicz](https://github.com/ktos) for contributions to this release.
+
 ### 0.26.4
 
 * Fix overly-broad exception handler introduced in 0.26.3.
