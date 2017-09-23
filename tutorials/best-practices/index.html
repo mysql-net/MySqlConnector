@@ -211,13 +211,9 @@ should be familiar with <a href="https://msdn.microsoft.com/en-us/magazine/jj991
     <td>ExecuteScalar</td>
   </tr>
   <tr>
-    <td rowspan="3" style="vertical-align:middle">
+    <td rowspan="2" style="vertical-align:middle">
       <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbdatareader">DbDataReader</a>
     </td>
-    <td>IsDBNullAsync</td>
-    <td>IsDBNull</td>
-  </tr>
-  <tr>
     <td>NextResultAsync</td>
     <td>NextResult</td>
   </tr>
@@ -245,12 +241,16 @@ should be familiar with <a href="https://msdn.microsoft.com/en-us/magazine/jj991
 <p><span class="text-danger">*</span>Async Transaction methods are not part of ADO.NET, they are provided by
 MySqlConnector to allow database code to remain fully asynchronous.</p>
 
-<h3 id="exception-dbdatareader-getfieldvalueasync">Exception: DbDataReader.GetFieldValueAsync</h3>
+<h3 id="exceptions-dbdatareader-getfieldvalueasync-and-isdbnullasync">Exceptions: DbDataReader.GetFieldValueAsync and IsDBNullAsync</h3>
 
 <p>Once <code>DbDataReader.ReadAsync</code> (or <code>DbDataReader.Read</code>) has returned <code>true</code>, the full contents of the current
-row are will be memory. Calling <code>GetFieldValue&lt;T&gt;</code> will return the value immediately (without blocking on I/O).
+row will be in memory. Calling <code>GetFieldValue&lt;T&gt;</code> will return the value immediately (without blocking on I/O).
 It will have higher performance than <code>GetFieldValueAsync&lt;T&gt;</code> because it doesn&rsquo;t have to allocate a <code>Task&lt;T&gt;</code>
 to store the result. There is no performance benefit to using the <code>DbDataReader.GetFieldValueAsync&lt;T&gt;</code> method.</p>
+
+<p>Similarly, prefer to call <code>IsDBNull</code> instead of <code>IsDBNullAsync</code>; the information is already available and
+<code>IsDBNull</code> can return it immediately. (The async performance penalty isn&rsquo;t quite as bad because <code>IsDBNullAsync</code>
+uses cached <code>Task&lt;bool&gt;</code> objects for its <code>true</code> and <code>false</code> return values.)</p>
 
 <h3 id="example-console-application">Example Console Application</h3>
 
