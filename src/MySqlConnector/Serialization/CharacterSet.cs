@@ -1,9 +1,9 @@
-﻿namespace MySql.Data.Serialization
+namespace MySql.Data.Serialization
 {
 	/// <summary>
 	/// MySQL character set codes.
 	/// </summary>
-	/// <remarks>Obtained from <c>SELECT id, collation_name FROM information_schema.collations ORDER BY id;</c> on MySQL 5.7.11.</remarks>
+	/// <remarks>Obtained from <c>SELECT id, collation_name FROM information_schema.collations ORDER BY id;</c> on MySQL 8.0.3.</remarks>
 	internal enum CharacterSet : ushort
 	{
 		None = 0,
@@ -81,6 +81,7 @@
 		Keybcs2Binary = 73,
 		Koi8rBinary = 74,
 		Koi8uBinary = 75,
+		Utf8ToLowerCaseInsensitive = 76,
 		Latin2Binary = 77,
 		Latin5Binary = 78,
 		Latin7Binary = 79,
@@ -272,5 +273,9 @@
 		Utf8Mb4CroatianUca900AccentSensitiveCaseSensitive = 298,
 		Utf8Mb4VietnameseUca900AccentSensitiveCaseSensitive = 300,
 		Utf8Mb4JapaneseUca900AccentSensitiveCaseSensitive = 303,
+		Utf8Mb4JapaneseUca900AccentSensitiveCaseSensitiveKanaSensitive = 304,
+		Utf8Mb4Uca900AccentSensitiveCaseInsensitive = 305,
+		Utf8Mb4RussianUca900AccentInsensitiveCaseInsensitive = 306,
+		Utf8Mb4RussianUca900AccentSensitiveCaseSensitive = 307,
 	}
 }
