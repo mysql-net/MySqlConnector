@@ -54,13 +54,9 @@ should be familiar with [Async/Await - Best Practices in Asynchronous Programmin
     <td>ExecuteScalar</td>
   </tr>
   <tr>
-    <td rowspan="3" style="vertical-align:middle">
+    <td rowspan="2" style="vertical-align:middle">
       <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbdatareader">DbDataReader</a>
     </td>
-    <td>IsDBNullAsync</td>
-    <td>IsDBNull</td>
-  </tr>
-  <tr>
     <td>NextResultAsync</td>
     <td>NextResult</td>
   </tr>
@@ -88,12 +84,16 @@ should be familiar with [Async/Await - Best Practices in Asynchronous Programmin
 <span class="text-danger">*</span>Async Transaction methods are not part of ADO.NET, they are provided by
 MySqlConnector to allow database code to remain fully asynchronous.
 
-### Exception: DbDataReader.GetFieldValueAsync
+### Exceptions: DbDataReader.GetFieldValueAsync and IsDBNullAsync
 
 Once `DbDataReader.ReadAsync` (or `DbDataReader.Read`) has returned `true`, the full contents of the current
-row are will be memory. Calling `GetFieldValue<T>` will return the value immediately (without blocking on I/O).
+row will be in memory. Calling `GetFieldValue<T>` will return the value immediately (without blocking on I/O).
 It will have higher performance than `GetFieldValueAsync<T>` because it doesn't have to allocate a `Task<T>`
 to store the result. There is no performance benefit to using the `DbDataReader.GetFieldValueAsync<T>` method.
+
+Similarly, prefer to call `IsDBNull` instead of `IsDBNullAsync`; the information is already available and
+`IsDBNull` can return it immediately. (The async performance penalty isn't quite as bad because `IsDBNullAsync`
+uses cached `Task<bool>` objects for its `true` and `false` return values.)
 
 ### Example Console Application
 
