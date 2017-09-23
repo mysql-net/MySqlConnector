@@ -1,5 +1,7 @@
 using Dapper;
+#if !BASELINE
 using MySql.Data.Serialization;
+#endif
 using Xunit;
 
 namespace SideBySide
