@@ -95,6 +95,56 @@ namespace MySql.Data.Serialization
 			case CharacterSet.Geostd8Binary:
 			case CharacterSet.Latin1SpanishCaseInsensitive:
 			case CharacterSet.Cp1250PolishCaseInsensitive:
+			case CharacterSet.Dec8SwedishNoPadCaseInsensitive:
+			case CharacterSet.Cp850GeneralNoPadCaseInsensitive:
+			case CharacterSet.Hp8EnglishNoPadCaseInsensitive:
+			case CharacterSet.Koi8rGeneralNoPadCaseInsensitive:
+			case CharacterSet.Latin1SwedishNoPadCaseInsensitive:
+			case CharacterSet.Latin2GeneralNoPadCaseInsensitive:
+			case CharacterSet.Swe7SwedishNoPadCaseInsensitive:
+			case CharacterSet.AsciiGeneralNoPadCaseInsensitive:
+			case CharacterSet.HebrewGeneralNoPadCaseInsensitive:
+			case CharacterSet.Tis620ThaiNoPadCaseInsensitive:
+			case CharacterSet.Koi8uGeneralNoPadCaseInsensitive:
+			case CharacterSet.GreekGeneralNoPadCaseInsensitive:
+			case CharacterSet.Cp1250GeneralNoPadCaseInsensitive:
+			case CharacterSet.Latin5TurkishNoPadCaseInsensitive:
+			case CharacterSet.Armscii8GeneralNoPadCaseInsensitive:
+			case CharacterSet.Cp866GeneralNoPadCaseInsensitive:
+			case CharacterSet.Keybcs2GeneralNoPadCaseInsensitive:
+			case CharacterSet.MacCentralEuropeanGeneralNoPadCaseInsensitive:
+			case CharacterSet.MacRomanGeneralNoPadCaseInsensitive:
+			case CharacterSet.Cp852GeneralNoPadCaseInsensitive:
+			case CharacterSet.Latin7GeneralNoPadCaseInsensitive:
+			case CharacterSet.MacCentralEuropeanNoPadBinary:
+			case CharacterSet.Latin1NoPadBinary:
+			case CharacterSet.Cp1251NoPadBinary:
+			case CharacterSet.Cp1251GeneralNoPadCaseInsensitive:
+			case CharacterSet.MacRomanNoPadBinary:
+			case CharacterSet.Cp1256GeneralNoPadCaseInsensitive:
+			case CharacterSet.Cp1257NoPadBinary:
+			case CharacterSet.Cp1257GeneralNoPadCaseInsensitive:
+			case CharacterSet.Armscii8NoPadBinary:
+			case CharacterSet.AsciiNoPadBinary:
+			case CharacterSet.Cp1250NoPadBinary:
+			case CharacterSet.Cp1256NoPadBinary:
+			case CharacterSet.Cp866NoPadBinary:
+			case CharacterSet.Dec8NoPadBinary:
+			case CharacterSet.GreekNoPadBinary:
+			case CharacterSet.HebrewNoPadBinary:
+			case CharacterSet.Hp8NoPadBinary:
+			case CharacterSet.Keybcs2NoPadBinary:
+			case CharacterSet.Koi8rNoPadBinary:
+			case CharacterSet.Koi8uNoPadBinary:
+			case CharacterSet.Latin2NoPadBinary:
+			case CharacterSet.Latin5NoPadBinary:
+			case CharacterSet.Latin7NoPadBinary:
+			case CharacterSet.Cp850NoPadBinary:
+			case CharacterSet.Cp852NoPadBinary:
+			case CharacterSet.Swe7NoPadBinary:
+			case CharacterSet.Tis620NoPadBinary:
+			case CharacterSet.Geostd8GeneralNoPadCaseInsensitive:
+			case CharacterSet.Geostd8NoPadBinary:
 				return 1;
 
 			case CharacterSet.Big5ChineseCaseInsensitive:
@@ -136,6 +186,25 @@ namespace MySql.Data.Serialization
 			case CharacterSet.Ucs2Unicode520CaseInsensitive:
 			case CharacterSet.Ucs2VietnameseCaseInsensitive:
 			case CharacterSet.Ucs2GeneralMySql500CaseInsensitive:
+			case CharacterSet.Ucs2CroatianCaseInsensitiveMariaDb:
+			case CharacterSet.Ucs2MyanmarCaseInsensitive:
+			case CharacterSet.Ucs2ThaiUnicode520Weight2:
+			case CharacterSet.Big5ChineseNoPadCaseInsensitive:
+			case CharacterSet.SjisJapaneseNoPadCaseInsensitive:
+			case CharacterSet.EuckrKoreanNoPadCaseInsensitive:
+			case CharacterSet.Gb2312ChineseNoPadCaseInsensitive:
+			case CharacterSet.GbkChineseNoPadCaseInsensitive:
+			case CharacterSet.Ucs2GeneralNoPadCaseInsensitive:
+			case CharacterSet.Big5NoPadBinary:
+			case CharacterSet.EuckrNoPadBinary:
+			case CharacterSet.Gb2312NoPadBinary:
+			case CharacterSet.GbkNoPadBinary:
+			case CharacterSet.SjisNoPadBinary:
+			case CharacterSet.Ucs2NoPadBinary:
+			case CharacterSet.Cp932JapaneseNoPadCaseInsensitive:
+			case CharacterSet.Cp932NoPadBinary:
+			case CharacterSet.Ucs2UnicodeNoPadCaseInsensitive:
+			case CharacterSet.Ucs2Unicode520NoPadCaseInsensitive:
 				return 2;
 
 			case CharacterSet.UjisJapaneseCaseInsensitive:
@@ -170,6 +239,17 @@ namespace MySql.Data.Serialization
 			case CharacterSet.Utf8Unicode520CaseInsensitive:
 			case CharacterSet.Utf8VietnameseCaseInsensitive:
 			case CharacterSet.Utf8GeneralMySql500CaseInsensitive:
+			case CharacterSet.Utf8CroatianCaseInsensitiveMariaDb:
+			case CharacterSet.Utf8MyanmarCaseInsensitive:
+			case CharacterSet.Utf8ThaiUnicode520Weight2:
+			case CharacterSet.UjisJapaneseNoPadCaseInsensitive:
+			case CharacterSet.Utf8GeneralNoPadCaseInsensitive:
+			case CharacterSet.Utf8NoPadBinary:
+			case CharacterSet.UjisNoPadBinary:
+			case CharacterSet.EucjpmsJapaneseNoPadCaseInsensitive:
+			case CharacterSet.EucjpmsNoPadBinary:
+			case CharacterSet.Utf8UnicodeNoPadCaseInsensitive:
+			case CharacterSet.Utf8Unicode520NoPadCaseInsensitive:
 				return 3;
 
 			case CharacterSet.Utf8Mb4GeneralCaseInsensitive:
@@ -302,6 +382,29 @@ namespace MySql.Data.Serialization
 			case CharacterSet.Utf8Mb4Uca900AccentSensitiveCaseInsensitive:
 			case CharacterSet.Utf8Mb4RussianUca900AccentInsensitiveCaseInsensitive:
 			case CharacterSet.Utf8Mb4RussianUca900AccentSensitiveCaseSensitive:
+			case CharacterSet.Utf8Mb4CroatianCaseInsensitiveMariaDb:
+			case CharacterSet.Utf8Mb4MyanmarCaseInsensitive:
+			case CharacterSet.Utf8Mb4ThaiUnicode520Weight2:
+			case CharacterSet.Utf16CroatianCaseInsensitiveMariaDb:
+			case CharacterSet.Utf16MyanmarCaseInsensitive:
+			case CharacterSet.Utf16ThaiUnicode520Weight2:
+			case CharacterSet.Utf32CroatianCaseInsensitiveMariaDb:
+			case CharacterSet.Utf32MyanmarCaseInsensitive:
+			case CharacterSet.Utf32ThaiUnicode520Weight2:
+			case CharacterSet.Utf8Mb4GeneralNoPadCaseInsensitive:
+			case CharacterSet.Utf8Mb4NoPadBinary:
+			case CharacterSet.Utf16GeneralNoPadCaseInsensitive:
+			case CharacterSet.Utf16NoPadBinary:
+			case CharacterSet.Utf16leGeneralNoPadCaseInsensitive:
+			case CharacterSet.Utf32GeneralNoPadCaseInsensitive:
+			case CharacterSet.Utf32NoPadBinary:
+			case CharacterSet.Utf16leNoPadBinary:
+			case CharacterSet.Utf16UnicodeNoPadCaseInsensitive:
+			case CharacterSet.Utf16Unicode520NoPadCaseInsensitive:
+			case CharacterSet.Utf32UnicodeNoPadCaseInsensitive:
+			case CharacterSet.Utf32Unicode520NoPadCaseInsensitive:
+			case CharacterSet.Utf8Mb4UnicodeNoPadCaseInsensitive:
+			case CharacterSet.Utf8Mb4Unicode520NoPadCaseInsensitive:
 				return 4;
 
 			default:
