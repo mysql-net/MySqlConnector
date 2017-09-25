@@ -149,33 +149,6 @@ namespace SideBySide
 			}
 		}
 
-#if BASELINE
-		[Fact(Skip = "Throws MySqlException - error connecting: Timeout expired")]
-#else
-		[Fact]
-#endif
-		public void LeakReaders()
-		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
-			csb.Pooling = true;
-			csb.MinimumPoolSize = 0;
-			csb.MaximumPoolSize = 6;
-			csb.ConnectionTimeout = 3u;
-
-			for (int i = 0; i < csb.MaximumPoolSize + 2; i++)
-			{
-				var connection = new MySqlConnection(csb.ConnectionString);
-				connection.Open();
-				var cmd = connection.CreateCommand();
-				cmd.CommandText = "SELECT 1";
-				var reader = cmd.ExecuteReader();
-				Assert.True(reader.Read());
-
-				// have to GC for leaked connections to be removed from the pool
-				GC.Collect();
-			}
-		}
-
 		[Fact]
 		public async Task WaitTimeout()
 		{
@@ -202,35 +175,6 @@ namespace SideBySide
 			{
 				await connection.OpenAsync();
 				Assert.NotEqual(serverThread, connection.ServerThread);
-			}
-		}
-
-		[Theory]
-		[InlineData(2u, 3u, true)]
-		[InlineData(180u, 3u, false)]
-		public async Task ConnectionLifeTime(uint lifeTime, uint delaySeconds, bool shouldTimeout)
-		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
-			csb.Pooling = true;
-			csb.MinimumPoolSize = 0;
-			csb.MaximumPoolSize = 1;
-			csb.ConnectionLifeTime = lifeTime;
-			int serverThread;
-
-			using (var connection = new MySqlConnection(csb.ConnectionString))
-			{
-				await connection.OpenAsync();
-				serverThread = connection.ServerThread;
-				await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
-			}
-
-			using (var connection = new MySqlConnection(csb.ConnectionString))
-			{
-				await connection.OpenAsync();
-				if (shouldTimeout)
-					Assert.NotEqual(serverThread, connection.ServerThread);
-				else
-					Assert.Equal(serverThread, connection.ServerThread);
 			}
 		}
 

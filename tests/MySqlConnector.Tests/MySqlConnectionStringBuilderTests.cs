@@ -18,10 +18,10 @@ namespace MySql.Data.Tests
 			Assert.Null(csb.CertificateFile);
 			Assert.Null(csb.CertificatePassword);
 			Assert.Equal("", csb.CharacterSet);
+			Assert.Equal(0u, csb.ConnectionLifeTime);
 #if BASELINE
 			Assert.False(csb.ConnectionReset);
 #else
-			Assert.Equal(0u, csb.ConnectionLifeTime);
 			Assert.True(csb.ConnectionReset);
 #endif
 			Assert.Equal(15u, csb.ConnectionTimeout);

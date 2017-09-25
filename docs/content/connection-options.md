@@ -64,7 +64,7 @@ These are the options that need to be used in order to configure a connection to
   </thead>
   <tr>
     <td>SSL Mode, SslMode</td>
-    <td>None</td>
+    <td>Preferred</td>
     <td>This option has the following values:
       <ul>
         <li><b>Preferred</b> - this is the default. Use SSL if the server supports it.</li>
