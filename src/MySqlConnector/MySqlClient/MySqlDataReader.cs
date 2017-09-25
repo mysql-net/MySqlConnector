@@ -346,7 +346,9 @@ namespace MySql.Data.MySqlClient
 				schemaRow[columnName] = col.Name;
 				schemaRow[ordinal] = i + 1; // https://bugs.mysql.com/bug.php?id=61477
 				schemaRow[dataType] = GetFieldType(i);
-				schemaRow[size] = (Type)schemaRow[dataType] == typeof(string) ? col.ColumnLength / SerializationUtility.GetBytesPerCharacter(col.CharacterSet) : col.ColumnLength;
+				schemaRow[size] = (Type)schemaRow[dataType] == typeof(string) || ((Type) schemaRow[dataType]) == typeof(Guid) ?
+					col.ColumnLength / SerializationUtility.GetBytesPerCharacter(col.CharacterSet) :
+					col.ColumnLength;
 				schemaRow[providerType] = col.ColumnType;
 				schemaRow[isLong] = col.ColumnLength > 255 && ((col.ColumnFlags & ColumnFlags.Blob) != 0 || col.ColumnType.IsBlob());
 				schemaRow[isKey] = (col.ColumnFlags & ColumnFlags.PrimaryKey) != 0;
