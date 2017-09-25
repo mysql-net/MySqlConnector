@@ -290,8 +290,8 @@ namespace MySql.Data.MySqlClient
 			var columnName = new DataColumn(SchemaTableColumn.ColumnName, typeof(string));
 			var ordinal = new DataColumn(SchemaTableColumn.ColumnOrdinal, typeof(int));
 			var size = new DataColumn(SchemaTableColumn.ColumnSize, typeof(int));
-			var precision = new DataColumn(SchemaTableColumn.NumericPrecision, typeof(short));
-			var scale = new DataColumn(SchemaTableColumn.NumericScale, typeof(short));
+			var precision = new DataColumn(SchemaTableColumn.NumericPrecision, typeof(int));
+			var scale = new DataColumn(SchemaTableColumn.NumericScale, typeof(int));
 			var dataType = new DataColumn(SchemaTableColumn.DataType, typeof(System.Type));
 			var providerType = new DataColumn(SchemaTableColumn.ProviderType, typeof(int));
 			var isLong = new DataColumn(SchemaTableColumn.IsLong, typeof(bool));
@@ -310,6 +310,8 @@ namespace MySql.Data.MySqlClient
 			var isExpression = new DataColumn(SchemaTableColumn.IsExpression, typeof(bool));
 			var isIdentity = new DataColumn("IsIdentity", typeof(bool));
 			ordinal.DefaultValue = 0;
+			precision.DefaultValue = 0;
+			scale.DefaultValue = 0;
 			isLong.DefaultValue = false;
 
 			// must maintain order for backward compatibility
@@ -342,17 +344,17 @@ namespace MySql.Data.MySqlClient
 				var col = colDefinitions[i];
 				var schemaRow = schemaTable.NewRow();
 				schemaRow[columnName] = col.Name;
-				schemaRow[ordinal] = i;
-				schemaRow[size] = col.ColumnType.IsString() ? col.ColumnLength / col.CharacterSet.MaxLength() : col.ColumnLength;
-				schemaRow[dataType] = col.GetDataType(Connection.TreatTinyAsBoolean, Connection.OldGuids);
+				schemaRow[ordinal] = i + 1; // https://bugs.mysql.com/bug.php?id=61477
+				schemaRow[dataType] = GetFieldType(i);
+				schemaRow[size] = (Type)schemaRow[dataType] == typeof(string) ? col.ColumnLength / SerializationUtility.GetBytesPerCharacter(col.CharacterSet) : col.ColumnLength;
 				schemaRow[providerType] = col.ColumnType;
 				schemaRow[isLong] = col.ColumnLength > 255 && ((col.ColumnFlags & ColumnFlags.Blob) != 0 || col.ColumnType.IsBlob());
 				schemaRow[isKey] = (col.ColumnFlags & ColumnFlags.PrimaryKey) != 0;
 				schemaRow[allowDBNull] = (col.ColumnFlags & ColumnFlags.NotNull) == 0;
+				schemaRow[scale] = col.Decimals;
 				if (col.ColumnType.IsDecimal())
 				{
 					schemaRow[precision] = col.ColumnLength - 2 + ((col.ColumnFlags & ColumnFlags.Unsigned) != 0 ? 1 : 0);
-					schemaRow[scale] = col.Decimals;
 				}
 
 				schemaRow[baseSchemaName] = col.SchemaName;
