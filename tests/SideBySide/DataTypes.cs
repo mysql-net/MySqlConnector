@@ -624,8 +624,8 @@ namespace SideBySide
 					Assert.Equal(column, schema["ColumnName"]);
 					int ordinal = 2; // https://bugs.mysql.com/bug.php?id=61477
 					Assert.Equal(ordinal, schema["ColumnOrdinal"]);
-					Assert.Equal(columnSize, schema["ColumnSize"]);
 					Assert.Equal(dataType, schema["DataType"]);
+					Assert.Equal(columnSize, schema["ColumnSize"]);
 					Assert.Equal(isLong, schema["IsLong"]);
 					Assert.Equal(isKey, schema["IsKey"]);
 					Assert.Equal(allowDbNull, schema["AllowDBNull"]);
