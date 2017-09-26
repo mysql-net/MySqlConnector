@@ -703,6 +703,99 @@ namespace SideBySide
 		}
 #endif
 
+#if !BASELINE
+		[Theory]
+		[InlineData("Bit1", "datatypes_bits", "BIT", 1, typeof(ulong), "N", -1, 0)]
+		[InlineData("Bit32", "datatypes_bits", "BIT", 32, typeof(ulong), "N", -1, 0)]
+		[InlineData("Bit64", "datatypes_bits", "BIT", 64, typeof(ulong), "N", -1, 0)]
+		[InlineData("Binary", "datatypes_blobs", "BLOB", 100, typeof(byte[]), "N", -1, 0)]
+		[InlineData("VarBinary", "datatypes_blobs", "BLOB", 100, typeof(byte[]), "N", -1, 0)]
+		[InlineData("TinyBlob", "datatypes_blobs", "BLOB", 255, typeof(byte[]), "N", -1, 0)]
+		[InlineData("Blob", "datatypes_blobs", "BLOB", 65535, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("MediumBlob", "datatypes_blobs", "BLOB", 16777215, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("LongBlob", "datatypes_blobs", "BLOB", int.MaxValue, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("guidbin", "datatypes_blobs", "BLOB", 16, typeof(byte[]), "N", -1, 0)]
+		[InlineData("rowid", "datatypes_bools", "INT", 11, typeof(int), "AK", -1, 0)]
+		[InlineData("Boolean", "datatypes_bools", "BOOL", 1, typeof(bool), "N", -1, 0)]
+		[InlineData("TinyInt1", "datatypes_bools", "BOOL", 1, typeof(bool), "N", -1, 0)]
+		[InlineData("size", "datatypes_enums", "ENUM", 7, typeof(string), "N", -1, 0)]
+		[InlineData("color", "datatypes_enums", "ENUM", 6, typeof(string), "", -1, 0)]
+		[InlineData("char38", "datatypes_guids", "CHAR(38)", 38, typeof(string), "N", -1, 0)]
+		[InlineData("char38bin", "datatypes_guids", "CHAR(38)", 38, typeof(string), "N", -1, 0)]
+		[InlineData("text", "datatypes_guids", "VARCHAR", 65535, typeof(string), "LN", -1, 0)]
+		[InlineData("blob", "datatypes_guids", "BLOB", 65535, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("SByte", "datatypes_integers", "TINYINT", 4, typeof(sbyte), "N", -1, 0)]
+		[InlineData("Byte", "datatypes_integers", "TINYINT", 3, typeof(byte), "N", -1, 0)]
+		[InlineData("Int16", "datatypes_integers", "SMALLINT", 6, typeof(short), "N", -1, 0)]
+		[InlineData("UInt16", "datatypes_integers", "SMALLINT", 5, typeof(ushort), "N", -1, 0)]
+		[InlineData("Int24", "datatypes_integers", "MEDIUMINT", 9, typeof(int), "N", -1, 0)]
+		[InlineData("UInt24", "datatypes_integers", "MEDIUMINT", 8, typeof(uint), "N", -1, 0)]
+		[InlineData("Int32", "datatypes_integers", "INT", 11, typeof(int), "N", -1, 0)]
+		[InlineData("UInt32", "datatypes_integers", "INT", 10, typeof(uint), "N", -1, 0)]
+		[InlineData("Int64", "datatypes_integers", "BIGINT", 20, typeof(long), "N", -1, 0)]
+		[InlineData("UInt64", "datatypes_integers", "BIGINT", 20, typeof(ulong), "N", -1, 0)]
+		[InlineData("value", "datatypes_json_core", "JSON", int.MaxValue, typeof(string), "LN", -1, 0)]
+		[InlineData("Single", "datatypes_reals", "FLOAT", 12, typeof(float), "N", -1, 31)]
+		[InlineData("Double", "datatypes_reals", "DOUBLE", 22, typeof(double), "N", -1, 31)]
+		[InlineData("SmallDecimal", "datatypes_reals", "DECIMAL", 7, typeof(decimal), "N", 5, 2)]
+		[InlineData("MediumDecimal", "datatypes_reals", "DECIMAL", 30, typeof(decimal), "N", 28, 8)]
+		[InlineData("BigDecimal", "datatypes_reals", "DECIMAL", 52, typeof(decimal), "N", 50, 30)]
+		[InlineData("value", "datatypes_set", "SET", 12, typeof(string), "N", -1, 0)]
+		[InlineData("utf8", "datatypes_strings", "VARCHAR", 300, typeof(string), "N", -1, 0)]
+		[InlineData("utf8bin", "datatypes_strings", "VARCHAR", 300, typeof(string), "N", -1, 0)]
+		[InlineData("latin1", "datatypes_strings", "VARCHAR", 300, typeof(string), "N", -1, 0)]
+		[InlineData("latin1bin", "datatypes_strings", "VARCHAR", 300, typeof(string), "N", -1, 0)]
+		[InlineData("cp1251", "datatypes_strings", "VARCHAR", 300, typeof(string), "N", -1, 0)]
+		[InlineData("guid", "datatypes_strings", "CHAR(36)", 36, typeof(Guid), "N", -1, 0)]
+		[InlineData("guidbin", "datatypes_strings", "CHAR(36)", 36, typeof(Guid), "N", -1, 0)]
+		[InlineData("Date", "datatypes_times", "DATE", 10, typeof(DateTime), "N", -1, 0)]
+		[InlineData("DateTime", "datatypes_times", "DATETIME", 26, typeof(DateTime), "N", -1, 6)]
+		[InlineData("Timestamp", "datatypes_times", "TIMESTAMP", 26, typeof(DateTime), "N", -1, 6)]
+		[InlineData("Time", "datatypes_times", "TIME", 17, typeof(TimeSpan), "N", -1, 6)]
+		[InlineData("Year", "datatypes_times", "YEAR", 4, typeof(int), "N", -1, 0)]
+		public void GetColumnSchema(string column, string table, string dataTypeName, int columnSize, Type dataType, string flags, int precision, int scale)
+		{
+			if (table == "datatypes_json_core" && !AppConfig.SupportsJson)
+				return;
+
+			var isAutoIncrement = flags.IndexOf('A') != -1;
+			var isKey = flags.IndexOf('K') != -1;
+			var isLong = flags.IndexOf('L') != -1;
+			var allowDbNull = flags.IndexOf('N') != -1;
+			var realPrecision = precision == -1 ? default(int?) : precision;
+
+			using (var command = m_database.Connection.CreateCommand())
+			{
+				command.CommandText = $"select `{column}` from `{table}`;";
+				using (var reader = command.ExecuteReader())
+				{
+					var columns = reader.GetColumnSchema();
+					Assert.Single(columns);
+					var schema = columns[0];
+					Assert.Equal(allowDbNull, schema.AllowDBNull);
+					Assert.Equal(column, schema.BaseColumnName);
+					Assert.Equal(m_database.Connection.Database, schema.BaseSchemaName);
+					Assert.Equal(table, schema.BaseTableName);
+					Assert.Equal(column, schema.ColumnName);
+					Assert.Equal(0, schema.ColumnOrdinal);
+					Assert.Equal(dataType, schema.DataType);
+					Assert.Equal(dataTypeName, schema.DataTypeName);
+					Assert.Equal(columnSize, schema.ColumnSize);
+					Assert.False(schema.IsAliased.Value);
+					Assert.Equal(isAutoIncrement, schema.IsAutoIncrement);
+					Assert.False(schema.IsExpression.Value);
+					Assert.False(schema.IsHidden.Value);
+					Assert.Equal(isKey, schema.IsKey);
+					Assert.Equal(isLong, schema.IsLong);
+					Assert.False(schema.IsReadOnly.Value);
+					Assert.False(schema.IsUnique.Value);
+					Assert.Equal(realPrecision, schema.NumericPrecision);
+					Assert.Equal(scale, schema.NumericScale);
+				}
+			}
+		}
+#endif
+
 		private static byte[] CreateByteArray(int size)
 		{
 			var data = new byte[size];
