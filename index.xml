@@ -484,6 +484,7 @@ property doesn&amp;rsquo;t reference the active transaction. See &lt;a href=&#34
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=85185&#34;&gt;#85185&lt;/a&gt;: &lt;code&gt;ConnectionReset=True&lt;/code&gt; does not preserve connection charset&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=86263&#34;&gt;#86263&lt;/a&gt;: Transaction isolation level affects all transactions in session&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=87868&#34;&gt;#87868&lt;/a&gt;: &lt;code&gt;ColumnSize&lt;/code&gt; in schema table is incorrect for &lt;code&gt;CHAR(36)&lt;/code&gt; and &lt;code&gt;BLOB&lt;/code&gt; columns&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=87876&#34;&gt;#87876&lt;/a&gt;: &lt;code&gt;IsLong&lt;/code&gt; is schema table is incorrect for &lt;code&gt;LONGTEXT&lt;/code&gt; and &lt;code&gt;LONGBLOB&lt;/code&gt; columns&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
