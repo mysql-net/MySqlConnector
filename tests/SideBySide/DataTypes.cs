@@ -608,7 +608,7 @@ namespace SideBySide
 		[InlineData("Double", "datatypes_reals", 22, typeof(double), false, false, true, 0, 31)]
 		[InlineData("MediumDecimal", "datatypes_reals", 30, typeof(decimal), false, false, true, 28, 8)]
 		[InlineData("utf8", "datatypes_strings", 300, typeof(string), false, false, true, 0, 0)]
-#if BASELINE
+#if !BASELINE
 		[InlineData("guid", "datatypes_strings", 36, typeof(Guid), false, false, true, 0, 0)]
 		[InlineData("guidbin", "datatypes_strings", 36, typeof(Guid), false, false, true, 0, 0)]
 		[InlineData("Blob", "datatypes_blobs", 65535, typeof(byte[]), true, false, true, 0, 0)]
