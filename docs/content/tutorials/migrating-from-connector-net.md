@@ -93,3 +93,4 @@ property doesn't reference the active transaction. See [#333](https://github.com
 * [#84701](https://bugs.mysql.com/bug.php?id=84701): Can't create a paramter using a 64-bit enum with a value greater than int.MaxValue
 * [#85185](https://bugs.mysql.com/bug.php?id=85185): `ConnectionReset=True` does not preserve connection charset
 * [#86263](https://bugs.mysql.com/bug.php?id=86263): Transaction isolation level affects all transactions in session
+* [#87868](https://bugs.mysql.com/bug.php?id=87868): `ColumnSize` in schema table is incorrect for `CHAR(36)` and `BLOB` columns
