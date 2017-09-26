@@ -1,4 +1,4 @@
-﻿namespace MySql.Data.Serialization
+namespace MySql.Data.Serialization
 {
 	/// <summary>
 	/// See <a href="https://dev.mysql.com/doc/internals/en/com-query-response.html#column-type">MySQL documentation</a>.
@@ -37,7 +37,7 @@
 		Geometry = 0xFF,
 	}
 
-	internal static partial class Extensions
+	internal static class Extensions
 	{
 		public static bool IsBlob(this ColumnType type)
 		{

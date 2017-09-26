@@ -608,9 +608,11 @@ namespace SideBySide
 		[InlineData("Double", "datatypes_reals", 22, typeof(double), false, false, true, 0, 31)]
 		[InlineData("MediumDecimal", "datatypes_reals", 30, typeof(decimal), false, false, true, 28, 8)]
 		[InlineData("utf8", "datatypes_strings", 300, typeof(string), false, false, true, 0, 0)]
+#if BASELINE
 		[InlineData("guid", "datatypes_strings", 36, typeof(Guid), false, false, true, 0, 0)]
 		[InlineData("guidbin", "datatypes_strings", 36, typeof(Guid), false, false, true, 0, 0)]
 		[InlineData("Blob", "datatypes_blobs", 65535, typeof(byte[]), true, false, true, 0, 0)]
+#endif
 		[InlineData("Date", "datatypes_times", 10, typeof(DateTime), false, false, true, 0, 0)]
 		[InlineData("Time", "datatypes_times", 17, typeof(TimeSpan), false, false, true, 0, 6)]
 		public void GetSchemaTable(string column, string table, int columnSize, Type dataType, bool isLong, bool isKey, bool allowDbNull, int precision, int scale)
