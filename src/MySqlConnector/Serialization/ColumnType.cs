@@ -1,4 +1,4 @@
-﻿namespace MySql.Data.Serialization
+namespace MySql.Data.Serialization
 {
 	/// <summary>
 	/// See <a href="https://dev.mysql.com/doc/internals/en/com-query-response.html#column-type">MySQL documentation</a>.
@@ -35,5 +35,23 @@
 		VarString = 0xFD,
 		String = 0xFE,
 		Geometry = 0xFF,
+	}
+
+	internal static class Extensions
+	{
+		public static bool IsBlob(this ColumnType type)
+		{
+			return type >= ColumnType.TinyBlob && type <= ColumnType.Blob;
+		}
+
+		public static bool IsString(this ColumnType type)
+		{
+			return type == ColumnType.VarChar || type == ColumnType.VarString || type == ColumnType.String;
+		}
+
+		public static bool IsDecimal(this ColumnType type)
+		{
+			return type == ColumnType.Decimal || type == ColumnType.NewDecimal;
+		}
 	}
 }

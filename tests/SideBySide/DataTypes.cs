@@ -598,6 +598,52 @@ namespace SideBySide
 			}
 		}
 
+#if !NETCOREAPP1_1_2
+		[Theory]
+		[InlineData("rowid", "datatypes_bools", 11, typeof(int), false, true, false, 0, 0)]
+		[InlineData("Boolean", "datatypes_bools", 1, typeof(bool), false, false, true, 0, 0)]
+		[InlineData("SByte", "datatypes_integers", 4, typeof(sbyte), false, false, true, 0, 0)]
+		[InlineData("Int16", "datatypes_integers", 6, typeof(short), false, false, true, 0, 0)]
+		[InlineData("UInt16", "datatypes_integers", 5, typeof(ushort), false, false, true, 0, 0)]
+		[InlineData("Double", "datatypes_reals", 22, typeof(double), false, false, true, 0, 31)]
+		[InlineData("MediumDecimal", "datatypes_reals", 30, typeof(decimal), false, false, true, 28, 8)]
+		[InlineData("utf8", "datatypes_strings", 300, typeof(string), false, false, true, 0, 0)]
+#if !BASELINE
+		[InlineData("guid", "datatypes_strings", 36, typeof(Guid), false, false, true, 0, 0)]
+		[InlineData("guidbin", "datatypes_strings", 36, typeof(Guid), false, false, true, 0, 0)]
+		[InlineData("Blob", "datatypes_blobs", 65535, typeof(byte[]), true, false, true, 0, 0)]
+#endif
+		[InlineData("Date", "datatypes_times", 10, typeof(DateTime), false, false, true, 0, 0)]
+		[InlineData("Time", "datatypes_times", 17, typeof(TimeSpan), false, false, true, 0, 6)]
+		public void GetSchemaTable(string column, string table, int columnSize, Type dataType, bool isLong, bool isKey, bool allowDbNull, int precision, int scale)
+		{
+			using (var command = m_database.Connection.CreateCommand())
+			{
+				command.CommandText = $"select 1, `{column}` from `{table}`;";
+				using (var reader = command.ExecuteReader())
+				{
+					var schema = reader.GetSchemaTable().Rows[1];
+					Assert.Equal(column, schema["ColumnName"]);
+					int ordinal = 2; // https://bugs.mysql.com/bug.php?id=61477
+					Assert.Equal(ordinal, schema["ColumnOrdinal"]);
+					Assert.Equal(dataType, schema["DataType"]);
+					Assert.Equal(columnSize, schema["ColumnSize"]);
+					Assert.Equal(isLong, schema["IsLong"]);
+					Assert.Equal(isKey, schema["IsKey"]);
+					Assert.Equal(allowDbNull, schema["AllowDBNull"]);
+					Assert.Equal(precision, schema["NumericPrecision"]);
+					Assert.Equal(scale, schema["NumericScale"]);
+					Assert.Equal(m_database.Connection.Database, schema["BaseSchemaName"]);
+					Assert.Equal(table, schema["BaseTableName"]);
+					Assert.Equal(column, schema["BaseColumnName"]);
+					Assert.False((bool) schema["IsUnique"]);
+					Assert.False((bool) schema["IsRowVersion"]);
+					Assert.False((bool) schema["IsReadOnly"]);
+				}
+			}
+		}
+#endif
+
 		private static byte[] CreateByteArray(int size)
 		{
 			var data = new byte[size];
