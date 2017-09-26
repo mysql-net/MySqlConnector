@@ -619,12 +619,18 @@ namespace SideBySide
 		{
 			using (var command = m_database.Connection.CreateCommand())
 			{
-				command.CommandText = $"select 1, `{column}` from `{table}`;";
+				command.CommandText = $"select `{column}` from `{table}`;";
 				using (var reader = command.ExecuteReader())
 				{
-					var schema = reader.GetSchemaTable().Rows[1];
+					var schemaTable = reader.GetSchemaTable();
+					Assert.Single(schemaTable.Rows);
+					var schema = schemaTable.Rows[0];
 					Assert.Equal(column, schema["ColumnName"]);
-					int ordinal = 2; // https://bugs.mysql.com/bug.php?id=61477
+#if BASELINE
+					int ordinal = 1; // https://bugs.mysql.com/bug.php?id=61477
+#else
+					int ordinal = 0;
+#endif
 					Assert.Equal(ordinal, schema["ColumnOrdinal"]);
 					Assert.Equal(dataType, schema["DataType"]);
 					Assert.Equal(columnSize, schema["ColumnSize"]);
@@ -644,7 +650,7 @@ namespace SideBySide
 		}
 #endif
 
-		private static byte[] CreateByteArray(int size)
+					private static byte[] CreateByteArray(int size)
 		{
 			var data = new byte[size];
 			Random random = new Random(size);

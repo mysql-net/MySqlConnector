@@ -74,6 +74,7 @@ property doesn't reference the active transaction. See [#333](https://github.com
 
 * [#37283](https://bugs.mysql.com/bug.php?id=37283), [#70587](https://bugs.mysql.com/bug.php?id=70587): Distributed transactions are not supported
 * [#50773](https://bugs.mysql.com/bug.php?id=50773): Can't use multiple connections within one TransactionScope
+* [#61477](https://bugs.mysql.com/bug.php?id=61477): `ColumnOrdinal` in schema table is 1-based
 * [#66476](https://bugs.mysql.com/bug.php?id=66476): Connection pool uses queue instead of stack
 * [#70111](https://bugs.mysql.com/bug.php?id=70111): `Async` methods execute synchronously
 * [#70686](https://bugs.mysql.com/bug.php?id=70686): `TIME(3)` and `TIME(6)` fields serialize milliseconds incorrectly
