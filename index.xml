@@ -464,6 +464,7 @@ property doesn&amp;rsquo;t reference the active transaction. See &lt;a href=&#34
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=37283&#34;&gt;#37283&lt;/a&gt;, &lt;a href=&#34;https://bugs.mysql.com/bug.php?id=70587&#34;&gt;#70587&lt;/a&gt;: Distributed transactions are not supported&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=50773&#34;&gt;#50773&lt;/a&gt;: Can&amp;rsquo;t use multiple connections within one TransactionScope&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=61477&#34;&gt;#61477&lt;/a&gt;: &lt;code&gt;ColumnOrdinal&lt;/code&gt; in schema table is 1-based&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=66476&#34;&gt;#66476&lt;/a&gt;: Connection pool uses queue instead of stack&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=70111&#34;&gt;#70111&lt;/a&gt;: &lt;code&gt;Async&lt;/code&gt; methods execute synchronously&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=70686&#34;&gt;#70686&lt;/a&gt;: &lt;code&gt;TIME(3)&lt;/code&gt; and &lt;code&gt;TIME(6)&lt;/code&gt; fields serialize milliseconds incorrectly&lt;/li&gt;
@@ -482,6 +483,7 @@ property doesn&amp;rsquo;t reference the active transaction. See &lt;a href=&#34
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=84701&#34;&gt;#84701&lt;/a&gt;: Can&amp;rsquo;t create a paramter using a 64-bit enum with a value greater than int.MaxValue&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=85185&#34;&gt;#85185&lt;/a&gt;: &lt;code&gt;ConnectionReset=True&lt;/code&gt; does not preserve connection charset&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=86263&#34;&gt;#86263&lt;/a&gt;: Transaction isolation level affects all transactions in session&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=87868&#34;&gt;#87868&lt;/a&gt;: &lt;code&gt;ColumnSize&lt;/code&gt; in schema table is incorrect for &lt;code&gt;CHAR(36)&lt;/code&gt; and &lt;code&gt;BLOB&lt;/code&gt; columns&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
