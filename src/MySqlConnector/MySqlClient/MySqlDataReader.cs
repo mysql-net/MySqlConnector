@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient.Results;
@@ -13,6 +15,9 @@ using MySql.Data.Serialization;
 namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlDataReader : DbDataReader
+#if NETSTANDARD1_3 || NETSTANDARD2_0
+		, IDbColumnSchemaGenerator
+#endif
 	{
 		public override bool NextResult() =>
 			NextResultAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -219,6 +224,21 @@ namespace MySql.Data.MySqlClient
 		}
 #endif
 
+#if NETSTANDARD1_3 || NETSTANDARD2_0
+		public ReadOnlyCollection<DbColumn> GetColumnSchema()
+#else
+		public ReadOnlyCollection<MySqlDbColumn> GetColumnSchema()
+#endif
+		{
+			return GetResultSet().ColumnDefinitions
+				.Select((c, n) => new MySqlDbColumn(n, c, GetFieldType(n), GetDataTypeName(n)))
+#if NETSTANDARD1_3 || NETSTANDARD2_0
+				.Cast<DbColumn>()
+#endif
+				.ToList()
+				.AsReadOnly();
+		}
+
 		public override T GetFieldValue<T>(int ordinal)
 		{
 			if (typeof(T) == typeof(DateTimeOffset))
@@ -339,34 +359,28 @@ namespace MySql.Data.MySqlClient
 			columns.Add(isLong);
 			columns.Add(isReadOnly);
 
-			for (var i = 0; i < colDefinitions.Length; ++i)
+			foreach (MySqlDbColumn column in GetColumnSchema())
 			{
-				var col = colDefinitions[i];
 				var schemaRow = schemaTable.NewRow();
-				schemaRow[columnName] = col.Name;
-				schemaRow[ordinal] = i;
-				var fieldType = GetFieldType(i);
-				schemaRow[dataType] = fieldType;
-				var columnSize = fieldType == typeof(string) || fieldType == typeof(Guid) ?
-					col.ColumnLength / SerializationUtility.GetBytesPerCharacter(col.CharacterSet) :
-					col.ColumnLength;
-				schemaRow[size] = columnSize > int.MaxValue ? int.MaxValue : unchecked((int) columnSize);
-				schemaRow[providerType] = col.ColumnType;
-				schemaRow[isLong] = col.ColumnLength > 255 && ((col.ColumnFlags & ColumnFlags.Blob) != 0 || col.ColumnType == ColumnType.TinyBlob || col.ColumnType == ColumnType.Blob || col.ColumnType == ColumnType.MediumBlob || col.ColumnType == ColumnType.LongBlob);
+				schemaRow[columnName] = column.ColumnName;
+				schemaRow[ordinal] = column.ColumnOrdinal;
+				schemaRow[dataType] = column.DataType;
+				schemaRow[size] = column.ColumnSize;
+				schemaRow[providerType] = column.ProviderType;
+				schemaRow[isLong] = column.IsLong;
 				schemaRow[isUnique] = false;
-				schemaRow[isKey] = (col.ColumnFlags & ColumnFlags.PrimaryKey) != 0;
-				schemaRow[allowDBNull] = (col.ColumnFlags & ColumnFlags.NotNull) == 0;
-				schemaRow[scale] = col.Decimals;
-				if (col.ColumnType == ColumnType.Decimal || col.ColumnType == ColumnType.NewDecimal)
-					schemaRow[precision] = col.ColumnLength - 2 + ((col.ColumnFlags & ColumnFlags.Unsigned) != 0 ? 1 : 0);
+				schemaRow[isKey] = column.IsKey;
+				schemaRow[allowDBNull] = column.AllowDBNull;
+				schemaRow[scale] = column.NumericScale;
+				schemaRow[precision] = column.NumericPrecision.GetValueOrDefault();
 
-				schemaRow[baseCatalogName] = null;
-				schemaRow[baseColumnName] = col.PhysicalName;
-				schemaRow[baseSchemaName] = col.SchemaName;
-				schemaRow[baseTableName] = col.PhysicalTable;
-				schemaRow[isAutoIncrement] = (col.ColumnFlags & ColumnFlags.AutoIncrement) != 0;
+				schemaRow[baseCatalogName] = column.BaseCatalogName;
+				schemaRow[baseColumnName] = column.BaseColumnName;
+				schemaRow[baseSchemaName] = column.BaseSchemaName;
+				schemaRow[baseTableName] = column.BaseTableName;
+				schemaRow[isAutoIncrement] = column.IsAutoIncrement;
 				schemaRow[isRowVersion] = false;
-				schemaRow[isReadOnly] = false;
+				schemaRow[isReadOnly] = column.IsReadOnly;
 
 				schemaTable.Rows.Add(schemaRow);
 				schemaRow.AcceptChanges();
