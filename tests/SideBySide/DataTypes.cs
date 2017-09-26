@@ -600,55 +600,55 @@ namespace SideBySide
 
 #if !NETCOREAPP1_1_2
 		[Theory]
-		[InlineData("Bit1", "datatypes_bits", 1, typeof(ulong), false, false, true, 0, 0)]
-		[InlineData("Bit32", "datatypes_bits", 32, typeof(ulong), false, false, true, 0, 0)]
-		[InlineData("Bit64", "datatypes_bits", 64, typeof(ulong), false, false, true, 0, 0)]
-		[InlineData("Binary", "datatypes_blobs", 100, typeof(byte[]), false, false, true, 0, 0)]
-		[InlineData("VarBinary", "datatypes_blobs", 100, typeof(byte[]), false, false, true, 0, 0)]
-		[InlineData("TinyBlob", "datatypes_blobs", 255, typeof(byte[]), false, false, true, 0, 0)]
-		[InlineData("Blob", "datatypes_blobs", 65535, typeof(byte[]), true, false, true, 0, 0)]
-		[InlineData("MediumBlob", "datatypes_blobs", 16777215, typeof(byte[]), true, false, true, 0, 0)]
-		[InlineData("LongBlob", "datatypes_blobs", int.MaxValue, typeof(byte[]), true, false, true, 0, 0)]
-		[InlineData("guidbin", "datatypes_blobs", 16, typeof(byte[]), false, false, true, 0, 0)]
-		[InlineData("rowid", "datatypes_bools", 11, typeof(int), false, true, false, 0, 0)]
-		[InlineData("Boolean", "datatypes_bools", 1, typeof(bool), false, false, true, 0, 0)]
-		[InlineData("TinyInt1", "datatypes_bools", 1, typeof(bool), false, false, true, 0, 0)]
-		[InlineData("size", "datatypes_enums", 7, typeof(string), false, false, true, 0, 0)]
-		[InlineData("color", "datatypes_enums", 6, typeof(string), false, false, false, 0, 0)]
-		[InlineData("char38", "datatypes_guids", 38, typeof(string), false, false, true, 0, 0)]
-		[InlineData("char38bin", "datatypes_guids", 38, typeof(string), false, false, true, 0, 0)]
-		[InlineData("text", "datatypes_guids", 65535, typeof(string), true, false, true, 0, 0)]
-		[InlineData("blob", "datatypes_guids", 65535, typeof(byte[]), true, false, true, 0, 0)]
-		[InlineData("SByte", "datatypes_integers", 4, typeof(sbyte), false, false, true, 0, 0)]
-		[InlineData("Byte", "datatypes_integers", 3, typeof(byte), false, false, true, 0, 0)]
-		[InlineData("Int16", "datatypes_integers", 6, typeof(short), false, false, true, 0, 0)]
-		[InlineData("UInt16", "datatypes_integers", 5, typeof(ushort), false, false, true, 0, 0)]
-		[InlineData("Int24", "datatypes_integers", 9, typeof(int), false, false, true, 0, 0)]
-		[InlineData("UInt24", "datatypes_integers", 8, typeof(uint), false, false, true, 0, 0)]
-		[InlineData("Int32", "datatypes_integers", 11, typeof(int), false, false, true, 0, 0)]
-		[InlineData("UInt32", "datatypes_integers", 10, typeof(uint), false, false, true, 0, 0)]
-		[InlineData("Int64", "datatypes_integers", 20, typeof(long), false, false, true, 0, 0)]
-		[InlineData("UInt64", "datatypes_integers", 20, typeof(ulong), false, false, true, 0, 0)]
-		[InlineData("value", "datatypes_json_core", int.MaxValue, typeof(string), true, false, true, 0, 0)]
-		[InlineData("Single", "datatypes_reals", 12, typeof(float), false, false, true, 0, 31)]
-		[InlineData("Double", "datatypes_reals", 22, typeof(double), false, false, true, 0, 31)]
-		[InlineData("SmallDecimal", "datatypes_reals", 7, typeof(decimal), false, false, true, 5, 2)]
-		[InlineData("MediumDecimal", "datatypes_reals", 30, typeof(decimal), false, false, true, 28, 8)]
-		[InlineData("BigDecimal", "datatypes_reals", 52, typeof(decimal), false, false, true, 50, 30)]
-		[InlineData("value", "datatypes_set", 12, typeof(string), false, false, true, 0, 0)]
-		[InlineData("utf8", "datatypes_strings", 300, typeof(string), false, false, true, 0, 0)]
-		[InlineData("utf8bin", "datatypes_strings", 300, typeof(string), false, false, true, 0, 0)]
-		[InlineData("latin1", "datatypes_strings", 300, typeof(string), false, false, true, 0, 0)]
-		[InlineData("latin1bin", "datatypes_strings", 300, typeof(string), false, false, true, 0, 0)]
-		[InlineData("cp1251", "datatypes_strings", 300, typeof(string), false, false, true, 0, 0)]
-		[InlineData("guid", "datatypes_strings", 36, typeof(Guid), false, false, true, 0, 0)]
-		[InlineData("guidbin", "datatypes_strings", 36, typeof(Guid), false, false, true, 0, 0)]
-		[InlineData("Date", "datatypes_times", 10, typeof(DateTime), false, false, true, 0, 0)]
-		[InlineData("DateTime", "datatypes_times", 26, typeof(DateTime), false, false, true, 0, 6)]
-		[InlineData("Timestamp", "datatypes_times", 26, typeof(DateTime), false, false, true, 0, 6)]
-		[InlineData("Time", "datatypes_times", 17, typeof(TimeSpan), false, false, true, 0, 6)]
-		[InlineData("Year", "datatypes_times", 4, typeof(int), false, false, true, 0, 0)]
-		public void GetSchemaTable(string column, string table, int columnSize, Type dataType, bool isLong, bool isKey, bool allowDbNull, int precision, int scale)
+		[InlineData("Bit1", "datatypes_bits", 1, typeof(ulong), false, false, false, true, 0, 0)]
+		[InlineData("Bit32", "datatypes_bits", 32, typeof(ulong), false, false, false, true, 0, 0)]
+		[InlineData("Bit64", "datatypes_bits", 64, typeof(ulong), false, false, false, true, 0, 0)]
+		[InlineData("Binary", "datatypes_blobs", 100, typeof(byte[]), false, false, false, true, 0, 0)]
+		[InlineData("VarBinary", "datatypes_blobs", 100, typeof(byte[]), false, false, false, true, 0, 0)]
+		[InlineData("TinyBlob", "datatypes_blobs", 255, typeof(byte[]), false, false, false, true, 0, 0)]
+		[InlineData("Blob", "datatypes_blobs", 65535, typeof(byte[]), false, true, false, true, 0, 0)]
+		[InlineData("MediumBlob", "datatypes_blobs", 16777215, typeof(byte[]), false, true, false, true, 0, 0)]
+		[InlineData("LongBlob", "datatypes_blobs", int.MaxValue, typeof(byte[]), false, true, false, true, 0, 0)]
+		[InlineData("guidbin", "datatypes_blobs", 16, typeof(byte[]), false, false, false, true, 0, 0)]
+		[InlineData("rowid", "datatypes_bools", 11, typeof(int), true, false, true, false, 0, 0)]
+		[InlineData("Boolean", "datatypes_bools", 1, typeof(bool), false, false, false, true, 0, 0)]
+		[InlineData("TinyInt1", "datatypes_bools", 1, typeof(bool), false, false, false, true, 0, 0)]
+		[InlineData("size", "datatypes_enums", 7, typeof(string), false, false, false, true, 0, 0)]
+		[InlineData("color", "datatypes_enums", 6, typeof(string), false, false, false, false, 0, 0)]
+		[InlineData("char38", "datatypes_guids", 38, typeof(string), false, false, false, true, 0, 0)]
+		[InlineData("char38bin", "datatypes_guids", 38, typeof(string), false, false, false, true, 0, 0)]
+		[InlineData("text", "datatypes_guids", 65535, typeof(string), false, true, false, true, 0, 0)]
+		[InlineData("blob", "datatypes_guids", 65535, typeof(byte[]), false, true, false, true, 0, 0)]
+		[InlineData("SByte", "datatypes_integers", 4, typeof(sbyte), false, false, false, true, 0, 0)]
+		[InlineData("Byte", "datatypes_integers", 3, typeof(byte), false, false, false, true, 0, 0)]
+		[InlineData("Int16", "datatypes_integers", 6, typeof(short), false, false, false, true, 0, 0)]
+		[InlineData("UInt16", "datatypes_integers", 5, typeof(ushort), false, false, false, true, 0, 0)]
+		[InlineData("Int24", "datatypes_integers", 9, typeof(int), false, false, false, true, 0, 0)]
+		[InlineData("UInt24", "datatypes_integers", 8, typeof(uint), false, false, false, true, 0, 0)]
+		[InlineData("Int32", "datatypes_integers", 11, typeof(int), false, false, false, true, 0, 0)]
+		[InlineData("UInt32", "datatypes_integers", 10, typeof(uint), false, false, false, true, 0, 0)]
+		[InlineData("Int64", "datatypes_integers", 20, typeof(long), false, false, false, true, 0, 0)]
+		[InlineData("UInt64", "datatypes_integers", 20, typeof(ulong), false, false, false, true, 0, 0)]
+		[InlineData("value", "datatypes_json_core", int.MaxValue, typeof(string), false, true, false, true, 0, 0)]
+		[InlineData("Single", "datatypes_reals", 12, typeof(float), false, false, false, true, 0, 31)]
+		[InlineData("Double", "datatypes_reals", 22, typeof(double), false, false, false, true, 0, 31)]
+		[InlineData("SmallDecimal", "datatypes_reals", 7, typeof(decimal), false, false, false, true, 5, 2)]
+		[InlineData("MediumDecimal", "datatypes_reals", 30, typeof(decimal), false, false, false, true, 28, 8)]
+		[InlineData("BigDecimal", "datatypes_reals", 52, typeof(decimal), false, false, false, true, 50, 30)]
+		[InlineData("value", "datatypes_set", 12, typeof(string), false, false, false, true, 0, 0)]
+		[InlineData("utf8", "datatypes_strings", 300, typeof(string), false, false, false, true, 0, 0)]
+		[InlineData("utf8bin", "datatypes_strings", 300, typeof(string), false, false, false, true, 0, 0)]
+		[InlineData("latin1", "datatypes_strings", 300, typeof(string), false, false, false, true, 0, 0)]
+		[InlineData("latin1bin", "datatypes_strings", 300, typeof(string), false, false, false, true, 0, 0)]
+		[InlineData("cp1251", "datatypes_strings", 300, typeof(string), false, false, false, true, 0, 0)]
+		[InlineData("guid", "datatypes_strings", 36, typeof(Guid), false, false, false, true, 0, 0)]
+		[InlineData("guidbin", "datatypes_strings", 36, typeof(Guid), false, false, false, true, 0, 0)]
+		[InlineData("Date", "datatypes_times", 10, typeof(DateTime), false, false, false, true, 0, 0)]
+		[InlineData("DateTime", "datatypes_times", 26, typeof(DateTime), false, false, false, true, 0, 6)]
+		[InlineData("Timestamp", "datatypes_times", 26, typeof(DateTime), false, false, false, true, 0, 6)]
+		[InlineData("Time", "datatypes_times", 17, typeof(TimeSpan), false, false, false, true, 0, 6)]
+		[InlineData("Year", "datatypes_times", 4, typeof(int), false, false, false, true, 0, 0)]
+		public void GetSchemaTable(string column, string table, int columnSize, Type dataType, bool isAutoIncrement, bool isLong, bool isKey, bool allowDbNull, int precision, int scale)
 		{
 			if (table == "datatypes_json_core" && !AppConfig.SupportsJson)
 				return;
@@ -681,6 +681,7 @@ namespace SideBySide
 #else
 					Assert.Equal(isLong, schema["IsLong"]);
 #endif
+					Assert.Equal(isAutoIncrement, schema["IsAutoIncrement"]);
 					Assert.Equal(isKey, schema["IsKey"]);
 					Assert.Equal(allowDbNull, schema["AllowDBNull"]);
 					Assert.Equal(precision, schema["NumericPrecision"]);
@@ -696,7 +697,7 @@ namespace SideBySide
 		}
 #endif
 
-					private static byte[] CreateByteArray(int size)
+		private static byte[] CreateByteArray(int size)
 		{
 			var data = new byte[size];
 			Random random = new Random(size);

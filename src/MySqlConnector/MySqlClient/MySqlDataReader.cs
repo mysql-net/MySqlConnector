@@ -352,24 +352,21 @@ namespace MySql.Data.MySqlClient
 					col.ColumnLength;
 				schemaRow[size] = columnSize > int.MaxValue ? int.MaxValue : unchecked((int) columnSize);
 				schemaRow[providerType] = col.ColumnType;
-				schemaRow[isLong] = col.ColumnLength > 255 && ((col.ColumnFlags & ColumnFlags.Blob) != 0 || col.ColumnType.IsBlob());
+				schemaRow[isLong] = col.ColumnLength > 255 && ((col.ColumnFlags & ColumnFlags.Blob) != 0 || col.ColumnType == ColumnType.TinyBlob || col.ColumnType == ColumnType.Blob || col.ColumnType == ColumnType.MediumBlob || col.ColumnType == ColumnType.LongBlob);
+				schemaRow[isUnique] = false;
 				schemaRow[isKey] = (col.ColumnFlags & ColumnFlags.PrimaryKey) != 0;
 				schemaRow[allowDBNull] = (col.ColumnFlags & ColumnFlags.NotNull) == 0;
 				schemaRow[scale] = col.Decimals;
-				if (col.ColumnType.IsDecimal())
-				{
+				if (col.ColumnType == ColumnType.Decimal || col.ColumnType == ColumnType.NewDecimal)
 					schemaRow[precision] = col.ColumnLength - 2 + ((col.ColumnFlags & ColumnFlags.Unsigned) != 0 ? 1 : 0);
-				}
 
+				schemaRow[baseCatalogName] = null;
+				schemaRow[baseColumnName] = col.PhysicalName;
 				schemaRow[baseSchemaName] = col.SchemaName;
 				schemaRow[baseTableName] = col.PhysicalTable;
-				schemaRow[baseColumnName] = col.PhysicalName;
-				schemaRow[isUnique] = false;
+				schemaRow[isAutoIncrement] = (col.ColumnFlags & ColumnFlags.AutoIncrement) != 0;
 				schemaRow[isRowVersion] = false;
 				schemaRow[isReadOnly] = false;
-
-				// To be consist with Orcale MySQL connector, set baseCatelogName to null and do not set isAliased, isExpression, isIdentity, isHidden value.
-				schemaRow[baseCatalogName] = null;
 
 				schemaTable.Rows.Add(schemaRow);
 				schemaRow.AcceptChanges();
