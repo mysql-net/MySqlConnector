@@ -675,13 +675,14 @@ namespace SideBySide
 					Assert.Equal(ordinal, schema["ColumnOrdinal"]);
 					Assert.Equal(dataType, schema["DataType"]);
 #if BASELINE
-					// https://bugs.mysql.com/bug.php?id=87868
+					// https://bugs.mysql.com/bug.php?id=87868, https://bugs.mysql.com/bug.php?id=87876
 					if (!column.EndsWith("blob", StringComparison.OrdinalIgnoreCase) && column != "text" && dataType != typeof(Guid) && columnSize != int.MaxValue)
 						Assert.Equal(columnSize, schema["ColumnSize"]);
 #else
 					Assert.Equal(columnSize, schema["ColumnSize"]);
 #endif
 #if BASELINE
+					// https://bugs.mysql.com/bug.php?id=87876
 					Assert.Equal(isLong && columnSize != int.MaxValue, schema["IsLong"]);
 #else
 					Assert.Equal(isLong, schema["IsLong"]);
