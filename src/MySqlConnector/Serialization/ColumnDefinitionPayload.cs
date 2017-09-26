@@ -9,7 +9,7 @@ namespace MySql.Data.Serialization
 
 		public CharacterSet CharacterSet { get; private set; }
 
-		public int ColumnLength { get; private set; }
+		public uint ColumnLength { get; private set; }
 
 		public ColumnType ColumnType { get; private set; }
 
@@ -38,7 +38,7 @@ namespace MySql.Data.Serialization
 			var physicalName = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
 			reader.ReadByte(0x0C); // length of fixed-length fields, always 0x0C
 			var characterSet = (CharacterSet) reader.ReadUInt16();
-			var columnLength = (int) reader.ReadUInt32();
+			var columnLength = reader.ReadUInt32();
 			var columnType = (ColumnType) reader.ReadByte();
 			var columnFlags = (ColumnFlags) reader.ReadUInt16();
 			var decimals = reader.ReadByte(); // 0x00 for integers and static strings, 0x1f for dynamic strings, double, float, 0x00 to 0x51 for decimals
