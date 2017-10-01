@@ -103,26 +103,26 @@ namespace MySql.Data.Serialization
 		public bool UseCompression { get; }
 
 		// Helper Functions
-		private int? _connectionTimeoutMilliseconds;
+		int? m_connectionTimeoutMilliseconds;
 		public int ConnectionTimeoutMilliseconds
 		{
 			get
 			{
-				if (!_connectionTimeoutMilliseconds.HasValue)
+				if (!m_connectionTimeoutMilliseconds.HasValue)
 				{
 					try
 					{
 						checked
 						{
-							_connectionTimeoutMilliseconds = ConnectionTimeout * 1000;
+							m_connectionTimeoutMilliseconds = ConnectionTimeout * 1000;
 						}
 					}
 					catch (OverflowException)
 					{
-						_connectionTimeoutMilliseconds = Int32.MaxValue;
+						m_connectionTimeoutMilliseconds = Int32.MaxValue;
 					}
 				}
-				return _connectionTimeoutMilliseconds.Value;
+				return m_connectionTimeoutMilliseconds.Value;
 			}
 		}
 
