@@ -167,17 +167,17 @@ namespace MySql.Data.MySqlClient.Results
 		{
 			// if we've already read past the end of this resultset, Read returns false
 			if (BufferState == ResultSetState.HasMoreData || BufferState == ResultSetState.NoMoreData || BufferState == ResultSetState.None)
-				return new ValueTask<Row>((Row)null);
+				return new ValueTask<Row>((Row) null);
 
 			using (Command.RegisterCancel(cancellationToken))
 			{
 				var payloadValueTask = Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None);
 				return payloadValueTask.IsCompletedSuccessfully
-					? new ValueTask<Row>(ScanRowAsyncRemainder(payloadValueTask.Result))
-					: new ValueTask<Row>(ScanRowAsyncAwaited(payloadValueTask.AsTask(), cancellationToken));
+					? new ValueTask<Row>(ScanRowAsyncRemainder(payloadValueTask.Result, row))
+					: new ValueTask<Row>(ScanRowAsyncAwaited(payloadValueTask.AsTask(), row, cancellationToken));
 			}
 
-			async Task<Row> ScanRowAsyncAwaited(Task<PayloadData> payloadTask, CancellationToken token)
+			async Task<Row> ScanRowAsyncAwaited(Task<PayloadData> payloadTask, Row row_, CancellationToken token)
 			{
 				PayloadData payloadData;
 				try
@@ -191,10 +191,10 @@ namespace MySql.Data.MySqlClient.Results
 						token.ThrowIfCancellationRequested();
 					throw;
 				}
-				return ScanRowAsyncRemainder(payloadData);
+				return ScanRowAsyncRemainder(payloadData, row_);
 			}
 
-			Row ScanRowAsyncRemainder(PayloadData payload)
+			Row ScanRowAsyncRemainder(PayloadData payload, Row row_)
 			{
 				if (payload.HeaderByte == EofPayload.Signature)
 				{
@@ -223,12 +223,12 @@ namespace MySql.Data.MySqlClient.Results
 					reader.Offset += m_dataLengths[column];
 				}
 
-				if (row == null)
-					row = new Row(this);
-				row.SetData(m_dataLengths, m_dataOffsets, payload.ArraySegment);
-				m_rowBuffered = row;
+				if (row_ == null)
+					row_ = new Row(this);
+				row_.SetData(m_dataLengths, m_dataOffsets, payload.ArraySegment);
+				m_rowBuffered = row_;
 				m_hasRows = true;
-				return row;
+				return row_;
 			}
 		}
 

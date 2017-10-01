@@ -1,16 +1,14 @@
-﻿using System;
+using System;
 
 namespace MySql.Data.Protocol.Serialization
 {
-	internal class Packet
+	internal struct Packet
 	{
-		public Packet(int sequenceNumber, ArraySegment<byte> contents)
+		public Packet(ArraySegment<byte> contents)
 		{
-			SequenceNumber = sequenceNumber;
 			Contents = contents;
 		}
 
-		public int SequenceNumber { get; }
 		public ArraySegment<byte> Contents { get; }
 	}
 }
