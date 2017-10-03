@@ -291,9 +291,6 @@ namespace MySql.Data.Serialization
 
 				return true;
 			}
-			catch (EndOfStreamException)
-			{
-			}
 			catch (IOException)
 			{
 			}
@@ -411,9 +408,6 @@ namespace MySql.Data.Serialization
 				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				OkPayload.Create(payload);
 				return true;
-			}
-			catch (EndOfStreamException)
-			{
 			}
 			catch (IOException)
 			{
