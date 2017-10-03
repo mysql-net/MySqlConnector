@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
@@ -258,12 +258,39 @@ namespace SideBySide
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 #if BASELINE || NET45
-				await Assert.ThrowsAsync<NotImplementedException>(() => connection.OpenAsync());
+				await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());
 #else
 				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.OpenSsl))
 					await connection.OpenAsync();
 				else
 					await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());
+#endif
+			}
+		}
+
+		[RequiresFeatureFact(ServerFeatures.CachingSha2Password, RequiresSsl = true)]
+		public async Task CachingSha2WithSecureConnection()
+		{
+			var csb = AppConfig.CreateCachingSha2ConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+				await connection.OpenAsync();
+		}
+
+		[RequiresFeatureFact(ServerFeatures.CachingSha2Password)]
+		public async Task CachingSha2WithoutSecureConnection()
+		{
+			var csb = AppConfig.CreateCachingSha2ConnectionStringBuilder();
+			csb.SslMode = MySqlSslMode.None;
+			//csb.ServerRsaPublicKeyFile = @"C:\NewCerts\public_key.pem";
+#if !BASELINE
+			csb.AllowPublicKeyRetrieval = true;
+#endif
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+#if BASELINE || NET45
+				await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());
+#else
+				await connection.OpenAsync();
 #endif
 			}
 		}
