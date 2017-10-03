@@ -556,6 +556,16 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-27-0&#34;&gt;0.27.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Implement &lt;code&gt;MySqlDataReader.GetColumnSchema&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/182&#34;&gt;#182&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Implement &lt;code&gt;MySqlDataReader.GetSchemaTable&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/307&#34;&gt;#307&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Support MySQL Server 8.0.3 and MariaDB 10.2 collations: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/336&#34;&gt;#336&lt;/a&gt;, &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/337&#34;&gt;#337&lt;/a&gt;, &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/338&#34;&gt;#338&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Reduce allocations to improve performance: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/pull/342&#34;&gt;#342&lt;/a&gt;, &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/pull/343&#34;&gt;#343&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Thanks to &lt;a href=&#34;https://github.com/elemount&#34;&gt;Alex Lee&lt;/a&gt; and &lt;a href=&#34;https://github.com/ddunkin&#34;&gt;Dave Dunkin&lt;/a&gt; for contributions to this release.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-26-5&#34;&gt;0.26.5&lt;/h3&gt;
 
 &lt;ul&gt;
