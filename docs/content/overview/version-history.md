@@ -11,6 +11,14 @@ weight: 30
 Version History
 ===============
 
+### 0.27.0
+
+* Implement `MySqlDataReader.GetColumnSchema`: [#182](https://github.com/mysql-net/MySqlConnector/issues/182).
+* Implement `MySqlDataReader.GetSchemaTable`: [#307](https://github.com/mysql-net/MySqlConnector/issues/307).
+* Support MySQL Server 8.0.3 and MariaDB 10.2 collations: [#336](https://github.com/mysql-net/MySqlConnector/issues/336), [#337](https://github.com/mysql-net/MySqlConnector/issues/337), [#338](https://github.com/mysql-net/MySqlConnector/issues/338).
+* Reduce allocations to improve performance: [#342](https://github.com/mysql-net/MySqlConnector/pull/342), [#343](https://github.com/mysql-net/MySqlConnector/pull/343).
+* Thanks to [Alex Lee](https://github.com/elemount) and [Dave Dunkin](https://github.com/ddunkin) for contributions to this release.
+
 ### 0.26.5
 
 * Fix hang closing connection with ClearDB on Azure: [#330](https://github.com/mysql-net/MySqlConnector/issues/330).
