@@ -8,13 +8,13 @@ env:
     FEATURES=StoredProcedures
   - IMAGE=mysql:5.7
     NAME=mysql
-    FEATURES=Json,StoredProcedures,Sha256Password,LargePackets,CachingSha2Password
+    FEATURES=Json,StoredProcedures,Sha256Password,LargePackets
   - IMAGE=mysql:8.0
     NAME=mysql
     FEATURES=Json,StoredProcedures,Sha256Password,LargePackets,CachingSha2Password
   - IMAGE=percona:5.7
     NAME=percona
-    FEATURES=Json,StoredProcedures,Sha256Password,OpenSsl,LargePackets,CachingSha2Password
+    FEATURES=Json,StoredProcedures,Sha256Password,OpenSsl,LargePackets
   - IMAGE=mariadb:10.2
     NAME=mariadb
     FEATURES=StoredProcedures,OpenSsl,LargePackets

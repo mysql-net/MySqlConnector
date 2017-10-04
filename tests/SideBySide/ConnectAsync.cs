@@ -257,8 +257,8 @@ namespace SideBySide
 #endif
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
-#if BASELINE || NET45
-				await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());
+#if BASELINE
+				await Assert.ThrowsAsync<NotImplementedException>(() => connection.OpenAsync());
 #else
 				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.OpenSsl))
 					await connection.OpenAsync();
@@ -281,14 +281,13 @@ namespace SideBySide
 		{
 			var csb = AppConfig.CreateCachingSha2ConnectionStringBuilder();
 			csb.SslMode = MySqlSslMode.None;
-			//csb.ServerRsaPublicKeyFile = @"C:\NewCerts\public_key.pem";
 #if !BASELINE
 			csb.AllowPublicKeyRetrieval = true;
 #endif
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
-#if BASELINE || NET45
-				await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());
+#if BASELINE
+				await Assert.ThrowsAsync<NotImplementedException>(() => connection.OpenAsync());
 #else
 				await connection.OpenAsync();
 #endif

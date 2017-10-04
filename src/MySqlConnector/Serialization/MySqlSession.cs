@@ -461,6 +461,19 @@ namespace MySql.Data.Serialization
 			IOBehavior ioBehavior,
 			CancellationToken cancellationToken)
 		{
+			if (!string.IsNullOrEmpty(cs.ServerRsaPublicKeyFile))
+			{
+				try
+				{
+					return File.ReadAllText(cs.ServerRsaPublicKeyFile);
+				}
+				catch (IOException ex)
+				{
+					throw new MySqlException(
+						"Couldn't load server's RSA public key from '{0}'".FormatInvariant(cs.ServerRsaPublicKeyFile), ex);
+				}
+			}
+
 			if (cs.AllowPublicKeyRetrieval)
 			{
 				// request the RSA public key
