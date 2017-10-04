@@ -3,7 +3,7 @@
       "ConnectionString": "server=127.0.0.1;user id=ssltest;password=test;port=3306;database=mysqltest;ssl mode=required;use compression=true;Use Affected Rows=true",
       "PasswordlessUser": "no_password",
       "SecondaryDatabase": "testdb2",
-      "SupportedFeatures": "Json,StoredProcedures,Sha256Password,LargePackets,CachingSha2Password",
+      "SupportedFeatures": "Json,StoredProcedures,Sha256Password,LargePackets",
       "MySqlBulkLoaderLocalCsvFile": "../../../../TestData/LoadData_UTF8_BOM_Unix.CSV",
       "MySqlBulkLoaderLocalTsvFile": "../../../../TestData/LoadData_UTF8_BOM_Unix.TSV",
       "CertificatesPath": "../../../../../.ci/server/certs"
