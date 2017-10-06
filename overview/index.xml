@@ -65,6 +65,14 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-28-0&#34;&gt;0.28.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Support &lt;code&gt;caching_sha2_password&lt;/code&gt; authentication for MySQL 8.0: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/329&#34;&gt;#329&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fix inconsistent return value of &lt;code&gt;MySqlDataReader.HasRows&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/348&#34;&gt;#348&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Thanks to &lt;a href=&#34;https://github.com/Drake103&#34;&gt;Drake103&lt;/a&gt; for contributions to this release.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-27-0&#34;&gt;0.27.0&lt;/h3&gt;
 
 &lt;ul&gt;
