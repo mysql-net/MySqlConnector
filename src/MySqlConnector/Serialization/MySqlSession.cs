@@ -338,13 +338,13 @@ namespace MySql.Data.Serialization
 					throw new MySqlException("Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
 #else
 
-					var rsaPublicKey = await GetRsaPublicKeyForCachingSha2PasswordAsync(switchRequest.Name, cs, ioBehavior, cancellationToken);
-					return await SendEncryptedPasswordAsync(rsaPublicKey, RSAEncryptionPadding.Pkcs1, cs, ioBehavior, switchRequest, cancellationToken);
+					var rsaPublicKey = await GetRsaPublicKeyForCachingSha2PasswordAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+					return await SendEncryptedPasswordAsync(rsaPublicKey, RSAEncryptionPadding.Pkcs1, cs, ioBehavior, switchRequest, cancellationToken).ConfigureAwait(false);
 #endif
 				}
 				else
 				{
-					return await SendClearPasswordAsync(cs, ioBehavior, cancellationToken);
+					return await SendClearPasswordAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 
 			case "sha256_password":
@@ -353,13 +353,13 @@ namespace MySql.Data.Serialization
 #if NET45
 					throw new MySqlException("Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
 #else
-					var publicKey = await GetRsaPublicKeyForSha256PasswordAsync(switchRequest.Name, cs, ioBehavior, cancellationToken);
-					return await SendEncryptedPasswordAsync(publicKey, RSAEncryptionPadding.OaepSHA1, cs, ioBehavior, switchRequest, cancellationToken);
+					var publicKey = await GetRsaPublicKeyForSha256PasswordAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+					return await SendEncryptedPasswordAsync(publicKey, RSAEncryptionPadding.OaepSHA1, cs, ioBehavior, switchRequest, cancellationToken).ConfigureAwait(false);
 #endif
 				}
 				else
 				{
-					return await SendClearPasswordAsync(cs, ioBehavior, cancellationToken);
+					return await SendClearPasswordAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 
 			case "mysql_old_password":
