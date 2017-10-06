@@ -326,26 +326,10 @@ namespace MySql.Data.Serialization
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				var cachingSha2ServerResponsePayload = CachingSha2ServerResponsePayload.Create(payload);
-
 				if (cachingSha2ServerResponsePayload.Succeeded)
-				{
 					return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				}
 
-				if (!m_isSecureConnection && cs.Password.Length > 1)
-				{
-#if NET45
-					throw new MySqlException("Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
-#else
-
-					var rsaPublicKey = await GetRsaPublicKeyForCachingSha2PasswordAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
-					return await SendEncryptedPasswordAsync(rsaPublicKey, RSAEncryptionPadding.Pkcs1, cs, ioBehavior, switchRequest, cancellationToken).ConfigureAwait(false);
-#endif
-				}
-				else
-				{
-					return await SendClearPasswordAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
-				}
+				goto case "sha256_password";
 
 			case "sha256_password":
 				if (!m_isSecureConnection && cs.Password.Length > 1)
@@ -353,8 +337,8 @@ namespace MySql.Data.Serialization
 #if NET45
 					throw new MySqlException("Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
 #else
-					var publicKey = await GetRsaPublicKeyForSha256PasswordAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
-					return await SendEncryptedPasswordAsync(publicKey, RSAEncryptionPadding.OaepSHA1, cs, ioBehavior, switchRequest, cancellationToken).ConfigureAwait(false);
+					var publicKey = await GetRsaPublicKeyAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+					return await SendEncryptedPasswordAsync(switchRequest, publicKey, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 #endif
 				}
 				else
@@ -384,11 +368,10 @@ namespace MySql.Data.Serialization
 
 #if !NET45
 		private async Task<PayloadData> SendEncryptedPasswordAsync(
+			AuthenticationMethodSwitchRequestPayload switchRequest,
 			string rsaPublicKey,
-			RSAEncryptionPadding rsaEncryptionPadding,
 			ConnectionSettings cs,
 			IOBehavior ioBehavior,
-			AuthenticationMethodSwitchRequestPayload switchRequest,
 			CancellationToken cancellationToken)
 		{
 			// load the RSA public key
@@ -414,7 +397,8 @@ namespace MySql.Data.Serialization
 					passwordBytes[i] ^= AuthPluginData[i % AuthPluginData.Length];
 
 				// encrypt with RSA public key
-				var encryptedPassword = rsa.Encrypt(passwordBytes, rsaEncryptionPadding);
+				var padding = switchRequest.Name == "caching_sha2_password" ? RSAEncryptionPadding.Pkcs1 : RSAEncryptionPadding.OaepSHA1;
+				var encryptedPassword = rsa.Encrypt(passwordBytes, padding);
 				var payload = new PayloadData(new ArraySegment<byte>(encryptedPassword));
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -422,11 +406,7 @@ namespace MySql.Data.Serialization
 		}
 #endif
 
-		private async Task<string> GetRsaPublicKeyForSha256PasswordAsync(
-			string switchRequestName,
-			ConnectionSettings cs,
-			IOBehavior ioBehavior,
-			CancellationToken cancellationToken)
+		private async Task<string> GetRsaPublicKeyAsync(string switchRequestName, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (!string.IsNullOrEmpty(cs.ServerRsaPublicKeyFile))
 			{
@@ -436,58 +416,21 @@ namespace MySql.Data.Serialization
 				}
 				catch (IOException ex)
 				{
-					throw new MySqlException(
-						"Couldn't load server's RSA public key from '{0}'".FormatInvariant(cs.ServerRsaPublicKeyFile), ex);
+					throw new MySqlException("Couldn't load server's RSA public key from '{0}'".FormatInvariant(cs.ServerRsaPublicKeyFile), ex);
 				}
 			}
 
 			if (cs.AllowPublicKeyRetrieval)
 			{
 				// request the RSA public key
-				await SendReplyAsync(new PayloadData(new ArraySegment<byte>(new byte[] { 0x01 }, 0, 1)), ioBehavior,
-					cancellationToken).ConfigureAwait(false);
+				var payloadContent = switchRequestName == "caching_sha2_password" ? (byte) 0x02 : (byte) 0x01;
+				await SendReplyAsync(new PayloadData(new ArraySegment<byte>(new byte[] { payloadContent }, 0, 1)), ioBehavior, cancellationToken).ConfigureAwait(false);
 				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload);
 				return Encoding.ASCII.GetString(publicKeyPayload.Data);
 			}
 
-			throw new MySqlException(
-				"Authentication method '{0}' failed. Either use a secure connection, specify the server's RSA public key with ServerRSAPublicKeyFile, or set AllowPublicKeyRetrieval=True."
-					.FormatInvariant(switchRequestName));
-		}
-
-		private async Task<string> GetRsaPublicKeyForCachingSha2PasswordAsync(
-			string switchRequestName,
-			ConnectionSettings cs,
-			IOBehavior ioBehavior,
-			CancellationToken cancellationToken)
-		{
-			if (!string.IsNullOrEmpty(cs.ServerRsaPublicKeyFile))
-			{
-				try
-				{
-					return File.ReadAllText(cs.ServerRsaPublicKeyFile);
-				}
-				catch (IOException ex)
-				{
-					throw new MySqlException(
-						"Couldn't load server's RSA public key from '{0}'".FormatInvariant(cs.ServerRsaPublicKeyFile), ex);
-				}
-			}
-
-			if (cs.AllowPublicKeyRetrieval)
-			{
-				// request the RSA public key
-				await SendReplyAsync(new PayloadData(new ArraySegment<byte>(new byte[] { 0x02 }, 0, 1)), ioBehavior,
-					cancellationToken).ConfigureAwait(false);
-				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload);
-				return Encoding.ASCII.GetString(publicKeyPayload.Data);
-			}
-
-			throw new MySqlException(
-				"Authentication method '{0}' failed. Either use a secure connection, specify the server's RSA public key with ServerRSAPublicKeyFile, or set AllowPublicKeyRetrieval=True."
-					.FormatInvariant(switchRequestName));
+			throw new MySqlException("Authentication method '{0}' failed. Either use a secure connection, specify the server's RSA public key with ServerRSAPublicKeyFile, or set AllowPublicKeyRetrieval=True.".FormatInvariant(switchRequestName));
 		}
 
 		public async Task<bool> TryPingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
