@@ -339,7 +339,7 @@ namespace MySql.Data.Serialization
 #else
 
 					var rsaPublicKey = await GetRsaPublicKeyForCachingSha2PasswordAsync(switchRequest.Name, cs, ioBehavior, cancellationToken);
-					return await SendEncryptedPasswordAsync(rsaPublicKey, cs, ioBehavior, switchRequest, cancellationToken);
+					return await SendEncryptedPasswordAsync(rsaPublicKey, RSAEncryptionPadding.Pkcs1, cs, ioBehavior, switchRequest, cancellationToken);
 #endif
 				}
 				else
@@ -354,7 +354,7 @@ namespace MySql.Data.Serialization
 					throw new MySqlException("Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
 #else
 					var publicKey = await GetRsaPublicKeyForSha256PasswordAsync(switchRequest.Name, cs, ioBehavior, cancellationToken);
-					return await SendEncryptedPasswordAsync(publicKey, cs, ioBehavior, switchRequest, cancellationToken);
+					return await SendEncryptedPasswordAsync(publicKey, RSAEncryptionPadding.OaepSHA1, cs, ioBehavior, switchRequest, cancellationToken);
 #endif
 				}
 				else
@@ -385,6 +385,7 @@ namespace MySql.Data.Serialization
 #if !NET45
 		private async Task<PayloadData> SendEncryptedPasswordAsync(
 			string rsaPublicKey,
+			RSAEncryptionPadding rsaEncryptionPadding,
 			ConnectionSettings cs,
 			IOBehavior ioBehavior,
 			AuthenticationMethodSwitchRequestPayload switchRequest,
@@ -413,7 +414,7 @@ namespace MySql.Data.Serialization
 					passwordBytes[i] ^= AuthPluginData[i % AuthPluginData.Length];
 
 				// encrypt with RSA public key
-				var encryptedPassword = rsa.Encrypt(passwordBytes, RSAEncryptionPadding.Pkcs1);
+				var encryptedPassword = rsa.Encrypt(passwordBytes, rsaEncryptionPadding);
 				var payload = new PayloadData(new ArraySegment<byte>(encryptedPassword));
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
