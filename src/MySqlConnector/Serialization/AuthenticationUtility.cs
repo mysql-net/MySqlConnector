@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -39,5 +40,35 @@ namespace MySql.Data.Serialization
 		}
 
 		static readonly byte[] s_emptyArray = new byte[0];
+
+		public static byte[] CreateScrambleResponse(byte[] nonce, string password)
+		{
+			var scrambleResponse = string.IsNullOrEmpty(password)
+				? s_emptyArray
+				: HashPasswordWithNonce(nonce, password);
+
+			return scrambleResponse;
+		}
+
+		private static byte[] HashPasswordWithNonce(byte[] nonce, string password)
+		{
+			using (var sha256 = SHA256.Create())
+			{
+				var passwordBytes = Encoding.UTF8.GetBytes(password);
+				var hashedPassword = sha256.ComputeHash(passwordBytes);
+
+				var doubleHashedPassword = sha256.ComputeHash(hashedPassword);
+				var combined = new byte[doubleHashedPassword.Length + nonce.Length];
+
+				Buffer.BlockCopy(doubleHashedPassword, 0, combined, 0, doubleHashedPassword.Length);
+				Buffer.BlockCopy(nonce, 0, combined, doubleHashedPassword.Length, nonce.Length);
+
+				var xorBytes = sha256.ComputeHash(combined);
+				for (int i = 0; i < hashedPassword.Length; i++)
+					hashedPassword[i] ^= xorBytes[i];
+
+				return hashedPassword;
+			}
+		}
 	}
 }

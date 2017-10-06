@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Configuration;
@@ -48,6 +48,15 @@ namespace SideBySide
 			var csb = CreateConnectionStringBuilder();
 			csb.UserID = "sha256user";
 			csb.Password = "Sh@256Pa55";
+			csb.Database = null;
+			return csb;
+		}
+
+		public static MySqlConnectionStringBuilder CreateCachingSha2ConnectionStringBuilder()
+		{
+			var csb = CreateConnectionStringBuilder();
+			csb.UserID = "caching-sha2-user";
+			csb.Password = "Cach!ng-Sh@2-Pa55";
 			csb.Database = null;
 			return csb;
 		}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
@@ -257,13 +257,39 @@ namespace SideBySide
 #endif
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
-#if BASELINE || NET45
+#if BASELINE
 				await Assert.ThrowsAsync<NotImplementedException>(() => connection.OpenAsync());
 #else
 				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.OpenSsl))
 					await connection.OpenAsync();
 				else
 					await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());
+#endif
+			}
+		}
+
+		[RequiresFeatureFact(ServerFeatures.CachingSha2Password, RequiresSsl = true)]
+		public async Task CachingSha2WithSecureConnection()
+		{
+			var csb = AppConfig.CreateCachingSha2ConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+				await connection.OpenAsync();
+		}
+
+		[RequiresFeatureFact(ServerFeatures.CachingSha2Password)]
+		public async Task CachingSha2WithoutSecureConnection()
+		{
+			var csb = AppConfig.CreateCachingSha2ConnectionStringBuilder();
+			csb.SslMode = MySqlSslMode.None;
+#if !BASELINE
+			csb.AllowPublicKeyRetrieval = true;
+#endif
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+#if BASELINE
+				await Assert.ThrowsAsync<NotImplementedException>(() => connection.OpenAsync());
+#else
+				await connection.OpenAsync();
 #endif
 			}
 		}
