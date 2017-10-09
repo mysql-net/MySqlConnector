@@ -830,6 +830,38 @@ insert into has_rows(value) values(1),(2),(3);");
 			}
 		}
 
+		[Fact]
+		public void HasRowsRepeated()
+		{
+			m_database.Connection.Execute(@"drop table if exists has_rows;
+create table has_rows(value int not null);
+insert into has_rows(value) values(1),(2),(3);");
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select * from has_rows where value = 1;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(reader.HasRows);
+					Assert.True(reader.HasRows);
+					Assert.True(reader.HasRows);
+					Assert.True(reader.HasRows);
+
+					Assert.True(reader.Read());
+
+					Assert.True(reader.HasRows);
+					Assert.True(reader.HasRows);
+					Assert.True(reader.HasRows);
+
+					Assert.False(reader.Read());
+
+					Assert.True(reader.HasRows);
+					Assert.True(reader.HasRows);
+					Assert.True(reader.HasRows);
+				}
+			}
+		}
+
 		class BoolTest
 		{
 			public int Id { get; set; }

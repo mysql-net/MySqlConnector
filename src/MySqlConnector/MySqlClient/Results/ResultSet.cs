@@ -228,6 +228,7 @@ namespace MySql.Data.MySqlClient.Results
 				row_.SetData(m_dataLengths, m_dataOffsets, payload.ArraySegment);
 				m_rowBuffered = row_;
 				m_hasRows = true;
+				BufferState = ResultSetState.ReadingRows;
 				return row_;
 			}
 		}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MySql.Data.MySqlClient;
 using Xunit;
 
@@ -12,7 +12,7 @@ namespace SideBySide
 
 		public RequiresFeatureFactAttribute(ServerFeatures features)
 		{
-			if ((AppConfig.SupportedFeatures & features) != features)
+			if (!AppConfig.SupportedFeatures.HasFlag(features))
 				Skip = "Doesn't support " + features;
 		}
 
@@ -42,7 +42,7 @@ namespace SideBySide
 
 		public RequiresFeatureTheoryAttribute(ServerFeatures features)
 		{
-			if ((AppConfig.SupportedFeatures & features) != features)
+			if (!AppConfig.SupportedFeatures.HasFlag(features))
 				Skip = "Doesn't support " + features;
 		}
 

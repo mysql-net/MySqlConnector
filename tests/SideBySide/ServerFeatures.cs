@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace SideBySide
 {
@@ -11,5 +11,6 @@ namespace SideBySide
 		Sha256Password = 4,
 		OpenSsl = 8,
 		LargePackets = 16,
+		CachingSha2Password = 32
 	}
 }
