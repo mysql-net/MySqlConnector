@@ -1,5 +1,5 @@
 ---
-lastmod: 2016-10-16
+lastmod: 2017-11-06
 date: 2016-10-16
 menu:
   main:
@@ -33,29 +33,29 @@ MySqlConnector has some different default connection string options:
     <td><code>ConnectionReset</code></td>
     <td>Default is <code>true</code></td>
     <td>Default is <code>false</code></td>
-    <td>MySqlConnector takes an extra command to reset pooled connections by default so that the connection is always in a known state</td>
+    <td>MySqlConnector always resets pooled connections by default so that the connection is in a known state. This fixes <a href="https://bugs.mysql.com/bug.php?id=77421">MySQL Bug 77421</a>.</td>
   </tr>
   <tr>
     <td><code>LoadBalance</code></td>
     <td>Default is <code>RoundRobin</code></td>
     <td>(not configurable, effective default is <code>InOrder</code>)</td>
-    <td>Connector/NET currently has [a bug](https://bugs.mysql.com/bug.php?id=81650) that prevents multiple host names being used.</td>
+    <td>Connector/NET currently has <a href="https://bugs.mysql.com/bug.php?id=81650" title="MySQL bug #81650">a bug</a> that prevents multiple host names being used.</td>
   </tr>
   <tr>
     <td><code>ServerRSAPublicKeyFile</code></td>
     <td>(no default)</td>
     <td>(not configurable)</td>
-    <td>Specify the server's RSA public key to allow <code>sha256_password</code> authentication over an insecure connection.</td>
+    <td>Specify a file containing the server's RSA public key to allow <code>sha256_password</code> authentication over an insecure connection.</td>
   </tr>
   <tr>
     <td><code>UseAffectedRows</code></td>
     <td>Default is <code>true</code></td>
     <td>Default is <code>false</code></td>
-    <td>This also affects the behavior of the <code>ROW_COUNT</code> function.  <code>UseAffectedRows=true</code> is the default in most other languages (C++, PHP, others)</td>
+    <td>This also affects the behavior of the <code>ROW_COUNT</code> function. <code>UseAffectedRows=true</code> is the default in most other languages (C++, PHP, others)</td>
   </tr>
 </table>
 
-Some command line options that are supported in Connector/NET are not supported in MySqlConnector.  For a full list of options that are
+Some connection string options that are supported in Connector/NET are not supported in MySqlConnector. For a full list of options that are
 supported in MySqlConnector, see the [Connection Options](connection-options).
 
 ### TransactionScope

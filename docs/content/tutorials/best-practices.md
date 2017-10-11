@@ -1,5 +1,5 @@
 ---
-lastmod: 2017-10-21
+lastmod: 2017-11-06
 date: 2016-10-16
 menu:
   main:
@@ -14,7 +14,7 @@ Best Practices
 ## Asynchronous Operation
 
 MySqlConnector is fully asynchronous, supporting the async ADO.NET methods added in .NET 4.5 without blocking
-or using `Task.Run` to run synchronous methods on a background thread.  Programmers implementing MySqlConnector
+or using `Task.Run` to run synchronous methods on a background thread. Programmers implementing MySqlConnector
 should be familiar with [Async/Await - Best Practices in Asynchronous Programming](https://msdn.microsoft.com/en-us/magazine/jj991977.aspx).
 
 ### Always Use Async when possible
@@ -98,7 +98,7 @@ uses cached `Task<bool>` objects for its `true` and `false` return values.)
 ### Example Console Application
 
 In order to get the full benefit of asynchronous operation, every method in the call stack that eventually calls
-MySqlConnector should be implemented as an async method.  The exception is the `static void Main` method in a Console Application.
+MySqlConnector should be implemented as an async method.
 
 Example assumes a [configured AppDb](overview/configuration) object in the `MySqlConnector.Examples` namespace.
 
@@ -110,15 +110,11 @@ namespace MySqlConnector.Examples
 {
     public class Program
     {
-        public static void Main(string[] args)
-        {
-            MainAsync(args).GetAwaiter().GetResult();
-        }
-
-        public static async Task MainAsync(string[] args)
+        public static async Task Main(string[] args)
         {
             var tasks = new List<Task>();
-            for (var i=0; i<100; i++){
+            for (var i=0; i<100; i++)
+            {
                 tasks.Add(Controllers.SleepOne());
             }
             // these 100 queries should all complete in around
@@ -150,11 +146,11 @@ namespace MySqlConnector.Examples
 
 <div class="alert alert-warning">
   Using Synchronous Methods can have adverse effects on the managed thread pool and cause slowdowns or lock-ups
-  if not properly tuned.  The recommended approach is to use all Asynchronous Methods.
+  if not properly tuned. The recommended approach is to use all Asynchronous Methods.
 </div>
 
 If you must use synchronous methods, ensure that your thread pool is at least the size of the number of
-concurrent connections you plan to support.  For example, if you are creating a web server using
+concurrent connections you plan to support. For example, if you are creating a web server using
 synchronous methods that needs to support serving 500 Requests Per Second, set the minimum thread
 pool size to 500.
 

@@ -1,5 +1,5 @@
 ---
-lastmod: 2016-10-16
+lastmod: 2017-11-06
 date: 2016-10-16
 title: Home
 weight: 10
@@ -15,7 +15,7 @@ Home
 MySqlConnector is an [ADO.NET](https://msdn.microsoft.com/en-us/library/e80y5yhx.aspx) data
 provider for [MySQL](https://www.mysql.com/). It provides implementations of
 `DbConnection`, `DbCommand`, `DbDataReader`, `DbTransaction` &ndash; the classes
-needed to query and update databases from managed code.  Its features include:
+needed to query and update databases from managed code. Its features include:
 
 * .NET Core Compatibility
 * Truly Asynchronous: async functions implement asynchronous I/O
@@ -47,7 +47,7 @@ and is not based on [Oracle's Connector/NET](https://github.com/mysql/mysql-conn
       <a href="https://github.com/mysql-net/MySqlConnector">GitHub</a>
     </td>
     <td>
-      Closed Development Roadmap.  Code is viewable on
+      Closed Development Roadmap. Code is viewable on
       <a href="https://github.com/mysql/mysql-connector-net">GitHub</a>,
       some issues addressed in <a href="http://forums.mysql.com/list.php?38">Forums</a>
     </td>

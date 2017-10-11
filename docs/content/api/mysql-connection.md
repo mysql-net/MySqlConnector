@@ -1,5 +1,5 @@
 ---
-lastmod: 2016-10-16
+lastmod: 2017-11-06
 date: 2016-10-16
 menu:
   main:
@@ -11,7 +11,7 @@ weight: 10
 MySqlConnection
 =================
 
-MySqlConnection implements the [ADO.NET DbConnection class](https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbconnection),
+MySqlConnection implements the [ADO.NET DbConnection class](https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbconnection);
 please refer to its documentation.
 
 Additionally, MySqlConnection provides the following public properties and methods that may be used:
