@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Microsoft.Extensions.Configuration;
 
 using MySql.Data.MySqlClient;
@@ -21,6 +22,11 @@ namespace SideBySide
 
 		private static IConfiguration ConfigBuilder { get; } = new ConfigurationBuilder()
 			.AddInMemoryCollection(DefaultConfig)
+#if NETCOREAPP1_1_2
+			.SetBasePath(Path.GetDirectoryName(typeof(AppConfig).GetTypeInfo().Assembly.Location))
+#elif NETCOREAPP2_0
+			.SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
+#endif
 			.AddJsonFile("config.json")
 			.Build();
 
