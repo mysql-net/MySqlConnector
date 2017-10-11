@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.28.1
+
+* Fix garbage data being returned by `GetColumnSchema`/`GetSchemaTable`: [#354](https://github.com/mysql-net/MySqlConnector/issues/354).
+* Fix incorrect `NumericPrecision` for `decimal(n,0)` columns: [#356](https://github.com/mysql-net/MySqlConnector/issues/356).
+
 ### 0.28.0
 
 * Support `caching_sha2_password` authentication for MySQL 8.0: [#329](https://github.com/mysql-net/MySqlConnector/issues/329).
