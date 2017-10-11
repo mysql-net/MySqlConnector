@@ -485,6 +485,7 @@ property doesn&amp;rsquo;t reference the active transaction. See &lt;a href=&#34
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=86263&#34;&gt;#86263&lt;/a&gt;: Transaction isolation level affects all transactions in session&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=87868&#34;&gt;#87868&lt;/a&gt;: &lt;code&gt;ColumnSize&lt;/code&gt; in schema table is incorrect for &lt;code&gt;CHAR(36)&lt;/code&gt; and &lt;code&gt;BLOB&lt;/code&gt; columns&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=87876&#34;&gt;#87876&lt;/a&gt;: &lt;code&gt;IsLong&lt;/code&gt; is schema table is incorrect for &lt;code&gt;LONGTEXT&lt;/code&gt; and &lt;code&gt;LONGBLOB&lt;/code&gt; columns&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=88058&#34;&gt;#88058&lt;/a&gt;: &lt;code&gt;decimal(n, 0)&lt;/code&gt; has wrong &lt;code&gt;NumericPrecision&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
@@ -555,6 +556,13 @@ please refer to its documentation.&lt;/p&gt;
       <description>
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
+
+&lt;h3 id=&#34;0-28-1&#34;&gt;0.28.1&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix garbage data being returned by &lt;code&gt;GetColumnSchema&lt;/code&gt;/&lt;code&gt;GetSchemaTable&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/354&#34;&gt;#354&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fix incorrect &lt;code&gt;NumericPrecision&lt;/code&gt; for &lt;code&gt;decimal(n,0)&lt;/code&gt; columns: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/356&#34;&gt;#356&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;h3 id=&#34;0-28-0&#34;&gt;0.28.0&lt;/h3&gt;
 
