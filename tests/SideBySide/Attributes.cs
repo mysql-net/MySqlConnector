@@ -98,6 +98,32 @@ namespace SideBySide
 			if(string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderLocalCsvFile))
 				Skip = "No bulk loader local CSV file specified";
 		}
+
+		public bool TrustedHost
+		{
+			
+			get => _trustedHost;
+			set
+			{
+				_trustedHost = value;
+
+				var csb = AppConfig.CreateConnectionStringBuilder();
+				if (_trustedHost)
+				{
+					if (csb.SslMode == MySqlSslMode.None
+						|| csb.SslMode == MySqlSslMode.Preferred
+						|| csb.SslMode == MySqlSslMode.Required)
+						Skip = "SslMode should be VerifyCA or higher.";
+				}
+				else
+				{
+					if (csb.SslMode == MySqlSslMode.VerifyCA
+						|| csb.SslMode == MySqlSslMode.VerifyFull)
+						Skip = "SslMode should be less than VerifyCA.";
+				}
+			}
+		}
+		private bool _trustedHost;
 	}
 
 	public class BulkLoaderLocalTsvFileFactAttribute : FactAttribute

@@ -301,6 +301,8 @@ namespace MySql.Data.MySqlClient
 		internal bool TreatTinyAsBoolean => m_connectionSettings.TreatTinyAsBoolean;
 		internal IOBehavior AsyncIOBehavior => m_connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
 
+		internal MySqlSslMode SslMode => m_connectionSettings.SslMode;
+
 		internal void SetActiveReader(MySqlDataReader dataReader)
 		{
 			if (dataReader == null)

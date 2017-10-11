@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -42,16 +42,36 @@ namespace SideBySide
 			Assert.Equal(20, rowCount);
 		}
 
-		[BulkLoaderLocalCsvFileFact]
+		[BulkLoaderLocalCsvFileFact(TrustedHost = true)]
 		public async void CommandLoadLocalCsvFile()
 		{
-			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL", AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
+			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL",
+				AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
 			MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
-			if (m_database.Connection.State != ConnectionState.Open) await m_database.Connection.OpenAsync();
+
+			if (m_database.Connection.State != ConnectionState.Open)
+				await m_database.Connection.OpenAsync();
+
 			int rowCount = await command.ExecuteNonQueryAsync();
+
 			m_database.Connection.Close();
 			Assert.Equal(20, rowCount);
 		}
+
+#if !BASELINE
+		[BulkLoaderLocalCsvFileFact(TrustedHost = false)]
+		public async void ThrowsNotSupportedExceptionForNotTrustedHostAndNotStream()
+		{
+			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL",
+				AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
+			MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
+
+			if (m_database.Connection.State != ConnectionState.Open)
+				await m_database.Connection.OpenAsync();
+
+			await Assert.ThrowsAsync<MySqlException>(async () => await command.ExecuteNonQueryAsync());
+		}
+#endif
 
 		readonly DatabaseFixture m_database;
 		readonly string m_testTable;
