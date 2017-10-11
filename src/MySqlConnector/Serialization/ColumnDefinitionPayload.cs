@@ -75,9 +75,9 @@ namespace MySql.Data.Serialization
 
 		public byte Decimals { get; private set; }
 
-		public static ColumnDefinitionPayload Create(PayloadData payload)
+		public static ColumnDefinitionPayload Create(ArraySegment<byte> arraySegment)
 		{
-			var reader = new ByteArrayReader(payload.ArraySegment);
+			var reader = new ByteArrayReader(arraySegment);
 			SkipLengthEncodedByteString(ref reader); // catalog
 			SkipLengthEncodedByteString(ref reader); // schema
 			SkipLengthEncodedByteString(ref reader); // table
@@ -105,7 +105,7 @@ namespace MySql.Data.Serialization
 
 			return new ColumnDefinitionPayload
 			{
-				OriginalPayload = payload,
+				OriginalData = arraySegment,
 				CharacterSet = characterSet,
 				ColumnLength = columnLength,
 				ColumnType = columnType,
@@ -122,7 +122,7 @@ namespace MySql.Data.Serialization
 
 		private void ReadNames()
 		{
-			var reader = new ByteArrayReader(OriginalPayload.ArraySegment);
+			var reader = new ByteArrayReader(OriginalData);
 			m_catalogName = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
 			m_schemaName = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
 			m_table = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
@@ -132,7 +132,7 @@ namespace MySql.Data.Serialization
 			m_readNames = true;
 		}
 
-		PayloadData OriginalPayload { get; set; }
+		ArraySegment<byte> OriginalData { get; set; }
 
 		bool m_readNames;
 		string m_name;
