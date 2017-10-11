@@ -95,3 +95,4 @@ property doesn't reference the active transaction. See [#333](https://github.com
 * [#86263](https://bugs.mysql.com/bug.php?id=86263): Transaction isolation level affects all transactions in session
 * [#87868](https://bugs.mysql.com/bug.php?id=87868): `ColumnSize` in schema table is incorrect for `CHAR(36)` and `BLOB` columns
 * [#87876](https://bugs.mysql.com/bug.php?id=87876): `IsLong` is schema table is incorrect for `LONGTEXT` and `LONGBLOB` columns
+* [#88058](https://bugs.mysql.com/bug.php?id=88058): `decimal(n, 0)` has wrong `NumericPrecision`

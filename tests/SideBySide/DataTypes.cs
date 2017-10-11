@@ -648,7 +648,33 @@ namespace SideBySide
 		[InlineData("Timestamp", "datatypes_times", 26, typeof(DateTime), "N", 0, 6)]
 		[InlineData("Time", "datatypes_times", 17, typeof(TimeSpan), "N", 0, 6)]
 		[InlineData("Year", "datatypes_times", 4, typeof(int), "N", 0, 0)]
-		public void GetSchemaTable(string column, string table, int columnSize, Type dataType, string flags, int precision, int scale)
+		public void GetSchemaTable(string column, string table, int columnSize, Type dataType, string flags, int precision, int scale) =>
+			DoGetSchemaTable(column, table, columnSize, dataType, flags, precision, scale);
+
+		[Theory]
+		[InlineData("`decimal-type` decimal(10,0) NOT NULL", "decimal-type", 11, typeof(decimal), "", 10, 0
+#if BASELINE
+			, Skip = "https://bugs.mysql.com/bug.php?id=88058"
+#endif
+			)]
+		[InlineData("`decimal-type` decimal(10,1) NOT NULL", "decimal-type", 12, typeof(decimal), "", 10, 1)]
+		[InlineData("`decimal-type` decimal(10,0) UNSIGNED NOT NULL", "decimal-type", 10, typeof(decimal), "", 10, 0
+#if BASELINE
+			, Skip = "https://bugs.mysql.com/bug.php?id=88058"
+#endif
+			)]
+		[InlineData("`decimal-type` decimal(10,1) UNSIGNED NOT NULL", "decimal-type", 11, typeof(decimal), "", 10, 1)]
+		[InlineData("`decimal-type` decimal(65,30) NOT NULL", "decimal-type", 67, typeof(decimal), "", 65, 30)]
+		[InlineData("`decimal-type` decimal(1,1) NOT NULL", "decimal-type", 3, typeof(decimal), "", 1, 1)]
+		public void GetSchemaTableForNewColumn(string createColumn, string column, int columnSize, Type dataType, string flags, int precision, int scale)
+		{
+			m_database.Connection.Execute($@"drop table if exists schema_table;
+create table schema_table({createColumn});");
+
+			DoGetSchemaTable(column, "schema_table", columnSize, dataType, flags, precision, scale);
+		}
+
+		private void DoGetSchemaTable(string column, string table, int columnSize, Type dataType, string flags, int precision, int scale)
 		{
 			if (table == "datatypes_json_core" && !AppConfig.SupportsJson)
 				return;
