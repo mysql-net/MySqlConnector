@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -44,6 +44,8 @@ namespace MySqlConnector.Tests
 		public int ActiveConnections => m_activeConnections;
 
 		public string ServerVersion { get; set; } = "5.7.10-test";
+
+		public bool SuppressAuthPluginNameTerminatingNull { get; set; }
 
 		internal void ClientDisconnected() => Interlocked.Decrement(ref m_activeConnections);
 

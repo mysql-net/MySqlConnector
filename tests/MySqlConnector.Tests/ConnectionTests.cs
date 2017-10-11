@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -114,6 +115,17 @@ namespace MySqlConnector.Tests
 
 				// HACK: have to sleep (so that RecoverLeakedSessions is called in ConnectionPool.GetSessionAsync)
 				Thread.Sleep(250);
+			}
+		}
+
+		[Fact]
+		public void AuthPluginNameNotNullTerminated()
+		{
+			m_server.SuppressAuthPluginNameTerminatingNull = true;
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(ConnectionState.Open, connection.State);
 			}
 		}
 
