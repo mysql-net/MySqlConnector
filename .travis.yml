@@ -32,14 +32,14 @@ script:
 - pushd tests/MySqlConnector.Tests && dotnet xunit -c Release && popd
 - pushd tests/SideBySide
 - dotnet build SideBySide.csproj -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp1.1.2 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp1.1.2
-- echo 'Executing netcoreapp2.0 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp2.0 Debug Only tests' && time dotnet xunit -c Debug -f netcoreapp2.0 -class SideBySide.DebugOnlyTests
-- echo 'Executing netcoreapp2.0 tests with Compression, No SSL' && ../../.ci/use-config.sh config.compression.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp2.0 tests with No Compression, SSL' && ../../.ci/use-config.sh config.ssl.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp2.0 tests with Compression, SSL' && ../../.ci/use-config.sh config.compression+ssl.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp2.0 tests with Unix Domain Socket, No Compression, No SSL' && ../../.ci/use-config.sh config.uds.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp2.0 tests with Buffering, No Compression, No SSL' && ../../.ci/use-config.sh config.buffer.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp1.1.2 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet test -c Release -f netcoreapp1.1.2
+- echo 'Executing netcoreapp2.0 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet test -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp2.0 Debug Only tests' && time dotnet test -c Debug -f netcoreapp2.0 --filter="FullyQualifiedName~SideBySide.DebugOnlyTests"
+- echo 'Executing netcoreapp2.0 tests with Compression, No SSL' && ../../.ci/use-config.sh config.compression.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet test -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp2.0 tests with No Compression, SSL' && ../../.ci/use-config.sh config.ssl.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet test -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp2.0 tests with Compression, SSL' && ../../.ci/use-config.sh config.compression+ssl.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet test -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp2.0 tests with Unix Domain Socket, No Compression, No SSL' && ../../.ci/use-config.sh config.uds.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet test -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp2.0 tests with Buffering, No Compression, No SSL' && ../../.ci/use-config.sh config.buffer.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet test -c Release -f netcoreapp2.0
 - popd
 
 after_script:
