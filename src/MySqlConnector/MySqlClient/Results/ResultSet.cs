@@ -56,6 +56,10 @@ namespace MySql.Data.MySqlClient.Results
 						try
 						{
 							var localInfile = LocalInfilePayload.Create(payload);
+							if(!IsHostVerified(Connection)
+								&& !localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal))
+								throw new NotSupportedException("Use SourceStream or SslMode >= VerifyCA for LOAD DATA LOCAL INFILE");
+
 							using (var stream = localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal) ?
 								MySqlBulkLoader.GetAndRemoveStream(localInfile.FileName) :
 								File.OpenRead(localInfile.FileName))
@@ -127,6 +131,12 @@ namespace MySql.Data.MySqlClient.Results
 			}
 
 			return this;
+		}
+
+		private bool IsHostVerified(MySqlConnection connection)
+		{
+			return connection.SslMode == MySqlSslMode.VerifyCA
+				|| connection.SslMode == MySqlSslMode.VerifyFull;
 		}
 
 		public async Task BufferEntireAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)

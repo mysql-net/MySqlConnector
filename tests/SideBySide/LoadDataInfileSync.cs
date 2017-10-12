@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using MySql.Data.MySqlClient;
 using Xunit;
 using Dapper;
@@ -41,7 +41,7 @@ namespace SideBySide
 			Assert.Equal(20, rowCount);
 		}
 
-		[BulkLoaderLocalCsvFileFact]
+		[BulkLoaderLocalCsvFileFact(TrustedHost = true)]
 		public void CommandLoadLocalCsvFile()
 		{
 			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL", AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
@@ -51,6 +51,22 @@ namespace SideBySide
 			m_database.Connection.Close();
 			Assert.Equal(20, rowCount);
 		}
+
+#if !BASELINE
+		[BulkLoaderLocalCsvFileFact(TrustedHost = false)]
+		public void ThrowsNotSupportedExceptionForNotTrustedHostAndNotStream()
+		{
+			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL",
+				AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
+			MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
+			if (m_database.Connection.State != ConnectionState.Open)
+				m_database.Connection.Open();
+
+			Assert.Throws<MySqlException>(() => command.ExecuteNonQuery());
+
+			m_database.Connection.Close();
+		}
+#endif
 
 		readonly DatabaseFixture m_database;
 		readonly string m_testTable;
