@@ -54,7 +54,7 @@ namespace SideBySide
 			}
 		}
 
-		[UnbufferedResultSetsFact]
+		[SkippableFact(ConfigSettings.UnbufferedResultSets)]
 		public void CancelReaderAsynchronously()
 		{
 			using (var barrier = new Barrier(2))
@@ -90,7 +90,7 @@ namespace SideBySide
 			}
 		}
 
-		[UnbufferedResultSetsFact]
+		[SkippableFact(ConfigSettings.UnbufferedResultSets)]
 		public void CancelCommandBeforeRead()
 		{
 			using (var cmd = new MySqlCommand(c_hugeQuery, m_database.Connection))
@@ -117,11 +117,7 @@ namespace SideBySide
 			}
 		}
 
-		[UnbufferedResultSetsFact
-#if BASELINE
-			(Skip = "Hangs in NextResult")
-#endif
-		]
+		[SkippableFact(ConfigSettings.UnbufferedResultSets, Baseline = "Hangs in NextResult")]
 		public void CancelMultiStatementReader()
 		{
 			using (var barrier = new Barrier(2))
@@ -159,7 +155,7 @@ namespace SideBySide
 			}
 		}
 
-		[UnbufferedResultSetsFact]
+		[SkippableFact(ConfigSettings.UnbufferedResultSets)]
 		public void DapperQueryMultiple()
 		{
 			Stopwatch stopwatch;
@@ -275,7 +271,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 			Assert.Equal("value", value);
 		}
 
-		[UnbufferedResultSetsFact]
+		[SkippableFact(ConfigSettings.UnbufferedResultSets)]
 		public async Task CancelHugeQueryWithTokenAfterExecuteReader()
 		{
 			using (var cmd = new MySqlCommand(c_hugeQuery, m_database.Connection))
@@ -301,7 +297,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 			}
 		}
 
-		[UnbufferedResultSetsFact]
+		[SkippableFact(ConfigSettings.UnbufferedResultSets)]
 		public async Task CancelHugeQueryWithTokenInNextResult()
 		{
 			using (var cmd = new MySqlCommand(c_hugeQuery + "select 1, 2, 3;", m_database.Connection))
@@ -330,7 +326,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 			}
 		}
 
-		[UnbufferedResultSetsFact]
+		[SkippableFact(ConfigSettings.UnbufferedResultSets)]
 		public async Task CancelSlowQueryWithTokenAfterExecuteReader()
 		{
 			using (var cmd = new MySqlCommand(c_slowQuery, m_database.Connection))
@@ -359,7 +355,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 			}
 		}
 
-		[UnbufferedResultSetsFact]
+		[SkippableFact(ConfigSettings.UnbufferedResultSets)]
 		public async Task CancelSlowQueryWithTokenAfterNextResult()
 		{
 			using (var cmd = new MySqlCommand("SELECT 1; " + c_slowQuery, m_database.Connection))
@@ -395,7 +391,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 			}
 		}
 
-		[UnbufferedResultSetsFact]
+		[SkippableFact(ConfigSettings.UnbufferedResultSets)]
 		public async Task CancelMultiStatementInRead()
 		{
 			using (var cmd = new MySqlCommand(c_hugeQuery + c_hugeQuery + c_hugeQuery, m_database.Connection))

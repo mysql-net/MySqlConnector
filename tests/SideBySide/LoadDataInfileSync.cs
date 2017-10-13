@@ -30,7 +30,7 @@ namespace SideBySide
 			m_loadDataInfileCommand = "LOAD DATA{0} INFILE '{1}' INTO TABLE " + m_testTable + " CHARACTER SET UTF8MB4 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (one, two, three, four, five) SET five = UNHEX(five);";
 		}
 
-		[BulkLoaderCsvFileFact]
+		[SkippableFact(ConfigSettings.CsvFile)]
 		public void CommandLoadCsvFile()
 		{
 			string insertInlineCommand = string.Format(m_loadDataInfileCommand, "", AppConfig.MySqlBulkLoaderCsvFile.Replace("\\", "\\\\"));
@@ -41,7 +41,7 @@ namespace SideBySide
 			Assert.Equal(20, rowCount);
 		}
 
-		[BulkLoaderLocalCsvFileFact(TrustedHost = true)]
+		[SkippableFact(ConfigSettings.LocalCsvFile | ConfigSettings.TrustedHost)]
 		public void CommandLoadLocalCsvFile()
 		{
 			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL", AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
@@ -52,8 +52,7 @@ namespace SideBySide
 			Assert.Equal(20, rowCount);
 		}
 
-#if !BASELINE
-		[BulkLoaderLocalCsvFileFact(TrustedHost = false)]
+		[SkippableFact(ConfigSettings.LocalCsvFile | ConfigSettings.TrustedHost, Baseline = "Doesn't require trusted host for LOAD DATA LOCAL INFILE")]
 		public void ThrowsNotSupportedExceptionForNotTrustedHostAndNotStream()
 		{
 			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL",
@@ -66,7 +65,6 @@ namespace SideBySide
 
 			m_database.Connection.Close();
 		}
-#endif
 
 		readonly DatabaseFixture m_database;
 		readonly string m_testTable;

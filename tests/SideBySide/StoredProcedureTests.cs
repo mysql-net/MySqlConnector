@@ -98,7 +98,7 @@ namespace SideBySide
 			}
 		}
 
-		[RequiresFeatureTheory(ServerFeatures.StoredProcedures)]
+		[SkippableTheory(ServerFeatures.StoredProcedures)]
 		[InlineData("FUNCTION")]
 		[InlineData("PROCEDURE")]
 		public async Task StoredProcedureEchoException(string procedureType)
@@ -181,7 +181,7 @@ namespace SideBySide
 			}
 		}
 
-		[RequiresFeatureTheory(ServerFeatures.StoredProcedures)]
+		[SkippableTheory(ServerFeatures.StoredProcedures)]
 		[InlineData("NonQuery")]
 		[InlineData("Scalar")]
 		[InlineData("Reader")]
@@ -380,11 +380,7 @@ namespace SideBySide
 			}
 		}
 
-		[Theory
-#if BASELINE
-			(Skip = "https://bugs.mysql.com/bug.php?id=84220")
-#endif
-		]
+		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=84220")]
 		[InlineData(false)]
 		[InlineData(true)]
 		public async Task DottedName(bool useDatabaseName)

@@ -145,11 +145,7 @@ namespace SideBySide
 			DoQuery("set", column, dataTypeName, expected, reader => reader.GetString(0));
 		}
 
-#if BASELINE
-		[Theory(Skip = "https://bugs.mysql.com/bug.php?id=78917")]
-#else
-		[Theory]
-#endif
+		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=78917")]
 		[InlineData("Boolean", "BOOL", new object[] { null, false, true, false, true, true, true })]
 		[InlineData("TinyInt1", "BOOL", new object[] { null, false, true, false, true, true, true })]
 		public void QueryBoolean(string column, string dataTypeName, object[] expected)
@@ -835,7 +831,7 @@ create table schema_table({createColumn});");
 			return data;
 		}
 
-		[RequiresFeatureTheory(ServerFeatures.Json)]
+		[SkippableTheory(ServerFeatures.Json)]
 		[InlineData(new object[] { new[] { null, "NULL", "BOOLEAN", "ARRAY", "ARRAY", "ARRAY", "INTEGER", "INTEGER", "OBJECT", "OBJECT" }})]
 		public void JsonType(string[] expectedTypes)
 		{
@@ -843,7 +839,7 @@ create table schema_table({createColumn});");
 			Assert.Equal(expectedTypes, types);
 		}
 
-		[RequiresFeatureTheory(ServerFeatures.Json)]
+		[SkippableTheory(ServerFeatures.Json)]
 		[InlineData("value", new[] { null, "null", "true", "[]", "[0]", "[1]", "0", "1", "{}", "{\"a\": \"b\"}" })]
 		public void QueryJson(string column, string[] expected)
 		{
