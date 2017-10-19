@@ -483,9 +483,12 @@ property doesn&amp;rsquo;t reference the active transaction. See &lt;a href=&#34
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=84701&#34;&gt;#84701&lt;/a&gt;: Can&amp;rsquo;t create a paramter using a 64-bit enum with a value greater than int.MaxValue&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=85185&#34;&gt;#85185&lt;/a&gt;: &lt;code&gt;ConnectionReset=True&lt;/code&gt; does not preserve connection charset&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=86263&#34;&gt;#86263&lt;/a&gt;: Transaction isolation level affects all transactions in session&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=87307&#34;&gt;#87307&lt;/a&gt;: NextResult hangs instead of timing out&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=87316&#34;&gt;#87316&lt;/a&gt;: MySqlCommand.CommandTimeout can be set to a negative value&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=87868&#34;&gt;#87868&lt;/a&gt;: &lt;code&gt;ColumnSize&lt;/code&gt; in schema table is incorrect for &lt;code&gt;CHAR(36)&lt;/code&gt; and &lt;code&gt;BLOB&lt;/code&gt; columns&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=87876&#34;&gt;#87876&lt;/a&gt;: &lt;code&gt;IsLong&lt;/code&gt; is schema table is incorrect for &lt;code&gt;LONGTEXT&lt;/code&gt; and &lt;code&gt;LONGBLOB&lt;/code&gt; columns&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=88058&#34;&gt;#88058&lt;/a&gt;: &lt;code&gt;decimal(n, 0)&lt;/code&gt; has wrong &lt;code&gt;NumericPrecision&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=88124&#34;&gt;#88124&lt;/a&gt;: CommandTimeout isn&amp;rsquo;t reset when calling Read/NextResult&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
@@ -1190,8 +1193,9 @@ please refer to its documentation.&lt;/p&gt;
   &lt;tr&gt;
     &lt;td&gt;BufferResultSets, Buffer Result Sets&lt;/td&gt;
     &lt;td&gt;false&lt;/td&gt;
-    &lt;td&gt;Setting this to true immediately buffers all result sets to memory upon calling ExecuteReader/ExecuteReaderAsync.  This will allow the connection
-      to execute another statement while still holding the original postion of the reader.  Do not use when result sets are bigger than available memory.&lt;/td&gt;
+    &lt;td&gt;Setting this to &lt;code&gt;true&lt;/code&gt; immediately buffers all result sets to memory upon calling ExecuteReader/ExecuteReaderAsync.  This will allow the connection
+      to execute another statement while still holding the original postion of the reader.  Do not use when result sets are bigger than available memory. When this is &lt;code&gt;true&lt;/code&gt;, &lt;code&gt;CommandTimeout&lt;/code&gt; will apply to the entire time required to read all the result sets,
+      so must be set to a sufficiently large value.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Compress, Use Compression, UseCompression&lt;/td&gt;
@@ -1209,6 +1213,13 @@ please refer to its documentation.&lt;/p&gt;
     &lt;td&gt;Convert Zero Datetime, ConvertZeroDateTime&lt;/td&gt;
     &lt;td&gt;false&lt;/td&gt;
     &lt;td&gt;True to have MySqlDataReader.GetValue() and MySqlDataReader.GetDateTime() return DateTime.MinValue for date or datetime columns that have disallowed values.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Default Command Timeout, Command Timeout, DefaultCommandTimeout&lt;/td&gt;
+    &lt;td&gt;30&lt;/td&gt;
+    &lt;td&gt;The length of time (in seconds) each command can execute before timing out and throwing an exception, or zero to disable timeouts.
+      See the note in the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlcommand.commandtimeout&#34;&gt;Microsoft documentation&lt;/a&gt;
+      for more explanation of how this is determined.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Keep Alive, Keepalive&lt;/td&gt;
