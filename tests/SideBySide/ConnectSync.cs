@@ -214,7 +214,7 @@ namespace SideBySide
 				var stopwatch = Stopwatch.StartNew();
 				Assert.Throws<MySqlException>(() => connection.Open());
 				stopwatch.Stop();
-				TestUtilities.AssertDuration(stopwatch, 2900, 500);
+				TestUtilities.AssertDuration(stopwatch, 2900, 1500);
 			}
 		}
 

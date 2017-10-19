@@ -19,18 +19,32 @@ namespace MySql.Data.MySqlClient
 		, IDbColumnSchemaGenerator
 #endif
 	{
-		public override bool NextResult() =>
-			NextResultAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public override bool NextResult()
+		{
+			Command.ResetCommandTimeout();
+			return NextResultAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		}
 
-		public override bool Read() => GetResultSet().Read();
+		public override bool Read()
+		{
+			Command.ResetCommandTimeout();
+			return GetResultSet().Read();
+		}
 
-		public override Task<bool> ReadAsync(CancellationToken cancellationToken) => GetResultSet().ReadAsync(cancellationToken);
+		public override Task<bool> ReadAsync(CancellationToken cancellationToken)
+		{
+			Command.ResetCommandTimeout();
+			return GetResultSet().ReadAsync(cancellationToken);
+		}
 
 		internal Task<bool> ReadAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) =>
 			GetResultSet().ReadAsync(ioBehavior, cancellationToken);
 
-		public override Task<bool> NextResultAsync(CancellationToken cancellationToken) =>
-			NextResultAsync(Command.Connection.AsyncIOBehavior, cancellationToken);
+		public override Task<bool> NextResultAsync(CancellationToken cancellationToken)
+		{
+			Command.ResetCommandTimeout();
+			return NextResultAsync(Command.Connection.AsyncIOBehavior, cancellationToken);
+		}
 
 		internal async Task<bool> NextResultAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -402,9 +416,10 @@ namespace MySql.Data.MySqlClient
 			{
 				if (m_resultSet != null)
 				{
+					Command.Connection.Session.SetTimeout(Constants.InfiniteTimeout);
 					try
 					{
-						while (NextResult())
+						while (NextResultAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult())
 						{
 						}
 					}

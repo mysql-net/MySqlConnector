@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -150,6 +151,8 @@ namespace MySql.Data.Serialization
 				m_activeCommandId = 0;
 			}
 		}
+
+		public void SetTimeout(int timeoutMilliseconds) => m_payloadHandler.ByteHandler.RemainingTimeout = timeoutMilliseconds;
 
 		public async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -481,6 +484,8 @@ namespace MySql.Data.Serialization
 			}
 			catch (Exception ex)
 			{
+				if ((ex as MySqlException)?.Number == (int) MySqlErrorCode.CommandTimeoutExpired)
+					HandleTimeout();
 				task = ValueTaskExtensions.FromException<ArraySegment<byte>>(ex);
 			}
 
@@ -515,6 +520,12 @@ namespace MySql.Data.Serialization
 				return task;
 
 			return new ValueTask<int>(task.AsTask().ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default));
+		}
+
+		internal void HandleTimeout()
+		{
+			if (OwningConnection != null && OwningConnection.TryGetTarget(out var connection))
+				connection.SetState(ConnectionState.Closed);
 		}
 
 		private void VerifyConnected()
@@ -834,7 +845,17 @@ namespace MySql.Data.Serialization
 		{
 			if (task.IsFaulted)
 				SetFailed();
-			var payload = new PayloadData(task.GetAwaiter().GetResult());
+			ArraySegment<byte> bytes;
+			try
+			{
+				bytes = task.GetAwaiter().GetResult();
+			}
+			catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.CommandTimeoutExpired)
+			{
+				HandleTimeout();
+				throw;
+			}
+			var payload = new PayloadData(bytes);
 			payload.ThrowIfError();
 			return payload;
 		}

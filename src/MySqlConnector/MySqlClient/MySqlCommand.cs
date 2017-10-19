@@ -53,11 +53,17 @@ namespace MySql.Data.MySqlClient
 
 		public override void Cancel() => Connection.Cancel(this);
 
-		public override int ExecuteNonQuery() =>
-			ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public override int ExecuteNonQuery()
+		{
+			ResetCommandTimeout();
+			return ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		}
 
-		public override object ExecuteScalar() =>
-			ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public override object ExecuteScalar()
+		{
+			ResetCommandTimeout();
+			return ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		}
 
 		public new MySqlDataReader ExecuteReader() => (MySqlDataReader) base.ExecuteReader();
 
@@ -72,9 +78,14 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public override string CommandText { get; set; }
-		public override int CommandTimeout { get; set; }
 		public new MySqlConnection Connection { get; set; }
 		public new MySqlTransaction Transaction { get; set; }
+
+		public override int CommandTimeout
+		{
+			get => Math.Min(m_commandTimeout ?? Connection?.DefaultCommandTimeout ?? 0, int.MaxValue / 1000);
+			set => m_commandTimeout = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value), "CommandTimeout must be greater than or equal to zero.");
+		}
 
 		public override CommandType CommandType
 		{
@@ -127,8 +138,11 @@ namespace MySql.Data.MySqlClient
 			return new MySqlParameter();
 		}
 
-		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) =>
-			ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
+		{
+			ResetCommandTimeout();
+			return ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		}
 
 		public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) =>
 			ExecuteNonQueryAsync(Connection.AsyncIOBehavior, cancellationToken);
@@ -144,8 +158,11 @@ namespace MySql.Data.MySqlClient
 			!IsValid(out var exception) ? Utility.TaskFromException<object>(exception) :
 				m_commandExecutor.ExecuteScalarAsync(CommandText, m_parameterCollection, ioBehavior, cancellationToken);
 
-		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken) =>
-			ExecuteReaderAsync(behavior, Connection.AsyncIOBehavior, cancellationToken);
+		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+		{
+			ResetCommandTimeout();
+			return ExecuteReaderAsync(behavior, Connection.AsyncIOBehavior, cancellationToken);
+		}
 
 		internal Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken) =>
 			!IsValid(out var exception) ? Utility.TaskFromException<DbDataReader>(exception) :
@@ -185,6 +202,22 @@ namespace MySql.Data.MySqlClient
 
 		internal int CommandId { get; }
 
+		/// <summary>
+		/// Causes the effective command timeout to be reset back to the value specified by <see cref="CommandTimeout"/>.
+		/// </summary>
+		/// <remarks>As per the <a href="https://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlcommand.commandtimeout.aspx">MSDN documentation</a>,
+		/// "This property is the cumulative time-out (for all network packets that are read during the invocation of a method) for all network reads during command
+		/// execution or processing of the results. A time-out can still occur after the first row is returned, and does not include user processing time, only network
+		/// read time. For example, with a 30 second time out, if Read requires two network packets, then it has 30 seconds to read both network packets. If you call
+		/// Read again, it will have another 30 seconds to read any data that it requires."
+		/// The <see cref="ResetCommandTimeout"/> method is called by public ADO.NET API methods to reset the effective time remaining at the beginning of a new
+		/// method call.</remarks>
+		internal void ResetCommandTimeout()
+		{
+			var commandTimeout = CommandTimeout;
+			Connection.Session.SetTimeout(commandTimeout == 0 ? Constants.InfiniteTimeout : commandTimeout * 1000);
+		}
+
 		private void VerifyNotDisposed()
 		{
 			if (m_parameterCollection == null)
@@ -212,6 +245,7 @@ namespace MySql.Data.MySqlClient
 		static int s_commandId = 1;
 
 		MySqlParameterCollection m_parameterCollection;
+		int? m_commandTimeout;
 		CommandType m_commandType;
 		ICommandExecutor m_commandExecutor;
 		Action m_cancelAction;
