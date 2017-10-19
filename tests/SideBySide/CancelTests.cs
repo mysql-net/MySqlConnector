@@ -336,7 +336,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 				var stopwatch = Stopwatch.StartNew();
 				using (var reader = await cmd.ExecuteReaderAsync(cts.Token))
 				{
-					TestUtilities.AssertDuration(stopwatch, 450, 1500);
+					TestUtilities.AssertDuration(stopwatch, 450, 3000);
 
 					var rows = 0;
 					try
@@ -371,7 +371,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 					// the call to NextResult should block until the token is cancelled
 					var stopwatch = Stopwatch.StartNew();
 					Assert.True(await reader.NextResultAsync(cts.Token));
-					TestUtilities.AssertDuration(stopwatch, 450, 500);
+					TestUtilities.AssertDuration(stopwatch, 450, 1500);
 
 					int rows = 0;
 					try
