@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 namespace MySql.Data.Protocol.Serialization
@@ -35,7 +35,7 @@ namespace MySql.Data.Protocol.Serialization
 		{
 			// keep reading data synchronously while it is available
 			var readBytesTask = byteHandler.ReadBytesAsync(buffer, ioBehavior);
-			while (readBytesTask.IsCompleted)
+			while (readBytesTask.IsCompletedSuccessfully)
 			{
 				ValueTask<ArraySegment<byte>> result;
 				if (HasReadAllData(readBytesTask.Result, ref buffer, totalBytesToRead, out result))

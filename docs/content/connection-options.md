@@ -162,8 +162,9 @@ These are the other options that MySqlConnector supports.  They are set to sensi
   <tr>
     <td>BufferResultSets, Buffer Result Sets</td>
     <td>false</td>
-    <td>Setting this to true immediately buffers all result sets to memory upon calling ExecuteReader/ExecuteReaderAsync.  This will allow the connection
-      to execute another statement while still holding the original postion of the reader.  Do not use when result sets are bigger than available memory.</td>
+    <td>Setting this to <code>true</code> immediately buffers all result sets to memory upon calling ExecuteReader/ExecuteReaderAsync.  This will allow the connection
+      to execute another statement while still holding the original postion of the reader.  Do not use when result sets are bigger than available memory. When this is <code>true</code>, <code>CommandTimeout</code> will apply to the entire time required to read all the result sets,
+      so must be set to a sufficiently large value.</td>
   </tr>
   <tr>
     <td>Compress, Use Compression, UseCompression</td>
@@ -181,6 +182,13 @@ These are the other options that MySqlConnector supports.  They are set to sensi
     <td>Convert Zero Datetime, ConvertZeroDateTime</td>
     <td>false</td>
     <td>True to have MySqlDataReader.GetValue() and MySqlDataReader.GetDateTime() return DateTime.MinValue for date or datetime columns that have disallowed values.</td>
+  </tr>
+  <tr>
+    <td>Default Command Timeout, Command Timeout, DefaultCommandTimeout</td>
+    <td>30</td>
+    <td>The length of time (in seconds) each command can execute before timing out and throwing an exception, or zero to disable timeouts.
+      See the note in the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlcommand.commandtimeout">Microsoft documentation</a>
+      for more explanation of how this is determined.</td>
   </tr>
   <tr>
     <td>Keep Alive, Keepalive</td>

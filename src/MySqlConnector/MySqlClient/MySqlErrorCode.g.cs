@@ -7,6 +7,11 @@ namespace MySql.Data.MySqlClient
 	public enum MySqlErrorCode
 	{
 		/// <summary>
+		/// The timeout period specified by <see cref="MySqlCommand.CommandTimeout"/> elapsed before the operation completed.
+		/// </summary>
+		CommandTimeoutExpired = -1,
+
+		/// <summary>
 		/// ER_HASHCHK
 		/// </summary>
 		HashCheck = 1000,

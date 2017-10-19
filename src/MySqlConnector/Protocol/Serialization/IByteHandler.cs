@@ -1,10 +1,15 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 namespace MySql.Data.Protocol.Serialization
 {
 	internal interface IByteHandler : IDisposable
 	{
+		/// <summary>
+		/// The remaining timeout (in milliseconds) for the next I/O read. Use <see cref="Constants.InfiniteTimeout"/> to represent no (or, infinite) timeout.
+		/// </summary>
+		int RemainingTimeout { get; set; }
+
 		/// <summary>
 		/// Reads data from this byte handler.
 		/// </summary>

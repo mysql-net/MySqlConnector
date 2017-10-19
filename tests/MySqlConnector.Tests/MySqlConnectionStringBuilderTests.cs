@@ -27,6 +27,7 @@ namespace MySql.Data.Tests
 			Assert.Equal(15u, csb.ConnectionTimeout);
 			Assert.False(csb.ConvertZeroDateTime);
 			Assert.Equal("", csb.Database);
+			Assert.Equal(30u, csb.DefaultCommandTimeout);
 #if !BASELINE
 			Assert.False(csb.BufferResultSets);
 			Assert.Equal(180u, csb.ConnectionIdleTimeout);
@@ -73,6 +74,7 @@ namespace MySql.Data.Tests
 					"connection lifetime=15;" +
 					"ConnectionReset=false;" +
 					"Convert Zero Datetime=true;" +
+					"default command timeout=123;" +
 #if !BASELINE
 					"connectionidletimeout=30;" +
 					"bufferresultsets=true;" +
@@ -104,6 +106,7 @@ namespace MySql.Data.Tests
 			Assert.Equal(30u, csb.ConnectionTimeout);
 			Assert.True(csb.ConvertZeroDateTime);
 			Assert.Equal("schema_name", csb.Database);
+			Assert.Equal(123u, csb.DefaultCommandTimeout);
 #if !BASELINE
 			Assert.True(csb.BufferResultSets);
 			Assert.Equal(30u, csb.ConnectionIdleTimeout);

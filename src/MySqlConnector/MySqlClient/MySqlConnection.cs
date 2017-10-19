@@ -297,6 +297,7 @@ namespace MySql.Data.MySqlClient
 		internal bool AllowUserVariables => m_connectionSettings.AllowUserVariables;
 		internal bool BufferResultSets => m_connectionSettings.BufferResultSets;
 		internal bool ConvertZeroDateTime => m_connectionSettings.ConvertZeroDateTime;
+		internal int DefaultCommandTimeout => m_connectionSettings.DefaultCommandTimeout;
 		internal bool OldGuids => m_connectionSettings.OldGuids;
 		internal bool TreatTinyAsBoolean => m_connectionSettings.TreatTinyAsBoolean;
 		internal IOBehavior AsyncIOBehavior => m_connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
@@ -347,7 +348,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		private void SetState(ConnectionState newState)
+		internal void SetState(ConnectionState newState)
 		{
 			if (m_connectionState != newState)
 			{
