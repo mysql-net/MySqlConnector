@@ -139,12 +139,12 @@ namespace MySql.Data.MySqlClient
 			}
 			else if (Value is DateTime)
 			{
-				writer.WriteUtf8("timestamp '{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}'".FormatInvariant(Value));
+				writer.WriteUtf8("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(Value));
 			}
 			else if (Value is DateTimeOffset dateTimeOffsetValue)
 			{
 				// store as UTC as it will be read as such when deserialized from a timespan column
-				writer.WriteUtf8("timestamp '{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}'".FormatInvariant(dateTimeOffsetValue.UtcDateTime));
+				writer.WriteUtf8("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(dateTimeOffsetValue.UtcDateTime));
 			}
 			else if (Value is TimeSpan ts)
 			{
