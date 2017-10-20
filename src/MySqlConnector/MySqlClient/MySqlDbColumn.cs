@@ -35,7 +35,13 @@ namespace MySql.Data.MySqlClient
 			IsReadOnly = false;
 			IsUnique = (column.ColumnFlags & ColumnFlags.UniqueKey) != 0;
 			if (column.ColumnType == ColumnType.Decimal || column.ColumnType == ColumnType.NewDecimal)
-				NumericPrecision = (int) (column.ColumnLength - 2 + ((column.ColumnFlags & ColumnFlags.Unsigned) != 0 ? 1 : 0));
+			{
+				NumericPrecision = (int) column.ColumnLength;
+				if ((column.ColumnFlags & ColumnFlags.Unsigned) == 0)
+					NumericPrecision--;
+				if (column.Decimals > 0)
+					NumericPrecision--;
+			}
 			NumericScale = column.Decimals;
 			ProviderType = (int) column.ColumnType;
 		}

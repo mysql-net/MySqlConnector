@@ -1,5 +1,4 @@
-﻿using System.Data;
-using System.Threading.Tasks;
+using System.Data;
 using MySql.Data.MySqlClient;
 using Xunit;
 using Dapper;
@@ -31,7 +30,7 @@ namespace SideBySide
 			m_loadDataInfileCommand = "LOAD DATA{0} INFILE '{1}' INTO TABLE " + m_testTable + " CHARACTER SET UTF8MB4 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (one, two, three, four, five) SET five = UNHEX(five);";
 		}
 
-		[BulkLoaderCsvFileFact]
+		[SkippableFact(ConfigSettings.CsvFile)]
 		public async void CommandLoadCsvFile()
 		{
 			string insertInlineCommand = string.Format(m_loadDataInfileCommand, "", AppConfig.MySqlBulkLoaderCsvFile.Replace("\\", "\\\\"));
@@ -42,15 +41,33 @@ namespace SideBySide
 			Assert.Equal(20, rowCount);
 		}
 
-		[BulkLoaderLocalCsvFileFact]
+		[SkippableFact(ConfigSettings.LocalCsvFile | ConfigSettings.TrustedHost)]
 		public async void CommandLoadLocalCsvFile()
 		{
-			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL", AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
+			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL",
+				AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
 			MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
-			if (m_database.Connection.State != ConnectionState.Open) await m_database.Connection.OpenAsync();
+
+			if (m_database.Connection.State != ConnectionState.Open)
+				await m_database.Connection.OpenAsync();
+
 			int rowCount = await command.ExecuteNonQueryAsync();
+
 			m_database.Connection.Close();
 			Assert.Equal(20, rowCount);
+		}
+
+		[SkippableFact(ConfigSettings.LocalCsvFile | ConfigSettings.TrustedHost, Baseline = "Doesn't require trusted host for LOAD DATA LOCAL INFILE")]
+		public async void ThrowsNotSupportedExceptionForNotTrustedHostAndNotStream()
+		{
+			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL",
+				AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
+			MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
+
+			if (m_database.Connection.State != ConnectionState.Open)
+				await m_database.Connection.OpenAsync();
+
+			await Assert.ThrowsAsync<MySqlException>(async () => await command.ExecuteNonQueryAsync());
 		}
 
 		readonly DatabaseFixture m_database;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 
 namespace MySql.Data.Serialization
@@ -36,8 +36,10 @@ namespace MySql.Data.Serialization
 					AuthPluginData = concatenated;
 				}
 				if ((ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
-					AuthPluginName = Encoding.UTF8.GetString(reader.ReadNullTerminatedByteString());
+					AuthPluginName = Encoding.UTF8.GetString(reader.ReadNullOrEofTerminatedByteString());
 			}
+			if (reader.BytesRemaining != 0)
+				throw new FormatException("Extra bytes at end of payload.");
 		}
 
 		const byte c_protocolVersion = 0x0A;

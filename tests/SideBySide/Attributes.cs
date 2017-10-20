@@ -1,142 +1,73 @@
-using System;
 using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace SideBySide
 {
-	public class RequiresFeatureFactAttribute : FactAttribute
+	public class SkippableFactAttribute : FactAttribute
 	{
-		public RequiresFeatureFactAttribute()
+		public SkippableFactAttribute()
+			: this(ServerFeatures.None, ConfigSettings.None)
 		{
 		}
 
-		public RequiresFeatureFactAttribute(ServerFeatures features)
+		public SkippableFactAttribute(ServerFeatures serverFeatures)
+			: this(serverFeatures, ConfigSettings.None)
 		{
-			if (!AppConfig.SupportedFeatures.HasFlag(features))
-				Skip = "Doesn't support " + features;
 		}
 
-		public bool RequiresSsl
+		public SkippableFactAttribute(ConfigSettings configSettings)
+			: this(ServerFeatures.None, configSettings)
 		{
-			get => m_requiresSsl;
+		}
+
+		public SkippableFactAttribute(ServerFeatures serverFeatures, ConfigSettings configSettings)
+		{
+			Skip = TestUtilities.GetSkipReason(serverFeatures, configSettings);
+		}
+
+		public string Baseline
+		{
+			get => null;
 			set
 			{
-				m_requiresSsl = value;
-				if (m_requiresSsl)
-				{
-					var csb = AppConfig.CreateConnectionStringBuilder();
-					if (csb.SslMode == MySqlSslMode.None || csb.SslMode == MySqlSslMode.Preferred)
-						Skip = "SSL not explicitly required";
-				}
-			}
-		}
-
-		private bool m_requiresSsl;
-	}
-
-	public class RequiresFeatureTheoryAttribute : TheoryAttribute
-	{
-		public RequiresFeatureTheoryAttribute()
-		{
-		}
-
-		public RequiresFeatureTheoryAttribute(ServerFeatures features)
-		{
-			if (!AppConfig.SupportedFeatures.HasFlag(features))
-				Skip = "Doesn't support " + features;
-		}
-
-		public bool RequiresSsl
-		{
-			get => m_requiresSsl;
-			set
-			{
-				m_requiresSsl = value;
-				if (m_requiresSsl)
-				{
-					var csb = AppConfig.CreateConnectionStringBuilder();
-					if (csb.SslMode == MySqlSslMode.None || csb.SslMode == MySqlSslMode.Preferred)
-						Skip = "SSL not explicitly required";
-				}
-			}
-		}
-
-		private bool m_requiresSsl;
-	}
-
-	public class PasswordlessUserFactAttribute : FactAttribute
-	{
-		public PasswordlessUserFactAttribute()
-		{
-			if(string.IsNullOrWhiteSpace(AppConfig.PasswordlessUser))
-				Skip = "No passwordless user";
-		}
-	}
-
-	public class BulkLoaderCsvFileFactAttribute : FactAttribute
-	{
-		public BulkLoaderCsvFileFactAttribute()
-		{
-			if(string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderCsvFile))
-				Skip = "No bulk loader CSV file specified";
-		}
-	}
-
-	public class BulkLoaderTsvFileFactAttribute : FactAttribute
-	{
-		public BulkLoaderTsvFileFactAttribute()
-		{
-			if(string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderTsvFile))
-				Skip = "No bulk loader TSV file specified";
-		}
-	}
-
-	public class BulkLoaderLocalCsvFileFactAttribute : FactAttribute
-	{
-		public BulkLoaderLocalCsvFileFactAttribute()
-		{
-			if(string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderLocalCsvFile))
-				Skip = "No bulk loader local CSV file specified";
-		}
-	}
-
-	public class BulkLoaderLocalTsvFileFactAttribute : FactAttribute
-	{
-		public BulkLoaderLocalTsvFileFactAttribute()
-		{
-			if(string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderLocalTsvFile))
-				Skip = "No bulk loader local TSV file specified";
-		}
-	}
-
-	public class UnbufferedResultSetsFactAttribute : FactAttribute
-	{
-#if !BASELINE
-		public UnbufferedResultSetsFactAttribute()
-		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
-			if(csb.BufferResultSets == true)
-				Skip = "Do not run when BufferResultSets are used";
-		}
+#if BASELINE
+				Skip = value;
 #endif
-	}
-
-	public class TcpConnectionFactAttribute : FactAttribute
-	{
-		public TcpConnectionFactAttribute()
-		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
-			if(csb.Server.StartsWith("/", StringComparison.Ordinal) || csb.Server.StartsWith("./", StringComparison.Ordinal))
-				Skip = "Not a TCP Connection";
+			}
 		}
 	}
 
-	public class SecondaryDatabaseRequiredFactAttribute : FactAttribute
+	public class SkippableTheoryAttribute : TheoryAttribute
 	{
-		public SecondaryDatabaseRequiredFactAttribute()
+		public SkippableTheoryAttribute()
+			: this(ServerFeatures.None, ConfigSettings.None)
 		{
-			if (string.IsNullOrEmpty(AppConfig.SecondaryDatabase))
-				Skip = "No SecondaryDatabase specified.";
+		}
+
+		public SkippableTheoryAttribute(ServerFeatures serverFeatures)
+			: this(serverFeatures, ConfigSettings.None)
+		{
+		}
+
+		public SkippableTheoryAttribute(ConfigSettings configSettings)
+			: this(ServerFeatures.None, configSettings)
+		{
+		}
+
+		public SkippableTheoryAttribute(ServerFeatures serverFeatures, ConfigSettings configSettings)
+		{
+			Skip = TestUtilities.GetSkipReason(serverFeatures, configSettings);
+		}
+
+		public string Baseline
+		{
+			get => null;
+			set
+			{
+#if BASELINE
+				Skip = value;
+#endif
+			}
 		}
 	}
 }

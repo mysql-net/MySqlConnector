@@ -1,4 +1,8 @@
-﻿using System;
+using System;
+#if NETCOREAPP1_1_2
+using System.Reflection;
+#endif
+using System.Threading;
 using MySql.Data.MySqlClient;
 
 namespace SideBySide
@@ -7,6 +11,14 @@ namespace SideBySide
 	{
 		public DatabaseFixture()
 		{
+			// increase the number of worker threads to reduce number of spurious failures from threadpool starvation
+#if NETCOREAPP1_1_2
+			// from https://stackoverflow.com/a/42982698
+			typeof(ThreadPool).GetMethod("SetMinThreads", BindingFlags.Public | BindingFlags.Static).Invoke(null, new object[] { 64, 64 });
+#else
+			ThreadPool.SetMinThreads(64, 64);
+#endif
+
 			var csb = AppConfig.CreateConnectionStringBuilder();
 			var connectionString = csb.ConnectionString;
 			var database = csb.Database;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -147,11 +147,7 @@ namespace SideBySide
 			}
 		}
 
-#if BASELINE
-		[Fact(Skip = "https://bugs.mysql.com/bug.php?id=81650")]
-#else
-		[TcpConnectionFact]
-#endif
+		[SkippableFact(ConfigSettings.TcpConnection, Baseline = "https://bugs.mysql.com/bug.php?id=81650")]
 		public void ConnectMultipleHostNames()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -165,7 +161,7 @@ namespace SideBySide
 			}
 		}
 
-		[PasswordlessUserFact]
+		[SkippableFact(ConfigSettings.PasswordlessUser)]
 		public void ConnectNoPassword()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -181,7 +177,7 @@ namespace SideBySide
 			}
 		}
 
-		[PasswordlessUserFact]
+		[SkippableFact(ConfigSettings.PasswordlessUser)]
 		public void ConnectionPoolNoPassword()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -218,7 +214,7 @@ namespace SideBySide
 				var stopwatch = Stopwatch.StartNew();
 				Assert.Throws<MySqlException>(() => connection.Open());
 				stopwatch.Stop();
-				TestUtilities.AssertDuration(stopwatch, 2900, 500);
+				TestUtilities.AssertDuration(stopwatch, 2900, 1500);
 			}
 		}
 
@@ -237,7 +233,7 @@ namespace SideBySide
 			}
 		}
 
-		[SecondaryDatabaseRequiredFact]
+		[SkippableFact(ConfigSettings.SecondaryDatabase)]
 		public void ChangeDatabase()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -255,7 +251,7 @@ namespace SideBySide
 			}
 		}
 
-		[SecondaryDatabaseRequiredFact]
+		[SkippableFact(ConfigSettings.SecondaryDatabase)]
 		public void ChangeDatabaseNotOpen()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -265,7 +261,7 @@ namespace SideBySide
 			}
 		}
 
-		[SecondaryDatabaseRequiredFact]
+		[SkippableFact(ConfigSettings.SecondaryDatabase)]
 		public void ChangeDatabaseNull()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -276,7 +272,7 @@ namespace SideBySide
 			}
 		}
 
-		[SecondaryDatabaseRequiredFact]
+		[SkippableFact(ConfigSettings.SecondaryDatabase)]
 		public void ChangeDatabaseInvalidName()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -292,7 +288,7 @@ namespace SideBySide
 			}
 		}
 
-		[SecondaryDatabaseRequiredFact]
+		[SkippableFact(ConfigSettings.SecondaryDatabase)]
 		public void ChangeDatabaseConnectionPooling()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -326,7 +322,7 @@ namespace SideBySide
 			}
 		}
 
-		[RequiresFeatureFact(ServerFeatures.Sha256Password, RequiresSsl = true)]
+		[SkippableFact(ServerFeatures.Sha256Password, ConfigSettings.RequiresSsl)]
 		public void Sha256WithSecureConnection()
 		{
 			var csb = AppConfig.CreateSha256ConnectionStringBuilder();
@@ -334,7 +330,7 @@ namespace SideBySide
 				connection.Open();
 		}
 
-		[RequiresFeatureFact(ServerFeatures.Sha256Password)]
+		[SkippableFact(ServerFeatures.Sha256Password)]
 		public void Sha256WithoutSecureConnection()
 		{
 			var csb = AppConfig.CreateSha256ConnectionStringBuilder();

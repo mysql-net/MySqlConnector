@@ -245,11 +245,7 @@ namespace SideBySide
 			Assert.Equal(new int[0], values);
 		}
 
-		[Fact
-#if BASELINE
-		(Skip = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")
-#endif
-		]
+		[SkippableFact(Baseline = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")]
 		public void CommitTwoTransactions()
 		{
 			m_database.Connection.Execute(@"drop table if exists transaction_scope_test_1;
@@ -280,12 +276,7 @@ namespace SideBySide
 			Assert.Equal(new[] { 3, 4 }, values2);
 		}
 
-
-		[Fact
-#if BASELINE
-		(Skip = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")
-#endif
-		]
+		[SkippableFact(Baseline = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")]
 		public void RollBackTwoTransactions()
 		{
 			m_database.Connection.Execute(@"drop table if exists transaction_scope_test_1;

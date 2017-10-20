@@ -92,11 +92,7 @@ select last_insert_id();";
 				Assert.Equal(1L, rowid);
 		}
 
-#if BASELINE
-		[Theory(Skip = "http://bugs.mysql.com/bug.php?id=70686")]
-#else
-		[Theory]
-#endif
+		[SkippableTheory(Baseline = "http://bugs.mysql.com/bug.php?id=70686")]
 		[InlineData(3)]
 		[InlineData(6)]
 		public void InsertTime(int precision)
@@ -128,11 +124,7 @@ create table insert_time(value TIME({precision}));");
 		}
 
 
-#if BASELINE
-		[Fact(Skip = "https://bugs.mysql.com/bug.php?id=73788")]
-#else
-		[Fact]
-#endif
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=73788")]
 		public void InsertDateTimeOffset()
 		{
 			m_database.Connection.Execute(@"drop table if exists insert_datetimeoffset;

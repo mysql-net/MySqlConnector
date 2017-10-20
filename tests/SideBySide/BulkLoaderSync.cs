@@ -51,7 +51,7 @@ namespace SideBySide
 		}
 #endif
 
-		[BulkLoaderTsvFileFact]
+		[SkippableFact(ConfigSettings.TsvFile)]
 		public void BulkLoadTsvFile()
 		{
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
@@ -65,7 +65,7 @@ namespace SideBySide
 			Assert.Equal(20, rowCount);
 		}
 
-		[BulkLoaderLocalTsvFileFact]
+		[SkippableFact(ConfigSettings.LocalTsvFile)]
 		public void BulkLoadLocalTsvFile()
 		{
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
@@ -79,7 +79,7 @@ namespace SideBySide
 			Assert.Equal(20, rowCount);
 		}
 
-		[BulkLoaderLocalTsvFileFact]
+		[SkippableFact(ConfigSettings.LocalTsvFile)]
 		public void BulkLoadLocalTsvFileDoubleEscapedTerminators()
 		{
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
@@ -95,7 +95,7 @@ namespace SideBySide
 			Assert.Equal(20, rowCount);
 		}
 
-		[BulkLoaderCsvFileFact]
+		[SkippableFact(ConfigSettings.CsvFile)]
 		public void BulkLoadCsvFile()
 		{
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
@@ -113,7 +113,7 @@ namespace SideBySide
 			Assert.Equal(20, rowCount);
 		}
 
-		[BulkLoaderLocalCsvFileFact]
+		[SkippableFact(ConfigSettings.LocalCsvFile)]
 		public void BulkLoadLocalCsvFile()
 		{
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
@@ -307,7 +307,7 @@ namespace SideBySide
 #endif
 		}
 
-		[BulkLoaderLocalCsvFileFact]
+		[SkippableFact(ConfigSettings.LocalCsvFile)]
 		public void BulkLoadMissingTableName()
 		{
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
@@ -332,11 +332,8 @@ namespace SideBySide
 #endif
 		}
 
-#if BASELINE
-		[Fact(Skip = "SourceStream not implemented")]
-		public void BulkLoadFileStreamInvalidOperation() {}
-#else
-		[BulkLoaderLocalCsvFileFact]
+#if !BASELINE
+		[SkippableFact(ConfigSettings.LocalCsvFile)]
 		public void BulkLoadFileStreamInvalidOperation()
 		{
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
@@ -358,13 +355,8 @@ namespace SideBySide
 				});
 			}
 		}
-#endif
 
-#if BASELINE
-		[Fact(Skip = "SourceStream not implemented")]
-		public void BulkLoadLocalFileStream() {}
-#else
-		[BulkLoaderLocalCsvFileFact]
+		[SkippableFact(ConfigSettings.LocalCsvFile)]
 		public void BulkLoadLocalFileStream()
 		{
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
@@ -384,12 +376,7 @@ namespace SideBySide
 				Assert.Equal(20, rowCount);
 			}
 		}
-#endif
 
-#if BASELINE
-		[Fact(Skip = "SourceStream not implemented")]
-		public void BulkLoadMemoryStreamInvalidOperation() {}
-#else
 		[Fact]
 		public void BulkLoadMemoryStreamInvalidOperation()
 		{
@@ -411,12 +398,7 @@ namespace SideBySide
 				});
 			}
 		}
-#endif
 
-#if BASELINE
-		[Fact(Skip = "SourceStream not implemented")]
-		public void BulkLoadLocalMemoryStream() {}
-#else
 		[Fact]
 		public void BulkLoadLocalMemoryStream()
 		{
