@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.Common;
 using System.IO;
@@ -9,6 +9,12 @@ namespace MySql.Data.MySqlClient
 	{
 		public MySqlParameter()
 		{
+		}
+
+		public MySqlParameter(string name, object objValue)
+		{
+			ParameterName = name;
+			Value = objValue;
 		}
 
 		public override DbType DbType { get; set; }
@@ -70,6 +76,16 @@ namespace MySql.Data.MySqlClient
 		{
 			DbType = default(DbType);
 		}
+
+		public MySqlDbType MySqlDbType {
+			get {
+				return Types.TypeMapper.ConverToMySqlDbType(DbType);
+			}
+			set {
+				DbType = Types.TypeMapper.ConvertFromMySqlDbType(MySqlDbType);
+			}
+		}
+
 
 		internal MySqlParameter WithParameterName(string parameterName) => new MySqlParameter(this, parameterName);
 

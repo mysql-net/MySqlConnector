@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -215,6 +216,97 @@ namespace MySql.Data.MySqlClient
 
 #if !NETSTANDARD1_3
 		protected override DbProviderFactory DbProviderFactory => MySqlClientFactory.Instance;
+
+		/// <summary>
+		/// System.Data.Common, initial implementation of API DBConnection.GetSchema(String)
+		/// Returns schema information for the data source of this DbConnection using the specified string for the schema name.
+		/// </summary>
+		/// <param name="collectionName">Specifies the name of the schema to return.</param>
+		/// <returns>A DataTable that contains schema information.</returns>
+		public override System.Data.DataTable GetSchema(string collectionName)
+		{
+			return GetSchema(collectionName, null);
+		}
+
+		
+		/// <summary>
+		/// System.Data.Common, initial implementation of API DBConnection.GetSchema(String)
+		/// Returns schema information for the data source of this DbConnection using the specified string for the schema name.
+		/// </summary>
+		/// <param name="collectionName">Specifies the name of the schema to return.</param>
+		/// <param name="restrictions">Restrictions not supported yet.</param>
+		/// <returns>A DataTable that contains schema information.</returns>
+		public override System.Data.DataTable GetSchema(string collectionName, string[] restrictions)
+		{
+			var dt = new DataTable(collectionName);
+			switch (collectionName)
+			{
+			case "DataTypes":
+				dt.Columns.AddRange(new[] { // The names come from DbMetaDataColumnNames
+					new DataColumn("DataType", typeof(string)),
+					new DataColumn("TypeName", typeof(string)),
+					new DataColumn("ProviderDbType", typeof(int)),
+					new DataColumn("IsUnsigned", typeof(bool))
+				});
+
+				// Column type mappings:
+				var colTypes = Types.TypeMapper.Mapper.GetColumnMappings();
+				foreach (var map in colTypes)
+				{
+					var dbTypeMap = map.DbTypeMapping;
+					var dbType = dbTypeMap.DbTypes.FirstOrDefault();
+					dt.Rows.Add(new object[] {
+							dbTypeMap.ClrType.FullName,
+							map.ColumnTypeName,
+							(int)dbType,
+							map.Unsigned
+						});
+				}
+
+				// Data type mappings:
+				foreach (MySqlDbType mapItem in Enum.GetValues(typeof(MySqlDbType)))
+				{
+					var typeName = Enum.GetName(typeof(MySqlDbType), mapItem);
+					var dbType = Types.TypeMapper.ConvertFromMySqlDbType(mapItem);
+					var map = Types.TypeMapper.Mapper.GetDbTypeMapping(dbType);
+					if (map != null) // MySqlDbType.Set is not supported by the mapper.
+					{
+						dt.Rows.Add(new object[] {
+							map.ClrType.FullName,
+							Enum.GetName(typeof(MySqlDbType), mapItem).ToLower(),
+							(int)dbType,
+							typeName.Contains("UInt") || typeName.Contains("UByte")
+						});
+					}
+				}
+				return dt;
+
+			case "Procedures":
+				dt.Columns.AddRange(new[] {
+					new DataColumn("ROUTINE_TYPE"),
+					new DataColumn("ROUTINE_SCHEMA"),
+					new DataColumn("SPECIFIC_NAME")
+				});
+				var procsQuery = "SELECT ROUTINE_TYPE, ROUTINE_SCHEMA, SPECIFIC_NAME FROM INFORMATION_SCHEMA.ROUTINES;";
+				if (m_connectionState != ConnectionState.Open)
+				{
+					Open();
+				}
+				using (var com = new MySqlCommand(procsQuery, this))
+				using (var reader = com.ExecuteReader())
+				{
+					while (reader.Read())
+					{
+						dt.Rows.Add(new object[] { reader.GetString(0), reader.GetString(1), reader.GetString(2) });
+					}
+				}
+				return dt;
+
+			default:
+				throw new NotImplementedException("Not yet supported: GetSchema(\"" + collectionName + "\"). Please send a PR.");
+			}
+		}
+
 #endif
 
 		public override int ConnectionTimeout => m_connectionSettings.ConnectionTimeout;
