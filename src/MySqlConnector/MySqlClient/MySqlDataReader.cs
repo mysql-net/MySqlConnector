@@ -238,19 +238,11 @@ namespace MySql.Data.MySqlClient
 		}
 #endif
 
-#if NETSTANDARD1_3 || NETSTANDARD2_0
 		public ReadOnlyCollection<DbColumn> GetColumnSchema()
-#else
-		public ReadOnlyCollection<MySqlDbColumn> GetColumnSchema()
-#endif
 		{
 			return GetResultSet().ColumnDefinitions
-				.Select((c, n) => new MySqlDbColumn(n, c, GetFieldType(n), GetDataTypeName(n)))
-#if NETSTANDARD1_3 || NETSTANDARD2_0
-				.Cast<DbColumn>()
-#endif
-				.ToList()
-				.AsReadOnly();
+				.Select((c, n) => (DbColumn) new MySqlDbColumn(n, c, GetFieldType(n), GetDataTypeName(n)))
+				.ToList().AsReadOnly();
 		}
 
 		public override T GetFieldValue<T>(int ordinal)

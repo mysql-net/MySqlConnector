@@ -1,13 +1,42 @@
 using System;
-using System.Data.Common;
 using MySql.Data.Serialization;
+
+#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+namespace System.Data.Common
+{
+	public abstract class DbColumn
+	{
+		public bool? AllowDBNull { get; protected set; }
+		public string BaseCatalogName { get; protected set; }
+		public string BaseColumnName { get; protected set; }
+		public string BaseSchemaName { get; protected set; }
+		public string BaseServerName { get; protected set; }
+		public string BaseTableName { get; protected set; }
+		public string ColumnName { get; protected set; }
+		public int? ColumnOrdinal { get; protected set; }
+		public int? ColumnSize { get; protected set; }
+		public bool? IsAliased { get; protected set; }
+		public bool? IsAutoIncrement { get; protected set; }
+		public bool? IsExpression { get; protected set; }
+		public bool? IsHidden { get; protected set; }
+		public bool? IsIdentity { get; protected set; }
+		public bool? IsKey { get; protected set; }
+		public bool? IsLong { get; protected set; }
+		public bool? IsReadOnly { get; protected set; }
+		public bool? IsUnique { get; protected set; }
+		public int? NumericPrecision { get; protected set; }
+		public int? NumericScale { get; protected set; }
+		public string UdtAssemblyQualifiedName { get; protected set; }
+		public Type DataType { get; protected set; }
+		public string DataTypeName { get; protected set; }
+		public virtual object this[string property] => null;
+	}
+}
+#endif
 
 namespace MySql.Data.MySqlClient
 {
-	public sealed class MySqlDbColumn
-#if NETSTANDARD1_3 || NETSTANDARD2_0
-		: DbColumn
-#endif
+	public sealed class MySqlDbColumn : System.Data.Common.DbColumn
 	{
 		internal MySqlDbColumn(int ordinal, ColumnDefinitionPayload column, Type type, string dataTypeName)
 		{
@@ -47,30 +76,5 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public int ProviderType { get; }
-
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
-		public bool? AllowDBNull { get; }
-		public string BaseCatalogName { get; }
-		public string BaseColumnName { get; }
-		public string BaseSchemaName { get; }
-		public string BaseTableName { get; }
-		public string ColumnName { get; }
-		public int? ColumnOrdinal { get; }
-		public int? ColumnSize { get; }
-		public Type DataType { get; }
-		public string DataTypeName { get; }
-		public bool? IsAliased { get; }
-		public bool? IsAutoIncrement { get; }
-		public bool? IsExpression { get; }
-		public bool? IsHidden { get; }
-		public bool? IsIdentity { get; }
-		public bool? IsKey { get; }
-		public bool? IsLong { get; }
-		public bool? IsReadOnly { get; }
-		public bool? IsUnique { get; }
-		public int? NumericPrecision { get; }
-		public int? NumericScale { get; }
-		public string UdtAssemblyQualifiedName { get; }
-#endif
 	}
 }
