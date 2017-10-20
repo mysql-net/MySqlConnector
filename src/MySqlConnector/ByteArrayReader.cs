@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace MySql.Data
 {
@@ -101,6 +101,19 @@ namespace MySql.Data
 			byte[] substring = new byte[index - m_offset];
 			Buffer.BlockCopy(m_buffer, m_offset, substring, 0, substring.Length);
 			m_offset = index + 1;
+			return substring;
+		}
+
+		public byte[] ReadNullOrEofTerminatedByteString()
+		{
+			int index = m_offset;
+			while (index < m_maxOffset && m_buffer[index] != 0)
+				index++;
+			byte[] substring = new byte[index - m_offset];
+			Buffer.BlockCopy(m_buffer, m_offset, substring, 0, substring.Length);
+			if (index < m_maxOffset && m_buffer[index] == 0)
+				index++;
+			m_offset = index;
 			return substring;
 		}
 

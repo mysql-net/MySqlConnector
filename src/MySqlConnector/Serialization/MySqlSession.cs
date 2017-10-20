@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -151,6 +152,8 @@ namespace MySql.Data.Serialization
 			}
 		}
 
+		public void SetTimeout(int timeoutMilliseconds) => m_payloadHandler.ByteHandler.RemainingTimeout = timeoutMilliseconds;
+
 		public async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (m_payloadHandler != null)
@@ -216,7 +219,7 @@ namespace MySql.Data.Serialization
 				authPluginName = initialHandshake.AuthPluginName;
 			else
 				authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" : "mysql_native_password";
-			if (authPluginName != "mysql_native_password" && authPluginName != "sha256_password")
+			if (authPluginName != "mysql_native_password" && authPluginName != "sha256_password" && authPluginName != "caching_sha2_password")
 				throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(initialHandshake.AuthPluginName));
 
 			ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
@@ -246,8 +249,7 @@ namespace MySql.Data.Serialization
 			// if server doesn't support the authentication fast path, it will send a new challenge
 			if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 			{
-				await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 
 			OkPayload.Create(payload);
@@ -283,8 +285,7 @@ namespace MySql.Data.Serialization
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 					{
-						await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-						payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						payload = await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
 					OkPayload.Create(payload);
 				}
@@ -301,7 +302,7 @@ namespace MySql.Data.Serialization
 			return false;
 		}
 
-		private async Task SwitchAuthenticationAsync(ConnectionSettings cs, PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async Task<PayloadData> SwitchAuthenticationAsync(ConnectionSettings cs, PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			// if the server didn't support the hashed password; rehash with the new challenge
 			var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload);
@@ -312,82 +313,41 @@ namespace MySql.Data.Serialization
 				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
 				payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-				break;
+				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			case "mysql_clear_password":
 				if (!m_isSecureConnection)
 					throw new MySqlException("Authentication method '{0}' requires a secure connection.".FormatInvariant(switchRequest.Name));
 				payload = new PayloadData(new ArraySegment<byte>(Encoding.UTF8.GetBytes(cs.Password)));
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-				break;
+				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
+			case "caching_sha2_password":
+				var scrambleBytes = AuthenticationUtility.CreateScrambleResponse(Utility.TrimZeroByte(switchRequest.Data), cs.Password);
+				payload = new PayloadData(new ArraySegment<byte>(scrambleBytes));
+				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
+				var cachingSha2ServerResponsePayload = CachingSha2ServerResponsePayload.Create(payload);
+				if (cachingSha2ServerResponsePayload.Succeeded)
+					return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
+				goto case "sha256_password";
 
 			case "sha256_password":
-				// add NUL terminator to password
-				var passwordBytes = Encoding.UTF8.GetBytes(cs.Password);
-				Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
-
-				if (!m_isSecureConnection && passwordBytes.Length > 1)
+				if (!m_isSecureConnection && cs.Password.Length > 1)
 				{
 #if NET45
 					throw new MySqlException("Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
 #else
-					string publicKey;
-					if (!string.IsNullOrEmpty(cs.ServerRsaPublicKeyFile))
-					{
-						try
-						{
-							publicKey = File.ReadAllText(cs.ServerRsaPublicKeyFile);
-						}
-						catch (IOException ex)
-						{
-							throw new MySqlException("Couldn't load server's RSA public key from '{0}'".FormatInvariant(cs.ServerRsaPublicKeyFile), ex);
-						}
-					}
-					else if (cs.AllowPublicKeyRetrieval)
-					{
-						// request the RSA public key
-						await SendReplyAsync(new PayloadData(new ArraySegment<byte>(new byte[] { 0x01 }, 0, 1)), ioBehavior, cancellationToken).ConfigureAwait(false);
-						payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-						var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload);
-						publicKey = Encoding.ASCII.GetString(publicKeyPayload.Data);
-					}
-					else
-					{
-						throw new MySqlException("Authentication method '{0}' failed. Either use a secure connection, specify the server's RSA public key with ServerRSAPublicKeyFile, or set AllowPublicKeyRetrieval=True.".FormatInvariant(switchRequest.Name));
-					}
-
-					// load the RSA public key
-					RSA rsa;
-					try
-					{
-						rsa = Utility.DecodeX509PublicKey(publicKey);
-					}
-					catch (Exception ex)
-					{
-						throw new MySqlException("Couldn't load server's RSA public key; try using a secure connection instead.", ex);
-					}
-
-					using (rsa)
-					{
-						// XOR the password bytes with the challenge
-						AuthPluginData = Utility.TrimZeroByte(switchRequest.Data);
-						for (int i = 0; i < passwordBytes.Length; i++)
-							passwordBytes[i] ^= AuthPluginData[i % AuthPluginData.Length];
-
-						// encrypt with RSA public key
-						var encryptedPassword = rsa.Encrypt(passwordBytes, RSAEncryptionPadding.OaepSHA1);
-						payload = new PayloadData(new ArraySegment<byte>(encryptedPassword));
-						await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-					}
+					var publicKey = await GetRsaPublicKeyAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+					return await SendEncryptedPasswordAsync(switchRequest, publicKey, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 #endif
 				}
 				else
 				{
-					// send plaintext password
-					payload = new PayloadData(new ArraySegment<byte>(passwordBytes));
-					await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+					return await SendClearPasswordAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
-				break;
 
 			case "mysql_old_password":
 				throw new NotSupportedException("'MySQL Server is requesting the insecure pre-4.1 auth mechanism (mysql_old_password). The user password must be upgraded; see https://dev.mysql.com/doc/refman/5.7/en/account-upgrades.html.");
@@ -395,6 +355,85 @@ namespace MySql.Data.Serialization
 			default:
 				throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(switchRequest.Name));
 			}
+		}
+
+		private async Task<PayloadData> SendClearPasswordAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			// add NUL terminator to password
+			var passwordBytes = Encoding.UTF8.GetBytes(cs.Password);
+			Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
+
+			// send plaintext password
+			var payload = new PayloadData(new ArraySegment<byte>(passwordBytes));
+			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+			return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+		}
+
+#if !NET45
+		private async Task<PayloadData> SendEncryptedPasswordAsync(
+			AuthenticationMethodSwitchRequestPayload switchRequest,
+			string rsaPublicKey,
+			ConnectionSettings cs,
+			IOBehavior ioBehavior,
+			CancellationToken cancellationToken)
+		{
+			// load the RSA public key
+			RSA rsa;
+			try
+			{
+				rsa = Utility.DecodeX509PublicKey(rsaPublicKey);
+			}
+			catch (Exception ex)
+			{
+				throw new MySqlException("Couldn't load server's RSA public key; try using a secure connection instead.", ex);
+			}
+
+			// add NUL terminator to password
+			var passwordBytes = Encoding.UTF8.GetBytes(cs.Password);
+			Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
+
+			using (rsa)
+			{
+				// XOR the password bytes with the challenge
+				AuthPluginData = Utility.TrimZeroByte(switchRequest.Data);
+				for (var i = 0; i < passwordBytes.Length; i++)
+					passwordBytes[i] ^= AuthPluginData[i % AuthPluginData.Length];
+
+				// encrypt with RSA public key
+				var padding = switchRequest.Name == "caching_sha2_password" ? RSAEncryptionPadding.Pkcs1 : RSAEncryptionPadding.OaepSHA1;
+				var encryptedPassword = rsa.Encrypt(passwordBytes, padding);
+				var payload = new PayloadData(new ArraySegment<byte>(encryptedPassword));
+				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			}
+		}
+#endif
+
+		private async Task<string> GetRsaPublicKeyAsync(string switchRequestName, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			if (!string.IsNullOrEmpty(cs.ServerRsaPublicKeyFile))
+			{
+				try
+				{
+					return File.ReadAllText(cs.ServerRsaPublicKeyFile);
+				}
+				catch (IOException ex)
+				{
+					throw new MySqlException("Couldn't load server's RSA public key from '{0}'".FormatInvariant(cs.ServerRsaPublicKeyFile), ex);
+				}
+			}
+
+			if (cs.AllowPublicKeyRetrieval)
+			{
+				// request the RSA public key
+				var payloadContent = switchRequestName == "caching_sha2_password" ? (byte) 0x02 : (byte) 0x01;
+				await SendReplyAsync(new PayloadData(new ArraySegment<byte>(new byte[] { payloadContent }, 0, 1)), ioBehavior, cancellationToken).ConfigureAwait(false);
+				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload);
+				return Encoding.ASCII.GetString(publicKeyPayload.Data);
+			}
+
+			throw new MySqlException("Authentication method '{0}' failed. Either use a secure connection, specify the server's RSA public key with ServerRSAPublicKeyFile, or set AllowPublicKeyRetrieval=True.".FormatInvariant(switchRequestName));
 		}
 
 		public async Task<bool> TryPingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -445,6 +484,8 @@ namespace MySql.Data.Serialization
 			}
 			catch (Exception ex)
 			{
+				if ((ex as MySqlException)?.Number == (int) MySqlErrorCode.CommandTimeoutExpired)
+					HandleTimeout();
 				task = ValueTaskExtensions.FromException<ArraySegment<byte>>(ex);
 			}
 
@@ -479,6 +520,12 @@ namespace MySql.Data.Serialization
 				return task;
 
 			return new ValueTask<int>(task.AsTask().ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default));
+		}
+
+		internal void HandleTimeout()
+		{
+			if (OwningConnection != null && OwningConnection.TryGetTarget(out var connection))
+				connection.SetState(ConnectionState.Closed);
 		}
 
 		private void VerifyConnected()
@@ -798,7 +845,17 @@ namespace MySql.Data.Serialization
 		{
 			if (task.IsFaulted)
 				SetFailed();
-			var payload = new PayloadData(task.GetAwaiter().GetResult());
+			ArraySegment<byte> bytes;
+			try
+			{
+				bytes = task.GetAwaiter().GetResult();
+			}
+			catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.CommandTimeoutExpired)
+			{
+				HandleTimeout();
+				throw;
+			}
+			var payload = new PayloadData(bytes);
 			payload.ThrowIfError();
 			return payload;
 		}

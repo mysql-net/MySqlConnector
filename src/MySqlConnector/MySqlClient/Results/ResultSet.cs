@@ -24,6 +24,7 @@ namespace MySql.Data.MySqlClient.Results
 			LastInsertId = 0;
 			RecordsAffected = 0;
 			State = ResultSetState.None;
+			m_columnDefinitionPayloadUsedBytes = 0;
 			m_dataLengths = null;
 			m_dataOffsets = null;
 			m_readBuffer.Clear();
@@ -55,6 +56,10 @@ namespace MySql.Data.MySqlClient.Results
 						try
 						{
 							var localInfile = LocalInfilePayload.Create(payload);
+							if(!IsHostVerified(Connection)
+								&& !localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal))
+								throw new NotSupportedException("Use SourceStream or SslMode >= VerifyCA for LOAD DATA LOCAL INFILE");
+
 							using (var stream = localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal) ?
 								MySqlBulkLoader.GetAndRemoveStream(localInfile.FileName) :
 								File.OpenRead(localInfile.FileName))
@@ -83,6 +88,9 @@ namespace MySql.Data.MySqlClient.Results
 						if (reader.BytesRemaining != 0)
 							throw new MySqlException("Unexpected data at end of column_count packet; see https://github.com/mysql-net/MySqlConnector/issues/324");
 
+						// reserve adequate space to hold a copy of all column definitions (but note that this can be resized below if we guess too small)
+						Array.Resize(ref m_columnDefinitionPayloads, columnCount * 96);
+
 						ColumnDefinitions = new ColumnDefinitionPayload[columnCount];
 						m_dataOffsets = new int[columnCount];
 						m_dataLengths = new int[columnCount];
@@ -90,7 +98,15 @@ namespace MySql.Data.MySqlClient.Results
 						for (var column = 0; column < ColumnDefinitions.Length; column++)
 						{
 							payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-							ColumnDefinitions[column] = ColumnDefinitionPayload.Create(payload);
+							var arraySegment = payload.ArraySegment;
+
+							// 'Session.ReceiveReplyAsync' reuses a shared buffer; make a copy so that the column definitions can always be safely read at any future point
+							if (m_columnDefinitionPayloadUsedBytes + arraySegment.Count > m_columnDefinitionPayloads.Length)
+								Array.Resize(ref m_columnDefinitionPayloads, Math.Max(m_columnDefinitionPayloadUsedBytes + arraySegment.Count, m_columnDefinitionPayloadUsedBytes * 2));
+							Buffer.BlockCopy(arraySegment.Array, arraySegment.Offset, m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, arraySegment.Count);
+
+							ColumnDefinitions[column] = ColumnDefinitionPayload.Create(new ArraySegment<byte>(m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, arraySegment.Count));
+							m_columnDefinitionPayloadUsedBytes += arraySegment.Count;
 						}
 
 						if (!Session.SupportsDeprecateEof)
@@ -115,6 +131,12 @@ namespace MySql.Data.MySqlClient.Results
 			}
 
 			return this;
+		}
+
+		private bool IsHostVerified(MySqlConnection connection)
+		{
+			return connection.SslMode == MySqlSslMode.VerifyCA
+				|| connection.SslMode == MySqlSslMode.VerifyFull;
 		}
 
 		public async Task BufferEntireAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -228,6 +250,7 @@ namespace MySql.Data.MySqlClient.Results
 				row_.SetData(m_dataLengths, m_dataOffsets, payload.ArraySegment);
 				m_rowBuffered = row_;
 				m_hasRows = true;
+				BufferState = ResultSetState.ReadingRows;
 				return row_;
 			}
 		}
@@ -420,6 +443,8 @@ namespace MySql.Data.MySqlClient.Results
 		public int RecordsAffected { get; private set; }
 		public ResultSetState State { get; private set; }
 
+		byte[] m_columnDefinitionPayloads;
+		int m_columnDefinitionPayloadUsedBytes;
 		int[] m_dataLengths;
 		int[] m_dataOffsets;
 		readonly Queue<Row> m_readBuffer = new Queue<Row>();

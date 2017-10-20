@@ -170,7 +170,9 @@ namespace MySqlConnector.Tests
 			writer.Write(authData, 8, authData.Length - 8);
 			if (authData.Length - 8 < 13)
 				writer.Write(new byte[13 - (authData.Length - 8)]); // have to write at least 13 bytes
-			writer.WriteNullTerminated("mysql_native_password");
+			writer.Write(Encoding.UTF8.GetBytes("mysql_native_password"));
+			if (!m_server.SuppressAuthPluginNameTerminatingNull)
+				writer.Write((byte) 0);
 		}
 
 		private static void WriteOk(BinaryWriter writer)

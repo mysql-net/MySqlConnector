@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -153,15 +153,22 @@ namespace MySql.Data.MySqlClient
             if (!string.IsNullOrWhiteSpace(FileName) && SourceStream != null)
                 throw new InvalidOperationException("Cannot set both FileName and SourceStream");
 
-            if (string.IsNullOrWhiteSpace(FileName) && SourceStream != null)
-            {
-                if (!Local)
-                    throw new InvalidOperationException("Cannot use SourceStream when Local is not true.");
+			// LOCAL INFILE case
+			if (!string.IsNullOrWhiteSpace(FileName) && Local)
+			{
+				SourceStream = CreateFileStream(FileName);
+				FileName = null;
+			}
 
-                FileName = StreamPrefix + Guid.NewGuid().ToString("N");
-                lock (s_lock)
-                    s_streams.Add(FileName, SourceStream);
-            }
+			if (string.IsNullOrWhiteSpace(FileName) && SourceStream != null)
+			{
+				if (!Local)
+					throw new InvalidOperationException("Cannot use SourceStream when Local is not true.");
+
+				FileName = GenerateSourceStreamName();
+				lock (s_lock)
+					s_streams.Add(FileName, SourceStream);
+			}
 
             if (string.IsNullOrWhiteSpace(FileName) || string.IsNullOrWhiteSpace(TableName))
             {
@@ -179,7 +186,7 @@ namespace MySql.Data.MySqlClient
                 closeConnection = true;
                 Connection.Open();
             }
-
+            
             try
             {
                 var commandString = BuildSqlCommand();
@@ -196,7 +203,24 @@ namespace MySql.Data.MySqlClient
             }
         }
 
-        internal const string StreamPrefix = ":STREAM:";
+		private Stream CreateFileStream(string fileName)
+		{
+			try
+			{
+				return File.OpenRead(fileName);
+			}
+			catch (Exception ex)
+			{
+				throw new MySqlException($"Could not access file \"{fileName}\"", ex);
+			}
+		}
+
+		private static string GenerateSourceStreamName()
+		{
+			return StreamPrefix + Guid.NewGuid().ToString("N");
+		}
+
+		internal const string StreamPrefix = ":STREAM:";
 
         internal static Stream GetAndRemoveStream(string streamKey)
         {

@@ -75,10 +75,9 @@ namespace MySql.Data.Serialization
 
 		public byte Decimals { get; private set; }
 
-		public static ColumnDefinitionPayload Create(PayloadData payload)
+		public static ColumnDefinitionPayload Create(ArraySegment<byte> arraySegment)
 		{
-			var payloadCopy = new PayloadData(new ArraySegment<byte>((byte[]) payload.ArraySegment.Array?.Clone() ?? new byte[0], payload.ArraySegment.Offset, payload.ArraySegment.Count));
-			var reader = new ByteArrayReader(payloadCopy.ArraySegment);
+			var reader = new ByteArrayReader(arraySegment);
 			SkipLengthEncodedByteString(ref reader); // catalog
 			SkipLengthEncodedByteString(ref reader); // schema
 			SkipLengthEncodedByteString(ref reader); // table
@@ -106,7 +105,7 @@ namespace MySql.Data.Serialization
 
 			return new ColumnDefinitionPayload
 			{
-				OriginalPayload = payloadCopy,
+				OriginalData = arraySegment,
 				CharacterSet = characterSet,
 				ColumnLength = columnLength,
 				ColumnType = columnType,
@@ -123,7 +122,7 @@ namespace MySql.Data.Serialization
 
 		private void ReadNames()
 		{
-			var reader = new ByteArrayReader(OriginalPayload.ArraySegment);
+			var reader = new ByteArrayReader(OriginalData);
 			m_catalogName = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
 			m_schemaName = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
 			m_table = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
@@ -133,7 +132,7 @@ namespace MySql.Data.Serialization
 			m_readNames = true;
 		}
 
-		PayloadData OriginalPayload { get; set; }
+		ArraySegment<byte> OriginalData { get; set; }
 
 		bool m_readNames;
 		string m_name;

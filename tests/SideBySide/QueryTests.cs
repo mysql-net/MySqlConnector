@@ -124,7 +124,7 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 			}
 		}
 
-		[UnbufferedResultSetsFact]
+		[SkippableFact(ConfigSettings.UnbufferedResultSets)]
 		public async Task MultipleReaders()
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
@@ -168,11 +168,7 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 			}
 		}
 
-#if BASELINE
-		[Fact(Skip = "Does not support BufferResultSets")]
-#else
-		[Fact]
-#endif
+		[SkippableFact(Baseline = "Does not support BufferResultSets")]
 		public async Task MultipleBufferedReaders()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -502,11 +498,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			}
 		}
 
-#if BASELINE
-		[Fact(Skip = "http://bugs.mysql.com/bug.php?id=82292")]
-#else
-		[Fact]
-#endif
+		[SkippableFact(Baseline = "http://bugs.mysql.com/bug.php?id=82292")]
 		public void DapperNullableBoolNullFirst()
 		{
 			// adapted from https://github.com/StackExchange/dapper-dot-net/issues/552
@@ -520,12 +512,8 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			Assert.True(rows[1].IsBold);
 			Assert.Null(rows[2].IsBold);
 		}
-
-#if BASELINE
-		[Fact(Skip = "https://bugs.mysql.com/bug.php?id=78760")]
-#else
-		[Fact]
-#endif
+		
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=78760")]
 		public void TabsAndNewLines()
 		{
 			m_database.Connection.Execute(@"drop table if exists query_tabs;
@@ -800,11 +788,7 @@ insert into enum_test (id, value) VALUES (1002, 'no'), (1003, 'yes');
 			}
 		}
 
-		[Fact
-#if BASELINE
-			(Skip = "https://bugs.mysql.com/bug.php?id=84701")
-#endif
-		]
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=84701")]
 		public void Int64EnumParameter()
 		{
 			m_database.Connection.Execute(@"drop table if exists long_enum_test;
@@ -888,6 +872,38 @@ insert into has_rows(value) values(1),(2),(3);");
 
 						Assert.Equal(i != expecteds.Length - 1, reader.NextResult());
 					}
+				}
+			}
+		}
+
+		[Fact]
+		public void HasRowsRepeated()
+		{
+			m_database.Connection.Execute(@"drop table if exists has_rows;
+create table has_rows(value int not null);
+insert into has_rows(value) values(1),(2),(3);");
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select * from has_rows where value = 1;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(reader.HasRows);
+					Assert.True(reader.HasRows);
+					Assert.True(reader.HasRows);
+					Assert.True(reader.HasRows);
+
+					Assert.True(reader.Read());
+
+					Assert.True(reader.HasRows);
+					Assert.True(reader.HasRows);
+					Assert.True(reader.HasRows);
+
+					Assert.False(reader.Read());
+
+					Assert.True(reader.HasRows);
+					Assert.True(reader.HasRows);
+					Assert.True(reader.HasRows);
 				}
 			}
 		}

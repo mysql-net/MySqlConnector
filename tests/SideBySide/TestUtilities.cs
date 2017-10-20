@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+using System;
+using System.Diagnostics;
+using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace SideBySide
@@ -28,6 +30,59 @@ namespace SideBySide
 		{
 			var elapsed = stopwatch.ElapsedMilliseconds;
 			Assert.InRange(elapsed, minimumMilliseconds, minimumMilliseconds + lengthMilliseconds * AppConfig.TimeoutDelayFactor);
+		}
+
+		public static string GetSkipReason(ServerFeatures serverFeatures, ConfigSettings configSettings)
+		{
+			if (!AppConfig.SupportedFeatures.HasFlag(serverFeatures))
+				return $"Requires ServerFeatures.{serverFeatures}";
+
+			if (configSettings == ConfigSettings.None)
+				return null;
+
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			if (configSettings.HasFlag(ConfigSettings.RequiresSsl) && (csb.SslMode == MySqlSslMode.None || csb.SslMode == MySqlSslMode.Preferred))
+				return "Requires SslMode=Required or higher in connection string";
+
+			if (configSettings.HasFlag(ConfigSettings.TrustedHost) &&
+				(csb.SslMode == MySqlSslMode.None || csb.SslMode == MySqlSslMode.Preferred || csb.SslMode == MySqlSslMode.Required))
+			{
+				return "Requires SslMode=VerifyCA or higher in connection string";
+			}
+
+			if (configSettings.HasFlag(ConfigSettings.UntrustedHost) &&
+				(csb.SslMode == MySqlSslMode.VerifyCA || csb.SslMode == MySqlSslMode.VerifyFull))
+			{
+				return "Requires SslMode=Required or lower in connection string";
+			}
+
+			if (configSettings.HasFlag(ConfigSettings.PasswordlessUser) && string.IsNullOrWhiteSpace(AppConfig.PasswordlessUser))
+				return "Requires PasswordlessUser in config.json";
+
+			if (configSettings.HasFlag(ConfigSettings.CsvFile) && string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderCsvFile))
+				return "Requires MySqlBulkLoaderCsvFile in config.json";
+
+			if (configSettings.HasFlag(ConfigSettings.LocalCsvFile) && string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderLocalCsvFile))
+				return "Requires MySqlBulkLoaderLocalCsvFile in config.json";
+
+			if (configSettings.HasFlag(ConfigSettings.TsvFile) && string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderTsvFile))
+				return "Requires MySqlBulkLoaderTsvFile in config.json";
+
+			if (configSettings.HasFlag(ConfigSettings.LocalTsvFile) && string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderLocalTsvFile))
+				return "Requires MySqlBulkLoaderLocalTsvFile in config.json";
+
+#if !BASELINE
+			if (configSettings.HasFlag(ConfigSettings.UnbufferedResultSets) && csb.BufferResultSets)
+				return "Requires BufferResultSets=false in connection string";
+#endif
+
+			if (configSettings.HasFlag(ConfigSettings.TcpConnection) && (csb.Server.StartsWith("/", StringComparison.Ordinal) || csb.Server.StartsWith("./", StringComparison.Ordinal)))
+				return "Requires a TCP connection";
+
+			if (configSettings.HasFlag(ConfigSettings.SecondaryDatabase) && string.IsNullOrEmpty(AppConfig.SecondaryDatabase))
+				return "Requires SecondaryDatabase in config.json";
+
+			return null;
 		}
 	}
 }

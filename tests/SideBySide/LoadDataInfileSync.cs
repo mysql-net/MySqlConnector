@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using MySql.Data.MySqlClient;
 using Xunit;
 using Dapper;
@@ -30,7 +30,7 @@ namespace SideBySide
 			m_loadDataInfileCommand = "LOAD DATA{0} INFILE '{1}' INTO TABLE " + m_testTable + " CHARACTER SET UTF8MB4 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' IGNORE 1 LINES (one, two, three, four, five) SET five = UNHEX(five);";
 		}
 
-		[BulkLoaderCsvFileFact]
+		[SkippableFact(ConfigSettings.CsvFile)]
 		public void CommandLoadCsvFile()
 		{
 			string insertInlineCommand = string.Format(m_loadDataInfileCommand, "", AppConfig.MySqlBulkLoaderCsvFile.Replace("\\", "\\\\"));
@@ -41,7 +41,7 @@ namespace SideBySide
 			Assert.Equal(20, rowCount);
 		}
 
-		[BulkLoaderLocalCsvFileFact]
+		[SkippableFact(ConfigSettings.LocalCsvFile | ConfigSettings.TrustedHost)]
 		public void CommandLoadLocalCsvFile()
 		{
 			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL", AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
@@ -50,6 +50,20 @@ namespace SideBySide
 			int rowCount = command.ExecuteNonQuery();
 			m_database.Connection.Close();
 			Assert.Equal(20, rowCount);
+		}
+
+		[SkippableFact(ConfigSettings.LocalCsvFile | ConfigSettings.TrustedHost, Baseline = "Doesn't require trusted host for LOAD DATA LOCAL INFILE")]
+		public void ThrowsNotSupportedExceptionForNotTrustedHostAndNotStream()
+		{
+			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL",
+				AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
+			MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
+			if (m_database.Connection.State != ConnectionState.Open)
+				m_database.Connection.Open();
+
+			Assert.Throws<MySqlException>(() => command.ExecuteNonQuery());
+
+			m_database.Connection.Close();
 		}
 
 		readonly DatabaseFixture m_database;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
@@ -69,11 +69,7 @@ namespace SideBySide
 			}
 		}
 
-#if BASELINE
-		[Fact(Skip = "https://bugs.mysql.com/bug.php?id=81650")]
-#else
-		[TcpConnectionFact]
-#endif
+		[SkippableFact(ConfigSettings.TcpConnection, Baseline = "https://bugs.mysql.com/bug.php?id=81650")]
 		public async Task ConnectMultipleHostNames()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -87,7 +83,7 @@ namespace SideBySide
 			}
 		}
 
-		[PasswordlessUserFact]
+		[SkippableFact(ConfigSettings.PasswordlessUser)]
 		public async Task ConnectNoPassword()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -131,7 +127,7 @@ namespace SideBySide
 				var stopwatch = Stopwatch.StartNew();
 				await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
 				stopwatch.Stop();
-				TestUtilities.AssertDuration(stopwatch, 2900, 500);
+				TestUtilities.AssertDuration(stopwatch, 2900, 1500);
 			}
 		}
 
@@ -150,7 +146,7 @@ namespace SideBySide
 			}
 		}
 
-		[SecondaryDatabaseRequiredFact]
+		[SkippableFact(ConfigSettings.SecondaryDatabase)]
 		public async Task ChangeDatabase()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -168,7 +164,7 @@ namespace SideBySide
 			}
 		}
 
-		[SecondaryDatabaseRequiredFact]
+		[SkippableFact(ConfigSettings.SecondaryDatabase)]
 		public async Task ChangeDatabaseNotOpen()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -178,7 +174,7 @@ namespace SideBySide
 			}
 		}
 
-		[SecondaryDatabaseRequiredFact]
+		[SkippableFact(ConfigSettings.SecondaryDatabase)]
 		public async Task ChangeDatabaseNull()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -189,7 +185,7 @@ namespace SideBySide
 			}
 		}
 
-		[SecondaryDatabaseRequiredFact]
+		[SkippableFact(ConfigSettings.SecondaryDatabase)]
 		public async Task ChangeDatabaseInvalidName()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -205,7 +201,7 @@ namespace SideBySide
 			}
 		}
 
-		[SecondaryDatabaseRequiredFact]
+		[SkippableFact(ConfigSettings.SecondaryDatabase)]
 		public async Task ChangeDatabaseConnectionPooling()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -239,7 +235,7 @@ namespace SideBySide
 			}
 		}
 
-		[RequiresFeatureFact(ServerFeatures.Sha256Password, RequiresSsl = true)]
+		[SkippableFact(ServerFeatures.Sha256Password, ConfigSettings.RequiresSsl)]
 		public async Task Sha256WithSecureConnection()
 		{
 			var csb = AppConfig.CreateSha256ConnectionStringBuilder();
@@ -247,7 +243,7 @@ namespace SideBySide
 				await connection.OpenAsync();
 		}
 
-		[RequiresFeatureFact(ServerFeatures.Sha256Password)]
+		[SkippableFact(ServerFeatures.Sha256Password)]
 		public async Task Sha256WithoutSecureConnection()
 		{
 			var csb = AppConfig.CreateSha256ConnectionStringBuilder();
@@ -257,13 +253,39 @@ namespace SideBySide
 #endif
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
-#if BASELINE || NET45
+#if BASELINE
 				await Assert.ThrowsAsync<NotImplementedException>(() => connection.OpenAsync());
 #else
 				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.OpenSsl))
 					await connection.OpenAsync();
 				else
 					await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());
+#endif
+			}
+		}
+
+		[SkippableFact(ServerFeatures.CachingSha2Password, ConfigSettings.RequiresSsl)]
+		public async Task CachingSha2WithSecureConnection()
+		{
+			var csb = AppConfig.CreateCachingSha2ConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+				await connection.OpenAsync();
+		}
+
+		[SkippableFact(ServerFeatures.CachingSha2Password)]
+		public async Task CachingSha2WithoutSecureConnection()
+		{
+			var csb = AppConfig.CreateCachingSha2ConnectionStringBuilder();
+			csb.SslMode = MySqlSslMode.None;
+#if !BASELINE
+			csb.AllowPublicKeyRetrieval = true;
+#endif
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+#if BASELINE
+				await Assert.ThrowsAsync<NotImplementedException>(() => connection.OpenAsync());
+#else
+				await connection.OpenAsync();
 #endif
 			}
 		}

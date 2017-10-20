@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
@@ -252,6 +252,12 @@ namespace MySql.Data.Protocol.Serialization
 
 			public void Dispose()
 			{
+			}
+
+			public int RemainingTimeout
+			{
+				get => m_compressedPayloadHandler.ByteHandler.RemainingTimeout;
+				set => m_compressedPayloadHandler.ByteHandler.RemainingTimeout = value;
 			}
 
 			public ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, IOBehavior ioBehavior) =>

@@ -1,6 +1,6 @@
 {
     "Data": {
-      "ConnectionString": "server=127.0.0.1;user id=ssltest;password=test;port=3306;database=mysqltest;ssl mode=required;certificate file=../../../../../.ci/server/certs/ssl-client.pfx;Use Affected Rows=true",
+      "ConnectionString": "server=127.0.0.1;user id=ssltest;password=test;port=3306;database=mysqltest;ssl mode=required;certificate file=../../../../../.ci/server/certs/ssl-client.pfx;DefaultCommandTimeout=3600",
       "PasswordlessUser": "no_password",
       "SecondaryDatabase": "testdb2",
       "SupportedFeatures": "Json,StoredProcedures,Sha256Password,LargePackets",

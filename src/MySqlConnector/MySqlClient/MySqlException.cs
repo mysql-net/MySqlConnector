@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data.Common;
 
 namespace MySql.Data.MySqlClient
@@ -29,5 +29,10 @@ namespace MySql.Data.MySqlClient
 			Number = errorNumber;
 			SqlState = sqlState;
 		}
+
+		internal static MySqlException CreateForTimeout() => CreateForTimeout(null);
+
+		internal static MySqlException CreateForTimeout(Exception innerException) =>
+			new MySqlException((int) MySqlErrorCode.CommandTimeoutExpired, null, "The Command Timeout expired before the operation completed.");
 	}
 }

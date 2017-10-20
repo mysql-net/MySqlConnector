@@ -38,7 +38,7 @@ namespace SideBySide
 ");
 		}
 
-		[BulkLoaderTsvFileFact]
+		[SkippableFact(ConfigSettings.TsvFile)]
 		public async Task BulkLoadTsvFile()
 		{
 			using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
@@ -55,7 +55,7 @@ namespace SideBySide
 			}
 		}
 
-		[BulkLoaderLocalTsvFileFact]
+		[SkippableFact(ConfigSettings.LocalTsvFile)]
 		public async Task BulkLoadLocalTsvFile()
 		{
 			using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
@@ -72,7 +72,7 @@ namespace SideBySide
 			}
 		}
 
-		[BulkLoaderLocalTsvFileFact]
+		[SkippableFact(ConfigSettings.LocalTsvFile)]
 		public async Task BulkLoadLocalTsvFileDoubleEscapedTerminators()
 		{
 			using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
@@ -91,7 +91,7 @@ namespace SideBySide
 			}
 		}
 
-		[BulkLoaderCsvFileFact]
+		[SkippableFact(ConfigSettings.CsvFile)]
 		public async Task BulkLoadCsvFile()
 		{
 			using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
@@ -111,7 +111,7 @@ namespace SideBySide
 			}
 		}
 
-		[BulkLoaderLocalCsvFileFact]
+		[SkippableFact(ConfigSettings.LocalCsvFile)]
 		public async Task BulkLoadLocalCsvFile()
 		{
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
@@ -304,7 +304,7 @@ namespace SideBySide
 #endif
 		}
 
-		[BulkLoaderLocalCsvFileFact]
+		[SkippableFact(ConfigSettings.LocalCsvFile)]
 		public async Task BulkLoadMissingTableName()
 		{
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
@@ -329,11 +329,8 @@ namespace SideBySide
 #endif
 		}
 
-#if BASELINE
-		[Fact(Skip = "SourceStream not implemented")]
-		public void BulkLoadFileStreamInvalidOperation() {}
-#else
-		[BulkLoaderLocalCsvFileFact]
+#if !BASELINE
+		[SkippableFact(ConfigSettings.LocalCsvFile)]
 		public async Task BulkLoadFileStreamInvalidOperation()
 		{
 			using (MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString))
@@ -357,13 +354,8 @@ namespace SideBySide
 				}
 			}
 		}
-#endif
 
-#if BASELINE
-		[Fact(Skip = "SourceStream not implemented")]
-		public void BulkLoadLocalFileStream() {}
-#else
-		[BulkLoaderLocalCsvFileFact]
+		[SkippableFact(ConfigSettings.LocalCsvFile)]
 		public async Task BulkLoadLocalFileStream()
 		{
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
@@ -382,12 +374,7 @@ namespace SideBySide
 				Assert.Equal(20, rowCount);
 			}
 		}
-#endif
 
-#if BASELINE
-		[Fact(Skip = "SourceStream not implemented")]
-		public void BulkLoadMemoryStreamInvalidOperation() {}
-#else
 		[Fact]
 		public async Task BulkLoadMemoryStreamInvalidOperation()
 		{
@@ -408,12 +395,7 @@ namespace SideBySide
 				});
 			}
 		}
-#endif
 
-#if BASELINE
-		[Fact(Skip = "SourceStream not implemented")]
-		public void BulkLoadLocalMemoryStream() {}
-#else
 		[Fact]
 		public async Task BulkLoadLocalMemoryStream()
 		{

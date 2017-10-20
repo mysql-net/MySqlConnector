@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
@@ -152,6 +152,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.ConvertZeroDateTime.SetValue(this, value);
 		}
 
+		public uint DefaultCommandTimeout
+		{
+			get => MySqlConnectionStringOption.DefaultCommandTimeout.GetValue(this);
+			set => MySqlConnectionStringOption.DefaultCommandTimeout.SetValue(this, value);
+		}
+
 		public bool ForceSynchronous
 		{
 			get => MySqlConnectionStringOption.ForceSynchronous.GetValue(this);
@@ -274,6 +280,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<string> CharacterSet;
 		public static readonly MySqlConnectionStringOption<uint> ConnectionTimeout;
 		public static readonly MySqlConnectionStringOption<bool> ConvertZeroDateTime;
+		public static readonly MySqlConnectionStringOption<uint> DefaultCommandTimeout;
 		public static readonly MySqlConnectionStringOption<bool> ForceSynchronous;
 		public static readonly MySqlConnectionStringOption<uint> Keepalive;
 		public static readonly MySqlConnectionStringOption<bool> OldGuids;
@@ -400,6 +407,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(ConvertZeroDateTime = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Convert Zero Datetime", "ConvertZeroDateTime" },
 				defaultValue: false));
+
+			AddOption(DefaultCommandTimeout = new MySqlConnectionStringOption<uint>(
+				keys: new[] { "Default Command Timeout", "DefaultCommandTimeout", "Command Timeout" },
+				defaultValue: 30u));
 
 			AddOption(ForceSynchronous = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "ForceSynchronous" },

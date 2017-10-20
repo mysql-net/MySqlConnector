@@ -52,6 +52,7 @@ namespace MySql.Data.Serialization
 			BufferResultSets = csb.BufferResultSets;
 			ConnectionTimeout = (int)csb.ConnectionTimeout;
 			ConvertZeroDateTime = csb.ConvertZeroDateTime;
+			DefaultCommandTimeout = (int) csb.DefaultCommandTimeout;
 			ForceSynchronous = csb.ForceSynchronous;
 			Keepalive = csb.Keepalive;
 			OldGuids = csb.OldGuids;
@@ -93,6 +94,7 @@ namespace MySql.Data.Serialization
 		public bool BufferResultSets { get; }
 		public int ConnectionTimeout { get; }
 		public bool ConvertZeroDateTime { get; }
+		public int DefaultCommandTimeout { get; }
 		public bool ForceSynchronous { get; }
 		public uint Keepalive { get; }
 		public bool OldGuids { get; }
