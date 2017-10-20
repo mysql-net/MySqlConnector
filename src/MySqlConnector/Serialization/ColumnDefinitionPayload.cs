@@ -77,7 +77,8 @@ namespace MySql.Data.Serialization
 
 		public static ColumnDefinitionPayload Create(PayloadData payload)
 		{
-			var reader = new ByteArrayReader(payload.ArraySegment);
+			var payloadCopy = new PayloadData(new ArraySegment<byte>((byte[]) payload.ArraySegment.Array?.Clone() ?? new byte[0], payload.ArraySegment.Offset, payload.ArraySegment.Count));
+			var reader = new ByteArrayReader(payloadCopy.ArraySegment);
 			SkipLengthEncodedByteString(ref reader); // catalog
 			SkipLengthEncodedByteString(ref reader); // schema
 			SkipLengthEncodedByteString(ref reader); // table
@@ -105,7 +106,7 @@ namespace MySql.Data.Serialization
 
 			return new ColumnDefinitionPayload
 			{
-				OriginalPayload = payload,
+				OriginalPayload = payloadCopy,
 				CharacterSet = characterSet,
 				ColumnLength = columnLength,
 				ColumnType = columnType,
