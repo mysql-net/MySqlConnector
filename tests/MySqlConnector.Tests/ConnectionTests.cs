@@ -139,7 +139,7 @@ namespace MySqlConnector.Tests
 				Assert.True(dataTypes.Rows != null);
 				Assert.True(dataTypes.Rows.Count > 15);
 				var row1 = String.Join(",", dataTypes.Rows[0].ItemArray);
-				Assert.Equal("System.Boolean,bit,3,False", row1);
+				Assert.Equal("System.Boolean,BIT,3,False", row1);
 			}
 		}
 

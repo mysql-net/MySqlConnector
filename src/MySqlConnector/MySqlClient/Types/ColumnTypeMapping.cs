@@ -1,37 +1,28 @@
-﻿using System.Collections.Generic;
-using MySql.Data.Serialization;
-
 namespace MySql.Data.MySqlClient.Types
 {
-	internal class ColumnTypeMapping
+	internal sealed class ColumnTypeMapping
 	{
-		internal static string CreateLookupKey(string columnTypeName, bool unsigned, int length)
-		{
-			return columnTypeName.Trim().ToLowerInvariant()
-			       + "|" + (unsigned ? "u" : "s")
-			       + "|" + length;
-		}
+		public static string CreateLookupKey(string columnTypeName, bool isUnsigned, int length) => $"{columnTypeName}|{(isUnsigned ? "u" : "s")}|{length}";
 
-		public ColumnTypeMapping(string columnTypeName, DbTypeMapping dbTypeMapping, IEnumerable<ColumnType> columnTypes,
-			bool unsigned=false,
-			bool binary=false,
-			int length=0
-		)
+		public ColumnTypeMapping(string dataTypeName, DbTypeMapping dbTypeMapping, MySqlDbType mySqlDbType, bool unsigned = false, bool binary = false, int length = 0, string simpleDataTypeName = null)
 		{
-			ColumnTypeName = columnTypeName;
+			DataTypeName = dataTypeName;
+			SimpleDataTypeName = simpleDataTypeName ?? dataTypeName;
 			DbTypeMapping = dbTypeMapping;
+			MySqlDbType = mySqlDbType;
 			Unsigned = unsigned;
 			Binary = binary;
 			Length = length;
 		}
 
-		internal readonly string ColumnTypeName;
-		internal readonly DbTypeMapping DbTypeMapping;
-		internal readonly IEnumerable<ColumnType> ColumnTypes;
-		internal readonly bool Binary;
-		internal readonly bool Unsigned;
-		internal readonly int Length;
+		public string DataTypeName { get; }
+		public string SimpleDataTypeName { get; }
+		public DbTypeMapping DbTypeMapping { get; }
+		public MySqlDbType MySqlDbType { get; }
+		public bool Binary { get; }
+		public bool Unsigned { get; }
+		public int Length { get; }
 
-		internal string LookupKey => CreateLookupKey(ColumnTypeName, Unsigned, Length);
+		public string CreateLookupKey() => CreateLookupKey(DataTypeName, Unsigned, Length);
 	}
 }

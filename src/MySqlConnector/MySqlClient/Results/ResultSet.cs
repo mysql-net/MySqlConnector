@@ -275,97 +275,10 @@ namespace MySql.Data.MySqlClient.Results
 			if (ordinal < 0 || ordinal > ColumnDefinitions.Length)
 				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
 
-			switch (ColumnTypes[ordinal])
-			{
-			case MySqlDbType.Bool:
-				return "BOOL";
-
-			case MySqlDbType.UByte:
-			case MySqlDbType.Byte:
-				return "TINYINT";
-
-			case MySqlDbType.UInt16:
-			case MySqlDbType.Int16:
-				return "SMALLINT";
-
-			case MySqlDbType.UInt24:
-			case MySqlDbType.Int24:
-				return "MEDIUMINT";
-
-			case MySqlDbType.UInt32:
-			case MySqlDbType.Int32:
-				return "INT";
-
-			case MySqlDbType.UInt64:
-			case MySqlDbType.Int64:
-				return "BIGINT";
-
-			case MySqlDbType.Bit:
-				return "BIT";
-
-			case MySqlDbType.Enum:
-				return "ENUM";
-
-			case MySqlDbType.Set:
-				return "SET";
-
-			case MySqlDbType.Guid:
-				return "CHAR(36)";
-
-			case MySqlDbType.String:
-				var columnDefinition = ColumnDefinitions[ordinal];
-				return string.Format(CultureInfo.InvariantCulture, "CHAR({0})", columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet));
-
-			case MySqlDbType.VarString:
-			case MySqlDbType.TinyText:
-			case MySqlDbType.Text:
-			case MySqlDbType.MediumText:
-			case MySqlDbType.LongText:
-				return "VARCHAR";
-
-			case MySqlDbType.Binary:
-			case MySqlDbType.VarBinary:
-			case MySqlDbType.TinyBlob:
-			case MySqlDbType.Blob:
-			case MySqlDbType.MediumBlob:
-			case MySqlDbType.LongBlob:
-				return "BLOB";
-
-			case MySqlDbType.Date:
-				return "DATE";
-
-			case MySqlDbType.DateTime:
-				return "DATETIME";
-
-			case MySqlDbType.Timestamp:
-				return "TIMESTAMP";
-
-			case MySqlDbType.Time:
-				return "TIME";
-
-			case MySqlDbType.Year:
-				return "YEAR";
-
-			case MySqlDbType.Float:
-				return "FLOAT";
-
-			case MySqlDbType.Double:
-				return "DOUBLE";
-
-			case MySqlDbType.Decimal:
-			case MySqlDbType.NewDecimal:
-				return "DECIMAL";
-
-			case MySqlDbType.JSON:
-				return "JSON";
-
-			case MySqlDbType.Null:
-				// not a valid data type name, but only happens when there is no way to infer the type of the column, e.g., "SELECT NULL;"
-				return "NULL";
-
-			default:
-				throw new NotImplementedException("GetDataTypeName for {0} is not implemented".FormatInvariant(ColumnTypes[ordinal]));
-			}
+			var mySqlDbType = ColumnTypes[ordinal];
+			if (mySqlDbType == MySqlDbType.String)
+				return string.Format(CultureInfo.InvariantCulture, "CHAR({0})", ColumnDefinitions[ordinal].ColumnLength / SerializationUtility.GetBytesPerCharacter(ColumnDefinitions[ordinal].CharacterSet));
+			return TypeMapper.Mapper.GetColumnMapping(mySqlDbType).SimpleDataTypeName;
 		}
 
 		public Type GetFieldType(int ordinal)

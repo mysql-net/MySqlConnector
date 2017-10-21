@@ -257,7 +257,7 @@ namespace MySql.Data.MySqlClient
 					var dbType = dbTypeMap.DbTypes.FirstOrDefault();
 					dt.Rows.Add(new object[] {
 							dbTypeMap.ClrType.FullName,
-							map.ColumnTypeName,
+							map.DataTypeName,
 							(int)dbType,
 							map.Unsigned
 						});
