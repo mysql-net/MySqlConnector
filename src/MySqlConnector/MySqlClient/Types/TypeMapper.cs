@@ -19,7 +19,6 @@ namespace MySql.Data.MySqlClient.Types
 
 			// boolean
 			var typeBoolean = AddDbTypeMapping(new DbTypeMapping(typeof(bool), new[] { DbType.Boolean }, convert: o => Convert.ToBoolean(o)));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("BIT", typeBoolean, MySqlDbType.Bit));
 			AddMySqlDbTypeMapping(new ColumnTypeMapping("TINYINT", typeBoolean, MySqlDbType.Bool, unsigned: false, length: 1, simpleDataTypeName: "BOOL"));
 			AddMySqlDbTypeMapping(new ColumnTypeMapping("TINYINT", typeBoolean, MySqlDbType.Bool, unsigned: true, length: 1));
 
@@ -42,6 +41,7 @@ namespace MySql.Data.MySqlClient.Types
 			AddMySqlDbTypeMapping(new ColumnTypeMapping("INT", typeUint, MySqlDbType.UInt32, unsigned: true));
 			AddMySqlDbTypeMapping(new ColumnTypeMapping("BIGINT", typeLong, MySqlDbType.Int64, unsigned: false));
 			AddMySqlDbTypeMapping(new ColumnTypeMapping("BIGINT", typeUlong, MySqlDbType.UInt64, unsigned: true));
+			AddMySqlDbTypeMapping(new ColumnTypeMapping("BIT", typeUlong, MySqlDbType.Bit));
 
 			// decimals
 			var typeDecimal = AddDbTypeMapping(new DbTypeMapping(typeof(decimal), new[] { DbType.Decimal }, convert: o => Convert.ToDecimal(o)));
@@ -85,13 +85,12 @@ namespace MySql.Data.MySqlClient.Types
 			AddMySqlDbTypeMapping(new ColumnTypeMapping("GEOMETRYCOLLECTION", typeBinary, MySqlDbType.Geometry, binary: true));
 
 			// date/time
-			var typeDateTime = AddDbTypeMapping(new DbTypeMapping(typeof(DateTime), new[] { DbType.DateTime, DbType.Date, DbType.DateTime2 }));
+			var typeDateTime = AddDbTypeMapping(new DbTypeMapping(typeof(DateTime), new[] { DbType.DateTime, DbType.Date, DbType.DateTime2, DbType.DateTimeOffset }));
 			var typeTime = AddDbTypeMapping(new DbTypeMapping(typeof(TimeSpan), new[] { DbType.Time }));
-			var typeDateTimeOffset = AddDbTypeMapping(new DbTypeMapping(typeof(DateTimeOffset), new[] { DbType.DateTimeOffset }));
 			AddMySqlDbTypeMapping(new ColumnTypeMapping("DATETIME", typeDateTime, MySqlDbType.DateTime));
 			AddMySqlDbTypeMapping(new ColumnTypeMapping("DATE", typeDateTime, MySqlDbType.Date));
 			AddMySqlDbTypeMapping(new ColumnTypeMapping("TIME", typeTime, MySqlDbType.Time));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("TIMESTAMP", typeDateTimeOffset, MySqlDbType.Timestamp));
+			AddMySqlDbTypeMapping(new ColumnTypeMapping("TIMESTAMP", typeDateTime, MySqlDbType.Timestamp));
 			AddMySqlDbTypeMapping(new ColumnTypeMapping("YEAR", typeInt, MySqlDbType.Year));
 
 			// guid

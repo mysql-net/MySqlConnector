@@ -286,71 +286,7 @@ namespace MySql.Data.MySqlClient.Results
 			if (ordinal < 0 || ordinal > ColumnDefinitions.Length)
 				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
 
-			var columnDefinition = ColumnDefinitions[ordinal];
-			var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
-			switch (columnDefinition.ColumnType)
-			{
-				case ColumnType.Tiny:
-					return Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1 ? typeof(bool) :
-						isUnsigned ? typeof(byte) : typeof(sbyte);
-
-				case ColumnType.Int24:
-				case ColumnType.Long:
-					return isUnsigned ? typeof(uint) : typeof(int);
-
-				case ColumnType.Longlong:
-					return isUnsigned ? typeof(ulong) : typeof(long);
-
-				case ColumnType.Bit:
-					return typeof(ulong);
-
-				case ColumnType.String:
-					if (!Connection.OldGuids && columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
-						return typeof(Guid);
-					goto case ColumnType.VarString;
-
-				case ColumnType.VarString:
-				case ColumnType.TinyBlob:
-				case ColumnType.Blob:
-				case ColumnType.MediumBlob:
-				case ColumnType.LongBlob:
-					return columnDefinition.CharacterSet == CharacterSet.Binary ?
-						(Connection.OldGuids && columnDefinition.ColumnLength == 16 ? typeof(Guid) : typeof(byte[])) :
-						typeof(string);
-
-				case ColumnType.Json:
-					return typeof(string);
-
-				case ColumnType.Short:
-					return isUnsigned ? typeof(ushort) : typeof(short);
-
-				case ColumnType.Date:
-				case ColumnType.DateTime:
-				case ColumnType.Timestamp:
-					return typeof(DateTime);
-
-				case ColumnType.Time:
-					return typeof(TimeSpan);
-
-				case ColumnType.Year:
-					return typeof(int);
-
-				case ColumnType.Float:
-					return typeof(float);
-
-				case ColumnType.Double:
-					return typeof(double);
-
-				case ColumnType.Decimal:
-				case ColumnType.NewDecimal:
-					return typeof(decimal);
-
-				case ColumnType.Null:
-					return typeof(object);
-
-				default:
-					throw new NotImplementedException("GetFieldType for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));
-			}
+			return TypeMapper.Mapper.GetColumnMapping(ColumnTypes[ordinal]).DbTypeMapping.ClrType;
 		}
 
 		public int FieldCount => ColumnDefinitions?.Length ?? 0;

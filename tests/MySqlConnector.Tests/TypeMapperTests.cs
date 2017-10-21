@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Linq;
 using MySql.Data.MySqlClient.Types;
@@ -29,8 +29,8 @@ namespace MySql.Data.Tests
 		[InlineData(typeof(DateTime), DbType.Date)]
 		[InlineData(typeof(DateTime), DbType.DateTime)]
 		[InlineData(typeof(DateTime), DbType.DateTime2)]
+		[InlineData(typeof(DateTime), DbType.DateTimeOffset)]
 		[InlineData(typeof(TimeSpan), DbType.Time)]
-		[InlineData(typeof(DateTimeOffset), DbType.DateTimeOffset)]
 		[InlineData(typeof(Guid), DbType.Guid)]
 		public void DbTypeMappingTest(Type clrType, DbType dbType)
 		{
@@ -58,7 +58,7 @@ namespace MySql.Data.Tests
 		}
 
 		[Theory]
-		[InlineData("bit", false, 0, DbType.Boolean)]
+		[InlineData("bit", false, 0, DbType.UInt64)]
 		[InlineData("tinyint", false, 1, DbType.Boolean)]
 		[InlineData("tinyint", true, 1, DbType.Boolean)]
 		[InlineData("tinyint", false, 0, DbType.SByte)]
@@ -99,7 +99,7 @@ namespace MySql.Data.Tests
 		[InlineData("datetime", false, 0, DbType.DateTime)]
 		[InlineData("date", false, 0, DbType.DateTime)] // todo: this should be DbType.Date
 		[InlineData("time", false, 0, DbType.Time)]
-		[InlineData("timestamp", false, 0, DbType.DateTimeOffset)]
+		[InlineData("timestamp", false, 0, DbType.DateTime)]
 		[InlineData("year", false, 0, DbType.Int32)]
 		public void ColumnTypeMappingTest(string columnTypeName, bool unsigned, int length, DbType dbType)
 		{
