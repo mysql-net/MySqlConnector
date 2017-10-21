@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient.Types;
 using MySql.Data.Protocol.Serialization;
 using MySql.Data.Serialization;
 
@@ -21,6 +22,7 @@ namespace MySql.Data.MySqlClient.Results
 			// ResultSet can be re-used, so initialize everything
 			BufferState = ResultSetState.None;
 			ColumnDefinitions = null;
+			ColumnTypes = null;
 			LastInsertId = 0;
 			RecordsAffected = 0;
 			State = ResultSetState.None;
@@ -45,6 +47,7 @@ namespace MySql.Data.MySqlClient.Results
 						RecordsAffected += ok.AffectedRowCount;
 						LastInsertId = ok.LastInsertId;
 						ColumnDefinitions = null;
+						ColumnTypes = null;
 						State = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0
 							? ResultSetState.NoMoreData
 							: ResultSetState.HasMoreData;
@@ -92,6 +95,7 @@ namespace MySql.Data.MySqlClient.Results
 						Array.Resize(ref m_columnDefinitionPayloads, columnCount * 96);
 
 						ColumnDefinitions = new ColumnDefinitionPayload[columnCount];
+						ColumnTypes = new MySqlDbType[columnCount];
 						m_dataOffsets = new int[columnCount];
 						m_dataLengths = new int[columnCount];
 
@@ -105,7 +109,9 @@ namespace MySql.Data.MySqlClient.Results
 								Array.Resize(ref m_columnDefinitionPayloads, Math.Max(m_columnDefinitionPayloadUsedBytes + arraySegment.Count, m_columnDefinitionPayloadUsedBytes * 2));
 							Buffer.BlockCopy(arraySegment.Array, arraySegment.Offset, m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, arraySegment.Count);
 
-							ColumnDefinitions[column] = ColumnDefinitionPayload.Create(new ArraySegment<byte>(m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, arraySegment.Count));
+							var columnDefinition = ColumnDefinitionPayload.Create(new ArraySegment<byte>(m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, arraySegment.Count));
+							ColumnDefinitions[column] = columnDefinition;
+							ColumnTypes[column] = TypeMapper.ConvertToMySqlDbType(columnDefinition, treatTinyAsBoolean: Connection.TreatTinyAsBoolean, oldGuids: Connection.OldGuids);
 							m_columnDefinitionPayloadUsedBytes += arraySegment.Count;
 						}
 
@@ -269,74 +275,96 @@ namespace MySql.Data.MySqlClient.Results
 			if (ordinal < 0 || ordinal > ColumnDefinitions.Length)
 				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
 
-			var columnDefinition = ColumnDefinitions[ordinal];
-			switch (columnDefinition.ColumnType)
+			switch (ColumnTypes[ordinal])
 			{
-				case ColumnType.Tiny:
-					return Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1 ? "BOOL" : "TINYINT";
+			case MySqlDbType.Bool:
+				return "BOOL";
 
-				case ColumnType.Short:
-					return "SMALLINT";
+			case MySqlDbType.UByte:
+			case MySqlDbType.Byte:
+				return "TINYINT";
 
-				case ColumnType.Int24:
-					return "MEDIUMINT";
+			case MySqlDbType.UInt16:
+			case MySqlDbType.Int16:
+				return "SMALLINT";
 
-				case ColumnType.Long:
-					return "INT";
+			case MySqlDbType.UInt24:
+			case MySqlDbType.Int24:
+				return "MEDIUMINT";
 
-				case ColumnType.Longlong:
-					return "BIGINT";
+			case MySqlDbType.UInt32:
+			case MySqlDbType.Int32:
+				return "INT";
 
-				case ColumnType.Bit:
-					return "BIT";
+			case MySqlDbType.UInt64:
+			case MySqlDbType.Int64:
+				return "BIGINT";
 
-				case ColumnType.String:
-					return columnDefinition.CharacterSet == CharacterSet.Binary ? "BLOB" :
-						(columnDefinition.ColumnFlags & ColumnFlags.Enum) != 0 ? "ENUM" :
-						(columnDefinition.ColumnFlags & ColumnFlags.Set) != 0 ? "SET" :
-						string.Format(CultureInfo.InvariantCulture, "CHAR({0})", columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet));
+			case MySqlDbType.Bit:
+				return "BIT";
 
-				case ColumnType.VarString:
-				case ColumnType.TinyBlob:
-				case ColumnType.Blob:
-				case ColumnType.MediumBlob:
-				case ColumnType.LongBlob:
-					return columnDefinition.CharacterSet == CharacterSet.Binary ? "BLOB" : "VARCHAR";
+			case MySqlDbType.Enum:
+				return "ENUM";
 
-				case ColumnType.Date:
-					return "DATE";
+			case MySqlDbType.Set:
+				return "SET";
 
-				case ColumnType.DateTime:
-					return "DATETIME";
+			case MySqlDbType.Guid:
+				return "CHAR(36)";
 
-				case ColumnType.Timestamp:
-					return "TIMESTAMP";
+			case MySqlDbType.String:
+				var columnDefinition = ColumnDefinitions[ordinal];
+				return string.Format(CultureInfo.InvariantCulture, "CHAR({0})", columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet));
 
-				case ColumnType.Time:
-					return "TIME";
+			case MySqlDbType.VarString:
+			case MySqlDbType.TinyText:
+			case MySqlDbType.Text:
+			case MySqlDbType.MediumText:
+			case MySqlDbType.LongText:
+				return "VARCHAR";
 
-				case ColumnType.Year:
-					return "YEAR";
+			case MySqlDbType.Binary:
+			case MySqlDbType.VarBinary:
+			case MySqlDbType.TinyBlob:
+			case MySqlDbType.Blob:
+			case MySqlDbType.MediumBlob:
+			case MySqlDbType.LongBlob:
+				return "BLOB";
 
-				case ColumnType.Float:
-					return "FLOAT";
+			case MySqlDbType.Date:
+				return "DATE";
 
-				case ColumnType.Double:
-					return "DOUBLE";
+			case MySqlDbType.DateTime:
+				return "DATETIME";
 
-				case ColumnType.Decimal:
-				case ColumnType.NewDecimal:
-					return "DECIMAL";
+			case MySqlDbType.Timestamp:
+				return "TIMESTAMP";
 
-				case ColumnType.Json:
-					return "JSON";
+			case MySqlDbType.Time:
+				return "TIME";
 
-				case ColumnType.Null:
-					// not a valid data type name, but only happens when there is no way to infer the type of the column, e.g., "SELECT NULL;"
-					return "NULL";
+			case MySqlDbType.Year:
+				return "YEAR";
 
-				default:
-					throw new NotImplementedException("GetDataTypeName for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));
+			case MySqlDbType.Float:
+				return "FLOAT";
+
+			case MySqlDbType.Double:
+				return "DOUBLE";
+
+			case MySqlDbType.Decimal:
+			case MySqlDbType.NewDecimal:
+				return "DECIMAL";
+
+			case MySqlDbType.JSON:
+				return "JSON";
+
+			case MySqlDbType.Null:
+				// not a valid data type name, but only happens when there is no way to infer the type of the column, e.g., "SELECT NULL;"
+				return "NULL";
+
+			default:
+				throw new NotImplementedException("GetDataTypeName for {0} is not implemented".FormatInvariant(ColumnTypes[ordinal]));
 			}
 		}
 
@@ -439,6 +467,7 @@ namespace MySql.Data.MySqlClient.Results
 
 		public ResultSetState BufferState { get; private set; }
 		public ColumnDefinitionPayload[] ColumnDefinitions { get; private set; }
+		public MySqlDbType[] ColumnTypes { get; private set; }
 		public long LastInsertId { get; private set; }
 		public int RecordsAffected { get; private set; }
 		public ResultSetState State { get; private set; }

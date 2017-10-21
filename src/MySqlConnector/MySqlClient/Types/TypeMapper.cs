@@ -132,6 +132,102 @@ namespace MySql.Data.MySqlClient.Types
 			return columnTypeMapping;
 		}
 
+		public static MySqlDbType ConvertToMySqlDbType(ColumnDefinitionPayload columnDefinition, bool treatTinyAsBoolean, bool oldGuids)
+		{
+			var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
+			switch (columnDefinition.ColumnType)
+			{
+			case ColumnType.Tiny:
+				return treatTinyAsBoolean && columnDefinition.ColumnLength == 1 ? MySqlDbType.Bool :
+					isUnsigned ? MySqlDbType.UByte : MySqlDbType.Byte;
+
+			case ColumnType.Int24:
+				return isUnsigned ? MySqlDbType.UInt24 : MySqlDbType.Int24;
+
+			case ColumnType.Long:
+				return isUnsigned ? MySqlDbType.UInt32 : MySqlDbType.Int32;
+
+			case ColumnType.Longlong:
+				return isUnsigned ? MySqlDbType.UInt64 : MySqlDbType.Int64;
+
+			case ColumnType.Bit:
+				return MySqlDbType.Bit;
+
+			case ColumnType.String:
+				if (!oldGuids && columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
+					return MySqlDbType.Guid;
+				if ((columnDefinition.ColumnFlags & ColumnFlags.Enum) != 0)
+					return MySqlDbType.Enum;
+				if ((columnDefinition.ColumnFlags & ColumnFlags.Set) != 0)
+					return MySqlDbType.Set;
+				goto case ColumnType.VarString;
+
+			case ColumnType.VarString:
+			case ColumnType.TinyBlob:
+			case ColumnType.Blob:
+			case ColumnType.MediumBlob:
+			case ColumnType.LongBlob:
+				var type = columnDefinition.ColumnType;
+				if (columnDefinition.CharacterSet == CharacterSet.Binary)
+				{
+					if (oldGuids && columnDefinition.ColumnLength == 16)
+						return MySqlDbType.Guid;
+
+					return type == ColumnType.String ? MySqlDbType.Binary :
+						type == ColumnType.VarString ? MySqlDbType.VarBinary :
+						type == ColumnType.TinyBlob ? MySqlDbType.TinyBlob :
+						type == ColumnType.Blob ? MySqlDbType.Blob :
+						type == ColumnType.MediumBlob ? MySqlDbType.MediumBlob :
+						MySqlDbType.LongBlob;
+				}
+				return type == ColumnType.String ? MySqlDbType.String :
+					type == ColumnType.VarString ? MySqlDbType.VarString :
+					type == ColumnType.TinyBlob ? MySqlDbType.TinyText :
+					type == ColumnType.Blob ? MySqlDbType.Text:
+					type == ColumnType.MediumBlob ? MySqlDbType.MediumText :
+					MySqlDbType.LongText;
+
+			case ColumnType.Json:
+				return MySqlDbType.JSON;
+
+			case ColumnType.Short:
+				return isUnsigned ? MySqlDbType.UInt16 : MySqlDbType.Int16;
+
+			case ColumnType.Date:
+				return MySqlDbType.Date;
+
+			case ColumnType.DateTime:
+				return MySqlDbType.DateTime;
+
+			case ColumnType.Timestamp:
+				return MySqlDbType.Timestamp;
+
+			case ColumnType.Time:
+				return MySqlDbType.Time;
+
+			case ColumnType.Year:
+				return MySqlDbType.Year;
+
+			case ColumnType.Float:
+				return MySqlDbType.Float;
+
+			case ColumnType.Double:
+				return MySqlDbType.Double;
+
+			case ColumnType.Decimal:
+				return MySqlDbType.Decimal;
+
+			case ColumnType.NewDecimal:
+				return MySqlDbType.NewDecimal;
+
+			case ColumnType.Null:
+				return MySqlDbType.Null;
+
+			default:
+				throw new NotImplementedException("ConvertToMySqlDbType for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));
+			}
+		}
+
 		internal static MySqlDbType ConverToMySqlDbType(DbType dbtype)
 		{
 			switch (dbtype)
@@ -209,6 +305,8 @@ namespace MySql.Data.MySqlClient.Types
 			case MySqlDbType.LongText: return DbType.String;
 			case MySqlDbType.Text: return DbType.String;
 			case MySqlDbType.Guid: return DbType.Guid;
+			case MySqlDbType.Bool: return DbType.Boolean;
+			case MySqlDbType.Null: return DbType.Object;
 			}
 			throw new InvalidCastException("Never reached. " + dbtype.ToString());
 		}

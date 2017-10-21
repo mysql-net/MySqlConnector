@@ -4,13 +4,15 @@ namespace MySql.Data.MySqlClient
 {
 	public enum MySqlDbType
 	{
+		Bool = -1,
 		Decimal,
 		Byte,
 		Int16,
 		Int32,
 		Float,
 		Double,
-		Timestamp = 7,
+		Null,
+		Timestamp,
 		Int64,
 		Int24,
 		Date,
