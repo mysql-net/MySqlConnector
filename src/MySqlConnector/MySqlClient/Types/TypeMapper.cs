@@ -47,8 +47,8 @@ namespace MySql.Data.MySqlClient.Types
 			var typeDecimal = AddDbTypeMapping(new DbTypeMapping(typeof(decimal), new[] { DbType.Decimal }, convert: o => Convert.ToDecimal(o)));
 			var typeDouble = AddDbTypeMapping(new DbTypeMapping(typeof(double), new[] { DbType.Double }, convert: o => Convert.ToDouble(o)));
 			var typeFloat = AddDbTypeMapping(new DbTypeMapping(typeof(float), new[] { DbType.Single }, convert: o => Convert.ToSingle(o)));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("DECIMAL", typeDecimal, MySqlDbType.Decimal));
 			AddMySqlDbTypeMapping(new ColumnTypeMapping("DECIMAL", typeDecimal, MySqlDbType.NewDecimal));
+			AddMySqlDbTypeMapping(new ColumnTypeMapping("DECIMAL", typeDecimal, MySqlDbType.Decimal));
 			AddMySqlDbTypeMapping(new ColumnTypeMapping("DOUBLE", typeDouble, MySqlDbType.Double));
 			AddMySqlDbTypeMapping(new ColumnTypeMapping("FLOAT", typeFloat, MySqlDbType.Float));
 
@@ -197,7 +197,7 @@ namespace MySql.Data.MySqlClient.Types
 						MySqlDbType.LongBlob;
 				}
 				return type == ColumnType.String ? MySqlDbType.String :
-					type == ColumnType.VarString ? MySqlDbType.VarString :
+					type == ColumnType.VarString ? MySqlDbType.VarChar :
 					type == ColumnType.TinyBlob ? MySqlDbType.TinyText :
 					type == ColumnType.Blob ? MySqlDbType.Text:
 					type == ColumnType.MediumBlob ? MySqlDbType.MediumText :
