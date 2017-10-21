@@ -98,7 +98,7 @@ namespace MySql.Data.Tests
 		[InlineData("time", false, 0, DbType.Time)]
 		[InlineData("timestamp", false, 0, DbType.DateTime)]
 		[InlineData("year", false, 0, DbType.Int32)]
-		public void ColumnTypeMappingTest(string columnTypeName, bool unsigned, int length, DbType dbType)
+		public void ColumnTypeMetadataTest(string columnTypeName, bool unsigned, int length, DbType dbType)
 		{
 			Assert.Equal(dbType, TypeMapper.Mapper.GetDbTypeMapping(columnTypeName, unsigned, length).DbTypes.FirstOrDefault());
 			Assert.Equal(dbType, TypeMapper.Mapper.GetDbTypeMapping(columnTypeName.ToUpperInvariant(), unsigned, length).DbTypes.FirstOrDefault());

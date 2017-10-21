@@ -278,7 +278,7 @@ namespace MySql.Data.MySqlClient.Results
 			var mySqlDbType = ColumnTypes[ordinal];
 			if (mySqlDbType == MySqlDbType.String)
 				return string.Format(CultureInfo.InvariantCulture, "CHAR({0})", ColumnDefinitions[ordinal].ColumnLength / SerializationUtility.GetBytesPerCharacter(ColumnDefinitions[ordinal].CharacterSet));
-			return TypeMapper.Mapper.GetColumnMapping(mySqlDbType).SimpleDataTypeName;
+			return TypeMapper.Mapper.GetColumnTypeMetadata(mySqlDbType).SimpleDataTypeName;
 		}
 
 		public Type GetFieldType(int ordinal)
@@ -286,7 +286,7 @@ namespace MySql.Data.MySqlClient.Results
 			if (ordinal < 0 || ordinal > ColumnDefinitions.Length)
 				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
 
-			return TypeMapper.Mapper.GetColumnMapping(ColumnTypes[ordinal]).DbTypeMapping.ClrType;
+			return TypeMapper.Mapper.GetColumnTypeMetadata(ColumnTypes[ordinal]).DbTypeMapping.ClrType;
 		}
 
 		public int FieldCount => ColumnDefinitions?.Length ?? 0;

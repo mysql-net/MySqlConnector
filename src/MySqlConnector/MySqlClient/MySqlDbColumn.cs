@@ -42,9 +42,9 @@ namespace MySql.Data.MySqlClient
 	{
 		internal MySqlDbColumn(int ordinal, ColumnDefinitionPayload column, MySqlDbType mySqlDbType)
 		{
-			var columnTypeMapping = TypeMapper.Mapper.GetColumnMapping(mySqlDbType);
+			var columnTypeMetadata = TypeMapper.Mapper.GetColumnTypeMetadata(mySqlDbType);
 
-			var type = columnTypeMapping.DbTypeMapping.ClrType;
+			var type = columnTypeMetadata.DbTypeMapping.ClrType;
 			var columnSize = type == typeof(string) || type == typeof(Guid) ?
 				column.ColumnLength / SerializationUtility.GetBytesPerCharacter(column.CharacterSet) :
 				column.ColumnLength;
@@ -58,7 +58,7 @@ namespace MySql.Data.MySqlClient
 			ColumnOrdinal = ordinal;
 			ColumnSize = columnSize > int.MaxValue ? int.MaxValue : unchecked((int) columnSize);
 			DataType = type;
-			DataTypeName = columnTypeMapping.SimpleDataTypeName;
+			DataTypeName = columnTypeMetadata.SimpleDataTypeName;
 			if (mySqlDbType == MySqlDbType.String)
 				DataTypeName += string.Format(CultureInfo.InvariantCulture, "({0})", columnSize);
 			IsAliased = column.PhysicalName != column.Name;

@@ -14,13 +14,13 @@ namespace MySql.Data.MySqlClient.Types
 		{
 			m_dbTypeMappingsByClrType = new Dictionary<Type, DbTypeMapping>();
 			m_dbTypeMappingsByDbType = new Dictionary<DbType, DbTypeMapping>();
-			m_columnTypeMappingLookup = new Dictionary<string, ColumnTypeMapping>(StringComparer.OrdinalIgnoreCase);
-			m_mySqlDbTypeToColumnTypeMapping = new Dictionary<MySqlDbType, ColumnTypeMapping>();
+			m_columnTypeMetadataLookup = new Dictionary<string, ColumnTypeMetadata>(StringComparer.OrdinalIgnoreCase);
+			m_mySqlDbTypeToColumnTypeMetadata = new Dictionary<MySqlDbType, ColumnTypeMetadata>();
 
 			// boolean
 			var typeBoolean = AddDbTypeMapping(new DbTypeMapping(typeof(bool), new[] { DbType.Boolean }, convert: o => Convert.ToBoolean(o)));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("TINYINT", typeBoolean, MySqlDbType.Bool, unsigned: false, length: 1, simpleDataTypeName: "BOOL"));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("TINYINT", typeBoolean, MySqlDbType.Bool, unsigned: true, length: 1));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("TINYINT", typeBoolean, MySqlDbType.Bool, unsigned: false, length: 1, simpleDataTypeName: "BOOL"));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("TINYINT", typeBoolean, MySqlDbType.Bool, unsigned: true, length: 1));
 
 			// integers
 			var typeSbyte = AddDbTypeMapping(new DbTypeMapping(typeof(sbyte), new[] { DbType.SByte }, convert: o => Convert.ToSByte(o)));
@@ -31,87 +31,87 @@ namespace MySql.Data.MySqlClient.Types
 			var typeUint = AddDbTypeMapping(new DbTypeMapping(typeof(uint), new[] { DbType.UInt32 }, convert: o => Convert.ToUInt32(o)));
 			var typeLong = AddDbTypeMapping(new DbTypeMapping(typeof(long), new[] { DbType.Int64 }, convert: o => Convert.ToInt64(o)));
 			var typeUlong = AddDbTypeMapping(new DbTypeMapping(typeof(ulong), new[] { DbType.UInt64 }, convert: o => Convert.ToUInt64(o)));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("TINYINT", typeSbyte, MySqlDbType.Byte, unsigned: false));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("TINYINT", typeByte, MySqlDbType.UByte, unsigned: true));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("SMALLINT", typeShort, MySqlDbType.Int16, unsigned: false));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("SMALLINT", typeUshort, MySqlDbType.UInt16, unsigned: true));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("INT", typeInt, MySqlDbType.Int32, unsigned: false));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("INT", typeUint, MySqlDbType.UInt32, unsigned: true));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("MEDIUMINT", typeInt, MySqlDbType.Int24, unsigned: false));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("MEDIUMINT", typeUint, MySqlDbType.UInt24, unsigned: true));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("BIGINT", typeLong, MySqlDbType.Int64, unsigned: false));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("BIGINT", typeUlong, MySqlDbType.UInt64, unsigned: true));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("BIT", typeUlong, MySqlDbType.Bit));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("TINYINT", typeSbyte, MySqlDbType.Byte, unsigned: false));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("TINYINT", typeByte, MySqlDbType.UByte, unsigned: true));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("SMALLINT", typeShort, MySqlDbType.Int16, unsigned: false));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("SMALLINT", typeUshort, MySqlDbType.UInt16, unsigned: true));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("INT", typeInt, MySqlDbType.Int32, unsigned: false));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("INT", typeUint, MySqlDbType.UInt32, unsigned: true));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("MEDIUMINT", typeInt, MySqlDbType.Int24, unsigned: false));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("MEDIUMINT", typeUint, MySqlDbType.UInt24, unsigned: true));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("BIGINT", typeLong, MySqlDbType.Int64, unsigned: false));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("BIGINT", typeUlong, MySqlDbType.UInt64, unsigned: true));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("BIT", typeUlong, MySqlDbType.Bit));
 
 			// decimals
 			var typeDecimal = AddDbTypeMapping(new DbTypeMapping(typeof(decimal), new[] { DbType.Decimal, DbType.Currency, DbType.VarNumeric }, convert: o => Convert.ToDecimal(o)));
 			var typeDouble = AddDbTypeMapping(new DbTypeMapping(typeof(double), new[] { DbType.Double }, convert: o => Convert.ToDouble(o)));
 			var typeFloat = AddDbTypeMapping(new DbTypeMapping(typeof(float), new[] { DbType.Single }, convert: o => Convert.ToSingle(o)));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("DECIMAL", typeDecimal, MySqlDbType.NewDecimal));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("DECIMAL", typeDecimal, MySqlDbType.Decimal));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("DOUBLE", typeDouble, MySqlDbType.Double));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("FLOAT", typeFloat, MySqlDbType.Float));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("DECIMAL", typeDecimal, MySqlDbType.NewDecimal));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("DECIMAL", typeDecimal, MySqlDbType.Decimal));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("DOUBLE", typeDouble, MySqlDbType.Double));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("FLOAT", typeFloat, MySqlDbType.Float));
 
 			// string
 			var typeFixedString = AddDbTypeMapping(new DbTypeMapping(typeof(string), new[] { DbType.StringFixedLength, DbType.AnsiStringFixedLength }, convert: Convert.ToString));
 			var typeString = AddDbTypeMapping(new DbTypeMapping(typeof(string), new[] { DbType.String, DbType.AnsiString, DbType.Xml }, convert: Convert.ToString));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("CHAR", typeFixedString, MySqlDbType.String));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("VARCHAR", typeString, MySqlDbType.VarChar));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("VARCHAR", typeString, MySqlDbType.VarString));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("TINYTEXT", typeString, MySqlDbType.TinyText, simpleDataTypeName: "VARCHAR"));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("TEXT", typeString, MySqlDbType.Text, simpleDataTypeName: "VARCHAR"));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("MEDIUMTEXT", typeString, MySqlDbType.MediumText, simpleDataTypeName: "VARCHAR"));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("LONGTEXT", typeString, MySqlDbType.LongText, simpleDataTypeName: "VARCHAR"));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("ENUM", typeString, MySqlDbType.Enum));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("SET", typeString, MySqlDbType.Set));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("JSON", typeString, MySqlDbType.JSON));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("CHAR", typeFixedString, MySqlDbType.String));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("VARCHAR", typeString, MySqlDbType.VarChar));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("VARCHAR", typeString, MySqlDbType.VarString));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("TINYTEXT", typeString, MySqlDbType.TinyText, simpleDataTypeName: "VARCHAR"));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("TEXT", typeString, MySqlDbType.Text, simpleDataTypeName: "VARCHAR"));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("MEDIUMTEXT", typeString, MySqlDbType.MediumText, simpleDataTypeName: "VARCHAR"));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("LONGTEXT", typeString, MySqlDbType.LongText, simpleDataTypeName: "VARCHAR"));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("ENUM", typeString, MySqlDbType.Enum));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("SET", typeString, MySqlDbType.Set));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("JSON", typeString, MySqlDbType.JSON));
 
 			// binary
 			var typeBinary = AddDbTypeMapping(new DbTypeMapping(typeof(byte[]), new[] { DbType.Binary }));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("BLOB", typeBinary, MySqlDbType.Blob, binary: true, simpleDataTypeName: "BLOB"));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("BINARY", typeBinary, MySqlDbType.Binary, binary: true, simpleDataTypeName: "BLOB"));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("VARBINARY", typeBinary, MySqlDbType.VarBinary, binary: true, simpleDataTypeName: "BLOB"));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("TINYBLOB", typeBinary, MySqlDbType.TinyBlob, binary: true, simpleDataTypeName: "BLOB"));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("MEDIUMBLOB", typeBinary, MySqlDbType.MediumBlob, binary: true, simpleDataTypeName: "BLOB"));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("LONGBLOB", typeBinary, MySqlDbType.LongBlob, binary: true, simpleDataTypeName: "BLOB"));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("BLOB", typeBinary, MySqlDbType.Blob, binary: true, simpleDataTypeName: "BLOB"));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("BINARY", typeBinary, MySqlDbType.Binary, binary: true, simpleDataTypeName: "BLOB"));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("VARBINARY", typeBinary, MySqlDbType.VarBinary, binary: true, simpleDataTypeName: "BLOB"));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("TINYBLOB", typeBinary, MySqlDbType.TinyBlob, binary: true, simpleDataTypeName: "BLOB"));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("MEDIUMBLOB", typeBinary, MySqlDbType.MediumBlob, binary: true, simpleDataTypeName: "BLOB"));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("LONGBLOB", typeBinary, MySqlDbType.LongBlob, binary: true, simpleDataTypeName: "BLOB"));
 
 			// spatial
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("GEOMETRY", typeBinary, MySqlDbType.Geometry, binary: true));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("POINT", typeBinary, MySqlDbType.Geometry, binary: true));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("LINESTRING", typeBinary, MySqlDbType.Geometry, binary: true));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("POLYGON", typeBinary, MySqlDbType.Geometry, binary: true));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("MULTIPOINT", typeBinary, MySqlDbType.Geometry, binary: true));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("MULTILINESTRING", typeBinary, MySqlDbType.Geometry, binary: true));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("MULTIPOLYGON", typeBinary, MySqlDbType.Geometry, binary: true));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("GEOMETRYCOLLECTION", typeBinary, MySqlDbType.Geometry, binary: true));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("GEOMETRY", typeBinary, MySqlDbType.Geometry, binary: true));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("POINT", typeBinary, MySqlDbType.Geometry, binary: true));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("LINESTRING", typeBinary, MySqlDbType.Geometry, binary: true));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("POLYGON", typeBinary, MySqlDbType.Geometry, binary: true));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("MULTIPOINT", typeBinary, MySqlDbType.Geometry, binary: true));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("MULTILINESTRING", typeBinary, MySqlDbType.Geometry, binary: true));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("MULTIPOLYGON", typeBinary, MySqlDbType.Geometry, binary: true));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("GEOMETRYCOLLECTION", typeBinary, MySqlDbType.Geometry, binary: true));
 
 			// date/time
 			var typeDate = AddDbTypeMapping(new DbTypeMapping(typeof(DateTime), new[] { DbType.Date }));
 			var typeDateTime = AddDbTypeMapping(new DbTypeMapping(typeof(DateTime), new[] { DbType.DateTime, DbType.DateTime2, DbType.DateTimeOffset }));
 			var typeTime = AddDbTypeMapping(new DbTypeMapping(typeof(TimeSpan), new[] { DbType.Time }));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("DATETIME", typeDateTime, MySqlDbType.DateTime));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("DATE", typeDate, MySqlDbType.Date));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("DATE", typeDate, MySqlDbType.Newdate));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("TIME", typeTime, MySqlDbType.Time));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("TIMESTAMP", typeDateTime, MySqlDbType.Timestamp));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("YEAR", typeInt, MySqlDbType.Year));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("DATETIME", typeDateTime, MySqlDbType.DateTime));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("DATE", typeDate, MySqlDbType.Date));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("DATE", typeDate, MySqlDbType.Newdate));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("TIME", typeTime, MySqlDbType.Time));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("TIMESTAMP", typeDateTime, MySqlDbType.Timestamp));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("YEAR", typeInt, MySqlDbType.Year));
 
 			// guid
 			var typeGuid = AddDbTypeMapping(new DbTypeMapping(typeof(Guid), new[] { DbType.Guid }, convert: o => Guid.Parse(Convert.ToString(o))));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("CHAR", typeGuid, MySqlDbType.Guid, length: 36, simpleDataTypeName: "CHAR(36)"));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("CHAR", typeGuid, MySqlDbType.Guid, length: 36, simpleDataTypeName: "CHAR(36)"));
 
 			// null
 			var typeNull = AddDbTypeMapping(new DbTypeMapping(typeof(object), new[] { DbType.Object }, convert: o => null));
-			AddMySqlDbTypeMapping(new ColumnTypeMapping("NULL", typeNull, MySqlDbType.Null));
+			AddMySqlDbTypeMapping(new ColumnTypeMetadata("NULL", typeNull, MySqlDbType.Null));
 		}
 
-		public ColumnTypeMapping GetColumnMapping(MySqlDbType mySqlDbType) => m_mySqlDbTypeToColumnTypeMapping[mySqlDbType];
+		public ColumnTypeMetadata GetColumnTypeMetadata(MySqlDbType mySqlDbType) => m_mySqlDbTypeToColumnTypeMetadata[mySqlDbType];
 
-		public DbType GetDbTypeForMySqlDbType(MySqlDbType mySqlDbType) => m_mySqlDbTypeToColumnTypeMapping[mySqlDbType].DbTypeMapping.DbTypes[0];
+		public DbType GetDbTypeForMySqlDbType(MySqlDbType mySqlDbType) => m_mySqlDbTypeToColumnTypeMetadata[mySqlDbType].DbTypeMapping.DbTypes[0];
 
 		public MySqlDbType GetMySqlDbTypeForDbType(DbType dbType)
 		{
-			foreach (var pair in m_mySqlDbTypeToColumnTypeMapping)
+			foreach (var pair in m_mySqlDbTypeToColumnTypeMetadata)
 			{
 				if (pair.Value.DbTypeMapping.DbTypes.Contains(dbType))
 					return pair.Key;
@@ -130,13 +130,13 @@ namespace MySql.Data.MySqlClient.Types
 			return dbTypeMapping;
 		}
 
-		private void AddMySqlDbTypeMapping(ColumnTypeMapping columnTypeMapping)
+		private void AddMySqlDbTypeMapping(ColumnTypeMetadata columnTypeMetadata)
 		{
-			var lookupKey = columnTypeMapping.CreateLookupKey();
-			if (!m_columnTypeMappingLookup.ContainsKey(lookupKey))
-				m_columnTypeMappingLookup.Add(lookupKey, columnTypeMapping);
-			if (!m_mySqlDbTypeToColumnTypeMapping.ContainsKey(columnTypeMapping.MySqlDbType))
-				m_mySqlDbTypeToColumnTypeMapping.Add(columnTypeMapping.MySqlDbType, columnTypeMapping);
+			var lookupKey = columnTypeMetadata.CreateLookupKey();
+			if (!m_columnTypeMetadataLookup.ContainsKey(lookupKey))
+				m_columnTypeMetadataLookup.Add(lookupKey, columnTypeMetadata);
+			if (!m_mySqlDbTypeToColumnTypeMetadata.ContainsKey(columnTypeMetadata.MySqlDbType))
+				m_mySqlDbTypeToColumnTypeMetadata.Add(columnTypeMetadata.MySqlDbType, columnTypeMetadata);
 		}
 
 		internal DbTypeMapping GetDbTypeMapping(Type clrType)
@@ -151,16 +151,16 @@ namespace MySql.Data.MySqlClient.Types
 			return dbTypeMapping;
 		}
 
-		internal DbTypeMapping GetDbTypeMapping(string columnTypeName, bool unsigned=false, int length=0)
+		internal DbTypeMapping GetDbTypeMapping(string columnTypeName, bool unsigned = false, int length = 0)
 		{
-			return GetColumnTypeMapping(columnTypeName, unsigned, length)?.DbTypeMapping;
+			return GetColumnTypeMetadata(columnTypeName, unsigned, length)?.DbTypeMapping;
 		}
 
-		internal ColumnTypeMapping GetColumnTypeMapping(string columnTypeName, bool unsigned=false, int length=0)
+		internal ColumnTypeMetadata GetColumnTypeMetadata(string columnTypeName, bool unsigned = false, int length = 0)
 		{
-			if (!m_columnTypeMappingLookup.TryGetValue(ColumnTypeMapping.CreateLookupKey(columnTypeName, unsigned, length), out var columnTypeMapping) && length != 0)
-				m_columnTypeMappingLookup.TryGetValue(ColumnTypeMapping.CreateLookupKey(columnTypeName, unsigned, 0), out columnTypeMapping);
-			return columnTypeMapping;
+			if (!m_columnTypeMetadataLookup.TryGetValue(ColumnTypeMetadata.CreateLookupKey(columnTypeName, unsigned, length), out var columnTypeMetadata) && length != 0)
+				m_columnTypeMetadataLookup.TryGetValue(ColumnTypeMetadata.CreateLookupKey(columnTypeName, unsigned, 0), out columnTypeMetadata);
+			return columnTypeMetadata;
 		}
 
 		public static MySqlDbType ConvertToMySqlDbType(ColumnDefinitionPayload columnDefinition, bool treatTinyAsBoolean, bool oldGuids)
@@ -259,14 +259,14 @@ namespace MySql.Data.MySqlClient.Types
 			}
 		}
 
-		internal IEnumerable<ColumnTypeMapping> GetColumnMappings()
+		internal IEnumerable<ColumnTypeMetadata> GetColumnMappings()
 		{
-			return m_columnTypeMappingLookup.Values.AsEnumerable();
+			return m_columnTypeMetadataLookup.Values.AsEnumerable();
 		}
 
 		readonly Dictionary<Type, DbTypeMapping> m_dbTypeMappingsByClrType;
 		readonly Dictionary<DbType, DbTypeMapping> m_dbTypeMappingsByDbType;
-		readonly Dictionary<string, ColumnTypeMapping> m_columnTypeMappingLookup;
-		readonly Dictionary<MySqlDbType, ColumnTypeMapping> m_mySqlDbTypeToColumnTypeMapping;
+		readonly Dictionary<string, ColumnTypeMetadata> m_columnTypeMetadataLookup;
+		readonly Dictionary<MySqlDbType, ColumnTypeMetadata> m_mySqlDbTypeToColumnTypeMetadata;
 	}
 }

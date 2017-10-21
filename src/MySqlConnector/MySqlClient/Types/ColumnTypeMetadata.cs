@@ -1,10 +1,10 @@
 namespace MySql.Data.MySqlClient.Types
 {
-	internal sealed class ColumnTypeMapping
+	internal sealed class ColumnTypeMetadata
 	{
 		public static string CreateLookupKey(string columnTypeName, bool isUnsigned, int length) => $"{columnTypeName}|{(isUnsigned ? "u" : "s")}|{length}";
 
-		public ColumnTypeMapping(string dataTypeName, DbTypeMapping dbTypeMapping, MySqlDbType mySqlDbType, bool unsigned = false, bool binary = false, int length = 0, string simpleDataTypeName = null)
+		public ColumnTypeMetadata(string dataTypeName, DbTypeMapping dbTypeMapping, MySqlDbType mySqlDbType, bool unsigned = false, bool binary = false, int length = 0, string simpleDataTypeName = null)
 		{
 			DataTypeName = dataTypeName;
 			SimpleDataTypeName = simpleDataTypeName ?? dataTypeName;
