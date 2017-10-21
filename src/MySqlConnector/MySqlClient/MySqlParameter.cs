@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.IO;
+using MySql.Data.MySqlClient.Types;
 
 namespace MySql.Data.MySqlClient
 {
@@ -9,15 +10,37 @@ namespace MySql.Data.MySqlClient
 	{
 		public MySqlParameter()
 		{
+			m_mySqlDbType = MySqlDbType.VarChar;
 		}
 
 		public MySqlParameter(string name, object objValue)
 		{
+			m_mySqlDbType = MySqlDbType.VarChar;
 			ParameterName = name;
 			Value = objValue;
 		}
 
-		public override DbType DbType { get; set; }
+		public override DbType DbType
+		{
+			get => m_dbType;
+			set
+			{
+				m_dbType = value;
+				m_mySqlDbType = TypeMapper.Mapper.GetMySqlDbTypeForDbType(value);
+				HasSetDbType = true;
+			}
+		}
+
+		public MySqlDbType MySqlDbType
+		{
+			get => m_mySqlDbType;
+			set
+			{
+				m_dbType = TypeMapper.Mapper.GetDbTypeForMySqlDbType(value);
+				m_mySqlDbType = value;
+				HasSetDbType = true;
+			}
+		}
 
 		public override ParameterDirection Direction
 		{
@@ -77,22 +100,14 @@ namespace MySql.Data.MySqlClient
 			DbType = default(DbType);
 		}
 
-		public MySqlDbType MySqlDbType {
-			get {
-				return Types.TypeMapper.ConverToMySqlDbType(DbType);
-			}
-			set {
-				DbType = Types.TypeMapper.ConvertFromMySqlDbType(MySqlDbType);
-			}
-		}
-
-
 		internal MySqlParameter WithParameterName(string parameterName) => new MySqlParameter(this, parameterName);
 
 		private MySqlParameter(MySqlParameter other, string parameterName)
 		{
-			DbType = other.DbType;
+			m_dbType = other.m_dbType;
+			m_mySqlDbType = other.m_mySqlDbType;
 			m_direction = other.m_direction;
+			HasSetDbType = other.HasSetDbType;
 			IsNullable = other.IsNullable;
 			Size = other.Size;
 			ParameterName = parameterName ?? other.ParameterName;
@@ -104,6 +119,8 @@ namespace MySql.Data.MySqlClient
 		}
 
 		internal bool HasSetDirection => m_direction.HasValue;
+
+		internal bool HasSetDbType { get; set; }
 
 		internal string NormalizedParameterName { get; private set; }
 
@@ -190,27 +207,27 @@ namespace MySql.Data.MySqlClient
 					writer.WriteUtf8("'{0:D}'".FormatInvariant(guidValue));
 				}
 			}
-			else if (DbType == DbType.Int16)
+			else if (MySqlDbType == MySqlDbType.Int16)
 			{
 				writer.WriteUtf8("{0}".FormatInvariant((short) Value));
 			}
-			else if (DbType == DbType.UInt16)
+			else if (MySqlDbType == MySqlDbType.UInt16)
 			{
 				writer.WriteUtf8("{0}".FormatInvariant((ushort) Value));
 			}
-			else if (DbType == DbType.Int32)
+			else if (MySqlDbType == MySqlDbType.Int32)
 			{
 				writer.WriteUtf8("{0}".FormatInvariant((int) Value));
 			}
-			else if (DbType == DbType.UInt32)
+			else if (MySqlDbType == MySqlDbType.UInt32)
 			{
 				writer.WriteUtf8("{0}".FormatInvariant((uint) Value));
 			}
-			else if (DbType == DbType.Int64)
+			else if (MySqlDbType == MySqlDbType.Int64)
 			{
 				writer.WriteUtf8("{0}".FormatInvariant((long) Value));
 			}
-			else if (DbType == DbType.UInt64)
+			else if (MySqlDbType == MySqlDbType.UInt64)
 			{
 				writer.WriteUtf8("{0}".FormatInvariant((ulong) Value));
 			}
@@ -238,6 +255,8 @@ namespace MySql.Data.MySqlClient
 			return name.StartsWith("@", StringComparison.Ordinal) || name.StartsWith("?", StringComparison.Ordinal) ? name.Substring(1) : name;
 		}
 
+		DbType m_dbType;
+		MySqlDbType m_mySqlDbType;
 		string m_name;
 		ParameterDirection? m_direction;
 	}

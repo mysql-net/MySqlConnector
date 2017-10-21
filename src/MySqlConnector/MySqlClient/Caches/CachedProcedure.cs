@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
@@ -13,7 +13,7 @@ namespace MySql.Data.MySqlClient.Caches
 	{
 		internal static async Task<CachedProcedure> FillAsync(IOBehavior ioBehavior, MySqlConnection connection, string schema, string component, CancellationToken cancellationToken)
 		{
-			var cmd = (MySqlCommand) connection.CreateCommand();
+			var cmd = connection.CreateCommand();
 
 			cmd.CommandText = @"SELECT ORDINAL_POSITION, PARAMETER_MODE, PARAMETER_NAME, DATA_TYPE, DTD_IDENTIFIER
 				FROM information_schema.parameters
@@ -22,13 +22,11 @@ namespace MySql.Data.MySqlClient.Caches
 			cmd.Parameters.Add(new MySqlParameter
 			{
 				ParameterName = "@schema",
-				DbType = DbType.String,
 				Value = schema
 			});
 			cmd.Parameters.Add(new MySqlParameter
 			{
 				ParameterName = "@component",
-				DbType = DbType.String,
 				Value = component
 			});
 
@@ -77,7 +75,7 @@ namespace MySql.Data.MySqlClient.Caches
 
 				if (!alignParam.HasSetDirection)
 					alignParam.Direction = cachedParam.Direction;
-				if (alignParam.DbType == default(DbType))
+				if (!alignParam.HasSetDbType)
 					alignParam.DbType = cachedParam.DbType;
 
 				// cached parameters are oredered by ordinal position

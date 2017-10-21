@@ -267,7 +267,7 @@ namespace MySql.Data.MySqlClient
 				foreach (MySqlDbType mapItem in Enum.GetValues(typeof(MySqlDbType)))
 				{
 					var typeName = Enum.GetName(typeof(MySqlDbType), mapItem);
-					var dbType = Types.TypeMapper.ConvertFromMySqlDbType(mapItem);
+					var dbType = Types.TypeMapper.Mapper.GetDbTypeForMySqlDbType(mapItem);
 					var map = Types.TypeMapper.Mapper.GetDbTypeMapping(dbType);
 					if (map != null) // MySqlDbType.Set is not supported by the mapper.
 					{
