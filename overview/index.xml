@@ -20,17 +20,21 @@
 
 &lt;p&gt;The recommended way of installing MySqlConnector is through &lt;a href=&#34;https://www.nuget.org/packages/MySqlConnector/&#34;&gt;NuGet&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;Step 1:&lt;/strong&gt; Add MySqlConnector to the dependencies in your &lt;code&gt;project.json&lt;/code&gt; file:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Step 1:&lt;/strong&gt; Add MySqlConnector to the dependencies in your &lt;code&gt;csproj&lt;/code&gt; file:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
-  &amp;quot;title&amp;quot;: &amp;quot;My Application&amp;quot;,
-  &amp;quot;description&amp;quot;: &amp;quot;A great application&amp;quot;,
-  &amp;quot;dependencies&amp;quot;: {
-    &amp;quot;MySqlConnector&amp;quot;: &amp;quot;0.*&amp;quot;,
-    // other dependencies
-  },
-  // other config
-}
+&lt;pre&gt;&lt;code class=&#34;language-xml&#34;&gt;&amp;lt;Project Sdk=&amp;quot;Microsoft.NET.Sdk&amp;quot;&amp;gt;
+  &amp;lt;PropertyGroup&amp;gt;
+    &amp;lt;AssemblyTitle&amp;gt;My Application&amp;lt;/AssemblyTitle&amp;gt;
+    &amp;lt;Description&amp;gt;A great application&amp;lt;/Description&amp;gt;
+    &amp;lt;OutputType&amp;gt;Exe&amp;lt;/OutputType&amp;gt;
+    &amp;lt;TargetFramework&amp;gt;netcoreapp2.0&amp;lt;/TargetFramework&amp;gt;
+  &amp;lt;/PropertyGroup&amp;gt;
+
+  &amp;lt;ItemGroup&amp;gt;
+    &amp;lt;PackageReference Include=&amp;quot;MySqlConnector&amp;quot; Version=&amp;quot;0.28.2&amp;quot; /&amp;gt;
+  &amp;lt;/ItemGroup&amp;gt;
+
+&amp;lt;/Project&amp;gt;
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;&lt;strong&gt;Step 2:&lt;/strong&gt; Run the command &lt;code&gt;dotnet restore&lt;/code&gt;&lt;/p&gt;

@@ -163,18 +163,13 @@ concurrent connections you plan to support.  For example, if you are creating a 
 synchronous methods that needs to support serving 500 Requests Per Second, set the minimum thread
 pool size to 500.&lt;/p&gt;
 
-&lt;p&gt;Example &lt;code&gt;project.json&lt;/code&gt; configuration:&lt;/p&gt;
+&lt;p&gt;Example &lt;code&gt;csproj&lt;/code&gt; configuration:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
-  &amp;quot;runtimeOptions&amp;quot;: {
-    &amp;quot;configProperties&amp;quot;: {
-      &amp;quot;System.GC.Server&amp;quot;: true,
-      &amp;quot;System.GC.Concurrent&amp;quot;: true,
-      &amp;quot;System.Threading.ThreadPool.MinThreads&amp;quot;: 500
-    }
-  },
-  // other config
-}
+&lt;pre&gt;&lt;code class=&#34;language-xml&#34;&gt;&amp;lt;PropertyGroup&amp;gt;
+  &amp;lt;ServerGarbageCollection&amp;gt;true&amp;lt;/ServerGarbageCollection&amp;gt;
+  &amp;lt;ConcurrentGarbageCollection&amp;gt;true&amp;lt;/ConcurrentGarbageCollection&amp;gt;
+  &amp;lt;ThreadPoolMinThreads&amp;gt;500&amp;lt;/ThreadPoolMinThreads&amp;gt;
+&amp;lt;/PropertyGroup&amp;gt;
 &lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
@@ -264,17 +259,21 @@ and is not based on &lt;a href=&#34;https://github.com/mysql/mysql-connector-net
 
 &lt;p&gt;The recommended way of installing MySqlConnector is through &lt;a href=&#34;https://www.nuget.org/packages/MySqlConnector/&#34;&gt;NuGet&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;Step 1:&lt;/strong&gt; Add MySqlConnector to the dependencies in your &lt;code&gt;project.json&lt;/code&gt; file:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Step 1:&lt;/strong&gt; Add MySqlConnector to the dependencies in your &lt;code&gt;csproj&lt;/code&gt; file:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
-  &amp;quot;title&amp;quot;: &amp;quot;My Application&amp;quot;,
-  &amp;quot;description&amp;quot;: &amp;quot;A great application&amp;quot;,
-  &amp;quot;dependencies&amp;quot;: {
-    &amp;quot;MySqlConnector&amp;quot;: &amp;quot;0.*&amp;quot;,
-    // other dependencies
-  },
-  // other config
-}
+&lt;pre&gt;&lt;code class=&#34;language-xml&#34;&gt;&amp;lt;Project Sdk=&amp;quot;Microsoft.NET.Sdk&amp;quot;&amp;gt;
+  &amp;lt;PropertyGroup&amp;gt;
+    &amp;lt;AssemblyTitle&amp;gt;My Application&amp;lt;/AssemblyTitle&amp;gt;
+    &amp;lt;Description&amp;gt;A great application&amp;lt;/Description&amp;gt;
+    &amp;lt;OutputType&amp;gt;Exe&amp;lt;/OutputType&amp;gt;
+    &amp;lt;TargetFramework&amp;gt;netcoreapp2.0&amp;lt;/TargetFramework&amp;gt;
+  &amp;lt;/PropertyGroup&amp;gt;
+
+  &amp;lt;ItemGroup&amp;gt;
+    &amp;lt;PackageReference Include=&amp;quot;MySqlConnector&amp;quot; Version=&amp;quot;0.28.2&amp;quot; /&amp;gt;
+  &amp;lt;/ItemGroup&amp;gt;
+
+&amp;lt;/Project&amp;gt;
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;&lt;strong&gt;Step 2:&lt;/strong&gt; Run the command &lt;code&gt;dotnet restore&lt;/code&gt;&lt;/p&gt;
@@ -1296,7 +1295,7 @@ please refer to its documentation.&lt;/p&gt;
       <guid>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</guid>
       <description>
 
-&lt;h1 id=&#34;use-with-net-core-mvc&#34;&gt;Use with .NET Core MVC&lt;/h1&gt;
+&lt;h1 id=&#34;use-with-net-core-mvc-2-0&#34;&gt;Use with .NET Core MVC 2.0&lt;/h1&gt;
 
 &lt;p&gt;This tutorial will walk through a basic .NET Core JSON API application that performs CRUD operations on
 blog posts.  The code in this tutorial comes is an adaptation of &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/tree/master/tests/MySqlConnector.Performance&#34;&gt;MySqlConnector.Performance&lt;/a&gt;,
@@ -1316,52 +1315,11 @@ the performance application that is used to stress test MySqlConnector.&lt;/p&gt
 
 &lt;h3 id=&#34;initialize-net-core-mvc&#34;&gt;Initialize .NET Core MVC&lt;/h3&gt;
 
-&lt;p&gt;Create a new directory for the project with a &lt;code&gt;project.json&lt;/code&gt; file at the root:&lt;/p&gt;
+&lt;p&gt;Run &lt;code&gt;dotnet new webapi&lt;/code&gt; at the root to create the initial project, then run &lt;code&gt;dotnet add package MySqlConnector&lt;/code&gt;. You should have a working project at this point, use &lt;code&gt;dotnet run&lt;/code&gt; to verify the project builds and runs successfully.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
-  &amp;quot;dependencies&amp;quot;: {
-    &amp;quot;Microsoft.AspNetCore.Mvc&amp;quot;: &amp;quot;1.0.0&amp;quot;,
-    &amp;quot;Microsoft.AspNetCore.Server.Kestrel&amp;quot;: &amp;quot;1.0.0&amp;quot;,
-    &amp;quot;Microsoft.Extensions.Configuration.EnvironmentVariables&amp;quot;: &amp;quot;1.0.0&amp;quot;,
-    &amp;quot;Microsoft.Extensions.Configuration.FileExtensions&amp;quot;: &amp;quot;1.0.0&amp;quot;,
-    &amp;quot;Microsoft.Extensions.Configuration.Json&amp;quot;: &amp;quot;1.0.0&amp;quot;,
-    &amp;quot;Microsoft.Extensions.Configuration.CommandLine&amp;quot;: &amp;quot;1.0.0&amp;quot;,
-    &amp;quot;Microsoft.Extensions.Logging&amp;quot;: &amp;quot;1.0.0&amp;quot;,
-    &amp;quot;Microsoft.Extensions.Logging.Console&amp;quot;: &amp;quot;1.0.0&amp;quot;,
-    &amp;quot;Microsoft.Extensions.Logging.Debug&amp;quot;: &amp;quot;1.0.0&amp;quot;,
-    &amp;quot;Microsoft.Extensions.Options.ConfigurationExtensions&amp;quot;: &amp;quot;1.0.0&amp;quot;,
-    &amp;quot;MySqlConnector&amp;quot;: &amp;quot;0.*&amp;quot;
-  },
+&lt;h3 id=&#34;update-configuration-files&#34;&gt;Update Configuration Files&lt;/h3&gt;
 
-  &amp;quot;frameworks&amp;quot;: {
-    &amp;quot;netcoreapp1.0&amp;quot;: {
-      &amp;quot;dependencies&amp;quot;: {
-        &amp;quot;Microsoft.NETCore.App&amp;quot;: {
-          &amp;quot;type&amp;quot;: &amp;quot;platform&amp;quot;,
-          &amp;quot;version&amp;quot;: &amp;quot;1.0.0&amp;quot;
-        }
-      }
-    }
-  },
-
-  &amp;quot;runtimeOptions&amp;quot;: {
-    &amp;quot;gcServer&amp;quot;: true
-  },
-
-  &amp;quot;buildOptions&amp;quot;: {
-    &amp;quot;emitEntryPoint&amp;quot;: true,
-    &amp;quot;preserveCompilationContext&amp;quot;: true
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Run the command &lt;code&gt;dotnet restore&lt;/code&gt; in this directory.&lt;/p&gt;
-
-&lt;h3 id=&#34;add-configuration-files&#34;&gt;Add Configuration Files&lt;/h3&gt;
-
-&lt;p&gt;The first building block of our appplication is definig a couple JSON files to hold configuration:&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;appsettings.json&lt;/code&gt; holds .NET Core logging levels:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;appsettings.json&lt;/code&gt; holds .NET Core logging levels and the ADO.NET Connection String:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
     &amp;quot;Logging&amp;quot;: {
@@ -1371,33 +1329,9 @@ the performance application that is used to stress test MySqlConnector.&lt;/p&gt
             &amp;quot;System&amp;quot;: &amp;quot;Error&amp;quot;,
             &amp;quot;Microsoft&amp;quot;: &amp;quot;Error&amp;quot;
         }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;code&gt;config.json&lt;/code&gt; holds the ADO.NET Connection String:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
-    &amp;quot;Data&amp;quot;: {
-        &amp;quot;ConnectionString&amp;quot;: &amp;quot;server=127.0.0.1;user id=mysqltest;password=test;port=3306;database=blog;&amp;quot;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;code&gt;AppConfig.cs&lt;/code&gt; is a static class that builds a Configuration object from these files:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;using System.IO;
-using Microsoft.Extensions.Configuration;
-
-namespace MySqlConnector.Performance
-{
-    public static class AppConfig
-    {
-        public static IConfigurationRoot Config = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
-        .AddJsonFile(&amp;quot;appsettings.json&amp;quot;)
-        .AddJsonFile(&amp;quot;config.json&amp;quot;)
-        .Build();
+    },
+    &amp;quot;ConnectionStrings&amp;quot;: {
+        &amp;quot;DefaultConnection&amp;quot;: &amp;quot;server=127.0.0.1;user id=mysqltest;password=test;port=3306;database=blog;&amp;quot;,
     }
 }
 &lt;/code&gt;&lt;/pre&gt;
@@ -1412,12 +1346,11 @@ namespace MySqlConnector.Performance
 {
     public class AppDb : IDisposable
     {
-
         public MySqlConnection Connection;
 
-        public AppDb()
+        public AppDb(string connectionString)
         {
-            Connection = new MySqlConnection(AppConfig.Config[&amp;quot;Data:ConnectionString&amp;quot;]);
+            Connection = new MySqlConnection(connectionString);
         }
 
         public void Dispose()
@@ -1428,74 +1361,11 @@ namespace MySqlConnector.Performance
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h3 id=&#34;net-core-program-cs-and-startup-cs-files&#34;&gt;.NET Core Program.cs and Startup.cs Files&lt;/h3&gt;
+&lt;h3 id=&#34;net-core-startup&#34;&gt;.NET Core Startup&lt;/h3&gt;
 
-&lt;p&gt;&lt;code&gt;Program.cs&lt;/code&gt; contains the application entry point:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Startup.cs&lt;/code&gt; contains runtime configuration and framework services. Add this call to &lt;code&gt;ConfigureServices&lt;/code&gt; to make an instance of &lt;code&gt;AppDb&lt;/code&gt; available to controller methods.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;using Microsoft.AspNetCore.Hosting;
-
-namespace MySqlConnector.Performance
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseStartup&amp;lt;Startup&amp;gt;()
-                .Build();
-            host.Run();
-        }
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;code&gt;Startup.cs&lt;/code&gt; contains runtime configuration and framework services:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;using System.Buffers;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-
-namespace MySqlConnector.Performance
-{
-    public class Startup
-    {
-        public Startup(IHostingEnvironment env)
-        {
-            Configuration = AppConfig.Config;
-        }
-
-        public IConfigurationRoot Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            // Add framework services.
-            services.AddMvc(options =&amp;gt;
-            {
-                options.OutputFormatters.Clear();
-                options.OutputFormatters.Add(new JsonOutputFormatter(new JsonSerializerSettings()
-                {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                }, ArrayPool&amp;lt;char&amp;gt;.Shared));
-            });
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
-        {
-            loggerFactory.AddConsole(Configuration.GetSection(&amp;quot;Logging&amp;quot;));
-            loggerFactory.AddDebug();
-
-            app.UseMvc();
-        }
-    }
-}
+&lt;pre&gt;&lt;code class=&#34;language-csharp&#34;&gt;services.AddTransient&amp;lt;AppDb&amp;gt;(_ =&amp;gt; new AppDb(Configuration[&amp;quot;ConnectionStrings:DefaultConnection&amp;quot;]));
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Now our app is configured and we can focus on writing the core functionality!&lt;/p&gt;

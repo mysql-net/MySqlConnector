@@ -313,18 +313,13 @@ concurrent connections you plan to support.  For example, if you are creating a 
 synchronous methods that needs to support serving 500 Requests Per Second, set the minimum thread
 pool size to 500.</p>
 
-<p>Example <code>project.json</code> configuration:</p>
+<p>Example <code>csproj</code> configuration:</p>
 
-<pre><code class="language-json">{
-  &quot;runtimeOptions&quot;: {
-    &quot;configProperties&quot;: {
-      &quot;System.GC.Server&quot;: true,
-      &quot;System.GC.Concurrent&quot;: true,
-      &quot;System.Threading.ThreadPool.MinThreads&quot;: 500
-    }
-  },
-  // other config
-}
+<pre><code class="language-xml">&lt;PropertyGroup&gt;
+  &lt;ServerGarbageCollection&gt;true&lt;/ServerGarbageCollection&gt;
+  &lt;ConcurrentGarbageCollection&gt;true&lt;/ConcurrentGarbageCollection&gt;
+  &lt;ThreadPoolMinThreads&gt;500&lt;/ThreadPoolMinThreads&gt;
+&lt;/PropertyGroup&gt;
 </code></pre>
 
 

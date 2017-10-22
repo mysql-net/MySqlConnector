@@ -170,17 +170,21 @@
 
 <p>The recommended way of installing MySqlConnector is through <a href="https://www.nuget.org/packages/MySqlConnector/">NuGet</a></p>
 
-<p><strong>Step 1:</strong> Add MySqlConnector to the dependencies in your <code>project.json</code> file:</p>
+<p><strong>Step 1:</strong> Add MySqlConnector to the dependencies in your <code>csproj</code> file:</p>
 
-<pre><code class="language-json">{
-  &quot;title&quot;: &quot;My Application&quot;,
-  &quot;description&quot;: &quot;A great application&quot;,
-  &quot;dependencies&quot;: {
-    &quot;MySqlConnector&quot;: &quot;0.*&quot;,
-    // other dependencies
-  },
-  // other config
-}
+<pre><code class="language-xml">&lt;Project Sdk=&quot;Microsoft.NET.Sdk&quot;&gt;
+  &lt;PropertyGroup&gt;
+    &lt;AssemblyTitle&gt;My Application&lt;/AssemblyTitle&gt;
+    &lt;Description&gt;A great application&lt;/Description&gt;
+    &lt;OutputType&gt;Exe&lt;/OutputType&gt;
+    &lt;TargetFramework&gt;netcoreapp2.0&lt;/TargetFramework&gt;
+  &lt;/PropertyGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;PackageReference Include=&quot;MySqlConnector&quot; Version=&quot;0.28.2&quot; /&gt;
+  &lt;/ItemGroup&gt;
+
+&lt;/Project&gt;
 </code></pre>
 
 <p><strong>Step 2:</strong> Run the command <code>dotnet restore</code></p>
