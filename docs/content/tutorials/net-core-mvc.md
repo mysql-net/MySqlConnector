@@ -1,5 +1,5 @@
 ---
-lastmod: 2016-10-16
+lastmod: 2017-10-21
 date: 2016-10-16
 menu:
   main:
@@ -8,8 +8,8 @@ title: Use with .NET Core MVC
 weight: 30
 ---
 
-Use with .NET Core MVC
-======================
+Use with .NET Core MVC 2.0
+==========================
 
 This tutorial will walk through a basic .NET Core JSON API application that performs CRUD operations on
 blog posts.  The code in this tutorial comes is an adaptation of [MySqlConnector.Performance](https://github.com/mysql-net/MySqlConnector/tree/master/tests/MySqlConnector.Performance),
@@ -27,52 +27,11 @@ CREATE TABLE IF NOT EXISTS `BlogPost` (
 ```
 
 ### Initialize .NET Core MVC
-Create a new directory for the project with a `project.json` file at the root:
-```json
-{
-  "dependencies": {
-    "Microsoft.AspNetCore.Mvc": "1.0.0",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
-    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0",
-    "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0",
-    "Microsoft.Extensions.Configuration.Json": "1.0.0",
-    "Microsoft.Extensions.Configuration.CommandLine": "1.0.0",
-    "Microsoft.Extensions.Logging": "1.0.0",
-    "Microsoft.Extensions.Logging.Console": "1.0.0",
-    "Microsoft.Extensions.Logging.Debug": "1.0.0",
-    "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
-    "MySqlConnector": "0.*"
-  },
+Run `dotnet new webapi` at the root to create the initial project, then run `dotnet add package MySqlConnector`. You should have a working project at this point, use `dotnet run` to verify the project builds and runs successfully.
 
-  "frameworks": {
-    "netcoreapp1.0": {
-      "dependencies": {
-        "Microsoft.NETCore.App": {
-          "type": "platform",
-          "version": "1.0.0"
-        }
-      }
-    }
-  },
+### Update Configuration Files
 
-  "runtimeOptions": {
-    "gcServer": true
-  },
-
-  "buildOptions": {
-    "emitEntryPoint": true,
-    "preserveCompilationContext": true
-  }
-}
-```
-
-Run the command `dotnet restore` in this directory.
-
-### Add Configuration Files
-
-The first building block of our appplication is definig a couple JSON files to hold configuration:
-
-`appsettings.json` holds .NET Core logging levels:
+`appsettings.json` holds .NET Core logging levels and the ADO.NET Connection String:
 ```json
 {
     "Logging": {
@@ -82,33 +41,9 @@ The first building block of our appplication is definig a couple JSON files to h
             "System": "Error",
             "Microsoft": "Error"
         }
-    }
-}
-```
-
-`config.json` holds the ADO.NET Connection String:
-```json
-{
-    "Data": {
-        "ConnectionString": "server=127.0.0.1;user id=mysqltest;password=test;port=3306;database=blog;"
-    }
-}
-```
-
-`AppConfig.cs` is a static class that builds a Configuration object from these files:
-```csharp
-using System.IO;
-using Microsoft.Extensions.Configuration;
-
-namespace MySqlConnector.Performance
-{
-    public static class AppConfig
-    {
-        public static IConfigurationRoot Config = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
-        .AddJsonFile("appsettings.json")
-        .AddJsonFile("config.json")
-        .Build();
+    },
+    "ConnectionStrings": {
+        "DefaultConnection": "server=127.0.0.1;user id=mysqltest;password=test;port=3306;database=blog;",
     }
 }
 ```
@@ -123,12 +58,11 @@ namespace MySqlConnector.Performance
 {
     public class AppDb : IDisposable
     {
-
         public MySqlConnection Connection;
 
-        public AppDb()
+        public AppDb(string connectionString)
         {
-            Connection = new MySqlConnection(AppConfig.Config["Data:ConnectionString"]);
+            Connection = new MySqlConnection(connectionString);
         }
 
         public void Dispose()
@@ -139,74 +73,11 @@ namespace MySqlConnector.Performance
 }
 ```
 
-### .NET Core Program.cs and Startup.cs Files
+### .NET Core Startup
 
-`Program.cs` contains the application entry point:
+`Startup.cs` contains runtime configuration and framework services. Add this call to `ConfigureServices` to make an instance of `AppDb` available to controller methods.
 ```csharp
-using Microsoft.AspNetCore.Hosting;
-
-namespace MySqlConnector.Performance
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseStartup<Startup>()
-                .Build();
-            host.Run();
-        }
-    }
-}
-```
-
-`Startup.cs` contains runtime configuration and framework services:
-```csharp
-using System.Buffers;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-
-namespace MySqlConnector.Performance
-{
-    public class Startup
-    {
-        public Startup(IHostingEnvironment env)
-        {
-            Configuration = AppConfig.Config;
-        }
-
-        public IConfigurationRoot Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            // Add framework services.
-            services.AddMvc(options =>
-            {
-                options.OutputFormatters.Clear();
-                options.OutputFormatters.Add(new JsonOutputFormatter(new JsonSerializerSettings()
-                {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                }, ArrayPool<char>.Shared));
-            });
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
-        {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-
-            app.UseMvc();
-        }
-    }
-}
+services.AddTransient<AppDb>(_ => new AppDb(Configuration["ConnectionStrings:DefaultConnection"]));
 ```
 
 Now our app is configured and we can focus on writing the core functionality!
