@@ -73,24 +73,11 @@ namespace MySql.Data.MySqlClient
 
 		public override int Size { get; set; }
 
-		public override string SourceColumn
-		{
-			get { throw new NotSupportedException(); }
-			set { throw new NotSupportedException(); }
-		}
+		public override string SourceColumn { get; set; }
 
-		public override bool SourceColumnNullMapping
-		{
-			get { throw new NotSupportedException(); }
-			set { throw new NotSupportedException(); }
-		}
-
+		public override bool SourceColumnNullMapping { get; set; }
 #if !NETSTANDARD1_3
-		public override DataRowVersion SourceVersion
-		{
-			get { throw new NotSupportedException(); }
-			set { throw new NotSupportedException(); }
-		}
+		public override DataRowVersion SourceVersion { get; set; }
 #endif
 
 		public override object Value { get; set; }

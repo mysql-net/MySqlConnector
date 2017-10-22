@@ -292,6 +292,56 @@ insert into query_get_name (id, value) VALUES (1, 'one'), (2, 'two');
 
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
+				cmd.CommandText = @"DROP TABLE IF EXISTS `userauth`;
+CREATE TABLE `userauth` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+  `UserName` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `Email` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `PrimaryEmail` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `FirstName` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `LastName` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `DisplayName` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `BirthDate` datetime DEFAULT NULL,
+  `BirthDateRaw` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `Country` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `Culture` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `FullName` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `Gender` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `Language` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `MailAddress` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `Nickname` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `PostalCode` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `TimeZone` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `Salt` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `PasswordHash` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `DigestHA1Hash` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `Roles` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `Permissions` text COLLATE latin1_general_ci,
+  `CreatedDate` datetime NOT NULL,
+  `ModifiedDate` datetime NOT NULL,
+  `RefId` int(11) DEFAULT NULL,
+  `RefIdStr` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `Meta` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `PhoneNumber` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `Company` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `Address` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `Address2` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `City` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `State` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  `InvalidLoginAttempts` int(11) NOT NULL,
+  `LastLoginAttempt` datetime DEFAULT NULL,
+  `LockedDate` datetime DEFAULT NULL,
+  `RecoveryToken` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
+
+INSERT INTO `userauth` (`Id`, `UserName`, `Email`, `PrimaryEmail`, `FirstName`, `LastName`, `DisplayName`, `BirthDate`, `BirthDateRaw`, `Country`, `Culture`, `FullName`, `Gender`, `Language`, `MailAddress`, `Nickname`, `PostalCode`, `TimeZone`, `Salt`, `PasswordHash`, `DigestHA1Hash`, `Roles`, `Permissions`, `CreatedDate`, `ModifiedDate`, `RefId`, `RefIdStr`, `Meta`, `PhoneNumber`, `Company`, `Address`, `Address2`, `City`, `State`, `InvalidLoginAttempts`, `LastLoginAttempt`, `LockedDate`, `RecoveryToken`) VALUES (1,'12345',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'12345678','A1b816iuY267N2MnoD23lxLW0GSO0SxRtzDWM0s8pnVg','Dtse5agePM9Z0NGgUpXqkTmtuKwfId8W','[12345]','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','2017-06-22 10:34:56','2017-06-22 10:34:56',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL);
+";
+				cmd.ExecuteNonQuery();
+			}
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
 				cmd.CommandText = "select id, value FROM query_get_name order by id;";
 				using (var reader = cmd.ExecuteReader())
 				{
@@ -321,6 +371,18 @@ insert into query_get_name (id, value) VALUES (1, 'one'), (2, 'two');
 					Assert.False(await reader.NextResultAsync());
 					Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(0));
 				}
+
+				//cmd.CommandText = "select " + string.Join(",", Enumerable.Range(0,50).Select(_ => $"'{Guid.NewGuid()}'").ToArray());
+				cmd.CommandText =
+					"SELECT `Id`, `UserName`, `Email`, `PrimaryEmail`, `PhoneNumber`, `FirstName`, `LastName`, `DisplayName`, `Company`, `BirthDate`, `BirthDateRaw`, `Address`, `Address2`, `City`, `State`, `Country`, `Culture`, `FullName`, `Gender`, `Language`, `MailAddress`, `Nickname`, `PostalCode`, `TimeZone`, `Salt`, `PasswordHash`, `DigestHa1Hash`, `Roles`, `Permissions`, `CreatedDate`, `ModifiedDate`, `InvalidLoginAttempts`, `LastLoginAttempt`, `LockedDate`, `RecoveryToken`, `RefId`, `RefIdStr`, `Meta` FROM `UserAuth` WHERE `Id` = @Id";
+				cmd.Parameters.Add("Id", DbType.Int32).Value = 1;
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					var ex = Record.Exception(() => reader.GetName(0));
+					Assert.Null(ex);
+				}
+
 			}
 		}
 
