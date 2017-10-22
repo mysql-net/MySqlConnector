@@ -78,8 +78,18 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public override string CommandText { get; set; }
-		public new MySqlConnection Connection { get; set; }
 		public new MySqlTransaction Transaction { get; set; }
+
+		public new MySqlConnection Connection
+		{
+			get => m_connection;
+			set
+			{
+				if (m_connection?.HasActiveReader ?? false)
+					throw new MySqlException("Cannot set MySqlCommand.Connection when there is an open DataReader for this command; it must be closed first.");
+				m_connection = value;
+			}
+		}
 
 		public override int CommandTimeout
 		{
@@ -244,6 +254,7 @@ namespace MySql.Data.MySqlClient
 
 		static int s_commandId = 1;
 
+		MySqlConnection m_connection;
 		MySqlParameterCollection m_parameterCollection;
 		int? m_commandTimeout;
 		CommandType m_commandType;

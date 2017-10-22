@@ -323,6 +323,8 @@ namespace MySql.Data.MySqlClient
 
 		internal MySqlSslMode SslMode => m_connectionSettings.SslMode;
 
+		internal bool HasActiveReader => m_activeReader != null;
+
 		internal void SetActiveReader(MySqlDataReader dataReader)
 		{
 			if (dataReader == null)
