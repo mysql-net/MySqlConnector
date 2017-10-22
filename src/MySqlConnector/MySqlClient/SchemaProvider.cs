@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using MySql.Data.MySqlClient.Types;
 
 namespace MySql.Data.MySqlClient
@@ -129,10 +130,28 @@ namespace MySql.Data.MySqlClient
 
 		private void FillProcedures(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[] {
-				new DataColumn("ROUTINE_TYPE"),
-				new DataColumn("ROUTINE_SCHEMA"),
-				new DataColumn("SPECIFIC_NAME")
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("SPECIFIC_NAME", typeof(string)),
+				new DataColumn("ROUTINE_CATALOG", typeof(string)),
+				new DataColumn("ROUTINE_SCHEMA", typeof(string)),
+				new DataColumn("ROUTINE_NAME", typeof(string)),
+				new DataColumn("ROUTINE_TYPE", typeof(string)),
+				new DataColumn("DTD_IDENTIFIER", typeof(string)),
+				new DataColumn("ROUTINE_BODY", typeof(string)),
+				new DataColumn("ROUTINE_DEFINITION", typeof(string)),
+				new DataColumn("EXTERNAL_NAME", typeof(string)),
+				new DataColumn("EXTERNAL_LANGUAGE", typeof(string)),
+				new DataColumn("PARAMETER_STYLE", typeof(string)),
+				new DataColumn("IS_DETERMINISTIC", typeof(string)),
+				new DataColumn("SQL_DATA_ACCESS", typeof(string)),
+				new DataColumn("SQL_PATH", typeof(string)),
+				new DataColumn("SECURITY_TYPE", typeof(string)),
+				new DataColumn("CREATED", typeof(DateTime)),
+				new DataColumn("LAST_ALTERED", typeof(DateTime)),
+				new DataColumn("SQL_MODE", typeof(string)),
+				new DataColumn("ROUTINE_COMMENT", typeof(string)),
+				new DataColumn("DEFINER", typeof(string)),
 			});
 
 			Action close = null;
@@ -142,12 +161,18 @@ namespace MySql.Data.MySqlClient
 				close = m_connection.Close;
 			}
 
-			var procsQuery = "SELECT ROUTINE_TYPE, ROUTINE_SCHEMA, SPECIFIC_NAME FROM INFORMATION_SCHEMA.ROUTINES;";
-			using (var command = new MySqlCommand(procsQuery, m_connection))
-			using (var reader = command.ExecuteReader())
+			using (var command = m_connection.CreateCommand())
 			{
-				while (reader.Read())
-					dataTable.Rows.Add(reader.GetString(0), reader.GetString(1), reader.GetString(2));
+				command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(x => x.ColumnName)) + " FROM INFORMATION_SCHEMA.ROUTINES;";
+				using (var reader = command.ExecuteReader())
+				{
+					while (reader.Read())
+					{
+						var rowValues = new object[dataTable.Columns.Count];
+						reader.GetValues(rowValues);
+						dataTable.Rows.Add(rowValues);
+					}
+				}
 			}
 
 			close?.Invoke();
