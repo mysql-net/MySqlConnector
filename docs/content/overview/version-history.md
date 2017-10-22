@@ -11,6 +11,13 @@ weight: 30
 Version History
 ===============
 
+### 0.29.1
+
+* Work around Amazon Aurora `DateTime` conversion issue: [#364](https://github.com/mysql-net/MySqlConnector/issues/364).
+* Fix `NotSupportedException` in `MySqlParameter`: [#367](https://github.com/mysql-net/MySqlConnector/pull/367).
+* **Breaking** Remove a number of `MySqlErrorCode` enum values (to reduce library size).
+* Thanks to [Duane Gilbert](https://github.com/dgilbert) and [Naragato](https://github.com/Naragato) for contributions to this release.
+
 ### 0.29.0
 
 * **Breaking** Implement `MySqlConnectionStringBuilder.DefaultCommandTimeout` and `MySqlCommand.CommandTimeout` with a default of 30 seconds: [#67](https://github.com/mysql-net/MySqlConnector/issues/67).
@@ -18,7 +25,7 @@ Version History
 * Expose `MySqlDbType` and `MySqlCommand.MySqlDbType`: [#362](https://github.com/mysql-net/MySqlConnector/issues/362).
   * MySqlConnector adds `MySqlDbType.Bool` to represent a `TINYINT(1)` column.
   * Return correct values for `ProviderType` in `GetColumnSchema`/`GetSchemaTable`.
-* Implement `MySqlConnection.GetSchema`: [#361](https://github.com/mysql-net/MySqlConnector/issues/362).
+* Implement `MySqlConnection.GetSchema`: [#361](https://github.com/mysql-net/MySqlConnector/issues/361).
 * Update documentation for .NET Core 2.0: [#372](https://github.com/mysql-net/MySqlConnector/issues/372).
 * Fix information disclosure vulnerability related to `LOAD DATA LOCAL INFILE`: [#334](https://github.com/mysql-net/MySqlConnector/issues/334).
 * Improve async performance.
