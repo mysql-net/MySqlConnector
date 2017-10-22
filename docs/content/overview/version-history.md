@@ -11,6 +11,20 @@ weight: 30
 Version History
 ===============
 
+### 0.29.0
+
+* **Breaking** Implement `MySqlConnectionStringBuilder.DefaultCommandTimeout` and `MySqlCommand.CommandTimeout` with a default of 30 seconds: [#67](https://github.com/mysql-net/MySqlConnector/issues/67).
+  * This may cause long-running queries to throw an exception instead of succeeding; as a workaround, increase `CommandTimeout`.
+* Expose `MySqlDbType` and `MySqlCommand.MySqlDbType`: [#362](https://github.com/mysql-net/MySqlConnector/issues/362).
+  * MySqlConnector adds `MySqlDbType.Bool` to represent a `TINYINT(1)` column.
+  * Return correct values for `ProviderType` in `GetColumnSchema`/`GetSchemaTable`.
+* Implement `MySqlConnection.GetSchema`: [#361](https://github.com/mysql-net/MySqlConnector/issues/362).
+* Update documentation for .NET Core 2.0: [#372](https://github.com/mysql-net/MySqlConnector/issues/372).
+* Fix information disclosure vulnerability related to `LOAD DATA LOCAL INFILE`: [#334](https://github.com/mysql-net/MySqlConnector/issues/334).
+* Improve async performance.
+* Throw exception for unexpected API use: [#308](https://github.com/mysql-net/MySqlConnector/issues/308).
+* Thanks to [Gabden Ayazbayev](https://github.com/Drake103), [Tuomas Hietanen](https://github.com/Thorium), and [Dustin Masters](https://github.com/dustinsoftware) for contributions to this release.
+
 ### 0.28.2
 
 * Allow the auth plugin name in the initial handshake to be EOF-terminated: [#351](https://github.com/mysql-net/MySqlConnector/issues/351).
