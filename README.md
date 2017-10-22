@@ -25,6 +25,7 @@ This library is compatible with popular .NET ORMs including:
 
 * [Dapper](https://github.com/StackExchange/dapper-dot-net) ([NuGet](https://www.nuget.org/packages/Dapper))
 * [NReco.Data](https://github.com/nreco/data) ([NuGet](https://www.nuget.org/packages/NReco.Data))
+* [ServiceStack.OrmLite](https://github.com/ServiceStack/ServiceStack.OrmLite) ([MyGet](https://www.myget.org/feed/servicestack/package/nuget/ServiceStack.OrmLite.MySqlConnector))
 * [SimpleStack.Orm](https://github.com/SimpleStack/simplestack.orm) ([NuGet](https://www.nuget.org/packages/SimpleStack.Orm.MySQLConnector))
 
 For Entity Framework support, use:
