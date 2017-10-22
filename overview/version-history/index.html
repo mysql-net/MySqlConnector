@@ -168,6 +168,28 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-29-0">0.29.0</h3>
+
+<ul>
+<li><strong>Breaking</strong> Implement <code>MySqlConnectionStringBuilder.DefaultCommandTimeout</code> and <code>MySqlCommand.CommandTimeout</code> with a default of 30 seconds: <a href="https://github.com/mysql-net/MySqlConnector/issues/67">#67</a>.
+
+<ul>
+<li>This may cause long-running queries to throw an exception instead of succeeding; as a workaround, increase <code>CommandTimeout</code>.</li>
+</ul></li>
+<li>Expose <code>MySqlDbType</code> and <code>MySqlCommand.MySqlDbType</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/362">#362</a>.
+
+<ul>
+<li>MySqlConnector adds <code>MySqlDbType.Bool</code> to represent a <code>TINYINT(1)</code> column.</li>
+<li>Return correct values for <code>ProviderType</code> in <code>GetColumnSchema</code>/<code>GetSchemaTable</code>.</li>
+</ul></li>
+<li>Implement <code>MySqlConnection.GetSchema</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/362">#361</a>.</li>
+<li>Update documentation for .NET Core 2.0: <a href="https://github.com/mysql-net/MySqlConnector/issues/372">#372</a>.</li>
+<li>Fix information disclosure vulnerability related to <code>LOAD DATA LOCAL INFILE</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/334">#334</a>.</li>
+<li>Improve async performance.</li>
+<li>Throw exception for unexpected API use: <a href="https://github.com/mysql-net/MySqlConnector/issues/308">#308</a>.</li>
+<li>Thanks to <a href="https://github.com/Drake103">Gabden Ayazbayev</a>, <a href="https://github.com/Thorium">Tuomas Hietanen</a>, and <a href="https://github.com/dustinsoftware">Dustin Masters</a> for contributions to this release.</li>
+</ul>
+
 <h3 id="0-28-2">0.28.2</h3>
 
 <ul>

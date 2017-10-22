@@ -559,6 +559,28 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-29-0&#34;&gt;0.29.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Breaking&lt;/strong&gt; Implement &lt;code&gt;MySqlConnectionStringBuilder.DefaultCommandTimeout&lt;/code&gt; and &lt;code&gt;MySqlCommand.CommandTimeout&lt;/code&gt; with a default of 30 seconds: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/67&#34;&gt;#67&lt;/a&gt;.
+
+&lt;ul&gt;
+&lt;li&gt;This may cause long-running queries to throw an exception instead of succeeding; as a workaround, increase &lt;code&gt;CommandTimeout&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Expose &lt;code&gt;MySqlDbType&lt;/code&gt; and &lt;code&gt;MySqlCommand.MySqlDbType&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/362&#34;&gt;#362&lt;/a&gt;.
+
+&lt;ul&gt;
+&lt;li&gt;MySqlConnector adds &lt;code&gt;MySqlDbType.Bool&lt;/code&gt; to represent a &lt;code&gt;TINYINT(1)&lt;/code&gt; column.&lt;/li&gt;
+&lt;li&gt;Return correct values for &lt;code&gt;ProviderType&lt;/code&gt; in &lt;code&gt;GetColumnSchema&lt;/code&gt;/&lt;code&gt;GetSchemaTable&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Implement &lt;code&gt;MySqlConnection.GetSchema&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/362&#34;&gt;#361&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Update documentation for .NET Core 2.0: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/372&#34;&gt;#372&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fix information disclosure vulnerability related to &lt;code&gt;LOAD DATA LOCAL INFILE&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/334&#34;&gt;#334&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Improve async performance.&lt;/li&gt;
+&lt;li&gt;Throw exception for unexpected API use: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/308&#34;&gt;#308&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Thanks to &lt;a href=&#34;https://github.com/Drake103&#34;&gt;Gabden Ayazbayev&lt;/a&gt;, &lt;a href=&#34;https://github.com/Thorium&#34;&gt;Tuomas Hietanen&lt;/a&gt;, and &lt;a href=&#34;https://github.com/dustinsoftware&#34;&gt;Dustin Masters&lt;/a&gt; for contributions to this release.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-28-2&#34;&gt;0.28.2&lt;/h3&gt;
 
 &lt;ul&gt;
