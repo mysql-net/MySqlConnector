@@ -129,21 +129,6 @@ namespace MySqlConnector.Tests
 			}
 		}
 
-		[Fact]
-		public void GetSchemaHasDataTypesCollection()
-		{
-			using (var connection = new MySqlConnection(m_csb.ConnectionString))
-			{
-				var dataTypes = connection.GetSchema("DataTypes");
-				Assert.Equal("DataType", dataTypes.Columns[0].ColumnName);
-				Assert.True(dataTypes.Rows != null);
-				Assert.True(dataTypes.Rows.Count > 15);
-				var row1 = String.Join(",", dataTypes.Rows[0].ItemArray);
-				Assert.Equal("System.Boolean,TINYINT,3,False", row1);
-			}
-		}
-
-
 		private static async Task WaitForConditionAsync<T>(T expected, Func<T> getValue)
 		{
 			var sw = Stopwatch.StartNew();

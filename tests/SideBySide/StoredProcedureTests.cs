@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -399,6 +400,43 @@ namespace SideBySide
 					Assert.False(await reader.NextResultAsync());
 				}
 			}
+		}
+
+#if !NETCOREAPP1_1_2
+		[Theory]
+		[InlineData("echof", "FUNCTION", "varchar(63)", "BEGIN RETURN name; END", "NO", "CONTAINS SQL")]
+		[InlineData("echop", "PROCEDURE", null, "BEGIN SELECT name; END", "NO", "CONTAINS SQL")]
+		[InlineData("failing_function", "FUNCTION", "int(11)", "BEGIN DECLARE v1 INT; SELECT c1 FROM table_that_does_not_exist INTO v1; RETURN v1; END", "NO", "CONTAINS SQL")]
+		public void ProceduresSchema(string procedureName, string procedureType, string dtdIdentifier, string routineDefinition, string isDeterministic, string dataAccess)
+		{
+			var dataTable = m_database.Connection.GetSchema("Procedures");
+			var schema = m_database.Connection.Database;
+			var row = dataTable.Rows.Cast<DataRow>().Single(x => schema.Equals(x["ROUTINE_SCHEMA"]) && procedureName.Equals(x["ROUTINE_NAME"]));
+
+			Assert.Equal(procedureName, row["SPECIFIC_NAME"]);
+			Assert.Equal(procedureType, row["ROUTINE_TYPE"]);
+			if (dtdIdentifier == null)
+				Assert.Equal(DBNull.Value, row["DTD_IDENTIFIER"]);
+			else
+				Assert.Equal(dtdIdentifier, ((string) row["DTD_IDENTIFIER"]).Split(' ')[0]);
+			Assert.Equal(routineDefinition, NormalizeSpaces((string) row["ROUTINE_DEFINITION"]));
+			Assert.Equal(isDeterministic, row["IS_DETERMINISTIC"]);
+			Assert.Equal(dataAccess, ((string) row["SQL_DATA_ACCESS"]).Replace('_', ' '));
+		}
+#endif
+
+		private static string NormalizeSpaces(string input)
+		{
+			input = input.Replace('\r', ' ');
+			input = input.Replace('\n', ' ');
+			input = input.Replace('\t', ' ');
+			int startingLength;
+			do
+			{
+				startingLength = input.Length;
+				input = input.Replace("  ", " ");
+			} while (input.Length != startingLength);
+			return input;
 		}
 
 		readonly DatabaseFixture m_database;
