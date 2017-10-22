@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient.Types;
 using MySql.Data.Protocol.Serialization;
 using MySql.Data.Serialization;
 
@@ -21,6 +22,7 @@ namespace MySql.Data.MySqlClient.Results
 			// ResultSet can be re-used, so initialize everything
 			BufferState = ResultSetState.None;
 			ColumnDefinitions = null;
+			ColumnTypes = null;
 			LastInsertId = 0;
 			RecordsAffected = 0;
 			State = ResultSetState.None;
@@ -45,6 +47,7 @@ namespace MySql.Data.MySqlClient.Results
 						RecordsAffected += ok.AffectedRowCount;
 						LastInsertId = ok.LastInsertId;
 						ColumnDefinitions = null;
+						ColumnTypes = null;
 						State = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0
 							? ResultSetState.NoMoreData
 							: ResultSetState.HasMoreData;
@@ -92,6 +95,7 @@ namespace MySql.Data.MySqlClient.Results
 						Array.Resize(ref m_columnDefinitionPayloads, columnCount * 96);
 
 						ColumnDefinitions = new ColumnDefinitionPayload[columnCount];
+						ColumnTypes = new MySqlDbType[columnCount];
 						m_dataOffsets = new int[columnCount];
 						m_dataLengths = new int[columnCount];
 
@@ -105,7 +109,9 @@ namespace MySql.Data.MySqlClient.Results
 								Array.Resize(ref m_columnDefinitionPayloads, Math.Max(m_columnDefinitionPayloadUsedBytes + arraySegment.Count, m_columnDefinitionPayloadUsedBytes * 2));
 							Buffer.BlockCopy(arraySegment.Array, arraySegment.Offset, m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, arraySegment.Count);
 
-							ColumnDefinitions[column] = ColumnDefinitionPayload.Create(new ArraySegment<byte>(m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, arraySegment.Count));
+							var columnDefinition = ColumnDefinitionPayload.Create(new ArraySegment<byte>(m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, arraySegment.Count));
+							ColumnDefinitions[column] = columnDefinition;
+							ColumnTypes[column] = TypeMapper.ConvertToMySqlDbType(columnDefinition, treatTinyAsBoolean: Connection.TreatTinyAsBoolean, oldGuids: Connection.OldGuids);
 							m_columnDefinitionPayloadUsedBytes += arraySegment.Count;
 						}
 
@@ -269,75 +275,10 @@ namespace MySql.Data.MySqlClient.Results
 			if (ordinal < 0 || ordinal > ColumnDefinitions.Length)
 				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
 
-			var columnDefinition = ColumnDefinitions[ordinal];
-			switch (columnDefinition.ColumnType)
-			{
-				case ColumnType.Tiny:
-					return Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1 ? "BOOL" : "TINYINT";
-
-				case ColumnType.Short:
-					return "SMALLINT";
-
-				case ColumnType.Int24:
-					return "MEDIUMINT";
-
-				case ColumnType.Long:
-					return "INT";
-
-				case ColumnType.Longlong:
-					return "BIGINT";
-
-				case ColumnType.Bit:
-					return "BIT";
-
-				case ColumnType.String:
-					return columnDefinition.CharacterSet == CharacterSet.Binary ? "BLOB" :
-						(columnDefinition.ColumnFlags & ColumnFlags.Enum) != 0 ? "ENUM" :
-						(columnDefinition.ColumnFlags & ColumnFlags.Set) != 0 ? "SET" :
-						string.Format(CultureInfo.InvariantCulture, "CHAR({0})", columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet));
-
-				case ColumnType.VarString:
-				case ColumnType.TinyBlob:
-				case ColumnType.Blob:
-				case ColumnType.MediumBlob:
-				case ColumnType.LongBlob:
-					return columnDefinition.CharacterSet == CharacterSet.Binary ? "BLOB" : "VARCHAR";
-
-				case ColumnType.Date:
-					return "DATE";
-
-				case ColumnType.DateTime:
-					return "DATETIME";
-
-				case ColumnType.Timestamp:
-					return "TIMESTAMP";
-
-				case ColumnType.Time:
-					return "TIME";
-
-				case ColumnType.Year:
-					return "YEAR";
-
-				case ColumnType.Float:
-					return "FLOAT";
-
-				case ColumnType.Double:
-					return "DOUBLE";
-
-				case ColumnType.Decimal:
-				case ColumnType.NewDecimal:
-					return "DECIMAL";
-
-				case ColumnType.Json:
-					return "JSON";
-
-				case ColumnType.Null:
-					// not a valid data type name, but only happens when there is no way to infer the type of the column, e.g., "SELECT NULL;"
-					return "NULL";
-
-				default:
-					throw new NotImplementedException("GetDataTypeName for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));
-			}
+			var mySqlDbType = ColumnTypes[ordinal];
+			if (mySqlDbType == MySqlDbType.String)
+				return string.Format(CultureInfo.InvariantCulture, "CHAR({0})", ColumnDefinitions[ordinal].ColumnLength / SerializationUtility.GetBytesPerCharacter(ColumnDefinitions[ordinal].CharacterSet));
+			return TypeMapper.Instance.GetColumnTypeMetadata(mySqlDbType).SimpleDataTypeName;
 		}
 
 		public Type GetFieldType(int ordinal)
@@ -345,71 +286,7 @@ namespace MySql.Data.MySqlClient.Results
 			if (ordinal < 0 || ordinal > ColumnDefinitions.Length)
 				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
 
-			var columnDefinition = ColumnDefinitions[ordinal];
-			var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
-			switch (columnDefinition.ColumnType)
-			{
-				case ColumnType.Tiny:
-					return Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1 ? typeof(bool) :
-						isUnsigned ? typeof(byte) : typeof(sbyte);
-
-				case ColumnType.Int24:
-				case ColumnType.Long:
-					return isUnsigned ? typeof(uint) : typeof(int);
-
-				case ColumnType.Longlong:
-					return isUnsigned ? typeof(ulong) : typeof(long);
-
-				case ColumnType.Bit:
-					return typeof(ulong);
-
-				case ColumnType.String:
-					if (!Connection.OldGuids && columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
-						return typeof(Guid);
-					goto case ColumnType.VarString;
-
-				case ColumnType.VarString:
-				case ColumnType.TinyBlob:
-				case ColumnType.Blob:
-				case ColumnType.MediumBlob:
-				case ColumnType.LongBlob:
-					return columnDefinition.CharacterSet == CharacterSet.Binary ?
-						(Connection.OldGuids && columnDefinition.ColumnLength == 16 ? typeof(Guid) : typeof(byte[])) :
-						typeof(string);
-
-				case ColumnType.Json:
-					return typeof(string);
-
-				case ColumnType.Short:
-					return isUnsigned ? typeof(ushort) : typeof(short);
-
-				case ColumnType.Date:
-				case ColumnType.DateTime:
-				case ColumnType.Timestamp:
-					return typeof(DateTime);
-
-				case ColumnType.Time:
-					return typeof(TimeSpan);
-
-				case ColumnType.Year:
-					return typeof(int);
-
-				case ColumnType.Float:
-					return typeof(float);
-
-				case ColumnType.Double:
-					return typeof(double);
-
-				case ColumnType.Decimal:
-				case ColumnType.NewDecimal:
-					return typeof(decimal);
-
-				case ColumnType.Null:
-					return typeof(object);
-
-				default:
-					throw new NotImplementedException("GetFieldType for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));
-			}
+			return TypeMapper.Instance.GetColumnTypeMetadata(ColumnTypes[ordinal]).DbTypeMapping.ClrType;
 		}
 
 		public int FieldCount => ColumnDefinitions?.Length ?? 0;
@@ -439,6 +316,7 @@ namespace MySql.Data.MySqlClient.Results
 
 		public ResultSetState BufferState { get; private set; }
 		public ColumnDefinitionPayload[] ColumnDefinitions { get; private set; }
+		public MySqlDbType[] ColumnTypes { get; private set; }
 		public long LastInsertId { get; private set; }
 		public int RecordsAffected { get; private set; }
 		public ResultSetState State { get; private set; }

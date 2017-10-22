@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -102,9 +102,9 @@ namespace MySql.Data.MySqlClient.CommandExecutors
 				for (var i = 0; i < m_outParams.Count; i++)
 				{
 					var param = m_outParams[i];
-					if (param.DbType != default(DbType))
+					if (param.HasSetDbType)
 					{
-						var dbTypeMapping = TypeMapper.Mapper.GetDbTypeMapping(param.DbType);
+						var dbTypeMapping = TypeMapper.Instance.GetDbTypeMapping(param.DbType);
 						if (dbTypeMapping != null)
 						{
 							param.Value = dbTypeMapping.DoConversion(reader.GetValue(i));

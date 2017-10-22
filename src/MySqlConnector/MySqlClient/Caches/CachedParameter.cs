@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using System.Linq;
 using MySql.Data.MySqlClient.Types;
 
@@ -29,7 +29,7 @@ namespace MySql.Data.MySqlClient.Caches
 				}
 			}
 			Name = name;
-			DbType = TypeMapper.Mapper.GetDbTypeMapping(dataType, unsigned).DbTypes?.First() ?? DbType.Object;
+			DbType = TypeMapper.Instance.GetDbTypeMapping(dataType, unsigned).DbTypes?.First() ?? DbType.Object;
 		}
 
 		internal readonly int Position;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Linq;
 using MySql.Data.MySqlClient.Types;
@@ -22,20 +22,17 @@ namespace MySql.Data.Tests
 		[InlineData(typeof(double), DbType.Double)]
 		[InlineData(typeof(float), DbType.Single)]
 		[InlineData(typeof(string), DbType.String)]
-		[InlineData(typeof(string), DbType.StringFixedLength)]
 		[InlineData(typeof(string), DbType.AnsiString)]
-		[InlineData(typeof(string), DbType.AnsiStringFixedLength)]
 		[InlineData(typeof(byte[]), DbType.Binary)]
-		[InlineData(typeof(DateTime), DbType.Date)]
 		[InlineData(typeof(DateTime), DbType.DateTime)]
 		[InlineData(typeof(DateTime), DbType.DateTime2)]
+		[InlineData(typeof(DateTime), DbType.DateTimeOffset)]
 		[InlineData(typeof(TimeSpan), DbType.Time)]
-		[InlineData(typeof(DateTimeOffset), DbType.DateTimeOffset)]
 		[InlineData(typeof(Guid), DbType.Guid)]
 		public void DbTypeMappingTest(Type clrType, DbType dbType)
 		{
-			Assert.Equal(clrType, TypeMapper.Mapper.GetDbTypeMapping(dbType).ClrType);
-			Assert.Contains(dbType, TypeMapper.Mapper.GetDbTypeMapping(clrType).DbTypes);
+			Assert.Equal(clrType, TypeMapper.Instance.GetDbTypeMapping(dbType).ClrType);
+			Assert.Contains(dbType, TypeMapper.Instance.GetDbTypeMapping(clrType).DbTypes);
 		}
 
 		[Theory]
@@ -54,11 +51,11 @@ namespace MySql.Data.Tests
 		[InlineData((ulong)1, DbType.AnsiStringFixedLength, "1")]
 		public void ConversionTest(object original, DbType dbType, object expected)
 		{
-			Assert.Equal(expected, TypeMapper.Mapper.GetDbTypeMapping(dbType).DoConversion(original));
+			Assert.Equal(expected, TypeMapper.Instance.GetDbTypeMapping(dbType).DoConversion(original));
 		}
 
 		[Theory]
-		[InlineData("bit", false, 0, DbType.Boolean)]
+		[InlineData("bit", false, 0, DbType.UInt64)]
 		[InlineData("tinyint", false, 1, DbType.Boolean)]
 		[InlineData("tinyint", true, 1, DbType.Boolean)]
 		[InlineData("tinyint", false, 0, DbType.SByte)]
@@ -74,7 +71,7 @@ namespace MySql.Data.Tests
 		[InlineData("decimal", false, 0, DbType.Decimal)]
 		[InlineData("double", false, 0, DbType.Double)]
 		[InlineData("float", false, 0, DbType.Single)]
-		[InlineData("char", false, 0, DbType.String)]
+		[InlineData("char", false, 0, DbType.StringFixedLength)]
 		[InlineData("varchar", false, 0, DbType.String)]
 		[InlineData("tinytext", false, 0, DbType.String)]
 		[InlineData("text", false, 0, DbType.String)]
@@ -97,14 +94,14 @@ namespace MySql.Data.Tests
 		[InlineData("multilinestring", false, 0, DbType.Binary)]
 		[InlineData("multipolygon", false, 0, DbType.Binary)]
 		[InlineData("datetime", false, 0, DbType.DateTime)]
-		[InlineData("date", false, 0, DbType.DateTime)] // todo: this should be DbType.Date
+		[InlineData("date", false, 0, DbType.Date)]
 		[InlineData("time", false, 0, DbType.Time)]
-		[InlineData("timestamp", false, 0, DbType.DateTimeOffset)]
+		[InlineData("timestamp", false, 0, DbType.DateTime)]
 		[InlineData("year", false, 0, DbType.Int32)]
-		public void ColumnTypeMappingTest(string columnTypeName, bool unsigned, int length, DbType dbType)
+		public void ColumnTypeMetadataTest(string columnTypeName, bool unsigned, int length, DbType dbType)
 		{
-			Assert.Equal(dbType, TypeMapper.Mapper.GetDbTypeMapping(columnTypeName, unsigned, length).DbTypes.FirstOrDefault());
-			Assert.Equal(dbType, TypeMapper.Mapper.GetDbTypeMapping(columnTypeName.ToUpperInvariant(), unsigned, length).DbTypes.FirstOrDefault());
+			Assert.Equal(dbType, TypeMapper.Instance.GetDbTypeMapping(columnTypeName, unsigned, length).DbTypes.FirstOrDefault());
+			Assert.Equal(dbType, TypeMapper.Instance.GetDbTypeMapping(columnTypeName.ToUpperInvariant(), unsigned, length).DbTypes.FirstOrDefault());
 		}
 	}
 }

@@ -250,14 +250,14 @@ namespace MySql.Data.MySqlClient
 				});
 
 				// Column type mappings:
-				var colTypes = Types.TypeMapper.Mapper.GetColumnMappings();
+				var colTypes = Types.TypeMapper.Instance.GetColumnMappings();
 				foreach (var map in colTypes)
 				{
 					var dbTypeMap = map.DbTypeMapping;
 					var dbType = dbTypeMap.DbTypes.FirstOrDefault();
 					dt.Rows.Add(new object[] {
 							dbTypeMap.ClrType.FullName,
-							map.ColumnTypeName,
+							map.DataTypeName,
 							(int)dbType,
 							map.Unsigned
 						});
@@ -267,8 +267,8 @@ namespace MySql.Data.MySqlClient
 				foreach (MySqlDbType mapItem in Enum.GetValues(typeof(MySqlDbType)))
 				{
 					var typeName = Enum.GetName(typeof(MySqlDbType), mapItem);
-					var dbType = Types.TypeMapper.ConvertFromMySqlDbType(mapItem);
-					var map = Types.TypeMapper.Mapper.GetDbTypeMapping(dbType);
+					var dbType = Types.TypeMapper.Instance.GetDbTypeForMySqlDbType(mapItem);
+					var map = Types.TypeMapper.Instance.GetDbTypeMapping(dbType);
 					if (map != null) // MySqlDbType.Set is not supported by the mapper.
 					{
 						dt.Rows.Add(new object[] {

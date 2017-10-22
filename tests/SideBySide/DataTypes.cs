@@ -596,81 +596,86 @@ namespace SideBySide
 
 #if !NETCOREAPP1_1_2
 		[Theory]
-		[InlineData("Bit1", "datatypes_bits", 1, typeof(ulong), "N", 0, 0)]
-		[InlineData("Bit32", "datatypes_bits", 32, typeof(ulong), "N", 0, 0)]
-		[InlineData("Bit64", "datatypes_bits", 64, typeof(ulong), "N", 0, 0)]
-		[InlineData("Binary", "datatypes_blobs", 100, typeof(byte[]), "N", 0, 0)]
-		[InlineData("VarBinary", "datatypes_blobs", 100, typeof(byte[]), "N", 0, 0)]
-		[InlineData("TinyBlob", "datatypes_blobs", 255, typeof(byte[]), "N", 0, 0)]
-		[InlineData("Blob", "datatypes_blobs", 65535, typeof(byte[]), "LN", 0, 0)]
-		[InlineData("MediumBlob", "datatypes_blobs", 16777215, typeof(byte[]), "LN", 0, 0)]
-		[InlineData("LongBlob", "datatypes_blobs", int.MaxValue, typeof(byte[]), "LN", 0, 0)]
-		[InlineData("guidbin", "datatypes_blobs", 16, typeof(byte[]), "N", 0, 0)]
-		[InlineData("rowid", "datatypes_bools", 11, typeof(int), "AK", 0, 0)]
-		[InlineData("Boolean", "datatypes_bools", 1, typeof(bool), "N", 0, 0)]
-		[InlineData("TinyInt1", "datatypes_bools", 1, typeof(bool), "N", 0, 0)]
-		[InlineData("size", "datatypes_enums", 7, typeof(string), "N", 0, 0)]
-		[InlineData("color", "datatypes_enums", 6, typeof(string), "", 0, 0)]
-		[InlineData("char38", "datatypes_guids", 38, typeof(string), "N", 0, 0)]
-		[InlineData("char38bin", "datatypes_guids", 38, typeof(string), "N", 0, 0)]
-		[InlineData("text", "datatypes_guids", 65535, typeof(string), "LN", 0, 0)]
-		[InlineData("blob", "datatypes_guids", 65535, typeof(byte[]), "LN", 0, 0)]
-		[InlineData("SByte", "datatypes_integers", 4, typeof(sbyte), "N", 0, 0)]
-		[InlineData("Byte", "datatypes_integers", 3, typeof(byte), "N", 0, 0)]
-		[InlineData("Int16", "datatypes_integers", 6, typeof(short), "N", 0, 0)]
-		[InlineData("UInt16", "datatypes_integers", 5, typeof(ushort), "N", 0, 0)]
-		[InlineData("Int24", "datatypes_integers", 9, typeof(int), "N", 0, 0)]
-		[InlineData("UInt24", "datatypes_integers", 8, typeof(uint), "N", 0, 0)]
-		[InlineData("Int32", "datatypes_integers", 11, typeof(int), "N", 0, 0)]
-		[InlineData("UInt32", "datatypes_integers", 10, typeof(uint), "N", 0, 0)]
-		[InlineData("Int64", "datatypes_integers", 20, typeof(long), "N", 0, 0)]
-		[InlineData("UInt64", "datatypes_integers", 20, typeof(ulong), "N", 0, 0)]
-		[InlineData("value", "datatypes_json_core", int.MaxValue, typeof(string), "LN", 0, 0)]
-		[InlineData("Single", "datatypes_reals", 12, typeof(float), "N", 0, 31)]
-		[InlineData("Double", "datatypes_reals", 22, typeof(double), "N", 0, 31)]
-		[InlineData("SmallDecimal", "datatypes_reals", 7, typeof(decimal), "N", 5, 2)]
-		[InlineData("MediumDecimal", "datatypes_reals", 30, typeof(decimal), "N", 28, 8)]
-		[InlineData("BigDecimal", "datatypes_reals", 52, typeof(decimal), "N", 50, 30)]
-		[InlineData("value", "datatypes_set", 12, typeof(string), "N", 0, 0)]
-		[InlineData("utf8", "datatypes_strings", 300, typeof(string), "N", 0, 0)]
-		[InlineData("utf8bin", "datatypes_strings", 300, typeof(string), "N", 0, 0)]
-		[InlineData("latin1", "datatypes_strings", 300, typeof(string), "N", 0, 0)]
-		[InlineData("latin1bin", "datatypes_strings", 300, typeof(string), "N", 0, 0)]
-		[InlineData("cp1251", "datatypes_strings", 300, typeof(string), "N", 0, 0)]
-		[InlineData("guid", "datatypes_strings", 36, typeof(Guid), "N", 0, 0)]
-		[InlineData("guidbin", "datatypes_strings", 36, typeof(Guid), "N", 0, 0)]
-		[InlineData("Date", "datatypes_times", 10, typeof(DateTime), "N", 0, 0)]
-		[InlineData("DateTime", "datatypes_times", 26, typeof(DateTime), "N", 0, 6)]
-		[InlineData("Timestamp", "datatypes_times", 26, typeof(DateTime), "N", 0, 6)]
-		[InlineData("Time", "datatypes_times", 17, typeof(TimeSpan), "N", 0, 6)]
-		[InlineData("Year", "datatypes_times", 4, typeof(int), "N", 0, 0)]
-		public void GetSchemaTable(string column, string table, int columnSize, Type dataType, string flags, int precision, int scale) =>
-			DoGetSchemaTable(column, table, columnSize, dataType, flags, precision, scale);
+		[InlineData("Bit1", "datatypes_bits", MySqlDbType.Bit, 1, typeof(ulong), "N", 0, 0)]
+		[InlineData("Bit32", "datatypes_bits", MySqlDbType.Bit, 32, typeof(ulong), "N", 0, 0)]
+		[InlineData("Bit64", "datatypes_bits", MySqlDbType.Bit, 64, typeof(ulong), "N", 0, 0)]
+		[InlineData("Binary", "datatypes_blobs", MySqlDbType.Binary, 100, typeof(byte[]), "N", 0, 0)]
+		[InlineData("VarBinary", "datatypes_blobs", MySqlDbType.VarBinary, 100, typeof(byte[]), "N", 0, 0)]
+		[InlineData("TinyBlob", "datatypes_blobs", MySqlDbType.Blob, 255, typeof(byte[]), "N", 0, 0)]
+		[InlineData("Blob", "datatypes_blobs", MySqlDbType.Blob, 65535, typeof(byte[]), "LN", 0, 0)]
+		[InlineData("MediumBlob", "datatypes_blobs", MySqlDbType.Blob, 16777215, typeof(byte[]), "LN", 0, 0)]
+		[InlineData("LongBlob", "datatypes_blobs", MySqlDbType.Blob, int.MaxValue, typeof(byte[]), "LN", 0, 0)]
+		[InlineData("guidbin", "datatypes_blobs", MySqlDbType.Binary, 16, typeof(byte[]), "N", 0, 0)]
+		[InlineData("rowid", "datatypes_bools", MySqlDbType.Int32, 11, typeof(int), "AK", 0, 0)]
+#if BASELINE
+		[InlineData("Boolean", "datatypes_bools", MySqlDbType.Byte, 1, typeof(bool), "N", 0, 0)]
+		[InlineData("TinyInt1", "datatypes_bools", MySqlDbType.Byte, 1, typeof(bool), "N", 0, 0)]
+#else
+		[InlineData("Boolean", "datatypes_bools", MySqlDbType.Bool, 1, typeof(bool), "N", 0, 0)]
+		[InlineData("TinyInt1", "datatypes_bools", MySqlDbType.Bool, 1, typeof(bool), "N", 0, 0)]
+#endif
+		[InlineData("size", "datatypes_enums", MySqlDbType.Enum, 7, typeof(string), "N", 0, 0)]
+		[InlineData("color", "datatypes_enums", MySqlDbType.Enum, 6, typeof(string), "", 0, 0)]
+		[InlineData("char38", "datatypes_guids", MySqlDbType.String, 38, typeof(string), "N", 0, 0)]
+		[InlineData("char38bin", "datatypes_guids", MySqlDbType.String, 38, typeof(string), "N", 0, 0)]
+		[InlineData("text", "datatypes_guids", MySqlDbType.Text, 65535, typeof(string), "LN", 0, 0)]
+		[InlineData("blob", "datatypes_guids", MySqlDbType.Blob, 65535, typeof(byte[]), "LN", 0, 0)]
+		[InlineData("SByte", "datatypes_integers", MySqlDbType.Byte, 4, typeof(sbyte), "N", 0, 0)]
+		[InlineData("Byte", "datatypes_integers", MySqlDbType.UByte, 3, typeof(byte), "N", 0, 0)]
+		[InlineData("Int16", "datatypes_integers", MySqlDbType.Int16, 6, typeof(short), "N", 0, 0)]
+		[InlineData("UInt16", "datatypes_integers", MySqlDbType.UInt16, 5, typeof(ushort), "N", 0, 0)]
+		[InlineData("Int24", "datatypes_integers", MySqlDbType.Int24, 9, typeof(int), "N", 0, 0)]
+		[InlineData("UInt24", "datatypes_integers", MySqlDbType.UInt24, 8, typeof(uint), "N", 0, 0)]
+		[InlineData("Int32", "datatypes_integers", MySqlDbType.Int32, 11, typeof(int), "N", 0, 0)]
+		[InlineData("UInt32", "datatypes_integers", MySqlDbType.UInt32, 10, typeof(uint), "N", 0, 0)]
+		[InlineData("Int64", "datatypes_integers", MySqlDbType.Int64, 20, typeof(long), "N", 0, 0)]
+		[InlineData("UInt64", "datatypes_integers", MySqlDbType.UInt64, 20, typeof(ulong), "N", 0, 0)]
+		[InlineData("value", "datatypes_json_core", MySqlDbType.JSON, int.MaxValue, typeof(string), "LN", 0, 0)]
+		[InlineData("Single", "datatypes_reals", MySqlDbType.Float, 12, typeof(float), "N", 0, 31)]
+		[InlineData("Double", "datatypes_reals", MySqlDbType.Double, 22, typeof(double), "N", 0, 31)]
+		[InlineData("SmallDecimal", "datatypes_reals", MySqlDbType.NewDecimal, 7, typeof(decimal), "N", 5, 2)]
+		[InlineData("MediumDecimal", "datatypes_reals", MySqlDbType.NewDecimal, 30, typeof(decimal), "N", 28, 8)]
+		[InlineData("BigDecimal", "datatypes_reals", MySqlDbType.NewDecimal, 52, typeof(decimal), "N", 50, 30)]
+		[InlineData("value", "datatypes_set", MySqlDbType.Set, 12, typeof(string), "N", 0, 0)]
+		[InlineData("utf8", "datatypes_strings", MySqlDbType.VarChar, 300, typeof(string), "N", 0, 0)]
+		[InlineData("utf8bin", "datatypes_strings", MySqlDbType.VarChar, 300, typeof(string), "N", 0, 0)]
+		[InlineData("latin1", "datatypes_strings", MySqlDbType.VarChar, 300, typeof(string), "N", 0, 0)]
+		[InlineData("latin1bin", "datatypes_strings", MySqlDbType.VarChar, 300, typeof(string), "N", 0, 0)]
+		[InlineData("cp1251", "datatypes_strings", MySqlDbType.VarChar, 300, typeof(string), "N", 0, 0)]
+		[InlineData("guid", "datatypes_strings", MySqlDbType.Guid, 36, typeof(Guid), "N", 0, 0)]
+		[InlineData("guidbin", "datatypes_strings", MySqlDbType.Guid, 36, typeof(Guid), "N", 0, 0)]
+		[InlineData("Date", "datatypes_times", MySqlDbType.Date, 10, typeof(DateTime), "N", 0, 0)]
+		[InlineData("DateTime", "datatypes_times", MySqlDbType.DateTime, 26, typeof(DateTime), "N", 0, 6)]
+		[InlineData("Timestamp", "datatypes_times", MySqlDbType.Timestamp, 26, typeof(DateTime), "N", 0, 6)]
+		[InlineData("Time", "datatypes_times", MySqlDbType.Time, 17, typeof(TimeSpan), "N", 0, 6)]
+		[InlineData("Year", "datatypes_times", MySqlDbType.Year, 4, typeof(int), "N", 0, 0)]
+		public void GetSchemaTable(string column, string table, MySqlDbType mySqlDbType, int columnSize, Type dataType, string flags, int precision, int scale) =>
+			DoGetSchemaTable(column, table, mySqlDbType, columnSize, dataType, flags, precision, scale);
 
 		[Theory]
-		[InlineData("`decimal-type` decimal(10,0) NOT NULL", "decimal-type", 11, typeof(decimal), "", 10, 0
+		[InlineData("`decimal-type` decimal(10,0) NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 11, typeof(decimal), "", 10, 0
 #if BASELINE
 			, Skip = "https://bugs.mysql.com/bug.php?id=88058"
 #endif
 			)]
-		[InlineData("`decimal-type` decimal(10,1) NOT NULL", "decimal-type", 12, typeof(decimal), "", 10, 1)]
-		[InlineData("`decimal-type` decimal(10,0) UNSIGNED NOT NULL", "decimal-type", 10, typeof(decimal), "", 10, 0
+		[InlineData("`decimal-type` decimal(10,1) NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 12, typeof(decimal), "", 10, 1)]
+		[InlineData("`decimal-type` decimal(10,0) UNSIGNED NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 10, typeof(decimal), "", 10, 0
 #if BASELINE
 			, Skip = "https://bugs.mysql.com/bug.php?id=88058"
 #endif
 			)]
-		[InlineData("`decimal-type` decimal(10,1) UNSIGNED NOT NULL", "decimal-type", 11, typeof(decimal), "", 10, 1)]
-		[InlineData("`decimal-type` decimal(65,30) NOT NULL", "decimal-type", 67, typeof(decimal), "", 65, 30)]
-		[InlineData("`decimal-type` decimal(1,1) NOT NULL", "decimal-type", 3, typeof(decimal), "", 1, 1)]
-		public void GetSchemaTableForNewColumn(string createColumn, string column, int columnSize, Type dataType, string flags, int precision, int scale)
+		[InlineData("`decimal-type` decimal(10,1) UNSIGNED NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 11, typeof(decimal), "", 10, 1)]
+		[InlineData("`decimal-type` decimal(65,30) NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 67, typeof(decimal), "", 65, 30)]
+		[InlineData("`decimal-type` decimal(1,1) NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 3, typeof(decimal), "", 1, 1)]
+		public void GetSchemaTableForNewColumn(string createColumn, string column, MySqlDbType mySqlDbType, int columnSize, Type dataType, string flags, int precision, int scale)
 		{
 			m_database.Connection.Execute($@"drop table if exists schema_table;
 create table schema_table({createColumn});");
 
-			DoGetSchemaTable(column, "schema_table", columnSize, dataType, flags, precision, scale);
+			DoGetSchemaTable(column, "schema_table", mySqlDbType, columnSize, dataType, flags, precision, scale);
 		}
 
-		private void DoGetSchemaTable(string column, string table, int columnSize, Type dataType, string flags, int precision, int scale)
+		private void DoGetSchemaTable(string column, string table, MySqlDbType mySqlDbType, int columnSize, Type dataType, string flags, int precision, int scale)
 		{
 			if (table == "datatypes_json_core" && !AppConfig.SupportsJson)
 				return;
@@ -714,6 +719,11 @@ create table schema_table({createColumn});");
 					Assert.Equal(allowDbNull, schema["AllowDBNull"]);
 					Assert.Equal(precision, schema["NumericPrecision"]);
 					Assert.Equal(scale, schema["NumericScale"]);
+#if BASELINE
+					if (mySqlDbType == MySqlDbType.Enum || mySqlDbType == MySqlDbType.Set)
+						mySqlDbType = MySqlDbType.String;
+#endif
+					Assert.Equal(mySqlDbType, (MySqlDbType) schema["ProviderType"]);
 					Assert.Equal(m_database.Connection.Database, schema["BaseSchemaName"]);
 					Assert.Equal(table, schema["BaseTableName"]);
 					Assert.Equal(column, schema["BaseColumnName"]);
@@ -727,55 +737,55 @@ create table schema_table({createColumn});");
 
 #if !BASELINE
 		[Theory]
-		[InlineData("Bit1", "datatypes_bits", "BIT", 1, typeof(ulong), "N", -1, 0)]
-		[InlineData("Bit32", "datatypes_bits", "BIT", 32, typeof(ulong), "N", -1, 0)]
-		[InlineData("Bit64", "datatypes_bits", "BIT", 64, typeof(ulong), "N", -1, 0)]
-		[InlineData("Binary", "datatypes_blobs", "BLOB", 100, typeof(byte[]), "N", -1, 0)]
-		[InlineData("VarBinary", "datatypes_blobs", "BLOB", 100, typeof(byte[]), "N", -1, 0)]
-		[InlineData("TinyBlob", "datatypes_blobs", "BLOB", 255, typeof(byte[]), "N", -1, 0)]
-		[InlineData("Blob", "datatypes_blobs", "BLOB", 65535, typeof(byte[]), "LN", -1, 0)]
-		[InlineData("MediumBlob", "datatypes_blobs", "BLOB", 16777215, typeof(byte[]), "LN", -1, 0)]
-		[InlineData("LongBlob", "datatypes_blobs", "BLOB", int.MaxValue, typeof(byte[]), "LN", -1, 0)]
-		[InlineData("guidbin", "datatypes_blobs", "BLOB", 16, typeof(byte[]), "N", -1, 0)]
-		[InlineData("rowid", "datatypes_bools", "INT", 11, typeof(int), "AK", -1, 0)]
-		[InlineData("Boolean", "datatypes_bools", "BOOL", 1, typeof(bool), "N", -1, 0)]
-		[InlineData("TinyInt1", "datatypes_bools", "BOOL", 1, typeof(bool), "N", -1, 0)]
-		[InlineData("size", "datatypes_enums", "ENUM", 7, typeof(string), "N", -1, 0)]
-		[InlineData("color", "datatypes_enums", "ENUM", 6, typeof(string), "", -1, 0)]
-		[InlineData("char38", "datatypes_guids", "CHAR(38)", 38, typeof(string), "N", -1, 0)]
-		[InlineData("char38bin", "datatypes_guids", "CHAR(38)", 38, typeof(string), "N", -1, 0)]
-		[InlineData("text", "datatypes_guids", "VARCHAR", 65535, typeof(string), "LN", -1, 0)]
-		[InlineData("blob", "datatypes_guids", "BLOB", 65535, typeof(byte[]), "LN", -1, 0)]
-		[InlineData("SByte", "datatypes_integers", "TINYINT", 4, typeof(sbyte), "N", -1, 0)]
-		[InlineData("Byte", "datatypes_integers", "TINYINT", 3, typeof(byte), "N", -1, 0)]
-		[InlineData("Int16", "datatypes_integers", "SMALLINT", 6, typeof(short), "N", -1, 0)]
-		[InlineData("UInt16", "datatypes_integers", "SMALLINT", 5, typeof(ushort), "N", -1, 0)]
-		[InlineData("Int24", "datatypes_integers", "MEDIUMINT", 9, typeof(int), "N", -1, 0)]
-		[InlineData("UInt24", "datatypes_integers", "MEDIUMINT", 8, typeof(uint), "N", -1, 0)]
-		[InlineData("Int32", "datatypes_integers", "INT", 11, typeof(int), "N", -1, 0)]
-		[InlineData("UInt32", "datatypes_integers", "INT", 10, typeof(uint), "N", -1, 0)]
-		[InlineData("Int64", "datatypes_integers", "BIGINT", 20, typeof(long), "N", -1, 0)]
-		[InlineData("UInt64", "datatypes_integers", "BIGINT", 20, typeof(ulong), "N", -1, 0)]
-		[InlineData("value", "datatypes_json_core", "JSON", int.MaxValue, typeof(string), "LN", -1, 0)]
-		[InlineData("Single", "datatypes_reals", "FLOAT", 12, typeof(float), "N", -1, 31)]
-		[InlineData("Double", "datatypes_reals", "DOUBLE", 22, typeof(double), "N", -1, 31)]
-		[InlineData("SmallDecimal", "datatypes_reals", "DECIMAL", 7, typeof(decimal), "N", 5, 2)]
-		[InlineData("MediumDecimal", "datatypes_reals", "DECIMAL", 30, typeof(decimal), "N", 28, 8)]
-		[InlineData("BigDecimal", "datatypes_reals", "DECIMAL", 52, typeof(decimal), "N", 50, 30)]
-		[InlineData("value", "datatypes_set", "SET", 12, typeof(string), "N", -1, 0)]
-		[InlineData("utf8", "datatypes_strings", "VARCHAR", 300, typeof(string), "N", -1, 0)]
-		[InlineData("utf8bin", "datatypes_strings", "VARCHAR", 300, typeof(string), "N", -1, 0)]
-		[InlineData("latin1", "datatypes_strings", "VARCHAR", 300, typeof(string), "N", -1, 0)]
-		[InlineData("latin1bin", "datatypes_strings", "VARCHAR", 300, typeof(string), "N", -1, 0)]
-		[InlineData("cp1251", "datatypes_strings", "VARCHAR", 300, typeof(string), "N", -1, 0)]
-		[InlineData("guid", "datatypes_strings", "CHAR(36)", 36, typeof(Guid), "N", -1, 0)]
-		[InlineData("guidbin", "datatypes_strings", "CHAR(36)", 36, typeof(Guid), "N", -1, 0)]
-		[InlineData("Date", "datatypes_times", "DATE", 10, typeof(DateTime), "N", -1, 0)]
-		[InlineData("DateTime", "datatypes_times", "DATETIME", 26, typeof(DateTime), "N", -1, 6)]
-		[InlineData("Timestamp", "datatypes_times", "TIMESTAMP", 26, typeof(DateTime), "N", -1, 6)]
-		[InlineData("Time", "datatypes_times", "TIME", 17, typeof(TimeSpan), "N", -1, 6)]
-		[InlineData("Year", "datatypes_times", "YEAR", 4, typeof(int), "N", -1, 0)]
-		public void GetColumnSchema(string column, string table, string dataTypeName, int columnSize, Type dataType, string flags, int precision, int scale)
+		[InlineData("Bit1", "datatypes_bits", MySqlDbType.Bit, "BIT", 1, typeof(ulong), "N", -1, 0)]
+		[InlineData("Bit32", "datatypes_bits", MySqlDbType.Bit, "BIT", 32, typeof(ulong), "N", -1, 0)]
+		[InlineData("Bit64", "datatypes_bits", MySqlDbType.Bit, "BIT", 64, typeof(ulong), "N", -1, 0)]
+		[InlineData("Binary", "datatypes_blobs", MySqlDbType.Binary, "BLOB", 100, typeof(byte[]), "N", -1, 0)]
+		[InlineData("VarBinary", "datatypes_blobs", MySqlDbType.VarBinary, "BLOB", 100, typeof(byte[]), "N", -1, 0)]
+		[InlineData("TinyBlob", "datatypes_blobs", MySqlDbType.Blob, "BLOB", 255, typeof(byte[]), "N", -1, 0)]
+		[InlineData("Blob", "datatypes_blobs", MySqlDbType.Blob, "BLOB", 65535, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("MediumBlob", "datatypes_blobs", MySqlDbType.Blob, "BLOB", 16777215, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("LongBlob", "datatypes_blobs", MySqlDbType.Blob, "BLOB", int.MaxValue, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("guidbin", "datatypes_blobs", MySqlDbType.Binary, "BLOB", 16, typeof(byte[]), "N", -1, 0)]
+		[InlineData("rowid", "datatypes_bools", MySqlDbType.Int32, "INT", 11, typeof(int), "AK", -1, 0)]
+		[InlineData("Boolean", "datatypes_bools", MySqlDbType.Bool, "BOOL", 1, typeof(bool), "N", -1, 0)]
+		[InlineData("TinyInt1", "datatypes_bools", MySqlDbType.Bool, "BOOL", 1, typeof(bool), "N", -1, 0)]
+		[InlineData("size", "datatypes_enums", MySqlDbType.Enum, "ENUM", 7, typeof(string), "N", -1, 0)]
+		[InlineData("color", "datatypes_enums", MySqlDbType.Enum, "ENUM", 6, typeof(string), "", -1, 0)]
+		[InlineData("char38", "datatypes_guids", MySqlDbType.String, "CHAR(38)", 38, typeof(string), "N", -1, 0)]
+		[InlineData("char38bin", "datatypes_guids", MySqlDbType.String, "CHAR(38)", 38, typeof(string), "N", -1, 0)]
+		[InlineData("text", "datatypes_guids", MySqlDbType.Text, "VARCHAR", 65535, typeof(string), "LN", -1, 0)]
+		[InlineData("blob", "datatypes_guids", MySqlDbType.Blob, "BLOB", 65535, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("SByte", "datatypes_integers", MySqlDbType.Byte, "TINYINT", 4, typeof(sbyte), "N", -1, 0)]
+		[InlineData("Byte", "datatypes_integers", MySqlDbType.UByte, "TINYINT", 3, typeof(byte), "N", -1, 0)]
+		[InlineData("Int16", "datatypes_integers", MySqlDbType.Int16, "SMALLINT", 6, typeof(short), "N", -1, 0)]
+		[InlineData("UInt16", "datatypes_integers", MySqlDbType.UInt16, "SMALLINT", 5, typeof(ushort), "N", -1, 0)]
+		[InlineData("Int24", "datatypes_integers", MySqlDbType.Int24, "MEDIUMINT", 9, typeof(int), "N", -1, 0)]
+		[InlineData("UInt24", "datatypes_integers", MySqlDbType.UInt24, "MEDIUMINT", 8, typeof(uint), "N", -1, 0)]
+		[InlineData("Int32", "datatypes_integers", MySqlDbType.Int32, "INT", 11, typeof(int), "N", -1, 0)]
+		[InlineData("UInt32", "datatypes_integers", MySqlDbType.UInt32, "INT", 10, typeof(uint), "N", -1, 0)]
+		[InlineData("Int64", "datatypes_integers", MySqlDbType.Int64, "BIGINT", 20, typeof(long), "N", -1, 0)]
+		[InlineData("UInt64", "datatypes_integers", MySqlDbType.UInt64, "BIGINT", 20, typeof(ulong), "N", -1, 0)]
+		[InlineData("value", "datatypes_json_core", MySqlDbType.JSON, "JSON", int.MaxValue, typeof(string), "LN", -1, 0)]
+		[InlineData("Single", "datatypes_reals", MySqlDbType.Float, "FLOAT", 12, typeof(float), "N", -1, 31)]
+		[InlineData("Double", "datatypes_reals", MySqlDbType.Double, "DOUBLE", 22, typeof(double), "N", -1, 31)]
+		[InlineData("SmallDecimal", "datatypes_reals", MySqlDbType.NewDecimal, "DECIMAL", 7, typeof(decimal), "N", 5, 2)]
+		[InlineData("MediumDecimal", "datatypes_reals", MySqlDbType.NewDecimal, "DECIMAL", 30, typeof(decimal), "N", 28, 8)]
+		[InlineData("BigDecimal", "datatypes_reals", MySqlDbType.NewDecimal, "DECIMAL", 52, typeof(decimal), "N", 50, 30)]
+		[InlineData("value", "datatypes_set", MySqlDbType.Set, "SET", 12, typeof(string), "N", -1, 0)]
+		[InlineData("utf8", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR", 300, typeof(string), "N", -1, 0)]
+		[InlineData("utf8bin", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR", 300, typeof(string), "N", -1, 0)]
+		[InlineData("latin1", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR", 300, typeof(string), "N", -1, 0)]
+		[InlineData("latin1bin", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR", 300, typeof(string), "N", -1, 0)]
+		[InlineData("cp1251", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR", 300, typeof(string), "N", -1, 0)]
+		[InlineData("guid", "datatypes_strings", MySqlDbType.Guid, "CHAR(36)", 36, typeof(Guid), "N", -1, 0)]
+		[InlineData("guidbin", "datatypes_strings", MySqlDbType.Guid, "CHAR(36)", 36, typeof(Guid), "N", -1, 0)]
+		[InlineData("Date", "datatypes_times", MySqlDbType.Date, "DATE", 10, typeof(DateTime), "N", -1, 0)]
+		[InlineData("DateTime", "datatypes_times", MySqlDbType.DateTime, "DATETIME", 26, typeof(DateTime), "N", -1, 6)]
+		[InlineData("Timestamp", "datatypes_times", MySqlDbType.Timestamp, "TIMESTAMP", 26, typeof(DateTime), "N", -1, 6)]
+		[InlineData("Time", "datatypes_times", MySqlDbType.Time, "TIME", 17, typeof(TimeSpan), "N", -1, 6)]
+		[InlineData("Year", "datatypes_times", MySqlDbType.Year, "YEAR", 4, typeof(int), "N", -1, 0)]
+		public void GetColumnSchema(string column, string table, MySqlDbType mySqlDbType, string dataTypeName, int columnSize, Type dataType, string flags, int precision, int scale)
 		{
 			if (table == "datatypes_json_core" && !AppConfig.SupportsJson)
 				return;
@@ -793,7 +803,7 @@ create table schema_table({createColumn});");
 				{
 					var columns = reader.GetColumnSchema();
 					Assert.Single(columns);
-					var schema = columns[0];
+					var schema = (MySqlDbColumn) columns[0];
 					Assert.Equal(allowDbNull, schema.AllowDBNull);
 					Assert.Equal(column, schema.BaseColumnName);
 					Assert.Equal(m_database.Connection.Database, schema.BaseSchemaName);
@@ -813,6 +823,7 @@ create table schema_table({createColumn});");
 					Assert.False(schema.IsUnique.Value);
 					Assert.Equal(realPrecision, schema.NumericPrecision);
 					Assert.Equal(scale, schema.NumericScale);
+					Assert.Equal(mySqlDbType, schema.ProviderType);
 				}
 			}
 		}

@@ -241,7 +241,7 @@ namespace MySql.Data.MySqlClient
 		public ReadOnlyCollection<DbColumn> GetColumnSchema()
 		{
 			return GetResultSet().ColumnDefinitions
-				.Select((c, n) => (DbColumn) new MySqlDbColumn(n, c, GetFieldType(n), GetDataTypeName(n)))
+				.Select((c, n) => (DbColumn) new MySqlDbColumn(n, c, GetResultSet().ColumnTypes[n]))
 				.ToList().AsReadOnly();
 		}
 

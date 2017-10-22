@@ -1,4 +1,6 @@
 using System;
+using System.Globalization;
+using MySql.Data.MySqlClient.Types;
 using MySql.Data.Serialization;
 
 #if !NETSTANDARD1_3 && !NETSTANDARD2_0
@@ -38,8 +40,11 @@ namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlDbColumn : System.Data.Common.DbColumn
 	{
-		internal MySqlDbColumn(int ordinal, ColumnDefinitionPayload column, Type type, string dataTypeName)
+		internal MySqlDbColumn(int ordinal, ColumnDefinitionPayload column, MySqlDbType mySqlDbType)
 		{
+			var columnTypeMetadata = TypeMapper.Instance.GetColumnTypeMetadata(mySqlDbType);
+
+			var type = columnTypeMetadata.DbTypeMapping.ClrType;
 			var columnSize = type == typeof(string) || type == typeof(Guid) ?
 				column.ColumnLength / SerializationUtility.GetBytesPerCharacter(column.CharacterSet) :
 				column.ColumnLength;
@@ -53,7 +58,9 @@ namespace MySql.Data.MySqlClient
 			ColumnOrdinal = ordinal;
 			ColumnSize = columnSize > int.MaxValue ? int.MaxValue : unchecked((int) columnSize);
 			DataType = type;
-			DataTypeName = dataTypeName;
+			DataTypeName = columnTypeMetadata.SimpleDataTypeName;
+			if (mySqlDbType == MySqlDbType.String)
+				DataTypeName += string.Format(CultureInfo.InvariantCulture, "({0})", columnSize);
 			IsAliased = column.PhysicalName != column.Name;
 			IsAutoIncrement = (column.ColumnFlags & ColumnFlags.AutoIncrement) != 0;
 			IsExpression = false;
@@ -72,9 +79,9 @@ namespace MySql.Data.MySqlClient
 					NumericPrecision--;
 			}
 			NumericScale = column.Decimals;
-			ProviderType = (int) column.ColumnType;
+			ProviderType = mySqlDbType;
 		}
 
-		public int ProviderType { get; }
+		public MySqlDbType ProviderType { get; }
 	}
 }
