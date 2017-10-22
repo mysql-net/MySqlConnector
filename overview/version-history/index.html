@@ -168,6 +168,15 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-29-1">0.29.1</h3>
+
+<ul>
+<li>Work around Amazon Aurora <code>DateTime</code> conversion issue: <a href="https://github.com/mysql-net/MySqlConnector/issues/364">#364</a>.</li>
+<li>Fix <code>NotSupportedException</code> in <code>MySqlParameter</code>: <a href="https://github.com/mysql-net/MySqlConnector/pull/367">#367</a>.</li>
+<li><strong>Breaking</strong> Remove a number of <code>MySqlErrorCode</code> enum values (to reduce library size).</li>
+<li>Thanks to <a href="https://github.com/dgilbert">Duane Gilbert</a> and <a href="https://github.com/Naragato">Naragato</a> for contributions to this release.</li>
+</ul>
+
 <h3 id="0-29-0">0.29.0</h3>
 
 <ul>
@@ -182,7 +191,7 @@
 <li>MySqlConnector adds <code>MySqlDbType.Bool</code> to represent a <code>TINYINT(1)</code> column.</li>
 <li>Return correct values for <code>ProviderType</code> in <code>GetColumnSchema</code>/<code>GetSchemaTable</code>.</li>
 </ul></li>
-<li>Implement <code>MySqlConnection.GetSchema</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/362">#361</a>.</li>
+<li>Implement <code>MySqlConnection.GetSchema</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/361">#361</a>.</li>
 <li>Update documentation for .NET Core 2.0: <a href="https://github.com/mysql-net/MySqlConnector/issues/372">#372</a>.</li>
 <li>Fix information disclosure vulnerability related to <code>LOAD DATA LOCAL INFILE</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/334">#334</a>.</li>
 <li>Improve async performance.</li>
