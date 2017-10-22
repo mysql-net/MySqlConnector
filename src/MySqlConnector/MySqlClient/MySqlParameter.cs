@@ -26,7 +26,7 @@ namespace MySql.Data.MySqlClient
 			set
 			{
 				m_dbType = value;
-				m_mySqlDbType = TypeMapper.Mapper.GetMySqlDbTypeForDbType(value);
+				m_mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbType(value);
 				HasSetDbType = true;
 			}
 		}
@@ -36,7 +36,7 @@ namespace MySql.Data.MySqlClient
 			get => m_mySqlDbType;
 			set
 			{
-				m_dbType = TypeMapper.Mapper.GetDbTypeForMySqlDbType(value);
+				m_dbType = TypeMapper.Instance.GetDbTypeForMySqlDbType(value);
 				m_mySqlDbType = value;
 				HasSetDbType = true;
 			}

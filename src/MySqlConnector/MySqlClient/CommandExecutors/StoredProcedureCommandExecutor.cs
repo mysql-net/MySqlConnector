@@ -104,7 +104,7 @@ namespace MySql.Data.MySqlClient.CommandExecutors
 					var param = m_outParams[i];
 					if (param.HasSetDbType)
 					{
-						var dbTypeMapping = TypeMapper.Mapper.GetDbTypeMapping(param.DbType);
+						var dbTypeMapping = TypeMapper.Instance.GetDbTypeMapping(param.DbType);
 						if (dbTypeMapping != null)
 						{
 							param.Value = dbTypeMapping.DoConversion(reader.GetValue(i));

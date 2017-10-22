@@ -31,8 +31,8 @@ namespace MySql.Data.Tests
 		[InlineData(typeof(Guid), DbType.Guid)]
 		public void DbTypeMappingTest(Type clrType, DbType dbType)
 		{
-			Assert.Equal(clrType, TypeMapper.Mapper.GetDbTypeMapping(dbType).ClrType);
-			Assert.Contains(dbType, TypeMapper.Mapper.GetDbTypeMapping(clrType).DbTypes);
+			Assert.Equal(clrType, TypeMapper.Instance.GetDbTypeMapping(dbType).ClrType);
+			Assert.Contains(dbType, TypeMapper.Instance.GetDbTypeMapping(clrType).DbTypes);
 		}
 
 		[Theory]
@@ -51,7 +51,7 @@ namespace MySql.Data.Tests
 		[InlineData((ulong)1, DbType.AnsiStringFixedLength, "1")]
 		public void ConversionTest(object original, DbType dbType, object expected)
 		{
-			Assert.Equal(expected, TypeMapper.Mapper.GetDbTypeMapping(dbType).DoConversion(original));
+			Assert.Equal(expected, TypeMapper.Instance.GetDbTypeMapping(dbType).DoConversion(original));
 		}
 
 		[Theory]
@@ -100,8 +100,8 @@ namespace MySql.Data.Tests
 		[InlineData("year", false, 0, DbType.Int32)]
 		public void ColumnTypeMetadataTest(string columnTypeName, bool unsigned, int length, DbType dbType)
 		{
-			Assert.Equal(dbType, TypeMapper.Mapper.GetDbTypeMapping(columnTypeName, unsigned, length).DbTypes.FirstOrDefault());
-			Assert.Equal(dbType, TypeMapper.Mapper.GetDbTypeMapping(columnTypeName.ToUpperInvariant(), unsigned, length).DbTypes.FirstOrDefault());
+			Assert.Equal(dbType, TypeMapper.Instance.GetDbTypeMapping(columnTypeName, unsigned, length).DbTypes.FirstOrDefault());
+			Assert.Equal(dbType, TypeMapper.Instance.GetDbTypeMapping(columnTypeName.ToUpperInvariant(), unsigned, length).DbTypes.FirstOrDefault());
 		}
 	}
 }

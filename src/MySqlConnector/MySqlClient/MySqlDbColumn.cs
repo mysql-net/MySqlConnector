@@ -42,7 +42,7 @@ namespace MySql.Data.MySqlClient
 	{
 		internal MySqlDbColumn(int ordinal, ColumnDefinitionPayload column, MySqlDbType mySqlDbType)
 		{
-			var columnTypeMetadata = TypeMapper.Mapper.GetColumnTypeMetadata(mySqlDbType);
+			var columnTypeMetadata = TypeMapper.Instance.GetColumnTypeMetadata(mySqlDbType);
 
 			var type = columnTypeMetadata.DbTypeMapping.ClrType;
 			var columnSize = type == typeof(string) || type == typeof(Guid) ?
