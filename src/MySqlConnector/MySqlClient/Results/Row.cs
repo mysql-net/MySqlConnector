@@ -1,5 +1,4 @@
-﻿using System;
-using System.Buffers;
+using System;
 using System.Globalization;
 using System.Text;
 using MySql.Data.Serialization;

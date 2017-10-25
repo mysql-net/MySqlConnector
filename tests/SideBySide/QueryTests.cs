@@ -124,7 +124,7 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 			}
 		}
 
-		[SkippableFact(ConfigSettings.UnbufferedResultSets)]
+		[Fact]
 		public async Task MultipleReaders()
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
@@ -167,58 +167,7 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 				}
 			}
 		}
-
-		[SkippableFact(Baseline = "Does not support BufferResultSets")]
-		public async Task MultipleBufferedReaders()
-		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
-#if !BASELINE
-			csb.BufferResultSets = true;
-#endif
-
-			using (var connection = new MySqlConnection(csb.ConnectionString))
-			{
-				await connection.OpenAsync();
-				using (var cmd = connection.CreateCommand())
-				{
-					cmd.CommandText = @"drop table if exists query_multiple_buffered_readers;
-						create table query_multiple_buffered_readers(id integer not null primary key auto_increment);
-						insert into query_multiple_buffered_readers(id) values(1), (2), (3);";
-					await cmd.ExecuteNonQueryAsync();
-				}
-
-				using (var cmd1 = connection.CreateCommand())
-				using (var cmd2 = connection.CreateCommand())
-				{
-					var commandText = @"select id from query_multiple_buffered_readers order by id ASC;
-						select id from query_multiple_buffered_readers order by id DESC;";
-					cmd1.CommandText = commandText;
-					cmd2.CommandText = commandText;
-
-					var readers = new[]{ await cmd1.ExecuteReaderAsync(), await cmd2.ExecuteReaderAsync() };
-					foreach (var reader in readers){
-						Assert.True(await reader.ReadAsync());
-						Assert.Equal(1, reader.GetInt32(0));
-						Assert.True(await reader.ReadAsync());
-						Assert.Equal(2, reader.GetInt32(0));
-						Assert.True(await reader.ReadAsync());
-						Assert.Equal(3, reader.GetInt32(0));
-						Assert.False(await reader.ReadAsync());
-						Assert.True(await reader.NextResultAsync());
-
-						Assert.True(await reader.ReadAsync());
-						Assert.Equal(3, reader.GetInt32(0));
-						Assert.True(await reader.ReadAsync());
-						Assert.Equal(2, reader.GetInt32(0));
-						Assert.True(await reader.ReadAsync());
-						Assert.Equal(1, reader.GetInt32(0));
-						Assert.False(await reader.ReadAsync());
-						Assert.False(await reader.NextResultAsync());
-					}
-				}
-			}
-		}
-
+		
 		[Fact]
 		public async Task UndisposedReader()
 		{

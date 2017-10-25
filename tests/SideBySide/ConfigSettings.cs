@@ -14,7 +14,6 @@ namespace SideBySide
 		LocalCsvFile = 0x20,
 		TsvFile = 0x40,
 		LocalTsvFile = 0x80,
-		UnbufferedResultSets = 0x100,
 		TcpConnection = 0x200,
 		SecondaryDatabase = 0x400,
 	}
