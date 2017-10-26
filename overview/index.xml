@@ -69,6 +69,12 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-29-2&#34;&gt;0.29.2&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix an exception if &lt;code&gt;MySqlDataReader.GetOrdinal&lt;/code&gt; was called before &lt;code&gt;Read&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/379&#34;&gt;#379&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-29-1&#34;&gt;0.29.1&lt;/h3&gt;
 
 &lt;ul&gt;
