@@ -1,5 +1,5 @@
 ---
-lastmod: 2017-09-13
+lastmod: 2017-10-26
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,10 @@ weight: 30
 
 Version History
 ===============
+
+### 0.29.2
+
+* Fix an exception if `MySqlDataReader.GetOrdinal` was called before `Read`: [#379](https://github.com/mysql-net/MySqlConnector/issues/379).
 
 ### 0.29.1
 
