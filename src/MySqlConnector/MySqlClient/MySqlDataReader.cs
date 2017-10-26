@@ -171,7 +171,7 @@ namespace MySql.Data.MySqlClient
 		public override bool IsClosed => Command == null;
 		public override int RecordsAffected => m_recordsAffected;
 
-		public override int GetOrdinal(string name) => GetResultSet().GetCurrentRow().GetOrdinal(name);
+		public override int GetOrdinal(string name) => GetResultSet().GetOrdinal(name);
 
 		public override bool GetBoolean(int ordinal) => GetResultSet().GetCurrentRow().GetBoolean(ordinal);
 

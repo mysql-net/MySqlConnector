@@ -301,6 +301,20 @@ namespace MySql.Data.MySqlClient.Results
 			}
 		}
 
+		public int GetOrdinal(string name)
+		{
+			if (name == null)
+				throw new ArgumentNullException(nameof(name));
+
+			for (var column = 0; column < ColumnDefinitions.Length; column++)
+			{
+				if (name.Equals(ColumnDefinitions[column].Name, StringComparison.OrdinalIgnoreCase))
+					return column;
+			}
+
+			throw new IndexOutOfRangeException("The column name '{0}' does not exist in the result set.".FormatInvariant(name));
+		}
+
 		public Row GetCurrentRow()
 		{
 			if (State != ResultSetState.ReadingRows)

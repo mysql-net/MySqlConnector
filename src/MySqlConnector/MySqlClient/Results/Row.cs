@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Globalization;
 using System.Text;
 using MySql.Data.Serialization;
@@ -232,19 +231,7 @@ namespace MySql.Data.MySqlClient.Results
 
 		public object this[int ordinal] => GetValue(ordinal);
 
-		public object this[string name] => GetValue(GetOrdinal(name));
-
-		public int GetOrdinal(string name)
-		{
-			for (int column = 0; column < ResultSet.ColumnDefinitions.Length; column++)
-			{
-				if (ResultSet.ColumnDefinitions[column].Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-					return column;
-			}
-
-			// TODO: Correct exception
-			throw new IndexOutOfRangeException("The column name '{0}' does not exist in the result set.".FormatInvariant(name));
-		}
+		public object this[string name] => GetValue(ResultSet.GetOrdinal(name));
 
 		public object GetValue(int ordinal)
 		{

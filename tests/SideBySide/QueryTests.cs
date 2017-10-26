@@ -24,6 +24,77 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void GetOrdinal()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select 0 as zero, 1 as one;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.Equal(0, reader.GetOrdinal("zero"));
+					Assert.Equal(1, reader.GetOrdinal("one"));
+				}
+			}
+		}
+
+		[Fact]
+		public void GetOrdinalIgnoreCase()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select 0 as zero, 1 as one;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.Equal(0, reader.GetOrdinal("Zero"));
+					Assert.Equal(1, reader.GetOrdinal("ONE"));
+				}
+			}
+		}
+
+		[Fact]
+		public void GetOrdinalExceptionForNoColumn()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select 0 as zero, 1 as one;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.Throws<IndexOutOfRangeException>(() => reader.GetOrdinal("three"));
+				}
+			}
+		}
+
+		[Fact]
+		public void GetOrdinalExceptionForNull()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select 0 as zero, 1 as one;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.Throws<ArgumentNullException>(() => reader.GetOrdinal(null));
+				}
+			}
+		}
+
+		[Fact]
+		public void GetOrdinalBeforeAndAfterRead()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select 0 as zero, 1 as one;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.Equal(1, reader.GetOrdinal("one"));
+					Assert.True(reader.Read());
+					Assert.Equal(1, reader.GetOrdinal("one"));
+					Assert.False(reader.Read());
+					Assert.Equal(1, reader.GetOrdinal("one"));
+				}
+			}
+		}
+
+		[Fact]
 		public void WithoutUserVariables()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
