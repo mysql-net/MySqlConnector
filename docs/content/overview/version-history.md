@@ -1,5 +1,5 @@
 ---
-lastmod: 2017-10-26
+lastmod: 2017-10-28
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,10 @@ weight: 30
 
 Version History
 ===============
+
+### 0.29.3
+
+* Remove `System.Runtime.InteropServices.RuntimeInformation` dependency on full framework: [#381](https://github.com/mysql-net/MySqlConnector/issues/381).
 
 ### 0.29.2
 
