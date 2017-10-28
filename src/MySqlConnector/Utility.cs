@@ -220,6 +220,18 @@ namespace MySql.Data
 			}
 		}
 
+#if NET45 || NET46
+		public static bool IsWindows() => Environment.OSVersion.Platform == PlatformID.Win32NT;
+
+		public static void GetOSDetails(out string os, out string osDescription, out string architecture)
+		{
+			os = Environment.OSVersion.Platform == PlatformID.Win32NT ? "Windows" :
+				Environment.OSVersion.Platform == PlatformID.Unix ? "Linux" :
+				Environment.OSVersion.Platform == PlatformID.MacOSX ? "macOS" : null;
+			osDescription = Environment.OSVersion.VersionString;
+			architecture = IntPtr.Size == 8 ? "X64" : "X86";
+		}
+#else
 		public static bool IsWindows()
 		{
 			try
@@ -232,5 +244,15 @@ namespace MySql.Data
 				return false;
 			}
 		}
+
+		public static void GetOSDetails(out string os, out string osDescription, out string architecture)
+		{
+			os = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Windows" :
+				RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "Linux" :
+				RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "macOS" : null;
+			osDescription = RuntimeInformation.OSDescription;
+			architecture = RuntimeInformation.ProcessArchitecture.ToString();
+		}
+#endif
 	}
 }

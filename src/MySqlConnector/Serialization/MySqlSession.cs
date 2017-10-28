@@ -887,20 +887,16 @@ namespace MySql.Data.Serialization
 			attributesWriter.WriteLengthEncodedString(typeof(MySqlSession).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion);
 			try
 			{
-				var os = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Windows" :
-					RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "Linux" :
-						RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "macOS" : null;
-				var osDetails = RuntimeInformation.OSDescription;
-				var platform = RuntimeInformation.ProcessArchitecture.ToString();
+				Utility.GetOSDetails(out var os, out var osDescription, out var architecture);
 				if (os != null)
 				{
 					attributesWriter.WriteLengthEncodedString("_os");
 					attributesWriter.WriteLengthEncodedString(os);
 				}
 				attributesWriter.WriteLengthEncodedString("_os_details");
-				attributesWriter.WriteLengthEncodedString(osDetails);
+				attributesWriter.WriteLengthEncodedString(osDescription);
 				attributesWriter.WriteLengthEncodedString("_platform");
-				attributesWriter.WriteLengthEncodedString(platform);
+				attributesWriter.WriteLengthEncodedString(architecture);
 			}
 			catch (PlatformNotSupportedException)
 			{
