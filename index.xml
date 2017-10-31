@@ -1239,13 +1239,6 @@ please refer to its documentation.&lt;/p&gt;
     &lt;td&gt;Setting this to true indicates that the provider expects user variables in the SQL.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-    &lt;td&gt;BufferResultSets, Buffer Result Sets&lt;/td&gt;
-    &lt;td&gt;false&lt;/td&gt;
-    &lt;td&gt;Setting this to &lt;code&gt;true&lt;/code&gt; immediately buffers all result sets to memory upon calling ExecuteReader/ExecuteReaderAsync.  This will allow the connection
-      to execute another statement while still holding the original postion of the reader.  Do not use when result sets are bigger than available memory. When this is &lt;code&gt;true&lt;/code&gt;, &lt;code&gt;CommandTimeout&lt;/code&gt; will apply to the entire time required to read all the result sets,
-      so must be set to a sufficiently large value.&lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
     &lt;td&gt;Compress, Use Compression, UseCompression&lt;/td&gt;
     &lt;td&gt;false&lt;/td&gt;
     &lt;td&gt;If true (and if the server supports compression), compresses packets sent between client and server. This option is unlikely to be useful in
