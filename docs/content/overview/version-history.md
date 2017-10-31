@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.30.0
+
+* **Breaking** Remove `BufferResultSets` connection string option: [#378](https://github.com/mysql-net/MySqlConnector/pull/378).
+* The assembly is now strong-named: [#224](https://github.com/mysql-net/MySqlConnector/issues/224).
+
 ### 0.29.4
 
 * Fix exception in `MySqlTransaction.Dispose` if the underlying connection is closed or faulted: [#383](https://github.com/mysql-net/MySqlConnector/issues/383).
