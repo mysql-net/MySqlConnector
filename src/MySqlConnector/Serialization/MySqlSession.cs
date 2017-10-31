@@ -70,7 +70,7 @@ namespace MySql.Data.Serialization
 			{
 				if (m_activeCommandId != command.CommandId)
 					return false;
-				VerifyState(State.Querying, State.CancelingQuery);
+				VerifyState(State.Querying, State.CancelingQuery, State.Failed);
 				if (m_state != State.Querying)
 					return false;
 				m_state = State.CancelingQuery;
@@ -876,6 +876,12 @@ namespace MySql.Data.Serialization
 		{
 			if (m_state != state1 && m_state != state2)
 				throw new InvalidOperationException("Expected state to be ({0}|{1}) but was {2}.".FormatInvariant(state1, state2, m_state));
+		}
+
+		private void VerifyState(State state1, State state2, State state3)
+		{
+			if (m_state != state1 && m_state != state2 && m_state != state3)
+				throw new InvalidOperationException("Expected state to be ({0}|{1}|{2}) but was {3}.".FormatInvariant(state1, state2, state2, m_state));
 		}
 
 		private static byte[] CreateConnectionAttributes()
