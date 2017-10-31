@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.Protocol.Serialization;
-using MySql.Data.Serialization;
 
 namespace MySql.Data.MySqlClient
 {
@@ -77,10 +76,13 @@ namespace MySql.Data.MySqlClient
 			{
 				if (disposing)
 				{
-					if (!m_isFinished && m_connection != null && m_connection.CurrentTransaction == this)
+					if (!m_isFinished && m_connection?.CurrentTransaction == this)
 					{
-						using (var cmd = new MySqlCommand("rollback", m_connection, this))
-							cmd.ExecuteNonQuery();
+						if (m_connection.Session.IsConnected)
+						{
+							using (var cmd = new MySqlCommand("rollback", m_connection, this))
+								cmd.ExecuteNonQuery();
+						}
 						m_connection.CurrentTransaction = null;
 					}
 					m_connection = null;

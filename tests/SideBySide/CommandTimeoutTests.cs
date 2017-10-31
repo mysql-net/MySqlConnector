@@ -250,6 +250,71 @@ namespace SideBySide
 			Assert.Equal(ConnectionState.Open, m_connection.State);
 		}
 
+
+		[Fact]
+		public void TransactionCommandTimeoutWithSleepSync()
+		{
+			using (var transaction = m_connection.BeginTransaction())
+			using (var cmd = new MySqlCommand("SELECT SLEEP(120);", m_connection, transaction))
+			{
+				cmd.CommandTimeout = 2;
+				var sw = Stopwatch.StartNew();
+				try
+				{
+					using (var reader = cmd.ExecuteReader())
+					{
+						// shouldn't get here
+						Assert.True(false);
+					}
+				}
+				catch (MySqlException ex)
+				{
+					sw.Stop();
+					Assert.Contains("timeout", ex.Message, StringComparison.OrdinalIgnoreCase);
+#if !BASELINE
+					// https://bugs.mysql.com/bug.php?id=86009
+					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
+#endif
+				}
+			}
+
+#if !BASELINE
+			Assert.Equal(ConnectionState.Closed, m_connection.State);
+#endif
+		}
+
+		[Fact]
+		public async Task TransactionCommandTimeoutWithSleepAsync()
+		{
+			using (var transaction = await m_connection.BeginTransactionAsync())
+			using (var cmd = new MySqlCommand("SELECT SLEEP(120);", m_connection, transaction))
+			{
+				cmd.CommandTimeout = 2;
+				var sw = Stopwatch.StartNew();
+				try
+				{
+					using (var reader = await cmd.ExecuteReaderAsync())
+					{
+						// shouldn't get here
+						Assert.True(false);
+					}
+				}
+				catch (MySqlException ex)
+				{
+					sw.Stop();
+					Assert.Contains("timeout", ex.Message, StringComparison.OrdinalIgnoreCase);
+#if !BASELINE
+					// https://bugs.mysql.com/bug.php?id=86009
+					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
+#endif
+				}
+			}
+
+#if !BASELINE
+			Assert.Equal(ConnectionState.Closed, m_connection.State);
+#endif
+		}
+
 		readonly DatabaseFixture m_database;
 		readonly MySqlConnection m_connection;
 	}
