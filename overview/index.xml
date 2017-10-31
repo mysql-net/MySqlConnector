@@ -69,6 +69,13 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-30-0&#34;&gt;0.30.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Breaking&lt;/strong&gt; Remove &lt;code&gt;BufferResultSets&lt;/code&gt; connection string option: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/pull/378&#34;&gt;#378&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;The assembly is now strong-named: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/224&#34;&gt;#224&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-29-4&#34;&gt;0.29.4&lt;/h3&gt;
 
 &lt;ul&gt;
