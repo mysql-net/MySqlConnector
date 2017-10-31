@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MySql.Data.MySqlClient;
 using Xunit;
 
@@ -29,7 +29,6 @@ namespace MySql.Data.Tests
 			Assert.Equal("", csb.Database);
 			Assert.Equal(30u, csb.DefaultCommandTimeout);
 #if !BASELINE
-			Assert.False(csb.BufferResultSets);
 			Assert.Equal(180u, csb.ConnectionIdleTimeout);
 			Assert.False(csb.ForceSynchronous);
 			Assert.Null(csb.CACertificateFile);
@@ -77,7 +76,6 @@ namespace MySql.Data.Tests
 					"default command timeout=123;" +
 #if !BASELINE
 					"connectionidletimeout=30;" +
-					"bufferresultsets=true;" +
 					"forcesynchronous=true;" +
 					"ca certificate file=ca.pem;" +
 					"allow public key retrieval = true;" +
@@ -108,7 +106,6 @@ namespace MySql.Data.Tests
 			Assert.Equal("schema_name", csb.Database);
 			Assert.Equal(123u, csb.DefaultCommandTimeout);
 #if !BASELINE
-			Assert.True(csb.BufferResultSets);
 			Assert.Equal(30u, csb.ConnectionIdleTimeout);
 			Assert.True(csb.ForceSynchronous);
 			Assert.Equal("ca.pem", csb.CACertificateFile);

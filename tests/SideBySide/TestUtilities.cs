@@ -71,11 +71,6 @@ namespace SideBySide
 			if (configSettings.HasFlag(ConfigSettings.LocalTsvFile) && string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderLocalTsvFile))
 				return "Requires MySqlBulkLoaderLocalTsvFile in config.json";
 
-#if !BASELINE
-			if (configSettings.HasFlag(ConfigSettings.UnbufferedResultSets) && csb.BufferResultSets)
-				return "Requires BufferResultSets=false in connection string";
-#endif
-
 			if (configSettings.HasFlag(ConfigSettings.TcpConnection) && (csb.Server.StartsWith("/", StringComparison.Ordinal) || csb.Server.StartsWith("./", StringComparison.Ordinal)))
 				return "Requires a TCP connection";
 

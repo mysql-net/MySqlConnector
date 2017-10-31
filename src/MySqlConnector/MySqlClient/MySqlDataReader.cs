@@ -278,24 +278,14 @@ namespace MySql.Data.MySqlClient
 			try
 			{
 				await dataReader.ReadFirstResultSetAsync(ioBehavior).ConfigureAwait(false);
-				if (command.Connection.BufferResultSets)
-				{
-					while (await dataReader.BufferNextResultAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false) != null)
-					{
-					}
-				}
-				return dataReader;
 			}
 			catch (Exception)
 			{
 				dataReader.Dispose();
 				throw;
 			}
-			finally
-			{
-				if (command.Connection.BufferResultSets)
-					command.Connection.FinishQuerying();
-			}
+
+			return dataReader;
 		}
 
 		internal async Task ReadFirstResultSetAsync(IOBehavior ioBehavior)
@@ -426,8 +416,7 @@ namespace MySql.Data.MySqlClient
 				m_nextResultSetBuffer.Clear();
 
 				var connection = Command.Connection;
-				if (!connection.BufferResultSets)
-					connection.FinishQuerying();
+				connection.FinishQuerying();
 
 				Command.ReaderClosed();
 				if ((m_behavior & CommandBehavior.CloseConnection) != 0)

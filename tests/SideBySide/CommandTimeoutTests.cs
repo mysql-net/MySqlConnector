@@ -135,11 +135,8 @@ namespace SideBySide
 						Assert.False(reader.Read());
 						readFirstResultSet = true;
 
-#if !BASELINE
-						// if not buffering, the following call to a public API resets the internal timer
-						if (!csb.BufferResultSets)
-#endif
-							sw.Restart();
+						// the following call to a public API resets the internal timer
+						sw.Restart();
 
 						reader.NextResult();
 
@@ -180,11 +177,8 @@ namespace SideBySide
 						Assert.False(await reader.ReadAsync());
 						readFirstResultSet = true;
 
-#if !BASELINE
-						// if not buffering, the following call to a public API resets the internal timer
-						if (!csb.BufferResultSets)
-#endif
-							sw.Restart();
+						// the following call to a public API resets the internal timer
+						sw.Restart();
 
 						await reader.NextResultAsync();
 
@@ -206,7 +200,7 @@ namespace SideBySide
 #endif
 		}
 
-		[SkippableFact(ConfigSettings.UnbufferedResultSets, Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
 		public void CommandTimeoutResetsOnReadSync()
 		{
 			var csb = new MySqlConnectionStringBuilder(m_connection.ConnectionString);
@@ -228,7 +222,7 @@ namespace SideBySide
 			Assert.Equal(ConnectionState.Open, m_connection.State);
 		}
 
-		[SkippableFact(ConfigSettings.UnbufferedResultSets, Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
 		public async Task CommandTimeoutResetsOnReadAsync()
 		{
 			var csb = new MySqlConnectionStringBuilder(m_connection.ConnectionString);

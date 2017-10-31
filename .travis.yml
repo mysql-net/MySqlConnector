@@ -40,7 +40,6 @@ script:
 - echo 'Executing netcoreapp2.0 tests with No Compression, SSL' && ../../.ci/use-config.sh config.ssl.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
 - echo 'Executing netcoreapp2.0 tests with Compression, SSL' && ../../.ci/use-config.sh config.compression+ssl.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
 - echo 'Executing netcoreapp2.0 tests with Unix Domain Socket, No Compression, No SSL' && ../../.ci/use-config.sh config.uds.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp2.0 tests with Buffering, No Compression, No SSL' && ../../.ci/use-config.sh config.buffer.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
 - popd
 
 after_script:

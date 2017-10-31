@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using MySql.Data.MySqlClient;
@@ -49,7 +49,6 @@ namespace MySql.Data.Serialization
 			AllowPublicKeyRetrieval = csb.AllowPublicKeyRetrieval;
 			AllowUserVariables = csb.AllowUserVariables;
 			AutoEnlist = csb.AutoEnlist;
-			BufferResultSets = csb.BufferResultSets;
 			ConnectionTimeout = (int)csb.ConnectionTimeout;
 			ConvertZeroDateTime = csb.ConvertZeroDateTime;
 			DefaultCommandTimeout = (int) csb.DefaultCommandTimeout;
@@ -91,7 +90,6 @@ namespace MySql.Data.Serialization
 		public bool AllowPublicKeyRetrieval { get; }
 		public bool AllowUserVariables { get; }
 		public bool AutoEnlist { get; }
-		public bool BufferResultSets { get; }
 		public int ConnectionTimeout { get; }
 		public bool ConvertZeroDateTime { get; }
 		public int DefaultCommandTimeout { get; }

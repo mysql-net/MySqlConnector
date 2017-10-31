@@ -128,12 +128,6 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.AutoEnlist.SetValue(this, value);
 		}
 
-		public bool BufferResultSets
-		{
-			get => MySqlConnectionStringOption.BufferResultSets.GetValue(this);
-			set => MySqlConnectionStringOption.BufferResultSets.SetValue(this, value);
-		}
-
 		public string CharacterSet
 		{
 			get => MySqlConnectionStringOption.CharacterSet.GetValue(this);
@@ -276,7 +270,6 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<bool> AllowPublicKeyRetrieval;
 		public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
 		public static readonly MySqlConnectionStringOption<bool> AutoEnlist;
-		public static readonly MySqlConnectionStringOption<bool> BufferResultSets;
 		public static readonly MySqlConnectionStringOption<string> CharacterSet;
 		public static readonly MySqlConnectionStringOption<uint> ConnectionTimeout;
 		public static readonly MySqlConnectionStringOption<bool> ConvertZeroDateTime;
@@ -391,10 +384,6 @@ namespace MySql.Data.MySqlClient
 			AddOption(AutoEnlist = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "AutoEnlist", "Auto Enlist" },
 				defaultValue: true));
-
-			AddOption(BufferResultSets = new MySqlConnectionStringOption<bool>(
-				keys: new[] { "BufferResultSets", "Buffer Result Sets" },
-				defaultValue: false));
 
 			AddOption(CharacterSet = new MySqlConnectionStringOption<string>(
 				keys: new[] { "CharSet", "Character Set", "CharacterSet" },
