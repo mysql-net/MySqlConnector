@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.29.4
+
+* Fix exception in `MySqlTransaction.Dispose` if the underlying connection is closed or faulted: [#383](https://github.com/mysql-net/MySqlConnector/issues/383).
+
 ### 0.29.3
 
 * Remove `System.Runtime.InteropServices.RuntimeInformation` dependency on full framework: [#381](https://github.com/mysql-net/MySqlConnector/issues/381).
