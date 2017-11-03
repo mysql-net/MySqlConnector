@@ -212,7 +212,7 @@ namespace MySql.Data.MySqlClient
 				await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
-		protected override DbCommand CreateDbCommand() => new MySqlCommand(this, CurrentTransaction);
+		protected override DbCommand CreateDbCommand() => new MySqlCommand(this, null);
 
 #if !NETSTANDARD1_3
 		protected override DbProviderFactory DbProviderFactory => MySqlClientFactory.Instance;

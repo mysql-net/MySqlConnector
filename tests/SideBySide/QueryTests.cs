@@ -773,6 +773,7 @@ insert into long_enum_test (id, value) VALUES (0x7FFFFFFFFFFFFFFF, 1);
 			using (MySqlTransaction transaction = m_database.Connection.BeginTransaction())
 			using (MySqlCommand command = m_database.Connection.CreateCommand())
 			{
+				command.Transaction = transaction;
 				command.CommandText = "select @param + @param2";
 
 				MySqlParameter parameter = command.CreateParameter();

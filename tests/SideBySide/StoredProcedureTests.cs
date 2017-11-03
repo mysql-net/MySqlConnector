@@ -85,6 +85,7 @@ namespace SideBySide
 				using (var transaction = connection.BeginTransaction())
 				using (var command = connection.CreateCommand())
 				{
+					command.Transaction = transaction;
 					command.CommandType = CommandType.StoredProcedure;
 					command.CommandText = "failing_function";
 

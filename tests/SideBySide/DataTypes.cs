@@ -513,13 +513,12 @@ namespace SideBySide
 			using (var connection = new MySqlConnection(AppConfig.CreateConnectionStringBuilder().ConnectionString))
 			{
 				await connection.OpenAsync();
-				var transaction = await connection.BeginTransactionAsync();
 
 				var data = CreateByteArray(size);
 				var isSupported = size < 1048576 || AppConfig.SupportedFeatures.HasFlag(ServerFeatures.LargePackets);
 
 				long lastInsertId;
-				using (var cmd = new MySqlCommand($"insert into datatypes_blobs(`{column}`) values(?)", connection, transaction)
+				using (var cmd = new MySqlCommand($"insert into datatypes_blobs(`{column}`) values(?)", connection)
 				{
 					Parameters = { new MySqlParameter { Value = data } }
 				})
@@ -559,13 +558,12 @@ namespace SideBySide
 			using (var connection = new MySqlConnection(AppConfig.CreateConnectionStringBuilder().ConnectionString))
 			{
 				connection.Open();
-				var transaction = connection.BeginTransaction();
 
 				var data = CreateByteArray(size);
 				var isSupported = size < 1048576 || AppConfig.SupportedFeatures.HasFlag(ServerFeatures.LargePackets);
 
 				long lastInsertId;
-				using (var cmd = new MySqlCommand($"insert into datatypes_blobs(`{column}`) values(?)", connection, transaction)
+				using (var cmd = new MySqlCommand($"insert into datatypes_blobs(`{column}`) values(?)", connection)
 				{
 					Parameters = { new MySqlParameter { Value = data } }
 				})

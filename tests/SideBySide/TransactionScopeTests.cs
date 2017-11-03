@@ -206,7 +206,7 @@ namespace SideBySide
 				conn.Open();
 				using (var dbTransaction = conn.BeginTransaction())
 				{
-					conn.Execute("insert into transaction_scope_test(value) values(1), (2);");
+					conn.Execute("insert into transaction_scope_test(value) values(1), (2);", transaction: dbTransaction);
 
 					dbTransaction.Commit();
 					transactionScope.Complete();
@@ -229,7 +229,7 @@ namespace SideBySide
 				conn.Open();
 				using (var dbTransaction = conn.BeginTransaction())
 				{
-					conn.Execute("insert into transaction_scope_test(value) values(1), (2);");
+					conn.Execute("insert into transaction_scope_test(value) values(1), (2);", transaction: dbTransaction);
 
 #if BASELINE
 					// With Connector/NET a MySqlTransaction can't roll back after TransactionScope has been completed;

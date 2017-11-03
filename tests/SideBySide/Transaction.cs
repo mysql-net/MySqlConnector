@@ -91,6 +91,16 @@ namespace SideBySide
 			Assert.Equal(new int[0], results);
 		}
 
+		[Fact]
+		public void CommandTransactionIsNull()
+		{
+			using (var trans = m_connection.BeginTransaction())
+			using (var cmd = m_connection.CreateCommand())
+			{
+				Assert.Null(cmd.Transaction);
+			}
+		}
+
 		readonly TransactionFixture m_database;
 		readonly MySqlConnection m_connection;
 	}
