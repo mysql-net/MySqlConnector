@@ -26,7 +26,7 @@ namespace MySql.Data.Protocol.Serialization
 			if (headerBytes.Count < 4)
 			{
 				return protocolErrorBehavior == ProtocolErrorBehavior.Throw ?
-					ValueTaskExtensions.FromException<Packet>(new EndOfStreamException()) :
+					ValueTaskExtensions.FromException<Packet>(new EndOfStreamException("Expected to read 4 header bytes but only received {0}.".FormatInvariant(headerBytes.Count))) :
 					default(ValueTask<Packet>);
 			}
 
@@ -55,7 +55,7 @@ namespace MySql.Data.Protocol.Serialization
 
 		private static ValueTask<Packet> CreatePacketFromPayload(ArraySegment<byte> payloadBytes, int payloadLength, ProtocolErrorBehavior protocolErrorBehavior) =>
 			payloadBytes.Count >= payloadLength ? new ValueTask<Packet>(new Packet(payloadBytes)) :
-				protocolErrorBehavior == ProtocolErrorBehavior.Throw ? ValueTaskExtensions.FromException<Packet>(new EndOfStreamException()) :
+				protocolErrorBehavior == ProtocolErrorBehavior.Throw ? ValueTaskExtensions.FromException<Packet>(new EndOfStreamException("Expected to read {0} payload bytes but only received {1}.".FormatInvariant(payloadLength, payloadBytes.Count))) :
 				default(ValueTask<Packet>);
 
 		public static ValueTask<ArraySegment<byte>> ReadPayloadAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegmentHolder<byte> cache, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
