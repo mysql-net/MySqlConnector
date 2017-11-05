@@ -23,6 +23,7 @@ namespace MySql.Data.Serialization
 			{
 				ConnectionType = ConnectionType.Tcp;
 				Hostnames = csb.Server.Split(',');
+				LoadBalance = csb.LoadBalance;
 				Port = (int) csb.Port;
 			}
 			UserID = csb.UserID;
@@ -65,7 +66,8 @@ namespace MySql.Data.Serialization
 		// Base Options
 		public string ConnectionString { get; }
 		public ConnectionType ConnectionType { get; }
-		public IEnumerable<string> Hostnames { get; }
+		public IReadOnlyList<string> Hostnames { get; }
+		public MySqlLoadBalance LoadBalance { get; }
 		public int Port { get; }
 		public string UnixSocket { get; }
 		public string UserID { get; }
@@ -125,6 +127,5 @@ namespace MySql.Data.Serialization
 				return m_connectionTimeoutMilliseconds.Value;
 			}
 		}
-
 	}
 }

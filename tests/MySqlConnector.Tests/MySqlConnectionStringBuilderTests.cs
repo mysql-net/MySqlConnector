@@ -32,6 +32,7 @@ namespace MySql.Data.Tests
 			Assert.Equal(180u, csb.ConnectionIdleTimeout);
 			Assert.False(csb.ForceSynchronous);
 			Assert.Null(csb.CACertificateFile);
+			Assert.Equal(MySqlLoadBalance.RoundRobin, csb.LoadBalance);
 #endif
 			Assert.Equal(0u, csb.Keepalive);
 			Assert.Equal(100u, csb.MaximumPoolSize);
@@ -80,6 +81,7 @@ namespace MySql.Data.Tests
 					"ca certificate file=ca.pem;" +
 					"allow public key retrieval = true;" +
 					"server rsa public key file=rsa.pem;" +
+					"load balance=random;" +
 #endif
 					"Keep Alive=90;" +
 					"minpoolsize=5;" +
@@ -111,6 +113,7 @@ namespace MySql.Data.Tests
 			Assert.Equal("ca.pem", csb.CACertificateFile);
 			Assert.True(csb.AllowPublicKeyRetrieval);
 			Assert.Equal("rsa.pem", csb.ServerRsaPublicKeyFile);
+			Assert.Equal(MySqlLoadBalance.Random, csb.LoadBalance);
 #endif
 			Assert.Equal(90u, csb.Keepalive);
 			Assert.Equal(15u, csb.MaximumPoolSize);

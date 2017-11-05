@@ -356,8 +356,12 @@ namespace MySql.Data.MySqlClient
 					}
 					else
 					{
+						// only "in order" and "random" load balancers supported without connection pooling
+						var loadBalancer = m_connectionSettings.LoadBalance == MySqlLoadBalance.Random && m_connectionSettings.Hostnames.Count > 1 ?
+							RandomLoadBalancer.Instance : InOrderLoadBalancer.Instance;
+
 						var session = new MySqlSession();
-						await session.ConnectAsync(m_connectionSettings, ioBehavior, linkedSource.Token).ConfigureAwait(false);
+						await session.ConnectAsync(m_connectionSettings, loadBalancer, ioBehavior, linkedSource.Token).ConfigureAwait(false);
 						return session;
 					}
 				}
