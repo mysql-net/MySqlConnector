@@ -117,7 +117,7 @@ namespace MySql.Data.MySqlClient
 					lock (m_sessions)
 						m_sessions.AddFirst(session);
 				else
-					session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).ConfigureAwait(false);
+					session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 			}
 			finally
 			{
