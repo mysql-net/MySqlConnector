@@ -152,9 +152,8 @@ namespace MySql.Data.MySqlClient
 			lock (m_leasedSessions)
 			{
 				m_lastRecoveryTime = unchecked((uint) Environment.TickCount);
-				foreach (var pair in m_leasedSessions)
+				foreach (var session in m_leasedSessions.Values)
 				{
-					var session = pair.Value;
 					if (!session.OwningConnection.TryGetTarget(out var _))
 						recoveredSessions.Add(session);
 				}
