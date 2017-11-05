@@ -92,6 +92,19 @@ namespace MySqlConnector.Tests
 			}
 		}
 
+		[Theory]
+		[InlineData(3)]
+		[InlineData(7)]
+		public async Task MinimumPoolSize(int size)
+		{
+			m_csb.MinimumPoolSize = (uint) size;
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+				Assert.Equal(size, m_server.ActiveConnections);
+			}
+		}
+
 		[Fact]
 		public void LeakReaders()
 		{

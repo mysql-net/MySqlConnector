@@ -20,6 +20,9 @@ namespace MySql.Data.MySqlClient
 			if (m_sessionSemaphore.CurrentCount == 0 && unchecked(((uint) Environment.TickCount) - m_lastRecoveryTime) >= 1000u)
 				RecoverLeakedSessions();
 
+			if (m_connectionSettings.MinimumPoolSize > 0)
+				await CreateMinimumPooledSessions(ioBehavior, cancellationToken).ConfigureAwait(false);
+
 			// wait for an open slot (until the cancellationToken is cancelled, which is typically due to timeout)
 			if (ioBehavior == IOBehavior.Asynchronous)
 				await m_sessionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -228,6 +231,45 @@ namespace MySql.Data.MySqlClient
 			finally
 			{
 				m_cleanSemaphore.Release();
+			}
+		}
+
+		private async Task CreateMinimumPooledSessions(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			while (true)
+			{
+				lock (m_sessions)
+				{
+					// check if the desired minimum number of sessions have been created
+					if (m_connectionSettings.MaximumPoolSize - m_sessionSemaphore.CurrentCount + m_sessions.Count >= m_connectionSettings.MinimumPoolSize)
+						return;
+				}
+
+				// acquire the semaphore, to ensure that the maximum number of sessions isn't exceeded; if it can't be acquired,
+				// we have reached the maximum number of sessions and no more need to be created
+				if (ioBehavior == IOBehavior.Asynchronous)
+				{
+					if (!await m_sessionSemaphore.WaitAsync(0, cancellationToken).ConfigureAwait(false))
+						return;
+				}
+				else
+				{
+					if (!m_sessionSemaphore.Wait(0, cancellationToken))
+						return;
+				}
+
+				try
+				{
+					var session = new MySqlSession(this, m_generation, Interlocked.Increment(ref m_lastId));
+					await session.ConnectAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
+					lock (m_sessions)
+						m_sessions.AddFirst(session);
+				}
+				finally
+				{
+					// connection is in pool; semaphore shouldn't be held any more
+					m_sessionSemaphore.Release();
+				}
 			}
 		}
 
