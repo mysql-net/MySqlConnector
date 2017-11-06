@@ -544,23 +544,23 @@ namespace MySql.Data.Serialization
 
 		private async Task<bool> OpenTcpSocketAsync(ConnectionSettings cs, ILoadBalancer loadBalancer, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			var hostNames = loadBalancer.LoadBalance(cs.Hostnames);
-			foreach (var hostname in hostNames)
+			var hostNames = loadBalancer.LoadBalance(cs.HostNames);
+			foreach (var hostName in hostNames)
 			{
 				IPAddress[] ipAddresses;
 				try
 				{
 #if NETSTANDARD1_3
 // Dns.GetHostAddresses isn't available until netstandard 2.0: https://github.com/dotnet/corefx/pull/11950
-					ipAddresses = await Dns.GetHostAddressesAsync(hostname).ConfigureAwait(false);
+					ipAddresses = await Dns.GetHostAddressesAsync(hostName).ConfigureAwait(false);
 #else
 					if (ioBehavior == IOBehavior.Asynchronous)
 					{
-						ipAddresses = await Dns.GetHostAddressesAsync(hostname).ConfigureAwait(false);
+						ipAddresses = await Dns.GetHostAddressesAsync(hostName).ConfigureAwait(false);
 					}
 					else
 					{
-						ipAddresses = Dns.GetHostAddresses(hostname);
+						ipAddresses = Dns.GetHostAddresses(hostName);
 					}
 #endif
 				}
@@ -621,7 +621,7 @@ namespace MySql.Data.Serialization
 						continue;
 					}
 
-					HostName = hostname;
+					HostName = hostName;
 					m_tcpClient = tcpClient;
 					m_socket = m_tcpClient.Client;
 					m_networkStream = m_tcpClient.GetStream();

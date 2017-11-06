@@ -318,11 +318,11 @@ namespace MySql.Data.MySqlClient
 			if (cs.LoadBalance == MySqlLoadBalance.FewestConnections)
 			{
 				m_hostSessions = new Dictionary<string, int>();
-				foreach (var hostName in cs.Hostnames)
+				foreach (var hostName in cs.HostNames)
 					m_hostSessions[hostName] = 0;
 			}
 			m_loadBalancer = cs.ConnectionType != ConnectionType.Tcp ? null :
-				cs.Hostnames.Count == 1 || cs.LoadBalance == MySqlLoadBalance.InOrder ? InOrderLoadBalancer.Instance :
+				cs.HostNames.Count == 1 || cs.LoadBalance == MySqlLoadBalance.InOrder ? InOrderLoadBalancer.Instance :
 				cs.LoadBalance == MySqlLoadBalance.Random ? RandomLoadBalancer.Instance :
 				cs.LoadBalance == MySqlLoadBalance.FewestConnections ? new FewestConnectionsLoadBalancer(this) :
 				(ILoadBalancer) new RoundRobinLoadBalancer();
