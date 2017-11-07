@@ -1,4 +1,3 @@
-using System;
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
@@ -20,7 +19,7 @@ namespace MySqlConnector.Protocol.Payloads
 			if (connectionAttributes != null)
 				writer.Write(connectionAttributes);
 
-			return new PayloadData(writer.ToBytes());
+			return writer.ToPayloadData();
 		}
 	}
 }

@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 using MySqlConnector.Protocol.Serialization;
 
@@ -13,7 +12,7 @@ namespace MySqlConnector.Protocol.Payloads
 			writer.WriteByte((byte) CommandKind.InitDatabase);
 			writer.Write(Encoding.UTF8.GetBytes(databaseName));
 
-			return new PayloadData(writer.ToBytes());
+			return writer.ToPayloadData();
 		}
 	}
 }

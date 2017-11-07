@@ -1,4 +1,3 @@
-using System;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 
@@ -33,7 +32,7 @@ namespace MySqlConnector.Protocol.Payloads
 		}
 
 		public static PayloadData CreateWithSsl(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, bool useCompression) =>
-			new PayloadData(CreateCapabilitiesPayload(serverCapabilities, cs, useCompression, ProtocolCapabilities.Ssl).ToBytes());
+			CreateCapabilitiesPayload(serverCapabilities, cs, useCompression, ProtocolCapabilities.Ssl).ToPayloadData();
 
 		public static PayloadData Create(InitialHandshakePayload handshake, ConnectionSettings cs, bool useCompression, byte[] connectionAttributes)
 		{
@@ -53,7 +52,7 @@ namespace MySqlConnector.Protocol.Payloads
 			if (connectionAttributes != null)
 				writer.Write(connectionAttributes);
 
-			return new PayloadData(writer.ToBytes());
+			return writer.ToPayloadData();
 		}
 	}
 }

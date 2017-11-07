@@ -65,6 +65,21 @@ namespace MySqlConnector.Protocol.Serialization
 				return m_stream.ToArray();
 		}
 
+		public PayloadData ToPayloadData()
+		{
+			m_writer.Flush();
+			using (m_writer)
+			using (m_stream)
+			{
+#if NETSTANDARD1_3
+				var array = m_stream.ToArray();
+#else
+				var array = m_stream.GetBuffer();
+#endif
+				return new PayloadData(new ArraySegment<byte>(array, 0, checked((int) m_stream.Length)));
+			}
+		}
+
 		readonly MemoryStream m_stream;
 		readonly BinaryWriter m_writer;
 	}
