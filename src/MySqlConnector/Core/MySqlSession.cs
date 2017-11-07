@@ -140,7 +140,7 @@ namespace MySqlConnector.Core
 				// KILL QUERY will kill a subsequent query if the command it was intended to cancel has already completed.
 				// In order to handle this case, we issue a dummy query that will consume the pending cancellation.
 				// See https://bugs.mysql.com/bug.php?id=45679
-				var payload = new PayloadData(new ArraySegment<byte>(PayloadUtilities.CreateEofStringPayload(CommandKind.Query, "DO SLEEP(0);")));
+				var payload = QueryPayload.Create("DO SLEEP(0);");
 				SendAsync(payload, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 				payload = ReceiveReplyAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 				OkPayload.Create(payload);
@@ -275,7 +275,7 @@ namespace MySqlConnector.Core
 					OkPayload.Create(payload);
 
 					// the "reset connection" packet also resets the connection charset, so we need to change that back to our default
-					payload = new PayloadData(new ArraySegment<byte>(PayloadUtilities.CreateEofStringPayload(CommandKind.Query, "SET NAMES utf8mb4 COLLATE utf8mb4_bin;")));
+					payload = QueryPayload.Create("SET NAMES utf8mb4 COLLATE utf8mb4_bin;");
 					await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					OkPayload.Create(payload);
