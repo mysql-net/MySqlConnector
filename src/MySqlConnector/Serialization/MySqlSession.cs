@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -34,6 +35,7 @@ namespace MySql.Data.Serialization
 			CreatedUtc = DateTime.UtcNow;
 			Pool = pool;
 			PoolGeneration = poolGeneration;
+			HostName = "";
 		}
 
 		public int Id { get; }
@@ -45,6 +47,7 @@ namespace MySql.Data.Serialization
 		public int PoolGeneration { get; }
 		public DateTime LastReturnedUtc { get; private set; }
 		public string DatabaseOverride { get; set; }
+		public string HostName { get; private set; }
 		public IPAddress IPAddress => (m_tcpClient?.Client.RemoteEndPoint as IPEndPoint)?.Address;
 		public WeakReference<MySqlConnection> OwningConnection { get; set; }
 		public bool SupportsDeprecateEof => m_supportsDeprecateEof;
@@ -187,7 +190,7 @@ namespace MySql.Data.Serialization
 				m_state = State.Closed;
 		}
 
-		public async Task ConnectAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async Task ConnectAsync(ConnectionSettings cs, ILoadBalancer loadBalancer, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			lock (m_lock)
 			{
@@ -196,7 +199,7 @@ namespace MySql.Data.Serialization
 			}
 			var connected = false;
 			if (cs.ConnectionType == ConnectionType.Tcp)
-				connected = await OpenTcpSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+				connected = await OpenTcpSocketAsync(cs, loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
 			else if (cs.ConnectionType == ConnectionType.Unix)
 				connected = await OpenUnixSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 			if (!connected)
@@ -539,24 +542,25 @@ namespace MySql.Data.Serialization
 			}
 		}
 
-		private async Task<bool> OpenTcpSocketAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async Task<bool> OpenTcpSocketAsync(ConnectionSettings cs, ILoadBalancer loadBalancer, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			foreach (var hostname in cs.Hostnames)
+			var hostNames = loadBalancer.LoadBalance(cs.HostNames);
+			foreach (var hostName in hostNames)
 			{
 				IPAddress[] ipAddresses;
 				try
 				{
 #if NETSTANDARD1_3
 // Dns.GetHostAddresses isn't available until netstandard 2.0: https://github.com/dotnet/corefx/pull/11950
-					ipAddresses = await Dns.GetHostAddressesAsync(hostname).ConfigureAwait(false);
+					ipAddresses = await Dns.GetHostAddressesAsync(hostName).ConfigureAwait(false);
 #else
 					if (ioBehavior == IOBehavior.Asynchronous)
 					{
-						ipAddresses = await Dns.GetHostAddressesAsync(hostname).ConfigureAwait(false);
+						ipAddresses = await Dns.GetHostAddressesAsync(hostName).ConfigureAwait(false);
 					}
 					else
 					{
-						ipAddresses = Dns.GetHostAddresses(hostname);
+						ipAddresses = Dns.GetHostAddresses(hostName);
 					}
 #endif
 				}
@@ -617,7 +621,7 @@ namespace MySql.Data.Serialization
 						continue;
 					}
 
-					m_hostname = hostname;
+					HostName = hostName;
 					m_tcpClient = tcpClient;
 					m_socket = m_tcpClient.Client;
 					m_networkStream = m_tcpClient.GetStream();
@@ -768,14 +772,14 @@ namespace MySql.Data.Serialization
 			{
 				if (ioBehavior == IOBehavior.Asynchronous)
 				{
-					await sslStream.AuthenticateAsClientAsync(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
 				}
 				else
 				{
 #if NETSTANDARD1_3
-					await sslStream.AuthenticateAsClientAsync(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
 #else
-					sslStream.AuthenticateAsClient(m_hostname, clientCertificates, sslProtocols, checkCertificateRevocation);
+					sslStream.AuthenticateAsClient(HostName, clientCertificates, sslProtocols, checkCertificateRevocation);
 #endif
 				}
 				var sslByteHandler = new StreamByteHandler(sslStream);
@@ -786,7 +790,7 @@ namespace MySql.Data.Serialization
 			{
 				sslStream.Dispose();
 				ShutdownSocket();
-				m_hostname = "";
+				HostName = "";
 				lock (m_lock)
 					m_state = State.Failed;
 				if (ex is AuthenticationException)
@@ -955,7 +959,6 @@ namespace MySql.Data.Serialization
 		readonly object m_lock;
 		readonly ArraySegmentHolder<byte> m_payloadCache;
 		State m_state;
-		string m_hostname = "";
 		TcpClient m_tcpClient;
 		Socket m_socket;
 		NetworkStream m_networkStream;

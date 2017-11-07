@@ -188,7 +188,7 @@ namespace MySql.Data.MySqlClient
 		public override ConnectionState State => m_connectionState;
 
 		public override string DataSource => (m_connectionSettings.ConnectionType == ConnectionType.Tcp
-			? string.Join(",", m_connectionSettings.Hostnames)
+			? string.Join(",", m_connectionSettings.HostNames)
 			: m_connectionSettings.UnixSocket) ?? "";
 
 		public override string ServerVersion => m_session.ServerVersion.OriginalString;
@@ -356,8 +356,12 @@ namespace MySql.Data.MySqlClient
 					}
 					else
 					{
+						// only "in order" and "random" load balancers supported without connection pooling
+						var loadBalancer = m_connectionSettings.LoadBalance == MySqlLoadBalance.Random && m_connectionSettings.HostNames.Count > 1 ?
+							RandomLoadBalancer.Instance : InOrderLoadBalancer.Instance;
+
 						var session = new MySqlSession();
-						await session.ConnectAsync(m_connectionSettings, ioBehavior, linkedSource.Token).ConfigureAwait(false);
+						await session.ConnectAsync(m_connectionSettings, loadBalancer, ioBehavior, linkedSource.Token).ConfigureAwait(false);
 						return session;
 					}
 				}

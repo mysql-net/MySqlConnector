@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.Protocol.Serialization;
@@ -64,6 +65,7 @@ namespace MySql.Data.MySqlClient
 					if (!reuseSession)
 					{
 						// session is either old or cannot communicate with the server
+						AdjustHostConnectionCount(session, -1);
 						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
 					else
@@ -78,7 +80,8 @@ namespace MySql.Data.MySqlClient
 
 				// create a new session
 				session = new MySqlSession(this, m_generation, Interlocked.Increment(ref m_lastId));
-				await session.ConnectAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
+				await session.ConnectAsync(m_connectionSettings, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+				AdjustHostConnectionCount(session, 1);
 				session.OwningConnection = new WeakReference<MySqlConnection>(connection);
 				lock (m_leasedSessions)
 					m_leasedSessions.Add(session.Id, session);
@@ -114,10 +117,15 @@ namespace MySql.Data.MySqlClient
 					m_leasedSessions.Remove(session.Id);
 				session.OwningConnection = null;
 				if (SessionIsHealthy(session))
+				{
 					lock (m_sessions)
 						m_sessions.AddFirst(session);
+				}
 				else
+				{
+					AdjustHostConnectionCount(session, -1);
 					session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+				}
 			}
 			finally
 			{
@@ -260,7 +268,8 @@ namespace MySql.Data.MySqlClient
 				try
 				{
 					var session = new MySqlSession(this, m_generation, Interlocked.Increment(ref m_lastId));
-					await session.ConnectAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
+					await session.ConnectAsync(m_connectionSettings, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+					AdjustHostConnectionCount(session, 1);
 					lock (m_sessions)
 						m_sessions.AddFirst(session);
 				}
@@ -306,6 +315,39 @@ namespace MySql.Data.MySqlClient
 			m_sessionSemaphore = new SemaphoreSlim(cs.MaximumPoolSize);
 			m_sessions = new LinkedList<MySqlSession>();
 			m_leasedSessions = new Dictionary<int, MySqlSession>();
+			if (cs.LoadBalance == MySqlLoadBalance.FewestConnections)
+			{
+				m_hostSessions = new Dictionary<string, int>();
+				foreach (var hostName in cs.HostNames)
+					m_hostSessions[hostName] = 0;
+			}
+			m_loadBalancer = cs.ConnectionType != ConnectionType.Tcp ? null :
+				cs.HostNames.Count == 1 || cs.LoadBalance == MySqlLoadBalance.InOrder ? InOrderLoadBalancer.Instance :
+				cs.LoadBalance == MySqlLoadBalance.Random ? RandomLoadBalancer.Instance :
+				cs.LoadBalance == MySqlLoadBalance.FewestConnections ? new FewestConnectionsLoadBalancer(this) :
+				(ILoadBalancer) new RoundRobinLoadBalancer();
+		}
+
+		private void AdjustHostConnectionCount(MySqlSession session, int delta)
+		{
+			if (m_hostSessions != null)
+			{
+				lock (m_hostSessions)
+					m_hostSessions[session.HostName] += delta;
+			}
+		}
+
+		private sealed class FewestConnectionsLoadBalancer : ILoadBalancer
+		{
+			public FewestConnectionsLoadBalancer(ConnectionPool pool) => m_pool = pool;
+
+			public IEnumerable<string> LoadBalance(IReadOnlyList<string> hosts)
+			{
+				lock (m_pool.m_hostSessions)
+					return m_pool.m_hostSessions.OrderBy(x => x.Value).Select(x => x.Key).ToList();
+			}
+
+			readonly ConnectionPool m_pool;
 		}
 
 		static readonly ConcurrentDictionary<string, ConnectionPool> s_pools = new ConcurrentDictionary<string, ConnectionPool>();
@@ -336,6 +378,8 @@ namespace MySql.Data.MySqlClient
 		readonly LinkedList<MySqlSession> m_sessions;
 		readonly ConnectionSettings m_connectionSettings;
 		readonly Dictionary<int, MySqlSession> m_leasedSessions;
+		readonly ILoadBalancer m_loadBalancer;
+		readonly Dictionary<string, int> m_hostSessions;
 		int m_lastId;
 		uint m_lastRecoveryTime;
 	}

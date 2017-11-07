@@ -47,6 +47,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.Database.SetValue(this, value);
 		}
 
+		public MySqlLoadBalance LoadBalance
+		{
+			get => MySqlConnectionStringOption.LoadBalance.GetValue(this);
+			set => MySqlConnectionStringOption.LoadBalance.SetValue(this, value);
+		}
+
 		// SSL/TLS Options
 		public MySqlSslMode SslMode
 		{
@@ -251,6 +257,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<string> UserID;
 		public static readonly MySqlConnectionStringOption<string> Password;
 		public static readonly MySqlConnectionStringOption<string> Database;
+		public static readonly MySqlConnectionStringOption<MySqlLoadBalance> LoadBalance;
 
 		// SSL/TLS Options
 		public static readonly MySqlConnectionStringOption<MySqlSslMode> SslMode;
@@ -329,6 +336,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(Database = new MySqlConnectionStringOption<string>(
 				keys: new[] { "Database", "Initial Catalog" },
 				defaultValue: ""));
+
+			AddOption(LoadBalance = new MySqlConnectionStringOption<MySqlLoadBalance>(
+				keys: new[] { "LoadBalance", "Load Balance" },
+				defaultValue: MySqlLoadBalance.RoundRobin));
 
 			// SSL/TLS Options
 			AddOption(SslMode = new MySqlConnectionStringOption<MySqlSslMode>(
@@ -469,6 +480,16 @@ namespace MySql.Data.MySqlClient
 					return (T) (object) true;
 				if (string.Equals(booleanString, "no", StringComparison.OrdinalIgnoreCase))
 					return (T) (object) false;
+			}
+
+			if (typeof(T) == typeof(MySqlLoadBalance) && objectValue is string loadBalanceString)
+			{
+				foreach (var val in Enum.GetValues(typeof(T)))
+				{
+					if (string.Equals(loadBalanceString, val.ToString(), StringComparison.OrdinalIgnoreCase))
+						return (T) val;
+				}
+				throw new InvalidOperationException("Value '{0}' not supported for option '{1}'.".FormatInvariant(objectValue, typeof(T).Name));
 			}
 
 			if (typeof(T) == typeof(MySqlSslMode) && objectValue is string sslModeString)
