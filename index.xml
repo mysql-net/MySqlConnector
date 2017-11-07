@@ -21,7 +21,7 @@
 &lt;h2 id=&#34;asynchronous-operation&#34;&gt;Asynchronous Operation&lt;/h2&gt;
 
 &lt;p&gt;MySqlConnector is fully asynchronous, supporting the async ADO.NET methods added in .NET 4.5 without blocking
-or using &lt;code&gt;Task.Run&lt;/code&gt; to run synchronous methods on a background thread.  Programmers implementing MySqlConnector
+or using &lt;code&gt;Task.Run&lt;/code&gt; to run synchronous methods on a background thread. Programmers implementing MySqlConnector
 should be familiar with &lt;a href=&#34;https://msdn.microsoft.com/en-us/magazine/jj991977.aspx&#34;&gt;Async/Await - Best Practices in Asynchronous Programming&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h3 id=&#34;always-use-async-when-possible&#34;&gt;Always Use Async when possible&lt;/h3&gt;
@@ -105,7 +105,7 @@ uses cached &lt;code&gt;Task&amp;lt;bool&amp;gt;&lt;/code&gt; objects for its &l
 &lt;h3 id=&#34;example-console-application&#34;&gt;Example Console Application&lt;/h3&gt;
 
 &lt;p&gt;In order to get the full benefit of asynchronous operation, every method in the call stack that eventually calls
-MySqlConnector should be implemented as an async method.  The exception is the &lt;code&gt;static void Main&lt;/code&gt; method in a Console Application.&lt;/p&gt;
+MySqlConnector should be implemented as an async method.&lt;/p&gt;
 
 &lt;p&gt;Example assumes a &lt;a href=&#34;overview/configuration&#34;&gt;configured AppDb&lt;/a&gt; object in the &lt;code&gt;MySqlConnector.Examples&lt;/code&gt; namespace.&lt;/p&gt;
 
@@ -116,15 +116,11 @@ namespace MySqlConnector.Examples
 {
     public class Program
     {
-        public static void Main(string[] args)
-        {
-            MainAsync(args).GetAwaiter().GetResult();
-        }
-
-        public static async Task MainAsync(string[] args)
+        public static async Task Main(string[] args)
         {
             var tasks = new List&amp;lt;Task&amp;gt;();
-            for (var i=0; i&amp;lt;100; i++){
+            for (var i=0; i&amp;lt;100; i++)
+            {
                 tasks.Add(Controllers.SleepOne());
             }
             // these 100 queries should all complete in around
@@ -155,11 +151,11 @@ namespace MySqlConnector.Examples
 
 &lt;div class=&#34;alert alert-warning&#34;&gt;
   Using Synchronous Methods can have adverse effects on the managed thread pool and cause slowdowns or lock-ups
-  if not properly tuned.  The recommended approach is to use all Asynchronous Methods.
+  if not properly tuned. The recommended approach is to use all Asynchronous Methods.
 &lt;/div&gt;
 
 &lt;p&gt;If you must use synchronous methods, ensure that your thread pool is at least the size of the number of
-concurrent connections you plan to support.  For example, if you are creating a web server using
+concurrent connections you plan to support. For example, if you are creating a web server using
 synchronous methods that needs to support serving 500 Requests Per Second, set the minimum thread
 pool size to 500.&lt;/p&gt;
 
@@ -187,7 +183,7 @@ pool size to 500.&lt;/p&gt;
 &lt;p&gt;MySqlConnector is an &lt;a href=&#34;https://msdn.microsoft.com/en-us/library/e80y5yhx.aspx&#34;&gt;ADO.NET&lt;/a&gt; data
 provider for &lt;a href=&#34;https://www.mysql.com/&#34;&gt;MySQL&lt;/a&gt;. It provides implementations of
 &lt;code&gt;DbConnection&lt;/code&gt;, &lt;code&gt;DbCommand&lt;/code&gt;, &lt;code&gt;DbDataReader&lt;/code&gt;, &lt;code&gt;DbTransaction&lt;/code&gt; &amp;ndash; the classes
-needed to query and update databases from managed code.  Its features include:&lt;/p&gt;
+needed to query and update databases from managed code. Its features include:&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;.NET Core Compatibility&lt;/li&gt;
@@ -221,7 +217,7 @@ and is not based on &lt;a href=&#34;https://github.com/mysql/mysql-connector-net
       &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector&#34;&gt;GitHub&lt;/a&gt;
     &lt;/td&gt;
     &lt;td&gt;
-      Closed Development Roadmap.  Code is viewable on
+      Closed Development Roadmap. Code is viewable on
       &lt;a href=&#34;https://github.com/mysql/mysql-connector-net&#34;&gt;GitHub&lt;/a&gt;,
       some issues addressed in &lt;a href=&#34;http://forums.mysql.com/list.php?38&#34;&gt;Forums&lt;/a&gt;
     &lt;/td&gt;
@@ -257,7 +253,15 @@ and is not based on &lt;a href=&#34;https://github.com/mysql/mysql-connector-net
 
 &lt;h1 id=&#34;installing&#34;&gt;Installing&lt;/h1&gt;
 
-&lt;p&gt;The recommended way of installing MySqlConnector is through &lt;a href=&#34;https://www.nuget.org/packages/MySqlConnector/&#34;&gt;NuGet&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;The recommended way of installing MySqlConnector is through &lt;a href=&#34;https://www.nuget.org/packages/MySqlConnector/&#34;&gt;NuGet&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;automatically&#34;&gt;Automatically&lt;/h3&gt;
+
+&lt;p&gt;If using the new project system, run: &lt;code&gt;dotnet add package MySqlConnector&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Or, in Visual Studio, use the &lt;em&gt;NuGet Package Manager&lt;/em&gt; to browse for and install &lt;code&gt;MySqlConnector&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;manually&#34;&gt;Manually&lt;/h3&gt;
 
 &lt;p&gt;&lt;strong&gt;Step 1:&lt;/strong&gt; Add MySqlConnector to the dependencies in your &lt;code&gt;csproj&lt;/code&gt; file:&lt;/p&gt;
 
@@ -270,7 +274,7 @@ and is not based on &lt;a href=&#34;https://github.com/mysql/mysql-connector-net
   &amp;lt;/PropertyGroup&amp;gt;
 
   &amp;lt;ItemGroup&amp;gt;
-    &amp;lt;PackageReference Include=&amp;quot;MySqlConnector&amp;quot; Version=&amp;quot;0.28.2&amp;quot; /&amp;gt;
+    &amp;lt;PackageReference Include=&amp;quot;MySqlConnector&amp;quot; Version=&amp;quot;0.30.0&amp;quot; /&amp;gt;
   &amp;lt;/ItemGroup&amp;gt;
 
 &amp;lt;/Project&amp;gt;
@@ -290,7 +294,7 @@ and is not based on &lt;a href=&#34;https://github.com/mysql/mysql-connector-net
 
 &lt;h1 id=&#34;mysqlconnection&#34;&gt;MySqlConnection&lt;/h1&gt;
 
-&lt;p&gt;MySqlConnection implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbconnection&#34;&gt;ADO.NET DbConnection class&lt;/a&gt;,
+&lt;p&gt;MySqlConnection implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbconnection&#34;&gt;ADO.NET DbConnection class&lt;/a&gt;;
 please refer to its documentation.&lt;/p&gt;
 
 &lt;p&gt;Additionally, MySqlConnection provides the following public properties and methods that may be used:&lt;/p&gt;
@@ -383,8 +387,7 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;Not all MySQL data types are supported.&lt;/li&gt;
-&lt;li&gt;Many &lt;code&gt;MySql.Data&lt;/code&gt; connection string settings are not supported by this library. See &lt;a href=&#34;connection-options/&#34;&gt;Connection Options&lt;/a&gt; for a list of supported options.&lt;/li&gt;
-&lt;li&gt;Only the &lt;code&gt;mysql_native_password&lt;/code&gt; and &lt;code&gt;mysql_old_password&lt;/code&gt; authentication plugins are supported.&lt;/li&gt;
+&lt;li&gt;Some &lt;code&gt;MySql.Data&lt;/code&gt; connection string settings are not supported by this library. See &lt;a href=&#34;connection-options/&#34;&gt;Connection Options&lt;/a&gt; for a list of supported options.&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
@@ -421,29 +424,29 @@ please refer to its documentation.&lt;/p&gt;
     &lt;td&gt;&lt;code&gt;ConnectionReset&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;Default is &lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;Default is &lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
-    &lt;td&gt;MySqlConnector takes an extra command to reset pooled connections by default so that the connection is always in a known state&lt;/td&gt;
+    &lt;td&gt;MySqlConnector always resets pooled connections by default so that the connection is in a known state. This fixes &lt;a href=&#34;https://bugs.mysql.com/bug.php?id=77421&#34;&gt;MySQL Bug 77421&lt;/a&gt;.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;&lt;code&gt;LoadBalance&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;Default is &lt;code&gt;RoundRobin&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;(not configurable, effective default is &lt;code&gt;InOrder&lt;/code&gt;)&lt;/td&gt;
-    &lt;td&gt;Connector/NET currently has [a bug](https://bugs.mysql.com/bug.php?id=81650) that prevents multiple host names being used.&lt;/td&gt;
+    &lt;td&gt;Connector/NET currently has &lt;a href=&#34;https://bugs.mysql.com/bug.php?id=81650&#34; title=&#34;MySQL bug #81650&#34;&gt;a bug&lt;/a&gt; that prevents multiple host names being used.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;&lt;code&gt;ServerRSAPublicKeyFile&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;(no default)&lt;/td&gt;
     &lt;td&gt;(not configurable)&lt;/td&gt;
-    &lt;td&gt;Specify the server&#39;s RSA public key to allow &lt;code&gt;sha256_password&lt;/code&gt; authentication over an insecure connection.&lt;/td&gt;
+    &lt;td&gt;Specify a file containing the server&#39;s RSA public key to allow &lt;code&gt;sha256_password&lt;/code&gt; authentication over an insecure connection.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;&lt;code&gt;UseAffectedRows&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;Default is &lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;Default is &lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
-    &lt;td&gt;This also affects the behavior of the &lt;code&gt;ROW_COUNT&lt;/code&gt; function.  &lt;code&gt;UseAffectedRows=true&lt;/code&gt; is the default in most other languages (C++, PHP, others)&lt;/td&gt;
+    &lt;td&gt;This also affects the behavior of the &lt;code&gt;ROW_COUNT&lt;/code&gt; function. &lt;code&gt;UseAffectedRows=true&lt;/code&gt; is the default in most other languages (C++, PHP, others)&lt;/td&gt;
   &lt;/tr&gt;
 &lt;/table&gt;
 
-&lt;p&gt;Some command line options that are supported in Connector/NET are not supported in MySqlConnector.  For a full list of options that are
+&lt;p&gt;Some connection string options that are supported in Connector/NET are not supported in MySqlConnector. For a full list of options that are
 supported in MySqlConnector, see the &lt;a href=&#34;connection-options&#34;&gt;Connection Options&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h3 id=&#34;transactionscope&#34;&gt;TransactionScope&lt;/h3&gt;
@@ -508,10 +511,10 @@ property doesn&amp;rsquo;t reference the active transaction. See &lt;a href=&#34
 
 &lt;h1 id=&#34;mysqlcommand&#34;&gt;MySqlCommand&lt;/h1&gt;
 
-&lt;p&gt;MySqlCommand implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbcommand&#34;&gt;ADO.NET DbCommand class&lt;/a&gt;,
+&lt;p&gt;&lt;code&gt;MySqlCommand&lt;/code&gt; implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbcommand&#34;&gt;ADO.NET DbCommand class&lt;/a&gt;;
 please refer to its documentation.&lt;/p&gt;
 
-&lt;p&gt;Additionally, MySqlCommand provides the following public properties and methods that may be used:&lt;/p&gt;
+&lt;p&gt;Additionally, &lt;code&gt;MySqlCommand&lt;/code&gt; provides the following public properties and methods that may be used:&lt;/p&gt;
 
 &lt;h3 id=&#34;constructors&#34;&gt;Constructors&lt;/h3&gt;
 
@@ -549,7 +552,8 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;p&gt;&lt;code&gt;public long LastInsertedId&lt;/code&gt;&lt;/p&gt;
 
-&lt;p&gt;Holds the value of the LastInsertedId after an SQL command inserting a row has been executed&lt;/p&gt;
+&lt;p&gt;Holds the first automatically-generated ID for a value inserted in an &lt;code&gt;AUTO_INCREMENT&lt;/code&gt; column in the last statement.
+See &lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_last-insert-id&#34;&gt;&lt;code&gt;LAST_INSERT_ID()&lt;/code&gt;&lt;/a&gt; for more information.&lt;/p&gt;
 
 &lt;hr /&gt;
 </description>
@@ -1117,32 +1121,32 @@ please refer to its documentation.&lt;/p&gt;
   &lt;thead&gt;
     &lt;th style=&#34;width: 20%&#34;&gt;Name&lt;/th&gt;
     &lt;th style=&#34;width: 10%&#34;&gt;Default&lt;/th&gt;
-    &lt;th style=&#34;width: 70%&#34;&gt;Descriotion&lt;/th&gt;
+    &lt;th style=&#34;width: 70%&#34;&gt;Description&lt;/th&gt;
   &lt;/thead&gt;
   &lt;tr&gt;
     &lt;td&gt;Host, Server, Data Source, DataSource, Address, Addr, Network Address&lt;/td&gt;
     &lt;td&gt;localhost&lt;/td&gt;
-    &lt;td&gt;The name or network address of the instance of MySQL to which to connect. Multiple hosts can be specified separated by commas. This can be useful where multiple MySQL servers are configured for replication and you are not concerned about the precise server you are connecting to. No attempt is made by the provider to synchronize writes to the database, so take care when using this option. In Unix environment with Mono, this can be a fully qualified path to a MySQL socket file. With this configuration, the Unix socket is used instead of the TCP/IP socket. Currently, only a single socket name can be given, so accessing MySQL in a replicated environment using Unix sockets is not currently supported.&lt;/td&gt;
+    &lt;td&gt;The host name or network address of the MySQL Server to which to connect. Multiple hosts can be specified in a comma-delimited list.&lt;br&gt;On Unix-like systems, this can be a fully qualified path to a MySQL socket file, which will cause a Unix socket to be used instead of a TCP/IP socket. Only a single socket name can be specified.&lt;/td&gt;
   &lt;/tr&gt;
     &lt;tr&gt;
     &lt;td&gt;Port&lt;/td&gt;
     &lt;td&gt;3306&lt;/td&gt;
-    &lt;td&gt;The port MySQL is using to listen for connections.&lt;/td&gt;
+    &lt;td&gt;The TCP port on which MySQL Server is listening for connections.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;User Id, UserID, Username, Uid, User name, User&lt;/td&gt;
     &lt;td&gt;&lt;/td&gt;
-    &lt;td&gt;The MySQL login account being used.&lt;/td&gt;
+    &lt;td&gt;The MySQL user ID.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Password, pwd&lt;/td&gt;
     &lt;td&gt;&lt;/td&gt;
-    &lt;td&gt;The password for the MySQL account being used.&lt;/td&gt;
+    &lt;td&gt;The password for the MySQL user.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Database, Initial Catalog&lt;/td&gt;
     &lt;td&gt;&lt;/td&gt;
-    &lt;td&gt;The case-sensitive name of the database to use initially.  This is not required.&lt;/td&gt;
+    &lt;td&gt;(Optional) The case-sensitive name of the initial database to use. This may be required if the MySQL user account only has access rights to particular databases on the server.&lt;/td&gt;
   &lt;/tr&gt;
 &lt;/table&gt;
 
@@ -1154,57 +1158,57 @@ please refer to its documentation.&lt;/p&gt;
   &lt;thead&gt;
     &lt;th style=&#34;width: 20%&#34;&gt;Name&lt;/th&gt;
     &lt;th style=&#34;width: 10%&#34;&gt;Default&lt;/th&gt;
-    &lt;th style=&#34;width: 70%&#34;&gt;Descriotion&lt;/th&gt;
+    &lt;th style=&#34;width: 70%&#34;&gt;Description&lt;/th&gt;
   &lt;/thead&gt;
   &lt;tr&gt;
     &lt;td&gt;SSL Mode, SslMode&lt;/td&gt;
     &lt;td&gt;Preferred&lt;/td&gt;
     &lt;td&gt;This option has the following values:
       &lt;ul&gt;
-        &lt;li&gt;&lt;b&gt;Preferred&lt;/b&gt; - this is the default. Use SSL if the server supports it.&lt;/li&gt;
-        &lt;li&gt;&lt;b&gt;None&lt;/b&gt; - do not use SSL.&lt;/li&gt;
-        &lt;li&gt;&lt;b&gt;Required&lt;/b&gt; - Always use SSL. Deny connection if server does not support SSL.  Do not validate CA or hostname.&lt;/li&gt;
-        &lt;li&gt;&lt;b&gt;VerifyCA&lt;/b&gt; - Always use SSL. Validate the CA but tolerate hostname mismatch.&lt;/li&gt;
-        &lt;li&gt;&lt;b&gt;VerifyFull&lt;/b&gt; - Always use SSL. Validate CA and hostname.&lt;/li&gt;
+        &lt;li&gt;&lt;b&gt;Preferred&lt;/b&gt; - (this is the default). Use SSL if the server supports it.&lt;/li&gt;
+        &lt;li&gt;&lt;b&gt;None&lt;/b&gt; - Do not use SSL.&lt;/li&gt;
+        &lt;li&gt;&lt;b&gt;Required&lt;/b&gt; - Always use SSL. Deny connection if server does not support SSL. Does not validate CA or hostname.&lt;/li&gt;
+        &lt;li&gt;&lt;b&gt;VerifyCA&lt;/b&gt; - Always use SSL. Validates the CA but tolerates hostname mismatch.&lt;/li&gt;
+        &lt;li&gt;&lt;b&gt;VerifyFull&lt;/b&gt; - Always use SSL. Validates CA and hostname.&lt;/li&gt;
       &lt;/ul&gt;
     &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Certificate File, CertificateFile&lt;/td&gt;
     &lt;td&gt;&lt;/td&gt;
-    &lt;td&gt;This option specifies the path to a certificate file in a PEM Encoded (.pem) or PKCS #12 (.pfx) format. &lt;/td&gt;
+    &lt;td&gt;Specifies the path to a certificate file in a PEM Encoded (.pem) or PKCS #12 (.pfx) format.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Certificate Password, CertificatePassword   &lt;/td&gt;
     &lt;td&gt;&lt;/td&gt;
-    &lt;td&gt;Specifies a password that is used in conjunction with a certificate specified using the option CertificateFile.  Not required if the certificate file is not password protected.&lt;/td&gt;
+    &lt;td&gt;Specifies the password for the certificate specified using the &lt;code&gt;CertificateFile&lt;/code&gt; option. Not required if the certificate file is not password protected.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;CA Certificate File, CACertificateFile&lt;/td&gt;
     &lt;td&gt;&lt;/td&gt;
-    &lt;td&gt;This option specifies the path to a CA certificate file in a PEM Encoded (.pem) format.  This should be used in with &lt;code&gt;SslMode=VerifyCA&lt;/code&gt; or &lt;code&gt;SslMode=VerifyFull&lt;/code&gt; to enable verification of a CA certificate that is not trusted by the Operating System&#39;s certificate store.&lt;/td&gt;
+    &lt;td&gt;This option specifies the path to a CA certificate file in a PEM Encoded (.pem) format. This should be used in with &lt;code&gt;SslMode=VerifyCA&lt;/code&gt; or &lt;code&gt;SslMode=VerifyFull&lt;/code&gt; to enable verification of a CA certificate that is not trusted by the Operating System&#39;s certificate store.&lt;/td&gt;
   &lt;/tr&gt;
 &lt;/table&gt;
 
 &lt;h2 id=&#34;connection-pooling-options&#34;&gt;Connection Pooling Options&lt;/h2&gt;
 
-&lt;p&gt;Connection pooling is enabled by default.  These options are used to configure it.&lt;/p&gt;
+&lt;p&gt;Connection pooling is enabled by default. These options are used to configure it.&lt;/p&gt;
 
 &lt;table class=&#34;table table-striped table-hover&#34;&gt;
   &lt;thead&gt;
     &lt;th style=&#34;width: 20%&#34;&gt;Name&lt;/th&gt;
     &lt;th style=&#34;width: 10%&#34;&gt;Default&lt;/th&gt;
-    &lt;th style=&#34;width: 70%&#34;&gt;Descriotion&lt;/th&gt;
+    &lt;th style=&#34;width: 70%&#34;&gt;Description&lt;/th&gt;
   &lt;/thead&gt;
   &lt;tr&gt;
     &lt;td&gt;Pooling&lt;/td&gt;
     &lt;td&gt;true&lt;/td&gt;
-    &lt;td&gt;When true, the MySqlConnection object is drawn from the appropriate pool, or if necessary, is created and added to the appropriate pool. Recognized values are true, false, yes, and no.&lt;/td&gt;
+    &lt;td&gt;Enables connection pooling. When pooling is enabled, &lt;code&gt;MySqlConnection.Open&lt;/code&gt; retrieves an open connection from the pool if one is available (opening a new connection if not), and &lt;code&gt;Close&lt;/code&gt;/&lt;code&gt;Dispose&lt;/code&gt; returns the open connection to the pool.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Connection Lifetime, ConnectionLifeTime&lt;/td&gt;
     &lt;td&gt;0&lt;/td&gt;
-    &lt;td&gt;When a connection is returned to the pool, its creation time is compared with the current time, and the connection is destroyed if that time span (in seconds) exceeds the value specified by Connection Lifetime. This is useful in clustered configurations to force load balancing between a running server and a server just brought online. A value of zero (0) means pooled connections will never incur a ConnectionLifeTime timeout.&lt;/td&gt;
+    &lt;td&gt;Controls the maximum length of time a connection to the server can be open. Connections that are returned to the pool are destroyed if it&#39;s been more than &lt;code&gt;ConnectionLifeTime&lt;/code&gt; seconds since the connection was created. The default value of zero (0) means pooled connections will never incur a ConnectionLifeTime timeout.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Connection Reset, ConnectionReset   &lt;/td&gt;
@@ -1214,7 +1218,7 @@ please refer to its documentation.&lt;/p&gt;
   &lt;tr&gt;
     &lt;td&gt;Connection Idle Timeout, ConnectionIdleTimeout&lt;/td&gt;
     &lt;td&gt;180&lt;/td&gt;
-    &lt;td&gt;The amount of time in seconds that a connection can remain idle in the pool. Any connection that is idle for longer is subject to being closed by a background task that runs every minute, unless there are only MinimumPoolSize connections left in the pool. A value of zero (0) means pooled connections will never incur a ConnectionIdleTimeout.&lt;/td&gt;
+    &lt;td&gt;The amount of time in seconds that a connection can remain idle in the pool. Any connection that is idle for longer is subject to being closed by a background task that runs every minute, unless there are only MinimumPoolSize connections left in the pool. A value of zero (0) means pooled connections will never incur a ConnectionIdleTimeout, and if the pool grows to its maximum size, it will never get smaller.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Maximum Pool Size, Max Pool Size, MaximumPoolsize, maxpoolsize&lt;/td&gt;
@@ -1230,13 +1234,13 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h2 id=&#34;other-options&#34;&gt;Other Options&lt;/h2&gt;
 
-&lt;p&gt;These are the other options that MySqlConnector supports.  They are set to sensible defaults and typically do not need to be tweaked.&lt;/p&gt;
+&lt;p&gt;These are the other options that MySqlConnector supports. They are set to sensible defaults and typically do not need to be tweaked.&lt;/p&gt;
 
 &lt;table class=&#34;table table-striped table-hover&#34;&gt;
   &lt;thead&gt;
     &lt;th style=&#34;width: 20%&#34;&gt;Name&lt;/th&gt;
     &lt;th style=&#34;width: 10%&#34;&gt;Default&lt;/th&gt;
-    &lt;th style=&#34;width: 70%&#34;&gt;Descriotion&lt;/th&gt;
+    &lt;th style=&#34;width: 70%&#34;&gt;Description&lt;/th&gt;
   &lt;/thead&gt;
   &lt;tr&gt;
     &lt;td&gt;AllowPublicKeyRetrieval, Allow Public Key Retrieval&lt;/td&gt;
@@ -1249,7 +1253,8 @@ please refer to its documentation.&lt;/p&gt;
   &lt;tr&gt;
     &lt;td&gt;AllowUserVariables, Allow User Variables&lt;/td&gt;
     &lt;td&gt;false&lt;/td&gt;
-    &lt;td&gt;Setting this to true indicates that the provider expects user variables in the SQL.&lt;/td&gt;
+    &lt;td&gt;Allows user-defined variables (prefixed with &lt;code&gt;@&lt;/code&gt;) to be used in SQL statements. The default value (&lt;code&gt;false&lt;/code&gt;)
+    only allows &lt;code&gt;@&lt;/code&gt;-prefixed names to refer to command parameters.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Compress, Use Compression, UseCompression&lt;/td&gt;
@@ -1278,7 +1283,7 @@ please refer to its documentation.&lt;/p&gt;
   &lt;tr&gt;
     &lt;td&gt;Keep Alive, Keepalive&lt;/td&gt;
     &lt;td&gt;0&lt;/td&gt;
-    &lt;td&gt;TCP Keepalive idle time.  A value of 0 indicates that the OS Default keepalive settings are used.
+    &lt;td&gt;TCP Keepalive idle time. A value of 0 indicates that the OS Default keepalive settings are used.
     On Windows, a value greater than 0 is the idle connection time, measured in seconds, before the first keepalive packet is sent.
     Due to limitations in .NET Core, Unix-based Operating Systems will always use the OS Default keepalive settings.&lt;/td&gt;
   &lt;/tr&gt;
@@ -1316,7 +1321,7 @@ please refer to its documentation.&lt;/p&gt;
   &lt;tr&gt;
     &lt;td&gt;Treat Tiny As Boolean, TreatTinyAsBoolean&lt;/td&gt;
     &lt;td&gt;true&lt;/td&gt;
-    &lt;td&gt;When set to true, tinyint(1) values are returned as booleans.  Setting this to false causes tinyint(1) to be returned as sbyte/byte.&lt;/td&gt;
+    &lt;td&gt;When set to true, tinyint(1) values are returned as booleans. Setting this to false causes tinyint(1) to be returned as sbyte/byte.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Use Affected Rows, UseAffectedRows&lt;/td&gt;
@@ -1337,7 +1342,7 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h1 id=&#34;mysqldatareader&#34;&gt;MySqlDataReader&lt;/h1&gt;
 
-&lt;p&gt;MySqlDataReader implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbdatareader&#34;&gt;ADO.NET DbDataReader class&lt;/a&gt;,
+&lt;p&gt;MySqlDataReader implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbdatareader&#34;&gt;ADO.NET DbDataReader class&lt;/a&gt;;
 please refer to its documentation.&lt;/p&gt;
 
 &lt;p&gt;Additionally, MySqlDataReader provides the following public properties and methods that may be used:&lt;/p&gt;
@@ -1355,6 +1360,10 @@ please refer to its documentation.&lt;/p&gt;
 &lt;p&gt;Gets the value of the specified column as a DateTimeOffset with an offset of 0&lt;/p&gt;
 
 &lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public ReadOnlyCollection&amp;lt;DbColumn&amp;gt; GetColumnSchema()&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Implements the new &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/api/system.data.common.idbcolumnschemagenerator.getcolumnschema&#34;&gt;&lt;code&gt;IDbColumnSchemaGenerator.GetColumnSchema&lt;/code&gt;&lt;/a&gt; interface that returns metadata about the columns in the result set.&lt;/p&gt;
 </description>
     </item>
     
@@ -1864,6 +1873,7 @@ please refer to its documentation.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/StackExchange/dapper-dot-net&#34;&gt;Dapper&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/Dapper&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/nreco/data&#34;&gt;NReco.Data&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/NReco.Data&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/ServiceStack/ServiceStack.OrmLite&#34;&gt;ServiceStack.OrmLite&lt;/a&gt; (&lt;a href=&#34;https://www.myget.org/feed/servicestack/package/nuget/ServiceStack.OrmLite.MySqlConnector&#34;&gt;MyGet&lt;/a&gt;)&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/SimpleStack/simplestack.orm&#34;&gt;SimpleStack.Orm&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/SimpleStack.Orm.MySQLConnector&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
 &lt;/ul&gt;
 

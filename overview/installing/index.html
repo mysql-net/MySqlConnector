@@ -168,7 +168,15 @@
 
 <h1 id="installing">Installing</h1>
 
-<p>The recommended way of installing MySqlConnector is through <a href="https://www.nuget.org/packages/MySqlConnector/">NuGet</a></p>
+<p>The recommended way of installing MySqlConnector is through <a href="https://www.nuget.org/packages/MySqlConnector/">NuGet</a>.</p>
+
+<h3 id="automatically">Automatically</h3>
+
+<p>If using the new project system, run: <code>dotnet add package MySqlConnector</code></p>
+
+<p>Or, in Visual Studio, use the <em>NuGet Package Manager</em> to browse for and install <code>MySqlConnector</code>.</p>
+
+<h3 id="manually">Manually</h3>
 
 <p><strong>Step 1:</strong> Add MySqlConnector to the dependencies in your <code>csproj</code> file:</p>
 
@@ -181,7 +189,7 @@
   &lt;/PropertyGroup&gt;
 
   &lt;ItemGroup&gt;
-    &lt;PackageReference Include=&quot;MySqlConnector&quot; Version=&quot;0.28.2&quot; /&gt;
+    &lt;PackageReference Include=&quot;MySqlConnector&quot; Version=&quot;0.30.0&quot; /&gt;
   &lt;/ItemGroup&gt;
 
 &lt;/Project&gt;

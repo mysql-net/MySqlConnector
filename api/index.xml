@@ -18,7 +18,7 @@
 
 &lt;h1 id=&#34;mysqlconnection&#34;&gt;MySqlConnection&lt;/h1&gt;
 
-&lt;p&gt;MySqlConnection implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbconnection&#34;&gt;ADO.NET DbConnection class&lt;/a&gt;,
+&lt;p&gt;MySqlConnection implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbconnection&#34;&gt;ADO.NET DbConnection class&lt;/a&gt;;
 please refer to its documentation.&lt;/p&gt;
 
 &lt;p&gt;Additionally, MySqlConnection provides the following public properties and methods that may be used:&lt;/p&gt;
@@ -109,10 +109,10 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h1 id=&#34;mysqlcommand&#34;&gt;MySqlCommand&lt;/h1&gt;
 
-&lt;p&gt;MySqlCommand implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbcommand&#34;&gt;ADO.NET DbCommand class&lt;/a&gt;,
+&lt;p&gt;&lt;code&gt;MySqlCommand&lt;/code&gt; implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbcommand&#34;&gt;ADO.NET DbCommand class&lt;/a&gt;;
 please refer to its documentation.&lt;/p&gt;
 
-&lt;p&gt;Additionally, MySqlCommand provides the following public properties and methods that may be used:&lt;/p&gt;
+&lt;p&gt;Additionally, &lt;code&gt;MySqlCommand&lt;/code&gt; provides the following public properties and methods that may be used:&lt;/p&gt;
 
 &lt;h3 id=&#34;constructors&#34;&gt;Constructors&lt;/h3&gt;
 
@@ -150,7 +150,8 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;p&gt;&lt;code&gt;public long LastInsertedId&lt;/code&gt;&lt;/p&gt;
 
-&lt;p&gt;Holds the value of the LastInsertedId after an SQL command inserting a row has been executed&lt;/p&gt;
+&lt;p&gt;Holds the first automatically-generated ID for a value inserted in an &lt;code&gt;AUTO_INCREMENT&lt;/code&gt; column in the last statement.
+See &lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_last-insert-id&#34;&gt;&lt;code&gt;LAST_INSERT_ID()&lt;/code&gt;&lt;/a&gt; for more information.&lt;/p&gt;
 
 &lt;hr /&gt;
 </description>
@@ -166,7 +167,7 @@ please refer to its documentation.&lt;/p&gt;
 
 &lt;h1 id=&#34;mysqldatareader&#34;&gt;MySqlDataReader&lt;/h1&gt;
 
-&lt;p&gt;MySqlDataReader implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbdatareader&#34;&gt;ADO.NET DbDataReader class&lt;/a&gt;,
+&lt;p&gt;MySqlDataReader implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbdatareader&#34;&gt;ADO.NET DbDataReader class&lt;/a&gt;;
 please refer to its documentation.&lt;/p&gt;
 
 &lt;p&gt;Additionally, MySqlDataReader provides the following public properties and methods that may be used:&lt;/p&gt;
@@ -184,6 +185,10 @@ please refer to its documentation.&lt;/p&gt;
 &lt;p&gt;Gets the value of the specified column as a DateTimeOffset with an offset of 0&lt;/p&gt;
 
 &lt;hr /&gt;
+
+&lt;p&gt;&lt;code&gt;public ReadOnlyCollection&amp;lt;DbColumn&amp;gt; GetColumnSchema()&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Implements the new &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/api/system.data.common.idbcolumnschemagenerator.getcolumnschema&#34;&gt;&lt;code&gt;IDbColumnSchemaGenerator.GetColumnSchema&lt;/code&gt;&lt;/a&gt; interface that returns metadata about the columns in the result set.&lt;/p&gt;
 </description>
     </item>
     

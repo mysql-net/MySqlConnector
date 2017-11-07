@@ -168,7 +168,7 @@
 
 <h1 id="mysqldatareader">MySqlDataReader</h1>
 
-<p>MySqlDataReader implements the <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbdatareader">ADO.NET DbDataReader class</a>,
+<p>MySqlDataReader implements the <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbdatareader">ADO.NET DbDataReader class</a>;
 please refer to its documentation.</p>
 
 <p>Additionally, MySqlDataReader provides the following public properties and methods that may be used:</p>
@@ -186,6 +186,10 @@ please refer to its documentation.</p>
 <p>Gets the value of the specified column as a DateTimeOffset with an offset of 0</p>
 
 <hr />
+
+<p><code>public ReadOnlyCollection&lt;DbColumn&gt; GetColumnSchema()</code></p>
+
+<p>Implements the new <a href="https://docs.microsoft.com/en-us/dotnet/api/system.data.common.idbcolumnschemagenerator.getcolumnschema"><code>IDbColumnSchemaGenerator.GetColumnSchema</code></a> interface that returns metadata about the columns in the result set.</p>
 
 
 

@@ -168,10 +168,10 @@
 
 <h1 id="mysqlcommand">MySqlCommand</h1>
 
-<p>MySqlCommand implements the <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbcommand">ADO.NET DbCommand class</a>,
+<p><code>MySqlCommand</code> implements the <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbcommand">ADO.NET DbCommand class</a>;
 please refer to its documentation.</p>
 
-<p>Additionally, MySqlCommand provides the following public properties and methods that may be used:</p>
+<p>Additionally, <code>MySqlCommand</code> provides the following public properties and methods that may be used:</p>
 
 <h3 id="constructors">Constructors</h3>
 
@@ -209,7 +209,8 @@ please refer to its documentation.</p>
 
 <p><code>public long LastInsertedId</code></p>
 
-<p>Holds the value of the LastInsertedId after an SQL command inserting a row has been executed</p>
+<p>Holds the first automatically-generated ID for a value inserted in an <code>AUTO_INCREMENT</code> column in the last statement.
+See <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_last-insert-id"><code>LAST_INSERT_ID()</code></a> for more information.</p>
 
 <hr />
 

@@ -178,32 +178,32 @@
   <thead>
     <th style="width: 20%">Name</th>
     <th style="width: 10%">Default</th>
-    <th style="width: 70%">Descriotion</th>
+    <th style="width: 70%">Description</th>
   </thead>
   <tr>
     <td>Host, Server, Data Source, DataSource, Address, Addr, Network Address</td>
     <td>localhost</td>
-    <td>The name or network address of the instance of MySQL to which to connect. Multiple hosts can be specified separated by commas. This can be useful where multiple MySQL servers are configured for replication and you are not concerned about the precise server you are connecting to. No attempt is made by the provider to synchronize writes to the database, so take care when using this option. In Unix environment with Mono, this can be a fully qualified path to a MySQL socket file. With this configuration, the Unix socket is used instead of the TCP/IP socket. Currently, only a single socket name can be given, so accessing MySQL in a replicated environment using Unix sockets is not currently supported.</td>
+    <td>The host name or network address of the MySQL Server to which to connect. Multiple hosts can be specified in a comma-delimited list.<br>On Unix-like systems, this can be a fully qualified path to a MySQL socket file, which will cause a Unix socket to be used instead of a TCP/IP socket. Only a single socket name can be specified.</td>
   </tr>
     <tr>
     <td>Port</td>
     <td>3306</td>
-    <td>The port MySQL is using to listen for connections.</td>
+    <td>The TCP port on which MySQL Server is listening for connections.</td>
   </tr>
   <tr>
     <td>User Id, UserID, Username, Uid, User name, User</td>
     <td></td>
-    <td>The MySQL login account being used.</td>
+    <td>The MySQL user ID.</td>
   </tr>
   <tr>
     <td>Password, pwd</td>
     <td></td>
-    <td>The password for the MySQL account being used.</td>
+    <td>The password for the MySQL user.</td>
   </tr>
   <tr>
     <td>Database, Initial Catalog</td>
     <td></td>
-    <td>The case-sensitive name of the database to use initially.  This is not required.</td>
+    <td>(Optional) The case-sensitive name of the initial database to use. This may be required if the MySQL user account only has access rights to particular databases on the server.</td>
   </tr>
 </table>
 
@@ -215,57 +215,57 @@
   <thead>
     <th style="width: 20%">Name</th>
     <th style="width: 10%">Default</th>
-    <th style="width: 70%">Descriotion</th>
+    <th style="width: 70%">Description</th>
   </thead>
   <tr>
     <td>SSL Mode, SslMode</td>
     <td>Preferred</td>
     <td>This option has the following values:
       <ul>
-        <li><b>Preferred</b> - this is the default. Use SSL if the server supports it.</li>
-        <li><b>None</b> - do not use SSL.</li>
-        <li><b>Required</b> - Always use SSL. Deny connection if server does not support SSL.  Do not validate CA or hostname.</li>
-        <li><b>VerifyCA</b> - Always use SSL. Validate the CA but tolerate hostname mismatch.</li>
-        <li><b>VerifyFull</b> - Always use SSL. Validate CA and hostname.</li>
+        <li><b>Preferred</b> - (this is the default). Use SSL if the server supports it.</li>
+        <li><b>None</b> - Do not use SSL.</li>
+        <li><b>Required</b> - Always use SSL. Deny connection if server does not support SSL. Does not validate CA or hostname.</li>
+        <li><b>VerifyCA</b> - Always use SSL. Validates the CA but tolerates hostname mismatch.</li>
+        <li><b>VerifyFull</b> - Always use SSL. Validates CA and hostname.</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>Certificate File, CertificateFile</td>
     <td></td>
-    <td>This option specifies the path to a certificate file in a PEM Encoded (.pem) or PKCS #12 (.pfx) format. </td>
+    <td>Specifies the path to a certificate file in a PEM Encoded (.pem) or PKCS #12 (.pfx) format.</td>
   </tr>
   <tr>
     <td>Certificate Password, CertificatePassword   </td>
     <td></td>
-    <td>Specifies a password that is used in conjunction with a certificate specified using the option CertificateFile.  Not required if the certificate file is not password protected.</td>
+    <td>Specifies the password for the certificate specified using the <code>CertificateFile</code> option. Not required if the certificate file is not password protected.</td>
   </tr>
   <tr>
     <td>CA Certificate File, CACertificateFile</td>
     <td></td>
-    <td>This option specifies the path to a CA certificate file in a PEM Encoded (.pem) format.  This should be used in with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the Operating System's certificate store.</td>
+    <td>This option specifies the path to a CA certificate file in a PEM Encoded (.pem) format. This should be used in with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the Operating System's certificate store.</td>
   </tr>
 </table>
 
 <h2 id="connection-pooling-options">Connection Pooling Options</h2>
 
-<p>Connection pooling is enabled by default.  These options are used to configure it.</p>
+<p>Connection pooling is enabled by default. These options are used to configure it.</p>
 
 <table class="table table-striped table-hover">
   <thead>
     <th style="width: 20%">Name</th>
     <th style="width: 10%">Default</th>
-    <th style="width: 70%">Descriotion</th>
+    <th style="width: 70%">Description</th>
   </thead>
   <tr>
     <td>Pooling</td>
     <td>true</td>
-    <td>When true, the MySqlConnection object is drawn from the appropriate pool, or if necessary, is created and added to the appropriate pool. Recognized values are true, false, yes, and no.</td>
+    <td>Enables connection pooling. When pooling is enabled, <code>MySqlConnection.Open</code> retrieves an open connection from the pool if one is available (opening a new connection if not), and <code>Close</code>/<code>Dispose</code> returns the open connection to the pool.</td>
   </tr>
   <tr>
     <td>Connection Lifetime, ConnectionLifeTime</td>
     <td>0</td>
-    <td>When a connection is returned to the pool, its creation time is compared with the current time, and the connection is destroyed if that time span (in seconds) exceeds the value specified by Connection Lifetime. This is useful in clustered configurations to force load balancing between a running server and a server just brought online. A value of zero (0) means pooled connections will never incur a ConnectionLifeTime timeout.</td>
+    <td>Controls the maximum length of time a connection to the server can be open. Connections that are returned to the pool are destroyed if it's been more than <code>ConnectionLifeTime</code> seconds since the connection was created. The default value of zero (0) means pooled connections will never incur a ConnectionLifeTime timeout.</td>
   </tr>
   <tr>
     <td>Connection Reset, ConnectionReset   </td>
@@ -275,7 +275,7 @@
   <tr>
     <td>Connection Idle Timeout, ConnectionIdleTimeout</td>
     <td>180</td>
-    <td>The amount of time in seconds that a connection can remain idle in the pool. Any connection that is idle for longer is subject to being closed by a background task that runs every minute, unless there are only MinimumPoolSize connections left in the pool. A value of zero (0) means pooled connections will never incur a ConnectionIdleTimeout.</td>
+    <td>The amount of time in seconds that a connection can remain idle in the pool. Any connection that is idle for longer is subject to being closed by a background task that runs every minute, unless there are only MinimumPoolSize connections left in the pool. A value of zero (0) means pooled connections will never incur a ConnectionIdleTimeout, and if the pool grows to its maximum size, it will never get smaller.</td>
   </tr>
   <tr>
     <td>Maximum Pool Size, Max Pool Size, MaximumPoolsize, maxpoolsize</td>
@@ -291,13 +291,13 @@
 
 <h2 id="other-options">Other Options</h2>
 
-<p>These are the other options that MySqlConnector supports.  They are set to sensible defaults and typically do not need to be tweaked.</p>
+<p>These are the other options that MySqlConnector supports. They are set to sensible defaults and typically do not need to be tweaked.</p>
 
 <table class="table table-striped table-hover">
   <thead>
     <th style="width: 20%">Name</th>
     <th style="width: 10%">Default</th>
-    <th style="width: 70%">Descriotion</th>
+    <th style="width: 70%">Description</th>
   </thead>
   <tr>
     <td>AllowPublicKeyRetrieval, Allow Public Key Retrieval</td>
@@ -310,7 +310,8 @@
   <tr>
     <td>AllowUserVariables, Allow User Variables</td>
     <td>false</td>
-    <td>Setting this to true indicates that the provider expects user variables in the SQL.</td>
+    <td>Allows user-defined variables (prefixed with <code>@</code>) to be used in SQL statements. The default value (<code>false</code>)
+    only allows <code>@</code>-prefixed names to refer to command parameters.</td>
   </tr>
   <tr>
     <td>Compress, Use Compression, UseCompression</td>
@@ -339,7 +340,7 @@
   <tr>
     <td>Keep Alive, Keepalive</td>
     <td>0</td>
-    <td>TCP Keepalive idle time.  A value of 0 indicates that the OS Default keepalive settings are used.
+    <td>TCP Keepalive idle time. A value of 0 indicates that the OS Default keepalive settings are used.
     On Windows, a value greater than 0 is the idle connection time, measured in seconds, before the first keepalive packet is sent.
     Due to limitations in .NET Core, Unix-based Operating Systems will always use the OS Default keepalive settings.</td>
   </tr>
@@ -377,7 +378,7 @@
   <tr>
     <td>Treat Tiny As Boolean, TreatTinyAsBoolean</td>
     <td>true</td>
-    <td>When set to true, tinyint(1) values are returned as booleans.  Setting this to false causes tinyint(1) to be returned as sbyte/byte.</td>
+    <td>When set to true, tinyint(1) values are returned as booleans. Setting this to false causes tinyint(1) to be returned as sbyte/byte.</td>
   </tr>
   <tr>
     <td>Use Affected Rows, UseAffectedRows</td>

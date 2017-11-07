@@ -21,7 +21,7 @@
 &lt;h2 id=&#34;asynchronous-operation&#34;&gt;Asynchronous Operation&lt;/h2&gt;
 
 &lt;p&gt;MySqlConnector is fully asynchronous, supporting the async ADO.NET methods added in .NET 4.5 without blocking
-or using &lt;code&gt;Task.Run&lt;/code&gt; to run synchronous methods on a background thread.  Programmers implementing MySqlConnector
+or using &lt;code&gt;Task.Run&lt;/code&gt; to run synchronous methods on a background thread. Programmers implementing MySqlConnector
 should be familiar with &lt;a href=&#34;https://msdn.microsoft.com/en-us/magazine/jj991977.aspx&#34;&gt;Async/Await - Best Practices in Asynchronous Programming&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h3 id=&#34;always-use-async-when-possible&#34;&gt;Always Use Async when possible&lt;/h3&gt;
@@ -105,7 +105,7 @@ uses cached &lt;code&gt;Task&amp;lt;bool&amp;gt;&lt;/code&gt; objects for its &l
 &lt;h3 id=&#34;example-console-application&#34;&gt;Example Console Application&lt;/h3&gt;
 
 &lt;p&gt;In order to get the full benefit of asynchronous operation, every method in the call stack that eventually calls
-MySqlConnector should be implemented as an async method.  The exception is the &lt;code&gt;static void Main&lt;/code&gt; method in a Console Application.&lt;/p&gt;
+MySqlConnector should be implemented as an async method.&lt;/p&gt;
 
 &lt;p&gt;Example assumes a &lt;a href=&#34;overview/configuration&#34;&gt;configured AppDb&lt;/a&gt; object in the &lt;code&gt;MySqlConnector.Examples&lt;/code&gt; namespace.&lt;/p&gt;
 
@@ -116,15 +116,11 @@ namespace MySqlConnector.Examples
 {
     public class Program
     {
-        public static void Main(string[] args)
-        {
-            MainAsync(args).GetAwaiter().GetResult();
-        }
-
-        public static async Task MainAsync(string[] args)
+        public static async Task Main(string[] args)
         {
             var tasks = new List&amp;lt;Task&amp;gt;();
-            for (var i=0; i&amp;lt;100; i++){
+            for (var i=0; i&amp;lt;100; i++)
+            {
                 tasks.Add(Controllers.SleepOne());
             }
             // these 100 queries should all complete in around
@@ -155,11 +151,11 @@ namespace MySqlConnector.Examples
 
 &lt;div class=&#34;alert alert-warning&#34;&gt;
   Using Synchronous Methods can have adverse effects on the managed thread pool and cause slowdowns or lock-ups
-  if not properly tuned.  The recommended approach is to use all Asynchronous Methods.
+  if not properly tuned. The recommended approach is to use all Asynchronous Methods.
 &lt;/div&gt;
 
 &lt;p&gt;If you must use synchronous methods, ensure that your thread pool is at least the size of the number of
-concurrent connections you plan to support.  For example, if you are creating a web server using
+concurrent connections you plan to support. For example, if you are creating a web server using
 synchronous methods that needs to support serving 500 Requests Per Second, set the minimum thread
 pool size to 500.&lt;/p&gt;
 
@@ -206,29 +202,29 @@ pool size to 500.&lt;/p&gt;
     &lt;td&gt;&lt;code&gt;ConnectionReset&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;Default is &lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;Default is &lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
-    &lt;td&gt;MySqlConnector takes an extra command to reset pooled connections by default so that the connection is always in a known state&lt;/td&gt;
+    &lt;td&gt;MySqlConnector always resets pooled connections by default so that the connection is in a known state. This fixes &lt;a href=&#34;https://bugs.mysql.com/bug.php?id=77421&#34;&gt;MySQL Bug 77421&lt;/a&gt;.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;&lt;code&gt;LoadBalance&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;Default is &lt;code&gt;RoundRobin&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;(not configurable, effective default is &lt;code&gt;InOrder&lt;/code&gt;)&lt;/td&gt;
-    &lt;td&gt;Connector/NET currently has [a bug](https://bugs.mysql.com/bug.php?id=81650) that prevents multiple host names being used.&lt;/td&gt;
+    &lt;td&gt;Connector/NET currently has &lt;a href=&#34;https://bugs.mysql.com/bug.php?id=81650&#34; title=&#34;MySQL bug #81650&#34;&gt;a bug&lt;/a&gt; that prevents multiple host names being used.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;&lt;code&gt;ServerRSAPublicKeyFile&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;(no default)&lt;/td&gt;
     &lt;td&gt;(not configurable)&lt;/td&gt;
-    &lt;td&gt;Specify the server&#39;s RSA public key to allow &lt;code&gt;sha256_password&lt;/code&gt; authentication over an insecure connection.&lt;/td&gt;
+    &lt;td&gt;Specify a file containing the server&#39;s RSA public key to allow &lt;code&gt;sha256_password&lt;/code&gt; authentication over an insecure connection.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;&lt;code&gt;UseAffectedRows&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;Default is &lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;Default is &lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
-    &lt;td&gt;This also affects the behavior of the &lt;code&gt;ROW_COUNT&lt;/code&gt; function.  &lt;code&gt;UseAffectedRows=true&lt;/code&gt; is the default in most other languages (C++, PHP, others)&lt;/td&gt;
+    &lt;td&gt;This also affects the behavior of the &lt;code&gt;ROW_COUNT&lt;/code&gt; function. &lt;code&gt;UseAffectedRows=true&lt;/code&gt; is the default in most other languages (C++, PHP, others)&lt;/td&gt;
   &lt;/tr&gt;
 &lt;/table&gt;
 
-&lt;p&gt;Some command line options that are supported in Connector/NET are not supported in MySqlConnector.  For a full list of options that are
+&lt;p&gt;Some connection string options that are supported in Connector/NET are not supported in MySqlConnector. For a full list of options that are
 supported in MySqlConnector, see the &lt;a href=&#34;connection-options&#34;&gt;Connection Options&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h3 id=&#34;transactionscope&#34;&gt;TransactionScope&lt;/h3&gt;

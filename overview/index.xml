@@ -18,7 +18,15 @@
 
 &lt;h1 id=&#34;installing&#34;&gt;Installing&lt;/h1&gt;
 
-&lt;p&gt;The recommended way of installing MySqlConnector is through &lt;a href=&#34;https://www.nuget.org/packages/MySqlConnector/&#34;&gt;NuGet&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;The recommended way of installing MySqlConnector is through &lt;a href=&#34;https://www.nuget.org/packages/MySqlConnector/&#34;&gt;NuGet&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;automatically&#34;&gt;Automatically&lt;/h3&gt;
+
+&lt;p&gt;If using the new project system, run: &lt;code&gt;dotnet add package MySqlConnector&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Or, in Visual Studio, use the &lt;em&gt;NuGet Package Manager&lt;/em&gt; to browse for and install &lt;code&gt;MySqlConnector&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;manually&#34;&gt;Manually&lt;/h3&gt;
 
 &lt;p&gt;&lt;strong&gt;Step 1:&lt;/strong&gt; Add MySqlConnector to the dependencies in your &lt;code&gt;csproj&lt;/code&gt; file:&lt;/p&gt;
 
@@ -31,7 +39,7 @@
   &amp;lt;/PropertyGroup&amp;gt;
 
   &amp;lt;ItemGroup&amp;gt;
-    &amp;lt;PackageReference Include=&amp;quot;MySqlConnector&amp;quot; Version=&amp;quot;0.28.2&amp;quot; /&amp;gt;
+    &amp;lt;PackageReference Include=&amp;quot;MySqlConnector&amp;quot; Version=&amp;quot;0.30.0&amp;quot; /&amp;gt;
   &amp;lt;/ItemGroup&amp;gt;
 
 &amp;lt;/Project&amp;gt;
@@ -53,8 +61,7 @@
 
 &lt;ul&gt;
 &lt;li&gt;Not all MySQL data types are supported.&lt;/li&gt;
-&lt;li&gt;Many &lt;code&gt;MySql.Data&lt;/code&gt; connection string settings are not supported by this library. See &lt;a href=&#34;connection-options/&#34;&gt;Connection Options&lt;/a&gt; for a list of supported options.&lt;/li&gt;
-&lt;li&gt;Only the &lt;code&gt;mysql_native_password&lt;/code&gt; and &lt;code&gt;mysql_old_password&lt;/code&gt; authentication plugins are supported.&lt;/li&gt;
+&lt;li&gt;Some &lt;code&gt;MySql.Data&lt;/code&gt; connection string settings are not supported by this library. See &lt;a href=&#34;connection-options/&#34;&gt;Connection Options&lt;/a&gt; for a list of supported options.&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
@@ -681,6 +688,7 @@ public void SyncMethod()
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/StackExchange/dapper-dot-net&#34;&gt;Dapper&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/Dapper&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/nreco/data&#34;&gt;NReco.Data&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/NReco.Data&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/ServiceStack/ServiceStack.OrmLite&#34;&gt;ServiceStack.OrmLite&lt;/a&gt; (&lt;a href=&#34;https://www.myget.org/feed/servicestack/package/nuget/ServiceStack.OrmLite.MySqlConnector&#34;&gt;MyGet&lt;/a&gt;)&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/SimpleStack/simplestack.orm&#34;&gt;SimpleStack.Orm&lt;/a&gt; (&lt;a href=&#34;https://www.nuget.org/packages/SimpleStack.Orm.MySQLConnector&#34;&gt;NuGet&lt;/a&gt;)&lt;/li&gt;
 &lt;/ul&gt;
 
