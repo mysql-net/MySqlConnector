@@ -12,35 +12,49 @@ namespace MySqlConnector.Protocol.Payloads
 		public byte[] AuthPluginData { get; }
 		public string AuthPluginName { get; }
 
-		internal InitialHandshakePayload(ByteArrayReader reader)
+		public static InitialHandshakePayload Create(PayloadData payload)
 		{
+			var reader = new ByteArrayReader(payload.ArraySegment);
 			reader.ReadByte(c_protocolVersion);
-			ServerVersion = reader.ReadNullTerminatedByteString();
-			ConnectionId = reader.ReadInt32();
-			AuthPluginData = reader.ReadByteString(8);
+			var serverVersion = reader.ReadNullTerminatedByteString();
+			var connectionId = reader.ReadInt32();
+			var authPluginData = reader.ReadByteString(8);
+			string authPluginName = null;
 			reader.ReadByte(0);
-			var capabilityFlagsLow = reader.ReadUInt16();
+			var protocolCapabilities = (ProtocolCapabilities) reader.ReadUInt16();
 			if (reader.BytesRemaining > 0)
 			{
 				var charSet = (CharacterSet) reader.ReadByte();
-				ServerStatus status = (ServerStatus) reader.ReadInt16();
+				var status = (ServerStatus) reader.ReadInt16();
 				var capabilityFlagsHigh = reader.ReadUInt16();
-				ProtocolCapabilities = (ProtocolCapabilities) (capabilityFlagsHigh << 16 | capabilityFlagsLow);
+				protocolCapabilities |= (ProtocolCapabilities) (capabilityFlagsHigh << 16);
 				var authPluginDataLength = reader.ReadByte();
 				var unused = reader.ReadByteString(10);
-				if ((ProtocolCapabilities & ProtocolCapabilities.SecureConnection) != 0)
+				if ((protocolCapabilities & ProtocolCapabilities.SecureConnection) != 0)
 				{
 					var authPluginData2 = reader.ReadByteString(Math.Max(13, authPluginDataLength - 8));
-					var concatenated = new byte[AuthPluginData.Length + authPluginData2.Length];
-					Buffer.BlockCopy(AuthPluginData, 0, concatenated, 0, AuthPluginData.Length);
-					Buffer.BlockCopy(authPluginData2, 0, concatenated, AuthPluginData.Length, authPluginData2.Length);
-					AuthPluginData = concatenated;
+					var concatenated = new byte[authPluginData.Length + authPluginData2.Length];
+					Buffer.BlockCopy(authPluginData, 0, concatenated, 0, authPluginData.Length);
+					Buffer.BlockCopy(authPluginData2, 0, concatenated,authPluginData.Length, authPluginData2.Length);
+					authPluginData = concatenated;
 				}
-				if ((ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
-					AuthPluginName = Encoding.UTF8.GetString(reader.ReadNullOrEofTerminatedByteString());
+				if ((protocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
+					authPluginName = Encoding.UTF8.GetString(reader.ReadNullOrEofTerminatedByteString());
 			}
+
 			if (reader.BytesRemaining != 0)
 				throw new FormatException("Extra bytes at end of payload.");
+
+			return new InitialHandshakePayload(protocolCapabilities, serverVersion, connectionId, authPluginData, authPluginName);
+		}
+
+		private InitialHandshakePayload(ProtocolCapabilities protocolCapabilities, byte[] serverVersion, int connectionId, byte[] authPluginData, string authPluginName)
+		{
+			ProtocolCapabilities = protocolCapabilities;
+			ServerVersion = serverVersion;
+			ConnectionId = connectionId;
+			AuthPluginData = authPluginData;
+			AuthPluginName = authPluginName;
 		}
 
 		const byte c_protocolVersion = 0x0A;
