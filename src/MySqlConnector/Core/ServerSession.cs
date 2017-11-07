@@ -215,7 +215,7 @@ namespace MySqlConnector.Core
 
 			var payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			var reader = new ByteArrayReader(payload.ArraySegment.Array, payload.ArraySegment.Offset, payload.ArraySegment.Count);
-			var initialHandshake = new InitialHandshakePacket(reader);
+			var initialHandshake = new InitialHandshakePayload(reader);
 
 			// if PluginAuth is supported, then use the specified auth plugin; else, fall back to protocol capabilities to determine the auth type to use
 			string authPluginName;
@@ -245,7 +245,7 @@ namespace MySqlConnector.Core
 
 			m_supportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
 
-			var response = HandshakeResponse41Packet.Create(initialHandshake, cs, m_useCompression, m_supportsConnectionAttributes ? s_connectionAttributes : null);
+			var response = HandshakeResponse41Payload.Create(initialHandshake, cs, m_useCompression, m_supportsConnectionAttributes ? s_connectionAttributes : null);
 			payload = new PayloadData(new ArraySegment<byte>(response));
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -766,7 +766,7 @@ namespace MySqlConnector.Core
 
 			var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
 
-			var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Packet.InitSsl(serverCapabilities, cs, m_useCompression)));
+			var initSsl = new PayloadData(new ArraySegment<byte>(HandshakeResponse41Payload.InitSsl(serverCapabilities, cs, m_useCompression)));
 			await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			try

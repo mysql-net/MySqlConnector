@@ -4,7 +4,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal sealed class InitialHandshakePacket
+	internal sealed class InitialHandshakePayload
 	{
 		public ProtocolCapabilities ProtocolCapabilities { get; }
 		public byte[] ServerVersion { get; }
@@ -12,7 +12,7 @@ namespace MySqlConnector.Protocol.Payloads
 		public byte[] AuthPluginData { get; }
 		public string AuthPluginName { get; }
 
-		internal InitialHandshakePacket(ByteArrayReader reader)
+		internal InitialHandshakePayload(ByteArrayReader reader)
 		{
 			reader.ReadByte(c_protocolVersion);
 			ServerVersion = reader.ReadNullTerminatedByteString();
