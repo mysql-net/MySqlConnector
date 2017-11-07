@@ -1,7 +1,8 @@
 using System;
 using System.Net.Sockets;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Protocol.Serialization
 {
 	internal static class SerializationUtility
 	{

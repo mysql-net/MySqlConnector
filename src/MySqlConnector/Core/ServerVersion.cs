@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Globalization;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector.Core
 {
 	internal sealed class ServerVersion
 	{

@@ -1,6 +1,7 @@
 using System.Text;
+using MySqlConnector.Protocol.Serialization;
 
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Protocol.Payloads
 {
 	internal class AuthenticationMethodSwitchRequestPayload
 	{

@@ -1,6 +1,7 @@
-﻿using System;
+using System;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector.Core
 {
 	internal abstract class MySqlParser
 	{

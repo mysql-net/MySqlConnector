@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
+using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
 {

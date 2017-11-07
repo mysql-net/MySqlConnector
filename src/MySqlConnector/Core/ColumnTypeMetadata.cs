@@ -1,4 +1,6 @@
-namespace MySql.Data.MySqlClient.Types
+using MySql.Data.MySqlClient;
+
+namespace MySqlConnector.Core
 {
 	internal sealed class ColumnTypeMetadata
 	{

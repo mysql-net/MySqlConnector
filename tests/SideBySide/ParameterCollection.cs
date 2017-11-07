@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+using System;
 using MySql.Data.MySqlClient;
 using Xunit;
 

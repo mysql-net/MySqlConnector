@@ -1,6 +1,7 @@
 using Dapper;
 #if !BASELINE
-using MySql.Data.Serialization;
+using MySqlConnector.Protocol;
+using MySqlConnector.Protocol.Serialization;
 #endif
 using Xunit;
 

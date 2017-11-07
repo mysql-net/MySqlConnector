@@ -1,4 +1,4 @@
-﻿namespace MySql.Data.MySqlClient.Results
+namespace MySqlConnector.Core
 {
 	internal enum ResultSetState
 	{

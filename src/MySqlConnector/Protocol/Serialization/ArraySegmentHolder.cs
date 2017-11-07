@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace MySql.Data.Protocol.Serialization
+namespace MySqlConnector.Protocol.Serialization
 {
 	/// <summary>
 	/// <see cref="ArraySegmentHolder{T}"/> is a class that holds an instance of <see cref="ArraySegment{T}"/>.

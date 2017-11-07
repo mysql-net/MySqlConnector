@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector.Core
 {
 	internal static class ServerVersions
 	{

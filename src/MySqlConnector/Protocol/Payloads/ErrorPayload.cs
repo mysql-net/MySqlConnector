@@ -1,7 +1,8 @@
-﻿using System.Text;
+using System.Text;
 using MySql.Data.MySqlClient;
+using MySqlConnector.Protocol.Serialization;
 
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Protocol.Payloads
 {
 	// See https://dev.mysql.com/doc/internals/en/packet-ERR_Packet.html
 	internal class ErrorPayload

@@ -1,6 +1,6 @@
-﻿using System.Text;
+using System.Text;
 
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Protocol.Serialization
 {
     internal static class PayloadUtilities
     {

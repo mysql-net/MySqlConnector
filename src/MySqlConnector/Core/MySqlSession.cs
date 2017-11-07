@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -8,7 +7,6 @@ using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -16,9 +14,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
-using MySql.Data.Protocol.Serialization;
+using MySqlConnector.Protocol;
+using MySqlConnector.Protocol.Payloads;
+using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Core
 {
 	internal sealed class MySqlSession
 	{

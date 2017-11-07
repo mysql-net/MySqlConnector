@@ -1,6 +1,7 @@
 using System;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data
+namespace MySqlConnector.Protocol.Serialization
 {
 	internal struct ByteArrayReader
 	{

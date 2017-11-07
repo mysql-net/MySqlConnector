@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using MySql.Data.MySqlClient.Types;
+using MySql.Data.MySqlClient;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector.Core
 {
-    internal sealed class SchemaProvider
-    {
+	internal sealed class SchemaProvider
+	{
 		public SchemaProvider(MySqlConnection connection)
 		{
 			m_connection = connection;

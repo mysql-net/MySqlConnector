@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Protocol
 {
 	[Flags]
 	internal enum ProtocolCapabilities

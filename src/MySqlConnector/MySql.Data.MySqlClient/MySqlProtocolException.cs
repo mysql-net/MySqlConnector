@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
 {

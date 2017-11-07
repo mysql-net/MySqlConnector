@@ -1,8 +1,7 @@
 using System.Data;
 using System.Linq;
-using MySql.Data.MySqlClient.Types;
 
-namespace MySql.Data.MySqlClient.Caches
+namespace MySqlConnector.Core
 {
 	internal class CachedParameter
 	{

@@ -1,4 +1,7 @@
-namespace MySql.Data.Serialization
+using MySqlConnector.Core;
+using MySqlConnector.Protocol.Serialization;
+
+namespace MySqlConnector.Protocol.Payloads
 {
 	internal sealed class HandshakeResponse41Packet
 	{

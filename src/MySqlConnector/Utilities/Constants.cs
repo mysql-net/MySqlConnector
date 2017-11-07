@@ -1,4 +1,4 @@
-namespace MySql.Data
+namespace MySqlConnector.Utilities
 {
 	internal static class Constants
 	{

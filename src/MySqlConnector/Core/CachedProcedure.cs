@@ -5,9 +5,10 @@ using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MySql.Data.Protocol.Serialization;
+using MySql.Data.MySqlClient;
+using MySqlConnector.Protocol.Serialization;
 
-namespace MySql.Data.MySqlClient.Caches
+namespace MySqlConnector.Core
 {
 	internal class CachedProcedure
 	{

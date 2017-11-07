@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data.Protocol.Serialization
+namespace MySqlConnector.Protocol.Serialization
 {
 	internal sealed class StandardPayloadHandler : IPayloadHandler
 	{

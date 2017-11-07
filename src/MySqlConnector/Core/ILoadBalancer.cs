@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Core
 {
 	internal interface ILoadBalancer
 	{

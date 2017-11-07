@@ -1,10 +1,11 @@
-﻿using System.Data;
+using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
-using MySql.Data.Protocol.Serialization;
+using MySql.Data.MySqlClient;
+using MySqlConnector.Protocol.Serialization;
 
-namespace MySql.Data.MySqlClient.CommandExecutors
+namespace MySqlConnector.Core
 {
 	internal interface ICommandExecutor
 	{

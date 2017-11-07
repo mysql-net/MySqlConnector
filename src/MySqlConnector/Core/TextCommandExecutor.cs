@@ -1,14 +1,16 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.Common;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using MySql.Data.Protocol.Serialization;
-using MySql.Data.Serialization;
+using MySql.Data.MySqlClient;
+using MySqlConnector.Protocol;
+using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data.MySqlClient.CommandExecutors
+namespace MySqlConnector.Core
 {
 	internal class TextCommandExecutor : ICommandExecutor
 	{

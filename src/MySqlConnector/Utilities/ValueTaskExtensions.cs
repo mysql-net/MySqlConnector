@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace MySql.Data
+namespace MySqlConnector.Utilities
 {
 	internal static class ValueTaskExtensions
 	{

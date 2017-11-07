@@ -1,7 +1,7 @@
 using System;
 using System.Data;
 
-namespace MySql.Data.MySqlClient.Types
+namespace MySqlConnector.Core
 {
 	internal sealed class DbTypeMapping
 	{

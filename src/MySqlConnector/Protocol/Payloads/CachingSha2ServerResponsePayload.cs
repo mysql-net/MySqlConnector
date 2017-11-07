@@ -1,4 +1,6 @@
-namespace MySql.Data.Serialization
+using MySqlConnector.Protocol.Serialization;
+
+namespace MySqlConnector.Protocol.Payloads
 {
 	internal class CachingSha2ServerResponsePayload
 	{

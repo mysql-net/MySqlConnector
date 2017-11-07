@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector.Core
 {
 	[Flags]
 	internal enum StatementPreparerOptions

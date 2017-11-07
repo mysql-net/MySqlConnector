@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text;
 
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Protocol.Serialization
 {
 	internal sealed class PayloadWriter
 	{

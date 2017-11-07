@@ -1,4 +1,4 @@
-﻿// copied from https://github.com/mono/mono/blob/master/mcs/class/Mono.Posix/Mono.Unix/UnixEndPoint.cs
+// copied from https://github.com/mono/mono/blob/master/mcs/class/Mono.Posix/Mono.Unix/UnixEndPoint.cs
 
 //
 // Mono.Unix.UnixEndPoint: EndPoint derived class for AF_UNIX family sockets.
@@ -35,7 +35,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace MySql.Data
+namespace MySqlConnector.Utilities
 {
 	internal sealed class UnixEndPoint : EndPoint
 	{

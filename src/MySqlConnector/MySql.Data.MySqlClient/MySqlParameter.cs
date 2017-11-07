@@ -2,7 +2,8 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.IO;
-using MySql.Data.MySqlClient.Types;
+using MySqlConnector.Core;
+using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
 {

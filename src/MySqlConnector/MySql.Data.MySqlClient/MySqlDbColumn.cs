@@ -1,7 +1,9 @@
 using System;
 using System.Globalization;
-using MySql.Data.MySqlClient.Types;
-using MySql.Data.Serialization;
+using MySqlConnector.Core;
+using MySqlConnector.Protocol;
+using MySqlConnector.Protocol.Payloads;
+using MySqlConnector.Protocol.Serialization;
 
 #if !NETSTANDARD1_3 && !NETSTANDARD2_0
 namespace System.Data.Common

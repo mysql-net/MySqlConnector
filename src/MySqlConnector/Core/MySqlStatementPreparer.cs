@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using System.Data;
 using System.IO;
 using System.Text;
-using MySql.Data.Serialization;
+using MySql.Data.MySqlClient;
+using MySqlConnector.Protocol;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector.Core
 {
 	internal sealed class MySqlStatementPreparer
 	{

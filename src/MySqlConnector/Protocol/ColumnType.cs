@@ -1,4 +1,4 @@
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Protocol
 {
 	/// <summary>
 	/// See <a href="https://dev.mysql.com/doc/internals/en/com-query-response.html#column-type">MySQL documentation</a>.

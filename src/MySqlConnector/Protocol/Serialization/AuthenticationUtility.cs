@@ -1,9 +1,8 @@
 using System;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Protocol.Serialization
 {
 	internal static class AuthenticationUtility
 	{

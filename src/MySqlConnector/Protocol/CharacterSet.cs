@@ -1,4 +1,4 @@
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Protocol
 {
 	/// <summary>
 	/// MySQL character set codes.

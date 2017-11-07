@@ -1,4 +1,4 @@
-﻿namespace MySql.Data.Serialization
+namespace MySqlConnector.Core
 {
 	/// <summary>
 	/// Specifies whether to perform synchronous or asynchronous I/O.

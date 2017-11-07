@@ -1,8 +1,8 @@
-﻿using MySql.Data.MySqlClient;
-using MySql.Data.MySqlClient.Caches;
+using MySql.Data.MySqlClient;
+using MySqlConnector.Core;
 using Xunit;
 
-namespace MySql.Data.Tests
+namespace MySqlConnector.Tests
 {
 	public class NormalizeTests
 	{

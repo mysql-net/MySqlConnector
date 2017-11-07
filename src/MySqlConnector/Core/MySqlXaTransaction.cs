@@ -3,8 +3,9 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Transactions;
+using MySql.Data.MySqlClient;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector.Core
 {
 	internal sealed class MySqlXaTransaction : IEnlistmentNotification
 	{

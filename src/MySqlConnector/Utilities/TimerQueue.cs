@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace MySql.Data
+namespace MySqlConnector.Utilities
 {
 	internal sealed class TimerQueue
 	{

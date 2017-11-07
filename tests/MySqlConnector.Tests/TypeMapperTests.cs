@@ -1,7 +1,7 @@
 using System;
 using System.Data;
 using System.Linq;
-using MySql.Data.MySqlClient.Types;
+using MySqlConnector.Core;
 using Xunit;
 
 namespace MySql.Data.Tests

@@ -4,11 +4,13 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient.Types;
-using MySql.Data.Protocol.Serialization;
-using MySql.Data.Serialization;
+using MySql.Data.MySqlClient;
+using MySqlConnector.Protocol;
+using MySqlConnector.Protocol.Payloads;
+using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data.MySqlClient.Results
+namespace MySqlConnector.Core
 {
 	internal class ResultSet
 	{

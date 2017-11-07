@@ -1,6 +1,7 @@
-﻿using System;
+using System;
+using MySqlConnector.Protocol.Serialization;
 
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Protocol.Payloads
 {
 	internal class ChangeUserPayload
 	{

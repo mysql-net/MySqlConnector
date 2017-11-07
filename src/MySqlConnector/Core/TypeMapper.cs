@@ -2,9 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using MySql.Data.Serialization;
+using MySql.Data.MySqlClient;
+using MySqlConnector.Protocol;
+using MySqlConnector.Protocol.Payloads;
+using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data.MySqlClient.Types
+namespace MySqlConnector.Core
 {
 	internal sealed class TypeMapper
 	{

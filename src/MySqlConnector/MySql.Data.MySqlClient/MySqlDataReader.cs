@@ -8,9 +8,9 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient.Results;
-using MySql.Data.Protocol.Serialization;
-using MySql.Data.Serialization;
+using MySqlConnector.Core;
+using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
 {

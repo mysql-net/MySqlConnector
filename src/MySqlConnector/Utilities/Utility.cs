@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MySql.Data
+namespace MySqlConnector.Utilities
 {
 	internal static class Utility
 	{

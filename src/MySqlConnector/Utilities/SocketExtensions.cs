@@ -1,6 +1,6 @@
-﻿using System.Net.Sockets;
+using System.Net.Sockets;
 
-namespace MySql.Data
+namespace MySqlConnector.Utilities
 {
 	internal static class SocketExtensions
 	{

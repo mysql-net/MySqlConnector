@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MySql.Data
+namespace MySqlConnector.Utilities
 {
 	// See http://blogs.msdn.com/b/pfxteam/archive/2011/12/15/10248293.aspx
 	internal sealed class SocketAwaitable : INotifyCompletion

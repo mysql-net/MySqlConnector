@@ -1,9 +1,12 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Text;
-using MySql.Data.Serialization;
+using MySql.Data.MySqlClient;
+using MySqlConnector.Protocol;
+using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data.MySqlClient.Results
+namespace MySqlConnector.Core
 {
 	internal class Row : IDisposable
 	{

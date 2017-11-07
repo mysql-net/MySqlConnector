@@ -1,7 +1,7 @@
-﻿using System;
 using System.Text;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Protocol.Payloads
 {
 	// See https://dev.mysql.com/doc/internals/en/com-query-response.html#local-infile-request
 	internal class LocalInfilePayload

@@ -3,8 +3,9 @@ using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient.CommandExecutors;
-using MySql.Data.Protocol.Serialization;
+using MySqlConnector.Core;
+using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
 {

@@ -1,6 +1,7 @@
-﻿using System;
+using System;
+using MySqlConnector.Protocol.Payloads;
 
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Protocol
 {
 	internal struct PayloadData
 	{

@@ -1,5 +1,5 @@
 using System.Linq;
-using MySql.Data.Serialization;
+using MySqlConnector.Core;
 using Xunit;
 
 namespace MySqlConnector.Tests

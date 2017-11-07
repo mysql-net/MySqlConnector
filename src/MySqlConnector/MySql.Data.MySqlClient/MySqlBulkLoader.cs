@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MySql.Data.Protocol.Serialization;
+using MySqlConnector.Protocol.Serialization;
 
 namespace MySql.Data.MySqlClient
 {

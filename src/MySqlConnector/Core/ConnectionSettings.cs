@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using MySql.Data.MySqlClient;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data.Serialization
+namespace MySqlConnector.Core
 {
 	internal sealed class ConnectionSettings
 	{
