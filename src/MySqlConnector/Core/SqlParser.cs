@@ -3,7 +3,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core
 {
-	internal abstract class MySqlParser
+	internal abstract class SqlParser
 	{
 		public int Parse(string sql)
 		{

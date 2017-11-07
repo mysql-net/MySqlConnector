@@ -39,7 +39,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private sealed class ParameterSqlParser : MySqlParser
+		private sealed class ParameterSqlParser : SqlParser
 		{
 			public ParameterSqlParser(MySqlStatementPreparer preparer, BinaryWriter writer)
 			{
