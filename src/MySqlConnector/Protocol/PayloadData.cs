@@ -5,10 +5,9 @@ namespace MySqlConnector.Protocol
 {
 	internal struct PayloadData
 	{
-		public PayloadData(ArraySegment<byte> data)
-		{
-			ArraySegment = data;
-		}
+		public PayloadData(byte[] data) => ArraySegment = new ArraySegment<byte>(data);
+
+		public PayloadData(ArraySegment<byte> data) => ArraySegment = data;
 
 		public void ThrowIfError()
 		{

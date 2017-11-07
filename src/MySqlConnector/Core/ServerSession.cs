@@ -313,20 +313,20 @@ namespace MySqlConnector.Core
 			case "mysql_native_password":
 				AuthPluginData = switchRequest.Data;
 				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
-				payload = new PayloadData(new ArraySegment<byte>(hashedPassword));
+				payload = new PayloadData(hashedPassword);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			case "mysql_clear_password":
 				if (!m_isSecureConnection)
 					throw new MySqlException("Authentication method '{0}' requires a secure connection.".FormatInvariant(switchRequest.Name));
-				payload = new PayloadData(new ArraySegment<byte>(Encoding.UTF8.GetBytes(cs.Password)));
+				payload = new PayloadData(Encoding.UTF8.GetBytes(cs.Password));
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			case "caching_sha2_password":
 				var scrambleBytes = AuthenticationUtility.CreateScrambleResponse(Utility.TrimZeroByte(switchRequest.Data), cs.Password);
-				payload = new PayloadData(new ArraySegment<byte>(scrambleBytes));
+				payload = new PayloadData(scrambleBytes);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
@@ -366,7 +366,7 @@ namespace MySqlConnector.Core
 			Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
 
 			// send plaintext password
-			var payload = new PayloadData(new ArraySegment<byte>(passwordBytes));
+			var payload = new PayloadData(passwordBytes);
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
@@ -404,7 +404,7 @@ namespace MySqlConnector.Core
 				// encrypt with RSA public key
 				var padding = switchRequest.Name == "caching_sha2_password" ? RSAEncryptionPadding.Pkcs1 : RSAEncryptionPadding.OaepSHA1;
 				var encryptedPassword = rsa.Encrypt(passwordBytes, padding);
-				var payload = new PayloadData(new ArraySegment<byte>(encryptedPassword));
+				var payload = new PayloadData(encryptedPassword);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
@@ -429,7 +429,7 @@ namespace MySqlConnector.Core
 			{
 				// request the RSA public key
 				var payloadContent = switchRequestName == "caching_sha2_password" ? (byte) 0x02 : (byte) 0x01;
-				await SendReplyAsync(new PayloadData(new ArraySegment<byte>(new byte[] { payloadContent }, 0, 1)), ioBehavior, cancellationToken).ConfigureAwait(false);
+				await SendReplyAsync(new PayloadData(new[] { payloadContent }), ioBehavior, cancellationToken).ConfigureAwait(false);
 				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload);
 				return Encoding.ASCII.GetString(publicKeyPayload.Data);

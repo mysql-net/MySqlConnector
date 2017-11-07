@@ -6,7 +6,7 @@ namespace MySqlConnector.Protocol.Payloads
     {
         public static PayloadData Create()
         {
-            return new PayloadData(new ArraySegment<byte>(new byte[] { }));
+            return new PayloadData(new byte[0]);
         }
     }
 }

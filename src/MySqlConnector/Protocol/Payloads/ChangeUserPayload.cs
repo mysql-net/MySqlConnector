@@ -20,7 +20,7 @@ namespace MySqlConnector.Protocol.Payloads
 			if (connectionAttributes != null)
 				writer.Write(connectionAttributes);
 
-			return new PayloadData(new ArraySegment<byte>(writer.ToBytes()));
+			return new PayloadData(writer.ToBytes());
 		}
 	}
 }

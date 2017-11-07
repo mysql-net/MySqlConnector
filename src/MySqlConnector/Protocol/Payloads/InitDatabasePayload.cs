@@ -13,7 +13,7 @@ namespace MySqlConnector.Protocol.Payloads
 			writer.WriteByte((byte) CommandKind.InitDatabase);
 			writer.Write(Encoding.UTF8.GetBytes(databaseName));
 
-			return new PayloadData(new ArraySegment<byte>(writer.ToBytes()));
+			return new PayloadData(writer.ToBytes());
 		}
 	}
 }
