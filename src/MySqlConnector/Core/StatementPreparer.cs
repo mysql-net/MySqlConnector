@@ -8,9 +8,9 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core
 {
-	internal sealed class MySqlStatementPreparer
+	internal sealed class StatementPreparer
 	{
-		public MySqlStatementPreparer(string commandText, MySqlParameterCollection parameters, StatementPreparerOptions options)
+		public StatementPreparer(string commandText, MySqlParameterCollection parameters, StatementPreparerOptions options)
 		{
 			m_commandText = commandText;
 			m_parameters = parameters;
@@ -41,7 +41,7 @@ namespace MySqlConnector.Core
 
 		private sealed class ParameterSqlParser : SqlParser
 		{
-			public ParameterSqlParser(MySqlStatementPreparer preparer, BinaryWriter writer)
+			public ParameterSqlParser(StatementPreparer preparer, BinaryWriter writer)
 			{
 				m_preparer = preparer;
 				m_writer = writer;
@@ -87,7 +87,7 @@ namespace MySqlConnector.Core
 				m_writer.WriteUtf8(value, offset, length);
 			}
 
-			readonly MySqlStatementPreparer m_preparer;
+			readonly StatementPreparer m_preparer;
 			readonly BinaryWriter m_writer;
 			int m_currentParameterIndex;
 			int m_lastIndex;

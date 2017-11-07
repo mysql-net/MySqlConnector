@@ -86,7 +86,7 @@ namespace MySqlConnector.Core
 				statementPreparerOptions |= StatementPreparerOptions.OldGuids;
 			if (m_command.CommandType == CommandType.StoredProcedure)
 				statementPreparerOptions |= StatementPreparerOptions.AllowOutputParameters;
-			var preparer = new MySqlStatementPreparer(commandText, parameterCollection, statementPreparerOptions);
+			var preparer = new StatementPreparer(commandText, parameterCollection, statementPreparerOptions);
 			return new PayloadData(preparer.ParseAndBindParameters());
 		}
 
