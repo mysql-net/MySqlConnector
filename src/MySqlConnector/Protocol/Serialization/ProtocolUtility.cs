@@ -9,7 +9,7 @@ namespace MySqlConnector.Protocol.Serialization
 {
 	internal static class ProtocolUtility
 	{
-		public static ValueTask<Packet> ReadPacketAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+		private static ValueTask<Packet> ReadPacketAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
 			var headerBytesTask = bufferedByteReader.ReadBytesAsync(byteHandler, 4, ioBehavior);
 			if (headerBytesTask.IsCompleted)
@@ -131,7 +131,7 @@ namespace MySqlConnector.Protocol.Serialization
 			}
 		}
 
-		public static ValueTask<int> WritePacketAsync(IByteHandler byteHandler, int sequenceNumber, ArraySegment<byte> contents, IOBehavior ioBehavior)
+		private static ValueTask<int> WritePacketAsync(IByteHandler byteHandler, int sequenceNumber, ArraySegment<byte> contents, IOBehavior ioBehavior)
 		{
 			var bufferLength = contents.Count + 4;
 			var buffer = ArrayPool<byte>.Shared.Rent(bufferLength);
