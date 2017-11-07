@@ -10,7 +10,7 @@ before_test:
 test_script:
 - ps: .\.ci\test.ps1
 after_test:
-- cmd: dotnet pack src\MySqlConnector\MySqlConnector.csproj --configuration Release
+- cmd: dotnet pack src\MySqlConnector\MySqlConnector.csproj -c Release -p:SourceLinkCreate=true -p:SourceLinkTest=true
 notifications:
 - provider: Slack
   incoming_webhook:
