@@ -2,7 +2,7 @@ image: Visual Studio 2017
 services:
 - mysql
 build_script:
-- ps: .\.ci\build.ps1
+- dotnet --info
 before_test:
 - cmd: |-
     "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql.exe" -u root --password=Password12! < .ci\server\init.sql
