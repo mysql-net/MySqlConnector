@@ -268,7 +268,7 @@ namespace MySql.Data.MySqlClient
 
 		internal MySqlCommand Command { get; private set; }
 		internal MySqlConnection Connection => Command?.Connection;
-		internal MySqlSession Session => Command?.Connection.Session;
+		internal ServerSession Session => Command?.Connection.Session;
 
 		internal static async Task<MySqlDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, IOBehavior ioBehavior)
 		{

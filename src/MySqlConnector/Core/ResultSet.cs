@@ -328,7 +328,7 @@ namespace MySqlConnector.Core
 		public Exception ReadResultSetHeaderException { get; private set; }
 		public MySqlCommand Command => DataReader.Command;
 		public MySqlConnection Connection => DataReader.Connection;
-		public MySqlSession Session => DataReader.Session;
+		public ServerSession Session => DataReader.Session;
 
 		public ResultSetState BufferState { get; private set; }
 		public ColumnDefinitionPayload[] ColumnDefinitions { get; private set; }

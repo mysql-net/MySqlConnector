@@ -21,14 +21,14 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core
 {
-	internal sealed class MySqlSession
+	internal sealed class ServerSession
 	{
-		public MySqlSession()
+		public ServerSession()
 			: this(null, 0, 0)
 		{
 		}
 
-		public MySqlSession(ConnectionPool pool, int poolGeneration, int id)
+		public ServerSession(ConnectionPool pool, int poolGeneration, int id)
 		{
 			m_lock = new object();
 			m_payloadCache = new ArraySegmentHolder<byte>();
@@ -537,9 +537,9 @@ namespace MySqlConnector.Core
 			lock (m_lock)
 			{
 				if (m_state == State.Closed)
-					throw new ObjectDisposedException(nameof(MySqlSession));
+					throw new ObjectDisposedException(nameof(ServerSession));
 				if (m_state != State.Connected && m_state != State.Querying && m_state != State.CancelingQuery && m_state != State.ClearingPendingCancellation && m_state != State.Closing)
-					throw new InvalidOperationException("MySqlSession is not connected.");
+					throw new InvalidOperationException("ServerSession is not connected.");
 			}
 		}
 
@@ -895,7 +895,7 @@ namespace MySqlConnector.Core
 			attributesWriter.WriteLengthEncodedString("_client_name");
 			attributesWriter.WriteLengthEncodedString("MySqlConnector");
 			attributesWriter.WriteLengthEncodedString("_client_version");
-			attributesWriter.WriteLengthEncodedString(typeof(MySqlSession).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion);
+			attributesWriter.WriteLengthEncodedString(typeof(ServerSession).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion);
 			try
 			{
 				Utility.GetOSDetails(out var os, out var osDescription, out var architecture);

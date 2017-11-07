@@ -253,7 +253,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		internal MySqlSession Session
+		internal ServerSession Session
 		{
 			get
 			{
@@ -340,7 +340,7 @@ namespace MySql.Data.MySqlClient
 			m_activeReader = null;
 		}
 
-		private async Task<MySqlSession> CreateSessionAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async Task<ServerSession> CreateSessionAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			var connectTimeout = m_connectionSettings.ConnectionTimeout == 0 ? Timeout.InfiniteTimeSpan : TimeSpan.FromMilliseconds(m_connectionSettings.ConnectionTimeoutMilliseconds);
 			using (var timeoutSource = new CancellationTokenSource(connectTimeout))
@@ -361,7 +361,7 @@ namespace MySql.Data.MySqlClient
 						var loadBalancer = m_connectionSettings.LoadBalance == MySqlLoadBalance.Random && m_connectionSettings.HostNames.Count > 1 ?
 							RandomLoadBalancer.Instance : InOrderLoadBalancer.Instance;
 
-						var session = new MySqlSession();
+						var session = new ServerSession();
 						await session.ConnectAsync(m_connectionSettings, loadBalancer, ioBehavior, linkedSource.Token).ConfigureAwait(false);
 						return session;
 					}
@@ -438,7 +438,7 @@ namespace MySql.Data.MySqlClient
 
 		MySqlConnectionStringBuilder m_connectionStringBuilder;
 		ConnectionSettings m_connectionSettings;
-		MySqlSession m_session;
+		ServerSession m_session;
 		ConnectionState m_connectionState;
 		bool m_hasBeenOpened;
 		bool m_isDisposed;

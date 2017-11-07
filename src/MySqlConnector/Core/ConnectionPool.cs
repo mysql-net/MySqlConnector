@@ -11,7 +11,7 @@ namespace MySqlConnector.Core
 {
 	internal sealed class ConnectionPool
 	{
-		public async Task<MySqlSession> GetSessionAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async Task<ServerSession> GetSessionAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -33,7 +33,7 @@ namespace MySqlConnector.Core
 			try
 			{
 				// check for a waiting session
-				MySqlSession session = null;
+				ServerSession session = null;
 				lock (m_sessions)
 				{
 					if (m_sessions.Count > 0)
@@ -79,7 +79,7 @@ namespace MySqlConnector.Core
 				}
 
 				// create a new session
-				session = new MySqlSession(this, m_generation, Interlocked.Increment(ref m_lastId));
+				session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastId));
 				await session.ConnectAsync(m_connectionSettings, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
 				AdjustHostConnectionCount(session, 1);
 				session.OwningConnection = new WeakReference<MySqlConnection>(connection);
@@ -94,7 +94,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private bool SessionIsHealthy(MySqlSession session)
+		private bool SessionIsHealthy(ServerSession session)
 		{
 			if (!session.IsConnected)
 				return false;
@@ -109,7 +109,7 @@ namespace MySqlConnector.Core
 			return true;
 		}
 
-		public void Return(MySqlSession session)
+		public void Return(ServerSession session)
 		{
 			try
 			{
@@ -150,13 +150,13 @@ namespace MySqlConnector.Core
 		}
 
 		/// <summary>
-		/// Examines all the <see cref="MySqlSession"/> objects in <see cref="m_leasedSessions"/> to determine if any
+		/// Examines all the <see cref="ServerSession"/> objects in <see cref="m_leasedSessions"/> to determine if any
 		/// have an owning <see cref="MySqlConnection"/> that has been garbage-collected. If so, assumes that the connection 
 		/// was not properly disposed and returns the session to the pool.
 		/// </summary>
 		private void RecoverLeakedSessions()
 		{
-			var recoveredSessions = new List<MySqlSession>();
+			var recoveredSessions = new List<ServerSession>();
 			lock (m_leasedSessions)
 			{
 				m_lastRecoveryTime = unchecked((uint) Environment.TickCount);
@@ -170,7 +170,7 @@ namespace MySqlConnector.Core
 				session.ReturnToPool();
 		}
 
-		private async Task CleanPoolAsync(IOBehavior ioBehavior, Func<MySqlSession, bool> shouldCleanFn, bool respectMinPoolSize, CancellationToken cancellationToken)
+		private async Task CleanPoolAsync(IOBehavior ioBehavior, Func<ServerSession, bool> shouldCleanFn, bool respectMinPoolSize, CancellationToken cancellationToken)
 		{
 			// synchronize access to this method as only one clean routine should be run at a time
 			if (ioBehavior == IOBehavior.Asynchronous)
@@ -204,7 +204,7 @@ namespace MySqlConnector.Core
 					try
 					{
 						// check for a waiting session
-						MySqlSession session = null;
+						ServerSession session = null;
 						lock (m_sessions)
 						{
 							if (m_sessions.Count > 0)
@@ -267,7 +267,7 @@ namespace MySqlConnector.Core
 
 				try
 				{
-					var session = new MySqlSession(this, m_generation, Interlocked.Increment(ref m_lastId));
+					var session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastId));
 					await session.ConnectAsync(m_connectionSettings, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
 					AdjustHostConnectionCount(session, 1);
 					lock (m_sessions)
@@ -313,8 +313,8 @@ namespace MySqlConnector.Core
 			m_generation = 0;
 			m_cleanSemaphore = new SemaphoreSlim(1);
 			m_sessionSemaphore = new SemaphoreSlim(cs.MaximumPoolSize);
-			m_sessions = new LinkedList<MySqlSession>();
-			m_leasedSessions = new Dictionary<int, MySqlSession>();
+			m_sessions = new LinkedList<ServerSession>();
+			m_leasedSessions = new Dictionary<int, ServerSession>();
 			if (cs.LoadBalance == MySqlLoadBalance.FewestConnections)
 			{
 				m_hostSessions = new Dictionary<string, int>();
@@ -328,7 +328,7 @@ namespace MySqlConnector.Core
 				(ILoadBalancer) new RoundRobinLoadBalancer();
 		}
 
-		private void AdjustHostConnectionCount(MySqlSession session, int delta)
+		private void AdjustHostConnectionCount(ServerSession session, int delta)
 		{
 			if (m_hostSessions != null)
 			{
@@ -375,9 +375,9 @@ namespace MySqlConnector.Core
 		int m_generation;
 		readonly SemaphoreSlim m_cleanSemaphore;
 		readonly SemaphoreSlim m_sessionSemaphore;
-		readonly LinkedList<MySqlSession> m_sessions;
+		readonly LinkedList<ServerSession> m_sessions;
 		readonly ConnectionSettings m_connectionSettings;
-		readonly Dictionary<int, MySqlSession> m_leasedSessions;
+		readonly Dictionary<int, ServerSession> m_leasedSessions;
 		readonly ILoadBalancer m_loadBalancer;
 		readonly Dictionary<string, int> m_hostSessions;
 		int m_lastId;
