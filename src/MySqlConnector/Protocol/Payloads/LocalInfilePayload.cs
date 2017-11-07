@@ -4,7 +4,7 @@ using MySqlConnector.Utilities;
 namespace MySqlConnector.Protocol.Payloads
 {
 	// See https://dev.mysql.com/doc/internals/en/com-query-response.html#local-infile-request
-	internal class LocalInfilePayload
+	internal sealed class LocalInfilePayload
 	{
 		public const byte Signature = 0xFB;
 

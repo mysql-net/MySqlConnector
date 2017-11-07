@@ -2,7 +2,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal class AuthenticationMoreDataPayload
+	internal sealed class AuthenticationMoreDataPayload
 	{
 		public byte[] Data { get; }
 

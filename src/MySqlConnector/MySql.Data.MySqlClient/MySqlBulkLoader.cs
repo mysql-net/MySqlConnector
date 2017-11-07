@@ -9,7 +9,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySql.Data.MySqlClient
 {
-    public class MySqlBulkLoader
+    public sealed class MySqlBulkLoader
     {
         private const string defaultFieldTerminator = "\t";
         private const string defaultLineTerminator = "\n";

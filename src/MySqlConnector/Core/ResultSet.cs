@@ -12,7 +12,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core
 {
-	internal class ResultSet
+	internal sealed class ResultSet
 	{
 		public ResultSet(MySqlDataReader dataReader)
 		{

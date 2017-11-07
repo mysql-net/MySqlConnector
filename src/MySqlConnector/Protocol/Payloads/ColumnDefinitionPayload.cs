@@ -5,7 +5,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal class ColumnDefinitionPayload
+	internal sealed class ColumnDefinitionPayload
 	{
 		public string Name
 		{

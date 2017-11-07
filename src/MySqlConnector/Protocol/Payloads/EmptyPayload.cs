@@ -2,7 +2,7 @@ using System;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-    internal class EmptyPayload
+    internal sealed class EmptyPayload
     {
         public static PayloadData Create()
         {

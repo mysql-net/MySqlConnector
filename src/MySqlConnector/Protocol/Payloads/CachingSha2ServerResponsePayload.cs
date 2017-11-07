@@ -2,7 +2,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal class CachingSha2ServerResponsePayload
+	internal sealed class CachingSha2ServerResponsePayload
 	{
 		public const byte Signature = 0x01;
 

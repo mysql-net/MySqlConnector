@@ -7,7 +7,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySql.Data.MySqlClient
 {
-	public class MySqlTransaction : DbTransaction
+	public sealed class MySqlTransaction : DbTransaction
 	{
 		public override void Commit() =>
 			CommitAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();

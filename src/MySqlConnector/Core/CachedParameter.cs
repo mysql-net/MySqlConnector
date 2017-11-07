@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace MySqlConnector.Core
 {
-	internal class CachedParameter
+	internal sealed class CachedParameter
 	{
 		public CachedParameter(int ordinalPosition, string mode, string name, string dataType, bool unsigned)
 		{

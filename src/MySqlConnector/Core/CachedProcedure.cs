@@ -10,7 +10,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Core
 {
-	internal class CachedProcedure
+	internal sealed class CachedProcedure
 	{
 		internal static async Task<CachedProcedure> FillAsync(IOBehavior ioBehavior, MySqlConnection connection, string schema, string component, CancellationToken cancellationToken)
 		{
@@ -51,7 +51,7 @@ namespace MySqlConnector.Core
 			return new CachedProcedure(schema, component, parameters.AsReadOnly());
 		}
 
-		protected CachedProcedure(string schema, string component, ReadOnlyCollection<CachedParameter> parameters)
+		private CachedProcedure(string schema, string component, ReadOnlyCollection<CachedParameter> parameters)
 		{
 			m_schema = schema;
 			m_component = component;

@@ -5,7 +5,7 @@ using MySqlConnector.Protocol.Serialization;
 namespace MySqlConnector.Protocol.Payloads
 {
 	// See https://dev.mysql.com/doc/internals/en/packet-ERR_Packet.html
-	internal class ErrorPayload
+	internal sealed class ErrorPayload
 	{
 		public int ErrorCode { get; }
 		public string State { get; }

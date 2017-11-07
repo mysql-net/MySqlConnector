@@ -9,7 +9,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Core
 {
-	internal class StoredProcedureCommandExecutor : TextCommandExecutor
+	internal sealed class StoredProcedureCommandExecutor : TextCommandExecutor
 	{
 
 		internal StoredProcedureCommandExecutor(MySqlCommand command)

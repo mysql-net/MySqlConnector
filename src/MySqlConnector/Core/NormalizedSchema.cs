@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace MySqlConnector.Core
 {
-	internal class NormalizedSchema
+	internal sealed class NormalizedSchema
 	{
 		private const string ReQuoted = @"`((?:[^`]|``)+)`";
 		private const string ReUnQuoted = @"([^\.`]+)";

@@ -3,7 +3,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal class AuthenticationMethodSwitchRequestPayload
+	internal sealed class AuthenticationMethodSwitchRequestPayload
 	{
 		public string Name { get; }
 		public byte[] Data { get; }

@@ -8,7 +8,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core
 {
-	internal class Row : IDisposable
+	internal sealed class Row : IDisposable
 	{
 		public Row(ResultSet resultSet) => ResultSet = resultSet;
 
