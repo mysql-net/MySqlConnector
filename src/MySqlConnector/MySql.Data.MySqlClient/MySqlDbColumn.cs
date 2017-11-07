@@ -48,7 +48,7 @@ namespace MySql.Data.MySqlClient
 
 			var type = columnTypeMetadata.DbTypeMapping.ClrType;
 			var columnSize = type == typeof(string) || type == typeof(Guid) ?
-				column.ColumnLength / SerializationUtility.GetBytesPerCharacter(column.CharacterSet) :
+				column.ColumnLength / ProtocolUtility.GetBytesPerCharacter(column.CharacterSet) :
 				column.ColumnLength;
 
 			AllowDBNull = (column.ColumnFlags & ColumnFlags.NotNull) == 0;

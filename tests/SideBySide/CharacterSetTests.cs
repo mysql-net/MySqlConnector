@@ -25,7 +25,7 @@ namespace SideBySide
 					var characterSet = (CharacterSet) reader.GetInt32(0);
 					var maxLength = reader.GetInt32(1);
 
-					Assert.Equal(maxLength, SerializationUtility.GetBytesPerCharacter(characterSet));
+					Assert.Equal(maxLength, ProtocolUtility.GetBytesPerCharacter(characterSet));
 				}
 			}
 		}

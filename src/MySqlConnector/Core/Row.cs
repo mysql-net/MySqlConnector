@@ -272,7 +272,7 @@ namespace MySqlConnector.Core
 					return bitValue;
 
 				case ColumnType.String:
-					if (!Connection.OldGuids && columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
+					if (!Connection.OldGuids && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
 						return Guid.Parse(Encoding.UTF8.GetString(data));
 					goto case ColumnType.VarString;
 

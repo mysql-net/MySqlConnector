@@ -193,7 +193,7 @@ namespace MySqlConnector.Core
 				return MySqlDbType.Bit;
 
 			case ColumnType.String:
-				if (!oldGuids && columnDefinition.ColumnLength / SerializationUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
+				if (!oldGuids && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
 					return MySqlDbType.Guid;
 				if ((columnDefinition.ColumnFlags & ColumnFlags.Enum) != 0)
 					return MySqlDbType.Enum;

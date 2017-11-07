@@ -279,7 +279,7 @@ namespace MySqlConnector.Core
 
 			var mySqlDbType = ColumnTypes[ordinal];
 			if (mySqlDbType == MySqlDbType.String)
-				return string.Format(CultureInfo.InvariantCulture, "CHAR({0})", ColumnDefinitions[ordinal].ColumnLength / SerializationUtility.GetBytesPerCharacter(ColumnDefinitions[ordinal].CharacterSet));
+				return string.Format(CultureInfo.InvariantCulture, "CHAR({0})", ColumnDefinitions[ordinal].ColumnLength / ProtocolUtility.GetBytesPerCharacter(ColumnDefinitions[ordinal].CharacterSet));
 			return TypeMapper.Instance.GetColumnTypeMetadata(mySqlDbType).SimpleDataTypeName;
 		}
 
