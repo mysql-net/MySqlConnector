@@ -344,6 +344,22 @@
     Due to limitations in .NET Core, Unix-based Operating Systems will always use the OS Default keepalive settings.</td>
   </tr>
   <tr>
+    <td>Load Balance, LoadBalance</td>
+    <td>RoundRobin</td>
+    <td><p>The load-balancing strategy to use when <code>Host</code> contains multiple, comma-delimited, host names.
+      The options include:</p>
+      <dl>
+        <dt>RoundRobin</dt>
+        <dd>Each new connection opened for this connection pool uses the next host name (sequentially with wraparound). Requires <code>Pooling=True</code>. This is the default if <code>Pooling=True</code>.</dd>
+        <dt>InOrder</dt>
+        <dd>Each new connection tries the hosts in order, starting with the first one. This is the default if <code>Pooling=False</code>.</dd>
+        <dt>Random</dt>
+        <dd>Servers are tried in a random order.</dd>
+        <dt>FewestConnections</dt>
+        <dd>Servers are tried in ascending order of number of currently-open connections in this connection pool. Requires <code>Pooling=True</code>.
+      </dl>
+  </tr>
+  <tr>
     <td>Old Guids, OldGuids</td>
     <td>false</td>
     <td> The backend representation of a GUID type was changed from BINARY(16) to CHAR(36). This was done to allow developers to use the server function UUID() to populate a GUID table - UUID() generates a 36-character string. Developers of older applications can add 'Old Guids=true' to the connection string to use a GUID of data type BINARY(16).</td>

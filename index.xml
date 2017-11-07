@@ -424,6 +424,12 @@ please refer to its documentation.&lt;/p&gt;
     &lt;td&gt;MySqlConnector takes an extra command to reset pooled connections by default so that the connection is always in a known state&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
+    &lt;td&gt;&lt;code&gt;LoadBalance&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;Default is &lt;code&gt;RoundRobin&lt;/code&gt;&lt;/td&gt;
+    &lt;td&gt;(not configurable, effective default is &lt;code&gt;InOrder&lt;/code&gt;)&lt;/td&gt;
+    &lt;td&gt;Connector/NET currently has [a bug](https://bugs.mysql.com/bug.php?id=81650) that prevents multiple host names being used.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
     &lt;td&gt;&lt;code&gt;ServerRSAPublicKeyFile&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;(no default)&lt;/td&gt;
     &lt;td&gt;(not configurable)&lt;/td&gt;
@@ -1275,6 +1281,22 @@ please refer to its documentation.&lt;/p&gt;
     &lt;td&gt;TCP Keepalive idle time.  A value of 0 indicates that the OS Default keepalive settings are used.
     On Windows, a value greater than 0 is the idle connection time, measured in seconds, before the first keepalive packet is sent.
     Due to limitations in .NET Core, Unix-based Operating Systems will always use the OS Default keepalive settings.&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;Load Balance, LoadBalance&lt;/td&gt;
+    &lt;td&gt;RoundRobin&lt;/td&gt;
+    &lt;td&gt;&lt;p&gt;The load-balancing strategy to use when &lt;code&gt;Host&lt;/code&gt; contains multiple, comma-delimited, host names.
+      The options include:&lt;/p&gt;
+      &lt;dl&gt;
+        &lt;dt&gt;RoundRobin&lt;/dt&gt;
+        &lt;dd&gt;Each new connection opened for this connection pool uses the next host name (sequentially with wraparound). Requires &lt;code&gt;Pooling=True&lt;/code&gt;. This is the default if &lt;code&gt;Pooling=True&lt;/code&gt;.&lt;/dd&gt;
+        &lt;dt&gt;InOrder&lt;/dt&gt;
+        &lt;dd&gt;Each new connection tries the hosts in order, starting with the first one. This is the default if &lt;code&gt;Pooling=False&lt;/code&gt;.&lt;/dd&gt;
+        &lt;dt&gt;Random&lt;/dt&gt;
+        &lt;dd&gt;Servers are tried in a random order.&lt;/dd&gt;
+        &lt;dt&gt;FewestConnections&lt;/dt&gt;
+        &lt;dd&gt;Servers are tried in ascending order of number of currently-open connections in this connection pool. Requires &lt;code&gt;Pooling=True&lt;/code&gt;.
+      &lt;/dl&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
     &lt;td&gt;Old Guids, OldGuids&lt;/td&gt;
