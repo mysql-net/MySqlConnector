@@ -3,8 +3,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data.Protocol.Serialization
+namespace MySqlConnector.Protocol.Serialization
 {
 	internal sealed class StreamByteHandler : IByteHandler
 	{

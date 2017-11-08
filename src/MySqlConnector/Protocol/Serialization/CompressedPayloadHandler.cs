@@ -3,9 +3,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
-using MySql.Data.Serialization;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data.Protocol.Serialization
+namespace MySqlConnector.Protocol.Serialization
 {
 	internal sealed class CompressedPayloadHandler : IPayloadHandler
 	{

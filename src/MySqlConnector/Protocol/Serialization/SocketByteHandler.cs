@@ -2,8 +2,9 @@ using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using MySqlConnector.Utilities;
 
-namespace MySql.Data.Protocol.Serialization
+namespace MySqlConnector.Protocol.Serialization
 {
 	internal sealed class SocketByteHandler : IByteHandler
 	{

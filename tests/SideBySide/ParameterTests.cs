@@ -1,16 +1,11 @@
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace SideBySide
 {
-    public class ParameterTests
-    {
+	public class ParameterTests
+	{
 		[Theory]
 		[InlineData(DbType.Byte, MySqlDbType.UByte)]
 		[InlineData(DbType.SByte, MySqlDbType.Byte)]

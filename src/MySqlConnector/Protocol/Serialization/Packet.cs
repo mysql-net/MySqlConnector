@@ -1,6 +1,6 @@
 using System;
 
-namespace MySql.Data.Protocol.Serialization
+namespace MySqlConnector.Protocol.Serialization
 {
 	internal struct Packet
 	{

@@ -1,8 +1,8 @@
-using MySql.Data.MySqlClient;
 using System;
 using System.Data;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace SideBySide

@@ -1,4 +1,3 @@
-using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace SideBySide

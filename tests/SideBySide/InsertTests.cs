@@ -1,10 +1,10 @@
 using System;
-using System.Linq;
-using MySql.Data.MySqlClient;
-using Dapper;
-using Xunit;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
+using MySql.Data.MySqlClient;
+using Xunit;
 
 namespace SideBySide
 {

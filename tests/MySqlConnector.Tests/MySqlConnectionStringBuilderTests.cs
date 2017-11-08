@@ -2,7 +2,7 @@ using System;
 using MySql.Data.MySqlClient;
 using Xunit;
 
-namespace MySql.Data.Tests
+namespace MySqlConnector.Tests
 {
 	public class MySqlConnectionStringBuilderTests
 	{

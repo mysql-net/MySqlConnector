@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using MySql.Data.MySqlClient;
 using MySqlConnector.Performance.Models;
 
 namespace MySqlConnector.Performance.Controllers
