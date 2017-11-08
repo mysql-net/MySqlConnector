@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -288,23 +287,53 @@ namespace MySqlConnector.Core
 
 			var key = cs.ConnectionString;
 
-			if (!s_pools.TryGetValue(key, out var pool))
+			try
 			{
-				pool = s_pools.GetOrAdd(cs.ConnectionString, newKey => new ConnectionPool(cs));
+				s_poolLock.EnterReadLock();
+				if (s_pools.TryGetValue(key, out var pool))
+					return pool;
 			}
-			return pool;
+			finally
+			{
+				s_poolLock.ExitReadLock();
+			}
+
+			try
+			{
+				s_poolLock.EnterWriteLock();
+				if (!s_pools.TryGetValue(key, out var pool))
+					pool = s_pools[key] = new ConnectionPool(cs);
+				return pool;
+			}
+			finally
+			{
+				s_poolLock.ExitWriteLock();
+			}
 		}
 
 		public static async Task ClearPoolsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			foreach (var pool in s_pools.Values)
+			foreach (var pool in GetAllPools())
 				await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
 		public static async Task ReapPoolsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			foreach (var pool in s_pools.Values)
+			foreach (var pool in GetAllPools())
 				await pool.ReapAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+		}
+
+		private static IReadOnlyList<ConnectionPool> GetAllPools()
+		{
+			try
+			{
+				s_poolLock.EnterReadLock();
+				return s_pools.Values.ToList();
+			}
+			finally
+			{
+				s_poolLock.ExitReadLock();
+			}
 		}
 
 		private ConnectionPool(ConnectionSettings cs)
@@ -350,7 +379,8 @@ namespace MySqlConnector.Core
 			readonly ConnectionPool m_pool;
 		}
 
-		static readonly ConcurrentDictionary<string, ConnectionPool> s_pools = new ConcurrentDictionary<string, ConnectionPool>();
+		static readonly ReaderWriterLockSlim s_poolLock = new ReaderWriterLockSlim();
+		static readonly Dictionary<string, ConnectionPool> s_pools = new Dictionary<string, ConnectionPool>();
 #if DEBUG
 		static readonly TimeSpan ReaperInterval = TimeSpan.FromSeconds(1);
 #else
