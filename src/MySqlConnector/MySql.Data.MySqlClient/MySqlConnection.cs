@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlConnector.Core;
+using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -285,9 +286,10 @@ namespace MySql.Data.MySqlClient
 					}
 				}
 			}
-			catch (MySqlException)
+			catch (MySqlException ex)
 			{
 				// cancelling the query failed; setting the state back to 'Querying' will allow another call to 'Cancel' to try again
+				Log.Warn(ex, "Session{0} cancelling command {1} failed", m_session.Id, command.CommandId);
 				session.AbortCancel(command);
 			}
 		}
@@ -434,6 +436,8 @@ namespace MySql.Data.MySqlClient
 				CurrentTransaction = null;
 			}
 		}
+
+		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlConnection));
 
 		MySqlConnectionStringBuilder m_connectionStringBuilder;
 		ConnectionSettings m_connectionSettings;
