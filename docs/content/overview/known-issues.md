@@ -11,5 +11,6 @@ weight: 20
 Known Issues
 ============
 
-* Not all MySQL data types are supported.
+* Prepared statements are not supported: [#397](https://github.com/mysql-net/MySqlConnector/issues/397).
+* MySQL spatial data types are not supported: [#70](https://github.com/mysql-net/MySqlConnector/issues/70).
 * Some `MySql.Data` connection string settings are not supported by this library. See [Connection Options](connection-options/) for a list of supported options.
