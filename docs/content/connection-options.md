@@ -199,8 +199,8 @@ These are the other options that MySqlConnector supports. They are set to sensib
       <dl>
         <dt>RoundRobin</dt>
         <dd>Each new connection opened for this connection pool uses the next host name (sequentially with wraparound). Requires <code>Pooling=True</code>. This is the default if <code>Pooling=True</code>.</dd>
-        <dt>InOrder</dt>
-        <dd>Each new connection tries the hosts in order, starting with the first one. This is the default if <code>Pooling=False</code>.</dd>
+        <dt>FailOver</dt>
+        <dd>Each new connection tries to connect to the first host; subsequent hosts are used only if connecting to the first one fails. This is the default if <code>Pooling=False</code>.</dd>
         <dt>Random</dt>
         <dd>Servers are tried in a random order.</dd>
         <dt>LeastConnections</dt>

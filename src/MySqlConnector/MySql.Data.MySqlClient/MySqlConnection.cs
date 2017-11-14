@@ -357,9 +357,9 @@ namespace MySql.Data.MySqlClient
 					}
 					else
 					{
-						// only "in order" and "random" load balancers supported without connection pooling
+						// only "fail over" and "random" load balancers supported without connection pooling
 						var loadBalancer = m_connectionSettings.LoadBalance == MySqlLoadBalance.Random && m_connectionSettings.HostNames.Count > 1 ?
-							RandomLoadBalancer.Instance : InOrderLoadBalancer.Instance;
+							RandomLoadBalancer.Instance : FailOverLoadBalancer.Instance;
 
 						var session = new ServerSession();
 						await session.ConnectAsync(m_connectionSettings, loadBalancer, ioBehavior, linkedSource.Token).ConfigureAwait(false);

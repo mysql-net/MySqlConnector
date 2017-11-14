@@ -351,7 +351,7 @@ namespace MySqlConnector.Core
 					m_hostSessions[hostName] = 0;
 			}
 			m_loadBalancer = cs.ConnectionType != ConnectionType.Tcp ? null :
-				cs.HostNames.Count == 1 || cs.LoadBalance == MySqlLoadBalance.InOrder ? InOrderLoadBalancer.Instance :
+				cs.HostNames.Count == 1 || cs.LoadBalance == MySqlLoadBalance.FailOver ? FailOverLoadBalancer.Instance :
 				cs.LoadBalance == MySqlLoadBalance.Random ? RandomLoadBalancer.Instance :
 				cs.LoadBalance == MySqlLoadBalance.LeastConnections ? new LeastConnectionsLoadBalancer(this) :
 				(ILoadBalancer) new RoundRobinLoadBalancer();

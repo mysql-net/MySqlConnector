@@ -12,13 +12,13 @@ namespace MySqlConnector.Core
 		IEnumerable<string> LoadBalance(IReadOnlyList<string> hosts);
 	}
 
-	internal sealed class InOrderLoadBalancer : ILoadBalancer
+	internal sealed class FailOverLoadBalancer : ILoadBalancer
 	{
-		public static ILoadBalancer Instance { get; } = new InOrderLoadBalancer();
+		public static ILoadBalancer Instance { get; } = new FailOverLoadBalancer();
 
 		public IEnumerable<string> LoadBalance(IReadOnlyList<string> hosts) => hosts;
 
-		private InOrderLoadBalancer()
+		private FailOverLoadBalancer()
 		{
 		}
 	}

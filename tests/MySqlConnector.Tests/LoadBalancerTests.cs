@@ -7,9 +7,9 @@ namespace MySqlConnector.Tests
 	public class LoadBalancerTests
 	{
 		[Fact]
-		public void InOrder()
+		public void FailOver()
 		{
-			var loadBalancer = InOrderLoadBalancer.Instance;
+			var loadBalancer = FailOverLoadBalancer.Instance;
 			var input = new[] { "a", "b", "c", "d" };
 			Assert.Equal(new[] { "a", "b", "c", "d" }, loadBalancer.LoadBalance(input));
 			Assert.Same(input, loadBalancer.LoadBalance(input));

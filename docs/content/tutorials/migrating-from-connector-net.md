@@ -38,7 +38,7 @@ MySqlConnector has some different default connection string options:
   <tr>
     <td><code>LoadBalance</code></td>
     <td>Default is <code>RoundRobin</code></td>
-    <td>(not configurable, effective default is <code>InOrder</code>)</td>
+    <td>(not configurable, effective default is <code>FailOver</code>)</td>
     <td>Connector/NET currently has <a href="https://bugs.mysql.com/bug.php?id=81650" title="MySQL bug #81650">a bug</a> that prevents multiple host names being used.</td>
   </tr>
   <tr>

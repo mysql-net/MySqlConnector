@@ -3,14 +3,14 @@ namespace MySql.Data.MySqlClient
 	public enum MySqlLoadBalance
 	{
 		/// <summary>
-		/// Servers are tried sequentially, across multiple calls to <see cref="MySqlConnection.Open"/>.
+		/// Each new connection opened for a connection pool uses the next host name (sequentially with wraparound).
 		/// </summary>
 		RoundRobin,
 
 		/// <summary>
-		/// Servers are tried in order, starting with the first one, for each call to <see cref="MySqlConnection.Open"/>.
+		/// Each new connection tries to connect to the first host; subsequent hosts are used only if connecting to the first one fails.
 		/// </summary>
-		InOrder,
+		FailOver,
 
 		/// <summary>
 		/// Servers are tried in random order.
