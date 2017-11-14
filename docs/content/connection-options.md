@@ -203,7 +203,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
         <dd>Each new connection tries the hosts in order, starting with the first one. This is the default if <code>Pooling=False</code>.</dd>
         <dt>Random</dt>
         <dd>Servers are tried in a random order.</dd>
-        <dt>FewestConnections</dt>
+        <dt>LeastConnections</dt>
         <dd>Servers are tried in ascending order of number of currently-open connections in this connection pool. Requires <code>Pooling=True</code>.
       </dl>
   </tr>

@@ -150,7 +150,7 @@ namespace MySqlConnector.Core
 
 		/// <summary>
 		/// Examines all the <see cref="ServerSession"/> objects in <see cref="m_leasedSessions"/> to determine if any
-		/// have an owning <see cref="MySqlConnection"/> that has been garbage-collected. If so, assumes that the connection 
+		/// have an owning <see cref="MySqlConnection"/> that has been garbage-collected. If so, assumes that the connection
 		/// was not properly disposed and returns the session to the pool.
 		/// </summary>
 		private void RecoverLeakedSessions()
@@ -344,7 +344,7 @@ namespace MySqlConnector.Core
 			m_sessionSemaphore = new SemaphoreSlim(cs.MaximumPoolSize);
 			m_sessions = new LinkedList<ServerSession>();
 			m_leasedSessions = new Dictionary<int, ServerSession>();
-			if (cs.LoadBalance == MySqlLoadBalance.FewestConnections)
+			if (cs.LoadBalance == MySqlLoadBalance.LeastConnections)
 			{
 				m_hostSessions = new Dictionary<string, int>();
 				foreach (var hostName in cs.HostNames)
@@ -353,7 +353,7 @@ namespace MySqlConnector.Core
 			m_loadBalancer = cs.ConnectionType != ConnectionType.Tcp ? null :
 				cs.HostNames.Count == 1 || cs.LoadBalance == MySqlLoadBalance.InOrder ? InOrderLoadBalancer.Instance :
 				cs.LoadBalance == MySqlLoadBalance.Random ? RandomLoadBalancer.Instance :
-				cs.LoadBalance == MySqlLoadBalance.FewestConnections ? new FewestConnectionsLoadBalancer(this) :
+				cs.LoadBalance == MySqlLoadBalance.LeastConnections ? new LeastConnectionsLoadBalancer(this) :
 				(ILoadBalancer) new RoundRobinLoadBalancer();
 		}
 
@@ -366,9 +366,9 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private sealed class FewestConnectionsLoadBalancer : ILoadBalancer
+		private sealed class LeastConnectionsLoadBalancer : ILoadBalancer
 		{
-			public FewestConnectionsLoadBalancer(ConnectionPool pool) => m_pool = pool;
+			public LeastConnectionsLoadBalancer(ConnectionPool pool) => m_pool = pool;
 
 			public IEnumerable<string> LoadBalance(IReadOnlyList<string> hosts)
 			{

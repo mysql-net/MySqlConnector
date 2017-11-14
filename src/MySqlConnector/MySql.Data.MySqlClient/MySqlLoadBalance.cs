@@ -20,6 +20,6 @@ namespace MySql.Data.MySqlClient
 		/// <summary>
 		/// Servers are tried in ascending order of number of currently-open connections.
 		/// </summary>
-		FewestConnections,
+		LeastConnections,
 	}
 }
