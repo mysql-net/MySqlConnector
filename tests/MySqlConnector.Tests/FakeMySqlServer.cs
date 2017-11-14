@@ -46,6 +46,7 @@ namespace MySqlConnector.Tests
 		public string ServerVersion { get; set; } = "5.7.10-test";
 
 		public bool SuppressAuthPluginNameTerminatingNull { get; set; }
+		public bool SendIncompletePostHandshakeResponse { get; set; }
 
 		internal void ClientDisconnected() => Interlocked.Decrement(ref m_activeConnections);
 

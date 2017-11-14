@@ -193,71 +193,78 @@ namespace MySqlConnector.Core
 
 		public async Task ConnectAsync(ConnectionSettings cs, ILoadBalancer loadBalancer, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			lock (m_lock)
-			{
-				VerifyState(State.Created);
-				m_state = State.Connecting;
-			}
-			var connected = false;
-			if (cs.ConnectionType == ConnectionType.Tcp)
-				connected = await OpenTcpSocketAsync(cs, loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
-			else if (cs.ConnectionType == ConnectionType.Unix)
-				connected = await OpenUnixSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
-			if (!connected)
+			try
 			{
 				lock (m_lock)
-					m_state = State.Failed;
-				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
+				{
+					VerifyState(State.Created);
+					m_state = State.Connecting;
+				}
+				var connected = false;
+				if (cs.ConnectionType == ConnectionType.Tcp)
+					connected = await OpenTcpSocketAsync(cs, loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+				else if (cs.ConnectionType == ConnectionType.Unix)
+					connected = await OpenUnixSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+				if (!connected)
+				{
+					lock (m_lock)
+						m_state = State.Failed;
+					throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
+				}
+
+				var byteHandler = new SocketByteHandler(m_socket);
+				m_payloadHandler = new StandardPayloadHandler(byteHandler);
+
+				var payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				var initialHandshake = InitialHandshakePayload.Create(payload);
+
+				// if PluginAuth is supported, then use the specified auth plugin; else, fall back to protocol capabilities to determine the auth type to use
+				string authPluginName;
+				if ((initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
+					authPluginName = initialHandshake.AuthPluginName;
+				else
+					authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" : "mysql_native_password";
+				if (authPluginName != "mysql_native_password" && authPluginName != "sha256_password" && authPluginName != "caching_sha2_password")
+					throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(initialHandshake.AuthPluginName));
+
+				ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
+				ConnectionId = initialHandshake.ConnectionId;
+				AuthPluginData = initialHandshake.AuthPluginData;
+				m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
+
+				var serverSupportsSsl = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Ssl) != 0;
+				if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
+				{
+					if (!serverSupportsSsl)
+						throw new MySqlException("Server does not support SSL");
+					await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
+
+				m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
+				if (m_supportsConnectionAttributes && s_connectionAttributes == null)
+					s_connectionAttributes = CreateConnectionAttributes();
+
+				m_supportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
+
+				payload = HandshakeResponse41Payload.Create(initialHandshake, cs, m_useCompression, m_supportsConnectionAttributes ? s_connectionAttributes : null);
+				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
+				// if server doesn't support the authentication fast path, it will send a new challenge
+				if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
+				{
+					payload = await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
+
+				OkPayload.Create(payload);
+
+				if (m_useCompression)
+					m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
 			}
-
-			var byteHandler = new SocketByteHandler(m_socket);
-			m_payloadHandler = new StandardPayloadHandler(byteHandler);
-
-			var payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			var initialHandshake = InitialHandshakePayload.Create(payload);
-
-			// if PluginAuth is supported, then use the specified auth plugin; else, fall back to protocol capabilities to determine the auth type to use
-			string authPluginName;
-			if ((initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
-				authPluginName = initialHandshake.AuthPluginName;
-			else
-				authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" : "mysql_native_password";
-			if (authPluginName != "mysql_native_password" && authPluginName != "sha256_password" && authPluginName != "caching_sha2_password")
-				throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(initialHandshake.AuthPluginName));
-
-			ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
-			ConnectionId = initialHandshake.ConnectionId;
-			AuthPluginData = initialHandshake.AuthPluginData;
-			m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
-
-			var serverSupportsSsl = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Ssl) != 0;
-			if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
+			catch (IOException ex)
 			{
-				if (!serverSupportsSsl)
-					throw new MySqlException("Server does not support SSL");
-				await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+				throw new MySqlException("Couldn't connect to server", ex);
 			}
-
-			m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
-			if (m_supportsConnectionAttributes && s_connectionAttributes == null)
-				s_connectionAttributes = CreateConnectionAttributes();
-
-			m_supportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
-
-			payload = HandshakeResponse41Payload.Create(initialHandshake, cs, m_useCompression, m_supportsConnectionAttributes ? s_connectionAttributes : null);
-			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-
-			// if server doesn't support the authentication fast path, it will send a new challenge
-			if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
-			{
-				payload = await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-			}
-
-			OkPayload.Create(payload);
-
-			if (m_useCompression)
-				m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
 		}
 
 		public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)

@@ -28,6 +28,13 @@ namespace MySqlConnector.Tests
 				{
 					await SendAsync(stream, 0, WriteInitialHandshake);
 					await ReadPayloadAsync(stream, token); // handshake response
+
+					if (m_server.SendIncompletePostHandshakeResponse)
+					{
+						await stream.WriteAsync(new byte[] { 1, 0, 0, 2 }, 0, 4);
+						return;
+					}
+
 					await SendAsync(stream, 2, WriteOk);
 
 					var keepRunning = true;

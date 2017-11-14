@@ -142,6 +142,16 @@ namespace MySqlConnector.Tests
 			}
 		}
 
+		[Fact]
+		public void IncompleteServerHandshake()
+		{
+			m_server.SendIncompletePostHandshakeResponse = true;
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				Assert.Throws<MySqlException>(() => connection.Open());
+			}
+		}
+
 		private static async Task WaitForConditionAsync<T>(T expected, Func<T> getValue)
 		{
 			var sw = Stopwatch.StartNew();
