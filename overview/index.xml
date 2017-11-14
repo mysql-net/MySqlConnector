@@ -60,7 +60,8 @@
 &lt;h1 id=&#34;known-issues&#34;&gt;Known Issues&lt;/h1&gt;
 
 &lt;ul&gt;
-&lt;li&gt;Not all MySQL data types are supported.&lt;/li&gt;
+&lt;li&gt;Prepared statements are not supported: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/397&#34;&gt;#397&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;MySQL spatial data types are not supported: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/70&#34;&gt;#70&lt;/a&gt;.&lt;/li&gt;
 &lt;li&gt;Some &lt;code&gt;MySql.Data&lt;/code&gt; connection string settings are not supported by this library. See &lt;a href=&#34;connection-options/&#34;&gt;Connection Options&lt;/a&gt; for a list of supported options.&lt;/li&gt;
 &lt;/ul&gt;
 </description>
@@ -75,6 +76,19 @@
       <description>
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
+
+&lt;h3 id=&#34;0-31-0&#34;&gt;0.31.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Implement &lt;code&gt;MinimumPoolSize&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/85&#34;&gt;#85&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Implement server load balancing with new &lt;code&gt;LoadBalance&lt;/code&gt; connection string setting: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/226&#34;&gt;#226&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Add SourceLink.&lt;/li&gt;
+&lt;li&gt;Wrap &lt;code&gt;EndOfStreamException&lt;/code&gt; in &lt;code&gt;MySqlException&lt;/code&gt; when connecting fails: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/388&#34;&gt;#388&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fix &lt;code&gt;StackOverflowException&lt;/code&gt; when reading large BLOBs asynchronously.&lt;/li&gt;
+&lt;li&gt;Don&amp;rsquo;t set &lt;code&gt;Transaction&lt;/code&gt; on new &lt;code&gt;MySqlCommand&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/389&#34;&gt;#389&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Ignore &lt;code&gt;MySqlConnection.Cancel&lt;/code&gt; when connection is broken: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/386&#34;&gt;#386&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Improve internal code organisation: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/376&#34;&gt;#376&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;h3 id=&#34;0-30-0&#34;&gt;0.30.0&lt;/h3&gt;
 

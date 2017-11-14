@@ -168,6 +168,19 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-31-0">0.31.0</h3>
+
+<ul>
+<li>Implement <code>MinimumPoolSize</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/85">#85</a>.</li>
+<li>Implement server load balancing with new <code>LoadBalance</code> connection string setting: <a href="https://github.com/mysql-net/MySqlConnector/issues/226">#226</a>.</li>
+<li>Add SourceLink.</li>
+<li>Wrap <code>EndOfStreamException</code> in <code>MySqlException</code> when connecting fails: <a href="https://github.com/mysql-net/MySqlConnector/issues/388">#388</a>.</li>
+<li>Fix <code>StackOverflowException</code> when reading large BLOBs asynchronously.</li>
+<li>Don&rsquo;t set <code>Transaction</code> on new <code>MySqlCommand</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/389">#389</a>.</li>
+<li>Ignore <code>MySqlConnection.Cancel</code> when connection is broken: <a href="https://github.com/mysql-net/MySqlConnector/issues/386">#386</a>.</li>
+<li>Improve internal code organisation: <a href="https://github.com/mysql-net/MySqlConnector/issues/376">#376</a>.</li>
+</ul>
+
 <h3 id="0-30-0">0.30.0</h3>
 
 <ul>

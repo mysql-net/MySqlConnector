@@ -207,7 +207,7 @@ pool size to 500.&lt;/p&gt;
   &lt;tr&gt;
     &lt;td&gt;&lt;code&gt;LoadBalance&lt;/code&gt;&lt;/td&gt;
     &lt;td&gt;Default is &lt;code&gt;RoundRobin&lt;/code&gt;&lt;/td&gt;
-    &lt;td&gt;(not configurable, effective default is &lt;code&gt;InOrder&lt;/code&gt;)&lt;/td&gt;
+    &lt;td&gt;(not configurable, effective default is &lt;code&gt;FailOver&lt;/code&gt;)&lt;/td&gt;
     &lt;td&gt;Connector/NET currently has &lt;a href=&#34;https://bugs.mysql.com/bug.php?id=81650&#34; title=&#34;MySQL bug #81650&#34;&gt;a bug&lt;/a&gt; that prevents multiple host names being used.&lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
