@@ -11,6 +11,17 @@ weight: 30
 Version History
 ===============
 
+### 0.31.0
+
+* Implement `MinimumPoolSize`: [#85](https://github.com/mysql-net/MySqlConnector/issues/85).
+* Implement server load balancing with new `LoadBalance` connection string setting: [#226](https://github.com/mysql-net/MySqlConnector/issues/226).
+* Add SourceLink.
+* Wrap `EndOfStreamException` in `MySqlException` when connecting fails: [#388](https://github.com/mysql-net/MySqlConnector/issues/388).
+* Fix `StackOverflowException` when reading large BLOBs asynchronously.
+* Don't set `Transaction` on new `MySqlCommand`: [#389](https://github.com/mysql-net/MySqlConnector/issues/389).
+* Ignore `MySqlConnection.Cancel` when connection is broken: [#386](https://github.com/mysql-net/MySqlConnector/issues/386).
+* Improve internal code organisation: [#376](https://github.com/mysql-net/MySqlConnector/issues/376).
+
 ### 0.30.0
 
 * **Breaking** Remove `BufferResultSets` connection string option: [#378](https://github.com/mysql-net/MySqlConnector/pull/378).
