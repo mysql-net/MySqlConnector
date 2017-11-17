@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.31.1
+
+* Fix `InvalidOperationException` if `MySqlBulkLoader` is used inside a transaction (again): [#300](https://github.com/mysql-net/MySqlConnector/issues/300).
+* **Breaking** Remove `MySqlBulkLoader.Transaction` property (added in 0.24.0); `MySqlBulkLoader` will always use the ambient transaction, if any. This matches Connector/NET API & behaviour.
+
 ### 0.31.0
 
 * Implement `MinimumPoolSize`: [#85](https://github.com/mysql-net/MySqlConnector/issues/85).
