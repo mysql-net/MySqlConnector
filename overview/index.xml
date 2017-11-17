@@ -77,6 +77,13 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-31-1&#34;&gt;0.31.1&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix &lt;code&gt;InvalidOperationException&lt;/code&gt; if &lt;code&gt;MySqlBulkLoader&lt;/code&gt; is used inside a transaction (again): &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/300&#34;&gt;#300&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Breaking&lt;/strong&gt; Remove &lt;code&gt;MySqlBulkLoader.Transaction&lt;/code&gt; property (added in 0.24.0); &lt;code&gt;MySqlBulkLoader&lt;/code&gt; will always use the ambient transaction, if any. This matches Connector/NET API &amp;amp; behaviour.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-31-0&#34;&gt;0.31.0&lt;/h3&gt;
 
 &lt;ul&gt;
