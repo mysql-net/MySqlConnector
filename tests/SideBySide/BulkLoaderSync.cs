@@ -246,6 +246,42 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void BulkLoadLocalCsvFileBeforeTransactionWithCommit()
+		{
+			try
+			{
+				m_database.Connection.Open();
+				var bulkLoader = new MySqlBulkLoader(m_database.Connection)
+				{
+					FileName = AppConfig.MySqlBulkLoaderLocalCsvFile,
+					TableName = m_testTable,
+					CharacterSet = "UTF8",
+					NumberOfLinesToSkip = 1,
+					FieldTerminator = ",",
+					FieldQuotationCharacter = '"',
+					FieldQuotationOptional = true,
+					Local = true,
+				};
+				bulkLoader.Expressions.Add("five = UNHEX(five)");
+				bulkLoader.Columns.AddRange(new[] { "one", "two", "three", "four", "five" });
+
+				using (var transaction = m_database.Connection.BeginTransaction())
+				{
+					var rowCount = bulkLoader.Load();
+					Assert.Equal(20, rowCount);
+
+					transaction.Commit();
+				}
+
+				Assert.Equal(20, m_database.Connection.ExecuteScalar<int>($@"select count(*) from {m_testTable};"));
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+		}
+
+		[Fact]
 		public void BulkLoadLocalCsvFileInTransactionWithRollback()
 		{
 			try
@@ -267,6 +303,42 @@ namespace SideBySide
 					bulkLoader.Expressions.Add("five = UNHEX(five)");
 					bulkLoader.Columns.AddRange(new[] { "one", "two", "three", "four", "five" });
 
+					var rowCount = bulkLoader.Load();
+					Assert.Equal(20, rowCount);
+
+					transaction.Rollback();
+				}
+
+				Assert.Equal(0, m_database.Connection.ExecuteScalar<int>($@"select count(*) from {m_testTable};"));
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+		}
+
+		[Fact]
+		public void BulkLoadLocalCsvFileBeforeTransactionWithRollback()
+		{
+			try
+			{
+				m_database.Connection.Open();
+				var bulkLoader = new MySqlBulkLoader(m_database.Connection)
+				{
+					FileName = AppConfig.MySqlBulkLoaderLocalCsvFile,
+					TableName = m_testTable,
+					CharacterSet = "UTF8",
+					NumberOfLinesToSkip = 1,
+					FieldTerminator = ",",
+					FieldQuotationCharacter = '"',
+					FieldQuotationOptional = true,
+					Local = true,
+				};
+				bulkLoader.Expressions.Add("five = UNHEX(five)");
+				bulkLoader.Columns.AddRange(new[] { "one", "two", "three", "four", "five" });
+
+				using (var transaction = m_database.Connection.BeginTransaction())
+				{
 					var rowCount = bulkLoader.Load();
 					Assert.Equal(20, rowCount);
 

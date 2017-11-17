@@ -22,7 +22,6 @@ namespace MySql.Data.MySqlClient
         public List<string> Columns { get; }
         public MySqlBulkLoaderConflictOption ConflictOption { get; set; }
         public MySqlConnection Connection { get; set; }
-		public MySqlTransaction Transaction { get; set; }
         public char EscapeCharacter { get; set; }
         public List<string> Expressions { get; }
         public char FieldQuotationCharacter { get; set; }
@@ -60,7 +59,6 @@ namespace MySql.Data.MySqlClient
             ConflictOption = MySqlBulkLoaderConflictOption.None;
             Columns = new List<string>();
             Expressions = new List<string>();
-	        Transaction = connection.CurrentTransaction;
         }
 
         private string BuildSqlCommand()
@@ -186,11 +184,11 @@ namespace MySql.Data.MySqlClient
                 closeConnection = true;
                 Connection.Open();
             }
-            
+
             try
             {
                 var commandString = BuildSqlCommand();
-                var cmd = new MySqlCommand(commandString, Connection, Transaction)
+                var cmd = new MySqlCommand(commandString, Connection, Connection.CurrentTransaction)
                 {
                     CommandTimeout = Timeout,
                 };
