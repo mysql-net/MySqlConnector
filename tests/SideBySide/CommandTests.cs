@@ -39,6 +39,25 @@ namespace SideBySide
 			}
 		}
 
+		[Fact]
+		public void PrepareRequiresConnection()
+		{
+			using (var command = new MySqlCommand())
+			{
+				Assert.Throws<InvalidOperationException>(() => command.Prepare());
+			}
+		}
+
+		[Fact]
+		public void PrepareRequiresOpenConnection()
+		{
+			using (var connection = new MySqlConnection())
+			using (var command = connection.CreateCommand())
+			{
+				Assert.Throws<InvalidOperationException>(() => command.Prepare());
+			}
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }

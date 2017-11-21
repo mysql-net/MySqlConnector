@@ -72,6 +72,11 @@ namespace MySql.Data.MySqlClient
 
 		public override void Prepare()
 		{
+			if (Connection == null)
+				throw new InvalidOperationException("Connection property must be non-null.");
+			if (Connection.State != ConnectionState.Open)
+				throw new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
+
 			// NOTE: Prepared statements in MySQL are not currently supported.
 			// 1) Only a subset of statements are actually preparable by the server: http://dev.mysql.com/worklog/task/?id=2871
 			// 2) Although CLIENT_MULTI_STATEMENTS is supposed to mean that the Server "Can handle multiple statements per COM_QUERY and COM_STMT_PREPARE" (https://dev.mysql.com/doc/internals/en/capability-flags.html#flag-CLIENT_MULTI_STATEMENTS),
