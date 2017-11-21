@@ -226,7 +226,7 @@ namespace MySql.Data.MySqlClient
 		internal void ResetCommandTimeout()
 		{
 			var commandTimeout = CommandTimeout;
-			Connection.Session.SetTimeout(commandTimeout == 0 ? Constants.InfiniteTimeout : commandTimeout * 1000);
+			Connection?.Session?.SetTimeout(commandTimeout == 0 ? Constants.InfiniteTimeout : commandTimeout * 1000);
 		}
 
 		private void VerifyNotDisposed()
