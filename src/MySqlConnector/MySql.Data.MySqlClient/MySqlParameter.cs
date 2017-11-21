@@ -226,7 +226,7 @@ namespace MySql.Data.MySqlClient
 			}
 			else if (Value is Enum)
 			{
-				writer.WriteUtf8("{0:d}".FormatInvariant(Value));
+				writer.WriteUtf8("'{0:G}'".FormatInvariant(Value));
 			}
 			else
 			{
