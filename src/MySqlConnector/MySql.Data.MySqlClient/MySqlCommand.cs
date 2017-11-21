@@ -92,7 +92,7 @@ namespace MySql.Data.MySqlClient
 			set
 			{
 				if (m_connection?.HasActiveReader ?? false)
-					throw new MySqlException("Cannot set MySqlCommand.Connection when there is an open DataReader for this command; it must be closed first.");
+					throw new InvalidOperationException("Cannot set MySqlCommand.Connection when there is an open DataReader for this command; it must be closed first.");
 				m_connection = value;
 			}
 		}
