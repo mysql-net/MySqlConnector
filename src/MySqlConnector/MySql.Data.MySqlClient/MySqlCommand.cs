@@ -161,14 +161,14 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) =>
-			ExecuteNonQueryAsync(Connection.AsyncIOBehavior, cancellationToken);
+			ExecuteNonQueryAsync(AsyncIOBehavior, cancellationToken);
 
 		internal Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) =>
 			!IsValid(out var exception) ? Utility.TaskFromException<int>(exception) :
 				m_commandExecutor.ExecuteNonQueryAsync(CommandText, m_parameterCollection, ioBehavior, cancellationToken);
 
 		public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken) =>
-			ExecuteScalarAsync(Connection.AsyncIOBehavior, cancellationToken);
+			ExecuteScalarAsync(AsyncIOBehavior, cancellationToken);
 
 		internal Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) =>
 			!IsValid(out var exception) ? Utility.TaskFromException<object>(exception) :
@@ -177,7 +177,7 @@ namespace MySql.Data.MySqlClient
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
 		{
 			ResetCommandTimeout();
-			return ExecuteReaderAsync(behavior, Connection.AsyncIOBehavior, cancellationToken);
+			return ExecuteReaderAsync(behavior, AsyncIOBehavior, cancellationToken);
 		}
 
 		internal Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken) =>
@@ -233,6 +233,8 @@ namespace MySql.Data.MySqlClient
 			var commandTimeout = CommandTimeout;
 			Connection?.Session?.SetTimeout(commandTimeout == 0 ? Constants.InfiniteTimeout : commandTimeout * 1000);
 		}
+
+		private IOBehavior AsyncIOBehavior => Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous;
 
 		private void VerifyNotDisposed()
 		{
