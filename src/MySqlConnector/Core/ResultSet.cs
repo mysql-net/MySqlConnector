@@ -26,7 +26,7 @@ namespace MySqlConnector.Core
 			ColumnDefinitions = null;
 			ColumnTypes = null;
 			LastInsertId = 0;
-			RecordsAffected = 0;
+			RecordsAffected = null;
 			State = ResultSetState.None;
 			m_columnDefinitionPayloadUsedBytes = 0;
 			m_dataLengths = null;
@@ -46,7 +46,7 @@ namespace MySqlConnector.Core
 					if (firstByte == OkPayload.Signature)
 					{
 						var ok = OkPayload.Create(payload);
-						RecordsAffected += ok.AffectedRowCount;
+						RecordsAffected = (RecordsAffected ?? 0) + ok.AffectedRowCount;
 						LastInsertId = ok.LastInsertId;
 						ColumnDefinitions = null;
 						ColumnTypes = null;
@@ -334,7 +334,7 @@ namespace MySqlConnector.Core
 		public ColumnDefinitionPayload[] ColumnDefinitions { get; private set; }
 		public MySqlDbType[] ColumnTypes { get; private set; }
 		public long LastInsertId { get; private set; }
-		public int RecordsAffected { get; private set; }
+		public int? RecordsAffected { get; private set; }
 		public ResultSetState State { get; private set; }
 
 		byte[] m_columnDefinitionPayloads;

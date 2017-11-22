@@ -104,7 +104,7 @@ namespace MySql.Data.MySqlClient
 			}
 
 			Command.LastInsertedId = resultSet.LastInsertId;
-			m_recordsAffected += resultSet.RecordsAffected;
+			m_recordsAffected = m_recordsAffected == null ? resultSet.RecordsAffected : m_recordsAffected.Value + (resultSet.RecordsAffected ?? 0);
 		}
 
 		private async Task<ResultSet> BufferNextResultAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -169,7 +169,7 @@ namespace MySql.Data.MySqlClient
 
 		public override bool HasRows => GetResultSet().HasRows;
 		public override bool IsClosed => Command == null;
-		public override int RecordsAffected => m_recordsAffected;
+		public override int RecordsAffected => m_recordsAffected.GetValueOrDefault(-1);
 
 		public override int GetOrdinal(string name) => GetResultSet().GetOrdinal(name);
 
@@ -441,7 +441,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		readonly CommandBehavior m_behavior;
-		int m_recordsAffected;
+		int? m_recordsAffected;
 		ResultSet m_resultSet;
 		ResultSet m_resultSetBuffered;
 #if !NETSTANDARD1_3
