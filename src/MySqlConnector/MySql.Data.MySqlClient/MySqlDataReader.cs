@@ -144,6 +144,8 @@ namespace MySql.Data.MySqlClient
 				try
 				{
 					m_resultSetBuffered = await resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
+					if (m_resultSetBuffered.BufferState == ResultSetState.NoMoreData)
+						m_resultSetBuffered = null;
 					return m_resultSetBuffered;
 				}
 				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted)

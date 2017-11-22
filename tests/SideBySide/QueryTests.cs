@@ -533,6 +533,23 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		}
 
 		[Fact]
+		public void TrailingCommentIsNotAResultSet()
+		{
+			using (var command = m_database.Connection.CreateCommand())
+			{
+				command.CommandText = "select 0; -- trailing comment";
+				using (var reader = command.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(0, reader.GetInt32(0));
+					Assert.False(reader.NextResult());
+					Assert.False(reader.HasRows);
+					Assert.False(reader.Read());
+				}
+			}
+		}
+
+		[Fact]
 		public void SumBytes()
 		{
 			m_database.Connection.Execute(@"drop table if exists sum_bytes;
