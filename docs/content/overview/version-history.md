@@ -11,6 +11,15 @@ weight: 30
 Version History
 ===============
 
+### 0.31.3
+
+* Fix return value of `ExecuteScalar` to be the first column from the first row of the first result set.
+* Fix return value of `ExecuteNonQuery` to correctly return -1 for `SELECT` statements.
+* Fix bug where `NextResult` returns `true` for a trailing comment in a SQL statement.
+* **Breaking** Throw `InvalidOperationException` if `MySqlCommand.CommandText` is set while the command is active.
+* **Breaking** Throw `InvalidOperationException` (instead of `MySqlException`) if a `MySqlCommand` is executed while there is an open reader.
+* **Breaking** Throw `InvalidOperationException` from `MySqlCommand.Prepare` when preconditions aren't met.
+
 ### 0.31.2
 
 * **Breaking** Throw `InvalidOperationException` when `MySqlCommand.Connection` can't be set (instead of `MySqlException`).
