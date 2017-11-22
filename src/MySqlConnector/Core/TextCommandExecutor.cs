@@ -37,13 +37,19 @@ namespace MySqlConnector.Core
 		public virtual async Task<object> ExecuteScalarAsync(string commandText, MySqlParameterCollection parameterCollection,
 			IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			var hasSetResult = false;
 			object result = null;
 			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(commandText, parameterCollection, CommandBehavior.SingleResult | CommandBehavior.SingleRow, ioBehavior, cancellationToken).ConfigureAwait(false))
 			{
 				do
 				{
-					if (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
-						result = reader.GetValue(0);
+					var hasResult = await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					if (!hasSetResult)
+					{
+						if (hasResult)
+							result = reader.GetValue(0);
+						hasSetResult = true;
+					}
 				} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
 			}
 			return result;

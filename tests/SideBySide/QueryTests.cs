@@ -499,6 +499,40 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		}
 
 		[Fact]
+		public void ExecuteScalarReturnsFirstValue()
+		{
+			var result = m_database.Connection.ExecuteScalar("select 1; select 2;");
+			Assert.Equal(1L, result);
+		}
+
+		[Fact]
+		public async Task ExecuteScalarAsyncReturnsFirstValue()
+		{
+			var result = await m_database.Connection.ExecuteScalarAsync("select 1; select 2;");
+			Assert.Equal(1L, result);
+		}
+
+		[Fact]
+		public void ExecuteScalarReturnsNull()
+		{
+			m_database.Connection.Execute(@"drop table if exists empty_table;
+			create table empty_table(id bigint not null primary key);");
+			var result = m_database.Connection.ExecuteScalar("select * from empty_table; select 2;");
+			Assert.Null(result);
+		}
+
+		[Fact]
+		public void ExecuteScalarReturnsDBNull()
+		{
+			using (var command = m_database.Connection.CreateCommand())
+			{
+				command.CommandText = "select null; select 2;";
+				var result = command.ExecuteScalar();
+				Assert.Equal(DBNull.Value, result);
+			}
+		}
+
+		[Fact]
 		public void SumBytes()
 		{
 			m_database.Connection.Execute(@"drop table if exists sum_bytes;
