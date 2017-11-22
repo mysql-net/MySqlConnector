@@ -85,7 +85,17 @@ namespace MySql.Data.MySqlClient
 			//    this is not actually true because "Prepared statement handles are defined to work only with strings that contain a single statement" (http://dev.mysql.com/doc/refman/5.7/en/c-api-multiple-queries.html).
 		}
 
-		public override string CommandText { get; set; }
+		public override string CommandText
+		{
+			get => m_commandText;
+			set
+			{
+				if (m_connection?.HasActiveReader ?? false)
+					throw new InvalidOperationException("Cannot set MySqlCommand.CommandText when there is an open DataReader for this command; it must be closed first.");
+				m_commandText = value;
+			}
+		}
+
 		public new MySqlTransaction Transaction { get; set; }
 
 		public new MySqlConnection Connection
@@ -265,6 +275,7 @@ namespace MySql.Data.MySqlClient
 		static int s_commandId = 1;
 
 		MySqlConnection m_connection;
+		string m_commandText;
 		MySqlParameterCollection m_parameterCollection;
 		int? m_commandTimeout;
 		CommandType m_commandType;
