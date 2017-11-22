@@ -5,7 +5,7 @@
     <Description>A truly async MySQL ADO.NET provider, supporting MySQL Server, MariaDB, Percona Server, Amazon Aurora, Azure Database for MySQL and more.</Description>
     <Copyright>Copyright 2016–2017 Bradley Grainger</Copyright>
     <AssemblyTitle>Async MySQL Connector</AssemblyTitle>
-    <VersionPrefix>0.31.1</VersionPrefix>
+    <VersionPrefix>0.31.2</VersionPrefix>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <AssemblyOriginatorKeyFile>..\..\MySqlConnector.snk</AssemblyOriginatorKeyFile>

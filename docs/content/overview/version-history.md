@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.31.2
+
+* **Breaking** Throw `InvalidOperationException` when `MySqlCommand.Connection` can't be set (instead of `MySqlException`).
+* **Breaking** Throw `InvalidOperationException` from `MySqlCommand.Prepare` when preconditions aren't met.
+* Fix `NullReferenceException` when `MySqlCommand.Connection` isn't set (now correctly throws `InvalidOperationException`).
+
 ### 0.31.1
 
 * Fix `InvalidOperationException` if `MySqlBulkLoader` is used inside a transaction (again): [#300](https://github.com/mysql-net/MySqlConnector/issues/300).
