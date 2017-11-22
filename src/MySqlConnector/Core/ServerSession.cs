@@ -115,7 +115,7 @@ namespace MySqlConnector.Core
 			lock (m_lock)
 			{
 				if (m_state == State.Querying || m_state == State.CancelingQuery)
-					throw new MySqlException("There is already an open DataReader associated with this Connection which must be closed first.");
+					throw new InvalidOperationException("There is already an open DataReader associated with this Connection which must be closed first.");
 
 				VerifyState(State.Connected);
 				m_state = State.Querying;

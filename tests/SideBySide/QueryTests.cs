@@ -198,6 +198,11 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 		[Fact]
 		public async Task MultipleReaders()
 		{
+#if BASELINE
+			var exceptionType = typeof(MySqlException);
+#else
+			var exceptionType = typeof(InvalidOperationException);
+#endif
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
 				cmd.CommandText = @"drop table if exists query_multiple_readers;
@@ -214,21 +219,21 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 
 				using (var reader1 = await cmd1.ExecuteReaderAsync())
 				{
-					Assert.Throws<MySqlException>(() => cmd2.ExecuteReader());
-					Assert.Throws<MySqlException>(() => cmd2.ExecuteScalar());
+					Assert.Throws(exceptionType, () => cmd2.ExecuteReader());
+					Assert.Throws(exceptionType, () => cmd2.ExecuteScalar());
 					do
 					{
 						while (await reader1.ReadAsync())
 						{
-							Assert.Throws<MySqlException>(() => cmd2.ExecuteReader());
-							Assert.Throws<MySqlException>(() => cmd2.ExecuteScalar());
+							Assert.Throws(exceptionType, () => cmd2.ExecuteReader());
+							Assert.Throws(exceptionType, () => cmd2.ExecuteScalar());
 						}
-						Assert.Throws<MySqlException>(() => cmd2.ExecuteReader());
-						Assert.Throws<MySqlException>(() => cmd2.ExecuteScalar());
+						Assert.Throws(exceptionType, () => cmd2.ExecuteReader());
+						Assert.Throws(exceptionType, () => cmd2.ExecuteScalar());
 					} while (await reader1.NextResultAsync());
 
-					Assert.Throws<MySqlException>(() => cmd2.ExecuteReader());
-					Assert.Throws<MySqlException>(() => cmd2.ExecuteScalar());
+					Assert.Throws(exceptionType, () => cmd2.ExecuteReader());
+					Assert.Throws(exceptionType, () => cmd2.ExecuteScalar());
 
 					reader1.Dispose();
 					using (cmd2.ExecuteReader())

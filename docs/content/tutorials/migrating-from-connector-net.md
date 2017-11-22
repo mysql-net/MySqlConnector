@@ -76,6 +76,11 @@ Connector/NET allows a command to be executed even when `MySqlCommand.Transactio
 disposed `MySqlTransaction`. MySqlConnector will throw an `InvalidOperationException` if the `MySqlCommand.Transaction`
 property doesn't reference the active transaction. See [#333](https://github.com/mysql-net/MySqlConnector/issues/333) for more details.
 
+### Exceptions
+
+For consistency with other ADO.NET providers, MySqlConnector will throw `InvalidOperationException` (instead of `MySqlException`)
+for various precondition checks that indicate misuse of the API (and not a problem related to MySQL Server).
+
 ### Bugs present in Connector/NET that are fixed in MySqlConnector
 
 * [#37283](https://bugs.mysql.com/bug.php?id=37283), [#70587](https://bugs.mysql.com/bug.php?id=70587): Distributed transactions are not supported
