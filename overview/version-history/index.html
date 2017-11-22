@@ -168,6 +168,14 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-31-2">0.31.2</h3>
+
+<ul>
+<li><strong>Breaking</strong> Throw <code>InvalidOperationException</code> when <code>MySqlCommand.Connection</code> can&rsquo;t be set (instead of <code>MySqlException</code>).</li>
+<li><strong>Breaking</strong> Throw <code>InvalidOperationException</code> from <code>MySqlCommand.Prepare</code> when preconditions aren&rsquo;t met.</li>
+<li>Fix <code>NullReferenceException</code> when <code>MySqlCommand.Connection</code> isn&rsquo;t set (now correctly throws <code>InvalidOperationException</code>).</li>
+</ul>
+
 <h3 id="0-31-1">0.31.1</h3>
 
 <ul>

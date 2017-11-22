@@ -570,6 +570,14 @@ See &lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/information-function
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-31-2&#34;&gt;0.31.2&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Breaking&lt;/strong&gt; Throw &lt;code&gt;InvalidOperationException&lt;/code&gt; when &lt;code&gt;MySqlCommand.Connection&lt;/code&gt; can&amp;rsquo;t be set (instead of &lt;code&gt;MySqlException&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Breaking&lt;/strong&gt; Throw &lt;code&gt;InvalidOperationException&lt;/code&gt; from &lt;code&gt;MySqlCommand.Prepare&lt;/code&gt; when preconditions aren&amp;rsquo;t met.&lt;/li&gt;
+&lt;li&gt;Fix &lt;code&gt;NullReferenceException&lt;/code&gt; when &lt;code&gt;MySqlCommand.Connection&lt;/code&gt; isn&amp;rsquo;t set (now correctly throws &lt;code&gt;InvalidOperationException&lt;/code&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-31-1&#34;&gt;0.31.1&lt;/h3&gt;
 
 &lt;ul&gt;
