@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -178,7 +177,7 @@ namespace MySql.Data.MySqlClient
 			set
 			{
 				if (m_hasBeenOpened)
-					throw new MySqlException("Cannot change connection string on a connection that has already been opened.");
+					throw new InvalidOperationException("Cannot change connection string on a connection that has already been opened.");
 				m_connectionStringBuilder = new MySqlConnectionStringBuilder(value);
 				m_connectionSettings = new ConnectionSettings(m_connectionStringBuilder);
 			}
