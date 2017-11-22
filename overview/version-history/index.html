@@ -168,6 +168,17 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-31-3">0.31.3</h3>
+
+<ul>
+<li>Fix return value of <code>ExecuteScalar</code> to be the first column from the first row of the first result set.</li>
+<li>Fix return value of <code>ExecuteNonQuery</code> to correctly return -1 for <code>SELECT</code> statements.</li>
+<li>Fix bug where <code>NextResult</code> returns <code>true</code> for a trailing comment in a SQL statement.</li>
+<li><strong>Breaking</strong> Throw <code>InvalidOperationException</code> if <code>MySqlCommand.CommandText</code> is set while the command is active.</li>
+<li><strong>Breaking</strong> Throw <code>InvalidOperationException</code> (instead of <code>MySqlException</code>) if a <code>MySqlCommand</code> is executed while there is an open reader.</li>
+<li><strong>Breaking</strong> Throw <code>InvalidOperationException</code> from <code>MySqlCommand.Prepare</code> when preconditions aren&rsquo;t met.</li>
+</ul>
+
 <h3 id="0-31-2">0.31.2</h3>
 
 <ul>

@@ -245,6 +245,11 @@ object to be created. See &lt;a href=&#34;https://github.com/mysql-net/MySqlConn
 disposed &lt;code&gt;MySqlTransaction&lt;/code&gt;. MySqlConnector will throw an &lt;code&gt;InvalidOperationException&lt;/code&gt; if the &lt;code&gt;MySqlCommand.Transaction&lt;/code&gt;
 property doesn&amp;rsquo;t reference the active transaction. See &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/333&#34;&gt;#333&lt;/a&gt; for more details.&lt;/p&gt;
 
+&lt;h3 id=&#34;exceptions&#34;&gt;Exceptions&lt;/h3&gt;
+
+&lt;p&gt;For consistency with other ADO.NET providers, MySqlConnector will throw &lt;code&gt;InvalidOperationException&lt;/code&gt; (instead of &lt;code&gt;MySqlException&lt;/code&gt;)
+for various precondition checks that indicate misuse of the API (and not a problem related to MySQL Server).&lt;/p&gt;
+
 &lt;h3 id=&#34;bugs-present-in-connector-net-that-are-fixed-in-mysqlconnector&#34;&gt;Bugs present in Connector/NET that are fixed in MySqlConnector&lt;/h3&gt;
 
 &lt;ul&gt;

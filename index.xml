@@ -468,6 +468,11 @@ object to be created. See &lt;a href=&#34;https://github.com/mysql-net/MySqlConn
 disposed &lt;code&gt;MySqlTransaction&lt;/code&gt;. MySqlConnector will throw an &lt;code&gt;InvalidOperationException&lt;/code&gt; if the &lt;code&gt;MySqlCommand.Transaction&lt;/code&gt;
 property doesn&amp;rsquo;t reference the active transaction. See &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/333&#34;&gt;#333&lt;/a&gt; for more details.&lt;/p&gt;
 
+&lt;h3 id=&#34;exceptions&#34;&gt;Exceptions&lt;/h3&gt;
+
+&lt;p&gt;For consistency with other ADO.NET providers, MySqlConnector will throw &lt;code&gt;InvalidOperationException&lt;/code&gt; (instead of &lt;code&gt;MySqlException&lt;/code&gt;)
+for various precondition checks that indicate misuse of the API (and not a problem related to MySQL Server).&lt;/p&gt;
+
 &lt;h3 id=&#34;bugs-present-in-connector-net-that-are-fixed-in-mysqlconnector&#34;&gt;Bugs present in Connector/NET that are fixed in MySqlConnector&lt;/h3&gt;
 
 &lt;ul&gt;
@@ -569,6 +574,17 @@ See &lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/information-function
       <description>
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
+
+&lt;h3 id=&#34;0-31-3&#34;&gt;0.31.3&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fix return value of &lt;code&gt;ExecuteScalar&lt;/code&gt; to be the first column from the first row of the first result set.&lt;/li&gt;
+&lt;li&gt;Fix return value of &lt;code&gt;ExecuteNonQuery&lt;/code&gt; to correctly return -1 for &lt;code&gt;SELECT&lt;/code&gt; statements.&lt;/li&gt;
+&lt;li&gt;Fix bug where &lt;code&gt;NextResult&lt;/code&gt; returns &lt;code&gt;true&lt;/code&gt; for a trailing comment in a SQL statement.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Breaking&lt;/strong&gt; Throw &lt;code&gt;InvalidOperationException&lt;/code&gt; if &lt;code&gt;MySqlCommand.CommandText&lt;/code&gt; is set while the command is active.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Breaking&lt;/strong&gt; Throw &lt;code&gt;InvalidOperationException&lt;/code&gt; (instead of &lt;code&gt;MySqlException&lt;/code&gt;) if a &lt;code&gt;MySqlCommand&lt;/code&gt; is executed while there is an open reader.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Breaking&lt;/strong&gt; Throw &lt;code&gt;InvalidOperationException&lt;/code&gt; from &lt;code&gt;MySqlCommand.Prepare&lt;/code&gt; when preconditions aren&amp;rsquo;t met.&lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;h3 id=&#34;0-31-2&#34;&gt;0.31.2&lt;/h3&gt;
 
