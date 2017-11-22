@@ -295,7 +295,7 @@ namespace MySql.Data.MySqlClient
 			s_options.TryGetValue(key, out var option) ? option : null;
 
 		public static MySqlConnectionStringOption GetOptionForKey(string key) =>
-			TryGetOptionForKey(key) ?? throw new InvalidOperationException("Option '{0}' not supported.".FormatInvariant(key));
+			TryGetOptionForKey(key) ?? throw new ArgumentException("Option '{0}' not supported.".FormatInvariant(key));
 
 		public string Key => m_keys[0];
 		public IReadOnlyList<string> Keys => m_keys;
