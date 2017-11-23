@@ -263,6 +263,8 @@ namespace MySqlConnector.Core
 			}
 		}
 
+		public int Depth => 0;
+
 		public string GetName(int ordinal)
 		{
 			if (ColumnDefinitions == null)

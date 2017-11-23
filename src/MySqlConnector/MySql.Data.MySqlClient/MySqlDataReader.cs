@@ -205,7 +205,7 @@ namespace MySql.Data.MySqlClient
 
 		public override IEnumerator GetEnumerator() => new DbEnumerator(this, closeReader: false);
 
-		public override int Depth => throw new NotSupportedException();
+		public override int Depth => GetResultSet().Depth;
 
 		protected override DbDataReader GetDbDataReader(int ordinal) => throw new NotSupportedException();
 
