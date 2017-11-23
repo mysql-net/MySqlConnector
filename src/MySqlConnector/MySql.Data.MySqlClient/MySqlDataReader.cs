@@ -21,19 +21,19 @@ namespace MySql.Data.MySqlClient
 	{
 		public override bool NextResult()
 		{
-			Command.ResetCommandTimeout();
+			Command?.ResetCommandTimeout();
 			return NextResultAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		}
 
 		public override bool Read()
 		{
-			Command.ResetCommandTimeout();
+			Command?.ResetCommandTimeout();
 			return GetResultSet().Read();
 		}
 
 		public override Task<bool> ReadAsync(CancellationToken cancellationToken)
 		{
-			Command.ResetCommandTimeout();
+			Command?.ResetCommandTimeout();
 			return GetResultSet().ReadAsync(cancellationToken);
 		}
 
@@ -433,7 +433,7 @@ namespace MySql.Data.MySqlClient
 		private void VerifyNotDisposed()
 		{
 			if (Command == null)
-				throw new ObjectDisposedException(GetType().Name);
+				throw new InvalidOperationException("Can't call this method when MySqlDataReader is closed.");
 		}
 
 		private ResultSet GetResultSet()
