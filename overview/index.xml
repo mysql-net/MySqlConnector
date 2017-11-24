@@ -77,6 +77,28 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-32-0&#34;&gt;0.32.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Implement more &lt;code&gt;MySqlParameter&lt;/code&gt; constructor overloads: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/402&#34;&gt;#402&lt;/a&gt;.
+
+&lt;ul&gt;
+&lt;li&gt;This improves compatibility with Connector/NET.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Implement &lt;code&gt;MySqlParameter.Precision&lt;/code&gt; and &lt;code&gt;MySqlParameter.Scale&lt;/code&gt;.
+
+&lt;ul&gt;
+&lt;li&gt;The properties are provided only for source compatibility.&lt;/li&gt;
+&lt;li&gt;Not available on .NET 4.5.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Implement &lt;code&gt;MySqlDataReader.GetChars&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Implement &lt;code&gt;MySqlDataReader.Depth&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Fix &lt;code&gt;NullReferenceException&lt;/code&gt; in &lt;code&gt;MySqlDataReader&lt;/code&gt; when reader is disposed.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Breaking&lt;/strong&gt; Throw &lt;code&gt;InvalidCastException&lt;/code&gt; (instead of &lt;code&gt;MySqlException&lt;/code&gt;) from &lt;code&gt;MySqlDataReader.GetGuid&lt;/code&gt; if column is &lt;code&gt;NULL&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Breaking&lt;/strong&gt; Throw &lt;code&gt;InvalidOperationException&lt;/code&gt; (instead of &lt;code&gt;MySqlException&lt;/code&gt;) from &lt;code&gt;MySqlConnection.ConnectionString&lt;/code&gt; setter if connection is open.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Breaking&lt;/strong&gt; Throw &lt;code&gt;ArgumentException&lt;/code&gt; (instead of &lt;code&gt;InvalidOperationException&lt;/code&gt;) from &lt;code&gt;MySqlConnectionStringBuilder&lt;/code&gt; for invalid option names.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-31-3&#34;&gt;0.31.3&lt;/h3&gt;
 
 &lt;ul&gt;

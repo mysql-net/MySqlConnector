@@ -168,6 +168,28 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-32-0">0.32.0</h3>
+
+<ul>
+<li>Implement more <code>MySqlParameter</code> constructor overloads: <a href="https://github.com/mysql-net/MySqlConnector/issues/402">#402</a>.
+
+<ul>
+<li>This improves compatibility with Connector/NET.</li>
+</ul></li>
+<li>Implement <code>MySqlParameter.Precision</code> and <code>MySqlParameter.Scale</code>.
+
+<ul>
+<li>The properties are provided only for source compatibility.</li>
+<li>Not available on .NET 4.5.</li>
+</ul></li>
+<li>Implement <code>MySqlDataReader.GetChars</code>.</li>
+<li>Implement <code>MySqlDataReader.Depth</code>.</li>
+<li>Fix <code>NullReferenceException</code> in <code>MySqlDataReader</code> when reader is disposed.</li>
+<li><strong>Breaking</strong> Throw <code>InvalidCastException</code> (instead of <code>MySqlException</code>) from <code>MySqlDataReader.GetGuid</code> if column is <code>NULL</code>.</li>
+<li><strong>Breaking</strong> Throw <code>InvalidOperationException</code> (instead of <code>MySqlException</code>) from <code>MySqlConnection.ConnectionString</code> setter if connection is open.</li>
+<li><strong>Breaking</strong> Throw <code>ArgumentException</code> (instead of <code>InvalidOperationException</code>) from <code>MySqlConnectionStringBuilder</code> for invalid option names.</li>
+</ul>
+
 <h3 id="0-31-3">0.31.3</h3>
 
 <ul>
