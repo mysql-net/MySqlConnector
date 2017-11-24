@@ -11,6 +11,20 @@ weight: 30
 Version History
 ===============
 
+### 0.32.0
+
+* Implement more `MySqlParameter` constructor overloads: [#402](https://github.com/mysql-net/MySqlConnector/issues/402).
+  * This improves compatibility with Connector/NET.
+* Implement `MySqlParameter.Precision` and `MySqlParameter.Scale`.
+  * The properties are provided only for source compatibility.
+  * Not available on .NET 4.5.
+* Implement `MySqlDataReader.GetChars`.
+* Implement `MySqlDataReader.Depth`.
+* Fix `NullReferenceException` in `MySqlDataReader` when reader is disposed.
+* **Breaking** Throw `InvalidCastException` (instead of `MySqlException`) from `MySqlDataReader.GetGuid` if column is `NULL`.
+* **Breaking** Throw `InvalidOperationException` (instead of `MySqlException`) from `MySqlConnection.ConnectionString` setter if connection is open.
+* **Breaking** Throw `ArgumentException` (instead of `InvalidOperationException`) from `MySqlConnectionStringBuilder` for invalid option names.
+
 ### 0.31.3
 
 * Fix return value of `ExecuteScalar` to be the first column from the first row of the first result set.
