@@ -729,20 +729,6 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		}
 
 		[Fact]
-		public void ParameterDefaults()
-		{
-			var parameter = new MySqlParameter();
-			Assert.Equal(DbType.AnsiString, parameter.DbType);
-			Assert.Equal(ParameterDirection.Input, parameter.Direction);
-			Assert.False(parameter.IsNullable);
-			Assert.Null(parameter.ParameterName);
-			Assert.Equal(0, parameter.Precision);
-			Assert.Equal(0, parameter.Scale);
-			Assert.Equal(0, parameter.Size);
-			Assert.Null(parameter.Value);
-		}
-
-		[Fact]
 		public void InputOutputParameter()
 		{
 			using (var cmd = m_database.Connection.CreateCommand())

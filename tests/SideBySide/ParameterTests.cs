@@ -57,7 +57,169 @@ namespace SideBySide
 				Assert.Equal(mySqlDbType, parameter.MySqlDbType);
 				Assert.Equal(dbTypes[0], parameter.DbType);
 			}
+		}
 
+		[Fact]
+		public void ConstructorSimple()
+		{
+			var parameter = new MySqlParameter();
+			Assert.Null(parameter.ParameterName);
+#if BASELINE
+			Assert.Equal(MySqlDbType.Decimal, parameter.MySqlDbType);
+			Assert.Equal(DbType.AnsiString, parameter.DbType);
+#else
+			Assert.Equal(MySqlDbType.VarChar, parameter.MySqlDbType);
+			Assert.Equal(DbType.String, parameter.DbType);
+#endif
+			Assert.False(parameter.IsNullable);
+			Assert.Null(parameter.Value);
+			Assert.Equal(ParameterDirection.Input, parameter.Direction);
+			Assert.Equal(0, parameter.Precision);
+			Assert.Equal(0, parameter.Scale);
+			Assert.Equal(0, parameter.Size);
+#if !NETCOREAPP1_1_2
+			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
+#endif
+			Assert.Null(parameter.SourceColumn);
+		}
+
+		[Fact]
+		public void ConstructorNameValue()
+		{
+			var parameter = new MySqlParameter("@name", 1.0);
+			Assert.Equal("@name", parameter.ParameterName);
+			Assert.Equal(MySqlDbType.Double, parameter.MySqlDbType);
+			Assert.Equal(DbType.Double, parameter.DbType);
+			Assert.False(parameter.IsNullable);
+			Assert.Equal(1.0, parameter.Value);
+			Assert.Equal(ParameterDirection.Input, parameter.Direction);
+			Assert.Equal(0, parameter.Precision);
+			Assert.Equal(0, parameter.Scale);
+			Assert.Equal(0, parameter.Size);
+#if !NETCOREAPP1_1_2
+			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
+#endif
+			Assert.Null(parameter.SourceColumn);
+		}
+
+		[Fact]
+		public void ConstructorNameType()
+		{
+			var parameter = new MySqlParameter("@name", MySqlDbType.Double);
+			Assert.Equal("@name", parameter.ParameterName);
+			Assert.Equal(MySqlDbType.Double, parameter.MySqlDbType);
+			Assert.Equal(DbType.Double, parameter.DbType);
+			Assert.False(parameter.IsNullable);
+			Assert.Null(parameter.Value);
+			Assert.Equal(ParameterDirection.Input, parameter.Direction);
+			Assert.Equal(0, parameter.Precision);
+			Assert.Equal(0, parameter.Scale);
+			Assert.Equal(0, parameter.Size);
+#if !NETCOREAPP1_1_2
+			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
+#endif
+			Assert.Null(parameter.SourceColumn);
+		}
+
+		[Fact]
+		public void ConstructorNameTypeSize()
+		{
+			var parameter = new MySqlParameter("@name", MySqlDbType.Double, 4);
+			Assert.Equal("@name", parameter.ParameterName);
+			Assert.Equal(MySqlDbType.Double, parameter.MySqlDbType);
+			Assert.Equal(DbType.Double, parameter.DbType);
+			Assert.False(parameter.IsNullable);
+			Assert.Null(parameter.Value);
+			Assert.Equal(ParameterDirection.Input, parameter.Direction);
+			Assert.Equal(0, parameter.Precision);
+			Assert.Equal(0, parameter.Scale);
+			Assert.Equal(4, parameter.Size);
+#if !NETCOREAPP1_1_2
+			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
+#endif
+			Assert.Null(parameter.SourceColumn);
+		}
+
+		[Fact]
+		public void ConstructorNameTypeSizeSourceColumn()
+		{
+			var parameter = new MySqlParameter("@name", MySqlDbType.Int32, 4, "source");
+			Assert.Equal("@name", parameter.ParameterName);
+			Assert.Equal(MySqlDbType.Int32, parameter.MySqlDbType);
+			Assert.Equal(DbType.Int32, parameter.DbType);
+			Assert.False(parameter.IsNullable);
+			Assert.Null(parameter.Value);
+			Assert.Equal(ParameterDirection.Input, parameter.Direction);
+			Assert.Equal(0, parameter.Precision);
+			Assert.Equal(0, parameter.Scale);
+			Assert.Equal(4, parameter.Size);
+#if !NETCOREAPP1_1_2
+			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
+#endif
+			Assert.Equal("source", parameter.SourceColumn);
+		}
+
+		[Theory]
+		[InlineData(1, DbType.Int32, MySqlDbType.Int32)]
+		[InlineData(1.0, DbType.Double, MySqlDbType.Double)]
+		[InlineData(1.0f, DbType.Single, MySqlDbType.Float)]
+		[InlineData("1", DbType.String, MySqlDbType.VarChar)]
+#if BASELINE
+		[InlineData('1', DbType.Object, MySqlDbType.Blob)]
+#else
+		[InlineData('1', DbType.String, MySqlDbType.VarChar)]
+#endif
+		public void SetValueInfersType(object value, DbType expectedDbType, MySqlDbType expectedMySqlDbType)
+		{
+			var parameter = new MySqlParameter { Value = value };
+			Assert.Equal(expectedDbType, parameter.DbType);
+			Assert.Equal(expectedMySqlDbType, parameter.MySqlDbType);
+		}
+
+		[Fact]
+		public void SetValueToByteArrayInfersType()
+		{
+			var parameter = new MySqlParameter { Value = new byte[1] };
+#if BASELINE
+			Assert.Equal(DbType.Object, parameter.DbType);
+#else
+			Assert.Equal(DbType.Binary, parameter.DbType);
+#endif
+			Assert.Equal(MySqlDbType.Blob, parameter.MySqlDbType);
+		}
+
+
+		[Fact]
+		public void SetValueDoesNotInferType()
+		{
+			var parameter = new MySqlParameter("@name", MySqlDbType.Int32);
+			Assert.Equal(DbType.Int32, parameter.DbType);
+			Assert.Equal(MySqlDbType.Int32, parameter.MySqlDbType);
+
+			parameter.Value = 1.0;
+			Assert.Equal(DbType.Int32, parameter.DbType);
+			Assert.Equal(MySqlDbType.Int32, parameter.MySqlDbType);
+		}
+
+		[Fact]
+		public void ResetDbType()
+		{
+			var parameter = new MySqlParameter("@name", 1);
+			Assert.Equal(DbType.Int32, parameter.DbType);
+			Assert.Equal(MySqlDbType.Int32, parameter.MySqlDbType);
+
+			parameter.ResetDbType();
+#if BASELINE
+			Assert.Equal(MySqlDbType.Int32, parameter.MySqlDbType);
+			Assert.Equal(DbType.Int32, parameter.DbType);
+#else
+			Assert.Equal(MySqlDbType.VarChar, parameter.MySqlDbType);
+			Assert.Equal(DbType.String, parameter.DbType);
+#endif
+
+			parameter.Value = 1.0;
+			Assert.Equal(DbType.Double, parameter.DbType);
+			Assert.Equal(MySqlDbType.Double, parameter.MySqlDbType);
 		}
 	}
 }

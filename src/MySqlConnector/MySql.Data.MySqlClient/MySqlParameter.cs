@@ -11,11 +11,10 @@ namespace MySql.Data.MySqlClient
 	{
 		public MySqlParameter()
 		{
-			m_mySqlDbType = MySqlDbType.VarChar;
-			SourceColumn = "";
 #if !NETSTANDARD1_3
 			SourceVersion = DataRowVersion.Current;
 #endif
+			ResetDbType();
 		}
 
 		public MySqlParameter(string name, object objValue)
@@ -23,6 +22,27 @@ namespace MySql.Data.MySqlClient
 		{
 			ParameterName = name;
 			Value = objValue;
+		}
+
+		public MySqlParameter(string name, MySqlDbType mySqlDbType)
+			: this(name, mySqlDbType, 0)
+		{
+		}
+
+		public MySqlParameter(string name, MySqlDbType mySqlDbType, int size)
+			: this(name, mySqlDbType, size, null)
+		{
+		}
+
+		public MySqlParameter(string name, MySqlDbType mySqlDbType, int size, string sourceColumn)
+		{
+			ParameterName = name;
+			MySqlDbType = mySqlDbType;
+			Size = size;
+			SourceColumn = sourceColumn;
+#if !NETSTANDARD1_3
+			SourceVersion = DataRowVersion.Current;
+#endif
 		}
 
 		public override DbType DbType
@@ -65,14 +85,11 @@ namespace MySql.Data.MySqlClient
 
 		public override string ParameterName
 		{
-			get
-			{
-				return m_name;
-			}
+			get => m_name;
 			set
 			{
 				m_name = value;
-				NormalizedParameterName = NormalizeParameterName(m_name);
+				NormalizedParameterName = value == null ? null : NormalizeParameterName(m_name);
 			}
 		}
 
@@ -86,11 +103,29 @@ namespace MySql.Data.MySqlClient
 		public override DataRowVersion SourceVersion { get; set; }
 #endif
 
-		public override object Value { get; set; }
+		public override object Value
+		{
+			get => m_value;
+			set
+			{
+				m_value = value;
+				if (!HasSetDbType && value != null)
+				{
+					var typeMapping = TypeMapper.Instance.GetDbTypeMapping(value.GetType());
+					if (typeMapping != null)
+					{
+						m_dbType = typeMapping.DbTypes[0];
+						m_mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbType(m_dbType);
+					}
+				}
+			}
+		}
 
 		public override void ResetDbType()
 		{
-			DbType = default(DbType);
+			m_mySqlDbType = MySqlDbType.VarChar;
+			m_dbType = DbType.String;
+			HasSetDbType = false;
 		}
 
 		internal MySqlParameter WithParameterName(string parameterName) => new MySqlParameter(this, parameterName);
@@ -252,5 +287,6 @@ namespace MySql.Data.MySqlClient
 		MySqlDbType m_mySqlDbType;
 		string m_name;
 		ParameterDirection? m_direction;
+		object m_value;
 	}
 }
