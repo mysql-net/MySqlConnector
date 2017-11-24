@@ -104,17 +104,30 @@ namespace MySqlConnector.Core
 				return m_dataLengths[ordinal];
 			}
 
-			if (bufferOffset + length > buffer.Length)
-				throw new ArgumentException("bufferOffset + length cannot exceed buffer.Length", nameof(length));
+			CheckBufferArguments(dataOffset, buffer, bufferOffset, length);
 
-			int lengthToCopy = Math.Min(m_dataLengths[ordinal] - (int) dataOffset, length);
-			Buffer.BlockCopy(m_payload.Array, checked((int) (m_dataOffsets[ordinal] + dataOffset)), buffer, bufferOffset, lengthToCopy);
+			var offset = (int) dataOffset;
+			var lengthToCopy = Math.Max(0, Math.Min(m_dataLengths[ordinal] - offset, length));
+			Buffer.BlockCopy(m_payload.Array, m_dataOffsets[ordinal] + offset, buffer, bufferOffset, lengthToCopy);
 			return lengthToCopy;
 		}
 
 		public char GetChar(int ordinal) => (char) GetValue(ordinal);
 
-		public long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) => throw new NotImplementedException();
+		public long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length)
+		{
+			var value = GetString(ordinal);
+			if (buffer == null)
+				return value.Length;
+
+			CheckBufferArguments(dataOffset, buffer, bufferOffset, length);
+
+			var offset = (int) dataOffset;
+			var lengthToCopy = Math.Max(0, Math.Min(value.Length - offset, length));
+			if (lengthToCopy > 0)
+				value.CopyTo(offset, buffer, bufferOffset, lengthToCopy);
+			return lengthToCopy;
+		}
 
 		public Guid GetGuid(int ordinal)
 		{
@@ -323,6 +336,22 @@ namespace MySqlConnector.Core
 				default:
 					throw new NotImplementedException("Reading {0} not implemented".FormatInvariant(columnDefinition.ColumnType));
 			}
+		}
+
+		private static void CheckBufferArguments<T>(long dataOffset, T[] buffer, int bufferOffset, int length)
+		{
+			if (dataOffset < 0)
+				throw new ArgumentOutOfRangeException(nameof(dataOffset), dataOffset, "dataOffset must be non-negative");
+			if (dataOffset > int.MaxValue)
+				throw new ArgumentOutOfRangeException(nameof(dataOffset), dataOffset, "dataOffset must be a 32-bit integer");
+			if (length < 0)
+				throw new ArgumentOutOfRangeException(nameof(length), length, "length must be non-negative");
+			if (bufferOffset < 0)
+				throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, "bufferOffset must be non-negative");
+			if (bufferOffset > buffer.Length)
+				throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, "bufferOffset must be within the buffer");
+			if (checked(bufferOffset + length) > buffer.Length)
+				throw new ArgumentException("bufferOffset + length cannot exceed buffer.Length", nameof(length));
 		}
 
 		private DateTime ParseDateTime(ArraySegment<byte> value)
