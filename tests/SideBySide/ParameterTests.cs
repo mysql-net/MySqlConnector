@@ -159,6 +159,30 @@ namespace SideBySide
 			Assert.Equal("source", parameter.SourceColumn);
 		}
 
+#if !NETCOREAPP1_1_2
+		[Fact]
+		public void ConstructorEverything()
+		{
+#if !NET452
+			var parameter = new MySqlParameter("@name", MySqlDbType.Float, 4, ParameterDirection.Output, true, 1, 2, "source", DataRowVersion.Original, 3.0);
+			Assert.Equal(1, parameter.Precision);
+			Assert.Equal(2, parameter.Scale);
+#else
+			// The .NET 4.5.2 tests use the .NET 4.5 library, which does not support Precision and Scale (they were added in .NET 4.5.1)
+			var parameter = new MySqlParameter("@name", MySqlDbType.Float, 4, ParameterDirection.Output, true, 0, 0, "source", DataRowVersion.Original, 3.0);
+#endif
+			Assert.Equal("@name", parameter.ParameterName);
+			Assert.Equal(MySqlDbType.Float, parameter.MySqlDbType);
+			Assert.Equal(DbType.Single, parameter.DbType);
+			Assert.Equal(3.0, parameter.Value);
+			Assert.True(parameter.IsNullable);
+			Assert.Equal(ParameterDirection.Output, parameter.Direction);
+			Assert.Equal(4, parameter.Size);
+			Assert.Equal(DataRowVersion.Original, parameter.SourceVersion);
+			Assert.Equal("source", parameter.SourceColumn);
+		}
+#endif
+
 		[Theory]
 		[InlineData(1, DbType.Int32, MySqlDbType.Int32)]
 		[InlineData(1.0, DbType.Double, MySqlDbType.Double)]

@@ -45,6 +45,26 @@ namespace MySql.Data.MySqlClient
 #endif
 		}
 
+#if !NETSTANDARD1_3
+		public MySqlParameter(string name, MySqlDbType mySqlDbType, int size, ParameterDirection direction, bool isNullable, byte precision, byte scale, string sourceColumn, DataRowVersion sourceVersion, object value)
+			: this(name, mySqlDbType, size, sourceColumn)
+		{
+			Direction = direction;
+			IsNullable = isNullable;
+#if NET45
+			if (precision != 0)
+				throw new PlatformNotSupportedException("'precision' parameter is not supported on .NET 4.5.");
+			if (scale != 0)
+				throw new PlatformNotSupportedException("'scale' parameter is not supported on .NET 4.5.");
+#else
+			Precision = precision;
+			Scale = scale;
+#endif
+			SourceVersion = sourceVersion;
+			Value = value;
+		}
+#endif
+
 		public override DbType DbType
 		{
 			get => m_dbType;
@@ -82,6 +102,11 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public override bool IsNullable { get; set; }
+
+#if !NET45
+		public override byte Precision { get; set; }
+		public override byte Scale { get; set; }
+#endif
 
 		public override string ParameterName
 		{
