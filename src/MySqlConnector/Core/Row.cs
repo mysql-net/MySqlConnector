@@ -91,8 +91,8 @@ namespace MySqlConnector.Core
 			var column = ResultSet.ColumnDefinitions[ordinal];
 			var columnType = column.ColumnType;
 			if ((column.ColumnFlags & ColumnFlags.Binary) == 0 ||
-			    (columnType != ColumnType.String && columnType != ColumnType.VarString && columnType != ColumnType.TinyBlob &&
-			     columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob))
+				(columnType != ColumnType.String && columnType != ColumnType.VarString && columnType != ColumnType.TinyBlob &&
+				columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob))
 			{
 				throw new InvalidCastException("Can't convert {0} to bytes.".FormatInvariant(columnType));
 			}
@@ -128,12 +128,14 @@ namespace MySqlConnector.Core
 			if (value is byte[] bytes && bytes.Length == 16)
 				return new Guid(bytes);
 
+			if (m_dataOffsets[ordinal] == -1)
+				throw new InvalidCastException("Column is NULL.");
 			throw new MySqlException("The value could not be converted to a GUID: {0}".FormatInvariant(value));
 		}
 
 		public short GetInt16(int ordinal)
 		{
-			object value = GetValue(ordinal);
+			var value = GetValue(ordinal);
 			if (value is short)
 				return (short) value;
 
@@ -158,7 +160,7 @@ namespace MySqlConnector.Core
 
 		public int GetInt32(int ordinal)
 		{
-			object value = GetValue(ordinal);
+			var value = GetValue(ordinal);
 			if (value is int)
 				return (int) value;
 
@@ -183,7 +185,7 @@ namespace MySqlConnector.Core
 
 		public long GetInt64(int ordinal)
 		{
-			object value = GetValue(ordinal);
+			var value = GetValue(ordinal);
 			if (value is long)
 				return (long) value;
 
@@ -216,7 +218,7 @@ namespace MySqlConnector.Core
 
 		public double GetDouble(int ordinal)
 		{
-			object value = GetValue(ordinal);
+			var value = GetValue(ordinal);
 			return value is float floatValue ? floatValue : (double) value;
 		}
 

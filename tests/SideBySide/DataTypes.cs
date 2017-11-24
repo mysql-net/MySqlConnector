@@ -14,8 +14,10 @@ using Xunit;
 // Additionally, that is what DbDataReader.GetFieldValue<T> throws. For consistency, we prefer InvalidCastException.
 #if BASELINE
 using GetValueWhenNullException = System.Data.SqlTypes.SqlNullValueException;
+using GetGuidWhenNullException = MySql.Data.MySqlClient.MySqlException;
 #else
 using GetValueWhenNullException = System.InvalidCastException;
+using GetGuidWhenNullException = System.InvalidCastException;
 #endif
 
 namespace SideBySide
@@ -286,7 +288,7 @@ namespace SideBySide
 			for (int i = 0; i < expected.Length; i++)
 				if (expected[i] != null)
 					expected[i] = Guid.Parse((string) expected[i]);
-			DoQuery<MySqlException>("strings", column, dataTypeName, expected, reader => reader.GetGuid(0));
+			DoQuery<GetGuidWhenNullException>("strings", column, dataTypeName, expected, reader => reader.GetGuid(0));
 		}
 
 		[Theory]
@@ -379,7 +381,7 @@ namespace SideBySide
 
 					Assert.True(await reader.ReadAsync().ConfigureAwait(false));
 					Assert.True(reader.IsDBNull(0));
-					Assert.Throws<MySqlException>(() => reader.GetGuid(0));
+					Assert.Throws<GetGuidWhenNullException>(() => reader.GetGuid(0));
 
 					Assert.True(await reader.ReadAsync().ConfigureAwait(false));
 					Assert.False(reader.IsDBNull(0));
