@@ -110,3 +110,4 @@ for various precondition checks that indicate misuse of the API (and not a probl
 * [#87876](https://bugs.mysql.com/bug.php?id=87876): `IsLong` is schema table is incorrect for `LONGTEXT` and `LONGBLOB` columns
 * [#88058](https://bugs.mysql.com/bug.php?id=88058): `decimal(n, 0)` has wrong `NumericPrecision`
 * [#88124](https://bugs.mysql.com/bug.php?id=88124): CommandTimeout isn't reset when calling Read/NextResult
+* [#88611](https://bugs.mysql.com/bug.php?id=88611): `MySqlCommand` can be executed even if it has "wrong" transaction
