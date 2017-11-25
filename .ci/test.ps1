@@ -17,6 +17,12 @@ if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
 popd
+pushd tests\Conformance.Tests
+dotnet xunit -c Release
+if ($LASTEXITCODE -ne 0){
+    exit $LASTEXITCODE;
+}
+popd
 
 pushd .\tests\SideBySide
 
