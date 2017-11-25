@@ -503,6 +503,7 @@ for various precondition checks that indicate misuse of the API (and not a probl
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=87876&#34;&gt;#87876&lt;/a&gt;: &lt;code&gt;IsLong&lt;/code&gt; is schema table is incorrect for &lt;code&gt;LONGTEXT&lt;/code&gt; and &lt;code&gt;LONGBLOB&lt;/code&gt; columns&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=88058&#34;&gt;#88058&lt;/a&gt;: &lt;code&gt;decimal(n, 0)&lt;/code&gt; has wrong &lt;code&gt;NumericPrecision&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=88124&#34;&gt;#88124&lt;/a&gt;: CommandTimeout isn&amp;rsquo;t reset when calling Read/NextResult&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://bugs.mysql.com/bug.php?id=88611&#34;&gt;#88611&lt;/a&gt;: &lt;code&gt;MySqlCommand&lt;/code&gt; can be executed even if it has &amp;ldquo;wrong&amp;rdquo; transaction&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
