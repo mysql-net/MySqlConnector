@@ -225,7 +225,11 @@ namespace MySqlConnector.Core
 
 		public DateTimeOffset GetDateTimeOffset(int ordinal) => new DateTimeOffset(DateTime.SpecifyKind(GetDateTime(ordinal), DateTimeKind.Utc));
 
-		public string GetString(int ordinal) => (string) GetValue(ordinal);
+		public string GetString(int ordinal)
+		{
+			var value = GetValue(ordinal);
+			return value is string stringValue ? stringValue : value.ToString();
+		} 
 
 		public decimal GetDecimal(int ordinal) => (decimal) GetValue(ordinal);
 
