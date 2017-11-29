@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 
 namespace SideBySide
 {
@@ -220,6 +220,7 @@ values
   ('{""a"": ""b""}');
 ");
 			}
+			Connection.Close();
 		}
 	}
 }

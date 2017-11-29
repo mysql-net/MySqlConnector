@@ -22,11 +22,17 @@ using GetGuidWhenNullException = System.InvalidCastException;
 
 namespace SideBySide
 {
-	public class DataTypes : IClassFixture<DataTypesFixture>
+	public class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 	{
 		public DataTypes(DataTypesFixture database)
 		{
 			m_database = database;
+			m_database.Connection.Open();
+		}
+
+		public void Dispose()
+		{
+			m_database.Connection.Close();
 		}
 
 		[Theory]
