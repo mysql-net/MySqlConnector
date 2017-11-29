@@ -11,36 +11,43 @@ namespace SideBySide
 	{
 		public DatabaseFixture()
 		{
-			// increase the number of worker threads to reduce number of spurious failures from threadpool starvation
+			lock (s_lock)
+			{
+				if (!s_isInitialized)
+				{
+					// increase the number of worker threads to reduce number of spurious failures from threadpool starvation
 #if NETCOREAPP1_1_2
-			// from https://stackoverflow.com/a/42982698
-			typeof(ThreadPool).GetMethod("SetMinThreads", BindingFlags.Public | BindingFlags.Static).Invoke(null, new object[] { 64, 64 });
+					// from https://stackoverflow.com/a/42982698
+					typeof(ThreadPool).GetMethod("SetMinThreads", BindingFlags.Public | BindingFlags.Static).Invoke(null, new object[] { 64, 64 });
 #else
-			ThreadPool.SetMinThreads(64, 64);
+					ThreadPool.SetMinThreads(64, 64);
 #endif
 
-			var csb = AppConfig.CreateConnectionStringBuilder();
-			var connectionString = csb.ConnectionString;
-			var database = csb.Database;
-			csb.Database = "";
-			using (var db = new MySqlConnection(csb.ConnectionString))
-			{
-				db.Open();
-				using (var cmd = db.CreateCommand())
-				{
-					cmd.CommandText = $"create schema if not exists {database};";
-					cmd.ExecuteNonQuery();
-
-					if (!string.IsNullOrEmpty(AppConfig.SecondaryDatabase))
+					var csb = AppConfig.CreateConnectionStringBuilder();
+					var database = csb.Database;
+					csb.Database = "";
+					using (var db = new MySqlConnection(csb.ConnectionString))
 					{
-						cmd.CommandText = $"create schema if not exists {AppConfig.SecondaryDatabase};";
-						cmd.ExecuteNonQuery();
+						db.Open();
+						using (var cmd = db.CreateCommand())
+						{
+							cmd.CommandText = $"create schema if not exists {database};";
+							cmd.ExecuteNonQuery();
+
+							if (!string.IsNullOrEmpty(AppConfig.SecondaryDatabase))
+							{
+								cmd.CommandText = $"create schema if not exists {AppConfig.SecondaryDatabase};";
+								cmd.ExecuteNonQuery();
+							}
+						}
+						db.Close();
 					}
+
+					s_isInitialized = true;
 				}
-				db.Close();
 			}
 
-			Connection = new MySqlConnection(connectionString);
+			Connection = new MySqlConnection(AppConfig.ConnectionString);
 		}
 
 		public MySqlConnection Connection { get; }
@@ -57,5 +64,8 @@ namespace SideBySide
 				Connection.Dispose();
 			}
 		}
+
+		static object s_lock = new object();
+		static bool s_isInitialized;
 	}
 }
