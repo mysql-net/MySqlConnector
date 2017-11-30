@@ -10,13 +10,15 @@ before_test:
 test_script:
 - ps: .\.ci\test.ps1
 after_test:
-- cmd: dotnet pack src\MySqlConnector\MySqlConnector.csproj -c Release -p:SourceLinkCreate=true -p:SourceLinkTest=true
+- cmd: |-
+    dotnet pack src\MySqlConnector\MySqlConnector.csproj -c Release -p:SourceLinkCreate=true -p:SourceLinkTest=true
+    dotnet pack src\MySqlConnector.Logging.log4net\MySqlConnector.Logging.log4net.csproj -c Release -p:SourceLinkCreate=true -p:SourceLinkTest=true
 notifications:
 - provider: Slack
   incoming_webhook:
     secure: SRJ5fYQE4tvelyqeX3Lkv0gXta3O2pl4/+wNaqmqmcFkmYBe+U31T5YCGhipBOVhHBIZLevihOJZ78sFVJrmAFV5bHgtX/VPIKEXN+7ytis=
 artifacts:
-- path: src\MySqlConnector\bin\Release\MySqlConnector.*.nupkg
+- path: src\*\bin\Release\*.nupkg
 deploy:
 - provider: NuGet
   api_key:
