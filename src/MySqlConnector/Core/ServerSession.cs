@@ -263,6 +263,9 @@ namespace MySqlConnector.Core
 
 				if (m_useCompression)
 					m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
+
+				if (ShouldGetRealServerDetails())
+					await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			}
 			catch (IOException ex)
 			{
@@ -807,6 +810,65 @@ namespace MySqlConnector.Core
 				if (ex is IOException && clientCertificates != null)
 					throw new MySqlException("MySQL Server rejected client certificate", ex);
 				throw;
+			}
+		}
+
+		// Some servers are exposed through a proxy, which handles the initial handshake and gives the proxy's
+		// server version and thread ID. Detect this situation and return `true` if the real server's details should
+		// be requested after connecting (which takes an extra roundtrip).
+		private bool ShouldGetRealServerDetails()
+		{
+			// currently hardcoded to the version returned by the Azure Database for MySQL proxy
+			return ServerVersion.OriginalString == "5.6.26.0";
+		}
+
+		private async Task GetRealServerDetailsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			try
+			{
+				await SendAsync(QueryPayload.Create("SELECT CONNECTION_ID(), VERSION();"), ioBehavior, cancellationToken).ConfigureAwait(false);
+
+				// column count: 2
+				await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
+				// CONNECTION_ID() and VERSION() columns
+				await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+				await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+
+				PayloadData payload;
+				if (!SupportsDeprecateEof)
+				{
+					payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+					EofPayload.Create(payload);
+				}
+
+				// first (and only) row
+				int? connectionId = default;
+				string serverVersion = null;
+				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+				var reader = new ByteArrayReader(payload.ArraySegment);
+				var length = reader.ReadLengthEncodedIntegerOrNull();
+				if (length != -1)
+					connectionId = int.Parse(Encoding.UTF8.GetString(reader.ReadByteString(length)), CultureInfo.InvariantCulture);
+				length = reader.ReadLengthEncodedIntegerOrNull();
+				if (length != -1)
+					serverVersion = Encoding.UTF8.GetString(reader.ReadByteString(length));
+
+				// OK/EOF payload
+				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+				if (OkPayload.IsOk(payload, SupportsDeprecateEof))
+					OkPayload.Create(payload, SupportsDeprecateEof);
+				else
+					EofPayload.Create(payload);
+
+				if (connectionId.HasValue && serverVersion != null)
+				{
+					ConnectionId = connectionId.Value;
+					ServerVersion = new ServerVersion(serverVersion);
+				}
+			}
+			catch (MySqlException)
+			{
 			}
 		}
 
