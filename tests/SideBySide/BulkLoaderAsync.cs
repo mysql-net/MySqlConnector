@@ -132,7 +132,9 @@ namespace SideBySide
 		[Fact]
 		public async Task BulkLoadCsvFileNotFound()
 		{
-			var secureFilePath = m_database.Connection.Query<string>(@"select @@global.secure_file_priv;").FirstOrDefault() ?? "";
+			var secureFilePath = await m_database.Connection.ExecuteScalarAsync<string>(@"select @@global.secure_file_priv;");
+			if (string.IsNullOrEmpty(secureFilePath) || secureFilePath == "NULL")
+				return;
 
 			MySqlBulkLoader bl = new MySqlBulkLoader(m_database.Connection);
 			bl.FileName = Path.Combine(secureFilePath, AppConfig.MySqlBulkLoaderCsvFile + "-junk");
