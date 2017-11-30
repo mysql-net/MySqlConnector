@@ -77,6 +77,8 @@ namespace MySqlConnector.Core
 				VerifyState(State.Querying, State.CancelingQuery, State.Failed);
 				if (m_state != State.Querying)
 					return false;
+				if (command.CancelAttemptCount++ >= 10)
+					return false;
 				m_state = State.CancelingQuery;
 			}
 
@@ -119,6 +121,7 @@ namespace MySqlConnector.Core
 
 				VerifyState(State.Connected);
 				m_state = State.Querying;
+				command.CancelAttemptCount = 0;
 				m_activeCommandId = command.CommandId;
 			}
 		}

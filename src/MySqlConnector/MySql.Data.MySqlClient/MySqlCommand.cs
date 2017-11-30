@@ -230,6 +230,8 @@ namespace MySql.Data.MySqlClient
 
 		internal int CommandId { get; }
 
+		internal int CancelAttemptCount { get; set; }
+
 		/// <summary>
 		/// Causes the effective command timeout to be reset back to the value specified by <see cref="CommandTimeout"/>.
 		/// </summary>
