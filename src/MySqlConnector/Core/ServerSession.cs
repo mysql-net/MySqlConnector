@@ -339,7 +339,7 @@ namespace MySqlConnector.Core
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 					{
-						Log.Info("{0} optimistic reauthentication failed; logging in again", m_logArguments);
+						Log.Debug("{0} optimistic reauthentication failed; logging in again", m_logArguments);
 						payload = await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
 					OkPayload.Create(payload);
