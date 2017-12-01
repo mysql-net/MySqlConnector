@@ -1,5 +1,6 @@
 using System.Text;
 using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Payloads
 {
@@ -14,7 +15,7 @@ namespace MySqlConnector.Protocol.Payloads
 		{
 			var reader = new ByteArrayReader(payload.ArraySegment);
 			reader.ReadByte(Signature);
-			var fileName = Encoding.UTF8.GetString(reader.ReadByteArray(reader.BytesRemaining));
+			var fileName = Encoding.UTF8.GetString(reader.ReadByteArraySegment(reader.BytesRemaining));
 			return new LocalInfilePayload(fileName);
 		}
 

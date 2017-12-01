@@ -127,6 +127,14 @@ namespace MySqlConnector.Protocol.Serialization
 			return result;
 		}
 
+		public ArraySegment<byte> ReadByteArraySegment(int length)
+		{
+			VerifyRead(length);
+			var result = new ArraySegment<byte>(m_buffer, m_offset, length);
+			m_offset += length;
+			return result;
+		}
+
 		public ulong ReadLengthEncodedInteger()
 		{
 			byte encodedLength = m_buffer[m_offset++];

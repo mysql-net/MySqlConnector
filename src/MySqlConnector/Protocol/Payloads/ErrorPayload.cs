@@ -1,6 +1,7 @@
 using System.Text;
 using MySql.Data.MySqlClient;
 using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Payloads
 {
@@ -19,17 +20,17 @@ namespace MySqlConnector.Protocol.Payloads
 			reader.ReadByte(Signature);
 
 			var errorCode = reader.ReadUInt16();
-			var stateMarker = Encoding.ASCII.GetString(reader.ReadByteArray(1));
+			var stateMarker = Encoding.ASCII.GetString(reader.ReadByteArraySegment(1));
 			string state, message;
 			if (stateMarker == "#")
 			{
-				state = Encoding.ASCII.GetString(reader.ReadByteArray(5));
-				message = Encoding.UTF8.GetString(reader.ReadByteArray(payload.ArraySegment.Count - 9));
+				state = Encoding.ASCII.GetString(reader.ReadByteArraySegment(5));
+				message = Encoding.UTF8.GetString(reader.ReadByteArraySegment(payload.ArraySegment.Count - 9));
 			}
 			else
 			{
 				state = "HY000";
-				message = stateMarker + Encoding.UTF8.GetString(reader.ReadByteArray(payload.ArraySegment.Count - 4));
+				message = stateMarker + Encoding.UTF8.GetString(reader.ReadByteArraySegment(payload.ArraySegment.Count - 4));
 			}
 			return new ErrorPayload(errorCode, state, message);
 		}
