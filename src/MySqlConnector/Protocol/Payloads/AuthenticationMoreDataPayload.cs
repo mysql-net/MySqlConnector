@@ -12,7 +12,7 @@ namespace MySqlConnector.Protocol.Payloads
 		{
 			var reader = new ByteArrayReader(payload.ArraySegment);
 			reader.ReadByte(Signature);
-			return new AuthenticationMoreDataPayload(reader.ReadByteString(reader.BytesRemaining));
+			return new AuthenticationMoreDataPayload(reader.ReadByteArray(reader.BytesRemaining));
 		}
 
 		private AuthenticationMoreDataPayload(byte[] data) => Data = data;

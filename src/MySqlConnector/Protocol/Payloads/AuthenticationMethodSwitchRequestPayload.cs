@@ -26,7 +26,7 @@ namespace MySqlConnector.Protocol.Payloads
 			else
 			{
 				name = Encoding.UTF8.GetString(reader.ReadNullTerminatedByteString());
-				data = reader.ReadByteString(reader.BytesRemaining);
+				data = reader.ReadByteArray(reader.BytesRemaining);
 			}
 			return new AuthenticationMethodSwitchRequestPayload(name, data);
 		}

@@ -924,10 +924,10 @@ namespace MySqlConnector.Core
 				var reader = new ByteArrayReader(payload.ArraySegment);
 				var length = reader.ReadLengthEncodedIntegerOrNull();
 				if (length != -1)
-					connectionId = int.Parse(Encoding.UTF8.GetString(reader.ReadByteString(length)), CultureInfo.InvariantCulture);
+					connectionId = int.Parse(Encoding.UTF8.GetString(reader.ReadByteArray(length)), CultureInfo.InvariantCulture);
 				length = reader.ReadLengthEncodedIntegerOrNull();
 				if (length != -1)
-					serverVersion = Encoding.UTF8.GetString(reader.ReadByteString(length));
+					serverVersion = Encoding.UTF8.GetString(reader.ReadByteArray(length));
 
 				// OK/EOF payload
 				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);

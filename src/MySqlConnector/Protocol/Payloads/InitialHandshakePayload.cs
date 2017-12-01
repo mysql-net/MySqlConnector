@@ -18,7 +18,7 @@ namespace MySqlConnector.Protocol.Payloads
 			reader.ReadByte(c_protocolVersion);
 			var serverVersion = reader.ReadNullTerminatedByteString();
 			var connectionId = reader.ReadInt32();
-			var authPluginData = reader.ReadByteString(8);
+			var authPluginData = reader.ReadByteArray(8);
 			string authPluginName = null;
 			reader.ReadByte(0);
 			var protocolCapabilities = (ProtocolCapabilities) reader.ReadUInt16();
@@ -29,10 +29,10 @@ namespace MySqlConnector.Protocol.Payloads
 				var capabilityFlagsHigh = reader.ReadUInt16();
 				protocolCapabilities |= (ProtocolCapabilities) (capabilityFlagsHigh << 16);
 				var authPluginDataLength = reader.ReadByte();
-				var unused = reader.ReadByteString(10);
+				var unused = reader.ReadByteArray(10);
 				if ((protocolCapabilities & ProtocolCapabilities.SecureConnection) != 0)
 				{
-					var authPluginData2 = reader.ReadByteString(Math.Max(13, authPluginDataLength - 8));
+					var authPluginData2 = reader.ReadByteArray(Math.Max(13, authPluginDataLength - 8));
 					var concatenated = new byte[authPluginData.Length + authPluginData2.Length];
 					Buffer.BlockCopy(authPluginData, 0, concatenated, 0, authPluginData.Length);
 					Buffer.BlockCopy(authPluginData2, 0, concatenated,authPluginData.Length, authPluginData2.Length);

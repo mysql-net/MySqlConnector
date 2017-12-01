@@ -14,7 +14,7 @@ namespace MySqlConnector.Protocol.Payloads
 		{
 			var reader = new ByteArrayReader(payload.ArraySegment);
 			reader.ReadByte(Signature);
-			var fileName = Encoding.UTF8.GetString(reader.ReadByteString(reader.BytesRemaining));
+			var fileName = Encoding.UTF8.GetString(reader.ReadByteArray(reader.BytesRemaining));
 			return new LocalInfilePayload(fileName);
 		}
 

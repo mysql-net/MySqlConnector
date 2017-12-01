@@ -118,7 +118,7 @@ namespace MySqlConnector.Protocol.Serialization
 			return substring;
 		}
 
-		public byte[] ReadByteString(int length)
+		public byte[] ReadByteArray(int length)
 		{
 			VerifyRead(length);
 			var result = new byte[length];
