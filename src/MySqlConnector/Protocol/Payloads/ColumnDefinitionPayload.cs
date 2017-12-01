@@ -100,7 +100,7 @@ namespace MySqlConnector.Protocol.Payloads
 					reader.ReadLengthEncodedByteString();
 			}
 
-			if (reader.BytesRemaining != 0)
+			while (reader.BytesRemaining != 0 && reader.ReadByte() != 0)
 			{
 				throw new FormatException("Extra bytes at end of payload.");
 			}
