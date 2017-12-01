@@ -1,0 +1,30 @@
+<Project>
+
+  <PropertyGroup>
+    <VersionPrefix>0.32.0</VersionPrefix>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <AssemblyOriginatorKeyFile>..\..\MySqlConnector.snk</AssemblyOriginatorKeyFile>
+    <TargetFrameworks>net45;net46;netstandard1.3;netstandard2.0</TargetFrameworks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PackageReleaseNotes>https://mysql-net.github.io/MySqlConnector/overview/version-history/</PackageReleaseNotes>
+    <PackageProjectUrl>https://mysql-net.github.io/MySqlConnector/</PackageProjectUrl>
+    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageIconUrl>https://mysql-net.github.io/MySqlConnector/img/logo.png</PackageIconUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/mysql-net/MySqlConnector.git</RepositoryUrl>
+    <DebugType>embedded</DebugType>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
+    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.5.0" PrivateAssets="All" />
+    <DotNetCliToolReference Include="dotnet-sourcelink" Version="2.5.0" />
+    <PackageReference Include="SourceLink.Test" Version="2.5.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DefineConstants>DEBUG</DefineConstants>
+  </PropertyGroup>
+
+</Project>

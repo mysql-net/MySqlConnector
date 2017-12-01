@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -59,6 +60,8 @@ namespace MySqlConnector.Core
 			CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
+			if (Log.IsDebugEnabled())
+				Log.Debug("Session{0} Execute{1}: {2}", m_command.Connection.Session.Id, ioBehavior == IOBehavior.Asynchronous ? "Async" : "", commandText);
 			var payload = CreateQueryPayload(commandText, parameterCollection);
 			using (m_command.RegisterCancel(cancellationToken))
 			{
@@ -71,6 +74,7 @@ namespace MySqlConnector.Core
 				}
 				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
 				{
+					Log.Warn("Session{0} query was interrupted", m_command.Connection.Session.Id);
 					throw new OperationCanceledException(cancellationToken);
 				}
 				catch (Exception ex) when (payload.ArraySegment.Count > 4_194_304 && (ex is SocketException || ex is IOException || ex is MySqlProtocolException))
@@ -95,6 +99,8 @@ namespace MySqlConnector.Core
 			var preparer = new StatementPreparer(commandText, parameterCollection, statementPreparerOptions);
 			return new PayloadData(preparer.ParseAndBindParameters());
 		}
+
+		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(TextCommandExecutor));
 
 		readonly MySqlCommand m_command;
 	}
