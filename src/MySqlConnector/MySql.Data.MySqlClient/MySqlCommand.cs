@@ -138,11 +138,7 @@ namespace MySql.Data.MySqlClient
 
 		public override bool DesignTimeVisible { get; set; }
 
-		public override UpdateRowSource UpdatedRowSource
-		{
-			get { throw new NotSupportedException(); }
-			set { throw new NotSupportedException(); }
-		}
+		public override UpdateRowSource UpdatedRowSource { get; set; }
 
 		public long LastInsertedId { get; internal set; }
 
