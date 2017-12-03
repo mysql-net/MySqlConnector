@@ -11,6 +11,14 @@ weight: 30
 Version History
 ===============
 
+### 0.33.0
+
+* Implement logging framework: [#390](https://github.com/mysql-net/MySqlConnector/issues/390).
+  * Add new project, `MySqlConnector.Logging.log4net`, that adapts MySqlConnector logging for log4net.
+* Implement `MySqlDataAdapter`: [#183](https://github.com/mysql-net/MySqlConnector/issues/183).
+* Get correct connection ID for Azure Database for MySQL.
+* Use `AdoNet.Specification.Tests` test suite to validate implementation.
+
 ### 0.32.0
 
 * Implement more `MySqlParameter` constructor overloads: [#402](https://github.com/mysql-net/MySqlConnector/issues/402).
