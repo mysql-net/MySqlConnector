@@ -576,6 +576,19 @@ See &lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/information-function
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-33-0&#34;&gt;0.33.0&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Implement logging framework: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/390&#34;&gt;#390&lt;/a&gt;.
+
+&lt;ul&gt;
+&lt;li&gt;Add new project, &lt;code&gt;MySqlConnector.Logging.log4net&lt;/code&gt;, that adapts MySqlConnector logging for log4net.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Implement &lt;code&gt;MySqlDataAdapter&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/183&#34;&gt;#183&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Get correct connection ID for Azure Database for MySQL.&lt;/li&gt;
+&lt;li&gt;Use &lt;code&gt;AdoNet.Specification.Tests&lt;/code&gt; test suite to validate implementation.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-32-0&#34;&gt;0.32.0&lt;/h3&gt;
 
 &lt;ul&gt;
