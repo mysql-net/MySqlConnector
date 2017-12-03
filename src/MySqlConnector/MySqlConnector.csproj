@@ -2,10 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>net45;net46;netstandard1.3;netstandard2.0</TargetFrameworks>
-    <Title>MySQL Connector</Title>
+    <Title>Async MySQL ADO.NET Connector</Title>
     <Description>A truly async MySQL ADO.NET provider, supporting MySQL Server, MariaDB, Percona Server, Amazon Aurora, Azure Database for MySQL and more.</Description>
     <Copyright>Copyright 2016–2017 Bradley Grainger</Copyright>
-    <AssemblyTitle>Async MySQL Connector</AssemblyTitle>
     <Authors>Bradley Grainger;Caleb Lloyd</Authors>
     <AssemblyName>MySqlConnector</AssemblyName>
     <PackageId>MySqlConnector</PackageId>
