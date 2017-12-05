@@ -625,19 +625,19 @@ namespace MySqlConnector.Core
 				IPAddress[] ipAddresses;
 				try
 				{
-#if NETSTANDARD1_3
-// Dns.GetHostAddresses isn't available until netstandard 2.0: https://github.com/dotnet/corefx/pull/11950
-					ipAddresses = await Dns.GetHostAddressesAsync(hostName).ConfigureAwait(false);
-#else
 					if (ioBehavior == IOBehavior.Asynchronous)
 					{
 						ipAddresses = await Dns.GetHostAddressesAsync(hostName).ConfigureAwait(false);
 					}
 					else
 					{
+#if NETSTANDARD1_3
+						// Dns.GetHostAddresses isn't available until netstandard 2.0: https://github.com/dotnet/corefx/pull/11950
+						ipAddresses = await Dns.GetHostAddressesAsync(hostName).ConfigureAwait(false);
+#else
 						ipAddresses = Dns.GetHostAddresses(hostName);
-					}
 #endif
+					}
 				}
 				catch (SocketException)
 				{
