@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.33.1
+
+* Add missing `.ConfigureAwait(false)`
+  * Fixes a potential deadlock in clients that blocked on `Task`s returned from async methods.
+
 ### 0.33.0
 
 * Implement logging framework: [#390](https://github.com/mysql-net/MySqlConnector/issues/390).
