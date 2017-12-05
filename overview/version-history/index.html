@@ -168,6 +168,16 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-33-1">0.33.1</h3>
+
+<ul>
+<li>Add missing <code>.ConfigureAwait(false)</code>
+
+<ul>
+<li>Fixes a potential deadlock in clients that blocked on <code>Task</code>s returned from async methods.</li>
+</ul></li>
+</ul>
+
 <h3 id="0-33-0">0.33.0</h3>
 
 <ul>

@@ -576,6 +576,16 @@ See &lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/information-function
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-33-1&#34;&gt;0.33.1&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Add missing &lt;code&gt;.ConfigureAwait(false)&lt;/code&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Fixes a potential deadlock in clients that blocked on &lt;code&gt;Task&lt;/code&gt;s returned from async methods.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-33-0&#34;&gt;0.33.0&lt;/h3&gt;
 
 &lt;ul&gt;
