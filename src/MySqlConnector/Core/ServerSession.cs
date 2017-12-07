@@ -968,7 +968,7 @@ namespace MySqlConnector.Core
 
 		/// <summary>
 		/// Disposes and sets <paramref name="disposable"/> to <c>null</c>, ignoring any
-		/// <see cref="SocketException"/> that is thrown.
+		/// <see cref="IOException"/> or <see cref="SocketException"/> that is thrown.
 		/// </summary>
 		/// <typeparam name="T">An <see cref="IDisposable"/> type.</typeparam>
 		/// <param name="disposable">The object to dispose.</param>
@@ -980,6 +980,9 @@ namespace MySqlConnector.Core
 				try
 				{
 					disposable.Dispose();
+				}
+				catch (IOException)
+				{
 				}
 				catch (SocketException)
 				{
