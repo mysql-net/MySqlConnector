@@ -204,6 +204,9 @@ namespace MySqlConnector.Core
 					catch (IOException)
 					{
 					}
+					catch (ObjectDisposedException)
+					{
+					}
 					catch (SocketException)
 					{
 					}
