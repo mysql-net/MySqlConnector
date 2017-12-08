@@ -394,7 +394,7 @@ namespace SideBySide
 					Assert.NotNull(reader.GetValue(0));
 					Assert.IsType(fieldType, reader.GetValue(0));
 
-					Type exceptionType = typeof(MySqlException);
+					Type exceptionType = typeof(GetGuidWhenNullException);
 #if BASELINE
 					// baseline throws FormatException when conversion from string fails
 					if (fieldType == typeof(string))

@@ -141,9 +141,7 @@ namespace MySqlConnector.Core
 			if (value is byte[] bytes && bytes.Length == 16)
 				return new Guid(bytes);
 
-			if (m_dataOffsets[ordinal] == -1)
-				throw new InvalidCastException("Column is NULL.");
-			throw new MySqlException("The value could not be converted to a GUID: {0}".FormatInvariant(value));
+			throw new InvalidCastException("The value could not be converted to a GUID: {0}".FormatInvariant(value));
 		}
 
 		public short GetInt16(int ordinal)
