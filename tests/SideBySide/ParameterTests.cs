@@ -63,13 +63,16 @@ namespace SideBySide
 		public void ConstructorSimple()
 		{
 			var parameter = new MySqlParameter();
-			Assert.Null(parameter.ParameterName);
 #if BASELINE
+			Assert.Null(parameter.ParameterName);
 			Assert.Equal(MySqlDbType.Decimal, parameter.MySqlDbType);
 			Assert.Equal(DbType.AnsiString, parameter.DbType);
+			Assert.Null(parameter.SourceColumn);
 #else
+			Assert.Equal("", parameter.ParameterName);
 			Assert.Equal(MySqlDbType.VarChar, parameter.MySqlDbType);
 			Assert.Equal(DbType.String, parameter.DbType);
+			Assert.Equal("", parameter.SourceColumn);
 #endif
 			Assert.False(parameter.IsNullable);
 			Assert.Null(parameter.Value);
@@ -80,7 +83,6 @@ namespace SideBySide
 #if !NETCOREAPP1_1_2
 			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
-			Assert.Null(parameter.SourceColumn);
 		}
 
 		[Fact]
@@ -99,7 +101,11 @@ namespace SideBySide
 #if !NETCOREAPP1_1_2
 			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
+#if BASELINE
 			Assert.Null(parameter.SourceColumn);
+#else
+			Assert.Equal("", parameter.SourceColumn);
+#endif
 		}
 
 		[Fact]
@@ -118,7 +124,11 @@ namespace SideBySide
 #if !NETCOREAPP1_1_2
 			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
+#if BASELINE
 			Assert.Null(parameter.SourceColumn);
+#else
+			Assert.Equal("", parameter.SourceColumn);
+#endif
 		}
 
 		[Fact]
@@ -137,7 +147,11 @@ namespace SideBySide
 #if !NETCOREAPP1_1_2
 			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
+#if BASELINE
 			Assert.Null(parameter.SourceColumn);
+#else
+			Assert.Equal("", parameter.SourceColumn);
+#endif
 		}
 
 		[Fact]

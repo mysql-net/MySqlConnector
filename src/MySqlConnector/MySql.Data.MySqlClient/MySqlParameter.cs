@@ -11,6 +11,8 @@ namespace MySql.Data.MySqlClient
 	{
 		public MySqlParameter()
 		{
+			ParameterName = "";
+			SourceColumn = "";
 #if !NETSTANDARD1_3
 			SourceVersion = DataRowVersion.Current;
 #endif
@@ -30,7 +32,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public MySqlParameter(string name, MySqlDbType mySqlDbType, int size)
-			: this(name, mySqlDbType, size, null)
+			: this(name, mySqlDbType, size, "")
 		{
 		}
 
