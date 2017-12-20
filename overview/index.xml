@@ -77,6 +77,19 @@
 
 &lt;h1 id=&#34;version-history&#34;&gt;Version History&lt;/h1&gt;
 
+&lt;h3 id=&#34;0-33-2&#34;&gt;0.33.2&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Breaking&lt;/strong&gt; Throw &lt;code&gt;InvalidCastException&lt;/code&gt; instead of &lt;code&gt;MySqlException&lt;/code&gt; from &lt;code&gt;MySqlDataReader.GetGuid&lt;/code&gt;.
+
+&lt;ul&gt;
+&lt;li&gt;This is a breaking API change from Connector/NET, but matches other ADO.NET connectors.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Fix default values of &lt;code&gt;MySqlParameter.ParameterName&lt;/code&gt; and &lt;code&gt;.SourceColumn&lt;/code&gt;; they now follow MSDN documentation.&lt;/li&gt;
+&lt;li&gt;Fix &lt;code&gt;ObjectDisposedException&lt;/code&gt; when a connection is returned to the pool: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/411&#34;&gt;#411&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fix &lt;code&gt;NotSupportedException&lt;/code&gt; when &lt;code&gt;MySqlParameter.Value&lt;/code&gt; is set to a &lt;code&gt;char&lt;/code&gt;: &lt;a href=&#34;https://github.com/mysql-net/MySqlConnector/issues/412&#34;&gt;#412&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;h3 id=&#34;0-33-1&#34;&gt;0.33.1&lt;/h3&gt;
 
 &lt;ul&gt;

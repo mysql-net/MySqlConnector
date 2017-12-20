@@ -168,6 +168,19 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-33-2">0.33.2</h3>
+
+<ul>
+<li><strong>Breaking</strong> Throw <code>InvalidCastException</code> instead of <code>MySqlException</code> from <code>MySqlDataReader.GetGuid</code>.
+
+<ul>
+<li>This is a breaking API change from Connector/NET, but matches other ADO.NET connectors.</li>
+</ul></li>
+<li>Fix default values of <code>MySqlParameter.ParameterName</code> and <code>.SourceColumn</code>; they now follow MSDN documentation.</li>
+<li>Fix <code>ObjectDisposedException</code> when a connection is returned to the pool: <a href="https://github.com/mysql-net/MySqlConnector/issues/411">#411</a>.</li>
+<li>Fix <code>NotSupportedException</code> when <code>MySqlParameter.Value</code> is set to a <code>char</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/412">#412</a>.</li>
+</ul>
+
 <h3 id="0-33-1">0.33.1</h3>
 
 <ul>
