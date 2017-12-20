@@ -11,6 +11,14 @@ weight: 30
 Version History
 ===============
 
+### 0.33.2
+
+* **Breaking** Throw `InvalidCastException` instead of `MySqlException` from `MySqlDataReader.GetGuid`.
+  * This is a breaking API change from Connector/NET, but matches other ADO.NET connectors.
+* Fix default values of `MySqlParameter.ParameterName` and `.SourceColumn`; they now follow MSDN documentation.
+* Fix `ObjectDisposedException` when a connection is returned to the pool: [#411](https://github.com/mysql-net/MySqlConnector/issues/411).
+* Fix `NotSupportedException` when `MySqlParameter.Value` is set to a `char`: [#412](https://github.com/mysql-net/MySqlConnector/issues/412).
+
 ### 0.33.1
 
 * Add missing `.ConfigureAwait(false)`
