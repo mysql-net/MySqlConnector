@@ -768,6 +768,62 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		}
 
 		[Fact]
+		public void CharParameter()
+		{
+			m_database.Connection.Execute(@"drop table if exists char_test;
+create table char_test(id integer not null primary key, char1 char(1) not null, char4 char(4) not null, varchar1 varchar(1) not null, varchar4 varchar(4) not null) collate utf8mb4_bin;
+insert into char_test (id, char1, char4, varchar1, varchar4) VALUES (1, '\'', 'b', 'c', 'Σ'), (2, 'e', '\\', '""', 'h');
+");
+
+			using (var command = new MySqlCommand("select id from char_test where char1 = @ch;", m_database.Connection))
+			{
+				command.Parameters.AddWithValue("@ch", '\'');
+				using (var reader = command.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(1, reader.GetInt32(0));
+					Assert.False(reader.Read());
+				}
+			}
+
+			using (var command = new MySqlCommand("select id from char_test where char4 = @ch;", m_database.Connection))
+			{
+				command.Parameters.AddWithValue("@ch", '\\');
+				using (var reader = command.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(2, reader.GetInt32(0));
+					Assert.False(reader.Read());
+				}
+			}
+
+			using (var command = new MySqlCommand("select id from char_test where varchar1 = @ch;", m_database.Connection))
+			{
+				command.Parameters.AddWithValue("@ch", '"');
+				using (var reader = command.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(2, reader.GetInt32(0));
+					Assert.False(reader.Read());
+				}
+			}
+
+#if !BASELINE
+			// can't repro test failure locally, but it fails on Appveyor
+			using (var command = new MySqlCommand("select id from char_test where varchar4 = @ch;", m_database.Connection))
+			{
+				command.Parameters.AddWithValue("@ch", 'Σ');
+				using (var reader = command.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(1, reader.GetInt32(0));
+					Assert.False(reader.Read());
+				}
+			}
+#endif
+		}
+
+		[Fact]
 		public void EnumParameter()
 		{
 			m_database.Connection.Execute(@"drop table if exists enum_test;

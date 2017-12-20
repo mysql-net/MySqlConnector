@@ -191,6 +191,23 @@ namespace MySql.Data.MySqlClient
 				writer.WriteUtf8(stringValue.Replace("\\", "\\\\").Replace("'", "\\'"));
 				writer.Write((byte) '\'');
 			}
+			else if (Value is char charValue)
+			{
+				writer.Write((byte) '\'');
+				switch (charValue)
+				{
+				case '\'':
+				case '\\':
+					writer.Write((byte) '\\');
+					writer.Write((byte) charValue);
+					break;
+
+				default:
+					writer.WriteUtf8(charValue.ToString());
+					break;
+				}
+				writer.Write((byte) '\'');
+			}
 			else if (Value is byte || Value is sbyte || Value is short || Value is int || Value is long || Value is ushort || Value is uint || Value is ulong || Value is decimal)
 			{
 				writer.WriteUtf8("{0}".FormatInvariant(Value));
