@@ -92,18 +92,8 @@ namespace MySqlConnector.Protocol.Payloads
 			var columnType = (ColumnType) reader.ReadByte();
 			var columnFlags = (ColumnFlags) reader.ReadUInt16();
 			var decimals = reader.ReadByte(); // 0x00 for integers and static strings, 0x1f for dynamic strings, double, float, 0x00 to 0x51 for decimals
-			reader.ReadByte(0);
-			if (reader.BytesRemaining > 0)
-			{
-				int defaultValuesCount = checked((int) reader.ReadLengthEncodedInteger());
-				for (int i = 0; i < defaultValuesCount; i++)
-					reader.ReadLengthEncodedByteString();
-			}
-
-			if (reader.BytesRemaining != 0)
-			{
-				throw new FormatException("Extra bytes at end of payload.");
-			}
+			reader.ReadByte(0); // reserved byte 1
+			reader.ReadByte(0); // reserved byte 2
 
 			return new ColumnDefinitionPayload
 			{
