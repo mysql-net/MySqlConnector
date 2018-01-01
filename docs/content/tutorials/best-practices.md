@@ -22,8 +22,8 @@ should be familiar with [Async/Await - Best Practices in Asynchronous Programmin
 <table class="table table-bordered table-head-centered" style="max-width: 650px">
   <thead>
     <th style="width:30%">ADO.NET Class</th>
-    <th class="success" style="width:40%">Asynchronous Method<br />(always use when possible)</th>
-    <th class="warning" style="width:30%">Synchronous Method<br />(avoid when possible)</th>
+    <th class="alert-success" style="width:40%">Asynchronous Method<br />(always use when possible)</th>
+    <th class="alert-danger" style="width:30%">Synchronous Method<br />(avoid when possible)</th>
   </thead>
   <tr>
     <td rowspan="2" style="vertical-align:middle">

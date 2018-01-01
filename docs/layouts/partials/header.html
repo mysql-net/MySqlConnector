@@ -30,33 +30,23 @@
     {{ .Scratch.Add "title" "" }}{{ if isset .Site.Data.titles .Title }}{{ .Scratch.Set "title" (index .Site.Data.titles .Title).title }}{{ else }}{{ .Scratch.Set "title" .Title}}{{end}}
     <title>MySqlConnector - {{ .Scratch.Get "title" }}</title>
 
-    <link rel="stylesheet" type="text/css" href="assets/bootstrap/css/bootstrap.min.css" />
-    <link rel="stylesheet" type="text/css" href="assets/font-awesome/css/font-awesome.min.css" />
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
     <link rel="stylesheet" type="text/css" href="assets/prism/css/prism.css" />
-    <link rel="stylesheet" type="text/css"  href="css/style.css" rel="stylesheet" />
-
   </head>
 
   <body>
 
-    <nav class="navbar navbar-default navbar-fixed-top">
-        <div class="container">
-            <div class="col-xs-8 navbar-mysqlc-logo">
-                <a href="">
-                    <img alt="MySqlConnector" src="img/icons/favicon-32x32.png" />
-                </a>
-                <a href="">
-                    MySqlConnector
-                </a>
-            </div>
-            <div class="col-xs-4 navbar-mysqlc-gh">
-                <a href="https://github.com/mysql-net/MySqlConnector">
-                    <i class="fa fa-github"></i> View on GitHub
-                </a>
-            </div>
-    </nav>
-
     <div class="container">
+        <div class="masthead">
+            <ul class="nav nav-pills pull-right">
+            <li><a href="https://github.com/mysql-net/MySqlConnector/">GitHub</a></li>
+            </ul>
+            <h3 class="muted"><a href="index.html">MySqlConnector</a></h3>
+        </div>
+        <hr />
         <div class="row">
-            {{ partial "menu.html" . }}
-            <div class="col-md-9">
+            <div class="span9" id="main">

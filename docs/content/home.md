@@ -5,7 +5,6 @@ title: Home
 weight: 10
 menu:
   main:
-    pre: "<i class='fa fa-home'></i>"
     url: ""
 ---
 

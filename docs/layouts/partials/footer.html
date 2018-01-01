@@ -1,52 +1,9 @@
-{{ $cur := . }}
-          <div id="prevNext">
-            {{ range $i, $el := .Site.Menus.main }}
-              {{ $.Scratch.Set "tempPrev" "" }}
-              {{ $.Scratch.Set "parent" "" }}
-              {{ range .Children }}
-                {{ if ne ($.Scratch.Get "parent") "" }}
-            <div class="pull-right">
-              <a  href="{{.URL}}">
-                  {{.Name}} <i class="fa fa-angle-right"></i>
-              </a>
-            </div>
-                  {{ $.Scratch.Set "parent" "" }}
-                {{ end }}
-                {{ if $cur.IsMenuCurrent "main" . }}
-                  {{ $.Scratch.Set "parent" $el }}
-                  {{ if ne ($.Scratch.Get "tempPrev") "" }}
-            <div class="pull-left">
-              <a  href="{{($.Scratch.Get "tempPrev").URL}}">
-                  <i class="fa fa-angle-left"></i> {{($.Scratch.Get "tempPrev").Name}}
-              </a>
-            </div>
-                  {{ end }}
-                {{ end }}
-                {{ $.Scratch.Set "tempPrev" . }}
-              {{ end }}
-            {{ end }}
-            <div class="clearfix"></div>
         </div>
-        <!-- col -->
+        {{ partial "menu.html" . }}
       </div>
-      <!-- row -->
     </div>
-    <!-- container -->
-
-    <footer class="footer">
-      <div class="container-fluid">
-        <div class="row">
-          <div id="footerContent" class="col-sm-12">
-            Free and open source under the
-            <a href="https://github.com/mysql-net/MySqlConnector/blob/master/LICENSE">MIT License</a>
-          </div>
-        </div>
-      </div>
-    </footer>
 
     <!-- js -->
-    <script type="text/javascript" src="assets/jquery/js/jquery-2.1.4.min.js"></script>
-    <script type="text/javascript" src="assets/bootstrap/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="assets/prism/js/prism.js"></script>
   </body>
 </html>

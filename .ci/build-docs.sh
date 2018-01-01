@@ -15,7 +15,7 @@ fi
 openssl aes-256-cbc -K $encrypted_6d671fff73d6_key -iv $encrypted_6d671fff73d6_iv -in id_rsa.enc -out ~/.ssh/id_rsa -d && chmod 600 ~/.ssh/id_rsa
 
 # download and install hugo
-curl -SsL https://github.com/spf13/hugo/releases/download/v0.17/hugo_0.17-64bit.deb > ~/hugo.deb
+curl -SsL https://github.com/gohugoio/hugo/releases/download/v0.32/hugo_0.32_Linux-64bit.deb > ~/hugo.deb
 sudo dpkg -i ~/hugo.deb
 
 # build docs

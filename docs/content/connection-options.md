@@ -5,7 +5,6 @@ title: Connection Options
 weight: 30
 menu:
   main:
-    pre: "<i class='fa fa-bolt'></i>"
 ---
 
 Connection Options
