@@ -13,6 +13,7 @@ after_test:
 - cmd: |-
     dotnet pack src\MySqlConnector\MySqlConnector.csproj -c Release -p:SourceLinkCreate=true -p:SourceLinkTest=true
     dotnet pack src\MySqlConnector.Logging.log4net\MySqlConnector.Logging.log4net.csproj -c Release -p:SourceLinkCreate=true -p:SourceLinkTest=true
+    dotnet pack src\MySqlConnector.Logging.Microsoft.Extensions.Logging\MySqlConnector.Logging.Microsoft.Extensions.Logging.csproj -c Release -p:SourceLinkCreate=true -p:SourceLinkTest=true
 notifications:
 - provider: Slack
   incoming_webhook:
