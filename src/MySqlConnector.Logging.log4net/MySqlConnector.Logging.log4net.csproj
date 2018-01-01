@@ -6,7 +6,7 @@
     <Description>Writes MySqlConnector logging output to log4net with one line of code.</Description>
     <Copyright>Copyright 2017 Bradley Grainger</Copyright>
     <Authors>Bradley Grainger</Authors>
-    <PackageTags>mysql;mysqlconnector;async;ado.net;database;netcore</PackageTags>
+    <PackageTags>mysql;mysqlconnector;async;ado.net;database;netcore;log4net;logging</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

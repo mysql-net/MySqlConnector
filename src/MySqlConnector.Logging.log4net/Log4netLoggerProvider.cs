@@ -6,8 +6,8 @@ using log4net.Core;
 
 namespace MySqlConnector.Logging
 {
-    public sealed class Log4netLoggerProvider : IMySqlConnectorLoggerProvider
-    {
+	public sealed class Log4netLoggerProvider : IMySqlConnectorLoggerProvider
+	{
 		public IMySqlConnectorLogger CreateLogger(string name) => new Log4netLogger(LogManager.GetLogger(s_loggerAssembly, "MySqlConnector." + name));
 
 		static readonly Assembly s_loggerAssembly = typeof(Log4netLogger).GetTypeInfo().Assembly;
