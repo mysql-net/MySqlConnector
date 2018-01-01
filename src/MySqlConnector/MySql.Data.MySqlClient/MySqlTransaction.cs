@@ -67,6 +67,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+		public new MySqlConnection Connection => m_connection;
 		protected override DbConnection DbConnection => m_connection;
 		public override IsolationLevel IsolationLevel { get; }
 
