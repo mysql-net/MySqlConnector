@@ -13,26 +13,26 @@ namespace MySql.Data.MySqlClient
 			CommitAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public Task CommitAsync(CancellationToken cancellationToken = default) =>
-			CommitAsync(m_connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+			CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 
 		internal async Task CommitAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyNotDisposed();
-			if (m_connection == null)
+			if (Connection == null)
 				throw new InvalidOperationException("Already committed or rolled back.");
 
-			if (m_connection.CurrentTransaction == this)
+			if (Connection.CurrentTransaction == this)
 			{
-				using (var cmd = new MySqlCommand("commit", m_connection, this))
+				using (var cmd = new MySqlCommand("commit", Connection, this))
 					await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				m_connection.CurrentTransaction = null;
-				m_connection = null;
+				Connection.CurrentTransaction = null;
+				Connection = null;
 			}
-			else if (m_connection.CurrentTransaction != null)
+			else if (Connection.CurrentTransaction != null)
 			{
 				throw new InvalidOperationException("This is not the active transaction.");
 			}
-			else if (m_connection.CurrentTransaction == null)
+			else if (Connection.CurrentTransaction == null)
 			{
 				throw new InvalidOperationException("There is no active transaction.");
 			}
@@ -42,33 +42,33 @@ namespace MySql.Data.MySqlClient
 			RollbackAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public Task RollbackAsync(CancellationToken cancellationToken = default) =>
-			RollbackAsync(m_connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+			RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 
 		internal async Task RollbackAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyNotDisposed();
-			if (m_connection == null)
+			if (Connection == null)
 				throw new InvalidOperationException("Already committed or rolled back.");
 
-			if (m_connection.CurrentTransaction == this)
+			if (Connection.CurrentTransaction == this)
 			{
-				using (var cmd = new MySqlCommand("rollback", m_connection, this))
+				using (var cmd = new MySqlCommand("rollback", Connection, this))
 					await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				m_connection.CurrentTransaction = null;
-				m_connection = null;
+				Connection.CurrentTransaction = null;
+				Connection = null;
 			}
-			else if (m_connection.CurrentTransaction != null)
+			else if (Connection.CurrentTransaction != null)
 			{
 				throw new InvalidOperationException("This is not the active transaction.");
 			}
-			else if (m_connection.CurrentTransaction == null)
+			else if (Connection.CurrentTransaction == null)
 			{
 				throw new InvalidOperationException("There is no active transaction.");
 			}
 		}
 
-		public new MySqlConnection Connection => m_connection;
-		protected override DbConnection DbConnection => m_connection;
+		public new MySqlConnection Connection { get; private set; }
+		protected override DbConnection DbConnection => Connection;
 		public override IsolationLevel IsolationLevel { get; }
 
 		protected override void Dispose(bool disposing)
@@ -78,16 +78,16 @@ namespace MySql.Data.MySqlClient
 				if (disposing)
 				{
 					m_isDisposed = true;
-					if (m_connection?.CurrentTransaction == this)
+					if (Connection?.CurrentTransaction == this)
 					{
-						if (m_connection.Session.IsConnected)
+						if (Connection.Session.IsConnected)
 						{
-							using (var cmd = new MySqlCommand("rollback", m_connection, this))
+							using (var cmd = new MySqlCommand("rollback", Connection, this))
 								cmd.ExecuteNonQuery();
 						}
-						m_connection.CurrentTransaction = null;
+						Connection.CurrentTransaction = null;
 					}
-					m_connection = null;
+					Connection = null;
 				}
 			}
 			finally
@@ -98,7 +98,7 @@ namespace MySql.Data.MySqlClient
 
 		internal MySqlTransaction(MySqlConnection connection, IsolationLevel isolationLevel)
 		{
-			m_connection = connection;
+			Connection = connection;
 			IsolationLevel = isolationLevel;
 		}
 
@@ -108,7 +108,6 @@ namespace MySql.Data.MySqlClient
 				throw new ObjectDisposedException(nameof(MySqlTransaction));
 		}
 
-		MySqlConnection m_connection;
 		bool m_isDisposed;
 	}
 }
