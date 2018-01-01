@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
@@ -6,10 +7,11 @@ namespace MySqlConnector.Protocol.Payloads
 {
 	internal sealed class OkPayload
 	{
-		public int AffectedRowCount { get; set; }
-		public long LastInsertId { get; set; }
-		public ServerStatus ServerStatus { get; set; }
-		public int WarningCount { get; set; }
+		public int AffectedRowCount { get; }
+		public long LastInsertId { get; }
+		public ServerStatus ServerStatus { get; }
+		public int WarningCount { get; }
+		public string NewSchema { get; }
 
 		public const byte Signature = 0x00;
 
@@ -35,16 +37,47 @@ namespace MySqlConnector.Protocol.Payloads
 			var lastInsertId = checked((long) reader.ReadLengthEncodedInteger());
 			var serverStatus = (ServerStatus) reader.ReadUInt16();
 			var warningCount = (int) reader.ReadUInt16();
+			string newSchema = null;
 
-			return new OkPayload(affectedRowCount, lastInsertId, serverStatus, warningCount);
+			if ((serverStatus & ServerStatus.SessionStateChanged) == ServerStatus.SessionStateChanged)
+			{
+				reader.ReadLengthEncodedByteString(); // human-readable info
+
+				// implies ProtocolCapabilities.SessionTrack
+				var sessionStateChangeDataLength = checked((int) reader.ReadLengthEncodedInteger());
+				var endOffset = reader.Offset + sessionStateChangeDataLength;
+				while (reader.Offset < endOffset)
+				{
+					var kind = (SessionTrackKind) reader.ReadByte();
+					var dataLength = (int) reader.ReadLengthEncodedInteger();
+					switch (kind)
+					{
+					case SessionTrackKind.Schema:
+						newSchema = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
+						break;
+
+					default:
+						reader.Offset += dataLength;
+						break;
+					}
+				}
+			}
+			else
+			{
+				// either "string<EOF> info" or "string<lenenc> info" (followed by no session change info)
+				// ignore human-readable string in both cases
+			}
+
+			return new OkPayload(affectedRowCount, lastInsertId, serverStatus, warningCount, newSchema);
 		}
 
-		private OkPayload(int affectedRowCount, long lastInsertId, ServerStatus serverStatus, int warningCount)
+		private OkPayload(int affectedRowCount, long lastInsertId, ServerStatus serverStatus, int warningCount, string newSchema)
 		{
 			AffectedRowCount = affectedRowCount;
 			LastInsertId = lastInsertId;
 			ServerStatus = serverStatus;
 			WarningCount = warningCount;
+			NewSchema = newSchema;
 		}
 	}
 }

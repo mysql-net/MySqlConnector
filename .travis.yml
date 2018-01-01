@@ -8,16 +8,16 @@ env:
     FEATURES=StoredProcedures
   - IMAGE=mysql:5.7
     NAME=mysql
-    FEATURES=Json,StoredProcedures,Sha256Password,LargePackets
+    FEATURES=Json,StoredProcedures,Sha256Password,LargePackets,SessionTrack
   - IMAGE=mysql:8.0
     NAME=mysql
-    FEATURES=Json,StoredProcedures,Sha256Password,LargePackets,CachingSha2Password
+    FEATURES=Json,StoredProcedures,Sha256Password,LargePackets,CachingSha2Password,SessionTrack
   - IMAGE=percona:5.7
     NAME=percona
-    FEATURES=Json,StoredProcedures,Sha256Password,OpenSsl,LargePackets
+    FEATURES=Json,StoredProcedures,Sha256Password,OpenSsl,LargePackets,SessionTrack
   - IMAGE=mariadb:10.2
     NAME=mariadb
-    FEATURES=StoredProcedures,OpenSsl,LargePackets
+    FEATURES=StoredProcedures,OpenSsl,LargePackets,SessionTrack
 
 before_install:
 - .ci/docker-run.sh $IMAGE $NAME 3307 $FEATURES

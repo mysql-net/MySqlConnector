@@ -307,6 +307,28 @@ namespace SideBySide
 			}
 		}
 
+		[SkippableFact(ServerFeatures.SessionTrack, ConfigSettings.SecondaryDatabase, Baseline = "https://bugs.mysql.com/bug.php?id=89085")]
+		public void UseDatabase()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+
+				Assert.Equal(csb.Database, connection.Database);
+				Assert.Equal(csb.Database, QueryCurrentDatabase(connection));
+
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = $"USE {AppConfig.SecondaryDatabase};";
+					cmd.ExecuteNonQuery();
+				}
+
+				Assert.Equal(AppConfig.SecondaryDatabase, connection.Database);
+				Assert.Equal(AppConfig.SecondaryDatabase, QueryCurrentDatabase(connection));
+			}
+		}
+
 		private static string QueryCurrentDatabase(MySqlConnection connection)
 		{
 			using (var cmd = connection.CreateCommand())
