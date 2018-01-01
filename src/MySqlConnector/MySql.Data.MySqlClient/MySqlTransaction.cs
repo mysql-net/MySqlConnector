@@ -9,13 +9,11 @@ namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlTransaction : DbTransaction
 	{
-		public override void Commit() =>
-			CommitAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public override void Commit() => CommitAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+		public Task CommitAsync() => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, default);
+		public Task CommitAsync(CancellationToken cancellationToken) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 
-		public Task CommitAsync(CancellationToken cancellationToken = default) =>
-			CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
-
-		internal async Task CommitAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async Task CommitAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyNotDisposed();
 			if (Connection == null)
@@ -38,13 +36,11 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public override void Rollback() =>
-			RollbackAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public override void Rollback() => RollbackAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+		public Task RollbackAsync() => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, default);
+		public Task RollbackAsync(CancellationToken cancellationToken) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 
-		public Task RollbackAsync(CancellationToken cancellationToken = default) =>
-			RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
-
-		internal async Task RollbackAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async Task RollbackAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyNotDisposed();
 			if (Connection == null)
