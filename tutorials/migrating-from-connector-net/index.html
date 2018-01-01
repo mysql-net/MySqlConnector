@@ -26,142 +26,30 @@
     <meta name="theme-color" content="#ffffff">
     
 
-    <meta name="generator" content="Hugo 0.17" />
+    <meta name="generator" content="Hugo 0.32" />
     
     <title>MySqlConnector - Migrating from Connector/NET</title>
 
-    <link rel="stylesheet" type="text/css" href="assets/bootstrap/css/bootstrap.min.css" />
-    <link rel="stylesheet" type="text/css" href="assets/font-awesome/css/font-awesome.min.css" />
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
     <link rel="stylesheet" type="text/css" href="assets/prism/css/prism.css" />
-    <link rel="stylesheet" type="text/css"  href="css/style.css" rel="stylesheet" />
-
   </head>
 
   <body>
 
-    <nav class="navbar navbar-default navbar-fixed-top">
-        <div class="container">
-            <div class="col-xs-8 navbar-mysqlc-logo">
-                <a href="">
-                    <img alt="MySqlConnector" src="img/icons/favicon-32x32.png" />
-                </a>
-                <a href="">
-                    MySqlConnector
-                </a>
-            </div>
-            <div class="col-xs-4 navbar-mysqlc-gh">
-                <a href="https://github.com/mysql-net/MySqlConnector">
-                    <i class="fa fa-github"></i> View on GitHub
-                </a>
-            </div>
-    </nav>
-
     <div class="container">
+        <div class="masthead">
+            <ul class="nav nav-pills pull-right">
+            <li><a href="https://github.com/mysql-net/MySqlConnector/">GitHub</a></li>
+            </ul>
+            <h3 class="muted"><a href="index.html">MySqlConnector</a></h3>
+        </div>
+        <hr />
         <div class="row">
-            
-<div class="col-md-3">
-    <div class="list-group" id="navigation" data-spy="affix" data-offset-top="0">
-
-        
-        <a class="list-group-item" href="" data-parent="#navigation">
-            <i class='fa fa-home'></i> <span>Home</span> 
-        </a>
-
-        
-
-        
-        <a class="list-group-item" href="#nav-1" data-parent="#navigation" data-toggle="collapse">
-            <i class='fa fa-road'></i> <span>Getting Started</span> <i class="fa fa-angle-down"></i>
-        </a>
-
-        
-        <div id="nav-1" class="submenu panel-collapse collapse ">
-            
-            <a class="list-group-item" data-parent="#nav-1" href="/MySqlConnector/overview/installing/">
-                <span>Installing</span>
-            </a>
-            
-            <a class="list-group-item" data-parent="#nav-1" href="/MySqlConnector/overview/known-issues/">
-                <span>Known Issues</span>
-            </a>
-            
-            <a class="list-group-item" data-parent="#nav-1" href="/MySqlConnector/overview/version-history/">
-                <span>Version History</span>
-            </a>
-            
-            <a class="list-group-item" data-parent="#nav-1" href="/MySqlConnector/overview/configuration/">
-                <span>Configuration</span>
-            </a>
-            
-            <a class="list-group-item" data-parent="#nav-1" href="/MySqlConnector/overview/use-with-orms/">
-                <span>Use with ORMs</span>
-            </a>
-            
-        </div>
-        
-
-        
-        <a class="list-group-item" href="/MySqlConnector/connection-options/" data-parent="#navigation">
-            <i class='fa fa-bolt'></i> <span>Connection Options</span> 
-        </a>
-
-        
-
-        
-        <a class="list-group-item active" href="#nav-3" data-parent="#navigation" data-toggle="collapse">
-            <i class='fa fa-lightbulb-o'></i> <span>Tutorials</span> <i class="fa fa-angle-down"></i>
-        </a>
-
-        
-        <div id="nav-3" class="submenu panel-collapse collapse  in">
-            
-            <a class="list-group-item" data-parent="#nav-3" href="/MySqlConnector/tutorials/best-practices/">
-                <span>Best Practices</span>
-            </a>
-            
-            <a class="list-group-item active" data-parent="#nav-3" href="/MySqlConnector/tutorials/migrating-from-connector-net/">
-                <span>Migrating from Connector/NET</span>
-            </a>
-            
-            <a class="list-group-item" data-parent="#nav-3" href="/MySqlConnector/tutorials/net-core-mvc/">
-                <span>Use with .NET Core MVC</span>
-            </a>
-            
-        </div>
-        
-
-        
-        <a class="list-group-item" href="#nav-4" data-parent="#navigation" data-toggle="collapse">
-            <i class='fa fa-file-text'></i> <span>API</span> <i class="fa fa-angle-down"></i>
-        </a>
-
-        
-        <div id="nav-4" class="submenu panel-collapse collapse ">
-            
-            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-connection/">
-                <span>MySqlConnection</span>
-            </a>
-            
-            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-command/">
-                <span>MySqlCommand</span>
-            </a>
-            
-            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-data-reader/">
-                <span>MySqlDataReader</span>
-            </a>
-            
-            <a class="list-group-item" data-parent="#nav-4" href="/MySqlConnector/api/mysql-transaction/">
-                <span>MySqlTransaction</span>
-            </a>
-            
-        </div>
-        
-
-        
-    </div>
-</div>
-
-            <div class="col-md-9">
+            <div class="span9" id="main">
 
 
 
@@ -272,115 +160,101 @@ for various precondition checks that indicate misuse of the API (and not a probl
 </ul>
 
 
-
-          <div id="prevNext">
-            
-              
-              
-              
-            
-              
-              
-              
-                
-                
-                
-              
-                
-                
-                
-              
-                
-                
-                
-              
-                
-                
-                
-              
-                
-                
-                
-              
-            
-              
-              
-              
-            
-              
-              
-              
-                
-                
-                
-              
-                
-                
-                  
-                  
-            <div class="pull-left">
-              <a  href="/MySqlConnector/tutorials/best-practices/">
-                  <i class="fa fa-angle-left"></i> Best Practices
-              </a>
-            </div>
-                  
-                
-                
-              
-                
-            <div class="pull-right">
-              <a  href="/MySqlConnector/tutorials/net-core-mvc/">
-                  Use with .NET Core MVC <i class="fa fa-angle-right"></i>
-              </a>
-            </div>
-                  
-                
-                
-                
-              
-            
-              
-              
-              
-                
-                
-                
-              
-                
-                
-                
-              
-                
-                
-                
-              
-                
-                
-                
-              
-            
-            <div class="clearfix"></div>
         </div>
+        <div class="span3">
+    <ul class="nav nav-list" id="menu">
+
         
+        <li class="nav-header">
+            <a href="">Home</a>
+        </li>
+
+        
+
+        
+        <li class="nav-header">
+            Getting Started
+        </li>
+
+        
+        <li>
+            <a href="/MySqlConnector/overview/installing/">Installing</a>
+        </li>
+        
+        <li>
+            <a href="/MySqlConnector/overview/known-issues/">Known Issues</a>
+        </li>
+        
+        <li>
+            <a href="/MySqlConnector/overview/version-history/">Version History</a>
+        </li>
+        
+        <li>
+            <a href="/MySqlConnector/overview/configuration/">Configuration</a>
+        </li>
+        
+        <li>
+            <a href="/MySqlConnector/overview/use-with-orms/">Use with ORMs</a>
+        </li>
+        
+
+        
+        <li class="nav-header">
+            <a href="/MySqlConnector/connection-options/">Connection Options</a>
+        </li>
+
+        
+
+        
+        <li class="nav-header">
+            Tutorials
+        </li>
+
+        
+        <li>
+            <a href="/MySqlConnector/tutorials/best-practices/">Best Practices</a>
+        </li>
+        
+        <li>
+            <a href="/MySqlConnector/tutorials/migrating-from-connector-net/">Migrating from Connector/NET</a>
+        </li>
+        
+        <li>
+            <a href="/MySqlConnector/tutorials/net-core-mvc/">Use with .NET Core MVC</a>
+        </li>
+        
+
+        
+        <li class="nav-header">
+            API
+        </li>
+
+        
+        <li>
+            <a href="/MySqlConnector/api/mysql-connection/">MySqlConnection</a>
+        </li>
+        
+        <li>
+            <a href="/MySqlConnector/api/mysql-command/">MySqlCommand</a>
+        </li>
+        
+        <li>
+            <a href="/MySqlConnector/api/mysql-data-reader/">MySqlDataReader</a>
+        </li>
+        
+        <li>
+            <a href="/MySqlConnector/api/mysql-transaction/">MySqlTransaction</a>
+        </li>
+        
+
+        
+    </ul>
+</div>
+
       </div>
-      
     </div>
-    
-
-    <footer class="footer">
-      <div class="container-fluid">
-        <div class="row">
-          <div id="footerContent" class="col-sm-12">
-            Free and open source under the
-            <a href="https://github.com/mysql-net/MySqlConnector/blob/master/LICENSE">MIT License</a>
-          </div>
-        </div>
-      </div>
-    </footer>
 
     
-    <script type="text/javascript" src="assets/jquery/js/jquery-2.1.4.min.js"></script>
-    <script type="text/javascript" src="assets/bootstrap/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="assets/prism/js/prism.js"></script>
   </body>
 </html>

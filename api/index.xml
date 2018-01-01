@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Api-rss on MySqlConnector: Async MySQL Driver for .NET and .NET Core</title>
-    <link>https://mysql-net.github.io/MySqlConnector/api/index.xml</link>
-    <description>Recent content in Api-rss on MySqlConnector: Async MySQL Driver for .NET and .NET Core</description>
+    <title>Api on MySqlConnector: Async MySQL Driver for .NET and .NET Core</title>
+    <link>https://mysql-net.github.io/MySqlConnector/api/</link>
+    <description>Recent content in Api on MySqlConnector: Async MySQL Driver for .NET and .NET Core</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Sun, 16 Oct 2016 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://mysql-net.github.io/MySqlConnector/api/index.xml" rel="self" type="application/rss+xml" />
+    
+	<atom:link href="https://mysql-net.github.io/MySqlConnector/api/index.xml" rel="self" type="application/rss+xml" />
+    
     
     <item>
       <title>MySqlConnection</title>
@@ -14,89 +16,17 @@
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-connection/</guid>
-      <description>
-
-&lt;h1 id=&#34;mysqlconnection&#34;&gt;MySqlConnection&lt;/h1&gt;
-
-&lt;p&gt;MySqlConnection implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbconnection&#34;&gt;ADO.NET DbConnection class&lt;/a&gt;;
-please refer to its documentation.&lt;/p&gt;
-
-&lt;p&gt;Additionally, MySqlConnection provides the following public properties and methods that may be used:&lt;/p&gt;
-
-&lt;h3 id=&#34;constructors&#34;&gt;Constructors&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;public MySqlConnection()&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Parameterless constructor&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;code&gt;public MySqlConnection(string connectionString)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Constructor that set the connection string&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h3 id=&#34;additional-properties&#34;&gt;Additional Properties&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;public int ServerThread&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Connection ID from MySQL Server&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h3 id=&#34;additional-instance-methods&#34;&gt;Additional Instance Methods&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;public Task&amp;lt;MySqlTransaction&amp;gt; BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Async version of BeginTransaction&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;code&gt;public Task&amp;lt;MySqlTransaction&amp;gt; BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Async version of BeginTransaction that supports setting Isolation Level&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h3 id=&#34;additional-static-methods&#34;&gt;Additional Static Methods&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;public static void ClearPool(MySqlConnection connection)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Clears the connection pool that the connection belongs to&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;code&gt;public static Task ClearPoolAsync(MySqlConnection connection)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Async version of ClearPool&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;code&gt;public static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Async version of ClearPool with cancellation token support&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;code&gt;public static void ClearAllPools()&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Clears all connection pools in the entire application&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;code&gt;public static Task ClearAllPoolsAsync()&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Async version of ClearAllPoolsAsync&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;code&gt;public static Task ClearAllPoolsAsync(CancellationToken cancellationToken)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Async version of ClearAllPoolsAsync with cancellation token support&lt;/p&gt;
-
-&lt;hr /&gt;
-</description>
+      <description>MySqlConnection MySqlConnection implements the ADO.NET DbConnection class; please refer to its documentation.
+Additionally, MySqlConnection provides the following public properties and methods that may be used:
+Constructors public MySqlConnection()
+Parameterless constructor
+public MySqlConnection(string connectionString)
+Constructor that set the connection string
+Additional Properties public int ServerThread
+Connection ID from MySQL Server
+Additional Instance Methods public Task&amp;lt;MySqlTransaction&amp;gt; BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
+Async version of BeginTransaction
+public Task&amp;lt;MySqlTransaction&amp;gt; BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))</description>
     </item>
     
     <item>
@@ -105,56 +35,18 @@ please refer to its documentation.&lt;/p&gt;
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-command/</guid>
-      <description>
-
-&lt;h1 id=&#34;mysqlcommand&#34;&gt;MySqlCommand&lt;/h1&gt;
-
-&lt;p&gt;&lt;code&gt;MySqlCommand&lt;/code&gt; implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbcommand&#34;&gt;ADO.NET DbCommand class&lt;/a&gt;;
-please refer to its documentation.&lt;/p&gt;
-
-&lt;p&gt;Additionally, &lt;code&gt;MySqlCommand&lt;/code&gt; provides the following public properties and methods that may be used:&lt;/p&gt;
-
-&lt;h3 id=&#34;constructors&#34;&gt;Constructors&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;public MySqlCommand()&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Parameterless constructor&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;code&gt;public MySqlCommand(string commandText)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;constructor accepting command SQL&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;code&gt;public MySqlCommand(MySqlConnection connection, MySqlTransaction transaction)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;constructor accepting connection object and transaction object&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;code&gt;public MySqlCommand(string commandText, MySqlConnection connection)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;constructor accepting command SQL and connection object&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;code&gt;public MySqlCommand(string commandText, MySqlConnection connection, MySqlTransaction transaction)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;constructor accepting command SQL, connection object, and transaction object&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h3 id=&#34;additional-properties&#34;&gt;Additional Properties&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;public long LastInsertedId&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Holds the first automatically-generated ID for a value inserted in an &lt;code&gt;AUTO_INCREMENT&lt;/code&gt; column in the last statement.
-See &lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_last-insert-id&#34;&gt;&lt;code&gt;LAST_INSERT_ID()&lt;/code&gt;&lt;/a&gt; for more information.&lt;/p&gt;
-
-&lt;hr /&gt;
-</description>
+      <description>MySqlCommand MySqlCommand implements the ADO.NET DbCommand class; please refer to its documentation.
+Additionally, MySqlCommand provides the following public properties and methods that may be used:
+Constructors public MySqlCommand()
+Parameterless constructor
+public MySqlCommand(string commandText)
+constructor accepting command SQL
+public MySqlCommand(MySqlConnection connection, MySqlTransaction transaction)
+constructor accepting connection object and transaction object
+public MySqlCommand(string commandText, MySqlConnection connection)
+constructor accepting command SQL and connection object
+public MySqlCommand(string commandText, MySqlConnection connection, MySqlTransaction transaction)
+constructor accepting command SQL, connection object, and transaction object</description>
     </item>
     
     <item>
@@ -163,33 +55,14 @@ See &lt;a href=&#34;https://dev.mysql.com/doc/refman/8.0/en/information-function
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-data-reader/</guid>
-      <description>
-
-&lt;h1 id=&#34;mysqldatareader&#34;&gt;MySqlDataReader&lt;/h1&gt;
-
-&lt;p&gt;MySqlDataReader implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbdatareader&#34;&gt;ADO.NET DbDataReader class&lt;/a&gt;;
-please refer to its documentation.&lt;/p&gt;
-
-&lt;p&gt;Additionally, MySqlDataReader provides the following public properties and methods that may be used:&lt;/p&gt;
-
-&lt;h3 id=&#34;additional-instance-methods&#34;&gt;Additional Instance Methods&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;public sbyte GetSByte(int ordinal)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Gets the value of the specified column as an sbyte&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;code&gt;public DateTimeOffset GetDateTimeOffset(int ordinal)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Gets the value of the specified column as a DateTimeOffset with an offset of 0&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;code&gt;public ReadOnlyCollection&amp;lt;DbColumn&amp;gt; GetColumnSchema()&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Implements the new &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/api/system.data.common.idbcolumnschemagenerator.getcolumnschema&#34;&gt;&lt;code&gt;IDbColumnSchemaGenerator.GetColumnSchema&lt;/code&gt;&lt;/a&gt; interface that returns metadata about the columns in the result set.&lt;/p&gt;
-</description>
+      <description>MySqlDataReader MySqlDataReader implements the ADO.NET DbDataReader class; please refer to its documentation.
+Additionally, MySqlDataReader provides the following public properties and methods that may be used:
+Additional Instance Methods public sbyte GetSByte(int ordinal)
+Gets the value of the specified column as an sbyte
+public DateTimeOffset GetDateTimeOffset(int ordinal)
+Gets the value of the specified column as a DateTimeOffset with an offset of 0
+public ReadOnlyCollection&amp;lt;DbColumn&amp;gt; GetColumnSchema()
+Implements the new IDbColumnSchemaGenerator.GetColumnSchema interface that returns metadata about the columns in the result set.</description>
     </item>
     
     <item>
@@ -198,29 +71,12 @@ please refer to its documentation.&lt;/p&gt;
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-transaction/</guid>
-      <description>
-
-&lt;h1 id=&#34;mysqltransaction&#34;&gt;MySqlTransaction&lt;/h1&gt;
-
-&lt;p&gt;MySqlTransaction implements the &lt;a href=&#34;https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbtransaction&#34;&gt;ADO.NET DbTransaction class&lt;/a&gt;,
-please refer to its documentation.&lt;/p&gt;
-
-&lt;p&gt;Additionally, MySqlTransaction provides the following public properties and methods that may be used:&lt;/p&gt;
-
-&lt;h3 id=&#34;additional-instance-methods&#34;&gt;Additional Instance Methods&lt;/h3&gt;
-
-&lt;p&gt;&lt;code&gt;public Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Async version of Commit&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;code&gt;public Task RollbackAsync(CancellationToken cancellationToken = default(CancellationToken))&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Async version of Rollback&lt;/p&gt;
-
-&lt;hr /&gt;
-</description>
+      <description>MySqlTransaction MySqlTransaction implements the ADO.NET DbTransaction class, please refer to its documentation.
+Additionally, MySqlTransaction provides the following public properties and methods that may be used:
+Additional Instance Methods public Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))
+Async version of Commit
+public Task RollbackAsync(CancellationToken cancellationToken = default(CancellationToken))
+Async version of Rollback</description>
     </item>
     
   </channel>
