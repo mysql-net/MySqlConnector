@@ -79,7 +79,7 @@ namespace MySqlConnector.Core
 				if (!alignParam.HasSetDirection)
 					alignParam.Direction = cachedParam.Direction;
 				if (!alignParam.HasSetDbType)
-					alignParam.DbType = cachedParam.DbType;
+					alignParam.MySqlDbType = cachedParam.MySqlDbType;
 
 				// cached parameters are oredered by ordinal position
 				alignedParams.Add(alignParam);

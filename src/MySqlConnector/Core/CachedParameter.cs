@@ -1,5 +1,6 @@
+using System;
 using System.Data;
-using System.Linq;
+using MySql.Data.MySqlClient;
 
 namespace MySqlConnector.Core
 {
@@ -9,31 +10,20 @@ namespace MySqlConnector.Core
 		{
 			Position = ordinalPosition;
 			if (Position == 0)
-			{
 				Direction = ParameterDirection.ReturnValue;
-			}
-			else
-			{
-				switch (mode.ToLowerInvariant())
-				{
-					case "in":
-						Direction = ParameterDirection.Input;
-						break;
-					case "inout":
-						Direction = ParameterDirection.InputOutput;
-						break;
-					case "out":
-						Direction = ParameterDirection.Output;
-						break;
-				}
-			}
+			else if (string.Equals(mode, "in", StringComparison.OrdinalIgnoreCase))
+				Direction = ParameterDirection.Input;
+			else if (string.Equals(mode, "inout", StringComparison.OrdinalIgnoreCase))
+				Direction = ParameterDirection.InputOutput;
+			else if (string.Equals(mode, "out", StringComparison.OrdinalIgnoreCase))
+				Direction = ParameterDirection.Output;
 			Name = name;
-			DbType = TypeMapper.Instance.GetDbTypeMapping(dataType, unsigned).DbTypes?.First() ?? DbType.Object;
+			MySqlDbType = TypeMapper.Instance.GetMySqlDbType(dataType, unsigned);
 		}
 
-		internal readonly int Position;
-		internal readonly ParameterDirection Direction;
-		internal readonly string Name;
-		internal readonly DbType DbType;
+		public int Position { get; }
+		public ParameterDirection Direction { get; }
+		public string Name { get; }
+		public MySqlDbType MySqlDbType { get; }
 	}
 }
