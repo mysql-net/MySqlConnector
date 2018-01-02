@@ -11,6 +11,18 @@ weight: 30
 Version History
 ===============
 
+### 0.34.0
+
+* Implement `MySqlCommandBuilder`: [#303](https://github.com/mysql-net/MySqlConnector/issues/303).
+* Add `Microsoft.Extensions.Logging` provider: [#418](https://github.com/mysql-net/MySqlConnector/issues/418).
+* Add new `MySqlTransaction.Connection` property that returns an object typed as `MySqlConnection`.
+* Support `CLIENT_SESSION_TRACK` protocol option: [#323](https://github.com/mysql-net/MySqlConnector/issues/323).
+* Optimization: move procedure cache to connection pool: [#415](https://github.com/mysql-net/MySqlConnector/issues/415).
+* Ignore extra data at end of column definition payload: [#413](https://github.com/mysql-net/MySqlConnector/pull/413).
+* Handle failure to find procedure: [#282](https://github.com/mysql-net/MySqlConnector/issues/282).
+* **Breaking** Clear `MySqlTransaction.Connection` when transaction is committed: [#61](https://github.com/mysql-net/MySqlConnector/issues/61).
+  * This is a breaking API change from Connector/NET, but matches other ADO.NET connectors.
+
 ### 0.33.2
 
 * **Breaking** Throw `InvalidCastException` instead of `MySqlException` from `MySqlDataReader.GetGuid`.
