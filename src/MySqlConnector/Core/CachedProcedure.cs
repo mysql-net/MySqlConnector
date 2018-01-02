@@ -48,7 +48,7 @@ namespace MySqlConnector.Core
 				}
 			}
 
-			return new CachedProcedure(schema, component, parameters.AsReadOnly());
+			return parameters.Count == 0 ? null : new CachedProcedure(schema, component, parameters.AsReadOnly());
 		}
 
 		private CachedProcedure(string schema, string component, ReadOnlyCollection<CachedParameter> parameters)

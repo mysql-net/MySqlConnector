@@ -307,6 +307,9 @@ namespace MySql.Data.MySqlClient
 				cachedProcedures = m_cachedProcedures = new Dictionary<string, CachedProcedure>();
 
 			var normalized = NormalizedSchema.MustNormalize(name, Database);
+			if (string.IsNullOrEmpty(normalized.Schema))
+				return null;
+
 			CachedProcedure cachedProcedure;
 			lock (cachedProcedures)
 				cachedProcedures.TryGetValue(normalized.FullyQualified, out cachedProcedure);
