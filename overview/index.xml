@@ -38,7 +38,7 @@ Manually Step 1: Add MySqlConnector to the dependencies in your csproj file:
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.33.2  Breaking Throw InvalidCastException instead of MySqlException from MySqlDataReader.GetGuid.  This is a breaking API change from Connector/NET, but matches other ADO.NET connectors.  Fix default values of MySqlParameter.ParameterName and .SourceColumn; they now follow MSDN documentation. Fix ObjectDisposedException when a connection is returned to the pool: #411. Fix NotSupportedException when MySqlParameter.Value is set to a char: #412.  0.33.1  Add missing .ConfigureAwait(false)  Fixes a potential deadlock in clients that blocked on Tasks returned from async methods.</description>
+      <description>Version History 0.34.0  Implement MySqlCommandBuilder: #303. Add Microsoft.Extensions.Logging provider: #418. Add new MySqlTransaction.Connection property that returns an object typed as MySqlConnection. Support CLIENT_SESSION_TRACK protocol option: #323. Optimization: move procedure cache to connection pool: #415. Ignore extra data at end of column definition payload: #413. Handle failure to find procedure: #282. Breaking Clear MySqlTransaction.Connection when transaction is committed: #61.  This is a breaking API change from Connector/NET, but matches other ADO.</description>
     </item>
     
     <item>

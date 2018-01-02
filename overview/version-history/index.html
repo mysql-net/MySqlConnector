@@ -56,6 +56,23 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-34-0">0.34.0</h3>
+
+<ul>
+<li>Implement <code>MySqlCommandBuilder</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/303">#303</a>.</li>
+<li>Add <code>Microsoft.Extensions.Logging</code> provider: <a href="https://github.com/mysql-net/MySqlConnector/issues/418">#418</a>.</li>
+<li>Add new <code>MySqlTransaction.Connection</code> property that returns an object typed as <code>MySqlConnection</code>.</li>
+<li>Support <code>CLIENT_SESSION_TRACK</code> protocol option: <a href="https://github.com/mysql-net/MySqlConnector/issues/323">#323</a>.</li>
+<li>Optimization: move procedure cache to connection pool: <a href="https://github.com/mysql-net/MySqlConnector/issues/415">#415</a>.</li>
+<li>Ignore extra data at end of column definition payload: <a href="https://github.com/mysql-net/MySqlConnector/pull/413">#413</a>.</li>
+<li>Handle failure to find procedure: <a href="https://github.com/mysql-net/MySqlConnector/issues/282">#282</a>.</li>
+<li><strong>Breaking</strong> Clear <code>MySqlTransaction.Connection</code> when transaction is committed: <a href="https://github.com/mysql-net/MySqlConnector/issues/61">#61</a>.
+
+<ul>
+<li>This is a breaking API change from Connector/NET, but matches other ADO.NET connectors.</li>
+</ul></li>
+</ul>
+
 <h3 id="0-33-2">0.33.2</h3>
 
 <ul>
