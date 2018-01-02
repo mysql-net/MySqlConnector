@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Data;
 using System.Data.Common;
 using System.Net.Sockets;
@@ -302,16 +302,10 @@ namespace MySql.Data.MySqlClient
 			if (m_session.ServerVersion.Version < ServerVersions.SupportsProcedureCache)
 				return null;
 
-			if (m_cachedProcedures == null)
-				m_cachedProcedures = new Dictionary<string, CachedProcedure>();
-
 			var normalized = NormalizedSchema.MustNormalize(name, Database);
-			if (!m_cachedProcedures.TryGetValue(normalized.FullyQualified, out var cachedProcedure))
-			{
-				cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema, normalized.Component, cancellationToken).ConfigureAwait(false);
-				m_cachedProcedures[normalized.FullyQualified] = cachedProcedure;
-			}
-			return cachedProcedure;
+
+			return await m_cachedProcedures.GetOrAdd(normalized.FullyQualified,
+				(key) => CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema, normalized.Component, cancellationToken));
 		}
 
 		internal MySqlTransaction CurrentTransaction { get; set; }
@@ -428,7 +422,6 @@ namespace MySql.Data.MySqlClient
 
 		private void CloseDatabase()
 		{
-			m_cachedProcedures = null;
 			m_activeReader?.Dispose();
 			if (CurrentTransaction != null && m_session.IsConnected)
 			{
@@ -438,6 +431,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlConnection));
+		static readonly ConcurrentDictionary<string, Task<CachedProcedure>> m_cachedProcedures = new ConcurrentDictionary<string, Task<CachedProcedure>>();
 
 		MySqlConnectionStringBuilder m_connectionStringBuilder;
 		ConnectionSettings m_connectionSettings;
@@ -446,7 +440,6 @@ namespace MySql.Data.MySqlClient
 		bool m_hasBeenOpened;
 		bool m_isDisposed;
 		bool m_shouldCloseWhenUnenlisted;
-		Dictionary<string, CachedProcedure> m_cachedProcedures;
 		MySqlDataReader m_activeReader;
 	}
 }
