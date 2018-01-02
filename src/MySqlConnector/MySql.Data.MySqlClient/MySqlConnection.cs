@@ -302,14 +302,19 @@ namespace MySql.Data.MySqlClient
 			if (m_session.ServerVersion.Version < ServerVersions.SupportsProcedureCache)
 				return null;
 
-			if (m_cachedProcedures == null)
-				m_cachedProcedures = new Dictionary<string, CachedProcedure>();
+			var cachedProcedures = m_session.Pool?.GetProcedureCache() ?? m_cachedProcedures;
+			if (cachedProcedures == null)
+				cachedProcedures = m_cachedProcedures = new Dictionary<string, CachedProcedure>();
 
 			var normalized = NormalizedSchema.MustNormalize(name, Database);
-			if (!m_cachedProcedures.TryGetValue(normalized.FullyQualified, out var cachedProcedure))
+			CachedProcedure cachedProcedure;
+			lock (cachedProcedures)
+				cachedProcedures.TryGetValue(normalized.FullyQualified, out cachedProcedure);
+			if (cachedProcedure == null)
 			{
 				cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema, normalized.Component, cancellationToken).ConfigureAwait(false);
-				m_cachedProcedures[normalized.FullyQualified] = cachedProcedure;
+				lock (cachedProcedures)
+					cachedProcedures[normalized.FullyQualified] = cachedProcedure;
 			}
 			return cachedProcedure;
 		}

@@ -166,6 +166,7 @@ namespace MySqlConnector.Core
 			// increment the generation of the connection pool
 			Log.Info("{0} clearing connection pool", m_logArguments);
 			Interlocked.Increment(ref m_generation);
+			m_procedureCache = null;
 			RecoverLeakedSessions();
 			await CleanPoolAsync(ioBehavior, session => session.PoolGeneration != m_generation, false, cancellationToken).ConfigureAwait(false);
 		}
@@ -179,6 +180,23 @@ namespace MySqlConnector.Core
 			await CleanPoolAsync(ioBehavior, session => (DateTime.UtcNow - session.LastReturnedUtc).TotalSeconds >= m_connectionSettings.ConnectionIdleTimeout, true, cancellationToken).ConfigureAwait(false);
 		}
 
+		/// <summary>
+		/// Returns the stored procedure cache for this <see cref="ConnectionPool"/>, lazily creating it on demand.
+		/// This method may return a different object after <see cref="ClearAsync"/> has been called. The returned
+		/// object is shared between multiple threads and is only safe to use after taking a <c>lock</c> on the
+		/// object itself.
+		/// </summary>
+		public Dictionary<string, CachedProcedure> GetProcedureCache()
+		{
+			var procedureCache = m_procedureCache;
+			if (procedureCache == null)
+			{
+				var newProcedureCache = new Dictionary<string, CachedProcedure>();
+				procedureCache = Interlocked.CompareExchange(ref m_procedureCache, newProcedureCache, null) ?? newProcedureCache;
+			}
+			return procedureCache;
+		}
+		
 		/// <summary>
 		/// Examines all the <see cref="ServerSession"/> objects in <see cref="m_leasedSessions"/> to determine if any
 		/// have an owning <see cref="MySqlConnection"/> that has been garbage-collected. If so, assumes that the connection
@@ -461,5 +479,6 @@ namespace MySqlConnector.Core
 		readonly object[] m_logArguments;
 		uint m_lastRecoveryTime;
 		int m_lastSessionId;
+		Dictionary<string, CachedProcedure> m_procedureCache;
 	}
 }
