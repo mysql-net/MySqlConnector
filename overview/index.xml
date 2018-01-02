@@ -61,8 +61,8 @@ Application Database Object Example It&amp;rsquo;s a good idea to use an IDispos
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</guid>
       <description> Use with ORMs This library is compatible with popular .NET ORMs including:
- Dapper (NuGet) NReco.Data (NuGet) ServiceStack.OrmLite (MyGet) SimpleStack.Orm (NuGet)  For Entity Framework support, use:
- Pomelo.EntityFrameworkCore.MySql (NuGet)  </description>
+ Dapper (GitHub, NuGet) NReco.Data (GitHub, NuGet) Paradigm ORM (GitHub, NuGet) ServiceStack.OrmLite (GitHub, NuGet) SimpleStack.Orm (GitHub, NuGet)  For Entity Framework support, use:
+ Pomelo.EntityFrameworkCore.MySql (GitHub, NuGet)  </description>
     </item>
     
   </channel>
