@@ -562,7 +562,7 @@ namespace MySqlConnector.Core
 			catch (Exception ex)
 			{
 				m_logArguments[1] = ex.Message;
-				Log.Error(ex, "{0} failed in ReceiveReplyAsync: {1}", m_logArguments);
+				Log.Info(ex, "{0} failed in ReceiveReplyAsync: {1}", m_logArguments);
 				if ((ex as MySqlException)?.Number == (int) MySqlErrorCode.CommandTimeoutExpired)
 					HandleTimeout();
 				task = ValueTaskExtensions.FromException<ArraySegment<byte>>(ex);
@@ -593,7 +593,7 @@ namespace MySqlConnector.Core
 			catch (Exception ex)
 			{
 				m_logArguments[1] = ex.Message;
-				Log.Error(ex, "{0} failed in SendReplyAsync: {1}", m_logArguments);
+				Log.Info(ex, "{0} failed in SendReplyAsync: {1}", m_logArguments);
 				task = ValueTaskExtensions.FromException<int>(ex);
 			}
 
@@ -996,7 +996,6 @@ namespace MySqlConnector.Core
 			if (task.IsFaulted)
 			{
 				SetFailed();
-				Log.Error(task.Exception.InnerException, "{0} failed in TryAsyncContinuation", m_logArguments);
 				task.GetAwaiter().GetResult();
 			}
 			return 0;
@@ -1005,10 +1004,7 @@ namespace MySqlConnector.Core
 		private PayloadData TryAsyncContinuation(Task<ArraySegment<byte>> task)
 		{
 			if (task.IsFaulted)
-			{
 				SetFailed();
-				Log.Error(task.Exception.InnerException, "{0} failed in TryAsyncContinuation", m_logArguments);
-			}
 			ArraySegment<byte> bytes;
 			try
 			{
@@ -1027,7 +1023,7 @@ namespace MySqlConnector.Core
 
 		internal void SetFailed()
 		{
-			Log.Error("{0} setting state to Failed", m_logArguments);
+			Log.Info("{0} setting state to Failed", m_logArguments);
 			lock (m_lock)
 				m_state = State.Failed;
 		}
