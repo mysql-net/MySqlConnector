@@ -37,6 +37,48 @@ create table insert_ai(rowid integer not null primary key auto_increment, text v
 		}
 
 		[Fact]
+		public async Task LastInsertedIdNegative()
+		{
+			await m_database.Connection.ExecuteAsync(@"drop table if exists insert_ai;
+create table insert_ai(rowid integer not null primary key auto_increment);");
+			try
+			{
+				await m_database.Connection.OpenAsync();
+				using (var command = new MySqlCommand("INSERT INTO insert_ai(rowid) VALUES (@rowid);", m_database.Connection))
+				{
+					command.Parameters.AddWithValue("@rowid", -1);
+					await command.ExecuteNonQueryAsync();
+					Assert.Equal(-1L, command.LastInsertedId);
+				}
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+		}
+
+		[Fact]
+		public async Task LastInsertedIdUlong()
+		{
+			await m_database.Connection.ExecuteAsync(@"drop table if exists insert_ai;
+create table insert_ai(rowid bigint unsigned not null primary key auto_increment);");
+			try
+			{
+				await m_database.Connection.OpenAsync();
+				using (var command = new MySqlCommand("INSERT INTO insert_ai(rowid) VALUES (@rowid);", m_database.Connection))
+				{
+					command.Parameters.AddWithValue("@rowid", ((ulong) long.MaxValue) + 1);
+					await command.ExecuteNonQueryAsync();
+					Assert.Equal(long.MinValue, command.LastInsertedId);
+				}
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+		}
+
+		[Fact]
 		public async Task RowsAffected()
 		{
 			await m_database.Connection.ExecuteAsync(@"drop table if exists insert_rows_affected;

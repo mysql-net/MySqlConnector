@@ -8,7 +8,7 @@ namespace MySqlConnector.Protocol.Payloads
 	internal sealed class OkPayload
 	{
 		public int AffectedRowCount { get; }
-		public long LastInsertId { get; }
+		public ulong LastInsertId { get; }
 		public ServerStatus ServerStatus { get; }
 		public int WarningCount { get; }
 		public string NewSchema { get; }
@@ -34,7 +34,7 @@ namespace MySqlConnector.Protocol.Payloads
 			if (signature != Signature && (!deprecateEof || signature != EofPayload.Signature))
 				throw new FormatException("Expected to read 0x00 or 0xFE but got 0x{0:X2}".FormatInvariant(signature));
 			var affectedRowCount = checked((int) reader.ReadLengthEncodedInteger());
-			var lastInsertId = checked((long) reader.ReadLengthEncodedInteger());
+			var lastInsertId = reader.ReadLengthEncodedInteger();
 			var serverStatus = (ServerStatus) reader.ReadUInt16();
 			var warningCount = (int) reader.ReadUInt16();
 			string newSchema = null;
@@ -71,7 +71,7 @@ namespace MySqlConnector.Protocol.Payloads
 			return new OkPayload(affectedRowCount, lastInsertId, serverStatus, warningCount, newSchema);
 		}
 
-		private OkPayload(int affectedRowCount, long lastInsertId, ServerStatus serverStatus, int warningCount, string newSchema)
+		private OkPayload(int affectedRowCount, ulong lastInsertId, ServerStatus serverStatus, int warningCount, string newSchema)
 		{
 			AffectedRowCount = affectedRowCount;
 			LastInsertId = lastInsertId;

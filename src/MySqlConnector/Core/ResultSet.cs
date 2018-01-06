@@ -47,7 +47,7 @@ namespace MySqlConnector.Core
 					{
 						var ok = OkPayload.Create(payload);
 						RecordsAffected = (RecordsAffected ?? 0) + ok.AffectedRowCount;
-						LastInsertId = ok.LastInsertId;
+						LastInsertId = unchecked((long) ok.LastInsertId);
 						if (ok.NewSchema != null)
 							Connection.Session.DatabaseOverride = ok.NewSchema;
 						ColumnDefinitions = null;
