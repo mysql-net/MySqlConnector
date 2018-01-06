@@ -96,7 +96,7 @@ namespace MySql.Data.MySqlClient
 				// for any exception not created from an ErrorPayload, mark the session as failed (because we can't guarantee that all data
 				// has been read from the connection and that the socket is still usable)
 				if (mySqlException?.SqlState == null)
-					Command.Connection.Session.SetFailed();
+					Command.Connection.Session.SetFailed(resultSet.ReadResultSetHeaderException);
 
 				throw mySqlException != null ?
 					new MySqlException(mySqlException.Number, mySqlException.SqlState, mySqlException.Message, mySqlException) :

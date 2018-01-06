@@ -995,7 +995,7 @@ namespace MySqlConnector.Core
 		{
 			if (task.IsFaulted)
 			{
-				SetFailed();
+				SetFailed(task.Exception.InnerException);
 				task.GetAwaiter().GetResult();
 			}
 			return 0;
@@ -1004,7 +1004,7 @@ namespace MySqlConnector.Core
 		private PayloadData TryAsyncContinuation(Task<ArraySegment<byte>> task)
 		{
 			if (task.IsFaulted)
-				SetFailed();
+				SetFailed(task.Exception.InnerException);
 			ArraySegment<byte> bytes;
 			try
 			{
@@ -1021,9 +1021,10 @@ namespace MySqlConnector.Core
 			return payload;
 		}
 
-		internal void SetFailed()
+		internal void SetFailed(Exception exception)
 		{
-			Log.Info("{0} setting state to Failed", m_logArguments);
+			m_logArguments[1] = exception.Message;
+			Log.Info(exception, "{0} setting state to Failed: {1}", m_logArguments);
 			lock (m_lock)
 				m_state = State.Failed;
 		}
