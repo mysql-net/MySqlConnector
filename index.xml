@@ -109,7 +109,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.34.0  Implement MySqlCommandBuilder: #303. Add Microsoft.Extensions.Logging provider: #418. Add new MySqlTransaction.Connection property that returns an object typed as MySqlConnection. Support CLIENT_SESSION_TRACK protocol option: #323. Optimization: move procedure cache to connection pool: #415. Ignore extra data at end of column definition payload: #413. Handle failure to find procedure: #282. Breaking Clear MySqlTransaction.Connection when transaction is committed: #61.  This is a breaking API change from Connector/NET, but matches other ADO.</description>
+      <description>Version History 0.34.1  Add overloads of MySqlParameterCollection.Add: #424. Fix conversion of MySqlCommand.LastInsertedId: #422. Fix &amp;ldquo;Expected state to be Failed but was Connected&amp;rdquo; InvalidOperationException: #423. Improve performance when calling stored procedures with no parameters (this was regressed in 0.34.0). Reduce severity of some logging statements.  0.34.0  Implement MySqlCommandBuilder: #303. Add Microsoft.Extensions.Logging provider: #418. Add new MySqlTransaction.Connection property that returns an object typed as MySqlConnection. Support CLIENT_SESSION_TRACK protocol option: #323.</description>
     </item>
     
     <item>

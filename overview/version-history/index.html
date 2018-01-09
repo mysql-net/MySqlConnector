@@ -56,6 +56,16 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-34-1">0.34.1</h3>
+
+<ul>
+<li>Add overloads of <code>MySqlParameterCollection.Add</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/424">#424</a>.</li>
+<li>Fix conversion of <code>MySqlCommand.LastInsertedId</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/422">#422</a>.</li>
+<li>Fix &ldquo;Expected state to be Failed but was Connected&rdquo; <code>InvalidOperationException</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/423">#423</a>.</li>
+<li>Improve performance when calling stored procedures with no parameters (this was regressed in 0.34.0).</li>
+<li>Reduce severity of some logging statements.</li>
+</ul>
+
 <h3 id="0-34-0">0.34.0</h3>
 
 <ul>
