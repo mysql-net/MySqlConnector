@@ -208,7 +208,7 @@ namespace SideBySide
 				cmd.Parameters.Add(new MySqlParameter
 				{
 					ParameterName = "@radius",
-					Value = 1.0,
+					Value = 1.5,
 #if BASELINE
 					Direction = ParameterDirection.Input,
 #endif
@@ -268,7 +268,7 @@ namespace SideBySide
 				Assert.Equal((string)cmd.Parameters["@name"].Value + (string)cmd.Parameters["@shape"].Value, result);
 
 			Assert.Equal(2 * (double)cmd.Parameters["@radius"].Value, cmd.Parameters["@diameter"].Value);
-			Assert.Equal(Math.PI * (double)cmd.Parameters["@radius"].Value, cmd.Parameters["@area"].Value);
+			Assert.Equal(2.0 * Math.PI * (double)cmd.Parameters["@radius"].Value, cmd.Parameters["@circumference"].Value);
 			Assert.Equal(Math.PI * Math.Pow((double)cmd.Parameters["@radius"].Value, 2), cmd.Parameters["@area"].Value);
 			Assert.Equal((double)cmd.Parameters["@area"].Value * (double)cmd.Parameters["@height"].Value, cmd.Parameters["@volume"].Value);
 		}
