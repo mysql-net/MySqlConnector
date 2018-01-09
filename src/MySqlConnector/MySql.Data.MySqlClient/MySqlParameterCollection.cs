@@ -33,6 +33,15 @@ namespace MySql.Data.MySqlClient
 			return m_parameters.Count - 1;
 		}
 
+		public MySqlParameter Add(MySqlParameter parameter)
+		{
+			AddParameter(parameter);
+			return parameter;
+		}
+
+		public MySqlParameter Add(string parameterName, MySqlDbType mySqlDbType) => Add(new MySqlParameter(parameterName, mySqlDbType));
+		public MySqlParameter Add(string parameterName, MySqlDbType mySqlDbType, int size) => Add(new MySqlParameter(parameterName, mySqlDbType, size));
+
 		public override void AddRange(Array values)
 		{
 			foreach (var obj in values)

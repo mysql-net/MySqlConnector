@@ -161,6 +161,34 @@ namespace SideBySide
 			Assert.Equal(3, m_parameterCollection.Count);
 		}
 
+		[Fact]
+		public void AddMySqlParameter()
+		{
+			var parameter = new MySqlParameter("test", MySqlDbType.Double, 3);
+			var parameter2 = m_parameterCollection.Add(parameter);
+			Assert.Same(parameter, parameter2);
+			Assert.Same(parameter, m_parameterCollection[0]);
+		}
+
+		[Fact]
+		public void AddNameType()
+		{
+			var parameter = m_parameterCollection.Add("test", MySqlDbType.Double);
+			Assert.Equal("test", parameter.ParameterName);
+			Assert.Equal(MySqlDbType.Double, parameter.MySqlDbType);
+			Assert.Same(parameter, m_parameterCollection[0]);
+		}
+
+		[Fact]
+		public void AddNameTypeSize()
+		{
+			var parameter = m_parameterCollection.Add("test", MySqlDbType.Double, 10);
+			Assert.Equal("test", parameter.ParameterName);
+			Assert.Equal(MySqlDbType.Double, parameter.MySqlDbType);
+			Assert.Equal(10, parameter.Size);
+			Assert.Same(parameter, m_parameterCollection[0]);
+		}
+
 		MySqlCommand m_command;
 		MySqlParameterCollection m_parameterCollection;
 	}
