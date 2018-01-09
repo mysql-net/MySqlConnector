@@ -11,6 +11,14 @@ weight: 30
 Version History
 ===============
 
+### 0.34.1
+
+* Add overloads of `MySqlParameterCollection.Add`: [#424](https://github.com/mysql-net/MySqlConnector/issues/424).
+* Fix conversion of `MySqlCommand.LastInsertedId`: [#422](https://github.com/mysql-net/MySqlConnector/issues/422).
+* Fix "Expected state to be Failed but was Connected" `InvalidOperationException`: [#423](https://github.com/mysql-net/MySqlConnector/issues/423).
+* Improve performance when calling stored procedures with no parameters (this was regressed in 0.34.0).
+* Reduce severity of some logging statements.
+
 ### 0.34.0
 
 * Implement `MySqlCommandBuilder`: [#303](https://github.com/mysql-net/MySqlConnector/issues/303).
