@@ -117,6 +117,24 @@ namespace SideBySide
 			}
 		}
 
+		[Fact]
+		public async Task StoredProcedureOutIncorrectType()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "out_string";
+				cmd.CommandType = CommandType.StoredProcedure;
+				cmd.Parameters.Add(new MySqlParameter
+				{
+					ParameterName = "@value",
+					DbType = DbType.Double,
+					Direction = ParameterDirection.Output,
+				});
+
+				await Assert.ThrowsAsync<FormatException>(cmd.ExecuteNonQueryAsync);
+			}
+		}
+
 		[Theory]
 		[InlineData("NonQuery")]
 		[InlineData("Scalar")]

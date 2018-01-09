@@ -396,8 +396,10 @@ namespace MySql.Data.MySqlClient
 
 		private void DoClose()
 		{
-			if (Command != null)
+			if (!m_closed)
 			{
+				m_closed = true;
+
 				if (m_resultSet != null)
 				{
 					Command.Connection.Session.SetTimeout(Constants.InfiniteTimeout);
@@ -443,6 +445,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		readonly CommandBehavior m_behavior;
+		bool m_closed;
 		int? m_recordsAffected;
 		ResultSet m_resultSet;
 		ResultSet m_resultSetBuffered;

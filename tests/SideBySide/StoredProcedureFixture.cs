@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 
 namespace SideBySide
 {
@@ -47,6 +47,13 @@ namespace SideBySide
 					SELECT area * height INTO volume;
 					SELECT 'circle' INTO shape;
 					SELECT CONCAT(name, shape);
+				END");
+			Connection.Execute(@"DROP PROCEDURE IF EXISTS out_string;
+				CREATE PROCEDURE out_string(
+					OUT value VARCHAR(100)
+				)
+				BEGIN
+					SELECT 'test value' INTO value;
 				END");
 			Connection.Execute(@"drop table if exists sproc_multiple_rows;
 				create table sproc_multiple_rows (
