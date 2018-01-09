@@ -311,9 +311,10 @@ namespace MySql.Data.MySqlClient
 				return null;
 
 			CachedProcedure cachedProcedure;
+			bool foundProcedure;
 			lock (cachedProcedures)
-				cachedProcedures.TryGetValue(normalized.FullyQualified, out cachedProcedure);
-			if (cachedProcedure == null)
+				foundProcedure = cachedProcedures.TryGetValue(normalized.FullyQualified, out cachedProcedure);
+			if (!foundProcedure)
 			{
 				cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema, normalized.Component, cancellationToken).ConfigureAwait(false);
 				lock (cachedProcedures)
