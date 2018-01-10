@@ -55,6 +55,15 @@ namespace SideBySide
 				BEGIN
 					SELECT 'test value' INTO value;
 				END");
+			Connection.Execute(@"DROP PROCEDURE IF EXISTS out_null;
+				CREATE PROCEDURE out_null(
+					OUT string_value VARCHAR(100),
+					OUT int_value INT
+				)
+				BEGIN
+					SELECT NULL INTO string_value;
+					SELECT NULL INTO int_value;
+				END");
 			Connection.Execute(@"drop table if exists sproc_multiple_rows;
 				create table sproc_multiple_rows (
 					value integer not null primary key auto_increment,

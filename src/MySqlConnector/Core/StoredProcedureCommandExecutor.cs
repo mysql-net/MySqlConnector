@@ -102,7 +102,7 @@ namespace MySqlConnector.Core
 				for (var i = 0; i < m_outParams.Count; i++)
 				{
 					var param = m_outParams[i];
-					if (param.HasSetDbType)
+					if (param.HasSetDbType && !reader.IsDBNull(i))
 					{
 						var dbTypeMapping = TypeMapper.Instance.GetDbTypeMapping(param.DbType);
 						if (dbTypeMapping != null)
