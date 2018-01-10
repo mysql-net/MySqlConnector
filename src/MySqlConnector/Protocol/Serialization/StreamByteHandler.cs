@@ -80,13 +80,16 @@ namespace MySqlConnector.Protocol.Serialization
 		public ValueTask<int> WriteBytesAsync(ArraySegment<byte> data, IOBehavior ioBehavior)
 		{
 			if (ioBehavior == IOBehavior.Asynchronous)
-			{
 				return new ValueTask<int>(DoWriteBytesAsync(data));
-			}
-			else
+
+			try
 			{
 				m_stream.Write(data.Array, data.Offset, data.Count);
-				return default(ValueTask<int>);
+				return default;
+			}
+			catch (Exception ex)
+			{
+				return ValueTaskExtensions.FromException<int>(ex);
 			}
 
 			async Task<int> DoWriteBytesAsync(ArraySegment<byte> data_)

@@ -28,21 +28,28 @@ namespace MySqlConnector.Protocol.Serialization
 
 			ValueTask<int> DoReadBytesSync(ArraySegment<byte> buffer_)
 			{
-				if (RemainingTimeout == Constants.InfiniteTimeout)
-					return new ValueTask<int>(m_socket.Receive(buffer_.Array, buffer_.Offset, buffer_.Count, SocketFlags.None));
-
-				while (RemainingTimeout > 0)
+				try
 				{
-					var startTime = Environment.TickCount;
-					if (m_socket.Poll(Math.Min(int.MaxValue / 1000, RemainingTimeout) * 1000, SelectMode.SelectRead))
+					if (RemainingTimeout == Constants.InfiniteTimeout)
+						return new ValueTask<int>(m_socket.Receive(buffer_.Array, buffer_.Offset, buffer_.Count, SocketFlags.None));
+
+					while (RemainingTimeout > 0)
 					{
-						var bytesRead = m_socket.Receive(buffer_.Array, buffer_.Offset, buffer_.Count, SocketFlags.None);
+						var startTime = Environment.TickCount;
+						if (m_socket.Poll(Math.Min(int.MaxValue / 1000, RemainingTimeout) * 1000, SelectMode.SelectRead))
+						{
+							var bytesRead = m_socket.Receive(buffer_.Array, buffer_.Offset, buffer_.Count, SocketFlags.None);
+							RemainingTimeout -= unchecked(Environment.TickCount - startTime);
+							return new ValueTask<int>(bytesRead);
+						}
 						RemainingTimeout -= unchecked(Environment.TickCount - startTime);
-						return new ValueTask<int>(bytesRead);
 					}
-					RemainingTimeout -= unchecked(Environment.TickCount - startTime);
+					return ValueTaskExtensions.FromException<int>(MySqlException.CreateForTimeout());
 				}
-				return ValueTaskExtensions.FromException<int>(MySqlException.CreateForTimeout());
+				catch (Exception ex)
+				{
+					return ValueTaskExtensions.FromException<int>(ex);
+				}
 			}
 
 			async Task<int> DoReadBytesAsync(ArraySegment<byte> buffer_)
@@ -79,13 +86,16 @@ namespace MySqlConnector.Protocol.Serialization
 		public ValueTask<int> WriteBytesAsync(ArraySegment<byte> data, IOBehavior ioBehavior)
 		{
 			if (ioBehavior == IOBehavior.Asynchronous)
-			{
 				return new ValueTask<int>(DoWriteBytesAsync(data));
-			}
-			else
+
+			try
 			{
 				m_socket.Send(data.Array, data.Offset, data.Count, SocketFlags.None);
-				return default(ValueTask<int>);
+				return default;
+			}
+			catch (Exception ex)
+			{
+				return ValueTaskExtensions.FromException<int>(ex);
 			}
 
 			async Task<int> DoWriteBytesAsync(ArraySegment<byte> data_)
