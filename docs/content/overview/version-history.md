@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.34.2
+
+* Fix exception when a stored procedure returns `NULL` for an `OUT` parameter: [#425](https://github.com/mysql-net/MySqlConnector/issues/425).
+
 ### 0.34.1
 
 * Add overloads of `MySqlParameterCollection.Add`: [#424](https://github.com/mysql-net/MySqlConnector/issues/424).
