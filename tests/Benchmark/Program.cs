@@ -72,6 +72,14 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 			m_connection.Open();
 		}
 
+		[GlobalCleanup]
+		public void GlobalCleanup()
+		{
+			m_connection.Dispose();
+			m_connection = null;
+			MySqlConnection.ClearAllPools();
+		}
+
 		private static void AddBlobParameter(DbCommand command, string name, int size)
 		{
 			var parameter = command.CreateParameter();
