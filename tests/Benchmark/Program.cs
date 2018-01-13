@@ -49,7 +49,7 @@ create schema if not exists benchmark;
 
 drop table if exists benchmark.integers;
 create table benchmark.integers (value int not null primary key);
-insert into benchmark.integers(value) values (0),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15),(16),(17),(18),(19),(20);
+insert into benchmark.integers(value) values (0),(1),(2),(3),(4),(5),(6),(7),(8),(9);
 
 drop table if exists benchmark.blobs;
 create table benchmark.blobs(
@@ -137,10 +137,11 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 		[Benchmark] public Task ManyRowsAsync() => ReadAllRowsAsync(c_manyRowsSql);
 		[Benchmark] public void ManyRowsSync() => ReadAllRowsSync(c_manyRowsSql);
 
-		private const string c_manyRowsSql = "select * from integers a join integers b; select * from integers a join integers b join integers c;";
+		private const string c_manyRowsSql = "select * from integers a join integers b join integers c;";
 
-		private async Task ReadAllRowsAsync(string sql)
+		private async Task<int> ReadAllRowsAsync(string sql)
 		{
+			int total = 0;
 			using (var cmd = m_connection.CreateCommand())
 			{
 				cmd.CommandText = sql;
@@ -150,14 +151,18 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 					{
 						while (await reader.ReadAsync())
 						{
+							if (reader.FieldCount > 1)
+								total += reader.GetInt32(1);
 						}
 					} while (await reader.NextResultAsync());
 				}
 			}
+			return total;
 		}
 
-		private void ReadAllRowsSync(string sql)
+		private int ReadAllRowsSync(string sql)
 		{
+			int total = 0;
 			using (var cmd = m_connection.CreateCommand())
 			{
 				cmd.CommandText = sql;
@@ -167,10 +172,13 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 					{
 						while (reader.Read())
 						{
+							if (reader.FieldCount > 1)
+								total += reader.GetInt32(1);
 						}
 					} while (reader.NextResult());
 				}
 			}
+			return total;
 		}
 
 		// TODO: move to config file
