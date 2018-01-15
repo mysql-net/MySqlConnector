@@ -59,8 +59,8 @@ rowid integer not null primary key auto_increment,
 insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 
 					// larger blobs make the tests run much slower
-					AddBlobParameter(cmd, "@Blob1", 100000);
-					AddBlobParameter(cmd, "@Blob2", 1000000);
+					AddBlobParameter(cmd, "@Blob1", 75000);
+					AddBlobParameter(cmd, "@Blob2", 150000);
 
 					cmd.ExecuteNonQuery();
 				}
