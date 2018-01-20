@@ -1,4 +1,3 @@
-#if !NETCOREAPP1_1_2
 using System;
 using System.Data;
 using Dapper;
@@ -20,6 +19,43 @@ namespace SideBySide
 			m_database.Connection.Close();
 		}
 
+		[SkippableFact(Baseline = "Throws NullReferenceException")]
+		public void DeriveParametersNull()
+		{
+			Assert.Throws<ArgumentNullException>(() => MySqlCommandBuilder.DeriveParameters(null));
+		}
+
+		[SkippableFact(Baseline = "Throws NullReferenceException")]
+		public void DeriveParametersNoConnection()
+		{
+			using (var cmd = new MySqlCommand("test"))
+			{
+				cmd.CommandType = CommandType.StoredProcedure;
+				Assert.Throws<ArgumentException>(() => MySqlCommandBuilder.DeriveParameters(cmd));
+			}
+		}
+
+		[SkippableFact(Baseline = "Throws InvalidOperationException")]
+		public void DeriveParametersText()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select 1;";
+				Assert.Throws<ArgumentException>(() => MySqlCommandBuilder.DeriveParameters(cmd));
+			}
+		}
+
+		[SkippableFact(Baseline = "Throws MySqlException")]
+		public void DeriveParametersNoCommandText()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandType = CommandType.StoredProcedure;
+				Assert.Throws<ArgumentException>(() => MySqlCommandBuilder.DeriveParameters(cmd));
+			}
+		}
+
+#if !NETCOREAPP1_1_2
 		[Fact]
 		public void Insert()
 		{
@@ -120,8 +156,8 @@ insert into command_builder_delete values(1, 'one'), (2, 'two');
 			var cb = new MySqlCommandBuilder();
 			Assert.Equal(expected, cb.UnquoteIdentifier(input));
 		}
+#endif
 
 		readonly DatabaseFixture m_database;
 	}
 }
-#endif

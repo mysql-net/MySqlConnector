@@ -109,6 +109,16 @@ namespace SideBySide
 				begin
 					select 1, 2, 3;
 				end;");
+
+			if (AppConfig.SupportsJson)
+			{
+				Connection.Execute(@"drop procedure if exists SetJson;
+CREATE PROCEDURE `SetJson`(vJson JSON)
+BEGIN
+	SELECT vJson;
+END
+");
+			}
 		}
 	}
 }

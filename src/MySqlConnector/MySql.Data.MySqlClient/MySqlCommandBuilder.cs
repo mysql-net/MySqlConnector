@@ -1,13 +1,50 @@
-#if !NETSTANDARD1_3
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
+using MySqlConnector.Core;
+using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
 {
+#if !NETSTANDARD1_3
 	public class MySqlCommandBuilder : DbCommandBuilder
+#else
+	public static class MySqlCommandBuilder
+#endif
 	{
+		public static void DeriveParameters(MySqlCommand command) => DeriveParametersAsync(IOBehavior.Synchronous, command, CancellationToken.None).GetAwaiter().GetResult();
+		public static Task DeriveParametersAsync(MySqlCommand command) => DeriveParametersAsync(command?.Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, command, CancellationToken.None);
+		public static Task DeriveParametersAsync(MySqlCommand command, CancellationToken cancellationToken) => DeriveParametersAsync(command?.Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, command, cancellationToken);
+
+		private static async Task DeriveParametersAsync(IOBehavior ioBehavior, MySqlCommand command, CancellationToken cancellationToken)
+		{
+			if (command == null)
+				throw new ArgumentNullException(nameof(command));
+			if (command.CommandType != CommandType.StoredProcedure)
+				throw new ArgumentException("MySqlCommand.CommandType must be StoredProcedure not {0}".FormatInvariant(command.CommandType), nameof(command));
+			if (string.IsNullOrWhiteSpace(command.CommandText))
+				throw new ArgumentException("MySqlCommand.CommandText must be set to a stored procedure name", nameof(command));
+			if (command.Connection?.State != ConnectionState.Open)
+				throw new ArgumentException("MySqlCommand.Connection must be an open connection.", nameof(command));
+			if (command.Connection.Session.ServerVersion.Version < ServerVersions.SupportsProcedureCache)
+				throw new NotSupportedException("MySQL Server {0} doesn't support INFORMATION_SCHEMA".FormatInvariant(command.Connection.Session.ServerVersion.OriginalString));
+
+			var cachedProcedure = await command.Connection.GetCachedProcedure(ioBehavior, command.CommandText, cancellationToken).ConfigureAwait(false);
+			command.Parameters.Clear();
+			if (cachedProcedure != null)
+			{
+				foreach (var cachedParameter in cachedProcedure.Parameters)
+				{
+					var parameter = command.Parameters.Add("@" + cachedParameter.Name, cachedParameter.MySqlDbType);
+					parameter.Direction = cachedParameter.Direction;
+				}
+			}
+		}
+
+#if !NETSTANDARD1_3
 		public MySqlCommandBuilder()
 		{
 			QuotePrefix = "`";
@@ -60,6 +97,6 @@ namespace MySql.Data.MySqlClient
 		}
 
 		private void RowUpdatingHandler(object sender, MySqlRowUpdatingEventArgs e) => RowUpdatingHandler(e);
+#endif
 	}
 }
-#endif

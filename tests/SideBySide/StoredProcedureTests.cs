@@ -451,6 +451,78 @@ namespace SideBySide
 			}
 		}
 
+		[Fact]
+		public void DeriveParametersCircle()
+		{
+			using (var cmd = new MySqlCommand("circle", m_database.Connection))
+			{
+				cmd.CommandType = CommandType.StoredProcedure;
+				MySqlCommandBuilder.DeriveParameters(cmd);
+
+				Assert.Collection(cmd.Parameters.Cast<MySqlParameter>(),
+					AssertParameter("@radius", ParameterDirection.Input, MySqlDbType.Double),
+					AssertParameter("@height", ParameterDirection.Input, MySqlDbType.Double),
+					AssertParameter("@name", ParameterDirection.Input, MySqlDbType.VarChar),
+					AssertParameter("@diameter", ParameterDirection.Output, MySqlDbType.Double),
+					AssertParameter("@circumference", ParameterDirection.Output, MySqlDbType.Double),
+					AssertParameter("@area", ParameterDirection.Output, MySqlDbType.Double),
+					AssertParameter("@volume", ParameterDirection.Output, MySqlDbType.Double),
+					AssertParameter("@shape", ParameterDirection.Output, MySqlDbType.VarChar));
+			}
+		}
+
+		[Fact]
+		public void DeriveParametersNumberLister()
+		{
+			using (var cmd = new MySqlCommand("number_lister", m_database.Connection))
+			{
+				cmd.CommandType = CommandType.StoredProcedure;
+				MySqlCommandBuilder.DeriveParameters(cmd);
+
+				Assert.Collection(cmd.Parameters.Cast<MySqlParameter>(),
+					AssertParameter("@high", ParameterDirection.InputOutput, MySqlDbType.Int32));
+			}
+		}
+
+		[Fact]
+		public void DeriveParametersRemovesExisting()
+		{
+			using (var cmd = new MySqlCommand("number_lister", m_database.Connection))
+			{
+				cmd.CommandType = CommandType.StoredProcedure;
+				cmd.Parameters.AddWithValue("test1", 1);
+				cmd.Parameters.AddWithValue("test2", 2);
+				cmd.Parameters.AddWithValue("test3", 3);
+
+				MySqlCommandBuilder.DeriveParameters(cmd);
+				Assert.Collection(cmd.Parameters.Cast<MySqlParameter>(),
+					AssertParameter("@high", ParameterDirection.InputOutput, MySqlDbType.Int32));
+			}
+		}
+
+		[SkippableFact(ServerFeatures.Json, Baseline = "https://bugs.mysql.com/bug.php?id=89335")]
+		public void DeriveParametersSetJson()
+		{
+			using (var cmd = new MySqlCommand("SetJson", m_database.Connection))
+			{
+				cmd.CommandType = CommandType.StoredProcedure;
+				MySqlCommandBuilder.DeriveParameters(cmd);
+
+				Assert.Collection(cmd.Parameters.Cast<MySqlParameter>(),
+					AssertParameter("@vJson", ParameterDirection.Input, MySqlDbType.JSON));
+			}
+		}
+
+		private static Action<MySqlParameter> AssertParameter(string name, ParameterDirection direction, MySqlDbType mySqlDbType)
+		{
+			return x =>
+			{
+				Assert.Equal(name, x.ParameterName);
+				Assert.Equal(direction, x.Direction);
+				Assert.Equal(mySqlDbType, x.MySqlDbType);
+			};
+		}
+
 #if !NETCOREAPP1_1_2
 		[Theory]
 		[InlineData("echof", "FUNCTION", "varchar(63)", "BEGIN RETURN name; END", "NO", "CONTAINS SQL")]

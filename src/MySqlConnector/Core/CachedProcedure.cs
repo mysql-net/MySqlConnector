@@ -12,7 +12,7 @@ namespace MySqlConnector.Core
 {
 	internal sealed class CachedProcedure
 	{
-		internal static async Task<CachedProcedure> FillAsync(IOBehavior ioBehavior, MySqlConnection connection, string schema, string component, CancellationToken cancellationToken)
+		public static async Task<CachedProcedure> FillAsync(IOBehavior ioBehavior, MySqlConnection connection, string schema, string component, CancellationToken cancellationToken)
 		{
 			var parameters = new List<CachedParameter>();
 			using (var cmd = connection.CreateCommand())
@@ -51,11 +51,13 @@ namespace MySqlConnector.Core
 			return parameters.Count == 0 ? null : new CachedProcedure(schema, component, parameters.AsReadOnly());
 		}
 
+		public ReadOnlyCollection<CachedParameter> Parameters { get; }
+
 		private CachedProcedure(string schema, string component, ReadOnlyCollection<CachedParameter> parameters)
 		{
 			m_schema = schema;
 			m_component = component;
-			m_parameters = parameters;
+			Parameters = parameters;
 		}
 
 		internal MySqlParameterCollection AlignParamsWithDb(MySqlParameterCollection parameterCollection)
@@ -63,7 +65,7 @@ namespace MySqlConnector.Core
 			var alignedParams = new MySqlParameterCollection();
 			var returnParam = parameterCollection.FirstOrDefault(x => x.Direction == ParameterDirection.ReturnValue);
 
-			foreach (var cachedParam in m_parameters)
+			foreach (var cachedParam in Parameters)
 			{
 				MySqlParameter alignParam;
 				if (cachedParam.Direction == ParameterDirection.ReturnValue)
@@ -92,6 +94,5 @@ namespace MySqlConnector.Core
 
 		readonly string m_schema;
 		readonly string m_component;
-		readonly ReadOnlyCollection<CachedParameter> m_parameters;
 	}
 }
