@@ -68,6 +68,11 @@
   </url>
   
   <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/logging/</loc>
+    <lastmod>2018-01-20T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</loc>
     <lastmod>2017-11-06T00:00:00+00:00</lastmod>
   </url>

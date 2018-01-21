@@ -28,7 +28,7 @@
 
     <meta name="generator" content="Hugo 0.32" />
     
-    <title>MySqlConnector - 404 Page not found</title>
+    <title>MySqlConnector - Logging</title>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -51,9 +51,40 @@
         <div class="row">
             <div class="span9" id="main">
 
-<div class="col-lg-8 col-md-12">
-Page Not Found.
-</div>
+
+
+
+<h1 id="logging">Logging</h1>
+
+<p>MySqlConnector implements a custom logging framework with the <code>IMySqlConnectorLogger</code> and <code>IMySqlConnectorLoggerProvider</code> interfaces.
+To connect MySqlConnector to an existing logging framework, write an implementation of <code>IMySqlConnectorLoggerProvider</code> that adapts
+the existing logging framework, and install it by setting <code>MySqlConnector.Logging.MySqlConnectorLogManager.Provider = provider;</code>.</p>
+
+<p>The <code>MySqlConnectorLogManager.Provider</code> property may only be set once, and must be set before any other MySqlConnector library methods are called.</p>
+
+<h3 id="existing-logging-providers">Existing Logging Providers</h3>
+
+<p>There are NuGet packages that adapt MySqlConnetor logging for popular logging frameworks.</p>
+
+<h4 id="log4net">log4net</h4>
+
+<p>Install <a href="https://www.nuget.org/packages/MySqlConnector.Logging.log4net/">MySqlConnector.Logging.log4net</a>.</p>
+
+<p>Add the following line of code to your application startup routine:</p>
+
+<pre><code>MySqlConnectorLogManager.Provider = new Log4netLoggerProvider();
+</code></pre>
+
+<h4 id="microsoft-extensions-logging">Microsoft.Extensions.Logging</h4>
+
+<p>Install <a href="https://www.nuget.org/packages/MySqlConnector.Logging.Microsoft.Extensions.Logging/">MySqlConnector.Logging.Microsoft.Extensions.Logging</a>.</p>
+
+<p>Add the following line of code to your <code>Startup.Configure</code> method:</p>
+
+<pre><code>MySqlConnectorLogManager.Provider = new MicrosoftExtensionsLoggingLoggerProvider(loggerFactory);
+</code></pre>
+
+
         </div>
         <div class="span3">
     <ul class="nav nav-list" id="menu">

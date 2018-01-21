@@ -179,6 +179,17 @@ Async version of Rollback</description>
     </item>
     
     <item>
+      <title>Logging</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/logging/</link>
+      <pubDate>Sat, 20 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/logging/</guid>
+      <description>Logging MySqlConnector implements a custom logging framework with the IMySqlConnectorLogger and IMySqlConnectorLoggerProvider interfaces. To connect MySqlConnector to an existing logging framework, write an implementation of IMySqlConnectorLoggerProvider that adapts the existing logging framework, and install it by setting MySqlConnector.Logging.MySqlConnectorLogManager.Provider = provider;.
+The MySqlConnectorLogManager.Provider property may only be set once, and must be set before any other MySqlConnector library methods are called.
+Existing Logging Providers There are NuGet packages that adapt MySqlConnetor logging for popular logging frameworks.</description>
+    </item>
+    
+    <item>
       <title>Use with ORMs</title>
       <link>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
