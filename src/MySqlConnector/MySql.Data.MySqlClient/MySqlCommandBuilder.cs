@@ -33,14 +33,17 @@ namespace MySql.Data.MySqlClient
 				throw new NotSupportedException("MySQL Server {0} doesn't support INFORMATION_SCHEMA".FormatInvariant(command.Connection.Session.ServerVersion.OriginalString));
 
 			var cachedProcedure = await command.Connection.GetCachedProcedure(ioBehavior, command.CommandText, cancellationToken).ConfigureAwait(false);
-			command.Parameters.Clear();
-			if (cachedProcedure != null)
+			if (cachedProcedure == null)
 			{
-				foreach (var cachedParameter in cachedProcedure.Parameters)
-				{
-					var parameter = command.Parameters.Add("@" + cachedParameter.Name, cachedParameter.MySqlDbType);
-					parameter.Direction = cachedParameter.Direction;
-				}
+				var name = NormalizedSchema.MustNormalize(command.CommandText, command.Connection.Database);
+				throw new MySqlException("Procedure or function '{0}' cannot be found in database '{1}'.".FormatInvariant(name.Component, name.Schema));
+			}
+
+			command.Parameters.Clear();
+			foreach (var cachedParameter in cachedProcedure.Parameters)
+			{
+				var parameter = command.Parameters.Add("@" + cachedParameter.Name, cachedParameter.MySqlDbType);
+				parameter.Direction = cachedParameter.Direction;
 			}
 		}
 

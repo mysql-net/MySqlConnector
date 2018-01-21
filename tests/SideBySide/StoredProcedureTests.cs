@@ -500,6 +500,16 @@ namespace SideBySide
 			}
 		}
 
+		[Fact]
+		public void DeriveParametersDoesNotExist()
+		{
+			using (var cmd = new MySqlCommand("xx_does_not_exist", m_database.Connection))
+			{
+				cmd.CommandType = CommandType.StoredProcedure;
+				Assert.Throws<MySqlException>(() => MySqlCommandBuilder.DeriveParameters(cmd));
+			}
+		}
+
 		[SkippableFact(ServerFeatures.Json, Baseline = "https://bugs.mysql.com/bug.php?id=89335")]
 		public void DeriveParametersSetJson()
 		{

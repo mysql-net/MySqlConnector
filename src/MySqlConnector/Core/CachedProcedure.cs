@@ -15,26 +15,26 @@ namespace MySqlConnector.Core
 		public static async Task<CachedProcedure> FillAsync(IOBehavior ioBehavior, MySqlConnection connection, string schema, string component, CancellationToken cancellationToken)
 		{
 			var parameters = new List<CachedParameter>();
+			int routineCount;
 			using (var cmd = connection.CreateCommand())
 			{
 				cmd.Transaction = connection.CurrentTransaction;
-				cmd.CommandText = @"SELECT ORDINAL_POSITION, PARAMETER_MODE, PARAMETER_NAME, DATA_TYPE, DTD_IDENTIFIER
+				cmd.CommandText = @"SELECT COUNT(*)
+					FROM information_schema.routines
+					WHERE ROUTINE_SCHEMA = @schema AND ROUTINE_NAME = @component;
+					SELECT ORDINAL_POSITION, PARAMETER_MODE, PARAMETER_NAME, DATA_TYPE, DTD_IDENTIFIER
 					FROM information_schema.parameters
 					WHERE SPECIFIC_SCHEMA = @schema AND SPECIFIC_NAME = @component
 					ORDER BY ORDINAL_POSITION";
-				cmd.Parameters.Add(new MySqlParameter
-				{
-					ParameterName = "@schema",
-					Value = schema
-				});
-				cmd.Parameters.Add(new MySqlParameter
-				{
-					ParameterName = "@component",
-					Value = component
-				});
+				cmd.Parameters.AddWithValue("@schema", schema);
+				cmd.Parameters.AddWithValue("@component", component);
 
 				using (var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false))
 				{
+					await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+					routineCount = reader.GetInt32(0);
+					await reader.NextResultAsync(cancellationToken).ConfigureAwait(false);
+
 					while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
 					{
 						parameters.Add(new CachedParameter(
@@ -48,7 +48,7 @@ namespace MySqlConnector.Core
 				}
 			}
 
-			return parameters.Count == 0 ? null : new CachedProcedure(schema, component, parameters.AsReadOnly());
+			return routineCount == 0 ? null : new CachedProcedure(schema, component, parameters.AsReadOnly());
 		}
 
 		public ReadOnlyCollection<CachedParameter> Parameters { get; }
