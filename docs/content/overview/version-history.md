@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.35.0
+
+* Add `MySqlCommandBuilder.DeriveParameters`: [#419](https://github.com/mysql-net/MySqlConnector/issues/419).
+* Add `MySqlConnection.Ping` and `MySqlConnection.PingAsync`: [#260](https://github.com/mysql-net/MySqlConnector/issues/260).
+
 ### 0.34.2
 
 * Fix exception when a stored procedure returns `NULL` for an `OUT` parameter: [#425](https://github.com/mysql-net/MySqlConnector/issues/425).
