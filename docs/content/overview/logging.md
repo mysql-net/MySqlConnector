@@ -18,7 +18,7 @@ The `MySqlConnectorLogManager.Provider` property may only be set once, and must 
 
 ### Existing Logging Providers
 
-There are NuGet packages that adapt MySqlConnetor logging for popular logging frameworks.
+There are NuGet packages that adapt MySqlConnector logging for popular logging frameworks.
 
 #### log4net
 
