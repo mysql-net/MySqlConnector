@@ -33,15 +33,13 @@ namespace MySqlConnector.Core
 		{
 			m_lock = new object();
 			m_payloadCache = new ArraySegmentHolder<byte>();
-			Id = id.ToString();
-			if (pool != null)
-				Id = pool.Id + "." + Id;
+			Id = (pool?.Id ?? 0) + "." + id;
 			CreatedUtc = DateTime.UtcNow;
 			Pool = pool;
 			PoolGeneration = poolGeneration;
 			HostName = "";
 			m_logArguments = new object[] { "Session{0}".FormatInvariant(Id), null };
-			Log.Info("{0} created new session", m_logArguments);
+			Log.Debug("{0} created new session", m_logArguments);
 		}
 
 		public string Id { get; }

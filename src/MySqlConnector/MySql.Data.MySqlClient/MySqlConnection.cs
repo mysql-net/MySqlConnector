@@ -372,6 +372,7 @@ namespace MySql.Data.MySqlClient
 							RandomLoadBalancer.Instance : FailOverLoadBalancer.Instance;
 
 						var session = new ServerSession();
+						Log.Info("Created new non-pooled Session{0}", session.Id);
 						await session.ConnectAsync(m_connectionSettings, loadBalancer, ioBehavior, linkedSource.Token).ConfigureAwait(false);
 						return session;
 					}
