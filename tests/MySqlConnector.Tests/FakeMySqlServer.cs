@@ -25,18 +25,21 @@ namespace MySqlConnector.Tests
 
 		public void Stop()
 		{
-			m_cts.Cancel();
-			m_tcpListener.Stop();
-			try
+			if (m_cts != null)
 			{
-				Task.WaitAll(m_tasks.ToArray());
+				m_cts.Cancel();
+				m_tcpListener.Stop();
+				try
+				{
+					Task.WaitAll(m_tasks.ToArray());
+				}
+				catch (AggregateException)
+				{
+				}
+				m_tasks.Clear();
+				m_cts.Dispose();
+				m_cts = null;
 			}
-			catch (AggregateException)
-			{
-			}
-			m_tasks.Clear();
-			m_cts.Dispose();
-			m_cts = null;
 		}
 
 		public int Port => ((IPEndPoint) m_tcpListener.LocalEndpoint).Port;

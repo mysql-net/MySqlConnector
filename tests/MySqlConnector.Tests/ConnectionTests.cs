@@ -152,6 +152,31 @@ namespace MySqlConnector.Tests
 			}
 		}
 
+		[Fact]
+		public void Ping()
+		{
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(ConnectionState.Open, connection.State);
+				Assert.True(connection.Ping());
+				Assert.Equal(ConnectionState.Open, connection.State);
+			}
+		}
+
+		[Fact]
+		public void PingWhenClosed()
+		{
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(ConnectionState.Open, connection.State);
+				m_server.Stop();
+				Assert.False(connection.Ping());
+				Assert.Equal(ConnectionState.Closed, connection.State);
+			}
+		}
+
 		private static async Task WaitForConditionAsync<T>(T expected, Func<T> getValue)
 		{
 			var sw = Stopwatch.StartNew();

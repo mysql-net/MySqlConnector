@@ -135,6 +135,27 @@ namespace MySql.Data.MySqlClient
 
 		public new MySqlCommand CreateCommand() => (MySqlCommand) base.CreateCommand();
 
+		public bool Ping() => PingAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public Task<bool> PingAsync() => PingAsync((m_connectionSettings?.ForceSynchronous ?? false) ? IOBehavior.Synchronous : IOBehavior.Asynchronous, CancellationToken.None).AsTask();
+		public Task<bool> PingAsync(CancellationToken cancellationToken) => PingAsync((m_connectionSettings?.ForceSynchronous ?? false) ? IOBehavior.Synchronous : IOBehavior.Asynchronous, cancellationToken).AsTask();
+
+		private async ValueTask<bool> PingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			if (m_session == null)
+				return false;
+			try
+			{
+				if (await m_session.TryPingAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
+					return true;
+			}
+			catch (InvalidOperationException)
+			{
+			}
+
+			SetState(ConnectionState.Closed);
+			return false;
+		}
+
 		public override void Open() => OpenAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public override Task OpenAsync(CancellationToken cancellationToken) =>

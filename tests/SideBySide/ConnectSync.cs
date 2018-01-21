@@ -367,6 +367,30 @@ namespace SideBySide
 			}
 		}
 
+		[Fact]
+		public void PingNoConnection()
+		{
+			using (var connection = new MySqlConnection())
+				Assert.False(connection.Ping());
+		}
+
+		[Fact]
+		public void PingBeforeConnecting()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+				Assert.False(connection.Ping());
+		}
+
+		[Fact]
+		public void PingConnection()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				Assert.True(connection.Ping());
+			}
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }

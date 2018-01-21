@@ -312,6 +312,32 @@ namespace SideBySide
 			}
 		}
 
+#if !BASELINE
+		[Fact]
+		public async Task PingNoConnection()
+		{
+			using (var connection = new MySqlConnection())
+				Assert.False(await connection.PingAsync());
+		}
+
+		[Fact]
+		public async Task PingBeforeConnecting()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+				Assert.False(await connection.PingAsync());
+		}
+
+		[Fact]
+		public async Task PingConnection()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				await connection.OpenAsync();
+				Assert.True(await connection.PingAsync());
+			}
+		}
+#endif
+
 		readonly DatabaseFixture m_database;
 	}
 

@@ -507,7 +507,7 @@ namespace MySqlConnector.Core
 			throw new MySqlException("Authentication method '{0}' failed. Either use a secure connection, specify the server's RSA public key with ServerRSAPublicKeyFile, or set AllowPublicKeyRetrieval=True.".FormatInvariant(switchRequestName));
 		}
 
-		public async Task<bool> TryPingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async ValueTask<bool> TryPingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyState(State.Connected);
 
