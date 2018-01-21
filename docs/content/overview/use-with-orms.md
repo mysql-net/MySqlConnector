@@ -5,7 +5,7 @@ menu:
   main:
     parent: getting started
 title: Use with ORMs
-weight: 50
+weight: 60
 ---
 
 Use with ORMs
