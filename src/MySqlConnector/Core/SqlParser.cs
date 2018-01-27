@@ -5,11 +5,10 @@ namespace MySqlConnector.Core
 {
 	internal abstract class SqlParser
 	{
-		public int Parse(string sql)
+		public void Parse(string sql)
 		{
 			OnBeforeParse(sql ?? throw new ArgumentNullException(nameof(sql)));
 
-			int statementCount = 0;
 			int parameterStartIndex = -1;
 
 			var state = State.Beginning;
@@ -148,7 +147,6 @@ namespace MySqlConnector.Core
 					}
 					else if (ch == ';')
 					{
-						IncrementStatementCount(state, ref statementCount);
 						state = State.Beginning;
 					}
 					else if (!IsWhitespace(ch) && state == State.Beginning)
@@ -158,9 +156,7 @@ namespace MySqlConnector.Core
 				}
 			}
 
-			IncrementStatementCount(state, ref statementCount);
 			OnParsed();
-			return statementCount;
 		}
 
 		protected virtual void OnBeforeParse(string sql)
@@ -178,13 +174,7 @@ namespace MySqlConnector.Core
 		protected virtual void OnParsed()
 		{
 		}
-
-		private void IncrementStatementCount(State state, ref int statementCount)
-		{
-			if (state != State.Beginning && state != State.EndOfLineComment && state != State.CStyleComment && state != State.CStyleCommentAsterisk)
-				statementCount++;
-		}
-
+		
 		private static bool IsWhitespace(char ch) => ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
 
 		private static bool IsVariableName(char ch) => (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '.' || ch == '_' || ch == '$';
