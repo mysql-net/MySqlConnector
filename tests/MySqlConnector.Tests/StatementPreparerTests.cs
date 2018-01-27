@@ -9,47 +9,28 @@ namespace MySqlConnector.Tests
 	public class StatementPreparerTests
 	{
 		[Theory]
-		[InlineData(GoodSqlText)]
-		[InlineData(AnotherGoodSqlText)]
-		[InlineData(AnotherGoodSqlText2)]
-		[InlineData(BadSqlText)]
-		public void PrepareQuery(string sql)
+		[InlineData("SELECT Id\nFROM mytable\nWHERE column1 = 2\nAND column2 = @param")]
+		[InlineData("SELECT Id\nFROM mytable\nWHERE column1 = 2  -- mycomment\nAND column2 = @param")]
+		[InlineData("SELECT Id\nFROM mytable\nWHERE column1 = 2 -- mycomment\nAND column2 = @param")]
+		[InlineData("SELECT Id\nFROM mytable\nWHERE column1 = 2 -- mycomment\n  AND column2 = @param")]
+		public void Bug429(string sql)
 		{
 			var parameters = new MySqlParameterCollection();
-			parameters.AddWithValue("c2", 3);
-
-			var parsedRequest1 = Encoding.UTF8.GetString(new StatementPreparer(sql, parameters, StatementPreparerOptions.None).ParseAndBindParameters().Slice(1));
-
-			Assert.Matches("column2 = 3", parsedRequest1);
+			parameters.AddWithValue("@param", 123);
+			var parsedSql = GetParsedSql(sql, parameters);
+			Assert.Equal(sql.Replace("@param", "123"), parsedSql);
 		}
 
-		[Fact]
-		public void CStyleComment()
+		[Theory]
+		[InlineData(@"SELECT /* * / @param */ 1;")]
+		[InlineData("SELECT # @param \n1;")]
+		[InlineData("SELECT -- @param \n1;")]
+		public void ParametersIgnoredInComments(string sql)
 		{
-			var parameters = new MySqlParameterCollection();
-			var sql = @"SELECT /* * / @param */ 1;";
-			var parsedSql = Encoding.UTF8.GetString(new StatementPreparer(sql, parameters, StatementPreparerOptions.None).ParseAndBindParameters().Slice(1));
-			Assert.Equal(sql, parsedSql);
+			Assert.Equal(sql, GetParsedSql(sql));
 		}
 
-		private const string BadSqlText = @"SELECT Id
-FROM mytable
-WHERE column1 = 2 -- mycomment
-  AND column2 = @c2";
-
-		private const string GoodSqlText = @"SELECT Id
-FROM mytable
-WHERE column1 = 2
-AND column2 = @c2";
-
-		private const string AnotherGoodSqlText = @"SELECT Id
-FROM mytable
-WHERE column1 = 2  -- mycomment
-AND column2 = @c2";
-
-		private const string AnotherGoodSqlText2 = @"SELECT Id
-FROM mytable
-WHERE column1 = 2 -- mycomment
-AND column2 = @c2";
+		private static string GetParsedSql(string input, MySqlParameterCollection parameters = null) =>
+			Encoding.UTF8.GetString(new StatementPreparer(input, parameters ?? new MySqlParameterCollection(), StatementPreparerOptions.None).ParseAndBindParameters().Slice(1));
 	}
 }
