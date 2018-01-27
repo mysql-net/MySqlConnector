@@ -75,7 +75,6 @@ namespace MySqlConnector.Core
 				{
 					if (ch == ' ')
 					{
-						beforeCommentState = state;
 						state = State.EndOfLineComment;
 					}
 					else
@@ -121,7 +120,10 @@ namespace MySqlConnector.Core
 						throw new InvalidOperationException("Unexpected state: {0}".FormatInvariant(state));
 
 					if (ch == '-')
+					{
+						beforeCommentState = state;
 						state = State.Hyphen;
+					}
 					else if (ch == '/')
 						state = State.ForwardSlash;
 					else if (ch == '\'')
