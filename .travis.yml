@@ -5,22 +5,22 @@ services: docker
 env:
   - IMAGE=mysql:5.6
     NAME=mysql
-    FEATURES=StoredProcedures
+    OMIT_FEATURES=Json,Sha256Password,OpenSsl,LargePackets,CachingSha2Password,SessionTrack
   - IMAGE=mysql:5.7
     NAME=mysql
-    FEATURES=Json,StoredProcedures,Sha256Password,LargePackets,SessionTrack
+    OMIT_FEATURES=OpenSsl,CachingSha2Password
   - IMAGE=mysql:8.0
     NAME=mysql
-    FEATURES=Json,StoredProcedures,Sha256Password,LargePackets,CachingSha2Password,SessionTrack
+    OMIT_FEATURES=OpenSsl
   - IMAGE=percona:5.7
     NAME=percona
-    FEATURES=Json,StoredProcedures,Sha256Password,OpenSsl,LargePackets,SessionTrack
+    OMIT_FEATURES=CachingSha2Password
   - IMAGE=mariadb:10.2
     NAME=mariadb
-    FEATURES=StoredProcedures,OpenSsl,LargePackets,SessionTrack
+    OMIT_FEATURES=Json,Sha256Password,CachingSha2Password
 
 before_install:
-- .ci/docker-run.sh $IMAGE $NAME 3307 $FEATURES
+- .ci/docker-run.sh $IMAGE $NAME 3307 $OMIT_FEATURES
 - curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
 - sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
 - sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
@@ -33,14 +33,14 @@ script:
 - pushd tests/Conformance.Tests && CONNECTION_STRING="Server=localhost;Port=3307;User Id=mysqltest;Password='test;key=\"val';SSL Mode=None" dotnet xunit -c Release && popd
 - pushd tests/SideBySide
 - dotnet build SideBySide.csproj -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp1.1.2 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp1.1.2
-- echo 'Executing netcoreapp2.0 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp1.1.2 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet xunit -c Release -f netcoreapp1.1.2
+- echo 'Executing netcoreapp2.0 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
 - echo 'Executing netcoreapp2.0 Debug Only tests' && time dotnet xunit -c Debug -f netcoreapp2.0 -class SideBySide.DebugOnlyTests
-- echo 'Executing netcoreapp2.0 tests with Compression, No SSL' && ../../.ci/use-config.sh config.compression.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp1.1.2 tests with No Compression, SSL' && ../../.ci/use-config.sh config.ssl.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp1.1.2
-- echo 'Executing netcoreapp2.0 tests with No Compression, SSL' && ../../.ci/use-config.sh config.ssl.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp2.0 tests with Compression, SSL' && ../../.ci/use-config.sh config.compression+ssl.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp2.0 tests with Unix Domain Socket, No Compression, No SSL' && ../../.ci/use-config.sh config.uds.json 172.17.0.1 3307 $NAME $FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp2.0 tests with Compression, No SSL' && ../../.ci/use-config.sh config.compression.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp1.1.2 tests with No Compression, SSL' && ../../.ci/use-config.sh config.ssl.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet xunit -c Release -f netcoreapp1.1.2
+- echo 'Executing netcoreapp2.0 tests with No Compression, SSL' && ../../.ci/use-config.sh config.ssl.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp2.0 tests with Compression, SSL' && ../../.ci/use-config.sh config.compression+ssl.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp2.0 tests with Unix Domain Socket, No Compression, No SSL' && ../../.ci/use-config.sh config.uds.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
 - popd
 
 after_script:
