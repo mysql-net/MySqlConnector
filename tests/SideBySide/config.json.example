@@ -2,8 +2,8 @@
     "Data": {
       "ConnectionString": "server=127.0.0.1;user id=mysqltest;password='test;key=\"val';port=3306;database=mysqltest;DefaultCommandTimeout=3600",
       "PasswordlessUser": "no_password",
-      "SupportsCachedProcedures": true,
-      "SupportsJson": true,
+      "SecondaryDatabase": "testdb2",
+      "UnsupportedFeatures": "CachingSha2Password,OpenSsl",
       "CertificatesPath": "C:/work/MySqlConnector/.ci/server/certs"
     }
 }

@@ -45,5 +45,5 @@ fi
 
 if [ $# -ge 5 ]
 then
-    sed -i "s/\"SupportedFeatures\": \".*\"/\"SupportedFeatures\": \"$5\"/g" ../../tests/SideBySide/config.json
+    sed -i "s/\"UnsupportedFeatures\": \".*\"/\"UnsupportedFeatures\": \"$5\"/g" ../../tests/SideBySide/config.json
 fi

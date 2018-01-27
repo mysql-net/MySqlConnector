@@ -2,7 +2,7 @@
 cd $(dirname $0)
 
 display_usage() {
-    echo -e "\nUsage:\n$0 [image] [name] [port] [features]\n"
+    echo -e "\nUsage:\n$0 [image] [name] [port] [omit_features]\n"
 }
 
 # check whether user had supplied -h or --help . If yes display usage
@@ -22,7 +22,7 @@ fi
 IMAGE=$1
 NAME=$2
 PORT=$3
-FEATURES=$4
+OMIT_FEATURES=$4
 
 sudo mkdir -p run/$NAME
 sudo chmod 777 run/$NAME
@@ -44,12 +44,12 @@ for i in `seq 1 30`; do
 	# try running the init script
 	docker exec -it $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init.sql' >/dev/null 2>&1
 	if [ $? -ne 0 ]; then continue; fi
-	if [[ $FEATURES == *"Sha256Password"* ]]; then
+	if [[ $OMIT_FEATURES != *"Sha256Password"* ]]; then
 	 	docker exec -it $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_sha256.sql' >/dev/null 2>&1
 		if [ $? -ne 0 ]; then continue; fi
 	fi
 
-	if [[ $FEATURES == *"CachingSha2Password"* ]]; then
+	if [[ $OMIT_FEATURES != *"CachingSha2Password"* ]]; then
 		docker exec -it $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_caching_sha2.sql' >/dev/null 2>&1
 		if [ $? -ne 0 ]; then continue; fi
 	fi
