@@ -13,6 +13,7 @@ Thumbs.db
 *.csproj.user
 *.DotSettings.user
 .idea
+*.ncrunchproject.user
 *.[Rr]e[Ss]harper.user
 *.sln.cache
 *.suo
