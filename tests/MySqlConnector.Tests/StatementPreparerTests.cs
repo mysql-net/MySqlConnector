@@ -30,6 +30,20 @@ namespace MySqlConnector.Tests
 			Assert.Equal(sql, GetParsedSql(sql));
 		}
 
+		[Theory]
+		[InlineData("SELECT '@param';")]
+		[InlineData("SELECT \"@param\";")]
+		[InlineData("SELECT `@param`;")]
+		[InlineData("SELECT 'test\\'@param';")]
+		[InlineData("SELECT \"test\\\"@param\";")]
+		[InlineData("SELECT 'test''@param';")]
+		[InlineData("SELECT \"test\"\"@param\";")]
+		[InlineData("SELECT `test``@param`;")]
+		public void ParametersIgnoredInStrings(string sql)
+		{
+			Assert.Equal(sql, GetParsedSql(sql));
+		}
+
 		private static string GetParsedSql(string input, MySqlParameterCollection parameters = null) =>
 			Encoding.UTF8.GetString(new StatementPreparer(input, parameters ?? new MySqlParameterCollection(), StatementPreparerOptions.None).ParseAndBindParameters().Slice(1));
 	}
