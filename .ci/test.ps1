@@ -40,7 +40,7 @@ if ($LASTEXITCODE -ne 0){
 
 echo "Executing tests with Compression, No SSL"
 Copy-Item -Force ..\..\.ci\config\config.compression.json config.json
-dotnet xunit -c Release
+dotnet xunit -c Release -f netcoreapp2.0
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
