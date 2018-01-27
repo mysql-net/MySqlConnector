@@ -23,6 +23,15 @@ namespace MySqlConnector.Tests
 			Assert.Matches("column2 = 3", parsedRequest1);
 		}
 
+		[Fact]
+		public void CStyleComment()
+		{
+			var parameters = new MySqlParameterCollection();
+			var sql = @"SELECT /* * / @param */ 1;";
+			var parsedSql = Encoding.UTF8.GetString(new StatementPreparer(sql, parameters, StatementPreparerOptions.None).ParseAndBindParameters().Slice(1));
+			Assert.Equal(sql, parsedSql);
+		}
+
 		private const string BadSqlText = @"SELECT Id
 FROM mytable
 WHERE column1 = 2 -- mycomment

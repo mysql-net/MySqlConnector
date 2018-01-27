@@ -29,8 +29,7 @@ namespace MySqlConnector.Core
 				}
 				else if (state == State.CStyleCommentAsterisk)
 				{
-					if (ch == '/')
-						state = beforeCommentState;
+					state = ch == '/' ? beforeCommentState : State.CStyleComment;
 				}
 				else if (state == State.SingleQuotedString)
 				{
