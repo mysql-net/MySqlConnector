@@ -9,7 +9,7 @@ namespace MySql.Data.MySqlClient
 		public static void ClearConnectionPools() => MySqlConnection.ClearAllPools();
 
 		/// <summary>
-		/// Escapes single and double quotes, and backslashes in <paramref name="input"/>.
+		/// Escapes single and double quotes, and backslashes in <paramref name="value"/>.
 		/// </summary>
 		public static string EscapeString(string value)
 		{

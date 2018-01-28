@@ -6,7 +6,7 @@ namespace MySqlConnector.Core
 	internal interface ILoadBalancer
 	{
 		/// <summary>
-		/// Returns an <see cref="IEnumerable{string}"/> containing <paramref name="hosts"/> in the order they
+		/// Returns an <see cref="IEnumerable{String}"/> containing <paramref name="hosts"/> in the order they
 		/// should be tried to satisfy the load balancing policy.
 		/// </summary>
 		IEnumerable<string> LoadBalance(IReadOnlyList<string> hosts);
