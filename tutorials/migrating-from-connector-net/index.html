@@ -126,7 +126,9 @@ property doesn&rsquo;t reference the active transaction. See <a href="https://gi
 <p>For consistency with other ADO.NET providers, MySqlConnector will throw <code>InvalidOperationException</code> (instead of <code>MySqlException</code>)
 for various precondition checks that indicate misuse of the API (and not a problem related to MySQL Server).</p>
 
-<h3 id="bugs-present-in-connector-net-that-are-fixed-in-mysqlconnector">Bugs present in Connector/NET that are fixed in MySqlConnector</h3>
+<h3 id="fixed-bugs">Fixed Bugs</h3>
+
+<p>The following bugs in Connector/NET are fixed by switching to MySqlConnector.</p>
 
 <ul>
 <li><a href="https://bugs.mysql.com/bug.php?id=37283">#37283</a>, <a href="https://bugs.mysql.com/bug.php?id=70587">#70587</a>: Distributed transactions are not supported</li>
@@ -138,13 +140,14 @@ for various precondition checks that indicate misuse of the API (and not a probl
 <li><a href="https://bugs.mysql.com/bug.php?id=72494">#72494</a>, <a href="https://bugs.mysql.com/bug.php?id=83330">#83330</a>: EndOfStreamException inserting large blob with UseCompression=True</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=73610">#73610</a>: Invalid password exception has wrong number</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=73788">#73788</a>: Can&rsquo;t use <code>DateTimeOffset</code></li>
+<li><a href="https://bugs.mysql.com/bug.php?id=75604">#75604</a>: Crash after 29.4 days of uptime</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=75917">#75917</a>, <a href="https://bugs.mysql.com/bug.php?id=76597">#76597</a>, <a href="https://bugs.mysql.com/bug.php?id=77691">#77691</a>, <a href="https://bugs.mysql.com/bug.php?id=78650">#78650</a>, <a href="https://bugs.mysql.com/bug.php?id=78919">#78919</a>, <a href="https://bugs.mysql.com/bug.php?id=80921">#80921</a>, <a href="https://bugs.mysql.com/bug.php?id=82136">#82136</a>: &ldquo;Reading from the stream has failed&rdquo; when connecting to a server</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=77421">#77421</a>: Connection is not reset when pulled from the connection pool</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=78426">#78426</a>: Unknown database exception has wrong number</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=78760">#78760</a>: Error when using tabs and newlines in SQL statements</li>
-<li><a href="https://bugs.mysql.com/bug.php?id=78917">#78917</a>, <a href="https://bugs.mysql.com/bug.php?id=79196">#79196</a>, <a href="https://bugs.mysql.com/bug.php?id=82292">#82292</a>: <code>TINYINT(1)</code> values start being returned as <code>sbyte</code> after <code>NULL</code></li>
+<li><a href="https://bugs.mysql.com/bug.php?id=78917">#78917</a>, <a href="https://bugs.mysql.com/bug.php?id=79196">#79196</a>, <a href="https://bugs.mysql.com/bug.php?id=82292">#82292</a>, <a href="https://bugs.mysql.com/bug.php?id=89040">#89040</a>: <code>TINYINT(1)</code> values start being returned as <code>sbyte</code> after <code>NULL</code></li>
 <li><a href="https://bugs.mysql.com/bug.php?id=80030">#80030</a>: Slow to connect with pooling disabled</li>
-<li><a href="https://bugs.mysql.com/bug.php?id=81650">#81650</a>: <code>Server</code> connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=81650">#81650</a>, <a href="https://bugs.mysql.com/bug.php?id=88962">#88962</a>: <code>Server</code> connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=83329">#83229</a>: &ldquo;Unknown command&rdquo; exception inserting large blob with UseCompression=True</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=84220">#84220</a>: Cannot call a stored procedure with <code>.</code> in its name</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=84701">#84701</a>: Can&rsquo;t create a paramter using a 64-bit enum with a value greater than int.MaxValue</li>
@@ -157,6 +160,9 @@ for various precondition checks that indicate misuse of the API (and not a probl
 <li><a href="https://bugs.mysql.com/bug.php?id=88058">#88058</a>: <code>decimal(n, 0)</code> has wrong <code>NumericPrecision</code></li>
 <li><a href="https://bugs.mysql.com/bug.php?id=88124">#88124</a>: CommandTimeout isn&rsquo;t reset when calling Read/NextResult</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=88611">#88611</a>: <code>MySqlCommand</code> can be executed even if it has &ldquo;wrong&rdquo; transaction</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=89085">#89085</a>: <code>MySqlConnection.Database</code> not updated after <code>USE database;</code></li>
+<li><a href="https://bugs.mysql.com/bug.php?id=89159">#89159</a>: <code>MySqlDataReader</code> cannot outlive <code>MySqlCommand</code></li>
+<li><a href="https://bugs.mysql.com/bug.php?id=89335">#89335</a>: <code>MySqlCommandBuilder.DeriveParameters</code> fails for <code>JSON</code> type</li>
 </ul>
 
 
