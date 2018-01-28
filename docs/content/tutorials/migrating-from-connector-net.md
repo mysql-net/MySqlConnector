@@ -81,7 +81,9 @@ property doesn't reference the active transaction. See [#333](https://github.com
 For consistency with other ADO.NET providers, MySqlConnector will throw `InvalidOperationException` (instead of `MySqlException`)
 for various precondition checks that indicate misuse of the API (and not a problem related to MySQL Server).
 
-### Bugs present in Connector/NET that are fixed in MySqlConnector
+### Fixed Bugs
+
+The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 
 * [#37283](https://bugs.mysql.com/bug.php?id=37283), [#70587](https://bugs.mysql.com/bug.php?id=70587): Distributed transactions are not supported
 * [#50773](https://bugs.mysql.com/bug.php?id=50773): Can't use multiple connections within one TransactionScope
