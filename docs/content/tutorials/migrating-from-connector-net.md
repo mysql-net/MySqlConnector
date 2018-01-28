@@ -94,13 +94,14 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 * [#72494](https://bugs.mysql.com/bug.php?id=72494), [#83330](https://bugs.mysql.com/bug.php?id=83330): EndOfStreamException inserting large blob with UseCompression=True
 * [#73610](https://bugs.mysql.com/bug.php?id=73610): Invalid password exception has wrong number
 * [#73788](https://bugs.mysql.com/bug.php?id=73788): Can't use `DateTimeOffset`
+* [#75604](https://bugs.mysql.com/bug.php?id=75604): Crash after 29.4 days of uptime
 * [#75917](https://bugs.mysql.com/bug.php?id=75917), [#76597](https://bugs.mysql.com/bug.php?id=76597), [#77691](https://bugs.mysql.com/bug.php?id=77691), [#78650](https://bugs.mysql.com/bug.php?id=78650), [#78919](https://bugs.mysql.com/bug.php?id=78919), [#80921](https://bugs.mysql.com/bug.php?id=80921), [#82136](https://bugs.mysql.com/bug.php?id=82136): "Reading from the stream has failed" when connecting to a server
 * [#77421](https://bugs.mysql.com/bug.php?id=77421): Connection is not reset when pulled from the connection pool
 * [#78426](https://bugs.mysql.com/bug.php?id=78426): Unknown database exception has wrong number
 * [#78760](https://bugs.mysql.com/bug.php?id=78760): Error when using tabs and newlines in SQL statements
-* [#78917](https://bugs.mysql.com/bug.php?id=78917), [#79196](https://bugs.mysql.com/bug.php?id=79196), [#82292](https://bugs.mysql.com/bug.php?id=82292): `TINYINT(1)` values start being returned as `sbyte` after `NULL`
+* [#78917](https://bugs.mysql.com/bug.php?id=78917), [#79196](https://bugs.mysql.com/bug.php?id=79196), [#82292](https://bugs.mysql.com/bug.php?id=82292), [#89040](https://bugs.mysql.com/bug.php?id=89040): `TINYINT(1)` values start being returned as `sbyte` after `NULL`
 * [#80030](https://bugs.mysql.com/bug.php?id=80030): Slow to connect with pooling disabled
-* [#81650](https://bugs.mysql.com/bug.php?id=81650): `Server` connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds
+* [#81650](https://bugs.mysql.com/bug.php?id=81650), [#88962](https://bugs.mysql.com/bug.php?id=88962): `Server` connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds
 * [#83229](https://bugs.mysql.com/bug.php?id=83329): "Unknown command" exception inserting large blob with UseCompression=True
 * [#84220](https://bugs.mysql.com/bug.php?id=84220): Cannot call a stored procedure with `.` in its name
 * [#84701](https://bugs.mysql.com/bug.php?id=84701): Can't create a paramter using a 64-bit enum with a value greater than int.MaxValue
@@ -113,3 +114,6 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 * [#88058](https://bugs.mysql.com/bug.php?id=88058): `decimal(n, 0)` has wrong `NumericPrecision`
 * [#88124](https://bugs.mysql.com/bug.php?id=88124): CommandTimeout isn't reset when calling Read/NextResult
 * [#88611](https://bugs.mysql.com/bug.php?id=88611): `MySqlCommand` can be executed even if it has "wrong" transaction
+* [#89085](https://bugs.mysql.com/bug.php?id=89085): `MySqlConnection.Database` not updated after `USE database;`
+* [#89159](https://bugs.mysql.com/bug.php?id=89159): `MySqlDataReader` cannot outlive `MySqlCommand`
+* [#89335](https://bugs.mysql.com/bug.php?id=89335): `MySqlCommandBuilder.DeriveParameters` fails for `JSON` type
