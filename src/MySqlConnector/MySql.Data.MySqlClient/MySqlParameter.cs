@@ -167,7 +167,7 @@ namespace MySql.Data.MySqlClient
 			Size = other.Size;
 			ParameterName = parameterName ?? other.ParameterName;
 			Value = other.Value;
-#if NETSTANDARD1_3
+#if !NET45
 			Precision = other.Precision;
 			Scale = other.Scale;
 #endif
