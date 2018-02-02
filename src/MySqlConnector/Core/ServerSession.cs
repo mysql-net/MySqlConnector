@@ -779,7 +779,7 @@ namespace MySqlConnector.Core
 				}
 				catch (CryptographicException ex)
 				{
-					m_logArguments[1] = cs.CACertificateFile;
+					m_logArguments[1] = cs.CertificateFile;
 					Log.Error(ex, "{0} couldn't load certificate from '{1}'", m_logArguments);
 					if (!File.Exists(cs.CertificateFile))
 						throw new MySqlException("Cannot find Certificate File", ex);
@@ -808,6 +808,7 @@ namespace MySqlConnector.Core
 				}
 				catch (CryptographicException ex)
 				{
+					m_logArguments[1] = cs.CACertificateFile;
 					Log.Error(ex, "{0} couldn't load CA certificate from '{1}'", m_logArguments);
 					if (!File.Exists(cs.CACertificateFile))
 						throw new MySqlException("Cannot find CA Certificate File", ex);
