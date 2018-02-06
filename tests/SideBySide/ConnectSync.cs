@@ -193,7 +193,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public void ConnectTimeout()
 		{
 			var csb = new MySqlConnectionStringBuilder

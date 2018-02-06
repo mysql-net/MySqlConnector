@@ -13,5 +13,6 @@ namespace SideBySide
 		LargePackets = 16,
 		CachingSha2Password = 32,
 		SessionTrack = 64,
+		Timeout = 128,
 	}
 }

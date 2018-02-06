@@ -112,7 +112,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public async Task ConnectTimeoutAsync()
 		{
 			var csb = new MySqlConnectionStringBuilder

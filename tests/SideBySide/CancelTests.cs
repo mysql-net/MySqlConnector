@@ -34,7 +34,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public void CancelCommand()
 		{
 			using (var cmd = new MySqlCommand("SELECT SLEEP(5)", m_database.Connection))
@@ -54,7 +54,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public void CancelReaderAsynchronously()
 		{
 			using (var barrier = new Barrier(2))
@@ -90,7 +90,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public void CancelCommandBeforeRead()
 		{
 			using (var cmd = new MySqlCommand(c_hugeQuery, m_database.Connection))
@@ -117,7 +117,7 @@ namespace SideBySide
 			}
 		}
 
-		[SkippableFact(Baseline = "Hangs in NextResult")]
+		[SkippableFact(ServerFeatures.Timeout, Baseline = "Hangs in NextResult")]
 		public void CancelMultiStatementReader()
 		{
 			using (var barrier = new Barrier(2))
@@ -155,7 +155,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public void DapperQueryMultiple()
 		{
 			Stopwatch stopwatch;
@@ -173,7 +173,7 @@ namespace SideBySide
 		}
 
 #if !BASELINE
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public async Task CancelCommandWithTokenBeforeExecuteScalar()
 		{
 			using (var cmd = new MySqlCommand("select 1;", m_database.Connection))
@@ -190,7 +190,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public async Task CancelCommandWithTokenBeforeExecuteNonQuery()
 		{
 			using (var cmd = new MySqlCommand("select 1;", m_database.Connection))
@@ -207,7 +207,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public async Task CancelCommandWithTokenBeforeExecuteReader()
 		{
 			using (var cmd = new MySqlCommand("select 1;", m_database.Connection))
@@ -271,7 +271,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 			Assert.Equal("value", value);
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public async Task CancelHugeQueryWithTokenAfterExecuteReader()
 		{
 			using (var cmd = new MySqlCommand(c_hugeQuery, m_database.Connection))
@@ -297,7 +297,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 			}
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public async Task CancelHugeQueryWithTokenInNextResult()
 		{
 			using (var cmd = new MySqlCommand(c_hugeQuery + "select 1, 2, 3;", m_database.Connection))
@@ -326,7 +326,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 			}
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public async Task CancelSlowQueryWithTokenAfterExecuteReader()
 		{
 			using (var cmd = new MySqlCommand(c_slowQuery, m_database.Connection))
@@ -355,7 +355,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 			}
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public async Task CancelSlowQueryWithTokenAfterNextResult()
 		{
 			using (var cmd = new MySqlCommand("SELECT 1; " + c_slowQuery, m_database.Connection))
@@ -391,7 +391,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 			}
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public async Task CancelMultiStatementInRead()
 		{
 			using (var cmd = new MySqlCommand(c_hugeQuery + c_hugeQuery + c_hugeQuery, m_database.Connection))
