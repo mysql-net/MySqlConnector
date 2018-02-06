@@ -15,5 +15,6 @@ namespace SideBySide
 		SessionTrack = 64,
 		Timeout = 128,
 		ErrorCodes = 256,
+		KnownCertificateAuthority = 512,
 	}
 }

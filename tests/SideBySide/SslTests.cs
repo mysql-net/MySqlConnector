@@ -41,7 +41,7 @@ namespace SideBySide
 			}
 		}
 
-		[SkippableTheory(ConfigSettings.RequiresSsl)]
+		[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
 		[InlineData("ssl-client.pfx", null, null)]
 		[InlineData("ssl-client-pw-test.pfx", "test", null)]
 		[InlineData("ssl-client-cert.pem", null, null)]
@@ -74,7 +74,7 @@ namespace SideBySide
 			}
 		}
 
-		[SkippableFact(ConfigSettings.RequiresSsl)]
+		[SkippableFact(ServerFeatures.KnownCertificateAuthority, ConfigSettings.RequiresSsl)]
 		public async Task ConnectSslBadClientCertificate()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -91,7 +91,7 @@ namespace SideBySide
 			}
 		}
 
-		[SkippableFact(ConfigSettings.RequiresSsl, Baseline = "MySql.Data does not support CACertificateFile")]
+		[SkippableFact(ServerFeatures.KnownCertificateAuthority, ConfigSettings.RequiresSsl, Baseline = "MySql.Data does not support CACertificateFile")]
 		public async Task ConnectSslBadCaCertificate()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -108,5 +108,4 @@ namespace SideBySide
 
 		readonly DatabaseFixture m_database;
 	}
-
 }

@@ -16,5 +16,6 @@ namespace SideBySide
 		LocalTsvFile = 0x80,
 		TcpConnection = 0x200,
 		SecondaryDatabase = 0x400,
+		KnownClientCertificate = 0x800,
 	}
 }
