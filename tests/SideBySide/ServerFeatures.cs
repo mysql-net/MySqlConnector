@@ -14,5 +14,6 @@ namespace SideBySide
 		CachingSha2Password = 32,
 		SessionTrack = 64,
 		Timeout = 128,
+		ErrorCodes = 256,
 	}
 }

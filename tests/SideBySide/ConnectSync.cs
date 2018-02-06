@@ -63,7 +63,8 @@ namespace SideBySide
 					// https://bugs.mysql.com/bug.php?id=78426
 					Assert.NotNull(ex);
 #else
-					Assert.Equal((int) MySqlErrorCode.UnknownDatabase, ex.Number);
+					if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.Number != 0)
+						Assert.Equal((int) MySqlErrorCode.UnknownDatabase, ex.Number);
 #endif
 				}
 				Assert.Equal(ConnectionState.Closed, connection.State);
@@ -88,7 +89,8 @@ namespace SideBySide
 					// https://bugs.mysql.com/bug.php?id=73610
 					Assert.NotNull(ex);
 #else
-					Assert.Equal((int) MySqlErrorCode.AccessDenied, ex.Number);
+					if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.Number != 0)
+						Assert.Equal((int) MySqlErrorCode.AccessDenied, ex.Number);
 #endif
 				}
 				Assert.Equal(ConnectionState.Closed, connection.State);
