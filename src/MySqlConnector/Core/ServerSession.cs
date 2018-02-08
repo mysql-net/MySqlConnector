@@ -1026,6 +1026,8 @@ namespace MySqlConnector.Core
 			Log.Info(exception, "{0} setting state to Failed: {1}", m_logArguments);
 			lock (m_lock)
 				m_state = State.Failed;
+			if (OwningConnection != null && OwningConnection.TryGetTarget(out var connection))
+				connection.SetState(ConnectionState.Closed);
 		}
 
 		private void VerifyState(State state)
