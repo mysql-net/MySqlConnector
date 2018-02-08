@@ -100,7 +100,7 @@ namespace MySql.Data.MySqlClient
 
 				throw mySqlException != null ?
 					new MySqlException(mySqlException.Number, mySqlException.SqlState, mySqlException.Message, mySqlException) :
-					resultSet.ReadResultSetHeaderException;
+					new MySqlException("Failed to read the result set.", resultSet.ReadResultSetHeaderException);
 			}
 
 			Command.LastInsertedId = resultSet.LastInsertId;
