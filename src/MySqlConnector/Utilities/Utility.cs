@@ -249,7 +249,7 @@ namespace MySqlConnector.Utilities
 		{
 			os = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Windows" :
 				RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "Linux" :
-				RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "macOS" : null;
+				RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "macOS" : null;
 			osDescription = RuntimeInformation.OSDescription;
 			architecture = RuntimeInformation.ProcessArchitecture.ToString();
 		}
