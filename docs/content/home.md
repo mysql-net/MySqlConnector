@@ -21,16 +21,16 @@ needed to query and update databases from managed code. Its features include:
 * High Performance: code is stress tested for performance bottlenecks
 * Lightweight: Library only implements ADO.NET core
 
-### Why use MySql over Oracle's Connector/NET?
+### Why use MySql over Oracle’s Connector/NET?
 
 MySqlConnector is a clean-room reimplementation of the [MySQL Protocol](https://dev.mysql.com/doc/internals/en/client-server-protocol.html)
-and is not based on [Oracle's Connector/NET](https://github.com/mysql/mysql-connector-net).
+and is not based on [Oracle’s Connector/NET](https://github.com/mysql/mysql-connector-net).
 
 <table class="table table-striped table-hover" style="max-width: 650px">
   <thead>
     <th style="width:25%"></th>
     <th style="width:25%">MySqlConnector</th>
-    <th style="width:25%">Oracle's Connector/NET</th>
+    <th style="width:25%">Oracle’s Connector/NET</th>
     <th style="width:25%">MySqlConnector Advantage</th>
   </thead>
   <tr>
@@ -48,7 +48,7 @@ and is not based on [Oracle's Connector/NET](https://github.com/mysql/mysql-conn
     <td>
       Closed Development Roadmap. Code is viewable on
       <a href="https://github.com/mysql/mysql-connector-net">GitHub</a>,
-      some issues addressed in <a href="http://forums.mysql.com/list.php?38">Forums</a>
+      some issues addressed in <a href="http://forums.mysql.com/list.php?38">forums</a>
     </td>
     <td>
       Get involved!  View
@@ -64,7 +64,8 @@ and is not based on [Oracle's Connector/NET](https://github.com/mysql/mysql-conn
     </td>
     <td>
       <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GPLv2</a>
-      with <a href="http://www.mysql.com/about/legal/licensing/foss-exception/">FOSS Exception</a>
+      with <a href="http://www.mysql.com/about/legal/licensing/foss-exception/">FOSS Exception</a>; or
+      <a href="https://www.mysql.com/about/legal/licensing/oem/">commercial license</a>
     </td>
     <td>More Permissive</td>
   </tr>
