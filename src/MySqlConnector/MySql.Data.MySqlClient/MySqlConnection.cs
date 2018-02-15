@@ -405,6 +405,14 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+		internal bool SslIsEncrypted => m_session.SslIsEncrypted;
+
+		internal bool SslIsSigned => m_session.SslIsSigned;
+
+		internal bool SslIsAuthenticated => m_session.SslIsAuthenticated;
+
+		internal bool SslIsMutuallyAuthenticated => m_session.SslIsMutuallyAuthenticated;
+
 		internal void SetState(ConnectionState newState)
 		{
 			if (m_connectionState != newState)

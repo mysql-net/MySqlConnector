@@ -772,6 +772,13 @@ namespace MySqlConnector.Core
 				try
 				{
 					var certificate = new X509Certificate2(cs.CertificateFile, cs.CertificatePassword);
+					if (!certificate.HasPrivateKey)
+					{
+						m_logArguments[1] = cs.CertificateFile;
+						Log.Error("{0} no private key included with certificate '{1}'", m_logArguments);
+						throw new MySqlException("CertificateFile does not contain a private key. "+
+						                         "CertificateFile should be in PKCS #12 (.pfx) format and contain both a Certificate and Private Key");
+					}
 #if !NET45
 					m_clientCertificate = certificate;
 #endif
@@ -872,6 +879,7 @@ namespace MySqlConnector.Core
 				var sslByteHandler = new StreamByteHandler(sslStream);
 				m_payloadHandler.ByteHandler = sslByteHandler;
 				m_isSecureConnection = true;
+				m_sslStream = sslStream;
 			}
 			catch (Exception ex)
 			{
@@ -1057,6 +1065,14 @@ namespace MySqlConnector.Core
 			}
 		}
 
+		internal bool SslIsEncrypted => m_sslStream != null && m_sslStream.IsEncrypted;
+
+		internal bool SslIsSigned => m_sslStream != null && m_sslStream.IsSigned;
+
+		internal bool SslIsAuthenticated => m_sslStream != null && m_sslStream.IsAuthenticated;
+
+		internal bool SslIsMutuallyAuthenticated => m_sslStream != null && m_sslStream.IsMutuallyAuthenticated;
+
 		private byte[] CreateConnectionAttributes()
 		{
 			Log.Debug("{0} creating connection attributes", m_logArguments);
@@ -1143,6 +1159,7 @@ namespace MySqlConnector.Core
 		TcpClient m_tcpClient;
 		Socket m_socket;
 		NetworkStream m_networkStream;
+		SslStream m_sslStream;
 #if !NET45
 		IDisposable m_clientCertificate;
 		IDisposable m_serverCertificate;
