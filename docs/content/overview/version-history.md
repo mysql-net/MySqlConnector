@@ -11,6 +11,17 @@ weight: 30
 Version History
 ===============
 
+### 0.36.0
+
+* **Breaking** Require `CertificateFile` to include private key (for mutual authentication): [#436](https://github.com/mysql-net/MySqlConnector/issues/436).
+* Add `MySqlDataReader.GetX(string)` overloads: [#435](https://github.com/mysql-net/MySqlConnector/issues/435).
+* Add `MySqlDataReader.GetTimeSpan`: [#438](https://github.com/mysql-net/MySqlConnector/issues/438).
+* Add `MySqlDataReader.GetUInt16`, `GetUInt32`, `GetUInt64`: [#439](https://github.com/mysql-net/MySqlConnector/issues/439).
+* Set `MySqlConnection.State` to `ConnectionState.Closed` when the connection fails: [#433](https://github.com/mysql-net/MySqlConnector/issues/433).
+* Fix error parsing `--` comments in SQL: [#429](https://github.com/mysql-net/MySqlConnector/issues/429).
+* Fix error parsing C-style comments in SQL.
+* **Breaking** Wrap unhandled `SocketException` in `MySqlException`: [#434](https://github.com/mysql-net/MySqlConnector/issues/434).
+
 ### 0.35.0
 
 * Add `MySqlCommandBuilder.DeriveParameters`: [#419](https://github.com/mysql-net/MySqlConnector/issues/419).
