@@ -16,27 +16,23 @@ namespace SideBySide
 		public async Task ConnectSslPreferred()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
-			string requiredSslVersion;
-			using (var connection = new MySqlConnection(csb.ConnectionString))
-			{
-				using (var cmd = connection.CreateCommand())
-				{
-					await connection.OpenAsync();
-					cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
-					requiredSslVersion = (string)await cmd.ExecuteScalarAsync();
-				}
-			}
-			Assert.False(string.IsNullOrWhiteSpace(requiredSslVersion));
-
 			csb.SslMode = MySqlSslMode.Preferred;
+			csb.CertificateFile = null;
+			csb.CertificatePassword = null;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				using (var cmd = connection.CreateCommand())
 				{
 					await connection.OpenAsync();
+#if !BASELINE
+					Assert.True(connection.SslIsEncrypted);
+					Assert.True(connection.SslIsSigned);
+					Assert.True(connection.SslIsAuthenticated);
+					Assert.False(connection.SslIsMutuallyAuthenticated);
+#endif
 					cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
-					var preferredSslVersion = (string)await cmd.ExecuteScalarAsync();
-					Assert.Equal(requiredSslVersion, preferredSslVersion);
+					var sslVersion = (string)await cmd.ExecuteScalarAsync();
+					Assert.False(string.IsNullOrWhiteSpace(sslVersion));
 				}
 			}
 		}
@@ -44,11 +40,9 @@ namespace SideBySide
 		[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
 		[InlineData("ssl-client.pfx", null, null)]
 		[InlineData("ssl-client-pw-test.pfx", "test", null)]
-		[InlineData("ssl-client-cert.pem", null, null)]
 #if !BASELINE
 		[InlineData("ssl-client.pfx", null, "ssl-ca-cert.pem")]
 		[InlineData("ssl-client-pw-test.pfx", "test", "ssl-ca-cert.pem")]
-		[InlineData("ssl-client-cert.pem", null, "ssl-ca-cert.pem")]
 #endif
 		public async Task ConnectSslClientCertificate(string certFile, string certFilePassword, string caCertFile)
 		{
@@ -67,10 +61,28 @@ namespace SideBySide
 				using (var cmd = connection.CreateCommand())
 				{
 					await connection.OpenAsync();
+#if !BASELINE
+					Assert.True(connection.SslIsEncrypted);
+					Assert.True(connection.SslIsSigned);
+					Assert.True(connection.SslIsAuthenticated);
+					Assert.True(connection.SslIsMutuallyAuthenticated);
+#endif
 					cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
 					var sslVersion = (string)await cmd.ExecuteScalarAsync();
 					Assert.False(string.IsNullOrWhiteSpace(sslVersion));
 				}
+			}
+		}
+
+		[SkippableFact(ConfigSettings.RequiresSsl, Baseline = "MySql.Data does not check for a private key")]
+		public async Task ConnectSslClientCertificateNoPrivateKey()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.CertificateFile = Path.Combine(AppConfig.CertsPath, "ssl-client-cert.pem");
+			csb.SslMode = MySqlSslMode.Required;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
 			}
 		}
 
@@ -95,7 +107,7 @@ namespace SideBySide
 		public async Task ConnectSslBadCaCertificate()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
-			csb.CertificateFile = Path.Combine(AppConfig.CertsPath, "ssl-client-cert.pem");
+			csb.CertificateFile = Path.Combine(AppConfig.CertsPath, "ssl-client.pfx");
 			csb.SslMode = MySqlSslMode.VerifyCA;
 #if !BASELINE
 			csb.CACertificateFile = Path.Combine(AppConfig.CertsPath, "non-ca-client-cert.pem");

@@ -77,7 +77,7 @@ These are the options that need to be used in order to configure a connection to
   <tr>
     <td>Certificate File, CertificateFile</td>
     <td></td>
-    <td>Specifies the path to a certificate file in a PEM Encoded (.pem) or PKCS #12 (.pfx) format.</td>
+    <td>Specifies the path to a certificate file in PKCS #12 (.pfx) format containing a bundled Certificate and Private Key used for Mutual Authentication.  To create a PKCS #12 bundle from a PEM encoded Certificate and Key, use <code>openssl pkcs12 -in cert.pem -inkey key.pem -export -out bundle.pfx</code></td>
   </tr>
   <tr>
     <td>Certificate Password, CertificatePassword	</td>
