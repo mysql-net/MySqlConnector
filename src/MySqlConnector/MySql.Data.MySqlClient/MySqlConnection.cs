@@ -23,17 +23,13 @@ namespace MySql.Data.MySqlClient
 		public MySqlConnection(string connectionString) => ConnectionString = connectionString;
 
 		public new MySqlTransaction BeginTransaction() => (MySqlTransaction) base.BeginTransaction();
-
 		public new MySqlTransaction BeginTransaction(IsolationLevel isolationLevel) => (MySqlTransaction) base.BeginTransaction(isolationLevel);
+		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => BeginDbTransactionAsync(isolationLevel, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public Task<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
-			BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, cancellationToken);
-
-		public Task<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken)) =>
-			BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, cancellationToken);
-
-		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) =>
-			BeginDbTransactionAsync(isolationLevel, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public Task<MySqlTransaction> BeginTransactionAsync() => BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, CancellationToken.None);
+		public Task<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken) => BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, cancellationToken);
+		public Task<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel) => BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, CancellationToken.None);
+		public Task<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken) => BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, cancellationToken);
 
 		private async Task<MySqlTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
