@@ -1065,13 +1065,13 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		internal bool SslIsEncrypted => m_sslStream != null && m_sslStream.IsEncrypted;
+		internal bool SslIsEncrypted => m_sslStream?.IsEncrypted ?? false;
 
-		internal bool SslIsSigned => m_sslStream != null && m_sslStream.IsSigned;
+		internal bool SslIsSigned => m_sslStream?.IsSigned ?? false;
 
-		internal bool SslIsAuthenticated => m_sslStream != null && m_sslStream.IsAuthenticated;
+		internal bool SslIsAuthenticated => m_sslStream?.IsAuthenticated ?? false;
 
-		internal bool SslIsMutuallyAuthenticated => m_sslStream != null && m_sslStream.IsMutuallyAuthenticated;
+		internal bool SslIsMutuallyAuthenticated => m_sslStream?.IsMutuallyAuthenticated ?? false;
 
 		private byte[] CreateConnectionAttributes()
 		{
