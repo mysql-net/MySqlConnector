@@ -56,6 +56,19 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-36-0">0.36.0</h3>
+
+<ul>
+<li><strong>Breaking</strong> Require <code>CertificateFile</code> to include private key (for mutual authentication): <a href="https://github.com/mysql-net/MySqlConnector/issues/436">#436</a>.</li>
+<li>Add <code>MySqlDataReader.GetX(string)</code> overloads: <a href="https://github.com/mysql-net/MySqlConnector/issues/435">#435</a>.</li>
+<li>Add <code>MySqlDataReader.GetTimeSpan</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/438">#438</a>.</li>
+<li>Add <code>MySqlDataReader.GetUInt16</code>, <code>GetUInt32</code>, <code>GetUInt64</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/439">#439</a>.</li>
+<li>Set <code>MySqlConnection.State</code> to <code>ConnectionState.Closed</code> when the connection fails: <a href="https://github.com/mysql-net/MySqlConnector/issues/433">#433</a>.</li>
+<li>Fix error parsing <code>--</code> comments in SQL: <a href="https://github.com/mysql-net/MySqlConnector/issues/429">#429</a>.</li>
+<li>Fix error parsing C-style comments in SQL.</li>
+<li><strong>Breaking</strong> Wrap unhandled <code>SocketException</code> in <code>MySqlException</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/434">#434</a>.</li>
+</ul>
+
 <h3 id="0-35-0">0.35.0</h3>
 
 <ul>
