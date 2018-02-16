@@ -238,6 +238,15 @@ namespace MySql.Data.MySqlClient
 		public override float GetFloat(int ordinal) => GetResultSet().GetCurrentRow().GetFloat(ordinal);
 		public float GetFloat(string name) => GetFloat(GetOrdinal(name));
 
+		public ushort GetUInt16(int ordinal) => GetResultSet().GetCurrentRow().GetUInt16(ordinal);
+		public ushort GetUInt16(string name) => GetUInt16(GetOrdinal(name));
+
+		public uint GetUInt32(int ordinal) => GetResultSet().GetCurrentRow().GetUInt32(ordinal);
+		public uint GetUInt32(string name) => GetUInt32(GetOrdinal(name));
+
+		public ulong GetUInt64(int ordinal) => GetResultSet().GetCurrentRow().GetUInt64(ordinal);
+		public ulong GetUInt64(string name) => GetUInt64(GetOrdinal(name));
+
 		public override int VisibleFieldCount => FieldCount;
 
 #if !NETSTANDARD1_3

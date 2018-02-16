@@ -219,6 +219,81 @@ namespace MySqlConnector.Core
 			return (long) value;
 		}
 
+		public ushort GetUInt16(int ordinal)
+		{
+			var value = GetValue(ordinal);
+			if (value is ushort)
+				return (ushort) value;
+
+			if (value is sbyte)
+				return checked((ushort) (sbyte) value);
+			if (value is byte)
+				return (byte) value;
+			if (value is short)
+				return checked((ushort) (short) value);
+			if (value is int)
+				return checked((ushort) (int) value);
+			if (value is uint)
+				return checked((ushort) (uint) value);
+			if (value is long)
+				return checked((ushort) (long) value);
+			if (value is ulong)
+				return checked((ushort) (ulong) value);
+			if (value is decimal)
+				return (ushort) (decimal) value;
+			return (ushort) value;
+		}
+
+		public uint GetUInt32(int ordinal)
+		{
+			var value = GetValue(ordinal);
+			if (value is uint)
+				return (uint) value;
+
+			if (value is sbyte)
+				return checked((uint) (sbyte) value);
+			if (value is byte)
+				return (byte) value;
+			if (value is short)
+				return checked((uint) (short) value);
+			if (value is ushort)
+				return (ushort) value;
+			if (value is int)
+				return checked((uint) (int) value);
+			if (value is long)
+				return checked((uint) (long) value);
+			if (value is ulong)
+				return checked((uint) (ulong) value);
+			if (value is decimal)
+				return (uint) (decimal) value;
+			return (uint) value;
+		}
+
+		public ulong GetUInt64(int ordinal)
+		{
+			var value = GetValue(ordinal);
+			if (value is ulong)
+				return (ulong) value;
+
+			if (value is sbyte)
+				return checked((ulong) (sbyte) value);
+			if (value is byte)
+				return (byte) value;
+			if (value is short)
+				return checked((ulong) (short) value);
+			if (value is ushort)
+				return (ushort) value;
+			if (value is int)
+				return checked((ulong) (int) value);
+			if (value is uint)
+				return (uint) value;
+			if (value is long)
+				return checked((ulong) (long) value);
+			if (value is decimal)
+				return (ulong) (decimal) value;
+			return (ulong) value;
+		}
+
 		public DateTime GetDateTime(int ordinal) => (DateTime) GetValue(ordinal);
 
 		public DateTimeOffset GetDateTimeOffset(int ordinal) => new DateTimeOffset(DateTime.SpecifyKind(GetDateTime(ordinal), DateTimeKind.Utc));

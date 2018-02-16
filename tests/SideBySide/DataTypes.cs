@@ -99,7 +99,55 @@ namespace SideBySide
 			await DoGetValue(column, (r, n) => r.GetInt64(n), (r, s) => r.GetInt64(s), flags, values).ConfigureAwait(false);
 		}
 
-		private async Task DoGetValue<T>(string column, Func<DbDataReader, int, T> getInt, Func<MySqlDataReader, string, T> getIntByName, int[] flags, T[] values)
+		[Theory]
+		[InlineData("SByte", new[] { 1, 0, 2, 0, 0 }, new ushort[] { 0, 0, 0, 127, 123 })]
+		[InlineData("Byte", new[] { 1, 0, 0, 0, 0 }, new ushort[] { 0, 0, 0, 255, 123 })]
+		[InlineData("Int16", new[] { 1, 0, 2, 0, 0 }, new ushort[] { 0, 0, 0, 32767, 12345 })]
+		[InlineData("UInt16", new[] { 1, 0, 0, 0, 0 }, new ushort[] { 0, 0, 0, 65535, 12345 })]
+		[InlineData("Int24", new[] { 1, 0, 2, 2, 2 }, new ushort[] { 0, 0, 0, 0, 0 })]
+		[InlineData("UInt24", new[] { 1, 0, 0, 2, 2 }, new ushort[] { 0, 0, 0, 0, 0 })]
+		[InlineData("Int32", new[] { 1, 0, 2, 2, 2 }, new ushort[] { 0, 0, 0, 0, 0 })]
+		[InlineData("UInt32", new[] { 1, 0, 0, 2, 2 }, new ushort[] { 0, 0, 0, 0, 0 })]
+		[InlineData("Int64", new[] { 1, 0, 2, 2, 2 }, new ushort[] { 0, 0, 0, 0, 0 })]
+		[InlineData("UInt64", new[] { 1, 0, 0, 2, 2 }, new ushort[] { 0, 0, 0, 0, 0 })]
+		public async Task GetUInt16(string column, int[] flags, ushort[] values)
+		{
+			await DoGetValue(column, (r, n) => r.GetUInt16(n), (r, s) => r.GetUInt16(s), flags, values).ConfigureAwait(false);
+		}
+
+		[Theory]
+		[InlineData("SByte", new[] { 1, 0, 2, 0, 0 }, new uint[] { 0, 0, 0, 127, 123 })]
+		[InlineData("Byte", new[] { 1, 0, 0, 0, 0 }, new uint[] { 0, 0, 0, 255, 123 })]
+		[InlineData("Int16", new[] { 1, 0, 2, 0, 0 }, new uint[] { 0, 0, 0, 32767, 12345 })]
+		[InlineData("UInt16", new[] { 1, 0, 0, 0, 0 }, new uint[] { 0, 0, 0, 65535, 12345 })]
+		[InlineData("Int24", new[] { 1, 0, 2, 0, 0 }, new uint[] { 0, 0, 0, 8388607, 1234567 })]
+		[InlineData("UInt24", new[] { 1, 0, 0, 0, 0 }, new uint[] { 0, 0, 0, 16777215, 1234567 })]
+		[InlineData("Int32", new[] { 1, 0, 2, 0, 0 }, new uint[] { 0, 0, 0, 2147483647, 123456789 })]
+		[InlineData("UInt32", new[] { 1, 0, 0, 0, 0 }, new uint[] { 0, 0, 0, 4294967295, 123456789 })]
+		[InlineData("Int64", new[] { 1, 0, 2, 2, 2 }, new uint[] { 0, 0, 0, 0, 0 })]
+		[InlineData("UInt64", new[] { 1, 0, 0, 2, 2 }, new uint[] { 0, 0, 0, 0, 0 })]
+		public async Task GetUInt32(string column, int[] flags, uint[] values)
+		{
+			await DoGetValue(column, (r, n) => r.GetUInt32(n), (r, s) => r.GetUInt32(s), flags, values).ConfigureAwait(false);
+		}
+
+		[Theory]
+		[InlineData("SByte", new[] { 1, 0, 2, 0, 0 }, new ulong[] { 0, 0, 0, 127, 123 })]
+		[InlineData("Byte", new[] { 1, 0, 0, 0, 0 }, new ulong[] { 0, 0, 0, 255, 123 })]
+		[InlineData("Int16", new[] { 1, 0, 2, 0, 0 }, new ulong[] { 0, 0, 0, 32767, 12345 })]
+		[InlineData("UInt16", new[] { 1, 0, 0, 0, 0 }, new ulong[] { 0, 0, 0, 65535, 12345 })]
+		[InlineData("Int24", new[] { 1, 0, 2, 0, 0 }, new ulong[] { 0, 0, 0, 8388607, 1234567 })]
+		[InlineData("UInt24", new[] { 1, 0, 0, 0, 0 }, new ulong[] { 0, 0, 0, 16777215, 1234567 })]
+		[InlineData("Int32", new[] { 1, 0, 2, 0, 0 }, new ulong[] { 0, 0, 0, 2147483647, 123456789 })]
+		[InlineData("UInt32", new[] { 1, 0, 0, 0, 0 }, new ulong[] { 0, 0, 0, 4294967295, 123456789 })]
+		[InlineData("Int64", new[] { 1, 0, 2, 0, 0 }, new ulong[] { 0, 0, 0, 9223372036854775807, 1234567890123456789 })]
+		[InlineData("UInt64", new[] { 1, 0, 0, 0, 0 }, new ulong[] { 0, 0, 0, 18446744073709551615, 1234567890123456789 })]
+		public async Task GetUInt64(string column, int[] flags, ulong[] values)
+		{
+			await DoGetValue(column, (r, n) => r.GetUInt64(n), (r, s) => r.GetUInt64(s), flags, values).ConfigureAwait(false);
+		}
+
+		private async Task DoGetValue<T>(string column, Func<MySqlDataReader, int, T> getInt, Func<MySqlDataReader, string, T> getIntByName, int[] flags, T[] values)
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
@@ -202,7 +250,7 @@ namespace SideBySide
 		[InlineData("UInt16", "SMALLINT", new object[] { null, default(ushort), ushort.MinValue, ushort.MaxValue, (ushort) 12345 })]
 		public void QueryUInt16(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery<InvalidCastException>("integers", column, dataTypeName, expected, reader => reader.GetFieldValue<ushort>(0));
+			DoQuery("integers", column, dataTypeName, expected, reader => reader.GetUInt16(column));
 		}
 
 		[Theory]
@@ -222,7 +270,7 @@ namespace SideBySide
 			// mysql-connector-net incorrectly returns "INT" for "MEDIUMINT UNSIGNED"
 			dataTypeName = "INT";
 #endif
-			DoQuery<InvalidCastException>("integers", column, dataTypeName, expected, reader => reader.GetFieldValue<uint>(0));
+			DoQuery("integers", column, dataTypeName, expected, reader => reader.GetUInt32(column));
 		}
 
 		[Theory]
@@ -236,7 +284,7 @@ namespace SideBySide
 		[InlineData("UInt64", "BIGINT", new object[] { null, default(ulong), ulong.MinValue, ulong.MaxValue, 1234567890123456789u })]
 		public void QueryUInt64(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery<InvalidCastException>("integers", column, dataTypeName, expected, reader => reader.GetFieldValue<ulong>(0));
+			DoQuery("integers", column, dataTypeName, expected, reader => reader.GetUInt64(0));
 		}
 
 		[Theory]
@@ -245,7 +293,7 @@ namespace SideBySide
 		[InlineData("Bit64",  new object[] { null, 0UL, 1UL, ulong.MaxValue })]
 		public void QueryBits(string column, object[] expected)
 		{
-			DoQuery<InvalidCastException>("bits", column, "BIT", expected, reader => reader.GetFieldValue<ulong>(0));
+			DoQuery("bits", column, "BIT", expected, reader => reader.GetUInt64(column));
 		}
 
 		[Theory]
