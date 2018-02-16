@@ -223,6 +223,9 @@ namespace MySql.Data.MySqlClient
 		public DateTimeOffset GetDateTimeOffset(int ordinal) => GetResultSet().GetCurrentRow().GetDateTimeOffset(ordinal);
 		public DateTimeOffset GetDateTimeOffset(string name) => GetDateTimeOffset(GetOrdinal(name));
 
+		public TimeSpan GetTimeSpan(int ordinal) => (TimeSpan) GetValue(ordinal);
+		public TimeSpan GetTimeSpan(string name) => GetTimeSpan(GetOrdinal(name));
+
 		public override string GetString(int ordinal) => GetResultSet().GetCurrentRow().GetString(ordinal);
 		public string GetString(string name) => GetString(GetOrdinal(name));
 

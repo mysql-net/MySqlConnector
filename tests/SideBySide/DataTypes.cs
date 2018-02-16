@@ -477,7 +477,7 @@ namespace SideBySide
 		[InlineData("`Time`", "TIME", new object[] { null, "-838 -59 -59", "838 59 59", "0 0 0", "0 14 3 4 567890" })]
 		public void QueryTime(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery<InvalidCastException>("times", column, dataTypeName, ConvertToTimeSpan(expected), reader => reader.GetFieldValue<TimeSpan>(0));
+			DoQuery("times", column, dataTypeName, ConvertToTimeSpan(expected), reader => reader.GetTimeSpan(0));
 		}
 
 		[Theory]
