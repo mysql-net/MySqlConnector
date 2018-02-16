@@ -176,26 +176,34 @@ namespace MySql.Data.MySqlClient
 		public override int GetOrdinal(string name) => GetResultSet().GetOrdinal(name);
 
 		public override bool GetBoolean(int ordinal) => GetResultSet().GetCurrentRow().GetBoolean(ordinal);
+		public bool GetBoolean(string name) => GetBoolean(GetOrdinal(name));
 
 		public override byte GetByte(int ordinal) => GetResultSet().GetCurrentRow().GetByte(ordinal);
+		public byte GetByte(string name) => GetByte(GetOrdinal(name));
 
 		public sbyte GetSByte(int ordinal) => GetResultSet().GetCurrentRow().GetSByte(ordinal);
+		public sbyte GetSByte(string name) => GetSByte(GetOrdinal(name));
 
 		public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length)
 			=> GetResultSet().GetCurrentRow().GetBytes(ordinal, dataOffset, buffer, bufferOffset, length);
 
 		public override char GetChar(int ordinal) => GetResultSet().GetCurrentRow().GetChar(ordinal);
+		public char GetChar(string name) => GetChar(GetOrdinal(name));
 
 		public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length)
 			=> GetResultSet().GetCurrentRow().GetChars(ordinal, dataOffset, buffer, bufferOffset, length);
 
 		public override Guid GetGuid(int ordinal) => GetResultSet().GetCurrentRow().GetGuid(ordinal);
+		public Guid GetGuid(string name) => GetGuid(GetOrdinal(name));
 
 		public override short GetInt16(int ordinal) => GetResultSet().GetCurrentRow().GetInt16(ordinal);
+		public short GetInt16(string name) => GetInt16(GetOrdinal(name));
 
 		public override int GetInt32(int ordinal) => GetResultSet().GetCurrentRow().GetInt32(ordinal);
+		public int GetInt32(string name) => GetInt32(GetOrdinal(name));
 
 		public override long GetInt64(int ordinal) => GetResultSet().GetCurrentRow().GetInt64(ordinal);
+		public long GetInt64(string name) => GetInt64(GetOrdinal(name));
 
 		public override string GetDataTypeName(int ordinal) => GetResultSet().GetDataTypeName(ordinal);
 
@@ -210,16 +218,22 @@ namespace MySql.Data.MySqlClient
 		protected override DbDataReader GetDbDataReader(int ordinal) => throw new NotSupportedException();
 
 		public override DateTime GetDateTime(int ordinal) => GetResultSet().GetCurrentRow().GetDateTime(ordinal);
+		public DateTime GetDateTime(string name) => GetDateTime(GetOrdinal(name));
 
 		public DateTimeOffset GetDateTimeOffset(int ordinal) => GetResultSet().GetCurrentRow().GetDateTimeOffset(ordinal);
+		public DateTimeOffset GetDateTimeOffset(string name) => GetDateTimeOffset(GetOrdinal(name));
 
 		public override string GetString(int ordinal) => GetResultSet().GetCurrentRow().GetString(ordinal);
+		public string GetString(string name) => GetString(GetOrdinal(name));
 
 		public override decimal GetDecimal(int ordinal) => GetResultSet().GetCurrentRow().GetDecimal(ordinal);
+		public decimal GetDecimal(string name) => GetDecimal(GetOrdinal(name));
 
 		public override double GetDouble(int ordinal) => GetResultSet().GetCurrentRow().GetDouble(ordinal);
+		public double GetDouble(string name) => GetDouble(GetOrdinal(name));
 
 		public override float GetFloat(int ordinal) => GetResultSet().GetCurrentRow().GetFloat(ordinal);
+		public float GetFloat(string name) => GetFloat(GetOrdinal(name));
 
 		public override int VisibleFieldCount => FieldCount;
 

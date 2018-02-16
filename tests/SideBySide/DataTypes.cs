@@ -48,7 +48,7 @@ namespace SideBySide
 		[InlineData("UInt64", new[] { 1, 0, 0, 0, 0 }, new[] { false, false, false, true, true })]
 		public async Task GetBoolean(string column, int[] flags, bool[] values)
 		{
-			await DoGetValue(column, (r, n) => r.GetBoolean(n), flags, values).ConfigureAwait(false);
+			await DoGetValue(column, (r, n) => r.GetBoolean(n), (r, s) => r.GetBoolean(s), flags, values).ConfigureAwait(false);
 		}
 
 		[Theory]
@@ -64,7 +64,7 @@ namespace SideBySide
 		[InlineData("UInt64", new[] { 1, 0, 0, 2, 2 }, new short[] { 0, 0, 0, 0, 0 })]
 		public async Task GetInt16(string column, int[] flags, short[] values)
 		{
-			await DoGetValue(column, (r, n) => r.GetInt16(n), flags, values).ConfigureAwait(false);
+			await DoGetValue(column, (r, n) => r.GetInt16(n), (r, s) => r.GetInt16(s), flags, values).ConfigureAwait(false);
 		}
 
 		[Theory]
@@ -80,7 +80,7 @@ namespace SideBySide
 		[InlineData("UInt64", new[] { 1, 0, 0, 2, 2 }, new[] { 0, 0, 0, 0, 0 })]
 		public async Task GetInt32(string column, int[] flags, int[] values)
 		{
-			await DoGetValue(column, (r, n) => r.GetInt32(n), flags, values).ConfigureAwait(false);
+			await DoGetValue(column, (r, n) => r.GetInt32(n), (r, s) => r.GetInt32(s), flags, values).ConfigureAwait(false);
 		}
 
 		[Theory]
@@ -96,15 +96,15 @@ namespace SideBySide
 		[InlineData("UInt64", new[] { 1, 0, 0, 2, 0 }, new[] { 0L, 0, 0, 0, 1234567890123456789 })]
 		public async Task GetInt64(string column, int[] flags, long[] values)
 		{
-			await DoGetValue(column, (r, n) => r.GetInt64(n), flags, values).ConfigureAwait(false);
+			await DoGetValue(column, (r, n) => r.GetInt64(n), (r, s) => r.GetInt64(s), flags, values).ConfigureAwait(false);
 		}
 
-		private async Task DoGetValue<T>(string column, Func<DbDataReader, int, T> getInt, int[] flags, T[] values)
+		private async Task DoGetValue<T>(string column, Func<DbDataReader, int, T> getInt, Func<MySqlDataReader, string, T> getIntByName, int[] flags, T[] values)
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
 				cmd.CommandText = $"select {column} from datatypes_integers order by rowid";
-				using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
+				using (var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync().ConfigureAwait(false))
 				{
 					for (int i = 0; i < flags.Length; i++)
 					{
@@ -113,6 +113,7 @@ namespace SideBySide
 						{
 						case 0: // normal
 							Assert.Equal(values[i], getInt(reader, 0));
+							Assert.Equal(values[i], getIntByName(reader, column));
 							break;
 
 						case 1: // null
@@ -121,6 +122,7 @@ namespace SideBySide
 
 						case 2: // overflow
 							Assert.Throws<OverflowException>(() => getInt(reader, 0));
+							Assert.Throws<OverflowException>(() => getIntByName(reader, column));
 							break;
 						}
 					}
@@ -150,7 +152,7 @@ namespace SideBySide
 			// mysql-connector-net incorrectly returns "VARCHAR" for "ENUM"
 			dataTypeName = "VARCHAR";
 #endif
-			DoQuery("set", column, dataTypeName, expected, reader => reader.GetString(0));
+			DoQuery("set", column, dataTypeName, expected, reader => reader.GetString(column));
 		}
 
 		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=78917")]
@@ -171,7 +173,7 @@ namespace SideBySide
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				connection.Open();
-				DoQuery("bools", column, dataTypeName, expected, reader => ((MySqlDataReader) reader).GetSByte(0), baselineCoercedNullValue: default(sbyte), connection: connection);
+				DoQuery("bools", column, dataTypeName, expected, reader => reader.GetSByte(0), baselineCoercedNullValue: default(sbyte), connection: connection);
 			}
 		}
 
@@ -179,7 +181,7 @@ namespace SideBySide
 		[InlineData("SByte", "TINYINT", new object[] { null, default(sbyte), sbyte.MinValue, sbyte.MaxValue, (sbyte) 123 })]
 		public void QuerySByte(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("integers", column, dataTypeName, expected, reader => ((MySqlDataReader) reader).GetSByte(0), baselineCoercedNullValue: default(sbyte));
+			DoQuery("integers", column, dataTypeName, expected, reader => reader.GetSByte(column), baselineCoercedNullValue: default(sbyte));
 		}
 
 		[Theory]
@@ -342,14 +344,14 @@ namespace SideBySide
 						{
 							Assert.Equal(typeof(string), reader.GetFieldType(0));
 							Assert.Equal("00000000-0000-0000-0000-000000000000", reader.GetValue(0));
-							Assert.Equal("00000000-0000-0000-0000-000000000000", reader.GetString(0));
+							Assert.Equal("00000000-0000-0000-0000-000000000000", reader.GetString("guidbin"));
 						}
 						else
 						{
 							Assert.Equal(typeof(Guid), reader.GetFieldType(0));
 							Assert.Equal(Guid.Empty, reader.GetValue(0));
 						}
-						Assert.Equal(Guid.Empty, reader.GetGuid(0));
+						Assert.Equal(Guid.Empty, reader.GetGuid("guidbin"));
 					}
 				}
 			}
@@ -423,9 +425,9 @@ namespace SideBySide
 		[InlineData("`Timestamp`", "TIMESTAMP", new object[] { null, "1970 01 01 0 0 1", "2038 1 18 3 14 7 999999", null, "2016 4 5 14 3 4 567890" })]
 		public void QueryDate(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("times", column, dataTypeName, ConvertToDateTime(expected), reader => reader.GetDateTime(0));
+			DoQuery("times", column, dataTypeName, ConvertToDateTime(expected), reader => reader.GetDateTime(column.Replace("`", "")));
 #if !BASELINE
-			DoQuery("times", column, dataTypeName, ConvertToDateTimeOffset(expected), reader => (reader as MySqlDataReader).GetDateTimeOffset(0), matchesDefaultType: false);
+			DoQuery("times", column, dataTypeName, ConvertToDateTimeOffset(expected), reader => reader.GetDateTimeOffset(0), matchesDefaultType: false);
 #endif
 		}
 
@@ -881,7 +883,7 @@ create table schema_table({createColumn});");
 			string column,
 			string dataTypeName,
 			object[] expected,
-			Func<DbDataReader, object> getValue,
+			Func<MySqlDataReader, object> getValue,
 			object baselineCoercedNullValue = null,
 			bool omitWhereTest = false,
 			bool matchesDefaultType = true,
@@ -897,7 +899,7 @@ create table schema_table({createColumn});");
 			string column,
 			string dataTypeName,
 			object[] expected,
-			Func<DbDataReader, object> getValue,
+			Func<MySqlDataReader, object> getValue,
 			object baselineCoercedNullValue = null,
 			bool omitWhereTest = false,
 			bool matchesDefaultType = true,
