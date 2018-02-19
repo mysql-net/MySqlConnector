@@ -14,6 +14,8 @@ namespace MySqlConnector.Core
 	{
 		public int Id { get; }
 
+		public ConnectionSettings ConnectionSettings { get; }
+
 		public async Task<ServerSession> GetSessionAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
@@ -27,7 +29,7 @@ namespace MySqlConnector.Core
 				RecoverLeakedSessions();
 			}
 
-			if (m_connectionSettings.MinimumPoolSize > 0)
+			if (ConnectionSettings.MinimumPoolSize > 0)
 				await CreateMinimumPooledSessions(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			// wait for an open slot (until the cancellationToken is cancelled, which is typically due to timeout)
@@ -61,9 +63,9 @@ namespace MySqlConnector.Core
 					}
 					else
 					{
-						if (m_connectionSettings.ConnectionReset)
+						if (ConnectionSettings.ConnectionReset)
 						{
-							reuseSession = await session.TryResetConnectionAsync(m_connectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
+							reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
 						}
 						else
 						{
@@ -98,7 +100,7 @@ namespace MySqlConnector.Core
 				session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 				if (Log.IsInfoEnabled())
 					Log.Info("{0} no pooled session available; created new Session{1}", m_logArguments[0], session.Id);
-				await session.ConnectAsync(m_connectionSettings, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+				await session.ConnectAsync(ConnectionSettings, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
 				AdjustHostConnectionCount(session, 1);
 				session.OwningConnection = new WeakReference<MySqlConnection>(connection);
 				int leasedSessionsCountNew;
@@ -126,8 +128,8 @@ namespace MySqlConnector.Core
 				return false;
 			if (session.DatabaseOverride != null)
 				return false;
-			if (m_connectionSettings.ConnectionLifeTime > 0
-			    && (DateTime.UtcNow - session.CreatedUtc).TotalSeconds >= m_connectionSettings.ConnectionLifeTime)
+			if (ConnectionSettings.ConnectionLifeTime > 0
+			    && (DateTime.UtcNow - session.CreatedUtc).TotalSeconds >= ConnectionSettings.ConnectionLifeTime)
 				return false;
 
 			return true;
@@ -175,9 +177,9 @@ namespace MySqlConnector.Core
 		{
 			Log.Debug("{0} reaping connection pool", m_logArguments);
 			RecoverLeakedSessions();
-			if (m_connectionSettings.ConnectionIdleTimeout == 0)
+			if (ConnectionSettings.ConnectionIdleTimeout == 0)
 				return;
-			await CleanPoolAsync(ioBehavior, session => (DateTime.UtcNow - session.LastReturnedUtc).TotalSeconds >= m_connectionSettings.ConnectionIdleTimeout, true, cancellationToken).ConfigureAwait(false);
+			await CleanPoolAsync(ioBehavior, session => (DateTime.UtcNow - session.LastReturnedUtc).TotalSeconds >= ConnectionSettings.ConnectionIdleTimeout, true, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -196,7 +198,7 @@ namespace MySqlConnector.Core
 			}
 			return procedureCache;
 		}
-		
+
 		/// <summary>
 		/// Examines all the <see cref="ServerSession"/> objects in <see cref="m_leasedSessions"/> to determine if any
 		/// have an owning <see cref="MySqlConnection"/> that has been garbage-collected. If so, assumes that the connection
@@ -238,7 +240,7 @@ namespace MySqlConnector.Core
 					// if respectMinPoolSize is true, return if (leased sessions + waiting sessions <= minPoolSize)
 					if (respectMinPoolSize)
 						lock (m_sessions)
-							if (m_connectionSettings.MaximumPoolSize - m_sessionSemaphore.CurrentCount + m_sessions.Count <= m_connectionSettings.MinimumPoolSize)
+							if (ConnectionSettings.MaximumPoolSize - m_sessionSemaphore.CurrentCount + m_sessions.Count <= ConnectionSettings.MinimumPoolSize)
 								return;
 
 					// try to get an open slot; if this fails, connection pool is full and sessions will be disposed when returned to pool
@@ -301,7 +303,7 @@ namespace MySqlConnector.Core
 				lock (m_sessions)
 				{
 					// check if the desired minimum number of sessions have been created
-					if (m_connectionSettings.MaximumPoolSize - m_sessionSemaphore.CurrentCount + m_sessions.Count >= m_connectionSettings.MinimumPoolSize)
+					if (ConnectionSettings.MaximumPoolSize - m_sessionSemaphore.CurrentCount + m_sessions.Count >= ConnectionSettings.MinimumPoolSize)
 						return;
 				}
 
@@ -322,7 +324,7 @@ namespace MySqlConnector.Core
 				{
 					var session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 					Log.Info("{0} created Session{1} to reach minimum pool size", m_logArguments[0], session.Id);
-					await session.ConnectAsync(m_connectionSettings, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+					await session.ConnectAsync(ConnectionSettings, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
 					AdjustHostConnectionCount(session, 1);
 					lock (m_sessions)
 						m_sessions.AddFirst(session);
@@ -335,17 +337,13 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		public static ConnectionPool GetPool(ConnectionSettings cs)
+		public static ConnectionPool GetPool(string connectionString)
 		{
-			if (!cs.Pooling)
-				return null;
-
-			var key = cs.ConnectionString;
-
+			// check if pool has already been created for this exact connection string
 			try
 			{
 				s_poolLock.EnterReadLock();
-				if (s_pools.TryGetValue(key, out var pool))
+				if (s_pools.TryGetValue(connectionString, out var pool))
 					return pool;
 			}
 			finally
@@ -353,11 +351,37 @@ namespace MySqlConnector.Core
 				s_poolLock.ExitReadLock();
 			}
 
+			// parse connection string and check for 'Pooling' setting
+			var connectionStringBuilder = new MySqlConnectionStringBuilder(connectionString);
+			if (!connectionStringBuilder.Pooling)
+				return null;
+
+			// check for pool using normalized form of connection string
+			var normalizedConnectionString = connectionStringBuilder.ConnectionString;
+			try
+			{
+				s_poolLock.EnterReadLock();
+				if (s_pools.TryGetValue(normalizedConnectionString, out var pool))
+					return pool;
+				// TODO: Add an entry using 'connectionString'?
+			}
+			finally
+			{
+				s_poolLock.ExitReadLock();
+			}
+
+			var connectionSettings = new ConnectionSettings(connectionStringBuilder);
+
 			try
 			{
 				s_poolLock.EnterWriteLock();
-				if (!s_pools.TryGetValue(key, out var pool))
-					pool = s_pools[key] = new ConnectionPool(cs);
+				if (!s_pools.TryGetValue(normalizedConnectionString, out var pool))
+				{
+					pool = new ConnectionPool(connectionSettings);
+					s_pools[normalizedConnectionString] = pool;
+					if (normalizedConnectionString != connectionString)
+						s_pools[connectionString] = pool;
+				}
 				return pool;
 			}
 			finally
@@ -393,7 +417,7 @@ namespace MySqlConnector.Core
 
 		private ConnectionPool(ConnectionSettings cs)
 		{
-			m_connectionSettings = cs;
+			ConnectionSettings = cs;
 			m_generation = 0;
 			m_cleanSemaphore = new SemaphoreSlim(1);
 			m_sessionSemaphore = new SemaphoreSlim(cs.MaximumPoolSize);
@@ -414,10 +438,7 @@ namespace MySqlConnector.Core
 			Id = Interlocked.Increment(ref s_poolId);
 			m_logArguments = new object[] { "Pool{0}".FormatInvariant(Id) };
 			if (Log.IsInfoEnabled())
-			{
-				var csb = new MySqlConnectionStringBuilder(cs.ConnectionString);
-				Log.Info("{0} creating new connection pool for {1}", m_logArguments[0], csb.GetConnectionString(includePassword: false));
-			}
+				Log.Info("{0} creating new connection pool for {1}", m_logArguments[0], cs.ConnectionStringBuilder.GetConnectionString(includePassword: false));
 		}
 
 		private void AdjustHostConnectionCount(ServerSession session, int delta)
@@ -472,7 +493,6 @@ namespace MySqlConnector.Core
 		readonly SemaphoreSlim m_cleanSemaphore;
 		readonly SemaphoreSlim m_sessionSemaphore;
 		readonly LinkedList<ServerSession> m_sessions;
-		readonly ConnectionSettings m_connectionSettings;
 		readonly Dictionary<string, ServerSession> m_leasedSessions;
 		readonly ILoadBalancer m_loadBalancer;
 		readonly Dictionary<string, int> m_hostSessions;
