@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -340,54 +341,39 @@ namespace MySqlConnector.Core
 		public static ConnectionPool GetPool(string connectionString)
 		{
 			// check if pool has already been created for this exact connection string
-			try
-			{
-				s_poolLock.EnterReadLock();
-				if (s_pools.TryGetValue(connectionString, out var pool))
-					return pool;
-			}
-			finally
-			{
-				s_poolLock.ExitReadLock();
-			}
+			if (s_pools.TryGetValue(connectionString, out var pool))
+				return pool;
 
-			// parse connection string and check for 'Pooling' setting
+			// parse connection string and check for 'Pooling' setting; return 'null' if pooling is disabled
 			var connectionStringBuilder = new MySqlConnectionStringBuilder(connectionString);
 			if (!connectionStringBuilder.Pooling)
+			{
+				s_pools.GetOrAdd(connectionString, default(ConnectionPool));
 				return null;
+			}
 
 			// check for pool using normalized form of connection string
 			var normalizedConnectionString = connectionStringBuilder.ConnectionString;
-			try
+			if (normalizedConnectionString != connectionString && s_pools.TryGetValue(normalizedConnectionString, out pool))
 			{
-				s_poolLock.EnterReadLock();
-				if (s_pools.TryGetValue(normalizedConnectionString, out var pool))
-					return pool;
-				// TODO: Add an entry using 'connectionString'?
-			}
-			finally
-			{
-				s_poolLock.ExitReadLock();
-			}
-
-			var connectionSettings = new ConnectionSettings(connectionStringBuilder);
-
-			try
-			{
-				s_poolLock.EnterWriteLock();
-				if (!s_pools.TryGetValue(normalizedConnectionString, out var pool))
-				{
-					pool = new ConnectionPool(connectionSettings);
-					s_pools[normalizedConnectionString] = pool;
-					if (normalizedConnectionString != connectionString)
-						s_pools[connectionString] = pool;
-				}
+				// try to set the pool for the connection string to the canonical pool; if someone else
+				// beats us to it, just use the existing value
+				pool = s_pools.GetOrAdd(connectionString, pool);
 				return pool;
 			}
-			finally
-			{
-				s_poolLock.ExitWriteLock();
-			}
+
+			// create a new pool and attempt to insert it; if someone else beats us to it, just use their value
+			var connectionSettings = new ConnectionSettings(connectionStringBuilder);
+			var newPool = new ConnectionPool(connectionSettings);
+			pool = s_pools.GetOrAdd(normalizedConnectionString, newPool);
+
+			// if we won the race to create the new pool, also store it under the original connection string
+			if (pool == newPool && connectionString != normalizedConnectionString)
+				s_pools.GetOrAdd(connectionString, pool);
+			else if (pool != newPool && Log.IsInfoEnabled())
+				Log.Info("{0} was created but will not be used (due to race)", newPool.m_logArguments[0]);
+
+			return pool;
 		}
 
 		public static async Task ClearPoolsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -404,15 +390,14 @@ namespace MySqlConnector.Core
 
 		private static IReadOnlyList<ConnectionPool> GetAllPools()
 		{
-			try
+			var pools = new List<ConnectionPool>(s_pools.Count);
+			var uniquePools = new HashSet<ConnectionPool>();
+			foreach (var pool in s_pools.Values)
 			{
-				s_poolLock.EnterReadLock();
-				return s_pools.Values.ToList();
+				if (pool != null && uniquePools.Add(pool))
+					pools.Add(pool);
 			}
-			finally
-			{
-				s_poolLock.ExitReadLock();
-			}
+			return pools;
 		}
 
 		private ConnectionPool(ConnectionSettings cs)
@@ -464,8 +449,7 @@ namespace MySqlConnector.Core
 		}
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConnectionPool));
-		static readonly ReaderWriterLockSlim s_poolLock = new ReaderWriterLockSlim();
-		static readonly Dictionary<string, ConnectionPool> s_pools = new Dictionary<string, ConnectionPool>();
+		static readonly ConcurrentDictionary<string, ConnectionPool> s_pools = new ConcurrentDictionary<string, ConnectionPool>();
 #if DEBUG
 		static readonly TimeSpan ReaperInterval = TimeSpan.FromSeconds(1);
 #else
