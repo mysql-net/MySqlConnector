@@ -340,15 +340,25 @@ namespace MySqlConnector.Core
 
 		public static ConnectionPool GetPool(string connectionString)
 		{
+			// check single-entry MRU cache for this exact connection string; most applications have just one
+			// connection string and will get a cache hit here
+			var cache = s_mruCache;
+			if (cache?.ConnectionString == connectionString)
+				return cache.Pool;
+
 			// check if pool has already been created for this exact connection string
 			if (s_pools.TryGetValue(connectionString, out var pool))
+			{
+				s_mruCache = new ConnectionStringPool(connectionString, pool);
 				return pool;
+			}
 
 			// parse connection string and check for 'Pooling' setting; return 'null' if pooling is disabled
 			var connectionStringBuilder = new MySqlConnectionStringBuilder(connectionString);
 			if (!connectionStringBuilder.Pooling)
 			{
 				s_pools.GetOrAdd(connectionString, default(ConnectionPool));
+				s_mruCache = new ConnectionStringPool(connectionString, null);
 				return null;
 			}
 
@@ -359,6 +369,7 @@ namespace MySqlConnector.Core
 				// try to set the pool for the connection string to the canonical pool; if someone else
 				// beats us to it, just use the existing value
 				pool = s_pools.GetOrAdd(connectionString, pool);
+				s_mruCache = new ConnectionStringPool(connectionString, pool);
 				return pool;
 			}
 
@@ -369,9 +380,14 @@ namespace MySqlConnector.Core
 
 			// if we won the race to create the new pool, also store it under the original connection string
 			if (pool == newPool && connectionString != normalizedConnectionString)
+			{
 				s_pools.GetOrAdd(connectionString, pool);
+				s_mruCache = new ConnectionStringPool(connectionString, pool);
+			}
 			else if (pool != newPool && Log.IsInfoEnabled())
+			{
 				Log.Info("{0} was created but will not be used (due to race)", newPool.m_logArguments[0]);
+			}
 
 			return pool;
 		}
@@ -448,6 +464,18 @@ namespace MySqlConnector.Core
 			readonly ConnectionPool m_pool;
 		}
 
+		private sealed class ConnectionStringPool
+		{
+			public ConnectionStringPool(string connectionString, ConnectionPool pool)
+			{
+				ConnectionString = connectionString;
+				Pool = pool;
+			}
+
+			public string ConnectionString { get; }
+			public ConnectionPool Pool { get; }
+		}
+
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConnectionPool));
 		static readonly ConcurrentDictionary<string, ConnectionPool> s_pools = new ConcurrentDictionary<string, ConnectionPool>();
 #if DEBUG
@@ -472,6 +500,7 @@ namespace MySqlConnector.Core
 		});
 
 		static int s_poolId;
+		static ConnectionStringPool s_mruCache;
 
 		int m_generation;
 		readonly SemaphoreSlim m_cleanSemaphore;
