@@ -278,7 +278,7 @@ namespace SideBySide
 #if BASELINE
 				await Assert.ThrowsAsync<NotImplementedException>(() => connection.OpenAsync());
 #else
-				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.OpenSsl))
+				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.RsaEncryption))
 					await connection.OpenAsync();
 				else
 					await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());

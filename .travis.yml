@@ -5,13 +5,13 @@ services: docker
 env:
   - IMAGE=mysql:5.6
     NAME=mysql
-    OMIT_FEATURES=Json,Sha256Password,OpenSsl,LargePackets,CachingSha2Password,SessionTrack
+    OMIT_FEATURES=Json,Sha256Password,RsaEncryption,LargePackets,CachingSha2Password,SessionTrack
   - IMAGE=mysql:5.7
     NAME=mysql
-    OMIT_FEATURES=OpenSsl,CachingSha2Password
+    OMIT_FEATURES=RsaEncryption,CachingSha2Password
   - IMAGE=mysql:8.0
     NAME=mysql
-    OMIT_FEATURES=OpenSsl
+    OMIT_FEATURES=RsaEncryption
   - IMAGE=percona:5.7
     NAME=percona
     OMIT_FEATURES=CachingSha2Password

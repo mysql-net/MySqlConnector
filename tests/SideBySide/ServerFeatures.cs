@@ -9,7 +9,7 @@ namespace SideBySide
 		Json = 1,
 		StoredProcedures = 2,
 		Sha256Password = 4,
-		OpenSsl = 8,
+		RsaEncryption = 8,
 		LargePackets = 16,
 		CachingSha2Password = 32,
 		SessionTrack = 64,

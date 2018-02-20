@@ -361,7 +361,7 @@ namespace SideBySide
 #if BASELINE || NET45
 				Assert.Throws<NotImplementedException>(() => connection.Open());
 #else
-				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.OpenSsl))
+				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.RsaEncryption))
 					connection.Open();
 				else
 					Assert.Throws<MySqlException>(() => connection.Open());
