@@ -68,6 +68,14 @@ namespace MySqlConnector.Protocol.Payloads
 				// ignore human-readable string in both cases
 			}
 
+			if (affectedRowCount == 0 && lastInsertId == 0 && warningCount == 0 && newSchema == null)
+			{
+				if (serverStatus == ServerStatus.AutoCommit)
+					return s_autoCommitOk;
+				if (serverStatus == (ServerStatus.AutoCommit | ServerStatus.SessionStateChanged))
+					return s_autoCommitSessionStateChangedOk;
+			}
+
 			return new OkPayload(affectedRowCount, lastInsertId, serverStatus, warningCount, newSchema);
 		}
 
@@ -79,5 +87,8 @@ namespace MySqlConnector.Protocol.Payloads
 			WarningCount = warningCount;
 			NewSchema = newSchema;
 		}
+
+		static readonly OkPayload s_autoCommitOk = new OkPayload(0, 0, ServerStatus.AutoCommit, 0, null);
+		static readonly OkPayload s_autoCommitSessionStateChangedOk = new OkPayload(0, 0, ServerStatus.AutoCommit | ServerStatus.SessionStateChanged, 0, null);
 	}
 }
