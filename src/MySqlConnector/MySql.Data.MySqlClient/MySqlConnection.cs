@@ -432,7 +432,12 @@ namespace MySql.Data.MySqlClient
 			{
 				var previousState = m_connectionState;
 				m_connectionState = newState;
-				OnStateChange(new StateChangeEventArgs(previousState, newState));
+				var eventArgs =
+					previousState == ConnectionState.Closed && newState == ConnectionState.Connecting ? s_stateChangeClosedConnecting :
+					previousState == ConnectionState.Connecting && newState == ConnectionState.Open ? s_stateChangeConnectingOpen :
+					previousState == ConnectionState.Open && newState == ConnectionState.Closed ? s_stateChangeOpenClosed :
+					new StateChangeEventArgs(previousState, newState);
+				OnStateChange(eventArgs);
 			}
 		}
 
@@ -497,6 +502,9 @@ namespace MySql.Data.MySqlClient
 		}
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlConnection));
+		static readonly StateChangeEventArgs s_stateChangeClosedConnecting = new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting);
+		static readonly StateChangeEventArgs s_stateChangeConnectingOpen = new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open);
+		static readonly StateChangeEventArgs s_stateChangeOpenClosed = new StateChangeEventArgs(ConnectionState.Open, ConnectionState.Closed);
 
 		string m_connectionString;
 		ConnectionSettings m_connectionSettings;
