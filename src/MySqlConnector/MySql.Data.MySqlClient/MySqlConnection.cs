@@ -377,34 +377,44 @@ namespace MySql.Data.MySqlClient
 			m_connectionSettings = pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
 			var actualIOBehavior = ioBehavior ?? (m_connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous);
 
-			var connectTimeout = m_connectionSettings.ConnectionTimeout == 0 ? Timeout.InfiniteTimeSpan : TimeSpan.FromMilliseconds(m_connectionSettings.ConnectionTimeoutMilliseconds);
-			using (var timeoutSource = new CancellationTokenSource(connectTimeout))
-			using (var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token))
+			CancellationTokenSource timeoutSource = null;
+			CancellationTokenSource linkedSource = null;
+			try
 			{
-				try
-				{
-					// get existing session from the pool if possible
-					if (pool != null)
-					{
-						// this returns an open session
-						return await pool.GetSessionAsync(this, actualIOBehavior, linkedSource.Token).ConfigureAwait(false);
-					}
-					else
-					{
-						// only "fail over" and "random" load balancers supported without connection pooling
-						var loadBalancer = m_connectionSettings.LoadBalance == MySqlLoadBalance.Random && m_connectionSettings.HostNames.Count > 1 ?
-							RandomLoadBalancer.Instance : FailOverLoadBalancer.Instance;
+				// the cancellation token for connection is controlled by 'cancellationToken' (if it can be cancelled), ConnectionTimeout
+				// (from the connection string, if non-zero), or a combination of both
+				if (m_connectionSettings.ConnectionTimeout != 0)
+					timeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(m_connectionSettings.ConnectionTimeoutMilliseconds));
+				if (cancellationToken.CanBeCanceled && timeoutSource != null)
+					linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
+				var connectToken = linkedSource?.Token ?? timeoutSource?.Token ?? cancellationToken;
 
-						var session = new ServerSession();
-						Log.Info("Created new non-pooled Session{0}", session.Id);
-						await session.ConnectAsync(m_connectionSettings, loadBalancer, actualIOBehavior, linkedSource.Token).ConfigureAwait(false);
-						return session;
-					}
-				}
-				catch (OperationCanceledException ex) when (timeoutSource.IsCancellationRequested)
+				// get existing session from the pool if possible
+				if (pool != null)
 				{
-					throw new MySqlException("Connect Timeout expired.", ex);
+					// this returns an open session
+					return await pool.GetSessionAsync(this, actualIOBehavior, connectToken).ConfigureAwait(false);
 				}
+				else
+				{
+					// only "fail over" and "random" load balancers supported without connection pooling
+					var loadBalancer = m_connectionSettings.LoadBalance == MySqlLoadBalance.Random && m_connectionSettings.HostNames.Count > 1 ?
+						RandomLoadBalancer.Instance : FailOverLoadBalancer.Instance;
+
+					var session = new ServerSession();
+					Log.Info("Created new non-pooled Session{0}", session.Id);
+					await session.ConnectAsync(m_connectionSettings, loadBalancer, actualIOBehavior, connectToken).ConfigureAwait(false);
+					return session;
+				}
+			}
+			catch (OperationCanceledException ex) when (timeoutSource.IsCancellationRequested)
+			{
+				throw new MySqlException("Connect Timeout expired.", ex);
+			}
+			finally
+			{
+				linkedSource?.Dispose();
+				timeoutSource?.Dispose();
 			}
 		}
 
