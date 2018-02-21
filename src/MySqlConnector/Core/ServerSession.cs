@@ -197,7 +197,7 @@ namespace MySqlConnector.Core
 					{
 						Log.Info("{0} sending QUIT command", m_logArguments);
 						m_payloadHandler.StartNewConversation();
-						await m_payloadHandler.WritePayloadAsync(QuitPayload.Create().ArraySegment, ioBehavior).ConfigureAwait(false);
+						await m_payloadHandler.WritePayloadAsync(QuitPayload.Instance.ArraySegment, ioBehavior).ConfigureAwait(false);
 					}
 					catch (IOException)
 					{
@@ -514,7 +514,7 @@ namespace MySqlConnector.Core
 			try
 			{
 				Log.Debug("{0} pinging server", m_logArguments);
-				await SendAsync(PingPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
+				await SendAsync(PingPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				OkPayload.Create(payload);
 				Log.Info("{0} successfully pinged server", m_logArguments);
