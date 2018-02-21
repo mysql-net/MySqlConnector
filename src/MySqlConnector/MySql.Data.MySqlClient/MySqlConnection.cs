@@ -371,7 +371,7 @@ namespace MySql.Data.MySqlClient
 			m_activeReader = null;
 		}
 
-		private async Task<ServerSession> CreateSessionAsync(IOBehavior? ioBehavior, CancellationToken cancellationToken)
+		private async ValueTask<ServerSession> CreateSessionAsync(IOBehavior? ioBehavior, CancellationToken cancellationToken)
 		{
 			var pool = ConnectionPool.GetPool(m_connectionString);
 			m_connectionSettings = pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));

@@ -17,7 +17,7 @@ namespace MySqlConnector.Core
 
 		public ConnectionSettings ConnectionSettings { get; }
 
-		public async Task<ServerSession> GetSessionAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async ValueTask<ServerSession> GetSessionAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
