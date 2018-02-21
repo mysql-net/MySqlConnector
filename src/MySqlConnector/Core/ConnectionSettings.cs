@@ -10,6 +10,7 @@ namespace MySqlConnector.Core
 	{
 		public ConnectionSettings(MySqlConnectionStringBuilder csb)
 		{
+			ConnectionStringBuilder = csb;
 			ConnectionString = csb.ConnectionString;
 
 			// Base Options
@@ -63,6 +64,12 @@ namespace MySqlConnector.Core
 			UseAffectedRows = csb.UseAffectedRows;
 			UseCompression = csb.UseCompression;
 		}
+
+		/// <summary>
+		/// The <see cref="MySqlConnectionStringBuilder" /> that was used to create this <see cref="ConnectionSettings" />.!--
+		/// This object must not be mutated.
+		/// </summary>
+		public MySqlConnectionStringBuilder ConnectionStringBuilder { get; }
 
 		// Base Options
 		public string ConnectionString { get; }

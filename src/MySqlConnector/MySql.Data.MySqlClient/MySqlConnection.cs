@@ -154,10 +154,9 @@ namespace MySql.Data.MySqlClient
 
 		public override void Open() => OpenAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public override Task OpenAsync(CancellationToken cancellationToken) =>
-			OpenAsync(AsyncIOBehavior, cancellationToken);
+		public override Task OpenAsync(CancellationToken cancellationToken) => OpenAsync(default, cancellationToken);
 
-		private async Task OpenAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async Task OpenAsync(IOBehavior? ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyNotDisposed();
 			if (State != ConnectionState.Closed)
@@ -191,23 +190,28 @@ namespace MySql.Data.MySqlClient
 
 		public override string ConnectionString
 		{
-			get => m_connectionStringBuilder.GetConnectionString(!m_hasBeenOpened || m_connectionSettings.PersistSecurityInfo);
+			get
+			{
+				if (!m_hasBeenOpened)
+					return m_connectionString;
+				var connectionStringBuilder = GetConnectionSettings().ConnectionStringBuilder;
+				return connectionStringBuilder.GetConnectionString(connectionStringBuilder.PersistSecurityInfo);
+			}
 			set
 			{
 				if (m_hasBeenOpened)
 					throw new InvalidOperationException("Cannot change connection string on a connection that has already been opened.");
-				m_connectionStringBuilder = new MySqlConnectionStringBuilder(value);
-				m_connectionSettings = new ConnectionSettings(m_connectionStringBuilder);
+				m_connectionString = value;
 			}
 		}
 
-		public override string Database => m_session?.DatabaseOverride ?? m_connectionSettings.Database;
+		public override string Database => m_session?.DatabaseOverride ?? GetConnectionSettings().Database;
 
 		public override ConnectionState State => m_connectionState;
 
-		public override string DataSource => (m_connectionSettings.ConnectionType == ConnectionType.Tcp
-			? string.Join(",", m_connectionSettings.HostNames)
-			: m_connectionSettings.UnixSocket) ?? "";
+		public override string DataSource => (GetConnectionSettings().ConnectionType == ConnectionType.Tcp
+			? string.Join(",", GetConnectionSettings().HostNames)
+			: GetConnectionSettings().UnixSocket) ?? "";
 
 		public override string ServerVersion => m_session.ServerVersion.OriginalString;
 
@@ -225,7 +229,7 @@ namespace MySql.Data.MySqlClient
 			if (connection == null)
 				throw new ArgumentNullException(nameof(connection));
 
-			var pool = ConnectionPool.GetPool(connection.m_connectionSettings);
+			var pool = ConnectionPool.GetPool(connection.m_connectionString);
 			if (pool != null)
 				await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
@@ -288,7 +292,7 @@ namespace MySql.Data.MySqlClient
 			try
 			{
 				// open a dedicated connection to the server to kill the active query
-				var csb = new MySqlConnectionStringBuilder(m_connectionStringBuilder.GetConnectionString(includePassword: true));
+				var csb = new MySqlConnectionStringBuilder(m_connectionString);
 				csb.Pooling = false;
 				if (m_session.IPAddress != null)
 					csb.Server = m_session.IPAddress.ToString();
@@ -343,10 +347,10 @@ namespace MySql.Data.MySqlClient
 		internal MySqlTransaction CurrentTransaction { get; set; }
 		internal bool AllowUserVariables => m_connectionSettings.AllowUserVariables;
 		internal bool ConvertZeroDateTime => m_connectionSettings.ConvertZeroDateTime;
-		internal int DefaultCommandTimeout => m_connectionSettings.DefaultCommandTimeout;
+		internal int DefaultCommandTimeout => GetConnectionSettings().DefaultCommandTimeout;
 		internal bool OldGuids => m_connectionSettings.OldGuids;
 		internal bool TreatTinyAsBoolean => m_connectionSettings.TreatTinyAsBoolean;
-		internal IOBehavior AsyncIOBehavior => m_connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
+		internal IOBehavior AsyncIOBehavior => GetConnectionSettings().ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
 
 		internal MySqlSslMode SslMode => m_connectionSettings.SslMode;
 
@@ -367,8 +371,12 @@ namespace MySql.Data.MySqlClient
 			m_activeReader = null;
 		}
 
-		private async Task<ServerSession> CreateSessionAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async ValueTask<ServerSession> CreateSessionAsync(IOBehavior? ioBehavior, CancellationToken cancellationToken)
 		{
+			var pool = ConnectionPool.GetPool(m_connectionString);
+			m_connectionSettings = pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
+			var actualIOBehavior = ioBehavior ?? (m_connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous);
+
 			var connectTimeout = m_connectionSettings.ConnectionTimeout == 0 ? Timeout.InfiniteTimeSpan : TimeSpan.FromMilliseconds(m_connectionSettings.ConnectionTimeoutMilliseconds);
 			using (var timeoutSource = new CancellationTokenSource(connectTimeout))
 			using (var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token))
@@ -376,11 +384,10 @@ namespace MySql.Data.MySqlClient
 				try
 				{
 					// get existing session from the pool if possible
-					if (m_connectionSettings.Pooling)
+					if (pool != null)
 					{
-						var pool = ConnectionPool.GetPool(m_connectionSettings);
 						// this returns an open session
-						return await pool.GetSessionAsync(this, ioBehavior, linkedSource.Token).ConfigureAwait(false);
+						return await pool.GetSessionAsync(this, actualIOBehavior, linkedSource.Token).ConfigureAwait(false);
 					}
 					else
 					{
@@ -390,7 +397,7 @@ namespace MySql.Data.MySqlClient
 
 						var session = new ServerSession();
 						Log.Info("Created new non-pooled Session{0}", session.Id);
-						await session.ConnectAsync(m_connectionSettings, loadBalancer, ioBehavior, linkedSource.Token).ConfigureAwait(false);
+						await session.ConnectAsync(m_connectionSettings, loadBalancer, actualIOBehavior, linkedSource.Token).ConfigureAwait(false);
 						return session;
 					}
 				}
@@ -472,9 +479,16 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+		private ConnectionSettings GetConnectionSettings()
+		{
+			if (m_connectionSettings == null)
+				m_connectionSettings = new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
+			return m_connectionSettings;
+		}
+
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlConnection));
 
-		MySqlConnectionStringBuilder m_connectionStringBuilder;
+		string m_connectionString;
 		ConnectionSettings m_connectionSettings;
 		ServerSession m_session;
 		ConnectionState m_connectionState;
