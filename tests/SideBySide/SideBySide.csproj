@@ -21,7 +21,7 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
     <ThreadPoolMinThreads>64</ThreadPoolMinThreads>
-    <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion>2.0.5</RuntimeFrameworkVersion>
   </PropertyGroup>
 
  <ItemGroup>

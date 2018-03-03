@@ -18,7 +18,7 @@
     <AssemblyName>MySqlConnector.Tests</AssemblyName>
     <PackageId>MySqlConnector.Tests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion>2.0.5</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
