@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp1.1;net47;netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.10.11" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.10.13" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\MySqlConnector\MySqlConnector.csproj" />
