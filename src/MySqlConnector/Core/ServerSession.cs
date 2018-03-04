@@ -197,7 +197,7 @@ namespace MySqlConnector.Core
 					{
 						Log.Info("{0} sending QUIT command", m_logArguments);
 						m_payloadHandler.StartNewConversation();
-						await m_payloadHandler.WritePayloadAsync(QuitPayload.Create().ArraySegment, ioBehavior).ConfigureAwait(false);
+						await m_payloadHandler.WritePayloadAsync(QuitPayload.Instance.ArraySegment, ioBehavior).ConfigureAwait(false);
 					}
 					catch (IOException)
 					{
@@ -319,13 +319,12 @@ namespace MySqlConnector.Core
 				{
 					m_logArguments[1] = ServerVersion.OriginalString;
 					Log.Debug("{0} ServerVersion {1} supports reset connection; sending reset connection request", m_logArguments);
-					await SendAsync(ResetConnectionPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
+					await SendAsync(ResetConnectionPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 					var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					OkPayload.Create(payload);
 
 					// the "reset connection" packet also resets the connection charset, so we need to change that back to our default
-					payload = QueryPayload.Create("SET NAMES utf8mb4 COLLATE utf8mb4_bin;");
-					await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+					await SendAsync(s_setNamesUtf8mb4Payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					OkPayload.Create(payload);
 				}
@@ -515,7 +514,7 @@ namespace MySqlConnector.Core
 			try
 			{
 				Log.Debug("{0} pinging server", m_logArguments);
-				await SendAsync(PingPayload.Create(), ioBehavior, cancellationToken).ConfigureAwait(false);
+				await SendAsync(PingPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				OkPayload.Create(payload);
 				Log.Info("{0} successfully pinged server", m_logArguments);
@@ -1151,6 +1150,7 @@ namespace MySqlConnector.Core
 		static int s_lastId;
 		static byte[] s_connectionAttributes;
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ServerSession));
+		static readonly PayloadData s_setNamesUtf8mb4Payload = QueryPayload.Create("SET NAMES utf8mb4 COLLATE utf8mb4_bin;");
 
 		readonly object m_lock;
 		readonly object[] m_logArguments;
