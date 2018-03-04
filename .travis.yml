@@ -11,7 +11,7 @@ env:
     OMIT_FEATURES=RsaEncryption,CachingSha2Password
   - IMAGE=mysql:8.0
     NAME=mysql
-    OMIT_FEATURES=RsaEncryption
+    OMIT_FEATURES=None
   - IMAGE=percona:5.7
     NAME=percona
     OMIT_FEATURES=CachingSha2Password

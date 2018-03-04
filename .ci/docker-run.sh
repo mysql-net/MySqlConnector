@@ -23,6 +23,11 @@ IMAGE=$1
 NAME=$2
 PORT=$3
 OMIT_FEATURES=$4
+MYSQL_EXTRA=
+
+if [ "$IMAGE" == "mysql:8.0" ]; then
+  MYSQL_EXTRA='--default-authentication-plugin=mysql_native_password'
+fi
 
 sudo mkdir -p run/$NAME
 sudo chmod 777 run/$NAME
@@ -36,7 +41,8 @@ docker run -d \
 	$IMAGE \
   --log-bin-trust-function-creators=1 \
   --local-infile=1 \
-  --secure-file-priv=/var/tmp
+  --secure-file-priv=/var/tmp \
+  $MYSQL_EXTRA
 
 for i in `seq 1 30`; do
 	# wait for mysql to come up
