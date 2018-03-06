@@ -55,7 +55,9 @@ namespace MySqlConnector.Protocol.Serialization
 			async Task<int> DoReadBytesAsync(ArraySegment<byte> buffer_)
 			{
 				var startTime = RemainingTimeout == Constants.InfiniteTimeout ? 0 : Environment.TickCount;
-				var timerId = RemainingTimeout == Constants.InfiniteTimeout ? 0 : TimerQueue.Instance.Add(RemainingTimeout, m_closeSocket);
+				var timerId = RemainingTimeout == Constants.InfiniteTimeout ? 0 :
+					RemainingTimeout <= 0 ? throw MySqlException.CreateForTimeout() :
+					TimerQueue.Instance.Add(RemainingTimeout, m_closeSocket);
 				m_socketAwaitable.EventArgs.SetBuffer(buffer_.Array, buffer_.Offset, buffer_.Count);
 				int bytesRead;
 				try
