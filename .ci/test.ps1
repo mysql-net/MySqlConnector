@@ -32,11 +32,6 @@ dotnet xunit -c Release
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
-echo "Executing Debug Only tests"
-dotnet xunit -c Debug -class SideBySide.DebugOnlyTests
-if ($LASTEXITCODE -ne 0){
-    exit $LASTEXITCODE;
-}
 
 echo "Executing tests with Compression, No SSL"
 Copy-Item -Force ..\..\.ci\config\config.compression.json config.json

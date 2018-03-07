@@ -178,8 +178,6 @@ namespace MySqlConnector.Core
 		{
 			Log.Debug("{0} reaping connection pool", m_logArguments);
 			RecoverLeakedSessions();
-			if (ConnectionSettings.ConnectionIdleTimeout == 0)
-				return;
 			await CleanPoolAsync(ioBehavior, session => (DateTime.UtcNow - session.LastReturnedUtc).TotalSeconds >= ConnectionSettings.ConnectionIdleTimeout, true, cancellationToken).ConfigureAwait(false);
 		}
 
@@ -398,12 +396,6 @@ namespace MySqlConnector.Core
 				await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
-		public static async Task ReapPoolsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-		{
-			foreach (var pool in GetAllPools())
-				await pool.ReapAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-		}
-
 		private static IReadOnlyList<ConnectionPool> GetAllPools()
 		{
 			var pools = new List<ConnectionPool>(s_pools.Count);
@@ -430,6 +422,7 @@ namespace MySqlConnector.Core
 				foreach (var hostName in cs.HostNames)
 					m_hostSessions[hostName] = 0;
 			}
+
 			m_loadBalancer = cs.ConnectionType != ConnectionType.Tcp ? null :
 				cs.HostNames.Count == 1 || cs.LoadBalance == MySqlLoadBalance.FailOver ? FailOverLoadBalancer.Instance :
 				cs.LoadBalance == MySqlLoadBalance.Random ? RandomLoadBalancer.Instance :
@@ -440,6 +433,28 @@ namespace MySqlConnector.Core
 			m_logArguments = new object[] { "Pool{0}".FormatInvariant(Id) };
 			if (Log.IsInfoEnabled())
 				Log.Info("{0} creating new connection pool for {1}", m_logArguments[0], cs.ConnectionStringBuilder.GetConnectionString(includePassword: false));
+
+			if (cs.ConnectionIdleTimeout > 0)
+			{
+				var reaperInterval = TimeSpan.FromSeconds(Math.Max(1, Math.Min(60, cs.ConnectionIdleTimeout / 2)));
+				m_reaperTask = Task.Run(async () =>
+				{
+					while (true)
+					{
+						var task = Task.Delay(reaperInterval);
+						try
+						{
+							using (var source = new CancellationTokenSource(reaperInterval))
+								await ReapAsync(IOBehavior.Asynchronous, source.Token).ConfigureAwait(false);
+						}
+						catch
+						{
+							// do nothing; we'll try to reap again
+						}
+						await task.ConfigureAwait(false);
+					}
+				});
+			}
 		}
 
 		private void AdjustHostConnectionCount(ServerSession session, int delta)
@@ -478,26 +493,6 @@ namespace MySqlConnector.Core
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConnectionPool));
 		static readonly ConcurrentDictionary<string, ConnectionPool> s_pools = new ConcurrentDictionary<string, ConnectionPool>();
-#if DEBUG
-		static readonly TimeSpan ReaperInterval = TimeSpan.FromSeconds(1);
-#else
-		static readonly TimeSpan ReaperInterval = TimeSpan.FromMinutes(1);
-#endif
-		static readonly Task Reaper = Task.Run(async () => {
-			while (true)
-			{
-				var task = Task.Delay(ReaperInterval);
-				try
-				{
-					await ReapPoolsAsync(IOBehavior.Asynchronous, new CancellationTokenSource(ReaperInterval).Token).ConfigureAwait(false);
-				}
-				catch
-				{
-					// do nothing; we'll try to reap again
-				}
-				await task.ConfigureAwait(false);
-			}
-		});
 
 		static int s_poolId;
 		static ConnectionStringPool s_mruCache;
@@ -510,6 +505,7 @@ namespace MySqlConnector.Core
 		readonly ILoadBalancer m_loadBalancer;
 		readonly Dictionary<string, int> m_hostSessions;
 		readonly object[] m_logArguments;
+		readonly Task m_reaperTask;
 		uint m_lastRecoveryTime;
 		int m_lastSessionId;
 		Dictionary<string, CachedProcedure> m_procedureCache;

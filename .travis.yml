@@ -35,7 +35,6 @@ script:
 - dotnet build SideBySide.csproj -c Release -f netcoreapp2.0
 - echo 'Executing netcoreapp1.1.2 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet xunit -c Release -f netcoreapp1.1.2
 - echo 'Executing netcoreapp2.0 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp2.0 Debug Only tests' && time dotnet xunit -c Debug -f netcoreapp2.0 -class SideBySide.DebugOnlyTests
 - echo 'Executing netcoreapp2.0 tests with Compression, No SSL' && ../../.ci/use-config.sh config.compression.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet xunit -c Release -f netcoreapp2.0
 - echo 'Executing netcoreapp1.1.2 tests with No Compression, SSL' && ../../.ci/use-config.sh config.ssl.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet xunit -c Release -f netcoreapp1.1.2
 - echo 'Executing netcoreapp2.0 tests with No Compression, SSL' && ../../.ci/use-config.sh config.ssl.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet xunit -c Release -f netcoreapp2.0

@@ -44,10 +44,6 @@
     <PackageReference Include="MySql.Data" Version="6.9.9" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(Configuration)' != 'Debug' ">
-    <Compile Remove="DebugOnlyTests.cs" />
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1.2' ">
     <Compile Remove="TransactionScopeTests.cs" />
   </ItemGroup>
