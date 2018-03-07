@@ -56,6 +56,15 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-36-1">0.36.1</h3>
+
+<ul>
+<li>Reap connections more frequently if <code>ConnectionIdleTimeout</code> is low: <a href="https://github.com/mysql-net/MySqlConnector/issues/442">#442</a>.</li>
+<li>Fix <code>ArgumentOutOfRangeException</code> when command times out: <a href="https://github.com/mysql-net/MySqlConnector/issues/447">#447</a>.</li>
+<li>Speed up connection pooling (particularly in applications that only have one connection string).</li>
+<li>Reduce heap allocations in common scenarios.</li>
+</ul>
+
 <h3 id="0-36-0">0.36.0</h3>
 
 <ul>
