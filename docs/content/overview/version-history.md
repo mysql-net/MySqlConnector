@@ -11,6 +11,13 @@ weight: 30
 Version History
 ===============
 
+### 0.36.1
+
+* Reap connections more frequently if `ConnectionIdleTimeout` is low: [#442](https://github.com/mysql-net/MySqlConnector/issues/442).
+* Fix `ArgumentOutOfRangeException` when command times out: [#447](https://github.com/mysql-net/MySqlConnector/issues/447).
+* Speed up connection pooling (particularly in applications that only have one connection string).
+* Reduce heap allocations in common scenarios.
+
 ### 0.36.0
 
 * **Breaking** Require `CertificateFile` to include private key (for mutual authentication): [#436](https://github.com/mysql-net/MySqlConnector/issues/436).
