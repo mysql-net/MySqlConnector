@@ -851,11 +851,6 @@ namespace MySqlConnector.Core
 			else
 				sslStream = new SslStream(m_networkStream, false, ValidateRemoteCertificate, ValidateLocalCertificate);
 
-			// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/mysql-net/MySqlConnector/pull/101
-			var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
-			if (!Utility.IsWindows())
-				sslProtocols |= SslProtocols.Tls12;
-
 			var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
 
 			var initSsl = HandshakeResponse41Payload.CreateWithSsl(serverCapabilities, cs, m_useCompression);
@@ -865,14 +860,14 @@ namespace MySqlConnector.Core
 			{
 				if (ioBehavior == IOBehavior.Asynchronous)
 				{
-					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, cs.SslProtocols, checkCertificateRevocation).ConfigureAwait(false);
 				}
 				else
 				{
 #if NETSTANDARD1_3
-					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, cs.SslProtocols, checkCertificateRevocation).ConfigureAwait(false);
 #else
-					sslStream.AuthenticateAsClient(HostName, clientCertificates, sslProtocols, checkCertificateRevocation);
+					sslStream.AuthenticateAsClient(HostName, clientCertificates, cs.SslProtocols, checkCertificateRevocation);
 #endif
 				}
 				var sslByteHandler = new StreamByteHandler(sslStream);
@@ -1071,6 +1066,7 @@ namespace MySqlConnector.Core
 		internal bool SslIsAuthenticated => m_sslStream?.IsAuthenticated ?? false;
 
 		internal bool SslIsMutuallyAuthenticated => m_sslStream?.IsMutuallyAuthenticated ?? false;
+		internal SslProtocols SslProtocol => m_sslStream?.SslProtocol ?? SslProtocols.None;
 
 		private byte[] CreateConnectionAttributes()
 		{

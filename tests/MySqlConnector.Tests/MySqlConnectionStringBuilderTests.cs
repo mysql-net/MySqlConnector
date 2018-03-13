@@ -1,4 +1,5 @@
 using System;
+using System.Security.Authentication;
 using MySql.Data.MySqlClient;
 using Xunit;
 
@@ -82,6 +83,7 @@ namespace MySqlConnector.Tests
 					"allow public key retrieval = true;" +
 					"server rsa public key file=rsa.pem;" +
 					"load balance=random;" +
+					"ssl protocols = Tls11,Tls12;" +
 #endif
 					"Keep Alive=90;" +
 					"minpoolsize=5;" +
@@ -114,6 +116,7 @@ namespace MySqlConnector.Tests
 			Assert.True(csb.AllowPublicKeyRetrieval);
 			Assert.Equal("rsa.pem", csb.ServerRsaPublicKeyFile);
 			Assert.Equal(MySqlLoadBalance.Random, csb.LoadBalance);
+			Assert.Equal(SslProtocols.Tls11 | SslProtocols.Tls12, csb.SslProtocols);
 #endif
 			Assert.Equal(90u, csb.Keepalive);
 			Assert.Equal(15u, csb.MaximumPoolSize);

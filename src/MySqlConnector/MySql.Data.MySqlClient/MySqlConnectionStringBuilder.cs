@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
+using System.Security.Authentication;
 using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
@@ -59,6 +60,12 @@ namespace MySql.Data.MySqlClient
 		{
 			get => MySqlConnectionStringOption.SslMode.GetValue(this);
 			set => MySqlConnectionStringOption.SslMode.SetValue(this, value);
+		}
+
+		public SslProtocols SslProtocols
+		{
+			get => MySqlConnectionStringOption.SslProtocols.GetValue(this);
+			set => MySqlConnectionStringOption.SslProtocols.SetValue(this, value);
 		}
 
 		public string CertificateFile
@@ -262,6 +269,7 @@ namespace MySql.Data.MySqlClient
 
 		// SSL/TLS Options
 		public static readonly MySqlConnectionStringOption<MySqlSslMode> SslMode;
+		public static readonly MySqlConnectionStringOption<SslProtocols> SslProtocols;
 		public static readonly MySqlConnectionStringOption<string> CertificateFile;
 		public static readonly MySqlConnectionStringOption<string> CertificatePassword;
 		public static readonly MySqlConnectionStringOption<string> CACertificateFile;
@@ -346,6 +354,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(SslMode = new MySqlConnectionStringOption<MySqlSslMode>(
 				keys: new[] { "SSL Mode", "SslMode" },
 				defaultValue: MySqlSslMode.Preferred));
+
+			AddOption(SslProtocols = new MySqlConnectionStringOption<SslProtocols>(
+				keys: new[] { "SSL Protocols", "SslProtocols" },
+				defaultValue: System.Security.Authentication.SslProtocols.Tls | System.Security.Authentication.SslProtocols.Tls11));
 
 			AddOption(CertificateFile = new MySqlConnectionStringOption<string>(
 				keys: new[] { "CertificateFile", "Certificate File" },
@@ -501,6 +513,18 @@ namespace MySql.Data.MySqlClient
 						return (T) val;
 				}
 				throw new InvalidOperationException("Value '{0}' not supported for option '{1}'.".FormatInvariant(objectValue, typeof(T).Name));
+			}
+
+			if (typeof(T) == typeof(SslProtocols) && objectValue is string sslProtocolsString)
+			{
+				try
+				{
+					return (T) Enum.Parse(typeof(T), sslProtocolsString, true);
+				}
+				catch (Exception)
+				{
+					throw new InvalidOperationException("Value '{0}' not supported for option '{1}'.".FormatInvariant(objectValue, typeof(T).Name));
+				}
 			}
 
 			return (T) Convert.ChangeType(objectValue, typeof(T), CultureInfo.InvariantCulture);

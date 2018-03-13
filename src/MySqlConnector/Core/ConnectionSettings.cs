@@ -34,6 +34,7 @@ namespace MySqlConnector.Core
 
 			// SSL/TLS Options
 			SslMode = csb.SslMode;
+			SslProtocols = csb.SslProtocols;
 			CertificateFile = csb.CertificateFile;
 			CertificatePassword = csb.CertificatePassword;
 			CACertificateFile = csb.CACertificateFile;
@@ -84,6 +85,7 @@ namespace MySqlConnector.Core
 
 		// SSL/TLS Options
 		public MySqlSslMode SslMode { get; }
+		public System.Security.Authentication.SslProtocols SslProtocols { get; }
 		public string CertificateFile { get; }
 		public string CertificatePassword { get; }
 		public string CACertificateFile { get; }
