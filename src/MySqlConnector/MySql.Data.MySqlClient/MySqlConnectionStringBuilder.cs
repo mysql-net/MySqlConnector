@@ -355,9 +355,16 @@ namespace MySql.Data.MySqlClient
 				keys: new[] { "SSL Mode", "SslMode" },
 				defaultValue: MySqlSslMode.Preferred));
 
+			var sslProtocolsDefault = System.Security.Authentication.SslProtocols.Tls |
+				 System.Security.Authentication.SslProtocols.Tls11;
+			if (!Utility.IsWindows())
+			{
+				sslProtocolsDefault |= System.Security.Authentication.SslProtocols.Tls12;
+			}
+
 			AddOption(SslProtocols = new MySqlConnectionStringOption<SslProtocols>(
 				keys: new[] { "SSL Protocols", "SslProtocols" },
-				defaultValue: System.Security.Authentication.SslProtocols.Tls | System.Security.Authentication.SslProtocols.Tls11));
+				defaultValue: sslProtocolsDefault));
 
 			AddOption(CertificateFile = new MySqlConnectionStringOption<string>(
 				keys: new[] { "CertificateFile", "Certificate File" },
