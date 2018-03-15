@@ -390,6 +390,10 @@ namespace MySqlConnector.Core
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
+				// OK payload can be sent immediately (e.g., if password is empty( (short-circuiting the )
+				if (OkPayload.IsOk(payload, SupportsDeprecateEof))
+					return payload;
+
 				var cachingSha2ServerResponsePayload = CachingSha2ServerResponsePayload.Create(payload);
 				if (cachingSha2ServerResponsePayload.Succeeded)
 					return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
