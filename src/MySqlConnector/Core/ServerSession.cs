@@ -301,6 +301,12 @@ namespace MySqlConnector.Core
 				if (ShouldGetRealServerDetails())
 					await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			}
+			catch (ArgumentException ex)
+			{
+				m_logArguments[1] = ex.Message;
+				Log.Error("{0} couldn't connect to server: {1}", m_logArguments);
+				throw new MySqlException("Couldn't connect to server", ex);
+			}
 			catch (IOException ex)
 			{
 				m_logArguments[1] = ex.Message;

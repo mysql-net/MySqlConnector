@@ -46,6 +46,20 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void ConnectInvalidPort()
+		{
+			var csb = new MySqlConnectionStringBuilder
+			{
+				Server = "localhost",
+				Port = 1000000,
+			};
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				Assert.Throws<MySqlException>(() => connection.Open());
+			}
+		}
+
+		[Fact]
 		public void ConnectBadDatabase()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
