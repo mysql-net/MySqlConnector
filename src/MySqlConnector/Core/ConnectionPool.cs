@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
@@ -16,6 +17,8 @@ namespace MySqlConnector.Core
 		public int Id { get; }
 
 		public ConnectionSettings ConnectionSettings { get; }
+
+		public SslProtocols SslProtocols { get; set; }
 
 		public async ValueTask<ServerSession> GetSessionAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -411,6 +414,7 @@ namespace MySqlConnector.Core
 		private ConnectionPool(ConnectionSettings cs)
 		{
 			ConnectionSettings = cs;
+			SslProtocols = Utility.GetDefaultSslProtocols();
 			m_generation = 0;
 			m_cleanSemaphore = new SemaphoreSlim(1);
 			m_sessionSemaphore = new SemaphoreSlim(cs.MaximumPoolSize);

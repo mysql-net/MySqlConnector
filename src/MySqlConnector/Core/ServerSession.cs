@@ -225,60 +225,93 @@ namespace MySqlConnector.Core
 					VerifyState(State.Created);
 					m_state = State.Connecting;
 				}
-				var connected = false;
-				if (cs.ConnectionType == ConnectionType.Tcp)
-					connected = await OpenTcpSocketAsync(cs, loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
-				else if (cs.ConnectionType == ConnectionType.Unix)
-					connected = await OpenUnixSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
-				if (!connected)
+
+				// TLS negotiation should automatically fall back to the best version supported by client and server. However,
+				// Windows Schannel clients will fail to connect to a yaSSL-based MySQL Server if TLS 1.2 is requested and
+				// have to use only TLS 1.1: https://github.com/mysql-net/MySqlConnector/pull/101
+				// In order to use the best protocol possible (i.e., not always default to TLS 1.1), we try the OS-default protocol
+				// (which is SslProtocols.None; see https://docs.microsoft.com/en-us/dotnet/framework/network-programming/tls),
+				// then fall back to SslProtocols.Tls11 if that fails and it's possible that the cause is a yaSSL server.
+				bool shouldRetrySsl;
+				var sslProtocols = Pool?.SslProtocols ?? Utility.GetDefaultSslProtocols();
+				PayloadData payload;
+				InitialHandshakePayload initialHandshake;
+				do
 				{
-					lock (m_lock)
-						m_state = State.Failed;
-					Log.Error("{0} connecting failed", m_logArguments);
-					throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
-				}
+					shouldRetrySsl = (sslProtocols == SslProtocols.None || (sslProtocols & SslProtocols.Tls12) == SslProtocols.Tls12) && Utility.IsWindows();
 
-				var byteHandler = new SocketByteHandler(m_socket);
-				m_payloadHandler = new StandardPayloadHandler(byteHandler);
-
-				var payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				var initialHandshake = InitialHandshakePayload.Create(payload);
-
-				// if PluginAuth is supported, then use the specified auth plugin; else, fall back to protocol capabilities to determine the auth type to use
-				string authPluginName;
-				if ((initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
-					authPluginName = initialHandshake.AuthPluginName;
-				else
-					authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" : "mysql_native_password";
-				m_logArguments[1] = authPluginName;
-				Log.Debug("{0} server sent auth_plugin_name '{1}'", m_logArguments);
-				if (authPluginName != "mysql_native_password" && authPluginName != "sha256_password" && authPluginName != "caching_sha2_password")
-				{
-					Log.Error("{0} unsupported authentication method '{1}'", m_logArguments);
-					throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(initialHandshake.AuthPluginName));
-				}
-
-				ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
-				ConnectionId = initialHandshake.ConnectionId;
-				AuthPluginData = initialHandshake.AuthPluginData;
-				m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
-
-				m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
-				m_supportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
-				var serverSupportsSsl = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Ssl) != 0;
-
-				Log.Info("{0} made connection; ServerVersion={1}; ConnectionId={2}; Flags: {3}{4}{5}{6}", m_logArguments[0], ServerVersion.OriginalString, ConnectionId,
-					m_useCompression ? "Cmp " :"", m_supportsConnectionAttributes ? "Attr " : "", m_supportsDeprecateEof ? "" : "Eof ", serverSupportsSsl ? "Ssl " : "");
-
-				if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
-				{
-					if (!serverSupportsSsl)
+					var connected = false;
+					if (cs.ConnectionType == ConnectionType.Tcp)
+						connected = await OpenTcpSocketAsync(cs, loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+					else if (cs.ConnectionType == ConnectionType.Unix)
+						connected = await OpenUnixSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+					if (!connected)
 					{
-						Log.Error("{0} requires SSL but server doesn't support it", m_logArguments);
-						throw new MySqlException("Server does not support SSL");
+						lock (m_lock)
+							m_state = State.Failed;
+						Log.Error("{0} connecting failed", m_logArguments);
+						throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
 					}
-					await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
-				}
+
+					var byteHandler = new SocketByteHandler(m_socket);
+					m_payloadHandler = new StandardPayloadHandler(byteHandler);
+
+					payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					initialHandshake = InitialHandshakePayload.Create(payload);
+
+					// if PluginAuth is supported, then use the specified auth plugin; else, fall back to protocol capabilities to determine the auth type to use
+					string authPluginName;
+					if ((initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
+						authPluginName = initialHandshake.AuthPluginName;
+					else
+						authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" : "mysql_native_password";
+					m_logArguments[1] = authPluginName;
+					Log.Debug("{0} server sent auth_plugin_name '{1}'", m_logArguments);
+					if (authPluginName != "mysql_native_password" && authPluginName != "sha256_password" && authPluginName != "caching_sha2_password")
+					{
+						Log.Error("{0} unsupported authentication method '{1}'", m_logArguments);
+						throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(initialHandshake.AuthPluginName));
+					}
+
+					ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
+					ConnectionId = initialHandshake.ConnectionId;
+					AuthPluginData = initialHandshake.AuthPluginData;
+					m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
+
+					m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
+					m_supportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
+					var serverSupportsSsl = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Ssl) != 0;
+
+					Log.Info("{0} made connection; ServerVersion={1}; ConnectionId={2}; Flags: {3}{4}{5}{6}", m_logArguments[0], ServerVersion.OriginalString, ConnectionId,
+						m_useCompression ? "Cmp " : "", m_supportsConnectionAttributes ? "Attr " : "", m_supportsDeprecateEof ? "" : "Eof ", serverSupportsSsl ? "Ssl " : "");
+
+					if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
+					{
+						if (!serverSupportsSsl)
+						{
+							Log.Error("{0} requires SSL but server doesn't support it", m_logArguments);
+							throw new MySqlException("Server does not support SSL");
+						}
+
+						try
+						{
+							await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, sslProtocols, ioBehavior, cancellationToken).ConfigureAwait(false);
+							shouldRetrySsl = false;
+						}
+						catch (Exception ex) when (shouldRetrySsl && ((ex is MySqlException && ex.InnerException is IOException) || ex is IOException))
+						{
+							// negotiating TLS 1.2 with a yaSSL-based server throws an exception on Windows, see comment at top of method
+							Log.Warn(ex, "{0} failed negotiating TLS; falling back to TLS 1.1", m_logArguments);
+							sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
+							if (Pool != null)
+								Pool.SslProtocols = sslProtocols;
+						}
+					}
+					else
+					{
+						shouldRetrySsl = false;
+					}
+				} while (shouldRetrySsl);
 
 				if (m_supportsConnectionAttributes && s_connectionAttributes == null)
 					s_connectionAttributes = CreateConnectionAttributes();
@@ -772,7 +805,7 @@ namespace MySqlConnector.Core
 			return false;
 		}
 
-		private async Task InitSslAsync(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async Task InitSslAsync(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, SslProtocols sslProtocols, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			Log.Info("{0} initializing TLS connection", m_logArguments);
 			X509CertificateCollection clientCertificates = null;
@@ -861,11 +894,6 @@ namespace MySqlConnector.Core
 			else
 				sslStream = new SslStream(m_networkStream, false, ValidateRemoteCertificate, ValidateLocalCertificate);
 
-			// SslProtocols.Tls1.2 throws an exception in Windows, see https://github.com/mysql-net/MySqlConnector/pull/101
-			var sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
-			if (!Utility.IsWindows())
-				sslProtocols |= SslProtocols.Tls12;
-
 			var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
 
 			var initSsl = HandshakeResponse41Payload.CreateWithSsl(serverCapabilities, cs, m_useCompression);
@@ -889,6 +917,8 @@ namespace MySqlConnector.Core
 				m_payloadHandler.ByteHandler = sslByteHandler;
 				m_isSecureConnection = true;
 				m_sslStream = sslStream;
+				m_logArguments[1] = sslStream.SslProtocol;
+				Log.Info("{0} connected TLS with protocol {1}", m_logArguments);
 			}
 			catch (Exception ex)
 			{
@@ -1081,6 +1111,8 @@ namespace MySqlConnector.Core
 		internal bool SslIsAuthenticated => m_sslStream?.IsAuthenticated ?? false;
 
 		internal bool SslIsMutuallyAuthenticated => m_sslStream?.IsMutuallyAuthenticated ?? false;
+
+		internal SslProtocols SslProtocol => m_sslStream?.SslProtocol ?? SslProtocols.None;
 
 		private byte[] CreateConnectionAttributes()
 		{

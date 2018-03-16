@@ -16,5 +16,7 @@ namespace SideBySide
 		Timeout = 128,
 		ErrorCodes = 256,
 		KnownCertificateAuthority = 512,
+		Tls11 = 1024,
+		Tls12 = 2048,
 	}
 }

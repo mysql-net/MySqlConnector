@@ -1,4 +1,5 @@
 using System.IO;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -115,6 +116,34 @@ namespace SideBySide
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+			}
+		}
+
+		[SkippableFact(ConfigSettings.RequiresSsl)]
+		public async Task ConnectSslTlsVersion()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				await connection.OpenAsync();
+#if BASELINE
+				var expectedProtocol = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls11) ? SslProtocols.Tls11 : SslProtocols.Tls;
+#else
+				var expectedProtocol = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls12) ? SslProtocols.Tls12 :
+					AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls11) ? SslProtocols.Tls11 :
+					SslProtocols.Tls;
+#endif
+				var expectedProtocolString = expectedProtocol == SslProtocols.Tls12 ? "TLSv1.2" :
+					expectedProtocol == SslProtocols.Tls11 ? "TLSv1.1" : "TLSv1";
+
+#if !BASELINE
+				Assert.Equal(expectedProtocol, connection.SslProtocol);
+#endif
+				using (var cmd = new MySqlCommand("show status like 'Ssl_version';", connection))
+				using (var reader = await cmd.ExecuteReaderAsync())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(expectedProtocolString, reader.GetString(1));
+				}
 			}
 		}
 

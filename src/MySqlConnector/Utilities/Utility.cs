@@ -2,7 +2,9 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Security;
 using System.Runtime.InteropServices;
+using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -253,6 +255,42 @@ namespace MySqlConnector.Utilities
 			osDescription = RuntimeInformation.OSDescription;
 			architecture = RuntimeInformation.ProcessArchitecture.ToString();
 		}
+#endif
+
+#if NET45 || NET46
+		public static SslProtocols GetDefaultSslProtocols()
+		{
+			if (!s_defaultSslProtocols.HasValue)
+			{
+				try
+				{
+					using (var memoryStream = new MemoryStream())
+					using (var sslStream = new SslStream(memoryStream))
+					{
+						sslStream.AuthenticateAsClient("localhost", null, SslProtocols.None, false);
+					}
+				}
+				catch (ArgumentException ex) when (ex.ParamName == "sslProtocolType")
+				{
+					// Prior to .NET Framework 4.7, SslProtocols.None is not a valid argument to AuthenticateAsClientAsync.
+					// If the NET46 build is loaded by an application that targets. NET 4.7 (or later), or if app.config has set
+					// Switch.System.Net.DontEnableSystemDefaultTlsVersions to false, then SslProtocols.None will work; otherwise,
+					// if the application targets .NET 4.6.2 or earlier and hasn't changed the AppContext switch, then it will
+					// fail at runtime; we catch the exception and explicitly specify the protocols to use.
+					s_defaultSslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
+				}
+				catch (Exception)
+				{
+					s_defaultSslProtocols = SslProtocols.None;
+				}
+			}
+
+			return s_defaultSslProtocols.Value;
+		}
+
+		static SslProtocols? s_defaultSslProtocols;
+#else
+		public static SslProtocols GetDefaultSslProtocols() => SslProtocols.None;
 #endif
 	}
 }

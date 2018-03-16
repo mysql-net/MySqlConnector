@@ -5,10 +5,10 @@ services: docker
 env:
   - IMAGE=mysql:5.6
     NAME=mysql
-    OMIT_FEATURES=Json,Sha256Password,RsaEncryption,LargePackets,CachingSha2Password,SessionTrack
+    OMIT_FEATURES=Json,Sha256Password,RsaEncryption,LargePackets,CachingSha2Password,SessionTrack,Tls11,Tls12
   - IMAGE=mysql:5.7
     NAME=mysql
-    OMIT_FEATURES=RsaEncryption,CachingSha2Password
+    OMIT_FEATURES=RsaEncryption,CachingSha2Password,Tls12
   - IMAGE=mysql:8.0
     NAME=mysql
     OMIT_FEATURES=None
