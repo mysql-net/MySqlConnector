@@ -1,4 +1,3 @@
-using System.Data;
 using System.Text;
 using MySql.Data.MySqlClient;
 using MySqlConnector.Core;
@@ -32,9 +31,10 @@ namespace MySqlConnector.Tests
 		}
 
 		[Theory]
-		[InlineData(DbType.String, DummyEnum.FirstValue, "'FirstValue'"), ]
+		[InlineData(MySqlDbType.String, DummyEnum.FirstValue, "'FirstValue'")]
+		[InlineData(MySqlDbType.VarChar, DummyEnum.FirstValue, "'FirstValue'")]
 		[InlineData(null, DummyEnum.FirstValue, "0")]
-		public void EnumParametersAreParsedCorrectly(DbType? type, object value, string replacedValue)
+		public void EnumParametersAreParsedCorrectly(MySqlDbType? type, object value, string replacedValue)
 		{
 			const string sql = "SELECT @param";
 			var parameters = new MySqlParameterCollection();
@@ -42,7 +42,7 @@ namespace MySqlConnector.Tests
 
 			if (type != null)
 			{
-				paramater.DbType = type.Value;
+				paramater.MySqlDbType = type.Value;
 			}
 
 			parameters.Add(paramater);
