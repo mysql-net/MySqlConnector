@@ -305,7 +305,7 @@ namespace MySql.Data.MySqlClient
 			}
 			else if (MySqlDbType == MySqlDbType.String && Value is Enum)
 			{
-				writer.WriteUtf8("{0:G}".FormatInvariant(Value));
+				writer.WriteUtf8("'{0:G}'".FormatInvariant(Value));
 			}
 			else if (Value is Enum)
 			{
