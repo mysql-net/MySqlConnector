@@ -1,3 +1,4 @@
+using System.Data;
 using System.Text;
 using MySql.Data.MySqlClient;
 using MySqlConnector.Core;
@@ -28,6 +29,27 @@ namespace MySqlConnector.Tests
 		public void ParametersIgnoredInComments(string sql)
 		{
 			Assert.Equal(sql, GetParsedSql(sql));
+		}
+
+		[Theory]
+		[InlineData(DbType.String, DummyEnum.FirstValue, "'FirstValue'"), ]
+		[InlineData(null, DummyEnum.FirstValue, "0")]
+		public void EnumParametersAreParsedCorrectly(DbType? type, object value, string replacedValue)
+		{
+			const string sql = "SELECT @param";
+			var parameters = new MySqlParameterCollection();
+			var paramater = new MySqlParameter("@param", value);
+
+			if (type != null)
+			{
+				paramater.DbType = type.Value;
+			}
+
+			parameters.Add(paramater);
+			
+			var parsedSql = GetParsedSql(sql, parameters);
+			Assert.Equal(sql.Replace("@param", replacedValue), parsedSql);
+
 		}
 
 		[Theory]
