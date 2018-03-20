@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>MySqlConnector: Async MySQL Driver for .NET and .NET Core</title>
+    <link>https://mysql-net.github.io/MySqlConnector/</link>
+    <description>Recent content on MySqlConnector: Async MySQL Driver for .NET and .NET Core</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Sun, 16 Oct 2016 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://mysql-net.github.io/MySqlConnector/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Best Practices</title>
+      <link>https://mysql-net.github.io/MySqlConnector/tutorials/best-practices/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/tutorials/best-practices/</guid>
+      <description>Best Practices Asynchronous Operation MySqlConnector is fully asynchronous, supporting the async ADO.NET methods added in .NET 4.5 without blocking or using Task.Run to run synchronous methods on a background thread. Programmers implementing MySqlConnector should be familiar with Async/Await - Best Practices in Asynchronous Programming.
+Always Use Async when possible  ADO.NET Class Asynchronous Method
+(always use when possible) Synchronous Method
+(avoid when possible)   DbConnection  OpenAsync Open    *MySqlConnection.</description>
+    </item>
+    
+    <item>
+      <title>Home</title>
+      <link>https://mysql-net.github.io/MySqlConnector/home/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/home/</guid>
+      <description>Home MySqlConnector is an ADO.NET data provider for MySQL. It provides implementations of DbConnection, DbCommand, DbDataReader, DbTransaction &amp;ndash; the classes needed to query and update databases from managed code. Its features include:
+ .NET Core Compatibility Truly Asynchronous: async functions implement asynchronous I/O High Performance: code is stress tested for performance bottlenecks Lightweight: Library only implements ADO.NET core  Why use MySql over Oracle’s Connector/NET? MySqlConnector is a clean-room reimplementation of the MySQL Protocol and is not based on Oracle’s Connector/NET.</description>
+    </item>
+    
+    <item>
+      <title>Installing</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/installing/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/installing/</guid>
+      <description>Installing The recommended way of installing MySqlConnector is through NuGet.
+Automatically If using the new project system, run: dotnet add package MySqlConnector
+Or, in Visual Studio, use the NuGet Package Manager to browse for and install MySqlConnector.
+Manually Step 1: Add MySqlConnector to the dependencies in your csproj file:
+&amp;lt;Project Sdk=&amp;quot;Microsoft.NET.Sdk&amp;quot;&amp;gt; &amp;lt;PropertyGroup&amp;gt; &amp;lt;AssemblyTitle&amp;gt;My Application&amp;lt;/AssemblyTitle&amp;gt; &amp;lt;Description&amp;gt;A great application&amp;lt;/Description&amp;gt; &amp;lt;OutputType&amp;gt;Exe&amp;lt;/OutputType&amp;gt; &amp;lt;TargetFramework&amp;gt;netcoreapp2.0&amp;lt;/TargetFramework&amp;gt; &amp;lt;/PropertyGroup&amp;gt; &amp;lt;ItemGroup&amp;gt; &amp;lt;PackageReference Include=&amp;quot;MySqlConnector&amp;quot; Version=&amp;quot;0.30.0&amp;quot; /&amp;gt; &amp;lt;/ItemGroup&amp;gt; &amp;lt;/Project&amp;gt;  Step 2: Run the command dotnet restore</description>
+    </item>
+    
+    <item>
+      <title>MySqlConnection</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-connection/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-connection/</guid>
+      <description>MySqlConnection MySqlConnection implements the ADO.NET DbConnection class; please refer to its documentation.
+Additionally, MySqlConnection provides the following public properties and methods that may be used:
+Constructors public MySqlConnection()
+Parameterless constructor
+public MySqlConnection(string connectionString)
+Constructor that set the connection string
+Additional Properties public int ServerThread
+Connection ID from MySQL Server
+Additional Instance Methods public Task&amp;lt;MySqlTransaction&amp;gt; BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
+Async version of BeginTransaction
+public Task&amp;lt;MySqlTransaction&amp;gt; BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))</description>
+    </item>
+    
+    <item>
+      <title>Known Issues</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/known-issues/</link>
+      <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/known-issues/</guid>
+      <description> Known Issues  Prepared statements are not supported: #397. MySQL spatial data types are not supported: #70. Some MySql.Data connection string settings are not supported by this library. See Connection Options for a list of supported options.  </description>
+    </item>
+    
+    <item>
+      <title>Migrating from Connector/NET</title>
+      <link>https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/</guid>
+      <description>Migrating from Connector/NET Connection String Differences MySqlConnector has some different default connection string options:
+ Option MySqlConnector Oracle&#39;s Connector/NET Notes   AllowPublicKeyRetrieval Default is false (not configurable) When using sha256_password authentication, this option allows the RSA public key to be retrieved from the server (when not using a secure connection). It&#39;s false by default to avoid disclosing the password to a malicious proxy.   ConnectionReset Default is true Default is false MySqlConnector always resets pooled connections by default so that the connection is in a known state.</description>
+    </item>
+    
+    <item>
+      <title>MySqlCommand</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-command/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-command/</guid>
+      <description>MySqlCommand MySqlCommand implements the ADO.NET DbCommand class; please refer to its documentation.
+Additionally, MySqlCommand provides the following public properties and methods that may be used:
+Constructors public MySqlCommand()
+Parameterless constructor
+public MySqlCommand(string commandText)
+constructor accepting command SQL
+public MySqlCommand(MySqlConnection connection, MySqlTransaction transaction)
+constructor accepting connection object and transaction object
+public MySqlCommand(string commandText, MySqlConnection connection)
+constructor accepting command SQL and connection object
+public MySqlCommand(string commandText, MySqlConnection connection, MySqlTransaction transaction)
+constructor accepting command SQL, connection object, and transaction object</description>
+    </item>
+    
+    <item>
+      <title>Version History</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/version-history/</link>
+      <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
+      <description>Version History 0.37.0  Support TLS 1.2 on Windows clients: #458.  Use the best TLS version supported by the OS, as per best practices.  Add ConnectionIdlePingTime connection string setting (Experimental): #461. Fix failure to log in for accounts with empty passwords that use caching_sha2_password. Throw MySqlException for invalid port number in connection string.  0.36.1  Reap connections more frequently if ConnectionIdleTimeout is low: #442. Fix ArgumentOutOfRangeException when command times out: #447.</description>
+    </item>
+    
+    <item>
+      <title>Connection Options</title>
+      <link>https://mysql-net.github.io/MySqlConnector/connection-options/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/connection-options/</guid>
+      <description>Connection Options MySqlConnector supports a subset of Oracle&amp;rsquo;s Connector/NET connection options.
+Base Options These are the basic options that need to be defined to connect to a MySQL database.
+ Name Default Description   Host, Server, Data Source, DataSource, Address, Addr, Network Address localhost The host name or network address of the MySQL Server to which to connect. Multiple hosts can be specified in a comma-delimited list.
+On Unix-like systems, this can be a fully qualified path to a MySQL socket file, which will cause a Unix socket to be used instead of a TCP/IP socket.</description>
+    </item>
+    
+    <item>
+      <title>MySqlDataReader</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-data-reader/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-data-reader/</guid>
+      <description>MySqlDataReader MySqlDataReader implements the ADO.NET DbDataReader class; please refer to its documentation.
+Additionally, MySqlDataReader provides the following public properties and methods that may be used:
+Additional Instance Methods public sbyte GetSByte(int ordinal)
+Gets the value of the specified column as an sbyte
+public DateTimeOffset GetDateTimeOffset(int ordinal)
+Gets the value of the specified column as a DateTimeOffset with an offset of 0
+public ReadOnlyCollection&amp;lt;DbColumn&amp;gt; GetColumnSchema()
+Implements the new IDbColumnSchemaGenerator.GetColumnSchema interface that returns metadata about the columns in the result set.</description>
+    </item>
+    
+    <item>
+      <title>Use with .NET Core MVC</title>
+      <link>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</guid>
+      <description>Use with .NET Core MVC 2.0 This tutorial will walk through a basic .NET Core JSON API application that performs CRUD operations on blog posts. The code in this tutorial comes is an adaptation of MySqlConnector.Performance, the performance application that is used to stress test MySqlConnector.
+Initialize MySQL Create a MySQL database and copy the following SQL to create a table called BlogPost:
+CREATE TABLE IF NOT EXISTS `BlogPost` ( `Id` int(11) NOT NULL AUTO_INCREMENT, `Content` longtext, `Title` longtext, PRIMARY KEY (`Id`) ) ENGINE=InnoDB;  Initialize .</description>
+    </item>
+    
+    <item>
+      <title>Configuration</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/configuration/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/configuration/</guid>
+      <description>Configuration MySqlConnector uses a connection string in order to connect to your database.
+To connect to a database on localhost port 3306 with a user mysqltest, password Password123, and default schema mysqldb, the connection string would be:
+host=127.0.0.1;port=3306;user id=mysqltest;password=Password123;database=mysqldb;
+For all connection string options, view the Connection Options Reference
+Application Database Object Example It&amp;rsquo;s a good idea to use an IDisposable object that configures the connection string globally, and closes the connection automatically:</description>
+    </item>
+    
+    <item>
+      <title>MySqlTransaction</title>
+      <link>https://mysql-net.github.io/MySqlConnector/api/mysql-transaction/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/api/mysql-transaction/</guid>
+      <description>MySqlTransaction MySqlTransaction implements the ADO.NET DbTransaction class, please refer to its documentation.
+Additionally, MySqlTransaction provides the following public properties and methods that may be used:
+Additional Instance Methods public Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))
+Async version of Commit
+public Task RollbackAsync(CancellationToken cancellationToken = default(CancellationToken))
+Async version of Rollback</description>
+    </item>
+    
+    <item>
+      <title>Logging</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/logging/</link>
+      <pubDate>Sat, 20 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/logging/</guid>
+      <description>Logging MySqlConnector implements a custom logging framework with the IMySqlConnectorLogger and IMySqlConnectorLoggerProvider interfaces. To connect MySqlConnector to an existing logging framework, write an implementation of IMySqlConnectorLoggerProvider that adapts the existing logging framework, and install it by setting MySqlConnector.Logging.MySqlConnectorLogManager.Provider = provider;.
+The MySqlConnectorLogManager.Provider property may only be set once, and must be set before any other MySqlConnector library methods are called.
+Existing Logging Providers There are NuGet packages that adapt MySqlConnector logging for popular logging frameworks.</description>
+    </item>
+    
+    <item>
+      <title>Use with ORMs</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</guid>
+      <description> Use with ORMs This library is compatible with popular .NET ORMs including:
+ Dapper (GitHub, NuGet) NReco.Data (GitHub, NuGet) Paradigm ORM (GitHub, NuGet) ServiceStack.OrmLite (GitHub, NuGet) SimpleStack.Orm (GitHub, NuGet)  For Entity Framework support, use:
+ Pomelo.EntityFrameworkCore.MySql (GitHub, NuGet)  </description>
+    </item>
+    
+  </channel>
+</rss>

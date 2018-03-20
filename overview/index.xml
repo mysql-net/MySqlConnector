@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Overview on MySqlConnector: Async MySQL Driver for .NET and .NET Core</title>
+    <link>https://mysql-net.github.io/MySqlConnector/overview/</link>
+    <description>Recent content in Overview on MySqlConnector: Async MySQL Driver for .NET and .NET Core</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Sun, 16 Oct 2016 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://mysql-net.github.io/MySqlConnector/overview/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Installing</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/installing/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/installing/</guid>
+      <description>Installing The recommended way of installing MySqlConnector is through NuGet.
+Automatically If using the new project system, run: dotnet add package MySqlConnector
+Or, in Visual Studio, use the NuGet Package Manager to browse for and install MySqlConnector.
+Manually Step 1: Add MySqlConnector to the dependencies in your csproj file:
+&amp;lt;Project Sdk=&amp;quot;Microsoft.NET.Sdk&amp;quot;&amp;gt; &amp;lt;PropertyGroup&amp;gt; &amp;lt;AssemblyTitle&amp;gt;My Application&amp;lt;/AssemblyTitle&amp;gt; &amp;lt;Description&amp;gt;A great application&amp;lt;/Description&amp;gt; &amp;lt;OutputType&amp;gt;Exe&amp;lt;/OutputType&amp;gt; &amp;lt;TargetFramework&amp;gt;netcoreapp2.0&amp;lt;/TargetFramework&amp;gt; &amp;lt;/PropertyGroup&amp;gt; &amp;lt;ItemGroup&amp;gt; &amp;lt;PackageReference Include=&amp;quot;MySqlConnector&amp;quot; Version=&amp;quot;0.30.0&amp;quot; /&amp;gt; &amp;lt;/ItemGroup&amp;gt; &amp;lt;/Project&amp;gt;  Step 2: Run the command dotnet restore</description>
+    </item>
+    
+    <item>
+      <title>Known Issues</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/known-issues/</link>
+      <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/known-issues/</guid>
+      <description> Known Issues  Prepared statements are not supported: #397. MySQL spatial data types are not supported: #70. Some MySql.Data connection string settings are not supported by this library. See Connection Options for a list of supported options.  </description>
+    </item>
+    
+    <item>
+      <title>Version History</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/version-history/</link>
+      <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
+      <description>Version History 0.37.0  Support TLS 1.2 on Windows clients: #458.  Use the best TLS version supported by the OS, as per best practices.  Add ConnectionIdlePingTime connection string setting (Experimental): #461. Fix failure to log in for accounts with empty passwords that use caching_sha2_password. Throw MySqlException for invalid port number in connection string.  0.36.1  Reap connections more frequently if ConnectionIdleTimeout is low: #442. Fix ArgumentOutOfRangeException when command times out: #447.</description>
+    </item>
+    
+    <item>
+      <title>Configuration</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/configuration/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/configuration/</guid>
+      <description>Configuration MySqlConnector uses a connection string in order to connect to your database.
+To connect to a database on localhost port 3306 with a user mysqltest, password Password123, and default schema mysqldb, the connection string would be:
+host=127.0.0.1;port=3306;user id=mysqltest;password=Password123;database=mysqldb;
+For all connection string options, view the Connection Options Reference
+Application Database Object Example It&amp;rsquo;s a good idea to use an IDisposable object that configures the connection string globally, and closes the connection automatically:</description>
+    </item>
+    
+    <item>
+      <title>Logging</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/logging/</link>
+      <pubDate>Sat, 20 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/logging/</guid>
+      <description>Logging MySqlConnector implements a custom logging framework with the IMySqlConnectorLogger and IMySqlConnectorLoggerProvider interfaces. To connect MySqlConnector to an existing logging framework, write an implementation of IMySqlConnectorLoggerProvider that adapts the existing logging framework, and install it by setting MySqlConnector.Logging.MySqlConnectorLogManager.Provider = provider;.
+The MySqlConnectorLogManager.Provider property may only be set once, and must be set before any other MySqlConnector library methods are called.
+Existing Logging Providers There are NuGet packages that adapt MySqlConnector logging for popular logging frameworks.</description>
+    </item>
+    
+    <item>
+      <title>Use with ORMs</title>
+      <link>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</link>
+      <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</guid>
+      <description> Use with ORMs This library is compatible with popular .NET ORMs including:
+ Dapper (GitHub, NuGet) NReco.Data (GitHub, NuGet) Paradigm ORM (GitHub, NuGet) ServiceStack.OrmLite (GitHub, NuGet) SimpleStack.Orm (GitHub, NuGet)  For Entity Framework support, use:
+ Pomelo.EntityFrameworkCore.MySql (GitHub, NuGet)  </description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/tutorials/best-practices/</loc>
+    <lastmod>2017-11-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/home/</loc>
+    <lastmod>2017-11-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/installing/</loc>
+    <lastmod>2017-11-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/api/mysql-connection/</loc>
+    <lastmod>2017-11-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/known-issues/</loc>
+    <lastmod>2017-11-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/</loc>
+    <lastmod>2017-11-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/api/mysql-command/</loc>
+    <lastmod>2017-11-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/version-history/</loc>
+    <lastmod>2017-10-28T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/connection-options/</loc>
+    <lastmod>2017-11-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/api/mysql-data-reader/</loc>
+    <lastmod>2017-11-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/tutorials/net-core-mvc/</loc>
+    <lastmod>2017-10-21T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/configuration/</loc>
+    <lastmod>2016-10-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/api/mysql-transaction/</loc>
+    <lastmod>2016-10-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/logging/</loc>
+    <lastmod>2018-01-20T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/use-with-orms/</loc>
+    <lastmod>2017-11-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/api/</loc>
+    <lastmod>2017-11-06T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/groups/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/</loc>
+    <lastmod>2017-11-06T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/</loc>
+    <lastmod>2017-11-06T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/tags/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/tutorials/</loc>
+    <lastmod>2017-11-06T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+</urlset>
