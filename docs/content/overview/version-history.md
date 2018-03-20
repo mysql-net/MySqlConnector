@@ -11,6 +11,14 @@ weight: 30
 Version History
 ===============
 
+### 0.37.0
+
+* Support TLS 1.2 on Windows clients: [#458](https://github.com/mysql-net/MySqlConnector/pull/458).
+  * Use the best TLS version supported by the OS, as per [best practices](https://docs.microsoft.com/en-us/dotnet/framework/network-programming/tls).
+* Add `ConnectionIdlePingTime` connection string setting _(Experimental)_: [#461](https://github.com/mysql-net/MySqlConnector/pull/461).
+* Fix failure to log in for accounts with empty passwords that use `caching_sha2_password`.
+* Throw `MySqlException` for invalid port number in connection string.
+
 ### 0.36.1
 
 * Reap connections more frequently if `ConnectionIdleTimeout` is low: [#442](https://github.com/mysql-net/MySqlConnector/issues/442).
