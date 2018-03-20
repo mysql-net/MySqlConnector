@@ -426,6 +426,7 @@ namespace MySql.Data.MySqlClient
 		internal bool SslIsAuthenticated => m_session.SslIsAuthenticated;
 
 		internal bool SslIsMutuallyAuthenticated => m_session.SslIsMutuallyAuthenticated;
+		internal System.Security.Authentication.SslProtocols SslProtocol => m_session.SslProtocol;
 
 		internal SslProtocols SslProtocol => m_session.SslProtocol;
 

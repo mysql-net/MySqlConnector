@@ -903,14 +903,14 @@ namespace MySqlConnector.Core
 			{
 				if (ioBehavior == IOBehavior.Asynchronous)
 				{
-					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, cs.SslProtocols, checkCertificateRevocation).ConfigureAwait(false);
 				}
 				else
 				{
 #if NETSTANDARD1_3
-					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, cs.SslProtocols, checkCertificateRevocation).ConfigureAwait(false);
 #else
-					sslStream.AuthenticateAsClient(HostName, clientCertificates, sslProtocols, checkCertificateRevocation);
+					sslStream.AuthenticateAsClient(HostName, clientCertificates, cs.SslProtocols, checkCertificateRevocation);
 #endif
 				}
 				var sslByteHandler = new StreamByteHandler(sslStream);
@@ -1111,6 +1111,7 @@ namespace MySqlConnector.Core
 		internal bool SslIsAuthenticated => m_sslStream?.IsAuthenticated ?? false;
 
 		internal bool SslIsMutuallyAuthenticated => m_sslStream?.IsMutuallyAuthenticated ?? false;
+		internal SslProtocols SslProtocol => m_sslStream?.SslProtocol ?? SslProtocols.None;
 
 		internal SslProtocols SslProtocol => m_sslStream?.SslProtocol ?? SslProtocols.None;
 

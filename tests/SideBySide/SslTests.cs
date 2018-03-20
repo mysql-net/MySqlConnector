@@ -38,6 +38,23 @@ namespace SideBySide
 			}
 		}
 
+#if !BASELINE
+		[SkippableFact(ConfigSettings.RequiresSsl)]
+		public async Task ConnectTls1_0()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.SslMode = MySqlSslMode.Preferred;
+			csb.SslProtocols = System.Security.Authentication.SslProtocols.Tls;
+			csb.CertificateFile = null;
+			csb.CertificatePassword = null;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+				Assert.True(csb.SslProtocols.HasFlag(connection.SslProtocol));
+			}
+		}
+#endif
+
 		[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
 		[InlineData("ssl-client.pfx", null, null)]
 		[InlineData("ssl-client-pw-test.pfx", "test", null)]
