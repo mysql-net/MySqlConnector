@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Net.Sockets;
+using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlConnector.Core;
@@ -425,6 +426,8 @@ namespace MySql.Data.MySqlClient
 		internal bool SslIsAuthenticated => m_session.SslIsAuthenticated;
 
 		internal bool SslIsMutuallyAuthenticated => m_session.SslIsMutuallyAuthenticated;
+
+		internal SslProtocols SslProtocol => m_session.SslProtocol;
 
 		internal void SetState(ConnectionState newState)
 		{
