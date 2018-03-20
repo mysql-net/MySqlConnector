@@ -40,7 +40,7 @@ namespace MySqlConnector.Core
 
 			// Connection Pooling Options
 			Pooling = csb.Pooling;
-			ConnectionLifeTime = (int)csb.ConnectionLifeTime;
+			ConnectionLifeTime = Math.Min(csb.ConnectionLifeTime, uint.MaxValue / 1000) * 1000;
 			ConnectionReset = csb.ConnectionReset;
 			ConnectionIdleTimeout = (int)csb.ConnectionIdleTimeout;
 			if (csb.MinimumPoolSize > csb.MaximumPoolSize)
@@ -90,7 +90,7 @@ namespace MySqlConnector.Core
 
 		// Connection Pooling Options
 		public bool Pooling { get; }
-		public int ConnectionLifeTime { get; }
+		public uint ConnectionLifeTime { get; }
 		public bool ConnectionReset { get; }
 		public int ConnectionIdleTimeout { get; }
 		public int MinimumPoolSize { get; }

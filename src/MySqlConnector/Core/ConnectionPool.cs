@@ -130,7 +130,7 @@ namespace MySqlConnector.Core
 			if (session.DatabaseOverride != null)
 				return false;
 			if (ConnectionSettings.ConnectionLifeTime > 0
-			    && (DateTime.UtcNow - session.CreatedUtc).TotalSeconds >= ConnectionSettings.ConnectionLifeTime)
+			    && unchecked((uint) Environment.TickCount) - session.CreatedTicks >= ConnectionSettings.ConnectionLifeTime)
 				return false;
 
 			return true;
@@ -178,7 +178,7 @@ namespace MySqlConnector.Core
 		{
 			Log.Debug("{0} reaping connection pool", m_logArguments);
 			RecoverLeakedSessions();
-			await CleanPoolAsync(ioBehavior, session => (DateTime.UtcNow - session.LastReturnedUtc).TotalSeconds >= ConnectionSettings.ConnectionIdleTimeout, true, cancellationToken).ConfigureAwait(false);
+			await CleanPoolAsync(ioBehavior, session => (unchecked((uint) Environment.TickCount) - session.LastReturnedTicks) / 1000 >= ConnectionSettings.ConnectionIdleTimeout, true, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>
