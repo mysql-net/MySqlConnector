@@ -161,6 +161,19 @@
     <td>If <code>true</code>, the connection state is reset when it is retrieved from the pool. The default value of <code>true</code> ensures that the connection is in the same state whether it's newly created or retrieved from the pool. A value of <code>false</code> avoids making an additional server round trip when obtaining a connection, but the connection state is not reset, meaning that session variables and other session state changes from any previous use of the connection are carried over.</td>
   </tr>
   <tr>
+    <td>Connection Idle Ping Time, Connection Idle Ping Time <em>(Experimental)</em></td>
+    <td>0</td>
+    <td>When a connection is retrieved from the pool, and <code>ConnectionReset</code> is <code>false</code>, the server
+      will be pinged if the connection has been idle in the pool for longer than <code>ConnectionIdlePingTime</code> seconds.
+      If pinging the server fails, a new connection will be opened automatically by the connection pool. This ensures that the
+      <code>MySqlConnection</code> is in a valid, open state after the call to <code>Open</code>/<code>OpenAsync</code>,
+      at the cost of an extra server roundtrip. For high-performance scenarios, you may wish to set <code>ConnectionIdlePingTime</code>
+      to a non-zero value to make the connection pool assume that recently-returned connections are still open. If the
+      connection is broken, it will throw from the first call to <code>ExecuteNonQuery</code>, <code>ExecuteReader</code>,
+      etc.; your code should handle that failure and retry the connection. This option has no effect if <code>ConnectionReset</code>
+      is <code>true</code>, as that will cause a connection reset packet to be sent to the server, making ping redundant.
+  </tr>
+  <tr>
     <td>Connection Idle Timeout, ConnectionIdleTimeout</td>
     <td>180</td>
     <td>The amount of time (in seconds) that a connection can remain idle in the pool. Any connection above <code>MinimumPoolSize</code> connections that is idle for longer than <code>ConnectionIdleTimeout</code> is subject to being closed by a background task. The background task runs every minute, or half of <code>ConnectionIdleTimeout</code>, whichever is more frequent. A value of zero (0) means pooled connections will never incur a ConnectionIdleTimeout, and if the pool grows to its maximum size, it will never get smaller.</td>
