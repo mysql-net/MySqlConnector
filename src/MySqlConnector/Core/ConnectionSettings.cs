@@ -42,6 +42,7 @@ namespace MySqlConnector.Core
 			Pooling = csb.Pooling;
 			ConnectionLifeTime = Math.Min(csb.ConnectionLifeTime, uint.MaxValue / 1000) * 1000;
 			ConnectionReset = csb.ConnectionReset;
+			ConnectionIdlePingTime = Math.Min(csb.ConnectionIdlePingTime, uint.MaxValue / 1000) * 1000;
 			ConnectionIdleTimeout = (int)csb.ConnectionIdleTimeout;
 			if (csb.MinimumPoolSize > csb.MaximumPoolSize)
 				throw new MySqlException("MaximumPoolSize must be greater than or equal to MinimumPoolSize");
@@ -92,6 +93,7 @@ namespace MySqlConnector.Core
 		public bool Pooling { get; }
 		public uint ConnectionLifeTime { get; }
 		public bool ConnectionReset { get; }
+		public uint ConnectionIdlePingTime { get; }
 		public int ConnectionIdleTimeout { get; }
 		public int MinimumPoolSize { get; }
 		public int MaximumPoolSize { get; }

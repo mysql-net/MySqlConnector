@@ -29,6 +29,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal("", csb.Database);
 			Assert.Equal(30u, csb.DefaultCommandTimeout);
 #if !BASELINE
+			Assert.Equal(0u, csb.ConnectionIdlePingTime);
 			Assert.Equal(180u, csb.ConnectionIdleTimeout);
 			Assert.False(csb.ForceSynchronous);
 			Assert.Null(csb.CACertificateFile);
@@ -76,6 +77,7 @@ namespace MySqlConnector.Tests
 					"Convert Zero Datetime=true;" +
 					"default command timeout=123;" +
 #if !BASELINE
+					"connection idle ping time=60;" +
 					"connectionidletimeout=30;" +
 					"forcesynchronous=true;" +
 					"ca certificate file=ca.pem;" +
@@ -108,6 +110,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal("schema_name", csb.Database);
 			Assert.Equal(123u, csb.DefaultCommandTimeout);
 #if !BASELINE
+			Assert.Equal(60u, csb.ConnectionIdlePingTime);
 			Assert.Equal(30u, csb.ConnectionIdleTimeout);
 			Assert.True(csb.ForceSynchronous);
 			Assert.Equal("ca.pem", csb.CACertificateFile);

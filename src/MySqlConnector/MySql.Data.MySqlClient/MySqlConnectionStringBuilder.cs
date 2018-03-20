@@ -98,6 +98,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.ConnectionReset.SetValue(this, value);
 		}
 
+		public uint ConnectionIdlePingTime
+		{
+			get => MySqlConnectionStringOption.ConnectionIdlePingTime.GetValue(this);
+			set => MySqlConnectionStringOption.ConnectionIdlePingTime.SetValue(this, value);
+		}
+
 		public uint ConnectionIdleTimeout
 		{
 			get => MySqlConnectionStringOption.ConnectionIdleTimeout.GetValue(this);
@@ -270,6 +276,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<bool> Pooling;
 		public static readonly MySqlConnectionStringOption<uint> ConnectionLifeTime;
 		public static readonly MySqlConnectionStringOption<bool> ConnectionReset;
+		public static readonly MySqlConnectionStringOption<uint> ConnectionIdlePingTime;
 		public static readonly MySqlConnectionStringOption<uint> ConnectionIdleTimeout;
 		public static readonly MySqlConnectionStringOption<uint> MinimumPoolSize;
 		public static readonly MySqlConnectionStringOption<uint> MaximumPoolSize;
@@ -371,6 +378,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(ConnectionReset = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Connection Reset", "ConnectionReset" },
 				defaultValue: true));
+
+			AddOption(ConnectionIdlePingTime = new MySqlConnectionStringOption<uint>(
+				keys: new[] { "Connection Idle Ping Time", "ConnectionIdlePingTime" },
+				defaultValue: 0));
 
 			AddOption(ConnectionIdleTimeout = new MySqlConnectionStringOption<uint>(
 				keys: new[] { "Connection Idle Timeout", "ConnectionIdleTimeout" },
