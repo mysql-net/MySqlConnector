@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.37.1
+
+* Serialize enum parameter values as strings when `MySqlParameter.MySqlDbType` is set to `MySqlDbType.String` or `VarChar`: [#459](https://github.com/mysql-net/MySqlConnector/issues/459).
+* Require `ConnectionIdlePingTime` (added in 0.37.0) to be explicitly set to a non-zero value to avoid pinging the server.
+* Thanks to [Naragato](https://github.com/naragato) for contributions to this release.
+
 ### 0.37.0
 
 * Support TLS 1.2 on Windows clients: [#458](https://github.com/mysql-net/MySqlConnector/pull/458).
