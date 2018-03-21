@@ -249,6 +249,37 @@ create table insert_enum_value(rowid integer not null primary key auto_increment
 			Assert.Equal(Enum64.On, results[1].Enum64);
 		}
 
+		[Fact]
+		public async Task EnumParametersAreParsedCorrectly()
+		{
+			await m_database.Connection.ExecuteAsync(@"drop table if exists insert_enum_value2;
+create table insert_enum_value2(rowid integer not null primary key auto_increment, `Varchar` varchar(10), `String` varchar(10), `Int` int null);");
+
+			try
+			{
+				await m_database.Connection.OpenAsync();
+				using (var command = new MySqlCommand("INSERT INTO insert_enum_value2 (`Varchar`, `String`, `Int`) VALUES (@Varchar, @String, @Int);", m_database.Connection))
+				{
+
+					command.Parameters.Add(new MySqlParameter("@String", MySqlColor.Orange)).MySqlDbType = MySqlDbType.String;
+					command.Parameters.Add(new MySqlParameter("@Varchar", MySqlColor.Green)).MySqlDbType = MySqlDbType.VarChar;
+					command.Parameters.Add(new MySqlParameter("@Int", MySqlColor.None));
+
+					await command.ExecuteNonQueryAsync();
+					var result = (await m_database.Connection.QueryAsync<ColorEnumValues>(@"select `Varchar`, `String`, `Int` from insert_enum_value2;")).ToArray();
+					Assert.Single(result);
+					Assert.Equal(MySqlColor.Orange.ToString("G"), result[0].String);
+					Assert.Equal(MySqlColor.Green.ToString("G"), result[0].Varchar);
+					Assert.Equal((int) MySqlColor.None, result[0].Int);
+				}
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+
+		}
+
 		enum Enum16 : short
 		{
 			Off,
@@ -272,6 +303,12 @@ create table insert_enum_value(rowid integer not null primary key auto_increment
 			public DateTimeOffset? datetimeoffset1 { get; set; }
 		}
 
+		class ColorEnumValues
+		{
+			public string Varchar { get; set; }
+			public string String { get; set; }
+			public int Int { get; set; }
+		}
 
 		class EnumValues
 		{

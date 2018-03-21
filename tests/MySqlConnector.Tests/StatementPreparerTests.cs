@@ -31,6 +31,28 @@ namespace MySqlConnector.Tests
 		}
 
 		[Theory]
+		[InlineData(MySqlDbType.String, DummyEnum.FirstValue, "'FirstValue'")]
+		[InlineData(MySqlDbType.VarChar, DummyEnum.FirstValue, "'FirstValue'")]
+		[InlineData(null, DummyEnum.FirstValue, "0")]
+		public void EnumParametersAreParsedCorrectly(MySqlDbType? type, object value, string replacedValue)
+		{
+			const string sql = "SELECT @param";
+			var parameters = new MySqlParameterCollection();
+			var paramater = new MySqlParameter("@param", value);
+
+			if (type != null)
+			{
+				paramater.MySqlDbType = type.Value;
+			}
+
+			parameters.Add(paramater);
+			
+			var parsedSql = GetParsedSql(sql, parameters);
+			Assert.Equal(sql.Replace("@param", replacedValue), parsedSql);
+
+		}
+
+		[Theory]
 		[InlineData("SELECT '@param';")]
 		[InlineData("SELECT \"@param\";")]
 		[InlineData("SELECT `@param`;")]
