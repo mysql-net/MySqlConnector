@@ -303,7 +303,7 @@ namespace MySql.Data.MySqlClient
 			{
 				writer.WriteUtf8("{0}".FormatInvariant((ulong) Value));
 			}
-			else if (MySqlDbType == MySqlDbType.String || MySqlDbType == MySqlDbType.VarChar && HasSetDbType && Value is Enum)
+			else if ((MySqlDbType == MySqlDbType.String || MySqlDbType == MySqlDbType.VarChar) && HasSetDbType && Value is Enum)
 			{
 				writer.WriteUtf8("'{0:G}'".FormatInvariant(Value));
 			}
