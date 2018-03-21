@@ -56,6 +56,14 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-37-1">0.37.1</h3>
+
+<ul>
+<li>Serialize enum parameter values as strings when <code>MySqlParameter.MySqlDbType</code> is set to <code>MySqlDbType.String</code> or <code>VarChar</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/459">#459</a>.</li>
+<li>Require <code>ConnectionIdlePingTime</code> (added in 0.37.0) to be explicitly set to a non-zero value to avoid pinging the server.</li>
+<li>Thanks to <a href="https://github.com/naragato">Naragato</a> for contributions to this release.</li>
+</ul>
+
 <h3 id="0-37-0">0.37.0</h3>
 
 <ul>
