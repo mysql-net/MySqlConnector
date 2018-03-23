@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.RegularExpressions;
 using Serilog;
 using Serilog.Events;
@@ -7,20 +7,19 @@ namespace MySqlConnector.Logging
 {
     public sealed class SerilogLoggerProvider : IMySqlConnectorLoggerProvider
     {
-        public SerilogLoggerProvider(bool attemptProperties) => m_attemptProperties = attemptProperties;
+		public SerilogLoggerProvider() { }
 
         public IMySqlConnectorLogger CreateLogger(string name)
         {
-            return new SerilogLogger(name, m_attemptProperties);
+            return new SerilogLogger(name);
         }
 
         private class SerilogLogger : IMySqlConnectorLogger
         {
-            public SerilogLogger(string name, bool attemptProperties)
+            public SerilogLogger(string name)
             {
                 m_name = name;
                 m_logger = Serilog.Log.ForContext("SourceContext", "MySqlConnector." + name);
-                m_attemptProperties = attemptProperties;
             }
 
             public bool IsEnabled(MySqlConnectorLogLevel level) => m_logger.IsEnabled(GetLevel(level));
@@ -61,10 +60,8 @@ namespace MySqlConnector.Logging
             static readonly Regex tokenReplacer = new Regex(@"\{(\d+)\}", RegexOptions.Compiled);
             
             readonly ILogger m_logger;
-            readonly bool m_attemptProperties;
             readonly string m_name;
         }
 
-        readonly bool m_attemptProperties;
     }
 }
