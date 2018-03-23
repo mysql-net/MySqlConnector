@@ -259,5 +259,23 @@ namespace SideBySide
 			Assert.Equal(DbType.Double, parameter.DbType);
 			Assert.Equal(MySqlDbType.Double, parameter.MySqlDbType);
 		}
+
+		[Fact]
+		public void Precision()
+		{
+			IDbCommand command = new MySqlCommand();
+			IDbDataParameter parameter = command.CreateParameter();
+			parameter.Precision = 11;
+			Assert.Equal((byte) 11, parameter.Precision);
+		}
+
+		[Fact]
+		public void Scale()
+		{
+			IDbCommand command = new MySqlCommand();
+			IDbDataParameter parameter = command.CreateParameter();
+			parameter.Scale = 12;
+			Assert.Equal((byte) 12, parameter.Scale);
+		}
 	}
 }

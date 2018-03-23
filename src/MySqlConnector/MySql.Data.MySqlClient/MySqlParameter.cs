@@ -7,7 +7,7 @@ using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
 {
-	public sealed class MySqlParameter : DbParameter
+	public sealed class MySqlParameter : DbParameter, IDbDataParameter
 	{
 		public MySqlParameter()
 		{
@@ -54,10 +54,8 @@ namespace MySql.Data.MySqlClient
 			Direction = direction;
 			IsNullable = isNullable;
 #if NET45
-			if (precision != 0)
-				throw new PlatformNotSupportedException("'precision' parameter is not supported on .NET 4.5.");
-			if (scale != 0)
-				throw new PlatformNotSupportedException("'scale' parameter is not supported on .NET 4.5.");
+			((IDbDataParameter) this).Precision = precision;
+			((IDbDataParameter) this).Scale = scale;
 #else
 			Precision = precision;
 			Scale = scale;
@@ -105,7 +103,10 @@ namespace MySql.Data.MySqlClient
 
 		public override bool IsNullable { get; set; }
 
-#if !NET45
+#if NET45
+		byte IDbDataParameter.Precision { get; set; }
+		byte IDbDataParameter.Scale { get; set; }
+#else
 		public override byte Precision { get; set; }
 		public override byte Scale { get; set; }
 #endif
