@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net45;net46;netstandard1.3;netstandard2.0</TargetFrameworks>
+    <Title>MySqlConnector Logging Adapter for Serilog</Title>
+    <Description>Writes lightly-structured MySqlConnector logging output to Serilog.</Description>
+    <Copyright>Copyright 2017 Bradley Grainger</Copyright>
+    <Authors>Marc Lewandowski</Authors>
+    <PackageTags>mysql;mysqlconnector;async;ado.net;database;netcore;serilog;logging</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Serilog" Version="2.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MySqlConnector\MySqlConnector.csproj" />
+  </ItemGroup>
+
+</Project>
