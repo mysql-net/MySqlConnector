@@ -1,4 +1,5 @@
 using System.Data;
+using System.Data.Common;
 using MySql.Data.MySqlClient;
 using Xunit;
 
@@ -261,7 +262,7 @@ namespace SideBySide
 		}
 
 		[Fact]
-		public void Precision()
+		public void PrecisionViaInterface()
 		{
 			IDbCommand command = new MySqlCommand();
 			IDbDataParameter parameter = command.CreateParameter();
@@ -270,10 +271,28 @@ namespace SideBySide
 		}
 
 		[Fact]
-		public void Scale()
+		public void PrecisionViaBaseClass()
+		{
+			DbCommand command = new MySqlCommand();
+			DbParameter parameter = command.CreateParameter();
+			parameter.Precision = 11;
+			Assert.Equal((byte) 11, parameter.Precision);
+		}
+
+		[Fact]
+		public void ScaleViaInterface()
 		{
 			IDbCommand command = new MySqlCommand();
 			IDbDataParameter parameter = command.CreateParameter();
+			parameter.Scale = 12;
+			Assert.Equal((byte) 12, parameter.Scale);
+		}
+
+		[Fact]
+		public void ScaleViaBaseClass()
+		{
+			DbCommand command = new MySqlCommand();
+			DbParameter parameter = command.CreateParameter();
 			parameter.Scale = 12;
 			Assert.Equal((byte) 12, parameter.Scale);
 		}

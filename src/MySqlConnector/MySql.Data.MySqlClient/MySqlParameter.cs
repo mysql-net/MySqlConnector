@@ -53,13 +53,8 @@ namespace MySql.Data.MySqlClient
 		{
 			Direction = direction;
 			IsNullable = isNullable;
-#if NET45
-			((IDbDataParameter) this).Precision = precision;
-			((IDbDataParameter) this).Scale = scale;
-#else
 			Precision = precision;
 			Scale = scale;
-#endif
 			SourceVersion = sourceVersion;
 			Value = value;
 		}
@@ -104,12 +99,10 @@ namespace MySql.Data.MySqlClient
 		public override bool IsNullable { get; set; }
 
 #if NET45
-		byte IDbDataParameter.Precision { get; set; }
-		byte IDbDataParameter.Scale { get; set; }
-#else
-		public override byte Precision { get; set; }
-		public override byte Scale { get; set; }
+#pragma warning disable 109 // no existing member for 'new' to hide
 #endif
+		public new byte Precision { get; set; }
+		public new byte Scale { get; set; }
 
 		public override string ParameterName
 		{
