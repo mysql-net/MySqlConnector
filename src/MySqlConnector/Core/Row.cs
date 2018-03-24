@@ -112,7 +112,11 @@ namespace MySqlConnector.Core
 			return lengthToCopy;
 		}
 
-		public char GetChar(int ordinal) => (char) GetValue(ordinal);
+		public char GetChar(int ordinal)
+		{
+			var stringValue = (string) GetValue(ordinal);
+			return stringValue.Length > 0 ? stringValue[0] : throw new InvalidCastException();
+		}
 
 		public long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length)
 		{

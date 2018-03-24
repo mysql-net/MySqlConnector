@@ -348,6 +348,34 @@ namespace SideBySide
 		}
 
 		[Theory]
+		[InlineData("utf8", new[] {null, "", "ASCII", "Ũńıċōđĕ", c_251ByteString})]
+		[InlineData("cp1251", new[] { null, "", "ASCII", "АБВГабвг", c_251ByteString })]
+		public void QueryChar(string column, string[] expected)
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = $@"select `{column}` from datatypes_strings order by rowid;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					for (var i = 0; i < expected.Length; i++)
+					{
+						Assert.True(reader.Read());
+						if (expected[i] == null)
+							Assert.True(reader.IsDBNull(0));
+						else if (expected[i].Length == 0)
+#if BASELINE
+							Assert.Throws<IndexOutOfRangeException>(() => reader.GetChar(0));
+#else
+							Assert.Throws<InvalidCastException>(() => reader.GetChar(0));
+#endif
+						else
+							Assert.Equal(expected[i][0], reader.GetChar(0));
+					}
+				}
+			}
+		}
+
+		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
 		public void QueryBinaryGuid(bool oldGuids)
