@@ -90,13 +90,13 @@ namespace MySqlConnector.Core
 				m_state = State.CancelingQuery;
 			}
 
-			Log.Info("Session{0} will cancel CommandId {1} (CancelledAttempts={2}) CommandText: {3}", m_logArguments[0], command.CommandId, command.CancelAttemptCount, command.CommandText);
+			Log.Info("Session{0} will cancel CommandId: {1} (CancelledAttempts={2}) CommandText: {3}", m_logArguments[0], command.CommandId, command.CancelAttemptCount, command.CommandText);
 			return true;
 		}
 
 		public void DoCancel(MySqlCommand commandToCancel, MySqlCommand killCommand)
 		{
-			Log.Info("Session{0} canceling CommandId {1}: CommandText {2}", m_logArguments[0], commandToCancel.CommandId, commandToCancel.CommandText);
+			Log.Info("Session{0} canceling CommandId {1}: CommandText: {2}", m_logArguments[0], commandToCancel.CommandId, commandToCancel.CommandText);
 			lock (m_lock)
 			{
 				if (m_activeCommandId != commandToCancel.CommandId)
@@ -129,7 +129,7 @@ namespace MySqlConnector.Core
 				if (m_state == State.Querying || m_state == State.CancelingQuery)
 				{
 					m_logArguments[1] = m_state;
-					Log.Error("Session{0} can't execute new command when in CommandState {1}: CommandText: {2}", m_logArguments[0], m_state, command.CommandText);
+					Log.Error("Session{0} can't execute new command when in SessionState: {1}: CommandText: {2}", m_logArguments[0], m_state, command.CommandText);
 					throw new InvalidOperationException("There is already an open DataReader associated with this Connection which must be closed first.");
 				}
 
@@ -143,7 +143,7 @@ namespace MySqlConnector.Core
 		public void FinishQuerying()
 		{
 			m_logArguments[1] = m_state;
-			Log.Debug("Session{0} entering FinishQuerying; CommandState = {1}", m_logArguments);
+			Log.Debug("Session{0} entering FinishQuerying; SessionState = {1}", m_logArguments);
 			bool clearConnection = false;
 			lock (m_lock)
 			{
@@ -159,7 +159,7 @@ namespace MySqlConnector.Core
 				// KILL QUERY will kill a subsequent query if the command it was intended to cancel has already completed.
 				// In order to handle this case, we issue a dummy query that will consume the pending cancellation.
 				// See https://bugs.mysql.com/bug.php?id=45679
-				Log.Info("Session{0} sending 'DO SLEEP(0)' command to clear pending cancellation", m_logArguments[0]);
+				Log.Info("Session{0} sending 'DO SLEEP(0)' command to clear pending cancellation", m_logArguments);
 				var payload = QueryPayload.Create("DO SLEEP(0);");
 				SendAsync(payload, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 				payload = ReceiveReplyAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -266,10 +266,10 @@ namespace MySqlConnector.Core
 					else
 						authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" : "mysql_native_password";
 					m_logArguments[1] = authPluginName;
-					Log.Debug("Session{0} server sent auth_plugin_name '{1}'", m_logArguments);
+					Log.Debug("Session{0} server sent AuthPluginName={1}", m_logArguments);
 					if (authPluginName != "mysql_native_password" && authPluginName != "sha256_password" && authPluginName != "caching_sha2_password")
 					{
-						Log.Error("Session{0} unsupported authentication method auth_plugin_name'{1}'", m_logArguments);
+						Log.Error("Session{0} unsupported authentication method AuthPluginName={1}", m_logArguments);
 						throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(initialHandshake.AuthPluginName));
 					}
 
@@ -442,7 +442,7 @@ namespace MySqlConnector.Core
 				if (!m_isSecureConnection && cs.Password.Length > 1)
 				{
 #if NET45
-					Log.Error("Session{0} can't use AuthenticationMethod {1} without secure connection on .NET 4.5", m_logArguments);
+					Log.Error("Session{0} can't use AuthenticationMethod '{1}' without secure connection on .NET 4.5", m_logArguments);
 					throw new MySqlException("Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
 #else
 					var publicKey = await GetRsaPublicKeyAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
