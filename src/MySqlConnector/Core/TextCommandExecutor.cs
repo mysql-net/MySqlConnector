@@ -61,7 +61,7 @@ namespace MySqlConnector.Core
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			if (Log.IsDebugEnabled())
-				Log.Debug("Session{0} Execute{1}: {2}", m_command.Connection.Session.Id, ioBehavior == IOBehavior.Asynchronous ? "Async" : "", commandText);
+				Log.Debug("Session{0} ExecuteBehavior {1} CommandText: {2}", m_command.Connection.Session.Id, ioBehavior, commandText);
 			var payload = CreateQueryPayload(commandText, parameterCollection);
 			using (m_command.RegisterCancel(cancellationToken))
 			{
