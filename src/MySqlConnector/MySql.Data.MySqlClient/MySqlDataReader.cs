@@ -207,6 +207,7 @@ namespace MySql.Data.MySqlClient
 
 		public override string GetDataTypeName(int ordinal) => GetResultSet().GetDataTypeName(ordinal);
 
+		public Type GetFieldType(string name) => GetFieldType(GetOrdinal(name));
 		public override Type GetFieldType(int ordinal) => GetResultSet().GetFieldType(ordinal);
 
 		public override object GetValue(int ordinal) => GetResultSet().GetCurrentRow().GetValue(ordinal);

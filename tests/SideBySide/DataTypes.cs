@@ -1013,6 +1013,7 @@ create table schema_table({createColumn});");
 							{
 								Assert.Equal(value, reader.GetValue(0));
 								Assert.Equal(value.GetType(), reader.GetFieldType(0));
+								Assert.Equal(value.GetType(), reader.GetFieldType(column.Replace("`", "")));
 							}
 
 							// test `reader.GetFieldValue<value.GetType()>`
