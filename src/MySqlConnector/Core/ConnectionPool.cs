@@ -43,10 +43,10 @@ namespace MySqlConnector.Core
 			else
 				m_sessionSemaphore.Wait(cancellationToken);
 
+			ServerSession session = null;
 			try
 			{
 				// check for a waiting session
-				ServerSession session = null;
 				lock (m_sessions)
 				{
 					if (m_sessions.Count > 0)
@@ -121,8 +121,22 @@ namespace MySqlConnector.Core
 					Log.Debug("Pool{0} returning new Session{1} to caller; LeasedSessionsCount={2}", m_logArguments[0], session.Id, leasedSessionsCountNew);
 				return session;
 			}
-			catch
+			catch (Exception ex)
 			{
+				if (session != null)
+				{
+					try
+					{
+						Log.Debug(ex, "Pool{0} disposing created Session{1} due to exception: {2}", m_logArguments[0], session.Id, ex.Message);
+						AdjustHostConnectionCount(session, -1);
+						await session.DisposeAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+					}
+					catch (Exception unexpectedException)
+					{
+						Log.Error(unexpectedException, "Pool{0} unexpected error in GetSessionAsync: {1}", m_logArguments[0], unexpectedException.Message);
+					}
+				}
+
 				m_sessionSemaphore.Release();
 				throw;
 			}
