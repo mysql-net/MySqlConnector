@@ -397,11 +397,14 @@ namespace MySqlConnector.Core
 			var newPool = new ConnectionPool(connectionSettings);
 			pool = s_pools.GetOrAdd(normalizedConnectionString, newPool);
 
-			// if we won the race to create the new pool, also store it under the original connection string
-			if (pool == newPool && connectionString != normalizedConnectionString)
+			if (pool == newPool)
 			{
-				s_pools.GetOrAdd(connectionString, pool);
 				s_mruCache = new ConnectionStringPool(connectionString, pool);
+				pool.StartReaperTask();
+
+				// if we won the race to create the new pool, also store it under the original connection string
+				if (connectionString != normalizedConnectionString)
+					s_pools.GetOrAdd(connectionString, pool);
 			}
 			else if (pool != newPool && Log.IsInfoEnabled())
 			{
@@ -455,10 +458,13 @@ namespace MySqlConnector.Core
 			m_logArguments = new object[] { "{0}".FormatInvariant(Id) };
 			if (Log.IsInfoEnabled())
 				Log.Info("Pool{0} creating new connection pool for ConnectionString: {1}", m_logArguments[0], cs.ConnectionStringBuilder.GetConnectionString(includePassword: false));
+		}
 
-			if (cs.ConnectionIdleTimeout > 0)
+		private void StartReaperTask()
+		{
+			if (ConnectionSettings.ConnectionIdleTimeout > 0)
 			{
-				var reaperInterval = TimeSpan.FromSeconds(Math.Max(1, Math.Min(60, cs.ConnectionIdleTimeout / 2)));
+				var reaperInterval = TimeSpan.FromSeconds(Math.Max(1, Math.Min(60, ConnectionSettings.ConnectionIdleTimeout / 2)));
 				m_reaperTask = Task.Run(async () =>
 				{
 					while (true)
@@ -527,7 +533,7 @@ namespace MySqlConnector.Core
 		readonly ILoadBalancer m_loadBalancer;
 		readonly Dictionary<string, int> m_hostSessions;
 		readonly object[] m_logArguments;
-		readonly Task m_reaperTask;
+		Task m_reaperTask;
 		uint m_lastRecoveryTime;
 		int m_lastSessionId;
 		Dictionary<string, CachedProcedure> m_procedureCache;
