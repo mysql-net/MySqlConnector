@@ -38,7 +38,7 @@ Manually Step 1: Add MySqlConnector to the dependencies in your csproj file:
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.37.1  Serialize enum parameter values as strings when MySqlParameter.MySqlDbType is set to MySqlDbType.String or VarChar: #459. Require ConnectionIdlePingTime (added in 0.37.0) to be explicitly set to a non-zero value to avoid pinging the server. Thanks to Naragato for contributions to this release.  0.37.0  Support TLS 1.2 on Windows clients: #458.  Use the best TLS version supported by the OS, as per best practices.  Add ConnectionIdlePingTime connection string setting (Experimental): #461.</description>
+      <description>Version History 0.38.0  Add Serilog logging provider: #463. Implement IDbDataParameter on MySqlParameter: #465. Implement MySqlDataReader.GetChar: #456. Add MySqlDataReader.GetFieldType(string) overload: #440. Fix a connection pooling session leak in high contention scenarios: #469. Fix overhead of extra connection pools created in a race: #468. Thanks to Marc Lewandowski for contributions to this release.  0.37.1  Serialize enum parameter values as strings when MySqlParameter.MySqlDbType is set to MySqlDbType.String or VarChar: #459.</description>
     </item>
     
     <item>
