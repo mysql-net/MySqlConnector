@@ -14,12 +14,13 @@ Version History
 ### 0.38.0
 
 * Add Serilog logging provider: [#463](https://github.com/mysql-net/MySqlConnector/issues/463).
+* Add NLog logging provider: [#470](https://github.com/mysql-net/MySqlConnector/pull/470).
 * Implement `IDbDataParameter` on `MySqlParameter`: [#465](https://github.com/mysql-net/MySqlConnector/issues/465).
 * Implement `MySqlDataReader.GetChar`: [#456](https://github.com/mysql-net/MySqlConnector/issues/456).
 * Add `MySqlDataReader.GetFieldType(string)` overload: [#440](https://github.com/mysql-net/MySqlConnector/issues/440).
 * Fix a connection pooling session leak in high contention scenarios: [#469](https://github.com/mysql-net/MySqlConnector/issues/469).
 * Fix overhead of extra connection pools created in a race: [#468](https://github.com/mysql-net/MySqlConnector/issues/468).
-* Thanks to [Marc Lewandowski](https://github.com/marcrocny) for contributions to this release.
+* Thanks to [Marc Lewandowski](https://github.com/marcrocny) and [Rolf Kristensen](https://github.com/snakefoot) for contributions to this release.
 
 ### 0.37.1
 
