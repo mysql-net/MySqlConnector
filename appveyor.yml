@@ -14,6 +14,7 @@ after_test:
     dotnet pack src\MySqlConnector\MySqlConnector.csproj -c Release -p:SourceLinkCreate=true -p:SourceLinkTest=true
     dotnet pack src\MySqlConnector.Logging.log4net\MySqlConnector.Logging.log4net.csproj -c Release -p:SourceLinkCreate=true -p:SourceLinkTest=true
     dotnet pack src\MySqlConnector.Logging.Microsoft.Extensions.Logging\MySqlConnector.Logging.Microsoft.Extensions.Logging.csproj -c Release -p:SourceLinkCreate=true -p:SourceLinkTest=true
+    dotnet pack src\MySqlConnector.Logging.NLog\MySqlConnector.Logging.NLog.csproj -c Release -p:SourceLinkCreate=true -p:SourceLinkTest=true
     dotnet pack src\MySqlConnector.Logging.Serilog\MySqlConnector.Logging.Serilog.csproj -c Release -p:SourceLinkCreate=true -p:SourceLinkTest=true
 notifications:
 - provider: Slack
