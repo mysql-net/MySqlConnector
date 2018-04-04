@@ -119,7 +119,8 @@ object to be created. See <a href="https://github.com/mysql-net/MySqlConnector/i
 
 <p>Connector/NET allows a command to be executed even when <code>MySqlCommand.Transaction</code> references a commited, rolled back, or
 disposed <code>MySqlTransaction</code>. MySqlConnector will throw an <code>InvalidOperationException</code> if the <code>MySqlCommand.Transaction</code>
-property doesn&rsquo;t reference the active transaction. See <a href="https://github.com/mysql-net/MySqlConnector/issues/333">#333</a> for more details.</p>
+property doesn&rsquo;t reference the active transaction. To disable this strict validation, set <code>IgnoreCommandTransaction=true</code>
+in the connection string. See <a href="https://github.com/mysql-net/MySqlConnector/issues/474">Issue 474</a> for more details.</p>
 
 <h3 id="exceptions">Exceptions</h3>
 
@@ -150,7 +151,7 @@ for various precondition checks that indicate misuse of the API (and not a probl
 <li><a href="https://bugs.mysql.com/bug.php?id=81650">#81650</a>, <a href="https://bugs.mysql.com/bug.php?id=88962">#88962</a>: <code>Server</code> connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=83329">#83229</a>: &ldquo;Unknown command&rdquo; exception inserting large blob with UseCompression=True</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=84220">#84220</a>: Cannot call a stored procedure with <code>.</code> in its name</li>
-<li><a href="https://bugs.mysql.com/bug.php?id=84701">#84701</a>: Can&rsquo;t create a paramter using a 64-bit enum with a value greater than int.MaxValue</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=84701">#84701</a>: Can&rsquo;t create a parameter using a 64-bit enum with a value greater than int.MaxValue</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=85185">#85185</a>: <code>ConnectionReset=True</code> does not preserve connection charset</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=86263">#86263</a>: Transaction isolation level affects all transactions in session</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=87307">#87307</a>: NextResult hangs instead of timing out</li>
