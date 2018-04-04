@@ -19,7 +19,7 @@ MySqlConnector has some different default connection string options:
   <thead>
     <th style="width:20%">Option</th>
     <th style="width:20%">MySqlConnector</th>
-    <th style="width:20%">Oracle's Connector/NET</th>
+    <th style="width:20%">Oracle’s Connector/NET</th>
     <th style="width:40%">Notes</th>
   </thead>
   <tr>
@@ -27,13 +27,19 @@ MySqlConnector has some different default connection string options:
     <td>Default is <code>false</code></td>
     <td>(not configurable)</td>
     <td>When using <code>sha256_password</code> authentication, this option allows the RSA public key to be retrieved from the server
-    (when not using a secure connection). It's <code>false</code> by default to avoid disclosing the password to a malicious proxy.</td>
+    (when not using a secure connection). It’s <code>false</code> by default to avoid disclosing the password to a malicious proxy.</td>
   </tr>
   <tr>
     <td><code>ConnectionReset</code></td>
     <td>Default is <code>true</code></td>
     <td>Default is <code>false</code></td>
     <td>MySqlConnector always resets pooled connections by default so that the connection is in a known state. This fixes <a href="https://bugs.mysql.com/bug.php?id=77421">MySQL Bug 77421</a>.</td>
+  </tr>
+  <tr>
+    <td><code>IgnoreCommandTransaction</code></td>
+    <td>Default is <code>false</code></td>
+    <td>(not configurable, effective default is <code>true</code>)</td>
+    <td>See remarks under <a href="#mysqlcommand">MySqlCommand</a> below.</td>
   </tr>
   <tr>
     <td><code>LoadBalance</code></td>
@@ -45,7 +51,7 @@ MySqlConnector has some different default connection string options:
     <td><code>ServerRSAPublicKeyFile</code></td>
     <td>(no default)</td>
     <td>(not configurable)</td>
-    <td>Specify a file containing the server's RSA public key to allow <code>sha256_password</code> authentication over an insecure connection.</td>
+    <td>Specify a file containing the server’s RSA public key to allow <code>sha256_password</code> authentication over an insecure connection.</td>
   </tr>
   <tr>
     <td><code>UseAffectedRows</code></td>
@@ -74,7 +80,8 @@ object to be created. See [#331](https://github.com/mysql-net/MySqlConnector/iss
 
 Connector/NET allows a command to be executed even when `MySqlCommand.Transaction` references a commited, rolled back, or
 disposed `MySqlTransaction`. MySqlConnector will throw an `InvalidOperationException` if the `MySqlCommand.Transaction`
-property doesn't reference the active transaction. To disable this strict validation, set <code>IgnoreCommandTransaction=true</code>
+property doesn’t reference the active transaction. This fixes <a href="https://bugs.mysql.com/bug.php?id=88611">MySQL Bug 88611</a>.
+To disable this strict validation, set <code>IgnoreCommandTransaction=true</code>
 in the connection string. See [Issue 474](https://github.com/mysql-net/MySqlConnector/issues/474) for more details.
 
 ### Exceptions
@@ -87,14 +94,14 @@ for various precondition checks that indicate misuse of the API (and not a probl
 The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 
 * [#37283](https://bugs.mysql.com/bug.php?id=37283), [#70587](https://bugs.mysql.com/bug.php?id=70587): Distributed transactions are not supported
-* [#50773](https://bugs.mysql.com/bug.php?id=50773): Can't use multiple connections within one TransactionScope
+* [#50773](https://bugs.mysql.com/bug.php?id=50773): Can’t use multiple connections within one TransactionScope
 * [#61477](https://bugs.mysql.com/bug.php?id=61477): `ColumnOrdinal` in schema table is 1-based
 * [#66476](https://bugs.mysql.com/bug.php?id=66476): Connection pool uses queue instead of stack
 * [#70111](https://bugs.mysql.com/bug.php?id=70111): `Async` methods execute synchronously
 * [#70686](https://bugs.mysql.com/bug.php?id=70686): `TIME(3)` and `TIME(6)` fields serialize milliseconds incorrectly
 * [#72494](https://bugs.mysql.com/bug.php?id=72494), [#83330](https://bugs.mysql.com/bug.php?id=83330): EndOfStreamException inserting large blob with UseCompression=True
 * [#73610](https://bugs.mysql.com/bug.php?id=73610): Invalid password exception has wrong number
-* [#73788](https://bugs.mysql.com/bug.php?id=73788): Can't use `DateTimeOffset`
+* [#73788](https://bugs.mysql.com/bug.php?id=73788): Can’t use `DateTimeOffset`
 * [#75604](https://bugs.mysql.com/bug.php?id=75604): Crash after 29.4 days of uptime
 * [#75917](https://bugs.mysql.com/bug.php?id=75917), [#76597](https://bugs.mysql.com/bug.php?id=76597), [#77691](https://bugs.mysql.com/bug.php?id=77691), [#78650](https://bugs.mysql.com/bug.php?id=78650), [#78919](https://bugs.mysql.com/bug.php?id=78919), [#80921](https://bugs.mysql.com/bug.php?id=80921), [#82136](https://bugs.mysql.com/bug.php?id=82136): "Reading from the stream has failed" when connecting to a server
 * [#77421](https://bugs.mysql.com/bug.php?id=77421): Connection is not reset when pulled from the connection pool
@@ -105,7 +112,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 * [#81650](https://bugs.mysql.com/bug.php?id=81650), [#88962](https://bugs.mysql.com/bug.php?id=88962): `Server` connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds
 * [#83229](https://bugs.mysql.com/bug.php?id=83329): "Unknown command" exception inserting large blob with UseCompression=True
 * [#84220](https://bugs.mysql.com/bug.php?id=84220): Cannot call a stored procedure with `.` in its name
-* [#84701](https://bugs.mysql.com/bug.php?id=84701): Can't create a parameter using a 64-bit enum with a value greater than int.MaxValue
+* [#84701](https://bugs.mysql.com/bug.php?id=84701): Can’t create a parameter using a 64-bit enum with a value greater than int.MaxValue
 * [#85185](https://bugs.mysql.com/bug.php?id=85185): `ConnectionReset=True` does not preserve connection charset
 * [#86263](https://bugs.mysql.com/bug.php?id=86263): Transaction isolation level affects all transactions in session
 * [#87307](https://bugs.mysql.com/bug.php?id=87307): NextResult hangs instead of timing out
@@ -113,7 +120,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 * [#87868](https://bugs.mysql.com/bug.php?id=87868): `ColumnSize` in schema table is incorrect for `CHAR(36)` and `BLOB` columns
 * [#87876](https://bugs.mysql.com/bug.php?id=87876): `IsLong` is schema table is incorrect for `LONGTEXT` and `LONGBLOB` columns
 * [#88058](https://bugs.mysql.com/bug.php?id=88058): `decimal(n, 0)` has wrong `NumericPrecision`
-* [#88124](https://bugs.mysql.com/bug.php?id=88124): CommandTimeout isn't reset when calling Read/NextResult
+* [#88124](https://bugs.mysql.com/bug.php?id=88124): CommandTimeout isn’t reset when calling Read/NextResult
 * [#88611](https://bugs.mysql.com/bug.php?id=88611): `MySqlCommand` can be executed even if it has "wrong" transaction
 * [#89085](https://bugs.mysql.com/bug.php?id=89085): `MySqlConnection.Database` not updated after `USE database;`
 * [#89159](https://bugs.mysql.com/bug.php?id=89159): `MySqlDataReader` cannot outlive `MySqlCommand`
