@@ -57,6 +57,7 @@ namespace MySqlConnector.Core
 			ConvertZeroDateTime = csb.ConvertZeroDateTime;
 			DefaultCommandTimeout = (int) csb.DefaultCommandTimeout;
 			ForceSynchronous = csb.ForceSynchronous;
+			IgnoreCommandTransaction = csb.IgnoreCommandTransaction;
 			Keepalive = csb.Keepalive;
 			OldGuids = csb.OldGuids;
 			PersistSecurityInfo = csb.PersistSecurityInfo;
@@ -106,6 +107,7 @@ namespace MySqlConnector.Core
 		public bool ConvertZeroDateTime { get; }
 		public int DefaultCommandTimeout { get; }
 		public bool ForceSynchronous { get; }
+		public bool IgnoreCommandTransaction { get; }
 		public uint Keepalive { get; }
 		public bool OldGuids { get; }
 		public bool PersistSecurityInfo { get; }

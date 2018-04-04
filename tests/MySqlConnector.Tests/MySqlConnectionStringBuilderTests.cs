@@ -32,6 +32,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal(0u, csb.ConnectionIdlePingTime);
 			Assert.Equal(180u, csb.ConnectionIdleTimeout);
 			Assert.False(csb.ForceSynchronous);
+			Assert.False(csb.IgnoreCommandTransaction);
 			Assert.Null(csb.CACertificateFile);
 			Assert.Equal(MySqlLoadBalance.RoundRobin, csb.LoadBalance);
 #endif
@@ -80,6 +81,7 @@ namespace MySqlConnector.Tests
 					"connection idle ping time=60;" +
 					"connectionidletimeout=30;" +
 					"forcesynchronous=true;" +
+					"ignore command transaction=true;" +
 					"ca certificate file=ca.pem;" +
 					"allow public key retrieval = true;" +
 					"server rsa public key file=rsa.pem;" +
@@ -113,6 +115,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal(60u, csb.ConnectionIdlePingTime);
 			Assert.Equal(30u, csb.ConnectionIdleTimeout);
 			Assert.True(csb.ForceSynchronous);
+			Assert.True(csb.IgnoreCommandTransaction);
 			Assert.Equal("ca.pem", csb.CACertificateFile);
 			Assert.True(csb.AllowPublicKeyRetrieval);
 			Assert.Equal("rsa.pem", csb.ServerRsaPublicKeyFile);

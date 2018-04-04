@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
@@ -89,16 +89,6 @@ namespace SideBySide
 			}
 			var results = m_connection.Query<int>(@"select value from transactions_test order by value;");
 			Assert.Equal(new int[0], results);
-		}
-
-		[Fact]
-		public void CommandTransactionIsNull()
-		{
-			using (var trans = m_connection.BeginTransaction())
-			using (var cmd = m_connection.CreateCommand())
-			{
-				Assert.Null(cmd.Transaction);
-			}
 		}
 
 		readonly TransactionFixture m_database;

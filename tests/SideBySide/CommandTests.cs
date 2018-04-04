@@ -23,6 +23,20 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void CreateCommandDoesNotSetTransaction()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using (connection.BeginTransaction())
+				using (var cmd = connection.CreateCommand())
+				{
+					Assert.Null(cmd.Transaction);
+				}
+			}
+		}
+
+		[Fact]
 		public void ExecuteReaderRequiresConnection()
 		{
 			using (var command = new MySqlCommand())
@@ -85,6 +99,89 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 				Assert.Equal(2, await connection.ExecuteAsync("delete from execute_non_query where value is null;"));
 				Assert.Equal(1, await connection.ExecuteAsync("update execute_non_query set value = 'three' where value = 'one';"));
 			}
+		}
+
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=88611")]
+		public void CommandTransactionMustBeSet()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using (var transaction = connection.BeginTransaction())
+				using (var command = connection.CreateCommand())
+				{
+					command.CommandText = "SELECT 1;";
+					Assert.Throws<InvalidOperationException>(() => command.ExecuteScalar());
+
+					command.Transaction = transaction;
+					Assert.Equal(1L, command.ExecuteScalar());
+				}
+			}
+		}
+
+		[Fact]
+		public void IgnoreCommandTransactionIgnoresNull()
+		{
+			using (var connection = new MySqlConnection(GetIgnoreCommandTransactionConnectionString()))
+			{
+				connection.Open();
+				using (connection.BeginTransaction())
+				using (var command = connection.CreateCommand())
+				{
+					command.CommandText = "SELECT 1;";
+					Assert.Equal(1L, command.ExecuteScalar());
+				}
+			}
+		}
+
+		[Fact]
+		public void IgnoreCommandTransactionIgnoresDisposedTransaction()
+		{
+			using (var connection = new MySqlConnection(GetIgnoreCommandTransactionConnectionString()))
+			{
+				connection.Open();
+
+				var transaction = connection.BeginTransaction();
+				transaction.Commit();
+				transaction.Dispose();
+
+				using (var command = connection.CreateCommand())
+				{
+					command.CommandText = "SELECT 1;";
+					command.Transaction = transaction;
+					Assert.Equal(1L, command.ExecuteScalar());
+				}
+			}
+		}
+
+		[Fact]
+		public void IgnoreCommandTransactionIgnoresDifferentTransaction()
+		{
+			using (var connection1 = new MySqlConnection(AppConfig.ConnectionString))
+			using (var connection2 = new MySqlConnection(GetIgnoreCommandTransactionConnectionString()))
+			{
+				connection1.Open();
+				connection2.Open();
+				using (var transaction1 = connection1.BeginTransaction())
+				using (var command2 = connection2.CreateCommand())
+				{
+					command2.Transaction = transaction1;
+					command2.CommandText = "SELECT 1;";
+					Assert.Equal(1L, command2.ExecuteScalar());
+				}
+			}
+		}
+
+		private static string GetIgnoreCommandTransactionConnectionString()
+		{
+#if BASELINE
+			return AppConfig.ConnectionString;
+#else
+			return new MySqlConnectionStringBuilder(AppConfig.ConnectionString)
+			{
+				IgnoreCommandTransaction = true
+			}.ConnectionString;
+#endif
 		}
 
 		readonly DatabaseFixture m_database;

@@ -349,6 +349,7 @@ namespace MySql.Data.MySqlClient
 		internal bool AllowUserVariables => m_connectionSettings.AllowUserVariables;
 		internal bool ConvertZeroDateTime => m_connectionSettings.ConvertZeroDateTime;
 		internal int DefaultCommandTimeout => GetConnectionSettings().DefaultCommandTimeout;
+		internal bool IgnoreCommandTransaction => m_connectionSettings.IgnoreCommandTransaction;
 		internal bool OldGuids => m_connectionSettings.OldGuids;
 		internal bool TreatTinyAsBoolean => m_connectionSettings.TreatTinyAsBoolean;
 		internal IOBehavior AsyncIOBehavior => GetConnectionSettings().ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;

@@ -261,8 +261,8 @@ namespace MySql.Data.MySqlClient
 				exception = new InvalidOperationException("Connection property must be non-null.");
 			else if (Connection.State != ConnectionState.Open && Connection.State != ConnectionState.Connecting)
 				exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
-			else if (Transaction != Connection.CurrentTransaction)
-				exception = new InvalidOperationException("The transaction associated with this command is not the connection's active transaction.");
+			else if (!Connection.IgnoreCommandTransaction && Transaction != Connection.CurrentTransaction)
+				exception = new InvalidOperationException("The transaction associated with this command is not the connection's active transaction; see https://github.com/mysql-net/MySqlConnector/issues/474");
 			else if (string.IsNullOrWhiteSpace(CommandText))
 				exception = new InvalidOperationException("CommandText must be specified");
 			return exception == null;

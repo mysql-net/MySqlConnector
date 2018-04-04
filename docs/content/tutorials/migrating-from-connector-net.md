@@ -74,7 +74,8 @@ object to be created. See [#331](https://github.com/mysql-net/MySqlConnector/iss
 
 Connector/NET allows a command to be executed even when `MySqlCommand.Transaction` references a commited, rolled back, or
 disposed `MySqlTransaction`. MySqlConnector will throw an `InvalidOperationException` if the `MySqlCommand.Transaction`
-property doesn't reference the active transaction. See [#333](https://github.com/mysql-net/MySqlConnector/issues/333) for more details.
+property doesn't reference the active transaction. To disable this strict validation, set <code>IgnoreCommandTransaction=true</code>
+in the connection string. See [Issue 474](https://github.com/mysql-net/MySqlConnector/issues/474) for more details.
 
 ### Exceptions
 
@@ -104,7 +105,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 * [#81650](https://bugs.mysql.com/bug.php?id=81650), [#88962](https://bugs.mysql.com/bug.php?id=88962): `Server` connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds
 * [#83229](https://bugs.mysql.com/bug.php?id=83329): "Unknown command" exception inserting large blob with UseCompression=True
 * [#84220](https://bugs.mysql.com/bug.php?id=84220): Cannot call a stored procedure with `.` in its name
-* [#84701](https://bugs.mysql.com/bug.php?id=84701): Can't create a paramter using a 64-bit enum with a value greater than int.MaxValue
+* [#84701](https://bugs.mysql.com/bug.php?id=84701): Can't create a parameter using a 64-bit enum with a value greater than int.MaxValue
 * [#85185](https://bugs.mysql.com/bug.php?id=85185): `ConnectionReset=True` does not preserve connection charset
 * [#86263](https://bugs.mysql.com/bug.php?id=86263): Transaction isolation level affects all transactions in session
 * [#87307](https://bugs.mysql.com/bug.php?id=87307): NextResult hangs instead of timing out

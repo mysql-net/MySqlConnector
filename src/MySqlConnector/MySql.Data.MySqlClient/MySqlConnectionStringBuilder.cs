@@ -171,6 +171,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.ForceSynchronous.SetValue(this, value);
 		}
 
+		public bool IgnoreCommandTransaction
+		{
+			get => MySqlConnectionStringOption.IgnoreCommandTransaction.GetValue(this);
+			set => MySqlConnectionStringOption.IgnoreCommandTransaction.SetValue(this, value);
+		}
+
 		public uint Keepalive
 		{
 			get => MySqlConnectionStringOption.Keepalive.GetValue(this);
@@ -290,6 +296,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<bool> ConvertZeroDateTime;
 		public static readonly MySqlConnectionStringOption<uint> DefaultCommandTimeout;
 		public static readonly MySqlConnectionStringOption<bool> ForceSynchronous;
+		public static readonly MySqlConnectionStringOption<bool> IgnoreCommandTransaction;
 		public static readonly MySqlConnectionStringOption<uint> Keepalive;
 		public static readonly MySqlConnectionStringOption<bool> OldGuids;
 		public static readonly MySqlConnectionStringOption<bool> PersistSecurityInfo;
@@ -426,6 +433,10 @@ namespace MySql.Data.MySqlClient
 
 			AddOption(ForceSynchronous = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "ForceSynchronous" },
+				defaultValue: false));
+
+			AddOption(IgnoreCommandTransaction = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "IgnoreCommandTransaction", "Ignore Command Transaction" },
 				defaultValue: false));
 
 			AddOption(Keepalive = new MySqlConnectionStringOption<uint>(
