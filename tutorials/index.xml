@@ -29,7 +29,7 @@ Always Use Async when possible  ADO.NET Class Asynchronous Method
       
       <guid>https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/</guid>
       <description>Migrating from Connector/NET Connection String Differences MySqlConnector has some different default connection string options:
- Option MySqlConnector Oracle&#39;s Connector/NET Notes   AllowPublicKeyRetrieval Default is false (not configurable) When using sha256_password authentication, this option allows the RSA public key to be retrieved from the server (when not using a secure connection). It&#39;s false by default to avoid disclosing the password to a malicious proxy.   ConnectionReset Default is true Default is false MySqlConnector always resets pooled connections by default so that the connection is in a known state.</description>
+ Option MySqlConnector Oracle’s Connector/NET Notes   AllowPublicKeyRetrieval Default is false (not configurable) When using sha256_password authentication, this option allows the RSA public key to be retrieved from the server (when not using a secure connection). It’s false by default to avoid disclosing the password to a malicious proxy.   ConnectionReset Default is true Default is false MySqlConnector always resets pooled connections by default so that the connection is in a known state.</description>
     </item>
     
     <item>

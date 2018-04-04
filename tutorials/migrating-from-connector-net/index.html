@@ -64,7 +64,7 @@
   <thead>
     <th style="width:20%">Option</th>
     <th style="width:20%">MySqlConnector</th>
-    <th style="width:20%">Oracle's Connector/NET</th>
+    <th style="width:20%">Oracle’s Connector/NET</th>
     <th style="width:40%">Notes</th>
   </thead>
   <tr>
@@ -72,13 +72,19 @@
     <td>Default is <code>false</code></td>
     <td>(not configurable)</td>
     <td>When using <code>sha256_password</code> authentication, this option allows the RSA public key to be retrieved from the server
-    (when not using a secure connection). It's <code>false</code> by default to avoid disclosing the password to a malicious proxy.</td>
+    (when not using a secure connection). It’s <code>false</code> by default to avoid disclosing the password to a malicious proxy.</td>
   </tr>
   <tr>
     <td><code>ConnectionReset</code></td>
     <td>Default is <code>true</code></td>
     <td>Default is <code>false</code></td>
     <td>MySqlConnector always resets pooled connections by default so that the connection is in a known state. This fixes <a href="https://bugs.mysql.com/bug.php?id=77421">MySQL Bug 77421</a>.</td>
+  </tr>
+  <tr>
+    <td><code>IgnoreCommandTransaction</code></td>
+    <td>Default is <code>false</code></td>
+    <td>(not configurable, effective default is <code>true</code>)</td>
+    <td>See remarks under <a href="#mysqlcommand">MySqlCommand</a> below.</td>
   </tr>
   <tr>
     <td><code>LoadBalance</code></td>
@@ -90,7 +96,7 @@
     <td><code>ServerRSAPublicKeyFile</code></td>
     <td>(no default)</td>
     <td>(not configurable)</td>
-    <td>Specify a file containing the server's RSA public key to allow <code>sha256_password</code> authentication over an insecure connection.</td>
+    <td>Specify a file containing the server’s RSA public key to allow <code>sha256_password</code> authentication over an insecure connection.</td>
   </tr>
   <tr>
     <td><code>UseAffectedRows</code></td>
@@ -119,7 +125,8 @@ object to be created. See <a href="https://github.com/mysql-net/MySqlConnector/i
 
 <p>Connector/NET allows a command to be executed even when <code>MySqlCommand.Transaction</code> references a commited, rolled back, or
 disposed <code>MySqlTransaction</code>. MySqlConnector will throw an <code>InvalidOperationException</code> if the <code>MySqlCommand.Transaction</code>
-property doesn&rsquo;t reference the active transaction. To disable this strict validation, set <code>IgnoreCommandTransaction=true</code>
+property doesn’t reference the active transaction. This fixes <a href="https://bugs.mysql.com/bug.php?id=88611">MySQL Bug 88611</a>.
+To disable this strict validation, set <code>IgnoreCommandTransaction=true</code>
 in the connection string. See <a href="https://github.com/mysql-net/MySqlConnector/issues/474">Issue 474</a> for more details.</p>
 
 <h3 id="exceptions">Exceptions</h3>
@@ -133,14 +140,14 @@ for various precondition checks that indicate misuse of the API (and not a probl
 
 <ul>
 <li><a href="https://bugs.mysql.com/bug.php?id=37283">#37283</a>, <a href="https://bugs.mysql.com/bug.php?id=70587">#70587</a>: Distributed transactions are not supported</li>
-<li><a href="https://bugs.mysql.com/bug.php?id=50773">#50773</a>: Can&rsquo;t use multiple connections within one TransactionScope</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=50773">#50773</a>: Can’t use multiple connections within one TransactionScope</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=61477">#61477</a>: <code>ColumnOrdinal</code> in schema table is 1-based</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=66476">#66476</a>: Connection pool uses queue instead of stack</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=70111">#70111</a>: <code>Async</code> methods execute synchronously</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=70686">#70686</a>: <code>TIME(3)</code> and <code>TIME(6)</code> fields serialize milliseconds incorrectly</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=72494">#72494</a>, <a href="https://bugs.mysql.com/bug.php?id=83330">#83330</a>: EndOfStreamException inserting large blob with UseCompression=True</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=73610">#73610</a>: Invalid password exception has wrong number</li>
-<li><a href="https://bugs.mysql.com/bug.php?id=73788">#73788</a>: Can&rsquo;t use <code>DateTimeOffset</code></li>
+<li><a href="https://bugs.mysql.com/bug.php?id=73788">#73788</a>: Can’t use <code>DateTimeOffset</code></li>
 <li><a href="https://bugs.mysql.com/bug.php?id=75604">#75604</a>: Crash after 29.4 days of uptime</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=75917">#75917</a>, <a href="https://bugs.mysql.com/bug.php?id=76597">#76597</a>, <a href="https://bugs.mysql.com/bug.php?id=77691">#77691</a>, <a href="https://bugs.mysql.com/bug.php?id=78650">#78650</a>, <a href="https://bugs.mysql.com/bug.php?id=78919">#78919</a>, <a href="https://bugs.mysql.com/bug.php?id=80921">#80921</a>, <a href="https://bugs.mysql.com/bug.php?id=82136">#82136</a>: &ldquo;Reading from the stream has failed&rdquo; when connecting to a server</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=77421">#77421</a>: Connection is not reset when pulled from the connection pool</li>
@@ -151,7 +158,7 @@ for various precondition checks that indicate misuse of the API (and not a probl
 <li><a href="https://bugs.mysql.com/bug.php?id=81650">#81650</a>, <a href="https://bugs.mysql.com/bug.php?id=88962">#88962</a>: <code>Server</code> connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=83329">#83229</a>: &ldquo;Unknown command&rdquo; exception inserting large blob with UseCompression=True</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=84220">#84220</a>: Cannot call a stored procedure with <code>.</code> in its name</li>
-<li><a href="https://bugs.mysql.com/bug.php?id=84701">#84701</a>: Can&rsquo;t create a parameter using a 64-bit enum with a value greater than int.MaxValue</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=84701">#84701</a>: Can’t create a parameter using a 64-bit enum with a value greater than int.MaxValue</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=85185">#85185</a>: <code>ConnectionReset=True</code> does not preserve connection charset</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=86263">#86263</a>: Transaction isolation level affects all transactions in session</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=87307">#87307</a>: NextResult hangs instead of timing out</li>
@@ -159,7 +166,7 @@ for various precondition checks that indicate misuse of the API (and not a probl
 <li><a href="https://bugs.mysql.com/bug.php?id=87868">#87868</a>: <code>ColumnSize</code> in schema table is incorrect for <code>CHAR(36)</code> and <code>BLOB</code> columns</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=87876">#87876</a>: <code>IsLong</code> is schema table is incorrect for <code>LONGTEXT</code> and <code>LONGBLOB</code> columns</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=88058">#88058</a>: <code>decimal(n, 0)</code> has wrong <code>NumericPrecision</code></li>
-<li><a href="https://bugs.mysql.com/bug.php?id=88124">#88124</a>: CommandTimeout isn&rsquo;t reset when calling Read/NextResult</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=88124">#88124</a>: CommandTimeout isn’t reset when calling Read/NextResult</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=88611">#88611</a>: <code>MySqlCommand</code> can be executed even if it has &ldquo;wrong&rdquo; transaction</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=89085">#89085</a>: <code>MySqlConnection.Database</code> not updated after <code>USE database;</code></li>
 <li><a href="https://bugs.mysql.com/bug.php?id=89159">#89159</a>: <code>MySqlDataReader</code> cannot outlive <code>MySqlCommand</code></li>
