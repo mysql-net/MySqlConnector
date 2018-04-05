@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.39.0
+
+* Add `IgnoreCommandTransaction` connection string setting: [#474](https://github.com/mysql-net/MySqlConnector/issues/474).
+
 ### 0.38.0
 
 * Add Serilog logging provider: [#463](https://github.com/mysql-net/MySqlConnector/issues/463).
