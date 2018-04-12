@@ -694,7 +694,7 @@ namespace MySqlConnector.Core
 					{
 						tcpClient = new TcpClient(ipAddress.AddressFamily);
 
-						using (cancellationToken.Register(() => tcpClient?.Client?.Dispose()))
+						using (cancellationToken.Register(() => tcpClient.Client?.Dispose()))
 						{
 							try
 							{
@@ -727,6 +727,7 @@ namespace MySqlConnector.Core
 							}
 							catch (ObjectDisposedException ex) when (cancellationToken.IsCancellationRequested)
 							{
+								SafeDispose(ref tcpClient);
 								Log.Info("Session{0} connect timeout expired connecting to IpAddress {1} for HostName '{2}'", m_logArguments[0], ipAddress, hostName);
 								throw new MySqlException("Connect Timeout expired.", ex);
 							}
@@ -734,8 +735,15 @@ namespace MySqlConnector.Core
 					}
 					catch (SocketException)
 					{
-						tcpClient?.Client?.Dispose();
+						SafeDispose(ref tcpClient);
 						continue;
+					}
+
+					if (!tcpClient.Connected && cancellationToken.IsCancellationRequested)
+					{
+						SafeDispose(ref tcpClient);
+						Log.Info("Session{0} connect timeout expired connecting to IpAddress {1} for HostName '{2}'", m_logArguments[0], ipAddress, hostName);
+						throw new MySqlException("Connect Timeout expired.");
 					}
 
 					HostName = hostName;
