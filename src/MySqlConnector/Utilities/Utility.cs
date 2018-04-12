@@ -2,8 +2,13 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net.Security;
+using System.Net;
+#if NETSTANDARD1_3 || NETSTANDARD2_0
 using System.Runtime.InteropServices;
+#endif
+#if NET45 || NET46
+using System.Reflection;
+#endif
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Text;
@@ -262,27 +267,26 @@ namespace MySqlConnector.Utilities
 		{
 			if (!s_defaultSslProtocols.HasValue)
 			{
+				// Prior to .NET Framework 4.7, SslProtocols.None is not a valid argument to SslStream.AuthenticateAsClientAsync.
+				// If the NET46 build is loaded by an application that targets. NET 4.7 (or later), or if app.config has set
+				// Switch.System.Net.DontEnableSystemDefaultTlsVersions to false, then SslProtocols.None will work; otherwise,
+				// if the application targets .NET 4.6.2 or earlier and hasn't changed the AppContext switch, then it will
+				// fail at runtime. We attempt to determine if it will fail by accessing the internal static
+				// ServicePointManager.DisableSystemDefaultTlsVersions property, which controls whether SslProtocols.None is
+				// an acceptable value.
+				bool disableSystemDefaultTlsVersions;
 				try
 				{
-					using (var memoryStream = new MemoryStream())
-					using (var sslStream = new SslStream(memoryStream))
-					{
-						sslStream.AuthenticateAsClient("localhost", null, SslProtocols.None, false);
-					}
-				}
-				catch (ArgumentException ex) when (ex.ParamName == "sslProtocolType")
-				{
-					// Prior to .NET Framework 4.7, SslProtocols.None is not a valid argument to AuthenticateAsClientAsync.
-					// If the NET46 build is loaded by an application that targets. NET 4.7 (or later), or if app.config has set
-					// Switch.System.Net.DontEnableSystemDefaultTlsVersions to false, then SslProtocols.None will work; otherwise,
-					// if the application targets .NET 4.6.2 or earlier and hasn't changed the AppContext switch, then it will
-					// fail at runtime; we catch the exception and explicitly specify the protocols to use.
-					s_defaultSslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
+					var property = typeof(ServicePointManager).GetProperty("DisableSystemDefaultTlsVersions", BindingFlags.NonPublic | BindingFlags.Static);
+					disableSystemDefaultTlsVersions = property == null || (property.GetValue(null) is bool b && b);
 				}
 				catch (Exception)
 				{
-					s_defaultSslProtocols = SslProtocols.None;
+					// couldn't access the property; assume the safer default of 'true'
+					disableSystemDefaultTlsVersions = true;
 				}
+
+				s_defaultSslProtocols = disableSystemDefaultTlsVersions ? (SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12) : SslProtocols.None;
 			}
 
 			return s_defaultSslProtocols.Value;
