@@ -501,7 +501,7 @@ namespace SideBySide
 		[InlineData("`Timestamp`", "TIMESTAMP", new object[] { null, "1970 01 01 0 0 1", "2038 1 18 3 14 7 999999", null, "2016 4 5 14 3 4 567890" })]
 		public void QueryDate(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("times", column, dataTypeName, ConvertToDateTime(expected), reader => reader.GetDateTime(column.Replace("`", "")));
+			DoQuery("times", column, dataTypeName, ConvertToDateTime(expected, DateTimeKind.Unspecified), reader => reader.GetDateTime(column.Replace("`", "")));
 #if !BASELINE
 			DoQuery("times", column, dataTypeName, ConvertToDateTimeOffset(expected), reader => reader.GetDateTimeOffset(0), matchesDefaultType: false);
 #endif
@@ -1053,18 +1053,18 @@ create table schema_table({createColumn});");
 			}
 		}
 
-		private static object[] ConvertToDateTime(object[] input)
+		private static object[] ConvertToDateTime(object[] input, DateTimeKind kind)
 		{
 			var output = new object[input.Length];
 			for (int i = 0; i < input.Length; i++)
 			{
 				var value = SplitAndParse(input[i]);
 				if (value?.Length == 3)
-					output[i] = new DateTime(value[0], value[1], value[2]);
+					output[i] = new DateTime(value[0], value[1], value[2], 0, 0, 0, kind);
 				else if (value?.Length == 6)
-					output[i] = new DateTime(value[0], value[1], value[2], value[3], value[4], value[5]);
+					output[i] = new DateTime(value[0], value[1], value[2], value[3], value[4], value[5], kind);
 				else if (value?.Length == 7)
-					output[i] = new DateTime(value[0], value[1], value[2], value[3], value[4], value[5], value[6] / 1000).AddTicks(value[6] % 1000 * 10);
+					output[i] = new DateTime(value[0], value[1], value[2], value[3], value[4], value[5], value[6] / 1000, kind).AddTicks(value[6] % 1000 * 10);
 			}
 			return output;
 		}
@@ -1072,11 +1072,11 @@ create table schema_table({createColumn});");
 		private static object[] ConvertToDateTimeOffset(object[] input)
 		{
 			var output = new object[input.Length];
-			var dateTimes = ConvertToDateTime(input);
+			var dateTimes = ConvertToDateTime(input, DateTimeKind.Utc);
 			for (int i = 0; i < dateTimes.Length; i++)
 			{
 				if (dateTimes[i] != null)
-					output[i] = new DateTimeOffset(DateTime.SpecifyKind((DateTime)dateTimes[i], DateTimeKind.Utc));
+					output[i] = new DateTimeOffset((DateTime) dateTimes[i]);
 			}
 			return output;
 		}
