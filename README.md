@@ -84,3 +84,7 @@ be a drop-in replacement.
 ## License
 
 This library is licensed under the [MIT License](LICENSE).
+
+## Contributing
+
+If you'd like to contribute to MySqlConnector, please read our [contributing guidelines](.github/CONTRIBUTING.md).
