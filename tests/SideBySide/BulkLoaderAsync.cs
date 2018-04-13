@@ -209,7 +209,7 @@ namespace SideBySide
 			};
 		}
 
-		[Fact]
+		[SkippableFact(ConfigSettings.LocalCsvFile)]
 		public async Task BulkLoadLocalCsvFileInTransactionWithCommit()
 		{
 			try
@@ -245,7 +245,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[SkippableFact(ConfigSettings.LocalCsvFile)]
 		public async Task BulkLoadLocalCsvFileInTransactionWithRollback()
 		{
 			try
