@@ -9,5 +9,7 @@ namespace MySqlConnector.Core
 		AllowUserVariables = 1,
 		OldGuids = 2,
 		AllowOutputParameters = 4,
+		DateTimeUtc = 8,
+		DateTimeLocal = 16,
 	}
 }

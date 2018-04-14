@@ -159,6 +159,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.ConvertZeroDateTime.SetValue(this, value);
 		}
 
+		public MySqlDateTimeKind DateTimeKind
+		{
+			get => MySqlConnectionStringOption.DateTimeKind.GetValue(this);
+			set => MySqlConnectionStringOption.DateTimeKind.SetValue(this, value);
+		}
+
 		public uint DefaultCommandTimeout
 		{
 			get => MySqlConnectionStringOption.DefaultCommandTimeout.GetValue(this);
@@ -294,6 +300,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<string> CharacterSet;
 		public static readonly MySqlConnectionStringOption<uint> ConnectionTimeout;
 		public static readonly MySqlConnectionStringOption<bool> ConvertZeroDateTime;
+		public static readonly MySqlConnectionStringOption<MySqlDateTimeKind> DateTimeKind;
 		public static readonly MySqlConnectionStringOption<uint> DefaultCommandTimeout;
 		public static readonly MySqlConnectionStringOption<bool> ForceSynchronous;
 		public static readonly MySqlConnectionStringOption<bool> IgnoreCommandTransaction;
@@ -427,6 +434,10 @@ namespace MySql.Data.MySqlClient
 				keys: new[] { "Convert Zero Datetime", "ConvertZeroDateTime" },
 				defaultValue: false));
 
+			AddOption(DateTimeKind = new MySqlConnectionStringOption<MySqlDateTimeKind>(
+				keys: new[] { "DateTimeKind" },
+				defaultValue: MySqlDateTimeKind.Unspecified));
+
 			AddOption(DefaultCommandTimeout = new MySqlConnectionStringOption<uint>(
 				keys: new[] { "Default Command Timeout", "DefaultCommandTimeout", "Command Timeout" },
 				defaultValue: 30u));
@@ -505,21 +516,11 @@ namespace MySql.Data.MySqlClient
 					return (T) (object) false;
 			}
 
-			if (typeof(T) == typeof(MySqlLoadBalance) && objectValue is string loadBalanceString)
+			if ((typeof(T) == typeof(MySqlLoadBalance) || typeof(T) == typeof(MySqlSslMode) || typeof(T) == typeof(MySqlDateTimeKind)) && objectValue is string enumString)
 			{
 				foreach (var val in Enum.GetValues(typeof(T)))
 				{
-					if (string.Equals(loadBalanceString, val.ToString(), StringComparison.OrdinalIgnoreCase))
-						return (T) val;
-				}
-				throw new InvalidOperationException("Value '{0}' not supported for option '{1}'.".FormatInvariant(objectValue, typeof(T).Name));
-			}
-
-			if (typeof(T) == typeof(MySqlSslMode) && objectValue is string sslModeString)
-			{
-				foreach (var val in Enum.GetValues(typeof(T)))
-				{
-					if (string.Equals(sslModeString, val.ToString(), StringComparison.OrdinalIgnoreCase))
+					if (string.Equals(enumString, val.ToString(), StringComparison.OrdinalIgnoreCase))
 						return (T) val;
 				}
 				throw new InvalidOperationException("Value '{0}' not supported for option '{1}'.".FormatInvariant(objectValue, typeof(T).Name));

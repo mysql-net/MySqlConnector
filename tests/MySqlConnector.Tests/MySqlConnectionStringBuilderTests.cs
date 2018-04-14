@@ -26,6 +26,9 @@ namespace MySqlConnector.Tests
 #endif
 			Assert.Equal(15u, csb.ConnectionTimeout);
 			Assert.False(csb.ConvertZeroDateTime);
+#if !BASELINE
+			Assert.Equal(MySqlDateTimeKind.Unspecified, csb.DateTimeKind);
+#endif
 			Assert.Equal("", csb.Database);
 			Assert.Equal(30u, csb.DefaultCommandTimeout);
 #if !BASELINE
@@ -76,6 +79,9 @@ namespace MySqlConnector.Tests
 					"connection lifetime=15;" +
 					"ConnectionReset=false;" +
 					"Convert Zero Datetime=true;" +
+#if !BASELINE
+					"datetimekind=utc;" +
+#endif
 					"default command timeout=123;" +
 #if !BASELINE
 					"connection idle ping time=60;" +
@@ -109,6 +115,9 @@ namespace MySqlConnector.Tests
 			Assert.False(csb.ConnectionReset);
 			Assert.Equal(30u, csb.ConnectionTimeout);
 			Assert.True(csb.ConvertZeroDateTime);
+#if !BASELINE
+			Assert.Equal(MySqlDateTimeKind.Utc, csb.DateTimeKind);
+#endif
 			Assert.Equal("schema_name", csb.Database);
 			Assert.Equal(123u, csb.DefaultCommandTimeout);
 #if !BASELINE

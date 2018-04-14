@@ -190,6 +190,13 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>True to have MySqlDataReader.GetValue() and MySqlDataReader.GetDateTime() return DateTime.MinValue for date or datetime columns that have disallowed values.</td>
   </tr>
   <tr>
+    <td>DateTimeKind</td>
+    <td>Unspecified</td>
+    <td>The <code>DateTimeKind</code> used when <code>MySqlDataReader</code> returns a <code>DateTime</code>. If set to <code>Utc</code> or <code>Local</code>,
+    a <code>MySqlException</code> will be thrown if a <code>DateTime</code> command parameter has a <code>Kind</code> of <code>Local</code> or <code>Utc</code>,
+    respectively.</td>
+  </tr>
+  <tr>
     <td>Default Command Timeout, Command Timeout, DefaultCommandTimeout</td>
     <td>30</td>
     <td>The length of time (in seconds) each command can execute before timing out and throwing an exception, or zero to disable timeouts.

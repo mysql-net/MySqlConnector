@@ -549,6 +549,51 @@ namespace SideBySide
 			}
 		}
 
+#if !BASELINE
+		[Theory]
+		[InlineData(MySqlDateTimeKind.Unspecified, DateTimeKind.Unspecified, true)]
+		[InlineData(MySqlDateTimeKind.Unspecified, DateTimeKind.Local, true)]
+		[InlineData(MySqlDateTimeKind.Unspecified, DateTimeKind.Utc, true)]
+		[InlineData(MySqlDateTimeKind.Utc, DateTimeKind.Unspecified, true)]
+		[InlineData(MySqlDateTimeKind.Utc, DateTimeKind.Local, false)]
+		[InlineData(MySqlDateTimeKind.Utc, DateTimeKind.Utc, true)]
+		[InlineData(MySqlDateTimeKind.Local, DateTimeKind.Unspecified, true)]
+		[InlineData(MySqlDateTimeKind.Local, DateTimeKind.Local, true)]
+		[InlineData(MySqlDateTimeKind.Local, DateTimeKind.Utc, false)]
+		public void QueryDateTimeKind(MySqlDateTimeKind kindOption, DateTimeKind kindIn, bool success)
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.DateTimeKind = kindOption;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+
+				var dateTimeIn = new DateTime(2002, 3, 4, 5, 6, 7, 890, kindIn);
+				using (var cmd = new MySqlCommand(@"drop table if exists date_time_kind;
+create table date_time_kind(rowid integer not null primary key auto_increment, dt datetime(3) not null);
+insert into date_time_kind(dt) values(?)", connection)
+				{
+					Parameters = { new MySqlParameter { Value = dateTimeIn } }
+				})
+				{
+					if (success)
+					{
+						cmd.ExecuteNonQuery();
+						long lastInsertId = cmd.LastInsertedId;
+						cmd.CommandText = $"select dt from date_time_kind where rowid = {lastInsertId};";
+						var dateTimeOut = (DateTime?) cmd.ExecuteScalar();
+						Assert.Equal(dateTimeIn, dateTimeOut);
+						Assert.Equal(kindOption, (MySqlDateTimeKind) dateTimeOut.Value.Kind);
+					}
+					else
+					{
+						Assert.Throws<MySqlException>(() => cmd.ExecuteNonQuery());
+					}
+				}
+			}
+		}
+#endif
+
 		[Theory]
 		[InlineData("`Time`", "TIME", new object[] { null, "-838 -59 -59", "838 59 59", "0 0 0", "0 14 3 4 567890" })]
 		public void QueryTime(string column, string dataTypeName, object[] expected)

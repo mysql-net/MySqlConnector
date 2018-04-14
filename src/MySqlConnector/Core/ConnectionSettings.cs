@@ -55,6 +55,7 @@ namespace MySqlConnector.Core
 			AutoEnlist = csb.AutoEnlist;
 			ConnectionTimeout = (int) csb.ConnectionTimeout;
 			ConvertZeroDateTime = csb.ConvertZeroDateTime;
+			DateTimeKind = (DateTimeKind) csb.DateTimeKind;
 			DefaultCommandTimeout = (int) csb.DefaultCommandTimeout;
 			ForceSynchronous = csb.ForceSynchronous;
 			IgnoreCommandTransaction = csb.IgnoreCommandTransaction;
@@ -105,6 +106,7 @@ namespace MySqlConnector.Core
 		public bool AutoEnlist { get; }
 		public int ConnectionTimeout { get; }
 		public bool ConvertZeroDateTime { get; }
+		public DateTimeKind DateTimeKind { get; }
 		public int DefaultCommandTimeout { get; }
 		public bool ForceSynchronous { get; }
 		public bool IgnoreCommandTransaction { get; }
