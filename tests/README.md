@@ -2,19 +2,38 @@
 
 ## Side-by-side Tests
 
-The `SideBySide` project is intended to verify that the new MySql.Data implementation
-is equivalent to the official ADO.NET connector in places where that is deemed important.
+The `SideBySide` project is intended to verify that MySqlConnector doesn't break compatibility
+with Connector/NET and that [known bugs have been fixed](https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/#fixed-bugs).
 
-The tests require a MySQL server.  Copy the file `SideBySide/config.json.example` to `SideBySide/config.json`.
-Then edit the `config.json` file in order to connect to your server:
+The tests require a MySQL server. The simplest way to run one is with [Docker](https://www.docker.com/community-edition):
 
-    Data.ConnectionString: The full MySql Connection String to your server.  You should specify a database name.
-        If the database does not exist, the test will attempt to create it.
+    docker run -d --rm --name mysqlconnector -e MYSQL_ROOT_PASSWORD=pass -p 3306:3306 mysql:5.7 --max-allowed-packet=96M --character-set-server=utf8mb4
 
-    Data.PasswordlessUser: Leave blank to disable passwordless user tests.  Otherwise, this should be a user
-        on your database with no Password and no Roles.
+Copy the file `SideBySide/config.json.example` to `SideBySide/config.json`, then edit
+the `config.json` file in order to connect to your server. If you are using the Docker
+command above, then the default options will work and do not need to be modified.
+Otherwise, set the following options appropriately:
 
-    Data.SupportsJson: True if your MySql server supports JSON (5.7 and up), false otherwise.
+* `Data.ConnectionString`: The full connection string to your server. You should specify a database name. If the database does not exist, the test will attempt to create it.
+* `Data.PasswordlessUser`: (Optional) A user account in your database with no password and no roles.
+* `Data.SecondaryDatabase`: (Optional) A second database on your server that the test user has permission to access.
+* `Data.CertificatesPath`: (Optional) The absolute path to the server and client certificates folder (i.e., the `.ci/server/certs` folder in this repo).
+* `Data.MySqlBulkLoaderLocalCsvFile`: (Optional) The path to a test CSV file.
+* `Data.MySqlBulkLoaderLocalTsvFile`: (Optional) The path to a test TSV file.
+* `Data.UnsupportedFeatures`: A comma-delimited list of `ServerFeature` enum values that your test database server does *not* support
+  * `Json`: the `JSON` data type (MySQL 5.7 and later)
+  * `StoredProcedures`: create and execute stored procedures
+  * `Sha256Password`: a user named `sha256user` exists on your server and uses the `sha256_password` auth plugin
+  * `RsaEncryption`: server supports RSA public key encryption (for `sha256_password` and `caching_sha2_password`)
+  * `LargePackets`: large packets (over 4MB)
+  * `CachingSha2Password`: a user named `caching-sha2-user` exists on your server and uses the `caching_sha2_password` auth plugin
+  * `SessionTrack`: server supports `CLIENT_SESSION_TRACK` capability (MySQL 5.7 and later)
+  * `Timeout`: server can cancel queries promptly (so timed tests don't time out)
+  * `ErrorCodes`: server returns error codes in error packet (some MySQL proxies do not)
+  * `Tls11`: server supports TLS 1.1
+  * `Tls12`: server supports TLS 1.2
+
+## Running Tests
 
 There are two ways to run the tests: command line and Visual Studio.
 
@@ -24,14 +43,16 @@ After building the solution, you should see a list of tests in the Test Explorer
 
 ### Command Line
 
-To run the New tests against MySqlConnector:
+To run the tests against MySqlConnector:
 
 ```
-dotnet restore; dotnet test
+cd tests\SideBySide
+dotnet xunit -c Release
 ```
 
-To run the Baseline tests against MySql.Data:
+To run the tests against MySql.Data:
 
 ```
-dotnet restore /p:Configuration=Baseline; dotnet test -c Baseline
+cd tests\SideBySide
+dotnet restore /p:Configuration=Baseline && dotnet test -c Baseline
 ```
