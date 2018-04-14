@@ -212,8 +212,8 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData("TinyInt1", "TINYINT", new object[] { null, (sbyte)0, (sbyte)1, (sbyte)0, (sbyte)1, (sbyte)-1, (sbyte)123 })]
-		[InlineData("Boolean", "TINYINT", new object[] { null, (sbyte)0, (sbyte)1, (sbyte)0, (sbyte)1, (sbyte)-1, (sbyte)123 })]
+		[InlineData("TinyInt1", "TINYINT", new object[] { null, (sbyte) 0, (sbyte) 1, (sbyte) 0, (sbyte) 1, (sbyte) -1, (sbyte) 123 })]
+		[InlineData("Boolean", "TINYINT", new object[] { null, (sbyte) 0, (sbyte) 1, (sbyte) 0, (sbyte) 1, (sbyte) -1, (sbyte) 123 })]
 		public void QueryTinyIntSbyte(string column, string dataTypeName, object[] expected)
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -288,9 +288,9 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData("Bit1",  new object[] { null, 0UL, 1UL, 1UL })]
-		[InlineData("Bit32",  new object[] { null, 0UL, 1UL, (ulong) uint.MaxValue })]
-		[InlineData("Bit64",  new object[] { null, 0UL, 1UL, ulong.MaxValue })]
+		[InlineData("Bit1", new object[] { null, 0UL, 1UL, 1UL })]
+		[InlineData("Bit32", new object[] { null, 0UL, 1UL, (ulong) uint.MaxValue })]
+		[InlineData("Bit64", new object[] { null, 0UL, 1UL, ulong.MaxValue })]
 		public void QueryBits(string column, object[] expected)
 		{
 			DoQuery("bits", column, "BIT", expected, reader => reader.GetUInt64(column));
@@ -348,7 +348,7 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData("utf8", new[] {null, "", "ASCII", "Ũńıċōđĕ", c_251ByteString})]
+		[InlineData("utf8", new[] { null, "", "ASCII", "Ũńıċōđĕ", c_251ByteString })]
 		[InlineData("cp1251", new[] { null, "", "ASCII", "АБВГабвг", c_251ByteString })]
 		public void QueryChar(string column, string[] expected)
 		{
@@ -443,7 +443,7 @@ namespace SideBySide
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				await connection.OpenAsync().ConfigureAwait(false);
-				Assert.Equal(oldGuids? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guid = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
+				Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guid = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
 				Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guidbin = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
 				Assert.Equal(oldGuids ? 1L : 0L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_blobs where guidbin = @guid", new { guid = new Guid(0x33221100, 0x5544, 0x7766, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF) }).ConfigureAwait(false)).SingleOrDefault());
 			}
@@ -501,7 +501,7 @@ namespace SideBySide
 		[InlineData("`Timestamp`", "TIMESTAMP", new object[] { null, "1970 01 01 0 0 1", "2038 1 18 3 14 7 999999", null, "2016 4 5 14 3 4 567890" })]
 		public void QueryDate(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("times", column, dataTypeName, ConvertToDateTime(expected), reader => reader.GetDateTime(column.Replace("`", "")));
+			DoQuery("times", column, dataTypeName, ConvertToDateTime(expected, DateTimeKind.Unspecified), reader => reader.GetDateTime(column.Replace("`", "")));
 #if !BASELINE
 			DoQuery("times", column, dataTypeName, ConvertToDateTimeOffset(expected), reader => reader.GetDateTimeOffset(0), matchesDefaultType: false);
 #endif
@@ -548,6 +548,51 @@ namespace SideBySide
 				}
 			}
 		}
+
+#if !BASELINE
+		[Theory]
+		[InlineData(MySqlDateTimeKind.Unspecified, DateTimeKind.Unspecified, true)]
+		[InlineData(MySqlDateTimeKind.Unspecified, DateTimeKind.Local, true)]
+		[InlineData(MySqlDateTimeKind.Unspecified, DateTimeKind.Utc, true)]
+		[InlineData(MySqlDateTimeKind.Utc, DateTimeKind.Unspecified, true)]
+		[InlineData(MySqlDateTimeKind.Utc, DateTimeKind.Local, false)]
+		[InlineData(MySqlDateTimeKind.Utc, DateTimeKind.Utc, true)]
+		[InlineData(MySqlDateTimeKind.Local, DateTimeKind.Unspecified, true)]
+		[InlineData(MySqlDateTimeKind.Local, DateTimeKind.Local, true)]
+		[InlineData(MySqlDateTimeKind.Local, DateTimeKind.Utc, false)]
+		public void QueryDateTimeKind(MySqlDateTimeKind kindOption, DateTimeKind kindIn, bool success)
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.DateTimeKind = kindOption;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+
+				var dateTimeIn = new DateTime(2002, 3, 4, 5, 6, 7, 890, kindIn);
+				using (var cmd = new MySqlCommand(@"drop table if exists date_time_kind;
+create table date_time_kind(rowid integer not null primary key auto_increment, dt datetime(3) not null);
+insert into date_time_kind(dt) values(?)", connection)
+				{
+					Parameters = { new MySqlParameter { Value = dateTimeIn } }
+				})
+				{
+					if (success)
+					{
+						cmd.ExecuteNonQuery();
+						long lastInsertId = cmd.LastInsertedId;
+						cmd.CommandText = $"select dt from date_time_kind where rowid = {lastInsertId};";
+						var dateTimeOut = (DateTime?) cmd.ExecuteScalar();
+						Assert.Equal(dateTimeIn, dateTimeOut);
+						Assert.Equal(kindOption, (MySqlDateTimeKind) dateTimeOut.Value.Kind);
+					}
+					else
+					{
+						Assert.Throws<MySqlException>(() => cmd.ExecuteNonQuery());
+					}
+				}
+			}
+		}
+#endif
 
 		[Theory]
 		[InlineData("`Time`", "TIME", new object[] { null, "-838 -59 -59", "838 59 59", "0 0 0", "0 14 3 4 567890" })]
@@ -927,7 +972,7 @@ create table schema_table({createColumn});");
 		}
 
 		[SkippableTheory(ServerFeatures.Json)]
-		[InlineData(new object[] { new[] { null, "NULL", "BOOLEAN", "ARRAY", "ARRAY", "ARRAY", "INTEGER", "INTEGER", "OBJECT", "OBJECT" }})]
+		[InlineData(new object[] { new[] { null, "NULL", "BOOLEAN", "ARRAY", "ARRAY", "ARRAY", "INTEGER", "INTEGER", "OBJECT", "OBJECT" } })]
 		public void JsonType(string[] expectedTypes)
 		{
 			var types = m_database.Connection.Query<string>(@"select JSON_TYPE(value) from datatypes_json_core order by rowid;").ToList();
@@ -963,7 +1008,7 @@ create table schema_table({createColumn});");
 			object baselineCoercedNullValue = null,
 			bool omitWhereTest = false,
 			bool matchesDefaultType = true,
-			MySqlConnection connection=null)
+			MySqlConnection connection = null)
 		{
 			DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, baselineCoercedNullValue, omitWhereTest, matchesDefaultType, connection);
 		}
@@ -979,7 +1024,7 @@ create table schema_table({createColumn});");
 			object baselineCoercedNullValue = null,
 			bool omitWhereTest = false,
 			bool matchesDefaultType = true,
-			MySqlConnection connection=null)
+			MySqlConnection connection = null)
 			where TException : Exception
 		{
 			connection = connection ?? m_database.Connection;
@@ -1020,19 +1065,19 @@ create table schema_table({createColumn});");
 							var syncMethod = typeof(MySqlDataReader)
 								.GetMethod("GetFieldValue")
 								.MakeGenericMethod(value.GetType());
-							Assert.Equal(value, syncMethod.Invoke(reader, new object[]{ 0 }));
+							Assert.Equal(value, syncMethod.Invoke(reader, new object[] { 0 }));
 
 							// test `reader.GetFieldValueAsync<value.GetType()>`
 							var asyncMethod = typeof(MySqlDataReader)
-								.GetMethod("GetFieldValueAsync", new []{ typeof(int) })
+								.GetMethod("GetFieldValueAsync", new[] { typeof(int) })
 								.MakeGenericMethod(value.GetType());
-							var asyncMethodValue = asyncMethod.Invoke(reader, new object[]{ 0 });
+							var asyncMethodValue = asyncMethod.Invoke(reader, new object[] { 0 });
 							var asyncMethodGetAwaiter = asyncMethodValue.GetType()
 								.GetMethod("GetAwaiter");
-							var asyncMethodGetAwaiterValue = asyncMethodGetAwaiter.Invoke(asyncMethodValue, new object[]{ });
+							var asyncMethodGetAwaiterValue = asyncMethodGetAwaiter.Invoke(asyncMethodValue, new object[] { });
 							var asyncMethodGetResult = asyncMethodGetAwaiterValue.GetType()
 								.GetMethod("GetResult");
-							var asyncMethodGetResultValue = asyncMethodGetResult.Invoke(asyncMethodGetAwaiterValue, new object[]{ });
+							var asyncMethodGetResultValue = asyncMethodGetResult.Invoke(asyncMethodGetAwaiterValue, new object[] { });
 							Assert.Equal(value, asyncMethodGetResultValue);
 						}
 					}
@@ -1053,18 +1098,18 @@ create table schema_table({createColumn});");
 			}
 		}
 
-		private static object[] ConvertToDateTime(object[] input)
+		private static object[] ConvertToDateTime(object[] input, DateTimeKind kind)
 		{
 			var output = new object[input.Length];
 			for (int i = 0; i < input.Length; i++)
 			{
 				var value = SplitAndParse(input[i]);
 				if (value?.Length == 3)
-					output[i] = new DateTime(value[0], value[1], value[2]);
+					output[i] = new DateTime(value[0], value[1], value[2], 0, 0, 0, kind);
 				else if (value?.Length == 6)
-					output[i] = new DateTime(value[0], value[1], value[2], value[3], value[4], value[5]);
+					output[i] = new DateTime(value[0], value[1], value[2], value[3], value[4], value[5], kind);
 				else if (value?.Length == 7)
-					output[i] = new DateTime(value[0], value[1], value[2], value[3], value[4], value[5], value[6] / 1000).AddTicks(value[6] % 1000 * 10);
+					output[i] = new DateTime(value[0], value[1], value[2], value[3], value[4], value[5], value[6] / 1000, kind).AddTicks(value[6] % 1000 * 10);
 			}
 			return output;
 		}
@@ -1072,11 +1117,11 @@ create table schema_table({createColumn});");
 		private static object[] ConvertToDateTimeOffset(object[] input)
 		{
 			var output = new object[input.Length];
-			var dateTimes = ConvertToDateTime(input);
+			var dateTimes = ConvertToDateTime(input, DateTimeKind.Utc);
 			for (int i = 0; i < dateTimes.Length; i++)
 			{
 				if (dateTimes[i] != null)
-					output[i] = new DateTimeOffset(DateTime.SpecifyKind((DateTime)dateTimes[i], DateTimeKind.Utc));
+					output[i] = new DateTimeOffset((DateTime) dateTimes[i]);
 			}
 			return output;
 		}

@@ -94,6 +94,10 @@ namespace MySqlConnector.Core
 				statementPreparerOptions |= StatementPreparerOptions.AllowUserVariables;
 			if (m_command.Connection.OldGuids)
 				statementPreparerOptions |= StatementPreparerOptions.OldGuids;
+			if (m_command.Connection.DateTimeKind == DateTimeKind.Utc)
+				statementPreparerOptions |= StatementPreparerOptions.DateTimeUtc;
+			else if (m_command.Connection.DateTimeKind == DateTimeKind.Local)
+				statementPreparerOptions |= StatementPreparerOptions.DateTimeLocal;
 			if (m_command.CommandType == CommandType.StoredProcedure)
 				statementPreparerOptions |= StatementPreparerOptions.AllowOutputParameters;
 			var preparer = new StatementPreparer(commandText, parameterCollection, statementPreparerOptions);

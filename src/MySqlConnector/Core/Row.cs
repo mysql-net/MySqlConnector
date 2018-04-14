@@ -456,7 +456,7 @@ namespace MySqlConnector.Core
 				return new DateTime(year, month, day, hour, minute, second);
 
 			var microseconds = int.Parse(parts[6] + new string('0', 6 - parts[6].Length), CultureInfo.InvariantCulture);
-			return new DateTime(year, month, day, hour, minute, second, microseconds / 1000).AddTicks(microseconds % 1000 * 10);
+			return new DateTime(year, month, day, hour, minute, second, microseconds / 1000, Connection.DateTimeKind).AddTicks(microseconds % 1000 * 10);
 		}
 
 		private static TimeSpan ParseTimeSpan(ArraySegment<byte> value)
