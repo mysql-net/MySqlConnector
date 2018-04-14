@@ -212,8 +212,8 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData("TinyInt1", "TINYINT", new object[] { null, (sbyte)0, (sbyte)1, (sbyte)0, (sbyte)1, (sbyte)-1, (sbyte)123 })]
-		[InlineData("Boolean", "TINYINT", new object[] { null, (sbyte)0, (sbyte)1, (sbyte)0, (sbyte)1, (sbyte)-1, (sbyte)123 })]
+		[InlineData("TinyInt1", "TINYINT", new object[] { null, (sbyte) 0, (sbyte) 1, (sbyte) 0, (sbyte) 1, (sbyte) -1, (sbyte) 123 })]
+		[InlineData("Boolean", "TINYINT", new object[] { null, (sbyte) 0, (sbyte) 1, (sbyte) 0, (sbyte) 1, (sbyte) -1, (sbyte) 123 })]
 		public void QueryTinyIntSbyte(string column, string dataTypeName, object[] expected)
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
@@ -288,9 +288,9 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData("Bit1",  new object[] { null, 0UL, 1UL, 1UL })]
-		[InlineData("Bit32",  new object[] { null, 0UL, 1UL, (ulong) uint.MaxValue })]
-		[InlineData("Bit64",  new object[] { null, 0UL, 1UL, ulong.MaxValue })]
+		[InlineData("Bit1", new object[] { null, 0UL, 1UL, 1UL })]
+		[InlineData("Bit32", new object[] { null, 0UL, 1UL, (ulong) uint.MaxValue })]
+		[InlineData("Bit64", new object[] { null, 0UL, 1UL, ulong.MaxValue })]
 		public void QueryBits(string column, object[] expected)
 		{
 			DoQuery("bits", column, "BIT", expected, reader => reader.GetUInt64(column));
@@ -348,7 +348,7 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData("utf8", new[] {null, "", "ASCII", "Ũńıċōđĕ", c_251ByteString})]
+		[InlineData("utf8", new[] { null, "", "ASCII", "Ũńıċōđĕ", c_251ByteString })]
 		[InlineData("cp1251", new[] { null, "", "ASCII", "АБВГабвг", c_251ByteString })]
 		public void QueryChar(string column, string[] expected)
 		{
@@ -443,7 +443,7 @@ namespace SideBySide
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				await connection.OpenAsync().ConfigureAwait(false);
-				Assert.Equal(oldGuids? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guid = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
+				Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guid = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
 				Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guidbin = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
 				Assert.Equal(oldGuids ? 1L : 0L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_blobs where guidbin = @guid", new { guid = new Guid(0x33221100, 0x5544, 0x7766, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF) }).ConfigureAwait(false)).SingleOrDefault());
 			}
@@ -927,7 +927,7 @@ create table schema_table({createColumn});");
 		}
 
 		[SkippableTheory(ServerFeatures.Json)]
-		[InlineData(new object[] { new[] { null, "NULL", "BOOLEAN", "ARRAY", "ARRAY", "ARRAY", "INTEGER", "INTEGER", "OBJECT", "OBJECT" }})]
+		[InlineData(new object[] { new[] { null, "NULL", "BOOLEAN", "ARRAY", "ARRAY", "ARRAY", "INTEGER", "INTEGER", "OBJECT", "OBJECT" } })]
 		public void JsonType(string[] expectedTypes)
 		{
 			var types = m_database.Connection.Query<string>(@"select JSON_TYPE(value) from datatypes_json_core order by rowid;").ToList();
@@ -963,7 +963,7 @@ create table schema_table({createColumn});");
 			object baselineCoercedNullValue = null,
 			bool omitWhereTest = false,
 			bool matchesDefaultType = true,
-			MySqlConnection connection=null)
+			MySqlConnection connection = null)
 		{
 			DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, baselineCoercedNullValue, omitWhereTest, matchesDefaultType, connection);
 		}
@@ -979,7 +979,7 @@ create table schema_table({createColumn});");
 			object baselineCoercedNullValue = null,
 			bool omitWhereTest = false,
 			bool matchesDefaultType = true,
-			MySqlConnection connection=null)
+			MySqlConnection connection = null)
 			where TException : Exception
 		{
 			connection = connection ?? m_database.Connection;
@@ -1020,19 +1020,19 @@ create table schema_table({createColumn});");
 							var syncMethod = typeof(MySqlDataReader)
 								.GetMethod("GetFieldValue")
 								.MakeGenericMethod(value.GetType());
-							Assert.Equal(value, syncMethod.Invoke(reader, new object[]{ 0 }));
+							Assert.Equal(value, syncMethod.Invoke(reader, new object[] { 0 }));
 
 							// test `reader.GetFieldValueAsync<value.GetType()>`
 							var asyncMethod = typeof(MySqlDataReader)
-								.GetMethod("GetFieldValueAsync", new []{ typeof(int) })
+								.GetMethod("GetFieldValueAsync", new[] { typeof(int) })
 								.MakeGenericMethod(value.GetType());
-							var asyncMethodValue = asyncMethod.Invoke(reader, new object[]{ 0 });
+							var asyncMethodValue = asyncMethod.Invoke(reader, new object[] { 0 });
 							var asyncMethodGetAwaiter = asyncMethodValue.GetType()
 								.GetMethod("GetAwaiter");
-							var asyncMethodGetAwaiterValue = asyncMethodGetAwaiter.Invoke(asyncMethodValue, new object[]{ });
+							var asyncMethodGetAwaiterValue = asyncMethodGetAwaiter.Invoke(asyncMethodValue, new object[] { });
 							var asyncMethodGetResult = asyncMethodGetAwaiterValue.GetType()
 								.GetMethod("GetResult");
-							var asyncMethodGetResultValue = asyncMethodGetResult.Invoke(asyncMethodGetAwaiterValue, new object[]{ });
+							var asyncMethodGetResultValue = asyncMethodGetResult.Invoke(asyncMethodGetAwaiterValue, new object[] { });
 							Assert.Equal(value, asyncMethodGetResultValue);
 						}
 					}

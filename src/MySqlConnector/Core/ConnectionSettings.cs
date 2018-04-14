@@ -43,17 +43,17 @@ namespace MySqlConnector.Core
 			ConnectionLifeTime = Math.Min(csb.ConnectionLifeTime, uint.MaxValue / 1000) * 1000;
 			ConnectionReset = csb.ConnectionReset;
 			ConnectionIdlePingTime = Math.Min(csb.ConnectionIdlePingTime, uint.MaxValue / 1000) * 1000;
-			ConnectionIdleTimeout = (int)csb.ConnectionIdleTimeout;
+			ConnectionIdleTimeout = (int) csb.ConnectionIdleTimeout;
 			if (csb.MinimumPoolSize > csb.MaximumPoolSize)
 				throw new MySqlException("MaximumPoolSize must be greater than or equal to MinimumPoolSize");
-			MinimumPoolSize = (int)csb.MinimumPoolSize;
-			MaximumPoolSize = (int)csb.MaximumPoolSize;
+			MinimumPoolSize = (int) csb.MinimumPoolSize;
+			MaximumPoolSize = (int) csb.MaximumPoolSize;
 
 			// Other Options
 			AllowPublicKeyRetrieval = csb.AllowPublicKeyRetrieval;
 			AllowUserVariables = csb.AllowUserVariables;
 			AutoEnlist = csb.AutoEnlist;
-			ConnectionTimeout = (int)csb.ConnectionTimeout;
+			ConnectionTimeout = (int) csb.ConnectionTimeout;
 			ConvertZeroDateTime = csb.ConvertZeroDateTime;
 			DefaultCommandTimeout = (int) csb.DefaultCommandTimeout;
 			ForceSynchronous = csb.ForceSynchronous;
