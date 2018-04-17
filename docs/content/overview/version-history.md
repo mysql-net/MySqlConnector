@@ -11,6 +11,19 @@ weight: 30
 Version History
 ===============
 
+### 0.40.0
+
+* Add `DateTimeKind` connection string setting: [#479](https://github.com/mysql-net/MySqlConnector/pull/479).
+* Fix `ArgumentException` for `SslProtocols.None`: [#482](https://github.com/mysql-net/MySqlConnector/issues/482).
+* Fix `IOException` being thrown at startup: [#475](https://github.com/mysql-net/MySqlConnector/issues/475).
+* Fix race condition in `OpenTcpSocketAsync`: [#476](https://github.com/mysql-net/MySqlConnector/issues/476).
+* Optimise `MySqlConnection.Open` when `ConnectionReset=true` (default): [#483](https://github.com/mysql-net/MySqlConnector/pull/483).
+* Thanks to [Ed Ball](https://github.com/ejball) for contributions to this release.
+
+#### MySqlConnector.Logging.Microsoft.Extensions.Logging
+
+* Reduce dependencies to just `Microsoft.Extensions.Logging.Abstractions`.
+
 ### 0.39.0
 
 * Add `IgnoreCommandTransaction` connection string setting: [#474](https://github.com/mysql-net/MySqlConnector/issues/474).
