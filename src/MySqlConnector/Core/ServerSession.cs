@@ -362,14 +362,31 @@ namespace MySqlConnector.Core
 				{
 					m_logArguments[1] = ServerVersion.OriginalString;
 					Log.Debug("Session{0} ServerVersion={1} supports reset connection; sending reset connection request", m_logArguments);
-					await SendAsync(ResetConnectionPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
-					var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Create(payload);
+					if (m_payloadHandler is StandardPayloadHandler standardPayloadHandler)
+					{
+						// send both packets at once
+						await standardPayloadHandler.ByteHandler.WriteBytesAsync(s_resetConnectionPackets, ioBehavior).ConfigureAwait(false);
 
-					// the "reset connection" packet also resets the connection charset, so we need to change that back to our default
-					await SendAsync(s_setNamesUtf8mb4Payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Create(payload);
+						// read two OK replies
+						standardPayloadHandler.SetNextSequenceNumber(1);
+						var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						OkPayload.Create(payload);
+
+						standardPayloadHandler.SetNextSequenceNumber(1);
+						payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						OkPayload.Create(payload);
+					}
+					else
+					{
+						await SendAsync(ResetConnectionPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
+						var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						OkPayload.Create(payload);
+
+						// the "reset connection" packet also resets the connection charset, so we need to change that back to our default
+						await SendAsync(s_setNamesUtf8mb4Payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+						payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						OkPayload.Create(payload);
+					}
 				}
 				else
 				{
@@ -1202,6 +1219,11 @@ namespace MySqlConnector.Core
 		static byte[] s_connectionAttributes;
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ServerSession));
 		static readonly PayloadData s_setNamesUtf8mb4Payload = QueryPayload.Create("SET NAMES utf8mb4 COLLATE utf8mb4_bin;");
+		static readonly ArraySegment<byte> s_resetConnectionPackets = new ArraySegment<byte>(new byte[]
+		{
+			1, 0, 0, 0, (byte) CommandKind.ResetConnection,
+			39, 0, 0, 0, (byte) CommandKind.Query, 83, 69, 84, 32, 78, 65, 77, 69, 83, 32, 117, 116, 102, 56, 109, 98, 52, 32, 67, 79, 76, 76, 65, 84, 69, 32, 117, 116, 102, 56, 109, 98, 52, 95, 98, 105, 110, 59 // SET NAMES utf8mb4 COLLATE utf8mb4_bin;
+		});
 
 		readonly object m_lock;
 		readonly object[] m_logArguments;
