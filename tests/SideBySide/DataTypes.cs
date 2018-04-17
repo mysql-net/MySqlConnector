@@ -568,22 +568,52 @@ namespace SideBySide
 			{
 				connection.Open();
 
-				var dateTimeIn = new DateTime(2002, 3, 4, 5, 6, 7, 890, kindIn);
+				var dateTimeIn = new DateTime(2001, 2, 3, 14, 5, 6, 789, kindIn);
 				using (var cmd = new MySqlCommand(@"drop table if exists date_time_kind;
-create table date_time_kind(rowid integer not null primary key auto_increment, dt datetime(3) not null);
-insert into date_time_kind(dt) values(?)", connection)
+create table date_time_kind(
+	rowid integer not null primary key auto_increment,
+	d date,
+	dt0 datetime(0),
+	dt1 datetime(1),
+	dt2 datetime(2),
+	dt3 datetime(3),
+	dt4 datetime(4),
+	dt5 datetime(5),
+	dt6 datetime(6));
+insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?, ?, ?, ?, ?, ?)", connection)
 				{
-					Parameters = { new MySqlParameter { Value = dateTimeIn } }
+					Parameters =
+					{
+						new MySqlParameter { Value = dateTimeIn },
+						new MySqlParameter { Value = dateTimeIn },
+						new MySqlParameter { Value = dateTimeIn },
+						new MySqlParameter { Value = dateTimeIn },
+						new MySqlParameter { Value = dateTimeIn },
+						new MySqlParameter { Value = dateTimeIn },
+						new MySqlParameter { Value = dateTimeIn },
+						new MySqlParameter { Value = dateTimeIn },
+					}
 				})
 				{
 					if (success)
 					{
 						cmd.ExecuteNonQuery();
 						long lastInsertId = cmd.LastInsertedId;
-						cmd.CommandText = $"select dt from date_time_kind where rowid = {lastInsertId};";
-						var dateTimeOut = (DateTime?) cmd.ExecuteScalar();
-						Assert.Equal(dateTimeIn, dateTimeOut);
-						Assert.Equal(kindOption, (MySqlDateTimeKind) dateTimeOut.Value.Kind);
+						cmd.CommandText = $"select d, dt0, dt1, dt2, dt3, dt4, dt5, dt6 from date_time_kind where rowid = {lastInsertId};";
+						using (var reader = cmd.ExecuteReader())
+						{
+							Assert.True(reader.Read());
+							Assert.Equal(new DateTime(2001, 2, 3), reader.GetValue(0));
+							Assert.Equal(new DateTime(2001, 2, 3, 14, 5, AppConfig.SupportedFeatures.HasFlag(ServerFeatures.RoundDateTime) ? 7 : 6, kindIn), reader.GetValue(1));
+							Assert.Equal(new DateTime(2001, 2, 3, 14, 5, 6, AppConfig.SupportedFeatures.HasFlag(ServerFeatures.RoundDateTime) ? 800 : 700, kindIn), reader.GetValue(2));
+							Assert.Equal(new DateTime(2001, 2, 3, 14, 5, 6, AppConfig.SupportedFeatures.HasFlag(ServerFeatures.RoundDateTime) ? 790 : 780, kindIn), reader.GetValue(3));
+							Assert.Equal(dateTimeIn, reader.GetValue(4));
+							Assert.Equal(dateTimeIn, reader.GetValue(5));
+							Assert.Equal(dateTimeIn, reader.GetValue(6));
+							Assert.Equal(dateTimeIn, reader.GetValue(7));
+							for (int i = 0; i < 7; i++)
+								Assert.Equal(kindOption, (MySqlDateTimeKind) reader.GetDateTime(i).Kind);
+						}
 					}
 					else
 					{

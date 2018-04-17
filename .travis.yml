@@ -17,7 +17,7 @@ env:
     OMIT_FEATURES=CachingSha2Password
   - IMAGE=mariadb:10.2
     NAME=mariadb
-    OMIT_FEATURES=Json,Sha256Password,CachingSha2Password
+    OMIT_FEATURES=Json,Sha256Password,CachingSha2Password,RoundDateTime
 
 before_install:
 - .ci/docker-run.sh $IMAGE $NAME 3307 $OMIT_FEATURES

@@ -32,6 +32,7 @@ Otherwise, set the following options appropriately:
   * `ErrorCodes`: server returns error codes in error packet (some MySQL proxies do not)
   * `Tls11`: server supports TLS 1.1
   * `Tls12`: server supports TLS 1.2
+  * `RoundDateTime`: server rounds `datetime` values to the specified precision (not implemented in MariaDB)
 
 ## Running Tests
 
