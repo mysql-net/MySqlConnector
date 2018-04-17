@@ -293,6 +293,8 @@ namespace MySqlConnector.Utilities
 		}
 
 		static SslProtocols? s_defaultSslProtocols;
+#elif NETSTANDARD1_3
+		public static SslProtocols GetDefaultSslProtocols() => SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
 #else
 		public static SslProtocols GetDefaultSslProtocols() => SslProtocols.None;
 #endif

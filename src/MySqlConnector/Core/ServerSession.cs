@@ -299,6 +299,11 @@ namespace MySqlConnector.Core
 							await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, sslProtocols, ioBehavior, cancellationToken).ConfigureAwait(false);
 							shouldRetrySsl = false;
 						}
+						catch (ArgumentException ex) when (ex.ParamName == "sslProtocolType" && sslProtocols == SslProtocols.None)
+						{
+							Log.Warn(ex, "Session{0} doesn't support SslProtocols.None; falling back to explicitly specifying SslProtocols", m_logArguments);
+							sslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
+						}
 						catch (Exception ex) when (shouldRetrySsl && ((ex is MySqlException && ex.InnerException is IOException) || ex is IOException))
 						{
 							// negotiating TLS 1.2 with a yaSSL-based server throws an exception on Windows, see comment at top of method
