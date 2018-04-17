@@ -56,6 +56,23 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-40-0">0.40.0</h3>
+
+<ul>
+<li>Add <code>DateTimeKind</code> connection string setting: <a href="https://github.com/mysql-net/MySqlConnector/pull/479">#479</a>.</li>
+<li>Fix <code>ArgumentException</code> for <code>SslProtocols.None</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/482">#482</a>.</li>
+<li>Fix <code>IOException</code> being thrown at startup: <a href="https://github.com/mysql-net/MySqlConnector/issues/475">#475</a>.</li>
+<li>Fix race condition in <code>OpenTcpSocketAsync</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/476">#476</a>.</li>
+<li>Optimise <code>MySqlConnection.Open</code> when <code>ConnectionReset=true</code> (default): <a href="https://github.com/mysql-net/MySqlConnector/pull/483">#483</a>.</li>
+<li>Thanks to <a href="https://github.com/ejball">Ed Ball</a> for contributions to this release.</li>
+</ul>
+
+<h4 id="mysqlconnector-logging-microsoft-extensions-logging">MySqlConnector.Logging.Microsoft.Extensions.Logging</h4>
+
+<ul>
+<li>Reduce dependencies to just <code>Microsoft.Extensions.Logging.Abstractions</code>.</li>
+</ul>
+
 <h3 id="0-39-0">0.39.0</h3>
 
 <ul>

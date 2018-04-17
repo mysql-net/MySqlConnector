@@ -109,7 +109,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.39.0  Add IgnoreCommandTransaction connection string setting: #474.  0.38.0  Add Serilog logging provider: #463. Add NLog logging provider: #470. Implement IDbDataParameter on MySqlParameter: #465. Implement MySqlDataReader.GetChar: #456. Add MySqlDataReader.GetFieldType(string) overload: #440. Fix a connection pooling session leak in high contention scenarios: #469. Fix overhead of extra connection pools created in a race: #468. Thanks to Marc Lewandowski and Rolf Kristensen for contributions to this release.  0.</description>
+      <description>Version History 0.40.0  Add DateTimeKind connection string setting: #479. Fix ArgumentException for SslProtocols.None: #482. Fix IOException being thrown at startup: #475. Fix race condition in OpenTcpSocketAsync: #476. Optimise MySqlConnection.Open when ConnectionReset=true (default): #483. Thanks to Ed Ball for contributions to this release.  MySqlConnector.Logging.Microsoft.Extensions.Logging  Reduce dependencies to just Microsoft.Extensions.Logging.Abstractions.  0.39.0  Add IgnoreCommandTransaction connection string setting: #474.  0.38.0  Add Serilog logging provider: #463. Add NLog logging provider: #470.</description>
     </item>
     
     <item>
