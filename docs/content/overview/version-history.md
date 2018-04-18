@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.40.1
+
+* Always use new `DateTimeKind` setting: [#484](https://github.com/mysql-net/MySqlConnector/pull/484).
+
 ### 0.40.0
 
 * Add `DateTimeKind` connection string setting: [#479](https://github.com/mysql-net/MySqlConnector/pull/479).
