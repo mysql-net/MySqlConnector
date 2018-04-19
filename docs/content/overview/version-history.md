@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.40.2
+
+* Reverted `ConnectionReset=true` optimisation (added in 0.40.0) that was incompatible with Aurora: [#486](https://github.com/mysql-net/MySqlConnector/issues/486).
+
 ### 0.40.1
 
 * Always use new `DateTimeKind` setting: [#484](https://github.com/mysql-net/MySqlConnector/pull/484).
