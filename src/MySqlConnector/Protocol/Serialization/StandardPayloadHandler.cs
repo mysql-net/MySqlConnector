@@ -23,8 +23,6 @@ namespace MySqlConnector.Protocol.Serialization
 			m_sequenceNumber = 0;
 		}
 
-		public void SetNextSequenceNumber(int sequenceNumber) => m_sequenceNumber = sequenceNumber;
-
 		public IByteHandler ByteHandler
 		{
 			get => m_byteHandler;
