@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
 using Dapper;
+using Xunit.Sdk;
 
 namespace SideBySide
 {
@@ -158,7 +159,14 @@ namespace SideBySide
 
 				if (!(exception is FileNotFoundException))
 				{
-					Assert.Contains("Errcode: 2 ", exception.Message);
+					try
+					{
+						Assert.Contains("Errcode: 2 ", exception.Message, StringComparison.OrdinalIgnoreCase);
+					}
+					catch (ContainsException)
+					{
+						Assert.Contains("OS errno 2 ", exception.Message, StringComparison.OrdinalIgnoreCase);
+					}
 					Assert.Contains("No such file or directory", exception.Message);
 				}
 			}
