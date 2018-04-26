@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.40.3
+
+* Fix `caching_sha2_password` authentication for MySQL Server 8.0.11 release: [#489](https://github.com/mysql-net/MySqlConnector/issues/489).
+  * **Breaking** This authentication plugin can no longer be used with MySQL Server 8.0.4; you must update to the GA release.
+
 ### 0.40.2
 
 * Reverted `ConnectionReset=true` optimisation (added in 0.40.0) that was incompatible with Aurora: [#486](https://github.com/mysql-net/MySqlConnector/issues/486).
