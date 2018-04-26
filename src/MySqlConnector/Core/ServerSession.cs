@@ -513,7 +513,7 @@ namespace MySqlConnector.Core
 					passwordBytes[i] ^= AuthPluginData[i % AuthPluginData.Length];
 
 				// encrypt with RSA public key
-				var padding = switchRequest.Name == "caching_sha2_password" ? RSAEncryptionPadding.Pkcs1 : RSAEncryptionPadding.OaepSHA1;
+				var padding = RSAEncryptionPadding.OaepSHA1;
 				var encryptedPassword = rsa.Encrypt(passwordBytes, padding);
 				var payload = new PayloadData(encryptedPassword);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
