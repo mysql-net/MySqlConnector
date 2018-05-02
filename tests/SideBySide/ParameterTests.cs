@@ -81,7 +81,9 @@ namespace SideBySide
 			Assert.Equal(0, parameter.Precision);
 			Assert.Equal(0, parameter.Scale);
 			Assert.Equal(0, parameter.Size);
-#if !NETCOREAPP1_1_2
+#if BASELINE
+			Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
+#elif !NETCOREAPP1_1_2
 			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
 		}
@@ -99,7 +101,9 @@ namespace SideBySide
 			Assert.Equal(0, parameter.Precision);
 			Assert.Equal(0, parameter.Scale);
 			Assert.Equal(0, parameter.Size);
-#if !NETCOREAPP1_1_2
+#if BASELINE
+			Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
+#elif !NETCOREAPP1_1_2
 			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
 #if BASELINE
@@ -122,7 +126,9 @@ namespace SideBySide
 			Assert.Equal(0, parameter.Precision);
 			Assert.Equal(0, parameter.Scale);
 			Assert.Equal(0, parameter.Size);
-#if !NETCOREAPP1_1_2
+#if BASELINE
+			Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
+#elif !NETCOREAPP1_1_2
 			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
 #if BASELINE
@@ -145,7 +151,9 @@ namespace SideBySide
 			Assert.Equal(0, parameter.Precision);
 			Assert.Equal(0, parameter.Scale);
 			Assert.Equal(4, parameter.Size);
-#if !NETCOREAPP1_1_2
+#if BASELINE
+			Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
+#elif !NETCOREAPP1_1_2
 			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
 #if BASELINE
@@ -168,7 +176,9 @@ namespace SideBySide
 			Assert.Equal(0, parameter.Precision);
 			Assert.Equal(0, parameter.Scale);
 			Assert.Equal(4, parameter.Size);
-#if !NETCOREAPP1_1_2
+#if BASELINE
+			Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
+#elif !NETCOREAPP1_1_2
 			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
 			Assert.Equal("source", parameter.SourceColumn);
