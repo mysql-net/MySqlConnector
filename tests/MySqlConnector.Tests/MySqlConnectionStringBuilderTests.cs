@@ -10,9 +10,7 @@ namespace MySqlConnector.Tests
 		public void Defaults()
 		{
 			var csb = new MySqlConnectionStringBuilder();
-#if !BASELINE
 			Assert.False(csb.AllowPublicKeyRetrieval);
-#endif
 			Assert.False(csb.AllowUserVariables);
 			Assert.True(csb.AutoEnlist);
 			Assert.Null(csb.CertificateFile);
@@ -73,6 +71,7 @@ namespace MySqlConnector.Tests
 			{
 				ConnectionString = "Data Source=db-server;" +
 					"Initial Catalog=schema_name;" +
+					"allowpublickeyretrieval = true;" +
 					"Allow User Variables=true;" +
 					"auto enlist=False;" +
 					"certificate file=file.pfx;" +
@@ -93,7 +92,6 @@ namespace MySqlConnector.Tests
 					"forcesynchronous=true;" +
 					"ignore command transaction=true;" +
 					"ca certificate file=ca.pem;" +
-					"allow public key retrieval = true;" +
 					"server rsa public key file=rsa.pem;" +
 					"load balance=random;" +
 #endif
@@ -110,6 +108,7 @@ namespace MySqlConnector.Tests
 					"Uid=username;" +
 					"useaffectedrows=false"
 			};
+			Assert.True(csb.AllowPublicKeyRetrieval);
 			Assert.True(csb.AllowUserVariables);
 			Assert.False(csb.AutoEnlist);
 			Assert.Equal("file.pfx", csb.CertificateFile);
@@ -130,7 +129,6 @@ namespace MySqlConnector.Tests
 			Assert.True(csb.ForceSynchronous);
 			Assert.True(csb.IgnoreCommandTransaction);
 			Assert.Equal("ca.pem", csb.CACertificateFile);
-			Assert.True(csb.AllowPublicKeyRetrieval);
 			Assert.Equal("rsa.pem", csb.ServerRsaPublicKeyFile);
 			Assert.Equal(MySqlLoadBalance.Random, csb.LoadBalance);
 #endif

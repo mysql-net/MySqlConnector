@@ -270,19 +270,13 @@ namespace SideBySide
 		{
 			var csb = AppConfig.CreateSha256ConnectionStringBuilder();
 			csb.SslMode = MySqlSslMode.None;
-#if !BASELINE
 			csb.AllowPublicKeyRetrieval = true;
-#endif
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
-#if BASELINE
-				await Assert.ThrowsAsync<NotImplementedException>(() => connection.OpenAsync());
-#else
 				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.RsaEncryption))
 					await connection.OpenAsync();
 				else
 					await Assert.ThrowsAsync<MySqlException>(() => connection.OpenAsync());
-#endif
 			}
 		}
 
@@ -299,16 +293,10 @@ namespace SideBySide
 		{
 			var csb = AppConfig.CreateCachingSha2ConnectionStringBuilder();
 			csb.SslMode = MySqlSslMode.None;
-#if !BASELINE
 			csb.AllowPublicKeyRetrieval = true;
-#endif
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
-#if BASELINE
-				await Assert.ThrowsAsync<NotImplementedException>(() => connection.OpenAsync());
-#else
 				await connection.OpenAsync();
-#endif
 			}
 		}
 
