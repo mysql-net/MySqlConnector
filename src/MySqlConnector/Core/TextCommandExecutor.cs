@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
@@ -23,37 +24,77 @@ namespace MySqlConnector.Core
 		public virtual async Task<int> ExecuteNonQueryAsync(string commandText, MySqlParameterCollection parameterCollection,
 			IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(commandText, parameterCollection, CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false))
+			Exception e = default;
+			var operationId = s_diagnosticListener.WriteCommandBefore(m_command);
+
+			try
 			{
-				do
+				using (var reader = (MySqlDataReader) await ExecuteReaderAsync(commandText, parameterCollection,
+					CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false))
 				{
-					while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
+					do
 					{
-					}
-				} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
-				return reader.RecordsAffected;
+						while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
+						{
+						}
+					} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
+
+					return reader.RecordsAffected;
+				}
+			}
+			catch (Exception ex)
+			{
+				e = ex;
+				throw;
+			}
+			finally
+			{
+				if (e != null)
+					s_diagnosticListener.WriteCommandError(operationId, m_command, e);
+				else
+					s_diagnosticListener.WriteCommandAfter(operationId, m_command);
 			}
 		}
 
 		public virtual async Task<object> ExecuteScalarAsync(string commandText, MySqlParameterCollection parameterCollection,
 			IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			var hasSetResult = false;
-			object result = null;
-			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(commandText, parameterCollection, CommandBehavior.SingleResult | CommandBehavior.SingleRow, ioBehavior, cancellationToken).ConfigureAwait(false))
+			Exception e = default;
+			var operationId = s_diagnosticListener.WriteCommandBefore(m_command);
+
+			try
 			{
-				do
+				var hasSetResult = false;
+				object result = null;
+				using (var reader = (MySqlDataReader) await ExecuteReaderAsync(commandText, parameterCollection,
+					CommandBehavior.SingleResult | CommandBehavior.SingleRow, ioBehavior, cancellationToken).ConfigureAwait(false))
 				{
-					var hasResult = await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					if (!hasSetResult)
+					do
 					{
-						if (hasResult)
-							result = reader.GetValue(0);
-						hasSetResult = true;
-					}
-				} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
+						var hasResult = await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						if (!hasSetResult)
+						{
+							if (hasResult)
+								result = reader.GetValue(0);
+							hasSetResult = true;
+						}
+					} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
+				}
+
+				return result;
 			}
-			return result;
+			catch (Exception ex)
+			{
+				e = ex;
+				throw;
+			}
+			finally
+			{
+				if (e != null)
+					s_diagnosticListener.WriteCommandError(operationId, m_command, e);
+				else
+					s_diagnosticListener.WriteCommandAfter(operationId, m_command);
+			}
 		}
 
 		public virtual async Task<DbDataReader> ExecuteReaderAsync(string commandText, MySqlParameterCollection parameterCollection,
@@ -105,6 +146,7 @@ namespace MySqlConnector.Core
 		}
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(TextCommandExecutor));
+		static readonly DiagnosticListener s_diagnosticListener = new DiagnosticListener(DiagnosticListenerExtensions.DiagnosticListenerName);
 
 		readonly MySqlCommand m_command;
 	}
