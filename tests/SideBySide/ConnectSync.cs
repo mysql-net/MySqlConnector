@@ -367,12 +367,10 @@ namespace SideBySide
 		{
 			var csb = AppConfig.CreateSha256ConnectionStringBuilder();
 			csb.SslMode = MySqlSslMode.None;
-#if !BASELINE
 			csb.AllowPublicKeyRetrieval = true;
-#endif
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
-#if BASELINE || NET45
+#if NET45
 				Assert.Throws<NotImplementedException>(() => connection.Open());
 #else
 				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.RsaEncryption))

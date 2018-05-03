@@ -13,6 +13,7 @@ namespace SideBySide
 			m_database = database;
 		}
 
+#if !BASELINE
 		[SkippableFact(ConfigSettings.RequiresSsl)]
 		public async Task ConnectSslPreferred()
 		{
@@ -25,18 +26,17 @@ namespace SideBySide
 				using (var cmd = connection.CreateCommand())
 				{
 					await connection.OpenAsync();
-#if !BASELINE
 					Assert.True(connection.SslIsEncrypted);
 					Assert.True(connection.SslIsSigned);
 					Assert.True(connection.SslIsAuthenticated);
 					Assert.False(connection.SslIsMutuallyAuthenticated);
-#endif
 					cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
 					var sslVersion = (string)await cmd.ExecuteScalarAsync();
 					Assert.False(string.IsNullOrWhiteSpace(sslVersion));
 				}
 			}
 		}
+#endif
 
 		[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
 		[InlineData("ssl-client.pfx", null, null)]

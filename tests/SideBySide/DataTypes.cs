@@ -812,17 +812,9 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 			DoGetSchemaTable(column, table, mySqlDbType, columnSize, dataType, flags, precision, scale);
 
 		[Theory]
-		[InlineData("`decimal-type` decimal(10,0) NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 11, typeof(decimal), "", 10, 0
-#if BASELINE
-			, Skip = "https://bugs.mysql.com/bug.php?id=88058"
-#endif
-			)]
+		[InlineData("`decimal-type` decimal(10,0) NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 11, typeof(decimal), "", 10, 0)]
 		[InlineData("`decimal-type` decimal(10,1) NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 12, typeof(decimal), "", 10, 1)]
-		[InlineData("`decimal-type` decimal(10,0) UNSIGNED NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 10, typeof(decimal), "", 10, 0
-#if BASELINE
-			, Skip = "https://bugs.mysql.com/bug.php?id=88058"
-#endif
-			)]
+		[InlineData("`decimal-type` decimal(10,0) UNSIGNED NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 10, typeof(decimal), "", 10, 0)]
 		[InlineData("`decimal-type` decimal(10,1) UNSIGNED NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 11, typeof(decimal), "", 10, 1)]
 		[InlineData("`decimal-type` decimal(65,30) NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 67, typeof(decimal), "", 65, 30)]
 		[InlineData("`decimal-type` decimal(1,1) NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 3, typeof(decimal), "", 1, 1)]
@@ -861,18 +853,13 @@ create table schema_table({createColumn});");
 					Assert.Equal(ordinal, schema["ColumnOrdinal"]);
 					Assert.Equal(dataType, schema["DataType"]);
 #if BASELINE
-					// https://bugs.mysql.com/bug.php?id=87868, https://bugs.mysql.com/bug.php?id=87876
-					if (!column.EndsWith("blob", StringComparison.OrdinalIgnoreCase) && column != "text" && dataType != typeof(Guid) && columnSize != int.MaxValue)
+					// https://bugs.mysql.com/bug.php?id=87876
+					if (columnSize != int.MaxValue)
 						Assert.Equal(columnSize, schema["ColumnSize"]);
 #else
 					Assert.Equal(columnSize, schema["ColumnSize"]);
 #endif
-#if BASELINE
-					// https://bugs.mysql.com/bug.php?id=87876
-					Assert.Equal(isLong && columnSize != int.MaxValue, schema["IsLong"]);
-#else
 					Assert.Equal(isLong, schema["IsLong"]);
-#endif
 					Assert.Equal(isAutoIncrement, schema["IsAutoIncrement"]);
 					Assert.Equal(isKey, schema["IsKey"]);
 					Assert.Equal(allowDbNull, schema["AllowDBNull"]);

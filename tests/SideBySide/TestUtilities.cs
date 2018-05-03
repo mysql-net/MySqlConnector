@@ -41,11 +41,19 @@ namespace SideBySide
 				return null;
 
 			var csb = AppConfig.CreateConnectionStringBuilder();
-			if (configSettings.HasFlag(ConfigSettings.RequiresSsl) && (csb.SslMode == MySqlSslMode.None || csb.SslMode == MySqlSslMode.Preferred))
+			if (configSettings.HasFlag(ConfigSettings.RequiresSsl) && (csb.SslMode == MySqlSslMode.None
+#if !BASELINE
+			 || csb.SslMode == MySqlSslMode.Preferred
+#endif
+			 ))
 				return "Requires SslMode=Required or higher in connection string";
 
 			if (configSettings.HasFlag(ConfigSettings.TrustedHost) &&
-				(csb.SslMode == MySqlSslMode.None || csb.SslMode == MySqlSslMode.Preferred || csb.SslMode == MySqlSslMode.Required))
+				(csb.SslMode == MySqlSslMode.None ||
+#if !BASELINE
+				csb.SslMode == MySqlSslMode.Preferred ||
+#endif
+				csb.SslMode == MySqlSslMode.Required))
 			{
 				return "Requires SslMode=VerifyCA or higher in connection string";
 			}

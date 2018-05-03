@@ -9,6 +9,12 @@ namespace SideBySide
 {
 	public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 	{
+#if BASELINE
+		const string c_timeoutMessage = "fatal error";
+#else
+		const string c_timeoutMessage = "timeout";
+#endif
+
 		public CommandTimeoutTests(DatabaseFixture database)
 		{
 			m_database = database;
@@ -73,17 +79,12 @@ namespace SideBySide
 				catch (MySqlException ex)
 				{
 					sw.Stop();
-					Assert.Contains("timeout", ex.Message, StringComparison.OrdinalIgnoreCase);
-#if !BASELINE
-					// https://bugs.mysql.com/bug.php?id=86009
+					Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
 					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
-#endif
 				}
 			}
 
-#if !BASELINE
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
-#endif
 		}
 
 		[Fact]
@@ -104,17 +105,12 @@ namespace SideBySide
 				catch (MySqlException ex)
 				{
 					sw.Stop();
-					Assert.Contains("timeout", ex.Message, StringComparison.OrdinalIgnoreCase);
-#if !BASELINE
-					// https://bugs.mysql.com/bug.php?id=86009
+					Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
 					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
-#endif
 				}
 			}
 
-#if !BASELINE
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
-#endif
 		}
 
 		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=87307")]
@@ -154,9 +150,7 @@ namespace SideBySide
 				}
 			}
 
-#if !BASELINE
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
-#endif
 		}
 
 		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=87307")]
@@ -195,9 +189,7 @@ namespace SideBySide
 				}
 			}
 
-#if !BASELINE
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
-#endif
 		}
 
 		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
@@ -264,17 +256,12 @@ namespace SideBySide
 				catch (MySqlException ex)
 				{
 					sw.Stop();
-					Assert.Contains("timeout", ex.Message, StringComparison.OrdinalIgnoreCase);
-#if !BASELINE
-					// https://bugs.mysql.com/bug.php?id=86009
+					Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
 					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
-#endif
 				}
 			}
 
-#if !BASELINE
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
-#endif
 		}
 
 		[Fact]
@@ -296,17 +283,11 @@ namespace SideBySide
 				catch (MySqlException ex)
 				{
 					sw.Stop();
-					Assert.Contains("timeout", ex.Message, StringComparison.OrdinalIgnoreCase);
-#if !BASELINE
-					// https://bugs.mysql.com/bug.php?id=86009
-					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
-#endif
+					Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
 				}
 			}
 
-#if !BASELINE
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
-#endif
 		}
 
 		readonly DatabaseFixture m_database;
