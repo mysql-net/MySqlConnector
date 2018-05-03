@@ -1,8 +1,10 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySql.Data.MySqlClient
@@ -21,10 +23,27 @@ namespace MySql.Data.MySqlClient
 
 			if (Connection.CurrentTransaction == this)
 			{
-				using (var cmd = new MySqlCommand("commit", Connection, this))
-					await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				Connection.CurrentTransaction = null;
-				Connection = null;
+				Exception e = default;
+				var operationId = s_diagnosticListener.WriteTransactionCommitBefore(IsolationLevel, Connection);
+				try
+				{
+					using (var cmd = new MySqlCommand("commit", Connection, this))
+						await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					Connection.CurrentTransaction = null;
+					Connection = null;
+				}
+				catch (Exception ex)
+				{
+					e = ex;
+					throw;
+				}
+				finally
+				{
+					if (e != null)
+						s_diagnosticListener.WriteTransactionCommitError(operationId, IsolationLevel, Connection, e);
+					else
+						s_diagnosticListener.WriteTransactionCommitAfter(operationId, IsolationLevel, Connection);
+				}
 			}
 			else if (Connection.CurrentTransaction != null)
 			{
@@ -48,10 +67,27 @@ namespace MySql.Data.MySqlClient
 
 			if (Connection.CurrentTransaction == this)
 			{
-				using (var cmd = new MySqlCommand("rollback", Connection, this))
-					await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				Connection.CurrentTransaction = null;
-				Connection = null;
+				Exception e = default;
+				var operationId = s_diagnosticListener.WriteTransactionRollbackBefore(IsolationLevel, Connection, null);
+				try
+				{
+					using (var cmd = new MySqlCommand("rollback", Connection, this))
+						await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					Connection.CurrentTransaction = null;
+					Connection = null;
+				}
+				catch (Exception ex)
+				{
+					e = ex;
+					throw;
+				}
+				finally
+				{
+					if (e != null)
+						s_diagnosticListener.WriteTransactionRollbackError(operationId, IsolationLevel, Connection, null, e);
+					else
+						s_diagnosticListener.WriteTransactionRollbackAfter(operationId, IsolationLevel, Connection, null);
+				}
 			}
 			else if (Connection.CurrentTransaction != null)
 			{
@@ -103,6 +139,8 @@ namespace MySql.Data.MySqlClient
 			if (m_isDisposed)
 				throw new ObjectDisposedException(nameof(MySqlTransaction));
 		}
+
+		static readonly DiagnosticListener s_diagnosticListener = new DiagnosticListener(DiagnosticListenerExtensions.DiagnosticListenerName);
 
 		bool m_isDisposed;
 	}
