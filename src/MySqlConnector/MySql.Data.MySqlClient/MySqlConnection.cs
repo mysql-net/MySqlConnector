@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Threading;
@@ -165,6 +166,8 @@ namespace MySql.Data.MySqlClient
 
 			SetState(ConnectionState.Connecting);
 
+			Exception e = default;
+			var operationId = s_diagnosticListener.WriteConnectionOpenBefore(this);
 			try
 			{
 				m_session = await CreateSessionAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -172,15 +175,28 @@ namespace MySql.Data.MySqlClient
 				m_hasBeenOpened = true;
 				SetState(ConnectionState.Open);
 			}
-			catch (MySqlException)
+			catch (MySqlException ex)
 			{
+				e = ex;
 				SetState(ConnectionState.Closed);
 				throw;
 			}
 			catch (SocketException ex)
 			{
+				e = ex;
 				SetState(ConnectionState.Closed);
 				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.", ex);
+			}
+			finally
+			{
+				if (e != null)
+				{
+					s_diagnosticListener.WriteConnectionOpenError(operationId, this, e);
+				}
+				else
+				{
+					s_diagnosticListener.WriteConnectionOpenAfter(operationId, this);
+				}
 			}
 
 #if !NETSTANDARD1_3
@@ -469,14 +485,23 @@ namespace MySql.Data.MySqlClient
 
 			if (m_connectionState != ConnectionState.Closed)
 			{
+				Exception e = default;
+				var operationId = s_diagnosticListener.WriteConnectionCloseBefore(this);
 				try
 				{
 					CloseDatabase();
 				}
+				catch (Exception ex)
+				{
+					e = ex;
+					throw;
+				}
 				finally
 				{
+					string sessionId = null;
 					if (m_session != null)
 					{
+						sessionId = m_session.Id;
 						if (m_connectionSettings.Pooling)
 							m_session.ReturnToPool();
 						else
@@ -484,6 +509,15 @@ namespace MySql.Data.MySqlClient
 						m_session = null;
 					}
 					SetState(ConnectionState.Closed);
+
+					if (e != null)
+					{
+						s_diagnosticListener.WriteConnectionCloseError(operationId, sessionId, this, e);
+					}
+					else
+					{
+						s_diagnosticListener.WriteConnectionCloseAfter(operationId, sessionId, this);
+					}
 				}
 			}
 		}
@@ -510,6 +544,7 @@ namespace MySql.Data.MySqlClient
 		static readonly StateChangeEventArgs s_stateChangeClosedConnecting = new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting);
 		static readonly StateChangeEventArgs s_stateChangeConnectingOpen = new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open);
 		static readonly StateChangeEventArgs s_stateChangeOpenClosed = new StateChangeEventArgs(ConnectionState.Open, ConnectionState.Closed);
+		static readonly DiagnosticListener s_diagnosticListener = new DiagnosticListener(DiagnosticListenerExtensions.DiagnosticListenerName);
 
 		string m_connectionString;
 		ConnectionSettings m_connectionSettings;
