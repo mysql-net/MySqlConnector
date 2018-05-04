@@ -11,13 +11,31 @@ namespace MySqlConnector.Core
 	/// </summary>
 	internal static class DiagnosticListenerExtensions
 	{
+		// Diagnostics listeners name
 		public const string CommandListenerName = "MySqlConnector.Command";
 		public const string ConnectionListenerName = "MySqlConnector.Connection";
 		public const string TransactionListenerName = "MySqlConnector.Transaction";
 
+		// Command listener events name
 		public const string WriteStart = nameof(WriteStart);
 		public const string WriteStop = nameof(WriteStop);
 		public const string WriteError = nameof(WriteError);
+
+		// Connection listener events name
+		public const string WriteOpenStart = nameof(WriteOpenStart);
+		public const string WriteOpenStop = nameof(WriteOpenStop);
+		public const string WriteOpenError = nameof(WriteOpenError);
+		public const string WriteCloseStart = nameof(WriteCloseStart);
+		public const string WriteCloseStop = nameof(WriteCloseStop);
+		public const string WriteCloseError = nameof(WriteCloseError);
+
+		// Transaction listener events name
+		public const string WriteCommitStart = nameof(WriteCommitStart);
+		public const string WriteCommitStop = nameof(WriteCommitStop);
+		public const string WriteCommitError = nameof(WriteCommitError);
+		public const string WriteRollbackStart = nameof(WriteRollbackStart);
+		public const string WriteRollbackStop = nameof(WriteRollbackStop);
+		public const string WriteRollbackError = nameof(WriteRollbackError);
 
 		public static Guid WriteCommandStart(this DiagnosticListener @this, MySqlCommand sqlCommand, [CallerMemberName] string operation = "")
 		{
@@ -75,12 +93,12 @@ namespace MySqlConnector.Core
 
 		public static Guid WriteConnectionOpenStart(this DiagnosticListener @this, MySqlConnection sqlConnection, [CallerMemberName] string operation = "")
 		{
-			if (@this.IsEnabled(WriteStart))
+			if (@this.IsEnabled(WriteOpenStart))
 			{
 				Guid operationId = Guid.NewGuid();
 
 				@this.Write(
-					WriteStart,
+					WriteOpenStart,
 					new
 					{
 						OperationId = operationId,
@@ -97,10 +115,10 @@ namespace MySqlConnector.Core
 
 		public static void WriteConnectionOpenStop(this DiagnosticListener @this, Guid operationId, MySqlConnection sqlConnection, [CallerMemberName] string operation = "")
 		{
-			if (@this.IsEnabled(WriteStop))
+			if (@this.IsEnabled(WriteOpenStop))
 			{
 				@this.Write(
-					WriteStop,
+					WriteOpenStop,
 					new
 					{
 						OperationId = operationId,
@@ -113,10 +131,10 @@ namespace MySqlConnector.Core
 
 		public static void WriteConnectionOpenError(this DiagnosticListener @this, Guid operationId, MySqlConnection sqlConnection, Exception ex, [CallerMemberName] string operation = "")
 		{
-			if (@this.IsEnabled(WriteError))
+			if (@this.IsEnabled(WriteOpenError))
 			{
 				@this.Write(
-					WriteError,
+					WriteOpenError,
 					new
 					{
 						OperationId = operationId,
@@ -130,12 +148,12 @@ namespace MySqlConnector.Core
 
 		public static Guid WriteConnectionCloseStart(this DiagnosticListener @this, MySqlConnection sqlConnection, [CallerMemberName] string operation = "")
 		{
-			if (@this.IsEnabled(WriteStart))
+			if (@this.IsEnabled(WriteCloseStart))
 			{
 				Guid operationId = Guid.NewGuid();
 
 				@this.Write(
-					WriteStart,
+					WriteCloseStart,
 					new
 					{
 						OperationId = operationId,
@@ -152,10 +170,10 @@ namespace MySqlConnector.Core
 
 		public static void WriteConnectionCloseStop(this DiagnosticListener @this, Guid operationId, string clientConnectionId, MySqlConnection sqlConnection, [CallerMemberName] string operation = "")
 		{
-			if (@this.IsEnabled(WriteStop))
+			if (@this.IsEnabled(WriteCloseStop))
 			{
 				@this.Write(
-					WriteStop,
+					WriteCloseStop,
 					new
 					{
 						OperationId = operationId,
@@ -169,10 +187,10 @@ namespace MySqlConnector.Core
 
 		public static void WriteConnectionCloseError(this DiagnosticListener @this, Guid operationId, string clientConnectionId, MySqlConnection sqlConnection, Exception ex, [CallerMemberName] string operation = "")
 		{
-			if (@this.IsEnabled(WriteError))
+			if (@this.IsEnabled(WriteCloseError))
 			{
 				@this.Write(
-					WriteError,
+					WriteCloseError,
 					new
 					{
 						OperationId = operationId,
@@ -187,12 +205,12 @@ namespace MySqlConnector.Core
 
 		public static Guid WriteTransactionCommitStart(this DiagnosticListener @this, IsolationLevel isolationLevel, MySqlConnection connection, [CallerMemberName] string operation = "")
 		{
-			if (@this.IsEnabled(WriteStart))
+			if (@this.IsEnabled(WriteCommitStart))
 			{
 				Guid operationId = Guid.NewGuid();
 
 				@this.Write(
-					WriteStart,
+					WriteCommitStart,
 					new
 					{
 						OperationId = operationId,
@@ -210,10 +228,10 @@ namespace MySqlConnector.Core
 
 		public static void WriteTransactionCommitStop(this DiagnosticListener @this, Guid operationId, IsolationLevel isolationLevel, MySqlConnection connection, [CallerMemberName] string operation = "")
 		{
-			if (@this.IsEnabled(WriteStop))
+			if (@this.IsEnabled(WriteCommitStop))
 			{
 				@this.Write(
-					WriteStop,
+					WriteCommitStop,
 					new
 					{
 						OperationId = operationId,
@@ -227,10 +245,10 @@ namespace MySqlConnector.Core
 
 		public static void WriteTransactionCommitError(this DiagnosticListener @this, Guid operationId, IsolationLevel isolationLevel, MySqlConnection connection, Exception ex, [CallerMemberName] string operation = "")
 		{
-			if (@this.IsEnabled(WriteError))
+			if (@this.IsEnabled(WriteCommitError))
 			{
 				@this.Write(
-					WriteError,
+					WriteCommitError,
 					new
 					{
 						OperationId = operationId,
@@ -245,12 +263,12 @@ namespace MySqlConnector.Core
 
 		public static Guid WriteTransactionRollbackStart(this DiagnosticListener @this, IsolationLevel isolationLevel, MySqlConnection connection, string transactionName, [CallerMemberName] string operation = "")
 		{
-			if (@this.IsEnabled(WriteStart))
+			if (@this.IsEnabled(WriteRollbackStart))
 			{
 				Guid operationId = Guid.NewGuid();
 
 				@this.Write(
-					WriteStart,
+					WriteRollbackStart,
 					new
 					{
 						OperationId = operationId,
@@ -269,10 +287,10 @@ namespace MySqlConnector.Core
 
 		public static void WriteTransactionRollbackStop(this DiagnosticListener @this, Guid operationId, IsolationLevel isolationLevel, MySqlConnection connection, string transactionName, [CallerMemberName] string operation = "")
 		{
-			if (@this.IsEnabled(WriteStop))
+			if (@this.IsEnabled(WriteRollbackStop))
 			{
 				@this.Write(
-					WriteStop,
+					WriteRollbackStop,
 					new
 					{
 						OperationId = operationId,
@@ -287,10 +305,10 @@ namespace MySqlConnector.Core
 
 		public static void WriteTransactionRollbackError(this DiagnosticListener @this, Guid operationId, IsolationLevel isolationLevel, MySqlConnection connection, string transactionName, Exception ex, [CallerMemberName] string operation = "")
 		{
-			if (@this.IsEnabled(WriteError))
+			if (@this.IsEnabled(WriteRollbackError))
 			{
 				@this.Write(
-					WriteError,
+					WriteRollbackError,
 					new
 					{
 						OperationId = operationId,
