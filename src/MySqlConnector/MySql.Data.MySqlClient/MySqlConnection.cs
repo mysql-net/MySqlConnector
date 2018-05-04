@@ -167,7 +167,7 @@ namespace MySql.Data.MySqlClient
 			SetState(ConnectionState.Connecting);
 
 			Exception e = default;
-			var operationId = s_diagnosticListener.WriteConnectionOpenBefore(this);
+			var operationId = s_diagnosticListener.WriteConnectionOpenStart(this);
 			try
 			{
 				m_session = await CreateSessionAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -195,7 +195,7 @@ namespace MySql.Data.MySqlClient
 				}
 				else
 				{
-					s_diagnosticListener.WriteConnectionOpenAfter(operationId, this);
+					s_diagnosticListener.WriteConnectionOpenStop(operationId, this);
 				}
 			}
 
@@ -486,7 +486,7 @@ namespace MySql.Data.MySqlClient
 			if (m_connectionState != ConnectionState.Closed)
 			{
 				Exception e = default;
-				var operationId = s_diagnosticListener.WriteConnectionCloseBefore(this);
+				var operationId = s_diagnosticListener.WriteConnectionCloseStart(this);
 				try
 				{
 					CloseDatabase();
@@ -516,7 +516,7 @@ namespace MySql.Data.MySqlClient
 					}
 					else
 					{
-						s_diagnosticListener.WriteConnectionCloseAfter(operationId, sessionId, this);
+						s_diagnosticListener.WriteConnectionCloseStop(operationId, sessionId, this);
 					}
 				}
 			}
@@ -544,7 +544,7 @@ namespace MySql.Data.MySqlClient
 		static readonly StateChangeEventArgs s_stateChangeClosedConnecting = new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting);
 		static readonly StateChangeEventArgs s_stateChangeConnectingOpen = new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open);
 		static readonly StateChangeEventArgs s_stateChangeOpenClosed = new StateChangeEventArgs(ConnectionState.Open, ConnectionState.Closed);
-		static readonly DiagnosticListener s_diagnosticListener = new DiagnosticListener(DiagnosticListenerExtensions.DiagnosticListenerName);
+		static readonly DiagnosticListener s_diagnosticListener = new DiagnosticListener(DiagnosticListenerExtensions.ConnectionListenerName);
 
 		string m_connectionString;
 		ConnectionSettings m_connectionSettings;

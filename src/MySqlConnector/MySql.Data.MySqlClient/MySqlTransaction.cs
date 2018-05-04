@@ -24,7 +24,7 @@ namespace MySql.Data.MySqlClient
 			if (Connection.CurrentTransaction == this)
 			{
 				Exception e = default;
-				var operationId = s_diagnosticListener.WriteTransactionCommitBefore(IsolationLevel, Connection);
+				var operationId = s_diagnosticListener.WriteTransactionCommitStart(IsolationLevel, Connection);
 				try
 				{
 					using (var cmd = new MySqlCommand("commit", Connection, this))
@@ -42,7 +42,7 @@ namespace MySql.Data.MySqlClient
 					if (e != null)
 						s_diagnosticListener.WriteTransactionCommitError(operationId, IsolationLevel, Connection, e);
 					else
-						s_diagnosticListener.WriteTransactionCommitAfter(operationId, IsolationLevel, Connection);
+						s_diagnosticListener.WriteTransactionCommitStop(operationId, IsolationLevel, Connection);
 				}
 			}
 			else if (Connection.CurrentTransaction != null)
@@ -68,7 +68,7 @@ namespace MySql.Data.MySqlClient
 			if (Connection.CurrentTransaction == this)
 			{
 				Exception e = default;
-				var operationId = s_diagnosticListener.WriteTransactionRollbackBefore(IsolationLevel, Connection, null);
+				var operationId = s_diagnosticListener.WriteTransactionRollbackStart(IsolationLevel, Connection, null);
 				try
 				{
 					using (var cmd = new MySqlCommand("rollback", Connection, this))
@@ -86,7 +86,7 @@ namespace MySql.Data.MySqlClient
 					if (e != null)
 						s_diagnosticListener.WriteTransactionRollbackError(operationId, IsolationLevel, Connection, null, e);
 					else
-						s_diagnosticListener.WriteTransactionRollbackAfter(operationId, IsolationLevel, Connection, null);
+						s_diagnosticListener.WriteTransactionRollbackStop(operationId, IsolationLevel, Connection, null);
 				}
 			}
 			else if (Connection.CurrentTransaction != null)
@@ -140,7 +140,7 @@ namespace MySql.Data.MySqlClient
 				throw new ObjectDisposedException(nameof(MySqlTransaction));
 		}
 
-		static readonly DiagnosticListener s_diagnosticListener = new DiagnosticListener(DiagnosticListenerExtensions.DiagnosticListenerName);
+		static readonly DiagnosticListener s_diagnosticListener = new DiagnosticListener(DiagnosticListenerExtensions.TransactionListenerName);
 
 		bool m_isDisposed;
 	}

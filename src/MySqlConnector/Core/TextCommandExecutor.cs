@@ -25,7 +25,7 @@ namespace MySqlConnector.Core
 			IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			Exception e = default;
-			var operationId = s_diagnosticListener.WriteCommandBefore(m_command);
+			var operationId = s_diagnosticListener.WriteCommandStart(m_command);
 
 			try
 			{
@@ -52,7 +52,7 @@ namespace MySqlConnector.Core
 				if (e != null)
 					s_diagnosticListener.WriteCommandError(operationId, m_command, e);
 				else
-					s_diagnosticListener.WriteCommandAfter(operationId, m_command);
+					s_diagnosticListener.WriteCommandStop(operationId, m_command);
 			}
 		}
 
@@ -60,7 +60,7 @@ namespace MySqlConnector.Core
 			IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			Exception e = default;
-			var operationId = s_diagnosticListener.WriteCommandBefore(m_command);
+			var operationId = s_diagnosticListener.WriteCommandStart(m_command);
 
 			try
 			{
@@ -93,7 +93,7 @@ namespace MySqlConnector.Core
 				if (e != null)
 					s_diagnosticListener.WriteCommandError(operationId, m_command, e);
 				else
-					s_diagnosticListener.WriteCommandAfter(operationId, m_command);
+					s_diagnosticListener.WriteCommandStop(operationId, m_command);
 			}
 		}
 
@@ -146,7 +146,7 @@ namespace MySqlConnector.Core
 		}
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(TextCommandExecutor));
-		static readonly DiagnosticListener s_diagnosticListener = new DiagnosticListener(DiagnosticListenerExtensions.DiagnosticListenerName);
+		static readonly DiagnosticListener s_diagnosticListener = new DiagnosticListener(DiagnosticListenerExtensions.CommandListenerName);
 
 		readonly MySqlCommand m_command;
 	}
