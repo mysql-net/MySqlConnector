@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.40.4
+
+* Allow `CACertificateFile` to contain multiple (concatenated) certificates: [#499](https://github.com/mysql-net/MySqlConnector/issues/499).
+* Avoid `IndexOutOfRangeException` in `ValidateRemoteCertificate`: [#498](https://github.com/mysql-net/MySqlConnector/issues/498).
+
 ### 0.40.3
 
 * Fix `caching_sha2_password` authentication for MySQL Server 8.0.11 release: [#489](https://github.com/mysql-net/MySqlConnector/issues/489).
