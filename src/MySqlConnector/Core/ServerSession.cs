@@ -828,13 +828,11 @@ namespace MySqlConnector.Core
 					{
 						m_logArguments[1] = cs.CertificateFile;
 						Log.Error("Session{0} no private key included with CertificateFile '{1}'", m_logArguments);
-						throw new MySqlException("CertificateFile does not contain a private key. "+
-						                         "CertificateFile should be in PKCS #12 (.pfx) format and contain both a Certificate and Private Key");
+						throw new MySqlException("CertificateFile does not contain a private key. " +
+							"CertificateFile should be in PKCS #12 (.pfx) format and contain both a Certificate and Private Key");
 					}
-#if !NET45
 					m_clientCertificate = certificate;
-#endif
-					clientCertificates = new X509CertificateCollection {certificate};
+					clientCertificates = new X509CertificateCollection { certificate };
 				}
 				catch (CryptographicException ex)
 				{
@@ -849,29 +847,64 @@ namespace MySqlConnector.Core
 			X509Chain caCertificateChain = null;
 			if (cs.CACertificateFile != null)
 			{
-				try
+				var certificateChain = new X509Chain
 				{
-					var caCertificate = new X509Certificate2(cs.CACertificateFile);
-#if !NET45
-					m_serverCertificate = caCertificate;
-#endif
-					caCertificateChain = new X509Chain
-					{
-						ChainPolicy =
+					ChainPolicy =
 						{
 							RevocationMode = X509RevocationMode.NoCheck,
 							VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority
 						}
-					};
-					caCertificateChain.ChainPolicy.ExtraStore.Add(caCertificate);
-				}
-				catch (CryptographicException ex)
+				};
+
+				try
 				{
+					// read the CA Certificate File
 					m_logArguments[1] = cs.CACertificateFile;
-					Log.Error(ex, "Session{0} couldn't load CA certificate from CertificateFile '{1}'", m_logArguments);
-					if (!File.Exists(cs.CACertificateFile))
-						throw new MySqlException("Cannot find CA Certificate File", ex);
-					throw new MySqlException("The CA Certificate File is invalid", ex);
+					Log.Debug("Session{0} loading CA certificate(s) from CertificateFile '{1}'", m_logArguments);
+					byte[] certificateBytes;
+					try
+					{
+						certificateBytes = File.ReadAllBytes(cs.CACertificateFile);
+					}
+					catch (Exception ex)
+					{
+						Log.Error(ex, "Session{0} couldn't load CA certificate from CertificateFile '{1}'", m_logArguments);
+						throw new MySqlException("Could not load CA Certificate File: " + cs.CACertificateFile, ex);
+					}
+
+					// find the index of each individual certificate in the file (assuming there may be multiple certificates concatenated together)
+					for (var index = 0; index != -1; index = Utility.FindNextIndex(certificateBytes, index + 1, s_beginCertificateBytes))
+					{
+						try
+						{
+							// load the certificate at this index; note that 'new X509Certificate' stops at the end of the first certificate it loads
+							m_logArguments[1] = index;
+							Log.Debug("Session{0} loading certificate at Index {1} in the CA certificate file.", m_logArguments);
+							var caCertificate = new X509Certificate2(Utility.ArraySlice(certificateBytes, index));
+							certificateChain.ChainPolicy.ExtraStore.Add(caCertificate);
+						}
+						catch (CryptographicException ex)
+						{
+							m_logArguments[1] = cs.CACertificateFile;
+							Log.Error(ex, "Session{0} couldn't load CA certificate from CertificateFile '{1}'", m_logArguments);
+							if (!File.Exists(cs.CACertificateFile))
+								throw new MySqlException("The CA Certificate File is invalid", ex);
+						}
+					}
+
+					// success
+					if (Log.IsInfoEnabled())
+						Log.Info("Session{0} loaded certificates from CertificateFile '{1}'; CertificateCount: {2}", m_logArguments[0], cs.CACertificateFile, certificateChain.ChainPolicy.ExtraStore.Count);
+					caCertificateChain = certificateChain;
+					certificateChain = null;
+				}
+				finally
+				{
+#if NET45
+					certificateChain?.Reset();
+#else
+					certificateChain?.Dispose();
+#endif
 				}
 			}
 
@@ -944,6 +977,14 @@ namespace MySqlConnector.Core
 					throw new MySqlException("MySQL Server rejected client certificate", ex);
 				throw;
 			}
+			finally
+			{
+#if NET45
+				caCertificateChain?.Reset();
+#else
+				caCertificateChain?.Dispose();
+#endif
+			}
 		}
 
 		// Some servers are exposed through a proxy, which handles the initial handshake and gives the proxy's
@@ -1015,9 +1056,11 @@ namespace MySqlConnector.Core
 			Utility.Dispose(ref m_networkStream);
 			SafeDispose(ref m_tcpClient);
 			SafeDispose(ref m_socket);
-#if !NET45
+#if NET45
+			m_clientCertificate?.Reset();
+			m_clientCertificate = null;
+#else
 			Utility.Dispose(ref m_clientCertificate);
-			Utility.Dispose(ref m_serverCertificate);
 #endif
 		}
 
@@ -1198,6 +1241,7 @@ namespace MySqlConnector.Core
 			Failed,
 		}
 
+		static readonly byte[] s_beginCertificateBytes = new byte[] { 45, 45, 45, 45, 45, 66, 69, 71, 73, 78, 32, 67, 69, 82, 84, 73, 70, 73, 67, 65, 84, 69, 45, 45, 45, 45, 45 }; // -----BEGIN CERTIFICATE-----
 		static int s_lastId;
 		static byte[] s_connectionAttributes;
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ServerSession));
@@ -1211,10 +1255,7 @@ namespace MySqlConnector.Core
 		Socket m_socket;
 		NetworkStream m_networkStream;
 		SslStream m_sslStream;
-#if !NET45
-		IDisposable m_clientCertificate;
-		IDisposable m_serverCertificate;
-#endif
+		X509Certificate2 m_clientCertificate;
 		IPayloadHandler m_payloadHandler;
 		int m_activeCommandId;
 		bool m_useCompression;

@@ -156,6 +156,45 @@ namespace MySqlConnector.Utilities
 		public static ArraySegment<T> Slice<T>(this ArraySegment<T> arraySegment, int index, int length) =>
 			new ArraySegment<T>(arraySegment.Array, arraySegment.Offset + index, length);
 
+		/// <summary>
+		/// Returns a new <see cref="byte[]"/> that is a slice of <paramref name="input"/> starting at <paramref name="offset"/>.
+		/// </summary>
+		/// <param name="input">The array to slice.</param>
+		/// <param name="offset">The offset at which to slice.</param>
+		/// <returns>A new <see cref="byte[]"/> that is a slice of <paramref name="input"/> from <paramref name="offset"/> to the end.</returns>
+		public static byte[] ArraySlice(byte[] input, int offset)
+		{
+			if (offset == 0)
+				return input;
+			var slice = new byte[input.Length - offset];
+			Array.Copy(input, offset, slice, 0, slice.Length);
+			return slice;
+		}
+
+		/// <summary>
+		/// Finds the next index of <paramref name="pattern"/> in <paramref name="array"/>, starting at index <paramref name="offset"/>.
+		/// </summary>
+		/// <param name="array">The array to search.</param>
+		/// <param name="offset">The offset at which to start searching.</param>
+		/// <param name="pattern">The pattern to find in <paramref name="array"/>.</param>
+		/// <returns>The offset of <paramref name="pattern"/> within <paramref name="array"/>, or <c>-1</c> if <paramref name="pattern"/> was not found.</returns>
+		public static int FindNextIndex(byte[] array, int offset, byte[] pattern)
+		{
+			var limit = array.Length - pattern.Length;
+			for (var start = offset; start <= limit; start++)
+			{
+				var i = 0;
+				for (; i < pattern.Length; i++)
+				{
+					if (array[start + i] != pattern[i])
+						break;
+				}
+				if (i == pattern.Length)
+					return start;
+			}
+			return -1;
+		}
+
 #if NET45
 		public static Task<T> TaskFromException<T>(Exception exception)
 		{
