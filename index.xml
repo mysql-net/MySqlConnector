@@ -109,7 +109,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.40.3  Fix caching_sha2_password authentication for MySQL Server 8.0.11 release: #489.  Breaking This authentication plugin can no longer be used with MySQL Server 8.0.4; you must update to the GA release.   0.40.2  Reverted ConnectionReset=true optimisation (added in 0.40.0) that was incompatible with Aurora: #486.  0.40.1  Always use new DateTimeKind setting: #484.  0.40.0  Add DateTimeKind connection string setting: #479. Fix ArgumentException for SslProtocols.</description>
+      <description>Version History 0.40.4  Allow CACertificateFile to contain multiple (concatenated) certificates: #499. Avoid IndexOutOfRangeException in ValidateRemoteCertificate: #498.  0.40.3  Fix caching_sha2_password authentication for MySQL Server 8.0.11 release: #489.  Breaking This authentication plugin can no longer be used with MySQL Server 8.0.4; you must update to the GA release.   0.40.2  Reverted ConnectionReset=true optimisation (added in 0.40.0) that was incompatible with Aurora: #486.  0.40.1  Always use new DateTimeKind setting: #484.</description>
     </item>
     
     <item>
