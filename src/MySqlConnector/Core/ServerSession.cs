@@ -917,7 +917,7 @@ namespace MySqlConnector.Core
 
 				if ((rcbPolicyErrors & SslPolicyErrors.RemoteCertificateChainErrors) != 0 && caCertificateChain != null)
 				{
-					if (caCertificateChain.Build((X509Certificate2) rcbCertificate))
+					if (caCertificateChain.Build((X509Certificate2) rcbCertificate) && caCertificateChain.ChainStatus.Length > 0)
 					{
 						var chainStatus = caCertificateChain.ChainStatus[0].Status & ~X509ChainStatusFlags.UntrustedRoot;
 						if (chainStatus == X509ChainStatusFlags.NoError)
