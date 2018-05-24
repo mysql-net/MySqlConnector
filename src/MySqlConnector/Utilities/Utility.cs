@@ -162,11 +162,11 @@ namespace MySqlConnector.Utilities
 		/// <param name="input">The array to slice.</param>
 		/// <param name="offset">The offset at which to slice.</param>
 		/// <returns>A new <see cref="byte[]"/> that is a slice of <paramref name="input"/> from <paramref name="offset"/> to the end.</returns>
-		public static byte[] ArraySlice(byte[] input, int offset)
+		public static byte[] ArraySlice(byte[] input, int offset, int length)
 		{
-			if (offset == 0)
+			if (offset == 0 && length == input.Length)
 				return input;
-			var slice = new byte[input.Length - offset];
+			var slice = new byte[length];
 			Array.Copy(input, offset, slice, 0, slice.Length);
 			return slice;
 		}

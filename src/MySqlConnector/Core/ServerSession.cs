@@ -873,14 +873,15 @@ namespace MySqlConnector.Core
 					}
 
 					// find the index of each individual certificate in the file (assuming there may be multiple certificates concatenated together)
-					for (var index = 0; index != -1; index = Utility.FindNextIndex(certificateBytes, index + 1, s_beginCertificateBytes))
+					for (var index = 0; index != -1;)
 					{
+						var nextIndex = Utility.FindNextIndex(certificateBytes, index + 1, s_beginCertificateBytes);
 						try
 						{
 							// load the certificate at this index; note that 'new X509Certificate' stops at the end of the first certificate it loads
 							m_logArguments[1] = index;
 							Log.Debug("Session{0} loading certificate at Index {1} in the CA certificate file.", m_logArguments);
-							var caCertificate = new X509Certificate2(Utility.ArraySlice(certificateBytes, index));
+							var caCertificate = new X509Certificate2(Utility.ArraySlice(certificateBytes, index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index));
 							certificateChain.ChainPolicy.ExtraStore.Add(caCertificate);
 						}
 						catch (CryptographicException ex)
@@ -890,6 +891,7 @@ namespace MySqlConnector.Core
 							if (!File.Exists(cs.CACertificateFile))
 								throw new MySqlException("The CA Certificate File is invalid", ex);
 						}
+						index = nextIndex;
 					}
 
 					// success
