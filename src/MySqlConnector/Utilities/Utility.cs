@@ -266,6 +266,13 @@ namespace MySqlConnector.Utilities
 			}
 		}
 
+		public static void SwapBytes(byte[] bytes, int offset1, int offset2)
+		{
+			byte swap = bytes[offset1];
+			bytes[offset1] = bytes[offset2];
+			bytes[offset2] = swap;
+		}
+
 #if NET45 || NET46
 		public static bool IsWindows() => Environment.OSVersion.Platform == PlatformID.Win32NT;
 

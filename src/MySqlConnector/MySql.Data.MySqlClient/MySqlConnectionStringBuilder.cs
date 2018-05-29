@@ -177,6 +177,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.ForceSynchronous.SetValue(this, value);
 		}
 
+		public MySqlGuidFormat GuidFormat
+		{
+			get => MySqlConnectionStringOption.GuidFormat.GetValue(this);
+			set => MySqlConnectionStringOption.GuidFormat.SetValue(this, value);
+		}
+
 		public bool IgnoreCommandTransaction
 		{
 			get => MySqlConnectionStringOption.IgnoreCommandTransaction.GetValue(this);
@@ -303,6 +309,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<MySqlDateTimeKind> DateTimeKind;
 		public static readonly MySqlConnectionStringOption<uint> DefaultCommandTimeout;
 		public static readonly MySqlConnectionStringOption<bool> ForceSynchronous;
+		public static readonly MySqlConnectionStringOption<MySqlGuidFormat> GuidFormat;
 		public static readonly MySqlConnectionStringOption<bool> IgnoreCommandTransaction;
 		public static readonly MySqlConnectionStringOption<uint> Keepalive;
 		public static readonly MySqlConnectionStringOption<bool> OldGuids;
@@ -446,6 +453,10 @@ namespace MySql.Data.MySqlClient
 				keys: new[] { "ForceSynchronous" },
 				defaultValue: false));
 
+			AddOption(GuidFormat = new MySqlConnectionStringOption<MySqlGuidFormat>(
+				keys: new[] { "GuidFormat" },
+				defaultValue: MySqlGuidFormat.Default));
+
 			AddOption(IgnoreCommandTransaction = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "IgnoreCommandTransaction", "Ignore Command Transaction" },
 				defaultValue: false));
@@ -516,7 +527,7 @@ namespace MySql.Data.MySqlClient
 					return (T) (object) false;
 			}
 
-			if ((typeof(T) == typeof(MySqlLoadBalance) || typeof(T) == typeof(MySqlSslMode) || typeof(T) == typeof(MySqlDateTimeKind)) && objectValue is string enumString)
+			if ((typeof(T) == typeof(MySqlLoadBalance) || typeof(T) == typeof(MySqlSslMode) || typeof(T) == typeof(MySqlDateTimeKind) || typeof(T) == typeof(MySqlGuidFormat)) && objectValue is string enumString)
 			{
 				foreach (var val in Enum.GetValues(typeof(T)))
 				{

@@ -33,6 +33,9 @@ namespace MySqlConnector.Tests
 			Assert.Equal(0u, csb.ConnectionIdlePingTime);
 			Assert.Equal(180u, csb.ConnectionIdleTimeout);
 			Assert.False(csb.ForceSynchronous);
+#if !BASELINE
+			Assert.Equal(MySqlGuidFormat.Default, csb.GuidFormat);
+#endif
 			Assert.False(csb.IgnoreCommandTransaction);
 			Assert.Null(csb.CACertificateFile);
 			Assert.Equal(MySqlLoadBalance.RoundRobin, csb.LoadBalance);
@@ -94,6 +97,7 @@ namespace MySqlConnector.Tests
 					"ca certificate file=ca.pem;" +
 					"server rsa public key file=rsa.pem;" +
 					"load balance=random;" +
+					"guidformat=timeswapbinary16;" +
 #endif
 					"Keep Alive=90;" +
 					"minpoolsize=5;" +
@@ -131,6 +135,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal("ca.pem", csb.CACertificateFile);
 			Assert.Equal("rsa.pem", csb.ServerRsaPublicKeyFile);
 			Assert.Equal(MySqlLoadBalance.Random, csb.LoadBalance);
+			Assert.Equal(MySqlGuidFormat.TimeSwapBinary16, csb.GuidFormat);
 #endif
 			Assert.Equal(90u, csb.Keepalive);
 			Assert.Equal(15u, csb.MaximumPoolSize);

@@ -59,13 +59,33 @@ namespace MySqlConnector.Core
 			DefaultCommandTimeout = (int) csb.DefaultCommandTimeout;
 			ForceSynchronous = csb.ForceSynchronous;
 			IgnoreCommandTransaction = csb.IgnoreCommandTransaction;
+			GuidFormat = GetEffectiveGuidFormat(csb.GuidFormat, csb.OldGuids);
 			Keepalive = csb.Keepalive;
-			OldGuids = csb.OldGuids;
 			PersistSecurityInfo = csb.PersistSecurityInfo;
 			ServerRsaPublicKeyFile = csb.ServerRsaPublicKeyFile;
 			TreatTinyAsBoolean = csb.TreatTinyAsBoolean;
 			UseAffectedRows = csb.UseAffectedRows;
 			UseCompression = csb.UseCompression;
+		}
+
+		private static MySqlGuidFormat GetEffectiveGuidFormat(MySqlGuidFormat guidFormat, bool oldGuids)
+		{
+			switch (guidFormat)
+			{
+			case MySqlGuidFormat.Default:
+				return oldGuids ? MySqlGuidFormat.LittleEndianBinary16 : MySqlGuidFormat.Char36;
+			case MySqlGuidFormat.None:
+			case MySqlGuidFormat.Char36:
+			case MySqlGuidFormat.Char32:
+			case MySqlGuidFormat.Binary16:
+			case MySqlGuidFormat.TimeSwapBinary16:
+			case MySqlGuidFormat.LittleEndianBinary16:
+				if (oldGuids)
+					throw new MySqlException("OldGuids cannot be used with GuidFormat");
+				return guidFormat;
+			default:
+				throw new MySqlException("Unknown GuidFormat");
+			}
 		}
 
 		/// <summary>
@@ -109,9 +129,9 @@ namespace MySqlConnector.Core
 		public DateTimeKind DateTimeKind { get; }
 		public int DefaultCommandTimeout { get; }
 		public bool ForceSynchronous { get; }
+		public MySqlGuidFormat GuidFormat { get; }
 		public bool IgnoreCommandTransaction { get; }
 		public uint Keepalive { get; }
-		public bool OldGuids { get; }
 		public bool PersistSecurityInfo { get; }
 		public string ServerRsaPublicKeyFile { get; }
 		public bool TreatTinyAsBoolean { get; }

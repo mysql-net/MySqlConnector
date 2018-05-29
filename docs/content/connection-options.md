@@ -197,6 +197,29 @@ These are the other options that MySqlConnector supports. They are set to sensib
     respectively.</td>
   </tr>
   <tr>
+    <td>GuidFormat</td>
+    <td>Default</td>
+    <td><p>Determines which column type (if any) should be read as a <code>System.Guid</code>.
+      The options include:</p>
+      <dl>
+        <dt>Char36</dt>
+        <dd>All <code>CHAR(36)</code> columns are read/written as a <code>Guid</code> using lowercase hex with hyphens, which matches <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid"><code>UUID()</code></a>.</dd>
+        <dt>Char32</dt>
+        <dd>All <code>CHAR(32)</code> columns are read/written as a <code>Guid</code> using lowercase hex without hyphens.</dd>
+        <dt>Binary16</dt>
+        <dd>All <code>BINARY(16)</code> columns are read/written as a <code>Guid</code> using big-endian byte order, which matches <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin"><code>UUID_TO_BIN(x)</code></a>.</dd>
+        <dt>TimeSwapBinary16</dt>
+        <dd>All <code>BINARY(16)</code> columns are read/written as a <code>Guid</code> using big-endian byte order with time parts swapped, which matches <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin"><code>UUID_TO_BIN(x,1)</code></a>.</dd>
+        <dt>LittleEndianBinary16</dt>
+        <dd>All <code>BINARY(16)</code> columns are read/written as a <code>Guid</code> using little-endian byte order, i.e. the byte order used by <code>Guid.ToByteArray()</code> and the <code>Guid(byte[])</code> constructor.</dd>
+        <dt>None</dt>
+        <dd>No column types are automatically read as a <code>Guid</code>.</dd>
+        <dt>Default</dt>
+        <dd>Same as <code>Char36</code> if <code>OldGuids=False</code>; same as <code>LittleEndianBinary16</code> if <code>OldGuids=True</code>.</dd>
+      </dl>
+    </td>
+  </tr>
+  <tr>
     <td>Default Command Timeout, Command Timeout, DefaultCommandTimeout</td>
     <td>30</td>
     <td>The length of time (in seconds) each command can execute before timing out and throwing an exception, or zero to disable timeouts.
@@ -235,7 +258,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
   <tr>
     <td>Old Guids, OldGuids</td>
     <td>false</td>
-    <td> The backend representation of a GUID type was changed from BINARY(16) to CHAR(36). This was done to allow developers to use the server function UUID() to populate a GUID table - UUID() generates a 36-character string. Developers of older applications can add 'Old Guids=true' to the connection string to use a GUID of data type BINARY(16).</td>
+    <td>Obsolete; use the <code>GuidFormat</code> option instead.</td>
   </tr>
   <tr>
     <td>Persist Security Info, PersistSecurityInfo</td>

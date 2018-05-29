@@ -262,16 +262,41 @@ namespace MySql.Data.MySqlClient
 			}
 			else if (Value is Guid guidValue)
 			{
-				if ((options & StatementPreparerOptions.OldGuids) != 0)
+				StatementPreparerOptions guidOptions = options & StatementPreparerOptions.GuidFormatMask;
+				if (guidOptions == StatementPreparerOptions.GuidFormatBinary16 ||
+					guidOptions == StatementPreparerOptions.GuidFormatTimeSwapBinary16 ||
+					guidOptions == StatementPreparerOptions.GuidFormatLittleEndianBinary16)
 				{
+					var bytes = guidValue.ToByteArray();
+					if (guidOptions != StatementPreparerOptions.GuidFormatLittleEndianBinary16)
+					{
+						Utility.SwapBytes(bytes, 0, 3);
+						Utility.SwapBytes(bytes, 1, 2);
+						Utility.SwapBytes(bytes, 4, 5);
+						Utility.SwapBytes(bytes, 6, 7);
+
+						if (guidOptions == StatementPreparerOptions.GuidFormatTimeSwapBinary16)
+						{
+							Utility.SwapBytes(bytes, 0, 4);
+							Utility.SwapBytes(bytes, 1, 5);
+							Utility.SwapBytes(bytes, 2, 6);
+							Utility.SwapBytes(bytes, 3, 7);
+							Utility.SwapBytes(bytes, 0, 2);
+							Utility.SwapBytes(bytes, 1, 3);
+						}
+					}
 					writer.WriteUtf8("_binary'");
-					foreach (var by in guidValue.ToByteArray())
+					foreach (var by in bytes)
 					{
 						if (by == 0x27 || by == 0x5C)
 							writer.Write((byte) 0x5C);
 						writer.Write(by);
 					}
 					writer.Write((byte) '\'');
+				}
+				else if (guidOptions == StatementPreparerOptions.GuidFormatChar32)
+				{
+					writer.WriteUtf8("'{0:N}'".FormatInvariant(guidValue));
 				}
 				else
 				{

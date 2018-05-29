@@ -364,7 +364,9 @@ namespace MySqlConnector.Core
 				return bitValue;
 
 			case ColumnType.String:
-				if (!Connection.OldGuids && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
+				if (Connection.GuidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
+					return Guid.Parse(Encoding.UTF8.GetString(data));
+				if (Connection.GuidFormat == MySqlGuidFormat.Char32 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
 					return Guid.Parse(Encoding.UTF8.GetString(data));
 				goto case ColumnType.VarString;
 
@@ -378,7 +380,30 @@ namespace MySqlConnector.Core
 				{
 					var result = new byte[m_dataLengths[ordinal]];
 					Buffer.BlockCopy(m_payload.Array, m_dataOffsets[ordinal], result, 0, result.Length);
-					return Connection.OldGuids && columnDefinition.ColumnLength == 16 ? (object) new Guid(result) : result;
+					if ((Connection.GuidFormat == MySqlGuidFormat.Binary16 || Connection.GuidFormat == MySqlGuidFormat.TimeSwapBinary16 || Connection.GuidFormat == MySqlGuidFormat.LittleEndianBinary16) &&
+						columnDefinition.ColumnLength == 16)
+					{
+						if (Connection.GuidFormat != MySqlGuidFormat.LittleEndianBinary16)
+						{
+							if (Connection.GuidFormat == MySqlGuidFormat.TimeSwapBinary16)
+							{
+								Utility.SwapBytes(result, 0, 2);
+								Utility.SwapBytes(result, 1, 3);
+								Utility.SwapBytes(result, 0, 4);
+								Utility.SwapBytes(result, 1, 5);
+								Utility.SwapBytes(result, 2, 6);
+								Utility.SwapBytes(result, 3, 7);
+							}
+
+							Utility.SwapBytes(result, 0, 3);
+							Utility.SwapBytes(result, 1, 2);
+							Utility.SwapBytes(result, 4, 5);
+							Utility.SwapBytes(result, 6, 7);
+						}
+						return new Guid(result);
+					}
+
+					return result;
 				}
 				return Encoding.UTF8.GetString(data);
 

@@ -173,7 +173,7 @@ namespace MySqlConnector.Core
 			return columnTypeMetadata;
 		}
 
-		public static MySqlDbType ConvertToMySqlDbType(ColumnDefinitionPayload columnDefinition, bool treatTinyAsBoolean, bool oldGuids)
+		public static MySqlDbType ConvertToMySqlDbType(ColumnDefinitionPayload columnDefinition, bool treatTinyAsBoolean, MySqlGuidFormat guidFormat)
 		{
 			var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
 			switch (columnDefinition.ColumnType)
@@ -195,7 +195,9 @@ namespace MySqlConnector.Core
 				return MySqlDbType.Bit;
 
 			case ColumnType.String:
-				if (!oldGuids && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
+				if (guidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
+					return MySqlDbType.Guid;
+				if (guidFormat == MySqlGuidFormat.Char32 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
 					return MySqlDbType.Guid;
 				if ((columnDefinition.ColumnFlags & ColumnFlags.Enum) != 0)
 					return MySqlDbType.Enum;
@@ -211,7 +213,7 @@ namespace MySqlConnector.Core
 				var type = columnDefinition.ColumnType;
 				if (columnDefinition.CharacterSet == CharacterSet.Binary)
 				{
-					if (oldGuids && columnDefinition.ColumnLength == 16)
+					if ((guidFormat == MySqlGuidFormat.Binary16 || guidFormat == MySqlGuidFormat.TimeSwapBinary16 || guidFormat == MySqlGuidFormat.LittleEndianBinary16) && columnDefinition.ColumnLength == 16)
 						return MySqlDbType.Guid;
 
 					return type == ColumnType.String ? MySqlDbType.Binary :
