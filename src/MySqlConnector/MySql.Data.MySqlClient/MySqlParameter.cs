@@ -99,10 +99,12 @@ namespace MySql.Data.MySqlClient
 		public override bool IsNullable { get; set; }
 
 #if NET45
-#pragma warning disable 109 // no existing member for 'new' to hide
+		public byte Precision { get; set; }
+		public byte Scale { get; set; }
+#else
+		public override byte Precision { get; set; }
+		public override byte Scale { get; set; }
 #endif
-		public new byte Precision { get; set; }
-		public new byte Scale { get; set; }
 
 		public override string ParameterName
 		{
