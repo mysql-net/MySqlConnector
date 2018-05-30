@@ -3,7 +3,7 @@ using System;
 namespace MySql.Data.MySqlClient
 {
 	/// <summary>
-	/// The <see cref="DateTimeKind" /> used when reading <see cref="DateTime" /> from the databsae.
+	/// The <see cref="DateTimeKind" /> used when reading <see cref="DateTime" /> from the database.
 	/// </summary>
 	public enum MySqlDateTimeKind
 	{

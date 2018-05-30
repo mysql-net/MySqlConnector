@@ -224,7 +224,7 @@ namespace MySqlConnector.Core
 				return type == ColumnType.String ? MySqlDbType.String :
 					type == ColumnType.VarString ? MySqlDbType.VarChar :
 					type == ColumnType.TinyBlob ? MySqlDbType.TinyText :
-					type == ColumnType.Blob ? MySqlDbType.Text:
+					type == ColumnType.Blob ? MySqlDbType.Text :
 					type == ColumnType.MediumBlob ? MySqlDbType.MediumText :
 					MySqlDbType.LongText;
 

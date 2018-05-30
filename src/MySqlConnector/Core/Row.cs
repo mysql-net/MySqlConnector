@@ -341,77 +341,77 @@ namespace MySqlConnector.Core
 			var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
 			switch (columnDefinition.ColumnType)
 			{
-				case ColumnType.Tiny:
-					var value = int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
-					if (Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1)
-						return value != 0;
-					return isUnsigned ? (object) (byte) value : (sbyte) value;
+			case ColumnType.Tiny:
+				var value = int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+				if (Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1)
+					return value != 0;
+				return isUnsigned ? (object) (byte) value : (sbyte) value;
 
-				case ColumnType.Int24:
-				case ColumnType.Long:
-					return isUnsigned ? (object) uint.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
-						int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+			case ColumnType.Int24:
+			case ColumnType.Long:
+				return isUnsigned ? (object) uint.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
+					int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
-				case ColumnType.Longlong:
-					return isUnsigned ? (object) ulong.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
-						long.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+			case ColumnType.Longlong:
+				return isUnsigned ? (object) ulong.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
+					long.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
-				case ColumnType.Bit:
-					// BIT column is transmitted as MSB byte array
-					ulong bitValue = 0;
-					for (int i = 0; i < m_dataLengths[ordinal]; i++)
-						bitValue = bitValue * 256 + m_payload.Array[m_dataOffsets[ordinal] + i];
-					return bitValue;
+			case ColumnType.Bit:
+				// BIT column is transmitted as MSB byte array
+				ulong bitValue = 0;
+				for (int i = 0; i < m_dataLengths[ordinal]; i++)
+					bitValue = bitValue * 256 + m_payload.Array[m_dataOffsets[ordinal] + i];
+				return bitValue;
 
-				case ColumnType.String:
-					if (!Connection.OldGuids && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
-						return Guid.Parse(Encoding.UTF8.GetString(data));
-					goto case ColumnType.VarString;
+			case ColumnType.String:
+				if (!Connection.OldGuids && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
+					return Guid.Parse(Encoding.UTF8.GetString(data));
+				goto case ColumnType.VarString;
 
-				case ColumnType.VarString:
-				case ColumnType.VarChar:
-				case ColumnType.TinyBlob:
-				case ColumnType.Blob:
-				case ColumnType.MediumBlob:
-				case ColumnType.LongBlob:
-					if (columnDefinition.CharacterSet == CharacterSet.Binary)
-					{
-						var result = new byte[m_dataLengths[ordinal]];
-						Buffer.BlockCopy(m_payload.Array, m_dataOffsets[ordinal], result, 0, result.Length);
-						return Connection.OldGuids && columnDefinition.ColumnLength == 16 ? (object) new Guid(result) : result;
-					}
-					return Encoding.UTF8.GetString(data);
+			case ColumnType.VarString:
+			case ColumnType.VarChar:
+			case ColumnType.TinyBlob:
+			case ColumnType.Blob:
+			case ColumnType.MediumBlob:
+			case ColumnType.LongBlob:
+				if (columnDefinition.CharacterSet == CharacterSet.Binary)
+				{
+					var result = new byte[m_dataLengths[ordinal]];
+					Buffer.BlockCopy(m_payload.Array, m_dataOffsets[ordinal], result, 0, result.Length);
+					return Connection.OldGuids && columnDefinition.ColumnLength == 16 ? (object) new Guid(result) : result;
+				}
+				return Encoding.UTF8.GetString(data);
 
-				case ColumnType.Json:
-					return Encoding.UTF8.GetString(data);
+			case ColumnType.Json:
+				return Encoding.UTF8.GetString(data);
 
-				case ColumnType.Short:
-					return isUnsigned ? (object) ushort.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
-						short.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+			case ColumnType.Short:
+				return isUnsigned ? (object) ushort.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
+					short.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
-				case ColumnType.Date:
-				case ColumnType.DateTime:
-				case ColumnType.Timestamp:
-					return ParseDateTime(data);
+			case ColumnType.Date:
+			case ColumnType.DateTime:
+			case ColumnType.Timestamp:
+				return ParseDateTime(data);
 
-				case ColumnType.Time:
-					return ParseTimeSpan(data);
+			case ColumnType.Time:
+				return ParseTimeSpan(data);
 
-				case ColumnType.Year:
-					return int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+			case ColumnType.Year:
+				return int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
-				case ColumnType.Float:
-					return float.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+			case ColumnType.Float:
+				return float.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
-				case ColumnType.Double:
-					return double.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+			case ColumnType.Double:
+				return double.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
-				case ColumnType.Decimal:
-				case ColumnType.NewDecimal:
-					return decimal.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+			case ColumnType.Decimal:
+			case ColumnType.NewDecimal:
+				return decimal.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
 
-				default:
-					throw new NotImplementedException("Reading {0} not implemented".FormatInvariant(columnDefinition.ColumnType));
+			default:
+				throw new NotImplementedException("Reading {0} not implemented".FormatInvariant(columnDefinition.ColumnType));
 			}
 		}
 

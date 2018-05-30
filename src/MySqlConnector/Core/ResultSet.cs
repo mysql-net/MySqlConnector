@@ -63,7 +63,7 @@ namespace MySqlConnector.Core
 						try
 						{
 							var localInfile = LocalInfilePayload.Create(payload);
-							if(!IsHostVerified(Connection)
+							if (!IsHostVerified(Connection)
 								&& !localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal))
 								throw new NotSupportedException("Use SourceStream or SslMode >= VerifyCA for LOAD DATA LOCAL INFILE");
 
