@@ -143,7 +143,7 @@ namespace MySqlConnector.Core
 				return guid;
 
 			if (value is byte[] bytes && bytes.Length == 16)
-				return new Guid(bytes);
+				return CreateGuidFromBytes(Connection.GuidFormat, bytes);
 
 			throw new InvalidCastException("The value could not be converted to a GUID: {0}".FormatInvariant(value));
 		}
@@ -364,7 +364,9 @@ namespace MySqlConnector.Core
 				return bitValue;
 
 			case ColumnType.String:
-				if (!Connection.OldGuids && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
+				if (Connection.GuidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
+					return Guid.Parse(Encoding.UTF8.GetString(data));
+				if (Connection.GuidFormat == MySqlGuidFormat.Char32 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
 					return Guid.Parse(Encoding.UTF8.GetString(data));
 				goto case ColumnType.VarString;
 
@@ -378,7 +380,14 @@ namespace MySqlConnector.Core
 				{
 					var result = new byte[m_dataLengths[ordinal]];
 					Buffer.BlockCopy(m_payload.Array, m_dataOffsets[ordinal], result, 0, result.Length);
-					return Connection.OldGuids && columnDefinition.ColumnLength == 16 ? (object) new Guid(result) : result;
+					var guidFormat = Connection.GuidFormat;
+					if ((guidFormat == MySqlGuidFormat.Binary16 || guidFormat == MySqlGuidFormat.TimeSwapBinary16 || guidFormat == MySqlGuidFormat.LittleEndianBinary16) &&
+						columnDefinition.ColumnLength == 16)
+					{
+						return CreateGuidFromBytes(guidFormat, result);
+					}
+
+					return result;
 				}
 				return Encoding.UTF8.GetString(data);
 
@@ -477,6 +486,16 @@ namespace MySqlConnector.Core
 			if (hours < 0)
 				microseconds = -microseconds;
 			return new TimeSpan(0, hours, minutes, seconds, microseconds / 1000) + TimeSpan.FromTicks(microseconds % 1000 * 10);
+		}
+
+		private static Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, byte[] bytes)
+		{
+			if (guidFormat == MySqlGuidFormat.Binary16)
+				return new Guid(new[] { bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4], bytes[7], bytes[6], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] });
+			else if (guidFormat == MySqlGuidFormat.TimeSwapBinary16)
+				return new Guid(new[] { bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] });
+			else
+				return new Guid(bytes);
 		}
 
 		public readonly ResultSet ResultSet;

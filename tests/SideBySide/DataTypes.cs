@@ -495,6 +495,148 @@ namespace SideBySide
 			}
 		}
 
+#if !BASELINE
+		[Theory]
+		[InlineData(MySqlGuidFormat.Default, false)]
+		[InlineData(MySqlGuidFormat.Default, true)]
+		[InlineData(MySqlGuidFormat.None, false)]
+		[InlineData(MySqlGuidFormat.Char36, false)]
+		[InlineData(MySqlGuidFormat.Char32, false)]
+		[InlineData(MySqlGuidFormat.Binary16, false)]
+		[InlineData(MySqlGuidFormat.TimeSwapBinary16, false)]
+		[InlineData(MySqlGuidFormat.LittleEndianBinary16, false)]
+		public void QueryGuidFormat(MySqlGuidFormat guidFormat, bool oldGuids)
+		{
+			bool isChar36 = guidFormat == MySqlGuidFormat.Char36 || (guidFormat == MySqlGuidFormat.Default && !oldGuids);
+			bool isChar32 = guidFormat == MySqlGuidFormat.Char32;
+			bool isBinary16 = guidFormat == MySqlGuidFormat.Binary16;
+			bool isTimeSwapBinary16 = guidFormat == MySqlGuidFormat.TimeSwapBinary16;
+			bool isLittleEndianBinary16 = guidFormat == MySqlGuidFormat.LittleEndianBinary16 || (guidFormat == MySqlGuidFormat.Default && oldGuids);
+
+			Guid guid = new Guid("00112233-4455-6677-8899-AABBCCDDEEFF");
+			string guidAsChar36 = "00112233-4455-6677-8899-AABBCCDDEEFF";
+			string guidAsChar32 = "00112233445566778899AABBCCDDEEFF";
+			byte[] guidAsBinary16 = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+			byte[] guidAsTimeSwapBinary16 = { 0x66, 0x77, 0x44, 0x55, 0x00, 0x11, 0x22, 0x33, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+			byte[] guidAsLittleEndianBinary16 = { 0x33, 0x22, 0x11, 0x00, 0x55, 0x44, 0x77, 0x66, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+
+			bool uuidToBin = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.UuidToBin);
+			string sql = $@"drop table if exists guid_format;
+create table guid_format(
+	rowid integer not null primary key auto_increment,
+	c36 char(36),
+	c32 char(32),
+	b16 binary(16),
+	tsb16 binary(16),
+	leb16 binary(16),
+	t text,
+	b blob);
+insert into guid_format(c36, c32, b16, tsb16, leb16, t, b) values(?, ?, ?, ?, ?, ?, ?);
+insert into guid_format(c36, c32, b16, tsb16, leb16, t, b) values(?, ?, ?, ?, ?, ?, ?);
+insert into guid_format(c36, c32, b16, tsb16, leb16, t, b) values(
+	'00112233-4455-6677-8899-AABBCCDDEEFF',
+	'00112233445566778899AABBCCDDEEFF',
+	{(uuidToBin ? "UUID_TO_BIN('00112233-4455-6677-8899-AABBCCDDEEFF', FALSE)" : "UNHEX('00112233445566778899AABBCCDDEEFF')")},
+	{(uuidToBin ? "UUID_TO_BIN('00112233-4455-6677-8899-AABBCCDDEEFF', TRUE)" : "UNHEX('66774455001122338899AABBCCDDEEFF')")},
+	UNHEX('33221100554477668899AABBCCDDEEFF'),
+	{(uuidToBin ? "BIN_TO_UUID(UNHEX('00112233445566778899AABBCCDDEEFF'))" : "'00112233-4455-6677-8899-AABBCCDDEEFF'")},
+	{(isBinary16 ? (uuidToBin ? "UUID_TO_BIN('00112233-4455-6677-8899-AABBCCDDEEFF')" : "UNHEX('00112233445566778899AABBCCDDEEFF')") : isTimeSwapBinary16 ? (uuidToBin ? "UUID_TO_BIN('00112233-4455-6677-8899-AABBCCDDEEFF', TRUE)" : "UNHEX('66774455001122338899AABBCCDDEEFF')") : "UNHEX('33221100554477668899AABBCCDDEEFF')")});
+";
+
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.GuidFormat = guidFormat;
+			csb.OldGuids = oldGuids;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+
+				using (var cmd = new MySqlCommand(sql, connection)
+				{
+					Parameters =
+					{
+						new MySqlParameter { Value = guidAsChar36 },
+						new MySqlParameter { Value = guidAsChar32 },
+						new MySqlParameter { Value = guidAsBinary16 },
+						new MySqlParameter { Value = guidAsTimeSwapBinary16 },
+						new MySqlParameter { Value = guidAsLittleEndianBinary16 },
+						new MySqlParameter { Value = guidAsChar36 },
+						new MySqlParameter { Value = isBinary16 ? guidAsBinary16 : isTimeSwapBinary16 ? guidAsTimeSwapBinary16 : guidAsLittleEndianBinary16 },
+						new MySqlParameter { Value = isChar36 ? (object) guid : guidAsChar36 },
+						new MySqlParameter { Value = isChar32 ? (object) guid : guidAsChar32 },
+						new MySqlParameter { Value = isBinary16 ? (object) guid : guidAsBinary16 },
+						new MySqlParameter { Value = isTimeSwapBinary16 ? (object) guid : guidAsTimeSwapBinary16 },
+						new MySqlParameter { Value = isLittleEndianBinary16 ? (object) guid : guidAsLittleEndianBinary16 },
+						new MySqlParameter { Value = guidAsChar32 },
+						new MySqlParameter { Value = isBinary16 ? guidAsBinary16 : isTimeSwapBinary16 ? guidAsTimeSwapBinary16 : guidAsLittleEndianBinary16 },
+					}
+				})
+				{
+					cmd.ExecuteNonQuery();
+					cmd.CommandText = "select c36, c32, b16, tsb16, leb16, t, b from guid_format;";
+					using (var reader = cmd.ExecuteReader())
+					{
+						for (int row = 0; row < 3; row++)
+						{
+							Assert.True(reader.Read());
+
+							object c36 = reader.GetValue(0);
+							if (isChar36)
+								Assert.Equal(guid, (Guid) c36);
+							else
+								Assert.Equal(guidAsChar36, (string) c36);
+							Assert.Equal(guid, reader.GetGuid(0));
+
+							object c32 = reader.GetValue(1);
+							if (isChar32)
+								Assert.Equal(guid, (Guid) c32);
+							else
+								Assert.Equal(guidAsChar32, (string) c32);
+							Assert.Equal(guid, reader.GetGuid(1));
+
+							object b16 = reader.GetValue(2);
+							if (isBinary16)
+								Assert.Equal(guid, (Guid) b16);
+							else if (isTimeSwapBinary16 || isLittleEndianBinary16)
+								Assert.NotEqual(guid, (Guid) b16);
+							else
+								Assert.Equal(guidAsBinary16, (byte[]) b16);
+							if (isBinary16)
+								Assert.Equal(guid, reader.GetGuid(2));
+
+							object tsb16 = reader.GetValue(3);
+							if (isTimeSwapBinary16)
+								Assert.Equal(guid, (Guid) tsb16);
+							else if (isBinary16 || isLittleEndianBinary16)
+								Assert.NotEqual(guid, (Guid) tsb16);
+							else
+								Assert.Equal(guidAsTimeSwapBinary16, (byte[]) tsb16);
+							if (isTimeSwapBinary16)
+								Assert.Equal(guid, reader.GetGuid(3));
+
+							object leb16 = reader.GetValue(4);
+							if (isLittleEndianBinary16)
+								Assert.Equal(guid, (Guid) leb16);
+							else if (isBinary16 || isTimeSwapBinary16)
+								Assert.NotEqual(guid, (Guid) leb16);
+							else
+								Assert.Equal(guidAsLittleEndianBinary16, (byte[]) leb16);
+							if (!isBinary16 && !isTimeSwapBinary16)
+								Assert.Equal(guid, reader.GetGuid(4));
+
+							Assert.IsType<string>(reader.GetValue(5));
+							Assert.Equal(guid, reader.GetGuid(5));
+
+							Assert.IsType<byte[]>(reader.GetValue(6));
+							Assert.Equal(guid, reader.GetGuid(6));
+						}
+
+						Assert.False(reader.Read());
+					}
+				}
+			}
+		}
+#endif
+
 		[Theory]
 		[InlineData("`Date`", "DATE", new object[] { null, "1000 01 01", "9999 12 31", null, "2016 04 05" })]
 		[InlineData("`DateTime`", "DATETIME", new object[] { null, "1000 01 01 0 0 0", "9999 12 31 23 59 59 999999", null, "2016 4 5 14 3 4 567890" })]
