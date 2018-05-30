@@ -520,7 +520,7 @@ namespace SideBySide
 			byte[] guidTimeSwapBinary16 = { 0x66, 0x77, 0x44, 0x55, 0x00, 0x11, 0x22, 0x33, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
 			byte[] guidLittleEndianBinary16 = { 0x33, 0x22, 0x11, 0x00, 0x55, 0x44, 0x77, 0x66, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
 
-			const bool mysql8 = false;
+			bool uuidToBin = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.UuidToBin);
 			string sql = $@"drop table if exists guid_format;
 create table guid_format(
 	rowid integer not null primary key auto_increment,
@@ -531,7 +531,7 @@ create table guid_format(
 	leb16 binary(16));
 insert into guid_format(c36, c32, b16, tsb16, leb16) values(?, ?, ?, ?, ?);
 insert into guid_format(c36, c32, b16, tsb16, leb16) values(?, ?, ?, ?, ?);
-insert into guid_format(c36, c32, b16, tsb16, leb16) values('00112233-4455-6677-8899-AABBCCDDEEFF', '00112233445566778899AABBCCDDEEFF', {(mysql8 ? "UUID_TO_BIN('00112233-4455-6677-8899-AABBCCDDEEFF', FALSE)" : "UNHEX('00112233445566778899AABBCCDDEEFF')")}, {(mysql8 ? "UUID_TO_BIN('00112233-4455-6677-8899-AABBCCDDEEFF', TRUE)" : "UNHEX('66774455001122338899AABBCCDDEEFF')")}, UNHEX('33221100554477668899AABBCCDDEEFF'));
+insert into guid_format(c36, c32, b16, tsb16, leb16) values('00112233-4455-6677-8899-AABBCCDDEEFF', '00112233445566778899AABBCCDDEEFF', {(uuidToBin ? "UUID_TO_BIN('00112233-4455-6677-8899-AABBCCDDEEFF', FALSE)" : "UNHEX('00112233445566778899AABBCCDDEEFF')")}, {(uuidToBin ? "UUID_TO_BIN('00112233-4455-6677-8899-AABBCCDDEEFF', TRUE)" : "UNHEX('66774455001122338899AABBCCDDEEFF')")}, UNHEX('33221100554477668899AABBCCDDEEFF'));
 ";
 
 			var csb = AppConfig.CreateConnectionStringBuilder();
