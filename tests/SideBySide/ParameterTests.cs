@@ -290,6 +290,24 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void PrecisionDirect()
+		{
+			MySqlCommand command = new MySqlCommand();
+			MySqlParameter parameter = command.CreateParameter();
+			parameter.Precision = 11;
+			Assert.Equal((byte) 11, parameter.Precision);
+		}
+
+		[Fact]
+		public void PrecisionMixed()
+		{
+			MySqlCommand command = new MySqlCommand();
+			DbParameter parameter = command.CreateParameter();
+			((IDbDataParameter) parameter).Precision = 11;
+			Assert.Equal((byte) 11, ((MySqlParameter) parameter).Precision);
+		}
+
+		[Fact]
 		public void ScaleViaInterface()
 		{
 			IDbCommand command = new MySqlCommand();
@@ -305,6 +323,24 @@ namespace SideBySide
 			DbParameter parameter = command.CreateParameter();
 			parameter.Scale = 12;
 			Assert.Equal((byte) 12, parameter.Scale);
+		}
+
+		[Fact]
+		public void ScaleDirect()
+		{
+			MySqlCommand command = new MySqlCommand();
+			MySqlParameter parameter = command.CreateParameter();
+			parameter.Scale = 12;
+			Assert.Equal((byte) 12, parameter.Scale);
+		}
+
+		[Fact]
+		public void ScaleMixed()
+		{
+			MySqlCommand command = new MySqlCommand();
+			DbParameter parameter = command.CreateParameter();
+			((IDbDataParameter) parameter).Scale = 12;
+			Assert.Equal((byte) 12, ((MySqlParameter) parameter).Scale);
 		}
 	}
 }
