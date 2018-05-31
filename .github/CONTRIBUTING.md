@@ -13,6 +13,11 @@ All pull requests will be tested automatically; PRs with failing tests will not 
 All PRs that add new functionality must also include tests that verify the new functionality. This is important
 to ensure that compatibility with `MySql.Data` is maintained.
 
+This project uses the [Developer Certificate of Origin](https://developercertificate.org/). In short, you
+must add a `Signed-off-by: Your Name <email@example.com>` line to the bottom of your commit
+message to indicate that you accept the DCO and have the right to submit your contributions. You
+can use `git commit -s` to automatically add this line to your commit message. [Learn more](https://probot.github.io/apps/dco/)
+
 ### Code Guidelines
 
 Please install an [Editorconfig plugin](http://editorconfig.org/#download) in your favourite editor so that your
