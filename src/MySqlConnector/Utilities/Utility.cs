@@ -34,6 +34,21 @@ namespace MySqlConnector.Utilities
 		public static string GetString(this Encoding encoding, ArraySegment<byte> arraySegment) =>
 			encoding.GetString(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
 
+		public static string GetString(this Encoding encoding, ReadOnlySpan<byte> span)
+		{
+			if (span.Length == 0)
+				return "";
+#if NET45
+			return encoding.GetString(span.ToArray());
+#else
+			unsafe
+			{
+				fixed (byte* ptr = span)
+					return encoding.GetString(ptr, span.Length);
+			}
+#endif
+		}
+
 		/// <summary>
 		/// Loads a RSA public key from a PEM string. Taken from <a href="https://stackoverflow.com/a/32243171/23633">Stack Overflow</a>.
 		/// </summary>
@@ -172,21 +187,21 @@ namespace MySqlConnector.Utilities
 		}
 
 		/// <summary>
-		/// Finds the next index of <paramref name="pattern"/> in <paramref name="array"/>, starting at index <paramref name="offset"/>.
+		/// Finds the next index of <paramref name="pattern"/> in <paramref name="data"/>, starting at index <paramref name="offset"/>.
 		/// </summary>
-		/// <param name="array">The array to search.</param>
+		/// <param name="data">The array to search.</param>
 		/// <param name="offset">The offset at which to start searching.</param>
-		/// <param name="pattern">The pattern to find in <paramref name="array"/>.</param>
-		/// <returns>The offset of <paramref name="pattern"/> within <paramref name="array"/>, or <c>-1</c> if <paramref name="pattern"/> was not found.</returns>
-		public static int FindNextIndex(byte[] array, int offset, byte[] pattern)
+		/// <param name="pattern">The pattern to find in <paramref name="data"/>.</param>
+		/// <returns>The offset of <paramref name="pattern"/> within <paramref name="data"/>, or <c>-1</c> if <paramref name="pattern"/> was not found.</returns>
+		public static int FindNextIndex(ReadOnlySpan<byte> data, int offset, ReadOnlySpan<byte> pattern)
 		{
-			var limit = array.Length - pattern.Length;
+			var limit = data.Length - pattern.Length;
 			for (var start = offset; start <= limit; start++)
 			{
 				var i = 0;
 				for (; i < pattern.Length; i++)
 				{
-					if (array[start + i] != pattern[i])
+					if (data[start + i] != pattern[i])
 						break;
 				}
 				if (i == pattern.Length)

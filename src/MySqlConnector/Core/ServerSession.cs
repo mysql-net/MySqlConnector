@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Text;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -1020,16 +1021,16 @@ namespace MySqlConnector.Core
 				}
 
 				// first (and only) row
-				int? connectionId = default;
-				string serverVersion = null;
 				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-				var reader = new ByteArrayReader(payload.ArraySegment);
-				var length = reader.ReadLengthEncodedIntegerOrNull();
-				if (length != -1)
-					connectionId = int.Parse(Encoding.UTF8.GetString(reader.ReadByteArraySegment(length)), CultureInfo.InvariantCulture);
-				length = reader.ReadLengthEncodedIntegerOrNull();
-				if (length != -1)
-					serverVersion = Encoding.UTF8.GetString(reader.ReadByteArraySegment(length));
+				void ReadRow(ArraySegment<byte> arraySegment, out int? connectionId_, out string serverVersion_)
+				{
+					var reader = new ByteArrayReader(arraySegment);
+					var length = reader.ReadLengthEncodedIntegerOrNull();
+					connectionId_ = (length != -1 && Utf8Parser.TryParse(reader.ReadByteString(length), out int id, out _)) ? id : default(int?);
+					length = reader.ReadLengthEncodedIntegerOrNull();
+					serverVersion_ = length != -1 ? Encoding.UTF8.GetString(reader.ReadByteString(length)) : null;
+				}
+				ReadRow(payload.ArraySegment, out var connectionId, out var serverVersion);
 
 				// OK/EOF payload
 				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
