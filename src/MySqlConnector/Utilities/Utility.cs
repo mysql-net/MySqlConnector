@@ -6,7 +6,7 @@ using System.Net;
 #if NETSTANDARD1_3 || NETSTANDARD2_0
 using System.Runtime.InteropServices;
 #endif
-#if NET45 || NET46
+#if NET45 || NET461
 using System.Reflection;
 #endif
 using System.Security.Authentication;
@@ -273,7 +273,7 @@ namespace MySqlConnector.Utilities
 			bytes[offset2] = swap;
 		}
 
-#if NET45 || NET46
+#if NET45 || NET461
 		public static bool IsWindows() => Environment.OSVersion.Platform == PlatformID.Win32NT;
 
 		public static void GetOSDetails(out string os, out string osDescription, out string architecture)
@@ -308,13 +308,13 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
-#if NET45 || NET46
+#if NET45 || NET461
 		public static SslProtocols GetDefaultSslProtocols()
 		{
 			if (!s_defaultSslProtocols.HasValue)
 			{
 				// Prior to .NET Framework 4.7, SslProtocols.None is not a valid argument to SslStream.AuthenticateAsClientAsync.
-				// If the NET46 build is loaded by an application that targets. NET 4.7 (or later), or if app.config has set
+				// If the NET461 build is loaded by an application that targets. NET 4.7 (or later), or if app.config has set
 				// Switch.System.Net.DontEnableSystemDefaultTlsVersions to false, then SslProtocols.None will work; otherwise,
 				// if the application targets .NET 4.6.2 or earlier and hasn't changed the AppContext switch, then it will
 				// fail at runtime. We attempt to determine if it will fail by accessing the internal static

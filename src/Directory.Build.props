@@ -5,7 +5,6 @@
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <AssemblyOriginatorKeyFile>..\..\MySqlConnector.snk</AssemblyOriginatorKeyFile>
-    <TargetFrameworks>net45;net46;netstandard1.3;netstandard2.0</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageReleaseNotes>https://mysql-net.github.io/MySqlConnector/overview/version-history/</PackageReleaseNotes>
     <PackageProjectUrl>https://mysql-net.github.io/MySqlConnector/</PackageProjectUrl>
