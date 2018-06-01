@@ -6,15 +6,15 @@ namespace MySqlConnector.Protocol.Payloads
 	{
 		public static PayloadData Create(string user, byte[] authResponse, string schemaName, byte[] connectionAttributes)
 		{
-			var writer = new PayloadWriter();
+			var writer = new ByteBufferWriter();
 
-			writer.WriteByte((byte) CommandKind.ChangeUser);
+			writer.Write((byte) CommandKind.ChangeUser);
 			writer.WriteNullTerminatedString(user);
-			writer.WriteByte(checked((byte) authResponse.Length));
+			writer.Write(checked((byte) authResponse.Length));
 			writer.Write(authResponse);
 			writer.WriteNullTerminatedString(schemaName ?? "");
-			writer.WriteByte((byte) CharacterSet.Utf8Mb4Binary);
-			writer.WriteByte(0);
+			writer.Write((byte) CharacterSet.Utf8Mb4Binary);
+			writer.Write((byte) 0);
 			writer.WriteNullTerminatedString("mysql_native_password");
 			if (connectionAttributes != null)
 				writer.Write(connectionAttributes);

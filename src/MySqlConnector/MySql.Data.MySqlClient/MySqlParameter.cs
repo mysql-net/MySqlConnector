@@ -1,8 +1,10 @@
 using System;
+using System.Buffers.Text;
 using System.Data;
 using System.Data.Common;
-using System.IO;
+using System.Diagnostics;
 using MySqlConnector.Core;
+using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
@@ -175,16 +177,16 @@ namespace MySql.Data.MySqlClient
 
 		internal string NormalizedParameterName { get; private set; }
 
-		internal void AppendSqlString(BinaryWriter writer, StatementPreparerOptions options, string parameterName)
+		internal void AppendSqlString(ByteBufferWriter writer, StatementPreparerOptions options, string parameterName)
 		{
 			if (Value == null || Value == DBNull.Value)
 			{
-				writer.WriteUtf8("NULL");
+				writer.Write(s_nullBytes);
 			}
 			else if (Value is string stringValue)
 			{
 				writer.Write((byte) '\'');
-				writer.WriteUtf8(stringValue.Replace("\\", "\\\\").Replace("'", "\\'"));
+				writer.Write(stringValue.Replace("\\", "\\\\").Replace("'", "\\'"));
 				writer.Write((byte) '\'');
 			}
 			else if (Value is char charValue)
@@ -199,44 +201,70 @@ namespace MySql.Data.MySqlClient
 					break;
 
 				default:
-					writer.WriteUtf8(charValue.ToString());
+					writer.Write(charValue.ToString());
 					break;
 				}
 				writer.Write((byte) '\'');
 			}
-			else if (Value is byte || Value is sbyte || Value is short || Value is int || Value is long || Value is ushort || Value is uint || Value is ulong || Value is decimal)
+			else if (Value is byte || Value is sbyte || Value is decimal)
 			{
-				writer.WriteUtf8("{0}".FormatInvariant(Value));
+				writer.Write("{0}".FormatInvariant(Value));
+			}
+			else if (Value is short shortValue)
+			{
+				writer.WriteString(shortValue);
+			}
+			else if (Value is ushort ushortValue)
+			{
+				writer.WriteString(ushortValue);
+			}
+			else if (Value is int intValue)
+			{
+				writer.WriteString(intValue);
+			}
+			else if (Value is uint uintValue)
+			{
+				writer.WriteString(uintValue);
+			}
+			else if (Value is long longValue)
+			{
+				writer.WriteString(longValue);
+			}
+			else if (Value is ulong ulongValue)
+			{
+				writer.WriteString(ulongValue);
 			}
 			else if (Value is byte[] byteArrayValue)
 			{
 				// determine the number of bytes to be written
-				const string c_prefix = "_binary'";
-				var length = byteArrayValue.Length + c_prefix.Length + 1;
+				var length = byteArrayValue.Length + s_binaryBytes.Length + 1;
 				foreach (var by in byteArrayValue)
 				{
 					if (by == 0x27 || by == 0x5C)
 						length++;
 				}
 
-				((MemoryStream) writer.BaseStream).Capacity = (int) writer.BaseStream.Length + length;
-
-				writer.WriteUtf8(c_prefix);
+				var span = writer.GetSpan(length);
+				s_binaryBytes.CopyTo(span);
+				var index = s_binaryBytes.Length;
 				foreach (var by in byteArrayValue)
 				{
 					if (by == 0x27 || by == 0x5C)
-						writer.Write((byte) 0x5C);
-					writer.Write(by);
+						span[index++] = 0x5C;
+					span[index++] = by;
 				}
-				writer.Write((byte) '\'');
+				span[index++] = 0x27;
+				Debug.Assert(index == length, "index == length");
+				writer.Advance(index);
 			}
 			else if (Value is bool boolValue)
 			{
-				writer.WriteUtf8(boolValue ? "true" : "false");
+				writer.Write(boolValue ? s_trueBytes : s_falseBytes);
 			}
 			else if (Value is float || Value is double)
 			{
-				writer.WriteUtf8("{0:R}".FormatInvariant(Value));
+				// NOTE: Utf8Formatter doesn't support "R"
+				writer.Write("{0:R}".FormatInvariant(Value));
 			}
 			else if (Value is DateTime dateTimeValue)
 			{
@@ -245,22 +273,22 @@ namespace MySql.Data.MySqlClient
 				else if ((options & StatementPreparerOptions.DateTimeLocal) != 0 && dateTimeValue.Kind == DateTimeKind.Utc)
 					throw new MySqlException("DateTime.Kind must not be Utc when DateTimeKind setting is Local (parameter name: {0})".FormatInvariant(parameterName));
 
-				writer.WriteUtf8("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(dateTimeValue));
+				writer.Write("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(dateTimeValue));
 			}
 			else if (Value is DateTimeOffset dateTimeOffsetValue)
 			{
 				// store as UTC as it will be read as such when deserialized from a timespan column
-				writer.WriteUtf8("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(dateTimeOffsetValue.UtcDateTime));
+				writer.Write("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(dateTimeOffsetValue.UtcDateTime));
 			}
 			else if (Value is TimeSpan ts)
 			{
-				writer.WriteUtf8("time '");
+				writer.Write("time '");
 				if (ts.Ticks < 0)
 				{
 					writer.Write((byte) '-');
 					ts = TimeSpan.FromTicks(-ts.Ticks);
 				}
-				writer.WriteUtf8("{0}:{1:mm':'ss'.'ffffff}'".FormatInvariant(ts.Days * 24 + ts.Hours, ts));
+				writer.Write("{0}:{1:mm':'ss'.'ffffff}'".FormatInvariant(ts.Days * 24 + ts.Hours, ts));
 			}
 			else if (Value is Guid guidValue)
 			{
@@ -287,7 +315,7 @@ namespace MySql.Data.MySqlClient
 							Utility.SwapBytes(bytes, 1, 3);
 						}
 					}
-					writer.WriteUtf8("_binary'");
+					writer.Write(s_binaryBytes);
 					foreach (var by in bytes)
 					{
 						if (by == 0x27 || by == 0x5C)
@@ -296,46 +324,48 @@ namespace MySql.Data.MySqlClient
 					}
 					writer.Write((byte) '\'');
 				}
-				else if (guidOptions == StatementPreparerOptions.GuidFormatChar32)
-				{
-					writer.WriteUtf8("'{0:N}'".FormatInvariant(guidValue));
-				}
 				else
 				{
-					writer.WriteUtf8("'{0:D}'".FormatInvariant(guidValue));
+					var is32Characters = guidOptions == StatementPreparerOptions.GuidFormatChar32;
+					var guidLength = is32Characters ? 34 : 38;
+					var span = writer.GetSpan(guidLength);
+					span[0] = 0x27;
+					Utf8Formatter.TryFormat(guidValue, span.Slice(1), out _, is32Characters ? 'N' : 'D');
+					span[guidLength - 1] = 0x27;
+					writer.Advance(guidLength);
 				}
 			}
 			else if (MySqlDbType == MySqlDbType.Int16)
 			{
-				writer.WriteUtf8("{0}".FormatInvariant((short) Value));
+				writer.WriteString((short) Value);
 			}
 			else if (MySqlDbType == MySqlDbType.UInt16)
 			{
-				writer.WriteUtf8("{0}".FormatInvariant((ushort) Value));
+				writer.WriteString((ushort) Value);
 			}
 			else if (MySqlDbType == MySqlDbType.Int32)
 			{
-				writer.WriteUtf8("{0}".FormatInvariant((int) Value));
+				writer.WriteString((int) Value);
 			}
 			else if (MySqlDbType == MySqlDbType.UInt32)
 			{
-				writer.WriteUtf8("{0}".FormatInvariant((uint) Value));
+				writer.WriteString((uint) Value);
 			}
 			else if (MySqlDbType == MySqlDbType.Int64)
 			{
-				writer.WriteUtf8("{0}".FormatInvariant((long) Value));
+				writer.WriteString((long) Value);
 			}
 			else if (MySqlDbType == MySqlDbType.UInt64)
 			{
-				writer.WriteUtf8("{0}".FormatInvariant((ulong) Value));
+				writer.WriteString((ulong) Value);
 			}
 			else if ((MySqlDbType == MySqlDbType.String || MySqlDbType == MySqlDbType.VarChar) && HasSetDbType && Value is Enum)
 			{
-				writer.WriteUtf8("'{0:G}'".FormatInvariant(Value));
+				writer.Write("'{0:G}'".FormatInvariant(Value));
 			}
 			else if (Value is Enum)
 			{
-				writer.WriteUtf8("{0:d}".FormatInvariant(Value));
+				writer.Write("{0:d}".FormatInvariant(Value));
 			}
 			else
 			{
@@ -356,6 +386,11 @@ namespace MySql.Data.MySqlClient
 
 			return name.StartsWith("@", StringComparison.Ordinal) || name.StartsWith("?", StringComparison.Ordinal) ? name.Substring(1) : name;
 		}
+
+		static readonly byte[] s_nullBytes = { 0x4E, 0x55, 0x4C, 0x4C }; // NULL
+		static readonly byte[] s_trueBytes = { 0x74, 0x72, 0x75, 0x65 }; // true
+		static readonly byte[] s_falseBytes = { 0x66, 0x61, 0x6C, 0x73, 0x65 }; // false
+		static readonly byte[] s_binaryBytes = { 0x5F, 0x62, 0x69, 0x6E, 0x61, 0x72, 0x79, 0x27 }; // _binary'
 
 		DbType m_dbType;
 		MySqlDbType m_mySqlDbType;

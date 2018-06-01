@@ -5,11 +5,11 @@ namespace MySqlConnector.Protocol.Payloads
 {
 	internal sealed class HandshakeResponse41Payload
 	{
-		private static PayloadWriter CreateCapabilitiesPayload(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, bool useCompression, ProtocolCapabilities additionalCapabilities=0)
+		private static ByteBufferWriter CreateCapabilitiesPayload(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, bool useCompression, ProtocolCapabilities additionalCapabilities=0)
 		{
-			var writer = new PayloadWriter();
+			var writer = new ByteBufferWriter();
 
-			writer.WriteInt32((int) (
+			writer.Write((int) (
 				ProtocolCapabilities.Protocol41 |
 				ProtocolCapabilities.LongPassword |
 				ProtocolCapabilities.SecureConnection |
@@ -25,9 +25,9 @@ namespace MySqlConnector.Protocol.Payloads
 				(serverCapabilities & ProtocolCapabilities.SessionTrack) |
 				(serverCapabilities & ProtocolCapabilities.DeprecateEof) |
 				additionalCapabilities));
-			writer.WriteInt32(0x4000_0000);
-			writer.WriteByte((byte) CharacterSet.Utf8Mb4Binary);
-			writer.Write(new byte[23]);
+			writer.Write(0x4000_0000);
+			writer.Write((byte) CharacterSet.Utf8Mb4Binary);
+			writer.Write(s_padding);
 
 			return writer;
 		}
@@ -41,7 +41,7 @@ namespace MySqlConnector.Protocol.Payloads
 			var writer = CreateCapabilitiesPayload(handshake.ProtocolCapabilities, cs, useCompression);
 			writer.WriteNullTerminatedString(cs.UserID);
 			var authenticationResponse = AuthenticationUtility.CreateAuthenticationResponse(handshake.AuthPluginData, 0, cs.Password);
-			writer.WriteByte((byte) authenticationResponse.Length);
+			writer.Write((byte) authenticationResponse.Length);
 			writer.Write(authenticationResponse);
 
 			if (!string.IsNullOrWhiteSpace(cs.Database))
@@ -55,5 +55,7 @@ namespace MySqlConnector.Protocol.Payloads
 
 			return writer.ToPayloadData();
 		}
+
+		static readonly byte[] s_padding = new byte[23];
 	}
 }

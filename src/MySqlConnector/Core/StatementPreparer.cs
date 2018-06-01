@@ -1,9 +1,8 @@
 using System;
 using System.Data;
-using System.IO;
-using System.Text;
 using MySql.Data.MySqlClient;
 using MySqlConnector.Protocol;
+using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core
@@ -19,29 +18,21 @@ namespace MySqlConnector.Core
 
 		public ArraySegment<byte> ParseAndBindParameters()
 		{
-			using (var stream = new MemoryStream(m_commandText.Length + 1))
-			using (var writer = new BinaryWriter(stream, Encoding.UTF8))
+			var writer = new ByteBufferWriter(m_commandText.Length + 1);
+			writer.Write((byte) CommandKind.Query);
+
+			if (!string.IsNullOrWhiteSpace(m_commandText))
 			{
-				writer.Write((byte) CommandKind.Query);
-
-				if (!string.IsNullOrWhiteSpace(m_commandText))
-				{
-					var parser = new ParameterSqlParser(this, writer);
-					parser.Parse(m_commandText);
-				}
-
-#if NETSTANDARD1_3
-				var array = stream.ToArray();
-#else
-				var array = stream.GetBuffer();
-#endif
-				return new ArraySegment<byte>(array, 0, checked((int) stream.Length));
+				var parser = new ParameterSqlParser(this, writer);
+				parser.Parse(m_commandText);
 			}
+
+			return writer.ArraySegment;
 		}
 
 		private sealed class ParameterSqlParser : SqlParser
 		{
-			public ParameterSqlParser(StatementPreparer preparer, BinaryWriter writer)
+			public ParameterSqlParser(StatementPreparer preparer, ByteBufferWriter writer)
 			{
 				m_preparer = preparer;
 				m_writer = writer;
@@ -84,11 +75,11 @@ namespace MySqlConnector.Core
 
 			private void AppendString(string value, int offset, int length)
 			{
-				m_writer.WriteUtf8(value, offset, length);
+				m_writer.Write(value, offset, length);
 			}
 
 			readonly StatementPreparer m_preparer;
-			readonly BinaryWriter m_writer;
+			readonly ByteBufferWriter m_writer;
 			int m_currentParameterIndex;
 			int m_lastIndex;
 		}
