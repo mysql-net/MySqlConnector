@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Text;
 using System.Globalization;
 using System.Text;
 using MySql.Data.MySqlClient;
@@ -336,25 +337,23 @@ namespace MySqlConnector.Core
 			if (m_dataOffsets[ordinal] == -1)
 				return DBNull.Value;
 
-			var data = new ArraySegment<byte>(m_payload.Array, m_dataOffsets[ordinal], m_dataLengths[ordinal]);
+			var data = new ReadOnlySpan<byte>(m_payload.Array, m_dataOffsets[ordinal], m_dataLengths[ordinal]);
 			var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
 			var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
 			switch (columnDefinition.ColumnType)
 			{
 			case ColumnType.Tiny:
-				var value = int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+				var value = ParseInt32(data);
 				if (Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1)
 					return value != 0;
 				return isUnsigned ? (object) (byte) value : (sbyte) value;
 
 			case ColumnType.Int24:
 			case ColumnType.Long:
-				return isUnsigned ? (object) uint.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
-					int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+				return isUnsigned ? (object) ParseUInt32(data) : ParseInt32(data);
 
 			case ColumnType.Longlong:
-				return isUnsigned ? (object) ulong.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
-					long.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+				return isUnsigned ? (object) ParseUInt64(data) : ParseInt64(data);
 
 			case ColumnType.Bit:
 				// BIT column is transmitted as MSB byte array
@@ -365,9 +364,9 @@ namespace MySqlConnector.Core
 
 			case ColumnType.String:
 				if (Connection.GuidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
-					return Guid.Parse(Encoding.UTF8.GetString(data));
+					return Utf8Parser.TryParse(data, out Guid guid, out int guid36BytesConsumed, 'D') && guid36BytesConsumed == 36 ? guid : throw new FormatException();
 				if (Connection.GuidFormat == MySqlGuidFormat.Char32 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
-					return Guid.Parse(Encoding.UTF8.GetString(data));
+					return Utf8Parser.TryParse(data, out Guid guid, out int guid32BytesConsumed, 'N') && guid32BytesConsumed == 32 ? guid : throw new FormatException();
 				goto case ColumnType.VarString;
 
 			case ColumnType.VarString:
@@ -378,16 +377,11 @@ namespace MySqlConnector.Core
 			case ColumnType.LongBlob:
 				if (columnDefinition.CharacterSet == CharacterSet.Binary)
 				{
-					var result = new byte[m_dataLengths[ordinal]];
-					Buffer.BlockCopy(m_payload.Array, m_dataOffsets[ordinal], result, 0, result.Length);
 					var guidFormat = Connection.GuidFormat;
-					if ((guidFormat == MySqlGuidFormat.Binary16 || guidFormat == MySqlGuidFormat.TimeSwapBinary16 || guidFormat == MySqlGuidFormat.LittleEndianBinary16) &&
-						columnDefinition.ColumnLength == 16)
-					{
-						return CreateGuidFromBytes(guidFormat, result);
-					}
+					if ((guidFormat == MySqlGuidFormat.Binary16 || guidFormat == MySqlGuidFormat.TimeSwapBinary16 || guidFormat == MySqlGuidFormat.LittleEndianBinary16) && columnDefinition.ColumnLength == 16)
+						return CreateGuidFromBytes(guidFormat, data);
 
-					return result;
+					return data.ToArray();
 				}
 				return Encoding.UTF8.GetString(data);
 
@@ -395,8 +389,7 @@ namespace MySqlConnector.Core
 				return Encoding.UTF8.GetString(data);
 
 			case ColumnType.Short:
-				return isUnsigned ? (object) ushort.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture) :
-					short.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+				return isUnsigned ? (object) ParseUInt16(data) : ParseInt16(data);
 
 			case ColumnType.Date:
 			case ColumnType.DateTime:
@@ -407,22 +400,40 @@ namespace MySqlConnector.Core
 				return ParseTimeSpan(data);
 
 			case ColumnType.Year:
-				return int.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+				return ParseInt32(data);
 
 			case ColumnType.Float:
-				return float.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+				return !Utf8Parser.TryParse(data, out float floatValue, out var floatBytesConsumed) || floatBytesConsumed != data.Length ? throw new FormatException() : floatValue;
 
 			case ColumnType.Double:
-				return double.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+				return !Utf8Parser.TryParse(data, out double doubleValue, out var doubleBytesConsumed) || doubleBytesConsumed != data.Length ? throw new FormatException() : doubleValue;
 
 			case ColumnType.Decimal:
 			case ColumnType.NewDecimal:
-				return decimal.Parse(Encoding.UTF8.GetString(data), CultureInfo.InvariantCulture);
+				return Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) && bytesConsumed == data.Length ? decimalValue : throw new FormatException();
 
 			default:
 				throw new NotImplementedException("Reading {0} not implemented".FormatInvariant(columnDefinition.ColumnType));
 			}
 		}
+
+		private static short ParseInt16(ReadOnlySpan<byte> data) =>
+			!Utf8Parser.TryParse(data, out short value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
+
+		private static ushort ParseUInt16(ReadOnlySpan<byte> data) =>
+			!Utf8Parser.TryParse(data, out ushort value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
+
+		private static int ParseInt32(ReadOnlySpan<byte> data) =>
+			!Utf8Parser.TryParse(data, out int value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
+
+		private static uint ParseUInt32(ReadOnlySpan<byte> data) =>
+			!Utf8Parser.TryParse(data, out uint value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
+
+		private static long ParseInt64(ReadOnlySpan<byte> data) =>
+			!Utf8Parser.TryParse(data, out long value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
+
+		private static ulong ParseUInt64(ReadOnlySpan<byte> data) =>
+			!Utf8Parser.TryParse(data, out ulong value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
 
 		private static void CheckBufferArguments<T>(long dataOffset, T[] buffer, int bufferOffset, int length)
 		{
@@ -440,13 +451,18 @@ namespace MySqlConnector.Core
 				throw new ArgumentException("bufferOffset + length cannot exceed buffer.Length", nameof(length));
 		}
 
-		private DateTime ParseDateTime(ArraySegment<byte> value)
+		private DateTime ParseDateTime(ReadOnlySpan<byte> value)
 		{
-			var parts = Encoding.UTF8.GetString(value).Split('-', ' ', ':', '.');
-
-			var year = int.Parse(parts[0], CultureInfo.InvariantCulture);
-			var month = int.Parse(parts[1], CultureInfo.InvariantCulture);
-			var day = int.Parse(parts[2], CultureInfo.InvariantCulture);
+			if (!Utf8Parser.TryParse(value, out int year, out var bytesConsumed) || bytesConsumed != 4)
+				goto InvalidDateTime;
+			if (value.Length < 5 || value[4] != 45)
+				goto InvalidDateTime;
+			if (!Utf8Parser.TryParse(value.Slice(5), out int month, out bytesConsumed) || bytesConsumed != 2)
+				goto InvalidDateTime;
+			if (value.Length < 8 || value[7] != 45)
+				goto InvalidDateTime;
+			if (!Utf8Parser.TryParse(value.Slice(8), out int day, out bytesConsumed) || bytesConsumed != 2)
+				goto InvalidDateTime;
 
 			if (year == 0 && month == 0 && day == 0)
 			{
@@ -455,47 +471,85 @@ namespace MySqlConnector.Core
 				throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime.");
 			}
 
-			if (parts.Length == 3)
+			if (value.Length == 10)
 				return new DateTime(year, month, day, 0, 0, 0, Connection.DateTimeKind);
 
-			var hour = int.Parse(parts[3], CultureInfo.InvariantCulture);
-			var minute = int.Parse(parts[4], CultureInfo.InvariantCulture);
-			var second = int.Parse(parts[5], CultureInfo.InvariantCulture);
-			if (parts.Length == 6)
-				return new DateTime(year, month, day, hour, minute, second, Connection.DateTimeKind);
+			if (value[10] != 32)
+				goto InvalidDateTime;
+			if (!Utf8Parser.TryParse(value.Slice(11), out int hour, out bytesConsumed) || bytesConsumed != 2)
+				goto InvalidDateTime;
+			if (value.Length < 14 || value[13] != 58)
+				goto InvalidDateTime;
+			if (!Utf8Parser.TryParse(value.Slice(14), out int minute, out bytesConsumed) || bytesConsumed != 2)
+				goto InvalidDateTime;
+			if (value.Length < 17 || value[16] != 58)
+				goto InvalidDateTime;
+			if (!Utf8Parser.TryParse(value.Slice(17), out int second, out bytesConsumed) || bytesConsumed != 2)
+				goto InvalidDateTime;
 
-			var microseconds = int.Parse(parts[6] + new string('0', 6 - parts[6].Length), CultureInfo.InvariantCulture);
+			if (value.Length == 19)
+				return new DateTime(year, month, day, hour, minute, second, Connection.DateTimeKind);
+			if (value[19] != 46)
+				goto InvalidDateTime;
+
+			if (!Utf8Parser.TryParse(value.Slice(20), out int microseconds, out bytesConsumed) || bytesConsumed != value.Length - 20)
+				goto InvalidDateTime;
+			for (; bytesConsumed < 6; bytesConsumed++)
+				microseconds *= 10;
+
 			return new DateTime(year, month, day, hour, minute, second, microseconds / 1000, Connection.DateTimeKind).AddTicks(microseconds % 1000 * 10);
+
+InvalidDateTime:
+			throw new FormatException("Couldn't interpret '{0}' as a valid DateTime".FormatInvariant(Encoding.UTF8.GetString(value)));
 		}
 
-		private static TimeSpan ParseTimeSpan(ArraySegment<byte> value)
+		private static TimeSpan ParseTimeSpan(ReadOnlySpan<byte> value)
 		{
-			var parts = Encoding.UTF8.GetString(value).Split(':', '.');
+			var originalValue = value;
+			if (!Utf8Parser.TryParse(value, out int hours, out var bytesConsumed))
+				goto InvalidTimeSpan;
+			if (value.Length == bytesConsumed || value[bytesConsumed] != 58)
+				goto InvalidTimeSpan;
+			value = value.Slice(bytesConsumed + 1);
 
-			var hours = int.Parse(parts[0], CultureInfo.InvariantCulture);
-			var minutes = int.Parse(parts[1], CultureInfo.InvariantCulture);
+			if (!Utf8Parser.TryParse(value, out int minutes, out bytesConsumed) || bytesConsumed != 2)
+				goto InvalidTimeSpan;
+			if (value.Length < 3 || value[2] != 58)
+				goto InvalidTimeSpan;
+			value = value.Slice(3);
 			if (hours < 0)
 				minutes = -minutes;
-			var seconds = int.Parse(parts[2], CultureInfo.InvariantCulture);
+
+			if (!Utf8Parser.TryParse(value, out int seconds, out bytesConsumed) || bytesConsumed != 2)
+				goto InvalidTimeSpan;
 			if (hours < 0)
 				seconds = -seconds;
-			if (parts.Length == 3)
+			if (value.Length == 2)
 				return new TimeSpan(hours, minutes, seconds);
 
-			var microseconds = int.Parse(parts[3] + new string('0', 6 - parts[3].Length), CultureInfo.InvariantCulture);
+			if (value[2] != 46)
+				goto InvalidTimeSpan;
+			value = value.Slice(3);
+			if (!Utf8Parser.TryParse(value, out int microseconds, out bytesConsumed) || bytesConsumed != value.Length)
+				goto InvalidTimeSpan;
+			for (; bytesConsumed < 6; bytesConsumed++)
+				microseconds *= 10;
 			if (hours < 0)
 				microseconds = -microseconds;
 			return new TimeSpan(0, hours, minutes, seconds, microseconds / 1000) + TimeSpan.FromTicks(microseconds % 1000 * 10);
+
+InvalidTimeSpan:
+			throw new FormatException("Couldn't interpret '{0}' as a valid TimeSpan".FormatInvariant(Encoding.UTF8.GetString(originalValue)));
 		}
 
-		private static Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, byte[] bytes)
+		private static Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes)
 		{
 			if (guidFormat == MySqlGuidFormat.Binary16)
 				return new Guid(new[] { bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4], bytes[7], bytes[6], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] });
 			else if (guidFormat == MySqlGuidFormat.TimeSwapBinary16)
 				return new Guid(new[] { bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] });
 			else
-				return new Guid(bytes);
+				return new Guid(bytes.ToArray());
 		}
 
 		public readonly ResultSet ResultSet;

@@ -29,9 +29,6 @@ namespace MySqlConnector.Utilities
 		public static string FormatInvariant(this string format, params object[] args) =>
 			string.Format(CultureInfo.InvariantCulture, format, args);
 
-		public static string GetString(this Encoding encoding, ArraySegment<byte> arraySegment) =>
-			encoding.GetString(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
-
 		public static string GetString(this Encoding encoding, ReadOnlySpan<byte> span)
 		{
 			if (span.Length == 0)
