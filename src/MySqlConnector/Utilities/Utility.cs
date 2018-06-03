@@ -44,6 +44,7 @@ namespace MySqlConnector.Utilities
 #endif
 		}
 
+#if NET45 || NET461 || NETSTANDARD1_3 || NETSTANDARD2_0
 		public static unsafe void GetBytes(this Encoding encoding, ReadOnlySpan<char> chars, Span<byte> bytes)
 		{
 			fixed (char* charsPtr = chars)
@@ -52,8 +53,9 @@ namespace MySqlConnector.Utilities
 				encoding.GetBytes(charsPtr, chars.Length, bytesPtr, bytes.Length);
 			}
 		}
+#endif
 
-#if !NET45 && !NETSTANDARD1_3
+#if NET461 || NETSTANDARD2_0
 		public static unsafe void Convert(this Encoder encoder, ReadOnlySpan<char> chars, Span<byte> bytes, bool flush, out int charsUsed, out int bytesUsed, out bool completed)
 		{
 			fixed (char* charsPtr = chars)
