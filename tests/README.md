@@ -49,7 +49,7 @@ To run the tests against MySqlConnector:
 
 ```
 cd tests\SideBySide
-dotnet xunit -c Release
+dotnet test -c Release
 ```
 
 To run the tests against MySql.Data:
