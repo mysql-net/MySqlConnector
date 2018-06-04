@@ -106,7 +106,7 @@ namespace SideBySide
 				{
 					sw.Stop();
 					Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
-					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
+					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 700);
 				}
 			}
 
@@ -185,7 +185,7 @@ namespace SideBySide
 					sw.Stop();
 					Assert.True(readFirstResultSet);
 					Assert.Contains("timeout", ex.Message, StringComparison.OrdinalIgnoreCase);
-					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
+					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 550);
 				}
 			}
 
