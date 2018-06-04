@@ -20,17 +20,17 @@ namespace MySqlConnector.Protocol.Payloads
 			reader.ReadByte(Signature);
 
 			var errorCode = reader.ReadUInt16();
-			var stateMarker = Encoding.ASCII.GetString(reader.ReadByteArraySegment(1));
+			var stateMarker = Encoding.ASCII.GetString(reader.ReadByteString(1));
 			string state, message;
 			if (stateMarker == "#")
 			{
-				state = Encoding.ASCII.GetString(reader.ReadByteArraySegment(5));
-				message = Encoding.UTF8.GetString(reader.ReadByteArraySegment(payload.ArraySegment.Count - 9));
+				state = Encoding.ASCII.GetString(reader.ReadByteString(5));
+				message = Encoding.UTF8.GetString(reader.ReadByteString(payload.ArraySegment.Count - 9));
 			}
 			else
 			{
 				state = "HY000";
-				message = stateMarker + Encoding.UTF8.GetString(reader.ReadByteArraySegment(payload.ArraySegment.Count - 4));
+				message = stateMarker + Encoding.UTF8.GetString(reader.ReadByteString(payload.ArraySegment.Count - 4));
 			}
 			return new ErrorPayload(errorCode, state, message);
 		}

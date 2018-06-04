@@ -1,19 +1,20 @@
 using System;
+using System.Buffers.Binary;
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Serialization
 {
-	internal struct ByteArrayReader
+	internal ref struct ByteArrayReader
 	{
-		public ByteArrayReader(byte[] buffer, int offset, int length)
+		public ByteArrayReader(ReadOnlySpan<byte> buffer)
 		{
-			m_buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
-			m_offset = offset >= 0 ? offset : throw new ArgumentOutOfRangeException(nameof(offset));
-			m_maxOffset = offset + length <= m_buffer.Length ? offset + length : throw new ArgumentOutOfRangeException(nameof(length));
+			m_buffer = buffer;
+			m_offset = 0;
+			m_maxOffset = buffer.Length;
 		}
 
 		public ByteArrayReader(ArraySegment<byte> arraySegment)
-			: this(arraySegment.Array, arraySegment.Offset, arraySegment.Count)
+			: this(arraySegment.AsSpan())
 		{
 		}
 
@@ -38,7 +39,7 @@ namespace MySqlConnector.Protocol.Serialization
 		public short ReadInt16()
 		{
 			VerifyRead(2);
-			var result = BitConverter.ToInt16(m_buffer, m_offset);
+			var result = BinaryPrimitives.ReadInt16LittleEndian(m_buffer.Slice(m_offset));
 			m_offset += 2;
 			return result;
 		}
@@ -46,7 +47,7 @@ namespace MySqlConnector.Protocol.Serialization
 		public ushort ReadUInt16()
 		{
 			VerifyRead(2);
-			var result = BitConverter.ToUInt16(m_buffer, m_offset);
+			var result = BinaryPrimitives.ReadUInt16LittleEndian(m_buffer.Slice(m_offset));
 			m_offset += 2;
 			return result;
 		}
@@ -54,7 +55,7 @@ namespace MySqlConnector.Protocol.Serialization
 		public int ReadInt32()
 		{
 			VerifyRead(4);
-			var result = BitConverter.ToInt32(m_buffer, m_offset);
+			var result = BinaryPrimitives.ReadInt32LittleEndian(m_buffer.Slice(m_offset));
 			m_offset += 4;
 			return result;
 		}
@@ -62,7 +63,7 @@ namespace MySqlConnector.Protocol.Serialization
 		public uint ReadUInt32()
 		{
 			VerifyRead(4);
-			var result = BitConverter.ToUInt32(m_buffer, m_offset);
+			var result = BinaryPrimitives.ReadUInt32LittleEndian(m_buffer.Slice(m_offset));
 			m_offset += 4;
 			return result;
 		}
@@ -91,46 +92,34 @@ namespace MySqlConnector.Protocol.Serialization
 			return result;
 		}
 
-		// TODO: Span<byte>
-		public byte[] ReadNullTerminatedByteString()
+		public ReadOnlySpan<byte> ReadNullTerminatedByteString()
 		{
 			int index = m_offset;
 			while (index < m_maxOffset && m_buffer[index] != 0)
 				index++;
 			if (index == m_maxOffset)
 				throw new FormatException("Read past end of buffer looking for NUL.");
-			byte[] substring = new byte[index - m_offset];
-			Buffer.BlockCopy(m_buffer, m_offset, substring, 0, substring.Length);
+			var substring = m_buffer.Slice(m_offset, index - m_offset);
 			m_offset = index + 1;
 			return substring;
 		}
 
-		public byte[] ReadNullOrEofTerminatedByteString()
+		public ReadOnlySpan<byte> ReadNullOrEofTerminatedByteString()
 		{
 			int index = m_offset;
 			while (index < m_maxOffset && m_buffer[index] != 0)
 				index++;
-			byte[] substring = new byte[index - m_offset];
-			Buffer.BlockCopy(m_buffer, m_offset, substring, 0, substring.Length);
+			var substring = m_buffer.Slice(m_offset, index - m_offset);
 			if (index < m_maxOffset && m_buffer[index] == 0)
 				index++;
 			m_offset = index;
 			return substring;
 		}
 
-		public byte[] ReadByteArray(int length)
+		public ReadOnlySpan<byte> ReadByteString(int length)
 		{
 			VerifyRead(length);
-			var result = new byte[length];
-			Buffer.BlockCopy(m_buffer, m_offset, result, 0, result.Length);
-			m_offset += length;
-			return result;
-		}
-
-		public ArraySegment<byte> ReadByteArraySegment(int length)
-		{
-			VerifyRead(length);
-			var result = new ArraySegment<byte>(m_buffer, m_offset, length);
+			var result = m_buffer.Slice(m_offset, length);
 			m_offset += length;
 			return result;
 		}
@@ -166,10 +155,10 @@ namespace MySqlConnector.Protocol.Serialization
 			return checked((int) ReadLengthEncodedInteger());
 		}
 
-		public ArraySegment<byte> ReadLengthEncodedByteString()
+		public ReadOnlySpan<byte> ReadLengthEncodedByteString()
 		{
 			var length = checked((int) ReadLengthEncodedInteger());
-			var result = new ArraySegment<byte>(m_buffer, m_offset, length);
+			var result = m_buffer.Slice(m_offset, length);
 			m_offset += length;
 			return result;
 		}
@@ -182,7 +171,7 @@ namespace MySqlConnector.Protocol.Serialization
 				throw new InvalidOperationException("Read past end of buffer.");
 		}
 
-		readonly byte[] m_buffer;
+		readonly ReadOnlySpan<byte> m_buffer;
 		readonly int m_maxOffset;
 		int m_offset;
 	}

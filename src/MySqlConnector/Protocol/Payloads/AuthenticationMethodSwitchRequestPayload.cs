@@ -1,5 +1,6 @@
 using System.Text;
 using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Payloads
 {
@@ -26,7 +27,7 @@ namespace MySqlConnector.Protocol.Payloads
 			else
 			{
 				name = Encoding.UTF8.GetString(reader.ReadNullTerminatedByteString());
-				data = reader.ReadByteArray(reader.BytesRemaining);
+				data = reader.ReadByteString(reader.BytesRemaining).ToArray();
 			}
 			return new AuthenticationMethodSwitchRequestPayload(name, data);
 		}

@@ -62,7 +62,7 @@ namespace MySqlConnector.Core
 			cancellationToken.ThrowIfCancellationRequested();
 			if (Log.IsDebugEnabled())
 				Log.Debug("Session{0} ExecuteBehavior {1} CommandText: {2}", m_command.Connection.Session.Id, ioBehavior, commandText);
-			var payload = CreateQueryPayload(commandText, parameterCollection);
+			using (var payload = CreateQueryPayload(commandText, parameterCollection))
 			using (m_command.RegisterCancel(cancellationToken))
 			{
 				m_command.Connection.Session.StartQuerying(m_command);
@@ -119,7 +119,7 @@ namespace MySqlConnector.Core
 			}
 
 			var preparer = new StatementPreparer(commandText, parameterCollection, statementPreparerOptions);
-			return new PayloadData(preparer.ParseAndBindParameters());
+			return new PayloadData(preparer.ParseAndBindParameters(), isPooled: true);
 		}
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(TextCommandExecutor));

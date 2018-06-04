@@ -124,7 +124,8 @@ namespace MySql.Data.MySqlClient
 
 			CloseDatabase();
 
-			await m_session.SendAsync(InitDatabasePayload.Create(databaseName), ioBehavior, cancellationToken).ConfigureAwait(false);
+			using (var initDatabasePayload = InitDatabasePayload.Create(databaseName))
+				await m_session.SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			var payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			OkPayload.Create(payload);
 			m_session.DatabaseOverride = databaseName;

@@ -90,10 +90,15 @@ namespace MySqlConnector.Core
 					}
 					else
 					{
-						var reader = new ByteArrayReader(payload.ArraySegment);
-						var columnCount = (int) reader.ReadLengthEncodedInteger();
-						if (reader.BytesRemaining != 0)
-							throw new MySqlException("Unexpected data at end of column_count packet; see https://github.com/mysql-net/MySqlConnector/issues/324");
+						int ReadColumnCount(ArraySegment<byte> arraySegment)
+						{
+							var reader = new ByteArrayReader(arraySegment);
+							var columnCount_ = (int) reader.ReadLengthEncodedInteger();
+							if (reader.BytesRemaining != 0)
+								throw new MySqlException("Unexpected data at end of column_count packet; see https://github.com/mysql-net/MySqlConnector/issues/324");
+							return columnCount_;
+						}
+						var columnCount = ReadColumnCount(payload.ArraySegment);
 
 						// reserve adequate space to hold a copy of all column definitions (but note that this can be resized below if we guess too small)
 						Array.Resize(ref m_columnDefinitionPayloads, columnCount * 96);
@@ -251,7 +256,7 @@ namespace MySqlConnector.Core
 				{
 					var length = reader.ReadLengthEncodedIntegerOrNull();
 					m_dataLengths[column] = length == -1 ? 0 : length;
-					m_dataOffsets[column] = length == -1 ? -1 : reader.Offset;
+					m_dataOffsets[column] = length == -1 ? -1 : reader.Offset + payload.ArraySegment.Offset;
 					reader.Offset += m_dataLengths[column];
 				}
 

@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Text;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -322,8 +323,8 @@ namespace MySqlConnector.Core
 				if (m_supportsConnectionAttributes && s_connectionAttributes == null)
 					s_connectionAttributes = CreateConnectionAttributes();
 
-				payload = HandshakeResponse41Payload.Create(initialHandshake, cs, m_useCompression, m_supportsConnectionAttributes ? s_connectionAttributes : null);
-				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				using (var handshakeResponsePayload = HandshakeResponse41Payload.Create(initialHandshake, cs, m_useCompression, m_supportsConnectionAttributes ? s_connectionAttributes : null))
+					await SendReplyAsync(handshakeResponsePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				// if server doesn't support the authentication fast path, it will send a new challenge
@@ -377,9 +378,9 @@ namespace MySqlConnector.Core
 					m_logArguments[1] = ServerVersion.OriginalString;
 					Log.Debug("Session{0} ServerVersion={1} doesn't support reset connection; sending change user request", m_logArguments);
 					var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
-					var payload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database, m_supportsConnectionAttributes ? s_connectionAttributes : null);
-					await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					using (var changeUserPayload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database, m_supportsConnectionAttributes ? s_connectionAttributes : null))
+						await SendAsync(changeUserPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
+					var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 					{
 						Log.Debug("Session{0} optimistic reauthentication failed; logging in again", m_logArguments);
@@ -941,8 +942,8 @@ namespace MySqlConnector.Core
 
 			var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
 
-			var initSsl = HandshakeResponse41Payload.CreateWithSsl(serverCapabilities, cs, m_useCompression);
-			await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
+			using (var initSsl = HandshakeResponse41Payload.CreateWithSsl(serverCapabilities, cs, m_useCompression))
+				await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			try
 			{
@@ -1020,16 +1021,16 @@ namespace MySqlConnector.Core
 				}
 
 				// first (and only) row
-				int? connectionId = default;
-				string serverVersion = null;
 				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-				var reader = new ByteArrayReader(payload.ArraySegment);
-				var length = reader.ReadLengthEncodedIntegerOrNull();
-				if (length != -1)
-					connectionId = int.Parse(Encoding.UTF8.GetString(reader.ReadByteArraySegment(length)), CultureInfo.InvariantCulture);
-				length = reader.ReadLengthEncodedIntegerOrNull();
-				if (length != -1)
-					serverVersion = Encoding.UTF8.GetString(reader.ReadByteArraySegment(length));
+				void ReadRow(ArraySegment<byte> arraySegment, out int? connectionId_, out string serverVersion_)
+				{
+					var reader = new ByteArrayReader(arraySegment);
+					var length = reader.ReadLengthEncodedIntegerOrNull();
+					connectionId_ = (length != -1 && Utf8Parser.TryParse(reader.ReadByteString(length), out int id, out _)) ? id : default(int?);
+					length = reader.ReadLengthEncodedIntegerOrNull();
+					serverVersion_ = length != -1 ? Encoding.UTF8.GetString(reader.ReadByteString(length)) : null;
+				}
+				ReadRow(payload.ArraySegment, out var connectionId, out var serverVersion);
 
 				// OK/EOF payload
 				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
@@ -1171,7 +1172,7 @@ namespace MySqlConnector.Core
 		private byte[] CreateConnectionAttributes()
 		{
 			Log.Debug("Session{0} creating connection attributes", m_logArguments);
-			var attributesWriter = new PayloadWriter();
+			var attributesWriter = new ByteBufferWriter();
 			attributesWriter.WriteLengthEncodedString("_client_name");
 			attributesWriter.WriteLengthEncodedString("MySqlConnector");
 			attributesWriter.WriteLengthEncodedString("_client_version");
@@ -1197,12 +1198,15 @@ namespace MySqlConnector.Core
 				attributesWriter.WriteLengthEncodedString("_pid");
 				attributesWriter.WriteLengthEncodedString(process.Id.ToString(CultureInfo.InvariantCulture));
 			}
-			var connectionAttributes = attributesWriter.ToBytes();
-
-			var writer = new PayloadWriter();
-			writer.WriteLengthEncodedInteger((ulong) connectionAttributes.Length);
-			writer.Write(connectionAttributes);
-			return writer.ToBytes();
+			using (var connectionAttributesPayload = attributesWriter.ToPayloadData())
+			{
+				var connectionAttributes = connectionAttributesPayload.ArraySegment;
+				var writer = new ByteBufferWriter(connectionAttributes.Count + 9);
+				writer.WriteLengthEncodedInteger((ulong) connectionAttributes.Count);
+				writer.Write(connectionAttributes);
+				using (var payload = writer.ToPayloadData())
+					return payload.ArraySegment.AsSpan().ToArray();
+			}
 		}
 
 		private Exception CreateExceptionForErrorPayload(PayloadData payload)

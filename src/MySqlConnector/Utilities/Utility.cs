@@ -3,10 +3,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-#if NETSTANDARD1_3 || NETSTANDARD2_0
 using System.Runtime.InteropServices;
-#endif
-#if NET45 || NET46
+#if NET45 || NET461
 using System.Reflection;
 #endif
 using System.Security.Authentication;
@@ -31,8 +29,44 @@ namespace MySqlConnector.Utilities
 		public static string FormatInvariant(this string format, params object[] args) =>
 			string.Format(CultureInfo.InvariantCulture, format, args);
 
-		public static string GetString(this Encoding encoding, ArraySegment<byte> arraySegment) =>
-			encoding.GetString(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
+		public static string GetString(this Encoding encoding, ReadOnlySpan<byte> span)
+		{
+			if (span.Length == 0)
+				return "";
+#if NET45
+			return encoding.GetString(span.ToArray());
+#else
+			unsafe
+			{
+				fixed (byte* ptr = span)
+					return encoding.GetString(ptr, span.Length);
+			}
+#endif
+		}
+
+#if NET45 || NET461 || NETSTANDARD1_3 || NETSTANDARD2_0
+		public static unsafe void GetBytes(this Encoding encoding, ReadOnlySpan<char> chars, Span<byte> bytes)
+		{
+			fixed (char* charsPtr = chars)
+			fixed (byte* bytesPtr = bytes)
+			{
+				encoding.GetBytes(charsPtr, chars.Length, bytesPtr, bytes.Length);
+			}
+		}
+#endif
+
+#if NET461 || NETSTANDARD2_0
+		public static unsafe void Convert(this Encoder encoder, ReadOnlySpan<char> chars, Span<byte> bytes, bool flush, out int charsUsed, out int bytesUsed, out bool completed)
+		{
+			fixed (char* charsPtr = chars)
+			fixed (byte* bytesPtr = bytes)
+			{
+				// MemoryMarshal.GetNonNullPinnableReference is internal, so fake it by using an invalid but non-null pointer; this
+				// prevents Convert from throwing an exception when the output buffer is empty
+				encoder.Convert(charsPtr, chars.Length, bytesPtr == null ? (byte*) 1 : bytesPtr, bytes.Length, flush, out charsUsed, out bytesUsed, out completed);
+			}
+		}
+#endif
 
 		/// <summary>
 		/// Loads a RSA public key from a PEM string. Taken from <a href="https://stackoverflow.com/a/32243171/23633">Stack Overflow</a>.
@@ -41,7 +75,7 @@ namespace MySqlConnector.Utilities
 		/// <returns>An RSA public key, or <c>null</c> on failure.</returns>
 		public static RSA DecodeX509PublicKey(string publicKey)
 		{
-			var x509Key = Convert.FromBase64String(publicKey.Replace("-----BEGIN PUBLIC KEY-----", "").Replace("-----END PUBLIC KEY-----", ""));
+			var x509Key = System.Convert.FromBase64String(publicKey.Replace("-----BEGIN PUBLIC KEY-----", "").Replace("-----END PUBLIC KEY-----", ""));
 
 			// encoded OID sequence for  PKCS #1 rsaEncryption szOID_RSA_RSA = "1.2.840.113549.1.1.1"
 			byte[] seqOid = { 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00 };
@@ -172,21 +206,21 @@ namespace MySqlConnector.Utilities
 		}
 
 		/// <summary>
-		/// Finds the next index of <paramref name="pattern"/> in <paramref name="array"/>, starting at index <paramref name="offset"/>.
+		/// Finds the next index of <paramref name="pattern"/> in <paramref name="data"/>, starting at index <paramref name="offset"/>.
 		/// </summary>
-		/// <param name="array">The array to search.</param>
+		/// <param name="data">The array to search.</param>
 		/// <param name="offset">The offset at which to start searching.</param>
-		/// <param name="pattern">The pattern to find in <paramref name="array"/>.</param>
-		/// <returns>The offset of <paramref name="pattern"/> within <paramref name="array"/>, or <c>-1</c> if <paramref name="pattern"/> was not found.</returns>
-		public static int FindNextIndex(byte[] array, int offset, byte[] pattern)
+		/// <param name="pattern">The pattern to find in <paramref name="data"/>.</param>
+		/// <returns>The offset of <paramref name="pattern"/> within <paramref name="data"/>, or <c>-1</c> if <paramref name="pattern"/> was not found.</returns>
+		public static int FindNextIndex(ReadOnlySpan<byte> data, int offset, ReadOnlySpan<byte> pattern)
 		{
-			var limit = array.Length - pattern.Length;
+			var limit = data.Length - pattern.Length;
 			for (var start = offset; start <= limit; start++)
 			{
 				var i = 0;
 				for (; i < pattern.Length; i++)
 				{
-					if (array[start + i] != pattern[i])
+					if (data[start + i] != pattern[i])
 						break;
 				}
 				if (i == pattern.Length)
@@ -230,42 +264,6 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
-		public static void WriteUtf8(this BinaryWriter writer, string value) =>
-			WriteUtf8(writer, value, 0, value.Length);
-
-		public static void WriteUtf8(this BinaryWriter writer, string value, int startIndex, int length)
-		{
-			var endIndex = startIndex + length;
-			while (startIndex < endIndex)
-			{
-				int codePoint = char.ConvertToUtf32(value, startIndex);
-				startIndex++;
-				if (codePoint < 0x80)
-				{
-					writer.Write((byte) codePoint);
-				}
-				else if (codePoint < 0x800)
-				{
-					writer.Write((byte) (0xC0 | ((codePoint >> 6) & 0x1F)));
-					writer.Write((byte) (0x80 | (codePoint & 0x3F)));
-				}
-				else if (codePoint < 0x10000)
-				{
-					writer.Write((byte) (0xE0 | ((codePoint >> 12) & 0x0F)));
-					writer.Write((byte) (0x80 | ((codePoint >> 6) & 0x3F)));
-					writer.Write((byte) (0x80 | (codePoint & 0x3F)));
-				}
-				else
-				{
-					writer.Write((byte) (0xF0 | ((codePoint >> 18) & 0x07)));
-					writer.Write((byte) (0x80 | ((codePoint >> 12) & 0x3F)));
-					writer.Write((byte) (0x80 | ((codePoint >> 6) & 0x3F)));
-					writer.Write((byte) (0x80 | (codePoint & 0x3F)));
-					startIndex++;
-				}
-			}
-		}
-
 		public static void SwapBytes(byte[] bytes, int offset1, int offset2)
 		{
 			byte swap = bytes[offset1];
@@ -273,7 +271,7 @@ namespace MySqlConnector.Utilities
 			bytes[offset2] = swap;
 		}
 
-#if NET45 || NET46
+#if NET45 || NET461
 		public static bool IsWindows() => Environment.OSVersion.Platform == PlatformID.Win32NT;
 
 		public static void GetOSDetails(out string os, out string osDescription, out string architecture)
@@ -308,13 +306,13 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
-#if NET45 || NET46
+#if NET45 || NET461
 		public static SslProtocols GetDefaultSslProtocols()
 		{
 			if (!s_defaultSslProtocols.HasValue)
 			{
 				// Prior to .NET Framework 4.7, SslProtocols.None is not a valid argument to SslStream.AuthenticateAsClientAsync.
-				// If the NET46 build is loaded by an application that targets. NET 4.7 (or later), or if app.config has set
+				// If the NET461 build is loaded by an application that targets. NET 4.7 (or later), or if app.config has set
 				// Switch.System.Net.DontEnableSystemDefaultTlsVersions to false, then SslProtocols.None will work; otherwise,
 				// if the application targets .NET 4.6.2 or earlier and hasn't changed the AppContext switch, then it will
 				// fail at runtime. We attempt to determine if it will fail by accessing the internal static
