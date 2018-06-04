@@ -23,6 +23,27 @@ namespace SideBySide
 		}
 
 		/// <summary>
+		/// Verifies that <paramref name="value"/> is an integer (<see cref="Int32"/> or <see cref="Int64"/>) with the value <code>1</code>.
+		/// </summary>
+		public static void AssertIsOne(object value)
+		{
+			switch (value)
+			{
+			case int intValue:
+				Assert.Equal(1, intValue);
+				break;
+
+			case long longValue:
+				Assert.Equal(1L, longValue);
+				break;
+
+			default:
+				Assert.Equal(1L, value);
+				break;
+			}
+		}
+
+		/// <summary>
 		/// Asserts that <paramref name="stopwatch"/> is in the range [minimumMilliseconds, minimumMilliseconds + lengthMilliseconds].
 		/// </summary>
 		/// <remarks>This method applies a scaling factor for delays encountered under Continuous Integration environments.</remarks>

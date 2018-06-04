@@ -502,14 +502,14 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		public void ExecuteScalarReturnsFirstValue()
 		{
 			var result = m_database.Connection.ExecuteScalar("select 1; select 2;");
-			Assert.Equal(1L, result);
+			TestUtilities.AssertIsOne(result);
 		}
 
 		[Fact]
 		public async Task ExecuteScalarAsyncReturnsFirstValue()
 		{
 			var result = await m_database.Connection.ExecuteScalarAsync("select 1; select 2;");
-			Assert.Equal(1L, result);
+			TestUtilities.AssertIsOne(result);
 		}
 
 		[Fact]
@@ -649,8 +649,8 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		[InlineData("null", typeof(object))]
 #endif
 		[InlineData("cast(null as char)", typeof(string))]
-		[InlineData("1", typeof(long))]
-		[InlineData("cast(1 as unsigned)", typeof(ulong))]
+		[InlineData("1000000000000", typeof(long))]
+		[InlineData("cast(1000000000000 as unsigned)", typeof(ulong))]
 		[InlineData("1.0", typeof(decimal))]
 		[InlineData("'text'", typeof(string))]
 		[InlineData("cast('text' as char(4))", typeof(string))]
@@ -679,8 +679,8 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		[InlineData("null", "NULL")]
 #endif
 		[InlineData("cast(null as char)", "VARCHAR")]
-		[InlineData("1", "BIGINT")]
-		[InlineData("cast(1 as unsigned)", "BIGINT")]
+		[InlineData("1000000000000", "BIGINT")]
+		[InlineData("cast(1000000000000 as unsigned)", "BIGINT")]
 		[InlineData("1.0", "DECIMAL")]
 		[InlineData("'text'", "VARCHAR")]
 		[InlineData("cast('2000-01-02' as date)", "DATE")]
@@ -890,7 +890,7 @@ insert into long_enum_test (id, value) VALUES (0x7FFFFFFFFFFFFFFF, 1);
 				using (MySqlDataReader reader = command.ExecuteReader())
 				{
 					Assert.True(reader.Read());
-					Assert.Equal(3L, reader.GetValue(0));
+					Assert.Equal(3L, Convert.ToInt64(reader.GetValue(0)));
 					Assert.False(reader.Read());
 				}
 

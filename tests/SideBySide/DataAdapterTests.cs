@@ -49,7 +49,7 @@ insert into data_adapter(int_value, text_value) values
 				Assert.Single(ds.Tables);
 				Assert.Single(ds.Tables[0].Rows);
 				Assert.Single(ds.Tables[0].Rows[0].ItemArray);
-				Assert.Equal(1L, ds.Tables[0].Rows[0][0]);
+				TestUtilities.AssertIsOne(ds.Tables[0].Rows[0][0]);
 			}
 		}
 
@@ -61,7 +61,7 @@ insert into data_adapter(int_value, text_value) values
 			using (var ds = new DataSet())
 			{
 				da.Fill(ds);
-				Assert.Equal(1L, ds.Tables[0].Rows[0][0]);
+				TestUtilities.AssertIsOne(ds.Tables[0].Rows[0][0]);
 			}
 		}
 
@@ -72,8 +72,7 @@ insert into data_adapter(int_value, text_value) values
 			using (var ds = new DataSet())
 			{
 				da.Fill(ds);
-				Assert.Equal(1L, ds.Tables[0].Rows[0][0]);
-				Assert.Equal(1L, ds.Tables[0].Rows[0][0]);
+				TestUtilities.AssertIsOne(ds.Tables[0].Rows[0][0]);
 			}
 		}
 
@@ -84,7 +83,7 @@ insert into data_adapter(int_value, text_value) values
 			using (var ds = new DataSet())
 			{
 				da.Fill(ds);
-				Assert.Equal(1L, ds.Tables[0].Rows[0][0]);
+				TestUtilities.AssertIsOne(ds.Tables[0].Rows[0][0]);
 			}
 		}
 

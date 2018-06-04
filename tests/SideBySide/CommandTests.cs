@@ -114,7 +114,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 					Assert.Throws<InvalidOperationException>(() => command.ExecuteScalar());
 
 					command.Transaction = transaction;
-					Assert.Equal(1L, command.ExecuteScalar());
+					TestUtilities.AssertIsOne(command.ExecuteScalar());
 				}
 			}
 		}
@@ -129,7 +129,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 				using (var command = connection.CreateCommand())
 				{
 					command.CommandText = "SELECT 1;";
-					Assert.Equal(1L, command.ExecuteScalar());
+					TestUtilities.AssertIsOne(command.ExecuteScalar());
 				}
 			}
 		}
@@ -149,7 +149,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 				{
 					command.CommandText = "SELECT 1;";
 					command.Transaction = transaction;
-					Assert.Equal(1L, command.ExecuteScalar());
+					TestUtilities.AssertIsOne(command.ExecuteScalar());
 				}
 			}
 		}
@@ -167,7 +167,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 				{
 					command2.Transaction = transaction1;
 					command2.CommandText = "SELECT 1;";
-					Assert.Equal(1L, command2.ExecuteScalar());
+					TestUtilities.AssertIsOne(command2.ExecuteScalar());
 				}
 			}
 		}

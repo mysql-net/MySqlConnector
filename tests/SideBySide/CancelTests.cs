@@ -28,8 +28,7 @@ namespace SideBySide
 			using (var cmd = new MySqlCommand("SELECT SLEEP(0.25)", m_database.Connection))
 			{
 				var stopwatch = Stopwatch.StartNew();
-				var result = (long) cmd.ExecuteScalar();
-				Assert.Equal(0L, result);
+				Assert.Equal(0L, Convert.ToInt64(cmd.ExecuteScalar()));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 100, 1000);
 			}
 		}
@@ -46,8 +45,7 @@ namespace SideBySide
 				});
 
 				var stopwatch = Stopwatch.StartNew();
-				var result = (long) cmd.ExecuteScalar();
-				Assert.Equal(1L, result);
+				TestUtilities.AssertIsOne(cmd.ExecuteScalar());
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
 
 				task.Wait(); // shouldn't throw
