@@ -5,10 +5,20 @@
     <link>https://mysql-net.github.io/MySqlConnector/</link>
     <description>Recent content on MySqlConnector: Async MySQL Driver for .NET and .NET Core</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Sun, 16 Oct 2016 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 05 Jun 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://mysql-net.github.io/MySqlConnector/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Basic API</title>
+      <link>https://mysql-net.github.io/MySqlConnector/tutorials/basic-api/</link>
+      <pubDate>Tue, 05 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/tutorials/basic-api/</guid>
+      <description>Basic API MySqlConnector aims to be fully ADO.NET-compatible; its API should feel almost identical to other .NET database drivers. Here’s a basic code snippet to get you started.
+var connString = &amp;quot;Server=myserver;User ID=mylogin;Password=mypass;Database=mydatabase&amp;quot;; using (var conn = new MySqlConnection(connString)) { await conn.OpenAsync(); // Insert some data using (var cmd = new MySqlCommand()) { cmd.Connection = conn; cmd.CommandText = &amp;quot;INSERT INTO data (some_field) VALUES (@p)&amp;quot;; cmd.Parameters.AddWithValue(&amp;quot;p&amp;quot;, &amp;quot;Hello world&amp;quot;); await cmd.ExecuteNonQueryAsync(); } // Retrieve all rows using (var cmd = new MySqlCommand(&amp;quot;SELECT some_field FROM data&amp;quot;, conn)) using (var reader = await cmd.</description>
+    </item>
     
     <item>
       <title>Best Practices</title>
@@ -29,7 +39,7 @@ Always Use Async when possible  ADO.NET Class Asynchronous Method
       
       <guid>https://mysql-net.github.io/MySqlConnector/home/</guid>
       <description>Home MySqlConnector is an ADO.NET data provider for MySQL. It provides implementations of DbConnection, DbCommand, DbDataReader, DbTransaction &amp;ndash; the classes needed to query and update databases from managed code. Its features include:
- .NET Core Compatibility Truly Asynchronous: async functions implement asynchronous I/O High Performance: code is stress tested for performance bottlenecks Lightweight: Library only implements ADO.NET core  Why use MySql over Oracle’s Connector/NET? MySqlConnector is a clean-room reimplementation of the MySQL Protocol and is not based on Oracle’s Connector/NET.</description>
+ .NET Core Compatibility Truly Asynchronous: async functions implement asynchronous I/O High Performance: code is stress tested for performance bottlenecks Lightweight: Library only implements ADO.NET core  Getting Started Read how to install and a basic example of using the API.</description>
     </item>
     
     <item>

@@ -72,7 +72,7 @@ the existing logging framework, and install it by setting <code>MySqlConnector.L
 
 <p>Add the following line of code to your application startup routine:</p>
 
-<pre><code>MySqlConnectorLogManager.Provider = new Log4netLoggerProvider();
+<pre><code class="language-csharp">MySqlConnectorLogManager.Provider = new Log4netLoggerProvider();
 </code></pre>
 
 <h4 id="microsoft-extensions-logging">Microsoft.Extensions.Logging</h4>
@@ -81,7 +81,16 @@ the existing logging framework, and install it by setting <code>MySqlConnector.L
 
 <p>Add the following line of code to your <code>Startup.Configure</code> method:</p>
 
-<pre><code>MySqlConnectorLogManager.Provider = new MicrosoftExtensionsLoggingLoggerProvider(loggerFactory);
+<pre><code class="language-csharp">MySqlConnectorLogManager.Provider = new MicrosoftExtensionsLoggingLoggerProvider(loggerFactory);
+</code></pre>
+
+<h4 id="serilog">Serilog</h4>
+
+<p>Install <a href="https://www.nuget.org/packages/MySqlConnector.Logging.Serilog/">MySqlConnector.Logging.Serilog</a>.</p>
+
+<p>Add the following line of code to your application startup routine:</p>
+
+<pre><code class="language-csharp">MySqlConnectorLogManager.Provider = new SerilogLoggerProvider(loggerFactory);
 </code></pre>
 
 
@@ -139,6 +148,10 @@ the existing logging framework, and install it by setting <code>MySqlConnector.L
             Tutorials
         </li>
 
+        
+        <li>
+            <a href="/MySqlConnector/tutorials/basic-api/">Basic API</a>
+        </li>
         
         <li>
             <a href="/MySqlConnector/tutorials/best-practices/">Best Practices</a>

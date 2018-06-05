@@ -5,10 +5,20 @@
     <link>https://mysql-net.github.io/MySqlConnector/tutorials/</link>
     <description>Recent content in Tutorials on MySqlConnector: Async MySQL Driver for .NET and .NET Core</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Sun, 16 Oct 2016 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 05 Jun 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://mysql-net.github.io/MySqlConnector/tutorials/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Basic API</title>
+      <link>https://mysql-net.github.io/MySqlConnector/tutorials/basic-api/</link>
+      <pubDate>Tue, 05 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/tutorials/basic-api/</guid>
+      <description>Basic API MySqlConnector aims to be fully ADO.NET-compatible; its API should feel almost identical to other .NET database drivers. Here’s a basic code snippet to get you started.
+var connString = &amp;quot;Server=myserver;User ID=mylogin;Password=mypass;Database=mydatabase&amp;quot;; using (var conn = new MySqlConnection(connString)) { await conn.OpenAsync(); // Insert some data using (var cmd = new MySqlCommand()) { cmd.Connection = conn; cmd.CommandText = &amp;quot;INSERT INTO data (some_field) VALUES (@p)&amp;quot;; cmd.Parameters.AddWithValue(&amp;quot;p&amp;quot;, &amp;quot;Hello world&amp;quot;); await cmd.ExecuteNonQueryAsync(); } // Retrieve all rows using (var cmd = new MySqlCommand(&amp;quot;SELECT some_field FROM data&amp;quot;, conn)) using (var reader = await cmd.</description>
+    </item>
     
     <item>
       <title>Best Practices</title>

@@ -28,7 +28,7 @@
 
     <meta name="generator" content="Hugo 0.32" />
     
-    <title>MySqlConnector - MySqlTransaction</title>
+    <title>MySqlConnector - Basic API</title>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -54,26 +54,35 @@
 
 
 
-<h1 id="mysqltransaction">MySqlTransaction</h1>
+<h1 id="basic-api">Basic API</h1>
 
-<p>MySqlTransaction implements the <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbtransaction">ADO.NET DbTransaction class</a>,
-please refer to its documentation.</p>
+<p>MySqlConnector aims to be fully ADO.NET-compatible; its API should feel almost identical to other .NET database drivers.
+Here’s a basic code snippet to get you started.</p>
 
-<p>Additionally, MySqlTransaction provides the following public properties and methods that may be used:</p>
+<pre><code class="language-csharp">var connString = &quot;Server=myserver;User ID=mylogin;Password=mypass;Database=mydatabase&quot;;
 
-<h3 id="additional-instance-methods">Additional Instance Methods</h3>
+using (var conn = new MySqlConnection(connString))
+{
+    await conn.OpenAsync();
 
-<p><code>public Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))</code></p>
+    // Insert some data
+    using (var cmd = new MySqlCommand())
+    {
+        cmd.Connection = conn;
+        cmd.CommandText = &quot;INSERT INTO data (some_field) VALUES (@p)&quot;;
+        cmd.Parameters.AddWithValue(&quot;p&quot;, &quot;Hello world&quot;);
+        await cmd.ExecuteNonQueryAsync();
+    }
 
-<p>Async version of Commit</p>
+    // Retrieve all rows
+    using (var cmd = new MySqlCommand(&quot;SELECT some_field FROM data&quot;, conn))
+    using (var reader = await cmd.ExecuteReaderAsync())
+        while (await reader.ReadAsync())
+            Console.WriteLine(reader.GetString(0));
+}
+</code></pre>
 
-<hr />
-
-<p><code>public Task RollbackAsync(CancellationToken cancellationToken = default(CancellationToken))</code></p>
-
-<p>Async version of Rollback</p>
-
-<hr />
+<p>You can find more info about the ADO.NET API in the <a href="https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/ado-net-overview">MSDN documentation</a> or in many tutorials on the Internet.</p>
 
 
         </div>
