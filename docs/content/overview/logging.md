@@ -26,7 +26,9 @@ Install [MySqlConnector.Logging.log4net](https://www.nuget.org/packages/MySqlCon
 
 Add the following line of code to your application startup routine:
 
-    MySqlConnectorLogManager.Provider = new Log4netLoggerProvider();
+```csharp
+MySqlConnectorLogManager.Provider = new Log4netLoggerProvider();
+```
 
 #### Microsoft.Extensions.Logging
 
@@ -34,4 +36,16 @@ Install [MySqlConnector.Logging.Microsoft.Extensions.Logging](https://www.nuget.
 
 Add the following line of code to your `Startup.Configure` method:
 
-    MySqlConnectorLogManager.Provider = new MicrosoftExtensionsLoggingLoggerProvider(loggerFactory);
+```csharp
+MySqlConnectorLogManager.Provider = new MicrosoftExtensionsLoggingLoggerProvider(loggerFactory);
+```
+
+#### Serilog
+
+Install [MySqlConnector.Logging.Serilog](https://www.nuget.org/packages/MySqlConnector.Logging.Serilog/).
+
+Add the following line of code to your application startup routine:
+
+```csharp
+MySqlConnectorLogManager.Provider = new SerilogLoggerProvider(loggerFactory);
+```
