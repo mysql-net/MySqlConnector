@@ -13,6 +13,7 @@ namespace MySqlConnector.Protocol.Payloads
 				ProtocolCapabilities.Protocol41 |
 				(cs.InteractiveSession ? (serverCapabilities & ProtocolCapabilities.Interactive) : 0) |
 				ProtocolCapabilities.LongPassword |
+				(serverCapabilities & ProtocolCapabilities.Transactions) |
 				ProtocolCapabilities.SecureConnection |
 				(serverCapabilities & ProtocolCapabilities.PluginAuth) |
 				(serverCapabilities & ProtocolCapabilities.PluginAuthLengthEncodedClientData) |
