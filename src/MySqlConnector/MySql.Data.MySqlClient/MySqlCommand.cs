@@ -78,11 +78,14 @@ namespace MySql.Data.MySqlClient
 				throw new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
 			if (string.IsNullOrWhiteSpace(CommandText))
 				throw new InvalidOperationException("CommandText must be specified");
+			if (Connection.IgnorePrepare)
+				return;
 
 			// NOTE: Prepared statements in MySQL are not currently supported.
 			// 1) Only a subset of statements are actually preparable by the server: http://dev.mysql.com/worklog/task/?id=2871
 			// 2) Although CLIENT_MULTI_STATEMENTS is supposed to mean that the Server "Can handle multiple statements per COM_QUERY and COM_STMT_PREPARE" (https://dev.mysql.com/doc/internals/en/capability-flags.html#flag-CLIENT_MULTI_STATEMENTS),
 			//    this is not actually true because "Prepared statement handles are defined to work only with strings that contain a single statement" (http://dev.mysql.com/doc/refman/5.7/en/c-api-multiple-queries.html).
+			throw new NotSupportedException("Prepared commands are not supported.");
 		}
 
 		public override string CommandText

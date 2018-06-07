@@ -352,6 +352,7 @@ namespace MySql.Data.MySqlClient
 		internal int DefaultCommandTimeout => GetConnectionSettings().DefaultCommandTimeout;
 		internal MySqlGuidFormat GuidFormat => m_connectionSettings.GuidFormat;
 		internal bool IgnoreCommandTransaction => m_connectionSettings.IgnoreCommandTransaction;
+		internal bool IgnorePrepare => m_connectionSettings.IgnorePrepare;
 		internal bool TreatTinyAsBoolean => m_connectionSettings.TreatTinyAsBoolean;
 		internal IOBehavior AsyncIOBehavior => GetConnectionSettings().ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
 

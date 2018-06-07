@@ -42,6 +42,7 @@ namespace MySqlConnector.Tests
 			Assert.Null(csb.CACertificateFile);
 			Assert.Equal(MySqlLoadBalance.RoundRobin, csb.LoadBalance);
 #endif
+			Assert.True(csb.IgnorePrepare);
 			Assert.False(csb.InteractiveSession);
 			Assert.Equal(0u, csb.Keepalive);
 			Assert.Equal(100u, csb.MaximumPoolSize);
@@ -104,6 +105,7 @@ namespace MySqlConnector.Tests
 					"load balance=random;" +
 					"guidformat=timeswapbinary16;" +
 #endif
+					"ignore prepare=false;" +
 					"interactive=true;" +
 					"Keep Alive=90;" +
 					"minpoolsize=5;" +
@@ -147,6 +149,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal(MySqlLoadBalance.Random, csb.LoadBalance);
 			Assert.Equal(MySqlGuidFormat.TimeSwapBinary16, csb.GuidFormat);
 #endif
+			Assert.False(csb.IgnorePrepare);
 			Assert.True(csb.InteractiveSession);
 			Assert.Equal(90u, csb.Keepalive);
 			Assert.Equal(15u, csb.MaximumPoolSize);
