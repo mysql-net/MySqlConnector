@@ -59,6 +59,7 @@ namespace MySqlConnector.Core
 			DefaultCommandTimeout = (int) csb.DefaultCommandTimeout;
 			ForceSynchronous = csb.ForceSynchronous;
 			IgnoreCommandTransaction = csb.IgnoreCommandTransaction;
+			InteractiveSession = csb.InteractiveSession;
 			GuidFormat = GetEffectiveGuidFormat(csb.GuidFormat, csb.OldGuids);
 			Keepalive = csb.Keepalive;
 			PersistSecurityInfo = csb.PersistSecurityInfo;
@@ -131,6 +132,7 @@ namespace MySqlConnector.Core
 		public bool ForceSynchronous { get; }
 		public MySqlGuidFormat GuidFormat { get; }
 		public bool IgnoreCommandTransaction { get; }
+		public bool InteractiveSession { get; }
 		public uint Keepalive { get; }
 		public bool PersistSecurityInfo { get; }
 		public string ServerRsaPublicKeyFile { get; }

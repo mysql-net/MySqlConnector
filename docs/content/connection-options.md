@@ -233,6 +233,11 @@ These are the other options that MySqlConnector supports. They are set to sensib
     This matches the Connector/NET behaviour and can make porting code easier. For more information, see <a href="https://github.com/mysql-net/MySqlConnector/issues/474">Issue 474</a>.</td>
   </tr>
   <tr>
+    <td>Interactive, Interactive Session, InteractiveSession</td>
+    <td>false</td>
+    <td>If <code>true</code>, the session <code>wait_timeout</code> variable is initialized from the global <code>interactive_timeout<code> value instead of the global <code>wait_timeout</code> value.</td>
+  </tr>
+  <tr>
     <td>Keep Alive, Keepalive</td>
     <td>0</td>
     <td>TCP Keepalive idle time. A value of 0 indicates that the OS Default keepalive settings are used.

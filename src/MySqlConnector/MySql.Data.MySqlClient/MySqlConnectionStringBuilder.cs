@@ -189,6 +189,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.IgnoreCommandTransaction.SetValue(this, value);
 		}
 
+		public bool InteractiveSession
+		{
+			get => MySqlConnectionStringOption.InteractiveSession.GetValue(this);
+			set => MySqlConnectionStringOption.InteractiveSession.SetValue(this, value);
+		}
+
 		public uint Keepalive
 		{
 			get => MySqlConnectionStringOption.Keepalive.GetValue(this);
@@ -311,6 +317,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<bool> ForceSynchronous;
 		public static readonly MySqlConnectionStringOption<MySqlGuidFormat> GuidFormat;
 		public static readonly MySqlConnectionStringOption<bool> IgnoreCommandTransaction;
+		public static readonly MySqlConnectionStringOption<bool> InteractiveSession;
 		public static readonly MySqlConnectionStringOption<uint> Keepalive;
 		public static readonly MySqlConnectionStringOption<bool> OldGuids;
 		public static readonly MySqlConnectionStringOption<bool> PersistSecurityInfo;
@@ -459,6 +466,10 @@ namespace MySql.Data.MySqlClient
 
 			AddOption(IgnoreCommandTransaction = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "IgnoreCommandTransaction", "Ignore Command Transaction" },
+				defaultValue: false));
+
+			AddOption(InteractiveSession = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "InteractiveSession", "Interactive", "Interactive Session" },
 				defaultValue: false));
 
 			AddOption(Keepalive = new MySqlConnectionStringOption<uint>(

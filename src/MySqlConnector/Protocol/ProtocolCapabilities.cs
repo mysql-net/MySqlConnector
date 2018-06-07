@@ -2,6 +2,9 @@ using System;
 
 namespace MySqlConnector.Protocol
 {
+	/// <summary>
+	/// The <a href="https://dev.mysql.com/doc/internals/en/capability-flags.html">MySQL Capability flags</a>.
+	/// </summary>
 	[Flags]
 	internal enum ProtocolCapabilities
 	{
@@ -61,7 +64,7 @@ namespace MySqlConnector.Protocol
 		Protocol41 = 0x200,
 
 		/// <summary>
-		/// Supports interactive and noninteractive clients.
+		/// Server: Supports interactive and noninteractive clients. Client: The session <code>wait_timeout</code> variable is set to the value of the session <code>interactive_timeout</code> variable.
 		/// </summary>
 		Interactive = 0x400,
 

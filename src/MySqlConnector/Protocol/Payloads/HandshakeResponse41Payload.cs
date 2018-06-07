@@ -11,6 +11,7 @@ namespace MySqlConnector.Protocol.Payloads
 
 			writer.Write((int) (
 				ProtocolCapabilities.Protocol41 |
+				(cs.InteractiveSession ? (serverCapabilities & ProtocolCapabilities.Interactive) : 0) |
 				ProtocolCapabilities.LongPassword |
 				ProtocolCapabilities.SecureConnection |
 				(serverCapabilities & ProtocolCapabilities.PluginAuth) |
