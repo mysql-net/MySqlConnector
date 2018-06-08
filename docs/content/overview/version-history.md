@@ -11,6 +11,18 @@ weight: 30
 Version History
 ===============
 
+### 0.41.0
+
+* Add `GuidFormat` connection string option (for better compatibility with MySQL 8.0 [`UUID_TO_BIN`](https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin)): [#497](https://github.com/mysql-net/MySqlConnector/issues/497).
+* Add `InteractiveSession` connection string option: [#510](https://github.com/mysql-net/MySqlConnector/issues/510).
+* Add `PipeName` connection string option: [#454](https://github.com/mysql-net/MySqlConnector/issues/454).
+* Improve performance by using `ReadOnlySpan<byte>`, `Utf8Formatter`, and `Utf8Parser`: [#426](https://github.com/mysql-net/MySqlConnector/issues/426).
+* Add `netcoreapp2.1` package.
+* Remove unnecessary dependencies from `netstandard2.0` package.
+* Fix error in loading multiple certificates on macOS.
+* Fix bug in setting `MySqlParameter.Precision` and `Scale` under `netstandard1.3`.
+* Thanks to [Ed Ball](https://github.com/ejball) for contributions to this release.
+
 ### 0.40.4
 
 * Allow `CACertificateFile` to contain multiple (concatenated) certificates: [#499](https://github.com/mysql-net/MySqlConnector/issues/499).
