@@ -93,6 +93,22 @@
     <td></td>
     <td>(Optional) The case-sensitive name of the initial database to use. This may be required if the MySQL user account only has access rights to particular databases on the server.</td>
   </tr>
+  <tr>
+    <td>Protocol, ConnectionProtocol, Connection Protocol</td>
+    <td>Socket</td>
+    <td>How to connect to the MySQL Server. This option has the following values:
+      <ul>
+        <li><b>Socket</b> (default): Use TCP/IP sockets.</li>
+        <li><b>Unix</b>: Use a Unix socket.</li>
+        <li><b>Pipe</b>: Use a Windows named pipe.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>Pipe, PipeName, Pipe Name</td>
+    <td>MYSQL</td>
+    <td>The name of the Windows named pipe to use to connect to the server. You must also set <code>ConnectionProtocol=pipe</code> to used named pipes.</td>
+  </tr>
 </table>
 
 <h2 id="ssl-tls-options">SSL/TLS Options</h2>
