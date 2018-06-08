@@ -119,7 +119,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.40.4  Allow CACertificateFile to contain multiple (concatenated) certificates: #499. Avoid IndexOutOfRangeException in ValidateRemoteCertificate: #498.  0.40.3  Fix caching_sha2_password authentication for MySQL Server 8.0.11 release: #489.  Breaking This authentication plugin can no longer be used with MySQL Server 8.0.4; you must update to the GA release.   0.40.2  Reverted ConnectionReset=true optimisation (added in 0.40.0) that was incompatible with Aurora: #486.  0.40.1  Always use new DateTimeKind setting: #484.</description>
+      <description>Version History 0.41.0  Add GuidFormat connection string option (for better compatibility with MySQL 8.0 UUID_TO_BIN): #497. Add InteractiveSession connection string option: #510. Add PipeName connection string option: #454. Improve performance by using ReadOnlySpan&amp;lt;byte&amp;gt;, Utf8Formatter, and Utf8Parser: #426. Add netcoreapp2.1 package. Remove unnecessary dependencies from netstandard2.0 package. Fix error in loading multiple certificates on macOS. Fix bug in setting MySqlParameter.Precision and Scale under netstandard1.3. Thanks to Ed Ball for contributions to this release.</description>
     </item>
     
     <item>

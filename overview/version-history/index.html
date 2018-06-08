@@ -56,6 +56,20 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-41-0">0.41.0</h3>
+
+<ul>
+<li>Add <code>GuidFormat</code> connection string option (for better compatibility with MySQL 8.0 <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin"><code>UUID_TO_BIN</code></a>): <a href="https://github.com/mysql-net/MySqlConnector/issues/497">#497</a>.</li>
+<li>Add <code>InteractiveSession</code> connection string option: <a href="https://github.com/mysql-net/MySqlConnector/issues/510">#510</a>.</li>
+<li>Add <code>PipeName</code> connection string option: <a href="https://github.com/mysql-net/MySqlConnector/issues/454">#454</a>.</li>
+<li>Improve performance by using <code>ReadOnlySpan&lt;byte&gt;</code>, <code>Utf8Formatter</code>, and <code>Utf8Parser</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/426">#426</a>.</li>
+<li>Add <code>netcoreapp2.1</code> package.</li>
+<li>Remove unnecessary dependencies from <code>netstandard2.0</code> package.</li>
+<li>Fix error in loading multiple certificates on macOS.</li>
+<li>Fix bug in setting <code>MySqlParameter.Precision</code> and <code>Scale</code> under <code>netstandard1.3</code>.</li>
+<li>Thanks to <a href="https://github.com/ejball">Ed Ball</a> for contributions to this release.</li>
+</ul>
+
 <h3 id="0-40-4">0.40.4</h3>
 
 <ul>
