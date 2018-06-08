@@ -22,14 +22,13 @@ namespace MySqlConnector.Protocol.Serialization
 
 		public ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, IOBehavior ioBehavior)
 		{
-			return (ioBehavior == IOBehavior.Asynchronous) ?
-				new ValueTask<int>(DoReadBytesAsync(buffer)) : DoReadBytesSync(buffer);
+			return ioBehavior == IOBehavior.Asynchronous ? new ValueTask<int>(DoReadBytesAsync(buffer)) :
+				RemainingTimeout <= 0 ? ValueTaskExtensions.FromException<int>(MySqlException.CreateForTimeout()) :
+				m_stream.CanTimeout ? DoReadBytesSync(buffer) :
+				DoReadBytesSyncOverAsync(buffer);
 
 			ValueTask<int> DoReadBytesSync(ArraySegment<byte> buffer_)
 			{
-				if (RemainingTimeout <= 0)
-					return ValueTaskExtensions.FromException<int>(MySqlException.CreateForTimeout());
-
 				m_stream.ReadTimeout = RemainingTimeout == Constants.InfiniteTimeout ? Timeout.Infinite : RemainingTimeout;
 				var startTime = RemainingTimeout == Constants.InfiniteTimeout ? 0 : Environment.TickCount;
 				int bytesRead;
@@ -46,6 +45,19 @@ namespace MySqlConnector.Protocol.Serialization
 				if (RemainingTimeout != Constants.InfiniteTimeout)
 					RemainingTimeout -= unchecked(Environment.TickCount - startTime);
 				return new ValueTask<int>(bytesRead);
+			}
+
+			ValueTask<int> DoReadBytesSyncOverAsync(ArraySegment<byte> buffer_)
+			{
+				try
+				{
+					// handle timeout by setting a timer to close the stream in the background
+					return new ValueTask<int>(DoReadBytesAsync(buffer_).GetAwaiter().GetResult());
+				}
+				catch (Exception ex)
+				{
+					return ValueTaskExtensions.FromException<int>(ex);
+				}
 			}
 
 			async Task<int> DoReadBytesAsync(ArraySegment<byte> buffer_)

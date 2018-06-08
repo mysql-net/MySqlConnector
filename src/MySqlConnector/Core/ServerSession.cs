@@ -4,6 +4,9 @@ using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+#if !NETSTANDARD1_3
+using System.IO.Pipes;
+#endif
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -242,10 +245,12 @@ namespace MySqlConnector.Core
 					shouldRetrySsl = (sslProtocols == SslProtocols.None || (sslProtocols & SslProtocols.Tls12) == SslProtocols.Tls12) && Utility.IsWindows();
 
 					var connected = false;
-					if (cs.ConnectionType == ConnectionType.Tcp)
+					if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets)
 						connected = await OpenTcpSocketAsync(cs, loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
-					else if (cs.ConnectionType == ConnectionType.Unix)
+					else if (cs.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket)
 						connected = await OpenUnixSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+					else if (cs.ConnectionProtocol == MySqlConnectionProtocol.NamedPipe)
+						connected = await OpenNamedPipeAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 					if (!connected)
 					{
 						lock (m_lock)
@@ -254,7 +259,7 @@ namespace MySqlConnector.Core
 						throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
 					}
 
-					var byteHandler = new SocketByteHandler(m_socket);
+					var byteHandler = m_socket != null ? (IByteHandler) new SocketByteHandler(m_socket) : new StreamByteHandler(m_stream);
 					m_payloadHandler = new StandardPayloadHandler(byteHandler);
 
 					payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -755,7 +760,7 @@ namespace MySqlConnector.Core
 					HostName = hostName;
 					m_tcpClient = tcpClient;
 					m_socket = m_tcpClient.Client;
-					m_networkStream = m_tcpClient.GetStream();
+					m_stream = m_tcpClient.GetStream();
 					m_socket.SetKeepAlive(cs.Keepalive);
 					lock (m_lock)
 						m_state = State.Connected;
@@ -806,7 +811,7 @@ namespace MySqlConnector.Core
 			if (socket.Connected)
 			{
 				m_socket = socket;
-				m_networkStream = new NetworkStream(socket);
+				m_stream = new NetworkStream(socket);
 
 				lock (m_lock)
 					m_state = State.Connected;
@@ -814,6 +819,48 @@ namespace MySqlConnector.Core
 			}
 
 			return false;
+		}
+
+		private Task<bool> OpenNamedPipeAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+#if NETSTANDARD1_3
+			throw new NotSupportedException("Named pipe connections are not supported in netstandard1.3");
+#else
+			if (Log.IsInfoEnabled())
+				Log.Info("Session{0} connecting to NamedPipe '{1}' on Server '{2}'", m_logArguments[0], cs.PipeName, cs.HostNames[0]);
+			var namedPipeStream = new NamedPipeClientStream(cs.HostNames[0], cs.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+			try
+			{
+				using (cancellationToken.Register(() => namedPipeStream.Dispose()))
+				{
+					try
+					{
+						namedPipeStream.Connect();
+					}
+					catch (ObjectDisposedException ex) when (cancellationToken.IsCancellationRequested)
+					{
+						m_logArguments[1] = cs.PipeName;
+						Log.Info("Session{0} connect timeout expired connecting to named pipe '{1}'", m_logArguments);
+						throw new MySqlException("Connect Timeout expired.", ex);
+					}
+				}
+			}
+			catch (IOException)
+			{
+				namedPipeStream.Dispose();
+			}
+
+			if (namedPipeStream.IsConnected)
+			{
+				m_stream = namedPipeStream;
+
+				lock (m_lock)
+					m_state = State.Connected;
+				return Task.FromResult(true);
+			}
+
+			return Task.FromResult(false);
+#endif
 		}
 
 		private async Task InitSslAsync(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, SslProtocols sslProtocols, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -936,9 +983,9 @@ namespace MySqlConnector.Core
 
 			SslStream sslStream;
 			if (clientCertificates == null)
-				sslStream = new SslStream(m_networkStream, false, ValidateRemoteCertificate);
+				sslStream = new SslStream(m_stream, false, ValidateRemoteCertificate);
 			else
-				sslStream = new SslStream(m_networkStream, false, ValidateRemoteCertificate, ValidateLocalCertificate);
+				sslStream = new SslStream(m_stream, false, ValidateRemoteCertificate, ValidateLocalCertificate);
 
 			var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
 
@@ -1056,7 +1103,7 @@ namespace MySqlConnector.Core
 		{
 			Log.Info("Session{0} closing stream/socket", m_logArguments);
 			Utility.Dispose(ref m_payloadHandler);
-			Utility.Dispose(ref m_networkStream);
+			Utility.Dispose(ref m_stream);
 			SafeDispose(ref m_tcpClient);
 			SafeDispose(ref m_socket);
 #if NET45
@@ -1259,7 +1306,7 @@ namespace MySqlConnector.Core
 		State m_state;
 		TcpClient m_tcpClient;
 		Socket m_socket;
-		NetworkStream m_networkStream;
+		Stream m_stream;
 		SslStream m_sslStream;
 		X509Certificate2 m_clientCertificate;
 		IPayloadHandler m_payloadHandler;

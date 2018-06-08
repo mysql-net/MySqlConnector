@@ -13,21 +13,31 @@ namespace MySqlConnector.Core
 			ConnectionStringBuilder = csb;
 			ConnectionString = csb.ConnectionString;
 
-			// Base Options
-			if (!Utility.IsWindows() && (csb.Server.StartsWith("/", StringComparison.Ordinal) || csb.Server.StartsWith("./", StringComparison.Ordinal)))
+			if (csb.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket || (!Utility.IsWindows() && (csb.Server.StartsWith("/", StringComparison.Ordinal) || csb.Server.StartsWith("./", StringComparison.Ordinal))))
 			{
 				if (!File.Exists(csb.Server))
 					throw new MySqlException("Cannot find Unix Socket at " + csb.Server);
-				ConnectionType = ConnectionType.Unix;
+				ConnectionProtocol = MySqlConnectionProtocol.UnixSocket;
 				UnixSocket = Path.GetFullPath(csb.Server);
+			}
+			else if (csb.ConnectionProtocol == MySqlConnectionProtocol.NamedPipe)
+			{
+				ConnectionProtocol = MySqlConnectionProtocol.NamedPipe;
+				HostNames = (csb.Server == "." || string.Equals(csb.Server, "localhost", StringComparison.OrdinalIgnoreCase)) ? s_localhostPipeServer : new[] { csb.Server };
+				PipeName = csb.PipeName;
+			}
+			else if (csb.ConnectionProtocol == MySqlConnectionProtocol.SharedMemory)
+			{
+				throw new NotSupportedException("Shared Memory connections are not supported");
 			}
 			else
 			{
-				ConnectionType = ConnectionType.Tcp;
+				ConnectionProtocol = MySqlConnectionProtocol.Sockets;
 				HostNames = csb.Server.Split(',');
 				LoadBalance = csb.LoadBalance;
 				Port = (int) csb.Port;
 			}
+
 			UserID = csb.UserID;
 			Password = csb.Password;
 			Database = csb.Database;
@@ -97,10 +107,11 @@ namespace MySqlConnector.Core
 
 		// Base Options
 		public string ConnectionString { get; }
-		public ConnectionType ConnectionType { get; }
+		public MySqlConnectionProtocol ConnectionProtocol { get; }
 		public IReadOnlyList<string> HostNames { get; }
 		public MySqlLoadBalance LoadBalance { get; }
 		public int Port { get; }
+		public string PipeName { get; }
 		public string UnixSocket { get; }
 		public string UserID { get; }
 		public string Password { get; }
@@ -163,5 +174,7 @@ namespace MySqlConnector.Core
 				return m_connectionTimeoutMilliseconds.Value;
 			}
 		}
+
+		static readonly string[] s_localhostPipeServer = { "." };
 	}
 }

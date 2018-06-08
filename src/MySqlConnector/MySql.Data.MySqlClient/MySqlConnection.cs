@@ -211,9 +211,7 @@ namespace MySql.Data.MySqlClient
 
 		public override ConnectionState State => m_connectionState;
 
-		public override string DataSource => (GetConnectionSettings().ConnectionType == ConnectionType.Tcp
-			? string.Join(",", GetConnectionSettings().HostNames)
-			: GetConnectionSettings().UnixSocket) ?? "";
+		public override string DataSource => GetConnectionSettings().ConnectionStringBuilder.Server;
 
 		public override string ServerVersion => m_session.ServerVersion.OriginalString;
 

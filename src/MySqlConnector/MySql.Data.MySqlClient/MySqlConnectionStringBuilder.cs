@@ -54,6 +54,18 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.LoadBalance.SetValue(this, value);
 		}
 
+		public MySqlConnectionProtocol ConnectionProtocol
+		{
+			get => MySqlConnectionStringOption.ConnectionProtocol.GetValue(this);
+			set => MySqlConnectionStringOption.ConnectionProtocol.SetValue(this, value);
+		}
+
+		public string PipeName
+		{
+			get => MySqlConnectionStringOption.PipeName.GetValue(this);
+			set => MySqlConnectionStringOption.PipeName.SetValue(this, value);
+		}
+
 		// SSL/TLS Options
 		public MySqlSslMode SslMode
 		{
@@ -289,6 +301,8 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<string> Password;
 		public static readonly MySqlConnectionStringOption<string> Database;
 		public static readonly MySqlConnectionStringOption<MySqlLoadBalance> LoadBalance;
+		public static readonly MySqlConnectionStringOption<MySqlConnectionProtocol> ConnectionProtocol;
+		public static readonly MySqlConnectionStringOption<string> PipeName;
 
 		// SSL/TLS Options
 		public static readonly MySqlConnectionStringOption<MySqlSslMode> SslMode;
@@ -376,6 +390,14 @@ namespace MySql.Data.MySqlClient
 			AddOption(LoadBalance = new MySqlConnectionStringOption<MySqlLoadBalance>(
 				keys: new[] { "LoadBalance", "Load Balance" },
 				defaultValue: MySqlLoadBalance.RoundRobin));
+
+			AddOption(ConnectionProtocol = new MySqlConnectionStringOption<MySqlConnectionProtocol>(
+				keys: new[] { "ConnectionProtocol", "Connection Protocol", "Protocol" },
+				defaultValue: MySqlConnectionProtocol.Socket));
+
+			AddOption(PipeName = new MySqlConnectionStringOption<string>(
+				keys: new[] { "PipeName", "Pipe", "Pipe Name" },
+				defaultValue: "MYSQL"));
 
 			// SSL/TLS Options
 			AddOption(SslMode = new MySqlConnectionStringOption<MySqlSslMode>(
@@ -538,14 +560,16 @@ namespace MySql.Data.MySqlClient
 					return (T) (object) false;
 			}
 
-			if ((typeof(T) == typeof(MySqlLoadBalance) || typeof(T) == typeof(MySqlSslMode) || typeof(T) == typeof(MySqlDateTimeKind) || typeof(T) == typeof(MySqlGuidFormat)) && objectValue is string enumString)
+			if ((typeof(T) == typeof(MySqlLoadBalance) || typeof(T) == typeof(MySqlSslMode) || typeof(T) == typeof(MySqlDateTimeKind) || typeof(T) == typeof(MySqlGuidFormat) || typeof(T) == typeof(MySqlConnectionProtocol)) && objectValue is string enumString)
 			{
-				foreach (var val in Enum.GetValues(typeof(T)))
+				try
 				{
-					if (string.Equals(enumString, val.ToString(), StringComparison.OrdinalIgnoreCase))
-						return (T) val;
+					return (T) Enum.Parse(typeof(T), enumString, ignoreCase: true);
 				}
-				throw new InvalidOperationException("Value '{0}' not supported for option '{1}'.".FormatInvariant(objectValue, typeof(T).Name));
+				catch (Exception ex)
+				{
+					throw new InvalidOperationException("Value '{0}' not supported for option '{1}'.".FormatInvariant(objectValue, typeof(T).Name), ex);
+				}
 			}
 
 			return (T) Convert.ChangeType(objectValue, typeof(T), CultureInfo.InvariantCulture);

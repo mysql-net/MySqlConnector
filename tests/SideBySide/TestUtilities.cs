@@ -103,7 +103,7 @@ namespace SideBySide
 			if (configSettings.HasFlag(ConfigSettings.LocalTsvFile) && string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderLocalTsvFile))
 				return "Requires MySqlBulkLoaderLocalTsvFile in config.json";
 
-			if (configSettings.HasFlag(ConfigSettings.TcpConnection) && (csb.Server.StartsWith("/", StringComparison.Ordinal) || csb.Server.StartsWith("./", StringComparison.Ordinal)))
+			if (configSettings.HasFlag(ConfigSettings.TcpConnection) && ((csb.Server.StartsWith("/", StringComparison.Ordinal) || csb.Server.StartsWith("./", StringComparison.Ordinal)) || csb.ConnectionProtocol != MySqlConnectionProtocol.Sockets))
 				return "Requires a TCP connection";
 
 			if (configSettings.HasFlag(ConfigSettings.SecondaryDatabase) && string.IsNullOrEmpty(AppConfig.SecondaryDatabase))

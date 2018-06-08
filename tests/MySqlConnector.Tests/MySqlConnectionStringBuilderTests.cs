@@ -17,6 +17,7 @@ namespace MySqlConnector.Tests
 			Assert.Null(csb.CertificatePassword);
 			Assert.Equal("", csb.CharacterSet);
 			Assert.Equal(0u, csb.ConnectionLifeTime);
+			Assert.Equal(MySqlConnectionProtocol.Sockets, csb.ConnectionProtocol);
 #if BASELINE
 			Assert.False(csb.ConnectionReset);
 #else
@@ -45,6 +46,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal(100u, csb.MaximumPoolSize);
 			Assert.Equal(0u, csb.MinimumPoolSize);
 			Assert.Equal("", csb.Password);
+			Assert.Equal("MYSQL", csb.PipeName);
 			Assert.False(csb.OldGuids);
 			Assert.False(csb.PersistSecurityInfo);
 			Assert.True(csb.Pooling);
@@ -106,8 +108,10 @@ namespace MySqlConnector.Tests
 					"maxpoolsize=15;" +
 					"OldGuids=true;" +
 					"persistsecurityinfo=yes;" +
+					"Pipe=MyPipe;" +
 					"Pooling=no;" +
 					"Port=1234;" +
+					"protocol=pipe;" +
 					"pwd=Pass1234;" +
 					"Treat Tiny As Boolean=false;" +
 					"ssl mode=verifyca;" +
@@ -121,6 +125,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal("Pass1234", csb.CertificatePassword);
 			Assert.Equal("latin1", csb.CharacterSet);
 			Assert.Equal(15u, csb.ConnectionLifeTime);
+			Assert.Equal(MySqlConnectionProtocol.NamedPipe, csb.ConnectionProtocol);
 			Assert.False(csb.ConnectionReset);
 			Assert.Equal(30u, csb.ConnectionTimeout);
 			Assert.True(csb.ConvertZeroDateTime);
@@ -144,6 +149,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal(15u, csb.MaximumPoolSize);
 			Assert.Equal(5u, csb.MinimumPoolSize);
 			Assert.Equal("Pass1234", csb.Password);
+			Assert.Equal("MyPipe", csb.PipeName);
 			Assert.True(csb.OldGuids);
 			Assert.True(csb.PersistSecurityInfo);
 			Assert.False(csb.Pooling);
