@@ -52,6 +52,14 @@ namespace MySqlConnector.Tests
 		}
 
 		[Fact]
+		public void GetDateTimeForInvalidDate()
+		{
+			var msdt = new MySqlDateTime();
+			Assert.False(msdt.IsValidDateTime);
+			Assert.Throws<MySqlConversionException>(() => msdt.GetDateTime());
+		}
+
+		[Fact]
 		public void SetMicrosecond()
 		{
 			var msdt = new MySqlDateTime();
