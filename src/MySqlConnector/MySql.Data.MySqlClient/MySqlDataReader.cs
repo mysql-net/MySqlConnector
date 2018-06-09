@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MySql.Data.Types;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -224,6 +225,9 @@ namespace MySql.Data.MySqlClient
 		public DateTimeOffset GetDateTimeOffset(int ordinal) => GetResultSet().GetCurrentRow().GetDateTimeOffset(ordinal);
 		public DateTimeOffset GetDateTimeOffset(string name) => GetDateTimeOffset(GetOrdinal(name));
 
+		public MySqlDateTime GetMySqlDateTime(int ordinal) => GetResultSet().GetCurrentRow().GetMySqlDateTime(ordinal);
+		public MySqlDateTime GetMySqlDateTime(string name) => GetMySqlDateTime(GetOrdinal(name));
+
 		public TimeSpan GetTimeSpan(int ordinal) => (TimeSpan) GetValue(ordinal);
 		public TimeSpan GetTimeSpan(string name) => GetTimeSpan(GetOrdinal(name));
 
@@ -270,7 +274,7 @@ namespace MySql.Data.MySqlClient
 		public ReadOnlyCollection<DbColumn> GetColumnSchema()
 		{
 			return GetResultSet().ColumnDefinitions
-				.Select((c, n) => (DbColumn) new MySqlDbColumn(n, c, GetResultSet().ColumnTypes[n]))
+				.Select((c, n) => (DbColumn) new MySqlDbColumn(n, c, Connection.AllowZeroDateTime, GetResultSet().ColumnTypes[n]))
 				.ToList().AsReadOnly();
 		}
 

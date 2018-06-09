@@ -12,6 +12,7 @@ namespace MySqlConnector.Tests
 			var csb = new MySqlConnectionStringBuilder();
 			Assert.False(csb.AllowPublicKeyRetrieval);
 			Assert.False(csb.AllowUserVariables);
+			Assert.False(csb.AllowZeroDateTime);
 			Assert.True(csb.AutoEnlist);
 			Assert.Null(csb.CertificateFile);
 			Assert.Null(csb.CertificatePassword);
@@ -79,6 +80,7 @@ namespace MySqlConnector.Tests
 					"Initial Catalog=schema_name;" +
 					"allowpublickeyretrieval = true;" +
 					"Allow User Variables=true;" +
+					"allow zero datetime=true;" +
 					"auto enlist=False;" +
 					"certificate file=file.pfx;" +
 					"certificate password=Pass1234;" +
@@ -120,6 +122,7 @@ namespace MySqlConnector.Tests
 			};
 			Assert.True(csb.AllowPublicKeyRetrieval);
 			Assert.True(csb.AllowUserVariables);
+			Assert.True(csb.AllowZeroDateTime);
 			Assert.False(csb.AutoEnlist);
 			Assert.Equal("file.pfx", csb.CertificateFile);
 			Assert.Equal("Pass1234", csb.CertificatePassword);

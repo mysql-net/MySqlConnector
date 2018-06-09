@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using MySql.Data.Types;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;
@@ -297,7 +298,10 @@ namespace MySqlConnector.Core
 			if (ordinal < 0 || ordinal > ColumnDefinitions.Length)
 				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
 
-			return TypeMapper.Instance.GetColumnTypeMetadata(ColumnTypes[ordinal]).DbTypeMapping.ClrType;
+			var type = TypeMapper.Instance.GetColumnTypeMetadata(ColumnTypes[ordinal]).DbTypeMapping.ClrType;
+			if (Connection.AllowZeroDateTime && type == typeof(DateTime))
+				type = typeof(MySqlDateTime);
+			return type;
 		}
 
 		public int FieldCount => ColumnDefinitions?.Length ?? 0;

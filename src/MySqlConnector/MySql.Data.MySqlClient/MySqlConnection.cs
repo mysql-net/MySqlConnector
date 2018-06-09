@@ -346,6 +346,7 @@ namespace MySql.Data.MySqlClient
 
 		internal MySqlTransaction CurrentTransaction { get; set; }
 		internal bool AllowUserVariables => m_connectionSettings.AllowUserVariables;
+		internal bool AllowZeroDateTime => m_connectionSettings.AllowZeroDateTime;
 		internal bool ConvertZeroDateTime => m_connectionSettings.ConvertZeroDateTime;
 		internal DateTimeKind DateTimeKind => m_connectionSettings.DateTimeKind;
 		internal int DefaultCommandTimeout => GetConnectionSettings().DefaultCommandTimeout;

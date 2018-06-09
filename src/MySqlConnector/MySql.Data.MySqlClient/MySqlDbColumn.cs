@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using MySql.Data.Types;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Payloads;
@@ -42,7 +43,7 @@ namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlDbColumn : System.Data.Common.DbColumn
 	{
-		internal MySqlDbColumn(int ordinal, ColumnDefinitionPayload column, MySqlDbType mySqlDbType)
+		internal MySqlDbColumn(int ordinal, ColumnDefinitionPayload column, bool allowZeroDateTime, MySqlDbType mySqlDbType)
 		{
 			var columnTypeMetadata = TypeMapper.Instance.GetColumnTypeMetadata(mySqlDbType);
 
@@ -59,7 +60,7 @@ namespace MySql.Data.MySqlClient
 			ColumnName = column.Name;
 			ColumnOrdinal = ordinal;
 			ColumnSize = columnSize > int.MaxValue ? int.MaxValue : unchecked((int) columnSize);
-			DataType = type;
+			DataType = (allowZeroDateTime && type == typeof(DateTime)) ? typeof(MySqlDateTime) : type;
 			DataTypeName = columnTypeMetadata.SimpleDataTypeName;
 			if (mySqlDbType == MySqlDbType.String)
 				DataTypeName += string.Format(CultureInfo.InvariantCulture, "({0})", columnSize);

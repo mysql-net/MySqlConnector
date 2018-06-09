@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
+using MySql.Data.Types;
 using Xunit;
 
 namespace SideBySide
@@ -165,7 +166,6 @@ create table insert_time(value TIME({precision}));");
 			}
 		}
 
-
 		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=73788")]
 		public void InsertDateTimeOffset()
 		{
@@ -198,6 +198,32 @@ create table insert_datetimeoffset(rowid integer not null primary key auto_incre
 			DateTime.SpecifyKind(datetime, DateTimeKind.Utc);
 
 			Assert.Equal(value.datetimeoffset1.Value.UtcDateTime, datetime);
+		}
+
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=91199")]
+		public void InsertMySqlDateTime()
+		{
+			m_database.Connection.Execute(@"drop table if exists insert_mysqldatetime;
+create table insert_mysqldatetime(rowid integer not null primary key auto_increment, ts timestamp(6) null);");
+			var value = new DateTimeOffsetValues { datetimeoffset1 = new DateTimeOffset(2017, 1, 2, 3, 4, 5, TimeSpan.FromMinutes(678)) };
+
+			m_database.Connection.Open();
+			try
+			{
+				using (var cmd = m_database.Connection.CreateCommand())
+				{
+					cmd.CommandText = @"insert into insert_mysqldatetime(ts) values(@ts);";
+					cmd.Parameters.AddWithValue("@ts", new MySqlDateTime(2018, 6, 9, 12, 34, 56, 123456));
+					cmd.ExecuteNonQuery();
+				}
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+
+			var datetime = m_database.Connection.ExecuteScalar<DateTime>(@"select ts from insert_mysqldatetime order by rowid;");
+			Assert.Equal(new DateTime(2018, 6, 9, 12, 34, 56, 123).AddTicks(4560), datetime);
 		}
 
 		[Fact]
