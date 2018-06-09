@@ -189,6 +189,13 @@ These are the other options that MySqlConnector supports. They are set to sensib
     only allows <code>@</code>-prefixed names to refer to command parameters.</td>
   </tr>
   <tr>
+    <td>AllowZeroDateTime, Allow Zero DateTime</td>
+    <td>false</td>
+    <td>If set to <c>true</c> all `DATE`, `DATETIME` and `TIMESTAMP` columns are returned as `MySqlDateTime` objects instead of `DateTime`.
+    This allows the special “zero” date value `0000-00-00` to be retrieved from the database. If <code>false</code> (the default)
+    date columns are returned as `DateTime` values, and an exception is thrown for unrepresentable dates.</td>
+  </tr>
+  <tr>
     <td>Compress, Use Compression, UseCompression</td>
     <td>false</td>
     <td>If true (and if the server supports compression), compresses packets sent between client and server. This option is unlikely to be useful in
