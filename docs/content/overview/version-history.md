@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.42.0
+
+* Add `AllowZeroDateTime` connection string option: [#507](https://github.com/mysql-net/MySqlConnector/issues/507).
+* Add `MySqlDateTime` type (to allow invalid `DateTime` values to be represented).
+
 ### 0.41.0
 
 * Add `GuidFormat` connection string option (for better compatibility with MySQL 8.0 [`UUID_TO_BIN`](https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin)): [#497](https://github.com/mysql-net/MySqlConnector/issues/497).
