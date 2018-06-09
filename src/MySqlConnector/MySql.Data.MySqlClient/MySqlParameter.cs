@@ -3,6 +3,7 @@ using System.Buffers.Text;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
+using MySql.Data.Types;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -265,6 +266,13 @@ namespace MySql.Data.MySqlClient
 			{
 				// NOTE: Utf8Formatter doesn't support "R"
 				writer.Write("{0:R}".FormatInvariant(Value));
+			}
+			else if (Value is MySqlDateTime mySqlDateTimeValue)
+			{
+				if (mySqlDateTimeValue.IsValidDateTime)
+					writer.Write("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(mySqlDateTimeValue.GetDateTime()));
+				else
+					writer.Write("timestamp('0000-00-00')");
 			}
 			else if (Value is DateTime dateTimeValue)
 			{

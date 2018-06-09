@@ -3,6 +3,7 @@ using System.Buffers.Text;
 using System.Globalization;
 using System.Text;
 using MySql.Data.MySqlClient;
+using MySql.Data.Types;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -315,6 +316,14 @@ namespace MySqlConnector.Core
 
 		public float GetFloat(int ordinal) => (float) GetValue(ordinal);
 
+		public MySqlDateTime GetMySqlDateTime(int ordinal)
+		{
+			var value = GetValue(ordinal);
+			if (value is DateTime dateTime)
+				return new MySqlDateTime(dateTime);
+			return (MySqlDateTime) value;
+		}
+
 		public int GetValues(object[] values)
 		{
 			int count = Math.Min(values.Length, ResultSet.ColumnDefinitions.Length);
@@ -451,7 +460,7 @@ namespace MySqlConnector.Core
 				throw new ArgumentException("bufferOffset + length cannot exceed buffer.Length", nameof(length));
 		}
 
-		private DateTime ParseDateTime(ReadOnlySpan<byte> value)
+		private object ParseDateTime(ReadOnlySpan<byte> value)
 		{
 			if (!Utf8Parser.TryParse(value, out int year, out var bytesConsumed) || bytesConsumed != 4)
 				goto InvalidDateTime;
@@ -468,36 +477,52 @@ namespace MySqlConnector.Core
 			{
 				if (Connection.ConvertZeroDateTime)
 					return DateTime.MinValue;
+				if (Connection.AllowZeroDateTime)
+					return new MySqlDateTime();
 				throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime.");
 			}
 
+			int hour, minute, second, microseconds;
 			if (value.Length == 10)
-				return new DateTime(year, month, day, 0, 0, 0, Connection.DateTimeKind);
+			{
+				hour = 0;
+				minute = 0;
+				second = 0;
+				microseconds = 0;
+			}
+			else
+			{
+				if (value[10] != 32)
+					goto InvalidDateTime;
+				if (!Utf8Parser.TryParse(value.Slice(11), out hour, out bytesConsumed) || bytesConsumed != 2)
+					goto InvalidDateTime;
+				if (value.Length < 14 || value[13] != 58)
+					goto InvalidDateTime;
+				if (!Utf8Parser.TryParse(value.Slice(14), out minute, out bytesConsumed) || bytesConsumed != 2)
+					goto InvalidDateTime;
+				if (value.Length < 17 || value[16] != 58)
+					goto InvalidDateTime;
+				if (!Utf8Parser.TryParse(value.Slice(17), out second, out bytesConsumed) || bytesConsumed != 2)
+					goto InvalidDateTime;
 
-			if (value[10] != 32)
-				goto InvalidDateTime;
-			if (!Utf8Parser.TryParse(value.Slice(11), out int hour, out bytesConsumed) || bytesConsumed != 2)
-				goto InvalidDateTime;
-			if (value.Length < 14 || value[13] != 58)
-				goto InvalidDateTime;
-			if (!Utf8Parser.TryParse(value.Slice(14), out int minute, out bytesConsumed) || bytesConsumed != 2)
-				goto InvalidDateTime;
-			if (value.Length < 17 || value[16] != 58)
-				goto InvalidDateTime;
-			if (!Utf8Parser.TryParse(value.Slice(17), out int second, out bytesConsumed) || bytesConsumed != 2)
-				goto InvalidDateTime;
+				if (value.Length == 19)
+				{
+					microseconds = 0;
+				}
+				else
+				{
+					if (value[19] != 46)
+						goto InvalidDateTime;
 
-			if (value.Length == 19)
-				return new DateTime(year, month, day, hour, minute, second, Connection.DateTimeKind);
-			if (value[19] != 46)
-				goto InvalidDateTime;
+					if (!Utf8Parser.TryParse(value.Slice(20), out microseconds, out bytesConsumed) || bytesConsumed != value.Length - 20)
+						goto InvalidDateTime;
+					for (; bytesConsumed < 6; bytesConsumed++)
+						microseconds *= 10;
+				}
+			}
 
-			if (!Utf8Parser.TryParse(value.Slice(20), out int microseconds, out bytesConsumed) || bytesConsumed != value.Length - 20)
-				goto InvalidDateTime;
-			for (; bytesConsumed < 6; bytesConsumed++)
-				microseconds *= 10;
-
-			return new DateTime(year, month, day, hour, minute, second, microseconds / 1000, Connection.DateTimeKind).AddTicks(microseconds % 1000 * 10);
+			var dt = new DateTime(year, month, day, hour, minute, second, microseconds / 1000, Connection.DateTimeKind).AddTicks(microseconds % 1000 * 10);
+			return Connection.AllowZeroDateTime ? (object) new MySqlDateTime(dt) : dt;
 
 InvalidDateTime:
 			throw new FormatException("Couldn't interpret '{0}' as a valid DateTime".FormatInvariant(Encoding.UTF8.GetString(value)));

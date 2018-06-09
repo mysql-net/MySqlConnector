@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
+using MySql.Data.Types;
 using Xunit;
 
 // mysql-connector-net will throw SqlNullValueException, which is an exception type related to SQL Server:
@@ -891,6 +892,55 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 					TestUtilities.AssertEqual(data, queryResult);
 
 					connection.Execute($"delete from datatypes_blobs where rowid = {lastInsertId}");
+				}
+			}
+		}
+
+		[Theory]
+		[InlineData(false, "Date", typeof(DateTime))]
+		[InlineData(true, "Date", typeof(MySqlDateTime))]
+		[InlineData(false, "DateTime", typeof(DateTime))]
+		[InlineData(true, "DateTime", typeof(MySqlDateTime))]
+		[InlineData(false, "TimeStamp", typeof(DateTime))]
+		[InlineData(true, "TimeStamp", typeof(MySqlDateTime))]
+		[InlineData(false, "Time", typeof(TimeSpan))]
+		[InlineData(true, "Time", typeof(TimeSpan))]
+		public void AllowZeroDateTime(bool allowZeroDateTime, string columnName, Type expectedType)
+		{
+			var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString);
+			csb.AllowZeroDateTime = allowZeroDateTime;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+				using (var cmd = new MySqlCommand($"SELECT `{columnName}` FROM datatypes_times WHERE `{columnName}` IS NOT NULL", connection))
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(expectedType, reader.GetFieldType(0));
+					Assert.IsType(expectedType, reader.GetValue(0));
+#if !NETCOREAPP1_1_2
+					var dt = reader.GetSchemaTable();
+					Assert.Equal(expectedType, dt.Rows[0]["DataType"]);
+#endif
+				}
+			}
+		}
+
+		[Theory]
+		[InlineData("Date")]
+		[InlineData("DateTime")]
+		[InlineData("Timestamp")]
+		public void GetMySqlDateTime(string columnName)
+		{
+			using (var cmd = new MySqlCommand($"SELECT `{columnName}` FROM datatypes_times WHERE `{columnName}` IS NOT NULL", m_database.Connection))
+			using (var reader = cmd.ExecuteReader())
+			{
+				while (reader.Read())
+				{
+					var dt = reader.GetDateTime(0);
+					var msdt = reader.GetMySqlDateTime(0);
+					Assert.True(msdt.IsValidDateTime);
+					Assert.Equal(dt, msdt.GetDateTime());
 				}
 			}
 		}
