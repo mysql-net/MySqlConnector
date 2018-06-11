@@ -3,7 +3,7 @@ using System.Data;
 using System.Linq;
 using MySqlConnector.Core;
 using Xunit;
-
+//测试test
 namespace MySql.Data.Tests
 {
 	public class TypeMapperTests
