@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using MySqlConnector.Performance.Commands;
 
@@ -11,17 +12,20 @@ namespace MySqlConnector.Performance
 			AppDb.Initialize();
 			if (args.Length == 0)
 			{
-				var host = new WebHostBuilder()
-					.UseUrls("http://*:5000")
-					.UseKestrel()
-					.UseStartup<Startup>()
-					.Build();
-				host.Run();
+				BuildWebHost(args).Run();
 			}
 			else
 			{
 				Environment.Exit(CommandRunner.Run(args));
 			}
+		}
+
+		public static IWebHost BuildWebHost(string[] args)
+		{
+			return WebHost.CreateDefaultBuilder(args)
+				.UseUrls("http://*:5000")
+				.UseStartup<Startup>()
+				.Build();
 		}
 	}
 }
