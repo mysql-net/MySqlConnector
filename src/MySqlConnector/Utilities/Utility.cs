@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Text;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -227,6 +228,65 @@ namespace MySqlConnector.Utilities
 					return start;
 			}
 			return -1;
+		}
+
+		public static TimeSpan ParseTimeSpan(ReadOnlySpan<byte> value)
+		{
+			var originalValue = value;
+
+			// parse (optional) leading minus sign
+			var isNegative = false;
+			if (value.Length > 0 && value[0] == 0x2D)
+			{
+				isNegative = true;
+				value = value.Slice(1);
+			}
+
+			// parse hours (0-838)
+			if (!Utf8Parser.TryParse(value, out int hours, out var bytesConsumed) || hours < 0 || hours > 838)
+				goto InvalidTimeSpan;
+			if (value.Length == bytesConsumed || value[bytesConsumed] != 58)
+				goto InvalidTimeSpan;
+			value = value.Slice(bytesConsumed + 1);
+
+			// parse minutes (0-59)
+			if (!Utf8Parser.TryParse(value, out int minutes, out bytesConsumed) || bytesConsumed != 2 || minutes < 0 || minutes > 59)
+				goto InvalidTimeSpan;
+			if (value.Length < 3 || value[2] != 58)
+				goto InvalidTimeSpan;
+			value = value.Slice(3);
+
+			// parse seconds (0-59)
+			if (!Utf8Parser.TryParse(value, out int seconds, out bytesConsumed) || bytesConsumed != 2 || seconds < 0 || seconds > 59)
+				goto InvalidTimeSpan;
+
+			int microseconds;
+			if (value.Length == 2)
+			{
+				microseconds = 0;
+			}
+			else
+			{
+				if (value[2] != 46)
+					goto InvalidTimeSpan;
+				value = value.Slice(3);
+				if (!Utf8Parser.TryParse(value, out microseconds, out bytesConsumed) || bytesConsumed != value.Length || microseconds < 0 || microseconds > 999_999)
+					goto InvalidTimeSpan;
+				for (; bytesConsumed < 6; bytesConsumed++)
+					microseconds *= 10;
+			}
+
+			if (isNegative)
+			{
+				hours = -hours;
+				minutes = -minutes;
+				seconds = -seconds;
+				microseconds = -microseconds;
+			}
+			return new TimeSpan(0, hours, minutes, seconds, microseconds / 1000) + TimeSpan.FromTicks(microseconds % 1000 * 10);
+
+			InvalidTimeSpan:
+			throw new FormatException("Couldn't interpret '{0}' as a valid TimeSpan".FormatInvariant(Encoding.UTF8.GetString(originalValue)));
 		}
 
 #if NET45
