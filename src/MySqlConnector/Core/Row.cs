@@ -406,7 +406,7 @@ namespace MySqlConnector.Core
 				return ParseDateTime(data);
 
 			case ColumnType.Time:
-				return ParseTimeSpan(data);
+				return Utility.ParseTimeSpan(data);
 
 			case ColumnType.Year:
 				return ParseInt32(data);
@@ -526,45 +526,6 @@ namespace MySqlConnector.Core
 
 InvalidDateTime:
 			throw new FormatException("Couldn't interpret '{0}' as a valid DateTime".FormatInvariant(Encoding.UTF8.GetString(value)));
-		}
-
-		private static TimeSpan ParseTimeSpan(ReadOnlySpan<byte> value)
-		{
-			var originalValue = value;
-			if (!Utf8Parser.TryParse(value, out int hours, out var bytesConsumed))
-				goto InvalidTimeSpan;
-			if (value.Length == bytesConsumed || value[bytesConsumed] != 58)
-				goto InvalidTimeSpan;
-			value = value.Slice(bytesConsumed + 1);
-
-			if (!Utf8Parser.TryParse(value, out int minutes, out bytesConsumed) || bytesConsumed != 2)
-				goto InvalidTimeSpan;
-			if (value.Length < 3 || value[2] != 58)
-				goto InvalidTimeSpan;
-			value = value.Slice(3);
-			if (hours < 0)
-				minutes = -minutes;
-
-			if (!Utf8Parser.TryParse(value, out int seconds, out bytesConsumed) || bytesConsumed != 2)
-				goto InvalidTimeSpan;
-			if (hours < 0)
-				seconds = -seconds;
-			if (value.Length == 2)
-				return new TimeSpan(hours, minutes, seconds);
-
-			if (value[2] != 46)
-				goto InvalidTimeSpan;
-			value = value.Slice(3);
-			if (!Utf8Parser.TryParse(value, out int microseconds, out bytesConsumed) || bytesConsumed != value.Length)
-				goto InvalidTimeSpan;
-			for (; bytesConsumed < 6; bytesConsumed++)
-				microseconds *= 10;
-			if (hours < 0)
-				microseconds = -microseconds;
-			return new TimeSpan(0, hours, minutes, seconds, microseconds / 1000) + TimeSpan.FromTicks(microseconds % 1000 * 10);
-
-InvalidTimeSpan:
-			throw new FormatException("Couldn't interpret '{0}' as a valid TimeSpan".FormatInvariant(Encoding.UTF8.GetString(originalValue)));
 		}
 
 		private static Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes)

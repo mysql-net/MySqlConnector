@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Condition=" '$(Configuration)' != 'Baseline' ">
     <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
@@ -32,7 +32,7 @@
 
   <ItemGroup Condition=" '$(Configuration)' == 'Baseline' ">
     <PackageReference Include="MySql.Data" Version="8.0.11" />
-    <Compile Remove="ConnectionTests.cs;FakeMySqlServer.cs;FakeMySqlServerConnection.cs;LoadBalancerTests.cs;NormalizeTests.cs;StatementPreparerTests.cs;TypeMapperTests.cs" />
+    <Compile Remove="ConnectionTests.cs;FakeMySqlServer.cs;FakeMySqlServerConnection.cs;LoadBalancerTests.cs;NormalizeTests.cs;StatementPreparerTests.cs;TypeMapperTests.cs;UtilityTests.cs" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
