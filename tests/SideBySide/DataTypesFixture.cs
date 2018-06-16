@@ -195,6 +195,18 @@ values
     '33221100-5544-7766-8899-aabbccddeeff', X'00112233445566778899AABBCCDDEEFF'),
   ('{33221100-5544-7766-8899-aabbccddeeff}', '{33221100-5544-7766-8899-aabbccddeeff}',
     '{33221100-5544-7766-8899-aabbccddeeff}', X'00112233445566778899AABBCCDDEEFF');
+
+drop table if exists datatypes_geometry;
+create table datatypes_geometry (
+  rowid integer not null primary key auto_increment,
+  `Geometry` geometry null
+);
+
+insert into datatypes_geometry (`Geometry`)
+values
+  (null),
+  (ST_GeomFromText('POINT(1 1)')),
+  (ST_GeomFromText('LINESTRING(0 0,1 1,2 2)'));
 ");
 
 			if (AppConfig.SupportsJson)

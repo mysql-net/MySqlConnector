@@ -945,6 +945,24 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 			}
 		}
 
+		[Fact]
+		public void Geometry()
+		{
+			DoQuery("geometry", "Geometry", "GEOMETRY", new object[]
+			{
+				null,
+				new byte[] { 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63 },
+				new byte[] { 0, 0, 0, 0, 1, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 64 }
+			},
+#if !BASELINE
+				GetBytes
+#else
+				// NOTE: Connector/NET returns 'null' for NULL so simulate an exception for the tests
+				x => x.IsDBNull(0) ? throw new GetValueWhenNullException() : x.GetValue(0)
+#endif
+				);
+		}
+
 #if !NETCOREAPP1_1_2
 		[Theory]
 		[InlineData("Bit1", "datatypes_bits", MySqlDbType.Bit, 1, typeof(ulong), "N", 0, 0)]
@@ -1000,6 +1018,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		[InlineData("Timestamp", "datatypes_times", MySqlDbType.Timestamp, 26, typeof(DateTime), "N", 0, 6)]
 		[InlineData("Time", "datatypes_times", MySqlDbType.Time, 17, typeof(TimeSpan), "N", 0, 6)]
 		[InlineData("Year", "datatypes_times", MySqlDbType.Year, 4, typeof(int), "N", 0, 0)]
+		[InlineData("Geometry", "datatypes_geometry", MySqlDbType.Geometry, int.MaxValue, typeof(byte[]), "LN", 0, 0)]
 		public void GetSchemaTable(string column, string table, MySqlDbType mySqlDbType, int columnSize, Type dataType, string flags, int precision, int scale) =>
 			DoGetSchemaTable(column, table, mySqlDbType, columnSize, dataType, flags, precision, scale);
 
@@ -1123,6 +1142,7 @@ create table schema_table({createColumn});");
 		[InlineData("Timestamp", "datatypes_times", MySqlDbType.Timestamp, "TIMESTAMP", 26, typeof(DateTime), "N", -1, 6)]
 		[InlineData("Time", "datatypes_times", MySqlDbType.Time, "TIME", 17, typeof(TimeSpan), "N", -1, 6)]
 		[InlineData("Year", "datatypes_times", MySqlDbType.Year, "YEAR", 4, typeof(int), "N", -1, 0)]
+		[InlineData("Geometry", "datatypes_geometry", MySqlDbType.Geometry, "GEOMETRY", int.MaxValue, typeof(byte[]), "LN", -1, 0)]
 		public void GetColumnSchema(string column, string table, MySqlDbType mySqlDbType, string dataTypeName, int columnSize, Type dataType, string flags, int precision, int scale)
 		{
 			if (table == "datatypes_json_core" && !AppConfig.SupportsJson)

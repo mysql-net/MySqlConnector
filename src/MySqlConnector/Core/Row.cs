@@ -94,7 +94,8 @@ namespace MySqlConnector.Core
 			var columnType = column.ColumnType;
 			if ((column.ColumnFlags & ColumnFlags.Binary) == 0 ||
 				(columnType != ColumnType.String && columnType != ColumnType.VarString && columnType != ColumnType.TinyBlob &&
-				columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob))
+				columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob &&
+				columnType != ColumnType.Geometry))
 			{
 				throw new InvalidCastException("Can't convert {0} to bytes.".FormatInvariant(columnType));
 			}
@@ -420,6 +421,9 @@ namespace MySqlConnector.Core
 			case ColumnType.Decimal:
 			case ColumnType.NewDecimal:
 				return Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) && bytesConsumed == data.Length ? decimalValue : throw new FormatException();
+
+			case ColumnType.Geometry:
+				return data.ToArray();
 
 			default:
 				throw new NotImplementedException("Reading {0} not implemented".FormatInvariant(columnDefinition.ColumnType));

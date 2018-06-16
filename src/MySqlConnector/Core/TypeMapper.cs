@@ -263,6 +263,9 @@ namespace MySqlConnector.Core
 			case ColumnType.NewDecimal:
 				return MySqlDbType.NewDecimal;
 
+			case ColumnType.Geometry:
+				return MySqlDbType.Geometry;
+
 			case ColumnType.Null:
 				return MySqlDbType.Null;
 
