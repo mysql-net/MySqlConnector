@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.42.1
+
+* Fix `NotImplementedException` reading a `GEOMETRY` column as `byte[]`: [#70](https://github.com/mysql-net/MySqlConnector/issues/70).
+* Fix negative `TIME` parsing: [#518](https://github.com/mysql-net/MySqlConnector/issues/518).
+* Fix `ArgumentException` preparing a SQL statement: [#520](https://github.com/mysql-net/MySqlConnector/issues/520).
+
 ### 0.42.0
 
 * Add `AllowZeroDateTime` connection string option: [#507](https://github.com/mysql-net/MySqlConnector/issues/507).
