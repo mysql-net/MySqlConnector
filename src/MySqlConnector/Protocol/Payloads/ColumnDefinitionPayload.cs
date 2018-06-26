@@ -17,13 +17,13 @@ namespace MySqlConnector.Protocol.Payloads
 			}
 		}
 
-		public CharacterSet CharacterSet { get; private set; }
+		public CharacterSet CharacterSet { get; }
 
-		public uint ColumnLength { get; private set; }
+		public uint ColumnLength { get; }
 
-		public ColumnType ColumnType { get; private set; }
+		public ColumnType ColumnType { get; }
 
-		public ColumnFlags ColumnFlags { get; private set; }
+		public ColumnFlags ColumnFlags { get; }
 
 		public string SchemaName
 		{
@@ -75,9 +75,9 @@ namespace MySqlConnector.Protocol.Payloads
 			}
 		}
 
-		public byte Decimals { get; private set; }
+		public byte Decimals { get; }
 
-		public static ColumnDefinitionPayload Create(ArraySegment<byte> arraySegment)
+		public static ColumnDefinitionPayload Create(ResizableArraySegment<byte> arraySegment)
 		{
 			var reader = new ByteArrayReader(arraySegment);
 			SkipLengthEncodedByteString(ref reader); // catalog
@@ -95,21 +95,23 @@ namespace MySqlConnector.Protocol.Payloads
 			reader.ReadByte(0); // reserved byte 1
 			reader.ReadByte(0); // reserved byte 2
 
-			return new ColumnDefinitionPayload
-			{
-				OriginalData = arraySegment,
-				CharacterSet = characterSet,
-				ColumnLength = columnLength,
-				ColumnType = columnType,
-				ColumnFlags = columnFlags,
-				Decimals = decimals
-			};
+			return new ColumnDefinitionPayload(arraySegment, characterSet, columnLength, columnType, columnFlags, decimals);
 		}
 
 		private static void SkipLengthEncodedByteString(ref ByteArrayReader reader)
 		{
 			var length = checked((int) reader.ReadLengthEncodedInteger());
 			reader.Offset += length;
+		}
+
+		private ColumnDefinitionPayload(ResizableArraySegment<byte> originalData, CharacterSet characterSet, uint columnLength, ColumnType columnType, ColumnFlags columnFlags, byte decimals)
+		{
+			OriginalData = originalData;
+			CharacterSet = characterSet;
+			ColumnLength = columnLength;
+			ColumnType = columnType;
+			ColumnFlags = columnFlags;
+			Decimals = decimals;
 		}
 
 		private void ReadNames()
@@ -124,7 +126,7 @@ namespace MySqlConnector.Protocol.Payloads
 			m_readNames = true;
 		}
 
-		ArraySegment<byte> OriginalData { get; set; }
+		ResizableArraySegment<byte> OriginalData { get; }
 
 		bool m_readNames;
 		string m_name;

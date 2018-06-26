@@ -102,7 +102,7 @@ namespace MySqlConnector.Core
 						var columnCount = ReadColumnCount(payload.ArraySegment);
 
 						// reserve adequate space to hold a copy of all column definitions (but note that this can be resized below if we guess too small)
-						Array.Resize(ref m_columnDefinitionPayloads, columnCount * 96);
+						Utility.Resize(ref m_columnDefinitionPayloads, columnCount * 96);
 
 						ColumnDefinitions = new ColumnDefinitionPayload[columnCount];
 						ColumnTypes = new MySqlDbType[columnCount];
@@ -115,11 +115,11 @@ namespace MySqlConnector.Core
 							var arraySegment = payload.ArraySegment;
 
 							// 'Session.ReceiveReplyAsync' reuses a shared buffer; make a copy so that the column definitions can always be safely read at any future point
-							if (m_columnDefinitionPayloadUsedBytes + arraySegment.Count > m_columnDefinitionPayloads.Length)
-								Array.Resize(ref m_columnDefinitionPayloads, Math.Max(m_columnDefinitionPayloadUsedBytes + arraySegment.Count, m_columnDefinitionPayloadUsedBytes * 2));
-							Buffer.BlockCopy(arraySegment.Array, arraySegment.Offset, m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, arraySegment.Count);
+							if (m_columnDefinitionPayloadUsedBytes + arraySegment.Count > m_columnDefinitionPayloads.Count)
+								Utility.Resize(ref m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes + arraySegment.Count);
+							Buffer.BlockCopy(arraySegment.Array, arraySegment.Offset, m_columnDefinitionPayloads.Array, m_columnDefinitionPayloadUsedBytes, arraySegment.Count);
 
-							var columnDefinition = ColumnDefinitionPayload.Create(new ArraySegment<byte>(m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, arraySegment.Count));
+							var columnDefinition = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, arraySegment.Count));
 							ColumnDefinitions[column] = columnDefinition;
 							ColumnTypes[column] = TypeMapper.ConvertToMySqlDbType(columnDefinition, treatTinyAsBoolean: Connection.TreatTinyAsBoolean, guidFormat: Connection.GuidFormat);
 							m_columnDefinitionPayloadUsedBytes += arraySegment.Count;
@@ -344,7 +344,7 @@ namespace MySqlConnector.Core
 		public int? RecordsAffected { get; private set; }
 		public ResultSetState State { get; private set; }
 
-		byte[] m_columnDefinitionPayloads;
+		ResizableArray<byte> m_columnDefinitionPayloads;
 		int m_columnDefinitionPayloadUsedBytes;
 		int[] m_dataLengths;
 		int[] m_dataOffsets;

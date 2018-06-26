@@ -230,6 +230,17 @@ namespace MySqlConnector.Utilities
 			return -1;
 		}
 
+		/// <summary>
+		/// Resizes <paramref name="resizableArray"/> to hold at least <paramref name="newLength"/> items.
+		/// </summary>
+		/// <remarks><paramref name="resizableArray"/> may be <c>null</c>, in which case a new <see cref="ResizableArray{T}"/> will be allocated.</remarks>
+		public static void Resize<T>(ref ResizableArray<T> resizableArray, int newLength)
+		{
+			if (resizableArray == null)
+				resizableArray = new ResizableArray<T>();
+			resizableArray.DoResize(Math.Max(newLength, resizableArray.Count * 2));
+		}
+
 		public static TimeSpan ParseTimeSpan(ReadOnlySpan<byte> value)
 		{
 			var originalValue = value;
