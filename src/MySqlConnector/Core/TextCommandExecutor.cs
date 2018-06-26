@@ -20,42 +20,6 @@ namespace MySqlConnector.Core
 			m_command = command;
 		}
 
-		public virtual async Task<int> ExecuteNonQueryAsync(string commandText, MySqlParameterCollection parameterCollection,
-			IOBehavior ioBehavior, CancellationToken cancellationToken)
-		{
-			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(commandText, parameterCollection, CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false))
-			{
-				do
-				{
-					while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
-					{
-					}
-				} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
-				return reader.RecordsAffected;
-			}
-		}
-
-		public virtual async Task<object> ExecuteScalarAsync(string commandText, MySqlParameterCollection parameterCollection,
-			IOBehavior ioBehavior, CancellationToken cancellationToken)
-		{
-			var hasSetResult = false;
-			object result = null;
-			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(commandText, parameterCollection, CommandBehavior.SingleResult | CommandBehavior.SingleRow, ioBehavior, cancellationToken).ConfigureAwait(false))
-			{
-				do
-				{
-					var hasResult = await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					if (!hasSetResult)
-					{
-						if (hasResult)
-							result = reader.GetValue(0);
-						hasSetResult = true;
-					}
-				} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
-			}
-			return result;
-		}
-
 		public virtual async Task<DbDataReader> ExecuteReaderAsync(string commandText, MySqlParameterCollection parameterCollection,
 			CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{

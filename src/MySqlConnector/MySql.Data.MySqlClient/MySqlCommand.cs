@@ -54,17 +54,9 @@ namespace MySql.Data.MySqlClient
 
 		public override void Cancel() => Connection.Cancel(this);
 
-		public override int ExecuteNonQuery()
-		{
-			ResetCommandTimeout();
-			return ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-		}
+		public override int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public override object ExecuteScalar()
-		{
-			ResetCommandTimeout();
-			return ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-		}
+		public override object ExecuteScalar() => ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public new MySqlDataReader ExecuteReader() => (MySqlDataReader) base.ExecuteReader();
 
@@ -174,16 +166,44 @@ namespace MySql.Data.MySqlClient
 		public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) =>
 			ExecuteNonQueryAsync(AsyncIOBehavior, cancellationToken);
 
-		internal Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) =>
-			!IsValid(out var exception) ? Utility.TaskFromException<int>(exception) :
-				m_commandExecutor.ExecuteNonQueryAsync(CommandText, m_parameterCollection, ioBehavior, cancellationToken);
+		internal async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			ResetCommandTimeout();
+			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false))
+			{
+				do
+				{
+					while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
+					{
+					}
+				} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
+				return reader.RecordsAffected;
+			}
+		}
 
 		public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken) =>
 			ExecuteScalarAsync(AsyncIOBehavior, cancellationToken);
 
-		internal Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) =>
-			!IsValid(out var exception) ? Utility.TaskFromException<object>(exception) :
-				m_commandExecutor.ExecuteScalarAsync(CommandText, m_parameterCollection, ioBehavior, cancellationToken);
+		internal async Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			ResetCommandTimeout();
+			var hasSetResult = false;
+			object result = null;
+			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(CommandBehavior.SingleResult | CommandBehavior.SingleRow, ioBehavior, cancellationToken).ConfigureAwait(false))
+			{
+				do
+				{
+					var hasResult = await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					if (!hasSetResult)
+					{
+						if (hasResult)
+							result = reader.GetValue(0);
+						hasSetResult = true;
+					}
+				} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
+			}
+			return result;
+		}
 
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
 		{
