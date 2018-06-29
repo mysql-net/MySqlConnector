@@ -155,12 +155,6 @@ namespace MySqlConnector.Core
 				|| connection.SslMode == MySqlSslMode.VerifyFull;
 		}
 
-		public async Task BufferEntireAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-		{
-			while (BufferState == ResultSetState.ReadingRows || BufferState == ResultSetState.ReadResultSetHeader)
-				await BufferReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-		}
-
 		public async Task ReadEntireAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			while (State == ResultSetState.ReadingRows || State == ResultSetState.ReadResultSetHeader)

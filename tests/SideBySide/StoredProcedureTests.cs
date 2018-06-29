@@ -363,34 +363,35 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
-		public async Task MultipleResultSets()
+		[Theory]
+		[InlineData(1, new string[0], new[] { "eight", "five", "four", "seven", "six", "three", "two" })]
+		[InlineData(4, new[] { "one", "three", "two" }, new[] { "eight", "five", "seven", "six" })]
+		[InlineData(8, new[] { "five", "four", "one", "seven", "six", "three", "two" }, new string[0])]
+		public async Task MultipleResultSets(int pivot, string[] firstResultSet, string[] secondResultSet)
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
 				cmd.CommandText = "multiple_result_sets";
 				cmd.CommandType = CommandType.StoredProcedure;
-				cmd.Parameters.Add(new MySqlParameter { ParameterName = "@pivot", Value = 4 });
+				cmd.Parameters.Add(new MySqlParameter { ParameterName = "@pivot", Value = pivot });
 				using (var reader = await cmd.ExecuteReaderAsync())
 				{
-					Assert.True(await reader.ReadAsync());
-					Assert.Equal("one", reader.GetString(0));
-					Assert.True(await reader.ReadAsync());
-					Assert.Equal("three", reader.GetString(0));
-					Assert.True(await reader.ReadAsync());
-					Assert.Equal("two", reader.GetString(0));
+					foreach (var result in firstResultSet)
+					{
+						Assert.True(await reader.ReadAsync());
+						Assert.Equal(result, reader.GetString(0));
+					}
 					Assert.False(await reader.ReadAsync());
+
 					Assert.True(await reader.NextResultAsync());
 
-					Assert.True(await reader.ReadAsync());
-					Assert.Equal("eight", reader.GetString(0));
-					Assert.True(await reader.ReadAsync());
-					Assert.Equal("five", reader.GetString(0));
-					Assert.True(await reader.ReadAsync());
-					Assert.Equal("seven", reader.GetString(0));
-					Assert.True(await reader.ReadAsync());
-					Assert.Equal("six", reader.GetString(0));
+					foreach (var result in secondResultSet)
+					{
+						Assert.True(await reader.ReadAsync());
+						Assert.Equal(result, reader.GetString(0));
+					}
 					Assert.False(await reader.ReadAsync());
+
 					Assert.False(await reader.NextResultAsync());
 				}
 			}

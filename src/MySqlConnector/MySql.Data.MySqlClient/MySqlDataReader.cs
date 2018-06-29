@@ -53,28 +53,10 @@ namespace MySql.Data.MySqlClient
 			try
 			{
 				await m_resultSet.ReadEntireAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				var nextResult = m_nextResultSetBuffer.Count > 0
-					? m_nextResultSetBuffer.Dequeue()
-					: await ScanResultSetAsync(ioBehavior, m_resultSet, cancellationToken).ConfigureAwait(false);
+				var nextResult = await ScanResultSetAsync(ioBehavior, m_resultSet, cancellationToken).ConfigureAwait(false);
 
 				if (nextResult != null)
-				{
 					ActivateResultSet(nextResult);
-
-					// https://github.com/mysql-net/MySqlConnector/issues/135
-					if (Command.CommandType == CommandType.StoredProcedure)
-					{
-						var nextRead = await nextResult.BufferReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-						if (nextRead == null)
-						{
-							var nextResultSet = m_nextResultSetBuffer.Count > 0
-								? m_nextResultSetBuffer.Peek()
-								: await BufferNextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-							if (nextResultSet == null)
-								nextResult = null;
-						}
-					}
-				}
 
 				m_resultSet = nextResult ?? new ResultSet(this);
 				return nextResult != null;
@@ -83,7 +65,6 @@ namespace MySql.Data.MySqlClient
 			{
 				m_resultSet = new ResultSet(this);
 				m_resultSetBuffered = null;
-				m_nextResultSetBuffer.Clear();
 				throw;
 			}
 		}
@@ -106,17 +87,6 @@ namespace MySql.Data.MySqlClient
 
 			Command.LastInsertedId = resultSet.LastInsertId;
 			m_recordsAffected = m_recordsAffected == null ? resultSet.RecordsAffected : m_recordsAffected.Value + (resultSet.RecordsAffected ?? 0);
-		}
-
-		private async Task<ResultSet> BufferNextResultAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-		{
-			if (m_resultSetBuffered != null)
-				await m_resultSetBuffered.BufferEntireAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			// ScanResultSetAsync sets m_resultSetBuffered to the next result set if there is one
-			if (await ScanResultSetAsync(ioBehavior, null, cancellationToken).ConfigureAwait(false) == null)
-				return null;
-			m_nextResultSetBuffer.Enqueue(m_resultSetBuffered);
-			return m_resultSetBuffered;
 		}
 
 		private ValueTask<ResultSet> ScanResultSetAsync(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
@@ -448,7 +418,6 @@ namespace MySql.Data.MySqlClient
 				}
 
 				m_resultSetBuffered = null;
-				m_nextResultSetBuffer.Clear();
 
 				var connection = Command.Connection;
 				connection.FinishQuerying();
@@ -483,6 +452,5 @@ namespace MySql.Data.MySqlClient
 #if !NETSTANDARD1_3
 		DataTable m_schemaTable;
 #endif
-		readonly Queue<ResultSet> m_nextResultSetBuffer = new Queue<ResultSet>();
 	}
 }
