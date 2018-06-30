@@ -119,7 +119,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.42.1  Fix NotImplementedException reading a GEOMETRY column as byte[]: #70. Fix negative TIME parsing: #518. Fix ArgumentException preparing a SQL statement: #520.  0.42.0  Add AllowZeroDateTime connection string option: #507. Add MySqlDateTime type (to allow invalid DateTime values to be represented).  0.41.0  Add GuidFormat connection string option (for better compatibility with MySQL 8.0 UUID_TO_BIN): #497. Add InteractiveSession connection string option: #510. Add PipeName connection string option: #454.</description>
+      <description>Version History 0.42.2  Fix bug that ignored last result set returned from a stored procedure if it was empty: #524. Fix extra memory usage if column definition payloads exceeded original size estimate.  0.42.1  Fix NotImplementedException reading a GEOMETRY column as byte[]: #70. Fix negative TIME parsing: #518. Fix ArgumentException preparing a SQL statement: #520.  0.42.0  Add AllowZeroDateTime connection string option: #507. Add MySqlDateTime type (to allow invalid DateTime values to be represented).</description>
     </item>
     
     <item>
