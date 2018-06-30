@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.42.2
+
+* Fix bug that ignored last result set returned from a stored procedure if it was empty: [#524](https://github.com/mysql-net/MySqlConnector/issues/524).
+* Fix extra memory usage if column definition payloads exceeded original size estimate.
+
 ### 0.42.1
 
 * Fix `NotImplementedException` reading a `GEOMETRY` column as `byte[]`: [#70](https://github.com/mysql-net/MySqlConnector/issues/70).
