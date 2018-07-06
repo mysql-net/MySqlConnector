@@ -466,6 +466,7 @@ namespace MySqlConnector.Core
 
 		private object ParseDateTime(ReadOnlySpan<byte> value)
 		{
+			Exception exception = null;
 			if (!Utf8Parser.TryParse(value, out int year, out var bytesConsumed) || bytesConsumed != 4)
 				goto InvalidDateTime;
 			if (value.Length < 5 || value[4] != 45)
@@ -525,11 +526,18 @@ namespace MySqlConnector.Core
 				}
 			}
 
-			var dt = new DateTime(year, month, day, hour, minute, second, microseconds / 1000, Connection.DateTimeKind).AddTicks(microseconds % 1000 * 10);
-			return Connection.AllowZeroDateTime ? (object) new MySqlDateTime(dt) : dt;
+			try
+			{
+				return Connection.AllowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
+					new DateTime(year, month, day, hour, minute, second, microseconds / 1000, Connection.DateTimeKind).AddTicks(microseconds % 1000 * 10);
+			}
+			catch (Exception ex)
+			{
+				exception = ex;
+			}
 
 InvalidDateTime:
-			throw new FormatException("Couldn't interpret '{0}' as a valid DateTime".FormatInvariant(Encoding.UTF8.GetString(value)));
+			throw new FormatException("Couldn't interpret '{0}' as a valid DateTime".FormatInvariant(Encoding.UTF8.GetString(value)), exception);
 		}
 
 		private static Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes)
