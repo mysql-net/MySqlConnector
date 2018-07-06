@@ -238,7 +238,7 @@ namespace MySqlConnector.Utilities
 		{
 			if (resizableArray == null)
 				resizableArray = new ResizableArray<T>();
-			resizableArray.DoResize(Math.Max(newLength, resizableArray.Count * 2));
+			resizableArray.DoResize(newLength);
 		}
 
 		public static TimeSpan ParseTimeSpan(ReadOnlySpan<byte> value)

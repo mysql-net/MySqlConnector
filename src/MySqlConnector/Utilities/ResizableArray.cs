@@ -1,3 +1,5 @@
+using System;
+
 namespace MySqlConnector.Utilities
 {
 	/// <summary>
@@ -14,7 +16,7 @@ namespace MySqlConnector.Utilities
 		internal void DoResize(int length)
 		{
 			if (m_array == null || length > m_array.Length)
-				System.Array.Resize(ref m_array, length);
+				System.Array.Resize(ref m_array, Math.Max(length, Count * 2));
 		}
 
 		T[] m_array;
