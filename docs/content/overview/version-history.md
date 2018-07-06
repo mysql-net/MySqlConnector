@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.42.3
+
+* Fix bug (introduced in 0.42.2) that caused extremely high memory usage.
+* Allow `DATE` columns with invalid `DateTime` values to be read as `MySqlDateTime`: [#529](https://github.com/mysql-net/MySqlConnector/issues/529).
+
 ### 0.42.2
 
 * Fix bug that ignored last result set returned from a stored procedure if it was empty: [#524](https://github.com/mysql-net/MySqlConnector/issues/524).
