@@ -38,7 +38,7 @@ Manually Step 1: Add MySqlConnector to the dependencies in your csproj file:
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.42.2  Fix bug that ignored last result set returned from a stored procedure if it was empty: #524. Fix extra memory usage if column definition payloads exceeded original size estimate.  0.42.1  Fix NotImplementedException reading a GEOMETRY column as byte[]: #70. Fix negative TIME parsing: #518. Fix ArgumentException preparing a SQL statement: #520.  0.42.0  Add AllowZeroDateTime connection string option: #507. Add MySqlDateTime type (to allow invalid DateTime values to be represented).</description>
+      <description>Version History 0.42.3  Fix bug (introduced in 0.42.2) that caused extremely high memory usage. Allow DATE columns with invalid DateTime values to be read as MySqlDateTime: #529.  0.42.2  Fix bug that ignored last result set returned from a stored procedure if it was empty: #524. Fix extra memory usage if column definition payloads exceeded original size estimate.  0.42.1  Fix NotImplementedException reading a GEOMETRY column as byte[]: #70.</description>
     </item>
     
     <item>
