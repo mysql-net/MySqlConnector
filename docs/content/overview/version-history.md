@@ -13,7 +13,7 @@ Version History
 
 ### 0.42.3
 
-* Fix bug (introduced in 0.42.2) that caused extremely high memory usage.
+* Fix bug (introduced in 0.42.2) that caused extremely high memory usage: [#528](https://github.com/mysql-net/MySqlConnector/issues/528).
 * Allow `DATE` columns with invalid `DateTime` values to be read as `MySqlDateTime`: [#529](https://github.com/mysql-net/MySqlConnector/issues/529).
 
 ### 0.42.2
