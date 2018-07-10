@@ -354,7 +354,7 @@ namespace MySqlConnector.Core
 			{
 			case ColumnType.Tiny:
 				var value = ParseInt32(data);
-				if (Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1)
+				if (Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1 && !isUnsigned)
 					return value != 0;
 				return isUnsigned ? (object) (byte) value : (sbyte) value;
 

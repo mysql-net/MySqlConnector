@@ -226,6 +226,13 @@ namespace SideBySide
 			}
 		}
 
+		[Theory()]
+		[InlineData("TinyInt1U", "TINYINT", new object[] { null, (byte) 0, (byte) 1, (byte) 0, (byte) 1, (byte) 255, (byte) 123 })]
+		public void QueryTinyInt1Unsigned(string column, string dataTypeName, object[] expected)
+		{
+			DoQuery("bools", column, dataTypeName, expected, reader => reader.GetByte(0), baselineCoercedNullValue: default(byte));
+		}
+
 		[Theory]
 		[InlineData("SByte", "TINYINT", new object[] { null, default(sbyte), sbyte.MinValue, sbyte.MaxValue, (sbyte) 123 })]
 		public void QuerySByte(string column, string dataTypeName, object[] expected)
@@ -983,6 +990,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		[InlineData("Boolean", "datatypes_bools", MySqlDbType.Bool, 1, typeof(bool), "N", 0, 0)]
 		[InlineData("TinyInt1", "datatypes_bools", MySqlDbType.Bool, 1, typeof(bool), "N", 0, 0)]
 #endif
+		[InlineData("TinyInt1U", "datatypes_bools", MySqlDbType.UByte, 1, typeof(byte), "N", 0, 0)]
 		[InlineData("size", "datatypes_enums", MySqlDbType.Enum, 7, typeof(string), "N", 0, 0)]
 		[InlineData("color", "datatypes_enums", MySqlDbType.Enum, 6, typeof(string), "", 0, 0)]
 		[InlineData("char38", "datatypes_guids", MySqlDbType.String, 38, typeof(string), "N", 0, 0)]
@@ -1107,6 +1115,7 @@ create table schema_table({createColumn});");
 		[InlineData("rowid", "datatypes_bools", MySqlDbType.Int32, "INT", 11, typeof(int), "AK", -1, 0)]
 		[InlineData("Boolean", "datatypes_bools", MySqlDbType.Bool, "BOOL", 1, typeof(bool), "N", -1, 0)]
 		[InlineData("TinyInt1", "datatypes_bools", MySqlDbType.Bool, "BOOL", 1, typeof(bool), "N", -1, 0)]
+		[InlineData("TinyInt1U", "datatypes_bools", MySqlDbType.UByte, "TINYINT", 1, typeof(byte), "N", -1, 0)]
 		[InlineData("size", "datatypes_enums", MySqlDbType.Enum, "ENUM", 7, typeof(string), "N", -1, 0)]
 		[InlineData("color", "datatypes_enums", MySqlDbType.Enum, "ENUM", 6, typeof(string), "", -1, 0)]
 		[InlineData("char38", "datatypes_guids", MySqlDbType.String, "CHAR(38)", 38, typeof(string), "N", -1, 0)]

@@ -12,18 +12,19 @@ drop table if exists datatypes_bools;
 create table datatypes_bools(
   rowid integer not null primary key auto_increment,
   Boolean bool null,
-  TinyInt1 tinyint(1) null
+  TinyInt1 tinyint(1) null,
+  TinyInt1U tinyint(1) unsigned null
 );
 
-insert into datatypes_bools(Boolean, TinyInt1)
+insert into datatypes_bools(Boolean, TinyInt1, TinyInt1U)
 values
-  (null, null),
-  (0, 0),
-  (1, 1),
-  (false, false),
-  (true, true),
-  (-1, -1),
-  (123, 123);
+  (null, null, null),
+  (0, 0, 0),
+  (1, 1, 1),
+  (false, false, false),
+  (true, true, true),
+  (-1, -1, 255),
+  (123, 123, 123);
 
 drop table if exists datatypes_bits;
 create table datatypes_bits(

@@ -179,7 +179,7 @@ namespace MySqlConnector.Core
 			switch (columnDefinition.ColumnType)
 			{
 			case ColumnType.Tiny:
-				return treatTinyAsBoolean && columnDefinition.ColumnLength == 1 ? MySqlDbType.Bool :
+				return treatTinyAsBoolean && columnDefinition.ColumnLength == 1 && !isUnsigned ? MySqlDbType.Bool :
 					isUnsigned ? MySqlDbType.UByte : MySqlDbType.Byte;
 
 			case ColumnType.Int24:
