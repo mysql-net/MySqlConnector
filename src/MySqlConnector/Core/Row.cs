@@ -1,59 +1,45 @@
 using System;
-using System.Buffers.Text;
-using System.Globalization;
-using System.Text;
 using MySql.Data.MySqlClient;
 using MySql.Data.Types;
 using MySqlConnector.Protocol;
-using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core
 {
-	internal sealed class Row : IDisposable
+	internal abstract class Row
 	{
-		public Row(ResultSet resultSet) => ResultSet = resultSet;
-
-		public void SetData(int[] dataLengths, int[] dataOffsets, ArraySegment<byte> payload)
+		public void SetData(ArraySegment<byte> data)
 		{
-			m_dataLengths = dataLengths;
-			m_dataOffsets = dataOffsets;
-			m_payload = payload;
-		}
-
-		public void BufferData()
-		{
-			// by default, m_payload, m_dataLengths, and m_dataOffsets are re-used to save allocations
-			// if the row is going to be buffered, we need to copy them
-			// since m_payload can span multiple rows, offests must recalculated to include only this row
-
-			var bufferDataLengths = new int[m_dataLengths.Length];
-			Buffer.BlockCopy(m_dataLengths, 0, bufferDataLengths, 0, m_dataLengths.Length * sizeof(int));
-			m_dataLengths = bufferDataLengths;
-
-			var bufferDataOffsets = new int[m_dataOffsets.Length];
-			for (var i = 0; i < m_dataOffsets.Length; i++)
+			m_data = data;
+			if (m_dataOffsets == null)
 			{
-				// a -1 offset denotes null, only adjust positive offsets
-				if (m_dataOffsets[i] >= 0)
-					bufferDataOffsets[i] = m_dataOffsets[i] - m_payload.Offset;
-				else
-					bufferDataOffsets[i] = m_dataOffsets[i];
+				m_dataOffsets = new int[ResultSet.ColumnDefinitions.Length];
+				m_dataLengths = new int[ResultSet.ColumnDefinitions.Length];
 			}
-			m_dataOffsets = bufferDataOffsets;
-
-			var bufferedPayload = new byte[m_payload.Count];
-			Buffer.BlockCopy(m_payload.Array, m_payload.Offset, bufferedPayload, 0, m_payload.Count);
-			m_payload = new ArraySegment<byte>(bufferedPayload);
+			GetDataOffsets(m_data.AsSpan(), m_dataOffsets, m_dataLengths);
 		}
 
-		public void Dispose() => ClearData();
-
-		public void ClearData()
+		public Row Clone()
 		{
-			m_dataLengths = null;
-			m_dataOffsets = null;
-			m_payload = default(ArraySegment<byte>);
+			var clonedRow = CloneCore();
+			var clonedData = new byte[m_data.Count];
+			Buffer.BlockCopy(m_data.Array, m_data.Offset, clonedData, 0, m_data.Count);
+			clonedRow.SetData(new ArraySegment<byte>(clonedData));
+			return clonedRow;
+		}
+
+		public object GetValue(int ordinal)
+		{
+			if (ordinal < 0 || ordinal > ResultSet.ColumnDefinitions.Length)
+				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ResultSet.ColumnDefinitions.Length));
+
+			if (m_dataOffsets[ordinal] == -1)
+				return DBNull.Value;
+
+			var data = new ReadOnlySpan<byte>(m_data.Array, m_data.Offset + m_dataOffsets[ordinal], m_dataLengths[ordinal]);
+			var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
+			return GetValueCore(data, columnDefinition);
 		}
 
 		public bool GetBoolean(int ordinal)
@@ -111,7 +97,7 @@ namespace MySqlConnector.Core
 
 			var offset = (int) dataOffset;
 			var lengthToCopy = Math.Max(0, Math.Min(m_dataLengths[ordinal] - offset, length));
-			Buffer.BlockCopy(m_payload.Array, m_dataOffsets[ordinal] + offset, buffer, bufferOffset, lengthToCopy);
+			Buffer.BlockCopy(m_data.Array, m_data.Offset + m_dataOffsets[ordinal] + offset, buffer, bufferOffset, lengthToCopy);
 			return lengthToCopy;
 		}
 
@@ -339,208 +325,18 @@ namespace MySqlConnector.Core
 
 		public object this[string name] => GetValue(ResultSet.GetOrdinal(name));
 
-		public object GetValue(int ordinal)
-		{
-			if (ordinal < 0 || ordinal > ResultSet.ColumnDefinitions.Length)
-				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ResultSet.ColumnDefinitions.Length));
+		protected Row(ResultSet resultSet) => ResultSet = resultSet;
 
-			if (m_dataOffsets[ordinal] == -1)
-				return DBNull.Value;
+		protected abstract Row CloneCore();
 
-			var data = new ReadOnlySpan<byte>(m_payload.Array, m_dataOffsets[ordinal], m_dataLengths[ordinal]);
-			var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
-			var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
-			switch (columnDefinition.ColumnType)
-			{
-			case ColumnType.Tiny:
-				var value = ParseInt32(data);
-				if (Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1 && !isUnsigned)
-					return value != 0;
-				return isUnsigned ? (object) (byte) value : (sbyte) value;
+		protected abstract object GetValueCore(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
 
-			case ColumnType.Int24:
-			case ColumnType.Long:
-				return isUnsigned ? (object) ParseUInt32(data) : ParseInt32(data);
+		protected abstract void GetDataOffsets(ReadOnlySpan<byte> data, int[] dataOffsets, int[] dataLengths);
 
-			case ColumnType.Longlong:
-				return isUnsigned ? (object) ParseUInt64(data) : ParseInt64(data);
+		protected ResultSet ResultSet { get; }
+		protected MySqlConnection Connection => ResultSet.Connection;
 
-			case ColumnType.Bit:
-				// BIT column is transmitted as MSB byte array
-				ulong bitValue = 0;
-				for (int i = 0; i < m_dataLengths[ordinal]; i++)
-					bitValue = bitValue * 256 + m_payload.Array[m_dataOffsets[ordinal] + i];
-				return bitValue;
-
-			case ColumnType.String:
-				if (Connection.GuidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
-					return Utf8Parser.TryParse(data, out Guid guid, out int guid36BytesConsumed, 'D') && guid36BytesConsumed == 36 ? guid : throw new FormatException();
-				if (Connection.GuidFormat == MySqlGuidFormat.Char32 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
-					return Utf8Parser.TryParse(data, out Guid guid, out int guid32BytesConsumed, 'N') && guid32BytesConsumed == 32 ? guid : throw new FormatException();
-				goto case ColumnType.VarString;
-
-			case ColumnType.VarString:
-			case ColumnType.VarChar:
-			case ColumnType.TinyBlob:
-			case ColumnType.Blob:
-			case ColumnType.MediumBlob:
-			case ColumnType.LongBlob:
-				if (columnDefinition.CharacterSet == CharacterSet.Binary)
-				{
-					var guidFormat = Connection.GuidFormat;
-					if ((guidFormat == MySqlGuidFormat.Binary16 || guidFormat == MySqlGuidFormat.TimeSwapBinary16 || guidFormat == MySqlGuidFormat.LittleEndianBinary16) && columnDefinition.ColumnLength == 16)
-						return CreateGuidFromBytes(guidFormat, data);
-
-					return data.ToArray();
-				}
-				return Encoding.UTF8.GetString(data);
-
-			case ColumnType.Json:
-				return Encoding.UTF8.GetString(data);
-
-			case ColumnType.Short:
-				return isUnsigned ? (object) ParseUInt16(data) : ParseInt16(data);
-
-			case ColumnType.Date:
-			case ColumnType.DateTime:
-			case ColumnType.Timestamp:
-				return ParseDateTime(data);
-
-			case ColumnType.Time:
-				return Utility.ParseTimeSpan(data);
-
-			case ColumnType.Year:
-				return ParseInt32(data);
-
-			case ColumnType.Float:
-				return !Utf8Parser.TryParse(data, out float floatValue, out var floatBytesConsumed) || floatBytesConsumed != data.Length ? throw new FormatException() : floatValue;
-
-			case ColumnType.Double:
-				return !Utf8Parser.TryParse(data, out double doubleValue, out var doubleBytesConsumed) || doubleBytesConsumed != data.Length ? throw new FormatException() : doubleValue;
-
-			case ColumnType.Decimal:
-			case ColumnType.NewDecimal:
-				return Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) && bytesConsumed == data.Length ? decimalValue : throw new FormatException();
-
-			case ColumnType.Geometry:
-				return data.ToArray();
-
-			default:
-				throw new NotImplementedException("Reading {0} not implemented".FormatInvariant(columnDefinition.ColumnType));
-			}
-		}
-
-		private static short ParseInt16(ReadOnlySpan<byte> data) =>
-			!Utf8Parser.TryParse(data, out short value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
-
-		private static ushort ParseUInt16(ReadOnlySpan<byte> data) =>
-			!Utf8Parser.TryParse(data, out ushort value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
-
-		private static int ParseInt32(ReadOnlySpan<byte> data) =>
-			!Utf8Parser.TryParse(data, out int value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
-
-		private static uint ParseUInt32(ReadOnlySpan<byte> data) =>
-			!Utf8Parser.TryParse(data, out uint value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
-
-		private static long ParseInt64(ReadOnlySpan<byte> data) =>
-			!Utf8Parser.TryParse(data, out long value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
-
-		private static ulong ParseUInt64(ReadOnlySpan<byte> data) =>
-			!Utf8Parser.TryParse(data, out ulong value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
-
-		private static void CheckBufferArguments<T>(long dataOffset, T[] buffer, int bufferOffset, int length)
-		{
-			if (dataOffset < 0)
-				throw new ArgumentOutOfRangeException(nameof(dataOffset), dataOffset, "dataOffset must be non-negative");
-			if (dataOffset > int.MaxValue)
-				throw new ArgumentOutOfRangeException(nameof(dataOffset), dataOffset, "dataOffset must be a 32-bit integer");
-			if (length < 0)
-				throw new ArgumentOutOfRangeException(nameof(length), length, "length must be non-negative");
-			if (bufferOffset < 0)
-				throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, "bufferOffset must be non-negative");
-			if (bufferOffset > buffer.Length)
-				throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, "bufferOffset must be within the buffer");
-			if (checked(bufferOffset + length) > buffer.Length)
-				throw new ArgumentException("bufferOffset + length cannot exceed buffer.Length", nameof(length));
-		}
-
-		private object ParseDateTime(ReadOnlySpan<byte> value)
-		{
-			Exception exception = null;
-			if (!Utf8Parser.TryParse(value, out int year, out var bytesConsumed) || bytesConsumed != 4)
-				goto InvalidDateTime;
-			if (value.Length < 5 || value[4] != 45)
-				goto InvalidDateTime;
-			if (!Utf8Parser.TryParse(value.Slice(5), out int month, out bytesConsumed) || bytesConsumed != 2)
-				goto InvalidDateTime;
-			if (value.Length < 8 || value[7] != 45)
-				goto InvalidDateTime;
-			if (!Utf8Parser.TryParse(value.Slice(8), out int day, out bytesConsumed) || bytesConsumed != 2)
-				goto InvalidDateTime;
-
-			if (year == 0 && month == 0 && day == 0)
-			{
-				if (Connection.ConvertZeroDateTime)
-					return DateTime.MinValue;
-				if (Connection.AllowZeroDateTime)
-					return new MySqlDateTime();
-				throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime.");
-			}
-
-			int hour, minute, second, microseconds;
-			if (value.Length == 10)
-			{
-				hour = 0;
-				minute = 0;
-				second = 0;
-				microseconds = 0;
-			}
-			else
-			{
-				if (value[10] != 32)
-					goto InvalidDateTime;
-				if (!Utf8Parser.TryParse(value.Slice(11), out hour, out bytesConsumed) || bytesConsumed != 2)
-					goto InvalidDateTime;
-				if (value.Length < 14 || value[13] != 58)
-					goto InvalidDateTime;
-				if (!Utf8Parser.TryParse(value.Slice(14), out minute, out bytesConsumed) || bytesConsumed != 2)
-					goto InvalidDateTime;
-				if (value.Length < 17 || value[16] != 58)
-					goto InvalidDateTime;
-				if (!Utf8Parser.TryParse(value.Slice(17), out second, out bytesConsumed) || bytesConsumed != 2)
-					goto InvalidDateTime;
-
-				if (value.Length == 19)
-				{
-					microseconds = 0;
-				}
-				else
-				{
-					if (value[19] != 46)
-						goto InvalidDateTime;
-
-					if (!Utf8Parser.TryParse(value.Slice(20), out microseconds, out bytesConsumed) || bytesConsumed != value.Length - 20)
-						goto InvalidDateTime;
-					for (; bytesConsumed < 6; bytesConsumed++)
-						microseconds *= 10;
-				}
-			}
-
-			try
-			{
-				return Connection.AllowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
-					new DateTime(year, month, day, hour, minute, second, microseconds / 1000, Connection.DateTimeKind).AddTicks(microseconds % 1000 * 10);
-			}
-			catch (Exception ex)
-			{
-				exception = ex;
-			}
-
-InvalidDateTime:
-			throw new FormatException("Couldn't interpret '{0}' as a valid DateTime".FormatInvariant(Encoding.UTF8.GetString(value)), exception);
-		}
-
-		private static Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes)
+		protected static Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes)
 		{
 #if NET45 || NET461 || NETSTANDARD1_3 || NETSTANDARD2_0
 			if (guidFormat == MySqlGuidFormat.Binary16)
@@ -563,15 +359,27 @@ InvalidDateTime:
 				}
 				return new Guid(bytes);
 			}
-
 #endif
 		}
 
-		public readonly ResultSet ResultSet;
-		public MySqlConnection Connection => ResultSet.Connection;
+		private static void CheckBufferArguments<T>(long dataOffset, T[] buffer, int bufferOffset, int length)
+		{
+			if (dataOffset < 0)
+				throw new ArgumentOutOfRangeException(nameof(dataOffset), dataOffset, "dataOffset must be non-negative");
+			if (dataOffset > int.MaxValue)
+				throw new ArgumentOutOfRangeException(nameof(dataOffset), dataOffset, "dataOffset must be a 32-bit integer");
+			if (length < 0)
+				throw new ArgumentOutOfRangeException(nameof(length), length, "length must be non-negative");
+			if (bufferOffset < 0)
+				throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, "bufferOffset must be non-negative");
+			if (bufferOffset > buffer.Length)
+				throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, "bufferOffset must be within the buffer");
+			if (checked(bufferOffset + length) > buffer.Length)
+				throw new ArgumentException("bufferOffset + length cannot exceed buffer.Length", nameof(length));
+		}
 
-		ArraySegment<byte> m_payload;
-		int[] m_dataLengths;
+		ArraySegment<byte> m_data;
 		int[] m_dataOffsets;
+		int[] m_dataLengths;
 	}
 }
