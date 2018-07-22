@@ -15,7 +15,9 @@ namespace MySqlConnector.Protocol.Serialization
 			m_output = m_buffer;
 		}
 
-		public ArraySegment<byte> ArraySegment => new ArraySegment<byte>(m_buffer, 0, m_buffer.Length - m_output.Length);
+		public int Position => m_buffer.Length - m_output.Length;
+
+		public ArraySegment<byte> ArraySegment => new ArraySegment<byte>(m_buffer, 0, Position);
 
 		public PayloadData ToPayloadData() => new PayloadData(ArraySegment, isPooled: true);
 
@@ -210,7 +212,7 @@ namespace MySqlConnector.Protocol.Serialization
 
 		private void Reallocate(int additional = 0)
 		{
-			var usedLength = m_buffer.Length - m_output.Length;
+			var usedLength = Position;
 			var newBuffer = ArrayPool<byte>.Shared.Rent(Math.Max(usedLength + additional, m_buffer.Length * 2));
 			Buffer.BlockCopy(m_buffer, 0, newBuffer, 0, usedLength);
 			ArrayPool<byte>.Shared.Return(m_buffer);
