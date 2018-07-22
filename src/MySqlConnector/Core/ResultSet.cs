@@ -242,7 +242,7 @@ namespace MySqlConnector.Core
 				}
 
 				if (row_ == null)
-					row_ = new TextRow(this);
+					row_ = DataReader.ResultSetProtocol == ResultSetProtocol.Binary ? (Row) new BinaryRow(this) : new TextRow(this);
 				row_.SetData(payload.ArraySegment);
 				m_rowBuffered = row_;
 				m_hasRows = true;

@@ -270,12 +270,13 @@ namespace MySql.Data.MySqlClient
 		}
 
 		internal MySqlCommand Command { get; private set; }
+		internal ResultSetProtocol ResultSetProtocol { get; }
 		internal MySqlConnection Connection => Command?.Connection;
 		internal ServerSession Session => Command?.Connection.Session;
 
-		internal static async Task<MySqlDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, IOBehavior ioBehavior)
+		internal static async Task<MySqlDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, ResultSetProtocol resultSetProtocol, IOBehavior ioBehavior)
 		{
-			var dataReader = new MySqlDataReader(command, behavior);
+			var dataReader = new MySqlDataReader(command, resultSetProtocol, behavior);
 			command.Connection.SetActiveReader(dataReader);
 
 			try
@@ -389,9 +390,10 @@ namespace MySql.Data.MySqlClient
 		}
 #endif
 
-		private MySqlDataReader(MySqlCommand command, CommandBehavior behavior)
+		private MySqlDataReader(MySqlCommand command, ResultSetProtocol resultSetProtocol, CommandBehavior behavior)
 		{
 			Command = command;
+			ResultSetProtocol = resultSetProtocol;
 			m_behavior = behavior;
 		}
 
