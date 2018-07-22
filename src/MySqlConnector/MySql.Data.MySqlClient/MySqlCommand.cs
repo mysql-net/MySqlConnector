@@ -267,6 +267,40 @@ namespace MySql.Data.MySqlClient
 			Connection?.Session?.SetTimeout(commandTimeout == 0 ? Constants.InfiniteTimeout : commandTimeout * 1000);
 		}
 
+		internal StatementPreparerOptions CreateStatementPreparerOptions()
+		{
+			var statementPreparerOptions = StatementPreparerOptions.None;
+			if (Connection.AllowUserVariables || CommandType == CommandType.StoredProcedure)
+				statementPreparerOptions |= StatementPreparerOptions.AllowUserVariables;
+			if (Connection.DateTimeKind == DateTimeKind.Utc)
+				statementPreparerOptions |= StatementPreparerOptions.DateTimeUtc;
+			else if (Connection.DateTimeKind == DateTimeKind.Local)
+				statementPreparerOptions |= StatementPreparerOptions.DateTimeLocal;
+			if (CommandType == CommandType.StoredProcedure)
+				statementPreparerOptions |= StatementPreparerOptions.AllowOutputParameters;
+
+			switch (Connection.GuidFormat)
+			{
+			case MySqlGuidFormat.Char36:
+				statementPreparerOptions |= StatementPreparerOptions.GuidFormatChar36;
+				break;
+			case MySqlGuidFormat.Char32:
+				statementPreparerOptions |= StatementPreparerOptions.GuidFormatChar32;
+				break;
+			case MySqlGuidFormat.Binary16:
+				statementPreparerOptions |= StatementPreparerOptions.GuidFormatBinary16;
+				break;
+			case MySqlGuidFormat.TimeSwapBinary16:
+				statementPreparerOptions |= StatementPreparerOptions.GuidFormatTimeSwapBinary16;
+				break;
+			case MySqlGuidFormat.LittleEndianBinary16:
+				statementPreparerOptions |= StatementPreparerOptions.GuidFormatLittleEndianBinary16;
+				break;
+			}
+
+			return statementPreparerOptions;
+		}
+
 		private IOBehavior AsyncIOBehavior => Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous;
 
 		private void VerifyNotDisposed()
