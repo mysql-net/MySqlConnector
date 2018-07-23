@@ -97,7 +97,15 @@ namespace MySqlConnector.Core
 					else
 					{
 						OnPositionalParameter(parameterStartIndex);
-						state = State.Statement;
+						if (ch == ';')
+						{
+							OnStatementEnd(index);
+							state = State.Beginning;
+						}
+						else
+						{
+							state = State.Statement;
+						}
 					}
 				}
 				else if (state == State.AtSign)
@@ -109,7 +117,15 @@ namespace MySqlConnector.Core
 					if (!IsVariableName(ch))
 					{
 						OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
-						state = State.Statement;
+						if (ch == ';')
+						{
+							OnStatementEnd(index);
+							state = State.Beginning;
+						}
+						else
+						{
+							state = State.Statement;
+						}
 					}
 				}
 				else
@@ -147,11 +163,14 @@ namespace MySqlConnector.Core
 					}
 					else if (ch == ';')
 					{
+						if (state != State.Beginning)
+							OnStatementEnd(index);
 						state = State.Beginning;
 					}
 					else if (!IsWhitespace(ch) && state == State.Beginning)
 					{
 						state = State.Statement;
+						OnStatementBegin(index);
 					}
 				}
 			}
@@ -163,6 +182,10 @@ namespace MySqlConnector.Core
 		{
 		}
 
+		protected virtual void OnStatementBegin(int index)
+		{
+		}
+
 		protected virtual void OnPositionalParameter(int index)
 		{
 		}
@@ -171,10 +194,14 @@ namespace MySqlConnector.Core
 		{
 		}
 
+		protected virtual void OnStatementEnd(int index)
+		{
+		}
+
 		protected virtual void OnParsed()
 		{
 		}
-		
+
 		private static bool IsWhitespace(char ch) => ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
 
 		private static bool IsVariableName(char ch) => (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '.' || ch == '_' || ch == '$';

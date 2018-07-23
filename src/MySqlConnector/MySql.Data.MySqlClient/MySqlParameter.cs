@@ -178,7 +178,7 @@ namespace MySql.Data.MySqlClient
 
 		internal string NormalizedParameterName { get; private set; }
 
-		internal void AppendSqlString(ByteBufferWriter writer, StatementPreparerOptions options, string parameterName)
+		internal void AppendSqlString(ByteBufferWriter writer, StatementPreparerOptions options)
 		{
 			if (Value == null || Value == DBNull.Value)
 			{
@@ -277,9 +277,9 @@ namespace MySql.Data.MySqlClient
 			else if (Value is DateTime dateTimeValue)
 			{
 				if ((options & StatementPreparerOptions.DateTimeUtc) != 0 && dateTimeValue.Kind == DateTimeKind.Local)
-					throw new MySqlException("DateTime.Kind must not be Local when DateTimeKind setting is Utc (parameter name: {0})".FormatInvariant(parameterName));
+					throw new MySqlException("DateTime.Kind must not be Local when DateTimeKind setting is Utc (parameter name: {0})".FormatInvariant(ParameterName));
 				else if ((options & StatementPreparerOptions.DateTimeLocal) != 0 && dateTimeValue.Kind == DateTimeKind.Utc)
-					throw new MySqlException("DateTime.Kind must not be Utc when DateTimeKind setting is Local (parameter name: {0})".FormatInvariant(parameterName));
+					throw new MySqlException("DateTime.Kind must not be Utc when DateTimeKind setting is Local (parameter name: {0})".FormatInvariant(ParameterName));
 
 				writer.Write("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(dateTimeValue));
 			}

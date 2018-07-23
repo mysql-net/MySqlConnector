@@ -7,6 +7,7 @@ namespace MySqlConnector.Protocol
 		Query = 3,
 		Ping = 14,
 		ChangeUser = 17,
+		StatementPrepare = 22,
 		ResetConnection = 31,
 	}
 }

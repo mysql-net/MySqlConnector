@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using MySql.Data.MySqlClient;
 using MySqlConnector.Protocol;
@@ -16,6 +17,18 @@ namespace MySqlConnector.Core
 			m_options = options;
 		}
 
+		public ParsedStatements SplitStatements()
+		{
+			var statements = new List<ParsedStatement>();
+			var statementStartEndIndexes = new List<int>();
+			var writer = new ByteBufferWriter(m_commandText.Length + 1);
+			var parser = new PreparedCommandSqlParser(this, statements, statementStartEndIndexes, writer);
+			parser.Parse(m_commandText);
+			for (var i = 0; i < statements.Count; i++)
+				statements[i].StatementBytes = writer.ArraySegment.Slice(statementStartEndIndexes[i * 2], statementStartEndIndexes[i * 2 + 1] - statementStartEndIndexes[i * 2]);
+			return new ParsedStatements(statements, writer.ToPayloadData());
+		}
+
 		public ArraySegment<byte> ParseAndBindParameters()
 		{
 			var writer = new ByteBufferWriter(m_commandText.Length + 1);
@@ -30,6 +43,22 @@ namespace MySqlConnector.Core
 			return writer.ArraySegment;
 		}
 
+		private int GetParameterIndex(string name)
+		{
+			var index = m_parameters.NormalizedIndexOf(name);
+			if (index == -1 && (m_options & StatementPreparerOptions.AllowUserVariables) == 0)
+				throw new MySqlException("Parameter '{0}' must be defined. To use this as a variable, set 'Allow User Variables=true' in the connection string.".FormatInvariant(name));
+			return index;
+		}
+
+		private MySqlParameter GetInputParameter(int index)
+		{
+			var parameter = m_parameters[index];
+			if (parameter.Direction != ParameterDirection.Input && (m_options & StatementPreparerOptions.AllowOutputParameters) == 0)
+				throw new MySqlException("Only ParameterDirection.Input is supported when CommandType is Text (parameter name: {0})".FormatInvariant(parameter.ParameterName));
+			return parameter;
+		}
+
 		private sealed class ParameterSqlParser : SqlParser
 		{
 			public ParameterSqlParser(StatementPreparer preparer, ByteBufferWriter writer)
@@ -38,18 +67,11 @@ namespace MySqlConnector.Core
 				m_writer = writer;
 			}
 
-			protected override void OnBeforeParse(string sql)
-			{
-			}
-
 			protected override void OnNamedParameter(int index, int length)
 			{
-				var parameterName = m_preparer.m_commandText.Substring(index, length);
-				var parameterIndex = m_preparer.m_parameters.NormalizedIndexOf(parameterName);
+				var parameterIndex = m_preparer.GetParameterIndex(m_preparer.m_commandText.Substring(index, length));
 				if (parameterIndex != -1)
 					DoAppendParameter(parameterIndex, index, length);
-				else if ((m_preparer.m_options & StatementPreparerOptions.AllowUserVariables) == 0)
-					throw new MySqlException("Parameter '{0}' must be defined. To use this as a variable, set 'Allow User Variables=true' in the connection string.".FormatInvariant(parameterName));
 			}
 
 			protected override void OnPositionalParameter(int index)
@@ -60,22 +82,15 @@ namespace MySqlConnector.Core
 
 			private void DoAppendParameter(int parameterIndex, int textIndex, int textLength)
 			{
-				AppendString(m_preparer.m_commandText, m_lastIndex, textIndex - m_lastIndex);
-				var parameter = m_preparer.m_parameters[parameterIndex];
-				if (parameter.Direction != ParameterDirection.Input && (m_preparer.m_options & StatementPreparerOptions.AllowOutputParameters) == 0)
-					throw new MySqlException("Only ParameterDirection.Input is supported when CommandType is Text (parameter name: {0})".FormatInvariant(parameter.ParameterName));
-				m_preparer.m_parameters[parameterIndex].AppendSqlString(m_writer, m_preparer.m_options, parameter.ParameterName);
+				m_writer.Write(m_preparer.m_commandText, m_lastIndex, textIndex - m_lastIndex);
+				var parameter = m_preparer.GetInputParameter(parameterIndex);
+				parameter.AppendSqlString(m_writer, m_preparer.m_options);
 				m_lastIndex = textIndex + textLength;
 			}
 
 			protected override void OnParsed()
 			{
-				AppendString(m_preparer.m_commandText, m_lastIndex, m_preparer.m_commandText.Length - m_lastIndex);
-			}
-
-			private void AppendString(string value, int offset, int length)
-			{
-				m_writer.Write(value, offset, length);
+				m_writer.Write(m_preparer.m_commandText, m_lastIndex, m_preparer.m_commandText.Length - m_lastIndex);
 			}
 
 			readonly StatementPreparer m_preparer;
@@ -83,6 +98,66 @@ namespace MySqlConnector.Core
 			int m_currentParameterIndex;
 			int m_lastIndex;
 		}
+
+		private sealed class PreparedCommandSqlParser : SqlParser
+		{
+			public PreparedCommandSqlParser(StatementPreparer preparer, List<ParsedStatement> statements, List<int> statementStartEndIndexes, ByteBufferWriter writer)
+			{
+				m_preparer = preparer;
+				m_statements = statements;
+				m_statementStartEndIndexes = statementStartEndIndexes;
+				m_writer = writer;
+			}
+
+			protected override void OnStatementBegin(int index)
+			{
+				m_statements.Add(new ParsedStatement());
+				m_statementStartEndIndexes.Add(m_writer.Position);
+				m_writer.Write((byte) CommandKind.StatementPrepare);
+				m_lastIndex = index;
+			}
+
+			protected override void OnNamedParameter(int index, int length)
+			{
+				var parameterName = m_preparer.m_commandText.Substring(index, length);
+				DoAppendParameter(parameterName, -1, index, length);
+			}
+
+			protected override void OnPositionalParameter(int index)
+			{
+				DoAppendParameter(null, m_currentParameterIndex, index, 1);
+				m_currentParameterIndex++;
+			}
+
+			private void DoAppendParameter(string parameterName, int parameterIndex, int textIndex, int textLength)
+			{
+				// write all SQL up to the parameter
+				m_writer.Write(m_preparer.m_commandText, m_lastIndex, textIndex - m_lastIndex);
+				m_lastIndex = textIndex + textLength;
+
+				// replace the parameter with a ? placeholder
+				m_writer.Write((byte) '?');
+
+				// store the parameter index
+				m_statements[m_statements.Count - 1].ParameterNames.Add(parameterName);
+				m_statements[m_statements.Count - 1].ParameterIndexes.Add(parameterIndex);
+			}
+
+			protected override void OnStatementEnd(int index)
+			{
+				m_writer.Write(m_preparer.m_commandText, m_lastIndex, index - m_lastIndex);
+				m_lastIndex = index;
+				m_statementStartEndIndexes.Add(m_writer.Position);
+			}
+
+			readonly StatementPreparer m_preparer;
+			readonly List<ParsedStatement> m_statements;
+			readonly List<int> m_statementStartEndIndexes;
+			readonly ByteBufferWriter m_writer;
+			int m_currentParameterIndex;
+			int m_lastIndex;
+		}
+
 
 		readonly string m_commandText;
 		readonly MySqlParameterCollection m_parameters;
