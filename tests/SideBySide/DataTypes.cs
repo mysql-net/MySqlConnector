@@ -23,18 +23,15 @@ using GetGuidWhenNullException = System.InvalidCastException;
 
 namespace SideBySide
 {
-	public class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
+	public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 	{
 		public DataTypes(DataTypesFixture database)
 		{
-			m_database = database;
-			m_database.Connection.Open();
+			Connection = new MySqlConnection(CreateConnectionStringBuilder().ConnectionString);
+			Connection.Open();
 		}
 
-		public void Dispose()
-		{
-			m_database.Connection.Close();
-		}
+		public void Dispose() => Connection.Dispose();
 
 		[Theory]
 		[InlineData("SByte", new[] { 1, 0, 0, 0, 0 }, new[] { false, false, true, true, true })]
@@ -150,9 +147,10 @@ namespace SideBySide
 
 		private async Task DoGetValue<T>(string column, Func<MySqlDataReader, int, T> getInt, Func<MySqlDataReader, string, T> getIntByName, int[] flags, T[] values)
 		{
-			using (var cmd = m_database.Connection.CreateCommand())
+			using (var cmd = Connection.CreateCommand())
 			{
 				cmd.CommandText = $"select {column} from datatypes_integers order by rowid";
+				cmd.Prepare();
 				using (var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync().ConfigureAwait(false))
 				{
 					for (int i = 0; i < flags.Length; i++)
@@ -217,7 +215,7 @@ namespace SideBySide
 		[InlineData("Boolean", "TINYINT", new object[] { null, (sbyte) 0, (sbyte) 1, (sbyte) 0, (sbyte) 1, (sbyte) -1, (sbyte) 123 })]
 		public void QueryTinyIntSbyte(string column, string dataTypeName, object[] expected)
 		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
+			var csb = CreateConnectionStringBuilder();
 			csb.TreatTinyAsBoolean = false;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -360,9 +358,10 @@ namespace SideBySide
 		[InlineData("cp1251", new[] { null, "", "ASCII", "АБВГабвг", c_251ByteString })]
 		public void QueryChar(string column, string[] expected)
 		{
-			using (var cmd = m_database.Connection.CreateCommand())
+			using (var cmd = Connection.CreateCommand())
 			{
 				cmd.CommandText = $@"select `{column}` from datatypes_strings order by rowid;";
+				cmd.Prepare();
 				using (var reader = cmd.ExecuteReader())
 				{
 					for (var i = 0; i < expected.Length; i++)
@@ -388,7 +387,7 @@ namespace SideBySide
 		[InlineData(true)]
 		public void QueryBinaryGuid(bool oldGuids)
 		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
+			var csb = CreateConnectionStringBuilder();
 			csb.OldGuids = oldGuids;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -396,6 +395,7 @@ namespace SideBySide
 				using (var cmd = connection.CreateCommand())
 				{
 					cmd.CommandText = @"select guidbin from datatypes_blobs order by rowid;";
+					cmd.Prepare();
 					using (var reader = cmd.ExecuteReader())
 					{
 						Assert.True(reader.Read());
@@ -446,7 +446,7 @@ namespace SideBySide
 		[InlineData(true)]
 		public async Task QueryWithGuidParameter(bool oldGuids)
 		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
+			var csb = CreateConnectionStringBuilder();
 			csb.OldGuids = oldGuids;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -464,9 +464,10 @@ namespace SideBySide
 		[InlineData("blob", typeof(byte[]))]
 		public async Task GetGuid(string column, Type fieldType)
 		{
-			using (var cmd = m_database.Connection.CreateCommand())
+			using (var cmd = Connection.CreateCommand())
 			{
 				cmd.CommandText = $"select `{column}` from datatypes_guids order by rowid";
+				cmd.Prepare();
 				using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
 				{
 					Assert.Equal(fieldType, reader.GetFieldType(0));
@@ -551,7 +552,7 @@ insert into guid_format(c36, c32, b16, tsb16, leb16, t, b) values(
 	{(isBinary16 ? (uuidToBin ? "UUID_TO_BIN('00112233-4455-6677-8899-AABBCCDDEEFF')" : "UNHEX('00112233445566778899AABBCCDDEEFF')") : isTimeSwapBinary16 ? (uuidToBin ? "UUID_TO_BIN('00112233-4455-6677-8899-AABBCCDDEEFF', TRUE)" : "UNHEX('66774455001122338899AABBCCDDEEFF')") : "UNHEX('33221100554477668899AABBCCDDEEFF')")});
 ";
 
-			var csb = AppConfig.CreateConnectionStringBuilder();
+			var csb = CreateConnectionStringBuilder();
 			csb.GuidFormat = guidFormat;
 			csb.OldGuids = oldGuids;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
@@ -581,6 +582,7 @@ insert into guid_format(c36, c32, b16, tsb16, leb16, t, b) values(
 				{
 					cmd.ExecuteNonQuery();
 					cmd.CommandText = "select c36, c32, b16, tsb16, leb16, t, b from guid_format;";
+					cmd.Prepare();
 					using (var reader = cmd.ExecuteReader())
 					{
 						for (int row = 0; row < 3; row++)
@@ -662,7 +664,7 @@ insert into guid_format(c36, c32, b16, tsb16, leb16, t, b) values(
 		[InlineData(true)]
 		public void QueryZeroDateTime(bool convertZeroDateTime)
 		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
+			var csb = CreateConnectionStringBuilder();
 			csb.ConvertZeroDateTime = convertZeroDateTime;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -670,6 +672,7 @@ insert into guid_format(c36, c32, b16, tsb16, leb16, t, b) values(
 				using (var cmd = connection.CreateCommand())
 				{
 					cmd.CommandText = @"select cast(0 as date), cast(0 as datetime);";
+					cmd.Prepare();
 					using (var reader = cmd.ExecuteReader() as MySqlDataReader)
 					{
 						Assert.True(reader.Read());
@@ -712,7 +715,7 @@ insert into guid_format(c36, c32, b16, tsb16, leb16, t, b) values(
 		[InlineData(MySqlDateTimeKind.Local, DateTimeKind.Utc, false)]
 		public void QueryDateTimeKind(MySqlDateTimeKind kindOption, DateTimeKind kindIn, bool success)
 		{
-			var csb = AppConfig.CreateConnectionStringBuilder();
+			var csb = CreateConnectionStringBuilder();
 			csb.DateTimeKind = kindOption;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -750,6 +753,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 						cmd.ExecuteNonQuery();
 						long lastInsertId = cmd.LastInsertedId;
 						cmd.CommandText = $"select d, dt0, dt1, dt2, dt3, dt4, dt5, dt6 from date_time_kind where rowid = {lastInsertId};";
+						cmd.Prepare();
 						using (var reader = cmd.ExecuteReader())
 						{
 							Assert.True(reader.Read());
@@ -820,8 +824,14 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		[InlineData("LongBlob", 67108864)]
 		public async Task InsertLargeBlobAsync(string column, int size)
 		{
+#if BASELINE
+			// https://bugs.mysql.com/bug.php?id=91754
+			if (!CreateConnectionStringBuilder().IgnorePrepare && size >= 16_777_216)
+				return;
+#endif
+
 			// NOTE: MySQL Server will reset the connection when it receives an oversize packet, so we need to create a test-specific connection here
-			using (var connection = new MySqlConnection(AppConfig.CreateConnectionStringBuilder().ConnectionString))
+			using (var connection = new MySqlConnection(CreateConnectionStringBuilder().ConnectionString))
 			{
 				await connection.OpenAsync();
 
@@ -829,19 +839,19 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 				var isSupported = size < 1048576 || AppConfig.SupportedFeatures.HasFlag(ServerFeatures.LargePackets);
 
 				long lastInsertId;
-				using (var cmd = new MySqlCommand($"insert into datatypes_blobs(`{column}`) values(?)", connection)
-				{
-					Parameters = { new MySqlParameter { Value = data } }
-				})
+				using (var cmd = new MySqlCommand($"insert into datatypes_blob_insert(`{column}`) values(@data)", connection))
 				{
 					try
 					{
+						cmd.Parameters.AddWithValue("@data", data);
+						cmd.Prepare();
 						await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 						lastInsertId = cmd.LastInsertedId;
 						Assert.True(isSupported);
 					}
 					catch (MySqlException ex)
 					{
+						Console.WriteLine(ex.Message);
 						lastInsertId = -1;
 						Assert.False(isSupported);
 						Assert.True(ex.Message.IndexOf("packet") >= 0 || ex.Message.IndexOf("innodb_log_file_size") >= 0);
@@ -850,10 +860,10 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 
 				if (isSupported)
 				{
-					var queryResult = (await connection.QueryAsync<byte[]>($"select `{column}` from datatypes_blobs where rowid = {lastInsertId}").ConfigureAwait(false)).Single();
+					var queryResult = (await connection.QueryAsync<byte[]>($"select `{column}` from datatypes_blob_insert where rowid = {lastInsertId}").ConfigureAwait(false)).Single();
 					TestUtilities.AssertEqual(data, queryResult);
 
-					await connection.ExecuteAsync($"delete from datatypes_blobs where rowid = {lastInsertId}").ConfigureAwait(false);
+					await connection.ExecuteAsync($"delete from datatypes_blob_insert where rowid = {lastInsertId}").ConfigureAwait(false);
 				}
 			}
 		}
@@ -865,8 +875,14 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		[InlineData("LongBlob", 67108864)]
 		public void InsertLargeBlobSync(string column, int size)
 		{
+#if BASELINE
+// https://bugs.mysql.com/bug.php?id=91754
+			if (!CreateConnectionStringBuilder().IgnorePrepare && size >= 16_777_216)
+				return;
+#endif
+
 			// NOTE: MySQL Server will reset the connection when it receives an oversize packet, so we need to create a test-specific connection here
-			using (var connection = new MySqlConnection(AppConfig.CreateConnectionStringBuilder().ConnectionString))
+			using (var connection = new MySqlConnection(CreateConnectionStringBuilder().ConnectionString))
 			{
 				connection.Open();
 
@@ -874,19 +890,19 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 				var isSupported = size < 1048576 || AppConfig.SupportedFeatures.HasFlag(ServerFeatures.LargePackets);
 
 				long lastInsertId;
-				using (var cmd = new MySqlCommand($"insert into datatypes_blobs(`{column}`) values(?)", connection)
-				{
-					Parameters = { new MySqlParameter { Value = data } }
-				})
+				using (var cmd = new MySqlCommand($"insert into datatypes_blob_insert(`{column}`) values(@data)", connection))
 				{
 					try
 					{
+						cmd.Parameters.AddWithValue("@data", data);
+						cmd.Prepare();
 						cmd.ExecuteNonQuery();
 						lastInsertId = cmd.LastInsertedId;
 						Assert.True(isSupported);
 					}
 					catch (MySqlException ex)
 					{
+						Console.WriteLine(ex.Message);
 						lastInsertId = -1;
 						Assert.False(isSupported);
 						Assert.True(ex.Message.IndexOf("packet") >= 0 || ex.Message.IndexOf("innodb_log_file_size") >= 0);
@@ -895,10 +911,10 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 
 				if (isSupported)
 				{
-					var queryResult = connection.Query<byte[]>($"select `{column}` from datatypes_blobs where rowid = {lastInsertId}").Single();
+					var queryResult = connection.Query<byte[]>($"select `{column}` from datatypes_blob_insert where rowid = {lastInsertId}").Single();
 					TestUtilities.AssertEqual(data, queryResult);
 
-					connection.Execute($"delete from datatypes_blobs where rowid = {lastInsertId}");
+					connection.Execute($"delete from datatypes_blob_insert where rowid = {lastInsertId}");
 				}
 			}
 		}
@@ -914,21 +930,24 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		[InlineData(true, "Time", typeof(TimeSpan))]
 		public void AllowZeroDateTime(bool allowZeroDateTime, string columnName, Type expectedType)
 		{
-			var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString);
+			var csb = CreateConnectionStringBuilder();
 			csb.AllowZeroDateTime = allowZeroDateTime;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				connection.Open();
 				using (var cmd = new MySqlCommand($"SELECT `{columnName}` FROM datatypes_times WHERE `{columnName}` IS NOT NULL", connection))
-				using (var reader = cmd.ExecuteReader())
 				{
-					Assert.True(reader.Read());
-					Assert.Equal(expectedType, reader.GetFieldType(0));
-					Assert.IsType(expectedType, reader.GetValue(0));
+					cmd.Prepare();
+					using (var reader = cmd.ExecuteReader())
+					{
+						Assert.True(reader.Read());
+						Assert.Equal(expectedType, reader.GetFieldType(0));
+						Assert.IsType(expectedType, reader.GetValue(0));
 #if !NETCOREAPP1_1_2
-					var dt = reader.GetSchemaTable();
-					Assert.Equal(expectedType, dt.Rows[0]["DataType"]);
+						var dt = reader.GetSchemaTable();
+						Assert.Equal(expectedType, dt.Rows[0]["DataType"]);
 #endif
+					}
 				}
 			}
 		}
@@ -939,15 +958,18 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		[InlineData("Timestamp")]
 		public void GetMySqlDateTime(string columnName)
 		{
-			using (var cmd = new MySqlCommand($"SELECT `{columnName}` FROM datatypes_times WHERE `{columnName}` IS NOT NULL", m_database.Connection))
-			using (var reader = cmd.ExecuteReader())
+			using (var cmd = new MySqlCommand($"SELECT `{columnName}` FROM datatypes_times WHERE `{columnName}` IS NOT NULL", Connection))
 			{
-				while (reader.Read())
+				cmd.Prepare();
+				using (var reader = cmd.ExecuteReader())
 				{
-					var dt = reader.GetDateTime(0);
-					var msdt = reader.GetMySqlDateTime(0);
-					Assert.True(msdt.IsValidDateTime);
-					Assert.Equal(dt, msdt.GetDateTime());
+					while (reader.Read())
+					{
+						var dt = reader.GetDateTime(0);
+						var msdt = reader.GetMySqlDateTime(0);
+						Assert.True(msdt.IsValidDateTime);
+						Assert.Equal(dt, msdt.GetDateTime());
+					}
 				}
 			}
 		}
@@ -1039,7 +1061,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		[InlineData("`decimal-type` decimal(1,1) NOT NULL", "decimal-type", MySqlDbType.NewDecimal, 3, typeof(decimal), "", 1, 1)]
 		public void GetSchemaTableForNewColumn(string createColumn, string column, MySqlDbType mySqlDbType, int columnSize, Type dataType, string flags, int precision, int scale)
 		{
-			m_database.Connection.Execute($@"drop table if exists schema_table;
+			Connection.Execute($@"drop table if exists schema_table;
 create table schema_table({createColumn});");
 
 			DoGetSchemaTable(column, "schema_table", mySqlDbType, columnSize, dataType, flags, precision, scale);
@@ -1055,9 +1077,11 @@ create table schema_table({createColumn});");
 			var isLong = flags.IndexOf('L') != -1;
 			var allowDbNull = flags.IndexOf('N') != -1;
 
-			using (var command = m_database.Connection.CreateCommand())
+			using (var command = Connection.CreateCommand())
 			{
 				command.CommandText = $"select `{column}` from `{table}`;";
+				command.Prepare();
+
 				using (var reader = command.ExecuteReader())
 				{
 					var schemaTable = reader.GetSchemaTable();
@@ -1089,7 +1113,7 @@ create table schema_table({createColumn});");
 						mySqlDbType = MySqlDbType.String;
 #endif
 					Assert.Equal(mySqlDbType, (MySqlDbType) schema["ProviderType"]);
-					Assert.Equal(m_database.Connection.Database, schema["BaseSchemaName"]);
+					Assert.Equal(Connection.Database, schema["BaseSchemaName"]);
 					Assert.Equal(table, schema["BaseTableName"]);
 					Assert.Equal(column, schema["BaseColumnName"]);
 					Assert.False((bool) schema["IsUnique"]);
@@ -1163,9 +1187,10 @@ create table schema_table({createColumn});");
 			var allowDbNull = flags.IndexOf('N') != -1;
 			var realPrecision = precision == -1 ? default(int?) : precision;
 
-			using (var command = m_database.Connection.CreateCommand())
+			using (var command = Connection.CreateCommand())
 			{
 				command.CommandText = $"select `{column}` from `{table}`;";
+				command.Prepare();
 				using (var reader = command.ExecuteReader())
 				{
 					var columns = reader.GetColumnSchema();
@@ -1173,7 +1198,7 @@ create table schema_table({createColumn});");
 					var schema = (MySqlDbColumn) columns[0];
 					Assert.Equal(allowDbNull, schema.AllowDBNull);
 					Assert.Equal(column, schema.BaseColumnName);
-					Assert.Equal(m_database.Connection.Database, schema.BaseSchemaName);
+					Assert.Equal(Connection.Database, schema.BaseSchemaName);
 					Assert.Equal(table, schema.BaseTableName);
 					Assert.Equal(column, schema.ColumnName);
 					Assert.Equal(0, schema.ColumnOrdinal);
@@ -1213,7 +1238,7 @@ create table schema_table({createColumn});");
 		[InlineData(new object[] { new[] { null, "NULL", "BOOLEAN", "ARRAY", "ARRAY", "ARRAY", "INTEGER", "INTEGER", "OBJECT", "OBJECT" } })]
 		public void JsonType(string[] expectedTypes)
 		{
-			var types = m_database.Connection.Query<string>(@"select JSON_TYPE(value) from datatypes_json_core order by rowid;").ToList();
+			var types = Connection.Query<string>(@"select JSON_TYPE(value) from datatypes_json_core order by rowid;").ToList();
 			Assert.Equal(expectedTypes, types);
 		}
 
@@ -1265,10 +1290,11 @@ create table schema_table({createColumn});");
 			MySqlConnection connection = null)
 			where TException : Exception
 		{
-			connection = connection ?? m_database.Connection;
+			connection = connection ?? Connection;
 			using (var cmd = connection.CreateCommand())
 			{
 				cmd.CommandText = $"select {column} from datatypes_{table} order by rowid";
+				cmd.Prepare();
 				using (var reader = cmd.ExecuteReader())
 				{
 					Assert.Equal(dataTypeName, reader.GetDataTypeName(0));
@@ -1330,6 +1356,7 @@ create table schema_table({createColumn});");
 					p.ParameterName = "@value";
 					p.Value = expected.Last();
 					cmd.Parameters.Add(p);
+					cmd.Prepare();
 					var result = cmd.ExecuteScalar();
 					Assert.Equal(Array.IndexOf(expected, p.Value) + 1, result);
 				}
@@ -1391,6 +1418,9 @@ create table schema_table({createColumn});");
 			return output;
 		}
 
-		readonly DataTypesFixture m_database;
+		private MySqlConnection Connection { get; }
+
+		private MySqlConnectionStringBuilder CreateConnectionStringBuilder() => new MySqlConnectionStringBuilder(AppConfig.ConnectionString);
 	}
 }
+
