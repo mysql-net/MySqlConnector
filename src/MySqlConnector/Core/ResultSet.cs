@@ -30,8 +30,6 @@ namespace MySqlConnector.Core
 			RecordsAffected = null;
 			State = ResultSetState.None;
 			m_columnDefinitionPayloadUsedBytes = 0;
-			m_dataLengths = null;
-			m_dataOffsets = null;
 			m_readBuffer.Clear();
 			m_row = null;
 			m_rowBuffered = null;
@@ -106,8 +104,6 @@ namespace MySqlConnector.Core
 
 						ColumnDefinitions = new ColumnDefinitionPayload[columnCount];
 						ColumnTypes = new MySqlDbType[columnCount];
-						m_dataOffsets = new int[columnCount];
-						m_dataLengths = new int[columnCount];
 
 						for (var column = 0; column < ColumnDefinitions.Length; column++)
 						{
@@ -171,7 +167,6 @@ namespace MySqlConnector.Core
 
 		public async Task<bool> ReadAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			m_row?.ClearData();
 			m_row = m_readBuffer.Count > 0
 				? m_readBuffer.Dequeue()
 				: await ScanRowAsync(ioBehavior, m_row, cancellationToken).ConfigureAwait(false);
@@ -187,7 +182,7 @@ namespace MySqlConnector.Core
 
 		public async Task<Row> BufferReadAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			m_rowBuffered?.BufferData();
+			m_rowBuffered = m_rowBuffered?.Clone();
 			// ScanRowAsync sets m_rowBuffered to the next row if there is one
 			if (await ScanRowAsync(ioBehavior, null, cancellationToken).ConfigureAwait(false) == null)
 				return null;
@@ -246,18 +241,9 @@ namespace MySqlConnector.Core
 					}
 				}
 
-				var reader = new ByteArrayReader(payload.ArraySegment);
-				for (var column = 0; column < m_dataOffsets.Length; column++)
-				{
-					var length = reader.ReadLengthEncodedIntegerOrNull();
-					m_dataLengths[column] = length == -1 ? 0 : length;
-					m_dataOffsets[column] = length == -1 ? -1 : reader.Offset + payload.ArraySegment.Offset;
-					reader.Offset += m_dataLengths[column];
-				}
-
 				if (row_ == null)
-					row_ = new Row(this);
-				row_.SetData(m_dataLengths, m_dataOffsets, payload.ArraySegment);
+					row_ = DataReader.ResultSetProtocol == ResultSetProtocol.Binary ? (Row) new BinaryRow(this) : new TextRow(this);
+				row_.SetData(payload.ArraySegment);
 				m_rowBuffered = row_;
 				m_hasRows = true;
 				BufferState = ResultSetState.ReadingRows;
@@ -346,8 +332,6 @@ namespace MySqlConnector.Core
 
 		ResizableArray<byte> m_columnDefinitionPayloads;
 		int m_columnDefinitionPayloadUsedBytes;
-		int[] m_dataLengths;
-		int[] m_dataOffsets;
 		readonly Queue<Row> m_readBuffer = new Queue<Row>();
 		Row m_row;
 		Row m_rowBuffered;

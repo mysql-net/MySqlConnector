@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using MySql.Data.MySqlClient;
 using MySqlConnector.Core;
-using MySqlConnector.Utilities;
 using Xunit;
 
 namespace MySqlConnector.Tests
@@ -116,6 +116,65 @@ namespace MySqlConnector.Tests
 			const string sql = "SELECT @param";
 			var parsedSql = GetParsedSql(sql, parameters, (StatementPreparerOptions) options);
 			Assert.Equal(sql.Replace("@param", replacedValue), parsedSql);
+		}
+
+		[Theory]
+		[InlineData("SELECT 1", new[] { "SELECT 1" }, "")]
+		[InlineData("SELECT 1;", new[] { "SELECT 1" }, "")]
+		[InlineData("\r\n-- leading comment\r\nSELECT 1;\r\n\r\n-- trailing comment", new[] { "SELECT 1" }, "")]
+		[InlineData("SELECT 1; SELECT 2;", new[] { "SELECT 1", "SELECT 2" }, ";")]
+		[InlineData("SELECT ?;", new[] { "SELECT ?" }, "0")]
+		[InlineData("SELECT ?, ?;", new[] { "SELECT ?, ?" }, "0,1")]
+		[InlineData("SELECT ?, ?; SELECT ?, ?;", new[] { "SELECT ?, ?", "SELECT ?, ?" }, "0,1;2,3")]
+		[InlineData("SELECT @one, @two;", new[] { "SELECT ?, ?" }, "@one,@two")]
+		[InlineData("SELECT @one, @two; SELECT @zero, @three", new[] { "SELECT ?, ?", "SELECT ?, ?" }, "@one,@two;@zero,@three")]
+		[InlineData("SELECT ?, ?; SELECT ?, ?", new[] { "SELECT ?, ?", "SELECT ?, ?" }, "0,1;2,3")]
+		[InlineData("SELECT '@one' FROM `@three` WHERE `@zero` = @two;", new[] { "SELECT '@one' FROM `@three` WHERE `@zero` = ?" }, "@two")]
+		public void SplitStatement(string sql, string[] expectedStatements, string expectedStatementParametersString)
+		{
+			// verify InlineData is in the expected format
+			var expectedStatementParameters = expectedStatementParametersString.Split(';');
+			Assert.Equal(expectedStatements.Length, expectedStatementParameters.Length);
+
+			// make some dummy parameters available to the test input
+			var parameters = new MySqlParameterCollection
+			{
+				new MySqlParameter("@zero", 0),
+				new MySqlParameter("@one", 0),
+				new MySqlParameter("@two", 0),
+				new MySqlParameter("@three", 0),
+			};
+
+			var preparer = new StatementPreparer(sql, parameters, StatementPreparerOptions.None);
+			using (var parsedStatements = preparer.SplitStatements())
+			{
+				var splitStatements = parsedStatements.Statements;
+				Assert.Equal(expectedStatements.Length, splitStatements.Count);
+				for (var i = 0; i < splitStatements.Count; i++)
+				{
+					var parsedSql = Encoding.UTF8.GetString(splitStatements[i].StatementBytes.Slice(1));
+					Assert.Equal(expectedStatements[i], parsedSql);
+
+					var expectedParameterNamesOrIndexes = expectedStatementParameters[i].Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+					var expectedParameterIndexes = new int[expectedParameterNamesOrIndexes.Length];
+					var expectedParameterNames = new string[expectedParameterNamesOrIndexes.Length];
+					for (var j = 0; j < expectedParameterNamesOrIndexes.Length; j++)
+					{
+						if (expectedParameterNamesOrIndexes[j][0] == '@')
+						{
+							expectedParameterNames[j] = expectedParameterNamesOrIndexes[j];
+							expectedParameterIndexes[j] = -1;
+						}
+						else
+						{
+							expectedParameterIndexes[j] = int.Parse(expectedParameterNamesOrIndexes[j], CultureInfo.InvariantCulture);
+						}
+					}
+
+					Assert.Equal(expectedParameterIndexes, splitStatements[i].ParameterIndexes);
+					Assert.Equal(expectedParameterNames, splitStatements[i].ParameterNames);
+				}
+			}
 		}
 
 		private static string GetParsedSql(string input, MySqlParameterCollection parameters = null, StatementPreparerOptions options = StatementPreparerOptions.None) =>

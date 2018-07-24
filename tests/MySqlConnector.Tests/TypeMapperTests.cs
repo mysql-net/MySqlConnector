@@ -4,7 +4,7 @@ using System.Linq;
 using MySqlConnector.Core;
 using Xunit;
 
-namespace MySql.Data.Tests
+namespace MySqlConnector.Tests
 {
 	public class TypeMapperTests
 	{
@@ -26,7 +26,7 @@ namespace MySql.Data.Tests
 		[InlineData(typeof(byte[]), DbType.Binary)]
 		[InlineData(typeof(DateTime), DbType.DateTime)]
 		[InlineData(typeof(DateTime), DbType.DateTime2)]
-		[InlineData(typeof(DateTime), DbType.DateTimeOffset)]
+		[InlineData(typeof(DateTimeOffset), DbType.DateTimeOffset)]
 		[InlineData(typeof(TimeSpan), DbType.Time)]
 		[InlineData(typeof(Guid), DbType.Guid)]
 		public void DbTypeMappingTest(Type clrType, DbType dbType)

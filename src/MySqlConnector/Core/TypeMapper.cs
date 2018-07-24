@@ -93,6 +93,7 @@ namespace MySqlConnector.Core
 			// date/time
 			var typeDate = AddDbTypeMapping(new DbTypeMapping(typeof(DateTime), new[] { DbType.Date }));
 			var typeDateTime = AddDbTypeMapping(new DbTypeMapping(typeof(DateTime), new[] { DbType.DateTime, DbType.DateTime2, DbType.DateTimeOffset }));
+			AddDbTypeMapping(new DbTypeMapping(typeof(DateTimeOffset), new[] { DbType.DateTimeOffset }));
 			var typeTime = AddDbTypeMapping(new DbTypeMapping(typeof(TimeSpan), new[] { DbType.Time }));
 			AddColumnTypeMetadata(new ColumnTypeMetadata("DATETIME", typeDateTime, MySqlDbType.DateTime));
 			AddColumnTypeMetadata(new ColumnTypeMetadata("DATE", typeDate, MySqlDbType.Date));
@@ -272,6 +273,157 @@ namespace MySqlConnector.Core
 			default:
 				throw new NotImplementedException("ConvertToMySqlDbType for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));
 			}
+		}
+
+		public static ushort ConvertToColumnTypeAndFlags(MySqlDbType dbType, MySqlGuidFormat guidFormat)
+		{
+			var isUnsigned = false;
+			ColumnType columnType;
+			switch (dbType)
+			{
+			case MySqlDbType.Bool:
+			case MySqlDbType.Byte:
+				columnType = ColumnType.Tiny;
+				break;
+
+			case MySqlDbType.UByte:
+				columnType = ColumnType.Tiny;
+				isUnsigned = true;
+				break;
+
+			case MySqlDbType.Int16:
+				columnType = ColumnType.Short;
+				break;
+
+			case MySqlDbType.UInt16:
+				columnType = ColumnType.Short;
+				isUnsigned = true;
+				break;
+
+			case MySqlDbType.Int24:
+				columnType = ColumnType.Int24;
+				break;
+
+			case MySqlDbType.UInt24:
+				columnType = ColumnType.Int24;
+				isUnsigned = true;
+				break;
+
+			case MySqlDbType.Int32:
+				columnType = ColumnType.Long;
+				break;
+
+			case MySqlDbType.UInt32:
+				columnType = ColumnType.Long;
+				isUnsigned = true;
+				break;
+
+			case MySqlDbType.Int64:
+				columnType = ColumnType.Longlong;
+				break;
+
+			case MySqlDbType.UInt64:
+				columnType = ColumnType.Longlong;
+				isUnsigned = true;
+				break;
+
+			case MySqlDbType.Bit:
+				columnType = ColumnType.Bit;
+				break;
+
+			case MySqlDbType.Guid:
+				if (guidFormat == MySqlGuidFormat.Char36 || guidFormat == MySqlGuidFormat.Char32)
+					columnType = ColumnType.String;
+				else
+					columnType = ColumnType.Blob;
+				break;
+
+			case MySqlDbType.Enum:
+			case MySqlDbType.Set:
+				columnType = ColumnType.String;
+				break;
+
+			case MySqlDbType.Binary:
+			case MySqlDbType.String:
+				columnType = ColumnType.String;
+				break;
+
+			case MySqlDbType.VarBinary:
+			case MySqlDbType.VarChar:
+			case MySqlDbType.VarString:
+				columnType = ColumnType.VarString;
+				break;
+
+			case MySqlDbType.TinyBlob:
+			case MySqlDbType.TinyText:
+				columnType = ColumnType.TinyBlob;
+				break;
+
+			case MySqlDbType.Blob:
+			case MySqlDbType.Text:
+				columnType = ColumnType.Blob;
+				break;
+
+			case MySqlDbType.MediumBlob:
+			case MySqlDbType.MediumText:
+				columnType = ColumnType.MediumBlob;
+				break;
+
+			case MySqlDbType.LongBlob:
+			case MySqlDbType.LongText:
+				columnType = ColumnType.LongBlob;
+				break;
+
+			case MySqlDbType.JSON:
+				columnType = ColumnType.Json; // TODO: test
+				break;
+
+			case MySqlDbType.Date:
+			case MySqlDbType.Newdate:
+				columnType = ColumnType.Date;
+				break;
+
+			case MySqlDbType.DateTime:
+				columnType = ColumnType.DateTime;
+				break;
+
+			case MySqlDbType.Timestamp:
+				columnType = ColumnType.Timestamp;
+				break;
+
+			case MySqlDbType.Time:
+				columnType = ColumnType.Time;
+				break;
+
+			case MySqlDbType.Year:
+				columnType = ColumnType.Year;
+				break;
+
+			case MySqlDbType.Float:
+				columnType = ColumnType.Float;
+				break;
+
+			case MySqlDbType.Double:
+				columnType = ColumnType.Double;
+				break;
+
+			case MySqlDbType.Decimal:
+				columnType = ColumnType.Decimal;
+				break;
+
+			case MySqlDbType.NewDecimal:
+				columnType = ColumnType.NewDecimal;
+				break;
+
+			case MySqlDbType.Geometry:
+				columnType = ColumnType.Geometry;
+				break;
+
+			default:
+				throw new NotImplementedException("ConvertToColumnTypeAndFlags for {0} is not implemented".FormatInvariant(dbType));
+			}
+
+			return (ushort) ((byte) columnType | (isUnsigned ? 0x8000 : 0));
 		}
 
 		internal IEnumerable<ColumnTypeMetadata> GetColumnMappings()
