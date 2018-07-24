@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dapper;
 using MySql.Data.MySqlClient;
 using Xunit;
 
@@ -9,6 +10,79 @@ namespace SideBySide
 	{
 		public PreparedCommandTests(DatabaseFixture database)
 		{
+		}
+
+		[SkippableFact(Baseline = "Parameter '@data' was not found during prepare.")]
+		public void PrepareBeforeBindingParameters()
+		{
+			using (var connection = CreatePrepareConnection())
+			{
+				connection.Execute($@"DROP TABLE IF EXISTS bind_parameters_test;
+CREATE TABLE bind_parameters_test(data TEXT NOT NULL);");
+
+				using (var command = new MySqlCommand(@"INSERT INTO bind_parameters_test(data) VALUES(@data);", connection))
+				{
+					command.Prepare();
+					command.Parameters.AddWithValue("@data", "test");
+					command.ExecuteNonQuery();
+				}
+
+				Assert.Equal(new[] { "test" }, connection.Query<string>("SELECT data FROM bind_parameters_test;"));
+			}
+		}
+
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=91753")]
+		public void UnnamedParameters()
+		{
+			using (var connection = CreatePrepareConnection())
+			{
+				connection.Execute($@"DROP TABLE IF EXISTS bind_parameters_test;
+CREATE TABLE bind_parameters_test(data1 TEXT NOT NULL, data2 INTEGER);");
+
+				using (var command = new MySqlCommand(@"INSERT INTO bind_parameters_test(data1, data2) VALUES(?, ?);", connection))
+				{
+					command.Parameters.Add(new MySqlParameter { Value = "test" });
+					command.Parameters.Add(new MySqlParameter { Value = 1234 });
+					command.Prepare();
+					command.ExecuteNonQuery();
+				}
+
+				using (var command = new MySqlCommand(@"SELECT data1, data2 FROM bind_parameters_test;", connection))
+				{
+					command.Prepare();
+					using (var reader = command.ExecuteReader())
+					{
+						Assert.True(reader.Read());
+						Assert.Equal("test", reader.GetValue(0));
+						Assert.Equal(1234, reader.GetValue(1));
+					}
+				}
+			}
+		}
+
+		[Fact]
+		public void ReuseCommand()
+		{
+			using (var connection = CreatePrepareConnection())
+			{
+				connection.Execute($@"DROP TABLE IF EXISTS reuse_command_test;
+CREATE TABLE reuse_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT, data TEXT NOT NULL);");
+
+				using (var command = new MySqlCommand(@"INSERT INTO reuse_command_test(data) VALUES(@data);", connection))
+				{
+					// work around Connector/NET failure; see PrepareBeforeBindingParameters
+					var parameter = command.Parameters.AddWithValue("@data", "");
+					command.Prepare();
+
+					foreach (var value in new[] { "one", "two", "three" })
+					{
+						parameter.Value = value;
+						command.ExecuteNonQuery();
+					}
+				}
+
+				Assert.Equal(new[] { "one", "two", "three" }, connection.Query<string>("SELECT data FROM reuse_command_test ORDER BY rowid;"));
+			}
 		}
 
 		[Theory]
@@ -22,11 +96,8 @@ namespace SideBySide
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				connection.Open();
-				using (var command = new MySqlCommand($@"DROP TABLE IF EXISTS prepared_command_test;
-CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT, data {dataType});", connection))
-				{
-					command.ExecuteNonQuery();
-				}
+				connection.Execute($@"DROP TABLE IF EXISTS prepared_command_test;
+CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT, data {dataType});");
 
 				using (var command = new MySqlCommand("INSERT INTO prepared_command_test(data) VALUES(@null), (@data);", connection))
 				{
@@ -103,6 +174,14 @@ CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCRE
 				if (AppConfig.SupportsJson)
 					yield return new object[] { isPrepared, "JSON", "{\"test\": true}" };
 			}
+		}
+
+		private static MySqlConnection CreatePrepareConnection()
+		{
+			var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString) { IgnorePrepare = false };
+			var connection = new MySqlConnection(csb.ConnectionString);
+			connection.Open();
+			return connection;
 		}
 	}
 }
