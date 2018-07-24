@@ -125,10 +125,10 @@ namespace MySqlConnector.Core
 			case ColumnType.Date:
 			case ColumnType.DateTime:
 			case ColumnType.Timestamp:
-				return ParseDateTime(data);
+				return ReadDateTime(data);
 
 			case ColumnType.Time:
-				return ParseTime(data);
+				return ReadTimeSpan(data);
 
 			case ColumnType.Year:
 				return (int) MemoryMarshal.Read<short>(data);
@@ -151,7 +151,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private object ParseDateTime(ReadOnlySpan<byte> value)
+		private object ReadDateTime(ReadOnlySpan<byte> value)
 		{
 			if (value.Length == 0)
 			{
@@ -193,7 +193,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private object ParseTime(ReadOnlySpan<byte> value)
+		private static TimeSpan ReadTimeSpan(ReadOnlySpan<byte> value)
 		{
 			if (value.Length == 0)
 				return TimeSpan.Zero;
