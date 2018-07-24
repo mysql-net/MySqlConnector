@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlConnector.Core;
+using MySqlConnector.Protocol;
+using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
@@ -62,7 +65,11 @@ namespace MySql.Data.MySqlClient
 
 		public new MySqlDataReader ExecuteReader(CommandBehavior commandBehavior) => (MySqlDataReader) base.ExecuteReader(commandBehavior);
 
-		public override void Prepare()
+		public override void Prepare() => PrepareAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+		public Task PrepareAsync() => PrepareAsync(AsyncIOBehavior, default);
+		public Task PrepareAsync(CancellationToken cancellationToken) => PrepareAsync(AsyncIOBehavior, cancellationToken);
+		
+		private async Task PrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (Connection == null)
 				throw new InvalidOperationException("Connection property must be non-null.");
@@ -70,6 +77,73 @@ namespace MySql.Data.MySqlClient
 				throw new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
 			if (string.IsNullOrWhiteSpace(CommandText))
 				throw new InvalidOperationException("CommandText must be specified");
+			if (m_connection?.HasActiveReader ?? false)
+				throw new InvalidOperationException("Cannot call Prepare when there is an open DataReader for this command; it must be closed first.");
+			if (Connection.IgnorePrepare)
+				return;
+
+			if (CommandType != CommandType.Text)
+				throw new NotSupportedException("Only CommandType.Text is currently supported by MySqlCommand.Prepare");
+
+			var statementPreparer = new StatementPreparer(CommandText, Parameters, CreateStatementPreparerOptions());
+			var parsedStatements = statementPreparer.SplitStatements();
+
+			if (parsedStatements.Statements.Count > 1)
+				throw new NotSupportedException("Multiple semicolon-delimited SQL statements are not supported by MySqlCommand.Prepare");
+
+			var columnsAndParameters = new ResizableArray<byte>();
+			var columnsAndParametersSize = 0;
+
+			var preparedStatements = new List<PreparedStatement>(parsedStatements.Statements.Count);
+			foreach (var statement in parsedStatements.Statements)
+			{
+				await Connection.Session.SendAsync(new PayloadData(statement.StatementBytes), ioBehavior, cancellationToken).ConfigureAwait(false);
+				var payload = await Connection.Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				var response = StatementPrepareResponsePayload.Create(payload);
+
+				ColumnDefinitionPayload[] parameters = null;
+				if (response.ParameterCount > 0)
+				{
+					parameters = new ColumnDefinitionPayload[response.ParameterCount];
+					for (var i = 0; i < response.ParameterCount; i++)
+					{
+						payload = await Connection.Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payload.ArraySegment.Count);
+						Buffer.BlockCopy(payload.ArraySegment.Array, payload.ArraySegment.Offset, columnsAndParameters.Array, columnsAndParametersSize, payload.ArraySegment.Count);
+						parameters[i] = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(columnsAndParameters, columnsAndParametersSize, payload.ArraySegment.Count));
+						columnsAndParametersSize += payload.ArraySegment.Count;
+					}
+					if (!Connection.Session.SupportsDeprecateEof)
+					{
+						payload = await Connection.Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						EofPayload.Create(payload);
+					}
+				}
+
+				ColumnDefinitionPayload[] columns = null;
+				if (response.ColumnCount > 0)
+				{
+					columns = new ColumnDefinitionPayload[response.ColumnCount];
+					for (var i = 0; i < response.ColumnCount; i++)
+					{
+						payload = await Connection.Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payload.ArraySegment.Count);
+						Buffer.BlockCopy(payload.ArraySegment.Array, payload.ArraySegment.Offset, columnsAndParameters.Array, columnsAndParametersSize, payload.ArraySegment.Count);
+						columns[i] = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(columnsAndParameters, columnsAndParametersSize, payload.ArraySegment.Count));
+						columnsAndParametersSize += payload.ArraySegment.Count;
+					}
+					if (!Connection.Session.SupportsDeprecateEof)
+					{
+						payload = await Connection.Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						EofPayload.Create(payload);
+					}
+				}
+
+				preparedStatements.Add(new PreparedStatement(response.StatementId, statement, columns, parameters));
+			}
+
+			m_parsedStatements = parsedStatements;
+			m_statements = preparedStatements;
 		}
 
 		public override string CommandText
@@ -80,6 +154,7 @@ namespace MySql.Data.MySqlClient
 				if (m_connection?.HasActiveReader ?? false)
 					throw new InvalidOperationException("Cannot set MySqlCommand.CommandText when there is an open DataReader for this command; it must be closed first.");
 				m_commandText = value;
+				m_statements = null;
 			}
 		}
 
@@ -104,22 +179,12 @@ namespace MySql.Data.MySqlClient
 
 		public override CommandType CommandType
 		{
-			get
-			{
-				return m_commandType;
-			}
+			get => m_commandType;
 			set
 			{
 				if (value != CommandType.Text && value != CommandType.StoredProcedure)
 					throw new ArgumentException("CommandType must be Text or StoredProcedure.", nameof(value));
-				if (value == m_commandType)
-					return;
-
 				m_commandType = value;
-				if (value == CommandType.Text)
-					m_commandExecutor = new TextCommandExecutor(this);
-				else if (value == CommandType.StoredProcedure)
-					m_commandExecutor = new StoredProcedureCommandExecutor(this);
 			}
 		}
 
@@ -203,9 +268,20 @@ namespace MySql.Data.MySqlClient
 			return ExecuteReaderAsync(behavior, AsyncIOBehavior, cancellationToken);
 		}
 
-		internal Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken) =>
-			!IsValid(out var exception) ? Utility.TaskFromException<DbDataReader>(exception) :
-				m_commandExecutor.ExecuteReaderAsync(CommandText, m_parameterCollection, behavior, ioBehavior, cancellationToken);
+		internal Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			if (!IsValid(out var exception))
+				return Utility.TaskFromException<DbDataReader>(exception);
+
+			if (m_statements != null)
+				m_commandExecutor = new PreparedStatementCommandExecutor(this);
+			else if (m_commandType == CommandType.Text)
+				m_commandExecutor = new TextCommandExecutor(this);
+			else if (m_commandType == CommandType.StoredProcedure)
+				m_commandExecutor = new StoredProcedureCommandExecutor(this);
+
+			return m_commandExecutor.ExecuteReaderAsync(CommandText, m_parameterCollection, behavior, ioBehavior, cancellationToken);
+		}
 
 		protected override void Dispose(bool disposing)
 		{
@@ -214,6 +290,8 @@ namespace MySql.Data.MySqlClient
 				if (disposing)
 				{
 					m_parameterCollection = null;
+					m_parsedStatements?.Dispose();
+					m_parsedStatements = null;
 				}
 			}
 			finally
@@ -242,6 +320,8 @@ namespace MySql.Data.MySqlClient
 		internal int CommandId { get; }
 
 		internal int CancelAttemptCount { get; set; }
+
+		internal IReadOnlyList<PreparedStatement> PreparedStatements => m_statements;
 
 		/// <summary>
 		/// Causes the effective command timeout to be reset back to the value specified by <see cref="CommandTimeout"/>.
@@ -324,6 +404,8 @@ namespace MySql.Data.MySqlClient
 		MySqlConnection m_connection;
 		string m_commandText;
 		MySqlParameterCollection m_parameterCollection;
+		ParsedStatements m_parsedStatements;
+		IReadOnlyList<PreparedStatement> m_statements;
 		int? m_commandTimeout;
 		CommandType m_commandType;
 		ICommandExecutor m_commandExecutor;

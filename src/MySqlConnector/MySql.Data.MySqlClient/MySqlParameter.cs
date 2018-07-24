@@ -381,6 +381,174 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+		internal void AppendBinary(ByteBufferWriter writer, StatementPreparerOptions options)
+		{
+			if (Value == null || Value == DBNull.Value)
+			{
+				// stored in "null bitmap" only
+			}
+			else if (Value is string stringValue)
+			{
+				writer.WriteLengthEncodedString(stringValue);
+			}
+			else if (Value is char charValue)
+			{
+				writer.WriteLengthEncodedString(charValue.ToString());
+			}
+			else if (Value is sbyte sbyteValue)
+			{
+				writer.Write(unchecked((byte) sbyteValue));
+			}
+			else if (Value is byte byteValue)
+			{
+				writer.Write(byteValue);
+			}
+			else if (Value is bool boolValue)
+			{
+				writer.Write((byte) (boolValue ? 1 : 0));
+			}
+			else if (Value is short shortValue)
+			{
+				writer.Write(unchecked((ushort) shortValue));
+			}
+			else if (Value is ushort ushortValue)
+			{
+				writer.Write(ushortValue);
+			}
+			else if (Value is int intValue)
+			{
+				writer.Write(intValue);
+			}
+			else if (Value is uint uintValue)
+			{
+				writer.Write(uintValue);
+			}
+			else if (Value is long longValue)
+			{
+				writer.Write(unchecked((ulong) longValue));
+			}
+			else if (Value is ulong ulongValue)
+			{
+				writer.Write(ulongValue);
+			}
+			else if (Value is byte[] byteArrayValue)
+			{
+				writer.WriteLengthEncodedInteger(unchecked((ulong) byteArrayValue.Length));
+				writer.Write(byteArrayValue);
+			}
+			else if (Value is float floatValue)
+			{
+				writer.Write(BitConverter.GetBytes(floatValue));
+			}
+			else if (Value is double doubleValue)
+			{
+				writer.Write(unchecked((ulong) BitConverter.DoubleToInt64Bits(doubleValue)));
+			}
+			else if (Value is decimal)
+			{
+				writer.WriteLengthEncodedString("{0}".FormatInvariant(Value));
+			}
+			else if (Value is MySqlDateTime mySqlDateTimeValue)
+			{
+				if (mySqlDateTimeValue.IsValidDateTime)
+					WriteDateTime(writer, mySqlDateTimeValue.GetDateTime());
+				else
+					writer.Write((byte) 0);
+			}
+			else if (Value is DateTime dateTimeValue)
+			{
+				if ((options & StatementPreparerOptions.DateTimeUtc) != 0 && dateTimeValue.Kind == DateTimeKind.Local)
+					throw new MySqlException("DateTime.Kind must not be Local when DateTimeKind setting is Utc (parameter name: {0})".FormatInvariant(ParameterName));
+				else if ((options & StatementPreparerOptions.DateTimeLocal) != 0 && dateTimeValue.Kind == DateTimeKind.Utc)
+					throw new MySqlException("DateTime.Kind must not be Utc when DateTimeKind setting is Local (parameter name: {0})".FormatInvariant(ParameterName));
+
+				WriteDateTime(writer, dateTimeValue);
+			}
+			else if (Value is DateTimeOffset dateTimeOffsetValue)
+			{
+				// store as UTC as it will be read as such when deserialized from a timespan column
+				WriteDateTime(writer, dateTimeOffsetValue.UtcDateTime);
+			}
+			else if (Value is TimeSpan ts)
+			{
+				WriteTime(writer, ts);
+			}
+			else if (Value is Guid guidValue)
+			{
+				StatementPreparerOptions guidOptions = options & StatementPreparerOptions.GuidFormatMask;
+				if (guidOptions == StatementPreparerOptions.GuidFormatBinary16 ||
+					guidOptions == StatementPreparerOptions.GuidFormatTimeSwapBinary16 ||
+					guidOptions == StatementPreparerOptions.GuidFormatLittleEndianBinary16)
+				{
+					var bytes = guidValue.ToByteArray();
+					if (guidOptions != StatementPreparerOptions.GuidFormatLittleEndianBinary16)
+					{
+						Utility.SwapBytes(bytes, 0, 3);
+						Utility.SwapBytes(bytes, 1, 2);
+						Utility.SwapBytes(bytes, 4, 5);
+						Utility.SwapBytes(bytes, 6, 7);
+
+						if (guidOptions == StatementPreparerOptions.GuidFormatTimeSwapBinary16)
+						{
+							Utility.SwapBytes(bytes, 0, 4);
+							Utility.SwapBytes(bytes, 1, 5);
+							Utility.SwapBytes(bytes, 2, 6);
+							Utility.SwapBytes(bytes, 3, 7);
+							Utility.SwapBytes(bytes, 0, 2);
+							Utility.SwapBytes(bytes, 1, 3);
+						}
+					}
+					writer.Write((byte) 16);
+					writer.Write(bytes);
+				}
+				else
+				{
+					var is32Characters = guidOptions == StatementPreparerOptions.GuidFormatChar32;
+					var guidLength = is32Characters ? 32 : 36;
+					writer.Write((byte) guidLength);
+					var span = writer.GetSpan(guidLength);
+					Utf8Formatter.TryFormat(guidValue, span, out _, is32Characters ? 'N' : 'D');
+					writer.Advance(guidLength);
+				}
+			}
+			else if (MySqlDbType == MySqlDbType.Int16)
+			{
+				writer.Write((ushort) (short) Value);
+			}
+			else if (MySqlDbType == MySqlDbType.UInt16)
+			{
+				writer.Write((ushort) Value);
+			}
+			else if (MySqlDbType == MySqlDbType.Int32)
+			{
+				writer.Write((int) Value);
+			}
+			else if (MySqlDbType == MySqlDbType.UInt32)
+			{
+				writer.Write((uint) Value);
+			}
+			else if (MySqlDbType == MySqlDbType.Int64)
+			{
+				writer.Write((ulong) (long) Value);
+			}
+			else if (MySqlDbType == MySqlDbType.UInt64)
+			{
+				writer.Write((ulong) Value);
+			}
+			else if ((MySqlDbType == MySqlDbType.String || MySqlDbType == MySqlDbType.VarChar) && HasSetDbType && Value is Enum)
+			{
+				writer.WriteLengthEncodedString("{0:G}".FormatInvariant(Value));
+			}
+			else if (Value is Enum)
+			{
+				writer.Write(Convert.ToInt32(Value));
+			}
+			else
+			{
+				throw new NotSupportedException("Parameter type {0} (DbType: {1}) not currently supported. Value: {2}".FormatInvariant(Value.GetType().Name, DbType, Value));
+			}
+		}
+
 		internal static string NormalizeParameterName(string name)
 		{
 			name = name.Trim();
@@ -393,6 +561,55 @@ namespace MySql.Data.MySqlClient
 				return name.Substring(2, name.Length - 3).Replace("\"\"", "\"");
 
 			return name.StartsWith("@", StringComparison.Ordinal) || name.StartsWith("?", StringComparison.Ordinal) ? name.Substring(1) : name;
+		}
+
+		private static void WriteDateTime(ByteBufferWriter writer, DateTime dateTime)
+		{
+			byte length;
+			var microseconds = (int) (dateTime.Ticks % 10_000_000) / 10;
+			if (microseconds != 0)
+				length = 11;
+			else if (dateTime.Hour != 0 || dateTime.Minute != 0 || dateTime.Second != 0)
+				length = 7;
+			else
+				length = 4;
+			writer.Write(length);
+			writer.Write((ushort) dateTime.Year);
+			writer.Write((byte) dateTime.Month);
+			writer.Write((byte) dateTime.Day);
+			if (length > 4)
+			{
+				writer.Write((byte) dateTime.Hour);
+				writer.Write((byte) dateTime.Minute);
+				writer.Write((byte) dateTime.Second);
+				if (length > 7)
+				{
+					writer.Write(microseconds);
+				}
+			}
+		}
+
+		private static void WriteTime(ByteBufferWriter writer, TimeSpan timeSpan)
+		{
+			var ticks = timeSpan.Ticks;
+			if (ticks == 0)
+			{
+				writer.Write((byte) 0);
+			}
+			else
+			{
+				if (ticks < 0)
+					timeSpan = TimeSpan.FromTicks(-ticks);
+				var microseconds = (int) (timeSpan.Ticks % 10_000_000) / 10;
+				writer.Write((byte) (microseconds == 0 ? 8 : 12));
+				writer.Write((byte) (ticks < 0 ? 1 : 0));
+				writer.Write(timeSpan.Days);
+				writer.Write((byte) timeSpan.Hours);
+				writer.Write((byte) timeSpan.Minutes);
+				writer.Write((byte) timeSpan.Seconds);
+				if (microseconds != 0)
+					writer.Write(microseconds);
+			}
 		}
 
 		static readonly byte[] s_nullBytes = { 0x4E, 0x55, 0x4C, 0x4C }; // NULL
