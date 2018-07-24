@@ -154,9 +154,11 @@ namespace MySql.Data.MySqlClient
 				if (m_connection?.HasActiveReader ?? false)
 					throw new InvalidOperationException("Cannot set MySqlCommand.CommandText when there is an open DataReader for this command; it must be closed first.");
 				m_commandText = value;
-				m_statements = null;
+				ClearPreparedStatements();
 			}
 		}
+
+		public bool IsPrepared => m_statements != null;
 
 		public new MySqlTransaction Transaction { get; set; }
 
@@ -168,6 +170,7 @@ namespace MySql.Data.MySqlClient
 				if (m_connection?.HasActiveReader ?? false)
 					throw new InvalidOperationException("Cannot set MySqlCommand.Connection when there is an open DataReader for this command; it must be closed first.");
 				m_connection = value;
+				ClearPreparedStatements();
 			}
 		}
 
@@ -185,6 +188,7 @@ namespace MySql.Data.MySqlClient
 				if (value != CommandType.Text && value != CommandType.StoredProcedure)
 					throw new ArgumentException("CommandType must be Text or StoredProcedure.", nameof(value));
 				m_commandType = value;
+				ClearPreparedStatements();
 			}
 		}
 
@@ -290,8 +294,7 @@ namespace MySql.Data.MySqlClient
 				if (disposing)
 				{
 					m_parameterCollection = null;
-					m_parsedStatements?.Dispose();
-					m_parsedStatements = null;
+					ClearPreparedStatements();
 				}
 			}
 			finally
@@ -395,6 +398,13 @@ namespace MySql.Data.MySqlClient
 			else if (string.IsNullOrWhiteSpace(CommandText))
 				exception = new InvalidOperationException("CommandText must be specified");
 			return exception == null;
+		}
+
+		private void ClearPreparedStatements()
+		{
+			m_parsedStatements?.Dispose();
+			m_parsedStatements = null;
+			m_statements = null;
 		}
 
 		internal void ReaderClosed() => (m_commandExecutor as StoredProcedureCommandExecutor)?.SetParams();

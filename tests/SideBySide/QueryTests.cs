@@ -1012,6 +1012,7 @@ CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCRE
 					command.Parameters.AddWithValue("@data", dataValue);
 					if (isPrepared)
 						command.Prepare();
+					Assert.Equal(isPrepared, command.IsPrepared);
 					command.ExecuteNonQuery();
 				}
 
@@ -1019,6 +1020,7 @@ CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCRE
 				{
 					if (isPrepared)
 						command.Prepare();
+					Assert.Equal(isPrepared, command.IsPrepared);
 
 					using (var reader = command.ExecuteReader())
 					{
