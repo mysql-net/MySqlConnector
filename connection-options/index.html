@@ -149,6 +149,16 @@
     <td></td>
     <td>This option specifies the path to a CA certificate file in a PEM Encoded (.pem) format. This should be used in with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the Operating System's certificate store.</td>
   </tr>
+  <tr>
+    <td>Certificate Store Location, CertificateStoreLocation</td>
+    <td>None</td>
+    <td>Specifies whether the connection should be encrypted with a certificate from the Certificate Store on the machine, you can specify either <code>CurrentUser</code> or <code>LocalMachine</code> as valid locations, defaults to None which results in the certificate store not being used.</td>
+  </tr>
+  <tr>
+    <td>Certificate Thumbprint, CertificateThumbprint</td>
+    <td></td>
+    <td>Specifies which specific certificate should be used from the Certificate Store specified in the setting above. If none is specified and Certificate Store is chosen, all certificates from the store will be used to attempt to make the connection.</td>
+  </tr>
 </table>
 
 <h2 id="connection-pooling-options">Connection Pooling Options</h2>
