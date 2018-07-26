@@ -364,7 +364,7 @@ namespace MySqlConnector.Core
 
 			try
 			{
-				if (ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
+				if (DatabaseOverride == null && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
 				{
 					m_logArguments[1] = ServerVersion.OriginalString;
 					Log.Debug("Session{0} ServerVersion={1} supports reset connection; sending reset connection request", m_logArguments);
@@ -380,8 +380,17 @@ namespace MySqlConnector.Core
 				else
 				{
 					// optimistically hash the password with the challenge from the initial handshake (supported by MariaDB; doesn't appear to be supported by MySQL)
-					m_logArguments[1] = ServerVersion.OriginalString;
-					Log.Debug("Session{0} ServerVersion={1} doesn't support reset connection; sending change user request", m_logArguments);
+					if (DatabaseOverride == null)
+					{
+						m_logArguments[1] = ServerVersion.OriginalString;
+						Log.Debug("Session{0} ServerVersion={1} doesn't support reset connection; sending change user request", m_logArguments);
+					}
+					else
+					{
+						m_logArguments[1] = DatabaseOverride;
+						Log.Debug("Session{0} sending change user request due to changed Database={1}", m_logArguments);
+						DatabaseOverride = null;
+					}
 					var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
 					using (var changeUserPayload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database, m_supportsConnectionAttributes ? s_connectionAttributes : null))
 						await SendAsync(changeUserPayload, ioBehavior, cancellationToken).ConfigureAwait(false);

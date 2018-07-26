@@ -67,7 +67,7 @@ namespace MySqlConnector.Core
 					}
 					else
 					{
-						if (ConnectionSettings.ConnectionReset)
+						if (ConnectionSettings.ConnectionReset || session.DatabaseOverride != null)
 						{
 							reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
 						}
@@ -148,10 +148,8 @@ namespace MySqlConnector.Core
 				return false;
 			if (session.PoolGeneration != m_generation)
 				return false;
-			if (session.DatabaseOverride != null)
-				return false;
 			if (ConnectionSettings.ConnectionLifeTime > 0
-			    && unchecked((uint) Environment.TickCount) - session.CreatedTicks >= ConnectionSettings.ConnectionLifeTime)
+				&& unchecked((uint) Environment.TickCount) - session.CreatedTicks >= ConnectionSettings.ConnectionLifeTime)
 				return false;
 
 			return true;
