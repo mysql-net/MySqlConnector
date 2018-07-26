@@ -887,6 +887,12 @@ namespace MySqlConnector.Core
 
 					if (cs.CertificateThumbprint == null)
 					{
+						if (clientCertificates.Count == 0)
+						{
+							Log.Error("Session{0} no certificates were found in the certificate store", m_logArguments);
+							throw new MySqlException("No certificates were found in the certifcate store");
+						}
+
 						clientCertificates.AddRange(store.Certificates);
 					}
 					else
