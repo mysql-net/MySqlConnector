@@ -449,7 +449,7 @@ namespace MySql.Data.MySqlClient
 				defaultValue: MySqlCertificateStoreLocation.None));
 
 			AddOption(CertificateThumbprint = new MySqlConnectionStringOption<string>(
-				keys: new[] { "CertificateThumbprint", "Certificate Thumbprint" },
+				keys: new[] { "CertificateThumbprint", "Certificate Thumbprint", "Certificate Thumb Print" },
 				defaultValue: null));
 
 			// Connection Pooling Options

@@ -88,7 +88,7 @@ namespace MySqlConnector.Tests
 					"certificate file=file.pfx;" +
 					"certificate password=Pass1234;" +
 					"certificate store location=CurrentUser;" +
-					"certificate thumbprint=thumbprint123;" +
+					"certificate thumb print=thumbprint123;" +
 					"Character Set=latin1;" +
 					"Compress=true;" +
 					"connect timeout=30;" +
