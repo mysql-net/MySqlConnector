@@ -16,6 +16,8 @@ namespace MySqlConnector.Tests
 			Assert.True(csb.AutoEnlist);
 			Assert.Null(csb.CertificateFile);
 			Assert.Null(csb.CertificatePassword);
+			Assert.Equal(MySqlCertificateStoreLocation.None, csb.CertificateStoreLocation);
+			Assert.Null(csb.CertificateThumbprint);
 			Assert.Equal("", csb.CharacterSet);
 			Assert.Equal(0u, csb.ConnectionLifeTime);
 			Assert.Equal(MySqlConnectionProtocol.Sockets, csb.ConnectionProtocol);
@@ -85,6 +87,8 @@ namespace MySqlConnector.Tests
 					"auto enlist=False;" +
 					"certificate file=file.pfx;" +
 					"certificate password=Pass1234;" +
+					"certificate store location=CurrentUser;" +
+					"certificate thumb print=thumbprint123;" +
 					"Character Set=latin1;" +
 					"Compress=true;" +
 					"connect timeout=30;" +
@@ -128,6 +132,8 @@ namespace MySqlConnector.Tests
 			Assert.False(csb.AutoEnlist);
 			Assert.Equal("file.pfx", csb.CertificateFile);
 			Assert.Equal("Pass1234", csb.CertificatePassword);
+			Assert.Equal(MySqlCertificateStoreLocation.CurrentUser, csb.CertificateStoreLocation);
+			Assert.Equal("thumbprint123", csb.CertificateThumbprint);
 			Assert.Equal("latin1", csb.CharacterSet);
 			Assert.Equal(15u, csb.ConnectionLifeTime);
 			Assert.Equal(MySqlConnectionProtocol.NamedPipe, csb.ConnectionProtocol);

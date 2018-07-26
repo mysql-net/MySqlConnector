@@ -876,6 +876,47 @@ namespace MySqlConnector.Core
 		{
 			Log.Info("Session{0} initializing TLS connection", m_logArguments);
 			X509CertificateCollection clientCertificates = null;
+
+			if (cs.CertificateStoreLocation != MySqlCertificateStoreLocation.None)
+			{
+				try
+				{
+					var storeLocation = (cs.CertificateStoreLocation == MySqlCertificateStoreLocation.CurrentUser) ? StoreLocation.CurrentUser : StoreLocation.LocalMachine;
+					var store = new X509Store(StoreName.My, storeLocation);
+					store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
+
+					if (cs.CertificateThumbprint == null)
+					{
+						if (store.Certificates.Count == 0)
+						{
+							Log.Error("Session{0} no certificates were found in the certificate store", m_logArguments);
+							throw new MySqlException("No certificates were found in the certifcate store");
+						}
+
+						clientCertificates = new X509CertificateCollection(store.Certificates);
+					}
+					else
+					{
+						var requireValid = (cs.SslMode == MySqlSslMode.VerifyCA || cs.SslMode == MySqlSslMode.VerifyFull) ? true : false;
+						var foundCertificates = store.Certificates.Find(X509FindType.FindByThumbprint, cs.CertificateThumbprint, requireValid);
+						if (foundCertificates.Count == 0)
+						{
+							m_logArguments[1] = cs.CertificateThumbprint;
+							Log.Error("Session{0} certificate with specified thumbprint not found in store '{1}'", m_logArguments);
+							throw new MySqlException("Certificate with Thumbprint " + cs.CertificateThumbprint + " not found");
+						}
+
+						clientCertificates = new X509CertificateCollection(foundCertificates);
+					}
+				}
+				catch (CryptographicException ex)
+				{
+					m_logArguments[1] = cs.CertificateStoreLocation;
+					Log.Error(ex, "Session{0} couldn't load certificate from CertificateStoreLocation '{1}'", m_logArguments);
+					throw new MySqlException("Certificate couldn't be loaded from the CertificateStoreLocation", ex);
+				}
+			}
+
 			if (cs.CertificateFile != null)
 			{
 				try
