@@ -47,6 +47,8 @@ namespace MySqlConnector.Core
 			CertificateFile = csb.CertificateFile;
 			CertificatePassword = csb.CertificatePassword;
 			CACertificateFile = csb.CACertificateFile;
+			CertificateStoreLocation = csb.CertificateStoreLocation;
+			CertificateThumbprint = csb.CertificateThumbprint;
 
 			// Connection Pooling Options
 			Pooling = csb.Pooling;
@@ -124,6 +126,8 @@ namespace MySqlConnector.Core
 		public string CertificateFile { get; }
 		public string CertificatePassword { get; }
 		public string CACertificateFile { get; }
+		public MySqlCertificateStoreLocation CertificateStoreLocation { get; }
+		public string CertificateThumbprint { get; }
 
 		// Connection Pooling Options
 		public bool Pooling { get; }

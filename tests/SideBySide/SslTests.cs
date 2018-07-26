@@ -1,5 +1,6 @@
 using System.IO;
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -73,6 +74,42 @@ namespace SideBySide
 					Assert.False(string.IsNullOrWhiteSpace(sslVersion));
 				}
 			}
+		}
+
+		[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
+		[InlineData("ssl-client.pfx", MySqlCertificateStoreLocation.CurrentUser, null)]
+		public async Task ConnectSslClientCertificateFromCertificateStore(string certFile, MySqlCertificateStoreLocation storeLocation, string thumbprint)
+		{
+			// Create a mock of certificate store
+			X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+			store.Open(OpenFlags.ReadWrite);
+			var certificate = new X509Certificate2(Path.Combine(AppConfig.CertsPath, certFile));
+			store.Add(certificate);
+
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			
+			csb.CertificateStoreLocation = storeLocation;
+			csb.CertificateThumbprint = thumbprint;
+
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				using (var cmd = connection.CreateCommand())
+				{
+					await connection.OpenAsync();
+#if !BASELINE
+					Assert.True(connection.SslIsEncrypted);
+					Assert.True(connection.SslIsSigned);
+					Assert.True(connection.SslIsAuthenticated);
+					Assert.True(connection.SslIsMutuallyAuthenticated);
+#endif
+					cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
+					var sslVersion = (string) await cmd.ExecuteScalarAsync();
+					Assert.False(string.IsNullOrWhiteSpace(sslVersion));
+				}
+			}
+
+			// Remove the certificate from store
+			store.Remove(certificate);
 		}
 
 		[SkippableFact(ConfigSettings.RequiresSsl, Baseline = "MySql.Data does not check for a private key")]

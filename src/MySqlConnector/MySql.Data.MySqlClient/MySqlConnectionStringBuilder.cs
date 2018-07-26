@@ -91,6 +91,18 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.CACertificateFile.SetValue(this, value);
 		}
 
+		public MySqlCertificateStoreLocation CertificateStoreLocation
+		{
+			get => MySqlConnectionStringOption.CertificateStoreLocation.GetValue(this);
+			set => MySqlConnectionStringOption.CertificateStoreLocation.SetValue(this, value);
+		}
+
+		public string CertificateThumbprint
+		{
+			get => MySqlConnectionStringOption.CertificateThumbprint.GetValue(this);
+			set => MySqlConnectionStringOption.CertificateThumbprint.SetValue(this, value);
+		}
+
 		// Connection Pooling Options
 		public bool Pooling
 		{
@@ -320,6 +332,8 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<MySqlSslMode> SslMode;
 		public static readonly MySqlConnectionStringOption<string> CertificateFile;
 		public static readonly MySqlConnectionStringOption<string> CertificatePassword;
+		public static readonly MySqlConnectionStringOption<MySqlCertificateStoreLocation> CertificateStoreLocation;
+		public static readonly MySqlConnectionStringOption<string> CertificateThumbprint;
 		public static readonly MySqlConnectionStringOption<string> CACertificateFile;
 
 		// Connection Pooling Options
@@ -428,6 +442,14 @@ namespace MySql.Data.MySqlClient
 
 			AddOption(CACertificateFile = new MySqlConnectionStringOption<string>(
 				keys: new[] { "CACertificateFile", "CA Certificate File" },
+				defaultValue: null));
+
+			AddOption(CertificateStoreLocation = new MySqlConnectionStringOption<MySqlCertificateStoreLocation>(
+				keys: new[] { "CertificateStoreLocation", "Certificate Store Location" },
+				defaultValue: MySqlCertificateStoreLocation.None));
+
+			AddOption(CertificateThumbprint = new MySqlConnectionStringOption<string>(
+				keys: new[] { "CertificateThumbprint", "Certificate Thumbprint" },
 				defaultValue: null));
 
 			// Connection Pooling Options
@@ -582,7 +604,7 @@ namespace MySql.Data.MySqlClient
 					return (T) (object) false;
 			}
 
-			if ((typeof(T) == typeof(MySqlLoadBalance) || typeof(T) == typeof(MySqlSslMode) || typeof(T) == typeof(MySqlDateTimeKind) || typeof(T) == typeof(MySqlGuidFormat) || typeof(T) == typeof(MySqlConnectionProtocol)) && objectValue is string enumString)
+			if ((typeof(T) == typeof(MySqlLoadBalance) || typeof(T) == typeof(MySqlSslMode) || typeof(T) == typeof(MySqlDateTimeKind) || typeof(T) == typeof(MySqlGuidFormat) || typeof(T) == typeof(MySqlConnectionProtocol) || typeof(T) == typeof(MySqlCertificateStoreLocation)) && objectValue is string enumString)
 			{
 				try
 				{
