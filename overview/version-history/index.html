@@ -56,6 +56,21 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-43-0">0.43.0</h3>
+
+<ul>
+<li>Add first version of prepared commands: <a href="https://github.com/mysql-net/MySqlConnector/pull/534">#534</a>.
+
+<ul>
+<li>Only single statements (and not stored procedures) are preparable.</li>
+<li>The (new) <code>IgnorePrepare</code> connection string option defaults to <code>true</code> and must be set to <code>false</code> to use prepared commands.</li>
+</ul></li>
+<li>Add <code>CertificateStore</code> and <code>CertificateThumbprint</code> connection string options: <a href="https://github.com/mysql-net/MySqlConnector/issues/536">#536</a>.</li>
+<li>Fix bug that rejected sessions from the connection pool if <code>ChangeDatabase</code> had been called: <a href="https://github.com/mysql-net/MySqlConnector/issues/515">#515</a>.</li>
+<li>Don&rsquo;t map <code>TINYINT(1) UNSIGNED</code> as <code>bool</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/530">#530</a>.</li>
+<li>Thanks to <a href="https://github.com/hajekj">Jan Hajek</a> for contributions to this release.</li>
+</ul>
+
 <h3 id="0-42-3">0.42.3</h3>
 
 <ul>

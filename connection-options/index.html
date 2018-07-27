@@ -152,12 +152,12 @@
   <tr>
     <td>Certificate Store Location, CertificateStoreLocation</td>
     <td>None</td>
-    <td>Specifies whether the connection should be encrypted with a certificate from the Certificate Store on the machine, you can specify either <code>CurrentUser</code> or <code>LocalMachine</code> as valid locations, defaults to None which results in the certificate store not being used.</td>
+    <td>Specifies whether the connection should be encrypted with a certificate from the Certificate Store on the machine. The default value of <code>None</code> means the certificate store is not used; a value of <code>CurrentUser</code> or <code>LocalMachine</code> uses the specified store.</td>
   </tr>
   <tr>
     <td>Certificate Thumbprint, CertificateThumbprint</td>
     <td></td>
-    <td>Specifies which specific certificate should be used from the Certificate Store specified in the setting above. If none is specified and Certificate Store is chosen, all certificates from the store will be used to attempt to make the connection.</td>
+    <td>Specifies which certificate should be used from the Certificate Store specified in the setting above. This option must be used to indicate which certificate in the store should be used for authentication.</td>
   </tr>
 </table>
 
