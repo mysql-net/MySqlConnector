@@ -890,20 +890,20 @@ namespace MySqlConnector.Core
 						if (store.Certificates.Count == 0)
 						{
 							Log.Error("Session{0} no certificates were found in the certificate store", m_logArguments);
-							throw new MySqlException("No certificates were found in the certifcate store");
+							throw new MySqlException("No certificates were found in the certificate store");
 						}
 
 						clientCertificates = new X509CertificateCollection(store.Certificates);
 					}
 					else
 					{
-						var requireValid = (cs.SslMode == MySqlSslMode.VerifyCA || cs.SslMode == MySqlSslMode.VerifyFull) ? true : false;
+						var requireValid = cs.SslMode == MySqlSslMode.VerifyCA || cs.SslMode == MySqlSslMode.VerifyFull;
 						var foundCertificates = store.Certificates.Find(X509FindType.FindByThumbprint, cs.CertificateThumbprint, requireValid);
 						if (foundCertificates.Count == 0)
 						{
 							m_logArguments[1] = cs.CertificateThumbprint;
-							Log.Error("Session{0} certificate with specified thumbprint not found in store '{1}'", m_logArguments);
-							throw new MySqlException("Certificate with Thumbprint " + cs.CertificateThumbprint + " not found");
+							Log.Error("Session{0} certificate with Thumbprint={1} not found in store", m_logArguments);
+							throw new MySqlException("Certificate with Thumbprint {0} not found".FormatInvariant(cs.CertificateThumbprint));
 						}
 
 						clientCertificates = new X509CertificateCollection(foundCertificates);
@@ -912,7 +912,7 @@ namespace MySqlConnector.Core
 				catch (CryptographicException ex)
 				{
 					m_logArguments[1] = cs.CertificateStoreLocation;
-					Log.Error(ex, "Session{0} couldn't load certificate from CertificateStoreLocation '{1}'", m_logArguments);
+					Log.Error(ex, "Session{0} couldn't load certificate from CertificateStoreLocation={1}", m_logArguments);
 					throw new MySqlException("Certificate couldn't be loaded from the CertificateStoreLocation", ex);
 				}
 			}
