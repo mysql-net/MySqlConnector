@@ -11,6 +11,16 @@ weight: 30
 Version History
 ===============
 
+### 0.43.0
+
+* Add first version of prepared commands: [#534](https://github.com/mysql-net/MySqlConnector/pull/534).
+  * Only single statements (and not stored procedures) are preparable.
+  * The (new) `IgnorePrepare` connection string option defaults to `true` and must be set to `false` to use prepared commands.
+* Add `CertificateStore` and `CertificateThumbprint` connection string options: [#536](https://github.com/mysql-net/MySqlConnector/issues/536).
+* Fix bug that rejected sessions from the connection pool if `ChangeDatabase` had been called: [#515](https://github.com/mysql-net/MySqlConnector/issues/515).
+* Don't map `TINYINT(1) UNSIGNED` as `bool`: [#530](https://github.com/mysql-net/MySqlConnector/issues/530).
+* Thanks to [Jan Hajek](https://github.com/hajekj) for contributions to this release.
+
 ### 0.42.3
 
 * Fix bug (introduced in 0.42.2) that caused extremely high memory usage: [#528](https://github.com/mysql-net/MySqlConnector/issues/528).
