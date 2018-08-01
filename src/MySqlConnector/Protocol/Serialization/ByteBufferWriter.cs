@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Buffers.Text;
 using System.Diagnostics;
 using System.Text;
@@ -55,9 +56,7 @@ namespace MySqlConnector.Protocol.Serialization
 		{
 			if (m_output.Length < 2)
 				Reallocate(2);
-			var span = m_output.Span;
-			span[0] = (byte) value;
-			span[1] = (byte) (value >> 8);
+			BinaryPrimitives.WriteUInt16LittleEndian(m_output.Span, value);
 			m_output = m_output.Slice(2);
 		}
 
@@ -65,11 +64,7 @@ namespace MySqlConnector.Protocol.Serialization
 		{
 			if (m_output.Length < 4)
 				Reallocate(4);
-			var span = m_output.Span;
-			span[0] = (byte) value;
-			span[1] = (byte) (value >> 8);
-			span[2] = (byte) (value >> 16);
-			span[3] = (byte) (value >> 24);
+			BinaryPrimitives.WriteInt32LittleEndian(m_output.Span, value);
 			m_output = m_output.Slice(4);
 		}
 
@@ -77,11 +72,7 @@ namespace MySqlConnector.Protocol.Serialization
 		{
 			if (m_output.Length < 4)
 				Reallocate(4);
-			var span = m_output.Span;
-			span[0] = (byte) value;
-			span[1] = (byte) (value >> 8);
-			span[2] = (byte) (value >> 16);
-			span[3] = (byte) (value >> 24);
+			BinaryPrimitives.WriteUInt32LittleEndian(m_output.Span, value);
 			m_output = m_output.Slice(4);
 		}
 
@@ -89,15 +80,7 @@ namespace MySqlConnector.Protocol.Serialization
 		{
 			if (m_output.Length < 8)
 				Reallocate(8);
-			var span = m_output.Span;
-			span[0] = (byte) value;
-			span[1] = (byte) (value >> 8);
-			span[2] = (byte) (value >> 16);
-			span[3] = (byte) (value >> 24);
-			span[4] = (byte) (value >> 32);
-			span[5] = (byte) (value >> 40);
-			span[6] = (byte) (value >> 48);
-			span[7] = (byte) (value >> 56);
+			BinaryPrimitives.WriteUInt64LittleEndian(m_output.Span, value);
 			m_output = m_output.Slice(8);
 		}
 
@@ -242,10 +225,7 @@ namespace MySqlConnector.Protocol.Serialization
 			}
 			else if (value < 16777216)
 			{
-				writer.Write((byte) 0xfd);
-				writer.Write((byte) (value & 0xFF));
-				writer.Write((byte) ((value >> 8) & 0xFF));
-				writer.Write((byte) ((value >> 16) & 0xFF));
+				writer.Write((uint) ((value << 8) | 0xfd));
 			}
 			else
 			{
