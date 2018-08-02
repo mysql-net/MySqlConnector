@@ -135,7 +135,7 @@ select last_insert_id();";
 				Assert.Equal(1L, rowid);
 		}
 
-		[SkippableTheory(Baseline = "http://bugs.mysql.com/bug.php?id=70686")]
+		[Theory]
 		[InlineData(3)]
 		[InlineData(6)]
 		public void InsertTime(int precision)

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
  <PropertyGroup Condition=" '$(Configuration)' != 'Baseline' ">
     <TargetFrameworks>net452;net461;netcoreapp1.1.2;netcoreapp2.0;netcoreapp2.1</TargetFrameworks>
@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'Baseline' ">
-    <PackageReference Include="MySql.Data" Version="8.0.11" />
+    <PackageReference Include="MySql.Data" Version="8.0.12" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1.2' ">

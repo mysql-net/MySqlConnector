@@ -159,11 +159,9 @@ CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCRE
 				yield return new object[] { isPrepared, "DATETIME(3)", new DateTime(2018, 7, 23, 20, 46, 52, 123) };
 				yield return new object[] { isPrepared, "ENUM('small', 'medium', 'large')", "medium" };
 				yield return new object[] { isPrepared, "SET('one','two','four','eight')", "two,eight" };
-
-#if !BASELINE
-				// https://bugs.mysql.com/bug.php?id=78917
 				yield return new object[] { isPrepared, "BOOL", true };
 
+#if !BASELINE
 				// https://bugs.mysql.com/bug.php?id=91770
 				yield return new object[] { isPrepared, "TIME(3)", TimeSpan.Zero.Subtract(new TimeSpan(15, 10, 34, 56, 789)) };
 

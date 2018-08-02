@@ -202,12 +202,16 @@ namespace SideBySide
 			DoQuery("set", column, dataTypeName, expected, reader => reader.GetString(column));
 		}
 
-		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=78917")]
+		[Theory]
 		[InlineData("Boolean", "BOOL", new object[] { null, false, true, false, true, true, true })]
 		[InlineData("TinyInt1", "BOOL", new object[] { null, false, true, false, true, true, true })]
 		public void QueryBoolean(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("bools", column, dataTypeName, expected, reader => reader.GetBoolean(0));
+#if BASELINE
+// Connector/NET returns "TINYINT" for "BOOL"
+			dataTypeName = "TINYINT";
+#endif
+			DoQuery<InvalidCastException>("bools", column, dataTypeName, expected, reader => reader.GetBoolean(0));
 		}
 
 		[Theory]
