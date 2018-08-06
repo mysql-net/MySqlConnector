@@ -201,8 +201,9 @@ namespace MySql.Data.MySqlClient
 			}
 			set
 			{
-				if (m_hasBeenOpened)
-					throw new InvalidOperationException("Cannot change connection string on a connection that has already been opened.");
+				if (m_connectionState == ConnectionState.Open)
+					throw new InvalidOperationException("Cannot change the connection string on an open connection.");
+				m_hasBeenOpened = false;
 				m_connectionString = value;
 			}
 		}

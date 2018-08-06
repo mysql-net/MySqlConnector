@@ -112,9 +112,11 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData(false)]
-		[InlineData(true)]
-		public void PersistSecurityInfo(bool persistSecurityInfo)
+		[InlineData(false, false)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(true, true)]
+		public void PersistSecurityInfo(bool persistSecurityInfo, bool closeConnection)
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.PersistSecurityInfo = persistSecurityInfo;
@@ -128,6 +130,15 @@ namespace SideBySide
 					Assert.Equal(csb.ConnectionString, connection.ConnectionString);
 				else
 					Assert.Equal(connectionStringWithoutPassword, connection.ConnectionString);
+
+				if (closeConnection)
+				{
+					connection.Close();
+					if (persistSecurityInfo)
+						Assert.Equal(csb.ConnectionString, connection.ConnectionString);
+					else
+						Assert.Equal(connectionStringWithoutPassword, connection.ConnectionString);
+				}
 			}
 		}
 
@@ -351,6 +362,46 @@ namespace SideBySide
 			{
 				cmd.CommandText = "SELECT DATABASE()";
 				return (string) cmd.ExecuteScalar();
+			}
+		}
+
+		[SkippableFact(ConfigSettings.SecondaryDatabase)]
+		public void ChangeConnectionStringWhenOpen()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(csb.Database, connection.Database);
+
+				csb.Database = AppConfig.SecondaryDatabase;
+#if BASELINE
+				Assert.Throws<MySqlException>(() =>
+#else
+				Assert.Throws<InvalidOperationException>(() =>
+#endif
+				{
+					 connection.ConnectionString = csb.ConnectionString;
+				});
+			}
+		}
+
+		[SkippableFact(ConfigSettings.SecondaryDatabase)]
+		public void ChangeConnectionStringAfterClose()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(csb.Database, connection.Database);
+				connection.Close();
+
+				csb.Database = AppConfig.SecondaryDatabase;
+				connection.ConnectionString = csb.ConnectionString;
+
+				connection.Open();
+				Assert.Equal(csb.Database, connection.Database);
+				connection.Close();
 			}
 		}
 
