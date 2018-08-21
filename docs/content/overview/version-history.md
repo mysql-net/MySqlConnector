@@ -11,6 +11,13 @@ weight: 30
 Version History
 ===============
 
+### 0.44.0
+
+* Add `Application Name` connection string setting: [#547](https://github.com/mysql-net/MySqlConnector/pull/547).
+* Clear connection pools on exit: [#545](https://github.com/mysql-net/MySqlConnector/pull/545).
+* Allow `ConnectionString` to be set on a closed connection: [#543](https://github.com/mysql-net/MySqlConnector/pull/543).
+* Fix intermittent `NotSupportedException` with SSL connections under .NET Core 2.1: [#509](https://github.com/mysql-net/MySqlConnector/pull/509).
+
 ### 0.43.0
 
 * Add first version of prepared commands: [#534](https://github.com/mysql-net/MySqlConnector/pull/534).
