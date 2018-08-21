@@ -119,7 +119,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.43.0  Add first version of prepared commands: #534.  Only single statements (and not stored procedures) are preparable. The (new) IgnorePrepare connection string option defaults to true and must be set to false to use prepared commands.  Add CertificateStore and CertificateThumbprint connection string options: #536. Fix bug that rejected sessions from the connection pool if ChangeDatabase had been called: #515. Don&amp;rsquo;t map TINYINT(1) UNSIGNED as bool: #530.</description>
+      <description>Version History 0.44.0  Add Application Name connection string setting: #547. Clear connection pools on exit: #545. Allow ConnectionString to be set on a closed connection: #543. Fix intermittent NotSupportedException with SSL connections under .NET Core 2.1: #509.  0.43.0  Add first version of prepared commands: #534.  Only single statements (and not stored procedures) are preparable. The (new) IgnorePrepare connection string option defaults to true and must be set to false to use prepared commands.</description>
     </item>
     
     <item>
