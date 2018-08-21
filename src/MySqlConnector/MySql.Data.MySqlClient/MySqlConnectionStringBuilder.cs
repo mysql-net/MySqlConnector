@@ -165,6 +165,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.AllowZeroDateTime.SetValue(this, value);
 		}
 
+		public string ApplicationName
+		{
+			get => MySqlConnectionStringOption.ApplicationName.GetValue(this);
+			set => MySqlConnectionStringOption.ApplicationName.SetValue(this, value);
+		}
+
 		public bool AutoEnlist
 		{
 			get => MySqlConnectionStringOption.AutoEnlist.GetValue(this);
@@ -349,6 +355,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<bool> AllowPublicKeyRetrieval;
 		public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
 		public static readonly MySqlConnectionStringOption<bool> AllowZeroDateTime;
+		public static readonly MySqlConnectionStringOption<string> ApplicationName;
 		public static readonly MySqlConnectionStringOption<bool> AutoEnlist;
 		public static readonly MySqlConnectionStringOption<string> CharacterSet;
 		public static readonly MySqlConnectionStringOption<uint> ConnectionTimeout;
@@ -493,6 +500,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(AllowZeroDateTime = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "AllowZeroDateTime", "Allow Zero DateTime" },
 				defaultValue: false));
+
+			AddOption(ApplicationName = new MySqlConnectionStringOption<string>(
+				keys: new[] { "ApplicationName", "Application Name" },
+				defaultValue: null));
 
 			AddOption(AutoEnlist = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "AutoEnlist", "Auto Enlist" },

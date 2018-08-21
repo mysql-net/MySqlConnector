@@ -328,10 +328,10 @@ namespace MySqlConnector.Core
 					}
 				} while (shouldRetrySsl);
 
-				if (m_supportsConnectionAttributes && s_connectionAttributes == null)
-					s_connectionAttributes = CreateConnectionAttributes();
+				if (m_supportsConnectionAttributes && cs.ConnectionAttributes == null)
+					cs.ConnectionAttributes = CreateConnectionAttributes(cs.ApplicationName);
 
-				using (var handshakeResponsePayload = HandshakeResponse41Payload.Create(initialHandshake, cs, m_useCompression, m_supportsConnectionAttributes ? s_connectionAttributes : null))
+				using (var handshakeResponsePayload = HandshakeResponse41Payload.Create(initialHandshake, cs, m_useCompression, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
 					await SendReplyAsync(handshakeResponsePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
@@ -395,7 +395,7 @@ namespace MySqlConnector.Core
 						DatabaseOverride = null;
 					}
 					var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
-					using (var changeUserPayload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database, m_supportsConnectionAttributes ? s_connectionAttributes : null))
+					using (var changeUserPayload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
 						await SendAsync(changeUserPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 					var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
@@ -1269,7 +1269,7 @@ namespace MySqlConnector.Core
 
 		internal SslProtocols SslProtocol => m_sslStream?.SslProtocol ?? SslProtocols.None;
 
-		private byte[] CreateConnectionAttributes()
+		private byte[] CreateConnectionAttributes(string programName)
 		{
 			Log.Debug("Session{0} creating connection attributes", m_logArguments);
 			var attributesWriter = new ByteBufferWriter();
@@ -1297,6 +1297,11 @@ namespace MySqlConnector.Core
 			{
 				attributesWriter.WriteLengthEncodedString("_pid");
 				attributesWriter.WriteLengthEncodedString(process.Id.ToString(CultureInfo.InvariantCulture));
+			}
+			if (!string.IsNullOrEmpty(programName))
+			{
+				attributesWriter.WriteLengthEncodedString("program_name");
+				attributesWriter.WriteLengthEncodedString(programName);
 			}
 			using (var connectionAttributesPayload = attributesWriter.ToPayloadData())
 			{
@@ -1349,7 +1354,6 @@ namespace MySqlConnector.Core
 
 		static readonly byte[] s_beginCertificateBytes = new byte[] { 45, 45, 45, 45, 45, 66, 69, 71, 73, 78, 32, 67, 69, 82, 84, 73, 70, 73, 67, 65, 84, 69, 45, 45, 45, 45, 45 }; // -----BEGIN CERTIFICATE-----
 		static int s_lastId;
-		static byte[] s_connectionAttributes;
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ServerSession));
 		static readonly PayloadData s_setNamesUtf8mb4Payload = QueryPayload.Create("SET NAMES utf8mb4 COLLATE utf8mb4_bin;");
 

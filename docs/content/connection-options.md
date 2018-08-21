@@ -1,5 +1,5 @@
 ---
-lastmod: 2017-11-06
+lastmod: 2018-08-21
 date: 2016-10-16
 title: Connection Options
 weight: 30
@@ -204,6 +204,12 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>If set to <c>true</c> all `DATE`, `DATETIME` and `TIMESTAMP` columns are returned as `MySqlDateTime` objects instead of `DateTime`.
     This allows the special “zero” date value `0000-00-00` to be retrieved from the database. If <code>false</code> (the default)
     date columns are returned as `DateTime` values, and an exception is thrown for unrepresentable dates.</td>
+  </tr>
+  <tr>
+    <td>ApplicationName, Application Name</td>
+    <td>null</td>
+    <td>Sets the <c>program_name</c> connection attribute passed to MySQL Server. This value may be displayed by diagnostic tools,
+    e.g., as the “Program” column in “Client Connections” in <a href="https://www.mysql.com/products/workbench/">MySQL Workbench</a>.</td>
   </tr>
   <tr>
     <td>Compress, Use Compression, UseCompression</td>

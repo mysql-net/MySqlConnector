@@ -34,12 +34,11 @@ namespace MySqlConnector.Tests
 			Assert.Equal("", csb.Database);
 			Assert.Equal(30u, csb.DefaultCommandTimeout);
 #if !BASELINE
+			Assert.Null(csb.ApplicationName);
 			Assert.Equal(0u, csb.ConnectionIdlePingTime);
 			Assert.Equal(180u, csb.ConnectionIdleTimeout);
 			Assert.False(csb.ForceSynchronous);
-#if !BASELINE
 			Assert.Equal(MySqlGuidFormat.Default, csb.GuidFormat);
-#endif
 			Assert.False(csb.IgnoreCommandTransaction);
 			Assert.Null(csb.CACertificateFile);
 			Assert.Equal(MySqlLoadBalance.RoundRobin, csb.LoadBalance);
@@ -100,6 +99,7 @@ namespace MySqlConnector.Tests
 #endif
 					"default command timeout=123;" +
 #if !BASELINE
+					"application name=My Test Application;" +
 					"connection idle ping time=60;" +
 					"connectionidletimeout=30;" +
 					"forcesynchronous=true;" +
@@ -146,6 +146,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal("schema_name", csb.Database);
 			Assert.Equal(123u, csb.DefaultCommandTimeout);
 #if !BASELINE
+			Assert.Equal("My Test Application", csb.ApplicationName);
 			Assert.Equal(60u, csb.ConnectionIdlePingTime);
 			Assert.Equal(30u, csb.ConnectionIdleTimeout);
 			Assert.True(csb.ForceSynchronous);

@@ -65,6 +65,7 @@ namespace MySqlConnector.Core
 			AllowPublicKeyRetrieval = csb.AllowPublicKeyRetrieval;
 			AllowUserVariables = csb.AllowUserVariables;
 			AllowZeroDateTime = csb.AllowZeroDateTime;
+			ApplicationName = csb.ApplicationName;
 			AutoEnlist = csb.AutoEnlist;
 			ConnectionTimeout = (int) csb.ConnectionTimeout;
 			ConvertZeroDateTime = csb.ConvertZeroDateTime;
@@ -142,6 +143,7 @@ namespace MySqlConnector.Core
 		public bool AllowPublicKeyRetrieval { get; }
 		public bool AllowUserVariables { get; }
 		public bool AllowZeroDateTime { get; }
+		public string ApplicationName { get; }
 		public bool AutoEnlist { get; }
 		public int ConnectionTimeout { get; }
 		public bool ConvertZeroDateTime { get; }
@@ -158,6 +160,8 @@ namespace MySqlConnector.Core
 		public bool TreatTinyAsBoolean { get; }
 		public bool UseAffectedRows { get; }
 		public bool UseCompression { get; }
+
+		public byte[] ConnectionAttributes { get; set; }
 
 		// Helper Functions
 		int? m_connectionTimeoutMilliseconds;
