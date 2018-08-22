@@ -85,6 +85,10 @@ namespace MySql.Data.MySqlClient
 			if (CommandType != CommandType.Text)
 				throw new NotSupportedException("Only CommandType.Text is currently supported by MySqlCommand.Prepare");
 
+			// don't prepare the same SQL twice
+			if (m_connection.Session.TryGetPreparedStatement(CommandText) != null)
+				return;
+
 			var statementPreparer = new StatementPreparer(CommandText, Parameters, CreateStatementPreparerOptions());
 			var parsedStatements = statementPreparer.SplitStatements();
 
@@ -142,8 +146,7 @@ namespace MySql.Data.MySqlClient
 				preparedStatements.Add(new PreparedStatement(response.StatementId, statement, columns, parameters));
 			}
 
-			m_parsedStatements = parsedStatements;
-			m_statements = preparedStatements;
+			m_connection.Session.AddPreparedStatement(CommandText, new PreparedStatements(preparedStatements, parsedStatements));
 		}
 
 		public override string CommandText
@@ -154,11 +157,10 @@ namespace MySql.Data.MySqlClient
 				if (m_connection?.HasActiveReader ?? false)
 					throw new InvalidOperationException("Cannot set MySqlCommand.CommandText when there is an open DataReader for this command; it must be closed first.");
 				m_commandText = value;
-				ClearPreparedStatements();
 			}
 		}
 
-		public bool IsPrepared => m_statements != null;
+		public bool IsPrepared => TryGetPreparedStatement() != null;
 
 		public new MySqlTransaction Transaction { get; set; }
 
@@ -170,7 +172,6 @@ namespace MySql.Data.MySqlClient
 				if (m_connection?.HasActiveReader ?? false)
 					throw new InvalidOperationException("Cannot set MySqlCommand.Connection when there is an open DataReader for this command; it must be closed first.");
 				m_connection = value;
-				ClearPreparedStatements();
 			}
 		}
 
@@ -188,7 +189,6 @@ namespace MySql.Data.MySqlClient
 				if (value != CommandType.Text && value != CommandType.StoredProcedure)
 					throw new ArgumentException("CommandType must be Text or StoredProcedure.", nameof(value));
 				m_commandType = value;
-				ClearPreparedStatements();
 			}
 		}
 
@@ -277,8 +277,9 @@ namespace MySql.Data.MySqlClient
 			if (!IsValid(out var exception))
 				return Utility.TaskFromException<DbDataReader>(exception);
 
-			if (m_statements != null)
-				m_commandExecutor = new PreparedStatementCommandExecutor(this);
+			var preparedStatements = TryGetPreparedStatement();
+			if (preparedStatements != null)
+				m_commandExecutor = new PreparedStatementCommandExecutor(this, preparedStatements);
 			else if (m_commandType == CommandType.Text)
 				m_commandExecutor = new TextCommandExecutor(this);
 			else if (m_commandType == CommandType.StoredProcedure)
@@ -292,10 +293,7 @@ namespace MySql.Data.MySqlClient
 			try
 			{
 				if (disposing)
-				{
 					m_parameterCollection = null;
-					ClearPreparedStatements();
-				}
 			}
 			finally
 			{
@@ -323,8 +321,6 @@ namespace MySql.Data.MySqlClient
 		internal int CommandId { get; }
 
 		internal int CancelAttemptCount { get; set; }
-
-		internal IReadOnlyList<PreparedStatement> PreparedStatements => m_statements;
 
 		/// <summary>
 		/// Causes the effective command timeout to be reset back to the value specified by <see cref="CommandTimeout"/>.
@@ -400,12 +396,7 @@ namespace MySql.Data.MySqlClient
 			return exception == null;
 		}
 
-		private void ClearPreparedStatements()
-		{
-			m_parsedStatements?.Dispose();
-			m_parsedStatements = null;
-			m_statements = null;
-		}
+		private PreparedStatements TryGetPreparedStatement() => CommandType == CommandType.Text && !string.IsNullOrWhiteSpace(CommandText) ? m_connection.Session.TryGetPreparedStatement(CommandText) : null;
 
 		internal void ReaderClosed() => (m_commandExecutor as StoredProcedureCommandExecutor)?.SetParams();
 
@@ -414,8 +405,6 @@ namespace MySql.Data.MySqlClient
 		MySqlConnection m_connection;
 		string m_commandText;
 		MySqlParameterCollection m_parameterCollection;
-		ParsedStatements m_parsedStatements;
-		IReadOnlyList<PreparedStatement> m_statements;
 		int? m_commandTimeout;
 		CommandType m_commandType;
 		ICommandExecutor m_commandExecutor;
