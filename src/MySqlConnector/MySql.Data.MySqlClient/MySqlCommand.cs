@@ -65,30 +65,56 @@ namespace MySql.Data.MySqlClient
 
 		public new MySqlDataReader ExecuteReader(CommandBehavior commandBehavior) => (MySqlDataReader) base.ExecuteReader(commandBehavior);
 
-		public override void Prepare() => PrepareAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+		public override void Prepare()
+		{
+			if (!NeedsPrepare(out var exception))
+			{
+				if (exception != null)
+					throw exception;
+				return;
+			}
+
+			DoPrepareAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+		}
+
 		public Task PrepareAsync() => PrepareAsync(AsyncIOBehavior, default);
 		public Task PrepareAsync(CancellationToken cancellationToken) => PrepareAsync(AsyncIOBehavior, cancellationToken);
-		
-		private async Task PrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+
+		private Task PrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			if (!NeedsPrepare(out var exception))
+				return exception != null ? Utility.TaskFromException(exception) : Utility.CompletedTask;
+
+			return DoPrepareAsync(ioBehavior, cancellationToken);
+		}
+
+		private bool NeedsPrepare(out Exception exception)
+		{
+			exception = null;
 			if (Connection == null)
-				throw new InvalidOperationException("Connection property must be non-null.");
-			if (Connection.State != ConnectionState.Open)
-				throw new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
-			if (string.IsNullOrWhiteSpace(CommandText))
-				throw new InvalidOperationException("CommandText must be specified");
-			if (m_connection?.HasActiveReader ?? false)
-				throw new InvalidOperationException("Cannot call Prepare when there is an open DataReader for this command; it must be closed first.");
-			if (Connection.IgnorePrepare)
-				return;
+				exception = new InvalidOperationException("Connection property must be non-null.");
+			else if (Connection.State != ConnectionState.Open)
+				exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
+			else if (string.IsNullOrWhiteSpace(CommandText))
+				exception = new InvalidOperationException("CommandText must be specified");
+			else if (Connection?.HasActiveReader ?? false)
+				exception = new InvalidOperationException("Cannot call Prepare when there is an open DataReader for this command; it must be closed first.");
+
+			if (exception != null || Connection.IgnorePrepare)
+				return false;
 
 			if (CommandType != CommandType.Text)
-				throw new NotSupportedException("Only CommandType.Text is currently supported by MySqlCommand.Prepare");
+			{
+				exception = new NotSupportedException("Only CommandType.Text is currently supported by MySqlCommand.Prepare");
+				return false;
+			}
 
 			// don't prepare the same SQL twice
-			if (m_connection.Session.TryGetPreparedStatement(CommandText) != null)
-				return;
+			return Connection.Session.TryGetPreparedStatement(CommandText) == null;
+		}
 
+		private async Task DoPrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
 			var statementPreparer = new StatementPreparer(CommandText, Parameters, CreateStatementPreparerOptions());
 			var parsedStatements = statementPreparer.SplitStatements();
 
@@ -146,7 +172,7 @@ namespace MySql.Data.MySqlClient
 				preparedStatements.Add(new PreparedStatement(response.StatementId, statement, columns, parameters));
 			}
 
-			m_connection.Session.AddPreparedStatement(CommandText, new PreparedStatements(preparedStatements, parsedStatements));
+			Connection.Session.AddPreparedStatement(CommandText, new PreparedStatements(preparedStatements, parsedStatements));
 		}
 
 		public override string CommandText
