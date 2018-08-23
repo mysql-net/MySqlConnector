@@ -19,9 +19,9 @@ improves the throughput of a web server that performs database operations.
 
 This library outperforms Connector/NET (`MySql.Data`) on benchmarks:
 
-![Benchmark 1](./docs/static/img/graph1.png) ![Benchmark 2](./docs/static/img/graph2.png)
+![Benchmark 1](https://files.logoscdn.com/v1/files/12389056/content.png?signature=UE8FnU9ykb1f_7C68_D8lF2ZAzc) ![Benchmark 2](https://files.logoscdn.com/v1/files/12389051/content.png?signature=Gptw0KDjYREuulIk_37zuO6OToc)
 
-(Client: MySqlConnector 0.34.2, Windows 10 x64; Server: MySQL Server 5.6.21, Unix)
+(Client: MySqlConnector 0.44.0, Windows 10 x64; Server: MySQL Server 5.6.21, Unix)
 
 ### Bug Fixes
 
