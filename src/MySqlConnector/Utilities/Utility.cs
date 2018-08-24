@@ -301,6 +301,22 @@ namespace MySqlConnector.Utilities
 		}
 
 #if NET45
+		public static Task CompletedTask
+		{
+			get
+			{
+				if (s_completedTask == null)
+				{
+					var tcs = new TaskCompletionSource<object>();
+					tcs.SetResult(null);
+					s_completedTask = tcs.Task;
+				}
+				return s_completedTask;
+			}
+		}
+		static Task s_completedTask;
+
+		public static Task TaskFromException(Exception exception) => TaskFromException<object>(exception);
 		public static Task<T> TaskFromException<T>(Exception exception)
 		{
 			var tcs = new TaskCompletionSource<T>();
@@ -308,6 +324,8 @@ namespace MySqlConnector.Utilities
 			return tcs.Task;
 		}
 #else
+		public static Task CompletedTask => Task.CompletedTask;
+		public static Task TaskFromException(Exception exception) => Task.FromException(exception);
 		public static Task<T> TaskFromException<T>(Exception exception) => Task.FromException<T>(exception);
 #endif
 

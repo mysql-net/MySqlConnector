@@ -15,9 +15,10 @@ namespace MySqlConnector.Core
 {
 	internal sealed class PreparedStatementCommandExecutor : ICommandExecutor
 	{
-		public PreparedStatementCommandExecutor(MySqlCommand command)
+		public PreparedStatementCommandExecutor(MySqlCommand command, PreparedStatements preparedStatements)
 		{
 			m_command = command;
+			m_preparedStatements = preparedStatements;
 		}
 
 		public async Task<DbDataReader> ExecuteReaderAsync(string commandText, MySqlParameterCollection parameterCollection, CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -25,7 +26,7 @@ namespace MySqlConnector.Core
 			cancellationToken.ThrowIfCancellationRequested();
 			if (Log.IsDebugEnabled())
 				Log.Debug("Session{0} ExecuteBehavior {1} CommandText: {2}", m_command.Connection.Session.Id, ioBehavior, commandText);
-			using (var payload = CreateQueryPayload(m_command.PreparedStatements[0], parameterCollection, m_command.Connection.GuidFormat))
+			using (var payload = CreateQueryPayload(m_preparedStatements.Statements[0], parameterCollection, m_command.Connection.GuidFormat))
 			using (m_command.RegisterCancel(cancellationToken))
 			{
 				m_command.Connection.Session.StartQuerying(m_command);
@@ -105,5 +106,6 @@ namespace MySqlConnector.Core
 		static IMySqlConnectorLogger Log { get; } = MySqlConnectorLogManager.CreateLogger(nameof(PreparedStatementCommandExecutor));
 
 		readonly MySqlCommand m_command;
+		readonly PreparedStatements m_preparedStatements;
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Buffers.Text;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -126,6 +127,23 @@ namespace MySqlConnector.Core
 			}
 		}
 
+		public void AddPreparedStatement(string commandText, PreparedStatements preparedStatements)
+		{
+			if (m_preparedStatements == null)
+				m_preparedStatements = new Dictionary<string, PreparedStatements>();
+			m_preparedStatements.Add(commandText, preparedStatements);
+		}
+
+		public PreparedStatements TryGetPreparedStatement(string commandText)
+		{
+			if (m_preparedStatements != null)
+			{
+				if (m_preparedStatements.TryGetValue(commandText, out var statement))
+					return statement;
+			}
+			return null;
+		}
+
 		public void StartQuerying(MySqlCommand command)
 		{
 			lock (m_lock)
@@ -217,6 +235,8 @@ namespace MySqlConnector.Core
 					}
 				}
 			}
+
+			ClearPreparedStatements();
 
 			ShutdownSocket();
 			lock (m_lock)
@@ -367,6 +387,9 @@ namespace MySqlConnector.Core
 
 			try
 			{
+				// clear all prepared statements; resetting the connection will clear them on the server
+				ClearPreparedStatements();
+
 				if (DatabaseOverride == null && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
 				{
 					m_logArguments[1] = ServerVersion.OriginalString;
@@ -1322,6 +1345,16 @@ namespace MySqlConnector.Core
 			return exception;
 		}
 
+		private void ClearPreparedStatements()
+		{
+			if (m_preparedStatements != null)
+			{
+				foreach (var pair in m_preparedStatements)
+					pair.Value.Dispose();
+				m_preparedStatements.Clear();
+			}
+		}
+
 		private enum State
 		{
 			// The session has been created; no connection has been made.
@@ -1372,5 +1405,6 @@ namespace MySqlConnector.Core
 		bool m_isSecureConnection;
 		bool m_supportsConnectionAttributes;
 		bool m_supportsDeprecateEof;
+		Dictionary<string, PreparedStatements> m_preparedStatements;
 	}
 }

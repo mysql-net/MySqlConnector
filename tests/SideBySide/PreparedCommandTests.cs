@@ -131,6 +131,41 @@ CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCRE
 			}
 		}
 
+		[Fact]
+		public void PrepareMultipleTimes()
+		{
+			using (var connection = CreatePrepareConnection())
+			{
+				using (var cmd = new MySqlCommand("SELECT 'test';", connection))
+				{
+					Assert.False(cmd.IsPrepared);
+					cmd.Prepare();
+					Assert.True(cmd.IsPrepared);
+					cmd.Prepare();
+					Assert.Equal("test", cmd.ExecuteScalar());
+				}
+			}
+		}
+
+		[SkippableFact(Baseline = "Connector/NET doesn't cache prepared commands")]
+		public void PreparedCommandIsCached()
+		{
+			using (var connection = CreatePrepareConnection())
+			{
+				using (var cmd = new MySqlCommand("SELECT 'test';", connection))
+				{
+					cmd.Prepare();
+					Assert.Equal("test", cmd.ExecuteScalar());
+				}
+
+				using (var cmd = new MySqlCommand("SELECT 'test';", connection))
+				{
+					Assert.True(cmd.IsPrepared);
+					Assert.Equal("test", cmd.ExecuteScalar());
+				}
+			}
+		}
+
 		public static IEnumerable<object[]> GetInsertAndQueryData()
 		{
 			foreach (var isPrepared in new[] { false, true })
