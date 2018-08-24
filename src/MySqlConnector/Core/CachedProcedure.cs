@@ -63,7 +63,7 @@ namespace MySqlConnector.Core
 		internal MySqlParameterCollection AlignParamsWithDb(MySqlParameterCollection parameterCollection)
 		{
 			var alignedParams = new MySqlParameterCollection();
-			var returnParam = parameterCollection.FirstOrDefault(x => x.Direction == ParameterDirection.ReturnValue);
+			var returnParam = parameterCollection?.FirstOrDefault(x => x.Direction == ParameterDirection.ReturnValue);
 
 			foreach (var cachedParam in Parameters)
 			{
@@ -74,7 +74,7 @@ namespace MySqlConnector.Core
 				}
 				else
 				{
-					var index = parameterCollection.NormalizedIndexOf(cachedParam.Name);
+					var index = parameterCollection?.NormalizedIndexOf(cachedParam.Name) ?? -1;
 					alignParam = index >= 0 ? parameterCollection[index] : throw new ArgumentException($"Parameter '{cachedParam.Name}' not found in the collection.");
 				}
 

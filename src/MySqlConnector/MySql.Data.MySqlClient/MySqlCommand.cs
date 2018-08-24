@@ -41,7 +41,6 @@ namespace MySql.Data.MySqlClient
 			CommandText = commandText;
 			Connection = connection;
 			Transaction = transaction;
-			m_parameterCollection = new MySqlParameterCollection();
 			CommandType = CommandType.Text;
 		}
 
@@ -50,6 +49,8 @@ namespace MySql.Data.MySqlClient
 			get
 			{
 				VerifyNotDisposed();
+				if (m_parameterCollection == null)
+					m_parameterCollection = new MySqlParameterCollection();
 				return m_parameterCollection;
 			}
 		}
@@ -116,7 +117,7 @@ namespace MySql.Data.MySqlClient
 
 		private async Task DoPrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			var statementPreparer = new StatementPreparer(CommandText, Parameters, CreateStatementPreparerOptions());
+			var statementPreparer = new StatementPreparer(CommandText, m_parameterCollection, CreateStatementPreparerOptions());
 			var parsedStatements = statementPreparer.SplitStatements();
 
 			if (parsedStatements.Statements.Count > 1)
@@ -231,7 +232,7 @@ namespace MySql.Data.MySqlClient
 			set => Connection = (MySqlConnection) value;
 		}
 
-		protected override DbParameterCollection DbParameterCollection => m_parameterCollection;
+		protected override DbParameterCollection DbParameterCollection => Parameters;
 
 		protected override DbTransaction DbTransaction
 		{
@@ -326,6 +327,7 @@ namespace MySql.Data.MySqlClient
 			{
 				base.Dispose(disposing);
 			}
+			m_isDisposed = true;
 		}
 
 		/// <summary>
@@ -403,14 +405,14 @@ namespace MySql.Data.MySqlClient
 
 		private void VerifyNotDisposed()
 		{
-			if (m_parameterCollection == null)
+			if (m_isDisposed)
 				throw new ObjectDisposedException(GetType().Name);
 		}
 
 		private bool IsValid(out Exception exception)
 		{
 			exception = null;
-			if (m_parameterCollection == null)
+			if (m_isDisposed)
 				exception = new ObjectDisposedException(GetType().Name);
 			else if (Connection == null)
 				exception = new InvalidOperationException("Connection property must be non-null.");
@@ -429,6 +431,7 @@ namespace MySql.Data.MySqlClient
 
 		static int s_commandId = 1;
 
+		bool m_isDisposed;
 		MySqlConnection m_connection;
 		string m_commandText;
 		MySqlParameterCollection m_parameterCollection;
