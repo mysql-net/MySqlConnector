@@ -50,6 +50,7 @@ namespace MySql.Data.MySqlClient
 #if !NETSTANDARD1_3
 		public MySqlCommandBuilder()
 		{
+			GC.SuppressFinalize(this);
 			QuotePrefix = "`";
 			QuoteSuffix = "`";
 		}

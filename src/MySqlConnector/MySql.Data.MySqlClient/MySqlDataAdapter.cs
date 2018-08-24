@@ -1,4 +1,5 @@
 #if !NETSTANDARD1_3
+using System;
 using System.Data;
 using System.Data.Common;
 
@@ -8,9 +9,14 @@ namespace MySql.Data.MySqlClient
 	{
 		public MySqlDataAdapter()
 		{
+			GC.SuppressFinalize(this);
 		}
 
-		public MySqlDataAdapter(MySqlCommand selectCommand) => SelectCommand = selectCommand;
+		public MySqlDataAdapter(MySqlCommand selectCommand)
+			: this()
+		{
+			SelectCommand = selectCommand;
+		}
 
 		public MySqlDataAdapter(string selectCommandText, MySqlConnection connection)
 			: this(new MySqlCommand(selectCommandText, connection))

@@ -21,7 +21,11 @@ namespace MySql.Data.MySqlClient
 		{
 		}
 
-		public MySqlConnection(string connectionString) => ConnectionString = connectionString;
+		public MySqlConnection(string connectionString)
+		{
+			GC.SuppressFinalize(this);
+			ConnectionString = connectionString;
+		}
 
 		public new MySqlTransaction BeginTransaction() => (MySqlTransaction) base.BeginTransaction();
 		public new MySqlTransaction BeginTransaction(IsolationLevel isolationLevel) => (MySqlTransaction) base.BeginTransaction(isolationLevel);

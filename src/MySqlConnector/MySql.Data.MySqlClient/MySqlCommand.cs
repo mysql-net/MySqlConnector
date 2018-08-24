@@ -36,6 +36,7 @@ namespace MySql.Data.MySqlClient
 
 		public MySqlCommand(string commandText, MySqlConnection connection, MySqlTransaction transaction)
 		{
+			GC.SuppressFinalize(this);
 			CommandId = Interlocked.Increment(ref s_commandId);
 			CommandText = commandText;
 			Connection = connection;
