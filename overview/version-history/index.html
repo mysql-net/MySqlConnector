@@ -56,6 +56,15 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-44-1">0.44.1</h3>
+
+<ul>
+<li><code>MySqlCommand.Prepare</code> will cache the prepared command until the connection is reset.</li>
+<li>Improve performance of <code>MySqlCommand.Prepare</code>, especially when preparation is unnecessary.</li>
+<li>Lazily allocate <code>MySqlParameterCollection</code> (accessed via <code>MySqlCommand.Parameters</code>) for better performance when command parameters aren&rsquo;t used.</li>
+<li>Use <code>GC.SuppressFinalize</code> to improve performance when various objects (derived from <code>Component</code>) aren&rsquo;t properly disposed.</li>
+</ul>
+
 <h3 id="0-44-0">0.44.0</h3>
 
 <ul>
