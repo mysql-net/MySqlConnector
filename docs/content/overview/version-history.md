@@ -11,6 +11,13 @@ weight: 30
 Version History
 ===============
 
+### 0.44.1
+
+* `MySqlCommand.Prepare` will cache the prepared command until the connection is reset.
+* Improve performance of `MySqlCommand.Prepare`, especially when preparation is unnecessary.
+* Lazily allocate `MySqlParameterCollection` (accessed via `MySqlCommand.Parameters`) for better performance when command parameters aren't used.
+* Use `GC.SuppressFinalize` to improve performance when various objects (derived from `Component`) aren't properly disposed.
+
 ### 0.44.0
 
 * Add `Application Name` connection string setting: [#547](https://github.com/mysql-net/MySqlConnector/pull/547).
