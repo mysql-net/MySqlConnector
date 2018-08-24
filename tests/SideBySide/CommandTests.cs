@@ -172,6 +172,68 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 			}
 		}
 
+		[Fact]
+		public void ThrowsIfNamedParameterUsedButNoParametersDefined()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using (var cmd = new MySqlCommand("SELECT @param;", connection))
+				{
+					Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
+				}
+			}
+		}
+
+		[Fact]
+		public void ThrowsIfUnnamedParameterUsedButNoParametersDefined()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using (var cmd = new MySqlCommand("SELECT ?;", connection))
+				{
+#if BASELINE
+					Assert.Throws<IndexOutOfRangeException>(() => cmd.ExecuteScalar());
+#else
+					Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
+#endif
+				}
+			}
+		}
+
+		[Fact]
+		public void ThrowsIfUndefinedNamedParameterUsed()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using (var cmd = new MySqlCommand("SELECT @param;", connection))
+				{
+					cmd.Parameters.AddWithValue("@name", "test");
+					Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
+				}
+			}
+		}
+
+		[Fact]
+		public void ThrowsIfTooManyUnnamedParametersUsed()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using (var cmd = new MySqlCommand("SELECT ?, ?;", connection))
+				{
+					cmd.Parameters.Add(new MySqlParameter { Value = 1 });
+#if BASELINE
+					Assert.Throws<IndexOutOfRangeException>(() => cmd.ExecuteScalar());
+#else
+					Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
+#endif
+				}
+			}
+		}
+
 		private static string GetIgnoreCommandTransactionConnectionString()
 		{
 #if BASELINE

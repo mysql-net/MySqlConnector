@@ -53,6 +53,8 @@ namespace MySqlConnector.Core
 
 		private MySqlParameter GetInputParameter(int index)
 		{
+			if (index >= m_parameters.Count)
+				throw new MySqlException("Parameter index {0} is invalid when only {1} parameter{2} defined.".FormatInvariant(index, m_parameters.Count, m_parameters.Count == 1 ? " is" : "s are"));
 			var parameter = m_parameters[index];
 			if (parameter.Direction != ParameterDirection.Input && (m_options & StatementPreparerOptions.AllowOutputParameters) == 0)
 				throw new MySqlException("Only ParameterDirection.Input is supported when CommandType is Text (parameter name: {0})".FormatInvariant(parameter.ParameterName));

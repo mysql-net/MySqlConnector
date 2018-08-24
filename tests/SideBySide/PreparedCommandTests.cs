@@ -166,6 +166,60 @@ CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCRE
 			}
 		}
 
+		[Fact]
+		public void ThrowsIfNamedParameterUsedButNoParametersDefined()
+		{
+			using (var connection = CreatePrepareConnection())
+			using (var cmd = new MySqlCommand("SELECT @param;", connection))
+			{
+#if BASELINE
+				Assert.Throws<InvalidOperationException>(() => cmd.Prepare());
+#else
+				cmd.Prepare();
+				Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
+#endif
+			}
+		}
+
+		[Fact]
+		public void ThrowsIfUnnamedParameterUsedButNoParametersDefined()
+		{
+			using (var connection = CreatePrepareConnection())
+			using (var cmd = new MySqlCommand("SELECT ?;", connection))
+			{
+				cmd.Prepare();
+				Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
+			}
+		}
+
+		[Fact]
+		public void ThrowsIfUndefinedNamedParameterUsed()
+		{
+			using (var connection = CreatePrepareConnection())
+			using (var cmd = new MySqlCommand("SELECT @param;", connection))
+			{
+				cmd.Parameters.AddWithValue("@name", "test");
+#if BASELINE
+				Assert.Throws<InvalidOperationException>(() => cmd.Prepare());
+#else
+				cmd.Prepare();
+				Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
+#endif
+			}
+		}
+
+		[Fact]
+		public void ThrowsIfTooManyUnnamedParametersUsed()
+		{
+			using (var connection = CreatePrepareConnection())
+			using (var cmd = new MySqlCommand("SELECT ?, ?;", connection))
+			{
+				cmd.Parameters.Add(new MySqlParameter { Value = 1 });
+				cmd.Prepare();
+				Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
+			}
+		}
+
 		public static IEnumerable<object[]> GetInsertAndQueryData()
 		{
 			foreach (var isPrepared in new[] { false, true })

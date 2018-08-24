@@ -68,6 +68,10 @@ namespace MySqlConnector.Core
 				{
 					var parameterName = preparedStatement.Statement.ParameterNames[i];
 					var parameterIndex = parameterName != null ? parameterCollection.NormalizedIndexOf(parameterName) : preparedStatement.Statement.ParameterIndexes[i];
+					if (parameterIndex == -1 && parameterName != null)
+						throw new MySqlException("Parameter '{0}' must be defined.".FormatInvariant(parameterName));
+					else if (parameterIndex < 0 || parameterIndex >= parameterCollection.Count)
+						throw new MySqlException("Parameter index {0} is invalid when only {1} parameter{2} defined.".FormatInvariant(parameterIndex, parameterCollection.Count, parameterCollection.Count == 1 ? " is" : "s are"));
 					parameters[i] = parameterCollection[parameterIndex];
 				}
 
