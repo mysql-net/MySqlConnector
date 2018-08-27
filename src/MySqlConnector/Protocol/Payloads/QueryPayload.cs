@@ -2,7 +2,7 @@ using System.Text;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal sealed class QueryPayload
+	internal readonly struct QueryPayload
 	{
 		public static PayloadData Create(string query)
 		{

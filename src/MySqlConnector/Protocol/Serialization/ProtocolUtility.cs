@@ -476,7 +476,7 @@ namespace MySqlConnector.Protocol.Serialization
 			}
 		}
 
-		private static bool HasReadPayload(ArraySegmentHolder<byte> previousPayloads, Packet packet, ProtocolErrorBehavior protocolErrorBehavior, out ValueTask<ArraySegment<byte>> result)
+		private static bool HasReadPayload(ArraySegmentHolder<byte> previousPayloads, in Packet packet, ProtocolErrorBehavior protocolErrorBehavior, out ValueTask<ArraySegment<byte>> result)
 		{
 			if (previousPayloads.Count == 0 && packet.Contents.Count < MaxPacketSize)
 			{

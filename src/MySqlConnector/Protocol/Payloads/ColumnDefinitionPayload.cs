@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -77,7 +76,7 @@ namespace MySqlConnector.Protocol.Payloads
 
 		public byte Decimals { get; }
 
-		public static ColumnDefinitionPayload Create(ResizableArraySegment<byte> arraySegment)
+		public static ColumnDefinitionPayload Create(in ResizableArraySegment<byte> arraySegment)
 		{
 			var reader = new ByteArrayReader(arraySegment);
 			SkipLengthEncodedByteString(ref reader); // catalog
@@ -104,7 +103,7 @@ namespace MySqlConnector.Protocol.Payloads
 			reader.Offset += length;
 		}
 
-		private ColumnDefinitionPayload(ResizableArraySegment<byte> originalData, CharacterSet characterSet, uint columnLength, ColumnType columnType, ColumnFlags columnFlags, byte decimals)
+		private ColumnDefinitionPayload(in ResizableArraySegment<byte> originalData, CharacterSet characterSet, uint columnLength, ColumnType columnType, ColumnFlags columnFlags, byte decimals)
 		{
 			OriginalData = originalData;
 			CharacterSet = characterSet;

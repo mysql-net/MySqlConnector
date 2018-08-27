@@ -2,13 +2,13 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal sealed class StatementPrepareResponsePayload
+	internal readonly struct StatementPrepareResponsePayload
 	{
 		public int StatementId { get; }
 		public int ColumnCount { get; }
 		public int ParameterCount { get; }
 
-		public static StatementPrepareResponsePayload Create(PayloadData payload)
+		public static StatementPrepareResponsePayload Create(in PayloadData payload)
 		{
 			var reader = new ByteArrayReader(payload.ArraySegment);
 			reader.ReadByte(0);

@@ -4,14 +4,14 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal sealed class AuthenticationMethodSwitchRequestPayload
+	internal readonly struct AuthenticationMethodSwitchRequestPayload
 	{
 		public string Name { get; }
 		public byte[] Data { get; }
 
 		public const byte Signature = 0xFE;
 
-		public static AuthenticationMethodSwitchRequestPayload Create(PayloadData payload)
+		public static AuthenticationMethodSwitchRequestPayload Create(in PayloadData payload)
 		{
 			var reader = new ByteArrayReader(payload.ArraySegment);
 			reader.ReadByte(Signature);

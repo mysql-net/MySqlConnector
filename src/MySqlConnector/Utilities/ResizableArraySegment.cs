@@ -5,7 +5,7 @@ namespace MySqlConnector.Utilities
 	/// <summary>
 	/// An <see cref="ArraySegment{T}"/> that supports having its underlying array reallocated and resized.
 	/// </summary>
-	internal struct ResizableArraySegment<T>
+	internal readonly struct ResizableArraySegment<T>
 	{
 		public ResizableArraySegment(ResizableArray<T> array, int offset, int count)
 		{

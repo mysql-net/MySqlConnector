@@ -1337,7 +1337,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private Exception CreateExceptionForErrorPayload(PayloadData payload)
+		private Exception CreateExceptionForErrorPayload(in PayloadData payload)
 		{
 			var errorPayload = ErrorPayload.Create(payload);
 			var exception = errorPayload.ToException();

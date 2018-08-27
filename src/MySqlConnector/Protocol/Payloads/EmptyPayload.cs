@@ -2,11 +2,16 @@ using System;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-    internal sealed class EmptyPayload
+	internal readonly struct EmptyPayload
     {
         public static PayloadData Create()
         {
-            return new PayloadData(new byte[0]);
+#if NET45
+			byte[] data = new byte[0];
+#else
+			byte[] data = Array.Empty<byte>();
+#endif
+			return new PayloadData(data);
         }
     }
 }

@@ -2,7 +2,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal sealed class InitDatabasePayload
+	internal readonly struct InitDatabasePayload
 	{
 		public static PayloadData Create(string databaseName)
 		{
