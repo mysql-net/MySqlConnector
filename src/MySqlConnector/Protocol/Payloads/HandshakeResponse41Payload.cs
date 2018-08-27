@@ -3,7 +3,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal sealed class HandshakeResponse41Payload
+	internal readonly struct HandshakeResponse41Payload
 	{
 		private static ByteBufferWriter CreateCapabilitiesPayload(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, bool useCompression, ProtocolCapabilities additionalCapabilities=0)
 		{
@@ -37,7 +37,7 @@ namespace MySqlConnector.Protocol.Payloads
 		public static PayloadData CreateWithSsl(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, bool useCompression) =>
 			CreateCapabilitiesPayload(serverCapabilities, cs, useCompression, ProtocolCapabilities.Ssl).ToPayloadData();
 
-		public static PayloadData Create(InitialHandshakePayload handshake, ConnectionSettings cs, bool useCompression, byte[] connectionAttributes)
+		public static PayloadData Create(in InitialHandshakePayload handshake, ConnectionSettings cs, bool useCompression, byte[] connectionAttributes)
 		{
 			// TODO: verify server capabilities
 			var writer = CreateCapabilitiesPayload(handshake.ProtocolCapabilities, cs, useCompression);

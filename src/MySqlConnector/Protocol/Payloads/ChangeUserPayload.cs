@@ -2,7 +2,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal sealed class ChangeUserPayload
+	internal readonly struct ChangeUserPayload
 	{
 		public static PayloadData Create(string user, byte[] authResponse, string schemaName, byte[] connectionAttributes)
 		{

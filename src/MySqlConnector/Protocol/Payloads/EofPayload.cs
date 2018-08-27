@@ -4,12 +4,12 @@ using MySqlConnector.Protocol.Serialization;
 namespace MySqlConnector.Protocol.Payloads
 {
 	// See https://dev.mysql.com/doc/internals/en/packet-EOF_Packet.html
-	internal sealed class EofPayload
+	internal readonly struct EofPayload
 	{
 		public int WarningCount { get; }
 		public ServerStatus ServerStatus { get; }
 
-		public static EofPayload Create(PayloadData payload)
+		public static EofPayload Create(in PayloadData payload)
 		{
 			var reader = new ByteArrayReader(payload.ArraySegment);
 			reader.ReadByte(Signature);
@@ -30,7 +30,7 @@ namespace MySqlConnector.Protocol.Payloads
 		/// </summary>
 		/// <param name="payload">The payload to examine.</param>
 		/// <returns><c>true</c> if this is an EOF packet; otherwise, <c>false</c>.</returns>
-		public static bool IsEof(PayloadData payload) =>
+		public static bool IsEof(in PayloadData payload) =>
 			payload.ArraySegment.Count > 0 && payload.ArraySegment.Count < 9 && payload.ArraySegment.Array[payload.ArraySegment.Offset] == Signature;
 
 		public const byte Signature = 0xFE;

@@ -5,7 +5,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal sealed class InitialHandshakePayload
+	internal readonly struct InitialHandshakePayload
 	{
 		public ProtocolCapabilities ProtocolCapabilities { get; }
 		public byte[] ServerVersion { get; }
@@ -13,7 +13,7 @@ namespace MySqlConnector.Protocol.Payloads
 		public byte[] AuthPluginData { get; }
 		public string AuthPluginName { get; }
 
-		public static InitialHandshakePayload Create(PayloadData payload)
+		public static InitialHandshakePayload Create(in PayloadData payload)
 		{
 			var reader = new ByteArrayReader(payload.ArraySegment);
 			reader.ReadByte(c_protocolVersion);

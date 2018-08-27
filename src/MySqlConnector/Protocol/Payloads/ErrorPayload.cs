@@ -6,7 +6,7 @@ using MySqlConnector.Utilities;
 namespace MySqlConnector.Protocol.Payloads
 {
 	// See https://dev.mysql.com/doc/internals/en/packet-ERR_Packet.html
-	internal sealed class ErrorPayload
+	internal readonly struct ErrorPayload
 	{
 		public int ErrorCode { get; }
 		public string State { get; }
@@ -14,7 +14,7 @@ namespace MySqlConnector.Protocol.Payloads
 
 		public MySqlException ToException() => new MySqlException(ErrorCode, State, Message);
 
-		public static ErrorPayload Create(PayloadData payload)
+		public static ErrorPayload Create(in PayloadData payload)
 		{
 			var reader = new ByteArrayReader(payload.ArraySegment);
 			reader.ReadByte(Signature);

@@ -2,7 +2,7 @@ using System;
 
 namespace MySqlConnector.Protocol.Serialization
 {
-	internal struct Packet
+	internal readonly struct Packet
 	{
 		public Packet(ArraySegment<byte> contents)
 		{

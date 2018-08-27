@@ -2,7 +2,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal sealed class CachingSha2ServerResponsePayload
+	internal readonly struct CachingSha2ServerResponsePayload
 	{
 		public const byte Signature = 0x01;
 
@@ -20,7 +20,7 @@ namespace MySqlConnector.Protocol.Payloads
 
 		public bool FullAuthRequired { get; }
 
-		public static CachingSha2ServerResponsePayload Create(PayloadData payload)
+		public static CachingSha2ServerResponsePayload Create(in PayloadData payload)
 		{
 			var reader = new ByteArrayReader(payload.ArraySegment);
 			reader.ReadByte(Signature);

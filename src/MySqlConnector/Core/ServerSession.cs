@@ -622,7 +622,7 @@ namespace MySqlConnector.Core
 		}
 
 		// Starts a new conversation with the server by sending the first packet.
-		public ValueTask<int> SendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public ValueTask<int> SendAsync(in PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			m_payloadHandler.StartNewConversation();
 			return SendReplyAsync(payload, ioBehavior, cancellationToken);
@@ -666,7 +666,7 @@ namespace MySqlConnector.Core
 		}
 
 		// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
-		public ValueTask<int> SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public ValueTask<int> SendReplyAsync(in PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			ValueTask<int> task;
 			try
@@ -1337,7 +1337,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private Exception CreateExceptionForErrorPayload(PayloadData payload)
+		private Exception CreateExceptionForErrorPayload(in PayloadData payload)
 		{
 			var errorPayload = ErrorPayload.Create(payload);
 			var exception = errorPayload.ToException();

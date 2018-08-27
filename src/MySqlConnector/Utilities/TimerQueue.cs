@@ -108,7 +108,7 @@ namespace MySqlConnector.Utilities
 			m_timer.Change(-1, -1);
 		}
 
-		private struct Data
+		private readonly struct Data
 		{
 			public Data(uint id, int time, Action action)
 			{

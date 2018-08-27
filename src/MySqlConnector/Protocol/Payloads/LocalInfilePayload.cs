@@ -5,13 +5,13 @@ using MySqlConnector.Utilities;
 namespace MySqlConnector.Protocol.Payloads
 {
 	// See https://dev.mysql.com/doc/internals/en/com-query-response.html#local-infile-request
-	internal sealed class LocalInfilePayload
+	internal readonly struct LocalInfilePayload
 	{
 		public const byte Signature = 0xFB;
 
 		public string FileName { get; }
 
-		public static LocalInfilePayload Create(PayloadData payload)
+		public static LocalInfilePayload Create(in PayloadData payload)
 		{
 			var reader = new ByteArrayReader(payload.ArraySegment);
 			reader.ReadByte(Signature);

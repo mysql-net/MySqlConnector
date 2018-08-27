@@ -5,7 +5,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal sealed class OkPayload
+	internal readonly struct OkPayload
 	{
 		public int AffectedRowCount { get; }
 		public ulong LastInsertId { get; }
@@ -20,14 +20,14 @@ namespace MySqlConnector.Protocol.Payloads
 		 * https://mariadb.com/kb/en/the-mariadb-library/resultset/
 		 * https://github.com/MariaDB/mariadb-connector-j/blob/5fa814ac6e1b4c9cb6d141bd221cbd5fc45c8a78/src/main/java/org/mariadb/jdbc/internal/com/read/resultset/SelectResultSet.java#L443-L444
 		 */
-		public static bool IsOk(PayloadData payload, bool deprecateEof) =>
+		public static bool IsOk(in PayloadData payload, bool deprecateEof) =>
 			payload.ArraySegment.Array != null && payload.ArraySegment.Count > 0 &&
 				((payload.ArraySegment.Count > 6 && payload.ArraySegment.Array[payload.ArraySegment.Offset] == Signature) ||
 				(deprecateEof && payload.ArraySegment.Count < 0xFF_FFFF && payload.ArraySegment.Array[payload.ArraySegment.Offset] == EofPayload.Signature));
 
-		public static OkPayload Create(PayloadData payload) => Create(payload, false);
+		public static OkPayload Create(in PayloadData payload) => Create(payload, false);
 
-		public static OkPayload Create(PayloadData payload, bool deprecateEof)
+		public static OkPayload Create(in PayloadData payload, bool deprecateEof)
 		{
 			var reader = new ByteArrayReader(payload.ArraySegment);
 			var signature = reader.ReadByte();
