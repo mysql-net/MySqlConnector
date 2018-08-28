@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -11,9 +12,9 @@ namespace MySqlConnector.Protocol.Payloads
 
 		public string FileName { get; }
 
-		public static LocalInfilePayload Create(PayloadData payload)
+		public static LocalInfilePayload Create(ReadOnlySpan<byte> span)
 		{
-			var reader = new ByteArrayReader(payload.ArraySegment);
+			var reader = new ByteArrayReader(span);
 			reader.ReadByte(Signature);
 			var fileName = Encoding.UTF8.GetString(reader.ReadByteString(reader.BytesRemaining));
 			return new LocalInfilePayload(fileName);

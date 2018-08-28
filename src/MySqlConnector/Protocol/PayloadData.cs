@@ -18,6 +18,7 @@ namespace MySqlConnector.Protocol
 		}
 
 		public ArraySegment<byte> ArraySegment { get; }
+		public ReadOnlySpan<byte> AsSpan() => ArraySegment.AsSpan();
 		public byte HeaderByte => ArraySegment.Array[ArraySegment.Offset];
 
 		public void Dispose()

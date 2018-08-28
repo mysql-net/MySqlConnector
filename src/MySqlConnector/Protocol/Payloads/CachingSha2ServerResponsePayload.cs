@@ -1,3 +1,4 @@
+using System;
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
@@ -20,9 +21,9 @@ namespace MySqlConnector.Protocol.Payloads
 
 		public bool FullAuthRequired { get; }
 
-		public static CachingSha2ServerResponsePayload Create(PayloadData payload)
+		public static CachingSha2ServerResponsePayload Create(ReadOnlySpan<byte> span)
 		{
-			var reader = new ByteArrayReader(payload.ArraySegment);
+			var reader = new ByteArrayReader(span);
 			reader.ReadByte(Signature);
 			var secondByte = reader.ReadByte();
 

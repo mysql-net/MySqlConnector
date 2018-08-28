@@ -131,7 +131,7 @@ namespace MySql.Data.MySqlClient
 			{
 				await Connection.Session.SendAsync(new PayloadData(statement.StatementBytes), ioBehavior, cancellationToken).ConfigureAwait(false);
 				var payload = await Connection.Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				var response = StatementPrepareResponsePayload.Create(payload);
+				var response = StatementPrepareResponsePayload.Create(payload.AsSpan());
 
 				ColumnDefinitionPayload[] parameters = null;
 				if (response.ParameterCount > 0)
@@ -148,7 +148,7 @@ namespace MySql.Data.MySqlClient
 					if (!Connection.Session.SupportsDeprecateEof)
 					{
 						payload = await Connection.Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-						EofPayload.Create(payload);
+						EofPayload.Create(payload.AsSpan());
 					}
 				}
 
@@ -167,7 +167,7 @@ namespace MySql.Data.MySqlClient
 					if (!Connection.Session.SupportsDeprecateEof)
 					{
 						payload = await Connection.Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-						EofPayload.Create(payload);
+						EofPayload.Create(payload.AsSpan());
 					}
 				}
 

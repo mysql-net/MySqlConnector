@@ -44,7 +44,7 @@ namespace MySqlConnector.Core
 					var firstByte = payload.HeaderByte;
 					if (firstByte == OkPayload.Signature)
 					{
-						var ok = OkPayload.Create(payload);
+						var ok = OkPayload.Create(payload.AsSpan());
 						RecordsAffected = (RecordsAffected ?? 0) + ok.AffectedRowCount;
 						LastInsertId = unchecked((long) ok.LastInsertId);
 						if (ok.NewSchema != null)
@@ -61,7 +61,7 @@ namespace MySqlConnector.Core
 					{
 						try
 						{
-							var localInfile = LocalInfilePayload.Create(payload);
+							var localInfile = LocalInfilePayload.Create(payload.AsSpan());
 							if (!IsHostVerified(Connection)
 								&& !localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal))
 								throw new NotSupportedException("Use SourceStream or SslMode >= VerifyCA for LOAD DATA LOCAL INFILE");
@@ -89,15 +89,15 @@ namespace MySqlConnector.Core
 					}
 					else
 					{
-						int ReadColumnCount(ArraySegment<byte> arraySegment)
+						int ReadColumnCount(ReadOnlySpan<byte> span)
 						{
-							var reader = new ByteArrayReader(arraySegment);
+							var reader = new ByteArrayReader(span);
 							var columnCount_ = (int) reader.ReadLengthEncodedInteger();
 							if (reader.BytesRemaining != 0)
 								throw new MySqlException("Unexpected data at end of column_count packet; see https://github.com/mysql-net/MySqlConnector/issues/324");
 							return columnCount_;
 						}
-						var columnCount = ReadColumnCount(payload.ArraySegment);
+						var columnCount = ReadColumnCount(payload.AsSpan());
 
 						// reserve adequate space to hold a copy of all column definitions (but note that this can be resized below if we guess too small)
 						Utility.Resize(ref m_columnDefinitionPayloads, columnCount * 96);
@@ -124,7 +124,7 @@ namespace MySqlConnector.Core
 						if (!Session.SupportsDeprecateEof)
 						{
 							payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-							EofPayload.Create(payload);
+							EofPayload.Create(payload.AsSpan());
 						}
 
 						LastInsertId = -1;
@@ -225,16 +225,17 @@ namespace MySqlConnector.Core
 			{
 				if (payload.HeaderByte == EofPayload.Signature)
 				{
-					if (Session.SupportsDeprecateEof && OkPayload.IsOk(payload, Session.SupportsDeprecateEof))
+					var span = payload.AsSpan();
+					if (Session.SupportsDeprecateEof && OkPayload.IsOk(span, Session.SupportsDeprecateEof))
 					{
-						var ok = OkPayload.Create(payload, Session.SupportsDeprecateEof);
+						var ok = OkPayload.Create(span, Session.SupportsDeprecateEof);
 						BufferState = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
 						m_rowBuffered = null;
 						return null;
 					}
 					if (!Session.SupportsDeprecateEof && EofPayload.IsEof(payload))
 					{
-						var eof = EofPayload.Create(payload);
+						var eof = EofPayload.Create(span);
 						BufferState = (eof.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
 						m_rowBuffered = null;
 						return null;

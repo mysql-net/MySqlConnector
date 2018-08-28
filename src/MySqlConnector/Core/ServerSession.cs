@@ -185,7 +185,7 @@ namespace MySqlConnector.Core
 				var payload = QueryPayload.Create("DO SLEEP(0);");
 				SendAsync(payload, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 				payload = ReceiveReplyAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-				OkPayload.Create(payload);
+				OkPayload.Create(payload.AsSpan());
 			}
 
 			lock (m_lock)
@@ -286,7 +286,7 @@ namespace MySqlConnector.Core
 					m_payloadHandler = new StandardPayloadHandler(byteHandler);
 
 					payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					initialHandshake = InitialHandshakePayload.Create(payload);
+					initialHandshake = InitialHandshakePayload.Create(payload.AsSpan());
 
 					// if PluginAuth is supported, then use the specified auth plugin; else, fall back to protocol capabilities to determine the auth type to use
 					string authPluginName;
@@ -361,7 +361,7 @@ namespace MySqlConnector.Core
 					payload = await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 
-				OkPayload.Create(payload);
+				OkPayload.Create(payload.AsSpan());
 
 				if (m_useCompression)
 					m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
@@ -396,12 +396,12 @@ namespace MySqlConnector.Core
 					Log.Debug("Session{0} ServerVersion={1} supports reset connection; sending reset connection request", m_logArguments);
 					await SendAsync(ResetConnectionPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 					var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Create(payload);
+					OkPayload.Create(payload.AsSpan());
 
 					// the "reset connection" packet also resets the connection charset, so we need to change that back to our default
 					await SendAsync(s_setNamesUtf8mb4Payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Create(payload);
+					OkPayload.Create(payload.AsSpan());
 				}
 				else
 				{
@@ -426,7 +426,7 @@ namespace MySqlConnector.Core
 						Log.Debug("Session{0} optimistic reauthentication failed; logging in again", m_logArguments);
 						payload = await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
-					OkPayload.Create(payload);
+					OkPayload.Create(payload.AsSpan());
 				}
 
 				return true;
@@ -446,7 +446,7 @@ namespace MySqlConnector.Core
 		private async Task<PayloadData> SwitchAuthenticationAsync(ConnectionSettings cs, PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			// if the server didn't support the hashed password; rehash with the new challenge
-			var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload);
+			var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload.AsSpan());
 			m_logArguments[1] = switchRequest.Name;
 			Log.Debug("Session{0} switching to AuthenticationMethod '{1}'", m_logArguments);
 			switch (switchRequest.Name)
@@ -475,10 +475,10 @@ namespace MySqlConnector.Core
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				// OK payload can be sent immediately (e.g., if password is empty( (short-circuiting the )
-				if (OkPayload.IsOk(payload, SupportsDeprecateEof))
+				if (OkPayload.IsOk(payload.AsSpan(), SupportsDeprecateEof))
 					return payload;
 
-				var cachingSha2ServerResponsePayload = CachingSha2ServerResponsePayload.Create(payload);
+				var cachingSha2ServerResponsePayload = CachingSha2ServerResponsePayload.Create(payload.AsSpan());
 				if (cachingSha2ServerResponsePayload.Succeeded)
 					return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
@@ -585,7 +585,7 @@ namespace MySqlConnector.Core
 				var payloadContent = switchRequestName == "caching_sha2_password" ? (byte) 0x02 : (byte) 0x01;
 				await SendReplyAsync(new PayloadData(new[] { payloadContent }), ioBehavior, cancellationToken).ConfigureAwait(false);
 				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload);
+				var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload.AsSpan());
 				return Encoding.ASCII.GetString(publicKeyPayload.Data);
 			}
 
@@ -604,7 +604,7 @@ namespace MySqlConnector.Core
 				Log.Debug("Session{0} pinging server", m_logArguments);
 				await SendAsync(PingPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				OkPayload.Create(payload);
+				OkPayload.Create(payload.AsSpan());
 				Log.Info("Session{0} successfully pinged server", m_logArguments);
 				return true;
 			}
@@ -658,7 +658,7 @@ namespace MySqlConnector.Core
 				if (payload.HeaderByte != ErrorPayload.Signature)
 					return new ValueTask<PayloadData>(payload);
 
-				var exception = CreateExceptionForErrorPayload(payload);
+				var exception = CreateExceptionForErrorPayload(payload.AsSpan());
 				return ValueTaskExtensions.FromException<PayloadData>(exception);
 			}
 
@@ -1140,27 +1140,27 @@ namespace MySqlConnector.Core
 				if (!SupportsDeprecateEof)
 				{
 					payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-					EofPayload.Create(payload);
+					EofPayload.Create(payload.AsSpan());
 				}
 
 				// first (and only) row
 				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-				void ReadRow(ArraySegment<byte> arraySegment, out int? connectionId_, out string serverVersion_)
+				void ReadRow(ReadOnlySpan<byte> span, out int? connectionId_, out string serverVersion_)
 				{
-					var reader = new ByteArrayReader(arraySegment);
+					var reader = new ByteArrayReader(span);
 					var length = reader.ReadLengthEncodedIntegerOrNull();
 					connectionId_ = (length != -1 && Utf8Parser.TryParse(reader.ReadByteString(length), out int id, out _)) ? id : default(int?);
 					length = reader.ReadLengthEncodedIntegerOrNull();
 					serverVersion_ = length != -1 ? Encoding.UTF8.GetString(reader.ReadByteString(length)) : null;
 				}
-				ReadRow(payload.ArraySegment, out var connectionId, out var serverVersion);
+				ReadRow(payload.AsSpan(), out var connectionId, out var serverVersion);
 
 				// OK/EOF payload
 				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-				if (OkPayload.IsOk(payload, SupportsDeprecateEof))
-					OkPayload.Create(payload, SupportsDeprecateEof);
+				if (OkPayload.IsOk(payload.AsSpan(), SupportsDeprecateEof))
+					OkPayload.Create(payload.AsSpan(), SupportsDeprecateEof);
 				else
-					EofPayload.Create(payload);
+					EofPayload.Create(payload.AsSpan());
 
 				if (connectionId.HasValue && serverVersion != null)
 				{
@@ -1241,7 +1241,7 @@ namespace MySqlConnector.Core
 			}
 			var payload = new PayloadData(bytes);
 			if (payload.HeaderByte == ErrorPayload.Signature)
-				throw CreateExceptionForErrorPayload(payload);
+				throw CreateExceptionForErrorPayload(payload.AsSpan());
 			return payload;
 		}
 
@@ -1337,9 +1337,9 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private Exception CreateExceptionForErrorPayload(PayloadData payload)
+		private Exception CreateExceptionForErrorPayload(ReadOnlySpan<byte> span)
 		{
-			var errorPayload = ErrorPayload.Create(payload);
+			var errorPayload = ErrorPayload.Create(span);
 			var exception = errorPayload.ToException();
 			Log.Error(exception, "Session{0} got error payload: Code={1}, State={2}, Message={3}", m_logArguments[0], errorPayload.ErrorCode, errorPayload.State, errorPayload.Message);
 			return exception;

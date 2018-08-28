@@ -9,14 +9,14 @@ namespace MySqlConnector.Protocol.Payloads
 		public int WarningCount { get; }
 		public ServerStatus ServerStatus { get; }
 
-		public static EofPayload Create(PayloadData payload)
+		public static EofPayload Create(ReadOnlySpan<byte> span)
 		{
-			var reader = new ByteArrayReader(payload.ArraySegment);
+			var reader = new ByteArrayReader(span);
 			reader.ReadByte(Signature);
-			if (payload.ArraySegment.Count > 5)
+			if (span.Length > 5)
 				throw new FormatException("Not an EOF packet");
 			int warningCount = reader.ReadUInt16();
-			ServerStatus serverStatus = (ServerStatus) reader.ReadUInt16();
+			var serverStatus = (ServerStatus) reader.ReadUInt16();
 
 			if (reader.BytesRemaining != 0)
 				throw new FormatException("Extra bytes at end of payload.");

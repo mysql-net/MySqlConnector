@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using MySql.Data.MySqlClient;
 using MySqlConnector.Protocol.Serialization;
@@ -14,9 +15,9 @@ namespace MySqlConnector.Protocol.Payloads
 
 		public MySqlException ToException() => new MySqlException(ErrorCode, State, Message);
 
-		public static ErrorPayload Create(PayloadData payload)
+		public static ErrorPayload Create(ReadOnlySpan<byte> span)
 		{
-			var reader = new ByteArrayReader(payload.ArraySegment);
+			var reader = new ByteArrayReader(span);
 			reader.ReadByte(Signature);
 
 			var errorCode = reader.ReadUInt16();
@@ -25,12 +26,12 @@ namespace MySqlConnector.Protocol.Payloads
 			if (stateMarker == "#")
 			{
 				state = Encoding.ASCII.GetString(reader.ReadByteString(5));
-				message = Encoding.UTF8.GetString(reader.ReadByteString(payload.ArraySegment.Count - 9));
+				message = Encoding.UTF8.GetString(reader.ReadByteString(span.Length - 9));
 			}
 			else
 			{
 				state = "HY000";
-				message = stateMarker + Encoding.UTF8.GetString(reader.ReadByteString(payload.ArraySegment.Count - 4));
+				message = stateMarker + Encoding.UTF8.GetString(reader.ReadByteString(span.Length - 4));
 			}
 			return new ErrorPayload(errorCode, state, message);
 		}

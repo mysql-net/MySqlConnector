@@ -1,3 +1,4 @@
+using System;
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
@@ -8,9 +9,9 @@ namespace MySqlConnector.Protocol.Payloads
 		public int ColumnCount { get; }
 		public int ParameterCount { get; }
 
-		public static StatementPrepareResponsePayload Create(PayloadData payload)
+		public static StatementPrepareResponsePayload Create(ReadOnlySpan<byte> span)
 		{
-			var reader = new ByteArrayReader(payload.ArraySegment);
+			var reader = new ByteArrayReader(span);
 			reader.ReadByte(0);
 			var statementId = reader.ReadInt32();
 			var columnCount = (int) reader.ReadInt16();

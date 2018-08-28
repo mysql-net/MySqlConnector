@@ -1,3 +1,4 @@
+using System;
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
@@ -8,9 +9,9 @@ namespace MySqlConnector.Protocol.Payloads
 
 		public const byte Signature = 0x01;
 
-		public static AuthenticationMoreDataPayload Create(PayloadData payload)
+		public static AuthenticationMoreDataPayload Create(ReadOnlySpan<byte> span)
 		{
-			var reader = new ByteArrayReader(payload.ArraySegment);
+			var reader = new ByteArrayReader(span);
 			reader.ReadByte(Signature);
 			return new AuthenticationMoreDataPayload(reader.ReadByteString(reader.BytesRemaining).ToArray());
 		}

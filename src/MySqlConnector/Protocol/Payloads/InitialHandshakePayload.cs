@@ -13,9 +13,9 @@ namespace MySqlConnector.Protocol.Payloads
 		public byte[] AuthPluginData { get; }
 		public string AuthPluginName { get; }
 
-		public static InitialHandshakePayload Create(PayloadData payload)
+		public static InitialHandshakePayload Create(ReadOnlySpan<byte> span)
 		{
-			var reader = new ByteArrayReader(payload.ArraySegment);
+			var reader = new ByteArrayReader(span);
 			reader.ReadByte(c_protocolVersion);
 			var serverVersion = reader.ReadNullTerminatedByteString();
 			var connectionId = reader.ReadInt32();

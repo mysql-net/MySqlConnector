@@ -13,11 +13,6 @@ namespace MySqlConnector.Protocol.Serialization
 			m_maxOffset = buffer.Length;
 		}
 
-		public ByteArrayReader(ArraySegment<byte> arraySegment)
-			: this(arraySegment.AsSpan())
-		{
-		}
-
 		public int Offset
 		{
 			get => m_offset;
