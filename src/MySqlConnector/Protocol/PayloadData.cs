@@ -3,7 +3,7 @@ using System.Buffers;
 
 namespace MySqlConnector.Protocol
 {
-	internal struct PayloadData : IDisposable
+	internal readonly struct PayloadData : IDisposable
 	{
 		public PayloadData(byte[] data, bool isPooled = false)
 		{
