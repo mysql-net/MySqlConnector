@@ -85,7 +85,7 @@ namespace MySqlConnector.Core
 							ReadResultSetHeaderException = new MySqlException("Error during LOAD DATA LOCAL INFILE", ex);
 						}
 
-						await Session.SendReplyAsync(EmptyPayload.Create(), ioBehavior, CancellationToken.None).ConfigureAwait(false);
+						await Session.SendReplyAsync(EmptyPayload.Instance, ioBehavior, CancellationToken.None).ConfigureAwait(false);
 					}
 					else
 					{

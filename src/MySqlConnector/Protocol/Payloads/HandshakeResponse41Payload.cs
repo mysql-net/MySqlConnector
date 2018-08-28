@@ -3,7 +3,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
 {
-	internal sealed class HandshakeResponse41Payload
+	internal static class HandshakeResponse41Payload
 	{
 		private static ByteBufferWriter CreateCapabilitiesPayload(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, bool useCompression, ProtocolCapabilities additionalCapabilities=0)
 		{
