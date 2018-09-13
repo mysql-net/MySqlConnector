@@ -17,7 +17,7 @@ namespace MySqlConnector.Core
 				{ "MetaDataCollections", FillMetadataCollections },
 				{ "DataTypes", FillDataTypes },
 				{ "Procedures", FillProcedures },
-				{ "ReservedWords", FillReservedWords }
+				{ "ReservedWords", FillReservedWords },
 			};
 		}
 
