@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.45.0
+
+* Implement `MySqlConnection.GetSchema("ReservedWords")`. [#559](https://github.com/mysql-net/MySqlConnector/issues/559).
+* Optimisation: Use `ReadOnlySpan<byte>` when deserialising payloads.
+* Thanks to [Federico Sasso](https://github.com/fedesasso) for contributions to this release.
+
 ### 0.44.1
 
 * `MySqlCommand.Prepare` will cache the prepared command until the connection is reset.
