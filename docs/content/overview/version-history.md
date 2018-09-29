@@ -11,9 +11,14 @@ weight: 30
 Version History
 ===============
 
+### 0.45.1
+
+* Fix error parsing SQL parameters: [#563](https://github.com/mysql-net/MySqlConnector/issues/563).
+* Add documentation for common errors: [#565](https://github.com/mysql-net/MySqlConnector/issues/565).
+
 ### 0.45.0
 
-* Implement `MySqlConnection.GetSchema("ReservedWords")`. [#559](https://github.com/mysql-net/MySqlConnector/issues/559).
+* Implement `MySqlConnection.GetSchema("ReservedWords")`: [#559](https://github.com/mysql-net/MySqlConnector/issues/559).
 * Optimisation: Use `ReadOnlySpan<byte>` when deserialising payloads.
 * Thanks to [Federico Sasso](https://github.com/fedesasso) for contributions to this release.
 
