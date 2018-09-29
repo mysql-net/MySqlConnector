@@ -21,6 +21,17 @@ var connString = &amp;quot;Server=myserver;User ID=mylogin;Password=mypass;Datab
     </item>
     
     <item>
+      <title>Connection Reuse</title>
+      <link>https://mysql-net.github.io/MySqlConnector/troubleshooting/connection-reuse/</link>
+      <pubDate>Sat, 29 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/troubleshooting/connection-reuse/</guid>
+      <description>Connection Reuse A MySqlConnection object may only be used for one operation at a time. It may not be shared across multiple threads and used simultaneously, nor reused on the same thread while there is an open MySqlDataReader.
+Examples of Prohibited Use Multiple Threads You may not execute multiple operations in parallel, for example:
+using (var connection = new MySqlConnection(&amp;quot;...&amp;quot;)) { await connection.OpenAsync(); await Task.WhenAll( // don&#39;t do this connection.</description>
+    </item>
+    
+    <item>
       <title>Best Practices</title>
       <link>https://mysql-net.github.io/MySqlConnector/tutorials/best-practices/</link>
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
@@ -72,6 +83,16 @@ Connection ID from MySQL Server
 Additional Instance Methods public Task&amp;lt;MySqlTransaction&amp;gt; BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))
 Async version of BeginTransaction
 public Task&amp;lt;MySqlTransaction&amp;gt; BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))</description>
+    </item>
+    
+    <item>
+      <title>Transaction Usage</title>
+      <link>https://mysql-net.github.io/MySqlConnector/troubleshooting/transaction-usage/</link>
+      <pubDate>Sat, 29 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/troubleshooting/transaction-usage/</guid>
+      <description>Transaction Usage By default, MySqlConnector requires MySqlCommand.Transaction to be set to the connection&amp;rsquo;s active transaction in order for the command to be executed successfully. This strictness is intended to catch programming bugs related to using the wrong transaction, a disposed transaction, or forgetting to set the transaction (and using the default value null).
+However, this strictness can make migrating from Connector/NET more difficult, as it may require significant code changes to pass the current transaction through to all command objects.</description>
     </item>
     
     <item>

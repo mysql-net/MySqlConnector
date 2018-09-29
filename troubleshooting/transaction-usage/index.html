@@ -28,7 +28,7 @@
 
     <meta name="generator" content="Hugo 0.32" />
     
-    <title>MySqlConnector - Use with ORMs</title>
+    <title>MySqlConnector - Transaction Usage</title>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -54,22 +54,59 @@
 
 
 
-<h1 id="use-with-orms">Use with ORMs</h1>
+<h1 id="transaction-usage">Transaction Usage</h1>
 
-<p>This library is compatible with popular .NET ORMs including:</p>
+<p>By default, MySqlConnector requires <code>MySqlCommand.Transaction</code> to be set to the connection&rsquo;s active transaction in order for the command to be executed successfully. This strictness is intended to catch programming bugs related to using the wrong transaction, a disposed transaction, or forgetting to set the transaction (and using the default value <code>null</code>).</p>
+
+<p>However, this strictness can make migrating from Connector/NET more difficult, as it may require significant code changes to pass the current transaction through to all command objects. It can also be challenging when using a library like Dapper that creates the <code>MySqlCommand</code> objects itself.</p>
+
+<h2 id="workaround-use-ignorecommandtransaction-true">Workaround: Use IgnoreCommandTransaction=true</h2>
+
+<p>To easily migrate code from Connector/NET, use the <code>IgnoreCommandTransaction=true</code> connection string setting to emulate Connector/NET&rsquo;s behaviour and not validate the value of <code>MySqlCommand.Transaction</code>. By doing this, you will not need the code fixes prescribed below.</p>
+
+<h2 id="code-fix-set-mysqlcommand-transaction">Code Fix: Set MySqlCommand.Transaction</h2>
+
+<h3 id="ado-net-example">ADO.NET example</h3>
+
+<pre><code class="language-csharp">using (var connection = new MySqlConnection(...))
+{
+    connection.Open();
+    using (var transaction = connection.BeginTransaction())
+    using (var command = connection.CreateCommand())
+    {
+        command.CommandText = &quot;SELECT ...&quot;;
+
+        // *** ADD THIS LINE ***
+        command.Transaction = transaction;
+
+        // otherwise, this will throw System.InvalidOperationException: The transaction associated with this command is not the connection's active transaction.
+        command.ExecuteScalar();
+    }
+}
+</code></pre>
+
+<h3 id="dapper-example">Dapper Example</h3>
+
+<pre><code class="language-csharp">using (var connection = new MySqlConnection(...))
+{
+    connection.Open();
+    using (var transaction = connection.BeginTransaction())
+    {
+        // this will throw System.InvalidOperationException: The transaction associated with this command is not the connection's active transaction.
+        connection.Query(&quot;SELECT ...&quot;);
+
+        // use this instead:
+        connection.Query(&quot;SELECT ...&quot;, transaction: transaction);
+    }
+}
+</code></pre>
+
+<h2 id="further-reading">Further Reading</h2>
 
 <ul>
-<li><a href="https://stackexchange.github.io/Dapper/">Dapper</a> (<a href="https://github.com/StackExchange/dapper-dot-net">GitHub</a>, <a href="https://www.nuget.org/packages/Dapper">NuGet</a>)</li>
-<li><a href="https://www.nrecosite.com/dalc_net.aspx">NReco.Data</a> (<a href="https://github.com/nreco/data">GitHub</a>, <a href="https://www.nuget.org/packages/NReco.Data">NuGet</a>)</li>
-<li><a href="http://www.paradigm.net.co/">Paradigm ORM</a> (<a href="https://github.com/MiracleDevs/Paradigm.ORM">GitHub</a>, <a href="https://www.nuget.org/packages/Paradigm.ORM.Data.MySql/">NuGet</a>)</li>
-<li><a href="https://servicestack.net/ormlite">ServiceStack.OrmLite</a> (<a href="https://github.com/ServiceStack/ServiceStack.OrmLite">GitHub</a>, <a href="https://www.nuget.org/packages/ServiceStack.OrmLite.MySqlConnector">NuGet</a>)</li>
-<li>SimpleStack.Orm (<a href="https://github.com/SimpleStack/simplestack.orm">GitHub</a>, <a href="https://www.nuget.org/packages/SimpleStack.Orm.MySQLConnector">NuGet</a>)</li>
-</ul>
-
-<p>For Entity Framework support, use:</p>
-
-<ul>
-<li>Pomelo.EntityFrameworkCore.MySql (<a href="https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql">GitHub</a>, <a href="https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql">NuGet</a>)</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=88611">MySQL bug 88611</a> reporting Connector/NET&rsquo;s behaviour as a bug</li>
+<li><a href="https://github.com/mysql-net/MySqlConnector/issues/333">Issue #333</a> for the addition of MySqlConnector&rsquo;s strict behaviour</li>
+<li>Issues <a href="https://github.com/mysql-net/MySqlConnector/issues/405">#405</a>, <a href="https://github.com/mysql-net/MySqlConnector/issues/452">#452</a>, <a href="https://github.com/mysql-net/MySqlConnector/issues/457">#457</a> for users encountering this as a breaking change</li>
 </ul>
 
 
