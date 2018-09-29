@@ -29,3 +29,8 @@ pluralizeListTitles = false
     identifier = "api"
     pre = "<i class='fa fa-file-text'></i>"
     weight = 50
+[[menu.main]]
+    name = "Troubleshooting"
+    identifier = "troubleshooting"
+    pre = "<i class='fa fa-lightbulb-o'></i>"
+    weight = 60

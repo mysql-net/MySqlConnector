@@ -419,7 +419,7 @@ namespace MySql.Data.MySqlClient
 			else if (Connection.State != ConnectionState.Open && Connection.State != ConnectionState.Connecting)
 				exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
 			else if (!Connection.IgnoreCommandTransaction && Transaction != Connection.CurrentTransaction)
-				exception = new InvalidOperationException("The transaction associated with this command is not the connection's active transaction; see https://github.com/mysql-net/MySqlConnector/issues/474");
+				exception = new InvalidOperationException("The transaction associated with this command is not the connection's active transaction; see https://fl.vu/mysql-trans");
 			else if (string.IsNullOrWhiteSpace(CommandText))
 				exception = new InvalidOperationException("CommandText must be specified");
 			return exception == null;
