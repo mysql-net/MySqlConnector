@@ -152,7 +152,7 @@ namespace MySqlConnector.Core
 				{
 					m_logArguments[1] = m_state;
 					Log.Error("Session{0} can't execute new command when in SessionState: {1}: CommandText: {2}", m_logArguments[0], m_state, command.CommandText);
-					throw new InvalidOperationException("There is already an open DataReader associated with this Connection which must be closed first.");
+					throw new InvalidOperationException("This MySqlConnection is already in use. See https://fl.vu/mysql-conn-reuse");
 				}
 
 				VerifyState(State.Connected);
