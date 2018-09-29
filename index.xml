@@ -140,7 +140,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.45.0  Implement MySqlConnection.GetSchema(&amp;quot;ReservedWords&amp;quot;). #559. Optimisation: Use ReadOnlySpan&amp;lt;byte&amp;gt; when deserialising payloads. Thanks to Federico Sasso for contributions to this release.  0.44.1  MySqlCommand.Prepare will cache the prepared command until the connection is reset. Improve performance of MySqlCommand.Prepare, especially when preparation is unnecessary. Lazily allocate MySqlParameterCollection (accessed via MySqlCommand.Parameters) for better performance when command parameters aren&amp;rsquo;t used. Use GC.SuppressFinalize to improve performance when various objects (derived from Component) aren&amp;rsquo;t properly disposed.</description>
+      <description>Version History 0.45.1  Fix error parsing SQL parameters: #563. Add documentation for common errors: #565.  0.45.0  Implement MySqlConnection.GetSchema(&amp;quot;ReservedWords&amp;quot;): #559. Optimisation: Use ReadOnlySpan&amp;lt;byte&amp;gt; when deserialising payloads. Thanks to Federico Sasso for contributions to this release.  0.44.1  MySqlCommand.Prepare will cache the prepared command until the connection is reset. Improve performance of MySqlCommand.Prepare, especially when preparation is unnecessary. Lazily allocate MySqlParameterCollection (accessed via MySqlCommand.Parameters) for better performance when command parameters aren&amp;rsquo;t used.</description>
     </item>
     
     <item>
