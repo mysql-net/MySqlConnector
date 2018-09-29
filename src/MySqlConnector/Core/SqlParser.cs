@@ -133,12 +133,12 @@ namespace MySqlConnector.Core
 					if (state != State.Beginning && state != State.Statement)
 						throw new InvalidOperationException("Unexpected state: {0}".FormatInvariant(state));
 
-					if (ch == '-')
+					if (ch == '-' && index < sql.Length - 2 && sql[index + 1] == '-' && sql[index + 2] == ' ')
 					{
 						beforeCommentState = state;
 						state = State.Hyphen;
 					}
-					else if (ch == '/')
+					else if (ch == '/' && index < sql.Length - 1 && sql[index + 1] == '*')
 						state = State.ForwardSlash;
 					else if (ch == '\'')
 						state = State.SingleQuotedString;

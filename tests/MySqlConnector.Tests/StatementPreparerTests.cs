@@ -24,6 +24,27 @@ namespace MySqlConnector.Tests
 		}
 
 		[Theory]
+		[InlineData("UPDATE table SET a=a-@b;")]
+		[InlineData("UPDATE table SET a=a-/* subtract b */@b;")]
+		[InlineData("UPDATE table SET a=a+@b;")]
+		[InlineData("UPDATE table SET a=a/@b;")]
+		[InlineData("UPDATE table SET a=a-- \n-@b;")]
+		[InlineData("UPDATE table SET a = a-@b;")]
+		[InlineData("UPDATE table SET a = a+@b;")]
+		[InlineData("UPDATE table SET a = a - @b;")]
+		[InlineData("UPDATE table SET a=@b-a;")]
+		[InlineData("UPDATE table SET a=@b+a;")]
+		[InlineData("UPDATE table SET a = @b-a;")]
+		[InlineData("UPDATE table SET a = @b - a;")]
+		public void Bug563(string sql)
+		{
+			var parameters = new MySqlParameterCollection();
+			parameters.AddWithValue("@b", 123);
+			var parsedSql = GetParsedSql(sql, parameters);
+			Assert.Equal(sql.Replace("@b", "123"), parsedSql);
+		}
+
+		[Theory]
 		[InlineData(@"SELECT /* * / @param */ 1;")]
 		[InlineData("SELECT # @param \n1;")]
 		[InlineData("SELECT -- @param \n1;")]
