@@ -45,23 +45,8 @@ namespace MySqlConnector.Core
 				else
 				{
 					var columnDefinition = ResultSet.ColumnDefinitions[column];
-					int length;
-					if (columnDefinition.ColumnType == ColumnType.Longlong || columnDefinition.ColumnType == ColumnType.Double)
-						length = 8;
-					else if (columnDefinition.ColumnType == ColumnType.Long || columnDefinition.ColumnType == ColumnType.Int24 || columnDefinition.ColumnType == ColumnType.Float)
-						length = 4;
-					else if (columnDefinition.ColumnType == ColumnType.Short || columnDefinition.ColumnType == ColumnType.Year)
-						length = 2;
-					else if (columnDefinition.ColumnType == ColumnType.Tiny)
-						length = 1;
-					else if (columnDefinition.ColumnType == ColumnType.Date || columnDefinition.ColumnType == ColumnType.DateTime || columnDefinition.ColumnType == ColumnType.Timestamp || columnDefinition.ColumnType == ColumnType.Time)
-						length = reader.ReadByte();
-					else if (columnDefinition.ColumnType == ColumnType.DateTime2 || columnDefinition.ColumnType == ColumnType.NewDate || columnDefinition.ColumnType == ColumnType.Timestamp2)
-						throw new NotSupportedException("ColumnType {0} is not supported".FormatInvariant(columnDefinition.ColumnType));
-					else
-						length = checked((int) reader.ReadLengthEncodedInteger());
 
-					dataLengths[column] = length;
+					dataLengths[column] = GetColumnLength(columnDefinition, reader);
 					dataOffsets[column] = reader.Offset;
 				}
 
@@ -191,6 +176,27 @@ namespace MySqlConnector.Core
 			{
 				throw new FormatException("Couldn't interpret value as a valid DateTime".FormatInvariant(Encoding.UTF8.GetString(value)), ex);
 			}
+		}
+
+		private int GetColumnLength(ColumnDefinitionPayload columnDefinition, ByteArrayReader reader)
+		{
+			int length;
+			if (columnDefinition.ColumnType == ColumnType.Longlong || columnDefinition.ColumnType == ColumnType.Double)
+				length = 8;
+			else if (columnDefinition.ColumnType == ColumnType.Long || columnDefinition.ColumnType == ColumnType.Int24 || columnDefinition.ColumnType == ColumnType.Float)
+				length = 4;
+			else if (columnDefinition.ColumnType == ColumnType.Short || columnDefinition.ColumnType == ColumnType.Year)
+				length = 2;
+			else if (columnDefinition.ColumnType == ColumnType.Tiny)
+				length = 1;
+			else if (columnDefinition.ColumnType == ColumnType.Date || columnDefinition.ColumnType == ColumnType.DateTime || columnDefinition.ColumnType == ColumnType.Timestamp || columnDefinition.ColumnType == ColumnType.Time)
+				length = reader.ReadByte();
+			else if (columnDefinition.ColumnType == ColumnType.DateTime2 || columnDefinition.ColumnType == ColumnType.NewDate || columnDefinition.ColumnType == ColumnType.Timestamp2)
+				throw new NotSupportedException("ColumnType {0} is not supported".FormatInvariant(columnDefinition.ColumnType));
+			else
+				length = checked((int) reader.ReadLengthEncodedInteger());
+
+			return length;
 		}
 
 		private static TimeSpan ReadTimeSpan(ReadOnlySpan<byte> value)
