@@ -63,7 +63,7 @@ namespace MySql.Data.MySqlClient
 
 		public override bool Contains(string value) => IndexOf(value) != -1;
 
-		public override void CopyTo(Array array, int index) => throw new NotSupportedException();
+		public override void CopyTo(Array array, int index) => ((ICollection) m_parameters).CopyTo( array, index);
 
 		public override void Clear()
 		{
