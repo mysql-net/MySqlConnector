@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net45;net461;netstandard1.3;netstandard2.0;netcoreapp2.1</TargetFrameworks>
@@ -10,6 +10,8 @@
     <PackageId>MySqlConnector</PackageId>
     <PackageTags>mysql;mysqlconnector;async;ado.net;database;netcore</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyVersion>0.45.2.0</AssemblyVersion>
+    <Version>0.45.2</Version>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'net461' ">
