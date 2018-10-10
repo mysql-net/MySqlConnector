@@ -1,4 +1,5 @@
 using System;
+using System.Data.Common;
 using MySql.Data.MySqlClient;
 using Xunit;
 
@@ -187,6 +188,54 @@ namespace SideBySide
 			Assert.Equal(MySqlDbType.Double, parameter.MySqlDbType);
 			Assert.Equal(10, parameter.Size);
 			Assert.Same(parameter, m_parameterCollection[0]);
+		}
+
+		[Fact]
+		public void CopyTo()
+		{
+			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			var array = new DbParameter[2];
+			m_parameterCollection.CopyTo(array, 0);
+			Assert.Same(array[0], m_parameterCollection[0]);
+			Assert.Same(array[1], m_parameterCollection[1]);
+		}
+
+		[Fact]
+		public void CopyToIndex()
+		{
+			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			var array = new DbParameter[4];
+			m_parameterCollection.CopyTo(array, 1);
+			Assert.Null(array[0]);
+			Assert.Same(array[1], m_parameterCollection[0]);
+			Assert.Same(array[2], m_parameterCollection[1]);
+			Assert.Null(array[3]);
+		}
+
+		[Fact]
+		public void CopyToNullArray()
+		{
+			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			Assert.Throws<ArgumentNullException>(() => m_parameterCollection.CopyTo(null, 0));
+		}
+
+		[Fact]
+		public void CopyToSmallArray()
+		{
+			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			Assert.Throws<ArgumentException>(() => m_parameterCollection.CopyTo(new DbParameter[1], 0));
+		}
+
+		[Fact]
+		public void CopyToIndexOutOfRange()
+		{
+			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			Assert.Throws<ArgumentException>(() => m_parameterCollection.CopyTo(new DbParameter[2], 3));
 		}
 
 		MySqlCommand m_command;
