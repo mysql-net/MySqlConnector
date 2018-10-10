@@ -208,6 +208,104 @@ namespace SideBySide
 		}
 #endif
 
+		[Fact]
+		public void CloneParameterName()
+		{
+			var parameter = new MySqlParameter { ParameterName = "test" };
+			var clone = parameter.Clone();
+			Assert.Equal(parameter.ParameterName, clone.ParameterName);
+		}
+
+		[Fact]
+		public void CloneDbType()
+		{
+			var parameter = new MySqlParameter { DbType = DbType.Int64 };
+			var clone = parameter.Clone();
+			Assert.Equal(parameter.DbType, clone.DbType);
+		}
+
+		[Fact]
+		public void CloneMySqlDbType()
+		{
+			var parameter = new MySqlParameter { MySqlDbType = MySqlDbType.MediumText };
+			var clone = parameter.Clone();
+			Assert.Equal(parameter.MySqlDbType, clone.MySqlDbType);
+		}
+
+		[Fact]
+		public void CloneDirection()
+		{
+			var parameter = new MySqlParameter { Direction = ParameterDirection.InputOutput };
+			var clone = parameter.Clone();
+			Assert.Equal(parameter.Direction, clone.Direction);
+		}
+
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=92734")]
+		public void CloneIsNullable()
+		{
+			var parameter = new MySqlParameter { IsNullable = true };
+			var clone = parameter.Clone();
+			Assert.Equal(parameter.IsNullable, clone.IsNullable);
+		}
+
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=92734")]
+		public void ClonePrecision()
+		{
+			var parameter = new MySqlParameter { Precision = 10 };
+			var clone = parameter.Clone();
+			Assert.Equal(parameter.Precision, clone.Precision);
+		}
+
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=92734")]
+		public void CloneScale()
+		{
+			var parameter = new MySqlParameter { Scale = 12 };
+			var clone = parameter.Clone();
+			Assert.Equal(parameter.Scale, clone.Scale);
+		}
+
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=92734")]
+		public void CloneSize()
+		{
+			var parameter = new MySqlParameter { Size = 8 };
+			var clone = parameter.Clone();
+			Assert.Equal(parameter.Size, clone.Size);
+		}
+
+		[Fact]
+		public void CloneSourceColumn()
+		{
+			var parameter = new MySqlParameter { SourceColumn = "test" };
+			var clone = parameter.Clone();
+			Assert.Equal(parameter.SourceColumn, clone.SourceColumn);
+		}
+
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=92734")]
+		public void CloneSourceColumnNullMapping()
+		{
+			var parameter = new MySqlParameter { SourceColumnNullMapping = true };
+			var clone = parameter.Clone();
+			Assert.Equal(parameter.SourceColumnNullMapping, clone.SourceColumnNullMapping);
+		}
+
+#if !NETCOREAPP1_1_2
+		[Fact]
+		public void CloneSourceVersion()
+		{
+			var parameter = new MySqlParameter { SourceVersion = DataRowVersion.Proposed };
+			var clone = parameter.Clone();
+			Assert.Equal(parameter.SourceVersion, clone.SourceVersion);
+		}
+#endif
+
+		[Fact]
+		public void CloneValue()
+		{
+			var parameter = new MySqlParameter { Value = "test" };
+			var clone = parameter.Clone();
+			Assert.Equal(parameter.Value, clone.Value);
+		}
+
 		[Theory]
 		[InlineData(1, DbType.Int32, MySqlDbType.Int32)]
 		[InlineData(1.0, DbType.Double, MySqlDbType.Double)]

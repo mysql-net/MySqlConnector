@@ -10,11 +10,9 @@ using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
 {
-
-#if !NETSTANDARD1_3
-	public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
-#else
 	public sealed class MySqlParameter : DbParameter, IDbDataParameter
+#if !NETSTANDARD1_3
+		, ICloneable
 #endif
 	{
 		public MySqlParameter()
@@ -159,9 +157,15 @@ namespace MySql.Data.MySqlClient
 			HasSetDbType = false;
 		}
 
+		public MySqlParameter Clone() => new MySqlParameter(this);
+
+#if !NETSTANDARD1_3
+		object ICloneable.Clone() => Clone();
+#endif
+
 		internal MySqlParameter WithParameterName(string parameterName) => new MySqlParameter(this, parameterName);
 
-		private MySqlParameter(MySqlParameter other, string parameterName)
+		private MySqlParameter(MySqlParameter other)
 		{
 			m_dbType = other.m_dbType;
 			m_mySqlDbType = other.m_mySqlDbType;
@@ -169,12 +173,22 @@ namespace MySql.Data.MySqlClient
 			HasSetDbType = other.HasSetDbType;
 			IsNullable = other.IsNullable;
 			Size = other.Size;
-			ParameterName = parameterName ?? other.ParameterName;
-			Value = other.Value;
-#if !NET45
+			m_name = other.m_name;
+			NormalizedParameterName = other.NormalizedParameterName;
+			m_value = other.m_value;
 			Precision = other.Precision;
 			Scale = other.Scale;
+			SourceColumn = other.SourceColumn;
+			SourceColumnNullMapping = other.SourceColumnNullMapping;
+#if !NETSTANDARD1_3
+			SourceVersion = other.SourceVersion;
 #endif
+		}
+
+		private MySqlParameter(MySqlParameter other, string parameterName)
+			: this(other)
+		{
+			ParameterName = parameterName ?? throw new ArgumentNullException(nameof(parameterName));
 		}
 
 		internal bool HasSetDirection => m_direction.HasValue;
@@ -616,13 +630,6 @@ namespace MySql.Data.MySqlClient
 					writer.Write(microseconds);
 			}
 		}
-
-#if !NETSTANDARD1_3
-		public object Clone()
-		{
-			return new MySqlParameter(ParameterName, MySqlDbType, Size, Direction, IsNullable, Precision, Scale, SourceColumn, SourceVersion, Value);
-		}
-#endif
 
 		static readonly byte[] s_nullBytes = { 0x4E, 0x55, 0x4C, 0x4C }; // NULL
 		static readonly byte[] s_trueBytes = { 0x74, 0x72, 0x75, 0x65 }; // true
