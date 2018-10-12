@@ -1,5 +1,5 @@
 ---
-lastmod: 2017-10-28
+lastmod: 2018-10-12
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,14 @@ weight: 30
 
 Version History
 ===============
+
+### 0.46.0
+
+* Add `MySqlParameter.Clone`.
+* Implement `ICloneable` on `MySqlParameter`: [#567](https://github.com/mysql-net/MySqlConnector/pull/567).
+* Implement `MySqlParameterCollection.CopyTo`.
+* Add logging for cached procedures.
+* Thanks to [Jorge Rocha Gualtieri](https://github.com/jrocha) for contributions to this release.
 
 ### 0.45.1
 
