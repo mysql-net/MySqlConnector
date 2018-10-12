@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Core
@@ -48,6 +49,8 @@ namespace MySqlConnector.Core
 				}
 			}
 
+			if (Log.IsInfoEnabled())
+				Log.Info("Procedure for Schema={0} Component={1} has RoutineCount={2}, ParameterCount={3}", schema, component, routineCount, parameters.Count);
 			return routineCount == 0 ? null : new CachedProcedure(schema, component, parameters.AsReadOnly());
 		}
 
@@ -90,7 +93,9 @@ namespace MySqlConnector.Core
 			return alignedParams;
 		}
 
-		private string FullyQualified => $"`{m_schema}`.`{m_component}`";
+		string FullyQualified => $"`{m_schema}`.`{m_component}`";
+
+		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(CachedProcedure));
 
 		readonly string m_schema;
 		readonly string m_component;

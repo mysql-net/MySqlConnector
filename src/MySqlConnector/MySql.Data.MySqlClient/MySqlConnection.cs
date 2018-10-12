@@ -322,19 +322,30 @@ namespace MySql.Data.MySqlClient
 
 		internal async Task<CachedProcedure> GetCachedProcedure(IOBehavior ioBehavior, string name, CancellationToken cancellationToken)
 		{
+			if (Log.IsDebugEnabled())
+				Log.Debug("Session{0} getting cached procedure Name={1}", m_session.Id, name);
 			if (State != ConnectionState.Open)
 				throw new InvalidOperationException("Connection is not open.");
 
 			if (m_session.ServerVersion.Version < ServerVersions.SupportsProcedureCache)
+			{
+				Log.Warn("Session{0} ServerVersion={1} does not support cached procedures", m_session.Id, m_session.ServerVersion.OriginalString);
 				return null;
+			}
 
 			var cachedProcedures = m_session.Pool?.GetProcedureCache() ?? m_cachedProcedures;
 			if (cachedProcedures == null)
+			{
+				Log.Warn("Session{0} pool Pool{1} doesn't have a shared procedure cache; procedure will only be cached on this connection", m_session.Id, m_session.Pool?.Id);
 				cachedProcedures = m_cachedProcedures = new Dictionary<string, CachedProcedure>();
+			}
 
 			var normalized = NormalizedSchema.MustNormalize(name, Database);
 			if (string.IsNullOrEmpty(normalized.Schema))
+			{
+				Log.Warn("Session{0} couldn't normalize Database={1} Name={2}; not caching procedure", m_session.Id, Database, name);
 				return null;
+			}
 
 			CachedProcedure cachedProcedure;
 			bool foundProcedure;
@@ -343,8 +354,23 @@ namespace MySql.Data.MySqlClient
 			if (!foundProcedure)
 			{
 				cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema, normalized.Component, cancellationToken).ConfigureAwait(false);
+				if (Log.IsWarnEnabled())
+				{
+					if (cachedProcedure != null)
+						Log.Info("Session{0} caching procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
+					else
+						Log.Warn("Session{0} failed to cache procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
+				}
 				lock (cachedProcedures)
 					cachedProcedures[normalized.FullyQualified] = cachedProcedure;
+			}
+
+			if (Log.IsWarnEnabled())
+			{
+				if (cachedProcedure == null)
+					Log.Warn("Session{0} did not find cached procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
+				else
+					Log.Debug("Session{0} returning cached procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
 			}
 			return cachedProcedure;
 		}
