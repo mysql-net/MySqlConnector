@@ -1,5 +1,5 @@
 ---
-lastmod: 2018-08-21
+lastmod: 2018-10-13
 date: 2016-10-16
 title: Connection Options
 weight: 30
@@ -172,6 +172,20 @@ Connection pooling is enabled by default. These options are used to configure it
     <td>The minimum number of connections to leave in the pool if ConnectionIdleTimeout is reached.</td>
   </tr>
 </table>
+
+### Connection Pooling with Multiple Servers
+
+The `Server` option supports multiple comma-delimited host names. When this is used with connection
+pooling, the `LoadBalance` option controls how load is distributed across backend servers.
+
+* `RoundRobin` (default), `Random`: A total of `MaximumPoolSize` connections will be opened, but they
+may be unevenly distributed across back ends.
+* `LeastConnections`: A total of `MaximumPoolSize` connections will be opened, and they will be evenly
+distributed across back ends. The active connections will be selected from the pool in least-recently-used
+order, which does not ensure even load across the back ends. You should set `MaximumPoolSize` to the
+number of servers multiplied by the desired maximum number of open connections per backend server.
+* `Failover`: All connections will initially be made to the first server in the list. You should set `MaximumPoolSize`
+to the maximum number of open connections you want per server.
 
 Other Options
 -------------
