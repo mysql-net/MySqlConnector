@@ -947,7 +947,7 @@ namespace MySqlConnector.Core
 			{
 				try
 				{
-					var certificate = new X509Certificate2(cs.CertificateFile, cs.CertificatePassword);
+					var certificate = new X509Certificate2(cs.CertificateFile, cs.CertificatePassword, X509KeyStorageFlags.MachineKeySet);
 					if (!certificate.HasPrivateKey)
 					{
 						m_logArguments[1] = cs.CertificateFile;
@@ -1005,7 +1005,7 @@ namespace MySqlConnector.Core
 							// load the certificate at this index; note that 'new X509Certificate' stops at the end of the first certificate it loads
 							m_logArguments[1] = index;
 							Log.Debug("Session{0} loading certificate at Index {1} in the CA certificate file.", m_logArguments);
-							var caCertificate = new X509Certificate2(Utility.ArraySlice(certificateBytes, index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index));
+							var caCertificate = new X509Certificate2(Utility.ArraySlice(certificateBytes, index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index), default(string), X509KeyStorageFlags.MachineKeySet);
 							certificateChain.ChainPolicy.ExtraStore.Add(caCertificate);
 						}
 						catch (CryptographicException ex)
