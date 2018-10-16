@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.4" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'Baseline' ">
@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'Baseline' ">
-    <PackageReference Include="MySql.Data" Version="8.0.11" />
+    <PackageReference Include="MySql.Data" Version="8.0.12" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Baseline' ">
     <DefineConstants>BASELINE</DefineConstants>
@@ -32,20 +32,20 @@
   </ItemGroup>
 
   <Target Name="CopyDirsAfterBuild" AfterTargets="Build">
-    <Copy 
-      SourceFiles="@(AppConfig)" 
-      DestinationFolder="$(OutDir)\%(RecursiveDir)" 
-      SkipUnchangedFiles="true" 
-      OverwriteReadOnlyFiles="true" 
+    <Copy
+      SourceFiles="@(AppConfig)"
+      DestinationFolder="$(OutDir)\%(RecursiveDir)"
+      SkipUnchangedFiles="true"
+      OverwriteReadOnlyFiles="true"
       Retries="3"
       RetryDelayMilliseconds="300"/>
   </Target>
   <Target Name="CopyDirsAfterPublish" AfterTargets="Publish">
-    <Copy 
-      SourceFiles="@(AppConfig)" 
-      DestinationFolder="$(PublishDir)\%(RecursiveDir)" 
-      SkipUnchangedFiles="true" 
-      OverwriteReadOnlyFiles="true" 
+    <Copy
+      SourceFiles="@(AppConfig)"
+      DestinationFolder="$(PublishDir)\%(RecursiveDir)"
+      SkipUnchangedFiles="true"
+      OverwriteReadOnlyFiles="true"
       Retries="3"
       RetryDelayMilliseconds="300"/>
   </Target>
