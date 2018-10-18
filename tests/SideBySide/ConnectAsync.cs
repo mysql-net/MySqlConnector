@@ -300,6 +300,26 @@ namespace SideBySide
 			}
 		}
 
+		// To create a MariaDB GSSAPI user for a current user
+		// - install plugin if not already done , e.g mysql -uroot -e "INSTALL SONAME 'auth_gssapi'"
+		// create MariaDB's gssapi user
+		// a) Windows, easy way
+		//    mysql -uroot -e "CREATE USER  %USERNAME% IDENTIFIED WITH gssapi"
+		// b) more involved , Windows, outside of domain
+		//    mysql -uroot -e "CREATE USER gssapi_user IDENTIFIED WITH gssapi as '%USERDOMAIN%\%USERNAME%'"
+		// c) Windows, inside domain
+		//    mysql -uroot -e "CREATE USER gssapi_user IDENTIFIED WITH gssapi as '%USERNAME%@%USERDNSDOMAIN%'"
+		// d) Linux, domain (or Kerberos Realm) user
+		//    NAME=`klist|grep 'Default principal' |awk '{print $3}'` mysql -uroot -e "CREATE USER gssapi_user IDENTIFIED WITH gssapi AS '$NAME'"
+		[SkippableFact(ConfigSettings.GSSAPIUser)]
+		public async Task AuthGSSAPI()
+		{
+			var csb = AppConfig.CreateGSSAPIConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+			}
+		}
 #if !BASELINE
 		[Fact]
 		public async Task PingNoConnection()

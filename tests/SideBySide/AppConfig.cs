@@ -36,6 +36,8 @@ namespace SideBySide
 
 		public static string PasswordlessUser => Config.GetValue<string>("Data:PasswordlessUser");
 
+		public static string GSSAPIUser => Config.GetValue<string>("Data:GSSAPIUser");
+
 		public static string SecondaryDatabase => Config.GetValue<string>("Data:SecondaryDatabase");
 
 		private static ServerFeatures UnsupportedFeatures => (ServerFeatures) Enum.Parse(typeof(ServerFeatures), Config.GetValue<string>("Data:UnsupportedFeatures"));
@@ -69,6 +71,14 @@ namespace SideBySide
 			return csb;
 		}
 
+		public static MySqlConnectionStringBuilder CreateGSSAPIConnectionStringBuilder()
+		{
+			var csb = CreateConnectionStringBuilder();
+			csb.UserID = GSSAPIUser;
+			csb.Database = null;
+			return csb;
+		}
+	
 		// tests can run much slower in CI environments
 		public static int TimeoutDelayFactor { get; } = Environment.GetEnvironmentVariable("APPVEYOR") == "True" || Environment.GetEnvironmentVariable("TRAVIS") == "true" ? 6 : 1;
 	}
