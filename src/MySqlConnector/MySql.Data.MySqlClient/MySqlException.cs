@@ -33,6 +33,6 @@ namespace MySql.Data.MySqlClient
 		internal static MySqlException CreateForTimeout() => CreateForTimeout(null);
 
 		internal static MySqlException CreateForTimeout(Exception innerException) =>
-			new MySqlException((int) MySqlErrorCode.CommandTimeoutExpired, null, "The Command Timeout expired before the operation completed.");
+			new MySqlException((int) MySqlErrorCode.CommandTimeoutExpired, null, "The Command Timeout expired before the operation completed.", innerException);
 	}
 }
