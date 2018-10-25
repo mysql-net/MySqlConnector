@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.46.2
+
+* Fix missing `InnerException` on `MySqlConnection` created for a timeout: [#575](https://github.com/mysql-net/MySqlConnector/issues/575).
+
 ### 0.46.1
 
 * Fix `CryptographicException` when loading a PFX certificate file: [#574](https://github.com/mysql-net/MySqlConnector/issues/574).
