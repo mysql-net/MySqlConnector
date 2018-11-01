@@ -79,7 +79,7 @@ namespace MySqlConnector.Protocol.Serialization
 					return NegotiateStreamConstants.HeaderLength;
 				}
 				// Read and cache packet from server.
-				var payload = await m_serverSession.ReceiveReplyAsync(m_ioBehavior, cancellationToken);
+				var payload = await m_serverSession.ReceiveReplyAsync(m_ioBehavior, cancellationToken).ConfigureAwait(false);
 				var segment = payload.ArraySegment;
 
 				if (segment.Count > NegotiateStreamConstants.MaxPayloadLength)
@@ -118,7 +118,7 @@ namespace MySqlConnector.Protocol.Serialization
 			return bytesRead;
 		}
 
-		public override int Read(byte[] buffer, int offset, int count) => ReadAsync(buffer, offset, count, m_cancellationToken).Result;
+		public override int Read(byte[] buffer, int offset, int count) => ReadAsync(buffer, offset, count, m_cancellationToken).GetAwaiter().GetResult();
 
 		public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
 		{
@@ -183,12 +183,12 @@ namespace MySqlConnector.Protocol.Serialization
 				// full payload provided
 				payload = new PayloadData(new ArraySegment<byte>(buffer, offset, m_writePayloadLength));
 			}
-			await m_serverSession.SendReplyAsync(payload, m_ioBehavior, cancellationToken);
+			await m_serverSession.SendReplyAsync(payload, m_ioBehavior, cancellationToken).ConfigureAwait(false);
 			// Need to parse NegotiateStream header next time
 			m_writePayloadLength = 0;
 		}
 
-		public override void Write(byte[] buffer, int offset, int count) => WriteAsync(buffer, offset, count, m_cancellationToken).Wait();
+		public override void Write(byte[] buffer, int offset, int count) => WriteAsync(buffer, offset, count, m_cancellationToken).GetAwaiter().GetResult();
 
 		public override bool CanRead => true;
 
@@ -223,14 +223,24 @@ namespace MySqlConnector.Protocol.Serialization
 			using (var negotiateStream = new NegotiateStream(innerStream))
 			{
 				var targetName = GetServicePrincipalName(switchRequestPayloadData);
-				await negotiateStream.AuthenticateAsClientAsync(CredentialCache.DefaultNetworkCredentials, targetName);
-
+#if NETSTANDARD1_3
+				await negotiateStream.AuthenticateAsClientAsync(CredentialCache.DefaultNetworkCredentials, targetName).ConfigureAwait(false);
+#else
+				if (ioBehavior == IOBehavior.Synchronous)
+				{
+					negotiateStream.AuthenticateAsClient(CredentialCache.DefaultNetworkCredentials, targetName);
+				}
+				else
+				{
+					await negotiateStream.AuthenticateAsClientAsync(CredentialCache.DefaultNetworkCredentials, targetName).ConfigureAwait(false);
+				}
+#endif
 				if (innerStream.MySQLProtocolPayload.ArraySegment.Array != null)
 					// return already pre-read OK packet.
 					return innerStream.MySQLProtocolPayload;
 
 				// Read final OK packet from server
-				return await session.ReceiveReplyAsync(ioBehavior, cancellationToken);
+				return await session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 		}
 	}
