@@ -1340,9 +1340,9 @@ namespace MySqlConnector.Core
 		private Exception CreateExceptionForErrorPayload(ReadOnlySpan<byte> span)
 		{
 			var errorPayload = ErrorPayload.Create(span);
-			var exception = errorPayload.ToException();
-			Log.Error(exception, "Session{0} got error payload: Code={1}, State={2}, Message={3}", m_logArguments[0], errorPayload.ErrorCode, errorPayload.State, errorPayload.Message);
-			return exception;
+			if (Log.IsDebugEnabled())
+				Log.Debug("Session{0} got error payload: Code={1}, State={2}, Message={3}", m_logArguments[0], errorPayload.ErrorCode, errorPayload.State, errorPayload.Message);
+			return errorPayload.ToException();
 		}
 
 		private void ClearPreparedStatements()
