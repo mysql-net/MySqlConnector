@@ -261,6 +261,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.ServerRsaPublicKeyFile.SetValue(this, value);
 		}
 
+		public string ServerSPN
+		{
+			get => MySqlConnectionStringOption.ServerSPN.GetValue(this);
+			set => MySqlConnectionStringOption.ServerSPN.SetValue(this, value);
+		}
+
 		public bool TreatTinyAsBoolean
 		{
 			get => MySqlConnectionStringOption.TreatTinyAsBoolean.GetValue(this);
@@ -371,6 +377,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<bool> OldGuids;
 		public static readonly MySqlConnectionStringOption<bool> PersistSecurityInfo;
 		public static readonly MySqlConnectionStringOption<string> ServerRsaPublicKeyFile;
+		public static readonly MySqlConnectionStringOption<string> ServerSPN;
 		public static readonly MySqlConnectionStringOption<bool> TreatTinyAsBoolean;
 		public static readonly MySqlConnectionStringOption<bool> UseAffectedRows;
 		public static readonly MySqlConnectionStringOption<bool> UseCompression;
@@ -563,6 +570,10 @@ namespace MySql.Data.MySqlClient
 
 			AddOption(ServerRsaPublicKeyFile = new MySqlConnectionStringOption<string>(
 				keys: new[] { "ServerRSAPublicKeyFile", "Server RSA Public Key File" },
+				defaultValue: null));
+
+			AddOption(ServerSPN = new MySqlConnectionStringOption<string>(
+				keys: new[] { "Server SPN", "ServerSPN" },
 				defaultValue: null));
 
 			AddOption(TreatTinyAsBoolean = new MySqlConnectionStringOption<bool>(

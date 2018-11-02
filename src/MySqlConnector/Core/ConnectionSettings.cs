@@ -79,6 +79,7 @@ namespace MySqlConnector.Core
 			Keepalive = csb.Keepalive;
 			PersistSecurityInfo = csb.PersistSecurityInfo;
 			ServerRsaPublicKeyFile = csb.ServerRsaPublicKeyFile;
+			ServerSPN = csb.ServerSPN;
 			TreatTinyAsBoolean = csb.TreatTinyAsBoolean;
 			UseAffectedRows = csb.UseAffectedRows;
 			UseCompression = csb.UseCompression;
@@ -157,6 +158,7 @@ namespace MySqlConnector.Core
 		public uint Keepalive { get; }
 		public bool PersistSecurityInfo { get; }
 		public string ServerRsaPublicKeyFile { get; }
+		public string ServerSPN { get; }
 		public bool TreatTinyAsBoolean { get; }
 		public bool UseAffectedRows { get; }
 		public bool UseCompression { get; }

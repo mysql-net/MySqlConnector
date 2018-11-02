@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -318,6 +319,39 @@ namespace SideBySide
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				await connection.OpenAsync();
+			}
+		}
+
+		[SkippableFact(ConfigSettings.GSSAPIUser | ConfigSettings.HasKerberos)]
+		public async Task GoodServerSPN()
+		{
+			var csb = AppConfig.CreateGSSAPIConnectionStringBuilder();
+			string serverSPN;
+			// Use server's variable gssapi_principal_name as SPN
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = "select @@gssapi_principal_name";
+					serverSPN = (string) await cmd.ExecuteScalarAsync();
+				}
+			}
+			csb.ServerSPN = serverSPN;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+			}
+		}
+
+		[SkippableFact(ConfigSettings.GSSAPIUser)]
+		public async Task BadServerSPN()
+		{
+			var csb = AppConfig.CreateGSSAPIConnectionStringBuilder();
+			csb.ServerSPN = "BadServerSPN";
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await Assert.ThrowsAsync<AuthenticationException>(() => connection.OpenAsync());
 			}
 		}
 #if !BASELINE

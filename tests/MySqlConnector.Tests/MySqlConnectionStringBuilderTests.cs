@@ -58,6 +58,7 @@ namespace MySqlConnector.Tests
 #if !BASELINE
 			Assert.Null(csb.ServerRsaPublicKeyFile);
 #endif
+			Assert.Null(csb.ServerSPN);
 #if !BASELINE
 			Assert.Equal(MySqlSslMode.Preferred, csb.SslMode);
 #else
@@ -121,6 +122,7 @@ namespace MySqlConnector.Tests
 					"Port=1234;" +
 					"protocol=pipe;" +
 					"pwd=Pass1234;" +
+					"server spn=mariadb/host.example.com@EXAMPLE.COM;" +
 					"Treat Tiny As Boolean=false;" +
 					"ssl mode=verifyca;" +
 					"Uid=username;" +
@@ -168,6 +170,7 @@ namespace MySqlConnector.Tests
 			Assert.False(csb.Pooling);
 			Assert.Equal(1234u, csb.Port);
 			Assert.Equal("db-server", csb.Server);
+			Assert.Equal("mariadb/host.example.com@EXAMPLE.COM", csb.ServerSPN);
 			Assert.False(csb.TreatTinyAsBoolean);
 			Assert.Equal(MySqlSslMode.VerifyCA, csb.SslMode);
 			Assert.False(csb.UseAffectedRows);

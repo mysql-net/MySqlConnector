@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Security;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -216,13 +217,13 @@ namespace MySqlConnector.Protocol.Serialization
 			var reader = new ByteArrayReader(switchRequest.AsSpan());
 			return Encoding.UTF8.GetString(reader.ReadNullOrEofTerminatedByteString());
 		}
-		public static async Task<PayloadData> AuthenticateAsync(byte[] switchRequestPayloadData,
+		public static async Task<PayloadData> AuthenticateAsync(ConnectionSettings cs, byte[] switchRequestPayloadData,
 			ServerSession session, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			using (var innerStream = new NegotiateToMySqlConverterStream(session, ioBehavior, cancellationToken))
 			using (var negotiateStream = new NegotiateStream(innerStream))
 			{
-				var targetName = GetServicePrincipalName(switchRequestPayloadData);
+				var targetName =cs.ServerSPN ?? GetServicePrincipalName(switchRequestPayloadData);
 #if NETSTANDARD1_3
 				await negotiateStream.AuthenticateAsClientAsync(CredentialCache.DefaultNetworkCredentials, targetName).ConfigureAwait(false);
 #else
@@ -235,6 +236,13 @@ namespace MySqlConnector.Protocol.Serialization
 					await negotiateStream.AuthenticateAsClientAsync(CredentialCache.DefaultNetworkCredentials, targetName).ConfigureAwait(false);
 				}
 #endif
+				if (cs.ServerSPN != null && !negotiateStream.IsMutuallyAuthenticated)
+				{
+					// Negotiate used NTLM fallback, server name cannot be verified.
+					throw new AuthenticationException(String.Format(
+						"GSSAPI : Unable to verify server principal name using authentication type {0}",
+						negotiateStream.RemoteIdentity?.AuthenticationType));
+				}
 				if (innerStream.MySQLProtocolPayload.ArraySegment.Array != null)
 					// return already pre-read OK packet.
 					return innerStream.MySQLProtocolPayload;

@@ -17,6 +17,7 @@ namespace SideBySide
 		TcpConnection = 0x200,
 		SecondaryDatabase = 0x400,
 		KnownClientCertificate = 0x800,
-		GSSAPIUser = 0x1000
+		GSSAPIUser = 0x1000,
+		HasKerberos = 0x2000
 	}
 }
