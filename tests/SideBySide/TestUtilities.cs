@@ -94,6 +94,9 @@ namespace SideBySide
 			if (configSettings.HasFlag(ConfigSettings.GSSAPIUser) && string.IsNullOrWhiteSpace(AppConfig.GSSAPIUser))
 				return "Requires GSSAPIUser in config.json";
 
+			if (configSettings.HasFlag(ConfigSettings.HasKerberos) && !AppConfig.HasKerberos)
+				return "Requires HasKerberos in config.json";
+
 			if (configSettings.HasFlag(ConfigSettings.CsvFile) && string.IsNullOrWhiteSpace(AppConfig.MySqlBulkLoaderCsvFile))
 				return "Requires MySqlBulkLoaderCsvFile in config.json";
 

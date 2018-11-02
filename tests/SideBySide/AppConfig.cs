@@ -38,6 +38,8 @@ namespace SideBySide
 
 		public static string GSSAPIUser => Config.GetValue<string>("Data:GSSAPIUser");
 
+		public static bool HasKerberos => Config.GetValue<bool>("Data:HasKerberos");
+
 		public static string SecondaryDatabase => Config.GetValue<string>("Data:SecondaryDatabase");
 
 		private static ServerFeatures UnsupportedFeatures => (ServerFeatures) Enum.Parse(typeof(ServerFeatures), Config.GetValue<string>("Data:UnsupportedFeatures"));
