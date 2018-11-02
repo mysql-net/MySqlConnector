@@ -56,7 +56,7 @@
 
 <h1 id="connection-options">Connection Options</h1>
 
-<p>MySqlConnector supports a subset of Oracle&rsquo;s <a href="https://dev.mysql.com/doc/connector-net/en/connector-net-connection-options.html">Connector/NET connection options</a>.</p>
+<p>MySqlConnector supports a subset of Oracle’s <a href="https://dev.mysql.com/doc/connector-net/en/connector-net-8-0-connection-options.html">Connector/NET connection options</a>.</p>
 
 <h2 id="base-options">Base Options</h2>
 
@@ -215,6 +215,22 @@
     <td>The minimum number of connections to leave in the pool if ConnectionIdleTimeout is reached.</td>
   </tr>
 </table>
+
+<h3 id="connection-pooling-with-multiple-servers">Connection Pooling with Multiple Servers</h3>
+
+<p>The <code>Server</code> option supports multiple comma-delimited host names. When this is used with connection
+pooling, the <code>LoadBalance</code> option controls how load is distributed across backend servers.</p>
+
+<ul>
+<li><code>RoundRobin</code> (default), <code>Random</code>: A total of <code>MaximumPoolSize</code> connections will be opened, but they
+may be unevenly distributed across back ends.</li>
+<li><code>LeastConnections</code>: A total of <code>MaximumPoolSize</code> connections will be opened, and they will be evenly
+distributed across back ends. The active connections will be selected from the pool in least-recently-used
+order, which does not ensure even load across the back ends. You should set <code>MaximumPoolSize</code> to the
+number of servers multiplied by the desired maximum number of open connections per backend server.</li>
+<li><code>Failover</code>: All connections will initially be made to the first server in the list. You should set <code>MaximumPoolSize</code>
+to the maximum number of open connections you want per server.</li>
+</ul>
 
 <h2 id="other-options">Other Options</h2>
 

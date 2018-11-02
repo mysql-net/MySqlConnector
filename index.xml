@@ -149,7 +149,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/connection-options/</guid>
-      <description>Connection Options MySqlConnector supports a subset of Oracle&amp;rsquo;s Connector/NET connection options.
+      <description>Connection Options MySqlConnector supports a subset of Oracle’s Connector/NET connection options.
 Base Options These are the basic options that need to be defined to connect to a MySQL database.
  Name Default Description   Host, Server, Data Source, DataSource, Address, Addr, Network Address localhost The host name or network address of the MySQL Server to which to connect. Multiple hosts can be specified in a comma-delimited list.
 On Unix-like systems, this can be a fully qualified path to a MySQL socket file, which will cause a Unix socket to be used instead of a TCP/IP socket.</description>
