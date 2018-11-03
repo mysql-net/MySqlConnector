@@ -336,7 +336,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
   <tr>
     <td>Treat Tiny As Boolean, TreatTinyAsBoolean</td>
     <td>true</td>
-    <td>When set to true, tinyint(1) values are returned as booleans. Setting this to false causes tinyint(1) to be returned as sbyte/byte.</td>
+    <td>When set to <code>true</code>, <code>TINYINT(1)</code> values are returned as booleans. Setting this to <code>false</code> causes <code>TINYINT(1)</code> to be returned as sbyte/byte.</td>
   </tr>
   <tr>
     <td>Use Affected Rows, UseAffectedRows</td>
