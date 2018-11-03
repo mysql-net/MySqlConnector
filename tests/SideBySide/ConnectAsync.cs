@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -300,7 +301,61 @@ namespace SideBySide
 			}
 		}
 
+		// To create a MariaDB GSSAPI user for a current user
+		// - install plugin if not already done , e.g mysql -uroot -e "INSTALL SONAME 'auth_gssapi'"
+		// create MariaDB's gssapi user
+		// a) Windows, easy way
+		//    mysql -uroot -e "CREATE USER  %USERNAME% IDENTIFIED WITH gssapi"
+		// b) more involved , Windows, outside of domain
+		//    mysql -uroot -e "CREATE USER gssapi_user IDENTIFIED WITH gssapi as '%USERDOMAIN%\%USERNAME%'"
+		// c) Windows, inside domain
+		//    mysql -uroot -e "CREATE USER gssapi_user IDENTIFIED WITH gssapi as '%USERNAME%@%USERDNSDOMAIN%'"
+		// d) Linux, domain (or Kerberos Realm) user
+		//    NAME=`klist|grep 'Default principal' |awk '{print $3}'` mysql -uroot -e "CREATE USER gssapi_user IDENTIFIED WITH gssapi AS '$NAME'"
+		[SkippableFact(ConfigSettings.GSSAPIUser)]
+		public async Task AuthGSSAPI()
+		{
+			var csb = AppConfig.CreateGSSAPIConnectionStringBuilder();
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+			}
+		}
+
 #if !BASELINE
+		[SkippableFact(ConfigSettings.GSSAPIUser | ConfigSettings.HasKerberos)]
+		public async Task GoodServerSPN()
+		{
+			var csb = AppConfig.CreateGSSAPIConnectionStringBuilder();
+			string serverSPN;
+			// Use server's variable gssapi_principal_name as SPN
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = "select @@gssapi_principal_name";
+					serverSPN = (string) await cmd.ExecuteScalarAsync();
+				}
+			}
+			csb.ServerSPN = serverSPN;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+			}
+		}
+
+		[SkippableFact(ConfigSettings.GSSAPIUser)]
+		public async Task BadServerSPN()
+		{
+			var csb = AppConfig.CreateGSSAPIConnectionStringBuilder();
+			csb.ServerSPN = "BadServerSPN";
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				await Assert.ThrowsAsync<AuthenticationException>(() => connection.OpenAsync());
+			}
+		}
+
 		[Fact]
 		public async Task PingNoConnection()
 		{

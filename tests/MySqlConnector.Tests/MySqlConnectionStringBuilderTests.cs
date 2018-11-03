@@ -57,8 +57,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal("", csb.Server);
 #if !BASELINE
 			Assert.Null(csb.ServerRsaPublicKeyFile);
-#endif
-#if !BASELINE
+			Assert.Null(csb.ServerSPN);
 			Assert.Equal(MySqlSslMode.Preferred, csb.SslMode);
 #else
 			Assert.Equal(MySqlSslMode.Required, csb.SslMode);
@@ -108,6 +107,7 @@ namespace MySqlConnector.Tests
 					"server rsa public key file=rsa.pem;" +
 					"load balance=random;" +
 					"guidformat=timeswapbinary16;" +
+					"server spn=mariadb/host.example.com@EXAMPLE.COM;" +
 #endif
 					"ignore prepare=false;" +
 					"interactive=true;" +
@@ -155,6 +155,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal("rsa.pem", csb.ServerRsaPublicKeyFile);
 			Assert.Equal(MySqlLoadBalance.Random, csb.LoadBalance);
 			Assert.Equal(MySqlGuidFormat.TimeSwapBinary16, csb.GuidFormat);
+			Assert.Equal("mariadb/host.example.com@EXAMPLE.COM", csb.ServerSPN);
 #endif
 			Assert.False(csb.IgnorePrepare);
 			Assert.True(csb.InteractiveSession);

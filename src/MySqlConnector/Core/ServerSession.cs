@@ -500,6 +500,9 @@ namespace MySqlConnector.Core
 					return await SendClearPasswordAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 
+			case "auth_gssapi_client":
+				return await AuthGSSAPI.AuthenticateAsync(cs, switchRequest.Data, this, ioBehavior, cancellationToken).ConfigureAwait(false);
+
 			case "mysql_old_password":
 				Log.Error("Session{0} is requesting AuthenticationMethod '{1}' which is not supported", m_logArguments);
 				throw new NotSupportedException("'MySQL Server is requesting the insecure pre-4.1 auth mechanism (mysql_old_password). The user password must be upgraded; see https://dev.mysql.com/doc/refman/5.7/en/account-upgrades.html.");
