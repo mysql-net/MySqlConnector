@@ -329,6 +329,11 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>For <code>sha256_password</code> authentication. See comments under <code>AllowPublicKeyRetrieval</code>.</td>
   </tr>
   <tr>
+    <td>ServerSPN, Server SPN</td>
+    <td></td>
+    <td>For MariaDB <a href="https://mariadb.com/kb/en/library/authentication-plugin-gssapi/"><code>auth_gssapi_client</code></a> authentication. Specifies the server’s Service Principal Name (to verify that authentication is occurring with the correct server).</td>
+  </tr>
+  <tr>
     <td>Treat Tiny As Boolean, TreatTinyAsBoolean</td>
     <td>true</td>
     <td>When set to true, tinyint(1) values are returned as booleans. Setting this to false causes tinyint(1) to be returned as sbyte/byte.</td>
