@@ -12,13 +12,15 @@ Home
 ====
 
 MySqlConnector is an [ADO.NET](https://msdn.microsoft.com/en-us/library/e80y5yhx.aspx) data
-provider for [MySQL](https://www.mysql.com/). It provides implementations of
-`DbConnection`, `DbCommand`, `DbDataReader`, `DbTransaction` &ndash; the classes
+provider for [MySQL Server](https://www.mysql.com/), [MariaDB](https://mariadb.org/),
+[Percona Server](https://www.percona.com/software/mysql-database/percona-server), [Amazon Aurora](https://aws.amazon.com/rds/aurora/),
+[Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/) and more. It provides implementations of
+`DbConnection`, `DbCommand`, `DbDataReader`, `DbTransaction` &mdash; the classes
 needed to query and update databases from managed code. Its features include:
 
 * .NET Core Compatibility
 * Truly Asynchronous: async functions implement asynchronous I/O
-* High Performance: code is stress tested for performance bottlenecks
+* High Performance: code is stress tested for performance bottlenecks and performs well on the [TechEmpower Framework Benchmarks](https://www.techempower.com/benchmarks/)
 * Lightweight: Library only implements ADO.NET core
 
 ### Getting Started
