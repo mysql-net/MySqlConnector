@@ -49,8 +49,8 @@ Always Use Async when possible  ADO.NET Class Asynchronous Method
       <pubDate>Sun, 16 Oct 2016 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/home/</guid>
-      <description>Home MySqlConnector is an ADO.NET data provider for MySQL. It provides implementations of DbConnection, DbCommand, DbDataReader, DbTransaction &amp;ndash; the classes needed to query and update databases from managed code. Its features include:
- .NET Core Compatibility Truly Asynchronous: async functions implement asynchronous I/O High Performance: code is stress tested for performance bottlenecks Lightweight: Library only implements ADO.NET core  Getting Started Read how to install and a basic example of using the API.</description>
+      <description>Home MySqlConnector is an ADO.NET data provider for MySQL Server, MariaDB, Percona Server, Amazon Aurora, Azure Database for MySQL and more. It provides implementations of DbConnection, DbCommand, DbDataReader, DbTransaction &amp;mdash; the classes needed to query and update databases from managed code. Its features include:
+ .NET Core Compatibility Truly Asynchronous: async functions implement asynchronous I/O High Performance: code is stress tested for performance bottlenecks and performs well on the TechEmpower Framework Benchmarks Lightweight: Library only implements ADO.</description>
     </item>
     
     <item>
