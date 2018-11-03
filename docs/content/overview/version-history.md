@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.47.0
+
+* Support <a href="https://mariadb.com/kb/en/library/authentication-plugin-gssapi/">MariaDB GSSAPI</a> authentication: [#577](https://github.com/mysql-net/MySqlConnector/pull/577).
+* Log received error payloads at `Debug` level.
+* Thanks to <a href="https://github.com/vaintroub">Vladislav Vaintroub</a> for contributions to this release.
+
 ### 0.46.2
 
 * Fix missing `InnerException` on `MySqlConnection` created for a timeout: [#575](https://github.com/mysql-net/MySqlConnector/issues/575).
