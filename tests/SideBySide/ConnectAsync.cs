@@ -322,6 +322,7 @@ namespace SideBySide
 			}
 		}
 
+#if !BASELINE
 		[SkippableFact(ConfigSettings.GSSAPIUser | ConfigSettings.HasKerberos)]
 		public async Task GoodServerSPN()
 		{
@@ -354,7 +355,7 @@ namespace SideBySide
 				await Assert.ThrowsAsync<AuthenticationException>(() => connection.OpenAsync());
 			}
 		}
-#if !BASELINE
+
 		[Fact]
 		public async Task PingNoConnection()
 		{
