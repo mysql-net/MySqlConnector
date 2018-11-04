@@ -58,10 +58,8 @@ namespace MySqlConnector.Tests
 #if !BASELINE
 			Assert.Null(csb.ServerRsaPublicKeyFile);
 			Assert.Null(csb.ServerSPN);
-			Assert.Equal(MySqlSslMode.Preferred, csb.SslMode);
-#else
-			Assert.Equal(MySqlSslMode.Required, csb.SslMode);
 #endif
+			Assert.Equal(MySqlSslMode.Preferred, csb.SslMode);
 			Assert.True(csb.TreatTinyAsBoolean);
 			Assert.False(csb.UseCompression);
 			Assert.Equal("", csb.UserID);
