@@ -140,7 +140,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.47.1  Return NullReferenceException in GetSchemaTable: #580. Return correct schema table for second result set: #581.  0.47.0  Support MariaDB GSSAPI authentication: #577. Log received error payloads at Debug level. Thanks to Vladislav Vaintroub for contributions to this release.  0.46.2  Fix missing InnerException on MySqlConnection created for a timeout: #575.  0.46.1  Fix CryptographicException when loading a PFX certificate file: #574.  0.46.0  Add MySqlParameter.</description>
+      <description>Version History 0.47.1  Fix NullReferenceException in GetSchemaTable: #580. Return correct schema table for second result set: #581.  0.47.0  Support MariaDB GSSAPI authentication: #577. Log received error payloads at Debug level. Thanks to Vladislav Vaintroub for contributions to this release.  0.46.2  Fix missing InnerException on MySqlConnection created for a timeout: #575.  0.46.1  Fix CryptographicException when loading a PFX certificate file: #574.  0.46.0  Add MySqlParameter.</description>
     </item>
     
     <item>
