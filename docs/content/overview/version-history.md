@@ -13,7 +13,7 @@ Version History
 
 ### 0.47.1
 
-* Return `NullReferenceException` in `GetSchemaTable`: [#580](https://github.com/mysql-net/MySqlConnector/issues/580).
+* Fix `NullReferenceException` in `GetSchemaTable`: [#580](https://github.com/mysql-net/MySqlConnector/issues/580).
 * Return correct schema table for second result set: [#581](https://github.com/mysql-net/MySqlConnector/issues/581).
 
 ### 0.47.0
