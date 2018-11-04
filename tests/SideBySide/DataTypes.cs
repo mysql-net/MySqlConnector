@@ -1149,6 +1149,28 @@ create table schema_table({createColumn});");
 				}
 			}
 		}
+
+		[Fact]
+		public void GetSchemaTableAfterNextResult()
+		{
+			using (var command = Connection.CreateCommand())
+			{
+				command.CommandText = "select Int16 from datatypes_integers;";
+				using (var reader = command.ExecuteReader())
+				{
+					var table = reader.GetSchemaTable();
+					Assert.NotNull(table);
+					Assert.Equal("Int16", table.Rows[0]["ColumnName"]);
+
+					while (reader.Read())
+					{
+					}
+
+					Assert.False(reader.NextResult());
+					Assert.Null(reader.GetSchemaTable());
+				}
+			}
+		}
 #endif
 
 #if !BASELINE

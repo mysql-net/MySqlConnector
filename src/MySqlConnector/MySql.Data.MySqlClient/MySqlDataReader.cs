@@ -234,10 +234,7 @@ namespace MySql.Data.MySqlClient
 		public override DataTable GetSchemaTable()
 		{
 			if (m_schemaTable == null)
-			{
 				m_schemaTable = BuildSchemaTable();
-			}
-
 			return m_schemaTable;
 		}
 
@@ -309,6 +306,8 @@ namespace MySql.Data.MySqlClient
 		internal DataTable BuildSchemaTable()
 		{
 			var colDefinitions = GetResultSet().ColumnDefinitions;
+			if (colDefinitions == null)
+				return null;
 			DataTable schemaTable = new DataTable("SchemaTable");
 			schemaTable.Locale = CultureInfo.InvariantCulture;
 			schemaTable.MinimumCapacity = colDefinitions.Length;
