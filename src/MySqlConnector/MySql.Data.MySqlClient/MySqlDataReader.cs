@@ -59,12 +59,18 @@ namespace MySql.Data.MySqlClient
 					ActivateResultSet(nextResult);
 
 				m_resultSet = nextResult ?? new ResultSet(this);
+#if !NETSTANDARD1_3
+				m_schemaTable = null;
+#endif
 				return nextResult != null;
 			}
 			catch (MySqlException)
 			{
 				m_resultSet = new ResultSet(this);
 				m_resultSetBuffered = null;
+#if !NETSTANDARD1_3
+				m_schemaTable = null;
+#endif
 				throw;
 			}
 		}
