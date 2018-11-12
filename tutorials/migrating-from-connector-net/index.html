@@ -154,7 +154,7 @@ for various precondition checks that indicate misuse of the API (and not a probl
 <li><a href="https://bugs.mysql.com/bug.php?id=78426">#78426</a>: Unknown database exception has wrong number</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=78760">#78760</a>: Error when using tabs and newlines in SQL statements</li>
 <li><del><a href="https://bugs.mysql.com/bug.php?id=78917">#78917</a>, <a href="https://bugs.mysql.com/bug.php?id=79196">#79196</a>, <a href="https://bugs.mysql.com/bug.php?id=82292">#82292</a>, <a href="https://bugs.mysql.com/bug.php?id=89040">#89040</a>: <code>TINYINT(1)</code> values start being returned as <code>sbyte</code> after <code>NULL</code></del></li>
-<li><a href="https://bugs.mysql.com/bug.php?id=80030">#80030</a>: Slow to connect with pooling disabled</li>
+<li><del><a href="https://bugs.mysql.com/bug.php?id=80030">#80030</a>: Slow to connect with pooling disabled</del></li>
 <li><a href="https://bugs.mysql.com/bug.php?id=81650">#81650</a>, <a href="https://bugs.mysql.com/bug.php?id=88962">#88962</a>: <code>Server</code> connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=83329">#83229</a>: &ldquo;Unknown command&rdquo; exception inserting large blob with UseCompression=True</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=84220">#84220</a>: Cannot call a stored procedure with <code>.</code> in its name</li>
@@ -163,8 +163,8 @@ for various precondition checks that indicate misuse of the API (and not a probl
 <li><a href="https://bugs.mysql.com/bug.php?id=86263">#86263</a>: Transaction isolation level affects all transactions in session</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=87307">#87307</a>: NextResult hangs instead of timing out</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=87316">#87316</a>: MySqlCommand.CommandTimeout can be set to a negative value</li>
-<li><a href="https://bugs.mysql.com/bug.php?id=87868">#87868</a>: <code>ColumnSize</code> in schema table is incorrect for <code>CHAR(36)</code> and <code>BLOB</code> columns</li>
-<li><a href="https://bugs.mysql.com/bug.php?id=87876">#87876</a>: <code>IsLong</code> is schema table is incorrect for <code>LONGTEXT</code> and <code>LONGBLOB</code> columns</li>
+<li><del><a href="https://bugs.mysql.com/bug.php?id=87868">#87868</a>: <code>ColumnSize</code> in schema table is incorrect for <code>CHAR(36)</code> and <code>BLOB</code> columns</del></li>
+<li><del><a href="https://bugs.mysql.com/bug.php?id=87876">#87876</a>: <code>IsLong</code> is schema table is incorrect for <code>LONGTEXT</code> and <code>LONGBLOB</code> columns</del></li>
 <li><del><a href="https://bugs.mysql.com/bug.php?id=88058">#88058</a>: <code>decimal(n, 0)</code> has wrong <code>NumericPrecision</code></del></li>
 <li><a href="https://bugs.mysql.com/bug.php?id=88124">#88124</a>: CommandTimeout isn’t reset when calling Read/NextResult</li>
 <li><del><a href="https://bugs.mysql.com/bug.php?id=88472">#88472</a>: <code>TINYINT(1)</code> is not returned as <code>bool</code> if <code>MySqlCommand.Prepare</code> is called</del></li>
@@ -183,6 +183,10 @@ for various precondition checks that indicate misuse of the API (and not a probl
 <li><a href="https://bugs.mysql.com/bug.php?id=91770">#91770</a>: <code>TIME(n)</code> column loses microseconds with prepared command</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=92367">#92367</a>: <code>MySqlDataReader.GetDateTime</code> and <code>GetValue</code> return inconsistent values</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=92734">#92734</a>: <code>MySqlParameter.Clone</code> doesn&rsquo;t copy all property values</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=92789">#92789</a>: Illegal connection attributes written for non-ASCII values</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=92912">#92912</a>: <code>MySqlDbType.LongText</code> values encoded incorrectly with prepared statements</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=92982">#92982</a>: <code>FormatException</code> thrown when connecting to MySQL Server 8.0.13</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=93047">#93047</a>: <code>MySqlDataAdapter</code> throws timeout exception when an error occurs</li>
 </ul>
 
 
