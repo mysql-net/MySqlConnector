@@ -27,7 +27,7 @@ needed to query and update databases from managed code. Its features include:
 
 Read [how to install](./overview/installing/) and a [basic example](./tutorials/basic-api/) of using the API.
 
-### Why use MySql over Oracle’s Connector/NET?
+### Why use MySqlConnector over Oracle’s Connector/NET?
 
 MySqlConnector is a clean-room reimplementation of the [MySQL Protocol](https://dev.mysql.com/doc/internals/en/client-server-protocol.html)
 and is not based on [Oracle’s Connector/NET](https://github.com/mysql/mysql-connector-net).
