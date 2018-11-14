@@ -12,14 +12,15 @@
     <PackageIconUrl>https://mysql-net.github.io/MySqlConnector/img/logo.png</PackageIconUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/mysql-net/MySqlConnector.git</RepositoryUrl>
-    <DebugType>embedded</DebugType>
+    <DebugType>portable</DebugType>
     <LangVersion>latest</LangVersion>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
-    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.5.0" PrivateAssets="All" />
-    <DotNetCliToolReference Include="dotnet-sourcelink" Version="2.5.0" />
-    <PackageReference Include="SourceLink.Test" Version="2.5.0" PrivateAssets="all" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02" PrivateAssets="All"/>
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
