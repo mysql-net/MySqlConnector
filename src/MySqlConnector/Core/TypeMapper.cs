@@ -165,7 +165,7 @@ namespace MySqlConnector.Core
 			return GetColumnTypeMetadata(columnTypeName, unsigned, length)?.DbTypeMapping;
 		}
 
-		public MySqlDbType GetMySqlDbType(string typeName, bool unsigned) => GetColumnTypeMetadata(typeName, unsigned, 0).MySqlDbType;
+		public MySqlDbType GetMySqlDbType(string typeName, bool unsigned, int length) => GetColumnTypeMetadata(typeName, unsigned, length).MySqlDbType;
 
 		private ColumnTypeMetadata GetColumnTypeMetadata(string columnTypeName, bool unsigned, int length)
 		{

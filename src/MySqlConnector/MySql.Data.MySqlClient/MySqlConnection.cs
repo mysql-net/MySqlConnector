@@ -327,12 +327,6 @@ namespace MySql.Data.MySqlClient
 			if (State != ConnectionState.Open)
 				throw new InvalidOperationException("Connection is not open.");
 
-			if (m_session.ServerVersion.Version < ServerVersions.SupportsProcedureCache)
-			{
-				Log.Warn("Session{0} ServerVersion={1} does not support cached procedures", m_session.Id, m_session.ServerVersion.OriginalString);
-				return null;
-			}
-
 			var cachedProcedures = m_session.Pool?.GetProcedureCache() ?? m_cachedProcedures;
 			if (cachedProcedures == null)
 			{
@@ -361,8 +355,14 @@ namespace MySql.Data.MySqlClient
 					else
 						Log.Warn("Session{0} failed to cache procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
 				}
+				int count;
 				lock (cachedProcedures)
+				{
 					cachedProcedures[normalized.FullyQualified] = cachedProcedure;
+					count = cachedProcedures.Count;
+				}
+				if (Log.IsInfoEnabled())
+					Log.Info("Session{0} procedure cache Count={1}", m_session.Id, count);
 			}
 
 			if (Log.IsWarnEnabled())

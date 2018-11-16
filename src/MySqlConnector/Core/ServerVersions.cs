@@ -9,5 +9,8 @@ namespace MySqlConnector.Core
 
 		// http://dev.mysql.com/doc/refman/5.5/en/parameters-table.html
 		public static readonly Version SupportsProcedureCache = new Version(5, 5, 3);
+
+		// https://ocelot.ca/blog/blog/2017/08/22/no-more-mysql-proc-in-mysql-8-0/
+		public static readonly Version RemovesMySqlProcTable = new Version(8, 0, 0);
 	}
 }
