@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.48.0 (Beta 1)
+
+* Update stored procedure metadata cache to use `mysql.proc` when available: [#569](https://github.com/mysql-net/MySqlConnector/issues/569).
+  * This should provide higher performance, but is a potentially-breaking change for any client using stored procedures.
+* Use latest dotnet SourceLink package.
+
 ### 0.47.1
 
 * Fix `NullReferenceException` in `GetSchemaTable`: [#580](https://github.com/mysql-net/MySqlConnector/issues/580).
