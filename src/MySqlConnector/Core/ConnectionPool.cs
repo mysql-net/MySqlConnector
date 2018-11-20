@@ -380,7 +380,7 @@ namespace MySqlConnector.Core
 			}
 
 			// check for pool using normalized form of connection string
-			var normalizedConnectionString = connectionStringBuilder.ConnectionString;
+			var normalizedConnectionString = GetNormalizedConnectionString(connectionStringBuilder);
 			if (normalizedConnectionString != connectionString && s_pools.TryGetValue(normalizedConnectionString, out pool))
 			{
 				// try to set the pool for the connection string to the canonical pool; if someone else
@@ -410,6 +410,18 @@ namespace MySqlConnector.Core
 			}
 
 			return pool;
+		}
+
+		static string GetNormalizedConnectionString(MySqlConnectionStringBuilder builder)
+		{
+			var db = builder.Database;
+			if(builder.Pooling && builder.ServerLevelPooling)
+			{
+				builder.Database = null;
+			}
+			var normalizedConnectionString = builder.ConnectionString;
+			builder.Database = db;
+			return normalizedConnectionString;
 		}
 
 		public static async Task ClearPoolsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)

@@ -53,6 +53,7 @@ namespace MySqlConnector.Tests
 			Assert.False(csb.OldGuids);
 			Assert.False(csb.PersistSecurityInfo);
 			Assert.True(csb.Pooling);
+			Assert.False(csb.ServerLevelPooling);
 			Assert.Equal(3306u, csb.Port);
 			Assert.Equal("", csb.Server);
 #if !BASELINE
@@ -116,6 +117,7 @@ namespace MySqlConnector.Tests
 					"persistsecurityinfo=yes;" +
 					"Pipe=MyPipe;" +
 					"Pooling=no;" +
+					"ServerLevelPooling=yes;" +
 					"Port=1234;" +
 					"protocol=pipe;" +
 					"pwd=Pass1234;" +
@@ -165,6 +167,7 @@ namespace MySqlConnector.Tests
 			Assert.True(csb.OldGuids);
 			Assert.True(csb.PersistSecurityInfo);
 			Assert.False(csb.Pooling);
+			Assert.True(csb.ServerLevelPooling);
 			Assert.Equal(1234u, csb.Port);
 			Assert.Equal("db-server", csb.Server);
 			Assert.False(csb.TreatTinyAsBoolean);

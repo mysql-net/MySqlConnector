@@ -8,7 +8,7 @@ using Xunit;
 
 namespace MySqlConnector.Tests
 {
-    public class ConnectionTests : IDisposable
+	public class ConnectionTests : IDisposable
 	{
 		public ConnectionTests()
 		{
@@ -63,6 +63,114 @@ namespace MySqlConnector.Tests
 				await WaitForConditionAsync(0, () => m_server.ActiveConnections);
 			}
 		}
+
+		[Fact]
+		public void ServerLevelPoolingIsTrue_PooledConnectionIsReturnedToServerPool()
+		{
+			Assert.Equal(0, m_server.ActiveConnections);
+
+			m_csb.Pooling = true;
+			m_csb.ServerLevelPooling = true;
+			m_csb.Database = "database1";
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(1, m_server.ActiveConnections);
+
+				Assert.Equal(m_server.ServerVersion, connection.ServerVersion);
+				connection.Close();
+				Assert.Equal(1, m_server.ActiveConnections);
+			}
+			m_csb.Database = "database2";
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(1, m_server.ActiveConnections);
+
+				Assert.Equal(m_server.ServerVersion, connection.ServerVersion);
+				connection.Close();
+				Assert.Equal(1, m_server.ActiveConnections);
+			}
+			Assert.Equal(1, m_server.ActiveConnections);
+		}
+
+		[Fact]
+		public void ServerLevelPoolingIsFalse_PooledConnectionIsReturnedToDatabasePool()
+		{
+			Assert.Equal(0, m_server.ActiveConnections);
+
+			m_csb.Pooling = true;
+			m_csb.ServerLevelPooling = false;
+			m_csb.Database = "database1";
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(1, m_server.ActiveConnections);
+
+				Assert.Equal(m_server.ServerVersion, connection.ServerVersion);
+				connection.Close();
+				Assert.Equal(1, m_server.ActiveConnections);
+			}
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(1, m_server.ActiveConnections);
+
+				Assert.Equal(m_server.ServerVersion, connection.ServerVersion);
+				connection.Close();
+				Assert.Equal(1, m_server.ActiveConnections);
+			}
+
+			m_csb.Database = "database2";
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(2, m_server.ActiveConnections);
+
+				Assert.Equal(m_server.ServerVersion, connection.ServerVersion);
+				connection.Close();
+				Assert.Equal(2, m_server.ActiveConnections);
+			}
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(2, m_server.ActiveConnections);
+
+				Assert.Equal(m_server.ServerVersion, connection.ServerVersion);
+				connection.Close();
+				Assert.Equal(2, m_server.ActiveConnections);
+			}
+			Assert.Equal(2, m_server.ActiveConnections);
+		}
+
+		[Fact]
+		public async Task ServerLevelPoolingIsTrue_UnpooledConnectionIsClosed()
+		{
+			Assert.Equal(0, m_server.ActiveConnections);
+
+			m_csb.Pooling = false;
+			m_csb.ServerLevelPooling = true;
+			m_csb.Database = "database1";
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(1, m_server.ActiveConnections);
+
+				Assert.Equal(m_server.ServerVersion, connection.ServerVersion);
+				connection.Close();
+			}
+			m_csb.Database = "database2";
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(1, m_server.ActiveConnections);
+
+				Assert.Equal(m_server.ServerVersion, connection.ServerVersion);
+				connection.Close();
+			}
+			await WaitForConditionAsync(0, () => m_server.ActiveConnections);
+		}
+
 
 		[Theory]
 		[InlineData(2u, 3u, true)]

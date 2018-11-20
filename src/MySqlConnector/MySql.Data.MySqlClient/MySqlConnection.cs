@@ -175,6 +175,14 @@ namespace MySql.Data.MySqlClient
 				m_session = await CreateSessionAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				m_hasBeenOpened = true;
+
+				var settings = GetConnectionSettings();
+				if (settings.Pooling && settings.ServerLevelPooling
+					&& Database != settings.Database)
+				{
+					await ChangeDatabaseAsync(m_connectionSettings.Database);
+				}
+
 				SetState(ConnectionState.Open);
 			}
 			catch (MySqlException)

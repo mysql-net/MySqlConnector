@@ -60,6 +60,7 @@ namespace MySqlConnector.Core
 				throw new MySqlException("MaximumPoolSize must be greater than or equal to MinimumPoolSize");
 			MinimumPoolSize = (int) csb.MinimumPoolSize;
 			MaximumPoolSize = (int) csb.MaximumPoolSize;
+			ServerLevelPooling = csb.ServerLevelPooling;
 
 			// Other Options
 			AllowPublicKeyRetrieval = csb.AllowPublicKeyRetrieval;
@@ -139,6 +140,7 @@ namespace MySqlConnector.Core
 		public int ConnectionIdleTimeout { get; }
 		public int MinimumPoolSize { get; }
 		public int MaximumPoolSize { get; }
+		public bool ServerLevelPooling { get; }
 
 		// Other Options
 		public bool AllowPublicKeyRetrieval { get; }

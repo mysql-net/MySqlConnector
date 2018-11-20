@@ -146,6 +146,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.MaximumPoolSize.SetValue(this, value);
 		}
 
+		public bool ServerLevelPooling
+		{
+			get => MySqlConnectionStringOption.ServerLevelPooling.GetValue(this);
+			set => MySqlConnectionStringOption.ServerLevelPooling.SetValue(this, value);
+		}
+
 		// Other Options
 		public bool AllowPublicKeyRetrieval
 		{
@@ -356,6 +362,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<uint> ConnectionIdleTimeout;
 		public static readonly MySqlConnectionStringOption<uint> MinimumPoolSize;
 		public static readonly MySqlConnectionStringOption<uint> MaximumPoolSize;
+		public static readonly MySqlConnectionStringOption<bool> ServerLevelPooling;
 
 		// Other Options
 		public static readonly MySqlConnectionStringOption<bool> AllowPublicKeyRetrieval;
@@ -494,6 +501,11 @@ namespace MySql.Data.MySqlClient
 			AddOption(MaximumPoolSize = new MySqlConnectionStringOption<uint>(
 				keys: new[] { "Maximum Pool Size", "Max Pool Size", "MaximumPoolSize", "maxpoolsize" },
 				defaultValue: 100));
+
+			AddOption(ServerLevelPooling = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "serverlevelpooling", "Server Level Pooling" },
+				defaultValue: false
+				));
 
 			// Other Options
 			AddOption(AllowPublicKeyRetrieval = new MySqlConnectionStringOption<bool>(
