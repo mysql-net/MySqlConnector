@@ -9,10 +9,14 @@ namespace MySqlConnector.Core
 {
 	internal sealed class MySqlXaTransaction : IEnlistmentNotification
 	{
-		public MySqlXaTransaction(MySqlConnection connection) => m_connection = connection;
+		public MySqlXaTransaction(MySqlConnection connection) => Connection = connection;
+
+		public MySqlConnection Connection { get; }
 
 		public void Start(Transaction transaction)
 		{
+			m_transaction = transaction;
+
 			// generate an "xid" with "gtrid" (Global TRansaction ID) from the .NET Transaction and "bqual" (Branch QUALifier)
 			// unique to this object
 			var id = Interlocked.Increment(ref s_currentId);
@@ -35,7 +39,8 @@ namespace MySqlConnector.Core
 		{
 			ExecuteXaCommand("COMMIT");
 			enlistment.Done();
-			m_connection.UnenlistTransaction(this);
+			Connection.UnenlistTransaction(this, m_transaction);
+			m_transaction = null;
 		}
 
 		public void Rollback(Enlistment enlistment)
@@ -43,14 +48,15 @@ namespace MySqlConnector.Core
 			ExecuteXaCommand("END");
 			ExecuteXaCommand("ROLLBACK");
 			enlistment.Done();
-			m_connection.UnenlistTransaction(this);
+			Connection.UnenlistTransaction(this, m_transaction);
+			m_transaction = null;
 		}
 
 		public void InDoubt(Enlistment enlistment) => throw new NotSupportedException();
 
 		private void ExecuteXaCommand(string statement)
 		{
-			using (var cmd = m_connection.CreateCommand())
+			using (var cmd = Connection.CreateCommand())
 			{
 				cmd.CommandText = "XA " + statement + " " + m_xid;
 				cmd.ExecuteNonQuery();
@@ -59,7 +65,7 @@ namespace MySqlConnector.Core
 
 		static int s_currentId;
 
-		readonly MySqlConnection m_connection;
+		Transaction m_transaction;
 		string m_xid;
 	}
 }
