@@ -13,6 +13,9 @@ using MySqlConnector.Utilities;
 namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlCommand : DbCommand
+#if !NETSTANDARD1_3
+		, ICloneable
+#endif
 	{
 		public MySqlCommand()
 			: this(null, null, null)
@@ -42,6 +45,18 @@ namespace MySql.Data.MySqlClient
 			Connection = connection;
 			Transaction = transaction;
 			CommandType = CommandType.Text;
+		}
+
+		private MySqlCommand(MySqlCommand other)
+			: this(other.CommandText, other.Connection, other.Transaction)
+		{
+			m_commandTimeout = other.m_commandTimeout;
+			m_commandType = other.m_commandType;
+			var parameters = Parameters;
+			DesignTimeVisible = other.DesignTimeVisible;
+			UpdatedRowSource = other.UpdatedRowSource;
+			foreach (MySqlParameter parameter in other.Parameters)
+				parameters.Add(parameter.Clone());
 		}
 
 		public new MySqlParameterCollection Parameters
@@ -315,6 +330,12 @@ namespace MySql.Data.MySqlClient
 
 			return m_commandExecutor.ExecuteReaderAsync(CommandText, m_parameterCollection, behavior, ioBehavior, cancellationToken);
 		}
+
+		public MySqlCommand Clone() => new MySqlCommand(this);
+
+#if !NETSTANDARD1_3
+		object ICloneable.Clone() => Clone();
+#endif
 
 		protected override void Dispose(bool disposing)
 		{

@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
@@ -230,6 +231,45 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 #else
 					Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
 #endif
+				}
+			}
+		}
+
+		[Fact]
+		public void CloneCommand()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using (var transaction = connection.BeginTransaction())
+				{
+					var param = new MySqlParameter("@param", MySqlDbType.Decimal) { Value = 12.3m };
+					using (var cmd = new MySqlCommand("SELECT @param;", connection, transaction)
+					{
+						CommandType = CommandType.StoredProcedure,
+						Parameters = { param },
+					})
+					{
+						using (var cmd2 = (MySqlCommand) cmd.Clone())
+						{
+							Assert.Equal(cmd.Connection, cmd2.Connection);
+							Assert.Equal(cmd.Transaction, cmd2.Transaction);
+							Assert.Equal(cmd.CommandText, cmd2.CommandText);
+							Assert.Equal(cmd.CommandType, cmd2.CommandType);
+							Assert.Single(cmd2.Parameters);
+
+							var param2 = cmd2.Parameters[0];
+							Assert.Equal(param.ParameterName, param2.ParameterName);
+							Assert.Equal(param.MySqlDbType, param2.MySqlDbType);
+							Assert.Equal(param.Value, param2.Value);
+
+							cmd.CommandText = "New text";
+							Assert.NotEqual(cmd.CommandText, cmd2.CommandText);
+
+							param.Value = 0m;
+							Assert.NotEqual(0m, cmd2.Parameters[0].Value);
+						}
+					}
 				}
 			}
 		}
