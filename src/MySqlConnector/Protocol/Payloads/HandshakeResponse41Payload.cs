@@ -28,7 +28,7 @@ namespace MySqlConnector.Protocol.Payloads
 				(serverCapabilities & ProtocolCapabilities.DeprecateEof) |
 				additionalCapabilities));
 			writer.Write(0x4000_0000);
-			writer.Write((byte) CharacterSet.Utf8Mb4Binary);
+			writer.Write((byte) CharacterSet.Utf8Mb4GeneralCaseInsensitive);
 			writer.Write(s_padding);
 
 			return writer;

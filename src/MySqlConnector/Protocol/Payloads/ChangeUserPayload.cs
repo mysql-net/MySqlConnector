@@ -13,7 +13,7 @@ namespace MySqlConnector.Protocol.Payloads
 			writer.Write(checked((byte) authResponse.Length));
 			writer.Write(authResponse);
 			writer.WriteNullTerminatedString(schemaName ?? "");
-			writer.Write((byte) CharacterSet.Utf8Mb4Binary);
+			writer.Write((byte) CharacterSet.Utf8Mb4GeneralCaseInsensitive);
 			writer.Write((byte) 0);
 			writer.WriteNullTerminatedString("mysql_native_password");
 			if (connectionAttributes != null)
