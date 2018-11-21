@@ -56,10 +56,23 @@
 
 <h1 id="version-history">Version History</h1>
 
-<h3 id="0-48-0-beta-1">0.48.0 (Beta 1)</h3>
+<h3 id="0-48-0-beta-2">0.48.0 Beta 2</h3>
 
 <ul>
-<li>Update stored procedure metadata cache to use <code>mysql.proc</code> when available: <a href="https://github.com/mysql-net/MySqlConnector/issues/569">#569</a>.
+<li><strong>Potentially breaking</strong> Reuse a single connection used sequentially within a transaction: <a href="https://github.com/mysql-net/MySqlConnector/issues/546">#546</a>.
+
+<ul>
+<li>Could change the behavior of <code>TransactionScope</code> in existing code, but will be more similar to Connector/NET.</li>
+</ul></li>
+<li><strong>Potentially breaking</strong> Set default connection collation to <code>utf8mb4_general_ci</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/585">#585</a>.</li>
+<li>Implement ICloneable on MySqlCommand: <a href="https://github.com/mysql-net/MySqlConnector/issues/583">#583</a>.</li>
+<li>Switch back to embedded PDBs.</li>
+</ul>
+
+<h3 id="0-48-0-beta-1">0.48.0 Beta 1</h3>
+
+<ul>
+<li><strong>Potentially breaking</strong> Update stored procedure metadata cache to use <code>mysql.proc</code> when available: <a href="https://github.com/mysql-net/MySqlConnector/issues/569">#569</a>.
 
 <ul>
 <li>This should provide higher performance, but is a potentially-breaking change for any client using stored procedures.</li>

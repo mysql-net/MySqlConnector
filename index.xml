@@ -140,7 +140,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.48.0 (Beta 1)  Update stored procedure metadata cache to use mysql.proc when available: #569.  This should provide higher performance, but is a potentially-breaking change for any client using stored procedures.  Use latest dotnet SourceLink package.  0.47.1  Fix NullReferenceException in GetSchemaTable: #580. Return correct schema table for second result set: #581.  0.47.0  Support MariaDB GSSAPI authentication: #577. Log received error payloads at Debug level.</description>
+      <description>Version History 0.48.0 Beta 2  Potentially breaking Reuse a single connection used sequentially within a transaction: #546.  Could change the behavior of TransactionScope in existing code, but will be more similar to Connector/NET.  Potentially breaking Set default connection collation to utf8mb4_general_ci: #585. Implement ICloneable on MySqlCommand: #583. Switch back to embedded PDBs.  0.48.0 Beta 1  Potentially breaking Update stored procedure metadata cache to use mysql.</description>
     </item>
     
     <item>
