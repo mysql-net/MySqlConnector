@@ -11,9 +11,17 @@ weight: 30
 Version History
 ===============
 
-### 0.48.0 (Beta 1)
+### 0.48.0 Beta 2
 
-* Update stored procedure metadata cache to use `mysql.proc` when available: [#569](https://github.com/mysql-net/MySqlConnector/issues/569).
+* **Potentially breaking** Reuse a single connection used sequentially within a transaction: [#546](https://github.com/mysql-net/MySqlConnector/issues/546).
+  * Could change the behavior of `TransactionScope` in existing code, but will be more similar to Connector/NET.
+* **Potentially breaking** Set default connection collation to `utf8mb4_general_ci`: [#585](https://github.com/mysql-net/MySqlConnector/issues/585).
+* Implement ICloneable on MySqlCommand: [#583](https://github.com/mysql-net/MySqlConnector/issues/583).
+* Switch back to embedded PDBs.
+
+### 0.48.0 Beta 1
+
+* **Potentially breaking** Update stored procedure metadata cache to use `mysql.proc` when available: [#569](https://github.com/mysql-net/MySqlConnector/issues/569).
   * This should provide higher performance, but is a potentially-breaking change for any client using stored procedures.
 * Use latest dotnet SourceLink package.
 
