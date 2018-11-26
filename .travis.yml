@@ -12,7 +12,7 @@ env:
   - IMAGE=mysql:8.0
     NAME=mysql
     OMIT_FEATURES=None
-  - IMAGE=percona:5.7
+  - IMAGE=percona:5.7.22
     NAME=percona
     OMIT_FEATURES=CachingSha2Password,UuidToBin
   - IMAGE=mariadb:10.2
