@@ -419,6 +419,9 @@ namespace SideBySide
 						}
 						Assert.Equal(expectedGuid, reader.GetGuid(0));
 						Assert.Equal(expectedBytes, GetBytes(reader));
+#if !BASELINE
+						Assert.Equal(expectedBytes, GetStreamBytes(reader));
+#endif
 						Assert.False(reader.Read());
 					}
 
@@ -815,8 +818,11 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 
 #if BASELINE
 			DoQuery<NullReferenceException>("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, GetBytes);
+			// https://bugs.mysql.com/bug.php?id=93374
+			// DoQuery<NullReferenceException>("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, GetStreamBytes);
 #else
 			DoQuery<InvalidCastException>("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, GetBytes);
+			DoQuery<InvalidCastException>("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, GetStreamBytes);
 #endif
 		}
 
@@ -1309,6 +1315,16 @@ create table schema_table({createColumn});");
 			var result = new byte[size];
 			reader.GetBytes(0, 0, result, 0, result.Length);
 			return result;
+		}
+
+		private static byte[] GetStreamBytes(DbDataReader reader)
+		{
+			using (var stream = reader.GetStream(0))
+			{
+				var bytes = new byte[stream.Length];
+				Assert.Equal(bytes.Length, stream.Read(bytes, 0, bytes.Length));
+				return bytes;
+			}
 		}
 
 		private void DoQuery(

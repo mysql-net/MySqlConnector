@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using MySql.Data.MySqlClient;
 using MySql.Data.Types;
 using MySqlConnector.Protocol;
@@ -290,6 +291,14 @@ namespace MySqlConnector.Core
 		public DateTime GetDateTime(int ordinal) => (DateTime) GetValue(ordinal);
 
 		public DateTimeOffset GetDateTimeOffset(int ordinal) => new DateTimeOffset(DateTime.SpecifyKind(GetDateTime(ordinal), DateTimeKind.Utc));
+
+		public Stream GetStream(int ordinal)
+		{
+			var length = GetBytes(ordinal, 0, null, 0, 0);
+			var bytes = new byte[length];
+			GetBytes(ordinal, 0, bytes, 0, bytes.Length);
+			return new MemoryStream(bytes);
+		}
 
 		public string GetString(int ordinal) => (string) GetValue(ordinal);
 
