@@ -11,12 +11,20 @@ weight: 30
 Version History
 ===============
 
+### 0.48.0 Beta 3
+
+* **Potentially breaking** Disallow duplicate parameter names after normalization: [#591](https://github.com/mysql-net/MySqlConnector/issues/591).
+* Fix logic for detecting variable names in SQL: [#195](https://github.com/mysql-net/MySqlConnector/issues/195), [#589]((https://github.com/mysql-net/MySqlConnector/issues/589).
+* Implement more efficient version of `MySqlDataReader.GetStream`.
+* Support MySQL Server 5.1 (and earlier) by using `utf8` if `utf8mb4` isn't available.
+* Fix `NullReferenceException` when attempting to invoke a non-existent stored procedure.
+
 ### 0.48.0 Beta 2
 
 * **Potentially breaking** Reuse a single connection used sequentially within a transaction: [#546](https://github.com/mysql-net/MySqlConnector/issues/546).
   * Could change the behavior of `TransactionScope` in existing code, but will be more similar to Connector/NET.
 * **Potentially breaking** Set default connection collation to `utf8mb4_general_ci`: [#585](https://github.com/mysql-net/MySqlConnector/issues/585).
-* Implement ICloneable on MySqlCommand: [#583](https://github.com/mysql-net/MySqlConnector/issues/583).
+* Implement `ICloneable` on `MySqlCommand`: [#583](https://github.com/mysql-net/MySqlConnector/issues/583).
 * Switch back to embedded PDBs.
 
 ### 0.48.0 Beta 1
