@@ -19,7 +19,7 @@ namespace MySqlConnector.Core
 		public static async Task<CachedProcedure> FillAsync(IOBehavior ioBehavior, MySqlConnection connection, string schema, string component, CancellationToken cancellationToken)
 		{
 			// try to use mysql.proc first, as it is much faster
-			if (connection.Session.ServerVersion.Version < ServerVersions.RemovesMySqlProcTable)
+			if (connection.Session.ServerVersion.Version < ServerVersions.RemovesMySqlProcTable && !connection.Session.ProcAccessDenied)
 			{
 				try
 				{
@@ -56,6 +56,8 @@ namespace MySqlConnector.Core
 				catch (MySqlException ex)
 				{
 					Log.Warn("Session{0} failed to retrieve metadata for Schema={1} Component={2}; falling back to INFORMATION_SCHEMA. Error: {3}", connection.Session.Id, schema, component, ex.Message);
+					if ((MySqlErrorCode) ex.Number == MySqlErrorCode.TableAccessDenied)
+						connection.Session.ProcAccessDenied = true;
 				}
 			}
 

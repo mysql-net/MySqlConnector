@@ -60,6 +60,7 @@ namespace MySqlConnector.Core
 		public IPAddress IPAddress => (m_tcpClient?.Client.RemoteEndPoint as IPEndPoint)?.Address;
 		public WeakReference<MySqlConnection> OwningConnection { get; set; }
 		public bool SupportsDeprecateEof => m_supportsDeprecateEof;
+		public bool ProcAccessDenied { get; set; }
 
 		public void ReturnToPool()
 		{
