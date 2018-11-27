@@ -204,7 +204,7 @@ namespace MySqlConnector.Core
 
 		private static bool IsWhitespace(char ch) => ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
 
-		private static bool IsVariableName(char ch) => (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '.' || ch == '_' || ch == '$';
+		private static bool IsVariableName(char ch) => (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '.' || ch == '_' || ch == '$' || (ch >= 0x0080 && ch <= 0xFFFF);
 
 		private enum State
 		{
