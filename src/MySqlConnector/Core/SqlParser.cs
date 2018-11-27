@@ -13,6 +13,7 @@ namespace MySqlConnector.Core
 
 			var state = State.Beginning;
 			var beforeCommentState = State.Beginning;
+			bool isNamedParameter = false;
 			for (int index = 0; index <= sql.Length; index++)
 			{
 				char ch = index == sql.Length ? ';' : sql[index];
@@ -59,15 +60,42 @@ namespace MySqlConnector.Core
 				}
 				else if (state == State.SingleQuotedStringSingleQuote)
 				{
-					state = ch == '\'' ? State.SingleQuotedString : State.Statement;
+					if (ch == '\'')
+					{
+						state = State.SingleQuotedString;
+					}
+					else
+					{
+						if (isNamedParameter)
+							OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
+						state = State.Statement;
+					}
 				}
 				else if (state == State.DoubleQuotedStringDoubleQuote)
 				{
-					state = ch == '"' ? State.DoubleQuotedString : State.Statement;
+					if (ch == '"')
+					{
+						state = State.DoubleQuotedString;
+					}
+					else
+					{
+						if (isNamedParameter)
+							OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
+						state = State.Statement;
+					}
 				}
 				else if (state == State.BacktickQuotedStringBacktick)
 				{
-					state = ch == '`' ? State.BacktickQuotedString : State.Statement;
+					if (ch == '`')
+					{
+						state = State.BacktickQuotedString;
+					}
+					else
+					{
+						if (isNamedParameter)
+							OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
+						state = State.Statement;
+					}
 				}
 				else if (state == State.SecondHyphen)
 				{
@@ -110,7 +138,29 @@ namespace MySqlConnector.Core
 				}
 				else if (state == State.AtSign)
 				{
-					state = IsVariableName(ch) ? State.NamedParameter : State.Statement;
+					if (IsVariableName(ch))
+					{
+						state = State.NamedParameter;
+					}
+					else if (ch == '`')
+					{
+						state = State.BacktickQuotedString;
+						isNamedParameter = true;
+					}
+					else if (ch == '"')
+					{
+						state = State.DoubleQuotedString;
+						isNamedParameter = true;
+					}
+					else if (ch == '\'')
+					{
+						state = State.SingleQuotedString;
+						isNamedParameter = true;
+					}
+					else
+					{
+						state = State.Statement;
+					}
 				}
 				else if (state == State.NamedParameter)
 				{

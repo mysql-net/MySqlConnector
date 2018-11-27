@@ -89,6 +89,49 @@ namespace MySqlConnector.Tests
 		}
 
 		[Theory]
+		[InlineData("SELECT @var;", "var")]
+		[InlineData("SELECT @var;", "@var")]
+		[InlineData("SELECT @var;", "@`var`")]
+		[InlineData("SELECT @var;", "@'var'")]
+		[InlineData("SELECT @`var`;", "var")]
+		[InlineData("SELECT @`var`;", "@var")]
+		[InlineData("SELECT @`var`;", "@`var`")]
+		[InlineData("SELECT @`v``ar`;", "v`ar")]
+		[InlineData("SELECT @`v``ar`;", "@`v``ar`")]
+		[InlineData("SELECT @'var';", "var")]
+		[InlineData("SELECT @'var';", "@var")]
+		[InlineData("SELECT @'var';", "@'var'")]
+		[InlineData("SELECT @'v''ar';", "v'ar")]
+		[InlineData("SELECT @'v''ar';", "@'v''ar'")]
+		[InlineData("SELECT @\"var\";", "var")]
+		[InlineData("SELECT @\"var\";", "@var")]
+		[InlineData("SELECT @\"var\";", "@\"var\"")]
+		[InlineData("SELECT @\"v\"\"ar\";", "v\"ar")]
+		[InlineData("SELECT @\"v\"\"ar\";", "@\"v\"\"ar\"")]
+		public void QuotedParameters(string sql, string parameterName)
+		{
+			var parameters = new MySqlParameterCollection();
+			parameters.AddWithValue(parameterName, 123);
+			var parsedSql = GetParsedSql(sql, parameters);
+			Assert.Equal("SELECT 123;", parsedSql);
+		}
+
+		[Theory]
+		[InlineData(@"SET @'var':=1;
+SELECT @foo+@'var' as R")]
+		[InlineData(@"SET @'var':=1;
+SELECT @foo+1 as R")]
+		[InlineData(@"SET @'var':=@foo+1;
+SELECT @'var' as R")]
+		public void Bug589(string sql)
+		{
+			var parameters = new MySqlParameterCollection();
+			parameters.AddWithValue("@foo", 22);
+			var parsedSql = GetParsedSql(sql, parameters, StatementPreparerOptions.AllowUserVariables);
+			Assert.Equal(sql.Replace("@foo", "22"), parsedSql);
+		}
+
+		[Theory]
 		[MemberData(nameof(FormatParameterData))]
 		public void FormatParameter(object parameterValue, string replacedValue)
 		{
