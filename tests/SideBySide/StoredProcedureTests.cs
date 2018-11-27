@@ -557,6 +557,16 @@ namespace SideBySide
 		}
 #endif
 
+		[Fact]
+		public void CallNonExistentStoredProcedure()
+		{
+			using (var command = new MySqlCommand("NonExistentStoredProcedure", m_database.Connection))
+			{
+				command.CommandType = CommandType.StoredProcedure;
+				Assert.Throws<MySqlException>(() => command.ExecuteNonQuery());
+			}
+		}
+
 		private static string NormalizeSpaces(string input)
 		{
 			input = input.Replace('\r', ' ');

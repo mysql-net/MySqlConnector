@@ -31,7 +31,7 @@ namespace MySqlConnector.Core
 			var inParams = new MySqlParameterCollection();
 			var argParamNames = new List<string>();
 			var inOutSetParams = "";
-			for (var i = 0; i < parameterCollection.Count; i++)
+			for (var i = 0; i < (parameterCollection?.Count ?? 0); i++)
 			{
 				var param = parameterCollection[i];
 				var inName = "@inParam" + i;
