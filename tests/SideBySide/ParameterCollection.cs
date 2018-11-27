@@ -20,18 +20,23 @@ namespace SideBySide
 
 		[Theory]
 		[InlineData("Baz", 0)]
-		[InlineData("@Baz", -1)]
-		[InlineData("?Baz", -1)]
-		[InlineData("Test", -1)]
 		[InlineData("@Test", 1)]
-		[InlineData("?Test", -1)]
-		[InlineData("Foo", -1)]
-		[InlineData("@Foo", -1)]
 		[InlineData("?Foo", 2)]
 		[InlineData("Bar", -1)]
 		[InlineData("@Bar", -1)]
 		[InlineData("?Bar", -1)]
 		[InlineData("", -1)]
+#if !BASELINE
+		[InlineData("@Baz", 0)]
+		[InlineData("?Baz", 0)]
+		[InlineData("@'Baz'", 0)]
+		[InlineData("?Test", 1)]
+		[InlineData("Test", 1)]
+		[InlineData("@`Test`", 1)]
+		[InlineData("Foo", 2)]
+		[InlineData("@Foo", 2)]
+		[InlineData("@\"Foo\"", 2)]
+#endif
 		public void FindByName(string parameterName, int position)
 		{
 			m_parameterCollection.Add(new MySqlParameter { ParameterName = "Baz", Value = 0 });
@@ -41,15 +46,6 @@ namespace SideBySide
 			Assert.Equal(position, index);
 			Assert.Equal(position != -1, m_parameterCollection.Contains(parameterName));
 
-			string expectedParameterName = parameterName;
-#if BASELINE
-			// NOTE: Baseline will match "Baz" in the parameter collection with "@Baz", but only for the indexing operator
-			if (parameterName.EndsWith("Baz", StringComparison.Ordinal))
-			{
-				position = 0;
-				expectedParameterName = "Baz";
-			}
-#endif
 			if (position == -1)
 			{
 				Assert.Throws<ArgumentException>(() => m_parameterCollection[parameterName]);
@@ -58,7 +54,7 @@ namespace SideBySide
 			{
 				var parameter = m_parameterCollection[parameterName];
 				Assert.NotNull(parameter);
-				Assert.Equal(expectedParameterName, parameter.ParameterName);
+				Assert.Same(m_parameterCollection[position], parameter);
 			}
 		}
 
@@ -67,6 +63,11 @@ namespace SideBySide
 		[InlineData("@Test")]
 		[InlineData("@tEsT")]
 		[InlineData("@TEST")]
+#if !BASELINE
+		[InlineData("test")]
+		[InlineData("@`test`")]
+		[InlineData("@'test'")]
+#endif
 		public void FindByNameIgnoringCase(string parameterName)
 		{
 			m_parameterCollection.AddWithValue("@Test", 1);
@@ -84,6 +85,20 @@ namespace SideBySide
 
 			m_parameterCollection.RemoveAt(parameterName);
 			Assert.Equal(0, m_parameterCollection.Count);
+		}
+
+		[Theory]
+		[InlineData("@test")]
+		[InlineData("@TEST")]
+#if !BASELINE
+		[InlineData("test")] // https://bugs.mysql.com/bug.php?id=93370
+		[InlineData("@'test'")]
+		[InlineData("@`TEST`")]
+#endif
+		public void AddDuplicateParameter(string parameterName)
+		{
+			m_parameterCollection.AddWithValue("@test", 1);
+			Assert.Throws<MySqlException>(() => { m_parameterCollection.AddWithValue(parameterName, 2); });
 		}
 
 		[Fact]

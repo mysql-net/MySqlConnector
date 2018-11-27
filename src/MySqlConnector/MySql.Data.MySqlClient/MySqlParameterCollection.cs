@@ -87,13 +87,7 @@ namespace MySql.Data.MySqlClient
 
 		public override int IndexOf(object value) => m_parameters.IndexOf((MySqlParameter) value);
 
-		public override int IndexOf(string parameterName)
-		{
-			var index = NormalizedIndexOf(parameterName);
-			if (index == -1)
-				return -1;
-			return string.Equals(parameterName, m_parameters[index].ParameterName, StringComparison.OrdinalIgnoreCase) ? index : -1;
-		}
+		public override int IndexOf(string parameterName) => NormalizedIndexOf(parameterName);
 
 		// Finds the index of a parameter by name, regardless of whether 'parameterName' or the matching
 		// MySqlParameter.ParameterName has a leading '?' or '@'.
@@ -160,8 +154,10 @@ namespace MySql.Data.MySqlClient
 
 		private void AddParameter(MySqlParameter parameter)
 		{
+			if (!string.IsNullOrEmpty(parameter.NormalizedParameterName) && NormalizedIndexOf(parameter.NormalizedParameterName) != -1)
+				throw new MySqlException(@"Parameter '{0}' has already been defined.".FormatInvariant(parameter.ParameterName));
 			m_parameters.Add(parameter);
-			if (parameter.NormalizedParameterName != null)
+			if (!string.IsNullOrEmpty(parameter.NormalizedParameterName))
 				m_nameToIndex[parameter.NormalizedParameterName] = m_parameters.Count - 1;
 		}
 
