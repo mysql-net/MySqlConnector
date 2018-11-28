@@ -1321,6 +1321,8 @@ create table schema_table({createColumn});");
 		{
 			using (var stream = reader.GetStream(0))
 			{
+				Assert.True(stream.CanRead);
+				Assert.False(stream.CanWrite);
 				var bytes = new byte[stream.Length];
 				Assert.Equal(bytes.Length, stream.Read(bytes, 0, bytes.Length));
 				return bytes;

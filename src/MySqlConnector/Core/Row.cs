@@ -294,10 +294,20 @@ namespace MySqlConnector.Core
 
 		public Stream GetStream(int ordinal)
 		{
-			var length = GetBytes(ordinal, 0, null, 0, 0);
-			var bytes = new byte[length];
-			GetBytes(ordinal, 0, bytes, 0, bytes.Length);
-			return new MemoryStream(bytes);
+			if (m_dataOffsets[ordinal] == -1)
+				throw new InvalidCastException("Column is NULL.");
+
+			var column = ResultSet.ColumnDefinitions[ordinal];
+			var columnType = column.ColumnType;
+			if ((column.ColumnFlags & ColumnFlags.Binary) == 0 ||
+			    (columnType != ColumnType.String && columnType != ColumnType.VarString && columnType != ColumnType.TinyBlob &&
+			     columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob &&
+			     columnType != ColumnType.Geometry))
+			{
+				throw new InvalidCastException("Can't convert {0} to bytes.".FormatInvariant(columnType));
+			}
+
+			return new MemoryStream(m_data.Array, m_data.Offset + m_dataOffsets[ordinal], m_dataLengths[ordinal], false);
 		}
 
 		public string GetString(int ordinal) => (string) GetValue(ordinal);
