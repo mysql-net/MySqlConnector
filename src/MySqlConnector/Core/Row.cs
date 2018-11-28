@@ -74,18 +74,7 @@ namespace MySqlConnector.Core
 
 		public long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length)
 		{
-			if (m_dataOffsets[ordinal] == -1)
-				throw new InvalidCastException("Column is NULL.");
-
-			var column = ResultSet.ColumnDefinitions[ordinal];
-			var columnType = column.ColumnType;
-			if ((column.ColumnFlags & ColumnFlags.Binary) == 0 ||
-				(columnType != ColumnType.String && columnType != ColumnType.VarString && columnType != ColumnType.TinyBlob &&
-				columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob &&
-				columnType != ColumnType.Geometry))
-			{
-				throw new InvalidCastException("Can't convert {0} to bytes.".FormatInvariant(columnType));
-			}
+			CheckBinaryColumn(ordinal);
 
 			if (buffer == null)
 			{
@@ -294,19 +283,7 @@ namespace MySqlConnector.Core
 
 		public Stream GetStream(int ordinal)
 		{
-			if (m_dataOffsets[ordinal] == -1)
-				throw new InvalidCastException("Column is NULL.");
-
-			var column = ResultSet.ColumnDefinitions[ordinal];
-			var columnType = column.ColumnType;
-			if ((column.ColumnFlags & ColumnFlags.Binary) == 0 ||
-			    (columnType != ColumnType.String && columnType != ColumnType.VarString && columnType != ColumnType.TinyBlob &&
-			     columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob &&
-			     columnType != ColumnType.Geometry))
-			{
-				throw new InvalidCastException("Can't convert {0} to bytes.".FormatInvariant(columnType));
-			}
-
+			CheckBinaryColumn(ordinal);
 			return new MemoryStream(m_data.Array, m_data.Offset + m_dataOffsets[ordinal], m_dataLengths[ordinal], false);
 		}
 
@@ -379,6 +356,22 @@ namespace MySqlConnector.Core
 				return new Guid(bytes);
 			}
 #endif
+		}
+
+		private void CheckBinaryColumn(int ordinal)
+		{
+			if (m_dataOffsets[ordinal] == -1)
+				throw new InvalidCastException("Column is NULL.");
+
+			var column = ResultSet.ColumnDefinitions[ordinal];
+			var columnType = column.ColumnType;
+			if ((column.ColumnFlags & ColumnFlags.Binary) == 0 ||
+			    (columnType != ColumnType.String && columnType != ColumnType.VarString && columnType != ColumnType.TinyBlob &&
+			     columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob &&
+			     columnType != ColumnType.Geometry))
+			{
+				throw new InvalidCastException("Can't convert {0} to bytes.".FormatInvariant(columnType));
+			}
 		}
 
 		private static void CheckBufferArguments<T>(long dataOffset, T[] buffer, int bufferOffset, int length)
