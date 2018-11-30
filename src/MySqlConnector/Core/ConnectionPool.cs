@@ -29,7 +29,7 @@ namespace MySqlConnector.Core
 			// on the lock in RecoverLeakedSessions in high-concurrency situations
 			if (m_sessionSemaphore.CurrentCount == 0 && unchecked(((uint) Environment.TickCount) - m_lastRecoveryTime) >= 1000u)
 			{
-				Log.Warn("Pool{0} is empty; recovering leaked sessions", m_logArguments);
+				Log.Info("Pool{0} is empty; recovering leaked sessions", m_logArguments);
 				RecoverLeakedSessions();
 			}
 
