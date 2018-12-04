@@ -56,11 +56,19 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-48-0-rc-1">0.48.0 RC 1</h3>
+
+<ul>
+<li>Add <code>MySqlConnection.InfoMessage</code> event: <a href="https://github.com/mysql-net/MySqlConnector/issues/594">#594</a>.</li>
+<li>Reduce log message severity for session discarded due to <code>ConnectionLifeTime</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/586">#586</a>.</li>
+<li>Optimise <code>MySqlDataReader.GetStream</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/592">#592</a>.</li>
+</ul>
+
 <h3 id="0-48-0-beta-3">0.48.0 Beta 3</h3>
 
 <ul>
 <li><strong>Potentially breaking</strong> Disallow duplicate parameter names after normalization: <a href="https://github.com/mysql-net/MySqlConnector/issues/591">#591</a>.</li>
-<li>Fix logic for detecting variable names in SQL: <a href="https://github.com/mysql-net/MySqlConnector/issues/195">#195</a>, [#589]((<a href="https://github.com/mysql-net/MySqlConnector/issues/589">https://github.com/mysql-net/MySqlConnector/issues/589</a>).</li>
+<li>Fix logic for detecting variable names in SQL: <a href="https://github.com/mysql-net/MySqlConnector/issues/195">#195</a>, <a href="https://github.com/mysql-net/MySqlConnector/issues/589">#589</a>.</li>
 <li>Implement more efficient version of <code>MySqlDataReader.GetStream</code>.</li>
 <li>Support MySQL Server 5.1 (and earlier) by using <code>utf8</code> if <code>utf8mb4</code> isn&rsquo;t available.</li>
 <li>Fix <code>NullReferenceException</code> when attempting to invoke a non-existent stored procedure.</li>
