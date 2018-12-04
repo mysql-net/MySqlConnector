@@ -11,10 +11,16 @@ weight: 30
 Version History
 ===============
 
+### 0.48.0 RC 1
+
+* Add `MySqlConnection.InfoMessage` event: [#594](https://github.com/mysql-net/MySqlConnector/issues/594).
+* Reduce log message severity for session discarded due to `ConnectionLifeTime`: [#586](https://github.com/mysql-net/MySqlConnector/issues/586).
+* Optimise `MySqlDataReader.GetStream`: [#592](https://github.com/mysql-net/MySqlConnector/issues/592).
+
 ### 0.48.0 Beta 3
 
 * **Potentially breaking** Disallow duplicate parameter names after normalization: [#591](https://github.com/mysql-net/MySqlConnector/issues/591).
-* Fix logic for detecting variable names in SQL: [#195](https://github.com/mysql-net/MySqlConnector/issues/195), [#589]((https://github.com/mysql-net/MySqlConnector/issues/589).
+* Fix logic for detecting variable names in SQL: [#195](https://github.com/mysql-net/MySqlConnector/issues/195), [#589](https://github.com/mysql-net/MySqlConnector/issues/589).
 * Implement more efficient version of `MySqlDataReader.GetStream`.
 * Support MySQL Server 5.1 (and earlier) by using `utf8` if `utf8mb4` isn't available.
 * Fix `NullReferenceException` when attempting to invoke a non-existent stored procedure.
