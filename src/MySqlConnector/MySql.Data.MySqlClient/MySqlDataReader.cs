@@ -94,6 +94,7 @@ namespace MySql.Data.MySqlClient
 
 			Command.LastInsertedId = resultSet.LastInsertId;
 			m_recordsAffected = m_recordsAffected == null ? resultSet.RecordsAffected : m_recordsAffected.Value + (resultSet.RecordsAffected ?? 0);
+			m_hasWarnings = resultSet.WarningCount != 0;
 		}
 
 		private ValueTask<ResultSet> ScanResultSetAsync(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
@@ -431,7 +432,7 @@ namespace MySql.Data.MySqlClient
 				m_resultSetBuffered = null;
 
 				var connection = Command.Connection;
-				connection.FinishQuerying();
+				connection.FinishQuerying(m_hasWarnings);
 
 				Command.ReaderClosed();
 				if ((m_behavior & CommandBehavior.CloseConnection) != 0)
@@ -458,6 +459,7 @@ namespace MySql.Data.MySqlClient
 		readonly CommandBehavior m_behavior;
 		bool m_closed;
 		int? m_recordsAffected;
+		bool m_hasWarnings;
 		ResultSet m_resultSet;
 		ResultSet m_resultSetBuffered;
 #if !NETSTANDARD1_3

@@ -28,6 +28,7 @@ namespace MySqlConnector.Core
 			ColumnTypes = null;
 			LastInsertId = 0;
 			RecordsAffected = null;
+			WarningCount = 0;
 			State = ResultSetState.None;
 			m_columnDefinitionPayloadUsedBytes = 0;
 			m_readBuffer.Clear();
@@ -47,6 +48,7 @@ namespace MySqlConnector.Core
 						var ok = OkPayload.Create(payload.AsSpan());
 						RecordsAffected = (RecordsAffected ?? 0) + ok.AffectedRowCount;
 						LastInsertId = unchecked((long) ok.LastInsertId);
+						WarningCount = ok.WarningCount;
 						if (ok.NewSchema != null)
 							Connection.Session.DatabaseOverride = ok.NewSchema;
 						ColumnDefinitions = null;
@@ -128,6 +130,7 @@ namespace MySqlConnector.Core
 						}
 
 						LastInsertId = -1;
+						WarningCount = 0;
 						State = ResultSetState.ReadResultSetHeader;
 						break;
 					}
@@ -329,6 +332,7 @@ namespace MySqlConnector.Core
 		public MySqlDbType[] ColumnTypes { get; private set; }
 		public long LastInsertId { get; private set; }
 		public int? RecordsAffected { get; private set; }
+		public int WarningCount { get; private set; }
 		public ResultSetState State { get; private set; }
 
 		ResizableArray<byte> m_columnDefinitionPayloads;

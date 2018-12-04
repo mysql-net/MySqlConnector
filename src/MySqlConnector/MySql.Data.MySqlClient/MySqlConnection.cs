@@ -309,6 +309,8 @@ namespace MySql.Data.MySqlClient
 
 		public override int ConnectionTimeout => m_connectionSettings.ConnectionTimeout;
 
+		public event MySqlInfoMessageEventHandler InfoMessage;
+
 		protected override void Dispose(bool disposing)
 		{
 			try
@@ -444,10 +446,23 @@ namespace MySql.Data.MySqlClient
 			m_activeReader = dataReader;
 		}
 
-		internal void FinishQuerying()
+		internal void FinishQuerying(bool hasWarnings)
 		{
 			m_session.FinishQuerying();
 			m_activeReader = null;
+
+			if (hasWarnings && InfoMessage != null)
+			{
+				var errors = new List<MySqlError>();
+				using (var command = new MySqlCommand("SHOW WARNINGS;", this))
+				using (var reader = command.ExecuteReader())
+				{
+					while (reader.Read())
+						errors.Add(new MySqlError(reader.GetString(0), reader.GetInt32(1), reader.GetString(2)));
+				}
+
+				InfoMessage(this, new MySqlInfoMessageEventArgs(errors.ToArray()));
+			}
 		}
 
 		private async ValueTask<ServerSession> CreateSessionAsync(IOBehavior? ioBehavior, CancellationToken cancellationToken)
