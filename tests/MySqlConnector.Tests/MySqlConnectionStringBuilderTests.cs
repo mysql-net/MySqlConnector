@@ -68,6 +68,9 @@ namespace MySqlConnector.Tests
 #else
 			Assert.True(csb.UseAffectedRows);
 #endif
+#if !BASELINE
+			Assert.True(csb.UseXaTransactions);
+#endif
 		}
 
 		[Fact]
@@ -106,6 +109,7 @@ namespace MySqlConnector.Tests
 					"load balance=random;" +
 					"guidformat=timeswapbinary16;" +
 					"server spn=mariadb/host.example.com@EXAMPLE.COM;" +
+					"use xa transactions=false;" +
 #endif
 					"ignore prepare=false;" +
 					"interactive=true;" +
@@ -154,6 +158,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal(MySqlLoadBalance.Random, csb.LoadBalance);
 			Assert.Equal(MySqlGuidFormat.TimeSwapBinary16, csb.GuidFormat);
 			Assert.Equal("mariadb/host.example.com@EXAMPLE.COM", csb.ServerSPN);
+			Assert.False(csb.UseXaTransactions);
 #endif
 			Assert.False(csb.IgnorePrepare);
 			Assert.True(csb.InteractiveSession);

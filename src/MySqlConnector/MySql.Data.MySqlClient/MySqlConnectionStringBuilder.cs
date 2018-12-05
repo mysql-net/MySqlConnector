@@ -285,6 +285,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.UseCompression.SetValue(this, value);
 		}
 
+		public bool UseXaTransactions
+		{
+			get => MySqlConnectionStringOption.UseXaTransactions.GetValue(this);
+			set => MySqlConnectionStringOption.UseXaTransactions.SetValue(this, value);
+		}
+
 		// Other Methods
 		public override bool ContainsKey(string key)
 		{
@@ -381,6 +387,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<bool> TreatTinyAsBoolean;
 		public static readonly MySqlConnectionStringOption<bool> UseAffectedRows;
 		public static readonly MySqlConnectionStringOption<bool> UseCompression;
+		public static readonly MySqlConnectionStringOption<bool> UseXaTransactions;
 
 		public static MySqlConnectionStringOption TryGetOptionForKey(string key) =>
 			s_options.TryGetValue(key, out var option) ? option : null;
@@ -587,6 +594,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(UseCompression = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Compress", "Use Compression", "UseCompression" },
 				defaultValue: false));
+
+			AddOption(UseXaTransactions = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "Use XA Transactions", "UseXaTransactions" },
+				defaultValue: true));
 		}
 
 		static readonly Dictionary<string, MySqlConnectionStringOption> s_options;

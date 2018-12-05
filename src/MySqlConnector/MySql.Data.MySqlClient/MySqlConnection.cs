@@ -43,7 +43,7 @@ namespace MySql.Data.MySqlClient
 			if (CurrentTransaction != null)
 				throw new InvalidOperationException("Transactions may not be nested.");
 #if !NETSTANDARD1_3
-			if (m_xaTransaction != null)
+			if (m_implicitTransaction != null)
 				throw new InvalidOperationException("Cannot begin a transaction when already enlisted in a transaction.");
 #endif
 
@@ -85,7 +85,7 @@ namespace MySql.Data.MySqlClient
 #if !NETSTANDARD1_3
 		public override void EnlistTransaction(System.Transactions.Transaction transaction)
 		{
-			if (m_xaTransaction != null)
+			if (m_implicitTransaction != null)
 				throw new MySqlException("Already enlisted in a Transaction.");
 			if (CurrentTransaction != null)
 				throw new InvalidOperationException("Can't enlist in a Transaction when there is an active MySqlTransaction.");
@@ -101,13 +101,24 @@ namespace MySql.Data.MySqlClient
 					// can reuse the existing connection
 					DoClose(changeState: false);
 					m_session = existingConnection.DetachSession();
-					m_xaTransaction = existingConnection.m_xaTransaction;
+					m_implicitTransaction = existingConnection.m_implicitTransaction;
 				}
 				else
 				{
-					var xaTransaction = new MySqlXaTransaction(this);
-					xaTransaction.Start(transaction);
-					m_xaTransaction = xaTransaction;
+					ImplicitTransactionBase implicitTransaction;
+					if (m_connectionSettings.UseXaTransactions)
+					{
+						implicitTransaction = new XaImplicitTransaction(this);
+					}
+					else
+					{
+						if (existingConnection != null)
+							throw new NotSupportedException("Multiple simultaneous connections or connections with different connection strings inside the same transaction are not supported when UseXaTransactions=False.");
+						implicitTransaction = new StandardImplicitTransaction(this);
+					}
+
+					implicitTransaction.Start(transaction);
+					m_implicitTransaction = implicitTransaction;
 
 					if (existingConnection == null)
 						lock (s_lock)
@@ -116,11 +127,11 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		internal void UnenlistTransaction(MySqlXaTransaction xaTransaction, System.Transactions.Transaction transaction)
+		internal void UnenlistTransaction(ImplicitTransactionBase implicitTransaction, System.Transactions.Transaction transaction)
 		{
-			if (!object.ReferenceEquals(xaTransaction, m_xaTransaction))
+			if (!object.ReferenceEquals(implicitTransaction, m_implicitTransaction))
 				throw new InvalidOperationException("Active transaction is not the one being unenlisted from.");
-			m_xaTransaction = null;
+			m_implicitTransaction = null;
 
 			if (m_shouldCloseWhenUnenlisted)
 			{
@@ -154,7 +165,7 @@ namespace MySql.Data.MySqlClient
 			return session;
 		}
 
-		MySqlXaTransaction m_xaTransaction;
+		ImplicitTransactionBase m_implicitTransaction;
 #endif
 
 		public override void Close() => DoClose(changeState: true);
@@ -428,7 +439,11 @@ namespace MySql.Data.MySqlClient
 		internal DateTimeKind DateTimeKind => m_connectionSettings.DateTimeKind;
 		internal int DefaultCommandTimeout => GetConnectionSettings().DefaultCommandTimeout;
 		internal MySqlGuidFormat GuidFormat => m_connectionSettings.GuidFormat;
+#if NETSTANDARD1_3
 		internal bool IgnoreCommandTransaction => m_connectionSettings.IgnoreCommandTransaction;
+#else
+		internal bool IgnoreCommandTransaction => m_connectionSettings.IgnoreCommandTransaction || m_implicitTransaction is StandardImplicitTransaction;
+#endif
 		internal bool IgnorePrepare => m_connectionSettings.IgnorePrepare;
 		internal bool TreatTinyAsBoolean => m_connectionSettings.TreatTinyAsBoolean;
 		internal IOBehavior AsyncIOBehavior => GetConnectionSettings().ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
@@ -548,13 +563,13 @@ namespace MySql.Data.MySqlClient
 #if !NETSTANDARD1_3
 			// If participating in a distributed transaction, keep the connection open so we can commit or rollback.
 			// This handles the common pattern of disposing a connection before disposing a TransactionScope (e.g., nested using blocks)
-			if (m_xaTransaction != null)
+			if (m_implicitTransaction != null)
 			{
 				// make sure all DB work is done
 				m_activeReader?.Dispose();
 				m_activeReader = null;
 
-				if (object.ReferenceEquals(m_xaTransaction.Connection, this))
+				if (object.ReferenceEquals(m_implicitTransaction.Connection, this))
 				{
 					// if this was the original connection in the transaction, simply defer closing
 					m_shouldCloseWhenUnenlisted = true;
@@ -563,7 +578,7 @@ namespace MySql.Data.MySqlClient
 				else
 				{
 					// reattach the session to the transaction's original connection
-					m_xaTransaction.Connection.AttachSession(m_session);
+					m_implicitTransaction.Connection.AttachSession(m_session);
 					m_session = null;
 				}
 			}

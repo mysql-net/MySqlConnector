@@ -83,6 +83,7 @@ namespace MySqlConnector.Core
 			TreatTinyAsBoolean = csb.TreatTinyAsBoolean;
 			UseAffectedRows = csb.UseAffectedRows;
 			UseCompression = csb.UseCompression;
+			UseXaTransactions = csb.UseXaTransactions;
 		}
 
 		private static MySqlGuidFormat GetEffectiveGuidFormat(MySqlGuidFormat guidFormat, bool oldGuids)
@@ -162,6 +163,7 @@ namespace MySqlConnector.Core
 		public bool TreatTinyAsBoolean { get; }
 		public bool UseAffectedRows { get; }
 		public bool UseCompression { get; }
+		public bool UseXaTransactions { get; }
 
 		public byte[] ConnectionAttributes { get; set; }
 

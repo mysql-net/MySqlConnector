@@ -343,4 +343,12 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>true</td>
     <td>When false, the connection reports found rows instead of changed (affected) rows.</td>
   </tr>
+  <tr>
+    <td>Use XA Transactions, UseXaTransactions</td>
+    <td>true</td>
+    <td>When <code>true</code> (default), using <code>TransactionScope</code> or <code>MySqlConnection.EnlistTransaction</code>
+    will use a <a href="https://dev.mysql.com/doc/refman/8.0/en/xa.html">XA Transaction</a>. This allows true
+    distributed transactions, but may not be compatible with server replication; there are <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-restrictions.html">other limitations</a>.
+    When set to <code>false</code>, regular MySQL transactions are used, just like Connector/NET.</td>
+  </tr>
 </table>

@@ -66,10 +66,11 @@ supported in MySqlConnector, see the [Connection Options](connection-options).
 
 ### TransactionScope
 
-MySqlConnector adds full distributed transaction support (for client code using [`TransactionScope`](https://msdn.microsoft.com/en-us/library/system.transactions.transactionscope.aspx)),
-while Connector/NET uses regular database transactions. As a result, code that uses `TransactionScope`
-may execute differently with MySqlConnector. To get Connector/NET-compatible behavior, remove
-`TransactionScope` and use `BeginTransaction`/`Commit` directly.
+MySqlConnector adds full distributed transaction support (for client code using [`System.Transactions.Transaction`](https://docs.microsoft.com/en-us/dotnet/api/system.transactions.transaction
+)),
+while Connector/NET uses regular database transactions. As a result, code that uses `TransactionScope` or `MySqlConnection.EnlistTransaction`
+may execute differently with MySqlConnector. To get Connector/NET-compatible behavior, set
+`UseXaTransactions=false` in your connection string.
 
 ### MySqlConnection
 
