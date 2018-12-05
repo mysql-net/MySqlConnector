@@ -101,7 +101,7 @@ However, this strictness can make migrating from Connector/NET more difficult, a
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/known-issues/</guid>
-      <description> Known Issues  Prepared statements are not supported: #397. MySQL spatial data types are not supported: #70. Some MySql.Data connection string settings are not supported by this library. See Connection Options for a list of supported options.  </description>
+      <description> Known Issues  Prepared statements are not supported: #397. Some MySql.Data connection string settings are not supported by this library. See Connection Options for a list of supported options.  </description>
     </item>
     
     <item>
@@ -140,7 +140,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.48.0 RC 1  Add MySqlConnection.InfoMessage event: #594. Reduce log message severity for session discarded due to ConnectionLifeTime: #586. Optimise MySqlDataReader.GetStream: #592.  0.48.0 Beta 3  Potentially breaking Disallow duplicate parameter names after normalization: #591. Fix logic for detecting variable names in SQL: #195, #589. Implement more efficient version of MySqlDataReader.GetStream. Support MySQL Server 5.1 (and earlier) by using utf8 if utf8mb4 isn&amp;rsquo;t available. Fix NullReferenceException when attempting to invoke a non-existent stored procedure.</description>
+      <description>Version History 0.48.0 RC 2  Add UseXaTransactions connection string option to opt out of XA transactions: #254.  0.48.0 RC 1  Add MySqlConnection.InfoMessage event: #594. Reduce log message severity for session discarded due to ConnectionLifeTime: #586. Optimise MySqlDataReader.GetStream: #592.  0.48.0 Beta 3  Potentially breaking Disallow duplicate parameter names after normalization: #591. Fix logic for detecting variable names in SQL: #195, #589. Implement more efficient version of MySqlDataReader.</description>
     </item>
     
     <item>

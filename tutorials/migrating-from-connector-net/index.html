@@ -111,10 +111,10 @@ supported in MySqlConnector, see the <a href="connection-options">Connection Opt
 
 <h3 id="transactionscope">TransactionScope</h3>
 
-<p>MySqlConnector adds full distributed transaction support (for client code using <a href="https://msdn.microsoft.com/en-us/library/system.transactions.transactionscope.aspx"><code>TransactionScope</code></a>),
-while Connector/NET uses regular database transactions. As a result, code that uses <code>TransactionScope</code>
-may execute differently with MySqlConnector. To get Connector/NET-compatible behavior, remove
-<code>TransactionScope</code> and use <code>BeginTransaction</code>/<code>Commit</code> directly.</p>
+<p>MySqlConnector adds full distributed transaction support (for client code using <a href="https://docs.microsoft.com/en-us/dotnet/api/system.transactions.transaction"><code>System.Transactions.Transaction</code></a>),
+while Connector/NET uses regular database transactions. As a result, code that uses <code>TransactionScope</code> or <code>MySqlConnection.EnlistTransaction</code>
+may execute differently with MySqlConnector. To get Connector/NET-compatible behavior, set
+<code>UseXaTransactions=false</code> in your connection string.</p>
 
 <h3 id="mysqlconnection">MySqlConnection</h3>
 
