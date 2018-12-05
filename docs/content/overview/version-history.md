@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.48.0 RC 2
+
+* Add `UseXaTransactions` connection string option to opt out of XA transactions: [#254](https://github.com/mysql-net/MySqlConnector/issues/254).
+
 ### 0.48.0 RC 1
 
 * Add `MySqlConnection.InfoMessage` event: [#594](https://github.com/mysql-net/MySqlConnector/issues/594).
