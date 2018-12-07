@@ -108,6 +108,8 @@ namespace MySql.Data.MySqlClient
 					ImplicitTransactionBase implicitTransaction;
 					if (m_connectionSettings.UseXaTransactions)
 					{
+						if (!(existingConnection?.m_connectionSettings.UseXaTransactions ?? true))
+							throw new NotSupportedException("Cannot start an XA transaction when there is an existing non-XA transaction.");
 						implicitTransaction = new XaImplicitTransaction(this);
 					}
 					else

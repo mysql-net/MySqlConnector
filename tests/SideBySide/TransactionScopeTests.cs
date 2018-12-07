@@ -555,6 +555,42 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 			}
 		}
 
+#if !BASELINE
+		[Fact]
+		public void CannotMixXaAndNonXaTransactions()
+		{
+			using (new TransactionScope())
+			{
+				using (var conn1 = new MySqlConnection(AppConfig.ConnectionString))
+				{
+					conn1.Open();
+
+					using (var conn2 = new MySqlConnection(AppConfig.ConnectionString + ";UseXaTransactions=False"))
+					{
+						Assert.Throws<NotSupportedException>(() => conn2.Open());
+					}
+				}
+			}
+		}
+
+		[Fact]
+		public void CannotMixNonXaAndXaTransactions()
+		{
+			using (new TransactionScope())
+			{
+				using (var conn1 = new MySqlConnection(AppConfig.ConnectionString + ";UseXaTransactions=False"))
+				{
+					conn1.Open();
+
+					using (var conn2 = new MySqlConnection(AppConfig.ConnectionString))
+					{
+						Assert.Throws<NotSupportedException>(() => conn2.Open());
+					}
+				}
+			}
+		}
+#endif
+
 		DatabaseFixture m_database;
 	}
 }
