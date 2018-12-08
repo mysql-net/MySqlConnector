@@ -56,51 +56,29 @@
 
 <h1 id="version-history">Version History</h1>
 
-<h3 id="0-48-0-rc-2">0.48.0 RC 2</h3>
+<h3 id="0-48-0">0.48.0</h3>
 
 <ul>
-<li>Add <code>UseXaTransactions</code> connection string option to opt out of XA transactions: <a href="https://github.com/mysql-net/MySqlConnector/issues/254">#254</a>.</li>
-</ul>
-
-<h3 id="0-48-0-rc-1">0.48.0 RC 1</h3>
-
-<ul>
-<li>Add <code>MySqlConnection.InfoMessage</code> event: <a href="https://github.com/mysql-net/MySqlConnector/issues/594">#594</a>.</li>
-<li>Reduce log message severity for session discarded due to <code>ConnectionLifeTime</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/586">#586</a>.</li>
-<li>Optimise <code>MySqlDataReader.GetStream</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/592">#592</a>.</li>
-</ul>
-
-<h3 id="0-48-0-beta-3">0.48.0 Beta 3</h3>
-
-<ul>
-<li><strong>Potentially breaking</strong> Disallow duplicate parameter names after normalization: <a href="https://github.com/mysql-net/MySqlConnector/issues/591">#591</a>.</li>
-<li>Fix logic for detecting variable names in SQL: <a href="https://github.com/mysql-net/MySqlConnector/issues/195">#195</a>, <a href="https://github.com/mysql-net/MySqlConnector/issues/589">#589</a>.</li>
-<li>Implement more efficient version of <code>MySqlDataReader.GetStream</code>.</li>
-<li>Support MySQL Server 5.1 (and earlier) by using <code>utf8</code> if <code>utf8mb4</code> isn&rsquo;t available.</li>
-<li>Fix <code>NullReferenceException</code> when attempting to invoke a non-existent stored procedure.</li>
-</ul>
-
-<h3 id="0-48-0-beta-2">0.48.0 Beta 2</h3>
-
-<ul>
-<li><strong>Potentially breaking</strong> Reuse a single connection used sequentially within a transaction: <a href="https://github.com/mysql-net/MySqlConnector/issues/546">#546</a>.
-
-<ul>
-<li>Could change the behavior of <code>TransactionScope</code> in existing code, but will be more similar to Connector/NET.</li>
-</ul></li>
-<li><strong>Potentially breaking</strong> Set default connection collation to <code>utf8mb4_general_ci</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/585">#585</a>.</li>
-<li>Implement <code>ICloneable</code> on <code>MySqlCommand</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/583">#583</a>.</li>
-<li>Switch back to embedded PDBs.</li>
-</ul>
-
-<h3 id="0-48-0-beta-1">0.48.0 Beta 1</h3>
-
-<ul>
+<li><strong>Breaking</strong> Disallow duplicate parameter names after normalization: <a href="https://github.com/mysql-net/MySqlConnector/issues/591">#591</a>.</li>
+<li><strong>Potentially breaking</strong> Change default connection collation from <code>utf8mb4_bin</code> to <code>utf8mb4_general_ci</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/585">#585</a>.</li>
 <li><strong>Potentially breaking</strong> Update stored procedure metadata cache to use <code>mysql.proc</code> when available: <a href="https://github.com/mysql-net/MySqlConnector/issues/569">#569</a>.
 
 <ul>
-<li>This should provide higher performance, but is a potentially-breaking change for any client using stored procedures.</li>
+<li>This provides higher performance, but is a potentially-breaking change for any client using stored procedures.</li>
 </ul></li>
+<li>Change <code>System.Transactions</code> support:
+
+<ul>
+<li>Add <code>UseXaTransactions</code> connection string option to opt out of XA transactions (equivalent to Connector/NET behaviour): <a href="https://github.com/mysql-net/MySqlConnector/issues/254">#254</a>.</li>
+<li><strong>Potentially breaking</strong> Opening multiple (distinct) <code>MySqlConnection</code> objects within the same transaction will reuse the same server session: <a href="https://github.com/mysql-net/MySqlConnector/issues/546">#546</a>.</li>
+</ul></li>
+<li>Add <code>MySqlConnection.InfoMessage</code> event: <a href="https://github.com/mysql-net/MySqlConnector/issues/594">#594</a>.</li>
+<li>Implement <code>ICloneable</code> on <code>MySqlCommand</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/583">#583</a>.</li>
+<li>Fix logic for detecting variable names in SQL: <a href="https://github.com/mysql-net/MySqlConnector/issues/195">#195</a>, <a href="https://github.com/mysql-net/MySqlConnector/issues/589">#589</a>.</li>
+<li>Fix <code>NullReferenceException</code> when attempting to invoke a non-existent stored procedure.</li>
+<li>Support MySQL Server 5.1 (and earlier) by using <code>utf8</code> if <code>utf8mb4</code> isn&rsquo;t available.</li>
+<li>Reduce log message severity for session discarded due to <code>ConnectionLifeTime</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/586">#586</a>.</li>
+<li>Optimise <code>MySqlDataReader.GetStream</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/592">#592</a>.</li>
 <li>Use latest dotnet SourceLink package.</li>
 </ul>
 
