@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <Version>0.48.0-rc2</Version>
+    <Version>0.48.0</Version>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <AssemblyOriginatorKeyFile>..\..\MySqlConnector.snk</AssemblyOriginatorKeyFile>
