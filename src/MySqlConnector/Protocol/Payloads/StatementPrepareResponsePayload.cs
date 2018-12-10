@@ -14,8 +14,8 @@ namespace MySqlConnector.Protocol.Payloads
 			var reader = new ByteArrayReader(span);
 			reader.ReadByte(0);
 			var statementId = reader.ReadInt32();
-			var columnCount = (int) reader.ReadInt16();
-			var parameterCount = (int) reader.ReadInt16();
+			var columnCount = (int) reader.ReadUInt16();
+			var parameterCount = (int) reader.ReadUInt16();
 			reader.ReadByte(0);
 			var warningCount = (int) reader.ReadInt16();
 
