@@ -28,7 +28,7 @@ namespace MySqlConnector.Utilities
 		public static string FormatInvariant(this string format, params object[] args) =>
 			string.Format(CultureInfo.InvariantCulture, format, args);
 
-#if NET45 || NET461 || NETSTANDARD1_3 || NETSTANDARD2_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 		public static string GetString(this Encoding encoding, ReadOnlySpan<byte> span)
 		{
 			if (span.Length == 0)
@@ -54,7 +54,7 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
-#if NET461 || NETSTANDARD2_0
+#if NET461 || NET471 || NETSTANDARD2_0
 		public static unsafe void Convert(this Encoder encoder, ReadOnlySpan<char> chars, Span<byte> bytes, bool flush, out int charsUsed, out int bytesUsed, out bool completed)
 		{
 			fixed (char* charsPtr = chars)
