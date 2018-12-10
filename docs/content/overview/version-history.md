@@ -11,6 +11,13 @@ weight: 30
 Version History
 ===============
 
+### 0.48.1
+
+* Add `net471` as target platform: [#595](https://github.com/mysql-net/MySqlConnector/issues/595).
+* Support `IDbColumnSchemaGenerator` interface in `netcoreapp2.1` package.
+* Fix error in binding parameter values for prepared statements.
+* Fix exception when using more than 32,767 parameters in a prepared statement.
+
 ### 0.48.0
 
 * **Breaking** Disallow duplicate parameter names after normalization: [#591](https://github.com/mysql-net/MySqlConnector/issues/591).
