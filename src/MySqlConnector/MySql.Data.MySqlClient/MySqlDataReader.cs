@@ -17,7 +17,7 @@ using MySqlConnector.Utilities;
 namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlDataReader : DbDataReader
-#if NETSTANDARD1_3 || NETSTANDARD2_0
+#if !NET45 && !NET461
 		, IDbColumnSchemaGenerator
 #endif
 	{

@@ -5,9 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
-#if NET45 || NET461
 using System.Reflection;
-#endif
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Text;
@@ -30,6 +28,7 @@ namespace MySqlConnector.Utilities
 		public static string FormatInvariant(this string format, params object[] args) =>
 			string.Format(CultureInfo.InvariantCulture, format, args);
 
+#if NET45 || NET461 || NETSTANDARD1_3 || NETSTANDARD2_0
 		public static string GetString(this Encoding encoding, ReadOnlySpan<byte> span)
 		{
 			if (span.Length == 0)
@@ -45,7 +44,6 @@ namespace MySqlConnector.Utilities
 #endif
 		}
 
-#if NET45 || NET461 || NETSTANDARD1_3 || NETSTANDARD2_0
 		public static unsafe void GetBytes(this Encoding encoding, ReadOnlySpan<char> chars, Span<byte> bytes)
 		{
 			fixed (char* charsPtr = chars)
