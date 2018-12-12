@@ -140,7 +140,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.48.1  Add net471 as target platform: #595. Support IDbColumnSchemaGenerator interface in netcoreapp2.1 package. Fix error in binding parameter values for prepared statements. Fix exception when using more than 32,767 parameters in a prepared statement.  0.48.0  Breaking Disallow duplicate parameter names after normalization: #591. Potentially breaking Change default connection collation from utf8mb4_bin to utf8mb4_general_ci: #585. Potentially breaking Update stored procedure metadata cache to use mysql.proc when available: #569.</description>
+      <description>Version History 0.48.2  Fix InvalidCastException in MySqlDataReader.GetDateTime when AllowZeroDateTime=True: #597.  0.48.1  Add net471 as target platform: #595. Support IDbColumnSchemaGenerator interface in netcoreapp2.1 package. Fix error in binding parameter values for prepared statements. Fix exception when using more than 32,767 parameters in a prepared statement.  0.48.0  Breaking Disallow duplicate parameter names after normalization: #591. Potentially breaking Change default connection collation from utf8mb4_bin to utf8mb4_general_ci: #585. Potentially breaking Update stored procedure metadata cache to use mysql.</description>
     </item>
     
     <item>
