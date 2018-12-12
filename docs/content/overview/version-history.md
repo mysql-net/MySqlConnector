@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.48.2
+
+* Fix `InvalidCastException` in `MySqlDataReader.GetDateTime` when `AllowZeroDateTime=True`: [#597](https://github.com/mysql-net/MySqlConnector/issues/597).
+
 ### 0.48.1
 
 * Add `net471` as target platform: [#595](https://github.com/mysql-net/MySqlConnector/issues/595).
