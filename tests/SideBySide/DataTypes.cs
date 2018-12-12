@@ -930,22 +930,22 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		}
 
 		[Theory]
-		[InlineData(false, "Date", typeof(DateTime))]
-		[InlineData(true, "Date", typeof(MySqlDateTime))]
-		[InlineData(false, "DateTime", typeof(DateTime))]
-		[InlineData(true, "DateTime", typeof(MySqlDateTime))]
-		[InlineData(false, "TimeStamp", typeof(DateTime))]
-		[InlineData(true, "TimeStamp", typeof(MySqlDateTime))]
-		[InlineData(false, "Time", typeof(TimeSpan))]
-		[InlineData(true, "Time", typeof(TimeSpan))]
-		public void AllowZeroDateTime(bool allowZeroDateTime, string columnName, Type expectedType)
+		[InlineData(false, "Date", typeof(DateTime), "1000 01 01")]
+		[InlineData(true, "Date", typeof(MySqlDateTime), "1000 01 01")]
+		[InlineData(false, "DateTime", typeof(DateTime), "1000 01 01")]
+		[InlineData(true, "DateTime", typeof(MySqlDateTime), "1000 01 01")]
+		[InlineData(false, "TimeStamp", typeof(DateTime), "1970 01 01 0 0 1")]
+		[InlineData(true, "TimeStamp", typeof(MySqlDateTime), "1970 01 01 0 0 1")]
+		[InlineData(false, "Time", typeof(TimeSpan), null)]
+		[InlineData(true, "Time", typeof(TimeSpan), null)]
+		public void AllowZeroDateTime(bool allowZeroDateTime, string columnName, Type expectedType, string expectedDateTime)
 		{
 			var csb = CreateConnectionStringBuilder();
 			csb.AllowZeroDateTime = allowZeroDateTime;
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				connection.Open();
-				using (var cmd = new MySqlCommand($"SELECT `{columnName}` FROM datatypes_times WHERE `{columnName}` IS NOT NULL", connection))
+				using (var cmd = new MySqlCommand($"SELECT `{columnName}` FROM datatypes_times WHERE `{columnName}` IS NOT NULL ORDER BY rowid", connection))
 				{
 					cmd.Prepare();
 					using (var reader = cmd.ExecuteReader())
@@ -957,6 +957,13 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 						var dt = reader.GetSchemaTable();
 						Assert.Equal(expectedType, dt.Rows[0]["DataType"]);
 #endif
+
+						if (expectedDateTime != null)
+						{
+							var expected = (DateTime) ConvertToDateTime(new object[] { expectedDateTime }, DateTimeKind.Unspecified)[0];
+							Assert.Equal(expected, reader.GetDateTime(0));
+							Assert.Equal(new MySqlDateTime(expected), reader.GetMySqlDateTime(0));
+						}
 					}
 				}
 			}

@@ -277,7 +277,13 @@ namespace MySqlConnector.Core
 			return (ulong) value;
 		}
 
-		public DateTime GetDateTime(int ordinal) => (DateTime) GetValue(ordinal);
+		public DateTime GetDateTime(int ordinal)
+		{
+			var value = GetValue(ordinal);
+			if (value is MySqlDateTime mySqlDateTime)
+				return mySqlDateTime.GetDateTime();
+			return (DateTime) value;
+		}
 
 		public DateTimeOffset GetDateTimeOffset(int ordinal) => new DateTimeOffset(DateTime.SpecifyKind(GetDateTime(ordinal), DateTimeKind.Utc));
 
