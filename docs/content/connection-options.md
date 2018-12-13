@@ -283,7 +283,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>IgnoreCommandTransaction, Ignore Command Transaction</td>
     <td>false</td>
     <td>If <code>true</code>, the value of <code>MySqlCommand.Transaction</code> is ignored when commands are executed.
-    This matches the Connector/NET behaviour and can make porting code easier. For more information, see <a href="https://github.com/mysql-net/MySqlConnector/issues/474">Issue 474</a>.</td>
+    This matches the Connector/NET behaviour and can make porting code easier. For more information, see <a href="troubleshooting/transaction-usage/">Transaction Usage</a>.</td>
   </tr>
   <tr>
     <td>Interactive, Interactive Session, InteractiveSession</td>
