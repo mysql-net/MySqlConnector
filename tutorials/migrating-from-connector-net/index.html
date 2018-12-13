@@ -127,7 +127,7 @@ object to be created. See <a href="https://github.com/mysql-net/MySqlConnector/i
 disposed <code>MySqlTransaction</code>. MySqlConnector will throw an <code>InvalidOperationException</code> if the <code>MySqlCommand.Transaction</code>
 property doesn’t reference the active transaction. This fixes <a href="https://bugs.mysql.com/bug.php?id=88611">MySQL Bug 88611</a>.
 To disable this strict validation, set <code>IgnoreCommandTransaction=true</code>
-in the connection string. See <a href="https://github.com/mysql-net/MySqlConnector/issues/474">Issue 474</a> for more details.</p>
+in the connection string. See <a href="troubleshooting/transaction-usage/">Transaction Usage</a> for more details.</p>
 
 <h3 id="exceptions">Exceptions</h3>
 
@@ -187,6 +187,10 @@ for various precondition checks that indicate misuse of the API (and not a probl
 <li><a href="https://bugs.mysql.com/bug.php?id=92912">#92912</a>: <code>MySqlDbType.LongText</code> values encoded incorrectly with prepared statements</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=92982">#92982</a>: <code>FormatException</code> thrown when connecting to MySQL Server 8.0.13</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=93047">#93047</a>: <code>MySqlDataAdapter</code> throws timeout exception when an error occurs</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=93202">#93202</a>: Connector runs <code>SHOW VARIABLES</code> when connection is made</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=93220">#93220</a>: Can’t call FUNCTION when parameter name contains parentheses</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=93370">#93370</a>: <code>MySqlParameterCollection.Add</code> precondition check isn&rsquo;t consistent</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=93374">#93374</a>: <code>MySqlDataReader.GetStream</code> throws <code>IndexOutOfRangeException</code></li>
 </ul>
 
 
