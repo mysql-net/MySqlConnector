@@ -62,7 +62,7 @@ Application Database Object Example It&amp;rsquo;s a good idea to use an IDispos
       <guid>https://mysql-net.github.io/MySqlConnector/overview/logging/</guid>
       <description>Logging MySqlConnector implements a custom logging framework with the IMySqlConnectorLogger and IMySqlConnectorLoggerProvider interfaces. To connect MySqlConnector to an existing logging framework, write an implementation of IMySqlConnectorLoggerProvider that adapts the existing logging framework, and install it by setting MySqlConnector.Logging.MySqlConnectorLogManager.Provider = provider;.
 The MySqlConnectorLogManager.Provider property may only be set once, and must be set before any other MySqlConnector library methods are called.
-Existing Logging Providers There are NuGet packages that adapt MySqlConnector logging for popular logging frameworks.</description>
+Debug-level logging is useful for diagnosing problems with MySqlConnector itself; it is recommend that applications limit MySqlConnector logging to Info or higher.</description>
     </item>
     
     <item>
