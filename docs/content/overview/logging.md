@@ -16,6 +16,9 @@ the existing logging framework, and install it by setting `MySqlConnector.Loggin
 
 The `MySqlConnectorLogManager.Provider` property may only be set once, and must be set before any other MySqlConnector library methods are called.
 
+Debug-level logging is useful for diagnosing problems with MySqlConnector itself; it is recommend that applications limit MySqlConnector
+logging to Info or higher.
+
 ### Existing Logging Providers
 
 There are NuGet packages that adapt MySqlConnector logging for popular logging frameworks.
@@ -28,6 +31,16 @@ Add the following line of code to your application startup routine:
 
 ```csharp
 MySqlConnectorLogManager.Provider = new Log4netLoggerProvider();
+```
+
+To reduce the verbosity of MySqlConnector logging, add the following element to your log4net config:
+
+```xml
+<log4net>
+  ...
+  <logger name="MySqlConnector">
+    <level value="WARN" /> <!-- or "INFO" -->
+  </logger>
 ```
 
 #### Microsoft.Extensions.Logging
