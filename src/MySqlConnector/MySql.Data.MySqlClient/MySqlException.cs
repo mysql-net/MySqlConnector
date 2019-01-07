@@ -1,12 +1,34 @@
 using System;
 using System.Data.Common;
+#if !NETSTANDARD1_3
+using System.Runtime.Serialization;
+#endif
 
 namespace MySql.Data.MySqlClient
 {
+#if !NETSTANDARD1_3
+	[Serializable]
+#endif
 	public sealed class MySqlException : DbException
 	{
 		public int Number { get; }
 		public string SqlState { get; }
+
+#if !NETSTANDARD1_3
+		private MySqlException(SerializationInfo info, StreamingContext context)
+			: base(info, context)
+		{
+			Number = info.GetInt32("Number");
+			SqlState = info.GetString("SqlState");
+		}
+
+		public override void GetObjectData(SerializationInfo info, StreamingContext context)
+		{
+			base.GetObjectData(info, context);
+			info.AddValue("Number", Number);
+			info.AddValue("SqlState", SqlState);
+		}
+#endif
 
 		internal MySqlException(string message)
 			: this(message, null)

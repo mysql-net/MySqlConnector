@@ -146,3 +146,4 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#93220](https://bugs.mysql.com/bug.php?id=93220): Can’t call FUNCTION when parameter name contains parentheses
 * [#93370](https://bugs.mysql.com/bug.php?id=93370): `MySqlParameterCollection.Add` precondition check isn't consistent
 * [#93374](https://bugs.mysql.com/bug.php?id=93374): `MySqlDataReader.GetStream` throws `IndexOutOfRangeException`
+* [#93825](https://bugs.mysql.com/bug.php?id=93825): `MySqlException` loses data when serialized
