@@ -25,5 +25,13 @@ namespace MySqlConnector.Tests
 			Assert.Equal(exception.SqlState, copy.SqlState);
 			Assert.Equal(exception.Message, copy.Message);
 		}
+
+		[Fact]
+		public void Data()
+		{
+			var exception = new MySqlException(1, "two", "three");
+			Assert.Equal(1, exception.Data["Server Error Code"]);
+			Assert.Equal("two", exception.Data["SqlState"]);
+		}
 	}
 }

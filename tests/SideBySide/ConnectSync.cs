@@ -32,6 +32,7 @@ namespace SideBySide
 				catch (MySqlException ex)
 				{
 					Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
+					Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Data["Server Error Code"]);
 				}
 				Assert.Equal(ConnectionState.Closed, connection.State);
 			}

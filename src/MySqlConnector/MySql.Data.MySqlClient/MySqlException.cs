@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Data.Common;
 #if !NETSTANDARD1_3
 using System.Runtime.Serialization;
@@ -30,6 +31,20 @@ namespace MySql.Data.MySqlClient
 		}
 #endif
 
+		public override IDictionary Data
+		{
+			get
+			{
+				if (m_data == null)
+				{
+					m_data = base.Data;
+					m_data["Server Error Code"] = Number;
+					m_data["SqlState"] = SqlState;
+				}
+				return m_data;
+			}
+		}
+
 		internal MySqlException(string message)
 			: this(message, null)
 		{
@@ -56,5 +71,7 @@ namespace MySql.Data.MySqlClient
 
 		internal static MySqlException CreateForTimeout(Exception innerException) =>
 			new MySqlException((int) MySqlErrorCode.CommandTimeoutExpired, null, "The Command Timeout expired before the operation completed.", innerException);
+
+		IDictionary m_data;
 	}
 }
