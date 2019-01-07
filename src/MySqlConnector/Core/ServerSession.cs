@@ -280,7 +280,7 @@ namespace MySqlConnector.Core
 						lock (m_lock)
 							m_state = State.Failed;
 						Log.Error("Session{0} connecting failed", m_logArguments);
-						throw new MySqlException("Unable to connect to any of the specified MySQL hosts.");
+						throw new MySqlException((int) MySqlErrorCode.UnableToConnectToHost, null, "Unable to connect to any of the specified MySQL hosts.");
 					}
 
 					var byteHandler = m_socket != null ? (IByteHandler) new SocketByteHandler(m_socket) : new StreamByteHandler(m_stream);

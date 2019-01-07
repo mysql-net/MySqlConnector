@@ -242,7 +242,7 @@ namespace MySql.Data.MySqlClient
 			catch (SocketException ex)
 			{
 				SetState(ConnectionState.Closed);
-				throw new MySqlException("Unable to connect to any of the specified MySQL hosts.", ex);
+				throw new MySqlException((int) MySqlErrorCode.UnableToConnectToHost, null, "Unable to connect to any of the specified MySQL hosts.", ex);
 			}
 
 #if !NETSTANDARD1_3
