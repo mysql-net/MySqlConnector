@@ -11,6 +11,15 @@ weight: 30
 Version History
 ===============
 
+### 0.49.0
+
+* **Breaking** The default value for the `UseAffectedRows` connection string option has changed from `true` to `false`. This provides better compatibility with Connector/NET's defaults and also with other ADO.NET libraries: [#600](https://github.com/mysql-net/MySqlConnector/issues/600).
+  * If you are upgrading from an earlier version of MySqlConnector, either audit your uses of the return value of `ExecuteNonQuery` (it will now return the number of rows matched by the `WHERE` clause for `UPDATE` statements, instead of the number of rows whose values are actually changed), or add `UseAffectedRows=true` to your connection string.
+  * If you are migrating (or have recently migrated) from Connector/NET to MySqlConnector, then no changes need to be made: MySqlConnector now exhibits the same default behaviour as Connector/NET.
+* Make `MySqlException` serializable: [#601](https://github.com/mysql-net/MySqlConnector/issues/601).
+* Set `MySqlException.Number` to `MySqlErrorCode.UnableToConnectToHost` when connecting fails: [#599](https://github.com/mysql-net/MySqlConnector/issues/599).
+* Populate `MySqlException.Data` dictionary: [#602](https://github.com/mysql-net/MySqlConnector/issues/602).
+
 ### 0.48.2
 
 * Fix `InvalidCastException` in `MySqlDataReader.GetDateTime` when `AllowZeroDateTime=True`: [#597](https://github.com/mysql-net/MySqlConnector/issues/597).
