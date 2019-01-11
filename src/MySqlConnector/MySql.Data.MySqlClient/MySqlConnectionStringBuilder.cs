@@ -589,7 +589,7 @@ namespace MySql.Data.MySqlClient
 
 			AddOption(UseAffectedRows = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Use Affected Rows", "UseAffectedRows" },
-				defaultValue: true));
+				defaultValue: false));
 
 			AddOption(UseCompression = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Compress", "Use Compression", "UseCompression" },

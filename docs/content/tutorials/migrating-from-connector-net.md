@@ -53,12 +53,6 @@ MySqlConnector has some different default connection string options:
     <td>(not configurable)</td>
     <td>Specify a file containing the server’s RSA public key to allow <code>sha256_password</code> authentication over an insecure connection.</td>
   </tr>
-  <tr>
-    <td><code>UseAffectedRows</code></td>
-    <td>Default is <code>true</code></td>
-    <td>Default is <code>false</code></td>
-    <td>This also affects the behavior of the <code>ROW_COUNT</code> function. <code>UseAffectedRows=true</code> is the default in most other languages (C++, PHP, others)</td>
-  </tr>
 </table>
 
 Some connection string options that are supported in Connector/NET are not supported in MySqlConnector. For a full list of options that are

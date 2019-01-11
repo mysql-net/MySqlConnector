@@ -63,11 +63,7 @@ namespace MySqlConnector.Tests
 			Assert.True(csb.TreatTinyAsBoolean);
 			Assert.False(csb.UseCompression);
 			Assert.Equal("", csb.UserID);
-#if BASELINE
 			Assert.False(csb.UseAffectedRows);
-#else
-			Assert.True(csb.UseAffectedRows);
-#endif
 #if !BASELINE
 			Assert.True(csb.UseXaTransactions);
 #endif
@@ -126,7 +122,7 @@ namespace MySqlConnector.Tests
 					"Treat Tiny As Boolean=false;" +
 					"ssl mode=verifyca;" +
 					"Uid=username;" +
-					"useaffectedrows=false"
+					"useaffectedrows=true"
 			};
 			Assert.True(csb.AllowPublicKeyRetrieval);
 			Assert.True(csb.AllowUserVariables);
@@ -174,7 +170,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal("db-server", csb.Server);
 			Assert.False(csb.TreatTinyAsBoolean);
 			Assert.Equal(MySqlSslMode.VerifyCA, csb.SslMode);
-			Assert.False(csb.UseAffectedRows);
+			Assert.True(csb.UseAffectedRows);
 			Assert.True(csb.UseCompression);
 			Assert.Equal("username", csb.UserID);
 		}
