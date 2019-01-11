@@ -38,7 +38,7 @@ Manually Step 1: Add MySqlConnector to the dependencies in your csproj file:
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.48.2  Fix InvalidCastException in MySqlDataReader.GetDateTime when AllowZeroDateTime=True: #597.  0.48.1  Add net471 as target platform: #595. Support IDbColumnSchemaGenerator interface in netcoreapp2.1 package. Fix error in binding parameter values for prepared statements. Fix exception when using more than 32,767 parameters in a prepared statement.  0.48.0  Breaking Disallow duplicate parameter names after normalization: #591. Potentially breaking Change default connection collation from utf8mb4_bin to utf8mb4_general_ci: #585. Potentially breaking Update stored procedure metadata cache to use mysql.</description>
+      <description>Version History 0.49.0  Breaking The default value for the UseAffectedRows connection string option has changed from true to false. This provides better compatibility with Connector/NET&amp;rsquo;s defaults and also with other ADO.NET libraries: #600.  If you are upgrading from an earlier version of MySqlConnector, either audit your uses of the return value of ExecuteNonQuery (it will now return the number of rows matched by the WHERE clause for UPDATE statements, instead of the number of rows whose values are actually changed), or add UseAffectedRows=true to your connection string.</description>
     </item>
     
     <item>

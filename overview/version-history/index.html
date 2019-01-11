@@ -56,6 +56,20 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-49-0">0.49.0</h3>
+
+<ul>
+<li><strong>Breaking</strong> The default value for the <code>UseAffectedRows</code> connection string option has changed from <code>true</code> to <code>false</code>. This provides better compatibility with Connector/NET&rsquo;s defaults and also with other ADO.NET libraries: <a href="https://github.com/mysql-net/MySqlConnector/issues/600">#600</a>.
+
+<ul>
+<li>If you are upgrading from an earlier version of MySqlConnector, either audit your uses of the return value of <code>ExecuteNonQuery</code> (it will now return the number of rows matched by the <code>WHERE</code> clause for <code>UPDATE</code> statements, instead of the number of rows whose values are actually changed), or add <code>UseAffectedRows=true</code> to your connection string.</li>
+<li>If you are migrating (or have recently migrated) from Connector/NET to MySqlConnector, then no changes need to be made: MySqlConnector now exhibits the same default behaviour as Connector/NET.</li>
+</ul></li>
+<li>Make <code>MySqlException</code> serializable: <a href="https://github.com/mysql-net/MySqlConnector/issues/601">#601</a>.</li>
+<li>Set <code>MySqlException.Number</code> to <code>MySqlErrorCode.UnableToConnectToHost</code> when connecting fails: <a href="https://github.com/mysql-net/MySqlConnector/issues/599">#599</a>.</li>
+<li>Populate <code>MySqlException.Data</code> dictionary: <a href="https://github.com/mysql-net/MySqlConnector/issues/602">#602</a>.</li>
+</ul>
+
 <h3 id="0-48-2">0.48.2</h3>
 
 <ul>
