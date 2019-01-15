@@ -60,6 +60,7 @@ namespace MySqlConnector.Core
 		public IPAddress IPAddress => (m_tcpClient?.Client.RemoteEndPoint as IPEndPoint)?.Address;
 		public WeakReference<MySqlConnection> OwningConnection { get; set; }
 		public bool SupportsDeprecateEof => m_supportsDeprecateEof;
+		public bool SupportsSessionTrack => m_supportsSessionTrack;
 		public bool ProcAccessDenied { get; set; }
 
 		public void ReturnToPool()
@@ -186,7 +187,7 @@ namespace MySqlConnector.Core
 				var payload = QueryPayload.Create("DO SLEEP(0);");
 				SendAsync(payload, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 				payload = ReceiveReplyAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-				OkPayload.Create(payload.AsSpan());
+				OkPayload.Create(payload.AsSpan(), SupportsDeprecateEof, SupportsSessionTrack);
 			}
 
 			lock (m_lock)
@@ -310,12 +311,13 @@ namespace MySqlConnector.Core
 
 					m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
 					m_supportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
+					m_supportsSessionTrack = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SessionTrack) != 0;
 					var serverSupportsSsl = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Ssl) != 0;
 					m_characterSet = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? CharacterSet.Utf8Mb4GeneralCaseInsensitive : CharacterSet.Utf8GeneralCaseInsensitive;
 
-					Log.Info("Session{0} made connection; ServerVersion={1}; ConnectionId={2}; Compression={3}; Attributes={4}; DeprecateEof={5}; Ssl={6}",
+					Log.Info("Session{0} made connection; ServerVersion={1}; ConnectionId={2}; Compression={3}; Attributes={4}; DeprecateEof={5}; Ssl={6}; SessionTrack={7}",
 						m_logArguments[0], ServerVersion.OriginalString, ConnectionId,
-						m_useCompression, m_supportsConnectionAttributes, m_supportsDeprecateEof, serverSupportsSsl);
+						m_useCompression, m_supportsConnectionAttributes, m_supportsDeprecateEof, serverSupportsSsl, m_supportsSessionTrack);
 
 					if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
 					{
@@ -363,7 +365,7 @@ namespace MySqlConnector.Core
 					payload = await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 
-				OkPayload.Create(payload.AsSpan());
+				OkPayload.Create(payload.AsSpan(), SupportsDeprecateEof, SupportsSessionTrack);
 
 				if (m_useCompression)
 					m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
@@ -398,12 +400,12 @@ namespace MySqlConnector.Core
 					Log.Debug("Session{0} ServerVersion={1} supports reset connection; sending reset connection request", m_logArguments);
 					await SendAsync(ResetConnectionPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 					var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Create(payload.AsSpan());
+					OkPayload.Create(payload.AsSpan(), SupportsDeprecateEof, SupportsSessionTrack);
 
 					// the "reset connection" packet also resets the connection charset, so we need to change that back to our default
 					await SendAsync(s_setNamesUtf8mb4Payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Create(payload.AsSpan());
+					OkPayload.Create(payload.AsSpan(), SupportsDeprecateEof, SupportsSessionTrack);
 				}
 				else
 				{
@@ -428,7 +430,7 @@ namespace MySqlConnector.Core
 						Log.Debug("Session{0} optimistic reauthentication failed; logging in again", m_logArguments);
 						payload = await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
-					OkPayload.Create(payload.AsSpan());
+					OkPayload.Create(payload.AsSpan(), SupportsDeprecateEof, SupportsSessionTrack);
 				}
 
 				return true;
@@ -609,7 +611,7 @@ namespace MySqlConnector.Core
 				Log.Debug("Session{0} pinging server", m_logArguments);
 				await SendAsync(PingPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				OkPayload.Create(payload.AsSpan());
+				OkPayload.Create(payload.AsSpan(), SupportsDeprecateEof, SupportsSessionTrack);
 				Log.Info("Session{0} successfully pinged server", m_logArguments);
 				return true;
 			}
@@ -1163,7 +1165,7 @@ namespace MySqlConnector.Core
 				// OK/EOF payload
 				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 				if (OkPayload.IsOk(payload.AsSpan(), SupportsDeprecateEof))
-					OkPayload.Create(payload.AsSpan(), SupportsDeprecateEof);
+					OkPayload.Create(payload.AsSpan(), SupportsDeprecateEof, SupportsSessionTrack);
 				else
 					EofPayload.Create(payload.AsSpan());
 
@@ -1410,6 +1412,7 @@ namespace MySqlConnector.Core
 		bool m_isSecureConnection;
 		bool m_supportsConnectionAttributes;
 		bool m_supportsDeprecateEof;
+		bool m_supportsSessionTrack;
 		CharacterSet m_characterSet;
 		Dictionary<string, PreparedStatements> m_preparedStatements;
 	}

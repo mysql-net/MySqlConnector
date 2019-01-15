@@ -45,7 +45,7 @@ namespace MySqlConnector.Core
 					var firstByte = payload.HeaderByte;
 					if (firstByte == OkPayload.Signature)
 					{
-						var ok = OkPayload.Create(payload.AsSpan());
+						var ok = OkPayload.Create(payload.AsSpan(), Session.SupportsDeprecateEof, Session.SupportsDeprecateEof);
 						RecordsAffected = (RecordsAffected ?? 0) + ok.AffectedRowCount;
 						LastInsertId = unchecked((long) ok.LastInsertId);
 						WarningCount = ok.WarningCount;
@@ -231,7 +231,7 @@ namespace MySqlConnector.Core
 					var span = payload.AsSpan();
 					if (Session.SupportsDeprecateEof && OkPayload.IsOk(span, Session.SupportsDeprecateEof))
 					{
-						var ok = OkPayload.Create(span, Session.SupportsDeprecateEof);
+						var ok = OkPayload.Create(span, Session.SupportsDeprecateEof, Session.SupportsSessionTrack);
 						BufferState = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
 						m_rowBuffered = null;
 						return null;

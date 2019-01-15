@@ -16,7 +16,7 @@ namespace MySqlConnector.Protocol.Payloads
 		public const byte Signature = 0x00;
 
 		/* See
-		 * http://web.archive.org/web/20160604101747/http://dev.mysql.com/doc/internals/en/packet-OK_Packet.html
+		 * https://dev.mysql.com/doc/internals/en/packet-OK_Packet.html
 		 * https://mariadb.com/kb/en/the-mariadb-library/resultset/
 		 * https://github.com/MariaDB/mariadb-connector-j/blob/5fa814ac6e1b4c9cb6d141bd221cbd5fc45c8a78/src/main/java/org/mariadb/jdbc/internal/com/read/resultset/SelectResultSet.java#L443-L444
 		 */
@@ -25,9 +25,7 @@ namespace MySqlConnector.Protocol.Payloads
 				(span.Length > 6 && span[0] == Signature ||
 				 deprecateEof && span.Length < 0xFF_FFFF && span[0] == EofPayload.Signature);
 
-		public static OkPayload Create(ReadOnlySpan<byte> span) => Create(span, false);
-
-		public static OkPayload Create(ReadOnlySpan<byte> span, bool deprecateEof)
+		public static OkPayload Create(ReadOnlySpan<byte> span, bool deprecateEof, bool clientSessionTrack)
 		{
 			var reader = new ByteArrayReader(span);
 			var signature = reader.ReadByte();
@@ -39,7 +37,7 @@ namespace MySqlConnector.Protocol.Payloads
 			var warningCount = (int) reader.ReadUInt16();
 			string newSchema = null;
 
-			if ((serverStatus & ServerStatus.SessionStateChanged) == ServerStatus.SessionStateChanged)
+			if (clientSessionTrack && (serverStatus & ServerStatus.SessionStateChanged) == ServerStatus.SessionStateChanged)
 			{
 				reader.ReadLengthEncodedByteString(); // human-readable info
 
