@@ -140,7 +140,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.49.0  Breaking The default value for the UseAffectedRows connection string option has changed from true to false. This provides better compatibility with Connector/NET&amp;rsquo;s defaults and also with other ADO.NET libraries: #600.  If you are upgrading from an earlier version of MySqlConnector, either audit your uses of the return value of ExecuteNonQuery (it will now return the number of rows matched by the WHERE clause for UPDATE statements, instead of the number of rows whose values are actually changed), or add UseAffectedRows=true to your connection string.</description>
+      <description>Version History 0.49.1  Fix bug in parsing OK packet when CLIENT_SESSION_TRACK isn&amp;rsquo;t supported: #603.  0.49.0  Breaking The default value for the UseAffectedRows connection string option has changed from true to false. This provides better compatibility with Connector/NET&amp;rsquo;s defaults and also with other ADO.NET libraries: #600.  If you are upgrading from an earlier version of MySqlConnector, either audit your uses of the return value of ExecuteNonQuery (it will now return the number of rows matched by the WHERE clause for UPDATE statements, instead of the number of rows whose values are actually changed), or add UseAffectedRows=true to your connection string.</description>
     </item>
     
     <item>
