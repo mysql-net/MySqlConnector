@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.49.1
+
+* Fix bug in parsing OK packet when `CLIENT_SESSION_TRACK` isn't supported: [#603](https://github.com/mysql-net/MySqlConnector/pull/603).
+
 ### 0.49.0
 
 * **Breaking** The default value for the `UseAffectedRows` connection string option has changed from `true` to `false`. This provides better compatibility with Connector/NET's defaults and also with other ADO.NET libraries: [#600](https://github.com/mysql-net/MySqlConnector/issues/600).
