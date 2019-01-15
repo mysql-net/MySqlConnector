@@ -24,7 +24,7 @@ namespace MySqlConnector.Protocol.Payloads
 				(cs.UseAffectedRows ? 0 : ProtocolCapabilities.FoundRows) |
 				(useCompression ? ProtocolCapabilities.Compress : ProtocolCapabilities.None) |
 				(serverCapabilities & ProtocolCapabilities.ConnectionAttributes) |
-				(serverCapabilities & ProtocolCapabilities.SessionTrack) |
+				ProtocolCapabilities.SessionTrack |
 				(serverCapabilities & ProtocolCapabilities.DeprecateEof) |
 				additionalCapabilities));
 			writer.Write(0x4000_0000);
