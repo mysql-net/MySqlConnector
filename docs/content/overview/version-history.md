@@ -11,7 +11,7 @@ weight: 30
 Version History
 ===============
 
-### 0.49.1
+### 0.49.2
 
 * Fix bug in parsing OK packet when `CLIENT_SESSION_TRACK` isn't supported: [#603](https://github.com/mysql-net/MySqlConnector/pull/603).
 
