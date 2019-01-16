@@ -45,7 +45,7 @@ namespace MySqlConnector.Core
 					var firstByte = payload.HeaderByte;
 					if (firstByte == OkPayload.Signature)
 					{
-						var ok = OkPayload.Create(payload.AsSpan(), Session.SupportsDeprecateEof, Session.SupportsDeprecateEof);
+						var ok = OkPayload.Create(payload.AsSpan(), Session.SupportsDeprecateEof, Session.SupportsSessionTrack);
 						RecordsAffected = (RecordsAffected ?? 0) + ok.AffectedRowCount;
 						LastInsertId = unchecked((long) ok.LastInsertId);
 						WarningCount = ok.WarningCount;
