@@ -12,7 +12,33 @@ namespace MySqlConnector.Core
 
 		protected override void OnStart()
 		{
-			m_transaction = Connection.BeginTransaction();
+			System.Data.IsolationLevel isolationLevel;
+			switch (Transaction.IsolationLevel)
+			{
+			case IsolationLevel.Serializable:
+				isolationLevel = System.Data.IsolationLevel.Serializable;
+				break;
+			case IsolationLevel.RepeatableRead:
+				isolationLevel = System.Data.IsolationLevel.RepeatableRead;
+				break;
+			case IsolationLevel.ReadCommitted:
+				isolationLevel = System.Data.IsolationLevel.ReadCommitted;
+				break;
+			case IsolationLevel.ReadUncommitted:
+				isolationLevel = System.Data.IsolationLevel.ReadUncommitted;
+				break;
+			case IsolationLevel.Snapshot:
+				isolationLevel = System.Data.IsolationLevel.Snapshot;
+				break;
+			case IsolationLevel.Chaos:
+				isolationLevel = System.Data.IsolationLevel.Chaos;
+				break;
+			case IsolationLevel.Unspecified:
+			default:
+				isolationLevel = System.Data.IsolationLevel.Unspecified;
+				break;
+			}
+			m_transaction = Connection.BeginTransaction(isolationLevel);
 		}
 
 		protected override void OnPrepare(PreparingEnlistment enlistment)

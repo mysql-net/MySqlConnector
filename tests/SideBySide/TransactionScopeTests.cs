@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Transactions;
 using Dapper;
 using MySql.Data.MySqlClient;
@@ -534,6 +535,58 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		}
 
 		[Fact]
+		public void SimultaneousConnectionsWithTransactionScopeReadCommittedWithNonXaTransactions()
+		{
+			var connectionString = AppConfig.ConnectionString;
+#if !BASELINE
+			connectionString += ";UseXaTransactions=False";
+#endif
+
+			// from https://github.com/mysql-net/MySqlConnector/issues/605
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				connection.Open();
+				connection.Execute(@"DROP TABLE IF EXISTS orders;
+					CREATE TABLE `orders`(  
+						`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+						`description` VARCHAR(50),
+						PRIMARY KEY (`id`)
+					);");
+			}
+
+			var task = Task.Run(() => UseTransaction());
+			UseTransaction();
+			task.Wait();
+
+			void UseTransaction()
+			{
+				// This TransactionScope may be overly configured, but let's stick with the one I am actually using
+				using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
+					new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
+					TransactionScopeAsyncFlowOption.Enabled))
+				{
+					using (var connection = new MySqlConnection(connectionString))
+					using (var command = connection.CreateCommand())
+					{
+						command.CommandText = @"SELECT MAX(id) FROM orders FOR UPDATE;";
+						connection.Open();
+						command.ExecuteScalar();
+					}
+
+					using (var connection = new MySqlConnection(connectionString))
+					using (var command = connection.CreateCommand())
+					{
+						command.CommandText = @"INSERT INTO orders (description) VALUES ('blabla'), ('blablabla');";
+						connection.Open();
+						command.ExecuteNonQuery();
+					}
+
+					transactionScope.Complete();
+				}
+			}
+		}
+
+		[Fact]
 		public void TwoDifferentConnectionStringsThrowsWithNonXaTransactions()
 		{
 			var connectionString = AppConfig.ConnectionString;
@@ -594,3 +647,4 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		DatabaseFixture m_database;
 	}
 }
+
