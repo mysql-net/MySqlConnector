@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.49.3
+
+* Use correct isolation level when starting a transaction for `System.Transactions.TransactionScope`: [#605](https://github.com/mysql-net/MySqlConnector/issues/605).
+
 ### 0.49.2
 
 * Fix bug in parsing OK packet when `CLIENT_SESSION_TRACK` isn't supported: [#603](https://github.com/mysql-net/MySqlConnector/pull/603).
