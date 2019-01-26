@@ -87,17 +87,13 @@ insert into select_value values
 
 		private void ExecuteNonQuery(string sql)
 		{
-			using (var connection = Factory.CreateConnection())
-			{
-				connection.ConnectionString = ConnectionString;
-				connection.Open();
+			using var connection = Factory.CreateConnection();
+			connection.ConnectionString = ConnectionString;
+			connection.Open();
 
-				using (var command = connection.CreateCommand())
-				{
-					command.CommandText = sql;
-					command.ExecuteNonQuery();
-				}
-			}
+			using var command = connection.CreateCommand();
+			command.CommandText = sql;
+			command.ExecuteNonQuery();
 		}
 	}
 }

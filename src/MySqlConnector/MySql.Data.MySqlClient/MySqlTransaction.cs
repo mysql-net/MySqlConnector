@@ -80,7 +80,7 @@ namespace MySql.Data.MySqlClient
 			try
 			{
 				if (disposing)
-						DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+					DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 			}
 			finally
 			{

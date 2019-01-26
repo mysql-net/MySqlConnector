@@ -25,12 +25,10 @@ create table insert_ai(rowid integer not null primary key auto_increment, text v
 			try
 			{
 				await m_database.Connection.OpenAsync();
-				using (var command = new MySqlCommand("INSERT INTO insert_ai (text) VALUES (@text);", m_database.Connection))
-				{
-					command.Parameters.Add(new MySqlParameter { ParameterName = "@text", Value = "test" });
-					await command.ExecuteNonQueryAsync();
-					Assert.Equal(1L, command.LastInsertedId);
-				}
+				using var command = new MySqlCommand("INSERT INTO insert_ai (text) VALUES (@text);", m_database.Connection);
+				command.Parameters.Add(new MySqlParameter { ParameterName = "@text", Value = "test" });
+				await command.ExecuteNonQueryAsync();
+				Assert.Equal(1L, command.LastInsertedId);
 			}
 			finally
 			{
@@ -46,12 +44,10 @@ create table insert_ai(rowid integer not null primary key auto_increment);");
 			try
 			{
 				await m_database.Connection.OpenAsync();
-				using (var command = new MySqlCommand("INSERT INTO insert_ai(rowid) VALUES (@rowid);", m_database.Connection))
-				{
-					command.Parameters.AddWithValue("@rowid", -1);
-					await command.ExecuteNonQueryAsync();
-					Assert.Equal(-1L, command.LastInsertedId);
-				}
+				using var command = new MySqlCommand("INSERT INTO insert_ai(rowid) VALUES (@rowid);", m_database.Connection);
+				command.Parameters.AddWithValue("@rowid", -1);
+				await command.ExecuteNonQueryAsync();
+				Assert.Equal(-1L, command.LastInsertedId);
 			}
 			finally
 			{
@@ -67,12 +63,10 @@ create table insert_ai(rowid bigint unsigned not null primary key auto_increment
 			try
 			{
 				await m_database.Connection.OpenAsync();
-				using (var command = new MySqlCommand("INSERT INTO insert_ai(rowid) VALUES (@rowid);", m_database.Connection))
-				{
-					command.Parameters.AddWithValue("@rowid", ((ulong) long.MaxValue) + 1);
-					await command.ExecuteNonQueryAsync();
-					Assert.Equal(long.MinValue, command.LastInsertedId);
-				}
+				using var command = new MySqlCommand("INSERT INTO insert_ai(rowid) VALUES (@rowid);", m_database.Connection);
+				command.Parameters.AddWithValue("@rowid", ((ulong) long.MaxValue) + 1);
+				await command.ExecuteNonQueryAsync();
+				Assert.Equal(long.MinValue, command.LastInsertedId);
 			}
 			finally
 			{
@@ -89,13 +83,11 @@ create table insert_rows_affected(id integer not null primary key auto_increment
 			try
 			{
 				await m_database.Connection.OpenAsync();
-				using (var command = new MySqlCommand(@"
+				using var command = new MySqlCommand(@"
 INSERT INTO insert_rows_affected (value) VALUES (null);
-INSERT INTO insert_rows_affected (value) VALUES (null);", m_database.Connection))
-				{
-					var rowsAffected = await command.ExecuteNonQueryAsync();
-					Assert.Equal(2, rowsAffected);
-				}
+INSERT INTO insert_rows_affected (value) VALUES (null);", m_database.Connection);
+				var rowsAffected = await command.ExecuteNonQueryAsync();
+				Assert.Equal(2, rowsAffected);
 			}
 			finally
 			{
@@ -111,11 +103,9 @@ create table insert_ai_2(rowid integer not null primary key auto_increment, text
 			try
 			{
 				m_database.Connection.Open();
-				using (var command = new MySqlCommand("insert into insert_ai_2(text) values('test');", m_database.Connection))
-				{
-					command.ExecuteNonQuery();
-					Assert.Equal(1234L, command.LastInsertedId);
-				}
+				using var command = new MySqlCommand("insert into insert_ai_2(text) values('test');", m_database.Connection);
+				command.ExecuteNonQuery();
+				Assert.Equal(1234L, command.LastInsertedId);
 			}
 			finally
 			{
@@ -177,17 +167,15 @@ create table insert_datetimeoffset(rowid integer not null primary key auto_incre
 			m_database.Connection.Open();
 			try
 			{
-				using (var cmd = m_database.Connection.CreateCommand())
+				using var cmd = m_database.Connection.CreateCommand();
+				cmd.CommandText = @"insert into insert_datetimeoffset(datetimeoffset1) values(@datetimeoffset1);";
+				cmd.Parameters.Add(new MySqlParameter
 				{
-					cmd.CommandText = @"insert into insert_datetimeoffset(datetimeoffset1) values(@datetimeoffset1);";
-					cmd.Parameters.Add(new MySqlParameter
-					{
-						ParameterName = "@datetimeoffset1",
-						DbType = DbType.DateTimeOffset,
-						Value = value.datetimeoffset1
-					});
-					cmd.ExecuteNonQuery();
-				}
+					ParameterName = "@datetimeoffset1",
+					DbType = DbType.DateTimeOffset,
+					Value = value.datetimeoffset1
+				});
+				cmd.ExecuteNonQuery();
 			}
 			finally
 			{
@@ -211,12 +199,10 @@ create table insert_mysqldatetime(rowid integer not null primary key auto_increm
 			m_database.Connection.Open();
 			try
 			{
-				using (var cmd = m_database.Connection.CreateCommand())
-				{
-					cmd.CommandText = @"insert into insert_mysqldatetime(ts) values(@ts);";
-					cmd.Parameters.AddWithValue("@ts", new MySqlDateTime(2018, 6, 9, 12, 34, 56, 123456));
-					cmd.ExecuteNonQuery();
-				}
+				using var cmd = m_database.Connection.CreateCommand();
+				cmd.CommandText = @"insert into insert_mysqldatetime(ts) values(@ts);";
+				cmd.Parameters.AddWithValue("@ts", new MySqlDateTime(2018, 6, 9, 12, 34, 56, 123456));
+				cmd.ExecuteNonQuery();
 			}
 			finally
 			{
@@ -232,30 +218,28 @@ create table insert_mysqldatetime(rowid integer not null primary key auto_increm
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.OldGuids = true;
-			using (var connection = new MySqlConnection(csb.ConnectionString))
-			{
-				connection.Open();
-				connection.Execute(@"drop table if exists old_guids;
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			connection.Open();
+			connection.Execute(@"drop table if exists old_guids;
 create table old_guids(id integer not null primary key auto_increment, guid binary(16) null);");
 
-				var guid = new Guid(1, 2, 3, 0x27, 0x5C, 0x7B, 0x7D, 0x22, 0x25, 0x26, 0x2C);
+			var guid = new Guid(1, 2, 3, 0x27, 0x5C, 0x7B, 0x7D, 0x22, 0x25, 0x26, 0x2C);
 
-				using (var cmd = connection.CreateCommand())
-				{
-					cmd.CommandText = @"insert into old_guids(guid) values(@guid)";
-					var parameter = cmd.CreateParameter();
-					parameter.ParameterName = "@guid";
-					parameter.Value = guid;
-					cmd.Parameters.Add(parameter);
-					cmd.ExecuteNonQuery();
-				}
+			using (var cmd = connection.CreateCommand())
+			{
+				cmd.CommandText = @"insert into old_guids(guid) values(@guid)";
+				var parameter = cmd.CreateParameter();
+				parameter.ParameterName = "@guid";
+				parameter.Value = guid;
+				cmd.Parameters.Add(parameter);
+				cmd.ExecuteNonQuery();
+			}
 
-				using (var cmd = connection.CreateCommand())
-				{
-					cmd.CommandText = @"select guid from old_guids;";
-					var selected = (Guid) cmd.ExecuteScalar();
-					Assert.Equal(guid, selected);
-				}
+			using (var cmd = connection.CreateCommand())
+			{
+				cmd.CommandText = @"select guid from old_guids;";
+				var selected = (Guid) cmd.ExecuteScalar();
+				Assert.Equal(guid, selected);
 			}
 		}
 
@@ -285,20 +269,17 @@ create table insert_enum_value2(rowid integer not null primary key auto_incremen
 			try
 			{
 				await m_database.Connection.OpenAsync();
-				using (var command = new MySqlCommand("INSERT INTO insert_enum_value2 (`Varchar`, `String`, `Int`) VALUES (@Varchar, @String, @Int);", m_database.Connection))
-				{
+				using var command = new MySqlCommand("INSERT INTO insert_enum_value2 (`Varchar`, `String`, `Int`) VALUES (@Varchar, @String, @Int);", m_database.Connection);
+				command.Parameters.Add(new MySqlParameter("@String", MySqlColor.Orange)).MySqlDbType = MySqlDbType.String;
+				command.Parameters.Add(new MySqlParameter("@Varchar", MySqlColor.Green)).MySqlDbType = MySqlDbType.VarChar;
+				command.Parameters.Add(new MySqlParameter("@Int", MySqlColor.None));
 
-					command.Parameters.Add(new MySqlParameter("@String", MySqlColor.Orange)).MySqlDbType = MySqlDbType.String;
-					command.Parameters.Add(new MySqlParameter("@Varchar", MySqlColor.Green)).MySqlDbType = MySqlDbType.VarChar;
-					command.Parameters.Add(new MySqlParameter("@Int", MySqlColor.None));
-
-					await command.ExecuteNonQueryAsync();
-					var result = (await m_database.Connection.QueryAsync<ColorEnumValues>(@"select `Varchar`, `String`, `Int` from insert_enum_value2;")).ToArray();
-					Assert.Single(result);
-					Assert.Equal(MySqlColor.Orange.ToString("G"), result[0].String);
-					Assert.Equal(MySqlColor.Green.ToString("G"), result[0].Varchar);
-					Assert.Equal((int) MySqlColor.None, result[0].Int);
-				}
+				await command.ExecuteNonQueryAsync();
+				var result = (await m_database.Connection.QueryAsync<ColorEnumValues>(@"select `Varchar`, `String`, `Int` from insert_enum_value2;")).ToArray();
+				Assert.Single(result);
+				Assert.Equal(MySqlColor.Orange.ToString("G"), result[0].String);
+				Assert.Equal(MySqlColor.Green.ToString("G"), result[0].Varchar);
+				Assert.Equal((int) MySqlColor.None, result[0].Int);
 			}
 			finally
 			{
@@ -398,24 +379,22 @@ create table insert_mysql_set(
 		[MemberData(nameof(GetBlobs))]
 		public void InsertBlob(object data, bool prepare)
 		{
-			using (var connection = new MySqlConnection(AppConfig.ConnectionString + ";IgnorePrepare=false"))
-			{
-				connection.Open();
-				connection.Execute(@"drop table if exists insert_mysql_blob;
+			using var connection = new MySqlConnection(AppConfig.ConnectionString + ";IgnorePrepare=false");
+			connection.Open();
+			connection.Execute(@"drop table if exists insert_mysql_blob;
 create table insert_mysql_blob(
-	rowid integer not null primary key auto_increment,
-	value mediumblob null
+rowid integer not null primary key auto_increment,
+value mediumblob null
 );");
 
-				using (var cmd = new MySqlCommand("insert into insert_mysql_blob(value) values(@data);", connection))
-				{
-					cmd.Parameters.AddWithValue("@data", data);
-					if (prepare)
-						cmd.Prepare();
-					cmd.ExecuteNonQuery();
-				}
-				Assert.Equal(new byte[] { 1, 2, 3, 4, 5, 6 }, connection.Query<byte[]>(@"select value from insert_mysql_blob;").Single());
+			using (var cmd = new MySqlCommand("insert into insert_mysql_blob(value) values(@data);", connection))
+			{
+				cmd.Parameters.AddWithValue("@data", data);
+				if (prepare)
+					cmd.Prepare();
+				cmd.ExecuteNonQuery();
 			}
+			Assert.Equal(new byte[] { 1, 2, 3, 4, 5, 6 }, connection.Query<byte[]>(@"select value from insert_mysql_blob;").Single());
 		}
 
 		public static IEnumerable<object[]> GetBlobs()

@@ -630,22 +630,20 @@ namespace MySqlConnector.Core
 			var passwordBytes = Encoding.UTF8.GetBytes(cs.Password);
 			Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
 
-			using (var rsa = RSA.Create())
-			{
-				rsa.ImportParameters(rsaParameters);
+			using var rsa = RSA.Create();
+			rsa.ImportParameters(rsaParameters);
 
-				// XOR the password bytes with the challenge
-				AuthPluginData = Utility.TrimZeroByte(switchRequest.Data);
-				for (var i = 0; i < passwordBytes.Length; i++)
-					passwordBytes[i] ^= AuthPluginData[i % AuthPluginData.Length];
+			// XOR the password bytes with the challenge
+			AuthPluginData = Utility.TrimZeroByte(switchRequest.Data);
+			for (var i = 0; i < passwordBytes.Length; i++)
+				passwordBytes[i] ^= AuthPluginData[i % AuthPluginData.Length];
 
-				// encrypt with RSA public key
-				var padding = RSAEncryptionPadding.OaepSHA1;
-				var encryptedPassword = rsa.Encrypt(passwordBytes, padding);
-				var payload = new PayloadData(encryptedPassword);
-				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			}
+			// encrypt with RSA public key
+			var padding = RSAEncryptionPadding.OaepSHA1;
+			var encryptedPassword = rsa.Encrypt(passwordBytes, padding);
+			var payload = new PayloadData(encryptedPassword);
+			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+			return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 #endif
 
@@ -1477,25 +1475,21 @@ namespace MySqlConnector.Core
 			catch (PlatformNotSupportedException)
 			{
 			}
-			using (var process = Process.GetCurrentProcess())
-			{
-				attributesWriter.WriteLengthEncodedString("_pid");
-				attributesWriter.WriteLengthEncodedString(process.Id.ToString(CultureInfo.InvariantCulture));
-			}
+			using var process = Process.GetCurrentProcess();
+			attributesWriter.WriteLengthEncodedString("_pid");
+			attributesWriter.WriteLengthEncodedString(process.Id.ToString(CultureInfo.InvariantCulture));
 			if (!string.IsNullOrEmpty(programName))
 			{
 				attributesWriter.WriteLengthEncodedString("program_name");
 				attributesWriter.WriteLengthEncodedString(programName);
 			}
-			using (var connectionAttributesPayload = attributesWriter.ToPayloadData())
-			{
-				var connectionAttributes = connectionAttributesPayload.Span;
-				var writer = new ByteBufferWriter(connectionAttributes.Length + 9);
-				writer.WriteLengthEncodedInteger((ulong) connectionAttributes.Length);
-				writer.Write(connectionAttributes);
-				using (var payload = writer.ToPayloadData())
-					return payload.Memory.ToArray();
-			}
+			using var connectionAttributesPayload = attributesWriter.ToPayloadData();
+			var connectionAttributes = connectionAttributesPayload.Span;
+			var writer = new ByteBufferWriter(connectionAttributes.Length + 9);
+			writer.WriteLengthEncodedInteger((ulong) connectionAttributes.Length);
+			writer.Write(connectionAttributes);
+			using var payload = writer.ToPayloadData();
+			return payload.Memory.ToArray();
 		}
 
 		private Exception CreateExceptionForErrorPayload(ReadOnlySpan<byte> span)

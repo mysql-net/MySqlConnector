@@ -74,13 +74,11 @@ namespace MySql.Data.MySqlClient
 							var writer = new ByteBufferWriter();
 							if (!Command.Connection.Session.IsCancelingQuery && m_payloadCreator.WriteQueryCommand(ref m_commandListPosition, m_cachedProcedures, writer))
 							{
-								using (var payload = writer.ToPayloadData())
-								{
-									await Command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-									await m_resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
-									ActivateResultSet();
-									m_hasMoreResults = true;
-								}
+								using var payload = writer.ToPayloadData();
+								await Command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+								await m_resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
+								ActivateResultSet();
+								m_hasMoreResults = true;
 							}
 						}
 					}

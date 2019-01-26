@@ -76,17 +76,15 @@ namespace MySqlConnector.Core
 								&& !localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal))
 								throw new NotSupportedException("Use SourceStream or SslMode >= VerifyCA for LOAD DATA LOCAL INFILE. See https://fl.vu/mysql-load-data");
 
-							using (var stream = localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal) ?
+							using var stream = localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal) ?
 								MySqlBulkLoader.GetAndRemoveStream(localInfile.FileName) :
-								File.OpenRead(localInfile.FileName))
+								File.OpenRead(localInfile.FileName);
+							var readBuffer = new byte[65536];
+							int byteCount;
+							while ((byteCount = await stream.ReadAsync(readBuffer, 0, readBuffer.Length).ConfigureAwait(false)) > 0)
 							{
-								byte[] readBuffer = new byte[65536];
-								int byteCount;
-								while ((byteCount = await stream.ReadAsync(readBuffer, 0, readBuffer.Length).ConfigureAwait(false)) > 0)
-								{
-									payload = new PayloadData(new ArraySegment<byte>(readBuffer, 0, byteCount));
-									await Session.SendReplyAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
-								}
+								payload = new PayloadData(new ArraySegment<byte>(readBuffer, 0, byteCount));
+								await Session.SendReplyAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
 							}
 						}
 						catch (Exception ex)
@@ -213,13 +211,11 @@ namespace MySqlConnector.Core
 			if (BufferState == ResultSetState.HasMoreData || BufferState == ResultSetState.NoMoreData || BufferState == ResultSetState.None)
 				return new ValueTask<Row?>(default(Row?));
 
-			using (Command.CancellableCommand.RegisterCancel(cancellationToken))
-			{
-				var payloadValueTask = Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None);
-				return payloadValueTask.IsCompletedSuccessfully
-					? new ValueTask<Row?>(ScanRowAsyncRemainder(this, payloadValueTask.Result, row))
-					: new ValueTask<Row?>(ScanRowAsyncAwaited(this, payloadValueTask.AsTask(), row, cancellationToken));
-			}
+			using var registration = Command.CancellableCommand.RegisterCancel(cancellationToken);
+			var payloadValueTask = Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None);
+			return payloadValueTask.IsCompletedSuccessfully
+				? new ValueTask<Row?>(ScanRowAsyncRemainder(this, payloadValueTask.Result, row))
+				: new ValueTask<Row?>(ScanRowAsyncAwaited(this, payloadValueTask.AsTask(), row, cancellationToken));
 
 			static async Task<Row?> ScanRowAsyncAwaited(ResultSet this_, Task<PayloadData> payloadTask, Row? row_, CancellationToken token)
 			{

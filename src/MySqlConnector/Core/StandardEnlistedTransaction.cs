@@ -29,8 +29,8 @@ namespace MySqlConnector.Core
 				_ => "repeatable read",
 			};
 
-			using (var cmd = new MySqlCommand("set transaction isolation level " + isolationLevel + "; start transaction;", Connection))
-				cmd.ExecuteNonQuery();
+			using var cmd = new MySqlCommand("set transaction isolation level " + isolationLevel + "; start transaction;", Connection);
+			cmd.ExecuteNonQuery();
 		}
 
 		protected override void OnPrepare(PreparingEnlistment enlistment)
@@ -39,14 +39,14 @@ namespace MySqlConnector.Core
 
 		protected override void OnCommit(Enlistment enlistment)
 		{
-			using (var cmd = new MySqlCommand("commit;", Connection))
-				cmd.ExecuteNonQuery();
+			using var cmd = new MySqlCommand("commit;", Connection);
+			cmd.ExecuteNonQuery();
 		}
 
 		protected override void OnRollback(Enlistment enlistment)
 		{
-			using (var cmd = new MySqlCommand("rollback;", Connection))
-				cmd.ExecuteNonQuery();
+			using var cmd = new MySqlCommand("rollback;", Connection);
+			cmd.ExecuteNonQuery();
 		}
 	}
 }
