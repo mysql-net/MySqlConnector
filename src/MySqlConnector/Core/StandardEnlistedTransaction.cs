@@ -15,28 +15,19 @@ namespace MySqlConnector.Core
 
 		protected override void OnStart()
 		{
-			string isolationLevel;
-			switch (Transaction.IsolationLevel)
+			var isolationLevel = Transaction.IsolationLevel switch
 			{
-			case IsolationLevel.Serializable:
-				isolationLevel = "serializable";
-				break;
-			case IsolationLevel.ReadCommitted:
-				isolationLevel = "read committed";
-				break;
-			case IsolationLevel.ReadUncommitted:
-				isolationLevel = "read uncommitted";
-				break;
-			case IsolationLevel.Snapshot:
-			case IsolationLevel.Chaos:
-				throw new NotSupportedException("IsolationLevel.{0} is not supported.".FormatInvariant(Transaction.IsolationLevel));
-			// "In terms of the SQL:1992 transaction isolation levels, the default InnoDB level is REPEATABLE READ." - http://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-model.html
-			case IsolationLevel.Unspecified:
-			case IsolationLevel.RepeatableRead:
-			default:
-				isolationLevel = "repeatable read";
-				break;
-			}
+				IsolationLevel.Serializable => "serializable",
+				IsolationLevel.ReadCommitted => "read committed",
+				IsolationLevel.ReadUncommitted => "read uncommitted",
+				IsolationLevel.RepeatableRead => "repeatable read",
+				IsolationLevel.Snapshot => throw new NotSupportedException("IsolationLevel.{0} is not supported.".FormatInvariant(Transaction.IsolationLevel)),
+				IsolationLevel.Chaos => throw new NotSupportedException("IsolationLevel.{0} is not supported.".FormatInvariant(Transaction.IsolationLevel)),
+
+				// "In terms of the SQL:1992 transaction isolation levels, the default InnoDB level is REPEATABLE READ." - http://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-model.html
+				IsolationLevel.Unspecified => "repeatable read",
+				_ => "repeatable read",
+			};
 
 			using (var cmd = new MySqlCommand("set transaction isolation level " + isolationLevel + "; start transaction;", Connection))
 				cmd.ExecuteNonQuery();
