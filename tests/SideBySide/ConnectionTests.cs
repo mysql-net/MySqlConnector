@@ -107,5 +107,23 @@ namespace SideBySide
 				Assert.Throws<InvalidOperationException>(() => connection.ServerThread);
 			}
 		}
+
+		[Fact]
+		public void DatabaseIsEmptyString()
+		{
+			using (var connection = new MySqlConnection())
+			{
+				Assert.Equal("", connection.Database);
+			}
+		}
+
+		[Fact]
+		public void DataSourceIsEmptyString()
+		{
+			using (var connection = new MySqlConnection())
+			{
+				Assert.Equal("", connection.DataSource);
+			}
+		}
 	}
 }
