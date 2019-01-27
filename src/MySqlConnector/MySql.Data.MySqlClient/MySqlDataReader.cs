@@ -44,8 +44,8 @@ namespace MySql.Data.MySqlClient
 
 		public override Task<bool> NextResultAsync(CancellationToken cancellationToken)
 		{
-			Command.ResetCommandTimeout();
-			return NextResultAsync(Command.Connection.AsyncIOBehavior, cancellationToken);
+			Command?.ResetCommandTimeout();
+			return NextResultAsync(Command?.Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 		}
 
 		internal async Task<bool> NextResultAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
