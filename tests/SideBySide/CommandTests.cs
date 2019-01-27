@@ -76,6 +76,34 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void NewCommandIsNotPrepared()
+		{
+			using (var command = new MySqlCommand())
+				Assert.False(command.IsPrepared);
+		}
+
+		[Fact]
+		public void CommandWithoutConnectionIsNotPrepared()
+		{
+			using (var command = new MySqlCommand())
+			{
+				command.CommandText = "SELECT 1";
+				Assert.False(command.IsPrepared);
+			}
+		}
+
+		[Fact]
+		public void CommandWithClosedConnectionIsNotPrepared()
+		{
+			using (var connection = new MySqlConnection())
+			using (var command = connection.CreateCommand())
+			{
+				command.CommandText = "SELECT 1";
+				Assert.False(command.IsPrepared);
+			}
+		}
+
+		[Fact]
 		public void ExecuteNonQueryForSelectReturnsNegativeOne()
 		{
 			using (var connection = new MySqlConnection(m_database.Connection.ConnectionString))

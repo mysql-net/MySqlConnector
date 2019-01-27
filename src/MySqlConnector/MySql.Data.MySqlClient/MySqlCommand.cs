@@ -446,7 +446,8 @@ namespace MySql.Data.MySqlClient
 			return exception == null;
 		}
 
-		private PreparedStatements TryGetPreparedStatement() => CommandType == CommandType.Text && !string.IsNullOrWhiteSpace(CommandText) ? m_connection.Session.TryGetPreparedStatement(CommandText) : null;
+		private PreparedStatements TryGetPreparedStatement() => CommandType == CommandType.Text && !string.IsNullOrWhiteSpace(CommandText) && m_connection != null &&
+			m_connection.State == ConnectionState.Open ? m_connection.Session.TryGetPreparedStatement(CommandText) : null;
 
 		internal void ReaderClosed() => (m_commandExecutor as StoredProcedureCommandExecutor)?.SetParams();
 
