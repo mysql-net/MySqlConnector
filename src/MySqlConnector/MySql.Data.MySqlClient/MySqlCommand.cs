@@ -72,7 +72,7 @@ namespace MySql.Data.MySqlClient
 
 		public new MySqlParameter CreateParameter() => (MySqlParameter) base.CreateParameter();
 
-		public override void Cancel() => Connection.Cancel(this);
+		public override void Cancel() => Connection?.Cancel(this);
 
 		public override int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
