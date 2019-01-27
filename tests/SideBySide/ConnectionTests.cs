@@ -1,3 +1,4 @@
+using System;
 using Dapper;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -86,6 +87,24 @@ namespace SideBySide
 			{
 				connection.ConnectionString = "";
 				Assert.Equal("", connection.ConnectionString);
+			}
+		}
+
+		[SkippableFact(Baseline = "Throws NullReferenceException")]
+		public void ServerVersionThrows()
+		{
+			using (var connection = new MySqlConnection())
+			{
+				Assert.Throws<InvalidOperationException>(() => connection.ServerVersion);
+			}
+		}
+
+		[SkippableFact(Baseline = "Throws NullReferenceException")]
+		public void ServerThreadThrows()
+		{
+			using (var connection = new MySqlConnection())
+			{
+				Assert.Throws<InvalidOperationException>(() => connection.ServerThread);
 			}
 		}
 	}
