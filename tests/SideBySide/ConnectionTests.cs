@@ -54,5 +54,39 @@ namespace SideBySide
 #endif
 			}
 		}
+
+		[Fact]
+		public void DefaultConnectionStringIsEmpty()
+		{
+			using (var connection = new MySqlConnection())
+				Assert.Equal("", connection.ConnectionString);
+		}
+
+		[Fact]
+		public void InitializeWithNullConnectionString()
+		{
+			using (var connection = new MySqlConnection(default(string)))
+				Assert.Equal("", connection.ConnectionString);
+		}
+
+		[Fact]
+		public void SetConnectionStringToNull()
+		{
+			using (var connection = new MySqlConnection())
+			{
+				connection.ConnectionString = null;
+				Assert.Equal("", connection.ConnectionString);
+			}
+		}
+
+		[Fact]
+		public void SetConnectionStringToEmptyString()
+		{
+			using (var connection = new MySqlConnection())
+			{
+				connection.ConnectionString = "";
+				Assert.Equal("", connection.ConnectionString);
+			}
+		}
 	}
 }

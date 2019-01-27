@@ -17,7 +17,7 @@ namespace MySql.Data.MySqlClient
 	public sealed class MySqlConnection : DbConnection
 	{
 		public MySqlConnection()
-			: this("")
+			: this(default)
 		{
 		}
 
@@ -265,7 +265,7 @@ namespace MySql.Data.MySqlClient
 				if (m_connectionState == ConnectionState.Open)
 					throw new InvalidOperationException("Cannot change the connection string on an open connection.");
 				m_hasBeenOpened = false;
-				m_connectionString = value;
+				m_connectionString = value ?? "";
 			}
 		}
 
