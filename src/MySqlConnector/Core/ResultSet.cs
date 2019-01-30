@@ -260,16 +260,18 @@ namespace MySqlConnector.Core
 		public string GetName(int ordinal)
 		{
 			if (ColumnDefinitions == null)
-				throw new IndexOutOfRangeException("There is no current result set.");
-			if (ordinal < 0 || ordinal > ColumnDefinitions.Length)
+				throw new InvalidOperationException("There is no current result set.");
+			if (ordinal < 0 || ordinal >= ColumnDefinitions.Length)
 				throw new IndexOutOfRangeException("value must be between 0 and {0}".FormatInvariant(ColumnDefinitions.Length - 1));
 			return ColumnDefinitions[ordinal].Name;
 		}
 
 		public string GetDataTypeName(int ordinal)
 		{
-			if (ordinal < 0 || ordinal > ColumnDefinitions.Length)
-				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
+			if (ColumnDefinitions == null)
+				throw new InvalidOperationException("There is no current result set.");
+			if (ordinal < 0 || ordinal >= ColumnDefinitions.Length)
+				throw new IndexOutOfRangeException("value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
 
 			var mySqlDbType = ColumnTypes[ordinal];
 			if (mySqlDbType == MySqlDbType.String)
@@ -279,8 +281,10 @@ namespace MySqlConnector.Core
 
 		public Type GetFieldType(int ordinal)
 		{
-			if (ordinal < 0 || ordinal > ColumnDefinitions.Length)
-				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
+			if (ColumnDefinitions == null)
+				throw new InvalidOperationException("There is no current result set.");
+			if (ordinal < 0 || ordinal >= ColumnDefinitions.Length)
+				throw new IndexOutOfRangeException("value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
 
 			var type = TypeMapper.Instance.GetColumnTypeMetadata(ColumnTypes[ordinal]).DbTypeMapping.ClrType;
 			if (Connection.AllowZeroDateTime && type == typeof(DateTime))
@@ -304,6 +308,8 @@ namespace MySqlConnector.Core
 		{
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
+			if (ColumnDefinitions == null)
+				throw new InvalidOperationException("There is no current result set.");
 
 			for (var column = 0; column < ColumnDefinitions.Length; column++)
 			{

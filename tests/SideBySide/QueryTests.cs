@@ -78,6 +78,24 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void GetOrdinalAfterNextResult()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select 0 as zero, 1 as one;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.False(reader.NextResult());
+#if BASELINE
+					Assert.Throws<Exception>(() => reader.GetOrdinal("zero"));
+#else
+					Assert.Throws<InvalidOperationException>(() => reader.GetOrdinal("zero"));
+#endif
+				}
+			}
+		}
+
+		[Fact]
 		public void GetOrdinalBeforeAndAfterRead()
 		{
 			using (var cmd = m_database.Connection.CreateCommand())
@@ -403,7 +421,11 @@ insert into query_get_name (id, value) VALUES (1, 'one'), (2, 'two');
 					Assert.Equal("id", reader.GetName(0));
 
 					Assert.False(await reader.NextResultAsync());
+#if BASELINE
 					Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(0));
+#else
+					Assert.Throws<InvalidOperationException>(() => reader.GetName(0));
+#endif
 				}
 
 				cmd.CommandText = "select id, value FROM query_get_name where id > 10 order by id;";
@@ -416,7 +438,11 @@ insert into query_get_name (id, value) VALUES (1, 'one'), (2, 'two');
 					Assert.Equal("id", reader.GetName(0));
 
 					Assert.False(await reader.NextResultAsync());
+#if BASELINE
 					Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(0));
+#else
+					Assert.Throws<InvalidOperationException>(() => reader.GetName(0));
+#endif
 				}
 			}
 		}
@@ -744,6 +770,38 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			}
 		}
 
+		[Fact]
+		public void GetFieldTypeInvalidIndex()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select 1;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Throws<IndexOutOfRangeException>(() => reader.GetFieldType(1));
+				}
+			}
+		}
+
+		[Fact]
+		public void GetFieldTypeAfterNextResult()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select 1;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.False(reader.NextResult());
+#if BASELINE
+					Assert.Throws<IndexOutOfRangeException>(() => reader.GetFieldType(0));
+#else
+					Assert.Throws<InvalidOperationException>(() => reader.GetFieldType(0));
+#endif
+				}
+			}
+		}
+
 		[Theory]
 #if BASELINE
 		[InlineData("null", "VARCHAR")]
@@ -769,6 +827,38 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 				{
 					Assert.True(reader.Read());
 					Assert.Equal(expectedDataType, reader.GetDataTypeName(0));
+				}
+			}
+		}
+
+		[Fact]
+		public void GetDataTypeNameInvalidIndex()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select 1;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Throws<IndexOutOfRangeException>(() => reader.GetDataTypeName(1));
+				}
+			}
+		}
+
+		[Fact]
+		public void GetDataTypeNameAfterNextResult()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select 1;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.False(reader.NextResult());
+#if BASELINE
+					Assert.Throws<IndexOutOfRangeException>(() => reader.GetDataTypeName(0));
+#else
+					Assert.Throws<InvalidOperationException>(() => reader.GetDataTypeName(0));
+#endif
 				}
 			}
 		}
