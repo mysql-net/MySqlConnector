@@ -863,6 +863,22 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			}
 		}
 
+#if !BASELINE
+		[Fact]
+		public void GetColumnSchemaAfterNextResult()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select 1;";
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.False(reader.NextResult());
+					Assert.Throws<InvalidOperationException>(() => reader.GetColumnSchema());
+				}
+			}
+		}
+#endif
+
 		private void UseReaderWithoutDisposingThread(object obj)
 		{
 			var data = (UseReaderWithoutDisposingThreadData) obj;

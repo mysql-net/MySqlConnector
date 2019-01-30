@@ -251,7 +251,10 @@ namespace MySql.Data.MySqlClient
 
 		public ReadOnlyCollection<DbColumn> GetColumnSchema()
 		{
-			return GetResultSet().ColumnDefinitions
+			var columnDefinitions = GetResultSet().ColumnDefinitions;
+			if (columnDefinitions == null)
+				throw new InvalidOperationException("There is no current result set.");
+			return columnDefinitions
 				.Select((c, n) => (DbColumn) new MySqlDbColumn(n, c, Connection.AllowZeroDateTime, GetResultSet().ColumnTypes[n]))
 				.ToList().AsReadOnly();
 		}
