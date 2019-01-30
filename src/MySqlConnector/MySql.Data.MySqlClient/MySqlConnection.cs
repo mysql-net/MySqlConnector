@@ -522,7 +522,7 @@ namespace MySql.Data.MySqlClient
 					return session;
 				}
 			}
-			catch (OperationCanceledException ex) when (timeoutSource.IsCancellationRequested)
+			catch (OperationCanceledException ex) when (timeoutSource?.IsCancellationRequested ?? false)
 			{
 				throw new MySqlException("Connect Timeout expired.", ex);
 			}
