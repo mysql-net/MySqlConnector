@@ -1006,7 +1006,7 @@ namespace MySqlConnector.Core
 					// find the index of each individual certificate in the file (assuming there may be multiple certificates concatenated together)
 					for (var index = 0; index != -1;)
 					{
-						var nextIndex = Utility.FindNextIndex(certificateBytes, index + 1, s_beginCertificateBytes);
+						var nextIndex = Utility.FindNextIndex(certificateBytes, index + 1, BeginCertificateBytes);
 						try
 						{
 							// load the certificate at this index; note that 'new X509Certificate' stops at the end of the first certificate it loads
@@ -1392,7 +1392,7 @@ namespace MySqlConnector.Core
 			Failed,
 		}
 
-		static readonly byte[] s_beginCertificateBytes = new byte[] { 45, 45, 45, 45, 45, 66, 69, 71, 73, 78, 32, 67, 69, 82, 84, 73, 70, 73, 67, 65, 84, 69, 45, 45, 45, 45, 45 }; // -----BEGIN CERTIFICATE-----
+		static ReadOnlySpan<byte> BeginCertificateBytes => new byte[] { 45, 45, 45, 45, 45, 66, 69, 71, 73, 78, 32, 67, 69, 82, 84, 73, 70, 73, 67, 65, 84, 69, 45, 45, 45, 45, 45 }; // -----BEGIN CERTIFICATE-----
 		static int s_lastId;
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ServerSession));
 		static readonly PayloadData s_setNamesUtf8mb4Payload = QueryPayload.Create("SET NAMES utf8mb4 COLLATE utf8mb4_general_ci;");
