@@ -54,7 +54,7 @@ namespace MySqlConnector.Core
 		public uint CreatedTicks { get; }
 		public ConnectionPool Pool { get; }
 		public int PoolGeneration { get; }
-		public uint LastReturnedTicks { get; private set; }
+		public uint LastReturnedTicks { get; set; }
 		public string DatabaseOverride { get; set; }
 		public string HostName { get; private set; }
 		public IPAddress IPAddress => (m_tcpClient?.Client.RemoteEndPoint as IPEndPoint)?.Address;
@@ -63,16 +63,7 @@ namespace MySqlConnector.Core
 		public bool SupportsSessionTrack => m_supportsSessionTrack;
 		public bool ProcAccessDenied { get; set; }
 
-		public void ReturnToPool()
-		{
-			if (Log.IsDebugEnabled())
-			{
-				m_logArguments[1] = Pool?.Id;
-				Log.Debug("Session{0} returning to Pool{1}", m_logArguments);
-			}
-			LastReturnedTicks = unchecked((uint) Environment.TickCount);
-			Pool?.Return(this);
-		}
+		public void ReturnToPool() => Pool?.Return(this);
 
 		public bool IsConnected
 		{

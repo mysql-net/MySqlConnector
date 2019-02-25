@@ -11,6 +11,13 @@ weight: 30
 Version History
 ===============
 
+### 0.50.0 Beta 1
+
+* **EXPERIMENTAL** New lock-free connection pool based on npgsql's implementation.
+  * **Breaking** The `MaximumPoolSize` connection string option is now limited to 4096.
+  * Pooled connections are not created proactively at startup to reach `MinimumPoolSize`; instead, the connection pool waits until the first time that connection is needed to create it.
+  * The background task to prune idle connections is now created if and only if there are more than `MinimumPoolSize` connections in the pool.
+
 ### 0.49.3
 
 * Use correct isolation level when starting a transaction for `System.Transactions.TransactionScope`: [#605](https://github.com/mysql-net/MySqlConnector/issues/605).

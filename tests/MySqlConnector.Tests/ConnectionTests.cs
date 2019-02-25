@@ -101,7 +101,7 @@ namespace MySqlConnector.Tests
 			using (var connection = new MySqlConnection(m_csb.ConnectionString))
 			{
 				await connection.OpenAsync();
-				Assert.Equal(size, m_server.ActiveConnections);
+				Assert.Equal(1, m_server.ActiveConnections);
 			}
 		}
 

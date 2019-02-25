@@ -58,6 +58,8 @@ namespace MySqlConnector.Core
 			ConnectionIdleTimeout = (int) csb.ConnectionIdleTimeout;
 			if (csb.MinimumPoolSize > csb.MaximumPoolSize)
 				throw new MySqlException("MaximumPoolSize must be greater than or equal to MinimumPoolSize");
+			if (csb.MaximumPoolSize > ConnectionPool.PoolSizeLimit)
+				throw new MySqlException("MaximumPoolSize must be less than or equal to {0}".FormatInvariant(ConnectionPool.PoolSizeLimit));
 			MinimumPoolSize = (int) csb.MinimumPoolSize;
 			MaximumPoolSize = (int) csb.MaximumPoolSize;
 
