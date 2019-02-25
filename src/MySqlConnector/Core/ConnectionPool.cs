@@ -191,6 +191,14 @@ namespace MySqlConnector.Core
 					var tcs = waitingOpenAttempt.TaskCompletionSource;
 
 					// We have a pending open attempt. "Complete" it, handing off the session.
+#if !NET45
+					if (!tcs.TrySetResult(session))
+					{
+						// If the open attempt timed out, the Task's state will be set to Canceled and our TrySetResult fails. Try again.
+						Debug.Assert(tcs.Task.IsCanceled);
+						continue;
+					}
+#else
 					if (waitingOpenAttempt.IsAsync)
 					{
 						// If the waiting open attempt is asynchronous (i.e. OpenAsync()), we can't simply
@@ -223,6 +231,7 @@ namespace MySqlConnector.Core
 						Debug.Assert(tcs.Task.IsCanceled);
 						continue;
 					}
+#endif
 
 					return;
 				}
@@ -652,7 +661,11 @@ namespace MySqlConnector.Core
 					try
 					{
 						// Enqueue an open attempt into the waiting queue so that the next release attempt will unblock us.
+#if !NET45
+						var tcs = new TaskCompletionSource<ServerSession>(TaskCreationOptions.RunContinuationsAsynchronously);
+#else
 						var tcs = new TaskCompletionSource<ServerSession>();
+#endif
 						m_waiting.Enqueue(new OpenAttempt(tcs, ioBehavior == IOBehavior.Asynchronous));
 
 						try
@@ -756,6 +769,12 @@ namespace MySqlConnector.Core
 			{
 				var tcs = waitingOpenAttempt.TaskCompletionSource;
 
+#if !NET45
+				if (!tcs.TrySetResult(null)) // Open attempt is sync
+				{
+					// TODO: Release more??
+				}
+#else
 				// We have a pending open attempt. "Complete" it, handing off the session.
 				if (waitingOpenAttempt.IsAsync)
 				{
@@ -765,7 +784,6 @@ namespace MySqlConnector.Core
 					// to run in the thread pool via Task.Run().
 
 					// TODO: When we drop support for .NET Framework 4.5, switch to RunContinuationsAsynchronously
-#pragma warning disable 4014
 					Task.Run(() =>
 					{
 						if (!tcs.TrySetResult(null))
@@ -773,12 +791,12 @@ namespace MySqlConnector.Core
 							// TODO: Release more??
 						}
 					});
-#pragma warning restore 4014
 				}
 				else if (!tcs.TrySetResult(null)) // Open attempt is sync
 				{
 					// TODO: Release more??
 				}
+#endif
 			}
 		}
 
