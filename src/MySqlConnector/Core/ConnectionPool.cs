@@ -101,7 +101,7 @@ namespace MySqlConnector.Core
 						int leasedSessionsCountPooled;
 						lock (m_leasedSessions)
 						{
-							m_leasedSessions.Add(session.Id, session);
+							m_leasedSessions.Add(session);
 							leasedSessionsCountPooled = m_leasedSessions.Count;
 						}
 						if (Log.IsDebugEnabled())
@@ -121,7 +121,7 @@ namespace MySqlConnector.Core
 				int leasedSessionsCountNew;
 				lock (m_leasedSessions)
 				{
-					m_leasedSessions.Add(session.Id, session);
+					m_leasedSessions.Add(session);
 					leasedSessionsCountNew = m_leasedSessions.Count;
 				}
 				if (Log.IsDebugEnabled())
@@ -155,7 +155,7 @@ namespace MySqlConnector.Core
 				Log.Debug("Pool{0} receiving Session{1} back", m_logArguments[0], session.Id);
 
 			lock (m_leasedSessions)
-				m_leasedSessions.Remove(session.Id);
+				m_leasedSessions.Remove(session);
 			session.OwningConnection = null;
 			var sessionHealth = GetSessionHealth(session);
 			if (sessionHealth != 0)
@@ -312,7 +312,7 @@ namespace MySqlConnector.Core
 			lock (m_leasedSessions)
 			{
 				m_lastRecoveryTime = unchecked((uint) Environment.TickCount);
-				foreach (var session in m_leasedSessions.Values)
+				foreach (var session in m_leasedSessions)
 				{
 					if (!session.OwningConnection.TryGetTarget(out var _))
 						recoveredSessions.Add(session);
@@ -410,7 +410,7 @@ namespace MySqlConnector.Core
 			m_pruningInterval = TimeSpan.FromSeconds(Math.Max(1, Math.Min(60, ConnectionSettings.ConnectionIdleTimeout / 2)));
 			m_idleSessions = new ServerSession[m_maximumPoolSize];
 			m_waiting = new ConcurrentQueue<OpenAttempt>();
-			m_leasedSessions = new Dictionary<string, ServerSession>();
+			m_leasedSessions = new List<ServerSession>();
 			if (cs.LoadBalance == MySqlLoadBalance.LeastConnections)
 			{
 				m_hostSessions = new Dictionary<string, int>();
@@ -865,7 +865,7 @@ namespace MySqlConnector.Core
 		readonly int m_minimumPoolSize;
 		readonly ServerSession[] m_idleSessions;
 		readonly ConcurrentQueue<OpenAttempt> m_waiting;
-		readonly Dictionary<string, ServerSession> m_leasedSessions;
+		readonly List<ServerSession> m_leasedSessions;
 		readonly ILoadBalancer m_loadBalancer;
 		readonly Dictionary<string, int> m_hostSessions;
 		readonly object[] m_logArguments;
