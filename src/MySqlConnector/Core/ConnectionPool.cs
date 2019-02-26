@@ -87,27 +87,20 @@ namespace MySqlConnector.Core
 						}
 					}
 
-					if (!reuseSession)
-					{
-						// session is either old or cannot communicate with the server
-						Log.Warn("Pool{0} Session{1} is unusable; destroying it", m_logArguments[0], session.Id);
-						AdjustHostConnectionCount(session, -1);
-						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					}
-					else
+					if (reuseSession)
 					{
 						// pooled session is ready to be used; return it
 						session.OwningConnection = new WeakReference<MySqlConnection>(connection);
-						int leasedSessionsCountPooled;
-						lock (m_leasedSessions)
-						{
-							m_leasedSessions.Add(session);
-							leasedSessionsCountPooled = m_leasedSessions.Count;
-						}
+						AddBusySession(session);
 						if (Log.IsDebugEnabled())
-							Log.Debug("Pool{0} returning pooled Session{1} to caller; LeasedSessionsCount={2}", m_logArguments[0], session.Id, leasedSessionsCountPooled);
+							Log.Debug("Pool{0} returning pooled Session{1} to caller; BusySessionsCount={2}", m_logArguments[0], session.Id, m_state.Busy);
 						return session;
 					}
+
+					// session is either old or cannot communicate with the server
+					Log.Warn("Pool{0} Session{1} is unusable; destroying it", m_logArguments[0], session.Id);
+					AdjustHostConnectionCount(session, -1);
+					await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 					// create a new session
 					session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
@@ -118,14 +111,9 @@ namespace MySqlConnector.Core
 
 				AdjustHostConnectionCount(session, 1);
 				session.OwningConnection = new WeakReference<MySqlConnection>(connection);
-				int leasedSessionsCountNew;
-				lock (m_leasedSessions)
-				{
-					m_leasedSessions.Add(session);
-					leasedSessionsCountNew = m_leasedSessions.Count;
-				}
+				AddBusySession(session);
 				if (Log.IsDebugEnabled())
-					Log.Debug("Pool{0} returning new Session{1} to caller; LeasedSessionsCount={2}", m_logArguments[0], session.Id, leasedSessionsCountNew);
+					Log.Debug("Pool{0} returning new Session{1} to caller; BusySessionsCount={2}", m_logArguments[0], session.Id, m_state.Busy);
 				return session;
 			}
 			catch (Exception ex)
@@ -154,8 +142,23 @@ namespace MySqlConnector.Core
 			if (Log.IsDebugEnabled())
 				Log.Debug("Pool{0} receiving Session{1} back", m_logArguments[0], session.Id);
 
-			lock (m_leasedSessions)
-				m_leasedSessions.Remove(session);
+			// remove the session from the array of busy sessions
+			var foundSession = false;
+			for (var i = 0; i < m_busySessions.Length; i++)
+			{
+				if (object.ReferenceEquals(m_busySessions[i], session))
+				{
+					// there's no contention for this slot, but we want to ensure the null is published
+					Interlocked.Exchange(ref m_busySessions[i], null);
+					foundSession = true;
+				}
+			}
+			if (!foundSession)
+			{
+				Log.Error("Pool{0} didn't find busy session when returning Session{1}", m_logArguments[0], session.Id);
+				throw new InvalidOperationException("Pool{0} didn't find busy session when returning Session{1}".FormatInvariant(m_logArguments[0], session.Id));
+			}
+
 			session.OwningConnection = null;
 			var sessionHealth = GetSessionHealth(session);
 			if (sessionHealth != 0)
@@ -302,28 +305,40 @@ namespace MySqlConnector.Core
 		}
 
 		/// <summary>
-		/// Examines all the <see cref="ServerSession"/> objects in <see cref="m_leasedSessions"/> to determine if any
+		/// Examines all the <see cref="ServerSession"/> objects in <see cref="m_busySessions"/> to determine if any
 		/// have an owning <see cref="MySqlConnection"/> that has been garbage-collected. If so, assumes that the connection
 		/// was not properly disposed and returns the session to the pool.
 		/// </summary>
 		private void RecoverLeakedSessions()
 		{
-			var recoveredSessions = new List<ServerSession>();
-			lock (m_leasedSessions)
+			// simplistic mutex by verifying that only one thread has attempted to recover in the last second
+			lock (m_busySessions)
 			{
+				if (unchecked(((uint) Environment.TickCount) - m_lastRecoveryTime) < 1000u)
+					return;
 				m_lastRecoveryTime = unchecked((uint) Environment.TickCount);
-				foreach (var session in m_leasedSessions)
+			}
+
+			var recoveredSessions = default(List<ServerSession>);
+			foreach (var session in m_busySessions)
+			{
+				if (!(session?.OwningConnection.TryGetTarget(out var _) ?? true))
 				{
-					if (!session.OwningConnection.TryGetTarget(out var _))
-						recoveredSessions.Add(session);
+					if (recoveredSessions is null)
+						recoveredSessions = new List<ServerSession>();
+					recoveredSessions.Add(session);
 				}
 			}
-			if (recoveredSessions.Count == 0)
-				Log.Debug("Pool{0} recovered no sessions", m_logArguments);
-			else
+			if (recoveredSessions?.Count > 0)
+			{
 				Log.Warn("Pool{0}: RecoveredSessionCount={1}", m_logArguments[0], recoveredSessions.Count);
-			foreach (var session in recoveredSessions)
-				session.ReturnToPool();
+				foreach (var session in recoveredSessions)
+					Return(session);
+			}
+			else
+			{
+				Log.Debug("Pool{0} recovered no sessions", m_logArguments);
+			}
 		}
 
 		public static ConnectionPool GetPool(string connectionString)
@@ -410,7 +425,7 @@ namespace MySqlConnector.Core
 			m_pruningInterval = TimeSpan.FromSeconds(Math.Max(1, Math.Min(60, ConnectionSettings.ConnectionIdleTimeout / 2)));
 			m_idleSessions = new ServerSession[m_maximumPoolSize];
 			m_waiting = new ConcurrentQueue<OpenAttempt>();
-			m_leasedSessions = new List<ServerSession>();
+			m_busySessions = new ServerSession[m_maximumPoolSize];
 			if (cs.LoadBalance == MySqlLoadBalance.LeastConnections)
 			{
 				m_hostSessions = new Dictionary<string, int>();
@@ -508,6 +523,23 @@ namespace MySqlConnector.Core
 
 		static void OnAppDomainShutDown(object sender, EventArgs e) => ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #endif
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private void AddBusySession(ServerSession session)
+		{
+			var sw = new SpinWait();
+			while (true)
+			{
+				// try to find the first open slot in the array, and store the session there
+				for (var i = 0; i < m_busySessions.Length; i++)
+				{
+					if (m_busySessions[i] is null && Interlocked.CompareExchange(ref m_busySessions[i], session, null) is null)
+						return;
+				}
+
+				sw.SpinOnce();
+			}
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private bool TryAllocateFast(out ServerSession session)
@@ -831,9 +863,9 @@ namespace MySqlConnector.Core
 		{
 			for (var i = 0; i < m_idleSessions.Length; i++)
 			{
-				var connector = Interlocked.Exchange(ref m_idleSessions[i], null);
-				if (connector != null)
-					CloseSession(connector, wasIdle: true);
+				var session = Interlocked.Exchange(ref m_idleSessions[i], null);
+				if (session != null)
+					CloseSession(session, wasIdle: true);
 			}
 
 			Interlocked.Increment(ref m_generation);
@@ -865,7 +897,7 @@ namespace MySqlConnector.Core
 		readonly int m_minimumPoolSize;
 		readonly ServerSession[] m_idleSessions;
 		readonly ConcurrentQueue<OpenAttempt> m_waiting;
-		readonly List<ServerSession> m_leasedSessions;
+		readonly ServerSession[] m_busySessions;
 		readonly ILoadBalancer m_loadBalancer;
 		readonly Dictionary<string, int> m_hostSessions;
 		readonly object[] m_logArguments;
