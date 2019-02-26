@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using MySqlConnector.Core;
 using Xunit;
 
@@ -16,7 +17,7 @@ namespace MySqlConnector.Tests
 		public void ParseServerVersion(string serverVersion, string expectedString)
 		{
 			var expected = Version.Parse(expectedString);
-			Assert.Equal(expected, new ServerVersion(serverVersion).Version);
+			Assert.Equal(expected, new ServerVersion(Encoding.UTF8.GetBytes(serverVersion)).Version);
 		}
 	}
 }

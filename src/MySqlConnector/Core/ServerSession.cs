@@ -304,7 +304,7 @@ namespace MySqlConnector.Core
 						throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(initialHandshake.AuthPluginName));
 					}
 
-					ServerVersion = new ServerVersion(Encoding.ASCII.GetString(initialHandshake.ServerVersion));
+					ServerVersion = new ServerVersion(initialHandshake.ServerVersion);
 					ConnectionId = initialHandshake.ConnectionId;
 					AuthPluginData = initialHandshake.AuthPluginData;
 					m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
@@ -1152,13 +1152,13 @@ namespace MySqlConnector.Core
 
 				// first (and only) row
 				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-				void ReadRow(ReadOnlySpan<byte> span, out int? connectionId_, out string serverVersion_)
+				void ReadRow(ReadOnlySpan<byte> span, out int? connectionId_, out byte[] serverVersion_)
 				{
 					var reader = new ByteArrayReader(span);
 					var length = reader.ReadLengthEncodedIntegerOrNull();
 					connectionId_ = (length != -1 && Utf8Parser.TryParse(reader.ReadByteString(length), out int id, out _)) ? id : default(int?);
 					length = reader.ReadLengthEncodedIntegerOrNull();
-					serverVersion_ = length != -1 ? Encoding.UTF8.GetString(reader.ReadByteString(length)) : null;
+					serverVersion_ = length != -1 ? reader.ReadByteString(length).ToArray() : null;
 				}
 				ReadRow(payload.AsSpan(), out var connectionId, out var serverVersion);
 
@@ -1171,9 +1171,10 @@ namespace MySqlConnector.Core
 
 				if (connectionId.HasValue && serverVersion != null)
 				{
-					Log.Info("Session{0} changing ConnectionIdOld {1} to ConnectionId {2} and ServerVersionOld {3} to ServerVersion {4}", m_logArguments[0], ConnectionId, connectionId.Value, ServerVersion.OriginalString, serverVersion);
+					var newServerVersion = new ServerVersion(serverVersion);
+					Log.Info("Session{0} changing ConnectionIdOld {1} to ConnectionId {2} and ServerVersionOld {3} to ServerVersion {4}", m_logArguments[0], ConnectionId, connectionId.Value, ServerVersion.OriginalString, newServerVersion.OriginalString);
 					ConnectionId = connectionId.Value;
-					ServerVersion = new ServerVersion(serverVersion);
+					ServerVersion = newServerVersion;
 				}
 			}
 			catch (MySqlException ex)

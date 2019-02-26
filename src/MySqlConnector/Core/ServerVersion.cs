@@ -1,28 +1,24 @@
 using System;
-using System.Globalization;
+using System.Buffers.Text;
+using System.Text;
+using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core
 {
 	internal sealed class ServerVersion
 	{
-		public ServerVersion(string versionString)
+		public ServerVersion(ReadOnlySpan<byte> versionString)
 		{
-			OriginalString = versionString;
+			OriginalString = Encoding.ASCII.GetString(versionString);
 
-			var last = 0;
-			var index = versionString.IndexOf('.', last);
-			var major = int.Parse(versionString.Substring(last, index - last), CultureInfo.InvariantCulture);
-			last = index + 1;
-
-			index = versionString.IndexOf('.', last);
-			var minor = int.Parse(versionString.Substring(last, index - last), CultureInfo.InvariantCulture);
-			last = index + 1;
-
-			do
-			{
-				index++;
-			} while (index < versionString.Length && versionString[index] >= '0' && versionString[index] <= '9');
-			var build = int.Parse(versionString.Substring(last, index - last), CultureInfo.InvariantCulture);
+			if (!Utf8Parser.TryParse(versionString, out int major, out var bytesConsumed) || versionString[bytesConsumed] != 0x2E)
+				throw new InvalidOperationException("Error parsing " + OriginalString);
+			versionString = versionString.Slice(bytesConsumed + 1);
+			if (!Utf8Parser.TryParse(versionString, out int minor, out bytesConsumed) || versionString[bytesConsumed] != 0x2E)
+				throw new InvalidOperationException("Error parsing " + OriginalString);
+			versionString = versionString.Slice(bytesConsumed + 1);
+			if (!Utf8Parser.TryParse(versionString, out int build, out bytesConsumed))
+				throw new InvalidOperationException("Error parsing " + OriginalString);
 
 			Version = new Version(major, minor, build);
 		}
