@@ -259,28 +259,17 @@ namespace MySqlConnector.Core
 					ticks = 1;
 				session.LastReturnedTicks = ticks;
 
-				// We start scanning for an empty slot in "random" places in the array, to avoid
-				// too much interlocked operations "contention" at the beginning.
-#if !NETSTANDARD1_3
-				var start = Thread.CurrentThread.ManagedThreadId % m_maximumPoolSize;
-#else
-				var start = 0;
-#endif
-
 				sw = new SpinWait();
 				while (true)
 				{
-					for (var i = start; i < m_idleSessions.Length; i++)
+					// place returned sessions starting at the end of the array so the pool has stack-like behaviour (i.e.,
+					// the most-recently-returned session is more likely to be returned by the next call to TryAllocateFast)
+					for (var i = m_idleSessions.Length - 1; i >= 0; i--)
 					{
-						if (Interlocked.CompareExchange(ref m_idleSessions[i], session, null) is null)
+						if (m_idleSessions[i] is null && Interlocked.CompareExchange(ref m_idleSessions[i], session, null) is null)
 							return;
 					}
 
-					for (var i = 0; i < start; i++)
-					{
-						if (Interlocked.CompareExchange(ref m_idleSessions[i], session, null) is null)
-							return;
-					}
 					sw.SpinOnce();
 				}
 			}
@@ -523,14 +512,6 @@ namespace MySqlConnector.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private bool TryAllocateFast(out ServerSession session)
 		{
-			// We start scanning for an idle session in "random" places in the array, to avoid
-			// too much interlocked operations "contention" at the beginning.
-#if !NETSTANDARD1_3
-			var start = Thread.CurrentThread.ManagedThreadId % m_maximumPoolSize;
-#else
-			var start = 0;
-#endif
-
 			// Idle may indicate that there are idle connectors, with the subsequent scan failing to find any.
 			// This can happen because of race conditions with Release(), which updates Idle before actually putting
 			// the session in the list, or because of other allocation attempts, which remove the session from
@@ -539,24 +520,15 @@ namespace MySqlConnector.Core
 			session = null;
 			while (Volatile.Read(ref m_state.Idle) > 0)
 			{
-				for (var i = start; session is null && i < m_maximumPoolSize; i++)
+				// read from the front of the array to simulate stack-like behaviour (see comment in Return)
+				for (var i = 0; i < m_idleSessions.Length; i++)
 				{
 					// First check without an Interlocked operation, it's faster
-					if (m_idleSessions[i] is null)
-						continue;
-
-					// If we saw a session in this slot, atomically exchange it with a null.
+					// If we see a session in this slot, atomically exchange it with a null.
 					// Either we get a session out which we can use, or we get null because
 					// someone has taken it in the meanwhile. Either way put a null in its place.
-					session = Interlocked.Exchange(ref m_idleSessions[i], null);
-				}
-
-				for (var i = 0; session is null && i < start; i++)
-				{
-					// Same as above
-					if (m_idleSessions[i] is null)
-						continue;
-					session = Interlocked.Exchange(ref m_idleSessions[i], null);
+					if (!(m_idleSessions[i] is null) && !((session = Interlocked.Exchange(ref m_idleSessions[i], null)) is null))
+						break;
 				}
 
 				if (session is null)
@@ -841,7 +813,8 @@ namespace MySqlConnector.Core
 		{
 			var idleLifetime = ConnectionSettings.ConnectionIdleTimeout;
 
-			for (var i = 0; i < m_idleSessions.Length; i++)
+			// prune from the back of the array, which is likely to have the oldest sessions
+			for (var i = m_idleSessions.Length -1; i >= 0; i--)
 			{
 				if (m_state.Total <= m_minimumPoolSize)
 					return;
