@@ -10,6 +10,9 @@ namespace MySqlConnector.Core
 		// https://dev.mysql.com/doc/refman/5.7/en/mysql-reset-connection.html
 		public static readonly Version SupportsResetConnection = new Version(5, 7, 3);
 
+		// https://mariadb.com/kb/en/library/com_reset_connection/
+		public static readonly Version MariaDbSupportsResetConnection = new Version(10, 2, 4);
+
 		// http://dev.mysql.com/doc/refman/5.5/en/parameters-table.html
 		public static readonly Version SupportsProcedureCache = new Version(5, 5, 3);
 

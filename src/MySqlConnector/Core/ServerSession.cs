@@ -394,7 +394,7 @@ namespace MySqlConnector.Core
 				// clear all prepared statements; resetting the connection will clear them on the server
 				ClearPreparedStatements();
 
-				if (DatabaseOverride == null && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
+				if (DatabaseOverride == null && (ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0 || ServerVersion.MariaDbVersion?.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0))
 				{
 					m_logArguments[1] = ServerVersion.OriginalString;
 					Log.Debug("Session{0} ServerVersion={1} supports reset connection; sending reset connection request", m_logArguments);
