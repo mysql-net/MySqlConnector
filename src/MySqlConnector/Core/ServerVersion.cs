@@ -19,11 +19,33 @@ namespace MySqlConnector.Core
 			versionString = versionString.Slice(bytesConsumed + 1);
 			if (!Utf8Parser.TryParse(versionString, out int build, out bytesConsumed))
 				throw new InvalidOperationException("Error parsing " + OriginalString);
+			versionString = versionString.Slice(bytesConsumed);
 
 			Version = new Version(major, minor, build);
+
+			// check for MariaDB version appended to a fake MySQL version
+			if (versionString.Length != 0 && versionString[0] == 0x2D && versionString.IndexOf(MariaDb) != -1)
+			{
+				versionString = versionString.Slice(1);
+				if (Utf8Parser.TryParse(versionString, out major, out bytesConsumed) && versionString[bytesConsumed] == 0x2E)
+				{
+					versionString = versionString.Slice(bytesConsumed + 1);
+					if (Utf8Parser.TryParse(versionString, out minor, out bytesConsumed) && versionString[bytesConsumed] == 0x2E)
+					{
+						versionString = versionString.Slice(bytesConsumed + 1);
+						if (Utf8Parser.TryParse(versionString, out build, out bytesConsumed) && versionString[bytesConsumed] == 0x2D)
+						{
+							MariaDbVersion = new Version(major, minor, build);
+						}
+					}
+				}
+			}
 		}
 
 		public string OriginalString { get; }
 		public Version Version { get; }
+		public Version MariaDbVersion { get; }
+
+		static ReadOnlySpan<byte> MariaDb => new byte[] { 0x2D, 0x4D, 0x61, 0x72, 0x69, 0x61, 0x44, 0x42, 0x2D }; // -MariaDB-
 	}
 }
