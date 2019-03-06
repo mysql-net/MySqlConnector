@@ -43,5 +43,30 @@ namespace SideBySide
 			Assert.IsType<MySqlDataAdapter>(MySqlClientFactory.Instance.CreateDataAdapter());
 		}
 #endif
+
+#if !NETCOREAPP1_1_2 && !NETCOREAPP2_0
+		[Fact]
+		public void DbProviderFactories()
+		{
+#if NETCOREAPP2_1
+			MySqlClientFactory.Register();
+#endif
+#if BASELINE
+			var providerInvariantName = "MySql.Data.MySqlClient";
+#else
+			var providerInvariantName = MySqlClientFactory.InvariantName;
+#endif
+			var factory = System.Data.Common.DbProviderFactories.GetFactory(providerInvariantName);
+			Assert.NotNull(factory);
+			Assert.Same(MySqlClientFactory.Instance, factory);
+
+			using (var connection = new MySqlConnection())
+			{
+				factory = System.Data.Common.DbProviderFactories.GetFactory(connection);
+				Assert.NotNull(factory);
+				Assert.Same(MySqlClientFactory.Instance, factory);
+			}
+		}
+#endif
 	}
 }
