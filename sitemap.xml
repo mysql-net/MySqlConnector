@@ -33,6 +33,11 @@
   </url>
   
   <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/overview/dbproviderfactories/</loc>
+    <lastmod>2019-03-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://mysql-net.github.io/MySqlConnector/troubleshooting/transaction-usage/</loc>
     <lastmod>2018-09-29T00:00:00+00:00</lastmod>
   </url>

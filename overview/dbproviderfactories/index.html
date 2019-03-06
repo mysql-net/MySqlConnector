@@ -28,7 +28,7 @@
 
     <meta name="generator" content="Hugo 0.32" />
     
-    <title>MySqlConnector - MySqlCommand</title>
+    <title>MySqlConnector - DbProviderFactories</title>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -54,53 +54,29 @@
 
 
 
-<h1 id="mysqlcommand">MySqlCommand</h1>
+<h1 id="using-dbproviderfactories">Using DbProviderFactories</h1>
 
-<p><code>MySqlCommand</code> implements the <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbcommand">ADO.NET DbCommand class</a>;
-please refer to its documentation.</p>
+<p>MySqlConnector can be registered with <code>DbProviderFactories</code> and obtained via <code>DbProviderFactories.GetFactory(MySqlClientFactory.InvariantName)</code>, or by
+using the methods <a href="https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/obtaining-a-dbproviderfactory">described here</a>.</p>
 
-<p>Additionally, <code>MySqlCommand</code> provides the following public properties and methods that may be used:</p>
+<h2 id="net-framework">.NET Framework</h2>
 
-<h3 id="constructors">Constructors</h3>
+<p>For .NET Framework applications, add the following section to your <code>app.config</code> or <code>web.config</code>:</p>
 
-<p><code>public MySqlCommand()</code></p>
+<pre><code class="language-xml">&lt;system.data&gt;
+  &lt;DbProviderFactories&gt;
+     &lt;add name=&quot;MySqlConnector&quot;
+        invariant=&quot;MySqlConnector&quot;
+        description=&quot;Async MySQL ADO.NET Connector&quot;
+        type=&quot;MySql.Data.MySqlClient.MySqlClientFactory, MySqlConnector, Culture=neutral, PublicKeyToken=d33d3e53aa5f8c92&quot; /&gt;
+  &lt;/DbProviderFactories&gt;
+&lt;/system.data&gt;
+</code></pre>
 
-<p>Parameterless constructor</p>
+<h2 id="net-core">.NET Core</h2>
 
-<hr />
-
-<p><code>public MySqlCommand(string commandText)</code></p>
-
-<p>constructor accepting command SQL</p>
-
-<hr />
-
-<p><code>public MySqlCommand(MySqlConnection connection, MySqlTransaction transaction)</code></p>
-
-<p>constructor accepting connection object and transaction object</p>
-
-<hr />
-
-<p><code>public MySqlCommand(string commandText, MySqlConnection connection)</code></p>
-
-<p>constructor accepting command SQL and connection object</p>
-
-<hr />
-
-<p><code>public MySqlCommand(string commandText, MySqlConnection connection, MySqlTransaction transaction)</code></p>
-
-<p>constructor accepting command SQL, connection object, and transaction object</p>
-
-<hr />
-
-<h3 id="additional-properties">Additional Properties</h3>
-
-<p><code>public long LastInsertedId</code></p>
-
-<p>Holds the first automatically-generated ID for a value inserted in an <code>AUTO_INCREMENT</code> column in the last statement.
-See <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_last-insert-id"><code>LAST_INSERT_ID()</code></a> for more information.</p>
-
-<hr />
+<p>For .NET Core 2.1 or later, call <code>MySqlClientFactory.Register()</code> during application startup. This will register MySqlConnector&rsquo;s
+<code>DbProviderFactory</code> implementation in the central <code>DbProviderFactories</code> registry.</p>
 
 
         </div>

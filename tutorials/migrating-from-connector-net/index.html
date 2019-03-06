@@ -163,7 +163,7 @@ for various precondition checks that indicate misuse of the API (and not a probl
 <li><a href="https://bugs.mysql.com/bug.php?id=88124">#88124</a>: CommandTimeout isn’t reset when calling Read/NextResult</li>
 <li><del><a href="https://bugs.mysql.com/bug.php?id=88472">#88472</a>: <code>TINYINT(1)</code> is not returned as <code>bool</code> if <code>MySqlCommand.Prepare</code> is called</del></li>
 <li><a href="https://bugs.mysql.com/bug.php?id=88611">#88611</a>: <code>MySqlCommand</code> can be executed even if it has &ldquo;wrong&rdquo; transaction</li>
-<li><a href="https://bugs.mysql.com/bug.php?id=88660">#88660</a>: <code>MySqlClientFactory.Instance.CreateDataAdapter()</code> and <code>CreateCommandBuilder</code> return <code>null</code></li>
+<li><del><a href="https://bugs.mysql.com/bug.php?id=88660">#88660</a>: <code>MySqlClientFactory.Instance.CreateDataAdapter()</code> and <code>CreateCommandBuilder</code> return <code>null</code></del></li>
 <li><a href="https://bugs.mysql.com/bug.php?id=89085">#89085</a>: <code>MySqlConnection.Database</code> not updated after <code>USE database;</code></li>
 <li><a href="https://bugs.mysql.com/bug.php?id=89159">#89159</a>: <code>MySqlDataReader</code> cannot outlive <code>MySqlCommand</code></li>
 <li><a href="https://bugs.mysql.com/bug.php?id=89335">#89335</a>: <code>MySqlCommandBuilder.DeriveParameters</code> fails for <code>JSON</code> type</li>
@@ -210,6 +210,10 @@ for various precondition checks that indicate misuse of the API (and not a probl
         
         <li>
             <a href="/MySqlConnector/overview/installing/">Installing</a>
+        </li>
+        
+        <li>
+            <a href="/MySqlConnector/overview/dbproviderfactories/">DbProviderFactories</a>
         </li>
         
         <li>
