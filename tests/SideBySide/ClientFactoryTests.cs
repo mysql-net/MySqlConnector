@@ -31,13 +31,13 @@ namespace SideBySide
 		}
 
 #if !NETCOREAPP1_1_2
-		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=88660")]
+		[Fact]
 		public void CreateCommandBuilder()
 		{
 			Assert.IsType<MySqlCommandBuilder>(MySqlClientFactory.Instance.CreateCommandBuilder());
 		}
 
-		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=88660")]
+		[Fact]
 		public void CreateDataAdapter()
 		{
 			Assert.IsType<MySqlDataAdapter>(MySqlClientFactory.Instance.CreateDataAdapter());

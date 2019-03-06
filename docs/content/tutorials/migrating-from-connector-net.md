@@ -118,7 +118,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#88124](https://bugs.mysql.com/bug.php?id=88124): CommandTimeout isn’t reset when calling Read/NextResult
 * ~~[#88472](https://bugs.mysql.com/bug.php?id=88472): `TINYINT(1)` is not returned as `bool` if `MySqlCommand.Prepare` is called~~
 * [#88611](https://bugs.mysql.com/bug.php?id=88611): `MySqlCommand` can be executed even if it has "wrong" transaction
-* [#88660](https://bugs.mysql.com/bug.php?id=88660): `MySqlClientFactory.Instance.CreateDataAdapter()` and `CreateCommandBuilder` return `null`
+* ~~[#88660](https://bugs.mysql.com/bug.php?id=88660): `MySqlClientFactory.Instance.CreateDataAdapter()` and `CreateCommandBuilder` return `null`~~
 * [#89085](https://bugs.mysql.com/bug.php?id=89085): `MySqlConnection.Database` not updated after `USE database;`
 * [#89159](https://bugs.mysql.com/bug.php?id=89159): `MySqlDataReader` cannot outlive `MySqlCommand`
 * [#89335](https://bugs.mysql.com/bug.php?id=89335): `MySqlCommandBuilder.DeriveParameters` fails for `JSON` type
