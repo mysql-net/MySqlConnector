@@ -18,12 +18,13 @@ namespace MySqlConnector.Core
 				{ "DataTypes", FillDataTypes },
 				{ "Procedures", FillProcedures },
 				{ "ReservedWords", FillReservedWords },
+				{ "Restrictions", FillRestrictions },
 			};
 		}
 
 		public DataTable GetSchema() => GetSchema("MetaDataCollections");
 
-		public DataTable GetSchema(string collectionName)
+		public DataTable GetSchema(string collectionName, string[] restrictions = null)
 		{
 			if (!m_schemaCollections.TryGetValue(collectionName, out var fillAction))
 				throw new ArgumentException("Invalid collection name.", nameof(collectionName));
@@ -31,6 +32,19 @@ namespace MySqlConnector.Core
 			var dataTable = new DataTable(collectionName);
 			fillAction(dataTable);
 			return dataTable;
+		}
+
+		private void FillRestrictions(DataTable dataTable)
+		{
+				dataTable.Columns.AddRange(new[] {
+					new DataColumn("CollectionName", typeof(string)),
+					new DataColumn("RestrictionName", typeof(string)),
+					new DataColumn("RestrictionDefault", typeof(string)),
+					new DataColumn("RestrictionNumber", typeof(int))
+				});
+
+			foreach (var collectionName in m_schemaCollections.Keys)
+				dataTable.Rows.Add(collectionName, 0, 0);
 		}
 
 		private void FillMetadataCollections(DataTable dataTable)
@@ -41,8 +55,11 @@ namespace MySqlConnector.Core
 				new DataColumn("NumberOfIdentifierParts", typeof(int))
 			});
 
-			foreach (var collectionName in m_schemaCollections.Keys)
-				dataTable.Rows.Add(collectionName, 0, 0);
+			foreach (var collectionName in m_schemaCollections.Keys) {
+				dataTable.Rows.Add(collectionName, "Schema", string.Empty, 1);
+				dataTable.Rows.Add(collectionName, "Table", string.Empty, 2);
+				dataTable.Rows.Add(collectionName, "TableType", string.Empty, 3);
+			}
 		}
 
 		private void FillDataTypes(DataTable dataTable)

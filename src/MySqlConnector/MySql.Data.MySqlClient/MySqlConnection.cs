@@ -308,7 +308,7 @@ namespace MySql.Data.MySqlClient
 		public override DataTable GetSchema(string collectionName) => GetSchemaProvider().GetSchema(collectionName);
 
 		/// <inheritdoc cref="DbConnection.GetSchema(string)"/>
-		public override DataTable GetSchema(string collectionName, string[] restrictions) => GetSchemaProvider().GetSchema(collectionName);
+		public override DataTable GetSchema(string collectionName, string[] restrictions) => GetSchemaProvider().GetSchema(collectionName, restrictions);
 
 		private SchemaProvider GetSchemaProvider()
 		{

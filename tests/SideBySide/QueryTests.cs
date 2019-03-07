@@ -333,7 +333,7 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 				}
 			}
 		}
-		
+
 		[Fact]
 		public async Task UndisposedReader()
 		{
@@ -573,7 +573,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			Assert.True(rows[1].IsBold);
 			Assert.Null(rows[2].IsBold);
 		}
-		
+
 		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=78760")]
 		public void TabsAndNewLines()
 		{
@@ -1155,6 +1155,18 @@ insert into has_rows(value) values(1),(2),(3);");
 			// https://bugs.mysql.com/bug.php?id=89639
 			Assert.Contains("CREATE", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
 #endif
+		}
+
+		[Fact]
+		public void RestrictionsSchema()
+		{
+			var table = m_database.Connection.GetSchema("Restrictions");
+			Assert.NotNull(table);
+			Assert.Equal(4, table.Columns.Count);
+			Assert.Equal("CollectionName", table.Columns[0].ColumnName);
+			Assert.Equal("RestrictionName", table.Columns[1].ColumnName);
+			Assert.Equal("RestrictionDefault", table.Columns[2].ColumnName);
+			Assert.Equal("RestrictionNumber", table.Columns[3].ColumnName);
 		}
 #endif
 
