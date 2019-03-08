@@ -51,6 +51,10 @@ namespace MySqlConnector.Core
 				RecoverLeakedSessions();
 			}
 
+#if !NETSTANDARD1_3
+			Thread.Sleep(1);
+#endif
+
 			Log.Debug("Pool{0} checking for an available session", m_logArguments);
 			if (!TryAllocateFast(out var session))
 			{
