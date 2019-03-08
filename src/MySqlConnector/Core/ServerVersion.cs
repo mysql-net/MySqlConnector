@@ -24,18 +24,27 @@ namespace MySqlConnector.Core
 			Version = new Version(major, minor, build);
 
 			// check for MariaDB version appended to a fake MySQL version
-			if (versionString.Length != 0 && versionString[0] == 0x2D && versionString.IndexOf(MariaDb) != -1)
+			if (versionString.Length != 0 && versionString[0] == 0x2D)
 			{
 				versionString = versionString.Slice(1);
-				if (Utf8Parser.TryParse(versionString, out major, out bytesConsumed) && versionString[bytesConsumed] == 0x2E)
+				var mariaDbIndex = versionString.IndexOf(MariaDb);
+				if (mariaDbIndex != -1)
 				{
-					versionString = versionString.Slice(bytesConsumed + 1);
-					if (Utf8Parser.TryParse(versionString, out minor, out bytesConsumed) && versionString[bytesConsumed] == 0x2E)
+					var totalBytesRead = 0;
+					if (Utf8Parser.TryParse(versionString, out major, out bytesConsumed) && versionString[bytesConsumed] == 0x2E)
 					{
 						versionString = versionString.Slice(bytesConsumed + 1);
-						if (Utf8Parser.TryParse(versionString, out build, out bytesConsumed) && versionString[bytesConsumed] == 0x2D)
+						totalBytesRead += bytesConsumed + 1;
+						if (Utf8Parser.TryParse(versionString, out minor, out bytesConsumed) && versionString[bytesConsumed] == 0x2E)
 						{
-							MariaDbVersion = new Version(major, minor, build);
+							versionString = versionString.Slice(bytesConsumed + 1);
+							totalBytesRead += bytesConsumed + 1;
+							if (Utf8Parser.TryParse(versionString, out build, out bytesConsumed) && versionString[bytesConsumed] == 0x2D)
+							{
+								totalBytesRead += bytesConsumed;
+								if (totalBytesRead == mariaDbIndex)
+									MariaDbVersion = new Version(major, minor, build);
+							}
 						}
 					}
 				}
@@ -46,6 +55,6 @@ namespace MySqlConnector.Core
 		public Version Version { get; }
 		public Version MariaDbVersion { get; }
 
-		static ReadOnlySpan<byte> MariaDb => new byte[] { 0x2D, 0x4D, 0x61, 0x72, 0x69, 0x61, 0x44, 0x42, 0x2D }; // -MariaDB-
+		static ReadOnlySpan<byte> MariaDb => new byte[] { 0x2D, 0x4D, 0x61, 0x72, 0x69, 0x61, 0x44, 0x42 }; // -MariaDB
 	}
 }
