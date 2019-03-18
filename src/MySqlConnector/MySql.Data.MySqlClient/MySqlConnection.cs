@@ -85,6 +85,10 @@ namespace MySql.Data.MySqlClient
 #if !NETSTANDARD1_3
 		public override void EnlistTransaction(System.Transactions.Transaction transaction)
 		{
+			// ignore reenlistment of same connection in same transaction
+			if (m_implicitTransaction?.Transaction.Equals(transaction) ?? false)
+				return;
+
 			if (m_implicitTransaction != null)
 				throw new MySqlException("Already enlisted in a Transaction.");
 			if (CurrentTransaction != null)

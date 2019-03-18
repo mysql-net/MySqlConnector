@@ -28,6 +28,19 @@ namespace SideBySide
 
 		[Theory]
 		[MemberData(nameof(ConnectionStrings))]
+		public void EnlistSameTransaction(string connectionString)
+		{
+			using (new TransactionScope())
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString + ";" + connectionString))
+			{
+				connection.Open();
+				connection.EnlistTransaction(System.Transactions.Transaction.Current);
+				connection.EnlistTransaction(System.Transactions.Transaction.Current);
+			}
+		}
+
+		[Theory]
+		[MemberData(nameof(ConnectionStrings))]
 		public void EnlistTwoTransactions(string connectionString)
 		{
 			using (var connection = new MySqlConnection(AppConfig.ConnectionString + ";" + connectionString))

@@ -9,6 +9,8 @@ namespace MySqlConnector.Core
 	{
 		public MySqlConnection Connection { get; }
 
+		public Transaction Transaction { get; private set; }
+
 		public void Start(Transaction transaction)
 		{
 			Transaction = transaction;
@@ -41,8 +43,6 @@ namespace MySqlConnector.Core
 		public void InDoubt(Enlistment enlistment) => throw new NotImplementedException();
 
 		protected ImplicitTransactionBase(MySqlConnection connection) => Connection = connection;
-
-		protected Transaction Transaction { get; private set; }
 
 		protected abstract void OnStart();
 		protected abstract void OnPrepare(PreparingEnlistment enlistment);
