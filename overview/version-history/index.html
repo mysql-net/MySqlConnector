@@ -56,6 +56,17 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-50-0">0.50.0</h3>
+
+<ul>
+<li>Add <code>MySqlClientFactory.Register()</code> for integration with <code>DbProviderFactories</code> in <code>netcoreapp2.1</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/526">#526</a>.</li>
+<li>Use more efficient &ldquo;Reset Connection&rdquo; for MariaDB 10.2.4 and later: <a href="https://github.com/mysql-net/MySqlConnector/issues/613">#613</a>.</li>
+<li>Ignore <code>MySqlConnection.EnlistTransaction</code> called more than once for the same transaction: <a href="https://github.com/mysql-net/MySqlConnector/issues/619">#619</a>.</li>
+<li><code>MySqlConnection.ConnectionString</code> will always be coerced from <code>null</code> to the empty string.</li>
+<li>Use <code>ReadOnlySpan&lt;byte&gt;</code> in more places when parsing server responses.</li>
+<li>Fix multiple <code>NullReferenceException</code> errors that could occur in edge cases.</li>
+</ul>
+
 <h3 id="0-49-3">0.49.3</h3>
 
 <ul>
