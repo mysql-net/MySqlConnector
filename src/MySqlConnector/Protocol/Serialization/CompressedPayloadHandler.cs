@@ -211,7 +211,7 @@ namespace MySqlConnector.Protocol.Serialization
 			}
 
 			uint uncompressedLength = (uint) remainingUncompressedBytes;
-			if (compressedData.Array == null || compressedData.Count >= remainingUncompressedBytes)
+			if (compressedData.Array is null || compressedData.Count >= remainingUncompressedBytes)
 			{
 				// setting the length to 0 indicates sending uncompressed data
 				uncompressedLength = 0;

@@ -80,7 +80,7 @@ namespace MySqlConnector.Core
 				for (var i = 0; i < parameters.Length; i++)
 				{
 					var parameter = parameters[i];
-					if (parameter.Value == null || parameter.Value == DBNull.Value)
+					if (parameter.Value is null || parameter.Value == DBNull.Value)
 						nullBitmap |= (byte) (1 << (i % 8));
 
 					if (i % 8 == 7)

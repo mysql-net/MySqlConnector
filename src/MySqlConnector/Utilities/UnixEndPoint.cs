@@ -43,7 +43,7 @@ namespace MySqlConnector.Utilities
 
 		public UnixEndPoint (string filename)
 		{
-			if (filename == null)
+			if (filename is null)
 				throw new ArgumentNullException ("filename");
 
 			if (filename == "")
@@ -124,7 +124,7 @@ namespace MySqlConnector.Utilities
 		public override bool Equals (object o)
 		{
 			UnixEndPoint other = o as UnixEndPoint;
-			if (other == null)
+			if (other is null)
 				return false;
 
 			return (other.filename == filename);

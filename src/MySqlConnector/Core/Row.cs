@@ -13,7 +13,7 @@ namespace MySqlConnector.Core
 		public void SetData(ArraySegment<byte> data)
 		{
 			m_data = data;
-			if (m_dataOffsets == null)
+			if (m_dataOffsets is null)
 			{
 				m_dataOffsets = new int[ResultSet.ColumnDefinitions.Length];
 				m_dataLengths = new int[ResultSet.ColumnDefinitions.Length];
@@ -76,7 +76,7 @@ namespace MySqlConnector.Core
 		{
 			CheckBinaryColumn(ordinal);
 
-			if (buffer == null)
+			if (buffer is null)
 			{
 				// this isn't required by the DbDataReader.GetBytes API documentation, but is what mysql-connector-net does
 				// (as does SqlDataReader: http://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqldatareader.getbytes.aspx)
@@ -100,7 +100,7 @@ namespace MySqlConnector.Core
 		public long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length)
 		{
 			var value = GetString(ordinal);
-			if (buffer == null)
+			if (buffer is null)
 				return value.Length;
 
 			CheckBufferArguments(dataOffset, buffer, bufferOffset, length);

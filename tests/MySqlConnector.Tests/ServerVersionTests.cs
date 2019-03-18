@@ -25,7 +25,7 @@ namespace MySqlConnector.Tests
 			var expected = Version.Parse(expectedString);
 			Assert.Equal(expected, serverVersion.Version);
 
-			if (expectedMariaDbString == null)
+			if (expectedMariaDbString is null)
 			{
 				Assert.Equal(default(Version), serverVersion.MariaDbVersion);
 			}

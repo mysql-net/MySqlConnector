@@ -234,7 +234,7 @@ namespace MySqlConnector.Utilities
 		/// <remarks><paramref name="resizableArray"/> may be <c>null</c>, in which case a new <see cref="ResizableArray{T}"/> will be allocated.</remarks>
 		public static void Resize<T>(ref ResizableArray<T> resizableArray, int newLength)
 		{
-			if (resizableArray == null)
+			if (resizableArray is null)
 				resizableArray = new ResizableArray<T>();
 			resizableArray.DoResize(newLength);
 		}
@@ -303,7 +303,7 @@ namespace MySqlConnector.Utilities
 		{
 			get
 			{
-				if (s_completedTask == null)
+				if (s_completedTask is null)
 				{
 					var tcs = new TaskCompletionSource<object>();
 					tcs.SetResult(null);
@@ -409,7 +409,7 @@ namespace MySqlConnector.Utilities
 				try
 				{
 					var property = typeof(ServicePointManager).GetProperty("DisableSystemDefaultTlsVersions", BindingFlags.NonPublic | BindingFlags.Static);
-					disableSystemDefaultTlsVersions = property == null || (property.GetValue(null) is bool b && b);
+					disableSystemDefaultTlsVersions = property is null || (property.GetValue(null) is bool b && b);
 				}
 				catch (Exception)
 				{

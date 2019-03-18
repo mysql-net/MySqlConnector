@@ -131,7 +131,7 @@ namespace MySqlConnector.Core
 
 		public void AddPreparedStatement(string commandText, PreparedStatements preparedStatements)
 		{
-			if (m_preparedStatements == null)
+			if (m_preparedStatements is null)
 				m_preparedStatements = new Dictionary<string, PreparedStatements>();
 			m_preparedStatements.Add(commandText, preparedStatements);
 		}
@@ -284,7 +284,7 @@ namespace MySqlConnector.Core
 						throw new MySqlException((int) MySqlErrorCode.UnableToConnectToHost, null, "Unable to connect to any of the specified MySQL hosts.");
 					}
 
-					var byteHandler = m_socket != null ? (IByteHandler) new SocketByteHandler(m_socket) : new StreamByteHandler(m_stream);
+					var byteHandler = m_socket is null ? new StreamByteHandler(m_stream) : (IByteHandler) new SocketByteHandler(m_socket);
 					m_payloadHandler = new StandardPayloadHandler(byteHandler);
 
 					payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -352,7 +352,7 @@ namespace MySqlConnector.Core
 					}
 				} while (shouldRetrySsl);
 
-				if (m_supportsConnectionAttributes && cs.ConnectionAttributes == null)
+				if (m_supportsConnectionAttributes && cs.ConnectionAttributes is null)
 					cs.ConnectionAttributes = CreateConnectionAttributes(cs.ApplicationName);
 
 				using (var handshakeResponsePayload = HandshakeResponse41Payload.Create(initialHandshake, cs, m_useCompression, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
@@ -394,7 +394,7 @@ namespace MySqlConnector.Core
 				// clear all prepared statements; resetting the connection will clear them on the server
 				ClearPreparedStatements();
 
-				if (DatabaseOverride == null && (ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0 || ServerVersion.MariaDbVersion?.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0))
+				if (DatabaseOverride is null && (ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0 || ServerVersion.MariaDbVersion?.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0))
 				{
 					m_logArguments[1] = ServerVersion.OriginalString;
 					Log.Debug("Session{0} ServerVersion={1} supports reset connection; sending reset connection request", m_logArguments);
@@ -410,7 +410,7 @@ namespace MySqlConnector.Core
 				else
 				{
 					// optimistically hash the password with the challenge from the initial handshake (supported by MariaDB; doesn't appear to be supported by MySQL)
-					if (DatabaseOverride == null)
+					if (DatabaseOverride is null)
 					{
 						m_logArguments[1] = ServerVersion.OriginalString;
 						Log.Debug("Session{0} ServerVersion={1} doesn't support reset connection; sending change user request", m_logArguments);
@@ -918,7 +918,7 @@ namespace MySqlConnector.Core
 					var store = new X509Store(StoreName.My, storeLocation);
 					store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
 
-					if (cs.CertificateThumbprint == null)
+					if (cs.CertificateThumbprint is null)
 					{
 						if (store.Certificates.Count == 0)
 						{
@@ -1064,11 +1064,8 @@ namespace MySqlConnector.Core
 				return rcbPolicyErrors == SslPolicyErrors.None;
 			}
 
-			SslStream sslStream;
-			if (clientCertificates == null)
-				sslStream = new SslStream(m_stream, false, ValidateRemoteCertificate);
-			else
-				sslStream = new SslStream(m_stream, false, ValidateRemoteCertificate, ValidateLocalCertificate);
+			var sslStream = clientCertificates is null ? new SslStream(m_stream, false, ValidateRemoteCertificate) :
+				new SslStream(m_stream, false, ValidateRemoteCertificate, ValidateLocalCertificate);
 
 			var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
 

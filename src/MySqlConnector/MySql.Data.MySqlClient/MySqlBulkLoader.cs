@@ -105,7 +105,7 @@ namespace MySql.Data.MySqlClient
                 sqlCommandFragment.Clear();
             }
 
-            if (LinePrefix != null && LinePrefix.Length > 0)
+            if (!string.IsNullOrEmpty(LinePrefix))
                 sqlCommandFragment.AppendFormat("STARTING BY \'{0}\' ", LinePrefix);
 
             if (LineTerminator != defaultLineTerminator)
@@ -145,7 +145,7 @@ namespace MySql.Data.MySqlClient
 
         private async Task<int> LoadAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
         {
-            if (Connection == null)
+            if (Connection is null)
                 throw new InvalidOperationException("Connection not set");
 
             if (!string.IsNullOrWhiteSpace(FileName) && SourceStream != null)

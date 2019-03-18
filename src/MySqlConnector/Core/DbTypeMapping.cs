@@ -19,7 +19,7 @@ namespace MySqlConnector.Core
 		{
 			if (obj.GetType() == ClrType)
 				return obj;
-			return m_convert == null ? Convert.ChangeType(obj, ClrType) : m_convert(obj);
+			return m_convert is null ? Convert.ChangeType(obj, ClrType) : m_convert(obj);
 		}
 
 		readonly Func<object, object> m_convert;

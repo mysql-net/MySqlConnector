@@ -174,7 +174,7 @@ namespace MySqlConnector.Core
 				? m_readBuffer.Dequeue()
 				: await ScanRowAsync(ioBehavior, m_row, cancellationToken).ConfigureAwait(false);
 
-			if (m_row == null)
+			if (m_row is null)
 			{
 				State = BufferState;
 				return false;
@@ -187,7 +187,7 @@ namespace MySqlConnector.Core
 		{
 			m_rowBuffered = m_rowBuffered?.Clone();
 			// ScanRowAsync sets m_rowBuffered to the next row if there is one
-			if (await ScanRowAsync(ioBehavior, null, cancellationToken).ConfigureAwait(false) == null)
+			if (await ScanRowAsync(ioBehavior, null, cancellationToken).ConfigureAwait(false) is null)
 				return null;
 			m_readBuffer.Enqueue(m_rowBuffered);
 			return m_rowBuffered;
@@ -245,7 +245,7 @@ namespace MySqlConnector.Core
 					}
 				}
 
-				if (row_ == null)
+				if (row_ is null)
 					row_ = DataReader.ResultSetProtocol == ResultSetProtocol.Binary ? (Row) new BinaryRow(this) : new TextRow(this);
 				row_.SetData(payload.ArraySegment);
 				m_rowBuffered = row_;
@@ -259,7 +259,7 @@ namespace MySqlConnector.Core
 
 		public string GetName(int ordinal)
 		{
-			if (ColumnDefinitions == null)
+			if (ColumnDefinitions is null)
 				throw new InvalidOperationException("There is no current result set.");
 			if (ordinal < 0 || ordinal >= ColumnDefinitions.Length)
 				throw new IndexOutOfRangeException("value must be between 0 and {0}".FormatInvariant(ColumnDefinitions.Length - 1));
@@ -268,7 +268,7 @@ namespace MySqlConnector.Core
 
 		public string GetDataTypeName(int ordinal)
 		{
-			if (ColumnDefinitions == null)
+			if (ColumnDefinitions is null)
 				throw new InvalidOperationException("There is no current result set.");
 			if (ordinal < 0 || ordinal >= ColumnDefinitions.Length)
 				throw new IndexOutOfRangeException("value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
@@ -281,7 +281,7 @@ namespace MySqlConnector.Core
 
 		public Type GetFieldType(int ordinal)
 		{
-			if (ColumnDefinitions == null)
+			if (ColumnDefinitions is null)
 				throw new InvalidOperationException("There is no current result set.");
 			if (ordinal < 0 || ordinal >= ColumnDefinitions.Length)
 				throw new IndexOutOfRangeException("value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
@@ -306,9 +306,9 @@ namespace MySqlConnector.Core
 
 		public int GetOrdinal(string name)
 		{
-			if (name == null)
+			if (name is null)
 				throw new ArgumentNullException(nameof(name));
-			if (ColumnDefinitions == null)
+			if (ColumnDefinitions is null)
 				throw new InvalidOperationException("There is no current result set.");
 
 			for (var column = 0; column < ColumnDefinitions.Length; column++)

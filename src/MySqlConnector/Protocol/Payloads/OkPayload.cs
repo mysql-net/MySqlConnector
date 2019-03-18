@@ -66,7 +66,7 @@ namespace MySqlConnector.Protocol.Payloads
 				// ignore human-readable string in both cases
 			}
 
-			if (affectedRowCount == 0 && lastInsertId == 0 && warningCount == 0 && newSchema == null)
+			if (affectedRowCount == 0 && lastInsertId == 0 && warningCount == 0 && newSchema is null)
 			{
 				if (serverStatus == ServerStatus.AutoCommit)
 					return s_autoCommitOk;

@@ -126,7 +126,7 @@ namespace MySql.Data.MySqlClient
 					implicitTransaction.Start(transaction);
 					m_implicitTransaction = implicitTransaction;
 
-					if (existingConnection == null)
+					if (existingConnection is null)
 						lock (s_lock)
 							s_transactionConnections[transaction] = this;
 				}
@@ -160,7 +160,7 @@ namespace MySql.Data.MySqlClient
 
 		private ServerSession DetachSession()
 		{
-			if (m_session == null)
+			if (m_session is null)
 				throw new MySqlException("Expected this MySqlConnection to have a ServerSession, but it was already detached.");
 
 			m_activeReader?.Dispose();
@@ -204,7 +204,7 @@ namespace MySql.Data.MySqlClient
 
 		private async ValueTask<bool> PingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			if (m_session == null)
+			if (m_session is null)
 				return false;
 			try
 			{
@@ -292,7 +292,7 @@ namespace MySql.Data.MySqlClient
 
 		private static async Task ClearPoolAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			if (connection == null)
+			if (connection is null)
 				throw new ArgumentNullException(nameof(connection));
 
 			var pool = ConnectionPool.GetPool(connection.m_connectionString);
@@ -316,7 +316,7 @@ namespace MySql.Data.MySqlClient
 
 		private SchemaProvider GetSchemaProvider()
 		{
-			if (m_schemaProvider == null)
+			if (m_schemaProvider is null)
 				m_schemaProvider = new SchemaProvider(this);
 			return m_schemaProvider;
 		}
@@ -347,7 +347,7 @@ namespace MySql.Data.MySqlClient
 			get
 			{
 				VerifyNotDisposed();
-				if (m_session == null || State != ConnectionState.Open)
+				if (m_session is null || State != ConnectionState.Open)
 					throw new InvalidOperationException($"Connection must be Open but was {State}.");
 				return m_session;
 			}
@@ -395,7 +395,7 @@ namespace MySql.Data.MySqlClient
 				throw new InvalidOperationException("Connection is not open.");
 
 			var cachedProcedures = m_session.Pool?.GetProcedureCache() ?? m_cachedProcedures;
-			if (cachedProcedures == null)
+			if (cachedProcedures is null)
 			{
 				Log.Warn("Session{0} pool Pool{1} doesn't have a shared procedure cache; procedure will only be cached on this connection", m_session.Id, m_session.Pool?.Id);
 				cachedProcedures = m_cachedProcedures = new Dictionary<string, CachedProcedure>();
@@ -417,10 +417,10 @@ namespace MySql.Data.MySqlClient
 				cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema, normalized.Component, cancellationToken).ConfigureAwait(false);
 				if (Log.IsWarnEnabled())
 				{
-					if (cachedProcedure != null)
-						Log.Info("Session{0} caching procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
-					else
+					if (cachedProcedure is null)
 						Log.Warn("Session{0} failed to cache procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
+					else
+						Log.Info("Session{0} caching procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
 				}
 				int count;
 				lock (cachedProcedures)
@@ -434,7 +434,7 @@ namespace MySql.Data.MySqlClient
 
 			if (Log.IsWarnEnabled())
 			{
-				if (cachedProcedure == null)
+				if (cachedProcedure is null)
 					Log.Warn("Session{0} did not find cached procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
 				else
 					Log.Debug("Session{0} returning cached procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
@@ -464,7 +464,7 @@ namespace MySql.Data.MySqlClient
 
 		internal void SetActiveReader(MySqlDataReader dataReader)
 		{
-			if (dataReader == null)
+			if (dataReader is null)
 				throw new ArgumentNullException(nameof(dataReader));
 			if (m_activeReader != null)
 				throw new InvalidOperationException("Can't replace active reader.");
@@ -633,7 +633,7 @@ namespace MySql.Data.MySqlClient
 
 		private ConnectionSettings GetConnectionSettings()
 		{
-			if (m_connectionSettings == null)
+			if (m_connectionSettings is null)
 				m_connectionSettings = new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
 			return m_connectionSettings;
 		}

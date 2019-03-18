@@ -35,7 +35,7 @@ namespace MySql.Data.MySqlClient
 		{
 			get
 			{
-				if (m_data == null)
+				if (m_data is null)
 				{
 					m_data = base.Data;
 					m_data["Server Error Code"] = Number;

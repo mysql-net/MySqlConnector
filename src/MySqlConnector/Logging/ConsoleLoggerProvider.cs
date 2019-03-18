@@ -38,7 +38,7 @@ namespace MySqlConnector.Logging
 				sb.Append(m_name);
 				sb.Append('\t');
 
-				if (args == null || args.Length == 0)
+				if (args is null || args.Length == 0)
 					sb.Append(message);
 				else
 					sb.AppendFormat(CultureInfo.InvariantCulture, message, args);

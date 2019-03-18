@@ -15,7 +15,7 @@ namespace MySqlConnector.Utilities
 		/// </summary>
 		internal void DoResize(int length)
 		{
-			if (m_array == null || length > m_array.Length)
+			if (m_array is null || length > m_array.Length)
 				System.Array.Resize(ref m_array, Math.Max(length, Count * 2));
 		}
 

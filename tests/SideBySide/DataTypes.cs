@@ -371,7 +371,7 @@ namespace SideBySide
 					for (var i = 0; i < expected.Length; i++)
 					{
 						Assert.True(reader.Read());
-						if (expected[i] == null)
+						if (expected[i] is null)
 							Assert.True(reader.IsDBNull(0));
 						else if (expected[i].Length == 0)
 #if BASELINE
@@ -1375,7 +1375,7 @@ create table schema_table({createColumn});");
 					foreach (var value in expected)
 					{
 						Assert.True(reader.Read());
-						if (value == null)
+						if (value is null)
 						{
 							Assert.Equal(DBNull.Value, reader.GetValue(0));
 #if BASELINE
@@ -1482,7 +1482,7 @@ create table schema_table({createColumn});");
 		private static int[] SplitAndParse(object obj)
 		{
 			var value = obj as string;
-			if (value == null)
+			if (value is null)
 				return null;
 
 			var split = value.Split();

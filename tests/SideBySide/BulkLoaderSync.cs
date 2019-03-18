@@ -197,9 +197,9 @@ namespace SideBySide
 			{
 				while (mySqlException.InnerException != null)
 				{
-					if (mySqlException.InnerException.GetType() == typeof(MySqlException))
+					if (mySqlException.InnerException is MySqlException innerException)
 					{
-						mySqlException = (MySqlException)mySqlException.InnerException;
+						mySqlException = innerException;
 					}
 					else
 					{
@@ -207,7 +207,7 @@ namespace SideBySide
 						break;
 					}
 				}
-				if (mySqlException.InnerException == null)
+				if (mySqlException.InnerException is null)
 				{
 					Assert.IsType<System.IO.FileNotFoundException>(mySqlException);
 				}

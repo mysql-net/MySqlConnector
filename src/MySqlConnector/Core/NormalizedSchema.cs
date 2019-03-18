@@ -16,9 +16,9 @@ namespace MySqlConnector.Core
 		internal static NormalizedSchema MustNormalize(string name, string defaultSchema = null)
 		{
 			var normalized = new NormalizedSchema(name, defaultSchema);
-			if (normalized.Component == null)
+			if (normalized.Component is null)
 				throw new ArgumentException("Could not determine function/procedure name", nameof(name));
-			if (normalized.Schema == null)
+			if (normalized.Schema is null)
 				throw new ArgumentException("Could not determine schema", nameof(defaultSchema));
 			return normalized;
 		}
@@ -38,12 +38,12 @@ namespace MySqlConnector.Core
 					firstGroup = match.Groups[1].Value.Trim();
 				else if (match.Groups[2].Success)
 					firstGroup = match.Groups[2].Value.Trim();
-				if (Component == null)
+				if (Component is null)
 					Component = firstGroup.Trim();
 				else
 					Schema = firstGroup.Trim();
 
-				if (Schema == null)
+				if (Schema is null)
 					Schema = defaultSchema;
 			}
 		}

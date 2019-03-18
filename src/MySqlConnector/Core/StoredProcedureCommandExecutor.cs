@@ -62,7 +62,7 @@ namespace MySqlConnector.Core
 
 			// if a return param is set, assume it is a funciton.  otherwise, assume stored procedure
 			commandText += "(" + string.Join(", ", argParamNames) +")";
-			if (returnParam == null)
+			if (returnParam is null)
 			{
 				commandText = inOutSetParams + "CALL " + commandText;
 				if (m_outParams.Count > 0)

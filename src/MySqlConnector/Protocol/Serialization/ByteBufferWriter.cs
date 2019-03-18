@@ -129,7 +129,7 @@ namespace MySqlConnector.Protocol.Serialization
 
 		public void Write(ReadOnlySpan<char> chars)
 		{
-			if (m_encoder == null)
+			if (m_encoder is null)
 				m_encoder = Encoding.UTF8.GetEncoder();
 			while (chars.Length > 0)
 			{

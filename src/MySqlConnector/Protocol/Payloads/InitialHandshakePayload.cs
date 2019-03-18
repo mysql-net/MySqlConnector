@@ -42,7 +42,7 @@ namespace MySqlConnector.Protocol.Payloads
 				if ((protocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
 					authPluginName = Encoding.UTF8.GetString(reader.ReadNullOrEofTerminatedByteString());
 			}
-			if (authPluginData == null)
+			if (authPluginData is null)
 				authPluginData = authPluginData1.ToArray();
 
 			if (reader.BytesRemaining != 0)

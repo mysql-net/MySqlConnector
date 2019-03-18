@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 
 namespace MySql.Data.MySqlClient
@@ -13,7 +13,7 @@ namespace MySql.Data.MySqlClient
 		/// </summary>
 		public static string EscapeString(string value)
 		{
-			if (value == null)
+			if (value is null)
 				throw new ArgumentNullException(nameof(value));
 
 			StringBuilder sb = null;
@@ -22,7 +22,7 @@ namespace MySql.Data.MySqlClient
 			{
 				if (value[i] == '\'' || value[i] == '\"' || value[i] == '\\')
 				{
-					if (sb == null)
+					if (sb is null)
 						sb = new StringBuilder();
 					sb.Append(value, last + 1, i - (last + 1));
 					sb.Append('\\');
@@ -30,8 +30,7 @@ namespace MySql.Data.MySqlClient
 					last = i;
 				}
 			}
-			if (sb != null)
-				sb.Append(value, last + 1, value.Length - (last + 1));
+			sb?.Append(value, last + 1, value.Length - (last + 1));
 
 			return sb?.ToString() ?? value;
 		}

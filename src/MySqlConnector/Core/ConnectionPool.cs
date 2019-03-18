@@ -214,7 +214,7 @@ namespace MySqlConnector.Core
 		public Dictionary<string, CachedProcedure> GetProcedureCache()
 		{
 			var procedureCache = m_procedureCache;
-			if (procedureCache == null)
+			if (procedureCache is null)
 			{
 				var newProcedureCache = new Dictionary<string, CachedProcedure>();
 				procedureCache = Interlocked.CompareExchange(ref m_procedureCache, newProcedureCache, null) ?? newProcedureCache;
@@ -290,7 +290,7 @@ namespace MySqlConnector.Core
 								m_sessions.RemoveLast();
 							}
 						}
-						if (session == null)
+						if (session is null)
 							return;
 
 						if (shouldCleanFn(session))

@@ -485,7 +485,7 @@ namespace MySqlConnector.Protocol.Serialization
 			}
 
 			var previousPayloadsArray = previousPayloads.Array;
-			if (previousPayloadsArray == null)
+			if (previousPayloadsArray is null)
 				previousPayloadsArray = new byte[ProtocolUtility.MaxPacketSize + 1];
 			else if (previousPayloads.Offset + previousPayloads.Count + packet.Contents.Count > previousPayloadsArray.Length)
 				Array.Resize(ref previousPayloadsArray, previousPayloadsArray.Length * 2);

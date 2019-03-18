@@ -118,7 +118,7 @@ namespace MySql.Data.MySqlClient
 			set
 			{
 				m_name = value;
-				NormalizedParameterName = value == null ? null : NormalizeParameterName(m_name);
+				NormalizedParameterName = value is null ? null : NormalizeParameterName(m_name);
 			}
 		}
 
@@ -199,7 +199,7 @@ namespace MySql.Data.MySqlClient
 
 		internal void AppendSqlString(ByteBufferWriter writer, StatementPreparerOptions options)
 		{
-			if (Value == null || Value == DBNull.Value)
+			if (Value is null || Value == DBNull.Value)
 			{
 				writer.Write(s_nullBytes);
 			}
@@ -402,7 +402,7 @@ namespace MySql.Data.MySqlClient
 
 		internal void AppendBinary(ByteBufferWriter writer, StatementPreparerOptions options)
 		{
-			if (Value == null || Value == DBNull.Value)
+			if (Value is null || Value == DBNull.Value)
 			{
 				// stored in "null bitmap" only
 			}

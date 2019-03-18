@@ -18,7 +18,7 @@ namespace MySqlConnector.Logging
 
 			public void Log(MySqlConnectorLogLevel level, string message, object[] args = null, Exception exception = null)
 			{
-				if (args == null || args.Length == 0)
+				if (args is null || args.Length == 0)
 					m_logger.Log(GetLevel(level), 0, message, exception, s_getMessage);
 				else
 					m_logger.Log(GetLevel(level), 0, (message, args), exception, s_messageFormatter);

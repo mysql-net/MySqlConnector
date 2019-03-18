@@ -619,7 +619,7 @@ namespace MySql.Data.MySqlClient
 
 		public void SetValue(MySqlConnectionStringBuilder builder, T value)
 		{
-			builder[Key] = m_coerce != null ? m_coerce(value) : value;
+			builder[Key] = m_coerce is null ? value : m_coerce(value);
 		}
 
 		public override object GetObject(MySqlConnectionStringBuilder builder)

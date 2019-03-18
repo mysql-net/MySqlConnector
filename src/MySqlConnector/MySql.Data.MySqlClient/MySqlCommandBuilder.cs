@@ -21,7 +21,7 @@ namespace MySql.Data.MySqlClient
 
 		private static async Task DeriveParametersAsync(IOBehavior ioBehavior, MySqlCommand command, CancellationToken cancellationToken)
 		{
-			if (command == null)
+			if (command is null)
 				throw new ArgumentNullException(nameof(command));
 			if (command.CommandType != CommandType.StoredProcedure)
 				throw new ArgumentException("MySqlCommand.CommandType must be StoredProcedure not {0}".FormatInvariant(command.CommandType), nameof(command));
@@ -33,7 +33,7 @@ namespace MySql.Data.MySqlClient
 				throw new NotSupportedException("MySQL Server {0} doesn't support INFORMATION_SCHEMA".FormatInvariant(command.Connection.Session.ServerVersion.OriginalString));
 
 			var cachedProcedure = await command.Connection.GetCachedProcedure(ioBehavior, command.CommandText, cancellationToken).ConfigureAwait(false);
-			if (cachedProcedure == null)
+			if (cachedProcedure is null)
 			{
 				var name = NormalizedSchema.MustNormalize(command.CommandText, command.Connection.Database);
 				throw new MySqlException("Procedure or function '{0}' cannot be found in database '{1}'.".FormatInvariant(name.Component, name.Schema));

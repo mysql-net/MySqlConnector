@@ -547,7 +547,7 @@ namespace SideBySide
 
 			Assert.Equal(procedureName, row["SPECIFIC_NAME"]);
 			Assert.Equal(procedureType, row["ROUTINE_TYPE"]);
-			if (dtdIdentifier == null)
+			if (dtdIdentifier is null)
 				Assert.Equal(DBNull.Value, row["DTD_IDENTIFIER"]);
 			else
 				Assert.Equal(dtdIdentifier, ((string) row["DTD_IDENTIFIER"]).Split(' ')[0]);
