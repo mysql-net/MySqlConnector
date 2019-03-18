@@ -11,6 +11,15 @@ weight: 30
 Version History
 ===============
 
+### 0.50.0
+
+* Add `MySqlClientFactory.Register()` for integration with `DbProviderFactories` in `netcoreapp2.1`: [#526](https://github.com/mysql-net/MySqlConnector/issues/526).
+* Use more efficient "Reset Connection" for MariaDB 10.2.4 and later: [#613](https://github.com/mysql-net/MySqlConnector/issues/613).
+* Ignore `MySqlConnection.EnlistTransaction` called more than once for the same transaction: [#619](https://github.com/mysql-net/MySqlConnector/issues/619).
+* `MySqlConnection.ConnectionString` will always be coerced from `null` to the empty string.
+* Use `ReadOnlySpan<byte>` in more places when parsing server responses.
+* Fix multiple `NullReferenceException` errors that could occur in edge cases.
+
 ### 0.49.3
 
 * Use correct isolation level when starting a transaction for `System.Transactions.TransactionScope`: [#605](https://github.com/mysql-net/MySqlConnector/issues/605).
