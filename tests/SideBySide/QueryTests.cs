@@ -1158,6 +1158,30 @@ insert into has_rows(value) values(1),(2),(3);");
 		}
 #endif
 
+		[Fact]
+		public void CommandBehaviorCloseConnection()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				Assert.Equal(ConnectionState.Closed, connection.State);
+				connection.Open();
+				Assert.Equal(ConnectionState.Open, connection.State);
+
+				using (var cmd = new MySqlCommand("SELECT 1;", connection))
+				using (var reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(1, reader.GetInt32(0));
+					Assert.False(reader.Read());
+				}
+
+				Assert.Equal(ConnectionState.Closed, connection.State);
+				connection.Open();
+				Assert.Equal(ConnectionState.Open, connection.State);
+				connection.Close();
+			}
+		}
+
 		class BoolTest
 		{
 			public int Id { get; set; }

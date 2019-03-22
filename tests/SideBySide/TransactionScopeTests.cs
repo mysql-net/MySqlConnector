@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 using Dapper;
@@ -636,6 +638,40 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 			}
 		}
 
+		[Theory]
+		[MemberData(nameof(ConnectionStrings))]
+		public async Task CommandBehaviorCloseConnection(string connectionString)
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString + ";" + connectionString))
+			using (new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+			{
+				using (var command1 = new MySqlCommand("SELECT 1"))
+				using (var command2 = new MySqlCommand("SELECT 2"))
+				{
+					command1.Connection = connection;
+					command2.Connection = connection;
+
+					await connection.OpenAsync();
+					using (var reader = await command1.ExecuteReaderAsync(CommandBehavior.CloseConnection, CancellationToken.None))
+					{
+						Assert.True(await reader.ReadAsync());
+						Assert.Equal(1, reader.GetInt32(0));
+						Assert.False(await reader.ReadAsync());
+					}
+
+					Assert.Equal(ConnectionState.Closed, connection.State);
+
+					await connection.OpenAsync();
+					using (var reader = await command2.ExecuteReaderAsync(CommandBehavior.CloseConnection, CancellationToken.None))
+					{
+						Assert.True(await reader.ReadAsync());
+						Assert.Equal(2, reader.GetInt32(0));
+						Assert.False(await reader.ReadAsync());
+					}
+				}
+			}
+		}
+
 		[SkippableFact(Baseline = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")]
 		public void CommitTwoTransactions()
 		{
@@ -746,7 +782,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 			{
 				// This TransactionScope may be overly configured, but let's stick with the one I am actually using
 				using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-					new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
+					new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted },
 					TransactionScopeAsyncFlowOption.Enabled))
 				{
 					using (var connection = new MySqlConnection(connectionString))
