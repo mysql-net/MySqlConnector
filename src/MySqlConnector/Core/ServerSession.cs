@@ -782,7 +782,7 @@ namespace MySqlConnector.Core
 							{
 								SafeDispose(ref tcpClient);
 								Log.Info("Session{0} connect timeout expired connecting to IpAddress {1} for HostName '{2}'", m_logArguments[0], ipAddress, hostName);
-								throw new MySqlException("Connect Timeout expired.", ex);
+								throw new MySqlException((int) MySqlErrorCode.UnableToConnectToHost, null, "Connect Timeout expired.", ex);
 							}
 						}
 					}

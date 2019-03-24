@@ -3,6 +3,7 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Authentication;
+using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -129,15 +130,51 @@ namespace SideBySide
 			{
 				Server = "www.mysql.com",
 				Pooling = false,
-				ConnectionTimeout = 3,
+				ConnectionTimeout = 2,
 			};
 
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				var stopwatch = Stopwatch.StartNew();
-				await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+				try
+				{
+					await connection.OpenAsync();
+					Assert.True(false);
+				}
+				catch (MySqlException ex)
+				{
+					Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
+				}
 				stopwatch.Stop();
-				TestUtilities.AssertDuration(stopwatch, 2900, 1500);
+				TestUtilities.AssertDuration(stopwatch, 1900, 1500);
+			}
+		}
+
+
+		[SkippableFact(ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=94760")]
+		public async Task ConnectTimeoutAsyncCancellationToken()
+		{
+			var csb = new MySqlConnectionStringBuilder
+			{
+				Server = "www.mysql.com",
+				Pooling = false,
+			};
+
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				var stopwatch = Stopwatch.StartNew();
+				try
+				{
+					using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2)))
+						await connection.OpenAsync(cts.Token);
+					Assert.True(false);
+				}
+				catch (MySqlException ex)
+				{
+					Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
+				}
+				stopwatch.Stop();
+				TestUtilities.AssertDuration(stopwatch, 1900, 1500);
 			}
 		}
 

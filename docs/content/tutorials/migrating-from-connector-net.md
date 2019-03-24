@@ -143,3 +143,4 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#93374](https://bugs.mysql.com/bug.php?id=93374): `MySqlDataReader.GetStream` throws `IndexOutOfRangeException`
 * [#93825](https://bugs.mysql.com/bug.php?id=93825): `MySqlException` loses data when serialized
 * [#94075](https://bugs.mysql.com/bug.php?id=94075): `MySqlCommand.Cancel` throws exception
+* [#94760](https://bugs.mysql.com/bug.php?id=94760): `MySqlConnection.OpenAsync(CancellationToken)` doesn’t respect cancellation token
