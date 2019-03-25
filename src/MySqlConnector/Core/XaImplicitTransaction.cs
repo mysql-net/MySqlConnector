@@ -8,8 +8,8 @@ namespace MySqlConnector.Core
 {
 	internal sealed class XaImplicitTransaction : ImplicitTransactionBase
 	{
-		public XaImplicitTransaction(MySqlConnection connection)
-			: base(connection)
+		public XaImplicitTransaction(Transaction transaction, MySqlConnection connection)
+			: base(transaction, connection)
 		{
 		}
 

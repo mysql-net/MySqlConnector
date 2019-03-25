@@ -465,6 +465,177 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 			}
 		}
 
+		[Theory]
+		[MemberData(nameof(ConnectionStrings))]
+		public void ReusingConnectionInOneTransactionDoesNotDeadlock(string connectionString)
+		{
+			connectionString = AppConfig.ConnectionString + ";" + connectionString;
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				connection.Open();
+				connection.Execute(@"drop table if exists transaction_scope_test;
+create table transaction_scope_test(rowid integer not null auto_increment primary key, value text);
+insert into transaction_scope_test(value) values('one'),('two'),('three');");
+			}
+
+			var transactionOptions = new TransactionOptions
+			{
+				IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
+				Timeout = TransactionManager.MaximumTimeout
+			};
+			using (var scope = new TransactionScope(TransactionScopeOption.Required, transactionOptions, TransactionScopeAsyncFlowOption.Enabled))
+			{
+				using (var connection = new MySqlConnection(connectionString))
+				{
+					connection.Open();
+					connection.Execute("insert into transaction_scope_test(value) values('four'),('five'),('six');");
+					connection.Close();
+
+					connection.Open();
+					connection.Execute("update transaction_scope_test set value = @newValue where rowid = @id", new { newValue = "new value", id = 4 });
+				}
+
+				scope.Complete();
+			}
+
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				connection.Open();
+				Assert.Equal(new[] { "one", "two", "three", "new value", "five", "six" }, connection.Query<string>(@"select value from transaction_scope_test order by rowid;"));
+			}
+		}
+
+		[Theory]
+		[MemberData(nameof(ConnectionStrings))]
+		public void ReusingConnectionInOneTransactionDoesNotDeadlockWithoutComplete(string connectionString)
+		{
+			connectionString = AppConfig.ConnectionString + ";" + connectionString;
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				connection.Open();
+				connection.Execute(@"drop table if exists transaction_scope_test;
+create table transaction_scope_test(rowid integer not null auto_increment primary key, value text);
+insert into transaction_scope_test(value) values('one'),('two'),('three');");
+			}
+
+			var transactionOptions = new TransactionOptions
+			{
+				IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
+				Timeout = TransactionManager.MaximumTimeout
+			};
+			using (new TransactionScope(TransactionScopeOption.Required, transactionOptions, TransactionScopeAsyncFlowOption.Enabled))
+			{
+				using (var connection = new MySqlConnection(connectionString))
+				{
+					connection.Open();
+					connection.Execute("insert into transaction_scope_test(value) values('four'),('five'),('six');");
+					connection.Close();
+
+					connection.Open();
+					connection.Execute("update transaction_scope_test set value = @newValue where rowid = @id", new { newValue = "new value", id = 4 });
+				}
+			}
+
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				connection.Open();
+				Assert.Equal(new[] { "one", "two", "three" }, connection.Query<string>(@"select value from transaction_scope_test order by rowid;"));
+			}
+		}
+
+		[Theory]
+		[MemberData(nameof(ConnectionStrings))]
+		public void ReusingConnectionInOneTransactionWithoutAutoEnlistDoesNotDeadlock(string connectionString)
+		{
+			connectionString = AppConfig.ConnectionString + ";AutoEnlist=false;" + connectionString;
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				connection.Open();
+				connection.Execute(@"drop table if exists transaction_scope_test;
+create table transaction_scope_test(rowid integer not null auto_increment primary key, value text);
+insert into transaction_scope_test(value) values('one'),('two'),('three');");
+			}
+
+			using (var transaction = new CommittableTransaction())
+			{
+				using (var connection = new MySqlConnection(connectionString))
+				{
+					connection.Open();
+					connection.EnlistTransaction(transaction);
+					connection.Execute("insert into transaction_scope_test(value) values('four'),('five'),('six');");
+					connection.Close();
+
+					connection.Open();
+					connection.EnlistTransaction(transaction);
+					connection.Execute("update transaction_scope_test set value = @newValue where rowid = @id", new { newValue = "new value", id = 4 });
+				}
+
+				transaction.Commit();
+			}
+
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				connection.Open();
+				Assert.Equal(new[] { "one", "two", "three", "new value", "five", "six" }, connection.Query<string>(@"select value from transaction_scope_test order by rowid;"));
+			}
+		}
+
+		[Theory]
+		[MemberData(nameof(ConnectionStrings))]
+		public void ReusingConnectionInOneTransactionWithoutAutoEnlistDoesNotDeadlockWithRollback(string connectionString)
+		{
+			connectionString = AppConfig.ConnectionString + ";AutoEnlist=false;" + connectionString;
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				connection.Open();
+				connection.Execute(@"drop table if exists transaction_scope_test;
+create table transaction_scope_test(rowid integer not null auto_increment primary key, value text);
+insert into transaction_scope_test(value) values('one'),('two'),('three');");
+			}
+
+			using (var transaction = new CommittableTransaction())
+			{
+				using (var connection = new MySqlConnection(connectionString))
+				{
+					connection.Open();
+					connection.EnlistTransaction(transaction);
+					connection.Execute("insert into transaction_scope_test(value) values('four'),('five'),('six');");
+					connection.Close();
+
+					connection.Open();
+					connection.EnlistTransaction(transaction);
+					connection.Execute("update transaction_scope_test set value = @newValue where rowid = @id", new { newValue = "new value", id = 4 });
+				}
+
+				transaction.Rollback();
+			}
+
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				connection.Open();
+				Assert.Equal(new[] { "one", "two", "three" }, connection.Query<string>(@"select value from transaction_scope_test order by rowid;"));
+			}
+		}
+
+		[SkippableTheory(Baseline = "Different results")]
+		[MemberData(nameof(ConnectionStrings))]
+		public void ReusingConnectionInOneTransactionReusesPhysicalConnection(string connectionString)
+		{
+			connectionString = AppConfig.ConnectionString + ";" + connectionString;
+			using (new CommittableTransaction())
+			{
+				using (var connection = new MySqlConnection(connectionString))
+				{
+					connection.Open();
+					var sessionId = connection.ServerThread;
+					connection.Close();
+
+					connection.Open();
+					Assert.Equal(sessionId, connection.ServerThread);
+				}
+			}
+		}
+
 		[SkippableFact(Baseline = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")]
 		public void CommitTwoTransactions()
 		{

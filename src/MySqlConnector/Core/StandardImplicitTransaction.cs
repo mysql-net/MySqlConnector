@@ -1,44 +1,45 @@
 #if !NETSTANDARD1_3
+using System;
 using System.Transactions;
 using MySql.Data.MySqlClient;
+using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core
 {
 	internal sealed class StandardImplicitTransaction : ImplicitTransactionBase
 	{
-		public StandardImplicitTransaction(MySqlConnection connection) : base(connection)
+		public StandardImplicitTransaction(Transaction transaction, MySqlConnection connection)
+			: base(transaction, connection)
 		{
 		}
 
 		protected override void OnStart()
 		{
-			System.Data.IsolationLevel isolationLevel;
+			string isolationLevel;
 			switch (Transaction.IsolationLevel)
 			{
 			case IsolationLevel.Serializable:
-				isolationLevel = System.Data.IsolationLevel.Serializable;
-				break;
-			case IsolationLevel.RepeatableRead:
-				isolationLevel = System.Data.IsolationLevel.RepeatableRead;
+				isolationLevel = "serializable";
 				break;
 			case IsolationLevel.ReadCommitted:
-				isolationLevel = System.Data.IsolationLevel.ReadCommitted;
+				isolationLevel = "read committed";
 				break;
 			case IsolationLevel.ReadUncommitted:
-				isolationLevel = System.Data.IsolationLevel.ReadUncommitted;
+				isolationLevel = "read uncommitted";
 				break;
 			case IsolationLevel.Snapshot:
-				isolationLevel = System.Data.IsolationLevel.Snapshot;
-				break;
 			case IsolationLevel.Chaos:
-				isolationLevel = System.Data.IsolationLevel.Chaos;
-				break;
+				throw new NotSupportedException("IsolationLevel.{0} is not supported.".FormatInvariant(Transaction.IsolationLevel));
+			// "In terms of the SQL:1992 transaction isolation levels, the default InnoDB level is REPEATABLE READ." - http://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-model.html
 			case IsolationLevel.Unspecified:
+			case IsolationLevel.RepeatableRead:
 			default:
-				isolationLevel = System.Data.IsolationLevel.Unspecified;
+				isolationLevel = "repeatable read";
 				break;
 			}
-			m_transaction = Connection.BeginTransaction(isolationLevel);
+
+			using (var cmd = new MySqlCommand("set transaction isolation level " + isolationLevel + "; start transaction;", Connection))
+				cmd.ExecuteNonQuery();
 		}
 
 		protected override void OnPrepare(PreparingEnlistment enlistment)
@@ -47,17 +48,15 @@ namespace MySqlConnector.Core
 
 		protected override void OnCommit(Enlistment enlistment)
 		{
-			m_transaction.Commit();
-			m_transaction = null;
+			using (var cmd = new MySqlCommand("commit;", Connection))
+				cmd.ExecuteNonQuery();
 		}
 
 		protected override void OnRollback(Enlistment enlistment)
 		{
-			m_transaction.Rollback();
-			m_transaction = null;
+			using (var cmd = new MySqlCommand("rollback;", Connection))
+				cmd.ExecuteNonQuery();
 		}
-
-		MySqlTransaction m_transaction;
 	}
 }
 #endif
