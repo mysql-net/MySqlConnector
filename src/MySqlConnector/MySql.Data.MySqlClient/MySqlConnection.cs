@@ -43,7 +43,7 @@ namespace MySql.Data.MySqlClient
 			if (CurrentTransaction != null)
 				throw new InvalidOperationException("Transactions may not be nested.");
 #if !NETSTANDARD1_3
-			if (m_implicitTransaction != null)
+			if (m_enlistedTransaction != null)
 				throw new InvalidOperationException("Cannot begin a transaction when already enlisted in a transaction.");
 #endif
 
@@ -86,10 +86,10 @@ namespace MySql.Data.MySqlClient
 		public override void EnlistTransaction(System.Transactions.Transaction transaction)
 		{
 			// ignore reenlistment of same connection in same transaction
-			if (m_implicitTransaction?.Transaction.Equals(transaction) ?? false)
+			if (m_enlistedTransaction?.Transaction.Equals(transaction) ?? false)
 				return;
 
-			if (m_implicitTransaction != null)
+			if (m_enlistedTransaction != null)
 				throw new MySqlException("Already enlisted in a Transaction.");
 			if (CurrentTransaction != null)
 				throw new InvalidOperationException("Can't enlist in a Transaction when there is an active MySqlTransaction.");
@@ -106,16 +106,16 @@ namespace MySql.Data.MySqlClient
 				}
 				else
 				{
-					m_implicitTransaction = m_connectionSettings.UseXaTransactions ?
-						(ImplicitTransactionBase) new XaImplicitTransaction(transaction, this) :
-						new StandardImplicitTransaction(transaction, this);
-					m_implicitTransaction.Start();
+					m_enlistedTransaction = m_connectionSettings.UseXaTransactions ?
+						(EnlistedTransactionBase) new XaEnlistedTransaction(transaction, this) :
+						new StandardEnlistedTransaction(transaction, this);
+					m_enlistedTransaction.Start();
 
 					lock (s_lock)
 					{
 						if (!s_transactionConnections.TryGetValue(transaction, out var enlistedTransactions))
-							s_transactionConnections[transaction] = enlistedTransactions = new List<ImplicitTransactionBase>();
-						enlistedTransactions.Add(m_implicitTransaction);
+							s_transactionConnections[transaction] = enlistedTransactions = new List<EnlistedTransactionBase>();
+						enlistedTransactions.Add(m_enlistedTransaction);
 					}
 				}
 			}
@@ -123,8 +123,8 @@ namespace MySql.Data.MySqlClient
 
 		internal void UnenlistTransaction()
 		{
-			var transaction = m_implicitTransaction.Transaction;
-			m_implicitTransaction = null;
+			var transaction = m_enlistedTransaction.Transaction;
+			m_enlistedTransaction = null;
 
 			// find this connection in the list of connections associated with the transaction
 			bool? wasIdle = null;
@@ -201,9 +201,9 @@ namespace MySql.Data.MySqlClient
 				throw new InvalidOperationException("This connection must not have a session");
 			if (other.m_session is null)
 				throw new InvalidOperationException("Other connection must have a session");
-			if (m_implicitTransaction != null)
+			if (m_enlistedTransaction != null)
 				throw new InvalidOperationException("This connection must not have an enlisted transaction");
-			if (other.m_implicitTransaction is null)
+			if (other.m_enlistedTransaction is null)
 				throw new InvalidOperationException("Other connection must have an enlisted transaction");
 			if (m_activeReader != null)
 				throw new InvalidOperationException("This connection must not have an active reader");
@@ -218,11 +218,11 @@ namespace MySql.Data.MySqlClient
 			m_cachedProcedures = other.m_cachedProcedures;
 			other.m_cachedProcedures = null;
 
-			m_implicitTransaction = other.m_implicitTransaction;
-			other.m_implicitTransaction = null;
+			m_enlistedTransaction = other.m_enlistedTransaction;
+			other.m_enlistedTransaction = null;
 		}
 
-		ImplicitTransactionBase m_implicitTransaction;
+		EnlistedTransactionBase m_enlistedTransaction;
 #endif
 
 		public override void Close() => DoClose(changeState: true);
@@ -523,7 +523,7 @@ namespace MySql.Data.MySqlClient
 #if NETSTANDARD1_3
 		internal bool IgnoreCommandTransaction => m_connectionSettings.IgnoreCommandTransaction;
 #else
-		internal bool IgnoreCommandTransaction => m_connectionSettings.IgnoreCommandTransaction || m_implicitTransaction is StandardImplicitTransaction;
+		internal bool IgnoreCommandTransaction => m_connectionSettings.IgnoreCommandTransaction || m_enlistedTransaction is StandardEnlistedTransaction;
 #endif
 		internal bool IgnorePrepare => m_connectionSettings.IgnorePrepare;
 		internal bool TreatTinyAsBoolean => m_connectionSettings.TreatTinyAsBoolean;
@@ -642,7 +642,7 @@ namespace MySql.Data.MySqlClient
 #if !NETSTANDARD1_3
 			// If participating in a distributed transaction, keep the connection open so we can commit or rollback.
 			// This handles the common pattern of disposing a connection before disposing a TransactionScope (e.g., nested using blocks)
-			if (!(m_implicitTransaction is null))
+			if (!(m_enlistedTransaction is null))
 			{
 				// make sure all DB work is done
 				m_activeReader?.Dispose();
@@ -663,7 +663,7 @@ namespace MySql.Data.MySqlClient
 				// put the new, idle, connection into the list of sessions for this transaction (replacing this MySqlConnection)
 				lock (s_lock)
 				{
-					foreach (var enlistedTransaction in s_transactionConnections[connection.m_implicitTransaction.Transaction])
+					foreach (var enlistedTransaction in s_transactionConnections[connection.m_enlistedTransaction.Transaction])
 					{
 						if (enlistedTransaction.Connection == this)
 						{
@@ -727,7 +727,7 @@ namespace MySql.Data.MySqlClient
 		static readonly StateChangeEventArgs s_stateChangeOpenClosed = new StateChangeEventArgs(ConnectionState.Open, ConnectionState.Closed);
 #if !NETSTANDARD1_3
 		static readonly object s_lock = new object();
-		static readonly Dictionary<System.Transactions.Transaction, List<ImplicitTransactionBase>> s_transactionConnections = new Dictionary<System.Transactions.Transaction, List<ImplicitTransactionBase>>();
+		static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = new Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>>();
 #endif
 
 		string m_connectionString;

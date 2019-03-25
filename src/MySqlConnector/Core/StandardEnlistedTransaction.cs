@@ -6,9 +6,9 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core
 {
-	internal sealed class StandardImplicitTransaction : ImplicitTransactionBase
+	internal sealed class StandardEnlistedTransaction : EnlistedTransactionBase
 	{
-		public StandardImplicitTransaction(Transaction transaction, MySqlConnection connection)
+		public StandardEnlistedTransaction(Transaction transaction, MySqlConnection connection)
 			: base(transaction, connection)
 		{
 		}

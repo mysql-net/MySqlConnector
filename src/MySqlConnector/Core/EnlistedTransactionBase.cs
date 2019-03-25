@@ -5,7 +5,7 @@ using MySql.Data.MySqlClient;
 
 namespace MySqlConnector.Core
 {
-	internal abstract class ImplicitTransactionBase : IEnlistmentNotification
+	internal abstract class EnlistedTransactionBase : IEnlistmentNotification
 	{
 		// A MySqlConnection that holds the ServerSession that was enrolled in the transaction
 		public MySqlConnection Connection { get; set; }
@@ -45,7 +45,7 @@ namespace MySqlConnector.Core
 
 		public void InDoubt(Enlistment enlistment) => throw new NotImplementedException();
 
-		protected ImplicitTransactionBase(Transaction transaction, MySqlConnection connection)
+		protected EnlistedTransactionBase(Transaction transaction, MySqlConnection connection)
 		{
 			Transaction = transaction;
 			Connection = connection;
