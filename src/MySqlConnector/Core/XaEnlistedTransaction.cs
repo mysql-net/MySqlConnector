@@ -6,10 +6,10 @@ using MySql.Data.MySqlClient;
 
 namespace MySqlConnector.Core
 {
-	internal sealed class XaImplicitTransaction : ImplicitTransactionBase
+	internal sealed class XaEnlistedTransaction : EnlistedTransactionBase
 	{
-		public XaImplicitTransaction(MySqlConnection connection)
-			: base(connection)
+		public XaEnlistedTransaction(Transaction transaction, MySqlConnection connection)
+			: base(transaction, connection)
 		{
 		}
 

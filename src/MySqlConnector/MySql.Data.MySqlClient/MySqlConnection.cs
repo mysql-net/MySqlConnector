@@ -43,7 +43,7 @@ namespace MySql.Data.MySqlClient
 			if (CurrentTransaction != null)
 				throw new InvalidOperationException("Transactions may not be nested.");
 #if !NETSTANDARD1_3
-			if (m_implicitTransaction != null)
+			if (m_enlistedTransaction != null)
 				throw new InvalidOperationException("Cannot begin a transaction when already enlisted in a transaction.");
 #endif
 
@@ -86,92 +86,143 @@ namespace MySql.Data.MySqlClient
 		public override void EnlistTransaction(System.Transactions.Transaction transaction)
 		{
 			// ignore reenlistment of same connection in same transaction
-			if (m_implicitTransaction?.Transaction.Equals(transaction) ?? false)
+			if (m_enlistedTransaction?.Transaction.Equals(transaction) ?? false)
 				return;
 
-			if (m_implicitTransaction != null)
+			if (m_enlistedTransaction != null)
 				throw new MySqlException("Already enlisted in a Transaction.");
 			if (CurrentTransaction != null)
 				throw new InvalidOperationException("Can't enlist in a Transaction when there is an active MySqlTransaction.");
 
 			if (transaction != null)
 			{
-				MySqlConnection existingConnection;
-				lock (s_lock)
-					s_transactionConnections.TryGetValue(transaction, out existingConnection);
-
-				if (existingConnection != null && existingConnection.m_shouldCloseWhenUnenlisted && existingConnection.m_connectionString == m_connectionString)
+				var existingConnection = FindExistingEnlistedSession(transaction);
+				if (existingConnection != null)
 				{
 					// can reuse the existing connection
 					DoClose(changeState: false);
-					m_session = existingConnection.DetachSession();
-					m_implicitTransaction = existingConnection.m_implicitTransaction;
+					TakeSessionFrom(existingConnection);
+					return;
 				}
 				else
 				{
-					ImplicitTransactionBase implicitTransaction;
-					if (m_connectionSettings.UseXaTransactions)
-					{
-						if (!(existingConnection?.m_connectionSettings.UseXaTransactions ?? true))
-							throw new NotSupportedException("Cannot start an XA transaction when there is an existing non-XA transaction.");
-						implicitTransaction = new XaImplicitTransaction(this);
-					}
-					else
-					{
-						if (existingConnection != null)
-							throw new NotSupportedException("Multiple simultaneous connections or connections with different connection strings inside the same transaction are not supported when UseXaTransactions=False.");
-						implicitTransaction = new StandardImplicitTransaction(this);
-					}
+					m_enlistedTransaction = m_connectionSettings.UseXaTransactions ?
+						(EnlistedTransactionBase) new XaEnlistedTransaction(transaction, this) :
+						new StandardEnlistedTransaction(transaction, this);
+					m_enlistedTransaction.Start();
 
-					implicitTransaction.Start(transaction);
-					m_implicitTransaction = implicitTransaction;
-
-					if (existingConnection is null)
-						lock (s_lock)
-							s_transactionConnections[transaction] = this;
+					lock (s_lock)
+					{
+						if (!s_transactionConnections.TryGetValue(transaction, out var enlistedTransactions))
+							s_transactionConnections[transaction] = enlistedTransactions = new List<EnlistedTransactionBase>();
+						enlistedTransactions.Add(m_enlistedTransaction);
+					}
 				}
 			}
 		}
 
-		internal void UnenlistTransaction(ImplicitTransactionBase implicitTransaction, System.Transactions.Transaction transaction)
+		internal void UnenlistTransaction()
 		{
-			if (!object.ReferenceEquals(implicitTransaction, m_implicitTransaction))
-				throw new InvalidOperationException("Active transaction is not the one being unenlisted from.");
-			m_implicitTransaction = null;
+			var transaction = m_enlistedTransaction.Transaction;
+			m_enlistedTransaction = null;
 
-			if (m_shouldCloseWhenUnenlisted)
+			// find this connection in the list of connections associated with the transaction
+			bool? wasIdle = null;
+			lock (s_lock)
 			{
-				m_shouldCloseWhenUnenlisted = false;
-				Close();
+				var enlistedTransactions = s_transactionConnections[transaction];
+				for (int i = 0; i < enlistedTransactions.Count; i++)
+				{
+					if (enlistedTransactions[i].Connection == this)
+					{
+						wasIdle = enlistedTransactions[i].IsIdle;
+						enlistedTransactions.RemoveAt(i);
+						break;
+					}
+				}
+				if (enlistedTransactions.Count == 0)
+					s_transactionConnections.Remove(transaction);
 			}
 
-			// NOTE: may try to remove the same Transaction multiple times (if it spans multiple connections), which is a safe no-op
+			// if the connection was idle (i.e., the client already closed it), really close it now
+			if (wasIdle is null)
+				throw new InvalidOperationException("Didn't find transaction");
+			if (wasIdle.Value)
+				Close();
+		}
+
+		// If there is an idle (i.e., no client has it open) MySqlConnection thats part of 'transaction',
+		// returns it; otherwise, returns null. If a valid MySqlConnection is returned, the current connection
+		// has been stored in 's_transactionConnections' and the caller must call TakeSessionFrom to
+		// transfer its session to this MySqlConnection.
+		// Also performs validation checks to ensure that XA and non-XA transactions aren't being mixed.
+		private MySqlConnection FindExistingEnlistedSession(System.Transactions.Transaction transaction)
+		{
+			var hasEnlistedTransactions = false;
+			var hasXaTransaction = false;
 			lock (s_lock)
-				s_transactionConnections.Remove(transaction);
+			{
+				if (s_transactionConnections.TryGetValue(transaction, out var enlistedTransactions))
+				{
+					hasEnlistedTransactions = true;
+					foreach (var enlistedTransaction in enlistedTransactions)
+					{
+						hasXaTransaction = enlistedTransaction.Connection.m_connectionSettings.UseXaTransactions;
+						if (enlistedTransaction.IsIdle && enlistedTransaction.Connection.m_connectionString == m_connectionString)
+						{
+							var existingConnection = enlistedTransaction.Connection;
+							enlistedTransaction.Connection = this;
+							enlistedTransaction.IsIdle = false;
+							return existingConnection;
+						}
+					}
+				}
+			}
+
+			// no valid existing connection was found; verify that constraints aren't violated
+			if (m_connectionSettings.UseXaTransactions)
+			{
+				if (hasEnlistedTransactions && !hasXaTransaction)
+					throw new NotSupportedException("Cannot start an XA transaction when there is an existing non-XA transaction.");
+			}
+			else if (hasEnlistedTransactions)
+			{
+				throw new NotSupportedException("Multiple simultaneous connections or connections with different connection strings inside the same transaction are not supported when UseXaTransactions=False.");
+			}
+			return null;
 		}
 
-		private void AttachSession(ServerSession session)
+		private void TakeSessionFrom(MySqlConnection other)
 		{
+#if DEBUG
+			if (other is null)
+				throw new ArgumentNullException(nameof(other));
 			if (m_session != null)
-				throw new MySqlException("Expected this MySqlConnection to have no ServerSession, but it was already attached.");
+				throw new InvalidOperationException("This connection must not have a session");
+			if (other.m_session is null)
+				throw new InvalidOperationException("Other connection must have a session");
+			if (m_enlistedTransaction != null)
+				throw new InvalidOperationException("This connection must not have an enlisted transaction");
+			if (other.m_enlistedTransaction is null)
+				throw new InvalidOperationException("Other connection must have an enlisted transaction");
+			if (m_activeReader != null)
+				throw new InvalidOperationException("This connection must not have an active reader");
+			if (other.m_activeReader != null)
+				throw new InvalidOperationException("Other connection must not have an active reader");
+#endif
 
-			m_session = session;
+			m_session = other.m_session;
+			m_session.OwningConnection = new WeakReference<MySqlConnection>(this);
+			other.m_session = null;
+
+			m_cachedProcedures = other.m_cachedProcedures;
+			other.m_cachedProcedures = null;
+
+			m_enlistedTransaction = other.m_enlistedTransaction;
+			other.m_enlistedTransaction = null;
 		}
 
-		private ServerSession DetachSession()
-		{
-			if (m_session is null)
-				throw new MySqlException("Expected this MySqlConnection to have a ServerSession, but it was already detached.");
-
-			m_activeReader?.Dispose();
-			m_activeReader = null;
-
-			var session = m_session;
-			m_session = null;
-			return session;
-		}
-
-		ImplicitTransactionBase m_implicitTransaction;
+		EnlistedTransactionBase m_enlistedTransaction;
 #endif
 
 		public override void Close() => DoClose(changeState: true);
@@ -231,9 +282,28 @@ namespace MySql.Data.MySqlClient
 
 			SetState(ConnectionState.Connecting);
 
+			var pool = ConnectionPool.GetPool(m_connectionString);
+			if (m_connectionSettings is null)
+				m_connectionSettings = pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
+
+#if !NETSTANDARD1_3
+			// check if there is an open session (in the current transaction) that can be adopted
+			if (m_connectionSettings.AutoEnlist && !(System.Transactions.Transaction.Current is null))
+			{
+				var existingConnection = FindExistingEnlistedSession(System.Transactions.Transaction.Current);
+				if (existingConnection != null)
+				{
+					TakeSessionFrom(existingConnection);
+					m_hasBeenOpened = true;
+					SetState(ConnectionState.Open);
+					return;
+				}
+			}
+#endif
+
 			try
 			{
-				m_session = await CreateSessionAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				m_session = await CreateSessionAsync(pool, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				m_hasBeenOpened = true;
 				SetState(ConnectionState.Open);
@@ -250,7 +320,7 @@ namespace MySql.Data.MySqlClient
 			}
 
 #if !NETSTANDARD1_3
-			if (m_connectionSettings.AutoEnlist && System.Transactions.Transaction.Current != null)
+			if (m_connectionSettings.AutoEnlist && !(System.Transactions.Transaction.Current is null))
 				EnlistTransaction(System.Transactions.Transaction.Current);
 #endif
 		}
@@ -270,6 +340,7 @@ namespace MySql.Data.MySqlClient
 					throw new InvalidOperationException("Cannot change the connection string on an open connection.");
 				m_hasBeenOpened = false;
 				m_connectionString = value ?? "";
+				m_connectionSettings = null;
 			}
 		}
 
@@ -337,7 +408,7 @@ namespace MySql.Data.MySqlClient
 			}
 			finally
 			{
-				m_isDisposed = !m_shouldCloseWhenUnenlisted;
+				m_isDisposed = true;
 				base.Dispose(disposing);
 			}
 		}
@@ -348,7 +419,7 @@ namespace MySql.Data.MySqlClient
 			{
 				VerifyNotDisposed();
 				if (m_session is null || State != ConnectionState.Open)
-					throw new InvalidOperationException($"Connection must be Open but was {State}.");
+					throw new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(State));
 				return m_session;
 			}
 		}
@@ -452,7 +523,7 @@ namespace MySql.Data.MySqlClient
 #if NETSTANDARD1_3
 		internal bool IgnoreCommandTransaction => m_connectionSettings.IgnoreCommandTransaction;
 #else
-		internal bool IgnoreCommandTransaction => m_connectionSettings.IgnoreCommandTransaction || m_implicitTransaction is StandardImplicitTransaction;
+		internal bool IgnoreCommandTransaction => m_connectionSettings.IgnoreCommandTransaction || m_enlistedTransaction is StandardEnlistedTransaction;
 #endif
 		internal bool IgnorePrepare => m_connectionSettings.IgnorePrepare;
 		internal bool TreatTinyAsBoolean => m_connectionSettings.TreatTinyAsBoolean;
@@ -490,10 +561,8 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		private async ValueTask<ServerSession> CreateSessionAsync(IOBehavior? ioBehavior, CancellationToken cancellationToken)
+		private async ValueTask<ServerSession> CreateSessionAsync(ConnectionPool pool, IOBehavior? ioBehavior, CancellationToken cancellationToken)
 		{
-			var pool = ConnectionPool.GetPool(m_connectionString);
-			m_connectionSettings = pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
 			var actualIOBehavior = ioBehavior ?? (m_connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous);
 
 			CancellationTokenSource timeoutSource = null;
@@ -573,28 +642,42 @@ namespace MySql.Data.MySqlClient
 #if !NETSTANDARD1_3
 			// If participating in a distributed transaction, keep the connection open so we can commit or rollback.
 			// This handles the common pattern of disposing a connection before disposing a TransactionScope (e.g., nested using blocks)
-			if (m_implicitTransaction != null)
+			if (!(m_enlistedTransaction is null))
 			{
 				// make sure all DB work is done
 				m_activeReader?.Dispose();
 				m_activeReader = null;
 
-				if (object.ReferenceEquals(m_implicitTransaction.Connection, this))
+				// This connection is being closed, so create a new MySqlConnection that will own the ServerSession
+				// (which remains open). This ensures the ServerSession always has a valid OwningConnection (even
+				// if 'this' is GCed.
+				var connection = new MySqlConnection
 				{
-					// if this was the original connection in the transaction, simply defer closing
-					m_shouldCloseWhenUnenlisted = true;
-					return;
-				}
-				else
+					m_connectionString = m_connectionString,
+					m_connectionSettings = m_connectionSettings,
+					m_connectionState = m_connectionState,
+					m_hasBeenOpened = true,
+				};
+				connection.TakeSessionFrom(this);
+
+				// put the new, idle, connection into the list of sessions for this transaction (replacing this MySqlConnection)
+				lock (s_lock)
 				{
-					// reattach the session to the transaction's original connection
-					m_implicitTransaction.Connection.AttachSession(m_session);
-					m_session = null;
+					foreach (var enlistedTransaction in s_transactionConnections[connection.m_enlistedTransaction.Transaction])
+					{
+						if (enlistedTransaction.Connection == this)
+						{
+							enlistedTransaction.Connection = connection;
+							enlistedTransaction.IsIdle = true;
+							break;
+						}
+					}
 				}
+
+				if (changeState)
+					SetState(ConnectionState.Closed);
+				return;
 			}
-#else
-			// fix "field is never assigned" compiler error
-			m_shouldCloseWhenUnenlisted = false;
 #endif
 
 			if (m_connectionState != ConnectionState.Closed)
@@ -644,7 +727,7 @@ namespace MySql.Data.MySqlClient
 		static readonly StateChangeEventArgs s_stateChangeOpenClosed = new StateChangeEventArgs(ConnectionState.Open, ConnectionState.Closed);
 #if !NETSTANDARD1_3
 		static readonly object s_lock = new object();
-		static readonly Dictionary<System.Transactions.Transaction, MySqlConnection> s_transactionConnections = new Dictionary<System.Transactions.Transaction, MySqlConnection>();
+		static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = new Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>>();
 #endif
 
 		string m_connectionString;
@@ -653,7 +736,6 @@ namespace MySql.Data.MySqlClient
 		ConnectionState m_connectionState;
 		bool m_hasBeenOpened;
 		bool m_isDisposed;
-		bool m_shouldCloseWhenUnenlisted;
 		Dictionary<string, CachedProcedure> m_cachedProcedures;
 		MySqlDataReader m_activeReader;
 	}
