@@ -56,12 +56,20 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-51-1">0.51.1</h3>
+
+<ul>
+<li>Add support for <code>Memory&lt;byte&gt;</code> and <code>ArraySegment&lt;byte&gt;</code> as <code>MySqlParameter.Value</code> values.</li>
+<li>Fix exception when setting <code>MySqlParameter.Value</code> to <code>ReadOnlyMemory&lt;byte&gt;</code> when using prepared commands.</li>
+</ul>
+
 <h3 id="0-51-0">0.51.0</h3>
 
 <ul>
 <li>Set <code>MySqlException.Number</code> to <code>MySqlErrorCode.UnableToConnectToHost</code> in more situations when connecting times out: <a href="https://github.com/mysql-net/MySqlConnector/pull/622">#622</a>.</li>
 <li>Improve handling of <code>MySqlConnection.Close()</code> within <code>TransactionScope</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/620">#620</a>.</li>
 <li>Allow <code>MySqlParameter.Value</code> to be a <code>ReadOnlyMemory&lt;byte&gt;</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/624">#624</a>.</li>
+<li>Thanks to <a href="https://github.com/mguinness">mguinness</a> for contributions to this release.</li>
 </ul>
 
 <h3 id="0-50-0">0.50.0</h3>
