@@ -254,9 +254,10 @@ namespace MySql.Data.MySqlClient
 			{
 				writer.WriteString(ulongValue);
 			}
-			else if (Value is byte[] || Value is ReadOnlyMemory<byte> || Value is Memory<byte>)
+			else if (Value is byte[] || Value is ReadOnlyMemory<byte> || Value is Memory<byte> || Value is ArraySegment<byte>)
 			{
 				var inputSpan = Value is byte[] byteArray ? byteArray.AsSpan() :
+					Value is ArraySegment<byte> arraySegment ? arraySegment.AsSpan() :
 					Value is Memory<byte> memory ? memory.Span :
 					((ReadOnlyMemory<byte>) Value).Span;
 
@@ -468,6 +469,11 @@ namespace MySql.Data.MySqlClient
 			{
 				writer.WriteLengthEncodedInteger(unchecked((ulong) memoryValue.Length));
 				writer.Write(memoryValue.Span);
+			}
+			else if (Value is ArraySegment<byte> arraySegmentValue)
+			{
+				writer.WriteLengthEncodedInteger(unchecked((ulong) arraySegmentValue.Count));
+				writer.Write(arraySegmentValue);
 			}
 			else if (Value is float floatValue)
 			{

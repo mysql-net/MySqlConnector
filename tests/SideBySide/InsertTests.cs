@@ -425,6 +425,7 @@ create table insert_mysql_blob(
 				new byte[] { 1, 2, 3, 4, 5, 6 },
 				new ReadOnlyMemory<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, 1, 6),
 				new Memory<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, 1, 6),
+				new ArraySegment<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, 1, 6),
 			})
 			{
 				yield return new[] { blob, false };
