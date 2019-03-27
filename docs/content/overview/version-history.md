@@ -16,6 +16,7 @@ Version History
 * Set `MySqlException.Number` to `MySqlErrorCode.UnableToConnectToHost` in more situations when connecting times out: [#622](https://github.com/mysql-net/MySqlConnector/pull/622).
 * Improve handling of `MySqlConnection.Close()` within `TransactionScope`: [#620](https://github.com/mysql-net/MySqlConnector/issues/620).
 * Allow `MySqlParameter.Value` to be a `ReadOnlyMemory<byte>`: [#624](https://github.com/mysql-net/MySqlConnector/issues/624).
+* Thanks to <a href="https://github.com/mguinness">mguinness</a> for contributions to this release.
 
 ### 0.50.0
 
