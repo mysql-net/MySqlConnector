@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.51.1
+
+* Add support for `Memory<byte>` and `ArraySegment<byte>` as `MySqlParameter.Value` values.
+* Fix exception when setting `MySqlParameter.Value` to `ReadOnlyMemory<byte>` when using prepared commands.
+
 ### 0.51.0
 
 * Set `MySqlException.Number` to `MySqlErrorCode.UnableToConnectToHost` in more situations when connecting times out: [#622](https://github.com/mysql-net/MySqlConnector/pull/622).
