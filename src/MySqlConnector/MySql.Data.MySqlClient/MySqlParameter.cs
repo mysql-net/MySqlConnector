@@ -254,28 +254,30 @@ namespace MySql.Data.MySqlClient
 			{
 				writer.WriteString(ulongValue);
 			}
-			else if (Value is byte[] || Value is ReadOnlyMemory<byte>)
+			else if (Value is byte[] || Value is ReadOnlyMemory<byte> || Value is Memory<byte>)
 			{
-				var memoryValue = Value is byte[] byteArrayValue ? byteArrayValue.AsSpan() : ((ReadOnlyMemory<byte>) Value).Span;
+				var inputSpan = Value is byte[] byteArray ? byteArray.AsSpan() :
+					Value is Memory<byte> memory ? memory.Span :
+					((ReadOnlyMemory<byte>) Value).Span;
 
 				// determine the number of bytes to be written
-				var length = memoryValue.Length + s_binaryBytes.Length + 1;
-				foreach (var by in memoryValue)
+				var length = inputSpan.Length + s_binaryBytes.Length + 1;
+				foreach (var by in inputSpan)
 				{
 					if (by == 0x27 || by == 0x5C)
 						length++;
 				}
 
-				var span = writer.GetSpan(length);
-				s_binaryBytes.CopyTo(span);
+				var outputSpan = writer.GetSpan(length);
+				s_binaryBytes.CopyTo(outputSpan);
 				var index = s_binaryBytes.Length;
-				foreach (var by in memoryValue)
+				foreach (var by in inputSpan)
 				{
 					if (by == 0x27 || by == 0x5C)
-						span[index++] = 0x5C;
-					span[index++] = by;
+						outputSpan[index++] = 0x5C;
+					outputSpan[index++] = by;
 				}
-				span[index++] = 0x27;
+				outputSpan[index++] = 0x27;
 				Debug.Assert(index == length, "index == length");
 				writer.Advance(index);
 			}
@@ -461,6 +463,11 @@ namespace MySql.Data.MySqlClient
 			{
 				writer.WriteLengthEncodedInteger(unchecked((ulong) readOnlyMemoryValue.Length));
 				writer.Write(readOnlyMemoryValue.Span);
+			}
+			else if (Value is Memory<byte> memoryValue)
+			{
+				writer.WriteLengthEncodedInteger(unchecked((ulong) memoryValue.Length));
+				writer.Write(memoryValue.Span);
 			}
 			else if (Value is float floatValue)
 			{

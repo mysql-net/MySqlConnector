@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -393,29 +394,9 @@ create table insert_mysql_set(
 
 
 #if !BASELINE
-		[Fact]
-		public void InsertReadOnlyMemory()
-		{
-			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
-			{
-				connection.Open();
-				connection.Execute(@"drop table if exists insert_mysql_blob;
-create table insert_mysql_blob(
-	rowid integer not null primary key auto_increment,
-	value mediumblob null
-);");
-
-				using (var cmd = new MySqlCommand("insert into insert_mysql_blob(value) values(@data);", connection))
-				{
-					cmd.Parameters.AddWithValue("@data", new ReadOnlyMemory<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, 1, 6));
-					cmd.ExecuteNonQuery();
-				}
-				Assert.Equal(new byte[] { 1, 2, 3, 4, 5, 6 }, connection.Query<byte[]>(@"select value from insert_mysql_blob;").Single());
-			}
-		}
-
-		[Fact]
-		public void InsertReadOnlyMemoryPrepared()
+		[Theory]
+		[MemberData(nameof(GetBlobs))]
+		public void InsertBlob(object data, bool prepare)
 		{
 			using (var connection = new MySqlConnection(AppConfig.ConnectionString + ";IgnorePrepare=false"))
 			{
@@ -428,11 +409,26 @@ create table insert_mysql_blob(
 
 				using (var cmd = new MySqlCommand("insert into insert_mysql_blob(value) values(@data);", connection))
 				{
-					cmd.Parameters.AddWithValue("@data", new ReadOnlyMemory<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, 1, 6));
-					cmd.Prepare();
+					cmd.Parameters.AddWithValue("@data", data);
+					if (prepare)
+						cmd.Prepare();
 					cmd.ExecuteNonQuery();
 				}
 				Assert.Equal(new byte[] { 1, 2, 3, 4, 5, 6 }, connection.Query<byte[]>(@"select value from insert_mysql_blob;").Single());
+			}
+		}
+
+		public static IEnumerable<object[]> GetBlobs()
+		{
+			foreach (var blob in new object[]
+			{
+				new byte[] { 1, 2, 3, 4, 5, 6 },
+				new ReadOnlyMemory<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, 1, 6),
+				new Memory<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, 1, 6),
+			})
+			{
+				yield return new[] { blob, false };
+				yield return new[] { blob, true };
 			}
 		}
 #endif
