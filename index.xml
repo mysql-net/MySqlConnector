@@ -151,7 +151,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.50.0  Add MySqlClientFactory.Register() for integration with DbProviderFactories in netcoreapp2.1: #526. Use more efficient &amp;ldquo;Reset Connection&amp;rdquo; for MariaDB 10.2.4 and later: #613. Ignore MySqlConnection.EnlistTransaction called more than once for the same transaction: #619. MySqlConnection.ConnectionString will always be coerced from null to the empty string. Use ReadOnlySpan&amp;lt;byte&amp;gt; in more places when parsing server responses. Fix multiple NullReferenceException errors that could occur in edge cases.  0.49.3  Use correct isolation level when starting a transaction for System.</description>
+      <description>Version History 0.51.0  Set MySqlException.Number to MySqlErrorCode.UnableToConnectToHost in more situations when connecting times out: #622. Improve handling of MySqlConnection.Close() within TransactionScope: #620. Allow MySqlParameter.Value to be a ReadOnlyMemory&amp;lt;byte&amp;gt;: #624.  0.50.0  Add MySqlClientFactory.Register() for integration with DbProviderFactories in netcoreapp2.1: #526. Use more efficient &amp;ldquo;Reset Connection&amp;rdquo; for MariaDB 10.2.4 and later: #613. Ignore MySqlConnection.EnlistTransaction called more than once for the same transaction: #619. MySqlConnection.ConnectionString will always be coerced from null to the empty string.</description>
     </item>
     
     <item>

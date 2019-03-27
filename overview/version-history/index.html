@@ -56,6 +56,14 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-51-0">0.51.0</h3>
+
+<ul>
+<li>Set <code>MySqlException.Number</code> to <code>MySqlErrorCode.UnableToConnectToHost</code> in more situations when connecting times out: <a href="https://github.com/mysql-net/MySqlConnector/pull/622">#622</a>.</li>
+<li>Improve handling of <code>MySqlConnection.Close()</code> within <code>TransactionScope</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/620">#620</a>.</li>
+<li>Allow <code>MySqlParameter.Value</code> to be a <code>ReadOnlyMemory&lt;byte&gt;</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/624">#624</a>.</li>
+</ul>
+
 <h3 id="0-50-0">0.50.0</h3>
 
 <ul>
