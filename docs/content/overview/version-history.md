@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.51.0
+
+* Set `MySqlException.Number` to `MySqlErrorCode.UnableToConnectToHost` in more situations when connecting times out: [#622](https://github.com/mysql-net/MySqlConnector/pull/622).
+* Improve handling of `MySqlConnection.Close()` within `TransactionScope`: [#620](https://github.com/mysql-net/MySqlConnector/issues/620).
+* Allow `MySqlParameter.Value` to be a `ReadOnlyMemory<byte>`: [#624](https://github.com/mysql-net/MySqlConnector/issues/624).
+
 ### 0.50.0
 
 * Add `MySqlClientFactory.Register()` for integration with `DbProviderFactories` in `netcoreapp2.1`: [#526](https://github.com/mysql-net/MySqlConnector/issues/526).
