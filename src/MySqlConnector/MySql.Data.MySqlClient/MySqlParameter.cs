@@ -254,11 +254,13 @@ namespace MySql.Data.MySqlClient
 			{
 				writer.WriteString(ulongValue);
 			}
-			else if (Value is byte[] byteArrayValue)
+			else if (Value is byte[] || Value is ReadOnlyMemory<byte>)
 			{
+				var memoryValue = Value is byte[] byteArrayValue ? byteArrayValue.AsSpan() : ((ReadOnlyMemory<byte>) Value).Span;
+
 				// determine the number of bytes to be written
-				var length = byteArrayValue.Length + s_binaryBytes.Length + 1;
-				foreach (var by in byteArrayValue)
+				var length = memoryValue.Length + s_binaryBytes.Length + 1;
+				foreach (var by in memoryValue)
 				{
 					if (by == 0x27 || by == 0x5C)
 						length++;
@@ -267,7 +269,7 @@ namespace MySql.Data.MySqlClient
 				var span = writer.GetSpan(length);
 				s_binaryBytes.CopyTo(span);
 				var index = s_binaryBytes.Length;
-				foreach (var by in byteArrayValue)
+				foreach (var by in memoryValue)
 				{
 					if (by == 0x27 || by == 0x5C)
 						span[index++] = 0x5C;

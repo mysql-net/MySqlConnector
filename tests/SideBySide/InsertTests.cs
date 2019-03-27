@@ -391,6 +391,30 @@ create table insert_mysql_set(
 			Assert.Equal(new[] { "one", "one,two", "one,four", "one,two,four" }, m_database.Connection.Query<string>(@"select value from insert_mysql_set where find_in_set('one', value) order by rowid"));
 		}
 
+
+#if !BASELINE
+		[Fact]
+		public void InsertReadOnlyMemory()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				connection.Execute(@"drop table if exists insert_mysql_blob;
+create table insert_mysql_blob(
+	rowid integer not null primary key auto_increment,
+	value mediumblob null
+);");
+
+				using (var cmd = new MySqlCommand("insert into insert_mysql_blob(value) values(@data);", connection))
+				{
+					cmd.Parameters.AddWithValue("@data", new ReadOnlyMemory<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, 1, 6));
+					cmd.ExecuteNonQuery();
+				}
+				Assert.Equal(new byte[] { 1, 2, 3, 4, 5, 6 }, connection.Query<byte[]>(@"select value from insert_mysql_blob;").Single());
+			}
+		}
+#endif
+
 		readonly DatabaseFixture m_database;
 	}
 }
