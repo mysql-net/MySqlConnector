@@ -380,7 +380,7 @@ create table insert_mysql_enums(
 		}
 
 		[Fact]
-		public void InsertMySqSet()
+		public void InsertMySqlSet()
 		{
 			m_database.Connection.Execute(@"drop table if exists insert_mysql_set;
 create table insert_mysql_set(
