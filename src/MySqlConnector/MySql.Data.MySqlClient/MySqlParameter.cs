@@ -457,6 +457,11 @@ namespace MySql.Data.MySqlClient
 				writer.WriteLengthEncodedInteger(unchecked((ulong) byteArrayValue.Length));
 				writer.Write(byteArrayValue);
 			}
+			else if (Value is ReadOnlyMemory<byte> readOnlyMemoryValue)
+			{
+				writer.WriteLengthEncodedInteger(unchecked((ulong) readOnlyMemoryValue.Length));
+				writer.Write(readOnlyMemoryValue.Span);
+			}
 			else if (Value is float floatValue)
 			{
 				writer.Write(BitConverter.GetBytes(floatValue));
