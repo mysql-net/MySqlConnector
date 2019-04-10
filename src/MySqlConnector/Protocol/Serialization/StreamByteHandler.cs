@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
@@ -38,7 +39,7 @@ namespace MySqlConnector.Protocol.Serialization
 				}
 				catch (Exception ex)
 				{
-					if (ex is IOException && RemainingTimeout != Constants.InfiniteTimeout)
+					if (RemainingTimeout != Constants.InfiniteTimeout && ex is IOException ioException && ioException.InnerException is SocketException socketException && socketException.SocketErrorCode == SocketError.TimedOut)
 						return ValueTaskExtensions.FromException<int>(MySqlException.CreateForTimeout(ex));
 					return ValueTaskExtensions.FromException<int>(ex);
 				}
