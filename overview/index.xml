@@ -49,7 +49,7 @@ Manually Step 1: Add MySqlConnector to the dependencies in your csproj file:
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.51.1  Add support for Memory&amp;lt;byte&amp;gt; and ArraySegment&amp;lt;byte&amp;gt; as MySqlParameter.Value values. Fix exception when setting MySqlParameter.Value to ReadOnlyMemory&amp;lt;byte&amp;gt; when using prepared commands.  0.51.0  Set MySqlException.Number to MySqlErrorCode.UnableToConnectToHost in more situations when connecting times out: #622. Improve handling of MySqlConnection.Close() within TransactionScope: #620. Allow MySqlParameter.Value to be a ReadOnlyMemory&amp;lt;byte&amp;gt;: #624. Thanks to mguinness for contributions to this release.  0.50.0  Add MySqlClientFactory.Register() for integration with DbProviderFactories in netcoreapp2.</description>
+      <description>Version History 0.52.0  Potentially breaking Change default connection collation from utf8mb4_general_ci to the server&amp;rsquo;s default for utf8mb4: #626.  This updates a change made in 0.48.0.  Fix &amp;ldquo;Command timeout&amp;rdquo; exception being thrown when there wasn&amp;rsquo;t a command timeout: #628.  0.51.1  Add support for Memory&amp;lt;byte&amp;gt; and ArraySegment&amp;lt;byte&amp;gt; as MySqlParameter.Value values. Fix exception when setting MySqlParameter.Value to ReadOnlyMemory&amp;lt;byte&amp;gt; when using prepared commands.  0.51.0  Set MySqlException.Number to MySqlErrorCode.</description>
     </item>
     
     <item>

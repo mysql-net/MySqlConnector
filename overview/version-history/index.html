@@ -56,6 +56,17 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-52-0">0.52.0</h3>
+
+<ul>
+<li><strong>Potentially breaking</strong> Change default connection collation from <code>utf8mb4_general_ci</code> to the server&rsquo;s default for <code>utf8mb4</code>: <a href="https://github.com/mysql-net/MySqlConnector/issues/626">#626</a>.
+
+<ul>
+<li>This updates a change made in 0.48.0.</li>
+</ul></li>
+<li>Fix &ldquo;Command timeout&rdquo; exception being thrown when there wasn&rsquo;t a command timeout: <a href="https://github.com/mysql-net/MySqlConnector/issues/628">#628</a>.</li>
+</ul>
+
 <h3 id="0-51-1">0.51.1</h3>
 
 <ul>
