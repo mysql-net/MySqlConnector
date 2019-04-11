@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.52.0
+
+* **Potentially breaking** Change default connection collation from `utf8mb4_general_ci` to the server's default for `utf8mb4`: [#626](https://github.com/mysql-net/MySqlConnector/issues/626).
+  * This updates a change made in 0.48.0.
+* Fix "Command timeout" exception being thrown when there wasn't a command timeout: [#628](https://github.com/mysql-net/MySqlConnector/issues/628).
+
 ### 0.51.1
 
 * Add support for `Memory<byte>` and `ArraySegment<byte>` as `MySqlParameter.Value` values.
