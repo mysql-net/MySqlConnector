@@ -1,4 +1,6 @@
+using System.Linq;
 using Dapper;
+using MySql.Data.MySqlClient;
 #if !BASELINE
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
@@ -30,6 +32,67 @@ namespace SideBySide
 			}
 		}
 #endif
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void IllegalMixOfCollations(bool reopenConnection)
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.AllowUserVariables = true;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+				connection.Execute(@"
+DROP TABLE IF EXISTS mix_collations;
+CREATE TABLE mix_collations (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  test_col varchar(10) DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY ix_test (test_col)
+);
+INSERT INTO mix_collations (test_col)
+VALUES ('a'), ('b'), ('c'), ('d'), ('e'), ('f'), ('g'), ('h'), ('i'), ('j');");
+
+				if (reopenConnection)
+				{
+					connection.Close();
+					connection.Open();
+				}
+
+				using (var reader = connection.ExecuteReader(@"
+				SET @param = 'B';
+				SELECT * FROM mix_collations a WHERE a.test_col = @param"))
+				{
+					Assert.True(reader.Read());
+				}
+			}
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void CollationConnection(bool reopenConnection)
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+#if BASELINE
+			csb.CharacterSet = "utf8mb4";
+#endif
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+
+				if (reopenConnection)
+				{
+					connection.Close();
+					connection.Open();
+				}
+
+				var collation = connection.Query<string>(@"select @@collation_connection;").Single();
+				var expected = connection.ServerVersion.StartsWith("8.0") ? "utf8mb4_0900_ai_ci" : "utf8mb4_general_ci";
+				Assert.Equal(expected, collation);
+			}
+		}
 
 		readonly DatabaseFixture m_database;
 	}

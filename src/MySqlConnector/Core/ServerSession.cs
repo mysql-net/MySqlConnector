@@ -314,6 +314,7 @@ namespace MySqlConnector.Core
 					m_supportsSessionTrack = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SessionTrack) != 0;
 					var serverSupportsSsl = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Ssl) != 0;
 					m_characterSet = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? CharacterSet.Utf8Mb4GeneralCaseInsensitive : CharacterSet.Utf8GeneralCaseInsensitive;
+					m_setNamesPayload = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? s_setNamesUtf8mb4Payload : s_setNamesUtf8Payload;
 
 					Log.Info("Session{0} made connection; ServerVersion={1}; ConnectionId={2}; Compression={3}; Attributes={4}; DeprecateEof={5}; Ssl={6}; SessionTrack={7}",
 						m_logArguments[0], ServerVersion.OriginalString, ConnectionId,
@@ -370,6 +371,11 @@ namespace MySqlConnector.Core
 				if (m_useCompression)
 					m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
 
+				// set 'collation_connection' to the server default
+				await SendAsync(m_setNamesPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				OkPayload.Create(payload.AsSpan(), SupportsDeprecateEof, SupportsSessionTrack);
+
 				if (ShouldGetRealServerDetails())
 					await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			}
@@ -394,16 +400,12 @@ namespace MySqlConnector.Core
 				// clear all prepared statements; resetting the connection will clear them on the server
 				ClearPreparedStatements();
 
+				PayloadData payload;
 				if (DatabaseOverride is null && (ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0 || ServerVersion.MariaDbVersion?.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0))
 				{
 					m_logArguments[1] = ServerVersion.OriginalString;
 					Log.Debug("Session{0} ServerVersion={1} supports reset connection; sending reset connection request", m_logArguments);
 					await SendAsync(ResetConnectionPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
-					var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Create(payload.AsSpan(), SupportsDeprecateEof, SupportsSessionTrack);
-
-					// the "reset connection" packet also resets the connection charset, so we need to change that back to our default
-					await SendAsync(s_setNamesUtf8mb4Payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					OkPayload.Create(payload.AsSpan(), SupportsDeprecateEof, SupportsSessionTrack);
 				}
@@ -424,7 +426,7 @@ namespace MySqlConnector.Core
 					var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
 					using (var changeUserPayload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
 						await SendAsync(changeUserPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
-					var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 					{
 						Log.Debug("Session{0} optimistic reauthentication failed; logging in again", m_logArguments);
@@ -432,6 +434,11 @@ namespace MySqlConnector.Core
 					}
 					OkPayload.Create(payload.AsSpan(), SupportsDeprecateEof, SupportsSessionTrack);
 				}
+
+				// set 'collation_connection' to the server default
+				await SendAsync(m_setNamesPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				OkPayload.Create(payload.AsSpan(), SupportsDeprecateEof, SupportsSessionTrack);
 
 				return true;
 			}
@@ -1393,7 +1400,8 @@ namespace MySqlConnector.Core
 		static ReadOnlySpan<byte> BeginCertificateBytes => new byte[] { 45, 45, 45, 45, 45, 66, 69, 71, 73, 78, 32, 67, 69, 82, 84, 73, 70, 73, 67, 65, 84, 69, 45, 45, 45, 45, 45 }; // -----BEGIN CERTIFICATE-----
 		static int s_lastId;
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ServerSession));
-		static readonly PayloadData s_setNamesUtf8mb4Payload = QueryPayload.Create("SET NAMES utf8mb4 COLLATE utf8mb4_general_ci;");
+		static readonly PayloadData s_setNamesUtf8Payload = QueryPayload.Create("SET NAMES utf8;");
+		static readonly PayloadData s_setNamesUtf8mb4Payload = QueryPayload.Create("SET NAMES utf8mb4;");
 
 		readonly object m_lock;
 		readonly object[] m_logArguments;
@@ -1412,6 +1420,7 @@ namespace MySqlConnector.Core
 		bool m_supportsDeprecateEof;
 		bool m_supportsSessionTrack;
 		CharacterSet m_characterSet;
+		PayloadData m_setNamesPayload;
 		Dictionary<string, PreparedStatements> m_preparedStatements;
 	}
 }

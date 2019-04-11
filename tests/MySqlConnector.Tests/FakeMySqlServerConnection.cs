@@ -65,7 +65,7 @@ namespace MySqlConnector.Tests
 						case CommandKind.Query:
 							var query = Encoding.UTF8.GetString(bytes, 1, bytes.Length - 1);
 							Match match;
-							if (query == "SET NAMES utf8mb4 COLLATE utf8mb4_general_ci;")
+							if (query == "SET NAMES utf8mb4;")
 							{
 								await SendAsync(stream, 1, WriteOk);
 							}
