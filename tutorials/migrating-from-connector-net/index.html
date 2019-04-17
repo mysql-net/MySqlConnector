@@ -75,6 +75,12 @@
     (when not using a secure connection). It’s <code>false</code> by default to avoid disclosing the password to a malicious proxy.</td>
   </tr>
   <tr>
+    <td><code>CharacterSet</code>, <code>CharSet</code></td>
+    <td>Ignored; <code>utf8mb4</code> is always used</td>
+    <td>(server-defined)</td>
+    <td>MySqlConnector always uses <code>utf8mb4</code> to send and receive strings from MySQL Server. This option may be specified (for backwards compatibility) but it will be ignored.</td>
+  </tr>
+  <tr>
     <td><code>ConnectionReset</code></td>
     <td>Default is <code>true</code></td>
     <td>Default is <code>false</code></td>
