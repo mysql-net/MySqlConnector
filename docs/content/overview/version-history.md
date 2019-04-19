@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.53.0
+
+* **Breaking** `MySqlDataReader.GetTextReader()` will throw an `InvalidCastException` if the field value is NULL. Previously, it would return a `StringReader` wrapping an empty string.
+* Add `MySqlDataReader.GetTextReader(string name)`.
+* Implement `MySqlDataReader.GetFieldValue<T>` for `TextReader` and `Stream`.
+
 ### 0.52.0
 
 * **Potentially breaking** Change default connection collation from `utf8mb4_general_ci` to the server's default for `utf8mb4`: [#626](https://github.com/mysql-net/MySqlConnector/issues/626).
