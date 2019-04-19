@@ -17,9 +17,11 @@ using Xunit;
 #if BASELINE
 using GetValueWhenNullException = System.Data.SqlTypes.SqlNullValueException;
 using GetGuidWhenNullException = MySql.Data.MySqlClient.MySqlException;
+using GetBytesWhenNullException = System.NullReferenceException;
 #else
 using GetValueWhenNullException = System.InvalidCastException;
 using GetGuidWhenNullException = System.InvalidCastException;
+using GetBytesWhenNullException = System.InvalidCastException;
 #endif
 
 namespace SideBySide
@@ -824,13 +826,20 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 			if (data.Length < padLength)
 				Array.Resize(ref data, padLength);
 
-#if BASELINE
-			DoQuery<NullReferenceException>("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, GetBytes);
-			// https://bugs.mysql.com/bug.php?id=93374
-			// DoQuery<NullReferenceException>("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, GetStreamBytes);
-#else
-			DoQuery<InvalidCastException>("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, GetBytes);
-			DoQuery<InvalidCastException>("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, GetStreamBytes);
+			DoQuery<GetBytesWhenNullException>("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, GetBytes);
+#if !BASELINE // https://bugs.mysql.com/bug.php?id=93374
+			DoQuery("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, GetStreamBytes);
+			DoQuery("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, reader => reader.GetStream(0), matchesDefaultType: false, assertEqual: (e, a) =>
+			{
+				using (var stream = (Stream) a)
+				{
+					Assert.True(stream.CanRead);
+					Assert.False(stream.CanWrite);
+					var bytes = new byte[stream.Length];
+					Assert.Equal(bytes.Length, stream.Read(bytes, 0, bytes.Length));
+					Assert.Equal(e, bytes);
+				}
+			}, getFieldValueType: typeof(Stream));
 #endif
 		}
 

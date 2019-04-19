@@ -268,6 +268,8 @@ namespace MySql.Data.MySqlClient
 				return (T) Convert.ChangeType(GetDateTimeOffset(ordinal), typeof(T));
 			if (typeof(T) == typeof(TextReader) || typeof(T) == typeof(StringReader))
 				return (T) (object) GetTextReader(ordinal);
+			if (typeof(T) == typeof(Stream))
+				return (T) (object) GetStream(ordinal);
 
 			return base.GetFieldValue<T>(ordinal);
 		}
