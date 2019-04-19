@@ -212,6 +212,9 @@ namespace MySql.Data.MySqlClient
 		public override Stream GetStream(int ordinal) => GetResultSet().GetCurrentRow().GetStream(ordinal);
 		public Stream GetStream(string name) => GetStream(GetOrdinal(name));
 
+		public override TextReader GetTextReader(int ordinal) => new StringReader(GetString(ordinal));
+		public TextReader GetTextReader(string name) => new StringReader(GetString(name));
+
 		public override string GetString(int ordinal) => GetResultSet().GetCurrentRow().GetString(ordinal);
 		public string GetString(string name) => GetString(GetOrdinal(name));
 
@@ -263,6 +266,8 @@ namespace MySql.Data.MySqlClient
 		{
 			if (typeof(T) == typeof(DateTimeOffset))
 				return (T) Convert.ChangeType(GetDateTimeOffset(ordinal), typeof(T));
+			if (typeof(T) == typeof(TextReader) || typeof(T) == typeof(StringReader))
+				return (T) (object) GetTextReader(ordinal);
 
 			return base.GetFieldValue<T>(ordinal);
 		}

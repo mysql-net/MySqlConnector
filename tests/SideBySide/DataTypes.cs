@@ -1,6 +1,7 @@
 using System;
 using System.Data.Common;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -343,6 +344,13 @@ namespace SideBySide
 		public void QueryString(string column, string[] expected)
 		{
 			DoQuery("strings", column, "VARCHAR", expected, reader => reader.GetString(0));
+#if !BASELINE
+			DoQuery("strings", column, "VARCHAR", expected, reader => reader.GetTextReader(0), matchesDefaultType: false, assertEqual: (e, a) =>
+			{
+				using (var actualReader = (TextReader) a)
+					Assert.Equal(e, actualReader.ReadToEnd());
+			}, getFieldValueType: typeof(TextReader));
+#endif
 		}
 		const string c_251ByteString = "This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating \"this field is null\". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.";
 
@@ -1345,9 +1353,11 @@ create table schema_table({createColumn});");
 			object baselineCoercedNullValue = null,
 			bool omitWhereTest = false,
 			bool matchesDefaultType = true,
-			MySqlConnection connection = null)
+			MySqlConnection connection = null,
+			Action<object, object> assertEqual = null,
+			Type getFieldValueType = null)
 		{
-			DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, baselineCoercedNullValue, omitWhereTest, matchesDefaultType, connection);
+			DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, baselineCoercedNullValue, omitWhereTest, matchesDefaultType, connection, assertEqual, getFieldValueType);
 		}
 
 		// NOTE: baselineCoercedNullValue is to work around inconsistencies in mysql-connector-net; DBNull.Value will
@@ -1361,10 +1371,13 @@ create table schema_table({createColumn});");
 			object baselineCoercedNullValue = null,
 			bool omitWhereTest = false,
 			bool matchesDefaultType = true,
-			MySqlConnection connection = null)
+			MySqlConnection connection = null,
+			Action<object, object> assertEqual = null,
+			Type getFieldValueType = null)
 			where TException : Exception
 		{
 			connection = connection ?? Connection;
+			assertEqual = assertEqual ?? Assert.Equal;
 			using (var cmd = connection.CreateCommand())
 			{
 				cmd.CommandText = $"select {column} from datatypes_{table} order by rowid";
@@ -1389,12 +1402,12 @@ create table schema_table({createColumn});");
 						}
 						else
 						{
-							Assert.Equal(value, getValue(reader));
+							assertEqual(value, getValue(reader));
 
 							// test `reader.GetValue` and `reader.GetFieldType` if value matches default type
 							if (matchesDefaultType)
 							{
-								Assert.Equal(value, reader.GetValue(0));
+								assertEqual(value, reader.GetValue(0));
 								Assert.Equal(value.GetType(), reader.GetFieldType(0));
 								Assert.Equal(value.GetType(), reader.GetFieldType(column.Replace("`", "")));
 							}
@@ -1402,13 +1415,13 @@ create table schema_table({createColumn});");
 							// test `reader.GetFieldValue<value.GetType()>`
 							var syncMethod = typeof(MySqlDataReader)
 								.GetMethod("GetFieldValue")
-								.MakeGenericMethod(value.GetType());
-							Assert.Equal(value, syncMethod.Invoke(reader, new object[] { 0 }));
+								.MakeGenericMethod(getFieldValueType ?? value.GetType());
+							assertEqual(value, syncMethod.Invoke(reader, new object[] { 0 }));
 
 							// test `reader.GetFieldValueAsync<value.GetType()>`
 							var asyncMethod = typeof(MySqlDataReader)
 								.GetMethod("GetFieldValueAsync", new[] { typeof(int) })
-								.MakeGenericMethod(value.GetType());
+								.MakeGenericMethod(getFieldValueType ?? value.GetType());
 							var asyncMethodValue = asyncMethod.Invoke(reader, new object[] { 0 });
 							var asyncMethodGetAwaiter = asyncMethodValue.GetType()
 								.GetMethod("GetAwaiter");
@@ -1416,7 +1429,7 @@ create table schema_table({createColumn});");
 							var asyncMethodGetResult = asyncMethodGetAwaiterValue.GetType()
 								.GetMethod("GetResult");
 							var asyncMethodGetResultValue = asyncMethodGetResult.Invoke(asyncMethodGetAwaiterValue, new object[] { });
-							Assert.Equal(value, asyncMethodGetResultValue);
+							assertEqual(value, asyncMethodGetResultValue);
 						}
 					}
 					Assert.False(reader.Read());
