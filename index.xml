@@ -151,7 +151,7 @@ constructor accepting command SQL, connection object, and transaction object</de
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.52.0  Potentially breaking Change default connection collation from utf8mb4_general_ci to the server&amp;rsquo;s default for utf8mb4: #626.  This updates a change made in 0.48.0.  Fix &amp;ldquo;Command timeout&amp;rdquo; exception being thrown when there wasn&amp;rsquo;t a command timeout: #628.  0.51.1  Add support for Memory&amp;lt;byte&amp;gt; and ArraySegment&amp;lt;byte&amp;gt; as MySqlParameter.Value values. Fix exception when setting MySqlParameter.Value to ReadOnlyMemory&amp;lt;byte&amp;gt; when using prepared commands.  0.51.0  Set MySqlException.Number to MySqlErrorCode.</description>
+      <description>Version History 0.53.0  Breaking MySqlDataReader.GetTextReader() will throw an InvalidCastException if the field value is NULL. Previously, it would return a StringReader wrapping an empty string. Add MySqlDataReader.GetTextReader(string name). Implement MySqlDataReader.GetFieldValue&amp;lt;T&amp;gt; for TextReader and Stream.  0.52.0  Potentially breaking Change default connection collation from utf8mb4_general_ci to the server&amp;rsquo;s default for utf8mb4: #626.  This updates a change made in 0.48.0.  Fix &amp;ldquo;Command timeout&amp;rdquo; exception being thrown when there wasn&amp;rsquo;t a command timeout: #628.</description>
     </item>
     
     <item>

@@ -56,6 +56,14 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-53-0">0.53.0</h3>
+
+<ul>
+<li><strong>Breaking</strong> <code>MySqlDataReader.GetTextReader()</code> will throw an <code>InvalidCastException</code> if the field value is NULL. Previously, it would return a <code>StringReader</code> wrapping an empty string.</li>
+<li>Add <code>MySqlDataReader.GetTextReader(string name)</code>.</li>
+<li>Implement <code>MySqlDataReader.GetFieldValue&lt;T&gt;</code> for <code>TextReader</code> and <code>Stream</code>.</li>
+</ul>
+
 <h3 id="0-52-0">0.52.0</h3>
 
 <ul>
