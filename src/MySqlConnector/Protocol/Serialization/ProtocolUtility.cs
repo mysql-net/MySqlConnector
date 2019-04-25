@@ -369,6 +369,7 @@ namespace MySqlConnector.Protocol.Serialization
 			case CharacterSet.Utf8Mb4Uca900AccentSensitiveCaseInsensitive:
 			case CharacterSet.Utf8Mb4RussianUca900AccentInsensitiveCaseInsensitive:
 			case CharacterSet.Utf8Mb4RussianUca900AccentSensitiveCaseSensitive:
+			case CharacterSet.Utf8Mb4ChineseUca900AccentSensitiveCaseSensitive:
 			case CharacterSet.Utf8Mb4CroatianCaseInsensitiveMariaDb:
 			case CharacterSet.Utf8Mb4MyanmarCaseInsensitive:
 			case CharacterSet.Utf8Mb4ThaiUnicode520Weight2:

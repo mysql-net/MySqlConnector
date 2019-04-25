@@ -3,7 +3,7 @@ namespace MySqlConnector.Protocol
 	/// <summary>
 	/// MySQL character set codes.
 	/// </summary>
-	/// <remarks>Obtained from <c>SELECT id, collation_name FROM information_schema.collations ORDER BY id;</c> on MySQL 8.0.3.</remarks>
+	/// <remarks>Obtained from <c>SELECT id, collation_name FROM information_schema.collations ORDER BY id;</c> on MySQL 8.0.16.</remarks>
 	internal enum CharacterSet : ushort
 	{
 		None = 0,
@@ -277,6 +277,7 @@ namespace MySqlConnector.Protocol
 		Utf8Mb4Uca900AccentSensitiveCaseInsensitive = 305,
 		Utf8Mb4RussianUca900AccentInsensitiveCaseInsensitive = 306,
 		Utf8Mb4RussianUca900AccentSensitiveCaseSensitive = 307,
+		Utf8Mb4ChineseUca900AccentSensitiveCaseSensitive = 308,
 		Utf8CroatianCaseInsensitiveMariaDb = 576,
 		Utf8MyanmarCaseInsensitive = 577,
 		Utf8ThaiUnicode520Weight2 = 578,
