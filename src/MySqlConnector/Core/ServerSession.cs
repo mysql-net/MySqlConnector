@@ -1130,7 +1130,7 @@ namespace MySqlConnector.Core
 		private bool ShouldGetRealServerDetails()
 		{
 			// currently hardcoded to the version returned by the Azure Database for MySQL proxy
-			return ServerVersion.OriginalString == "5.6.26.0";
+			return ServerVersion.OriginalString == "5.6.26.0" || ServerVersion.OriginalString == "5.6.39.0";
 		}
 
 		private async Task GetRealServerDetailsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
