@@ -49,7 +49,7 @@ Manually Step 1: Add MySqlConnector to the dependencies in your csproj file:
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.53.0  Breaking MySqlDataReader.GetTextReader() will throw an InvalidCastException if the field value is NULL. Previously, it would return a StringReader wrapping an empty string. Add MySqlDataReader.GetTextReader(string name). Implement MySqlDataReader.GetFieldValue&amp;lt;T&amp;gt; for TextReader and Stream.  0.52.0  Potentially breaking Change default connection collation from utf8mb4_general_ci to the server&amp;rsquo;s default for utf8mb4: #626.  This updates a change made in 0.48.0.  Fix &amp;ldquo;Command timeout&amp;rdquo; exception being thrown when there wasn&amp;rsquo;t a command timeout: #628.</description>
+      <description>Version History 0.54.0  Implement batch updates in MySqlDataAdapter: #635.  See Performing Batch Operations Using DataAdapters for information about the API.  Improve compatibility with latest Azure Database for MySQL changes.  0.53.0  Breaking MySqlDataReader.GetTextReader() will throw an InvalidCastException if the field value is NULL. Previously, it would return a StringReader wrapping an empty string. Add MySqlDataReader.GetTextReader(string name). Implement MySqlDataReader.GetFieldValue&amp;lt;T&amp;gt; for TextReader and Stream.  0.52.0  Potentially breaking Change default connection collation from utf8mb4_general_ci to the server&amp;rsquo;s default for utf8mb4: #626.</description>
     </item>
     
     <item>
