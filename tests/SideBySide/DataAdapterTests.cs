@@ -191,6 +191,72 @@ insert into data_adapter(int_value, text_value) values
 			}
 		}
 
+		[Fact]
+		public void BatchUpdate()
+		{
+			using (var ds = new DataSet())
+			using (var da = new MySqlDataAdapter("SELECT * FROM data_adapter", m_connection))
+			{
+				da.Fill(ds);
+
+				da.UpdateCommand = new MySqlCommand("UPDATE data_adapter SET int_value=@int, text_value=@text WHERE id=@id", m_connection)
+				{
+					Parameters =
+					{
+						new MySqlParameter("@int", MySqlDbType.Int32) { Direction = ParameterDirection.Input, SourceColumn = "int_value" },
+						new MySqlParameter("@text", MySqlDbType.String) { Direction = ParameterDirection.Input, SourceColumn = "text_value" },
+						new MySqlParameter("@id", MySqlDbType.Int64) { Direction = ParameterDirection.Input, SourceColumn = "id" },
+					},
+					UpdatedRowSource = UpdateRowSource.None,
+				};
+
+				da.UpdateBatchSize = 10;
+
+				var dt = ds.Tables[0];
+				dt.Rows[0][1] = 2;
+				dt.Rows[0][2] = "two";
+				dt.Rows[1][1] = 3;
+				dt.Rows[1][2] = "three";
+				dt.Rows[2][1] = 4;
+				dt.Rows[2][2] = "four";
+
+				da.Update(ds);
+			}
+
+			Assert.Equal(new[] { "two", "three", "four" }, m_connection.Query<string>("SELECT text_value FROM data_adapter ORDER BY id"));
+		}
+
+
+		[Fact]
+		public void BatchInsert()
+		{
+			using (var ds = new DataSet())
+			using (var da = new MySqlDataAdapter("SELECT * FROM data_adapter", m_connection))
+			{
+				da.Fill(ds);
+
+				da.InsertCommand = new MySqlCommand("INSERT INTO data_adapter(int_value, text_value) VALUES(@int, @text);", m_connection)
+				{
+					Parameters =
+					{
+						new MySqlParameter("@int", MySqlDbType.Int32) { Direction = ParameterDirection.Input, SourceColumn = "int_value" },
+						new MySqlParameter("@text", MySqlDbType.String) { Direction = ParameterDirection.Input, SourceColumn = "text_value" },
+					},
+					UpdatedRowSource = UpdateRowSource.None,
+				};
+	
+				da.UpdateBatchSize = 10;
+
+				var dt = ds.Tables[0];
+				dt.Rows.Add(0, 2, "two");
+				dt.Rows.Add(0, 3, "three");
+				dt.Rows.Add(0, 4, "four");
+
+				da.Update(ds);
+			}
+
+			Assert.Equal(new[] { null, "", "one", "two", "three", "four" }, m_connection.Query<string>("SELECT text_value FROM data_adapter ORDER BY id"));
+		}
 		readonly MySqlConnection m_connection;
 	}
 }
