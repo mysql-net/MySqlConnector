@@ -1,5 +1,5 @@
 ---
-lastmod: 2018-10-12
+lastmod: 2019-05-11
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,12 @@ weight: 30
 
 Version History
 ===============
+
+### 0.54.0
+
+* Implement batch updates in `MySqlDataAdapter`: [#635](https://github.com/mysql-net/MySqlConnector/issues/635).
+  * See [Performing Batch Operations Using DataAdapters](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/performing-batch-operations-using-dataadapters) for information about the API.
+* Improve compatibility with latest Azure Database for MySQL changes.
 
 ### 0.53.0
 
