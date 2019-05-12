@@ -109,6 +109,16 @@
 <p>Some connection string options that are supported in Connector/NET are not supported in MySqlConnector. For a full list of options that are
 supported in MySqlConnector, see the <a href="connection-options">Connection Options</a>.</p>
 
+<h3 id="implicit-conversions">Implicit Conversions</h3>
+
+<p>Connector/NET allows <code>MySqlDataReader.GetString()</code> to be called on many non-textual columns, and will implicitly
+convert the value to a <code>string</code> (using the current locale). This is a frequent source of locale-dependent bugs, so
+MySqlConnector follows typical ADO.NET practice (e.g., SqlClient, npgsql) and disallows this (by throwing an <code>InvalidCastException</code>).</p>
+
+<p>To fix this, use the accessor method (e.g., <code>GetInt32</code>, <code>GetDouble</code>) that matches the column type, or perform an
+explicit conversion to <code>string</code> by calling <code>GetValue(x).ToString()</code> (optionally supplying the right <code>CultureInfo</code> to use
+for formatting).</p>
+
 <h3 id="transactionscope">TransactionScope</h3>
 
 <p>MySqlConnector adds full distributed transaction support (for client code using <a href="https://docs.microsoft.com/en-us/dotnet/api/system.transactions.transaction"><code>System.Transactions.Transaction</code></a>),
