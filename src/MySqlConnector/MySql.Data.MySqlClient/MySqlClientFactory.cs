@@ -16,6 +16,10 @@ namespace MySql.Data.MySqlClient
 		public override DbDataAdapter CreateDataAdapter() => new MySqlDataAdapter();
 #endif
 
+		public DbBatch CreateBatch() => new MySqlDbBatch();
+		public DbBatchCommand CreateBatchCommand() => new MySqlDbBatchCommand();
+		public bool CanCreateBatch => true;
+
 		private MySqlClientFactory()
 		{
 		}

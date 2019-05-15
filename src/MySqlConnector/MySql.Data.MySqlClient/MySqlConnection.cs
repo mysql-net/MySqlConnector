@@ -399,6 +399,13 @@ namespace MySql.Data.MySqlClient
 
 		public event MySqlInfoMessageEventHandler InfoMessage;
 
+		public DbBatch CreateBatch() => CreateDbBatch();
+		private MySqlDbBatch CreateDbBatch() => new MySqlDbBatch(this);
+
+		public DbBatchCommand CreateBatchCommand() => CreateDbBatchCommand();
+		private MySqlDbBatchCommand CreateDbBatchCommand() => new MySqlDbBatchCommand();
+		public bool CanCreateBatch => true;
+
 		protected override void Dispose(bool disposing)
 		{
 			try
