@@ -38,7 +38,7 @@ namespace MySqlConnector.Utilities
 #else
 			unsafe
 			{
-				fixed (byte* ptr = span)
+				fixed (byte* ptr = &MemoryMarshal.GetReference(span))
 					return encoding.GetString(ptr, span.Length);
 			}
 #endif
@@ -46,8 +46,8 @@ namespace MySqlConnector.Utilities
 
 		public static unsafe void GetBytes(this Encoding encoding, ReadOnlySpan<char> chars, Span<byte> bytes)
 		{
-			fixed (char* charsPtr = chars)
-			fixed (byte* bytesPtr = bytes)
+			fixed (char* charsPtr = &MemoryMarshal.GetReference(chars))
+			fixed (byte* bytesPtr = &MemoryMarshal.GetReference(bytes))
 			{
 				encoding.GetBytes(charsPtr, chars.Length, bytesPtr, bytes.Length);
 			}
@@ -57,8 +57,8 @@ namespace MySqlConnector.Utilities
 #if NET461 || NET471 || NETSTANDARD2_0
 		public static unsafe void Convert(this Encoder encoder, ReadOnlySpan<char> chars, Span<byte> bytes, bool flush, out int charsUsed, out int bytesUsed, out bool completed)
 		{
-			fixed (char* charsPtr = chars)
-			fixed (byte* bytesPtr = bytes)
+			fixed (char* charsPtr = &MemoryMarshal.GetReference(chars))
+			fixed (byte* bytesPtr = &MemoryMarshal.GetReference(bytes))
 			{
 				// MemoryMarshal.GetNonNullPinnableReference is internal, so fake it by using an invalid but non-null pointer; this
 				// prevents Convert from throwing an exception when the output buffer is empty
