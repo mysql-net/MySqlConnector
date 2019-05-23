@@ -2,7 +2,6 @@ using System;
 using System.Buffers.Text;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Reflection;
@@ -68,106 +67,119 @@ namespace MySqlConnector.Utilities
 #endif
 
 		/// <summary>
-		/// Loads a RSA public key from a PEM string. Taken from <a href="https://stackoverflow.com/a/32243171/23633">Stack Overflow</a>.
+		/// Loads a RSA public key from a PEM string.
 		/// </summary>
 		/// <param name="publicKey">The public key, in PEM format.</param>
 		/// <returns>An RSA public key, or <c>null</c> on failure.</returns>
 		public static RSA DecodeX509PublicKey(string publicKey)
 		{
 			var x509Key = System.Convert.FromBase64String(publicKey.Replace("-----BEGIN PUBLIC KEY-----", "").Replace("-----END PUBLIC KEY-----", ""));
+			var parameters = GetKeyParameters(x509Key, false);
+			var rsa = RSA.Create();
+			rsa.ImportParameters(parameters);
+			return rsa;
+		}
 
-			// encoded OID sequence for  PKCS #1 rsaEncryption szOID_RSA_RSA = "1.2.840.113549.1.1.1"
-			byte[] seqOid = { 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00 };
+		// Derived from: https://stackoverflow.com/a/32243171/, https://stackoverflow.com/a/26978561/, http://luca.ntop.org/Teaching/Appunti/asn1.html
+		internal static RSAParameters GetKeyParameters(ReadOnlySpan<byte> data, bool isPrivate)
+		{
+			// read header (30 81 xx, or 30 82 xx xx)
+			if (data[0] != 0x30)
+				throw new FormatException("Expected 0x30 but read {0:X2}".FormatInvariant(data[0]));
+			data = data.Slice(1);
 
-			// ---------  Set up stream to read the asn.1 encoded SubjectPublicKeyInfo blob  ------
-			using (var stream = new MemoryStream(x509Key))
-			using (var reader = new BinaryReader(stream)) //wrap Memory Stream with BinaryReader for easy reading
+			if (!TryReadAsnLength(data, out var length, out var bytesConsumed))
+				throw new FormatException("Couldn't read key length");
+			data = data.Slice(bytesConsumed);
+
+			if (!isPrivate)
 			{
-				var temp = reader.ReadUInt16();
-				switch (temp)
-				{
-				case 0x8130:
-					reader.ReadByte(); //advance 1 byte
-					break;
-				case 0x8230:
-					reader.ReadInt16(); //advance 2 bytes
-					break;
-				default:
-					throw new FormatException("Expected 0x8130 or 0x8230 but read {0:X4}".FormatInvariant(temp));
-				}
+				if (!data.Slice(0, s_rsaOid.Length).SequenceEqual(s_rsaOid))
+					throw new FormatException("Expected RSA OID but read {0}".FormatInvariant(BitConverter.ToString(data.Slice(0, 15).ToArray())));
+				data = data.Slice(s_rsaOid.Length);
 
-				var seq = reader.ReadBytes(15);
-				if (!seq.SequenceEqual(seqOid)) //make sure Sequence for OID is correct
-					throw new FormatException("Expected RSA OID but read {0}".FormatInvariant(BitConverter.ToString(seq)));
+				// BIT STRING (0x03) followed by length
+				if (data[0] != 0x03)
+					throw new FormatException("Expected 0x03 but read {0:X2}".FormatInvariant(data[0]));
+				data = data.Slice(1);
 
-				temp = reader.ReadUInt16();
-				if (temp == 0x8103) //data read as little endian order (actual data order for Bit String is 03 81)
-					reader.ReadByte(); //advance 1 byte
-				else if (temp == 0x8203)
-					reader.ReadInt16(); //advance 2 bytes
-				else
-					throw new FormatException("Expected 0x8130 or 0x8230 but read {0:X4}".FormatInvariant(temp));
+				if (!TryReadAsnLength(data, out length, out bytesConsumed))
+					throw new FormatException("Couldn't read length");
+				data = data.Slice(bytesConsumed);
 
-				var bt = reader.ReadByte();
-				if (bt != 0x00) //expect null byte next
-					throw new FormatException("Expected 0x00 but read {0:X2}".FormatInvariant(bt));
+				// skip NULL byte
+				if (data[0] != 0x00)
+					throw new FormatException("Expected 0x00 but read {0:X2}".FormatInvariant(data[0]));
+				data = data.Slice(1);
 
-				temp = reader.ReadUInt16();
-				if (temp == 0x8130) //data read as little endian order (actual data order for Sequence is 30 81)
-					reader.ReadByte(); //advance 1 byte
-				else if (temp == 0x8230)
-					reader.ReadInt16(); //advance 2 bytes
-				else
-					throw new FormatException("Expected 0x8130 or 0x8230 but read {0:X4}".FormatInvariant(temp));
+				// skip next header (30 81 xx, or 30 82 xx xx)
+				if (data[0] != 0x30)
+					throw new FormatException("Expected 0x30 but read {0:X2}".FormatInvariant(data[0]));
+				data = data.Slice(1);
 
-				temp = reader.ReadUInt16();
-				byte lowbyte;
-				byte highbyte = 0x00;
-
-				if (temp == 0x8102)
-				{
-					//data read as little endian order (actual data order for Integer is 02 81)
-					lowbyte = reader.ReadByte(); // read next bytes which is bytes in modulus
-				}
-				else if (temp == 0x8202)
-				{
-					highbyte = reader.ReadByte(); //advance 2 bytes
-					lowbyte = reader.ReadByte();
-				}
-				else
-				{
-					throw new FormatException("Expected 0x8102 or 0x8202 but read {0:X4}".FormatInvariant(temp));
-				}
-
-				var modulusSize = highbyte * 256 + lowbyte;
-
-				var firstbyte = reader.ReadByte();
-				reader.BaseStream.Seek(-1, SeekOrigin.Current);
-
-				if (firstbyte == 0x00)
-				{
-					//if first byte (highest order) of modulus is zero, don't include it
-					reader.ReadByte(); //skip this null byte
-					modulusSize -= 1; //reduce modulus buffer size by 1
-				}
-
-				var modulus = reader.ReadBytes(modulusSize); //read the modulus bytes
-
-				if (reader.ReadByte() != 0x02) //expect an Integer for the exponent data
-					throw new FormatException("Expected 0x02");
-				int exponentSize = reader.ReadByte(); // should only need one byte for actual exponent data (for all useful values)
-				var exponent = reader.ReadBytes(exponentSize);
-
-				// ------- create RSACryptoServiceProvider instance and initialize with public key -----
-				var rsa = RSA.Create();
-				var rsaKeyInfo = new RSAParameters
-				{
-					Modulus = modulus,
-					Exponent = exponent
-				};
-				rsa.ImportParameters(rsaKeyInfo);
-				return rsa;
+				if (!TryReadAsnLength(data, out length, out bytesConsumed))
+					throw new FormatException("Couldn't read length");
+				data = data.Slice(bytesConsumed);
 			}
+			else
+			{
+				if (!TryReadAsnInteger(data, out var zero, out bytesConsumed) || zero.Length != 1 || zero[0] != 0)
+					throw new FormatException("Couldn't read zero.");
+				data = data.Slice(bytesConsumed);
+			}
+
+			if (!TryReadAsnInteger(data, out var modulus, out bytesConsumed))
+				throw new FormatException("Couldn't read modulus");
+			data = data.Slice(bytesConsumed);
+
+			if (!TryReadAsnInteger(data, out var exponent, out bytesConsumed))
+				throw new FormatException("Couldn't read exponent");
+			data = data.Slice(bytesConsumed);
+
+			if (!isPrivate)
+			{
+				return new RSAParameters
+				{
+					Modulus = modulus.ToArray(),
+					Exponent = exponent.ToArray(),
+				};
+			}
+
+			if (!TryReadAsnInteger(data, out var d, out bytesConsumed))
+				throw new FormatException("Couldn't read D");
+			data = data.Slice(bytesConsumed);
+
+			if (!TryReadAsnInteger(data, out var p, out bytesConsumed))
+				throw new FormatException("Couldn't read P");
+			data = data.Slice(bytesConsumed);
+
+			if (!TryReadAsnInteger(data, out var q, out bytesConsumed))
+				throw new FormatException("Couldn't read Q");
+			data = data.Slice(bytesConsumed);
+
+			if (!TryReadAsnInteger(data, out var dp, out bytesConsumed))
+				throw new FormatException("Couldn't read DP");
+			data = data.Slice(bytesConsumed);
+
+			if (!TryReadAsnInteger(data, out var dq, out bytesConsumed))
+				throw new FormatException("Couldn't read DQ");
+			data = data.Slice(bytesConsumed);
+
+			if (!TryReadAsnInteger(data, out var iq, out bytesConsumed))
+				throw new FormatException("Couldn't read IQ");
+			data = data.Slice(bytesConsumed);
+
+			return new RSAParameters
+			{
+				Modulus = modulus.ToArray(),
+				Exponent = exponent.ToArray(),
+				D = d.ToArray(),
+				P = p.ToArray(),
+				Q = q.ToArray(),
+				DP = dp.ToArray(),
+				DQ = dq.ToArray(),
+				InverseQ = iq.ToArray(),
+			};
 		}
 
 		/// <summary>
@@ -429,5 +441,71 @@ namespace MySqlConnector.Utilities
 #else
 		public static SslProtocols GetDefaultSslProtocols() => SslProtocols.None;
 #endif
+
+		// Reads a length encoded according to ASN.1 BER rules.
+		private static bool TryReadAsnLength(ReadOnlySpan<byte> data, out int length, out int bytesConsumed)
+		{
+			var leadByte = data[0];
+			if (leadByte < 0x80)
+			{
+				// Short form. One octet. Bit 8 has value "0" and bits 7-1 give the length.
+				length = leadByte;
+				bytesConsumed = 1;
+				return true;
+			}
+
+			// Long form. Two to 127 octets. Bit 8 of first octet has value "1" and bits 7-1 give the number of additional length octets. Second and following octets give the length, base 256, most significant digit first.
+			if (leadByte == 0x81)
+			{
+				length = data[1];
+				bytesConsumed = 2;
+				return true;
+			}
+
+			if (leadByte == 0x82)
+			{
+				length = data[1] * 256 + data[2];
+				bytesConsumed = 3;
+				return true;
+			}
+
+			// lengths over 2^16 are not currently handled
+			length = 0;
+			bytesConsumed = 0;
+			return false;
+		}
+
+		private static bool TryReadAsnInteger(ReadOnlySpan<byte> data, out ReadOnlySpan<byte> number, out int bytesConsumed)
+		{
+			// integer tag is 2
+			if (data[0] != 0x02)
+			{
+				number = default;
+				bytesConsumed = 0;
+				return false;
+			}
+			data = data.Slice(1);
+
+			// tag is followed by the length of the integer
+			if (!TryReadAsnLength(data, out var length, out var lengthBytesConsumed))
+			{
+				number = default;
+				bytesConsumed = 0;
+				return false;
+			}
+
+			// length is followed by the integer bytes, MSB first
+			number = data.Slice(lengthBytesConsumed, length);
+			bytesConsumed = lengthBytesConsumed + length + 1;
+
+			// trim leading zero bytes
+			while (number.Length > 1 && number[0] == 0)
+				number = number.Slice(1);
+
+			return true;
+		}
+
+		// encoded OID sequence for  PKCS #1 rsaEncryption szOID_RSA_RSA = "1.2.840.113549.1.1.1"
+		private static ReadOnlySpan<byte> s_rsaOid => new byte[] { 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00 };
 	}
 }
