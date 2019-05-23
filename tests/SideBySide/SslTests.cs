@@ -54,9 +54,7 @@ namespace SideBySide
 			if (caCertFile != null)
 			{
 				csb.SslMode = MySqlSslMode.VerifyCA;
-#if !BASELINE
-				csb.CACertificateFile = Path.Combine(AppConfig.CertsPath, caCertFile);
-#endif
+				csb.SslCa = Path.Combine(AppConfig.CertsPath, caCertFile);
 			}
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
@@ -132,24 +130,22 @@ namespace SideBySide
 			csb.CertificatePassword = "";
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
-#if BASELINE
-				var exType = typeof(IOException);
-#else
-				var exType = typeof(MySqlException);
-#endif
-				await Assert.ThrowsAsync(exType, async () => await connection.OpenAsync());
+				await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
 			}
 		}
 
-		[SkippableFact(ServerFeatures.KnownCertificateAuthority, ConfigSettings.RequiresSsl, Baseline = "MySql.Data does not support CACertificateFile")]
+		[SkippableFact(ServerFeatures.KnownCertificateAuthority, ConfigSettings.RequiresSsl)]
 		public async Task ConnectSslBadCaCertificate()
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
-			csb.CertificateFile = Path.Combine(AppConfig.CertsPath, "ssl-client.pfx");
-			csb.SslMode = MySqlSslMode.VerifyCA;
 #if !BASELINE
-			csb.CACertificateFile = Path.Combine(AppConfig.CertsPath, "non-ca-client-cert.pem");
+			csb.CertificateFile = Path.Combine(AppConfig.CertsPath, "ssl-client.pfx");
+#else
+			csb.SslCert = Path.Combine(AppConfig.CertsPath, "ssl-client-cert.pem");
+			csb.SslKey = Path.Combine(AppConfig.CertsPath, "ssl-client-key.pem");
 #endif
+			csb.SslMode = MySqlSslMode.VerifyCA;
+			csb.SslCa = Path.Combine(AppConfig.CertsPath, "non-ca-client-cert.pem");
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
 				await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());

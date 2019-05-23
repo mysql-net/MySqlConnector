@@ -61,6 +61,10 @@ MySqlConnector has some different default connection string options:
   </tr>
 </table>
 
+Connector/NET uses `CertificateFile` to specify the client’s private key, unless `SslCert` and `SslKey` are specified, in which case
+it is used to specify the server’s CA certificate file; `SslCa` is just an alias for this option. MySqlConnector always uses `CertificateFile`
+for the client’s private key (in PFX format); `SslCa` (aka `CACertificateFile`) is a separate option to specify the server’s CA certificate.
+
 Some connection string options that are supported in Connector/NET are not supported in MySqlConnector. For a full list of options that are
 supported in MySqlConnector, see the [Connection Options](connection-options).
 

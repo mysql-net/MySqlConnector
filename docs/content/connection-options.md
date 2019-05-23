@@ -101,9 +101,9 @@ These are the options that need to be used in order to configure a connection to
     <td>Specifies the password for the certificate specified using the <code>CertificateFile</code> option. Not required if the certificate file is not password protected.</td>
   </tr>
   <tr>
-    <td>CA Certificate File, CACertificateFile</td>
+    <td>CA Certificate File, CACertificateFile, SslCa, Ssl-Ca</td>
     <td></td>
-    <td>This option specifies the path to a CA certificate file in a PEM Encoded (.pem) format. This should be used in with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the Operating System's certificate store.</td>
+    <td>This option specifies the path to a CA certificate file in a PEM Encoded (.pem) format. This should be used in with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the Operating System’s certificate store.</td>
   </tr>
   <tr>
     <td>Certificate Store Location, CertificateStoreLocation</td>

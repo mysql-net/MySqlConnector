@@ -40,7 +40,6 @@ namespace MySqlConnector.Tests
 			Assert.False(csb.ForceSynchronous);
 			Assert.Equal(MySqlGuidFormat.Default, csb.GuidFormat);
 			Assert.False(csb.IgnoreCommandTransaction);
-			Assert.Null(csb.CACertificateFile);
 			Assert.Equal(MySqlLoadBalance.RoundRobin, csb.LoadBalance);
 #endif
 			Assert.True(csb.IgnorePrepare);
@@ -59,6 +58,7 @@ namespace MySqlConnector.Tests
 			Assert.Null(csb.ServerRsaPublicKeyFile);
 			Assert.Null(csb.ServerSPN);
 #endif
+			Assert.Null(csb.SslCa);
 			Assert.Equal(MySqlSslMode.Preferred, csb.SslMode);
 			Assert.True(csb.TreatTinyAsBoolean);
 			Assert.False(csb.UseCompression);
@@ -100,7 +100,6 @@ namespace MySqlConnector.Tests
 					"connectionidletimeout=30;" +
 					"forcesynchronous=true;" +
 					"ignore command transaction=true;" +
-					"ca certificate file=ca.pem;" +
 					"server rsa public key file=rsa.pem;" +
 					"load balance=random;" +
 					"guidformat=timeswapbinary16;" +
@@ -120,6 +119,7 @@ namespace MySqlConnector.Tests
 					"protocol=pipe;" +
 					"pwd=Pass1234;" +
 					"Treat Tiny As Boolean=false;" +
+					"ssl-ca=ca.pem;" +
 					"ssl mode=verifyca;" +
 					"Uid=username;" +
 					"useaffectedrows=true"
@@ -128,7 +128,10 @@ namespace MySqlConnector.Tests
 			Assert.True(csb.AllowUserVariables);
 			Assert.True(csb.AllowZeroDateTime);
 			Assert.False(csb.AutoEnlist);
+#if !BASELINE
+			// Connector/NET treats "CertificateFile" (client certificate) and "SslCa" (server CA) as aliases
 			Assert.Equal("file.pfx", csb.CertificateFile);
+#endif
 			Assert.Equal("Pass1234", csb.CertificatePassword);
 			Assert.Equal(MySqlCertificateStoreLocation.CurrentUser, csb.CertificateStoreLocation);
 			Assert.Equal("thumbprint123", csb.CertificateThumbprint);
@@ -149,7 +152,6 @@ namespace MySqlConnector.Tests
 			Assert.Equal(30u, csb.ConnectionIdleTimeout);
 			Assert.True(csb.ForceSynchronous);
 			Assert.True(csb.IgnoreCommandTransaction);
-			Assert.Equal("ca.pem", csb.CACertificateFile);
 			Assert.Equal("rsa.pem", csb.ServerRsaPublicKeyFile);
 			Assert.Equal(MySqlLoadBalance.Random, csb.LoadBalance);
 			Assert.Equal(MySqlGuidFormat.TimeSwapBinary16, csb.GuidFormat);
@@ -169,6 +171,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal(1234u, csb.Port);
 			Assert.Equal("db-server", csb.Server);
 			Assert.False(csb.TreatTinyAsBoolean);
+			Assert.Equal("ca.pem", csb.SslCa);
 			Assert.Equal(MySqlSslMode.VerifyCA, csb.SslMode);
 			Assert.True(csb.UseAffectedRows);
 			Assert.True(csb.UseCompression);

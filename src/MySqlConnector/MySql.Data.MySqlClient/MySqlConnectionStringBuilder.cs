@@ -85,10 +85,17 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.CertificatePassword.SetValue(this, value);
 		}
 
+		[Obsolete("Use SslCa instead.")]
 		public string CACertificateFile
 		{
-			get => MySqlConnectionStringOption.CACertificateFile.GetValue(this);
-			set => MySqlConnectionStringOption.CACertificateFile.SetValue(this, value);
+			get => MySqlConnectionStringOption.SslCa.GetValue(this);
+			set => MySqlConnectionStringOption.SslCa.SetValue(this, value);
+		}
+
+		public string SslCa
+		{
+			get => MySqlConnectionStringOption.SslCa.GetValue(this);
+			set => MySqlConnectionStringOption.SslCa.SetValue(this, value);
 		}
 
 		public MySqlCertificateStoreLocation CertificateStoreLocation
@@ -352,7 +359,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<string> CertificatePassword;
 		public static readonly MySqlConnectionStringOption<MySqlCertificateStoreLocation> CertificateStoreLocation;
 		public static readonly MySqlConnectionStringOption<string> CertificateThumbprint;
-		public static readonly MySqlConnectionStringOption<string> CACertificateFile;
+		public static readonly MySqlConnectionStringOption<string> SslCa;
 
 		// Connection Pooling Options
 		public static readonly MySqlConnectionStringOption<bool> Pooling;
@@ -461,8 +468,8 @@ namespace MySql.Data.MySqlClient
 				keys: new[] { "CertificatePassword", "Certificate Password" },
 				defaultValue: null));
 
-			AddOption(CACertificateFile = new MySqlConnectionStringOption<string>(
-				keys: new[] { "CACertificateFile", "CA Certificate File" },
+			AddOption(SslCa = new MySqlConnectionStringOption<string>(
+				keys: new[] { "CACertificateFile", "CA Certificate File", "SslCa", "Ssl-Ca" },
 				defaultValue: null));
 
 			AddOption(CertificateStoreLocation = new MySqlConnectionStringOption<MySqlCertificateStoreLocation>(
