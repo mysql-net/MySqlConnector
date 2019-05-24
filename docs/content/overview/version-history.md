@@ -11,6 +11,15 @@ weight: 30
 Version History
 ===============
 
+### 0.55.0
+
+* **Breaking** `MySqlBulkLoader` (for local files) and `LOAD DATA LOCAL INFILE` are disabled by default.
+  * Set `AllowLoadLocalInfile=true` in the connection string to enable loading local data.
+  * This is a security measure; see http://fl.vu/mysql-load-data for details.
+* Add `AllowLoadLocalInfile` connection string option: [#643](https://github.com/mysql-net/MySqlConnector/issues/643).
+* Add `SslCert` and `SslKey` connection string options to specify a client certificate using PEM files: [#641](https://github.com/mysql-net/MySqlConnector/issues/641).
+* Add `SslCa` alias for the `CACertificateFile` connection string option: [#640](https://github.com/mysql-net/MySqlConnector/issues/640).
+
 ### 0.54.0
 
 * Implement batch updates in `MySqlDataAdapter`: [#635](https://github.com/mysql-net/MySqlConnector/issues/635).
