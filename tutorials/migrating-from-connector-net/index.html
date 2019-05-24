@@ -106,6 +106,10 @@
   </tr>
 </table>
 
+<p>Connector/NET uses <code>CertificateFile</code> to specify the client’s private key, unless <code>SslCert</code> and <code>SslKey</code> are specified, in which case
+it is used to specify the server’s CA certificate file; <code>SslCa</code> is just an alias for this option. MySqlConnector always uses <code>CertificateFile</code>
+for the client’s private key (in PFX format); <code>SslCa</code> (aka <code>CACertificateFile</code>) is a separate option to specify the server’s CA certificate.</p>
+
 <p>Some connection string options that are supported in Connector/NET are not supported in MySqlConnector. For a full list of options that are
 supported in MySqlConnector, see the <a href="connection-options">Connection Options</a>.</p>
 
@@ -206,6 +210,7 @@ for various precondition checks that indicate misuse of the API (and not a probl
 <li><a href="https://bugs.mysql.com/bug.php?id=94075">#94075</a>: <code>MySqlCommand.Cancel</code> throws exception</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=94760">#94760</a>: <code>MySqlConnection.OpenAsync(CancellationToken)</code> doesn’t respect cancellation token</li>
 <li><a href="https://bugs.mysql.com/bug.php?id=95348">#95348</a>: Inefficient query when executing stored procedures</li>
+<li><a href="https://bugs.mysql.com/bug.php?id=95436">#95436</a>: Client doesn&rsquo;t authenticate with PEM certificate</li>
 </ul>
 
 
@@ -320,6 +325,10 @@ for various precondition checks that indicate misuse of the API (and not a probl
         
         <li>
             <a href="/MySqlConnector/troubleshooting/transaction-usage/">Transaction Usage</a>
+        </li>
+        
+        <li>
+            <a href="/MySqlConnector/troubleshooting/load-data-local-infile/">Load Data Local Infile</a>
         </li>
         
 

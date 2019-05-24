@@ -49,7 +49,7 @@ Manually Step 1: Add MySqlConnector to the dependencies in your csproj file:
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.54.0  Implement batch updates in MySqlDataAdapter: #635.  See Performing Batch Operations Using DataAdapters for information about the API.  Improve compatibility with latest Azure Database for MySQL changes.  0.53.0  Breaking MySqlDataReader.GetTextReader() will throw an InvalidCastException if the field value is NULL. Previously, it would return a StringReader wrapping an empty string. Add MySqlDataReader.GetTextReader(string name). Implement MySqlDataReader.GetFieldValue&amp;lt;T&amp;gt; for TextReader and Stream.  0.52.0  Potentially breaking Change default connection collation from utf8mb4_general_ci to the server&amp;rsquo;s default for utf8mb4: #626.</description>
+      <description>Version History 0.55.0  Breaking MySqlBulkLoader (for local files) and LOAD DATA LOCAL INFILE are disabled by default.  Set AllowLoadLocalInfile=true in the connection string to enable loading local data. This is a security measure; see http://fl.vu/mysql-load-data for details.  Add AllowLoadLocalInfile connection string option: #643. Add SslCert and SslKey connection string options to specify a client certificate using PEM files: #641. Add SslCa alias for the CACertificateFile connection string option: #640.</description>
     </item>
     
     <item>

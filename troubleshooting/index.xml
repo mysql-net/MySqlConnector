@@ -31,5 +31,15 @@ using (var connection = new MySqlConnection(&amp;quot;...&amp;quot;)) { await co
 However, this strictness can make migrating from Connector/NET more difficult, as it may require significant code changes to pass the current transaction through to all command objects.</description>
     </item>
     
+    <item>
+      <title>Load Data Local Infile</title>
+      <link>https://mysql-net.github.io/MySqlConnector/troubleshooting/load-data-local-infile/</link>
+      <pubDate>Thu, 23 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://mysql-net.github.io/MySqlConnector/troubleshooting/load-data-local-infile/</guid>
+      <description>Load Data Local Infile Background MySQL Server supports a LOAD DATA command that can bulk load data from a CSV or TSV file. This normally loads data from a file on the server, but it can load from a file on the client by using the LOAD DATA LOCAL statement, or by setting MySqlBulkLoader.Local = true.
+Errors If you do this, you may receive one of the following errors:</description>
+    </item>
+    
   </channel>
 </rss>

@@ -28,7 +28,7 @@
 
     <meta name="generator" content="Hugo 0.32" />
     
-    <title>MySqlConnector - MySqlTransaction</title>
+    <title>MySqlConnector - Load Data Local Infile</title>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -54,26 +54,43 @@
 
 
 
-<h1 id="mysqltransaction">MySqlTransaction</h1>
+<h1 id="load-data-local-infile">Load Data Local Infile</h1>
 
-<p>MySqlTransaction implements the <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbtransaction">ADO.NET DbTransaction class</a>,
-please refer to its documentation.</p>
+<h2 id="background">Background</h2>
 
-<p>Additionally, MySqlTransaction provides the following public properties and methods that may be used:</p>
+<p>MySQL Server supports a <code>LOAD DATA</code> command that can bulk load data from a CSV or TSV file.
+This normally loads data from a file on the server, but it can load from a file on the client by using
+the <code>LOAD DATA LOCAL</code> statement, or by setting <code>MySqlBulkLoader.Local = true</code>.</p>
 
-<h3 id="additional-instance-methods">Additional Instance Methods</h3>
+<h2 id="errors">Errors</h2>
 
-<p><code>public Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))</code></p>
+<p>If you do this, you may receive one of the following errors:</p>
 
-<p>Async version of Commit</p>
+<ul>
+<li>The used command is not allowed with this MySQL version</li>
+<li>To use MySqlBulkLoader.Local=true, set AllowLoadLocalInfile=true in the connection string.</li>
+<li>To use LOAD DATA LOCAL INFILE, set AllowLoadLocalInfile=true in the connection string.</li>
+<li>Use SourceStream or SslMode &gt;= VerifyCA for LOAD DATA LOCAL INFILE.</li>
+</ul>
 
-<hr />
+<h2 id="cause">Cause</h2>
 
-<p><code>public Task RollbackAsync(CancellationToken cancellationToken = default(CancellationToken))</code></p>
+<p><code>LOAD DATA LOCAL INFILE</code> is disabled by default because it poses a security risk. A
+malicious server or proxy could send a fake “local infile request” packet to the client and
+read any file that the client has permission to open.</p>
 
-<p>Async version of Rollback</p>
+<p>For more information, see <a href="https://dev.mysql.com/doc/refman/8.0/en/load-data-local.html">the MySQL documentation</a>.</p>
 
-<hr />
+<h2 id="how-to-fix">How to Fix</h2>
+
+<p>To allow <code>LOAD DATA LOCAL INFILE</code> to succeed, you must set <code>AllowLoadLocalInfile=true</code>
+in the client’s connection string.</p>
+
+<p>If you use <code>MySqlBulkerLoader</code> and set <code>Local=true</code>, then everything should work by default.</p>
+
+<p>If you are manually creating a <code>LOAD DATA LOCAL INFILE</code> statement, you must be connected
+to a trusted server. This requires specifying <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> in the
+connection string. Alternatively, rewrite the code to use <code>MySqlBulkLoader</code>.</p>
 
 
         </div>

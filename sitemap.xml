@@ -58,6 +58,11 @@
   </url>
   
   <url>
+    <loc>https://mysql-net.github.io/MySqlConnector/troubleshooting/load-data-local-infile/</loc>
+    <lastmod>2019-05-23T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://mysql-net.github.io/MySqlConnector/overview/version-history/</loc>
     <lastmod>2019-05-11T00:00:00+00:00</lastmod>
   </url>

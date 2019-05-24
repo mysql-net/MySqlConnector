@@ -56,6 +56,20 @@
 
 <h1 id="version-history">Version History</h1>
 
+<h3 id="0-55-0">0.55.0</h3>
+
+<ul>
+<li><strong>Breaking</strong> <code>MySqlBulkLoader</code> (for local files) and <code>LOAD DATA LOCAL INFILE</code> are disabled by default.
+
+<ul>
+<li>Set <code>AllowLoadLocalInfile=true</code> in the connection string to enable loading local data.</li>
+<li>This is a security measure; see <a href="http://fl.vu/mysql-load-data">http://fl.vu/mysql-load-data</a> for details.</li>
+</ul></li>
+<li>Add <code>AllowLoadLocalInfile</code> connection string option: <a href="https://github.com/mysql-net/MySqlConnector/issues/643">#643</a>.</li>
+<li>Add <code>SslCert</code> and <code>SslKey</code> connection string options to specify a client certificate using PEM files: <a href="https://github.com/mysql-net/MySqlConnector/issues/641">#641</a>.</li>
+<li>Add <code>SslCa</code> alias for the <code>CACertificateFile</code> connection string option: <a href="https://github.com/mysql-net/MySqlConnector/issues/640">#640</a>.</li>
+</ul>
+
 <h3 id="0-54-0">0.54.0</h3>
 
 <ul>
@@ -1195,6 +1209,10 @@
         
         <li>
             <a href="/MySqlConnector/troubleshooting/transaction-usage/">Transaction Usage</a>
+        </li>
+        
+        <li>
+            <a href="/MySqlConnector/troubleshooting/load-data-local-infile/">Load Data Local Infile</a>
         </li>
         
 
