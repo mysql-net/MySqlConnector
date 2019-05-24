@@ -185,17 +185,31 @@ namespace MySql.Data.MySqlClient
                 Connection.Open();
             }
 
+            bool closeStream = SourceStream is object;
             try
             {
+                if (Local && !Connection.AllowLoadLocalInfile)
+                    throw new NotSupportedException("To use MySqlBulkLoader.Local=true, set AllowLoadLocalInfile=true in the connection string. See https://fl.vu/mysql-load-data");
+
                 var commandString = BuildSqlCommand();
                 var cmd = new MySqlCommand(commandString, Connection, Connection.CurrentTransaction)
                 {
                     CommandTimeout = Timeout,
                 };
-                return await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+                var result = await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+                closeStream = false;
+                return result;
             }
             finally
             {
+                if (closeStream)
+                {
+                    using (GetAndRemoveStream(FileName))
+                    {
+                        // close the stream
+                    }
+                }
+
                 if (closeConnection)
                     Connection.Close();
             }

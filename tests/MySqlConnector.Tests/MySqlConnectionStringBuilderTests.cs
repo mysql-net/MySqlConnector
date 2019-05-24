@@ -10,6 +10,7 @@ namespace MySqlConnector.Tests
 		public void Defaults()
 		{
 			var csb = new MySqlConnectionStringBuilder();
+			Assert.False(csb.AllowLoadLocalInfile);
 			Assert.False(csb.AllowPublicKeyRetrieval);
 			Assert.False(csb.AllowUserVariables);
 			Assert.False(csb.AllowZeroDateTime);
@@ -78,6 +79,7 @@ namespace MySqlConnector.Tests
 			{
 				ConnectionString = "Data Source=db-server;" +
 					"Initial Catalog=schema_name;" +
+					"allow load local infile=true;" +
 					"allowpublickeyretrieval = true;" +
 					"Allow User Variables=true;" +
 					"allow zero datetime=true;" +
@@ -128,6 +130,7 @@ namespace MySqlConnector.Tests
 					"Uid=username;" +
 					"useaffectedrows=true"
 			};
+			Assert.True(csb.AllowLoadLocalInfile);
 			Assert.True(csb.AllowPublicKeyRetrieval);
 			Assert.True(csb.AllowUserVariables);
 			Assert.True(csb.AllowZeroDateTime);

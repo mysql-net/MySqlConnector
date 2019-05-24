@@ -63,10 +63,12 @@ namespace MySqlConnector.Core
 					{
 						try
 						{
+							if (!Connection.AllowLoadLocalInfile)
+								throw new NotSupportedException("To use LOAD DATA LOCAL INFILE, set AllowLoadLocalInfile=true in the connection string. See https://fl.vu/mysql-load-data");
 							var localInfile = LocalInfilePayload.Create(payload.AsSpan());
 							if (!IsHostVerified(Connection)
 								&& !localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal))
-								throw new NotSupportedException("Use SourceStream or SslMode >= VerifyCA for LOAD DATA LOCAL INFILE");
+								throw new NotSupportedException("Use SourceStream or SslMode >= VerifyCA for LOAD DATA LOCAL INFILE. See https://fl.vu/mysql-load-data");
 
 							using (var stream = localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal) ?
 								MySqlBulkLoader.GetAndRemoveStream(localInfile.FileName) :

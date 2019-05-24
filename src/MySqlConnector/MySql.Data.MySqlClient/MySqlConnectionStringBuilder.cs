@@ -166,6 +166,12 @@ namespace MySql.Data.MySqlClient
 		}
 
 		// Other Options
+		public bool AllowLoadLocalInfile
+		{
+			get => MySqlConnectionStringOption.AllowLoadLocalInfile.GetValue(this);
+			set => MySqlConnectionStringOption.AllowLoadLocalInfile.SetValue(this, value);
+		}
+
 		public bool AllowPublicKeyRetrieval
 		{
 			get => MySqlConnectionStringOption.AllowPublicKeyRetrieval.GetValue(this);
@@ -385,6 +391,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<uint> MaximumPoolSize;
 
 		// Other Options
+		public static readonly MySqlConnectionStringOption<bool> AllowLoadLocalInfile;
 		public static readonly MySqlConnectionStringOption<bool> AllowPublicKeyRetrieval;
 		public static readonly MySqlConnectionStringOption<bool> AllowUserVariables;
 		public static readonly MySqlConnectionStringOption<bool> AllowZeroDateTime;
@@ -532,6 +539,10 @@ namespace MySql.Data.MySqlClient
 				defaultValue: 100));
 
 			// Other Options
+			AddOption(AllowLoadLocalInfile = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "AllowLoadLocalInfile", "Allow Load Local Infile" },
+				defaultValue: false));
+
 			AddOption(AllowPublicKeyRetrieval = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "AllowPublicKeyRetrieval", "Allow Public Key Retrieval" },
 				defaultValue: false));

@@ -542,13 +542,9 @@ namespace SideBySide
 
 		internal static string GetLocalConnectionString()
 		{
-#if BASELINE
 			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.AllowLoadLocalInfile = true;
 			return csb.ConnectionString;
-#else
-			return AppConfig.ConnectionString;
-#endif
 		}
 
 		readonly string m_testTable;

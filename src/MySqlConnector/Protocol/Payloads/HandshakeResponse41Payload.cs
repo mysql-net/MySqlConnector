@@ -20,7 +20,7 @@ namespace MySqlConnector.Protocol.Payloads
 				(serverCapabilities & ProtocolCapabilities.PluginAuthLengthEncodedClientData) |
 				ProtocolCapabilities.MultiStatements |
 				ProtocolCapabilities.MultiResults |
-				ProtocolCapabilities.LocalFiles |
+				(cs.AllowLoadLocalInfile ? (serverCapabilities & ProtocolCapabilities.LocalFiles) : 0) |
 				(string.IsNullOrWhiteSpace(cs.Database) ? 0 : ProtocolCapabilities.ConnectWithDatabase) |
 				(cs.UseAffectedRows ? 0 : ProtocolCapabilities.FoundRows) |
 				(useCompression ? ProtocolCapabilities.Compress : ProtocolCapabilities.None) |

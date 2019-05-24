@@ -64,6 +64,7 @@ namespace MySqlConnector.Core
 			MaximumPoolSize = (int) csb.MaximumPoolSize;
 
 			// Other Options
+			AllowLoadLocalInfile = csb.AllowLoadLocalInfile;
 			AllowPublicKeyRetrieval = csb.AllowPublicKeyRetrieval;
 			AllowUserVariables = csb.AllowUserVariables;
 			AllowZeroDateTime = csb.AllowZeroDateTime;
@@ -146,6 +147,7 @@ namespace MySqlConnector.Core
 		public int MaximumPoolSize { get; }
 
 		// Other Options
+		public bool AllowLoadLocalInfile { get; }
 		public bool AllowPublicKeyRetrieval { get; }
 		public bool AllowUserVariables { get; }
 		public bool AllowZeroDateTime { get; }
