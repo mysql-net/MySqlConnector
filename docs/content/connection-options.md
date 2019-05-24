@@ -103,7 +103,7 @@ These are the options that need to be used in order to configure a connection to
   <tr>
     <td>SslCert, Ssl-Cert</td>
     <td></td>
-    <td>Specifies the path to the client’s SSL certificate file in PEM format. <code>SslKey</code> must also be specified, and <code>CertificateFile</code> should not be.</td>
+    <td>Specifies the path to the client’s SSL certificate file in PEM format. <code>SslKey</code> must also be specified, and <code>CertificateFile</code> should not be. This option is not supported on the <code>netstandard1.3</code> or <code>netstandard2.0</code> platforms.</td>
   </tr>
   <tr>
     <td>SslKey, Ssl-Key</td>
