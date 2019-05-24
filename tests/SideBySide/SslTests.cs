@@ -56,7 +56,33 @@ namespace SideBySide
 				csb.SslMode = MySqlSslMode.VerifyCA;
 				csb.SslCa = Path.Combine(AppConfig.CertsPath, caCertFile);
 			}
-			using (var connection = new MySqlConnection(csb.ConnectionString))
+			await DoTestSsl(csb.ConnectionString);
+		}
+
+#if !NETCOREAPP1_1_2 && !NETCOREAPP2_0
+		[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
+		[InlineData("ssl-client-cert.pem", "ssl-client-key.pem", null)]
+#if !BASELINE
+		[InlineData("ssl-client-cert.pem", "ssl-client-key.pem", "ssl-ca-cert.pem")] // https://bugs.mysql.com/bug.php?id=95436
+#endif
+		public async Task ConnectSslClientCertificatePem(string certFile, string keyFile, string caCertFile)
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.CertificateFile = null;
+			csb.SslCert = Path.Combine(AppConfig.CertsPath, certFile);
+			csb.SslKey = Path.Combine(AppConfig.CertsPath, keyFile);
+			if (caCertFile != null)
+			{
+				csb.SslMode = MySqlSslMode.VerifyCA;
+				csb.SslCa = Path.Combine(AppConfig.CertsPath, caCertFile);
+			}
+			await DoTestSsl(csb.ConnectionString);
+		}
+#endif
+
+		private async Task DoTestSsl(string connectionString)
+		{
+			using (var connection = new MySqlConnection(connectionString))
 			{
 				using (var cmd = connection.CreateCommand())
 				{
@@ -68,7 +94,7 @@ namespace SideBySide
 					Assert.True(connection.SslIsMutuallyAuthenticated);
 #endif
 					cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
-					var sslVersion = (string)await cmd.ExecuteScalarAsync();
+					var sslVersion = (string) await cmd.ExecuteScalarAsync();
 					Assert.False(string.IsNullOrWhiteSpace(sslVersion));
 				}
 			}

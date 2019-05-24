@@ -59,6 +59,8 @@ namespace MySqlConnector.Tests
 			Assert.Null(csb.ServerSPN);
 #endif
 			Assert.Null(csb.SslCa);
+			Assert.Null(csb.SslCert);
+			Assert.Null(csb.SslKey);
 			Assert.Equal(MySqlSslMode.Preferred, csb.SslMode);
 			Assert.True(csb.TreatTinyAsBoolean);
 			Assert.False(csb.UseCompression);
@@ -120,6 +122,8 @@ namespace MySqlConnector.Tests
 					"pwd=Pass1234;" +
 					"Treat Tiny As Boolean=false;" +
 					"ssl-ca=ca.pem;" +
+					"ssl-cert=client-cert.pem;" +
+					"ssl-key=client-key.pem;" +
 					"ssl mode=verifyca;" +
 					"Uid=username;" +
 					"useaffectedrows=true"
@@ -172,6 +176,8 @@ namespace MySqlConnector.Tests
 			Assert.Equal("db-server", csb.Server);
 			Assert.False(csb.TreatTinyAsBoolean);
 			Assert.Equal("ca.pem", csb.SslCa);
+			Assert.Equal("client-cert.pem", csb.SslCert);
+			Assert.Equal("client-key.pem", csb.SslKey);
 			Assert.Equal(MySqlSslMode.VerifyCA, csb.SslMode);
 			Assert.True(csb.UseAffectedRows);
 			Assert.True(csb.UseCompression);

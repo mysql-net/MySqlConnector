@@ -67,21 +67,33 @@ namespace MySqlConnector.Utilities
 #endif
 
 		/// <summary>
-		/// Loads a RSA public key from a PEM string.
+		/// Loads a RSA key from a PEM string.
 		/// </summary>
-		/// <param name="publicKey">The public key, in PEM format.</param>
-		/// <returns>An RSA public key, or <c>null</c> on failure.</returns>
-		public static RSA DecodeX509PublicKey(string publicKey)
+		/// <param name="key">The key, in PEM format.</param>
+		/// <returns>An RSA key.</returns>
+		public static RSAParameters GetRsaParameters(string key)
 		{
-			var x509Key = System.Convert.FromBase64String(publicKey.Replace("-----BEGIN PUBLIC KEY-----", "").Replace("-----END PUBLIC KEY-----", ""));
-			var parameters = GetKeyParameters(x509Key, false);
-			var rsa = RSA.Create();
-			rsa.ImportParameters(parameters);
-			return rsa;
+			bool isPrivate;
+			if (key.StartsWith("-----BEGIN RSA PRIVATE KEY-----", StringComparison.Ordinal))
+			{
+				key = key.Replace("-----BEGIN RSA PRIVATE KEY-----", "").Replace("-----END RSA PRIVATE KEY-----", "");
+				isPrivate = true;
+			}
+			else if (key.StartsWith("-----BEGIN PUBLIC KEY-----", StringComparison.Ordinal))
+			{
+				key = key.Replace("-----BEGIN PUBLIC KEY-----", "").Replace("-----END PUBLIC KEY-----", "");
+				isPrivate = false;
+			}
+			else
+			{
+				throw new FormatException("Unrecognized PEM header: " + key.Substring(0, Math.Min(key.Length, 80)));
+			}
+
+			return GetRsaParameters(System.Convert.FromBase64String(key), isPrivate);
 		}
 
 		// Derived from: https://stackoverflow.com/a/32243171/, https://stackoverflow.com/a/26978561/, http://luca.ntop.org/Teaching/Appunti/asn1.html
-		internal static RSAParameters GetKeyParameters(ReadOnlySpan<byte> data, bool isPrivate)
+		private static RSAParameters GetRsaParameters(ReadOnlySpan<byte> data, bool isPrivate)
 		{
 			// read header (30 81 xx, or 30 82 xx xx)
 			if (data[0] != 0x30)

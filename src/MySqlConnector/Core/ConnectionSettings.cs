@@ -46,6 +46,8 @@ namespace MySqlConnector.Core
 			SslMode = csb.SslMode;
 			CertificateFile = csb.CertificateFile;
 			CertificatePassword = csb.CertificatePassword;
+			SslCertificateFile = csb.SslCert;
+			SslKeyFile = csb.SslKey;
 			CACertificateFile = csb.SslCa;
 			CertificateStoreLocation = csb.CertificateStoreLocation;
 			CertificateThumbprint = csb.CertificateThumbprint;
@@ -129,6 +131,8 @@ namespace MySqlConnector.Core
 		public string CertificateFile { get; }
 		public string CertificatePassword { get; }
 		public string CACertificateFile { get; }
+		public string SslCertificateFile { get; }
+		public string SslKeyFile { get; }
 		public MySqlCertificateStoreLocation CertificateStoreLocation { get; }
 		public string CertificateThumbprint { get; }
 

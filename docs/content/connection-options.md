@@ -93,7 +93,7 @@ These are the options that need to be used in order to configure a connection to
   <tr>
     <td>Certificate File, CertificateFile</td>
     <td></td>
-    <td>Specifies the path to a certificate file in PKCS #12 (.pfx) format containing a bundled Certificate and Private Key used for Mutual Authentication.  To create a PKCS #12 bundle from a PEM encoded Certificate and Key, use <code>openssl pkcs12 -in cert.pem -inkey key.pem -export -out bundle.pfx</code></td>
+    <td>Specifies the path to a certificate file in PKCS #12 (.pfx) format containing a bundled Certificate and Private Key used for Mutual Authentication.  To create a PKCS #12 bundle from a PEM encoded Certificate and Key, use <code>openssl pkcs12 -in cert.pem -inkey key.pem -export -out bundle.pfx</code>. This option should not be specified if <code>SslCert</code> and <code>SslKey</code> are used.</td>
   </tr>
   <tr>
     <td>Certificate Password, CertificatePassword</td>
@@ -101,9 +101,19 @@ These are the options that need to be used in order to configure a connection to
     <td>Specifies the password for the certificate specified using the <code>CertificateFile</code> option. Not required if the certificate file is not password protected.</td>
   </tr>
   <tr>
+    <td>SslCert, Ssl-Cert</td>
+    <td></td>
+    <td>Specifies the path to the client’s SSL certificate file in PEM format. <code>SslKey</code> must also be specified, and <code>CertificateFile</code> should not be.</td>
+  </tr>
+  <tr>
+    <td>SslKey, Ssl-Key</td>
+    <td></td>
+    <td>Specifies the path to the client’s SSL private key in PEM format. <code>SslCert</code> must also be specified, and <code>CertificateFile</code> should not be.</td>
+  </tr>
+  <tr>
     <td>CA Certificate File, CACertificateFile, SslCa, Ssl-Ca</td>
     <td></td>
-    <td>This option specifies the path to a CA certificate file in a PEM Encoded (.pem) format. This should be used in with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the Operating System’s certificate store.</td>
+    <td>This option specifies the path to a CA certificate file in a PEM Encoded (.pem) format. This should be used with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the Operating System’s certificate store.</td>
   </tr>
   <tr>
     <td>Certificate Store Location, CertificateStoreLocation</td>

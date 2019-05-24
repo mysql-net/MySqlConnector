@@ -85,8 +85,11 @@ namespace SideBySide
 				return "Requires SslMode=Required or lower in connection string";
 			}
 
-			if (configSettings.HasFlag(ConfigSettings.KnownClientCertificate) && !(csb.CertificateFile?.EndsWith("ssl-client.pfx", StringComparison.OrdinalIgnoreCase) ?? false))
-				return "Requires CertificateFile=client.pfx in connection string";
+			if (configSettings.HasFlag(ConfigSettings.KnownClientCertificate))
+			{
+				if (!((csb.CertificateFile?.EndsWith("ssl-client.pfx", StringComparison.OrdinalIgnoreCase) ?? false) || (csb.SslKey?.EndsWith("ssl-client-key.pem", StringComparison.OrdinalIgnoreCase) ?? false)))
+					return "Requires CertificateFile=client.pfx in connection string";
+			}
 
 			if (configSettings.HasFlag(ConfigSettings.PasswordlessUser) && string.IsNullOrWhiteSpace(AppConfig.PasswordlessUser))
 				return "Requires PasswordlessUser in config.json";

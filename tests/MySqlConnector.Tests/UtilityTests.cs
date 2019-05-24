@@ -60,8 +60,7 @@ namespace MySqlConnector.Tests
 		[Fact]
 		public void DecodePublicKey()
 		{
-			var publicKey = Convert.FromBase64String(c_publicKey.Replace("-----BEGIN PUBLIC KEY-----", "").Replace("-----END PUBLIC KEY-----", ""));
-			var parameters = Utility.GetKeyParameters(publicKey, isPrivate: false);
+			var parameters = Utility.GetRsaParameters(c_publicKey);
 			Console.WriteLine(BitConverter.ToString(parameters.Modulus));
 			Assert.Equal(s_modulus, parameters.Modulus);
 			Assert.Equal(s_exponent, parameters.Exponent);
@@ -70,8 +69,7 @@ namespace MySqlConnector.Tests
 		[Fact]
 		public void DecodePrivateKey()
 		{
-			var privateKey = Convert.FromBase64String(c_privateKey.Replace("-----BEGIN RSA PRIVATE KEY-----", "").Replace("-----END RSA PRIVATE KEY-----", ""));
-			var parameters = Utility.GetKeyParameters(privateKey, isPrivate: true);
+			var parameters = Utility.GetRsaParameters(c_privateKey);
 			Console.WriteLine(BitConverter.ToString(parameters.Modulus));
 			Assert.Equal(s_modulus, parameters.Modulus);
 			Assert.Equal(s_exponent, parameters.Exponent);
