@@ -61,7 +61,6 @@ namespace MySqlConnector.Tests
 		public void DecodePublicKey()
 		{
 			var parameters = Utility.GetRsaParameters(c_publicKey);
-			Console.WriteLine(BitConverter.ToString(parameters.Modulus));
 			Assert.Equal(s_modulus, parameters.Modulus);
 			Assert.Equal(s_exponent, parameters.Exponent);
 		}
@@ -70,7 +69,6 @@ namespace MySqlConnector.Tests
 		public void DecodePrivateKey()
 		{
 			var parameters = Utility.GetRsaParameters(c_privateKey);
-			Console.WriteLine(BitConverter.ToString(parameters.Modulus));
 			Assert.Equal(s_modulus, parameters.Modulus);
 			Assert.Equal(s_exponent, parameters.Exponent);
 			Assert.Equal(s_d, parameters.D);
