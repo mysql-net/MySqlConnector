@@ -19,6 +19,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using MySqlConnector.Authentication;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Payloads;
@@ -517,6 +518,13 @@ namespace MySqlConnector.Core
 			case "mysql_old_password":
 				Log.Error("Session{0} is requesting AuthenticationMethod '{1}' which is not supported", m_logArguments);
 				throw new NotSupportedException("'MySQL Server is requesting the insecure pre-4.1 auth mechanism (mysql_old_password). The user password must be upgraded; see https://dev.mysql.com/doc/refman/5.7/en/account-upgrades.html.");
+
+			case "client_ed25519":
+				if (!AuthenticationPlugins.TryGetPlugin(switchRequest.Name, out var ed25519Plugin))
+					throw new NotSupportedException("You must install the MySqlConnector.Authentication.Ed25519 package and call Ed25519AuthenticationPlugin.Install to use client_ed25519 authentication.");
+				payload = new PayloadData(ed25519Plugin.CreateResponse(cs.Password, switchRequest.Data));
+				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			default:
 				Log.Error("Session{0} is requesting AuthenticationMethod '{1}' which is not supported", m_logArguments);

@@ -5,9 +5,28 @@ using Chaos.NaCl.Internal.Ed25519Ref10;
 
 namespace MySqlConnector.Authentication.Ed25519
 {
-	public static class Ed25519
+	/// <summary>
+	/// Provides an implementation of the <c>client_ed25519</c> authentication plugin for MariaDB.
+	/// </summary>
+	/// <remarks>See <a href="https://mariadb.com/kb/en/library/authentication-plugin-ed25519/">Authentication Plugin - ed25519</a>.</remarks>
+	public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin
 	{
-		public static byte[] Ed25519SignWithPassword(string password, byte[] seed)
+		/// <summary>
+		/// Registers the Ed25519 authentication plugin with MySqlConnector. You must call this method once before
+		/// opening a connection that uses Ed25519 authentication.
+		/// </summary>
+		public static void Install()
+		{
+			if (!s_isInstalled)
+			{
+				AuthenticationPlugins.Register(new Ed25519AuthenticationPlugin());
+				s_isInstalled = true;
+			}
+		}
+
+		public string Name => "client_ed25519";
+
+		public byte[] CreateResponse(string password, ReadOnlySpan<byte> authenticationData)
 		{
 			// Java reference: https://github.com/MariaDB/mariadb-connector-j/blob/master/src/main/java/org/mariadb/jdbc/internal/com/send/authentication/Ed25519PasswordPlugin.java
 			// C reference:  https://github.com/MariaDB/server/blob/592fe954ef82be1bc08b29a8e54f7729eb1e1343/plugin/auth_ed25519/ref10/sign.c#L7
@@ -64,10 +83,10 @@ namespace MySqlConnector.Authentication.Ed25519
 					crypto_hash_sha512(nonce,sm + 32,mlen + 32);
 				*/
 
-				byte[] sm = new byte[64 + seed.Length];
-				Buffer.BlockCopy(seed, 0, sm, 64, seed.Length);
+				byte[] sm = new byte[64 + authenticationData.Length];
+				authenticationData.CopyTo(sm.AsSpan().Slice(64));
 				Buffer.BlockCopy(az, 32, sm, 32, 32);
-				byte[] nonce = sha512.ComputeHash(sm, 32, seed.Length + 32);
+				byte[] nonce = sha512.ComputeHash(sm, 32, authenticationData.Length + 32);
 
 				/*** Java
 					ScalarOps scalar = new ScalarOps();
@@ -133,5 +152,11 @@ namespace MySqlConnector.Authentication.Ed25519
 				return result;
 			}
 		}
+
+		private Ed25519AuthenticationPlugin()
+		{
+		}
+
+		static bool s_isInstalled;
 	}
 }
