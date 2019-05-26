@@ -1,7 +1,7 @@
 steps:
 - task: DownloadPipelineArtifact@0
   inputs:
-    artifactName: 'MySqlConnector.Tests'
+    artifactName: 'MySqlConnector.Tests-2.1-$(Agent.OS)'
     targetPath: $(System.DefaultWorkingDirectory)
 - task: DotNetCoreCLI@2
   displayName: 'Run MySqlConnector.Tests'
