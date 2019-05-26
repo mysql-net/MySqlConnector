@@ -161,7 +161,7 @@ Errors If you do this, you may receive one of the following errors:</description
       <pubDate>Mon, 27 Mar 2017 00:00:00 +0000</pubDate>
       
       <guid>https://mysql-net.github.io/MySqlConnector/overview/version-history/</guid>
-      <description>Version History 0.55.0  Breaking MySqlBulkLoader (for local files) and LOAD DATA LOCAL INFILE are disabled by default.  Set AllowLoadLocalInfile=true in the connection string to enable loading local data. This is a security measure; see https://fl.vu/mysql-load-data for details.  Add AllowLoadLocalInfile connection string option: #643. Add SslCert and SslKey connection string options to specify a client certificate using PEM files: #641. Add SslCa alias for the CACertificateFile connection string option: #640.</description>
+      <description>Version History 0.56.0  Support client_ed25519 authentication plugin for MariaDB: #639.  This is implemented in a new NuGet package, MySqlConnector.Authentication.Ed25519, and must be activated by calling Ed25519AuthenticationPlugin.Install.   0.55.0  Breaking MySqlBulkLoader (for local files) and LOAD DATA LOCAL INFILE are disabled by default.  Set AllowLoadLocalInfile=true in the connection string to enable loading local data. This is a security measure; see https://fl.vu/mysql-load-data for details.  Add AllowLoadLocalInfile connection string option: #643.</description>
     </item>
     
     <item>
