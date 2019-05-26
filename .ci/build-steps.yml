@@ -19,3 +19,31 @@ steps:
   inputs:
     command: 'build'
     arguments: '-c Release'
+- task: DotNetCoreCLI@2
+  displayName: 'Publish MySqlConnector.Tests'
+  inputs:
+    command: 'publish'
+    arguments: '-c Release -f netcoreapp2.1 tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj'
+    publishWebProjects: false
+    zipAfterPublish: false
+- task: DotNetCoreCLI@2
+  displayName: 'Publish SideBySide (net472)'
+  inputs:
+    command: 'publish'
+    arguments: '-c Release -f net472 tests/SideBySide/SideBySide.csproj'
+    publishWebProjects: false
+    zipAfterPublish: false
+- task: DotNetCoreCLI@2
+  displayName: 'Publish SideBySide (2.0)'
+  inputs:
+    command: 'publish'
+    arguments: '-c Release -f netcoreapp2.0 tests/SideBySide/SideBySide.csproj'
+    publishWebProjects: false
+    zipAfterPublish: false
+- task: DotNetCoreCLI@2
+  displayName: 'Publish SideBySide (2.1)'
+  inputs:
+    command: 'publish'
+    arguments: '-c Release -f netcoreapp2.1 tests/SideBySide/SideBySide.csproj'
+    publishWebProjects: false
+    zipAfterPublish: false

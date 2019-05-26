@@ -35,3 +35,19 @@ stages:
       vmimage: 'vs2017-win2016'
     steps:
     - template: '.ci/build-steps.yml'
+    - task: PublishPipelineArtifact@0
+      inputs:
+        artifactName: 'MySqlConnector.Tests'
+        targetPath: 'tests/MySqlConnector.Tests/bin/Release/netcoreapp2.1/publish'
+    - task: PublishPipelineArtifact@0
+      inputs:
+        artifactName: 'SideBySide-net472'
+        targetPath: 'tests/SideBySide/bin/Release/net472/publish'
+    - task: PublishPipelineArtifact@0
+      inputs:
+        artifactName: 'SideBySide-2.0'
+        targetPath: 'tests/SideBySide/bin/Release/netcoreapp2.0/publish'
+    - task: PublishPipelineArtifact@0
+      inputs:
+        artifactName: 'SideBySide-2.1'
+        targetPath: 'tests/SideBySide/bin/Release/netcoreapp2.1/publish'
