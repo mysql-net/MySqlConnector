@@ -28,6 +28,12 @@ stages:
     pool:
       vmimage: 'ubuntu-16.04'
     steps:
+    - task: CopyFiles@2
+      displayName: 'Copy config.json'
+      inputs:
+        sourceFolder: '.ci/config'
+        contents: 'config.json'
+        targetFolder: 'tests/SideBySide'
     - task: DotNetCoreInstaller@0
       displayName: 'Install .NET Core'
       inputs:
@@ -42,9 +48,16 @@ stages:
         command: 'build'
         arguments: '-c Release'
   - job: windows_build
+    displayName: 'Windows'
     pool:
       vmimage: 'vs2017-win2016'
     steps:
+    - task: CopyFiles@2
+      displayName: 'Copy config.json'
+      inputs:
+        sourceFolder: '.ci/config'
+        contents: 'config.json'
+        targetFolder: 'tests/SideBySide'
     - task: DotNetCoreInstaller@0
       displayName: 'Install .NET Core'
       inputs:
