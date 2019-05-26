@@ -8,4 +8,9 @@ steps:
   inputs:
     command: 'custom'
     custom: 'vstest'
-    arguments: 'MySqlConnector.Tests.dll'
+    arguments: 'MySqlConnector.Tests.dll /logger:trx'
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: VSTest
+    testResultsFiles: '**/*.trx'
+    testRunTitle: 'MySqlConnector.Tests-2.1-$(Agent.OS)'
