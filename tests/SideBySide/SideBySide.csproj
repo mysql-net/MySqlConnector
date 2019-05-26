@@ -36,6 +36,7 @@
 
   <ItemGroup Condition=" '$(Configuration)' != 'Baseline' ">
     <ProjectReference Include="..\..\src\MySqlConnector\MySqlConnector.csproj" />
+    <ProjectReference Include="..\..\src\MySqlConnector.Authentication.Ed25519\MySqlConnector.Authentication.Ed25519.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'Baseline' ">
