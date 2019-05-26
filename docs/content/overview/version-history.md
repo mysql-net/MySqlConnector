@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.56.0
+
+* Support `client_ed25519` authentication plugin for MariaDB: [#639](https://github.com/mysql-net/MySqlConnector/issues/639).
+  * This is implemented in a new NuGet package, MySqlConnector.Authentication.Ed25519, and must be activated by calling `Ed25519AuthenticationPlugin.Install`.
+
 ### 0.55.0
 
 * **Breaking** `MySqlBulkLoader` (for local files) and `LOAD DATA LOCAL INFILE` are disabled by default.
