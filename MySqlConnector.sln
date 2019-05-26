@@ -20,6 +20,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlConnector.Logging.Seri
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlConnector.Logging.NLog", "src\MySqlConnector.Logging.NLog\MySqlConnector.Logging.NLog.csproj", "{92015BEE-563A-4595-9243-0510D2B8767F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlConnector.Authentication.Ed25519", "src\MySqlConnector.Authentication.Ed25519\MySqlConnector.Authentication.Ed25519.csproj", "{5DB4FA2E-910B-47CE-B467-F6852104D567}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +64,10 @@ Global
 		{92015BEE-563A-4595-9243-0510D2B8767F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92015BEE-563A-4595-9243-0510D2B8767F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92015BEE-563A-4595-9243-0510D2B8767F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DB4FA2E-910B-47CE-B467-F6852104D567}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DB4FA2E-910B-47CE-B467-F6852104D567}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DB4FA2E-910B-47CE-B467-F6852104D567}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DB4FA2E-910B-47CE-B467-F6852104D567}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

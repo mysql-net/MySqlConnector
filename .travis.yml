@@ -5,20 +5,23 @@ services: docker
 env:
   - IMAGE=mysql:5.6
     NAME=mysql
-    OMIT_FEATURES=Json,Sha256Password,RsaEncryption,LargePackets,CachingSha2Password,SessionTrack,Tls11,Tls12,UuidToBin
+    OMIT_FEATURES=Ed25519,Json,Sha256Password,RsaEncryption,LargePackets,CachingSha2Password,SessionTrack,Tls11,Tls12,UuidToBin
   - IMAGE=mysql:5.7
     NAME=mysql
-    OMIT_FEATURES=RsaEncryption,CachingSha2Password,Tls12,UuidToBin
+    OMIT_FEATURES=Ed25519,RsaEncryption,CachingSha2Password,Tls12,UuidToBin
   - IMAGE=mysql:8.0
     NAME=mysql
-    OMIT_FEATURES=None
+    OMIT_FEATURES=Ed25519
   - IMAGE=percona:5.7.22
     NAME=percona
-    OMIT_FEATURES=CachingSha2Password,UuidToBin
+    OMIT_FEATURES=CachingSha2Password,Ed25519,UuidToBin
   - IMAGE=mariadb:10.2
     NAME=mariadb
-    OMIT_FEATURES=Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin
+    OMIT_FEATURES=Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin
   - IMAGE=mariadb:10.3
+    NAME=mariadb
+    OMIT_FEATURES=Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin
+  - IMAGE=mariadb:10.4
     NAME=mariadb
     OMIT_FEATURES=Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin
 

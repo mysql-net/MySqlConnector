@@ -1,6 +1,6 @@
 ﻿{
     "Data": {
       "ConnectionString": "server=127.0.0.1;user id=root;password=pass;port=3306;database=mysqltest",
-      "UnsupportedFeatures": "CachingSha2Password,RsaEncryption,Sha256Password,UuidToBin"
+      "UnsupportedFeatures": "CachingSha2Password,Ed25519,RsaEncryption,Sha256Password,UuidToBin"
     }
 }

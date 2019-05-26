@@ -60,6 +60,11 @@ for i in `seq 1 30`; do
 		if [ $? -ne 0 ]; then continue; fi
 	fi
 
+	if [[ $OMIT_FEATURES != *"Ed25519"* ]]; then
+		docker exec -it $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_ed25519.sql' >/dev/null 2>&1
+		if [ $? -ne 0 ]; then continue; fi
+	fi
+
 	# exit if successful
 	docker exec -it $NAME mysql -ussltest -ptest \
 		--ssl-mode=REQUIRED \

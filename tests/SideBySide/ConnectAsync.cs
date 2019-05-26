@@ -1,11 +1,13 @@
 using System;
 using System.Data;
 using System.Diagnostics;
-using System.IO;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+#if !BASELINE
+using MySqlConnector.Authentication.Ed25519;
+#endif
 using Xunit;
 
 namespace SideBySide
@@ -346,6 +348,23 @@ namespace SideBySide
 				await connection.OpenAsync();
 			}
 		}
+
+#if !BASELINE
+#if !NETCOREAPP1_1_2 && !NETCOREAPP2_0
+		[SkippableFact(ServerFeatures.Ed25519)]
+		public async Task Ed25519Authentication()
+		{
+			Ed25519AuthenticationPlugin.Install();
+
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.UserID = "ed25519user";
+			csb.Password = "Ed255!9";
+			csb.Database = null;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+				await connection.OpenAsync();
+		}
+#endif
+#endif
 
 		// To create a MariaDB GSSAPI user for a current user
 		// - install plugin if not already done , e.g mysql -uroot -e "INSTALL SONAME 'auth_gssapi'"

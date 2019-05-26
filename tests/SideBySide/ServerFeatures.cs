@@ -20,5 +20,6 @@ namespace SideBySide
 		Tls12 = 2048,
 		RoundDateTime = 4096,
 		UuidToBin = 8192,
+		Ed25519 = 16384,
 	}
 }

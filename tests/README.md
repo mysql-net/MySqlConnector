@@ -21,18 +21,19 @@ Otherwise, set the following options appropriately:
 * `Data.MySqlBulkLoaderLocalCsvFile`: (Optional) The path to a test CSV file.
 * `Data.MySqlBulkLoaderLocalTsvFile`: (Optional) The path to a test TSV file.
 * `Data.UnsupportedFeatures`: A comma-delimited list of `ServerFeature` enum values that your test database server does *not* support
-  * `Json`: the `JSON` data type (MySQL 5.7 and later)
-  * `StoredProcedures`: create and execute stored procedures
-  * `Sha256Password`: a user named `sha256user` exists on your server and uses the `sha256_password` auth plugin
-  * `RsaEncryption`: server supports RSA public key encryption (for `sha256_password` and `caching_sha2_password`)
-  * `LargePackets`: large packets (over 4MB)
   * `CachingSha2Password`: a user named `caching-sha2-user` exists on your server and uses the `caching_sha2_password` auth plugin
-  * `SessionTrack`: server supports `CLIENT_SESSION_TRACK` capability (MySQL 5.7 and later)
-  * `Timeout`: server can cancel queries promptly (so timed tests don't time out)
+  * `Ed25519`: a user named `ed25519user` exists on your server and uses the `client_ed25519` auth plugin
   * `ErrorCodes`: server returns error codes in error packet (some MySQL proxies do not)
+  * `Json`: the `JSON` data type (MySQL 5.7 and later)
+  * `LargePackets`: large packets (over 4MB)
+  * `RoundDateTime`: server rounds `datetime` values to the specified precision (not implemented in MariaDB)
+  * `RsaEncryption`: server supports RSA public key encryption (for `sha256_password` and `caching_sha2_password`)
+  * `SessionTrack`: server supports `CLIENT_SESSION_TRACK` capability (MySQL 5.7 and later)
+  * `Sha256Password`: a user named `sha256user` exists on your server and uses the `sha256_password` auth plugin
+  * `StoredProcedures`: create and execute stored procedures
+  * `Timeout`: server can cancel queries promptly (so timed tests don't time out)
   * `Tls11`: server supports TLS 1.1
   * `Tls12`: server supports TLS 1.2
-  * `RoundDateTime`: server rounds `datetime` values to the specified precision (not implemented in MariaDB)
   * `UuidToBin`: server supports `UUID_TO_BIN` (MySQL 8.0 and later)
 
 ## Running Tests
