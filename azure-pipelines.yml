@@ -51,3 +51,20 @@ stages:
       inputs:
         artifactName: 'SideBySide-2.1'
         targetPath: 'tests/SideBySide/bin/Release/netcoreapp2.1/publish'
+
+- stage: test
+  displayName: 'Test'
+  dependsOn: 'build'
+  jobs:
+  - job: linux_test
+    displayName: 'Linux'
+    pool:
+      vmimage: 'ubuntu-16.04'
+    steps:
+    - template: '.ci/mysqlconnector-tests-steps.yml'
+  - job: windows_test
+    displayName: 'Windows'
+    pool:
+      vmimage: 'vs2017-win2016'
+    steps:
+    - template: '.ci/mysqlconnector-tests-steps.yml'
