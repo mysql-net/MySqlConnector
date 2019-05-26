@@ -1,0 +1,60 @@
+resources:
+  containers:
+  - container: mysql57
+    image: mysql:5.7.24
+    ports:
+    - "3300:3306"
+    env:
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+    - $(pwd)/.ci/run/$NAME:/var/run/mysqld:rw
+    - $(pwd)/.ci/server:/etc/mysql/conf.d:ro
+
+variables:
+  DotNetCoreSdkVersion: '2.1.700'
+
+trigger:
+  batch: false
+  branches:
+    include:
+    - azure-pipelines
+
+stages:
+- stage: build
+  displayName: 'Build'
+  jobs:
+  - job: linux_build
+    displayName: 'Linux'
+    pool:
+      vmimage: 'ubuntu-16.04'
+    steps:
+    - task: DotNetCoreInstaller@0
+      displayName: 'Install .NET Core'
+      inputs:
+        version: $(DotNetCoreSdkVersion)
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore packages'
+      inputs:
+        command: 'restore'
+    - task: DotNetCoreCLI@2
+      displayName: 'Build'
+      inputs:
+        command: 'build'
+        arguments: '-c Release'
+  - job: windows_build
+    pool:
+      vmimage: 'vs2017-win2016'
+    steps:
+    - task: DotNetCoreInstaller@0
+      displayName: 'Install .NET Core'
+      inputs:
+        version: $(DotNetCoreSdkVersion)
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore packages'
+      inputs:
+        command: 'restore'
+    - task: DotNetCoreCLI@2
+      displayName: 'Build'
+      inputs:
+        command: 'build'
+        arguments: '-c Release'
