@@ -19,36 +19,30 @@ trigger:
     include:
     - azure-pipelines
 
-stages:
-- stage: build
-  displayName: 'Build'
-  jobs:
-  - job: linux_build
-    displayName: 'Linux'
-    pool:
-      vmimage: 'ubuntu-16.04'
-    steps:
-    - template: '.ci/build-steps.yml'
-  - job: windows_build
-    displayName: 'Windows'
-    pool:
-      vmimage: 'vs2017-win2016'
-    steps:
-    - template: '.ci/build-steps.yml'
-
-- stage: test
-  displayName: 'Test'
-  dependsOn: 'build'
-  jobs:
-  - job: linux_test
-    displayName: 'Linux'
-    pool:
-      vmimage: 'ubuntu-16.04'
-    steps:
-    - template: '.ci/mysqlconnector-tests-steps.yml'
-  - job: windows_test
-    displayName: 'Windows'
-    pool:
-      vmimage: 'vs2017-win2016'
-    steps:
-    - template: '.ci/mysqlconnector-tests-steps.yml'
+jobs:
+- job: linux_build
+  displayName: 'Linux'
+  pool:
+    vmimage: 'ubuntu-16.04'
+  steps:
+  - template: '.ci/build-steps.yml'
+- job: windows_build
+  displayName: 'Windows'
+  pool:
+    vmimage: 'vs2017-win2016'
+  steps:
+  - template: '.ci/build-steps.yml'
+- job: linux_unit_tests
+  dependsOn: linux_build
+  displayName: 'Linux Unit Tests'
+  pool:
+    vmimage: 'ubuntu-16.04'
+  steps:
+  - template: '.ci/mysqlconnector-tests-steps.yml'
+- job: windows_unit_tests
+  dependsOn: windows_build
+  displayName: 'Windows Unit Tests'
+  pool:
+    vmimage: 'vs2017-win2016'
+  steps:
+  - template: '.ci/mysqlconnector-tests-steps.yml'
