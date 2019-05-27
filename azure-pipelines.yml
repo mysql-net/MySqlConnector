@@ -41,12 +41,24 @@ jobs:
     vmimage: 'ubuntu-16.04'
   strategy:
     matrix:
-      mysql56:
-        image: 'mysql:5.6.44'
+      'MySQL 5.6':
+        image: 'mysql:5.6'
         unsupportedFeatures: 'Ed25519,Json,Sha256Password,RsaEncryption,LargePackets,CachingSha2Password,SessionTrack,Tls11,Tls12,UuidToBin'
-      mysql57:
-        image: 'mysql:5.7.26'
+      'MySQL 5.7':
+        image: 'mysql:5.7'
         unsupportedFeatures: 'Ed25519,RsaEncryption,CachingSha2Password,Tls12,UuidToBin'
+      'MySQL 8.0':
+        image: 'mysql:8.0'
+        unsupportedFeatures: 'Ed25519'
+      'Percona 5.7':
+        image: 'percona:5.7.22'
+        unsupportedFeatures: 'CachingSha2Password,Ed25519,UuidToBin'
+      'MariaDB 10.2':
+        image: 'mariadb:10.2'
+        unsupportedFeatures: 'Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin'
+      'MariaDB 10.3':
+        image: 'mariadb:10.3'
+        unsupportedFeatures: 'Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin'
   steps:
   - template: '.ci/integration-tests-steps.yml'
     parameters:
