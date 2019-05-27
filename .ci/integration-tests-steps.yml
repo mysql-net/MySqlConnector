@@ -17,7 +17,7 @@ steps:
     arguments: 'SideBySide.dll /logger:trx'
   env:
     DATA__UNSUPPORTEDFEATURES: ${{ parameters.unsupportedFeatures }}
-    DATA__CONNECTIONSTRING: 'server=localhost;port=3300;user id=root;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600'
+    DATA__CONNECTIONSTRING: 'server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600'
     DATA__MYSQLBULKLOADERLOCALCSVFILE: '$(Build.Repository.LocalPath)/tests/TestData/LoadData_UTF8_BOM_Unix.CSV'
     DATA__MYSQLBULKLOADERLOCALTSVFILE: '$(Build.Repository.LocalPath)/tests/TestData/LoadData_UTF8_BOM_Unix.TSV'
     TF_BUILD: $(TF_BUILD)

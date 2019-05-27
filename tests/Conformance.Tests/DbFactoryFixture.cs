@@ -9,7 +9,7 @@ namespace Conformance.Tests
 	{
 		public DbFactoryFixture()
 		{
-			ConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? "Server=localhost;User Id=mysqltest;Password='test;key=\"val';SSL Mode=None";
+			ConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? "Server=localhost;User Id=mysqltest;Password=test;SSL Mode=None";
 		}
 
 		public string ConnectionString { get; }
