@@ -36,12 +36,14 @@ steps:
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish SideBySide (net472)'
+  condition: eq(variables['Agent.OS'], 'Windows_NT')
   inputs:
     command: 'publish'
     arguments: '-c Release -f net472 tests/SideBySide/SideBySide.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
+  condition: eq(variables['Agent.OS'], 'Windows_NT')
   inputs:
     artifactName: 'SideBySide-net472-$(Agent.OS)'
     targetPath: 'tests/SideBySide/bin/Release/net472/publish'
