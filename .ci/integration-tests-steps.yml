@@ -1,0 +1,30 @@
+parameters:
+  unsupportedFeatures: ''
+  image: ''
+
+steps:
+- task: DownloadPipelineArtifact@0
+  inputs:
+    artifactName: 'SideBySide-2.1-$(Agent.OS)'
+    targetPath: $(System.DefaultWorkingDirectory)
+- bash: ${{ format('.ci/docker-run.sh {0} mysql 3300 {1}', parameters.image, parameters.unsupportedFeatures) }}
+  displayName: 'Start Docker container'
+- task: DotNetCoreCLI@2
+  displayName: ${{ format('Run {0} Integration Tests', parameters.image) }}
+  inputs:
+    command: 'custom'
+    custom: 'vstest'
+    arguments: 'SideBySide.dll /logger:trx'
+  env:
+    DATA__UNSUPPORTEDFEATURES: ${{ parameters.unsupportedFeatures }}
+    DATA__CONNECTIONSTRING: 'server=localhost;port=3300;user id=root;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600'
+    DATA__MYSQLBULKLOADERLOCALCSVFILE: '$(Build.Repository.LocalPath)/tests/TestData/LoadData_UTF8_BOM_Unix.CSV'
+    DATA__MYSQLBULKLOADERLOCALTSVFILE: '$(Build.Repository.LocalPath)/tests/TestData/LoadData_UTF8_BOM_Unix.TSV'
+    TF_BUILD: $(TF_BUILD)
+- task: PublishTestResults@2
+  condition: always()
+  inputs:
+    testResultsFormat: VSTest
+    testResultsFiles: '**/*.trx'
+    testRunTitle: ${{ format('{0} integration tests ($(Agent.OS), netcoreapp2.1)', parameters.image) }}
+    failTaskOnFailedTests: true

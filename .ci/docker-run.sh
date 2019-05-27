@@ -47,26 +47,31 @@ docker run -d \
 for i in `seq 1 30`; do
 	# wait for mysql to come up
 	sleep 1
+	echo "Testing if container is responding"
+	docker exec $NAME mysql -uroot -ptest -e "SELECT 1" >/dev/null 2>&1
+	if [ $? -ne 0 ]; then continue; fi
+
 	# try running the init script
-	docker exec -it $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init.sql' >/dev/null 2>&1
+	echo "Creating mysqltest user"
+	docker exec $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init.sql'
 	if [ $? -ne 0 ]; then continue; fi
 	if [[ $OMIT_FEATURES != *"Sha256Password"* ]]; then
-	 	docker exec -it $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_sha256.sql' >/dev/null 2>&1
+	 	docker exec $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_sha256.sql'
 		if [ $? -ne 0 ]; then continue; fi
 	fi
 
 	if [[ $OMIT_FEATURES != *"CachingSha2Password"* ]]; then
-		docker exec -it $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_caching_sha2.sql' >/dev/null 2>&1
+		docker exec $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_caching_sha2.sql'
 		if [ $? -ne 0 ]; then continue; fi
 	fi
 
 	if [[ $OMIT_FEATURES != *"Ed25519"* ]]; then
-		docker exec -it $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_ed25519.sql' >/dev/null 2>&1
+		docker exec $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_ed25519.sql'
 		if [ $? -ne 0 ]; then continue; fi
 	fi
 
 	# exit if successful
-	docker exec -it $NAME mysql -ussltest -ptest \
+	docker exec $NAME mysql -ussltest -ptest \
 		--ssl-mode=REQUIRED \
 		--ssl-ca=/etc/mysql/conf.d/certs/ssl-ca-cert.pem \
 		--ssl-cert=/etc/mysql/conf.d/certs/ssl-client-cert.pem \
@@ -74,7 +79,7 @@ for i in `seq 1 30`; do
 		-e "SELECT 1"
 	if [ $? -ne 0 ]; then
 		# mariadb uses --ssl=TRUE instead of --ssl-mode=REQUIRED
-		docker exec -it $NAME mysql -ussltest -ptest \
+		docker exec $NAME mysql -ussltest -ptest \
 			--ssl=TRUE \
 			--ssl-ca=/etc/mysql/conf.d/certs/ssl-ca-cert.pem \
 			--ssl-cert=/etc/mysql/conf.d/certs/ssl-client-cert.pem \

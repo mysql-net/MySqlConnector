@@ -1,15 +1,3 @@
-resources:
-  containers:
-  - container: mysql57
-    image: mysql:5.7.24
-    ports:
-    - "3300:3306"
-    env:
-      MYSQL_ROOT_PASSWORD: password
-    volumes:
-    - $(pwd)/.ci/run/$NAME:/var/run/mysqld:rw
-    - $(pwd)/.ci/server:/etc/mysql/conf.d:ro
-
 variables:
   DotNetCoreSdkVersion: '2.1.700'
 
@@ -21,13 +9,13 @@ trigger:
 
 jobs:
 - job: linux_build
-  displayName: 'Linux'
+  displayName: 'Linux Build'
   pool:
     vmimage: 'ubuntu-16.04'
   steps:
   - template: '.ci/build-steps.yml'
 - job: windows_build
-  displayName: 'Windows'
+  displayName: 'Windows Build'
   pool:
     vmimage: 'vs2017-win2016'
   steps:
@@ -46,3 +34,21 @@ jobs:
     vmimage: 'vs2017-win2016'
   steps:
   - template: '.ci/mysqlconnector-tests-steps.yml'
+- job: linux_integration_tests
+  dependsOn: linux_build
+  displayName: 'Linux Tests'
+  pool:
+    vmimage: 'ubuntu-16.04'
+  strategy:
+    matrix:
+      mysql56:
+        image: 'mysql:5.6.44'
+        unsupportedFeatures: 'Ed25519,Json,Sha256Password,RsaEncryption,LargePackets,CachingSha2Password,SessionTrack,Tls11,Tls12,UuidToBin'
+      mysql57:
+        image: 'mysql:5.7.26'
+        unsupportedFeatures: 'Ed25519,RsaEncryption,CachingSha2Password,Tls12,UuidToBin'
+  steps:
+  - template: '.ci/integration-tests-steps.yml'
+    parameters:
+      image: $(image)
+      unsupportedFeatures: $(unsupportedFeatures)

@@ -84,8 +84,9 @@ namespace SideBySide
 			csb.Database = null;
 			return csb;
 		}
-	
+
 		// tests can run much slower in CI environments
-		public static int TimeoutDelayFactor { get; } = Environment.GetEnvironmentVariable("APPVEYOR") == "True" || Environment.GetEnvironmentVariable("TRAVIS") == "true" ? 6 : 1;
+		public static int TimeoutDelayFactor { get; } = Environment.GetEnvironmentVariable("APPVEYOR") == "True" || Environment.GetEnvironmentVariable("TRAVIS") == "true" ? 6 :
+			Environment.GetEnvironmentVariable("TF_BUILD") == "True" ? 8 : 1;
 	}
 }
