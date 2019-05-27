@@ -57,7 +57,7 @@ steps:
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: 'SideBySide-2.0-$(Agent.OS)'
+    artifactName: 'SideBySide-netcoreapp2.0-$(Agent.OS)'
     targetPath: 'tests/SideBySide/bin/Release/netcoreapp2.0/publish'
 
 - task: DotNetCoreCLI@2
@@ -69,5 +69,5 @@ steps:
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: 'SideBySide-2.1-$(Agent.OS)'
+    artifactName: 'SideBySide-netcoreapp2.1-$(Agent.OS)'
     targetPath: 'tests/SideBySide/bin/Release/netcoreapp2.1/publish'
