@@ -20,17 +20,21 @@ namespace SideBySide
 
 		public static string CertsPath => Path.GetFullPath(Config.GetValue<string>("Data:CertificatesPath"));
 
-		private static IConfiguration ConfigBuilder { get; } = new ConfigurationBuilder()
-			.AddInMemoryCollection(DefaultConfig)
+		private static IConfiguration BuildConfiguration()
+		{
+			var builder = new ConfigurationBuilder()
+				.AddInMemoryCollection(DefaultConfig)
 #if NETCOREAPP1_1_2
-			.SetBasePath(Path.GetDirectoryName(typeof(AppConfig).GetTypeInfo().Assembly.Location))
+				.SetBasePath(Path.GetDirectoryName(typeof(AppConfig).GetTypeInfo().Assembly.Location))
 #elif NETCOREAPP2_0 || NETCOREAPP2_1
-			.SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
+				.SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
 #endif
-			.AddJsonFile("config.json")
-			.Build();
+				.AddJsonFile("config.json")
+				.AddEnvironmentVariables();
+			return builder.Build();
+		}
 
-		public static IConfiguration Config => ConfigBuilder;
+		public static IConfiguration Config { get; } = BuildConfiguration();
 
 		public static string ConnectionString => Config.GetValue<string>("Data:ConnectionString");
 
