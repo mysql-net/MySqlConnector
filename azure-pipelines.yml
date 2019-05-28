@@ -14,12 +14,25 @@ jobs:
     vmimage: 'ubuntu-16.04'
   steps:
   - template: '.ci/build-steps.yml'
+
 - job: windows_build
   displayName: 'Windows Build'
   pool:
     vmimage: 'vs2017-win2016'
   steps:
   - template: '.ci/build-steps.yml'
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish SideBySide (net472)'
+    inputs:
+      command: 'publish'
+      arguments: '-c Release -f net472 tests/SideBySide/SideBySide.csproj'
+      publishWebProjects: false
+      zipAfterPublish: false
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'SideBySide-net472-$(Agent.OS)'
+      targetPath: 'tests/SideBySide/bin/Release/net472/publish'
+
 - job: linux_unit_tests
   dependsOn: linux_build
   displayName: 'Linux Unit Tests'
@@ -27,6 +40,7 @@ jobs:
     vmimage: 'ubuntu-16.04'
   steps:
   - template: '.ci/mysqlconnector-tests-steps.yml'
+
 - job: windows_unit_tests
   dependsOn: windows_build
   displayName: 'Windows Unit Tests'
@@ -34,6 +48,7 @@ jobs:
     vmimage: 'vs2017-win2016'
   steps:
   - template: '.ci/mysqlconnector-tests-steps.yml'
+
 - job: linux_integration_tests
   dependsOn: linux_build
   displayName: 'Linux Tests'
