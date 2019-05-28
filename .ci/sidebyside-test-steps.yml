@@ -6,13 +6,15 @@ parameters:
   description: ''
 
 steps:
+- task: DeleteFiles@1
+  condition: always()
+  inputs:
+    contents: '**/*.trx'
 - task: DownloadPipelineArtifact@0
+  condition: always()
   inputs:
     artifactName: ${{ format('SideBySide-{0}-$(Agent.OS)', parameters.platform) }}
     targetPath: ${{ format('$(Build.BinariesDirectory)/{0}', parameters.platform) }}
-- task: DeleteFiles@1
-  inputs:
-    contents: '**/*.trx'
 - task: DotNetCoreCLI@2
   displayName: ${{ format('{0} {1} Tests', parameters.platform, parameters.description) }}
   inputs:
