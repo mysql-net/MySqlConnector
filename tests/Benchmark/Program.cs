@@ -181,7 +181,7 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 		}
 
 		// TODO: move to config file
-		static string s_connectionString = "server=127.0.0.1;user id=mysqltest;password='test;key=\"val';port=3306;ssl mode=none;Use Affected Rows=true;Connection Reset=false;Default Command Timeout=0;AutoEnlist=false;";
+		static string s_connectionString = "server=127.0.0.1;user id=mysqltest;password=test;port=3306;ssl mode=none;Use Affected Rows=true;Connection Reset=false;Default Command Timeout=0;AutoEnlist=false;";
 
 		MySqlConnection m_connection;
 	}

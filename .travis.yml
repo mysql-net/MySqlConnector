@@ -36,7 +36,7 @@ before_install:
 script:
 - dotnet restore
 - pushd tests/MySqlConnector.Tests && dotnet test -c Release && popd
-- pushd tests/Conformance.Tests && CONNECTION_STRING="Server=localhost;Port=3307;User Id=mysqltest;Password='test;key=\"val';SSL Mode=None" dotnet test -c Release && popd
+- pushd tests/Conformance.Tests && CONNECTION_STRING="Server=localhost;Port=3307;User Id=mysqltest;Password=test;SSL Mode=None" dotnet test -c Release && popd
 - pushd tests/SideBySide
 - dotnet build SideBySide.csproj -c Release -f netcoreapp2.0
 - echo 'Executing netcoreapp1.1.2 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp1.1.2

@@ -1,0 +1,84 @@
+variables:
+  DotNetCoreSdkVersion: '2.1.700'
+
+trigger:
+  batch: false
+  branches:
+    include:
+    - azure-pipelines
+
+jobs:
+- job: linux_build
+  displayName: 'Linux Build'
+  pool:
+    vmimage: 'ubuntu-16.04'
+  steps:
+  - template: '.ci/build-steps.yml'
+
+- job: windows_build
+  displayName: 'Windows Build'
+  pool:
+    vmimage: 'vs2017-win2016'
+  steps:
+  - template: '.ci/build-steps.yml'
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish SideBySide (net472)'
+    inputs:
+      command: 'publish'
+      arguments: '-c Release -f net472 tests/SideBySide/SideBySide.csproj'
+      publishWebProjects: false
+      zipAfterPublish: false
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'SideBySide-net472-$(Agent.OS)'
+      targetPath: 'tests/SideBySide/bin/Release/net472/publish'
+
+- job: linux_unit_tests
+  dependsOn: linux_build
+  displayName: 'Linux Unit Tests'
+  pool:
+    vmimage: 'ubuntu-16.04'
+  steps:
+  - template: '.ci/mysqlconnector-tests-steps.yml'
+
+- job: windows_unit_tests
+  dependsOn: windows_build
+  displayName: 'Windows Unit Tests'
+  pool:
+    vmimage: 'vs2017-win2016'
+  steps:
+  - template: '.ci/mysqlconnector-tests-steps.yml'
+
+- job: linux_integration_tests
+  dependsOn: linux_build
+  displayName: 'Linux Tests'
+  pool:
+    vmimage: 'ubuntu-16.04'
+  strategy:
+    matrix:
+      'MySQL 5.6':
+        image: 'mysql:5.6'
+        unsupportedFeatures: 'Ed25519,Json,Sha256Password,RsaEncryption,LargePackets,CachingSha2Password,SessionTrack,Tls11,Tls12,UuidToBin'
+      'MySQL 5.7':
+        image: 'mysql:5.7'
+        unsupportedFeatures: 'Ed25519,RsaEncryption,CachingSha2Password,Tls12,UuidToBin'
+      'MySQL 8.0':
+        image: 'mysql:8.0'
+        unsupportedFeatures: 'Ed25519'
+      'Percona 5.7':
+        image: 'percona:5.7.22'
+        unsupportedFeatures: 'CachingSha2Password,Ed25519,UuidToBin'
+      'MariaDB 10.2':
+        image: 'mariadb:10.2'
+        unsupportedFeatures: 'Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin'
+      'MariaDB 10.3':
+        image: 'mariadb:10.3'
+        unsupportedFeatures: 'Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin'
+      'MariaDB 10.4':
+        image: 'mariadb:10.4'
+        unsupportedFeatures: 'Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin'
+  steps:
+  - template: '.ci/integration-tests-steps.yml'
+    parameters:
+      image: $(image)
+      unsupportedFeatures: $(unsupportedFeatures)
