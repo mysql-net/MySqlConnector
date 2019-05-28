@@ -74,6 +74,9 @@ jobs:
       'MariaDB 10.3':
         image: 'mariadb:10.3'
         unsupportedFeatures: 'Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin'
+      'MariaDB 10.4':
+        image: 'mariadb:10.4'
+        unsupportedFeatures: 'Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin'
   steps:
   - template: '.ci/integration-tests-steps.yml'
     parameters:
