@@ -1,12 +1,6 @@
 variables:
   DotNetCoreSdkVersion: '2.1.700'
 
-trigger:
-  batch: false
-  branches:
-    include:
-    - azure-pipelines
-
 jobs:
 - job: linux_build
   displayName: 'Linux Build'
