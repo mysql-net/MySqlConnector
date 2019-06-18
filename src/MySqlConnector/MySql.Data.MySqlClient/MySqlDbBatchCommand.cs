@@ -1,5 +1,6 @@
 using System.Data;
 using System.Data.Common;
+using MySqlConnector.Core;
 
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 namespace System.Data.Common
@@ -19,7 +20,7 @@ namespace System.Data.Common
 
 namespace MySql.Data.MySqlClient
 {
-	public sealed class MySqlDbBatchCommand : DbBatchCommand
+	public sealed class MySqlDbBatchCommand : DbBatchCommand, IMySqlCommand
 	{
 		public MySqlDbBatchCommand()
 			: this(null)
@@ -46,6 +47,29 @@ namespace MySql.Data.MySqlClient
 					m_parameterCollection = new MySqlParameterCollection();
 				return m_parameterCollection;
 			}
+		}
+
+		MySqlConnection IMySqlCommand.Connection { get; set; }
+
+		long IMySqlCommand.LastInsertedId
+		{
+			get
+			{
+				// TODO:
+				return 0;
+			}
+		}
+
+
+		PreparedStatements IMySqlCommand.TryGetPreparedStatements()
+		{
+			// TODO:
+			return null;
+		}
+
+		void IMySqlCommand.SetLastInsertedId(long lastInsertedId)
+		{
+			// TODO:
 		}
 
 		MySqlParameterCollection m_parameterCollection;

@@ -415,7 +415,6 @@ namespace SideBySide
 					cmd.CommandText = "number_lister";
 					cmd.CommandType = CommandType.StoredProcedure;
 					cmd.Parameters.Add(parameter);
-					cmd.Prepare();
 					using (var reader = await cmd.ExecuteReaderAsync())
 					{
 						for (var i = 0; i < (int) parameter.Value; i++)

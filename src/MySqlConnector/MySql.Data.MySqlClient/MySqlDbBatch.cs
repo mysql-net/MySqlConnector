@@ -1,8 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
+using MySqlConnector.Core;
+using MySqlConnector.Protocol.Serialization;
 
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 namespace System.Data.Common
@@ -14,8 +15,10 @@ namespace System.Data.Common
 
 		#region Execution (mirrors DbCommand)
 
-		public abstract DbDataReader ExecuteReader();
-		public abstract Task<DbDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default);
+		public DbDataReader ExecuteReader() => ExecuteDbDataReader();
+		protected abstract DbDataReader ExecuteDbDataReader();
+		public Task<DbDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default) => ExecuteDbDataReaderAsync(cancellationToken);
+		protected abstract Task<DbDataReader> ExecuteDbDataReaderAsync(CancellationToken cancellationToken);
 
 		public abstract int ExecuteNonQuery();
 		public abstract Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default);
@@ -76,12 +79,12 @@ namespace MySql.Data.MySqlClient
 		{
 			Connection = connection;
 			Transaction = transaction;
-			m_dbBatchCommands = new MySqlDbBatchCommandCollection();
+			m_batchCommands = new MySqlDbBatchCommandCollection();
 		}
 
 		public new MySqlConnection Connection { get; set; }
 		public new MySqlTransaction Transaction { get; set; }
-		public new MySqlDbBatchCommandCollection BatchCommands => m_dbBatchCommands;
+		public new MySqlDbBatchCommandCollection BatchCommands => m_batchCommands;
 
 		protected override DbConnection DbConnection
 		{
@@ -95,19 +98,38 @@ namespace MySql.Data.MySqlClient
 			set => Transaction = (MySqlTransaction) value;
 		}
 
-		protected override DbBatchCommandCollection DbBatchCommands => m_dbBatchCommands;
+		protected override DbBatchCommandCollection DbBatchCommands => m_batchCommands;
 
-		public override DbDataReader ExecuteReader() => throw new NotImplementedException();
+		protected override DbDataReader ExecuteDbDataReader()
+		{
+			// TODO: ResetCommandTimeout();
+			return ExecuteReaderAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		}
 
-		public override Task<DbDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CancellationToken cancellationToken)
+		{
+			// TODO: ResetCommandTimeout();
+			return ExecuteReaderAsync(AsyncIOBehavior, cancellationToken);
+		}
 
-		public override int ExecuteNonQuery() => throw new NotImplementedException();
+		private Task<DbDataReader> ExecuteReaderAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			// TODO:
+			// if (!IsValid(out var exception))
+			// 	return Utility.TaskFromException<DbDataReader>(exception);
 
-		public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+			foreach (IMySqlCommand batchCommand in m_batchCommands)
+				batchCommand.Connection = Connection;
+			return CommandExecutor.ExecuteReaderAsync(m_batchCommands, new SingleCommandPayloadCreator(), default /* TODO: */, ioBehavior, cancellationToken);
+		}
 
-		public override object ExecuteScalar() => throw new NotImplementedException();
+		public override int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+		public override object ExecuteScalar() => ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+
+		public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default) => ExecuteNonQueryAsync(AsyncIOBehavior, cancellationToken);
+
+		public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken = default) => ExecuteScalarAsync(AsyncIOBehavior, cancellationToken);
 
 		public override int Timeout { get; set; }
 
@@ -119,6 +141,44 @@ namespace MySql.Data.MySqlClient
 
 		public override Task CancelAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-		readonly MySqlDbBatchCommandCollection m_dbBatchCommands;
+		private async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			// TODO: ResetCommandTimeout();
+			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
+			{
+				do
+				{
+					while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
+					{
+					}
+				} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
+				return reader.RecordsAffected;
+			}
+		}
+
+		private async Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			// TODO: ResetCommandTimeout();
+			var hasSetResult = false;
+			object result = null;
+			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(/* TODO: CommandBehavior.SingleResult | CommandBehavior.SingleRow, */ioBehavior, cancellationToken).ConfigureAwait(false))
+			{
+				do
+				{
+					var hasResult = await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					if (!hasSetResult)
+					{
+						if (hasResult)
+							result = reader.GetValue(0);
+						hasSetResult = true;
+					}
+				} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
+			}
+			return result;
+		}
+
+		private IOBehavior AsyncIOBehavior => Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous;
+
+		readonly MySqlDbBatchCommandCollection m_batchCommands;
 	}
 }

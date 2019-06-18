@@ -30,11 +30,11 @@ namespace MySqlConnector.Core
 			using (m_command.RegisterCancel(cancellationToken))
 			{
 				m_command.Connection.Session.StartQuerying(m_command);
-				m_command.LastInsertedId = -1;
+				((IMySqlCommand) m_command).SetLastInsertedId(-1);
 				try
 				{
 					await m_command.Connection.Session.SendAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
-					return await MySqlDataReader.CreateAsync(m_command, behavior, ResultSetProtocol.Text, ioBehavior).ConfigureAwait(false);
+					return await MySqlDataReader.CreateAsync(default, default, m_command, behavior, ioBehavior).ConfigureAwait(false);
 				}
 				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
 				{
@@ -53,8 +53,10 @@ namespace MySqlConnector.Core
 
 		private PayloadData CreateQueryPayload(string commandText, MySqlParameterCollection parameterCollection)
 		{
+			var writer = new ByteBufferWriter();
 			var preparer = new StatementPreparer(commandText, parameterCollection, m_command.CreateStatementPreparerOptions());
-			return new PayloadData(preparer.ParseAndBindParameters(), isPooled: true);
+			preparer.ParseAndBindParameters(writer);
+			return writer.ToPayloadData();
 		}
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(TextCommandExecutor));

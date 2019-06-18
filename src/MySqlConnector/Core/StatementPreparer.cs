@@ -29,18 +29,14 @@ namespace MySqlConnector.Core
 			return new ParsedStatements(statements, writer.ToPayloadData());
 		}
 
-		public ArraySegment<byte> ParseAndBindParameters()
+		public void ParseAndBindParameters(ByteBufferWriter writer)
 		{
-			var writer = new ByteBufferWriter(m_commandText.Length + 1);
-			writer.Write((byte) CommandKind.Query);
-
 			if (!string.IsNullOrWhiteSpace(m_commandText))
 			{
+				writer.Write((byte) CommandKind.Query);
 				var parser = new ParameterSqlParser(this, writer);
 				parser.Parse(m_commandText);
 			}
-
-			return writer.ArraySegment;
 		}
 
 		private int GetParameterIndex(string name)

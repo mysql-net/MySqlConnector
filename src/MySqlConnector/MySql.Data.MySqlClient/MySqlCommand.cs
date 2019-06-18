@@ -12,7 +12,7 @@ using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
 {
-	public sealed class MySqlCommand : DbCommand
+	public sealed class MySqlCommand : DbCommand, IMySqlCommand
 #if !NETSTANDARD1_3
 		, ICloneable
 #endif
@@ -132,7 +132,7 @@ namespace MySql.Data.MySqlClient
 
 		private async Task DoPrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			var statementPreparer = new StatementPreparer(CommandText, m_parameterCollection, CreateStatementPreparerOptions());
+			var statementPreparer = new StatementPreparer(CommandText, m_parameterCollection, ((IMySqlCommand) this).CreateStatementPreparerOptions());
 			var parsedStatements = statementPreparer.SplitStatements();
 
 			if (parsedStatements.Statements.Count > 1)
@@ -203,7 +203,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public bool IsPrepared => TryGetPreparedStatement() != null;
+		public bool IsPrepared => ((IMySqlCommand) this).TryGetPreparedStatements() != null;
 
 		public new MySqlTransaction Transaction { get; set; }
 
@@ -239,7 +239,9 @@ namespace MySql.Data.MySqlClient
 
 		public override UpdateRowSource UpdatedRowSource { get; set; }
 
-		public long LastInsertedId { get; internal set; }
+		public long LastInsertedId { get; private set; }
+
+		void IMySqlCommand.SetLastInsertedId(long value) => LastInsertedId = value;
 
 		protected override DbConnection DbConnection
 		{
@@ -320,15 +322,15 @@ namespace MySql.Data.MySqlClient
 			if (!IsValid(out var exception))
 				return Utility.TaskFromException<DbDataReader>(exception);
 
-			var preparedStatements = TryGetPreparedStatement();
-			if (preparedStatements != null)
-				m_commandExecutor = new PreparedStatementCommandExecutor(this, preparedStatements);
-			else if (m_commandType == CommandType.Text)
-				m_commandExecutor = new TextCommandExecutor(this);
-			else if (m_commandType == CommandType.StoredProcedure)
+			if (m_commandType == CommandType.StoredProcedure)
+			{
 				m_commandExecutor = new StoredProcedureCommandExecutor(this);
-
-			return m_commandExecutor.ExecuteReaderAsync(CommandText, m_parameterCollection, behavior, ioBehavior, cancellationToken);
+				return m_commandExecutor.ExecuteReaderAsync(CommandText, m_parameterCollection, behavior, ioBehavior, cancellationToken);
+			}
+			else
+			{
+				return CommandExecutor.ExecuteReaderAsync(new IMySqlCommand[] { this }, new SingleCommandPayloadCreator(), behavior, ioBehavior, cancellationToken);
+			}
 		}
 
 		public MySqlCommand Clone() => new MySqlCommand(this);
@@ -388,40 +390,6 @@ namespace MySql.Data.MySqlClient
 			Connection?.Session?.SetTimeout(commandTimeout == 0 ? Constants.InfiniteTimeout : commandTimeout * 1000);
 		}
 
-		internal StatementPreparerOptions CreateStatementPreparerOptions()
-		{
-			var statementPreparerOptions = StatementPreparerOptions.None;
-			if (Connection.AllowUserVariables || CommandType == CommandType.StoredProcedure)
-				statementPreparerOptions |= StatementPreparerOptions.AllowUserVariables;
-			if (Connection.DateTimeKind == DateTimeKind.Utc)
-				statementPreparerOptions |= StatementPreparerOptions.DateTimeUtc;
-			else if (Connection.DateTimeKind == DateTimeKind.Local)
-				statementPreparerOptions |= StatementPreparerOptions.DateTimeLocal;
-			if (CommandType == CommandType.StoredProcedure)
-				statementPreparerOptions |= StatementPreparerOptions.AllowOutputParameters;
-
-			switch (Connection.GuidFormat)
-			{
-			case MySqlGuidFormat.Char36:
-				statementPreparerOptions |= StatementPreparerOptions.GuidFormatChar36;
-				break;
-			case MySqlGuidFormat.Char32:
-				statementPreparerOptions |= StatementPreparerOptions.GuidFormatChar32;
-				break;
-			case MySqlGuidFormat.Binary16:
-				statementPreparerOptions |= StatementPreparerOptions.GuidFormatBinary16;
-				break;
-			case MySqlGuidFormat.TimeSwapBinary16:
-				statementPreparerOptions |= StatementPreparerOptions.GuidFormatTimeSwapBinary16;
-				break;
-			case MySqlGuidFormat.LittleEndianBinary16:
-				statementPreparerOptions |= StatementPreparerOptions.GuidFormatLittleEndianBinary16;
-				break;
-			}
-
-			return statementPreparerOptions;
-		}
-
 		private IOBehavior AsyncIOBehavior => Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous;
 
 		private void VerifyNotDisposed()
@@ -446,10 +414,10 @@ namespace MySql.Data.MySqlClient
 			return exception is null;
 		}
 
-		private PreparedStatements TryGetPreparedStatement() => CommandType == CommandType.Text && !string.IsNullOrWhiteSpace(CommandText) && m_connection != null &&
+		PreparedStatements IMySqlCommand.TryGetPreparedStatements() => CommandType == CommandType.Text && !string.IsNullOrWhiteSpace(CommandText) && m_connection != null &&
 			m_connection.State == ConnectionState.Open ? m_connection.Session.TryGetPreparedStatement(CommandText) : null;
 
-		internal void ReaderClosed() => (m_commandExecutor as StoredProcedureCommandExecutor)?.SetParams();
+		internal void ReaderClosed() => (m_commandExecutor as StoredProcedureCommandExecutor)?.SetParams(); // TODO: Delete
 
 		static int s_commandId = 1;
 

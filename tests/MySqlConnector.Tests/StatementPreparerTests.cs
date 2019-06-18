@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text;
 using MySql.Data.MySqlClient;
 using MySqlConnector.Core;
+using MySqlConnector.Protocol.Serialization;
 using Xunit;
 
 namespace MySqlConnector.Tests
@@ -241,7 +242,13 @@ SELECT @'var' as R")]
 			}
 		}
 
-		private static string GetParsedSql(string input, MySqlParameterCollection parameters = null, StatementPreparerOptions options = StatementPreparerOptions.None) =>
-			Encoding.UTF8.GetString(new StatementPreparer(input, parameters ?? new MySqlParameterCollection(), options).ParseAndBindParameters().Slice(1));
+		private static string GetParsedSql(string input, MySqlParameterCollection parameters = null, StatementPreparerOptions options = StatementPreparerOptions.None)
+		{
+			var preparer = new StatementPreparer(input, parameters ?? new MySqlParameterCollection(), options);
+			var writer = new ByteBufferWriter();
+			preparer.ParseAndBindParameters(writer);
+			using (var payload = writer.ToPayloadData())
+				return Encoding.UTF8.GetString(payload.AsSpan().Slice(1));
+		}
 	}
 }

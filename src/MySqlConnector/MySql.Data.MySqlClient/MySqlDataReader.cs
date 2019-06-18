@@ -56,8 +56,24 @@ namespace MySql.Data.MySqlClient
 				await m_resultSet.ReadEntireAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				var nextResult = await ScanResultSetAsync(ioBehavior, m_resultSet, cancellationToken).ConfigureAwait(false);
 
-				if (nextResult != null)
+				if (nextResult is null)
+				{
+					var writer = new ByteBufferWriter();
+					// TODO: Update Command, probably?
+					if (m_payloadCreator?.WriteQueryCommand(ref m_commandListPosition, writer) ?? false) // TODO: always supply payload creator
+					{
+						using (var payload = writer.ToPayloadData())
+						{
+							await Command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+							await ReadFirstResultSetAsync(ioBehavior).ConfigureAwait(false);
+							nextResult = m_resultSet;
+						}
+					}
+				}
+				else
+				{
 					ActivateResultSet(nextResult);
+				}
 
 				m_resultSet = nextResult ?? new ResultSet(this);
 #if !NETSTANDARD1_3
@@ -92,7 +108,7 @@ namespace MySql.Data.MySqlClient
 					new MySqlException("Failed to read the result set.", resultSet.ReadResultSetHeaderException);
 			}
 
-			Command.LastInsertedId = resultSet.LastInsertId;
+			Command.SetLastInsertedId(resultSet.LastInsertId);
 			m_recordsAffected = m_recordsAffected is null ? resultSet.RecordsAffected : m_recordsAffected.Value + (resultSet.RecordsAffected ?? 0);
 			m_hasWarnings = resultSet.WarningCount != 0;
 		}
@@ -287,14 +303,13 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		internal MySqlCommand Command { get; private set; }
-		internal ResultSetProtocol ResultSetProtocol { get; }
+		internal IMySqlCommand Command { get; private set; }
 		internal MySqlConnection Connection => Command?.Connection;
 		internal ServerSession Session => Command?.Connection.Session;
 
-		internal static async Task<MySqlDataReader> CreateAsync(MySqlCommand command, CommandBehavior behavior, ResultSetProtocol resultSetProtocol, IOBehavior ioBehavior)
+		internal static async Task<MySqlDataReader> CreateAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IMySqlCommand command, CommandBehavior behavior, IOBehavior ioBehavior)
 		{
-			var dataReader = new MySqlDataReader(command, resultSetProtocol, behavior);
+			var dataReader = new MySqlDataReader(commandListPosition, payloadCreator, command, behavior);
 			command.Connection.SetActiveReader(dataReader);
 
 			try
@@ -410,10 +425,11 @@ namespace MySql.Data.MySqlClient
 		}
 #endif
 
-		private MySqlDataReader(MySqlCommand command, ResultSetProtocol resultSetProtocol, CommandBehavior behavior)
+		private MySqlDataReader(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IMySqlCommand command, CommandBehavior behavior)
 		{
+			m_commandListPosition = commandListPosition;
+			m_payloadCreator = payloadCreator;
 			Command = command;
-			ResultSetProtocol = resultSetProtocol;
 			m_behavior = behavior;
 		}
 
@@ -447,7 +463,7 @@ namespace MySql.Data.MySqlClient
 				Command.ReaderClosed();
 				if ((m_behavior & CommandBehavior.CloseConnection) != 0)
 				{
-					Command.Dispose();
+					(Command as IDisposable)?.Dispose();
 					connection.Close();
 				}
 				Command = null;
@@ -467,6 +483,8 @@ namespace MySql.Data.MySqlClient
 		}
 
 		readonly CommandBehavior m_behavior;
+		CommandListPosition m_commandListPosition;
+		private readonly ICommandPayloadCreator m_payloadCreator;
 		bool m_closed;
 		int? m_recordsAffected;
 		bool m_hasWarnings;

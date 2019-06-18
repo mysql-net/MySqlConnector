@@ -248,7 +248,74 @@ namespace MySqlConnector.Core
 				}
 
 				if (row_ is null)
-					row_ = DataReader.ResultSetProtocol == ResultSetProtocol.Binary ? (Row) new BinaryRow(this) : new TextRow(this);
+				{
+					bool isBinaryRow = false;
+					if (payload.HeaderByte == 0 && !Connection.IgnorePrepare)
+					{
+						// this might be a binary row, but it might also be a text row whose first column is zero bytes long; try reading
+						// the row as a series of length-encoded values (the text format) to see if this might plausibly be a text row
+						var isTextRow = false;
+						var reader = new ByteArrayReader(payload.AsSpan());
+						var columnCount = 0;
+						while (reader.BytesRemaining > 0)
+						{
+							int length;
+							var firstByte = reader.ReadByte();
+							if (firstByte == 0xFB)
+							{
+								// NULL
+								length = 0;
+							}
+							else if (firstByte == 0xFC)
+							{
+								// two-byte length-encoded integer
+								if (reader.BytesRemaining < 2)
+									break;
+								length = unchecked((int) reader.ReadFixedLengthUInt32(2));
+							}
+							else if (firstByte == 0xFD)
+							{
+								// three-byte length-encoded integer
+								if (reader.BytesRemaining < 3)
+									break;
+								length = unchecked((int) reader.ReadFixedLengthUInt32(3));
+							}
+							else if (firstByte == 0xFE)
+							{
+								// eight-byte length-encoded integer
+								if (reader.BytesRemaining < 8)
+									break;
+								length = checked((int) reader.ReadFixedLengthUInt64(8));
+							}
+							else if (firstByte == 0xFF)
+							{
+								// invalid length prefix
+								break;
+							}
+							else
+							{
+								// single-byte length
+								length = firstByte;
+							}
+
+							if (reader.BytesRemaining < length)
+								break;
+							reader.Offset += length;
+							columnCount++;
+
+							if (columnCount == ColumnDefinitions.Length)
+							{
+								// if we used up all the bytes reading exactly 'ColumnDefinitions' length-encoded columns, then assume this is a text row
+								if (reader.BytesRemaining == 0)
+									isTextRow = true;
+								break;
+							}
+						}
+
+						isBinaryRow = !isTextRow;
+					}
+					row_ = isBinaryRow ? (Row) new BinaryRow(this) : new TextRow(this);
+				}
 				row_.SetData(payload.ArraySegment);
 				m_rowBuffered = row_;
 				m_hasRows = true;
@@ -331,7 +398,7 @@ namespace MySqlConnector.Core
 
 		public readonly MySqlDataReader DataReader;
 		public Exception ReadResultSetHeaderException { get; private set; }
-		public MySqlCommand Command => DataReader.Command;
+		public IMySqlCommand Command => DataReader.Command;
 		public MySqlConnection Connection => DataReader.Connection;
 		public ServerSession Session => DataReader.Session;
 

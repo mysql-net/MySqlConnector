@@ -147,7 +147,7 @@ namespace MySqlConnector.Core
 			return null;
 		}
 
-		public void StartQuerying(MySqlCommand command)
+		public void StartQuerying(IMySqlCommand command)
 		{
 			lock (m_lock)
 			{
@@ -160,8 +160,13 @@ namespace MySqlConnector.Core
 
 				VerifyState(State.Connected);
 				m_state = State.Querying;
-				command.CancelAttemptCount = 0;
-				m_activeCommandId = command.CommandId;
+
+				if (command is MySqlCommand realCommand)
+				{
+					// TODO:
+					realCommand.CancelAttemptCount = 0;
+					m_activeCommandId = realCommand.CommandId;
+				}
 			}
 		}
 
