@@ -326,7 +326,7 @@ namespace MySqlConnector.Core
 						if (!serverSupportsSsl)
 						{
 							Log.Error("Session{0} requires SSL but server doesn't support it", m_logArguments);
-							throw new MySqlException("Server does not support SSL");
+							throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Server does not support SSL");
 						}
 
 						try
@@ -383,12 +383,12 @@ namespace MySqlConnector.Core
 			catch (ArgumentException ex)
 			{
 				Log.Error(ex, "Session{0} couldn't connect to server", m_logArguments);
-				throw new MySqlException("Couldn't connect to server", ex);
+				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't connect to server", ex);
 			}
 			catch (IOException ex)
 			{
 				Log.Error(ex, "Session{0} couldn't connect to server", m_logArguments);
-				throw new MySqlException("Couldn't connect to server", ex);
+				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't connect to server", ex);
 			}
 		}
 
@@ -474,7 +474,7 @@ namespace MySqlConnector.Core
 				if (!m_isSecureConnection)
 				{
 					Log.Error("Session{0} needs a secure connection to use AuthenticationMethod '{1}'", m_logArguments);
-					throw new MySqlException("Authentication method '{0}' requires a secure connection.".FormatInvariant(switchRequest.Name));
+					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Authentication method '{0}' requires a secure connection.".FormatInvariant(switchRequest.Name));
 				}
 				payload = new PayloadData(Encoding.UTF8.GetBytes(cs.Password));
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -501,7 +501,7 @@ namespace MySqlConnector.Core
 				{
 #if NET45
 					Log.Error("Session{0} can't use AuthenticationMethod '{1}' without secure connection on .NET 4.5", m_logArguments);
-					throw new MySqlException("Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
+					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
 #else
 					var publicKey = await GetRsaPublicKeyAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 					return await SendEncryptedPasswordAsync(switchRequest, publicKey, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -561,7 +561,7 @@ namespace MySqlConnector.Core
 			catch (Exception ex)
 			{
 				Log.Error(ex, "Session{0} couldn't load server's RSA public key", m_logArguments);
-				throw new MySqlException("Couldn't load server's RSA public key; try using a secure connection instead.", ex);
+				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't load server's RSA public key; try using a secure connection instead.", ex);
 			}
 
 			// add NUL terminator to password
@@ -615,7 +615,7 @@ namespace MySqlConnector.Core
 
 			m_logArguments[1] = switchRequestName;
 			Log.Error("Session{0} couldn't use AuthenticationMethod '{1}' because RSA key wasn't specified or couldn't be retrieved", m_logArguments);
-			throw new MySqlException("Authentication method '{0}' failed. Either use a secure connection, specify the server's RSA public key with ServerRSAPublicKeyFile, or set AllowPublicKeyRetrieval=True.".FormatInvariant(switchRequestName));
+			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Authentication method '{0}' failed. Either use a secure connection, specify the server's RSA public key with ServerRSAPublicKeyFile, or set AllowPublicKeyRetrieval=True.".FormatInvariant(switchRequestName));
 		}
 
 		public async ValueTask<bool> TryPingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -813,7 +813,7 @@ namespace MySqlConnector.Core
 					{
 						SafeDispose(ref tcpClient);
 						Log.Info("Session{0} connect timeout expired connecting to IpAddress {1} for HostName '{2}'", m_logArguments[0], ipAddress, hostName);
-						throw new MySqlException("Connect Timeout expired.");
+						throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 					}
 
 					HostName = hostName;
@@ -858,7 +858,7 @@ namespace MySqlConnector.Core
 					catch (ObjectDisposedException ex) when (cancellationToken.IsCancellationRequested)
 					{
 						Log.Info("Session{0} connect timeout expired connecting to UNIX Socket '{1}'", m_logArguments);
-						throw new MySqlException("Connect Timeout expired.", ex);
+						throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
 					}
 				}
 			}
@@ -900,7 +900,7 @@ namespace MySqlConnector.Core
 					{
 						m_logArguments[1] = cs.PipeName;
 						Log.Info("Session{0} connect timeout expired connecting to named pipe '{1}'", m_logArguments);
-						throw new MySqlException("Connect Timeout expired.", ex);
+						throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
 					}
 				}
 			}
@@ -1193,9 +1193,9 @@ namespace MySqlConnector.Core
 				lock (m_lock)
 					m_state = State.Failed;
 				if (ex is AuthenticationException)
-					throw new MySqlException("SSL Authentication Error", ex);
+					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL Authentication Error", ex);
 				if (ex is IOException && clientCertificates != null)
-					throw new MySqlException("MySQL Server rejected client certificate", ex);
+					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "MySQL Server rejected client certificate", ex);
 				throw;
 			}
 			finally
