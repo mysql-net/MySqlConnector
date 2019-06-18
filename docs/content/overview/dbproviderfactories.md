@@ -31,5 +31,5 @@ For .NET Framework applications, add the following section to your `app.config` 
 
 ## .NET Core
 
-For .NET Core 2.1 or later, call `MySqlClientFactory.Register()` during application startup. This will register MySqlConnector's
-`DbProviderFactory` implementation in the central `DbProviderFactories` registry.
+For .NET Core 2.1 or later, call `DbProviderFactories.RegisterFactory("MySqlConnector", MySqlClientFactory.Instance)` during application
+startup. This will register MySqlConnector's `DbProviderFactory` implementation in the central `DbProviderFactories` registry.

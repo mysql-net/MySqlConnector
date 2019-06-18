@@ -1,3 +1,4 @@
+using System.Data.Common;
 using MySql.Data.MySqlClient;
 using Xunit;
 
@@ -46,17 +47,17 @@ namespace SideBySide
 
 #if !NETCOREAPP1_1_2 && !NETCOREAPP2_0
 		[Fact]
-		public void DbProviderFactories()
+		public void DbProviderFactoriesGetFactory()
 		{
 #if NETCOREAPP2_1
-			MySqlClientFactory.Register();
+			DbProviderFactories.RegisterFactory("MySqlConnector", MySqlClientFactory.Instance);
 #endif
 #if BASELINE
 			var providerInvariantName = "MySql.Data.MySqlClient";
 #else
-			var providerInvariantName = MySqlClientFactory.InvariantName;
+			var providerInvariantName = "MySqlConnector";
 #endif
-			var factory = System.Data.Common.DbProviderFactories.GetFactory(providerInvariantName);
+			var factory = DbProviderFactories.GetFactory(providerInvariantName);
 			Assert.NotNull(factory);
 			Assert.Same(MySqlClientFactory.Instance, factory);
 
