@@ -132,6 +132,46 @@ CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCRE
 			}
 		}
 
+		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=14115")]
+		[MemberData(nameof(GetInsertAndQueryData))]
+		public void InsertAndQueryMultipleStatements(bool isPrepared, string dataType, object dataValue)
+		{
+			var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString)
+			{
+				IgnorePrepare = !isPrepared,
+			};
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+				connection.Execute($@"DROP TABLE IF EXISTS prepared_command_test;
+CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT, data {dataType});");
+
+				using (var command = new MySqlCommand(@"INSERT INTO prepared_command_test(data) VALUES(@null);
+INSERT INTO prepared_command_test(data) VALUES(@data);
+SELECT data FROM prepared_command_test ORDER BY rowid;", connection))
+				{
+					command.Parameters.AddWithValue("@null", null);
+					command.Parameters.AddWithValue("@data", dataValue);
+					if (isPrepared)
+						command.Prepare();
+					Assert.Equal(isPrepared, command.IsPrepared);
+
+					using (var reader = command.ExecuteReader())
+					{
+						Assert.True(reader.Read());
+						Assert.True(reader.IsDBNull(0));
+
+						Assert.True(reader.Read());
+						Assert.False(reader.IsDBNull(0));
+						Assert.Equal(dataValue, reader.GetValue(0));
+
+						Assert.False(reader.Read());
+						Assert.False(reader.NextResult());
+					}
+				}
+			}
+		}
+
 		[Fact]
 		public void PrepareMultipleTimes()
 		{

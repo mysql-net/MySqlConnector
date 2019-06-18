@@ -315,6 +315,12 @@ namespace MySql.Data.MySqlClient
 			try
 			{
 				await dataReader.ReadFirstResultSetAsync(ioBehavior).ConfigureAwait(false);
+
+				// if the command list has multiple commands, keep reading until a result set is found
+				while (dataReader.m_resultSet.State == ResultSetState.NoMoreData && payloadCreator is object && commandListPosition.CommandIndex < commandListPosition.Commands.Count)
+				{
+					await dataReader.NextResultAsync(ioBehavior, /* TODO: */ default).ConfigureAwait(false);
+				}
 			}
 			catch (Exception)
 			{

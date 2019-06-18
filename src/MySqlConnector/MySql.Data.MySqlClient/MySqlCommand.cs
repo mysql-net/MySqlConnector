@@ -135,9 +135,6 @@ namespace MySql.Data.MySqlClient
 			var statementPreparer = new StatementPreparer(CommandText, m_parameterCollection, ((IMySqlCommand) this).CreateStatementPreparerOptions());
 			var parsedStatements = statementPreparer.SplitStatements();
 
-			if (parsedStatements.Statements.Count > 1)
-				throw new NotSupportedException("Multiple semicolon-delimited SQL statements are not supported by MySqlCommand.Prepare");
-
 			var columnsAndParameters = new ResizableArray<byte>();
 			var columnsAndParametersSize = 0;
 
