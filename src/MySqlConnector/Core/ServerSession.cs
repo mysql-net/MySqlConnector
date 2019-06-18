@@ -282,7 +282,7 @@ namespace MySqlConnector.Core
 						lock (m_lock)
 							m_state = State.Failed;
 						Log.Error("Session{0} connecting failed", m_logArguments);
-						throw new MySqlException((int) MySqlErrorCode.UnableToConnectToHost, null, "Unable to connect to any of the specified MySQL hosts.");
+						throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Unable to connect to any of the specified MySQL hosts.");
 					}
 
 					var byteHandler = m_socket is null ? new StreamByteHandler(m_stream) : (IByteHandler) new SocketByteHandler(m_socket);
@@ -799,7 +799,7 @@ namespace MySqlConnector.Core
 							{
 								SafeDispose(ref tcpClient);
 								Log.Info("Session{0} connect timeout expired connecting to IpAddress {1} for HostName '{2}'", m_logArguments[0], ipAddress, hostName);
-								throw new MySqlException((int) MySqlErrorCode.UnableToConnectToHost, null, "Connect Timeout expired.", ex);
+								throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
 							}
 						}
 					}

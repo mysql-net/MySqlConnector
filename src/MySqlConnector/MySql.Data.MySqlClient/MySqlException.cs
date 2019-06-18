@@ -55,6 +55,16 @@ namespace MySql.Data.MySqlClient
 		{
 		}
 
+		internal MySqlException(MySqlErrorCode errorCode, string message)
+			: this((int) errorCode, null, message, null)
+		{
+		}
+
+		internal MySqlException(MySqlErrorCode errorCode, string message, Exception innerException)
+			: this((int) errorCode, null, message, innerException)
+		{
+		}
+
 		internal MySqlException(int errorNumber, string sqlState, string message)
 			: this(errorNumber, sqlState, message, null)
 		{
@@ -70,7 +80,7 @@ namespace MySql.Data.MySqlClient
 		internal static MySqlException CreateForTimeout() => CreateForTimeout(null);
 
 		internal static MySqlException CreateForTimeout(Exception innerException) =>
-			new MySqlException((int) MySqlErrorCode.CommandTimeoutExpired, null, "The Command Timeout expired before the operation completed.", innerException);
+			new MySqlException(MySqlErrorCode.CommandTimeoutExpired, "The Command Timeout expired before the operation completed.", innerException);
 
 		IDictionary m_data;
 	}

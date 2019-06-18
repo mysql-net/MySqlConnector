@@ -316,7 +316,7 @@ namespace MySql.Data.MySqlClient
 			catch (SocketException ex)
 			{
 				SetState(ConnectionState.Closed);
-				throw new MySqlException((int) MySqlErrorCode.UnableToConnectToHost, null, "Unable to connect to any of the specified MySQL hosts.", ex);
+				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Unable to connect to any of the specified MySQL hosts.", ex);
 			}
 
 #if !NETSTANDARD1_3
@@ -598,7 +598,7 @@ namespace MySql.Data.MySqlClient
 			}
 			catch (OperationCanceledException ex) when (timeoutSource?.IsCancellationRequested ?? false)
 			{
-				throw new MySqlException((int) MySqlErrorCode.UnableToConnectToHost, null, "Connect Timeout expired.", ex);
+				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
 			}
 			finally
 			{
