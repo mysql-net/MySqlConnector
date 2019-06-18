@@ -75,8 +75,8 @@ using the methods <a href="https://docs.microsoft.com/en-us/dotnet/framework/dat
 
 <h2 id="net-core">.NET Core</h2>
 
-<p>For .NET Core 2.1 or later, call <code>MySqlClientFactory.Register()</code> during application startup. This will register MySqlConnector&rsquo;s
-<code>DbProviderFactory</code> implementation in the central <code>DbProviderFactories</code> registry.</p>
+<p>For .NET Core 2.1 or later, call <code>DbProviderFactories.RegisterFactory(&quot;MySqlConnector&quot;, MySqlClientFactory.Instance)</code> during application
+startup. This will register MySqlConnector&rsquo;s <code>DbProviderFactory</code> implementation in the central <code>DbProviderFactories</code> registry.</p>
 
 
         </div>
