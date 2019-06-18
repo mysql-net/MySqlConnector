@@ -20,14 +20,14 @@ namespace System.Data.Common
 
 namespace MySql.Data.MySqlClient
 {
-	public sealed class MySqlDbBatchCommand : DbBatchCommand, IMySqlCommand
+	public sealed class MySqlBatchCommand : DbBatchCommand, IMySqlCommand
 	{
-		public MySqlDbBatchCommand()
+		public MySqlBatchCommand()
 			: this(null)
 		{
 		}
 
-		public MySqlDbBatchCommand(string commandText)
+		public MySqlBatchCommand(string commandText)
 		{
 			CommandText = commandText;
 			CommandType = CommandType.Text;

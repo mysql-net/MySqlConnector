@@ -6,7 +6,7 @@ using MySql.Data.MySqlClient;
 namespace MySqlConnector.Core
 {
 	/// <summary>
-	/// <see cref="IMySqlCommand"/> provides an internal abstraction over <see cref="MySqlCommand"/> and <see cref="MySqlDbBatchCommand"/>.
+	/// <see cref="IMySqlCommand"/> provides an internal abstraction over <see cref="MySqlCommand"/> and <see cref="MySqlBatchCommand"/>.
 	/// </summary>
 	internal interface IMySqlCommand
 	{

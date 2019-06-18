@@ -68,23 +68,23 @@ namespace System.Data.Common
 
 namespace MySql.Data.MySqlClient
 {
-	public sealed class MySqlDbBatch : DbBatch
+	public sealed class MySqlBatch : DbBatch
 	{
-		public MySqlDbBatch()
+		public MySqlBatch()
 			: this(null, null)
 		{
 		}
 
-		public MySqlDbBatch(MySqlConnection connection = null, MySqlTransaction transaction = null)
+		public MySqlBatch(MySqlConnection connection = null, MySqlTransaction transaction = null)
 		{
 			Connection = connection;
 			Transaction = transaction;
-			m_batchCommands = new MySqlDbBatchCommandCollection();
+			m_batchCommands = new MySqlBatchCommandCollection();
 		}
 
 		public new MySqlConnection Connection { get; set; }
 		public new MySqlTransaction Transaction { get; set; }
-		public new MySqlDbBatchCommandCollection BatchCommands => m_batchCommands;
+		public new MySqlBatchCommandCollection BatchCommands => m_batchCommands;
 
 		protected override DbConnection DbConnection
 		{
@@ -179,6 +179,6 @@ namespace MySql.Data.MySqlClient
 
 		private IOBehavior AsyncIOBehavior => Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous;
 
-		readonly MySqlDbBatchCommandCollection m_batchCommands;
+		readonly MySqlBatchCommandCollection m_batchCommands;
 	}
 }

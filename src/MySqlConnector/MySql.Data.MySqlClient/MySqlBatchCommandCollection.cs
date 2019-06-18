@@ -14,11 +14,11 @@ namespace System.Data.Common
 
 namespace MySql.Data.MySqlClient
 {
-	public sealed class MySqlDbBatchCommandCollection : DbBatchCommandCollection, IReadOnlyList<IMySqlCommand>
+	public sealed class MySqlBatchCommandCollection : DbBatchCommandCollection, IReadOnlyList<IMySqlCommand>
 	{
-		public new MySqlDbBatchCommand this[int index]
+		public new MySqlBatchCommand this[int index]
 		{
-			get => (MySqlDbBatchCommand) base[index];
+			get => (MySqlBatchCommand) base[index];
 			set => base[index] = value;
 		}
 
@@ -26,7 +26,7 @@ namespace MySql.Data.MySqlClient
 
 		IEnumerator<IMySqlCommand> IEnumerable<IMySqlCommand>.GetEnumerator()
 		{
-			foreach (MySqlDbBatchCommand command in this)
+			foreach (MySqlBatchCommand command in this)
 				yield return command;
 		}
 	}
