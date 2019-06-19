@@ -7,6 +7,8 @@ namespace MySqlConnector.Core
 {
 	internal sealed class BatchedCommandPayloadCreator : ICommandPayloadCreator
 	{
+		public static ICommandPayloadCreator Instance { get; } = new BatchedCommandPayloadCreator();
+
 		public bool WriteQueryCommand(ref CommandListPosition commandListPosition, ByteBufferWriter writer)
 		{
 			writer.Write((byte) CommandKind.Multi);
@@ -18,7 +20,7 @@ namespace MySqlConnector.Core
 				var position = writer.Position;
 				writer.Write(Padding);
 
-				wroteCommand = SingleCommandPayloadCreator.WriteSingleQueryCommand(ref commandListPosition, writer);
+				wroteCommand = SingleCommandPayloadCreator.Instance.WriteQueryCommand(ref commandListPosition, writer);
 				if (firstResult is null)
 					firstResult = wroteCommand;
 

@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using MySql.Data.MySqlClient;
+using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -9,9 +9,9 @@ namespace MySqlConnector.Core
 {
 	internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	{
-		public bool WriteQueryCommand(ref CommandListPosition commandListPosition, ByteBufferWriter writer) => WriteSingleQueryCommand(ref commandListPosition, writer);
+		public static ICommandPayloadCreator Instance { get; } = new SingleCommandPayloadCreator();
 
-		public static bool WriteSingleQueryCommand(ref CommandListPosition commandListPosition, ByteBufferWriter writer)
+		public bool WriteQueryCommand(ref CommandListPosition commandListPosition, ByteBufferWriter writer)
 		{
 			if (commandListPosition.CommandIndex == commandListPosition.Commands.Count)
 				return false;
@@ -20,6 +20,8 @@ namespace MySqlConnector.Core
 			var preparedStatements = command.TryGetPreparedStatements();
 			if (preparedStatements is null)
 			{
+				if (Log.IsDebugEnabled())
+					Log.Debug("Session{0} Preparing command payload; CommandText: {1}", command.Connection.Session.Id, command.CommandText);
 				var preparer = new StatementPreparer(command.CommandText, command.Parameters, command.CreateStatementPreparerOptions());
 				preparer.ParseAndBindParameters(writer);
 
@@ -29,6 +31,9 @@ namespace MySqlConnector.Core
 			{
 				var preparedStatement = preparedStatements.Statements[commandListPosition.PreparedStatementIndex];
 				var parameterCollection = command.Parameters;
+
+				if (Log.IsDebugEnabled())
+					Log.Debug("Session{0} Preparing command payload; CommandId: {1}; CommandText: {2}", command.Connection.Session.Id, preparedStatement.StatementId, command.CommandText);
 
 				writer.Write((byte) CommandKind.StatementExecute);
 				writer.Write(preparedStatement.StatementId);
@@ -89,5 +94,7 @@ namespace MySqlConnector.Core
 
 			return true;
 		}
+
+		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(SingleCommandPayloadCreator));
 	}
 }

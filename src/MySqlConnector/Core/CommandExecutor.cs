@@ -18,10 +18,10 @@ namespace MySqlConnector.Core
 		public static async Task<DbDataReader> ExecuteReaderAsync(IReadOnlyList<IMySqlCommand> commands, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
-			// TODO: if (Log.IsDebugEnabled())
-			//	Log.Debug("Session{0} ExecuteBehavior {1} CommandText: {2}", m_command.Connection.Session.Id, ioBehavior, commandText);
 			var commandListPosition = new CommandListPosition(commands);
 			var command = commands[0];
+			if (Log.IsDebugEnabled())
+				Log.Debug("Session{0} ExecuteReader {1} CommandCount: {2}", command.Connection.Session.Id, ioBehavior, commands.Count);
 			ByteBufferWriter writer = new ByteBufferWriter();
 			if (!payloadCreator.WriteQueryCommand(ref commandListPosition, writer))
 				throw new InvalidOperationException("ICommandPayloadCreator failed to write query payload");
