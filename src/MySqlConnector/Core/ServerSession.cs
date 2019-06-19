@@ -60,6 +60,7 @@ namespace MySqlConnector.Core
 		public string HostName { get; private set; }
 		public IPAddress IPAddress => (m_tcpClient?.Client.RemoteEndPoint as IPEndPoint)?.Address;
 		public WeakReference<MySqlConnection> OwningConnection { get; set; }
+		public bool SupportsComMulti => m_supportsComMulti;
 		public bool SupportsDeprecateEof => m_supportsDeprecateEof;
 		public bool SupportsSessionTrack => m_supportsSessionTrack;
 		public bool ProcAccessDenied { get; set; }
@@ -315,6 +316,7 @@ namespace MySqlConnector.Core
 					AuthPluginData = initialHandshake.AuthPluginData;
 					m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
 
+					m_supportsComMulti = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.MariaDbComMulti) != 0;
 					m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
 					m_supportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
 					m_supportsSessionTrack = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SessionTrack) != 0;
@@ -1505,6 +1507,7 @@ namespace MySqlConnector.Core
 		int m_activeCommandId;
 		bool m_useCompression;
 		bool m_isSecureConnection;
+		bool m_supportsComMulti;
 		bool m_supportsConnectionAttributes;
 		bool m_supportsDeprecateEof;
 		bool m_supportsSessionTrack;

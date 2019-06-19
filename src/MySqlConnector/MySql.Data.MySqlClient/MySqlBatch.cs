@@ -120,7 +120,8 @@ namespace MySql.Data.MySqlClient
 
 			foreach (IMySqlCommand batchCommand in m_batchCommands)
 				batchCommand.Connection = Connection;
-			return CommandExecutor.ExecuteReaderAsync(m_batchCommands, new SingleCommandPayloadCreator(), default /* TODO: */, ioBehavior, cancellationToken);
+			var payloadCreator = Connection.Session.SupportsComMulti ? (ICommandPayloadCreator) new BatchedCommandPayloadCreator() : new SingleCommandPayloadCreator();
+			return CommandExecutor.ExecuteReaderAsync(m_batchCommands, payloadCreator, default /* TODO: */, ioBehavior, cancellationToken);
 		}
 
 		public override int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();

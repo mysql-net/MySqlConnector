@@ -9,31 +9,6 @@ namespace MySqlConnector.Core
 {
 	internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	{
-		public static bool TryAdvanceToNextCommand(IReadOnlyList<IMySqlCommand> commands, ref int commandIndex, ref int preparedStatementIndex) // TODO: delete
-		{
-			var command = commands[commandIndex];
-			var preparedStatements = command.TryGetPreparedStatements();
-
-			if (preparedStatements is null)
-			{
-				commandIndex++;
-				preparedStatementIndex = 0;
-				return commandIndex < commands.Count;
-			}
-			else
-			{
-				// advance to next prepared statement or next command
-				preparedStatementIndex++;
-				if (preparedStatementIndex == preparedStatements.Statements.Count)
-				{
-					commandIndex++;
-					preparedStatementIndex = 0;
-					return commandIndex < commands.Count;
-				}
-				return true;
-			}
-		}
-
 		public bool WriteQueryCommand(ref CommandListPosition commandListPosition, ByteBufferWriter writer) => WriteSingleQueryCommand(ref commandListPosition, writer);
 
 		public static bool WriteSingleQueryCommand(ref CommandListPosition commandListPosition, ByteBufferWriter writer)

@@ -13,7 +13,7 @@ namespace MySqlConnector.Protocol.Payloads
 			writer.Write((int) (
 				ProtocolCapabilities.Protocol41 |
 				(cs.InteractiveSession ? (serverCapabilities & ProtocolCapabilities.Interactive) : 0) |
-				ProtocolCapabilities.LongPassword |
+				(serverCapabilities & ProtocolCapabilities.LongPassword) |
 				(serverCapabilities & ProtocolCapabilities.Transactions) |
 				ProtocolCapabilities.SecureConnection |
 				(serverCapabilities & ProtocolCapabilities.PluginAuth) |
@@ -31,6 +31,15 @@ namespace MySqlConnector.Protocol.Payloads
 			writer.Write(0x4000_0000);
 			writer.Write((byte) characterSet);
 			writer.Write(Padding);
+			if ((serverCapabilities & ProtocolCapabilities.LongPassword) == 0)
+			{
+				// MariaDB writes extended capabilities at the end of the padding
+				writer.Write((int) (((long) (serverCapabilities & ProtocolCapabilities.MariaDbComMulti)) >> 32));
+			}
+			else
+			{
+				writer.Write(0u);
+			}
 
 			return writer;
 		}
@@ -59,7 +68,7 @@ namespace MySqlConnector.Protocol.Payloads
 			return writer.ToPayloadData();
 		}
 
-		// NOTE: not new byte[23]; see https://github.com/dotnet/roslyn/issues/33088
-		static ReadOnlySpan<byte> Padding => new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		// NOTE: not new byte[19]; see https://github.com/dotnet/roslyn/issues/33088
+		static ReadOnlySpan<byte> Padding => new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	}
 }
