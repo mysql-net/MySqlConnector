@@ -6,7 +6,7 @@ namespace MySqlConnector.Protocol
 	/// The <a href="https://dev.mysql.com/doc/internals/en/capability-flags.html">MySQL Capability flags</a>.
 	/// </summary>
 	[Flags]
-	internal enum ProtocolCapabilities : long
+	internal enum ProtocolCapabilities : ulong
 	{
 		/// <summary>
 		/// No specified capabilities.

@@ -1,9 +1,11 @@
 using System;
+using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Utilities;
 
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 namespace System.Data.Common
@@ -79,12 +81,12 @@ namespace MySql.Data.MySqlClient
 		{
 			Connection = connection;
 			Transaction = transaction;
-			m_batchCommands = new MySqlBatchCommandCollection();
+			BatchCommands = new MySqlBatchCommandCollection();
 		}
 
 		public new MySqlConnection Connection { get; set; }
 		public new MySqlTransaction Transaction { get; set; }
-		public new MySqlBatchCommandCollection BatchCommands => m_batchCommands;
+		public new MySqlBatchCommandCollection BatchCommands { get; }
 
 		protected override DbConnection DbConnection
 		{
@@ -98,7 +100,7 @@ namespace MySql.Data.MySqlClient
 			set => Transaction = (MySqlTransaction) value;
 		}
 
-		protected override DbBatchCommandCollection DbBatchCommands => m_batchCommands;
+		protected override DbBatchCommandCollection DbBatchCommands => BatchCommands;
 
 		protected override DbDataReader ExecuteDbDataReader()
 		{
@@ -114,14 +116,14 @@ namespace MySql.Data.MySqlClient
 
 		private Task<DbDataReader> ExecuteReaderAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			// TODO:
-			// if (!IsValid(out var exception))
-			// 	return Utility.TaskFromException<DbDataReader>(exception);
+			if (!IsValid(out var exception))
+			 	return Utility.TaskFromException<DbDataReader>(exception);
 
-			foreach (IMySqlCommand batchCommand in m_batchCommands)
+			foreach (IMySqlCommand batchCommand in BatchCommands)
 				batchCommand.Connection = Connection;
+
 			var payloadCreator = Connection.Session.SupportsComMulti ? BatchedCommandPayloadCreator.Instance : SingleCommandPayloadCreator.Instance;
-			return CommandExecutor.ExecuteReaderAsync(m_batchCommands, payloadCreator, default /* TODO: */, ioBehavior, cancellationToken);
+			return CommandExecutor.ExecuteReaderAsync(BatchCommands, payloadCreator, default /* TODO: */, ioBehavior, cancellationToken);
 		}
 
 		public override int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -141,6 +143,19 @@ namespace MySql.Data.MySqlClient
 		public override void Cancel() => throw new NotImplementedException();
 
 		public override Task CancelAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+		protected override void Dispose(bool disposing)
+		{
+			try
+			{
+				// TODO:
+				m_isDisposed = true;
+			}
+			finally
+			{
+				base.Dispose(disposing);
+			}
+		}
 
 		private async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -178,8 +193,37 @@ namespace MySql.Data.MySqlClient
 			return result;
 		}
 
+		private bool IsValid(out Exception exception)
+		{
+			exception = null;
+			if (m_isDisposed)
+				exception = new ObjectDisposedException(GetType().Name);
+			else if (Connection is null)
+				exception = new InvalidOperationException("Connection property must be non-null.");
+			else if (Connection.State != ConnectionState.Open && Connection.State != ConnectionState.Connecting)
+				exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
+			else if (!Connection.IgnoreCommandTransaction && Transaction != Connection.CurrentTransaction)
+				exception = new InvalidOperationException("The transaction associated with this command is not the connection's active transaction; see https://fl.vu/mysql-trans");
+			else if (BatchCommands.Count == 0)
+				exception = new InvalidOperationException("BatchCommands must contain a command");
+
+			if (exception is null)
+			{
+				foreach (var command in BatchCommands)
+				{
+					if ((command.CommandBehavior & CommandBehavior.CloseConnection) != 0)
+					{
+						exception = new NotSupportedException("CommandBehavior.CloseConnection is not supported by MySqlBatch");
+						break;
+					}
+				}
+			}
+
+			return exception is null;
+		}
+
 		private IOBehavior AsyncIOBehavior => Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous;
 
-		readonly MySqlBatchCommandCollection m_batchCommands;
+		bool m_isDisposed;
 	}
 }

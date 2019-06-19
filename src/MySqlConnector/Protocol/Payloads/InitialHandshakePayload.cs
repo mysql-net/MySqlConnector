@@ -29,7 +29,7 @@ namespace MySqlConnector.Protocol.Payloads
 				var charSet = (CharacterSet) reader.ReadByte();
 				var status = (ServerStatus) reader.ReadInt16();
 				var capabilityFlagsHigh = reader.ReadUInt16();
-				protocolCapabilities |= (ProtocolCapabilities) (capabilityFlagsHigh << 16);
+				protocolCapabilities |= (ProtocolCapabilities) ((ulong) capabilityFlagsHigh << 16);
 				var authPluginDataLength = reader.ReadByte();
 				var unused = reader.ReadByteString(6);
 
