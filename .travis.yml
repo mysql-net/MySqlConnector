@@ -49,9 +49,6 @@ script:
 - echo 'Executing netcoreapp2.0 tests with Unix Domain Socket, No Compression, No SSL' && ../../.ci/use-config.sh config.uds.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp2.0
 - popd
 
-after_script:
-- chmod +x .ci/build-docs.sh && ./.ci/build-docs.sh
-
 notifications:
   slack:
     secure: IHVnvL5z2g75VQt9qmJxpAyrbQQPA8VIaO0Of8q4p733E9aA4ZwuFDiqxXcamBbcFJeVPPq4xBTRPZNlTUyZt+No9oFaDnlIA1fKE/ksVH03SqrXwXO0k6toCqofb0/166+ijoe0m6IV7wfT8lvtgD9Lgd9y+M3Zh2NKXAlJasaOve8/pUOcgDqhfT5MST4RD1X4xdjcNnWifEQHACFWgYsM8bD5SrqbAYkHnUcZx0LnY7Cr2RwTUTFS5EN+lbSmy+uhE+JyYFT/5EBIcjLQql8QIHFanTtlGif5rosxb1Wot7pve6KWCGMUnM7FO5vmCbzeRC/kQZ4VGNQyFW8BrOTpOSOAPDfUvlIKuNsARkIYhHvLfjbNtjlcBuyrBKbuvLmGpYo7w+qUGimpi6xZTr3iq0cpb9OYhEtaF/upWI+p77kjjPYlXCg424zP+5SlTVBwCbOsUsKK/l1SjL8RBgpl/bgMTQ7jzEBO+zAWBW7H50d1edZ1IgyClVYbtwR0/gjJGndYyZLALf55x0FnYQkgCuPXU5egmdBiwQUZcRRcjgzY3s9tXLY2NHjI61Zt6IA4JoAugjH03VTo369gj641bLkH3ViVCLnvI6BPIaTsgjs+g6V00K+PT3+Vu9nnLd6eXc72V5QiWHPEMXyGTdnIYnHm9VvK7879c/W/aTM=

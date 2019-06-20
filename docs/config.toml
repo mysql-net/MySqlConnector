@@ -1,5 +1,5 @@
 title = "MySqlConnector: Async MySQL Driver for .NET and .NET Core"
-baseurl = "https://mysql-net.github.io/MySqlConnector/"
+baseurl = "https://mysqlconnector.net/"
 MetaDataFormat = "yaml"
 pluralizeListTitles = false
 
