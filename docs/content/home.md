@@ -8,26 +8,54 @@ menu:
     url: ""
 ---
 
-Home
-====
+# MySqlConnector: High Performance MySQL Library for .NET
+
+* **Asynchronous:** True asynchronous I/O for maximum throughput
+* **Fast:** Optimized for speed and low memory usage
+* **Reliable:** Fixes [dozens of open bugs](/tutorials/migrating-from-connector-net/#fixed-bugs) in Oracle’s Connector/NET; passes all [ADO.NET Specification Tests](https://mysql-net.github.io/AdoNetResults/)
+* **Leading Edge:** First MySQL library to support .NET Core; uses the latest .NET features
+* **Open:** MIT license; development [happens on GitHub](https://github.com/mysql-net/MySqlConnector) with publicly visible roadmaps, issues, and PRs
+
+## About
 
 MySqlConnector is an [ADO.NET](https://msdn.microsoft.com/en-us/library/e80y5yhx.aspx) data
 provider for [MySQL Server](https://www.mysql.com/), [MariaDB](https://mariadb.org/),
 [Percona Server](https://www.percona.com/software/mysql-database/percona-server), [Amazon Aurora](https://aws.amazon.com/rds/aurora/),
-[Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/) and more. It provides implementations of
+[Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/),
+[Google Cloud SQL for MySQL](https://cloud.google.com/sql/docs/mysql/) and more. It provides implementations of
 `DbConnection`, `DbCommand`, `DbDataReader`, `DbTransaction` &mdash; the classes
-needed to query and update databases from managed code. Its features include:
+needed to query and update databases from managed code.
 
-* .NET Core Compatibility
-* Truly Asynchronous: async functions implement asynchronous I/O
-* High Performance: code is stress tested for performance bottlenecks and performs well on the [TechEmpower Framework Benchmarks](https://www.techempower.com/benchmarks/)
-* Lightweight: Library only implements ADO.NET core
+## Getting Started
 
-### Getting Started
+Install MySqlConnector from [NuGet](https://www.nuget.org/packages/MySqlConnector/): `dotnet add package MySqlConnector`
 
-Read [how to install](./overview/installing/) and a [basic example](./tutorials/basic-api/) of using the API.
+Connecting to your database is simple:
 
-### Why use MySqlConnector over Oracle’s Connector/NET?
+```csharp
+using (var connection = new MySqlConnection("Server=myserver;User ID=mylogin;Password=mypass;Database=mydatabase"))
+{
+    connection.Open();
+
+    using (var command = new MySqlCommand("SELECT field FROM table;", connection))
+    using (var reader = command.ExecuteReader())
+        while (reader.Read())
+            Console.WriteLine(reader.GetString(0));
+}
+```
+
+For more information, see [how to install](./overview/installing/) and a [basic example](./tutorials/basic-api/) of using the API.
+[Many ORMs](/overview/use-with-orms/) are supported.
+
+## Performance
+
+MySqlConnector outperforms Connector/NET (MySql.Data) on benchmarks:
+
+![Benchmark 1](https://files.logoscdn.com/v1/files/12389056/content.png?signature=UE8FnU9ykb1f_7C68_D8lF2ZAzc) ![Benchmark 2](https://files.logoscdn.com/v1/files/12389051/content.png?signature=Gptw0KDjYREuulIk_37zuO6OToc)
+
+(Client: MySqlConnector 0.44.0, Windows 10 x64; Server: MySQL Server 5.6.21, Unix)
+
+## Why use MySqlConnector over Oracle’s Connector/NET?
 
 MySqlConnector is a clean-room reimplementation of the [MySQL Protocol](https://dev.mysql.com/doc/internals/en/client-server-protocol.html)
 and is not based on [Oracle’s Connector/NET](https://github.com/mysql/mysql-connector-net).
@@ -57,7 +85,7 @@ and is not based on [Oracle’s Connector/NET](https://github.com/mysql/mysql-co
       some issues addressed in <a href="http://forums.mysql.com/list.php?38">forums</a>
     </td>
     <td>
-      Get involved!  View
+      <a href="https://github.com/mysql-net/MySqlConnector/issues?q=is%3Aissue+is%3Aopen+label%3A%22up+for+grabs%22">Get involved!</a> View
       <a href="https://github.com/mysql-net/MySqlConnector/milestones">our roadmap</a>,
       discuss <a href="https://github.com/mysql-net/MySqlConnector/issues">issues</a>,
       contribute <a href="https://github.com/mysql-net/MySqlConnector/pulls">pull requests</a>
