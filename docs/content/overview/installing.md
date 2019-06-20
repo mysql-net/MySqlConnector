@@ -33,7 +33,7 @@ Or, in Visual Studio, use the _NuGet Package Manager_ to browse for and install 
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MySqlConnector" Version="0.30.0" />
+    <PackageReference Include="MySqlConnector" Version="0.56.0" />
   </ItemGroup>
 
 </Project>
