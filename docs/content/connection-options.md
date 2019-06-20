@@ -1,5 +1,5 @@
 ---
-lastmod: 2018-10-13
+lastmod: 2019-05-23
 date: 2016-10-16
 title: Connection Options
 weight: 30
