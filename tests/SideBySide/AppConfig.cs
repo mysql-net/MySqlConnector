@@ -48,7 +48,7 @@ namespace SideBySide
 
 		private static ServerFeatures UnsupportedFeatures => (ServerFeatures) Enum.Parse(typeof(ServerFeatures), Config.GetValue<string>("Data:UnsupportedFeatures"));
 
-		public static ServerFeatures SupportedFeatures => ~ServerFeatures.None & ~UnsupportedFeatures;
+		public static ServerFeatures SupportedFeatures => ~ServerFeatures.None & ~UnsupportedFeatures & ~ServerFeatures.Timeout;
 
 		public static bool SupportsJson => SupportedFeatures.HasFlag(ServerFeatures.Json);
 

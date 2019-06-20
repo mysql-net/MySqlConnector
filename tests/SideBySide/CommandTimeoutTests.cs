@@ -61,7 +61,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public void CommandTimeoutWithSleepSync()
 		{
 			using (var cmd = new MySqlCommand("SELECT SLEEP(120);", m_connection))
@@ -87,7 +87,7 @@ namespace SideBySide
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public async Task CommandTimeoutWithSleepAsync()
 		{
 			using (var cmd = new MySqlCommand("SELECT SLEEP(120);", m_connection))
@@ -113,7 +113,7 @@ namespace SideBySide
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
 		}
 
-		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=87307")]
+		[SkippableFact(ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=87307")]
 		public void MultipleCommandTimeoutWithSleepSync()
 		{
 			var csb = new MySqlConnectionStringBuilder(m_connection.ConnectionString);
@@ -153,7 +153,7 @@ namespace SideBySide
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
 		}
 
-		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=87307")]
+		[SkippableFact(ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=87307")]
 		public async Task MultipleCommandTimeoutWithSleepAsync()
 		{
 			var csb = new MySqlConnectionStringBuilder(m_connection.ConnectionString);
@@ -192,7 +192,7 @@ namespace SideBySide
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
 		}
 
-		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
+		[SkippableFact(ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
 		public void CommandTimeoutResetsOnReadSync()
 		{
 			var csb = new MySqlConnectionStringBuilder(m_connection.ConnectionString);
@@ -214,7 +214,7 @@ namespace SideBySide
 			Assert.Equal(ConnectionState.Open, m_connection.State);
 		}
 
-		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
+		[SkippableFact(ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
 		public async Task CommandTimeoutResetsOnReadAsync()
 		{
 			var csb = new MySqlConnectionStringBuilder(m_connection.ConnectionString);
@@ -237,7 +237,7 @@ namespace SideBySide
 		}
 
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public void TransactionCommandTimeoutWithSleepSync()
 		{
 			using (var transaction = m_connection.BeginTransaction())
@@ -264,7 +264,7 @@ namespace SideBySide
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
 		}
 
-		[Fact]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public async Task TransactionCommandTimeoutWithSleepAsync()
 		{
 			using (var transaction = await m_connection.BeginTransactionAsync())
