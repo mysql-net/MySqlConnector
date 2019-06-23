@@ -53,11 +53,7 @@ namespace MySql.Data.MySqlClient
 
 		long IMySqlCommand.LastInsertedId => m_lastInsertedId;
 
-		PreparedStatements IMySqlCommand.TryGetPreparedStatements()
-		{
-			// TODO:
-			return null;
-		}
+		PreparedStatements IMySqlCommand.TryGetPreparedStatements() => null;
 
 		void IMySqlCommand.SetLastInsertedId(long lastInsertedId) => m_lastInsertedId = lastInsertedId;
 

@@ -146,7 +146,6 @@ namespace MySql.Data.MySqlClient
 		{
 			try
 			{
-				// TODO:
 				m_isDisposed = true;
 			}
 			finally
