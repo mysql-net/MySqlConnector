@@ -87,6 +87,91 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void CreateBatchDoesNotSetTransaction()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using (connection.BeginTransaction())
+				using (var batch = connection.CreateBatch())
+				{
+					Assert.Null(batch.Transaction);
+				}
+			}
+		}
+
+		[Fact]
+		public void BatchTransactionMustBeSet()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using (var transaction = connection.BeginTransaction())
+				using (var batch = connection.CreateBatch())
+				{
+					batch.BatchCommands.Add(new MySqlBatchCommand("SELECT 1;"));
+					Assert.Throws<InvalidOperationException>(() => batch.ExecuteScalar());
+
+					batch.Transaction = transaction;
+					TestUtilities.AssertIsOne(batch.ExecuteScalar());
+				}
+			}
+		}
+
+		[Fact]
+		public void IgnoreBatchTransactionIgnoresNull()
+		{
+			using (var connection = new MySqlConnection(GetIgnoreCommandTransactionConnectionString()))
+			{
+				connection.Open();
+				using (connection.BeginTransaction())
+				using (var batch = connection.CreateBatch())
+				{
+					batch.BatchCommands.Add(new MySqlBatchCommand("SELECT 1;"));
+					TestUtilities.AssertIsOne(batch.ExecuteScalar());
+				}
+			}
+		}
+
+		[Fact]
+		public void IgnoreCommandTransactionIgnoresDisposedTransaction()
+		{
+			using (var connection = new MySqlConnection(GetIgnoreCommandTransactionConnectionString()))
+			{
+				connection.Open();
+
+				var transaction = connection.BeginTransaction();
+				transaction.Commit();
+				transaction.Dispose();
+
+				using (var batch = connection.CreateBatch())
+				{
+					batch.BatchCommands.Add(new MySqlBatchCommand("SELECT 1;"));
+					batch.Transaction = transaction;
+					TestUtilities.AssertIsOne(batch.ExecuteScalar());
+				}
+			}
+		}
+
+		[Fact]
+		public void IgnoreCommandTransactionIgnoresDifferentTransaction()
+		{
+			using (var connection1 = new MySqlConnection(AppConfig.ConnectionString))
+			using (var connection2 = new MySqlConnection(GetIgnoreCommandTransactionConnectionString()))
+			{
+				connection1.Open();
+				connection2.Open();
+				using (var transaction1 = connection1.BeginTransaction())
+				using (var batch2 = connection2.CreateBatch())
+				{
+					batch2.Transaction = transaction1;
+					batch2.BatchCommands.Add(new MySqlBatchCommand("SELECT 1;"));
+					TestUtilities.AssertIsOne(batch2.ExecuteScalar());
+				}
+			}
+		}
+
+		[Fact]
 		public void ExecuteBatch()
 		{
 			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
@@ -124,6 +209,12 @@ namespace SideBySide
 				}
 			}
 		}
+
+		private static string GetIgnoreCommandTransactionConnectionString() =>
+			new MySqlConnectionStringBuilder(AppConfig.ConnectionString)
+			{
+				IgnoreCommandTransaction = true
+			}.ConnectionString;
 	}
 }
 #endif
