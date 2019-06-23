@@ -118,6 +118,30 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public async Task StoredProcedureNoResultSet()
+		{
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "out_string";
+				cmd.CommandType = CommandType.StoredProcedure;
+				cmd.Parameters.Add(new MySqlParameter
+				{
+					ParameterName = "@value",
+					DbType = DbType.String,
+					Direction = ParameterDirection.Output,
+				});
+
+				using (var reader = await cmd.ExecuteReaderAsync())
+				{
+					Assert.False(await reader.ReadAsync());
+					Assert.False(await reader.NextResultAsync());
+				}
+
+				Assert.Equal("test value", cmd.Parameters[0].Value);
+			}
+		}
+
+		[Fact]
 		public async Task StoredProcedureOutIncorrectType()
 		{
 			using (var cmd = m_database.Connection.CreateCommand())

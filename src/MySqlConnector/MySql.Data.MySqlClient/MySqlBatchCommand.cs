@@ -60,7 +60,6 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-
 		PreparedStatements IMySqlCommand.TryGetPreparedStatements()
 		{
 			// TODO:
@@ -71,6 +70,10 @@ namespace MySql.Data.MySqlClient
 		{
 			// TODO:
 		}
+
+		MySqlParameterCollection IMySqlCommand.OutParameters { get; set; }
+
+		MySqlParameter IMySqlCommand.ReturnParameter { get; set; }
 
 		MySqlParameterCollection m_parameterCollection;
 	}

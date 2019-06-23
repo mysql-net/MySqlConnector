@@ -53,14 +53,22 @@ namespace MySql.Data.MySqlClient
 			VerifyNotDisposed();
 			try
 			{
-				await m_resultSet.ReadEntireAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				var nextResult = await ScanResultSetAsync(ioBehavior, m_resultSet, cancellationToken).ConfigureAwait(false);
+				ResultSet nextResult = null;
+				while (true)
+				{
+					await m_resultSet.ReadEntireAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					nextResult = await ScanResultSetAsync(ioBehavior, m_resultSet, cancellationToken).ConfigureAwait(false);
+					if (nextResult?.ContainsCommandParameters ?? false)
+						await ReadOutParametersAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					else
+						break;
+				}
 
 				if (nextResult is null)
 				{
 					var writer = new ByteBufferWriter();
 					// TODO: Update Command, probably?
-					if (m_payloadCreator?.WriteQueryCommand(ref m_commandListPosition, writer) ?? false) // TODO: always supply payload creator
+					if (m_payloadCreator.WriteQueryCommand(ref m_commandListPosition, m_cachedProcedures, writer))
 					{
 						using (var payload = writer.ToPayloadData())
 						{
@@ -307,17 +315,20 @@ namespace MySql.Data.MySqlClient
 		internal MySqlConnection Connection => Command?.Connection;
 		internal ServerSession Session => Command?.Connection.Session;
 
-		internal static async Task<MySqlDataReader> CreateAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IMySqlCommand command, CommandBehavior behavior, IOBehavior ioBehavior)
+		internal static async Task<MySqlDataReader> CreateAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary<string, CachedProcedure> cachedProcedures, IMySqlCommand command, CommandBehavior behavior, IOBehavior ioBehavior)
 		{
-			var dataReader = new MySqlDataReader(commandListPosition, payloadCreator, command, behavior);
+			var dataReader = new MySqlDataReader(commandListPosition, payloadCreator, cachedProcedures, command, behavior);
 			command.Connection.SetActiveReader(dataReader);
 
 			try
 			{
 				await dataReader.ReadFirstResultSetAsync(ioBehavior).ConfigureAwait(false);
 
+				if (dataReader.m_resultSet.ContainsCommandParameters)
+					await dataReader.ReadOutParametersAsync(ioBehavior, /* TODO: */ CancellationToken.None).ConfigureAwait(false);
+
 				// if the command list has multiple commands, keep reading until a result set is found
-				while (dataReader.m_resultSet.State == ResultSetState.NoMoreData && payloadCreator is object && commandListPosition.CommandIndex < commandListPosition.Commands.Count)
+				while (dataReader.m_resultSet.State == ResultSetState.NoMoreData && commandListPosition.CommandIndex < commandListPosition.Commands.Count)
 				{
 					await dataReader.NextResultAsync(ioBehavior, /* TODO: */ default).ConfigureAwait(false);
 				}
@@ -431,10 +442,11 @@ namespace MySql.Data.MySqlClient
 		}
 #endif
 
-		private MySqlDataReader(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IMySqlCommand command, CommandBehavior behavior)
+		private MySqlDataReader(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary<string, CachedProcedure> cachedProcedures, IMySqlCommand command, CommandBehavior behavior)
 		{
 			m_commandListPosition = commandListPosition;
 			m_payloadCreator = payloadCreator;
+			m_cachedProcedures = cachedProcedures;
 			Command = command;
 			m_behavior = behavior;
 		}
@@ -466,7 +478,6 @@ namespace MySql.Data.MySqlClient
 				var connection = Command.Connection;
 				connection.FinishQuerying(m_hasWarnings);
 
-				Command.ReaderClosed();
 				if ((m_behavior & CommandBehavior.CloseConnection) != 0)
 				{
 					(Command as IDisposable)?.Dispose();
@@ -474,6 +485,36 @@ namespace MySql.Data.MySqlClient
 				}
 				Command = null;
 			}
+		}
+
+		// If ResultSet.ContainsCommandParameters is true, then this method should be called to read the (single)
+		// row in that result set, which contains the values of "out" parameters from the previous stored procedure
+		// execution. These values will be stored in the parameters of the associated command.
+		private async Task ReadOutParametersAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			await ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
+			if (GetString(0) != SingleCommandPayloadCreator.OutParameterSentinelColumnName)
+				throw new InvalidOperationException("Expected out parameter values.");
+
+			for (var i = 0; i < Command.OutParameters.Count; i++)
+			{
+				var param = Command.OutParameters[i];
+				var columnIndex = i + 1;
+				if (param.HasSetDbType && !IsDBNull(columnIndex))
+				{
+					var dbTypeMapping = TypeMapper.Instance.GetDbTypeMapping(param.DbType);
+					if (dbTypeMapping != null)
+					{
+						param.Value = dbTypeMapping.DoConversion(GetValue(columnIndex));
+						continue;
+					}
+				}
+				param.Value = GetValue(columnIndex);
+			}
+
+			if (await ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
+				throw new InvalidOperationException("Expected only one row.");
 		}
 
 		private void VerifyNotDisposed()
@@ -489,8 +530,9 @@ namespace MySql.Data.MySqlClient
 		}
 
 		readonly CommandBehavior m_behavior;
+		readonly ICommandPayloadCreator m_payloadCreator;
+		readonly IDictionary<string, CachedProcedure> m_cachedProcedures;
 		CommandListPosition m_commandListPosition;
-		private readonly ICommandPayloadCreator m_payloadCreator;
 		bool m_closed;
 		int? m_recordsAffected;
 		bool m_hasWarnings;

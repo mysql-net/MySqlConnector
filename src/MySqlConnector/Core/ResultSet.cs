@@ -30,6 +30,7 @@ namespace MySqlConnector.Core
 			RecordsAffected = null;
 			WarningCount = 0;
 			State = ResultSetState.None;
+			ContainsCommandParameters = false;
 			m_columnDefinitionPayloadUsedBytes = 0;
 			m_readBuffer.Clear();
 			m_row = null;
@@ -131,6 +132,8 @@ namespace MySqlConnector.Core
 							EofPayload.Create(payload.AsSpan());
 						}
 
+						if (ColumnDefinitions.Length == (Command?.OutParameters?.Count + 1) && ColumnDefinitions[0].Name == SingleCommandPayloadCreator.OutParameterSentinelColumnName)
+							ContainsCommandParameters = true;
 						LastInsertId = -1;
 						WarningCount = 0;
 						State = ResultSetState.ReadResultSetHeader;
@@ -175,6 +178,12 @@ namespace MySqlConnector.Core
 			m_row = m_readBuffer.Count > 0
 				? m_readBuffer.Dequeue()
 				: await ScanRowAsync(ioBehavior, m_row, cancellationToken).ConfigureAwait(false);
+
+			if (Command.ReturnParameter is object && m_row is object)
+			{
+				Command.ReturnParameter.Value = m_row.GetValue(0);
+				Command.ReturnParameter = null;
+			}
 
 			if (m_row is null)
 			{
@@ -409,6 +418,7 @@ namespace MySqlConnector.Core
 		public int? RecordsAffected { get; private set; }
 		public int WarningCount { get; private set; }
 		public ResultSetState State { get; private set; }
+		public bool ContainsCommandParameters { get; private set; }
 
 		ResizableArray<byte> m_columnDefinitionPayloads;
 		int m_columnDefinitionPayloadUsedBytes;

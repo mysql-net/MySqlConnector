@@ -17,6 +17,8 @@ namespace MySqlConnector.Core
 		MySqlConnection Connection { get; set; }
 		long LastInsertedId { get; }
 		void SetLastInsertedId(long lastInsertedId);
+		MySqlParameterCollection OutParameters { get; set; }
+		MySqlParameter ReturnParameter { get; set; }
 	}
 
 	internal static class IMySqlCommandExtensions
@@ -31,12 +33,6 @@ namespace MySqlConnector.Core
 		{
 			// TODO:
 			return (command as MySqlCommand)?.RegisterCancel(cancellationToken);
-		}
-
-		public static void ReaderClosed(this IMySqlCommand command)
-		{
-			// TODO:
-			(command as MySqlCommand)?.ReaderClosed();
 		}
 
 		public static StatementPreparerOptions CreateStatementPreparerOptions(this IMySqlCommand command)

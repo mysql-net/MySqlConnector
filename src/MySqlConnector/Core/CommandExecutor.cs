@@ -22,8 +22,21 @@ namespace MySqlConnector.Core
 			var command = commands[0];
 			if (Log.IsDebugEnabled())
 				Log.Debug("Session{0} ExecuteReader {1} CommandCount: {2}", command.Connection.Session.Id, ioBehavior, commands.Count);
-			ByteBufferWriter writer = new ByteBufferWriter();
-			if (!payloadCreator.WriteQueryCommand(ref commandListPosition, writer))
+
+			Dictionary<string, CachedProcedure> cachedProcedures = null;
+			foreach (var command2 in commands)
+			{
+				if (command2.CommandType == CommandType.StoredProcedure)
+				{
+					if (cachedProcedures is null)
+						cachedProcedures = new Dictionary<string, CachedProcedure>();
+					if (!cachedProcedures.ContainsKey(command2.CommandText))
+						cachedProcedures.Add(command2.CommandText, await command2.Connection.GetCachedProcedure(ioBehavior, command2.CommandText, cancellationToken).ConfigureAwait(false));
+				}
+			}
+
+			var writer = new ByteBufferWriter();
+			if (!payloadCreator.WriteQueryCommand(ref commandListPosition, cachedProcedures, writer))
 				throw new InvalidOperationException("ICommandPayloadCreator failed to write query payload");
 			using (var payload = writer.ToPayloadData())
 			using (command.RegisterCancel(cancellationToken))
@@ -33,7 +46,7 @@ namespace MySqlConnector.Core
 				try
 				{
 					await command.Connection.Session.SendAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
-					return await MySqlDataReader.CreateAsync(commandListPosition, payloadCreator, command, behavior, ioBehavior).ConfigureAwait(false);
+					return await MySqlDataReader.CreateAsync(commandListPosition, payloadCreator, cachedProcedures, command, behavior, ioBehavior).ConfigureAwait(false);
 				}
 				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
 				{

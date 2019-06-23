@@ -319,15 +319,7 @@ namespace MySql.Data.MySqlClient
 			if (!IsValid(out var exception))
 				return Utility.TaskFromException<DbDataReader>(exception);
 
-			if (m_commandType == CommandType.StoredProcedure)
-			{
-				m_commandExecutor = new StoredProcedureCommandExecutor(this);
-				return m_commandExecutor.ExecuteReaderAsync(CommandText, m_parameterCollection, behavior, ioBehavior, cancellationToken);
-			}
-			else
-			{
-				return CommandExecutor.ExecuteReaderAsync(new IMySqlCommand[] { this }, new SingleCommandPayloadCreator(), behavior, ioBehavior, cancellationToken);
-			}
+			return CommandExecutor.ExecuteReaderAsync(new IMySqlCommand[] { this }, new SingleCommandPayloadCreator(), behavior, ioBehavior, cancellationToken);
 		}
 
 		public MySqlCommand Clone() => new MySqlCommand(this);
@@ -414,7 +406,9 @@ namespace MySql.Data.MySqlClient
 		PreparedStatements IMySqlCommand.TryGetPreparedStatements() => CommandType == CommandType.Text && !string.IsNullOrWhiteSpace(CommandText) && m_connection != null &&
 			m_connection.State == ConnectionState.Open ? m_connection.Session.TryGetPreparedStatement(CommandText) : null;
 
-		internal void ReaderClosed() => (m_commandExecutor as StoredProcedureCommandExecutor)?.SetParams(); // TODO: Delete
+		MySqlParameterCollection IMySqlCommand.OutParameters { get; set; }
+
+		MySqlParameter IMySqlCommand.ReturnParameter { get; set; }
 
 		static int s_commandId = 1;
 
@@ -424,7 +418,6 @@ namespace MySql.Data.MySqlClient
 		MySqlParameterCollection m_parameterCollection;
 		int? m_commandTimeout;
 		CommandType m_commandType;
-		ICommandExecutor m_commandExecutor;
 		Action m_cancelAction;
 	}
 }
