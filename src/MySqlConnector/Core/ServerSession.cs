@@ -60,6 +60,7 @@ namespace MySqlConnector.Core
 		public string HostName { get; private set; }
 		public IPAddress IPAddress => (m_tcpClient?.Client.RemoteEndPoint as IPEndPoint)?.Address;
 		public WeakReference<MySqlConnection> OwningConnection { get; set; }
+		public bool SupportsComMulti => m_supportsComMulti;
 		public bool SupportsDeprecateEof => m_supportsDeprecateEof;
 		public bool SupportsSessionTrack => m_supportsSessionTrack;
 		public bool ProcAccessDenied { get; set; }
@@ -84,7 +85,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		public bool TryStartCancel(MySqlCommand command)
+		public bool TryStartCancel(ICancellableCommand command)
 		{
 			lock (m_lock)
 			{
@@ -98,13 +99,13 @@ namespace MySqlConnector.Core
 				m_state = State.CancelingQuery;
 			}
 
-			Log.Info("Session{0} will cancel CommandId: {1} (CancelledAttempts={2}) CommandText: {3}", m_logArguments[0], command.CommandId, command.CancelAttemptCount, command.CommandText);
+			Log.Info("Session{0} will cancel CommandId: {1} (CancelledAttempts={2}) CommandText: {3}", m_logArguments[0], command.CommandId, command.CancelAttemptCount, (command as MySqlCommand)?.CommandText);
 			return true;
 		}
 
-		public void DoCancel(MySqlCommand commandToCancel, MySqlCommand killCommand)
+		public void DoCancel(ICancellableCommand commandToCancel, MySqlCommand killCommand)
 		{
-			Log.Info("Session{0} canceling CommandId {1}: CommandText: {2}", m_logArguments[0], commandToCancel.CommandId, commandToCancel.CommandText);
+			Log.Info("Session{0} canceling CommandId {1}: CommandText: {2}", m_logArguments[0], commandToCancel.CommandId, (commandToCancel as MySqlCommand)?.CommandText);
 			lock (m_lock)
 			{
 				if (m_activeCommandId != commandToCancel.CommandId)
@@ -121,7 +122,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		public void AbortCancel(MySqlCommand command)
+		public void AbortCancel(ICancellableCommand command)
 		{
 			lock (m_lock)
 			{
@@ -129,6 +130,8 @@ namespace MySqlConnector.Core
 					m_state = State.Querying;
 			}
 		}
+
+		public bool IsCancelingQuery => m_state == State.CancelingQuery;
 
 		public void AddPreparedStatement(string commandText, PreparedStatements preparedStatements)
 		{
@@ -147,19 +150,20 @@ namespace MySqlConnector.Core
 			return null;
 		}
 
-		public void StartQuerying(MySqlCommand command)
+		public void StartQuerying(ICancellableCommand command)
 		{
 			lock (m_lock)
 			{
 				if (m_state == State.Querying || m_state == State.CancelingQuery)
 				{
 					m_logArguments[1] = m_state;
-					Log.Error("Session{0} can't execute new command when in SessionState: {1}: CommandText: {2}", m_logArguments[0], m_state, command.CommandText);
+					Log.Error("Session{0} can't execute new command when in SessionState: {1}", m_logArguments[0], m_state);
 					throw new InvalidOperationException("This MySqlConnection is already in use. See https://fl.vu/mysql-conn-reuse");
 				}
 
 				VerifyState(State.Connected);
 				m_state = State.Querying;
+
 				command.CancelAttemptCount = 0;
 				m_activeCommandId = command.CommandId;
 			}
@@ -310,6 +314,7 @@ namespace MySqlConnector.Core
 					AuthPluginData = initialHandshake.AuthPluginData;
 					m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
 
+					m_supportsComMulti = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.MariaDbComMulti) != 0;
 					m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
 					m_supportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
 					m_supportsSessionTrack = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SessionTrack) != 0;
@@ -1500,6 +1505,7 @@ namespace MySqlConnector.Core
 		int m_activeCommandId;
 		bool m_useCompression;
 		bool m_isSecureConnection;
+		bool m_supportsComMulti;
 		bool m_supportsConnectionAttributes;
 		bool m_supportsDeprecateEof;
 		bool m_supportsSessionTrack;

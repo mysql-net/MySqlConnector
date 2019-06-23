@@ -6,7 +6,7 @@ namespace MySqlConnector.Protocol
 	/// The <a href="https://dev.mysql.com/doc/internals/en/capability-flags.html">MySQL Capability flags</a>.
 	/// </summary>
 	[Flags]
-	internal enum ProtocolCapabilities
+	internal enum ProtocolCapabilities : ulong
 	{
 		/// <summary>
 		/// No specified capabilities.
@@ -129,5 +129,20 @@ namespace MySqlConnector.Protocol
 		/// Can send OK after a Text Resultset.
 		/// </summary>
 		DeprecateEof = 0x100_0000,
+
+		/// <summary>
+		/// Client supports progress indicator.
+		/// </summary>
+		MariaDbClientProgress = 0x1_0000_0000,
+
+		/// <summary>
+		/// Client supports COM_MULTI (i.e., CommandKind.Multi)
+		/// </summary>
+		MariaDbComMulti = 0x2_0000_0000,
+
+		/// <summary>
+		/// Support of array binding.
+		/// </summary>
+		MariaDbStatementBulkOperations = 0x4_0000_0000,
 	}
 }

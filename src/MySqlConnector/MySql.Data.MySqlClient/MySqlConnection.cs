@@ -399,6 +399,13 @@ namespace MySql.Data.MySqlClient
 
 		public event MySqlInfoMessageEventHandler InfoMessage;
 
+		public MySqlBatch CreateBatch() => CreateDbBatch();
+		private MySqlBatch CreateDbBatch() => new MySqlBatch(this);
+
+		public MySqlBatchCommand CreateBatchCommand() => CreateDbBatchCommand();
+		private MySqlBatchCommand CreateDbBatchCommand() => new MySqlBatchCommand();
+		public bool CanCreateBatch => true;
+
 		protected override void Dispose(bool disposing)
 		{
 			try
@@ -426,7 +433,7 @@ namespace MySql.Data.MySqlClient
 
 		internal void SetSessionFailed(Exception exception) => m_session.SetFailed(exception);
 
-		internal void Cancel(MySqlCommand command)
+		internal void Cancel(ICancellableCommand command)
 		{
 			var session = Session;
 			if (!session.TryStartCancel(command))

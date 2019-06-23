@@ -108,6 +108,7 @@ for various precondition checks that indicate misuse of the API (and not a probl
 
 The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~~Strikethrough~~ indicates bugs that have since been fixed in a newer version of Connector/NET, but were fixed first in MySqlConnector.)
 
+* [#14115](https://bugs.mysql.com/bug.php?id=14115): Compound statements are not supported by `MySqlCommand.Prepare`
 * [#37283](https://bugs.mysql.com/bug.php?id=37283), [#70587](https://bugs.mysql.com/bug.php?id=70587): Distributed transactions are not supported
 * [#50773](https://bugs.mysql.com/bug.php?id=50773): Can’t use multiple connections within one TransactionScope
 * [#61477](https://bugs.mysql.com/bug.php?id=61477): `ColumnOrdinal` in schema table is 1-based

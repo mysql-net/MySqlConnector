@@ -30,6 +30,7 @@ namespace MySqlConnector.Core
 			RecordsAffected = null;
 			WarningCount = 0;
 			State = ResultSetState.None;
+			ContainsCommandParameters = false;
 			m_columnDefinitionPayloadUsedBytes = 0;
 			m_readBuffer.Clear();
 			m_row = null;
@@ -131,6 +132,8 @@ namespace MySqlConnector.Core
 							EofPayload.Create(payload.AsSpan());
 						}
 
+						if (ColumnDefinitions.Length == (Command?.OutParameters?.Count + 1) && ColumnDefinitions[0].Name == SingleCommandPayloadCreator.OutParameterSentinelColumnName)
+							ContainsCommandParameters = true;
 						LastInsertId = -1;
 						WarningCount = 0;
 						State = ResultSetState.ReadResultSetHeader;
@@ -176,6 +179,12 @@ namespace MySqlConnector.Core
 				? m_readBuffer.Dequeue()
 				: await ScanRowAsync(ioBehavior, m_row, cancellationToken).ConfigureAwait(false);
 
+			if (Command.ReturnParameter is object && m_row is object)
+			{
+				Command.ReturnParameter.Value = m_row.GetValue(0);
+				Command.ReturnParameter = null;
+			}
+
 			if (m_row is null)
 			{
 				State = BufferState;
@@ -201,7 +210,7 @@ namespace MySqlConnector.Core
 			if (BufferState == ResultSetState.HasMoreData || BufferState == ResultSetState.NoMoreData || BufferState == ResultSetState.None)
 				return new ValueTask<Row>((Row) null);
 
-			using (Command.RegisterCancel(cancellationToken))
+			using (Command.CancellableCommand.RegisterCancel(cancellationToken))
 			{
 				var payloadValueTask = Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None);
 				return payloadValueTask.IsCompletedSuccessfully
@@ -248,7 +257,74 @@ namespace MySqlConnector.Core
 				}
 
 				if (row_ is null)
-					row_ = DataReader.ResultSetProtocol == ResultSetProtocol.Binary ? (Row) new BinaryRow(this) : new TextRow(this);
+				{
+					bool isBinaryRow = false;
+					if (payload.HeaderByte == 0 && !Connection.IgnorePrepare)
+					{
+						// this might be a binary row, but it might also be a text row whose first column is zero bytes long; try reading
+						// the row as a series of length-encoded values (the text format) to see if this might plausibly be a text row
+						var isTextRow = false;
+						var reader = new ByteArrayReader(payload.AsSpan());
+						var columnCount = 0;
+						while (reader.BytesRemaining > 0)
+						{
+							int length;
+							var firstByte = reader.ReadByte();
+							if (firstByte == 0xFB)
+							{
+								// NULL
+								length = 0;
+							}
+							else if (firstByte == 0xFC)
+							{
+								// two-byte length-encoded integer
+								if (reader.BytesRemaining < 2)
+									break;
+								length = unchecked((int) reader.ReadFixedLengthUInt32(2));
+							}
+							else if (firstByte == 0xFD)
+							{
+								// three-byte length-encoded integer
+								if (reader.BytesRemaining < 3)
+									break;
+								length = unchecked((int) reader.ReadFixedLengthUInt32(3));
+							}
+							else if (firstByte == 0xFE)
+							{
+								// eight-byte length-encoded integer
+								if (reader.BytesRemaining < 8)
+									break;
+								length = checked((int) reader.ReadFixedLengthUInt64(8));
+							}
+							else if (firstByte == 0xFF)
+							{
+								// invalid length prefix
+								break;
+							}
+							else
+							{
+								// single-byte length
+								length = firstByte;
+							}
+
+							if (reader.BytesRemaining < length)
+								break;
+							reader.Offset += length;
+							columnCount++;
+
+							if (columnCount == ColumnDefinitions.Length)
+							{
+								// if we used up all the bytes reading exactly 'ColumnDefinitions' length-encoded columns, then assume this is a text row
+								if (reader.BytesRemaining == 0)
+									isTextRow = true;
+								break;
+							}
+						}
+
+						isBinaryRow = !isTextRow;
+					}
+					row_ = isBinaryRow ? (Row) new BinaryRow(this) : new TextRow(this);
+				}
 				row_.SetData(payload.ArraySegment);
 				m_rowBuffered = row_;
 				m_hasRows = true;
@@ -331,7 +407,7 @@ namespace MySqlConnector.Core
 
 		public readonly MySqlDataReader DataReader;
 		public Exception ReadResultSetHeaderException { get; private set; }
-		public MySqlCommand Command => DataReader.Command;
+		public IMySqlCommand Command => DataReader.Command;
 		public MySqlConnection Connection => DataReader.Connection;
 		public ServerSession Session => DataReader.Session;
 
@@ -342,6 +418,7 @@ namespace MySqlConnector.Core
 		public int? RecordsAffected { get; private set; }
 		public int WarningCount { get; private set; }
 		public ResultSetState State { get; private set; }
+		public bool ContainsCommandParameters { get; private set; }
 
 		ResizableArray<byte> m_columnDefinitionPayloads;
 		int m_columnDefinitionPayloadUsedBytes;

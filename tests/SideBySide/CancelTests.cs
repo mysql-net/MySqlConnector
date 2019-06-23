@@ -416,6 +416,436 @@ create table cancel_completed_command(id integer not null primary key, value tex
 			}
 		}
 
+#if !BASELINE
+		[SkippableFact(ServerFeatures.Timeout)]
+		public void CancelBatchCommand()
+		{
+			using (var batch = new MySqlBatch(m_database.Connection)
+			{
+				BatchCommands =
+				{
+					new MySqlBatchCommand("SELECT SLEEP(5)"),
+				},
+			})
+			{
+				var task = Task.Run(async () =>
+				{
+					await Task.Delay(TimeSpan.FromSeconds(0.5));
+					batch.Cancel();
+				});
+
+				var stopwatch = Stopwatch.StartNew();
+				TestUtilities.AssertIsOne(batch.ExecuteScalar());
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
+
+				task.Wait(); // shouldn't throw
+			}
+		}
+
+		[SkippableFact(ServerFeatures.Timeout)]
+		public void CancelBatchReaderAsynchronously()
+		{
+			using (var barrier = new Barrier(2))
+			using (var batch = new MySqlBatch(m_database.Connection)
+			{
+				BatchCommands =
+				{
+					new MySqlBatchCommand(c_hugeQuery),
+				},
+			})
+			{
+				var task = Task.Run(() =>
+				{
+					barrier.SignalAndWait();
+					batch.Cancel();
+				});
+
+				int rows = 0;
+				using (var reader = batch.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+
+					barrier.SignalAndWait();
+					try
+					{
+						while (reader.Read())
+							rows++;
+					}
+					catch (MySqlException ex)
+					{
+						Assert.Equal((int) MySqlErrorCode.QueryInterrupted, ex.Number);
+					}
+
+					// query returns 25 billion rows; we shouldn't have read many of them
+					Assert.InRange(rows, 0, 10000000);
+				}
+
+				task.Wait(); // shouldn't throw
+			}
+		}
+
+		[SkippableFact(ServerFeatures.Timeout)]
+		public void CancelBatchBeforeRead()
+		{
+			using (var batch = new MySqlBatch(m_database.Connection)
+			{
+				BatchCommands =
+				{
+					new MySqlBatchCommand(c_hugeQuery),
+				},
+			})
+			{
+				using (var reader = batch.ExecuteReader())
+				{
+					batch.Cancel();
+
+					var stopwatch = Stopwatch.StartNew();
+					int rows = 0;
+					try
+					{
+						while (reader.Read())
+							rows++;
+					}
+					catch (MySqlException ex)
+					{
+						Assert.Equal((int) MySqlErrorCode.QueryInterrupted, ex.Number);
+					}
+					Assert.False(reader.NextResult());
+					TestUtilities.AssertDuration(stopwatch, 0, 1000);
+					Assert.InRange(rows, 0, 10000000);
+				}
+			}
+		}
+
+		[SkippableFact(ServerFeatures.Timeout)]
+		public void CancelMultiCommandBatchReader()
+		{
+			using (var barrier = new Barrier(2))
+			using (var batch = new MySqlBatch(m_database.Connection)
+			{
+				BatchCommands =
+				{
+					new MySqlBatchCommand(c_hugeQuery),
+					new MySqlBatchCommand(c_hugeQuery),
+					new MySqlBatchCommand(c_hugeQuery),
+				},
+			})
+			{
+				var task = Task.Run(() =>
+				{
+					barrier.SignalAndWait();
+					batch.Cancel();
+				});
+
+				int rows = 0;
+				using (var reader = batch.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+
+					barrier.SignalAndWait();
+					try
+					{
+						while (reader.Read())
+							rows++;
+					}
+					catch (MySqlException ex)
+					{
+						Assert.Equal((int) MySqlErrorCode.QueryInterrupted, ex.Number);
+					}
+
+					// query returns 25 billion rows; we shouldn't have read many of them
+					Assert.InRange(rows, 0, 10000000);
+
+					Assert.False(reader.NextResult());
+				}
+
+				task.Wait(); // shouldn't throw
+			}
+		}
+
+		[SkippableFact(ServerFeatures.Timeout)]
+		public async Task CancelBatchWithTokenBeforeExecuteScalar()
+		{
+			using (var batch = new MySqlBatch(m_database.Connection)
+			{
+				BatchCommands =
+				{
+					new MySqlBatchCommand("select 1;"),
+				},
+			})
+			{
+				try
+				{
+					await batch.ExecuteScalarAsync(s_canceledToken);
+					Assert.True(false);
+				}
+				catch (OperationCanceledException ex)
+				{
+					Assert.Equal(s_canceledToken, ex.CancellationToken);
+				}
+			}
+		}
+
+		[SkippableFact(ServerFeatures.Timeout)]
+		public async Task CancelBatchWithTokenBeforeExecuteNonQuery()
+		{
+			using (var batch = new MySqlBatch(m_database.Connection)
+			{
+				BatchCommands =
+				{
+					new MySqlBatchCommand("select 1;"),
+				},
+			})
+			{
+				try
+				{
+					await batch.ExecuteNonQueryAsync(s_canceledToken);
+					Assert.True(false);
+				}
+				catch (OperationCanceledException ex)
+				{
+					Assert.Equal(s_canceledToken, ex.CancellationToken);
+				}
+			}
+		}
+
+		[SkippableFact(ServerFeatures.Timeout)]
+		public async Task CancelBatchWithTokenBeforeExecuteReader()
+		{
+			using (var batch = new MySqlBatch(m_database.Connection)
+			{
+				BatchCommands =
+				{
+					new MySqlBatchCommand("select 1;"),
+				},
+			})
+			{
+				try
+				{
+					await batch.ExecuteReaderAsync(s_canceledToken);
+					Assert.True(false);
+				}
+				catch (OperationCanceledException ex)
+				{
+					Assert.Equal(s_canceledToken, ex.CancellationToken);
+				}
+			}
+		}
+
+		[Fact]
+		public async Task CancelCompletedBatch()
+		{
+			await m_database.Connection.ExecuteAsync(@"drop table if exists cancel_completed_command;
+create table cancel_completed_command (
+	id bigint unsigned,
+	value varchar(45)
+);").ConfigureAwait(false);
+
+			using (var batch = m_database.Connection.CreateBatch())
+			{
+				batch.BatchCommands.Add(new MySqlBatchCommand(@"insert into cancel_completed_command (id, value) values (1, null);"));
+
+				using (await batch.ExecuteReaderAsync().ConfigureAwait(false))
+					batch.Cancel();
+			}
+
+			using (var batch = m_database.Connection.CreateBatch())
+			{
+				batch.BatchCommands.Add(new MySqlBatchCommand(@"update cancel_completed_command SET value = ""value"" where id = 1;"));
+
+				await batch.ExecuteNonQueryAsync().ConfigureAwait(false);
+			}
+
+			using (var cmd = m_database.Connection.CreateCommand())
+			{
+				cmd.CommandText = "select value from cancel_completed_command where id = 1;";
+				var value = (string) await cmd.ExecuteScalarAsync();
+				Assert.Equal("value", value);
+			}
+		}
+
+		[SkippableFact(ServerFeatures.Timeout)]
+		public async Task CancelHugeQueryBatchWithTokenAfterExecuteReader()
+		{
+			using (var batch = new MySqlBatch(m_database.Connection)
+			{
+				BatchCommands =
+				{
+					new MySqlBatchCommand(c_hugeQuery),
+				},
+			})
+			using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5)))
+			using (var reader = await batch.ExecuteReaderAsync(cts.Token))
+			{
+				var rows = 0;
+				try
+				{
+					while (await reader.ReadAsync(cts.Token))
+						rows++;
+					Assert.True(false);
+				}
+				catch (OperationCanceledException ex)
+				{
+					Assert.Equal(cts.Token, ex.CancellationToken);
+					Assert.InRange(rows, 0, 10000000);
+				}
+
+				// no more result sets
+				Assert.False(reader.Read());
+				Assert.False(reader.NextResult());
+			}
+		}
+
+		[SkippableFact(ServerFeatures.Timeout)]
+		public async Task CancelHugeQueryBatchWithTokenInNextResult()
+		{
+			using (var batch = new MySqlBatch(m_database.Connection)
+			{
+				BatchCommands =
+				{
+					new MySqlBatchCommand(c_hugeQuery),
+					new MySqlBatchCommand("select 1, 2, 3;"),
+				},
+			})
+			using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5)))
+			using (var reader = await batch.ExecuteReaderAsync(cts.Token))
+			{
+				// read first result set
+				Assert.True(await reader.ReadAsync(cts.Token));
+
+				try
+				{
+					// skip to the next result set
+					Assert.True(await reader.NextResultAsync(cts.Token));
+
+					// shouldn't get here
+					Assert.True(false);
+				}
+				catch (OperationCanceledException ex)
+				{
+					Assert.Equal(cts.Token, ex.CancellationToken);
+				}
+
+				// no more result sets
+				Assert.False(reader.Read());
+				Assert.False(reader.NextResult());
+			}
+		}
+
+		[SkippableFact(ServerFeatures.Timeout)]
+		public async Task CancelSlowQueryBatchWithTokenAfterExecuteReader()
+		{
+			using (var batch = new MySqlBatch(m_database.Connection)
+			{
+				BatchCommands =
+				{
+					new MySqlBatchCommand(c_slowQuery),
+				},
+			})
+			using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5)))
+			{
+				// the call to ExecuteReader should block until the token is cancelled
+				var stopwatch = Stopwatch.StartNew();
+				using (var reader = await batch.ExecuteReaderAsync(cts.Token))
+				{
+					TestUtilities.AssertDuration(stopwatch, 450, 3000);
+
+					var rows = 0;
+					try
+					{
+						// the OperationCanceledException is thrown later, from ReadAsync
+						while (await reader.ReadAsync(cts.Token))
+							rows++;
+						Assert.True(false);
+					}
+					catch (OperationCanceledException ex)
+					{
+						Assert.Equal(cts.Token, ex.CancellationToken);
+						Assert.InRange(rows, 0, 100);
+					}
+				}
+			}
+		}
+
+		[SkippableFact(ServerFeatures.Timeout)]
+		public async Task CancelSlowQueryBatchWithTokenAfterNextResult()
+		{
+			using (var batch = new MySqlBatch(m_database.Connection)
+			{
+				BatchCommands =
+				{
+					new MySqlBatchCommand("SELECT 1;"),
+					new MySqlBatchCommand(c_slowQuery),
+				},
+			})
+			using (var reader = await batch.ExecuteReaderAsync())
+			{
+				// first resultset should be available immediately
+				Assert.True(reader.Read());
+				Assert.Equal(1, reader.GetInt32(0));
+				Assert.False(reader.Read());
+
+				using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5)))
+				{
+					// the call to NextResult should block until the token is cancelled
+					var stopwatch = Stopwatch.StartNew();
+					Assert.True(await reader.NextResultAsync(cts.Token));
+					TestUtilities.AssertDuration(stopwatch, 450, 1500);
+
+					int rows = 0;
+					try
+					{
+						// the OperationCanceledException is thrown later, from ReadAsync
+						while (await reader.ReadAsync(cts.Token))
+							rows++;
+					}
+					catch (OperationCanceledException ex)
+					{
+						Assert.Equal(cts.Token, ex.CancellationToken);
+						Assert.InRange(rows, 0, 100);
+					}
+				}
+
+				Assert.False(await reader.NextResultAsync());
+			}
+		}
+
+		[SkippableFact(ServerFeatures.Timeout)]
+		public async Task CancelMultiStatementBatchInRead()
+		{
+			using (var batch = new MySqlBatch(m_database.Connection)
+			{
+				BatchCommands =
+				{
+					new MySqlBatchCommand(c_hugeQuery),
+					new MySqlBatchCommand(c_hugeQuery),
+					new MySqlBatchCommand(c_hugeQuery),
+				},
+			})
+			using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5)))
+			using (var reader = await batch.ExecuteReaderAsync())
+			{
+				var rows = 0;
+				try
+				{
+					while (await reader.ReadAsync(cts.Token))
+						rows++;
+
+					Assert.True(false);
+				}
+				catch (OperationCanceledException ex)
+				{
+					Assert.Equal(cts.Token, ex.CancellationToken);
+					Assert.InRange(rows, 0, 10000000);
+				}
+
+				// no more result sets; the whole command was cancelled
+				Assert.False(reader.Read());
+				Assert.False(reader.NextResult());
+			}
+		}
+#endif
+
 		private static CancellationToken GetCanceledToken()
 		{
 			var cts = new CancellationTokenSource();

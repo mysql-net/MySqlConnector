@@ -29,9 +29,17 @@ namespace MySqlConnector.Protocol.Payloads
 				var charSet = (CharacterSet) reader.ReadByte();
 				var status = (ServerStatus) reader.ReadInt16();
 				var capabilityFlagsHigh = reader.ReadUInt16();
-				protocolCapabilities |= (ProtocolCapabilities) (capabilityFlagsHigh << 16);
+				protocolCapabilities |= (ProtocolCapabilities) ((ulong) capabilityFlagsHigh << 16);
 				var authPluginDataLength = reader.ReadByte();
-				var unused = reader.ReadByteString(10);
+				var unused = reader.ReadByteString(6);
+
+				long extendedCapabilites = reader.ReadInt32();
+				if ((protocolCapabilities & ProtocolCapabilities.LongPassword) == 0)
+				{
+					// MariaDB clears the CLIENT_LONG_PASSWORD flag to indicate it's not a MySQL Server
+					protocolCapabilities |= (ProtocolCapabilities) (extendedCapabilites << 32);
+				}
+
 				if ((protocolCapabilities & ProtocolCapabilities.SecureConnection) != 0)
 				{
 					var authPluginData2 = reader.ReadByteString(Math.Max(13, authPluginDataLength - 8));

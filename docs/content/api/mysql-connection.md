@@ -1,11 +1,11 @@
 ---
-lastmod: 2017-11-06
+lastmod: 2019-06-23
 date: 2016-10-16
 menu:
   main:
     parent: api
 title: MySqlConnection
-weight: 10
+weight: 30
 ---
 
 MySqlConnection
@@ -17,50 +17,61 @@ please refer to its documentation.
 Additionally, MySqlConnection provides the following public properties and methods that may be used:
 
 ### Constructors
-`public MySqlConnection()`
+`MySqlConnection()`
 
-Parameterless constructor
+Parameterless constructor.
 ***
-`public MySqlConnection(string connectionString)`
+`MySqlConnection(string connectionString)`
 
-Constructor that set the connection string
-***
+Constructor that sets the `ConnectionString` property.
+
 ### Additional Properties
-`public int ServerThread`
+`int ServerThread`
 
-Connection ID from MySQL Server
+Connection ID from MySQL Server.
 ***
+`bool CanCreateBatch`
+
+Returns `true`.
+
 ### Additional Instance Methods
-`public Task<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))`
+`Task<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))`
 
-Async version of BeginTransaction
+Async version of `BeginTransaction`.
 ***
-`public Task<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))`
+`Task<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))`
 
-Async version of BeginTransaction that supports setting Isolation Level
+Async version of `BeginTransaction` that supports setting Isolation Level.
 ***
+`MySqlBatch CreateBatch()`
+
+Creates a `MySqlBatch` object for executing batched commands.
+***
+`MySqlBatchCommand CreateBatchCommand()`
+
+Creates a `MySqlBatchCommand` object (that can be used with `MySqlBatch.BatchCommands`).
+
 ### Additional Static Methods
-`public static void ClearPool(MySqlConnection connection)`
+`static void ClearPool(MySqlConnection connection)`
 
-Clears the connection pool that the connection belongs to
+Clears the connection pool that the connection belongs to.
 ***
-`public static Task ClearPoolAsync(MySqlConnection connection)`
+`static Task ClearPoolAsync(MySqlConnection connection)`
 
-Async version of ClearPool
+Async version of `ClearPool`.
 ***
-`public static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken)`
+`static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken)`
 
-Async version of ClearPool with cancellation token support
+Async version of `ClearPool` with cancellation token support.
 ***
-`public static void ClearAllPools()`
+`static void ClearAllPools()`
 
-Clears all connection pools in the entire application
+Clears all connection pools in the entire application.
 ***
-`public static Task ClearAllPoolsAsync()`
+`static Task ClearAllPoolsAsync()`
 
-Async version of ClearAllPoolsAsync
+Async version of `ClearAllPoolsAsync`.
 ***
-`public static Task ClearAllPoolsAsync(CancellationToken cancellationToken)`
+`static Task ClearAllPoolsAsync(CancellationToken cancellationToken)`
 
-Async version of ClearAllPoolsAsync with cancellation token support
-***
+Async version of `ClearAllPoolsAsync` with cancellation token support.
