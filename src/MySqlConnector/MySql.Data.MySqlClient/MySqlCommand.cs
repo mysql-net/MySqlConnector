@@ -12,7 +12,7 @@ using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
 {
-	public sealed class MySqlCommand : DbCommand, IMySqlCommand
+	public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 #if !NETSTANDARD1_3
 		, ICloneable
 #endif
@@ -40,7 +40,7 @@ namespace MySql.Data.MySqlClient
 		public MySqlCommand(string commandText, MySqlConnection connection, MySqlTransaction transaction)
 		{
 			GC.SuppressFinalize(this);
-			CommandId = Interlocked.Increment(ref s_commandId);
+			m_commandId = ICancellableCommandExtensions.GetNextId();
 			CommandText = commandText;
 			Connection = connection;
 			Transaction = transaction;
@@ -262,7 +262,7 @@ namespace MySql.Data.MySqlClient
 
 		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
 		{
-			ResetCommandTimeout();
+			this.ResetCommandTimeout();
 			return ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		}
 
@@ -271,7 +271,7 @@ namespace MySql.Data.MySqlClient
 
 		internal async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			ResetCommandTimeout();
+			this.ResetCommandTimeout();
 			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false))
 			{
 				do
@@ -289,7 +289,7 @@ namespace MySql.Data.MySqlClient
 
 		internal async Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			ResetCommandTimeout();
+			this.ResetCommandTimeout();
 			var hasSetResult = false;
 			object result = null;
 			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(CommandBehavior.SingleResult | CommandBehavior.SingleRow, ioBehavior, cancellationToken).ConfigureAwait(false))
@@ -310,7 +310,7 @@ namespace MySql.Data.MySqlClient
 
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
 		{
-			ResetCommandTimeout();
+			this.ResetCommandTimeout();
 			return ExecuteReaderAsync(behavior, AsyncIOBehavior, cancellationToken);
 		}
 
@@ -349,7 +349,7 @@ namespace MySql.Data.MySqlClient
 		/// <returns>An object that must be disposed to revoke the cancellation registration.</returns>
 		/// <remarks>This method is more efficient than calling <code>token.Register(Command.Cancel)</code> because it avoids
 		/// unnecessary allocations.</remarks>
-		internal IDisposable RegisterCancel(CancellationToken token)
+		IDisposable ICancellableCommand.RegisterCancel(CancellationToken token)
 		{
 			if (!token.CanBeCanceled)
 				return null;
@@ -359,25 +359,11 @@ namespace MySql.Data.MySqlClient
 			return token.Register(m_cancelAction);
 		}
 
-		internal int CommandId { get; }
+		int ICancellableCommand.CommandId => m_commandId;
 
-		internal int CancelAttemptCount { get; set; }
+		int ICancellableCommand.CancelAttemptCount { get; set; }
 
-		/// <summary>
-		/// Causes the effective command timeout to be reset back to the value specified by <see cref="CommandTimeout"/>.
-		/// </summary>
-		/// <remarks>As per the <a href="https://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlcommand.commandtimeout.aspx">MSDN documentation</a>,
-		/// "This property is the cumulative time-out (for all network packets that are read during the invocation of a method) for all network reads during command
-		/// execution or processing of the results. A time-out can still occur after the first row is returned, and does not include user processing time, only network
-		/// read time. For example, with a 30 second time out, if Read requires two network packets, then it has 30 seconds to read both network packets. If you call
-		/// Read again, it will have another 30 seconds to read any data that it requires."
-		/// The <see cref="ResetCommandTimeout"/> method is called by public ADO.NET API methods to reset the effective time remaining at the beginning of a new
-		/// method call.</remarks>
-		internal void ResetCommandTimeout()
-		{
-			var commandTimeout = CommandTimeout;
-			Connection?.Session?.SetTimeout(commandTimeout == 0 ? Constants.InfiniteTimeout : commandTimeout * 1000);
-		}
+		ICancellableCommand IMySqlCommand.CancellableCommand => this;
 
 		private IOBehavior AsyncIOBehavior => Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous;
 
@@ -410,8 +396,7 @@ namespace MySql.Data.MySqlClient
 
 		MySqlParameter IMySqlCommand.ReturnParameter { get; set; }
 
-		static int s_commandId = 1;
-
+		readonly int m_commandId;
 		bool m_isDisposed;
 		MySqlConnection m_connection;
 		string m_commandText;

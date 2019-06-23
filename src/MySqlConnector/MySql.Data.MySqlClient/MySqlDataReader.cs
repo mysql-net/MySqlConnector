@@ -23,19 +23,19 @@ namespace MySql.Data.MySqlClient
 	{
 		public override bool NextResult()
 		{
-			Command?.ResetCommandTimeout();
+			Command?.CancellableCommand.ResetCommandTimeout();
 			return NextResultAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		}
 
 		public override bool Read()
 		{
-			Command?.ResetCommandTimeout();
+			Command?.CancellableCommand.ResetCommandTimeout();
 			return GetResultSet().Read();
 		}
 
 		public override Task<bool> ReadAsync(CancellationToken cancellationToken)
 		{
-			Command?.ResetCommandTimeout();
+			Command?.CancellableCommand.ResetCommandTimeout();
 			return GetResultSet().ReadAsync(cancellationToken);
 		}
 
@@ -44,7 +44,7 @@ namespace MySql.Data.MySqlClient
 
 		public override Task<bool> NextResultAsync(CancellationToken cancellationToken)
 		{
-			Command?.ResetCommandTimeout();
+			Command?.CancellableCommand.ResetCommandTimeout();
 			return NextResultAsync(Command?.Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 		}
 
@@ -66,15 +66,21 @@ namespace MySql.Data.MySqlClient
 
 				if (nextResult is null)
 				{
-					var writer = new ByteBufferWriter();
-					// TODO: Update Command, probably?
-					if (m_payloadCreator.WriteQueryCommand(ref m_commandListPosition, m_cachedProcedures, writer))
+					if (m_commandListPosition.CommandIndex < m_commandListPosition.Commands.Count)
 					{
-						using (var payload = writer.ToPayloadData())
+						Command = m_commandListPosition.Commands[m_commandListPosition.CommandIndex];
+						using (Command.CancellableCommand.RegisterCancel(cancellationToken))
 						{
-							await Command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-							await ReadFirstResultSetAsync(ioBehavior).ConfigureAwait(false);
-							nextResult = m_resultSet;
+							var writer = new ByteBufferWriter();
+							if (!Command.Connection.Session.IsCancelingQuery && m_payloadCreator.WriteQueryCommand(ref m_commandListPosition, m_cachedProcedures, writer))
+							{
+								using (var payload = writer.ToPayloadData())
+								{
+									await Command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+									await ReadFirstResultSetAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+									nextResult = m_resultSet;
+								}
+							}
 						}
 					}
 				}
@@ -142,7 +148,7 @@ namespace MySql.Data.MySqlClient
 
 		private async Task<ResultSet> ScanResultSetAsyncAwaited(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
 		{
-			using (Command.RegisterCancel(cancellationToken))
+			using (Command.CancellableCommand.RegisterCancel(cancellationToken))
 			{
 				try
 				{
@@ -315,22 +321,22 @@ namespace MySql.Data.MySqlClient
 		internal MySqlConnection Connection => Command?.Connection;
 		internal ServerSession Session => Command?.Connection.Session;
 
-		internal static async Task<MySqlDataReader> CreateAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary<string, CachedProcedure> cachedProcedures, IMySqlCommand command, CommandBehavior behavior, IOBehavior ioBehavior)
+		internal static async Task<MySqlDataReader> CreateAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary<string, CachedProcedure> cachedProcedures, IMySqlCommand command, CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			var dataReader = new MySqlDataReader(commandListPosition, payloadCreator, cachedProcedures, command, behavior);
 			command.Connection.SetActiveReader(dataReader);
 
 			try
 			{
-				await dataReader.ReadFirstResultSetAsync(ioBehavior).ConfigureAwait(false);
+				await dataReader.ReadFirstResultSetAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				if (dataReader.m_resultSet.ContainsCommandParameters)
-					await dataReader.ReadOutParametersAsync(ioBehavior, /* TODO: */ CancellationToken.None).ConfigureAwait(false);
+					await dataReader.ReadOutParametersAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				// if the command list has multiple commands, keep reading until a result set is found
 				while (dataReader.m_resultSet.State == ResultSetState.NoMoreData && commandListPosition.CommandIndex < commandListPosition.Commands.Count)
 				{
-					await dataReader.NextResultAsync(ioBehavior, /* TODO: */ default).ConfigureAwait(false);
+					await dataReader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 			}
 			catch (Exception)
@@ -342,7 +348,7 @@ namespace MySql.Data.MySqlClient
 			return dataReader;
 		}
 
-		internal async Task ReadFirstResultSetAsync(IOBehavior ioBehavior)
+		internal async Task ReadFirstResultSetAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			m_resultSet = await new ResultSet(this).ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
 			ActivateResultSet(m_resultSet);

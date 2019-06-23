@@ -38,15 +38,18 @@ namespace MySqlConnector.Core
 			var writer = new ByteBufferWriter();
 			if (!payloadCreator.WriteQueryCommand(ref commandListPosition, cachedProcedures, writer))
 				throw new InvalidOperationException("ICommandPayloadCreator failed to write query payload");
+
+			cancellationToken.ThrowIfCancellationRequested();
+
 			using (var payload = writer.ToPayloadData())
-			using (command.RegisterCancel(cancellationToken))
+			using (command.CancellableCommand.RegisterCancel(cancellationToken))
 			{
-				command.Connection.Session.StartQuerying(command);
+				command.Connection.Session.StartQuerying(command.CancellableCommand);
 				command.SetLastInsertedId(-1);
 				try
 				{
 					await command.Connection.Session.SendAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
-					return await MySqlDataReader.CreateAsync(commandListPosition, payloadCreator, cachedProcedures, command, behavior, ioBehavior).ConfigureAwait(false);
+					return await MySqlDataReader.CreateAsync(commandListPosition, payloadCreator, cachedProcedures, command, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
 				{

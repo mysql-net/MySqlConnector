@@ -49,16 +49,9 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		MySqlConnection IMySqlCommand.Connection { get; set; }
+		MySqlConnection IMySqlCommand.Connection => Batch.Connection;
 
-		long IMySqlCommand.LastInsertedId
-		{
-			get
-			{
-				// TODO:
-				return 0;
-			}
-		}
+		long IMySqlCommand.LastInsertedId => m_lastInsertedId;
 
 		PreparedStatements IMySqlCommand.TryGetPreparedStatements()
 		{
@@ -66,15 +59,17 @@ namespace MySql.Data.MySqlClient
 			return null;
 		}
 
-		void IMySqlCommand.SetLastInsertedId(long lastInsertedId)
-		{
-			// TODO:
-		}
+		void IMySqlCommand.SetLastInsertedId(long lastInsertedId) => m_lastInsertedId = lastInsertedId;
 
 		MySqlParameterCollection IMySqlCommand.OutParameters { get; set; }
 
 		MySqlParameter IMySqlCommand.ReturnParameter { get; set; }
 
+		ICancellableCommand IMySqlCommand.CancellableCommand => Batch;
+
+		internal MySqlBatch Batch { get; set; }
+
 		MySqlParameterCollection m_parameterCollection;
+		long m_lastInsertedId;
 	}
 }

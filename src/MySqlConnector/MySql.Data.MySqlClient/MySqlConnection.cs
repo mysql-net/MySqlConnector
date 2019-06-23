@@ -433,7 +433,7 @@ namespace MySql.Data.MySqlClient
 
 		internal void SetSessionFailed(Exception exception) => m_session.SetFailed(exception);
 
-		internal void Cancel(MySqlCommand command)
+		internal void Cancel(ICancellableCommand command)
 		{
 			var session = Session;
 			if (!session.TryStartCancel(command))

@@ -49,7 +49,6 @@ namespace System.Data.Common
 		public abstract void Prepare();
 		public abstract Task PrepareAsync(CancellationToken cancellationToken = default);
 		public abstract void Cancel();
-		public abstract Task CancelAsync(CancellationToken cancellationToken = default);
 
 		#endregion
 
@@ -70,7 +69,7 @@ namespace System.Data.Common
 
 namespace MySql.Data.MySqlClient
 {
-	public sealed class MySqlBatch : DbBatch
+	public sealed class MySqlBatch : DbBatch, ICancellableCommand
 	{
 		public MySqlBatch()
 			: this(null, null)
@@ -82,6 +81,7 @@ namespace MySql.Data.MySqlClient
 			Connection = connection;
 			Transaction = transaction;
 			BatchCommands = new MySqlBatchCommandCollection();
+			m_commandId = ICancellableCommandExtensions.GetNextId();
 		}
 
 		public new MySqlConnection Connection { get; set; }
@@ -104,13 +104,13 @@ namespace MySql.Data.MySqlClient
 
 		protected override DbDataReader ExecuteDbDataReader()
 		{
-			// TODO: ResetCommandTimeout();
+			((ICancellableCommand) this).ResetCommandTimeout();
 			return ExecuteReaderAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		}
 
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CancellationToken cancellationToken)
 		{
-			// TODO: ResetCommandTimeout();
+			((ICancellableCommand) this).ResetCommandTimeout();
 			return ExecuteReaderAsync(AsyncIOBehavior, cancellationToken);
 		}
 
@@ -119,8 +119,8 @@ namespace MySql.Data.MySqlClient
 			if (!IsValid(out var exception))
 			 	return Utility.TaskFromException<DbDataReader>(exception);
 
-			foreach (IMySqlCommand batchCommand in BatchCommands)
-				batchCommand.Connection = Connection;
+			foreach (MySqlBatchCommand batchCommand in BatchCommands)
+				batchCommand.Batch = this;
 
 			var payloadCreator = Connection.Session.SupportsComMulti ? BatchedCommandPayloadCreator.Instance : SingleCommandPayloadCreator.Instance;
 			return CommandExecutor.ExecuteReaderAsync(BatchCommands, payloadCreator, default /* TODO: */, ioBehavior, cancellationToken);
@@ -140,9 +140,7 @@ namespace MySql.Data.MySqlClient
 
 		public override Task PrepareAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-		public override void Cancel() => throw new NotImplementedException();
-
-		public override Task CancelAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+		public override void Cancel() => Connection?.Cancel(this);
 
 		protected override void Dispose(bool disposing)
 		{
@@ -157,9 +155,23 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+		int ICancellableCommand.CommandId => m_commandId;
+		int ICancellableCommand.CommandTimeout => Timeout;
+		int ICancellableCommand.CancelAttemptCount { get; set; }
+
+		IDisposable ICancellableCommand.RegisterCancel(CancellationToken token)
+		{
+			if (!token.CanBeCanceled)
+				return null;
+
+			if (m_cancelAction is null)
+				m_cancelAction = Cancel;
+			return token.Register(m_cancelAction);
+		}
+
 		private async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			// TODO: ResetCommandTimeout();
+			((ICancellableCommand) this).ResetCommandTimeout();
 			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
 			{
 				do
@@ -174,7 +186,7 @@ namespace MySql.Data.MySqlClient
 
 		private async Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			// TODO: ResetCommandTimeout();
+			((ICancellableCommand) this).ResetCommandTimeout();
 			var hasSetResult = false;
 			object result = null;
 			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(/* TODO: CommandBehavior.SingleResult | CommandBehavior.SingleRow, */ioBehavior, cancellationToken).ConfigureAwait(false))
@@ -224,6 +236,8 @@ namespace MySql.Data.MySqlClient
 
 		private IOBehavior AsyncIOBehavior => Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous;
 
+		readonly int m_commandId;
 		bool m_isDisposed;
+		Action m_cancelAction;
 	}
 }

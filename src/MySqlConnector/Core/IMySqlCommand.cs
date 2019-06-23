@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Threading;
 using MySql.Data.MySqlClient;
+using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core
 {
@@ -14,27 +15,16 @@ namespace MySqlConnector.Core
 		CommandType CommandType { get; }
 		MySqlParameterCollection Parameters { get; }
 		PreparedStatements TryGetPreparedStatements();
-		MySqlConnection Connection { get; set; }
+		MySqlConnection Connection { get; }
 		long LastInsertedId { get; }
 		void SetLastInsertedId(long lastInsertedId);
 		MySqlParameterCollection OutParameters { get; set; }
 		MySqlParameter ReturnParameter { get; set; }
+		ICancellableCommand CancellableCommand { get; }
 	}
 
 	internal static class IMySqlCommandExtensions
 	{
-		public static void ResetCommandTimeout(this IMySqlCommand command)
-		{
-			// TODO:
-			(command as MySqlCommand)?.ResetCommandTimeout();
-		}
-
-		public static IDisposable RegisterCancel(this IMySqlCommand command, CancellationToken cancellationToken)
-		{
-			// TODO:
-			return (command as MySqlCommand)?.RegisterCancel(cancellationToken);
-		}
-
 		public static StatementPreparerOptions CreateStatementPreparerOptions(this IMySqlCommand command)
 		{
 			var connection = command.Connection;

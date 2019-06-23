@@ -210,7 +210,7 @@ namespace MySqlConnector.Core
 			if (BufferState == ResultSetState.HasMoreData || BufferState == ResultSetState.NoMoreData || BufferState == ResultSetState.None)
 				return new ValueTask<Row>((Row) null);
 
-			using (Command.RegisterCancel(cancellationToken))
+			using (Command.CancellableCommand.RegisterCancel(cancellationToken))
 			{
 				var payloadValueTask = Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None);
 				return payloadValueTask.IsCompletedSuccessfully
