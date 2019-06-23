@@ -48,7 +48,7 @@ namespace SideBySide
 
 		private static ServerFeatures UnsupportedFeatures => (ServerFeatures) Enum.Parse(typeof(ServerFeatures), Config.GetValue<string>("Data:UnsupportedFeatures"));
 
-		public static ServerFeatures SupportedFeatures => ~ServerFeatures.None & ~UnsupportedFeatures & ~ServerFeatures.Timeout;
+		public static ServerFeatures SupportedFeatures => ~ServerFeatures.None & ~UnsupportedFeatures & ~(IsCiBuild ? ServerFeatures.Timeout : ServerFeatures.None);
 
 		public static bool SupportsJson => SupportedFeatures.HasFlag(ServerFeatures.Json);
 
@@ -84,6 +84,11 @@ namespace SideBySide
 			csb.Database = null;
 			return csb;
 		}
+
+		public static bool IsCiBuild =>
+			Environment.GetEnvironmentVariable("APPVEYOR") == "True" ||
+			Environment.GetEnvironmentVariable("TRAVIS") == "true" ||
+			Environment.GetEnvironmentVariable("TF_BUILD") == "True";
 
 		// tests can run much slower in CI environments
 		public static int TimeoutDelayFactor { get; } = Environment.GetEnvironmentVariable("APPVEYOR") == "True" || Environment.GetEnvironmentVariable("TRAVIS") == "true" ? 6 :
