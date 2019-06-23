@@ -5,7 +5,7 @@ menu:
   main:
     parent: api
 title: MySqlDataReader
-weight: 30
+weight: 40
 ---
 
 MySqlDataReader
