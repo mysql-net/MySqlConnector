@@ -123,7 +123,7 @@ namespace MySql.Data.MySqlClient
 				batchCommand.Batch = this;
 
 			var payloadCreator = Connection.Session.SupportsComMulti ? BatchedCommandPayloadCreator.Instance : SingleCommandPayloadCreator.Instance;
-			return CommandExecutor.ExecuteReaderAsync(BatchCommands, payloadCreator, default /* TODO: */, ioBehavior, cancellationToken);
+			return CommandExecutor.ExecuteReaderAsync(BatchCommands, payloadCreator, CommandBehavior.Default, ioBehavior, cancellationToken);
 		}
 
 		public override int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -189,7 +189,7 @@ namespace MySql.Data.MySqlClient
 			((ICancellableCommand) this).ResetCommandTimeout();
 			var hasSetResult = false;
 			object result = null;
-			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(/* TODO: CommandBehavior.SingleResult | CommandBehavior.SingleRow, */ioBehavior, cancellationToken).ConfigureAwait(false))
+			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
 			{
 				do
 				{
