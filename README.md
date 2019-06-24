@@ -5,7 +5,7 @@ provider for [MySQL](https://www.mysql.com/). It provides implementations of
 `DbConnection`, `DbCommand`, `DbDataReader`, `DbTransaction`—the classes
 needed to query and update databases from managed code.
 
-Complete documentation is available at the [MySqlConnector Documentation Website](https://mysql-net.github.io/MySqlConnector/).
+Complete documentation is available at the [MySqlConnector Documentation Website](https://mysqlconnector.net/).
 
 ## Why Use This Library?
 
@@ -25,7 +25,7 @@ This library outperforms Connector/NET (`MySql.Data`) on benchmarks:
 
 ### Bug Fixes
 
-This library [fixes dozens of outstanding bugs](https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/#bugs-present-in-connector-net-that-are-fixed-in-mysqlconnector) in Connector/NET.
+This library [fixes dozens of outstanding bugs](https://mysqlconnector.net/tutorials/migrating-from-connector-net/#bugs-present-in-connector-net-that-are-fixed-in-mysqlconnector) in Connector/NET.
 
 ### License
 

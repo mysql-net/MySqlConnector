@@ -6,10 +6,10 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <AssemblyOriginatorKeyFile>..\..\MySqlConnector.snk</AssemblyOriginatorKeyFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <PackageReleaseNotes>https://mysql-net.github.io/MySqlConnector/overview/version-history/</PackageReleaseNotes>
-    <PackageProjectUrl>https://mysql-net.github.io/MySqlConnector/</PackageProjectUrl>
+    <PackageReleaseNotes>https://mysqlconnector.net/overview/version-history/</PackageReleaseNotes>
+    <PackageProjectUrl>https://mysqlconnector.net/</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIconUrl>https://mysql-net.github.io/MySqlConnector/img/logo.png</PackageIconUrl>
+    <PackageIconUrl>https://mysqlconnector.net/img/logo.png</PackageIconUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/mysql-net/MySqlConnector.git</RepositoryUrl>
     <DebugType>embedded</DebugType>

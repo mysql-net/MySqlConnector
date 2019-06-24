@@ -3,7 +3,7 @@
 ## Side-by-side Tests
 
 The `SideBySide` project is intended to verify that MySqlConnector doesn't break compatibility
-with Connector/NET and that [known bugs have been fixed](https://mysql-net.github.io/MySqlConnector/tutorials/migrating-from-connector-net/#fixed-bugs).
+with Connector/NET and that [known bugs have been fixed](https://mysqlconnector.net/tutorials/migrating-from-connector-net/#fixed-bugs).
 
 The tests require a MySQL server. The simplest way to run one is with [Docker](https://www.docker.com/community-edition):
 

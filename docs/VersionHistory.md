@@ -2,8 +2,8 @@
 
 ## Known Issues
 
-Known Issues have [moved here](https://mysql-net.github.io/MySqlConnector/overview/known-issues/).
+Known Issues have [moved here](https://mysqlconnector.net/overview/known-issues/).
 
 ## Release Notes
 
-Release Notes have [moved here](https://mysql-net.github.io/MySqlConnector/overview/version-history/).
+Release Notes have [moved here](https://mysqlconnector.net/overview/version-history/).
