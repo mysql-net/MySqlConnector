@@ -53,18 +53,17 @@ namespace MySql.Data.MySqlClient
 			VerifyNotDisposed();
 			try
 			{
-				ResultSet nextResult = null;
 				while (true)
 				{
 					await m_resultSet.ReadEntireAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					nextResult = await ScanResultSetAsync(ioBehavior, m_resultSet, cancellationToken).ConfigureAwait(false);
-					if (nextResult?.ContainsCommandParameters ?? false)
+					await ScanResultSetAsync(ioBehavior, m_resultSet, cancellationToken).ConfigureAwait(false);
+					if (m_hasMoreResults && m_resultSet.ContainsCommandParameters)
 						await ReadOutParametersAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					else
 						break;
 				}
 
-				if (nextResult is null)
+				if (!m_hasMoreResults)
 				{
 					if (m_commandListPosition.CommandIndex < m_commandListPosition.Commands.Count)
 					{
@@ -78,7 +77,7 @@ namespace MySql.Data.MySqlClient
 								{
 									await Command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 									await ReadFirstResultSetAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-									nextResult = m_resultSet;
+									m_hasMoreResults = true;
 								}
 							}
 						}
@@ -86,19 +85,20 @@ namespace MySql.Data.MySqlClient
 				}
 				else
 				{
-					ActivateResultSet(nextResult);
+					ActivateResultSet(m_resultSet);
 				}
 
-				m_resultSet = nextResult ?? new ResultSet(this);
+				if (!m_hasMoreResults)
+					m_resultSet.Reset();
 #if !NETSTANDARD1_3
 				m_schemaTable = null;
 #endif
-				return nextResult != null;
+				return m_hasMoreResults;
 			}
 			catch (MySqlException)
 			{
-				m_resultSet = new ResultSet(this);
-				m_resultSetBuffered = null;
+				m_resultSet.Reset();
+				m_hasMoreResults = false;
 #if !NETSTANDARD1_3
 				m_schemaTable = null;
 #endif
@@ -127,39 +127,36 @@ namespace MySql.Data.MySqlClient
 			m_hasWarnings = resultSet.WarningCount != 0;
 		}
 
-		private ValueTask<ResultSet> ScanResultSetAsync(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
+		private ValueTask<int> ScanResultSetAsync(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
 		{
-			if (m_resultSetBuffered is null)
-				return new ValueTask<ResultSet>((ResultSet)null);
+			if (!m_hasMoreResults)
+				return default;
 
-			if (m_resultSetBuffered.BufferState == ResultSetState.NoMoreData || m_resultSetBuffered.BufferState == ResultSetState.None)
+			if (resultSet.BufferState == ResultSetState.NoMoreData || resultSet.BufferState == ResultSetState.None)
 			{
-				m_resultSetBuffered = null;
-				return new ValueTask<ResultSet>((ResultSet)null);
+				m_hasMoreResults = false;
+				return default;
 			}
 
-			if (m_resultSetBuffered.BufferState != ResultSetState.HasMoreData)
-				throw new InvalidOperationException("Invalid state: {0}".FormatInvariant(m_resultSetBuffered.State));
+			if (resultSet.BufferState != ResultSetState.HasMoreData)
+				throw new InvalidOperationException("Invalid state: {0}".FormatInvariant(resultSet.BufferState));
 
-			if (resultSet is null)
-				resultSet = new ResultSet(this);
-			return new ValueTask<ResultSet>(ScanResultSetAsyncAwaited(ioBehavior, resultSet, cancellationToken));
+			return new ValueTask<int>(ScanResultSetAsyncAwaited(ioBehavior, resultSet, cancellationToken));
 		}
 
-		private async Task<ResultSet> ScanResultSetAsyncAwaited(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
+		private async Task<int> ScanResultSetAsyncAwaited(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
 		{
 			using (Command.CancellableCommand.RegisterCancel(cancellationToken))
 			{
 				try
 				{
-					m_resultSetBuffered = await resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
-					if (m_resultSetBuffered.BufferState == ResultSetState.NoMoreData)
-						m_resultSetBuffered = null;
-					return m_resultSetBuffered;
+					await resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
+					m_hasMoreResults = resultSet.BufferState != ResultSetState.NoMoreData;
+					return 0;
 				}
 				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted)
 				{
-					m_resultSetBuffered = null;
+					m_hasMoreResults = false;
 					cancellationToken.ThrowIfCancellationRequested();
 					throw;
 				}
@@ -350,9 +347,9 @@ namespace MySql.Data.MySqlClient
 
 		internal async Task ReadFirstResultSetAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			m_resultSet = await new ResultSet(this).ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
+			await m_resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
 			ActivateResultSet(m_resultSet);
-			m_resultSetBuffered = m_resultSet;
+			m_hasMoreResults = true;
 		}
 
 #if !NETSTANDARD1_3
@@ -455,6 +452,7 @@ namespace MySql.Data.MySqlClient
 			m_cachedProcedures = cachedProcedures;
 			Command = command;
 			m_behavior = behavior;
+			m_resultSet = new ResultSet(this);
 		}
 
 		private void DoClose()
@@ -479,7 +477,7 @@ namespace MySql.Data.MySqlClient
 					m_resultSet = null;
 				}
 
-				m_resultSetBuffered = null;
+				m_hasMoreResults = false;
 
 				var connection = Command.Connection;
 				connection.FinishQuerying(m_hasWarnings);
@@ -543,7 +541,7 @@ namespace MySql.Data.MySqlClient
 		int? m_recordsAffected;
 		bool m_hasWarnings;
 		ResultSet m_resultSet;
-		ResultSet m_resultSetBuffered;
+		bool m_hasMoreResults;
 #if !NETSTANDARD1_3
 		DataTable m_schemaTable;
 #endif

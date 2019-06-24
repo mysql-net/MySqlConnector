@@ -20,7 +20,7 @@ namespace MySqlConnector.Core
 			DataReader = dataReader;
 		}
 
-		public async Task<ResultSet> ReadResultSetHeaderAsync(IOBehavior ioBehavior)
+		public void Reset()
 		{
 			// ResultSet can be re-used, so initialize everything
 			BufferState = ResultSetState.None;
@@ -36,6 +36,11 @@ namespace MySqlConnector.Core
 			m_row = null;
 			m_rowBuffered = null;
 			m_hasRows = false;
+		}
+
+		public async Task ReadResultSetHeaderAsync(IOBehavior ioBehavior)
+		{
+			Reset();
 
 			try
 			{
@@ -149,8 +154,6 @@ namespace MySqlConnector.Core
 			{
 				BufferState = State;
 			}
-
-			return this;
 		}
 
 		private bool IsHostVerified(MySqlConnection connection)
