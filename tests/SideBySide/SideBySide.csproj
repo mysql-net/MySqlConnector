@@ -52,7 +52,7 @@
     <Reference Include="System" />
     <Reference Include="System.Transactions" />
     <Reference Include="Microsoft.CSharp" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0-preview.2" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0-preview.2" Condition=" '$(OS)' != 'Windows_NT' "/>
   </ItemGroup>
 
   <ItemGroup>
