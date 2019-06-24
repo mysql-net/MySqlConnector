@@ -11,6 +11,14 @@ weight: 30
 Version History
 ===============
 
+### 0.57.0-beta1
+
+* **Breaking:** Remove `MySqlClientFactory.Register`: [#654](https://github.com/mysql-net/MySqlConnector/issues/654).
+  * Replace calls to this method with `DbProviderFactories.RegisterFactory("MySqlConnector", MySqlClientFactory.Instance)` instead.
+* **Experimental:** Implement the new ADO.NET `DbBatch` API: [#650](https://github.com/mysql-net/MySqlConnector/issues/650).
+  * This API is not finalised and may change in the future.
+* Use `MySqlErrorCode.UnableToConnectToHost` in more situations when connecting fails: [#647](https://github.com/mysql-net/MySqlConnector/issues/647).
+
 ### 0.56.0
 
 * Support `client_ed25519` authentication plugin for MariaDB: [#639](https://github.com/mysql-net/MySqlConnector/issues/639).
