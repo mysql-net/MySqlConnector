@@ -98,7 +98,18 @@ namespace MySqlConnector.Core
 				writer.Write((byte) 1);
 
 				foreach (var parameter in parameters)
-					writer.Write(TypeMapper.ConvertToColumnTypeAndFlags(parameter.MySqlDbType, command.Connection.GuidFormat));
+				{
+					// override explicit MySqlDbType with inferred type from the Value
+					var mySqlDbType = parameter.MySqlDbType;
+					var typeMapping = (parameter.Value is null || parameter.Value == DBNull.Value) ? null : TypeMapper.Instance.GetDbTypeMapping(parameter.Value.GetType());
+					if (typeMapping is object)
+					{
+						var dbType = typeMapping.DbTypes[0];
+						mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbType(dbType);
+					}
+
+					writer.Write(TypeMapper.ConvertToColumnTypeAndFlags(mySqlDbType, command.Connection.GuidFormat));
+				}
 
 				var options = command.CreateStatementPreparerOptions();
 				foreach (var parameter in parameters)

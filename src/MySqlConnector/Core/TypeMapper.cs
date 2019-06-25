@@ -419,6 +419,10 @@ namespace MySqlConnector.Core
 				columnType = ColumnType.Geometry;
 				break;
 
+			case MySqlDbType.Null:
+				columnType = ColumnType.Null;
+				break;
+
 			default:
 				throw new NotImplementedException("ConvertToColumnTypeAndFlags for {0} is not implemented".FormatInvariant(dbType));
 			}
