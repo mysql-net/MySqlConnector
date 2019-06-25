@@ -13,7 +13,7 @@ namespace MySqlConnector.Core
 	{
 		string CommandText { get; }
 		CommandType CommandType { get; }
-		MySqlParameterCollection Parameters { get; }
+		MySqlParameterCollection RawParameters { get; }
 		PreparedStatements TryGetPreparedStatements();
 		MySqlConnection Connection { get; }
 		long LastInsertedId { get; }

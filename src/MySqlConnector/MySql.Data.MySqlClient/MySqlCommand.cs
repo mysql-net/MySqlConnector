@@ -70,6 +70,8 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+		MySqlParameterCollection IMySqlCommand.RawParameters => m_parameterCollection;
+
 		public new MySqlParameter CreateParameter() => (MySqlParameter) base.CreateParameter();
 
 		public override void Cancel() => Connection?.Cancel(this);

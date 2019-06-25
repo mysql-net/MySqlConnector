@@ -49,6 +49,8 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+		MySqlParameterCollection IMySqlCommand.RawParameters => m_parameterCollection;
+
 		MySqlConnection IMySqlCommand.Connection => Batch.Connection;
 
 		long IMySqlCommand.LastInsertedId => m_lastInsertedId;
