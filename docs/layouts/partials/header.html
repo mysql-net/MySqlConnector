@@ -38,6 +38,17 @@
     {{ .Hugo.Generator }}
     {{ .Scratch.Add "title" "" }}{{ if isset .Site.Data.titles .Title }}{{ .Scratch.Set "title" (index .Site.Data.titles .Title).title }}{{ else }}{{ .Scratch.Set "title" .Title}}{{end}}
     <title>MySqlConnector - {{ .Scratch.Get "title" }}</title>
+    <meta property="og:title" content="MySqlConnector - {{ .Scratch.Get "title" }}" />
+    <meta property="og:description" content="MySqlConnector is a high-performance, asynchronous ADO.NET data provider for MySQL Server, MariaDB, Percona Server, Amazon Aurora, Azure Database for MySQL, Google Cloud SQL for MySQL and more." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://mysqlconnector.net/img/icons/android-icon-192x192.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="192" />
+    <meta property="og:image:height" content="192" />
+    <meta property="og:image:alt" content="MySqlConnector logo: a dolphin superimposed on a database symbol" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content="{{ .Page.Permalink }}" />
+    <meta property="fb:app_id" content="422535981632483" />
 
     <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="css/style.css" />
