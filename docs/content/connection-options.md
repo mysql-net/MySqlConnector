@@ -149,12 +149,12 @@ Connection pooling is enabled by default. These options are used to configure it
   <tr>
     <td>Connection Lifetime, ConnectionLifeTime</td>
     <td>0</td>
-    <td>Controls the maximum length of time a connection to the server can be open. Connections that are returned to the pool are destroyed if it's been more than <code>ConnectionLifeTime</code> seconds since the connection was created. The default value of zero (0) means pooled connections will never incur a ConnectionLifeTime timeout.</td>
+    <td>Controls the maximum length of time a connection to the server can be open. Connections that are returned to the pool are destroyed if it’s been more than <code>ConnectionLifeTime</code> seconds since the connection was created. The default value of zero (0) means pooled connections will never incur a ConnectionLifeTime timeout.</td>
   </tr>
   <tr>
     <td>Connection Reset, ConnectionReset</td>
     <td><code>true</code></td>
-    <td>If <code>true</code>, the connection state is reset when it is retrieved from the pool. The default value of <code>true</code> ensures that the connection is in the same state whether it's newly created or retrieved from the pool. A value of <code>false</code> avoids making an additional server round trip when obtaining a connection, but the connection state is not reset, meaning that session variables and other session state changes from any previous use of the connection are carried over.</td>
+    <td>If <code>true</code>, the connection state is reset when it is retrieved from the pool. The default value of <code>true</code> ensures that the connection is in the same state whether it’s newly created or retrieved from the pool. A value of <code>false</code> avoids making an additional server round trip when obtaining a connection, but the connection state is not reset, meaning that session variables and other session state changes from any previous use of the connection are carried over.</td>
   </tr>
   <tr>
     <td>Connection Idle Ping Time, Connection Idle Ping Time <em>(Experimental)</em></td>
@@ -215,7 +215,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>AllowPublicKeyRetrieval, Allow Public Key Retrieval</td>
     <td>false</td>
     <td>If the user account uses <code>sha256_password</code> authentication, the password must be protected during transmission; TLS is the preferred mechanism for this,
-      but if it is not available then RSA public key encryption will be used. To specify the server's RSA public key, use the <code>ServerRSAPublicKeyFile</code> connection
+      but if it is not available then RSA public key encryption will be used. To specify the server’s RSA public key, use the <code>ServerRSAPublicKeyFile</code> connection
       string setting, or set <code>AllowPublicKeyRetrieval=True</code> to allow the client to automatically request the public key from the server. Note that <code>AllowPublicKeyRetrieval=True</code>
       could allow a malicious proxy to perform a MITM attack to get the plaintext password, so it is <code>False</code> by default and must be explicitly enabled.</td>
   </tr>
@@ -240,7 +240,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
   </tr>
   <tr>
     <td>CharSet, Character Set, CharacterSet</td>
-    <td></td>
+    <td>utf8mb4</td>
     <td>MySqlConnector always uses <code>utf8mb4</code> to send and receive strings from MySQL Server. This option may be specified (for backwards compatibility) but it will be ignored.</td>
   </tr>
   <tr>
@@ -248,7 +248,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>false</td>
     <td>If true (and if the server supports compression), compresses packets sent between client and server. This option is unlikely to be useful in
       practice unless there is a high-latency or low-bandwidth network link between the application and the database server. You should measure
-      performance with and without this option to determine if it's beneficial in your environment.</td>
+      performance with and without this option to determine if it’s beneficial in your environment.</td>
   </tr>
   <tr>
     <td>Connect Timeout, Connection Timeout, ConnectionTimeout</td>
@@ -368,5 +368,100 @@ These are the other options that MySqlConnector supports. They are set to sensib
     will use a <a href="https://dev.mysql.com/doc/refman/8.0/en/xa.html">XA Transaction</a>. This allows true
     distributed transactions, but may not be compatible with server replication; there are <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-restrictions.html">other limitations</a>.
     When set to <code>false</code>, regular MySQL transactions are used, just like Connector/NET.</td>
+  </tr>
+</table>
+
+
+Unsupported Options
+-------------
+
+These options are used by Connector/NET but not supported by MySqlConnector. In general, they should be removed
+from your connection string when migrating from Connector/NET to MySqlConnector.
+
+<table class="table table-striped table-hover">
+  <thead>
+    <th style="width: 20%">Name</th>
+    <th style="width: 10%">Default</th>
+    <th style="width: 70%">Description</th>
+  </thead>
+  <tr>
+    <td>AllowBatch, Allow Batch</td>
+    <td>true</td>
+    <td>MySqlConnector always allows batch statements.</td>
+  </tr>
+  <tr>
+    <td>CheckParameters, Check Parameters</td>
+    <td>true</td>
+    <td>MySqlConnector always checks stored procedure parameters efficiently; there’s no need to disable this.</td>
+  </tr>
+  <tr>
+    <td>CommandInterceptors, Command Interceptors</td>
+    <td></td>
+    <td>MySqlConnector doesn’t support this extensibility mechanism, which is not compatible with async operations.</td>
+  </tr>
+  <tr>
+    <td>ExceptionInterceptors, Exception Interceptors</td>
+    <td></td>
+    <td>MySqlConnector doesn’t support this extensibility mechanism.</td>
+  </tr>
+  <tr>
+    <td>FunctionsReturnString, Functions Return String</td>
+    <td>false</td>
+    <td>Not supported. BLOBs are always returned as <code>byte[]</code>.</td>
+  </tr>
+  <tr>
+    <td>IncludeSecurityAsserts, Include Security Asserts</td>
+    <td>false</td>
+    <td>Not supported. For partial trust environments.</td>
+  </tr>
+  <tr>
+    <td>IntegratedSecurity, Integrated Security</td>
+    <td>false</td>
+    <td>Windows authentication is not supported.</td>
+  </tr>
+  <tr>
+    <td>Logging</td>
+    <td>false</td>
+    <td>Use <a href="/overview/logging/">MySqlConnector logging</a> (which is more flexible) instead.</td>
+  </tr>
+  <tr>
+    <td>OldSyntax, Old Syntax, UseOldSyntax, Use Old Syntax</td>
+    <td>false</td>
+    <td>This option is deprecated in Connector/NET and unsupported in MySqlConnector.</td>
+  </tr>
+  <tr>
+    <td>ProcedureCacheSize, Procedure Cache Size, ProcedureCache, Procedure Cache</td>
+    <td></td>
+    <td>MySqlConnector places no limit on the amount of stored procedure metadata that is cached. It takes a very small amount of memory.</td>
+  </tr>
+  <tr>
+    <td>RespectBinaryFlags, Respect Binary Flags</td>
+    <td>true</td>
+    <td>The binary type of a column is always respected.</td>
+  </tr>
+  <tr>
+    <td>SharedMemoryName, Shared Memory Name</td>
+    <td>true</td>
+    <td>Shared memory (on Windows) is not supported as a connection protocol.</td>
+  </tr>
+  <tr>
+    <td>SqlServerMode, Sql Server Mode</td>
+    <td>false</td>
+    <td>Not supported.</td>
+  </tr>
+  <tr>
+    <td>TreatBlobsAsUtf8, Treat BLOBs as UTF8</td>
+    <td>false</td>
+    <td>Not supported. BLOBs are always returned as <code>byte[]</code>.</td>
+  </tr>
+  <tr>
+    <td>UsePerformanceMonitor, Use Performance Monitor, UserPerfMon, PerfMon</td>
+    <td>false</td>
+    <td>Not supported.</td>
+  </tr>
+  <tr>
+    <td>UseUsageAdvisor, Use Usage Advisor, Usage Advisor</td>
+    <td>false</td>
+    <td>Not supported.</td>
   </tr>
 </table>
