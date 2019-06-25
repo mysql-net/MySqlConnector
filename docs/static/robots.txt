@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /home/
+
+Sitemap: https://mysqlconnector.net/sitemap.xml
