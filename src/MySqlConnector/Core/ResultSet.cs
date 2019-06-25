@@ -32,7 +32,7 @@ namespace MySqlConnector.Core
 			State = ResultSetState.None;
 			ContainsCommandParameters = false;
 			m_columnDefinitionPayloadUsedBytes = 0;
-			m_readBuffer.Clear();
+			m_readBuffer?.Clear();
 			m_row = null;
 			m_rowBuffered = null;
 			m_hasRows = false;
@@ -178,9 +178,8 @@ namespace MySqlConnector.Core
 
 		public async Task<bool> ReadAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			m_row = m_readBuffer.Count > 0
-				? m_readBuffer.Dequeue()
-				: await ScanRowAsync(ioBehavior, m_row, cancellationToken).ConfigureAwait(false);
+			m_row = m_readBuffer?.Count > 0 ? m_readBuffer.Dequeue() :
+				await ScanRowAsync(ioBehavior, m_row, cancellationToken).ConfigureAwait(false);
 
 			if (Command.ReturnParameter is object && m_row is object)
 			{
@@ -203,6 +202,8 @@ namespace MySqlConnector.Core
 			// ScanRowAsync sets m_rowBuffered to the next row if there is one
 			if (await ScanRowAsync(ioBehavior, null, cancellationToken).ConfigureAwait(false) is null)
 				return null;
+			if (m_readBuffer is null)
+				m_readBuffer = new Queue<Row>();
 			m_readBuffer.Enqueue(m_rowBuffered);
 			return m_rowBuffered;
 		}
@@ -425,7 +426,7 @@ namespace MySqlConnector.Core
 
 		ResizableArray<byte> m_columnDefinitionPayloads;
 		int m_columnDefinitionPayloadUsedBytes;
-		readonly Queue<Row> m_readBuffer = new Queue<Row>();
+		Queue<Row> m_readBuffer;
 		Row m_row;
 		Row m_rowBuffered;
 		bool m_hasRows;
