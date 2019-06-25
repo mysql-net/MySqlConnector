@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.57.0-beta2
+
+* Fix exception when executing a prepared statement if `MySqlParameter.MySqlDbType` was set: [#659](https://github.com/mysql-net/MySqlConnector/issues/659).
+* Remove `Microsoft.NETFramework.ReferenceAssemblies` dependency.
+* Reduce memory allocations for `MySqlCommand.Execute*`.
+
 ### 0.57.0-beta1
 
 * **Breaking** Remove `MySqlClientFactory.Register`: [#654](https://github.com/mysql-net/MySqlConnector/issues/654).
