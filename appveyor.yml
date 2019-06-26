@@ -27,7 +27,7 @@ deploy:
 - provider: NuGet
   api_key:
     secure: "jXzwnknTcQgGqjAxBzMLstPMaXy9rl3HowFns/QKaUqbUMUqXKpNLiNZKqv6tfnS"
-  artifact: /.*MySqlConnector[0-9.]+(-(alpha|beta)\.?[0-9]+)?nupkg/
+  artifact: /.*MySqlConnector[0-9.]+(-(alpha|beta|rc)\.?[0-9.]+)?nupkg/
   skip_symbols: true
   on:
     appveyor_repo_tag: true
