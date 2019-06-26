@@ -5,10 +5,8 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.11.1" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.11.5" />
+    <PackageReference Include="MySqlConnector" Version="0.56.0" />
     <!-- PackageReference Include="MySql.Data" Version="8.0.12" / -->
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\MySqlConnector\MySqlConnector.csproj" />
   </ItemGroup>
 </Project>
