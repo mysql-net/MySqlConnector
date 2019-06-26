@@ -26,6 +26,86 @@ jobs:
     inputs:
       artifactName: 'SideBySide-net472-$(Agent.OS)'
       targetPath: 'tests/SideBySide/bin/Release/net472/publish'
+  - task: DotNetCoreCLI@2
+    displayName: 'Create NuGet packages'
+    inputs:
+      command: 'custom'
+      projects: 'src/**/*.csproj'
+      custom: 'pack'
+      arguments: '-c Release --version-suffix build-$(Build.BuildNumber) -o $(Build.ArtifactStagingDirectory)'
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish packages'
+    inputs:
+      command: 'push'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+      nuGetFeedType: 'internal'
+      publishVstsFeed: 'Builds'
+
+- job: windows_baseline
+  displayName: 'Baseline'
+  pool:
+    vmimage: 'vs2017-win2016'
+  steps:
+  - script: |
+      mkdir C:\mysql
+      CD /D C:\mysql
+      curl -fsS --retry 3 --retry-connrefused -o mysql.msi https://cdn.mysql.com/archives/mysql-installer/mysql-installer-community-8.0.15.0.msi
+      msiexec /q /log install.txt /i mysql.msi datadir=C:\mysql installdir=C:\mysql
+      call "C:\Program Files (x86)\MySQL\MySQL Installer for Windows\MySQLInstallerConsole.exe" community install server;8.0.15;x64:*:port=3306;rootpasswd=test;servicename=MySQL -silent
+      netsh advfirewall firewall add rule name="Allow mysql" dir=in action=allow edge=yes remoteip=any protocol=TCP localport=3306
+    displayName: Install MySQL Server
+  - script: |
+      "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql" -uroot -ptest -e "SET GLOBAL local_infile=1; SET GLOBAL log_bin_trust_function_creators=1;"
+      "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql" -uroot -ptest < $(Build.Repository.LocalPath)\.ci\server\init.sql
+      "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql" -uroot -ptest < $(Build.Repository.LocalPath)\.ci\server\init_sha256.sql
+      "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql" -uroot -ptest < $(Build.Repository.LocalPath)\.ci\server\init_caching_sha2.sql
+    displayName: Configure MySQL Server
+  - task: CopyFiles@2
+    displayName: 'Copy config.json'
+    inputs:
+      sourceFolder: '.ci/config'
+      contents: 'config.json'
+      targetFolder: 'tests/SideBySide'
+  - task: DotNetCoreInstaller@0
+    displayName: 'Install .NET Core'
+    inputs:
+      version: $(DotNetCoreSdkVersion)
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore packages'
+    inputs:
+      command: 'restore'
+      arguments: 'tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj /p:Configuration=Baseline'
+      verbosityRestore: 'minimal'
+  - task: DotNetCoreCLI@2
+    displayName: 'Unit tests'
+    inputs:
+      command: 'test'
+      arguments: 'tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj -c Baseline'
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore packages'
+    inputs:
+      command: 'restore'
+      arguments: 'tests\SideBySide\SideBySide.csproj /p:Configuration=Baseline'
+      verbosityRestore: 'minimal'
+  - task: DotNetCoreCLI@2
+    displayName: 'Baseline tests'
+    inputs:
+      command: 'test'
+      arguments: 'tests\SideBySide\SideBySide.csproj -c Baseline --logger'
+    env:
+      DATA__UNSUPPORTEDFEATURES: 'Ed25519'
+      DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=root;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600'
+      DATA__CERTIFICATESPATH: '$(Build.Repository.LocalPath)\.ci\server\certs\'
+      DATA__MYSQLBULKLOADERLOCALCSVFILE: '$(Build.Repository.LocalPath)\tests\TestData\LoadData_UTF8_BOM_Unix.CSV'
+      DATA__MYSQLBULKLOADERLOCALTSVFILE: '$(Build.Repository.LocalPath)\tests\TestData\LoadData_UTF8_BOM_Unix.TSV'
+      TF_BUILD: $(TF_BUILD)
+  - task: PublishTestResults@2
+    condition: always()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: '**/*.trx'
+      testRunTitle: 'Baseline Tests'
+      failTaskOnFailedTests: true
 
 - job: linux_unit_tests
   dependsOn: linux_build
