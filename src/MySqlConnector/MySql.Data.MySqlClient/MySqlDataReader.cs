@@ -76,7 +76,8 @@ namespace MySql.Data.MySqlClient
 								using (var payload = writer.ToPayloadData())
 								{
 									await Command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-									await ReadFirstResultSetAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+									await m_resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
+									ActivateResultSet();
 									m_hasMoreResults = true;
 								}
 							}
@@ -85,7 +86,7 @@ namespace MySql.Data.MySqlClient
 				}
 				else
 				{
-					ActivateResultSet(m_resultSet);
+					ActivateResultSet();
 				}
 
 				if (!m_hasMoreResults)
@@ -106,25 +107,25 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		private void ActivateResultSet(ResultSet resultSet)
+		private void ActivateResultSet()
 		{
-			if (resultSet.ReadResultSetHeaderException != null)
+			if (m_resultSet.ReadResultSetHeaderException != null)
 			{
-				var mySqlException = resultSet.ReadResultSetHeaderException as MySqlException;
+				var mySqlException = m_resultSet.ReadResultSetHeaderException as MySqlException;
 
 				// for any exception not created from an ErrorPayload, mark the session as failed (because we can't guarantee that all data
 				// has been read from the connection and that the socket is still usable)
 				if (mySqlException?.SqlState is null)
-					Command.Connection.SetSessionFailed(resultSet.ReadResultSetHeaderException);
+					Command.Connection.SetSessionFailed(m_resultSet.ReadResultSetHeaderException);
 
 				throw mySqlException != null ?
 					new MySqlException(mySqlException.Number, mySqlException.SqlState, mySqlException.Message, mySqlException) :
-					new MySqlException("Failed to read the result set.", resultSet.ReadResultSetHeaderException);
+					new MySqlException("Failed to read the result set.", m_resultSet.ReadResultSetHeaderException);
 			}
 
-			Command.SetLastInsertedId(resultSet.LastInsertId);
-			m_recordsAffected = m_recordsAffected is null ? resultSet.RecordsAffected : m_recordsAffected.Value + (resultSet.RecordsAffected ?? 0);
-			m_hasWarnings = resultSet.WarningCount != 0;
+			Command.SetLastInsertedId(m_resultSet.LastInsertId);
+			m_recordsAffected = m_recordsAffected is null ? m_resultSet.RecordsAffected : m_recordsAffected.Value + (m_resultSet.RecordsAffected ?? 0);
+			m_hasWarnings = m_resultSet.WarningCount != 0;
 		}
 
 		private ValueTask<int> ScanResultSetAsync(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
@@ -325,7 +326,9 @@ namespace MySql.Data.MySqlClient
 
 			try
 			{
-				await dataReader.ReadFirstResultSetAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				await dataReader.m_resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
+				dataReader.ActivateResultSet();
+				dataReader.m_hasMoreResults = true;
 
 				if (dataReader.m_resultSet.ContainsCommandParameters)
 					await dataReader.ReadOutParametersAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -343,13 +346,6 @@ namespace MySql.Data.MySqlClient
 			}
 
 			return dataReader;
-		}
-
-		internal async Task ReadFirstResultSetAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-		{
-			await m_resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
-			ActivateResultSet(m_resultSet);
-			m_hasMoreResults = true;
 		}
 
 #if !NETSTANDARD1_3
