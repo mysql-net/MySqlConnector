@@ -32,9 +32,17 @@ namespace MySql.Data.MySqlClient
 		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => BeginDbTransactionAsync(isolationLevel, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public Task<MySqlTransaction> BeginTransactionAsync() => BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, CancellationToken.None);
+#if !NETCOREAPP3_0
 		public Task<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken) => BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, cancellationToken);
+#else
+		public new Task<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken) => BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, cancellationToken);
+#endif
 		public Task<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel) => BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, CancellationToken.None);
+#if !NETCOREAPP3_0
 		public Task<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken) => BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, cancellationToken);
+#else
+		public new Task<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken) => BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, cancellationToken);
+#endif
 
 		private async Task<MySqlTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -227,12 +235,20 @@ namespace MySql.Data.MySqlClient
 
 		public override void Close() => CloseAsync(changeState: true, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		public Task CloseAsync() => CloseAsync(changeState: true, SimpleAsyncIOBehavior, CancellationToken.None);
+#if !NETCOREAPP3_0
 		public Task CloseAsync(CancellationToken cancellationToken) => CloseAsync(changeState: true, SimpleAsyncIOBehavior, cancellationToken);
+#else
+		public override Task CloseAsync(CancellationToken cancellationToken) => CloseAsync(changeState: true, SimpleAsyncIOBehavior, cancellationToken);
+#endif
 		internal Task CloseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) => CloseAsync(changeState: true, ioBehavior, cancellationToken);
 
 		public override void ChangeDatabase(string databaseName) => ChangeDatabaseAsync(IOBehavior.Synchronous, databaseName, CancellationToken.None).GetAwaiter().GetResult();
 		public Task ChangeDatabaseAsync(string databaseName) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, CancellationToken.None);
+#if !NETCOREAPP3_0
 		public Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, cancellationToken);
+#else
+		public override Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, cancellationToken);
+#endif
 
 		private async Task ChangeDatabaseAsync(IOBehavior ioBehavior, string databaseName, CancellationToken cancellationToken)
 		{
@@ -423,7 +439,11 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+#if !NETCOREAPP3_0
 		public async Task DisposeAsync()
+#else
+		public override async ValueTask DisposeAsync()
+#endif
 		{
 			try
 			{

@@ -7,7 +7,7 @@ using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1 || NETCOREAPP3_0
 namespace System.Data.Common
 {
 	public abstract class DbBatch : IDisposable

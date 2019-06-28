@@ -12,7 +12,11 @@ namespace MySql.Data.MySqlClient
 	{
 		public override void Commit() => CommitAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 		public Task CommitAsync() => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, default);
+#if !NETCOREAPP3_0
 		public Task CommitAsync(CancellationToken cancellationToken) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+#else
+		public override Task CommitAsync(CancellationToken cancellationToken) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+#endif
 
 		private async Task CommitAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -39,7 +43,11 @@ namespace MySql.Data.MySqlClient
 
 		public override void Rollback() => RollbackAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 		public Task RollbackAsync() => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, default);
+#if !NETCOREAPP3_0
 		public Task RollbackAsync(CancellationToken cancellationToken) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+#else
+		public override Task RollbackAsync(CancellationToken cancellationToken) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+#endif
 
 		private async Task RollbackAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -81,18 +89,30 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
+#if !NETCOREAPP3_0
 		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
+#else
+		public override ValueTask DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
+#endif
 
+#if !NETCOREAPP3_0
 		internal Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#else
+		internal ValueTask DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#endif
 		{
 			m_isDisposed = true;
 			if (Connection?.CurrentTransaction == this)
 				return DoDisposeAsync(ioBehavior, cancellationToken);
 			Connection = null;
-			return Utility.CompletedTask;
+			return Utility.CompletedValueTask;
 		}
 
+#if !NETCOREAPP3_0
 		private async Task DoDisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#else
+		private async ValueTask DoDisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#endif
 		{
 			if (Connection?.CurrentTransaction == this)
 			{

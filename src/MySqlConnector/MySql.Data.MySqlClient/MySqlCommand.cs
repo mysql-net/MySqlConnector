@@ -97,7 +97,11 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public Task PrepareAsync() => PrepareAsync(AsyncIOBehavior, default);
+#if !NETCOREAPP3_0
 		public Task PrepareAsync(CancellationToken cancellationToken) => PrepareAsync(AsyncIOBehavior, cancellationToken);
+#else
+		public override Task PrepareAsync(CancellationToken cancellationToken) => PrepareAsync(AsyncIOBehavior, cancellationToken);
+#endif
 
 		private Task PrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -344,10 +348,14 @@ namespace MySql.Data.MySqlClient
 			m_isDisposed = true;
 		}
 
+#if !NETCOREAPP3_0
 		public Task DisposeAsync()
+#else
+		public override ValueTask DisposeAsync()
+#endif
 		{
 			Dispose();
-			return Utility.CompletedTask;
+			return Utility.CompletedValueTask;
 		}
 
 		/// <summary>
