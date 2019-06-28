@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
 {
@@ -72,24 +73,37 @@ namespace MySql.Data.MySqlClient
 			try
 			{
 				if (disposing)
-				{
-					m_isDisposed = true;
-					if (Connection?.CurrentTransaction == this)
-					{
-						if (Connection.State == ConnectionState.Open && Connection.Session.IsConnected)
-						{
-							using (var cmd = new MySqlCommand("rollback", Connection, this))
-								cmd.ExecuteNonQuery();
-						}
-						Connection.CurrentTransaction = null;
-					}
-					Connection = null;
-				}
+						DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 			}
 			finally
 			{
 				base.Dispose(disposing);
 			}
+		}
+
+		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
+
+		internal Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			m_isDisposed = true;
+			if (Connection?.CurrentTransaction == this)
+				return DoDisposeAsync(ioBehavior, cancellationToken);
+			Connection = null;
+			return Utility.CompletedTask;
+		}
+
+		private async Task DoDisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			if (Connection?.CurrentTransaction == this)
+			{
+				if (Connection.State == ConnectionState.Open && Connection.Session.IsConnected)
+				{
+					using (var cmd = new MySqlCommand("rollback", Connection, this))
+						await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
+				Connection.CurrentTransaction = null;
+			}
+			Connection = null;
 		}
 
 		internal MySqlTransaction(MySqlConnection connection, IsolationLevel isolationLevel)

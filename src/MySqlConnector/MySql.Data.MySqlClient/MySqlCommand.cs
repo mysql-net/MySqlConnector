@@ -344,6 +344,12 @@ namespace MySql.Data.MySqlClient
 			m_isDisposed = true;
 		}
 
+		public Task DisposeAsync()
+		{
+			Dispose();
+			return Utility.CompletedTask;
+		}
+
 		/// <summary>
 		/// Registers <see cref="Cancel"/> as a callback with <paramref name="token"/> if cancellation is supported.
 		/// </summary>

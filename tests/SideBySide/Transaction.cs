@@ -49,6 +49,25 @@ namespace SideBySide
 			var results = await m_connection.QueryAsync<int>(@"select value from transactions_test order by value;").ConfigureAwait(false);
 			Assert.Equal(new[] { 1, 2 }, results);
 		}
+
+		[Fact]
+		public async Task CommitDisposeAsync()
+		{
+			await m_connection.ExecuteAsync("delete from transactions_test").ConfigureAwait(false);
+			MySqlTransaction trans = null;
+			try
+			{
+				trans = await m_connection.BeginTransactionAsync().ConfigureAwait(false);
+				await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
+				await trans.CommitAsync().ConfigureAwait(false);
+			}
+			finally
+			{
+				await trans.DisposeAsync().ConfigureAwait(false);
+			}
+			var results = await m_connection.QueryAsync<int>(@"select value from transactions_test order by value;").ConfigureAwait(false);
+			Assert.Equal(new[] { 1, 2 }, results);
+		}
 #endif
 
 		[Fact]
@@ -77,6 +96,25 @@ namespace SideBySide
 			var results = await m_connection.QueryAsync<int>(@"select value from transactions_test order by value;").ConfigureAwait(false);
 			Assert.Equal(new int[0], results);
 		}
+
+		[Fact]
+		public async Task RollbackDisposeAsync()
+		{
+			await m_connection.ExecuteAsync("delete from transactions_test").ConfigureAwait(false);
+			MySqlTransaction trans = null;
+			try
+			{
+				trans = await m_connection.BeginTransactionAsync().ConfigureAwait(false);
+				await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
+				await trans.RollbackAsync().ConfigureAwait(false);
+			}
+			finally
+			{
+				await trans.DisposeAsync().ConfigureAwait(false);
+			}
+			var results = await m_connection.QueryAsync<int>(@"select value from transactions_test order by value;").ConfigureAwait(false);
+			Assert.Equal(new int[0], results);
+		}
 #endif
 
 		[Fact]
@@ -90,6 +128,26 @@ namespace SideBySide
 			var results = m_connection.Query<int>(@"select value from transactions_test order by value;");
 			Assert.Equal(new int[0], results);
 		}
+
+#if !BASELINE
+		[Fact]
+		public async Task DisposeAsync()
+		{
+			await m_connection.ExecuteAsync("delete from transactions_test").ConfigureAwait(false);
+			MySqlTransaction trans = null;
+			try
+			{
+				trans = await m_connection.BeginTransactionAsync().ConfigureAwait(false);
+				await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
+			}
+			finally
+			{
+				await trans.DisposeAsync().ConfigureAwait(false);
+			}
+			var results = await m_connection.QueryAsync<int>(@"select value from transactions_test order by value;").ConfigureAwait(false);
+			Assert.Equal(new int[0], results);
+		}
+#endif
 
 		readonly TransactionFixture m_database;
 		readonly MySqlConnection m_connection;
