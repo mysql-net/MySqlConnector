@@ -100,7 +100,7 @@ namespace MySql.Data.MySqlClient
 				if (existingConnection != null)
 				{
 					// can reuse the existing connection
-					DoClose(changeState: false);
+					CloseAsync(changeState: false, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 					TakeSessionFrom(existingConnection);
 					return;
 				}
@@ -225,7 +225,8 @@ namespace MySql.Data.MySqlClient
 		EnlistedTransactionBase m_enlistedTransaction;
 #endif
 
-		public override void Close() => DoClose(changeState: true);
+		public override void Close() => CloseAsync(changeState: true, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public Task CloseAsync(CancellationToken cancellationToken = default) => CloseAsync(changeState: true, IOBehavior.Asynchronous, cancellationToken);
 
 		public override void ChangeDatabase(string databaseName) => ChangeDatabaseAsync(IOBehavior.Synchronous, databaseName, CancellationToken.None).GetAwaiter().GetResult();
 		public Task ChangeDatabaseAsync(string databaseName) => ChangeDatabaseAsync(IOBehavior.Asynchronous, databaseName, CancellationToken.None);
@@ -411,7 +412,7 @@ namespace MySql.Data.MySqlClient
 			try
 			{
 				if (disposing)
-					DoClose(changeState: true);
+					CloseAsync(changeState: true, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 			}
 			finally
 			{
@@ -645,12 +646,40 @@ namespace MySql.Data.MySqlClient
 				throw new ObjectDisposedException(GetType().Name);
 		}
 
-		private void DoClose(bool changeState)
+		private Task CloseAsync(bool changeState, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			if (m_connectionState == ConnectionState.Closed)
+				return Utility.CompletedTask;
+
+			// check fast path
+			if (m_activeReader is null &&
+				CurrentTransaction is null &&
+#if !NETSTANDARD1_3
+				m_enlistedTransaction is null &&
+#endif
+				m_connectionSettings.Pooling)
+			{
+				m_cachedProcedures = null;
+				if (m_session is object)
+				{
+					m_session.ReturnToPool();
+					m_session = null;
+				}
+				if (changeState)
+					SetState(ConnectionState.Closed);
+
+				return Utility.CompletedTask;
+			}
+
+			return DoCloseAsync(changeState, ioBehavior, cancellationToken);
+		}
+
+		private async Task DoCloseAsync(bool changeState, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 #if !NETSTANDARD1_3
 			// If participating in a distributed transaction, keep the connection open so we can commit or rollback.
 			// This handles the common pattern of disposing a connection before disposing a TransactionScope (e.g., nested using blocks)
-			if (!(m_enlistedTransaction is null))
+			if (m_enlistedTransaction is object)
 			{
 				// make sure all DB work is done
 				m_activeReader?.Dispose();
@@ -701,7 +730,7 @@ namespace MySql.Data.MySqlClient
 						if (m_connectionSettings.Pooling)
 							m_session.ReturnToPool();
 						else
-							m_session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+							await m_session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 						m_session = null;
 					}
 

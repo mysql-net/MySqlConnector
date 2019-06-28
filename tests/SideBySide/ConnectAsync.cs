@@ -79,6 +79,8 @@ namespace SideBySide
 				Assert.Equal(ConnectionState.Closed, connection.State);
 				await connection.OpenAsync();
 				Assert.Equal(ConnectionState.Open, connection.State);
+				await connection.CloseAsync();
+				Assert.Equal(ConnectionState.Closed, connection.State);
 			}
 		}
 

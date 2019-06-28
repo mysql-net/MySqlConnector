@@ -47,6 +47,25 @@ namespace MySqlConnector.Tests
 		}
 
 		[Fact]
+		public async Task PooledConnectionIsReturnedToPoolAsync()
+		{
+			Assert.Equal(0, m_server.ActiveConnections);
+
+			m_csb.Pooling = true;
+			using (var connection = new MySqlConnection(m_csb.ConnectionString))
+			{
+				await connection.OpenAsync();
+				Assert.Equal(1, m_server.ActiveConnections);
+
+				Assert.Equal(m_server.ServerVersion, connection.ServerVersion);
+				await connection.CloseAsync();
+				Assert.Equal(1, m_server.ActiveConnections);
+			}
+
+			Assert.Equal(1, m_server.ActiveConnections);
+		}
+
+		[Fact]
 		public async Task UnpooledConnectionIsClosed()
 		{
 			Assert.Equal(0, m_server.ActiveConnections);
