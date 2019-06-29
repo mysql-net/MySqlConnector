@@ -31,7 +31,7 @@ namespace MySql.Data.MySqlClient
 				Connection.CurrentTransaction = null;
 				Connection = null;
 			}
-			else if (Connection.CurrentTransaction != null)
+			else if (Connection.CurrentTransaction is object)
 			{
 				throw new InvalidOperationException("This is not the active transaction.");
 			}
@@ -62,7 +62,7 @@ namespace MySql.Data.MySqlClient
 				Connection.CurrentTransaction = null;
 				Connection = null;
 			}
-			else if (Connection.CurrentTransaction != null)
+			else if (Connection.CurrentTransaction is object)
 			{
 				throw new InvalidOperationException("This is not the active transaction.");
 			}

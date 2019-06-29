@@ -103,7 +103,7 @@ namespace MySqlConnector.Protocol.Serialization
 #if NET45 || NETSTANDARD1_3
 		public void Write(string value)
 		{
-			Debug.Assert(value != null, "value != null");
+			Debug.Assert(value is object, "value is object");
 			if (value.Length == 0)
 				return;
 
@@ -119,7 +119,7 @@ namespace MySqlConnector.Protocol.Serialization
 			if (length == 0)
 				return;
 
-			Debug.Assert(value != null, "value != null");
+			Debug.Assert(value is object, "value is object");
 			fixed (char* charsPtr = value)
 			{
 				var byteCount = Encoding.UTF8.GetByteCount(charsPtr + offset, length);

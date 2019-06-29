@@ -320,13 +320,13 @@ namespace MySql.Data.MySqlClient
 		public override bool ContainsKey(string key)
 		{
 			var option = MySqlConnectionStringOption.TryGetOptionForKey(key);
-			return option != null && base.ContainsKey(option.Key);
+			return option is object && base.ContainsKey(option.Key);
 		}
 
 		public override bool Remove(string key)
 		{
 			var option = MySqlConnectionStringOption.TryGetOptionForKey(key);
-			return option != null && base.Remove(option.Key);
+			return option is object && base.Remove(option.Key);
 		}
 
 		public override object this[string key]

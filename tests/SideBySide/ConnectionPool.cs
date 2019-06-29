@@ -27,8 +27,8 @@ namespace SideBySide
 			csb.Pooling = true;
 			csb.MaximumPoolSize = (uint) poolSize; // use a different pool size to create a unique connection string to force a unique pool to be created
 
-			if (connectionReset != null)
-				csb.ConnectionReset = (bool) connectionReset;
+			if (connectionReset is bool connectionResetValue)
+				csb.ConnectionReset = connectionResetValue;
 
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{

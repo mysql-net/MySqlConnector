@@ -180,7 +180,7 @@ namespace SideBySide
 				}
 				catch (Exception exception)
 				{
-					while (exception.InnerException != null)
+					while (exception.InnerException is object)
 						exception = exception.InnerException;
 
 					if (!(exception is FileNotFoundException))
@@ -223,7 +223,7 @@ namespace SideBySide
 				}
 				catch (MySqlException mySqlException)
 				{
-					while (mySqlException.InnerException != null)
+					while (mySqlException.InnerException is object)
 					{
 						if (mySqlException.InnerException is MySqlException innerException)
 						{

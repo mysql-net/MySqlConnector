@@ -17,7 +17,7 @@ namespace MySqlConnector.Utilities
 		public static void Dispose<T>(ref T disposable)
 			where T : class, IDisposable
 		{
-			if (disposable != null)
+			if (disposable is object)
 			{
 				disposable.Dispose();
 				disposable = null;
@@ -61,7 +61,7 @@ namespace MySqlConnector.Utilities
 			{
 				// MemoryMarshal.GetNonNullPinnableReference is internal, so fake it by using an invalid but non-null pointer; this
 				// prevents Convert from throwing an exception when the output buffer is empty
-				encoder.Convert(charsPtr, chars.Length, bytesPtr == null ? (byte*) 1 : bytesPtr, bytes.Length, flush, out charsUsed, out bytesUsed, out completed);
+				encoder.Convert(charsPtr, chars.Length, bytesPtr is null ? (byte*) 1 : bytesPtr, bytes.Length, flush, out charsUsed, out bytesUsed, out completed);
 			}
 		}
 #endif

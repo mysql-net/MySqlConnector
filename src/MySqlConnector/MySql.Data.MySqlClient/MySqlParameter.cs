@@ -138,10 +138,10 @@ namespace MySql.Data.MySqlClient
 			set
 			{
 				m_value = value;
-				if (!HasSetDbType && value != null)
+				if (!HasSetDbType && value is object)
 				{
 					var typeMapping = TypeMapper.Instance.GetDbTypeMapping(value.GetType());
-					if (typeMapping != null)
+					if (typeMapping is object)
 					{
 						m_dbType = typeMapping.DbTypes[0];
 						m_mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbType(m_dbType);

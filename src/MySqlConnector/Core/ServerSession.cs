@@ -142,7 +142,7 @@ namespace MySqlConnector.Core
 
 		public PreparedStatements TryGetPreparedStatement(string commandText)
 		{
-			if (m_preparedStatements != null)
+			if (m_preparedStatements is object)
 			{
 				if (m_preparedStatements.TryGetValue(commandText, out var statement))
 					return statement;
@@ -209,7 +209,7 @@ namespace MySqlConnector.Core
 
 		public async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			if (m_payloadHandler != null)
+			if (m_payloadHandler is object)
 			{
 				// attempt to gracefully close the connection, ignoring any errors (it may have been closed already by the server, etc.)
 				State state;
@@ -349,7 +349,7 @@ namespace MySqlConnector.Core
 							// negotiating TLS 1.2 with a yaSSL-based server throws an exception on Windows, see comment at top of method
 							Log.Warn(ex, "Session{0} failed negotiating TLS; falling back to TLS 1.1", m_logArguments);
 							sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
-							if (Pool != null)
+							if (Pool is object)
 								Pool.SslProtocols = sslProtocols;
 						}
 					}
@@ -717,7 +717,7 @@ namespace MySqlConnector.Core
 
 		internal void HandleTimeout()
 		{
-			if (OwningConnection != null && OwningConnection.TryGetTarget(out var connection))
+			if (OwningConnection is object && OwningConnection.TryGetTarget(out var connection))
 				connection.SetState(ConnectionState.Closed);
 		}
 
@@ -1046,7 +1046,7 @@ namespace MySqlConnector.Core
 				throw new NotSupportedException("SslCert and SslKey connection string options are not supported in netstandard1.3 or netstandard2.0.");
 #endif
 			}
-			else if (cs.CertificateFile != null)
+			else if (cs.CertificateFile is object)
 			{
 				try
 				{
@@ -1072,7 +1072,7 @@ namespace MySqlConnector.Core
 			}
 
 			X509Chain caCertificateChain = null;
-			if (cs.CACertificateFile != null)
+			if (cs.CACertificateFile is object)
 			{
 				var certificateChain = new X509Chain
 				{
@@ -1144,7 +1144,7 @@ namespace MySqlConnector.Core
 				if (cs.SslMode == MySqlSslMode.Preferred || cs.SslMode == MySqlSslMode.Required)
 					return true;
 
-				if ((rcbPolicyErrors & SslPolicyErrors.RemoteCertificateChainErrors) != 0 && caCertificateChain != null)
+				if ((rcbPolicyErrors & SslPolicyErrors.RemoteCertificateChainErrors) != 0 && caCertificateChain is object)
 				{
 					if (caCertificateChain.Build((X509Certificate2) rcbCertificate) && caCertificateChain.ChainStatus.Length > 0)
 					{
@@ -1199,7 +1199,7 @@ namespace MySqlConnector.Core
 					m_state = State.Failed;
 				if (ex is AuthenticationException)
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL Authentication Error", ex);
-				if (ex is IOException && clientCertificates != null)
+				if (ex is IOException && clientCertificates is object)
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "MySQL Server rejected client certificate", ex);
 				throw;
 			}
@@ -1262,7 +1262,7 @@ namespace MySqlConnector.Core
 				else
 					EofPayload.Create(payload.AsSpan());
 
-				if (connectionId.HasValue && serverVersion != null)
+				if (connectionId.HasValue && serverVersion is object)
 				{
 					var newServerVersion = new ServerVersion(serverVersion);
 					Log.Info("Session{0} changing ConnectionIdOld {1} to ConnectionId {2} and ServerVersionOld {3} to ServerVersion {4}", m_logArguments[0], ConnectionId, connectionId.Value, ServerVersion.OriginalString, newServerVersion.OriginalString);
@@ -1300,7 +1300,7 @@ namespace MySqlConnector.Core
 		private static void SafeDispose<T>(ref T disposable)
 			where T : class, IDisposable
 		{
-			if (disposable != null)
+			if (disposable is object)
 			{
 				try
 				{
@@ -1352,7 +1352,7 @@ namespace MySqlConnector.Core
 			Log.Info(exception, "Session{0} setting state to Failed", m_logArguments);
 			lock (m_lock)
 				m_state = State.Failed;
-			if (OwningConnection != null && OwningConnection.TryGetTarget(out var connection))
+			if (OwningConnection is object && OwningConnection.TryGetTarget(out var connection))
 				connection.SetState(ConnectionState.Closed);
 		}
 
@@ -1404,7 +1404,7 @@ namespace MySqlConnector.Core
 			try
 			{
 				Utility.GetOSDetails(out var os, out var osDescription, out var architecture);
-				if (os != null)
+				if (os is object)
 				{
 					attributesWriter.WriteLengthEncodedString("_os");
 					attributesWriter.WriteLengthEncodedString(os);
@@ -1448,7 +1448,7 @@ namespace MySqlConnector.Core
 
 		private void ClearPreparedStatements()
 		{
-			if (m_preparedStatements != null)
+			if (m_preparedStatements is object)
 			{
 				foreach (var pair in m_preparedStatements)
 					pair.Value.Dispose();

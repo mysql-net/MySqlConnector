@@ -16,7 +16,7 @@ namespace MySqlConnector.Protocol.Payloads
 			writer.Write((byte) characterSet);
 			writer.Write((byte) 0);
 			writer.WriteNullTerminatedString("mysql_native_password");
-			if (connectionAttributes != null)
+			if (connectionAttributes is object)
 				writer.Write(connectionAttributes);
 
 			return writer.ToPayloadData();

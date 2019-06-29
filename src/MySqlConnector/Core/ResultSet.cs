@@ -55,7 +55,7 @@ namespace MySqlConnector.Core
 						RecordsAffected = (RecordsAffected ?? 0) + ok.AffectedRowCount;
 						LastInsertId = unchecked((long) ok.LastInsertId);
 						WarningCount = ok.WarningCount;
-						if (ok.NewSchema != null)
+						if (ok.NewSchema is object)
 							Connection.Session.DatabaseOverride = ok.NewSchema;
 						ColumnDefinitions = null;
 						ColumnTypes = null;
@@ -381,7 +381,7 @@ namespace MySqlConnector.Core
 			get
 			{
 				if (BufferState == ResultSetState.ReadResultSetHeader)
-					return BufferReadAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult() != null;
+					return BufferReadAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult() is object;
 				return m_hasRows;
 			}
 		}

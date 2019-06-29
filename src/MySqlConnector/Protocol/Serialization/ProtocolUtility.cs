@@ -533,7 +533,7 @@ namespace MySqlConnector.Protocol.Serialization
 			if (task.IsCompletedSuccessfully)
 			{
 				ArrayPool<byte>.Shared.Return(buffer);
-				return default(ValueTask<int>);
+				return default;
 			}
 			return AddContinuation(task, buffer);
 

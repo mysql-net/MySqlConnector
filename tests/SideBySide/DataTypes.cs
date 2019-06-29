@@ -332,8 +332,8 @@ namespace SideBySide
 		public void QueryDecimal(string column, object[] expected)
 		{
 			for (int i = 0; i < expected.Length; i++)
-				if (expected[i] != null)
-					expected[i] = decimal.Parse((string) expected[i], CultureInfo.InvariantCulture);
+				if (expected[i] is string expectedValue)
+					expected[i] = decimal.Parse(expectedValue, CultureInfo.InvariantCulture);
 			DoQuery("reals", column, "DECIMAL", expected, reader => reader.GetDecimal(0));
 		}
 
@@ -362,8 +362,8 @@ namespace SideBySide
 		public void QueryGuid(string column, string dataTypeName, object[] expected)
 		{
 			for (int i = 0; i < expected.Length; i++)
-				if (expected[i] != null)
-					expected[i] = Guid.Parse((string) expected[i]);
+				if (expected[i] is string expectedValue)
+					expected[i] = Guid.Parse(expectedValue);
 			DoQuery<GetGuidWhenNullException>("strings", column, dataTypeName, expected, reader => reader.GetGuid(0));
 		}
 
@@ -975,7 +975,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 						Assert.Equal(expectedType, dt.Rows[0]["DataType"]);
 #endif
 
-						if (expectedDateTime != null)
+						if (expectedDateTime is object)
 						{
 							var expected = (DateTime) ConvertToDateTime(new object[] { expectedDateTime }, DateTimeKind.Unspecified)[0];
 							Assert.Equal(expected, reader.GetDateTime(0));
@@ -1401,7 +1401,7 @@ create table schema_table({createColumn});");
 						{
 							Assert.Equal(DBNull.Value, reader.GetValue(0));
 #if BASELINE
-							if (baselineCoercedNullValue != null)
+							if (baselineCoercedNullValue is object)
 								Assert.Equal(baselineCoercedNullValue, getValue(reader));
 							else
 								Assert.Throws<TException>(() => getValue(reader));
@@ -1481,8 +1481,8 @@ create table schema_table({createColumn});");
 			var dateTimes = ConvertToDateTime(input, DateTimeKind.Utc);
 			for (int i = 0; i < dateTimes.Length; i++)
 			{
-				if (dateTimes[i] != null)
-					output[i] = new DateTimeOffset((DateTime) dateTimes[i]);
+				if (dateTimes[i] is DateTime dateTime)
+					output[i] = new DateTimeOffset(dateTime);
 			}
 			return output;
 		}

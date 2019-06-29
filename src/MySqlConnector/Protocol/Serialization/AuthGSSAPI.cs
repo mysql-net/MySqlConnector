@@ -237,14 +237,14 @@ namespace MySqlConnector.Protocol.Serialization
 					await negotiateStream.AuthenticateAsClientAsync(CredentialCache.DefaultNetworkCredentials, targetName).ConfigureAwait(false);
 				}
 #endif
-				if (cs.ServerSPN != null && !negotiateStream.IsMutuallyAuthenticated)
+				if (cs.ServerSPN is object && !negotiateStream.IsMutuallyAuthenticated)
 				{
 					// Negotiate used NTLM fallback, server name cannot be verified.
 					throw new AuthenticationException(String.Format(
 						"GSSAPI : Unable to verify server principal name using authentication type {0}",
 						negotiateStream.RemoteIdentity?.AuthenticationType));
 				}
-				if (innerStream.MySQLProtocolPayload.ArraySegment.Array != null)
+				if (innerStream.MySQLProtocolPayload.ArraySegment.Array is object)
 					// return already pre-read OK packet.
 					return innerStream.MySQLProtocolPayload;
 

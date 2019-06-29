@@ -110,7 +110,7 @@ namespace MySql.Data.MySqlClient
 		public override void RemoveAt(int index)
 		{
 			var oldParameter = m_parameters[index];
-			if (oldParameter.NormalizedParameterName != null)
+			if (oldParameter.NormalizedParameterName is object)
 				m_nameToIndex.Remove(oldParameter.NormalizedParameterName);
 			m_parameters.RemoveAt(index);
 
@@ -127,10 +127,10 @@ namespace MySql.Data.MySqlClient
 		{
 			var newParameter = (MySqlParameter) value;
 			var oldParameter = m_parameters[index];
-			if (oldParameter.NormalizedParameterName != null)
+			if (oldParameter.NormalizedParameterName is object)
 				m_nameToIndex.Remove(oldParameter.NormalizedParameterName);
 			m_parameters[index] = newParameter;
-			if (newParameter.NormalizedParameterName != null)
+			if (newParameter.NormalizedParameterName is object)
 				m_nameToIndex.Add(newParameter.NormalizedParameterName, index);
 		}
 
