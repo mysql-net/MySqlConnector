@@ -36,7 +36,7 @@
     <!--end icons-->
 
     {{ .Hugo.Generator }}
-    {{ .Scratch.Add "title" "" }}{{ if isset .Site.Data.titles .Title }}{{ .Scratch.Set "title" (index .Site.Data.titles .Title).title }}{{ else }}{{ .Scratch.Set "title" .Title}}{{end}}
+    {{ .Scratch.Add "title" "" }}{{ if isset .Site.Data.titles .Title }}{{ .Scratch.Set "title" (index .Site.Data.titles .Title).title }}{{ else if isset .Page.Params "customtitle" }}{{ .Scratch.Set "title" .Page.Params.customtitle }}{{ else }}{{ .Scratch.Set "title" .Title}}{{end}}
     <title>MySqlConnector - {{ .Scratch.Get "title" }}</title>
     <meta property="og:title" content="MySqlConnector - {{ .Scratch.Get "title" }}" />
     <meta property="og:description" content="MySqlConnector is a high-performance, asynchronous ADO.NET data provider for MySQL Server, MariaDB, Percona Server, Amazon Aurora, Azure Database for MySQL, Google Cloud SQL for MySQL and more." />

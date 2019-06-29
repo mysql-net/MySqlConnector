@@ -1,16 +1,21 @@
 ---
-lastmod: 2019-05-23
+lastmod: 2019-06-28
 date: 2016-10-16
 title: Connection Options
+customtitle: .NET MySQL ConnectionString for C# Programs
 weight: 30
 menu:
   main:
 ---
 
-Connection Options
-==================
+# MySQL ConnectionString Options
 
-MySqlConnector supports most of Oracle’s [Connector/NET connection options](https://dev.mysql.com/doc/connector-net/en/connector-net-8-0-connection-options.html).
+The simplest MySQL connection string for C# is:
+
+`new MySqlConnection("server=YOURSERVER;user=YOURUSERID;password=YOURPASSWORD")`
+
+For all the other options, see the tables below. MySqlConnector supports most of Oracle’s
+[Connector/NET connection options](https://dev.mysql.com/doc/connector-net/en/connector-net-8-0-connection-options.html).
 
 There are also several unique options that are supported only by MySqlConnector, a replacement for `MySql.Data` that [fixes bugs](/tutorials/migrating-from-connector-net/#fixed-bugs),
 adds new features, and improves database access performance. [Install it now](/overview/installing/).
