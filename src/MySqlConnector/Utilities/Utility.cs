@@ -351,6 +351,12 @@ namespace MySqlConnector.Utilities
 		public static Task<T> TaskFromException<T>(Exception exception) => Task.FromException<T>(exception);
 #endif
 
+#if !NETCOREAPP3_0
+		public static Task CompletedValueTask => CompletedTask;
+#else
+		public static ValueTask CompletedValueTask => default;
+#endif
+
 		public static byte[] TrimZeroByte(byte[] value)
 		{
 			if (value[value.Length - 1] == 0)

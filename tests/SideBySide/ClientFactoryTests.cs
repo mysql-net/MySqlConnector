@@ -49,7 +49,7 @@ namespace SideBySide
 		[Fact]
 		public void DbProviderFactoriesGetFactory()
 		{
-#if NETCOREAPP2_1
+#if !NET452 && !NET461 && !NET472
 			DbProviderFactories.RegisterFactory("MySqlConnector", MySqlClientFactory.Instance);
 #endif
 #if BASELINE

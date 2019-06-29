@@ -274,10 +274,7 @@ namespace MySql.Data.MySqlClient
 			return m_schemaTable;
 		}
 
-		public override void Close()
-		{
-			DoClose();
-		}
+		public override void Close() => DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #endif
 
 		public ReadOnlyCollection<DbColumn> GetColumnSchema()
@@ -307,13 +304,19 @@ namespace MySql.Data.MySqlClient
 			try
 			{
 				if (disposing)
-					DoClose();
+					DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 			}
 			finally
 			{
 				base.Dispose(disposing);
 			}
 		}
+
+#if !NETCOREAPP3_0
+		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
+#else
+		public override ValueTask DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
+#endif
 
 		internal IMySqlCommand Command { get; private set; }
 		internal MySqlConnection Connection => Command?.Connection;
@@ -451,7 +454,11 @@ namespace MySql.Data.MySqlClient
 			m_resultSet = new ResultSet(this);
 		}
 
-		private void DoClose()
+#if !NETCOREAPP3_0
+		internal async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#else
+		internal async ValueTask DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#endif
 		{
 			if (!m_closed)
 			{
@@ -462,7 +469,7 @@ namespace MySql.Data.MySqlClient
 					Command.Connection.Session.SetTimeout(Constants.InfiniteTimeout);
 					try
 					{
-						while (NextResultAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult())
+						while (await NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
 						{
 						}
 					}
@@ -481,7 +488,7 @@ namespace MySql.Data.MySqlClient
 				if ((m_behavior & CommandBehavior.CloseConnection) != 0)
 				{
 					(Command as IDisposable)?.Dispose();
-					connection.Close();
+					await connection.CloseAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				Command = null;
 			}

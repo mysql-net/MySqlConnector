@@ -1,5 +1,5 @@
 variables:
-  DotNetCoreSdkVersion: '2.1.700'
+  DotNetCoreSdkVersion: '3.0.100-preview6-012264'
 
 jobs:
 - job: linux_build
@@ -156,3 +156,4 @@ jobs:
     parameters:
       image: $(image)
       unsupportedFeatures: $(unsupportedFeatures)
+      DotNetCoreSdkVersion: $(DotNetCoreSdkVersion)
