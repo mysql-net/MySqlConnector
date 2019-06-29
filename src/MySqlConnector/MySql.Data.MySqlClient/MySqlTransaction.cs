@@ -11,11 +11,10 @@ namespace MySql.Data.MySqlClient
 	public sealed class MySqlTransaction : DbTransaction
 	{
 		public override void Commit() => CommitAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
-		public Task CommitAsync() => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, default);
 #if !NETCOREAPP3_0
-		public Task CommitAsync(CancellationToken cancellationToken) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+		public Task CommitAsync(CancellationToken cancellationToken = default) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #else
-		public override Task CommitAsync(CancellationToken cancellationToken) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+		public override Task CommitAsync(CancellationToken cancellationToken = default) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #endif
 
 		private async Task CommitAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -42,11 +41,10 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public override void Rollback() => RollbackAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
-		public Task RollbackAsync() => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, default);
 #if !NETCOREAPP3_0
-		public Task RollbackAsync(CancellationToken cancellationToken) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+		public Task RollbackAsync(CancellationToken cancellationToken = default) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #else
-		public override Task RollbackAsync(CancellationToken cancellationToken) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+		public override Task RollbackAsync(CancellationToken cancellationToken = default) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #endif
 
 		private async Task RollbackAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)

@@ -31,17 +31,12 @@ namespace MySql.Data.MySqlClient
 		public new MySqlTransaction BeginTransaction(IsolationLevel isolationLevel) => (MySqlTransaction) base.BeginTransaction(isolationLevel);
 		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => BeginDbTransactionAsync(isolationLevel, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public ValueTask<MySqlTransaction> BeginTransactionAsync() => BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, CancellationToken.None);
 #if !NETCOREAPP3_0
-		public ValueTask<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken) => BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, cancellationToken);
+		public ValueTask<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) => BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, cancellationToken);
+		public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default) => BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, cancellationToken);
 #else
-		public new ValueTask<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken) => BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, cancellationToken);
-#endif
-		public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel) => BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, CancellationToken.None);
-#if !NETCOREAPP3_0
-		public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken) => BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, cancellationToken);
-#else
-		public new ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken) => BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, cancellationToken);
+		public new ValueTask<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) => BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, cancellationToken);
+		public new ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default) => BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, cancellationToken);
 
 		protected override async ValueTask<DbTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken) =>
 			await BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
@@ -237,20 +232,18 @@ namespace MySql.Data.MySqlClient
 #endif
 
 		public override void Close() => CloseAsync(changeState: true, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-		public Task CloseAsync() => CloseAsync(changeState: true, SimpleAsyncIOBehavior, CancellationToken.None);
 #if !NETCOREAPP3_0
-		public Task CloseAsync(CancellationToken cancellationToken) => CloseAsync(changeState: true, SimpleAsyncIOBehavior, cancellationToken);
+		public Task CloseAsync(CancellationToken cancellationToken = default) => CloseAsync(changeState: true, SimpleAsyncIOBehavior, cancellationToken);
 #else
-		public override Task CloseAsync(CancellationToken cancellationToken) => CloseAsync(changeState: true, SimpleAsyncIOBehavior, cancellationToken);
+		public override Task CloseAsync(CancellationToken cancellationToken = default) => CloseAsync(changeState: true, SimpleAsyncIOBehavior, cancellationToken);
 #endif
 		internal Task CloseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) => CloseAsync(changeState: true, ioBehavior, cancellationToken);
 
 		public override void ChangeDatabase(string databaseName) => ChangeDatabaseAsync(IOBehavior.Synchronous, databaseName, CancellationToken.None).GetAwaiter().GetResult();
-		public Task ChangeDatabaseAsync(string databaseName) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, CancellationToken.None);
 #if !NETCOREAPP3_0
-		public Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, cancellationToken);
+		public Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, cancellationToken);
 #else
-		public override Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, cancellationToken);
+		public override Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, cancellationToken);
 #endif
 
 		private async Task ChangeDatabaseAsync(IOBehavior ioBehavior, string databaseName, CancellationToken cancellationToken)
@@ -272,8 +265,7 @@ namespace MySql.Data.MySqlClient
 		public new MySqlCommand CreateCommand() => (MySqlCommand) base.CreateCommand();
 
 		public bool Ping() => PingAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-		public Task<bool> PingAsync() => PingAsync(SimpleAsyncIOBehavior, CancellationToken.None).AsTask();
-		public Task<bool> PingAsync(CancellationToken cancellationToken) => PingAsync(SimpleAsyncIOBehavior, cancellationToken).AsTask();
+		public Task<bool> PingAsync(CancellationToken cancellationToken = default) => PingAsync(SimpleAsyncIOBehavior, cancellationToken).AsTask();
 
 		private async ValueTask<bool> PingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -377,11 +369,9 @@ namespace MySql.Data.MySqlClient
 		public int ServerThread => Session.ConnectionId;
 
 		public static void ClearPool(MySqlConnection connection) => ClearPoolAsync(connection, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-		public static Task ClearPoolAsync(MySqlConnection connection) => ClearPoolAsync(connection, connection.AsyncIOBehavior, CancellationToken.None);
-		public static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken) => ClearPoolAsync(connection, connection.AsyncIOBehavior, cancellationToken);
+		public static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken = default) => ClearPoolAsync(connection, connection.AsyncIOBehavior, cancellationToken);
 		public static void ClearAllPools() => ConnectionPool.ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-		public static Task ClearAllPoolsAsync() => ConnectionPool.ClearPoolsAsync(IOBehavior.Asynchronous, CancellationToken.None);
-		public static Task ClearAllPoolsAsync(CancellationToken cancellationToken) => ConnectionPool.ClearPoolsAsync(IOBehavior.Asynchronous, cancellationToken);
+		public static Task ClearAllPoolsAsync(CancellationToken cancellationToken = default) => ConnectionPool.ClearPoolsAsync(IOBehavior.Asynchronous, cancellationToken);
 
 		private static async Task ClearPoolAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{

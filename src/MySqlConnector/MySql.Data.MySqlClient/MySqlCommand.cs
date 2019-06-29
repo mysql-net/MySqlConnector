@@ -96,11 +96,10 @@ namespace MySql.Data.MySqlClient
 			DoPrepareAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 		}
 
-		public Task PrepareAsync() => PrepareAsync(AsyncIOBehavior, default);
 #if !NETCOREAPP3_0
-		public Task PrepareAsync(CancellationToken cancellationToken) => PrepareAsync(AsyncIOBehavior, cancellationToken);
+		public Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
 #else
-		public override Task PrepareAsync(CancellationToken cancellationToken) => PrepareAsync(AsyncIOBehavior, cancellationToken);
+		public override Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
 #endif
 
 		private Task PrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
