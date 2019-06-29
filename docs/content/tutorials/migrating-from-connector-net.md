@@ -91,6 +91,10 @@ may execute differently with MySqlConnector. To get Connector/NET-compatible beh
 Connector/NET allows a `MySqlConnection` object to be reused after it has been disposed. MySqlConnector requires a new `MySqlConnection`
 object to be created. See [#331](https://github.com/mysql-net/MySqlConnector/issues/331) for more details.
 
+The return value of `MySqlConnection.BeginTransactionAsync` has changed from `Task<MySqlTransaction>` to
+`ValueTask<MySqlTransaction>` to match the [standard API in .NET Core 3.0](https://github.com/dotnet/corefx/issues/35012).
+(This method does always perform I/O, so `ValueTask` is not an optimization for MySqlConnector.)
+
 ### MySqlCommand
 
 Connector/NET allows a command to be executed even when `MySqlCommand.Transaction` references a commited, rolled back, or

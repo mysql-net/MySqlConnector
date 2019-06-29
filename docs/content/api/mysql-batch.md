@@ -76,18 +76,21 @@ The collection of commands that will be executed in the batch.
 ### Methods
 
 `public void ExecuteNonQuery();`
+
 `public Task ExecuteNonQueryAsync();`
 
 Executes all the commands in the batch, returning nothing.
 ***
 
 `public object ExecuteScalar();`
+
 `public Task<object> ExecuteScalarAsync();`
 
 Executes all the commands in the batch, returning the value from the first column in the first row of the first resultset.
 ***
 
 `public MySqlDataReader ExecuteReader();`
+
 `public Task<DbDataReader> ExecuteReaderAsync();`
 
 Executes all the commands in the batch, return a `DbDataReader` that can iterate over the result sets. If multiple

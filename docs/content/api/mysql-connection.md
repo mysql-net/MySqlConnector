@@ -35,11 +35,15 @@ Connection ID from MySQL Server.
 Returns `true`.
 
 ### Additional Instance Methods
-`Task<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default(CancellationToken))`
+`ValueTask<MySqlTransaction> BeginTransactionAsync()`
+
+`ValueTask<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken)`
 
 Async version of `BeginTransaction`.
 ***
-`Task<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))`
+`ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel)`
+
+`ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken)`
 
 Async version of `BeginTransaction` that supports setting Isolation Level.
 ***

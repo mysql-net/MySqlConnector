@@ -18,11 +18,15 @@ Additionally, MySqlTransaction provides the following public properties and meth
 
 ### Additional Instance Methods
 
-`public Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))`
+`public Task CommitAsync()`
+
+`public Task CommitAsync(CancellationToken cancellationToken)`
 
 Async version of Commit
 ***
-`public Task RollbackAsync(CancellationToken cancellationToken = default(CancellationToken))`
+`public Task RollbackAsync()`
+
+`public Task RollbackAsync(CancellationToken cancellationToken)`
 
 Async version of Rollback
 ***
