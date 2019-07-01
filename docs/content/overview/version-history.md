@@ -11,6 +11,16 @@ weight: 30
 Version History
 ===============
 
+### 0.57.0-beta3
+
+* **Breaking Change** Return type of `MySqlConnection.BeginTransactionAsync` changed to `ValueTask<MySqlTransaction>` (to match .NET Core 3.0 APIs).
+* **Breaking Change** Various `XyzAsync` method overloads that did not take a `CancellationToken` were removed.
+* Add `netcoreapp3.0` package.
+* Add .NET Core 3.0 async methods: [#642](https://github.com/mysql-net/MySqlConnector/issues/642).
+* Add `MySqlConnection.CloseAsync`: [#467](https://github.com/mysql-net/MySqlConnector/issues/467).
+  * Note: The API is not final and may change: [#665](https://github.com/mysql-net/MySqlConnector/issues/665).
+* Improve performance of `MySqlDataReader`; reduce memory allocations.
+
 ### 0.57.0-beta2
 
 * Fix exception when executing a prepared statement if `MySqlParameter.MySqlDbType` was set: [#659](https://github.com/mysql-net/MySqlConnector/issues/659).
