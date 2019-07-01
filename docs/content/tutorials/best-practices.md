@@ -1,5 +1,5 @@
 ---
-lastmod: 2017-11-06
+lastmod: 2019-06-30
 date: 2016-10-16
 menu:
   main:
@@ -8,8 +8,23 @@ title: Best Practices
 weight: 10
 ---
 
-Best Practices
-=============
+# Best Practices
+
+## Store bool as TINYINT(1)
+
+In MySQL Server, [`BOOL` is an alias for `TINYINT(1)`](https://dev.mysql.com/doc/refman/8.0/en/numeric-type-overview.html).
+The MySQL ADO.NET connector understands this convention and will marshal `TINYINT(1)` back
+to managed code as the C# `bool` type (`System.Boolean`).
+
+Use the `BOOL` alias when defining columns in your SQL statements. Do not use `BIT(1)` (which gets
+mapped as a `ulong`) to represent a Boolean value.
+
+## Avoid TINYINT(1)
+
+As a corollary to the above, avoid explicitly using `TINYINT(1)`. If you need a one-byte integer,
+use `TINYINT` (or `TINYINT UNSIGNED`). The `(1)` suffix simply indicates the "display width"
+(which is typically ignored by .NET programs), not the number of bytes used for storage. (And
+for a `bool` C# value, use `BOOL` in SQL.)
 
 ## Asynchronous Operation
 
