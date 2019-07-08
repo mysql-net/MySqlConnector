@@ -1,4 +1,5 @@
 ---
+lastmod: 2019-07-08
 date: 2019-07-07
 title: Retrieval of Public Key
 weight: 40
