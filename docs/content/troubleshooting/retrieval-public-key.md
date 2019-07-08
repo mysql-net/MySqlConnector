@@ -7,7 +7,9 @@ menu:
     parent: troubleshooting
 ---
 
-# Problem
+# Retrieval of the RSA public key is not enabled for insecure connections
+
+## Problem
 
 When connecting to MySQL Server from a C# program, you may receive one of the following errors:
 
@@ -15,7 +17,7 @@ When connecting to MySQL Server from a C# program, you may receive one of the fo
 * **Authentication method 'caching_sha2_password' failed. Either use a secure connection, specify the server's RSA public key with ServerRSAPublicKeyFile, or set AllowPublicKeyRetrieval=True.** (MySqlConnector)
 * **Authentication method 'sha256_password' failed. Either use a secure connection, specify the server's RSA public key with ServerRSAPublicKeyFile, or set AllowPublicKeyRetrieval=True.** (MySqlConnector)
 
-# Fix
+## Fix
 
 Use one of the following fixes. (Note: if using `MySql.Data` (Connector/NET), uninstall it first then [install MySqlConnector](/overview/installing).)
 
@@ -23,8 +25,7 @@ Use one of the following fixes. (Note: if using `MySql.Data` (Connector/NET), un
 * Specify the (local) path that contains a copy of the server’s public key by adding `;ServerRSAPublicKeyFile=path/to/file.pem` to the connection string. To retrieve the server’s public key, connect securely to the server and execute the following query, saving the results in a file: `SHOW STATUS LIKE 'Caching_sha2_password_rsa_public_key';`
 * (Not recommended) Automatically retrieve the server’s public key by adding `;AllowPublicKeyRetrieval=true` to the connection string; this is potentially insecure.
 
-
-# Background
+## Background
 
 MySQL Server 5.7 added the [`sha256_password` authentication plugin](https://dev.mysql.com/doc/refman/8.0/en/sha256-pluggable-authentication.html).
 MySQL Server 8.0 adds the [`caching_sha2_password` authentication plugin](https://dev.mysql.com/doc/refman/8.0/en/caching-sha2-pluggable-authentication.html)
