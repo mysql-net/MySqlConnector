@@ -1,0 +1,22 @@
+[build]
+base = "docs/"
+publish = "docs/public/"
+command = "hugo --gc --minify -v"
+
+[[redirects]]
+from = "/home/"
+to = "/"
+
+[[redirects]]
+from = "/index.html"
+to = "/"
+
+[[redirects]]
+from = "/:category/index.html"
+to = "/:category/"
+force = true
+
+[[redirects]]
+from = "/:category/:page/index.html"
+to = "/:category/:page/"
+force = true
