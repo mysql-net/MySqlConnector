@@ -1,4 +1,4 @@
 /home/    /    301
-/index.html    /    301
-/:category/index.html   /:category/    301
 /:category/:page/index.html   /:category/:page/    301
+/:category/index.html   /:category/    301
+/index.html    /    301
