@@ -1,7 +1,8 @@
 ---
-lastmod: 2019-07-08
+lastmod: 2019-07-12
 date: 2019-07-07
 title: Retrieval of Public Key
+customtitle: Retrieval of the RSA public key is not enabled for insecure connections
 weight: 40
 menu:
   main:

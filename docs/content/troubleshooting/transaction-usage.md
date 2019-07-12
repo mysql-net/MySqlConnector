@@ -1,7 +1,8 @@
 ---
-lastmod: 2019-07-08
+lastmod: 2019-07-12
 date: 2018-09-29
 title: Transaction Usage
+customtitle: The transaction associated with this command is not the connection’s active transaction
 weight: 20
 menu:
   main:
