@@ -1,8 +1,8 @@
 ---
-lastmod: 2019-06-28
+lastmod: 2019-07-13
 date: 2016-10-16
 title: Connection Options
-customtitle: .NET MySQL ConnectionString for C# Programs
+customtitle: MySQL Connection String for C#/.NET Programs
 weight: 30
 menu:
   main:
