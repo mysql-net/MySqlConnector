@@ -37,8 +37,8 @@
 
     {{ .Hugo.Generator }}
     {{ .Scratch.Add "title" "" }}{{ if isset .Site.Data.titles .Title }}{{ .Scratch.Set "title" (index .Site.Data.titles .Title).title }}{{ else if isset .Page.Params "customtitle" }}{{ .Scratch.Set "title" .Page.Params.customtitle }}{{ else }}{{ .Scratch.Set "title" .Title}}{{end}}
-    <title>MySqlConnector - {{ .Scratch.Get "title" }}</title>
-    <meta property="og:title" content="MySqlConnector - {{ .Scratch.Get "title" }}" />
+    <title>{{ .Scratch.Get "title" }} - MySqlConnector</title>
+    <meta property="og:title" content="{{ .Scratch.Get "title" }} - MySqlConnector" />
     <meta property="og:description" content="MySqlConnector is a high-performance, asynchronous ADO.NET data provider for MySQL Server, MariaDB, Percona Server, Amazon Aurora, Azure Database for MySQL, Google Cloud SQL for MySQL and more." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://mysqlconnector.net/img/icons/android-icon-192x192.png" />
