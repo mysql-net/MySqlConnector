@@ -407,7 +407,7 @@ namespace MySql.Data.MySqlClient
 		SchemaProvider m_schemaProvider;
 #endif
 
-		public override int ConnectionTimeout => m_connectionSettings.ConnectionTimeout;
+		public override int ConnectionTimeout => GetConnectionSettings().ConnectionTimeout;
 
 		public event MySqlInfoMessageEventHandler InfoMessage;
 

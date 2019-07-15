@@ -125,5 +125,45 @@ namespace SideBySide
 				Assert.Equal("", connection.DataSource);
 			}
 		}
+
+		[Fact]
+		public void ConnectionTimeoutDefaultValue()
+		{
+			using (var connection = new MySqlConnection())
+			{
+				Assert.Equal(15, connection.ConnectionTimeout);
+			}
+		}
+
+		[Fact]
+		public void ConnectionTimeoutDefaultValueAfterOpen()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(15, connection.ConnectionTimeout);
+			}
+		}
+
+		[Fact]
+		public void ConnectionTimeoutExplicitValue()
+		{
+			using (var connection = new MySqlConnection("Connection Timeout=30"))
+			{
+				Assert.Equal(30, connection.ConnectionTimeout);
+			}
+		}
+
+		[Fact]
+		public void ConnectionTimeoutExplicitValueAfterOpen()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.ConnectionTimeout = 30;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			{
+				connection.Open();
+				Assert.Equal(30, connection.ConnectionTimeout);
+			}
+		}
 	}
 }
