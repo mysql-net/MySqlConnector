@@ -30,6 +30,21 @@ namespace SideBySide
 
 		[Theory]
 		[MemberData(nameof(ConnectionStrings))]
+		public void EnlistTransactionWhenClosed(string connectionString)
+		{
+			using (new TransactionScope())
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString + ";" + connectionString))
+			{
+#if !BASELINE
+				Assert.Throws<InvalidOperationException>(() => connection.EnlistTransaction(System.Transactions.Transaction.Current));
+#else
+				Assert.Throws<NullReferenceException>(() => connection.EnlistTransaction(System.Transactions.Transaction.Current));
+#endif
+			}
+		}
+
+		[Theory]
+		[MemberData(nameof(ConnectionStrings))]
 		public void EnlistSameTransaction(string connectionString)
 		{
 			using (new TransactionScope())

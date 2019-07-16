@@ -91,6 +91,9 @@ namespace MySql.Data.MySqlClient
 #if !NETSTANDARD1_3
 		public override void EnlistTransaction(System.Transactions.Transaction transaction)
 		{
+			if (State != ConnectionState.Open)
+				throw new InvalidOperationException("Connection is not open.");
+
 			// ignore reenlistment of same connection in same transaction
 			if (m_enlistedTransaction?.Transaction.Equals(transaction) ?? false)
 				return;
