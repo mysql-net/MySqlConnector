@@ -278,6 +278,7 @@ namespace MySqlConnector.Protocol
 		Utf8Mb4RussianUca900AccentInsensitiveCaseInsensitive = 306,
 		Utf8Mb4RussianUca900AccentSensitiveCaseSensitive = 307,
 		Utf8Mb4ChineseUca900AccentSensitiveCaseSensitive = 308,
+		Utf8Mb4Uca900Binary = 309,
 		Utf8CroatianCaseInsensitiveMariaDb = 576,
 		Utf8MyanmarCaseInsensitive = 577,
 		Utf8ThaiUnicode520Weight2 = 578,
