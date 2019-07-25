@@ -11,6 +11,14 @@ weight: 30
 Version History
 ===============
 
+### 0.57.0-beta4
+
+* **Breaking Change** Remove `CancellationToken` parameter from `MySqlConnection.CloseAsync`: [#665](https://github.com/mysql-net/MySqlConnector/issues/665).
+* Support `utf8mb4_0900_bin` collation introduced in MySQL Server 8.0.17: [#670](https://github.com/mysql-net/MySqlConnector/issues/670).
+* Throw `InvalidOperationException` from `MySqlConnection.EnlistTransaction` instead of `NullReferenceException`.
+* Fix `NullReferenceException` thrown from `MySqlConnection.ConnectionTimeout`: [#669](https://github.com/mysql-net/MySqlConnector/issues/669).
+* Implement .NET Core 3.0 Preview 7 ADO.NET API.
+
 ### 0.57.0-beta3
 
 * **Breaking Change** Return type of `MySqlConnection.BeginTransactionAsync` changed to `ValueTask<MySqlTransaction>` (to match .NET Core 3.0 APIs).
