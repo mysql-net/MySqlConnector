@@ -1,5 +1,5 @@
 variables:
-  DotNetCoreSdkVersion: '3.0.100-preview6-012264'
+  DotNetCoreSdkVersion: '3.0.100-preview7-012821'
 
 jobs:
 - job: linux_build

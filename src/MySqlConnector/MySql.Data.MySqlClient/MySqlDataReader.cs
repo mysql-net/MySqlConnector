@@ -488,7 +488,7 @@ namespace MySql.Data.MySqlClient
 				if ((m_behavior & CommandBehavior.CloseConnection) != 0)
 				{
 					(Command as IDisposable)?.Dispose();
-					await connection.CloseAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					await connection.CloseAsync(ioBehavior).ConfigureAwait(false);
 				}
 				Command = null;
 			}
