@@ -1,4 +1,20 @@
 steps:
+- task: CacheBeta@0
+  inputs:
+    key: |
+      $(Agent.OS)
+      $(Build.SourcesDirectory)/src/MySqlConnector/MySqlConnector.csproj
+      $(Build.SourcesDirectory)/src/MySqlConnector.Authentication.Ed25519/MySqlConnector.Authentication.Ed25519.csproj
+      $(Build.SourcesDirectory)/src/MySqlConnector.Logging.log4net/MySqlConnector.Logging.log4net.csproj
+      $(Build.SourcesDirectory)/src/MySqlConnector.Logging.Microsoft.Extensions.Logging/MySqlConnector.Logging.Microsoft.Extensions.Logging.csproj
+      $(Build.SourcesDirectory)/src/MySqlConnector.Logging.NLog/MySqlConnector.Logging.NLog.csproj
+      $(Build.SourcesDirectory)/src/MySqlConnector.Logging.Serilog/MySqlConnector.Logging.Serilog.csproj
+      $(Build.SourcesDirectory)/tests/Conformance.Tests/Conformance.Tests.csproj
+      $(Build.SourcesDirectory)/tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj
+      $(Build.SourcesDirectory)/tests/SideBySide/SideBySide.csproj
+    path: $(NUGET_PACKAGES)
+  displayName: NuGet build cache
+
 - task: CopyFiles@2
   displayName: 'Copy config.json'
   inputs:

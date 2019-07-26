@@ -1,5 +1,6 @@
 variables:
   DotNetCoreSdkVersion: '3.0.100-preview7-012821'
+  NUGET_PACKAGES: '$(Pipeline.Workspace)/.nuget/packages'
 
 jobs:
 - job: linux_build
