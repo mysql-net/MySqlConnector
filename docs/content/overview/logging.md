@@ -54,6 +54,16 @@ Add the following line of code to your `Startup.Configure` method:
 MySqlConnectorLogManager.Provider = new MicrosoftExtensionsLoggingLoggerProvider(loggerFactory);
 ```
 
+#### NLog
+
+Install [MySqlConnector.Logging.NLog](https://www.nuget.org/packages/MySqlConnector.Logging.NLog/).
+
+Add the following line of code to your application startup routine:
+
+```csharp
+MySqlConnectorLogManager.Provider = new NLogLoggerProvider();
+```
+
 #### Serilog
 
 Install [MySqlConnector.Logging.Serilog](https://www.nuget.org/packages/MySqlConnector.Logging.Serilog/).
