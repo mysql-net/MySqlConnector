@@ -20,3 +20,33 @@ force = true
 from = "/:category/:page/index.html"
 to = "/:category/:page/"
 force = true
+
+[[redirects]]
+from = "/api/"
+to = "/"
+status = 302
+
+[[redirects]]
+from = "/groups/"
+to = "/"
+status = 302
+
+[[redirects]]
+from = "/overview/"
+to = "/"
+status = 302
+
+[[redirects]]
+from = "/tags/"
+to = "/"
+status = 302
+
+[[redirects]]
+from = "/troubleshooting/"
+to = "/"
+status = 302
+
+[[redirects]]
+from = "/tutorials/"
+to = "/"
+status = 302
