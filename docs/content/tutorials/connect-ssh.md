@@ -3,7 +3,8 @@ date: 2019-07-30
 menu:
   main:
     parent: tutorials
-title: Tutorial: Connecting with SSH
+title: Connecting with SSH
+customtitle: "Tutorial: Connecting to MySQL Server with SSH"
 weight: 15
 ---
 
