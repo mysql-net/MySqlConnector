@@ -1,8 +1,8 @@
 ---
-lastmod: 2019-07-12
+lastmod: 2019-07-30
 date: 2018-09-29
 title: Transaction Usage
-customtitle: The transaction associated with this command is not the connection’s active transaction
+customtitle: "Fix: The transaction associated with this command is not the connection’s active transaction"
 weight: 20
 menu:
   main:
