@@ -1,14 +1,15 @@
 ---
+lastmod: 2019-07-31
 date: 2019-07-30
 menu:
   main:
     parent: tutorials
 title: Connecting with SSH
-customtitle: "Tutorial: Connecting to MySQL Server with SSH"
+customtitle: "Tutorial: Connecting to MySQL Server with SSH from C#"
 weight: 15
 ---
 
-# Connecting to MySQL Server with SSH
+# Connecting to MySQL Server with SSH from C#
 
 This tutorial demonstrates how to simulate the `SshHostName`, `SshPort`, `SshUserName`, `SshPassword`, `SshKeyFile`, and `SshPassPhrase`
 connection string options using MySqlConnector.
@@ -26,7 +27,7 @@ The options are defined as follows:
 
 You must install the [Renci SSH.NET NuGet package](https://www.nuget.org/packages/SSH.NET/): `dotnet add package SSH.NET`
 
-Define the following method in your code; this will set up the SSH connection:
+Define the following method in your C# code; this will set up the SSH connection:
 
 ```csharp
 public static (SshClient SshClient, uint Port) ConnectSsh(string sshHostName, string sshUserName, string sshPassword = null,
@@ -78,7 +79,7 @@ want to keep the `SshClient` and forwarded port alive for the lifetime of your a
 
 ### If MySQL and SSH Server are the same
 
-If the MySQL Server and SSH Server are running on the same computer, use the following code:
+If the MySQL Server and SSH Server are running on the same computer, use the following C# code:
 
 ```csharp
 var server = "your db & ssh server";
@@ -108,7 +109,7 @@ using (sshClient)
 ### If MySQL and SSH Server are different
 
 If the MySQL Server and SSH Server are running on different computers (and the MySQL Server
-is reachable from the SSH Server, but not from the client computer), use the following code:
+is reachable from the SSH Server, but not from the client computer), use the following C# code:
 
 ```csharp
 var sshServer = "your ssh server";
