@@ -1,5 +1,5 @@
 ---
-lastmod: 2019-07-31
+lastmod: 2019-08-01
 date: 2019-07-30
 menu:
   main:
@@ -9,7 +9,7 @@ customtitle: "Tutorial: Connecting to MySQL Server with SSH from C#"
 weight: 15
 ---
 
-# Connecting to MySQL Server with SSH from C#
+# Connecting to MySQL Server with SSH from C\#
 
 This tutorial demonstrates how to simulate the `SshHostName`, `SshPort`, `SshUserName`, `SshPassword`, `SshKeyFile`, and `SshPassPhrase`
 connection string options using MySqlConnector.
