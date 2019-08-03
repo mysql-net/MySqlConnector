@@ -1020,7 +1020,7 @@ namespace MySqlConnector.Core
 					}
 					rsa.ImportParameters(rsaParameters);
 
-#if !NETCOREAPP2_1
+#if NET45 || NET461 || NET471
 					var certificate = new X509Certificate2(cs.SslCertificateFile, "", X509KeyStorageFlags.MachineKeySet)
 					{
 						PrivateKey = rsa,
