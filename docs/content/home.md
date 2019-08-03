@@ -51,7 +51,7 @@ For more information, see [how to install](./overview/installing/) and a [basic 
 
 MySqlConnector outperforms Connector/NET (MySql.Data) on benchmarks:
 
-![Benchmark 1](https://files.logoscdn.com/v1/files/12389056/content.png?signature=UE8FnU9ykb1f_7C68_D8lF2ZAzc) ![Benchmark 2](https://files.logoscdn.com/v1/files/12389051/content.png?signature=Gptw0KDjYREuulIk_37zuO6OToc)
+![Benchmark 1](https://files.logoscdn.com/v1/assets/2533998/optimized?share=0xvvkseNVc6bzHkZ) ![Benchmark 2](https://files.logoscdn.com/v1/assets/2533995/optimized?share=tcaVS7frgdVm6PAz)
 
 (Client: MySqlConnector 0.44.0, Windows 10 x64; Server: MySQL Server 5.6.21, Unix)
 
