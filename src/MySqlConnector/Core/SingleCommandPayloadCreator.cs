@@ -13,7 +13,9 @@ namespace MySqlConnector.Core
 	{
 		public static ICommandPayloadCreator Instance { get; } = new SingleCommandPayloadCreator();
 
-		public static string OutParameterSentinelColumnName => "\uE001\b";
+		// This is chosen to be something very unlikely to appear as a column name in a user's query. If a result set is read
+		// with this as the first column name, the result set will be treated as 'out' parameters for the previous command.
+		public static string OutParameterSentinelColumnName => "\uE001\b\x0B";
 
 		public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure> cachedProcedures, ByteBufferWriter writer)
 		{
@@ -166,7 +168,7 @@ namespace MySqlConnector.Core
 				commandText = inOutSetParameters + "CALL " + commandText;
 				if (outParameters.Count > 0)
 				{
-					commandText += "SELECT '"+ OutParameterSentinelColumnName +"' AS '" + OutParameterSentinelColumnName + "', " + string.Join(", ", outParameterNames);
+					commandText += "SELECT '" + OutParameterSentinelColumnName + "' AS '" + OutParameterSentinelColumnName + "', " + string.Join(", ", outParameterNames);
 				}
 			}
 			else
