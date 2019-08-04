@@ -49,13 +49,15 @@ namespace MySqlConnector.Core
 			return true;
 		}
 
-		public static void WriteQueryPayload(IMySqlCommand command, IDictionary<string, CachedProcedure> cachedProcedures, ByteBufferWriter writer)
-		{
-			if (command.CommandType == CommandType.StoredProcedure)
-				WriteStoredProcedure(command, cachedProcedures, writer);
-			else
-				WriteCommand(command, writer);
-		}
+		/// <summary>
+		/// Writes the text of <paramref name="command"/> to <paramref name="writer"/>, encoded in UTF-8.
+		/// </summary>
+		/// <param name="command">The command.</param>
+		/// <param name="cachedProcedures">The cached procedures.</param>
+		/// <param name="writer">The output writer.</param>
+		/// <returns><c>true</c> if a complete command was written; otherwise, <c>false</c>.</returns>
+		public static bool WriteQueryPayload(IMySqlCommand command, IDictionary<string, CachedProcedure> cachedProcedures, ByteBufferWriter writer) =>
+			(command.CommandType == CommandType.StoredProcedure) ? WriteStoredProcedure(command, cachedProcedures, writer) :  WriteCommand(command, writer);
 
 		private static void WritePreparedStatement(IMySqlCommand command, PreparedStatement preparedStatement, ByteBufferWriter writer)
 		{
@@ -124,7 +126,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private static void WriteStoredProcedure(IMySqlCommand command, IDictionary<string, CachedProcedure> cachedProcedures, ByteBufferWriter writer)
+		private static bool WriteStoredProcedure(IMySqlCommand command, IDictionary<string, CachedProcedure> cachedProcedures, ByteBufferWriter writer)
 		{
 			var parameterCollection = command.RawParameters;
 			var cachedProcedure = cachedProcedures[command.CommandText];
@@ -184,13 +186,13 @@ namespace MySqlConnector.Core
 			command.ReturnParameter = returnParameter;
 
 			var preparer = new StatementPreparer(commandText, inParameters, command.CreateStatementPreparerOptions());
-			preparer.ParseAndBindParameters(writer);
+			return preparer.ParseAndBindParameters(writer);
 		}
 
-		private static void WriteCommand(IMySqlCommand command, ByteBufferWriter writer)
+		private static bool WriteCommand(IMySqlCommand command, ByteBufferWriter writer)
 		{
 			var preparer = new StatementPreparer(command.CommandText, command.RawParameters, command.CreateStatementPreparerOptions());
-			preparer.ParseAndBindParameters(writer);
+			return preparer.ParseAndBindParameters(writer);
 		}
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(SingleCommandPayloadCreator));

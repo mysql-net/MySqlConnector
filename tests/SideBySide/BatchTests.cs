@@ -171,8 +171,15 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
-		public void ExecuteBatch()
+		[Theory]
+		[InlineData("")]
+		[InlineData("\n")]
+		[InlineData(";")]
+		[InlineData(";\n")]
+		[InlineData("; -- ")]
+		[InlineData(" -- ")]
+		[InlineData(" # ")]
+		public void ExecuteBatch(string suffix)
 		{
 			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
 			{
@@ -181,9 +188,9 @@ namespace SideBySide
 				{
 					BatchCommands =
 					{
-						new MySqlBatchCommand("SELECT 1;"),
-						new MySqlBatchCommand("SELECT 2;"),
-						new MySqlBatchCommand("SELECT 3;"),
+						new MySqlBatchCommand("SELECT 1" + suffix),
+						new MySqlBatchCommand("SELECT 2" + suffix),
+						new MySqlBatchCommand("SELECT 3" + suffix),
 					},
 				})
 				using (var reader = batch.ExecuteReader())
@@ -206,6 +213,40 @@ namespace SideBySide
 					Assert.False(reader.NextResult());
 
 					Assert.Equal(6, total);
+				}
+			}
+		}
+
+		[Fact]
+		public void ExecuteInvalidSqlBatch()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using (var batch = new MySqlBatch(connection)
+				{
+					BatchCommands =
+					{
+						new MySqlBatchCommand("SELECT 1;"),
+						new MySqlBatchCommand("SELECT 2 /* incomplete"),
+						new MySqlBatchCommand("SELECT 3;"),
+					},
+				})
+				using (var reader = batch.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(1, reader.GetInt32(0));
+					Assert.False(reader.Read());
+
+					try
+					{
+						reader.NextResult();
+						Assert.True(false, "Shouldn't get here");
+					}
+					catch (MySqlException ex)
+					{
+						Assert.Equal(MySqlErrorCode.ParseError, (MySqlErrorCode) ex.Number);
+					}
 				}
 			}
 		}

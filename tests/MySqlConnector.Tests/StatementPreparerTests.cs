@@ -21,7 +21,7 @@ namespace MySqlConnector.Tests
 			var parameters = new MySqlParameterCollection();
 			parameters.AddWithValue("@param", 123);
 			var parsedSql = GetParsedSql(sql, parameters);
-			Assert.Equal(sql.Replace("@param", "123"), parsedSql);
+			Assert.Equal(sql.Replace("@param", "123") + ";", parsedSql);
 		}
 
 		[Theory]
@@ -60,7 +60,7 @@ namespace MySqlConnector.Tests
 		[InlineData(null, DummyEnum.FirstValue, "0")]
 		public void EnumParametersAreParsedCorrectly(MySqlDbType? type, object value, string replacedValue)
 		{
-			const string sql = "SELECT @param";
+			const string sql = "SELECT @param;";
 			var parameters = new MySqlParameterCollection();
 			var parameter = new MySqlParameter("@param", value);
 
@@ -129,7 +129,7 @@ SELECT @'var' as R")]
 			var parameters = new MySqlParameterCollection();
 			parameters.AddWithValue("@foo", 22);
 			var parsedSql = GetParsedSql(sql, parameters, StatementPreparerOptions.AllowUserVariables);
-			Assert.Equal(sql.Replace("@foo", "22"), parsedSql);
+			Assert.Equal(sql.Replace("@foo", "22") + ";", parsedSql);
 		}
 
 		[Theory]
@@ -137,7 +137,7 @@ SELECT @'var' as R")]
 		public void FormatParameter(object parameterValue, string replacedValue)
 		{
 			var parameters = new MySqlParameterCollection { new MySqlParameter("@param", parameterValue) };
-			const string sql = "SELECT @param";
+			const string sql = "SELECT @param;";
 			var parsedSql = GetParsedSql(sql, parameters);
 			Assert.Equal(sql.Replace("@param", replacedValue), parsedSql);
 		}
@@ -178,9 +178,28 @@ SELECT @'var' as R")]
 		public void GuidFormat(object options, string replacedValue)
 		{
 			var parameters = new MySqlParameterCollection { new MySqlParameter("@param", new Guid("61626364-6566-6768-696a-6b6c6d6e6f70")) };
-			const string sql = "SELECT @param";
+			const string sql = "SELECT @param;";
 			var parsedSql = GetParsedSql(sql, parameters, (StatementPreparerOptions) options);
 			Assert.Equal(sql.Replace("@param", replacedValue), parsedSql);
+		}
+
+		[Theory]
+		[InlineData("SELECT 1;", "SELECT 1;", true)]
+		[InlineData("SELECT 1", "SELECT 1;", true)]
+		[InlineData("SELECT 1 -- comment", "SELECT 1 -- comment\n;", true)]
+		[InlineData("SELECT 1 # comment", "SELECT 1 # comment\n;", true)]
+		[InlineData("SELECT '1", "SELECT '1", false)]
+		[InlineData("SELECT '1' /* test", "SELECT '1' /* test", false)]
+		public void CompleteStatements(string sql, string expectedSql, bool expectedComplete)
+		{
+			var preparer = new StatementPreparer(sql, new MySqlParameterCollection(), new StatementPreparerOptions());
+			var writer = new ByteBufferWriter();
+			var isComplete = preparer.ParseAndBindParameters(writer);
+			Assert.Equal(expectedComplete, isComplete);
+			string parsedSql;
+			using (var payload = writer.ToPayloadData())
+				parsedSql = Encoding.UTF8.GetString(payload.AsSpan());
+			Assert.Equal(expectedSql, parsedSql);
 		}
 
 		[Theory]

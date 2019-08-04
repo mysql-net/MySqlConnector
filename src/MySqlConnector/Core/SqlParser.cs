@@ -13,10 +13,10 @@ namespace MySqlConnector.Core
 
 			var state = State.Beginning;
 			var beforeCommentState = State.Beginning;
-			bool isNamedParameter = false;
-			for (int index = 0; index <= sql.Length; index++)
+			var isNamedParameter = false;
+			for (var index = 0; index < sql.Length; index++)
 			{
-				char ch = index == sql.Length ? ';' : sql[index];
+				var ch = sql[index];
 				if (state == State.EndOfLineComment)
 				{
 					if (ch == '\n')
@@ -68,7 +68,15 @@ namespace MySqlConnector.Core
 					{
 						if (isNamedParameter)
 							OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
-						state = State.Statement;
+						if (ch == ';')
+						{
+							OnStatementEnd(index);
+							state = State.Beginning;
+						}
+						else
+						{
+							state = State.Statement;
+						}
 					}
 				}
 				else if (state == State.DoubleQuotedStringDoubleQuote)
@@ -81,7 +89,15 @@ namespace MySqlConnector.Core
 					{
 						if (isNamedParameter)
 							OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
-						state = State.Statement;
+						if (ch == ';')
+						{
+							OnStatementEnd(index);
+							state = State.Beginning;
+						}
+						else
+						{
+							state = State.Statement;
+						}
 					}
 				}
 				else if (state == State.BacktickQuotedStringBacktick)
@@ -94,7 +110,15 @@ namespace MySqlConnector.Core
 					{
 						if (isNamedParameter)
 							OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
-						state = State.Statement;
+						if (ch == ';')
+						{
+							OnStatementEnd(index);
+							state = State.Beginning;
+						}
+						else
+						{
+							state = State.Statement;
+						}
 					}
 				}
 				else if (state == State.SecondHyphen)
@@ -225,7 +249,35 @@ namespace MySqlConnector.Core
 				}
 			}
 
-			OnParsed();
+			var states = FinalParseStates.None;
+			if (state == State.NamedParameter)
+			{
+				OnNamedParameter(parameterStartIndex, sql.Length - parameterStartIndex);
+				state = State.Statement;
+			}
+			else if (state == State.QuestionMark)
+			{
+				OnPositionalParameter(parameterStartIndex);
+				state = State.Statement;
+			}
+			else if (state == State.EndOfLineComment)
+			{
+				states |= FinalParseStates.NeedsNewline;
+				state = beforeCommentState;
+			}
+
+			if (state == State.Statement)
+			{
+				OnStatementEnd(sql.Length);
+				states |= FinalParseStates.NeedsSemicolon;
+				state = State.Beginning;
+			}
+			if (state == State.Beginning)
+			{
+				states |= FinalParseStates.Complete;
+			}
+
+			OnParsed(states);
 		}
 
 		protected virtual void OnBeforeParse(string sql)
@@ -248,8 +300,29 @@ namespace MySqlConnector.Core
 		{
 		}
 
-		protected virtual void OnParsed()
+		protected virtual void OnParsed(FinalParseStates states)
 		{
+		}
+
+		[Flags]
+		protected enum FinalParseStates
+		{
+			None = 0,
+
+			/// <summary>
+			/// The statement is complete (apart from potentially needing a semicolon or newline).
+			/// </summary>
+			Complete = 1,
+
+			/// <summary>
+			/// The statement needs a newline (e.g., to terminate a final comment).
+			/// </summary>
+			NeedsNewline = 2,
+
+			/// <summary>
+			/// The statement needs a semicolon (if another statement is going to be concatenated to it).
+			/// </summary>
+			NeedsSemicolon = 4,
 		}
 
 		private static bool IsWhitespace(char ch) => ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';

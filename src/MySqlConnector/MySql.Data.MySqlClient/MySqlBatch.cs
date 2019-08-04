@@ -122,7 +122,9 @@ namespace MySql.Data.MySqlClient
 			foreach (MySqlBatchCommand batchCommand in BatchCommands)
 				batchCommand.Batch = this;
 
-			var payloadCreator = Connection.Session.SupportsComMulti ? BatchedCommandPayloadCreator.Instance : SingleCommandPayloadCreator.Instance;
+			var payloadCreator = Connection.Session.SupportsComMulti ? BatchedCommandPayloadCreator.Instance :
+				// TODO: IsPrepared ? SingleCommandPayloadCreator.Instance :
+				ConcatenatedCommandPayloadCreator.Instance;
 			return CommandExecutor.ExecuteReaderAsync(BatchCommands, payloadCreator, CommandBehavior.Default, ioBehavior, cancellationToken);
 		}
 

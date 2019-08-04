@@ -36,6 +36,7 @@ namespace MySqlConnector.Core
 			m_row = null;
 			m_rowBuffered = null;
 			m_hasRows = false;
+			ReadResultSetHeaderException = null;
 		}
 
 		public async Task ReadResultSetHeaderAsync(IOBehavior ioBehavior)

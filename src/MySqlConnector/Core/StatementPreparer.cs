@@ -29,13 +29,15 @@ namespace MySqlConnector.Core
 			return new ParsedStatements(statements, writer.ToPayloadData());
 		}
 
-		public void ParseAndBindParameters(ByteBufferWriter writer)
+		public bool ParseAndBindParameters(ByteBufferWriter writer)
 		{
 			if (!string.IsNullOrWhiteSpace(m_commandText))
 			{
 				var parser = new ParameterSqlParser(this, writer);
 				parser.Parse(m_commandText);
+				return parser.IsComplete;
 			}
+			return true;
 		}
 
 		private int GetParameterIndex(string name)
@@ -64,6 +66,8 @@ namespace MySqlConnector.Core
 				m_writer = writer;
 			}
 
+			public bool IsComplete { get; private set; }
+
 			protected override void OnNamedParameter(int index, int length)
 			{
 				var parameterIndex = m_preparer.GetParameterIndex(m_preparer.m_commandText.Substring(index, length));
@@ -85,9 +89,14 @@ namespace MySqlConnector.Core
 				m_lastIndex = textIndex + textLength;
 			}
 
-			protected override void OnParsed()
+			protected override void OnParsed(FinalParseStates states)
 			{
 				m_writer.Write(m_preparer.m_commandText, m_lastIndex, m_preparer.m_commandText.Length - m_lastIndex);
+				if ((states & FinalParseStates.NeedsNewline) == FinalParseStates.NeedsNewline)
+					m_writer.Write((byte) '\n');
+				if ((states & FinalParseStates.NeedsSemicolon) == FinalParseStates.NeedsSemicolon)
+					m_writer.Write((byte) ';');
+				IsComplete = (states & FinalParseStates.Complete) == FinalParseStates.Complete;
 			}
 
 			readonly StatementPreparer m_preparer;
