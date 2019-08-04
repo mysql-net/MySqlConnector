@@ -517,7 +517,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 			}
 		}
 
-		[SkippableFact(ServerFeatures.Timeout)]
+		[SkippableFact(ServerFeatures.Timeout, Skip = "COM_MULTI")]
 		public void CancelMultiCommandBatchReader()
 		{
 			using (var barrier = new Barrier(2))
@@ -696,7 +696,7 @@ create table cancel_completed_command (
 			}
 		}
 
-		[SkippableFact(ServerFeatures.Timeout)]
+		[SkippableFact(ServerFeatures.Timeout, Skip = "COM_MULTI")]
 		public async Task CancelHugeQueryBatchWithTokenInNextResult()
 		{
 			using (var batch = new MySqlBatch(m_database.Connection)
@@ -810,7 +810,7 @@ create table cancel_completed_command (
 			}
 		}
 
-		[SkippableFact(ServerFeatures.Timeout)]
+		[SkippableFact(ServerFeatures.Timeout, Skip = "COM_MULTI")]
 		public async Task CancelMultiStatementBatchInRead()
 		{
 			using (var batch = new MySqlBatch(m_database.Connection)

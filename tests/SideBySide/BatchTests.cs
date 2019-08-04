@@ -217,7 +217,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[Fact(Skip = "COM_MULTI")]
 		public void ExecuteInvalidSqlBatch()
 		{
 			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
