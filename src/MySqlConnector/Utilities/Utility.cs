@@ -351,7 +351,7 @@ namespace MySqlConnector.Utilities
 		public static Task<T> TaskFromException<T>(Exception exception) => Task.FromException<T>(exception);
 #endif
 
-#if !NETCOREAPP3_0
+#if !NETSTANDARD2_1 && !NETCOREAPP3_0
 		public static Task CompletedValueTask => CompletedTask;
 #else
 		public static ValueTask CompletedValueTask => default;

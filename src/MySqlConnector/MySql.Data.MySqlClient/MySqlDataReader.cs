@@ -312,7 +312,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-#if !NETCOREAPP3_0
+#if !NETSTANDARD2_1 && !NETCOREAPP3_0
 		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
 #else
 		public override ValueTask DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
@@ -454,7 +454,7 @@ namespace MySql.Data.MySqlClient
 			m_resultSet = new ResultSet(this);
 		}
 
-#if !NETCOREAPP3_0
+#if !NETSTANDARD2_1 && !NETCOREAPP3_0
 		internal async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #else
 		internal async ValueTask DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)

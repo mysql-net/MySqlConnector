@@ -11,7 +11,7 @@ namespace MySql.Data.MySqlClient
 	public sealed class MySqlTransaction : DbTransaction
 	{
 		public override void Commit() => CommitAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
-#if !NETCOREAPP3_0
+#if !NETSTANDARD2_1 && !NETCOREAPP3_0
 		public Task CommitAsync(CancellationToken cancellationToken = default) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #else
 		public override Task CommitAsync(CancellationToken cancellationToken = default) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
@@ -41,7 +41,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public override void Rollback() => RollbackAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
-#if !NETCOREAPP3_0
+#if !NETSTANDARD2_1 && !NETCOREAPP3_0
 		public Task RollbackAsync(CancellationToken cancellationToken = default) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #else
 		public override Task RollbackAsync(CancellationToken cancellationToken = default) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
@@ -87,13 +87,13 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-#if !NETCOREAPP3_0
+#if !NETSTANDARD2_1 && !NETCOREAPP3_0
 		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
 #else
 		public override ValueTask DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
 #endif
 
-#if !NETCOREAPP3_0
+#if !NETSTANDARD2_1 && !NETCOREAPP3_0
 		internal Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #else
 		internal ValueTask DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -106,7 +106,7 @@ namespace MySql.Data.MySqlClient
 			return Utility.CompletedValueTask;
 		}
 
-#if !NETCOREAPP3_0
+#if !NETSTANDARD2_1 && !NETCOREAPP3_0
 		private async Task DoDisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #else
 		private async ValueTask DoDisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)

@@ -96,7 +96,7 @@ namespace MySql.Data.MySqlClient
 			DoPrepareAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 		}
 
-#if !NETCOREAPP3_0
+#if !NETSTANDARD2_1 && !NETCOREAPP3_0
 		public Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
 #else
 		public override Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
@@ -347,7 +347,7 @@ namespace MySql.Data.MySqlClient
 			m_isDisposed = true;
 		}
 
-#if !NETCOREAPP3_0
+#if !NETSTANDARD2_1 && !NETCOREAPP3_0
 		public Task DisposeAsync()
 #else
 		public override ValueTask DisposeAsync()

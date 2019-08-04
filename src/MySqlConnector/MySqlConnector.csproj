@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks Condition=" '$(NETCoreSdkVersion)' != '3.0.100-preview7-012821' ">net45;net461;net471;netstandard1.3;netstandard2.0;netcoreapp2.1</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(NETCoreSdkVersion)' == '3.0.100-preview7-012821' ">net45;net461;net471;netstandard1.3;netstandard2.0;netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(NETCoreSdkVersion)' == '3.0.100-preview7-012821' ">net45;net461;net471;netstandard1.3;netstandard2.0;netstandard2.1;netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
     <Title>Async MySQL ADO.NET Connector</Title>
     <Description>A truly async MySQL ADO.NET provider, supporting MySQL Server, MariaDB, Percona Server, Amazon Aurora, Azure Database for MySQL and more.</Description>
     <Copyright>Copyright 2016–2019 Bradley Grainger</Copyright>
