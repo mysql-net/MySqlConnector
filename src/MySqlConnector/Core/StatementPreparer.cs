@@ -33,7 +33,6 @@ namespace MySqlConnector.Core
 		{
 			if (!string.IsNullOrWhiteSpace(m_commandText))
 			{
-				writer.Write((byte) CommandKind.Query);
 				var parser = new ParameterSqlParser(this, writer);
 				parser.Parse(m_commandText);
 			}

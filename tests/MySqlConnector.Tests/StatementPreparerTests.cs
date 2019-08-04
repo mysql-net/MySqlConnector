@@ -248,7 +248,7 @@ SELECT @'var' as R")]
 			var writer = new ByteBufferWriter();
 			preparer.ParseAndBindParameters(writer);
 			using (var payload = writer.ToPayloadData())
-				return Encoding.UTF8.GetString(payload.AsSpan().Slice(1));
+				return Encoding.UTF8.GetString(payload.AsSpan());
 		}
 	}
 }

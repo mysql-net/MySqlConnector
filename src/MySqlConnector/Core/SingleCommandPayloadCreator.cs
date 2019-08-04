@@ -29,15 +29,14 @@ namespace MySqlConnector.Core
 				if (Log.IsDebugEnabled())
 					Log.Debug("Session{0} Preparing command payload; CommandText: {1}", command.Connection.Session.Id, command.CommandText);
 
-				if (command.CommandType == CommandType.StoredProcedure)
-					WriteStoredProcedure(command, cachedProcedures, writer);
-				else
-					WriteCommand(command, writer);
+				writer.Write((byte) CommandKind.Query);
+				WriteQueryPayload(command, cachedProcedures, writer);
 
 				commandListPosition.CommandIndex++;
 			}
 			else
 			{
+				writer.Write((byte) CommandKind.StatementExecute);
 				WritePreparedStatement(command, preparedStatements.Statements[commandListPosition.PreparedStatementIndex], writer);
 
 				// advance to next prepared statement or next command
@@ -47,18 +46,24 @@ namespace MySqlConnector.Core
 					commandListPosition.PreparedStatementIndex = 0;
 				}
 			}
-
 			return true;
 		}
 
-		private void WritePreparedStatement(IMySqlCommand command, PreparedStatement preparedStatement, ByteBufferWriter writer)
+		public static void WriteQueryPayload(IMySqlCommand command, IDictionary<string, CachedProcedure> cachedProcedures, ByteBufferWriter writer)
+		{
+			if (command.CommandType == CommandType.StoredProcedure)
+				WriteStoredProcedure(command, cachedProcedures, writer);
+			else
+				WriteCommand(command, writer);
+		}
+
+		private static void WritePreparedStatement(IMySqlCommand command, PreparedStatement preparedStatement, ByteBufferWriter writer)
 		{
 			var parameterCollection = command.RawParameters;
 
 			if (Log.IsDebugEnabled())
 				Log.Debug("Session{0} Preparing command payload; CommandId: {1}; CommandText: {2}", command.Connection.Session.Id, preparedStatement.StatementId, command.CommandText);
 
-			writer.Write((byte) CommandKind.StatementExecute);
 			writer.Write(preparedStatement.StatementId);
 			writer.Write((byte) 0);
 			writer.Write(1);
@@ -119,7 +124,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private void WriteStoredProcedure(IMySqlCommand command, IDictionary<string, CachedProcedure> cachedProcedures, ByteBufferWriter writer)
+		private static void WriteStoredProcedure(IMySqlCommand command, IDictionary<string, CachedProcedure> cachedProcedures, ByteBufferWriter writer)
 		{
 			var parameterCollection = command.RawParameters;
 			var cachedProcedure = cachedProcedures[command.CommandText];
@@ -182,7 +187,7 @@ namespace MySqlConnector.Core
 			preparer.ParseAndBindParameters(writer);
 		}
 
-		private void WriteCommand(IMySqlCommand command, ByteBufferWriter writer)
+		private static void WriteCommand(IMySqlCommand command, ByteBufferWriter writer)
 		{
 			var preparer = new StatementPreparer(command.CommandText, command.RawParameters, command.CreateStatementPreparerOptions());
 			preparer.ParseAndBindParameters(writer);
