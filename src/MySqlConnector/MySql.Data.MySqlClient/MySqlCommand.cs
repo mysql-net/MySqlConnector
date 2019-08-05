@@ -52,11 +52,9 @@ namespace MySql.Data.MySqlClient
 		{
 			m_commandTimeout = other.m_commandTimeout;
 			m_commandType = other.m_commandType;
-			var parameters = Parameters;
 			DesignTimeVisible = other.DesignTimeVisible;
 			UpdatedRowSource = other.UpdatedRowSource;
-			foreach (MySqlParameter parameter in other.Parameters)
-				parameters.Add(parameter.Clone());
+			m_parameterCollection = other.CloneRawParameters();
 		}
 
 		public new MySqlParameterCollection Parameters
@@ -101,6 +99,16 @@ namespace MySql.Data.MySqlClient
 #else
 		public override Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
 #endif
+
+		internal MySqlParameterCollection CloneRawParameters()
+		{
+			if (m_parameterCollection is null)
+				return null;
+			var parameters = new MySqlParameterCollection();
+			foreach (MySqlParameter parameter in m_parameterCollection)
+				parameters.Add(parameter.Clone());
+			return parameters;
+		}
 
 		private Task PrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{

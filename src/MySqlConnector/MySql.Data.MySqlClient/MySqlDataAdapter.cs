@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using MySqlConnector.Core;
 
 namespace MySql.Data.MySqlClient
 {
@@ -67,38 +68,44 @@ namespace MySql.Data.MySqlClient
 
 		public override int UpdateBatchSize { get; set; }
 
-		protected override void InitializeBatching() => m_batchCommands = new List<MySqlCommand>();
+		protected override void InitializeBatching() => m_batch = new MySqlBatch();
 
 		protected override void TerminateBatching()
 		{
-			if (m_batchCommands is object)
-				ClearBatch();
-			m_batchCommands = null;
+			m_batch?.Dispose();			
+			m_batch = null;
 		}
 
 		protected override int AddToBatch(IDbCommand command)
 		{
-			var count = m_batchCommands.Count;
-			m_batchCommands.Add(((MySqlCommand) command).Clone());
+			var mySqlCommand = (MySqlCommand) command;
+			if (m_batch.Connection is null)
+			{
+				m_batch.Connection = mySqlCommand.Connection;
+				m_batch.Transaction = mySqlCommand.Transaction;
+			}
+
+			var count = m_batch.BatchCommands.Count;
+			var batchCommand = new MySqlBatchCommand
+			{
+				CommandText = command.CommandText,
+				CommandType = command.CommandType,
+			};
+			if (mySqlCommand.CloneRawParameters() is MySqlParameterCollection clonedParameters)
+			{
+				foreach (var clonedParameter in clonedParameters)
+					batchCommand.Parameters.Add(clonedParameter);
+			}
+
+			m_batch.BatchCommands.Add(batchCommand);
 			return count;
 		}
 
-		protected override void ClearBatch()
-		{
-			foreach (var command in m_batchCommands)
-				command.Dispose();
-			m_batchCommands.Clear();
-		}
+		protected override void ClearBatch() => m_batch.BatchCommands.Clear();
 
-		protected override int ExecuteBatch()
-		{
-			var result = 0;
-			foreach (var command in m_batchCommands)
-				result += command.ExecuteNonQuery();
-			return result;
-		}
+		protected override int ExecuteBatch() => m_batch.ExecuteNonQuery();
 
-		List<MySqlCommand> m_batchCommands;
+		MySqlBatch m_batch;
 	}
 
 	public delegate void MySqlRowUpdatingEventHandler(object sender, MySqlRowUpdatingEventArgs e);
