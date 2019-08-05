@@ -11,6 +11,13 @@ weight: 30
 Version History
 ===============
 
+### 0.57.0-beta5
+
+* Send concatenated SQL when `MySqlBatch` is used with servers that don't support `COM_MULTI`: [#657](https://github.com/mysql-net/MySqlConnector/issues/657).
+* Use batching in `MySqlDataAdapter` when `UpdateBatchSize` is set: [#675](https://github.com/mysql-net/MySqlConnector/issues/675).
+* Add `netstandard2.1` target.
+* Fix error when using `SslKey` in `netcoreapp3.0`.
+
 ### 0.57.0-beta4
 
 * **Breaking Change** Remove `CancellationToken` parameter from `MySqlConnection.CloseAsync`: [#665](https://github.com/mysql-net/MySqlConnector/issues/665).
