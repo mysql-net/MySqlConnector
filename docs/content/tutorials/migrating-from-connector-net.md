@@ -103,6 +103,13 @@ property doesn’t reference the active transaction. This fixes <a href="https:/
 To disable this strict validation, set <code>IgnoreCommandTransaction=true</code>
 in the connection string. See [Transaction Usage](troubleshooting/transaction-usage/) for more details.
 
+### MySqlDataAdapter
+
+Connector/NET provides `MySqlDataAdapter.FillAsync`, `FillSchemaAsync`, and `UpdateAsync` methods, but these methods
+have a synchronous implementation. MySqlConnector only adds “Async” methods when they can be implemented asynchronously.
+This functionality depends on [dotnet/corefx#20658](https://github.com/dotnet/corefx/issues/20658) being implemented first.
+To migrate code, change it to call the synchronous methods instead.
+
 ### Exceptions
 
 For consistency with other ADO.NET providers, MySqlConnector will throw `InvalidOperationException` (instead of `MySqlException`)
