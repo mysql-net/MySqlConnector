@@ -632,6 +632,7 @@ namespace MySql.Data.MySqlClient
 						RandomLoadBalancer.Instance : FailOverLoadBalancer.Instance;
 
 					var session = new ServerSession();
+					session.OwningConnection = new WeakReference<MySqlConnection>(this);
 					Log.Info("Created new non-pooled Session{0}", session.Id);
 					await session.ConnectAsync(m_connectionSettings, loadBalancer, actualIOBehavior, connectToken).ConfigureAwait(false);
 					return session;
@@ -762,9 +763,14 @@ namespace MySql.Data.MySqlClient
 					if (m_session is object)
 					{
 						if (m_connectionSettings.Pooling)
+						{
 							m_session.ReturnToPool();
+						}
 						else
+						{
 							await m_session.DisposeAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+							m_session.OwningConnection = null;
+						}
 						m_session = null;
 					}
 
