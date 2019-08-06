@@ -68,6 +68,18 @@ for the client’s private key (in PFX format); `SslCa` (aka `CACertificateFile`
 Some connection string options that are supported in Connector/NET are not supported in MySqlConnector. For a full list of options that are
 supported in MySqlConnector, see the [Connection Options](connection-options).
 
+### Async
+
+Connector/NET implements the standard ADO.NET async methods, and adds some new ones (e.g., `MySqlConnection.BeginTransactionAsync`,
+`MySqlDataAdapter.FillAsync`) that don't exist in ADO.NET. None of these methods have an asynchronous implementation,
+but all execute synchronously then return a completed `Task`. This is a [longstanding known bug](https://bugs.mysql.com/bug.php?id=70111)
+in Connector/NET.
+
+Because the Connector/NET methods aren't actually asynchronous, porting client code to MySqlConnector (which is asynchronous)
+can expose bugs that only occur when an async method completes asynchronously and resumes the `await`-ing code
+on a background thread. To avoid deadlocks, make sure to [never block on async code](https://blog.stephencleary.com/2012/07/dont-block-on-async-code.html) (e.g., with `.Result`), use async all the way, use `ConfigureAwait` correctly,
+and follow the [best practices in async programming](https://msdn.microsoft.com/en-us/magazine/jj991977.aspx).
+
 ### Implicit Conversions
 
 Connector/NET allows `MySqlDataReader.GetString()` to be called on many non-textual columns, and will implicitly
