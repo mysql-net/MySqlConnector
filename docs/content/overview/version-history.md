@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.57.0-beta6
+
+* Fix `MySqlConnection.State` not being set to `ConnectionState.Closed` when a failure occurs if pooling is disabled: [#674](https://github.com/mysql-net/MySqlConnector/issues/674).
+
 ### 0.57.0-beta5
 
 * Send concatenated SQL when `MySqlBatch` is used with servers that don't support `COM_MULTI`: [#657](https://github.com/mysql-net/MySqlConnector/issues/657).
