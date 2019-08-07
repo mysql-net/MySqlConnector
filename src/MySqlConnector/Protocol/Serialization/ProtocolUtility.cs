@@ -3,6 +3,7 @@ using System.Buffers;
 using System.IO;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Serialization
@@ -417,38 +418,45 @@ namespace MySqlConnector.Protocol.Serialization
 		{
 			if (headerBytes.Count < 4)
 			{
-				return protocolErrorBehavior == ProtocolErrorBehavior.Throw ?
-					ValueTaskExtensions.FromException<Packet>(new EndOfStreamException("Expected to read 4 header bytes but only received {0}.".FormatInvariant(headerBytes.Count))) :
-					default(ValueTask<Packet>);
+				return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ? default :
+					ValueTaskExtensions.FromException<Packet>(new EndOfStreamException("Expected to read 4 header bytes but only received {0}.".FormatInvariant(headerBytes.Count)));
 			}
 
 			var payloadLength = (int) SerializationUtility.ReadUInt32(headerBytes.Array, headerBytes.Offset, 3);
 			int packetSequenceNumber = headerBytes.Array[headerBytes.Offset + 3];
 
+			Exception packetOutOfOrderException = null;
 			var expectedSequenceNumber = getNextSequenceNumber() % 256;
 			if (expectedSequenceNumber != -1 && packetSequenceNumber != expectedSequenceNumber)
-			{
-				if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
-					return default(ValueTask<Packet>);
-
-				var exception = MySqlProtocolException.CreateForPacketOutOfOrder(expectedSequenceNumber, packetSequenceNumber);
-				return ValueTaskExtensions.FromException<Packet>(exception);
-			}
+				packetOutOfOrderException = MySqlProtocolException.CreateForPacketOutOfOrder(expectedSequenceNumber, packetSequenceNumber);
 
 			var payloadBytesTask = bufferedByteReader.ReadBytesAsync(byteHandler, payloadLength, ioBehavior);
 			if (payloadBytesTask.IsCompleted)
-				return CreatePacketFromPayload(payloadBytesTask.Result, payloadLength, protocolErrorBehavior);
-			return AddContinuation(payloadBytesTask, payloadLength, protocolErrorBehavior);
+				return CreatePacketFromPayload(payloadBytesTask.Result, payloadLength, protocolErrorBehavior, packetOutOfOrderException);
+			return AddContinuation(payloadBytesTask, payloadLength, protocolErrorBehavior, packetOutOfOrderException);
 
 			// NOTE: use a local function (with no captures) to defer creation of lambda objects
-			ValueTask<Packet> AddContinuation(ValueTask<ArraySegment<byte>> payloadBytesTask_, int payloadLength_, ProtocolErrorBehavior protocolErrorBehavior_)
-				=> payloadBytesTask_.ContinueWith(x => CreatePacketFromPayload(x, payloadLength_, protocolErrorBehavior_));
+			ValueTask<Packet> AddContinuation(ValueTask<ArraySegment<byte>> payloadBytesTask_, int payloadLength_, ProtocolErrorBehavior protocolErrorBehavior_, Exception packetOutOfOrderException_)
+				=> payloadBytesTask_.ContinueWith(x => CreatePacketFromPayload(x, payloadLength_, protocolErrorBehavior_, packetOutOfOrderException_));
 		}
 
-		private static ValueTask<Packet> CreatePacketFromPayload(ArraySegment<byte> payloadBytes, int payloadLength, ProtocolErrorBehavior protocolErrorBehavior) =>
-			payloadBytes.Count >= payloadLength ? new ValueTask<Packet>(new Packet(payloadBytes)) :
+		private static ValueTask<Packet> CreatePacketFromPayload(ArraySegment<byte> payloadBytes, int payloadLength, ProtocolErrorBehavior protocolErrorBehavior, Exception exception)
+		{
+			if (exception is object)
+			{
+				if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
+					return default;
+
+				if (payloadBytes.Count > 0 && payloadBytes.AsSpan()[0] == ErrorPayload.Signature)
+					return new ValueTask<Packet>(new Packet(payloadBytes));
+
+				return ValueTaskExtensions.FromException<Packet>(exception);
+			}
+
+			return payloadBytes.Count >= payloadLength ? new ValueTask<Packet>(new Packet(payloadBytes)) :
 				protocolErrorBehavior == ProtocolErrorBehavior.Throw ? ValueTaskExtensions.FromException<Packet>(new EndOfStreamException("Expected to read {0} payload bytes but only received {1}.".FormatInvariant(payloadLength, payloadBytes.Count))) :
-				default(ValueTask<Packet>);
+				default;
+		}
 
 		public static ValueTask<ArraySegment<byte>> ReadPayloadAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegmentHolder<byte> cache, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
