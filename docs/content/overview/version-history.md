@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.57.0-beta7
+
+* Implement `MySqlBatch.Prepare`: [#656](https://github.com/mysql-net/MySqlConnector/issues/656).
+* Handle error packet being sent out-of-order: [#662](https://github.com/mysql-net/MySqlConnector/issues/662).
+
 ### 0.57.0-beta6
 
 * Fix `MySqlConnection.State` not being set to `ConnectionState.Closed` when a failure occurs if pooling is disabled: [#674](https://github.com/mysql-net/MySqlConnector/issues/674).
