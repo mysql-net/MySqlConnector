@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlConnector.Core;
-using MySqlConnector.Protocol;
-using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
@@ -91,7 +88,7 @@ namespace MySql.Data.MySqlClient
 				return;
 			}
 
-			DoPrepareAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+			Connection.Session.PrepareAsync(this, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 		}
 
 #if !NETSTANDARD2_1 && !NETCOREAPP3_0
@@ -115,7 +112,7 @@ namespace MySql.Data.MySqlClient
 			if (!NeedsPrepare(out var exception))
 				return exception is null ? Utility.CompletedTask : Utility.TaskFromException(exception);
 
-			return DoPrepareAsync(ioBehavior, cancellationToken);
+			return Connection.Session.PrepareAsync(this, ioBehavior, cancellationToken);
 		}
 
 		private bool NeedsPrepare(out Exception exception)
@@ -141,65 +138,6 @@ namespace MySql.Data.MySqlClient
 
 			// don't prepare the same SQL twice
 			return Connection.Session.TryGetPreparedStatement(CommandText) is null;
-		}
-
-		private async Task DoPrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-		{
-			var statementPreparer = new StatementPreparer(CommandText, m_parameterCollection, ((IMySqlCommand) this).CreateStatementPreparerOptions());
-			var parsedStatements = statementPreparer.SplitStatements();
-
-			var columnsAndParameters = new ResizableArray<byte>();
-			var columnsAndParametersSize = 0;
-
-			var preparedStatements = new List<PreparedStatement>(parsedStatements.Statements.Count);
-			foreach (var statement in parsedStatements.Statements)
-			{
-				await Connection.Session.SendAsync(new PayloadData(statement.StatementBytes), ioBehavior, cancellationToken).ConfigureAwait(false);
-				var payload = await Connection.Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				var response = StatementPrepareResponsePayload.Create(payload.AsSpan());
-
-				ColumnDefinitionPayload[] parameters = null;
-				if (response.ParameterCount > 0)
-				{
-					parameters = new ColumnDefinitionPayload[response.ParameterCount];
-					for (var i = 0; i < response.ParameterCount; i++)
-					{
-						payload = await Connection.Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-						Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payload.ArraySegment.Count);
-						Buffer.BlockCopy(payload.ArraySegment.Array, payload.ArraySegment.Offset, columnsAndParameters.Array, columnsAndParametersSize, payload.ArraySegment.Count);
-						parameters[i] = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(columnsAndParameters, columnsAndParametersSize, payload.ArraySegment.Count));
-						columnsAndParametersSize += payload.ArraySegment.Count;
-					}
-					if (!Connection.Session.SupportsDeprecateEof)
-					{
-						payload = await Connection.Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-						EofPayload.Create(payload.AsSpan());
-					}
-				}
-
-				ColumnDefinitionPayload[] columns = null;
-				if (response.ColumnCount > 0)
-				{
-					columns = new ColumnDefinitionPayload[response.ColumnCount];
-					for (var i = 0; i < response.ColumnCount; i++)
-					{
-						payload = await Connection.Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-						Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payload.ArraySegment.Count);
-						Buffer.BlockCopy(payload.ArraySegment.Array, payload.ArraySegment.Offset, columnsAndParameters.Array, columnsAndParametersSize, payload.ArraySegment.Count);
-						columns[i] = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(columnsAndParameters, columnsAndParametersSize, payload.ArraySegment.Count));
-						columnsAndParametersSize += payload.ArraySegment.Count;
-					}
-					if (!Connection.Session.SupportsDeprecateEof)
-					{
-						payload = await Connection.Session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-						EofPayload.Create(payload.AsSpan());
-					}
-				}
-
-				preparedStatements.Add(new PreparedStatement(response.StatementId, statement, columns, parameters));
-			}
-
-			Connection.Session.AddPreparedStatement(CommandText, new PreparedStatements(preparedStatements, parsedStatements));
 		}
 
 		public override string CommandText

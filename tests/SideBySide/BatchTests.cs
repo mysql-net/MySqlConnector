@@ -250,6 +250,49 @@ namespace SideBySide
 				}
 			}
 		}
+		[Fact]
+		public void PrepareNeedsConnection()
+		{
+			using (var batch = new MySqlBatch
+			{
+				BatchCommands =
+				{
+					new MySqlBatchCommand("SELECT 1;"),
+				},
+			})
+			{
+				Assert.Throws<InvalidOperationException>(() => batch.Prepare());
+			}
+		}
+
+		[Fact]
+		public void PrepareNeedsOpenConnection()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			using (var batch = new MySqlBatch(connection)
+			{
+				BatchCommands =
+				{
+					new MySqlBatchCommand("SELECT 1;"),
+				},
+			})
+			{
+				Assert.Throws<InvalidOperationException>(() => batch.Prepare());
+			}
+		}
+
+		[Fact]
+		public void PrepareNeedsCommands()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using (var batch = new MySqlBatch(connection))
+				{
+					Assert.Throws<InvalidOperationException>(() => batch.Prepare());
+				}
+			}
+		}
 
 		private static string GetIgnoreCommandTransactionConnectionString() =>
 			new MySqlConnectionStringBuilder(AppConfig.ConnectionString)

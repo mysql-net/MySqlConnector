@@ -123,7 +123,7 @@ namespace MySql.Data.MySqlClient
 				batchCommand.Batch = this;
 
 			var payloadCreator = Connection.Session.SupportsComMulti ? BatchedCommandPayloadCreator.Instance :
-				// TODO: IsPrepared ? SingleCommandPayloadCreator.Instance :
+				IsPrepared ? SingleCommandPayloadCreator.Instance :
 				ConcatenatedCommandPayloadCreator.Instance;
 			return CommandExecutor.ExecuteReaderAsync(BatchCommands, payloadCreator, CommandBehavior.Default, ioBehavior, cancellationToken);
 		}
@@ -138,9 +138,19 @@ namespace MySql.Data.MySqlClient
 
 		public override int Timeout { get; set; }
 
-		public override void Prepare() => throw new NotImplementedException();
+		public override void Prepare()
+		{
+			if (!NeedsPrepare(out var exception))
+			{
+				if (exception is object)
+					throw exception;
+				return;
+			}
 
-		public override Task PrepareAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+			DoPrepareAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+		}
+
+		public override Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
 
 		public override void Cancel() => Connection?.Cancel(this);
 
@@ -233,6 +243,56 @@ namespace MySql.Data.MySqlClient
 			}
 
 			return exception is null;
+		}
+
+		private bool NeedsPrepare(out Exception exception)
+		{
+			exception = null;
+			if (Connection is null)
+				exception = new InvalidOperationException("Connection property must be non-null.");
+			else if (Connection.State != ConnectionState.Open)
+				exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
+			else if (BatchCommands.Count == 0)
+				exception = new InvalidOperationException("BatchCommands must contain a command");
+			else if (Connection?.HasActiveReader ?? false)
+				exception = new InvalidOperationException("Cannot call Prepare when there is an open DataReader for this command; it must be closed first.");
+
+			return exception is null && !Connection.IgnorePrepare;
+		}
+
+		private Task PrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			if (!NeedsPrepare(out var exception))
+				return exception is null ? Utility.CompletedTask : Utility.TaskFromException(exception);
+
+			return DoPrepareAsync(ioBehavior, cancellationToken);
+		}
+
+		private async Task DoPrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			foreach (IMySqlCommand batchCommand in BatchCommands)
+			{
+				if (batchCommand.CommandType != CommandType.Text)
+					throw new NotSupportedException("Only CommandType.Text is currently supported by MySqlBatch.Prepare");
+				((MySqlBatchCommand) batchCommand).Batch = this;
+
+				// don't prepare the same SQL twice
+				if (Connection.Session.TryGetPreparedStatement(batchCommand.CommandText) is null)
+					await Connection.Session.PrepareAsync(batchCommand, ioBehavior, cancellationToken).ConfigureAwait(false);
+			}
+		}
+
+		private bool IsPrepared
+		{
+			get
+			{
+				foreach (var command in BatchCommands)
+				{
+					if (Connection.Session.TryGetPreparedStatement(command.CommandText) is null)
+						return false;
+				}
+				return true;
+			}
 		}
 
 		private IOBehavior AsyncIOBehavior => Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous;

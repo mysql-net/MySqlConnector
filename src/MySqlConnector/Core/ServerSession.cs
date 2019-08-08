@@ -133,11 +133,65 @@ namespace MySqlConnector.Core
 
 		public bool IsCancelingQuery => m_state == State.CancelingQuery;
 
-		public void AddPreparedStatement(string commandText, PreparedStatements preparedStatements)
+		public async Task PrepareAsync(IMySqlCommand command, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			var statementPreparer = new StatementPreparer(command.CommandText, command.RawParameters, command.CreateStatementPreparerOptions());
+			var parsedStatements = statementPreparer.SplitStatements();
+
+			var columnsAndParameters = new ResizableArray<byte>();
+			var columnsAndParametersSize = 0;
+
+			var preparedStatements = new List<PreparedStatement>(parsedStatements.Statements.Count);
+			foreach (var statement in parsedStatements.Statements)
+			{
+				await SendAsync(new PayloadData(statement.StatementBytes), ioBehavior, cancellationToken).ConfigureAwait(false);
+				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				var response = StatementPrepareResponsePayload.Create(payload.AsSpan());
+
+				ColumnDefinitionPayload[] parameters = null;
+				if (response.ParameterCount > 0)
+				{
+					parameters = new ColumnDefinitionPayload[response.ParameterCount];
+					for (var i = 0; i < response.ParameterCount; i++)
+					{
+						payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payload.ArraySegment.Count);
+						Buffer.BlockCopy(payload.ArraySegment.Array, payload.ArraySegment.Offset, columnsAndParameters.Array, columnsAndParametersSize, payload.ArraySegment.Count);
+						parameters[i] = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(columnsAndParameters, columnsAndParametersSize, payload.ArraySegment.Count));
+						columnsAndParametersSize += payload.ArraySegment.Count;
+					}
+					if (!SupportsDeprecateEof)
+					{
+						payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						EofPayload.Create(payload.AsSpan());
+					}
+				}
+
+				ColumnDefinitionPayload[] columns = null;
+				if (response.ColumnCount > 0)
+				{
+					columns = new ColumnDefinitionPayload[response.ColumnCount];
+					for (var i = 0; i < response.ColumnCount; i++)
+					{
+						payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payload.ArraySegment.Count);
+						Buffer.BlockCopy(payload.ArraySegment.Array, payload.ArraySegment.Offset, columnsAndParameters.Array, columnsAndParametersSize, payload.ArraySegment.Count);
+						columns[i] = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(columnsAndParameters, columnsAndParametersSize, payload.ArraySegment.Count));
+						columnsAndParametersSize += payload.ArraySegment.Count;
+					}
+					if (!SupportsDeprecateEof)
+					{
+						payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						EofPayload.Create(payload.AsSpan());
+					}
+				}
+
+				preparedStatements.Add(new PreparedStatement(response.StatementId, statement, columns, parameters));
+			}
+
 			if (m_preparedStatements is null)
 				m_preparedStatements = new Dictionary<string, PreparedStatements>();
-			m_preparedStatements.Add(commandText, preparedStatements);
+			m_preparedStatements.Add(command.CommandText, new PreparedStatements(preparedStatements, parsedStatements));
 		}
 
 		public PreparedStatements TryGetPreparedStatement(string commandText)

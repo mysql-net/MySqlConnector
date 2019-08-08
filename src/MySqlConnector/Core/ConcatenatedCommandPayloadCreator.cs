@@ -23,9 +23,6 @@ namespace MySqlConnector.Core
 			do
 			{
 				var command = commandListPosition.Commands[commandListPosition.CommandIndex];
-				if (command.TryGetPreparedStatements() is object)
-					throw new InvalidOperationException("Can't send prepared statements as part of a concatenated batch.");
-
 				if (Log.IsDebugEnabled())
 					Log.Debug("Session{0} Preparing command payload; CommandText: {1}", command.Connection.Session.Id, command.CommandText);
 
