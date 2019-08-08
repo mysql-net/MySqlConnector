@@ -7,69 +7,9 @@ using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_0
-namespace System.Data.Common
-{
-	public abstract class DbBatch : IDisposable
-	{
-		public DbBatchCommandCollection BatchCommands => DbBatchCommands;
-		protected abstract DbBatchCommandCollection DbBatchCommands { get; }
-
-		#region Execution (mirrors DbCommand)
-
-		public DbDataReader ExecuteReader() => ExecuteDbDataReader();
-		protected abstract DbDataReader ExecuteDbDataReader();
-		public Task<DbDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default) => ExecuteDbDataReaderAsync(cancellationToken);
-		protected abstract Task<DbDataReader> ExecuteDbDataReaderAsync(CancellationToken cancellationToken);
-
-		public abstract int ExecuteNonQuery();
-		public abstract Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default);
-
-		public abstract object ExecuteScalar();
-		public abstract Task<object> ExecuteScalarAsync(CancellationToken cancellationToken = default);
-
-		#endregion
-
-		#region Execution properties (mirrors DbCommand)
-
-		public abstract int Timeout { get; set; }
-
-		// Delegates to DbConnection
-		public DbConnection Connection { get; set; }
-		protected abstract DbConnection DbConnection { get; set; }
-
-		// Delegates to DbTransaction
-		public DbTransaction Transaction { get; set; }
-		protected abstract DbTransaction DbTransaction { get; set; }
-
-		#endregion
-
-		#region Other methods mirroring DbCommand
-
-		public abstract void Prepare();
-		public abstract Task PrepareAsync(CancellationToken cancellationToken = default);
-		public abstract void Cancel();
-
-		#endregion
-
-		#region Standard dispose pattern
-
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		protected virtual void Dispose(bool disposing) { }
-
-		#endregion
-	}
-}
-#endif
-
 namespace MySql.Data.MySqlClient
 {
-	public sealed class MySqlBatch : DbBatch, ICancellableCommand
+	public sealed class MySqlBatch : ICancellableCommand, IDisposable
 	{
 		public MySqlBatch()
 			: this(null, null)
@@ -84,31 +24,20 @@ namespace MySql.Data.MySqlClient
 			m_commandId = ICancellableCommandExtensions.GetNextId();
 		}
 
-		public new MySqlConnection Connection { get; set; }
-		public new MySqlTransaction Transaction { get; set; }
-		public new MySqlBatchCommandCollection BatchCommands { get; }
+		public MySqlConnection Connection { get; set; }
+		public MySqlTransaction Transaction { get; set; }
+		public MySqlBatchCommandCollection BatchCommands { get; }
 
-		protected override DbConnection DbConnection
-		{
-			get => Connection;
-			set => Connection = (MySqlConnection) value;
-		}
+		public DbDataReader ExecuteReader() => ExecuteDbDataReader();
+		public Task<DbDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default) => ExecuteDbDataReaderAsync(cancellationToken);
 
-		protected override DbTransaction DbTransaction
-		{
-			get => Transaction;
-			set => Transaction = (MySqlTransaction) value;
-		}
-
-		protected override DbBatchCommandCollection DbBatchCommands => BatchCommands;
-
-		protected override DbDataReader ExecuteDbDataReader()
+		private DbDataReader ExecuteDbDataReader()
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
 			return ExecuteReaderAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		}
 
-		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CancellationToken cancellationToken)
+		private Task<DbDataReader> ExecuteDbDataReaderAsync(CancellationToken cancellationToken)
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
 			return ExecuteReaderAsync(AsyncIOBehavior, cancellationToken);
@@ -128,17 +57,17 @@ namespace MySql.Data.MySqlClient
 			return CommandExecutor.ExecuteReaderAsync(BatchCommands, payloadCreator, CommandBehavior.Default, ioBehavior, cancellationToken);
 		}
 
-		public override int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public override object ExecuteScalar() => ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public object ExecuteScalar() => ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default) => ExecuteNonQueryAsync(AsyncIOBehavior, cancellationToken);
+		public Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default) => ExecuteNonQueryAsync(AsyncIOBehavior, cancellationToken);
 
-		public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken = default) => ExecuteScalarAsync(AsyncIOBehavior, cancellationToken);
+		public Task<object> ExecuteScalarAsync(CancellationToken cancellationToken = default) => ExecuteScalarAsync(AsyncIOBehavior, cancellationToken);
 
-		public override int Timeout { get; set; }
+		public int Timeout { get; set; }
 
-		public override void Prepare()
+		public void Prepare()
 		{
 			if (!NeedsPrepare(out var exception))
 			{
@@ -150,20 +79,13 @@ namespace MySql.Data.MySqlClient
 			DoPrepareAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 		}
 
-		public override Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
+		public Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
 
-		public override void Cancel() => Connection?.Cancel(this);
+		public void Cancel() => Connection?.Cancel(this);
 
-		protected override void Dispose(bool disposing)
+		public void Dispose()
 		{
-			try
-			{
-				m_isDisposed = true;
-			}
-			finally
-			{
-				base.Dispose(disposing);
-			}
+			m_isDisposed = true;
 		}
 
 		int ICancellableCommand.CommandId => m_commandId;
