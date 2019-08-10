@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using MySql.Data.MySqlClient;
 using MySql.Data.Types;
 using MySqlConnector.Protocol;
@@ -11,7 +12,7 @@ namespace MySqlConnector.Core
 {
 	internal abstract class Row
 	{
-		public void SetData(ArraySegment<byte> data)
+		public void SetData(ReadOnlyMemory<byte> data)
 		{
 			m_data = data;
 			if (m_dataOffsets is null)
@@ -19,15 +20,15 @@ namespace MySqlConnector.Core
 				m_dataOffsets = new int[ResultSet.ColumnDefinitions.Length];
 				m_dataLengths = new int[ResultSet.ColumnDefinitions.Length];
 			}
-			GetDataOffsets(m_data.AsSpan(), m_dataOffsets, m_dataLengths);
+			GetDataOffsets(m_data.Span, m_dataOffsets, m_dataLengths);
 		}
 
 		public Row Clone()
 		{
 			var clonedRow = CloneCore();
-			var clonedData = new byte[m_data.Count];
-			Buffer.BlockCopy(m_data.Array, m_data.Offset, clonedData, 0, m_data.Count);
-			clonedRow.SetData(new ArraySegment<byte>(clonedData));
+			var clonedData = new byte[m_data.Length];
+			m_data.CopyTo(clonedData);
+			clonedRow.SetData(clonedData);
 			return clonedRow;
 		}
 
@@ -39,7 +40,7 @@ namespace MySqlConnector.Core
 			if (m_dataOffsets[ordinal] == -1)
 				return DBNull.Value;
 
-			var data = new ReadOnlySpan<byte>(m_data.Array, m_data.Offset + m_dataOffsets[ordinal], m_dataLengths[ordinal]);
+			var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
 			var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
 			return GetValueCore(data, columnDefinition);
 		}
@@ -88,7 +89,8 @@ namespace MySqlConnector.Core
 
 			var offset = (int) dataOffset;
 			var lengthToCopy = Math.Max(0, Math.Min(m_dataLengths[ordinal] - offset, length));
-			Buffer.BlockCopy(m_data.Array, m_data.Offset + m_dataOffsets[ordinal] + offset, buffer, bufferOffset, lengthToCopy);
+			if (lengthToCopy > 0)
+				m_data.Slice(m_dataOffsets[ordinal] + offset, lengthToCopy).Span.CopyTo(buffer.AsSpan().Slice(bufferOffset));
 			return lengthToCopy;
 		}
 
@@ -291,7 +293,9 @@ namespace MySqlConnector.Core
 		public Stream GetStream(int ordinal)
 		{
 			CheckBinaryColumn(ordinal);
-			return new MemoryStream(m_data.Array, m_data.Offset + m_dataOffsets[ordinal], m_dataLengths[ordinal], false);
+			return (MemoryMarshal.TryGetArray(m_data, out var arraySegment)) ?
+				new MemoryStream(arraySegment.Array, arraySegment.Offset + m_dataOffsets[ordinal], m_dataLengths[ordinal], writable: false) :
+				throw new InvalidOperationException("Can't get underlying array.");
 		}
 
 		public string GetString(int ordinal) => (string) GetValue(ordinal);
@@ -405,7 +409,7 @@ namespace MySqlConnector.Core
 				throw new ArgumentException("bufferOffset + length cannot exceed buffer.Length", nameof(length));
 		}
 
-		ArraySegment<byte> m_data;
+		ReadOnlyMemory<byte> m_data;
 		int[] m_dataOffsets;
 		int[] m_dataLengths;
 	}

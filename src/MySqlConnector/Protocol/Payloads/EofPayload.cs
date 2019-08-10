@@ -31,7 +31,7 @@ namespace MySqlConnector.Protocol.Payloads
 		/// <param name="payload">The payload to examine.</param>
 		/// <returns><c>true</c> if this is an EOF packet; otherwise, <c>false</c>.</returns>
 		public static bool IsEof(PayloadData payload) =>
-			payload.ArraySegment.Count > 0 && payload.ArraySegment.Count < 9 && payload.ArraySegment.Array![payload.ArraySegment.Offset] == Signature;
+			payload.Span.Length > 0 && payload.Span.Length < 9 && payload.HeaderByte == Signature;
 
 		public const byte Signature = 0xFE;
 

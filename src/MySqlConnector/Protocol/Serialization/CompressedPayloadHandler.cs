@@ -44,7 +44,7 @@ namespace MySqlConnector.Protocol.Serialization
 				return ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader, compressedByteHandler, () => -1, cache, protocolErrorBehavior, ioBehavior);
 		}
 
-		public ValueTask<int> WritePayloadAsync(ArraySegment<byte> payload, IOBehavior ioBehavior)
+		public ValueTask<int> WritePayloadAsync(ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
 		{
 			// break the payload up into (possibly more than one) uncompressed packets
 			return ProtocolUtility.WritePayloadAsync(m_uncompressedStreamByteHandler, GetNextUncompressedSequenceNumber, payload, ioBehavior).ContinueWith(_ =>

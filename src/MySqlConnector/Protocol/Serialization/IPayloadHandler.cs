@@ -36,6 +36,6 @@ namespace MySqlConnector.Protocol.Serialization
 		/// <param name="payload">The data to write.</param>
 		/// <param name="ioBehavior">The <see cref="IOBehavior"/> to use when writing.</param>
 		/// <returns>A <see cref="ValueTask{Int32}"/>. The value of this object is not defined.</returns>
-		ValueTask<int> WritePayloadAsync(ArraySegment<byte> payload, IOBehavior ioBehavior);
+		ValueTask<int> WritePayloadAsync(ReadOnlyMemory<byte> payload, IOBehavior ioBehavior);
 	}
 }

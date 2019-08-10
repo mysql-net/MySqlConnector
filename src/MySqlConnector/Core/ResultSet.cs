@@ -53,7 +53,7 @@ namespace MySqlConnector.Core
 					var firstByte = payload.HeaderByte;
 					if (firstByte == OkPayload.Signature)
 					{
-						var ok = OkPayload.Create(payload.AsSpan(), Session.SupportsDeprecateEof, Session.SupportsSessionTrack);
+						var ok = OkPayload.Create(payload.Span, Session.SupportsDeprecateEof, Session.SupportsSessionTrack);
 						RecordsAffected = (RecordsAffected ?? 0) + ok.AffectedRowCount;
 						LastInsertId = unchecked((long) ok.LastInsertId);
 						WarningCount = ok.WarningCount;
@@ -73,7 +73,7 @@ namespace MySqlConnector.Core
 						{
 							if (!Connection.AllowLoadLocalInfile)
 								throw new NotSupportedException("To use LOAD DATA LOCAL INFILE, set AllowLoadLocalInfile=true in the connection string. See https://fl.vu/mysql-load-data");
-							var localInfile = LocalInfilePayload.Create(payload.AsSpan());
+							var localInfile = LocalInfilePayload.Create(payload.Span);
 							if (!IsHostVerified(Connection)
 								&& !localInfile.FileName.StartsWith(MySqlBulkLoader.StreamPrefix, StringComparison.Ordinal))
 								throw new NotSupportedException("Use SourceStream or SslMode >= VerifyCA for LOAD DATA LOCAL INFILE. See https://fl.vu/mysql-load-data");
@@ -109,7 +109,7 @@ namespace MySqlConnector.Core
 								throw new MySqlException("Unexpected data at end of column_count packet; see https://github.com/mysql-net/MySqlConnector/issues/324");
 							return columnCount_;
 						}
-						var columnCount = ReadColumnCount(payload.AsSpan());
+						var columnCount = ReadColumnCount(payload.Span);
 
 						// reserve adequate space to hold a copy of all column definitions (but note that this can be resized below if we guess too small)
 						Utility.Resize(ref m_columnDefinitionPayloads, columnCount * 96);
@@ -120,23 +120,23 @@ namespace MySqlConnector.Core
 						for (var column = 0; column < ColumnDefinitions.Length; column++)
 						{
 							payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-							var arraySegment = payload.ArraySegment;
+							var payloadLength = payload.Span.Length;
 
 							// 'Session.ReceiveReplyAsync' reuses a shared buffer; make a copy so that the column definitions can always be safely read at any future point
-							if (m_columnDefinitionPayloadUsedBytes + arraySegment.Count > m_columnDefinitionPayloads.Count)
-								Utility.Resize(ref m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes + arraySegment.Count);
-							Buffer.BlockCopy(arraySegment.Array, arraySegment.Offset, m_columnDefinitionPayloads.Array, m_columnDefinitionPayloadUsedBytes, arraySegment.Count);
+							if (m_columnDefinitionPayloadUsedBytes + payloadLength > m_columnDefinitionPayloads.Count)
+								Utility.Resize(ref m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes + payloadLength);
+							payload.Span.CopyTo(m_columnDefinitionPayloads.Array.AsSpan().Slice(m_columnDefinitionPayloadUsedBytes));
 
-							var columnDefinition = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, arraySegment.Count));
+							var columnDefinition = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, payloadLength));
 							ColumnDefinitions[column] = columnDefinition;
 							ColumnTypes[column] = TypeMapper.ConvertToMySqlDbType(columnDefinition, treatTinyAsBoolean: Connection.TreatTinyAsBoolean, guidFormat: Connection.GuidFormat);
-							m_columnDefinitionPayloadUsedBytes += arraySegment.Count;
+							m_columnDefinitionPayloadUsedBytes += payloadLength;
 						}
 
 						if (!Session.SupportsDeprecateEof)
 						{
 							payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-							EofPayload.Create(payload.AsSpan());
+							EofPayload.Create(payload.Span);
 						}
 
 						if (ColumnDefinitions.Length == (Command?.OutParameters?.Count + 1) && ColumnDefinitions[0].Name == SingleCommandPayloadCreator.OutParameterSentinelColumnName)
@@ -245,7 +245,7 @@ namespace MySqlConnector.Core
 			{
 				if (payload.HeaderByte == EofPayload.Signature)
 				{
-					var span = payload.AsSpan();
+					var span = payload.Span;
 					if (this_.Session.SupportsDeprecateEof && OkPayload.IsOk(span, this_.Session.SupportsDeprecateEof))
 					{
 						var ok = OkPayload.Create(span, this_.Session.SupportsDeprecateEof, this_.Session.SupportsSessionTrack);
@@ -270,7 +270,7 @@ namespace MySqlConnector.Core
 						// this might be a binary row, but it might also be a text row whose first column is zero bytes long; try reading
 						// the row as a series of length-encoded values (the text format) to see if this might plausibly be a text row
 						var isTextRow = false;
-						var reader = new ByteArrayReader(payload.AsSpan());
+						var reader = new ByteArrayReader(payload.Span);
 						var columnCount = 0;
 						while (reader.BytesRemaining > 0)
 						{
@@ -331,7 +331,7 @@ namespace MySqlConnector.Core
 					}
 					row_ = isBinaryRow ? (Row) new BinaryRow(this_) : new TextRow(this_);
 				}
-				row_.SetData(payload.ArraySegment);
+				row_.SetData(payload.Memory);
 				this_.m_rowBuffered = row_;
 				this_.m_hasRows = true;
 				this_.BufferState = ResultSetState.ReadingRows;

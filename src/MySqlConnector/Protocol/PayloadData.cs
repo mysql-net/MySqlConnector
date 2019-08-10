@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Runtime.InteropServices;
 
 namespace MySqlConnector.Protocol
 {
@@ -7,24 +8,24 @@ namespace MySqlConnector.Protocol
 	{
 		public PayloadData(byte[] data, bool isPooled = false)
 		{
-			ArraySegment = new ArraySegment<byte>(data);
+			Memory = data;
 			m_isPooled = isPooled;
 		}
 
-		public PayloadData(ArraySegment<byte> data, bool isPooled = false)
+		public PayloadData(ReadOnlyMemory<byte> data, bool isPooled = false)
 		{
-			ArraySegment = data;
+			Memory = data;
 			m_isPooled = isPooled;
 		}
 
-		public ArraySegment<byte> ArraySegment { get; }
-		public ReadOnlySpan<byte> AsSpan() => ArraySegment.AsSpan();
-		public byte HeaderByte => ArraySegment.Array![ArraySegment.Offset];
+		public ReadOnlyMemory<byte> Memory { get; }
+		public ReadOnlySpan<byte> Span => Memory.Span;
+		public byte HeaderByte => Span[0];
 
 		public void Dispose()
 		{
-			if (m_isPooled)
-				ArrayPool<byte>.Shared.Return(ArraySegment.Array!);
+			if (m_isPooled && MemoryMarshal.TryGetArray(Memory, out var arraySegment))
+				ArrayPool<byte>.Shared.Return(arraySegment.Array!);
 		}
 
 		readonly bool m_isPooled;

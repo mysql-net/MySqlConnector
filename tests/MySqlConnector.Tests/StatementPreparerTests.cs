@@ -198,7 +198,7 @@ SELECT @'var' as R")]
 			Assert.Equal(expectedComplete, isComplete);
 			string parsedSql;
 			using (var payload = writer.ToPayloadData())
-				parsedSql = Encoding.UTF8.GetString(payload.AsSpan());
+				parsedSql = Encoding.UTF8.GetString(payload.Span);
 			Assert.Equal(expectedSql, parsedSql);
 		}
 
@@ -267,7 +267,7 @@ SELECT @'var' as R")]
 			var writer = new ByteBufferWriter();
 			preparer.ParseAndBindParameters(writer);
 			using (var payload = writer.ToPayloadData())
-				return Encoding.UTF8.GetString(payload.AsSpan());
+				return Encoding.UTF8.GetString(payload.Span);
 		}
 	}
 }

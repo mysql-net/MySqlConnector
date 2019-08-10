@@ -511,30 +511,30 @@ namespace MySqlConnector.Protocol.Serialization
 			return false;
 		}
 
-		public static ValueTask<int> WritePayloadAsync(IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegment<byte> payload, IOBehavior ioBehavior)
+		public static ValueTask<int> WritePayloadAsync(IByteHandler byteHandler, Func<int> getNextSequenceNumber, ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
 		{
-			return payload.Count <= MaxPacketSize ? WritePacketAsync(byteHandler, getNextSequenceNumber(), payload, ioBehavior) :
+			return payload.Length <= MaxPacketSize ? WritePacketAsync(byteHandler, getNextSequenceNumber(), payload, ioBehavior) :
 				CreateTask(byteHandler, getNextSequenceNumber, payload, ioBehavior);
 
-			static ValueTask<int> CreateTask(IByteHandler byteHandler_, Func<int> getNextSequenceNumber_, ArraySegment<byte> payload_, IOBehavior ioBehavior_)
+			static ValueTask<int> CreateTask(IByteHandler byteHandler_, Func<int> getNextSequenceNumber_, ReadOnlyMemory<byte> payload_, IOBehavior ioBehavior_)
 			{
 				var writeTask = default(ValueTask<int>);
-				for (var bytesSent = 0; bytesSent < payload_.Count; bytesSent += MaxPacketSize)
+				for (var bytesSent = 0; bytesSent < payload_.Length; bytesSent += MaxPacketSize)
 				{
-					var contents = new ArraySegment<byte>(payload_.Array, payload_.Offset + bytesSent, Math.Min(MaxPacketSize, payload_.Count - bytesSent));
+					var contents = payload_.Slice(bytesSent, Math.Min(MaxPacketSize, payload_.Length - bytesSent));
 					writeTask = writeTask.ContinueWith(x => WritePacketAsync(byteHandler_, getNextSequenceNumber_(), contents, ioBehavior_));
 				}
 				return writeTask;
 			}
 		}
 
-		private static ValueTask<int> WritePacketAsync(IByteHandler byteHandler, int sequenceNumber, ArraySegment<byte> contents, IOBehavior ioBehavior)
+		private static ValueTask<int> WritePacketAsync(IByteHandler byteHandler, int sequenceNumber, ReadOnlyMemory<byte> contents, IOBehavior ioBehavior)
 		{
-			var bufferLength = contents.Count + 4;
+			var bufferLength = contents.Length + 4;
 			var buffer = ArrayPool<byte>.Shared.Rent(bufferLength);
-			SerializationUtility.WriteUInt32((uint) contents.Count, buffer, 0, 3);
+			SerializationUtility.WriteUInt32((uint) contents.Length, buffer, 0, 3);
 			buffer[3] = (byte) sequenceNumber;
-			Buffer.BlockCopy(contents.Array, contents.Offset, buffer, 4, contents.Count);
+			contents.CopyTo(buffer.AsMemory().Slice(4));
 			var task = byteHandler.WriteBytesAsync(new ArraySegment<byte>(buffer, 0, bufferLength), ioBehavior);
 			if (task.IsCompletedSuccessfully)
 			{
