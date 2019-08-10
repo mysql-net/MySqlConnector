@@ -23,7 +23,7 @@ namespace MySqlConnector.Protocol.Payloads
 				// if the packet is just the header byte (0xFE), it's an "Old Authentication Method Switch Request Packet"
 				// (possibly sent by a server that doesn't support CLIENT_PLUGIN_AUTH)
 				name = "mysql_old_password";
-				data = new byte[0];
+				data = Utility.EmptyByteArray;
 			}
 			else
 			{

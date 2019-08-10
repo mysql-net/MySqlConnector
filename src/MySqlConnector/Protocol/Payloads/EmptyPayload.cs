@@ -1,7 +1,9 @@
+using MySqlConnector.Utilities;
+
 namespace MySqlConnector.Protocol.Payloads
 {
 	internal static class EmptyPayload
 	{
-		public static PayloadData Instance { get; } = new PayloadData(new byte[0]);
+		public static PayloadData Instance { get; } = new PayloadData(Utility.EmptyByteArray);
 	}
 }

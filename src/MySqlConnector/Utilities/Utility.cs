@@ -347,10 +347,13 @@ namespace MySqlConnector.Utilities
 			tcs.SetException(exception);
 			return tcs.Task;
 		}
+
+		public static byte[] EmptyByteArray { get; } = new byte[0];
 #else
 		public static Task CompletedTask => Task.CompletedTask;
 		public static Task TaskFromException(Exception exception) => Task.FromException(exception);
 		public static Task<T> TaskFromException<T>(Exception exception) => Task.FromException<T>(exception);
+		public static byte[] EmptyByteArray { get; } = Array.Empty<byte>();
 #endif
 
 #if !NETSTANDARD2_1 && !NETCOREAPP3_0
