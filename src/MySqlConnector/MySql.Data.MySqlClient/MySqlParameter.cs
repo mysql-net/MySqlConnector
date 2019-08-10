@@ -254,11 +254,12 @@ namespace MySql.Data.MySqlClient
 			{
 				writer.WriteString(ulongValue);
 			}
-			else if (Value is byte[] || Value is ReadOnlyMemory<byte> || Value is Memory<byte> || Value is ArraySegment<byte>)
+			else if (Value is byte[] || Value is ReadOnlyMemory<byte> || Value is Memory<byte> || Value is ArraySegment<byte> || Value is MySqlGeometry)
 			{
 				var inputSpan = Value is byte[] byteArray ? byteArray.AsSpan() :
 					Value is ArraySegment<byte> arraySegment ? arraySegment.AsSpan() :
 					Value is Memory<byte> memory ? memory.Span :
+					Value is MySqlGeometry geometry ? geometry.Value :
 					((ReadOnlyMemory<byte>) Value).Span;
 
 				// determine the number of bytes to be written
@@ -474,6 +475,11 @@ namespace MySql.Data.MySqlClient
 			{
 				writer.WriteLengthEncodedInteger(unchecked((ulong) arraySegmentValue.Count));
 				writer.Write(arraySegmentValue);
+			}
+			else if (Value is MySqlGeometry geometry)
+			{
+				writer.WriteLengthEncodedInteger(unchecked((ulong) geometry.Value.Length));
+				writer.Write(geometry.Value);
 			}
 			else if (Value is float floatValue)
 			{

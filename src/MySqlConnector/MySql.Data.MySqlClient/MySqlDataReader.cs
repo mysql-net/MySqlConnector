@@ -234,6 +234,9 @@ namespace MySql.Data.MySqlClient
 		public MySqlDateTime GetMySqlDateTime(int ordinal) => GetResultSet().GetCurrentRow().GetMySqlDateTime(ordinal);
 		public MySqlDateTime GetMySqlDateTime(string name) => GetMySqlDateTime(GetOrdinal(name));
 
+		public MySqlGeometry GetMySqlGeometry(int ordinal) => GetResultSet().GetCurrentRow().GetMySqlGeometry(ordinal);
+		public MySqlGeometry GetMySqlGeometry(string name) => GetMySqlGeometry(GetOrdinal(name));
+
 		public TimeSpan GetTimeSpan(int ordinal) => (TimeSpan) GetValue(ordinal);
 		public TimeSpan GetTimeSpan(string name) => GetTimeSpan(GetOrdinal(name));
 
@@ -295,6 +298,8 @@ namespace MySql.Data.MySqlClient
 				return (T) (object) GetTextReader(ordinal);
 			if (typeof(T) == typeof(Stream))
 				return (T) (object) GetStream(ordinal);
+			if (typeof(T) == typeof(MySqlGeometry))
+				return (T) (object) GetMySqlGeometry(ordinal);
 
 			return base.GetFieldValue<T>(ordinal);
 		}

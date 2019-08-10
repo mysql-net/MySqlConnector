@@ -313,6 +313,14 @@ namespace MySqlConnector.Core
 			return (MySqlDateTime) value;
 		}
 
+		public MySqlGeometry GetMySqlGeometry(int ordinal)
+		{
+			var value = GetValue(ordinal);
+			if (value is byte[] bytes && ResultSet.ColumnDefinitions[ordinal].ColumnType == ColumnType.Geometry)
+				return new MySqlGeometry(bytes);
+			throw new InvalidCastException("Can't convert {0} to MySqlGeometry.".FormatInvariant(ResultSet.ColumnDefinitions[ordinal].ColumnType));
+		}
+
 		public int GetValues(object[] values)
 		{
 			int count = Math.Min(values.Length, ResultSet.ColumnDefinitions.Length);
@@ -372,9 +380,9 @@ namespace MySqlConnector.Core
 			var column = ResultSet.ColumnDefinitions[ordinal];
 			var columnType = column.ColumnType;
 			if ((column.ColumnFlags & ColumnFlags.Binary) == 0 ||
-			    (columnType != ColumnType.String && columnType != ColumnType.VarString && columnType != ColumnType.TinyBlob &&
-			     columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob &&
-			     columnType != ColumnType.Geometry))
+				(columnType != ColumnType.String && columnType != ColumnType.VarString && columnType != ColumnType.TinyBlob &&
+				columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob &&
+				columnType != ColumnType.Geometry))
 			{
 				throw new InvalidCastException("Can't convert {0} to bytes.".FormatInvariant(columnType));
 			}
