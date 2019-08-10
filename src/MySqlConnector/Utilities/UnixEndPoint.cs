@@ -1,3 +1,4 @@
+#nullable disable
 // copied from https://github.com/mono/mono/blob/master/mcs/class/Mono.Posix/Mono.Unix/UnixEndPoint.cs
 
 //

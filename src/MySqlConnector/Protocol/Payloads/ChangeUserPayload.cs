@@ -1,3 +1,4 @@
+#nullable disable
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads

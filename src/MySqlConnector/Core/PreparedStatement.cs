@@ -1,3 +1,4 @@
+#nullable disable
 using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.Core

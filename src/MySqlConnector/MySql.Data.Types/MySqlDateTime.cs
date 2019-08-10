@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 
 namespace MySql.Data.Types
@@ -48,7 +49,7 @@ namespace MySql.Data.Types
 		}
 
 		public DateTime GetDateTime() =>
-			!IsValidDateTime ? throw new MySqlConversionException("Cannot convert MySqlDateTime to DateTime when IsValidDateTime is false.") : 
+			!IsValidDateTime ? throw new MySqlConversionException("Cannot convert MySqlDateTime to DateTime when IsValidDateTime is false.") :
 				new DateTime(Year, Month, Day, Hour, Minute, Second, DateTimeKind.Unspecified).AddTicks(Microsecond * 10);
 
 		public override string ToString() => IsValidDateTime ? GetDateTime().ToString() : "0000-00-00";

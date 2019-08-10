@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Globalization;
 using MySql.Data.Types;

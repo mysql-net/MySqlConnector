@@ -1,8 +1,5 @@
-using System;
+#nullable disable
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;

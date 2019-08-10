@@ -1,3 +1,4 @@
+#nullable disable
 using System.Text;
 
 namespace MySqlConnector.Protocol.Payloads

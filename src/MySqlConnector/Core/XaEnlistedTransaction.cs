@@ -1,3 +1,4 @@
+#nullable disable
 #if !NETSTANDARD1_3
 using System.Globalization;
 using System.Threading;

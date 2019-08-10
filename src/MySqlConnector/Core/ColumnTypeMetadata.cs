@@ -1,3 +1,4 @@
+#nullable disable
 using MySql.Data.MySqlClient;
 
 namespace MySqlConnector.Core

@@ -1,3 +1,4 @@
+#nullable disable
 namespace MySqlConnector.Protocol.Serialization
 {
 	internal static class SerializationUtility

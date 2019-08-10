@@ -1,9 +1,8 @@
+#nullable disable
 #if !NETSTANDARD1_3
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using MySqlConnector.Core;
 
 namespace MySql.Data.MySqlClient
 {
@@ -72,7 +71,7 @@ namespace MySql.Data.MySqlClient
 
 		protected override void TerminateBatching()
 		{
-			m_batch?.Dispose();			
+			m_batch?.Dispose();
 			m_batch = null;
 		}
 
