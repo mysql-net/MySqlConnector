@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Buffers;
 
@@ -20,12 +19,12 @@ namespace MySqlConnector.Protocol
 
 		public ArraySegment<byte> ArraySegment { get; }
 		public ReadOnlySpan<byte> AsSpan() => ArraySegment.AsSpan();
-		public byte HeaderByte => ArraySegment.Array[ArraySegment.Offset];
+		public byte HeaderByte => ArraySegment.Array![ArraySegment.Offset];
 
 		public void Dispose()
 		{
 			if (m_isPooled)
-				ArrayPool<byte>.Shared.Return(ArraySegment.Array);
+				ArrayPool<byte>.Shared.Return(ArraySegment.Array!);
 		}
 
 		readonly bool m_isPooled;

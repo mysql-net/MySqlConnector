@@ -1,4 +1,3 @@
-#nullable disable
 namespace MySqlConnector.Logging
 {
 	/// <summary>

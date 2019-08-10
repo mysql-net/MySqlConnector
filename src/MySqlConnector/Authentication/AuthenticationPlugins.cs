@@ -1,6 +1,6 @@
-#nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MySqlConnector.Authentication
 {
@@ -24,7 +24,7 @@ namespace MySqlConnector.Authentication
 				s_plugins.Add(plugin.Name, plugin);
 		}
 
-		internal static bool TryGetPlugin(string name, out IAuthenticationPlugin plugin)
+		internal static bool TryGetPlugin(string name, [NotNullWhen(true)] out IAuthenticationPlugin? plugin)
 		{
 			lock (s_lock)
 				return s_plugins.TryGetValue(name, out plugin);

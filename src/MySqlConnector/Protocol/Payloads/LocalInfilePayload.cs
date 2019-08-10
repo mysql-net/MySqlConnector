@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Text;
 using MySqlConnector.Protocol.Serialization;

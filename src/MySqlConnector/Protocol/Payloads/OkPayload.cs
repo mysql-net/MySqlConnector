@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Text;
 using MySqlConnector.Protocol.Serialization;
@@ -12,7 +11,7 @@ namespace MySqlConnector.Protocol.Payloads
 		public ulong LastInsertId { get; }
 		public ServerStatus ServerStatus { get; }
 		public int WarningCount { get; }
-		public string NewSchema { get; }
+		public string? NewSchema { get; }
 
 		public const byte Signature = 0x00;
 
@@ -36,7 +35,7 @@ namespace MySqlConnector.Protocol.Payloads
 			var lastInsertId = reader.ReadLengthEncodedInteger();
 			var serverStatus = (ServerStatus) reader.ReadUInt16();
 			var warningCount = (int) reader.ReadUInt16();
-			string newSchema = null;
+			string? newSchema = null;
 
 			if (clientSessionTrack && (serverStatus & ServerStatus.SessionStateChanged) == ServerStatus.SessionStateChanged)
 			{
@@ -78,7 +77,7 @@ namespace MySqlConnector.Protocol.Payloads
 			return new OkPayload(affectedRowCount, lastInsertId, serverStatus, warningCount, newSchema);
 		}
 
-		private OkPayload(int affectedRowCount, ulong lastInsertId, ServerStatus serverStatus, int warningCount, string newSchema)
+		private OkPayload(int affectedRowCount, ulong lastInsertId, ServerStatus serverStatus, int warningCount, string? newSchema)
 		{
 			AffectedRowCount = affectedRowCount;
 			LastInsertId = lastInsertId;

@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 
 namespace MySqlConnector.Logging
@@ -17,7 +16,7 @@ namespace MySqlConnector.Logging
 		/// <summary>
 		/// Ignores the specified log message.
 		/// </summary>
-		public void Log(MySqlConnectorLogLevel level, string message, object[] args = null, Exception exception = null)
+		public void Log(MySqlConnectorLogLevel level, string message, object?[]? args = null, Exception? exception = null)
 		{
 		}
 

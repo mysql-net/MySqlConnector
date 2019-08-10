@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 
 namespace MySqlConnector.Utilities
@@ -7,8 +6,9 @@ namespace MySqlConnector.Utilities
 	/// A wrapper around a resizable array. This type is intended to be used with <see cref="ResizableArraySegment{T}"/>.
 	/// </summary>
 	internal sealed class ResizableArray<T>
+		where T : notnull
 	{
-		public T[] Array => m_array;
+		public T[]? Array => m_array;
 		public int Count => m_array?.Length ?? 0;
 
 		/// <summary>
@@ -20,6 +20,6 @@ namespace MySqlConnector.Utilities
 				System.Array.Resize(ref m_array, Math.Max(length, Count * 2));
 		}
 
-		T[] m_array;
+		T[]? m_array;
 	}
 }

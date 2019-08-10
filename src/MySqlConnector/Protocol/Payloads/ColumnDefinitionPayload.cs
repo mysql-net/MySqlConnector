@@ -1,4 +1,3 @@
-#nullable disable
 using System.Text;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -13,7 +12,7 @@ namespace MySqlConnector.Protocol.Payloads
 			{
 				if (!m_readNames)
 					ReadNames();
-				return m_name;
+				return m_name!;
 			}
 		}
 
@@ -31,7 +30,7 @@ namespace MySqlConnector.Protocol.Payloads
 			{
 				if (!m_readNames)
 					ReadNames();
-				return m_schemaName;
+				return m_schemaName!;
 			}
 		}
 
@@ -41,7 +40,7 @@ namespace MySqlConnector.Protocol.Payloads
 			{
 				if (!m_readNames)
 					ReadNames();
-				return m_catalogName;
+				return m_catalogName!;
 			}
 		}
 
@@ -51,7 +50,7 @@ namespace MySqlConnector.Protocol.Payloads
 			{
 				if (!m_readNames)
 					ReadNames();
-				return m_table;
+				return m_table!;
 			}
 		}
 
@@ -61,7 +60,7 @@ namespace MySqlConnector.Protocol.Payloads
 			{
 				if (!m_readNames)
 					ReadNames();
-				return m_physicalTable;
+				return m_physicalTable!;
 			}
 		}
 
@@ -71,7 +70,7 @@ namespace MySqlConnector.Protocol.Payloads
 			{
 				if (!m_readNames)
 					ReadNames();
-				return m_physicalName;
+				return m_physicalName!;
 			}
 		}
 
@@ -129,11 +128,11 @@ namespace MySqlConnector.Protocol.Payloads
 		ResizableArraySegment<byte> OriginalData { get; }
 
 		bool m_readNames;
-		string m_name;
-		string m_schemaName;
-		string m_catalogName;
-		string m_table;
-		string m_physicalTable;
-		string m_physicalName;
+		string? m_name;
+		string? m_schemaName;
+		string? m_catalogName;
+		string? m_table;
+		string? m_physicalTable;
+		string? m_physicalName;
 	}
 }

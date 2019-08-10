@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 
 namespace MySqlConnector.Utilities
@@ -7,6 +6,7 @@ namespace MySqlConnector.Utilities
 	/// An <see cref="ArraySegment{T}"/> that supports having its underlying array reallocated and resized.
 	/// </summary>
 	internal readonly struct ResizableArraySegment<T>
+		where T : notnull
 	{
 		public ResizableArraySegment(ResizableArray<T> array, int offset, int count)
 		{

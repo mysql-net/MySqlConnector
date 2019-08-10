@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Globalization;
 using System.Text;
@@ -28,7 +27,7 @@ namespace MySqlConnector.Logging
 
 			public bool IsEnabled(MySqlConnectorLogLevel level) => level >= m_provider.m_minimumLevel && level <= MySqlConnectorLogLevel.Fatal;
 
-			public void Log(MySqlConnectorLogLevel level, string message, object[] args = null, Exception exception = null)
+			public void Log(MySqlConnectorLogLevel level, string message, object?[]? args = null, Exception? exception = null)
 			{
 				if (!IsEnabled(level))
 					return;

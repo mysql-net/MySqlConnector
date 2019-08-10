@@ -1,4 +1,3 @@
-#nullable disable
 namespace MySqlConnector.Protocol.Payloads
 {
 	internal static class ResetConnectionPayload
