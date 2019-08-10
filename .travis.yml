@@ -27,11 +27,18 @@ env:
 
 before_install:
 - .ci/docker-run.sh $IMAGE $NAME 3307 $OMIT_FEATURES
-- wget -q -O packages-microsoft-prod.deb https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
-- sudo dpkg -i packages-microsoft-prod.deb
-- sudo apt-get install -y apt-transport-https
-- sudo apt-get update
-- sudo apt-get install -y dotnet-sdk-2.2 dotnet-sharedframework-microsoft.netcore.app-1.1.10
+- sudo apt-get install -y libunwind8
+- mkdir -p $HOME/dotnet
+- wget -q https://download.visualstudio.microsoft.com/download/pr/14b65ed5-f508-49c4-b429-1b22085895cf/a6820dabd3a0303135fe11217405bfd1/dotnet-ubuntu.16.04-x64.1.1.13.tar.gz
+- tar zxf dotnet-ubuntu.16.04-x64.1.1.13.tar.gz -C $HOME/dotnet
+- wget -q https://download.visualstudio.microsoft.com/download/pr/2c78594a-dd2c-488e-b201-b7fd9b78ab00/5f2169b20fc704e069c336114ec653c5/dotnet-runtime-2.1.12-linux-x64.tar.gz
+- tar zxf dotnet-runtime-2.1.12-linux-x64.tar.gz -C $HOME/dotnet
+- wget -q https://download.microsoft.com/download/3/a/3/3a3bda26-560d-4d8e-922e-6f6bc4553a84/dotnet-runtime-2.0.9-linux-x64.tar.gz
+- tar zxf dotnet-runtime-2.0.9-linux-x64.tar.gz -C $HOME/dotnet
+- wget -q https://download.visualstudio.microsoft.com/download/pr/c624c5d6-0e9c-4dd9-9506-6b197ef44dc8/ad61b332f3abcc7dec3a49434e4766e1/dotnet-sdk-3.0.100-preview7-012821-linux-x64.tar.gz
+- tar zxf dotnet-sdk-3.0.100-preview7-012821-linux-x64.tar.gz -C $HOME/dotnet
+- export DOTNET_ROOT=$HOME/dotnet
+- export PATH=$HOME/dotnet:$PATH
 - dotnet --info
 
 script:
