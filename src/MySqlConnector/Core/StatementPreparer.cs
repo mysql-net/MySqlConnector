@@ -1,4 +1,3 @@
-#nullable disable
 using System.Collections.Generic;
 using System.Data;
 using MySql.Data.MySqlClient;
@@ -10,7 +9,7 @@ namespace MySqlConnector.Core
 {
 	internal sealed class StatementPreparer
 	{
-		public StatementPreparer(string commandText, MySqlParameterCollection parameters, StatementPreparerOptions options)
+		public StatementPreparer(string commandText, MySqlParameterCollection? parameters, StatementPreparerOptions options)
 		{
 			m_commandText = commandText;
 			m_parameters = parameters;
@@ -52,7 +51,7 @@ namespace MySqlConnector.Core
 		{
 			if (index >= (m_parameters?.Count ?? 0))
 				throw new MySqlException("Parameter index {0} is invalid when only {1} parameter{2} defined.".FormatInvariant(index, m_parameters?.Count ?? 0, m_parameters?.Count == 1 ? " is" : "s are"));
-			var parameter = m_parameters[index];
+			var parameter = m_parameters![index];
 			if (parameter.Direction != ParameterDirection.Input && (m_options & StatementPreparerOptions.AllowOutputParameters) == 0)
 				throw new MySqlException("Only ParameterDirection.Input is supported when CommandType is Text (parameter name: {0})".FormatInvariant(parameter.ParameterName));
 			return parameter;
@@ -135,7 +134,7 @@ namespace MySqlConnector.Core
 				m_currentParameterIndex++;
 			}
 
-			private void DoAppendParameter(string parameterName, int parameterIndex, int textIndex, int textLength)
+			private void DoAppendParameter(string? parameterName, int parameterIndex, int textIndex, int textLength)
 			{
 				// write all SQL up to the parameter
 				m_writer.Write(m_preparer.m_commandText, m_lastIndex, textIndex - m_lastIndex);
@@ -166,7 +165,7 @@ namespace MySqlConnector.Core
 
 
 		readonly string m_commandText;
-		readonly MySqlParameterCollection m_parameters;
+		readonly MySqlParameterCollection? m_parameters;
 		readonly StatementPreparerOptions m_options;
 	}
 }

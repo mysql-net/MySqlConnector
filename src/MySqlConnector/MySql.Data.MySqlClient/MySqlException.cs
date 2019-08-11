@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Collections;
 using System.Data.Common;
@@ -14,7 +13,7 @@ namespace MySql.Data.MySqlClient
 	public sealed class MySqlException : DbException
 	{
 		public int Number { get; }
-		public string SqlState { get; }
+		public string? SqlState { get; }
 
 #if !NETSTANDARD1_3
 		private MySqlException(SerializationInfo info, StreamingContext context)
@@ -40,7 +39,7 @@ namespace MySql.Data.MySqlClient
 				{
 					m_data = base.Data;
 					m_data["Server Error Code"] = Number;
-					m_data["SqlState"] = SqlState;
+					m_data["SqlState"] = SqlState!; // BUG? Should be safe for value to be null
 				}
 				return m_data;
 			}
@@ -51,7 +50,7 @@ namespace MySql.Data.MySqlClient
 		{
 		}
 
-		internal MySqlException(string message, Exception innerException)
+		internal MySqlException(string message, Exception? innerException)
 			: this(0, null, message, innerException)
 		{
 		}
@@ -61,7 +60,7 @@ namespace MySql.Data.MySqlClient
 		{
 		}
 
-		internal MySqlException(MySqlErrorCode errorCode, string message, Exception innerException)
+		internal MySqlException(MySqlErrorCode errorCode, string message, Exception? innerException)
 			: this((int) errorCode, null, message, innerException)
 		{
 		}
@@ -71,7 +70,7 @@ namespace MySql.Data.MySqlClient
 		{
 		}
 
-		internal MySqlException(int errorNumber, string sqlState, string message, Exception innerException)
+		internal MySqlException(int errorNumber, string? sqlState, string message, Exception? innerException)
 			: base(message, innerException)
 		{
 			Number = errorNumber;
@@ -80,9 +79,9 @@ namespace MySql.Data.MySqlClient
 
 		internal static MySqlException CreateForTimeout() => CreateForTimeout(null);
 
-		internal static MySqlException CreateForTimeout(Exception innerException) =>
+		internal static MySqlException CreateForTimeout(Exception? innerException) =>
 			new MySqlException(MySqlErrorCode.CommandTimeoutExpired, "The Command Timeout expired before the operation completed.", innerException);
 
-		IDictionary m_data;
+		IDictionary? m_data;
 	}
 }

@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,6 +15,8 @@ namespace MySqlConnector.Core
 
 			if (csb.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket || (!Utility.IsWindows() && (csb.Server.StartsWith("/", StringComparison.Ordinal) || csb.Server.StartsWith("./", StringComparison.Ordinal))))
 			{
+				if (csb.LoadBalance != MySqlLoadBalance.RoundRobin)
+					throw new NotSupportedException("LoadBalance not supported when ConnectionProtocol=UnixSocket");
 				if (!File.Exists(csb.Server))
 					throw new MySqlException("Cannot find Unix Socket at " + csb.Server);
 				ConnectionProtocol = MySqlConnectionProtocol.UnixSocket;
@@ -23,6 +24,8 @@ namespace MySqlConnector.Core
 			}
 			else if (csb.ConnectionProtocol == MySqlConnectionProtocol.NamedPipe)
 			{
+				if (csb.LoadBalance != MySqlLoadBalance.RoundRobin)
+					throw new NotSupportedException("LoadBalance not supported when ConnectionProtocol=NamedPipe");
 				ConnectionProtocol = MySqlConnectionProtocol.NamedPipe;
 				HostNames = (csb.Server == "." || string.Equals(csb.Server, "localhost", StringComparison.OrdinalIgnoreCase)) ? s_localhostPipeServer : new[] { csb.Server };
 				PipeName = csb.PipeName;
@@ -119,11 +122,11 @@ namespace MySqlConnector.Core
 		// Base Options
 		public string ConnectionString { get; }
 		public MySqlConnectionProtocol ConnectionProtocol { get; }
-		public IReadOnlyList<string> HostNames { get; }
+		public IReadOnlyList<string>? HostNames { get; }
 		public MySqlLoadBalance LoadBalance { get; }
 		public int Port { get; }
-		public string PipeName { get; }
-		public string UnixSocket { get; }
+		public string? PipeName { get; }
+		public string? UnixSocket { get; }
 		public string UserID { get; }
 		public string Password { get; }
 		public string Database { get; }
@@ -172,7 +175,7 @@ namespace MySqlConnector.Core
 		public bool UseCompression { get; }
 		public bool UseXaTransactions { get; }
 
-		public byte[] ConnectionAttributes { get; set; }
+		public byte[]? ConnectionAttributes { get; set; }
 
 		// Helper Functions
 		int? m_connectionTimeoutMilliseconds;

@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Threading;
 using MySql.Data.MySqlClient;
@@ -14,8 +13,8 @@ namespace MySqlConnector.Core
 		int CommandId { get; }
 		int CommandTimeout { get; }
 		int CancelAttemptCount { get; set; }
-		MySqlConnection Connection { get; }
-		IDisposable RegisterCancel(CancellationToken cancellationToken);
+		MySqlConnection? Connection { get; }
+		IDisposable? RegisterCancel(CancellationToken cancellationToken);
 	}
 
 	internal static class ICancellableCommandExtensions

@@ -1,4 +1,3 @@
-#nullable disable
 using System.Data.Common;
 
 namespace MySql.Data.MySqlClient

@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Data;
 
@@ -6,7 +5,7 @@ namespace MySqlConnector.Core
 {
 	internal sealed class DbTypeMapping
 	{
-		public DbTypeMapping(Type clrType, DbType[] dbTypes, Func<object, object> convert = null)
+		public DbTypeMapping(Type clrType, DbType[] dbTypes, Func<object, object>? convert = null)
 		{
 			ClrType = clrType;
 			DbTypes = dbTypes;
@@ -20,9 +19,9 @@ namespace MySqlConnector.Core
 		{
 			if (obj.GetType() == ClrType)
 				return obj;
-			return m_convert is null ? Convert.ChangeType(obj, ClrType) : m_convert(obj);
+			return m_convert is null ? Convert.ChangeType(obj, ClrType)! : m_convert(obj);
 		}
 
-		readonly Func<object, object> m_convert;
+		readonly Func<object, object>? m_convert;
 	}
 }

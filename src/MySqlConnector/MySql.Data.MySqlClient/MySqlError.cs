@@ -1,4 +1,3 @@
-#nullable disable
 namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlError

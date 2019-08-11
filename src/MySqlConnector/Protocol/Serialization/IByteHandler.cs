@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Threading.Tasks;
 using MySqlConnector.Utilities;

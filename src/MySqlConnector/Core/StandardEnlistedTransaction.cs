@@ -1,4 +1,3 @@
-#nullable disable
 #if !NETSTANDARD1_3
 using System;
 using System.Transactions;

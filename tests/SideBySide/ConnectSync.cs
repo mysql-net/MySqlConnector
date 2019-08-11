@@ -120,6 +120,19 @@ namespace SideBySide
 			}
 		}
 
+#if !BASELINE
+		[Theory]
+		[InlineData("server=mysqld.sock;Protocol=Unix;LoadBalance=Failover")]
+		[InlineData("server=pipename;Protocol=Pipe;LoadBalance=Failover")]
+		public void LoadBalanceNotSupported(string connectionString)
+		{
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				Assert.Throws<NotSupportedException>(() => connection.Open());
+			}
+		}
+#endif
+
 		[Theory]
 		[InlineData(false, false)]
 		[InlineData(true, false)]

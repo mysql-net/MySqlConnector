@@ -1,4 +1,3 @@
-#nullable disable
 #if !NETSTANDARD1_3
 using System.Globalization;
 using System.Threading;
@@ -54,7 +53,7 @@ namespace MySqlConnector.Core
 
 		static int s_currentId;
 
-		string m_xid;
+		string? m_xid;
 	}
 }
 #endif

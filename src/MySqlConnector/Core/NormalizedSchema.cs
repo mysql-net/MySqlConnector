@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Text.RegularExpressions;
 
@@ -14,7 +13,7 @@ namespace MySqlConnector.Core
 			$@"^\s*{ReEither}\s*(?:\.\s*{ReEither}\s*)?$",
 			RegexOptions.Compiled);
 
-		internal static NormalizedSchema MustNormalize(string name, string defaultSchema = null)
+		internal static NormalizedSchema MustNormalize(string name, string? defaultSchema = null)
 		{
 			var normalized = new NormalizedSchema(name, defaultSchema);
 			if (normalized.Component is null)
@@ -24,7 +23,7 @@ namespace MySqlConnector.Core
 			return normalized;
 		}
 
-		public NormalizedSchema(string name, string defaultSchema=null)
+		public NormalizedSchema(string name, string? defaultSchema = null)
 		{
 			var match = NameRe.Match(name);
 			if (match.Success)
@@ -49,8 +48,8 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		internal readonly string Schema;
-		internal readonly string Component;
+		internal readonly string? Schema;
+		internal readonly string? Component;
 
 		internal string FullyQualified => $"`{Schema}`.`{Component}`";
 	}

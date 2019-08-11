@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 
 namespace MySqlConnector.Protocol.Serialization
@@ -12,14 +11,14 @@ namespace MySqlConnector.Protocol.Serialization
 	{
 		public ArraySegment<T> ArraySegment { get; set; }
 
-		public T[] Array => ArraySegment.Array;
+		public T[]? Array => ArraySegment.Array;
 		public int Offset => ArraySegment.Offset;
 		public int Count => ArraySegment.Count;
 
 		public void Clear()
 		{
 			if (ArraySegment.Count > 0)
-				ArraySegment = new ArraySegment<T>(ArraySegment.Array, 0, 0);
+				ArraySegment = new ArraySegment<T>(ArraySegment.Array!, 0, 0);
 		}
 	}
 }

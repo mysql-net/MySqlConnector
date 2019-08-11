@@ -678,7 +678,7 @@ namespace MySql.Data.MySqlClient
 #if !NETSTANDARD1_3
 				m_enlistedTransaction is null &&
 #endif
-				m_connectionSettings.Pooling)
+				(m_connectionSettings?.Pooling ?? false))
 			{
 				m_cachedProcedures = null;
 				if (m_session is object)

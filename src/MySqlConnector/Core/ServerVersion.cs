@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Buffers.Text;
 using System.Text;
@@ -54,7 +53,7 @@ namespace MySqlConnector.Core
 
 		public string OriginalString { get; }
 		public Version Version { get; }
-		public Version MariaDbVersion { get; }
+		public Version? MariaDbVersion { get; }
 
 		static ReadOnlySpan<byte> MariaDb => new byte[] { 0x2D, 0x4D, 0x61, 0x72, 0x69, 0x61, 0x44, 0x42 }; // -MariaDB
 	}

@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Buffers.Binary;
 using MySqlConnector.Utilities;

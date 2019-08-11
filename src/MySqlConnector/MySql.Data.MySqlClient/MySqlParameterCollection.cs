@@ -88,11 +88,11 @@ namespace MySql.Data.MySqlClient
 
 		public override int IndexOf(object? value) => value is MySqlParameter parameter ? m_parameters.IndexOf(parameter) : -1;
 
-		public override int IndexOf(string? parameterName) => NormalizedIndexOf(parameterName ?? "");
+		public override int IndexOf(string? parameterName) => NormalizedIndexOf(parameterName);
 
 		// Finds the index of a parameter by name, regardless of whether 'parameterName' or the matching
 		// MySqlParameter.ParameterName has a leading '?' or '@'.
-		internal int NormalizedIndexOf(string parameterName)
+		internal int NormalizedIndexOf(string? parameterName)
 		{
 			var normalizedName = MySqlParameter.NormalizeParameterName(parameterName ?? "");
 			return m_nameToIndex.TryGetValue(normalizedName, out var index) ? index : -1;

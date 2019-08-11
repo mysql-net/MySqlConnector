@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 
 namespace MySql.Data.Types
@@ -56,7 +55,7 @@ namespace MySql.Data.Types
 
 		public static explicit operator DateTime(MySqlDateTime val) => !val.IsValidDateTime ? DateTime.MinValue : val.GetDateTime();
 
-		int IComparable.CompareTo(object obj)
+		int IComparable.CompareTo(object? obj)
 		{
 			if (!(obj is MySqlDateTime other))
 				throw new ArgumentException("CompareTo can only be called with another MySqlDateTime", nameof(obj));

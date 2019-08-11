@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Data;
 using System.Data.Common;
@@ -17,8 +16,8 @@ namespace MySql.Data.MySqlClient
 #endif
 	{
 		public static void DeriveParameters(MySqlCommand command) => DeriveParametersAsync(IOBehavior.Synchronous, command, CancellationToken.None).GetAwaiter().GetResult();
-		public static Task DeriveParametersAsync(MySqlCommand command) => DeriveParametersAsync(command?.Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, command, CancellationToken.None);
-		public static Task DeriveParametersAsync(MySqlCommand command, CancellationToken cancellationToken) => DeriveParametersAsync(command?.Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, command, cancellationToken);
+		public static Task DeriveParametersAsync(MySqlCommand command) => DeriveParametersAsync(command?.Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, command!, CancellationToken.None);
+		public static Task DeriveParametersAsync(MySqlCommand command, CancellationToken cancellationToken) => DeriveParametersAsync(command?.Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, command!, cancellationToken);
 
 		private static async Task DeriveParametersAsync(IOBehavior ioBehavior, MySqlCommand command, CancellationToken cancellationToken)
 		{

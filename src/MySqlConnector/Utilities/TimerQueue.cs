@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -68,7 +67,7 @@ namespace MySqlConnector.Utilities
 			m_timeoutActions = new List<Data>();
 		}
 
-		private void Callback(object obj)
+		private void Callback(object? obj)
 		{
 			var current = Environment.TickCount;
 

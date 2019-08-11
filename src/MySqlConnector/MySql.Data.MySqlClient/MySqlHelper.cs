@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Text;
 
@@ -17,7 +16,7 @@ namespace MySql.Data.MySqlClient
 			if (value is null)
 				throw new ArgumentNullException(nameof(value));
 
-			StringBuilder sb = null;
+			StringBuilder? sb = null;
 			int last = -1;
 			for (int i = 0; i < value.Length; i++)
 			{

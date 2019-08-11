@@ -191,7 +191,7 @@ namespace MySqlConnector.Core
 
 		private static bool WriteCommand(IMySqlCommand command, ByteBufferWriter writer)
 		{
-			var preparer = new StatementPreparer(command.CommandText, command.RawParameters, command.CreateStatementPreparerOptions());
+			var preparer = new StatementPreparer(command.CommandText!, command.RawParameters, command.CreateStatementPreparerOptions());
 			return preparer.ParseAndBindParameters(writer);
 		}
 

@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Collections.Generic;
 
@@ -20,6 +19,6 @@ namespace MySqlConnector.Core
 			m_parsedStatements = null;
 		}
 
-		ParsedStatements m_parsedStatements;
+		ParsedStatements? m_parsedStatements;
 	}
 }
