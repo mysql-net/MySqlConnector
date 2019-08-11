@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Buffers.Text;
 using System.Text;
@@ -135,7 +134,7 @@ namespace MySqlConnector.Core
 
 		private object ParseDateTime(ReadOnlySpan<byte> value)
 		{
-			Exception exception = null;
+			Exception? exception = null;
 			if (!Utf8Parser.TryParse(value, out int year, out var bytesConsumed) || bytesConsumed != 4)
 				goto InvalidDateTime;
 			if (value.Length < 5 || value[4] != 45)

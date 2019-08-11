@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -15,12 +14,7 @@ namespace MySqlConnector.Core
 		public void SetData(ReadOnlyMemory<byte> data)
 		{
 			m_data = data;
-			if (m_dataOffsets is null)
-			{
-				m_dataOffsets = new int[ResultSet.ColumnDefinitions.Length];
-				m_dataLengths = new int[ResultSet.ColumnDefinitions.Length];
-			}
-			GetDataOffsets(m_data.Span, m_dataOffsets, m_dataLengths);
+			GetDataOffsets(m_data.Span, m_dataOffsets, m_dataLengths!);
 		}
 
 		public Row Clone()
@@ -34,8 +28,8 @@ namespace MySqlConnector.Core
 
 		public object GetValue(int ordinal)
 		{
-			if (ordinal < 0 || ordinal > ResultSet.ColumnDefinitions.Length)
-				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ResultSet.ColumnDefinitions.Length));
+			if (ordinal < 0 || ordinal > ResultSet.ColumnDefinitions!.Length)
+				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ResultSet.ColumnDefinitions!.Length));
 
 			if (m_dataOffsets[ordinal] == -1)
 				return DBNull.Value;
@@ -74,7 +68,7 @@ namespace MySqlConnector.Core
 
 		public byte GetByte(int ordinal) => (byte) GetValue(ordinal);
 
-		public long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length)
+		public long GetBytes(int ordinal, long dataOffset, byte[]? buffer, int bufferOffset, int length)
 		{
 			CheckBinaryColumn(ordinal);
 
@@ -100,7 +94,7 @@ namespace MySqlConnector.Core
 			return stringValue.Length > 0 ? stringValue[0] : throw new InvalidCastException();
 		}
 
-		public long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length)
+		public long GetChars(int ordinal, long dataOffset, char[]? buffer, int bufferOffset, int length)
 		{
 			var value = GetString(ordinal);
 			if (buffer is null)
@@ -294,7 +288,7 @@ namespace MySqlConnector.Core
 		{
 			CheckBinaryColumn(ordinal);
 			return (MemoryMarshal.TryGetArray(m_data, out var arraySegment)) ?
-				new MemoryStream(arraySegment.Array, arraySegment.Offset + m_dataOffsets[ordinal], m_dataLengths[ordinal], writable: false) :
+				new MemoryStream(arraySegment.Array!, arraySegment.Offset + m_dataOffsets[ordinal], m_dataLengths[ordinal], writable: false) :
 				throw new InvalidOperationException("Can't get underlying array.");
 		}
 
@@ -321,14 +315,14 @@ namespace MySqlConnector.Core
 		public MySqlGeometry GetMySqlGeometry(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			if (value is byte[] bytes && ResultSet.ColumnDefinitions[ordinal].ColumnType == ColumnType.Geometry)
+			if (value is byte[] bytes && ResultSet.ColumnDefinitions![ordinal].ColumnType == ColumnType.Geometry)
 				return new MySqlGeometry(bytes);
-			throw new InvalidCastException("Can't convert {0} to MySqlGeometry.".FormatInvariant(ResultSet.ColumnDefinitions[ordinal].ColumnType));
+			throw new InvalidCastException("Can't convert {0} to MySqlGeometry.".FormatInvariant(ResultSet.ColumnDefinitions![ordinal].ColumnType));
 		}
 
 		public int GetValues(object[] values)
 		{
-			int count = Math.Min(values.Length, ResultSet.ColumnDefinitions.Length);
+			int count = Math.Min((values ?? throw new ArgumentNullException(nameof(values))).Length, ResultSet.ColumnDefinitions!.Length);
 			for (int i = 0; i < count; i++)
 				values[i] = GetValue(i);
 			return count;
@@ -340,7 +334,12 @@ namespace MySqlConnector.Core
 
 		public object this[string name] => GetValue(ResultSet.GetOrdinal(name));
 
-		protected Row(ResultSet resultSet) => ResultSet = resultSet;
+		protected Row(ResultSet resultSet)
+		{
+			ResultSet = resultSet;
+			m_dataOffsets = new int[ResultSet.ColumnDefinitions!.Length];
+			m_dataLengths = new int[ResultSet.ColumnDefinitions.Length];
+		}
 
 		protected abstract Row CloneCore();
 
@@ -382,7 +381,7 @@ namespace MySqlConnector.Core
 			if (m_dataOffsets[ordinal] == -1)
 				throw new InvalidCastException("Column is NULL.");
 
-			var column = ResultSet.ColumnDefinitions[ordinal];
+			var column = ResultSet.ColumnDefinitions![ordinal];
 			var columnType = column.ColumnType;
 			if ((column.ColumnFlags & ColumnFlags.Binary) == 0 ||
 				(columnType != ColumnType.String && columnType != ColumnType.VarString && columnType != ColumnType.TinyBlob &&

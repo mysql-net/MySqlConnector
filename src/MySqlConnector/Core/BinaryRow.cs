@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Buffers.Text;
 using System.Runtime.InteropServices;
@@ -45,7 +44,7 @@ namespace MySqlConnector.Core
 				}
 				else
 				{
-					var columnDefinition = ResultSet.ColumnDefinitions[column];
+					var columnDefinition = ResultSet.ColumnDefinitions![column];
 					int length;
 					if (columnDefinition.ColumnType == ColumnType.Longlong || columnDefinition.ColumnType == ColumnType.Double)
 						length = 8;
