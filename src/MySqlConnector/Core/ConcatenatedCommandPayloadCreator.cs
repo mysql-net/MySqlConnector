@@ -1,4 +1,3 @@
-#nullable disable
 using System.Collections.Generic;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
@@ -10,7 +9,7 @@ namespace MySqlConnector.Core
 	{
 		public static ICommandPayloadCreator Instance { get; } = new ConcatenatedCommandPayloadCreator();
 
-		public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure> cachedProcedures, ByteBufferWriter writer)
+		public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer)
 		{
 			if (commandListPosition.CommandIndex == commandListPosition.Commands.Count)
 				return false;
@@ -21,7 +20,7 @@ namespace MySqlConnector.Core
 			{
 				var command = commandListPosition.Commands[commandListPosition.CommandIndex];
 				if (Log.IsDebugEnabled())
-					Log.Debug("Session{0} Preparing command payload; CommandText: {1}", command.Connection.Session.Id, command.CommandText);
+					Log.Debug("Session{0} Preparing command payload; CommandText: {1}", command.Connection!.Session.Id, command.CommandText);
 
 				isComplete = SingleCommandPayloadCreator.WriteQueryPayload(command, cachedProcedures, writer);
 				commandListPosition.CommandIndex++;

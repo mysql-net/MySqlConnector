@@ -25,7 +25,7 @@ namespace MySqlConnector.Utilities
 			}
 		}
 
-		public static string FormatInvariant(this string format, params object[] args) =>
+		public static string FormatInvariant(this string format, params object?[] args) =>
 			string.Format(CultureInfo.InvariantCulture, format, args);
 
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0

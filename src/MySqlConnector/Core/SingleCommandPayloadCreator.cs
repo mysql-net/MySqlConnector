@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -18,7 +17,7 @@ namespace MySqlConnector.Core
 		// with this as the first column name, the result set will be treated as 'out' parameters for the previous command.
 		public static string OutParameterSentinelColumnName => "\uE001\b\x0B";
 
-		public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure> cachedProcedures, ByteBufferWriter writer)
+		public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer)
 		{
 			if (commandListPosition.CommandIndex == commandListPosition.Commands.Count)
 				return false;
@@ -28,7 +27,7 @@ namespace MySqlConnector.Core
 			if (preparedStatements is null)
 			{
 				if (Log.IsDebugEnabled())
-					Log.Debug("Session{0} Preparing command payload; CommandText: {1}", command.Connection.Session.Id, command.CommandText);
+					Log.Debug("Session{0} Preparing command payload; CommandText: {1}", command.Connection!.Session.Id, command.CommandText);
 
 				writer.Write((byte) CommandKind.Query);
 				WriteQueryPayload(command, cachedProcedures, writer);
@@ -57,7 +56,7 @@ namespace MySqlConnector.Core
 		/// <param name="cachedProcedures">The cached procedures.</param>
 		/// <param name="writer">The output writer.</param>
 		/// <returns><c>true</c> if a complete command was written; otherwise, <c>false</c>.</returns>
-		public static bool WriteQueryPayload(IMySqlCommand command, IDictionary<string, CachedProcedure> cachedProcedures, ByteBufferWriter writer) =>
+		public static bool WriteQueryPayload(IMySqlCommand command, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer) =>
 			(command.CommandType == CommandType.StoredProcedure) ? WriteStoredProcedure(command, cachedProcedures, writer) :  WriteCommand(command, writer);
 
 		private static void WritePreparedStatement(IMySqlCommand command, PreparedStatement preparedStatement, ByteBufferWriter writer)
@@ -65,7 +64,7 @@ namespace MySqlConnector.Core
 			var parameterCollection = command.RawParameters;
 
 			if (Log.IsDebugEnabled())
-				Log.Debug("Session{0} Preparing command payload; CommandId: {1}; CommandText: {2}", command.Connection.Session.Id, preparedStatement.StatementId, command.CommandText);
+				Log.Debug("Session{0} Preparing command payload; CommandId: {1}; CommandText: {2}", command.Connection!.Session.Id, preparedStatement.StatementId, command.CommandText);
 
 			writer.Write(preparedStatement.StatementId);
 			writer.Write((byte) 0);
@@ -84,7 +83,7 @@ namespace MySqlConnector.Core
 						throw new MySqlException("Parameter '{0}' must be defined.".FormatInvariant(parameterName));
 					else if (parameterIndex < 0 || parameterIndex >= (parameterCollection?.Count ?? 0))
 						throw new MySqlException("Parameter index {0} is invalid when only {1} parameter{2} defined.".FormatInvariant(parameterIndex, parameterCollection?.Count ?? 0, parameterCollection?.Count == 1 ? " is" : "s are"));
-					parameters[i] = parameterCollection[parameterIndex];
+					parameters[i] = parameterCollection![parameterIndex];
 				}
 
 				// write null bitmap
@@ -118,7 +117,7 @@ namespace MySqlConnector.Core
 						mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbType(dbType);
 					}
 
-					writer.Write(TypeMapper.ConvertToColumnTypeAndFlags(mySqlDbType, command.Connection.GuidFormat));
+					writer.Write(TypeMapper.ConvertToColumnTypeAndFlags(mySqlDbType, command.Connection!.GuidFormat));
 				}
 
 				var options = command.CreateStatementPreparerOptions();
@@ -127,14 +126,14 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private static bool WriteStoredProcedure(IMySqlCommand command, IDictionary<string, CachedProcedure> cachedProcedures, ByteBufferWriter writer)
+		private static bool WriteStoredProcedure(IMySqlCommand command, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer)
 		{
 			var parameterCollection = command.RawParameters;
-			var cachedProcedure = cachedProcedures[command.CommandText];
+			var cachedProcedure = cachedProcedures[command.CommandText!];
 			if (cachedProcedure is object)
 				parameterCollection = cachedProcedure.AlignParamsWithDb(parameterCollection);
 
-			MySqlParameter returnParameter = null;
+			MySqlParameter? returnParameter = null;
 			var outParameters = new MySqlParameterCollection();
 			var outParameterNames = new List<string>();
 			var inParameters = new MySqlParameterCollection();
@@ -142,7 +141,7 @@ namespace MySqlConnector.Core
 			var inOutSetParameters = "";
 			for (var i = 0; i < (parameterCollection?.Count ?? 0); i++)
 			{
-				var param = parameterCollection[i];
+				var param = parameterCollection![i];
 				var inName = "@inParam" + i;
 				var outName = "@outParam" + i;
 				switch (param.Direction)

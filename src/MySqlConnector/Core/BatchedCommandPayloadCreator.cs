@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -11,7 +10,7 @@ namespace MySqlConnector.Core
 	{
 		public static ICommandPayloadCreator Instance { get; } = new BatchedCommandPayloadCreator();
 
-		public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure> cachedProcedures, ByteBufferWriter writer)
+		public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer)
 		{
 			writer.Write((byte) CommandKind.Multi);
 			bool? firstResult = default;

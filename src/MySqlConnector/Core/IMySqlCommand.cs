@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Data;
 using MySql.Data.MySqlClient;
@@ -10,15 +9,15 @@ namespace MySqlConnector.Core
 	/// </summary>
 	internal interface IMySqlCommand
 	{
-		string CommandText { get; }
+		string? CommandText { get; }
 		CommandType CommandType { get; }
-		MySqlParameterCollection RawParameters { get; }
-		PreparedStatements TryGetPreparedStatements();
-		MySqlConnection Connection { get; }
+		MySqlParameterCollection? RawParameters { get; }
+		PreparedStatements? TryGetPreparedStatements();
+		MySqlConnection? Connection { get; }
 		long LastInsertedId { get; }
 		void SetLastInsertedId(long lastInsertedId);
-		MySqlParameterCollection OutParameters { get; set; }
-		MySqlParameter ReturnParameter { get; set; }
+		MySqlParameterCollection? OutParameters { get; set; }
+		MySqlParameter? ReturnParameter { get; set; }
 		ICancellableCommand CancellableCommand { get; }
 	}
 
@@ -26,7 +25,7 @@ namespace MySqlConnector.Core
 	{
 		public static StatementPreparerOptions CreateStatementPreparerOptions(this IMySqlCommand command)
 		{
-			var connection = command.Connection;
+			var connection = command.Connection!;
 			var statementPreparerOptions = StatementPreparerOptions.None;
 			if (connection.AllowUserVariables || command.CommandType == CommandType.StoredProcedure)
 				statementPreparerOptions |= StatementPreparerOptions.AllowUserVariables;

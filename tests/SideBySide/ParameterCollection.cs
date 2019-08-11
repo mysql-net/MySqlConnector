@@ -104,7 +104,11 @@ namespace SideBySide
 		[Fact]
 		public void IndexOfNull()
 		{
+#if !BASELINE
+			Assert.Equal(-1, m_parameterCollection.IndexOf(null));
+#else
 			Assert.Throws<ArgumentNullException>(() => m_parameterCollection.IndexOf(null));
+#endif
 		}
 
 		[Fact]

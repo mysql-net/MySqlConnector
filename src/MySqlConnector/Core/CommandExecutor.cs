@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -21,23 +20,29 @@ namespace MySqlConnector.Core
 			cancellationToken.ThrowIfCancellationRequested();
 			var commandListPosition = new CommandListPosition(commands);
 			var command = commands[0];
-			if (Log.IsDebugEnabled())
-				Log.Debug("Session{0} ExecuteReader {1} CommandCount: {2}", command.Connection.Session.Id, ioBehavior, commands.Count);
 
-			Dictionary<string, CachedProcedure> cachedProcedures = null;
+			// pre-requisite: Connection is non-null must be checked before calling this method
+			var connection = command.Connection!;
+
+			if (Log.IsDebugEnabled())
+				Log.Debug("Session{0} ExecuteReader {1} CommandCount: {2}", connection.Session.Id, ioBehavior, commands.Count);
+
+			Dictionary<string, CachedProcedure?>? cachedProcedures = null;
 			foreach (var command2 in commands)
 			{
 				if (command2.CommandType == CommandType.StoredProcedure)
 				{
 					if (cachedProcedures is null)
-						cachedProcedures = new Dictionary<string, CachedProcedure>();
-					if (!cachedProcedures.ContainsKey(command2.CommandText))
-						cachedProcedures.Add(command2.CommandText, await command2.Connection.GetCachedProcedure(ioBehavior, command2.CommandText, cancellationToken).ConfigureAwait(false));
+						cachedProcedures = new Dictionary<string, CachedProcedure?>();
+					var commandText = command2.CommandText!;
+					if (!cachedProcedures.ContainsKey(commandText))
+						cachedProcedures.Add(commandText, await connection.GetCachedProcedure(ioBehavior, commandText, cancellationToken).ConfigureAwait(false));
 				}
 			}
 
 			var writer = new ByteBufferWriter();
-			if (!payloadCreator.WriteQueryCommand(ref commandListPosition, cachedProcedures, writer))
+			// cachedProcedures will be non-null if there is a stored procedure, which is also the only time it will be read
+			if (!payloadCreator.WriteQueryCommand(ref commandListPosition, cachedProcedures!, writer))
 				throw new InvalidOperationException("ICommandPayloadCreator failed to write query payload");
 
 			cancellationToken.ThrowIfCancellationRequested();
@@ -45,16 +50,16 @@ namespace MySqlConnector.Core
 			using (var payload = writer.ToPayloadData())
 			using (command.CancellableCommand.RegisterCancel(cancellationToken))
 			{
-				command.Connection.Session.StartQuerying(command.CancellableCommand);
+				connection.Session.StartQuerying(command.CancellableCommand);
 				command.SetLastInsertedId(-1);
 				try
 				{
-					await command.Connection.Session.SendAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
+					await connection.Session.SendAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
 					return await MySqlDataReader.CreateAsync(commandListPosition, payloadCreator, cachedProcedures, command, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
 				{
-					Log.Warn("Session{0} query was interrupted", command.Connection.Session.Id);
+					Log.Warn("Session{0} query was interrupted", connection.Session.Id);
 					throw new OperationCanceledException(cancellationToken);
 				}
 				catch (Exception ex) when (payload.Span.Length > 4_194_304 && (ex is SocketException || ex is IOException || ex is MySqlProtocolException))
