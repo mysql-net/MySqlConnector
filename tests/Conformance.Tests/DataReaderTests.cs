@@ -1,4 +1,5 @@
 using AdoNet.Specification.Tests;
+using Xunit;
 
 namespace Conformance.Tests
 {
@@ -8,5 +9,11 @@ namespace Conformance.Tests
 			: base(fixture)
 		{
 		}
+
+		[Fact(Skip = "Deliberately throws InvalidCastException")]
+		public override void GetTextReader_returns_empty_for_null_String() { }
+
+		[Fact(Skip = "https://github.com/mysql-net/MySqlConnector/issues/678")]
+		public override void GetSchemaTable_throws_after_Delete() { }
 	}
 }

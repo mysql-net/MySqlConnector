@@ -6,7 +6,7 @@ using AdoNet.Specification.Tests;
 
 namespace Conformance.Tests
 {
-	public class SelectValueFixture : ISelectValueFixture
+	public class SelectValueFixture : ISelectValueFixture, IDeleteFixture
 	{
 		public SelectValueFixture()
 		{
@@ -59,6 +59,8 @@ insert into select_value values
 
 		public string SelectNoRows => "SELECT * FROM mysql.user WHERE 0 = 1;";
 
+		public string DeleteNoRows => "DELETE FROM select_value WHERE 0 = 1;";
+
 		public IReadOnlyCollection<DbType> SupportedDbTypes { get; } = new[]
 		{
 			DbType.Binary,
@@ -80,6 +82,8 @@ insert into select_value values
 			DbType.UInt32,
 			DbType.UInt64,
 		};
+
+		public Type NullValueExceptionType => typeof(InvalidCastException);
 
 		private void ExecuteNonQuery(string sql)
 		{
