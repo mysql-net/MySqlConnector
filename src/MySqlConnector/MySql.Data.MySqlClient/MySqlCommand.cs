@@ -244,7 +244,7 @@ namespace MySql.Data.MySqlClient
 			this.ResetCommandTimeout();
 			var hasSetResult = false;
 			object result = null;
-			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(CommandBehavior.SingleResult | CommandBehavior.SingleRow, ioBehavior, cancellationToken).ConfigureAwait(false))
+			using (var reader = (MySqlDataReader) await ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false))
 			{
 				do
 				{
