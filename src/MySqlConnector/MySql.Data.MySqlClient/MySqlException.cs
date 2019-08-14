@@ -39,7 +39,7 @@ namespace MySql.Data.MySqlClient
 				{
 					m_data = base.Data;
 					m_data["Server Error Code"] = Number;
-					m_data["SqlState"] = SqlState!; // BUG? Should be safe for value to be null
+					m_data["SqlState"] = SqlState;
 				}
 				return m_data;
 			}

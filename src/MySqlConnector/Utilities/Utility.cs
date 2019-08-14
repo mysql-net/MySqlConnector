@@ -338,7 +338,7 @@ namespace MySqlConnector.Utilities
 				return s_completedTask;
 			}
 		}
-		static Task s_completedTask;
+		static Task? s_completedTask;
 
 		public static Task TaskFromException(Exception exception) => TaskFromException<object>(exception);
 		public static Task<T> TaskFromException<T>(Exception exception)

@@ -536,7 +536,7 @@ namespace MySqlConnector.Core
 		static readonly ConcurrentDictionary<string, ConnectionPool?> s_pools = new ConcurrentDictionary<string, ConnectionPool?>();
 
 		static int s_poolId;
-		static ConnectionStringPool s_mruCache;
+		static ConnectionStringPool? s_mruCache;
 
 		int m_generation;
 		readonly SemaphoreSlim m_cleanSemaphore;
