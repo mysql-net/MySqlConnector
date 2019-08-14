@@ -109,6 +109,11 @@ namespace SideBySide
 				begin
 					select 1, 2, 3;
 				end;");
+			Connection.Execute(@"DROP PROCEDURE IF EXISTS `GetTime`;
+				CREATE PROCEDURE `GetTime`(OUT OutTime TIME)
+				BEGIN
+					SET OutTime = CURTIME();
+				END");
 
 			if (AppConfig.SupportsJson)
 			{

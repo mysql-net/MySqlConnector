@@ -590,6 +590,22 @@ namespace SideBySide
 			}
 		}
 
+		[Fact]
+		public void OutputTimeParameter()
+		{
+			using (var command = new MySqlCommand("GetTime", m_database.Connection))
+			{
+				command.CommandType = CommandType.StoredProcedure;
+				var parameter = command.CreateParameter();
+				parameter.ParameterName = "OutTime";
+				parameter.Direction = ParameterDirection.Output;
+				command.Parameters.Add(parameter);
+
+				command.ExecuteNonQuery();
+				Assert.IsType<TimeSpan>(parameter.Value);
+			}
+		}
+
 		private static string NormalizeSpaces(string input)
 		{
 			input = input.Replace('\r', ' ');
