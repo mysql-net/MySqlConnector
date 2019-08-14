@@ -250,6 +250,48 @@ namespace SideBySide
 				}
 			}
 		}
+
+		[Fact]
+		public void SingleRow()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using (var command = new MySqlCommand(@"drop table if exists batch_single_row;
+create table batch_single_row(id integer not null primary key);
+insert into batch_single_row(id) values(1),(2),(3);", connection))
+				{
+					command.ExecuteNonQuery();
+				}
+
+				using (var batch = new MySqlBatch(connection)
+				{
+					BatchCommands =
+					{
+						new MySqlBatchCommand("SELECT id FROM batch_single_row ORDER BY id"),
+						new MySqlBatchCommand("SELECT id FROM batch_single_row ORDER BY id") { CommandBehavior = CommandBehavior.SingleRow },
+					},
+				})
+				using (var reader = batch.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(1, reader.GetInt32(0));
+					Assert.True(reader.Read());
+					Assert.Equal(2, reader.GetInt32(0));
+					Assert.True(reader.Read());
+					Assert.Equal(3, reader.GetInt32(0));
+					Assert.False(reader.Read());
+
+					Assert.True(reader.NextResult());
+					Assert.True(reader.Read());
+					Assert.Equal(1, reader.GetInt32(0));
+					Assert.False(reader.Read());
+
+					Assert.False(reader.NextResult());
+				}
+			}
+		}
+
 		[Fact]
 		public void PrepareNeedsConnection()
 		{

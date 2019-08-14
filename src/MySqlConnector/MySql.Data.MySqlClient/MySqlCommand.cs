@@ -271,7 +271,8 @@ namespace MySql.Data.MySqlClient
 			if (!IsValid(out var exception))
 				return Utility.TaskFromException<DbDataReader>(exception);
 
-			return CommandExecutor.ExecuteReaderAsync(new IMySqlCommand[] { this }, new SingleCommandPayloadCreator(), behavior, ioBehavior, cancellationToken);
+			m_commandBehavior = behavior;
+			return CommandExecutor.ExecuteReaderAsync(new IMySqlCommand[] { this }, SingleCommandPayloadCreator.Instance, behavior, ioBehavior, cancellationToken);
 		}
 
 		public MySqlCommand Clone() => new MySqlCommand(this);
@@ -354,8 +355,8 @@ namespace MySql.Data.MySqlClient
 		PreparedStatements IMySqlCommand.TryGetPreparedStatements() => CommandType == CommandType.Text && !string.IsNullOrWhiteSpace(CommandText) && m_connection is object &&
 			m_connection.State == ConnectionState.Open ? m_connection.Session.TryGetPreparedStatement(CommandText) : null;
 
+		CommandBehavior IMySqlCommand.CommandBehavior => m_commandBehavior;
 		MySqlParameterCollection IMySqlCommand.OutParameters { get; set; }
-
 		MySqlParameter IMySqlCommand.ReturnParameter { get; set; }
 
 		readonly int m_commandId;
@@ -365,6 +366,7 @@ namespace MySql.Data.MySqlClient
 		MySqlParameterCollection m_parameterCollection;
 		int? m_commandTimeout;
 		CommandType m_commandType;
+		CommandBehavior m_commandBehavior;
 		Action m_cancelAction;
 	}
 }

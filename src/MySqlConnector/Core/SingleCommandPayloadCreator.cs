@@ -191,10 +191,18 @@ namespace MySqlConnector.Core
 
 		private static bool WriteCommand(IMySqlCommand command, ByteBufferWriter writer)
 		{
+			var isSingleRow = (command.CommandBehavior & CommandBehavior.SingleRow) != 0;
+			if (isSingleRow)
+				writer.Write(SetSqlSelectLimit);
 			var preparer = new StatementPreparer(command.CommandText!, command.RawParameters, command.CreateStatementPreparerOptions());
-			return preparer.ParseAndBindParameters(writer);
+			var isComplete = preparer.ParseAndBindParameters(writer);
+			if (isComplete && isSingleRow)
+				writer.Write(ClearSqlSelectLimit);
+			return isComplete;
 		}
 
+		static ReadOnlySpan<byte> SetSqlSelectLimit => new byte[] { 83, 69, 84, 32, 115, 113, 108, 95, 115, 101, 108, 101, 99, 116, 95, 108, 105, 109, 105, 116, 61, 49, 59, 10 }; // SET sql_select_limit=1;\n
+		static ReadOnlySpan<byte> ClearSqlSelectLimit => new byte[] { 10, 83, 69, 84, 32, 115, 113, 108, 95, 115, 101, 108, 101, 99, 116, 95, 108, 105, 109, 105, 116, 61, 100, 101, 102, 97, 117, 108, 116, 59 }; // \nSET sql_select_limit=default;
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(SingleCommandPayloadCreator));
 	}
 }

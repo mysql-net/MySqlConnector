@@ -11,6 +11,7 @@ namespace MySqlConnector.Core
 	{
 		string? CommandText { get; }
 		CommandType CommandType { get; }
+		CommandBehavior CommandBehavior { get; }
 		MySqlParameterCollection? RawParameters { get; }
 		PreparedStatements? TryGetPreparedStatements();
 		MySqlConnection? Connection { get; }

@@ -333,7 +333,7 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 				}
 			}
 		}
-		
+
 		[Fact]
 		public async Task UndisposedReader()
 		{
@@ -573,7 +573,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			Assert.True(rows[1].IsBold);
 			Assert.Null(rows[2].IsBold);
 		}
-		
+
 		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=78760")]
 		public void TabsAndNewLines()
 		{
@@ -1179,6 +1179,26 @@ insert into has_rows(value) values(1),(2),(3);");
 				connection.Open();
 				Assert.Equal(ConnectionState.Open, connection.State);
 				connection.Close();
+			}
+		}
+
+		[Fact]
+		public void CommandBehaviorSingleRow()
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				connection.Execute(@"drop table if exists command_behavior_single_row;
+create table command_behavior_single_row(id integer not null primary key);
+insert into command_behavior_single_row(id) values(1),(2),(3),(4),(5),(6),(7),(8),(9),(10);");
+
+				using (var cmd = new MySqlCommand("SELECT id FROM command_behavior_single_row ORDER BY id;", connection))
+				using (var reader = cmd.ExecuteReader(CommandBehavior.SingleRow))
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(1, reader.GetInt32(0));
+					Assert.False(reader.Read());
+				}
 			}
 		}
 
