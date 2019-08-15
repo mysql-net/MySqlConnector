@@ -122,6 +122,14 @@ have a synchronous implementation. MySqlConnector only adds “Async” methods 
 This functionality depends on [dotnet/corefx#20658](https://github.com/dotnet/corefx/issues/20658) being implemented first.
 To migrate code, change it to call the synchronous methods instead.
 
+### MySqlGeometry
+
+The Connector/NET `MySqlGeometry` type assumes that the geometry can only be a simple point. MySqlConnector
+removes most of the API that is based on those assumptions.
+
+To avoid ambiguity, there are two different factory methods for constructing a `MySqlGeometry`. Use the static factory method `MySqlGeometry.FromMySql` (if you have a byte array containing MySQL's internal format), or `FromWkb` if you have
+Well-known Binary bytes.
+
 ### Exceptions
 
 For consistency with other ADO.NET providers, MySqlConnector will throw `InvalidOperationException` (instead of `MySqlException`)

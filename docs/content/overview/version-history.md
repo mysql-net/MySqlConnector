@@ -11,6 +11,16 @@ weight: 30
 Version History
 ===============
 
+### 0.57.0-beta8
+
+* **Breaking** Removed definitions of `System.Data.Common.DbBatch`, `DbBatchCommand` etc. from this library.
+* Build with .NET Core 3.0 Preview 8.
+* Add some nullable annotations; these are primarily on internal types and not in the public API.
+* Add `MySqlGeometry` and `MySqlDataReader.GetMySqlGeometry`: [#677](https://github.com/mysql-net/MySqlConnector/issues/677).
+  * The API is deliberately different than Connector/NET, which assumes a `MySqlGeometry` can only be a simple point.
+* Use `sql_select_limit` when `CommandBehavior.SingleRow` is specified: [#679](https://github.com/mysql-net/MySqlConnector/issues/679).
+* Fix exception deserializing an `OUT TIME` parameter from a stored procedure: [#680](https://github.com/mysql-net/MySqlConnector/issues/680).
+
 ### 0.57.0-beta7
 
 * Implement `MySqlBatch.Prepare`: [#656](https://github.com/mysql-net/MySqlConnector/issues/656).
