@@ -26,7 +26,6 @@ namespace MySqlConnector.Core
 			// boolean
 			var typeBoolean = AddDbTypeMapping(new DbTypeMapping(typeof(bool), new[] { DbType.Boolean }, convert: o => Convert.ToBoolean(o)));
 			AddColumnTypeMetadata(new ColumnTypeMetadata("TINYINT", typeBoolean, MySqlDbType.Bool, isUnsigned: false, length: 1, columnSize: 1, simpleDataTypeName: "BOOL", createFormat: "BOOL"));
-			AddColumnTypeMetadata(new ColumnTypeMetadata("TINYINT", typeBoolean, MySqlDbType.Bool, isUnsigned: true, length: 1));
 
 			// integers
 			var typeSbyte = AddDbTypeMapping(new DbTypeMapping(typeof(sbyte), new[] { DbType.SByte }, convert: o => Convert.ToSByte(o)));
@@ -38,6 +37,7 @@ namespace MySqlConnector.Core
 			var typeLong = AddDbTypeMapping(new DbTypeMapping(typeof(long), new[] { DbType.Int64 }, convert: o => Convert.ToInt64(o)));
 			var typeUlong = AddDbTypeMapping(new DbTypeMapping(typeof(ulong), new[] { DbType.UInt64 }, convert: o => Convert.ToUInt64(o)));
 			AddColumnTypeMetadata(new ColumnTypeMetadata("TINYINT", typeSbyte, MySqlDbType.Byte, isUnsigned: false));
+			AddColumnTypeMetadata(new ColumnTypeMetadata("TINYINT", typeByte, MySqlDbType.UByte, isUnsigned: true, length: 1));
 			AddColumnTypeMetadata(new ColumnTypeMetadata("TINYINT", typeByte, MySqlDbType.UByte, isUnsigned: true));
 			AddColumnTypeMetadata(new ColumnTypeMetadata("SMALLINT", typeShort, MySqlDbType.Int16, isUnsigned: false));
 			AddColumnTypeMetadata(new ColumnTypeMetadata("SMALLINT", typeUshort, MySqlDbType.UInt16, isUnsigned: true));

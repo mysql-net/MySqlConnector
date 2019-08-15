@@ -57,7 +57,7 @@ namespace MySqlConnector.Tests
 		[Theory]
 		[InlineData("bit", false, 0, DbType.UInt64)]
 		[InlineData("tinyint", false, 1, DbType.Boolean)]
-		[InlineData("tinyint", true, 1, DbType.Boolean)]
+		[InlineData("tinyint", true, 1, DbType.Byte)]
 		[InlineData("tinyint", false, 0, DbType.SByte)]
 		[InlineData("tinyint", true, 0, DbType.Byte)]
 		[InlineData("smallint", false, 0, DbType.Int16)]

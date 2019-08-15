@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.IO;
@@ -1328,6 +1329,92 @@ create table schema_table({createColumn});");
 			}
 		}
 #endif
+
+		[Theory]
+		[InlineData("Bit1", "datatypes_bits", MySqlDbType.Bit, "BIT", typeof(ulong), 3, 1ul)]
+		[InlineData("Bit32", "datatypes_bits", MySqlDbType.Bit, "BIT", typeof(ulong), 3, 1ul)]
+		[InlineData("Bit64", "datatypes_bits", MySqlDbType.Bit, "BIT", typeof(ulong), 3, 1ul)]
+		[InlineData("Binary", "datatypes_blobs", MySqlDbType.Binary, "BINARY(100)", typeof(byte[]), 2, null)]
+		[InlineData("VarBinary", "datatypes_blobs", MySqlDbType.VarBinary, "VARBINARY(100)", typeof(byte[]), 2, new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF })]
+		[InlineData("TinyBlob", "datatypes_blobs", MySqlDbType.TinyBlob, "TINYBLOB", typeof(byte[]), 2, new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF })]
+		[InlineData("Blob", "datatypes_blobs", MySqlDbType.Blob, "BLOB", typeof(byte[]), 2, new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF })]
+		[InlineData("MediumBlob", "datatypes_blobs", MySqlDbType.MediumBlob, "MEDIUMBLOB", typeof(byte[]), 2, new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF })]
+		[InlineData("LongBlob", "datatypes_blobs", MySqlDbType.LongBlob, "LONGBLOB", typeof(byte[]), 2, new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF })]
+		[InlineData("guidbin", "datatypes_blobs", MySqlDbType.Binary, "BINARY(16)", typeof(byte[]), 2, new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF })]
+#if BASELINE
+		[InlineData("Boolean", "datatypes_bools", MySqlDbType.Byte, "BOOL", typeof(sbyte), 3, (sbyte) 1)]
+		[InlineData("TinyInt1", "datatypes_bools", MySqlDbType.Byte, "TINYINT(1)", typeof(sbyte), 3, (sbyte) 1)]
+#else
+		[InlineData("Boolean", "datatypes_bools", MySqlDbType.Bool, "BOOL", typeof(bool), 3, true)]
+		[InlineData("TinyInt1", "datatypes_bools", MySqlDbType.Bool, "TINYINT(1)", typeof(bool), 3, true)]
+#endif
+		[InlineData("TinyInt1U", "datatypes_bools", MySqlDbType.UByte, "TINYINT(1) UNSIGNED", typeof(byte), 3, (byte) 1)]
+		[InlineData("char38", "datatypes_guids", MySqlDbType.String, "CHAR(38)", typeof(string), 2, "0")]
+		[InlineData("char38bin", "datatypes_guids", MySqlDbType.String, "CHAR(38)", typeof(string), 2, "0")]
+		[InlineData("SByte", "datatypes_integers", MySqlDbType.Byte, "TINYINT", typeof(sbyte), 4, (sbyte) 127)]
+		[InlineData("Byte", "datatypes_integers", MySqlDbType.UByte, "TINYINT UNSIGNED", typeof(byte), 4, (byte) 255)]
+		[InlineData("Int16", "datatypes_integers", MySqlDbType.Int16, "SMALLINT", typeof(short), 4, (short) 32767)]
+		[InlineData("UInt16", "datatypes_integers", MySqlDbType.UInt16, "SMALLINT UNSIGNED", typeof(ushort), 4, (ushort) 65535)]
+		[InlineData("Int24", "datatypes_integers", MySqlDbType.Int24, "MEDIUMINT", typeof(int), 4, 8388607)]
+		[InlineData("UInt24", "datatypes_integers", MySqlDbType.UInt24, "MEDIUMINT UNSIGNED", typeof(uint), 4, 16777215u)]
+		[InlineData("Int32", "datatypes_integers", MySqlDbType.Int32, "INT", typeof(int), 4, 2147483647)]
+		[InlineData("UInt32", "datatypes_integers", MySqlDbType.UInt32, "INT UNSIGNED", typeof(uint), 4, 4294967295u)]
+		[InlineData("Int64", "datatypes_integers", MySqlDbType.Int64, "BIGINT", typeof(long), 4, 9223372036854775807L)]
+		[InlineData("UInt64", "datatypes_integers", MySqlDbType.UInt64, "BIGINT UNSIGNED", typeof(ulong), 4, 18446744073709551615ul)]
+		[InlineData("Single", "datatypes_reals", MySqlDbType.Float, "FLOAT", typeof(float), 3, -3.40282e38f)]
+		[InlineData("Double", "datatypes_reals", MySqlDbType.Double, "DOUBLE", typeof(double), 3, -1.7976931348623157e308)]
+		[InlineData("SmallDecimal", "datatypes_reals", MySqlDbType.NewDecimal, "DECIMAL(5,2)", typeof(decimal), 3, null)]
+		[InlineData("MediumDecimal", "datatypes_reals", MySqlDbType.NewDecimal, "DECIMAL(28,8)", typeof(decimal), 3, null)]
+		[InlineData("BigDecimal", "datatypes_reals", MySqlDbType.NewDecimal, "DECIMAL(50,30)", typeof(decimal), 3, null)]
+		[InlineData("utf8", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR(300)", typeof(string), 3, "ASCII")]
+		[InlineData("latin1", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR(300)", typeof(string), 3, "ASCII")]
+		[InlineData("Date", "datatypes_times", MySqlDbType.Date, "DATE", typeof(DateTime), 2, null)]
+		[InlineData("DateTime", "datatypes_times", MySqlDbType.DateTime, "DATETIME", typeof(DateTime), 2, null)]
+		[InlineData("Timestamp", "datatypes_times", MySqlDbType.Timestamp, "TIMESTAMP", typeof(DateTime), 2, null)]
+		[InlineData("Time", "datatypes_times", MySqlDbType.Time, "TIME", typeof(TimeSpan), 2, null)]
+		[InlineData("Year", "datatypes_times", MySqlDbType.Year, "YEAR", typeof(int), 2, 1901)]
+#if !BASELINE
+		[InlineData("value", "datatypes_json_core", MySqlDbType.JSON, "JSON", typeof(string), 4, "[]")]
+		[InlineData("Geometry", "datatypes_geometry", MySqlDbType.Geometry, "GEOMETRY", typeof(byte[]), 2, null)]
+#endif
+		public void StoredProcedureOutParameter(string column, string table, MySqlDbType mySqlDbType, string dataTypeName, Type dataType, int rowid, object expectedValue)
+		{
+			if (table == "datatypes_json_core" && !AppConfig.SupportsJson)
+				return;
+
+			using (var command = Connection.CreateCommand())
+			{
+				command.CommandText = $@"drop procedure if exists sp_{column};
+create procedure sp_{column} (IN row_id INTEGER, OUT outparam {dataTypeName})
+begin
+	SELECT `{column}` INTO outparam FROM {table} WHERE rowid = row_id;
+end;";
+				command.ExecuteNonQuery();
+			}
+
+			using (var command = Connection.CreateCommand())
+			{
+				command.CommandText = $"sp_{column}";
+				command.CommandType = CommandType.StoredProcedure;
+
+				var parameter = command.CreateParameter();
+				parameter.ParameterName = "row_id";
+				parameter.Value = rowid;
+				command.Parameters.Add(parameter);
+
+				parameter = command.CreateParameter();
+				parameter.ParameterName = "outparam";
+				parameter.Direction = ParameterDirection.Output;
+				command.Parameters.Add(parameter);
+
+				command.ExecuteNonQuery();
+				Assert.IsType(dataType, parameter.Value);
+				Assert.Equal(mySqlDbType, parameter.MySqlDbType);
+
+				if (expectedValue is object)
+					Assert.Equal(expectedValue, parameter.Value);
+			}
+		}
 
 		private static byte[] CreateByteArray(int size)
 		{
