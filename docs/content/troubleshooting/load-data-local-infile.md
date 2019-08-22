@@ -1,14 +1,15 @@
 ---
-lastmod: 2019-05-23
+lastmod: 2019-08-21
 date: 2019-05-23
 title: Load Data Local Infile
+customtitle: "Fix: Using Load Data Local Infile"
 weight: 30
 menu:
   main:
     parent: troubleshooting
 ---
 
-# Load Data Local Infile
+# Using Load Data Local Infile
 
 ## Background
 
@@ -38,7 +39,7 @@ For more information, see [the MySQL documentation](https://dev.mysql.com/doc/re
 To allow `LOAD DATA LOCAL INFILE` to succeed, you must set `AllowLoadLocalInfile=true`
 in the client’s connection string.
 
-If you use `MySqlBulkerLoader` and set `Local=true`, then everything should work by default.
+If you use `MySqlBulkLoader` and set `Local=true`, then everything should work by default.
 
 If you are manually creating a `LOAD DATA LOCAL INFILE` statement, you must be connected
 to a trusted server. This requires specifying `SslMode=VerifyCA` or `SslMode=VerifyFull` in the
