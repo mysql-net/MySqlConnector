@@ -1,5 +1,5 @@
 ---
-lastmod: 2019-07-13
+lastmod: 2019-08-21
 date: 2016-10-16
 title: Connection Options
 customtitle: MySQL Connection String for C#/.NET Programs
@@ -216,6 +216,14 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <th style="width: 10%">Default</th>
     <th style="width: 70%">Description</th>
   </thead>
+  <tr>
+    <td>AllowLoadLocalInfile, Allow Load Local Infile</td>
+    <td>false</td>
+    <td>Allows the <code>LOAD DATA LOCAL</code> command to request files from the client. This is disabled by
+      default as a <a href="/troubleshooting/load-data-local-infile/" title="Using Load Data Local Infile">security precaution</a>.
+      In order to use <code>MySqlBulkLoader</code> and set its <code>Local</code> property to <code>true</code>, you
+      must set this option to <code>True</code> in  your connection string.</td>
+  </tr>
   <tr>
     <td>AllowPublicKeyRetrieval, Allow Public Key Retrieval</td>
     <td>false</td>
