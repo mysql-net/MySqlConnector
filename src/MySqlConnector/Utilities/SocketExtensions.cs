@@ -5,6 +5,7 @@ namespace MySqlConnector.Utilities
 {
 	internal static class SocketExtensions
 	{
+#if !NETSTANDARD2_1 && !NETCOREAPP3_0
 		public static SocketAwaitable ReceiveAsync(this Socket socket, SocketAwaitable awaitable)
 		{
 			awaitable.Reset();
@@ -20,6 +21,7 @@ namespace MySqlConnector.Utilities
 				awaitable.WasCompleted = true;
 			return awaitable;
 		}
+#endif
 
 		public static void SetKeepAlive(this Socket socket, uint keepAliveTimeSeconds)
 		{

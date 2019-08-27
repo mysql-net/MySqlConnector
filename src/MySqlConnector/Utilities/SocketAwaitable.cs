@@ -1,3 +1,4 @@
+#if !NETSTANDARD2_1 && !NETCOREAPP3_0
 using System;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -44,3 +45,4 @@ namespace MySqlConnector.Utilities
 		Action? m_continuation;
 	}
 }
+#endif
