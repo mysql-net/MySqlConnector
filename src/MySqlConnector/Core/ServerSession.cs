@@ -748,7 +748,27 @@ namespace MySqlConnector.Core
 				return ValueTaskExtensions.FromException<PayloadData>(exception);
 			}
 
-			return new ValueTask<PayloadData>(task.AsTask().ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default));
+			return ReceiveReplyAsyncAwaited(task);
+		}
+
+		private async ValueTask<PayloadData> ReceiveReplyAsyncAwaited(ValueTask<ArraySegment<byte>> task)
+		{
+			ArraySegment<byte> bytes;
+			try
+			{
+				bytes = await task.ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				SetFailed(ex);
+				if (ex is MySqlException msex && msex.Number == (int) MySqlErrorCode.CommandTimeoutExpired)
+					HandleTimeout();
+				throw;
+			}
+			var payload = new PayloadData(bytes);
+			if (payload.HeaderByte == ErrorPayload.Signature)
+				throw CreateExceptionForErrorPayload(payload.Span);
+			return payload;
 		}
 
 		// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
@@ -769,7 +789,20 @@ namespace MySqlConnector.Core
 			if (task.IsCompletedSuccessfully)
 				return task;
 
-			return new ValueTask<int>(task.AsTask().ContinueWith(TryAsyncContinuation, cancellationToken, TaskContinuationOptions.LazyCancellation | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default));
+			return SendReplyAsyncAwaited(task);
+		}
+
+		private async ValueTask<int> SendReplyAsyncAwaited(ValueTask<int> task)
+		{
+			try
+			{
+				return await task.ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				SetFailed(ex);
+				throw;
+			}
 		}
 
 		internal void HandleTimeout()
@@ -1371,36 +1404,6 @@ namespace MySqlConnector.Core
 				}
 				disposable = null;
 			}
-		}
-
-		private int TryAsyncContinuation(Task<int> task)
-		{
-			if (task.IsFaulted)
-			{
-				SetFailed(task.Exception.InnerException);
-				task.GetAwaiter().GetResult();
-			}
-			return 0;
-		}
-
-		private PayloadData TryAsyncContinuation(Task<ArraySegment<byte>> task)
-		{
-			if (task.IsFaulted)
-				SetFailed(task.Exception.InnerException);
-			ArraySegment<byte> bytes;
-			try
-			{
-				bytes = task.GetAwaiter().GetResult();
-			}
-			catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.CommandTimeoutExpired)
-			{
-				HandleTimeout();
-				throw;
-			}
-			var payload = new PayloadData(bytes);
-			if (payload.HeaderByte == ErrorPayload.Signature)
-				throw CreateExceptionForErrorPayload(payload.Span);
-			return payload;
 		}
 
 		internal void SetFailed(Exception exception)

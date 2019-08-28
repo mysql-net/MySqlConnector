@@ -410,8 +410,8 @@ namespace MySqlConnector.Protocol.Serialization
 				return ReadPacketAfterHeader(headerBytesTask.Result, bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior);
 			return AddContinuation(headerBytesTask, bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior);
 
-			static ValueTask<Packet> AddContinuation(ValueTask<ArraySegment<byte>> headerBytes_, BufferedByteReader bufferedByteReader_, IByteHandler byteHandler_, Func<int> getNextSequenceNumber_, ProtocolErrorBehavior protocolErrorBehavior_, IOBehavior ioBehavior_) =>
-				headerBytes_.ContinueWith(x => ReadPacketAfterHeader(x, bufferedByteReader_, byteHandler_, getNextSequenceNumber_, protocolErrorBehavior_, ioBehavior_));
+			static async ValueTask<Packet> AddContinuation(ValueTask<ArraySegment<byte>> headerBytes_, BufferedByteReader bufferedByteReader_, IByteHandler byteHandler_, Func<int> getNextSequenceNumber_, ProtocolErrorBehavior protocolErrorBehavior_, IOBehavior ioBehavior_) =>
+				await ReadPacketAfterHeader(await headerBytes_.ConfigureAwait(false), bufferedByteReader_, byteHandler_, getNextSequenceNumber_, protocolErrorBehavior_, ioBehavior_).ConfigureAwait(false);
 		}
 
 		private static ValueTask<Packet> ReadPacketAfterHeader(ArraySegment<byte> headerBytes, BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
@@ -435,8 +435,8 @@ namespace MySqlConnector.Protocol.Serialization
 				return CreatePacketFromPayload(payloadBytesTask.Result, payloadLength, protocolErrorBehavior, packetOutOfOrderException);
 			return AddContinuation(payloadBytesTask, payloadLength, protocolErrorBehavior, packetOutOfOrderException);
 
-			static ValueTask<Packet> AddContinuation(ValueTask<ArraySegment<byte>> payloadBytesTask_, int payloadLength_, ProtocolErrorBehavior protocolErrorBehavior_, Exception packetOutOfOrderException_)
-				=> payloadBytesTask_.ContinueWith(x => CreatePacketFromPayload(x, payloadLength_, protocolErrorBehavior_, packetOutOfOrderException_));
+			static async ValueTask<Packet> AddContinuation(ValueTask<ArraySegment<byte>> payloadBytesTask_, int payloadLength_, ProtocolErrorBehavior protocolErrorBehavior_, Exception packetOutOfOrderException_) =>
+				await CreatePacketFromPayload(await payloadBytesTask_.ConfigureAwait(false), payloadLength_, protocolErrorBehavior_, packetOutOfOrderException_).ConfigureAwait(false);
 		}
 
 		private static ValueTask<Packet> CreatePacketFromPayload(ArraySegment<byte> payloadBytes, int payloadLength, ProtocolErrorBehavior protocolErrorBehavior, Exception exception)
@@ -476,11 +476,12 @@ namespace MySqlConnector.Protocol.Serialization
 
 			return AddContinuation(readPacketTask, bufferedByteReader, byteHandler, getNextSequenceNumber, previousPayloads, protocolErrorBehavior, ioBehavior);
 
-			static ValueTask<ArraySegment<byte>> AddContinuation(ValueTask<Packet> readPacketTask_, BufferedByteReader bufferedByteReader_, IByteHandler byteHandler_, Func<int> getNextSequenceNumber_, ArraySegmentHolder<byte> previousPayloads_, ProtocolErrorBehavior protocolErrorBehavior_, IOBehavior ioBehavior_)
+			static async ValueTask<ArraySegment<byte>> AddContinuation(ValueTask<Packet> readPacketTask_, BufferedByteReader bufferedByteReader_, IByteHandler byteHandler_, Func<int> getNextSequenceNumber_, ArraySegmentHolder<byte> previousPayloads_, ProtocolErrorBehavior protocolErrorBehavior_, IOBehavior ioBehavior_)
 			{
-				return readPacketTask_.ContinueWith(packet =>
-					HasReadPayload(previousPayloads_, packet, protocolErrorBehavior_, out var result_) ? result_ :
-						DoReadPayloadAsync(bufferedByteReader_, byteHandler_, getNextSequenceNumber_, previousPayloads_, protocolErrorBehavior_, ioBehavior_));
+				var packet = await readPacketTask_.ConfigureAwait(false);
+				var resultTask = HasReadPayload(previousPayloads_, packet, protocolErrorBehavior_, out var result_) ? result_ :
+					DoReadPayloadAsync(bufferedByteReader_, byteHandler_, getNextSequenceNumber_, previousPayloads_, protocolErrorBehavior_, ioBehavior_);
+				return await resultTask.ConfigureAwait(false);
 			}
 		}
 
@@ -507,24 +508,23 @@ namespace MySqlConnector.Protocol.Serialization
 				return true;
 			}
 
-			result = default(ValueTask<ArraySegment<byte>>);
+			result = default;
 			return false;
 		}
 
 		public static ValueTask<int> WritePayloadAsync(IByteHandler byteHandler, Func<int> getNextSequenceNumber, ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
 		{
 			return payload.Length <= MaxPacketSize ? WritePacketAsync(byteHandler, getNextSequenceNumber(), payload, ioBehavior) :
-				CreateTask(byteHandler, getNextSequenceNumber, payload, ioBehavior);
+				WritePayloadAsyncAwaited(byteHandler, getNextSequenceNumber, payload, ioBehavior);
 
-			static ValueTask<int> CreateTask(IByteHandler byteHandler_, Func<int> getNextSequenceNumber_, ReadOnlyMemory<byte> payload_, IOBehavior ioBehavior_)
+			static async ValueTask<int> WritePayloadAsyncAwaited(IByteHandler byteHandler_, Func<int> getNextSequenceNumber_, ReadOnlyMemory<byte> payload_, IOBehavior ioBehavior_)
 			{
-				var writeTask = default(ValueTask<int>);
 				for (var bytesSent = 0; bytesSent < payload_.Length; bytesSent += MaxPacketSize)
 				{
 					var contents = payload_.Slice(bytesSent, Math.Min(MaxPacketSize, payload_.Length - bytesSent));
-					writeTask = writeTask.ContinueWith(x => WritePacketAsync(byteHandler_, getNextSequenceNumber_(), contents, ioBehavior_));
+					await WritePacketAsync(byteHandler_, getNextSequenceNumber_(), contents, ioBehavior_).ConfigureAwait(false);
 				}
-				return writeTask;
+				return 0;
 			}
 		}
 
@@ -541,15 +541,13 @@ namespace MySqlConnector.Protocol.Serialization
 				ArrayPool<byte>.Shared.Return(buffer);
 				return default;
 			}
-			return AddContinuation(task, buffer);
+			return WritePacketAsyncAwaited(task, buffer);
 
-			static ValueTask<int> AddContinuation(ValueTask<int> task_, byte[] buffer_)
+			static async ValueTask<int> WritePacketAsyncAwaited(ValueTask<int> task_, byte[] buffer_)
 			{
-				return task_.ContinueWith(x =>
-				{
-					ArrayPool<byte>.Shared.Return(buffer_);
-					return default(ValueTask<int>);
-				});
+				await task_.ConfigureAwait(false);
+				ArrayPool<byte>.Shared.Return(buffer_);
+				return 0;
 			}
 		}
 
