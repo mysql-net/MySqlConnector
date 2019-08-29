@@ -75,10 +75,31 @@ namespace MySqlConnector.Protocol.Serialization
 			var timerId = RemainingTimeout == Constants.InfiniteTimeout ? 0 :
 				RemainingTimeout <= 0 ? throw MySqlException.CreateForTimeout() :
 				TimerQueue.Instance.Add(RemainingTimeout, m_closeSocket);
+#if VALUETASKSOURCE
+			m_socketEventArgs.SetBuffer(buffer.Array, buffer.Offset, buffer.Count);
+#else
+			m_socketAwaitable.EventArgs.SetBuffer(buffer.Array, buffer.Offset, buffer.Count);
+#endif
 			int bytesRead;
 			try
 			{
-				bytesRead = await ReadBytesFromSocketAsync(buffer).ConfigureAwait(false);
+#if VALUETASKSOURCE
+				m_valueTaskSource.Reset();
+				if (!m_socket.ReceiveAsync(m_socketEventArgs))
+				{
+					if (m_socketEventArgs.SocketError != SocketError.Success)
+						throw new SocketException((int) m_socketEventArgs.SocketError);
+					else
+						bytesRead = m_socketEventArgs.BytesTransferred;
+				}
+				else
+				{
+					bytesRead = await new ValueTask<int>(this, m_valueTaskSource.Version).ConfigureAwait(false);
+				}
+#else
+				await m_socket.ReceiveAsync(m_socketAwaitable);
+				bytesRead = m_socketAwaitable.EventArgs.BytesTransferred;
+#endif
 			}
 			catch (SocketException ex)
 			{
@@ -102,7 +123,7 @@ namespace MySqlConnector.Protocol.Serialization
 		public ValueTask<int> WriteBytesAsync(ArraySegment<byte> data, IOBehavior ioBehavior)
 		{
 			if (ioBehavior == IOBehavior.Asynchronous)
-				return WriteBytesToSocketAsync(data);
+				return DoWriteBytesAsync(data);
 
 			try
 			{
@@ -116,16 +137,7 @@ namespace MySqlConnector.Protocol.Serialization
 		}
 
 #if VALUETASKSOURCE
-		private ValueTask<int> ReadBytesFromSocketAsync(ArraySegment<byte> buffer)
-		{
-			m_socketEventArgs.SetBuffer(buffer.Array, buffer.Offset, buffer.Count);
-			m_valueTaskSource.Reset();
-			if (!m_socket.ReceiveAsync(m_socketEventArgs))
-				PropagateSocketAsyncEventArgsStatus();
-			return new ValueTask<int>(this, m_valueTaskSource.Version);
-		}
-
-		private ValueTask<int> WriteBytesToSocketAsync(ArraySegment<byte> data)
+		private ValueTask<int> DoWriteBytesAsync(ArraySegment<byte> data)
 		{
 			m_socketEventArgs.SetBuffer(data.Array, data.Offset, data.Count);
 			m_valueTaskSource.Reset();
@@ -134,14 +146,7 @@ namespace MySqlConnector.Protocol.Serialization
 			return new ValueTask<int>(this, m_valueTaskSource.Version);
 		}
 #else
-		private async ValueTask<int> ReadBytesFromSocketAsync(ArraySegment<byte> buffer)
-		{
-			m_socketAwaitable.EventArgs.SetBuffer(buffer.Array, buffer.Offset, buffer.Count);
-			await m_socket.ReceiveAsync(m_socketAwaitable);
-			return m_socketAwaitable.EventArgs.BytesTransferred;
-		}
-
-		private async ValueTask<int> WriteBytesToSocketAsync(ArraySegment<byte> data)
+		private async ValueTask<int> DoWriteBytesAsync(ArraySegment<byte> data)
 		{
 			m_socketAwaitable.EventArgs.SetBuffer(data.Array, data.Offset, data.Count);
 			await m_socket.SendAsync(m_socketAwaitable);
