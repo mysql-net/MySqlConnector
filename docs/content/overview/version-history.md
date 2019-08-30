@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.57.0-beta9
+
+* Fix exception deserializing an `OUT BOOL` parameter from a stored procedure: [#682](https://github.com/mysql-net/MySqlConnector/issues/682).
+* Reduce allocations on some common code paths.
+
 ### 0.57.0-beta8
 
 * **Breaking** Removed definitions of `System.Data.Common.DbBatch`, `DbBatchCommand` etc. from this library.
