@@ -241,9 +241,9 @@ These are the other options that MySqlConnector supports. They are set to sensib
   <tr>
     <td>AllowZeroDateTime, Allow Zero DateTime</td>
     <td>false</td>
-    <td>If set to <c>true</c> all `DATE`, `DATETIME` and `TIMESTAMP` columns are returned as `MySqlDateTime` objects instead of `DateTime`.
-    This allows the special “zero” date value `0000-00-00` to be retrieved from the database. If <code>false</code> (the default)
-    date columns are returned as `DateTime` values, and an exception is thrown for unrepresentable dates.</td>
+    <td>If set to <c>true</c> all <code>DATE</code>, <code>DATETIME</code> and <code>TIMESTAMP</code> columns are returned as <code>MySqlDateTime</code> objects instead of <code>DateTime</code>.
+    This allows the special “zero” date value <code>0000-00-00</code> to be retrieved from the database. If <code>false</code> (the default)
+    date columns are returned as <code>DateTime</code> values, and an exception is thrown for unrepresentable dates.</td>
   </tr>
   <tr>
     <td>ApplicationName, Application Name</td>
