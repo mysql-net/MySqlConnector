@@ -271,7 +271,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
   <tr>
     <td>Convert Zero Datetime, ConvertZeroDateTime</td>
     <td>false</td>
-    <td>True to have MySqlDataReader.GetValue() and MySqlDataReader.GetDateTime() return DateTime.MinValue for date or datetime columns that have disallowed values.</td>
+    <td>True to have <code>MySqlDataReader.GetValue()</code> and <code>MySqlDataReader.GetDateTime()</code> return <code>DateTime.MinValue</code> for date or datetime columns that have disallowed values.</td>
   </tr>
   <tr>
     <td>DateTimeKind</td>
