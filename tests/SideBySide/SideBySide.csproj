@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Condition=" '$(Configuration)' != 'Baseline' ">
-    <TargetFrameworks Condition=" '$(NETCoreSdkVersion)' != '3.0.100-preview8-013656' ">net452;net461;net472;netcoreapp1.1.2;netcoreapp2.0;netcoreapp2.1</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(NETCoreSdkVersion)' == '3.0.100-preview8-013656' ">net452;net461;net472;netcoreapp1.1.2;netcoreapp2.0;netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(NETCoreSdkVersion)' != '3.0.100-preview9-014004' ">net452;net461;net472;netcoreapp1.1.2;netcoreapp2.0;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(NETCoreSdkVersion)' == '3.0.100-preview9-014004' ">net452;net461;net472;netcoreapp1.1.2;netcoreapp2.0;netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Baseline' ">
