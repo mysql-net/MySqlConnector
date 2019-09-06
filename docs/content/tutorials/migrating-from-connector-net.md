@@ -205,3 +205,4 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#96499](https://bugs.mysql.com/bug.php?id=96499): `MySqlException` when inserting a `MySqlGeometry` value
 * [#96500](https://bugs.mysql.com/bug.php?id=96500): `MySqlDataReader.GetFieldValue<MySqlGeometry>` throws `InvalidCastException`
 * [#96636](https://bugs.mysql.com/bug.php?id=96636): `MySqlConnection.Open()` slow under load when using SSL
+* [#96717](https://bugs.mysql.com/bug.php?id=96717): Not compatible with MySQL Server 5.0
