@@ -299,10 +299,17 @@ namespace MySqlConnector.Core
 		public double GetDouble(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			return value is float floatValue ? floatValue : (double) value;
+			return value is float floatValue ? floatValue :
+				value is decimal decimalValue ? (double) decimalValue :
+				(double) value;
 		}
 
-		public float GetFloat(int ordinal) => (float) GetValue(ordinal);
+		public float GetFloat(int ordinal)
+		{
+			var value = GetValue(ordinal);
+			return value is decimal decimalValue ? (float) decimalValue :
+				(float) value;
+		}
 
 		public MySqlDateTime GetMySqlDateTime(int ordinal)
 		{
