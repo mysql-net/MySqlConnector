@@ -113,6 +113,48 @@ namespace SideBySide
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
 		}
 
+		[SkippableTheory(ServerFeatures.Timeout)]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void CommandTimeoutWithStoredProcedureSleepSync(bool pooling)
+		{
+			using (var cmd = new MySqlCommand(@"drop procedure if exists sleep_sproc;
+create procedure sleep_sproc(IN seconds INT)
+begin
+	select sleep(seconds);
+end;", m_connection))
+			{
+				cmd.ExecuteNonQuery();
+			}
+
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.Pooling = pooling;
+			using (var connection = new MySqlConnection(csb.ConnectionString))
+			using (var cmd = new MySqlCommand("sleep_sproc", connection))
+			{
+				connection.Open();
+				cmd.CommandType = CommandType.StoredProcedure;
+				cmd.Parameters.AddWithValue("seconds", 10);
+				cmd.CommandTimeout = 2;
+
+				var sw = Stopwatch.StartNew();
+				try
+				{
+					using (var reader = cmd.ExecuteReader())
+					{
+						// shouldn't get here
+						Assert.True(false);
+					}
+				}
+				catch (MySqlException ex)
+				{
+					sw.Stop();
+					Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
+					TestUtilities.AssertDuration(sw, ((int) cmd.CommandTimeout) * 1000 - 100, 500);
+				}
+			}
+		}
+
 		[SkippableFact(ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=87307")]
 		public void MultipleCommandTimeoutWithSleepSync()
 		{
