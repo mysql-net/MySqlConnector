@@ -11,7 +11,7 @@ weight: 30
 Version History
 ===============
 
-### 0.57.0-beta10
+### 0.57.0-rc1
 
 * Allow `MySqlDataReader.GetDouble` and `GetFloat` on `DECIMAL` columns: [#664](https://github.com/mysql-net/MySqlConnector/issues/664).
 * Fix connection timeout when executing a stored procedure: [#672](https://github.com/mysql-net/MySqlConnector/issues/672).
