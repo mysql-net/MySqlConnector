@@ -64,9 +64,55 @@ namespace MySqlConnector.Core
 			return (bool) value;
 		}
 
-		public sbyte GetSByte(int ordinal) => (sbyte) GetValue(ordinal);
+		public sbyte GetSByte(int ordinal)
+		{
+			var value = GetValue(ordinal);
+			if (value is sbyte sbyteValue)
+				return sbyteValue;
 
-		public byte GetByte(int ordinal) => (byte) GetValue(ordinal);
+			if (value is byte byteValue)
+				return checked((sbyte) byteValue);
+			if (value is short shortValue)
+				return checked((sbyte) shortValue);
+			if (value is ushort ushortValue)
+				return checked((sbyte) ushortValue);
+			if (value is int intValue)
+				return checked((sbyte) intValue);
+			if (value is uint uintValue)
+				return checked((sbyte) uintValue);
+			if (value is long longValue)
+				return checked((sbyte) longValue);
+			if (value is ulong ulongValue)
+				return checked((sbyte) ulongValue);
+			if (value is decimal decimalValue)
+				return (sbyte) decimalValue;
+			return (sbyte) value;
+		}
+
+		public byte GetByte(int ordinal)
+		{
+			var value = GetValue(ordinal);
+			if (value is byte byteValue)
+				return byteValue;
+
+			if (value is sbyte sbyteValue)
+				return checked((byte) sbyteValue);
+			if (value is short shortValue)
+				return checked((byte) shortValue);
+			if (value is ushort ushortValue)
+				return checked((byte) ushortValue);
+			if (value is int intValue)
+				return checked((byte) intValue);
+			if (value is uint uintValue)
+				return checked((byte) uintValue);
+			if (value is long longValue)
+				return checked((byte) longValue);
+			if (value is ulong ulongValue)
+				return checked((byte) ulongValue);
+			if (value is decimal decimalValue)
+				return (byte) decimalValue;
+			return (byte) value;
+		}
 
 		public long GetBytes(int ordinal, long dataOffset, byte[]? buffer, int bufferOffset, int length)
 		{
