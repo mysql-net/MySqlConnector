@@ -1227,7 +1227,11 @@ create table schema_table({createColumn});");
 					}
 
 					Assert.False(reader.NextResult());
+#if BASELINE
 					Assert.Null(reader.GetSchemaTable());
+#else
+					Assert.Throws<InvalidOperationException>(() => reader.GetSchemaTable());
+#endif
 				}
 			}
 		}

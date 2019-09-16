@@ -362,7 +362,7 @@ namespace MySql.Data.MySqlClient
 		{
 			var colDefinitions = GetResultSet().ColumnDefinitions;
 			if (colDefinitions is null)
-				return null;
+				throw new InvalidOperationException("There is no current result set.");
 			DataTable schemaTable = new DataTable("SchemaTable");
 			schemaTable.Locale = CultureInfo.InvariantCulture;
 			schemaTable.MinimumCapacity = colDefinitions.Length;
