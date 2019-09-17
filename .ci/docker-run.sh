@@ -44,7 +44,7 @@ docker run -d \
   --secure-file-priv=/var/tmp \
   $MYSQL_EXTRA
 
-for i in `seq 1 60`; do
+for i in `seq 1 120`; do
 	# wait for mysql to come up
 	sleep 1
 	echo "Testing if container is responding"
