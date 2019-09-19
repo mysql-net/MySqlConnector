@@ -36,6 +36,7 @@ jobs:
       arguments: '-c Release --version-suffix build-$(Build.BuildNumber) -o $(Build.ArtifactStagingDirectory)'
   - task: DotNetCoreCLI@2
     displayName: 'Publish packages'
+    condition: ne(variables['Build.Reason'], 'PullRequest')
     inputs:
       command: 'push'
       packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
