@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29230.47
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlConnector", "src\MySqlConnector\MySqlConnector.csproj", "{F82378AF-274E-4FBA-8E45-27126D607B85}"
 EndProject
@@ -19,6 +19,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlConnector.Logging.NLog", "src\MySqlConnector.Logging.NLog\MySqlConnector.Logging.NLog.csproj", "{92015BEE-563A-4595-9243-0510D2B8767F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlConnector.Authentication.Ed25519", "src\MySqlConnector.Authentication.Ed25519\MySqlConnector.Authentication.Ed25519.csproj", "{5DB4FA2E-910B-47CE-B467-F6852104D567}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoBackslashEscapesTest", "NoBackslashEscapesTest\NoBackslashEscapesTest.csproj", "{F66C17EE-B279-4C08-91E3-E59A6E1637EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,6 +64,10 @@ Global
 		{5DB4FA2E-910B-47CE-B467-F6852104D567}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DB4FA2E-910B-47CE-B467-F6852104D567}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DB4FA2E-910B-47CE-B467-F6852104D567}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F66C17EE-B279-4C08-91E3-E59A6E1637EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F66C17EE-B279-4C08-91E3-E59A6E1637EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F66C17EE-B279-4C08-91E3-E59A6E1637EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F66C17EE-B279-4C08-91E3-E59A6E1637EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
