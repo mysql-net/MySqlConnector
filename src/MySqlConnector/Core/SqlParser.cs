@@ -265,6 +265,10 @@ namespace MySqlConnector.Core
 				states |= FinalParseStates.NeedsNewline;
 				state = beforeCommentState;
 			}
+			else if (state == State.SingleQuotedStringSingleQuote)
+			{
+				state = State.Statement;
+			}
 
 			if (state == State.Statement)
 			{
