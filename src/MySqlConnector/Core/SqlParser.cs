@@ -5,11 +5,16 @@ namespace MySqlConnector.Core
 {
 	internal abstract class SqlParser
 	{
+		protected StatementPreparer Preparer { get; }
+
+		protected SqlParser(StatementPreparer preparer) => Preparer = preparer;
+
 		public void Parse(string sql)
 		{
 			OnBeforeParse(sql ?? throw new ArgumentNullException(nameof(sql)));
 
 			int parameterStartIndex = -1;
+			var noBackslashEscapes = (Preparer.Options & StatementPreparerOptions.NoBackslashEscapes) == StatementPreparerOptions.NoBackslashEscapes;
 
 			var state = State.Beginning;
 			var beforeCommentState = State.Beginning;
@@ -35,7 +40,7 @@ namespace MySqlConnector.Core
 				{
 					if (ch == '\'')
 						state = State.SingleQuotedStringSingleQuote;
-					else if (ch == '\\')
+					else if (ch == '\\' && !noBackslashEscapes)
 						state = State.SingleQuotedStringBackslash;
 				}
 				else if (state == State.SingleQuotedStringBackslash)
@@ -46,7 +51,7 @@ namespace MySqlConnector.Core
 				{
 					if (ch == '"')
 						state = State.DoubleQuotedStringDoubleQuote;
-					else if (ch == '\\')
+					else if (ch == '\\' && !noBackslashEscapes)
 						state = State.DoubleQuotedStringBackslash;
 				}
 				else if (state == State.DoubleQuotedStringBackslash)
