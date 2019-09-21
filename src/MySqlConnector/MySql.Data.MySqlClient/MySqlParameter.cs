@@ -207,6 +207,8 @@ namespace MySql.Data.MySqlClient
 
 		internal void AppendSqlString(ByteBufferWriter writer, StatementPreparerOptions options)
 		{
+			var noBackslashEscapes = (options & StatementPreparerOptions.NoBackslashEscapes) == StatementPreparerOptions.NoBackslashEscapes;
+
 			if (Value is null || Value == DBNull.Value)
 			{
 				writer.Write(s_nullBytes);
@@ -214,7 +216,12 @@ namespace MySql.Data.MySqlClient
 			else if (Value is string stringValue)
 			{
 				writer.Write((byte) '\'');
-				writer.Write(stringValue.Replace("\\", "\\\\").Replace("'", "\\'"));
+
+				if (noBackslashEscapes)
+					writer.Write(stringValue.Replace("'", "''"));
+				else
+					writer.Write(stringValue.Replace("\\", "\\\\").Replace("'", "''"));
+
 				writer.Write((byte) '\'');
 			}
 			else if (Value is char charValue)
@@ -223,8 +230,14 @@ namespace MySql.Data.MySqlClient
 				switch (charValue)
 				{
 				case '\'':
+					writer.Write((byte) '\'');
+					writer.Write((byte) charValue);
+					break;
+
 				case '\\':
-					writer.Write((byte) '\\');
+					if (!noBackslashEscapes)
+						writer.Write((byte) '\\');
+
 					writer.Write((byte) charValue);
 					break;
 

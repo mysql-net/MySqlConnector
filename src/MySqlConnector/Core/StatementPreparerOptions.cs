@@ -16,5 +16,6 @@ namespace MySqlConnector.Core
 		GuidFormatTimeSwapBinary16 = 0x80,
 		GuidFormatLittleEndianBinary16 = 0xA0,
 		GuidFormatMask = 0xE0,
+		NoBackslashEscapes = 0x100,
 	}
 }

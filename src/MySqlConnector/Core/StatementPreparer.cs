@@ -9,11 +9,13 @@ namespace MySqlConnector.Core
 {
 	internal sealed class StatementPreparer
 	{
+		public StatementPreparerOptions Options { get; }
+
 		public StatementPreparer(string commandText, MySqlParameterCollection? parameters, StatementPreparerOptions options)
 		{
 			m_commandText = commandText;
 			m_parameters = parameters;
-			m_options = options;
+			Options = options;
 		}
 
 		public ParsedStatements SplitStatements()
@@ -42,7 +44,7 @@ namespace MySqlConnector.Core
 		private int GetParameterIndex(string name)
 		{
 			var index = m_parameters?.NormalizedIndexOf(name) ?? -1;
-			if (index == -1 && (m_options & StatementPreparerOptions.AllowUserVariables) == 0)
+			if (index == -1 && (Options & StatementPreparerOptions.AllowUserVariables) == 0)
 				throw new MySqlException("Parameter '{0}' must be defined. To use this as a variable, set 'Allow User Variables=true' in the connection string.".FormatInvariant(name));
 			return index;
 		}
@@ -52,7 +54,7 @@ namespace MySqlConnector.Core
 			if (index >= (m_parameters?.Count ?? 0))
 				throw new MySqlException("Parameter index {0} is invalid when only {1} parameter{2} defined.".FormatInvariant(index, m_parameters?.Count ?? 0, m_parameters?.Count == 1 ? " is" : "s are"));
 			var parameter = m_parameters![index];
-			if (parameter.Direction != ParameterDirection.Input && (m_options & StatementPreparerOptions.AllowOutputParameters) == 0)
+			if (parameter.Direction != ParameterDirection.Input && (Options & StatementPreparerOptions.AllowOutputParameters) == 0)
 				throw new MySqlException("Only ParameterDirection.Input is supported when CommandType is Text (parameter name: {0})".FormatInvariant(parameter.ParameterName));
 			return parameter;
 		}
@@ -60,8 +62,8 @@ namespace MySqlConnector.Core
 		private sealed class ParameterSqlParser : SqlParser
 		{
 			public ParameterSqlParser(StatementPreparer preparer, ByteBufferWriter writer)
+				: base(preparer)
 			{
-				m_preparer = preparer;
 				m_writer = writer;
 			}
 
@@ -69,7 +71,7 @@ namespace MySqlConnector.Core
 
 			protected override void OnNamedParameter(int index, int length)
 			{
-				var parameterIndex = m_preparer.GetParameterIndex(m_preparer.m_commandText.Substring(index, length));
+				var parameterIndex = Preparer.GetParameterIndex(Preparer.m_commandText.Substring(index, length));
 				if (parameterIndex != -1)
 					DoAppendParameter(parameterIndex, index, length);
 			}
@@ -82,15 +84,15 @@ namespace MySqlConnector.Core
 
 			private void DoAppendParameter(int parameterIndex, int textIndex, int textLength)
 			{
-				m_writer.Write(m_preparer.m_commandText, m_lastIndex, textIndex - m_lastIndex);
-				var parameter = m_preparer.GetInputParameter(parameterIndex);
-				parameter.AppendSqlString(m_writer, m_preparer.m_options);
+				m_writer.Write(Preparer.m_commandText, m_lastIndex, textIndex - m_lastIndex);
+				var parameter = Preparer.GetInputParameter(parameterIndex);
+				parameter.AppendSqlString(m_writer, Preparer.Options);
 				m_lastIndex = textIndex + textLength;
 			}
 
 			protected override void OnParsed(FinalParseStates states)
 			{
-				m_writer.Write(m_preparer.m_commandText, m_lastIndex, m_preparer.m_commandText.Length - m_lastIndex);
+				m_writer.Write(Preparer.m_commandText, m_lastIndex, Preparer.m_commandText.Length - m_lastIndex);
 				if ((states & FinalParseStates.NeedsNewline) == FinalParseStates.NeedsNewline)
 					m_writer.Write((byte) '\n');
 				if ((states & FinalParseStates.NeedsSemicolon) == FinalParseStates.NeedsSemicolon)
@@ -98,7 +100,6 @@ namespace MySqlConnector.Core
 				IsComplete = (states & FinalParseStates.Complete) == FinalParseStates.Complete;
 			}
 
-			readonly StatementPreparer m_preparer;
 			readonly ByteBufferWriter m_writer;
 			int m_currentParameterIndex;
 			int m_lastIndex;
@@ -107,8 +108,8 @@ namespace MySqlConnector.Core
 		private sealed class PreparedCommandSqlParser : SqlParser
 		{
 			public PreparedCommandSqlParser(StatementPreparer preparer, List<ParsedStatement> statements, List<int> statementStartEndIndexes, ByteBufferWriter writer)
+				: base(preparer)
 			{
-				m_preparer = preparer;
 				m_statements = statements;
 				m_statementStartEndIndexes = statementStartEndIndexes;
 				m_writer = writer;
@@ -124,7 +125,7 @@ namespace MySqlConnector.Core
 
 			protected override void OnNamedParameter(int index, int length)
 			{
-				var parameterName = m_preparer.m_commandText.Substring(index, length);
+				var parameterName = Preparer.m_commandText.Substring(index, length);
 				DoAppendParameter(parameterName, -1, index, length);
 			}
 
@@ -137,7 +138,7 @@ namespace MySqlConnector.Core
 			private void DoAppendParameter(string? parameterName, int parameterIndex, int textIndex, int textLength)
 			{
 				// write all SQL up to the parameter
-				m_writer.Write(m_preparer.m_commandText, m_lastIndex, textIndex - m_lastIndex);
+				m_writer.Write(Preparer.m_commandText, m_lastIndex, textIndex - m_lastIndex);
 				m_lastIndex = textIndex + textLength;
 
 				// replace the parameter with a ? placeholder
@@ -150,12 +151,11 @@ namespace MySqlConnector.Core
 
 			protected override void OnStatementEnd(int index)
 			{
-				m_writer.Write(m_preparer.m_commandText, m_lastIndex, index - m_lastIndex);
+				m_writer.Write(Preparer.m_commandText, m_lastIndex, index - m_lastIndex);
 				m_lastIndex = index;
 				m_statementStartEndIndexes.Add(m_writer.Position);
 			}
 
-			readonly StatementPreparer m_preparer;
 			readonly List<ParsedStatement> m_statements;
 			readonly List<int> m_statementStartEndIndexes;
 			readonly ByteBufferWriter m_writer;
@@ -166,6 +166,5 @@ namespace MySqlConnector.Core
 
 		readonly string m_commandText;
 		readonly MySqlParameterCollection? m_parameters;
-		readonly StatementPreparerOptions m_options;
 	}
 }
