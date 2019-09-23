@@ -270,7 +270,7 @@ namespace MySqlConnector.Core
 				states |= FinalParseStates.NeedsNewline;
 				state = beforeCommentState;
 			}
-			else if (state == State.SingleQuotedStringSingleQuote)
+			else if (state == State.SingleQuotedStringSingleQuote || state == State.DoubleQuotedStringDoubleQuote || state == State.BacktickQuotedStringBacktick)
 			{
 				state = State.Statement;
 			}

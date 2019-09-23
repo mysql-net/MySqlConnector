@@ -11,75 +11,40 @@ weight: 30
 Version History
 ===============
 
-### 0.57.0-rc1
-
-* Allow `MySqlDataReader.GetDouble` and `GetFloat` on `DECIMAL` columns: [#664](https://github.com/mysql-net/MySqlConnector/issues/664).
-* Fix connection timeout when executing a stored procedure: [#672](https://github.com/mysql-net/MySqlConnector/issues/672).
-* Fix incorrect exception being thrown after a timeout occurs executing a stored procedure: [#667](https://github.com/mysql-net/MySqlConnector/issues/667).
-* Build with .NET Core 3.0 Preview 9.
-
-### 0.57.0-beta9
-
-* Fix exception deserializing an `OUT BOOL` parameter from a stored procedure: [#682](https://github.com/mysql-net/MySqlConnector/issues/682).
-* Reduce allocations on some common code paths.
-
-### 0.57.0-beta8
-
-* **Breaking** Removed definitions of `System.Data.Common.DbBatch`, `DbBatchCommand` etc. from this library.
-* Build with .NET Core 3.0 Preview 8.
-* Add some nullable annotations; these are primarily on internal types and not in the public API.
-* Add `MySqlGeometry` and `MySqlDataReader.GetMySqlGeometry`: [#677](https://github.com/mysql-net/MySqlConnector/issues/677).
-  * The API is deliberately different than Connector/NET, which assumes a `MySqlGeometry` can only be a simple point.
-* Use `sql_select_limit` when `CommandBehavior.SingleRow` is specified: [#679](https://github.com/mysql-net/MySqlConnector/issues/679).
-* Fix exception deserializing an `OUT TIME` parameter from a stored procedure: [#680](https://github.com/mysql-net/MySqlConnector/issues/680).
-
-### 0.57.0-beta7
-
-* Implement `MySqlBatch.Prepare`: [#656](https://github.com/mysql-net/MySqlConnector/issues/656).
-* Handle error packet being sent out-of-order: [#662](https://github.com/mysql-net/MySqlConnector/issues/662).
-
-### 0.57.0-beta6
-
-* Fix `MySqlConnection.State` not being set to `ConnectionState.Closed` when a failure occurs if pooling is disabled: [#674](https://github.com/mysql-net/MySqlConnector/issues/674).
-
-### 0.57.0-beta5
-
-* Send concatenated SQL when `MySqlBatch` is used with servers that don't support `COM_MULTI`: [#657](https://github.com/mysql-net/MySqlConnector/issues/657).
-* Use batching in `MySqlDataAdapter` when `UpdateBatchSize` is set: [#675](https://github.com/mysql-net/MySqlConnector/issues/675).
-* Add `netstandard2.1` target.
-* Fix error when using `SslKey` in `netcoreapp3.0`.
-
-### 0.57.0-beta4
-
-* **Breaking Change** Remove `CancellationToken` parameter from `MySqlConnection.CloseAsync`: [#665](https://github.com/mysql-net/MySqlConnector/issues/665).
-* Support `utf8mb4_0900_bin` collation introduced in MySQL Server 8.0.17: [#670](https://github.com/mysql-net/MySqlConnector/issues/670).
-* Throw `InvalidOperationException` from `MySqlConnection.EnlistTransaction` instead of `NullReferenceException`.
-* Fix `NullReferenceException` thrown from `MySqlConnection.ConnectionTimeout`: [#669](https://github.com/mysql-net/MySqlConnector/issues/669).
-* Implement .NET Core 3.0 Preview 7 ADO.NET API.
-
-### 0.57.0-beta3
-
-* **Breaking Change** Return type of `MySqlConnection.BeginTransactionAsync` changed to `ValueTask<MySqlTransaction>` (to match .NET Core 3.0 APIs).
-* **Breaking Change** Various `XyzAsync` method overloads that did not take a `CancellationToken` were removed.
-* Add `netcoreapp3.0` package.
-* Add .NET Core 3.0 async methods: [#642](https://github.com/mysql-net/MySqlConnector/issues/642).
-* Add `MySqlConnection.CloseAsync`: [#467](https://github.com/mysql-net/MySqlConnector/issues/467).
-  * Note: The API is not final and may change: [#665](https://github.com/mysql-net/MySqlConnector/issues/665).
-* Improve performance of `MySqlDataReader`; reduce memory allocations.
-
-### 0.57.0-beta2
-
-* Fix exception when executing a prepared statement if `MySqlParameter.MySqlDbType` was set: [#659](https://github.com/mysql-net/MySqlConnector/issues/659).
-* Remove `Microsoft.NETFramework.ReferenceAssemblies` dependency.
-* Reduce memory allocations for `MySqlCommand.Execute*`.
-
-### 0.57.0-beta1
+### 0.57.0
 
 * **Breaking** Remove `MySqlClientFactory.Register`: [#654](https://github.com/mysql-net/MySqlConnector/issues/654).
   * Replace calls to this method with `DbProviderFactories.RegisterFactory("MySqlConnector", MySqlClientFactory.Instance)` instead.
+* **Breaking** Return type of `MySqlConnection.BeginTransactionAsync` changed to `ValueTask<MySqlTransaction>` (to match .NET Core 3.0 APIs).
+* **Breaking** Various `XyzAsync` method overloads that did not take a `CancellationToken` were removed.
+* **Breaking** Throw `InvalidOperationException` from `MySqlDataReader.GetSchemaTable` when there is no result set: [#678](https://github.com/mysql-net/MySqlConnector/issues/678).
 * **Experimental** Implement the new ADO.NET `DbBatch` API: [#650](https://github.com/mysql-net/MySqlConnector/issues/650).
   * This API is not finalised and may change in the future.
+* Add `netstandard2.1` and `netcoreapp3.0` platforms.
+* Implement .NET Core 3.0 ADO.NET API.
+* Add .NET Core 3.0 async methods: [#642](https://github.com/mysql-net/MySqlConnector/issues/642).
+* Allow `MySqlDataReader.GetDouble` and `GetFloat` on `DECIMAL` columns: [#664](https://github.com/mysql-net/MySqlConnector/issues/664).
+* Allow narrowing conversions in `MySqlDataReader.GetByte`: [#695](https://github.com/mysql-net/MySqlConnector/issues/695).
+* Add `MySqlGeometry` and `MySqlDataReader.GetMySqlGeometry`: [#677](https://github.com/mysql-net/MySqlConnector/issues/677).
+  * The API is deliberately different than Connector/NET, which assumes a `MySqlGeometry` can only be a simple point.
+* Use `sql_select_limit` when `CommandBehavior.SingleRow` is specified: [#679](https://github.com/mysql-net/MySqlConnector/issues/679).
+* Use batching in `MySqlDataAdapter` when `UpdateBatchSize` is set: [#675](https://github.com/mysql-net/MySqlConnector/issues/675).
+* Support `utf8mb4_0900_bin` collation introduced in MySQL Server 8.0.17: [#670](https://github.com/mysql-net/MySqlConnector/issues/670).
+* Add `MySqlConnection.CloseAsync`: [#467](https://github.com/mysql-net/MySqlConnector/issues/467).
+* Throw `InvalidOperationException` from `MySqlConnection.EnlistTransaction` instead of `NullReferenceException`.
+* Fix `NullReferenceException` thrown from `MySqlConnection.ConnectionTimeout`: [#669](https://github.com/mysql-net/MySqlConnector/issues/669).
+* Fix connection timeout when executing a stored procedure: [#672](https://github.com/mysql-net/MySqlConnector/issues/672).
+* Fix incorrect exception being thrown after a timeout occurs executing a stored procedure: [#667](https://github.com/mysql-net/MySqlConnector/issues/667).
+* Fix exception deserializing an `OUT BOOL` parameter from a stored procedure: [#682](https://github.com/mysql-net/MySqlConnector/issues/682).
+* Fix exception deserializing an `OUT TIME` parameter from a stored procedure: [#680](https://github.com/mysql-net/MySqlConnector/issues/680).
+* Fix `MySqlConnection.State` not being set to `ConnectionState.Closed` when a failure occurs if pooling is disabled: [#674](https://github.com/mysql-net/MySqlConnector/issues/674).
+* Fix exception when executing a prepared statement if `MySqlParameter.MySqlDbType` was set: [#659](https://github.com/mysql-net/MySqlConnector/issues/659).
+* Handle error packet being sent out-of-order: [#662](https://github.com/mysql-net/MySqlConnector/issues/662).
 * Use `MySqlErrorCode.UnableToConnectToHost` in more situations when connecting fails: [#647](https://github.com/mysql-net/MySqlConnector/issues/647).
+* Add some nullable annotations; these are primarily on internal types and not in the public API.
+* Reduce allocations on some common code paths.
+* Improve performance of `MySqlDataReader`; reduce memory allocations.
+* Thanks to [Josh Rees](https://github.com/joshdrees) for contributions to this release.
 
 ### 0.56.0
 
