@@ -134,11 +134,12 @@ SELECT @'var' as R")]
 
 		[Theory]
 		[MemberData(nameof(FormatParameterData))]
-		public void FormatParameter(object parameterValue, string replacedValue)
+		public void FormatParameter(object parameterValue, string replacedValue, bool noBackslashEscapes = false)
 		{
 			var parameters = new MySqlParameterCollection { new MySqlParameter("@param", parameterValue) };
 			const string sql = "SELECT @param;";
-			var parsedSql = GetParsedSql(sql, parameters);
+			var options = noBackslashEscapes ? StatementPreparerOptions.NoBackslashEscapes : StatementPreparerOptions.None;
+			var parsedSql = GetParsedSql(sql, parameters, options);
 			Assert.Equal(sql.Replace("@param", replacedValue), parsedSql);
 		}
 
@@ -158,9 +159,14 @@ SELECT @'var' as R")]
 				new object[] { 123456789.123456789m, "123456789.123456789" },
 				new object[] { "1234", "'1234'" },
 				new object[] { "it's", "'it''s'" },
+				new object[] { "it's", "'it''s'", true },
 				new object[] { 'a', "'a'" },
 				new object[] { '\'', "''''" },
+				new object[] { '\'', "''''", true },
 				new object[] { '\\', "'\\\\'" },
+				new object[] { '\\', "'\\'", true },
+				new object[] { "\\'", "'\\\\'''" },
+				new object[] { "\\'", "'\\'''", true },
 				new object[] { 'ﬃ', "'ﬃ'" },
 				new object[] { new DateTime(1234, 12, 23, 12, 34, 56, 789), "timestamp('1234-12-23 12:34:56.789000')" },
 				new object[] { new DateTimeOffset(1234, 12, 23, 12, 34, 56, 789, TimeSpan.FromHours(2)), "timestamp('1234-12-23 10:34:56.789000')" },
