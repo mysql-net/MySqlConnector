@@ -20,8 +20,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlConnector.Logging.NLog
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlConnector.Authentication.Ed25519", "src\MySqlConnector.Authentication.Ed25519\MySqlConnector.Authentication.Ed25519.csproj", "{5DB4FA2E-910B-47CE-B467-F6852104D567}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoBackslashEscapesTest", "NoBackslashEscapesTest\NoBackslashEscapesTest.csproj", "{F66C17EE-B279-4C08-91E3-E59A6E1637EF}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,10 +62,6 @@ Global
 		{5DB4FA2E-910B-47CE-B467-F6852104D567}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DB4FA2E-910B-47CE-B467-F6852104D567}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DB4FA2E-910B-47CE-B467-F6852104D567}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F66C17EE-B279-4C08-91E3-E59A6E1637EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F66C17EE-B279-4C08-91E3-E59A6E1637EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F66C17EE-B279-4C08-91E3-E59A6E1637EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F66C17EE-B279-4C08-91E3-E59A6E1637EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
