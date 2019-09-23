@@ -11,6 +11,13 @@ weight: 30
 Version History
 ===============
 
+### 0.57.0-rc2
+
+* **Breaking** Throw `InvalidOperationException` from `MySqlDataReader.GetSchemaTable` when there is no result set: [#678](https://github.com/mysql-net/MySqlConnector/issues/678).
+* Allow narrowing conversions in `MySqlDataReader.GetByte`: [#695](https://github.com/mysql-net/MySqlConnector/issues/695).
+* Build with .NET Core 3.0.
+* Thanks to [Josh Rees](https://github.com/joshdrees) for contributions to this release.
+
 ### 0.57.0-rc1
 
 * Allow `MySqlDataReader.GetDouble` and `GetFloat` on `DECIMAL` columns: [#664](https://github.com/mysql-net/MySqlConnector/issues/664).
