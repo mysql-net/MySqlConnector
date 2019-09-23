@@ -35,8 +35,8 @@ before_install:
 - tar zxf dotnet-runtime-2.1.12-linux-x64.tar.gz -C $HOME/dotnet
 - wget -q https://download.microsoft.com/download/3/a/3/3a3bda26-560d-4d8e-922e-6f6bc4553a84/dotnet-runtime-2.0.9-linux-x64.tar.gz
 - tar zxf dotnet-runtime-2.0.9-linux-x64.tar.gz -C $HOME/dotnet
-- wget -q https://download.visualstudio.microsoft.com/download/pr/b81a2bd3-a8a4-4c7e-bd69-030f412ff7b4/3fc5f2c0481313daf2e18c348362ff3f/dotnet-sdk-3.0.100-rc1-014190-linux-x64.tar.gz
-- tar zxf dotnet-sdk-3.0.100-rc1-014190-linux-x64.tar.gz -C $HOME/dotnet
+- wget -q https://download.visualstudio.microsoft.com/download/pr/886b4a4c-30af-454b-8bec-81c72b7b4e1f/d1a0c8de9abb36d8535363ede4a15de6/dotnet-sdk-3.0.100-linux-x64.tar.gz
+- tar zxf dotnet-sdk-3.0.100-linux-x64.tar.gz -C $HOME/dotnet
 - export DOTNET_ROOT=$HOME/dotnet
 - export PATH=$HOME/dotnet:$PATH
 - dotnet --info
