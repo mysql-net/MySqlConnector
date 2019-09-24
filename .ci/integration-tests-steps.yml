@@ -34,7 +34,7 @@ steps:
     connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=required;DefaultCommandTimeout=3600;certificate file=$(Build.Repository.LocalPath)/.ci/server/certs/ssl-client.pfx'
     platform: 'netcoreapp2.1'
     description: 'SSL'
-- task: DotNetCoreInstaller@0
+- task: UseDotNet@2
   displayName: 'Install .NET Core'
   inputs:
     version: $(DotNetCoreSdkVersion)
@@ -45,3 +45,10 @@ steps:
     connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600'
     platform: 'netcoreapp3.0'
     description: 'No SSL'
+- template: 'sidebyside-test-steps.yml'
+  parameters:
+    image: ${{ parameters.image }}
+    unsupportedFeatures: ${{ parameters.unsupportedFeatures }}
+    connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;UseCompression=True;DefaultCommandTimeout=3600'
+    platform: 'netcoreapp3.0'
+    description: 'Compression'
