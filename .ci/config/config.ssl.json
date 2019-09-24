@@ -4,7 +4,7 @@
       "SocketPath": "./../../../../../.ci/run/mysql/mysqld.sock",
       "PasswordlessUser": "no_password",
       "SecondaryDatabase": "testdb2",
-      "UnsupportedFeatures": "RsaEncryption,CachingSha2Password,Tls12,UuidToBin",
+      "UnsupportedFeatures": "RsaEncryption,CachingSha2Password,Tls12,Tls13,UuidToBin",
       "MySqlBulkLoaderLocalCsvFile": "../../../../TestData/LoadData_UTF8_BOM_Unix.CSV",
       "MySqlBulkLoaderLocalTsvFile": "../../../../TestData/LoadData_UTF8_BOM_Unix.TSV",
       "CertificatesPath": "../../../../../.ci/server/certs"

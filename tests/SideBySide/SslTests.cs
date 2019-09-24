@@ -1,4 +1,5 @@
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -176,6 +177,15 @@ namespace SideBySide
 #endif
 			var expectedProtocolString = expectedProtocol == SslProtocols.Tls12 ? "TLSv1.2" :
 				expectedProtocol == SslProtocols.Tls11 ? "TLSv1.1" : "TLSv1";
+
+#if NETCOREAPP3_0
+			// https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0#tls-13--openssl-111-on-linux
+			if (expectedProtocol == SslProtocols.Tls12 && AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls13) && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+			{
+				expectedProtocol = SslProtocols.Tls13;
+				expectedProtocolString = "TLSv1.3";
+			}
+#endif
 
 #if !BASELINE
 			Assert.Equal(expectedProtocol, connection.SslProtocol);

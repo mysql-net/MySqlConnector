@@ -134,16 +134,16 @@ jobs:
     matrix:
       'MySQL 5.6':
         image: 'mysql:5.6'
-        unsupportedFeatures: 'Ed25519,Json,Sha256Password,RsaEncryption,LargePackets,CachingSha2Password,SessionTrack,Tls11,Tls12,UuidToBin'
+        unsupportedFeatures: 'Ed25519,Json,Sha256Password,RsaEncryption,LargePackets,CachingSha2Password,SessionTrack,Tls11,Tls12,Tls13,UuidToBin'
       'MySQL 5.7':
         image: 'mysql:5.7'
-        unsupportedFeatures: 'Ed25519,RsaEncryption,CachingSha2Password,Tls12,UuidToBin'
+        unsupportedFeatures: 'Ed25519,RsaEncryption,CachingSha2Password,Tls12,Tls13,UuidToBin'
       'MySQL 8.0':
         image: 'mysql:8.0'
-        unsupportedFeatures: 'Ed25519'
+        unsupportedFeatures: 'Ed25519,Tls13'
       'Percona 5.7':
         image: 'percona:5.7.22'
-        unsupportedFeatures: 'CachingSha2Password,Ed25519,UuidToBin'
+        unsupportedFeatures: 'CachingSha2Password,Ed25519,Tls13,UuidToBin'
       'MariaDB 10.2':
         image: 'mariadb:10.2'
         unsupportedFeatures: 'Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin'

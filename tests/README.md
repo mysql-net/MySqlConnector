@@ -34,6 +34,8 @@ Otherwise, set the following options appropriately:
   * `Timeout`: server can cancel queries promptly (so timed tests don't time out)
   * `Tls11`: server supports TLS 1.1
   * `Tls12`: server supports TLS 1.2
+  * `Tls13`: server supports TLS 1.3
+  * `UnixDomainSocket`: server is accessible via a Unix domain socket
   * `UuidToBin`: server supports `UUID_TO_BIN` (MySQL 8.0 and later)
 
 ## Running Tests
