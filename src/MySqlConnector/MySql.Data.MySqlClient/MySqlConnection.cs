@@ -548,6 +548,7 @@ namespace MySql.Data.MySqlClient
 		internal bool IgnoreCommandTransaction => m_connectionSettings.IgnoreCommandTransaction || m_enlistedTransaction is StandardEnlistedTransaction;
 #endif
 		internal bool IgnorePrepare => m_connectionSettings.IgnorePrepare;
+		internal bool NoBackslashEscapes => m_connectionSettings.NoBackslashEscapes;
 		internal bool TreatTinyAsBoolean => m_connectionSettings.TreatTinyAsBoolean;
 		internal IOBehavior AsyncIOBehavior => GetConnectionSettings().ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
 

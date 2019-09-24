@@ -345,6 +345,11 @@ These are the other options that MySqlConnector supports. They are set to sensib
       </dl>
   </tr>
   <tr>
+    <td>No Backslash Escapes, NoBackslashEscapes</td>
+    <td>false</td>
+    <td>If <code>true</code>, backslashes are not escaped in string parameters. Set this to <code>true</code> if the server’s SQL mode includes <a href="https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html#sqlmode_no_backslash_escapes"><code>NO_BACKSLASH_ESCAPES</code></a>.</td>
+  </tr>
+  <tr>
     <td>Old Guids, OldGuids</td>
     <td>false</td>
     <td>Obsolete; use the <code>GuidFormat</code> option instead.</td>

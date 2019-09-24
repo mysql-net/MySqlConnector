@@ -1071,6 +1071,28 @@ insert into command_behavior_single_row(id) values(1),(2),(3),(4),(5),(6),(7),(8
 			Assert.False(reader.Read());
 		}
 
+#if !BASELINE
+		[Fact]
+		public void NoBackslashEscapes()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.NoBackslashEscapes = true;
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			connection.Open();
+			connection.Execute("SET @@sql_mode = CONCAT(@@sql_mode, ',NO_BACKSLASH_ESCAPES');");
+			var value = "\\'\"";
+			using var cmd = new MySqlCommand("SELECT @param;", connection)
+			{
+				Parameters =
+				{
+					new MySqlParameter("@param", value),
+				},
+			};
+			var result = cmd.ExecuteScalar();
+			Assert.Equal(value, result);
+		}
+#endif
+
 		class BoolTest
 		{
 			public int Id { get; set; }

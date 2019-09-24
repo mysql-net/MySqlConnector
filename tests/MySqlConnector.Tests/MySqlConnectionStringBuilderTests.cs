@@ -50,6 +50,9 @@ namespace MySqlConnector.Tests
 			Assert.Equal(0u, csb.MinimumPoolSize);
 			Assert.Equal("", csb.Password);
 			Assert.Equal("MYSQL", csb.PipeName);
+#if !BASELINE
+			Assert.False(csb.NoBackslashEscapes);
+#endif
 			Assert.False(csb.OldGuids);
 			Assert.False(csb.PersistSecurityInfo);
 			Assert.True(csb.Pooling);
@@ -107,6 +110,7 @@ namespace MySqlConnector.Tests
 					"server rsa public key file=rsa.pem;" +
 					"load balance=random;" +
 					"guidformat=timeswapbinary16;" +
+					"nobackslashescapes=true;" +
 					"server spn=mariadb/host.example.com@EXAMPLE.COM;" +
 					"use xa transactions=false;" +
 #endif
@@ -162,6 +166,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal("rsa.pem", csb.ServerRsaPublicKeyFile);
 			Assert.Equal(MySqlLoadBalance.Random, csb.LoadBalance);
 			Assert.Equal(MySqlGuidFormat.TimeSwapBinary16, csb.GuidFormat);
+			Assert.True(csb.NoBackslashEscapes);
 			Assert.Equal("mariadb/host.example.com@EXAMPLE.COM", csb.ServerSPN);
 			Assert.False(csb.UseXaTransactions);
 #endif

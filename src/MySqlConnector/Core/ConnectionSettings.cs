@@ -84,6 +84,7 @@ namespace MySqlConnector.Core
 			InteractiveSession = csb.InteractiveSession;
 			GuidFormat = GetEffectiveGuidFormat(csb.GuidFormat, csb.OldGuids);
 			Keepalive = csb.Keepalive;
+			NoBackslashEscapes = csb.NoBackslashEscapes;
 			PersistSecurityInfo = csb.PersistSecurityInfo;
 			ServerRsaPublicKeyFile = csb.ServerRsaPublicKeyFile;
 			ServerSPN = csb.ServerSPN;
@@ -167,6 +168,7 @@ namespace MySqlConnector.Core
 		public bool IgnorePrepare { get; }
 		public bool InteractiveSession { get; }
 		public uint Keepalive { get; }
+		public bool NoBackslashEscapes { get; }
 		public bool PersistSecurityInfo { get; }
 		public string ServerRsaPublicKeyFile { get; }
 		public string ServerSPN { get; }

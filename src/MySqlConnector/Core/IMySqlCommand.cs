@@ -36,6 +36,8 @@ namespace MySqlConnector.Core
 				statementPreparerOptions |= StatementPreparerOptions.DateTimeLocal;
 			if (command.CommandType == CommandType.StoredProcedure)
 				statementPreparerOptions |= StatementPreparerOptions.AllowOutputParameters;
+			if (connection.NoBackslashEscapes)
+				statementPreparerOptions |= StatementPreparerOptions.NoBackslashEscapes;
 
 			statementPreparerOptions |= connection.GuidFormat switch
 			{

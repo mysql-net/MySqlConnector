@@ -269,6 +269,12 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.Keepalive.SetValue(this, value);
 		}
 
+		public bool NoBackslashEscapes
+		{
+			get => MySqlConnectionStringOption.NoBackslashEscapes.GetValue(this);
+			set => MySqlConnectionStringOption.NoBackslashEscapes.SetValue(this, value);
+		}
+
 		public bool OldGuids
 		{
 			get => MySqlConnectionStringOption.OldGuids.GetValue(this);
@@ -409,6 +415,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringOption<bool> IgnorePrepare;
 		public static readonly MySqlConnectionStringOption<bool> InteractiveSession;
 		public static readonly MySqlConnectionStringOption<uint> Keepalive;
+		public static readonly MySqlConnectionStringOption<bool> NoBackslashEscapes;
 		public static readonly MySqlConnectionStringOption<bool> OldGuids;
 		public static readonly MySqlConnectionStringOption<bool> PersistSecurityInfo;
 		public static readonly MySqlConnectionStringOption<string> ServerRsaPublicKeyFile;
@@ -607,6 +614,10 @@ namespace MySql.Data.MySqlClient
 			AddOption(Keepalive = new MySqlConnectionStringOption<uint>(
 				keys: new[] { "Keep Alive", "Keepalive" },
 				defaultValue: 0u));
+
+			AddOption(NoBackslashEscapes = new MySqlConnectionStringOption<bool>(
+				keys: new[] { "No Backslash Escapes", "NoBackslashEscapes" },
+				defaultValue: false));
 
 			AddOption(OldGuids = new MySqlConnectionStringOption<bool>(
 				keys: new[] { "Old Guids", "OldGuids" },
