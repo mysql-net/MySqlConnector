@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.58.0
+
+* Add `NoBackslashEscapes` connection option: [#701](https://github.com/mysql-net/MySqlConnector/issues/701).
+* Store icon in the NuGet package: [#705](https://github.com/mysql-net/MySqlConnector/issues/705).
+* Thanks to [Laurents Meyer](https://github.com/lauxjpn) for contributions to this release.
+
 ### 0.57.0
 
 * **Breaking** Remove `MySqlClientFactory.Register`: [#654](https://github.com/mysql-net/MySqlConnector/issues/654).
