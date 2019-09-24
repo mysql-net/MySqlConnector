@@ -10,6 +10,7 @@
     <PackageProjectUrl>https://mysqlconnector.net/</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIconUrl>https://mysqlconnector.net/img/logo.png</PackageIconUrl>
+    <PackageIcon>logo.png</PackageIcon>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/mysql-net/MySqlConnector.git</RepositoryUrl>
     <DebugType>embedded</DebugType>
@@ -20,6 +21,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19367-01" PrivateAssets="All"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\docs\static\img\logo.png" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>
