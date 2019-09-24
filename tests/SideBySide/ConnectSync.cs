@@ -430,6 +430,17 @@ namespace SideBySide
 			Assert.True(connection.Ping());
 		}
 
+		[SkippableFact(ServerFeatures.UnixDomainSocket)]
+		public void UnixDomainSocket()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.Server = AppConfig.SocketPath;
+			csb.ConnectionProtocol = MySqlConnectionProtocol.Unix;
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			connection.Open();
+			Assert.Equal(ConnectionState.Open, connection.State);
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }

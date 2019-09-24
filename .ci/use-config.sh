@@ -2,7 +2,7 @@
 cd $(dirname $0)/config
 
 display_usage() {
-    echo -e "\nUsage:\n$0 [config.json script] [host] [port] [name] [features]\n"
+    echo -e "\nUsage:\n$0 [config.json script] [host] [port] [features]\n"
 }
 
 # check whether user had supplied -h or --help . If yes display usage
@@ -40,10 +40,5 @@ fi
 
 if [ $# -ge 4 ]
 then
-    sed -i "s/run\/mysql/run\/$4/g" ../../tests/SideBySide/config.json
-fi
-
-if [ $# -ge 5 ]
-then
-    sed -i "s/\"UnsupportedFeatures\": \".*\"/\"UnsupportedFeatures\": \"$5\"/g" ../../tests/SideBySide/config.json
+    sed -i "s/\"UnsupportedFeatures\": \".*\"/\"UnsupportedFeatures\": \"$4\"/g" ../../tests/SideBySide/config.json
 fi

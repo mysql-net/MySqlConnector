@@ -4,7 +4,7 @@ parameters:
   DotNetCoreSdkVersion: ''
 
 steps:
-- bash: ${{ format('.ci/docker-run.sh {0} mysql 3300 {1}', parameters.image, parameters.unsupportedFeatures) }}
+- bash: ${{ format('.ci/docker-run.sh {0} 3300 {1}', parameters.image, parameters.unsupportedFeatures) }}
   displayName: 'Start Docker container'
 - template: 'sidebyside-test-steps.yml'
   parameters:

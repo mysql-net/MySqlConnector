@@ -406,6 +406,17 @@ namespace SideBySide
 		}
 #endif
 
+		[SkippableFact(ServerFeatures.UnixDomainSocket)]
+		public async Task UnixDomainSocket()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.Server = AppConfig.SocketPath;
+			csb.ConnectionProtocol = MySqlConnectionProtocol.Unix;
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			await connection.OpenAsync();
+			Assert.Equal(ConnectionState.Open, connection.State);
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 

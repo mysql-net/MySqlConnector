@@ -46,6 +46,8 @@ namespace SideBySide
 
 		public static string SecondaryDatabase => Config.GetValue<string>("Data:SecondaryDatabase");
 
+		public static string SocketPath => Config.GetValue<string>("Data:SocketPath");
+
 		private static ServerFeatures UnsupportedFeatures => (ServerFeatures) Enum.Parse(typeof(ServerFeatures), Config.GetValue<string>("Data:UnsupportedFeatures"));
 
 		public static ServerFeatures SupportedFeatures => ~ServerFeatures.None & ~UnsupportedFeatures & ~(IsCiBuild ? ServerFeatures.Timeout : ServerFeatures.None);

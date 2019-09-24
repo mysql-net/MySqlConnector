@@ -13,30 +13,29 @@ then
 fi
 
 # check number of arguments
-if [ $# -ne 4 ]
+if [ $# -ne 3 ]
 then
     display_usage
     exit 1
 fi
 
 IMAGE=$1
-NAME=$2
-PORT=$3
-OMIT_FEATURES=$4
+PORT=$2
+OMIT_FEATURES=$3
 MYSQL_EXTRA=
 
 if [ "$IMAGE" == "mysql:8.0" ]; then
   MYSQL_EXTRA='--default-authentication-plugin=mysql_native_password'
 fi
 
-sudo mkdir -p run/$NAME
-sudo chmod 777 run/$NAME
+sudo mkdir -p run/mysql
+sudo chmod 777 run/mysql
 
 docker run -d \
-	-v $(pwd)/run/$NAME:/var/run/mysqld:rw \
+	-v $(pwd)/run/mysql:/var/run/mysqld:rw \
 	-v $(pwd)/server:/etc/mysql/conf.d:ro \
 	-p $PORT:3306 \
-	--name $NAME \
+	--name mysql \
 	-e MYSQL_ROOT_PASSWORD='test' \
 	$IMAGE \
   --log-bin-trust-function-creators=1 \
@@ -48,30 +47,30 @@ for i in `seq 1 120`; do
 	# wait for mysql to come up
 	sleep 1
 	echo "Testing if container is responding"
-	docker exec $NAME mysql -uroot -ptest -e "SELECT 1" >/dev/null 2>&1
+	docker exec mysql mysql -uroot -ptest -e "SELECT 1" >/dev/null 2>&1
 	if [ $? -ne 0 ]; then continue; fi
 
 	# try running the init script
 	echo "Creating mysqltest user"
-	docker exec $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init.sql'
+	docker exec mysql bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init.sql'
 	if [ $? -ne 0 ]; then continue; fi
 	if [[ $OMIT_FEATURES != *"Sha256Password"* ]]; then
-	 	docker exec $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_sha256.sql'
+	 	docker exec mysql bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_sha256.sql'
 		if [ $? -ne 0 ]; then continue; fi
 	fi
 
 	if [[ $OMIT_FEATURES != *"CachingSha2Password"* ]]; then
-		docker exec $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_caching_sha2.sql'
+		docker exec mysql bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_caching_sha2.sql'
 		if [ $? -ne 0 ]; then continue; fi
 	fi
 
 	if [[ $OMIT_FEATURES != *"Ed25519"* ]]; then
-		docker exec $NAME bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_ed25519.sql'
+		docker exec mysql bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_ed25519.sql'
 		if [ $? -ne 0 ]; then continue; fi
 	fi
 
 	# exit if successful
-	docker exec $NAME mysql -ussltest -ptest \
+	docker exec mysql mysql -ussltest -ptest \
 		--ssl-mode=REQUIRED \
 		--ssl-ca=/etc/mysql/conf.d/certs/ssl-ca-cert.pem \
 		--ssl-cert=/etc/mysql/conf.d/certs/ssl-client-cert.pem \
@@ -79,7 +78,7 @@ for i in `seq 1 120`; do
 		-e "SELECT 1"
 	if [ $? -ne 0 ]; then
 		# mariadb uses --ssl=TRUE instead of --ssl-mode=REQUIRED
-		docker exec $NAME mysql -ussltest -ptest \
+		docker exec mysql mysql -ussltest -ptest \
 			--ssl=TRUE \
 			--ssl-ca=/etc/mysql/conf.d/certs/ssl-ca-cert.pem \
 			--ssl-cert=/etc/mysql/conf.d/certs/ssl-client-cert.pem \

@@ -27,6 +27,7 @@ steps:
     DATA__CERTIFICATESPATH: '$(Build.Repository.LocalPath)/.ci/server/certs/'
     DATA__MYSQLBULKLOADERLOCALCSVFILE: '$(Build.Repository.LocalPath)/tests/TestData/LoadData_UTF8_BOM_Unix.CSV'
     DATA__MYSQLBULKLOADERLOCALTSVFILE: '$(Build.Repository.LocalPath)/tests/TestData/LoadData_UTF8_BOM_Unix.TSV'
+    DATA__SOCKETPATH: '$(Build.Repository.LocalPath)/.ci/run/mysql/mysqld.sock'
     TF_BUILD: $(TF_BUILD)
 - task: PublishTestResults@2
   condition: always()

@@ -95,7 +95,7 @@ jobs:
       command: 'test'
       arguments: 'tests\SideBySide\SideBySide.csproj -c Baseline --logger'
     env:
-      DATA__UNSUPPORTEDFEATURES: 'Ed25519'
+      DATA__UNSUPPORTEDFEATURES: 'Ed25519,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=root;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600'
       DATA__CERTIFICATESPATH: '$(Build.Repository.LocalPath)\.ci\server\certs\'
       DATA__MYSQLBULKLOADERLOCALCSVFILE: '$(Build.Repository.LocalPath)\tests\TestData\LoadData_UTF8_BOM_Unix.CSV'

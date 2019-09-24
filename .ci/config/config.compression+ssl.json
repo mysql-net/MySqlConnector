@@ -1,6 +1,7 @@
 {
     "Data": {
       "ConnectionString": "server=127.0.0.1;user id=ssltest;password=test;port=3306;database=mysqltest;ssl mode=required;use compression=true;DefaultCommandTimeout=3600",
+      "SocketPath": "./../../../../../.ci/run/mysql/mysqld.sock",
       "PasswordlessUser": "no_password",
       "SecondaryDatabase": "testdb2",
       "UnsupportedFeatures": "RsaEncryption,CachingSha2Password,Tls12,UuidToBin",

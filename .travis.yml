@@ -4,29 +4,22 @@ services: docker
 
 env:
   - IMAGE=mysql:5.6
-    NAME=mysql
     OMIT_FEATURES=Ed25519,Json,Sha256Password,RsaEncryption,LargePackets,CachingSha2Password,SessionTrack,Tls11,Tls12,UuidToBin
   - IMAGE=mysql:5.7
-    NAME=mysql
     OMIT_FEATURES=Ed25519,RsaEncryption,CachingSha2Password,Tls12,UuidToBin
   - IMAGE=mysql:8.0
-    NAME=mysql
     OMIT_FEATURES=Ed25519
   - IMAGE=percona:5.7.22
-    NAME=percona
     OMIT_FEATURES=CachingSha2Password,Ed25519,UuidToBin
   - IMAGE=mariadb:10.2
-    NAME=mariadb
     OMIT_FEATURES=Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin
   - IMAGE=mariadb:10.3
-    NAME=mariadb
     OMIT_FEATURES=Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin
   - IMAGE=mariadb:10.4
-    NAME=mariadb
     OMIT_FEATURES=Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin
 
 before_install:
-- .ci/docker-run.sh $IMAGE $NAME 3307 $OMIT_FEATURES
+- .ci/docker-run.sh $IMAGE 3307 $OMIT_FEATURES
 - sudo apt-get install -y libunwind8
 - mkdir -p $HOME/dotnet
 - wget -q https://download.visualstudio.microsoft.com/download/pr/14b65ed5-f508-49c4-b429-1b22085895cf/a6820dabd3a0303135fe11217405bfd1/dotnet-ubuntu.16.04-x64.1.1.13.tar.gz
@@ -47,14 +40,13 @@ script:
 - pushd tests/Conformance.Tests && CONNECTION_STRING="Server=localhost;Port=3307;User Id=mysqltest;Password=test;SSL Mode=None" dotnet test -c Release && popd
 - pushd tests/SideBySide
 - dotnet build SideBySide.csproj -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp1.1.2 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp1.1.2
-- echo 'Executing netcoreapp2.0 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp2.1 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp2.1
-- echo 'Executing netcoreapp2.1 tests with Compression, No SSL' && ../../.ci/use-config.sh config.compression.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp2.1
-- echo 'Executing netcoreapp1.1.2 tests with No Compression, SSL' && ../../.ci/use-config.sh config.ssl.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp1.1.2
-- echo 'Executing netcoreapp2.1 tests with No Compression, SSL' && ../../.ci/use-config.sh config.ssl.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp2.1
-- echo 'Executing netcoreapp2.0 tests with Compression, SSL' && ../../.ci/use-config.sh config.compression+ssl.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp2.0
-- echo 'Executing netcoreapp2.0 tests with Unix Domain Socket, No Compression, No SSL' && ../../.ci/use-config.sh config.uds.json 172.17.0.1 3307 $NAME $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp1.1.2 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp1.1.2
+- echo 'Executing netcoreapp2.0 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp2.0
+- echo 'Executing netcoreapp2.1 tests with No Compression, No SSL' && ../../.ci/use-config.sh config.json 172.17.0.1 3307 $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp2.1
+- echo 'Executing netcoreapp2.1 tests with Compression, No SSL' && ../../.ci/use-config.sh config.compression.json 172.17.0.1 3307 $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp2.1
+- echo 'Executing netcoreapp1.1.2 tests with No Compression, SSL' && ../../.ci/use-config.sh config.ssl.json 172.17.0.1 3307 $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp1.1.2
+- echo 'Executing netcoreapp2.1 tests with No Compression, SSL' && ../../.ci/use-config.sh config.ssl.json 172.17.0.1 3307 $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp2.1
+- echo 'Executing netcoreapp2.0 tests with Compression, SSL' && ../../.ci/use-config.sh config.compression+ssl.json 172.17.0.1 3307 $OMIT_FEATURES && time dotnet test -c Release -f netcoreapp2.0
 - popd
 
 notifications:
