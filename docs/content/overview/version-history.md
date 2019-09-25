@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.59.0
+
+* **Breaking** `MySqlDataReader.GetFloat()` converts `REAL` values (from `double` to `float`) instead of throwing `InvalidCastException`: [#706](https://github.com/mysql-net/MySqlConnector/issues/706).
+* Fix error in `mysql_clear_password` authentication plugin: [#703](https://github.com/mysql-net/MySqlConnector/issues/703).
+* Thanks to [Laurents Meyer](https://github.com/lauxjpn) for contributions to this release.
+
 ### 0.58.0
 
 * Add `NoBackslashEscapes` connection option: [#701](https://github.com/mysql-net/MySqlConnector/issues/701).
