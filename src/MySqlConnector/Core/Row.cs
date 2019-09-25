@@ -353,7 +353,8 @@ namespace MySqlConnector.Core
 		public float GetFloat(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			return value is decimal decimalValue ? (float) decimalValue :
+			return value is double doubleValue ? (float) doubleValue :
+				value is decimal decimalValue ? (float) decimalValue :
 				(float) value;
 		}
 
