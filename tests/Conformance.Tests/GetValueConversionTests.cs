@@ -82,5 +82,13 @@ namespace Conformance.Tests
 		// the minimum date permitted by MySQL is 1000-01-01; override the minimum value for DateTime tests
 		public override void GetDateTime_for_minimum_Date() => TestGetValue(DbType.Date, ValueKind.Minimum, x => x.GetDateTime(0), new DateTime(1000, 1, 1));
 		public override void GetDateTime_for_minimum_DateTime() => TestGetValue(DbType.Date, ValueKind.Minimum, x => x.GetDateTime(0), new DateTime(1000, 1, 1));
+
+		// The GetFloat() implementation allows for conversions from double to float.
+		// The minimum tests for float and double do not test for the smallest possible value (as the tests for integer values do),
+		// but test for the largest value smaller than 0 (Epsilon).
+		// If double.Epsilon is converted to float, it will result in 0.
+		public override void GetFloat_throws_for_minimum_Double() => TestGetValue(DbType.Double, ValueKind.Minimum, x => x.GetFloat(0), 0);
+		public override void GetFloat_throws_for_one_Double() => TestGetValue(DbType.Double, ValueKind.One, x => x.GetFloat(0), 1);
+		public override void GetFloat_throws_for_zero_Double() => TestGetValue(DbType.Double, ValueKind.Zero, x => x.GetFloat(0), 0);
 	}
 }
