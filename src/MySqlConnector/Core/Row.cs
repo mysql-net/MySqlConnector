@@ -353,9 +353,15 @@ namespace MySqlConnector.Core
 		public float GetFloat(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			return value is double doubleValue ? (float) doubleValue :
-				value is decimal decimalValue ? (float) decimalValue :
-				(float) value;
+
+			// Loss of precision is expected, significant loss of information is not.
+			// Use explicit range checks to guard against that.
+			return value switch
+			{
+				double doubleValue => (doubleValue >= float.MinValue && doubleValue <= float.MaxValue ? (float) doubleValue : throw new InvalidCastException("The value cannot be safely cast to Single.")),
+				decimal decimalValue => (float) decimalValue,
+				_ => (float) value
+			};
 		}
 
 		public MySqlDateTime GetMySqlDateTime(int ordinal)
