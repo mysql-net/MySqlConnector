@@ -538,7 +538,10 @@ namespace MySqlConnector.Core
 					Log.Error("Session{0} needs a secure connection to use AuthenticationMethod '{1}'", m_logArguments);
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Authentication method '{0}' requires a secure connection.".FormatInvariant(switchRequest.Name));
 				}
-				payload = new PayloadData(Encoding.UTF8.GetBytes(cs.Password));
+				// send the password as a NULL-terminated UTF-8 string
+				var passwordBytes = Encoding.UTF8.GetBytes(cs.Password);
+				Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
+				payload = new PayloadData(passwordBytes);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
