@@ -61,6 +61,8 @@ namespace MySqlConnector.Core
 				return (long) value != 0;
 			if (value is ulong)
 				return (ulong) value != 0;
+			if (value is decimal)
+				return (decimal) value != 0;
 			return (bool) value;
 		}
 
