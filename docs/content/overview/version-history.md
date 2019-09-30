@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.59.1
+
+* Allow `DECIMAL` column type to be read by `GetBoolean`: [#707](https://github.com/mysql-net/MySqlConnector/issues/707).
+* Fix error in reading `BIT(n)` columns: [#708](https://github.com/mysql-net/MySqlConnector/issues/708).
+* Thanks to [Laurents Meyer](https://github.com/lauxjpn) for contributions to this release.
+
 ### 0.59.0
 
 * **Breaking** `MySqlDataReader.GetFloat()` converts `REAL` values (from `double` to `float`) instead of throwing `InvalidCastException`: [#706](https://github.com/mysql-net/MySqlConnector/issues/706).
