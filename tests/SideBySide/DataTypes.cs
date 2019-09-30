@@ -1391,6 +1391,24 @@ end;";
 			DoQuery("json_core", column, dataTypeName, expected, reader => reader.GetString(0), omitWhereTest: true);
 		}
 
+		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=97067")]
+		[InlineData(false, "MIN", 0)]
+		[InlineData(false, "MAX", uint.MaxValue)]
+		[InlineData(true, "MIN", 0)]
+		[InlineData(true, "MAX", uint.MaxValue)]
+		public void QueryAggregateBit(bool shouldPrepare, string aggregation, ulong expected)
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.IgnorePrepare = !shouldPrepare;
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			connection.Open();
+			using var command = new MySqlCommand($@"SELECT {aggregation}(Bit32) FROM datatypes_bits;", connection);
+			if (shouldPrepare)
+				command.Prepare();
+			var result = command.ExecuteScalar();
+			Assert.Equal(expected, result);
+		}
+
 		private static byte[] GetBytes(DbDataReader reader)
 		{
 			var size = reader.GetBytes(0, 0, null, 0, 0);

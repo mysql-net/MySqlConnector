@@ -50,11 +50,7 @@ namespace MySqlConnector.Core
 				return isUnsigned ? (object) ParseUInt64(data) : ParseInt64(data);
 
 			case ColumnType.Bit:
-				// BIT column is transmitted as MSB byte array
-				ulong bitValue = 0;
-				for (int i = 0; i < data.Length; i++)
-					bitValue = bitValue * 256 + data[i];
-				return bitValue;
+				return ReadBit(data, columnDefinition.ColumnFlags);
 
 			case ColumnType.String:
 				if (Connection.GuidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
@@ -128,9 +124,6 @@ namespace MySqlConnector.Core
 
 		private static long ParseInt64(ReadOnlySpan<byte> data) =>
 			!Utf8Parser.TryParse(data, out long value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
-
-		private static ulong ParseUInt64(ReadOnlySpan<byte> data) =>
-			!Utf8Parser.TryParse(data, out ulong value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
 
 		private object ParseDateTime(ReadOnlySpan<byte> value)
 		{

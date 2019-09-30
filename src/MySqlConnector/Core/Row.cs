@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Text;
 using System.IO;
 using System.Runtime.InteropServices;
 using MySql.Data.MySqlClient;
@@ -435,6 +436,26 @@ namespace MySqlConnector.Core
 			}
 #endif
 		}
+
+		protected static object ReadBit(ReadOnlySpan<byte> data, ColumnFlags columnFlags)
+		{
+			if ((columnFlags & ColumnFlags.Binary) == 0)
+			{
+				// when the Binary flag IS NOT set, the BIT column is transmitted as MSB byte array
+				ulong bitValue = 0;
+				for (int i = 0; i < data.Length; i++)
+					bitValue = bitValue * 256 + data[i];
+				return bitValue;
+			}
+			else
+			{
+				// when the Binary flag IS set, the BIT column is transmitted as text
+				return ParseUInt64(data);
+			}
+		}
+
+		protected static ulong ParseUInt64(ReadOnlySpan<byte> data) =>
+			!Utf8Parser.TryParse(data, out ulong value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
 
 		private void CheckBinaryColumn(int ordinal)
 		{
