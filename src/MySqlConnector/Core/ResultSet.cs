@@ -15,10 +15,7 @@ namespace MySqlConnector.Core
 {
 	internal sealed class ResultSet
 	{
-		public ResultSet(MySqlDataReader dataReader)
-		{
-			DataReader = dataReader;
-		}
+		public ResultSet(MySqlDataReader dataReader) => DataReader = dataReader;
 
 		public void Reset()
 		{
@@ -55,7 +52,7 @@ namespace MySqlConnector.Core
 						RecordsAffected = (RecordsAffected ?? 0) + ok.AffectedRowCount;
 						LastInsertId = unchecked((long) ok.LastInsertId);
 						WarningCount = ok.WarningCount;
-						if (ok.NewSchema is object)
+						if (ok.NewSchema != null)
 							Connection.Session.DatabaseOverride = ok.NewSchema;
 						ColumnDefinitions = null;
 						ColumnTypes = null;
@@ -154,11 +151,8 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private bool IsHostVerified(MySqlConnection connection)
-		{
-			return connection.SslMode == MySqlSslMode.VerifyCA
-				|| connection.SslMode == MySqlSslMode.VerifyFull;
-		}
+		private bool IsHostVerified(MySqlConnection connection) => connection.SslMode == MySqlSslMode.VerifyCA
+			|| connection.SslMode == MySqlSslMode.VerifyFull;
 
 		public async Task ReadEntireAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
@@ -166,10 +160,7 @@ namespace MySqlConnector.Core
 				await ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
-		public bool Read()
-		{
-			return ReadAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-		}
+		public bool Read() => ReadAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public Task<bool> ReadAsync(CancellationToken cancellationToken) =>
 			ReadAsync(Connection.AsyncIOBehavior, cancellationToken);
@@ -255,7 +246,7 @@ namespace MySqlConnector.Core
 
 				if (row_ is null)
 				{
-					bool isBinaryRow = false;
+					var isBinaryRow = false;
 					if (payload.HeaderByte == 0 && !this_.Connection.IgnorePrepare)
 					{
 						// this might be a binary row, but it might also be a text row whose first column is zero bytes long; try reading

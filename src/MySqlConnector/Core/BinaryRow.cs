@@ -46,20 +46,38 @@ namespace MySqlConnector.Core
 				{
 					var columnDefinition = ResultSet.ColumnDefinitions![column];
 					int length;
-					if (columnDefinition.ColumnType == ColumnType.Longlong || columnDefinition.ColumnType == ColumnType.Double)
+					switch (columnDefinition.ColumnType)
+					{
+					case ColumnType.Longlong:
+					case ColumnType.Double:
 						length = 8;
-					else if (columnDefinition.ColumnType == ColumnType.Long || columnDefinition.ColumnType == ColumnType.Int24 || columnDefinition.ColumnType == ColumnType.Float)
+						break;
+					case ColumnType.Long:
+					case ColumnType.Int24:
+					case ColumnType.Float:
 						length = 4;
-					else if (columnDefinition.ColumnType == ColumnType.Short || columnDefinition.ColumnType == ColumnType.Year)
+						break;
+					case ColumnType.Short:
+					case ColumnType.Year:
 						length = 2;
-					else if (columnDefinition.ColumnType == ColumnType.Tiny)
+						break;
+					case ColumnType.Tiny:
 						length = 1;
-					else if (columnDefinition.ColumnType == ColumnType.Date || columnDefinition.ColumnType == ColumnType.DateTime || columnDefinition.ColumnType == ColumnType.Timestamp || columnDefinition.ColumnType == ColumnType.Time)
+						break;
+					case ColumnType.Date:
+					case ColumnType.DateTime:
+					case ColumnType.Timestamp:
+					case ColumnType.Time:
 						length = reader.ReadByte();
-					else if (columnDefinition.ColumnType == ColumnType.DateTime2 || columnDefinition.ColumnType == ColumnType.NewDate || columnDefinition.ColumnType == ColumnType.Timestamp2)
+						break;
+					case ColumnType.DateTime2:
+					case ColumnType.NewDate:
+					case ColumnType.Timestamp2:
 						throw new NotSupportedException("ColumnType {0} is not supported".FormatInvariant(columnDefinition.ColumnType));
-					else
+					default:
 						length = checked((int) reader.ReadLengthEncodedInteger());
+						break;
+					}
 
 					dataLengths[column] = length;
 					dataOffsets[column] = reader.Offset;
@@ -90,10 +108,18 @@ namespace MySqlConnector.Core
 				return ReadBit(data, columnDefinition.ColumnFlags);
 
 			case ColumnType.String:
-				if (Connection.GuidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
-					return Utf8Parser.TryParse(data, out Guid guid, out int guid36BytesConsumed, 'D') && guid36BytesConsumed == 36 ? guid : throw new FormatException();
-				if (Connection.GuidFormat == MySqlGuidFormat.Char32 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
-					return Utf8Parser.TryParse(data, out Guid guid, out int guid32BytesConsumed, 'N') && guid32BytesConsumed == 32 ? guid : throw new FormatException();
+				switch (Connection.GuidFormat)
+				{
+				case MySqlGuidFormat.Char36 when columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36:
+					{
+						return Utf8Parser.TryParse(data, out Guid guid, out int guid36BytesConsumed, 'D') && guid36BytesConsumed == 36 ? guid : throw new FormatException();
+					}
+				case MySqlGuidFormat.Char32 when columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32:
+					{
+						return Utf8Parser.TryParse(data, out Guid guid, out int guid32BytesConsumed, 'N') && guid32BytesConsumed == 32 ? guid : throw new FormatException();
+					}
+				}
+
 				goto case ColumnType.VarString;
 
 			case ColumnType.VarString:
@@ -102,15 +128,12 @@ namespace MySqlConnector.Core
 			case ColumnType.Blob:
 			case ColumnType.MediumBlob:
 			case ColumnType.LongBlob:
-				if (columnDefinition.CharacterSet == CharacterSet.Binary)
-				{
-					var guidFormat = Connection.GuidFormat;
-					if ((guidFormat == MySqlGuidFormat.Binary16 || guidFormat == MySqlGuidFormat.TimeSwapBinary16 || guidFormat == MySqlGuidFormat.LittleEndianBinary16) && columnDefinition.ColumnLength == 16)
-						return CreateGuidFromBytes(guidFormat, data);
+				if (columnDefinition.CharacterSet != CharacterSet.Binary) return Encoding.UTF8.GetString(data);
+				var guidFormat = Connection.GuidFormat;
+				if ((guidFormat == MySqlGuidFormat.Binary16 || guidFormat == MySqlGuidFormat.TimeSwapBinary16 || guidFormat == MySqlGuidFormat.LittleEndianBinary16) && columnDefinition.ColumnLength == 16)
+					return CreateGuidFromBytes(guidFormat, data);
 
-					return data.ToArray();
-				}
-				return Encoding.UTF8.GetString(data);
+				return data.ToArray();
 
 			case ColumnType.Json:
 				return Encoding.UTF8.GetString(data);
@@ -158,9 +181,9 @@ namespace MySqlConnector.Core
 				throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime.");
 			}
 
-			int year = value[0] + value[1] * 256;
-			int month = value[2];
-			int day = value[3];
+			var year = value[0] + value[1] * 256;
+			var month = value[2];
+			var day = value[3];
 
 			int hour, minute, second;
 			if (value.Length <= 4)

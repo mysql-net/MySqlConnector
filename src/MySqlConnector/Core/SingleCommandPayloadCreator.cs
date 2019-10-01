@@ -81,9 +81,9 @@ namespace MySqlConnector.Core
 					var parameterIndex = parameterName is object ? (parameterCollection?.NormalizedIndexOf(parameterName) ?? -1) : preparedStatement.Statement.ParameterIndexes[i];
 					if (parameterIndex == -1 && parameterName is object)
 						throw new MySqlException("Parameter '{0}' must be defined.".FormatInvariant(parameterName));
-					else if (parameterIndex < 0 || parameterIndex >= (parameterCollection?.Count ?? 0))
+					if (parameterIndex < 0 || parameterIndex >= (parameterCollection?.Count ?? 0))
 						throw new MySqlException("Parameter index {0} is invalid when only {1} parameter{2} defined.".FormatInvariant(parameterIndex, parameterCollection?.Count ?? 0, parameterCollection?.Count == 1 ? " is" : "s are"));
-					parameters[i] = parameterCollection![parameterIndex];
+					if (parameterCollection != null) parameters[i] = parameterCollection![parameterIndex];
 				}
 
 				// write null bitmap
@@ -130,7 +130,7 @@ namespace MySqlConnector.Core
 		{
 			var parameterCollection = command.RawParameters;
 			var cachedProcedure = cachedProcedures[command.CommandText!];
-			if (cachedProcedure is object)
+			if (cachedProcedure != null)
 				parameterCollection = cachedProcedure.AlignParamsWithDb(parameterCollection);
 
 			MySqlParameter? returnParameter = null;
@@ -141,30 +141,33 @@ namespace MySqlConnector.Core
 			var inOutSetParameters = "";
 			for (var i = 0; i < (parameterCollection?.Count ?? 0); i++)
 			{
-				var param = parameterCollection![i];
-				var inName = "@inParam" + i;
-				var outName = "@outParam" + i;
-				switch (param.Direction)
+				if (parameterCollection != null)
 				{
-				case ParameterDirection.Input:
-				case ParameterDirection.InputOutput:
-					var inParam = param.WithParameterName(inName);
-					inParameters.Add(inParam);
-					if (param.Direction == ParameterDirection.InputOutput)
+					var param = parameterCollection![i];
+					var inName = "@inParam" + i;
+					var outName = "@outParam" + i;
+					switch (param.Direction)
 					{
-						inOutSetParameters += $"SET {outName}={inName}; ";
-						goto case ParameterDirection.Output;
+					case ParameterDirection.Input:
+					case ParameterDirection.InputOutput:
+						var inParam = param.WithParameterName(inName);
+						inParameters.Add(inParam);
+						if (param.Direction == ParameterDirection.InputOutput)
+						{
+							inOutSetParameters += $"SET {outName}={inName}; ";
+							goto case ParameterDirection.Output;
+						}
+						argParameterNames.Add(inName);
+						break;
+					case ParameterDirection.Output:
+						outParameters.Add(param);
+						outParameterNames.Add(outName);
+						argParameterNames.Add(outName);
+						break;
+					case ParameterDirection.ReturnValue:
+						returnParameter = param;
+						break;
 					}
-					argParameterNames.Add(inName);
-					break;
-				case ParameterDirection.Output:
-					outParameters.Add(param);
-					outParameterNames.Add(outName);
-					argParameterNames.Add(outName);
-					break;
-				case ParameterDirection.ReturnValue:
-					returnParameter = param;
-					break;
 				}
 			}
 
@@ -201,8 +204,8 @@ namespace MySqlConnector.Core
 			return isComplete;
 		}
 
-		static ReadOnlySpan<byte> SetSqlSelectLimit => new byte[] { 83, 69, 84, 32, 115, 113, 108, 95, 115, 101, 108, 101, 99, 116, 95, 108, 105, 109, 105, 116, 61, 49, 59, 10 }; // SET sql_select_limit=1;\n
-		static ReadOnlySpan<byte> ClearSqlSelectLimit => new byte[] { 10, 83, 69, 84, 32, 115, 113, 108, 95, 115, 101, 108, 101, 99, 116, 95, 108, 105, 109, 105, 116, 61, 100, 101, 102, 97, 117, 108, 116, 59 }; // \nSET sql_select_limit=default;
-		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(SingleCommandPayloadCreator));
+		private static ReadOnlySpan<byte> SetSqlSelectLimit => new byte[] { 83, 69, 84, 32, 115, 113, 108, 95, 115, 101, 108, 101, 99, 116, 95, 108, 105, 109, 105, 116, 61, 49, 59, 10 }; // SET sql_select_limit=1;\n
+		private static ReadOnlySpan<byte> ClearSqlSelectLimit => new byte[] { 10, 83, 69, 84, 32, 115, 113, 108, 95, 115, 101, 108, 101, 99, 116, 95, 108, 105, 109, 105, 116, 61, 100, 101, 102, 97, 117, 108, 116, 59 }; // \nSET sql_select_limit=default;
+		private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(SingleCommandPayloadCreator));
 	}
 }

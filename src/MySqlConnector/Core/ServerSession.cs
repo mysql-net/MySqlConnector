@@ -230,7 +230,7 @@ namespace MySqlConnector.Core
 		{
 			m_logArguments[1] = m_state;
 			Log.Debug("Session{0} entering FinishQuerying; SessionState={1}", m_logArguments);
-			bool clearConnection = false;
+			var clearConnection = false;
 			lock (m_lock)
 			{
 				if (m_state == State.CancelingQuery)
@@ -331,13 +331,18 @@ namespace MySqlConnector.Core
 				{
 					shouldRetrySsl = (sslProtocols == SslProtocols.None || (sslProtocols & SslProtocols.Tls12) == SslProtocols.Tls12) && Utility.IsWindows();
 
-					var connected = false;
-					if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets)
-						connected = await OpenTcpSocketAsync(cs, loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
-					else if (cs.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket)
-						connected = await OpenUnixSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
-					else if (cs.ConnectionProtocol == MySqlConnectionProtocol.NamedPipe)
-						connected = await OpenNamedPipeAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+					var connected = cs.ConnectionProtocol switch
+					{
+						MySqlConnectionProtocol.Sockets => await OpenTcpSocketAsync(cs, loadBalancer, ioBehavior,
+								cancellationToken)
+							.ConfigureAwait(false),
+						MySqlConnectionProtocol.UnixSocket => await OpenUnixSocketAsync(cs, ioBehavior,
+								cancellationToken)
+							.ConfigureAwait(false),
+						MySqlConnectionProtocol.NamedPipe => await OpenNamedPipeAsync(cs, ioBehavior, cancellationToken)
+							.ConfigureAwait(false),
+						_ => false
+					};
 					if (!connected)
 					{
 						lock (m_lock)
@@ -808,7 +813,7 @@ namespace MySqlConnector.Core
 
 		internal void HandleTimeout()
 		{
-			if (OwningConnection is object && OwningConnection.TryGetTarget(out var connection))
+			if (OwningConnection != null && OwningConnection.TryGetTarget(out var connection))
 				connection.SetState(ConnectionState.Closed);
 		}
 
@@ -860,7 +865,8 @@ namespace MySqlConnector.Core
 					{
 						tcpClient = new TcpClient(ipAddress.AddressFamily);
 
-						using (cancellationToken.Register(() => tcpClient.Client?.Dispose()))
+						var client = tcpClient;
+						using (cancellationToken.Register(() => client.Client?.Dispose()))
 						{
 							try
 							{
@@ -1465,7 +1471,7 @@ namespace MySqlConnector.Core
 			try
 			{
 				Utility.GetOSDetails(out var os, out var osDescription, out var architecture);
-				if (os is object)
+				if (os != null)
 				{
 					attributesWriter.WriteLengthEncodedString("_os");
 					attributesWriter.WriteLengthEncodedString(os);
@@ -1543,31 +1549,31 @@ namespace MySqlConnector.Core
 			Failed,
 		}
 
-		static ReadOnlySpan<byte> BeginCertificateBytes => new byte[] { 45, 45, 45, 45, 45, 66, 69, 71, 73, 78, 32, 67, 69, 82, 84, 73, 70, 73, 67, 65, 84, 69, 45, 45, 45, 45, 45 }; // -----BEGIN CERTIFICATE-----
-		static int s_lastId;
-		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ServerSession));
-		static readonly PayloadData s_setNamesUtf8Payload = QueryPayload.Create("SET NAMES utf8;");
-		static readonly PayloadData s_setNamesUtf8mb4Payload = QueryPayload.Create("SET NAMES utf8mb4;");
+		private static ReadOnlySpan<byte> BeginCertificateBytes => new byte[] { 45, 45, 45, 45, 45, 66, 69, 71, 73, 78, 32, 67, 69, 82, 84, 73, 70, 73, 67, 65, 84, 69, 45, 45, 45, 45, 45 }; // -----BEGIN CERTIFICATE-----
+		private static int s_lastId;
+		private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ServerSession));
+		private static readonly PayloadData s_setNamesUtf8Payload = QueryPayload.Create("SET NAMES utf8;");
+		private static readonly PayloadData s_setNamesUtf8mb4Payload = QueryPayload.Create("SET NAMES utf8mb4;");
 
-		readonly object m_lock;
-		readonly object[] m_logArguments;
-		readonly ArraySegmentHolder<byte> m_payloadCache;
-		State m_state;
-		TcpClient m_tcpClient;
-		Socket m_socket;
-		Stream m_stream;
-		SslStream m_sslStream;
-		X509Certificate2 m_clientCertificate;
-		IPayloadHandler m_payloadHandler;
-		int m_activeCommandId;
-		bool m_useCompression;
-		bool m_isSecureConnection;
-		bool m_supportsComMulti;
-		bool m_supportsConnectionAttributes;
-		bool m_supportsDeprecateEof;
-		bool m_supportsSessionTrack;
-		CharacterSet m_characterSet;
-		PayloadData m_setNamesPayload;
-		Dictionary<string, PreparedStatements> m_preparedStatements;
+		private readonly object m_lock;
+		private readonly object[] m_logArguments;
+		private readonly ArraySegmentHolder<byte> m_payloadCache;
+		private State m_state;
+		private TcpClient m_tcpClient;
+		private Socket m_socket;
+		private Stream m_stream;
+		private SslStream m_sslStream;
+		private X509Certificate2 m_clientCertificate;
+		private IPayloadHandler m_payloadHandler;
+		private int m_activeCommandId;
+		private bool m_useCompression;
+		private bool m_isSecureConnection;
+		private bool m_supportsComMulti;
+		private bool m_supportsConnectionAttributes;
+		private bool m_supportsDeprecateEof;
+		private bool m_supportsSessionTrack;
+		private CharacterSet m_characterSet;
+		private PayloadData m_setNamesPayload;
+		private Dictionary<string, PreparedStatements> m_preparedStatements;
 	}
 }

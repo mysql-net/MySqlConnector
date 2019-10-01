@@ -429,7 +429,7 @@ namespace MySqlConnector.Core
 			var uniquePools = new HashSet<ConnectionPool>();
 			foreach (var pool in s_pools.Values)
 			{
-				if (pool is object && uniquePools.Add(pool))
+				if (pool != null && uniquePools.Add(pool))
 					pools.Add(pool);
 			}
 			return pools;
@@ -490,7 +490,7 @@ namespace MySqlConnector.Core
 
 		private void AdjustHostConnectionCount(ServerSession session, int delta)
 		{
-			if (m_hostSessions is object)
+			if (m_hostSessions != null)
 			{
 				lock (m_hostSessions)
 					m_hostSessions[session.HostName] += delta;
@@ -529,7 +529,7 @@ namespace MySqlConnector.Core
 			AppDomain.CurrentDomain.ProcessExit += OnAppDomainShutDown;
 		}
 
-		static void OnAppDomainShutDown(object? sender, EventArgs e) => ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		private static void OnAppDomainShutDown(object? sender, EventArgs e) => ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #endif
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConnectionPool));

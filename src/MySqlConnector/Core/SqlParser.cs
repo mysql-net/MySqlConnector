@@ -13,7 +13,7 @@ namespace MySqlConnector.Core
 		{
 			OnBeforeParse(sql ?? throw new ArgumentNullException(nameof(sql)));
 
-			int parameterStartIndex = -1;
+			var parameterStartIndex = -1;
 			var noBackslashEscapes = (Preparer.Options & StatementPreparerOptions.NoBackslashEscapes) == StatementPreparerOptions.NoBackslashEscapes;
 
 			var state = State.Beginning;

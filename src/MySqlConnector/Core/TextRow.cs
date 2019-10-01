@@ -53,10 +53,18 @@ namespace MySqlConnector.Core
 				return ReadBit(data, columnDefinition.ColumnFlags);
 
 			case ColumnType.String:
-				if (Connection.GuidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
-					return Utf8Parser.TryParse(data, out Guid guid, out int guid36BytesConsumed, 'D') && guid36BytesConsumed == 36 ? guid : throw new FormatException();
-				if (Connection.GuidFormat == MySqlGuidFormat.Char32 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
-					return Utf8Parser.TryParse(data, out Guid guid, out int guid32BytesConsumed, 'N') && guid32BytesConsumed == 32 ? guid : throw new FormatException();
+				switch (Connection.GuidFormat)
+				{
+				case MySqlGuidFormat.Char36 when columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36:
+					{
+						return Utf8Parser.TryParse(data, out Guid guid, out var guid36BytesConsumed, 'D') && guid36BytesConsumed == 36 ? guid : throw new FormatException();
+					}
+				case MySqlGuidFormat.Char32 when columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32:
+					{
+						return Utf8Parser.TryParse(data, out Guid guid, out var guid32BytesConsumed, 'N') && guid32BytesConsumed == 32 ? guid : throw new FormatException();
+					}
+				}
+
 				goto case ColumnType.VarString;
 
 			case ColumnType.VarString:

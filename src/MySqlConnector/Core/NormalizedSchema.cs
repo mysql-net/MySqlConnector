@@ -33,7 +33,7 @@ namespace MySqlConnector.Core
 				else if (match.Groups[4].Success)
 					Component = match.Groups[4].Value.Trim();
 
-				string firstGroup = "";
+				var firstGroup = "";
 				if (match.Groups[1].Success)
 					firstGroup = match.Groups[1].Value.Trim();
 				else if (match.Groups[2].Success)

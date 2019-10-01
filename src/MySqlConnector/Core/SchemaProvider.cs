@@ -462,7 +462,7 @@ namespace MySqlConnector.Core
 			  "YEAR_MONTH",
 			  "ZEROFILL",
 			};
-			foreach (string word in reservedWords)
+			foreach (var word in reservedWords)
 				dataTable.Rows.Add(word);
 		}
 

@@ -49,7 +49,7 @@ namespace MySql.Data.MySqlClient
 			if (!IsValid(out var exception))
 			 	return Utility.TaskFromException<DbDataReader>(exception);
 
-			foreach (MySqlBatchCommand batchCommand in BatchCommands)
+			foreach (var batchCommand in BatchCommands)
 				batchCommand.Batch = this;
 
 			var payloadCreator = Connection.Session.SupportsComMulti ? BatchedCommandPayloadCreator.Instance :

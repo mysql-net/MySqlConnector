@@ -23,13 +23,13 @@ namespace MySqlConnector.Core
 			{
 				try
 				{
-					using var cmd = connection.CreateCommand();
+					await using var cmd = connection.CreateCommand();
 					cmd.Transaction = connection.CurrentTransaction;
 					cmd.CommandText = @"SELECT param_list, returns FROM mysql.proc WHERE db = @schema AND name = @component";
 					cmd.Parameters.AddWithValue("@schema", schema);
 					cmd.Parameters.AddWithValue("@component", component);
 
-					using var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
+					await using var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
 					var exists = await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
 					if (!exists)
 						return null;
@@ -66,7 +66,7 @@ namespace MySqlConnector.Core
 
 			var parameters = new List<CachedParameter>();
 			int routineCount;
-			using (var cmd = connection.CreateCommand())
+			await using (var cmd = connection.CreateCommand())
 			{
 				cmd.Transaction = connection.CurrentTransaction;
 				cmd.CommandText = @"SELECT COUNT(*)
@@ -79,7 +79,7 @@ namespace MySqlConnector.Core
 				cmd.Parameters.AddWithValue("@schema", schema);
 				cmd.Parameters.AddWithValue("@component", component);
 
-				using var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
+				await using var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
 				await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
 				routineCount = reader.GetInt32(0);
 				await reader.NextResultAsync(cancellationToken).ConfigureAwait(false);
@@ -163,7 +163,7 @@ namespace MySqlConnector.Core
 			{
 				var parameter = parameters[i].Trim();
 				var originalString = parameter;
-				string direction = "IN";
+				var direction = "IN";
 				if (parameter.StartsWith("INOUT ", StringComparison.OrdinalIgnoreCase))
 				{
 					direction = "INOUT";
@@ -259,7 +259,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		string FullyQualified => $"`{m_schema}`.`{m_component}`";
+		private string FullyQualified => $"`{m_schema}`.`{m_component}`";
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(CachedProcedure));
 

@@ -104,7 +104,7 @@ namespace MySqlConnector.Core
 			AddColumnTypeMetadata(new ColumnTypeMetadata("YEAR", typeInt, MySqlDbType.Year));
 
 			// guid
-				var typeGuid = AddDbTypeMapping(new DbTypeMapping(typeof(Guid), new[] { DbType.Guid }, convert: o => Guid.Parse(Convert.ToString(o)!)));
+			var typeGuid = AddDbTypeMapping(new DbTypeMapping(typeof(Guid), new[] { DbType.Guid }, convert: o => Guid.Parse(Convert.ToString(o)!)));
 			AddColumnTypeMetadata(new ColumnTypeMetadata("CHAR", typeGuid, MySqlDbType.Guid, length: 36, simpleDataTypeName: "CHAR(36)", createFormat: "CHAR(36)"));
 
 			// null
@@ -120,11 +120,11 @@ namespace MySqlConnector.Core
 
 		public MySqlDbType GetMySqlDbTypeForDbType(DbType dbType)
 		{
-			foreach (var pair in m_mySqlDbTypeToColumnTypeMetadata)
+			foreach (var pair in m_mySqlDbTypeToColumnTypeMetadata.Where(pair => pair.Value.DbTypeMapping.DbTypes.Contains(dbType)))
 			{
-				if (pair.Value.DbTypeMapping.DbTypes.Contains(dbType))
-					return pair.Key;
+				return pair.Key;
 			}
+
 			return MySqlDbType.VarChar;
 		}
 
@@ -132,7 +132,7 @@ namespace MySqlConnector.Core
 		{
 			m_dbTypeMappingsByClrType[dbTypeMapping.ClrType] = dbTypeMapping;
 
-			if (dbTypeMapping.DbTypes is object)
+			if (dbTypeMapping.DbTypes != null)
 				foreach (var dbType in dbTypeMapping.DbTypes)
 					m_dbTypeMappingsByDbType[dbType] = dbTypeMapping;
 
@@ -161,10 +161,7 @@ namespace MySqlConnector.Core
 			return dbTypeMapping;
 		}
 
-		public DbTypeMapping? GetDbTypeMapping(string columnTypeName, bool unsigned = false, int length = 0)
-		{
-			return GetColumnTypeMetadata(columnTypeName, unsigned, length)?.DbTypeMapping;
-		}
+		public DbTypeMapping? GetDbTypeMapping(string columnTypeName, bool unsigned = false, int length = 0) => GetColumnTypeMetadata(columnTypeName, unsigned, length)?.DbTypeMapping;
 
 		public MySqlDbType GetMySqlDbType(string typeName, bool unsigned, int length) => GetColumnTypeMetadata(typeName, unsigned, length)!.MySqlDbType;
 
@@ -197,10 +194,13 @@ namespace MySqlConnector.Core
 				return MySqlDbType.Bit;
 
 			case ColumnType.String:
-				if (guidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
+				switch (guidFormat)
+				{
+				case MySqlGuidFormat.Char36 when columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36:
+				case MySqlGuidFormat.Char32 when columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32:
 					return MySqlDbType.Guid;
-				if (guidFormat == MySqlGuidFormat.Char32 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
-					return MySqlDbType.Guid;
+				}
+
 				if ((columnDefinition.ColumnFlags & ColumnFlags.Enum) != 0)
 					return MySqlDbType.Enum;
 				if ((columnDefinition.ColumnFlags & ColumnFlags.Set) != 0)
@@ -431,15 +431,12 @@ namespace MySqlConnector.Core
 			return (ushort) ((byte) columnType | (isUnsigned ? 0x8000 : 0));
 		}
 
-		internal IEnumerable<ColumnTypeMetadata> GetColumnMappings()
-		{
-			return m_columnTypeMetadataLookup.Values.AsEnumerable();
-		}
+		internal IEnumerable<ColumnTypeMetadata> GetColumnMappings() => m_columnTypeMetadataLookup.Values.AsEnumerable();
 
-		readonly List<ColumnTypeMetadata> m_columnTypeMetadata;
-		readonly Dictionary<Type, DbTypeMapping> m_dbTypeMappingsByClrType;
-		readonly Dictionary<DbType, DbTypeMapping> m_dbTypeMappingsByDbType;
-		readonly Dictionary<string, ColumnTypeMetadata> m_columnTypeMetadataLookup;
-		readonly Dictionary<MySqlDbType, ColumnTypeMetadata> m_mySqlDbTypeToColumnTypeMetadata;
+		private readonly List<ColumnTypeMetadata> m_columnTypeMetadata;
+		private readonly Dictionary<Type, DbTypeMapping> m_dbTypeMappingsByClrType;
+		private readonly Dictionary<DbType, DbTypeMapping> m_dbTypeMappingsByDbType;
+		private readonly Dictionary<string, ColumnTypeMetadata> m_columnTypeMetadataLookup;
+		private readonly Dictionary<MySqlDbType, ColumnTypeMetadata> m_mySqlDbTypeToColumnTypeMetadata;
 	}
 }

@@ -22,24 +22,23 @@ namespace MySqlConnector.Core
 				ConnectionProtocol = MySqlConnectionProtocol.UnixSocket;
 				UnixSocket = Path.GetFullPath(csb.Server);
 			}
-			else if (csb.ConnectionProtocol == MySqlConnectionProtocol.NamedPipe)
+			else switch (csb.ConnectionProtocol)
 			{
-				if (csb.LoadBalance != MySqlLoadBalance.RoundRobin)
-					throw new NotSupportedException("LoadBalance not supported when ConnectionProtocol=NamedPipe");
+			case MySqlConnectionProtocol.NamedPipe when csb.LoadBalance != MySqlLoadBalance.RoundRobin:
+				throw new NotSupportedException("LoadBalance not supported when ConnectionProtocol=NamedPipe");
+			case MySqlConnectionProtocol.NamedPipe:
 				ConnectionProtocol = MySqlConnectionProtocol.NamedPipe;
 				HostNames = (csb.Server == "." || string.Equals(csb.Server, "localhost", StringComparison.OrdinalIgnoreCase)) ? s_localhostPipeServer : new[] { csb.Server };
 				PipeName = csb.PipeName;
-			}
-			else if (csb.ConnectionProtocol == MySqlConnectionProtocol.SharedMemory)
-			{
+				break;
+			case MySqlConnectionProtocol.SharedMemory:
 				throw new NotSupportedException("Shared Memory connections are not supported");
-			}
-			else
-			{
+			default:
 				ConnectionProtocol = MySqlConnectionProtocol.Sockets;
 				HostNames = csb.Server.Split(',');
 				LoadBalance = csb.LoadBalance;
 				Port = (int) csb.Port;
+				break;
 			}
 
 			UserID = csb.UserID;

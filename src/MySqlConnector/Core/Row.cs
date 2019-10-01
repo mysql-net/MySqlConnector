@@ -43,78 +43,56 @@ namespace MySqlConnector.Core
 		public bool GetBoolean(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			if (value is bool)
-				return (bool) value;
-
-			if (value is sbyte)
-				return (sbyte) value != 0;
-			if (value is byte)
-				return (byte) value != 0;
-			if (value is short)
-				return (short) value != 0;
-			if (value is ushort)
-				return (ushort) value != 0;
-			if (value is int)
-				return (int) value != 0;
-			if (value is uint)
-				return (uint) value != 0;
-			if (value is long)
-				return (long) value != 0;
-			if (value is ulong)
-				return (ulong) value != 0;
-			if (value is decimal)
-				return (decimal) value != 0;
-			return (bool) value;
+			return value switch
+			{
+				bool b => b,
+				sbyte by => (@by != 0),
+				byte b => (b != 0),
+				short s => (s != 0),
+				ushort us => (us != 0),
+				int i => (i != 0),
+				uint u => (u != 0),
+				long l => (l != 0),
+				ulong ul => (ul != 0),
+				decimal d => (d != 0),
+				_ => (bool) value
+			};
 		}
 
 		public sbyte GetSByte(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			if (value is sbyte sbyteValue)
-				return sbyteValue;
-
-			if (value is byte byteValue)
-				return checked((sbyte) byteValue);
-			if (value is short shortValue)
-				return checked((sbyte) shortValue);
-			if (value is ushort ushortValue)
-				return checked((sbyte) ushortValue);
-			if (value is int intValue)
-				return checked((sbyte) intValue);
-			if (value is uint uintValue)
-				return checked((sbyte) uintValue);
-			if (value is long longValue)
-				return checked((sbyte) longValue);
-			if (value is ulong ulongValue)
-				return checked((sbyte) ulongValue);
-			if (value is decimal decimalValue)
-				return (sbyte) decimalValue;
-			return (sbyte) value;
+			return value switch
+			{
+				sbyte sbyteValue => sbyteValue,
+				byte byteValue => checked((sbyte) byteValue),
+				short shortValue => checked((sbyte) shortValue),
+				ushort ushortValue => checked((sbyte) ushortValue),
+				int intValue => checked((sbyte) intValue),
+				uint uintValue => checked((sbyte) uintValue),
+				long longValue => checked((sbyte) longValue),
+				ulong ulongValue => checked((sbyte) ulongValue),
+				decimal decimalValue => (sbyte) decimalValue,
+				_ => (sbyte) value
+			};
 		}
 
 		public byte GetByte(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			if (value is byte byteValue)
-				return byteValue;
-
-			if (value is sbyte sbyteValue)
-				return checked((byte) sbyteValue);
-			if (value is short shortValue)
-				return checked((byte) shortValue);
-			if (value is ushort ushortValue)
-				return checked((byte) ushortValue);
-			if (value is int intValue)
-				return checked((byte) intValue);
-			if (value is uint uintValue)
-				return checked((byte) uintValue);
-			if (value is long longValue)
-				return checked((byte) longValue);
-			if (value is ulong ulongValue)
-				return checked((byte) ulongValue);
-			if (value is decimal decimalValue)
-				return (byte) decimalValue;
-			return (byte) value;
+			return value switch
+			{
+				byte byteValue => byteValue,
+				sbyte sbyteValue => checked((byte) sbyteValue),
+				short shortValue => checked((byte) shortValue),
+				ushort ushortValue => checked((byte) ushortValue),
+				int intValue => checked((byte) intValue),
+				uint uintValue => checked((byte) uintValue),
+				long longValue => checked((byte) longValue),
+				ulong ulongValue => checked((byte) ulongValue),
+				decimal decimalValue => (byte) decimalValue,
+				_ => (byte) value
+			};
 		}
 
 		public long GetBytes(int ordinal, long dataOffset, byte[]? buffer, int bufferOffset, int length)
@@ -164,163 +142,121 @@ namespace MySqlConnector.Core
 			if (value is Guid guid)
 				return guid;
 
-			if (value is string stringValue && Guid.TryParse(stringValue, out guid))
-				return guid;
-
-			if (value is byte[] bytes && bytes.Length == 16)
-				return CreateGuidFromBytes(Connection.GuidFormat, bytes);
-
-			throw new InvalidCastException("The value could not be converted to a GUID: {0}".FormatInvariant(value));
+			return value switch
+			{
+				string stringValue when Guid.TryParse(stringValue, out guid) => guid,
+				byte[] bytes when bytes.Length == 16 => CreateGuidFromBytes(Connection.GuidFormat, bytes),
+				_ => throw new InvalidCastException(
+					"The value could not be converted to a GUID: {0}".FormatInvariant(value))
+			};
 		}
 
 		public short GetInt16(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			if (value is short)
-				return (short) value;
-
-			if (value is sbyte)
-				return (sbyte) value;
-			if (value is byte)
-				return (byte) value;
-			if (value is ushort)
-				return checked((short) (ushort) value);
-			if (value is int)
-				return checked((short) (int) value);
-			if (value is uint)
-				return checked((short) (uint) value);
-			if (value is long)
-				return checked((short) (long) value);
-			if (value is ulong)
-				return checked((short) (ulong) value);
-			if (value is decimal)
-				return (short) (decimal) value;
-			return (short) value;
+			return value switch
+			{
+				short s => s,
+				sbyte s => s,
+				byte b => b,
+				ushort u => checked((short) u),
+				int i => checked((short) i),
+				uint u => checked((short) u),
+				long l => checked((short) l),
+				ulong u => checked((short) u),
+				decimal d => (short) d,
+				_ => (short) value
+			};
 		}
 
 		public int GetInt32(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			if (value is int)
-				return (int) value;
-
-			if (value is sbyte)
-				return (sbyte) value;
-			if (value is byte)
-				return (byte) value;
-			if (value is short)
-				return (short) value;
-			if (value is ushort)
-				return (ushort) value;
-			if (value is uint)
-				return checked((int) (uint) value);
-			if (value is long)
-				return checked((int) (long) value);
-			if (value is ulong)
-				return checked((int) (ulong) value);
-			if (value is decimal)
-				return (int) (decimal) value;
-			return (int) value;
+			return value switch
+			{
+				int i => i,
+				sbyte s => s,
+				byte b => b,
+				short s => s,
+				ushort u => u,
+				uint u => checked((int) u),
+				long l => checked((int) l),
+				ulong u => checked((int) u),
+				decimal d => (int) d,
+				_ => (int) value
+			};
 		}
 
 		public long GetInt64(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			if (value is long)
-				return (long) value;
-
-			if (value is sbyte)
-				return (sbyte) value;
-			if (value is byte)
-				return (byte) value;
-			if (value is short)
-				return (short) value;
-			if (value is ushort)
-				return (ushort) value;
-			if (value is int)
-				return (int) value;
-			if (value is uint)
-				return (uint) value;
-			if (value is ulong)
-				return checked((long) (ulong) value);
-			if (value is decimal)
-				return (long) (decimal) value;
-			return (long) value;
+			return value switch
+			{
+				long l => l,
+				sbyte s => s,
+				byte b => b,
+				short s => s,
+				ushort u => u,
+				int i => i,
+				uint u => u,
+				ulong u => checked((long) u),
+				decimal d => (long) d,
+				_ => (long) value
+			};
 		}
 
 		public ushort GetUInt16(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			if (value is ushort)
-				return (ushort) value;
-
-			if (value is sbyte)
-				return checked((ushort) (sbyte) value);
-			if (value is byte)
-				return (byte) value;
-			if (value is short)
-				return checked((ushort) (short) value);
-			if (value is int)
-				return checked((ushort) (int) value);
-			if (value is uint)
-				return checked((ushort) (uint) value);
-			if (value is long)
-				return checked((ushort) (long) value);
-			if (value is ulong)
-				return checked((ushort) (ulong) value);
-			if (value is decimal)
-				return (ushort) (decimal) value;
-			return (ushort) value;
+			return value switch
+			{
+				ushort u => u,
+				sbyte s => checked((ushort) s),
+				byte b => b,
+				short s => checked((ushort) s),
+				int i => checked((ushort) i),
+				uint u => checked((ushort) u),
+				long l => checked((ushort) l),
+				ulong u => checked((ushort) u),
+				decimal d => (ushort) d,
+				_ => (ushort) value
+			};
 		}
 
 		public uint GetUInt32(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			if (value is uint)
-				return (uint) value;
-
-			if (value is sbyte)
-				return checked((uint) (sbyte) value);
-			if (value is byte)
-				return (byte) value;
-			if (value is short)
-				return checked((uint) (short) value);
-			if (value is ushort)
-				return (ushort) value;
-			if (value is int)
-				return checked((uint) (int) value);
-			if (value is long)
-				return checked((uint) (long) value);
-			if (value is ulong)
-				return checked((uint) (ulong) value);
-			if (value is decimal)
-				return (uint) (decimal) value;
-			return (uint) value;
+			return value switch
+			{
+				uint u => u,
+				sbyte s => checked((uint) s),
+				byte b => b,
+				short s => checked((uint) s),
+				ushort u => u,
+				int i => checked((uint) i),
+				long l => checked((uint) l),
+				ulong u => checked((uint) u),
+				decimal d => (uint) d,
+				_ => (uint) value
+			};
 		}
 
 		public ulong GetUInt64(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			if (value is ulong)
-				return (ulong) value;
-
-			if (value is sbyte)
-				return checked((ulong) (sbyte) value);
-			if (value is byte)
-				return (byte) value;
-			if (value is short)
-				return checked((ulong) (short) value);
-			if (value is ushort)
-				return (ushort) value;
-			if (value is int)
-				return checked((ulong) (int) value);
-			if (value is uint)
-				return (uint) value;
-			if (value is long)
-				return checked((ulong) (long) value);
-			if (value is decimal)
-				return (ulong) (decimal) value;
-			return (ulong) value;
+			return value switch
+			{
+				ulong u => u,
+				sbyte s => checked((ulong) s),
+				byte b => b,
+				short s => checked((ulong) s),
+				ushort u => u,
+				int i => checked((ulong) i),
+				uint u => u,
+				long l => checked((ulong) l),
+				decimal d => (ulong) d,
+				_ => (ulong) value
+			};
 		}
 
 		public DateTime GetDateTime(int ordinal)
@@ -337,7 +273,7 @@ namespace MySqlConnector.Core
 		{
 			CheckBinaryColumn(ordinal);
 			return (MemoryMarshal.TryGetArray(m_data, out var arraySegment)) ?
-				new MemoryStream(arraySegment.Array!, arraySegment.Offset + m_dataOffsets[ordinal], m_dataLengths[ordinal], writable: false) :
+				new MemoryStream(arraySegment.Array! ?? throw new InvalidOperationException(), arraySegment.Offset + m_dataOffsets[ordinal], m_dataLengths[ordinal], writable: false) :
 				throw new InvalidOperationException("Can't get underlying array.");
 		}
 
@@ -385,8 +321,8 @@ namespace MySqlConnector.Core
 
 		public int GetValues(object[] values)
 		{
-			int count = Math.Min((values ?? throw new ArgumentNullException(nameof(values))).Length, ResultSet.ColumnDefinitions!.Length);
-			for (int i = 0; i < count; i++)
+			var count = Math.Min((values ?? throw new ArgumentNullException(nameof(values))).Length, ResultSet.ColumnDefinitions!.Length);
+			for (var i = 0; i < count; i++)
 				values[i] = GetValue(i);
 			return count;
 		}
@@ -416,11 +352,14 @@ namespace MySqlConnector.Core
 		protected static Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes)
 		{
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
-			if (guidFormat == MySqlGuidFormat.Binary16)
+			switch (guidFormat)
+			{
+			case MySqlGuidFormat.Binary16:
 				return new Guid(new[] { bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4], bytes[7], bytes[6], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] });
-			if (guidFormat == MySqlGuidFormat.TimeSwapBinary16)
+			case MySqlGuidFormat.TimeSwapBinary16:
 				return new Guid(new[] { bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] });
-			return new Guid(bytes.ToArray());
+			default:
+				return new Guid(bytes.ToArray());
 #else
 			unsafe
 			{
@@ -431,6 +370,7 @@ namespace MySqlConnector.Core
 				return new Guid(bytes);
 			}
 #endif
+			}
 		}
 
 		protected static object ReadBit(ReadOnlySpan<byte> data, ColumnFlags columnFlags)
@@ -439,8 +379,9 @@ namespace MySqlConnector.Core
 			{
 				// when the Binary flag IS NOT set, the BIT column is transmitted as MSB byte array
 				ulong bitValue = 0;
-				for (int i = 0; i < data.Length; i++)
-					bitValue = bitValue * 256 + data[i];
+				foreach (var d in data)
+					bitValue = bitValue * 256 + d;
+
 				return bitValue;
 			}
 			else
@@ -486,7 +427,7 @@ namespace MySqlConnector.Core
 		}
 
 		ReadOnlyMemory<byte> m_data;
-		int[] m_dataOffsets;
-		int[] m_dataLengths;
+		private readonly int[] m_dataOffsets;
+		private readonly int[] m_dataLengths;
 	}
 }

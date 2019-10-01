@@ -71,7 +71,7 @@ namespace MySqlConnector.Core
 			{
 				// the default MySQL Server value for max_allowed_packet (in MySQL 5.7) is 4MiB: https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_allowed_packet
 				// use "decimal megabytes" (to round up) when creating the exception message
-				int megabytes = payload.Span.Length / 1_000_000;
+				var megabytes = payload.Span.Length / 1_000_000;
 				throw new MySqlException("Error submitting {0}MB packet; ensure 'max_allowed_packet' is greater than {0}MB.".FormatInvariant(megabytes), ex);
 			}
 		}
