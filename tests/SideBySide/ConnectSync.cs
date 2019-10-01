@@ -159,6 +159,8 @@ namespace SideBySide
 			Assert.Equal(ConnectionState.Open, connection.State);
 			connection.Close();
 			Assert.Equal(ConnectionState.Closed, connection.State);
+			connection.Open();
+			Assert.Equal(ConnectionState.Open, connection.State);
 		}
 
 		[Fact]

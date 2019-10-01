@@ -74,6 +74,8 @@ namespace SideBySide
 			Assert.Equal(ConnectionState.Open, connection.State);
 			await connection.CloseAsync();
 			Assert.Equal(ConnectionState.Closed, connection.State);
+			await connection.OpenAsync();
+			Assert.Equal(ConnectionState.Open, connection.State);
 		}
 
 		[SkippableFact(ConfigSettings.TcpConnection, Baseline = "https://bugs.mysql.com/bug.php?id=81650")]
