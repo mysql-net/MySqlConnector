@@ -31,7 +31,7 @@ namespace MySql.Data.Types
 			Microsecond = other.Microsecond;
 		}
 
-		public bool IsValidDateTime => Year != 0 && Month != 0 && Day != 0;
+		public readonly bool IsValidDateTime => Year != 0 && Month != 0 && Day != 0;
 
 		public int Year { get; set; }
 		public int Month { get; set; }
@@ -47,15 +47,15 @@ namespace MySql.Data.Types
 			set => Microsecond = value * 1000;
 		}
 
-		public DateTime GetDateTime() =>
+		public readonly DateTime GetDateTime() =>
 			!IsValidDateTime ? throw new MySqlConversionException("Cannot convert MySqlDateTime to DateTime when IsValidDateTime is false.") :
 				new DateTime(Year, Month, Day, Hour, Minute, Second, DateTimeKind.Unspecified).AddTicks(Microsecond * 10);
 
-		public override string ToString() => IsValidDateTime ? GetDateTime().ToString() : "0000-00-00";
+		public readonly override string ToString() => IsValidDateTime ? GetDateTime().ToString() : "0000-00-00";
 
 		public static explicit operator DateTime(MySqlDateTime val) => !val.IsValidDateTime ? DateTime.MinValue : val.GetDateTime();
 
-		int IComparable.CompareTo(object? obj)
+		readonly int IComparable.CompareTo(object? obj)
 		{
 			if (!(obj is MySqlDateTime other))
 				throw new ArgumentException("CompareTo can only be called with another MySqlDateTime", nameof(obj));
