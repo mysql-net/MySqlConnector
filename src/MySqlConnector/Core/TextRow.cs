@@ -145,7 +145,7 @@ namespace MySqlConnector.Core
 					return DateTime.MinValue;
 				if (Connection.AllowZeroDateTime)
 					return new MySqlDateTime();
-				throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime.");
+				throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime, set AllowZeroDateTime=True or ConvertZeroDateTime=True in the connection string. See https://mysqlconnector.net/connection-options/");
 			}
 
 			int hour, minute, second, microseconds;
