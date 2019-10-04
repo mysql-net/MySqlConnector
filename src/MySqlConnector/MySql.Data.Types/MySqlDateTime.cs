@@ -43,7 +43,7 @@ namespace MySql.Data.Types
 
 		public int Millisecond
 		{
-			get => Microsecond / 1000;
+			readonly get => Microsecond / 1000;
 			set => Microsecond = value * 1000;
 		}
 
