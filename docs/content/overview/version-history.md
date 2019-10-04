@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.59.2
+
+* Fix error when reading a `BIT(1)` column: [#713](https://github.com/mysql-net/MySqlConnector/issues/707).
+  * This fixes a problem introduced in 0.59.1.
+
 ### 0.59.1
 
 * Allow `DECIMAL` column type to be read by `GetBoolean`: [#707](https://github.com/mysql-net/MySqlConnector/issues/707).
