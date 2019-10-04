@@ -50,7 +50,7 @@ namespace MySqlConnector.Core
 				return isUnsigned ? (object) ParseUInt64(data) : ParseInt64(data);
 
 			case ColumnType.Bit:
-				return ReadBit(data, columnDefinition.ColumnFlags);
+				return ReadBit(data, columnDefinition);
 
 			case ColumnType.String:
 				if (Connection.GuidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)

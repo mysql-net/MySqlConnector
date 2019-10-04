@@ -1093,6 +1093,61 @@ insert into command_behavior_single_row(id) values(1),(2),(3),(4),(5),(6),(7),(8
 		}
 #endif
 
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=97067")]
+		public async Task QueryBit()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			await connection.OpenAsync();
+			await connection.ExecuteAsync(@"
+DROP TABLE IF EXISTS query_bit;
+CREATE TABLE query_bit(name TEXT, value BIT(1));
+INSERT INTO query_bit VALUES('a', 1);
+");
+
+			using var command = new MySqlCommand(@"
+SELECT value FROM query_bit;
+
+SELECT MAX(value) FROM query_bit;
+
+SELECT COALESCE(value, 0) FROM query_bit;
+
+SELECT CASE
+    WHEN name IS NOT NULL THEN value
+    ELSE NULL
+END AS value
+FROM query_bit;", connection);
+			using var reader = await command.ExecuteReaderAsync();
+
+			Assert.True(await reader.ReadAsync());
+			Assert.Equal(1ul, reader.GetValue(0));
+			Assert.False(await reader.ReadAsync());
+
+			Assert.True(await reader.NextResultAsync());
+
+			Assert.True(await reader.ReadAsync());
+			Assert.Equal(1ul, reader.GetValue(0));
+			Assert.False(await reader.ReadAsync());
+
+			Assert.True(await reader.NextResultAsync());
+
+			Assert.True(await reader.ReadAsync());
+			var value = reader.GetValue(0);
+			if (value is byte[] byteArray)
+				Assert.Equal(new byte[] { 49 }, byteArray); // server bug returns '1' as a blob
+			else
+				Assert.Equal(1m, value);
+			Assert.False(await reader.ReadAsync());
+
+			Assert.True(await reader.NextResultAsync());
+
+			Assert.True(await reader.ReadAsync());
+			// MySQL returns ulong, MariaDB returns decimal; GetBoolean will coerce both
+			Assert.True(reader.GetBoolean(0));
+			Assert.False(await reader.ReadAsync());
+
+			Assert.False(await reader.NextResultAsync());
+		}
+
 		class BoolTest
 		{
 			public int Id { get; set; }
