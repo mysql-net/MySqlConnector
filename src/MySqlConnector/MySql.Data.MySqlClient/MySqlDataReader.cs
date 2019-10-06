@@ -269,12 +269,7 @@ namespace MySql.Data.MySqlClient
 		public override int VisibleFieldCount => FieldCount;
 
 #if !NETSTANDARD1_3
-		public override DataTable GetSchemaTable()
-		{
-			if (m_schemaTable is null)
-				m_schemaTable = BuildSchemaTable();
-			return m_schemaTable;
-		}
+		public override DataTable GetSchemaTable() => m_schemaTable ??= BuildSchemaTable();
 
 		public override void Close() => DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #endif

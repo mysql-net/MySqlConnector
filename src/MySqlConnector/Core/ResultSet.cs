@@ -199,8 +199,7 @@ namespace MySqlConnector.Core
 			var row = await ScanRowAsync(ioBehavior, null, cancellationToken).ConfigureAwait(false);
 			if (row is null)
 				return null;
-			if (m_readBuffer is null)
-				m_readBuffer = new Queue<Row>();
+			m_readBuffer ??= new Queue<Row>();
 			m_readBuffer.Enqueue(row);
 			return row;
 		}

@@ -22,8 +22,7 @@ namespace MySql.Data.MySqlClient
 			{
 				if (value[i] == '\'' || value[i] == '\"' || value[i] == '\\')
 				{
-					if (sb is null)
-						sb = new StringBuilder();
+					sb ??= new StringBuilder();
 					sb.Append(value, last + 1, i - (last + 1));
 					sb.Append('\\');
 					sb.Append(value[i]);

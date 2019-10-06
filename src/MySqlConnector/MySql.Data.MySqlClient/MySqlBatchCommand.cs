@@ -21,15 +21,7 @@ namespace MySql.Data.MySqlClient
 		public CommandBehavior CommandBehavior { get; set; }
 		public int RecordsAffected { get; set; }
 
-		public MySqlParameterCollection Parameters
-		{
-			get
-			{
-				if (m_parameterCollection is null)
-					m_parameterCollection = new MySqlParameterCollection();
-				return m_parameterCollection;
-			}
-		}
+		public MySqlParameterCollection Parameters => m_parameterCollection ??= new MySqlParameterCollection();
 
 		MySqlParameterCollection? IMySqlCommand.RawParameters => m_parameterCollection;
 

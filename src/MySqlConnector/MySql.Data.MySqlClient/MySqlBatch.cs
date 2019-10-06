@@ -98,8 +98,7 @@ namespace MySql.Data.MySqlClient
 			if (!token.CanBeCanceled)
 				return null;
 
-			if (m_cancelAction is null)
-				m_cancelAction = Cancel;
+			m_cancelAction ??= Cancel;
 			return token.Register(m_cancelAction);
 		}
 

@@ -287,8 +287,7 @@ namespace MySql.Data.MySqlClient
 			SetState(ConnectionState.Connecting);
 
 			var pool = ConnectionPool.GetPool(m_connectionString);
-			if (m_connectionSettings is null)
-				m_connectionSettings = pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
+			m_connectionSettings ??= pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
 
 #if !NETSTANDARD1_3
 			// check if there is an open session (in the current transaction) that can be adopted
@@ -783,12 +782,8 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		private ConnectionSettings GetConnectionSettings()
-		{
-			if (m_connectionSettings is null)
-				m_connectionSettings = new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
-			return m_connectionSettings;
-		}
+		private ConnectionSettings GetConnectionSettings() =>
+			m_connectionSettings ??= new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlConnection));
 		static readonly StateChangeEventArgs s_stateChangeClosedConnecting = new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting);

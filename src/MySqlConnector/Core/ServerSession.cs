@@ -192,8 +192,7 @@ namespace MySqlConnector.Core
 				preparedStatements.Add(new PreparedStatement(response.StatementId, statement, columns, parameters));
 			}
 
-			if (m_preparedStatements is null)
-				m_preparedStatements = new Dictionary<string, PreparedStatements>();
+			m_preparedStatements ??= new Dictionary<string, PreparedStatements>();
 			m_preparedStatements.Add(command.CommandText, new PreparedStatements(preparedStatements, parsedStatements));
 		}
 

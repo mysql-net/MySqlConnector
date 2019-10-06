@@ -43,8 +43,7 @@ namespace MySqlConnector.Core
 				else
 					Schema = firstGroup.Trim();
 
-				if (Schema is null)
-					Schema = defaultSchema;
+				Schema ??= defaultSchema;
 			}
 		}
 

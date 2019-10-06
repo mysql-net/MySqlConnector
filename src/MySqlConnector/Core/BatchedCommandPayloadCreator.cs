@@ -22,8 +22,7 @@ namespace MySqlConnector.Core
 				writer.Write(Padding);
 
 				wroteCommand = SingleCommandPayloadCreator.Instance.WriteQueryCommand(ref commandListPosition, cachedProcedures, writer);
-				if (firstResult is null)
-					firstResult = wroteCommand;
+				firstResult ??= wroteCommand;
 
 				// write command length
 				var commandLength = writer.Position - position - Padding.Length;

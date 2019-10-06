@@ -50,8 +50,7 @@ namespace MySqlConnector.Protocol.Payloads
 				if ((protocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
 					authPluginName = Encoding.UTF8.GetString(reader.ReadNullOrEofTerminatedByteString());
 			}
-			if (authPluginData is null)
-				authPluginData = authPluginData1.ToArray();
+			authPluginData ??= authPluginData1.ToArray();
 
 			if (reader.BytesRemaining != 0)
 				throw new FormatException("Extra bytes at end of payload.");

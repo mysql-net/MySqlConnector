@@ -260,8 +260,7 @@ namespace MySqlConnector.Utilities
 		public static void Resize<T>([NotNull] ref ResizableArray<T>? resizableArray, int newLength)
 			where T : notnull
 		{
-			if (resizableArray is null)
-				resizableArray = new ResizableArray<T>();
+			resizableArray ??= new ResizableArray<T>();
 			resizableArray.DoResize(newLength);
 		}
 

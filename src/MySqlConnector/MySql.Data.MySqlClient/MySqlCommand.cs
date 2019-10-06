@@ -60,9 +60,7 @@ namespace MySql.Data.MySqlClient
 			get
 			{
 				VerifyNotDisposed();
-				if (m_parameterCollection is null)
-					m_parameterCollection = new MySqlParameterCollection();
-				return m_parameterCollection;
+				return m_parameterCollection ??= new MySqlParameterCollection();
 			}
 		}
 
@@ -313,8 +311,7 @@ namespace MySql.Data.MySqlClient
 			if (!token.CanBeCanceled)
 				return null;
 
-			if (m_cancelAction is null)
-				m_cancelAction = Cancel;
+			m_cancelAction ??= Cancel;
 			return token.Register(m_cancelAction);
 		}
 
