@@ -9,14 +9,15 @@ namespace MySqlConnector.Logging
     {
 		public SerilogLoggerProvider() { }
 
-        public IMySqlConnectorLogger CreateLogger(string name)
-        {
-            return new SerilogLogger(name);
-        }
+		public IMySqlConnectorLogger CreateLogger(string name) => new SerilogLogger(name);
 
-        private class SerilogLogger : IMySqlConnectorLogger
+		private class SerilogLogger : IMySqlConnectorLogger
         {
-            public SerilogLogger(string name)
+			static readonly Regex tokenReplacer = new Regex(@"((\w+)?\s?(?:=|:)?\s?'?)\{(?:\d+)(\:\w+)?\}('?)", RegexOptions.Compiled);
+
+			readonly ILogger m_logger;
+			readonly string m_name;
+			public SerilogLogger(string name)
             {
                 m_name = name;
                 m_logger = Serilog.Log.ForContext("SourceContext", "MySqlConnector." + name);
@@ -46,11 +47,6 @@ namespace MySqlConnector.Logging
 				MySqlConnectorLogLevel.Fatal => LogEventLevel.Fatal,
 				_ => throw new ArgumentOutOfRangeException(nameof(level), level, "Invalid value for 'level'."),
 			};
-
-			static readonly Regex tokenReplacer = new Regex(@"((\w+)?\s?(?:=|:)?\s?'?)\{(?:\d+)(\:\w+)?\}('?)", RegexOptions.Compiled);
-
-			readonly ILogger m_logger;
-            readonly string m_name;
         }
 
     }
