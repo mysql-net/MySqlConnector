@@ -1,4 +1,3 @@
-#nullable disable
 #if !NETSTANDARD1_3
 using System;
 using System.Collections.Generic;
@@ -26,6 +25,8 @@ namespace MySqlConnector.Core
 
 		public DataTable GetSchema(string collectionName)
 		{
+			if (collectionName is null)
+				throw new ArgumentNullException(nameof(collectionName));
 			if (!m_schemaCollections.TryGetValue(collectionName, out var fillAction))
 				throw new ArgumentException("Invalid collection name.", nameof(collectionName));
 
@@ -156,7 +157,7 @@ namespace MySqlConnector.Core
 				new DataColumn("DEFINER", typeof(string)),
 			});
 
-			Action close = null;
+			Action? close = null;
 			if (m_connection.State != ConnectionState.Open)
 			{
 				m_connection.Open();
@@ -165,7 +166,9 @@ namespace MySqlConnector.Core
 
 			using (var command = m_connection.CreateCommand())
 			{
+#pragma warning disable CA2100
 				command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(x => x.ColumnName)) + " FROM INFORMATION_SCHEMA.ROUTINES;";
+#pragma warning restore CA2100
 				using var reader = command.ExecuteReader();
 				while (reader.Read())
 				{

@@ -1,4 +1,3 @@
-#nullable disable
 // copied from https://github.com/mono/mono/blob/master/mcs/class/Mono.Posix/Mono.Unix/UnixEndPoint.cs
 
 //
@@ -122,13 +121,9 @@ namespace MySqlConnector.Utilities
 			return filename.GetHashCode ();
 		}
 
-		public override bool Equals (object o)
+		public override bool Equals (object? o)
 		{
-			UnixEndPoint other = o as UnixEndPoint;
-			if (other is null)
-				return false;
-
-			return (other.filename == filename);
+			return o is UnixEndPoint other && filename == other.filename;
 		}
 	}
 }

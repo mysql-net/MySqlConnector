@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.IO;
 using System.Net.Sockets;
@@ -36,7 +35,7 @@ namespace MySqlConnector.Protocol.Serialization
 				int bytesRead;
 				try
 				{
-					bytesRead = m_stream.Read(buffer_.Array, buffer_.Offset, buffer_.Count);
+					bytesRead = m_stream.Read(buffer_.Array!, buffer_.Offset, buffer_.Count);
 				}
 				catch (Exception ex)
 				{
@@ -69,7 +68,7 @@ namespace MySqlConnector.Protocol.Serialization
 				int bytesRead;
 				try
 				{
-					bytesRead = await m_stream.ReadAsync(buffer_.Array, buffer_.Offset, buffer_.Count).ConfigureAwait(false);
+					bytesRead = await m_stream.ReadAsync(buffer_.Array!, buffer_.Offset, buffer_.Count).ConfigureAwait(false);
 				}
 				catch (Exception ex) when (ex is ObjectDisposedException || ex is IOException)
 				{
@@ -98,7 +97,7 @@ namespace MySqlConnector.Protocol.Serialization
 
 			try
 			{
-				m_stream.Write(data.Array, data.Offset, data.Count);
+				m_stream.Write(data.Array!, data.Offset, data.Count);
 				return default;
 			}
 			catch (Exception ex)
@@ -108,7 +107,7 @@ namespace MySqlConnector.Protocol.Serialization
 
 			async Task<int> DoWriteBytesAsync(ArraySegment<byte> data_)
 			{
-				await m_stream.WriteAsync(data_.Array, data_.Offset, data_.Count).ConfigureAwait(false);
+				await m_stream.WriteAsync(data_.Array!, data_.Offset, data_.Count).ConfigureAwait(false);
 				return 0;
 			}
 		}

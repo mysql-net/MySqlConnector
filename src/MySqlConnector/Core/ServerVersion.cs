@@ -55,6 +55,14 @@ namespace MySqlConnector.Core
 		public Version Version { get; }
 		public Version? MariaDbVersion { get; }
 
+		public static ServerVersion Empty { get; } = new ServerVersion();
+
+		private ServerVersion()
+		{
+			OriginalString = "";
+			Version = new Version(0, 0);
+		}
+
 		static ReadOnlySpan<byte> MariaDb => new byte[] { 0x2D, 0x4D, 0x61, 0x72, 0x69, 0x61, 0x44, 0x42 }; // -MariaDB
 	}
 }

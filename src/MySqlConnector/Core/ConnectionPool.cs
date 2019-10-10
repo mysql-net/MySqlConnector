@@ -235,7 +235,7 @@ namespace MySqlConnector.Core
 				m_lastRecoveryTime = unchecked((uint) Environment.TickCount);
 				foreach (var session in m_leasedSessions.Values)
 				{
-					if (!session.OwningConnection.TryGetTarget(out var _))
+					if (!session.OwningConnection!.TryGetTarget(out var _))
 						recoveredSessions.Add(session);
 				}
 			}

@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Buffers;
 using System.IO;
@@ -414,18 +413,18 @@ namespace MySqlConnector.Protocol.Serialization
 				await ReadPacketAfterHeader(await headerBytes_.ConfigureAwait(false), bufferedByteReader_, byteHandler_, getNextSequenceNumber_, protocolErrorBehavior_, ioBehavior_).ConfigureAwait(false);
 		}
 
-		private static ValueTask<Packet> ReadPacketAfterHeader(ArraySegment<byte> headerBytes, BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+		private static ValueTask<Packet> ReadPacketAfterHeader(ReadOnlySpan<byte> headerBytes, BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
-			if (headerBytes.Count < 4)
+			if (headerBytes.Length < 4)
 			{
 				return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ? default :
-					ValueTaskExtensions.FromException<Packet>(new EndOfStreamException("Expected to read 4 header bytes but only received {0}.".FormatInvariant(headerBytes.Count)));
+					ValueTaskExtensions.FromException<Packet>(new EndOfStreamException("Expected to read 4 header bytes but only received {0}.".FormatInvariant(headerBytes.Length)));
 			}
 
-			var payloadLength = (int) SerializationUtility.ReadUInt32(headerBytes.Array, headerBytes.Offset, 3);
-			int packetSequenceNumber = headerBytes.Array[headerBytes.Offset + 3];
+			var payloadLength = (int) SerializationUtility.ReadUInt32(headerBytes.Slice(0, 3));
+			int packetSequenceNumber = headerBytes[3];
 
-			Exception packetOutOfOrderException = null;
+			Exception? packetOutOfOrderException = null;
 			var expectedSequenceNumber = getNextSequenceNumber() % 256;
 			if (expectedSequenceNumber != -1 && packetSequenceNumber != expectedSequenceNumber)
 				packetOutOfOrderException = MySqlProtocolException.CreateForPacketOutOfOrder(expectedSequenceNumber, packetSequenceNumber);
@@ -435,11 +434,11 @@ namespace MySqlConnector.Protocol.Serialization
 				return CreatePacketFromPayload(payloadBytesTask.Result, payloadLength, protocolErrorBehavior, packetOutOfOrderException);
 			return AddContinuation(payloadBytesTask, payloadLength, protocolErrorBehavior, packetOutOfOrderException);
 
-			static async ValueTask<Packet> AddContinuation(ValueTask<ArraySegment<byte>> payloadBytesTask_, int payloadLength_, ProtocolErrorBehavior protocolErrorBehavior_, Exception packetOutOfOrderException_) =>
+			static async ValueTask<Packet> AddContinuation(ValueTask<ArraySegment<byte>> payloadBytesTask_, int payloadLength_, ProtocolErrorBehavior protocolErrorBehavior_, Exception? packetOutOfOrderException_) =>
 				await CreatePacketFromPayload(await payloadBytesTask_.ConfigureAwait(false), payloadLength_, protocolErrorBehavior_, packetOutOfOrderException_).ConfigureAwait(false);
 		}
 
-		private static ValueTask<Packet> CreatePacketFromPayload(ArraySegment<byte> payloadBytes, int payloadLength, ProtocolErrorBehavior protocolErrorBehavior, Exception exception)
+		private static ValueTask<Packet> CreatePacketFromPayload(ArraySegment<byte> payloadBytes, int payloadLength, ProtocolErrorBehavior protocolErrorBehavior, Exception? exception)
 		{
 			if (exception is object)
 			{
@@ -499,7 +498,7 @@ namespace MySqlConnector.Protocol.Serialization
 			else if (previousPayloads.Offset + previousPayloads.Count + packet.Contents.Count > previousPayloadsArray.Length)
 				Array.Resize(ref previousPayloadsArray, previousPayloadsArray.Length * 2);
 
-			Buffer.BlockCopy(packet.Contents.Array, packet.Contents.Offset, previousPayloadsArray, previousPayloads.Offset + previousPayloads.Count, packet.Contents.Count);
+			Buffer.BlockCopy(packet.Contents.Array!, packet.Contents.Offset, previousPayloadsArray, previousPayloads.Offset + previousPayloads.Count, packet.Contents.Count);
 			previousPayloads.ArraySegment = new ArraySegment<byte>(previousPayloadsArray, previousPayloads.Offset, previousPayloads.Count + packet.Contents.Count);
 
 			if (packet.Contents.Count < ProtocolUtility.MaxPacketSize)
