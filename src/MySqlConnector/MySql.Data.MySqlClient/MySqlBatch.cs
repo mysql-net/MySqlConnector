@@ -1,7 +1,7 @@
-#nullable disable
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlConnector.Core;
@@ -17,7 +17,7 @@ namespace MySql.Data.MySqlClient
 		{
 		}
 
-		public MySqlBatch(MySqlConnection connection = null, MySqlTransaction transaction = null)
+		public MySqlBatch(MySqlConnection? connection = null, MySqlTransaction? transaction = null)
 		{
 			Connection = connection;
 			Transaction = transaction;
@@ -25,8 +25,8 @@ namespace MySql.Data.MySqlClient
 			m_commandId = ICancellableCommandExtensions.GetNextId();
 		}
 
-		public MySqlConnection Connection { get; set; }
-		public MySqlTransaction Transaction { get; set; }
+		public MySqlConnection? Connection { get; set; }
+		public MySqlTransaction? Transaction { get; set; }
 		public MySqlBatchCommandCollection BatchCommands { get; }
 
 		public DbDataReader ExecuteReader() => ExecuteDbDataReader();
@@ -49,13 +49,13 @@ namespace MySql.Data.MySqlClient
 			if (!IsValid(out var exception))
 			 	return Utility.TaskFromException<DbDataReader>(exception);
 
-			foreach (MySqlBatchCommand batchCommand in BatchCommands)
+			foreach (var batchCommand in BatchCommands)
 				batchCommand.Batch = this;
 
-			var payloadCreator = Connection.Session.SupportsComMulti ? BatchedCommandPayloadCreator.Instance :
+			var payloadCreator = Connection!.Session.SupportsComMulti ? BatchedCommandPayloadCreator.Instance :
 				IsPrepared ? SingleCommandPayloadCreator.Instance :
 				ConcatenatedCommandPayloadCreator.Instance;
-			return CommandExecutor.ExecuteReaderAsync(BatchCommands, payloadCreator, CommandBehavior.Default, ioBehavior, cancellationToken);
+			return CommandExecutor.ExecuteReaderAsync(BatchCommands!, payloadCreator, CommandBehavior.Default, ioBehavior, cancellationToken);
 		}
 
 		public int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -93,7 +93,7 @@ namespace MySql.Data.MySqlClient
 		int ICancellableCommand.CommandTimeout => Timeout;
 		int ICancellableCommand.CancelAttemptCount { get; set; }
 
-		IDisposable ICancellableCommand.RegisterCancel(CancellationToken token)
+		IDisposable? ICancellableCommand.RegisterCancel(CancellationToken token)
 		{
 			if (!token.CanBeCanceled)
 				return null;
@@ -119,7 +119,7 @@ namespace MySql.Data.MySqlClient
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
 			var hasSetResult = false;
-			object result = null;
+			object? result = null;
 			using var reader = (MySqlDataReader) await ExecuteReaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			do
 			{
@@ -131,10 +131,10 @@ namespace MySql.Data.MySqlClient
 					hasSetResult = true;
 				}
 			} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
-			return result;
+			return result!;
 		}
 
-		private bool IsValid(out Exception exception)
+		private bool IsValid([NotNullWhen(false)] out Exception? exception)
 		{
 			exception = null;
 			if (m_isDisposed)
@@ -144,29 +144,21 @@ namespace MySql.Data.MySqlClient
 			else if (Connection.State != ConnectionState.Open && Connection.State != ConnectionState.Connecting)
 				exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
 			else if (!Connection.IgnoreCommandTransaction && Transaction != Connection.CurrentTransaction)
-				exception = new InvalidOperationException("The transaction associated with this command is not the connection's active transaction; see https://fl.vu/mysql-trans");
+				exception = new InvalidOperationException("The transaction associated with this batch is not the connection's active transaction; see https://fl.vu/mysql-trans");
 			else if (BatchCommands.Count == 0)
 				exception = new InvalidOperationException("BatchCommands must contain a command");
-
-			if (exception is null)
-			{
-				foreach (var command in BatchCommands)
-				{
-					if ((command.CommandBehavior & CommandBehavior.CloseConnection) != 0)
-					{
-						exception = new NotSupportedException("CommandBehavior.CloseConnection is not supported by MySqlBatch");
-						break;
-					}
-				}
-			}
+			else
+				exception = GetExceptionForInvalidCommands();
 
 			return exception is null;
 		}
 
-		private bool NeedsPrepare(out Exception exception)
+		private bool NeedsPrepare(out Exception? exception)
 		{
 			exception = null;
-			if (Connection is null)
+			if (m_isDisposed)
+				exception = new ObjectDisposedException(GetType().Name);
+			else if (Connection is null)
 				exception = new InvalidOperationException("Connection property must be non-null.");
 			else if (Connection.State != ConnectionState.Open)
 				exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
@@ -174,8 +166,24 @@ namespace MySql.Data.MySqlClient
 				exception = new InvalidOperationException("BatchCommands must contain a command");
 			else if (Connection?.HasActiveReader ?? false)
 				exception = new InvalidOperationException("Cannot call Prepare when there is an open DataReader for this command; it must be closed first.");
+			else
+				exception = GetExceptionForInvalidCommands();
 
-			return exception is null && !Connection.IgnorePrepare;
+			return exception is null && !Connection!.IgnorePrepare;
+		}
+
+		private Exception? GetExceptionForInvalidCommands()
+		{
+			foreach (var command in BatchCommands)
+			{
+				if (command is null)
+					return new InvalidOperationException("BatchCommands must not contain null");
+				if ((command.CommandBehavior & CommandBehavior.CloseConnection) != 0)
+					return new NotSupportedException("CommandBehavior.CloseConnection is not supported by MySqlBatch");
+				if (string.IsNullOrWhiteSpace(command.CommandText))
+					return new InvalidOperationException("CommandText must be specified on each batch command");
+			}
+			return null;
 		}
 
 		private Task PrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -195,7 +203,7 @@ namespace MySql.Data.MySqlClient
 				((MySqlBatchCommand) batchCommand).Batch = this;
 
 				// don't prepare the same SQL twice
-				if (Connection.Session.TryGetPreparedStatement(batchCommand.CommandText) is null)
+				if (Connection!.Session.TryGetPreparedStatement(batchCommand.CommandText!) is null)
 					await Connection.Session.PrepareAsync(batchCommand, ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 		}
@@ -206,7 +214,7 @@ namespace MySql.Data.MySqlClient
 			{
 				foreach (var command in BatchCommands)
 				{
-					if (Connection.Session.TryGetPreparedStatement(command.CommandText) is null)
+					if (Connection!.Session.TryGetPreparedStatement(command!.CommandText!) is null)
 						return false;
 				}
 				return true;
@@ -217,6 +225,6 @@ namespace MySql.Data.MySqlClient
 
 		readonly int m_commandId;
 		bool m_isDisposed;
-		Action m_cancelAction;
+		Action? m_cancelAction;
 	}
 }

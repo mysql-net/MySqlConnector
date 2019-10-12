@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Data;
 using System.Data.Common;
@@ -71,8 +70,8 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public new MySqlConnection Connection { get; private set; }
-		protected override DbConnection DbConnection => Connection;
+		public new MySqlConnection? Connection { get; private set; }
+		protected override DbConnection? DbConnection => Connection;
 		public override IsolationLevel IsolationLevel { get; }
 
 		protected override void Dispose(bool disposing)

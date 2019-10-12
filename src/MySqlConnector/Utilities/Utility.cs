@@ -385,6 +385,36 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
+#if !NETSTANDARD2_1 && !NETCOREAPP2_1 && !NETCOREAPP3_0
+		public static int Read(this Stream stream, Memory<byte> buffer)
+		{
+			MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);
+			return stream.Read(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
+		}
+
+		public static Task<int> ReadAsync(this Stream stream, Memory<byte> buffer)
+		{
+			MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);
+			return stream.ReadAsync(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
+		}
+
+		public static void Write(this Stream stream, ReadOnlyMemory<byte> data)
+		{
+			MemoryMarshal.TryGetArray(data, out var arraySegment);
+			stream.Write(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
+		}
+
+		public static Task WriteAsync(this Stream stream, ReadOnlyMemory<byte> data)
+		{
+			MemoryMarshal.TryGetArray(data, out var arraySegment);
+			return stream.WriteAsync(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
+		}
+#else
+		public static int Read(this Stream stream, Memory<byte> buffer) => stream.Read(buffer.Span);
+
+		public static void Write(this Stream stream, ReadOnlyMemory<byte> data) => stream.Write(data.Span);
+#endif
+
 		public static void SwapBytes(byte[] bytes, int offset1, int offset2)
 		{
 			byte swap = bytes[offset1];

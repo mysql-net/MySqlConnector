@@ -1,8 +1,8 @@
-#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Threading;
@@ -22,10 +22,10 @@ namespace MySql.Data.MySqlClient
 		{
 		}
 
-		public MySqlConnection(string connectionString)
+		public MySqlConnection(string? connectionString)
 		{
 			GC.SuppressFinalize(this);
-			ConnectionString = connectionString;
+			m_connectionString = connectionString ?? "";
 		}
 
 		public new MySqlTransaction BeginTransaction() => (MySqlTransaction) base.BeginTransaction();
@@ -76,7 +76,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 #if !NETSTANDARD1_3
-		public override void EnlistTransaction(System.Transactions.Transaction transaction)
+		public override void EnlistTransaction(System.Transactions.Transaction? transaction)
 		{
 			if (State != ConnectionState.Open)
 				throw new InvalidOperationException("Connection is not open.");
@@ -102,7 +102,7 @@ namespace MySql.Data.MySqlClient
 				}
 				else
 				{
-					m_enlistedTransaction = m_connectionSettings.UseXaTransactions ?
+					m_enlistedTransaction = GetInitializedConnectionSettings().UseXaTransactions ?
 						(EnlistedTransactionBase) new XaEnlistedTransaction(transaction, this) :
 						new StandardEnlistedTransaction(transaction, this);
 					m_enlistedTransaction.Start();
@@ -119,7 +119,7 @@ namespace MySql.Data.MySqlClient
 
 		internal void UnenlistTransaction()
 		{
-			var transaction = m_enlistedTransaction.Transaction;
+			var transaction = m_enlistedTransaction!.Transaction;
 			m_enlistedTransaction = null;
 
 			// find this connection in the list of connections associated with the transaction
@@ -152,7 +152,7 @@ namespace MySql.Data.MySqlClient
 		// has been stored in 's_transactionConnections' and the caller must call TakeSessionFrom to
 		// transfer its session to this MySqlConnection.
 		// Also performs validation checks to ensure that XA and non-XA transactions aren't being mixed.
-		private MySqlConnection FindExistingEnlistedSession(System.Transactions.Transaction transaction)
+		private MySqlConnection? FindExistingEnlistedSession(System.Transactions.Transaction transaction)
 		{
 			var hasEnlistedTransactions = false;
 			var hasXaTransaction = false;
@@ -163,7 +163,7 @@ namespace MySql.Data.MySqlClient
 					hasEnlistedTransactions = true;
 					foreach (var enlistedTransaction in enlistedTransactions)
 					{
-						hasXaTransaction = enlistedTransaction.Connection.m_connectionSettings.UseXaTransactions;
+						hasXaTransaction = enlistedTransaction.Connection.GetInitializedConnectionSettings().UseXaTransactions;
 						if (enlistedTransaction.IsIdle && enlistedTransaction.Connection.m_connectionString == m_connectionString)
 						{
 							var existingConnection = enlistedTransaction.Connection;
@@ -176,7 +176,7 @@ namespace MySql.Data.MySqlClient
 			}
 
 			// no valid existing connection was found; verify that constraints aren't violated
-			if (m_connectionSettings.UseXaTransactions)
+			if (GetInitializedConnectionSettings().UseXaTransactions)
 			{
 				if (hasEnlistedTransactions && !hasXaTransaction)
 					throw new NotSupportedException("Cannot start an XA transaction when there is an existing non-XA transaction.");
@@ -208,7 +208,7 @@ namespace MySql.Data.MySqlClient
 #endif
 
 			m_session = other.m_session;
-			m_session.OwningConnection = new WeakReference<MySqlConnection>(this);
+			m_session!.OwningConnection = new WeakReference<MySqlConnection>(this);
 			other.m_session = null;
 
 			m_cachedProcedures = other.m_cachedProcedures;
@@ -218,7 +218,7 @@ namespace MySql.Data.MySqlClient
 			other.m_enlistedTransaction = null;
 		}
 
-		EnlistedTransactionBase m_enlistedTransaction;
+		EnlistedTransactionBase? m_enlistedTransaction;
 #endif
 
 		public override void Close() => CloseAsync(changeState: true, IOBehavior.Synchronous).GetAwaiter().GetResult();
@@ -246,7 +246,7 @@ namespace MySql.Data.MySqlClient
 			await CloseDatabaseAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			using (var initDatabasePayload = InitDatabasePayload.Create(databaseName))
-				await m_session.SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				await m_session!.SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			var payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			OkPayload.Create(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
 			m_session.DatabaseOverride = databaseName;
@@ -328,6 +328,7 @@ namespace MySql.Data.MySqlClient
 #endif
 		}
 
+		[AllowNull]
 		public override string ConnectionString
 		{
 			get
@@ -384,7 +385,7 @@ namespace MySql.Data.MySqlClient
 		public override DataTable GetSchema(string collectionName) => GetSchemaProvider().GetSchema(collectionName);
 
 		/// <inheritdoc cref="DbConnection.GetSchema(string)"/>
-		public override DataTable GetSchema(string collectionName, string[] restrictions) => GetSchemaProvider().GetSchema(collectionName);
+		public override DataTable GetSchema(string collectionName, string?[]? restrictions) => GetSchemaProvider().GetSchema(collectionName);
 
 		private SchemaProvider GetSchemaProvider()
 		{
@@ -393,12 +394,12 @@ namespace MySql.Data.MySqlClient
 			return m_schemaProvider;
 		}
 
-		SchemaProvider m_schemaProvider;
+		SchemaProvider? m_schemaProvider;
 #endif
 
 		public override int ConnectionTimeout => GetConnectionSettings().ConnectionTimeout;
 
-		public event MySqlInfoMessageEventHandler InfoMessage;
+		public event MySqlInfoMessageEventHandler? InfoMessage;
 
 		public MySqlBatch CreateBatch() => CreateDbBatch();
 		private MySqlBatch CreateDbBatch() => new MySqlBatch(this);
@@ -448,7 +449,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		internal void SetSessionFailed(Exception exception) => m_session.SetFailed(exception);
+		internal void SetSessionFailed(Exception exception) => m_session!.SetFailed(exception);
 
 		internal void Cancel(ICancellableCommand command)
 		{
@@ -461,35 +462,35 @@ namespace MySql.Data.MySqlClient
 				// open a dedicated connection to the server to kill the active query
 				var csb = new MySqlConnectionStringBuilder(m_connectionString);
 				csb.Pooling = false;
-				if (m_session.IPAddress is object)
+				if (m_session!.IPAddress is object)
 					csb.Server = m_session.IPAddress.ToString();
 				csb.ConnectionTimeout = 3u;
 
 				using var connection = new MySqlConnection(csb.ConnectionString);
 				connection.Open();
-				using var killCommand = new MySqlCommand("KILL QUERY {0}".FormatInvariant(command.Connection.ServerThread), connection);
+				using var killCommand = new MySqlCommand("KILL QUERY {0}".FormatInvariant(command.Connection!.ServerThread), connection);
 				session.DoCancel(command, killCommand);
 			}
 			catch (MySqlException ex)
 			{
 				// cancelling the query failed; setting the state back to 'Querying' will allow another call to 'Cancel' to try again
-				Log.Warn(ex, "Session{0} cancelling command {1} failed", m_session.Id, command.CommandId);
+				Log.Warn(ex, "Session{0} cancelling command {1} failed", m_session!.Id, command.CommandId);
 				session.AbortCancel(command);
 			}
 		}
 
-		internal async Task<CachedProcedure> GetCachedProcedure(IOBehavior ioBehavior, string name, CancellationToken cancellationToken)
+		internal async Task<CachedProcedure?> GetCachedProcedure(IOBehavior ioBehavior, string name, CancellationToken cancellationToken)
 		{
 			if (Log.IsDebugEnabled())
-				Log.Debug("Session{0} getting cached procedure Name={1}", m_session.Id, name);
+				Log.Debug("Session{0} getting cached procedure Name={1}", m_session!.Id, name);
 			if (State != ConnectionState.Open)
 				throw new InvalidOperationException("Connection is not open.");
 
-			var cachedProcedures = m_session.Pool?.GetProcedureCache() ?? m_cachedProcedures;
+			var cachedProcedures = m_session!.Pool?.GetProcedureCache() ?? m_cachedProcedures;
 			if (cachedProcedures is null)
 			{
 				Log.Warn("Session{0} pool Pool{1} doesn't have a shared procedure cache; procedure will only be cached on this connection", m_session.Id, m_session.Pool?.Id);
-				cachedProcedures = m_cachedProcedures = new Dictionary<string, CachedProcedure>();
+				cachedProcedures = m_cachedProcedures = new Dictionary<string, CachedProcedure?>();
 			}
 
 			var normalized = NormalizedSchema.MustNormalize(name, Database);
@@ -499,13 +500,13 @@ namespace MySql.Data.MySqlClient
 				return null;
 			}
 
-			CachedProcedure cachedProcedure;
+			CachedProcedure? cachedProcedure;
 			bool foundProcedure;
 			lock (cachedProcedures)
 				foundProcedure = cachedProcedures.TryGetValue(normalized.FullyQualified, out cachedProcedure);
 			if (!foundProcedure)
 			{
-				cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema, normalized.Component, cancellationToken).ConfigureAwait(false);
+				cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema!, normalized.Component!, cancellationToken).ConfigureAwait(false);
 				if (Log.IsWarnEnabled())
 				{
 					if (cachedProcedure is null)
@@ -533,28 +534,28 @@ namespace MySql.Data.MySqlClient
 			return cachedProcedure;
 		}
 
-		internal MySqlTransaction CurrentTransaction { get; set; }
-		internal bool AllowLoadLocalInfile => m_connectionSettings.AllowLoadLocalInfile;
-		internal bool AllowUserVariables => m_connectionSettings.AllowUserVariables;
-		internal bool AllowZeroDateTime => m_connectionSettings.AllowZeroDateTime;
-		internal bool ConvertZeroDateTime => m_connectionSettings.ConvertZeroDateTime;
-		internal DateTimeKind DateTimeKind => m_connectionSettings.DateTimeKind;
+		internal MySqlTransaction? CurrentTransaction { get; set; }
+		internal bool AllowLoadLocalInfile => GetInitializedConnectionSettings().AllowLoadLocalInfile;
+		internal bool AllowUserVariables => GetInitializedConnectionSettings().AllowUserVariables;
+		internal bool AllowZeroDateTime => GetInitializedConnectionSettings().AllowZeroDateTime;
+		internal bool ConvertZeroDateTime => GetInitializedConnectionSettings().ConvertZeroDateTime;
+		internal DateTimeKind DateTimeKind => GetInitializedConnectionSettings().DateTimeKind;
 		internal int DefaultCommandTimeout => GetConnectionSettings().DefaultCommandTimeout;
-		internal MySqlGuidFormat GuidFormat => m_connectionSettings.GuidFormat;
+		internal MySqlGuidFormat GuidFormat => GetInitializedConnectionSettings().GuidFormat;
 #if NETSTANDARD1_3
-		internal bool IgnoreCommandTransaction => m_connectionSettings.IgnoreCommandTransaction;
+		internal bool IgnoreCommandTransaction => GetInitializedConnectionSettings().IgnoreCommandTransaction;
 #else
-		internal bool IgnoreCommandTransaction => m_connectionSettings.IgnoreCommandTransaction || m_enlistedTransaction is StandardEnlistedTransaction;
+		internal bool IgnoreCommandTransaction => GetInitializedConnectionSettings().IgnoreCommandTransaction || m_enlistedTransaction is StandardEnlistedTransaction;
 #endif
-		internal bool IgnorePrepare => m_connectionSettings.IgnorePrepare;
-		internal bool NoBackslashEscapes => m_connectionSettings.NoBackslashEscapes;
-		internal bool TreatTinyAsBoolean => m_connectionSettings.TreatTinyAsBoolean;
+		internal bool IgnorePrepare => GetInitializedConnectionSettings().IgnorePrepare;
+		internal bool NoBackslashEscapes => GetInitializedConnectionSettings().NoBackslashEscapes;
+		internal bool TreatTinyAsBoolean => GetInitializedConnectionSettings().TreatTinyAsBoolean;
 		internal IOBehavior AsyncIOBehavior => GetConnectionSettings().ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
 
 		// Defaults to IOBehavior.Synchronous if the connection hasn't been opened yet; only use if it's a no-op for a closed connection.
 		internal IOBehavior SimpleAsyncIOBehavior => (m_connectionSettings?.ForceSynchronous ?? false) ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
 
-		internal MySqlSslMode SslMode => m_connectionSettings.SslMode;
+		internal MySqlSslMode SslMode => GetInitializedConnectionSettings().SslMode;
 
 		internal bool HasActiveReader => m_activeReader is object;
 
@@ -569,7 +570,7 @@ namespace MySql.Data.MySqlClient
 
 		internal void FinishQuerying(bool hasWarnings)
 		{
-			m_session.FinishQuerying();
+			m_session!.FinishQuerying();
 			m_activeReader = null;
 
 			if (hasWarnings && InfoMessage is object)
@@ -586,18 +587,19 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		private async ValueTask<ServerSession> CreateSessionAsync(ConnectionPool pool, IOBehavior? ioBehavior, CancellationToken cancellationToken)
+		private async ValueTask<ServerSession> CreateSessionAsync(ConnectionPool? pool, IOBehavior? ioBehavior, CancellationToken cancellationToken)
 		{
-			var actualIOBehavior = ioBehavior ?? (m_connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous);
+			var connectionSettings = GetInitializedConnectionSettings();
+			var actualIOBehavior = ioBehavior ?? (connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous);
 
-			CancellationTokenSource timeoutSource = null;
-			CancellationTokenSource linkedSource = null;
+			CancellationTokenSource? timeoutSource = null;
+			CancellationTokenSource? linkedSource = null;
 			try
 			{
 				// the cancellation token for connection is controlled by 'cancellationToken' (if it can be cancelled), ConnectionTimeout
 				// (from the connection string, if non-zero), or a combination of both
-				if (m_connectionSettings.ConnectionTimeout != 0)
-					timeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(m_connectionSettings.ConnectionTimeoutMilliseconds));
+				if (connectionSettings.ConnectionTimeout != 0)
+					timeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(connectionSettings.ConnectionTimeoutMilliseconds));
 				if (cancellationToken.CanBeCanceled && timeoutSource is object)
 					linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
 				var connectToken = linkedSource?.Token ?? timeoutSource?.Token ?? cancellationToken;
@@ -611,13 +613,13 @@ namespace MySql.Data.MySqlClient
 				else
 				{
 					// only "fail over" and "random" load balancers supported without connection pooling
-					var loadBalancer = m_connectionSettings.LoadBalance == MySqlLoadBalance.Random && m_connectionSettings.HostNames.Count > 1 ?
+					var loadBalancer = connectionSettings.LoadBalance == MySqlLoadBalance.Random && connectionSettings.HostNames!.Count > 1 ?
 						RandomLoadBalancer.Instance : FailOverLoadBalancer.Instance;
 
 					var session = new ServerSession();
 					session.OwningConnection = new WeakReference<MySqlConnection>(this);
 					Log.Info("Created new non-pooled Session{0}", session.Id);
-					await session.ConnectAsync(m_connectionSettings, loadBalancer, actualIOBehavior, connectToken).ConfigureAwait(false);
+					await session.ConnectAsync(connectionSettings, loadBalancer, actualIOBehavior, connectToken).ConfigureAwait(false);
 					return session;
 				}
 			}
@@ -632,15 +634,15 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		internal bool SslIsEncrypted => m_session.SslIsEncrypted;
+		internal bool SslIsEncrypted => m_session!.SslIsEncrypted;
 
-		internal bool SslIsSigned => m_session.SslIsSigned;
+		internal bool SslIsSigned => m_session!.SslIsSigned;
 
-		internal bool SslIsAuthenticated => m_session.SslIsAuthenticated;
+		internal bool SslIsAuthenticated => m_session!.SslIsAuthenticated;
 
-		internal bool SslIsMutuallyAuthenticated => m_session.SslIsMutuallyAuthenticated;
+		internal bool SslIsMutuallyAuthenticated => m_session!.SslIsMutuallyAuthenticated;
 
-		internal SslProtocols SslProtocol => m_session.SslProtocol;
+		internal SslProtocols SslProtocol => m_session!.SslProtocol;
 
 		internal void SetState(ConnectionState newState)
 		{
@@ -718,7 +720,7 @@ namespace MySql.Data.MySqlClient
 				// put the new, idle, connection into the list of sessions for this transaction (replacing this MySqlConnection)
 				lock (s_lock)
 				{
-					foreach (var enlistedTransaction in s_transactionConnections[connection.m_enlistedTransaction.Transaction])
+					foreach (var enlistedTransaction in s_transactionConnections[connection.m_enlistedTransaction!.Transaction])
 					{
 						if (enlistedTransaction.Connection == this)
 						{
@@ -745,7 +747,7 @@ namespace MySql.Data.MySqlClient
 				{
 					if (m_session is object)
 					{
-						if (m_connectionSettings.Pooling)
+						if (GetInitializedConnectionSettings().Pooling)
 						{
 							m_session.ReturnToPool();
 						}
@@ -775,7 +777,7 @@ namespace MySql.Data.MySqlClient
 		{
 			if (m_activeReader is object)
 				await m_activeReader.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			if (CurrentTransaction is object && m_session.IsConnected)
+			if (CurrentTransaction is object && m_session!.IsConnected)
 			{
 				await CurrentTransaction.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				CurrentTransaction = null;
@@ -784,6 +786,9 @@ namespace MySql.Data.MySqlClient
 
 		private ConnectionSettings GetConnectionSettings() =>
 			m_connectionSettings ??= new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
+
+		// This method may be called when it's known that the connection settings have been initialized.
+		private ConnectionSettings GetInitializedConnectionSettings() => m_connectionSettings!;
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlConnection));
 		static readonly StateChangeEventArgs s_stateChangeClosedConnecting = new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting);
@@ -795,12 +800,12 @@ namespace MySql.Data.MySqlClient
 #endif
 
 		string m_connectionString;
-		ConnectionSettings m_connectionSettings;
-		ServerSession m_session;
+		ConnectionSettings? m_connectionSettings;
+		ServerSession? m_session;
 		ConnectionState m_connectionState;
 		bool m_hasBeenOpened;
 		bool m_isDisposed;
-		Dictionary<string, CachedProcedure> m_cachedProcedures;
-		MySqlDataReader m_activeReader;
+		Dictionary<string, CachedProcedure?>? m_cachedProcedures;
+		MySqlDataReader? m_activeReader;
 	}
 }

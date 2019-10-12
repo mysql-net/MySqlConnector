@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -19,7 +18,7 @@ namespace MySql.Data.MySqlClient
 		private static readonly object s_lock = new object();
 		private static readonly Dictionary<string, Stream> s_streams = new Dictionary<string, Stream>();
 
-		public string CharacterSet { get; set; }
+		public string? CharacterSet { get; set; }
 		public List<string> Columns { get; }
 		public MySqlBulkLoaderConflictOption ConflictOption { get; set; }
 		public MySqlConnection Connection { get; set; }
@@ -27,16 +26,16 @@ namespace MySql.Data.MySqlClient
 		public List<string> Expressions { get; }
 		public char FieldQuotationCharacter { get; set; }
 		public bool FieldQuotationOptional { get; set; }
-		public string FieldTerminator { get; set; }
+		public string? FieldTerminator { get; set; }
 
 		/// <summary>
 		/// The name of the local (if <see cref="Local"/> is <c>true</c>) or remote (otherwise) file to load.
 		/// Either this or <see cref="SourceStream"/> must be set.
 		/// </summary>
-		public string FileName { get; set; }
+		public string? FileName { get; set; }
 
-		public string LinePrefix { get; set; }
-		public string LineTerminator { get; set; }
+		public string? LinePrefix { get; set; }
+		public string? LineTerminator { get; set; }
 		public bool Local { get; set; }
 		public int NumberOfLinesToSkip { get; set; }
 		public MySqlBulkLoaderPriority Priority { get; set; }
@@ -45,9 +44,9 @@ namespace MySql.Data.MySqlClient
 		/// A <see cref="Stream"/> containing the data to load. Either this or <see cref="FileName"/> must be set.
 		/// The <see cref="Local"/> property must be <c>true</c> if this is set.
 		/// </summary>
-		public Stream SourceStream { get; set; }
+		public Stream? SourceStream { get; set; }
 
-		public string TableName { get; set; }
+		public string? TableName { get; set; }
 		public int Timeout { get; set; }
 
 		public MySqlBulkLoader(MySqlConnection connection)
@@ -76,9 +75,9 @@ namespace MySql.Data.MySqlClient
 			sqlCommandMain.Append("INFILE ");
 
 			if (System.IO.Path.DirectorySeparatorChar != '\\')
-				sqlCommandMain.AppendFormat("'{0}' ", FileName);
+				sqlCommandMain.AppendFormat("'{0}' ", FileName!);
 			else
-				sqlCommandMain.AppendFormat("'{0}' ", FileName.Replace("\\", "\\\\"));
+				sqlCommandMain.AppendFormat("'{0}' ", FileName!.Replace("\\", "\\\\"));
 
 			if (ConflictOption == MySqlBulkLoaderConflictOption.Ignore)
 				sqlCommandMain.Append("IGNORE ");
@@ -155,7 +154,7 @@ namespace MySql.Data.MySqlClient
 			// LOCAL INFILE case
 			if (!string.IsNullOrWhiteSpace(FileName) && Local)
 			{
-				SourceStream = CreateFileStream(FileName);
+				SourceStream = CreateFileStream(FileName!);
 				FileName = null;
 			}
 
@@ -205,7 +204,7 @@ namespace MySql.Data.MySqlClient
 			{
 				if (closeStream)
 				{
-					using (GetAndRemoveStream(FileName))
+					using (GetAndRemoveStream(FileName!))
 					{
 						// close the stream
 					}

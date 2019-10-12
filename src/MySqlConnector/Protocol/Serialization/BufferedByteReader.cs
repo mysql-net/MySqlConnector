@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Threading.Tasks;
 using MySqlConnector.Utilities;
@@ -23,7 +22,7 @@ namespace MySqlConnector.Protocol.Serialization
 			var buffer = count > m_buffer.Length ? new byte[count] : m_buffer;
 			if (m_remainingData.Count > 0)
 			{
-				Buffer.BlockCopy(m_remainingData.Array, m_remainingData.Offset, buffer, 0, m_remainingData.Count);
+				Buffer.BlockCopy(m_remainingData.Array!, m_remainingData.Offset, buffer, 0, m_remainingData.Count);
 				m_remainingData = new ArraySegment<byte>(buffer, 0, m_remainingData.Count);
 			}
 
@@ -45,7 +44,7 @@ namespace MySqlConnector.Protocol.Serialization
 				var bufferSize = buffer.Offset + readBytesCount;
 				if (bufferSize >= totalBytesToRead)
 				{
-					var bufferBytes = new ArraySegment<byte>(buffer.Array, 0, bufferSize);
+					var bufferBytes = new ArraySegment<byte>(buffer.Array!, 0, bufferSize);
 					var requestedBytes = bufferBytes.Slice(0, totalBytesToRead);
 					m_remainingData = bufferBytes.Slice(totalBytesToRead);
 					return requestedBytes;

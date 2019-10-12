@@ -1,4 +1,3 @@
-#nullable disable
 #if !NETSTANDARD1_3
 using System;
 using System.Data;
@@ -29,31 +28,31 @@ namespace MySql.Data.MySqlClient
 		{
 		}
 
-		public event MySqlRowUpdatingEventHandler RowUpdating;
+		public event MySqlRowUpdatingEventHandler? RowUpdating;
 
-		public event MySqlRowUpdatedEventHandler RowUpdated;
+		public event MySqlRowUpdatedEventHandler? RowUpdated;
 
-		public new MySqlCommand DeleteCommand
+		public new MySqlCommand? DeleteCommand
 		{
-			get => (MySqlCommand) base.DeleteCommand;
+			get => (MySqlCommand?) base.DeleteCommand;
 			set => base.DeleteCommand = value;
 		}
 
-		public new MySqlCommand InsertCommand
+		public new MySqlCommand? InsertCommand
 		{
-			get => (MySqlCommand) base.InsertCommand;
+			get => (MySqlCommand?) base.InsertCommand;
 			set => base.InsertCommand = value;
 		}
 
-		public new MySqlCommand SelectCommand
+		public new MySqlCommand? SelectCommand
 		{
-			get => (MySqlCommand) base.SelectCommand;
+			get => (MySqlCommand?) base.SelectCommand;
 			set => base.SelectCommand = value;
 		}
 
-		public new MySqlCommand UpdateCommand
+		public new MySqlCommand? UpdateCommand
 		{
-			get => (MySqlCommand) base.UpdateCommand;
+			get => (MySqlCommand?) base.UpdateCommand;
 			set => base.UpdateCommand = value;
 		}
 
@@ -78,7 +77,7 @@ namespace MySql.Data.MySqlClient
 		protected override int AddToBatch(IDbCommand command)
 		{
 			var mySqlCommand = (MySqlCommand) command;
-			if (m_batch.Connection is null)
+			if (m_batch!.Connection is null)
 			{
 				m_batch.Connection = mySqlCommand.Connection;
 				m_batch.Transaction = mySqlCommand.Transaction;
@@ -100,11 +99,11 @@ namespace MySql.Data.MySqlClient
 			return count;
 		}
 
-		protected override void ClearBatch() => m_batch.BatchCommands.Clear();
+		protected override void ClearBatch() => m_batch!.BatchCommands.Clear();
 
-		protected override int ExecuteBatch() => m_batch.ExecuteNonQuery();
+		protected override int ExecuteBatch() => m_batch!.ExecuteNonQuery();
 
-		MySqlBatch m_batch;
+		MySqlBatch? m_batch;
 	}
 
 	public delegate void MySqlRowUpdatingEventHandler(object sender, MySqlRowUpdatingEventArgs e);

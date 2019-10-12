@@ -1,4 +1,3 @@
-#nullable disable
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using MySqlConnector.Core;
@@ -9,15 +8,15 @@ namespace MySql.Data.MySqlClient
 	{
 		public new MySqlBatchCommand this[int index]
 		{
-			get => (MySqlBatchCommand) base[index];
+			get => base[index];
 			set => base[index] = value;
 		}
 
-		IMySqlCommand IReadOnlyList<IMySqlCommand>.this[int index] => (IMySqlCommand) this[index];
+		IMySqlCommand IReadOnlyList<IMySqlCommand>.this[int index] => this[index];
 
 		IEnumerator<IMySqlCommand> IEnumerable<IMySqlCommand>.GetEnumerator()
 		{
-			foreach (MySqlBatchCommand command in this)
+			foreach (var command in this)
 				yield return command;
 		}
 	}

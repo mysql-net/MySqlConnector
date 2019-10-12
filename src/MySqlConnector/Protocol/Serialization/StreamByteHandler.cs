@@ -1,7 +1,7 @@
-#nullable disable
 using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
@@ -22,21 +22,21 @@ namespace MySqlConnector.Protocol.Serialization
 
 		public int RemainingTimeout { get; set; }
 
-		public ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, IOBehavior ioBehavior)
+		public ValueTask<int> ReadBytesAsync(Memory<byte> buffer, IOBehavior ioBehavior)
 		{
 			return ioBehavior == IOBehavior.Asynchronous ? new ValueTask<int>(DoReadBytesAsync(buffer)) :
 				RemainingTimeout <= 0 ? ValueTaskExtensions.FromException<int>(MySqlException.CreateForTimeout()) :
 				m_stream.CanTimeout ? DoReadBytesSync(buffer) :
 				DoReadBytesSyncOverAsync(buffer);
 
-			ValueTask<int> DoReadBytesSync(ArraySegment<byte> buffer_)
+			ValueTask<int> DoReadBytesSync(Memory<byte> buffer_)
 			{
 				m_stream.ReadTimeout = RemainingTimeout == Constants.InfiniteTimeout ? Timeout.Infinite : RemainingTimeout;
 				var startTime = RemainingTimeout == Constants.InfiniteTimeout ? 0 : Environment.TickCount;
 				int bytesRead;
 				try
 				{
-					bytesRead = m_stream.Read(buffer_.Array, buffer_.Offset, buffer_.Count);
+					bytesRead = m_stream.Read(buffer_);
 				}
 				catch (Exception ex)
 				{
@@ -49,7 +49,7 @@ namespace MySqlConnector.Protocol.Serialization
 				return new ValueTask<int>(bytesRead);
 			}
 
-			ValueTask<int> DoReadBytesSyncOverAsync(ArraySegment<byte> buffer_)
+			ValueTask<int> DoReadBytesSyncOverAsync(Memory<byte> buffer_)
 			{
 				try
 				{
@@ -62,14 +62,14 @@ namespace MySqlConnector.Protocol.Serialization
 				}
 			}
 
-			async Task<int> DoReadBytesAsync(ArraySegment<byte> buffer_)
+			async Task<int> DoReadBytesAsync(Memory<byte> buffer_)
 			{
 				var startTime = RemainingTimeout == Constants.InfiniteTimeout ? 0 : Environment.TickCount;
 				var timerId = RemainingTimeout == Constants.InfiniteTimeout ? 0 : TimerQueue.Instance.Add(RemainingTimeout, m_closeStream);
 				int bytesRead;
 				try
 				{
-					bytesRead = await m_stream.ReadAsync(buffer_.Array, buffer_.Offset, buffer_.Count).ConfigureAwait(false);
+					bytesRead = await m_stream.ReadAsync(buffer_).ConfigureAwait(false);
 				}
 				catch (Exception ex) when (ex is ObjectDisposedException || ex is IOException)
 				{
@@ -91,14 +91,14 @@ namespace MySqlConnector.Protocol.Serialization
 			}
 		}
 
-		public ValueTask<int> WriteBytesAsync(ArraySegment<byte> data, IOBehavior ioBehavior)
+		public ValueTask<int> WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior)
 		{
 			if (ioBehavior == IOBehavior.Asynchronous)
 				return new ValueTask<int>(DoWriteBytesAsync(data));
 
 			try
 			{
-				m_stream.Write(data.Array, data.Offset, data.Count);
+				m_stream.Write(data);
 				return default;
 			}
 			catch (Exception ex)
@@ -106,9 +106,9 @@ namespace MySqlConnector.Protocol.Serialization
 				return ValueTaskExtensions.FromException<int>(ex);
 			}
 
-			async Task<int> DoWriteBytesAsync(ArraySegment<byte> data_)
+			async Task<int> DoWriteBytesAsync(ReadOnlyMemory<byte> data_)
 			{
-				await m_stream.WriteAsync(data_.Array, data_.Offset, data_.Count).ConfigureAwait(false);
+				await m_stream.WriteAsync(data_).ConfigureAwait(false);
 				return 0;
 			}
 		}
