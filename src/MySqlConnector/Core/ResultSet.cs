@@ -402,9 +402,9 @@ namespace MySqlConnector.Core
 
 		public readonly MySqlDataReader DataReader;
 		public Exception? ReadResultSetHeaderException { get; private set; }
-		public IMySqlCommand Command => DataReader.Command;
-		public MySqlConnection Connection => DataReader.Connection;
-		public ServerSession Session => DataReader.Session;
+		public IMySqlCommand Command => DataReader.Command!;
+		public MySqlConnection Connection => DataReader.Connection!;
+		public ServerSession Session => DataReader.Session!;
 
 		public ResultSetState BufferState { get; private set; }
 		public ColumnDefinitionPayload[]? ColumnDefinitions { get; private set; }
