@@ -1,7 +1,8 @@
-#nullable disable
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlConnector.Core;
@@ -20,22 +21,22 @@ namespace MySql.Data.MySqlClient
 		{
 		}
 
-		public MySqlCommand(string commandText)
+		public MySqlCommand(string? commandText)
 			: this(commandText, null, null)
 		{
 		}
 
-		public MySqlCommand(MySqlConnection connection, MySqlTransaction transaction)
+		public MySqlCommand(MySqlConnection? connection, MySqlTransaction? transaction)
 			: this(null, connection, transaction)
 		{
 		}
 
-		public MySqlCommand(string commandText, MySqlConnection connection)
+		public MySqlCommand(string? commandText, MySqlConnection? connection)
 			: this(commandText, connection, null)
 		{
 		}
 
-		public MySqlCommand(string commandText, MySqlConnection connection, MySqlTransaction transaction)
+		public MySqlCommand(string? commandText, MySqlConnection? connection, MySqlTransaction? transaction)
 		{
 			GC.SuppressFinalize(this);
 			m_commandId = ICancellableCommandExtensions.GetNextId();
@@ -64,7 +65,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		MySqlParameterCollection IMySqlCommand.RawParameters => m_parameterCollection;
+		MySqlParameterCollection? IMySqlCommand.RawParameters => m_parameterCollection;
 
 		public new MySqlParameter CreateParameter() => (MySqlParameter) base.CreateParameter();
 
@@ -87,7 +88,7 @@ namespace MySql.Data.MySqlClient
 				return;
 			}
 
-			Connection.Session.PrepareAsync(this, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+			Connection!.Session.PrepareAsync(this, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 		}
 
 #if !NETSTANDARD2_1 && !NETCOREAPP3_0
@@ -96,12 +97,12 @@ namespace MySql.Data.MySqlClient
 		public override Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
 #endif
 
-		internal MySqlParameterCollection CloneRawParameters()
+		internal MySqlParameterCollection? CloneRawParameters()
 		{
 			if (m_parameterCollection is null)
 				return null;
 			var parameters = new MySqlParameterCollection();
-			foreach (MySqlParameter parameter in m_parameterCollection)
+			foreach (var parameter in (IEnumerable<MySqlParameter>) m_parameterCollection)
 				parameters.Add(parameter.Clone());
 			return parameters;
 		}
@@ -111,10 +112,10 @@ namespace MySql.Data.MySqlClient
 			if (!NeedsPrepare(out var exception))
 				return exception is null ? Utility.CompletedTask : Utility.TaskFromException(exception);
 
-			return Connection.Session.PrepareAsync(this, ioBehavior, cancellationToken);
+			return Connection!.Session.PrepareAsync(this, ioBehavior, cancellationToken);
 		}
 
-		private bool NeedsPrepare(out Exception exception)
+		private bool NeedsPrepare(out Exception? exception)
 		{
 			exception = null;
 			if (Connection is null)
@@ -126,7 +127,7 @@ namespace MySql.Data.MySqlClient
 			else if (Connection?.HasActiveReader ?? false)
 				exception = new InvalidOperationException("Cannot call Prepare when there is an open DataReader for this command; it must be closed first.");
 
-			if (exception is object || Connection.IgnorePrepare)
+			if (exception is object || Connection!.IgnorePrepare)
 				return false;
 
 			if (CommandType != CommandType.Text)
@@ -136,10 +137,10 @@ namespace MySql.Data.MySqlClient
 			}
 
 			// don't prepare the same SQL twice
-			return Connection.Session.TryGetPreparedStatement(CommandText) is null;
+			return Connection.Session.TryGetPreparedStatement(CommandText!) is null;
 		}
 
-		public override string CommandText
+		public override string? CommandText
 		{
 			get => m_commandText;
 			set
@@ -152,9 +153,9 @@ namespace MySql.Data.MySqlClient
 
 		public bool IsPrepared => ((IMySqlCommand) this).TryGetPreparedStatements() is object;
 
-		public new MySqlTransaction Transaction { get; set; }
+		public new MySqlTransaction? Transaction { get; set; }
 
-		public new MySqlConnection Connection
+		public new MySqlConnection? Connection
 		{
 			get => m_connection;
 			set
@@ -190,18 +191,18 @@ namespace MySql.Data.MySqlClient
 
 		void IMySqlCommand.SetLastInsertedId(long value) => LastInsertedId = value;
 
-		protected override DbConnection DbConnection
+		protected override DbConnection? DbConnection
 		{
 			get => Connection;
-			set => Connection = (MySqlConnection) value;
+			set => Connection = (MySqlConnection?) value;
 		}
 
 		protected override DbParameterCollection DbParameterCollection => Parameters;
 
-		protected override DbTransaction DbTransaction
+		protected override DbTransaction? DbTransaction
 		{
 			get => Transaction;
-			set => Transaction = (MySqlTransaction) value;
+			set => Transaction = (MySqlTransaction?) value;
 		}
 
 		protected override DbParameter CreateDbParameter()
@@ -239,7 +240,7 @@ namespace MySql.Data.MySqlClient
 		{
 			this.ResetCommandTimeout();
 			var hasSetResult = false;
-			object result = null;
+			object? result = null;
 			using var reader = (MySqlDataReader) await ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
 			do
 			{
@@ -251,7 +252,7 @@ namespace MySql.Data.MySqlClient
 					hasSetResult = true;
 				}
 			} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
-			return result;
+			return result!;
 		}
 
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
@@ -306,7 +307,7 @@ namespace MySql.Data.MySqlClient
 		/// <returns>An object that must be disposed to revoke the cancellation registration.</returns>
 		/// <remarks>This method is more efficient than calling <code>token.Register(Command.Cancel)</code> because it avoids
 		/// unnecessary allocations.</remarks>
-		IDisposable ICancellableCommand.RegisterCancel(CancellationToken token)
+		IDisposable? ICancellableCommand.RegisterCancel(CancellationToken token)
 		{
 			if (!token.CanBeCanceled)
 				return null;
@@ -329,7 +330,7 @@ namespace MySql.Data.MySqlClient
 				throw new ObjectDisposedException(GetType().Name);
 		}
 
-		private bool IsValid(out Exception exception)
+		private bool IsValid([NotNullWhen(false)] out Exception? exception)
 		{
 			exception = null;
 			if (m_isDisposed)
@@ -345,21 +346,21 @@ namespace MySql.Data.MySqlClient
 			return exception is null;
 		}
 
-		PreparedStatements IMySqlCommand.TryGetPreparedStatements() => CommandType == CommandType.Text && !string.IsNullOrWhiteSpace(CommandText) && m_connection is object &&
-			m_connection.State == ConnectionState.Open ? m_connection.Session.TryGetPreparedStatement(CommandText) : null;
+		PreparedStatements? IMySqlCommand.TryGetPreparedStatements() => CommandType == CommandType.Text && !string.IsNullOrWhiteSpace(CommandText) && m_connection is object &&
+			m_connection.State == ConnectionState.Open ? m_connection.Session.TryGetPreparedStatement(CommandText!) : null;
 
 		CommandBehavior IMySqlCommand.CommandBehavior => m_commandBehavior;
-		MySqlParameterCollection IMySqlCommand.OutParameters { get; set; }
-		MySqlParameter IMySqlCommand.ReturnParameter { get; set; }
+		MySqlParameterCollection? IMySqlCommand.OutParameters { get; set; }
+		MySqlParameter? IMySqlCommand.ReturnParameter { get; set; }
 
 		readonly int m_commandId;
 		bool m_isDisposed;
-		MySqlConnection m_connection;
-		string m_commandText;
-		MySqlParameterCollection m_parameterCollection;
+		MySqlConnection? m_connection;
+		string? m_commandText;
+		MySqlParameterCollection? m_parameterCollection;
 		int? m_commandTimeout;
 		CommandType m_commandType;
 		CommandBehavior m_commandBehavior;
-		Action m_cancelAction;
+		Action? m_cancelAction;
 	}
 }
