@@ -4,6 +4,7 @@
 
 using System;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 #if VALUETASKSOURCE
 using System.Threading.Tasks.Sources;
@@ -40,22 +41,34 @@ namespace MySqlConnector.Protocol.Serialization
 
 		public int RemainingTimeout { get; set; }
 
-		public ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, IOBehavior ioBehavior) =>
+		public ValueTask<int> ReadBytesAsync(Memory<byte> buffer, IOBehavior ioBehavior) =>
 			ioBehavior == IOBehavior.Asynchronous ? DoReadBytesAsync(buffer) : DoReadBytesSync(buffer);
 
-		private ValueTask<int> DoReadBytesSync(ArraySegment<byte> buffer)
+		private ValueTask<int> DoReadBytesSync(Memory<byte> buffer)
 		{
+#if !NETSTANDARD2_1 && !NETCOREAPP2_1 && !NETCOREAPP3_0
+			MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);
+#endif
+
 			try
 			{
 				if (RemainingTimeout == Constants.InfiniteTimeout)
-					return new ValueTask<int>(m_socket.Receive(buffer.Array, buffer.Offset, buffer.Count, SocketFlags.None));
+#if !NETSTANDARD2_1 && !NETCOREAPP2_1 && !NETCOREAPP3_0
+					return new ValueTask<int>(m_socket.Receive(arraySegment.Array, arraySegment.Offset, arraySegment.Count, SocketFlags.None));
+#else
+					return new ValueTask<int>(m_socket.Receive(buffer.Span, SocketFlags.None));
+#endif
 
 				while (RemainingTimeout > 0)
 				{
 					var startTime = Environment.TickCount;
 					if (m_socket.Poll(Math.Min(int.MaxValue / 1000, RemainingTimeout) * 1000, SelectMode.SelectRead))
 					{
-						var bytesRead = m_socket.Receive(buffer.Array, buffer.Offset, buffer.Count, SocketFlags.None);
+#if !NETSTANDARD2_1 && !NETCOREAPP2_1 && !NETCOREAPP3_0
+						var bytesRead = m_socket.Receive(arraySegment.Array, arraySegment.Offset, arraySegment.Count, SocketFlags.None);
+#else
+						var bytesRead = m_socket.Receive(buffer.Span, SocketFlags.None);
+#endif
 						RemainingTimeout -= unchecked(Environment.TickCount - startTime);
 						return new ValueTask<int>(bytesRead);
 					}
@@ -69,16 +82,16 @@ namespace MySqlConnector.Protocol.Serialization
 			}
 		}
 
-		private async ValueTask<int> DoReadBytesAsync(ArraySegment<byte> buffer)
+		private async ValueTask<int> DoReadBytesAsync(Memory<byte> buffer)
 		{
 			var startTime = RemainingTimeout == Constants.InfiniteTimeout ? 0 : Environment.TickCount;
 			var timerId = RemainingTimeout == Constants.InfiniteTimeout ? 0 :
 				RemainingTimeout <= 0 ? throw MySqlException.CreateForTimeout() :
 				TimerQueue.Instance.Add(RemainingTimeout, m_closeSocket);
 #if VALUETASKSOURCE
-			m_socketEventArgs.SetBuffer(buffer.Array, buffer.Offset, buffer.Count);
+			m_socketEventArgs.SetBuffer(buffer);
 #else
-			m_socketAwaitable.EventArgs.SetBuffer(buffer.Array, buffer.Offset, buffer.Count);
+			m_socketAwaitable.EventArgs.SetBuffer(buffer);
 #endif
 			int bytesRead;
 			try
@@ -120,14 +133,14 @@ namespace MySqlConnector.Protocol.Serialization
 			return bytesRead;
 		}
 
-		public ValueTask<int> WriteBytesAsync(ArraySegment<byte> data, IOBehavior ioBehavior)
+		public ValueTask<int> WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior)
 		{
 			if (ioBehavior == IOBehavior.Asynchronous)
 				return DoWriteBytesAsync(data);
 
 			try
 			{
-				m_socket.Send(data.Array, data.Offset, data.Count, SocketFlags.None);
+				m_socket.Send(data, SocketFlags.None);
 				return default;
 			}
 			catch (Exception ex)
@@ -137,18 +150,18 @@ namespace MySqlConnector.Protocol.Serialization
 		}
 
 #if VALUETASKSOURCE
-		private ValueTask<int> DoWriteBytesAsync(ArraySegment<byte> data)
+		private ValueTask<int> DoWriteBytesAsync(ReadOnlyMemory<byte> data)
 		{
-			m_socketEventArgs.SetBuffer(data.Array, data.Offset, data.Count);
+			m_socketEventArgs.SetBuffer(MemoryMarshal.AsMemory(data));
 			m_valueTaskSource.Reset();
 			if (!m_socket.SendAsync(m_socketEventArgs))
 				PropagateSocketAsyncEventArgsStatus();
 			return new ValueTask<int>(this, m_valueTaskSource.Version);
 		}
 #else
-		private async ValueTask<int> DoWriteBytesAsync(ArraySegment<byte> data)
+		private async ValueTask<int> DoWriteBytesAsync(ReadOnlyMemory<byte> data)
 		{
-			m_socketAwaitable.EventArgs.SetBuffer(data.Array, data.Offset, data.Count);
+			m_socketAwaitable.EventArgs.SetBuffer(MemoryMarshal.AsMemory(data));
 			await m_socket.SendAsync(m_socketAwaitable);
 			return 0;
 		}
@@ -169,7 +182,7 @@ namespace MySqlConnector.Protocol.Serialization
 		}
 #endif
 
-		readonly Socket m_socket;
+			readonly Socket m_socket;
 #if VALUETASKSOURCE
 		ManualResetValueTaskSourceCore<int> m_valueTaskSource; // mutable struct; do not make this readonly
 		readonly SocketAsyncEventArgs m_socketEventArgs;

@@ -64,13 +64,13 @@ namespace MySqlConnector.Protocol.Serialization
 			});
 		}
 
-		private ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+		private ValueTask<int> ReadBytesAsync(Memory<byte> buffer, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
 			// satisfy the read from cache if possible
 			if (m_remainingData.Count > 0)
 			{
-				var bytesToRead = Math.Min(m_remainingData.Count, buffer.Count);
-				Buffer.BlockCopy(m_remainingData.Array!, m_remainingData.Offset, buffer.Array!, buffer.Offset, bytesToRead);
+				var bytesToRead = Math.Min(m_remainingData.Count, buffer.Length);
+				m_remainingData.AsSpan().Slice(0, bytesToRead).CopyTo(buffer.Span);
 				m_remainingData = m_remainingData.Slice(bytesToRead);
 				return new ValueTask<int>(bytesToRead);
 			}
@@ -164,11 +164,10 @@ namespace MySqlConnector.Protocol.Serialization
 								}
 							}
 
-							var bytesToRead = Math.Min(m_remainingData.Count, buffer.Count);
-							Buffer.BlockCopy(m_remainingData.Array!, m_remainingData.Offset, buffer.Array!, buffer.Offset, bytesToRead);
+							var bytesToRead = Math.Min(m_remainingData.Count, buffer.Length);
+							m_remainingData.AsSpan().Slice(0, bytesToRead).CopyTo(buffer.Span);
 							m_remainingData = m_remainingData.Slice(bytesToRead);
 							return new ValueTask<int>(bytesToRead);
-
 						});
 				});
 		}
@@ -257,10 +256,10 @@ namespace MySqlConnector.Protocol.Serialization
 				set => m_compressedPayloadHandler.ByteHandler.RemainingTimeout = value;
 			}
 
-			public ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, IOBehavior ioBehavior) =>
+			public ValueTask<int> ReadBytesAsync(Memory<byte> buffer, IOBehavior ioBehavior) =>
 				m_compressedPayloadHandler.ReadBytesAsync(buffer, m_protocolErrorBehavior, ioBehavior);
 
-			public ValueTask<int> WriteBytesAsync(ArraySegment<byte> data, IOBehavior ioBehavior) => throw new NotSupportedException();
+			public ValueTask<int> WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior) => throw new NotSupportedException();
 
 			readonly CompressedPayloadHandler m_compressedPayloadHandler;
 			readonly ProtocolErrorBehavior m_protocolErrorBehavior;

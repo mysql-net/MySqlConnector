@@ -17,7 +17,7 @@ namespace MySqlConnector.Protocol.Serialization
 		/// <param name="buffer">The buffer to read into.</param>
 		/// <param name="ioBehavior">The <see cref="IOBehavior"/> to use when reading data.</param>
 		/// <returns>A <see cref="ValueTask{Int32}"/> holding the number of bytes read. If reading failed, this will be zero.</returns>
-		ValueTask<int> ReadBytesAsync(ArraySegment<byte> buffer, IOBehavior ioBehavior);
+		ValueTask<int> ReadBytesAsync(Memory<byte> buffer, IOBehavior ioBehavior);
 
 		/// <summary>
 		/// Writes data to this byte handler.
@@ -25,6 +25,6 @@ namespace MySqlConnector.Protocol.Serialization
 		/// <param name="data">The data to write.</param>
 		/// <param name="ioBehavior">The <see cref="IOBehavior"/> to use when writing.</param>
 		/// <returns>A <see cref="ValueTask{Int32}"/>. The value of this object is not defined.</returns>
-		ValueTask<int> WriteBytesAsync(ArraySegment<byte> data, IOBehavior ioBehavior);
+		ValueTask<int> WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior);
 	}
 }
