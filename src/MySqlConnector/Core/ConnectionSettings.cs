@@ -134,13 +134,13 @@ namespace MySqlConnector.Core
 
 		// SSL/TLS Options
 		public MySqlSslMode SslMode { get; }
-		public string CertificateFile { get; }
-		public string CertificatePassword { get; }
-		public string CACertificateFile { get; }
-		public string SslCertificateFile { get; }
-		public string SslKeyFile { get; }
+		public string? CertificateFile { get; }
+		public string? CertificatePassword { get; }
+		public string? CACertificateFile { get; }
+		public string? SslCertificateFile { get; }
+		public string? SslKeyFile { get; }
 		public MySqlCertificateStoreLocation CertificateStoreLocation { get; }
-		public string CertificateThumbprint { get; }
+		public string? CertificateThumbprint { get; }
 
 		// Connection Pooling Options
 		public bool Pooling { get; }
@@ -156,7 +156,7 @@ namespace MySqlConnector.Core
 		public bool AllowPublicKeyRetrieval { get; }
 		public bool AllowUserVariables { get; }
 		public bool AllowZeroDateTime { get; }
-		public string ApplicationName { get; }
+		public string? ApplicationName { get; }
 		public bool AutoEnlist { get; }
 		public int ConnectionTimeout { get; }
 		public bool ConvertZeroDateTime { get; }
@@ -170,8 +170,8 @@ namespace MySqlConnector.Core
 		public uint Keepalive { get; }
 		public bool NoBackslashEscapes { get; }
 		public bool PersistSecurityInfo { get; }
-		public string ServerRsaPublicKeyFile { get; }
-		public string ServerSPN { get; }
+		public string? ServerRsaPublicKeyFile { get; }
+		public string? ServerSPN { get; }
 		public bool TreatTinyAsBoolean { get; }
 		public bool UseAffectedRows { get; }
 		public bool UseCompression { get; }

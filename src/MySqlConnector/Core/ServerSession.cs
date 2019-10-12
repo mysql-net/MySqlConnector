@@ -1456,7 +1456,7 @@ namespace MySqlConnector.Core
 
 		internal SslProtocols SslProtocol => m_sslStream?.SslProtocol ?? SslProtocols.None;
 
-		private byte[] CreateConnectionAttributes(string programName)
+		private byte[] CreateConnectionAttributes(string? programName)
 		{
 			Log.Debug("Session{0} creating connection attributes", m_logArguments);
 			var attributesWriter = new ByteBufferWriter();
@@ -1486,7 +1486,7 @@ namespace MySqlConnector.Core
 			if (!string.IsNullOrEmpty(programName))
 			{
 				attributesWriter.WriteLengthEncodedString("program_name");
-				attributesWriter.WriteLengthEncodedString(programName);
+				attributesWriter.WriteLengthEncodedString(programName!);
 			}
 			using var connectionAttributesPayload = attributesWriter.ToPayloadData();
 			var connectionAttributes = connectionAttributesPayload.Span;
