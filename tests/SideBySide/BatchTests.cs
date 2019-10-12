@@ -49,13 +49,36 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void NeedsNonNullCommands()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+			using var batch = new MySqlBatch(connection)
+			{
+				BatchCommands = { null },
+			};
+			Assert.Throws<InvalidOperationException>(() => batch.ExecuteNonQuery());
+		}
+
+		[Fact]
+		public void NeedsCommandsWithCommandText()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+			using var batch = new MySqlBatch(connection)
+			{
+				BatchCommands = { new MySqlBatchCommand() },
+			};
+			Assert.Throws<InvalidOperationException>(() => batch.ExecuteNonQuery());
+		}
+
+		[Fact]
 		public void NotDisposed()
 		{
 			using var batch = new MySqlBatch();
 			batch.Dispose();
 			Assert.Throws<ObjectDisposedException>(() => batch.ExecuteNonQuery());
 		}
-
 
 		[Fact]
 		public void NoCloseConnection()
@@ -279,6 +302,30 @@ insert into batch_single_row(id) values(1),(2),(3);", connection))
 			using var connection = new MySqlConnection(AppConfig.ConnectionString);
 			connection.Open();
 			using var batch = new MySqlBatch(connection);
+			Assert.Throws<InvalidOperationException>(() => batch.Prepare());
+		}
+
+		[Fact]
+		public void PrepareNeedsNonNullCommands()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+			using var batch = new MySqlBatch(connection)
+			{
+				BatchCommands = { null },
+			};
+			Assert.Throws<InvalidOperationException>(() => batch.Prepare());
+		}
+
+		[Fact]
+		public void PrepareNeedsCommandsWithText()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+			using var batch = new MySqlBatch(connection)
+			{
+				BatchCommands = { new MySqlBatchCommand() },
+			};
 			Assert.Throws<InvalidOperationException>(() => batch.Prepare());
 		}
 
