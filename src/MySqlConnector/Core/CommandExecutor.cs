@@ -53,7 +53,7 @@ namespace MySqlConnector.Core
 			cancellationToken.ThrowIfCancellationRequested();
 
 			using var payload = writer.ToPayloadData();
-			using var registration = command.CancellableCommand.RegisterCancel(cancellationToken);
+			using var registration = command.CancellableCommand.RegisterCancel(cancellationToken); // lgtm[cs/useless-assignment-to-local]
 			connection.Session.StartQuerying(command.CancellableCommand);
 			command.SetLastInsertedId(-1);
 			try

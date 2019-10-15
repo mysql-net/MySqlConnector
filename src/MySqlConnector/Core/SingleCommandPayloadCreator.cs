@@ -152,7 +152,7 @@ namespace MySqlConnector.Core
 					inParameters.Add(inParam);
 					if (param.Direction == ParameterDirection.InputOutput)
 					{
-						inOutSetParameters += $"SET {outName}={inName}; ";
+						inOutSetParameters += $"SET {outName}={inName}; "; // lgtm[cs/string-concatenation-in-loop]
 						goto case ParameterDirection.Output;
 					}
 					argParameterNames.Add(inName);

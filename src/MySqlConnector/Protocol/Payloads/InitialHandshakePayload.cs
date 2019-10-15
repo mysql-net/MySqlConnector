@@ -26,12 +26,12 @@ namespace MySqlConnector.Protocol.Payloads
 			var protocolCapabilities = (ProtocolCapabilities) reader.ReadUInt16();
 			if (reader.BytesRemaining > 0)
 			{
-				var charSet = (CharacterSet) reader.ReadByte();
-				var status = (ServerStatus) reader.ReadInt16();
+				var charSet = (CharacterSet) reader.ReadByte(); // lgtm[cs/useless-assignment-to-local]
+				var status = (ServerStatus) reader.ReadInt16(); // lgtm[cs/useless-assignment-to-local]
 				var capabilityFlagsHigh = reader.ReadUInt16();
 				protocolCapabilities |= (ProtocolCapabilities) ((ulong) capabilityFlagsHigh << 16);
 				var authPluginDataLength = reader.ReadByte();
-				var unused = reader.ReadByteString(6);
+				reader.Offset += 6;
 
 				long extendedCapabilites = reader.ReadInt32();
 				if ((protocolCapabilities & ProtocolCapabilities.LongPassword) == 0)

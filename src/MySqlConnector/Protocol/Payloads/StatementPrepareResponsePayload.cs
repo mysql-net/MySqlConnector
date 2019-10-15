@@ -17,7 +17,7 @@ namespace MySqlConnector.Protocol.Payloads
 			var columnCount = (int) reader.ReadUInt16();
 			var parameterCount = (int) reader.ReadUInt16();
 			reader.ReadByte(0);
-			var warningCount = (int) reader.ReadInt16();
+			var warningCount = (int) reader.ReadInt16(); // lgtm[cs/useless-assignment-to-local]
 
 			return new StatementPrepareResponsePayload(statementId, columnCount, parameterCount);
 		}
