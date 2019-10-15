@@ -6,14 +6,14 @@ jobs:
 - job: linux_build
   displayName: 'Linux Build'
   pool:
-    vmimage: 'ubuntu-16.04'
+    vmimage: 'ubuntu-latest'
   steps:
   - template: '.ci/build-steps.yml'
 
 - job: windows_build
   displayName: 'Windows Build'
   pool:
-    vmimage: 'vs2017-win2016'
+    vmimage: 'windows-latest'
   steps:
   - template: '.ci/build-steps.yml'
   - task: DotNetCoreCLI@2
@@ -46,7 +46,7 @@ jobs:
 - job: windows_baseline
   displayName: 'Baseline'
   pool:
-    vmimage: 'vs2017-win2016'
+    vmimage: 'windows-latest'
   steps:
   - script: |
       mkdir C:\mysql
@@ -113,7 +113,7 @@ jobs:
   dependsOn: linux_build
   displayName: 'Linux Unit Tests'
   pool:
-    vmimage: 'ubuntu-16.04'
+    vmimage: 'ubuntu-latest'
   steps:
   - template: '.ci/mysqlconnector-tests-steps.yml'
 
@@ -121,7 +121,7 @@ jobs:
   dependsOn: windows_build
   displayName: 'Windows Unit Tests'
   pool:
-    vmimage: 'vs2017-win2016'
+    vmimage: 'windows-latest'
   steps:
   - template: '.ci/mysqlconnector-tests-steps.yml'
 
@@ -129,7 +129,7 @@ jobs:
   dependsOn: linux_build
   displayName: 'Linux Tests'
   pool:
-    vmimage: 'ubuntu-16.04'
+    vmimage: 'ubuntu-latest'
   strategy:
     matrix:
       'MySQL 5.6':
