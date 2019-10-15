@@ -15,7 +15,7 @@ namespace MySqlConnector.Protocol.Serialization
 
 		public int Offset
 		{
-			get => m_offset;
+			readonly get => m_offset;
 			set => m_offset = value >= 0 && value <= m_maxOffset ? value : throw new ArgumentOutOfRangeException(nameof(value), "value must be between 0 and {0}".FormatInvariant(m_maxOffset));
 		}
 
@@ -152,9 +152,9 @@ namespace MySqlConnector.Protocol.Serialization
 			return result;
 		}
 
-		public int BytesRemaining => m_maxOffset - m_offset;
+		public readonly int BytesRemaining => m_maxOffset - m_offset;
 
-		private void VerifyRead(int length)
+		private readonly void VerifyRead(int length)
 		{
 			if (m_offset + length > m_maxOffset)
 				throw new InvalidOperationException("Read past end of buffer.");
