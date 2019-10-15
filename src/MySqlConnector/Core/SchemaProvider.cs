@@ -38,9 +38,9 @@ namespace MySqlConnector.Core
 		private void FillMetadataCollections(DataTable dataTable)
 		{
 			dataTable.Columns.AddRange(new[] {
-				new DataColumn("CollectionName", typeof(string)),
-				new DataColumn("NumberOfRestrictions", typeof(int)),
-				new DataColumn("NumberOfIdentifierParts", typeof(int))
+				new DataColumn("CollectionName", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("NumberOfRestrictions", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("NumberOfIdentifierParts", typeof(int)) // lgtm[cs/local-not-disposed]
 			});
 
 			foreach (var collectionName in m_schemaCollections.Keys)
@@ -51,29 +51,29 @@ namespace MySqlConnector.Core
 		{
 			dataTable.Columns.AddRange(new[]
 			{
-				new DataColumn("TypeName", typeof(string)),
-				new DataColumn("ProviderDbType", typeof(int)),
-				new DataColumn("ColumnSize", typeof(long)),
-				new DataColumn("CreateFormat", typeof(string)),
-				new DataColumn("CreateParameters", typeof(string)),
-				new DataColumn("DataType", typeof(string)),
-				new DataColumn("IsAutoIncrementable", typeof(bool)),
-				new DataColumn("IsBestMatch", typeof(bool)),
-				new DataColumn("IsCaseSensitive", typeof(bool)),
-				new DataColumn("IsFixedLength", typeof(bool)),
-				new DataColumn("IsFixedPrecisionScale", typeof(bool)),
-				new DataColumn("IsLong", typeof(bool)),
-				new DataColumn("IsNullable", typeof(bool)),
-				new DataColumn("IsSearchable", typeof(bool)),
-				new DataColumn("IsSearchableWithLike", typeof(bool)),
-				new DataColumn("IsUnsigned", typeof(bool)),
-				new DataColumn("MaximumScale", typeof(short)),
-				new DataColumn("MinimumScale", typeof(short)),
-				new DataColumn("IsConcurrencyType", typeof(bool)),
-				new DataColumn("IsLiteralSupported", typeof(bool)),
-				new DataColumn("LiteralPrefix", typeof(string)),
-				new DataColumn("LiteralSuffix", typeof(string)),
-				new DataColumn("NativeDataType", typeof(string)),
+				new DataColumn("TypeName", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ProviderDbType", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ColumnSize", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CreateFormat", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CreateParameters", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DataType", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IsAutoIncrementable", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IsBestMatch", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IsCaseSensitive", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IsFixedLength", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IsFixedPrecisionScale", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IsLong", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IsNullable", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IsSearchable", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IsSearchableWithLike", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IsUnsigned", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new DataColumn("MaximumScale", typeof(short)), // lgtm[cs/local-not-disposed]
+				new DataColumn("MinimumScale", typeof(short)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IsConcurrencyType", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IsLiteralSupported", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new DataColumn("LiteralPrefix", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("LiteralSuffix", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("NativeDataType", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			var clrTypes = new HashSet<string>();
@@ -135,26 +135,26 @@ namespace MySqlConnector.Core
 		{
 			dataTable.Columns.AddRange(new[]
 			{
-				new DataColumn("SPECIFIC_NAME", typeof(string)),
-				new DataColumn("ROUTINE_CATALOG", typeof(string)),
-				new DataColumn("ROUTINE_SCHEMA", typeof(string)),
-				new DataColumn("ROUTINE_NAME", typeof(string)),
-				new DataColumn("ROUTINE_TYPE", typeof(string)),
-				new DataColumn("DTD_IDENTIFIER", typeof(string)),
-				new DataColumn("ROUTINE_BODY", typeof(string)),
-				new DataColumn("ROUTINE_DEFINITION", typeof(string)),
-				new DataColumn("EXTERNAL_NAME", typeof(string)),
-				new DataColumn("EXTERNAL_LANGUAGE", typeof(string)),
-				new DataColumn("PARAMETER_STYLE", typeof(string)),
-				new DataColumn("IS_DETERMINISTIC", typeof(string)),
-				new DataColumn("SQL_DATA_ACCESS", typeof(string)),
-				new DataColumn("SQL_PATH", typeof(string)),
-				new DataColumn("SECURITY_TYPE", typeof(string)),
-				new DataColumn("CREATED", typeof(DateTime)),
-				new DataColumn("LAST_ALTERED", typeof(DateTime)),
-				new DataColumn("SQL_MODE", typeof(string)),
-				new DataColumn("ROUTINE_COMMENT", typeof(string)),
-				new DataColumn("DEFINER", typeof(string)),
+				new DataColumn("SPECIFIC_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ROUTINE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ROUTINE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ROUTINE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ROUTINE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DTD_IDENTIFIER", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ROUTINE_BODY", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ROUTINE_DEFINITION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("EXTERNAL_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("EXTERNAL_LANGUAGE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PARAMETER_STYLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IS_DETERMINISTIC", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SQL_DATA_ACCESS", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SQL_PATH", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SECURITY_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CREATED", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new DataColumn("LAST_ALTERED", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SQL_MODE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ROUTINE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DEFINER", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			Action? close = null;
@@ -183,7 +183,7 @@ namespace MySqlConnector.Core
 
 		private void FillReservedWords(DataTable dataTable)
 		{
-			dataTable.Columns.Add(new DataColumn("ReservedWord", typeof(string)));
+			dataTable.Columns.Add(new DataColumn("ReservedWord", typeof(string))); // lgtm[cs/local-not-disposed]
 
 			// Note:
 			// For MySQL 8.0, the INFORMATION_SCHEMA.KEYWORDS table could be used to load the list at runtime,
