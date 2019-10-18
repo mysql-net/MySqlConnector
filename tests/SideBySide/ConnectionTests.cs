@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using Dapper;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -140,6 +141,26 @@ namespace SideBySide
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			connection.Open();
 			Assert.Equal(30, connection.ConnectionTimeout);
+		}
+
+		[Fact]
+		public void CloneClonesConnectionString()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			using var connection2 = (MySqlConnection) connection.Clone();
+			Assert.Equal(connection.ConnectionString, connection2.ConnectionString);
+#if !BASELINE
+			Assert.Equal(AppConfig.ConnectionString, connection2.ConnectionString);
+#endif
+		}
+
+		[Fact]
+		public void CloneIsClosed()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+			using var connection2 = (MySqlConnection) connection.Clone();
+			Assert.Equal(ConnectionState.Closed, connection2.State);
 		}
 	}
 }

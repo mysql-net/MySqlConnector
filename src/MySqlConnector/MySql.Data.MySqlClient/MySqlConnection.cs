@@ -16,6 +16,9 @@ using MySqlConnector.Utilities;
 namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlConnection : DbConnection
+#if !NETSTANDARD1_3
+		, ICloneable
+#endif
 	{
 		public MySqlConnection()
 			: this(default)
@@ -437,6 +440,12 @@ namespace MySql.Data.MySqlClient
 				m_isDisposed = true;
 			}
 		}
+
+		public MySqlConnection Clone() => new MySqlConnection(m_connectionString);
+
+#if !NETSTANDARD1_3
+		object ICloneable.Clone() => Clone();
+#endif
 
 		internal ServerSession Session
 		{
