@@ -11,6 +11,17 @@ weight: 30
 Version History
 ===============
 
+### 0.60.0-beta1
+
+* Add C# 8 nullable annotations to public API.
+* Support `Tables` and `Views` schemas in `MySqlConnection.GetSchema`: [#719](https://github.com/mysql-net/MySqlConnector/pull/719).
+* Add better exception message when `'0000-00-00'` can't be converted: [#690](https://github.com/mysql-net/MySqlConnector/issues/690).
+* Implement `MySqlConnection.Clone`: [#720](https://github.com/mysql-net/MySqlConnector/issues/720).
+* Update list of reserved words.
+* Use new `Socket` async APIs (.NET Standard 2.1, .NET Core 3.0).
+* Update `System.Net.Security` dependency to v4.3.1 (.NET Standard 1.3).
+* Thanks to [Roman Marusyk](https://github.com/Marusyk) and [KaliVi](https://github.com/KaliVi) for contributions to this release.
+
 ### 0.59.2
 
 * Fix error when reading a `BIT(1)` column: [#713](https://github.com/mysql-net/MySqlConnector/issues/707).
