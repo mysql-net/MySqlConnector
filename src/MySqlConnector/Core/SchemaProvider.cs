@@ -18,6 +18,8 @@ namespace MySqlConnector.Core
 				{ "DataTypes", FillDataTypes },
 				{ "Procedures", FillProcedures },
 				{ "ReservedWords", FillReservedWords },
+				{ "Tables", FillTables },
+				{ "Views", FillViews },
 			};
 		}
 
@@ -467,6 +469,97 @@ namespace MySqlConnector.Core
 			};
 			foreach (string word in reservedWords)
 				dataTable.Rows.Add(word);
+		}
+
+		private void FillTables(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ENGINE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ROW_FORMAT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_ROWS", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("AVG_ROW_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("MAX_DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("INDEX_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DATA_FREE", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("AUTO_INCREMENT", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CREATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new DataColumn("UPDATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHECK_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_COLLATION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHECKSUM", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CREATE_OPTIONS", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			Action? close = null;
+			if (m_connection.State != ConnectionState.Open)
+			{
+				m_connection.Open();
+				close = m_connection.Close;
+			}
+
+			using (var command = m_connection.CreateCommand())
+			{
+#pragma warning disable CA2100
+				command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(x => x.ColumnName)) + " FROM INFORMATION_SCHEMA.TABLES;";
+#pragma warning restore CA2100
+				using var reader = command.ExecuteReader();
+				while (reader.Read())
+				{
+					var rowValues = new object[dataTable.Columns.Count];
+					reader.GetValues(rowValues);
+					dataTable.Rows.Add(rowValues);
+				}
+			}
+
+			close?.Invoke();
+		}
+
+		private void FillViews(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("VIEW_DEFINITION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHECK_OPTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IS_UPDATABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DEFINER", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SECURITY_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHARACTER_SET_CLIENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("COLLATION_CONNECTION", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			Action? close = null;
+			if (m_connection.State != ConnectionState.Open)
+			{
+				m_connection.Open();
+				close = m_connection.Close;
+			}
+
+			using (var command = m_connection.CreateCommand())
+			{
+#pragma warning disable CA2100
+				command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(x => x.ColumnName)) + " FROM INFORMATION_SCHEMA.VIEWS;";
+#pragma warning restore CA2100
+				using var reader = command.ExecuteReader();
+				while (reader.Read())
+				{
+					var rowValues = new object[dataTable.Columns.Count];
+					reader.GetValues(rowValues);
+					dataTable.Rows.Add(rowValues);
+				}
+			}
+
+			close?.Invoke();
 		}
 
 		readonly MySqlConnection m_connection;
