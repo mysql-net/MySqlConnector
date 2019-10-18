@@ -159,28 +159,7 @@ namespace MySqlConnector.Core
 				new DataColumn("DEFINER", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			Action? close = null;
-			if (m_connection.State != ConnectionState.Open)
-			{
-				m_connection.Open();
-				close = m_connection.Close;
-			}
-
-			using (var command = m_connection.CreateCommand())
-			{
-#pragma warning disable CA2100
-				command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(x => x.ColumnName)) + " FROM INFORMATION_SCHEMA.ROUTINES;";
-#pragma warning restore CA2100
-				using var reader = command.ExecuteReader();
-				while (reader.Read())
-				{
-					var rowValues = new object[dataTable.Columns.Count];
-					reader.GetValues(rowValues);
-					dataTable.Rows.Add(rowValues);
-				}
-			}
-
-			close?.Invoke();
+			FillDataTable(dataTable, "ROUTINES");
 		}
 
 		private void FillReservedWords(DataTable dataTable)
@@ -498,28 +477,7 @@ namespace MySqlConnector.Core
 				new DataColumn("TABLE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			Action? close = null;
-			if (m_connection.State != ConnectionState.Open)
-			{
-				m_connection.Open();
-				close = m_connection.Close;
-			}
-
-			using (var command = m_connection.CreateCommand())
-			{
-#pragma warning disable CA2100
-				command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(x => x.ColumnName)) + " FROM INFORMATION_SCHEMA.TABLES;";
-#pragma warning restore CA2100
-				using var reader = command.ExecuteReader();
-				while (reader.Read())
-				{
-					var rowValues = new object[dataTable.Columns.Count];
-					reader.GetValues(rowValues);
-					dataTable.Rows.Add(rowValues);
-				}
-			}
-
-			close?.Invoke();
+			FillDataTable(dataTable, "TABLES");
 		}
 
 		private void FillViews(DataTable dataTable)
@@ -538,6 +496,11 @@ namespace MySqlConnector.Core
 				new DataColumn("COLLATION_CONNECTION", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
+			FillDataTable(dataTable, "VIEWS");
+		}
+
+		private void FillDataTable(DataTable dataTable, string tableName)
+		{
 			Action? close = null;
 			if (m_connection.State != ConnectionState.Open)
 			{
@@ -548,7 +511,7 @@ namespace MySqlConnector.Core
 			using (var command = m_connection.CreateCommand())
 			{
 #pragma warning disable CA2100
-				command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(x => x.ColumnName)) + " FROM INFORMATION_SCHEMA.VIEWS;";
+				command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(x => x.ColumnName)) + " FROM INFORMATION_SCHEMA." + tableName + ";";
 #pragma warning restore CA2100
 				using var reader = command.ExecuteReader();
 				while (reader.Read())
