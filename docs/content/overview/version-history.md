@@ -1,5 +1,5 @@
 ---
-lastmod: 2019-05-26
+lastmod: 2019-10-18
 date: 2017-03-27
 menu:
   main:
@@ -11,8 +11,9 @@ weight: 30
 Version History
 ===============
 
-### 0.60.0-beta1
+### 0.60.0
 
+* **Possibly breaking** Implement conversions in GetFieldValue<T>: [#716](https://github.com/mysql-net/MySqlConnector/issues/716).
 * Add C# 8 nullable annotations to public API.
 * Support `Tables` and `Views` schemas in `MySqlConnection.GetSchema`: [#719](https://github.com/mysql-net/MySqlConnector/pull/719).
 * Add better exception message when `'0000-00-00'` can't be converted: [#690](https://github.com/mysql-net/MySqlConnector/issues/690).
