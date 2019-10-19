@@ -285,14 +285,48 @@ namespace MySql.Data.MySqlClient
 
 		public override T GetFieldValue<T>(int ordinal)
 		{
+			if (typeof(T) == typeof(bool))
+				return (T) (object) GetBoolean(ordinal);
+			if (typeof(T) == typeof(byte))
+				return (T) (object) GetByte(ordinal);
+			if (typeof(T) == typeof(sbyte))
+				return (T) (object) GetSByte(ordinal);
+			if (typeof(T) == typeof(short))
+				return (T) (object) GetInt16(ordinal);
+			if (typeof(T) == typeof(ushort))
+				return (T) (object) GetUInt16(ordinal);
+			if (typeof(T) == typeof(int))
+				return (T) (object) GetInt32(ordinal);
+			if (typeof(T) == typeof(uint))
+				return (T) (object) GetUInt32(ordinal);
+			if (typeof(T) == typeof(long))
+				return (T) (object) GetInt64(ordinal);
+			if (typeof(T) == typeof(ulong))
+				return (T) (object) GetUInt64(ordinal);
+			if (typeof(T) == typeof(char))
+				return (T) (object) GetChar(ordinal);
+			if (typeof(T) == typeof(decimal))
+				return (T) (object) GetDecimal(ordinal);
+			if (typeof(T) == typeof(double))
+				return (T) (object) GetDouble(ordinal);
+			if (typeof(T) == typeof(float))
+				return (T) (object) GetFloat(ordinal);
+			if (typeof(T) == typeof(string))
+				return (T) (object) GetString(ordinal);
+			if (typeof(T) == typeof(DateTime))
+				return (T) (object) GetDateTime(ordinal);
 			if (typeof(T) == typeof(DateTimeOffset))
-				return (T) Convert.ChangeType(GetDateTimeOffset(ordinal), typeof(T));
-			if (typeof(T) == typeof(TextReader) || typeof(T) == typeof(StringReader))
-				return (T) (object) GetTextReader(ordinal);
-			if (typeof(T) == typeof(Stream))
-				return (T) (object) GetStream(ordinal);
+				return (T) (object) GetDateTimeOffset(ordinal);
+			if (typeof(T) == typeof(Guid))
+				return (T) (object) GetGuid(ordinal);
 			if (typeof(T) == typeof(MySqlGeometry))
 				return (T) (object) GetMySqlGeometry(ordinal);
+			if (typeof(T) == typeof(Stream))
+				return (T) (object) GetStream(ordinal);
+			if (typeof(T) == typeof(TextReader) || typeof(T) == typeof(StringReader))
+				return (T) (object) GetTextReader(ordinal);
+			if (typeof(T) == typeof(TimeSpan))
+				return (T) (object) GetTimeSpan(ordinal);
 
 			return base.GetFieldValue<T>(ordinal);
 		}
