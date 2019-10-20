@@ -1096,7 +1096,8 @@ create table schema_table({createColumn});");
 			command.CommandText = $"select `{column}` from `{table}`;";
 			command.Prepare();
 
-			using var reader = command.ExecuteReader();
+			using var reader = command.ExecuteReader(CommandBehavior.SchemaOnly);
+			Assert.False(reader.Read());
 			var schemaTable = reader.GetSchemaTable();
 			Assert.Single(schemaTable.Rows);
 			var schema = schemaTable.Rows[0];
