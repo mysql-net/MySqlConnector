@@ -208,3 +208,4 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#96636](https://bugs.mysql.com/bug.php?id=96636): `MySqlConnection.Open()` slow under load when using SSL
 * [#96717](https://bugs.mysql.com/bug.php?id=96717): Not compatible with MySQL Server 5.0
 * [#97067](https://bugs.mysql.com/bug.php?id=97067): Aggregate functions on BIT(n) columns return wrong result
+* [#97300](https://bugs.mysql.com/bug.php?id=97300): `GetSchemaTable()` returns table for stored procedure with output parameters

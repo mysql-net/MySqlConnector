@@ -29,18 +29,20 @@ namespace MySql.Data.MySqlClient
 
 		public override bool Read()
 		{
-			Command?.CancellableCommand.ResetCommandTimeout();
-			return GetResultSet().Read();
+			VerifyNotDisposed();
+			Command!.CancellableCommand.ResetCommandTimeout();
+			return m_resultSet!.Read();
 		}
 
 		public override Task<bool> ReadAsync(CancellationToken cancellationToken)
 		{
-			Command?.CancellableCommand.ResetCommandTimeout();
-			return GetResultSet().ReadAsync(cancellationToken);
+			VerifyNotDisposed();
+			Command!.CancellableCommand.ResetCommandTimeout();
+			return m_resultSet!.ReadAsync(cancellationToken);
 		}
 
 		internal Task<bool> ReadAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) =>
-			GetResultSet().ReadAsync(ioBehavior, cancellationToken);
+			m_resultSet!.ReadAsync(ioBehavior, cancellationToken);
 
 		public override Task<bool> NextResultAsync(CancellationToken cancellationToken)
 		{
@@ -58,7 +60,7 @@ namespace MySql.Data.MySqlClient
 					await m_resultSet!.ReadEntireAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					await ScanResultSetAsync(ioBehavior, m_resultSet, cancellationToken).ConfigureAwait(false);
 					if (m_hasMoreResults && m_resultSet.ContainsCommandParameters)
-						await ReadOutParametersAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						await ReadOutParametersAsync(Command!, m_resultSet, ioBehavior, cancellationToken).ConfigureAwait(false);
 					else
 						break;
 				}
@@ -366,7 +368,7 @@ namespace MySql.Data.MySqlClient
 				dataReader.m_hasMoreResults = true;
 
 				if (dataReader.m_resultSet.ContainsCommandParameters)
-					await dataReader.ReadOutParametersAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					await ReadOutParametersAsync(dataReader.Command!, dataReader.m_resultSet, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				// if the command list has multiple commands, keep reading until a result set is found
 				while (dataReader.m_resultSet.State == ResultSetState.NoMoreData && commandListPosition.CommandIndex < commandListPosition.Commands.Count)
@@ -529,30 +531,31 @@ namespace MySql.Data.MySqlClient
 		// If ResultSet.ContainsCommandParameters is true, then this method should be called to read the (single)
 		// row in that result set, which contains the values of "out" parameters from the previous stored procedure
 		// execution. These values will be stored in the parameters of the associated command.
-		private async Task ReadOutParametersAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private static async Task ReadOutParametersAsync(IMySqlCommand command, ResultSet resultSet, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			await ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			await resultSet.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
-			if (GetString(0) != SingleCommandPayloadCreator.OutParameterSentinelColumnName)
+			var row = resultSet.GetCurrentRow();
+			if (row.GetString(0) != SingleCommandPayloadCreator.OutParameterSentinelColumnName)
 				throw new InvalidOperationException("Expected out parameter values.");
 
-			for (var i = 0; i < Command!.OutParameters!.Count; i++)
+			for (var i = 0; i < command.OutParameters!.Count; i++)
 			{
-				var param = Command.OutParameters[i];
+				var param = command.OutParameters[i];
 				var columnIndex = i + 1;
-				if (param.HasSetDbType && !IsDBNull(columnIndex))
+				if (param.HasSetDbType && !row.IsDBNull(columnIndex))
 				{
 					var dbTypeMapping = TypeMapper.Instance.GetDbTypeMapping(param.DbType);
 					if (dbTypeMapping is object)
 					{
-						param.Value = dbTypeMapping.DoConversion(GetValue(columnIndex));
+						param.Value = dbTypeMapping.DoConversion(row.GetValue(columnIndex));
 						continue;
 					}
 				}
-				param.Value = GetValue(columnIndex);
+				param.Value = row.GetValue(columnIndex);
 			}
 
-			if (await ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
+			if (await resultSet.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
 				throw new InvalidOperationException("Expected only one row.");
 		}
 
@@ -565,7 +568,9 @@ namespace MySql.Data.MySqlClient
 		private ResultSet GetResultSet()
 		{
 			VerifyNotDisposed();
-			return m_resultSet ?? throw new InvalidOperationException("There is no current result set.");
+			if (m_resultSet is null || m_resultSet.ContainsCommandParameters)
+				throw new InvalidOperationException("There is no current result set.");
+			return m_resultSet;
 		}
 
 		readonly CommandBehavior m_behavior;
