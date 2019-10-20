@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.60.1
+
+* Implement `CommandBehavior.SchemaOnly`: [#723](https://github.com/mysql-net/MySqlConnector/issues/723).
+* Fix `MySqlDataReader` methods returning data for output parameters of stored procedures: [#722](https://github.com/mysql-net/MySqlConnector/issues/722).
+  * This fixes a regression introduced in 0.57.0.
+
 ### 0.60.0
 
 * **Possibly breaking** Implement conversions in GetFieldValue<T>: [#716](https://github.com/mysql-net/MySqlConnector/issues/716).
