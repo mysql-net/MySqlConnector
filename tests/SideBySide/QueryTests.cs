@@ -603,15 +603,23 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			Assert.Equal(512, reader.GetInt32(0));
 		}
 
-		[Fact]
-		public void SumShorts()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void SumShorts(bool prepareCommand)
 		{
-			m_database.Connection.Execute(@"drop table if exists sum_shorts;
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.IgnorePrepare = !prepareCommand;
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			connection.Open();
+
+			connection.Execute(@"drop table if exists sum_shorts;
 			create table sum_shorts(value smallint unsigned not null);
 			insert into sum_shorts(value) values(0), (1), (2), (32766), (32767);");
 
-			using var cmd = m_database.Connection.CreateCommand();
+			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "select sum(value) from sum_shorts";
+			cmd.Prepare();
 			Assert.Equal(65536m, cmd.ExecuteScalar());
 
 			using var reader = cmd.ExecuteReader();
@@ -622,15 +630,23 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			Assert.Equal(65536L, reader.GetInt64(0));
 		}
 
-		[Fact]
-		public void SumInts()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void SumInts(bool prepareCommand)
 		{
-			m_database.Connection.Execute(@"drop table if exists sum_ints;
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.IgnorePrepare = !prepareCommand;
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			connection.Open();
+
+			connection.Execute(@"drop table if exists sum_ints;
 			create table sum_ints(value int unsigned not null);
 			insert into sum_ints(value) values(0), (1), (2), (2147483646), (2147483647);");
 
-			using var cmd = m_database.Connection.CreateCommand();
+			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "select sum(value) from sum_ints";
+			cmd.Prepare();
 			Assert.Equal(4294967296m, cmd.ExecuteScalar());
 
 			using var reader = cmd.ExecuteReader();

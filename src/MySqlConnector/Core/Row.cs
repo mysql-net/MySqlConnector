@@ -200,28 +200,35 @@ namespace MySqlConnector.Core
 
 		public int GetInt32(int ordinal)
 		{
-			var value = GetValue(ordinal);
-			if (value is int)
-				return (int) value;
+			if (ordinal < 0 || ordinal > ResultSet.ColumnDefinitions!.Length)
+				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ResultSet.ColumnDefinitions!.Length));
 
-			if (value is sbyte)
-				return (sbyte) value;
-			if (value is byte)
-				return (byte) value;
-			if (value is short)
-				return (short) value;
-			if (value is ushort)
-				return (ushort) value;
-			if (value is uint)
-				return checked((int) (uint) value);
-			if (value is long)
-				return checked((int) (long) value);
-			if (value is ulong)
-				return checked((int) (ulong) value);
-			if (value is decimal)
-				return (int) (decimal) value;
-			return (int) value;
+			if (m_dataOffsets[ordinal] == -1)
+				throw new InvalidCastException();
+
+			var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
+			if ((columnDefinition.ColumnType != ColumnType.Tiny &&
+				columnDefinition.ColumnType != ColumnType.Short &&
+				columnDefinition.ColumnType != ColumnType.Int24 &&
+				columnDefinition.ColumnType != ColumnType.Long &&
+				columnDefinition.ColumnType != ColumnType.Longlong &&
+				columnDefinition.ColumnType != ColumnType.Bit &&
+				columnDefinition.ColumnType != ColumnType.Year &&
+				columnDefinition.ColumnType != ColumnType.Decimal &&
+				columnDefinition.ColumnType != ColumnType.NewDecimal) ||
+				(columnDefinition.ColumnType == ColumnType.Tiny && Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1 && (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) == 0))
+			{
+				throw new InvalidCastException("Can't convert {0} to Int32".FormatInvariant(ResultSet.ColumnTypes![ordinal]));
+			}
+
+			var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
+
+			if (columnDefinition.ColumnType == ColumnType.Bit)
+				return checked((int) ReadBit(data, columnDefinition));
+			return GetInt32Core(data, columnDefinition);
 		}
+
+		protected abstract int GetInt32Core(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
 
 		public long GetInt64(int ordinal)
 		{
@@ -427,7 +434,7 @@ namespace MySqlConnector.Core
 #endif
 			};
 
-		protected static object ReadBit(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+		protected static ulong ReadBit(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 		{
 			if ((columnDefinition.ColumnFlags & ColumnFlags.Binary) == 0)
 			{
