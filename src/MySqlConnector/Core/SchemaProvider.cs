@@ -15,10 +15,31 @@ namespace MySqlConnector.Core
 			m_schemaCollections = new Dictionary<string, Action<DataTable>>
 			{
 				{ "MetaDataCollections", FillMetadataCollections },
+				{ "CharacterSets", FillCharacterSets },
+				{ "Collations", FillCollations },
+				{ "CollationCharacterSetApplicability", FillCollationCharacterSetApplicability },
+				{ "Columns", FillColumns },
+				{ "Databases", FillDatabases },
 				{ "DataTypes", FillDataTypes },
+				{ "Engines", FillEngines },
+				{ "KeyColumnUsage", FillKeyColumnUsage },
+				{ "KeyWords", FillKeyWords },
+				{ "Parameters", FillParameters },
+				{ "Partitions", FillPartitions },
+				{ "Plugins", FillPlugins },
 				{ "Procedures", FillProcedures },
+				{ "ProcessList", FillProcessList },
+				{ "Profiling", FillProfiling },
+				{ "ReferentialConstraints", FillReferentialConstraints },
 				{ "ReservedWords", FillReservedWords },
+				{ "ResourceGroups", FillResourceGroups },
+				{ "SchemaPrivileges", FillSchemaPrivileges },
 				{ "Tables", FillTables },
+				{ "TableConstraints", FillTableConstraints },
+				{ "TablePrivileges", FillTablePrivileges },
+				{ "TableSpaces", FillTableSpaces },
+				{ "Triggers", FillTriggers },
+				{ "UserPrivileges", FillUserPrivileges },
 				{ "Views", FillViews },
 			};
 		}
@@ -47,6 +68,91 @@ namespace MySqlConnector.Core
 
 			foreach (var collectionName in m_schemaCollections.Keys)
 				dataTable.Rows.Add(collectionName, 0, 0);
+		}
+
+		private void FillCharacterSets(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DEFAULT_COLLATE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DESCRIPTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("MAXLEN", typeof(int)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "CHARACTER_SETS");
+		}
+
+		private void FillCollations(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ID", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IS_DEFAULT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IS_COMPILED", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SORTLEN", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PAD_ATTRIBUTE", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "COLLATIONS");
+		}
+
+		private void FillCollationCharacterSetApplicability(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "COLLATION_CHARACTER_SET_APPLICABILITY");
+		}
+
+		private void FillColumns(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("COLUMN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("COLUMN_DEFAULT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IS_NULLABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DATA_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHARACTER_MAXIMUM_LENGTH", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHARACTER_OCTET_LENGTH", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("NUMERIC_PRECISION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("NUMERIC_SCALE", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DATETIME_PRECISION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("COLUMN_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("COLUMN_KEY", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("EXTRA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PRIVILEGES", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("COLUMN_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("GENERATION_EXPRESSION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SRS_ID", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "COLUMNS");
+		}
+
+		private void FillDatabases(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("CATALOG_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SCHEMA_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DEFAULT_CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DEFAULT_COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SQL_PATH", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "SCHEMATA");
 		}
 
 		private void FillDataTypes(DataTable dataTable)
@@ -107,7 +213,7 @@ namespace MySqlConnector.Core
 				var createFormatParts = columnType.CreateFormat.Split(';');
 				dataTable.Rows.Add(
 					dataTypeName,
-					(int) mySqlDbType,
+					(int)mySqlDbType,
 					columnType.ColumnSize,
 					createFormatParts[0],
 					createFormatParts.Length == 1 ? null : createFormatParts[1],
@@ -131,6 +237,132 @@ namespace MySqlConnector.Core
 					null
 				);
 			}
+		}
+
+		private void FillEngines(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("ENGINE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SUPPORT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TRANSACTIONS", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("XA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SAVEPOINTS", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "ENGINES");
+		}
+
+		private void FillKeyColumnUsage(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("COLUMN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("POSITION_IN_UNIQUE_CONSTRAINT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("REFERENCED_TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("REFERENCED_TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("REFERENCED_COLUMN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "KEY_COLUMN_USAGE");
+		}
+
+		private void FillKeyWords(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("WORD", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("RESERVED", typeof(int)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "KEYWORDS");
+		}
+
+		private void FillParameters(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("SPECIFIC_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SPECIFIC_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SPECIFIC_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PARAMETER_MODE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PARAMETER_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DATA_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHARACTER_MAXIMUM_LENGTH", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHARACTER_OCTET_LENGTH", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("NUMERIC_PRECISION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("NUMERIC_SCALE", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DATETIME_PRECISION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DTD_IDENTIFIER", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ROUTINE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "PARAMETERS");
+		}
+
+		private void FillPartitions(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PARTITION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SUBPARTITION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PARTITION_ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SUBPARTITION_ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PARTITION_METHOD", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SUBPARTITION_METHOD", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PARTITION_EXPRESSION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SUBPARTITION_EXPRESSION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PARTITION_DESCRIPTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_ROWS", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("AVG_ROW_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("MAX_DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("INDEX_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DATA_FREE", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CREATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new DataColumn("UPDATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHECK_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHECKSUM", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PARTITION_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("NODEGROUP", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLESPACE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "PARTITIONS");
+		}
+
+		private void FillPlugins(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("PLUGIN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PLUGIN_VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PLUGIN_STATUS", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PLUGIN_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PLUGIN_TYPE_VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PLUGIN_LIBRARY", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PLUGIN_LIBRARY_VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PLUGIN_AUTHOR", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PLUGIN_DESCRIPTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PLUGIN_LICENSE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("LOAD_OPTION", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "PLUGINS");
 		}
 
 		private void FillProcedures(DataTable dataTable)
@@ -161,6 +393,71 @@ namespace MySqlConnector.Core
 
 			FillDataTable(dataTable, "ROUTINES");
 		}
+
+		private void FillProcessList(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("ID", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("USER", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("HOST", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DB", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("COMMAND", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TIME", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("STATE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("INFO", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "PROCESSLIST");
+		}
+
+		private void FillProfiling(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("QUERY_ID", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SEQ", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("STATE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DURATION", typeof(decimal)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CPU_USER", typeof(decimal)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CPU_SYSTEM", typeof(decimal)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CONTEXT_VOLUNTARY", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CONTEXT_INVOLUNTARY", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("BLOCK_OPS_IN", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("BLOCK_OPS_OUT", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("MESSAGES_SENT", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("MESSAGES_RECEIVED", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PAGE_FAULTS_MAJOR", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PAGE_FAULTS_MINOR", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SWAPS", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SOURCE_FUNCTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SOURCE_FILE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SOURCE_LINE", typeof(int)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "PROFILING");
+		}
+
+		private void FillReferentialConstraints(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("UNIQUE_CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("UNIQUE_CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("UNIQUE_CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("MATCH_OPTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("UPDATE_RULE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DELETE_RULE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("REFERENCED_TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "REFERENTIAL_CONSTRAINTS");
+		}
+
 
 		private void FillReservedWords(DataTable dataTable)
 		{
@@ -450,6 +747,34 @@ namespace MySqlConnector.Core
 				dataTable.Rows.Add(word);
 		}
 
+		private void FillResourceGroups(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("RESOURCE_GROUP_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("RESOURCE_GROUP_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("RESOURCE_GROUP_ENABLED", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("VCPU_IDS", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("THREAD_PRIORITY", typeof(int)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "RESOURCE_GROUPS");
+		}
+
+		private void FillSchemaPrivileges(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("GRANTEE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PRIVILEGE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "SCHEMA_PRIVILEGES");
+		}
+
 		private void FillTables(DataTable dataTable)
 		{
 			dataTable.Columns.AddRange(new[]
@@ -478,6 +803,98 @@ namespace MySqlConnector.Core
 			});
 
 			FillDataTable(dataTable, "TABLES");
+		}
+
+		private void FillTableConstraints(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CONSTRAINT_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "TABLE_CONSTRAINTS");
+		}
+
+		private void FillTablePrivileges(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("GRANTEE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PRIVILEGE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "TABLE_PRIVILEGES");
+		}
+
+		private void FillTableSpaces(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("TABLESPACE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ENGINE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLESPACE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("LOGFILE_GROUP_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("EXTENT_SIZE", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("AUTOEXTEND_SIZE", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("MAXIMUM_SIZE", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("NODEGROUP_ID", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLESPACE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "TABLESPACES");
+		}
+
+		private void FillTriggers(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("TRIGGER_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TRIGGER_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TRIGGER_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("EVENT_MANIPULATION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("EVENT_OBJECT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("EVENT_OBJECT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("EVENT_OBJECT_TABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ACTION_ORDER", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ACTION_CONDITION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ACTION_STATEMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ACTION_ORIENTATION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ACTION_TIMING", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ACTION_REFERENCE_OLD_TABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ACTION_REFERENCE_NEW_TABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ACTION_REFERENCE_OLD_ROW", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ACTION_REFERENCE_NEW_ROW", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CREATED", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new DataColumn("SQL_MODE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DEFINER", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHARACTER_SET_CLIENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("COLLATION_CONNECTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DATABASE_COLLATION", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "TRIGGERS");
+		}
+
+		private void FillUserPrivileges(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new[]
+			{
+				new DataColumn("GRANTEE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("PRIVILEGE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+			});
+
+			FillDataTable(dataTable, "USER_PRIVILEGES");
 		}
 
 		private void FillViews(DataTable dataTable)
