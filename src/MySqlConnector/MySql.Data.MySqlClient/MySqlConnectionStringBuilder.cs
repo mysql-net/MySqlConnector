@@ -208,6 +208,10 @@ namespace MySql.Data.MySqlClient
 			set => MySqlConnectionStringOption.CharacterSet.SetValue(this, value);
 		}
 
+		/// <summary>
+		/// The length of time (in seconds) to wait for a connection to the server before terminating the attempt and generating an error.
+		/// The default value is 15.
+		/// </summary>
 		public uint ConnectionTimeout
 		{
 			get => MySqlConnectionStringOption.ConnectionTimeout.GetValue(this);

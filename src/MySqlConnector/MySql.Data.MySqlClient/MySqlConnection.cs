@@ -401,9 +401,11 @@ namespace MySql.Data.MySqlClient
 #endif
 
  		/// <summary>
-        /// Gets the time (in seconds) to wait while trying to establish a connection
-        /// before terminating the attempt and generating an error. The default value is 15 seconds.
-        /// </summary>
+		/// Gets the time (in seconds) to wait while trying to establish a connection
+		/// before terminating the attempt and generating an error. This value
+		/// is controlled by <see cref="MySqlConnectionStringBuilder.ConnectionTimeout"/>,
+		/// which defaults to 15 seconds.
+		/// </summary>
 		public override int ConnectionTimeout => GetConnectionSettings().ConnectionTimeout;
 
 		public event MySqlInfoMessageEventHandler? InfoMessage;
