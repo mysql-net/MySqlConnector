@@ -400,6 +400,10 @@ namespace MySql.Data.MySqlClient
 		SchemaProvider? m_schemaProvider;
 #endif
 
+ 		/// <summary>
+        /// Gets the time (in seconds) to wait while trying to establish a connection
+        /// before terminating the attempt and generating an error. The default value is 15 seconds.
+        /// </summary>
 		public override int ConnectionTimeout => GetConnectionSettings().ConnectionTimeout;
 
 		public event MySqlInfoMessageEventHandler? InfoMessage;
