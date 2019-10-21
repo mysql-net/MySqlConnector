@@ -130,6 +130,31 @@ namespace SideBySide
 			Assert.Equal("test value", cmd.Parameters[0].Value);
 		}
 
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=97300")]
+		public async Task FieldCountForNoResultSet()
+		{
+			using var cmd = m_database.Connection.CreateCommand();
+			cmd.CommandText = "out_string";
+			cmd.CommandType = CommandType.StoredProcedure;
+			cmd.Parameters.Add(new MySqlParameter
+			{
+				ParameterName = "@value",
+				DbType = DbType.String,
+				Direction = ParameterDirection.Output,
+			});
+
+			using (var reader = await cmd.ExecuteReaderAsync())
+			{
+				Assert.Equal(0, reader.FieldCount);
+				Assert.False(reader.HasRows);
+				Assert.False(await reader.ReadAsync());
+				Assert.Equal(0, reader.FieldCount);
+				Assert.False(reader.HasRows);
+			}
+
+			Assert.Equal("test value", cmd.Parameters[0].Value);
+		}
+
 #if !NETCOREAPP1_1_2
 		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=97300")]
 		public async Task GetSchemaTableForNoResultSet()

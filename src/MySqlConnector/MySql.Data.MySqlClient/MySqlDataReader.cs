@@ -170,13 +170,32 @@ namespace MySql.Data.MySqlClient
 
 		public override bool IsDBNull(int ordinal) => GetResultSet().GetCurrentRow().IsDBNull(ordinal);
 
-		public override int FieldCount => GetResultSet().FieldCount;
+		public override int FieldCount
+		{
+			get
+			{
+				VerifyNotDisposed();
+				if (m_resultSet is null)
+					throw new InvalidOperationException("There is no current result set.");
+				return m_resultSet.ContainsCommandParameters ? 0 : m_resultSet.FieldCount;
+			}
+		}
 
 		public override object this[int ordinal] => GetResultSet().GetCurrentRow()[ordinal];
 
 		public override object this[string name] => GetResultSet().GetCurrentRow()[name];
 
-		public override bool HasRows => GetResultSet().HasRows;
+		public override bool HasRows
+		{
+			get
+			{
+				VerifyNotDisposed();
+				if (m_resultSet is null)
+					throw new InvalidOperationException("There is no current result set.");
+				return !m_resultSet.ContainsCommandParameters && m_resultSet.HasRows;
+			}
+		}
+
 		public override bool IsClosed => Command is null;
 		public override int RecordsAffected => m_recordsAffected.GetValueOrDefault(-1);
 
