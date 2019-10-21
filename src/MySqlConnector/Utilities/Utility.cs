@@ -215,11 +215,12 @@ namespace MySqlConnector.Utilities
 			new ArraySegment<T>(arraySegment.Array!, arraySegment.Offset + index, length);
 
 		/// <summary>
-		/// Returns a new <see cref="byte[]"/> that is a slice of <paramref name="input"/> starting at <paramref name="offset"/>.
+		/// Returns a new <see cref="T:byte[]"/> that is a slice of <paramref name="input"/> starting at <paramref name="offset"/>.
 		/// </summary>
 		/// <param name="input">The array to slice.</param>
 		/// <param name="offset">The offset at which to slice.</param>
-		/// <returns>A new <see cref="byte[]"/> that is a slice of <paramref name="input"/> from <paramref name="offset"/> to the end.</returns>
+		/// <param name="length">The length of the slice.</param>
+		/// <returns>A new <see cref="T:byte[]"/> that is a slice of <paramref name="input"/> from <paramref name="offset"/> to the end.</returns>
 		public static byte[] ArraySlice(byte[] input, int offset, int length)
 		{
 			if (offset == 0 && length == input.Length)

@@ -26,7 +26,7 @@ namespace MySqlConnector.Core
 		public static int GetNextId() => Interlocked.Increment(ref s_id);
 
 		/// <summary>
-		/// Causes the effective command timeout to be reset back to the value specified by <see cref="CommandTimeout"/>.
+		/// Causes the effective command timeout to be reset back to the value specified by <see cref="ICancellableCommand.CommandTimeout"/>.
 		/// </summary>
 		/// <remarks>As per the <a href="https://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlcommand.commandtimeout.aspx">MSDN documentation</a>,
 		/// "This property is the cumulative time-out (for all network packets that are read during the invocation of a method) for all network reads during command
