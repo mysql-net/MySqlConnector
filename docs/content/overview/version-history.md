@@ -11,6 +11,15 @@ weight: 30
 Version History
 ===============
 
+### 0.60.2
+
+* Add more schemas to `MySqlConnection.GetSchema`: [#724](https://github.com/mysql-net/MySqlConnector/pull/724).
+* Add XML documentation to NuGet package.
+* Add documentation for `MySqlConnection.ConnectionTimeout`: [#727](https://github.com/mysql-net/MySqlConnector/pull/727).
+* Fix exception in `MySqlDataReader.FieldCount` and `HasRows`: [#728](https://github.com/mysql-net/MySqlConnector/issues/728).
+  * This fixes a regression introduced in 0.60.1.
+* Thanks to [Joseph Amalfitano](https://github.com/JosephAmalfitanoSSA) and [KaliVi](https://github.com/KaliVi) for contributions to this release.
+
 ### 0.60.1
 
 * Implement `CommandBehavior.SchemaOnly`: [#723](https://github.com/mysql-net/MySqlConnector/issues/723).
