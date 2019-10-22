@@ -27,7 +27,7 @@ namespace MySqlConnector.Core
 			// if all sessions are used, see if any have been leaked and can be recovered
 			// check at most once per second (although this isn't enforced via a mutex so multiple threads might block
 			// on the lock in RecoverLeakedSessions in high-concurrency situations
-			if (m_sessionSemaphore.CurrentCount == 0 && unchecked(((uint) Environment.TickCount) - m_lastRecoveryTime) >= 1000u)
+			if (IsEmpty && unchecked(((uint) Environment.TickCount) - m_lastRecoveryTime) >= 1000u)
 			{
 				Log.Info("Pool{0} is empty; recovering leaked sessions", m_logArguments);
 				RecoverLeakedSessions();
@@ -141,6 +141,12 @@ namespace MySqlConnector.Core
 				throw;
 			}
 		}
+
+		/// <summary>
+		/// Returns <c>true</c> if the connection pool is empty, i.e., all connections are in use. Note that in a highly-multithreaded
+		/// environment, the value of this property may be stale by the time it's returned.
+		/// </summary>
+		internal bool IsEmpty => m_sessionSemaphore.CurrentCount == 0;
 
 		// Returns zero for healthy, non-zero otherwise.
 		private int GetSessionHealth(ServerSession session)

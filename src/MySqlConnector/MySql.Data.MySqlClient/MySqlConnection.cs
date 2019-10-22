@@ -640,7 +640,8 @@ namespace MySql.Data.MySqlClient
 			}
 			catch (OperationCanceledException ex) when (timeoutSource?.IsCancellationRequested ?? false)
 			{
-				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
+				var messageSuffix = (pool?.IsEmpty ?? false) ? " All pooled connections are in use." : "";
+				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired." + messageSuffix, ex);
 			}
 			finally
 			{
