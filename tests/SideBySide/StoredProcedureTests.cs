@@ -545,6 +545,38 @@ namespace SideBySide
 			Assert.Throws<MySqlException>(() => MySqlCommandBuilder.DeriveParameters(cmd));
 		}
 
+		[Fact]
+		public void DeriveParametersDoesNotExistThenIsCreated()
+		{
+			using (var cmd = new MySqlCommand("drop procedure if exists xx_does_not_exist_2;", m_database.Connection))
+				cmd.ExecuteNonQuery();
+
+			using (var cmd = new MySqlCommand("xx_does_not_exist_2", m_database.Connection))
+			{
+				cmd.CommandType = CommandType.StoredProcedure;
+				Assert.Throws<MySqlException>(() => MySqlCommandBuilder.DeriveParameters(cmd));
+			}
+
+			using (var cmd = new MySqlCommand(@"create procedure xx_does_not_exist_2(
+					IN param1 INT,
+					OUT param2 VARCHAR(100))
+				BEGIN
+					SELECT 'test' INTO param2;
+				END", m_database.Connection))
+			{
+				cmd.ExecuteNonQuery();
+			}
+
+			using (var cmd = new MySqlCommand("xx_does_not_exist_2", m_database.Connection))
+			{
+				cmd.CommandType = CommandType.StoredProcedure;
+				MySqlCommandBuilder.DeriveParameters(cmd);
+				Assert.Collection(cmd.Parameters.Cast<MySqlParameter>(),
+					AssertParameter("@param1", ParameterDirection.Input, MySqlDbType.Int32),
+					AssertParameter("@param2", ParameterDirection.Output, MySqlDbType.VarChar));
+			}
+		}
+
 		[SkippableFact(ServerFeatures.Json, Baseline = "https://bugs.mysql.com/bug.php?id=89335")]
 		public void DeriveParametersSetJson()
 		{
