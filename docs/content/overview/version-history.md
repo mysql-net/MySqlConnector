@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.60.3 Beta 1
+
+* Rewrite `ExecuteReaderAsync` to be more compatible with New Relic instrumentation.
+* Improve "Connect Timeout" exception message when connection pool is empty.
+* Revalidate missing stored procedures in `MySqlCommandBuilder.DeriveParameters(Async)`: [#730](https://github.com/mysql-net/MySqlConnector/issues/730).
+
 ### 0.60.2
 
 * Add more schemas to `MySqlConnection.GetSchema`: [#724](https://github.com/mysql-net/MySqlConnector/pull/724).
