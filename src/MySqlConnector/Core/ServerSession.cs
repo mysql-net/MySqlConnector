@@ -45,6 +45,7 @@ namespace MySqlConnector.Core
 			Pool = pool;
 			PoolGeneration = poolGeneration;
 			HostName = "";
+			SingleCommandList = new IMySqlCommand[1];
 			m_logArguments = new object?[] { "{0}".FormatInvariant(Id), null };
 			Log.Debug("Session{0} created new session", m_logArguments);
 		}
@@ -65,6 +66,7 @@ namespace MySqlConnector.Core
 		public bool SupportsDeprecateEof => m_supportsDeprecateEof;
 		public bool SupportsSessionTrack => m_supportsSessionTrack;
 		public bool ProcAccessDenied { get; set; }
+		public IMySqlCommand[] SingleCommandList { get; }
 
 		public void ReturnToPool()
 		{
