@@ -1071,6 +1071,32 @@ insert into command_behavior_single_row(id) values(1),(2),(3),(4),(5),(6),(7),(8
 			Assert.False(reader.Read());
 		}
 
+		[Fact]
+		public async Task CommandBehaviorSingleRowMultipleResultSets()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+			connection.Execute(@"drop table if exists command_behavior_single_row;
+create table command_behavior_single_row(id integer not null primary key);");
+
+			using (var cmd = new MySqlCommand("SELECT 1; insert into command_behavior_single_row(id) values(1); SELECT 2;", connection))
+			{
+				using var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow);
+				Assert.True(await reader.ReadAsync());
+				Assert.Equal(1, reader.GetInt32(0));
+				Assert.False(await reader.ReadAsync());
+#if !BASELINE
+				Assert.False(await reader.NextResultAsync());
+#endif
+			}
+
+			// subsequent commands were still executed (and had effects) even though they didn't return results
+			using (var cmd = new MySqlCommand("select count(*) from command_behavior_single_row;", connection))
+			{
+				Assert.Equal(1L, await cmd.ExecuteScalarAsync());
+			}
+		}
+
 #if !BASELINE
 		[Fact]
 		public void NoBackslashEscapes()

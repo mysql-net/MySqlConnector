@@ -55,39 +55,43 @@ namespace MySql.Data.MySqlClient
 			VerifyNotDisposed();
 			try
 			{
-				while (true)
+				do
 				{
-					await m_resultSet!.ReadEntireAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					await ScanResultSetAsync(ioBehavior, m_resultSet, cancellationToken).ConfigureAwait(false);
-					if (m_hasMoreResults && m_resultSet.ContainsCommandParameters)
-						await ReadOutParametersAsync(Command!, m_resultSet, ioBehavior, cancellationToken).ConfigureAwait(false);
-					else
-						break;
-				}
-
-				if (!m_hasMoreResults)
-				{
-					if (m_commandListPosition.CommandIndex < m_commandListPosition.Commands.Count)
+					while (true)
 					{
-						Command = m_commandListPosition.Commands[m_commandListPosition.CommandIndex];
-						using (Command.CancellableCommand.RegisterCancel(cancellationToken))
+						await m_resultSet!.ReadEntireAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						await ScanResultSetAsync(ioBehavior, m_resultSet, cancellationToken).ConfigureAwait(false);
+						if (m_hasMoreResults && m_resultSet.ContainsCommandParameters)
+							await ReadOutParametersAsync(Command!, m_resultSet, ioBehavior, cancellationToken).ConfigureAwait(false);
+						else
+							break;
+					}
+
+					if (!m_hasMoreResults)
+					{
+						if (m_commandListPosition.CommandIndex < m_commandListPosition.Commands.Count)
 						{
-							var writer = new ByteBufferWriter();
-							if (!Command.Connection!.Session.IsCancelingQuery && m_payloadCreator.WriteQueryCommand(ref m_commandListPosition, m_cachedProcedures!, writer))
+							Command = m_commandListPosition.Commands[m_commandListPosition.CommandIndex];
+							using (Command.CancellableCommand.RegisterCancel(cancellationToken))
 							{
-								using var payload = writer.ToPayloadData();
-								await Command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-								await m_resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
-								ActivateResultSet();
-								m_hasMoreResults = true;
+								var writer = new ByteBufferWriter();
+								if (!Command.Connection!.Session.IsCancelingQuery && m_payloadCreator.WriteQueryCommand(ref m_commandListPosition, m_cachedProcedures!, writer))
+								{
+									using var payload = writer.ToPayloadData();
+									await Command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+									await m_resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
+									ActivateResultSet();
+									m_hasMoreResults = true;
+								}
 							}
 						}
 					}
+					else
+					{
+						ActivateResultSet();
+					}
 				}
-				else
-				{
-					ActivateResultSet();
-				}
+				while (m_hasMoreResults && (Command!.CommandBehavior & CommandBehavior.SingleRow) != 0);
 
 				if (!m_hasMoreResults)
 					m_resultSet.Reset();
