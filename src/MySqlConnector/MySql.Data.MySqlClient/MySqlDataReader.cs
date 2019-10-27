@@ -91,7 +91,7 @@ namespace MySql.Data.MySqlClient
 						ActivateResultSet();
 					}
 				}
-				while (m_hasMoreResults && (Command!.CommandBehavior & CommandBehavior.SingleRow) != 0);
+				while (m_hasMoreResults && (Command!.CommandBehavior & (CommandBehavior.SingleResult | CommandBehavior.SingleRow)) != 0);
 
 				if (!m_hasMoreResults)
 					m_resultSet.Reset();

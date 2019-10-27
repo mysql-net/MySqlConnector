@@ -1097,6 +1097,30 @@ create table command_behavior_single_row(id integer not null primary key);");
 			}
 		}
 
+		[Fact]
+		public async Task CommandBehaviorSingleResultMultipleResultSets()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+			connection.Execute(@"drop table if exists command_behavior_single_result;
+create table command_behavior_single_result(id integer not null primary key);");
+
+			using (var cmd = new MySqlCommand("SELECT 1; insert into command_behavior_single_result(id) values(1); SELECT 2;", connection))
+			{
+				using var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult);
+				Assert.True(await reader.ReadAsync());
+				Assert.Equal(1, reader.GetInt32(0));
+				Assert.False(await reader.ReadAsync());
+				Assert.False(await reader.NextResultAsync());
+			}
+
+			// subsequent commands were still executed (and had effects) even though they didn't return results
+			using (var cmd = new MySqlCommand("select count(*) from command_behavior_single_result;", connection))
+			{
+				Assert.Equal(1L, await cmd.ExecuteScalarAsync());
+			}
+		}
+
 #if !BASELINE
 		[Fact]
 		public void NoBackslashEscapes()
