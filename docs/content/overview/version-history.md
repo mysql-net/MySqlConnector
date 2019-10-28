@@ -11,9 +11,10 @@ weight: 30
 Version History
 ===============
 
-### 0.60.3 Beta 1
+### 0.60.3
 
-* Rewrite `ExecuteReaderAsync` to be more compatible with New Relic instrumentation.
+* Improve detection of Azure Database for MySQL proxy: [#731](https://github.com/mysql-net/MySqlConnector/issues/731).
+* Implement `CommandBehavior.SingleResult` and `SingleRow`: [#681](https://github.com/mysql-net/MySqlConnector/issues/681).
 * Improve "Connect Timeout" exception message when connection pool is empty.
 * Revalidate missing stored procedures in `MySqlCommandBuilder.DeriveParameters(Async)`: [#730](https://github.com/mysql-net/MySqlConnector/issues/730).
 
