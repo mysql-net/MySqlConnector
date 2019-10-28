@@ -267,17 +267,7 @@ namespace MySql.Data.MySqlClient
 				throw exception;
 
 			m_commandBehavior = behavior;
-			var commandList = m_connection!.Session.SingleCommandList;
-			var oldCommand = commandList[0];
-			try
-			{
-				commandList[0] = this;
-				return await CommandExecutor.ExecuteReaderAsync(commandList, SingleCommandPayloadCreator.Instance, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
-			}
-			finally
-			{
-				commandList[0] = oldCommand;
-			}
+			return await CommandExecutor.ExecuteReaderAsync(new IMySqlCommand[] { this }, SingleCommandPayloadCreator.Instance, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
 		public MySqlCommand Clone() => new MySqlCommand(this);
