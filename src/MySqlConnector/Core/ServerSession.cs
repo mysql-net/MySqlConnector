@@ -443,7 +443,7 @@ namespace MySqlConnector.Core
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 
-				if (ShouldGetRealServerDetails())
+				if (ShouldGetRealServerDetails(cs))
 					await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			}
 			catch (ArgumentException ex)
@@ -1311,10 +1311,20 @@ namespace MySqlConnector.Core
 		// Some servers are exposed through a proxy, which handles the initial handshake and gives the proxy's
 		// server version and thread ID. Detect this situation and return `true` if the real server's details should
 		// be requested after connecting (which takes an extra roundtrip).
-		private bool ShouldGetRealServerDetails()
+		private bool ShouldGetRealServerDetails(ConnectionSettings cs)
 		{
-			// currently hardcoded to the version returned by the Azure Database for MySQL proxy
-			return ServerVersion.OriginalString == "5.6.26.0" || ServerVersion.OriginalString == "5.6.39.0";
+			// currently hardcoded to the version(s) returned by the Azure Database for MySQL proxy
+			if (ServerVersion.OriginalString == "5.6.42.0" || ServerVersion.OriginalString == "5.6.39.0" || ServerVersion.OriginalString == "5.6.26.0")
+				return true;
+
+			// detect Azure Database for MySQL DNS suffixes
+			if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets && cs.HostNames!.Count == 1)
+			{
+				return cs.HostNames[0].EndsWith(".mysql.database.azure.com", StringComparison.OrdinalIgnoreCase) ||
+					cs.HostNames[0].EndsWith(".mysql.database.chinacloudapi.cn", StringComparison.OrdinalIgnoreCase);
+			}
+
+			return false;
 		}
 
 		private async Task GetRealServerDetailsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
