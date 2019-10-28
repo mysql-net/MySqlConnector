@@ -261,13 +261,13 @@ namespace MySql.Data.MySqlClient
 			return ExecuteReaderAsync(behavior, AsyncIOBehavior, cancellationToken);
 		}
 
-		internal async Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		internal Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (!IsValid(out var exception))
-				throw exception;
+				return Utility.TaskFromException<DbDataReader>(exception);
 
 			m_commandBehavior = behavior;
-			return await CommandExecutor.ExecuteReaderAsync(new IMySqlCommand[] { this }, SingleCommandPayloadCreator.Instance, behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
+			return CommandExecutor.ExecuteReaderAsync(new IMySqlCommand[] { this }, SingleCommandPayloadCreator.Instance, behavior, ioBehavior, cancellationToken);
 		}
 
 		public MySqlCommand Clone() => new MySqlCommand(this);
