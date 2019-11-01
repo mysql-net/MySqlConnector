@@ -173,7 +173,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#88611](https://bugs.mysql.com/bug.php?id=88611): `MySqlCommand` can be executed even if it has “wrong” transaction
 * ~~[#88660](https://bugs.mysql.com/bug.php?id=88660): `MySqlClientFactory.Instance.CreateDataAdapter()` and `CreateCommandBuilder` return `null`~~
 * [#89085](https://bugs.mysql.com/bug.php?id=89085): `MySqlConnection.Database` not updated after `USE database;`
-* [#89159](https://bugs.mysql.com/bug.php?id=89159): `MySqlDataReader` cannot outlive `MySqlCommand`
+* [#89159](https://bugs.mysql.com/bug.php?id=89159), [#97242](https://bugs.mysql.com/bug.php?id=97242): `MySqlDataReader` cannot outlive `MySqlCommand`
 * [#89335](https://bugs.mysql.com/bug.php?id=89335): `MySqlCommandBuilder.DeriveParameters` fails for `JSON` type
 * [#89639](https://bugs.mysql.com/bug.php?id=89639): `ReservedWords` schema contains incorrect data
 * [#91123](https://bugs.mysql.com/bug.php?id=91123): Database names are case-sensitive when calling a stored procedure
@@ -209,3 +209,4 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#96717](https://bugs.mysql.com/bug.php?id=96717): Not compatible with MySQL Server 5.0
 * [#97067](https://bugs.mysql.com/bug.php?id=97067): Aggregate functions on BIT(n) columns return wrong result
 * [#97300](https://bugs.mysql.com/bug.php?id=97300): `GetSchemaTable()` returns table for stored procedure with output parameters
+* [#97448](https://bugs.mysql.com/bug.php?id=97448): Connecting fails if more than one IP is found in DNS for a named host
