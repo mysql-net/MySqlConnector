@@ -413,25 +413,19 @@ namespace MySqlConnector.Core
 		protected ResultSet ResultSet { get; }
 		protected MySqlConnection Connection => ResultSet.Connection;
 
-		protected static Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes)
-		{
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
-			if (guidFormat == MySqlGuidFormat.Binary16)
-				return new Guid(new[] { bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4], bytes[7], bytes[6], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] });
-			if (guidFormat == MySqlGuidFormat.TimeSwapBinary16)
-				return new Guid(new[] { bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] });
-			return new Guid(bytes.ToArray());
-#else
-			unsafe
+		protected unsafe static Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes) =>
+			guidFormat switch
 			{
-				if (guidFormat == MySqlGuidFormat.Binary16)
-					return new Guid(stackalloc byte[16] { bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4], bytes[7], bytes[6], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] });
-				if (guidFormat == MySqlGuidFormat.TimeSwapBinary16)
-					return new Guid(stackalloc byte[16] { bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] });
-				return new Guid(bytes);
-			}
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+				MySqlGuidFormat.Binary16 => new Guid(new[] { bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4], bytes[7], bytes[6], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] }),
+				MySqlGuidFormat.TimeSwapBinary16 => new Guid(new[] { bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] }),
+				_ => new Guid(bytes.ToArray()),
+#else
+				MySqlGuidFormat.Binary16 => new Guid(stackalloc byte[16] { bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4], bytes[7], bytes[6], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] }),
+				MySqlGuidFormat.TimeSwapBinary16 => new Guid(stackalloc byte[16] { bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] }),
+				_ => new Guid(bytes),
 #endif
-		}
+			};
 
 		protected static object ReadBit(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 		{
