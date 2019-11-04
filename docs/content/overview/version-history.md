@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.60.4
+
+* Fix disclosure of connection password via `MySqlConnection.Clone`: [#735](https://github.com/mysql-net/MySqlConnector/issues/735).
+
 ### 0.60.3
 
 * Improve detection of Azure Database for MySQL proxy: [#731](https://github.com/mysql-net/MySqlConnector/issues/731).
