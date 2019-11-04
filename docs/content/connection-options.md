@@ -357,7 +357,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
   <tr>
     <td>Persist Security Info, PersistSecurityInfo</td>
     <td>false</td>
-    <td>When set to false or no (strongly recommended), security-sensitive information, such as the password, is not returned as part of the connection if the connection is open or has ever been in an open state. Resetting the connection string resets all connection string values, including the password. Recognized values are true, false, yes, and no.</td>
+    <td>When set to <code>false</code> or no (strongly recommended), security-sensitive information, such as the password, is not returned as part of the connection string if the connection is open or has ever been in an open state. Resetting the connection string resets all connection string values, including the password. Recognized values are true, false, yes, and no.</td>
   </tr>
   <tr>
     <td>ServerRSAPublicKeyFile, Server RSA Public Key File</td>

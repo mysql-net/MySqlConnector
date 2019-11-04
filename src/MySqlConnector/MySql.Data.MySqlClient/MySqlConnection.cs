@@ -21,7 +21,7 @@ namespace MySql.Data.MySqlClient
 #endif
 	{
 		public MySqlConnection()
-			: this(default)
+			: this("")
 		{
 		}
 
@@ -447,7 +447,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public MySqlConnection Clone() => new MySqlConnection(m_connectionString);
+		public MySqlConnection Clone() => new MySqlConnection(this);
 
 #if !NETSTANDARD1_3
 		object ICloneable.Clone() => Clone();
@@ -673,6 +673,12 @@ namespace MySql.Data.MySqlClient
 					new StateChangeEventArgs(previousState, newState);
 				OnStateChange(eventArgs);
 			}
+		}
+
+		private MySqlConnection(MySqlConnection other)
+			: this(other.m_connectionString)
+		{
+			m_hasBeenOpened = other.m_hasBeenOpened;
 		}
 
 		private void VerifyNotDisposed()

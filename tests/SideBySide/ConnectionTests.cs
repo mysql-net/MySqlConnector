@@ -162,5 +162,15 @@ namespace SideBySide
 			using var connection2 = (MySqlConnection) connection.Clone();
 			Assert.Equal(ConnectionState.Closed, connection2.State);
 		}
+
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=97473")]
+		public void CloneDoesNotDisclosePassword()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+			using var connection2 = (MySqlConnection) connection.Clone();
+			Assert.Equal(connection.ConnectionString, connection2.ConnectionString);
+			Assert.DoesNotContain("password", connection2.ConnectionString, StringComparison.OrdinalIgnoreCase);
+		}
 	}
 }
