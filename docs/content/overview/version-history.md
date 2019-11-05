@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.61.0
+
+* Add `MySqlConnection.CloneWith`: [#736](https://github.com/mysql-net/MySqlConnector/issues/736).
+
 ### 0.60.4
 
 * Fix disclosure of connection password via `MySqlConnection.Clone`: [#735](https://github.com/mysql-net/MySqlConnector/issues/735).
