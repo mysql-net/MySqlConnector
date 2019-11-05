@@ -172,5 +172,75 @@ namespace SideBySide
 			Assert.Equal(connection.ConnectionString, connection2.ConnectionString);
 			Assert.DoesNotContain("password", connection2.ConnectionString, StringComparison.OrdinalIgnoreCase);
 		}
+
+#if !BASELINE
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void CloneWithUsesNewConnectionString(bool openConnection)
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			if (openConnection)
+				connection.Open();
+			using var connection2 = connection.CloneWith("user=root;password=pass;server=example.com;database=test");
+			Assert.Equal("User Id=root;Password=pass;Server=example.com;Database=test", connection2.ConnectionString);
+		}
+
+		[Fact]
+		public void CloneWithUsesExistingPassword()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			var newConnectionString = "user=root;server=example.com;database=test";
+			using var connection2 = connection.CloneWith(newConnectionString);
+
+			var builder = new MySqlConnectionStringBuilder(newConnectionString);
+			builder.Password = AppConfig.CreateConnectionStringBuilder().Password;
+			Assert.Equal(builder.ConnectionString, connection2.ConnectionString);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void CloneWithDoesNotDiscloseExistingPassword(bool persistSecurityInfo)
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+
+			var newConnectionString = "user=root;server=example.com;database=test;Persist Security Info=" + persistSecurityInfo;
+			using var connection2 = connection.CloneWith(newConnectionString);
+
+			var builder = new MySqlConnectionStringBuilder(newConnectionString);
+			Assert.Equal(builder.ConnectionString, connection2.ConnectionString);
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void CloneWithDoesDiscloseExistingPasswordIfPersistSecurityInfo(bool persistSecurityInfo)
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString + ";Persist Security Info=true");
+			connection.Open();
+
+			var newConnectionString = "user=root;server=example.com;database=test;Persist Security Info=" + persistSecurityInfo;
+			using var connection2 = connection.CloneWith(newConnectionString);
+
+			var builder = new MySqlConnectionStringBuilder(newConnectionString);
+			builder.Password = AppConfig.CreateConnectionStringBuilder().Password;
+			Assert.Equal(builder.ConnectionString, connection2.ConnectionString);
+		}
+
+		[Fact]
+		public void CloneWithCopiesExistingPassword()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+
+			var builder = AppConfig.CreateConnectionStringBuilder();
+			builder.Password = "";
+			using var connection2 = connection.CloneWith(builder.ConnectionString);
+			connection2.Open();
+			Assert.Equal(ConnectionState.Open, connection2.State);
+		}
+#endif
 	}
 }

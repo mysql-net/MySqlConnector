@@ -21,7 +21,7 @@ namespace MySql.Data.MySqlClient
 #endif
 	{
 		public MySqlConnection()
-			: this("")
+			: this(default)
 		{
 		}
 
@@ -447,11 +447,30 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public MySqlConnection Clone() => new MySqlConnection(this);
+		public MySqlConnection Clone() => new MySqlConnection(m_connectionString, m_hasBeenOpened);
 
 #if !NETSTANDARD1_3
 		object ICloneable.Clone() => Clone();
 #endif
+
+		/// <summary>
+		/// Returns an unopened copy of this connection with a new connection string. If the <c>Password</c>
+		/// in <paramref name="connectionString"/> is not set, the password from this connection will be used.
+		/// This allows creating a new connection with the same security information while changing other options,
+		/// such as database or pooling.
+		/// </summary>
+		/// <param name="connectionString">The new connection string to be used.</param>
+		/// <returns>A new <see cref="MySqlConnection"/> with different connection string options but
+		/// the same password as this connection (unless overridden by <paramref name="connectionString"/>).</returns>
+		public MySqlConnection CloneWith(string connectionString)
+		{
+			var newBuilder = new MySqlConnectionStringBuilder(connectionString ?? throw new ArgumentNullException(nameof(connectionString)));
+			var currentBuilder = new MySqlConnectionStringBuilder(m_connectionString);
+			var shouldCopyPassword = newBuilder.Password.Length == 0 && (!newBuilder.PersistSecurityInfo || currentBuilder.PersistSecurityInfo);
+			if (shouldCopyPassword)
+				newBuilder.Password = currentBuilder.Password;
+			return new MySqlConnection(newBuilder.ConnectionString, m_hasBeenOpened && shouldCopyPassword && !currentBuilder.PersistSecurityInfo);
+		}
 
 		internal ServerSession Session
 		{
@@ -675,10 +694,10 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		private MySqlConnection(MySqlConnection other)
-			: this(other.m_connectionString)
+		private MySqlConnection(string connectionString, bool hasBeenOpened)
+			: this(connectionString)
 		{
-			m_hasBeenOpened = other.m_hasBeenOpened;
+			m_hasBeenOpened = hasBeenOpened;
 		}
 
 		private void VerifyNotDisposed()
