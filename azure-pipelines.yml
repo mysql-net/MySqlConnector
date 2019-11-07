@@ -68,7 +68,7 @@ jobs:
       sourceFolder: '.ci/config'
       contents: 'config.json'
       targetFolder: 'tests/SideBySide'
-  - task: DotNetCoreInstaller@0
+  - task: UseDotNet@2
     displayName: 'Install .NET Core'
     inputs:
       version: $(DotNetCoreSdkVersion)
