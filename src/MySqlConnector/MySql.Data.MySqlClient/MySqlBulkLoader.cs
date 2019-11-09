@@ -16,7 +16,7 @@ namespace MySql.Data.MySqlClient
 		private const char defaultEscapeCharacter = '\\';
 
 		private static readonly object s_lock = new object();
-		private static readonly Dictionary<string, Stream> s_streams = new Dictionary<string, Stream>();
+		private static readonly Dictionary<string, object> s_sources = new Dictionary<string, object>();
 
 		public string? CharacterSet { get; set; }
 		public List<string> Columns { get; }
@@ -165,7 +165,7 @@ namespace MySql.Data.MySqlClient
 
 				FileName = GenerateSourceStreamName();
 				lock (s_lock)
-					s_streams.Add(FileName, SourceStream);
+					s_sources.Add(FileName, SourceStream);
 			}
 
 			if (string.IsNullOrWhiteSpace(FileName) || string.IsNullOrWhiteSpace(TableName))
@@ -203,12 +203,7 @@ namespace MySql.Data.MySqlClient
 			finally
 			{
 				if (closeStream)
-				{
-					using (GetAndRemoveStream(FileName!))
-					{
-						// close the stream
-					}
-				}
+					((IDisposable) GetAndRemoveSource(FileName!)).Dispose();
 
 				if (closeConnection)
 					Connection.Close();
@@ -229,17 +224,17 @@ namespace MySql.Data.MySqlClient
 
 		private static string GenerateSourceStreamName()
 		{
-			return StreamPrefix + Guid.NewGuid().ToString("N");
+			return SourcePrefix + Guid.NewGuid().ToString("N");
 		}
 
-		internal const string StreamPrefix = ":STREAM:";
+		internal const string SourcePrefix = ":SOURCE:";
 
-		internal static Stream GetAndRemoveStream(string streamKey)
+		internal static object GetAndRemoveSource(string sourceKey)
 		{
 			lock (s_lock)
 			{
-				var stream = s_streams[streamKey];
-				s_streams.Remove(streamKey);
+				var stream = s_sources[sourceKey];
+				s_sources.Remove(sourceKey);
 				return stream;
 			}
 		}
