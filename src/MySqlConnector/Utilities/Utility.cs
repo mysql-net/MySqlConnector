@@ -44,12 +44,12 @@ namespace MySqlConnector.Utilities
 #endif
 		}
 
-		public static unsafe void GetBytes(this Encoding encoding, ReadOnlySpan<char> chars, Span<byte> bytes)
+		public static unsafe int GetBytes(this Encoding encoding, ReadOnlySpan<char> chars, Span<byte> bytes)
 		{
 			fixed (char* charsPtr = &MemoryMarshal.GetReference(chars))
 			fixed (byte* bytesPtr = &MemoryMarshal.GetReference(bytes))
 			{
-				encoding.GetBytes(charsPtr, chars.Length, bytesPtr, bytes.Length);
+				return encoding.GetBytes(charsPtr, chars.Length, bytesPtr, bytes.Length);
 			}
 		}
 #endif

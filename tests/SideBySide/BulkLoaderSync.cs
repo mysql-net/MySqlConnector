@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.IO;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -490,7 +491,72 @@ namespace SideBySide
 			int rowCount = bl.Load();
 			Assert.Equal(5, rowCount);
 		}
+
+#if !NETCOREAPP1_1_2
+		[Fact]
+		public void BulkLoadDataTableWithLongData()
+		{
+			var dataTable = new DataTable()
+			{
+				Columns =
+				{
+					new DataColumn("id", typeof(int)),
+					new DataColumn("data", typeof(byte[])),
+				},
+				Rows =
+				{
+					new object[] { 1, new byte[8388500] },
+					new object[] { 12345678, new byte[8388500] },
+				},
+			};
+
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			connection.Open();
+			using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(a int, b longblob);", connection))
+			{
+				cmd.ExecuteNonQuery();
+			}
+
+			var bulkCopy = new MySqlBulkCopy(connection)
+			{
+				DestinationTableName = "bulk_load_data_table",
+			};
+			bulkCopy.WriteToServer(dataTable);
+		}
+
+		[Fact]
+		public void BulkLoadDataTableWithTooLongData()
+		{
+			var dataTable = new DataTable()
+			{
+				Columns =
+				{
+					new DataColumn("data", typeof(byte[])),
+				},
+				Rows =
+				{
+					new object[] { new byte[8388700] },
+				}
+			};
+
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			connection.Open();
+			using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(a int, b longblob);", connection))
+			{
+				cmd.ExecuteNonQuery();
+			}
+
+			var bulkCopy = new MySqlBulkCopy(connection)
+			{
+				DestinationTableName = "bulk_load_data_table",
+			};
+			Assert.Throws<MySqlException>(() => bulkCopy.WriteToServer(dataTable));
+		}
 #endif
+#endif
+
 		internal static string GetConnectionString() => AppConfig.ConnectionString;
 
 		internal static string GetLocalConnectionString()

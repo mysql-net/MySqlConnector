@@ -18,6 +18,7 @@ namespace MySql.Data.MySqlClient
 
 		public string? CommandText { get; set; }
 		public CommandType CommandType { get; set; }
+		public bool AllowUserVariables => false;
 		public CommandBehavior CommandBehavior { get; set; }
 		public int RecordsAffected { get; set; }
 

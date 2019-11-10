@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.IO;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
@@ -408,6 +409,70 @@ namespace SideBySide
 			int rowCount = await bl.LoadAsync();
 			Assert.Equal(5, rowCount);
 		}
+
+#if !NETCOREAPP1_1_2
+		[Fact]
+		public async Task BulkLoadDataTableWithLongData()
+		{
+			var dataTable = new DataTable()
+			{
+				Columns =
+				{
+					new DataColumn("id", typeof(int)),
+					new DataColumn("data", typeof(byte[])),
+				},
+				Rows =
+				{
+					new object[] { 1, new byte[8388500] },
+					new object[] { 12345678, new byte[8388500] },
+				},
+			};
+
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			await connection.OpenAsync();
+			using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(a int, b longblob);", connection))
+			{
+				await cmd.ExecuteNonQueryAsync();
+			}
+
+			var bulkCopy = new MySqlBulkCopy(connection)
+			{
+				DestinationTableName = "bulk_load_data_table",
+			};
+			await bulkCopy.WriteToServerAsync(dataTable);
+		}
+
+		[Fact]
+		public async Task BulkLoadDataTableWithTooLongData()
+		{
+			var dataTable = new DataTable()
+			{
+				Columns =
+				{
+					new DataColumn("data", typeof(byte[])),
+				},
+				Rows =
+				{
+					new object[] { new byte[8388700] },
+				}
+			};
+
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			await connection.OpenAsync();
+			using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(a int, b longblob);", connection))
+			{
+				await cmd.ExecuteNonQueryAsync();
+			}
+
+			var bulkCopy = new MySqlBulkCopy(connection)
+			{
+				DestinationTableName = "bulk_load_data_table",
+			};
+			await Assert.ThrowsAsync<MySqlException>(async () => await bulkCopy.WriteToServerAsync(dataTable));
+		}
+#endif
 #endif
 
 		private static string GetConnectionString() => BulkLoaderSync.GetConnectionString();

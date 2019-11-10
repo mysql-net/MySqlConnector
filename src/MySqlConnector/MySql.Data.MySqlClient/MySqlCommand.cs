@@ -107,6 +107,10 @@ namespace MySql.Data.MySqlClient
 			return parameters;
 		}
 
+		bool IMySqlCommand.AllowUserVariables => AllowUserVariables;
+
+		internal bool AllowUserVariables { get; set; }
+
 		private Task PrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (!NeedsPrepare(out var exception))

@@ -44,7 +44,11 @@ namespace MySql.Data.MySqlClient
 		/// A <see cref="Stream"/> containing the data to load. Either this or <see cref="FileName"/> must be set.
 		/// The <see cref="Local"/> property must be <c>true</c> if this is set.
 		/// </summary>
-		public Stream? SourceStream { get; set; }
+		public Stream? SourceStream
+		{
+			get => Source as Stream;
+			set => Source = value;
+		}
 
 		public string? TableName { get; set; }
 		public int Timeout { get; set; }
@@ -139,43 +143,40 @@ namespace MySql.Data.MySqlClient
 
 		public int Load() => LoadAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public Task<int> LoadAsync() => LoadAsync(IOBehavior.Asynchronous, CancellationToken.None);
+		public Task<int> LoadAsync() => LoadAsync(IOBehavior.Asynchronous, CancellationToken.None).AsTask();
 
-		public Task<int> LoadAsync(CancellationToken cancellationToken) => LoadAsync(IOBehavior.Asynchronous, cancellationToken);
+		public Task<int> LoadAsync(CancellationToken cancellationToken) => LoadAsync(IOBehavior.Asynchronous, cancellationToken).AsTask();
 
-		private async Task<int> LoadAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		internal async ValueTask<int> LoadAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (Connection is null)
 				throw new InvalidOperationException("Connection not set");
 
-			if (!string.IsNullOrWhiteSpace(FileName) && SourceStream is object)
-				throw new InvalidOperationException("Cannot set both FileName and SourceStream");
+			if (string.IsNullOrWhiteSpace(TableName))
+				throw new InvalidOperationException("TableName is required.");
 
-			// LOCAL INFILE case
-			if (!string.IsNullOrWhiteSpace(FileName) && Local)
+			if (!string.IsNullOrWhiteSpace(FileName) && Source is object)
+				throw new InvalidOperationException("Exactly one of FileName or SourceStream must be set.");
+
+			if (!string.IsNullOrWhiteSpace(FileName))
 			{
-				SourceStream = CreateFileStream(FileName!);
-				FileName = null;
+				if (Local)
+				{
+					// replace the file name with a sentinel so that we know (when processing the result set) that it's not spoofed by the server
+					var newFileName = GenerateSourceFileName();
+					lock (s_lock)
+						s_sources.Add(newFileName, CreateFileStream(FileName!));
+					FileName = newFileName;
+				}
 			}
-
-			if (string.IsNullOrWhiteSpace(FileName) && SourceStream is object)
+			else
 			{
 				if (!Local)
-					throw new InvalidOperationException("Cannot use SourceStream when Local is not true.");
+					throw new InvalidOperationException("Local must be true to use SourceStream, SourceDataTable, or SourceDataReader.");
 
-				FileName = GenerateSourceStreamName();
+				FileName = GenerateSourceFileName();
 				lock (s_lock)
-					s_sources.Add(FileName, SourceStream);
-			}
-
-			if (string.IsNullOrWhiteSpace(FileName) || string.IsNullOrWhiteSpace(TableName))
-			{
-				// This is intentionally a different exception to what is thrown by MySql.Data because
-				// it does not handle null or empty FileName and TableName.
-				// The baseline client simply tries to use the given values, resulting in a NullReferenceException for
-				// a null FileName, a MySqlException with an inner FileStream exception for an empty FileName,
-				// and a MySqlException with a syntax error if the TableName is null or empty.
-				throw new InvalidOperationException("FileName or SourceStream, and TableName are required.");
+					s_sources.Add(FileName, Source!);
 			}
 
 			bool closeConnection = false;
@@ -191,14 +192,16 @@ namespace MySql.Data.MySqlClient
 				if (Local && !Connection.AllowLoadLocalInfile)
 					throw new NotSupportedException("To use MySqlBulkLoader.Local=true, set AllowLoadLocalInfile=true in the connection string. See https://fl.vu/mysql-load-data");
 
-				var commandString = BuildSqlCommand();
-				var cmd = new MySqlCommand(commandString, Connection, Connection.CurrentTransaction)
+				using (var cmd = new MySqlCommand(BuildSqlCommand(), Connection, Connection.CurrentTransaction)
 				{
+					AllowUserVariables = true,
 					CommandTimeout = Timeout,
-				};
-				var result = await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				closeStream = false;
-				return result;
+				})
+				{
+					var result = await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					closeStream = false;
+					return result;
+				}
 			}
 			finally
 			{
@@ -222,12 +225,11 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		private static string GenerateSourceStreamName()
-		{
-			return SourcePrefix + Guid.NewGuid().ToString("N");
-		}
+		private static string GenerateSourceFileName() => SourcePrefix + Guid.NewGuid().ToString("N");
 
 		internal const string SourcePrefix = ":SOURCE:";
+
+		internal object? Source { get; set; }
 
 		internal static object GetAndRemoveSource(string sourceKey)
 		{

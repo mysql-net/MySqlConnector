@@ -1359,6 +1359,93 @@ end;";
 			}
 		}
 
+#if !BASELINE
+		[Theory]
+		[InlineData("Bit1", "datatypes_bits", "BIT(1)")]
+		[InlineData("Bit32", "datatypes_bits", "BIT(32)")]
+		[InlineData("Bit64", "datatypes_bits", "BIT(64)")]
+		[InlineData("Binary", "datatypes_blobs", "BINARY(100)")]
+		[InlineData("VarBinary", "datatypes_blobs", "VARBINARY(100)")]
+		[InlineData("TinyBlob", "datatypes_blobs", "TINYBLOB")]
+		[InlineData("Blob", "datatypes_blobs", "BLOB")]
+		[InlineData("guidbin", "datatypes_blobs", "BINARY(16)")]
+		[InlineData("Boolean", "datatypes_bools", "BOOL")]
+		[InlineData("TinyInt1", "datatypes_bools", "TINYINT(1)")]
+		[InlineData("TinyInt1U", "datatypes_bools", "TINYINT(1) UNSIGNED")]
+		[InlineData("char38", "datatypes_guids", "CHAR(38)")]
+		[InlineData("char38bin", "datatypes_guids", "CHAR(38)")]
+		[InlineData("SByte", "datatypes_integers", "TINYINT")]
+		[InlineData("Byte", "datatypes_integers", "TINYINT UNSIGNED")]
+		[InlineData("Int16", "datatypes_integers", "SMALLINT")]
+		[InlineData("UInt16", "datatypes_integers", "SMALLINT UNSIGNED")]
+		[InlineData("Int24", "datatypes_integers", "MEDIUMINT")]
+		[InlineData("UInt24", "datatypes_integers", "MEDIUMINT UNSIGNED")]
+		[InlineData("Int32", "datatypes_integers", "INT")]
+		[InlineData("UInt32", "datatypes_integers", "INT UNSIGNED")]
+		[InlineData("Int64", "datatypes_integers", "BIGINT")]
+		[InlineData("UInt64", "datatypes_integers", "BIGINT UNSIGNED")]
+		[InlineData("Single", "datatypes_reals", "FLOAT")]
+		[InlineData("Double", "datatypes_reals", "DOUBLE")]
+		[InlineData("SmallDecimal", "datatypes_reals", "DECIMAL(5,2)")]
+		[InlineData("MediumDecimal", "datatypes_reals", "DECIMAL(28,8)")]
+		[InlineData("BigDecimal", "datatypes_reals", "DECIMAL(50,30)")]
+		[InlineData("utf8", "datatypes_strings", "VARCHAR(300) CHARSET utf8mb4")]
+		[InlineData("latin1", "datatypes_strings", "VARCHAR(300) CHARSET latin1")]
+		[InlineData("Date", "datatypes_times", "DATE")]
+		[InlineData("DateTime", "datatypes_times", "DATETIME(6)")]
+		[InlineData("Timestamp", "datatypes_times", "TIMESTAMP(6)")]
+		[InlineData("Time", "datatypes_times", "TIME(6)")]
+		// [InlineData("Year", "datatypes_times", "YEAR")]
+		[InlineData("value", "datatypes_json_core", "JSON")]
+		[InlineData("Geometry", "datatypes_geometry", "GEOMETRY")]
+		public void BulkCopyDataReader(string column, string table, string dataTypeName)
+		{
+			if (table == "datatypes_json_core" && !AppConfig.SupportsJson)
+				return;
+
+			using var connection1 = new MySqlConnection(AppConfig.ConnectionString);
+			connection1.Open();
+
+			var bulkCopyTable = "bulk_copy_" + table;
+			using (var command = new MySqlCommand($@"drop table if exists `{bulkCopyTable}`; create table `{bulkCopyTable}`
+(`{column}` {dataTypeName} NULL);", connection1))
+			{
+				command.ExecuteNonQuery();
+			}
+
+			using (var command = new MySqlCommand($@"select `{column}` from `{table}`;", connection1))
+			{
+				using var reader = command.ExecuteReader();
+				var csb = AppConfig.CreateConnectionStringBuilder();
+				csb.AllowLoadLocalInfile = true;
+				var bulkCopy = new MySqlBulkCopy(new MySqlConnection(csb.ConnectionString))
+				{
+					DestinationTableName = bulkCopyTable,
+				};
+				bulkCopy.WriteToServer(reader);
+			}
+
+			using var connection2 = new MySqlConnection(AppConfig.ConnectionString);
+			connection2.Open();
+
+			using (var command1 = new MySqlCommand($@"select `{column}` from `{table}`;", connection1))
+			using (var reader1 = command1.ExecuteReader())
+			using (var command2 = new MySqlCommand($@"select `{column}` from `{bulkCopyTable}`;", connection2))
+			using (var reader2 = command2.ExecuteReader())
+			{
+				while (reader1.Read())
+				{
+					Assert.True(reader2.Read());
+					if (reader1.IsDBNull(0))
+						Assert.True(reader2.IsDBNull(0));
+					else
+						Assert.Equal(reader1.GetValue(0), reader2.GetValue(0));
+				}
+				Assert.False(reader2.Read());
+			}
+		}
+#endif
+
 		private static byte[] CreateByteArray(int size)
 		{
 			var data = new byte[size];

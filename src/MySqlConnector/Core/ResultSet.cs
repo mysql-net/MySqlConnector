@@ -1,5 +1,7 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -80,18 +82,36 @@ namespace MySqlConnector.Core
 								MySqlBulkLoader.GetAndRemoveSource(localInfile.FileName) :
 								File.OpenRead(localInfile.FileName);
 
-							if (source is Stream stream)
+							IDisposable? disposable = null;
+							byte[]? buffer = null;
+							try
 							{
-								using (stream)
+								switch (source)
 								{
-									var readBuffer = new byte[65536];
+								case Stream stream:
+									disposable = stream;
+									buffer = ArrayPool<byte>.Shared.Rent(1048576);
 									int byteCount;
-									while ((byteCount = await stream.ReadAsync(readBuffer, 0, readBuffer.Length).ConfigureAwait(false)) > 0)
+									while ((byteCount = await stream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
 									{
-										payload = new PayloadData(new ArraySegment<byte>(readBuffer, 0, byteCount));
+										payload = new PayloadData(new ArraySegment<byte>(buffer, 0, byteCount));
 										await Session.SendReplyAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
 									}
+									break;
+
+								case IDataReader dataReader:
+									await MySqlBulkCopy.SendDataReaderAsync(Connection, dataReader, ioBehavior, CancellationToken.None).ConfigureAwait(false);
+									break;
+
+								default:
+									throw new InvalidOperationException("Unsupported Source type: {0}".FormatInvariant(source.GetType().Name));
 								}
+							}
+							finally
+							{
+								if (buffer is object)
+									ArrayPool<byte>.Shared.Return(buffer);
+								disposable?.Dispose();
 							}
 						}
 						catch (Exception ex)
