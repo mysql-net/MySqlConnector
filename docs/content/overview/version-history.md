@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.62.0 Beta 1
+
+* **Experimental** Add new `MySqlBulkCopy` class for efficiently loading a table from a `DataTable` or `IDataReader`.
+
 ### 0.61.0
 
 * Add `MySqlConnection.CloneWith`: [#736](https://github.com/mysql-net/MySqlConnector/issues/736).
