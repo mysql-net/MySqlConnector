@@ -160,7 +160,7 @@ namespace MySql.Data.MySqlClient
 						else
 							shouldAppendSeparator = true;
 
-						if (!WriteValue(connection, value, buffer.AsSpan(0, maxLength).Slice(outputIndex), out var bytesWritten))
+						if (outputIndex >= maxLength || !WriteValue(connection, value, buffer.AsSpan(0, maxLength).Slice(outputIndex), out var bytesWritten))
 						{
 							wroteRow = false;
 							break;
