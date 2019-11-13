@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.62.0 Beta 2
+
+* Fix `InvalidOperationException` in `MySqlBulkCopy`.
+
 ### 0.62.0 Beta 1
 
 * **Experimental** Add new `MySqlBulkCopy` class for efficiently loading a table from a `DataTable` or `IDataReader`.
