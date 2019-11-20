@@ -356,7 +356,7 @@ namespace MySql.Data.MySqlClient
 				bytesWritten = 0;
 				while (index < value.Length)
 				{
-					if (value[index] == '\t' || value[index] == '\\')
+					if (Array.IndexOf(s_specialCharacters, value[index]) != -1)
 					{
 						if (output.Length < 2)
 						{
@@ -365,13 +365,14 @@ namespace MySql.Data.MySqlClient
 						}
 
 						output[0] = (byte) '\\';
-						output[1] = value[index] == '\t' ? (byte) 't' : (byte) '\\';
+						output[1] = (byte) value[index];
 						output = output.Slice(2);
 						bytesWritten += 2;
+						index++;
 					}
 					else
 					{
-						var nextIndex = value.IndexOfAny(new char[] { '\t', '\\' }, index);
+						var nextIndex = value.IndexOfAny(s_specialCharacters, index);
 						if (nextIndex == -1)
 							nextIndex = value.Length;
 						var encodedBytesWritten = Encoding.UTF8.GetBytes(value.AsSpan(index, nextIndex - index), output);
@@ -414,6 +415,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		private static ReadOnlySpan<byte> EscapedNull => new byte[] { 0x5C, 0x4E };
+		private static readonly char[] s_specialCharacters = new char[] { '\t', '\\', '\n' };
 
 		readonly MySqlConnection m_connection;
 		readonly MySqlTransaction? m_transaction;

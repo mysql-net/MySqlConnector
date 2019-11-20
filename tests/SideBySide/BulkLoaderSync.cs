@@ -526,6 +526,49 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		}
 
 		[Fact]
+		public void BulkLoadDataTableWithSpecialCharacters()
+		{
+			var dataTable = new DataTable()
+			{
+				Columns =
+				{
+					new DataColumn("id", typeof(int)),
+					new DataColumn("data", typeof(string)),
+				},
+			};
+
+			var strings = new[] { " ", "\t", ",", "\n", "\r", "\\", "ab\t", "\tcd", "ab\tcd", "\tab\ncd\t" };
+			for (var i = 0; i < strings.Length; i++)
+				dataTable.Rows.Add(i, strings[i]);
+
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			connection.Open();
+			using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(a int, b text);", connection))
+			{
+				cmd.ExecuteNonQuery();
+			}
+
+			var bulkCopy = new MySqlBulkCopy(connection)
+			{
+				DestinationTableName = "bulk_load_data_table",
+			};
+			bulkCopy.WriteToServer(dataTable);
+
+			using (var cmd = new MySqlCommand("select * from bulk_load_data_table order by a;", connection))
+			using (var reader = cmd.ExecuteReader())
+			{
+				for (int i = 0; i < strings.Length; i++)
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(i, reader.GetInt32(0));
+					Assert.Equal(strings[i], reader.GetString(1));
+				}
+				Assert.False(reader.Read());
+			}
+		}
+
+		[Fact]
 		public void BulkLoadDataTableWithTooLongData()
 		{
 			var dataTable = new DataTable()
