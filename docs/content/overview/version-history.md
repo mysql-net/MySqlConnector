@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.62.0 Beta 3
+
+* Fix string encoding bugs in `MySqlBulkCopy`.
+
 ### 0.62.0 Beta 2
 
 * Fix `InvalidOperationException` in `MySqlBulkCopy`.
