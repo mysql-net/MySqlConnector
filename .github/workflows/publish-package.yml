@@ -1,0 +1,50 @@
+name: Publish Package
+
+on:
+  push:
+    branches:
+    - 'master'
+    paths-ignore:
+    - 'docs/**'
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+jobs:
+
+  publish:
+    runs-on: 'windows-latest'
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.0.100
+
+    - name: Restore
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release
+
+    - name: Unit Tests
+      run: dotnet test --configuration Release tests\MySqlConnector.Tests
+
+    - name: Pack
+      run: dotnet pack --configuration Release --no-build --version-suffix $(Get-Date -Format "'preview'yyyyMMddHHmmss'+${{ github.sha }}'")
+
+    - name: Install NuGet
+      run: choco install nuget.commandline
+
+    - name: Add NuGet source
+      run: nuget sources Add -Name "GPR" -Source "https://nuget.pkg.github.com/mysql-net/index.json" -UserName bgrainger -Password ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish packages
+      run: |
+        $files = Get-ChildItem -Path src -Filter *.nupkg -Recurse
+        foreach ($file in $files) {
+          nuget push $file -Source GPR
+        }
