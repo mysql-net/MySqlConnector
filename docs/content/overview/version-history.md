@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.62.0 Beta 4
+
+* Optimize `MySqlDataReader.GetInt32`: [#725](https://github.com/mysql-net/MySqlConnector/pull/725).
+
 ### 0.62.0 Beta 3
 
 * Fix string encoding bugs in `MySqlBulkCopy`.
