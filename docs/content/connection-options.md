@@ -1,14 +1,14 @@
 ---
-lastmod: 2019-08-21
+lastmod: 2019-11-27
 date: 2016-10-16
 title: Connection Options
-customtitle: MySQL Connection String for C#/.NET Programs
+customtitle: MySQL Connection String for C# .NET Core Programs
 weight: 30
 menu:
   main:
 ---
 
-# MySQL ConnectionString Options
+# MySQL .NET Connection String Options
 
 The simplest MySQL connection string for C# is:
 
