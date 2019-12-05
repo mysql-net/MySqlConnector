@@ -15,6 +15,36 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void CommandTextIsEmptyStringByDefault()
+		{
+			using var command = new MySqlCommand();
+			Assert.Equal("", command.CommandText);
+		}
+
+		[Fact]
+		public void InitializeWithNullCommandText()
+		{
+			using var command = new MySqlCommand(default(string));
+			Assert.Equal("", command.CommandText);
+		}
+
+		[Fact]
+		public void SetCommandTextToNull()
+		{
+			using var command = new MySqlCommand();
+			command.CommandText = null;
+			Assert.Equal("", command.CommandText);
+		}
+
+		[Fact]
+		public void SetCommandTextToEmptyString()
+		{
+			using var command = new MySqlCommand();
+			command.CommandText = "";
+			Assert.Equal("", command.CommandText);
+		}
+
+		[Fact]
 		public void CreateCommandSetsConnection()
 		{
 			using var command = m_database.Connection.CreateCommand();

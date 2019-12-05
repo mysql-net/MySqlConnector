@@ -40,7 +40,7 @@ namespace MySql.Data.MySqlClient
 		{
 			GC.SuppressFinalize(this);
 			m_commandId = ICancellableCommandExtensions.GetNextId();
-			CommandText = commandText;
+			m_commandText = commandText ?? "";
 			Connection = connection;
 			Transaction = transaction;
 			CommandType = CommandType.Text;
@@ -144,14 +144,15 @@ namespace MySql.Data.MySqlClient
 			return Connection.Session.TryGetPreparedStatement(CommandText!) is null;
 		}
 
-		public override string? CommandText
+		[AllowNull]
+		public override string CommandText
 		{
 			get => m_commandText;
 			set
 			{
 				if (m_connection?.HasActiveReader ?? false)
 					throw new InvalidOperationException("Cannot set MySqlCommand.CommandText when there is an open DataReader for this command; it must be closed first.");
-				m_commandText = value;
+				m_commandText = value ?? "";
 			}
 		}
 
@@ -360,7 +361,7 @@ namespace MySql.Data.MySqlClient
 		readonly int m_commandId;
 		bool m_isDisposed;
 		MySqlConnection? m_connection;
-		string? m_commandText;
+		string m_commandText;
 		MySqlParameterCollection? m_parameterCollection;
 		int? m_commandTimeout;
 		CommandType m_commandType;
