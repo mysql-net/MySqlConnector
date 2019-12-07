@@ -149,7 +149,7 @@ Connection pooling is enabled by default. These options are used to configure it
   <tr>
     <td>Pooling</td>
     <td>true</td>
-    <td>Enables connection pooling. When pooling is enabled, <code>MySqlConnection.Open</code> retrieves an open connection from the pool if one is available (opening a new connection if not), and <code>Close</code>/<code>Dispose</code> returns the open connection to the pool.</td>
+    <td>Enables connection pooling. When pooling is enabled, <code>MySqlConnection.Open</code>/<code>OpenAsync</code> retrieves an open connection from the pool if one is available, and <code>Close</code>/<code>Dispose</code> returns the open connection to the pool. If there are no available connections in the pool, and the pool hasn’t reached <code>MaximumPoolSize</code> connections, a new connection will be opened; otherwise, the call to <code>Open</code>/<code>OpenAsync</code> blocks until a connection becomes available or <code>ConnectionTimeout</code> is reached.</td>
   </tr>
   <tr>
     <td>Connection Lifetime, ConnectionLifeTime</td>
