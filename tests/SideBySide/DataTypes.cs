@@ -1174,7 +1174,10 @@ create table schema_table({createColumn});");
 #if BASELINE
 			Assert.Null(reader.GetSchemaTable());
 #else
-			Assert.Throws<InvalidOperationException>(() => reader.GetSchemaTable());
+			table = reader.GetSchemaTable();
+			Assert.NotNull(table);
+			Assert.Empty(table.Rows);
+			Assert.Empty(table.Columns);
 #endif
 		}
 #endif

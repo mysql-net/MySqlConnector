@@ -172,7 +172,33 @@ namespace SideBySide
 			using (var reader = await cmd.ExecuteReaderAsync())
 			{
 				Assert.False(await reader.ReadAsync());
-				Assert.Throws<InvalidOperationException>(() => reader.GetSchemaTable());
+				var table = reader.GetSchemaTable();
+				Assert.NotNull(table);
+				Assert.Empty(table.Rows);
+				Assert.Empty(table.Columns);
+				Assert.False(await reader.NextResultAsync());
+			}
+		}
+#endif
+
+#if !BASELINE
+		[Fact]
+		public async Task GetColumnSchemaForNoResultSet()
+		{
+			using var cmd = m_database.Connection.CreateCommand();
+			cmd.CommandText = "out_string";
+			cmd.CommandType = CommandType.StoredProcedure;
+			cmd.Parameters.Add(new MySqlParameter
+			{
+				ParameterName = "@value",
+				DbType = DbType.String,
+				Direction = ParameterDirection.Output,
+			});
+
+			using (var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync())
+			{
+				Assert.False(await reader.ReadAsync());
+				Assert.Empty(reader.GetColumnSchema());
 				Assert.False(await reader.NextResultAsync());
 			}
 		}

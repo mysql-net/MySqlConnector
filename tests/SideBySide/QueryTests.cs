@@ -792,7 +792,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			cmd.CommandText = "select 1;";
 			using var reader = cmd.ExecuteReader();
 			Assert.False(reader.NextResult());
-			Assert.Throws<InvalidOperationException>(() => reader.GetColumnSchema());
+			Assert.Empty(reader.GetColumnSchema());
 		}
 #endif
 

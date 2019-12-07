@@ -300,12 +300,12 @@ namespace MySql.Data.MySqlClient
 
 		public ReadOnlyCollection<DbColumn> GetColumnSchema()
 		{
-			var columnDefinitions = GetResultSet().ColumnDefinitions;
-			if (columnDefinitions is null)
-				throw new InvalidOperationException("There is no current result set.");
-			return columnDefinitions
-				.Select((c, n) => (DbColumn) new MySqlDbColumn(n, c, Connection!.AllowZeroDateTime, GetResultSet().ColumnTypes![n]))
-				.ToList().AsReadOnly();
+			var columnDefinitions = m_resultSet?.ColumnDefinitions;
+			var hasNoSchema = columnDefinitions is null || m_resultSet!.ContainsCommandParameters;
+			return hasNoSchema ? new List<DbColumn>().AsReadOnly() :
+				columnDefinitions!
+					.Select((c, n) => (DbColumn) new MySqlDbColumn(n, c, Connection!.AllowZeroDateTime, GetResultSet().ColumnTypes![n]))
+					.ToList().AsReadOnly();
 		}
 
 		public override T GetFieldValue<T>(int ordinal)
@@ -411,11 +411,11 @@ namespace MySql.Data.MySqlClient
 #if !NETSTANDARD1_3
 		internal DataTable BuildSchemaTable()
 		{
-			var colDefinitions = GetResultSet().ColumnDefinitions;
-			if (colDefinitions is null)
-				throw new InvalidOperationException("There is no current result set.");
-			DataTable schemaTable = new DataTable("SchemaTable");
-			schemaTable.Locale = CultureInfo.InvariantCulture;
+			var schemaTable = new DataTable("SchemaTable") { Locale = CultureInfo.InvariantCulture };
+
+			var colDefinitions = m_resultSet?.ColumnDefinitions;
+			if (colDefinitions is null || m_resultSet!.ContainsCommandParameters)
+				return schemaTable;
 			schemaTable.MinimumCapacity = colDefinitions.Length;
 
 			var columnName = new DataColumn(SchemaTableColumn.ColumnName, typeof(string));
