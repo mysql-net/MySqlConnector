@@ -48,7 +48,8 @@ namespace MySqlConnector.Utilities
 				return;
 
 			// If keepAliveTimeSeconds > 0, override keepalive options on the socket
-			const uint keepAliveIntervalMillis = 1000;
+			const int keepAliveIntervalMillis = 1000;
+#if !NETCOREAPP3_0
 			if (Utility.IsWindows())
 			{
 				// http://stackoverflow.com/a/11834055/1419658
@@ -63,6 +64,10 @@ namespace MySqlConnector.Utilities
 			// Unix not supported: The appropriate socket options to set Keepalive options are not exposd in .NET
 			// https://github.com/dotnet/corefx/issues/14237
 			// Unix will still respect the OS Default Keepalive settings
+#else
+			socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveInterval, keepAliveIntervalMillis / 1000);
+			socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveTime, (int) keepAliveTimeSeconds);
+#endif
 		}
 	}
 }
