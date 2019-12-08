@@ -48,24 +48,27 @@ namespace MySqlConnector.Utilities
 				return;
 
 			// If keepAliveTimeSeconds > 0, override keepalive options on the socket
-			const int keepAliveIntervalMillis = 1000;
 #if !NETCOREAPP3_0
 			if (Utility.IsWindows())
 			{
 				// http://stackoverflow.com/a/11834055/1419658
 				// Windows takes time in milliseconds
 				var keepAliveTimeMillis = keepAliveTimeSeconds > uint.MaxValue / 1000 ? uint.MaxValue : keepAliveTimeSeconds * 1000;
-				var inOptionValues = new byte[sizeof(uint) * 3];
-				BitConverter.GetBytes((uint)1).CopyTo(inOptionValues, 0);
-				BitConverter.GetBytes(keepAliveTimeMillis).CopyTo(inOptionValues, sizeof(uint));
-				BitConverter.GetBytes(keepAliveIntervalMillis).CopyTo(inOptionValues, sizeof(uint) * 2);
+				var inOptionValues = new byte[12];
+				inOptionValues[0] = 1;
+				inOptionValues[4] = (byte) (keepAliveTimeMillis & 0xFF);
+				inOptionValues[5] = (byte) ((keepAliveTimeMillis >> 8) & 0xFF);
+				inOptionValues[6] = (byte) ((keepAliveTimeMillis >> 16) & 0xFF);
+				inOptionValues[7] = (byte) ((keepAliveTimeMillis >> 24) & 0xFF);
+				inOptionValues[8] = 0xE8;
+				inOptionValues[9] = 0x03;
 				socket.IOControl(IOControlCode.KeepAliveValues, inOptionValues, null);
 			}
 			// Unix not supported: The appropriate socket options to set Keepalive options are not exposd in .NET
 			// https://github.com/dotnet/corefx/issues/14237
 			// Unix will still respect the OS Default Keepalive settings
 #else
-			socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveInterval, keepAliveIntervalMillis / 1000);
+			socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveInterval, 1);
 			socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveTime, (int) keepAliveTimeSeconds);
 #endif
 		}
