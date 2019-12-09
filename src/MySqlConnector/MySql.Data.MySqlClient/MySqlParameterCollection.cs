@@ -17,7 +17,7 @@ namespace MySql.Data.MySqlClient
 			m_nameToIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 		}
 
-		public MySqlParameter Add(string? parameterName, DbType dbType)
+		public MySqlParameter Add(string parameterName, DbType dbType)
 		{
 			MySqlParameter parameter = new MySqlParameter
 			{
@@ -28,7 +28,7 @@ namespace MySql.Data.MySqlClient
 			return parameter;
 		}
 
-		public override int Add(object? value)
+		public override int Add(object value)
 		{
 			AddParameter((MySqlParameter) (value ?? throw new ArgumentNullException(nameof(value))));
 			return m_parameters.Count - 1;
@@ -40,16 +40,16 @@ namespace MySql.Data.MySqlClient
 			return parameter;
 		}
 
-		public MySqlParameter Add(string? parameterName, MySqlDbType mySqlDbType) => Add(new MySqlParameter(parameterName, mySqlDbType));
-		public MySqlParameter Add(string? parameterName, MySqlDbType mySqlDbType, int size) => Add(new MySqlParameter(parameterName, mySqlDbType, size));
+		public MySqlParameter Add(string parameterName, MySqlDbType mySqlDbType) => Add(new MySqlParameter(parameterName, mySqlDbType));
+		public MySqlParameter Add(string parameterName, MySqlDbType mySqlDbType, int size) => Add(new MySqlParameter(parameterName, mySqlDbType, size));
 
 		public override void AddRange(Array values)
 		{
 			foreach (var obj in values)
-				Add(obj);
+				Add(obj!);
 		}
 
-		public MySqlParameter AddWithValue(string? parameterName, object? value)
+		public MySqlParameter AddWithValue(string parameterName, object? value)
 		{
 			var parameter = new MySqlParameter
 			{
@@ -60,7 +60,7 @@ namespace MySql.Data.MySqlClient
 			return parameter;
 		}
 
-		public override bool Contains(object? value) => value is MySqlParameter parameter && m_parameters.Contains(parameter);
+		public override bool Contains(object value) => value is MySqlParameter parameter && m_parameters.Contains(parameter);
 
 		public override bool Contains(string value) => IndexOf(value) != -1;
 
@@ -78,7 +78,7 @@ namespace MySql.Data.MySqlClient
 
 		protected override DbParameter GetParameter(int index) => m_parameters[index];
 
-		protected override DbParameter GetParameter(string? parameterName)
+		protected override DbParameter GetParameter(string parameterName)
 		{
 			var index = IndexOf(parameterName);
 			if (index == -1)
@@ -86,9 +86,9 @@ namespace MySql.Data.MySqlClient
 			return m_parameters[index];
 		}
 
-		public override int IndexOf(object? value) => value is MySqlParameter parameter ? m_parameters.IndexOf(parameter) : -1;
+		public override int IndexOf(object value) => value is MySqlParameter parameter ? m_parameters.IndexOf(parameter) : -1;
 
-		public override int IndexOf(string? parameterName) => NormalizedIndexOf(parameterName);
+		public override int IndexOf(string parameterName) => NormalizedIndexOf(parameterName);
 
 		// Finds the index of a parameter by name, regardless of whether 'parameterName' or the matching
 		// MySqlParameter.ParameterName has a leading '?' or '@'.
@@ -98,7 +98,7 @@ namespace MySql.Data.MySqlClient
 			return m_nameToIndex.TryGetValue(normalizedName, out var index) ? index : -1;
 		}
 
-		public override void Insert(int index, object? value) => m_parameters.Insert(index, (MySqlParameter) (value ?? throw new ArgumentNullException(nameof(value))));
+		public override void Insert(int index, object value) => m_parameters.Insert(index, (MySqlParameter) (value ?? throw new ArgumentNullException(nameof(value))));
 
 #if !NETSTANDARD1_3
 		public override bool IsFixedSize => false;
@@ -106,7 +106,7 @@ namespace MySql.Data.MySqlClient
 		public override bool IsSynchronized => false;
 #endif
 
-		public override void Remove(object? value) => RemoveAt(IndexOf(value ?? throw new ArgumentNullException(nameof(value))));
+		public override void Remove(object value) => RemoveAt(IndexOf(value ?? throw new ArgumentNullException(nameof(value))));
 
 		public override void RemoveAt(int index)
 		{
@@ -122,9 +122,9 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public override void RemoveAt(string? parameterName) => RemoveAt(IndexOf(parameterName));
+		public override void RemoveAt(string parameterName) => RemoveAt(IndexOf(parameterName));
 
-		protected override void SetParameter(int index, DbParameter? value)
+		protected override void SetParameter(int index, DbParameter value)
 		{
 			var newParameter = (MySqlParameter) (value ?? throw new ArgumentNullException(nameof(value)));
 			var oldParameter = m_parameters[index];
@@ -135,7 +135,7 @@ namespace MySql.Data.MySqlClient
 				m_nameToIndex.Add(newParameter.NormalizedParameterName, index);
 		}
 
-		protected override void SetParameter(string? parameterName, DbParameter? value) => SetParameter(IndexOf(parameterName), value);
+		protected override void SetParameter(string parameterName, DbParameter value) => SetParameter(IndexOf(parameterName), value);
 
 		public override int Count => m_parameters.Count;
 
@@ -147,7 +147,7 @@ namespace MySql.Data.MySqlClient
 			set => SetParameter(index, value);
 		}
 
-		public new MySqlParameter this[string? name]
+		public new MySqlParameter this[string name]
 		{
 			get => (MySqlParameter) GetParameter(name);
 			set => SetParameter(name, value);

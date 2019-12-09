@@ -33,17 +33,17 @@ namespace MySql.Data.MySqlClient
 #endif
 		}
 
-		public MySqlParameter(string? name, MySqlDbType mySqlDbType)
+		public MySqlParameter(string name, MySqlDbType mySqlDbType)
 			: this(name, mySqlDbType, 0)
 		{
 		}
 
-		public MySqlParameter(string? name, MySqlDbType mySqlDbType, int size)
-			: this(name, mySqlDbType, size, null)
+		public MySqlParameter(string name, MySqlDbType mySqlDbType, int size)
+			: this(name, mySqlDbType, size, "")
 		{
 		}
 
-		public MySqlParameter(string? name, MySqlDbType mySqlDbType, int size, string? sourceColumn)
+		public MySqlParameter(string name, MySqlDbType mySqlDbType, int size, string sourceColumn)
 		{
 			m_name = name ?? "";
 			NormalizedParameterName = NormalizeParameterName(m_name);
@@ -56,7 +56,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 #if !NETSTANDARD1_3
-		public MySqlParameter(string? name, MySqlDbType mySqlDbType, int size, ParameterDirection direction, bool isNullable, byte precision, byte scale, string? sourceColumn, DataRowVersion sourceVersion, object value)
+		public MySqlParameter(string name, MySqlDbType mySqlDbType, int size, ParameterDirection direction, bool isNullable, byte precision, byte scale, string sourceColumn, DataRowVersion sourceVersion, object value)
 			: this(name, mySqlDbType, size, sourceColumn)
 		{
 			Direction = direction;
@@ -114,8 +114,8 @@ namespace MySql.Data.MySqlClient
 		public override byte Scale { get; set; }
 #endif
 
-		[NotNull]
-		public override string? ParameterName
+		[AllowNull]
+		public override string ParameterName
 		{
 			get => m_name;
 			set
@@ -127,8 +127,8 @@ namespace MySql.Data.MySqlClient
 
 		public override int Size { get; set; }
 
-		[NotNull]
-		public override string? SourceColumn
+		[AllowNull]
+		public override string SourceColumn
 		{
 			get => m_sourceColumn;
 			set => m_sourceColumn = value ?? "";

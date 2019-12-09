@@ -73,7 +73,7 @@ namespace MySql.Data.MySqlClient
 
 		public override int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public override object ExecuteScalar() => ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public override object? ExecuteScalar() => ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public new MySqlDataReader ExecuteReader() => (MySqlDataReader) base.ExecuteReader();
 
@@ -238,10 +238,10 @@ namespace MySql.Data.MySqlClient
 			return reader.RecordsAffected;
 		}
 
-		public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken) =>
+		public override Task<object?> ExecuteScalarAsync(CancellationToken cancellationToken) =>
 			ExecuteScalarAsync(AsyncIOBehavior, cancellationToken);
 
-		internal async Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		internal async Task<object?> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			this.ResetCommandTimeout();
 			var hasSetResult = false;
@@ -257,7 +257,7 @@ namespace MySql.Data.MySqlClient
 					hasSetResult = true;
 				}
 			} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
-			return result!;
+			return result;
 		}
 
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)

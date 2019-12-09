@@ -45,7 +45,7 @@ namespace MySqlConnector.Core
 					if (returnsSql.Length != 0)
 					{
 						var returnDataType = ParseDataType(returnsSql, out var unsigned, out var length);
-						parsedParameters.Insert(0, CreateCachedParameter(0, null, null, returnDataType, unsigned, length, returnsSql));
+						parsedParameters.Insert(0, CreateCachedParameter(0, null, "", returnDataType, unsigned, length, returnsSql));
 					}
 
 					return new CachedProcedure(schema, component, parsedParameters);
@@ -90,7 +90,7 @@ namespace MySqlConnector.Core
 					parameters.Add(new CachedParameter(
 						reader.GetInt32(0),
 						!reader.IsDBNull(1) ? reader.GetString(1) : null,
-						!reader.IsDBNull(2) ? reader.GetString(2) : null,
+						!reader.IsDBNull(2) ? reader.GetString(2) : "",
 						dataType,
 						unsigned,
 						length
@@ -247,7 +247,7 @@ namespace MySqlConnector.Core
 			return sql;
 		}
 
-		private static CachedParameter CreateCachedParameter(int ordinal, string? direction, string? name, string dataType, bool unsigned, int length, string originalSql)
+		private static CachedParameter CreateCachedParameter(int ordinal, string? direction, string name, string dataType, bool unsigned, int length, string originalSql)
 		{
 			try
 			{

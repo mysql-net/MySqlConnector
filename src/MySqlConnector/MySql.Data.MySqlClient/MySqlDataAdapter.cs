@@ -92,7 +92,7 @@ namespace MySql.Data.MySqlClient
 			if (mySqlCommand.CloneRawParameters() is MySqlParameterCollection clonedParameters)
 			{
 				foreach (var clonedParameter in clonedParameters)
-					batchCommand.Parameters.Add(clonedParameter);
+					batchCommand.Parameters.Add(clonedParameter!);
 			}
 
 			m_batch.BatchCommands.Add(batchCommand);

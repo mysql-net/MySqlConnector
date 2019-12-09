@@ -7,18 +7,17 @@ using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;
 
 #if NET45
-#nullable disable
 namespace System.Data.Common
 {
 	public abstract class DbColumn
 	{
 		public bool? AllowDBNull { get; protected set; }
-		public string BaseCatalogName { get; protected set; }
-		public string BaseColumnName { get; protected set; }
-		public string BaseSchemaName { get; protected set; }
-		public string BaseServerName { get; protected set; }
-		public string BaseTableName { get; protected set; }
-		public string ColumnName { get; protected set; }
+		public string? BaseCatalogName { get; protected set; }
+		public string? BaseColumnName { get; protected set; }
+		public string? BaseSchemaName { get; protected set; }
+		public string? BaseServerName { get; protected set; }
+		public string? BaseTableName { get; protected set; }
+		public string ColumnName { get; protected set; } = "";
 		public int? ColumnOrdinal { get; protected set; }
 		public int? ColumnSize { get; protected set; }
 		public bool? IsAliased { get; protected set; }
@@ -32,13 +31,12 @@ namespace System.Data.Common
 		public bool? IsUnique { get; protected set; }
 		public int? NumericPrecision { get; protected set; }
 		public int? NumericScale { get; protected set; }
-		public string UdtAssemblyQualifiedName { get; protected set; }
-		public Type DataType { get; protected set; }
-		public string DataTypeName { get; protected set; }
-		public virtual object this[string property] => null;
+		public string? UdtAssemblyQualifiedName { get; protected set; }
+		public Type? DataType { get; protected set; }
+		public string? DataTypeName { get; protected set; }
+		public virtual object? this[string property] => null;
 	}
 }
-#nullable enable
 #endif
 
 namespace MySql.Data.MySqlClient
