@@ -11,6 +11,13 @@ weight: 30
 Version History
 ===============
 
+### 0.62.0 Beta 5
+
+* Improve nullability annotations.
+  * `MySqlCommand.CommandText` defaults to the empty string: [#743](https://github.com/mysql-net/MySqlConnector/issues/743).
+  * Return empty schema when there is no result set: [#744](https://github.com/mysql-net/MySqlConnector/issues/744).
+* Set TCP Keepalive for all operating systems: [#746](https://github.com/mysql-net/MySqlConnector/issues/746).
+
 ### 0.62.0 Beta 4
 
 * Optimize `MySqlDataReader.GetInt32`: [#725](https://github.com/mysql-net/MySqlConnector/pull/725).
