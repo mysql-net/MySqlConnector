@@ -234,5 +234,127 @@ namespace MySqlConnector.Tests
 			};
 			Assert.Equal("", csb.ConnectionString);
 		}
+
+		[Fact]
+		public void SetServerToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("Server=test");
+			csb.Server = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+
+		[Fact]
+		public void SetUserIdToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("User ID=test");
+			csb.UserID = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+
+		[Fact]
+		public void SetPasswordToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("Password=test");
+			csb.Password = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+
+		[Fact]
+		public void SetDatabaseToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("Database=test");
+			csb.Database = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+
+		[Fact]
+		public void SetPipeNameToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("Pipe=test");
+			csb.PipeName = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+
+		[Fact]
+		public void SetCertificateFileToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("CertificateFile=test");
+			csb.CertificateFile = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+
+		[Fact]
+		public void SetCertificatePasswordToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("CertificatePassword=test");
+			csb.CertificatePassword = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+
+		[Fact]
+		public void SetSslCaToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("SslCa=test");
+			csb.SslCa = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+
+		[Fact]
+		public void SetSslCertToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("SslCert=test");
+			csb.SslCert = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+
+		[Fact]
+		public void SetSslKeyToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("SslKey=test");
+			csb.SslKey = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+
+		[Fact]
+		public void SetCertificateThumbprintToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("CertificateThumbprint=test");
+			csb.CertificateThumbprint = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+
+		[Fact]
+		public void SetCharacterSetToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("CharSet=test");
+			csb.CharacterSet = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+
+#if !BASELINE
+		[Fact]
+		public void SetApplicationNameToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("ApplicationName=test");
+			csb.ApplicationName = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+
+		[Fact]
+		public void SetServerRsaPublicKeyFileToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("ServerRSAPublicKeyFile=test");
+			csb.ServerRsaPublicKeyFile = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+
+		[Fact]
+		public void SetServerSPNToNull()
+		{
+			var csb = new MySqlConnectionStringBuilder("ServerSPN=test");
+			csb.ServerSPN = null;
+			Assert.Equal("", csb.ConnectionString);
+		}
+#endif
 	}
 }

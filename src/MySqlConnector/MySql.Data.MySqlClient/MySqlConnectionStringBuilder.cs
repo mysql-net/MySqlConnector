@@ -342,7 +342,7 @@ namespace MySql.Data.MySqlClient
 		public override object? this[string key]
 		{
 			get => MySqlConnectionStringOption.GetOptionForKey(key).GetObject(this);
-			set => base[MySqlConnectionStringOption.GetOptionForKey(key).Key] = Convert.ToString(value, CultureInfo.InvariantCulture);
+			set => base[MySqlConnectionStringOption.GetOptionForKey(key).Key] = value;
 		}
 
 		internal string GetConnectionString(bool includePassword)
