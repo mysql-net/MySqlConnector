@@ -1,12 +1,13 @@
 using System;
 using System.Buffers;
 using System.Buffers.Text;
+using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.Types;
+using MySqlConnector.Core;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -26,39 +27,33 @@ namespace MySql.Data.MySqlClient
 		public string? DestinationTableName { get; set; }
 
 #if !NETSTANDARD1_3
-		public void WriteToServer(DataTable dataTable) => WriteToServerAsync(dataTable, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public void WriteToServer(DataTable dataTable) => WriteToServerAsync(DataRowsValuesEnumerator.Create(dataTable), IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 #if !NETSTANDARD2_1 && !NETCOREAPP3_0
-		public Task WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default) => WriteToServerAsync(dataTable, IOBehavior.Asynchronous, cancellationToken).AsTask();
+		public Task WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default) => WriteToServerAsync(DataRowsValuesEnumerator.Create(dataTable), IOBehavior.Synchronous, CancellationToken.None).AsTask();
 #else
-		public ValueTask WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default) => WriteToServerAsync(dataTable, IOBehavior.Asynchronous, cancellationToken);
+		public ValueTask WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default) => WriteToServerAsync(DataRowsValuesEnumerator.Create(dataTable), IOBehavior.Synchronous, CancellationToken.None);
 #endif
 
+		public void WriteToServer(IEnumerable<DataRow> dataRows, int columnCount) => WriteToServerAsync(new DataRowsValuesEnumerator(dataRows, columnCount), IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #if !NETSTANDARD2_1 && !NETCOREAPP3_0
-		private async ValueTask<int> WriteToServerAsync(DataTable dataTable, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public Task WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, CancellationToken cancellationToken = default) => WriteToServerAsync(new DataRowsValuesEnumerator(dataRows, columnCount), IOBehavior.Asynchronous, cancellationToken).AsTask();
 #else
-		private async ValueTask WriteToServerAsync(DataTable dataTable, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public ValueTask WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, CancellationToken cancellationToken = default) => WriteToServerAsync(new DataRowsValuesEnumerator(dataRows, columnCount), IOBehavior.Asynchronous, cancellationToken);
 #endif
-		{
-			using var reader = dataTable.CreateDataReader();
-			await WriteToServerAsync(reader, ioBehavior, cancellationToken);
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
-			return 0;
-#endif
-		}
 #endif
 
-		public void WriteToServer(IDataReader dataReader) => WriteToServerAsync(dataReader, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		public void WriteToServer(IDataReader dataReader) => WriteToServerAsync(DataReaderValuesEnumerator.Create(dataReader), IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #if !NETSTANDARD2_1 && !NETCOREAPP3_0
-		public Task WriteToServerAsync(IDataReader dataReader, CancellationToken cancellationToken = default) => WriteToServerAsync(dataReader, IOBehavior.Asynchronous, cancellationToken).AsTask();
+		public Task WriteToServerAsync(IDataReader dataReader, CancellationToken cancellationToken = default) => WriteToServerAsync(DataReaderValuesEnumerator.Create(dataReader), IOBehavior.Asynchronous, cancellationToken).AsTask();
 #else
-		public ValueTask WriteToServerAsync(IDataReader dataReader, CancellationToken cancellationToken = default) => WriteToServerAsync(dataReader, IOBehavior.Asynchronous, cancellationToken);
+		public ValueTask WriteToServerAsync(IDataReader dataReader, CancellationToken cancellationToken = default) => WriteToServerAsync(DataReaderValuesEnumerator.Create(dataReader), IOBehavior.Asynchronous, cancellationToken);
 #endif
 
 #if !NETSTANDARD2_1 && !NETCOREAPP3_0
-		private async ValueTask<int> WriteToServerAsync(IDataReader dataReader, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async ValueTask<int> WriteToServerAsync(IValuesEnumerator values, IOBehavior ioBehavior, CancellationToken cancellationToken)
 #else
-		private async ValueTask WriteToServerAsync(IDataReader dataReader, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async ValueTask WriteToServerAsync(IValuesEnumerator values, IOBehavior ioBehavior, CancellationToken cancellationToken)
 #endif
 		{
 			var tableName = DestinationTableName ?? throw new InvalidOperationException("DestinationTableName must be set before calling WriteToServer");
@@ -73,7 +68,7 @@ namespace MySql.Data.MySqlClient
 				LineTerminator = "\n",
 				Local = true,
 				NumberOfLinesToSkip = 0,
-				Source = dataReader ?? throw new ArgumentNullException(nameof(dataReader)),
+				Source = values ?? throw new ArgumentNullException(nameof(values)),
 				TableName = tableName,
 				Timeout = BulkCopyTimeout,
 			};
@@ -129,26 +124,25 @@ namespace MySql.Data.MySqlClient
 			static string QuoteIdentifier(string identifier) => "`" + identifier.Replace("`", "``") + "`";
 		}
 
-		internal static async Task SendDataReaderAsync(MySqlConnection connection, IDataReader dataReader, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		internal static async Task SendDataReaderAsync(MySqlConnection connection, IValuesEnumerator valuesEnumerator, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			// rent a buffer that can fit in one packet
 			const int maxLength = 16_777_200;
 			var buffer = ArrayPool<byte>.Shared.Rent(maxLength + 1);
 			var outputIndex = 0;
-			var dbDataReader = dataReader as DbDataReader;
 
 			try
 			{
-				var values = new object?[dataReader.FieldCount];
+				var values = new object?[valuesEnumerator.FieldCount];
 				while (true)
 				{
-					var hasMore = ioBehavior == IOBehavior.Asynchronous && dbDataReader is object ?
-						await dbDataReader.ReadAsync(cancellationToken).ConfigureAwait(false) :
-						dataReader.Read();
+					var hasMore = ioBehavior == IOBehavior.Asynchronous ?
+						await valuesEnumerator.MoveNextAsync().ConfigureAwait(false) :
+						valuesEnumerator.MoveNext();
 					if (!hasMore)
 						break;
 
-					dataReader.GetValues(values);
+					valuesEnumerator.GetValues(values);
 					retryRow:
 					var startOutputIndex = outputIndex;
 					var wroteRow = true;

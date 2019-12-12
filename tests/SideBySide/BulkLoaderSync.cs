@@ -492,6 +492,42 @@ namespace SideBySide
 			Assert.Equal(5, rowCount);
 		}
 
+		[Fact]
+		public void BulkLoadDataReader()
+		{
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			using var connection2 = new MySqlConnection(GetLocalConnectionString());
+			connection.Open();
+			connection2.Open();
+			using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_reader_source;
+drop table if exists bulk_load_data_reader_destination;
+create table bulk_load_data_reader_source(value int, name text);
+create table bulk_load_data_reader_destination(value int, name text);
+insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five'),(6,'six');", connection))
+			{
+				cmd.ExecuteNonQuery();
+			}
+
+			using (var cmd = new MySqlCommand("select * from bulk_load_data_reader_source;", connection))
+			using (var reader = cmd.ExecuteReader())
+			{
+				var bulkCopy = new MySqlBulkCopy(connection2) { DestinationTableName = "bulk_load_data_reader_destination", };
+				bulkCopy.WriteToServer(reader);
+			}
+
+			using var cmd1 = new MySqlCommand("select * from bulk_load_data_reader_source order by value;", connection);
+			using var cmd2 = new MySqlCommand("select * from bulk_load_data_reader_destination order by value;", connection2);
+			using var reader1 = cmd1.ExecuteReader();
+			using var reader2 = cmd2.ExecuteReader();
+			while (reader1.Read())
+			{
+				Assert.True(reader2.Read());
+				Assert.Equal(reader1.GetInt32(0), reader2.GetInt32(0));
+				Assert.Equal(reader1.GetString(1), reader2.GetString(1));
+			}
+			Assert.False(reader2.Read());
+		}
+
 #if !NETCOREAPP1_1_2
 		[Fact]
 		public void BulkLoadDataTableWithLongData()

@@ -99,8 +99,8 @@ namespace MySqlConnector.Core
 									}
 									break;
 
-								case IDataReader dataReader:
-									await MySqlBulkCopy.SendDataReaderAsync(Connection, dataReader, ioBehavior, CancellationToken.None).ConfigureAwait(false);
+								case IValuesEnumerator valuesEnumerator:
+									await MySqlBulkCopy.SendDataReaderAsync(Connection, valuesEnumerator, ioBehavior, CancellationToken.None).ConfigureAwait(false);
 									break;
 
 								default:

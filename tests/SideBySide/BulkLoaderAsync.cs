@@ -410,6 +410,42 @@ namespace SideBySide
 			Assert.Equal(5, rowCount);
 		}
 
+		[Fact]
+		public async Task BulkLoadDataReader()
+		{
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			using var connection2 = new MySqlConnection(GetLocalConnectionString());
+			await connection.OpenAsync();
+			await connection2.OpenAsync();
+			using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_reader_source;
+drop table if exists bulk_load_data_reader_destination;
+create table bulk_load_data_reader_source(value int, name text);
+create table bulk_load_data_reader_destination(value int, name text);
+insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five'),(6,'six');", connection))
+			{
+				await cmd.ExecuteNonQueryAsync();
+			}
+
+			using (var cmd = new MySqlCommand("select * from bulk_load_data_reader_source;", connection))
+			using (var reader = await cmd.ExecuteReaderAsync())
+			{
+				var bulkCopy = new MySqlBulkCopy(connection2) { DestinationTableName = "bulk_load_data_reader_destination", };
+				await bulkCopy.WriteToServerAsync(reader);
+			}
+
+			using var cmd1 = new MySqlCommand("select * from bulk_load_data_reader_source order by value;", connection);
+			using var cmd2 = new MySqlCommand("select * from bulk_load_data_reader_destination order by value;", connection2);
+			using var reader1 = await cmd1.ExecuteReaderAsync();
+			using var reader2 = await cmd2.ExecuteReaderAsync();
+			while (await reader1.ReadAsync())
+			{
+				Assert.True(await reader2.ReadAsync());
+				Assert.Equal(reader1.GetInt32(0), reader2.GetInt32(0));
+				Assert.Equal(reader1.GetString(1), reader2.GetString(1));
+			}
+			Assert.False(await reader2.ReadAsync());
+		}
+
 #if !NETCOREAPP1_1_2
 		[Fact]
 		public async Task BulkLoadDataTableWithLongData()
