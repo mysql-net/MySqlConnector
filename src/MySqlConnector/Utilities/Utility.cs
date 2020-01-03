@@ -44,6 +44,17 @@ namespace MySqlConnector.Utilities
 #endif
 		}
 
+		public static unsafe int GetByteCount(this Encoding encoding, ReadOnlySpan<char> chars)
+		{
+			if (chars.Length == 0)
+				return 0;
+
+			fixed (char* charsPtr = &MemoryMarshal.GetReference(chars))
+			{
+				return encoding.GetByteCount(charsPtr, chars.Length);
+			}
+		}
+
 		public static unsafe int GetBytes(this Encoding encoding, ReadOnlySpan<char> chars, Span<byte> bytes)
 		{
 			fixed (char* charsPtr = &MemoryMarshal.GetReference(chars))

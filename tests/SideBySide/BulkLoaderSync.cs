@@ -529,8 +529,8 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 		}
 
 #if !NETCOREAPP1_1_2
-		[Fact]
-		public void BulkLoadDataTableWithLongData()
+		[SkippableFact(ServerFeatures.LargePackets)]
+		public void BulkLoadDataTableWithLongBlob()
 		{
 			var dataTable = new DataTable()
 			{
@@ -559,6 +559,48 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 				DestinationTableName = "bulk_load_data_table",
 			};
 			bulkCopy.WriteToServer(dataTable);
+
+			using (var cmd = new MySqlCommand(@"select sum(length(b)) from bulk_load_data_table;", connection))
+			{
+				Assert.Equal(16_777_000m, cmd.ExecuteScalar());
+			}
+		}
+
+		[SkippableFact(ServerFeatures.LargePackets)]
+		public void BulkLoadDataTableWithLongString()
+		{
+			var dataTable = new DataTable()
+			{
+				Columns =
+				{
+					new DataColumn("id", typeof(int)),
+					new DataColumn("data", typeof(string)),
+				},
+				Rows =
+				{
+					new object[] { 1, new string('a', 16_777_000) },
+					new object[] { 2, new string('b', 16_777_000) },
+				},
+			};
+
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			connection.Open();
+			using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(a int, b longtext);", connection))
+			{
+				cmd.ExecuteNonQuery();
+			}
+
+			var bulkCopy = new MySqlBulkCopy(connection)
+			{
+				DestinationTableName = "bulk_load_data_table",
+			};
+			bulkCopy.WriteToServer(dataTable);
+
+			using (var cmd = new MySqlCommand(@"select sum(length(b)) from bulk_load_data_table;", connection))
+			{
+				Assert.Equal(33_554_000m, cmd.ExecuteScalar());
+			}
 		}
 
 		[Fact]
@@ -605,7 +647,7 @@ create table bulk_load_data_table(a int, b text);", connection))
 		}
 
 		[Fact]
-		public void BulkLoadDataTableWithTooLongData()
+		public void BulkLoadDataTableWithTooLongBlob()
 		{
 			var dataTable = new DataTable()
 			{
@@ -616,6 +658,36 @@ create table bulk_load_data_table(a int, b text);", connection))
 				Rows =
 				{
 					new object[] { new byte[8388700] },
+				}
+			};
+
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			connection.Open();
+			using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(a int, b longblob);", connection))
+			{
+				cmd.ExecuteNonQuery();
+			}
+
+			var bulkCopy = new MySqlBulkCopy(connection)
+			{
+				DestinationTableName = "bulk_load_data_table",
+			};
+			Assert.Throws<MySqlException>(() => bulkCopy.WriteToServer(dataTable));
+		}
+
+		[Fact]
+		public void BulkLoadDataTableWithTooLongString()
+		{
+			var dataTable = new DataTable()
+			{
+				Columns =
+				{
+					new DataColumn("data", typeof(string)),
+				},
+				Rows =
+				{
+					new object[] { new string('a', 16_777_400) },
 				}
 			};
 

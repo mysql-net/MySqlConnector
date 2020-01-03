@@ -369,14 +369,13 @@ namespace MySql.Data.MySqlClient
 						var nextIndex = value.IndexOfAny(s_specialCharacters, index);
 						if (nextIndex == -1)
 							nextIndex = value.Length;
-						var encodedBytesWritten = Encoding.UTF8.GetBytes(value.AsSpan(index, nextIndex - index), output);
-						if (encodedBytesWritten == output.Length)
+						var encodedSize = Encoding.UTF8.GetByteCount(value.AsSpan(index, nextIndex - index));
+						if (encodedSize > output.Length)
 						{
-							// TODO: this isn't strictly an error
 							bytesWritten = 0;
 							return false;
 						}
-
+						var encodedBytesWritten = Encoding.UTF8.GetBytes(value.AsSpan(index, nextIndex - index), output);
 						bytesWritten += encodedBytesWritten;
 						output = output.Slice(encodedBytesWritten);
 						index = nextIndex;
