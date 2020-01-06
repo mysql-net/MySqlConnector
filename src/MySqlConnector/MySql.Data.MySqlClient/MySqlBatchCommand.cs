@@ -18,11 +18,12 @@ namespace MySql.Data.MySqlClient
 
 		public string? CommandText { get; set; }
 		public CommandType CommandType { get; set; }
-		public bool AllowUserVariables => false;
 		public CommandBehavior CommandBehavior { get; set; }
 		public int RecordsAffected { get; set; }
 
 		public MySqlParameterCollection Parameters => m_parameterCollection ??= new MySqlParameterCollection();
+
+		bool IMySqlCommand.AllowUserVariables => false;
 
 		MySqlParameterCollection? IMySqlCommand.RawParameters => m_parameterCollection;
 
