@@ -1,5 +1,5 @@
 ---
-lastmod: 2017-11-06
+lastmod: 2020-01-07
 date: 2016-10-16
 menu:
   main:
@@ -12,6 +12,7 @@ Installing
 ==========
 
 The recommended way of installing MySqlConnector is through [NuGet](https://www.nuget.org/packages/MySqlConnector/).
+Note that if you are using the `MySql.Data` NuGet package, it must be uninstalled first.
 
 ### Automatically
 
@@ -29,11 +30,11 @@ Or, in Visual Studio, use the _NuGet Package Manager_ to browse for and install 
     <AssemblyTitle>My Application</AssemblyTitle>
     <Description>A great application</Description>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MySqlConnector" Version="0.56.0" />
+    <PackageReference Include="MySqlConnector" Version="0.61.0" />
   </ItemGroup>
 
 </Project>
