@@ -350,48 +350,6 @@ namespace MySql.Data.MySqlClient
 				}
 			}
 
-			static bool WriteString(string value, Span<byte> output, out int bytesWritten)
-			{
-				var index = 0;
-				bytesWritten = 0;
-				while (index < value.Length)
-				{
-					if (Array.IndexOf(s_specialCharacters, value[index]) != -1)
-					{
-						if (output.Length < 2)
-						{
-							bytesWritten = 0;
-							return false;
-						}
-
-						output[0] = (byte) '\\';
-						output[1] = (byte) value[index];
-						output = output.Slice(2);
-						bytesWritten += 2;
-						index++;
-					}
-					else
-					{
-						var nextIndex = value.IndexOfAny(s_specialCharacters, index);
-						if (nextIndex == -1)
-							nextIndex = value.Length;
-						var encodedBytesWritten = Encoding.UTF8.GetBytes(value.AsSpan(index, nextIndex - index), output);
-						if (encodedBytesWritten == output.Length)
-						{
-							// TODO: this isn't strictly an error
-							bytesWritten = 0;
-							return false;
-						}
-
-						bytesWritten += encodedBytesWritten;
-						output = output.Slice(encodedBytesWritten);
-						index = nextIndex;
-					}
-				}
-
-				return true;
-			}
-
 			static bool WriteBytes(ReadOnlySpan<byte> value, Span<byte> output, out int bytesWritten)
 			{
 				if (output.Length < value.Length * 2)
@@ -416,6 +374,57 @@ namespace MySql.Data.MySqlClient
 
 		private static ReadOnlySpan<byte> EscapedNull => new byte[] { 0x5C, 0x4E };
 		private static readonly char[] s_specialCharacters = new char[] { '\t', '\\', '\n' };
+
+		internal static bool WriteString(string value, Span<byte> output, out int bytesWritten)
+		{
+			var index = 0;
+			bytesWritten = 0;
+			while (index < value.Length)
+			{
+				if (Array.IndexOf(s_specialCharacters, value[index]) != -1)
+				{
+					if (output.Length < 2)
+					{
+						bytesWritten = 0;
+						return false;
+					}
+
+					output[0] = (byte) '\\';
+					output[1] = (byte) value[index];
+					output = output.Slice(2);
+					bytesWritten += 2;
+					index++;
+				}
+				else
+				{
+					var nextIndex = value.IndexOfAny(s_specialCharacters, index);
+					if (nextIndex == -1)
+						nextIndex = value.Length;
+
+					var valueSpan = value.AsSpan(index, nextIndex - index);
+					var encodedByteCount = Encoding.UTF8.GetByteCount(valueSpan);
+					if (encodedByteCount > output.Length)
+					{
+						bytesWritten = 0;
+						return false;
+					}
+
+					var encodedBytesWritten = Encoding.UTF8.GetBytes(valueSpan, output);
+					if (encodedBytesWritten == output.Length)
+					{
+						// TODO: this isn't strictly an error
+						bytesWritten = 0;
+						return false;
+					}
+
+					bytesWritten += encodedBytesWritten;
+					output = output.Slice(encodedBytesWritten);
+					index = nextIndex;
+				}
+			}
+
+			return true;
+		}
 
 		readonly MySqlConnection m_connection;
 		readonly MySqlTransaction? m_transaction;
