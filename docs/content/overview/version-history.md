@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.62.0 Beta 6
+
+* Remove `MySqlBatchCommand.AllowUserVariables` internal.
+* Fix exception in `MySqlBulkCopy` when a `string` value crossed a packet boundary.
+* Remove properties from `MySqlConnectionStringBuilder` when they're set to `null`: [#749](https://github.com/mysql-net/MySqlConnector/issues/749).
+
 ### 0.62.0 Beta 5
 
 * Improve nullability annotations.
