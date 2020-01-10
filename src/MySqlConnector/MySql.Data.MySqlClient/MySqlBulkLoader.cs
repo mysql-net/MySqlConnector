@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -205,8 +206,8 @@ namespace MySql.Data.MySqlClient
 			}
 			finally
 			{
-				if (closeStream)
-					((IDisposable) GetAndRemoveSource(FileName!)).Dispose();
+				if (closeStream && TryGetAndRemoveSource(FileName!, out var source))
+					((IDisposable) source).Dispose();
 
 				if (closeConnection)
 					Connection.Close();
@@ -235,10 +236,24 @@ namespace MySql.Data.MySqlClient
 		{
 			lock (s_lock)
 			{
-				var stream = s_sources[sourceKey];
+				var source = s_sources[sourceKey];
 				s_sources.Remove(sourceKey);
-				return stream;
+				return source;
 			}
+		}
+
+		internal static bool TryGetAndRemoveSource(string sourceKey, [NotNullWhen(true)] out object? source)
+		{
+			lock (s_lock)
+			{
+				if (s_sources.TryGetValue(sourceKey, out source))
+				{
+					s_sources.Remove(sourceKey);
+					return true;
+				}
+			}
+
+			return false;
 		}
 	}
 }
