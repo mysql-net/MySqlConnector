@@ -2,23 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlBulkLoader
 	{
-		private const string defaultFieldTerminator = "\t";
-		private const string defaultLineTerminator = "\n";
-		private const char defaultEscapeCharacter = '\\';
-
-		private static readonly object s_lock = new object();
-		private static readonly Dictionary<string, object> s_sources = new Dictionary<string, object>();
-
 		public string? CharacterSet { get; set; }
 		public List<string> Columns { get; }
 		public MySqlBulkLoaderConflictOption ConflictOption { get; set; }
@@ -58,88 +53,8 @@ namespace MySql.Data.MySqlClient
 		{
 			Connection = connection;
 			Local = true;
-			FieldTerminator = defaultFieldTerminator;
-			LineTerminator = defaultLineTerminator;
-			FieldQuotationCharacter = '\0';
-			ConflictOption = MySqlBulkLoaderConflictOption.None;
 			Columns = new List<string>();
 			Expressions = new List<string>();
-		}
-
-		private string BuildSqlCommand()
-		{
-			StringBuilder sqlCommandMain = new StringBuilder("LOAD DATA ");
-			if (Priority == MySqlBulkLoaderPriority.Low)
-				sqlCommandMain.Append("LOW_PRIORITY ");
-			else if (Priority == MySqlBulkLoaderPriority.Concurrent)
-				sqlCommandMain.Append("CONCURRENT ");
-
-			if (Local)
-				sqlCommandMain.Append("LOCAL ");
-
-			sqlCommandMain.Append("INFILE ");
-
-			if (System.IO.Path.DirectorySeparatorChar != '\\')
-				sqlCommandMain.AppendFormat("'{0}' ", FileName!);
-			else
-				sqlCommandMain.AppendFormat("'{0}' ", FileName!.Replace("\\", "\\\\"));
-
-			if (ConflictOption == MySqlBulkLoaderConflictOption.Ignore)
-				sqlCommandMain.Append("IGNORE ");
-			else if (ConflictOption == MySqlBulkLoaderConflictOption.Replace)
-				sqlCommandMain.Append("REPLACE ");
-
-			sqlCommandMain.AppendFormat("INTO TABLE {0} ", TableName);
-
-			if (CharacterSet is object)
-				sqlCommandMain.AppendFormat("CHARACTER SET {0} ", CharacterSet);
-
-			StringBuilder sqlCommandFragment = new StringBuilder();
-			if (FieldTerminator != defaultFieldTerminator)
-				sqlCommandFragment.AppendFormat("TERMINATED BY \'{0}\' ", FieldTerminator);
-
-			if (FieldQuotationCharacter != 0)
-				sqlCommandFragment.AppendFormat("{0} ENCLOSED BY \'{1}\' ", (FieldQuotationOptional ? "OPTIONALLY" : ""), FieldQuotationCharacter);
-
-			if (EscapeCharacter != defaultEscapeCharacter && EscapeCharacter != 0)
-				sqlCommandFragment.AppendFormat("ESCAPED BY \'{0}\' ", EscapeCharacter);
-
-			if (sqlCommandFragment.Length > 0)
-			{
-				sqlCommandMain.AppendFormat("FIELDS {0}", sqlCommandFragment.ToString());
-				sqlCommandFragment.Clear();
-			}
-
-			if (!string.IsNullOrEmpty(LinePrefix))
-				sqlCommandFragment.AppendFormat("STARTING BY \'{0}\' ", LinePrefix);
-
-			if (LineTerminator != defaultLineTerminator)
-				sqlCommandFragment.AppendFormat("TERMINATED BY \'{0}\' ", LineTerminator);
-
-			if (sqlCommandFragment.Length > 0)
-				sqlCommandMain.AppendFormat("LINES {0}", sqlCommandFragment.ToString());
-
-			if (NumberOfLinesToSkip > 0)
-				sqlCommandMain.AppendFormat("IGNORE {0} LINES ", NumberOfLinesToSkip);
-
-			if (Columns.Count > 0)
-			{
-				sqlCommandMain.Append("(");
-				sqlCommandMain.Append(Columns[0]);
-				for (int i = 1; i < Columns.Count; i++)
-					sqlCommandMain.AppendFormat(",{0}", Columns[i]);
-				sqlCommandMain.Append(") ");
-			}
-
-			if (Expressions.Count > 0)
-			{
-				sqlCommandMain.Append("SET ");
-				sqlCommandMain.Append(Expressions[0]);
-				for (int i = 1; i < Expressions.Count; i++)
-					sqlCommandMain.AppendFormat(",{0}", Expressions[i]);
-			}
-
-			return sqlCommandMain.ToString();
 		}
 
 		public int Load() => LoadAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -180,7 +95,7 @@ namespace MySql.Data.MySqlClient
 					s_sources.Add(FileName, Source!);
 			}
 
-			bool closeConnection = false;
+			var closeConnection = false;
 			if (Connection.State != ConnectionState.Open)
 			{
 				closeConnection = true;
@@ -193,16 +108,14 @@ namespace MySql.Data.MySqlClient
 				if (Local && !Connection.AllowLoadLocalInfile)
 					throw new NotSupportedException("To use MySqlBulkLoader.Local=true, set AllowLoadLocalInfile=true in the connection string. See https://fl.vu/mysql-load-data");
 
-				using (var cmd = new MySqlCommand(BuildSqlCommand(), Connection, Connection.CurrentTransaction)
+				using var cmd = new MySqlCommand(CreateSql(), Connection, Connection.CurrentTransaction)
 				{
 					AllowUserVariables = true,
 					CommandTimeout = Timeout,
-				})
-				{
-					var result = await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					closeStream = false;
-					return result;
-				}
+				};
+				var result = await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				closeStream = false;
+				return result;
 			}
 			finally
 			{
@@ -212,6 +125,62 @@ namespace MySql.Data.MySqlClient
 				if (closeConnection)
 					Connection.Close();
 			}
+		}
+
+		internal const string SourcePrefix = ":SOURCE:";
+
+		internal object? Source { get; set; }
+
+		private string CreateSql()
+		{
+			var sb = new StringBuilder("LOAD DATA ");
+
+			sb.Append(Priority switch
+			{
+				MySqlBulkLoaderPriority.Low => "LOW_PRIORITY ",
+				MySqlBulkLoaderPriority.Concurrent => "LOCAL ",
+				_ => "",
+			});
+
+			if (Local)
+				sb.Append("LOCAL ");
+
+			sb.AppendFormat(CultureInfo.InvariantCulture, "INFILE '{0}' ", MySqlHelper.EscapeString(FileName!));
+
+			sb.Append(ConflictOption switch
+			{
+				MySqlBulkLoaderConflictOption.Replace => "REPLACE ",
+				MySqlBulkLoaderConflictOption.Ignore => "IGNORE ",
+				_ => "",
+			});
+
+			sb.AppendFormat(CultureInfo.InvariantCulture, "INTO TABLE {0} ", TableName);
+
+			if (CharacterSet is object)
+				sb.AppendFormat(CultureInfo.InvariantCulture, "CHARACTER SET {0} ", CharacterSet);
+
+			var fieldsTerminatedBy = FieldTerminator is null ? "" : "TERMINATED BY '{0}' ".FormatInvariant(MySqlHelper.EscapeString(FieldTerminator));
+			var fieldsEnclosedBy = FieldQuotationCharacter == default ? "" : "{0}ENCLOSED BY '{1}' ".FormatInvariant(FieldQuotationOptional ? "OPTIONALLY " : "", MySqlHelper.EscapeString(FieldQuotationCharacter.ToString()));
+			var fieldsEscapedBy = EscapeCharacter == default ? "" : "ESCAPED BY '{0}' ".FormatInvariant(MySqlHelper.EscapeString(EscapeCharacter.ToString()));
+			if (fieldsTerminatedBy.Length + fieldsEnclosedBy.Length + fieldsEscapedBy.Length > 0)
+				sb.AppendFormat(CultureInfo.InvariantCulture, "FIELDS {0}{1}{2}", fieldsTerminatedBy, fieldsEnclosedBy, fieldsEscapedBy);
+
+			var linesTerminatedBy = LineTerminator is null ? "" : "TERMINATED BY '{0}' ".FormatInvariant(MySqlHelper.EscapeString(LineTerminator));
+			var linesStartingBy = LinePrefix is null ? "" : "STARTING BY '{0}' ".FormatInvariant(MySqlHelper.EscapeString(LinePrefix));
+			if (linesTerminatedBy.Length + linesStartingBy.Length > 0)
+				sb.AppendFormat(CultureInfo.InvariantCulture, "LINES {0}{1}", linesTerminatedBy, linesStartingBy);
+
+			sb.AppendFormat(CultureInfo.InvariantCulture, "IGNORE {0} LINES ", NumberOfLinesToSkip);
+
+			if (Columns.Count > 0)
+				sb.AppendFormat(CultureInfo.InvariantCulture, "({0}) ", string.Join(",", Columns));
+
+			if (Expressions.Count > 0)
+				sb.AppendFormat("SET {0}", string.Join(",", Expressions));
+
+			sb.Append(';');
+
+			return sb.ToString();
 		}
 
 		private Stream CreateFileStream(string fileName)
@@ -225,12 +194,6 @@ namespace MySql.Data.MySqlClient
 				throw new MySqlException($"Could not access file \"{fileName}\"", ex);
 			}
 		}
-
-		private static string GenerateSourceFileName() => SourcePrefix + Guid.NewGuid().ToString("N");
-
-		internal const string SourcePrefix = ":SOURCE:";
-
-		internal object? Source { get; set; }
 
 		internal static object GetAndRemoveSource(string sourceKey)
 		{
@@ -255,5 +218,10 @@ namespace MySql.Data.MySqlClient
 
 			return false;
 		}
+
+		private static string GenerateSourceFileName() => SourcePrefix + Guid.NewGuid().ToString("N");
+
+		static readonly object s_lock = new object();
+		static readonly Dictionary<string, object> s_sources = new Dictionary<string, object>();
 	}
 }

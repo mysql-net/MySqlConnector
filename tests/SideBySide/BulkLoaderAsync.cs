@@ -67,23 +67,6 @@ namespace SideBySide
 			Assert.Equal(20, rowCount);
 		}
 
-		[SkippableFact(ConfigSettings.LocalTsvFile)]
-		public async Task BulkLoadLocalTsvFileDoubleEscapedTerminators()
-		{
-			using var connection = new MySqlConnection(GetLocalConnectionString());
-			MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-			bl.FileName = AppConfig.MySqlBulkLoaderLocalTsvFile;
-			bl.TableName = m_testTable;
-			bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
-			bl.NumberOfLinesToSkip = 1;
-			bl.Expressions.Add("five = UNHEX(five)");
-			bl.LineTerminator = "\\n";
-			bl.FieldTerminator = "\\t";
-			bl.Local = true;
-			int rowCount = await bl.LoadAsync();
-			Assert.Equal(20, rowCount);
-		}
-
 		[SkippableFact(ConfigSettings.CsvFile)]
 		public async Task BulkLoadCsvFile()
 		{
