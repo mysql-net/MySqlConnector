@@ -156,7 +156,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#78760](https://bugs.mysql.com/bug.php?id=78760): Error when using tabs and newlines in SQL statements
 * ~~[#78917](https://bugs.mysql.com/bug.php?id=78917), [#79196](https://bugs.mysql.com/bug.php?id=79196), [#82292](https://bugs.mysql.com/bug.php?id=82292), [#89040](https://bugs.mysql.com/bug.php?id=89040): `TINYINT(1)` values start being returned as `sbyte` after `NULL`~~
 * ~~[#80030](https://bugs.mysql.com/bug.php?id=80030): Slow to connect with pooling disabled~~
-* [#81650](https://bugs.mysql.com/bug.php?id=81650), [#88962](https://bugs.mysql.com/bug.php?id=88962): `Server` connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds
+* ~~[#81650](https://bugs.mysql.com/bug.php?id=81650), [#88962](https://bugs.mysql.com/bug.php?id=88962): `Server` connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds~~
 * [#83229](https://bugs.mysql.com/bug.php?id=83329): “Unknown command” exception inserting large blob with UseCompression=True
 * ~~[#83649](https://bugs.mysql.com/bug.php?id=83649): Connection cannot be made using IPv6~~
 * [#84220](https://bugs.mysql.com/bug.php?id=84220): Cannot call a stored procedure with `.` in its name
