@@ -543,10 +543,7 @@ namespace MySql.Data.MySqlClient
 				connection.FinishQuerying(m_hasWarnings);
 
 				if ((m_behavior & CommandBehavior.CloseConnection) != 0)
-				{
-					(Command as IDisposable)?.Dispose();
 					await connection.CloseAsync(ioBehavior).ConfigureAwait(false);
-				}
 				Command = null;
 			}
 		}
