@@ -17,9 +17,9 @@ namespace SideBySide
 
 				DROP FUNCTION IF EXISTS failing_function;
 				CREATE FUNCTION failing_function()
-				RETURNS INT
+				RETURNS DECIMAL(10,5)
 				BEGIN
-					DECLARE v1 INT;
+					DECLARE v1 DECIMAL(10,5);
 					SELECT c1 FROM table_that_does_not_exist INTO v1;
 					RETURN v1;
 				END;

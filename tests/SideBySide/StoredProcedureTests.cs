@@ -628,7 +628,7 @@ namespace SideBySide
 		[Theory]
 		[InlineData("echof", "FUNCTION", "varchar(63)", "BEGIN RETURN name; END", "NO", "CONTAINS SQL")]
 		[InlineData("echop", "PROCEDURE", null, "BEGIN SELECT name; END", "NO", "CONTAINS SQL")]
-		[InlineData("failing_function", "FUNCTION", "int(11)", "BEGIN DECLARE v1 INT; SELECT c1 FROM table_that_does_not_exist INTO v1; RETURN v1; END", "NO", "CONTAINS SQL")]
+		[InlineData("failing_function", "FUNCTION", "decimal(10,5)", "BEGIN DECLARE v1 DECIMAL(10,5); SELECT c1 FROM table_that_does_not_exist INTO v1; RETURN v1; END", "NO", "CONTAINS SQL")]
 		public void ProceduresSchema(string procedureName, string procedureType, string dtdIdentifier, string routineDefinition, string isDeterministic, string dataAccess)
 		{
 			var dataTable = m_database.Connection.GetSchema("Procedures");
