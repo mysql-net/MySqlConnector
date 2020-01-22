@@ -56,14 +56,7 @@ namespace MySql.Data.MySqlClient
 			m_parameterCollection = other.CloneRawParameters();
 		}
 
-		public new MySqlParameterCollection Parameters
-		{
-			get
-			{
-				VerifyNotDisposed();
-				return m_parameterCollection ??= new MySqlParameterCollection();
-			}
-		}
+		public new MySqlParameterCollection Parameters => m_parameterCollection ??= new MySqlParameterCollection();
 
 		MySqlParameterCollection? IMySqlCommand.RawParameters => m_parameterCollection;
 
@@ -210,11 +203,7 @@ namespace MySql.Data.MySqlClient
 			set => Transaction = (MySqlTransaction?) value;
 		}
 
-		protected override DbParameter CreateDbParameter()
-		{
-			VerifyNotDisposed();
-			return new MySqlParameter();
-		}
+		protected override DbParameter CreateDbParameter() => new MySqlParameter();
 
 		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
 		{
@@ -283,16 +272,8 @@ namespace MySql.Data.MySqlClient
 
 		protected override void Dispose(bool disposing)
 		{
-			try
-			{
-				if (disposing)
-					m_parameterCollection = null;
-			}
-			finally
-			{
-				base.Dispose(disposing);
-			}
 			m_isDisposed = true;
+			base.Dispose(disposing);
 		}
 
 #if !NETSTANDARD2_1 && !NETCOREAPP3_0
@@ -328,12 +309,6 @@ namespace MySql.Data.MySqlClient
 		ICancellableCommand IMySqlCommand.CancellableCommand => this;
 
 		private IOBehavior AsyncIOBehavior => Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous;
-
-		private void VerifyNotDisposed()
-		{
-			if (m_isDisposed)
-				throw new ObjectDisposedException(GetType().Name);
-		}
 
 		private bool IsValid([NotNullWhen(false)] out Exception? exception)
 		{
