@@ -775,11 +775,14 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		[InlineData("`Year`", "YEAR", new object[] { null, 1901, 2155, 0, 2016 })]
 		public void QueryYear(string column, string dataTypeName, object[] expected)
 		{
+			Func<MySqlDataReader, object> getValue = reader => reader.GetInt32(0);
 #if BASELINE
-			// mysql-connector-net incorrectly returns "INT" for "YEAR"
-			dataTypeName = "INT";
+			// Connector/NET incorrectly returns "SMALLINT" for "YEAR", and returns all YEAR values as short values
+			dataTypeName = "SMALLINT";
+			expected = expected.Select(x => x is null ? null : (object) (short) (int) x).ToArray();
+			getValue = reader => reader.GetInt16(0);
 #endif
-			DoQuery("times", column, dataTypeName, expected, reader => reader.GetInt32(0));
+			DoQuery("times", column, dataTypeName, expected, getValue);
 		}
 
 		[Theory]
@@ -1062,7 +1065,11 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		[InlineData("DateTime", "datatypes_times", MySqlDbType.DateTime, 26, typeof(DateTime), "N", 0, 6)]
 		[InlineData("Timestamp", "datatypes_times", MySqlDbType.Timestamp, 26, typeof(DateTime), "N", 0, 6)]
 		[InlineData("Time", "datatypes_times", MySqlDbType.Time, 17, typeof(TimeSpan), "N", 0, 6)]
+#if BASELINE
+		[InlineData("Year", "datatypes_times", MySqlDbType.Year, 4, typeof(short), "N", 0, 0)]
+#else
 		[InlineData("Year", "datatypes_times", MySqlDbType.Year, 4, typeof(int), "N", 0, 0)]
+#endif
 		[InlineData("Geometry", "datatypes_geometry", MySqlDbType.Geometry, int.MaxValue, typeof(byte[]), "LN", 0, 0)]
 		public void GetSchemaTable(string column, string table, MySqlDbType mySqlDbType, int columnSize, Type dataType, string flags, int precision, int scale) =>
 			DoGetSchemaTable(column, table, mySqlDbType, columnSize, dataType, flags, precision, scale);
@@ -1318,7 +1325,11 @@ create table schema_table({createColumn});");
 		[InlineData("DateTime", "datatypes_times", MySqlDbType.DateTime, "DATETIME", typeof(DateTime), 2, null)]
 		[InlineData("Timestamp", "datatypes_times", MySqlDbType.Timestamp, "TIMESTAMP", typeof(DateTime), 2, null)]
 		[InlineData("Time", "datatypes_times", MySqlDbType.Time, "TIME", typeof(TimeSpan), 2, null)]
+#if BASELINE
+		[InlineData("Year", "datatypes_times", MySqlDbType.Year, "YEAR", typeof(short), 2, (short) 1901)]
+#else
 		[InlineData("Year", "datatypes_times", MySqlDbType.Year, "YEAR", typeof(int), 2, 1901)]
+#endif
 #if !BASELINE
 		[InlineData("value", "datatypes_json_core", MySqlDbType.JSON, "JSON", typeof(string), 4, "[]")]
 		[InlineData("Geometry", "datatypes_geometry", MySqlDbType.Geometry, "GEOMETRY", typeof(byte[]), 2, null)]
