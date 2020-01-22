@@ -678,7 +678,7 @@ namespace MySql.Data.MySqlClient
 
 		public override object GetObject(MySqlConnectionStringBuilder builder) => GetValue(builder);
 
-		private static T ChangeType(object objectValue)
+		private T ChangeType(object objectValue)
 		{
 			if (typeof(T) == typeof(bool) && objectValue is string booleanString)
 			{
@@ -700,7 +700,14 @@ namespace MySql.Data.MySqlClient
 				}
 			}
 
-			return (T) Convert.ChangeType(objectValue, typeof(T), CultureInfo.InvariantCulture);
+			try
+			{
+				return (T) Convert.ChangeType(objectValue, typeof(T), CultureInfo.InvariantCulture);
+			}
+			catch (Exception ex)
+			{
+				throw new ArgumentException("Invalid value '{0}' for '{1}' connection string option.".FormatInvariant(objectValue, Key), ex);
+			}
 		}
 
 		readonly T m_defaultValue;
