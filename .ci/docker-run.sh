@@ -41,6 +41,7 @@ docker run -d \
   --log-bin-trust-function-creators=1 \
   --local-infile=1 \
   --secure-file-priv=/var/tmp \
+  --max-connections=250 \
   $MYSQL_EXTRA
 
 for i in `seq 1 120`; do
