@@ -279,6 +279,23 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 			cmd.Cancel();
 		}
 
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=90086")]
+		public void CommandsAreIndependent()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+
+			using var cmd1 = connection.CreateCommand();
+			cmd1.CommandText = "SELECT 1;";
+
+			using var cmd2 = connection.CreateCommand();
+			cmd2.CommandText = "SELECT 'abc';";
+			using var reader = cmd2.ExecuteReader();
+
+			cmd1.Dispose();
+			Assert.True(reader.Read());
+		}
+
 		private static string GetIgnoreCommandTransactionConnectionString()
 		{
 #if BASELINE
