@@ -1473,7 +1473,13 @@ namespace MySqlConnector.Core
 			attributesWriter.WriteLengthEncodedString("_client_name");
 			attributesWriter.WriteLengthEncodedString("MySqlConnector");
 			attributesWriter.WriteLengthEncodedString("_client_version");
-			attributesWriter.WriteLengthEncodedString(typeof(ServerSession).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion);
+
+			var version = typeof(ServerSession).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
+			var plusIndex = version.IndexOf('+');
+			if (plusIndex != -1)
+				version = version.Substring(0, plusIndex);
+			attributesWriter.WriteLengthEncodedString(version);
+
 			try
 			{
 				Utility.GetOSDetails(out var os, out var osDescription, out var architecture);
