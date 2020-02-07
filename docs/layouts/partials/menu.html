@@ -2,7 +2,7 @@
     <ul class="nav nav-list" id="menu">
 
         {{ range $i, $el := .Site.Menus.main }}
-        <li class="nav-header">
+        <li class="nav-header" style="font-size:12pt;color:#606060;margin-top:20px;">
             {{ if .HasChildren }}{{ .Name }}{{ else }}<a href="{{ .URL }}">{{ .Name }}</a>{{ end }}
         </li>
 
