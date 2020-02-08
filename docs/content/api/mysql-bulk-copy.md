@@ -54,6 +54,10 @@ The number of seconds for the operation to complete before it times out, or `0` 
 
 Name of the destination table on the server.
 
+`public int NotifyAfter { get; set; }`
+
+If non-zero, this defines the number of rows to be processed before generating a notification event.
+
 ### Methods
 
 `public void WriteToServer(DataTable dataTable);`
@@ -65,8 +69,30 @@ Copies all rows in the supplied `DataTable` to the destination table specified b
 
 ***
 
+`public void WriteToServer(IEnumerable<DataRow> dataRows, int columnCount)`
+
+`public async Task WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, CancellationToken cancellationToken = default)`
+
+Copies all rows in the supplied sequence of `DataRow` objects to the destination table specified by the `DestinationTableName` property of the `MySqlBulkCopy` object. The number of columns to be read from the `DataRow` objects must be specified in advance.
+(This method is not available on `netstandard1.3`.)
+
+***
+
 `public void WriteToServer(IDataReader dataReader);`
 
 `public Task WriteToServerAsync(IDataReader dataReader, CancellationToken cancellationToken = default);`
 
 Copies all rows in the supplied `IDataReader` to the destination table specified by the `DestinationTableName` property of the `MySqlBulkCopy` object.
+
+### Events
+
+`public event MySqlRowsCopiedEventHandler RowsCopied;`
+
+If `NotifyAfter` is non-zero, this event will be raised every time the number of rows specified by
+`NotifyAfter` have been processed, and once after all rows have been copied (but duplicate events
+will not be raised).
+
+Receipt of a `RowsCopied` event does not imply that any rows have been sent to the server or committed.
+
+The `MySqlRowsCopiedEventArgs.Abort` property can be set to `true` by the event handler to abort
+the copy.
