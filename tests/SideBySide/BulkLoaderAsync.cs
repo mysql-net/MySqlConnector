@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Data.Common;
 using System.IO;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
@@ -431,6 +432,15 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 
 #if !NETCOREAPP1_1_2
 		[Fact]
+		public void BulkCopyNullDataTable()
+		{
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			connection.Open();
+			var bulkCopy = new MySqlBulkCopy(connection);
+			Assert.ThrowsAsync<ArgumentNullException>(async () => await bulkCopy.WriteToServerAsync(default(DataTable)));
+		}
+
+		[Fact]
 		public async Task BulkLoadDataTableWithLongData()
 		{
 			var dataTable = new DataTable()
@@ -492,6 +502,15 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			await Assert.ThrowsAsync<MySqlException>(async () => await bulkCopy.WriteToServerAsync(dataTable));
 		}
 #endif
+
+		[Fact]
+		public void BulkCopyNullDataReader()
+		{
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			connection.Open();
+			var bulkCopy = new MySqlBulkCopy(connection);
+			Assert.ThrowsAsync<ArgumentNullException>(async () => await bulkCopy.WriteToServerAsync(default(DbDataReader)));
+		}
 #endif
 
 		private static string GetConnectionString() => BulkLoaderSync.GetConnectionString();
