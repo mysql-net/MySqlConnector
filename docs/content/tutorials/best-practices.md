@@ -1,5 +1,5 @@
 ---
-lastmod: 2019-06-30
+lastmod: 2020-02-08
 date: 2016-10-16
 menu:
   main:
@@ -25,6 +25,24 @@ As a corollary to the above, avoid explicitly using `TINYINT(1)`. If you need a 
 use `TINYINT` (or `TINYINT UNSIGNED`). The `(1)` suffix simply indicates the "display width"
 (which is typically ignored by .NET programs), not the number of bytes used for storage. (And
 for a `bool` C# value, use `BOOL` in SQL.)
+
+## Avoid FLOAT
+
+MySQL stores `FLOAT` values as 32-bit single-precision IEEE 754 values. However, when returning
+these values to a client application, "MySQL uses the `FLT_DIG` constant (which equals to 6 with
+IEEE 754 encoding) to print float-type numbers". This can lead to an apparent loss of precision in
+the least-significant digit when selecting values (even though they're stored with full precision).
+
+Do not use a `FLOAT` column if your application needs to retrieve the exact same values that were
+stored (with no loss of precision). You can instead use the `DOUBLE` column type (although it has
+double the storage requirements), perform a calculation on the value (e.g., `SELECT value+0`)
+to coerce it to double-precison (using the original `float` value), or use a prepared statement
+(i.e., `MySqlCommand.Prepare`) which uses a binary protocol to retrieve the original value.
+
+References:
+
+* [MySQL bug 87794](https://bugs.mysql.com/bug.php?id=87794)
+* [StackOverflow answer](https://stackoverflow.com/a/60084985/23633)
 
 ## Asynchronous Operation
 
