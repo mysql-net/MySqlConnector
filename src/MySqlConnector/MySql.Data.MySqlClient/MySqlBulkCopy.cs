@@ -26,6 +26,20 @@ namespace MySql.Data.MySqlClient
 
 		public string? DestinationTableName { get; set; }
 
+		/// <summary>
+		/// Defines the number of rows to be processed before generating a notification event.
+		/// </summary>
+		public int NotifyAfter { get; set; }
+
+		/// <summary>
+		/// Occurs every time that the number of rows specified by the <see cref="NotifyAfter"/> property have been processed,
+		/// and once after all rows have been copied (if <see cref="NotifyAfter"/> is non-zero).
+		/// </summary>
+		/// <remarks>
+		/// Receipt of a RowsCopied event does not imply that any rows have been sent to the server or committed.
+		/// </remarks>
+		public event MySqlRowsCopiedEventHandler? RowsCopied;
+
 #if !NETSTANDARD1_3
 		public void WriteToServer(DataTable dataTable)
 		{
@@ -167,6 +181,12 @@ namespace MySql.Data.MySqlClient
 			var buffer = ArrayPool<byte>.Shared.Rent(maxLength + 1);
 			var outputIndex = 0;
 
+			// allocate a reusable MySqlRowsCopiedEventArgs if event notification is necessary
+			var rowsCopied = 0;
+			MySqlRowsCopiedEventArgs? eventArgs = null;
+			if (NotifyAfter > 0 && RowsCopied is object)
+				eventArgs = new MySqlRowsCopiedEventArgs();
+
 			try
 			{
 				var values = new object?[m_valuesEnumerator!.FieldCount];
@@ -210,13 +230,29 @@ namespace MySql.Data.MySqlClient
 					else
 					{
 						buffer[outputIndex++] = (byte) '\n';
+
+						rowsCopied++;
+						if (eventArgs is object && rowsCopied % NotifyAfter == 0)
+						{
+							eventArgs.RowsCopied = rowsCopied;
+							RowsCopied!(this, eventArgs);
+							if (eventArgs.Abort)
+								break;
+						}
 					}
 				}
 
-				if (outputIndex != 0)
+				if (outputIndex != 0 && !(eventArgs?.Abort ?? false))
 				{
 					var payload2 = new PayloadData(new ArraySegment<byte>(buffer, 0, outputIndex));
 					await m_connection.Session.SendReplyAsync(payload2, ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
+
+				// send final RowsCopied event (if it wasn't already sent)
+				if (eventArgs is object && rowsCopied % NotifyAfter != 0)
+				{
+					eventArgs.RowsCopied = rowsCopied;
+					RowsCopied!(this, eventArgs);
 				}
 			}
 			finally

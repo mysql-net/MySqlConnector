@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -500,6 +501,92 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 				DestinationTableName = "bulk_load_data_table",
 			};
 			await Assert.ThrowsAsync<MySqlException>(async () => await bulkCopy.WriteToServerAsync(dataTable));
+		}
+
+		[Theory]
+		[InlineData(0, 15, 0, 0)]
+		[InlineData(5, 15, 3, 15)]
+		[InlineData(5, 16, 4, 16)]
+		[InlineData(int.MaxValue, 15, 1, 15)]
+		public async Task BulkCopyNotifyAfter(int notifyAfter, int rowCount, int expectedEventCount, int expectedRowsCopied)
+		{
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			await connection.OpenAsync();
+			using (var cmd = new MySqlCommand(@"drop table if exists bulk_copy_notify_after;
+				create table bulk_copy_notify_after(value int);", connection))
+			{
+				await cmd.ExecuteNonQueryAsync();
+			}
+
+			var bulkCopy = new MySqlBulkCopy(connection)
+			{
+				NotifyAfter = notifyAfter,
+				DestinationTableName = "bulk_copy_notify_after",
+			};
+			int eventCount = 0;
+			long rowsCopied = 0;
+			bulkCopy.RowsCopied += (s, e) =>
+			{
+				eventCount++;
+				rowsCopied = e.RowsCopied;
+			};
+
+			var dataTable = new DataTable()
+			{
+				Columns = { new DataColumn("value", typeof(int)) },
+			};
+			foreach (var x in Enumerable.Range(1, rowCount))
+				dataTable.Rows.Add(new object[] { x });
+
+			await bulkCopy.WriteToServerAsync(dataTable);
+			Assert.Equal(expectedEventCount, eventCount);
+			Assert.Equal(expectedRowsCopied, rowsCopied);
+		}
+
+		[Theory]
+		[InlineData(0, 40, 0, 0, 0, 40)]
+		[InlineData(5, 40, 15, 3, 15, 0)]
+		[InlineData(5, 40, 20, 4, 20, 16)]
+		[InlineData(int.MaxValue, 20, 0, 1, 20, 20)]
+		public async Task BulkCopyAbort(int notifyAfter, int rowCount, int abortAfter, int expectedEventCount, int expectedRowsCopied, long expectedCount)
+		{
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			await connection.OpenAsync();
+			using (var cmd = new MySqlCommand(@"drop table if exists bulk_copy_abort;
+				create table bulk_copy_abort(value longtext);", connection))
+			{
+				await cmd.ExecuteNonQueryAsync();
+			}
+
+			var bulkCopy = new MySqlBulkCopy(connection)
+			{
+				NotifyAfter = notifyAfter,
+				DestinationTableName = "bulk_copy_abort",
+			};
+			int eventCount = 0;
+			long rowsCopied = 0;
+			bulkCopy.RowsCopied += (s, e) =>
+			{
+				eventCount++;
+				rowsCopied = e.RowsCopied;
+				if (e.RowsCopied >= abortAfter)
+					e.Abort = true;
+			};
+
+			var dataTable = new DataTable()
+			{
+				Columns = { new DataColumn("value", typeof(string)) },
+			};
+			var str = new string('a', 1_000_000);
+			foreach (var x in Enumerable.Range(1, rowCount))
+				dataTable.Rows.Add(new object[] { str });
+
+			await bulkCopy.WriteToServerAsync(dataTable);
+			Assert.Equal(expectedEventCount, eventCount);
+			Assert.Equal(expectedRowsCopied, rowsCopied);
+
+			using (var cmd = new MySqlCommand("select count(value) from bulk_copy_abort;", connection))
+				Assert.Equal(expectedCount, await cmd.ExecuteScalarAsync());
 		}
 #endif
 
