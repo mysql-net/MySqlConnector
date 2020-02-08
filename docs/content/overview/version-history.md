@@ -11,6 +11,15 @@ weight: 30
 Version History
 ===============
 
+### 0.62.0 Beta 7
+
+* Implement `MySqlBulkCopy.RowsCopied` and `NotifyAfter`: [#769](https://github.com/mysql-net/MySqlConnector/issues/769).
+* Fix `KeyNotFoundException` in `GetAndRemoveStream`: [#757](https://github.com/mysql-net/MySqlConnector/issues/757).
+* Fix unescaped SQL in `MySqlBulkLoader`: [#759](https://github.com/mysql-net/MySqlConnector/issues/759).
+* Throw better exception for invalid connection string values: [#763](https://github.com/mysql-net/MySqlConnector/issues/763).
+* Reduce `ObjectDisposedExceptions` thrown from `MySqlCommand`.
+* Send shorter connector version to server: [#765](https://github.com/mysql-net/MySqlConnector/issues/765).
+
 ### 0.62.0 Beta 6
 
 * Remove `MySqlBatchCommand.AllowUserVariables` internal.
