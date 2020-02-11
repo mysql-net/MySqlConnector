@@ -81,37 +81,32 @@ namespace MySqlConnector.Core
 							var source = hasSourcePrefix ?
 								MySqlBulkLoader.GetAndRemoveSource(localInfile.FileName) :
 								File.OpenRead(localInfile.FileName);
-
-							IDisposable? disposable = null;
-							byte[]? buffer = null;
-							try
+							switch (source)
 							{
-								switch (source)
+							case Stream stream:
+								var buffer = ArrayPool<byte>.Shared.Rent(1048576);
+								try
 								{
-								case Stream stream:
-									disposable = stream;
-									buffer = ArrayPool<byte>.Shared.Rent(1048576);
 									int byteCount;
 									while ((byteCount = await stream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
 									{
 										payload = new PayloadData(new ArraySegment<byte>(buffer, 0, byteCount));
 										await Session.SendReplyAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
 									}
-									break;
-
-								case MySqlBulkCopy bulkCopy:
-									await bulkCopy.SendDataReaderAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-									break;
-
-								default:
-									throw new InvalidOperationException("Unsupported Source type: {0}".FormatInvariant(source.GetType().Name));
 								}
-							}
-							finally
-							{
-								if (buffer is object)
+								finally
+								{
 									ArrayPool<byte>.Shared.Return(buffer);
-								disposable?.Dispose();
+									stream.Dispose();
+								}
+								break;
+
+							case MySqlBulkCopy bulkCopy:
+								await bulkCopy.SendDataReaderAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+								break;
+
+							default:
+								throw new InvalidOperationException("Unsupported Source type: {0}".FormatInvariant(source.GetType().Name));
 							}
 						}
 						catch (Exception ex)
