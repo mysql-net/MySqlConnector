@@ -1,5 +1,5 @@
 ---
-lastmod: 2019-10-18
+lastmod: 2020-02-29
 date: 2017-03-27
 menu:
   main:
@@ -11,43 +11,20 @@ weight: 30
 Version History
 ===============
 
-### 0.62.0 Beta 7
+### 0.62.0
 
-* Implement `MySqlBulkCopy.RowsCopied` and `NotifyAfter`: [#769](https://github.com/mysql-net/MySqlConnector/issues/769).
-* Fix `KeyNotFoundException` in `GetAndRemoveStream`: [#757](https://github.com/mysql-net/MySqlConnector/issues/757).
-* Fix unescaped SQL in `MySqlBulkLoader`: [#759](https://github.com/mysql-net/MySqlConnector/issues/759).
-* Throw better exception for invalid connection string values: [#763](https://github.com/mysql-net/MySqlConnector/issues/763).
-* Reduce `ObjectDisposedExceptions` thrown from `MySqlCommand`.
-* Send shorter connector version to server: [#765](https://github.com/mysql-net/MySqlConnector/issues/765).
-
-### 0.62.0 Beta 6
-
-* Remove `MySqlBatchCommand.AllowUserVariables` internal.
-* Fix exception in `MySqlBulkCopy` when a `string` value crossed a packet boundary.
-* Remove properties from `MySqlConnectionStringBuilder` when they're set to `null`: [#749](https://github.com/mysql-net/MySqlConnector/issues/749).
-
-### 0.62.0 Beta 5
-
+* **Experimental** Add new `MySqlBulkCopy` class for efficiently loading a table from a `DataTable` or `IDataReader`: [#737](https://github.com/mysql-net/MySqlConnector/issues/737)
+  * Known issue: individual data values larger than 16MiB cannot be sent.
 * Improve nullability annotations.
   * `MySqlCommand.CommandText` defaults to the empty string: [#743](https://github.com/mysql-net/MySqlConnector/issues/743).
-  * Return empty schema when there is no result set: [#744](https://github.com/mysql-net/MySqlConnector/issues/744).
-* Set TCP Keepalive for all operating systems: [#746](https://github.com/mysql-net/MySqlConnector/issues/746).
-
-### 0.62.0 Beta 4
-
+  * **Breaking** Return empty schema when there is no result set: [#744](https://github.com/mysql-net/MySqlConnector/issues/744).
 * Optimize `MySqlDataReader.GetInt32`: [#725](https://github.com/mysql-net/MySqlConnector/pull/725).
-
-### 0.62.0 Beta 3
-
-* Fix string encoding bugs in `MySqlBulkCopy`.
-
-### 0.62.0 Beta 2
-
-* Fix `InvalidOperationException` in `MySqlBulkCopy`.
-
-### 0.62.0 Beta 1
-
-* **Experimental** Add new `MySqlBulkCopy` class for efficiently loading a table from a `DataTable` or `IDataReader`.
+* Set TCP Keepalive for all operating systems: [#746](https://github.com/mysql-net/MySqlConnector/issues/746).
+* Remove properties from `MySqlConnectionStringBuilder` when they're set to `null`: [#749](https://github.com/mysql-net/MySqlConnector/issues/749).
+* Send shorter connector version to server: [#765](https://github.com/mysql-net/MySqlConnector/issues/765).
+* Throw better exception for invalid connection string values: [#763](https://github.com/mysql-net/MySqlConnector/issues/763).
+* Fix `KeyNotFoundException` in `GetAndRemoveStream`: [#757](https://github.com/mysql-net/MySqlConnector/issues/757).
+* Reduce `ObjectDisposedExceptions` thrown from `MySqlCommand`.
 
 ### 0.61.0
 
