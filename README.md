@@ -25,7 +25,7 @@ This library outperforms Connector/NET (`MySql.Data`) on benchmarks:
 
 ### Bug Fixes
 
-This library [fixes dozens of outstanding bugs](https://mysqlconnector.net/tutorials/migrating-from-connector-net/#bugs-present-in-connector-net-that-are-fixed-in-mysqlconnector) in Connector/NET.
+This library [fixes dozens of outstanding bugs](https://mysqlconnector.net/tutorials/migrating-from-connector-net/#fixed-bugs) in Connector/NET.
 
 ### License
 
