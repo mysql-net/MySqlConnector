@@ -140,7 +140,7 @@ jobs:
         unsupportedFeatures: 'Ed25519,CachingSha2Password,Tls13,UuidToBin'
       'MySQL 8.0':
         image: 'mysql:8.0'
-        unsupportedFeatures: 'Ed25519,Tls13'
+        unsupportedFeatures: 'Ed25519'
       'Percona 5.7':
         image: 'percona:5.7.22'
         unsupportedFeatures: 'CachingSha2Password,Ed25519,Tls13,UuidToBin'
