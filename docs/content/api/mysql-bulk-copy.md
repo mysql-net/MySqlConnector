@@ -17,8 +17,11 @@ for SQL Server.
 Due to [security features](../troubleshooting/load-data-local-infile/) in MySQL Server, the connection string
 **must** have `AllowLoadLocalInfile=true` in order to use this class.
 
+`MySqlBulkCopy` currently requires that the source data (`DataTable` or `IDataReader`) contain all
+the columns of the destination table in the same order.
+
 **Note:** This API is a unique feature of MySqlConnector; you must [switch to MySqlConnector](../../overview/installing/)
-in order to use it. It is supported in version 0.62.0-beta6 and later.
+in order to use it. It is supported in version 0.62.0 and later.
 
 ## Example Code
 
