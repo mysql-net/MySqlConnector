@@ -13,6 +13,7 @@ namespace SideBySide
 		{
 			m_database = database;
 			m_connection = m_database.Connection;
+			m_connection.Execute("delete from transactions_test");
 		}
 
 		[Fact]
@@ -27,7 +28,6 @@ namespace SideBySide
 		[Fact]
 		public void Commit()
 		{
-			m_connection.Execute("delete from transactions_test");
 			using (var trans = m_connection.BeginTransaction())
 			{
 				m_connection.Execute("insert into transactions_test values(1), (2)", transaction: trans);
@@ -41,7 +41,6 @@ namespace SideBySide
 		public void DbConnectionCommit()
 		{
 			DbConnection connection = m_connection;
-			connection.Execute("delete from transactions_test");
 			using (var trans = connection.BeginTransaction())
 			{
 				connection.Execute("insert into transactions_test values(1), (2)", transaction: trans);
@@ -55,7 +54,6 @@ namespace SideBySide
 		[Fact]
 		public async Task CommitAsync()
 		{
-			await m_connection.ExecuteAsync("delete from transactions_test").ConfigureAwait(false);
 			using (var trans = await m_connection.BeginTransactionAsync().ConfigureAwait(false))
 			{
 				await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
@@ -68,7 +66,6 @@ namespace SideBySide
 		[Fact]
 		public async Task CommitDisposeAsync()
 		{
-			await m_connection.ExecuteAsync("delete from transactions_test").ConfigureAwait(false);
 			MySqlTransaction trans = null;
 			try
 			{
@@ -89,7 +86,6 @@ namespace SideBySide
 		public async Task DbConnectionCommitAsync()
 		{
 			DbConnection connection = m_connection;
-			await connection.ExecuteAsync("delete from transactions_test").ConfigureAwait(false);
 			using (var trans = await connection.BeginTransactionAsync().ConfigureAwait(false))
 			{
 				await connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
@@ -104,7 +100,6 @@ namespace SideBySide
 		[Fact]
 		public void Rollback()
 		{
-			m_connection.Execute("delete from transactions_test");
 			using (var trans = m_connection.BeginTransaction())
 			{
 				m_connection.Execute("insert into transactions_test values(1), (2)", transaction: trans);
@@ -118,7 +113,6 @@ namespace SideBySide
 		public void DbConnectionRollback()
 		{
 			DbConnection connection = m_connection;
-			connection.Execute("delete from transactions_test");
 			using (var trans = connection.BeginTransaction())
 			{
 				connection.Execute("insert into transactions_test values(1), (2)", transaction: trans);
@@ -132,7 +126,6 @@ namespace SideBySide
 		[Fact]
 		public async Task RollbackAsync()
 		{
-			await m_connection.ExecuteAsync("delete from transactions_test").ConfigureAwait(false);
 			using (var trans = await m_connection.BeginTransactionAsync().ConfigureAwait(false))
 			{
 				await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
@@ -145,7 +138,6 @@ namespace SideBySide
 		[Fact]
 		public async Task RollbackDisposeAsync()
 		{
-			await m_connection.ExecuteAsync("delete from transactions_test").ConfigureAwait(false);
 			MySqlTransaction trans = null;
 			try
 			{
@@ -166,7 +158,6 @@ namespace SideBySide
 		public async Task DbConnectionRollbackAsync()
 		{
 			DbConnection connection = m_connection;
-			await connection.ExecuteAsync("delete from transactions_test").ConfigureAwait(false);
 			using (var trans = await connection.BeginTransactionAsync().ConfigureAwait(false))
 			{
 				await connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans).ConfigureAwait(false);
@@ -181,7 +172,6 @@ namespace SideBySide
 		[Fact]
 		public void NoCommit()
 		{
-			m_connection.Execute("delete from transactions_test");
 			using (var trans = m_connection.BeginTransaction())
 			{
 				m_connection.Execute("insert into transactions_test values(1), (2)", transaction: trans);
@@ -194,7 +184,6 @@ namespace SideBySide
 		[Fact]
 		public async Task DisposeAsync()
 		{
-			await m_connection.ExecuteAsync("delete from transactions_test").ConfigureAwait(false);
 			MySqlTransaction trans = null;
 			try
 			{
