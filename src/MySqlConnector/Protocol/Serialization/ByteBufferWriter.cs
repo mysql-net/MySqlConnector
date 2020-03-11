@@ -104,7 +104,7 @@ namespace MySqlConnector.Protocol.Serialization
 		public void Write(string value)
 		{
 			Debug.Assert(value is object, "value is object");
-			if (value.Length == 0)
+			if (value!.Length == 0)
 				return;
 
 			var byteCount = Encoding.UTF8.GetByteCount(value);
