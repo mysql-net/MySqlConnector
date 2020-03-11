@@ -182,6 +182,125 @@ namespace SideBySide
 
 #if !BASELINE
 		[Fact]
+		public void SavepointNullName()
+		{
+			using var transaction = m_connection.BeginTransaction();
+			Assert.Throws<ArgumentNullException>("savepointName", () => transaction.Save(null));
+			Assert.Throws<ArgumentNullException>("savepointName", () => transaction.Release(null));
+			Assert.Throws<ArgumentNullException>("savepointName", () => transaction.Rollback(null));
+		}
+
+		[Fact]
+		public void SavepointEmptyName()
+		{
+			using var transaction = m_connection.BeginTransaction();
+			Assert.Throws<ArgumentException>("savepointName", () => transaction.Save(""));
+			Assert.Throws<ArgumentException>("savepointName", () => transaction.Release(""));
+			Assert.Throws<ArgumentException>("savepointName", () => transaction.Rollback(""));
+		}
+
+		[Fact]
+		public void SavepointRollbackUnknownName()
+		{
+			using var transaction = m_connection.BeginTransaction();
+			try
+			{
+				transaction.Rollback("a");
+				Assert.True(false);
+			}
+			catch (MySqlException ex)
+			{
+				Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode) ex.Number);
+			}
+		}
+
+		[Fact]
+		public void SavepointReleaseUnknownName()
+		{
+			using var transaction = m_connection.BeginTransaction();
+			try
+			{
+				transaction.Release("a");
+				Assert.True(false);
+			}
+			catch (MySqlException ex)
+			{
+				Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode) ex.Number);
+			}
+		}
+
+		[Fact]
+		public void SavepointRollbackReleasedName()
+		{
+			using var transaction = m_connection.BeginTransaction();
+			transaction.Save("a");
+			transaction.Release("a");
+			try
+			{
+				transaction.Rollback("a");
+				Assert.True(false);
+			}
+			catch (MySqlException ex)
+			{
+				Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode) ex.Number);
+			}
+		}
+
+		[Fact]
+		public void RollbackSavepoint()
+		{
+			using (var trans = m_connection.BeginTransaction())
+			{
+				m_connection.Execute("insert into transactions_test values(1), (2)", transaction: trans);
+				trans.Save("a");
+				m_connection.Execute("insert into transactions_test values(3), (4)", transaction: trans);
+				trans.Save("b");
+				m_connection.Execute("insert into transactions_test values(5), (6)", transaction: trans);
+				trans.Rollback("a");
+				trans.Commit();
+			}
+			var results = m_connection.Query<int>(@"select value from transactions_test order by value;");
+			Assert.Equal(new int[] { 1, 2 }, results);
+		}
+
+		[Fact]
+		public async Task RollbackSavepointAsync()
+		{
+			using (var trans = await m_connection.BeginTransactionAsync())
+			{
+				await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans);
+				await trans.SaveAsync("a");
+				await m_connection.ExecuteAsync("insert into transactions_test values(3), (4)", transaction: trans);
+				await trans.SaveAsync("b");
+				await m_connection.ExecuteAsync("insert into transactions_test values(5), (6)", transaction: trans);
+				await trans.RollbackAsync("a");
+				await trans.CommitAsync();
+			}
+			var results = await m_connection.QueryAsync<int>(@"select value from transactions_test order by value;");
+			Assert.Equal(new int[] { 1, 2 }, results);
+		}
+
+		[Fact]
+		public void SavepointRolledBackTransaction()
+		{
+			using (var transaction = m_connection.BeginTransaction())
+			{
+				transaction.Rollback();
+				Assert.Throws<InvalidOperationException>(() => transaction.Save("a"));
+			}
+		}
+
+		[Fact]
+		public void SavepointCommittedTransaction()
+		{
+			using (var transaction = m_connection.BeginTransaction())
+			{
+				transaction.Commit();
+				Assert.Throws<InvalidOperationException>(() => transaction.Save("a"));
+			}
+		}
+
+		[Fact]
 		public async Task DisposeAsync()
 		{
 			MySqlTransaction trans = null;
