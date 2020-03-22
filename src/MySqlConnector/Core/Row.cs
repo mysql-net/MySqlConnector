@@ -195,6 +195,8 @@ namespace MySqlConnector.Core
 				return checked((short) (ulong) value);
 			if (value is decimal)
 				return (short) (decimal) value;
+			if (value is bool)
+				return (bool) value ? (short) 1 : (short) 0;
 			return (short) value;
 		}
 
@@ -207,7 +209,7 @@ namespace MySqlConnector.Core
 				throw new InvalidCastException();
 
 			var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
-			if ((columnDefinition.ColumnType != ColumnType.Tiny &&
+			if (columnDefinition.ColumnType != ColumnType.Tiny &&
 				columnDefinition.ColumnType != ColumnType.Short &&
 				columnDefinition.ColumnType != ColumnType.Int24 &&
 				columnDefinition.ColumnType != ColumnType.Long &&
@@ -215,8 +217,7 @@ namespace MySqlConnector.Core
 				columnDefinition.ColumnType != ColumnType.Bit &&
 				columnDefinition.ColumnType != ColumnType.Year &&
 				columnDefinition.ColumnType != ColumnType.Decimal &&
-				columnDefinition.ColumnType != ColumnType.NewDecimal) ||
-				(columnDefinition.ColumnType == ColumnType.Tiny && Connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1 && (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) == 0))
+				columnDefinition.ColumnType != ColumnType.NewDecimal)
 			{
 				throw new InvalidCastException("Can't convert {0} to Int32".FormatInvariant(ResultSet.ColumnTypes![ordinal]));
 			}
@@ -252,6 +253,8 @@ namespace MySqlConnector.Core
 				return checked((long) (ulong) value);
 			if (value is decimal)
 				return (long) (decimal) value;
+			if (value is bool)
+				return (bool)value ? 1 : 0;
 			return (long) value;
 		}
 
@@ -277,6 +280,8 @@ namespace MySqlConnector.Core
 				return checked((ushort) (ulong) value);
 			if (value is decimal)
 				return (ushort) (decimal) value;
+			if (value is bool)
+				return (bool) value ? (ushort) 1 : (ushort) 0;
 			return (ushort) value;
 		}
 
@@ -302,6 +307,8 @@ namespace MySqlConnector.Core
 				return checked((uint) (ulong) value);
 			if (value is decimal)
 				return (uint) (decimal) value;
+			if (value is bool)
+				return (bool) value ? (uint) 1 : (uint) 0;
 			return (uint) value;
 		}
 
@@ -327,6 +334,8 @@ namespace MySqlConnector.Core
 				return checked((ulong) (long) value);
 			if (value is decimal)
 				return (ulong) (decimal) value;
+			if (value is bool)
+				return (bool) value ? (ulong) 1 : (ulong) 0;
 			return (ulong) value;
 		}
 
