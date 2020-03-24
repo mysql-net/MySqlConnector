@@ -350,7 +350,13 @@ namespace MySqlConnector.Core
 
 		public string GetString(int ordinal) => (string) GetValue(ordinal);
 
-		public decimal GetDecimal(int ordinal) => (decimal) GetValue(ordinal);
+		public decimal GetDecimal(int ordinal)
+		{
+			var value = GetValue(ordinal);
+			return value is float floatValue ? (decimal) floatValue :
+				value is double decimalValue ? (decimal) decimalValue :
+				(decimal) value;
+		}
 
 		public double GetDouble(int ordinal)
 		{
