@@ -159,6 +159,24 @@ namespace Conformance.Tests
 		public override void GetDateTime_for_minimum_DateTime() => TestGetValue(DbType.Date, ValueKind.Minimum, x => x.GetDateTime(0), new DateTime(1000, 1, 1));
 		public override void GetDateTime_for_minimum_DateTime_with_GetFieldValue() => TestGetValue(DbType.Date, ValueKind.Minimum, x => x.GetDateTime(0), new DateTime(1000, 1, 1));
 
+		// GetDecimal() allows conversions from float/double
+		public override void GetDecimal_throws_for_zero_Single() => TestGetValue(DbType.Single, ValueKind.Zero, x => x.GetDecimal(0), 0m);
+		public override void GetDecimal_throws_for_zero_Single_with_GetFieldValue() => TestGetValue(DbType.Single, ValueKind.Zero, x => x.GetDecimal(0), 0m);
+		public override void GetDecimal_throws_for_one_Single() => TestGetValue(DbType.Single, ValueKind.One, x => x.GetDecimal(0), 1m);
+		public override void GetDecimal_throws_for_one_Single_with_GetFieldValue() => TestGetValue(DbType.Single, ValueKind.One, x => x.GetDecimal(0), 1m);
+		public override void GetDecimal_throws_for_minimum_Single() => TestGetValue(DbType.Single, ValueKind.Minimum, x => x.GetDecimal(0), 0m);
+		public override void GetDecimal_throws_for_minimum_Single_with_GetFieldValue() => TestGetValue(DbType.Single, ValueKind.Minimum, x => x.GetDecimal(0), 0m);
+		public override void GetDecimal_throws_for_maximum_Single() => TestException(DbType.Single, ValueKind.Maximum, x => x.GetDecimal(0), typeof(OverflowException));
+		public override void GetDecimal_throws_for_maximum_Single_with_GetFieldValue() => TestException(DbType.Single, ValueKind.Maximum, x => x.GetDecimal(0), typeof(OverflowException));
+		public override void GetDecimal_throws_for_zero_Double() => TestGetValue(DbType.Double, ValueKind.Zero, x => x.GetDecimal(0), 0m);
+		public override void GetDecimal_throws_for_zero_Double_with_GetFieldValue() => TestGetValue(DbType.Double, ValueKind.Zero, x => x.GetDecimal(0), 0m);
+		public override void GetDecimal_throws_for_one_Double() => TestGetValue(DbType.Double, ValueKind.One, x => x.GetDecimal(0), 1m);
+		public override void GetDecimal_throws_for_one_Double_with_GetFieldValue() => TestGetValue(DbType.Double, ValueKind.One, x => x.GetDecimal(0), 1m);
+		public override void GetDecimal_throws_for_minimum_Double() => TestGetValue(DbType.Double, ValueKind.Minimum, x => x.GetDecimal(0), 0m);
+		public override void GetDecimal_throws_for_minimum_Double_with_GetFieldValue() => TestGetValue(DbType.Double, ValueKind.Minimum, x => x.GetDecimal(0), 0m);
+		public override void GetDecimal_throws_for_maximum_Double() => TestException(DbType.Double, ValueKind.Maximum, x => x.GetDecimal(0), typeof(OverflowException));
+		public override void GetDecimal_throws_for_maximum_Double_with_GetFieldValue() => TestException(DbType.Double, ValueKind.Maximum, x => x.GetDecimal(0), typeof(OverflowException));
+
 		// The GetFloat() implementation allows for conversions from double to float.
 		// The minimum tests for float and double do not test for the smallest possible value (as the tests for integer values do),
 		// but test for the largest value smaller than 0 (Epsilon).
