@@ -6,10 +6,12 @@ command = "hugo --gc --minify -v"
 [[redirects]]
 from = "/home/"
 to = "/"
+force = true
 
 [[redirects]]
 from = "/index.html"
 to = "/"
+force = true
 
 [[redirects]]
 from = "/:category/index.html"
@@ -25,28 +27,34 @@ force = true
 from = "/api/"
 to = "/"
 status = 302
+force = true
 
 [[redirects]]
 from = "/groups/"
 to = "/"
 status = 302
+force = true
 
 [[redirects]]
 from = "/overview/"
 to = "/"
 status = 302
+force = true
 
 [[redirects]]
 from = "/tags/"
 to = "/"
 status = 302
+force = true
 
 [[redirects]]
 from = "/troubleshooting/"
 to = "/"
 status = 302
+force = true
 
 [[redirects]]
 from = "/tutorials/"
 to = "/"
 status = 302
+force = true
