@@ -353,22 +353,38 @@ namespace MySqlConnector.Core
 		public decimal GetDecimal(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			return value is float floatValue ? (decimal) floatValue :
-				value is double decimalValue ? (decimal) decimalValue :
-				(decimal) value;
+			if (value is decimal) // happy flow
+				return (decimal) value;
+
+			if (value is double doubleValue)
+				return (decimal) doubleValue;
+
+			if (value is float floatValue)
+				return (decimal) floatValue;
+
+			return (decimal) value;
 		}
 
 		public double GetDouble(int ordinal)
 		{
 			var value = GetValue(ordinal);
-			return value is float floatValue ? floatValue :
-				value is decimal decimalValue ? (double) decimalValue :
-				(double) value;
+			if (value is double) // happy flow
+				return (double) value;
+
+			if (value is float floatValue)
+				return floatValue;
+
+			if (value is decimal decimalValue)
+				return (double) decimalValue;
+
+			return (double) value;
 		}
 
 		public float GetFloat(int ordinal)
 		{
 			var value = GetValue(ordinal);
+			if (value is float) // happy flow
+				return (float) value;
 
 			// Loss of precision is expected, significant loss of information is not.
 			// Use explicit range checks to guard against that.
