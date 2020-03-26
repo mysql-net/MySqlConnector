@@ -11,6 +11,15 @@ weight: 30
 Version History
 ===============
 
+### 0.63.0
+
+* **Experimental** Add new transaction savepoint API (from .NET 5): [#775](https://github.com/mysql-net/MySqlConnector/issues/775).
+* Allow `TINYINT(1)` (`BOOL`) columns to be read using `MySqlDataReader.GetInt32`, `GetInt16`, `GetByte`, etc. when `TreatTinyAsBoolean=true`: [#782](https://github.com/mysql-net/MySqlConnector/issues/782).
+  * These methods will always return `1` for any non-zero value in the underlying column.
+* Allow `FLOAT` and `DOUBLE` columns to be read using `MySqlDataReader.GetDecimal`: [#785](https://github.com/mysql-net/MySqlConnector/pull/785).
+* Fix connection timeout when server doesn't respond: [#739](https://github.com/mysql-net/MySqlConnector/issues/739).
+* Thanks to [Daniel Cohen Gindi](https://github.com/danielgindi) for contributions to this release.
+
 ### 0.62.0
 
 * **Experimental** Add new `MySqlBulkCopy` class for efficiently loading a table from a `DataTable` or `IDataReader`: [#737](https://github.com/mysql-net/MySqlConnector/issues/737)
