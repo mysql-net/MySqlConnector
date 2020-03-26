@@ -309,7 +309,7 @@ namespace MySqlConnector.Core
 				m_state = State.Closed;
 		}
 
-		public async Task ConnectAsync(ConnectionSettings cs, ILoadBalancer? loadBalancer, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async Task ConnectAsync(ConnectionSettings cs, int startTickCount, ILoadBalancer? loadBalancer, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -349,6 +349,8 @@ namespace MySqlConnector.Core
 					}
 
 					var byteHandler = m_socket is null ? new StreamByteHandler(m_stream!) : (IByteHandler) new SocketByteHandler(m_socket);
+					if (cs.ConnectionTimeout != 0)
+						byteHandler.RemainingTimeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - unchecked(Environment.TickCount - startTickCount));
 					m_payloadHandler = new StandardPayloadHandler(byteHandler);
 
 					payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);

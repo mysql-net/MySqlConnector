@@ -26,6 +26,9 @@ namespace MySqlConnector.Tests
 				using (client)
 				using (var stream = client.GetStream())
 				{
+					if (m_server.BlockOnConnect)
+						Thread.Sleep(TimeSpan.FromSeconds(10));
+
 					await SendAsync(stream, 0, WriteInitialHandshake);
 					await ReadPayloadAsync(stream, token); // handshake response
 

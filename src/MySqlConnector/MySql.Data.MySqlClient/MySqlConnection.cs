@@ -287,6 +287,8 @@ namespace MySql.Data.MySqlClient
 			if (State != ConnectionState.Closed)
 				throw new InvalidOperationException("Cannot Open when State is {0}.".FormatInvariant(State));
 
+			var openStartTickCount = Environment.TickCount;
+
 			SetState(ConnectionState.Connecting);
 
 			var pool = ConnectionPool.GetPool(m_connectionString);
@@ -309,7 +311,7 @@ namespace MySql.Data.MySqlClient
 
 			try
 			{
-				m_session = await CreateSessionAsync(pool, ioBehavior, cancellationToken).ConfigureAwait(false);
+				m_session = await CreateSessionAsync(pool, openStartTickCount, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				m_hasBeenOpened = true;
 				SetState(ConnectionState.Open);
@@ -621,7 +623,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		private async ValueTask<ServerSession> CreateSessionAsync(ConnectionPool? pool, IOBehavior? ioBehavior, CancellationToken cancellationToken)
+		private async ValueTask<ServerSession> CreateSessionAsync(ConnectionPool? pool, int startTickCount, IOBehavior? ioBehavior, CancellationToken cancellationToken)
 		{
 			var connectionSettings = GetInitializedConnectionSettings();
 			var actualIOBehavior = ioBehavior ?? (connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous);
@@ -633,7 +635,7 @@ namespace MySql.Data.MySqlClient
 				// the cancellation token for connection is controlled by 'cancellationToken' (if it can be cancelled), ConnectionTimeout
 				// (from the connection string, if non-zero), or a combination of both
 				if (connectionSettings.ConnectionTimeout != 0)
-					timeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(connectionSettings.ConnectionTimeoutMilliseconds));
+					timeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(Math.Max(1, connectionSettings.ConnectionTimeoutMilliseconds - unchecked(Environment.TickCount - startTickCount))));
 				if (cancellationToken.CanBeCanceled && timeoutSource is object)
 					linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
 				var connectToken = linkedSource?.Token ?? timeoutSource?.Token ?? cancellationToken;
@@ -642,7 +644,7 @@ namespace MySql.Data.MySqlClient
 				if (pool is object)
 				{
 					// this returns an open session
-					return await pool.GetSessionAsync(this, actualIOBehavior, connectToken).ConfigureAwait(false);
+					return await pool.GetSessionAsync(this, startTickCount, actualIOBehavior, connectToken).ConfigureAwait(false);
 				}
 				else
 				{
@@ -653,7 +655,7 @@ namespace MySql.Data.MySqlClient
 					var session = new ServerSession();
 					session.OwningConnection = new WeakReference<MySqlConnection>(this);
 					Log.Info("Created new non-pooled Session{0}", session.Id);
-					await session.ConnectAsync(connectionSettings, loadBalancer, actualIOBehavior, connectToken).ConfigureAwait(false);
+					await session.ConnectAsync(connectionSettings, startTickCount, loadBalancer, actualIOBehavior, connectToken).ConfigureAwait(false);
 					return session;
 				}
 			}
@@ -661,6 +663,10 @@ namespace MySql.Data.MySqlClient
 			{
 				var messageSuffix = (pool?.IsEmpty ?? false) ? " All pooled connections are in use." : "";
 				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired." + messageSuffix, ex);
+			}
+			catch (MySqlException ex) when (timeoutSource?.IsCancellationRequested ?? false)
+			{
+				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
 			}
 			finally
 			{

@@ -184,6 +184,26 @@ namespace MySqlConnector.Tests
 			Assert.Equal(ConnectionState.Closed, connection.State);
 		}
 
+		[Fact]
+		public void ConnectionTimeout()
+		{
+			m_server.BlockOnConnect = true;
+			var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString);
+			csb.ConnectionTimeout = 4;
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			var stopwatch = Stopwatch.StartNew();
+			try
+			{
+				connection.Open();
+				Assert.False(true);
+			}
+			catch (MySqlException ex)
+			{
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 3900, 4100);
+				Assert.Equal(MySqlErrorCode.UnableToConnectToHost, (MySqlErrorCode) ex.Number);
+			}
+		}
+
 		private static async Task WaitForConditionAsync<T>(T expected, Func<T> getValue)
 		{
 			var sw = Stopwatch.StartNew();

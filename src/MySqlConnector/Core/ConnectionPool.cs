@@ -20,7 +20,7 @@ namespace MySqlConnector.Core
 
 		public SslProtocols SslProtocols { get; set; }
 
-		public async ValueTask<ServerSession> GetSessionAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async ValueTask<ServerSession> GetSessionAsync(MySqlConnection connection, int startTickCount, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -108,7 +108,7 @@ namespace MySqlConnector.Core
 				session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 				if (Log.IsInfoEnabled())
 					Log.Info("Pool{0} no pooled session available; created new Session{1}", m_logArguments[0], session.Id);
-				await session.ConnectAsync(ConnectionSettings, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+				await session.ConnectAsync(ConnectionSettings, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
 				AdjustHostConnectionCount(session, 1);
 				session.OwningConnection = new WeakReference<MySqlConnection>(connection);
 				int leasedSessionsCountNew;
@@ -353,7 +353,7 @@ namespace MySqlConnector.Core
 				{
 					var session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 					Log.Info("Pool{0} created Session{1} to reach minimum pool size", m_logArguments[0], session.Id);
-					await session.ConnectAsync(ConnectionSettings, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+					await session.ConnectAsync(ConnectionSettings, Environment.TickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
 					AdjustHostConnectionCount(session, 1);
 					lock (m_sessions)
 						m_sessions.AddFirst(session);

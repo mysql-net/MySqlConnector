@@ -50,6 +50,7 @@ namespace MySqlConnector.Tests
 
 		public bool SuppressAuthPluginNameTerminatingNull { get; set; }
 		public bool SendIncompletePostHandshakeResponse { get; set; }
+		public bool BlockOnConnect { get; set; }
 
 		internal void ClientDisconnected() => Interlocked.Decrement(ref m_activeConnections);
 
