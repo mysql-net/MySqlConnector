@@ -89,6 +89,8 @@ namespace MySqlConnector.Core
 				return checked((sbyte) ulongValue);
 			if (value is decimal decimalValue)
 				return (sbyte) decimalValue;
+			if (value is bool boolValue)
+				return boolValue ? (sbyte) 1 : (sbyte) 0;
 			return (sbyte) value;
 		}
 
@@ -114,6 +116,8 @@ namespace MySqlConnector.Core
 				return checked((byte) ulongValue);
 			if (value is decimal decimalValue)
 				return (byte) decimalValue;
+			if (value is bool boolValue)
+				return boolValue ? (byte) 1 : (byte) 0;
 			return (byte) value;
 		}
 
@@ -226,7 +230,18 @@ namespace MySqlConnector.Core
 
 			if (columnDefinition.ColumnType == ColumnType.Bit)
 				return checked((int) ReadBit(data, columnDefinition));
-			return GetInt32Core(data, columnDefinition);
+
+			var result = GetInt32Core(data, columnDefinition);
+			if (columnDefinition.ColumnType == ColumnType.Tiny &&
+				Connection.TreatTinyAsBoolean &&
+				columnDefinition.ColumnLength == 1 &&
+				(columnDefinition.ColumnFlags & ColumnFlags.Unsigned) == 0 &&
+				result != 0)
+			{
+				// coerce all non-zero TINYINT(1) results to 1, since it represents a BOOL value
+				result = 1;
+			}
+			return result;
 		}
 
 		protected abstract int GetInt32Core(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
@@ -254,7 +269,7 @@ namespace MySqlConnector.Core
 			if (value is decimal)
 				return (long) (decimal) value;
 			if (value is bool)
-				return (bool)value ? 1 : 0;
+				return (bool) value ? 1 : 0;
 			return (long) value;
 		}
 

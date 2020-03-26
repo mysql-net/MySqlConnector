@@ -1214,6 +1214,51 @@ FROM query_bit;", connection);
 			Assert.False(await reader.NextResultAsync());
 		}
 
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		public void GetIntForTinyInt1(bool treatTinyAsBoolean, bool prepare)
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.TreatTinyAsBoolean = treatTinyAsBoolean;
+			csb.IgnorePrepare = false;
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			connection.Open();
+			connection.Execute(@"drop table if exists datatypes_tinyint1;
+create table datatypes_tinyint1(value tinyint(1));
+insert into datatypes_tinyint1(value) values(0), (1), (2), (-1), (-128), (127);");
+
+			using var command = new MySqlCommand("select value from datatypes_tinyint1;", connection);
+			if (prepare)
+				command.Prepare();
+			using var reader = command.ExecuteReader();
+
+			int[] expected = { 0, 1, 2, -1, -128, 127 };
+			if (treatTinyAsBoolean)
+				expected = expected.Select(x => x == 0 ? 0 : 1).ToArray();
+
+			for (int i = 0; i < expected.Length; i++)
+			{
+				Assert.True(reader.Read());
+#if !BASELINE
+				Assert.Equal((sbyte) expected[i], reader.GetSByte(0));
+				if (treatTinyAsBoolean)
+					Assert.Equal((byte) expected[i], reader.GetByte(0));
+#endif
+				Assert.Equal((short) expected[i], reader.GetInt16(0));
+				Assert.Equal(expected[i], reader.GetInt32(0));
+				Assert.Equal((long) expected[i], reader.GetInt64(0));
+#if !BASELINE
+				Assert.Equal(expected[i], reader.GetFieldValue<int>(0));
+#endif
+			}
+
+			Assert.False(reader.Read());
+		}
+
+
 		class BoolTest
 		{
 			public int Id { get; set; }
