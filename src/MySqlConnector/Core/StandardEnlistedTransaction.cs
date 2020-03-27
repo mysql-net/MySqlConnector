@@ -30,8 +30,8 @@ namespace MySqlConnector.Core
 			};
 
 			var consistentSnapshotText = Transaction.IsolationLevel == IsolationLevel.Snapshot ? " with consistent snapshot" : string.Empty;
-			using (var cmd = new MySqlCommand($"set transaction isolation level {isolationLevel}; start transaction{consistentSnapshotText};", Connection))
-				cmd.ExecuteNonQuery();
+			using var cmd = new MySqlCommand($"set transaction isolation level {isolationLevel}; start transaction{consistentSnapshotText};", Connection);
+			cmd.ExecuteNonQuery();
 		}
 
 		protected override void OnPrepare(PreparingEnlistment enlistment)
