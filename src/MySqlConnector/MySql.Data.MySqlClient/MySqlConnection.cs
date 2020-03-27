@@ -31,8 +31,8 @@ namespace MySql.Data.MySqlClient
 			m_connectionString = connectionString ?? "";
 		}
 
-		public new MySqlTransaction BeginTransaction() => (MySqlTransaction)base.BeginTransaction();
-		public new MySqlTransaction BeginTransaction(IsolationLevel isolationLevel) => (MySqlTransaction)base.BeginTransaction(isolationLevel);
+		public new MySqlTransaction BeginTransaction() => (MySqlTransaction) base.BeginTransaction();
+		public new MySqlTransaction BeginTransaction(IsolationLevel isolationLevel) => (MySqlTransaction) base.BeginTransaction(isolationLevel);
 		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => BeginDbTransactionAsync(isolationLevel, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 #if !NETSTANDARD2_1 && !NETCOREAPP3_0
