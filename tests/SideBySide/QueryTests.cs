@@ -1243,6 +1243,7 @@ insert into datatypes_tinyint1(value) values(0), (1), (2), (-1), (-128), (127);"
 			{
 				Assert.True(reader.Read());
 #if !BASELINE
+				// https://bugs.mysql.com/bug.php?id=99091
 				Assert.Equal((sbyte) expected[i], reader.GetSByte(0));
 				if (treatTinyAsBoolean)
 					Assert.Equal((byte) expected[i], reader.GetByte(0));
@@ -1251,13 +1252,13 @@ insert into datatypes_tinyint1(value) values(0), (1), (2), (-1), (-128), (127);"
 				Assert.Equal(expected[i], reader.GetInt32(0));
 				Assert.Equal((long) expected[i], reader.GetInt64(0));
 #if !BASELINE
+				// https://bugs.mysql.com/bug.php?id=99091
 				Assert.Equal(expected[i], reader.GetFieldValue<int>(0));
 #endif
 			}
 
 			Assert.False(reader.Read());
 		}
-
 
 		class BoolTest
 		{
