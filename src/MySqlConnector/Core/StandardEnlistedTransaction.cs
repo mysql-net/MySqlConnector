@@ -29,9 +29,9 @@ namespace MySqlConnector.Core
 				_ => "repeatable read",
 			};
 
-			var cosistentSnapshotText = Transaction.IsolationLevel == IsolationLevel.Snapshot ? " with consistent snapshot" : string.Empty;
-			using var cmd = new MySqlCommand($"set transaction isolation level {isolationLevel}; start transation{cosistentSnapshotText}", Connection);
-			cmd.ExecuteNonQuery();
+			var consistentSnapshotText = Transaction.IsolationLevel == IsolationLevel.Snapshot ? " with consistent snapshot" : string.Empty;
+			using (var cmd = new MySqlCommand($"set transaction isolation level {isolationLevel}; start transaction{consistentSnapshotText};", Connection))
+				cmd.ExecuteNonQuery();
 		}
 
 		protected override void OnPrepare(PreparingEnlistment enlistment)

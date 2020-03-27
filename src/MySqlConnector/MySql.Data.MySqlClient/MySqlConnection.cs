@@ -71,9 +71,9 @@ namespace MySql.Data.MySqlClient
 				_ => throw new NotSupportedException("IsolationLevel.{0} is not supported.".FormatInvariant(isolationLevel))
 			};
 
-			var cosistentSnapshotText = isolationLevel == IsolationLevel.Snapshot ? " with consistent snapshot" : string.Empty;
+			var consistentSnapshotText = isolationLevel == IsolationLevel.Snapshot ? " with consistent snapshot" : string.Empty;
 
-			using (var cmd = new MySqlCommand($"set transaction isolation level {isolationLevelValue}; start transation{cosistentSnapshotText}", this))
+			using (var cmd = new MySqlCommand($"set transaction isolation level {isolationLevelValue}; start transaction{consistentSnapshotText};", this))
 				await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			var transaction = new MySqlTransaction(this, isolationLevel);

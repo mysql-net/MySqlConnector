@@ -1,5 +1,7 @@
 using System;
+using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
@@ -48,6 +50,50 @@ namespace SideBySide
 			}
 			var results = connection.Query<int>(@"select value from transactions_test order by value;");
 			Assert.Equal(new[] { 1, 2 }, results);
+		}
+
+		[Theory]
+		[InlineData(IsolationLevel.ReadUncommitted, "read uncommitted")]
+		[InlineData(IsolationLevel.ReadCommitted, "read committed")]
+		[InlineData(IsolationLevel.RepeatableRead, "repeatable read")]
+		[InlineData(IsolationLevel.Serializable, "serializable")]
+		[InlineData(IsolationLevel.Snapshot, "repeatable read")]
+		[InlineData(IsolationLevel.Unspecified, "repeatable read")]
+		public void DbConnectionIsolationLevel(IsolationLevel inputIsolationLevel, string expectedTransactionIsolationLevel)
+		{
+			DbConnection connection = m_connection;
+			m_connection.Execute(@"set global log_output = 'table';");
+			m_connection.Execute(@"set global general_log = 1;");
+			using (var trans = connection.BeginTransaction(inputIsolationLevel))
+			{
+				trans.Commit();
+			}
+
+			m_connection.Execute(@"set global general_log = 0;");
+			var results = connection.Query<string>(@"select convert(argument USING utf8) from mysql.general_log order by event_time desc limit 4;");
+			Assert.Contains(expectedTransactionIsolationLevel, results.Last());
+		}
+
+		[Theory]
+		[InlineData(IsolationLevel.ReadUncommitted, "start transaction")]
+		[InlineData(IsolationLevel.ReadCommitted, "start transaction")]
+		[InlineData(IsolationLevel.RepeatableRead, "start transaction")]
+		[InlineData(IsolationLevel.Serializable, "start transaction")]
+		[InlineData(IsolationLevel.Unspecified, "start transaction")]
+		[InlineData(IsolationLevel.Snapshot, "start transaction with consistent snapshot")]
+		public void DbConnectionTransactionCommand(IsolationLevel inputIsolationLevel, string expectedTransactionIsolationLevel)
+		{
+			DbConnection connection = m_connection;
+			m_connection.Execute(@"set global log_output = 'table';");
+			m_connection.Execute(@"set global general_log = 1;");
+			using (var trans = connection.BeginTransaction(inputIsolationLevel))
+			{
+				trans.Commit();
+			}
+
+			m_connection.Execute(@"set global general_log = 0;");
+			var results = connection.Query<string>(@"select convert(argument USING utf8) from mysql.general_log order by event_time desc limit 3;");
+			Assert.Equal(expectedTransactionIsolationLevel, results.Last());
 		}
 
 #if !BASELINE
@@ -210,7 +256,7 @@ namespace SideBySide
 			}
 			catch (MySqlException ex)
 			{
-				Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode) ex.Number);
+				Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode)ex.Number);
 			}
 		}
 
@@ -225,7 +271,7 @@ namespace SideBySide
 			}
 			catch (MySqlException ex)
 			{
-				Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode) ex.Number);
+				Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode)ex.Number);
 			}
 		}
 
@@ -242,7 +288,7 @@ namespace SideBySide
 			}
 			catch (MySqlException ex)
 			{
-				Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode) ex.Number);
+				Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode)ex.Number);
 			}
 		}
 
