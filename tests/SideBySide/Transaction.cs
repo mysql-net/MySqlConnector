@@ -57,8 +57,10 @@ namespace SideBySide
 		[InlineData(IsolationLevel.ReadCommitted, "read committed")]
 		[InlineData(IsolationLevel.RepeatableRead, "repeatable read")]
 		[InlineData(IsolationLevel.Serializable, "serializable")]
-		[InlineData(IsolationLevel.Snapshot, "repeatable read")]
 		[InlineData(IsolationLevel.Unspecified, "repeatable read")]
+#if !BASELINE
+		[InlineData(IsolationLevel.Snapshot, "repeatable read")]
+#endif
 		public void DbConnectionIsolationLevel(IsolationLevel inputIsolationLevel, string expectedTransactionIsolationLevel)
 		{
 			DbConnection connection = m_connection;
@@ -75,6 +77,7 @@ namespace SideBySide
 			Assert.Contains(expectedTransactionIsolationLevel.ToLower(), lastIsolationLevelQuery.ToLower());
 		}
 
+#if !BASELINE
 		[Theory]
 		[InlineData(IsolationLevel.ReadUncommitted, "start transaction")]
 		[InlineData(IsolationLevel.ReadCommitted, "start transaction")]
@@ -98,7 +101,6 @@ namespace SideBySide
 			Assert.Equal(expectedTransactionIsolationLevel.ToLower(), lastStartTransactionQuery.ToLower());
 		}
 
-#if !BASELINE
 		[Fact]
 		public async Task CommitAsync()
 		{
