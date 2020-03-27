@@ -31,8 +31,8 @@ namespace MySql.Data.MySqlClient
 			m_connectionString = connectionString ?? "";
 		}
 
-		public new MySqlTransaction BeginTransaction() => (MySqlTransaction) base.BeginTransaction();
-		public new MySqlTransaction BeginTransaction(IsolationLevel isolationLevel) => (MySqlTransaction) base.BeginTransaction(isolationLevel);
+		public new MySqlTransaction BeginTransaction() => (MySqlTransaction)base.BeginTransaction();
+		public new MySqlTransaction BeginTransaction(IsolationLevel isolationLevel) => (MySqlTransaction)base.BeginTransaction(isolationLevel);
 		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => BeginDbTransactionAsync(isolationLevel, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 #if !NETSTANDARD2_1 && !NETCOREAPP3_0
@@ -63,6 +63,7 @@ namespace MySql.Data.MySqlClient
 				IsolationLevel.ReadCommitted => "read committed",
 				IsolationLevel.RepeatableRead => "repeatable read",
 				IsolationLevel.Serializable => "serializable",
+				IsolationLevel.Snapshot => "repeatable read",
 
 				// "In terms of the SQL:1992 transaction isolation levels, the default InnoDB level is REPEATABLE READ." - http://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-model.html
 				IsolationLevel.Unspecified => "repeatable read",
@@ -70,7 +71,9 @@ namespace MySql.Data.MySqlClient
 				_ => throw new NotSupportedException("IsolationLevel.{0} is not supported.".FormatInvariant(isolationLevel))
 			};
 
-			using (var cmd = new MySqlCommand("set transaction isolation level " + isolationLevelValue + "; start transaction;", this))
+			var cosistentSnapshotText = isolationLevel == IsolationLevel.Snapshot ? " with consistent snapshot" : string.Empty;
+
+			using (var cmd = new MySqlCommand($"set transaction isolation level {isolationLevelValue}; start transation{cosistentSnapshotText}", this))
 				await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			var transaction = new MySqlTransaction(this, isolationLevel);
@@ -106,7 +109,7 @@ namespace MySql.Data.MySqlClient
 				else
 				{
 					m_enlistedTransaction = GetInitializedConnectionSettings().UseXaTransactions ?
-						(EnlistedTransactionBase) new XaEnlistedTransaction(transaction, this) :
+						(EnlistedTransactionBase)new XaEnlistedTransaction(transaction, this) :
 						new StandardEnlistedTransaction(transaction, this);
 					m_enlistedTransaction.Start();
 
@@ -255,7 +258,7 @@ namespace MySql.Data.MySqlClient
 			m_session.DatabaseOverride = databaseName;
 		}
 
-		public new MySqlCommand CreateCommand() => (MySqlCommand) base.CreateCommand();
+		public new MySqlCommand CreateCommand() => (MySqlCommand)base.CreateCommand();
 
 		public bool Ping() => PingAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		public Task<bool> PingAsync(CancellationToken cancellationToken = default) => PingAsync(SimpleAsyncIOBehavior, cancellationToken).AsTask();
@@ -402,7 +405,7 @@ namespace MySql.Data.MySqlClient
 		SchemaProvider? m_schemaProvider;
 #endif
 
- 		/// <summary>
+		/// <summary>
 		/// Gets the time (in seconds) to wait while trying to establish a connection
 		/// before terminating the attempt and generating an error. This value
 		/// is controlled by <see cref="MySqlConnectionStringBuilder.ConnectionTimeout"/>,
@@ -664,7 +667,7 @@ namespace MySql.Data.MySqlClient
 				var messageSuffix = (pool?.IsEmpty ?? false) ? " All pooled connections are in use." : "";
 				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired." + messageSuffix, ex);
 			}
-			catch (MySqlException ex) when ((timeoutSource?.IsCancellationRequested ?? false) || ((MySqlErrorCode) ex.Number == MySqlErrorCode.CommandTimeoutExpired))
+			catch (MySqlException ex) when ((timeoutSource?.IsCancellationRequested ?? false) || ((MySqlErrorCode)ex.Number == MySqlErrorCode.CommandTimeoutExpired))
 			{
 				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
 			}
