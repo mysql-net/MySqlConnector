@@ -71,7 +71,7 @@ namespace SideBySide
 
 			m_connection.Execute(@"set global general_log = 0;");
 			var results = connection.Query<string>(@"select convert(argument USING utf8) from mysql.general_log order by event_time desc limit 4;");
-			Assert.Contains(expectedTransactionIsolationLevel, results.Last());
+			Assert.Contains(expectedTransactionIsolationLevel.ToLower(), results.Last().ToLower());
 		}
 
 		[Theory]
@@ -93,7 +93,7 @@ namespace SideBySide
 
 			m_connection.Execute(@"set global general_log = 0;");
 			var results = connection.Query<string>(@"select convert(argument USING utf8) from mysql.general_log order by event_time desc limit 3;");
-			Assert.Equal(expectedTransactionIsolationLevel, results.Last());
+			Assert.Equal(expectedTransactionIsolationLevel.ToLower(), results.Last().ToLower());
 		}
 
 #if !BASELINE
