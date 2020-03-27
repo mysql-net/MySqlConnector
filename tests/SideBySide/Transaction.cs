@@ -71,7 +71,7 @@ namespace SideBySide
 
 			m_connection.Execute(@"set global general_log = 0;");
 			var results = connection.Query<string>($"select convert(argument USING utf8) from mysql.general_log where thread_id = {m_connection.ServerThread} order by event_time desc limit 10;");
-			var lastIsolationLevelQuery = results.First(x => x.ToLower().Contains("set transaction isolation level"));
+			var lastIsolationLevelQuery = results.First(x => x.ToLower().Contains("isolation"));
 			Assert.Contains(expectedTransactionIsolationLevel.ToLower(), lastIsolationLevelQuery.ToLower());
 		}
 
@@ -94,7 +94,7 @@ namespace SideBySide
 
 			m_connection.Execute(@"set global general_log = 0;");
 			var results = connection.Query<string>($"select convert(argument USING utf8) from mysql.general_log where thread_id = {m_connection.ServerThread} order by event_time desc limit 10;");
-			var lastStartTransactionQuery = results.First(x => x.ToLower().Contains("start transaction"));
+			var lastStartTransactionQuery = results.First(x => x.ToLower().Contains("start"));
 			Assert.Equal(expectedTransactionIsolationLevel.ToLower(), lastStartTransactionQuery.ToLower());
 		}
 
