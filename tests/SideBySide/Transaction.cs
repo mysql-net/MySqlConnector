@@ -74,18 +74,24 @@ namespace SideBySide
 			m_connection.Execute(@"set global general_log = 0;");
 			var results = connection.Query<string>($"select convert(argument USING utf8) from mysql.general_log where thread_id = {m_connection.ServerThread} order by event_time desc limit 10;");
 			var lastIsolationLevelQuery = results.First(x => x.ToLower().Contains("isolation"));
+
+			if (IsMySqlAndVersionLessThan57(m_connection.ServerVersion))
+			{
+				Assert.Contains("serializable", lastIsolationLevelQuery.ToLower());
+				return;
+			}
+
 			Assert.Contains(expectedTransactionIsolationLevel.ToLower(), lastIsolationLevelQuery.ToLower());
 		}
 
+#if !BASELINE
 		[Theory]
 		[InlineData(IsolationLevel.ReadUncommitted, "start transaction")]
 		[InlineData(IsolationLevel.ReadCommitted, "start transaction")]
 		[InlineData(IsolationLevel.RepeatableRead, "start transaction")]
 		[InlineData(IsolationLevel.Serializable, "start transaction")]
 		[InlineData(IsolationLevel.Unspecified, "start transaction")]
-#if !BASELINE
 		[InlineData(IsolationLevel.Snapshot, "start transaction with consistent snapshot")]
-#endif
 		public void DbConnectionTransactionCommand(IsolationLevel inputIsolationLevel, string expectedTransactionIsolationLevel)
 		{
 			DbConnection connection = m_connection;
@@ -99,10 +105,16 @@ namespace SideBySide
 			m_connection.Execute(@"set global general_log = 0;");
 			var results = connection.Query<string>($"select convert(argument USING utf8) from mysql.general_log where thread_id = {m_connection.ServerThread} order by event_time desc limit 10;");
 			var lastStartTransactionQuery = results.First(x => x.ToLower().Contains("start"));
+
+			if (IsMySqlAndVersionLessThan57(m_connection.ServerVersion))
+			{
+				Assert.Contains("start transaction", lastStartTransactionQuery.ToLower());
+				return;
+			}
+
 			Assert.Contains(expectedTransactionIsolationLevel.ToLower(), lastStartTransactionQuery.ToLower());
 		}
 
-#if !BASELINE
 		[Fact]
 		public async Task CommitAsync()
 		{
@@ -369,6 +381,20 @@ namespace SideBySide
 			Assert.Equal(new int[0], results);
 		}
 #endif
+
+		private bool IsMySqlAndVersionLessThan57(string currentVersionStr)
+		{
+			var version = new Version("5.7");
+			Version currentVersion = null;
+
+			if (Version.TryParse(currentVersionStr, out currentVersion))
+			{
+				var result = version.CompareTo(currentVersion);
+				return result > 0;
+			}
+
+			return false;
+		}
 
 		readonly TransactionFixture m_database;
 		readonly MySqlConnection m_connection;
