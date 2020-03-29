@@ -348,6 +348,7 @@ namespace MySqlConnector.Core
 					m_state = State.Connecting;
 				}
 
+serverRedirection:
 				// TLS negotiation should automatically fall back to the best version supported by client and server. However,
 				// Windows Schannel clients will fail to connect to a yaSSL-based MySQL Server if TLS 1.2 is requested and
 				// have to use only TLS 1.1: https://github.com/mysql-net/MySqlConnector/pull/101
@@ -462,7 +463,51 @@ namespace MySqlConnector.Core
 					payload = await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 
-				OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+				var ok = OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+				if (ok.StatusInfo is not null && ok.StatusInfo.StartsWith("Location: mysql://", StringComparison.Ordinal))
+				{
+					// server redirection string has the format "Location: mysql://{host}:{port}/user={userId}[&ttl={ttl}]"
+					m_logArguments[1] = ok.StatusInfo;
+					Log.Info("Session{0} has server redirection header {1}", m_logArguments);
+
+					if (cs.IsRedirected)
+					{
+						Log.Info("Session{0} is already redirected; ignoring it.", m_logArguments);
+					}
+					else
+					{
+						var hostIndex = 18;
+						var colonIndex = ok.StatusInfo.IndexOf(':', hostIndex);
+						if (colonIndex != -1)
+						{
+							var host = ok.StatusInfo.Substring(hostIndex, colonIndex - hostIndex);
+							var portIndex = colonIndex + 1;
+							var userIndex = ok.StatusInfo.IndexOf("/user=", StringComparison.Ordinal);
+							if (userIndex != -1)
+							{
+								if (int.TryParse(ok.StatusInfo.Substring(portIndex, userIndex - portIndex), out var port))
+								{
+									var ampersandIndex = ok.StatusInfo.IndexOf('&', userIndex);
+									var userId = ampersandIndex == -1 ? ok.StatusInfo.Substring(userIndex + 6) : ok.StatusInfo.Substring(userIndex + 6, ampersandIndex - userIndex - 6);
+									Log.Info("Session{0} found server redirection Host={1}; Port={2}; User={3}", m_logArguments[0], host, port, userId);
+
+									if (host != cs.HostNames![0] || port != cs.Port || userId != cs.UserID)
+									{
+										Log.Info("Session{0} closing existing connection", m_logArguments);
+										await SendAsync(QuitPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
+										Log.Info("Session{0} opening new connection to Host={1}; Port={2}; User={3}", m_logArguments[0], host, port, userId);
+										cs = cs.CloneWith(host, port, userId, isRedirected: true);
+										goto serverRedirection;
+									}
+									else
+									{
+										Log.Info("Session{0} is already connected to this server; ignoring redirection", m_logArguments);
+									}
+								}
+							}
+						}
+					}
+				}
 
 				if (m_useCompression)
 					m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
@@ -1364,6 +1409,7 @@ namespace MySqlConnector.Core
 			if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets && cs.HostNames!.Count == 1)
 			{
 				return cs.HostNames[0].EndsWith(".mysql.database.azure.com", StringComparison.OrdinalIgnoreCase) ||
+					cs.HostNames[0].EndsWith(".database.windows.net", StringComparison.OrdinalIgnoreCase) ||
 					cs.HostNames[0].EndsWith(".mysql.database.chinacloudapi.cn", StringComparison.OrdinalIgnoreCase);
 			}
 
