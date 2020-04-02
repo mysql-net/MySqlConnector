@@ -1,7 +1,9 @@
 using System;
 using System.Data;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.RegularExpressions;
+using Dapper;
 using MySql.Data.MySqlClient;
 using Xunit;
 
@@ -340,6 +342,46 @@ namespace SideBySide
 
 			Assert.Equal(AppConfig.SecondaryDatabase, connection.Database);
 			Assert.Equal(AppConfig.SecondaryDatabase, QueryCurrentDatabase(connection));
+		}
+
+		[SkippableFact(ConfigSettings.SecondaryDatabase)]
+		public void ChangeDatabaseInTransaction()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			connection.Open();
+			connection.Execute($@"drop table if exists changedb1;
+create table changedb1(value int not null);
+drop table if exists `{AppConfig.SecondaryDatabase}`.changedb2;
+create table `{AppConfig.SecondaryDatabase}`.changedb2(value int not null);");
+
+			using var transaction = connection.BeginTransaction();
+
+#if !BASELINE
+			Assert.Equal(transaction, connection.CurrentTransaction);
+#endif
+			using (var command = new MySqlCommand("SELECT 'abc';", connection, transaction))
+				Assert.Equal("abc", command.ExecuteScalar());
+			using (var command = new MySqlCommand("INSERT INTO changedb1(value) values(1),(2);", connection, transaction))
+				command.ExecuteNonQuery();
+
+			connection.ChangeDatabase(AppConfig.SecondaryDatabase);
+
+#if !BASELINE
+			Assert.Equal(transaction, connection.CurrentTransaction);
+#endif
+
+			using (var command = new MySqlCommand("SELECT 'abc';", connection, transaction))
+				Assert.Equal("abc", command.ExecuteScalar());
+			using (var command = new MySqlCommand("INSERT INTO changedb2(value) values(3),(4);", connection, transaction))
+				command.ExecuteNonQuery();
+
+			transaction.Commit();
+
+			using var connection2 = new MySqlConnection(csb.ConnectionString);
+			connection2.Open();
+			var values = connection2.Query<int>($@"SELECT value FROM changedb1 UNION SELECT value FROM `{AppConfig.SecondaryDatabase}`.changedb2", connection2).OrderBy(x => x).ToList();
+			Assert.Equal(new[] { 1, 2, 3, 4 }, values);
 		}
 
 		private static string QueryCurrentDatabase(MySqlConnection connection)

@@ -246,8 +246,6 @@ namespace MySql.Data.MySqlClient
 			if (State != ConnectionState.Open)
 				throw new InvalidOperationException("Connection is not open.");
 
-			await CloseDatabaseAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-
 			using (var initDatabasePayload = InitDatabasePayload.Create(databaseName))
 				await m_session!.SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			var payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
