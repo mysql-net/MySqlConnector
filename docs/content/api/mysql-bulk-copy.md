@@ -20,6 +20,8 @@ Due to [security features](../troubleshooting/load-data-local-infile/) in MySQL 
 `MySqlBulkCopy` currently requires that the source data (`DataTable` or `IDataReader`) contain all
 the columns of the destination table in the same order.
 
+For data that is in CSV or TSV format, use [`MySqlBulkLoader`](api/mysql-bulk-loader/) to bulk load the file.
+
 **Note:** This API is a unique feature of MySqlConnector; you must [switch to MySqlConnector](../../overview/installing/)
 in order to use it. It is supported in version 0.62.0 and later.
 
