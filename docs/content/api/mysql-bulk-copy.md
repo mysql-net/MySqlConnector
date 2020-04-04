@@ -1,5 +1,5 @@
 ---
-lastmod: 2020-01-07
+lastmod: 2020-04-04
 date: 2019-11-11
 menu:
   main:
@@ -55,7 +55,7 @@ The number of seconds for the operation to complete before it times out, or `0` 
 
 `public string DestinationTableName { get; set; }`
 
-Name of the destination table on the server.
+Name of the destination table on the server. (This name shouldn't be quoted or escaped.)
 
 `public int NotifyAfter { get; set; }`
 

@@ -24,6 +24,10 @@ namespace MySql.Data.MySqlClient
 
 		public int BulkCopyTimeout { get; set; }
 
+		/// <summary>
+		/// The name of the table to insert rows into.
+		/// </summary>
+		/// <remarks>The table name shouldn't be quoted or escaped.</remarks>
 		public string? DestinationTableName { get; set; }
 
 		/// <summary>
@@ -119,7 +123,7 @@ namespace MySql.Data.MySqlClient
 				Local = true,
 				NumberOfLinesToSkip = 0,
 				Source = this,
-				TableName = tableName,
+				TableName = QuoteIdentifier(tableName),
 				Timeout = BulkCopyTimeout,
 			};
 
