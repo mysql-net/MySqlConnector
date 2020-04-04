@@ -138,7 +138,7 @@ namespace MySql.Data.MySqlClient
 			sb.Append(Priority switch
 			{
 				MySqlBulkLoaderPriority.Low => "LOW_PRIORITY ",
-				MySqlBulkLoaderPriority.Concurrent => "LOCAL ",
+				MySqlBulkLoaderPriority.Concurrent => "CONCURRENT ",
 				_ => "",
 			});
 
