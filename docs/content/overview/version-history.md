@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.63.1
+
+* Fix missing quoting of table name in `MySqlBulkCopy`: [#792](https://github.com/mysql-net/MySqlConnector/issues/792).
+* Fix bug in `ChangeDatabase` that rolled back an active transaction: [#794](https://github.com/mysql-net/MySqlConnector/issues/794).
+
 ### 0.63.0
 
 * **Experimental** Add new transaction savepoint API (from .NET 5): [#775](https://github.com/mysql-net/MySqlConnector/issues/775).
