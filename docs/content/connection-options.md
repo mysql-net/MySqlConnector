@@ -1,5 +1,5 @@
 ---
-lastmod: 2019-11-27
+lastmod: 2020-04-04
 date: 2016-10-16
 title: Connection Options
 customtitle: MySQL Connection String for C# .NET Core Programs
@@ -149,12 +149,12 @@ Connection pooling is enabled by default. These options are used to configure it
   <tr>
     <td>Pooling</td>
     <td>true</td>
-    <td>Enables connection pooling. When pooling is enabled, <code>MySqlConnection.Open</code>/<code>OpenAsync</code> retrieves an open connection from the pool if one is available, and <code>Close</code>/<code>Dispose</code> returns the open connection to the pool. If there are no available connections in the pool, and the pool hasn’t reached <code>MaximumPoolSize</code> connections, a new connection will be opened; otherwise, the call to <code>Open</code>/<code>OpenAsync</code> blocks until a connection becomes available or <code>ConnectionTimeout</code> is reached.</td>
+    <td>Enables connection pooling. When pooling is enabled, <code>MySqlConnection.Open</code>/<code>OpenAsync</code> retrieves an open connection from the pool if one is available, and <code>Close</code>/<code>Dispose</code>/<code>DisposeAsync</code> returns the open connection to the pool. If there are no available connections in the pool, and the pool hasn’t reached <code>MaximumPoolSize</code> connections, a new connection will be opened; otherwise, the call to <code>Open</code>/<code>OpenAsync</code> blocks until a connection becomes available or <code>ConnectionTimeout</code> is reached.</td>
   </tr>
   <tr>
     <td>Connection Lifetime, ConnectionLifeTime</td>
     <td>0</td>
-    <td>Controls the maximum length of time a connection to the server can be open. Connections that are returned to the pool are destroyed if it’s been more than <code>ConnectionLifeTime</code> seconds since the connection was created. The default value of zero (0) means pooled connections will never incur a ConnectionLifeTime timeout.</td>
+    <td>Connections that are returned to the pool will be closed if it’s been more than <code>ConnectionLifeTime</code> seconds since the connection was created. The default value of zero (0) means pooled connections will never incur a <code>ConnectionLifeTime</code> timeout. This can be useful when multiple database servers are being used, as it will force existing connections to be closed, which may spread load more evenly.</td>
   </tr>
   <tr>
     <td>Connection Reset, ConnectionReset</td>
