@@ -252,7 +252,6 @@ namespace SideBySide
 
 			var dataTable = connection.GetSchema(DbMetaDataCollectionNames.DataSourceInformation);
 			Assert.Equal(connection.ServerVersion, dataTable.Rows[0]["DataSourceProductVersion"]);
-			Assert.Equal(connection.Session.ServerVersion.Version.ToString(), dataTable.Rows[0]["DataSourceProductVersionNormalized"]);
 		}
 #endif
 	}
