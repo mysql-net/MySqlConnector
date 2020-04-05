@@ -2,7 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using MySql.Data.MySqlClient;
 
 namespace MySqlConnector.Core
@@ -14,6 +17,7 @@ namespace MySqlConnector.Core
 			m_connection = connection;
 			m_schemaCollections = new Dictionary<string, Action<DataTable>>
 			{
+				{ "DataSourceInformation", FillDataSourceInformation},
 				{ "MetaDataCollections", FillMetadataCollections },
 				{ "CharacterSets", FillCharacterSets },
 				{ "Collations", FillCollations },
@@ -57,6 +61,54 @@ namespace MySqlConnector.Core
 			fillAction(dataTable);
 			return dataTable;
 		}
+
+		private void FillDataSourceInformation(DataTable dataTable)
+		{
+			dataTable.Columns.AddRange(new [] {
+				new DataColumn("CompositeIdentifierSeparatorPattern", typeof(string)),
+				new DataColumn("DataSourceProductName", typeof(string)),
+				new DataColumn("DataSourceProductVersion", typeof(string)),
+				new DataColumn("DataSourceProductVersionNormalized", typeof(string)),
+				new DataColumn("GroupByBehavior", typeof(GroupByBehavior)),
+				new DataColumn("IdentifierPattern", typeof(string)),
+				new DataColumn("IdentifierCase", typeof(IdentifierCase)),
+				new DataColumn("OrderByColumnsInSelect", typeof(bool)),
+				new DataColumn("ParameterMarkerFormat", typeof(string)),
+				new DataColumn("ParameterMarkerPattern", typeof(string)),
+				new DataColumn("ParameterNameMaxLength", typeof(int)),
+				new DataColumn("QuotedIdentifierPattern", typeof(string)),
+				new DataColumn("QuotedIdentifierCase", typeof(IdentifierCase)),
+				new DataColumn("ParameterNamePattern", typeof(string)),
+				new DataColumn("StatementSeparatorPattern", typeof(string)),
+				new DataColumn("StringLiteralPattern", typeof(string)),
+				new DataColumn("SupportedJoinOperators", typeof(SupportedJoinOperators))
+			});
+
+			var row = dataTable.NewRow();
+			row["CompositeIdentifierSeparatorPattern"] = @"\.";
+			row["DataSourceProductName"] = "MysqlConnector";
+			row["DataSourceProductVersion"] = m_connection.ServerVersion;
+			row["DataSourceProductVersionNormalized"] = m_connection.Session.ServerVersion.Version.ToString();
+			row["GroupByBehavior"] = GroupByBehavior.Unrelated;
+			row["IdentifierPattern"] = @"(^\[\p{Lo}\p{Lu}\p{Ll}_@#][\p{Lo}\p{Lu}\p{Ll}\p{Nd}@$#_]*$)|(^\[[^\]\0]|\]\]+\]$)|(^\""[^\""\0]|\""\""+\""$)";
+			row["IdentifierCase"] = IdentifierCase.Insensitive;
+			row["OrderByColumnsInSelect"] = false;
+			row["ParameterMarkerFormat"] = @"{0}";
+			row["ParameterMarkerPattern"] = @"(@[A-Za-z0-9_$#]*)";
+			row["ParameterNameMaxLength"] = 128; // For function out parameters
+			row["QuotedIdentifierPattern"] = @"(([^\`]|\`\`)*)";
+			row["QuotedIdentifierCase"] = IdentifierCase.Sensitive;
+			row["ParameterNamePattern"] = @"^[\p{Lo}\p{Lu}\p{Ll}\p{Lm}_@#][\p{Lo}\p{Lu}\p{Ll}\p{Lm}\p{Nd}\uff3f_@#\$]*(?=\s+|$)";
+			row["StatementSeparatorPattern"] = ";";
+			row["StringLiteralPattern"] = @"'(([^']|'')*)'";
+			row["SupportedJoinOperators"] =
+				SupportedJoinOperators.FullOuter |
+				SupportedJoinOperators.Inner |
+				SupportedJoinOperators.LeftOuter |
+				SupportedJoinOperators.RightOuter;
+			dataTable.Rows.Add(row);
+		}
+
 
 		private void FillMetadataCollections(DataTable dataTable)
 		{
