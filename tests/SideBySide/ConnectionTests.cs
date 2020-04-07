@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Data.Common;
 using Dapper;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -240,6 +241,17 @@ namespace SideBySide
 			using var connection2 = connection.CloneWith(builder.ConnectionString);
 			connection2.Open();
 			Assert.Equal(ConnectionState.Open, connection2.State);
+		}
+#endif
+#if !NETCOREAPP1_1_2
+		[Fact]
+		public void GetDataSourceInformationSchemaCollection()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+
+			var dataTable = connection.GetSchema(DbMetaDataCollectionNames.DataSourceInformation);
+			Assert.Equal(connection.ServerVersion, dataTable.Rows[0]["DataSourceProductVersion"]);
 		}
 #endif
 	}
