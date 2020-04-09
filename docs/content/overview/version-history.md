@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.63.2
+
+* Support `IsolationLevel.Snapshot` in `BeginTransaction`: [#791](https://github.com/mysql-net/MySqlConnector/pull/791).
+* Support `DataSourceInformation` in `GetSchema`: [#795](https://github.com/mysql-net/MySqlConnector/pull/795).
+* Thanks to [John Battye](https://github.com/battyejp) and [Vincent DARON](https://github.com/vdaron) for contributions to this release.
+
 ### 0.63.1
 
 * Fix missing quoting of table name in `MySqlBulkCopy`: [#792](https://github.com/mysql-net/MySqlConnector/issues/792).
