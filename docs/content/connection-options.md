@@ -413,6 +413,11 @@ from your connection string when migrating from Connector/NET to MySqlConnector.
     <td>MySqlConnector always allows batch statements.</td>
   </tr>
   <tr>
+    <td>CacheServerProperties, Cache Server Properties</td>
+    <td></td>
+    <td>MySqlConnector doesn’t need this optimization.</td>
+  </tr>
+  <tr>
     <td>CheckParameters, Check Parameters</td>
     <td>true</td>
     <td>MySqlConnector always checks stored procedure parameters efficiently; there’s no need to disable this.</td>
@@ -421,6 +426,11 @@ from your connection string when migrating from Connector/NET to MySqlConnector.
     <td>CommandInterceptors, Command Interceptors</td>
     <td></td>
     <td>MySqlConnector doesn’t support this extensibility mechanism, which is not compatible with async operations.</td>
+  </tr>
+  <tr>
+    <td>DnsSrv, Dns-Srv</td>
+    <td></td>
+    <td>MySqlConnector doesn’t support discovering server addresses from DNS SRV records.</td>
   </tr>
   <tr>
     <td>ExceptionInterceptors, Exception Interceptors</td>
@@ -458,6 +468,11 @@ from your connection string when migrating from Connector/NET to MySqlConnector.
     <td>MySqlConnector places no limit on the amount of stored procedure metadata that is cached. It takes a very small amount of memory.</td>
   </tr>
   <tr>
+    <td>Replication</td>
+    <td></td>
+    <td>Not supported.</td>
+  </tr>
+  <tr>
     <td>RespectBinaryFlags, Respect Binary Flags</td>
     <td>true</td>
     <td>The binary type of a column is always respected.</td>
@@ -466,6 +481,11 @@ from your connection string when migrating from Connector/NET to MySqlConnector.
     <td>SharedMemoryName, Shared Memory Name</td>
     <td>true</td>
     <td>Shared memory (on Windows) is not supported as a connection protocol.</td>
+  </tr>
+  <tr>
+    <td>SshHostName, SshPort, SshUserName, SshPassword, SshKeyFile, SshPassPhrase</td>
+    <td></td>
+    <td>Connecting via SSH isn’t built into MySqlConnector, but can be set up easily by following <a href="tutorials/connect-ssh/" title="Connecting to MySQL Server with SSH from C#">these instructions</a>.</td>
   </tr>
   <tr>
     <td>SqlServerMode, Sql Server Mode</td>
