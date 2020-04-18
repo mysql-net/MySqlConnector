@@ -192,14 +192,13 @@ namespace MySqlConnector.Tests
 			Assert.Equal("username", csb.UserID);
 		}
 
-#if !BASELINE
 		[Fact]
 		public void EnumInvalidOperation()
 		{
-			var csb = new MySqlConnectionStringBuilder("ssl mode=invalid;");
-			Assert.Throws<InvalidOperationException>(() => csb.SslMode);
+			Assert.Throws<ArgumentException>(() => new MySqlConnectionStringBuilder("ssl mode=invalid;"));
 		}
 
+#if !BASELINE
 		[Fact]
 		public void ConstructWithNull()
 		{

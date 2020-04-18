@@ -342,8 +342,17 @@ namespace MySql.Data.MySqlClient
 		public override object? this[string key]
 		{
 			get => MySqlConnectionStringOption.GetOptionForKey(key).GetObject(this);
-			set => base[MySqlConnectionStringOption.GetOptionForKey(key).Key] = value;
+			set
+			{
+				var option = MySqlConnectionStringOption.GetOptionForKey(key);
+				if (value is null)
+					base[option.Key] = null;
+				else
+					option.SetObject(this, value);
+			}
 		}
+
+		internal void DoSetValue(string key, object? value) => base[key] = value;
 
 		internal string GetConnectionString(bool includePassword)
 		{
@@ -438,6 +447,7 @@ namespace MySql.Data.MySqlClient
 		public IReadOnlyList<string> Keys => m_keys;
 
 		public abstract object? GetObject(MySqlConnectionStringBuilder builder);
+		public abstract void SetObject(MySqlConnectionStringBuilder builder, object value);
 
 		protected MySqlConnectionStringOption(IReadOnlyList<string> keys)
 		{
@@ -674,9 +684,11 @@ namespace MySql.Data.MySqlClient
 			builder.TryGetValue(Key, out var objectValue) ? ChangeType(objectValue) : m_defaultValue;
 
 		public void SetValue(MySqlConnectionStringBuilder builder, T value) =>
-			builder[Key] = m_coerce is null ? value : m_coerce(value);
+			builder.DoSetValue(Key, m_coerce is null ? value : m_coerce(value));
 
 		public override object GetObject(MySqlConnectionStringBuilder builder) => GetValue(builder);
+
+		public override void SetObject(MySqlConnectionStringBuilder builder, object value) => SetValue(builder, ChangeType(value));
 
 		private T ChangeType(object objectValue)
 		{
@@ -694,9 +706,9 @@ namespace MySql.Data.MySqlClient
 				{
 					return (T) Enum.Parse(typeof(T), enumString, ignoreCase: true);
 				}
-				catch (Exception ex)
+				catch (Exception ex) when (!(ex is ArgumentException))
 				{
-					throw new InvalidOperationException("Value '{0}' not supported for option '{1}'.".FormatInvariant(objectValue, typeof(T).Name), ex);
+					throw new ArgumentException("Value '{0}' not supported for option '{1}'.".FormatInvariant(objectValue, typeof(T).Name), ex);
 				}
 			}
 
@@ -728,9 +740,11 @@ namespace MySql.Data.MySqlClient
 			builder.TryGetValue(Key, out var objectValue) ? ChangeType(objectValue) : m_defaultValue;
 
 		public void SetValue(MySqlConnectionStringBuilder builder, T? value) =>
-			builder[Key] = m_coerce is null ? value : m_coerce(value);
+			builder.DoSetValue(Key, m_coerce is null ? value : m_coerce(value));
 
 		public override object? GetObject(MySqlConnectionStringBuilder builder) => GetValue(builder);
+
+		public override void SetObject(MySqlConnectionStringBuilder builder, object value) => SetValue(builder, ChangeType(value));
 
 		private static T ChangeType(object objectValue) =>
 			(T) Convert.ChangeType(objectValue, typeof(T), CultureInfo.InvariantCulture);
@@ -742,7 +756,7 @@ namespace MySql.Data.MySqlClient
 	internal sealed class MySqlConnectionStringReferenceOption<T> : MySqlConnectionStringOption
 		where T : class
 	{
-		public MySqlConnectionStringReferenceOption(IReadOnlyList<string> keys, T? defaultValue, Func<T?, T>? coerce = null)
+		public MySqlConnectionStringReferenceOption(IReadOnlyList<string> keys, T? defaultValue, Func<T?, T?>? coerce = null)
 			: base(keys)
 		{
 			m_defaultValue = defaultValue;
@@ -753,9 +767,11 @@ namespace MySql.Data.MySqlClient
 			builder.TryGetValue(Key, out var objectValue) ? ChangeType(objectValue) : m_defaultValue;
 
 		public void SetValue(MySqlConnectionStringBuilder builder, T? value) =>
-			builder[Key] = m_coerce is null ? value : m_coerce(value);
+			builder.DoSetValue(Key, m_coerce is null ? value : m_coerce(value));
 
 		public override object? GetObject(MySqlConnectionStringBuilder builder) => GetValue(builder);
+
+		public override void SetObject(MySqlConnectionStringBuilder builder, object value) => SetValue(builder, ChangeType(value));
 
 		private static T ChangeType(object objectValue) =>
 			(T) Convert.ChangeType(objectValue, typeof(T), CultureInfo.InvariantCulture);
