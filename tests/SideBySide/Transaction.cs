@@ -94,7 +94,7 @@ namespace SideBySide
 			using (var trans = connection.BeginTransaction(inputIsolationLevel))
 				trans.Commit();
 
-			var results = connection.Query<string>($"select convert(argument USING utf8) from mysql.general_log where thread_id = @ServerThread and convert(argument using utf8) like '%start transaction%' and argument not like 'select%' order by event_time;", new { m_connection.ServerThread });
+			var results = connection.Query<string>($"select convert(argument USING utf8) from mysql.general_log where thread_id = @ServerThread and convert(argument using utf8) like 'start transaction%' order by event_time;", new { m_connection.ServerThread });
 			var lastStartTransactionQuery = results.Last();
 
 			Assert.Contains(expectedTransactionIsolationLevel.ToLower(), lastStartTransactionQuery.ToLower());

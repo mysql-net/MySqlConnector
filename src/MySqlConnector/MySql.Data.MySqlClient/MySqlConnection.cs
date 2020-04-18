@@ -57,7 +57,7 @@ namespace MySql.Data.MySqlClient
 				throw new InvalidOperationException("Cannot begin a transaction when already enlisted in a transaction.");
 #endif
 
-			string isolationLevelValue = isolationLevel switch
+			var isolationLevelValue = isolationLevel switch
 			{
 				IsolationLevel.ReadUncommitted => "read uncommitted",
 				IsolationLevel.ReadCommitted => "read committed",
@@ -71,10 +71,14 @@ namespace MySql.Data.MySqlClient
 				_ => throw new NotSupportedException("IsolationLevel.{0} is not supported.".FormatInvariant(isolationLevel))
 			};
 
-			var consistentSnapshotText = isolationLevel == IsolationLevel.Snapshot ? " with consistent snapshot" : string.Empty;
-
-			using (var cmd = new MySqlCommand($"set transaction isolation level {isolationLevelValue}; start transaction{consistentSnapshotText};", this))
+			using (var cmd = new MySqlCommand($"set transaction isolation level {isolationLevelValue};", this))
+			{
 				await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
+				var consistentSnapshotText = isolationLevel == IsolationLevel.Snapshot ? " with consistent snapshot" : "";
+				cmd.CommandText = $"start transaction{consistentSnapshotText};";
+				await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			}
 
 			var transaction = new MySqlTransaction(this, isolationLevel);
 			CurrentTransaction = transaction;
