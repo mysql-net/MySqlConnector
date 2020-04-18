@@ -29,7 +29,7 @@ namespace MySqlConnector.Core
 				_ => "repeatable read",
 			};
 
-			using var cmd = new MySqlCommand($"set transaction isolation level {isolationLevel};", Connection);
+			using var cmd = new MySqlCommand($"set session transaction isolation level {isolationLevel};", Connection);
 			cmd.ExecuteNonQuery();
 
 			var consistentSnapshotText = Transaction.IsolationLevel == IsolationLevel.Snapshot ? " with consistent snapshot" : "";
