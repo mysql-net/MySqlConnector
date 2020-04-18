@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using MySql.Data.Types;
 using Xunit;
 
@@ -30,7 +31,7 @@ namespace MySqlConnector.Tests
 		[Fact]
 		public void CreateFromDateTime()
 		{
-			var msdt = new MySqlDateTime(new DateTime(2018, 6, 9, 12, 34, 56, 123).AddTicks(4560));
+			var msdt = new MySqlDateTime(s_dateTime);
 			Assert.True(msdt.IsValidDateTime);
 			Assert.Equal(2018, msdt.Year);
 			Assert.Equal(6, msdt.Month);
@@ -45,10 +46,10 @@ namespace MySqlConnector.Tests
 		[Fact]
 		public void GetDateTime()
 		{
-			var msdt = new MySqlDateTime(2018, 6, 9, 12, 34, 56, 123456);
+			var msdt = s_mySqlDateTime;
 			Assert.True(msdt.IsValidDateTime);
 			var dt = msdt.GetDateTime();
-			Assert.Equal(new DateTime(2018, 6, 9, 12, 34, 56, 123).AddTicks(4560), dt);
+			Assert.Equal(s_dateTime, dt);
 		}
 
 		[Fact]
@@ -67,5 +68,81 @@ namespace MySqlConnector.Tests
 			msdt.Microsecond = 123456;
 			Assert.Equal(123, msdt.Millisecond);
 		}
+
+		[Fact]
+		public void ConvertibleToDateTime()
+		{
+			IConvertible convertible = s_mySqlDateTime;
+			var dt = convertible.ToDateTime(CultureInfo.InvariantCulture);
+			Assert.Equal(s_dateTime, dt);
+		}
+
+		[Fact]
+		public void ConvertToDateTime()
+		{
+			object obj = s_mySqlDateTime;
+			var dt = Convert.ToDateTime(obj);
+			Assert.Equal(s_dateTime, dt);
+		}
+
+		[Fact]
+		public void ChangeTypeToDateTime()
+		{
+			object obj = s_mySqlDateTime;
+			var dt = Convert.ChangeType(obj, TypeCode.DateTime);
+			Assert.Equal(s_dateTime, dt);
+		}
+
+		[Fact]
+		public void NotConvertibleToDateTime()
+		{
+			IConvertible convertible = new MySqlDateTime();
+#if !BASELINE
+			Assert.Throws<InvalidCastException>(() => convertible.ToDateTime(CultureInfo.InvariantCulture));
+#else
+			Assert.Throws<MySqlConversionException>(() => convertible.ToDateTime(CultureInfo.InvariantCulture));
+#endif
+		}
+
+		[Fact]
+		public void NotConvertToDateTime()
+		{
+			object obj = new MySqlDateTime();
+#if !BASELINE
+			Assert.Throws<InvalidCastException>(() => Convert.ToDateTime(obj));
+#else
+			Assert.Throws<MySqlConversionException>(() => Convert.ToDateTime(obj));
+#endif
+		}
+
+		[Fact]
+		public void NotChangeTypeToDateTime()
+		{
+			object obj = new MySqlDateTime();
+#if !BASELINE
+			Assert.Throws<InvalidCastException>(() => Convert.ChangeType(obj, TypeCode.DateTime));
+#else
+			Assert.Throws<MySqlConversionException>(() => Convert.ChangeType(obj, TypeCode.DateTime));
+#endif
+		}
+
+#if !BASELINE
+		[Fact]
+		public void ValidDateTimeConvertibleToString()
+		{
+			IConvertible convertible = s_mySqlDateTime;
+			Assert.Equal("06/09/2018 12:34:56", convertible.ToString(CultureInfo.InvariantCulture));
+		}
+
+		[Fact]
+		public void InvalidDateTimeConvertibleToString()
+		{
+			IConvertible convertible = new MySqlDateTime();
+			Assert.Equal("0000-00-00", convertible.ToString(CultureInfo.InvariantCulture));
+		}
+#endif
+
+		static readonly MySqlDateTime s_mySqlDateTime = new MySqlDateTime(2018, 6, 9, 12, 34, 56, 123456);
+		static readonly DateTime s_dateTime = new DateTime(2018, 6, 9, 12, 34, 56, 123).AddTicks(4560);
 	}
 }

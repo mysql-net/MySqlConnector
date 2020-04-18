@@ -2,7 +2,7 @@ using System;
 
 namespace MySql.Data.Types
 {
-	public struct MySqlDateTime : IComparable
+	public struct MySqlDateTime : IComparable, IConvertible
 	{
 		public MySqlDateTime(int year, int month, int day, int hour, int minute, int second, int microsecond)
 		{
@@ -86,5 +86,28 @@ namespace MySql.Data.Types
 				return 1;
 			return Microsecond.CompareTo(other.Microsecond);
 		}
+
+		DateTime IConvertible.ToDateTime(IFormatProvider? provider) => IsValidDateTime ? GetDateTime() : throw new InvalidCastException();
+		string IConvertible.ToString(IFormatProvider? provider) => IsValidDateTime ? GetDateTime().ToString(provider) : "0000-00-00";
+
+		object IConvertible.ToType(Type conversionType, IFormatProvider? provider) =>
+			conversionType == typeof(DateTime) ? (object) GetDateTime() :
+			conversionType == typeof(string) ? ((IConvertible) this).ToString(provider) :
+			throw new InvalidCastException();
+
+		TypeCode IConvertible.GetTypeCode() => TypeCode.Object;
+		bool IConvertible.ToBoolean(IFormatProvider? provider) => throw new InvalidCastException();
+		char IConvertible.ToChar(IFormatProvider? provider) => throw new InvalidCastException();
+		sbyte IConvertible.ToSByte(IFormatProvider? provider) => throw new InvalidCastException();
+		byte IConvertible.ToByte(IFormatProvider? provider) => throw new InvalidCastException();
+		short IConvertible.ToInt16(IFormatProvider? provider) => throw new InvalidCastException();
+		ushort IConvertible.ToUInt16(IFormatProvider? provider) => throw new InvalidCastException();
+		int IConvertible.ToInt32(IFormatProvider? provider) => throw new InvalidCastException();
+		uint IConvertible.ToUInt32(IFormatProvider? provider) => throw new InvalidCastException();
+		long IConvertible.ToInt64(IFormatProvider? provider) => throw new InvalidCastException();
+		ulong IConvertible.ToUInt64(IFormatProvider? provider) => throw new InvalidCastException();
+		float IConvertible.ToSingle(IFormatProvider? provider) => throw new InvalidCastException();
+		double IConvertible.ToDouble(IFormatProvider? provider) => throw new InvalidCastException();
+		decimal IConvertible.ToDecimal(IFormatProvider? provider) => throw new InvalidCastException();
 	}
 }
