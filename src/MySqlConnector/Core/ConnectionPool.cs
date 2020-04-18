@@ -444,7 +444,7 @@ namespace MySqlConnector.Core
 		private ConnectionPool(ConnectionSettings cs)
 		{
 			ConnectionSettings = cs;
-			SslProtocols = Utility.GetDefaultSslProtocols();
+			SslProtocols = cs.TlsVersions;
 			m_generation = 0;
 			m_cleanSemaphore = new SemaphoreSlim(1);
 			m_sessionSemaphore = new SemaphoreSlim(cs.MaximumPoolSize);

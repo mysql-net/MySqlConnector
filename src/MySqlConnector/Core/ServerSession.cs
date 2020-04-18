@@ -1,6 +1,7 @@
 using System;
 using System.Buffers.Text;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -326,7 +327,7 @@ namespace MySqlConnector.Core
 				// (which is SslProtocols.None; see https://docs.microsoft.com/en-us/dotnet/framework/network-programming/tls),
 				// then fall back to SslProtocols.Tls11 if that fails and it's possible that the cause is a yaSSL server.
 				bool shouldRetrySsl;
-				var sslProtocols = Pool?.SslProtocols ?? Utility.GetDefaultSslProtocols();
+				var sslProtocols = Pool?.SslProtocols ?? cs.TlsVersions;
 				PayloadData payload;
 				InitialHandshakePayload initialHandshake;
 				do
@@ -1296,6 +1297,8 @@ namespace MySqlConnector.Core
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL Authentication Error", ex);
 				if (ex is IOException && clientCertificates is object)
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "MySQL Server rejected client certificate", ex);
+				if (ex is Win32Exception win32 && win32.NativeErrorCode == -2146893007) // SEC_E_ALGORITHM_MISMATCH (0x80090331)
+					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "The server doesn't support the client's specified TLS versions.", ex);
 				throw;
 			}
 			finally

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using MySqlConnector.Utilities;
 
 namespace MySql.Data.MySqlClient
@@ -120,6 +121,12 @@ namespace MySql.Data.MySqlClient
 		{
 			get => MySqlConnectionStringOption.CertificateThumbprint.GetValue(this);
 			set => MySqlConnectionStringOption.CertificateThumbprint.SetValue(this, value);
+		}
+
+		public string? TlsVersion
+		{
+			get => MySqlConnectionStringOption.TlsVersion.GetValue(this);
+			set => MySqlConnectionStringOption.TlsVersion.SetValue(this, value);
 		}
 
 		// Connection Pooling Options
@@ -399,6 +406,7 @@ namespace MySql.Data.MySqlClient
 		public static readonly MySqlConnectionStringReferenceOption<string> SslCa;
 		public static readonly MySqlConnectionStringReferenceOption<string> SslCert;
 		public static readonly MySqlConnectionStringReferenceOption<string> SslKey;
+		public static readonly MySqlConnectionStringReferenceOption<string> TlsVersion;
 
 		// Connection Pooling Options
 		public static readonly MySqlConnectionStringValueOption<bool> Pooling;
@@ -529,6 +537,44 @@ namespace MySql.Data.MySqlClient
 			AddOption(CertificateThumbprint = new MySqlConnectionStringReferenceOption<string>(
 				keys: new[] { "CertificateThumbprint", "Certificate Thumbprint", "Certificate Thumb Print" },
 				defaultValue: null));
+
+			AddOption(TlsVersion = new MySqlConnectionStringReferenceOption<string>(
+				keys: new[] { "TlsVersion", "Tls Version", "Tls-Version" },
+				defaultValue: null,
+				coerce: value =>
+				{
+					if (string.IsNullOrWhiteSpace(value))
+						return null;
+
+					Span<bool> versions = stackalloc bool[4];
+					foreach (var part in value!.TrimStart('[', '(').TrimEnd(')', ']').Split(','))
+					{
+						var match = Regex.Match(part, @"\s*TLS( ?v?(1|1\.?0|1\.?1|1\.?2|1\.?3))?$", RegexOptions.IgnoreCase);
+						if (!match.Success)
+							throw new ArgumentException($"Unrecognized TlsVersion protocol version '{part}'; permitted versions are: TLS 1.0, TLS 1.1, TLS 1.2, TLS 1.3.");
+						var version = match.Groups[2].Value;
+						if (version == "" || version == "1" || version == "10" || version == "1.0")
+							versions[0] = true;
+						else if (version == "11" || version == "1.1")
+							versions[1] = true;
+						else if (version == "12" || version == "1.2")
+							versions[2] = true;
+						else if (version == "13" || version == "1.3")
+							versions[3] = true;
+					}
+
+					var coercedValue = "";
+					for (var i = 0; i < versions.Length; i++)
+					{
+						if (versions[i])
+						{
+							if (coercedValue.Length != 0)
+								coercedValue += ", ";
+							coercedValue += "TLS 1.{0}".FormatInvariant(i);
+						}
+					}
+					return coercedValue;
+				}));
 
 			// Connection Pooling Options
 			AddOption(Pooling = new MySqlConnectionStringValueOption<bool>(

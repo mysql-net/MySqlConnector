@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using MySql.Data.MySqlClient;
 using Xunit;
 
@@ -66,6 +67,7 @@ namespace MySqlConnector.Tests
 			Assert.Null(csb.SslCert);
 			Assert.Null(csb.SslKey);
 			Assert.Equal(MySqlSslMode.Preferred, csb.SslMode);
+			Assert.Null(csb.TlsVersion);
 			Assert.True(csb.TreatTinyAsBoolean);
 			Assert.False(csb.UseCompression);
 			Assert.Equal("", csb.UserID);
@@ -355,5 +357,51 @@ namespace MySqlConnector.Tests
 			Assert.Equal("", csb.ConnectionString);
 		}
 #endif
+
+		[Theory]
+		[InlineData("Tls", "0")]
+		[InlineData("Tls1", "0")]
+		[InlineData("Tlsv1", "0")]
+		[InlineData("Tlsv1.0", "0")]
+		[InlineData("TLS 1.0", "0")]
+		[InlineData("TLS v1.0", "0")]
+		[InlineData("Tls11", "1")]
+		[InlineData("Tlsv11", "1")]
+		[InlineData("Tlsv1.1", "1")]
+		[InlineData("TLS 1.1", "1")]
+		[InlineData("TLS v1.1", "1")]
+		[InlineData("Tls12", "2")]
+		[InlineData("Tlsv12", "2")]
+		[InlineData("Tlsv1.2", "2")]
+		[InlineData("TLS 1.2", "2")]
+		[InlineData("TLS v1.2", "2")]
+		[InlineData("Tls13", "3")]
+		[InlineData("Tlsv13", "3")]
+		[InlineData("Tlsv1.3", "3")]
+		[InlineData("TLS 1.3", "3")]
+		[InlineData("TLS v1.3", "3")]
+		[InlineData("Tls,Tls", "0")]
+		[InlineData("Tls1.1,Tls v1.1, TLS 1.1", "1")]
+		[InlineData("Tls12,Tls10", "0,2")]
+		[InlineData("TLS v1.3, TLS12, Tls 1.1", "1,2,3")]
+		public void ParseTlsVersion(string input, string expected)
+		{
+			var csb = new MySqlConnectionStringBuilder { TlsVersion = input };
+#if !BASELINE
+			string[] normalizedVersions = new[] { "TLS 1.0", "TLS 1.1", "TLS 1.2", "TLS 1.3" };
+#else
+			string[] normalizedVersions = new[] { "Tls", "Tls11", "Tls12", "Tls13" };
+#endif
+			var expectedTlsVersion = string.Join(", ", expected.Split(',').Select(int.Parse).Select(x => normalizedVersions[x]));
+			Assert.Equal(expectedTlsVersion, csb.TlsVersion);
+		}
+
+		[Fact]
+		public void ParseInvalidTlsVersion()
+		{
+			var csb = new MySqlConnectionStringBuilder();
+			Assert.Throws<ArgumentException>(() => csb.TlsVersion = "Tls14");
+			Assert.Throws<ArgumentException>(() => new MySqlConnectionStringBuilder("TlsVersion=Tls14"));
+		}
 	}
 }

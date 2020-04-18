@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
@@ -195,6 +196,47 @@ namespace SideBySide
 			Assert.True(reader.Read());
 			Assert.Equal(expectedProtocolString, reader.GetString(1));
 		}
+
+		[SkippableFact(ConfigSettings.RequiresSsl)]
+		public async Task ForceTls11()
+		{
+			// require TLS 1.1 and TLS 1.2
+			if (!AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls11) || !AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls12))
+				return;
+
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.TlsVersion = "TLS 1.1";
+
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			await connection.OpenAsync();
+
+#if !BASELINE
+			Assert.Equal(SslProtocols.Tls11, connection.SslProtocol);
+#endif
+			using var cmd = new MySqlCommand("show status like 'Ssl_version';", connection);
+			using var reader = await cmd.ExecuteReaderAsync();
+			Assert.True(reader.Read());
+			Assert.Equal("TLSv1.1", reader.GetString(1));
+		}
+
+#if NETCOREAPP3_0
+		[SkippableFact(ConfigSettings.RequiresSsl)]
+		public async Task RequireTls13()
+		{
+			if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls13))
+				return;
+
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.TlsVersion = "TLS 1.3";
+
+			using var connection = new MySqlConnection(csb.ConnectionString);
+#if !BASELINE
+			await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+#else
+			await Assert.ThrowsAsync<Win32Exception>(async () => await connection.OpenAsync());
+#endif
+		}
+#endif
 
 		readonly DatabaseFixture m_database;
 	}
