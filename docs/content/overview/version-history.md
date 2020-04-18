@@ -11,6 +11,13 @@ weight: 30
 Version History
 ===============
 
+### 0.64.0
+
+* Support `TlsVersion` connection string option: [#760](https://github.com/mysql-net/MySqlConnector/issues/760).
+* Implement `IConvertible` on `MySqlDateTime`: [#798](https://github.com/mysql-net/MySqlConnector/issues/798).
+* Always use `SESSION` transaction isolation level: [#801](https://github.com/mysql-net/MySqlConnector/issues/801).
+* Avoid composite commands when starting a transaction: [#774](https://github.com/mysql-net/MySqlConnector/issues/774).
+
 ### 0.63.2
 
 * Support `IsolationLevel.Snapshot` in `BeginTransaction`: [#791](https://github.com/mysql-net/MySqlConnector/pull/791).
