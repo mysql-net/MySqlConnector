@@ -186,8 +186,13 @@ namespace MySqlConnector.Core
 				new DataColumn("PRIVILEGES", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("COLUMN_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("GENERATION_EXPRESSION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SRS_ID", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
+
+			using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'SRS_ID';", m_connection))
+			{
+				if (command.ExecuteScalar() is object)
+					dataTable.Columns.Add(new DataColumn("SRS_ID", typeof(string))); // lgtm[cs/local-not-disposed]
+			}
 
 			FillDataTable(dataTable, "COLUMNS");
 		}
