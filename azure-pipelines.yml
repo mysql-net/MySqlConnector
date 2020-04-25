@@ -27,21 +27,6 @@ jobs:
     inputs:
       artifactName: 'SideBySide-net472-$(Agent.OS)'
       targetPath: 'tests/SideBySide/bin/Release/net472/publish'
-  - task: DotNetCoreCLI@2
-    displayName: 'Create NuGet packages'
-    inputs:
-      command: 'custom'
-      projects: 'src/**/*.csproj'
-      custom: 'pack'
-      arguments: '-c Release --version-suffix build-$(Build.BuildNumber) -o $(Build.ArtifactStagingDirectory)'
-  - task: DotNetCoreCLI@2
-    displayName: 'Publish packages'
-    condition: ne(variables['Build.Reason'], 'PullRequest')
-    inputs:
-      command: 'push'
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
-      nuGetFeedType: 'internal'
-      publishVstsFeed: 'Builds'
 
 - job: windows_baseline
   displayName: 'Baseline'
