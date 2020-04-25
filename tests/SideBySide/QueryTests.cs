@@ -1032,21 +1032,6 @@ insert into has_rows(value) values(1),(2),(3);");
 			Assert.True(reader.HasRows);
 		}
 
-#if !NETCOREAPP1_1_2
-		[Fact]
-		public void ReservedWordsSchema()
-		{
-			var table = m_database.Connection.GetSchema("ReservedWords");
-			Assert.NotNull(table);
-			Assert.Single(table.Columns);
-			Assert.Equal("ReservedWord", table.Columns[0].ColumnName);
-#if !BASELINE
-			// https://bugs.mysql.com/bug.php?id=89639
-			Assert.Contains("CREATE", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
-#endif
-		}
-#endif
-
 		[Fact]
 		public void CommandBehaviorCloseConnection()
 		{
