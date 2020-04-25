@@ -169,29 +169,32 @@ namespace MySqlConnector.Core
 				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("COLUMN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("ORDINAL_POSITION", typeof(uint)), // lgtm[cs/local-not-disposed]
 				new DataColumn("COLUMN_DEFAULT", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("IS_NULLABLE", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("DATA_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHARACTER_MAXIMUM_LENGTH", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHARACTER_OCTET_LENGTH", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("NUMERIC_PRECISION", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("NUMERIC_SCALE", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DATETIME_PRECISION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new DataColumn("CHARACTER_MAXIMUM_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new DataColumn("NUMERIC_PRECISION", typeof(ulong)), // lgtm[cs/local-not-disposed]
+				new DataColumn("NUMERIC_SCALE", typeof(ulong)), // lgtm[cs/local-not-disposed]
+				new DataColumn("DATETIME_PRECISION", typeof(uint)), // lgtm[cs/local-not-disposed]
 				new DataColumn("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("COLUMN_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("COLUMN_KEY", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("EXTRA", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("PRIVILEGES", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("COLUMN_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("GENERATION_EXPRESSION", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
+
+			using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'GENERATION_EXPRESSION';", m_connection))
+			{
+				if (command.ExecuteScalar() is object)
+					dataTable.Columns.Add(new DataColumn("GENERATION_EXPRESSION", typeof(string))); // lgtm[cs/local-not-disposed]
+			}
 
 			using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'SRS_ID';", m_connection))
 			{
 				if (command.ExecuteScalar() is object)
-					dataTable.Columns.Add(new DataColumn("SRS_ID", typeof(string))); // lgtm[cs/local-not-disposed]
+					dataTable.Columns.Add(new DataColumn("SRS_ID", typeof(uint))); // lgtm[cs/local-not-disposed]
 			}
 
 			FillDataTable(dataTable, "COLUMNS");

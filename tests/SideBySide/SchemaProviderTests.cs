@@ -40,6 +40,47 @@ namespace SideBySide
 #endif
 		}
 
+		[Fact]
+		public void ColumnsSchema()
+		{
+			var table = m_database.Connection.GetSchema("Columns");
+			Assert.NotNull(table);
+			AssertHasColumn("TABLE_CATALOG", typeof(string));
+			AssertHasColumn("TABLE_SCHEMA", typeof(string));
+			AssertHasColumn("TABLE_NAME", typeof(string));
+			AssertHasColumn("COLUMN_NAME", typeof(string));
+			AssertHasColumn("ORDINAL_POSITION", typeof(uint));
+			AssertHasColumn("COLUMN_DEFAULT", typeof(string));
+			AssertHasColumn("IS_NULLABLE", typeof(string));
+			AssertHasColumn("DATA_TYPE", typeof(string));
+			AssertHasColumn("CHARACTER_MAXIMUM_LENGTH", typeof(long));
+			AssertHasColumn("NUMERIC_PRECISION", typeof(ulong));
+			AssertHasColumn("NUMERIC_SCALE", typeof(ulong));
+			AssertHasColumn("DATETIME_PRECISION", typeof(uint));
+			AssertHasColumn("CHARACTER_SET_NAME", typeof(string));
+			AssertHasColumn("COLLATION_NAME", typeof(string));
+			AssertHasColumn("COLUMN_KEY", typeof(string));
+			AssertHasColumn("EXTRA", typeof(string));
+			AssertHasColumn("PRIVILEGES", typeof(string));
+			AssertHasColumn("COLUMN_COMMENT", typeof(string));
+
+			void AssertHasColumn(string name, Type type)
+			{
+				var column = table.Columns[name];
+				Assert.NotNull(column);
+
+				// allow integral types with a larger positive range
+				if (type == typeof(int))
+					Assert.True(type == typeof(int) || type == typeof(uint) || type == typeof(long) || type == typeof(ulong));
+				else if (type == typeof(uint))
+					Assert.True(type == typeof(uint) || type == typeof(long) || type == typeof(ulong));
+				else if (type == typeof(long))
+					Assert.True(type == typeof(long) || type == typeof(ulong));
+				else
+					Assert.Equal(type, column.DataType);
+			}
+		}
+
 		readonly DatabaseFixture m_database;
 	}
 }
