@@ -123,6 +123,36 @@ namespace SideBySide
 		}
 #endif
 
+#if !NETCOREAPP1_1_2
+		[Fact]
+		public void NonExistentPipe()
+		{
+			var csb = new MySqlConnectionStringBuilder
+			{
+				PipeName = "nonexistingpipe",
+				ConnectionProtocol = MySqlConnectionProtocol.NamedPipe,
+				Server = ".",
+				ConnectionTimeout = 1
+			};
+
+			var sw = Stopwatch.StartNew();
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			try
+			{
+				connection.Open();
+				Assert.False(true);
+			}
+			catch (MySqlException)
+			{
+			}
+#if !BASELINE
+			TestUtilities.AssertDuration(sw, 900, 500);
+#else
+			TestUtilities.AssertDuration(sw, 0, 500);
+#endif
+		}
+#endif
+
 		[Theory]
 		[InlineData(false, false)]
 		[InlineData(true, false)]

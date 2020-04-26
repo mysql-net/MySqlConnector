@@ -340,7 +340,7 @@ namespace MySqlConnector.Core
 					else if (cs.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket)
 						connected = await OpenUnixSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 					else if (cs.ConnectionProtocol == MySqlConnectionProtocol.NamedPipe)
-						connected = await OpenNamedPipeAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+						connected = await OpenNamedPipeAsync(cs, startTickCount, ioBehavior, cancellationToken).ConfigureAwait(false);
 					if (!connected)
 					{
 						lock (m_lock)
@@ -981,7 +981,13 @@ namespace MySqlConnector.Core
 			return false;
 		}
 
-		private Task<bool> OpenNamedPipeAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+#if NET45 || NETSTANDARD1_3
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+#endif
+		private async Task<bool> OpenNamedPipeAsync(ConnectionSettings cs, int startTickCount, IOBehavior ioBehavior, CancellationToken cancellationToken)
+#if NET45 || NETSTANDARD1_3Co
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+#endif
 		{
 #if NETSTANDARD1_3
 			throw new NotSupportedException("Named pipe connections are not supported in netstandard1.3");
@@ -989,15 +995,21 @@ namespace MySqlConnector.Core
 			if (Log.IsInfoEnabled())
 				Log.Info("Session{0} connecting to NamedPipe '{1}' on Server '{2}'", m_logArguments[0], cs.PipeName, cs.HostNames![0]);
 			var namedPipeStream = new NamedPipeClientStream(cs.HostNames![0], cs.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+			var timeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - unchecked(Environment.TickCount - startTickCount));
 			try
 			{
 				using (cancellationToken.Register(() => namedPipeStream.Dispose()))
 				{
 					try
 					{
-						namedPipeStream.Connect();
+#if !NET45
+						if (ioBehavior == IOBehavior.Asynchronous)
+							await namedPipeStream.ConnectAsync(timeout, cancellationToken).ConfigureAwait(false);
+						else
+#endif
+							namedPipeStream.Connect(timeout);
 					}
-					catch (ObjectDisposedException ex) when (cancellationToken.IsCancellationRequested)
+					catch (Exception ex) when ((ex is ObjectDisposedException && cancellationToken.IsCancellationRequested) || ex is TimeoutException)
 					{
 						m_logArguments[1] = cs.PipeName;
 						Log.Info("Session{0} connect timeout expired connecting to named pipe '{1}'", m_logArguments);
@@ -1016,10 +1028,10 @@ namespace MySqlConnector.Core
 
 				lock (m_lock)
 					m_state = State.Connected;
-				return Task.FromResult(true);
+				return true;
 			}
 
-			return Task.FromResult(false);
+			return false;
 #endif
 		}
 
