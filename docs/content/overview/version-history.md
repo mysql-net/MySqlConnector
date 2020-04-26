@@ -11,6 +11,12 @@ weight: 30
 Version History
 ===============
 
+### 0.64.1
+
+* Fix timeout for named pipe connections: [#804](https://github.com/mysql-net/MySqlConnector/issues/804).
+* Fix `ArgumentException` calling `MySqlConnection.GetSchema("COLUMNS")`: [#802](https://github.com/mysql-net/MySqlConnector/issues/802).
+* Fix `Unknown column 'SRS_ID'` exception calling `MySqlConnection.GetSchema("COLUMNS")`: [#805](https://github.com/mysql-net/MySqlConnector/issues/805).
+
 ### 0.64.0
 
 * Support `TlsVersion` connection string option: [#760](https://github.com/mysql-net/MySqlConnector/issues/760).
