@@ -11,6 +11,13 @@ weight: 30
 Version History
 ===============
 
+### 0.64.2
+
+* Restore `COLUMN_TYPE` column to `GetSchema("COLUMNS")`: [#807](https://github.com/mysql-net/MySqlConnector/pull/807).
+  * This was a regression in 0.64.1
+* Fix ignored `CancellationToken` in `MySqlBulkCopy.WriteToServerAsync(DataTable)`.
+* Thanks to [mitchydeath](https://github.com/mitchydeath) for contributions to this release.
+
 ### 0.64.1
 
 * Fix timeout for named pipe connections: [#804](https://github.com/mysql-net/MySqlConnector/issues/804).
