@@ -179,6 +179,7 @@ namespace MySqlConnector.Core
 				new DataColumn("DATETIME_PRECISION", typeof(uint)), // lgtm[cs/local-not-disposed]
 				new DataColumn("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new DataColumn("COLUMN_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("COLUMN_KEY", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("EXTRA", typeof(string)), // lgtm[cs/local-not-disposed]
 				new DataColumn("PRIVILEGES", typeof(string)), // lgtm[cs/local-not-disposed]
