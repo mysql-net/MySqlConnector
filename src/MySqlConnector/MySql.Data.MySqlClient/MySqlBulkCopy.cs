@@ -55,7 +55,7 @@ namespace MySql.Data.MySqlClient
 		public async Task WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable ?? throw new ArgumentNullException(nameof(dataTable)));
-			await WriteToServerAsync(IOBehavior.Asynchronous, CancellationToken.None).ConfigureAwait(false);
+			await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 		}
 #else
 		public async ValueTask WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default)
