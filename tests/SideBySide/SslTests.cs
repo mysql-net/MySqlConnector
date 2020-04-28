@@ -145,7 +145,11 @@ namespace SideBySide
 			csb.CertificateFile = Path.Combine(AppConfig.CertsPath, "non-ca-client.pfx");
 			csb.CertificatePassword = "";
 			using var connection = new MySqlConnection(csb.ConnectionString);
+#if !BASELINE
 			await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+#else
+			await Assert.ThrowsAsync<AuthenticationException>(async () => await connection.OpenAsync());
+#endif
 		}
 
 		[SkippableFact(ServerFeatures.KnownCertificateAuthority, ConfigSettings.RequiresSsl)]
@@ -169,13 +173,9 @@ namespace SideBySide
 		{
 			using var connection = new MySqlConnection(AppConfig.ConnectionString);
 			await connection.OpenAsync();
-#if BASELINE
-			var expectedProtocol = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls11) ? SslProtocols.Tls11 : SslProtocols.Tls;
-#else
 			var expectedProtocol = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls12) ? SslProtocols.Tls12 :
 				AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls11) ? SslProtocols.Tls11 :
 				SslProtocols.Tls;
-#endif
 			var expectedProtocolString = expectedProtocol == SslProtocols.Tls12 ? "TLSv1.2" :
 				expectedProtocol == SslProtocols.Tls11 ? "TLSv1.1" : "TLSv1";
 

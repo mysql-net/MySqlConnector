@@ -173,7 +173,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#88611](https://bugs.mysql.com/bug.php?id=88611): `MySqlCommand` can be executed even if it has “wrong” transaction
 * ~~[#88660](https://bugs.mysql.com/bug.php?id=88660): `MySqlClientFactory.Instance.CreateDataAdapter()` and `CreateCommandBuilder` return `null`~~
 * [#89085](https://bugs.mysql.com/bug.php?id=89085): `MySqlConnection.Database` not updated after `USE database;`
-* [#89159](https://bugs.mysql.com/bug.php?id=89159), [#97242](https://bugs.mysql.com/bug.php?id=97242): `MySqlDataReader` cannot outlive `MySqlCommand`
+* ~~[#89159](https://bugs.mysql.com/bug.php?id=89159), [#97242](https://bugs.mysql.com/bug.php?id=97242): `MySqlDataReader` cannot outlive `MySqlCommand`~~
 * [#89335](https://bugs.mysql.com/bug.php?id=89335): `MySqlCommandBuilder.DeriveParameters` fails for `JSON` type
 * [#89639](https://bugs.mysql.com/bug.php?id=89639): `ReservedWords` schema contains incorrect data
 * [#90086](https://bugs.mysql.com/bug.php?id=90086): `MySqlDataReader` is closed by an unrelated command disposal
@@ -200,7 +200,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#94760](https://bugs.mysql.com/bug.php?id=94760): `MySqlConnection.OpenAsync(CancellationToken)` doesn’t respect cancellation token
 * [#95348](https://bugs.mysql.com/bug.php?id=95348): Inefficient query when executing stored procedures
 * [#95436](https://bugs.mysql.com/bug.php?id=95436): Client doesn't authenticate with PEM certificate
-* [#95984](https://bugs.mysql.com/bug.php?id=95984): “Incorrect arguments to mysqld_stmt_execute” using prepared statement with `MySqlDbType.JSON`
+* ~~[#95984](https://bugs.mysql.com/bug.php?id=95984): “Incorrect arguments to mysqld_stmt_execute” using prepared statement with `MySqlDbType.JSON`~~
 * [#95986](https://bugs.mysql.com/bug.php?id=95986): “Incorrect integer value” using prepared statement with `MySqlDbType.Int24`
 * ~~[#96355](https://bugs.mysql.com/bug.php?id=96355), [#96614](https://bugs.mysql.com/bug.php?id=96614): `Could not load file or assembly 'Renci.SshNet'` when opening connection~~
 * [#96498](https://bugs.mysql.com/bug.php?id=96498): `WHERE` clause using `MySqlGeometry` as parameter finds no rows
@@ -210,7 +210,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#96717](https://bugs.mysql.com/bug.php?id=96717): Not compatible with MySQL Server 5.0
 * [#97067](https://bugs.mysql.com/bug.php?id=97067): Aggregate functions on BIT(n) columns return wrong result
 * [#97300](https://bugs.mysql.com/bug.php?id=97300): `GetSchemaTable()` returns table for stored procedure with output parameters
-* [#97448](https://bugs.mysql.com/bug.php?id=97448): Connecting fails if more than one IP is found in DNS for a named host
+* ~~[#97448](https://bugs.mysql.com/bug.php?id=97448): Connecting fails if more than one IP is found in DNS for a named host~~
 * [#97473](https://bugs.mysql.com/bug.php?id=97473): `MySqlConnection.Clone` discloses connection password
 * [#97738](https://bugs.mysql.com/bug.php?id=97738): Cannot use PEM files when account uses `require subject`
 * [#97872](https://bugs.mysql.com/bug.php?id=97872): `KeepAlive` in connection string throws exception on .NET Core

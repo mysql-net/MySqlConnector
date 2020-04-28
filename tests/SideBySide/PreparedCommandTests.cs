@@ -399,12 +399,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 
 				if (AppConfig.SupportsJson)
 				{
-#if !BASELINE
 					yield return new object[] { isPrepared, "JSON", "{\"test\": true}", MySqlDbType.JSON };
-#else
-					// https://bugs.mysql.com/bug.php?id=95984
-					yield return new object[] { isPrepared, "JSON", "{\"test\": true}", MySqlDbType.VarChar };
-#endif
 				}
 			}
 		}
