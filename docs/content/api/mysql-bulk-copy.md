@@ -1,5 +1,5 @@
 ---
-lastmod: 2020-04-04
+lastmod: 2020-05-02
 date: 2019-11-11
 menu:
   main:
@@ -16,9 +16,6 @@ for SQL Server.
 
 Due to [security features](../troubleshooting/load-data-local-infile/) in MySQL Server, the connection string
 **must** have `AllowLoadLocalInfile=true` in order to use this class.
-
-`MySqlBulkCopy` currently requires that the source data (`DataTable` or `IDataReader`) contain all
-the columns of the destination table in the same order.
 
 For data that is in CSV or TSV format, use [`MySqlBulkLoader`](api/mysql-bulk-loader/) to bulk load the file.
 
@@ -63,6 +60,14 @@ Name of the destination table on the server. (This name shouldn't be quoted or e
 
 If non-zero, this defines the number of rows to be processed before generating a notification event.
 
+`public List<MySqlBulkCopyColumnMapping> ColumnMappings { get; }`
+
+A collection of `MySqlBulkCopyColumnMapping` objects. If the columns being copied from the
+data source line up one-to-one with the columns in the destination table then populating this collection is
+unnecessary. Otherwise, this should be filled with a collection of `MySqlBulkCopyColumnMapping` objects
+specifying how source columns are to be mapped onto destination columns. If one column mapping is specified,
+then all must be specified.
+
 ### Methods
 
 `public void WriteToServer(DataTable dataTable);`
@@ -101,3 +106,41 @@ Receipt of a `RowsCopied` event does not imply that any rows have been sent to t
 
 The `MySqlRowsCopiedEventArgs.Abort` property can be set to `true` by the event handler to abort
 the copy.
+
+## MySqlBulkCopyColumnMapping
+
+Use `MySqlBulkCopyColumnMapping` to specify how to map columns in the source data to
+columns in the destination table.
+
+Set `SourceOrdinal` to the index of the source column to map. Set `DestinationColumn` to
+either the name of a column in the destination table, or the name of a user-defined variable.
+If a user-defined variable, you can use `Expression` to specify a MySQL expression that sets
+a destination column.
+
+Source columns that don't have an entry in `MySqlBulkCopy.ColumnMappings` will be ignored
+(unless the `ColumnMappings` collection is empty, in which case all columns will be mapped
+one-to-one).
+
+Columns containing binary data must be mapped using an expression that uses the `UNHEX` function.
+
+### Examples
+
+```csharp
+new MySqlBulkCopyColumnMapping
+{
+    SourceOrdinal = 2,
+    DestinationColumn = "user_name",
+},
+new MySqlBulkCopyColumnMapping
+{
+    SourceOrdinal = 0,
+    DestinationColumn = "@tmp",
+    Expression = "SET column_value = @tmp * 2",
+},
+new MySqlBulkCopyColumnMapping
+{
+    SourceOrdinal = 1,
+    DestinationColumn = "@tmp2",
+    Expression = "SET binary_column = UNHEX(@tmp2)",
+},
+```

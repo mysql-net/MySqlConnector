@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ namespace MySql.Data.MySqlClient
 		{
 			m_connection = connection ?? throw new ArgumentNullException(nameof(connection));
 			m_transaction = transaction;
+			ColumnMappings = new List<MySqlBulkCopyColumnMapping>();
 		}
 
 		public int BulkCopyTimeout { get; set; }
@@ -43,6 +45,15 @@ namespace MySql.Data.MySqlClient
 		/// Receipt of a RowsCopied event does not imply that any rows have been sent to the server or committed.
 		/// </remarks>
 		public event MySqlRowsCopiedEventHandler? RowsCopied;
+
+		/// <summary>
+		/// A collection of <see cref="MySqlBulkCopyColumnMapping"/> objects. If the columns being copied from the
+		/// data source line up one-to-one with the columns in the destination table then populating this collection is
+		/// unnecessary. Otherwise, this should be filled with a collection of <see cref="MySqlBulkCopyColumnMapping"/> objects
+		/// specifying how source columns are to be mapped onto destination columns. If one column mapping is specified,
+		/// then all must be specified.
+		/// </summary>
+		public List<MySqlBulkCopyColumnMapping> ColumnMappings { get; }
 
 #if !NETSTANDARD1_3
 		public void WriteToServer(DataTable dataTable)
@@ -134,16 +145,17 @@ namespace MySql.Data.MySqlClient
 				closeConnection = true;
 			}
 
-			using (var cmd = new MySqlCommand("select * from " + QuoteIdentifier(tableName) + ";", m_connection, m_transaction))
-			using (var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync(CommandBehavior.SchemaOnly, ioBehavior, cancellationToken).ConfigureAwait(false))
+			// if no user-supplied column mappings, compute them from the destination schema
+			if (ColumnMappings.Count == 0)
 			{
+				using var cmd = new MySqlCommand("select * from " + QuoteIdentifier(tableName) + ";", m_connection, m_transaction);
+				using var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync(CommandBehavior.SchemaOnly, ioBehavior, cancellationToken).ConfigureAwait(false);
 				var schema = reader.GetColumnSchema();
 				for (var i = 0; i < schema.Count; i++)
 				{
 					if (schema[i].DataTypeName == "BIT")
 					{
-						bulkLoader.Columns.Add($"@col{i}");
-						bulkLoader.Expressions.Add($"`{reader.GetName(i)}` = CAST(@col{i} AS UNSIGNED)");
+						ColumnMappings.Add(new MySqlBulkCopyColumnMapping(i, $"@col{i}", $"`{reader.GetName(i)}` = CAST(@col{i} AS UNSIGNED)"));
 					}
 					else if (schema[i].DataTypeName == "YEAR")
 					{
@@ -155,14 +167,34 @@ namespace MySql.Data.MySqlClient
 						var type = schema[i].DataType;
 						if (type == typeof(byte[]) || (type == typeof(Guid) && (m_connection.GuidFormat == MySqlGuidFormat.Binary16 || m_connection.GuidFormat == MySqlGuidFormat.LittleEndianBinary16 || m_connection.GuidFormat == MySqlGuidFormat.TimeSwapBinary16)))
 						{
-							bulkLoader.Columns.Add($"@col{i}");
-							bulkLoader.Expressions.Add($"`{reader.GetName(i)}` = UNHEX(@col{i})");
+							ColumnMappings.Add(new MySqlBulkCopyColumnMapping(i, $"@col{i}", $"`{reader.GetName(i)}` = UNHEX(@col{i})"));
 						}
 						else
 						{
-							bulkLoader.Columns.Add(QuoteIdentifier(reader.GetName(i)));
+							ColumnMappings.Add(new MySqlBulkCopyColumnMapping(i, reader.GetName(i)));
 						}
 					}
+				}
+			}
+
+			// set columns and expressions from the column mappings
+			for (var i = 0; i < m_valuesEnumerator!.FieldCount; i++)
+			{
+				var columnMapping = ColumnMappings.FirstOrDefault(x => x.SourceOrdinal == i);
+				if (columnMapping is null)
+				{
+					bulkLoader.Columns.Add("@`\uE002\bignore`");
+				}
+				else
+				{
+					if (columnMapping.DestinationColumn.Length == 0)
+						throw new InvalidOperationException("MySqlBulkCopyColumnMapping.DestinationName is not set.");
+					if (columnMapping.DestinationColumn[0] == '@')
+						bulkLoader.Columns.Add(columnMapping.DestinationColumn);
+					else
+						bulkLoader.Columns.Add(QuoteIdentifier(columnMapping.DestinationColumn));
+					if (columnMapping.Expression is object)
+						bulkLoader.Expressions.Add(columnMapping.Expression);
 				}
 			}
 

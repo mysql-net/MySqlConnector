@@ -784,6 +784,59 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			using (var cmd = new MySqlCommand("select count(value) from bulk_copy_abort;", connection))
 				Assert.Equal(expectedCount, cmd.ExecuteScalar());
 		}
+
+		[Fact]
+		public void BulkCopyColumnMappings()
+		{
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			connection.Open();
+			using (var cmd = new MySqlCommand(@"drop table if exists bulk_copy_column_mapping;
+				create table bulk_copy_column_mapping(intvalue int, `text` text);", connection))
+			{
+				cmd.ExecuteNonQuery();
+			}
+
+			var bulkCopy = new MySqlBulkCopy(connection)
+			{
+				DestinationTableName = "bulk_copy_column_mapping",
+				ColumnMappings =
+				{
+					new MySqlBulkCopyColumnMapping(1, "@val", "intvalue = @val + 1"),
+					new MySqlBulkCopyColumnMapping(3, "text"),
+				},
+			};
+
+			var dataTable = new DataTable()
+			{
+				Columns =
+				{
+					new DataColumn("c1", typeof(int)),
+					new DataColumn("c2", typeof(int)),
+					new DataColumn("c3", typeof(string)),
+					new DataColumn("c4", typeof(string)),
+				},
+				Rows =
+				{
+					new object[] { 1, 100, "a", "A" },
+					new object[] { 2, 200, "bb", "BB" },
+					new object[] { 3, 300, "ccc", "CCC" },
+				}
+			};
+
+			bulkCopy.WriteToServer(dataTable);
+
+			using var reader = connection.ExecuteReader(@"select * from bulk_copy_column_mapping;");
+			Assert.True(reader.Read());
+			Assert.Equal(101, reader.GetValue(0));
+			Assert.Equal("A", reader.GetValue(1));
+			Assert.True(reader.Read());
+			Assert.Equal(201, reader.GetValue(0));
+			Assert.Equal("BB", reader.GetValue(1));
+			Assert.True(reader.Read());
+			Assert.Equal(301, reader.GetValue(0));
+			Assert.Equal("CCC", reader.GetValue(1));
+			Assert.False(reader.Read());
+		}
 #endif
 
 		[Fact]
