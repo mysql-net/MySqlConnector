@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.65.0
+
+* Add `ColumnMappings` to `MySqlBulkCopy`: [#773](https://github.com/mysql-net/MySqlConnector/issues/773).
+
 ### 0.64.2
 
 * Restore `COLUMN_TYPE` column to `GetSchema("COLUMNS")`: [#807](https://github.com/mysql-net/MySqlConnector/pull/807).
