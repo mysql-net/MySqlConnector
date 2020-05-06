@@ -20,13 +20,13 @@ steps:
   displayName: 'Build'
   inputs:
     command: 'build'
-    arguments: '-c Release'
+    arguments: '-c Release --no-restore'
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish MySqlConnector.Tests'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f netcoreapp2.1 tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj'
+    arguments: '-c Release -f netcoreapp2.1 --no-build tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
@@ -38,7 +38,7 @@ steps:
   displayName: 'Publish Conformance.Tests'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f netcoreapp3.0 tests/Conformance.Tests/Conformance.Tests.csproj'
+    arguments: '-c Release -f netcoreapp3.0 --no-build tests/Conformance.Tests/Conformance.Tests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
@@ -50,7 +50,7 @@ steps:
   displayName: 'Publish SideBySide (2.0)'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f netcoreapp2.0 tests/SideBySide/SideBySide.csproj'
+    arguments: '-c Release -f netcoreapp2.0 --no-build tests/SideBySide/SideBySide.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
@@ -62,7 +62,7 @@ steps:
   displayName: 'Publish SideBySide (2.1)'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f netcoreapp2.1 tests/SideBySide/SideBySide.csproj'
+    arguments: '-c Release -f netcoreapp2.1 --no-build tests/SideBySide/SideBySide.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
@@ -74,7 +74,7 @@ steps:
   displayName: 'Publish SideBySide (3.0)'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f netcoreapp3.0 tests/SideBySide/SideBySide.csproj'
+    arguments: '-c Release -f netcoreapp3.0 --no-build tests/SideBySide/SideBySide.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
