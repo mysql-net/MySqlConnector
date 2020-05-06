@@ -55,6 +55,7 @@ jobs:
     inputs:
       command: 'test'
       arguments: 'tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj -c Baseline'
+      testRunTitle: 'Baseline unit tests'
   - task: DotNetCoreCLI@2
     displayName: 'Restore packages'
     inputs:
@@ -65,7 +66,8 @@ jobs:
     displayName: 'Baseline tests'
     inputs:
       command: 'test'
-      arguments: 'tests\SideBySide\SideBySide.csproj -c Baseline --logger'
+      arguments: 'tests\SideBySide\SideBySide.csproj -c Baseline'
+      testRunTitle: 'Baseline tests'
     env:
       DATA__UNSUPPORTEDFEATURES: 'Ed25519,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=root;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600'
@@ -91,41 +93,92 @@ jobs:
 
 - job: windows_unit_tests
   dependsOn: windows_build
-  displayName: 'Windows Unit Tests'
+  displayName: 'Windows Tests'
   pool:
     vmimage: 'windows-latest'
   steps:
+  - template: '.ci/install-mysql-windows.yml'
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core 2.1'
+    inputs:
+      version: '2.1.805'
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core'
+    inputs:
+      version: $(DotNetCoreSdkVersion)
   - template: '.ci/mysqlconnector-tests-steps.yml'
+  - template: '.ci/conformance-test-steps.yml'
+    parameters:
+      image: 'mysql:8.0'
+      connectionString: 'server=localhost;port=3306;user id=mysqltest;password=test;database=conformance;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
 
 - job: windows_integration_tests
-  dependsOn: windows_build
   displayName: 'Windows Integration Tests'
   pool:
     vmimage: 'windows-latest'
   steps:
   - template: '.ci/install-mysql-windows.yml'
   - task: UseDotNet@2
+    displayName: 'Install .NET Core 2.1'
+    inputs:
+      version: '2.1.805'
+  - task: UseDotNet@2
     displayName: 'Install .NET Core'
     inputs:
       version: $(DotNetCoreSdkVersion)
-  - template: '.ci/conformance-test-steps.yml'
-    parameters:
-      image: 'mysql:8.0'
-      connectionString: 'server=localhost;port=3306;user id=mysqltest;password=test;database=conformance;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
-  - template: '.ci/sidebyside-test-steps.yml'
-    parameters:
-      image: 'mysql:8.0'
-      unsupportedFeatures: 'Ed25519,Tls11,UnixDomainSocket'
-      connectionString: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
-      platform: 'netcoreapp3.0'
-      description: 'No SSL'
-  - template: '.ci/sidebyside-test-steps.yml'
-    parameters:
-      image: 'mysql:8.0'
-      unsupportedFeatures: 'Ed25519,Tls11,UnixDomainSocket'
-      connectionString: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;UseCompression=True;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
-      platform: 'netcoreapp3.0'
-      description: 'Compression, No SSL'
+  - task: CopyFiles@2
+    displayName: 'Copy config.json'
+    inputs:
+      sourceFolder: '.ci/config'
+      contents: 'config.json'
+      targetFolder: 'tests/SideBySide'
+  - task: PowerShell@2
+    displayName: 'Remove .NET 4.5.2 and .NET Core 1.1.2 targets'
+    inputs:
+      targetType: 'inline'
+      script: '(Get-Content .\tests\SideBySide\SideBySide.csproj -Raw).replace(''net452;'', '''').replace(''netcoreapp1.1.2;'', '''') | Set-Content .\tests\SideBySide\SideBySide.csproj'
+  - task: DotNetCoreCLI@2
+    displayName: 'Side by Side tests'
+    inputs:
+      command: 'test'
+      projects: 'tests/SideBySide/SideBySide.csproj'
+      arguments: '-c Release'
+      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'all', 'No SSL') }}
+    env:
+      DATA__UNSUPPORTEDFEATURES: 'Ed25519,Tls11,UnixDomainSocket'
+      DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True;UseCompression=True'
+
+- job: windows_integration_tests_compression
+  displayName: 'Windows Integration Tests (Compression)'
+  pool:
+    vmimage: 'windows-latest'
+  steps:
+  - template: '.ci/install-mysql-windows.yml'
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core 2.1'
+    inputs:
+      version: '2.1.805'
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core'
+    inputs:
+      version: $(DotNetCoreSdkVersion)
+  - script: copy .ci\config\config.compression.json tests\SideBySide\config.json
+    displayName: 'Copy config.json'
+  - task: PowerShell@2
+    displayName: 'Remove .NET 4.5.2 and .NET Core 1.1.2 targets'
+    inputs:
+      targetType: 'inline'
+      script: '(Get-Content .\tests\SideBySide\SideBySide.csproj -Raw).replace(''net452;'', '''').replace(''netcoreapp1.1.2;'', '''') | Set-Content .\tests\SideBySide\SideBySide.csproj'
+  - task: DotNetCoreCLI@2
+    displayName: 'Side by Side tests'
+    inputs:
+      command: 'test'
+      projects: 'tests/SideBySide/SideBySide.csproj'
+      arguments: '-c Release'
+      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'all', 'No SSL, Compression') }}
+    env:
+      DATA__UNSUPPORTEDFEATURES: 'Ed25519,Tls11,UnixDomainSocket'
+      DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True;UseCompression=True'
 
 - job: linux_integration_tests
   dependsOn: linux_build
