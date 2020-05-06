@@ -32,6 +32,10 @@ dotnet test -c Release -f net452
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
+dotnet test -c Release -f net461
+if ($LASTEXITCODE -ne 0){
+    exit $LASTEXITCODE;
+}
 dotnet test -c Release -f netcoreapp1.1.2
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;

@@ -112,8 +112,8 @@ jobs:
       image: 'mysql:8.0'
       connectionString: 'server=localhost;port=3306;user id=mysqltest;password=test;database=conformance;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
 
-- job: windows_integration_tests
-  displayName: 'Windows Integration Tests'
+- job: windows_integration_tests_1
+  displayName: 'Windows Integration Tests (Part 1)'
   pool:
     vmimage: 'windows-latest'
   steps:
@@ -133,23 +133,23 @@ jobs:
       contents: 'config.json'
       targetFolder: 'tests/SideBySide'
   - task: PowerShell@2
-    displayName: 'Remove .NET 4.5.2 and .NET Core 1.1.2 targets'
+    displayName: 'Remove target frameworks'
     inputs:
       targetType: 'inline'
-      script: '(Get-Content .\tests\SideBySide\SideBySide.csproj -Raw).replace(''net452;'', '''').replace(''netcoreapp1.1.2;'', '''') | Set-Content .\tests\SideBySide\SideBySide.csproj'
+      script: '((Get-Content .\tests\SideBySide\SideBySide.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>net472;netcoreapp2.0</TargetFrameworks>'')) | Set-Content .\tests\SideBySide\SideBySide.csproj'
   - task: DotNetCoreCLI@2
-    displayName: 'Side by Side tests'
+    displayName: 'Side by Side tests (net472/netcoreapp2.0)'
     inputs:
       command: 'test'
       projects: 'tests/SideBySide/SideBySide.csproj'
       arguments: '-c Release'
-      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'all', 'No SSL') }}
+      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net472/netcoreapp2.0', 'No SSL') }}
     env:
       DATA__UNSUPPORTEDFEATURES: 'Ed25519,Tls11,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True;UseCompression=True'
 
-- job: windows_integration_tests_compression
-  displayName: 'Windows Integration Tests (Compression)'
+- job: windows_integration_tests_2
+  displayName: 'Windows Integration Tests (Part 2)'
   pool:
     vmimage: 'windows-latest'
   steps:
@@ -162,23 +162,23 @@ jobs:
     displayName: 'Install .NET Core'
     inputs:
       version: $(DotNetCoreSdkVersion)
-  - script: copy .ci\config\config.compression.json tests\SideBySide\config.json
+  - script: copy .ci\config\config.json tests\SideBySide\config.json
     displayName: 'Copy config.json'
   - task: PowerShell@2
-    displayName: 'Remove .NET 4.5.2 and .NET Core 1.1.2 targets'
+    displayName: 'Remove target frameworks'
     inputs:
       targetType: 'inline'
-      script: '(Get-Content .\tests\SideBySide\SideBySide.csproj -Raw).replace(''net452;'', '''').replace(''netcoreapp1.1.2;'', '''') | Set-Content .\tests\SideBySide\SideBySide.csproj'
+      script: '((Get-Content .\tests\SideBySide\SideBySide.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>netcoreapp2.1;netcoreapp3.0</TargetFrameworks>'')) | Set-Content .\tests\SideBySide\SideBySide.csproj'
   - task: DotNetCoreCLI@2
-    displayName: 'Side by Side tests'
+    displayName: 'Side by Side tests (netcoreapp2.1/netcoreapp3.0)'
     inputs:
       command: 'test'
       projects: 'tests/SideBySide/SideBySide.csproj'
-      arguments: '-c Release'
-      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'all', 'No SSL, Compression') }}
+      arguments: '-c Release -f netcoreapp2.1'
+      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'netcoreapp2.1/netcoreapp3.0', 'No SSL') }}
     env:
       DATA__UNSUPPORTEDFEATURES: 'Ed25519,Tls11,UnixDomainSocket'
-      DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True;UseCompression=True'
+      DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
 
 - job: linux_integration_tests
   dependsOn: linux_build
