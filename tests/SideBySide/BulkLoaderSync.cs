@@ -725,6 +725,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			{
 				eventCount++;
 				rowsCopied = e.RowsCopied;
+				Assert.Equal(bulkCopy.RowsCopied, e.RowsCopied);
 			};
 
 			var dataTable = new DataTable()
@@ -737,6 +738,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			bulkCopy.WriteToServer(dataTable);
 			Assert.Equal(expectedEventCount, eventCount);
 			Assert.Equal(expectedRowsCopied, rowsCopied);
+			Assert.Equal(rowCount, bulkCopy.RowsCopied);
 		}
 
 		[Theory]

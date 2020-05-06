@@ -55,6 +55,11 @@ namespace MySql.Data.MySqlClient
 		/// </summary>
 		public List<MySqlBulkCopyColumnMapping> ColumnMappings { get; }
 
+		/// <summary>
+		/// Returns the number of rows that were copied (after <code>WriteToServer(Async)</code> finishes).
+		/// </summary>
+		public int RowsCopied { get; private set; }
+
 #if !NETSTANDARD1_3
 		public void WriteToServer(DataTable dataTable)
 		{
@@ -218,7 +223,7 @@ namespace MySql.Data.MySqlClient
 			var outputIndex = 0;
 
 			// allocate a reusable MySqlRowsCopiedEventArgs if event notification is necessary
-			var rowsCopied = 0;
+			RowsCopied = 0;
 			MySqlRowsCopiedEventArgs? eventArgs = null;
 			if (NotifyAfter > 0 && MySqlRowsCopied is object)
 				eventArgs = new MySqlRowsCopiedEventArgs();
@@ -267,10 +272,10 @@ namespace MySql.Data.MySqlClient
 					{
 						buffer[outputIndex++] = (byte) '\n';
 
-						rowsCopied++;
-						if (eventArgs is object && rowsCopied % NotifyAfter == 0)
+						RowsCopied++;
+						if (eventArgs is object && RowsCopied % NotifyAfter == 0)
 						{
-							eventArgs.RowsCopied = rowsCopied;
+							eventArgs.RowsCopied = RowsCopied;
 							MySqlRowsCopied!(this, eventArgs);
 							if (eventArgs.Abort)
 								break;
