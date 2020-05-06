@@ -283,13 +283,6 @@ namespace MySql.Data.MySqlClient
 					var payload2 = new PayloadData(new ArraySegment<byte>(buffer, 0, outputIndex));
 					await m_connection.Session.SendReplyAsync(payload2, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
-
-				// send final RowsCopied event (if it wasn't already sent)
-				if (eventArgs is object && rowsCopied % NotifyAfter != 0)
-				{
-					eventArgs.RowsCopied = rowsCopied;
-					MySqlRowsCopied!(this, eventArgs);
-				}
 			}
 			finally
 			{

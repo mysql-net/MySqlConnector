@@ -506,8 +506,8 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		[Theory]
 		[InlineData(0, 15, 0, 0)]
 		[InlineData(5, 15, 3, 15)]
-		[InlineData(5, 16, 4, 16)]
-		[InlineData(int.MaxValue, 15, 1, 15)]
+		[InlineData(5, 16, 3, 15)]
+		[InlineData(int.MaxValue, 0, 0, 0)]
 		public async Task BulkCopyNotifyAfter(int notifyAfter, int rowCount, int expectedEventCount, int expectedRowsCopied)
 		{
 			using var connection = new MySqlConnection(GetLocalConnectionString());
@@ -547,7 +547,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		[InlineData(0, 40, 0, 0, 0, 40)]
 		[InlineData(5, 40, 15, 3, 15, 0)]
 		[InlineData(5, 40, 20, 4, 20, 16)]
-		[InlineData(int.MaxValue, 20, 0, 1, 20, 20)]
+		[InlineData(int.MaxValue, 20, 0, 0, 0, 20)]
 		public async Task BulkCopyAbort(int notifyAfter, int rowCount, int abortAfter, int expectedEventCount, int expectedRowsCopied, long expectedCount)
 		{
 			using var connection = new MySqlConnection(GetLocalConnectionString());
