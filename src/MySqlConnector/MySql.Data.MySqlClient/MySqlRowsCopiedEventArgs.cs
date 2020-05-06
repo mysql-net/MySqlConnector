@@ -20,7 +20,7 @@ namespace MySql.Data.MySqlClient
 	}
 
 	/// <summary>
-	/// Represents the method that handles the <see cref="MySqlBulkCopy.RowsCopied"/> event of a <see cref="MySqlBulkCopy"/>.
+	/// Represents the method that handles the <see cref="MySqlBulkCopy.MySqlRowsCopied"/> event of a <see cref="MySqlBulkCopy"/>.
 	/// </summary>
 	public delegate void MySqlRowsCopiedEventHandler(object sender, MySqlRowsCopiedEventArgs e);
 }

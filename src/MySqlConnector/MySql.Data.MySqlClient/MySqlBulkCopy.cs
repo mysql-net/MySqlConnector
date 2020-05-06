@@ -44,7 +44,7 @@ namespace MySql.Data.MySqlClient
 		/// <remarks>
 		/// Receipt of a RowsCopied event does not imply that any rows have been sent to the server or committed.
 		/// </remarks>
-		public event MySqlRowsCopiedEventHandler? RowsCopied;
+		public event MySqlRowsCopiedEventHandler? MySqlRowsCopied;
 
 		/// <summary>
 		/// A collection of <see cref="MySqlBulkCopyColumnMapping"/> objects. If the columns being copied from the
@@ -220,7 +220,7 @@ namespace MySql.Data.MySqlClient
 			// allocate a reusable MySqlRowsCopiedEventArgs if event notification is necessary
 			var rowsCopied = 0;
 			MySqlRowsCopiedEventArgs? eventArgs = null;
-			if (NotifyAfter > 0 && RowsCopied is object)
+			if (NotifyAfter > 0 && MySqlRowsCopied is object)
 				eventArgs = new MySqlRowsCopiedEventArgs();
 
 			try
@@ -271,7 +271,7 @@ namespace MySql.Data.MySqlClient
 						if (eventArgs is object && rowsCopied % NotifyAfter == 0)
 						{
 							eventArgs.RowsCopied = rowsCopied;
-							RowsCopied!(this, eventArgs);
+							MySqlRowsCopied!(this, eventArgs);
 							if (eventArgs.Abort)
 								break;
 						}
@@ -288,7 +288,7 @@ namespace MySql.Data.MySqlClient
 				if (eventArgs is object && rowsCopied % NotifyAfter != 0)
 				{
 					eventArgs.RowsCopied = rowsCopied;
-					RowsCopied!(this, eventArgs);
+					MySqlRowsCopied!(this, eventArgs);
 				}
 			}
 			finally

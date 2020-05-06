@@ -525,7 +525,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			};
 			int eventCount = 0;
 			long rowsCopied = 0;
-			bulkCopy.RowsCopied += (s, e) =>
+			bulkCopy.MySqlRowsCopied += (s, e) =>
 			{
 				eventCount++;
 				rowsCopied = e.RowsCopied;
@@ -565,7 +565,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			};
 			int eventCount = 0;
 			long rowsCopied = 0;
-			bulkCopy.RowsCopied += (s, e) =>
+			bulkCopy.MySqlRowsCopied += (s, e) =>
 			{
 				eventCount++;
 				rowsCopied = e.RowsCopied;
