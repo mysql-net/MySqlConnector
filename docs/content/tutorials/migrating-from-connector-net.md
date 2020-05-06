@@ -189,7 +189,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#92734](https://bugs.mysql.com/bug.php?id=92734): `MySqlParameter.Clone` doesn't copy all property values
 * [#92789](https://bugs.mysql.com/bug.php?id=92789): Illegal connection attributes written for non-ASCII values
 * ~~[#92912](https://bugs.mysql.com/bug.php?id=92912): `MySqlDbType.LongText` values encoded incorrectly with prepared statements~~
-* [#92982](https://bugs.mysql.com/bug.php?id=92982): `FormatException` thrown when connecting to MySQL Server 8.0.13
+* [#92982](https://bugs.mysql.com/bug.php?id=92982), [#93399](https://bugs.mysql.com/bug.php?id=93399): `FormatException` thrown when connecting to MySQL Server 8.0.13
 * [#93047](https://bugs.mysql.com/bug.php?id=93047): `MySqlDataAdapter` throws timeout exception when an error occurs
 * ~~[#93202](https://bugs.mysql.com/bug.php?id=93202): Connector runs `SHOW VARIABLES` when connection is made~~
 * [#93220](https://bugs.mysql.com/bug.php?id=93220): Can’t call FUNCTION when parameter name contains parentheses
