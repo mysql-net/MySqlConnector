@@ -122,6 +122,13 @@ namespace MySqlConnector.Tests
 				},
 				new object[]
 				{
+					"IN input enum ('One', 'Two', 'Three')", new object[]
+					{
+						new CachedParameter(1, "IN", "input", "ENUM", false, 0),
+					}
+				},
+				new object[]
+				{
 					"OUT param DECIMAL(10,5)", new object[]
 					{
 						new CachedParameter(1, "OUT", "param", "DECIMAL", false, 0),
@@ -190,6 +197,7 @@ param4 INTEGER(3)
 		[InlineData("VARCHAR(300) COLLATE ascii_general_ci", "VARCHAR", false, 300)]
 		[InlineData("BINARY(16)", "BINARY", false, 16)]
 		[InlineData("CHAR(36)", "CHAR", false, 36)]
+		[InlineData("ENUM('a','b','c')", "ENUM", false, 0)]
 		public void ParseDataType(string sql, string expectedDataType, bool expectedUnsigned, int expectedLength)
 		{
 			var dataType = CachedProcedure.ParseDataType(sql, out var unsigned, out var length);

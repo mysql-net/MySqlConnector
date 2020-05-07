@@ -669,6 +669,18 @@ namespace SideBySide
 			Assert.IsType<TimeSpan>(parameter.Value);
 		}
 
+		[Fact]
+		public void EnumProcedure()
+		{
+			using var command = new MySqlCommand("EnumProcedure", m_database.Connection);
+			command.CommandType = CommandType.StoredProcedure;
+			command.Parameters.AddWithValue("@input", "One");
+			using var reader = command.ExecuteReader();
+			Assert.True(reader.Read());
+			Assert.Equal("One", reader.GetString(0));
+			Assert.False(reader.Read());
+		}
+
 		private static string NormalizeSpaces(string input)
 		{
 			input = input.Replace('\r', ' ');

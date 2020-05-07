@@ -124,7 +124,14 @@ namespace SideBySide
 				CREATE PROCEDURE `GetTime`(OUT OutTime TIME)
 				BEGIN
 					SET OutTime = CURTIME();
-				END;");
+				END;
+
+				DROP PROCEDURE IF EXISTS EnumProcedure;
+				CREATE PROCEDURE EnumProcedure(IN input enum ('One', 'Two', 'Three'))
+				BEGIN
+					SELECT input;
+				END;
+");
 
 			if (AppConfig.SupportsJson)
 			{

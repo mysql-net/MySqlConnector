@@ -157,6 +157,9 @@ namespace MySqlConnector.Core
 			// strip precision specifier containing comma
 			parametersSql = Regex.Replace(parametersSql, @"(DECIMAL|DEC|FIXED|NUMERIC|FLOAT|DOUBLE PRECISION|DOUBLE|REAL)\s*\(\d+(,\s*\d+)\)", @"$1", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
+			// strip enum values containing commas (these would have been stripped by ParseDataType anyway)
+			parametersSql = Regex.Replace(parametersSql, @"ENUM\s*\([^)]+\)", "ENUM", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
 			var parameters = parametersSql.Split(',');
 			var cachedParameters = new List<CachedParameter>(parameters.Length);
 			for (var i = 0; i < parameters.Length; i++)
@@ -202,6 +205,7 @@ namespace MySqlConnector.Core
 			}
 			sql = Regex.Replace(sql, " (CHARSET|CHARACTER SET) [A-Za-z0-9_]+", "", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 			sql = Regex.Replace(sql, " (COLLATE) [A-Za-z0-9_]+", "", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+			sql = Regex.Replace(sql, @"ENUM\s*\([^)]+\)", "ENUM", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
 			length = 0;
 			var match = Regex.Match(sql, @"\s*\(\s*(\d+)\s*(?:,\s*\d+\s*)?\)");
