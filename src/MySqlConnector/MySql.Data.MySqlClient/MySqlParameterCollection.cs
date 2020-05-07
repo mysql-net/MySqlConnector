@@ -68,6 +68,8 @@ namespace MySql.Data.MySqlClient
 
 		public override void Clear()
 		{
+			foreach (var parameter in m_parameters)
+				parameter.ParameterCollection = null;
 			m_parameters.Clear();
 			m_nameToIndex.Clear();
 		}
@@ -113,6 +115,7 @@ namespace MySql.Data.MySqlClient
 			var oldParameter = m_parameters[index];
 			if (oldParameter.NormalizedParameterName is object)
 				m_nameToIndex.Remove(oldParameter.NormalizedParameterName);
+			oldParameter.ParameterCollection = null;
 			m_parameters.RemoveAt(index);
 
 			foreach (var pair in m_nameToIndex.ToList())
@@ -130,9 +133,11 @@ namespace MySql.Data.MySqlClient
 			var oldParameter = m_parameters[index];
 			if (oldParameter.NormalizedParameterName is object)
 				m_nameToIndex.Remove(oldParameter.NormalizedParameterName);
+			oldParameter.ParameterCollection = null;
 			m_parameters[index] = newParameter;
 			if (newParameter.NormalizedParameterName is object)
 				m_nameToIndex.Add(newParameter.NormalizedParameterName, index);
+			newParameter.ParameterCollection = this;
 		}
 
 		protected override void SetParameter(string parameterName, DbParameter value) => SetParameter(IndexOf(parameterName), value);
@@ -153,6 +158,21 @@ namespace MySql.Data.MySqlClient
 			set => SetParameter(name, value);
 		}
 
+		internal void ChangeParameterName(MySqlParameter parameter, string oldName, string newName)
+		{
+			if (m_nameToIndex.TryGetValue(oldName, out var index) && m_parameters[index] == parameter)
+				m_nameToIndex.Remove(oldName);
+			else
+				index = m_parameters.IndexOf(parameter);
+
+			if (newName.Length != 0)
+			{
+				if (m_nameToIndex.ContainsKey(newName))
+					throw new MySqlException(@"There is already a parameter with the name '{0}' in this collection.".FormatInvariant(parameter.ParameterName));
+				m_nameToIndex[newName] = index;
+			}
+		}
+
 		private void AddParameter(MySqlParameter parameter)
 		{
 			if (!string.IsNullOrEmpty(parameter.NormalizedParameterName) && NormalizedIndexOf(parameter.NormalizedParameterName) != -1)
@@ -160,6 +180,7 @@ namespace MySql.Data.MySqlClient
 			m_parameters.Add(parameter);
 			if (!string.IsNullOrEmpty(parameter.NormalizedParameterName))
 				m_nameToIndex[parameter.NormalizedParameterName] = m_parameters.Count - 1;
+			parameter.ParameterCollection = this;
 		}
 
 		readonly List<MySqlParameter> m_parameters;

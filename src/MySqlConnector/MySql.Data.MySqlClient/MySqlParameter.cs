@@ -121,7 +121,9 @@ namespace MySql.Data.MySqlClient
 			set
 			{
 				m_name = value ?? "";
-				NormalizedParameterName = value is null ? "" : NormalizeParameterName(m_name);
+				var newNormalizedParameterName = value is null ? "" : NormalizeParameterName(m_name);
+				ParameterCollection?.ChangeParameterName(this, NormalizedParameterName, newNormalizedParameterName);
+				NormalizedParameterName = newNormalizedParameterName;
 			}
 		}
 
@@ -204,6 +206,8 @@ namespace MySql.Data.MySqlClient
 		internal bool HasSetDbType { get; set; }
 
 		internal string NormalizedParameterName { get; private set; }
+
+		internal MySqlParameterCollection? ParameterCollection { get; set; }
 
 		internal void AppendSqlString(ByteBufferWriter writer, StatementPreparerOptions options)
 		{

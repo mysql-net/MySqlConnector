@@ -257,6 +257,53 @@ namespace SideBySide
 			Assert.Throws<ArgumentException>(() => m_parameterCollection.CopyTo(new DbParameter[2], 3));
 		}
 
+		[Fact]
+		public void ChangeParameterNameAfterAdd()
+		{
+			using var cmd = new MySqlCommand();
+			using var cmd2 = new MySqlCommand();
+			var parameter = cmd.CreateParameter();
+			parameter.ParameterName = "@a";
+
+			cmd2.Parameters.Add(parameter);
+			cmd.Parameters.Add(parameter);
+
+			parameter.ParameterName = "@b";
+
+			Assert.Equal(parameter, cmd.Parameters["@b"]);
+			Assert.Throws<ArgumentException>(() => cmd.Parameters["@a"]);
+
+			// only works for the last collection that contained the parameter
+			Assert.Throws<ArgumentException>(() => cmd2.Parameters["@b"]);
+			Assert.Equal(parameter, cmd2.Parameters["@a"]);
+		}
+
+		[Fact]
+		public void SetParameterNameAfterAdd()
+		{
+			using var cmd = new MySqlCommand();
+			var parameter = cmd.CreateParameter();
+			cmd.Parameters.Add(parameter);
+			parameter.ParameterName = "@a";
+			Assert.Equal(parameter, cmd.Parameters["@a"]);
+		}
+
+		[Fact]
+		public void SetTwoParametersToSameNAme()
+		{
+			using var cmd = new MySqlCommand();
+			var parameter1 = cmd.CreateParameter();
+			cmd.Parameters.Add(parameter1);
+			var parameter2 = cmd.CreateParameter();
+			cmd.Parameters.Add(parameter2);
+			parameter1.ParameterName = "@a";
+#if !BASELINE
+			Assert.Throws<MySqlException>(() => parameter2.ParameterName = "@a");
+#else
+			Assert.Throws<ArgumentException>(() => parameter2.ParameterName = "@a");
+#endif
+		}
+
 		MySqlCommand m_command;
 		MySqlParameterCollection m_parameterCollection;
 	}
