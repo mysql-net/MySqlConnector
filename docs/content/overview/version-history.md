@@ -11,6 +11,14 @@ weight: 30
 Version History
 ===============
 
+### 0.66.0
+
+* **Breaking** Add `MySqlBulkCopy.RowsCopied` property: [#809](https://github.com/mysql-net/MySqlConnector/issues/809).
+  * The `RowsCopied` event is renamed to `MySqlRowsCopied`.
+  * The `MySqlRowsCopied` event is no longer guaranteed to be raised at the end of copying.
+* Fix `NullReferenceException` when calling a stored procedure with an `ENUM` parameter: [#812](https://github.com/mysql-net/MySqlConnector/issues/812).
+* Track `MySqlParameter` name changes (when added to a `MySqlParameterCollection`): [#811](https://github.com/mysql-net/MySqlConnector/issues/811).
+
 ### 0.65.0
 
 * Add `ColumnMappings` to `MySqlBulkCopy`: [#773](https://github.com/mysql-net/MySqlConnector/issues/773).
