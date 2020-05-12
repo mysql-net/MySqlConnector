@@ -49,6 +49,7 @@ namespace MySql.Data.MySqlClient
 		private MySqlCommand(MySqlCommand other)
 			: this(other.CommandText, other.Connection, other.Transaction)
 		{
+			GC.SuppressFinalize(this);
 			m_commandTimeout = other.m_commandTimeout;
 			m_commandType = other.m_commandType;
 			DesignTimeVisible = other.DesignTimeVisible;
