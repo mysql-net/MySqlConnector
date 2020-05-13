@@ -121,7 +121,9 @@ Source columns that don't have an entry in `MySqlBulkCopy.ColumnMappings` will b
 (unless the `ColumnMappings` collection is empty, in which case all columns will be mapped
 one-to-one).
 
-Columns containing binary data must be mapped using an expression that uses the `UNHEX` function.
+MySqlConnector will transmit all binary data as hex, so any expression that operates on it
+must decode it with the `UNHEX` function first. (This will be performed automatically if no
+`Expression` is specified, but will be necessary to specify manually for more complex expressions.)
 
 ### Examples
 
@@ -136,11 +138,5 @@ new MySqlBulkCopyColumnMapping
     SourceOrdinal = 0,
     DestinationColumn = "@tmp",
     Expression = "SET column_value = @tmp * 2",
-},
-new MySqlBulkCopyColumnMapping
-{
-    SourceOrdinal = 1,
-    DestinationColumn = "@tmp2",
-    Expression = "SET binary_column = UNHEX(@tmp2)",
 },
 ```

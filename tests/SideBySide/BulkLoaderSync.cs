@@ -793,7 +793,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			using var connection = new MySqlConnection(GetLocalConnectionString());
 			connection.Open();
 			using (var cmd = new MySqlCommand(@"drop table if exists bulk_copy_column_mapping;
-				create table bulk_copy_column_mapping(intvalue int, `text` text);", connection))
+				create table bulk_copy_column_mapping(intvalue int, `text` text, data blob);", connection))
 			{
 				cmd.ExecuteNonQuery();
 			}
@@ -805,6 +805,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 				{
 					new MySqlBulkCopyColumnMapping(1, "@val", "intvalue = @val + 1"),
 					new MySqlBulkCopyColumnMapping(3, "text"),
+					new MySqlBulkCopyColumnMapping(4, "data"),
 				},
 			};
 
@@ -816,12 +817,13 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 					new DataColumn("c2", typeof(int)),
 					new DataColumn("c3", typeof(string)),
 					new DataColumn("c4", typeof(string)),
+					new DataColumn("c5", typeof(byte[])),
 				},
 				Rows =
 				{
-					new object[] { 1, 100, "a", "A" },
-					new object[] { 2, 200, "bb", "BB" },
-					new object[] { 3, 300, "ccc", "CCC" },
+					new object[] { 1, 100, "a", "A", new byte[] { 0x33, 0x30 } },
+					new object[] { 2, 200, "bb", "BB", new byte[] { 0x33, 0x31 }  },
+					new object[] { 3, 300, "ccc", "CCC", new byte[] { 0x33, 0x32 }  },
 				}
 			};
 
@@ -831,12 +833,15 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			Assert.True(reader.Read());
 			Assert.Equal(101, reader.GetValue(0));
 			Assert.Equal("A", reader.GetValue(1));
+			Assert.Equal(new byte[] { 0x33, 0x30 }, reader.GetValue(2));
 			Assert.True(reader.Read());
 			Assert.Equal(201, reader.GetValue(0));
 			Assert.Equal("BB", reader.GetValue(1));
+			Assert.Equal(new byte[] { 0x33, 0x31 }, reader.GetValue(2));
 			Assert.True(reader.Read());
 			Assert.Equal(301, reader.GetValue(0));
 			Assert.Equal("CCC", reader.GetValue(1));
+			Assert.Equal(new byte[] { 0x33, 0x32 }, reader.GetValue(2));
 			Assert.False(reader.Read());
 		}
 #endif

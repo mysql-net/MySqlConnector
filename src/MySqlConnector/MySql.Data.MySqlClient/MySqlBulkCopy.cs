@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.Types;
 using MySqlConnector.Core;
+using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -150,17 +151,18 @@ namespace MySql.Data.MySqlClient
 				closeConnection = true;
 			}
 
-			// if no user-supplied column mappings, compute them from the destination schema
-			if (ColumnMappings.Count == 0)
+			// merge column mappings with the destination schema
+			var columnMappings = new List<MySqlBulkCopyColumnMapping>(ColumnMappings);
+			var addDefaultMappings = columnMappings.Count == 0;
+			using (var cmd = new MySqlCommand("select * from " + tableName + ";", m_connection, m_transaction))
+			using (var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync(CommandBehavior.SchemaOnly, ioBehavior, cancellationToken).ConfigureAwait(false))
 			{
-				using var cmd = new MySqlCommand("select * from " + tableName + ";", m_connection, m_transaction);
-				using var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync(CommandBehavior.SchemaOnly, ioBehavior, cancellationToken).ConfigureAwait(false);
 				var schema = reader.GetColumnSchema();
 				for (var i = 0; i < schema.Count; i++)
 				{
 					if (schema[i].DataTypeName == "BIT")
 					{
-						ColumnMappings.Add(new MySqlBulkCopyColumnMapping(i, $"@col{i}", $"`{reader.GetName(i)}` = CAST(@col{i} AS UNSIGNED)"));
+						AddColumnMapping(columnMappings, addDefaultMappings, i, reader.GetName(i), $"@`\uE002\bcol{i}`", $"%COL% = CAST(%VAR% AS UNSIGNED)");
 					}
 					else if (schema[i].DataTypeName == "YEAR")
 					{
@@ -172,11 +174,11 @@ namespace MySql.Data.MySqlClient
 						var type = schema[i].DataType;
 						if (type == typeof(byte[]) || (type == typeof(Guid) && (m_connection.GuidFormat == MySqlGuidFormat.Binary16 || m_connection.GuidFormat == MySqlGuidFormat.LittleEndianBinary16 || m_connection.GuidFormat == MySqlGuidFormat.TimeSwapBinary16)))
 						{
-							ColumnMappings.Add(new MySqlBulkCopyColumnMapping(i, $"@col{i}", $"`{reader.GetName(i)}` = UNHEX(@col{i})"));
+							AddColumnMapping(columnMappings, addDefaultMappings, i, reader.GetName(i), $"@`\uE002\bcol{i}`", $"%COL% = UNHEX(%VAR%)");
 						}
-						else
+						else if (addDefaultMappings)
 						{
-							ColumnMappings.Add(new MySqlBulkCopyColumnMapping(i, reader.GetName(i)));
+							columnMappings.Add(new MySqlBulkCopyColumnMapping(i, reader.GetName(i)));
 						}
 					}
 				}
@@ -185,9 +187,10 @@ namespace MySql.Data.MySqlClient
 			// set columns and expressions from the column mappings
 			for (var i = 0; i < m_valuesEnumerator!.FieldCount; i++)
 			{
-				var columnMapping = ColumnMappings.FirstOrDefault(x => x.SourceOrdinal == i);
+				var columnMapping = columnMappings.FirstOrDefault(x => x.SourceOrdinal == i);
 				if (columnMapping is null)
 				{
+					Log.Info("Ignoring column with SourceOrdinal {0}", i);
 					bulkLoader.Columns.Add("@`\uE002\bignore`");
 				}
 				else
@@ -213,6 +216,28 @@ namespace MySql.Data.MySqlClient
 #endif
 
 			static string QuoteIdentifier(string identifier) => "`" + identifier.Replace("`", "``") + "`";
+
+			static void AddColumnMapping(List<MySqlBulkCopyColumnMapping> columnMappings, bool addDefaultMappings, int destinationOrdinal, string destinationColumn, string variableName, string expression)
+			{
+				expression = expression.Replace("%COL%", "`" + destinationColumn + "`").Replace("%VAR%", variableName);
+				var columnMapping = columnMappings.FirstOrDefault(x => destinationColumn.Equals(x.DestinationColumn, StringComparison.OrdinalIgnoreCase));
+				if (columnMapping is object)
+				{
+					if (columnMapping.Expression is object)
+					{
+						Log.Warn("Column mapping for SourceOrdinal {0}, DestinationColumn {1} already has Expression {2}", columnMapping.SourceOrdinal, columnMapping.DestinationColumn, columnMapping.Expression);
+					}
+					else
+					{
+						columnMappings.Remove(columnMapping);
+						columnMappings.Add(new MySqlBulkCopyColumnMapping(columnMapping.SourceOrdinal, variableName, expression));
+					}
+				}
+				else if (addDefaultMappings)
+				{
+					columnMappings.Add(new MySqlBulkCopyColumnMapping(destinationOrdinal, variableName, expression));
+				}
+			}
 		}
 
 		internal async Task SendDataReaderAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -515,6 +540,7 @@ namespace MySql.Data.MySqlClient
 
 		private static ReadOnlySpan<byte> EscapedNull => new byte[] { 0x5C, 0x4E };
 		private static readonly char[] s_specialCharacters = new char[] { '\t', '\\', '\n' };
+		private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlBulkCopy));
 
 		readonly MySqlConnection m_connection;
 		readonly MySqlTransaction? m_transaction;
