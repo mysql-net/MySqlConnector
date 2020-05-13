@@ -129,6 +129,7 @@ namespace MySql.Data.MySqlClient
 		{
 			var tableName = DestinationTableName ?? throw new InvalidOperationException("DestinationTableName must be set before calling WriteToServer");
 
+			Log.Info("Starting bulk copy to {0}", tableName);
 			var bulkLoader = new MySqlBulkLoader(m_connection)
 			{
 				CharacterSet = "utf8mb4",
@@ -160,9 +161,10 @@ namespace MySql.Data.MySqlClient
 				var schema = reader.GetColumnSchema();
 				for (var i = 0; i < schema.Count; i++)
 				{
+					var destinationColumn = reader.GetName(i);
 					if (schema[i].DataTypeName == "BIT")
 					{
-						AddColumnMapping(columnMappings, addDefaultMappings, i, reader.GetName(i), $"@`\uE002\bcol{i}`", $"%COL% = CAST(%VAR% AS UNSIGNED)");
+						AddColumnMapping(columnMappings, addDefaultMappings, i, destinationColumn, $"@`\uE002\bcol{i}`", $"%COL% = CAST(%VAR% AS UNSIGNED)");
 					}
 					else if (schema[i].DataTypeName == "YEAR")
 					{
@@ -174,11 +176,12 @@ namespace MySql.Data.MySqlClient
 						var type = schema[i].DataType;
 						if (type == typeof(byte[]) || (type == typeof(Guid) && (m_connection.GuidFormat == MySqlGuidFormat.Binary16 || m_connection.GuidFormat == MySqlGuidFormat.LittleEndianBinary16 || m_connection.GuidFormat == MySqlGuidFormat.TimeSwapBinary16)))
 						{
-							AddColumnMapping(columnMappings, addDefaultMappings, i, reader.GetName(i), $"@`\uE002\bcol{i}`", $"%COL% = UNHEX(%VAR%)");
+							AddColumnMapping(columnMappings, addDefaultMappings, i, destinationColumn, $"@`\uE002\bcol{i}`", $"%COL% = UNHEX(%VAR%)");
 						}
 						else if (addDefaultMappings)
 						{
-							columnMappings.Add(new MySqlBulkCopyColumnMapping(i, reader.GetName(i)));
+							Log.Debug("Adding default column mapping from SourceOrdinal {0} to DestinationColumn {1}", i, destinationColumn);
+							columnMappings.Add(new MySqlBulkCopyColumnMapping(i, destinationColumn));
 						}
 					}
 				}
@@ -190,7 +193,7 @@ namespace MySql.Data.MySqlClient
 				var columnMapping = columnMappings.FirstOrDefault(x => x.SourceOrdinal == i);
 				if (columnMapping is null)
 				{
-					Log.Info("Ignoring column with SourceOrdinal {0}", i);
+					Log.Debug("Ignoring column with SourceOrdinal {0}", i);
 					bulkLoader.Columns.Add("@`\uE002\bignore`");
 				}
 				else
@@ -211,6 +214,8 @@ namespace MySql.Data.MySqlClient
 			if (closeConnection)
 				m_connection.Close();
 
+			Log.Info("Finished bulk copy to {0}", tableName);
+
 #if !NETSTANDARD2_1 && !NETCOREAPP3_0
 			return default;
 #endif
@@ -225,16 +230,18 @@ namespace MySql.Data.MySqlClient
 				{
 					if (columnMapping.Expression is object)
 					{
-						Log.Warn("Column mapping for SourceOrdinal {0}, DestinationColumn {1} already has Expression {2}", columnMapping.SourceOrdinal, columnMapping.DestinationColumn, columnMapping.Expression);
+						Log.Warn("Column mapping for SourceOrdinal {0}, DestinationColumn {1} already has Expression {2}", columnMapping.SourceOrdinal, destinationColumn, columnMapping.Expression);
 					}
 					else
 					{
+						Log.Debug("Setting expression to map SourceOrdinal {0} to DestinationColumn {1}", columnMapping.SourceOrdinal, destinationColumn);
 						columnMappings.Remove(columnMapping);
 						columnMappings.Add(new MySqlBulkCopyColumnMapping(columnMapping.SourceOrdinal, variableName, expression));
 					}
 				}
 				else if (addDefaultMappings)
 				{
+					Log.Debug("Adding default column mapping from SourceOrdinal {0} to DestinationColumn {1}", destinationOrdinal, destinationColumn);
 					columnMappings.Add(new MySqlBulkCopyColumnMapping(destinationOrdinal, variableName, expression));
 				}
 			}
