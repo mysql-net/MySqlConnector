@@ -139,7 +139,7 @@ namespace MySql.Data.MySqlClient
 				Local = true,
 				NumberOfLinesToSkip = 0,
 				Source = this,
-				TableName = QuoteIdentifier(tableName),
+				TableName = tableName,
 				Timeout = BulkCopyTimeout,
 			};
 
@@ -153,7 +153,7 @@ namespace MySql.Data.MySqlClient
 			// if no user-supplied column mappings, compute them from the destination schema
 			if (ColumnMappings.Count == 0)
 			{
-				using var cmd = new MySqlCommand("select * from " + QuoteIdentifier(tableName) + ";", m_connection, m_transaction);
+				using var cmd = new MySqlCommand("select * from " + tableName + ";", m_connection, m_transaction);
 				using var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync(CommandBehavior.SchemaOnly, ioBehavior, cancellationToken).ConfigureAwait(false);
 				var schema = reader.GetColumnSchema();
 				for (var i = 0; i < schema.Count; i++)

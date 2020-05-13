@@ -54,7 +54,7 @@ The number of seconds for the operation to complete before it times out, or `0` 
 
 `public string DestinationTableName { get; set; }`
 
-Name of the destination table on the server. (This name shouldn't be quoted or escaped.)
+Name of the destination table on the server. (This name needs to be quoted if it contains special characters.)
 
 `public int NotifyAfter { get; set; }`
 
