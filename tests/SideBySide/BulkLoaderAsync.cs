@@ -499,8 +499,19 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			var bulkCopy = new MySqlBulkCopy(connection)
 			{
 				DestinationTableName = "bulk_load_data_table",
+				ColumnMappings =
+				{
+					new MySqlBulkCopyColumnMapping(0, "b"),
+				}
 			};
-			await Assert.ThrowsAsync<MySqlException>(async () => await bulkCopy.WriteToServerAsync(dataTable));
+			try
+			{
+				await bulkCopy.WriteToServerAsync(dataTable);
+				Assert.True(false, "Expected exception wasn't thrown");
+			}
+			catch (MySqlException ex) when (ex.InnerException?.InnerException is NotSupportedException)
+			{
+			}
 		}
 
 		[Theory]

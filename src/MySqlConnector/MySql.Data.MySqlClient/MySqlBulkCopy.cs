@@ -159,7 +159,7 @@ namespace MySql.Data.MySqlClient
 			using (var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync(CommandBehavior.SchemaOnly, ioBehavior, cancellationToken).ConfigureAwait(false))
 			{
 				var schema = reader.GetColumnSchema();
-				for (var i = 0; i < schema.Count; i++)
+				for (var i = 0; i < Math.Min(m_valuesEnumerator!.FieldCount, schema.Count); i++)
 				{
 					var destinationColumn = reader.GetName(i);
 					if (schema[i].DataTypeName == "BIT")
@@ -188,7 +188,7 @@ namespace MySql.Data.MySqlClient
 			}
 
 			// set columns and expressions from the column mappings
-			for (var i = 0; i < m_valuesEnumerator!.FieldCount; i++)
+			for (var i = 0; i < m_valuesEnumerator.FieldCount; i++)
 			{
 				var columnMapping = columnMappings.FirstOrDefault(x => x.SourceOrdinal == i);
 				if (columnMapping is null)
@@ -199,7 +199,7 @@ namespace MySql.Data.MySqlClient
 				else
 				{
 					if (columnMapping.DestinationColumn.Length == 0)
-						throw new InvalidOperationException("MySqlBulkCopyColumnMapping.DestinationName is not set.");
+						throw new InvalidOperationException("MySqlBulkCopyColumnMapping.DestinationName is not set for SourceOrdinal {0}".FormatInvariant(columnMapping.SourceOrdinal));
 					if (columnMapping.DestinationColumn[0] == '@')
 						bulkLoader.Columns.Add(columnMapping.DestinationColumn);
 					else
@@ -207,6 +207,12 @@ namespace MySql.Data.MySqlClient
 					if (columnMapping.Expression is object)
 						bulkLoader.Expressions.Add(columnMapping.Expression);
 				}
+			}
+
+			foreach (var columnMapping in columnMappings)
+			{
+				if (columnMapping.SourceOrdinal < 0 || columnMapping.SourceOrdinal >= m_valuesEnumerator.FieldCount)
+					throw new InvalidOperationException("SourceOrdinal {0} is an invalid value".FormatInvariant(columnMapping.SourceOrdinal));
 			}
 
 			await bulkLoader.LoadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);

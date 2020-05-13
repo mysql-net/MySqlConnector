@@ -822,8 +822,8 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 				Rows =
 				{
 					new object[] { 1, 100, "a", "A", new byte[] { 0x33, 0x30 } },
-					new object[] { 2, 200, "bb", "BB", new byte[] { 0x33, 0x31 }  },
-					new object[] { 3, 300, "ccc", "CCC", new byte[] { 0x33, 0x32 }  },
+					new object[] { 2, 200, "bb", "BB", new byte[] { 0x33, 0x31 } },
+					new object[] { 3, 300, "ccc", "CCC", new byte[] { 0x33, 0x32 } },
 				}
 			};
 
@@ -843,6 +843,80 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			Assert.Equal("CCC", reader.GetValue(1));
 			Assert.Equal(new byte[] { 0x33, 0x32 }, reader.GetValue(2));
 			Assert.False(reader.Read());
+		}
+
+		[Fact]
+		public void BulkCopyColumnMappingsInvalidSourceOrdinal()
+		{
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			connection.Open();
+			using (var cmd = new MySqlCommand(@"drop table if exists bulk_copy_column_mapping;
+				create table bulk_copy_column_mapping(intvalue int, `text` text, data blob);", connection))
+			{
+				cmd.ExecuteNonQuery();
+			}
+
+			var bulkCopy = new MySqlBulkCopy(connection)
+			{
+				DestinationTableName = "bulk_copy_column_mapping",
+				ColumnMappings =
+				{
+					new MySqlBulkCopyColumnMapping(6, "@val", "intvalue = @val + 1"),
+				},
+			};
+
+			var dataTable = new DataTable()
+			{
+				Columns =
+				{
+					new DataColumn("c1", typeof(int)),
+				},
+				Rows =
+				{
+					new object[] { 1 },
+					new object[] { 2 },
+					new object[] { 3 },
+				}
+			};
+
+			Assert.Throws<InvalidOperationException>(() => bulkCopy.WriteToServer(dataTable));
+		}
+
+		[Fact]
+		public void BulkCopyColumnMappingsInvalidDestinationColumn()
+		{
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			connection.Open();
+			using (var cmd = new MySqlCommand(@"drop table if exists bulk_copy_column_mapping;
+				create table bulk_copy_column_mapping(intvalue int, `text` text, data blob);", connection))
+			{
+				cmd.ExecuteNonQuery();
+			}
+
+			var bulkCopy = new MySqlBulkCopy(connection)
+			{
+				DestinationTableName = "bulk_copy_column_mapping",
+				ColumnMappings =
+				{
+					new MySqlBulkCopyColumnMapping { SourceOrdinal = 0 },
+				},
+			};
+
+			var dataTable = new DataTable()
+			{
+				Columns =
+				{
+					new DataColumn("c1", typeof(int)),
+				},
+				Rows =
+				{
+					new object[] { 1 },
+					new object[] { 2 },
+					new object[] { 3 },
+				}
+			};
+
+			Assert.Throws<InvalidOperationException>(() => bulkCopy.WriteToServer(dataTable));
 		}
 #endif
 
