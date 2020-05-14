@@ -918,6 +918,45 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 
 			Assert.Throws<InvalidOperationException>(() => bulkCopy.WriteToServer(dataTable));
 		}
+
+		[Fact]
+		public void BulkCopyDoesNotInsertAllRows()
+		{
+			using var connection = new MySqlConnection(GetLocalConnectionString());
+			connection.Open();
+
+			connection.Execute(@"drop table if exists bulk_copy_duplicate_pk;
+create table bulk_copy_duplicate_pk(id integer primary key, value text not null);");
+
+			var bcp = new MySqlBulkCopy(connection)
+			{
+				DestinationTableName = "bulk_copy_duplicate_pk"
+			};
+
+			var dataTable = new DataTable()
+			{
+				Columns =
+				{
+					new DataColumn("id", typeof(int)),
+					new DataColumn("value", typeof(string)),
+				},
+				Rows =
+				{
+					new object[] { 1, "a" },
+					new object[] { 1, "b" },
+					new object[] { 3, "c" },
+				}
+			};
+
+			try
+			{
+				bcp.WriteToServer(dataTable);
+				Assert.True(false, "Exception wasn't thrown");
+			}
+			catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.BulkCopyFailed)
+			{
+			}
+		}
 #endif
 
 		[Fact]

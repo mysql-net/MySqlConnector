@@ -128,6 +128,7 @@ namespace MySql.Data.MySqlClient
 #endif
 		{
 			var tableName = DestinationTableName ?? throw new InvalidOperationException("DestinationTableName must be set before calling WriteToServer");
+			m_wasAborted = false;
 
 			Log.Info("Starting bulk copy to {0}", tableName);
 			var bulkLoader = new MySqlBulkLoader(m_connection)
@@ -215,12 +216,18 @@ namespace MySql.Data.MySqlClient
 					throw new InvalidOperationException("SourceOrdinal {0} is an invalid value".FormatInvariant(columnMapping.SourceOrdinal));
 			}
 
-			await bulkLoader.LoadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			var rowsInserted = await bulkLoader.LoadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			if (closeConnection)
 				m_connection.Close();
 
 			Log.Info("Finished bulk copy to {0}", tableName);
+
+			if (!m_wasAborted && rowsInserted != RowsCopied)
+			{
+				Log.Error("Bulk copy to DestinationTableName={0} failed; RowsCopied={1}; RowsInserted={2}", tableName, RowsCopied, rowsInserted);
+				throw new MySqlException(MySqlErrorCode.BulkCopyFailed, "{0} rows were copied to {1} but only {2} were inserted.".FormatInvariant(RowsCopied, tableName, rowsInserted));
+			}
 
 #if !NETSTANDARD2_1 && !NETCOREAPP3_0
 			return default;
@@ -330,6 +337,7 @@ namespace MySql.Data.MySqlClient
 			finally
 			{
 				ArrayPool<byte>.Shared.Return(buffer);
+				m_wasAborted = eventArgs?.Abort ?? false;
 			}
 
 			static bool WriteValue(MySqlConnection connection, object? value, Span<byte> output, out int bytesWritten)
@@ -558,5 +566,6 @@ namespace MySql.Data.MySqlClient
 		readonly MySqlConnection m_connection;
 		readonly MySqlTransaction? m_transaction;
 		IValuesEnumerator? m_valuesEnumerator;
+		bool m_wasAborted;
 	}
 }

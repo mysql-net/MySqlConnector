@@ -7,6 +7,11 @@ namespace MySql.Data.MySqlClient
 	public enum MySqlErrorCode
 	{
 		/// <summary>
+		/// Not all rows from the source supplied to <see cref="MySqlBulkCopy"/> were copied to <see cref="MySqlBulkCopy.DestinationTableName"/>.
+		/// </summary>
+		BulkCopyFailed = -2,
+
+		/// <summary>
 		/// The timeout period specified by <see cref="MySqlCommand.CommandTimeout"/> elapsed before the operation completed.
 		/// </summary>
 		CommandTimeoutExpired = -1,
