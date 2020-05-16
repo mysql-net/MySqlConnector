@@ -114,8 +114,8 @@ columns in the destination table.
 
 Set `SourceOrdinal` to the index of the source column to map. Set `DestinationColumn` to
 either the name of a column in the destination table, or the name of a user-defined variable.
-If a user-defined variable, you can use `Expression` to specify a MySQL expression that sets
-a destination column.
+If a user-defined variable, you can use `Expression` to specify a MySQL expression that assigns
+its value to destination column.
 
 Source columns that don't have an entry in `MySqlBulkCopy.ColumnMappings` will be ignored
 (unless the `ColumnMappings` collection is empty, in which case all columns will be mapped
@@ -137,6 +137,6 @@ new MySqlBulkCopyColumnMapping
 {
     SourceOrdinal = 0,
     DestinationColumn = "@tmp",
-    Expression = "SET column_value = @tmp * 2",
+    Expression = "column_value = @tmp * 2",
 },
 ```
