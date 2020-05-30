@@ -14,7 +14,7 @@ Version History
 ### 0.67.0
 
 * **Breaking** Add `new` implementations of `MySqlCommand.ExecuteReaderAsync` that return `Task<MySqlDataReader>`: [#822](https://github.com/mysql-net/MySqlConnector/issues/822).
-* **Breaking** `MySqlBulkCopy.DestinationTableName` must be quoted if it contains reserved keywords or characters: [#818](https://github.com/mysql-net/MySqlConnector/issues/822).
+* **Breaking** `MySqlBulkCopy.DestinationTableName` must be quoted if it contains reserved keywords or characters: [#818](https://github.com/mysql-net/MySqlConnector/issues/818).
 * Automatically create expressions for `BIT` and binary columns in `MySqlBulkCopy`: [#816](https://github.com/mysql-net/MySqlConnector/issues/816).
 * Throw an exception from `MySqlBulkCopy` if not all rows were inserted: [#814](https://github.com/mysql-net/MySqlConnector/issues/814).
 * Add logging to `MySqlBulkCopy`.
