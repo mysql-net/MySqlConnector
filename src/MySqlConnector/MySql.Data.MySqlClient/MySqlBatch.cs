@@ -1,6 +1,5 @@
 using System;
 using System.Data;
-using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,25 +28,25 @@ namespace MySql.Data.MySqlClient
 		public MySqlTransaction? Transaction { get; set; }
 		public MySqlBatchCommandCollection BatchCommands { get; }
 
-		public DbDataReader ExecuteReader() => ExecuteDbDataReader();
-		public Task<DbDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default) => ExecuteDbDataReaderAsync(cancellationToken);
+		public MySqlDataReader ExecuteReader() => ExecuteDbDataReader();
+		public Task<MySqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default) => ExecuteDbDataReaderAsync(cancellationToken);
 
-		private DbDataReader ExecuteDbDataReader()
+		private MySqlDataReader ExecuteDbDataReader()
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
 			return ExecuteReaderAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		}
 
-		private Task<DbDataReader> ExecuteDbDataReaderAsync(CancellationToken cancellationToken)
+		private Task<MySqlDataReader> ExecuteDbDataReaderAsync(CancellationToken cancellationToken)
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
 			return ExecuteReaderAsync(AsyncIOBehavior, cancellationToken);
 		}
 
-		private Task<DbDataReader> ExecuteReaderAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private Task<MySqlDataReader> ExecuteReaderAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (!IsValid(out var exception))
-			 	return Utility.TaskFromException<DbDataReader>(exception);
+			 	return Utility.TaskFromException<MySqlDataReader>(exception);
 
 			foreach (var batchCommand in BatchCommands)
 				batchCommand.Batch = this;
@@ -105,7 +104,7 @@ namespace MySql.Data.MySqlClient
 		private async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
-			using var reader = (MySqlDataReader) await ExecuteReaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			using var reader = await ExecuteReaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			do
 			{
 				while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
@@ -120,7 +119,7 @@ namespace MySql.Data.MySqlClient
 			((ICancellableCommand) this).ResetCommandTimeout();
 			var hasSetResult = false;
 			object? result = null;
-			using var reader = (MySqlDataReader) await ExecuteReaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			using var reader = await ExecuteReaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			do
 			{
 				var hasResult = await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);

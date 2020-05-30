@@ -69,9 +69,9 @@ namespace MySql.Data.MySqlClient
 
 		public override object? ExecuteScalar() => ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public new MySqlDataReader ExecuteReader() => (MySqlDataReader) base.ExecuteReader();
+		public new MySqlDataReader ExecuteReader() => ExecuteReaderAsync(default, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 
-		public new MySqlDataReader ExecuteReader(CommandBehavior commandBehavior) => (MySqlDataReader) base.ExecuteReader(commandBehavior);
+		public new MySqlDataReader ExecuteReader(CommandBehavior commandBehavior) => ExecuteReaderAsync(commandBehavior, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 
 		public override void Prepare()
 		{
@@ -206,11 +206,8 @@ namespace MySql.Data.MySqlClient
 
 		protected override DbParameter CreateDbParameter() => new MySqlParameter();
 
-		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
-		{
-			this.ResetCommandTimeout();
-			return ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-		}
+		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) =>
+			ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) =>
 			ExecuteNonQueryAsync(AsyncIOBehavior, cancellationToken);
@@ -218,7 +215,7 @@ namespace MySql.Data.MySqlClient
 		internal async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			this.ResetCommandTimeout();
-			using var reader = (MySqlDataReader) await ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
+			using var reader = await ExecuteReaderNoResetTimeoutAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
 			do
 			{
 				while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
@@ -236,7 +233,7 @@ namespace MySql.Data.MySqlClient
 			this.ResetCommandTimeout();
 			var hasSetResult = false;
 			object? result = null;
-			using var reader = (MySqlDataReader) await ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
+			using var reader = await ExecuteReaderNoResetTimeoutAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
 			do
 			{
 				var hasResult = await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -250,16 +247,25 @@ namespace MySql.Data.MySqlClient
 			return result;
 		}
 
-		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+		public new Task<MySqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default) =>
+			ExecuteReaderAsync(default, AsyncIOBehavior, cancellationToken);
+
+		public new Task<MySqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken = default) =>
+			ExecuteReaderAsync(behavior, AsyncIOBehavior, cancellationToken);
+
+		protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken) =>
+			await ExecuteReaderAsync(behavior, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
+
+		internal Task<MySqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			this.ResetCommandTimeout();
-			return ExecuteReaderAsync(behavior, AsyncIOBehavior, cancellationToken);
+			return ExecuteReaderNoResetTimeoutAsync(behavior, ioBehavior, cancellationToken);
 		}
 
-		internal Task<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		internal Task<MySqlDataReader> ExecuteReaderNoResetTimeoutAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (!IsValid(out var exception))
-				return Utility.TaskFromException<DbDataReader>(exception);
+				return Utility.TaskFromException<MySqlDataReader>(exception);
 
 			m_commandBehavior = behavior;
 			return CommandExecutor.ExecuteReaderAsync(new IMySqlCommand[] { this }, SingleCommandPayloadCreator.Instance, behavior, ioBehavior, cancellationToken);

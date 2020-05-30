@@ -157,7 +157,7 @@ namespace MySql.Data.MySqlClient
 			var columnMappings = new List<MySqlBulkCopyColumnMapping>(ColumnMappings);
 			var addDefaultMappings = columnMappings.Count == 0;
 			using (var cmd = new MySqlCommand("select * from " + tableName + ";", m_connection, m_transaction))
-			using (var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync(CommandBehavior.SchemaOnly, ioBehavior, cancellationToken).ConfigureAwait(false))
+			using (var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SchemaOnly, ioBehavior, cancellationToken).ConfigureAwait(false))
 			{
 				var schema = reader.GetColumnSchema();
 				for (var i = 0; i < Math.Min(m_valuesEnumerator!.FieldCount, schema.Count); i++)

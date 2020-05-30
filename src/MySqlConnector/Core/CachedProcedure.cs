@@ -29,7 +29,7 @@ namespace MySqlConnector.Core
 					cmd.Parameters.AddWithValue("@schema", schema);
 					cmd.Parameters.AddWithValue("@component", component);
 
-					using var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
+					using var reader = await cmd.ExecuteReaderNoResetTimeoutAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
 					var exists = await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
 					if (!exists)
 						return null;
@@ -79,7 +79,7 @@ namespace MySqlConnector.Core
 				cmd.Parameters.AddWithValue("@schema", schema);
 				cmd.Parameters.AddWithValue("@component", component);
 
-				using var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
+				using var reader = await cmd.ExecuteReaderNoResetTimeoutAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
 				await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
 				routineCount = reader.GetInt32(0);
 				await reader.NextResultAsync(cancellationToken).ConfigureAwait(false);

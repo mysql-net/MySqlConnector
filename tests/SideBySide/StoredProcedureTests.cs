@@ -195,7 +195,7 @@ namespace SideBySide
 				Direction = ParameterDirection.Output,
 			});
 
-			using (var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync())
+			using (var reader = await cmd.ExecuteReaderAsync())
 			{
 				Assert.False(await reader.ReadAsync());
 				Assert.Empty(reader.GetColumnSchema());
