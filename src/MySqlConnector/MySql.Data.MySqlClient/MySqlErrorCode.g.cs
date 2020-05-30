@@ -3222,5 +3222,10 @@ namespace MySql.Data.MySqlClient
 		/// ER_DEBUG_SYNC_HIT_LIMIT
 		/// </summary>
 		DebugSyncHitLimit = 1640,
+
+		/// <summary>
+		/// ER_CANT_EXECUTE_IN_READ_ONLY_TRANSACTION
+		/// </summary>
+		CannotExecuteInReadOnlyTransaction = 1792,
 	}
 }

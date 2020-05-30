@@ -31,22 +31,92 @@ namespace MySql.Data.MySqlClient
 			m_connectionString = connectionString ?? "";
 		}
 
-		public new MySqlTransaction BeginTransaction() => (MySqlTransaction) base.BeginTransaction();
-		public new MySqlTransaction BeginTransaction(IsolationLevel isolationLevel) => (MySqlTransaction) base.BeginTransaction(isolationLevel);
-		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => BeginDbTransactionAsync(isolationLevel, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		/// <summary>
+		/// Begins a database transaction.
+		/// </summary>
+		/// <returns>A <see cref="MySqlTransaction"/> representing the new database transaction.</returns>
+		/// <remarks>Transactions may not be nested.</remarks>
+		public new MySqlTransaction BeginTransaction() => BeginTransactionAsync(IsolationLevel.Unspecified, default, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+
+		/// <summary>
+		/// Begins a database transaction.
+		/// </summary>
+		/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
+		/// <returns>A <see cref="MySqlTransaction"/> representing the new database transaction.</returns>
+		/// <remarks>Transactions may not be nested.</remarks>
+		public new MySqlTransaction BeginTransaction(IsolationLevel isolationLevel) => BeginTransactionAsync(isolationLevel, default, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+
+		/// <summary>
+		/// Begins a database transaction.
+		/// </summary>
+		/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
+		/// <param name="isReadOnly">If <c>true</c>, changes to tables used in the transaction are prohibited; otherwise, they are permitted.</param>
+		/// <returns>A <see cref="MySqlTransaction"/> representing the new database transaction.</returns>
+		/// <remarks>Transactions may not be nested.</remarks>
+		public MySqlTransaction BeginTransaction(IsolationLevel isolationLevel, bool isReadOnly) => BeginTransactionAsync(isolationLevel, isReadOnly, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+
+		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => BeginTransactionAsync(isolationLevel, default, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 
 #if !NETSTANDARD2_1 && !NETCOREAPP3_0
-		public ValueTask<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) => BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, cancellationToken);
-		public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default) => BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, cancellationToken);
+		/// <summary>
+		/// Begins a database transaction asynchronously.
+		/// </summary>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
+		/// <remarks>Transactions may not be nested.</remarks>
+		public ValueTask<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) => BeginTransactionAsync(IsolationLevel.Unspecified, default, AsyncIOBehavior, cancellationToken);
+
+		/// <summary>
+		/// Begins a database transaction asynchronously.
+		/// </summary>
+		/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
+		/// <remarks>Transactions may not be nested.</remarks>
+		public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default) => BeginTransactionAsync(isolationLevel, default, AsyncIOBehavior, cancellationToken);
+
+		/// <summary>
+		/// Begins a database transaction asynchronously.
+		/// </summary>
+		/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
+		/// <param name="isReadOnly">If <c>true</c>, changes to tables used in the transaction are prohibited; otherwise, they are permitted.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
+		/// <remarks>Transactions may not be nested.</remarks>
+		public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, bool isReadOnly, CancellationToken cancellationToken = default) => BeginTransactionAsync(isolationLevel, isReadOnly, AsyncIOBehavior, cancellationToken);
 #else
-		public new ValueTask<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) => BeginDbTransactionAsync(IsolationLevel.Unspecified, AsyncIOBehavior, cancellationToken);
-		public new ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default) => BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, cancellationToken);
+		/// <summary>
+		/// Begins a database transaction asynchronously.
+		/// </summary>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
+		/// <remarks>Transactions may not be nested.</remarks>
+		public new ValueTask<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) => BeginTransactionAsync(IsolationLevel.Unspecified, default, AsyncIOBehavior, cancellationToken);
+
+		/// <summary>
+		/// Begins a database transaction asynchronously.
+		/// </summary>
+		/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
+		/// <remarks>Transactions may not be nested.</remarks>
+		public new ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default) => BeginTransactionAsync(isolationLevel, default, AsyncIOBehavior, cancellationToken);
+
+		/// <summary>
+		/// Begins a database transaction asynchronously.
+		/// </summary>
+		/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
+		/// <param name="isReadOnly">If <c>true</c>, changes to tables used in the transaction are prohibited; otherwise, they are permitted.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
+		/// <remarks>Transactions may not be nested.</remarks>
+		public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, bool isReadOnly, CancellationToken cancellationToken = default) => BeginTransactionAsync(isolationLevel, isReadOnly, AsyncIOBehavior, cancellationToken);
 
 		protected override async ValueTask<DbTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken) =>
-			await BeginDbTransactionAsync(isolationLevel, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
+			await BeginTransactionAsync(isolationLevel, default, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
 #endif
 
-		private async ValueTask<MySqlTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, bool? isReadOnly, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (State != ConnectionState.Open)
 				throw new InvalidOperationException("Connection is not open.");
@@ -76,7 +146,13 @@ namespace MySql.Data.MySqlClient
 				await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				var consistentSnapshotText = isolationLevel == IsolationLevel.Snapshot ? " with consistent snapshot" : "";
-				cmd.CommandText = $"start transaction{consistentSnapshotText};";
+				var readOnlyText = isReadOnly switch
+				{
+					true => " read only",
+					false => " read write",
+					null => "",
+				};
+				cmd.CommandText = $"start transaction{consistentSnapshotText}{readOnlyText};";
 				await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 

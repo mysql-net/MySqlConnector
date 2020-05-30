@@ -130,6 +130,51 @@ namespace SideBySide
 			Assert.Equal(new[] { 1, 2 }, results);
 		}
 
+		[Fact]
+		public void ReadOnlyTransaction()
+		{
+			using var trans = m_connection.BeginTransaction(IsolationLevel.Serializable, isReadOnly: true);
+			try
+			{
+				m_connection.Execute("insert into transactions_test values(1), (2)", transaction: trans);
+			}
+			catch (MySqlException ex)
+			{
+				Assert.Equal(MySqlErrorCode.CannotExecuteInReadOnlyTransaction, (MySqlErrorCode) ex.Number);
+			}
+		}
+
+		[Fact]
+		public void ReadWriteTransaction()
+		{
+			using (var trans = m_connection.BeginTransaction(IsolationLevel.Serializable, isReadOnly: false))
+			{
+				m_connection.Execute("insert into transactions_test values(1), (2)", transaction: trans);
+				trans.Commit();
+			}
+			var results = m_connection.Query<int>(@"select value from transactions_test order by value;");
+			Assert.Equal(new[] { 1, 2 }, results);
+		}
+
+		[Fact]
+		public async Task ReadOnlyTransactionAsync()
+		{
+			using var trans = await m_connection.BeginTransactionAsync(IsolationLevel.Serializable, isReadOnly: true);
+			await Assert.ThrowsAsync<MySqlException>(async () => await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans));
+		}
+
+		[Fact]
+		public async Task ReadWriteTransactionAsync()
+		{
+			using (var trans = await m_connection.BeginTransactionAsync(IsolationLevel.Serializable, isReadOnly: false))
+			{
+				await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans);
+				trans.Commit();
+			}
+			var results = m_connection.Query<int>(@"select value from transactions_test order by value;");
+			Assert.Equal(new[] { 1, 2 }, results);
+		}
+
 #if !NET452 && !NET461 && !NET472 && !NETCOREAPP1_1_2 && !NETCOREAPP2_0 && !NETCOREAPP2_1
 		[Fact]
 		public async Task DbConnectionCommitAsync()
