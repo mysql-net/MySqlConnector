@@ -25,16 +25,9 @@ namespace SideBySide
 			};
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			Assert.Equal(ConnectionState.Closed, connection.State);
-			try
-			{
-				connection.Open();
-				Assert.True(false, "Exception not thrown");
-			}
-			catch (MySqlException ex)
-			{
-				Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
-				Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Data["Server Error Code"]);
-			}
+			var ex = Assert.Throws<MySqlException>(connection.Open);
+			Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
+			Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Data["Server Error Code"]);
 			Assert.Equal(ConnectionState.Closed, connection.State);
 		}
 
@@ -70,21 +63,11 @@ namespace SideBySide
 			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.Database = "wrong_database";
 			using var connection = new MySqlConnection(csb.ConnectionString);
-			try
-			{
-				connection.Open();
-				Assert.True(false);
-			}
-			catch (MySqlException ex)
-			{
-#if BASELINE
-				// https://bugs.mysql.com/bug.php?id=78426
-				Assert.NotNull(ex);
-#else
-				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.Number != 0)
-					Assert.Equal((int) MySqlErrorCode.UnknownDatabase, ex.Number);
+			var ex = Assert.Throws<MySqlException>(connection.Open);
+#if !BASELINE // https://bugs.mysql.com/bug.php?id=78426
+			if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.Number != 0)
+				Assert.Equal((int) MySqlErrorCode.UnknownDatabase, ex.Number);
 #endif
-			}
 			Assert.Equal(ConnectionState.Closed, connection.State);
 		}
 
@@ -94,21 +77,11 @@ namespace SideBySide
 			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.Password = "wrong";
 			using var connection = new MySqlConnection(csb.ConnectionString);
-			try
-			{
-				connection.Open();
-				Assert.True(false);
-			}
-			catch (MySqlException ex)
-			{
-#if BASELINE
-				// https://bugs.mysql.com/bug.php?id=73610
-				Assert.NotNull(ex);
-#else
-				if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.Number != 0)
-					Assert.Equal((int) MySqlErrorCode.AccessDenied, ex.Number);
+			var ex = Assert.Throws<MySqlException>(connection.Open);
+#if !BASELINE // https://bugs.mysql.com/bug.php?id=78426
+			if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.Number != 0)
+				Assert.Equal((int) MySqlErrorCode.AccessDenied, ex.Number);
 #endif
-			}
 			Assert.Equal(ConnectionState.Closed, connection.State);
 		}
 
@@ -137,14 +110,7 @@ namespace SideBySide
 
 			var sw = Stopwatch.StartNew();
 			using var connection = new MySqlConnection(csb.ConnectionString);
-			try
-			{
-				connection.Open();
-				Assert.False(true);
-			}
-			catch (MySqlException)
-			{
-			}
+			Assert.Throws<MySqlException>(connection.Open);
 #if !BASELINE
 			TestUtilities.AssertDuration(sw, 900, 500);
 #else

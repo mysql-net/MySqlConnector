@@ -62,19 +62,10 @@ namespace SideBySide
 			{
 				cmd.CommandTimeout = 2;
 				var sw = Stopwatch.StartNew();
-				try
-				{
-					using var reader = cmd.ExecuteReader();
-
-					// shouldn't get here
-					Assert.True(false);
-				}
-				catch (MySqlException ex)
-				{
-					sw.Stop();
-					Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
-					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
-				}
+				var ex = Assert.Throws<MySqlException>(cmd.ExecuteReader);
+				sw.Stop();
+				Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
+				TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
 			}
 
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
@@ -87,19 +78,10 @@ namespace SideBySide
 			{
 				cmd.CommandTimeout = 2;
 				var sw = Stopwatch.StartNew();
-				try
-				{
-					using var reader = await cmd.ExecuteReaderAsync();
-
-					// shouldn't get here
-					Assert.True(false);
-				}
-				catch (MySqlException ex)
-				{
-					sw.Stop();
-					Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
-					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 700);
-				}
+				var exception = await Assert.ThrowsAsync<MySqlException>(cmd.ExecuteReaderAsync);
+				sw.Stop();
+				Assert.Contains(c_timeoutMessage, exception.Message, StringComparison.OrdinalIgnoreCase);
+				TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 700);
 			}
 
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
@@ -129,19 +111,10 @@ end;", m_connection))
 			cmd.CommandTimeout = 2;
 
 			var sw = Stopwatch.StartNew();
-			try
-			{
-				using var reader = cmd.ExecuteReader();
-
-				// shouldn't get here
-				Assert.True(false);
-			}
-			catch (MySqlException ex)
-			{
-				sw.Stop();
-				Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
-				TestUtilities.AssertDuration(sw, ((int) cmd.CommandTimeout) * 1000 - 100, 500);
-			}
+			var ex = Assert.Throws<MySqlException>(cmd.ExecuteReader);
+			sw.Stop();
+			Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
+			TestUtilities.AssertDuration(sw, ((int) cmd.CommandTimeout) * 1000 - 100, 500);
 		}
 
 		[SkippableFact(ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=87307")]
@@ -270,19 +243,10 @@ end;", m_connection))
 			{
 				cmd.CommandTimeout = 2;
 				var sw = Stopwatch.StartNew();
-				try
-				{
-					using var reader = cmd.ExecuteReader();
-
-					// shouldn't get here
-					Assert.True(false);
-				}
-				catch (MySqlException ex)
-				{
-					sw.Stop();
-					Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
-					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
-				}
+				var ex = Assert.Throws<MySqlException>(cmd.ExecuteReader);
+				sw.Stop();
+				Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
+				TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
 			}
 
 			Assert.Equal(ConnectionState.Closed, m_connection.State);
@@ -296,18 +260,9 @@ end;", m_connection))
 			{
 				cmd.CommandTimeout = 2;
 				var sw = Stopwatch.StartNew();
-				try
-				{
-					using var reader = await cmd.ExecuteReaderAsync();
-
-					// shouldn't get here
-					Assert.True(false);
-				}
-				catch (MySqlException ex)
-				{
-					sw.Stop();
-					Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
-				}
+				var ex = await Assert.ThrowsAsync<MySqlException>(cmd.ExecuteReaderAsync);
+				sw.Stop();
+				Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
 			}
 
 			Assert.Equal(ConnectionState.Closed, m_connection.State);

@@ -134,14 +134,8 @@ namespace SideBySide
 		public void ReadOnlyTransaction()
 		{
 			using var trans = m_connection.BeginTransaction(IsolationLevel.Serializable, isReadOnly: true);
-			try
-			{
-				m_connection.Execute("insert into transactions_test values(1), (2)", transaction: trans);
-			}
-			catch (MySqlException ex)
-			{
-				Assert.Equal(MySqlErrorCode.CannotExecuteInReadOnlyTransaction, (MySqlErrorCode) ex.Number);
-			}
+			var exception = Assert.Throws<MySqlException>(() => m_connection.Execute("insert into transactions_test values(1), (2)", transaction: trans));
+			Assert.Equal(MySqlErrorCode.CannotExecuteInReadOnlyTransaction, (MySqlErrorCode) exception.Number);
 		}
 
 		[Fact]
@@ -160,7 +154,8 @@ namespace SideBySide
 		public async Task ReadOnlyTransactionAsync()
 		{
 			using var trans = await m_connection.BeginTransactionAsync(IsolationLevel.Serializable, isReadOnly: true);
-			await Assert.ThrowsAsync<MySqlException>(async () => await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans));
+			var exception = await Assert.ThrowsAsync<MySqlException>(async () => await m_connection.ExecuteAsync("insert into transactions_test values(1), (2)", transaction: trans));
+			Assert.Equal(MySqlErrorCode.CannotExecuteInReadOnlyTransaction, (MySqlErrorCode) exception.Number);
 		}
 
 		[Fact]
@@ -297,30 +292,16 @@ namespace SideBySide
 		public void SavepointRollbackUnknownName()
 		{
 			using var transaction = m_connection.BeginTransaction();
-			try
-			{
-				transaction.Rollback("a");
-				Assert.True(false);
-			}
-			catch (MySqlException ex)
-			{
-				Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode)ex.Number);
-			}
+			var ex = Assert.Throws<MySqlException>(() => transaction.Rollback("a"));
+			Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode)ex.Number);
 		}
 
 		[Fact]
 		public void SavepointReleaseUnknownName()
 		{
 			using var transaction = m_connection.BeginTransaction();
-			try
-			{
-				transaction.Release("a");
-				Assert.True(false);
-			}
-			catch (MySqlException ex)
-			{
-				Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode)ex.Number);
-			}
+			var ex = Assert.Throws<MySqlException>(() => transaction.Release("a"));
+			Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode)ex.Number);
 		}
 
 		[Fact]
@@ -329,15 +310,8 @@ namespace SideBySide
 			using var transaction = m_connection.BeginTransaction();
 			transaction.Save("a");
 			transaction.Release("a");
-			try
-			{
-				transaction.Rollback("a");
-				Assert.True(false);
-			}
-			catch (MySqlException ex)
-			{
-				Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode)ex.Number);
-			}
+			var ex = Assert.Throws<MySqlException>(() => transaction.Rollback("a"));
+			Assert.Equal(MySqlErrorCode.StoredProcedureDoesNotExist, (MySqlErrorCode) ex.Number);
 		}
 
 		[Fact]

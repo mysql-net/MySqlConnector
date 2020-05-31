@@ -28,16 +28,9 @@ namespace SideBySide
 			};
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			Assert.Equal(ConnectionState.Closed, connection.State);
-			try
-			{
-				await connection.OpenAsync();
-				Assert.True(false, "Exception not thrown");
-			}
-			catch (MySqlException ex)
-			{
-				Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
-				Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Data["Server Error Code"]);
-			}
+			var ex = await Assert.ThrowsAsync<MySqlException>(connection.OpenAsync);
+			Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
+			Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Data["Server Error Code"]);
 			Assert.Equal(ConnectionState.Closed, connection.State);
 		}
 
@@ -127,16 +120,9 @@ namespace SideBySide
 
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			var stopwatch = Stopwatch.StartNew();
-			try
-			{
-				await connection.OpenAsync();
-				Assert.True(false);
-			}
-			catch (MySqlException ex)
-			{
-				Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
-			}
+			var ex = await Assert.ThrowsAsync<MySqlException>(connection.OpenAsync);
 			stopwatch.Stop();
+			Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
 			TestUtilities.AssertDuration(stopwatch, 1900, 1500);
 		}
 
@@ -156,17 +142,10 @@ namespace SideBySide
 
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			var stopwatch = Stopwatch.StartNew();
-			try
-			{
-				using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2)))
-					await connection.OpenAsync(cts.Token);
-				Assert.True(false);
-			}
-			catch (MySqlException ex)
-			{
-				Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
-			}
+			using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+			var ex = await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync(cts.Token));
 			stopwatch.Stop();
+			Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
 			TestUtilities.AssertDuration(stopwatch, 1900, 1500);
 		}
 

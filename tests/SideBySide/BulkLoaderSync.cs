@@ -948,14 +948,8 @@ create table bulk_copy_duplicate_pk(id integer primary key, value text not null)
 				}
 			};
 
-			try
-			{
-				bcp.WriteToServer(dataTable);
-				Assert.True(false, "Exception wasn't thrown");
-			}
-			catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.BulkCopyFailed)
-			{
-			}
+			var ex = Assert.Throws<MySqlException>(() => bcp.WriteToServer(dataTable));
+			Assert.Equal(MySqlErrorCode.BulkCopyFailed, (MySqlErrorCode) ex.Number);
 		}
 #endif
 

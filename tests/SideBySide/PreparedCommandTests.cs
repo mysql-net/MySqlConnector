@@ -313,15 +313,8 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		{
 			using var connection = CreateConnectionWithTableOfIntegers();
 			using var cmd = CreateCommandWithParameters(connection, 65536);
-			try
-			{
-				cmd.Prepare();
-				Assert.False(true, "Exception wasn't thrown");
-			}
-			catch (MySqlException ex)
-			{
-				Assert.Equal(MySqlErrorCode.PreparedStatementManyParameters, (MySqlErrorCode) ex.Number);
-			}
+			var ex = Assert.Throws<MySqlException>(cmd.Prepare);
+			Assert.Equal(MySqlErrorCode.PreparedStatementManyParameters, (MySqlErrorCode) ex.Number);
 		}
 
 		private static MySqlConnection CreateConnectionWithTableOfIntegers()
