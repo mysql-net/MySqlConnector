@@ -7,8 +7,12 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Dapper;
+#if BASELINE
 using MySql.Data.MySqlClient;
 using MySql.Data.Types;
+#else
+using MySqlConnector;
+#endif
 using Xunit;
 
 // mysql-connector-net will throw SqlNullValueException, which is an exception type related to SQL Server:

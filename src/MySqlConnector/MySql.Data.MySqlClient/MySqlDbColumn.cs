@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using MySql.Data.Types;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Payloads;
@@ -39,7 +38,7 @@ namespace System.Data.Common
 }
 #endif
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	public sealed class MySqlDbColumn : System.Data.Common.DbColumn
 	{

@@ -1,4 +1,4 @@
-﻿namespace MySql.Data.MySqlClient
+﻿namespace MySqlConnector
 {
     public enum MySqlBulkLoaderConflictOption
     {

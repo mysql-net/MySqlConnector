@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
 using MySqlConnector.Protocol;
 
 namespace MySqlConnector.Tests

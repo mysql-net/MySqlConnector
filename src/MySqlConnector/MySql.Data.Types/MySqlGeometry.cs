@@ -1,7 +1,7 @@
 using System;
 using System.Buffers.Binary;
 
-namespace MySql.Data.Types
+namespace MySqlConnector
 {
 	/// <summary>
 	/// Represents MySQL's internal GEOMETRY format: https://dev.mysql.com/doc/refman/8.0/en/gis-data-formats.html#gis-internal-format

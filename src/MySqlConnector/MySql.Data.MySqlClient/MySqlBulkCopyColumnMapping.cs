@@ -1,6 +1,6 @@
 using System;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	/// <summary>
 	/// <see cref="MySqlBulkCopyColumnMapping"/> specifies how to map columns in the source data to

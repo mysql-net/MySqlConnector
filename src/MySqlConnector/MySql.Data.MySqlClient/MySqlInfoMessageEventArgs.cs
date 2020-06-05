@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	public sealed class MySqlInfoMessageEventArgs : EventArgs
 	{

@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using MySqlConnector.Utilities;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerable<MySqlParameter>
 	{

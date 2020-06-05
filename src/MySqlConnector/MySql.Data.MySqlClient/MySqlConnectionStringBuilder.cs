@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using MySqlConnector.Utilities;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	{

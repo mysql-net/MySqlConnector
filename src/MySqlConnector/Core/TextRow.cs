@@ -1,8 +1,6 @@
 using System;
 using System.Buffers.Text;
 using System.Text;
-using MySql.Data.MySqlClient;
-using MySql.Data.Types;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;

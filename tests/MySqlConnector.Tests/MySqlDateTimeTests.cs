@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
+#if BASELINE
 using MySql.Data.Types;
+#endif
 using Xunit;
 
 namespace MySqlConnector.Tests

@@ -1,7 +1,7 @@
 using System.Data;
 using MySqlConnector.Core;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	public sealed class MySqlBatchCommand : IMySqlCommand
 	{

@@ -2,7 +2,6 @@ using System;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Serialization

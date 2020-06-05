@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Authentication;
-using MySql.Data.MySqlClient;
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core

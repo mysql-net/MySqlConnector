@@ -1,7 +1,7 @@
 using System;
 using System.Data.Common;
 using AdoNet.Specification.Tests;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace Conformance.Tests
 {

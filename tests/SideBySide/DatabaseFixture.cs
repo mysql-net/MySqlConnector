@@ -3,7 +3,11 @@ using System;
 using System.Reflection;
 #endif
 using System.Threading;
+#if BASELINE
 using MySql.Data.MySqlClient;
+#else
+using MySqlConnector;
+#endif
 
 namespace SideBySide
 {

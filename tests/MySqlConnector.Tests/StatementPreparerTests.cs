@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using MySql.Data.MySqlClient;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 using Xunit;

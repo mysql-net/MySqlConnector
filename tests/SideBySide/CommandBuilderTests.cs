@@ -1,7 +1,11 @@
 using System;
 using System.Data;
 using Dapper;
+#if BASELINE
 using MySql.Data.MySqlClient;
+#else
+using MySqlConnector;
+#endif
 using Xunit;
 
 namespace SideBySide

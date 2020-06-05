@@ -1,6 +1,6 @@
 using System;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	/// <summary>
 	/// Determines which column type (if any) should be read as a <c>System.Guid</c>.

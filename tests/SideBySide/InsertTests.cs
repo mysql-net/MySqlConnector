@@ -4,8 +4,12 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
+#if BASELINE
 using MySql.Data.MySqlClient;
 using MySql.Data.Types;
+#else
+using MySqlConnector;
+#endif
 using Xunit;
 
 namespace SideBySide

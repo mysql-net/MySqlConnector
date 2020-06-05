@@ -7,7 +7,7 @@ using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 #if !NETSTANDARD1_3
 	public class MySqlCommandBuilder : DbCommandBuilder

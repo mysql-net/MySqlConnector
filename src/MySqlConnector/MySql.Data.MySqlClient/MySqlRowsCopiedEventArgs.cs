@@ -1,6 +1,6 @@
 using System;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	public sealed class MySqlRowsCopiedEventArgs : EventArgs
 	{

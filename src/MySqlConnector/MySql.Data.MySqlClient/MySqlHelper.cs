@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	public sealed class MySqlHelper
 	{

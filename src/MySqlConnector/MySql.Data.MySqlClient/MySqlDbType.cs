@@ -1,6 +1,6 @@
 using System;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	public enum MySqlDbType
 	{

@@ -1,4 +1,3 @@
-using MySql.Data.MySqlClient;
 using MySqlConnector.Core;
 using Xunit;
 

@@ -1,5 +1,3 @@
-using MySql.Data.MySqlClient;
-
 namespace MySqlConnector.Core
 {
 	internal sealed class ColumnTypeMetadata

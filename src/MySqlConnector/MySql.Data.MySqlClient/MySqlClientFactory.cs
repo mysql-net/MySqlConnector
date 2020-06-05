@@ -1,6 +1,6 @@
 using System.Data.Common;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	public sealed class MySqlClientFactory : DbProviderFactory
 	{

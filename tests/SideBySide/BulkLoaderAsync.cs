@@ -4,9 +4,13 @@ using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
-using Xunit;
 using Dapper;
+#if BASELINE
+using MySql.Data.MySqlClient;
+#else
+using MySqlConnector;
+#endif
+using Xunit;
 using Xunit.Sdk;
 
 namespace SideBySide

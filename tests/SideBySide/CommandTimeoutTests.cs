@@ -2,7 +2,11 @@ using System;
 using System.Data;
 using System.Diagnostics;
 using System.Threading.Tasks;
+#if BASELINE
 using MySql.Data.MySqlClient;
+#else
+using MySqlConnector;
+#endif
 using Xunit;
 
 namespace SideBySide

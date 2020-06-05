@@ -1,6 +1,8 @@
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+#if BASELINE
 using MySql.Data.MySqlClient;
+#endif
 using Xunit;
 
 namespace MySqlConnector.Tests

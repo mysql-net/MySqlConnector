@@ -1,6 +1,6 @@
 using System;
 
-namespace MySql.Data.Types
+namespace MySqlConnector
 {
 	public class MySqlConversionException : Exception
 	{

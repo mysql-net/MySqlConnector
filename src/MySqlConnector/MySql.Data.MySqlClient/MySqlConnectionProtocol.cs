@@ -1,4 +1,4 @@
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	/// <summary>
 	/// Specifies the type of connection to make to the server.

@@ -49,7 +49,7 @@ insert into select_value values
 
 		public string ConnectionString { get; }
 
-		public DbProviderFactory Factory => MySql.Data.MySqlClient.MySqlClientFactory.Instance;
+		public DbProviderFactory Factory => MySqlConnector.MySqlClientFactory.Instance;
 
 		public void DropSelectValueTable(IDbFactoryFixture factoryFixture) => ExecuteNonQuery("drop table if exists select_value;");
 

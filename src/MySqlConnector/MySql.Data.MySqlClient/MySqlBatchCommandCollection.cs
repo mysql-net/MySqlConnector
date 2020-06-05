@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using MySqlConnector.Core;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	public sealed class MySqlBatchCommandCollection : Collection<MySqlBatchCommand>, IReadOnlyList<IMySqlCommand>
 	{

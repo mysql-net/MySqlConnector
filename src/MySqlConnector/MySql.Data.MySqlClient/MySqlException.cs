@@ -5,7 +5,7 @@ using System.Data.Common;
 using System.Runtime.Serialization;
 #endif
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	/// <summary>
 	/// <see cref="MySqlException"/> is thrown when MySQL Server returns an error code, or there is a

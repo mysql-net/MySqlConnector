@@ -9,7 +9,7 @@ using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 #if !NETSTANDARD1_3

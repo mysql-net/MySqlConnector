@@ -1,7 +1,9 @@
 using System.Linq;
 using Dapper;
+#if BASELINE
 using MySql.Data.MySqlClient;
-#if !BASELINE
+#else
+using MySqlConnector;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
 #endif

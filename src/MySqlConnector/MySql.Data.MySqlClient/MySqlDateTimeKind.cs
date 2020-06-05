@@ -1,6 +1,6 @@
 using System;
 
-namespace MySql.Data.MySqlClient
+namespace MySqlConnector
 {
 	/// <summary>
 	/// The <see cref="DateTimeKind" /> used when reading <see cref="DateTime" /> from the database.

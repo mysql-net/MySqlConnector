@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
+#if BASELINE
 using MySql.Data.MySqlClient;
-#if !BASELINE
+#else
+using MySqlConnector;
 using MySqlConnector.Authentication.Ed25519;
 #endif
 using Xunit;
