@@ -16,15 +16,19 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData("FUNCTION", "NonQuery")]
-		[InlineData("FUNCTION", "Scalar")]
-		[InlineData("FUNCTION", "Reader")]
-		[InlineData("PROCEDURE", "NonQuery")]
-		[InlineData("PROCEDURE", "Scalar")]
-		[InlineData("PROCEDURE", "Reader")]
-		public async Task StoredProcedureEcho(string procedureType, string executorType)
+		[InlineData("FUNCTION", "NonQuery", true)]
+		[InlineData("FUNCTION", "Scalar", true)]
+		[InlineData("FUNCTION", "Reader", true)]
+		[InlineData("PROCEDURE", "NonQuery", true)]
+		[InlineData("PROCEDURE", "NonQuery", false)]
+		[InlineData("PROCEDURE", "Scalar", true)]
+		[InlineData("PROCEDURE", "Scalar", false)]
+		[InlineData("PROCEDURE", "Reader", true)]
+		[InlineData("PROCEDURE", "Reader", false)]
+		public async Task StoredProcedureEcho(string procedureType, string executorType, bool ignorePrepare)
 		{
-			using var cmd = m_database.Connection.CreateCommand();
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "echo" + (procedureType == "FUNCTION" ? "f" : "p");
 			cmd.CommandType = CommandType.StoredProcedure;
 
@@ -47,6 +51,7 @@ namespace SideBySide
 				});
 			}
 
+			await cmd.PrepareAsync();
 			var result = await ExecuteCommandAsync(cmd, executorType);
 			if (procedureType == "PROCEDURE" && executorType != "NonQuery")
 				Assert.Equal(cmd.Parameters["@name"].Value, result);
@@ -57,9 +62,7 @@ namespace SideBySide
 		[Fact]
 		public void CallFailingFunction()
 		{
-			using var connection = new MySqlConnection(AppConfig.ConnectionString);
-			using var command = connection.CreateCommand();
-			connection.Open();
+			using var command = m_database.Connection.CreateCommand();
 
 			command.CommandType = CommandType.StoredProcedure;
 			command.CommandText = "failing_function";
@@ -69,17 +72,15 @@ namespace SideBySide
 			returnParameter.Direction = ParameterDirection.ReturnValue;
 			command.Parameters.Add(returnParameter);
 
+			command.Prepare();
 			Assert.Throws<MySqlException>(() => command.ExecuteNonQuery());
 		}
 
 		[Fact]
 		public void CallFailingFunctionInTransaction()
 		{
-			using var connection = new MySqlConnection(AppConfig.ConnectionString);
-			connection.Open();
-
-			using var transaction = connection.BeginTransaction();
-			using var command = connection.CreateCommand();
+			using var transaction = m_database.Connection.BeginTransaction();
+			using var command = m_database.Connection.CreateCommand();
 			command.Transaction = transaction;
 			command.CommandType = CommandType.StoredProcedure;
 			command.CommandText = "failing_function";
@@ -89,16 +90,20 @@ namespace SideBySide
 			returnParameter.Direction = ParameterDirection.ReturnValue;
 			command.Parameters.Add(returnParameter);
 
+			command.Prepare();
 			Assert.Throws<MySqlException>(() => command.ExecuteNonQuery());
 			transaction.Commit();
 		}
 
 		[SkippableTheory(ServerFeatures.StoredProcedures)]
-		[InlineData("FUNCTION")]
-		[InlineData("PROCEDURE")]
-		public async Task StoredProcedureEchoException(string procedureType)
+		[InlineData("FUNCTION", true)]
+		[InlineData("FUNCTION", false)]
+		[InlineData("PROCEDURE", true)]
+		[InlineData("PROCEDURE", false)]
+		public async Task StoredProcedureEchoException(string procedureType, bool ignorePrepare)
 		{
-			using var cmd = m_database.Connection.CreateCommand();
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "echo" + (procedureType == "FUNCTION" ? "f" : "p");
 			cmd.CommandType = CommandType.StoredProcedure;
 
@@ -108,10 +113,13 @@ namespace SideBySide
 				await Assert.ThrowsAsync<ArgumentException>(async () => await cmd.ExecuteNonQueryAsync());
 		}
 
-		[Fact]
-		public async Task StoredProcedureNoResultSet()
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task StoredProcedureNoResultSet(bool ignorePrepare)
 		{
-			using var cmd = m_database.Connection.CreateCommand();
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "out_string";
 			cmd.CommandType = CommandType.StoredProcedure;
 			cmd.Parameters.Add(new MySqlParameter
@@ -121,6 +129,7 @@ namespace SideBySide
 				Direction = ParameterDirection.Output,
 			});
 
+			await cmd.PrepareAsync();
 			using (var reader = await cmd.ExecuteReaderAsync())
 			{
 				Assert.False(await reader.ReadAsync());
@@ -130,10 +139,13 @@ namespace SideBySide
 			Assert.Equal("test value", cmd.Parameters[0].Value);
 		}
 
-		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=97300")]
-		public async Task FieldCountForNoResultSet()
+		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=97300")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task FieldCountForNoResultSet(bool ignorePrepare)
 		{
-			using var cmd = m_database.Connection.CreateCommand();
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "out_string";
 			cmd.CommandType = CommandType.StoredProcedure;
 			cmd.Parameters.Add(new MySqlParameter
@@ -143,6 +155,7 @@ namespace SideBySide
 				Direction = ParameterDirection.Output,
 			});
 
+			await cmd.PrepareAsync();
 			using (var reader = await cmd.ExecuteReaderAsync())
 			{
 				Assert.Equal(0, reader.FieldCount);
@@ -156,10 +169,13 @@ namespace SideBySide
 		}
 
 #if !NETCOREAPP1_1_2
-		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=97300")]
-		public async Task GetSchemaTableForNoResultSet()
+		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=97300")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task GetSchemaTableForNoResultSet(bool ignorePrepare)
 		{
-			using var cmd = m_database.Connection.CreateCommand();
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "out_string";
 			cmd.CommandType = CommandType.StoredProcedure;
 			cmd.Parameters.Add(new MySqlParameter
@@ -169,23 +185,25 @@ namespace SideBySide
 				Direction = ParameterDirection.Output,
 			});
 
-			using (var reader = await cmd.ExecuteReaderAsync())
-			{
-				Assert.False(await reader.ReadAsync());
-				var table = reader.GetSchemaTable();
-				Assert.NotNull(table);
-				Assert.Empty(table.Rows);
-				Assert.Empty(table.Columns);
-				Assert.False(await reader.NextResultAsync());
-			}
+			await cmd.PrepareAsync();
+			using var reader = await cmd.ExecuteReaderAsync();
+			Assert.False(await reader.ReadAsync());
+			var table = reader.GetSchemaTable();
+			Assert.NotNull(table);
+			Assert.Empty(table.Rows);
+			Assert.Empty(table.Columns);
+			Assert.False(await reader.NextResultAsync());
 		}
 #endif
 
 #if !BASELINE
-		[Fact]
-		public async Task GetColumnSchemaForNoResultSet()
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task GetColumnSchemaForNoResultSet(bool ignorePrepare)
 		{
-			using var cmd = m_database.Connection.CreateCommand();
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "out_string";
 			cmd.CommandType = CommandType.StoredProcedure;
 			cmd.Parameters.Add(new MySqlParameter
@@ -195,19 +213,23 @@ namespace SideBySide
 				Direction = ParameterDirection.Output,
 			});
 
-			using (var reader = await cmd.ExecuteReaderAsync())
-			{
-				Assert.False(await reader.ReadAsync());
-				Assert.Empty(reader.GetColumnSchema());
-				Assert.False(await reader.NextResultAsync());
-			}
+			await cmd.PrepareAsync();
+			using var reader = await cmd.ExecuteReaderAsync();
+			Assert.False(await reader.ReadAsync());
+			Assert.Empty(reader.GetColumnSchema());
+			Assert.False(await reader.NextResultAsync());
 		}
 #endif
 
-		[Fact]
-		public async Task StoredProcedureOutIncorrectType()
+		[Theory]
+		[InlineData(true)]
+#if !BASELINE
+		[InlineData(false)] // https://bugs.mysql.com/bug.php?id=99793
+#endif
+		public async Task StoredProcedureOutIncorrectType(bool ignorePrepare)
 		{
-			using var cmd = m_database.Connection.CreateCommand();
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "out_string";
 			cmd.CommandType = CommandType.StoredProcedure;
 			cmd.Parameters.Add(new MySqlParameter
@@ -217,13 +239,17 @@ namespace SideBySide
 				Direction = ParameterDirection.Output,
 			});
 
+			await cmd.PrepareAsync();
 			await Assert.ThrowsAsync<FormatException>(cmd.ExecuteNonQueryAsync);
 		}
 
-		[Fact]
-		public async Task StoredProcedureReturnsNull()
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task StoredProcedureReturnsNull(bool ignorePrepare)
 		{
-			using var cmd = m_database.Connection.CreateCommand();
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "out_null";
 			cmd.CommandType = CommandType.StoredProcedure;
 			cmd.Parameters.Add(new MySqlParameter
@@ -242,6 +268,7 @@ namespace SideBySide
 				IsNullable = true,
 				Value = "123",
 			});
+			await cmd.PrepareAsync();
 			await cmd.ExecuteNonQueryAsync();
 
 			Assert.Equal(DBNull.Value, cmd.Parameters["@string_value"].Value);
@@ -249,12 +276,16 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData("NonQuery")]
-		[InlineData("Scalar")]
-		[InlineData("Reader")]
-		public async Task StoredProcedureCircle(string executorType)
+		[InlineData("NonQuery", true)]
+		[InlineData("NonQuery", false)]
+		[InlineData("Scalar", true)]
+		[InlineData("Scalar", false)]
+		[InlineData("Reader", true)]
+		[InlineData("Reader", false)]
+		public async Task StoredProcedureCircle(string executorType, bool ignorePrepare)
 		{
-			using var cmd = m_database.Connection.CreateCommand();
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "circle";
 			cmd.CommandType = CommandType.StoredProcedure;
 			cmd.Parameters.Add(new MySqlParameter
@@ -309,20 +340,25 @@ namespace SideBySide
 				Direction = ParameterDirection.Output,
 			});
 
+			await cmd.PrepareAsync();
 			await CircleAssertions(cmd, executorType);
 		}
 
 		[SkippableTheory(ServerFeatures.StoredProcedures)]
-		[InlineData("NonQuery")]
-		[InlineData("Scalar")]
-		[InlineData("Reader")]
-		public async Task StoredProcedureCircleCached(string executorType)
+		[InlineData("NonQuery", true)]
+		[InlineData("NonQuery", false)]
+		[InlineData("Scalar", true)]
+		[InlineData("Scalar", false)]
+		[InlineData("Reader", true)]
+		[InlineData("Reader", false)]
+		public async Task StoredProcedureCircleCached(string executorType, bool ignorePrepare)
 		{
 			// reorder parameters
 			// remove return types
 			// remove directions (MySqlConnector only, MySql.Data does not fix these up)
 			// CachedProcedure class should fix everything up based on parameter names
-			using var cmd = m_database.Connection.CreateCommand();
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "circle";
 			cmd.CommandType = CommandType.StoredProcedure;
 			cmd.Parameters.Add(new MySqlParameter
@@ -385,6 +421,7 @@ namespace SideBySide
 #endif
 			});
 
+			await cmd.PrepareAsync();
 			await CircleAssertions(cmd, executorType);
 		}
 
@@ -420,16 +457,21 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData("factor")]
-		[InlineData("@factor")]
-		[InlineData("?factor")]
-		public async Task MultipleRows(string paramaterName)
+		[InlineData("factor", true)]
+		[InlineData("factor", false)]
+		[InlineData("@factor", true)]
+		[InlineData("@factor", false)]
+		[InlineData("?factor", true)]
+		[InlineData("?factor", false)]
+		public async Task MultipleRows(string paramaterName, bool ignorePrepare)
 		{
-			using var cmd = m_database.Connection.CreateCommand();
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "number_multiples";
 			cmd.CommandType = CommandType.StoredProcedure;
 			cmd.Parameters.Add(new MySqlParameter { ParameterName = paramaterName, Value = 3 });
 
+			await cmd.PrepareAsync();
 			using var reader = await cmd.ExecuteReaderAsync();
 			Assert.True(await reader.ReadAsync());
 			Assert.Equal("six", reader.GetString(0));
@@ -440,16 +482,21 @@ namespace SideBySide
 		}
 
 		[Theory]
-		[InlineData(1, new string[0], new[] { "eight", "five", "four", "seven", "six", "three", "two" })]
-		[InlineData(4, new[] { "one", "three", "two" }, new[] { "eight", "five", "seven", "six" })]
-		[InlineData(8, new[] { "five", "four", "one", "seven", "six", "three", "two" }, new string[0])]
-		public async Task MultipleResultSets(int pivot, string[] firstResultSet, string[] secondResultSet)
+		[InlineData(1, new string[0], new[] { "eight", "five", "four", "seven", "six", "three", "two" }, true)]
+		[InlineData(1, new string[0], new[] { "eight", "five", "four", "seven", "six", "three", "two" }, false)]
+		[InlineData(4, new[] { "one", "three", "two" }, new[] { "eight", "five", "seven", "six" }, true)]
+		[InlineData(4, new[] { "one", "three", "two" }, new[] { "eight", "five", "seven", "six" }, false)]
+		[InlineData(8, new[] { "five", "four", "one", "seven", "six", "three", "two" }, new string[0], true)]
+		[InlineData(8, new[] { "five", "four", "one", "seven", "six", "three", "two" }, new string[0], false)]
+		public async Task MultipleResultSets(int pivot, string[] firstResultSet, string[] secondResultSet, bool ignorePrepare)
 		{
-			using var cmd = m_database.Connection.CreateCommand();
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "multiple_result_sets";
 			cmd.CommandType = CommandType.StoredProcedure;
 			cmd.Parameters.Add(new MySqlParameter { ParameterName = "@pivot", Value = pivot });
 
+			await cmd.PrepareAsync();
 			using var reader = await cmd.ExecuteReaderAsync();
 			foreach (var result in firstResultSet)
 			{
@@ -470,9 +517,12 @@ namespace SideBySide
 			Assert.False(await reader.NextResultAsync());
 		}
 
-		[Fact]
-		public async Task InOut()
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task InOut(bool ignorePrepare)
 		{
+			using var connection = CreateOpenConnection(ignorePrepare);
 			var parameter = new MySqlParameter
 			{
 				ParameterName = "high",
@@ -482,12 +532,12 @@ namespace SideBySide
 			};
 			while ((int) parameter.Value < 8)
 			{
-				using var cmd = m_database.Connection.CreateCommand();
+				using var cmd = connection.CreateCommand();
 				var nextValue = (int) parameter.Value + 1;
 				cmd.CommandText = "number_lister";
 				cmd.CommandType = CommandType.StoredProcedure;
 				cmd.Parameters.Add(parameter);
-				cmd.Prepare();
+				await cmd.PrepareAsync();
 				using (var reader = await cmd.ExecuteReaderAsync())
 				{
 					for (var i = 0; i < (int) parameter.Value; i++)
@@ -503,14 +553,18 @@ namespace SideBySide
 		}
 
 		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=84220")]
-		[InlineData(false)]
-		[InlineData(true)]
-		public async Task DottedName(bool useDatabaseName)
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		public async Task DottedName(bool useDatabaseName, bool ignorePrepare)
 		{
-			using var cmd = m_database.Connection.CreateCommand();
-			cmd.CommandText = (useDatabaseName ? $"{m_database.Connection.Database}." : "") + "`dotted.name`";
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var cmd = connection.CreateCommand();
+			cmd.CommandText = (useDatabaseName ? $"{connection.Database}." : "") + "`dotted.name`";
 			cmd.CommandType = CommandType.StoredProcedure;
 
+			await cmd.PrepareAsync();
 			using var reader = await cmd.ExecuteReaderAsync();
 			Assert.True(await reader.ReadAsync());
 			Assert.Equal(1, reader.GetInt32(0));
@@ -656,25 +710,42 @@ namespace SideBySide
 		}
 
 		[Fact]
-		public void OutputTimeParameter()
+		public void PrepareNonExistentStoredProcedure()
 		{
-			using var command = new MySqlCommand("GetTime", m_database.Connection);
+			using var connection = CreateOpenConnection(ignorePrepare: false);
+			using var command = new MySqlCommand("NonExistentStoredProcedure", connection);
+			command.CommandType = CommandType.StoredProcedure;
+			Assert.Throws<MySqlException>(command.Prepare);
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void OutputTimeParameter(bool ignorePrepare)
+		{
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var command = new MySqlCommand("GetTime", connection);
 			command.CommandType = CommandType.StoredProcedure;
 			var parameter = command.CreateParameter();
 			parameter.ParameterName = "OutTime";
 			parameter.Direction = ParameterDirection.Output;
 			command.Parameters.Add(parameter);
 
+			command.Prepare();
 			command.ExecuteNonQuery();
 			Assert.IsType<TimeSpan>(parameter.Value);
 		}
 
-		[Fact]
-		public void EnumProcedure()
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void EnumProcedure(bool ignorePrepare)
 		{
-			using var command = new MySqlCommand("EnumProcedure", m_database.Connection);
+			using var connection = CreateOpenConnection(ignorePrepare);
+			using var command = new MySqlCommand("EnumProcedure", connection);
 			command.CommandType = CommandType.StoredProcedure;
 			command.Parameters.AddWithValue("@input", "One");
+			command.Prepare();
 			using var reader = command.ExecuteReader();
 			Assert.True(reader.Read());
 			Assert.Equal("One", reader.GetString(0));
@@ -693,6 +764,15 @@ namespace SideBySide
 				input = input.Replace("  ", " ");
 			} while (input.Length != startingLength);
 			return input;
+		}
+
+		private static MySqlConnection CreateOpenConnection(bool ignorePrepare)
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.IgnorePrepare = ignorePrepare;
+			var connection = new MySqlConnection(csb.ConnectionString);
+			connection.Open();
+			return connection;
 		}
 
 		readonly DatabaseFixture m_database;

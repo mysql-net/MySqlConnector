@@ -5,7 +5,7 @@ using Xunit;
 
 namespace SideBySide
 {
-	public class TestUtilities
+	public static class TestUtilities
 	{
 		/// <summary>
 		/// Asserts that two byte arrays are equal. This method is much faster than xUnit's <code>Assert.Equal</code>.
@@ -120,5 +120,13 @@ namespace SideBySide
 
 			return null;
 		}
+
+#if BASELINE
+		public static System.Threading.Tasks.Task PrepareAsync(this MySqlCommand command)
+		{
+			command.Prepare();
+			return System.Threading.Tasks.Task.CompletedTask;
+		}
+#endif
 	}
 }

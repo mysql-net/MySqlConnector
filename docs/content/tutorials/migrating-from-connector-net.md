@@ -216,3 +216,4 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#97872](https://bugs.mysql.com/bug.php?id=97872): `KeepAlive` in connection string throws exception on .NET Core
 * [#98322](https://bugs.mysql.com/bug.php?id=98322): `new MySqlConnection(null)` throws `NullReferenceException`
 * [#99091](https://bugs.mysql.com/bug.php?id=99091): Unexpected return value getting integer for `TINYINT(1)` column
+* [#99793](https://bugs.mysql.com/bug.php?id=99793): Prepared stored procedure command doesn't verify parameter types

@@ -140,7 +140,36 @@ namespace MySqlConnector.Core
 			// caller has validated this already
 			var commandText = command.CommandText!;
 
-			var statementPreparer = new StatementPreparer(commandText, command.RawParameters, command.CreateStatementPreparerOptions());
+			// for a stored procedure, the statement to be prepared is "CALL commandText(?,?,?,...);"
+			string commandToPrepare;
+			if (command.CommandType == CommandType.StoredProcedure)
+			{
+				var cachedProcedure = await command.Connection!.GetCachedProcedure(commandText, revalidateMissing: false, ioBehavior, cancellationToken).ConfigureAwait(false);
+				if (cachedProcedure is null)
+				{
+					var name = NormalizedSchema.MustNormalize(command.CommandText!, command.Connection.Database);
+					throw new MySqlException("Procedure or function '{0}' cannot be found in database '{1}'.".FormatInvariant(name.Component, name.Schema));
+				}
+
+				var parameterCount = cachedProcedure.Parameters.Count;
+				var callStatement = new StringBuilder("CALL ", commandText.Length + 8 + parameterCount * 2);
+				callStatement.Append(commandText);
+				callStatement.Append('(');
+				for (int i = 0; i < parameterCount; i++)
+					callStatement.Append("?,");
+				if (parameterCount == 0)
+					callStatement.Append(')');
+				else
+					callStatement[callStatement.Length - 1] = ')';
+				callStatement.Append(';');
+				commandToPrepare = callStatement.ToString();
+			}
+			else
+			{
+				commandToPrepare = commandText;
+			}
+
+			var statementPreparer = new StatementPreparer(commandToPrepare, command.RawParameters, command.CreateStatementPreparerOptions());
 			var parsedStatements = statementPreparer.SplitStatements();
 
 			var columnsAndParameters = new ResizableArray<byte>();

@@ -128,9 +128,9 @@ namespace MySql.Data.MySqlClient
 			if (exception is object || Connection!.IgnorePrepare)
 				return false;
 
-			if (CommandType != CommandType.Text)
+			if (CommandType != CommandType.StoredProcedure && CommandType != CommandType.Text)
 			{
-				exception = new NotSupportedException("Only CommandType.Text is currently supported by MySqlCommand.Prepare");
+				exception = new NotSupportedException("Only CommandType.Text and CommandType.StoredProcedure is currently supported by MySqlCommand.Prepare");
 				return false;
 			}
 
