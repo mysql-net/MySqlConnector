@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.68.0
+
+* Add `MySqlConnection.BeginTransaction` overload with `isReadOnly` parameter: [#817](https://github.com/mysql-net/MySqlConnector/issues/817).
+* Support `MySqlCommand.Prepare` for `CommandType.StoredProcedure`: [#742](https://github.com/mysql-net/MySqlConnector/issues/742).
+
 ### 0.67.0
 
 * **Breaking** Add `new` implementations of `MySqlCommand.ExecuteReaderAsync` that return `Task<MySqlDataReader>`: [#822](https://github.com/mysql-net/MySqlConnector/issues/822).
