@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.69.0
+
+* **Breaking** Change `MySqlGeometry.Value` from returning `ReadOnlySpan<byte>` to `byte[]`: [#829](https://github.com/mysql-net/MySqlConnector/pull/829).
+* Thanks to [Laurents Meyer](https://github.com/lauxjpn) for contributions to this release.
+
 ### 0.68.1
 
 * Fix SQL syntax error when calling `BeginTransaction(IsolationLevel.Snapshot, isReadOnly: true);`: [#817](https://github.com/mysql-net/MySqlConnector/issues/817).
