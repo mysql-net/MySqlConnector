@@ -284,7 +284,7 @@ namespace MySql.Data.MySqlClient
 				var inputSpan = Value is byte[] byteArray ? byteArray.AsSpan() :
 					Value is ArraySegment<byte> arraySegment ? arraySegment.AsSpan() :
 					Value is Memory<byte> memory ? memory.Span :
-					Value is MySqlGeometry geometry ? geometry.Value :
+					Value is MySqlGeometry geometry ? geometry.ValueSpan :
 					((ReadOnlyMemory<byte>) Value).Span;
 
 				// determine the number of bytes to be written
@@ -503,8 +503,8 @@ namespace MySql.Data.MySqlClient
 			}
 			else if (Value is MySqlGeometry geometry)
 			{
-				writer.WriteLengthEncodedInteger(unchecked((ulong) geometry.Value.Length));
-				writer.Write(geometry.Value);
+				writer.WriteLengthEncodedInteger(unchecked((ulong) geometry.ValueSpan.Length));
+				writer.Write(geometry.ValueSpan);
 			}
 			else if (Value is float floatValue)
 			{

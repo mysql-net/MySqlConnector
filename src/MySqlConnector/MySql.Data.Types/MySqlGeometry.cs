@@ -38,12 +38,14 @@ namespace MySql.Data.Types
 		/// <summary>
 		/// The Well-known Binary serialization of this geometry.
 		/// </summary>
-		public ReadOnlySpan<byte> WKB => new ReadOnlySpan<byte>(Value).Slice(4);
+		public ReadOnlySpan<byte> WKB => ValueSpan.Slice(4);
 
 		/// <summary>
 		/// The internal MySQL form of this geometry.
 		/// </summary>
-		public byte[] Value => m_bytes;
+		public byte[] Value => ValueSpan.ToArray();
+
+		internal ReadOnlySpan<byte> ValueSpan => m_bytes;
 
 		internal MySqlGeometry(byte[] bytes) => m_bytes = bytes;
 

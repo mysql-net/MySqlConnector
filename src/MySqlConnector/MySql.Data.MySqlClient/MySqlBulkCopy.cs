@@ -402,7 +402,7 @@ namespace MySql.Data.MySqlClient
 					var inputSpan = value is byte[] byteArray ? byteArray.AsSpan() :
 						value is ArraySegment<byte> arraySegment ? arraySegment.AsSpan() :
 						value is Memory<byte> memory ? memory.Span :
-						value is MySqlGeometry geometry ? geometry.Value :
+						value is MySqlGeometry geometry ? geometry.ValueSpan :
 						((ReadOnlyMemory<byte>) value).Span;
 
 					return WriteBytes(inputSpan, output, out bytesWritten);
