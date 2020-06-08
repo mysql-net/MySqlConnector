@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.68.1
+
+* Fix SQL syntax error when calling `BeginTransaction(IsolationLevel.Snapshot, isReadOnly: true);`: [#817](https://github.com/mysql-net/MySqlConnector/issues/817).
+
 ### 0.68.0
 
 * Add `MySqlConnection.BeginTransaction` overload with `isReadOnly` parameter: [#817](https://github.com/mysql-net/MySqlConnector/issues/817).
