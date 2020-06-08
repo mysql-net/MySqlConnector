@@ -152,7 +152,8 @@ namespace MySql.Data.MySqlClient
 					false => " read write",
 					null => "",
 				};
-				cmd.CommandText = $"start transaction{consistentSnapshotText}{readOnlyText};";
+				var separatorText = (consistentSnapshotText.Length == 0 || readOnlyText.Length == 0) ? "" : ",";
+				cmd.CommandText = $"start transaction{consistentSnapshotText}{separatorText}{readOnlyText};";
 				await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 

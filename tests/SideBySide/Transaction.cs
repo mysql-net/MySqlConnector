@@ -139,6 +139,14 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void ReadOnlySnapshotTransaction()
+		{
+			using var trans = m_connection.BeginTransaction(IsolationLevel.Snapshot, isReadOnly: true);
+			var exception = Assert.Throws<MySqlException>(() => m_connection.Execute("insert into transactions_test values(1), (2)", transaction: trans));
+			Assert.Equal(MySqlErrorCode.CannotExecuteInReadOnlyTransaction, (MySqlErrorCode) exception.Number);
+		}
+
+		[Fact]
 		public void ReadWriteTransaction()
 		{
 			using (var trans = m_connection.BeginTransaction(IsolationLevel.Serializable, isReadOnly: false))
