@@ -297,6 +297,10 @@ namespace MySqlConnector
 		public override void Close() => DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #endif
 
+		/// <summary>
+		/// Returns metadata about the columns in the result set.
+		/// </summary>
+		/// <returns>A <see cref="System.Collections.ObjectModel.ReadOnlyCollection{DbColumn}"/> containing metadata about the result set.</returns>
 		public ReadOnlyCollection<DbColumn> GetColumnSchema()
 		{
 			var columnDefinitions = m_resultSet?.ColumnDefinitions;

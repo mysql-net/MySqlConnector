@@ -15,6 +15,9 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector
 {
+	/// <summary>
+	/// <see cref="MySqlConnection"/> represents a connection to a MySQL database.
+	/// </summary>
 	public sealed class MySqlConnection : DbConnection
 #if !NETSTANDARD1_3
 		, ICloneable
@@ -461,11 +464,35 @@ namespace MySqlConnector
 
 		public override string ServerVersion => Session.ServerVersion.OriginalString;
 
+		/// <summary>
+		/// The connection ID from MySQL Server.
+		/// </summary>
 		public int ServerThread => Session.ConnectionId;
 
+		/// <summary>
+		/// Clears the connection pool that <paramref name="connection"/> belongs to.
+		/// </summary>
+		/// <param name="connection">The <see cref="MySqlConnection"/> whose connection pool will be cleared.</param>
 		public static void ClearPool(MySqlConnection connection) => ClearPoolAsync(connection, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+
+		/// <summary>
+		/// Asynchronously clears the connection pool that <paramref name="connection"/> belongs to.
+		/// </summary>
+		/// <param name="connection">The <see cref="MySqlConnection"/> whose connection pool will be cleared.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 		public static Task ClearPoolAsync(MySqlConnection connection, CancellationToken cancellationToken = default) => ClearPoolAsync(connection, connection.AsyncIOBehavior, cancellationToken);
+
+		/// <summary>
+		/// Clears all connection pools.
+		/// </summary>
 		public static void ClearAllPools() => ConnectionPool.ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+
+		/// <summary>
+		/// Asynchronously clears all connection pools.
+		/// </summary>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 		public static Task ClearAllPoolsAsync(CancellationToken cancellationToken = default) => ConnectionPool.ClearPoolsAsync(IOBehavior.Asynchronous, cancellationToken);
 
 		private static async Task ClearPoolAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -512,9 +539,17 @@ namespace MySqlConnector
 
 		public event MySqlInfoMessageEventHandler? InfoMessage;
 
+		/// <summary>
+		/// Creates a <see cref="MySqlBatch"/> object for executing batched commands.
+		/// </summary>
+		/// <returns></returns>
 		public MySqlBatch CreateBatch() => CreateDbBatch();
 		private MySqlBatch CreateDbBatch() => new MySqlBatch(this);
 
+		/// <summary>
+		/// Creates a <see cref="MySqlBatchCommand"/> object (that can be used with <see cref="MySqlBatch.BatchCommands"/>).
+		/// </summary>
+		/// <returns></returns>
 		public MySqlBatchCommand CreateBatchCommand() => CreateDbBatchCommand();
 		private MySqlBatchCommand CreateDbBatchCommand() => new MySqlBatchCommand();
 		public bool CanCreateBatch => true;

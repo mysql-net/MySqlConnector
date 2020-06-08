@@ -31,7 +31,8 @@ disablePathToLower = true
     name = "API"
     identifier = "api"
     pre = "<i class='fa fa-file-text'></i>"
-    weight = 50
+    url = "/api/MySqlConnectorAssembly/"
+    weight = 35
 [[menu.main]]
     name = "Troubleshooting"
     identifier = "troubleshooting"

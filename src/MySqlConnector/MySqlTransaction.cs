@@ -44,13 +44,50 @@ namespace MySqlConnector
 			Connection = null;
 		}
 
+		/// <summary>
+		/// Removes the named transaction savepoint with the specified <paramref name="savepointName"/>. No commit or rollback occurs.
+		/// </summary>
+		/// <param name="savepointName">The savepoint name.</param>
 		public void Release(string savepointName) => ExecuteSavepointAsync("release ", savepointName, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+
+		/// <summary>
+		/// Asynchronously removes the named transaction savepoint with the specified <paramref name="savepointName"/>. No commit or rollback occurs.
+		/// </summary>
+		/// <param name="savepointName">The savepoint name.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 		public Task ReleaseAsync(string savepointName, CancellationToken cancellationToken = default) => ExecuteSavepointAsync("release ", savepointName, Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 
+		/// <summary>
+		/// Rolls back the current transaction to the savepoint with the specified <paramref name="savepointName"/> without aborting the transaction.
+		/// </summary>
+		/// <param name="savepointName">The savepoint name.</param>
+		/// <remarks>The name must have been created with <see cref="Save"/>, but not released by calling <see cref="Release"/>.</remarks>
 		public void Rollback(string savepointName) => ExecuteSavepointAsync("rollback to ", savepointName, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+
+		/// <summary>
+		/// Asynchronously olls back the current transaction to the savepoint with the specified <paramref name="savepointName"/> without aborting the transaction.
+		/// </summary>
+		/// <param name="savepointName">The savepoint name.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+		/// <remarks>The name must have been created with <see cref="SaveAsync"/>, but not released by calling <see cref="ReleaseAsync"/>.</remarks>
 		public Task RollbackAsync(string savepointName, CancellationToken cancellationToken = default) => ExecuteSavepointAsync("rollback to ", savepointName, Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 
+		/// <summary>
+		/// Sets a named transaction savepoint with the specified <paramref name="savepointName"/>. If the current transaction
+		/// already has a savepoint with the same name, the old savepoint is deleted and a new one is set.
+		/// </summary>
+		/// <param name="savepointName">The savepoint name.</param>
 		public void Save(string savepointName) => ExecuteSavepointAsync("", savepointName, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+
+		/// <summary>
+		/// Asynchronously sets a named transaction savepoint with the specified <paramref name="savepointName"/>. If the current transaction
+		/// already has a savepoint with the same name, the old savepoint is deleted and a new one is set.
+		/// </summary>
+		/// <param name="savepointName">The savepoint name.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 		public Task SaveAsync(string savepointName, CancellationToken cancellationToken = default) => ExecuteSavepointAsync("", savepointName, Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 
 		private async Task ExecuteSavepointAsync(string command, string savepointName, IOBehavior ioBehavior, CancellationToken cancellationToken)

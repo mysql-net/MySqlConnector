@@ -11,31 +11,58 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector
 {
+	/// <summary>
+	/// <see cref="MySqlCommand"/> represents a SQL statement or stored procedure name
+	/// to execute against a MySQL database.
+	/// </summary>
 	public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 #if !NETSTANDARD1_3
 		, ICloneable
 #endif
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MySqlCommand"/> class.
+		/// </summary>
 		public MySqlCommand()
 			: this(null, null, null)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MySqlCommand"/> class, setting <see cref="CommandText"/> to <paramref name="commandText"/>.
+		/// </summary>
+		/// <param name="commandText">The text to assign to <see cref="CommandText"/>.</param>
 		public MySqlCommand(string? commandText)
 			: this(commandText, null, null)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MySqlCommand"/> class with the specified <see cref="MySqlConnection"/> and <see cref="MySqlTransaction"/>.
+		/// </summary>
+		/// <param name="connection">The <see cref="MySqlConnection"/> to use.</param>
+		/// <param name="transaction">The active <see cref="MySqlTransaction"/>, if any.</param>
 		public MySqlCommand(MySqlConnection? connection, MySqlTransaction? transaction)
 			: this(null, connection, transaction)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MySqlCommand"/> class with the specified command text and <see cref="MySqlConnection"/>.
+		/// </summary>
+		/// <param name="commandText">The text to assign to <see cref="CommandText"/>.</param>
+		/// <param name="connection">The <see cref="MySqlConnection"/> to use.</param>
 		public MySqlCommand(string? commandText, MySqlConnection? connection)
 			: this(commandText, connection, null)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MySqlCommand"/> class with the specified command text,<see cref="MySqlConnection"/>, and <see cref="MySqlTransaction"/>.
+		/// </summary>
+		/// <param name="commandText">The text to assign to <see cref="CommandText"/>.</param>
+		/// <param name="connection">The <see cref="MySqlConnection"/> to use.</param>
+		/// <param name="transaction">The active <see cref="MySqlTransaction"/>, if any.</param>
 		public MySqlCommand(string? commandText, MySqlConnection? connection, MySqlTransaction? transaction)
 		{
 			GC.SuppressFinalize(this);
@@ -57,22 +84,29 @@ namespace MySqlConnector
 			m_parameterCollection = other.CloneRawParameters();
 		}
 
+		/// <summary>
+		/// The collection of <see cref="MySqlParameter"/> objects for this command.
+		/// </summary>
 		public new MySqlParameterCollection Parameters => m_parameterCollection ??= new MySqlParameterCollection();
 
 		MySqlParameterCollection? IMySqlCommand.RawParameters => m_parameterCollection;
 
 		public new MySqlParameter CreateParameter() => (MySqlParameter) base.CreateParameter();
 
+		/// <inheritdoc/>
 		public override void Cancel() => Connection?.Cancel(this);
 
+		/// <inheritdoc/>
 		public override int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
+		/// <inheritdoc/>
 		public override object? ExecuteScalar() => ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 		public new MySqlDataReader ExecuteReader() => ExecuteReaderAsync(default, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 
 		public new MySqlDataReader ExecuteReader(CommandBehavior commandBehavior) => ExecuteReaderAsync(commandBehavior, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 
+		/// <inheritdoc/>
 		public override void Prepare()
 		{
 			if (!NeedsPrepare(out var exception))
@@ -138,6 +172,7 @@ namespace MySqlConnector
 			return Connection.Session.TryGetPreparedStatement(CommandText!) is null;
 		}
 
+		/// <inheritdoc/>
 		[AllowNull]
 		public override string CommandText
 		{
@@ -165,12 +200,14 @@ namespace MySqlConnector
 			}
 		}
 
+		/// <inheritdoc/>
 		public override int CommandTimeout
 		{
 			get => Math.Min(m_commandTimeout ?? Connection?.DefaultCommandTimeout ?? 0, int.MaxValue / 1000);
 			set => m_commandTimeout = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value), "CommandTimeout must be greater than or equal to zero.");
 		}
 
+		/// <inheritdoc/>
 		public override CommandType CommandType
 		{
 			get => m_commandType;
@@ -182,10 +219,18 @@ namespace MySqlConnector
 			}
 		}
 
+		/// <inheritdoc/>
 		public override bool DesignTimeVisible { get; set; }
 
+		/// <inheritdoc/>
 		public override UpdateRowSource UpdatedRowSource { get; set; }
 
+		/// <summary>
+		/// Holds the first automatically-generated ID for a value inserted in an <c>AUTO_INCREMENT</c> column in the last statement.
+		/// </summary>
+		/// <remarks>
+		/// See <a href="https://dev.mysql.com/doc/refman/8.0/en/information-functions.html#function_last-insert-id"><c>LAST_INSERT_ID()</c></a> for more information.
+		/// </remarks>
 		public long LastInsertedId { get; private set; }
 
 		void IMySqlCommand.SetLastInsertedId(long value) => LastInsertedId = value;

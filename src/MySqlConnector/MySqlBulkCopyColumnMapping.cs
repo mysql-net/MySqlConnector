@@ -3,8 +3,32 @@ using System;
 namespace MySqlConnector
 {
 	/// <summary>
-	/// <see cref="MySqlBulkCopyColumnMapping"/> specifies how to map columns in the source data to
-	/// destination columns when using <see cref="MySqlBulkCopy"/>.
+	/// <para>Use <see cref="MySqlBulkCopyColumnMapping"/> to specify how to map columns in the source data to
+	/// columns in the destination table when using <see cref="MySqlBulkCopy"/>.</para>
+	/// <para>Set <see cref="SourceOrdinal"/> to the index of the source column to map. Set <see cref="DestinationColumn"/> to
+	/// either the name of a column in the destination table, or the name of a user-defined variable.
+	/// If a user-defined variable, you can use <see cref="Expression"/> to specify a MySQL expression that assigns
+	/// its value to destination column.</para>
+	/// <para>Source columns that don't have an entry in <see cref="MySqlBulkCopy.ColumnMappings"/> will be ignored
+	/// (unless the <see cref="MySqlBulkCopy.ColumnMappings"/> collection is empty, in which case all columns will be mapped
+	/// one-to-one).</para>
+	/// <para>MySqlConnector will transmit all binary data as hex, so any expression that operates on it
+	/// must decode it with the <c>UNHEX</c> function first. (This will be performed automatically if no
+	/// <see cref="Expression"/> is specified, but will be necessary to specify manually for more complex expressions.)</para>
+	/// <para>Example code:</para>
+	/// <code>
+	/// new MySqlBulkCopyColumnMapping
+	/// {
+	///     SourceOrdinal = 2,
+	///     DestinationColumn = "user_name",
+	/// },
+	/// new MySqlBulkCopyColumnMapping
+	/// {
+	///     SourceOrdinal = 0,
+	///     DestinationColumn = "@tmp",
+	///     Expression = "column_value = @tmp * 2",
+	/// },
+	/// </code>
 	/// </summary>
 	public sealed class MySqlBulkCopyColumnMapping
 	{

@@ -15,8 +15,37 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector
 {
+	/// <summary>
+	/// <para><see cref="MySqlBulkCopy"/> lets you efficiently load a MySQL Server table with data from another source.
+	/// It is similar to the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlbulkcopy">SqlBulkCopy</a> class
+	/// for SQL Server.</para>
+	/// <para>Due to <a href="https://mysqlconnector.net/troubleshooting/load-data-local-infile/">security features</a>
+	/// in MySQL Server, the connection string <em>must</em> have <c>AllowLoadLocalInfile=true</c> in order
+	/// to use this class.</para>
+	/// <para>For data that is in CSV or TSV format, use <see cref="MySqlBulkLoader"/> to bulk load the file.</para>
+	/// <para>Example code:</para>
+	/// <code>
+	/// // NOTE: to copy data between tables in the same database, use INSERT ... SELECT
+	/// // https://dev.mysql.com/doc/refman/8.0/en/insert-select.html
+	/// var dataTable = GetDataTableFromExternalSource();
+	///
+	/// using var connection = new MySqlConnection("...;AllowLoadLocalInfile=True");
+	/// await connection.OpenAsync();
+	/// var bulkCopy = new MySqlBulkCopy(connection);
+	/// bulkCopy.DestinationTableName = "some_table_name";
+	/// await bulkCopy.WriteToServerAsync(dataTable);
+	/// </code>
+	/// </summary>
+	/// <remarks><para><strong>Note:</strong> This API is a unique feature of MySqlConnector; you must
+	/// <a href="https://mysqlconnector.net/overview/installing/">switch to MySqlConnector</a> in order to use it.
+	/// It is supported in version 0.62.0 and later.</para></remarks>
 	public sealed class MySqlBulkCopy
 	{
+		/// <summary>
+		/// Initializes a <see cref="MySqlBulkCopy"/> object with the specified connection, and optionally the active transaction.
+		/// </summary>
+		/// <param name="connection">The <see cref="MySqlConnection"/> to use.</param>
+		/// <param name="transaction">(Optional) The <see cref="MySqlTransaction"/> to use.</param>
 		public MySqlBulkCopy(MySqlConnection connection, MySqlTransaction? transaction = null)
 		{
 			m_connection = connection ?? throw new ArgumentNullException(nameof(connection));
@@ -24,25 +53,28 @@ namespace MySqlConnector
 			ColumnMappings = new List<MySqlBulkCopyColumnMapping>();
 		}
 
+		/// <summary>
+		/// The number of seconds for the operation to complete before it times out, or <c>0</c> for no timeout.
+		/// </summary>
 		public int BulkCopyTimeout { get; set; }
 
 		/// <summary>
 		/// The name of the table to insert rows into.
 		/// </summary>
-		/// <remarks>The table name shouldn't be quoted or escaped.</remarks>
+		/// <remarks>This name needs to be quoted if it contains special characters.</remarks>
 		public string? DestinationTableName { get; set; }
 
 		/// <summary>
-		/// Defines the number of rows to be processed before generating a notification event.
+		/// If non-zero, this specifies the number of rows to be processed before generating a notification event.
 		/// </summary>
 		public int NotifyAfter { get; set; }
 
 		/// <summary>
-		/// Occurs every time that the number of rows specified by the <see cref="NotifyAfter"/> property have been processed,
-		/// and once after all rows have been copied (if <see cref="NotifyAfter"/> is non-zero).
+		/// This event is raised every time that the number of rows specified by the <see cref="NotifyAfter"/> property have been processed.
 		/// </summary>
 		/// <remarks>
-		/// Receipt of a RowsCopied event does not imply that any rows have been sent to the server or committed.
+		/// <para>Receipt of a RowsCopied event does not imply that any rows have been sent to the server or committed.</para>
+		/// <para>The <see cref="MySqlRowsCopiedEventArgs.Abort"/> property can be set to <c>true</c> by the event handler to abort the copy.</para>
 		/// </remarks>
 		public event MySqlRowsCopiedEventHandler? MySqlRowsCopied;
 
@@ -61,6 +93,11 @@ namespace MySqlConnector
 		public int RowsCopied { get; private set; }
 
 #if !NETSTANDARD1_3
+		/// <summary>
+		/// Copies all rows in the supplied <see cref="DataTable"/> to the destination table specified by the
+		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
+		/// </summary>
+		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
 		public void WriteToServer(DataTable dataTable)
 		{
 			m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable ?? throw new ArgumentNullException(nameof(dataTable)));
@@ -68,12 +105,22 @@ namespace MySqlConnector
 		}
 
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+		/// <summary>
+		/// Asynchronously copies all rows in the supplied <see cref="DataTable"/> to the destination table specified by the
+		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
+		/// </summary>
+		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
 		public async Task WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable ?? throw new ArgumentNullException(nameof(dataTable)));
 			await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 		}
 #else
+		/// <summary>
+		/// Asynchronously copies all rows in the supplied <see cref="DataTable"/> to the destination table specified by the
+		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
+		/// </summary>
+		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
 		public async ValueTask WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable ?? throw new ArgumentNullException(nameof(dataTable)));
@@ -81,18 +128,44 @@ namespace MySqlConnector
 		}
 #endif
 
+		/// <summary>
+		/// Copies all rows in the supplied sequence of <see cref="DataRow"/> objects to the destination table specified by the
+		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object. The number of columns
+		/// to be read from the <see cref="DataRow"/> objects must be specified in advance.
+		/// </summary>
+		/// <param name="dataRows">The collection of <see cref="DataRow"/> objects.</param>
+		/// <param name="columnCount">The number of columns to copy (in each row).</param>
+		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
 		public void WriteToServer(IEnumerable<DataRow> dataRows, int columnCount)
 		{
 			m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows ?? throw new ArgumentNullException(nameof(dataRows)), columnCount);
 			WriteToServerAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		}
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+		/// <summary>
+		/// Asynchronously copies all rows in the supplied sequence of <see cref="DataRow"/> objects to the destination table specified by the
+		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object. The number of columns
+		/// to be read from the <see cref="DataRow"/> objects must be specified in advance.
+		/// </summary>
+		/// <param name="dataRows">The collection of <see cref="DataRow"/> objects.</param>
+		/// <param name="columnCount">The number of columns to copy (in each row).</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
 		public async Task WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows ?? throw new ArgumentNullException(nameof(dataRows)), columnCount);
 			await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 		}
 #else
+		/// <summary>
+		/// Asynchronously copies all rows in the supplied sequence of <see cref="DataRow"/> objects to the destination table specified by the
+		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object. The number of columns
+		/// to be read from the <see cref="DataRow"/> objects must be specified in advance.
+		/// </summary>
+		/// <param name="dataRows">The collection of <see cref="DataRow"/> objects.</param>
+		/// <param name="columnCount">The number of columns to copy (in each row).</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
 		public async ValueTask WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows ?? throw new ArgumentNullException(nameof(dataRows)), columnCount);
@@ -101,18 +174,35 @@ namespace MySqlConnector
 #endif
 #endif
 
+		/// <summary>
+		/// Copies all rows in the supplied <see cref="IDataReader"/> to the destination table specified by the
+		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
+		/// </summary>
+		/// <param name="dataReader">The <see cref="IDataReader"/> to copy from.</param>
 		public void WriteToServer(IDataReader dataReader)
 		{
 			m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader ?? throw new ArgumentNullException(nameof(dataReader)));
 			WriteToServerAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		}
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+		/// <summary>
+		/// Asynchronously copies all rows in the supplied <see cref="IDataReader"/> to the destination table specified by the
+		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
+		/// </summary>
+		/// <param name="dataReader">The <see cref="IDataReader"/> to copy from.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		public async Task WriteToServerAsync(IDataReader dataReader, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader ?? throw new ArgumentNullException(nameof(dataReader)));
 			await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 		}
 #else
+		/// <summary>
+		/// Asynchronously copies all rows in the supplied <see cref="IDataReader"/> to the destination table specified by the
+		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
+		/// </summary>
+		/// <param name="dataReader">The <see cref="IDataReader"/> to copy from.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		public async ValueTask WriteToServerAsync(IDataReader dataReader, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader ?? throw new ArgumentNullException(nameof(dataReader)));

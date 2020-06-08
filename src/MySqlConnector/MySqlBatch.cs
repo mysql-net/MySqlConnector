@@ -9,13 +9,64 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector
 {
+	/// <summary>
+	/// <para><see cref="MySqlBatch"/> implements the new
+	/// <a href="https://github.com/dotnet/runtime/issues/28633">ADO.NET batching API</a>.
+	/// <strong>It is currently experimental</strong> and may change in the future.</para>
+	/// <para>When using MariaDB (10.2 or later), the commands will be sent in a single batch, reducing network
+	/// round-trip time. With other MySQL Servers, this may be no more efficient than executing the commands
+	/// individually.</para>
+	/// <para>Example usage:</para>
+	/// <code>
+	/// using var connection = new MySqlConnection("...connection string...");
+	/// await connection.OpenAsync();
+	///
+	/// using var batch = new MySqlBatch(connection)
+	/// {
+	/// 	BatchCommands =
+	/// 	{
+	/// 		new MySqlBatchCommand("INSERT INTO departments(name) VALUES(@name);")
+	/// 		{
+	/// 			Parameters =
+	/// 			{
+	/// 				new MySqlParameter("@name", "Sales"),
+	/// 			},
+	/// 		},
+	/// 		new MySqlBatchCommand("SET @dept_id = last_insert_id()"),
+	/// 		new MySqlBatchCommand("INSERT INTO employees(name, department_id) VALUES(@name, @dept_id);")
+	/// 		{
+	/// 			Parameters =
+	/// 			{
+	/// 				new MySqlParameter("@name", "Jim Halpert"),
+	/// 			},
+	/// 		},
+	/// 	 	new MySqlBatchCommand("INSERT INTO employees(name, department_id) VALUES(@name, @dept_id);")
+	/// 		{
+	/// 			Parameters =
+	/// 			{
+	/// 				new MySqlParameter("@name", "Dwight Schrute"),
+	/// 			},
+	/// 		},
+	/// 	},
+	///  };
+	///  await batch.ExecuteNonQueryAsync();
+	/// </code>
+	/// </summary>
 	public sealed class MySqlBatch : ICancellableCommand, IDisposable
 	{
+		/// <summary>
+		/// Initializes a new <see cref="MySqlBatch"/> object. The <see cref="Connection"/> property must be set before this object can be used.
+		/// </summary>
 		public MySqlBatch()
 			: this(null, null)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new <see cref="MySqlBatch"/> object, setting the <see cref="Connection"/> and <see cref="Transaction"/> if specified.
+		/// </summary>
+		/// <param name="connection">(Optional) The <see cref="MySqlConnection"/> to use.</param>
+		/// <param name="transaction">(Optional) The <see cref="MySqlTransaction"/> to use.</param>
 		public MySqlBatch(MySqlConnection? connection = null, MySqlTransaction? transaction = null)
 		{
 			Connection = connection;
@@ -26,9 +77,26 @@ namespace MySqlConnector
 
 		public MySqlConnection? Connection { get; set; }
 		public MySqlTransaction? Transaction { get; set; }
+
+		/// <summary>
+		/// The collection of commands that will be executed in the batch.
+		/// </summary>
 		public MySqlBatchCommandCollection BatchCommands { get; }
 
+		/// <summary>
+		/// Executes all the commands in the batch, returning a <see cref="MySqlDataReader"/> that can iterate
+		/// over the result sets. If multiple resultsets are returned, use <see cref="MySqlDataReader.NextResult"/>
+		/// to access them.
+		/// </summary>
 		public MySqlDataReader ExecuteReader() => ExecuteDbDataReader();
+
+		/// <summary>
+		/// Executes all the commands in the batch, returning a <see cref="MySqlDataReader"/> that can iterate
+		/// over the result sets. If multiple resultsets are returned, use <see cref="MySqlDataReader.NextResultAsync(CancellationToken)"/>
+		/// to access them.
+		/// </summary>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task{MySqlDataReader}"/> containing the result of the asynchronous operation.</returns>
 		public Task<MySqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default) => ExecuteDbDataReaderAsync(cancellationToken);
 
 		private MySqlDataReader ExecuteDbDataReader()

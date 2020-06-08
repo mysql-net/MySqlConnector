@@ -25,8 +25,50 @@ force = true
 
 [[redirects]]
 from = "/api/"
-to = "/"
+to = "/api/MySqlConnectorAssembly/"
 status = 302
+force = true
+
+[[redirect]]
+from = "/api/mysql-batch/"
+to = "/api/MySqlConnector/MySqlBatchType/"
+status = 301
+force = true
+
+[[redirect]]
+from = "/api/mysql-bulk-copy/"
+to = "/api/MySqlConnector/MySqlBulkCopyType/"
+status = 301
+force = true
+
+[[redirect]]
+from = "/api/mysql-bulk-loader/"
+to = "/api/MySqlConnector/MySqlBulkLoaderType/"
+status = 301
+force = true
+
+[[redirect]]
+from = "/api/mysql-command/"
+to = "/api/MySqlConnector/MySqlCommandType/"
+status = 301
+force = true
+
+[[redirect]]
+from = "/api/mysql-connection/"
+to = "/api/MySqlConnector/MySqlConnectionType/"
+status = 301
+force = true
+
+[[redirect]]
+from = "/api/mysql-data-reader/"
+to = "/api/MySqlConnector/MySqlDataReaderType/"
+status = 301
+force = true
+
+[[redirect]]
+from = "/api/mysql-transaction/"
+to = "/api/MySqlConnector/MySqlTransactionType/"
+status = 301
 force = true
 
 [[redirects]]
