@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.69.1
+
+* Fix `OverflowException` when calling `MySqlDataReader.GetInt32` on a `DECIMAL` column: [#832](https://github.com/mysql-net/MySqlConnector/issues/832).
+
 ### 0.69.0
 
 * **Breaking** Change `MySqlGeometry.Value` from returning `ReadOnlySpan<byte>` to `byte[]`: [#829](https://github.com/mysql-net/MySqlConnector/pull/829).
