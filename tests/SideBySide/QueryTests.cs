@@ -633,6 +633,34 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			Assert.Equal(4294967296L, reader.GetInt64(0));
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void DivideInts(bool prepareCommand)
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.IgnorePrepare = !prepareCommand;
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			connection.Open();
+
+			using var cmd = new MySqlCommand("select 2 / 1;", connection);
+			cmd.Prepare();
+			using var reader = cmd.ExecuteReader();
+			Assert.True(reader.Read());
+			Assert.Equal(2.000m, reader.GetValue(0));
+			Assert.Equal(2.000m, reader.GetDecimal(0));
+#if !BASELINE
+			Assert.Equal((byte) 2, reader.GetByte(0));
+			Assert.Equal((sbyte) 2, reader.GetSByte(0));
+#endif
+			Assert.Equal((short) 2, reader.GetInt16(0));
+			Assert.Equal((ushort) 2, reader.GetUInt16(0));
+			Assert.Equal(2, reader.GetInt32(0));
+			Assert.Equal(2u, reader.GetUInt32(0));
+			Assert.Equal(2L, reader.GetInt64(0));
+			Assert.Equal(2ul, reader.GetUInt64(0));
+		}
+
 		[Fact]
 		public void UseReaderWithoutDisposing()
 		{

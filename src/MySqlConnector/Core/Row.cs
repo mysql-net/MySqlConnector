@@ -213,20 +213,23 @@ namespace MySqlConnector.Core
 				throw new InvalidCastException();
 
 			var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
-			if (columnDefinition.ColumnType != ColumnType.Tiny &&
+			if (columnDefinition.ColumnType == ColumnType.Decimal || columnDefinition.ColumnType == ColumnType.NewDecimal)
+			{
+				return (int) (decimal) GetValue(ordinal);
+			}
+			else if (columnDefinition.ColumnType != ColumnType.Tiny &&
 				columnDefinition.ColumnType != ColumnType.Short &&
 				columnDefinition.ColumnType != ColumnType.Int24 &&
 				columnDefinition.ColumnType != ColumnType.Long &&
 				columnDefinition.ColumnType != ColumnType.Longlong &&
 				columnDefinition.ColumnType != ColumnType.Bit &&
-				columnDefinition.ColumnType != ColumnType.Year &&
-				columnDefinition.ColumnType != ColumnType.Decimal &&
-				columnDefinition.ColumnType != ColumnType.NewDecimal)
+				columnDefinition.ColumnType != ColumnType.Year)
 			{
 				throw new InvalidCastException("Can't convert {0} to Int32".FormatInvariant(ResultSet.ColumnTypes![ordinal]));
 			}
 
 			var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
+			System.Console.WriteLine(System.Text.Encoding.UTF8.GetString(data));
 
 			if (columnDefinition.ColumnType == ColumnType.Bit)
 				return checked((int) ReadBit(data, columnDefinition));
