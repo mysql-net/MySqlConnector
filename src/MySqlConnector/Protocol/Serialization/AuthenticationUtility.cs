@@ -7,34 +7,33 @@ namespace MySqlConnector.Protocol.Serialization
 {
 	internal static class AuthenticationUtility
 	{
-		public static byte[] CreateAuthenticationResponse(byte[] challenge, int offset, string password) =>
-			string.IsNullOrEmpty(password) ? Utility.EmptyByteArray : HashPassword(challenge, offset, password);
+		public static byte[] CreateAuthenticationResponse(ReadOnlySpan<byte> challenge, string password) =>
+			string.IsNullOrEmpty(password) ? Utility.EmptyByteArray : HashPassword(challenge, password);
 
 		/// <summary>
 		/// Hashes a password with the "Secure Password Authentication" method.
 		/// </summary>
 		/// <param name="challenge">The 20-byte random challenge (from the "auth-plugin-data" in the initial handshake).</param>
-		/// <param name="offset">The offset of the start of the challenge within <paramref name="challenge"/>.</param>
 		/// <param name="password">The password to hash.</param>
 		/// <returns>A 20-byte password hash.</returns>
 		/// <remarks>See <a href="https://dev.mysql.com/doc/internals/en/secure-password-authentication.html">Secure Password Authentication</a>.</remarks>
-		public static byte[] HashPassword(byte[] challenge, int offset, string password)
+		public static byte[] HashPassword(ReadOnlySpan<byte> challenge, string password)
 		{
 			using var sha1 = SHA1.Create();
-			var combined = new byte[40];
-			Buffer.BlockCopy(challenge, offset, combined, 0, 20);
+			Span<byte> combined = stackalloc byte[40];
+			challenge.CopyTo(combined);
 
 			var passwordBytes = Encoding.UTF8.GetBytes(password);
-			var hashedPassword = sha1.ComputeHash(passwordBytes);
+			Span<byte> hashedPassword = stackalloc byte[20];
+			sha1.TryComputeHash(passwordBytes, hashedPassword, out _);
+			sha1.TryComputeHash(hashedPassword, combined.Slice(20), out _);
 
-			var doubleHashedPassword = sha1.ComputeHash(hashedPassword);
-			Buffer.BlockCopy(doubleHashedPassword, 0, combined, 20, 20);
-
-			var xorBytes = sha1.ComputeHash(combined);
+			Span<byte> xorBytes = stackalloc byte[20];
+			sha1.TryComputeHash(combined, xorBytes, out _);
 			for (int i = 0; i < hashedPassword.Length; i++)
 				hashedPassword[i] ^= xorBytes[i];
 
-			return hashedPassword;
+			return hashedPassword.ToArray();
 		}
 
 		public static byte[] CreateScrambleResponse(byte[] nonce, string password)

@@ -520,7 +520,7 @@ namespace MySqlConnector.Core
 						Log.Debug("Session{0} sending change user request due to changed Database={1}", m_logArguments);
 						DatabaseOverride = null;
 					}
-					var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData!, 0, cs.Password);
+					var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData!, cs.Password);
 					using (var changeUserPayload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
 						await SendAsync(changeUserPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -561,7 +561,7 @@ namespace MySqlConnector.Core
 			{
 			case "mysql_native_password":
 				AuthPluginData = switchRequest.Data;
-				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, 0, cs.Password);
+				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, cs.Password);
 				payload = new PayloadData(hashedPassword);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);

@@ -52,7 +52,7 @@ namespace MySqlConnector.Protocol.Payloads
 			// TODO: verify server capabilities
 			var writer = CreateCapabilitiesPayload(handshake.ProtocolCapabilities, cs, useCompression, characterSet);
 			writer.WriteNullTerminatedString(cs.UserID);
-			var authenticationResponse = AuthenticationUtility.CreateAuthenticationResponse(handshake.AuthPluginData, 0, cs.Password);
+			var authenticationResponse = AuthenticationUtility.CreateAuthenticationResponse(handshake.AuthPluginData, cs.Password);
 			writer.Write((byte) authenticationResponse.Length);
 			writer.Write(authenticationResponse);
 

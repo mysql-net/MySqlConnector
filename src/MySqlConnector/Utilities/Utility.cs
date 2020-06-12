@@ -367,6 +367,17 @@ namespace MySqlConnector.Utilities
 		public static byte[] EmptyByteArray { get; } = Array.Empty<byte>();
 #endif
 
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+		public static bool TryComputeHash(this HashAlgorithm hashAlgorithm, ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten)
+		{
+			// assume caller supplies a large-enough buffer so we don't have to bounds-check it
+			var output = hashAlgorithm.ComputeHash(source.ToArray());
+			output.AsSpan().CopyTo(destination);
+			bytesWritten = output.Length;
+			return true;
+		}
+#endif
+
 #if !NETSTANDARD2_1 && !NETCOREAPP3_0
 		public static Task CompletedValueTask => CompletedTask;
 #else

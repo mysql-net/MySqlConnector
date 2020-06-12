@@ -1,10 +1,11 @@
+using System;
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads
 {
 	internal static class ChangeUserPayload
 	{
-		public static PayloadData Create(string user, byte[] authResponse, string? schemaName, CharacterSet characterSet, byte[]? connectionAttributes)
+		public static PayloadData Create(string user, ReadOnlySpan<byte> authResponse, string? schemaName, CharacterSet characterSet, byte[]? connectionAttributes)
 		{
 			var writer = new ByteBufferWriter();
 
