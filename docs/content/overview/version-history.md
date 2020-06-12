@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.69.2
+
+* Remove `Console.WriteLine` debugging code that was inadvertently added in 0.69.1.
+
 ### 0.69.1
 
 * Fix `OverflowException` when calling `MySqlDataReader.GetInt32` on a `DECIMAL` column: [#832](https://github.com/mysql-net/MySqlConnector/issues/832).
