@@ -378,12 +378,6 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
-		public static Task CompletedValueTask => CompletedTask;
-#else
-		public static ValueTask CompletedValueTask => default;
-#endif
-
 		public static byte[] TrimZeroByte(byte[] value)
 		{
 			if (value[value.Length - 1] == 0)
@@ -411,7 +405,7 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
-#if !NETSTANDARD2_1 && !NETCOREAPP2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 		public static int Read(this Stream stream, Memory<byte> buffer)
 		{
 			MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);

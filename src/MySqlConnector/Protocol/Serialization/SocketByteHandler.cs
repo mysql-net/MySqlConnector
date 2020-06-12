@@ -12,14 +12,14 @@ namespace MySqlConnector.Protocol.Serialization
 		public SocketByteHandler(Socket socket)
 		{
 			m_socket = socket;
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 			m_socketAwaitable = new SocketAwaitable(new SocketAsyncEventArgs());
 #endif
 			m_closeSocket = socket.Dispose;
 			RemainingTimeout = Constants.InfiniteTimeout;
 		}
 
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 		public void Dispose() => m_socketAwaitable.EventArgs.Dispose();
 #else
 		public void Dispose() { }
@@ -32,14 +32,14 @@ namespace MySqlConnector.Protocol.Serialization
 
 		private ValueTask<int> DoReadBytesSync(Memory<byte> buffer)
 		{
-#if !NETSTANDARD2_1 && !NETCOREAPP2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 			MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);
 #endif
 
 			try
 			{
 				if (RemainingTimeout == Constants.InfiniteTimeout)
-#if !NETSTANDARD2_1 && !NETCOREAPP2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 					return new ValueTask<int>(m_socket.Receive(arraySegment.Array, arraySegment.Offset, arraySegment.Count, SocketFlags.None));
 #else
 					return new ValueTask<int>(m_socket.Receive(buffer.Span, SocketFlags.None));
@@ -50,7 +50,7 @@ namespace MySqlConnector.Protocol.Serialization
 					var startTime = Environment.TickCount;
 					if (m_socket.Poll(Math.Min(int.MaxValue / 1000, RemainingTimeout) * 1000, SelectMode.SelectRead))
 					{
-#if !NETSTANDARD2_1 && !NETCOREAPP2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 						var bytesRead = m_socket.Receive(arraySegment.Array, arraySegment.Offset, arraySegment.Count, SocketFlags.None);
 #else
 						var bytesRead = m_socket.Receive(buffer.Span, SocketFlags.None);
@@ -74,13 +74,13 @@ namespace MySqlConnector.Protocol.Serialization
 			var timerId = RemainingTimeout == Constants.InfiniteTimeout ? 0 :
 				RemainingTimeout <= 0 ? throw MySqlException.CreateForTimeout() :
 				TimerQueue.Instance.Add(RemainingTimeout, m_closeSocket);
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 			m_socketAwaitable.EventArgs.SetBuffer(buffer);
 #endif
 			int bytesRead;
 			try
 			{
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 				await m_socket.ReceiveAsync(m_socketAwaitable);
 				bytesRead = m_socketAwaitable.EventArgs.BytesTransferred;
 #else
@@ -124,7 +124,7 @@ namespace MySqlConnector.Protocol.Serialization
 
 		private async ValueTask<int> DoWriteBytesAsync(ReadOnlyMemory<byte> data)
 		{
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 			m_socketAwaitable.EventArgs.SetBuffer(MemoryMarshal.AsMemory(data));
 			await m_socket.SendAsync(m_socketAwaitable);
 #else
@@ -134,7 +134,7 @@ namespace MySqlConnector.Protocol.Serialization
 		}
 
 		readonly Socket m_socket;
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 		readonly SocketAwaitable m_socketAwaitable;
 #endif
 		readonly Action m_closeSocket;

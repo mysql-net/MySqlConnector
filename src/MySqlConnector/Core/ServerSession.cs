@@ -1014,7 +1014,7 @@ namespace MySqlConnector.Core
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #endif
 		private async Task<bool> OpenNamedPipeAsync(ConnectionSettings cs, int startTickCount, IOBehavior ioBehavior, CancellationToken cancellationToken)
-#if NET45 || NETSTANDARD1_3Co
+#if NET45 || NETSTANDARD1_3
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 #endif
 		{

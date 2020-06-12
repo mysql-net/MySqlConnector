@@ -11,7 +11,7 @@ namespace MySql.Data.MySqlClient
 	public sealed class MySqlTransaction : DbTransaction
 	{
 		public override void Commit() => CommitAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		public Task CommitAsync(CancellationToken cancellationToken = default) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #else
 		public override Task CommitAsync(CancellationToken cancellationToken = default) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
@@ -28,7 +28,7 @@ namespace MySql.Data.MySqlClient
 		}
 
 		public override void Rollback() => RollbackAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		public Task RollbackAsync(CancellationToken cancellationToken = default) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #else
 		public override Task RollbackAsync(CancellationToken cancellationToken = default) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
@@ -83,13 +83,13 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
 #else
 		public override ValueTask DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
 #endif
 
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		internal Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #else
 		internal ValueTask DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -99,10 +99,14 @@ namespace MySql.Data.MySqlClient
 			if (Connection?.CurrentTransaction == this)
 				return DoDisposeAsync(ioBehavior, cancellationToken);
 			Connection = null;
-			return Utility.CompletedValueTask;
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
+			return Utility.CompletedTask;
+#else
+			return default;
+#endif
 		}
 
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		private async Task DoDisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #else
 		private async ValueTask DoDisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)

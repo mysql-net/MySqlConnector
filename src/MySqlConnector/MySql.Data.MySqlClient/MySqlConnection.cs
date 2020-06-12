@@ -57,7 +57,7 @@ namespace MySql.Data.MySqlClient
 
 		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => BeginTransactionAsync(isolationLevel, default, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		/// <summary>
 		/// Begins a database transaction asynchronously.
 		/// </summary>
@@ -309,7 +309,7 @@ namespace MySql.Data.MySqlClient
 #endif
 
 		public override void Close() => CloseAsync(changeState: true, IOBehavior.Synchronous).GetAwaiter().GetResult();
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		public Task CloseAsync() => CloseAsync(changeState: true, SimpleAsyncIOBehavior);
 #else
 		public override Task CloseAsync() => CloseAsync(changeState: true, SimpleAsyncIOBehavior);
@@ -317,7 +317,7 @@ namespace MySql.Data.MySqlClient
 		internal Task CloseAsync(IOBehavior ioBehavior) => CloseAsync(changeState: true, ioBehavior);
 
 		public override void ChangeDatabase(string databaseName) => ChangeDatabaseAsync(IOBehavior.Synchronous, databaseName, CancellationToken.None).GetAwaiter().GetResult();
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		public Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, cancellationToken);
 #else
 		public override Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, cancellationToken);
@@ -515,7 +515,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		public async Task DisposeAsync()
 #else
 		public override async ValueTask DisposeAsync()

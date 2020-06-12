@@ -85,7 +85,7 @@ namespace MySql.Data.MySqlClient
 			Connection!.Session.PrepareAsync(this, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 		}
 
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		public Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
 #else
 		public override Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
@@ -283,14 +283,18 @@ namespace MySql.Data.MySqlClient
 			base.Dispose(disposing);
 		}
 
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		public Task DisposeAsync()
 #else
 		public override ValueTask DisposeAsync()
 #endif
 		{
 			Dispose();
-			return Utility.CompletedValueTask;
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
+			return Utility.CompletedTask;
+#else
+			return default;
+#endif
 		}
 
 		/// <summary>

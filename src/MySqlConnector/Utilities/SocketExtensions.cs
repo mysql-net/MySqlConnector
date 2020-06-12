@@ -6,7 +6,7 @@ namespace MySqlConnector.Utilities
 {
 	internal static class SocketExtensions
 	{
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 		public static SocketAwaitable ReceiveAsync(this Socket socket, SocketAwaitable awaitable)
 		{
 			awaitable.Reset();
@@ -24,7 +24,7 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
-#if !NETSTANDARD2_1 && !NETCOREAPP2_1 && !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 		public static void SetBuffer(this SocketAsyncEventArgs args, Memory<byte> buffer)
 		{
 			MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);
@@ -48,7 +48,7 @@ namespace MySqlConnector.Utilities
 				return;
 
 			// If keepAliveTimeSeconds > 0, override keepalive options on the socket
-#if !NETCOREAPP3_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1
 			if (Utility.IsWindows())
 			{
 				// http://stackoverflow.com/a/11834055/1419658
