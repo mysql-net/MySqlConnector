@@ -193,7 +193,7 @@ namespace MySqlConnector.Protocol.Serialization
 				compressedStream.WriteByte(0xDA);
 
 				using (var deflateStream = new DeflateStream(compressedStream, CompressionLevel.Optimal, leaveOpen: true))
-					deflateStream.Write(remainingUncompressedData.Array, remainingUncompressedData.Offset, remainingUncompressedBytes);
+					deflateStream.Write(remainingUncompressedData.Array!, remainingUncompressedData.Offset, remainingUncompressedBytes);
 
 				// write Adler-32 checksum to stream
 				var checksum = ComputeAdler32Checksum(remainingUncompressedData.Array!, remainingUncompressedData.Offset, remainingUncompressedBytes);
