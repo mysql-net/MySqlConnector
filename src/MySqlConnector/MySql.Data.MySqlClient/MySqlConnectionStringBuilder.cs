@@ -752,7 +752,7 @@ namespace MySql.Data.MySqlClient
 				{
 					return (T) Enum.Parse(typeof(T), enumString, ignoreCase: true);
 				}
-				catch (Exception ex) when (!(ex is ArgumentException))
+				catch (Exception ex) when (ex is not ArgumentException)
 				{
 					throw new ArgumentException("Value '{0}' not supported for option '{1}'.".FormatInvariant(objectValue, typeof(T).Name), ex);
 				}

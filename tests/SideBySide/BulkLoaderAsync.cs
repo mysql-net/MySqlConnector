@@ -137,7 +137,7 @@ namespace SideBySide
 				while (exception.InnerException is not null)
 					exception = exception.InnerException;
 
-				if (!(exception is FileNotFoundException))
+				if (exception is not FileNotFoundException)
 				{
 					try
 					{
