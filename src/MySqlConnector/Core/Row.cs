@@ -229,7 +229,6 @@ namespace MySqlConnector.Core
 			}
 
 			var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
-			System.Console.WriteLine(System.Text.Encoding.UTF8.GetString(data));
 
 			if (columnDefinition.ColumnType == ColumnType.Bit)
 				return checked((int) ReadBit(data, columnDefinition));
