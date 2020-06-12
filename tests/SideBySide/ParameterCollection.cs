@@ -39,9 +39,9 @@ namespace SideBySide
 #endif
 		public void FindByName(string parameterName, int position)
 		{
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "Baz", Value = 0 });
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test", Value = 1 });
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "?Foo", Value = 2 });
+			m_parameterCollection.Add(new() { ParameterName = "Baz", Value = 0 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test", Value = 1 });
+			m_parameterCollection.Add(new() { ParameterName = "?Foo", Value = 2 });
 			int index = m_parameterCollection.IndexOf(parameterName);
 			Assert.Equal(position, index);
 			Assert.Equal(position != -1, m_parameterCollection.Contains(parameterName));
@@ -114,8 +114,8 @@ namespace SideBySide
 		[Fact]
 		public void Clear()
 		{
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test2", Value = 1 });
 			Assert.Equal(0, m_parameterCollection.IndexOf("@Test1"));
 			Assert.Equal(1, m_parameterCollection.IndexOf("@Test2"));
 			m_parameterCollection.Clear();
@@ -127,8 +127,8 @@ namespace SideBySide
 		[Fact]
 		public void RemoveAtIndex()
 		{
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test2", Value = 1 });
 			Assert.Equal(0, m_parameterCollection.IndexOf("@Test1"));
 			Assert.Equal(1, m_parameterCollection.IndexOf("@Test2"));
 			m_parameterCollection.RemoveAt(0);
@@ -140,8 +140,8 @@ namespace SideBySide
 		[Fact]
 		public void RemoveAtString()
 		{
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test2", Value = 1 });
 			Assert.Equal(0, m_parameterCollection.IndexOf("@Test1"));
 			Assert.Equal(1, m_parameterCollection.IndexOf("@Test2"));
 			m_parameterCollection.RemoveAt("@Test1");
@@ -153,8 +153,8 @@ namespace SideBySide
 		[Fact]
 		public void SetParameterIndex()
 		{
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test2", Value = 1 });
 			Assert.Equal(0, m_parameterCollection.IndexOf("@Test1"));
 			Assert.Equal(1, m_parameterCollection.IndexOf("@Test2"));
 			m_parameterCollection[0] = new MySqlParameter { ParameterName = "@Test3", Value = 2 };
@@ -167,8 +167,8 @@ namespace SideBySide
 		[Fact]
 		public void SetParameterString()
 		{
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test2", Value = 1 });
 			Assert.Equal(0, m_parameterCollection.IndexOf("@Test1"));
 			Assert.Equal(1, m_parameterCollection.IndexOf("@Test2"));
 			m_parameterCollection["@Test1"] = new MySqlParameter { ParameterName = "@Test3", Value = 2 };
@@ -212,8 +212,8 @@ namespace SideBySide
 		[Fact]
 		public void CopyTo()
 		{
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test2", Value = 1 });
 			var array = new DbParameter[2];
 			m_parameterCollection.CopyTo(array, 0);
 			Assert.Same(array[0], m_parameterCollection[0]);
@@ -223,8 +223,8 @@ namespace SideBySide
 		[Fact]
 		public void CopyToIndex()
 		{
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test2", Value = 1 });
 			var array = new DbParameter[4];
 			m_parameterCollection.CopyTo(array, 1);
 			Assert.Null(array[0]);
@@ -236,24 +236,24 @@ namespace SideBySide
 		[Fact]
 		public void CopyToNullArray()
 		{
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test2", Value = 1 });
 			Assert.Throws<ArgumentNullException>(() => m_parameterCollection.CopyTo(null, 0));
 		}
 
 		[Fact]
 		public void CopyToSmallArray()
 		{
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test2", Value = 1 });
 			Assert.Throws<ArgumentException>(() => m_parameterCollection.CopyTo(new DbParameter[1], 0));
 		}
 
 		[Fact]
 		public void CopyToIndexOutOfRange()
 		{
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test1", Value = 0 });
-			m_parameterCollection.Add(new MySqlParameter { ParameterName = "@Test2", Value = 1 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test1", Value = 0 });
+			m_parameterCollection.Add(new() { ParameterName = "@Test2", Value = 1 });
 			Assert.Throws<ArgumentException>(() => m_parameterCollection.CopyTo(new DbParameter[2], 3));
 		}
 

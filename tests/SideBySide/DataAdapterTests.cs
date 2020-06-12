@@ -136,8 +136,8 @@ insert into data_adapter(int_value, text_value) values
 
 				da.InsertCommand = new MySqlCommand("INSERT INTO data_adapter (int_value, text_value) VALUES (@int, @text)", m_connection);
 
-				da.InsertCommand.Parameters.Add(new MySqlParameter("@int", DbType.Int32));
-				da.InsertCommand.Parameters.Add(new MySqlParameter("@text", DbType.String));
+				da.InsertCommand.Parameters.Add(new("@int", DbType.Int32));
+				da.InsertCommand.Parameters.Add(new("@text", DbType.String));
 
 				da.InsertCommand.Parameters[0].Direction = ParameterDirection.Input;
 				da.InsertCommand.Parameters[1].Direction = ParameterDirection.Input;
@@ -187,9 +187,9 @@ insert into data_adapter(int_value, text_value) values
 				{
 					Parameters =
 					{
-						new MySqlParameter("@int", MySqlDbType.Int32) { Direction = ParameterDirection.Input, SourceColumn = "int_value" },
-						new MySqlParameter("@text", MySqlDbType.String) { Direction = ParameterDirection.Input, SourceColumn = "text_value" },
-						new MySqlParameter("@id", MySqlDbType.Int64) { Direction = ParameterDirection.Input, SourceColumn = "id" },
+						new("@int", MySqlDbType.Int32) { Direction = ParameterDirection.Input, SourceColumn = "int_value" },
+						new("@text", MySqlDbType.String) { Direction = ParameterDirection.Input, SourceColumn = "text_value" },
+						new("@id", MySqlDbType.Int64) { Direction = ParameterDirection.Input, SourceColumn = "id" },
 					},
 					UpdatedRowSource = UpdateRowSource.None,
 				};
@@ -223,12 +223,12 @@ insert into data_adapter(int_value, text_value) values
 				{
 					Parameters =
 					{
-						new MySqlParameter("@int", MySqlDbType.Int32) { Direction = ParameterDirection.Input, SourceColumn = "int_value" },
-						new MySqlParameter("@text", MySqlDbType.String) { Direction = ParameterDirection.Input, SourceColumn = "text_value" },
+						new("@int", MySqlDbType.Int32) { Direction = ParameterDirection.Input, SourceColumn = "int_value" },
+						new("@text", MySqlDbType.String) { Direction = ParameterDirection.Input, SourceColumn = "text_value" },
 					},
 					UpdatedRowSource = UpdateRowSource.None,
 				};
-	
+
 				da.UpdateBatchSize = 10;
 
 				var dt = ds.Tables[0];

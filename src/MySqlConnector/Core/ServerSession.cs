@@ -192,7 +192,7 @@ namespace MySqlConnector.Core
 						var payloadLength = payload.Span.Length;
 						Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payloadLength);
 						payload.Span.CopyTo(columnsAndParameters.Array.AsSpan().Slice(columnsAndParametersSize));
-						parameters[i] = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(columnsAndParameters, columnsAndParametersSize, payloadLength));
+						parameters[i] = ColumnDefinitionPayload.Create(new(columnsAndParameters, columnsAndParametersSize, payloadLength));
 						columnsAndParametersSize += payloadLength;
 					}
 					if (!SupportsDeprecateEof)
@@ -212,7 +212,7 @@ namespace MySqlConnector.Core
 						var payloadLength = payload.Span.Length;
 						Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payloadLength);
 						payload.Span.CopyTo(columnsAndParameters.Array.AsSpan().Slice(columnsAndParametersSize));
-						columns[i] = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(columnsAndParameters, columnsAndParametersSize, payloadLength));
+						columns[i] = ColumnDefinitionPayload.Create(new(columnsAndParameters, columnsAndParametersSize, payloadLength));
 						columnsAndParametersSize += payloadLength;
 					}
 					if (!SupportsDeprecateEof)
@@ -222,11 +222,11 @@ namespace MySqlConnector.Core
 					}
 				}
 
-				preparedStatements.Add(new PreparedStatement(response.StatementId, statement, columns, parameters));
+				preparedStatements.Add(new(response.StatementId, statement, columns, parameters));
 			}
 
 			m_preparedStatements ??= new Dictionary<string, PreparedStatements>();
-			m_preparedStatements.Add(commandText, new PreparedStatements(preparedStatements, parsedStatements));
+			m_preparedStatements.Add(commandText, new(preparedStatements, parsedStatements));
 		}
 
 		public PreparedStatements? TryGetPreparedStatement(string commandText)

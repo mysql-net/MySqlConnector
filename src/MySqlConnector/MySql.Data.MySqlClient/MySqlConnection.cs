@@ -698,7 +698,7 @@ namespace MySql.Data.MySqlClient
 				using (var reader = command.ExecuteReader())
 				{
 					while (reader.Read())
-						errors.Add(new MySqlError(reader.GetString(0), reader.GetInt32(1), reader.GetString(2)));
+						errors.Add(new(reader.GetString(0), reader.GetInt32(1), reader.GetString(2)));
 				}
 
 				InfoMessage(this, new MySqlInfoMessageEventArgs(errors.ToArray()));
@@ -920,12 +920,12 @@ namespace MySql.Data.MySqlClient
 		private ConnectionSettings GetInitializedConnectionSettings() => m_connectionSettings!;
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlConnection));
-		static readonly StateChangeEventArgs s_stateChangeClosedConnecting = new StateChangeEventArgs(ConnectionState.Closed, ConnectionState.Connecting);
-		static readonly StateChangeEventArgs s_stateChangeConnectingOpen = new StateChangeEventArgs(ConnectionState.Connecting, ConnectionState.Open);
-		static readonly StateChangeEventArgs s_stateChangeOpenClosed = new StateChangeEventArgs(ConnectionState.Open, ConnectionState.Closed);
+		static readonly StateChangeEventArgs s_stateChangeClosedConnecting = new(ConnectionState.Closed, ConnectionState.Connecting);
+		static readonly StateChangeEventArgs s_stateChangeConnectingOpen = new(ConnectionState.Connecting, ConnectionState.Open);
+		static readonly StateChangeEventArgs s_stateChangeOpenClosed = new(ConnectionState.Open, ConnectionState.Closed);
 #if !NETSTANDARD1_3
-		static readonly object s_lock = new object();
-		static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = new Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>>();
+		static readonly object s_lock = new();
+		static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = new();
 #endif
 
 		string m_connectionString;

@@ -539,7 +539,7 @@ namespace MySqlConnector.Core
 #endif
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConnectionPool));
-		static readonly ConcurrentDictionary<string, ConnectionPool?> s_pools = new ConcurrentDictionary<string, ConnectionPool?>();
+		static readonly ConcurrentDictionary<string, ConnectionPool?> s_pools = new();
 
 		static int s_poolId;
 		static ConnectionStringPool? s_mruCache;

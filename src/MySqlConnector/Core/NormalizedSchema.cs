@@ -9,7 +9,7 @@ namespace MySqlConnector.Core
 		private const string ReUnQuoted = @"([^\.`]+)";
 		private static readonly string ReEither = $@"(?:{ReQuoted}|{ReUnQuoted})";
 
-		private static readonly Regex NameRe = new Regex(
+		private static readonly Regex NameRe = new(
 			$@"^\s*{ReEither}\s*(?:\.\s*{ReEither}\s*)?$",
 			RegexOptions.Compiled);
 

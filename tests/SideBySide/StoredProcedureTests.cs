@@ -32,7 +32,7 @@ namespace SideBySide
 			cmd.CommandText = "echo" + (procedureType == "FUNCTION" ? "f" : "p");
 			cmd.CommandType = CommandType.StoredProcedure;
 
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@name",
 				DbType = DbType.String,
@@ -43,7 +43,7 @@ namespace SideBySide
 			// we make the assumption that Stored Procedures with ParameterDirection.ReturnValue are functions
 			if (procedureType == "FUNCTION")
 			{
-				cmd.Parameters.Add(new MySqlParameter
+				cmd.Parameters.Add(new()
 				{
 					ParameterName = "@result",
 					DbType = DbType.String,
@@ -122,7 +122,7 @@ namespace SideBySide
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "out_string";
 			cmd.CommandType = CommandType.StoredProcedure;
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@value",
 				DbType = DbType.String,
@@ -148,7 +148,7 @@ namespace SideBySide
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "out_string";
 			cmd.CommandType = CommandType.StoredProcedure;
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@value",
 				DbType = DbType.String,
@@ -178,7 +178,7 @@ namespace SideBySide
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "out_string";
 			cmd.CommandType = CommandType.StoredProcedure;
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@value",
 				DbType = DbType.String,
@@ -206,7 +206,7 @@ namespace SideBySide
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "out_string";
 			cmd.CommandType = CommandType.StoredProcedure;
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@value",
 				DbType = DbType.String,
@@ -232,7 +232,7 @@ namespace SideBySide
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "out_string";
 			cmd.CommandType = CommandType.StoredProcedure;
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@value",
 				DbType = DbType.Double,
@@ -252,7 +252,7 @@ namespace SideBySide
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "out_null";
 			cmd.CommandType = CommandType.StoredProcedure;
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@string_value",
 				DbType = DbType.String,
@@ -260,7 +260,7 @@ namespace SideBySide
 				IsNullable = true,
 				Value = "non null",
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@int_value",
 				DbType = DbType.Int32,
@@ -288,52 +288,52 @@ namespace SideBySide
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "circle";
 			cmd.CommandType = CommandType.StoredProcedure;
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@radius",
 				DbType = DbType.Double,
 				Direction = ParameterDirection.Input,
 				Value = 1.0,
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@height",
 				DbType = DbType.Double,
 				Direction = ParameterDirection.Input,
 				Value = 2.0,
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@name",
 				DbType = DbType.String,
 				Direction = ParameterDirection.Input,
 				Value = "awesome",
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@diameter",
 				DbType = DbType.Double,
 				Direction = ParameterDirection.Output,
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@circumference",
 				DbType = DbType.Double,
 				Direction = ParameterDirection.Output,
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@area",
 				DbType = DbType.Double,
 				Direction = ParameterDirection.Output,
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@volume",
 				DbType = DbType.Double,
 				Direction = ParameterDirection.Output,
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@shape",
 				DbType = DbType.String,
@@ -361,7 +361,7 @@ namespace SideBySide
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "circle";
 			cmd.CommandType = CommandType.StoredProcedure;
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@name",
 				Value = "awesome",
@@ -369,7 +369,7 @@ namespace SideBySide
 				Direction = ParameterDirection.Input,
 #endif
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@radius",
 				Value = 1.5,
@@ -377,14 +377,14 @@ namespace SideBySide
 				Direction = ParameterDirection.Input,
 #endif
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@shape",
 #if BASELINE
 				Direction = ParameterDirection.Output,
 #endif
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@height",
 				Value = 2.0,
@@ -392,28 +392,28 @@ namespace SideBySide
 				Direction = ParameterDirection.Input,
 #endif
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@diameter",
 #if BASELINE
 				Direction = ParameterDirection.Output,
 #endif
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@area",
 #if BASELINE
 				Direction = ParameterDirection.Output,
 #endif
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@volume",
 #if BASELINE
 				Direction = ParameterDirection.Output,
 #endif
 			});
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@circumference",
 #if BASELINE
@@ -469,7 +469,7 @@ namespace SideBySide
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "number_multiples";
 			cmd.CommandType = CommandType.StoredProcedure;
-			cmd.Parameters.Add(new MySqlParameter { ParameterName = paramaterName, Value = 3 });
+			cmd.Parameters.Add(new() { ParameterName = paramaterName, Value = 3 });
 
 			await cmd.PrepareAsync();
 			using var reader = await cmd.ExecuteReaderAsync();
@@ -494,7 +494,7 @@ namespace SideBySide
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "multiple_result_sets";
 			cmd.CommandType = CommandType.StoredProcedure;
-			cmd.Parameters.Add(new MySqlParameter { ParameterName = "@pivot", Value = pivot });
+			cmd.Parameters.Add(new() { ParameterName = "@pivot", Value = pivot });
 
 			await cmd.PrepareAsync();
 			using var reader = await cmd.ExecuteReaderAsync();

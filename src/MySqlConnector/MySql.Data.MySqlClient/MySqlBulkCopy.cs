@@ -182,7 +182,7 @@ namespace MySql.Data.MySqlClient
 						else if (addDefaultMappings)
 						{
 							Log.Debug("Adding default column mapping from SourceOrdinal {0} to DestinationColumn {1}", i, destinationColumn);
-							columnMappings.Add(new MySqlBulkCopyColumnMapping(i, destinationColumn));
+							columnMappings.Add(new(i, destinationColumn));
 						}
 					}
 				}
@@ -249,13 +249,13 @@ namespace MySql.Data.MySqlClient
 					{
 						Log.Debug("Setting expression to map SourceOrdinal {0} to DestinationColumn {1}", columnMapping.SourceOrdinal, destinationColumn);
 						columnMappings.Remove(columnMapping);
-						columnMappings.Add(new MySqlBulkCopyColumnMapping(columnMapping.SourceOrdinal, variableName, expression));
+						columnMappings.Add(new(columnMapping.SourceOrdinal, variableName, expression));
 					}
 				}
 				else if (addDefaultMappings)
 				{
 					Log.Debug("Adding default column mapping from SourceOrdinal {0} to DestinationColumn {1}", destinationOrdinal, destinationColumn);
-					columnMappings.Add(new MySqlBulkCopyColumnMapping(destinationOrdinal, variableName, expression));
+					columnMappings.Add(new(destinationOrdinal, variableName, expression));
 				}
 			}
 		}

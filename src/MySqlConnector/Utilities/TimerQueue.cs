@@ -29,7 +29,7 @@ namespace MySqlConnector.Utilities
 				while (index > 0 && delay < unchecked(m_timeoutActions[index - 1].Time - current))
 					index--;
 				var absolute = unchecked(current + delay);
-				m_timeoutActions.Insert(index, new Data(id, absolute, action));
+				m_timeoutActions.Insert(index, new(id, absolute, action));
 
 				if (!m_isTimerEnabled || (index == 0 && unchecked(m_nextTimerTick - current) > delay))
 					UnsafeSetTimer(delay);

@@ -19,7 +19,7 @@ namespace MySql.Data.MySqlClient
 
 		public MySqlParameter Add(string parameterName, DbType dbType)
 		{
-			MySqlParameter parameter = new MySqlParameter
+			var parameter = new MySqlParameter
 			{
 				ParameterName = parameterName,
 				DbType = dbType,
@@ -40,8 +40,8 @@ namespace MySql.Data.MySqlClient
 			return parameter;
 		}
 
-		public MySqlParameter Add(string parameterName, MySqlDbType mySqlDbType) => Add(new MySqlParameter(parameterName, mySqlDbType));
-		public MySqlParameter Add(string parameterName, MySqlDbType mySqlDbType, int size) => Add(new MySqlParameter(parameterName, mySqlDbType, size));
+		public MySqlParameter Add(string parameterName, MySqlDbType mySqlDbType) => Add(new(parameterName, mySqlDbType));
+		public MySqlParameter Add(string parameterName, MySqlDbType mySqlDbType, int size) => Add(new(parameterName, mySqlDbType, size));
 
 		public override void AddRange(Array values)
 		{

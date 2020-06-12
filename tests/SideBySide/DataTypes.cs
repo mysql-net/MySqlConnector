@@ -562,20 +562,20 @@ insert into guid_format(c36, c32, b16, tsb16, leb16, t, b) values(
 			{
 				Parameters =
 				{
-					new MySqlParameter { Value = guidAsChar36 },
-					new MySqlParameter { Value = guidAsChar32 },
-					new MySqlParameter { Value = guidAsBinary16 },
-					new MySqlParameter { Value = guidAsTimeSwapBinary16 },
-					new MySqlParameter { Value = guidAsLittleEndianBinary16 },
-					new MySqlParameter { Value = guidAsChar36 },
-					new MySqlParameter { Value = isBinary16 ? guidAsBinary16 : isTimeSwapBinary16 ? guidAsTimeSwapBinary16 : guidAsLittleEndianBinary16 },
-					new MySqlParameter { Value = isChar36 ? (object) guid : guidAsChar36 },
-					new MySqlParameter { Value = isChar32 ? (object) guid : guidAsChar32 },
-					new MySqlParameter { Value = isBinary16 ? (object) guid : guidAsBinary16 },
-					new MySqlParameter { Value = isTimeSwapBinary16 ? (object) guid : guidAsTimeSwapBinary16 },
-					new MySqlParameter { Value = isLittleEndianBinary16 ? (object) guid : guidAsLittleEndianBinary16 },
-					new MySqlParameter { Value = guidAsChar32 },
-					new MySqlParameter { Value = isBinary16 ? guidAsBinary16 : isTimeSwapBinary16 ? guidAsTimeSwapBinary16 : guidAsLittleEndianBinary16 },
+					new() { Value = guidAsChar36 },
+					new() { Value = guidAsChar32 },
+					new() { Value = guidAsBinary16 },
+					new() { Value = guidAsTimeSwapBinary16 },
+					new() { Value = guidAsLittleEndianBinary16 },
+					new() { Value = guidAsChar36 },
+					new() { Value = isBinary16 ? guidAsBinary16 : isTimeSwapBinary16 ? guidAsTimeSwapBinary16 : guidAsLittleEndianBinary16 },
+					new() { Value = isChar36 ? (object) guid : guidAsChar36 },
+					new() { Value = isChar32 ? (object) guid : guidAsChar32 },
+					new() { Value = isBinary16 ? (object) guid : guidAsBinary16 },
+					new() { Value = isTimeSwapBinary16 ? (object) guid : guidAsTimeSwapBinary16 },
+					new() { Value = isLittleEndianBinary16 ? (object) guid : guidAsLittleEndianBinary16 },
+					new() { Value = guidAsChar32 },
+					new() { Value = isBinary16 ? guidAsBinary16 : isTimeSwapBinary16 ? guidAsTimeSwapBinary16 : guidAsLittleEndianBinary16 },
 				}
 			};
 			cmd.ExecuteNonQuery();
@@ -727,14 +727,14 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 			{
 				Parameters =
 				{
-					new MySqlParameter { Value = dateTimeIn },
-					new MySqlParameter { Value = dateTimeIn },
-					new MySqlParameter { Value = dateTimeIn },
-					new MySqlParameter { Value = dateTimeIn },
-					new MySqlParameter { Value = dateTimeIn },
-					new MySqlParameter { Value = dateTimeIn },
-					new MySqlParameter { Value = dateTimeIn },
-					new MySqlParameter { Value = dateTimeIn },
+					new() { Value = dateTimeIn },
+					new() { Value = dateTimeIn },
+					new() { Value = dateTimeIn },
+					new() { Value = dateTimeIn },
+					new() { Value = dateTimeIn },
+					new() { Value = dateTimeIn },
+					new() { Value = dateTimeIn },
+					new() { Value = dateTimeIn },
 				}
 			};
 			if (success)

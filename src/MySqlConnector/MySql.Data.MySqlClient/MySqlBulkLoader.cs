@@ -221,7 +221,7 @@ namespace MySql.Data.MySqlClient
 
 		private static string GenerateSourceFileName() => SourcePrefix + Guid.NewGuid().ToString("N");
 
-		static readonly object s_lock = new object();
-		static readonly Dictionary<string, object> s_sources = new Dictionary<string, object>();
+		static readonly object s_lock = new();
+		static readonly Dictionary<string, object> s_sources = new();
 	}
 }

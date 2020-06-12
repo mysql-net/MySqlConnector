@@ -30,7 +30,7 @@ namespace MySqlConnector.Authentication
 				return s_plugins.TryGetValue(name, out plugin);
 		}
 
-		static readonly object s_lock = new object();
-		static readonly Dictionary<string, IAuthenticationPlugin> s_plugins = new Dictionary<string, IAuthenticationPlugin>();
+		static readonly object s_lock = new();
+		static readonly Dictionary<string, IAuthenticationPlugin> s_plugins = new();
 	}
 }

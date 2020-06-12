@@ -87,7 +87,7 @@ namespace MySqlConnector.Core
 				while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
 				{
 					var dataType = ParseDataType(reader.GetString(3), out var unsigned, out var length);
-					parameters.Add(new CachedParameter(
+					parameters.Add(new(
 						reader.GetInt32(0),
 						!reader.IsDBNull(1) ? reader.GetString(1) : null,
 						!reader.IsDBNull(2) ? reader.GetString(2) : "",

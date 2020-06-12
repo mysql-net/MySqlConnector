@@ -232,7 +232,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 			using var connection = new MySqlConnection(AppConfig.ConnectionString);
 			connection.Open();
 			using var cmd = new MySqlCommand("SELECT ?, ?;", connection);
-			cmd.Parameters.Add(new MySqlParameter { Value = 1 });
+			cmd.Parameters.Add(new() { Value = 1 });
 #if BASELINE
 			Assert.Throws<IndexOutOfRangeException>(() => cmd.ExecuteScalar());
 #else

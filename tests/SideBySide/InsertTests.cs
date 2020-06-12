@@ -26,7 +26,7 @@ create table insert_ai(rowid integer not null primary key auto_increment, text v
 			{
 				await m_database.Connection.OpenAsync();
 				using var command = new MySqlCommand("INSERT INTO insert_ai (text) VALUES (@text);", m_database.Connection);
-				command.Parameters.Add(new MySqlParameter { ParameterName = "@text", Value = "test" });
+				command.Parameters.Add(new() { ParameterName = "@text", Value = "test" });
 				await command.ExecuteNonQueryAsync();
 				Assert.Equal(1L, command.LastInsertedId);
 			}
@@ -139,7 +139,7 @@ create table insert_time(value TIME({precision}));");
 				m_database.Connection.Open();
 				using (var command = new MySqlCommand("INSERT INTO insert_time (value) VALUES (@Value);", m_database.Connection))
 				{
-					command.Parameters.Add(new MySqlParameter { ParameterName = "@value", Value = TimeSpan.FromMilliseconds(10) });
+					command.Parameters.Add(new() { ParameterName = "@value", Value = TimeSpan.FromMilliseconds(10) });
 					command.ExecuteNonQuery();
 				}
 
@@ -169,7 +169,7 @@ create table insert_datetimeoffset(rowid integer not null primary key auto_incre
 			{
 				using var cmd = m_database.Connection.CreateCommand();
 				cmd.CommandText = @"insert into insert_datetimeoffset(datetimeoffset1) values(@datetimeoffset1);";
-				cmd.Parameters.Add(new MySqlParameter
+				cmd.Parameters.Add(new()
 				{
 					ParameterName = "@datetimeoffset1",
 					DbType = DbType.DateTimeOffset,
@@ -270,9 +270,9 @@ create table insert_enum_value2(rowid integer not null primary key auto_incremen
 			{
 				await m_database.Connection.OpenAsync();
 				using var command = new MySqlCommand("INSERT INTO insert_enum_value2 (`Varchar`, `String`, `Int`) VALUES (@Varchar, @String, @Int);", m_database.Connection);
-				command.Parameters.Add(new MySqlParameter("@String", MySqlColor.Orange)).MySqlDbType = MySqlDbType.String;
-				command.Parameters.Add(new MySqlParameter("@Varchar", MySqlColor.Green)).MySqlDbType = MySqlDbType.VarChar;
-				command.Parameters.Add(new MySqlParameter("@Int", MySqlColor.None));
+				command.Parameters.Add(new("@String", MySqlColor.Orange)).MySqlDbType = MySqlDbType.String;
+				command.Parameters.Add(new("@Varchar", MySqlColor.Green)).MySqlDbType = MySqlDbType.VarChar;
+				command.Parameters.Add(new("@Int", MySqlColor.None));
 
 				await command.ExecuteNonQueryAsync();
 				var result = (await m_database.Connection.QueryAsync<ColorEnumValues>(@"select `Varchar`, `String`, `Int` from insert_enum_value2;")).ToArray();

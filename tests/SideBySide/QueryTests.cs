@@ -394,7 +394,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
 				cmd.CommandText = "select id, value FROM query_null_parameter where @parameter is null or value = @parameter order by id;";
-				cmd.Parameters.Add(new MySqlParameter { ParameterName = "@parameter", Value = "one" });
+				cmd.Parameters.Add(new() { ParameterName = "@parameter", Value = "one" });
 				using var reader = cmd.ExecuteReader();
 				Assert.True(await reader.ReadAsync());
 				Assert.Equal(1L, reader.GetInt64(0));
@@ -405,7 +405,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			using (var cmd = m_database.Connection.CreateCommand())
 			{
 				cmd.CommandText = "select id, value FROM query_null_parameter where @parameter is null or value = @parameter order by id;";
-				cmd.Parameters.Add(new MySqlParameter { ParameterName = "@parameter", Value = null });
+				cmd.Parameters.Add(new() { ParameterName = "@parameter", Value = null });
 				using var reader = cmd.ExecuteReader();
 				Assert.True(await reader.ReadAsync());
 				Assert.Equal(1L, reader.GetInt64(0));
@@ -832,7 +832,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			using var cmd = m_database.Connection.CreateCommand();
 			cmd.CommandText = "set @param = 1234";
 
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@param",
 				Direction = ParameterDirection.InputOutput,
@@ -850,7 +850,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			using var cmd = m_database.Connection.CreateCommand();
 			cmd.CommandText = "set @param = 1234";
 
-			cmd.Parameters.Add(new MySqlParameter
+			cmd.Parameters.Add(new()
 			{
 				ParameterName = "@param",
 				Direction = ParameterDirection.Output,
@@ -1141,7 +1141,7 @@ create table command_behavior_single_result(id integer not null primary key);");
 			{
 				Parameters =
 				{
-					new MySqlParameter("@param", value),
+					new("@param", value),
 				},
 			};
 			var result = cmd.ExecuteScalar();

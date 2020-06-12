@@ -39,8 +39,8 @@ CREATE TABLE bind_parameters_test(data1 TEXT NOT NULL, data2 INTEGER);");
 
 			using (var command = new MySqlCommand(@"INSERT INTO bind_parameters_test(data1, data2) VALUES(?, ?);", connection))
 			{
-				command.Parameters.Add(new MySqlParameter { Value = "test" });
-				command.Parameters.Add(new MySqlParameter { Value = 1234 });
+				command.Parameters.Add(new() { Value = "test" });
+				command.Parameters.Add(new() { Value = 1234 });
 				command.Prepare();
 				command.ExecuteNonQuery();
 			}
@@ -268,7 +268,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		{
 			using var connection = CreatePrepareConnection();
 			using var cmd = new MySqlCommand("SELECT ?, ?;", connection);
-			cmd.Parameters.Add(new MySqlParameter { Value = 1 });
+			cmd.Parameters.Add(new() { Value = 1 });
 			cmd.Prepare();
 			Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
 		}

@@ -86,7 +86,7 @@ namespace MySqlConnector.Protocol.Payloads
 			NewSchema = newSchema;
 		}
 
-		static readonly OkPayload s_autoCommitOk = new OkPayload(0, 0, ServerStatus.AutoCommit, 0, null);
-		static readonly OkPayload s_autoCommitSessionStateChangedOk = new OkPayload(0, 0, ServerStatus.AutoCommit | ServerStatus.SessionStateChanged, 0, null);
+		static readonly OkPayload s_autoCommitOk = new(0, 0, ServerStatus.AutoCommit, 0, null);
+		static readonly OkPayload s_autoCommitSessionStateChangedOk = new(0, 0, ServerStatus.AutoCommit | ServerStatus.SessionStateChanged, 0, null);
 	}
 }

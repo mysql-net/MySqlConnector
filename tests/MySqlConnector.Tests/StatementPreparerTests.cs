@@ -136,7 +136,7 @@ SELECT @'var' as R")]
 		[MemberData(nameof(FormatParameterData))]
 		public void FormatParameter(object parameterValue, string replacedValue, bool noBackslashEscapes = false)
 		{
-			var parameters = new MySqlParameterCollection { new MySqlParameter("@param", parameterValue) };
+			var parameters = new MySqlParameterCollection { new("@param", parameterValue) };
 			const string sql = "SELECT @param;";
 			var options = noBackslashEscapes ? StatementPreparerOptions.NoBackslashEscapes : StatementPreparerOptions.None;
 			var parsedSql = GetParsedSql(sql, parameters, options);
@@ -183,7 +183,7 @@ SELECT @'var' as R")]
 		[InlineData(StatementPreparerOptions.GuidFormatLittleEndianBinary16, "_binary'dcbafehgijklmnop'")]
 		public void GuidFormat(object options, string replacedValue)
 		{
-			var parameters = new MySqlParameterCollection { new MySqlParameter("@param", new Guid("61626364-6566-6768-696a-6b6c6d6e6f70")) };
+			var parameters = new MySqlParameterCollection { new("@param", new Guid("61626364-6566-6768-696a-6b6c6d6e6f70")) };
 			const string sql = "SELECT @param;";
 			var parsedSql = GetParsedSql(sql, parameters, (StatementPreparerOptions) options);
 			Assert.Equal(sql.Replace("@param", replacedValue), parsedSql);
@@ -206,7 +206,7 @@ SELECT @'var' as R")]
 		[InlineData("SELECT * FROM test WHERE id = ?", "SELECT * FROM test WHERE id = 0;", true)]
 		public void CompleteStatements(string sql, string expectedSql, bool expectedComplete)
 		{
-			var parameters = new MySqlParameterCollection { new MySqlParameter { Value = 0 } };
+			var parameters = new MySqlParameterCollection { new() { Value = 0 } };
 			var preparer = new StatementPreparer(sql, parameters, new StatementPreparerOptions());
 			var writer = new ByteBufferWriter();
 			var isComplete = preparer.ParseAndBindParameters(writer);
@@ -238,10 +238,10 @@ SELECT @'var' as R")]
 			// make some dummy parameters available to the test input
 			var parameters = new MySqlParameterCollection
 			{
-				new MySqlParameter("@zero", 0),
-				new MySqlParameter("@one", 0),
-				new MySqlParameter("@two", 0),
-				new MySqlParameter("@three", 0),
+				new("@zero", 0),
+				new("@one", 0),
+				new("@two", 0),
+				new("@three", 0),
 			};
 
 			var preparer = new StatementPreparer(sql, parameters, StatementPreparerOptions.None);

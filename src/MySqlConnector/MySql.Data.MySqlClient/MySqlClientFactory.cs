@@ -4,7 +4,7 @@ namespace MySql.Data.MySqlClient
 {
 	public sealed class MySqlClientFactory : DbProviderFactory
 	{
-		public static readonly MySqlClientFactory Instance = new MySqlClientFactory();
+		public static readonly MySqlClientFactory Instance = new();
 
 		public override DbCommand CreateCommand() => new MySqlCommand();
 		public override DbConnection CreateConnection() => new MySqlConnection();

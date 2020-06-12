@@ -142,7 +142,7 @@ namespace MySqlConnector.Tests
 		}
 #endif
 
-		static readonly MySqlDateTime s_mySqlDateTime = new MySqlDateTime(2018, 6, 9, 12, 34, 56, 123456);
+		static readonly MySqlDateTime s_mySqlDateTime = new(2018, 6, 9, 12, 34, 56, 123456);
 		static readonly DateTime s_dateTime = new DateTime(2018, 6, 9, 12, 34, 56, 123).AddTicks(4560);
 	}
 }

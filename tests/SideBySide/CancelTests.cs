@@ -600,7 +600,7 @@ create table cancel_completed_command (
 
 			using (var batch = m_database.Connection.CreateBatch())
 			{
-				batch.BatchCommands.Add(new MySqlBatchCommand(@"insert into cancel_completed_command (id, value) values (1, null);"));
+				batch.BatchCommands.Add(new(@"insert into cancel_completed_command (id, value) values (1, null);"));
 
 				using (await batch.ExecuteReaderAsync().ConfigureAwait(false))
 					batch.Cancel();
@@ -608,7 +608,7 @@ create table cancel_completed_command (
 
 			using (var batch = m_database.Connection.CreateBatch())
 			{
-				batch.BatchCommands.Add(new MySqlBatchCommand(@"update cancel_completed_command SET value = ""value"" where id = 1;"));
+				batch.BatchCommands.Add(new(@"update cancel_completed_command SET value = ""value"" where id = 1;"));
 
 				await batch.ExecuteNonQueryAsync().ConfigureAwait(false);
 			}
