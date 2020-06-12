@@ -23,7 +23,9 @@ namespace MySqlConnector.Protocol.Serialization
 			Span<byte> combined = stackalloc byte[40];
 			challenge.CopyTo(combined);
 
-			var passwordBytes = Encoding.UTF8.GetBytes(password);
+			var passwordByteCount = Encoding.UTF8.GetByteCount(password);
+			Span<byte> passwordBytes = stackalloc byte[passwordByteCount];
+			Encoding.UTF8.GetBytes(password.AsSpan(), passwordBytes);
 			Span<byte> hashedPassword = stackalloc byte[20];
 			sha1.TryComputeHash(passwordBytes, hashedPassword, out _);
 			sha1.TryComputeHash(hashedPassword, combined.Slice(20), out _);
@@ -36,7 +38,7 @@ namespace MySqlConnector.Protocol.Serialization
 			return hashedPassword.ToArray();
 		}
 
-		public static byte[] CreateScrambleResponse(byte[] nonce, string password)
+		public static byte[] CreateScrambleResponse(ReadOnlySpan<byte> nonce, string password)
 		{
 			var scrambleResponse = string.IsNullOrEmpty(password)
 				? Utility.EmptyByteArray
@@ -45,23 +47,26 @@ namespace MySqlConnector.Protocol.Serialization
 			return scrambleResponse;
 		}
 
-		private static byte[] HashPasswordWithNonce(byte[] nonce, string password)
+		private static byte[] HashPasswordWithNonce(ReadOnlySpan<byte> nonce, string password)
 		{
 			using var sha256 = SHA256.Create();
-			var passwordBytes = Encoding.UTF8.GetBytes(password);
-			var hashedPassword = sha256.ComputeHash(passwordBytes);
+			var passwordByteCount = Encoding.UTF8.GetByteCount(password);
+			Span<byte> passwordBytes = stackalloc byte[passwordByteCount];
+			Encoding.UTF8.GetBytes(password.AsSpan(), passwordBytes);
 
-			var doubleHashedPassword = sha256.ComputeHash(hashedPassword);
-			var combined = new byte[doubleHashedPassword.Length + nonce.Length];
+			Span<byte> hashedPassword = stackalloc byte[32];
+			sha256.TryComputeHash(passwordBytes, hashedPassword, out _);
 
-			Buffer.BlockCopy(doubleHashedPassword, 0, combined, 0, doubleHashedPassword.Length);
-			Buffer.BlockCopy(nonce, 0, combined, doubleHashedPassword.Length, nonce.Length);
+			Span<byte> combined = stackalloc byte[32 + nonce.Length];
+			sha256.TryComputeHash(hashedPassword, combined, out _);
+			nonce.CopyTo(combined.Slice(32));
 
-			var xorBytes = sha256.ComputeHash(combined);
+			Span<byte> xorBytes = stackalloc byte[32];
+			sha256.TryComputeHash(combined, xorBytes, out _);
 			for (int i = 0; i < hashedPassword.Length; i++)
 				hashedPassword[i] ^= xorBytes[i];
 
-			return hashedPassword;
+			return hashedPassword.ToArray();
 		}
 	}
 }

@@ -391,6 +391,9 @@ namespace MySqlConnector.Utilities
 			return value;
 		}
 
+		public static ReadOnlySpan<byte> TrimZeroByte(ReadOnlySpan<byte> value) =>
+			value[value.Length - 1] == 0 ? value.Slice(0, value.Length - 1) : value;
+
 #if NET45
 		public static bool TryGetBuffer(this MemoryStream memoryStream, out ArraySegment<byte> buffer)
 		{
