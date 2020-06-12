@@ -77,7 +77,7 @@ namespace MySql.Data.MySqlClient
 		{
 			if (!NeedsPrepare(out var exception))
 			{
-				if (exception is object)
+				if (exception is not null)
 					throw exception;
 				return;
 			}
@@ -125,7 +125,7 @@ namespace MySql.Data.MySqlClient
 			else if (Connection?.HasActiveReader ?? false)
 				exception = new InvalidOperationException("Cannot call Prepare when there is an open DataReader for this command; it must be closed first.");
 
-			if (exception is object || Connection!.IgnorePrepare)
+			if (exception is not null || Connection!.IgnorePrepare)
 				return false;
 
 			if (CommandType != CommandType.StoredProcedure && CommandType != CommandType.Text)
@@ -150,7 +150,7 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		public bool IsPrepared => ((IMySqlCommand) this).TryGetPreparedStatements() is object;
+		public bool IsPrepared => ((IMySqlCommand) this).TryGetPreparedStatements() is not null;
 
 		public new MySqlTransaction? Transaction { get; set; }
 
@@ -333,7 +333,7 @@ namespace MySql.Data.MySqlClient
 			return exception is null;
 		}
 
-		PreparedStatements? IMySqlCommand.TryGetPreparedStatements() => CommandType == CommandType.Text && !string.IsNullOrWhiteSpace(CommandText) && m_connection is object &&
+		PreparedStatements? IMySqlCommand.TryGetPreparedStatements() => CommandType == CommandType.Text && !string.IsNullOrWhiteSpace(CommandText) && m_connection is not null &&
 			m_connection.State == ConnectionState.Open ? m_connection.Session.TryGetPreparedStatement(CommandText!) : null;
 
 		CommandBehavior IMySqlCommand.CommandBehavior => m_commandBehavior;

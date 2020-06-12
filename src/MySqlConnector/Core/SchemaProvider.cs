@@ -188,13 +188,13 @@ namespace MySqlConnector.Core
 
 			using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'GENERATION_EXPRESSION';", m_connection))
 			{
-				if (command.ExecuteScalar() is object)
+				if (command.ExecuteScalar() is not null)
 					dataTable.Columns.Add(new DataColumn("GENERATION_EXPRESSION", typeof(string))); // lgtm[cs/local-not-disposed]
 			}
 
 			using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'SRS_ID';", m_connection))
 			{
-				if (command.ExecuteScalar() is object)
+				if (command.ExecuteScalar() is not null)
 					dataTable.Columns.Add(new DataColumn("SRS_ID", typeof(uint))); // lgtm[cs/local-not-disposed]
 			}
 

@@ -78,8 +78,8 @@ namespace MySqlConnector.Core
 				for (var i = 0; i < preparedStatement.Statement.ParameterNames.Count; i++)
 				{
 					var parameterName = preparedStatement.Statement.ParameterNames[i];
-					var parameterIndex = parameterName is object ? (parameterCollection?.NormalizedIndexOf(parameterName) ?? -1) : preparedStatement.Statement.ParameterIndexes[i];
-					if (parameterIndex == -1 && parameterName is object)
+					var parameterIndex = parameterName is not null ? (parameterCollection?.NormalizedIndexOf(parameterName) ?? -1) : preparedStatement.Statement.ParameterIndexes[i];
+					if (parameterIndex == -1 && parameterName is not null)
 						throw new MySqlException("Parameter '{0}' must be defined.".FormatInvariant(parameterName));
 					else if (parameterIndex < 0 || parameterIndex >= (parameterCollection?.Count ?? 0))
 						throw new MySqlException("Parameter index {0} is invalid when only {1} parameter{2} defined.".FormatInvariant(parameterIndex, parameterCollection?.Count ?? 0, parameterCollection?.Count == 1 ? " is" : "s are"));
@@ -111,7 +111,7 @@ namespace MySqlConnector.Core
 					// override explicit MySqlDbType with inferred type from the Value
 					var mySqlDbType = parameter.MySqlDbType;
 					var typeMapping = (parameter.Value is null || parameter.Value == DBNull.Value) ? null : TypeMapper.Instance.GetDbTypeMapping(parameter.Value.GetType());
-					if (typeMapping is object)
+					if (typeMapping is not null)
 					{
 						var dbType = typeMapping.DbTypes[0];
 						mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbType(dbType);
@@ -130,7 +130,7 @@ namespace MySqlConnector.Core
 		{
 			var parameterCollection = command.RawParameters;
 			var cachedProcedure = cachedProcedures[command.CommandText!];
-			if (cachedProcedure is object)
+			if (cachedProcedure is not null)
 				parameterCollection = cachedProcedure.AlignParamsWithDb(parameterCollection);
 
 			MySqlParameter? returnParameter = null;

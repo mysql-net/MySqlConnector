@@ -62,7 +62,7 @@ namespace MySqlConnector.Protocol.Payloads
 			if ((handshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
 				writer.WriteNullTerminatedString("mysql_native_password");
 
-			if (connectionAttributes is object)
+			if (connectionAttributes is not null)
 				writer.Write(connectionAttributes);
 
 			return writer.ToPayloadData();

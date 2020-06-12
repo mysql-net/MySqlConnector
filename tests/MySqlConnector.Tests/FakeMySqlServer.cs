@@ -25,7 +25,7 @@ namespace MySqlConnector.Tests
 
 		public void Stop()
 		{
-			if (m_cts is object)
+			if (m_cts is not null)
 			{
 				m_cts.Cancel();
 				m_tcpListener.Stop();

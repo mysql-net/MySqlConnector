@@ -49,7 +49,7 @@ namespace SideBySide
 			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.CertificateFile = Path.Combine(AppConfig.CertsPath, certFile);
 			csb.CertificatePassword = certFilePassword;
-			if (caCertFile is object)
+			if (caCertFile is not null)
 			{
 				csb.SslMode = MySqlSslMode.VerifyCA;
 				csb.SslCa = Path.Combine(AppConfig.CertsPath, caCertFile);
@@ -69,7 +69,7 @@ namespace SideBySide
 			csb.CertificateFile = null;
 			csb.SslCert = Path.Combine(AppConfig.CertsPath, certFile);
 			csb.SslKey = Path.Combine(AppConfig.CertsPath, keyFile);
-			if (caCertFile is object)
+			if (caCertFile is not null)
 			{
 				csb.SslMode = MySqlSslMode.VerifyCA;
 				csb.SslCa = Path.Combine(AppConfig.CertsPath, caCertFile);

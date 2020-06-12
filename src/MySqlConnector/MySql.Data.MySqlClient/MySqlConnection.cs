@@ -120,10 +120,10 @@ namespace MySql.Data.MySqlClient
 		{
 			if (State != ConnectionState.Open)
 				throw new InvalidOperationException("Connection is not open.");
-			if (CurrentTransaction is object)
+			if (CurrentTransaction is not null)
 				throw new InvalidOperationException("Transactions may not be nested.");
 #if !NETSTANDARD1_3
-			if (m_enlistedTransaction is object)
+			if (m_enlistedTransaction is not null)
 				throw new InvalidOperationException("Cannot begin a transaction when already enlisted in a transaction.");
 #endif
 
@@ -172,15 +172,15 @@ namespace MySql.Data.MySqlClient
 			if (m_enlistedTransaction?.Transaction.Equals(transaction) ?? false)
 				return;
 
-			if (m_enlistedTransaction is object)
+			if (m_enlistedTransaction is not null)
 				throw new MySqlException("Already enlisted in a Transaction.");
-			if (CurrentTransaction is object)
+			if (CurrentTransaction is not null)
 				throw new InvalidOperationException("Can't enlist in a Transaction when there is an active MySqlTransaction.");
 
-			if (transaction is object)
+			if (transaction is not null)
 			{
 				var existingConnection = FindExistingEnlistedSession(transaction);
-				if (existingConnection is object)
+				if (existingConnection is not null)
 				{
 					// can reuse the existing connection
 					CloseAsync(changeState: false, IOBehavior.Synchronous).GetAwaiter().GetResult();
@@ -280,17 +280,17 @@ namespace MySql.Data.MySqlClient
 #if DEBUG
 			if (other is null)
 				throw new ArgumentNullException(nameof(other));
-			if (m_session is object)
+			if (m_session is not null)
 				throw new InvalidOperationException("This connection must not have a session");
 			if (other.m_session is null)
 				throw new InvalidOperationException("Other connection must have a session");
-			if (m_enlistedTransaction is object)
+			if (m_enlistedTransaction is not null)
 				throw new InvalidOperationException("This connection must not have an enlisted transaction");
 			if (other.m_enlistedTransaction is null)
 				throw new InvalidOperationException("Other connection must have an enlisted transaction");
-			if (m_activeReader is object)
+			if (m_activeReader is not null)
 				throw new InvalidOperationException("This connection must not have an active reader");
-			if (other.m_activeReader is object)
+			if (other.m_activeReader is not null)
 				throw new InvalidOperationException("Other connection must not have an active reader");
 #endif
 
@@ -378,10 +378,10 @@ namespace MySql.Data.MySqlClient
 
 #if !NETSTANDARD1_3
 			// check if there is an open session (in the current transaction) that can be adopted
-			if (m_connectionSettings.AutoEnlist && System.Transactions.Transaction.Current is object)
+			if (m_connectionSettings.AutoEnlist && System.Transactions.Transaction.Current is not null)
 			{
 				var existingConnection = FindExistingEnlistedSession(System.Transactions.Transaction.Current);
-				if (existingConnection is object)
+				if (existingConnection is not null)
 				{
 					TakeSessionFrom(existingConnection);
 					m_hasBeenOpened = true;
@@ -410,7 +410,7 @@ namespace MySql.Data.MySqlClient
 			}
 
 #if !NETSTANDARD1_3
-			if (m_connectionSettings.AutoEnlist && System.Transactions.Transaction.Current is object)
+			if (m_connectionSettings.AutoEnlist && System.Transactions.Transaction.Current is not null)
 				EnlistTransaction(System.Transactions.Transaction.Current);
 #endif
 		}
@@ -456,7 +456,7 @@ namespace MySql.Data.MySqlClient
 				throw new ArgumentNullException(nameof(connection));
 
 			var pool = ConnectionPool.GetPool(connection.m_connectionString);
-			if (pool is object)
+			if (pool is not null)
 				await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
@@ -580,7 +580,7 @@ namespace MySql.Data.MySqlClient
 				// open a dedicated connection to the server to kill the active query
 				var csb = new MySqlConnectionStringBuilder(m_connectionString);
 				csb.Pooling = false;
-				if (m_session!.IPAddress is object)
+				if (m_session!.IPAddress is not null)
 					csb.Server = m_session.IPAddress.ToString();
 				csb.ConnectionTimeout = 3u;
 
@@ -675,13 +675,13 @@ namespace MySql.Data.MySqlClient
 
 		internal MySqlSslMode SslMode => GetInitializedConnectionSettings().SslMode;
 
-		internal bool HasActiveReader => m_activeReader is object;
+		internal bool HasActiveReader => m_activeReader is not null;
 
 		internal void SetActiveReader(MySqlDataReader dataReader)
 		{
 			if (dataReader is null)
 				throw new ArgumentNullException(nameof(dataReader));
-			if (m_activeReader is object)
+			if (m_activeReader is not null)
 				throw new InvalidOperationException("Can't replace active reader.");
 			m_activeReader = dataReader;
 		}
@@ -691,7 +691,7 @@ namespace MySql.Data.MySqlClient
 			m_session!.FinishQuerying();
 			m_activeReader = null;
 
-			if (hasWarnings && InfoMessage is object)
+			if (hasWarnings && InfoMessage is not null)
 			{
 				var errors = new List<MySqlError>();
 				using (var command = new MySqlCommand("SHOW WARNINGS;", this))
@@ -718,12 +718,12 @@ namespace MySql.Data.MySqlClient
 				// (from the connection string, if non-zero), or a combination of both
 				if (connectionSettings.ConnectionTimeout != 0)
 					timeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(Math.Max(1, connectionSettings.ConnectionTimeoutMilliseconds - unchecked(Environment.TickCount - startTickCount))));
-				if (cancellationToken.CanBeCanceled && timeoutSource is object)
+				if (cancellationToken.CanBeCanceled && timeoutSource is not null)
 					linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
 				var connectToken = linkedSource?.Token ?? timeoutSource?.Token ?? cancellationToken;
 
 				// get existing session from the pool if possible
-				if (pool is object)
+				if (pool is not null)
 				{
 					// this returns an open session
 					return await pool.GetSessionAsync(this, startTickCount, actualIOBehavior, connectToken).ConfigureAwait(false);
@@ -808,7 +808,7 @@ namespace MySql.Data.MySqlClient
 				(m_connectionSettings?.Pooling ?? false))
 			{
 				m_cachedProcedures = null;
-				if (m_session is object)
+				if (m_session is not null)
 				{
 					m_session.ReturnToPool();
 					m_session = null;
@@ -827,10 +827,10 @@ namespace MySql.Data.MySqlClient
 #if !NETSTANDARD1_3
 			// If participating in a distributed transaction, keep the connection open so we can commit or rollback.
 			// This handles the common pattern of disposing a connection before disposing a TransactionScope (e.g., nested using blocks)
-			if (m_enlistedTransaction is object)
+			if (m_enlistedTransaction is not null)
 			{
 				// make sure all DB work is done
-				if (m_activeReader is object)
+				if (m_activeReader is not null)
 					await m_activeReader.DisposeAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 				m_activeReader = null;
 
@@ -874,7 +874,7 @@ namespace MySql.Data.MySqlClient
 				}
 				finally
 				{
-					if (m_session is object)
+					if (m_session is not null)
 					{
 						if (GetInitializedConnectionSettings().Pooling)
 						{
@@ -904,9 +904,9 @@ namespace MySql.Data.MySqlClient
 
 		private async Task DoCloseDatabaseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			if (m_activeReader is object)
+			if (m_activeReader is not null)
 				await m_activeReader.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			if (CurrentTransaction is object && m_session!.IsConnected)
+			if (CurrentTransaction is not null && m_session!.IsConnected)
 			{
 				await CurrentTransaction.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				CurrentTransaction = null;

@@ -939,7 +939,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 			Assert.Equal(expectedType, dt.Rows[0]["DataType"]);
 #endif
 
-			if (expectedDateTime is object)
+			if (expectedDateTime is not null)
 			{
 				var expected = (DateTime) ConvertToDateTime(new object[] { expectedDateTime }, DateTimeKind.Unspecified)[0];
 				Assert.Equal(expected, reader.GetDateTime(0));
@@ -1368,7 +1368,7 @@ end;";
 				Assert.IsType(dataType, parameter.Value);
 				Assert.Equal(mySqlDbType, parameter.MySqlDbType);
 
-				if (expectedValue is object)
+				if (expectedValue is not null)
 					Assert.Equal(expectedValue, parameter.Value);
 			}
 		}
@@ -1578,7 +1578,7 @@ end;";
 					{
 						Assert.Equal(DBNull.Value, reader.GetValue(0));
 #if BASELINE
-						if (baselineCoercedNullValue is object)
+						if (baselineCoercedNullValue is not null)
 							Assert.Equal(baselineCoercedNullValue, getValue(reader));
 						else
 							Assert.Throws<TException>(() => getValue(reader));

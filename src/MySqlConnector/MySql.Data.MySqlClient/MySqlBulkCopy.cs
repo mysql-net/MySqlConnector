@@ -205,7 +205,7 @@ namespace MySql.Data.MySqlClient
 						bulkLoader.Columns.Add(columnMapping.DestinationColumn);
 					else
 						bulkLoader.Columns.Add(QuoteIdentifier(columnMapping.DestinationColumn));
-					if (columnMapping.Expression is object)
+					if (columnMapping.Expression is not null)
 						bulkLoader.Expressions.Add(columnMapping.Expression);
 				}
 			}
@@ -239,9 +239,9 @@ namespace MySql.Data.MySqlClient
 			{
 				expression = expression.Replace("%COL%", "`" + destinationColumn + "`").Replace("%VAR%", variableName);
 				var columnMapping = columnMappings.FirstOrDefault(x => destinationColumn.Equals(x.DestinationColumn, StringComparison.OrdinalIgnoreCase));
-				if (columnMapping is object)
+				if (columnMapping is not null)
 				{
-					if (columnMapping.Expression is object)
+					if (columnMapping.Expression is not null)
 					{
 						Log.Warn("Column mapping for SourceOrdinal {0}, DestinationColumn {1} already has Expression {2}", columnMapping.SourceOrdinal, destinationColumn, columnMapping.Expression);
 					}
@@ -270,7 +270,7 @@ namespace MySql.Data.MySqlClient
 			// allocate a reusable MySqlRowsCopiedEventArgs if event notification is necessary
 			RowsCopied = 0;
 			MySqlRowsCopiedEventArgs? eventArgs = null;
-			if (NotifyAfter > 0 && MySqlRowsCopied is object)
+			if (NotifyAfter > 0 && MySqlRowsCopied is not null)
 				eventArgs = new MySqlRowsCopiedEventArgs();
 
 			try
@@ -318,7 +318,7 @@ namespace MySql.Data.MySqlClient
 						buffer[outputIndex++] = (byte) '\n';
 
 						RowsCopied++;
-						if (eventArgs is object && RowsCopied % NotifyAfter == 0)
+						if (eventArgs is not null && RowsCopied % NotifyAfter == 0)
 						{
 							eventArgs.RowsCopied = RowsCopied;
 							MySqlRowsCopied!(this, eventArgs);

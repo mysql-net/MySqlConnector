@@ -64,7 +64,7 @@ namespace MySqlConnector.Tests
 			var parameters = new MySqlParameterCollection();
 			var parameter = new MySqlParameter("@param", value);
 
-			if (type is object)
+			if (type is not null)
 			{
 				parameter.MySqlDbType = type.Value;
 			}

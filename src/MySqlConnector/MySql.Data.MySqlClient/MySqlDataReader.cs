@@ -113,7 +113,7 @@ namespace MySql.Data.MySqlClient
 
 		private void ActivateResultSet()
 		{
-			if (m_resultSet!.ReadResultSetHeaderException is object)
+			if (m_resultSet!.ReadResultSetHeaderException is not null)
 			{
 				var mySqlException = m_resultSet.ReadResultSetHeaderException as MySqlException;
 
@@ -122,7 +122,7 @@ namespace MySql.Data.MySqlClient
 				if (mySqlException?.SqlState is null)
 					Command!.Connection!.SetSessionFailed(m_resultSet.ReadResultSetHeaderException);
 
-				throw mySqlException is object ?
+				throw mySqlException is not null ?
 					new MySqlException(mySqlException.Number, mySqlException.SqlState, mySqlException.Message, mySqlException) :
 					new MySqlException("Failed to read the result set.", m_resultSet.ReadResultSetHeaderException);
 			}
@@ -521,7 +521,7 @@ namespace MySql.Data.MySqlClient
 			{
 				m_closed = true;
 
-				if (m_resultSet is object && Command!.Connection!.State == ConnectionState.Open)
+				if (m_resultSet is not null && Command!.Connection!.State == ConnectionState.Open)
 				{
 					Command.Connection.Session.SetTimeout(Constants.InfiniteTimeout);
 					try
@@ -566,7 +566,7 @@ namespace MySql.Data.MySqlClient
 				if (param.HasSetDbType && !row.IsDBNull(columnIndex))
 				{
 					var dbTypeMapping = TypeMapper.Instance.GetDbTypeMapping(param.DbType);
-					if (dbTypeMapping is object)
+					if (dbTypeMapping is not null)
 					{
 						param.Value = dbTypeMapping.DoConversion(row.GetValue(columnIndex));
 						continue;

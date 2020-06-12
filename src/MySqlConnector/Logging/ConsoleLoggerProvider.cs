@@ -44,7 +44,7 @@ namespace MySqlConnector.Logging
 					sb.AppendFormat(CultureInfo.InvariantCulture, message, args);
 				sb.AppendLine();
 
-				if (exception is object)
+				if (exception is not null)
 					sb.AppendLine(exception.ToString());
 
 				if (m_provider.m_isColored)

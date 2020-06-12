@@ -57,7 +57,7 @@ namespace MySqlConnector.Core
 						RecordsAffected = (RecordsAffected ?? 0) + ok.AffectedRowCount;
 						LastInsertId = unchecked((long) ok.LastInsertId);
 						WarningCount = ok.WarningCount;
-						if (ok.NewSchema is object)
+						if (ok.NewSchema is not null)
 							Connection.Session.DatabaseOverride = ok.NewSchema;
 						ColumnDefinitions = null;
 						ColumnTypes = null;
@@ -201,7 +201,7 @@ namespace MySqlConnector.Core
 			m_row = m_readBuffer?.Count > 0 ? m_readBuffer.Dequeue() :
 				await ScanRowAsync(ioBehavior, m_row, cancellationToken).ConfigureAwait(false);
 
-			if (Command.ReturnParameter is object && m_row is object)
+			if (Command.ReturnParameter is not null && m_row is not null)
 			{
 				Command.ReturnParameter.Value = m_row.GetValue(0);
 				Command.ReturnParameter = null;
@@ -394,7 +394,7 @@ namespace MySqlConnector.Core
 			get
 			{
 				if (BufferState == ResultSetState.ReadResultSetHeader)
-					return BufferReadAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult() is object;
+					return BufferReadAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult() is not null;
 				return m_hasRows;
 			}
 		}

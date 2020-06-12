@@ -71,7 +71,7 @@ namespace MySql.Data.MySqlClient
 		{
 			if (!NeedsPrepare(out var exception))
 			{
-				if (exception is object)
+				if (exception is not null)
 					throw exception;
 				return;
 			}

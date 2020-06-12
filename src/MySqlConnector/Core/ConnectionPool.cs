@@ -55,7 +55,7 @@ namespace MySqlConnector.Core
 						m_sessions.RemoveFirst();
 					}
 				}
-				if (session is object)
+				if (session is not null)
 				{
 					Log.Debug("Pool{0} found an existing session; checking it for validity", m_logArguments);
 					bool reuseSession;
@@ -67,7 +67,7 @@ namespace MySqlConnector.Core
 					}
 					else
 					{
-						if (ConnectionSettings.ConnectionReset || session.DatabaseOverride is object)
+						if (ConnectionSettings.ConnectionReset || session.DatabaseOverride is not null)
 						{
 							reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
 						}
@@ -123,7 +123,7 @@ namespace MySqlConnector.Core
 			}
 			catch (Exception ex)
 			{
-				if (session is object)
+				if (session is not null)
 				{
 					try
 					{
@@ -435,7 +435,7 @@ namespace MySqlConnector.Core
 			var uniquePools = new HashSet<ConnectionPool>();
 			foreach (var pool in s_pools.Values)
 			{
-				if (pool is object && uniquePools.Add(pool))
+				if (pool is not null && uniquePools.Add(pool))
 					pools.Add(pool);
 			}
 			return pools;
@@ -496,7 +496,7 @@ namespace MySqlConnector.Core
 
 		private void AdjustHostConnectionCount(ServerSession session, int delta)
 		{
-			if (m_hostSessions is object)
+			if (m_hostSessions is not null)
 			{
 				lock (m_hostSessions)
 					m_hostSessions[session.HostName] += delta;

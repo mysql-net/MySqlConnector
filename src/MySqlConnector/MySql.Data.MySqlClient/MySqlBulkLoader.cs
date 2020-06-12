@@ -71,7 +71,7 @@ namespace MySql.Data.MySqlClient
 			if (string.IsNullOrWhiteSpace(TableName))
 				throw new InvalidOperationException("TableName is required.");
 
-			if (!string.IsNullOrWhiteSpace(FileName) && Source is object)
+			if (!string.IsNullOrWhiteSpace(FileName) && Source is not null)
 				throw new InvalidOperationException("Exactly one of FileName or SourceStream must be set.");
 
 			if (!string.IsNullOrWhiteSpace(FileName))
@@ -102,7 +102,7 @@ namespace MySql.Data.MySqlClient
 				Connection.Open();
 			}
 
-			bool closeStream = SourceStream is object;
+			bool closeStream = SourceStream is not null;
 			try
 			{
 				if (Local && !Connection.AllowLoadLocalInfile)
@@ -156,7 +156,7 @@ namespace MySql.Data.MySqlClient
 
 			sb.AppendFormat(CultureInfo.InvariantCulture, "INTO TABLE {0} ", TableName);
 
-			if (CharacterSet is object)
+			if (CharacterSet is not null)
 				sb.AppendFormat(CultureInfo.InvariantCulture, "CHARACTER SET {0} ", CharacterSet);
 
 			var fieldsTerminatedBy = FieldTerminator is null ? "" : "TERMINATED BY '{0}' ".FormatInvariant(MySqlHelper.EscapeString(FieldTerminator));

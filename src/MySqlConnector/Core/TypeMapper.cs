@@ -132,7 +132,7 @@ namespace MySqlConnector.Core
 		{
 			m_dbTypeMappingsByClrType[dbTypeMapping.ClrType] = dbTypeMapping;
 
-			if (dbTypeMapping.DbTypes is object)
+			if (dbTypeMapping.DbTypes is not null)
 				foreach (var dbType in dbTypeMapping.DbTypes)
 					m_dbTypeMappingsByDbType[dbType] = dbTypeMapping;
 

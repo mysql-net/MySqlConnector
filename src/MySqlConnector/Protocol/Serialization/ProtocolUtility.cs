@@ -440,7 +440,7 @@ namespace MySqlConnector.Protocol.Serialization
 
 		private static ValueTask<Packet> CreatePacketFromPayload(ArraySegment<byte> payloadBytes, int payloadLength, ProtocolErrorBehavior protocolErrorBehavior, Exception? exception)
 		{
-			if (exception is object)
+			if (exception is not null)
 			{
 				if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
 					return default;

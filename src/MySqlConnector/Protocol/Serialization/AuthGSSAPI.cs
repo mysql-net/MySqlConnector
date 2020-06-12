@@ -231,7 +231,7 @@ namespace MySqlConnector.Protocol.Serialization
 				await negotiateStream.AuthenticateAsClientAsync(CredentialCache.DefaultNetworkCredentials, targetName).ConfigureAwait(false);
 			}
 #endif
-			if (cs.ServerSPN is object && !negotiateStream.IsMutuallyAuthenticated)
+			if (cs.ServerSPN is not null && !negotiateStream.IsMutuallyAuthenticated)
 			{
 				// Negotiate used NTLM fallback, server name cannot be verified.
 				throw new AuthenticationException(String.Format(
