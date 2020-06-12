@@ -32,6 +32,11 @@ steps:
     platform: 'netcoreapp2.1'
     description: 'No SSL'
 - task: UseDotNet@2
+  displayName: 'Install .NET Core 3.1'
+  inputs:
+    version: 3.1.x
+    packageType: runtime
+- task: UseDotNet@2
   displayName: 'Install .NET Core'
   inputs:
     version: $(DotNetCoreSdkVersion)

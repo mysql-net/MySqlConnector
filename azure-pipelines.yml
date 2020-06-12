@@ -1,5 +1,5 @@
 variables:
-  DotNetCoreSdkVersion: '3.1.301'
+  DotNetCoreSdkVersion: '5.0.100-preview.5.20279.10'
   NUGET_PACKAGES: '$(Pipeline.Workspace)/.nuget/packages'
 
 jobs:
@@ -101,7 +101,13 @@ jobs:
   - task: UseDotNet@2
     displayName: 'Install .NET Core 2.1'
     inputs:
-      version: '2.1.805'
+      version: '2.1.x'
+      packageType: runtime
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core 3.1'
+    inputs:
+      version: 3.1.x
+      packageType: runtime
   - task: UseDotNet@2
     displayName: 'Install .NET Core'
     inputs:
@@ -121,7 +127,8 @@ jobs:
   - task: UseDotNet@2
     displayName: 'Install .NET Core 2.1'
     inputs:
-      version: '2.1.805'
+      version: '2.1.x'
+      packageType: runtime
   - task: UseDotNet@2
     displayName: 'Install .NET Core'
     inputs:
@@ -157,7 +164,8 @@ jobs:
   - task: UseDotNet@2
     displayName: 'Install .NET Core 2.1'
     inputs:
-      version: '2.1.805'
+      version: '2.1.x'
+      packageType: runtime
   - task: UseDotNet@2
     displayName: 'Install .NET Core'
     inputs:
