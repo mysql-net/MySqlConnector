@@ -211,7 +211,7 @@ jobs:
         image: 'mariadb:10.2'
         unsupportedFeatures: 'Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin'
       'MariaDB 10.3':
-        image: 'mariadb:10.3'
+        image: 'mariadb:10.3-bionic'
         unsupportedFeatures: 'Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin'
       'MariaDB 10.4':
         image: 'mariadb:10.4.12'
