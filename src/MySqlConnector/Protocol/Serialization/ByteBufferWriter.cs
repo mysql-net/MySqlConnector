@@ -219,23 +219,25 @@ namespace MySqlConnector.Protocol.Serialization
 	{
 		public static void WriteLengthEncodedInteger(this ByteBufferWriter writer, ulong value)
 		{
-			if (value < 251)
+			switch (value)
 			{
+			case < 251:
 				writer.Write((byte) value);
-			}
-			else if (value < 65536)
-			{
+				break;
+
+			case < 65536:
 				writer.Write((byte) 0xfc);
 				writer.Write((ushort) value);
-			}
-			else if (value < 16777216)
-			{
+				break;
+
+			case < 16777216:
 				writer.Write((uint) ((value << 8) | 0xfd));
-			}
-			else
-			{
+				break;
+
+			default:
 				writer.Write((byte) 0xfe);
 				writer.Write(value);
+				break;
 			}
 		}
 

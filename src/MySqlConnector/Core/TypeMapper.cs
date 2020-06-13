@@ -278,156 +278,38 @@ namespace MySqlConnector.Core
 
 		public static ushort ConvertToColumnTypeAndFlags(MySqlDbType dbType, MySqlGuidFormat guidFormat)
 		{
-			var isUnsigned = false;
-			ColumnType columnType;
-			switch (dbType)
+			var isUnsigned = dbType == MySqlDbType.UByte || dbType == MySqlDbType.UInt16 ||
+				dbType == MySqlDbType.UInt24 || dbType == MySqlDbType.UInt32 || dbType == MySqlDbType.UInt64;
+			var columnType = dbType switch
 			{
-			case MySqlDbType.Bool:
-			case MySqlDbType.Byte:
-				columnType = ColumnType.Tiny;
-				break;
-
-			case MySqlDbType.UByte:
-				columnType = ColumnType.Tiny;
-				isUnsigned = true;
-				break;
-
-			case MySqlDbType.Int16:
-				columnType = ColumnType.Short;
-				break;
-
-			case MySqlDbType.UInt16:
-				columnType = ColumnType.Short;
-				isUnsigned = true;
-				break;
-
-			case MySqlDbType.Int24:
-				columnType = ColumnType.Int24;
-				break;
-
-			case MySqlDbType.UInt24:
-				columnType = ColumnType.Int24;
-				isUnsigned = true;
-				break;
-
-			case MySqlDbType.Int32:
-				columnType = ColumnType.Long;
-				break;
-
-			case MySqlDbType.UInt32:
-				columnType = ColumnType.Long;
-				isUnsigned = true;
-				break;
-
-			case MySqlDbType.Int64:
-				columnType = ColumnType.Longlong;
-				break;
-
-			case MySqlDbType.UInt64:
-				columnType = ColumnType.Longlong;
-				isUnsigned = true;
-				break;
-
-			case MySqlDbType.Bit:
-				columnType = ColumnType.Bit;
-				break;
-
-			case MySqlDbType.Guid:
-				if (guidFormat == MySqlGuidFormat.Char36 || guidFormat == MySqlGuidFormat.Char32)
-					columnType = ColumnType.String;
-				else
-					columnType = ColumnType.Blob;
-				break;
-
-			case MySqlDbType.Enum:
-			case MySqlDbType.Set:
-				columnType = ColumnType.String;
-				break;
-
-			case MySqlDbType.Binary:
-			case MySqlDbType.String:
-				columnType = ColumnType.String;
-				break;
-
-			case MySqlDbType.VarBinary:
-			case MySqlDbType.VarChar:
-			case MySqlDbType.VarString:
-				columnType = ColumnType.VarString;
-				break;
-
-			case MySqlDbType.TinyBlob:
-			case MySqlDbType.TinyText:
-				columnType = ColumnType.TinyBlob;
-				break;
-
-			case MySqlDbType.Blob:
-			case MySqlDbType.Text:
-				columnType = ColumnType.Blob;
-				break;
-
-			case MySqlDbType.MediumBlob:
-			case MySqlDbType.MediumText:
-				columnType = ColumnType.MediumBlob;
-				break;
-
-			case MySqlDbType.LongBlob:
-			case MySqlDbType.LongText:
-				columnType = ColumnType.LongBlob;
-				break;
-
-			case MySqlDbType.JSON:
-				columnType = ColumnType.Json; // TODO: test
-				break;
-
-			case MySqlDbType.Date:
-			case MySqlDbType.Newdate:
-				columnType = ColumnType.Date;
-				break;
-
-			case MySqlDbType.DateTime:
-				columnType = ColumnType.DateTime;
-				break;
-
-			case MySqlDbType.Timestamp:
-				columnType = ColumnType.Timestamp;
-				break;
-
-			case MySqlDbType.Time:
-				columnType = ColumnType.Time;
-				break;
-
-			case MySqlDbType.Year:
-				columnType = ColumnType.Year;
-				break;
-
-			case MySqlDbType.Float:
-				columnType = ColumnType.Float;
-				break;
-
-			case MySqlDbType.Double:
-				columnType = ColumnType.Double;
-				break;
-
-			case MySqlDbType.Decimal:
-				columnType = ColumnType.Decimal;
-				break;
-
-			case MySqlDbType.NewDecimal:
-				columnType = ColumnType.NewDecimal;
-				break;
-
-			case MySqlDbType.Geometry:
-				columnType = ColumnType.Geometry;
-				break;
-
-			case MySqlDbType.Null:
-				columnType = ColumnType.Null;
-				break;
-
-			default:
-				throw new NotImplementedException("ConvertToColumnTypeAndFlags for {0} is not implemented".FormatInvariant(dbType));
-			}
-
+				MySqlDbType.Bool or MySqlDbType.Byte or MySqlDbType.UByte => ColumnType.Tiny,
+				MySqlDbType.Int16 or MySqlDbType.UInt16 => ColumnType.Short,
+				MySqlDbType.Int24 or MySqlDbType.UInt24 => ColumnType.Int24,
+				MySqlDbType.Int32 or MySqlDbType.UInt32 => ColumnType.Long,
+				MySqlDbType.Int64 or MySqlDbType.UInt64 => ColumnType.Longlong,
+				MySqlDbType.Bit => ColumnType.Bit,
+				MySqlDbType.Guid => (guidFormat == MySqlGuidFormat.Char36 || guidFormat == MySqlGuidFormat.Char32) ? ColumnType.String : ColumnType.Blob,
+				MySqlDbType.Enum or MySqlDbType.Set => ColumnType.String,
+				MySqlDbType.Binary or MySqlDbType.String => ColumnType.String,
+				MySqlDbType.VarBinary or MySqlDbType.VarChar or MySqlDbType.VarString => ColumnType.VarString,
+				MySqlDbType.TinyBlob or MySqlDbType.TinyText => ColumnType.TinyBlob,
+				MySqlDbType.Blob or MySqlDbType.Text => ColumnType.Blob,
+				MySqlDbType.MediumBlob or MySqlDbType.MediumText => ColumnType.MediumBlob,
+				MySqlDbType.LongBlob or MySqlDbType.LongText => ColumnType.LongBlob,
+				MySqlDbType.JSON => ColumnType.Json, // TODO: test
+				MySqlDbType.Date or MySqlDbType.Newdate => ColumnType.Date,
+				MySqlDbType.DateTime => ColumnType.DateTime,
+				MySqlDbType.Timestamp => ColumnType.Timestamp,
+				MySqlDbType.Time => ColumnType.Time,
+				MySqlDbType.Year => ColumnType.Year,
+				MySqlDbType.Float => ColumnType.Float,
+				MySqlDbType.Double => ColumnType.Double,
+				MySqlDbType.Decimal => ColumnType.Decimal,
+				MySqlDbType.NewDecimal => ColumnType.NewDecimal,
+				MySqlDbType.Geometry => ColumnType.Geometry,
+				MySqlDbType.Null => ColumnType.Null,
+				_ => throw new NotImplementedException("ConvertToColumnTypeAndFlags for {0} is not implemented".FormatInvariant(dbType)),
+			};
 			return (ushort) ((byte) columnType | (isUnsigned ? 0x8000 : 0));
 		}
 

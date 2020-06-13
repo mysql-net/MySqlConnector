@@ -45,21 +45,16 @@ namespace MySqlConnector.Core
 				else
 				{
 					var columnDefinition = ResultSet.ColumnDefinitions![column];
-					int length;
-					if (columnDefinition.ColumnType == ColumnType.Longlong || columnDefinition.ColumnType == ColumnType.Double)
-						length = 8;
-					else if (columnDefinition.ColumnType == ColumnType.Long || columnDefinition.ColumnType == ColumnType.Int24 || columnDefinition.ColumnType == ColumnType.Float)
-						length = 4;
-					else if (columnDefinition.ColumnType == ColumnType.Short || columnDefinition.ColumnType == ColumnType.Year)
-						length = 2;
-					else if (columnDefinition.ColumnType == ColumnType.Tiny)
-						length = 1;
-					else if (columnDefinition.ColumnType == ColumnType.Date || columnDefinition.ColumnType == ColumnType.DateTime || columnDefinition.ColumnType == ColumnType.Timestamp || columnDefinition.ColumnType == ColumnType.Time)
-						length = reader.ReadByte();
-					else if (columnDefinition.ColumnType == ColumnType.DateTime2 || columnDefinition.ColumnType == ColumnType.NewDate || columnDefinition.ColumnType == ColumnType.Timestamp2)
-						throw new NotSupportedException("ColumnType {0} is not supported".FormatInvariant(columnDefinition.ColumnType));
-					else
-						length = checked((int) reader.ReadLengthEncodedInteger());
+					var length = columnDefinition.ColumnType switch
+					{
+						ColumnType.Longlong or ColumnType.Double => 8,
+						ColumnType.Long or ColumnType.Int24 or ColumnType.Float => 4,
+						ColumnType.Short or ColumnType.Year => 2,
+						ColumnType.Tiny => 1,
+						ColumnType.Date or ColumnType.DateTime or ColumnType.Timestamp or ColumnType.Time => reader.ReadByte(),
+						ColumnType.DateTime2 or ColumnType.NewDate or ColumnType.Timestamp2 => throw new NotSupportedException("ColumnType {0} is not supported".FormatInvariant(columnDefinition.ColumnType)),
+						_ => checked((int) reader.ReadLengthEncodedInteger()),
+					};
 
 					dataLengths[column] = length;
 					dataOffsets[column] = reader.Offset;
@@ -72,31 +67,16 @@ namespace MySqlConnector.Core
 		protected override int GetInt32Core(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 		{
 			var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
-			switch (columnDefinition.ColumnType)
+			return columnDefinition.ColumnType switch
 			{
-			case ColumnType.Tiny:
-				return isUnsigned ? (int) data[0] : (sbyte) data[0];
-
-			case ColumnType.Decimal:
-			case ColumnType.NewDecimal:
-				return Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) && bytesConsumed == data.Length ? checked((int) decimalValue) : throw new FormatException();
-
-			case ColumnType.Int24:
-			case ColumnType.Long:
-				return isUnsigned ? checked((int) MemoryMarshal.Read<uint>(data)) : MemoryMarshal.Read<int>(data);
-
-			case ColumnType.Longlong:
-				return isUnsigned ? checked((int) MemoryMarshal.Read<ulong>(data)) : checked((int) MemoryMarshal.Read<long>(data));
-
-			case ColumnType.Short:
-				return isUnsigned ? (int) MemoryMarshal.Read<ushort>(data) : MemoryMarshal.Read<short>(data);
-
-			case ColumnType.Year:
-				return (int) MemoryMarshal.Read<short>(data);
-
-			default:
-				throw new FormatException();
-			}
+				ColumnType.Tiny => isUnsigned ? (int) data[0] : (sbyte) data[0],
+				ColumnType.Decimal or ColumnType.NewDecimal => Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) && bytesConsumed == data.Length ? checked((int) decimalValue) : throw new FormatException(),
+				ColumnType.Int24 or ColumnType.Long => isUnsigned ? checked((int) MemoryMarshal.Read<uint>(data)) : MemoryMarshal.Read<int>(data),
+				ColumnType.Longlong => isUnsigned ? checked((int) MemoryMarshal.Read<ulong>(data)) : checked((int) MemoryMarshal.Read<long>(data)),
+				ColumnType.Short => isUnsigned ? (int) MemoryMarshal.Read<ushort>(data) : MemoryMarshal.Read<short>(data),
+				ColumnType.Year => MemoryMarshal.Read<short>(data),
+				_ => throw new FormatException(),
+			};
 		}
 
 		protected override object GetValueCore(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
