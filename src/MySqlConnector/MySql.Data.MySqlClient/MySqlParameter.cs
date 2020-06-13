@@ -215,7 +215,7 @@ namespace MySql.Data.MySqlClient
 
 			if (Value is null || Value == DBNull.Value)
 			{
-				writer.Write(s_nullBytes);
+				writer.Write(NullBytes);
 			}
 			else if (Value is string stringValue)
 			{
@@ -288,7 +288,7 @@ namespace MySql.Data.MySqlClient
 					((ReadOnlyMemory<byte>) Value).Span;
 
 				// determine the number of bytes to be written
-				var length = inputSpan.Length + s_binaryBytes.Length + 1;
+				var length = inputSpan.Length + BinaryBytes.Length + 1;
 				foreach (var by in inputSpan)
 				{
 					if (by == 0x27 || by == 0x5C)
@@ -296,8 +296,8 @@ namespace MySql.Data.MySqlClient
 				}
 
 				var outputSpan = writer.GetSpan(length);
-				s_binaryBytes.CopyTo(outputSpan);
-				var index = s_binaryBytes.Length;
+				BinaryBytes.CopyTo(outputSpan);
+				var index = BinaryBytes.Length;
 				foreach (var by in inputSpan)
 				{
 					if (by == 0x27 || by == 0x5C)
@@ -310,7 +310,7 @@ namespace MySql.Data.MySqlClient
 			}
 			else if (Value is bool boolValue)
 			{
-				writer.Write(boolValue ? s_trueBytes : s_falseBytes);
+				writer.Write(boolValue ? TrueBytes : FalseBytes);
 			}
 			else if (Value is float || Value is double)
 			{
@@ -373,7 +373,7 @@ namespace MySql.Data.MySqlClient
 							Utility.SwapBytes(bytes, 1, 3);
 						}
 					}
-					writer.Write(s_binaryBytes);
+					writer.Write(BinaryBytes);
 					foreach (var by in bytes)
 					{
 						if (by == 0x27 || by == 0x5C)
@@ -682,10 +682,10 @@ namespace MySql.Data.MySqlClient
 			}
 		}
 
-		static readonly byte[] s_nullBytes = { 0x4E, 0x55, 0x4C, 0x4C }; // NULL
-		static readonly byte[] s_trueBytes = { 0x74, 0x72, 0x75, 0x65 }; // true
-		static readonly byte[] s_falseBytes = { 0x66, 0x61, 0x6C, 0x73, 0x65 }; // false
-		static readonly byte[] s_binaryBytes = { 0x5F, 0x62, 0x69, 0x6E, 0x61, 0x72, 0x79, 0x27 }; // _binary'
+		static ReadOnlySpan<byte> NullBytes => new byte[] { 0x4E, 0x55, 0x4C, 0x4C }; // NULL
+		static ReadOnlySpan<byte> TrueBytes => new byte[] { 0x74, 0x72, 0x75, 0x65 }; // true
+		static ReadOnlySpan<byte> FalseBytes => new byte[] { 0x66, 0x61, 0x6C, 0x73, 0x65 }; // false
+		static ReadOnlySpan<byte> BinaryBytes => new byte[] { 0x5F, 0x62, 0x69, 0x6E, 0x61, 0x72, 0x79, 0x27 }; // _binary'
 
 		DbType m_dbType;
 		MySqlDbType m_mySqlDbType;
