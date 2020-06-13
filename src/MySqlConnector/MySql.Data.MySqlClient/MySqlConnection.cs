@@ -415,6 +415,24 @@ namespace MySql.Data.MySqlClient
 #endif
 		}
 
+		/// <summary>
+		/// Resets the session state of the current open connection; this clears temporary tables and user-defined variables.
+		/// </summary>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <c>ValueTask</c> representing the asynchronous operation.</returns>
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+		public async Task ResetConnectionAsync(CancellationToken cancellationToken = default)
+#else
+		public async ValueTask ResetConnectionAsync(CancellationToken cancellationToken = default)
+#endif
+		{
+			var session = Session;
+			Log.Debug("Session{0} resetting connection", session.Id);
+			await session.SendAsync(ResetConnectionPayload.Instance, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
+			var payload = await session.ReceiveReplyAsync(AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
+			OkPayload.Create(payload.Span, session.SupportsDeprecateEof, session.SupportsSessionTrack);
+		}
+
 		[AllowNull]
 		public override string ConnectionString
 		{

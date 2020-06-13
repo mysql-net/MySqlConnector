@@ -23,5 +23,6 @@ namespace SideBySide
 		Ed25519 = 0x4000,
 		UnixDomainSocket = 0x8000,
 		Tls13 = 0x1_0000,
+		ResetConnection = 0x2_0000,
 	}
 }

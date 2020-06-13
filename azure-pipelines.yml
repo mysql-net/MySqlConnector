@@ -197,7 +197,7 @@ jobs:
     matrix:
       'MySQL 5.6':
         image: 'mysql:5.6'
-        unsupportedFeatures: 'Ed25519,Json,Sha256Password,LargePackets,CachingSha2Password,SessionTrack,Tls13,UuidToBin'
+        unsupportedFeatures: 'Ed25519,Json,Sha256Password,LargePackets,CachingSha2Password,ResetConnection,SessionTrack,Tls13,UuidToBin'
       'MySQL 5.7':
         image: 'mysql:5.7'
         unsupportedFeatures: 'Ed25519,CachingSha2Password,Tls13,UuidToBin'

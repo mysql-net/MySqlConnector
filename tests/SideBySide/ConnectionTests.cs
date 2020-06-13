@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
 using Xunit;
@@ -240,6 +241,31 @@ namespace SideBySide
 			using var connection2 = connection.CloneWith(builder.ConnectionString);
 			connection2.Open();
 			Assert.Equal(ConnectionState.Open, connection2.State);
+		}
+
+		[Fact]
+		public async Task ResetConnectionThrowsIfNotOpen()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			await Assert.ThrowsAsync<InvalidOperationException>(async () => await connection.ResetConnectionAsync());
+		}
+
+		[SkippableFact(ServerFeatures.ResetConnection)]
+		public async Task ResetConnectionClearsUserVariables()
+		{
+			var csb = AppConfig.CreateConnectionStringBuilder();
+			csb.AllowUserVariables = true;
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			await connection.OpenAsync();
+
+			connection.Execute("set @temp_var = 1;");
+			var tempVar = connection.ExecuteScalar<int?>("select @temp_var;");
+			Assert.Equal(1, tempVar);
+
+			await connection.ResetConnectionAsync();
+
+			tempVar = connection.ExecuteScalar<int?>("select @temp_var;");
+			Assert.Null(tempVar);
 		}
 #endif
 	}
