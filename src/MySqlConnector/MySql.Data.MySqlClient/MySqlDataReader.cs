@@ -123,7 +123,7 @@ namespace MySql.Data.MySqlClient
 					Command!.Connection!.SetSessionFailed(m_resultSet.ReadResultSetHeaderException);
 
 				throw mySqlException is not null ?
-					new MySqlException(mySqlException.Number, mySqlException.SqlState, mySqlException.Message, mySqlException) :
+					new MySqlException(mySqlException.ErrorCode, mySqlException.SqlState, mySqlException.Message, mySqlException) :
 					new MySqlException("Failed to read the result set.", m_resultSet.ReadResultSetHeaderException);
 			}
 
@@ -159,7 +159,7 @@ namespace MySql.Data.MySqlClient
 					m_hasMoreResults = resultSet.BufferState != ResultSetState.NoMoreData;
 					return 0;
 				}
-				catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted)
+				catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.QueryInterrupted)
 				{
 					m_hasMoreResults = false;
 					cancellationToken.ThrowIfCancellationRequested();
@@ -530,7 +530,7 @@ namespace MySql.Data.MySqlClient
 						{
 						}
 					}
-					catch (MySqlException ex) when (ex.Number == (int) MySqlErrorCode.QueryInterrupted)
+					catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.QueryInterrupted)
 					{
 						// ignore "Query execution was interrupted" exceptions when closing a data reader
 					}

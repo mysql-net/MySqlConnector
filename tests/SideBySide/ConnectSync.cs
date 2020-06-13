@@ -65,8 +65,8 @@ namespace SideBySide
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			var ex = Assert.Throws<MySqlException>(connection.Open);
 #if !BASELINE // https://bugs.mysql.com/bug.php?id=78426
-			if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.Number != 0)
-				Assert.Equal((int) MySqlErrorCode.UnknownDatabase, ex.Number);
+			if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.ErrorCode != default)
+				Assert.Equal(MySqlErrorCode.UnknownDatabase, ex.ErrorCode);
 #endif
 			Assert.Equal(ConnectionState.Closed, connection.State);
 		}
@@ -79,8 +79,8 @@ namespace SideBySide
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			var ex = Assert.Throws<MySqlException>(connection.Open);
 #if !BASELINE // https://bugs.mysql.com/bug.php?id=78426
-			if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.Number != 0)
-				Assert.Equal((int) MySqlErrorCode.AccessDenied, ex.Number);
+			if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.ErrorCode != default)
+				Assert.Equal(MySqlErrorCode.AccessDenied, ex.ErrorCode);
 #endif
 			Assert.Equal(ConnectionState.Closed, connection.State);
 		}

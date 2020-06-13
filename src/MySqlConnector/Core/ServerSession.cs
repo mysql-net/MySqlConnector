@@ -768,7 +768,7 @@ namespace MySqlConnector.Core
 			catch (Exception ex)
 			{
 				Log.Info(ex, "Session{0} failed in ReceiveReplyAsync", m_logArguments);
-				if ((ex as MySqlException)?.Number == (int) MySqlErrorCode.CommandTimeoutExpired)
+				if ((ex as MySqlException)?.ErrorCode == MySqlErrorCode.CommandTimeoutExpired)
 					HandleTimeout();
 				task = ValueTaskExtensions.FromException<ArraySegment<byte>>(ex);
 			}
@@ -796,7 +796,7 @@ namespace MySqlConnector.Core
 			catch (Exception ex)
 			{
 				SetFailed(ex);
-				if (ex is MySqlException msex && msex.Number == (int) MySqlErrorCode.CommandTimeoutExpired)
+				if (ex is MySqlException msex && msex.ErrorCode == MySqlErrorCode.CommandTimeoutExpired)
 					HandleTimeout();
 				throw;
 			}

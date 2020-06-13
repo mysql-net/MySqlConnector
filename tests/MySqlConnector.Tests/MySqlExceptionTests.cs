@@ -10,7 +10,7 @@ namespace MySqlConnector.Tests
 		[Fact]
 		public void IsSerializable()
 		{
-			var exception = new MySqlException(1, "two", "three");
+			var exception = new MySqlException(MySqlErrorCode.No, "two", "three");
 			MySqlException copy;
 
 			using (var stream = new MemoryStream())
@@ -29,8 +29,8 @@ namespace MySqlConnector.Tests
 		[Fact]
 		public void Data()
 		{
-			var exception = new MySqlException(1, "two", "three");
-			Assert.Equal(1, exception.Data["Server Error Code"]);
+			var exception = new MySqlException(MySqlErrorCode.No, "two", "three");
+			Assert.Equal(1002, exception.Data["Server Error Code"]);
 			Assert.Equal("two", exception.Data["SqlState"]);
 		}
 	}

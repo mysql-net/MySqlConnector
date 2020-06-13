@@ -13,7 +13,7 @@ namespace MySqlConnector.Protocol.Payloads
 		public string State { get; }
 		public string Message { get; }
 
-		public MySqlException ToException() => new MySqlException(ErrorCode, State, Message);
+		public MySqlException ToException() => new MySqlException((MySqlErrorCode) ErrorCode, State, Message);
 
 		public static ErrorPayload Create(ReadOnlySpan<byte> span)
 		{

@@ -228,7 +228,7 @@ namespace SideBySide
 			}
 			catch (MySqlException ex)
 			{
-				Assert.Equal(MySqlErrorCode.ParseError, (MySqlErrorCode) ex.Number);
+				Assert.Equal(MySqlErrorCode.ParseError, ex.ErrorCode);
 			}
 		}
 

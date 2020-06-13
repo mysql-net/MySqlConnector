@@ -443,7 +443,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 				}
 				catch (MySqlException ex)
 				{
-					Assert.Equal((int) MySqlErrorCode.QueryInterrupted, ex.Number);
+					Assert.Equal(MySqlErrorCode.QueryInterrupted, ex.ErrorCode);
 				}
 
 				// query returns 25 billion rows; we shouldn't have read many of them
@@ -475,7 +475,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 			}
 			catch (MySqlException ex)
 			{
-				Assert.Equal((int) MySqlErrorCode.QueryInterrupted, ex.Number);
+				Assert.Equal(MySqlErrorCode.QueryInterrupted, ex.ErrorCode);
 			}
 			Assert.False(reader.NextResult());
 			TestUtilities.AssertDuration(stopwatch, 0, 1000);
@@ -514,7 +514,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 				}
 				catch (MySqlException ex)
 				{
-					Assert.Equal((int) MySqlErrorCode.QueryInterrupted, ex.Number);
+					Assert.Equal(MySqlErrorCode.QueryInterrupted, ex.ErrorCode);
 				}
 
 				// query returns 25 billion rows; we shouldn't have read many of them

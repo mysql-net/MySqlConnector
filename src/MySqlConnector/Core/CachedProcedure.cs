@@ -53,7 +53,7 @@ namespace MySqlConnector.Core
 				catch (MySqlException ex)
 				{
 					Log.Warn("Session{0} failed to retrieve metadata for Schema={1} Component={2}; falling back to INFORMATION_SCHEMA. Error: {3}", connection.Session.Id, schema, component, ex.Message);
-					if ((MySqlErrorCode) ex.Number == MySqlErrorCode.TableAccessDenied)
+					if (ex.ErrorCode == MySqlErrorCode.TableAccessDenied)
 						connection.Session.ProcAccessDenied = true;
 				}
 			}
