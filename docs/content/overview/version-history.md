@@ -11,6 +11,15 @@ weight: 30
 Version History
 ===============
 
+### 1.0.0 Beta 1
+
+* **Breaking** Change namespace to `MySqlConnector`: [#827](https://github.com/mysql-net/MySqlConnector/issues/827).
+* Add `MySqlConnection.ResetConnectionAsync`: [#831](https://github.com/mysql-net/MySqlConnector/issues/831).
+* Add `MySqlException.ErrorCode`: [#830](https://github.com/mysql-net/MySqlConnector/issues/830).
+* Add documentation at https://mysqlconnector.net/api/ built from XML doc comments: [#827](https://github.com/mysql-net/MySqlConnector/issues/827).
+* Add `net5.0` target framework.
+* Reduce memory allocations when hashing passwords (during login).
+
 ### 0.69.2
 
 * Remove `Console.WriteLine` debugging code that was inadvertently added in 0.69.1.
