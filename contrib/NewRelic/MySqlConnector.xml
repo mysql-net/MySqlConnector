@@ -8,7 +8,7 @@
 		<!-- command methods -->
 		<tracerFactory name="SqlCommandTracerAsync">
 			<!-- MySqlConnector -->
-			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlCommand">
+			<match assemblyName="MySqlConnector" className="MySqlConnector.MySqlCommand">
 				<exactMethodMatcher methodName="ExecuteReaderAsync" parameters="System.Data.CommandBehavior,MySqlConnector.Protocol.Serialization.IOBehavior,System.Threading.CancellationToken" />
 			</match>
 		</tracerFactory>
@@ -16,7 +16,7 @@
 		<!-- DataReader methods. DISABLED by default due to possible performance impact. Set enabled to "true" (or omit completely) to enable this instrumentation. -->
 		<tracerFactory name="DataReaderTracer" enabled="false">
 			<!-- MySqlConnector -->
-			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlDataReader">
+			<match assemblyName="MySqlConnector" className="MySqlConnector.MySqlDataReader">
 				<exactMethodMatcher methodName="NextResult" />
 				<exactMethodMatcher methodName="Read" />
 			</match>
@@ -24,7 +24,7 @@
 
 		<tracerFactory name="DataReaderTracerAsync" enabled="false">
 			<!-- MySqlConnector -->
-			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlDataReader">
+			<match assemblyName="MySqlConnector" className="MySqlConnector.MySqlDataReader">
 				<exactMethodMatcher methodName="NextResultAsync" />
 				<exactMethodMatcher methodName="ReadAsync" />
 			</match>
@@ -33,7 +33,7 @@
 		<!-- DbConnection.Open() -->
 		<tracerFactory name="OpenConnectionTracer">
 			<!-- MySqlConnector -->
-			<match assemblyName="MySqlConnector" className="MySql.Data.MySqlClient.MySqlConnection">
+			<match assemblyName="MySqlConnector" className="MySqlConnector.MySqlConnection">
 				<exactMethodMatcher methodName="Open" />
 			</match>
 		</tracerFactory>

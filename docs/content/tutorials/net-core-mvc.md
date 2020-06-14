@@ -1,5 +1,5 @@
 ---
-lastmod: 2019-11-08
+lastmod: 2020-06-14
 date: 2016-10-16
 menu:
   main:
@@ -59,7 +59,7 @@ from the Configuration Object:
 
 ```csharp
 using System;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace BlogPostApi
 {
@@ -94,7 +94,7 @@ Now our app is configured and we can focus on writing the core functionality!
 ```csharp
 using System.Data;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace BlogPostApi
 {
@@ -177,7 +177,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace BlogPostApi
 {

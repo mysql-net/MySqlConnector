@@ -1,5 +1,5 @@
 ---
-lastmod: 2019-05-23
+lastmod: 2020-06-14
 date: 2016-10-16
 menu:
   main:
@@ -10,6 +10,11 @@ weight: 20
 
 Migrating from Connector/NET
 ============================
+
+### Namespace
+
+MySqlConnector supports the same core API as MySQL Connector/NET, but the classes are in a different
+namespace. Change `using MySql.Data.MySqlClient;` to `using MySqlConnector;`.
 
 ### Connection String Differences
 

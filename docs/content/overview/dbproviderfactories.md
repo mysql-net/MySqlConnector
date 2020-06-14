@@ -1,5 +1,5 @@
 ---
-lastmod: 2019-03-06
+lastmod: 2020-06-14
 date: 2019-03-06
 menu:
   main:
@@ -24,7 +24,7 @@ For .NET Framework applications, add the following section to your `app.config` 
      <add name="MySqlConnector"
         invariant="MySqlConnector"
         description="Async MySQL ADO.NET Connector"
-        type="MySql.Data.MySqlClient.MySqlClientFactory, MySqlConnector, Culture=neutral, PublicKeyToken=d33d3e53aa5f8c92" />
+        type="MySqlConnector.MySqlClientFactory, MySqlConnector, Culture=neutral, PublicKeyToken=d33d3e53aa5f8c92" />
   </DbProviderFactories>
 </system.data>
 ```
