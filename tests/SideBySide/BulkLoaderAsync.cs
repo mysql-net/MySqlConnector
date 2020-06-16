@@ -400,7 +400,7 @@ namespace SideBySide
 		}
 
 		[Fact]
-		public async Task BulkLoadDataReader()
+		public async Task BulkCopyDataReader()
 		{
 			using var connection = new MySqlConnection(GetLocalConnectionString());
 			using var connection2 = new MySqlConnection(GetLocalConnectionString());
@@ -446,7 +446,7 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 		}
 
 		[Fact]
-		public async Task BulkLoadDataTableWithLongData()
+		public async Task BulkCopyDataTableWithLongData()
 		{
 			var dataTable = new DataTable()
 			{
@@ -457,8 +457,8 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 				},
 				Rows =
 				{
-					new object[] { 1, new byte[8388500] },
-					new object[] { 12345678, new byte[8388500] },
+					new object[] { 1, new byte[524200] },
+					new object[] { 12345678, new byte[524200] },
 				},
 			};
 
@@ -478,7 +478,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		}
 
 		[Fact]
-		public async Task BulkLoadDataTableWithTooLongData()
+		public async Task BulkCopyDataTableWithTooLongData()
 		{
 			var dataTable = new DataTable()
 			{
@@ -488,7 +488,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 				},
 				Rows =
 				{
-					new object[] { new byte[8388700] },
+					new object[] { new byte[524300] },
 				}
 			};
 
@@ -594,7 +594,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			{
 				Columns = { new DataColumn("value", typeof(string)) },
 			};
-			var str = new string('a', 1_000_000);
+			var str = new string('a', 62500);
 			foreach (var x in Enumerable.Range(1, rowCount))
 				dataTable.Rows.Add(new object[] { str });
 

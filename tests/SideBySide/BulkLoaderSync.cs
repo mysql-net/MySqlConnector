@@ -481,7 +481,7 @@ namespace SideBySide
 		}
 
 		[Fact]
-		public void BulkLoadDataReader()
+		public void BulkCopyDataReader()
 		{
 			using var connection = new MySqlConnection(GetLocalConnectionString());
 			using var connection2 = new MySqlConnection(GetLocalConnectionString());
@@ -526,8 +526,8 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 			Assert.Throws<ArgumentNullException>(() => bulkCopy.WriteToServer(default(DataTable)));
 		}
 
-		[SkippableFact(ServerFeatures.LargePackets)]
-		public void BulkLoadDataTableWithLongBlob()
+		[Fact]
+		public void BulkCopyDataTableWithLongBlob()
 		{
 			var dataTable = new DataTable()
 			{
@@ -538,8 +538,8 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 				},
 				Rows =
 				{
-					new object[] { 1, new byte[8388500] },
-					new object[] { 12345678, new byte[8388500] },
+					new object[] { 1, new byte[524200] },
+					new object[] { 12345678, new byte[524200] },
 				},
 			};
 
@@ -559,12 +559,12 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 
 			using (var cmd = new MySqlCommand(@"select sum(length(b)) from bulk_load_data_table;", connection))
 			{
-				Assert.Equal(16_777_000m, cmd.ExecuteScalar());
+				Assert.Equal(1_048_400m, cmd.ExecuteScalar());
 			}
 		}
 
-		[SkippableFact(ServerFeatures.LargePackets)]
-		public void BulkLoadDataTableWithLongString()
+		[Fact]
+		public void BulkCopyDataTableWithLongString()
 		{
 			var dataTable = new DataTable()
 			{
@@ -575,8 +575,8 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 				},
 				Rows =
 				{
-					new object[] { 1, new string('a', 16_777_000) },
-					new object[] { 2, new string('b', 16_777_000) },
+					new object[] { 1, new string('a', 1_048_500) },
+					new object[] { 2, new string('b', 1_048_500) },
 				},
 			};
 
@@ -596,12 +596,12 @@ create table bulk_load_data_table(a int, b longtext);", connection))
 
 			using (var cmd = new MySqlCommand(@"select sum(length(b)) from bulk_load_data_table;", connection))
 			{
-				Assert.Equal(33_554_000m, cmd.ExecuteScalar());
+				Assert.Equal(2_097_000m, cmd.ExecuteScalar());
 			}
 		}
 
 		[Fact]
-		public void BulkLoadDataTableWithSpecialCharacters()
+		public void BulkCopyDataTableWithSpecialCharacters()
 		{
 			var dataTable = new DataTable()
 			{
@@ -644,7 +644,7 @@ create table bulk_load_data_table(a int, b text);", connection))
 		}
 
 		[Fact]
-		public void BulkLoadDataTableWithTooLongBlob()
+		public void BulkCopyDataTableWithTooLongBlob()
 		{
 			var dataTable = new DataTable()
 			{
@@ -654,7 +654,7 @@ create table bulk_load_data_table(a int, b text);", connection))
 				},
 				Rows =
 				{
-					new object[] { new byte[8388700] },
+					new object[] { new byte[524300] },
 				}
 			};
 
@@ -674,7 +674,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		}
 
 		[Fact]
-		public void BulkLoadDataTableWithTooLongString()
+		public void BulkCopyDataTableWithTooLongString()
 		{
 			var dataTable = new DataTable()
 			{
@@ -684,7 +684,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 				},
 				Rows =
 				{
-					new object[] { new string('a', 16_777_400) },
+					new object[] { new string('a', 1_048_700) },
 				}
 			};
 
@@ -779,7 +779,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			{
 				Columns = { new DataColumn("value", typeof(string)) },
 			};
-			var str = new string('a', 1_000_000);
+			var str = new string('a', 62500);
 			foreach (var x in Enumerable.Range(1, rowCount))
 				dataTable.Rows.Add(new object[] { str });
 
