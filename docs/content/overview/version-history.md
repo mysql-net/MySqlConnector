@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.69.3
+
+* Fix `Failed to read the result set.` error when using `MySqlBulkCopy`: [#780](https://github.com/mysql-net/MySqlConnector/issues/780).
+  * The maximum row size supported by `MySqlBulkCopy`is 1 MiB.
+
 ### 0.69.2
 
 * Remove `Console.WriteLine` debugging code that was inadvertently added in 0.69.1.
