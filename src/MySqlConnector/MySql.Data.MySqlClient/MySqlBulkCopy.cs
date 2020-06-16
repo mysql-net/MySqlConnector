@@ -262,8 +262,7 @@ namespace MySql.Data.MySqlClient
 
 		internal async Task SendDataReaderAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			// rent a buffer that can fit in one packet
-			const int maxLength = 16_777_200;
+			const int maxLength = 1048575;
 			var buffer = ArrayPool<byte>.Shared.Rent(maxLength + 1);
 			var outputIndex = 0;
 
@@ -307,7 +306,7 @@ namespace MySql.Data.MySqlClient
 					if (!wroteRow)
 					{
 						if (startOutputIndex == 0)
-							throw new NotSupportedException("Total row length must be less than 16MiB.");
+							throw new NotSupportedException("Total row length must be less than 1 MiB.");
 						var payload = new PayloadData(new ArraySegment<byte>(buffer, 0, startOutputIndex));
 						await m_connection.Session.SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 						outputIndex = 0;
