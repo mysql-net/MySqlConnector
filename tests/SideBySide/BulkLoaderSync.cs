@@ -807,9 +807,9 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 				DestinationTableName = "bulk_copy_column_mapping",
 				ColumnMappings =
 				{
-					new MySqlBulkCopyColumnMapping(1, "@val", "intvalue = @val + 1"),
-					new MySqlBulkCopyColumnMapping(3, "text"),
-					new MySqlBulkCopyColumnMapping(4, "data"),
+					new(1, "@val", "intvalue = @val + 1"),
+					new(3, "text"),
+					new(4, "data"),
 				},
 			};
 
@@ -865,7 +865,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 				DestinationTableName = "bulk_copy_column_mapping",
 				ColumnMappings =
 				{
-					new MySqlBulkCopyColumnMapping(6, "@val", "intvalue = @val + 1"),
+					new(6, "@val", "intvalue = @val + 1"),
 				},
 			};
 
@@ -902,7 +902,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 				DestinationTableName = "bulk_copy_column_mapping",
 				ColumnMappings =
 				{
-					new MySqlBulkCopyColumnMapping { SourceOrdinal = 0 },
+					new() { SourceOrdinal = 0 },
 				},
 			};
 

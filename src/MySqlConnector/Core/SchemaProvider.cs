@@ -61,24 +61,24 @@ namespace MySqlConnector.Core
 
 		private void FillDataSourceInformation(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new [] {
-				new DataColumn("CompositeIdentifierSeparatorPattern", typeof(string)),
-				new DataColumn("DataSourceProductName", typeof(string)),
-				new DataColumn("DataSourceProductVersion", typeof(string)),
-				new DataColumn("DataSourceProductVersionNormalized", typeof(string)),
-				new DataColumn("GroupByBehavior", typeof(GroupByBehavior)),
-				new DataColumn("IdentifierPattern", typeof(string)),
-				new DataColumn("IdentifierCase", typeof(IdentifierCase)),
-				new DataColumn("OrderByColumnsInSelect", typeof(bool)),
-				new DataColumn("ParameterMarkerFormat", typeof(string)),
-				new DataColumn("ParameterMarkerPattern", typeof(string)),
-				new DataColumn("ParameterNameMaxLength", typeof(int)),
-				new DataColumn("QuotedIdentifierPattern", typeof(string)),
-				new DataColumn("QuotedIdentifierCase", typeof(IdentifierCase)),
-				new DataColumn("ParameterNamePattern", typeof(string)),
-				new DataColumn("StatementSeparatorPattern", typeof(string)),
-				new DataColumn("StringLiteralPattern", typeof(string)),
-				new DataColumn("SupportedJoinOperators", typeof(SupportedJoinOperators))
+			dataTable.Columns.AddRange(new DataColumn[] {
+				new("CompositeIdentifierSeparatorPattern", typeof(string)),
+				new("DataSourceProductName", typeof(string)),
+				new("DataSourceProductVersion", typeof(string)),
+				new("DataSourceProductVersionNormalized", typeof(string)),
+				new("GroupByBehavior", typeof(GroupByBehavior)),
+				new("IdentifierPattern", typeof(string)),
+				new("IdentifierCase", typeof(IdentifierCase)),
+				new("OrderByColumnsInSelect", typeof(bool)),
+				new("ParameterMarkerFormat", typeof(string)),
+				new("ParameterMarkerPattern", typeof(string)),
+				new("ParameterNameMaxLength", typeof(int)),
+				new("QuotedIdentifierPattern", typeof(string)),
+				new("QuotedIdentifierCase", typeof(IdentifierCase)),
+				new("ParameterNamePattern", typeof(string)),
+				new("StatementSeparatorPattern", typeof(string)),
+				new("StringLiteralPattern", typeof(string)),
+				new("SupportedJoinOperators", typeof(SupportedJoinOperators))
 			});
 
 			var row = dataTable.NewRow();
@@ -110,10 +110,10 @@ namespace MySqlConnector.Core
 
 		private void FillMetadataCollections(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[] {
-				new DataColumn("CollectionName", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("NumberOfRestrictions", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("NumberOfIdentifierParts", typeof(int)) // lgtm[cs/local-not-disposed]
+			dataTable.Columns.AddRange(new DataColumn[] {
+				new("CollectionName", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("NumberOfRestrictions", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("NumberOfIdentifierParts", typeof(int)) // lgtm[cs/local-not-disposed]
 			});
 
 			foreach (var collectionName in m_schemaCollections.Keys)
@@ -122,12 +122,12 @@ namespace MySqlConnector.Core
 
 		private void FillCharacterSets(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DEFAULT_COLLATE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DESCRIPTION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("MAXLEN", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DEFAULT_COLLATE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DESCRIPTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("MAXLEN", typeof(int)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "CHARACTER_SETS");
@@ -135,15 +135,15 @@ namespace MySqlConnector.Core
 
 		private void FillCollations(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ID", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IS_DEFAULT", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IS_COMPILED", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SORTLEN", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PAD_ATTRIBUTE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ID", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("IS_DEFAULT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("IS_COMPILED", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SORTLEN", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("PAD_ATTRIBUTE", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "COLLATIONS");
@@ -151,10 +151,10 @@ namespace MySqlConnector.Core
 
 		private void FillCollationCharacterSetApplicability(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "COLLATION_CHARACTER_SET_APPLICABILITY");
@@ -162,27 +162,27 @@ namespace MySqlConnector.Core
 
 		private void FillColumns(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("COLUMN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ORDINAL_POSITION", typeof(uint)), // lgtm[cs/local-not-disposed]
-				new DataColumn("COLUMN_DEFAULT", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IS_NULLABLE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DATA_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHARACTER_MAXIMUM_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("NUMERIC_PRECISION", typeof(ulong)), // lgtm[cs/local-not-disposed]
-				new DataColumn("NUMERIC_SCALE", typeof(ulong)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DATETIME_PRECISION", typeof(uint)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("COLUMN_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("COLUMN_KEY", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("EXTRA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PRIVILEGES", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("COLUMN_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("COLUMN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ORDINAL_POSITION", typeof(uint)), // lgtm[cs/local-not-disposed]
+				new("COLUMN_DEFAULT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("IS_NULLABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DATA_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CHARACTER_MAXIMUM_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("NUMERIC_PRECISION", typeof(ulong)), // lgtm[cs/local-not-disposed]
+				new("NUMERIC_SCALE", typeof(ulong)), // lgtm[cs/local-not-disposed]
+				new("DATETIME_PRECISION", typeof(uint)), // lgtm[cs/local-not-disposed]
+				new("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("COLUMN_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("COLUMN_KEY", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("EXTRA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PRIVILEGES", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("COLUMN_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'GENERATION_EXPRESSION';", m_connection))
@@ -202,13 +202,13 @@ namespace MySqlConnector.Core
 
 		private void FillDatabases(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("CATALOG_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SCHEMA_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DEFAULT_CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DEFAULT_COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SQL_PATH", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CATALOG_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SCHEMA_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DEFAULT_CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DEFAULT_COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SQL_PATH", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "SCHEMATA");
@@ -216,31 +216,31 @@ namespace MySqlConnector.Core
 
 		private void FillDataTypes(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("TypeName", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ProviderDbType", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ColumnSize", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CreateFormat", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CreateParameters", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DataType", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IsAutoIncrementable", typeof(bool)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IsBestMatch", typeof(bool)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IsCaseSensitive", typeof(bool)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IsFixedLength", typeof(bool)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IsFixedPrecisionScale", typeof(bool)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IsLong", typeof(bool)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IsNullable", typeof(bool)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IsSearchable", typeof(bool)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IsSearchableWithLike", typeof(bool)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IsUnsigned", typeof(bool)), // lgtm[cs/local-not-disposed]
-				new DataColumn("MaximumScale", typeof(short)), // lgtm[cs/local-not-disposed]
-				new DataColumn("MinimumScale", typeof(short)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IsConcurrencyType", typeof(bool)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IsLiteralSupported", typeof(bool)), // lgtm[cs/local-not-disposed]
-				new DataColumn("LiteralPrefix", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("LiteralSuffix", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("NativeDataType", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TypeName", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ProviderDbType", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("ColumnSize", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("CreateFormat", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CreateParameters", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DataType", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("IsAutoIncrementable", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new("IsBestMatch", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new("IsCaseSensitive", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new("IsFixedLength", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new("IsFixedPrecisionScale", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new("IsLong", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new("IsNullable", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new("IsSearchable", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new("IsSearchableWithLike", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new("IsUnsigned", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new("MaximumScale", typeof(short)), // lgtm[cs/local-not-disposed]
+				new("MinimumScale", typeof(short)), // lgtm[cs/local-not-disposed]
+				new("IsConcurrencyType", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new("IsLiteralSupported", typeof(bool)), // lgtm[cs/local-not-disposed]
+				new("LiteralPrefix", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("LiteralSuffix", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("NativeDataType", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			var clrTypes = new HashSet<string>();
@@ -300,14 +300,14 @@ namespace MySqlConnector.Core
 
 		private void FillEngines(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("ENGINE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SUPPORT", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TRANSACTIONS", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("XA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SAVEPOINTS", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ENGINE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SUPPORT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TRANSACTIONS", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("XA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SAVEPOINTS", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "ENGINES");
@@ -315,20 +315,20 @@ namespace MySqlConnector.Core
 
 		private void FillKeyColumnUsage(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("COLUMN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("POSITION_IN_UNIQUE_CONSTRAINT", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("REFERENCED_TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("REFERENCED_TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("REFERENCED_COLUMN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("COLUMN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("POSITION_IN_UNIQUE_CONSTRAINT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("REFERENCED_TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("REFERENCED_TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("REFERENCED_COLUMN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "KEY_COLUMN_USAGE");
@@ -336,10 +336,10 @@ namespace MySqlConnector.Core
 
 		private void FillKeyWords(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("WORD", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("RESERVED", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("WORD", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("RESERVED", typeof(int)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "KEYWORDS");
@@ -347,24 +347,24 @@ namespace MySqlConnector.Core
 
 		private void FillParameters(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("SPECIFIC_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SPECIFIC_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SPECIFIC_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PARAMETER_MODE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PARAMETER_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DATA_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHARACTER_MAXIMUM_LENGTH", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHARACTER_OCTET_LENGTH", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("NUMERIC_PRECISION", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("NUMERIC_SCALE", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DATETIME_PRECISION", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DTD_IDENTIFIER", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ROUTINE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SPECIFIC_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SPECIFIC_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SPECIFIC_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("PARAMETER_MODE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PARAMETER_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DATA_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CHARACTER_MAXIMUM_LENGTH", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("CHARACTER_OCTET_LENGTH", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("NUMERIC_PRECISION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("NUMERIC_SCALE", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("DATETIME_PRECISION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DTD_IDENTIFIER", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ROUTINE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "PARAMETERS");
@@ -372,33 +372,33 @@ namespace MySqlConnector.Core
 
 		private void FillPartitions(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PARTITION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SUBPARTITION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PARTITION_ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SUBPARTITION_ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PARTITION_METHOD", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SUBPARTITION_METHOD", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PARTITION_EXPRESSION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SUBPARTITION_EXPRESSION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PARTITION_DESCRIPTION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_ROWS", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("AVG_ROW_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("MAX_DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("INDEX_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DATA_FREE", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CREATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-				new DataColumn("UPDATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHECK_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHECKSUM", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PARTITION_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("NODEGROUP", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLESPACE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PARTITION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SUBPARTITION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PARTITION_ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("SUBPARTITION_ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("PARTITION_METHOD", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SUBPARTITION_METHOD", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PARTITION_EXPRESSION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SUBPARTITION_EXPRESSION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PARTITION_DESCRIPTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_ROWS", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("AVG_ROW_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("MAX_DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("INDEX_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("DATA_FREE", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("CREATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new("UPDATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new("CHECK_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new("CHECKSUM", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("PARTITION_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("NODEGROUP", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLESPACE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "PARTITIONS");
@@ -406,19 +406,19 @@ namespace MySqlConnector.Core
 
 		private void FillPlugins(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("PLUGIN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PLUGIN_VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PLUGIN_STATUS", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PLUGIN_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PLUGIN_TYPE_VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PLUGIN_LIBRARY", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PLUGIN_LIBRARY_VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PLUGIN_AUTHOR", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PLUGIN_DESCRIPTION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PLUGIN_LICENSE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("LOAD_OPTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PLUGIN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PLUGIN_VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PLUGIN_STATUS", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PLUGIN_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PLUGIN_TYPE_VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PLUGIN_LIBRARY", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PLUGIN_LIBRARY_VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PLUGIN_AUTHOR", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PLUGIN_DESCRIPTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PLUGIN_LICENSE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("LOAD_OPTION", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "PLUGINS");
@@ -426,28 +426,28 @@ namespace MySqlConnector.Core
 
 		private void FillProcedures(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("SPECIFIC_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ROUTINE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ROUTINE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ROUTINE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ROUTINE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DTD_IDENTIFIER", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ROUTINE_BODY", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ROUTINE_DEFINITION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("EXTERNAL_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("EXTERNAL_LANGUAGE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PARAMETER_STYLE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IS_DETERMINISTIC", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SQL_DATA_ACCESS", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SQL_PATH", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SECURITY_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CREATED", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-				new DataColumn("LAST_ALTERED", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SQL_MODE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ROUTINE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DEFINER", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SPECIFIC_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ROUTINE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ROUTINE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ROUTINE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ROUTINE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DTD_IDENTIFIER", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ROUTINE_BODY", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ROUTINE_DEFINITION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("EXTERNAL_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("EXTERNAL_LANGUAGE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PARAMETER_STYLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("IS_DETERMINISTIC", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SQL_DATA_ACCESS", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SQL_PATH", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SECURITY_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CREATED", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new("LAST_ALTERED", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new("SQL_MODE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ROUTINE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DEFINER", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "ROUTINES");
@@ -455,16 +455,16 @@ namespace MySqlConnector.Core
 
 		private void FillProcessList(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("ID", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("USER", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("HOST", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DB", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("COMMAND", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TIME", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("STATE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("INFO", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ID", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("USER", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("HOST", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DB", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("COMMAND", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TIME", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("STATE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("INFO", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "PROCESSLIST");
@@ -472,26 +472,26 @@ namespace MySqlConnector.Core
 
 		private void FillProfiling(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("QUERY_ID", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SEQ", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("STATE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DURATION", typeof(decimal)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CPU_USER", typeof(decimal)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CPU_SYSTEM", typeof(decimal)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CONTEXT_VOLUNTARY", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CONTEXT_INVOLUNTARY", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("BLOCK_OPS_IN", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("BLOCK_OPS_OUT", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("MESSAGES_SENT", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("MESSAGES_RECEIVED", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PAGE_FAULTS_MAJOR", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PAGE_FAULTS_MINOR", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SWAPS", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SOURCE_FUNCTION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SOURCE_FILE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SOURCE_LINE", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("QUERY_ID", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("SEQ", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("STATE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DURATION", typeof(decimal)), // lgtm[cs/local-not-disposed]
+				new("CPU_USER", typeof(decimal)), // lgtm[cs/local-not-disposed]
+				new("CPU_SYSTEM", typeof(decimal)), // lgtm[cs/local-not-disposed]
+				new("CONTEXT_VOLUNTARY", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("CONTEXT_INVOLUNTARY", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("BLOCK_OPS_IN", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("BLOCK_OPS_OUT", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("MESSAGES_SENT", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("MESSAGES_RECEIVED", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("PAGE_FAULTS_MAJOR", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("PAGE_FAULTS_MINOR", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("SWAPS", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("SOURCE_FUNCTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SOURCE_FILE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SOURCE_LINE", typeof(int)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "PROFILING");
@@ -499,19 +499,19 @@ namespace MySqlConnector.Core
 
 		private void FillReferentialConstraints(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("UNIQUE_CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("UNIQUE_CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("UNIQUE_CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("MATCH_OPTION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("UPDATE_RULE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DELETE_RULE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("REFERENCED_TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("UNIQUE_CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("UNIQUE_CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("UNIQUE_CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("MATCH_OPTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("UPDATE_RULE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DELETE_RULE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("REFERENCED_TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "REFERENTIAL_CONSTRAINTS");
@@ -808,13 +808,13 @@ namespace MySqlConnector.Core
 
 		private void FillResourceGroups(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("RESOURCE_GROUP_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("RESOURCE_GROUP_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("RESOURCE_GROUP_ENABLED", typeof(int)), // lgtm[cs/local-not-disposed]
-				new DataColumn("VCPU_IDS", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("THREAD_PRIORITY", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("RESOURCE_GROUP_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("RESOURCE_GROUP_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("RESOURCE_GROUP_ENABLED", typeof(int)), // lgtm[cs/local-not-disposed]
+				new("VCPU_IDS", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("THREAD_PRIORITY", typeof(int)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "RESOURCE_GROUPS");
@@ -822,13 +822,13 @@ namespace MySqlConnector.Core
 
 		private void FillSchemaPrivileges(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("GRANTEE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PRIVILEGE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("GRANTEE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PRIVILEGE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "SCHEMA_PRIVILEGES");
@@ -836,29 +836,29 @@ namespace MySqlConnector.Core
 
 		private void FillTables(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ENGINE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ROW_FORMAT", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_ROWS", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("AVG_ROW_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("MAX_DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("INDEX_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DATA_FREE", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("AUTO_INCREMENT", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CREATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-				new DataColumn("UPDATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHECK_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_COLLATION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHECKSUM", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CREATE_OPTIONS", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ENGINE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ROW_FORMAT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_ROWS", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("AVG_ROW_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("MAX_DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("INDEX_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("DATA_FREE", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("AUTO_INCREMENT", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("CREATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new("UPDATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new("CHECK_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new("TABLE_COLLATION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CHECKSUM", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CREATE_OPTIONS", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "TABLES");
@@ -866,14 +866,14 @@ namespace MySqlConnector.Core
 
 		private void FillTableConstraints(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CONSTRAINT_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CONSTRAINT_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "TABLE_CONSTRAINTS");
@@ -881,14 +881,14 @@ namespace MySqlConnector.Core
 
 		private void FillTablePrivileges(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("GRANTEE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PRIVILEGE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("GRANTEE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PRIVILEGE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "TABLE_PRIVILEGES");
@@ -896,17 +896,17 @@ namespace MySqlConnector.Core
 
 		private void FillTableSpaces(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("TABLESPACE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ENGINE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLESPACE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("LOGFILE_GROUP_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("EXTENT_SIZE", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("AUTOEXTEND_SIZE", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("MAXIMUM_SIZE", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("NODEGROUP_ID", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLESPACE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLESPACE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ENGINE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLESPACE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("LOGFILE_GROUP_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("EXTENT_SIZE", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("AUTOEXTEND_SIZE", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("MAXIMUM_SIZE", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("NODEGROUP_ID", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("TABLESPACE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "TABLESPACES");
@@ -914,30 +914,30 @@ namespace MySqlConnector.Core
 
 		private void FillTriggers(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("TRIGGER_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TRIGGER_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TRIGGER_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("EVENT_MANIPULATION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("EVENT_OBJECT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("EVENT_OBJECT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("EVENT_OBJECT_TABLE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ACTION_ORDER", typeof(long)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ACTION_CONDITION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ACTION_STATEMENT", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ACTION_ORIENTATION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ACTION_TIMING", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ACTION_REFERENCE_OLD_TABLE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ACTION_REFERENCE_NEW_TABLE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ACTION_REFERENCE_OLD_ROW", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("ACTION_REFERENCE_NEW_ROW", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CREATED", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SQL_MODE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DEFINER", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHARACTER_SET_CLIENT", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("COLLATION_CONNECTION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DATABASE_COLLATION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TRIGGER_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TRIGGER_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TRIGGER_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("EVENT_MANIPULATION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("EVENT_OBJECT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("EVENT_OBJECT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("EVENT_OBJECT_TABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ACTION_ORDER", typeof(long)), // lgtm[cs/local-not-disposed]
+				new("ACTION_CONDITION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ACTION_STATEMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ACTION_ORIENTATION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ACTION_TIMING", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ACTION_REFERENCE_OLD_TABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ACTION_REFERENCE_NEW_TABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ACTION_REFERENCE_OLD_ROW", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("ACTION_REFERENCE_NEW_ROW", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CREATED", typeof(DateTime)), // lgtm[cs/local-not-disposed]
+				new("SQL_MODE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DEFINER", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CHARACTER_SET_CLIENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("COLLATION_CONNECTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DATABASE_COLLATION", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "TRIGGERS");
@@ -945,12 +945,12 @@ namespace MySqlConnector.Core
 
 		private void FillUserPrivileges(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("GRANTEE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("PRIVILEGE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("GRANTEE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("PRIVILEGE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "USER_PRIVILEGES");
@@ -958,18 +958,18 @@ namespace MySqlConnector.Core
 
 		private void FillViews(DataTable dataTable)
 		{
-			dataTable.Columns.AddRange(new[]
+			dataTable.Columns.AddRange(new DataColumn[]
 			{
-				new DataColumn("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("VIEW_DEFINITION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHECK_OPTION", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("IS_UPDATABLE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("DEFINER", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("SECURITY_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("CHARACTER_SET_CLIENT", typeof(string)), // lgtm[cs/local-not-disposed]
-				new DataColumn("COLLATION_CONNECTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("VIEW_DEFINITION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CHECK_OPTION", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("IS_UPDATABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("DEFINER", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("SECURITY_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("CHARACTER_SET_CLIENT", typeof(string)), // lgtm[cs/local-not-disposed]
+				new("COLLATION_CONNECTION", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
 			FillDataTable(dataTable, "VIEWS");

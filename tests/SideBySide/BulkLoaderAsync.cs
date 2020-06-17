@@ -505,7 +505,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 				DestinationTableName = "bulk_load_data_table",
 				ColumnMappings =
 				{
-					new MySqlBulkCopyColumnMapping(0, "b"),
+					new(0, "b"),
 				}
 			};
 			try
