@@ -11,14 +11,14 @@ namespace MySqlConnector.Tests
 	{
 		public FakeMySqlServer()
 		{
-			m_tcpListener = new TcpListener(IPAddress.Any, 0);
-			m_tasks = new List<Task>();
+			m_tcpListener = new(IPAddress.Any, 0);
+			m_tasks = new();
 		}
 
 		public void Start()
 		{
 			m_activeConnections = 0;
-			m_cts = new CancellationTokenSource();
+			m_cts = new();
 			m_tcpListener.Start();
 			m_tasks.Add(AcceptConnectionsAsync());
 		}

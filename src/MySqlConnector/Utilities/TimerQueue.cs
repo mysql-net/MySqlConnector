@@ -6,7 +6,7 @@ namespace MySqlConnector.Utilities
 {
 	internal sealed class TimerQueue
 	{
-		public static TimerQueue Instance = new TimerQueue();
+		public static TimerQueue Instance = new();
 
 		/// <summary>
 		/// Adds a timer that will invoke <paramref name="action"/> in approximately <paramref name="delay"/> milliseconds.
@@ -62,9 +62,9 @@ namespace MySqlConnector.Utilities
 
 		private TimerQueue()
 		{
-			m_lock = new object();
-			m_timer = new Timer(Callback, this, -1, -1);
-			m_timeoutActions = new List<Data>();
+			m_lock = new();
+			m_timer = new(Callback, this, -1, -1);
+			m_timeoutActions = new();
 		}
 
 		private void Callback(object? obj)

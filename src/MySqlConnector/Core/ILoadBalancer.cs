@@ -46,14 +46,14 @@ namespace MySqlConnector.Core
 			return shuffled;
 		}
 
-		private RandomLoadBalancer() => m_random = new Random();
+		private RandomLoadBalancer() => m_random = new();
 
 		readonly Random m_random;
 	}
 
 	internal sealed class RoundRobinLoadBalancer : ILoadBalancer
 	{
-		public RoundRobinLoadBalancer() => m_lock = new object();
+		public RoundRobinLoadBalancer() => m_lock = new();
 
 		public IEnumerable<string> LoadBalance(IReadOnlyList<string> hosts)
 		{

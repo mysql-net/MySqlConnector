@@ -13,8 +13,8 @@ namespace MySqlConnector
 	{
 		internal MySqlParameterCollection()
 		{
-			m_parameters = new List<MySqlParameter>();
-			m_nameToIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+			m_parameters = new();
+			m_nameToIndex = new(StringComparer.OrdinalIgnoreCase);
 		}
 
 		public MySqlParameter Add(string parameterName, DbType dbType)

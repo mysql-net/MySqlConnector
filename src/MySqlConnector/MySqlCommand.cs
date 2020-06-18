@@ -87,7 +87,7 @@ namespace MySqlConnector
 		/// <summary>
 		/// The collection of <see cref="MySqlParameter"/> objects for this command.
 		/// </summary>
-		public new MySqlParameterCollection Parameters => m_parameterCollection ??= new MySqlParameterCollection();
+		public new MySqlParameterCollection Parameters => m_parameterCollection ??= new();
 
 		MySqlParameterCollection? IMySqlCommand.RawParameters => m_parameterCollection;
 

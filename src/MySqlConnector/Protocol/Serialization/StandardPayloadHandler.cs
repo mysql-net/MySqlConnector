@@ -34,7 +34,7 @@ namespace MySqlConnector.Protocol.Serialization
 			set
 			{
 				m_byteHandler = value ?? throw new ArgumentNullException(nameof(value));
-				m_bufferedByteReader = new BufferedByteReader();
+				m_bufferedByteReader = new();
 			}
 		}
 

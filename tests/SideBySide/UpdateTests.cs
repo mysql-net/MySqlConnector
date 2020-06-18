@@ -168,10 +168,10 @@ insert into update_station values(1, 'name', 2, null, null, null, false, '2016-0
 				name = "new name",
 				stationType_SID = 3,
 				geoPosition_SID = null,
-				service_start = new DateTime(2016, 1, 1),
-				service_end = new DateTime(2017, 12, 31),
+				service_start = new(2016, 1, 1),
+				service_end = new(2017, 12, 31),
 				deleted = true,
-				created_on = new DateTime(2000, 1, 1),
+				created_on = new(2000, 1, 1),
 				externalWebsite = null,
 				externalTitle = null,
 			};

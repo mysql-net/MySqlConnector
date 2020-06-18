@@ -23,10 +23,10 @@ namespace MySqlConnector.Protocol.Serialization
 			if (m_remainingData.Count > 0)
 			{
 				Buffer.BlockCopy(m_remainingData.Array!, m_remainingData.Offset, buffer, 0, m_remainingData.Count);
-				m_remainingData = new ArraySegment<byte>(buffer, 0, m_remainingData.Count);
+				m_remainingData = new(buffer, 0, m_remainingData.Count);
 			}
 
-			return ReadBytesAsync(byteHandler, new ArraySegment<byte>(buffer, m_remainingData.Count, buffer.Length - m_remainingData.Count), count, ioBehavior);
+			return ReadBytesAsync(byteHandler, new(buffer, m_remainingData.Count, buffer.Length - m_remainingData.Count), count, ioBehavior);
 		}
 
 		private async ValueTask<ArraySegment<byte>> ReadBytesAsync(IByteHandler byteHandler, ArraySegment<byte> buffer, int totalBytesToRead, IOBehavior ioBehavior)

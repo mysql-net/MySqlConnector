@@ -4,6 +4,6 @@ namespace MySqlConnector.Protocol.Payloads
 {
 	internal static class EmptyPayload
 	{
-		public static PayloadData Instance { get; } = new PayloadData(Utility.EmptyByteArray);
+		public static PayloadData Instance { get; } = new(Utility.EmptyByteArray);
 	}
 }

@@ -90,7 +90,7 @@ namespace MySqlConnector.Core
 					else
 					{
 						// pooled session is ready to be used; return it
-						session.OwningConnection = new WeakReference<MySqlConnection>(connection);
+						session.OwningConnection = new(connection);
 						int leasedSessionsCountPooled;
 						lock (m_leasedSessions)
 						{
@@ -104,12 +104,12 @@ namespace MySqlConnector.Core
 				}
 
 				// create a new session
-				session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
+				session = new(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 				if (Log.IsInfoEnabled())
 					Log.Info("Pool{0} no pooled session available; created new Session{1}", m_logArguments[0], session.Id);
 				await session.ConnectAsync(ConnectionSettings, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
 				AdjustHostConnectionCount(session, 1);
-				session.OwningConnection = new WeakReference<MySqlConnection>(connection);
+				session.OwningConnection = new(connection);
 				int leasedSessionsCountNew;
 				lock (m_leasedSessions)
 				{
@@ -376,7 +376,7 @@ namespace MySqlConnector.Core
 			// check if pool has already been created for this exact connection string
 			if (s_pools.TryGetValue(connectionString, out var pool))
 			{
-				s_mruCache = new ConnectionStringPool(connectionString, pool);
+				s_mruCache = new(connectionString, pool);
 				return pool;
 			}
 
@@ -385,7 +385,7 @@ namespace MySqlConnector.Core
 			if (!connectionStringBuilder.Pooling)
 			{
 				s_pools.GetOrAdd(connectionString, default(ConnectionPool));
-				s_mruCache = new ConnectionStringPool(connectionString, null);
+				s_mruCache = new(connectionString, null);
 				return null;
 			}
 
@@ -396,7 +396,7 @@ namespace MySqlConnector.Core
 				// try to set the pool for the connection string to the canonical pool; if someone else
 				// beats us to it, just use the existing value
 				pool = s_pools.GetOrAdd(connectionString, pool)!;
-				s_mruCache = new ConnectionStringPool(connectionString, pool);
+				s_mruCache = new(connectionString, pool);
 				return pool;
 			}
 
@@ -407,7 +407,7 @@ namespace MySqlConnector.Core
 
 			if (pool == newPool)
 			{
-				s_mruCache = new ConnectionStringPool(connectionString, pool);
+				s_mruCache = new(connectionString, pool);
 				pool.StartReaperTask();
 
 				// if we won the race to create the new pool, also store it under the original connection string
@@ -445,13 +445,13 @@ namespace MySqlConnector.Core
 			ConnectionSettings = cs;
 			SslProtocols = cs.TlsVersions;
 			m_generation = 0;
-			m_cleanSemaphore = new SemaphoreSlim(1);
-			m_sessionSemaphore = new SemaphoreSlim(cs.MaximumPoolSize);
-			m_sessions = new LinkedList<ServerSession>();
-			m_leasedSessions = new Dictionary<string, ServerSession>();
+			m_cleanSemaphore = new(1);
+			m_sessionSemaphore = new(cs.MaximumPoolSize);
+			m_sessions = new();
+			m_leasedSessions = new();
 			if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets && cs.LoadBalance == MySqlLoadBalance.LeastConnections)
 			{
-				m_hostSessions = new Dictionary<string, int>();
+				m_hostSessions = new();
 				foreach (var hostName in cs.HostNames!)
 					m_hostSessions[hostName] = 0;
 			}

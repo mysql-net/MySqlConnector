@@ -272,7 +272,7 @@ namespace MySqlConnector.Utilities
 		public static void Resize<T>([NotNull] ref ResizableArray<T>? resizableArray, int newLength)
 			where T : notnull
 		{
-			resizableArray ??= new ResizableArray<T>();
+			resizableArray ??= new();
 			resizableArray.DoResize(newLength);
 		}
 
@@ -394,12 +394,12 @@ namespace MySqlConnector.Utilities
 			try
 			{
 				var rawBuffer = memoryStream.GetBuffer();
-				buffer = new ArraySegment<byte>(rawBuffer, 0, checked((int) memoryStream.Length));
+				buffer = new(rawBuffer, 0, checked((int) memoryStream.Length));
 				return true;
 			}
 			catch (UnauthorizedAccessException)
 			{
-				buffer = default(ArraySegment<byte>);
+				buffer = default;
 				return false;
 			}
 		}

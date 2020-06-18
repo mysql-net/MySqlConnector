@@ -21,7 +21,7 @@ namespace MySqlConnector
 		public CommandBehavior CommandBehavior { get; set; }
 		public int RecordsAffected { get; set; }
 
-		public MySqlParameterCollection Parameters => m_parameterCollection ??= new MySqlParameterCollection();
+		public MySqlParameterCollection Parameters => m_parameterCollection ??= new();
 
 		bool IMySqlCommand.AllowUserVariables => false;
 

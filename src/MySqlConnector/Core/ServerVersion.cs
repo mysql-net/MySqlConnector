@@ -43,7 +43,7 @@ namespace MySqlConnector.Core
 							{
 								totalBytesRead += bytesConsumed;
 								if (totalBytesRead == mariaDbIndex)
-									MariaDbVersion = new Version(major, minor, build);
+									MariaDbVersion = new(major, minor, build);
 							}
 						}
 					}
@@ -55,7 +55,7 @@ namespace MySqlConnector.Core
 		public Version Version { get; }
 		public Version? MariaDbVersion { get; }
 
-		public static ServerVersion Empty { get; } = new ServerVersion();
+		public static ServerVersion Empty { get; } = new();
 
 		private ServerVersion()
 		{

@@ -12,7 +12,7 @@ namespace MySqlConnector.Core
 		public SchemaProvider(MySqlConnection connection)
 		{
 			m_connection = connection;
-			m_schemaCollections = new Dictionary<string, Action<DataTable>>
+			m_schemaCollections = new()
 			{
 				{ "DataSourceInformation", FillDataSourceInformation},
 				{ "MetaDataCollections", FillMetadataCollections },

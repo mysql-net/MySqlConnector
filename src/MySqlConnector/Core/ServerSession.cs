@@ -37,8 +37,8 @@ namespace MySqlConnector.Core
 
 		public ServerSession(ConnectionPool? pool, int poolGeneration, int id)
 		{
-			m_lock = new object();
-			m_payloadCache = new ArraySegmentHolder<byte>();
+			m_lock = new();
+			m_payloadCache = new();
 			Id = (pool?.Id ?? 0) + "." + id;
 			ServerVersion = ServerVersion.Empty;
 			CreatedTicks = unchecked((uint) Environment.TickCount);
@@ -224,7 +224,7 @@ namespace MySqlConnector.Core
 				preparedStatements.Add(new(response.StatementId, statement, columns, parameters));
 			}
 
-			m_preparedStatements ??= new Dictionary<string, PreparedStatements>();
+			m_preparedStatements ??= new();
 			m_preparedStatements.Add(commandText, new(preparedStatements, parsedStatements));
 		}
 
@@ -399,7 +399,7 @@ namespace MySqlConnector.Core
 						throw new NotSupportedException("Authentication method '{0}' is not supported.".FormatInvariant(initialHandshake.AuthPluginName));
 					}
 
-					ServerVersion = new ServerVersion(initialHandshake.ServerVersion);
+					ServerVersion = new(initialHandshake.ServerVersion);
 					ConnectionId = initialHandshake.ConnectionId;
 					AuthPluginData = initialHandshake.AuthPluginData;
 					m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
@@ -561,7 +561,7 @@ namespace MySqlConnector.Core
 			case "mysql_native_password":
 				AuthPluginData = switchRequest.Data;
 				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, cs.Password);
-				payload = new PayloadData(hashedPassword);
+				payload = new(hashedPassword);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
@@ -574,13 +574,13 @@ namespace MySqlConnector.Core
 				// send the password as a NULL-terminated UTF-8 string
 				var passwordBytes = Encoding.UTF8.GetBytes(cs.Password);
 				Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
-				payload = new PayloadData(passwordBytes);
+				payload = new(passwordBytes);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			case "caching_sha2_password":
 				var scrambleBytes = AuthenticationUtility.CreateScrambleResponse(Utility.TrimZeroByte(switchRequest.Data.AsSpan()), cs.Password);
-				payload = new PayloadData(scrambleBytes);
+				payload = new(scrambleBytes);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
@@ -620,7 +620,7 @@ namespace MySqlConnector.Core
 			case "client_ed25519":
 				if (!AuthenticationPlugins.TryGetPlugin(switchRequest.Name, out var ed25519Plugin))
 					throw new NotSupportedException("You must install the MySqlConnector.Authentication.Ed25519 package and call Ed25519AuthenticationPlugin.Install to use client_ed25519 authentication.");
-				payload = new PayloadData(ed25519Plugin.CreateResponse(cs.Password, switchRequest.Data));
+				payload = new(ed25519Plugin.CreateResponse(cs.Password, switchRequest.Data));
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
@@ -891,7 +891,7 @@ namespace MySqlConnector.Core
 					TcpClient? tcpClient = null;
 					try
 					{
-						tcpClient = new TcpClient(ipAddress.AddressFamily);
+						tcpClient = new(ipAddress.AddressFamily);
 
 						using (cancellationToken.Register(() => tcpClient.Client?.Dispose()))
 						{
@@ -1084,7 +1084,7 @@ namespace MySqlConnector.Core
 							throw new MySqlException("No certificates were found in the certificate store");
 						}
 
-						clientCertificates = new X509CertificateCollection(store.Certificates);
+						clientCertificates = new(store.Certificates);
 					}
 					else
 					{
@@ -1097,7 +1097,7 @@ namespace MySqlConnector.Core
 							throw new MySqlException("Certificate with Thumbprint {0} not found".FormatInvariant(cs.CertificateThumbprint));
 						}
 
-						clientCertificates = new X509CertificateCollection(foundCertificates);
+						clientCertificates = new(foundCertificates);
 					}
 				}
 				catch (CryptographicException ex)
@@ -1168,7 +1168,7 @@ namespace MySqlConnector.Core
 #endif
 
 					m_clientCertificate = certificate;
-					clientCertificates = new X509CertificateCollection { certificate };
+					clientCertificates = new() { certificate };
 				}
 
 				catch (CryptographicException ex)
@@ -1195,7 +1195,7 @@ namespace MySqlConnector.Core
 							"CertificateFile should be in PKCS #12 (.pfx) format and contain both a Certificate and Private Key");
 					}
 					m_clientCertificate = certificate;
-					clientCertificates = new X509CertificateCollection { certificate };
+					clientCertificates = new() { certificate };
 				}
 				catch (CryptographicException ex)
 				{
@@ -1210,13 +1210,13 @@ namespace MySqlConnector.Core
 			X509Chain? caCertificateChain = null;
 			if (cs.CACertificateFile is not null)
 			{
-				X509Chain? certificateChain = new X509Chain
+				X509Chain? certificateChain = new()
 				{
 					ChainPolicy =
-						{
-							RevocationMode = X509RevocationMode.NoCheck,
-							VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority
-						}
+					{
+						RevocationMode = X509RevocationMode.NoCheck,
+						VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority
+					}
 				};
 
 				try

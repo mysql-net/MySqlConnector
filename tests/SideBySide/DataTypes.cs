@@ -1467,7 +1467,7 @@ end;";
 		private static byte[] CreateByteArray(int size)
 		{
 			var data = new byte[size];
-			Random random = new Random(size);
+			var random = new Random(size);
 			random.NextBytes(data);
 
 			// ensure each byte value is used at least once

@@ -31,7 +31,7 @@ namespace MySqlConnector.Core
 			{
 				if (command2.CommandType == CommandType.StoredProcedure)
 				{
-					cachedProcedures ??= new Dictionary<string, CachedProcedure?>();
+					cachedProcedures ??= new();
 					var commandText = command2.CommandText!;
 					if (!cachedProcedures.ContainsKey(commandText))
 					{

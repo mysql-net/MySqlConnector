@@ -10,11 +10,11 @@ namespace MySqlConnector.Protocol.Serialization
 	{
 		public CompressedPayloadHandler(IByteHandler byteHandler)
 		{
-			m_uncompressedStream = new MemoryStream();
+			m_uncompressedStream = new();
 			m_uncompressedStreamByteHandler = new StreamByteHandler(m_uncompressedStream);
 			m_byteHandler = byteHandler;
-			m_bufferedByteReader = new BufferedByteReader();
-			m_compressedBufferedByteReader = new BufferedByteReader();
+			m_bufferedByteReader = new();
+			m_compressedBufferedByteReader = new();
 		}
 
 		public void Dispose()
@@ -148,7 +148,7 @@ namespace MySqlConnector.Protocol.Serialization
 								using var compressedStream = new MemoryStream(payloadReadBytes.Array, payloadReadBytes.Offset + headerSize, payloadReadBytes.Count - headerSize - checksumSize);
 								using var decompressingStream = new DeflateStream(compressedStream, CompressionMode.Decompress);
 								var bytesRead = decompressingStream.Read(uncompressedData, 0, uncompressedLength);
-								m_remainingData = new ArraySegment<byte>(uncompressedData, 0, bytesRead);
+								m_remainingData = new(uncompressedData, 0, bytesRead);
 
 								var checksum = ComputeAdler32Checksum(uncompressedData, 0, bytesRead);
 								int adlerStartOffset = payloadReadBytes.Offset + payloadReadBytes.Count - 4;

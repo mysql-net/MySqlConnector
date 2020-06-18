@@ -141,8 +141,8 @@ namespace MySqlConnector
 		{
 			Connection = connection;
 			Local = true;
-			Columns = new List<string>();
-			Expressions = new List<string>();
+			Columns = new();
+			Expressions = new();
 		}
 
 		/// <summary>

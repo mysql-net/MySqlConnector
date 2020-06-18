@@ -511,7 +511,7 @@ namespace MySqlConnector
 			m_cachedProcedures = cachedProcedures;
 			Command = command;
 			m_behavior = behavior;
-			m_resultSet = new ResultSet(this);
+			m_resultSet = new(this);
 		}
 
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1

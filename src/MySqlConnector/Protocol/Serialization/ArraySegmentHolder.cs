@@ -18,7 +18,7 @@ namespace MySqlConnector.Protocol.Serialization
 		public void Clear()
 		{
 			if (ArraySegment.Count > 0)
-				ArraySegment = new ArraySegment<T>(ArraySegment.Array!, 0, 0);
+				ArraySegment = new(ArraySegment.Array!, 0, 0);
 		}
 	}
 }

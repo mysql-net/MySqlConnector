@@ -47,7 +47,7 @@ namespace MySqlConnector.Logging
 				_ => throw new ArgumentOutOfRangeException(nameof(level), level, "Invalid value for 'level'."),
 			};
 
-			static readonly Regex tokenReplacer = new Regex(@"((\w+)?\s?(?:=|:)?\s?'?)\{(?:\d+)(\:\w+)?\}('?)", RegexOptions.Compiled);
+			static readonly Regex tokenReplacer = new(@"((\w+)?\s?(?:=|:)?\s?'?)\{(?:\d+)(\:\w+)?\}('?)", RegexOptions.Compiled);
 
 			readonly ILogger m_logger;
             readonly string m_name;

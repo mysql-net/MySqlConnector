@@ -11,10 +11,10 @@ namespace MySqlConnector.Tests
 	{
 		public ConnectionTests()
 		{
-			m_server = new FakeMySqlServer();
+			m_server = new();
 			m_server.Start();
 
-			m_csb = new MySqlConnectionStringBuilder
+			m_csb = new()
 			{
 				Server = "localhost",
 				Port = (uint) m_server.Port,

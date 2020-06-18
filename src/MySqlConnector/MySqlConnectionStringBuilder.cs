@@ -470,75 +470,75 @@ namespace MySqlConnector
 
 		static MySqlConnectionStringOption()
 		{
-			s_options = new Dictionary<string, MySqlConnectionStringOption>(StringComparer.OrdinalIgnoreCase);
+			s_options = new(StringComparer.OrdinalIgnoreCase);
 
 			// Base Options
-			AddOption(Server = new MySqlConnectionStringNonNullOption<string>(
+			AddOption(Server = new(
 				keys: new[] { "Server", "Host", "Data Source", "DataSource", "Address", "Addr", "Network Address" },
 				defaultValue: ""));
 
-			AddOption(Port = new MySqlConnectionStringValueOption<uint>(
+			AddOption(Port = new(
 				keys: new[] { "Port" },
 				defaultValue: 3306u));
 
-			AddOption(UserID = new MySqlConnectionStringNonNullOption<string>(
+			AddOption(UserID = new(
 				keys: new[] { "User Id", "UserID", "Username", "Uid", "User name", "User" },
 				defaultValue: ""));
 
-			AddOption(Password = new MySqlConnectionStringNonNullOption<string>(
+			AddOption(Password = new(
 				keys: new[] { "Password", "pwd" },
 				defaultValue: ""));
 
-			AddOption(Database = new MySqlConnectionStringNonNullOption<string>(
+			AddOption(Database = new(
 				keys: new[] { "Database", "Initial Catalog" },
 				defaultValue: ""));
 
-			AddOption(LoadBalance = new MySqlConnectionStringValueOption<MySqlLoadBalance>(
+			AddOption(LoadBalance = new(
 				keys: new[] { "LoadBalance", "Load Balance" },
 				defaultValue: MySqlLoadBalance.RoundRobin));
 
-			AddOption(ConnectionProtocol = new MySqlConnectionStringValueOption<MySqlConnectionProtocol>(
+			AddOption(ConnectionProtocol = new(
 				keys: new[] { "ConnectionProtocol", "Connection Protocol", "Protocol" },
 				defaultValue: MySqlConnectionProtocol.Socket));
 
-			AddOption(PipeName = new MySqlConnectionStringReferenceOption<string>(
+			AddOption(PipeName = new(
 				keys: new[] { "PipeName", "Pipe", "Pipe Name" },
 				defaultValue: "MYSQL"));
 
 			// SSL/TLS Options
-			AddOption(SslMode = new MySqlConnectionStringValueOption<MySqlSslMode>(
+			AddOption(SslMode = new(
 				keys: new[] { "SSL Mode", "SslMode" },
 				defaultValue: MySqlSslMode.Preferred));
 
-			AddOption(CertificateFile = new MySqlConnectionStringReferenceOption<string>(
+			AddOption(CertificateFile = new(
 				keys: new[] { "CertificateFile", "Certificate File" },
 				defaultValue: null));
 
-			AddOption(CertificatePassword = new MySqlConnectionStringReferenceOption<string>(
+			AddOption(CertificatePassword = new(
 				keys: new[] { "CertificatePassword", "Certificate Password" },
 				defaultValue: null));
 
-			AddOption(SslCa = new MySqlConnectionStringReferenceOption<string>(
+			AddOption(SslCa = new(
 				keys: new[] { "CACertificateFile", "CA Certificate File", "SslCa", "Ssl-Ca" },
 				defaultValue: null));
 
-			AddOption(SslCert = new MySqlConnectionStringReferenceOption<string>(
+			AddOption(SslCert = new(
 				keys: new[] { "SslCert", "Ssl-Cert" },
 				defaultValue: null));
 
-			AddOption(SslKey = new MySqlConnectionStringReferenceOption<string>(
+			AddOption(SslKey = new(
 				keys: new[] { "SslKey", "Ssl-Key" },
 				defaultValue: null));
 
-			AddOption(CertificateStoreLocation = new MySqlConnectionStringValueOption<MySqlCertificateStoreLocation>(
+			AddOption(CertificateStoreLocation = new(
 				keys: new[] { "CertificateStoreLocation", "Certificate Store Location" },
 				defaultValue: MySqlCertificateStoreLocation.None));
 
-			AddOption(CertificateThumbprint = new MySqlConnectionStringReferenceOption<string>(
+			AddOption(CertificateThumbprint = new(
 				keys: new[] { "CertificateThumbprint", "Certificate Thumbprint", "Certificate Thumb Print" },
 				defaultValue: null));
 
-			AddOption(TlsVersion = new MySqlConnectionStringReferenceOption<string>(
+			AddOption(TlsVersion = new(
 				keys: new[] { "TlsVersion", "Tls Version", "Tls-Version" },
 				defaultValue: null,
 				coerce: value =>
@@ -577,136 +577,136 @@ namespace MySqlConnector
 				}));
 
 			// Connection Pooling Options
-			AddOption(Pooling = new MySqlConnectionStringValueOption<bool>(
+			AddOption(Pooling = new(
 				keys: new[] { "Pooling" },
 				defaultValue: true));
 
-			AddOption(ConnectionLifeTime = new MySqlConnectionStringValueOption<uint>(
+			AddOption(ConnectionLifeTime = new(
 				keys: new[] { "Connection Lifetime", "ConnectionLifeTime" },
 				defaultValue: 0));
 
-			AddOption(ConnectionReset = new MySqlConnectionStringValueOption<bool>(
+			AddOption(ConnectionReset = new(
 				keys: new[] { "Connection Reset", "ConnectionReset" },
 				defaultValue: true));
 
-			AddOption(ConnectionIdlePingTime = new MySqlConnectionStringValueOption<uint>(
+			AddOption(ConnectionIdlePingTime = new(
 				keys: new[] { "Connection Idle Ping Time", "ConnectionIdlePingTime" },
 				defaultValue: 0));
 
-			AddOption(ConnectionIdleTimeout = new MySqlConnectionStringValueOption<uint>(
+			AddOption(ConnectionIdleTimeout = new(
 				keys: new[] { "Connection Idle Timeout", "ConnectionIdleTimeout" },
 				defaultValue: 180));
 
-			AddOption(MinimumPoolSize = new MySqlConnectionStringValueOption<uint>(
+			AddOption(MinimumPoolSize = new(
 				keys: new[] { "Minimum Pool Size", "Min Pool Size", "MinimumPoolSize", "minpoolsize" },
 				defaultValue: 0));
 
-			AddOption(MaximumPoolSize = new MySqlConnectionStringValueOption<uint>(
+			AddOption(MaximumPoolSize = new(
 				keys: new[] { "Maximum Pool Size", "Max Pool Size", "MaximumPoolSize", "maxpoolsize" },
 				defaultValue: 100));
 
 			// Other Options
-			AddOption(AllowLoadLocalInfile = new MySqlConnectionStringValueOption<bool>(
+			AddOption(AllowLoadLocalInfile = new(
 				keys: new[] { "AllowLoadLocalInfile", "Allow Load Local Infile" },
 				defaultValue: false));
 
-			AddOption(AllowPublicKeyRetrieval = new MySqlConnectionStringValueOption<bool>(
+			AddOption(AllowPublicKeyRetrieval = new(
 				keys: new[] { "AllowPublicKeyRetrieval", "Allow Public Key Retrieval" },
 				defaultValue: false));
 
-			AddOption(AllowUserVariables = new MySqlConnectionStringValueOption<bool>(
+			AddOption(AllowUserVariables = new(
 				keys: new[] { "AllowUserVariables", "Allow User Variables" },
 				defaultValue: false));
 
-			AddOption(AllowZeroDateTime = new MySqlConnectionStringValueOption<bool>(
+			AddOption(AllowZeroDateTime = new(
 				keys: new[] { "AllowZeroDateTime", "Allow Zero DateTime" },
 				defaultValue: false));
 
-			AddOption(ApplicationName = new MySqlConnectionStringReferenceOption<string>(
+			AddOption(ApplicationName = new(
 				keys: new[] { "ApplicationName", "Application Name" },
 				defaultValue: null));
 
-			AddOption(AutoEnlist = new MySqlConnectionStringValueOption<bool>(
+			AddOption(AutoEnlist = new(
 				keys: new[] { "AutoEnlist", "Auto Enlist" },
 				defaultValue: true));
 
-			AddOption(CharacterSet = new MySqlConnectionStringReferenceOption<string>(
+			AddOption(CharacterSet = new(
 				keys: new[] { "CharSet", "Character Set", "CharacterSet" },
 				defaultValue: ""));
 
-			AddOption(ConnectionTimeout = new MySqlConnectionStringValueOption<uint>(
+			AddOption(ConnectionTimeout = new(
 				keys: new[] { "Connection Timeout", "ConnectionTimeout", "Connect Timeout" },
 				defaultValue: 15u));
 
-			AddOption(ConvertZeroDateTime = new MySqlConnectionStringValueOption<bool>(
+			AddOption(ConvertZeroDateTime = new(
 				keys: new[] { "Convert Zero Datetime", "ConvertZeroDateTime" },
 				defaultValue: false));
 
-			AddOption(DateTimeKind = new MySqlConnectionStringValueOption<MySqlDateTimeKind>(
+			AddOption(DateTimeKind = new(
 				keys: new[] { "DateTimeKind" },
 				defaultValue: MySqlDateTimeKind.Unspecified));
 
-			AddOption(DefaultCommandTimeout = new MySqlConnectionStringValueOption<uint>(
+			AddOption(DefaultCommandTimeout = new(
 				keys: new[] { "Default Command Timeout", "DefaultCommandTimeout", "Command Timeout" },
 				defaultValue: 30u));
 
-			AddOption(ForceSynchronous = new MySqlConnectionStringValueOption<bool>(
+			AddOption(ForceSynchronous = new(
 				keys: new[] { "ForceSynchronous" },
 				defaultValue: false));
 
-			AddOption(GuidFormat = new MySqlConnectionStringValueOption<MySqlGuidFormat>(
+			AddOption(GuidFormat = new(
 				keys: new[] { "GuidFormat" },
 				defaultValue: MySqlGuidFormat.Default));
 
-			AddOption(IgnoreCommandTransaction = new MySqlConnectionStringValueOption<bool>(
+			AddOption(IgnoreCommandTransaction = new(
 				keys: new[] { "IgnoreCommandTransaction", "Ignore Command Transaction" },
 				defaultValue: false));
 
-			AddOption(IgnorePrepare = new MySqlConnectionStringValueOption<bool>(
+			AddOption(IgnorePrepare = new(
 				keys: new[] { "IgnorePrepare", "Ignore Prepare" },
 				defaultValue: true));
 
-			AddOption(InteractiveSession = new MySqlConnectionStringValueOption<bool>(
+			AddOption(InteractiveSession = new(
 				keys: new[] { "InteractiveSession", "Interactive", "Interactive Session" },
 				defaultValue: false));
 
-			AddOption(Keepalive = new MySqlConnectionStringValueOption<uint>(
+			AddOption(Keepalive = new(
 				keys: new[] { "Keep Alive", "Keepalive" },
 				defaultValue: 0u));
 
-			AddOption(NoBackslashEscapes = new MySqlConnectionStringValueOption<bool>(
+			AddOption(NoBackslashEscapes = new(
 				keys: new[] { "No Backslash Escapes", "NoBackslashEscapes" },
 				defaultValue: false));
 
-			AddOption(OldGuids = new MySqlConnectionStringValueOption<bool>(
+			AddOption(OldGuids = new(
 				keys: new[] { "Old Guids", "OldGuids" },
 				defaultValue: false));
 
-			AddOption(PersistSecurityInfo = new MySqlConnectionStringValueOption<bool>(
+			AddOption(PersistSecurityInfo = new(
 				keys: new[] { "Persist Security Info", "PersistSecurityInfo" },
 				defaultValue: false));
 
-			AddOption(ServerRsaPublicKeyFile = new MySqlConnectionStringReferenceOption<string>(
+			AddOption(ServerRsaPublicKeyFile = new(
 				keys: new[] { "ServerRSAPublicKeyFile", "Server RSA Public Key File" },
 				defaultValue: null));
 
-			AddOption(ServerSPN = new MySqlConnectionStringReferenceOption<string>(
+			AddOption(ServerSPN = new(
 				keys: new[] { "Server SPN", "ServerSPN" },
 				defaultValue: null));
 
-			AddOption(TreatTinyAsBoolean = new MySqlConnectionStringValueOption<bool>(
+			AddOption(TreatTinyAsBoolean = new(
 				keys: new[] { "Treat Tiny As Boolean", "TreatTinyAsBoolean" },
 				defaultValue: true));
 
-			AddOption(UseAffectedRows = new MySqlConnectionStringValueOption<bool>(
+			AddOption(UseAffectedRows = new(
 				keys: new[] { "Use Affected Rows", "UseAffectedRows" },
 				defaultValue: false));
 
-			AddOption(UseCompression = new MySqlConnectionStringValueOption<bool>(
+			AddOption(UseCompression = new(
 				keys: new[] { "Compress", "Use Compression", "UseCompression" },
 				defaultValue: false));
 
-			AddOption(UseXaTransactions = new MySqlConnectionStringValueOption<bool>(
+			AddOption(UseXaTransactions = new(
 				keys: new[] { "Use XA Transactions", "UseXaTransactions" },
 				defaultValue: true));
 		}

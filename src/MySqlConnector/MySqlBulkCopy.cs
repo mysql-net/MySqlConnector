@@ -50,7 +50,7 @@ namespace MySqlConnector
 		{
 			m_connection = connection ?? throw new ArgumentNullException(nameof(connection));
 			m_transaction = transaction;
-			ColumnMappings = new List<MySqlBulkCopyColumnMapping>();
+			ColumnMappings = new();
 		}
 
 		/// <summary>
@@ -359,7 +359,7 @@ namespace MySqlConnector
 			RowsCopied = 0;
 			MySqlRowsCopiedEventArgs? eventArgs = null;
 			if (NotifyAfter > 0 && MySqlRowsCopied is not null)
-				eventArgs = new MySqlRowsCopiedEventArgs();
+				eventArgs = new();
 
 			try
 			{
@@ -373,7 +373,7 @@ namespace MySqlConnector
 						break;
 
 					m_valuesEnumerator.GetValues(values);
-					retryRow:
+retryRow:
 					var startOutputIndex = outputIndex;
 					var wroteRow = true;
 					var shouldAppendSeparator = false;

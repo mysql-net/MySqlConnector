@@ -487,7 +487,7 @@ namespace MySqlConnector.Protocol.Serialization
 		{
 			if (previousPayloads.Count == 0 && packet.Contents.Count < MaxPacketSize)
 			{
-				result = new ValueTask<ArraySegment<byte>>(packet.Contents);
+				result = new(packet.Contents);
 				return true;
 			}
 
@@ -498,11 +498,11 @@ namespace MySqlConnector.Protocol.Serialization
 				Array.Resize(ref previousPayloadsArray, previousPayloadsArray.Length * 2);
 
 			Buffer.BlockCopy(packet.Contents.Array!, packet.Contents.Offset, previousPayloadsArray, previousPayloads.Offset + previousPayloads.Count, packet.Contents.Count);
-			previousPayloads.ArraySegment = new ArraySegment<byte>(previousPayloadsArray, previousPayloads.Offset, previousPayloads.Count + packet.Contents.Count);
+			previousPayloads.ArraySegment = new(previousPayloadsArray, previousPayloads.Offset, previousPayloads.Count + packet.Contents.Count);
 
 			if (packet.Contents.Count < ProtocolUtility.MaxPacketSize)
 			{
-				result = new ValueTask<ArraySegment<byte>>(previousPayloads.ArraySegment);
+				result = new(previousPayloads.ArraySegment);
 				return true;
 			}
 

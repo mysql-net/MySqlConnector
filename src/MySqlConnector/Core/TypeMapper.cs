@@ -12,15 +12,15 @@ namespace MySqlConnector.Core
 {
 	internal sealed class TypeMapper
 	{
-		public static TypeMapper Instance = new TypeMapper();
+		public static TypeMapper Instance { get; } = new();
 
 		private TypeMapper()
 		{
-			m_columnTypeMetadata = new List<ColumnTypeMetadata>();
-			m_dbTypeMappingsByClrType = new Dictionary<Type, DbTypeMapping>();
-			m_dbTypeMappingsByDbType = new Dictionary<DbType, DbTypeMapping>();
-			m_columnTypeMetadataLookup = new Dictionary<string, ColumnTypeMetadata>(StringComparer.OrdinalIgnoreCase);
-			m_mySqlDbTypeToColumnTypeMetadata = new Dictionary<MySqlDbType, ColumnTypeMetadata>();
+			m_columnTypeMetadata = new();
+			m_dbTypeMappingsByClrType = new();
+			m_dbTypeMappingsByDbType = new();
+			m_columnTypeMetadataLookup = new(StringComparer.OrdinalIgnoreCase);
+			m_mySqlDbTypeToColumnTypeMetadata = new();
 
 			// boolean
 			var typeBoolean = AddDbTypeMapping(new(typeof(bool), new[] { DbType.Boolean }, convert: o => Convert.ToBoolean(o)));

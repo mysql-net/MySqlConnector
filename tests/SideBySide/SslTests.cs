@@ -103,7 +103,7 @@ namespace SideBySide
 		public async Task ConnectSslClientCertificateFromCertificateStore(string certFile, MySqlCertificateStoreLocation storeLocation, string thumbprint)
 		{
 			// Create a mock of certificate store
-			X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+			var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
 			store.Open(OpenFlags.ReadWrite);
 			var certificate = new X509Certificate2(Path.Combine(AppConfig.CertsPath, certFile));
 			store.Add(certificate);

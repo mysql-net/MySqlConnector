@@ -88,7 +88,7 @@ namespace MySqlConnector.Core
 									int byteCount;
 									while ((byteCount = await stream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
 									{
-										payload = new PayloadData(new ArraySegment<byte>(buffer, 0, byteCount));
+										payload = new(new ArraySegment<byte>(buffer, 0, byteCount));
 										await Session.SendReplyAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
 									}
 								}
@@ -110,7 +110,7 @@ namespace MySqlConnector.Core
 						catch (Exception ex)
 						{
 							// store the exception, to be thrown after reading the response packet from the server
-							ReadResultSetHeaderException = new MySqlException("Error during LOAD DATA LOCAL INFILE", ex);
+							ReadResultSetHeaderException = new("Error during LOAD DATA LOCAL INFILE", ex);
 						}
 
 						await Session.SendReplyAsync(EmptyPayload.Instance, ioBehavior, CancellationToken.None).ConfigureAwait(false);
@@ -219,7 +219,7 @@ namespace MySqlConnector.Core
 			var row = await ScanRowAsync(ioBehavior, null, cancellationToken).ConfigureAwait(false);
 			if (row is null)
 				return null;
-			m_readBuffer ??= new Queue<Row>();
+			m_readBuffer ??= new();
 			m_readBuffer.Enqueue(row);
 			return row;
 		}

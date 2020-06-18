@@ -12,7 +12,7 @@ namespace MySqlConnector.Protocol.Serialization
 		{
 			m_socket = socket;
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
-			m_socketAwaitable = new SocketAwaitable(new SocketAsyncEventArgs());
+			m_socketAwaitable = new(new());
 #endif
 			m_closeSocket = socket.Dispose;
 			RemainingTimeout = Constants.InfiniteTimeout;

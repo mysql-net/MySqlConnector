@@ -71,7 +71,7 @@ namespace MySqlConnector
 		{
 			Connection = connection;
 			Transaction = transaction;
-			BatchCommands = new MySqlBatchCommandCollection();
+			BatchCommands = new();
 			m_commandId = ICancellableCommandExtensions.GetNextId();
 		}
 

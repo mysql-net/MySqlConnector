@@ -37,10 +37,10 @@ namespace SideBySide
 		[SkippableFact(ConfigSettings.CsvFile)]
 		public async void CommandLoadCsvFile()
 		{
-			string insertInlineCommand = string.Format(m_loadDataInfileCommand, "", AppConfig.MySqlBulkLoaderCsvFile.Replace("\\", "\\\\"));
-			MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
+			var insertInlineCommand = string.Format(m_loadDataInfileCommand, "", AppConfig.MySqlBulkLoaderCsvFile.Replace("\\", "\\\\"));
+			using var command = new MySqlCommand(insertInlineCommand, m_database.Connection);
 			if (m_database.Connection.State != ConnectionState.Open) await m_database.Connection.OpenAsync();
-			int rowCount = await command.ExecuteNonQueryAsync();
+			var rowCount = await command.ExecuteNonQueryAsync();
 			m_database.Connection.Close();
 			Assert.Equal(20, rowCount);
 		}
@@ -48,14 +48,14 @@ namespace SideBySide
 		[SkippableFact(ConfigSettings.LocalCsvFile | ConfigSettings.TrustedHost)]
 		public async void CommandLoadLocalCsvFile()
 		{
-			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL",
+			var insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL",
 				AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
-			MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
+			using var command = new MySqlCommand(insertInlineCommand, m_database.Connection);
 
 			if (m_database.Connection.State != ConnectionState.Open)
 				await m_database.Connection.OpenAsync();
 
-			int rowCount = await command.ExecuteNonQueryAsync();
+			var rowCount = await command.ExecuteNonQueryAsync();
 
 			m_database.Connection.Close();
 			Assert.Equal(20, rowCount);
@@ -64,9 +64,9 @@ namespace SideBySide
 		[SkippableFact(ConfigSettings.LocalCsvFile | ConfigSettings.TrustedHost, Baseline = "Doesn't require trusted host for LOAD DATA LOCAL INFILE")]
 		public async void ThrowsNotSupportedExceptionForNotTrustedHostAndNotStream()
 		{
-			string insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL",
+			var insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL",
 				AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
-			MySqlCommand command = new MySqlCommand(insertInlineCommand, m_database.Connection);
+			using var command = new MySqlCommand(insertInlineCommand, m_database.Connection);
 
 			if (m_database.Connection.State != ConnectionState.Open)
 				await m_database.Connection.OpenAsync();

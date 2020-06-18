@@ -49,8 +49,8 @@ namespace MySqlConnector.Protocol.Serialization
 		public NegotiateToMySqlConverterStream(ServerSession serverSession, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			m_serverSession = serverSession;
-			m_readBuffer = new MemoryStream();
-			m_writeBuffer = new MemoryStream();
+			m_readBuffer = new();
+			m_writeBuffer = new();
 			m_ioBehavior = ioBehavior;
 			m_cancellationToken = cancellationToken;
 		}
@@ -101,7 +101,7 @@ namespace MySqlConnector.Protocol.Serialization
 					break;
 				}
 
-				m_readBuffer = new MemoryStream(payloadMemory.ToArray());
+				m_readBuffer = new(payloadMemory.ToArray());
 				CreateNegotiateStreamMessageHeader(buffer, offset, NegotiateStreamConstants.HandshakeInProgress, m_readBuffer.Length);
 				bytesRead = NegotiateStreamConstants.HeaderLength;
 				offset += bytesRead;
@@ -172,13 +172,13 @@ namespace MySqlConnector.Protocol.Serialization
 					return;
 
 				var payloadBytes = m_writeBuffer.ToArray();
-				payload = new PayloadData(new ArraySegment<byte>(payloadBytes, 0, (int) m_writeBuffer.Length));
+				payload = new(new ArraySegment<byte>(payloadBytes, 0, (int) m_writeBuffer.Length));
 				m_writeBuffer.SetLength(0);
 			}
 			else
 			{
 				// full payload provided
-				payload = new PayloadData(new ArraySegment<byte>(buffer, offset, m_writePayloadLength));
+				payload = new(new ArraySegment<byte>(buffer, offset, m_writePayloadLength));
 			}
 			await m_serverSession.SendReplyAsync(payload, m_ioBehavior, cancellationToken).ConfigureAwait(false);
 			// Need to parse NegotiateStream header next time

@@ -66,7 +66,7 @@ namespace MySqlConnector
 
 		public override int UpdateBatchSize { get; set; }
 
-		protected override void InitializeBatching() => m_batch = new MySqlBatch();
+		protected override void InitializeBatching() => m_batch = new();
 
 		protected override void TerminateBatching()
 		{

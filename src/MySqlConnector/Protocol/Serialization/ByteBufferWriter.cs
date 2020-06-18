@@ -205,7 +205,7 @@ namespace MySqlConnector.Protocol.Serialization
 			Buffer.BlockCopy(m_buffer, 0, newBuffer, 0, usedLength);
 			ArrayPool<byte>.Shared.Return(m_buffer);
 			m_buffer = newBuffer;
-			m_output = new Memory<byte>(m_buffer, usedLength, m_buffer.Length - usedLength);
+			m_output = new(m_buffer, usedLength, m_buffer.Length - usedLength);
 		}
 
 #if !NET45 && !NETSTANDARD1_3

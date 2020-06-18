@@ -22,7 +22,7 @@ namespace MySqlConnector
 			{
 				if (value[i] == '\'' || value[i] == '\"' || value[i] == '\\')
 				{
-					sb ??= new StringBuilder();
+					sb ??= new();
 					sb.Append(value, last + 1, i - (last + 1));
 					sb.Append('\\');
 					sb.Append(value[i]);

@@ -13,7 +13,7 @@ namespace SideBySide
 	{
 		public ParameterCollection()
 		{
-			m_command = new MySqlCommand();
+			m_command = new();
 			m_parameterCollection = m_command.Parameters;
 		}
 
@@ -161,7 +161,7 @@ namespace SideBySide
 			m_parameterCollection.Add(new() { ParameterName = "@Test2", Value = 1 });
 			Assert.Equal(0, m_parameterCollection.IndexOf("@Test1"));
 			Assert.Equal(1, m_parameterCollection.IndexOf("@Test2"));
-			m_parameterCollection[0] = new MySqlParameter { ParameterName = "@Test3", Value = 2 };
+			m_parameterCollection[0] = new() { ParameterName = "@Test3", Value = 2 };
 			Assert.Equal(2, m_parameterCollection.Count);
 			Assert.Equal(-1, m_parameterCollection.IndexOf("@Test1"));
 			Assert.Equal(0, m_parameterCollection.IndexOf("@Test3"));
@@ -175,7 +175,7 @@ namespace SideBySide
 			m_parameterCollection.Add(new() { ParameterName = "@Test2", Value = 1 });
 			Assert.Equal(0, m_parameterCollection.IndexOf("@Test1"));
 			Assert.Equal(1, m_parameterCollection.IndexOf("@Test2"));
-			m_parameterCollection["@Test1"] = new MySqlParameter { ParameterName = "@Test3", Value = 2 };
+			m_parameterCollection["@Test1"] = new() { ParameterName = "@Test3", Value = 2 };
 			Assert.Equal(2, m_parameterCollection.Count);
 			Assert.Equal(-1, m_parameterCollection.IndexOf("@Test1"));
 			Assert.Equal(0, m_parameterCollection.IndexOf("@Test3"));

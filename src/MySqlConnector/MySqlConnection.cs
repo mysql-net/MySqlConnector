@@ -200,7 +200,7 @@ namespace MySqlConnector
 					lock (s_lock)
 					{
 						if (!s_transactionConnections.TryGetValue(transaction, out var enlistedTransactions))
-							s_transactionConnections[transaction] = enlistedTransactions = new List<EnlistedTransactionBase>();
+							s_transactionConnections[transaction] = enlistedTransactions = new();
 						enlistedTransactions.Add(m_enlistedTransaction);
 					}
 				}
@@ -298,7 +298,7 @@ namespace MySqlConnector
 #endif
 
 			m_session = other.m_session;
-			m_session!.OwningConnection = new WeakReference<MySqlConnection>(this);
+			m_session!.OwningConnection = new(this);
 			other.m_session = null;
 
 			m_cachedProcedures = other.m_cachedProcedures;
@@ -521,8 +521,7 @@ namespace MySqlConnector
 
 		private SchemaProvider GetSchemaProvider()
 		{
-			if (m_schemaProvider is null)
-				m_schemaProvider = new SchemaProvider(this);
+			m_schemaProvider ??= new(this);
 			return m_schemaProvider;
 		}
 
@@ -661,7 +660,7 @@ namespace MySqlConnector
 			if (cachedProcedures is null)
 			{
 				Log.Warn("Session{0} pool Pool{1} doesn't have a shared procedure cache; procedure will only be cached on this connection", m_session.Id, m_session.Pool?.Id);
-				cachedProcedures = m_cachedProcedures = new Dictionary<string, CachedProcedure?>();
+				cachedProcedures = m_cachedProcedures = new();
 			}
 
 			var normalized = NormalizedSchema.MustNormalize(name, Database);
@@ -830,7 +829,7 @@ namespace MySqlConnector
 					previousState == ConnectionState.Closed && newState == ConnectionState.Connecting ? s_stateChangeClosedConnecting :
 					previousState == ConnectionState.Connecting && newState == ConnectionState.Open ? s_stateChangeConnectingOpen :
 					previousState == ConnectionState.Open && newState == ConnectionState.Closed ? s_stateChangeOpenClosed :
-					new StateChangeEventArgs(previousState, newState);
+					new(previousState, newState);
 				OnStateChange(eventArgs);
 			}
 		}
@@ -967,7 +966,7 @@ namespace MySqlConnector
 		}
 
 		private ConnectionSettings GetConnectionSettings() =>
-			m_connectionSettings ??= new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
+			m_connectionSettings ??= new(new MySqlConnectionStringBuilder(m_connectionString));
 
 		// This method may be called when it's known that the connection settings have been initialized.
 		private ConnectionSettings GetInitializedConnectionSettings() => m_connectionSettings!;
