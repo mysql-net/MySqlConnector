@@ -364,6 +364,7 @@ namespace MySqlConnector
 			try
 			{
 				var values = new object?[m_valuesEnumerator!.FieldCount];
+				Encoder? utf8Encoder = null;
 				while (true)
 				{
 					var hasMore = ioBehavior == IOBehavior.Asynchronous ?
@@ -373,46 +374,31 @@ namespace MySqlConnector
 						break;
 
 					m_valuesEnumerator.GetValues(values);
-retryRow:
-					var startOutputIndex = outputIndex;
-					var wroteRow = true;
-					var shouldAppendSeparator = false;
-					foreach (var value in values)
+					for (var valueIndex = 0; valueIndex < values.Length; valueIndex++)
 					{
-						if (shouldAppendSeparator)
+						if (valueIndex > 0)
 							buffer[outputIndex++] = (byte) '\t';
-						else
-							shouldAppendSeparator = true;
 
-						if (outputIndex >= maxLength || !WriteValue(m_connection, value, buffer.AsSpan(0, maxLength).Slice(outputIndex), out var bytesWritten))
+						var inputIndex = 0;
+						var bytesWritten = 0;
+						while (outputIndex >= maxLength || !WriteValue(m_connection, values[valueIndex], ref inputIndex, ref utf8Encoder, buffer.AsSpan(0, maxLength).Slice(outputIndex), out bytesWritten))
 						{
-							wroteRow = false;
-							break;
+							var payload = new PayloadData(new ArraySegment<byte>(buffer, 0, outputIndex + bytesWritten));
+							await m_connection.Session.SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+							outputIndex = 0;
+							bytesWritten = 0;
 						}
 						outputIndex += bytesWritten;
 					}
+					buffer[outputIndex++] = (byte) '\n';
 
-					if (!wroteRow)
+					RowsCopied++;
+					if (eventArgs is not null && RowsCopied % NotifyAfter == 0)
 					{
-						if (startOutputIndex == 0)
-							throw new NotSupportedException("Total row length must be less than 1 MiB.");
-						var payload = new PayloadData(new ArraySegment<byte>(buffer, 0, startOutputIndex));
-						await m_connection.Session.SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-						outputIndex = 0;
-						goto retryRow;
-					}
-					else
-					{
-						buffer[outputIndex++] = (byte) '\n';
-
-						RowsCopied++;
-						if (eventArgs is not null && RowsCopied % NotifyAfter == 0)
-						{
-							eventArgs.RowsCopied = RowsCopied;
-							MySqlRowsCopied!(this, eventArgs);
-							if (eventArgs.Abort)
-								break;
-						}
+						eventArgs.RowsCopied = RowsCopied;
+						MySqlRowsCopied!(this, eventArgs);
+						if (eventArgs.Abort)
+							break;
 					}
 				}
 
@@ -428,8 +414,14 @@ retryRow:
 				m_wasAborted = eventArgs?.Abort ?? false;
 			}
 
-			static bool WriteValue(MySqlConnection connection, object? value, Span<byte> output, out int bytesWritten)
+			static bool WriteValue(MySqlConnection connection, object? value, ref int inputIndex, ref Encoder? utf8Encoder, Span<byte> output, out int bytesWritten)
 			{
+				if (output.Length == 0)
+				{
+					bytesWritten = 0;
+					return false;
+				}
+
 				if (value is null || value == DBNull.Value)
 				{
 					if (output.Length < EscapedNull.Length)
@@ -443,11 +435,11 @@ retryRow:
 				}
 				else if (value is string stringValue)
 				{
-					return WriteString(stringValue, output, out bytesWritten);
+					return WriteSubstring(stringValue, ref inputIndex, ref utf8Encoder, output, out bytesWritten);
 				}
 				else if (value is char charValue)
 				{
-					return WriteString(charValue.ToString(), output, out bytesWritten);
+					return WriteString(charValue.ToString(), ref utf8Encoder, output, out bytesWritten);
 				}
 				else if (value is byte byteValue)
 				{
@@ -493,7 +485,7 @@ retryRow:
 						value is MySqlGeometry geometry ? geometry.ValueSpan :
 						((ReadOnlyMemory<byte>) value).Span;
 
-					return WriteBytes(inputSpan, output, out bytesWritten);
+					return WriteBytes(inputSpan, ref inputIndex, output, out bytesWritten);
 				}
 				else if (value is bool boolValue)
 				{
@@ -509,14 +501,14 @@ retryRow:
 				else if (value is float || value is double)
 				{
 					// NOTE: Utf8Formatter doesn't support "R"
-					return WriteString("{0:R}".FormatInvariant(value), output, out bytesWritten);
+					return WriteString("{0:R}".FormatInvariant(value), ref utf8Encoder, output, out bytesWritten);
 				}
 				else if (value is MySqlDateTime mySqlDateTimeValue)
 				{
 					if (mySqlDateTimeValue.IsValidDateTime)
-						return WriteString("{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}".FormatInvariant(mySqlDateTimeValue.GetDateTime()), output, out bytesWritten);
+						return WriteString("{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}".FormatInvariant(mySqlDateTimeValue.GetDateTime()), ref utf8Encoder, output, out bytesWritten);
 					else
-						return WriteString("0000-00-00", output, out bytesWritten);
+						return WriteString("0000-00-00", ref utf8Encoder, output, out bytesWritten);
 				}
 				else if (value is DateTime dateTimeValue)
 				{
@@ -525,12 +517,12 @@ retryRow:
 					else if (connection.DateTimeKind == DateTimeKind.Local && dateTimeValue.Kind == DateTimeKind.Utc)
 						throw new MySqlException("DateTime.Kind must not be Utc when DateTimeKind setting is Local");
 
-					return WriteString("{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}".FormatInvariant(dateTimeValue), output, out bytesWritten);
+					return WriteString("{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}".FormatInvariant(dateTimeValue), ref utf8Encoder, output, out bytesWritten);
 				}
 				else if (value is DateTimeOffset dateTimeOffsetValue)
 				{
 					// store as UTC as it will be read as such when deserialized from a timespan column
-					return WriteString("{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}".FormatInvariant(dateTimeOffsetValue.UtcDateTime), output, out bytesWritten);
+					return WriteString("{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}".FormatInvariant(dateTimeOffsetValue.UtcDateTime), ref utf8Encoder, output, out bytesWritten);
 				}
 				else if (value is TimeSpan ts)
 				{
@@ -540,7 +532,7 @@ retryRow:
 						isNegative = true;
 						ts = TimeSpan.FromTicks(-ts.Ticks);
 					}
-					return WriteString("{0}{1}:{2:mm':'ss'.'ffffff}'".FormatInvariant(isNegative ? "-" : "", ts.Days * 24 + ts.Hours, ts), output, out bytesWritten);
+					return WriteString("{0}{1}:{2:mm':'ss'.'ffffff}'".FormatInvariant(isNegative ? "-" : "", ts.Days * 24 + ts.Hours, ts), ref utf8Encoder, output, out bytesWritten);
 				}
 				else if (value is Guid guidValue)
 				{
@@ -566,7 +558,7 @@ retryRow:
 								Utility.SwapBytes(bytes, 1, 3);
 							}
 						}
-						return WriteBytes(bytes, output, out bytesWritten);
+						return WriteBytes(bytes, ref inputIndex, output, out bytesWritten);
 					}
 					else
 					{
@@ -576,7 +568,7 @@ retryRow:
 				}
 				else if (value is Enum)
 				{
-					return WriteString("{0:d}".FormatInvariant(value), output, out bytesWritten);
+					return WriteString("{0:d}".FormatInvariant(value), ref utf8Encoder, output, out bytesWritten);
 				}
 				else
 				{
@@ -584,64 +576,72 @@ retryRow:
 				}
 			}
 
-			static bool WriteString(string value, Span<byte> output, out int bytesWritten)
+			static bool WriteString(string value, ref Encoder? utf8Encoder, Span<byte> output, out int bytesWritten)
 			{
-				var index = 0;
+				var inputIndex = 0;
+				if (WriteSubstring(value, ref inputIndex, ref utf8Encoder, output, out bytesWritten))
+					return true;
 				bytesWritten = 0;
-				while (index < value.Length)
-				{
-					if (Array.IndexOf(s_specialCharacters, value[index]) != -1)
-					{
-						if (output.Length < 2)
-						{
-							bytesWritten = 0;
-							return false;
-						}
+				return false;
+			}
 
+			// Writes as much of 'value' as possible, starting at 'inputIndex' and writing UTF-8-encoded bytes to 'output'.
+			// 'inputIndex' will be updated to the next character to be written, and 'bytesWritten' the number of bytes written to 'output'.
+			static bool WriteSubstring(string value, ref int inputIndex, ref Encoder? utf8Encoder, Span<byte> output, out int bytesWritten)
+			{
+				bytesWritten = 0;
+				while (inputIndex < value.Length)
+				{
+					if (Array.IndexOf(s_specialCharacters, value[inputIndex]) != -1)
+					{
+						if (output.Length <= 2)
+							return false;
+		
 						output[0] = (byte) '\\';
-						output[1] = (byte) value[index];
+						output[1] = (byte) value[inputIndex];
 						output = output.Slice(2);
 						bytesWritten += 2;
-						index++;
+						inputIndex++;
 					}
 					else
 					{
-						var nextIndex = value.IndexOfAny(s_specialCharacters, index);
+						var nextIndex = value.IndexOfAny(s_specialCharacters, inputIndex);
 						if (nextIndex == -1)
 							nextIndex = value.Length;
-						var encodedSize = Encoding.UTF8.GetByteCount(value.AsSpan(index, nextIndex - index));
-						if (encodedSize > output.Length)
-						{
-							bytesWritten = 0;
+
+						utf8Encoder ??= Encoding.UTF8.GetEncoder();
+#if NETSTANDARD1_3
+						var buffer = new byte[output.Length];
+						utf8Encoder.Convert(value.ToCharArray(), inputIndex, nextIndex - inputIndex, buffer, 0, buffer.Length, nextIndex == value.Length, out var charsUsed, out var bytesUsed, out var completed);
+						buffer.AsSpan().CopyTo(output);
+#else
+						utf8Encoder.Convert(value.AsSpan(inputIndex, nextIndex - inputIndex), output, nextIndex == value.Length, out var charsUsed, out var bytesUsed, out var completed);
+#endif
+
+						bytesWritten += bytesUsed;
+						output = output.Slice(bytesUsed);
+						inputIndex += charsUsed;
+
+						if (!completed)
 							return false;
-						}
-						var encodedBytesWritten = Encoding.UTF8.GetBytes(value.AsSpan(index, nextIndex - index), output);
-						bytesWritten += encodedBytesWritten;
-						output = output.Slice(encodedBytesWritten);
-						index = nextIndex;
 					}
 				}
 
 				return true;
 			}
 
-			static bool WriteBytes(ReadOnlySpan<byte> value, Span<byte> output, out int bytesWritten)
+			static bool WriteBytes(ReadOnlySpan<byte> value, ref int inputIndex, Span<byte> output, out int bytesWritten)
 			{
-				if (output.Length < value.Length * 2)
+				bytesWritten = 0;
+				for (; inputIndex < value.Length && output.Length > 2; inputIndex++)
 				{
-					bytesWritten = 0;
-					return false;
-				}
-
-				foreach (var by in value)
-				{
-					WriteNibble(by >> 4, output);
-					WriteNibble(by & 0xF, output.Slice(1));
+					WriteNibble(value[inputIndex] >> 4, output);
+					WriteNibble(value[inputIndex] & 0xF, output.Slice(1));
 					output = output.Slice(2);
+					bytesWritten += 2;
 				}
 
-				bytesWritten = value.Length * 2;
-				return true;
+				return inputIndex == value.Length;
 			}
 
 			static void WriteNibble(int value, Span<byte> output) => output[0] = value < 10 ? (byte) (value + 0x30) : (byte) (value + 0x57);

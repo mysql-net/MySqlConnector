@@ -65,7 +65,7 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
-#if NET461 || NET471 || NETSTANDARD2_0
+#if NET45 || NET461 || NET471 || NETSTANDARD2_0
 		public static unsafe void Convert(this Encoder encoder, ReadOnlySpan<char> chars, Span<byte> bytes, bool flush, out int charsUsed, out int bytesUsed, out bool completed)
 		{
 			fixed (char* charsPtr = &MemoryMarshal.GetReference(chars))

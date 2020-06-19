@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.Common;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Dapper;
 #if BASELINE
 using MySql.Data.MySqlClient;
@@ -563,27 +564,44 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			}
 		}
 
-		[Fact]
-		public void BulkCopyDataTableWithLongString()
+		[SkippableTheory(ServerFeatures.LargePackets)]
+		[InlineData(6)]
+		[InlineData(12)]
+		[InlineData(21)]
+		[InlineData(50)]
+		[InlineData(100)]
+		public void BulkCopyDataTableWithLongData(int rows)
 		{
+			// create a string that will be about 120,000 UTF-8 bytes
+			var sb = new StringBuilder { Capacity = 121_000 };
+			for (var j = 0; j < 4; j++)
+			{
+				for (var i = 0x20; i < 0x2000; i++)
+					sb.Append((char) i);
+				for (var i = 0x10000; i < 0x10780; i++)
+					sb.Append(char.ConvertFromUtf32(i));
+			}
+			var str = sb.ToString();
+
+			var bytes = new byte[50_000];
+			var random = new Random(1);
+			random.NextBytes(bytes);
+
 			var dataTable = new DataTable()
 			{
 				Columns =
 				{
-					new DataColumn("id", typeof(int)),
-					new DataColumn("data", typeof(string)),
-				},
-				Rows =
-				{
-					new object[] { 1, new string('a', 1_048_500) },
-					new object[] { 2, new string('b', 1_048_500) },
+					new DataColumn("data1", typeof(string)),
+					new DataColumn("data2", typeof(byte[])),
 				},
 			};
+			for (var i = 0; i < rows; i++)
+				dataTable.Rows.Add(str, bytes);
 
 			using var connection = new MySqlConnection(GetLocalConnectionString());
 			connection.Open();
 			using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
-create table bulk_load_data_table(a int, b longtext);", connection))
+create table bulk_load_data_table(a mediumtext collate utf8mb4_bin, b mediumblob);", connection))
 			{
 				cmd.ExecuteNonQuery();
 			}
@@ -594,9 +612,19 @@ create table bulk_load_data_table(a int, b longtext);", connection))
 			};
 			bulkCopy.WriteToServer(dataTable);
 
-			using (var cmd = new MySqlCommand(@"select sum(length(b)) from bulk_load_data_table;", connection))
+			using (var cmd = new MySqlCommand("select a, b from bulk_load_data_table;", connection))
+			using (var reader = cmd.ExecuteReader())
 			{
-				Assert.Equal(2_097_000m, cmd.ExecuteScalar());
+				var readRows = 0;
+				var readBytes = new byte[50_000];
+				while (reader.Read())
+				{
+					readRows++;
+					Assert.Equal(str, reader.GetString(0));
+					reader.GetBytes(1, 0, readBytes, 0, readBytes.Length);
+					Assert.Equal(bytes, readBytes);
+				}
+				Assert.Equal(rows, readRows);
 			}
 		}
 
@@ -641,66 +669,6 @@ create table bulk_load_data_table(a int, b text);", connection))
 				}
 				Assert.False(reader.Read());
 			}
-		}
-
-		[Fact]
-		public void BulkCopyDataTableWithTooLongBlob()
-		{
-			var dataTable = new DataTable()
-			{
-				Columns =
-				{
-					new DataColumn("data", typeof(byte[])),
-				},
-				Rows =
-				{
-					new object[] { new byte[524300] },
-				}
-			};
-
-			using var connection = new MySqlConnection(GetLocalConnectionString());
-			connection.Open();
-			using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
-create table bulk_load_data_table(a int, b longblob);", connection))
-			{
-				cmd.ExecuteNonQuery();
-			}
-
-			var bulkCopy = new MySqlBulkCopy(connection)
-			{
-				DestinationTableName = "bulk_load_data_table",
-			};
-			Assert.Throws<MySqlException>(() => bulkCopy.WriteToServer(dataTable));
-		}
-
-		[Fact]
-		public void BulkCopyDataTableWithTooLongString()
-		{
-			var dataTable = new DataTable()
-			{
-				Columns =
-				{
-					new DataColumn("data", typeof(string)),
-				},
-				Rows =
-				{
-					new object[] { new string('a', 1_048_700) },
-				}
-			};
-
-			using var connection = new MySqlConnection(GetLocalConnectionString());
-			connection.Open();
-			using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
-create table bulk_load_data_table(a int, b longblob);", connection))
-			{
-				cmd.ExecuteNonQuery();
-			}
-
-			var bulkCopy = new MySqlBulkCopy(connection)
-			{
-				DestinationTableName = "bulk_load_data_table",
-			};
-			Assert.Throws<MySqlException>(() => bulkCopy.WriteToServer(dataTable));
 		}
 
 		[Theory]
@@ -748,7 +716,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		[Theory]
 		[InlineData(0, 40, 0, 0, 0, 40)]
 		[InlineData(5, 40, 15, 3, 15, 0)]
-		[InlineData(5, 40, 20, 4, 20, 16)]
+		[InlineData(5, 40, 20, 4, 20, 17)]
 		[InlineData(int.MaxValue, 20, 0, 0, 0, 20)]
 		public void BulkCopyAbort(int notifyAfter, int rowCount, int abortAfter, int expectedEventCount, int expectedRowsCopied, long expectedCount)
 		{

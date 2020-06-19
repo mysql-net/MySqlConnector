@@ -477,47 +477,6 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			await bulkCopy.WriteToServerAsync(dataTable);
 		}
 
-		[Fact]
-		public async Task BulkCopyDataTableWithTooLongData()
-		{
-			var dataTable = new DataTable()
-			{
-				Columns =
-				{
-					new DataColumn("data", typeof(byte[])),
-				},
-				Rows =
-				{
-					new object[] { new byte[524300] },
-				}
-			};
-
-			using var connection = new MySqlConnection(GetLocalConnectionString());
-			await connection.OpenAsync();
-			using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
-create table bulk_load_data_table(a int, b longblob);", connection))
-			{
-				await cmd.ExecuteNonQueryAsync();
-			}
-
-			var bulkCopy = new MySqlBulkCopy(connection)
-			{
-				DestinationTableName = "bulk_load_data_table",
-				ColumnMappings =
-				{
-					new(0, "b"),
-				}
-			};
-			try
-			{
-				await bulkCopy.WriteToServerAsync(dataTable);
-				Assert.True(false, "Expected exception wasn't thrown");
-			}
-			catch (MySqlException ex) when (ex.InnerException?.InnerException is NotSupportedException)
-			{
-			}
-		}
-
 		[Theory]
 		[InlineData(0, 15, 0, 0)]
 		[InlineData(5, 15, 3, 15)]
@@ -563,7 +522,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		[Theory]
 		[InlineData(0, 40, 0, 0, 0, 40)]
 		[InlineData(5, 40, 15, 3, 15, 0)]
-		[InlineData(5, 40, 20, 4, 20, 16)]
+		[InlineData(5, 40, 20, 4, 20, 17)]
 		[InlineData(int.MaxValue, 20, 0, 0, 0, 20)]
 		public async Task BulkCopyAbort(int notifyAfter, int rowCount, int abortAfter, int expectedEventCount, int expectedRowsCopied, long expectedCount)
 		{
