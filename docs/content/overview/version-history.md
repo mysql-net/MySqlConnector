@@ -11,6 +11,13 @@ weight: 30
 Version History
 ===============
 
+### 1.0.0 Beta 2
+
+* **Breaking** Remove `MySqlInfoMessageEventArgs.errors` property; use `.Errors` instead.
+* Implement async schema APIs: [#835](https://github.com/mysql-net/MySqlConnector/issues/835).
+* Allow rows larger than 1 MiB in `MySqlBulkCopy`: [#834](https://github.com/mysql-net/MySqlConnector/issues/834).
+* Fix `Failed to read the result set.` error when using `MySqlBulkCopy`: [#780](https://github.com/mysql-net/MySqlConnector/issues/780).
+
 ### 1.0.0 Beta 1
 
 * **Breaking** Change namespace to `MySqlConnector`: [#827](https://github.com/mysql-net/MySqlConnector/issues/827).
