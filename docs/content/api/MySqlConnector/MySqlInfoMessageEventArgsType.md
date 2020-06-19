@@ -12,7 +12,6 @@ public sealed class MySqlInfoMessageEventArgs : EventArgs
 
 | name | description |
 | --- | --- |
-| [errors](../MySqlInfoMessageEventArgs/errors/) { get; } |  |
 | [Errors](../MySqlInfoMessageEventArgs/Errors/) { get; } |  |
 
 ## See Also

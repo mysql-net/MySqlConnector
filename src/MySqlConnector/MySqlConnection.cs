@@ -759,7 +759,7 @@ namespace MySqlConnector
 						errors.Add(new(reader.GetString(0), reader.GetInt32(1), reader.GetString(2)));
 				}
 
-				InfoMessage(this, new MySqlInfoMessageEventArgs(errors.ToArray()));
+				InfoMessage(this, new MySqlInfoMessageEventArgs(errors));
 			}
 		}
 

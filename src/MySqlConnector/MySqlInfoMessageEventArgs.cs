@@ -5,11 +5,9 @@ namespace MySqlConnector
 {
 	public sealed class MySqlInfoMessageEventArgs : EventArgs
 	{
-		internal MySqlInfoMessageEventArgs(MySqlError[] errors) => this.errors = errors;
+		internal MySqlInfoMessageEventArgs(IReadOnlyList<MySqlError> errors) => Errors = errors;
 
-		public MySqlError[] errors { get; }
-
-		public IReadOnlyList<MySqlError> Errors => errors;
+		public IReadOnlyList<MySqlError> Errors { get; }
 	}
 
 	public delegate void MySqlInfoMessageEventHandler(object sender, MySqlInfoMessageEventArgs args);

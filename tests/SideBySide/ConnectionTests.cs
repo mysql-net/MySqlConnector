@@ -27,8 +27,13 @@ namespace SideBySide
 			connection.InfoMessage += (s, a) =>
 			{
 				gotEvent = true;
+#if BASELINE
 				Assert.Single(a.errors);
 				Assert.Equal((int) MySqlErrorCode.BadTable, a.errors[0].Code);
+#else
+				Assert.Single(a.Errors);
+				Assert.Equal((int) MySqlErrorCode.BadTable, a.Errors[0].Code);
+#endif
 			};
 
 			connection.Execute(@"drop table if exists table_does_not_exist;");
@@ -46,8 +51,10 @@ namespace SideBySide
 			{
 				gotEvent = true;
 
+#if BASELINE
 				// seeming bug in Connector/NET raises an event with no errors
 				Assert.Empty(a.errors);
+#endif
 			};
 
 			connection.Execute(@"drop table if exists table_does_not_exist; select 1;");

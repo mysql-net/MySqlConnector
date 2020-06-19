@@ -135,6 +135,10 @@ removes most of the API that is based on those assumptions.
 To avoid ambiguity, there are two different factory methods for constructing a `MySqlGeometry`. Use the static factory method `MySqlGeometry.FromMySql` (if you have a byte array containing MySQL's internal format), or `FromWkb` if you have
 Well-known Binary bytes.
 
+### MySqlInfoMessageEventArgs
+
+The `MySqlError[] MySqlInfoMessageEventArgs.errors` property has changed to `IReadOnlyList<MySqlError> MySqlInfoMessageEventArgs.Errors`.
+
 ### Exceptions
 
 For consistency with other ADO.NET providers, MySqlConnector will throw `InvalidOperationException` (instead of `MySqlException`)
