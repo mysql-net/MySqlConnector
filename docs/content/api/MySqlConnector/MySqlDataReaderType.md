@@ -30,6 +30,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 | [GetChar](../MySqlDataReader/GetChar/)(…) |  |
 | override [GetChars](../MySqlDataReader/GetChars/)(…) |  |
 | [GetColumnSchema](../MySqlDataReader/GetColumnSchema/)() | Returns metadata about the columns in the result set. |
+| [GetColumnSchemaAsync](../MySqlDataReader/GetColumnSchemaAsync/)(…) | Returns metadata about the columns in the result set. |
 | override [GetDataTypeName](../MySqlDataReader/GetDataTypeName/)(…) |  |
 | override [GetDateTime](../MySqlDataReader/GetDateTime/)(…) |  |
 | [GetDateTime](../MySqlDataReader/GetDateTime/)(…) |  |
@@ -57,7 +58,8 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 | override [GetName](../MySqlDataReader/GetName/)(…) |  |
 | override [GetOrdinal](../MySqlDataReader/GetOrdinal/)(…) |  |
 | [GetSByte](../MySqlDataReader/GetSByte/)(…) |  (2 methods) |
-| override [GetSchemaTable](../MySqlDataReader/GetSchemaTable/)() |  |
+| override [GetSchemaTable](../MySqlDataReader/GetSchemaTable/)() | Returns a DataTable that contains metadata about the columns in the result set. |
+| [GetSchemaTableAsync](../MySqlDataReader/GetSchemaTableAsync/)(…) | Returns a DataTable that contains metadata about the columns in the result set. |
 | override [GetStream](../MySqlDataReader/GetStream/)(…) |  |
 | [GetStream](../MySqlDataReader/GetStream/)(…) |  |
 | override [GetString](../MySqlDataReader/GetString/)(…) |  |

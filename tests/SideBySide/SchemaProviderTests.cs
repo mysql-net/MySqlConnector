@@ -3,6 +3,7 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace SideBySide
@@ -80,6 +81,33 @@ namespace SideBySide
 					Assert.Equal(type, column.DataType);
 			}
 		}
+
+#if !BASELINE
+		[Fact]
+		public async Task GetMetaDataCollectionsSchemaAsync()
+		{
+			var table = await m_database.Connection.GetSchemaAsync();
+			Assert.Equal(3, table.Columns.Count);
+			Assert.Equal("CollectionName", table.Columns[0].ColumnName);
+		}
+
+		[Fact]
+		public async Task GetCharacterSetsSchemaAsync()
+		{
+			var table = await m_database.Connection.GetSchemaAsync("CharacterSets");
+			Assert.Equal(4, table.Columns.Count);
+			Assert.Contains("latin1", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
+			Assert.Contains("utf8", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
+		}
+
+		[Fact]
+		public void GetCollationsSchema()
+		{
+			var table = m_database.Connection.GetSchema("Collations");
+			Assert.Contains("latin1_general_ci", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
+			Assert.Contains("utf8_bin", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
+		}
+#endif
 
 		readonly DatabaseFixture m_database;
 	}

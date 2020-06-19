@@ -1,18 +1,27 @@
 ---
-title: GetSchemaTable
+title: GetSchemaTableAsync
 ---
 
-# MySqlDataReader.GetSchemaTable method
+# MySqlDataReader.GetSchemaTableAsync method
 
 Returns a DataTable that contains metadata about the columns in the result set.
 
 ```csharp
-public override DataTable GetSchemaTable()
+public Task<DataTable> GetSchemaTableAsync(
+    CancellationToken cancellationToken = default(CancellationToken))
 ```
+
+| parameter | description |
+| --- | --- |
+| cancellationToken | A token to cancel the operation. |
 
 ## Return Value
 
 A DataTable containing metadata about the columns in the result set.
+
+## Remarks
+
+This method runs synchronously; prefer to call [`GetSchemaTable`](../GetSchemaTable/) to avoid the overhead of allocating an unnecessary `Task`.
 
 ## See Also
 

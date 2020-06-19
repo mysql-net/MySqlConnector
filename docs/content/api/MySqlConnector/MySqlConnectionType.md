@@ -41,6 +41,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 | override [EnlistTransaction](../MySqlConnection/EnlistTransaction/)(…) |  |
 | override [GetSchema](../MySqlConnection/GetSchema/)() |  |
 | override [GetSchema](../MySqlConnection/GetSchema/)(…) |  (2 methods) |
+| [GetSchemaAsync](../MySqlConnection/GetSchemaAsync/)(…) | Asynchronously returns schema information for the data source of this [`MySqlConnection`](../MySqlConnectionType/). |
 | override [Open](../MySqlConnection/Open/)() |  |
 | override [OpenAsync](../MySqlConnection/OpenAsync/)(…) |  |
 | [Ping](../MySqlConnection/Ping/)() |  |

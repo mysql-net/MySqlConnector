@@ -292,7 +292,23 @@ namespace MySqlConnector
 		public override int VisibleFieldCount => FieldCount;
 
 #if !NETSTANDARD1_3
+		/// <summary>
+		/// Returns a <see cref="DataTable"/> that contains metadata about the columns in the result set.
+		/// </summary>
+		/// <returns>A <see cref="DataTable"/> containing metadata about the columns in the result set.</returns>
 		public override DataTable GetSchemaTable() => m_schemaTable ??= BuildSchemaTable();
+
+		/// <summary>
+		/// Returns a <see cref="DataTable"/> that contains metadata about the columns in the result set.
+		/// </summary>
+		/// <param name="cancellationToken">A token to cancel the operation.</param>
+		/// <returns>A <see cref="DataTable"/> containing metadata about the columns in the result set.</returns>
+		/// <remarks>This method runs synchronously; prefer to call <see cref="GetSchemaTable"/> to avoid the overhead of allocating an unnecessary <c>Task</c>.</remarks>
+		public Task<DataTable> GetSchemaTableAsync(CancellationToken cancellationToken = default)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			return Task.FromResult(GetSchemaTable());
+		}
 
 		public override void Close() => DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #endif
@@ -309,6 +325,18 @@ namespace MySqlConnector
 				columnDefinitions!
 					.Select((c, n) => (DbColumn) new MySqlDbColumn(n, c, Connection!.AllowZeroDateTime, GetResultSet().ColumnTypes![n]))
 					.ToList().AsReadOnly();
+		}
+
+		/// <summary>
+		/// Returns metadata about the columns in the result set.
+		/// </summary>
+		/// <param name="cancellationToken">A token to cancel the operation.</param>
+		/// <returns>A <see cref="Task"/> containing <see cref="System.Collections.ObjectModel.ReadOnlyCollection{DbColumn}"/> containing metadata about the result set.</returns>
+		/// <remarks>This method runs synchronously; prefer to call <see cref="GetColumnSchema"/> to avoid the overhead of allocating an unnecessary <c>Task</c>.</remarks>
+		public Task<ReadOnlyCollection<DbColumn>> GetColumnSchemaAsync(CancellationToken cancellationToken = default)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			return Task.FromResult(GetColumnSchema());
 		}
 
 		public override T GetFieldValue<T>(int ordinal)

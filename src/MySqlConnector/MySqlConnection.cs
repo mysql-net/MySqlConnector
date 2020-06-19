@@ -366,7 +366,7 @@ namespace MySqlConnector
 
 		public override Task OpenAsync(CancellationToken cancellationToken) => OpenAsync(default, cancellationToken);
 
-		private async Task OpenAsync(IOBehavior? ioBehavior, CancellationToken cancellationToken)
+		internal async Task OpenAsync(IOBehavior? ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyNotDisposed();
 			if (State != ConnectionState.Closed)
@@ -511,19 +511,25 @@ namespace MySqlConnector
 		protected override DbProviderFactory DbProviderFactory => MySqlClientFactory.Instance;
 
 		/// <inheritdoc cref="DbConnection.GetSchema()"/>
-		public override DataTable GetSchema() => GetSchemaProvider().GetSchema();
+		public override DataTable GetSchema() => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 
 		/// <inheritdoc cref="DbConnection.GetSchema(string)"/>
-		public override DataTable GetSchema(string collectionName) => GetSchemaProvider().GetSchema(collectionName);
+		public override DataTable GetSchema(string collectionName) => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, collectionName, default).GetAwaiter().GetResult();
 
 		/// <inheritdoc cref="DbConnection.GetSchema(string)"/>
-		public override DataTable GetSchema(string collectionName, string?[] restrictions) => GetSchemaProvider().GetSchema(collectionName);
+		public override DataTable GetSchema(string collectionName, string?[] restrictions) => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, collectionName, default).GetAwaiter().GetResult();
 
-		private SchemaProvider GetSchemaProvider()
-		{
-			m_schemaProvider ??= new(this);
-			return m_schemaProvider;
-		}
+		/// <summary>
+		/// Asynchronously returns schema information for the data source of this <see cref="MySqlConnection"/>.
+		/// </summary>
+		/// <param name="collectionName">The schema name of data to be returned; if <c>null</c>, the <c>MetaDataCollections</c> schema is returned.</param>
+		/// <param name="restrictions">The restrictions to apply to the schema; this parameter is currently ignored.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns></returns>
+		public Task<DataTable> GetSchemaAsync(string? collectionName = null, string?[]? restrictions = null, CancellationToken cancellationToken = default) =>
+			GetSchemaProvider().GetSchemaAsync(IOBehavior.Asynchronous, collectionName ?? "MetaDataCollections", cancellationToken).AsTask();
+
+		private SchemaProvider GetSchemaProvider() => m_schemaProvider ??= new(this);
 
 		SchemaProvider? m_schemaProvider;
 #endif

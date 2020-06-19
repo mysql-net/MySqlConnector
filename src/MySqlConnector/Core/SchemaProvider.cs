@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MySqlConnector.Protocol.Serialization;
+using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core
 {
@@ -45,9 +49,9 @@ namespace MySqlConnector.Core
 			};
 		}
 
-		public DataTable GetSchema() => GetSchema("MetaDataCollections");
+		public ValueTask<DataTable> GetSchemaAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) => GetSchemaAsync(ioBehavior, "MetaDataCollections", cancellationToken);
 
-		public DataTable GetSchema(string collectionName)
+		public async ValueTask<DataTable> GetSchemaAsync(IOBehavior ioBehavior, string collectionName, CancellationToken cancellationToken)
 		{
 			if (collectionName is null)
 				throw new ArgumentNullException(nameof(collectionName));
@@ -55,11 +59,11 @@ namespace MySqlConnector.Core
 				throw new ArgumentException("Invalid collection name.", nameof(collectionName));
 
 			var dataTable = new DataTable(collectionName);
-			fillAction(dataTable);
+			await fillAction(ioBehavior, dataTable, cancellationToken).ConfigureAwait(false);
 			return dataTable;
 		}
 
-		private void FillDataSourceInformation(DataTable dataTable)
+		private Task FillDataSourceInformation(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[] {
 				new("CompositeIdentifierSeparatorPattern", typeof(string)),
@@ -104,11 +108,13 @@ namespace MySqlConnector.Core
 				SupportedJoinOperators.LeftOuter |
 				SupportedJoinOperators.RightOuter;
 			dataTable.Rows.Add(row);
+
+			return Utility.CompletedTask;
 		}
 
 		private string GetVersion(Version v) => $"{v.Major:00}.{v.Minor:00}.{v.Build:0000}";
 
-		private void FillMetadataCollections(DataTable dataTable)
+		private Task FillMetadataCollections(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[] {
 				new("CollectionName", typeof(string)), // lgtm[cs/local-not-disposed]
@@ -118,9 +124,11 @@ namespace MySqlConnector.Core
 
 			foreach (var collectionName in m_schemaCollections.Keys)
 				dataTable.Rows.Add(collectionName, 0, 0);
+
+			return Utility.CompletedTask;
 		}
 
-		private void FillCharacterSets(DataTable dataTable)
+		private async Task FillCharacterSets(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -130,10 +138,10 @@ namespace MySqlConnector.Core
 				new("MAXLEN", typeof(int)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "CHARACTER_SETS");
+			await FillDataTableAsync(ioBehavior, dataTable, "CHARACTER_SETS", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillCollations(DataTable dataTable)
+		private async Task FillCollations(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -143,13 +151,12 @@ namespace MySqlConnector.Core
 				new("IS_DEFAULT", typeof(string)), // lgtm[cs/local-not-disposed]
 				new("IS_COMPILED", typeof(string)), // lgtm[cs/local-not-disposed]
 				new("SORTLEN", typeof(int)), // lgtm[cs/local-not-disposed]
-				new("PAD_ATTRIBUTE", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "COLLATIONS");
+			await FillDataTableAsync(ioBehavior, dataTable, "COLLATIONS", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillCollationCharacterSetApplicability(DataTable dataTable)
+		private async Task FillCollationCharacterSetApplicability(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -157,10 +164,10 @@ namespace MySqlConnector.Core
 				new("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "COLLATION_CHARACTER_SET_APPLICABILITY");
+			await FillDataTableAsync(ioBehavior, dataTable, "COLLATION_CHARACTER_SET_APPLICABILITY", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillColumns(DataTable dataTable)
+		private async Task FillColumns(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -187,20 +194,20 @@ namespace MySqlConnector.Core
 
 			using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'GENERATION_EXPRESSION';", m_connection))
 			{
-				if (command.ExecuteScalar() is not null)
+				if (await command.ExecuteScalarAsync(ioBehavior, cancellationToken).ConfigureAwait(false) is not null)
 					dataTable.Columns.Add(new DataColumn("GENERATION_EXPRESSION", typeof(string))); // lgtm[cs/local-not-disposed]
 			}
 
 			using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'SRS_ID';", m_connection))
 			{
-				if (command.ExecuteScalar() is not null)
+				if (await command.ExecuteScalarAsync(ioBehavior, cancellationToken).ConfigureAwait(false) is not null)
 					dataTable.Columns.Add(new DataColumn("SRS_ID", typeof(uint))); // lgtm[cs/local-not-disposed]
 			}
 
-			FillDataTable(dataTable, "COLUMNS");
+			await FillDataTableAsync(ioBehavior, dataTable, "COLUMNS", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillDatabases(DataTable dataTable)
+		private async Task FillDatabases(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -211,10 +218,10 @@ namespace MySqlConnector.Core
 				new("SQL_PATH", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "SCHEMATA");
+			await FillDataTableAsync(ioBehavior, dataTable, "SCHEMATA", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillDataTypes(DataTable dataTable)
+		private Task FillDataTypes(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -296,9 +303,11 @@ namespace MySqlConnector.Core
 					null
 				);
 			}
+
+			return Utility.CompletedTask;
 		}
 
-		private void FillEngines(DataTable dataTable)
+		private async Task FillEngines(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -310,10 +319,10 @@ namespace MySqlConnector.Core
 				new("SAVEPOINTS", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "ENGINES");
+			await FillDataTableAsync(ioBehavior, dataTable, "ENGINES", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillKeyColumnUsage(DataTable dataTable)
+		private async Task FillKeyColumnUsage(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -331,10 +340,10 @@ namespace MySqlConnector.Core
 				new("REFERENCED_COLUMN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "KEY_COLUMN_USAGE");
+			await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillKeyWords(DataTable dataTable)
+		private async Task FillKeyWords(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -342,10 +351,10 @@ namespace MySqlConnector.Core
 				new("RESERVED", typeof(int)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "KEYWORDS");
+			await FillDataTableAsync(ioBehavior, dataTable, "KEYWORDS", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillParameters(DataTable dataTable)
+		private async Task FillParameters(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -367,10 +376,10 @@ namespace MySqlConnector.Core
 				new("ROUTINE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "PARAMETERS");
+			await FillDataTableAsync(ioBehavior, dataTable, "PARAMETERS", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillPartitions(DataTable dataTable)
+		private async Task FillPartitions(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -401,10 +410,10 @@ namespace MySqlConnector.Core
 				new("TABLESPACE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "PARTITIONS");
+			await FillDataTableAsync(ioBehavior, dataTable, "PARTITIONS", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillPlugins(DataTable dataTable)
+		private async Task FillPlugins(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -421,10 +430,10 @@ namespace MySqlConnector.Core
 				new("LOAD_OPTION", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "PLUGINS");
+			await FillDataTableAsync(ioBehavior, dataTable, "PLUGINS", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillProcedures(DataTable dataTable)
+		private async Task FillProcedures(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -450,10 +459,10 @@ namespace MySqlConnector.Core
 				new("DEFINER", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "ROUTINES");
+			await FillDataTableAsync(ioBehavior, dataTable, "ROUTINES", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillProcessList(DataTable dataTable)
+		private async Task FillProcessList(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -467,10 +476,10 @@ namespace MySqlConnector.Core
 				new("INFO", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "PROCESSLIST");
+			await FillDataTableAsync(ioBehavior, dataTable, "PROCESSLIST", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillProfiling(DataTable dataTable)
+		private async Task FillProfiling(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -494,10 +503,10 @@ namespace MySqlConnector.Core
 				new("SOURCE_LINE", typeof(int)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "PROFILING");
+			await FillDataTableAsync(ioBehavior, dataTable, "PROFILING", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillReferentialConstraints(DataTable dataTable)
+		private async Task FillReferentialConstraints(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -514,11 +523,11 @@ namespace MySqlConnector.Core
 				new("REFERENCED_TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "REFERENTIAL_CONSTRAINTS");
+			await FillDataTableAsync(ioBehavior, dataTable, "REFERENTIAL_CONSTRAINTS", cancellationToken).ConfigureAwait(false);
 		}
 
 
-		private void FillReservedWords(DataTable dataTable)
+		private Task FillReservedWords(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.Add(new DataColumn("ReservedWord", typeof(string))); // lgtm[cs/local-not-disposed]
 
@@ -804,9 +813,11 @@ namespace MySqlConnector.Core
 			};
 			foreach (string word in reservedWords)
 				dataTable.Rows.Add(word);
+
+			return Utility.CompletedTask;
 		}
 
-		private void FillResourceGroups(DataTable dataTable)
+		private async Task FillResourceGroups(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -817,10 +828,10 @@ namespace MySqlConnector.Core
 				new("THREAD_PRIORITY", typeof(int)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "RESOURCE_GROUPS");
+			await FillDataTableAsync(ioBehavior, dataTable, "RESOURCE_GROUPS", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillSchemaPrivileges(DataTable dataTable)
+		private async Task FillSchemaPrivileges(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -831,10 +842,10 @@ namespace MySqlConnector.Core
 				new("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "SCHEMA_PRIVILEGES");
+			await FillDataTableAsync(ioBehavior, dataTable, "SCHEMA_PRIVILEGES", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillTables(DataTable dataTable)
+		private async Task FillTables(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -861,10 +872,10 @@ namespace MySqlConnector.Core
 				new("TABLE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "TABLES");
+			await FillDataTableAsync(ioBehavior, dataTable, "TABLES", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillTableConstraints(DataTable dataTable)
+		private async Task FillTableConstraints(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -876,10 +887,10 @@ namespace MySqlConnector.Core
 				new("CONSTRAINT_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "TABLE_CONSTRAINTS");
+			await FillDataTableAsync(ioBehavior, dataTable, "TABLE_CONSTRAINTS", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillTablePrivileges(DataTable dataTable)
+		private async Task FillTablePrivileges(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -891,10 +902,10 @@ namespace MySqlConnector.Core
 				new("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "TABLE_PRIVILEGES");
+			await FillDataTableAsync(ioBehavior, dataTable, "TABLE_PRIVILEGES", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillTableSpaces(DataTable dataTable)
+		private async Task FillTableSpaces(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -909,10 +920,10 @@ namespace MySqlConnector.Core
 				new("TABLESPACE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "TABLESPACES");
+			await FillDataTableAsync(ioBehavior, dataTable, "TABLESPACES", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillTriggers(DataTable dataTable)
+		private async Task FillTriggers(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -940,10 +951,10 @@ namespace MySqlConnector.Core
 				new("DATABASE_COLLATION", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "TRIGGERS");
+			await FillDataTableAsync(ioBehavior, dataTable, "TRIGGERS", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillUserPrivileges(DataTable dataTable)
+		private async Task FillUserPrivileges(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -953,10 +964,10 @@ namespace MySqlConnector.Core
 				new("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "USER_PRIVILEGES");
+			await FillDataTableAsync(ioBehavior, dataTable, "USER_PRIVILEGES", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillViews(DataTable dataTable)
+		private async Task FillViews(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
 			dataTable.Columns.AddRange(new DataColumn[]
 			{
@@ -972,15 +983,15 @@ namespace MySqlConnector.Core
 				new("COLLATION_CONNECTION", typeof(string)), // lgtm[cs/local-not-disposed]
 			});
 
-			FillDataTable(dataTable, "VIEWS");
+			await FillDataTableAsync(ioBehavior, dataTable, "VIEWS", cancellationToken).ConfigureAwait(false);
 		}
 
-		private void FillDataTable(DataTable dataTable, string tableName)
+		private async Task FillDataTableAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, CancellationToken cancellationToken)
 		{
 			Action? close = null;
 			if (m_connection.State != ConnectionState.Open)
 			{
-				m_connection.Open();
+				await m_connection.OpenAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				close = m_connection.Close;
 			}
 
@@ -989,8 +1000,8 @@ namespace MySqlConnector.Core
 #pragma warning disable CA2100
 				command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(x => x.ColumnName)) + " FROM INFORMATION_SCHEMA." + tableName + ";";
 #pragma warning restore CA2100
-				using var reader = command.ExecuteReader();
-				while (reader.Read())
+				using var reader = await command.ExecuteReaderAsync(default, ioBehavior, cancellationToken).ConfigureAwait(false);
+				while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
 				{
 					var rowValues = new object[dataTable.Columns.Count];
 					reader.GetValues(rowValues);
@@ -1002,7 +1013,7 @@ namespace MySqlConnector.Core
 		}
 
 		readonly MySqlConnection m_connection;
-		readonly Dictionary<string, Action<DataTable>> m_schemaCollections;
+		readonly Dictionary<string, Func<IOBehavior, DataTable, CancellationToken, Task>> m_schemaCollections;
 	}
 }
 #endif
