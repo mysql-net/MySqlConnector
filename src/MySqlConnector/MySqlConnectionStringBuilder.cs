@@ -406,25 +406,25 @@ namespace MySqlConnector
 	internal abstract class MySqlConnectionStringOption
 	{
 		// Base Options
-		public static readonly MySqlConnectionStringNonNullOption<string> Server;
+		public static readonly MySqlConnectionStringReferenceOption<string> Server;
 		public static readonly MySqlConnectionStringValueOption<uint> Port;
-		public static readonly MySqlConnectionStringNonNullOption<string> UserID;
-		public static readonly MySqlConnectionStringNonNullOption<string> Password;
-		public static readonly MySqlConnectionStringNonNullOption<string> Database;
+		public static readonly MySqlConnectionStringReferenceOption<string> UserID;
+		public static readonly MySqlConnectionStringReferenceOption<string> Password;
+		public static readonly MySqlConnectionStringReferenceOption<string> Database;
 		public static readonly MySqlConnectionStringValueOption<MySqlLoadBalance> LoadBalance;
 		public static readonly MySqlConnectionStringValueOption<MySqlConnectionProtocol> ConnectionProtocol;
-		public static readonly MySqlConnectionStringNonNullOption<string> PipeName;
+		public static readonly MySqlConnectionStringReferenceOption<string> PipeName;
 
 		// SSL/TLS Options
 		public static readonly MySqlConnectionStringValueOption<MySqlSslMode> SslMode;
-		public static readonly MySqlConnectionStringNonNullOption<string> CertificateFile;
-		public static readonly MySqlConnectionStringNonNullOption<string> CertificatePassword;
+		public static readonly MySqlConnectionStringReferenceOption<string> CertificateFile;
+		public static readonly MySqlConnectionStringReferenceOption<string> CertificatePassword;
 		public static readonly MySqlConnectionStringValueOption<MySqlCertificateStoreLocation> CertificateStoreLocation;
-		public static readonly MySqlConnectionStringNonNullOption<string> CertificateThumbprint;
-		public static readonly MySqlConnectionStringNonNullOption<string> SslCa;
-		public static readonly MySqlConnectionStringNonNullOption<string> SslCert;
-		public static readonly MySqlConnectionStringNonNullOption<string> SslKey;
-		public static readonly MySqlConnectionStringNonNullOption<string> TlsVersion;
+		public static readonly MySqlConnectionStringReferenceOption<string> CertificateThumbprint;
+		public static readonly MySqlConnectionStringReferenceOption<string> SslCa;
+		public static readonly MySqlConnectionStringReferenceOption<string> SslCert;
+		public static readonly MySqlConnectionStringReferenceOption<string> SslKey;
+		public static readonly MySqlConnectionStringReferenceOption<string> TlsVersion;
 
 		// Connection Pooling Options
 		public static readonly MySqlConnectionStringValueOption<bool> Pooling;
@@ -440,9 +440,9 @@ namespace MySqlConnector
 		public static readonly MySqlConnectionStringValueOption<bool> AllowPublicKeyRetrieval;
 		public static readonly MySqlConnectionStringValueOption<bool> AllowUserVariables;
 		public static readonly MySqlConnectionStringValueOption<bool> AllowZeroDateTime;
-		public static readonly MySqlConnectionStringNonNullOption<string> ApplicationName;
+		public static readonly MySqlConnectionStringReferenceOption<string> ApplicationName;
 		public static readonly MySqlConnectionStringValueOption<bool> AutoEnlist;
-		public static readonly MySqlConnectionStringNonNullOption<string> CharacterSet;
+		public static readonly MySqlConnectionStringReferenceOption<string> CharacterSet;
 		public static readonly MySqlConnectionStringValueOption<uint> ConnectionTimeout;
 		public static readonly MySqlConnectionStringValueOption<bool> ConvertZeroDateTime;
 		public static readonly MySqlConnectionStringValueOption<MySqlDateTimeKind> DateTimeKind;
@@ -456,8 +456,8 @@ namespace MySqlConnector
 		public static readonly MySqlConnectionStringValueOption<bool> NoBackslashEscapes;
 		public static readonly MySqlConnectionStringValueOption<bool> OldGuids;
 		public static readonly MySqlConnectionStringValueOption<bool> PersistSecurityInfo;
-		public static readonly MySqlConnectionStringNonNullOption<string> ServerRsaPublicKeyFile;
-		public static readonly MySqlConnectionStringNonNullOption<string> ServerSPN;
+		public static readonly MySqlConnectionStringReferenceOption<string> ServerRsaPublicKeyFile;
+		public static readonly MySqlConnectionStringReferenceOption<string> ServerSPN;
 		public static readonly MySqlConnectionStringValueOption<bool> TreatTinyAsBoolean;
 		public static readonly MySqlConnectionStringValueOption<bool> UseAffectedRows;
 		public static readonly MySqlConnectionStringValueOption<bool> UseCompression;
@@ -790,10 +790,10 @@ namespace MySqlConnector
 		readonly Func<T, T>? m_coerce;
 	}
 
-	internal sealed class MySqlConnectionStringNonNullOption<T> : MySqlConnectionStringOption
+	internal sealed class MySqlConnectionStringReferenceOption<T> : MySqlConnectionStringOption
 		where T : class
 	{
-		public MySqlConnectionStringNonNullOption(IReadOnlyList<string> keys, T defaultValue, Func<T?, T>? coerce = null)
+		public MySqlConnectionStringReferenceOption(IReadOnlyList<string> keys, T defaultValue, Func<T?, T>? coerce = null)
 			: base(keys)
 		{
 			m_defaultValue = defaultValue;
