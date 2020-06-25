@@ -16,6 +16,24 @@ Migrating from Connector/NET
 MySqlConnector supports the same core API as MySQL Connector/NET, but the classes are in a different
 namespace. Change `using MySql.Data.MySqlClient;` to `using MySqlConnector;`.
 
+### DbProviderFactories
+
+The `MySqlClientFactory` type is named `MySqlConnectorFactory` in MySqlConnector.
+
+In a .NET Framework application, make the following `app.config` change to register MySqlConnector instead of MySql.Data.
+
+```xml
+<system.data>
+  <DbProviderFactories>
+    <!-- REMOVE THIS -->
+    <!-- add name="MySQL Data Provider" invariant="MySql.Data.MySqlClient" description=".Net Framework Data Provider for MySQL" type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=8.0.20.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
+
+    <!-- ADD THIS -->
+    <add name="MySqlConnector" invariant="MySqlConnector" description="MySQL Connector for .NET" type="MySqlConnector.MySqlConnectorFactory, MySqlConnector, Culture=neutral, PublicKeyToken=d33d3e53aa5f8c92" />
+  </DbProviderFactories>
+</system.data>
+```
+
 ### Connection String Differences
 
 MySqlConnector has some different default connection string options:
@@ -111,6 +129,10 @@ object to be created. See [#331](https://github.com/mysql-net/MySqlConnector/iss
 The return value of `MySqlConnection.BeginTransactionAsync` has changed from `Task<MySqlTransaction>` to
 `ValueTask<MySqlTransaction>` to match the [standard API in .NET Core 3.0](https://github.com/dotnet/corefx/issues/35012).
 (This method does always perform I/O, so `ValueTask` is not an optimization for MySqlConnector.)
+
+### MySqlConnectionStringBuilder
+
+All `string` properties on `MySqlConnectionStringBuilder` will return the empty string (instead of `null`) if the property isn't set.
 
 ### MySqlCommand
 
