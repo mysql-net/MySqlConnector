@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 1.0.0 Beta 3
+
+* Fix connection pool leak when a failure (e.g., timeout) occurs on a connection: [#836](https://github.com/mysql-net/MySqlConnector/issues/836).
+
 ### 1.0.0 Beta 2
 
 * **Breaking** Remove `MySqlInfoMessageEventArgs.errors` property; use `.Errors` instead.
