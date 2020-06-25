@@ -921,9 +921,12 @@ namespace MySqlConnector
 			}
 #endif
 
+			m_cachedProcedures = null;
+
 			try
 			{
-				await CloseDatabaseAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+				if (m_activeReader is not null || CurrentTransaction is not null)
+					await CloseDatabaseAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			}
 			finally
 			{
@@ -946,15 +949,11 @@ namespace MySqlConnector
 			}
 		}
 
-		private Task CloseDatabaseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-		{
-			m_cachedProcedures = null;
-			if (m_activeReader is null && CurrentTransaction is null)
-				return Utility.CompletedTask;
-			return DoCloseDatabaseAsync(ioBehavior, cancellationToken);
-		}
-
-		private async Task DoCloseDatabaseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
+		private async Task CloseDatabaseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#else
+		private async ValueTask CloseDatabaseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#endif
 		{
 			if (m_activeReader is not null)
 				await m_activeReader.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
