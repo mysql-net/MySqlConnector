@@ -685,7 +685,7 @@ namespace MySqlConnector.Core
 
 		private async Task<string> GetRsaPublicKeyAsync(string switchRequestName, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			if (!string.IsNullOrEmpty(cs.ServerRsaPublicKeyFile))
+			if (cs.ServerRsaPublicKeyFile.Length != 0)
 			{
 				try
 				{
@@ -1022,7 +1022,7 @@ namespace MySqlConnector.Core
 #else
 			if (Log.IsInfoEnabled())
 				Log.Info("Session{0} connecting to NamedPipe '{1}' on Server '{2}'", m_logArguments[0], cs.PipeName, cs.HostNames![0]);
-			var namedPipeStream = new NamedPipeClientStream(cs.HostNames![0], cs.PipeName!, PipeDirection.InOut, PipeOptions.Asynchronous);
+			var namedPipeStream = new NamedPipeClientStream(cs.HostNames![0], cs.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
 			var timeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - unchecked(Environment.TickCount - startTickCount));
 			try
 			{
@@ -1076,7 +1076,7 @@ namespace MySqlConnector.Core
 					var store = new X509Store(StoreName.My, storeLocation);
 					store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
 
-					if (cs.CertificateThumbprint is null)
+					if (cs.CertificateThumbprint.Length == 0)
 					{
 						if (store.Certificates.Count == 0)
 						{
@@ -1108,7 +1108,7 @@ namespace MySqlConnector.Core
 				}
 			}
 
-			if (cs.SslCertificateFile is not null && cs.SslKeyFile is not null)
+			if (cs.SslCertificateFile.Length != 0 && cs.SslKeyFile.Length != 0)
 			{
 #if !NETSTANDARD1_3 && !NETSTANDARD2_0
 				m_logArguments[1] = cs.SslKeyFile;
@@ -1182,7 +1182,7 @@ namespace MySqlConnector.Core
 				throw new NotSupportedException("SslCert and SslKey connection string options are not supported in netstandard1.3 or netstandard2.0.");
 #endif
 			}
-			else if (cs.CertificateFile is not null)
+			else if (cs.CertificateFile.Length != 0)
 			{
 				try
 				{
@@ -1208,7 +1208,7 @@ namespace MySqlConnector.Core
 			}
 
 			X509Chain? caCertificateChain = null;
-			if (cs.CACertificateFile is not null)
+			if (cs.CACertificateFile.Length != 0)
 			{
 				X509Chain? certificateChain = new()
 				{
@@ -1511,7 +1511,7 @@ namespace MySqlConnector.Core
 
 		internal SslProtocols SslProtocol => m_sslStream?.SslProtocol ?? SslProtocols.None;
 
-		private byte[] CreateConnectionAttributes(string? programName)
+		private byte[] CreateConnectionAttributes(string programName)
 		{
 			Log.Debug("Session{0} creating connection attributes", m_logArguments);
 			var attributesWriter = new ByteBufferWriter();
@@ -1544,7 +1544,7 @@ namespace MySqlConnector.Core
 			using var process = Process.GetCurrentProcess();
 			attributesWriter.WriteLengthEncodedString("_pid");
 			attributesWriter.WriteLengthEncodedString(process.Id.ToString(CultureInfo.InvariantCulture));
-			if (!string.IsNullOrEmpty(programName))
+			if (programName.Length != 0)
 			{
 				attributesWriter.WriteLengthEncodedString("program_name");
 				attributesWriter.WriteLengthEncodedString(programName!);

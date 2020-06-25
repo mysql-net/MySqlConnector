@@ -18,10 +18,16 @@ namespace MySqlConnector.Tests
 			Assert.False(csb.AllowUserVariables);
 			Assert.False(csb.AllowZeroDateTime);
 			Assert.True(csb.AutoEnlist);
+#if BASELINE
 			Assert.Null(csb.CertificateFile);
 			Assert.Null(csb.CertificatePassword);
-			Assert.Equal(MySqlCertificateStoreLocation.None, csb.CertificateStoreLocation);
 			Assert.Null(csb.CertificateThumbprint);
+#else
+			Assert.Equal("", csb.CertificateFile);
+			Assert.Equal("", csb.CertificatePassword);
+			Assert.Equal("", csb.CertificateThumbprint);
+#endif
+			Assert.Equal(MySqlCertificateStoreLocation.None, csb.CertificateStoreLocation);
 			Assert.Equal("", csb.CharacterSet);
 			Assert.Equal(0u, csb.ConnectionLifeTime);
 			Assert.Equal(MySqlConnectionProtocol.Sockets, csb.ConnectionProtocol);
@@ -38,7 +44,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal("", csb.Database);
 			Assert.Equal(30u, csb.DefaultCommandTimeout);
 #if !BASELINE
-			Assert.Null(csb.ApplicationName);
+			Assert.Equal("", csb.ApplicationName);
 			Assert.Equal(0u, csb.ConnectionIdlePingTime);
 			Assert.Equal(180u, csb.ConnectionIdleTimeout);
 			Assert.False(csb.ForceSynchronous);
@@ -62,14 +68,19 @@ namespace MySqlConnector.Tests
 			Assert.Equal(3306u, csb.Port);
 			Assert.Equal("", csb.Server);
 #if !BASELINE
-			Assert.Null(csb.ServerRsaPublicKeyFile);
-			Assert.Null(csb.ServerSPN);
-#endif
+			Assert.Equal("", csb.ServerRsaPublicKeyFile);
+			Assert.Equal("", csb.ServerSPN);
+			Assert.Equal("", csb.SslCa);
+			Assert.Equal("", csb.SslCert);
+			Assert.Equal("", csb.SslKey);
+			Assert.Equal("", csb.TlsVersion);
+#else
 			Assert.Null(csb.SslCa);
 			Assert.Null(csb.SslCert);
 			Assert.Null(csb.SslKey);
-			Assert.Equal(MySqlSslMode.Preferred, csb.SslMode);
 			Assert.Null(csb.TlsVersion);
+#endif
+			Assert.Equal(MySqlSslMode.Preferred, csb.SslMode);
 			Assert.True(csb.TreatTinyAsBoolean);
 			Assert.False(csb.UseCompression);
 			Assert.Equal("", csb.UserID);
