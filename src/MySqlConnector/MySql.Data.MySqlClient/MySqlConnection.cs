@@ -796,9 +796,6 @@ namespace MySql.Data.MySqlClient
 
 		private Task CloseAsync(bool changeState, IOBehavior ioBehavior)
 		{
-			if (m_connectionState == ConnectionState.Closed)
-				return Utility.CompletedTask;
-
 			// check fast path
 			if (m_activeReader is null &&
 				CurrentTransaction is null &&
@@ -866,31 +863,28 @@ namespace MySql.Data.MySqlClient
 			}
 #endif
 
-			if (m_connectionState != ConnectionState.Closed)
+			try
 			{
-				try
+				await CloseDatabaseAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+			}
+			finally
+			{
+				if (m_session is object)
 				{
-					await CloseDatabaseAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-				}
-				finally
-				{
-					if (m_session is object)
+					if (GetInitializedConnectionSettings().Pooling)
 					{
-						if (GetInitializedConnectionSettings().Pooling)
-						{
-							m_session.ReturnToPool();
-						}
-						else
-						{
-							await m_session.DisposeAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-							m_session.OwningConnection = null;
-						}
-						m_session = null;
+						m_session.ReturnToPool();
 					}
-
-					if (changeState)
-						SetState(ConnectionState.Closed);
+					else
+					{
+						await m_session.DisposeAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+						m_session.OwningConnection = null;
+					}
+					m_session = null;
 				}
+
+				if (changeState)
+					SetState(ConnectionState.Closed);
 			}
 		}
 
