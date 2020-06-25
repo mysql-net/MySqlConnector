@@ -1,5 +1,6 @@
 #if BASELINE
 using MySql.Data.MySqlClient;
+using MySqlConnectorFactory = MySql.Data.MySqlClient.MySqlClientFactory;
 #endif
 using Xunit;
 
@@ -10,17 +11,17 @@ namespace MySqlConnector.Tests
 		[Fact]
 		public void CreatesExpectedTypes()
 		{
-			Assert.IsType<MySqlConnection>(MySqlClientFactory.Instance.CreateConnection());
-			Assert.IsType<MySqlConnectionStringBuilder>(MySqlClientFactory.Instance.CreateConnectionStringBuilder());
-			Assert.IsType<MySqlCommand>(MySqlClientFactory.Instance.CreateCommand());
-			Assert.IsType<MySqlParameter>(MySqlClientFactory.Instance.CreateParameter());
+			Assert.IsType<MySqlConnection>(MySqlConnectorFactory.Instance.CreateConnection());
+			Assert.IsType<MySqlConnectionStringBuilder>(MySqlConnectorFactory.Instance.CreateConnectionStringBuilder());
+			Assert.IsType<MySqlCommand>(MySqlConnectorFactory.Instance.CreateCommand());
+			Assert.IsType<MySqlParameter>(MySqlConnectorFactory.Instance.CreateParameter());
 		}
 
 		[Fact]
 		public void Singleton()
 		{
-			var factory1 = MySqlClientFactory.Instance;
-			var factory2 = MySqlClientFactory.Instance;
+			var factory1 = MySqlConnectorFactory.Instance;
+			var factory2 = MySqlConnectorFactory.Instance;
 			Assert.True(object.ReferenceEquals(factory1, factory2));
 		}
 	}

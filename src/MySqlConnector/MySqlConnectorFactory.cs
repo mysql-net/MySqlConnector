@@ -2,9 +2,9 @@ using System.Data.Common;
 
 namespace MySqlConnector
 {
-	public sealed class MySqlClientFactory : DbProviderFactory
+	public sealed class MySqlConnectorFactory : DbProviderFactory
 	{
-		public static readonly MySqlClientFactory Instance = new();
+		public static readonly MySqlConnectorFactory Instance = new();
 
 		public override DbCommand CreateCommand() => new MySqlCommand();
 		public override DbConnection CreateConnection() => new MySqlConnection();
@@ -20,7 +20,7 @@ namespace MySqlConnector
 		public MySqlBatchCommand CreateBatchCommand() => new MySqlBatchCommand();
 		public bool CanCreateBatch => true;
 
-		private MySqlClientFactory()
+		private MySqlConnectorFactory()
 		{
 		}
 	}

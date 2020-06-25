@@ -508,7 +508,7 @@ namespace MySqlConnector
 		protected override DbCommand CreateDbCommand() => new MySqlCommand(this, null);
 
 #if !NETSTANDARD1_3
-		protected override DbProviderFactory DbProviderFactory => MySqlClientFactory.Instance;
+		protected override DbProviderFactory DbProviderFactory => MySqlConnectorFactory.Instance;
 
 		/// <inheritdoc cref="DbConnection.GetSchema()"/>
 		public override DataTable GetSchema() => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();

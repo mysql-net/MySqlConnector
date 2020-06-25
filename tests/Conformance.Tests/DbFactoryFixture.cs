@@ -13,6 +13,6 @@ namespace Conformance.Tests
 		}
 
 		public string ConnectionString { get; }
-		public DbProviderFactory Factory => MySqlClientFactory.Instance;
+		public DbProviderFactory Factory => MySqlConnectorFactory.Instance;
 	}
 }

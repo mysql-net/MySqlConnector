@@ -15,12 +15,12 @@ title: MySqlConnector
 | enum [MySqlBulkLoaderConflictOption](../MySqlConnector/MySqlBulkLoaderConflictOptionType/) |  |
 | enum [MySqlBulkLoaderPriority](../MySqlConnector/MySqlBulkLoaderPriorityType/) |  |
 | enum [MySqlCertificateStoreLocation](../MySqlConnector/MySqlCertificateStoreLocationType/) |  |
-| class [MySqlClientFactory](../MySqlConnector/MySqlClientFactoryType/) |  |
 | class [MySqlCommand](../MySqlConnector/MySqlCommandType/) | [`MySqlCommand`](../MySqlConnector/MySqlCommandType/) represents a SQL statement or stored procedure name to execute against a MySQL database. |
 | class [MySqlCommandBuilder](../MySqlConnector/MySqlCommandBuilderType/) |  |
 | class [MySqlConnection](../MySqlConnector/MySqlConnectionType/) | [`MySqlConnection`](../MySqlConnector/MySqlConnectionType/) represents a connection to a MySQL database. |
 | enum [MySqlConnectionProtocol](../MySqlConnector/MySqlConnectionProtocolType/) | Specifies the type of connection to make to the server. |
 | class [MySqlConnectionStringBuilder](../MySqlConnector/MySqlConnectionStringBuilderType/) |  |
+| class [MySqlConnectorFactory](../MySqlConnector/MySqlConnectorFactoryType/) |  |
 | class [MySqlConversionException](../MySqlConnector/MySqlConversionExceptionType/) |  |
 | class [MySqlDataAdapter](../MySqlConnector/MySqlDataAdapterType/) |  |
 | class [MySqlDataReader](../MySqlConnector/MySqlDataReaderType/) |  |
