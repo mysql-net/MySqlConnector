@@ -22,7 +22,7 @@ jobs:
     - name: Set up .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.100-preview.5.20279.10
+        dotnet-version: 5.0.100-preview.6.20318.15
 
     - name: Restore
       run: dotnet restore
