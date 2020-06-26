@@ -14,11 +14,11 @@ namespace MySqlConnector
 #if !NETSTANDARD1_3
 		public override DbCommandBuilder CreateCommandBuilder() => new MySqlCommandBuilder();
 		public override DbDataAdapter CreateDataAdapter() => new MySqlDataAdapter();
+		public override bool CanCreateDataSourceEnumerator => false;
 
 #if !NET45 && !NET461 && !NET471 && !NETSTANDARD2_0 && !NETCOREAPP2_1
 		public override bool CanCreateCommandBuilder => true;
 		public override bool CanCreateDataAdapter => true;
-		public override bool CanCreateDataSourceEnumerator => false;
 #endif
 #endif
 

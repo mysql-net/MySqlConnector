@@ -14,8 +14,13 @@ namespace MySqlConnector.Tests
 			Assert.IsType<MySqlConnection>(MySqlConnectorFactory.Instance.CreateConnection());
 			Assert.IsType<MySqlConnectionStringBuilder>(MySqlConnectorFactory.Instance.CreateConnectionStringBuilder());
 			Assert.IsType<MySqlCommand>(MySqlConnectorFactory.Instance.CreateCommand());
+			Assert.IsType<MySqlCommandBuilder>(MySqlConnectorFactory.Instance.CreateCommandBuilder());
+			Assert.IsType<MySqlDataAdapter>(MySqlConnectorFactory.Instance.CreateDataAdapter());
 			Assert.IsType<MySqlParameter>(MySqlConnectorFactory.Instance.CreateParameter());
 		}
+
+		[Fact]
+		public void CanCreateDataSourceEnumerator() => Assert.False(MySqlConnectorFactory.Instance.CanCreateDataSourceEnumerator);
 
 		[Fact]
 		public void Singleton()
