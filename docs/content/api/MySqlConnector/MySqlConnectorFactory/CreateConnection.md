@@ -4,6 +4,8 @@ title: CreateConnection
 
 # MySqlConnectorFactory.CreateConnection method
 
+Creates a new [`MySqlConnection`](../../MySqlConnectionType/) object.
+
 ```csharp
 public override DbConnection CreateConnection()
 ```

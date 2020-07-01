@@ -4,6 +4,8 @@ title: CanCreateBatch
 
 # MySqlConnectorFactory.CanCreateBatch property
 
+Returns `true`.
+
 ```csharp
 public bool CanCreateBatch { get; }
 ```

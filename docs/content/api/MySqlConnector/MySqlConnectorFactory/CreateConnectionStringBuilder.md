@@ -4,6 +4,8 @@ title: CreateConnectionStringBuilder
 
 # MySqlConnectorFactory.CreateConnectionStringBuilder method
 
+Creates a new [`MySqlConnectionStringBuilder`](../../MySqlConnectionStringBuilderType/) object.
+
 ```csharp
 public override DbConnectionStringBuilder CreateConnectionStringBuilder()
 ```

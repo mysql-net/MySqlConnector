@@ -4,6 +4,8 @@ title: CreateBatch
 
 # MySqlConnectorFactory.CreateBatch method
 
+Creates a new [`MySqlBatch`](../../MySqlBatchType/) object.
+
 ```csharp
 public MySqlBatch CreateBatch()
 ```

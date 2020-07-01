@@ -4,6 +4,8 @@ title: CreateCommand
 
 # MySqlConnectorFactory.CreateCommand method
 
+Creates a new [`MySqlCommand`](../../MySqlCommandType/) object.
+
 ```csharp
 public override DbCommand CreateCommand()
 ```

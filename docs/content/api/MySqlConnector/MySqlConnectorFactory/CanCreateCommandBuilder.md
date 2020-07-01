@@ -1,18 +1,17 @@
 ---
-title: CreateBatchCommand
+title: CanCreateCommandBuilder
 ---
 
-# MySqlConnectorFactory.CreateBatchCommand method
+# MySqlConnectorFactory.CanCreateCommandBuilder property
 
-Creates a new [`MySqlBatchCommand`](../../MySqlBatchCommandType/) object.
+Returns `true`.
 
 ```csharp
-public MySqlBatchCommand CreateBatchCommand()
+public override bool CanCreateCommandBuilder { get; }
 ```
 
 ## See Also
 
-* class [MySqlBatchCommand](../../MySqlBatchCommandType/)
 * class [MySqlConnectorFactory](../../MySqlConnectorFactoryType/)
 * namespace [MySqlConnector](../../MySqlConnectorFactoryType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)

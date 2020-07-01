@@ -1,18 +1,17 @@
 ---
-title: CreateBatchCommand
+title: CanCreateDataAdapter
 ---
 
-# MySqlConnectorFactory.CreateBatchCommand method
+# MySqlConnectorFactory.CanCreateDataAdapter property
 
-Creates a new [`MySqlBatchCommand`](../../MySqlBatchCommandType/) object.
+Returns `true`.
 
 ```csharp
-public MySqlBatchCommand CreateBatchCommand()
+public override bool CanCreateDataAdapter { get; }
 ```
 
 ## See Also
 
-* class [MySqlBatchCommand](../../MySqlBatchCommandType/)
 * class [MySqlConnectorFactory](../../MySqlConnectorFactoryType/)
 * namespace [MySqlConnector](../../MySqlConnectorFactoryType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)

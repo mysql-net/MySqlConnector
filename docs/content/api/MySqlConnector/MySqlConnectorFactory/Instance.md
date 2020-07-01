@@ -4,6 +4,8 @@ title: Instance
 
 # MySqlConnectorFactory.Instance field
 
+Provides an instance of DbProviderFactory that can create MySqlConnector objects.
+
 ```csharp
 public static readonly MySqlConnectorFactory Instance;
 ```

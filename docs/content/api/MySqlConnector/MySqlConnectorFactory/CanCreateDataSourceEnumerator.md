@@ -1,18 +1,21 @@
 ---
-title: CreateBatchCommand
+title: CanCreateDataSourceEnumerator
 ---
 
-# MySqlConnectorFactory.CreateBatchCommand method
+# MySqlConnectorFactory.CanCreateDataSourceEnumerator property
 
-Creates a new [`MySqlBatchCommand`](../../MySqlBatchCommandType/) object.
+Returns `false`.
 
 ```csharp
-public MySqlBatchCommand CreateBatchCommand()
+public override bool CanCreateDataSourceEnumerator { get; }
 ```
+
+## Remarks
+
+DbDataSourceEnumerator is not supported by MySqlConnector.
 
 ## See Also
 
-* class [MySqlBatchCommand](../../MySqlBatchCommandType/)
 * class [MySqlConnectorFactory](../../MySqlConnectorFactoryType/)
 * namespace [MySqlConnector](../../MySqlConnectorFactoryType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)

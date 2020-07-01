@@ -22,7 +22,7 @@ title: MySqlConnector
 | class [MySqlConnection](../MySqlConnector/MySqlConnectionType/) | [`MySqlConnection`](../MySqlConnector/MySqlConnectionType/) represents a connection to a MySQL database. |
 | enum [MySqlConnectionProtocol](../MySqlConnector/MySqlConnectionProtocolType/) | Specifies the type of connection to make to the server. |
 | class [MySqlConnectionStringBuilder](../MySqlConnector/MySqlConnectionStringBuilderType/) |  |
-| class [MySqlConnectorFactory](../MySqlConnector/MySqlConnectorFactoryType/) |  |
+| class [MySqlConnectorFactory](../MySqlConnector/MySqlConnectorFactoryType/) | An implementation of DbProviderFactory that creates MySqlConnector objects. |
 | class [MySqlConversionException](../MySqlConnector/MySqlConversionExceptionType/) |  |
 | class [MySqlDataAdapter](../MySqlConnector/MySqlDataAdapterType/) |  |
 | class [MySqlDataReader](../MySqlConnector/MySqlDataReaderType/) |  |

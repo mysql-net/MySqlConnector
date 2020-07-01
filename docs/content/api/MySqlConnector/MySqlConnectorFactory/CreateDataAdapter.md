@@ -4,6 +4,8 @@ title: CreateDataAdapter
 
 # MySqlConnectorFactory.CreateDataAdapter method
 
+Creates a new [`MySqlDataAdapter`](../../MySqlDataAdapterType/) object.
+
 ```csharp
 public override DbDataAdapter CreateDataAdapter()
 ```

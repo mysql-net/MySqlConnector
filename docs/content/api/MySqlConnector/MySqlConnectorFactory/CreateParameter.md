@@ -4,6 +4,8 @@ title: CreateParameter
 
 # MySqlConnectorFactory.CreateParameter method
 
+Creates a new [`MySqlParameter`](../../MySqlParameterType/) object.
+
 ```csharp
 public override DbParameter CreateParameter()
 ```

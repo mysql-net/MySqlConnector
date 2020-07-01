@@ -4,6 +4,8 @@ title: CreateCommandBuilder
 
 # MySqlConnectorFactory.CreateCommandBuilder method
 
+Creates a new [`MySqlCommandBuilder`](../../MySqlCommandBuilderType/) object.
+
 ```csharp
 public override DbCommandBuilder CreateCommandBuilder()
 ```
