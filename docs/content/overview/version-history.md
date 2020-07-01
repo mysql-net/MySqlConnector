@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.69.5
+
+* Improve robustness of OK packet parsing: [#842](https://github.com/mysql-net/MySqlConnector/issues/842).
+
 ### 0.69.4
 
 * Fix connection pool leak when a failure (e.g., timeout) occurs on a connection: [#836](https://github.com/mysql-net/MySqlConnector/issues/836).
