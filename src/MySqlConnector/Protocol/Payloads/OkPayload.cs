@@ -37,33 +37,38 @@ namespace MySqlConnector.Protocol.Payloads
 			var warningCount = (int) reader.ReadUInt16();
 			string? newSchema = null;
 
-			if (clientSessionTrack && (serverStatus & ServerStatus.SessionStateChanged) == ServerStatus.SessionStateChanged)
+			if (clientSessionTrack)
 			{
-				reader.ReadLengthEncodedByteString(); // human-readable info
-
-				// implies ProtocolCapabilities.SessionTrack
-				var sessionStateChangeDataLength = checked((int) reader.ReadLengthEncodedInteger());
-				var endOffset = reader.Offset + sessionStateChangeDataLength;
-				while (reader.Offset < endOffset)
+				if (reader.BytesRemaining > 0)
 				{
-					var kind = (SessionTrackKind) reader.ReadByte();
-					var dataLength = (int) reader.ReadLengthEncodedInteger();
-					switch (kind)
-					{
-					case SessionTrackKind.Schema:
-						newSchema = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
-						break;
+					reader.ReadLengthEncodedByteString(); // human-readable info
 
-					default:
-						reader.Offset += dataLength;
-						break;
+					if ((serverStatus & ServerStatus.SessionStateChanged) == ServerStatus.SessionStateChanged && reader.BytesRemaining > 0)
+					{
+						// implies ProtocolCapabilities.SessionTrack
+						var sessionStateChangeDataLength = checked((int) reader.ReadLengthEncodedInteger());
+						var endOffset = reader.Offset + sessionStateChangeDataLength;
+						while (reader.Offset < endOffset)
+						{
+							var kind = (SessionTrackKind) reader.ReadByte();
+							var dataLength = (int) reader.ReadLengthEncodedInteger();
+							switch (kind)
+							{
+							case SessionTrackKind.Schema:
+								newSchema = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
+								break;
+
+							default:
+								reader.Offset += dataLength;
+								break;
+							}
+						}
 					}
 				}
 			}
 			else
 			{
-				// either "string<EOF> info" or "string<lenenc> info" (followed by no session change info)
-				// ignore human-readable string in both cases
+				// ignore "string<EOF> info" human-readable string
 			}
 
 			if (affectedRowCount == 0 && lastInsertId == 0 && warningCount == 0 && newSchema is null)
