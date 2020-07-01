@@ -19,6 +19,10 @@ public ValueTask ResetConnectionAsync(
 
 A `ValueTask` representing the asynchronous operation.
 
+## Remarks
+
+This is an optional feature of the MySQL protocol and may not be supported by all servers. It's known to be supported by MySQL Server 5.7.3 (and later) and MariaDB 10.2.4 (and later). Other MySQL-compatible servers or proxies may not support this command.
+
 ## See Also
 
 * class [MySqlConnection](../../MySqlConnectionType/)

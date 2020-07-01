@@ -423,6 +423,9 @@ namespace MySqlConnector
 		/// </summary>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <c>ValueTask</c> representing the asynchronous operation.</returns>
+		/// <remarks>This is an optional feature of the MySQL protocol and may not be supported by all servers.
+		/// It's known to be supported by MySQL Server 5.7.3 (and later) and MariaDB 10.2.4 (and later).
+		/// Other MySQL-compatible servers or proxies may not support this command.</remarks>
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 		public async Task ResetConnectionAsync(CancellationToken cancellationToken = default)
 #else
