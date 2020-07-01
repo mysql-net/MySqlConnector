@@ -1,5 +1,5 @@
 ---
-lastmod: 2020-02-29
+lastmod: 2020-07-01
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,10 @@ weight: 30
 
 Version History
 ===============
+
+### 1.0.0 Beta 5
+
+* Improve robustness of OK packet parsing: [#842](https://github.com/mysql-net/MySqlConnector/issues/842).
 
 ### 1.0.0 Beta 4
 
