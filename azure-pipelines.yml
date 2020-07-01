@@ -145,11 +145,15 @@ jobs:
       targetType: 'inline'
       script: '((Get-Content .\tests\SideBySide\SideBySide.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>net472;netcoreapp2.0</TargetFrameworks>'')) | Set-Content .\tests\SideBySide\SideBySide.csproj'
   - task: DotNetCoreCLI@2
+    displayName: 'Restore packages'
+    inputs:
+      command: 'restore'
+  - task: DotNetCoreCLI@2
     displayName: 'Side by Side tests (net472/netcoreapp2.0)'
     inputs:
       command: 'test'
       projects: 'tests/SideBySide/SideBySide.csproj'
-      arguments: '-c Release'
+      arguments: '-c Release --no-restore'
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net472/netcoreapp2.0', 'No SSL') }}
     env:
       DATA__UNSUPPORTEDFEATURES: 'Ed25519,Tls11,UnixDomainSocket'
@@ -178,11 +182,15 @@ jobs:
       targetType: 'inline'
       script: '((Get-Content .\tests\SideBySide\SideBySide.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>netcoreapp2.1;netcoreapp3.0</TargetFrameworks>'')) | Set-Content .\tests\SideBySide\SideBySide.csproj'
   - task: DotNetCoreCLI@2
+    displayName: 'Restore packages'
+    inputs:
+      command: 'restore'
+  - task: DotNetCoreCLI@2
     displayName: 'Side by Side tests (netcoreapp2.1/netcoreapp3.0)'
     inputs:
       command: 'test'
       projects: 'tests/SideBySide/SideBySide.csproj'
-      arguments: '-c Release -f netcoreapp2.1'
+      arguments: '-c Release -f netcoreapp2.1 --no-restore'
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'netcoreapp2.1/netcoreapp3.0', 'No SSL') }}
     env:
       DATA__UNSUPPORTEDFEATURES: 'Ed25519,Tls11,UnixDomainSocket'
