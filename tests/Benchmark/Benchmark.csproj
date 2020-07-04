@@ -1,12 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net472;netcoreapp2.1</TargetFrameworks>
-    <LangVersion>latest</LangVersion>
+    <TargetFrameworks>net48;netcoreapp3.1</TargetFrameworks>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.11.5" />
-    <PackageReference Include="MySqlConnector" Version="0.56.0" />
-    <!-- PackageReference Include="MySql.Data" Version="8.0.12" / -->
+    <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
+    <PackageReference Include="MySqlConnector" Version="1.0.0-beta.5" />
+    <PackageReference Include="MySql.Data" Version="8.0.20" />
   </ItemGroup>
 </Project>

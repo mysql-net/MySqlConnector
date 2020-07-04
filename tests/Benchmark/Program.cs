@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
@@ -9,9 +10,7 @@ using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
-using BenchmarkDotNet.Toolchains.CsProj;
 using BenchmarkDotNet.Validators;
-using MySql.Data.MySqlClient;
 
 namespace Benchmark
 {
@@ -21,14 +20,12 @@ namespace Benchmark
 		{
 			var customConfig = ManualConfig
 				.Create(DefaultConfig.Instance)
-				.With(JitOptimizationsValidator.FailOnError)
-				.With(MemoryDiagnoser.Default)
-				.With(StatisticColumn.AllStatistics)
-				.With(Job.Default.With(Runtime.Clr).With(Jit.RyuJit).With(Platform.X64).With(CsProjClassicNetToolchain.Net472).WithNuGet("MySqlConnector", "0.56.0").WithId("net472 0.56.0"))
-				.With(Job.Default.With(Runtime.Clr).With(Jit.RyuJit).With(Platform.X64).With(CsProjClassicNetToolchain.Net472).WithNuGet("MySqlConnector", "0.57.0-beta2").WithId("net472 0.57.0"))
-				.With(Job.Default.With(Runtime.Core).With(CsProjCoreToolchain.NetCoreApp21).WithNuGet("MySqlConnector", "0.56.0").WithId("netcore21 0.56.0"))
-				.With(Job.Default.With(Runtime.Core).With(CsProjCoreToolchain.NetCoreApp21).WithNuGet("MySqlConnector", "0.57.0-beta2").WithId("netcore21 0.57.0"))
-				.With(DefaultExporters.Csv);
+				.AddValidator(JitOptimizationsValidator.FailOnError)
+				.AddDiagnoser(MemoryDiagnoser.Default)
+				.AddColumn(StatisticColumn.AllStatistics)
+				.AddJob(Job.Default.WithRuntime(ClrRuntime.Net48))
+				.AddJob(Job.Default.WithRuntime(CoreRuntime.Core31))
+				.AddExporter(DefaultExporters.Csv);
 
 			var summary = BenchmarkRunner.Run<MySqlClient>(customConfig);
 			Console.WriteLine(summary);
@@ -37,10 +34,13 @@ namespace Benchmark
 
 	public class MySqlClient
 	{
+		[Params("MySql.Data", "MySqlConnector")]
+		public string Library { get; set; }
+
 		[GlobalSetup]
 		public void GlobalSetup()
 		{
-			using (var connection = new MySqlConnection(s_connectionString))
+			using (var connection = new MySqlConnector.MySqlConnection(s_connectionString))
 			{
 				connection.Open();
 				using (var cmd = connection.CreateCommand())
@@ -69,16 +69,23 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 
 			s_connectionString += ";database=benchmark";
 
-			m_connection = new MySqlConnection(s_connectionString);
-			m_connection.Open();
+			var mySqlData = new MySql.Data.MySqlClient.MySqlConnection(s_connectionString);
+			mySqlData.Open();
+			m_connections.Add("MySql.Data", mySqlData);
+
+			var mySqlConnector = new MySqlConnector.MySqlConnection(s_connectionString);
+			mySqlConnector.Open();
+			m_connections.Add("MySqlConnector", mySqlConnector);
 		}
 
 		[GlobalCleanup]
 		public void GlobalCleanup()
 		{
-			m_connection.Dispose();
-			m_connection = null;
-			MySqlConnection.ClearAllPools();
+			foreach (var connection in m_connections.Values)
+				connection.Dispose();
+			m_connections.Clear();
+			MySqlConnector.MySqlConnection.ClearAllPools();
+			MySql.Data.MySqlClient.MySqlConnection.ClearAllPools();
 		}
 
 		private static void AddBlobParameter(DbCommand command, string name, int size)
@@ -97,35 +104,31 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 		[Benchmark]
 		public async Task OpenFromPoolAsync()
 		{
-			m_connection.Close();
-			await m_connection.OpenAsync();
+			Connection.Close();
+			await Connection.OpenAsync();
 		}
 
 		[Benchmark]
 		public void OpenFromPoolSync()
 		{
-			m_connection.Close();
-			m_connection.Open();
+			Connection.Close();
+			Connection.Open();
 		}
 
 		[Benchmark]
 		public async Task ExecuteScalarAsync()
 		{
-			using (var cmd = m_connection.CreateCommand())
-			{
-				cmd.CommandText = c_executeScalarSql;
-				await cmd.ExecuteScalarAsync();
-			}
+			using var cmd = Connection.CreateCommand();
+			cmd.CommandText = c_executeScalarSql;
+			await cmd.ExecuteScalarAsync();
 		}
 
 		[Benchmark]
 		public void ExecuteScalarSync()
 		{
-			using (var cmd = m_connection.CreateCommand())
-			{
-				cmd.CommandText = c_executeScalarSql;
-				cmd.ExecuteScalar();
-			}
+			using var cmd = Connection.CreateCommand();
+			cmd.CommandText = c_executeScalarSql;
+			cmd.ExecuteScalar();
 		}
 
 		private const string c_executeScalarSql = "select max(value) from integers;";
@@ -143,20 +146,18 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 		private async Task<int> ReadAllRowsAsync(string sql)
 		{
 			int total = 0;
-			using (var cmd = m_connection.CreateCommand())
+			using (var cmd = Connection.CreateCommand())
 			{
 				cmd.CommandText = sql;
-				using (var reader = await cmd.ExecuteReaderAsync())
+				using var reader = await cmd.ExecuteReaderAsync();
+				do
 				{
-					do
+					while (await reader.ReadAsync())
 					{
-						while (await reader.ReadAsync())
-						{
-							if (reader.FieldCount > 1)
-								total += reader.GetInt32(1);
-						}
-					} while (await reader.NextResultAsync());
-				}
+						if (reader.FieldCount > 1)
+							total += reader.GetInt32(1);
+					}
+				} while (await reader.NextResultAsync());
 			}
 			return total;
 		}
@@ -164,27 +165,27 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 		private int ReadAllRowsSync(string sql)
 		{
 			int total = 0;
-			using (var cmd = m_connection.CreateCommand())
+			using (var cmd = Connection.CreateCommand())
 			{
 				cmd.CommandText = sql;
-				using (var reader = cmd.ExecuteReader())
+				using var reader = cmd.ExecuteReader();
+				do
 				{
-					do
+					while (reader.Read())
 					{
-						while (reader.Read())
-						{
-							if (reader.FieldCount > 1)
-								total += reader.GetInt32(1);
-						}
-					} while (reader.NextResult());
-				}
+						if (reader.FieldCount > 1)
+							total += reader.GetInt32(1);
+					}
+				} while (reader.NextResult());
 			}
 			return total;
 		}
 
-		// TODO: move to config file
-		static string s_connectionString = "server=127.0.0.1;user id=mysqltest;password=test;port=3306;ssl mode=none;Use Affected Rows=true;Connection Reset=false;Default Command Timeout=0;AutoEnlist=false;";
+		private DbConnection Connection => m_connections[Library];
 
-		MySqlConnection m_connection;
+		// TODO: move to config file
+		static string s_connectionString = "server=127.0.0.1;user id=root;password=pass;port=3306;ssl mode=none;Use Affected Rows=true;Connection Reset=false;Default Command Timeout=0;AutoEnlist=false;";
+
+		Dictionary<string, DbConnection> m_connections = new Dictionary<string, DbConnection>();
 	}
 }
