@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.69.6
+
+* Support `GEOMCOLLECTION` data type alias in MySQL Server 8.0: [#845](https://github.com/mysql-net/MySqlConnector/issues/845).
+
 ### 0.69.5
 
 * Improve robustness of OK packet parsing: [#842](https://github.com/mysql-net/MySqlConnector/issues/842).
