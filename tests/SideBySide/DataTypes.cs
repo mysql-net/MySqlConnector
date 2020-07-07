@@ -965,17 +965,24 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 			}
 		}
 
-		[Fact]
-		public void QueryGeometry()
+		[Theory]
+		[InlineData("Geometry", "GEOMETRY", new byte[] { 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63 })]
+		[InlineData("Point", "GEOMETRY", new byte[] { 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63 })]
+		[InlineData("LineString", "GEOMETRY", new byte[] { 0, 0, 0, 0, 1, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 64 })]
+		[InlineData("Polygon", "GEOMETRY", new byte[] { 0, 0, 0, 0, 1, 3, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })]
+		[InlineData("MultiPoint", "GEOMETRY", new byte[] { 0, 0, 0, 0, 1, 4, 0, 0, 0, 3, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 64, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 64, 0, 0, 0, 0, 0, 0, 8, 64 })]
+		[InlineData("MultiLineString", "GEOMETRY", new byte[] { 0, 0, 0, 0, 1, 5, 0, 0, 0, 2, 0, 0, 0, 1, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 64, 0, 0, 0, 0, 0, 0, 36, 64, 0, 0, 0, 0, 0, 0, 52, 64, 0, 0, 0, 0, 0, 0, 52, 64, 1, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 46, 64, 0, 0, 0, 0, 0, 0, 46, 64, 0, 0, 0, 0, 0, 0, 62, 64, 0, 0, 0, 0, 0, 0, 46, 64 })]
+		[InlineData("MultiPolygon", "GEOMETRY", new byte[] { 0, 0, 0, 0, 1, 6, 0, 0, 0, 2, 0, 0, 0, 1, 3, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 64, 0, 0, 0, 0, 0, 0, 36, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 64, 0, 0, 0, 0, 0, 0, 20, 64, 0, 0, 0, 0, 0, 0, 28, 64, 0, 0, 0, 0, 0, 0, 20, 64, 0, 0, 0, 0, 0, 0, 28, 64, 0, 0, 0, 0, 0, 0, 28, 64, 0, 0, 0, 0, 0, 0, 20, 64, 0, 0, 0, 0, 0, 0, 28, 64, 0, 0, 0, 0, 0, 0, 20, 64, 0, 0, 0, 0, 0, 0, 20, 64 })]
+		[InlineData("GeometryCollection", "GEOMETRY", new byte[] { 0, 0, 0, 0, 1, 7, 0, 0, 0, 3, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 64, 0, 0, 0, 0, 0, 0, 36, 64, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 62, 64, 0, 0, 0, 0, 0, 0, 62, 64, 1, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 46, 64, 0, 0, 0, 0, 0, 0, 46, 64, 0, 0, 0, 0, 0, 0, 52, 64, 0, 0, 0, 0, 0, 0, 52, 64 })]
+		public void QueryGeometry(string columnName, string dataTypeName, byte[] expected)
 		{
 			var geometryData = new byte[][]
 			{
 				null,
-				new byte[] { 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63 },
-				new byte[] { 0, 0, 0, 0, 1, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 64 }
+				expected,
 			};
 
-			DoQuery("geometry", "Geometry", "GEOMETRY", geometryData.ToArray(),
+			DoQuery("geometry", columnName, dataTypeName, geometryData.ToArray(),
 #if !BASELINE
 				GetBytes
 #else
@@ -984,7 +991,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 #endif
 				);
 
-			DoQuery<GetGeometryWhenNullException>("geometry", "Geometry", "GEOMETRY", geometryData.Select(CreateGeometry).ToArray(),
+			DoQuery<GetGeometryWhenNullException>("geometry", columnName, dataTypeName, geometryData.Select(CreateGeometry).ToArray(),
 				reader => reader.GetMySqlGeometry(0),
 				matchesDefaultType: false,
 #if BASELINE
@@ -1071,6 +1078,13 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		[InlineData("Year", "datatypes_times", MySqlDbType.Year, 4, typeof(int), "N", 0, 0)]
 #endif
 		[InlineData("Geometry", "datatypes_geometry", MySqlDbType.Geometry, int.MaxValue, typeof(byte[]), "LN", 0, 0)]
+		[InlineData("Point", "datatypes_geometry", MySqlDbType.Geometry, int.MaxValue, typeof(byte[]), "LN", 0, 0)]
+		[InlineData("LineString", "datatypes_geometry", MySqlDbType.Geometry, int.MaxValue, typeof(byte[]), "LN", 0, 0)]
+		[InlineData("Polygon", "datatypes_geometry", MySqlDbType.Geometry, int.MaxValue, typeof(byte[]), "LN", 0, 0)]
+		[InlineData("MultiPoint", "datatypes_geometry", MySqlDbType.Geometry, int.MaxValue, typeof(byte[]), "LN", 0, 0)]
+		[InlineData("MultiLineString", "datatypes_geometry", MySqlDbType.Geometry, int.MaxValue, typeof(byte[]), "LN", 0, 0)]
+		[InlineData("MultiPolygon", "datatypes_geometry", MySqlDbType.Geometry, int.MaxValue, typeof(byte[]), "LN", 0, 0)]
+		[InlineData("GeometryCollection", "datatypes_geometry", MySqlDbType.Geometry, int.MaxValue, typeof(byte[]), "LN", 0, 0)]
 		public void GetSchemaTable(string column, string table, MySqlDbType mySqlDbType, int columnSize, Type dataType, string flags, int precision, int scale) =>
 			DoGetSchemaTable(column, table, mySqlDbType, columnSize, dataType, flags, precision, scale);
 
@@ -1241,6 +1255,13 @@ create table schema_table({createColumn});");
 		[InlineData("Time", "datatypes_times", MySqlDbType.Time, "TIME", 17, typeof(TimeSpan), "N", -1, 6)]
 		[InlineData("Year", "datatypes_times", MySqlDbType.Year, "YEAR", 4, typeof(int), "N", -1, 0)]
 		[InlineData("Geometry", "datatypes_geometry", MySqlDbType.Geometry, "GEOMETRY", int.MaxValue, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("Point", "datatypes_geometry", MySqlDbType.Geometry, "GEOMETRY", int.MaxValue, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("LineString", "datatypes_geometry", MySqlDbType.Geometry, "GEOMETRY", int.MaxValue, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("Polygon", "datatypes_geometry", MySqlDbType.Geometry, "GEOMETRY", int.MaxValue, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("MultiPoint", "datatypes_geometry", MySqlDbType.Geometry, "GEOMETRY", int.MaxValue, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("MultiLineString", "datatypes_geometry", MySqlDbType.Geometry, "GEOMETRY", int.MaxValue, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("MultiPolygon", "datatypes_geometry", MySqlDbType.Geometry, "GEOMETRY", int.MaxValue, typeof(byte[]), "LN", -1, 0)]
+		[InlineData("GeometryCollection", "datatypes_geometry", MySqlDbType.Geometry, "GEOMETRY", int.MaxValue, typeof(byte[]), "LN", -1, 0)]
 		public void GetColumnSchema(string column, string table, MySqlDbType mySqlDbType, string dataTypeName, int columnSize, Type dataType, string flags, int precision, int scale)
 		{
 			if (table == "datatypes_json_core" && !AppConfig.SupportsJson)
@@ -1333,6 +1354,13 @@ create table schema_table({createColumn});");
 #if !BASELINE
 		[InlineData("value", "datatypes_json_core", MySqlDbType.JSON, "JSON", typeof(string), 4, "[]")]
 		[InlineData("Geometry", "datatypes_geometry", MySqlDbType.Geometry, "GEOMETRY", typeof(byte[]), 2, null)]
+		[InlineData("Point", "datatypes_geometry", MySqlDbType.Geometry, "POINT", typeof(byte[]), 2, null)]
+		[InlineData("LineString", "datatypes_geometry", MySqlDbType.Geometry, "LINESTRING", typeof(byte[]), 2, null)]
+		[InlineData("Polygon", "datatypes_geometry", MySqlDbType.Geometry, "POLYGON", typeof(byte[]), 2, null)]
+		[InlineData("MultiPoint", "datatypes_geometry", MySqlDbType.Geometry, "MULTIPOINT", typeof(byte[]), 2, null)]
+		[InlineData("MultiLineString", "datatypes_geometry", MySqlDbType.Geometry, "MULTILINESTRING", typeof(byte[]), 2, null)]
+		[InlineData("MultiPolygon", "datatypes_geometry", MySqlDbType.Geometry, "MULTIPOLYGON", typeof(byte[]), 2, null)]
+		[InlineData("GeometryCollection", "datatypes_geometry", MySqlDbType.Geometry, "GEOMETRYCOLLECTION", typeof(byte[]), 2, null)]
 #endif
 		public void StoredProcedureOutParameter(string column, string table, MySqlDbType mySqlDbType, string dataTypeName, Type dataType, int rowid, object expectedValue)
 		{

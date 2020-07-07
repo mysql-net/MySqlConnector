@@ -90,6 +90,7 @@ namespace MySqlConnector.Core
 			AddColumnTypeMetadata(new ColumnTypeMetadata("MULTILINESTRING", typeBinary, MySqlDbType.Geometry, binary: true));
 			AddColumnTypeMetadata(new ColumnTypeMetadata("MULTIPOLYGON", typeBinary, MySqlDbType.Geometry, binary: true));
 			AddColumnTypeMetadata(new ColumnTypeMetadata("GEOMETRYCOLLECTION", typeBinary, MySqlDbType.Geometry, binary: true));
+			AddColumnTypeMetadata(new ColumnTypeMetadata("GEOMCOLLECTION", typeBinary, MySqlDbType.Geometry, binary: true));
 
 			// date/time
 			var typeDate = AddDbTypeMapping(new DbTypeMapping(typeof(DateTime), new[] { DbType.Date }));

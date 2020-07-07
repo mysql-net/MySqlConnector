@@ -202,14 +202,22 @@ values
 drop table if exists datatypes_geometry;
 create table datatypes_geometry (
   rowid integer not null primary key auto_increment,
-  `Geometry` geometry null
+  `Geometry` geometry null,
+  `Point` point null,
+  `LineString` linestring null,
+  `Polygon` polygon null,
+  `MultiPoint` multipoint null,
+  `MultiLineString` multilinestring null,
+  `MultiPolygon` multipolygon null,
+  `GeometryCollection` geometrycollection null
 );
 
-insert into datatypes_geometry (`Geometry`)
+insert into datatypes_geometry (`Geometry`, `Point`, `LineString`, `Polygon`, `MultiPoint`, `MultiLineString`, `MultiPolygon`, `GeometryCollection`)
 values
-  (null),
-  (ST_GeomFromText('POINT(1 1)')),
-  (ST_GeomFromText('LINESTRING(0 0,1 1,2 2)'));
+  (null, null, null, null, null, null, null, null),
+  (ST_GeomFromText('POINT(1 1)'), ST_PointFromText('POINT(1 1)'), ST_LineFromText('LINESTRING(0 0,1 1,2 2)'), ST_PolyFromText('POLYGON((0 0,1 0,1 1,0 1,0 0))'),
+   ST_GeomFromText('MULTIPOINT(1 1, 2 2, 3 3)'), ST_GeomFromText('MULTILINESTRING((10 10, 20 20), (15 15, 30 15))'), ST_GeomFromText('MULTIPOLYGON(((0 0,10 0,10 10,0 10,0 0)),((5 5,7 5,7 7,5 7, 5 5)))'),
+   ST_GeomCollFromText('GEOMETRYCOLLECTION(POINT(10 10), POINT(30 30), LINESTRING(15 15, 20 20))'));
 ");
 
 			if (AppConfig.SupportsJson)
