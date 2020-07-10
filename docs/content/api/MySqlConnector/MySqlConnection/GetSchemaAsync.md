@@ -2,20 +2,75 @@
 title: GetSchemaAsync
 ---
 
-# MySqlConnection.GetSchemaAsync method
+# MySqlConnection.GetSchemaAsync method (1 of 3)
 
 Asynchronously returns schema information for the data source of this [`MySqlConnection`](../../MySqlConnectionType/).
 
 ```csharp
-public Task<DataTable> GetSchemaAsync(string collectionName = null, string[] restrictions = null, 
+public Task<DataTable> GetSchemaAsync(
     CancellationToken cancellationToken = default(CancellationToken))
 ```
 
 | parameter | description |
 | --- | --- |
-| collectionName | The schema name of data to be returned; if `null`, the `MetaDataCollections` schema is returned. |
+| cancellationToken | A token to cancel the asynchronous operation. |
+
+## Return Value
+
+A Task containing schema information.
+
+## See Also
+
+* class [MySqlConnection](../../MySqlConnectionType/)
+* namespace [MySqlConnector](../../MySqlConnectionType/)
+* assembly [MySqlConnector](../../../MySqlConnectorAssembly/)
+
+---
+
+# MySqlConnection.GetSchemaAsync method (2 of 3)
+
+Asynchronously returns schema information for the data source of this [`MySqlConnection`](../../MySqlConnectionType/).
+
+```csharp
+public Task<DataTable> GetSchemaAsync(string collectionName, 
+    CancellationToken cancellationToken = default(CancellationToken))
+```
+
+| parameter | description |
+| --- | --- |
+| collectionName | The name of the schema to return. |
+| cancellationToken | A token to cancel the asynchronous operation. |
+
+## Return Value
+
+A Task containing schema information.
+
+## See Also
+
+* class [MySqlConnection](../../MySqlConnectionType/)
+* namespace [MySqlConnector](../../MySqlConnectionType/)
+* assembly [MySqlConnector](../../../MySqlConnectorAssembly/)
+
+---
+
+# MySqlConnection.GetSchemaAsync method (3 of 3)
+
+Asynchronously returns schema information for the data source of this [`MySqlConnection`](../../MySqlConnectionType/).
+
+```csharp
+public Task<DataTable> GetSchemaAsync(string collectionName, string[] restrictions, 
+    CancellationToken cancellationToken = default(CancellationToken))
+```
+
+| parameter | description |
+| --- | --- |
+| collectionName | The name of the schema to return. |
 | restrictions | The restrictions to apply to the schema; this parameter is currently ignored. |
 | cancellationToken | A token to cancel the asynchronous operation. |
+
+## Return Value
+
+A Task containing schema information.
 
 ## See Also
 

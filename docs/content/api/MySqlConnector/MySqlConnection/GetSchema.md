@@ -4,9 +4,15 @@ title: GetSchema
 
 # MySqlConnection.GetSchema method (1 of 3)
 
+Returns schema information for the data source of this [`MySqlConnection`](../../MySqlConnectionType/).
+
 ```csharp
 public override DataTable GetSchema()
 ```
+
+## Return Value
+
+A DataTable containing schema information.
 
 ## See Also
 
@@ -18,9 +24,19 @@ public override DataTable GetSchema()
 
 # MySqlConnection.GetSchema method (2 of 3)
 
+Returns schema information for the data source of this [`MySqlConnection`](../../MySqlConnectionType/).
+
 ```csharp
 public override DataTable GetSchema(string collectionName)
 ```
+
+| parameter | description |
+| --- | --- |
+| collectionName | The name of the schema to return. |
+
+## Return Value
+
+A DataTable containing schema information.
 
 ## See Also
 
@@ -32,9 +48,20 @@ public override DataTable GetSchema(string collectionName)
 
 # MySqlConnection.GetSchema method (3 of 3)
 
+Returns schema information for the data source of this [`MySqlConnection`](../../MySqlConnectionType/).
+
 ```csharp
 public override DataTable GetSchema(string collectionName, string[] restrictions)
 ```
+
+| parameter | description |
+| --- | --- |
+| collectionName | The name of the schema to return. |
+| restrictions | The restrictions to apply to the schema; this parameter is currently ignored. |
+
+## Return Value
+
+A DataTable containing schema information.
 
 ## See Also
 

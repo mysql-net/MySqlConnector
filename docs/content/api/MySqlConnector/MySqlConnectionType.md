@@ -39,9 +39,9 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 | [CreateCommand](../MySqlConnection/CreateCommand/)() |  |
 | override [DisposeAsync](../MySqlConnection/DisposeAsync/)() |  |
 | override [EnlistTransaction](../MySqlConnection/EnlistTransaction/)(…) |  |
-| override [GetSchema](../MySqlConnection/GetSchema/)() |  |
-| override [GetSchema](../MySqlConnection/GetSchema/)(…) |  (2 methods) |
-| [GetSchemaAsync](../MySqlConnection/GetSchemaAsync/)(…) | Asynchronously returns schema information for the data source of this [`MySqlConnection`](../MySqlConnectionType/). |
+| override [GetSchema](../MySqlConnection/GetSchema/)() | Returns schema information for the data source of this [`MySqlConnection`](../MySqlConnectionType/). |
+| override [GetSchema](../MySqlConnection/GetSchema/)(…) | Returns schema information for the data source of this [`MySqlConnection`](../MySqlConnectionType/). (2 methods) |
+| [GetSchemaAsync](../MySqlConnection/GetSchemaAsync/)(…) | Asynchronously returns schema information for the data source of this [`MySqlConnection`](../MySqlConnectionType/). (3 methods) |
 | override [Open](../MySqlConnection/Open/)() |  |
 | override [OpenAsync](../MySqlConnection/OpenAsync/)(…) |  |
 | [Ping](../MySqlConnection/Ping/)() |  |

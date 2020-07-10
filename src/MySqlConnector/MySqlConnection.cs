@@ -513,24 +513,50 @@ namespace MySqlConnector
 #if !NETSTANDARD1_3
 		protected override DbProviderFactory DbProviderFactory => MySqlConnectorFactory.Instance;
 
-		/// <inheritdoc cref="DbConnection.GetSchema()"/>
+		/// <summary>
+		/// Returns schema information for the data source of this <see cref="MySqlConnection"/>.
+		/// </summary>
+		/// <returns>A <see cref="DataTable"/> containing schema information.</returns>
 		public override DataTable GetSchema() => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 
-		/// <inheritdoc cref="DbConnection.GetSchema(string)"/>
+		/// <summary>
+		/// Returns schema information for the data source of this <see cref="MySqlConnection"/>.
+		/// </summary>
+		/// <param name="collectionName">The name of the schema to return.</param>
+		/// <returns>A <see cref="DataTable"/> containing schema information.</returns>
 		public override DataTable GetSchema(string collectionName) => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, collectionName, default).GetAwaiter().GetResult();
 
-		/// <inheritdoc cref="DbConnection.GetSchema(string)"/>
+		/// <summary>
+		/// Returns schema information for the data source of this <see cref="MySqlConnection"/>.
+		/// </summary>
+		/// <param name="collectionName">The name of the schema to return.</param>
+		/// <param name="restrictions">The restrictions to apply to the schema; this parameter is currently ignored.</param>
+		/// <returns>A <see cref="DataTable"/> containing schema information.</returns>
 		public override DataTable GetSchema(string collectionName, string?[] restrictions) => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, collectionName, default).GetAwaiter().GetResult();
 
 		/// <summary>
 		/// Asynchronously returns schema information for the data source of this <see cref="MySqlConnection"/>.
 		/// </summary>
-		/// <param name="collectionName">The schema name of data to be returned; if <c>null</c>, the <c>MetaDataCollections</c> schema is returned.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task{DataTable}"/> containing schema information.</returns>
+		public Task<DataTable> GetSchemaAsync(CancellationToken cancellationToken = default) => GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, cancellationToken).AsTask();
+
+		/// <summary>
+		/// Asynchronously returns schema information for the data source of this <see cref="MySqlConnection"/>.
+		/// </summary>
+		/// <param name="collectionName">The name of the schema to return.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task{DataTable}"/> containing schema information.</returns>
+		public Task<DataTable> GetSchemaAsync(string collectionName, CancellationToken cancellationToken = default) => GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, collectionName, cancellationToken).AsTask();
+
+		/// <summary>
+		/// Asynchronously returns schema information for the data source of this <see cref="MySqlConnection"/>.
+		/// </summary>
+		/// <param name="collectionName">The name of the schema to return.</param>
 		/// <param name="restrictions">The restrictions to apply to the schema; this parameter is currently ignored.</param>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-		/// <returns></returns>
-		public Task<DataTable> GetSchemaAsync(string? collectionName = null, string?[]? restrictions = null, CancellationToken cancellationToken = default) =>
-			GetSchemaProvider().GetSchemaAsync(IOBehavior.Asynchronous, collectionName ?? "MetaDataCollections", cancellationToken).AsTask();
+		/// <returns>A <see cref="Task{DataTable}"/> containing schema information.</returns>
+		public Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictions, CancellationToken cancellationToken = default) => GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, collectionName, cancellationToken).AsTask();
 
 		private SchemaProvider GetSchemaProvider() => m_schemaProvider ??= new(this);
 
