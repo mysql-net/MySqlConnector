@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 1.0.0 Beta 6
+
+* **Potentially Breaking** Introduce `MySqlConnection.GetSchemaAsync` overloads to match latest .NET 5 API proposal: [#835](https://github.com/mysql-net/MySqlConnector/issues/835).
+* Support `GEOMCOLLECTION` data type alias in MySQL Server 8.0: [#845](https://github.com/mysql-net/MySqlConnector/issues/845).
+
 ### 1.0.0 Beta 5
 
 * Improve robustness of OK packet parsing: [#842](https://github.com/mysql-net/MySqlConnector/issues/842).
