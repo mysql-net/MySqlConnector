@@ -539,6 +539,7 @@ namespace MySqlConnector
 		/// </summary>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task{DataTable}"/> containing schema information.</returns>
+		/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
 		public Task<DataTable> GetSchemaAsync(CancellationToken cancellationToken = default) => GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, cancellationToken).AsTask();
 
 		/// <summary>
@@ -547,6 +548,7 @@ namespace MySqlConnector
 		/// <param name="collectionName">The name of the schema to return.</param>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task{DataTable}"/> containing schema information.</returns>
+		/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
 		public Task<DataTable> GetSchemaAsync(string collectionName, CancellationToken cancellationToken = default) => GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, collectionName, cancellationToken).AsTask();
 
 		/// <summary>
@@ -556,6 +558,7 @@ namespace MySqlConnector
 		/// <param name="restrictions">The restrictions to apply to the schema; this parameter is currently ignored.</param>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task{DataTable}"/> containing schema information.</returns>
+		/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
 		public Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictions, CancellationToken cancellationToken = default) => GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, collectionName, cancellationToken).AsTask();
 
 		private SchemaProvider GetSchemaProvider() => m_schemaProvider ??= new(this);

@@ -19,6 +19,10 @@ public Task<DataTable> GetSchemaAsync(
 
 A Task containing schema information.
 
+## Remarks
+
+The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.
+
 ## See Also
 
 * class [MySqlConnection](../../MySqlConnectionType/)
@@ -44,6 +48,10 @@ public Task<DataTable> GetSchemaAsync(string collectionName,
 ## Return Value
 
 A Task containing schema information.
+
+## Remarks
+
+The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.
 
 ## See Also
 
@@ -71,6 +79,10 @@ public Task<DataTable> GetSchemaAsync(string collectionName, string[] restrictio
 ## Return Value
 
 A Task containing schema information.
+
+## Remarks
+
+The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.
 
 ## See Also
 

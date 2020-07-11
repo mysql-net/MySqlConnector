@@ -37,8 +37,9 @@ namespace MySqlConnector
 	/// </code>
 	/// </summary>
 	/// <remarks><para><strong>Note:</strong> This API is a unique feature of MySqlConnector; you must
-	/// <a href="https://mysqlconnector.net/overview/installing/">switch to MySqlConnector</a> in order to use it.
-	/// It is supported in version 0.62.0 and later.</para></remarks>
+	/// <a href="https://mysqlconnector.net/overview/installing/">switch to MySqlConnector</a> in order to use it.</para>
+	/// <para>This API is experimental and may change in the future.</para>
+	/// </remarks>
 	public sealed class MySqlBulkCopy
 	{
 		/// <summary>

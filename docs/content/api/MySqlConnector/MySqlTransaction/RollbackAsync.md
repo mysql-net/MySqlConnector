@@ -18,7 +18,7 @@ public override Task RollbackAsync(CancellationToken cancellationToken = default
 
 # MySqlTransaction.RollbackAsync method (2 of 2)
 
-Asynchronously olls back the current transaction to the savepoint with the specified *savepointName* without aborting the transaction.
+Asynchronously rolls back the current transaction to the savepoint with the specified *savepointName* without aborting the transaction.
 
 ```csharp
 public Task RollbackAsync(string savepointName, 
@@ -37,6 +37,8 @@ A Task representing the asynchronous operation.
 ## Remarks
 
 The name must have been created with [`SaveAsync`](../SaveAsync/), but not released by calling [`ReleaseAsync`](../ReleaseAsync/).
+
+The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.
 
 ## See Also
 

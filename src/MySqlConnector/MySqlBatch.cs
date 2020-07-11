@@ -52,6 +52,7 @@ namespace MySqlConnector
 	///  await batch.ExecuteNonQueryAsync();
 	/// </code>
 	/// </summary>
+	/// <remarks>The proposed ADO.NET API that <see cref="MySqlBatch"/> is based on is not finalized. This API is experimental and may change in the future.</remarks>
 	public sealed class MySqlBatch : ICancellableCommand, IDisposable
 	{
 		/// <summary>

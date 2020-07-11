@@ -32,6 +32,8 @@ public void Rollback(string savepointName)
 
 The name must have been created with [`Save`](../Save/), but not released by calling [`Release`](../Release/).
 
+The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.
+
 ## See Also
 
 * class [MySqlTransaction](../../MySqlTransactionType/)

@@ -70,6 +70,10 @@ public sealed class MySqlBatch : IDisposable
 | [Prepare](../MySqlBatch/Prepare/)() |  |
 | [PrepareAsync](../MySqlBatch/PrepareAsync/)(…) |  |
 
+## Remarks
+
+The proposed ADO.NET API that [`MySqlBatch`](../MySqlBatchType/) is based on is not finalized. This API is experimental and may change in the future.
+
 ## See Also
 
 * namespace [MySqlConnector](../../MySqlConnectorNamespace/)

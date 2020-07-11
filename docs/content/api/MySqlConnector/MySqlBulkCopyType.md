@@ -44,7 +44,9 @@ public sealed class MySqlBulkCopy
 
 ## Remarks
 
-Note: This API is a unique feature of MySqlConnector; you must [switch to MySqlConnector](https://mysqlconnector.net/overview/installing/) in order to use it. It is supported in version 0.62.0 and later.
+Note: This API is a unique feature of MySqlConnector; you must [switch to MySqlConnector](https://mysqlconnector.net/overview/installing/) in order to use it.
+
+This API is experimental and may change in the future.
 
 ## See Also
 

@@ -22,7 +22,7 @@ public sealed class MySqlTransaction : DbTransaction
 | override [Rollback](../MySqlTransaction/Rollback/)() |  |
 | [Rollback](../MySqlTransaction/Rollback/)(…) | Rolls back the current transaction to the savepoint with the specified *savepointName* without aborting the transaction. |
 | override [RollbackAsync](../MySqlTransaction/RollbackAsync/)(…) |  |
-| [RollbackAsync](../MySqlTransaction/RollbackAsync/)(…) | Asynchronously olls back the current transaction to the savepoint with the specified *savepointName* without aborting the transaction. |
+| [RollbackAsync](../MySqlTransaction/RollbackAsync/)(…) | Asynchronously rolls back the current transaction to the savepoint with the specified *savepointName* without aborting the transaction. |
 | [Save](../MySqlTransaction/Save/)(…) | Sets a named transaction savepoint with the specified *savepointName*. If the current transaction already has a savepoint with the same name, the old savepoint is deleted and a new one is set. |
 | [SaveAsync](../MySqlTransaction/SaveAsync/)(…) | Asynchronously sets a named transaction savepoint with the specified *savepointName*. If the current transaction already has a savepoint with the same name, the old savepoint is deleted and a new one is set. |
 
