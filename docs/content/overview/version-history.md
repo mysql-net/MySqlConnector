@@ -11,39 +11,19 @@ weight: 30
 Version History
 ===============
 
-### 1.0.0 Beta 6
-
-* **Potentially Breaking** Introduce `MySqlConnection.GetSchemaAsync` overloads to match latest .NET 5 API proposal: [#835](https://github.com/mysql-net/MySqlConnector/issues/835).
-* Support `GEOMCOLLECTION` data type alias in MySQL Server 8.0: [#845](https://github.com/mysql-net/MySqlConnector/issues/845).
-
-### 1.0.0 Beta 5
-
-* Improve robustness of OK packet parsing: [#842](https://github.com/mysql-net/MySqlConnector/issues/842).
-
-### 1.0.0 Beta 4
-
-* **Breaking** Rename `MySqlClientFactory` to `MySqlConnectorFactory`: [#839](https://github.com/mysql-net/MySqlConnector/issues/839).
-* **Breaking** All `MySqlConnectionStringBuilder` string properties return `""` (not `null`) when unset: [#837](https://github.com/mysql-net/MySqlConnector/issues/837).
-* Implement `MySqlConnectorFactory.CanCreateXyz` methods: [#838](https://github.com/mysql-net/MySqlConnector/issues/838).
-
-### 1.0.0 Beta 3
-
-* Fix connection pool leak when a failure (e.g., timeout) occurs on a connection: [#836](https://github.com/mysql-net/MySqlConnector/issues/836).
-
-### 1.0.0 Beta 2
-
-* **Breaking** Remove `MySqlInfoMessageEventArgs.errors` property; use `.Errors` instead.
-* Implement async schema APIs: [#835](https://github.com/mysql-net/MySqlConnector/issues/835).
-* Allow rows larger than 1 MiB in `MySqlBulkCopy`: [#834](https://github.com/mysql-net/MySqlConnector/issues/834).
-* Fix `Failed to read the result set.` error when using `MySqlBulkCopy`: [#780](https://github.com/mysql-net/MySqlConnector/issues/780).
-
-### 1.0.0 Beta 1
+### 1.0.0
 
 * **Breaking** Change namespace to `MySqlConnector`: [#827](https://github.com/mysql-net/MySqlConnector/issues/827).
-* Add `MySqlConnection.ResetConnectionAsync`: [#831](https://github.com/mysql-net/MySqlConnector/issues/831).
-* Add `MySqlException.ErrorCode`: [#830](https://github.com/mysql-net/MySqlConnector/issues/830).
-* Add documentation at https://mysqlconnector.net/api/ built from XML doc comments: [#827](https://github.com/mysql-net/MySqlConnector/issues/827).
+* **Breaking** Rename `MySqlClientFactory` to `MySqlConnectorFactory`: [#839](https://github.com/mysql-net/MySqlConnector/issues/839).
+* **Breaking** All `MySqlConnectionStringBuilder` string properties return `""` (not `null`) when unset: [#837](https://github.com/mysql-net/MySqlConnector/issues/837).
+* **Breaking** Remove `MySqlInfoMessageEventArgs.errors` property; use `.Errors` instead.
+* Implement async schema APIs: [#835](https://github.com/mysql-net/MySqlConnector/issues/835).
+* Implement `MySqlConnectorFactory.CanCreateXyz` methods: [#838](https://github.com/mysql-net/MySqlConnector/issues/838).
 * Add `net5.0` target framework.
+* Add `MySqlException.ErrorCode`: [#830](https://github.com/mysql-net/MySqlConnector/issues/830).
+* Add `MySqlConnection.ResetConnectionAsync`: [#831](https://github.com/mysql-net/MySqlConnector/issues/831).
+* Add documentation at https://mysqlconnector.net/api/ built from XML doc comments: [#827](https://github.com/mysql-net/MySqlConnector/issues/827).
+* Allow rows larger than 1 MiB in `MySqlBulkCopy`: [#834](https://github.com/mysql-net/MySqlConnector/issues/834).
 * Reduce memory allocations when hashing passwords (during login).
 
 ### 0.69.6
