@@ -1254,6 +1254,24 @@ insert into datatypes_tinyint1(value) values(0), (1), (2), (-1), (-128), (127);"
 			Assert.False(reader.Read());
 		}
 
+#if !NETCOREAPP1_1_2
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=100159")]
+		public void QueryDateTimeLiteral()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+
+			string sql = "SELECT ?p0 as datevalue";
+			using var command = new MySqlCommand(sql, connection);
+			command.Parameters.AddWithValue("?p0", DateTime.UtcNow);
+
+			using var reader = command.ExecuteReader();
+			using var schema = reader.GetSchemaTable();
+			var providerType = (MySqlDbType) (int) schema.Rows[0]["ProviderType"];
+			Assert.Equal(MySqlDbType.DateTime, providerType);
+		}
+#endif
+
 		class BoolTest
 		{
 			public int Id { get; set; }
