@@ -214,7 +214,8 @@ namespace MySqlConnector
 
 			if (Value is null || Value == DBNull.Value)
 			{
-				writer.Write(NullBytes);
+				ReadOnlySpan<byte> nullBytes = new byte[] { 0x4E, 0x55, 0x4C, 0x4C }; // NULL
+				writer.Write(nullBytes);
 			}
 			else if (Value is string stringValue)
 			{
@@ -309,7 +310,9 @@ namespace MySqlConnector
 			}
 			else if (Value is bool boolValue)
 			{
-				writer.Write(boolValue ? TrueBytes : FalseBytes);
+				ReadOnlySpan<byte> trueBytes = new byte[] { 0x74, 0x72, 0x75, 0x65 }; // true
+				ReadOnlySpan<byte> falseBytes = new byte[] { 0x66, 0x61, 0x6C, 0x73, 0x65 }; // false
+				writer.Write(boolValue ? trueBytes : falseBytes);
 			}
 			else if (Value is float || Value is double)
 			{
@@ -681,9 +684,6 @@ namespace MySqlConnector
 			}
 		}
 
-		static ReadOnlySpan<byte> NullBytes => new byte[] { 0x4E, 0x55, 0x4C, 0x4C }; // NULL
-		static ReadOnlySpan<byte> TrueBytes => new byte[] { 0x74, 0x72, 0x75, 0x65 }; // true
-		static ReadOnlySpan<byte> FalseBytes => new byte[] { 0x66, 0x61, 0x6C, 0x73, 0x65 }; // false
 		static ReadOnlySpan<byte> BinaryBytes => new byte[] { 0x5F, 0x62, 0x69, 0x6E, 0x61, 0x72, 0x79, 0x27 }; // _binary'
 
 		DbType m_dbType;

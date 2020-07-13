@@ -118,9 +118,11 @@ namespace MySqlConnector.Utilities
 
 			if (!isPrivate)
 			{
-				if (!data.Slice(0, s_rsaOid.Length).SequenceEqual(s_rsaOid))
+				// encoded OID sequence for  PKCS #1 rsaEncryption szOID_RSA_RSA = "1.2.840.113549.1.1.1"
+				ReadOnlySpan<byte> rsaOid = new byte[] { 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00 };
+				if (!data.Slice(0, rsaOid.Length).SequenceEqual(rsaOid))
 					throw new FormatException("Expected RSA OID but read {0}".FormatInvariant(BitConverter.ToString(data.Slice(0, 15).ToArray())));
-				data = data.Slice(s_rsaOid.Length);
+				data = data.Slice(rsaOid.Length);
 
 				// BIT STRING (0x03) followed by length
 				if (data[0] != 0x03)
@@ -576,8 +578,5 @@ namespace MySqlConnector.Utilities
 
 			return true;
 		}
-
-		// encoded OID sequence for  PKCS #1 rsaEncryption szOID_RSA_RSA = "1.2.840.113549.1.1.1"
-		private static ReadOnlySpan<byte> s_rsaOid => new byte[] { 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00 };
 	}
 }

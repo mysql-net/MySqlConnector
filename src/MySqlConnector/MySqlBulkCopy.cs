@@ -425,13 +425,14 @@ namespace MySqlConnector
 
 				if (value is null || value == DBNull.Value)
 				{
-					if (output.Length < EscapedNull.Length)
+					ReadOnlySpan<byte> escapedNull = new byte[] { 0x5C, 0x4E };
+					if (output.Length < escapedNull.Length)
 					{
 						bytesWritten = 0;
 						return false;
 					}
-					EscapedNull.CopyTo(output);
-					bytesWritten = EscapedNull.Length;
+					escapedNull.CopyTo(output);
+					bytesWritten = escapedNull.Length;
 					return true;
 				}
 				else if (value is string stringValue)
@@ -648,7 +649,6 @@ namespace MySqlConnector
 			static void WriteNibble(int value, Span<byte> output) => output[0] = value < 10 ? (byte) (value + 0x30) : (byte) (value + 0x57);
 		}
 
-		private static ReadOnlySpan<byte> EscapedNull => new byte[] { 0x5C, 0x4E };
 		private static readonly char[] s_specialCharacters = new char[] { '\t', '\\', '\n' };
 		private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlBulkCopy));
 

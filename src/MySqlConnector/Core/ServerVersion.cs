@@ -27,7 +27,8 @@ namespace MySqlConnector.Core
 			if (versionString.Length != 0 && versionString[0] == 0x2D)
 			{
 				versionString = versionString.Slice(1);
-				var mariaDbIndex = versionString.IndexOf(MariaDb);
+				ReadOnlySpan<byte> mariaDb = new byte[] { 0x2D, 0x4D, 0x61, 0x72, 0x69, 0x61, 0x44, 0x42 }; // -MariaDB
+				var mariaDbIndex = versionString.IndexOf(mariaDb);
 				if (mariaDbIndex != -1)
 				{
 					var totalBytesRead = 0;
@@ -62,7 +63,5 @@ namespace MySqlConnector.Core
 			OriginalString = "";
 			Version = new Version(0, 0);
 		}
-
-		static ReadOnlySpan<byte> MariaDb => new byte[] { 0x2D, 0x4D, 0x61, 0x72, 0x69, 0x61, 0x44, 0x42 }; // -MariaDB
 	}
 }

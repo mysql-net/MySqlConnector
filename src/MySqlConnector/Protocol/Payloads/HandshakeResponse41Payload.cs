@@ -30,7 +30,11 @@ namespace MySqlConnector.Protocol.Payloads
 				additionalCapabilities));
 			writer.Write(0x4000_0000);
 			writer.Write((byte) characterSet);
-			writer.Write(Padding);
+
+			// NOTE: not new byte[19]; see https://github.com/dotnet/roslyn/issues/33088
+			ReadOnlySpan<byte> padding = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+			writer.Write(padding);
+
 			if ((serverCapabilities & ProtocolCapabilities.LongPassword) == 0)
 			{
 				// MariaDB writes extended capabilities at the end of the padding
@@ -67,8 +71,5 @@ namespace MySqlConnector.Protocol.Payloads
 
 			return writer.ToPayloadData();
 		}
-
-		// NOTE: not new byte[19]; see https://github.com/dotnet/roslyn/issues/33088
-		static ReadOnlySpan<byte> Padding => new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	}
 }

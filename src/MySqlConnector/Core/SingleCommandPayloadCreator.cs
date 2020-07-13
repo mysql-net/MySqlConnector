@@ -193,19 +193,25 @@ namespace MySqlConnector.Core
 			var isSchemaOnly = (command.CommandBehavior & CommandBehavior.SchemaOnly) != 0;
 			var isSingleRow = (command.CommandBehavior & CommandBehavior.SingleRow) != 0;
 			if (isSchemaOnly)
-				writer.Write(SetSqlSelectLimit0);
+			{
+				ReadOnlySpan<byte> setSqlSelectLimit0 = new byte[] { 83, 69, 84, 32, 115, 113, 108, 95, 115, 101, 108, 101, 99, 116, 95, 108, 105, 109, 105, 116, 61, 48, 59, 10 }; // SET sql_select_limit=0;\n
+				writer.Write(setSqlSelectLimit0);
+			}
 			else if (isSingleRow)
-				writer.Write(SetSqlSelectLimit1);
+			{
+				ReadOnlySpan<byte> setSqlSelectLimit1 = new byte[] { 83, 69, 84, 32, 115, 113, 108, 95, 115, 101, 108, 101, 99, 116, 95, 108, 105, 109, 105, 116, 61, 49, 59, 10 }; // SET sql_select_limit=1;\n
+				writer.Write(setSqlSelectLimit1);
+			}
 			var preparer = new StatementPreparer(command.CommandText!, command.RawParameters, command.CreateStatementPreparerOptions());
 			var isComplete = preparer.ParseAndBindParameters(writer);
 			if (isComplete && (isSchemaOnly || isSingleRow))
-				writer.Write(ClearSqlSelectLimit);
+			{
+				ReadOnlySpan<byte> clearSqlSelectLimit = new byte[] { 10, 83, 69, 84, 32, 115, 113, 108, 95, 115, 101, 108, 101, 99, 116, 95, 108, 105, 109, 105, 116, 61, 100, 101, 102, 97, 117, 108, 116, 59 }; // \nSET sql_select_limit=default;
+				writer.Write(clearSqlSelectLimit);
+			}
 			return isComplete;
 		}
 
-		static ReadOnlySpan<byte> SetSqlSelectLimit0 => new byte[] { 83, 69, 84, 32, 115, 113, 108, 95, 115, 101, 108, 101, 99, 116, 95, 108, 105, 109, 105, 116, 61, 48, 59, 10 }; // SET sql_select_limit=0;\n
-		static ReadOnlySpan<byte> SetSqlSelectLimit1 => new byte[] { 83, 69, 84, 32, 115, 113, 108, 95, 115, 101, 108, 101, 99, 116, 95, 108, 105, 109, 105, 116, 61, 49, 59, 10 }; // SET sql_select_limit=1;\n
-		static ReadOnlySpan<byte> ClearSqlSelectLimit => new byte[] { 10, 83, 69, 84, 32, 115, 113, 108, 95, 115, 101, 108, 101, 99, 116, 95, 108, 105, 109, 105, 116, 61, 100, 101, 102, 97, 117, 108, 116, 59 }; // \nSET sql_select_limit=default;
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(SingleCommandPayloadCreator));
 	}
 }
