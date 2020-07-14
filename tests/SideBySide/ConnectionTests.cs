@@ -72,7 +72,7 @@ namespace SideBySide
 			Assert.Equal("", connection.ConnectionString);
 		}
 
-		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=98322")]
+		[Fact]
 		public void InitializeWithNullConnectionString()
 		{
 			using var connection = new MySqlConnection(default(string));

@@ -143,7 +143,7 @@ namespace SideBySide
 			Assert.Equal("test value", cmd.Parameters[0].Value);
 		}
 
-		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=97300")]
+		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
 		public async Task FieldCountForNoResultSet(bool ignorePrepare)
@@ -173,7 +173,7 @@ namespace SideBySide
 		}
 
 #if !NETCOREAPP1_1_2
-		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=97300")]
+		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
 		public async Task GetSchemaTableForNoResultSet(bool ignorePrepare)
@@ -193,9 +193,13 @@ namespace SideBySide
 			using var reader = await cmd.ExecuteReaderAsync();
 			Assert.False(await reader.ReadAsync());
 			var table = reader.GetSchemaTable();
+#if BASELINE
+			Assert.Null(table);
+#else
 			Assert.NotNull(table);
 			Assert.Empty(table.Rows);
 			Assert.Empty(table.Columns);
+#endif
 			Assert.False(await reader.NextResultAsync());
 		}
 #endif
@@ -699,7 +703,12 @@ namespace SideBySide
 				Assert.Equal(DBNull.Value, row["DTD_IDENTIFIER"]);
 			else
 				Assert.Equal(dtdIdentifier, ((string) row["DTD_IDENTIFIER"]).Split(' ')[0]);
+#if BASELINE
+			// https://bugs.mysql.com/bug.php?id=100208
+			Assert.NotEmpty(routineDefinition);
+#else
 			Assert.Equal(routineDefinition, NormalizeSpaces((string) row["ROUTINE_DEFINITION"]));
+#endif
 			Assert.Equal(isDeterministic, row["IS_DETERMINISTIC"]);
 			Assert.Equal(dataAccess, ((string) row["SQL_DATA_ACCESS"]).Replace('_', ' '));
 		}

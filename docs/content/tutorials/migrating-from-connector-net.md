@@ -214,7 +214,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#91752](https://bugs.mysql.com/bug.php?id=91752): `00:00:00` is converted to `NULL` with prepared command~~
 * [#91753](https://bugs.mysql.com/bug.php?id=91753): Unnamed parameter not supported by `MySqlCommand.Prepare`
 * [#91754](https://bugs.mysql.com/bug.php?id=91754): Inserting 16MiB `BLOB` shifts it by four bytes when prepared
-* [#91770](https://bugs.mysql.com/bug.php?id=91770): `TIME(n)` column loses microseconds with prepared command
+* ~~[#91770](https://bugs.mysql.com/bug.php?id=91770): `TIME(n)` column loses microseconds with prepared command~~
 * [#92367](https://bugs.mysql.com/bug.php?id=92367): `MySqlDataReader.GetDateTime` and `GetValue` return inconsistent values
 * [#92465](https://bugs.mysql.com/bug.php?id=92465): “There is already an open DataReader” `MySqlException` thrown from `TransactionScope.Dispose`
 * [#92734](https://bugs.mysql.com/bug.php?id=92734): `MySqlParameter.Clone` doesn't copy all property values
@@ -234,18 +234,19 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#95984](https://bugs.mysql.com/bug.php?id=95984): “Incorrect arguments to mysqld_stmt_execute” using prepared statement with `MySqlDbType.JSON`~~
 * [#95986](https://bugs.mysql.com/bug.php?id=95986): “Incorrect integer value” using prepared statement with `MySqlDbType.Int24`
 * ~~[#96355](https://bugs.mysql.com/bug.php?id=96355), [#96614](https://bugs.mysql.com/bug.php?id=96614): `Could not load file or assembly 'Renci.SshNet'` when opening connection~~
-* [#96498](https://bugs.mysql.com/bug.php?id=96498): `WHERE` clause using `MySqlGeometry` as parameter finds no rows
-* [#96499](https://bugs.mysql.com/bug.php?id=96499): `MySqlException` when inserting a `MySqlGeometry` value
+* ~~[#96498](https://bugs.mysql.com/bug.php?id=96498): `WHERE` clause using `MySqlGeometry` as parameter finds no rows~~
+* ~~[#96499](https://bugs.mysql.com/bug.php?id=96499): `MySqlException` when inserting a `MySqlGeometry` value~~
 * [#96500](https://bugs.mysql.com/bug.php?id=96500): `MySqlDataReader.GetFieldValue<MySqlGeometry>` throws `InvalidCastException`
 * [#96636](https://bugs.mysql.com/bug.php?id=96636): `MySqlConnection.Open()` slow under load when using SSL
 * [#96717](https://bugs.mysql.com/bug.php?id=96717): Not compatible with MySQL Server 5.0
 * [#97067](https://bugs.mysql.com/bug.php?id=97067): Aggregate functions on BIT(n) columns return wrong result
-* [#97300](https://bugs.mysql.com/bug.php?id=97300): `GetSchemaTable()` returns table for stored procedure with output parameters
+* ~~[#97300](https://bugs.mysql.com/bug.php?id=97300): `GetSchemaTable()` returns table for stored procedure with output parameters~~
 * ~~[#97448](https://bugs.mysql.com/bug.php?id=97448): Connecting fails if more than one IP is found in DNS for a named host~~
 * [#97473](https://bugs.mysql.com/bug.php?id=97473): `MySqlConnection.Clone` discloses connection password
 * [#97738](https://bugs.mysql.com/bug.php?id=97738): Cannot use PEM files when account uses `require subject`
 * [#97872](https://bugs.mysql.com/bug.php?id=97872): `KeepAlive` in connection string throws exception on .NET Core
-* [#98322](https://bugs.mysql.com/bug.php?id=98322): `new MySqlConnection(null)` throws `NullReferenceException`
+* ~~[#98322](https://bugs.mysql.com/bug.php?id=98322): `new MySqlConnection(null)` throws `NullReferenceException`~~
 * [#99091](https://bugs.mysql.com/bug.php?id=99091): Unexpected return value getting integer for `TINYINT(1)` column
 * [#99793](https://bugs.mysql.com/bug.php?id=99793): Prepared stored procedure command doesn't verify parameter types
 * [#100159](https://bugs.mysql.com/bug.php?id=100159): SQL with DateTime parameter returns String value
+* [#100208](https://bugs.mysql.com/bug.php?id=100208): `GetSchema("Procedures")` returns `ROUTINE_DEFINITION` of `"System.Byte[]"`
