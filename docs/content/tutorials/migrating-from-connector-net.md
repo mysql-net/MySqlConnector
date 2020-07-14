@@ -250,3 +250,4 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#99793](https://bugs.mysql.com/bug.php?id=99793): Prepared stored procedure command doesn't verify parameter types
 * [#100159](https://bugs.mysql.com/bug.php?id=100159): SQL with DateTime parameter returns String value
 * [#100208](https://bugs.mysql.com/bug.php?id=100208): `GetSchema("Procedures")` returns `ROUTINE_DEFINITION` of `"System.Byte[]"`
+* [#100218](https://bugs.mysql.com/bug.php?id=100218): `TIME(n)` microsecond values deserialized incorrectly with prepared command

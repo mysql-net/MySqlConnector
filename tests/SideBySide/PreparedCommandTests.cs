@@ -385,8 +385,6 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 #else
 				yield return new object[] { isPrepared, "BOOL", true, MySqlDbType.Int32 };
 #endif
-
-				// https://bugs.mysql.com/bug.php?id=91770
 				yield return new object[] { isPrepared, "TIME(3)", TimeSpan.Zero.Subtract(new TimeSpan(15, 10, 34, 56, 789)), MySqlDbType.Time };
 
 #if !BASELINE
