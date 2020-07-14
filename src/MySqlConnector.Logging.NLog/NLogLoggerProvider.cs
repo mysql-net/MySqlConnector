@@ -10,13 +10,13 @@ namespace MySqlConnector.Logging
 
 		static readonly Type s_loggerType = typeof(NLogLogger);
 
-		private class NLogLogger : IMySqlConnectorLogger
+		private sealed class NLogLogger : IMySqlConnectorLogger
 		{
 			public NLogLogger(Logger logger) => m_logger = logger;
 
 			public bool IsEnabled(MySqlConnectorLogLevel level) => m_logger.IsEnabled(GetLevel(level));
 
-			public void Log(MySqlConnectorLogLevel level, string message, object[] args = null, Exception exception = null)
+			public void Log(MySqlConnectorLogLevel level, string message, object?[]? args = null, Exception? exception = null)
 			{
 				LogLevel logLevel = GetLevel(level);
 				if (m_logger.IsEnabled(logLevel))

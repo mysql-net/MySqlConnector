@@ -5,36 +5,31 @@ using Serilog.Events;
 
 namespace MySqlConnector.Logging
 {
-    public sealed class SerilogLoggerProvider : IMySqlConnectorLoggerProvider
-    {
+	public sealed class SerilogLoggerProvider : IMySqlConnectorLoggerProvider
+	{
 		public SerilogLoggerProvider() { }
 
-        public IMySqlConnectorLogger CreateLogger(string name)
-        {
-            return new SerilogLogger(name);
-        }
+		public IMySqlConnectorLogger CreateLogger(string name) => new SerilogLogger(name);
 
-        private class SerilogLogger : IMySqlConnectorLogger
-        {
-            public SerilogLogger(string name)
-            {
-                m_name = name;
-                m_logger = Serilog.Log.ForContext("SourceContext", "MySqlConnector." + name);
-            }
+		private sealed class SerilogLogger : IMySqlConnectorLogger
+		{
+			public SerilogLogger(string name) => m_logger = Serilog.Log.ForContext("SourceContext", "MySqlConnector." + name);
 
-            public bool IsEnabled(MySqlConnectorLogLevel level) => m_logger.IsEnabled(GetLevel(level));
+			public bool IsEnabled(MySqlConnectorLogLevel level) => m_logger.IsEnabled(GetLevel(level));
 
-            public void Log(MySqlConnectorLogLevel level, string message, object[] args = null, Exception exception = null)
-            {
-                if (args is null || args.Length == 0)
-                    m_logger.Write(GetLevel(level), exception, message);
-                else
-                {
+			public void Log(MySqlConnectorLogLevel level, string message, object?[]? args = null, Exception? exception = null)
+			{
+				if (args is null || args.Length == 0)
+				{
+					m_logger.Write(GetLevel(level), exception, message);
+				}
+				else
+				{
 					// rewrite message as template
 					var template = tokenReplacer.Replace(message, "$1{MySql$2$3}$4");
 					m_logger.Write(GetLevel(level), exception, template, args);
-                }
-            }
+				}
+			}
 
 			private static LogEventLevel GetLevel(MySqlConnectorLogLevel level) => level switch
 			{
@@ -50,8 +45,6 @@ namespace MySqlConnector.Logging
 			static readonly Regex tokenReplacer = new(@"((\w+)?\s?(?:=|:)?\s?'?)\{(?:\d+)(\:\w+)?\}('?)", RegexOptions.Compiled);
 
 			readonly ILogger m_logger;
-            readonly string m_name;
-        }
-
-    }
+		}
+	}
 }

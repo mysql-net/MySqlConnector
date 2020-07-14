@@ -4,9 +4,10 @@
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Title>MySqlConnector Logging Adapter for Microsoft.Extensions.Logging</Title>
     <Description>Writes MySqlConnector logging output to Microsoft.Extensions.Logging with one line of code.</Description>
-    <Copyright>Copyright 2017 Bradley Grainger</Copyright>
+    <Copyright>Copyright 2017–2020 Bradley Grainger</Copyright>
     <Authors>Bradley Grainger</Authors>
     <PackageTags>mysql;mysqlconnector;async;ado.net;database;netcore;logging</PackageTags>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

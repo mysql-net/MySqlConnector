@@ -13,13 +13,13 @@ namespace MySqlConnector.Logging
 		static readonly Assembly s_loggerAssembly = typeof(Log4netLogger).GetTypeInfo().Assembly;
 		static readonly Type s_loggerType = typeof(Log4netLogger);
 
-		private class Log4netLogger : IMySqlConnectorLogger
+		private sealed class Log4netLogger : IMySqlConnectorLogger
 		{
 			public Log4netLogger(ILoggerWrapper log) => m_logger = log.Logger;
 
 			public bool IsEnabled(MySqlConnectorLogLevel level) => m_logger.IsEnabledFor(GetLevel(level));
 
-			public void Log(MySqlConnectorLogLevel level, string message, object[] args = null, Exception exception = null)
+			public void Log(MySqlConnectorLogLevel level, string message, object?[]? args = null, Exception? exception = null)
 			{
 				if (args is null || args.Length == 0)
 					m_logger.Log(s_loggerType, GetLevel(level), message, exception);

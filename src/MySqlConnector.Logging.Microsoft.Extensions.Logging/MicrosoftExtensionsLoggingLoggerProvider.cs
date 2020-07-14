@@ -10,13 +10,13 @@ namespace MySqlConnector.Logging
 
 		public IMySqlConnectorLogger CreateLogger(string name) => new MicrosoftExtensionsLoggingLogger(m_loggerFactory.CreateLogger(name));
 
-		private class MicrosoftExtensionsLoggingLogger : IMySqlConnectorLogger
+		private sealed class MicrosoftExtensionsLoggingLogger : IMySqlConnectorLogger
 		{
 			public MicrosoftExtensionsLoggingLogger(ILogger logger) => m_logger = logger;
 
 			public bool IsEnabled(MySqlConnectorLogLevel level) => m_logger.IsEnabled(GetLevel(level));
 
-			public void Log(MySqlConnectorLogLevel level, string message, object[] args = null, Exception exception = null)
+			public void Log(MySqlConnectorLogLevel level, string message, object?[]? args = null, Exception? exception = null)
 			{
 				if (args is null || args.Length == 0)
 					m_logger.Log(GetLevel(level), 0, message, exception, s_getMessage);
@@ -36,7 +36,7 @@ namespace MySqlConnector.Logging
 			};
 
 			static readonly Func<string, Exception, string> s_getMessage = (s, e) => s;
-			static readonly Func<(string Message, object[] Args), Exception, string> s_messageFormatter = (s, e) => string.Format(CultureInfo.InvariantCulture, s.Message, s.Args);
+			static readonly Func<(string Message, object?[] Args), Exception, string> s_messageFormatter = (s, e) => string.Format(CultureInfo.InvariantCulture, s.Message, s.Args);
 
 			readonly ILogger m_logger;
 		}
