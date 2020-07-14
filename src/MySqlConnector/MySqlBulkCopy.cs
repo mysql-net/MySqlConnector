@@ -634,19 +634,19 @@ namespace MySqlConnector
 
 			static bool WriteBytes(ReadOnlySpan<byte> value, ref int inputIndex, Span<byte> output, out int bytesWritten)
 			{
+				ReadOnlySpan<byte> hex = new byte[] { (byte) '0', (byte) '1', (byte) '2', (byte) '3', (byte) '4', (byte) '5', (byte) '6', (byte) '7', (byte) '8', (byte) '9', (byte) 'A', (byte) 'B', (byte) 'C', (byte) 'D', (byte) 'E', (byte) 'F' };
 				bytesWritten = 0;
 				for (; inputIndex < value.Length && output.Length > 2; inputIndex++)
 				{
-					WriteNibble(value[inputIndex] >> 4, output);
-					WriteNibble(value[inputIndex] & 0xF, output.Slice(1));
+					var by = value[inputIndex];
+					output[0] = hex[(by >> 4) & 0xF];
+					output[1] = hex[by & 0xF];
 					output = output.Slice(2);
 					bytesWritten += 2;
 				}
 
 				return inputIndex == value.Length;
 			}
-
-			static void WriteNibble(int value, Span<byte> output) => output[0] = value < 10 ? (byte) (value + 0x30) : (byte) (value + 0x57);
 		}
 
 		private static readonly char[] s_specialCharacters = new char[] { '\t', '\\', '\n' };
