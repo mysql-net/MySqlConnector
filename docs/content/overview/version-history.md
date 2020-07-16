@@ -11,6 +11,10 @@ weight: 30
 Version History
 ===============
 
+### 0.69.7
+
+* Support `ENUM` columns that use the `MYSQL_TYPE_ENUM` type in their column metadata: [#850](https://github.com/mysql-net/MySqlConnector/issues/845).
+
 ### 0.69.6
 
 * Support `GEOMCOLLECTION` data type alias in MySQL Server 8.0: [#845](https://github.com/mysql-net/MySqlConnector/issues/845).
