@@ -34,7 +34,7 @@ jobs:
       run: dotnet test --configuration Release tests\MySqlConnector.Tests
 
     - name: Pack
-      run: dotnet pack --configuration Release --no-build --version-suffix $(Get-Date -Format "'preview'yyyyMMddHHmmss'+${{ github.sha }}'")
+      run: dotnet pack --configuration Release --no-build
 
     - name: Install NuGet
       run: choco install nuget.commandline
