@@ -207,6 +207,7 @@ namespace MySqlConnector.Core
 					return MySqlDbType.Set;
 				goto case ColumnType.VarString;
 
+			case ColumnType.VarChar:
 			case ColumnType.VarString:
 			case ColumnType.TinyBlob:
 			case ColumnType.Blob:
@@ -270,6 +271,12 @@ namespace MySqlConnector.Core
 
 			case ColumnType.Null:
 				return MySqlDbType.Null;
+
+			case ColumnType.Enum:
+				return MySqlDbType.Enum;
+
+			case ColumnType.Set:
+				return MySqlDbType.Set;
 
 			default:
 				throw new NotImplementedException("ConvertToMySqlDbType for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));

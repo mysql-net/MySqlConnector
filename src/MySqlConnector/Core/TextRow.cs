@@ -66,6 +66,8 @@ namespace MySqlConnector.Core
 			case ColumnType.Blob:
 			case ColumnType.MediumBlob:
 			case ColumnType.LongBlob:
+			case ColumnType.Enum:
+			case ColumnType.Set:
 				if (columnDefinition.CharacterSet == CharacterSet.Binary)
 				{
 					var guidFormat = Connection.GuidFormat;

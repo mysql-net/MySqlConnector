@@ -8,8 +8,7 @@ title: Version History
 weight: 30
 ---
 
-Version History
-===============
+# Version History
 
 ### 1.0.0
 
@@ -25,6 +24,10 @@ Version History
 * Add documentation at https://mysqlconnector.net/api/ built from XML doc comments: [#827](https://github.com/mysql-net/MySqlConnector/issues/827).
 * Allow rows larger than 1 MiB in `MySqlBulkCopy`: [#834](https://github.com/mysql-net/MySqlConnector/issues/834).
 * Reduce memory allocations when hashing passwords (during login).
+
+### 0.69.7
+
+* Support `ENUM` columns that use the `MYSQL_TYPE_ENUM` type in their column metadata: [#850](https://github.com/mysql-net/MySqlConnector/issues/850).
 
 ### 0.69.6
 
