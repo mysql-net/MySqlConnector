@@ -27,10 +27,13 @@ namespace SideBySide
 			Assert.Equal(m_database.Connection.ServerVersion, dataTable.Rows[0]["DataSourceProductVersion"]);
 		}
 
-		[Fact]
-		public void ReservedWordsSchema()
+		[Theory]
+		[InlineData("ReservedWords")]
+		[InlineData("RESERVEDWORDS")]
+		[InlineData("reservedwords")]
+		public void ReservedWordsSchema(string schemaName)
 		{
-			var table = m_database.Connection.GetSchema("ReservedWords");
+			var table = m_database.Connection.GetSchema(schemaName);
 			Assert.NotNull(table);
 			Assert.Single(table.Columns);
 			Assert.Equal("ReservedWord", table.Columns[0].ColumnName);
