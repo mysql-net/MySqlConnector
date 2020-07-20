@@ -1,5 +1,5 @@
 ---
-lastmod: 2020-07-01
+lastmod: 2020-07-20
 date: 2017-03-27
 menu:
   main:
@@ -24,6 +24,11 @@ weight: 30
 * Add documentation at https://mysqlconnector.net/api/ built from XML doc comments: [#827](https://github.com/mysql-net/MySqlConnector/issues/827).
 * Allow rows larger than 1 MiB in `MySqlBulkCopy`: [#834](https://github.com/mysql-net/MySqlConnector/issues/834).
 * Reduce memory allocations when hashing passwords (during login).
+
+### 0.69.8
+
+* Fix `MySqlBulkLoader` with Azure Database for MySQL/MariaDB: [#853](https://github.com/mysql-net/MySqlConnector/issues/853).
+* Make schema collection names (for `MySqlConnection.GetSchema(collectionName)`) case-insensitive: [#852](https://github.com/mysql-net/MySqlConnector/issues/852).
 
 ### 0.69.7
 

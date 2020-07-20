@@ -16,7 +16,7 @@ namespace MySqlConnector.Core
 		public SchemaProvider(MySqlConnection connection)
 		{
 			m_connection = connection;
-			m_schemaCollections = new()
+			m_schemaCollections = new(StringComparer.OrdinalIgnoreCase)
 			{
 				{ "DataSourceInformation", FillDataSourceInformation},
 				{ "MetaDataCollections", FillMetadataCollections },
