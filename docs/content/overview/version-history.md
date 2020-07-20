@@ -1,5 +1,5 @@
 ---
-lastmod: 2020-02-29
+lastmod: 2020-07-20
 date: 2017-03-27
 menu:
   main:
@@ -11,9 +11,14 @@ weight: 30
 Version History
 ===============
 
+### 0.69.8
+
+* Fix `MySqlBulkLoader` with Azure Database for MySQL/MariaDB: [#853](https://github.com/mysql-net/MySqlConnector/issues/853).
+* Make schema collection names (for `MySqlConnection.GetSchema(collectionName)`) case-insensitive: [#852](https://github.com/mysql-net/MySqlConnector/issues/852).
+
 ### 0.69.7
 
-* Support `ENUM` columns that use the `MYSQL_TYPE_ENUM` type in their column metadata: [#850](https://github.com/mysql-net/MySqlConnector/issues/845).
+* Support `ENUM` columns that use the `MYSQL_TYPE_ENUM` type in their column metadata: [#850](https://github.com/mysql-net/MySqlConnector/issues/850).
 
 ### 0.69.6
 
