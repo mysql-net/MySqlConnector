@@ -133,7 +133,7 @@ uses cached `Task<bool>` objects for its `true` and `false` return values.)
 In order to get the full benefit of asynchronous operation, every method in the call stack that eventually calls
 MySqlConnector should be implemented as an async method.
 
-Example assumes a [configured AppDb](overview/configuration) object in the `MySqlConnector.Examples` namespace.
+Example assumes a [configured AppDb](/overview/configuration) object in the `MySqlConnector.Examples` namespace.
 
 ```csharp
 using System.Threading.Tasks;
