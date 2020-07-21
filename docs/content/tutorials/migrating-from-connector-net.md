@@ -89,7 +89,7 @@ it is used to specify the server’s CA certificate file; `SslCa` is just an ali
 for the client’s private key (in PFX format); `SslCa` (aka `CACertificateFile`) is a separate option to specify the server’s CA certificate.
 
 Some connection string options that are supported in Connector/NET are not supported in MySqlConnector. For a full list of options that are
-supported in MySqlConnector, see the [Connection Options](connection-options).
+supported in MySqlConnector, see the [Connection Options](/connection-options).
 
 ### Async
 
@@ -140,7 +140,7 @@ Connector/NET allows a command to be executed even when `MySqlCommand.Transactio
 disposed `MySqlTransaction`. MySqlConnector will throw an `InvalidOperationException` if the `MySqlCommand.Transaction`
 property doesn’t reference the active transaction. This fixes <a href="https://bugs.mysql.com/bug.php?id=88611">MySQL Bug 88611</a>.
 To disable this strict validation, set <code>IgnoreCommandTransaction=true</code>
-in the connection string. See [Transaction Usage](troubleshooting/transaction-usage/) for more details.
+in the connection string. See [Transaction Usage](/troubleshooting/transaction-usage/) for more details.
 
 ### MySqlDataAdapter
 

@@ -54,7 +54,7 @@ to verify the project builds and runs successfully.
 }
 ```
 
-`AppDb.cs` is a disposable [Application Database Object](overview/configuration/), adapted to read the ConnectionString
+`AppDb.cs` is a disposable [Application Database Object](/overview/configuration/), adapted to read the ConnectionString
 from the Configuration Object:
 
 ```csharp
