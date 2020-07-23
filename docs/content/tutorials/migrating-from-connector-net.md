@@ -161,6 +161,13 @@ Well-known Binary bytes.
 
 The `MySqlError[] MySqlInfoMessageEventArgs.errors` property has changed to `IReadOnlyList<MySqlError> MySqlInfoMessageEventArgs.Errors`.
 
+### MySqlParameterCollection
+
+Connector/NET will assign the names `@Parameter1`, `@Parameter2`, etc. to unnamed `MySqlParameter` objects that are
+added to the `MySqlCommand.Parameters` parameter collection. These generated names may be used in the SQL assigned to
+`MySqlCommand.CommandText`. MySqlConnector requires all `MySqlParameter` objects to be explicitly given a name,
+or used only as positional parameters if they’re unnamed.
+
 ### Exceptions
 
 For consistency with other ADO.NET providers, MySqlConnector will throw `InvalidOperationException` (instead of `MySqlException`)
