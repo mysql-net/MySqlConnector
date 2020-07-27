@@ -47,6 +47,6 @@ namespace MySqlConnector.Protocol.Serialization
 		readonly Func<int> m_getNextSequenceNumber;
 		IByteHandler? m_byteHandler;
 		BufferedByteReader? m_bufferedByteReader;
-		int m_sequenceNumber;
+		byte m_sequenceNumber;
 	}
 }
