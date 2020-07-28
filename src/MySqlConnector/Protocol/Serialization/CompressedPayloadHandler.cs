@@ -48,7 +48,7 @@ namespace MySqlConnector.Protocol.Serialization
 			return ProtocolUtility.WritePayloadAsync(m_uncompressedStreamByteHandler!, GetNextUncompressedSequenceNumber, payload, ioBehavior).ContinueWith(_ =>
 			{
 				if (m_uncompressedStream!.Length == 0)
-					return default(ValueTask<int>);
+					return default;
 
 				if (!m_uncompressedStream.TryGetBuffer(out var uncompressedData))
 					throw new InvalidOperationException("Couldn't get uncompressed stream buffer.");
@@ -81,20 +81,20 @@ namespace MySqlConnector.Protocol.Serialization
 					if (headerReadBytes.Count < 7)
 					{
 						return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ?
-							default(ValueTask<int>) :
+							default :
 							ValueTaskExtensions.FromException<int>(new EndOfStreamException("Wanted to read 7 bytes but only read {0} when reading compressed packet header".FormatInvariant(headerReadBytes.Count)));
 					}
 
 					var payloadLength = (int) SerializationUtility.ReadUInt32(headerReadBytes.Array!, headerReadBytes.Offset, 3);
-					int packetSequenceNumber = headerReadBytes.Array![headerReadBytes.Offset + 3];
+					var packetSequenceNumber = headerReadBytes.Array![headerReadBytes.Offset + 3];
 					var uncompressedLength = (int) SerializationUtility.ReadUInt32(headerReadBytes.Array, headerReadBytes.Offset + 4, 3);
 
 					// verify the compressed packet sequence number
-					var expectedSequenceNumber = GetNextCompressedSequenceNumber() % 256;
+					var expectedSequenceNumber = GetNextCompressedSequenceNumber();
 					if (packetSequenceNumber != expectedSequenceNumber)
 					{
 						if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
-							return default(ValueTask<int>);
+							return default;
 
 						var exception = MySqlProtocolException.CreateForPacketOutOfOrder(expectedSequenceNumber, packetSequenceNumber);
 						return ValueTaskExtensions.FromException<int>(exception);
@@ -116,7 +116,7 @@ namespace MySqlConnector.Protocol.Serialization
 							if (payloadReadBytes.Count < payloadLength)
 							{
 								return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ?
-									default(ValueTask<int>) :
+									default :
 									ValueTaskExtensions.FromException<int>(new EndOfStreamException("Wanted to read {0} bytes but only read {1} when reading compressed payload".FormatInvariant(payloadLength, payloadReadBytes.Count)));
 							}
 
@@ -136,7 +136,7 @@ namespace MySqlConnector.Protocol.Serialization
 									// FLG & 0x40: has preset dictionary (not supported)
 									// CMF*256+FLG is a multiple of 31: header checksum
 									return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ?
-										default(ValueTask<int>) :
+										default :
 										ValueTaskExtensions.FromException<int>(new NotSupportedException("Unsupported zlib header: {0:X2}{1:X2}".FormatInvariant(cmf, flg)));
 								}
 
@@ -151,14 +151,14 @@ namespace MySqlConnector.Protocol.Serialization
 								m_remainingData = new(uncompressedData, 0, bytesRead);
 
 								var checksum = ComputeAdler32Checksum(uncompressedData, 0, bytesRead);
-								int adlerStartOffset = payloadReadBytes.Offset + payloadReadBytes.Count - 4;
+								var adlerStartOffset = payloadReadBytes.Offset + payloadReadBytes.Count - 4;
 								if (payloadReadBytes.Array[adlerStartOffset + 0] != ((checksum >> 24) & 0xFF) ||
 									payloadReadBytes.Array[adlerStartOffset + 1] != ((checksum >> 16) & 0xFF) ||
 									payloadReadBytes.Array[adlerStartOffset + 2] != ((checksum >> 8) & 0xFF) ||
 									payloadReadBytes.Array[adlerStartOffset + 3] != (checksum & 0xFF))
 								{
 									return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ?
-										default(ValueTask<int>) :
+										default :
 										ValueTaskExtensions.FromException<int>(new NotSupportedException("Invalid Adler-32 checksum of uncompressed data."));
 								}
 							}
@@ -171,7 +171,7 @@ namespace MySqlConnector.Protocol.Serialization
 				});
 		}
 
-		private int GetNextCompressedSequenceNumber() => m_compressedSequenceNumber++;
+		private byte GetNextCompressedSequenceNumber() => m_compressedSequenceNumber++;
 
 		private int GetNextUncompressedSequenceNumber() => m_uncompressedSequenceNumber++;
 
@@ -205,7 +205,7 @@ namespace MySqlConnector.Protocol.Serialization
 					throw new InvalidOperationException("Couldn't get compressed stream buffer.");
 			}
 
-			uint uncompressedLength = (uint) remainingUncompressedBytes;
+			var uncompressedLength = (uint) remainingUncompressedBytes;
 			if (compressedData.Array is null || compressedData.Count >= remainingUncompressedBytes)
 			{
 				// setting the length to 0 indicates sending uncompressed data
@@ -215,20 +215,20 @@ namespace MySqlConnector.Protocol.Serialization
 
 			var buffer = new byte[compressedData.Count + 7];
 			SerializationUtility.WriteUInt32((uint) compressedData.Count, buffer, 0, 3);
-			buffer[3] = (byte) GetNextCompressedSequenceNumber();
+			buffer[3] = GetNextCompressedSequenceNumber();
 			SerializationUtility.WriteUInt32(uncompressedLength, buffer, 4, 3);
 			Buffer.BlockCopy(compressedData.Array!, compressedData.Offset, buffer, 7, compressedData.Count);
 
 			remainingUncompressedData = remainingUncompressedData.Slice(remainingUncompressedBytes);
 			return m_byteHandler!.WriteBytesAsync(new ArraySegment<byte>(buffer, 0, buffer.Length), ioBehavior)
-				.ContinueWith(_ => remainingUncompressedData.Count == 0 ? default(ValueTask<int>) :
+				.ContinueWith(_ => remainingUncompressedData.Count == 0 ? default :
 					CompressAndWrite(remainingUncompressedData, ioBehavior));
 		}
 
 		private uint ComputeAdler32Checksum(byte[] data, int offset, int length)
 		{
 			int s1 = 1, s2 = 0;
-			for (int i = 0; i < length; i++)
+			for (var i = 0; i < length; i++)
 			{
 				s1 = (s1 + data[offset + i]) % 65521;
 				s2 = (s2 + s1) % 65521;
@@ -269,8 +269,8 @@ namespace MySqlConnector.Protocol.Serialization
 		IByteHandler? m_byteHandler;
 		readonly BufferedByteReader m_bufferedByteReader;
 		readonly BufferedByteReader m_compressedBufferedByteReader;
-		int m_compressedSequenceNumber;
-		int m_uncompressedSequenceNumber;
+		byte m_compressedSequenceNumber;
+		byte m_uncompressedSequenceNumber;
 		ArraySegment<byte> m_remainingData;
 		bool m_isContinuationPacket;
 	}
