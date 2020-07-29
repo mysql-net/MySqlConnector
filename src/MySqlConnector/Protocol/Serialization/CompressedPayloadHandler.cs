@@ -130,10 +130,10 @@ namespace MySqlConnector.Protocol.Serialization
 								// check CMF (Compression Method and Flags) and FLG (Flags) bytes for expected values
 								var cmf = payloadReadBytes.Array![payloadReadBytes.Offset];
 								var flg = payloadReadBytes.Array[payloadReadBytes.Offset + 1];
-								if (cmf != 0x78 || ((flg & 0x40) == 0x40) || ((cmf * 256 + flg) % 31 != 0))
+								if (cmf != 0x78 || ((flg & 0x20) == 0x20) || ((cmf * 256 + flg) % 31 != 0))
 								{
 									// CMF = 0x78: 32K Window Size + deflate compression
-									// FLG & 0x40: has preset dictionary (not supported)
+									// FLG & 0x20: has preset dictionary (not supported)
 									// CMF*256+FLG is a multiple of 31: header checksum
 									return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ?
 										default :
