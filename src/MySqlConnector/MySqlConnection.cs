@@ -755,6 +755,8 @@ namespace MySqlConnector
 #else
 		internal bool IgnoreCommandTransaction => GetInitializedConnectionSettings().IgnoreCommandTransaction || m_enlistedTransaction is StandardEnlistedTransaction;
 #endif
+		internal bool IgnoreHasActiveReader => GetInitializedConnectionSettings().IgnoreHasActiveReader;
+
 		internal bool IgnorePrepare => GetInitializedConnectionSettings().IgnorePrepare;
 		internal bool NoBackslashEscapes => GetInitializedConnectionSettings().NoBackslashEscapes;
 		internal bool TreatTinyAsBoolean => GetInitializedConnectionSettings().TreatTinyAsBoolean;
@@ -765,7 +767,7 @@ namespace MySqlConnector
 
 		internal MySqlSslMode SslMode => GetInitializedConnectionSettings().SslMode;
 
-		internal bool HasActiveReader => m_activeReader is not null;
+		internal bool HasActiveReader => !IgnoreHasActiveReader && m_activeReader is not null;
 
 		internal void SetActiveReader(MySqlDataReader dataReader)
 		{

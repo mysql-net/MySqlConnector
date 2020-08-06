@@ -50,6 +50,7 @@ namespace MySqlConnector.Tests
 			Assert.False(csb.ForceSynchronous);
 			Assert.Equal(MySqlGuidFormat.Default, csb.GuidFormat);
 			Assert.False(csb.IgnoreCommandTransaction);
+			Assert.False(csb.IgnoreHasActiveReader);
 			Assert.Equal(MySqlLoadBalance.RoundRobin, csb.LoadBalance);
 #endif
 			Assert.True(csb.IgnorePrepare);
@@ -122,6 +123,7 @@ namespace MySqlConnector.Tests
 					"connectionidletimeout=30;" +
 					"forcesynchronous=true;" +
 					"ignore command transaction=true;" +
+					"ignore hasactivereader=true;" +
 					"server rsa public key file=rsa.pem;" +
 					"load balance=random;" +
 					"guidformat=timeswapbinary16;" +
@@ -178,6 +180,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal(30u, csb.ConnectionIdleTimeout);
 			Assert.True(csb.ForceSynchronous);
 			Assert.True(csb.IgnoreCommandTransaction);
+			Assert.True(csb.IgnoreHasActiveReader);
 			Assert.Equal("rsa.pem", csb.ServerRsaPublicKeyFile);
 			Assert.Equal(MySqlLoadBalance.Random, csb.LoadBalance);
 			Assert.Equal(MySqlGuidFormat.TimeSwapBinary16, csb.GuidFormat);

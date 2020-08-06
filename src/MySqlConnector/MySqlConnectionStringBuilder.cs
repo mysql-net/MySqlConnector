@@ -277,6 +277,12 @@ namespace MySqlConnector
 			set => MySqlConnectionStringOption.IgnoreCommandTransaction.SetValue(this, value);
 		}
 
+		public bool IgnoreHasActiveReader
+		{
+			get => MySqlConnectionStringOption.IgnoreHasActiveReader.GetValue(this);
+			set => MySqlConnectionStringOption.IgnoreHasActiveReader.SetValue(this, value);
+		}
+
 		public bool IgnorePrepare
 		{
 			get => MySqlConnectionStringOption.IgnorePrepare.GetValue(this);
@@ -450,6 +456,7 @@ namespace MySqlConnector
 		public static readonly MySqlConnectionStringValueOption<bool> ForceSynchronous;
 		public static readonly MySqlConnectionStringValueOption<MySqlGuidFormat> GuidFormat;
 		public static readonly MySqlConnectionStringValueOption<bool> IgnoreCommandTransaction;
+		public static readonly MySqlConnectionStringValueOption<bool> IgnoreHasActiveReader;
 		public static readonly MySqlConnectionStringValueOption<bool> IgnorePrepare;
 		public static readonly MySqlConnectionStringValueOption<bool> InteractiveSession;
 		public static readonly MySqlConnectionStringValueOption<uint> Keepalive;
@@ -678,6 +685,10 @@ namespace MySqlConnector
 
 			AddOption(IgnoreCommandTransaction = new(
 				keys: new[] { "IgnoreCommandTransaction", "Ignore Command Transaction" },
+				defaultValue: false));
+
+			AddOption(IgnoreHasActiveReader = new(
+				keys: new[] { "IgnoreHasActiveReader", "Ignore HasActiveReader" },
 				defaultValue: false));
 
 			AddOption(IgnorePrepare = new(
