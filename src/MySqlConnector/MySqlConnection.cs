@@ -755,7 +755,7 @@ namespace MySqlConnector
 #else
 		internal bool IgnoreCommandTransaction => GetInitializedConnectionSettings().IgnoreCommandTransaction || m_enlistedTransaction is StandardEnlistedTransaction;
 #endif
-		internal bool IgnoreHasActiveReader => GetInitializedConnectionSettings().IgnoreHasActiveReader;
+		internal bool IgnoreHasActiveReader => m_connectionSettings?.IgnoreHasActiveReader ?? false;
 
 		internal bool IgnorePrepare => GetInitializedConnectionSettings().IgnorePrepare;
 		internal bool NoBackslashEscapes => GetInitializedConnectionSettings().NoBackslashEscapes;
