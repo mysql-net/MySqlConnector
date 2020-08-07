@@ -765,6 +765,8 @@ namespace MySqlConnector
 
 		internal MySqlSslMode SslMode => GetInitializedConnectionSettings().SslMode;
 
+		internal int? ActiveCommandId => m_session?.ActiveCommandId;
+
 		internal bool HasActiveReader => m_activeReader is not null;
 
 		internal void SetActiveReader(MySqlDataReader dataReader)

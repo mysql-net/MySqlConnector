@@ -300,6 +300,26 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 			Assert.True(reader.Read());
 		}
 
+		[Fact]
+		public void ExecutingCommandsAreIndependent()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+
+			using var cmd1 = connection.CreateCommand();
+			cmd1.CommandText = "SELECT 1;";
+			using var reader1 = cmd1.ExecuteReader();
+
+			using var cmd2 = connection.CreateCommand();
+			cmd2.CommandText = "SELECT 'abc';";
+
+#if BASELINE
+			Assert.Throws<MySqlException>(() => cmd2.ExecuteReader());
+#else
+			Assert.Throws<InvalidOperationException>(() => cmd2.ExecuteReader());
+#endif
+		}
+
 		private static string GetIgnoreCommandTransactionConnectionString()
 		{
 #if BASELINE

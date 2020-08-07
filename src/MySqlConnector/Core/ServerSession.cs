@@ -51,6 +51,7 @@ namespace MySqlConnector.Core
 
 		public string Id { get; }
 		public ServerVersion ServerVersion { get; set; }
+		public int ActiveCommandId { get; private set; }
 		public int ConnectionId { get; set; }
 		public byte[]? AuthPluginData { get; set; }
 		public uint CreatedTicks { get; }
@@ -90,7 +91,7 @@ namespace MySqlConnector.Core
 		{
 			lock (m_lock)
 			{
-				if (m_activeCommandId != command.CommandId)
+				if (ActiveCommandId != command.CommandId)
 					return false;
 				VerifyState(State.Querying, State.CancelingQuery, State.Failed);
 				if (m_state != State.Querying)
@@ -109,11 +110,11 @@ namespace MySqlConnector.Core
 			Log.Info("Session{0} canceling CommandId {1}: CommandText: {2}", m_logArguments[0], commandToCancel.CommandId, (commandToCancel as MySqlCommand)?.CommandText);
 			lock (m_lock)
 			{
-				if (m_activeCommandId != commandToCancel.CommandId)
+				if (ActiveCommandId != commandToCancel.CommandId)
 					return;
 
 				// NOTE: This command is executed while holding the lock to prevent race conditions during asynchronous cancellation.
-				// For example, if the lock weren't held, the current command could finish and the other thread could set m_activeCommandId
+				// For example, if the lock weren't held, the current command could finish and the other thread could set ActiveCommandId
 				// to zero, then start executing a new command. By the time this "KILL QUERY" command reached the server, the wrong
 				// command would be killed (because "KILL QUERY" specifies the connection whose command should be killed, not
 				// a unique identifier of the command itself). As a mitigation, we set the CommandTimeout to a low value to avoid
@@ -127,7 +128,7 @@ namespace MySqlConnector.Core
 		{
 			lock (m_lock)
 			{
-				if (m_activeCommandId == command.CommandId && m_state == State.CancelingQuery)
+				if (ActiveCommandId == command.CommandId && m_state == State.CancelingQuery)
 					m_state = State.Querying;
 			}
 		}
@@ -253,7 +254,7 @@ namespace MySqlConnector.Core
 				m_state = State.Querying;
 
 				command.CancelAttemptCount = 0;
-				m_activeCommandId = command.CommandId;
+				ActiveCommandId = command.CommandId;
 			}
 		}
 
@@ -289,7 +290,7 @@ namespace MySqlConnector.Core
 					m_state = State.Connected;
 				else
 					VerifyState(State.Failed);
-				m_activeCommandId = 0;
+				ActiveCommandId = 0;
 			}
 		}
 
@@ -1622,7 +1623,6 @@ namespace MySqlConnector.Core
 		SslStream? m_sslStream;
 		X509Certificate2? m_clientCertificate;
 		IPayloadHandler? m_payloadHandler;
-		int m_activeCommandId;
 		bool m_useCompression;
 		bool m_isSecureConnection;
 		bool m_supportsComMulti;
