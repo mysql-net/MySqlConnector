@@ -157,7 +157,7 @@ namespace MySqlConnector
 			else if (string.IsNullOrWhiteSpace(CommandText))
 				exception = new InvalidOperationException("CommandText must be specified");
 			else if (Connection?.HasActiveReader ?? false)
-				exception = new InvalidOperationException("Cannot call Prepare when there is an open DataReader for this command; it must be closed first.");
+				exception = new InvalidOperationException("Cannot call Prepare when there is an open DataReader for this command's connection; it must be closed first.");
 
 			if (exception is not null || Connection!.IgnorePrepare)
 				return false;
@@ -179,7 +179,7 @@ namespace MySqlConnector
 			get => m_commandText;
 			set
 			{
-				if (m_connection?.HasActiveReader ?? false)
+				if (m_connection?.ActiveCommandId == m_commandId)
 					throw new InvalidOperationException("Cannot set MySqlCommand.CommandText when there is an open DataReader for this command; it must be closed first.");
 				m_commandText = value ?? "";
 			}
@@ -194,7 +194,7 @@ namespace MySqlConnector
 			get => m_connection;
 			set
 			{
-				if (m_connection?.HasActiveReader ?? false)
+				if (m_connection?.ActiveCommandId == m_commandId)
 					throw new InvalidOperationException("Cannot set MySqlCommand.Connection when there is an open DataReader for this command; it must be closed first.");
 				m_connection = value;
 			}
