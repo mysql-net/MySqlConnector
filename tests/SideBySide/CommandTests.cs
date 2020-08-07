@@ -283,7 +283,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 			cmd.Cancel();
 		}
 
-		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=90086")]
+		[Fact]
 		public void CommandsAreIndependent()
 		{
 			using var connection = new MySqlConnection(AppConfig.ConnectionString);
