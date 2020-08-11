@@ -24,19 +24,19 @@ namespace MySqlConnector
 				ParameterName = parameterName,
 				DbType = dbType,
 			};
-			AddParameter(parameter);
+			AddParameter(parameter, m_parameters.Count);
 			return parameter;
 		}
 
 		public override int Add(object value)
 		{
-			AddParameter((MySqlParameter) (value ?? throw new ArgumentNullException(nameof(value))));
+			AddParameter((MySqlParameter) (value ?? throw new ArgumentNullException(nameof(value))), m_parameters.Count);
 			return m_parameters.Count - 1;
 		}
 
 		public MySqlParameter Add(MySqlParameter parameter)
 		{
-			AddParameter(parameter ?? throw new ArgumentNullException(nameof(parameter)));
+			AddParameter(parameter ?? throw new ArgumentNullException(nameof(parameter)), m_parameters.Count);
 			return parameter;
 		}
 
@@ -56,7 +56,7 @@ namespace MySqlConnector
 				ParameterName = parameterName,
 				Value = value
 			};
-			AddParameter(parameter);
+			AddParameter(parameter, m_parameters.Count);
 			return parameter;
 		}
 
@@ -100,7 +100,7 @@ namespace MySqlConnector
 			return m_nameToIndex.TryGetValue(normalizedName, out var index) ? index : -1;
 		}
 
-		public override void Insert(int index, object value) => m_parameters.Insert(index, (MySqlParameter) (value ?? throw new ArgumentNullException(nameof(value))));
+		public override void Insert(int index, object value) => AddParameter((MySqlParameter) (value ?? throw new ArgumentNullException(nameof(value))), index);
 
 #if !NETSTANDARD1_3
 		public override bool IsFixedSize => false;
@@ -173,13 +173,21 @@ namespace MySqlConnector
 			}
 		}
 
-		private void AddParameter(MySqlParameter parameter)
+		private void AddParameter(MySqlParameter parameter, int index)
 		{
 			if (!string.IsNullOrEmpty(parameter.NormalizedParameterName) && NormalizedIndexOf(parameter.NormalizedParameterName) != -1)
 				throw new MySqlException(@"Parameter '{0}' has already been defined.".FormatInvariant(parameter.ParameterName));
-			m_parameters.Add(parameter);
+			if (index < m_parameters.Count)
+			{
+				foreach (var pair in m_nameToIndex.ToList())
+				{
+					if (pair.Value >= index)
+						m_nameToIndex[pair.Key] = pair.Value + 1;
+				}
+			}
+			m_parameters.Insert(index, parameter);
 			if (!string.IsNullOrEmpty(parameter.NormalizedParameterName))
-				m_nameToIndex[parameter.NormalizedParameterName] = m_parameters.Count - 1;
+				m_nameToIndex[parameter.NormalizedParameterName] = index;
 			parameter.ParameterCollection = this;
 		}
 
