@@ -10,6 +10,18 @@ weight: 30
 
 # Version History
 
+### 1.0.1
+
+* Support `ENUM` columns that use the `MYSQL_TYPE_ENUM` type in their column metadata: [#850](https://github.com/mysql-net/MySqlConnector/issues/850).
+* Allow `MySqlCommand.CommandText` and `.Connection` to be changed while another command is executing: [#867](https://github.com/mysql-net/MySqlConnector/issues/867).
+* Make schema collection names (for `MySqlConnection.GetSchema(collectionName)`) case-insensitive: [#852](https://github.com/mysql-net/MySqlConnector/issues/852).
+* Fix `MySqlBulkLoader` with Azure Database for MySQL/MariaDB: [#853](https://github.com/mysql-net/MySqlConnector/issues/853).
+* Fix bug preventing the retrieval of more than 2^31-1 rows in a single query: [#863](https://github.com/mysql-net/MySqlConnector/issues/863).
+* Fix `MySqlParameterCollection.Insert` implementation: [#869](https://github.com/mysql-net/MySqlConnector/issues/869).
+* Fix integer overflow in sequence number for compressed packets.
+* Fix ZLIB header flags verification for compressed packets.
+* Thanks to [akamor](https://github.com/akamor) for contributions to this release.
+
 ### 1.0.0
 
 * **Breaking** Change namespace to `MySqlConnector`: [#827](https://github.com/mysql-net/MySqlConnector/issues/827).
