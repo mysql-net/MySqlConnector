@@ -11,7 +11,7 @@
   </PropertyGroup>
 
  <ItemGroup>
-    <PackageReference Include="AdoNet.Specification.Tests" Version="2.0.0-alpha7" />
+    <PackageReference Include="AdoNet.Specification.Tests" Version="2.0.0-alpha8" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />

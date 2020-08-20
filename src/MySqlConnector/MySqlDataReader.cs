@@ -296,7 +296,7 @@ namespace MySqlConnector
 		/// Returns a <see cref="DataTable"/> that contains metadata about the columns in the result set.
 		/// </summary>
 		/// <returns>A <see cref="DataTable"/> containing metadata about the columns in the result set.</returns>
-		public override DataTable GetSchemaTable() => m_schemaTable ??= BuildSchemaTable();
+		public override DataTable? GetSchemaTable() => m_schemaTable ??= BuildSchemaTable();
 
 		/// <summary>
 		/// Returns a <see cref="DataTable"/> that contains metadata about the columns in the result set.
@@ -304,7 +304,7 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the operation.</param>
 		/// <returns>A <see cref="DataTable"/> containing metadata about the columns in the result set.</returns>
 		/// <remarks>This method runs synchronously; prefer to call <see cref="GetSchemaTable"/> to avoid the overhead of allocating an unnecessary <c>Task</c>.</remarks>
-		public Task<DataTable> GetSchemaTableAsync(CancellationToken cancellationToken = default)
+		public Task<DataTable?> GetSchemaTableAsync(CancellationToken cancellationToken = default)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			return Task.FromResult(GetSchemaTable());
@@ -440,14 +440,14 @@ namespace MySqlConnector
 		}
 
 #if !NETSTANDARD1_3
-		internal DataTable BuildSchemaTable()
+		internal DataTable? BuildSchemaTable()
 		{
-			var schemaTable = new DataTable("SchemaTable") { Locale = CultureInfo.InvariantCulture };
+			var columnDefinitions = m_resultSet?.ColumnDefinitions;
+			if (columnDefinitions is null || m_resultSet!.ContainsCommandParameters)
+				return null;
 
-			var colDefinitions = m_resultSet?.ColumnDefinitions;
-			if (colDefinitions is null || m_resultSet!.ContainsCommandParameters)
-				return schemaTable;
-			schemaTable.MinimumCapacity = colDefinitions.Length;
+			var schemaTable = new DataTable("SchemaTable") { Locale = CultureInfo.InvariantCulture };
+			schemaTable.MinimumCapacity = columnDefinitions.Length;
 
 			var columnName = new DataColumn(SchemaTableColumn.ColumnName, typeof(string));
 			var ordinal = new DataColumn(SchemaTableColumn.ColumnOrdinal, typeof(int));

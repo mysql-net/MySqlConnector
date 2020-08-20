@@ -37,6 +37,10 @@ weight: 30
 * Allow rows larger than 1 MiB in `MySqlBulkCopy`: [#834](https://github.com/mysql-net/MySqlConnector/issues/834).
 * Reduce memory allocations when hashing passwords (during login).
 
+### 0.69.9
+
+* Return `null` from `MySqlDataReader.GetSchemaTable` when there is no result set: [#877](https://github.com/mysql-net/MySqlConnector/issues/877).
+
 ### 0.69.8
 
 * Fix `MySqlBulkLoader` with Azure Database for MySQL/MariaDB: [#853](https://github.com/mysql-net/MySqlConnector/issues/853).

@@ -1196,14 +1196,7 @@ create table schema_table({createColumn});");
 			}
 
 			Assert.False(reader.NextResult());
-#if BASELINE
 			Assert.Null(reader.GetSchemaTable());
-#else
-			table = reader.GetSchemaTable();
-			Assert.NotNull(table);
-			Assert.Empty(table.Rows);
-			Assert.Empty(table.Columns);
-#endif
 		}
 #endif
 
