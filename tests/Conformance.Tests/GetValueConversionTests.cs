@@ -85,6 +85,39 @@ namespace Conformance.Tests
 		public override void GetBoolean_throws_for_zero_Decimal() => TestGetValue(DbType.Decimal, ValueKind.Zero, x => x.GetBoolean(0), false);
 		public override void GetBoolean_throws_for_zero_Decimal_with_GetFieldValue() => TestGetValue(DbType.Decimal, ValueKind.Zero, x => x.GetBoolean(0), false);
 
+		// BOOL columns can be coerced to integers: https://github.com/mysql-net/MySqlConnector/issues/782
+		public override void GetByte_throws_for_minimum_Boolean() => TestGetValue(DbType.Boolean, ValueKind.Minimum, x => x.GetByte(0), (byte) 0);
+		public override void GetByte_throws_for_minimum_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.Minimum, x => x.GetFieldValue<byte>(0), (byte) 0);
+		public override void GetByte_throws_for_zero_Boolean() => TestGetValue(DbType.Boolean, ValueKind.Zero, x => x.GetByte(0), (byte) 0);
+		public override void GetByte_throws_for_zero_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.Zero, x => x.GetFieldValue<byte>(0), (byte) 0);
+		public override void GetByte_throws_for_one_Boolean() => TestGetValue(DbType.Boolean, ValueKind.One, x => x.GetByte(0), (byte) 1);
+		public override void GetByte_throws_for_one_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.One, x => x.GetFieldValue<byte>(0), (byte) 1);
+		public override void GetByte_throws_for_maximum_Boolean() => TestGetValue(DbType.Boolean, ValueKind.Maximum, x => x.GetByte(0), (byte) 1);
+		public override void GetByte_throws_for_maximum_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.Maximum, x => x.GetFieldValue<byte>(0), (byte) 1);
+		public override void GetInt16_throws_for_minimum_Boolean() => TestGetValue(DbType.Boolean, ValueKind.Minimum, x => x.GetInt16(0), (short) 0);
+		public override void GetInt16_throws_for_minimum_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.Minimum, x => x.GetFieldValue<short>(0), (short) 0);
+		public override void GetInt16_throws_for_zero_Boolean() => TestGetValue(DbType.Boolean, ValueKind.Zero, x => x.GetInt16(0), (short) 0);
+		public override void GetInt16_throws_for_zero_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.Zero, x => x.GetFieldValue<short>(0), (short) 0);
+		public override void GetInt16_throws_for_one_Boolean() => TestGetValue(DbType.Boolean, ValueKind.One, x => x.GetInt16(0), (short) 1);
+		public override void GetInt16_throws_for_one_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.One, x => x.GetFieldValue<short>(0), (short) 1);
+		public override void GetInt16_throws_for_maximum_Boolean() => TestGetValue(DbType.Boolean, ValueKind.Maximum, x => x.GetInt16(0), (short) 1);
+		public override void GetInt16_throws_for_maximum_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.Maximum, x => x.GetFieldValue<short>(0), (short) 1);
+		public override void GetInt32_throws_for_minimum_Boolean() => TestGetValue(DbType.Boolean, ValueKind.Minimum, x => x.GetInt32(0), 0);
+		public override void GetInt32_throws_for_minimum_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.Minimum, x => x.GetFieldValue<int>(0), 0);
+		public override void GetInt32_throws_for_zero_Boolean() => TestGetValue(DbType.Boolean, ValueKind.Zero, x => x.GetInt32(0), 0);
+		public override void GetInt32_throws_for_zero_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.Zero, x => x.GetFieldValue<int>(0), 0);
+		public override void GetInt32_throws_for_one_Boolean() => TestGetValue(DbType.Boolean, ValueKind.One, x => x.GetInt32(0), 1);
+		public override void GetInt32_throws_for_one_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.One, x => x.GetFieldValue<int>(0), 1);
+		public override void GetInt32_throws_for_maximum_Boolean() => TestGetValue(DbType.Boolean, ValueKind.Maximum, x => x.GetInt32(0), 1);
+		public override void GetInt32_throws_for_maximum_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.Maximum, x => x.GetFieldValue<int>(0), 1);
+		public override void GetInt64_throws_for_minimum_Boolean() => TestGetValue(DbType.Boolean, ValueKind.Minimum, x => x.GetInt64(0), 0L);
+		public override void GetInt64_throws_for_minimum_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.Minimum, x => x.GetFieldValue<long>(0), 0L);
+		public override void GetInt64_throws_for_zero_Boolean() => TestGetValue(DbType.Boolean, ValueKind.Zero, x => x.GetInt64(0), 0L);
+		public override void GetInt64_throws_for_zero_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.Zero, x => x.GetFieldValue<long>(0), 0L);
+		public override void GetInt64_throws_for_one_Boolean() => TestGetValue(DbType.Boolean, ValueKind.One, x => x.GetInt64(0), 1L);
+		public override void GetInt64_throws_for_one_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.One, x => x.GetFieldValue<long>(0), 1L);
+		public override void GetInt64_throws_for_maximum_Boolean() => TestGetValue(DbType.Boolean, ValueKind.Maximum, x => x.GetInt64(0), 1L);
+		public override void GetInt64_throws_for_maximum_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.Maximum, x => x.GetFieldValue<long>(0), 1L);
 
 		// GetByte allows integral conversions
 		public override void GetByte_throws_for_maximum_Int16() => TestException(DbType.Int16, ValueKind.Maximum, x => x.GetByte(0), typeof(OverflowException));
