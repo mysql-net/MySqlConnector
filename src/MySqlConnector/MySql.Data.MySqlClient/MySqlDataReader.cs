@@ -293,7 +293,7 @@ namespace MySql.Data.MySqlClient
 		public override int VisibleFieldCount => FieldCount;
 
 #if !NETSTANDARD1_3
-		public override DataTable GetSchemaTable() => m_schemaTable ??= BuildSchemaTable();
+		public override DataTable? GetSchemaTable() => m_schemaTable ??= BuildSchemaTable();
 
 		public override void Close() => DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #endif
@@ -409,14 +409,14 @@ namespace MySql.Data.MySqlClient
 		}
 
 #if !NETSTANDARD1_3
-		internal DataTable BuildSchemaTable()
+		internal DataTable? BuildSchemaTable()
 		{
-			var schemaTable = new DataTable("SchemaTable") { Locale = CultureInfo.InvariantCulture };
+			var columnDefinitions = m_resultSet?.ColumnDefinitions;
+			if (columnDefinitions is null || m_resultSet!.ContainsCommandParameters)
+				return null;
 
-			var colDefinitions = m_resultSet?.ColumnDefinitions;
-			if (colDefinitions is null || m_resultSet!.ContainsCommandParameters)
-				return schemaTable;
-			schemaTable.MinimumCapacity = colDefinitions.Length;
+			var schemaTable = new DataTable("SchemaTable") { Locale = CultureInfo.InvariantCulture };
+			schemaTable.MinimumCapacity = columnDefinitions.Length;
 
 			var columnName = new DataColumn(SchemaTableColumn.ColumnName, typeof(string));
 			var ordinal = new DataColumn(SchemaTableColumn.ColumnOrdinal, typeof(int));

@@ -189,9 +189,7 @@ namespace SideBySide
 			using var reader = await cmd.ExecuteReaderAsync();
 			Assert.False(await reader.ReadAsync());
 			var table = reader.GetSchemaTable();
-			Assert.NotNull(table);
-			Assert.Empty(table.Rows);
-			Assert.Empty(table.Columns);
+			Assert.Null(table);
 			Assert.False(await reader.NextResultAsync());
 		}
 #endif
