@@ -19,7 +19,12 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Set up .NET Core
+    - name: Set up .NET Core 2.1
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '2.1.x'
+
+    - name: Set up .NET 5
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.100-preview.8.20417.9
