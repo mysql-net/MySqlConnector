@@ -364,7 +364,8 @@ namespace MySqlConnector
 			return option is object && base.Remove(option.Key);
 		}
 
-		public override object? this[string key]
+		[AllowNull]
+		public override object this[string key]
 		{
 			get => MySqlConnectionStringOption.GetOptionForKey(key).GetObject(this);
 			set
@@ -472,7 +473,7 @@ namespace MySqlConnector
 		public string Key => m_keys[0];
 		public IReadOnlyList<string> Keys => m_keys;
 
-		public abstract object? GetObject(MySqlConnectionStringBuilder builder);
+		public abstract object GetObject(MySqlConnectionStringBuilder builder);
 		public abstract void SetObject(MySqlConnectionStringBuilder builder, object value);
 
 		protected MySqlConnectionStringOption(IReadOnlyList<string> keys)
@@ -806,7 +807,7 @@ namespace MySqlConnector
 		public void SetValue(MySqlConnectionStringBuilder builder, T? value) =>
 			builder.DoSetValue(Key, m_coerce is null ? value : m_coerce(value));
 
-		public override object? GetObject(MySqlConnectionStringBuilder builder) => GetValue(builder);
+		public override object GetObject(MySqlConnectionStringBuilder builder) => GetValue(builder);
 
 		public override void SetObject(MySqlConnectionStringBuilder builder, object value) => SetValue(builder, ChangeType(value));
 

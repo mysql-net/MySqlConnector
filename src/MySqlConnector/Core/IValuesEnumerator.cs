@@ -15,7 +15,7 @@ namespace MySqlConnector.Core
 		int FieldCount { get; }
 		ValueTask<bool> MoveNextAsync();
 		bool MoveNext();
-		void GetValues(object?[] values);
+		void GetValues(object[] values);
 	}
 
 	internal sealed class DbDataReaderValuesEnumerator : IValuesEnumerator
@@ -28,7 +28,7 @@ namespace MySqlConnector.Core
 
 		public bool MoveNext() => m_dataReader.Read();
 
-		public void GetValues(object?[] values) => m_dataReader.GetValues(values);
+		public void GetValues(object[] values) => m_dataReader.GetValues(values);
 
 		readonly DbDataReader m_dataReader;
 	}
@@ -45,7 +45,7 @@ namespace MySqlConnector.Core
 
 		public bool MoveNext() => m_dataReader.Read();
 
-		public void GetValues(object?[] values) => m_dataReader.GetValues(values);
+		public void GetValues(object[] values) => m_dataReader.GetValues(values);
 
 		readonly IDataReader m_dataReader;
 	}
@@ -73,7 +73,7 @@ namespace MySqlConnector.Core
 			return false;
 		}
 
-		public void GetValues(object?[] values)
+		public void GetValues(object[] values)
 		{
 			var row = m_dataRows.Current;
 			for (var i = 0; i < FieldCount; i++)

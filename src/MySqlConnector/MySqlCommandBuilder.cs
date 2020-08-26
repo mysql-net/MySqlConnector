@@ -61,9 +61,9 @@ namespace MySqlConnector
 			DataAdapter = dataAdapter;
 		}
 
-		public new MySqlDataAdapter DataAdapter
+		public new MySqlDataAdapter? DataAdapter
 		{
-			get => (MySqlDataAdapter) base.DataAdapter;
+			get => (MySqlDataAdapter?) base.DataAdapter;
 			set => base.DataAdapter = value;
 		}
 

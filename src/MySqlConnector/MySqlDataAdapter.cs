@@ -117,7 +117,7 @@ namespace MySqlConnector
 		{
 		}
 
-		public new MySqlCommand Command => (MySqlCommand) base.Command;
+		public new MySqlCommand Command => (MySqlCommand) base.Command!;
 	}
 
 	public sealed class MySqlRowUpdatedEventArgs : RowUpdatedEventArgs

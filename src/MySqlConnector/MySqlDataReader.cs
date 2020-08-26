@@ -245,7 +245,7 @@ namespace MySqlConnector
 
 		public override int Depth => GetResultSet().Depth;
 
-		protected override DbDataReader? GetDbDataReader(int ordinal) => throw new NotSupportedException();
+		protected override DbDataReader GetDbDataReader(int ordinal) => throw new NotSupportedException();
 
 		public override DateTime GetDateTime(int ordinal) => GetResultSet().GetCurrentRow().GetDateTime(ordinal);
 		public DateTime GetDateTime(string name) => GetDateTime(GetOrdinal(name));
@@ -296,7 +296,13 @@ namespace MySqlConnector
 		/// Returns a <see cref="DataTable"/> that contains metadata about the columns in the result set.
 		/// </summary>
 		/// <returns>A <see cref="DataTable"/> containing metadata about the columns in the result set.</returns>
+#if NET5_0
+#pragma warning disable 8764 // https://github.com/dotnet/runtime/pull/41082 should be fixed in RC1
+#endif
 		public override DataTable? GetSchemaTable() => m_schemaTable ??= BuildSchemaTable();
+#if NET5_0
+#pragma warning restore
+#endif
 
 		/// <summary>
 		/// Returns a <see cref="DataTable"/> that contains metadata about the columns in the result set.
@@ -304,7 +310,13 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the operation.</param>
 		/// <returns>A <see cref="DataTable"/> containing metadata about the columns in the result set.</returns>
 		/// <remarks>This method runs synchronously; prefer to call <see cref="GetSchemaTable"/> to avoid the overhead of allocating an unnecessary <c>Task</c>.</remarks>
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_0
 		public Task<DataTable?> GetSchemaTableAsync(CancellationToken cancellationToken = default)
+#else
+#pragma warning disable 8609 // https://github.com/dotnet/runtime/pull/41082 should be fixed in RC1
+		public override Task<DataTable?> GetSchemaTableAsync(CancellationToken cancellationToken = default)
+#pragma warning restore
+#endif
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			return Task.FromResult(GetSchemaTable());
@@ -333,7 +345,11 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the operation.</param>
 		/// <returns>A <see cref="Task"/> containing <see cref="System.Collections.ObjectModel.ReadOnlyCollection{DbColumn}"/> containing metadata about the result set.</returns>
 		/// <remarks>This method runs synchronously; prefer to call <see cref="GetColumnSchema"/> to avoid the overhead of allocating an unnecessary <c>Task</c>.</remarks>
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_0
 		public Task<ReadOnlyCollection<DbColumn>> GetColumnSchemaAsync(CancellationToken cancellationToken = default)
+#else
+		public override Task<ReadOnlyCollection<DbColumn>> GetColumnSchemaAsync(CancellationToken cancellationToken = default)
+#endif
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 			return Task.FromResult(GetColumnSchema());

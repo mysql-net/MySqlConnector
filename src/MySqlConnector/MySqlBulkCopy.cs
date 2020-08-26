@@ -364,7 +364,7 @@ namespace MySqlConnector
 
 			try
 			{
-				var values = new object?[m_valuesEnumerator!.FieldCount];
+				var values = new object[m_valuesEnumerator!.FieldCount];
 				Encoder? utf8Encoder = null;
 				while (true)
 				{
@@ -415,7 +415,7 @@ namespace MySqlConnector
 				m_wasAborted = eventArgs?.Abort ?? false;
 			}
 
-			static bool WriteValue(MySqlConnection connection, object? value, ref int inputIndex, ref Encoder? utf8Encoder, Span<byte> output, out int bytesWritten)
+			static bool WriteValue(MySqlConnection connection, object value, ref int inputIndex, ref Encoder? utf8Encoder, Span<byte> output, out int bytesWritten)
 			{
 				if (output.Length == 0)
 				{
