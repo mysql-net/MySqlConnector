@@ -19,12 +19,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Set up .NET Core 2.1
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '2.1.x'
-
-    - name: Set up .NET 5
+    - name: Set up .NET 5.0
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.100-preview.8.20417.9
@@ -33,10 +28,10 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --configuration Release
+      run: dotnet build --configuration Release --no-restore
 
     - name: Unit Tests
-      run: dotnet test --configuration Release tests\MySqlConnector.Tests
+      run: dotnet test --configuration Release tests\MySqlConnector.Tests --no-build
 
     - name: Pack
       run: dotnet pack --configuration Release --no-build
