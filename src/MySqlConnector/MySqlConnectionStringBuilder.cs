@@ -706,7 +706,7 @@ namespace MySqlConnector
 				defaultValue: false));
 
 			AddOption(ServerRsaPublicKeyFile = new(
-				keys: new[] { "ServerRSAPublicKeyFile", "Server RSA Public Key File" },
+				keys: new[] { "ServerRsaPublicKeyFile", "Server RSA Public Key File" },
 				defaultValue: ""));
 
 			AddOption(ServerSPN = new(
