@@ -329,9 +329,8 @@ These are the other options that MySqlConnector supports. They are set to sensib
   <tr>
     <td>Keep Alive, Keepalive</td>
     <td>0</td>
-    <td>TCP Keepalive idle time. A value of 0 indicates that the OS Default keepalive settings are used.
-    On Windows, a value greater than 0 is the idle connection time, measured in seconds, before the first keepalive packet is sent.
-    Due to limitations in .NET Core, Unix-based Operating Systems will always use the OS Default keepalive settings.</td>
+    <td><p>TCP Keepalive idle time (in seconds). A value of 0 indicates that the OS Default keepalive settings are used; a value greater than 0 is the idle connection time (in seconds) before the first keepalive packet is sent.</p>
+    <p>On Windows, this option is always supported. On non-Windows platforms, this option only takes effect in .NET Core 3.0 and later. For earlier versions of .NET Core, the OS Default keepalive settings are used instead.</p></td>
   </tr>
   <tr>
     <td>Load Balance, LoadBalance</td>

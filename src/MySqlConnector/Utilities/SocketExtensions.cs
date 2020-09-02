@@ -64,10 +64,9 @@ namespace MySqlConnector.Utilities
 				inOptionValues[9] = 0x03;
 				socket.IOControl(IOControlCode.KeepAliveValues, inOptionValues, null);
 			}
-			// Unix not supported: The appropriate socket options to set Keepalive options are not exposd in .NET
-			// https://github.com/dotnet/corefx/issues/14237
-			// Unix will still respect the OS Default Keepalive settings
+			// Unix not supported: The appropriate socket options to set Keepalive options are not exposed: https://github.com/dotnet/runtime/issues/19568
 #else
+			// cross-platform TCP KeepAlive settings were added in netcoreapp3.0: https://github.com/dotnet/runtime/issues/24041
 			socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveInterval, 1);
 			socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveTime, (int) keepAliveTimeSeconds);
 #endif
