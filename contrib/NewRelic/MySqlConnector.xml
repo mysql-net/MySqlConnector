@@ -9,7 +9,20 @@
 		<tracerFactory name="SqlCommandTracerAsync">
 			<!-- MySqlConnector -->
 			<match assemblyName="MySqlConnector" className="MySqlConnector.MySqlCommand">
-				<exactMethodMatcher methodName="ExecuteReaderAsync" parameters="System.Data.CommandBehavior,MySqlConnector.Protocol.Serialization.IOBehavior,System.Threading.CancellationToken" />
+				<exactMethodMatcher methodName="ExecuteReaderAsync" parameters="System.Threading.CancellationToken" />
+				<exactMethodMatcher methodName="ExecuteReaderAsync" parameters="System.Data.CommandBehavior,System.Threading.CancellationToken" />
+				<exactMethodMatcher methodName="ExecuteNonQueryAsync" parameters="System.Threading.CancellationToken" />
+				<exactMethodMatcher methodName="ExecuteScalarAsync" parameters="System.Threading.CancellationToken" />
+			</match>
+		</tracerFactory>
+
+		<tracerFactory name="SqlCommandTracer">
+			<!-- MySqlConnector -->
+			<match assemblyName="MySqlConnector" className="MySqlConnector.MySqlCommand">
+				<exactMethodMatcher methodName="ExecuteReader" />
+				<exactMethodMatcher methodName="ExecuteReader" parameters="System.Data.CommandBehavior" />
+				<exactMethodMatcher methodName="ExecuteNonQuery" />
+				<exactMethodMatcher methodName="ExecuteScalar" />
 			</match>
 		</tracerFactory>
 
