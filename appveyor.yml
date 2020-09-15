@@ -10,7 +10,7 @@ cache:
 install:
   - ps: Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "install-dotnet.ps1"
   - ps: .\install-dotnet.ps1 -Version 3.1.301 -InstallDir "dotnetcli"
-  - ps: .\install-dotnet.ps1 -Version 5.0.100-preview.8.20417.9 -InstallDir "dotnetcli"
+  - ps: .\install-dotnet.ps1 -Version 5.0.100-rc.1.20452.10 -InstallDir "dotnetcli"
 build_script:
 - dotnet --info
 before_test:

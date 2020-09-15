@@ -60,9 +60,9 @@ namespace MySqlConnector
 
 		protected override void OnRowUpdated(RowUpdatedEventArgs value) => RowUpdated?.Invoke(this, (MySqlRowUpdatedEventArgs) value);
 
-		protected override RowUpdatingEventArgs CreateRowUpdatingEvent(DataRow dataRow, IDbCommand command, StatementType statementType, DataTableMapping tableMapping) => new MySqlRowUpdatingEventArgs(dataRow, command, statementType, tableMapping);
+		protected override RowUpdatingEventArgs CreateRowUpdatingEvent(DataRow dataRow, IDbCommand? command, StatementType statementType, DataTableMapping tableMapping) => new MySqlRowUpdatingEventArgs(dataRow, command, statementType, tableMapping);
 
-		protected override RowUpdatedEventArgs CreateRowUpdatedEvent(DataRow dataRow, IDbCommand command, StatementType statementType, DataTableMapping tableMapping) => new MySqlRowUpdatedEventArgs(dataRow, command, statementType, tableMapping);
+		protected override RowUpdatedEventArgs CreateRowUpdatedEvent(DataRow dataRow, IDbCommand? command, StatementType statementType, DataTableMapping tableMapping) => new MySqlRowUpdatedEventArgs(dataRow, command, statementType, tableMapping);
 
 		public override int UpdateBatchSize { get; set; }
 
@@ -112,22 +112,22 @@ namespace MySqlConnector
 
 	public sealed class MySqlRowUpdatingEventArgs : RowUpdatingEventArgs
 	{
-		public MySqlRowUpdatingEventArgs(DataRow row, IDbCommand command, StatementType statementType, DataTableMapping tableMapping)
+		public MySqlRowUpdatingEventArgs(DataRow row, IDbCommand? command, StatementType statementType, DataTableMapping tableMapping)
 			: base(row, command, statementType, tableMapping)
 		{
 		}
 
-		public new MySqlCommand Command => (MySqlCommand) base.Command!;
+		public new MySqlCommand? Command => (MySqlCommand?) base.Command!;
 	}
 
 	public sealed class MySqlRowUpdatedEventArgs : RowUpdatedEventArgs
 	{
-		public MySqlRowUpdatedEventArgs(DataRow row, IDbCommand command, StatementType statementType, DataTableMapping tableMapping)
+		public MySqlRowUpdatedEventArgs(DataRow row, IDbCommand? command, StatementType statementType, DataTableMapping tableMapping)
 			: base(row, command, statementType, tableMapping)
 		{
 		}
 
-		public new MySqlCommand Command => (MySqlCommand) base.Command;
+		public new MySqlCommand? Command => (MySqlCommand?) base.Command;
 	}
 }
 #endif

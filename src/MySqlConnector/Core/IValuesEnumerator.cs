@@ -53,7 +53,7 @@ namespace MySqlConnector.Core
 #if !NETSTANDARD1_3
 	internal sealed class DataRowsValuesEnumerator : IValuesEnumerator
 	{
-		public static IValuesEnumerator Create(DataTable dataTable) => new DataRowsValuesEnumerator(dataTable.Rows.Cast<DataRow>(), dataTable.Columns.Count);
+		public static IValuesEnumerator Create(DataTable dataTable) => new DataRowsValuesEnumerator(dataTable.Rows.Cast<DataRow>().Where(x => x is not null).Select(x => x!), dataTable.Columns.Count);
 
 		public DataRowsValuesEnumerator(IEnumerable<DataRow> dataRows, int columnCount)
 		{
