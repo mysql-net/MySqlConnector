@@ -301,7 +301,7 @@ namespace SideBySide
 		}
 
 #if !BASELINE
-#if !NETCOREAPP1_1_2 && !NETCOREAPP2_0
+#if !NETCOREAPP1_1_2
 		[SkippableFact(ServerFeatures.Ed25519)]
 		public async Task Ed25519Authentication()
 		{

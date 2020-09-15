@@ -50,7 +50,7 @@ namespace SideBySide
 		}
 #endif
 
-#if !NETCOREAPP1_1_2 && !NETCOREAPP2_0
+#if !NETCOREAPP1_1_2
 		[Fact]
 		public void DbProviderFactoriesGetFactory()
 		{

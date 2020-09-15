@@ -61,7 +61,7 @@ namespace SideBySide
 			await DoTestSsl(csb.ConnectionString);
 		}
 
-#if !NETCOREAPP1_1_2 && !NETCOREAPP2_0
+#if !NETCOREAPP1_1_2
 		[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
 		[InlineData("ssl-client-cert.pem", "ssl-client-key.pem", null)]
 #if !BASELINE
@@ -201,6 +201,7 @@ namespace SideBySide
 			Assert.Equal(expectedProtocolString, reader.GetString(1));
 		}
 
+#if !NET5_0
 		[SkippableFact(ConfigSettings.RequiresSsl)]
 		public async Task ForceTls11()
 		{
@@ -222,6 +223,7 @@ namespace SideBySide
 			Assert.True(reader.Read());
 			Assert.Equal("TLSv1.1", reader.GetString(1));
 		}
+#endif
 
 #if NETCOREAPP3_1
 		[SkippableFact(ConfigSettings.RequiresSsl)]
