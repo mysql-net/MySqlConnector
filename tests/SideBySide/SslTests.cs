@@ -183,7 +183,7 @@ namespace SideBySide
 			var expectedProtocolString = expectedProtocol == SslProtocols.Tls12 ? "TLSv1.2" :
 				expectedProtocol == SslProtocols.Tls11 ? "TLSv1.1" : "TLSv1";
 
-#if NETCOREAPP3_0
+#if NETCOREAPP3_1
 			// https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0#tls-13--openssl-111-on-linux
 			if (expectedProtocol == SslProtocols.Tls12 && AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls13) && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 			{
@@ -223,7 +223,7 @@ namespace SideBySide
 			Assert.Equal("TLSv1.1", reader.GetString(1));
 		}
 
-#if NETCOREAPP3_0
+#if NETCOREAPP3_1
 		[SkippableFact(ConfigSettings.RequiresSsl)]
 		public async Task RequireTls13()
 		{

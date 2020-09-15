@@ -38,13 +38,13 @@ steps:
   displayName: 'Publish Conformance.Tests'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f netcoreapp3.0 --no-build tests/Conformance.Tests/Conformance.Tests.csproj'
+    arguments: '-c Release -f netcoreapp3.1 --no-build tests/Conformance.Tests/Conformance.Tests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: 'Conformance.Tests-3.0-$(Agent.OS)'
-    targetPath: 'tests/Conformance.Tests/bin/Release/netcoreapp3.0/publish'
+    artifactName: 'Conformance.Tests-3.1-$(Agent.OS)'
+    targetPath: 'tests/Conformance.Tests/bin/Release/netcoreapp3.1/publish'
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish SideBySide (2.0)'
@@ -71,13 +71,13 @@ steps:
     targetPath: 'tests/SideBySide/bin/Release/netcoreapp2.1/publish'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Publish SideBySide (3.0)'
+  displayName: 'Publish SideBySide (3.1)'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f netcoreapp3.0 --no-build tests/SideBySide/SideBySide.csproj'
+    arguments: '-c Release -f netcoreapp3.1 --no-build tests/SideBySide/SideBySide.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: 'SideBySide-netcoreapp3.0-$(Agent.OS)'
-    targetPath: 'tests/SideBySide/bin/Release/netcoreapp3.0/publish'
+    artifactName: 'SideBySide-netcoreapp3.1-$(Agent.OS)'
+    targetPath: 'tests/SideBySide/bin/Release/netcoreapp3.1/publish'
