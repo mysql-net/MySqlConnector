@@ -52,9 +52,9 @@ For Entity Framework support, use:
 
 ## Build Status
 
-Ubuntu 14.04 | Windows x64 | NuGet
+Appveyor | Azure Pipelines | NuGet
 --- | --- | ---
-[![Travis CI](https://img.shields.io/travis/mysql-net/MySqlConnector/master.svg)](https://travis-ci.org/mysql-net/MySqlConnector) | [![AppVeyor](https://img.shields.io/appveyor/ci/mysqlnet/mysqlconnector/master.svg)](https://ci.appveyor.com/project/mysqlnet/mysqlconnector) | [![NuGet Pre Release](https://img.shields.io/nuget/vpre/MySqlConnector.svg)](https://www.nuget.org/packages/MySqlConnector/)
+[![AppVeyor](https://img.shields.io/appveyor/ci/mysqlnet/mysqlconnector/master.svg)](https://ci.appveyor.com/project/mysqlnet/mysqlconnector) | [![Azure Pipelines](https://dev.azure.com/mysqlnet/MySqlConnector/_apis/build/status/mysql-net.MySqlConnector?branchName=master)](https://dev.azure.com/mysqlnet/MySqlConnector/_build/latest?definitionId=2&branchName=master) | [![NuGet](https://img.shields.io/nuget/vpre/MySqlConnector.svg)](https://www.nuget.org/packages/MySqlConnector/)
 
 ## Building
 
@@ -81,8 +81,8 @@ The goals of this project are:
 6. **Independent:** This is a clean-room reimplementation of the [MySQL Protocol](https://dev.mysql.com/doc/internals/en/client-server-protocol.html), not based on Connector/NET.
 
 Cloning the full API of Connector/NET is not a goal of this project, although
-it will try not to be gratuitously incompatible. For common scenarios, this package should
-be a drop-in replacement.
+it will try not to be gratuitously incompatible. For typical scenarios, [migrating to this package](https://mysqlconnector.net/tutorials/migrating-from-connector-net/) should
+be easy.
 
 ## License
 
