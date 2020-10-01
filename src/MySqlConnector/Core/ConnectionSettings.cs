@@ -95,8 +95,8 @@ namespace MySqlConnector.Core
 			ConnectionIdleTimeout = (int) csb.ConnectionIdleTimeout;
 			if (csb.MinimumPoolSize > csb.MaximumPoolSize)
 				throw new MySqlException("MaximumPoolSize must be greater than or equal to MinimumPoolSize");
-			MinimumPoolSize = (int) csb.MinimumPoolSize;
-			MaximumPoolSize = (int) csb.MaximumPoolSize;
+			MinimumPoolSize = ToSigned(csb.MinimumPoolSize);
+			MaximumPoolSize = ToSigned(csb.MaximumPoolSize);
 
 			// Other Options
 			AllowLoadLocalInfile = csb.AllowLoadLocalInfile;
@@ -105,10 +105,11 @@ namespace MySqlConnector.Core
 			AllowZeroDateTime = csb.AllowZeroDateTime;
 			ApplicationName = csb.ApplicationName;
 			AutoEnlist = csb.AutoEnlist;
-			ConnectionTimeout = (int) csb.ConnectionTimeout;
+			CancellationTimeout = ToSigned(csb.CancellationTimeout);
+			ConnectionTimeout = ToSigned(csb.ConnectionTimeout);
 			ConvertZeroDateTime = csb.ConvertZeroDateTime;
 			DateTimeKind = (DateTimeKind) csb.DateTimeKind;
-			DefaultCommandTimeout = (int) csb.DefaultCommandTimeout;
+			DefaultCommandTimeout = ToSigned(csb.DefaultCommandTimeout);
 			ForceSynchronous = csb.ForceSynchronous;
 			IgnoreCommandTransaction = csb.IgnoreCommandTransaction;
 			IgnorePrepare = csb.IgnorePrepare;
@@ -123,6 +124,8 @@ namespace MySqlConnector.Core
 			UseAffectedRows = csb.UseAffectedRows;
 			UseCompression = csb.UseCompression;
 			UseXaTransactions = csb.UseXaTransactions;
+
+			static int ToSigned(uint value) => value >= int.MaxValue ? int.MaxValue : (int) value;
 		}
 
 		private static MySqlGuidFormat GetEffectiveGuidFormat(MySqlGuidFormat guidFormat, bool oldGuids)
@@ -190,6 +193,7 @@ namespace MySqlConnector.Core
 		public bool AllowZeroDateTime { get; }
 		public string ApplicationName { get; }
 		public bool AutoEnlist { get; }
+		public int CancellationTimeout { get; }
 		public int ConnectionTimeout { get; }
 		public bool ConvertZeroDateTime { get; }
 		public DateTimeKind DateTimeKind { get; }

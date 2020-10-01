@@ -12,6 +12,8 @@ namespace MySqlConnector.Tests
 		public FakeMySqlServer()
 		{
 			m_tcpListener = new(IPAddress.Any, 0);
+			m_lock = new();
+			m_connections = new();
 			m_tasks = new();
 		}
 
@@ -36,6 +38,7 @@ namespace MySqlConnector.Tests
 				catch (AggregateException)
 				{
 				}
+				m_connections.Clear();
 				m_tasks.Clear();
 				m_cts.Dispose();
 				m_cts = null;
@@ -52,6 +55,15 @@ namespace MySqlConnector.Tests
 		public bool SendIncompletePostHandshakeResponse { get; set; }
 		public bool BlockOnConnect { get; set; }
 
+		internal void CancelQuery(int connectionId)
+		{
+			lock (m_lock)
+			{
+				if (connectionId >= 1 && connectionId <= m_connections.Count)
+					m_connections[connectionId - 1].CancelQueryEvent.Set();
+			}
+		}
+
 		internal void ClientDisconnected() => Interlocked.Decrement(ref m_activeConnections);
 
 		private async Task AcceptConnectionsAsync()
@@ -60,15 +72,18 @@ namespace MySqlConnector.Tests
 			{
 				var tcpClient = await m_tcpListener.AcceptTcpClientAsync();
 				Interlocked.Increment(ref m_activeConnections);
-				lock (m_tasks)
+				lock (m_lock)
 				{
 					var connection = new FakeMySqlServerConnection(this, m_tasks.Count);
+					m_connections.Add(connection);
 					m_tasks.Add(connection.RunAsync(tcpClient, m_cts.Token));
 				}
 			}
 		}
 
+		readonly object m_lock;
 		readonly TcpListener m_tcpListener;
+		readonly List<FakeMySqlServerConnection> m_connections;
 		readonly List<Task> m_tasks;
 		CancellationTokenSource m_cts;
 		int m_activeConnections;

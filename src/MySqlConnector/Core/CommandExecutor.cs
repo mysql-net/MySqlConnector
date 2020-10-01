@@ -52,7 +52,6 @@ namespace MySqlConnector.Core
 			cancellationToken.ThrowIfCancellationRequested();
 
 			using var payload = writer.ToPayloadData();
-			using var registration = command.CancellableCommand.RegisterCancel(cancellationToken); // lgtm[cs/useless-assignment-to-local]
 			connection.Session.StartQuerying(command.CancellableCommand);
 			command.SetLastInsertedId(-1);
 			try
@@ -63,7 +62,7 @@ namespace MySqlConnector.Core
 			catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
 			{
 				Log.Warn("Session{0} query was interrupted", connection.Session.Id);
-				throw new OperationCanceledException(cancellationToken);
+				throw new OperationCanceledException(ex. Message, ex, cancellationToken);
 			}
 			catch (Exception ex) when (payload.Span.Length > 4_194_304 && (ex is SocketException || ex is IOException || ex is MySqlProtocolException))
 			{
