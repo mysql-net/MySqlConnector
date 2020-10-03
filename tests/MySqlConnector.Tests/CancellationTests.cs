@@ -28,7 +28,7 @@ namespace MySqlConnector.Tests
 
 		public class CancelExecuteXWithCommandTimeout : CancellationTests
 		{
-			[Theory]
+			[SkipCITheory]
 			[MemberData(nameof(GetSyncMethodSteps))]
 			public void Test(int step, int method)
 			{
@@ -51,7 +51,7 @@ namespace MySqlConnector.Tests
 
 		public class CancelExecuteXAsyncWithCommandTimeout : CancellationTests
 		{
-			[Theory]
+			[SkipCITheory]
 			[MemberData(nameof(GetAsyncMethodSteps))]
 			public async Task Test(int step, int method)
 			{
@@ -69,7 +69,7 @@ namespace MySqlConnector.Tests
 
 		public class CancelExecuteXAsyncWithCancellationToken : CancellationTests
 		{
-			[Theory]
+			[SkipCITheory]
 			[MemberData(nameof(GetAsyncMethodSteps))]
 			public async Task Test(int step, int method)
 			{
@@ -89,7 +89,7 @@ namespace MySqlConnector.Tests
 
 		public class ExecuteXBeforeCommandTimeoutExpires : CancellationTests
 		{
-			[Theory]
+			[SkipCITheory]
 			[MemberData(nameof(GetSyncMethodSteps))]
 			public void Test(int step, int method)
 			{
@@ -111,8 +111,8 @@ namespace MySqlConnector.Tests
 
 		public class ExecuteXAsyncBeforeCancellationTokenCancels : CancellationTests
 		{
-			[Theory]
-			[MemberData(nameof(GetSyncMethodSteps))]
+			[SkipCITheory]
+			[MemberData(nameof(GetAsyncMethodSteps))]
 			public async Task Test(int step, int method)
 			{
 				using var connection = new MySqlConnection(m_csb.ConnectionString);
@@ -134,7 +134,7 @@ namespace MySqlConnector.Tests
 
 		public class ExecuteXWithLongAggregateTime : CancellationTests
 		{
-			[Theory]
+			[SkipCITheory]
 			[InlineData(0)]
 			[InlineData(1)]
 			public void Timeout(int method)
@@ -150,7 +150,7 @@ namespace MySqlConnector.Tests
 				Assert.Equal(MySqlErrorCode.QueryInterrupted, ex.ErrorCode);
 			}
 
-			[Theory]
+			[SkipCITheory]
 			[InlineData(2)]
 			public void NoTimeout(int method)
 			{
@@ -168,7 +168,7 @@ namespace MySqlConnector.Tests
 
 		public class ExecuteXAsyncWithLongAggregateTime : CancellationTests
 		{
-			[Theory]
+			[SkipCITheory]
 			[InlineData(0)]
 			[InlineData(1)]
 			public async Task Timeout(int method)
@@ -184,7 +184,7 @@ namespace MySqlConnector.Tests
 				Assert.Equal(MySqlErrorCode.QueryInterrupted, ex.ErrorCode);
 			}
 
-			[Theory]
+			[SkipCITheory]
 			[InlineData(2)]
 			public async Task NoTimeout(int method)
 			{
@@ -202,7 +202,7 @@ namespace MySqlConnector.Tests
 
 		public class ExecuteXTimeout : CancellationTests
 		{
-			[Theory]
+			[SkipCITheory]
 			[MemberData(nameof(GetSyncMethodSteps))]
 			public void Test(int step, int method)
 			{
@@ -223,7 +223,7 @@ namespace MySqlConnector.Tests
 
 		public class ExecuteXAsyncTimeout : CancellationTests
 		{
-			[Theory]
+			[SkipCITheory]
 			[MemberData(nameof(GetAsyncMethodSteps))]
 			public async Task Test(int step, int method)
 			{
