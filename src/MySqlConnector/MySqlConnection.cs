@@ -912,7 +912,7 @@ namespace MySqlConnector
 				throw new ObjectDisposedException(GetType().Name);
 		}
 
-		private Task CloseAsync(bool changeState, IOBehavior ioBehavior)
+		private async Task CloseAsync(bool changeState, IOBehavior ioBehavior)
 		{
 			// check fast path
 			if (m_activeReader is null &&
@@ -925,16 +925,16 @@ namespace MySqlConnector
 				m_cachedProcedures = null;
 				if (m_session is not null)
 				{
-					m_session.ReturnToPool();
+					await m_session.ReturnToPoolAsync(ioBehavior).ConfigureAwait(false);
 					m_session = null;
 				}
 				if (changeState)
 					SetState(ConnectionState.Closed);
 
-				return Utility.CompletedTask;
+				return;
 			}
 
-			return DoCloseAsync(changeState, ioBehavior);
+			await DoCloseAsync(changeState, ioBehavior).ConfigureAwait(false);
 		}
 
 		private async Task DoCloseAsync(bool changeState, IOBehavior ioBehavior)
@@ -994,7 +994,7 @@ namespace MySqlConnector
 				{
 					if (GetInitializedConnectionSettings().Pooling)
 					{
-						m_session.ReturnToPool();
+						await m_session.ReturnToPoolAsync(ioBehavior).ConfigureAwait(false);
 					}
 					else
 					{
