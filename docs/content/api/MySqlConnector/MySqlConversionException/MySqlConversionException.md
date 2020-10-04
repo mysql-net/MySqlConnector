@@ -4,9 +4,15 @@ title: MySqlConversionException
 
 # MySqlConversionException constructor
 
+Initializes a new instance of [`MySqlConversionException`](../../MySqlConversionExceptionType/).
+
 ```csharp
 public MySqlConversionException(string message)
 ```
+
+| parameter | description |
+| --- | --- |
+| message | The exception message. |
 
 ## See Also
 

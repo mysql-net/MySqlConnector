@@ -48,6 +48,11 @@ namespace MySqlConnector
 			SqlState = info.GetString("SqlState");
 		}
 
+		/// <summary>
+		/// Sets the <see cref="SerializationInfo"/> with information about the exception.
+		/// </summary>
+		/// <param name="info">The <see cref="SerializationInfo"/> that will be set.</param>
+		/// <param name="context">The context.</param>
 		public override void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
 			base.GetObjectData(info, context);
@@ -56,6 +61,9 @@ namespace MySqlConnector
 		}
 #endif
 
+		/// <summary>
+		/// Gets a collection of key/value pairs that provide additional information about the exception.
+		/// </summary>
 		public override IDictionary Data
 		{
 			get

@@ -4,9 +4,16 @@ title: GetObjectData
 
 # MySqlException.GetObjectData method
 
+Sets the SerializationInfo with information about the exception.
+
 ```csharp
 public override void GetObjectData(SerializationInfo info, StreamingContext context)
 ```
+
+| parameter | description |
+| --- | --- |
+| info | The SerializationInfo that will be set. |
+| context | The context. |
 
 ## See Also
 

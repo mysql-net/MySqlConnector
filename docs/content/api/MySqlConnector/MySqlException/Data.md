@@ -4,6 +4,8 @@ title: Data
 
 # MySqlException.Data property
 
+Gets a collection of key/value pairs that provide additional information about the exception.
+
 ```csharp
 public override IDictionary Data { get; }
 ```

@@ -4,6 +4,8 @@ title: MySqlConversionException
 
 # MySqlConversionException class
 
+[`MySqlConversionException`](../MySqlConversionExceptionType/) is thrown when a MySQL value can't be converted to another type.
+
 ```csharp
 public class MySqlConversionException : Exception
 ```
@@ -12,7 +14,7 @@ public class MySqlConversionException : Exception
 
 | name | description |
 | --- | --- |
-| [MySqlConversionException](../MySqlConversionException/MySqlConversionException/)(…) |  |
+| [MySqlConversionException](../MySqlConversionException/MySqlConversionException/)(…) | Initializes a new instance of [`MySqlConversionException`](../MySqlConversionExceptionType/). |
 
 ## See Also
 

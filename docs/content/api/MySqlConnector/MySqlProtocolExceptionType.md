@@ -4,6 +4,8 @@ title: MySqlProtocolException
 
 # MySqlProtocolException class
 
+[`MySqlProtocolException`](../MySqlProtocolExceptionType/) is thrown when there is an internal protocol error communicating with MySQL Server.
+
 ```csharp
 public sealed class MySqlProtocolException : InvalidOperationException
 ```

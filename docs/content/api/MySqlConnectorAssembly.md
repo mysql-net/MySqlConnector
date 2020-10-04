@@ -23,7 +23,7 @@ title: MySqlConnector
 | enum [MySqlConnectionProtocol](../MySqlConnector/MySqlConnectionProtocolType/) | Specifies the type of connection to make to the server. |
 | class [MySqlConnectionStringBuilder](../MySqlConnector/MySqlConnectionStringBuilderType/) |  |
 | class [MySqlConnectorFactory](../MySqlConnector/MySqlConnectorFactoryType/) | An implementation of DbProviderFactory that creates MySqlConnector objects. |
-| class [MySqlConversionException](../MySqlConnector/MySqlConversionExceptionType/) |  |
+| class [MySqlConversionException](../MySqlConnector/MySqlConversionExceptionType/) | [`MySqlConversionException`](../MySqlConnector/MySqlConversionExceptionType/) is thrown when a MySQL value can't be converted to another type. |
 | class [MySqlDataAdapter](../MySqlConnector/MySqlDataAdapterType/) |  |
 | class [MySqlDataReader](../MySqlConnector/MySqlDataReaderType/) |  |
 | struct [MySqlDateTime](../MySqlConnector/MySqlDateTimeType/) | Represents a MySQL date/time value. This type can be used to store `DATETIME` values such as `0000-00-00` that can be stored in MySQL (when [`AllowZeroDateTime`](../MySqlConnector/MySqlConnectionStringBuilder/AllowZeroDateTime/) is true) but can't be stored in a DateTime value. |
@@ -41,7 +41,7 @@ title: MySqlConnector
 | enum [MySqlLoadBalance](../MySqlConnector/MySqlLoadBalanceType/) |  |
 | class [MySqlParameter](../MySqlConnector/MySqlParameterType/) |  |
 | class [MySqlParameterCollection](../MySqlConnector/MySqlParameterCollectionType/) |  |
-| class [MySqlProtocolException](../MySqlConnector/MySqlProtocolExceptionType/) |  |
+| class [MySqlProtocolException](../MySqlConnector/MySqlProtocolExceptionType/) | [`MySqlProtocolException`](../MySqlConnector/MySqlProtocolExceptionType/) is thrown when there is an internal protocol error communicating with MySQL Server. |
 | class [MySqlRowsCopiedEventArgs](../MySqlConnector/MySqlRowsCopiedEventArgsType/) |  |
 | delegate [MySqlRowsCopiedEventHandler](../MySqlConnector/MySqlRowsCopiedEventHandlerType/) | Represents the method that handles the [`MySqlRowsCopied`](../MySqlConnector/MySqlBulkCopy/MySqlRowsCopied/) event of a [`MySqlBulkCopy`](../MySqlConnector/MySqlBulkCopyType/). |
 | class [MySqlRowUpdatedEventArgs](../MySqlConnector/MySqlRowUpdatedEventArgsType/) |  |

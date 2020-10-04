@@ -14,11 +14,11 @@ public sealed class MySqlException : DbException
 
 | name | description |
 | --- | --- |
-| override [Data](../MySqlException/Data/) { get; } |  |
+| override [Data](../MySqlException/Data/) { get; } | Gets a collection of key/value pairs that provide additional information about the exception. |
 | [ErrorCode](../MySqlException/ErrorCode/) { get; } | A [`MySqlErrorCode`](../MySqlErrorCodeType/) value identifying the kind of error. |
 | [Number](../MySqlException/Number/) { get; } | A [`MySqlErrorCode`](../MySqlErrorCodeType/) value identifying the kind of error. Prefer to use the [`ErrorCode`](../MySqlException/ErrorCode/) property. |
 | [SqlState](../MySqlException/SqlState/) { get; } | A `SQLSTATE` code identifying the kind of error. |
-| override [GetObjectData](../MySqlException/GetObjectData/)(…) |  |
+| override [GetObjectData](../MySqlException/GetObjectData/)(…) | Sets the SerializationInfo with information about the exception. |
 
 ## See Also
 
