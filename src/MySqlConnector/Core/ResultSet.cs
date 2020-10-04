@@ -246,8 +246,8 @@ namespace MySqlConnector.Core
 				catch (MySqlException ex)
 				{
 					this_.BufferState = this_.State = ResultSetState.NoMoreData;
-					if (ex.ErrorCode == MySqlErrorCode.QueryInterrupted)
-						token.ThrowIfCancellationRequested();
+					if (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && token.IsCancellationRequested)
+						throw new OperationCanceledException(ex.Message, ex, token);
 					throw;
 				}
 				return ScanRowAsyncRemainder(this_, payloadData, row_);

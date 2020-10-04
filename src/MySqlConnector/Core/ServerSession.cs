@@ -52,6 +52,7 @@ namespace MySqlConnector.Core
 		public string Id { get; }
 		public ServerVersion ServerVersion { get; set; }
 		public int ActiveCommandId { get; private set; }
+		public int CancellationTimeout { get; private set; }
 		public int ConnectionId { get; set; }
 		public byte[]? AuthPluginData { get; set; }
 		public uint CreatedTicks { get; }
@@ -404,6 +405,7 @@ namespace MySqlConnector.Core
 					ConnectionId = initialHandshake.ConnectionId;
 					AuthPluginData = initialHandshake.AuthPluginData;
 					m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
+					CancellationTimeout = cs.CancellationTimeout;
 
 					m_supportsComMulti = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.MariaDbComMulti) != 0;
 					m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;

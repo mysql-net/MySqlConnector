@@ -256,6 +256,12 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>Sets the <c>program_name</c> connection attribute passed to MySQL Server. This value may be displayed by diagnostic tools,
     e.g., as the “Program” column in “Client Connections” in <a href="https://www.mysql.com/products/workbench/">MySQL Workbench</a>.</td>
   </tr>
+  <tr id="CancellationTimeout">
+    <td>CancellationTimeout, Cancellation Timeout</td>
+    <td>2</td>
+    <td>The length of time (in seconds) to wait for a query to be canceled when <code>MySqlCommand.CommandTimeout</code> expires, or zero for no timeout. If a response isn’t received from the server in this
+    time, the local socket will be closed and a <code>MySqlException</code> will be thrown</td>
+  </tr>
   <tr id="CharSet">
     <td>CharSet, Character Set, CharacterSet</td>
     <td>utf8mb4</td>
@@ -311,7 +317,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
   <tr id="DefaultCommandTimeout">
     <td>Default Command Timeout, Command Timeout, DefaultCommandTimeout</td>
     <td>30</td>
-    <td>The length of time (in seconds) each command can execute before timing out and throwing an exception, or zero to disable timeouts.
+    <td>The length of time (in seconds) each command can execute before the query is cancelled on the server, or zero to disable timeouts.
       See the note in the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlcommand.commandtimeout">Microsoft documentation</a>
       for more explanation of how this is determined.</td>
   </tr>

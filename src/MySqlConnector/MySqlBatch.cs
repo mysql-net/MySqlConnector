@@ -106,10 +106,11 @@ namespace MySqlConnector
 			return ExecuteReaderAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		}
 
-		private Task<MySqlDataReader> ExecuteDbDataReaderAsync(CancellationToken cancellationToken)
+		private async Task<MySqlDataReader> ExecuteDbDataReaderAsync(CancellationToken cancellationToken)
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
-			return ExecuteReaderAsync(AsyncIOBehavior, cancellationToken);
+			using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
+			return await ExecuteReaderAsync(AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
 		private Task<MySqlDataReader> ExecuteReaderAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -170,9 +171,22 @@ namespace MySqlConnector
 			return token.Register(m_cancelAction);
 		}
 
+		void ICancellableCommand.SetTimeout(int milliseconds)
+		{
+			if (m_cancelTimerId != 0)
+				TimerQueue.Instance.Remove(m_cancelTimerId);
+
+			if (milliseconds != Constants.InfiniteTimeout)
+			{
+				m_cancelAction ??= Cancel;
+				m_cancelTimerId = TimerQueue.Instance.Add(milliseconds, m_cancelAction);
+			}
+		}
+
 		private async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
+			using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
 			using var reader = await ExecuteReaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			do
 			{
@@ -186,6 +200,7 @@ namespace MySqlConnector
 		private async Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
+			using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
 			var hasSetResult = false;
 			object? result = null;
 			using var reader = await ExecuteReaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -294,5 +309,6 @@ namespace MySqlConnector
 		readonly int m_commandId;
 		bool m_isDisposed;
 		Action? m_cancelAction;
+		uint m_cancelTimerId;
 	}
 }

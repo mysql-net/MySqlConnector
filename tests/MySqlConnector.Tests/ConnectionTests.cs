@@ -134,8 +134,8 @@ namespace MySqlConnector.Tests
 
 				var cmd = connection.CreateCommand();
 				cmd.CommandText = "SELECT 1;";
-				var reader = cmd.ExecuteReader();
-				Assert.True(reader.Read());
+				using (var reader = cmd.ExecuteReader())
+					Assert.True(reader.Read());
 
 				// have to GC for leaked connections to be removed from the pool
 				GC.Collect();

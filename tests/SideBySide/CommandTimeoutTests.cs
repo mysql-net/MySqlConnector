@@ -13,12 +13,6 @@ namespace SideBySide
 {
 	public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 	{
-#if BASELINE
-		const string c_timeoutMessage = "fatal error";
-#else
-		const string c_timeoutMessage = "timeout";
-#endif
-
 		public CommandTimeoutTests(DatabaseFixture database)
 		{
 			m_database = database;
@@ -62,33 +56,53 @@ namespace SideBySide
 		[SkippableFact(ServerFeatures.Timeout)]
 		public void CommandTimeoutWithSleepSync()
 		{
+			var connectionState = m_connection.State;
 			using (var cmd = new MySqlCommand("SELECT SLEEP(120);", m_connection))
 			{
 				cmd.CommandTimeout = 2;
 				var sw = Stopwatch.StartNew();
+#if BASELINE
 				var ex = Assert.Throws<MySqlException>(cmd.ExecuteReader);
+				Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
+				connectionState = ConnectionState.Closed;
+#else
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(1, reader.GetInt32(0));
+				}
+#endif
 				sw.Stop();
-				Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
 				TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
 			}
 
-			Assert.Equal(ConnectionState.Closed, m_connection.State);
+			Assert.Equal(connectionState, m_connection.State);
 		}
 
 		[SkippableFact(ServerFeatures.Timeout)]
 		public async Task CommandTimeoutWithSleepAsync()
 		{
+			var connectionState = m_connection.State;
 			using (var cmd = new MySqlCommand("SELECT SLEEP(120);", m_connection))
 			{
 				cmd.CommandTimeout = 2;
 				var sw = Stopwatch.StartNew();
+#if BASELINE
 				var exception = await Assert.ThrowsAsync<MySqlException>(cmd.ExecuteReaderAsync);
+				Assert.Contains("fatal error", exception.Message, StringComparison.OrdinalIgnoreCase);
+				connectionState = ConnectionState.Closed;
+#else
+				using (var reader = await cmd.ExecuteReaderAsync())
+				{
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal(1, reader.GetInt32(0));
+				}
+#endif
 				sw.Stop();
-				Assert.Contains(c_timeoutMessage, exception.Message, StringComparison.OrdinalIgnoreCase);
 				TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 700);
 			}
 
-			Assert.Equal(ConnectionState.Closed, m_connection.State);
+			Assert.Equal(connectionState, m_connection.State);
 		}
 
 		[SkippableTheory(ServerFeatures.Timeout)]
@@ -115,85 +129,85 @@ end;", m_connection))
 			cmd.CommandTimeout = 2;
 
 			var sw = Stopwatch.StartNew();
+#if BASELINE
 			var ex = Assert.Throws<MySqlException>(cmd.ExecuteReader);
+			Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
+#else
+			using (var reader = cmd.ExecuteReader())
+			{
+				Assert.True(reader.Read());
+				Assert.Equal(1, reader.GetInt32(0));
+			}
+#endif
 			sw.Stop();
-			Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
-			TestUtilities.AssertDuration(sw, ((int) cmd.CommandTimeout) * 1000 - 100, 500);
+			TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
 		}
 
-		[SkippableFact(ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=87307")]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public void MultipleCommandTimeoutWithSleepSync()
 		{
+			var connectionState = m_connection.State;
 			var csb = new MySqlConnectionStringBuilder(m_connection.ConnectionString);
 			using (var cmd = new MySqlCommand("SELECT 1; SELECT SLEEP(120);", m_connection))
 			{
 				cmd.CommandTimeout = 2;
-				var readFirstResultSet = false;
 				var sw = Stopwatch.StartNew();
-				try
-				{
-					using var reader = cmd.ExecuteReader();
-					Assert.True(reader.Read());
-					Assert.Equal(1, reader.GetInt32(0));
-					Assert.False(reader.Read());
-					readFirstResultSet = true;
+				using var reader = cmd.ExecuteReader();
+				Assert.True(reader.Read());
+				Assert.Equal(1, reader.GetInt32(0));
+				Assert.False(reader.Read());
 
-					// the following call to a public API resets the internal timer
-					sw.Restart();
+				// the following call to a public API resets the internal timer
+				sw.Restart();
 
-					reader.NextResult();
+#if BASELINE
+				var ex = Assert.Throws<MySqlException>(() => reader.NextResult());
+				Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
+				connectionState = ConnectionState.Closed;
+#else
+				Assert.True(reader.NextResult());
+				Assert.True(reader.Read());
+				Assert.Equal(1, reader.GetInt32(0));
+#endif
 
-					// shouldn't get here
-					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
-					Assert.True(false);
-				}
-				catch (MySqlException ex)
-				{
-					sw.Stop();
-					Assert.True(readFirstResultSet);
-					Assert.Contains("timeout", ex.Message, StringComparison.OrdinalIgnoreCase);
-					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
-				}
+				sw.Stop();
+				TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
 			}
 
-			Assert.Equal(ConnectionState.Closed, m_connection.State);
+			Assert.Equal(connectionState, m_connection.State);
 		}
 
-		[SkippableFact(ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=87307")]
+		[SkippableFact(ServerFeatures.Timeout)]
 		public async Task MultipleCommandTimeoutWithSleepAsync()
 		{
-			var csb = new MySqlConnectionStringBuilder(m_connection.ConnectionString);
+			var connectionState = m_connection.State;
 			using (var cmd = new MySqlCommand("SELECT 1; SELECT SLEEP(120);", m_connection))
 			{
 				cmd.CommandTimeout = 2;
-				var readFirstResultSet = false;
 				var sw = Stopwatch.StartNew();
-				try
-				{
-					using var reader = await cmd.ExecuteReaderAsync();
-					Assert.True(await reader.ReadAsync());
-					Assert.Equal(1, reader.GetInt32(0));
-					Assert.False(await reader.ReadAsync());
-					readFirstResultSet = true;
+				using var reader = await cmd.ExecuteReaderAsync();
+				Assert.True(await reader.ReadAsync());
+				Assert.Equal(1, reader.GetInt32(0));
+				Assert.False(await reader.ReadAsync());
 
-					// the following call to a public API resets the internal timer
-					sw.Restart();
+				// the following call to a public API resets the internal timer
+				sw.Restart();
 
-					await reader.NextResultAsync();
+#if BASELINE
+				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await reader.NextResultAsync());
+				Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
+				connectionState = ConnectionState.Closed;
+#else
+				Assert.True(await reader.NextResultAsync());
+				Assert.True(reader.Read());
+				Assert.Equal(1, reader.GetInt32(0));
+#endif
 
-					// shouldn't get here
-					Assert.True(false);
-				}
-				catch (MySqlException ex)
-				{
-					sw.Stop();
-					Assert.True(readFirstResultSet);
-					Assert.Contains("timeout", ex.Message, StringComparison.OrdinalIgnoreCase);
-					TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 550);
-				}
+				sw.Stop();
+				TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 550);
 			}
 
-			Assert.Equal(ConnectionState.Closed, m_connection.State);
+			Assert.Equal(connectionState, m_connection.State);
 		}
 
 		[SkippableFact(ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
@@ -242,34 +256,54 @@ end;", m_connection))
 		[SkippableFact(ServerFeatures.Timeout)]
 		public void TransactionCommandTimeoutWithSleepSync()
 		{
+			var connectionState = m_connection.State;
 			using (var transaction = m_connection.BeginTransaction())
 			using (var cmd = new MySqlCommand("SELECT SLEEP(120);", m_connection, transaction))
 			{
 				cmd.CommandTimeout = 2;
 				var sw = Stopwatch.StartNew();
+#if BASELINE
 				var ex = Assert.Throws<MySqlException>(cmd.ExecuteReader);
+				Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
+				connectionState = ConnectionState.Closed;
+#else
+				using (var reader = cmd.ExecuteReader())
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(1, reader.GetInt32(0));
+				}
+#endif
 				sw.Stop();
-				Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
 				TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
 			}
 
-			Assert.Equal(ConnectionState.Closed, m_connection.State);
+			Assert.Equal(connectionState, m_connection.State);
 		}
 
 		[SkippableFact(ServerFeatures.Timeout)]
 		public async Task TransactionCommandTimeoutWithSleepAsync()
 		{
+			var connectionState = m_connection.State;
 			using (var transaction = await m_connection.BeginTransactionAsync())
 			using (var cmd = new MySqlCommand("SELECT SLEEP(120);", m_connection, transaction))
 			{
 				cmd.CommandTimeout = 2;
 				var sw = Stopwatch.StartNew();
+#if BASELINE
 				var ex = await Assert.ThrowsAsync<MySqlException>(cmd.ExecuteReaderAsync);
+				Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
+				connectionState = ConnectionState.Closed;
+#else
+				using (var reader = await cmd.ExecuteReaderAsync())
+				{
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal(1, reader.GetInt32(0));
+				}
+#endif
 				sw.Stop();
-				Assert.Contains(c_timeoutMessage, ex.Message, StringComparison.OrdinalIgnoreCase);
 			}
 
-			Assert.Equal(ConnectionState.Closed, m_connection.State);
+			Assert.Equal(connectionState, m_connection.State);
 		}
 
 		readonly DatabaseFixture m_database;

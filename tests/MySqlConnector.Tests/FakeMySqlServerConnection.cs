@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -15,7 +16,10 @@ namespace MySqlConnector.Tests
 		{
 			m_server = server ?? throw new ArgumentNullException(nameof(server));
 			m_connectionId = connectionId;
+			CancelQueryEvent = new();
 		}
+
+		public ManualResetEventSlim CancelQueryEvent { get; }
 
 		public async Task RunAsync(TcpClient client, CancellationToken token)
 		{
@@ -71,7 +75,7 @@ namespace MySqlConnector.Tests
 							{
 								await SendAsync(stream, 1, WriteOk);
 							}
-							else if ((match = Regex.Match(query, @"^SELECT ([0-9]+)(;|$)")).Success)
+							else if ((match = Regex.Match(query, @"^SELECT ([0-9])(;|$)")).Success)
 							{
 								var number = match.Groups[1].Value;
 								var data = new byte[number.Length + 1];
@@ -79,10 +83,63 @@ namespace MySqlConnector.Tests
 								Encoding.UTF8.GetBytes(number, 0, number.Length, data, 1);
 
 								await SendAsync(stream, 1, x => x.Write((byte) 1)); // one column
-								await SendAsync(stream, 2, x => x.Write(new byte[] { 3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x5F, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 8, 0x81, 0, 0, 0, 0 })); // column definition
+								await SendAsync(stream, 2, x => x.Write(new byte[] { 3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x5F, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 3, 0x81, 0, 0, 0, 0 })); // column definition
 								await SendAsync(stream, 3, x => x.Write(new byte[] { 0xFE, 0, 0, 2, 0 })); // EOF
 								await SendAsync(stream, 4, x => x.Write(data));
 								await SendAsync(stream, 5, x => x.Write(new byte[] { 0xFE, 0, 0, 2, 0 })); // EOF
+							}
+							else if ((match = Regex.Match(query, @"^SELECT ([0-9]{3,})(;|$)")).Success)
+							{
+								var number = match.Groups[1].Value;
+								var data = new byte[number.Length + 1];
+								data[0] = (byte) number.Length;
+								Encoding.UTF8.GetBytes(number, 0, number.Length, data, 1);
+								var value = int.Parse(number);
+								var negativeOne = new byte[] { 2, 0x2D, 0x31 };
+
+								var packets = new byte[][]
+								{
+									new byte[] { 0xFF, 0x25, 0x05, 0x23, 0x37, 0x30, 0x31, 0x30, 0x30 }.Concat(Encoding.ASCII.GetBytes("Query execution was interrupted")).ToArray(), // error
+									new byte[] { 1 }, // one column
+									new byte[] { 3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x5F, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 3, 0x81, 0, 0, 0, 0 }, // column definition
+									new byte[] { 0xFE, 0, 0, 2, 0 }, // EOF
+									data,
+									negativeOne,
+									negativeOne,
+									new byte[] { 0xFE, 0, 0, 10, 0 }, // EOF, more results exist
+									new byte[] { 1 }, // one column
+									new byte[] { 3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x5F, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 3, 0x81, 0, 0, 0, 0 }, // column definition
+									new byte[] { 0xFE, 0, 0, 2, 0 }, // EOF
+									negativeOne,
+									new byte[] { 0xFE, 0, 0, 2, 0 }, // EOF
+								};
+								var pauseStep = value % 100;
+								var respectCancellation = value < 10000;
+
+								var queryInterrupted = false;
+								for (int step = 1; step < packets.Length && !queryInterrupted; step++)
+								{
+									if (pauseStep == step || value == 100)
+									{
+										if (respectCancellation)
+											queryInterrupted = CancelQueryEvent.Wait(value, token);
+										else
+											await Task.Delay(value, token);
+									}
+
+									await SendAsync(stream, step, x => x.Write(packets[queryInterrupted ? 0 : step]));
+								}
+							}
+							else if ((match = Regex.Match(query, @"^KILL QUERY ([0-9]+)(;|$)", RegexOptions.IgnoreCase)).Success)
+							{
+								var connectionId = int.Parse(match.Groups[1].Value);
+								m_server.CancelQuery(connectionId);
+								await SendAsync(stream, 1, WriteOk);
+							}
+							else if (query == "DO SLEEP(0);")
+							{
+								var wasSet = CancelQueryEvent.Wait(0, token);
+								await SendAsync(stream, 1, WriteOk);
 							}
 							else
 							{
