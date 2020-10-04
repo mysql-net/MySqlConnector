@@ -29,7 +29,7 @@ namespace MySqlConnector.Core
 			if (IsEmpty && unchecked(((uint) Environment.TickCount) - m_lastRecoveryTime) >= 1000u)
 			{
 				Log.Info("Pool{0} is empty; recovering leaked sessions", m_logArguments);
-				RecoverLeakedSessions();
+				await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
 			}
 
 			if (ConnectionSettings.MinimumPoolSize > 0)
@@ -161,7 +161,7 @@ namespace MySqlConnector.Core
 			return 0;
 		}
 
-		public void Return(ServerSession session)
+		public async Task ReturnAsync(IOBehavior ioBehavior, ServerSession session)
 		{
 			if (Log.IsDebugEnabled())
 				Log.Debug("Pool{0} receiving Session{1} back", m_logArguments[0], session.Id);
@@ -184,7 +184,7 @@ namespace MySqlConnector.Core
 					else
 						Log.Info("Pool{0} received expired Session{1}; destroying it", m_logArguments[0], session.Id);
 					AdjustHostConnectionCount(session, -1);
-					session.DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+					await session.DisposeAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 				}
 			}
 			finally
@@ -199,14 +199,14 @@ namespace MySqlConnector.Core
 			Log.Info("Pool{0} clearing connection pool", m_logArguments);
 			Interlocked.Increment(ref m_generation);
 			m_procedureCache = null;
-			RecoverLeakedSessions();
+			await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
 			await CleanPoolAsync(ioBehavior, session => session.PoolGeneration != m_generation, false, cancellationToken).ConfigureAwait(false);
 		}
 
 		public async Task ReapAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			Log.Debug("Pool{0} reaping connection pool", m_logArguments);
-			RecoverLeakedSessions();
+			await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
 			await CleanPoolAsync(ioBehavior, session => (unchecked((uint) Environment.TickCount) - session.LastReturnedTicks) / 1000 >= ConnectionSettings.ConnectionIdleTimeout, true, cancellationToken).ConfigureAwait(false);
 		}
 
@@ -232,7 +232,7 @@ namespace MySqlConnector.Core
 		/// have an owning <see cref="MySqlConnection"/> that has been garbage-collected. If so, assumes that the connection
 		/// was not properly disposed and returns the session to the pool.
 		/// </summary>
-		private void RecoverLeakedSessions()
+		private async Task RecoverLeakedSessionsAsync(IOBehavior ioBehavior)
 		{
 			var recoveredSessions = new List<ServerSession>();
 			lock (m_leasedSessions)
@@ -249,7 +249,7 @@ namespace MySqlConnector.Core
 			else
 				Log.Warn("Pool{0}: RecoveredSessionCount={1}", m_logArguments[0], recoveredSessions.Count);
 			foreach (var session in recoveredSessions)
-				session.ReturnToPool();
+				await session.ReturnToPoolAsync(ioBehavior).ConfigureAwait(false);
 		}
 
 		private async Task CleanPoolAsync(IOBehavior ioBehavior, Func<ServerSession, bool> shouldCleanFn, bool respectMinPoolSize, CancellationToken cancellationToken)
