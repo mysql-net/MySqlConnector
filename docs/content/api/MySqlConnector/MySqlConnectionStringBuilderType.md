@@ -20,6 +20,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 | [AllowZeroDateTime](../MySqlConnectionStringBuilder/AllowZeroDateTime/) { get; set; } |  |
 | [ApplicationName](../MySqlConnectionStringBuilder/ApplicationName/) { get; set; } |  |
 | [AutoEnlist](../MySqlConnectionStringBuilder/AutoEnlist/) { get; set; } |  |
+| [CancellationTimeout](../MySqlConnectionStringBuilder/CancellationTimeout/) { get; set; } |  |
 | [CertificateFile](../MySqlConnectionStringBuilder/CertificateFile/) { get; set; } |  |
 | [CertificatePassword](../MySqlConnectionStringBuilder/CertificatePassword/) { get; set; } |  |
 | [CertificateStoreLocation](../MySqlConnectionStringBuilder/CertificateStoreLocation/) { get; set; } |  |
