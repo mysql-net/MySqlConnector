@@ -4,6 +4,8 @@ title: MySqlTransaction
 
 # MySqlTransaction class
 
+[`MySqlTransaction`](../MySqlTransactionType/) represents an in-progress transaction on a MySQL Server.
+
 ```csharp
 public sealed class MySqlTransaction : DbTransaction
 ```
@@ -12,16 +14,16 @@ public sealed class MySqlTransaction : DbTransaction
 
 | name | description |
 | --- | --- |
-| [Connection](../MySqlTransaction/Connection/) { get; } |  |
-| override [IsolationLevel](../MySqlTransaction/IsolationLevel/) { get; } |  |
-| override [Commit](../MySqlTransaction/Commit/)() |  |
-| override [CommitAsync](../MySqlTransaction/CommitAsync/)(…) |  |
-| override [DisposeAsync](../MySqlTransaction/DisposeAsync/)() |  |
+| [Connection](../MySqlTransaction/Connection/) { get; } | Gets the [`MySqlConnection`](../MySqlConnectionType/) that this transaction is associated with. |
+| override [IsolationLevel](../MySqlTransaction/IsolationLevel/) { get; } | Gets the [`IsolationLevel`](../MySqlTransaction/IsolationLevel/) of this transaction. This value is set from [`BeginTransaction`](../MySqlConnection/BeginTransaction/) or any other overload that specifies an [`IsolationLevel`](../MySqlTransaction/IsolationLevel/). |
+| override [Commit](../MySqlTransaction/Commit/)() | Commits the database transaction. |
+| override [CommitAsync](../MySqlTransaction/CommitAsync/)(…) | Asynchronously commits the database transaction. |
+| override [DisposeAsync](../MySqlTransaction/DisposeAsync/)() | Asynchronously releases any resources associated with this transaction. If it was not committed, it will be rolled back. |
 | [Release](../MySqlTransaction/Release/)(…) | Removes the named transaction savepoint with the specified *savepointName*. No commit or rollback occurs. |
 | [ReleaseAsync](../MySqlTransaction/ReleaseAsync/)(…) | Asynchronously removes the named transaction savepoint with the specified *savepointName*. No commit or rollback occurs. |
-| override [Rollback](../MySqlTransaction/Rollback/)() |  |
+| override [Rollback](../MySqlTransaction/Rollback/)() | Rolls back the database transaction. |
 | [Rollback](../MySqlTransaction/Rollback/)(…) | Rolls back the current transaction to the savepoint with the specified *savepointName* without aborting the transaction. |
-| override [RollbackAsync](../MySqlTransaction/RollbackAsync/)(…) |  |
+| override [RollbackAsync](../MySqlTransaction/RollbackAsync/)(…) | Asynchronously rolls back the database transaction. |
 | [RollbackAsync](../MySqlTransaction/RollbackAsync/)(…) | Asynchronously rolls back the current transaction to the savepoint with the specified *savepointName* without aborting the transaction. |
 | [Save](../MySqlTransaction/Save/)(…) | Sets a named transaction savepoint with the specified *savepointName*. If the current transaction already has a savepoint with the same name, the old savepoint is deleted and a new one is set. |
 | [SaveAsync](../MySqlTransaction/SaveAsync/)(…) | Asynchronously sets a named transaction savepoint with the specified *savepointName*. If the current transaction already has a savepoint with the same name, the old savepoint is deleted and a new one is set. |
@@ -30,8 +32,8 @@ public sealed class MySqlTransaction : DbTransaction
 
 | name | description |
 | --- | --- |
-| override [DbConnection](../MySqlTransaction/DbConnection/) { get; } |  |
-| override [Dispose](../MySqlTransaction/Dispose/)(…) |  |
+| override [DbConnection](../MySqlTransaction/DbConnection/) { get; } | Gets the [`MySqlConnection`](../MySqlConnectionType/) that this transaction is associated with. |
+| override [Dispose](../MySqlTransaction/Dispose/)(…) | Releases any resources associated with this transaction. If it was not committed, it will be rolled back. |
 
 ## See Also
 

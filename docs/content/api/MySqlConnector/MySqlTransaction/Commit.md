@@ -4,6 +4,8 @@ title: Commit
 
 # MySqlTransaction.Commit method
 
+Commits the database transaction.
+
 ```csharp
 public override void Commit()
 ```

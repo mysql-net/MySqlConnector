@@ -58,6 +58,11 @@ namespace MySqlConnector
 		/// <remarks>Transactions may not be nested.</remarks>
 		public MySqlTransaction BeginTransaction(IsolationLevel isolationLevel, bool isReadOnly) => BeginTransactionAsync(isolationLevel, isReadOnly, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 
+		/// <summary>
+		/// Begins a database transaction.
+		/// </summary>
+		/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
+		/// <returns>A <see cref="MySqlTransaction"/> representing the new database transaction.</returns>
 		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => BeginTransactionAsync(isolationLevel, default, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
@@ -115,6 +120,12 @@ namespace MySqlConnector
 		/// <remarks>Transactions may not be nested.</remarks>
 		public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, bool isReadOnly, CancellationToken cancellationToken = default) => BeginTransactionAsync(isolationLevel, isReadOnly, AsyncIOBehavior, cancellationToken);
 
+		/// <summary>
+		/// Begins a database transaction asynchronously.
+		/// </summary>
+		/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="ValueTask{DbTransaction}"/> representing the new database transaction.</returns>
 		protected override async ValueTask<DbTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken) =>
 			await BeginTransactionAsync(isolationLevel, default, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
 #endif

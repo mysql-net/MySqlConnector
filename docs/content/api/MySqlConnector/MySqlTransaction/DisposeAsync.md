@@ -4,9 +4,15 @@ title: DisposeAsync
 
 # MySqlTransaction.DisposeAsync method
 
+Asynchronously releases any resources associated with this transaction. If it was not committed, it will be rolled back.
+
 ```csharp
 public override ValueTask DisposeAsync()
 ```
+
+## Return Value
+
+A Task representing the asynchronous operation.
 
 ## See Also
 

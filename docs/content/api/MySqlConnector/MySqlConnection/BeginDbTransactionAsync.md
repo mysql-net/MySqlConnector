@@ -4,10 +4,21 @@ title: BeginDbTransactionAsync
 
 # MySqlConnection.BeginDbTransactionAsync method
 
+Begins a database transaction asynchronously.
+
 ```csharp
 protected override ValueTask<DbTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, 
     CancellationToken cancellationToken)
 ```
+
+| parameter | description |
+| --- | --- |
+| isolationLevel | The IsolationLevel for the transaction. |
+| cancellationToken | A token to cancel the asynchronous operation. |
+
+## Return Value
+
+A ValueTask representing the new database transaction.
 
 ## See Also
 

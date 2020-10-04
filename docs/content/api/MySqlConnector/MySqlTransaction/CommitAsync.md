@@ -4,9 +4,19 @@ title: CommitAsync
 
 # MySqlTransaction.CommitAsync method
 
+Asynchronously commits the database transaction.
+
 ```csharp
 public override Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))
 ```
+
+| parameter | description |
+| --- | --- |
+| cancellationToken | A token to cancel the asynchronous operation. |
+
+## Return Value
+
+A Task representing the asynchronous operation.
 
 ## See Also
 

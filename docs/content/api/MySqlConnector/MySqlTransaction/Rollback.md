@@ -4,6 +4,8 @@ title: Rollback
 
 # MySqlTransaction.Rollback method (1 of 2)
 
+Rolls back the database transaction.
+
 ```csharp
 public override void Rollback()
 ```

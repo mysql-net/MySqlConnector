@@ -4,6 +4,8 @@ title: IsolationLevel
 
 # MySqlTransaction.IsolationLevel property
 
+Gets the `IsolationLevel` of this transaction. This value is set from [`BeginTransaction`](../../MySqlConnection/BeginTransaction/) or any other overload that specifies an `IsolationLevel`.
+
 ```csharp
 public override IsolationLevel IsolationLevel { get; }
 ```

@@ -4,9 +4,19 @@ title: RollbackAsync
 
 # MySqlTransaction.RollbackAsync method (1 of 2)
 
+Asynchronously rolls back the database transaction.
+
 ```csharp
 public override Task RollbackAsync(CancellationToken cancellationToken = default(CancellationToken))
 ```
+
+| parameter | description |
+| --- | --- |
+| cancellationToken | A token to cancel the asynchronous operation. |
+
+## Return Value
+
+A Task representing the asynchronous operation.
 
 ## See Also
 

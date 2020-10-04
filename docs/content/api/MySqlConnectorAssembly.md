@@ -49,7 +49,7 @@ title: MySqlConnector
 | class [MySqlRowUpdatingEventArgs](../MySqlConnector/MySqlRowUpdatingEventArgsType/) |  |
 | delegate [MySqlRowUpdatingEventHandler](../MySqlConnector/MySqlRowUpdatingEventHandlerType/) |  |
 | enum [MySqlSslMode](../MySqlConnector/MySqlSslModeType/) | SSL connection options. |
-| class [MySqlTransaction](../MySqlConnector/MySqlTransactionType/) |  |
+| class [MySqlTransaction](../MySqlConnector/MySqlTransactionType/) | [`MySqlTransaction`](../MySqlConnector/MySqlTransactionType/) represents an in-progress transaction on a MySQL Server. |
 
 ## MySqlConnector.Authentication namespace
 

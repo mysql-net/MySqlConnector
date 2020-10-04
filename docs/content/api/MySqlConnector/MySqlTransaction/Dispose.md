@@ -4,9 +4,15 @@ title: Dispose
 
 # MySqlTransaction.Dispose method
 
+Releases any resources associated with this transaction. If it was not committed, it will be rolled back.
+
 ```csharp
 protected override void Dispose(bool disposing)
 ```
+
+| parameter | description |
+| --- | --- |
+| disposing | `true` if this method is being called from `Dispose`; `false` if being called from a finalizer. |
 
 ## See Also
 

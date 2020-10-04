@@ -57,8 +57,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 | name | description |
 | --- | --- |
 | override [DbProviderFactory](../MySqlConnection/DbProviderFactory/) { get; } |  |
-| override [BeginDbTransaction](../MySqlConnection/BeginDbTransaction/)(…) |  |
-| override [BeginDbTransactionAsync](../MySqlConnection/BeginDbTransactionAsync/)(…) |  |
+| override [BeginDbTransaction](../MySqlConnection/BeginDbTransaction/)(…) | Begins a database transaction. |
+| override [BeginDbTransactionAsync](../MySqlConnection/BeginDbTransactionAsync/)(…) | Begins a database transaction asynchronously. |
 | override [CreateDbCommand](../MySqlConnection/CreateDbCommand/)() |  |
 | override [Dispose](../MySqlConnection/Dispose/)(…) |  |
 

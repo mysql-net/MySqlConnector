@@ -8,9 +8,21 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector
 {
+	/// <summary>
+	/// <see cref="MySqlTransaction"/> represents an in-progress transaction on a MySQL Server.
+	/// </summary>
 	public sealed class MySqlTransaction : DbTransaction
 	{
+		/// <summary>
+		/// Commits the database transaction.
+		/// </summary>
 		public override void Commit() => CommitAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+
+		/// <summary>
+		/// Asynchronously commits the database transaction.
+		/// </summary>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		public Task CommitAsync(CancellationToken cancellationToken = default) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #else
@@ -27,7 +39,16 @@ namespace MySqlConnector
 			Connection = null;
 		}
 
+		/// <summary>
+		/// Rolls back the database transaction.
+		/// </summary>
 		public override void Rollback() => RollbackAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+
+		/// <summary>
+		/// Asynchronously rolls back the database transaction.
+		/// </summary>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		public Task RollbackAsync(CancellationToken cancellationToken = default) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #else
@@ -133,10 +154,26 @@ namespace MySqlConnector
 			await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
+		/// <summary>
+		/// Gets the <see cref="MySqlConnection"/> that this transaction is associated with.
+		/// </summary>
 		public new MySqlConnection? Connection { get; private set; }
+
+		/// <summary>
+		/// Gets the <see cref="MySqlConnection"/> that this transaction is associated with.
+		/// </summary>
 		protected override DbConnection? DbConnection => Connection;
+
+		/// <summary>
+		/// Gets the <see cref="IsolationLevel"/> of this transaction. This value is set from <see cref="MySqlConnection.BeginTransaction(IsolationLevel)"/>
+		/// or any other overload that specifies an <see cref="IsolationLevel"/>.
+		/// </summary>
 		public override IsolationLevel IsolationLevel { get; }
 
+		/// <summary>
+		/// Releases any resources associated with this transaction. If it was not committed, it will be rolled back.
+		/// </summary>
+		/// <param name="disposing"><c>true</c> if this method is being called from <c>Dispose</c>; <c>false</c> if being called from a finalizer.</param>
 		protected override void Dispose(bool disposing)
 		{
 			try
@@ -150,6 +187,10 @@ namespace MySqlConnector
 			}
 		}
 
+		/// <summary>
+		/// Asynchronously releases any resources associated with this transaction. If it was not committed, it will be rolled back.
+		/// </summary>
+		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
 #else

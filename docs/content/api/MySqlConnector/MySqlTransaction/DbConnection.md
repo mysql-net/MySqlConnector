@@ -4,6 +4,8 @@ title: DbConnection
 
 # MySqlTransaction.DbConnection property
 
+Gets the [`MySqlConnection`](../../MySqlConnectionType/) that this transaction is associated with.
+
 ```csharp
 protected override DbConnection DbConnection { get; }
 ```
