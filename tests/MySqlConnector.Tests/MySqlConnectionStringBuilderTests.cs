@@ -23,6 +23,7 @@ namespace MySqlConnector.Tests
 			Assert.Null(csb.CertificatePassword);
 			Assert.Null(csb.CertificateThumbprint);
 #else
+			Assert.Equal(2, csb.CancellationTimeout);
 			Assert.Equal("", csb.CertificateFile);
 			Assert.Equal("", csb.CertificatePassword);
 			Assert.Equal("", csb.CertificateThumbprint);
@@ -118,6 +119,7 @@ namespace MySqlConnector.Tests
 					"default command timeout=123;" +
 #if !BASELINE
 					"application name=My Test Application;" +
+					"cancellation timeout = -1;" +
 					"connection idle ping time=60;" +
 					"connectionidletimeout=30;" +
 					"forcesynchronous=true;" +
@@ -155,6 +157,7 @@ namespace MySqlConnector.Tests
 			Assert.True(csb.AllowZeroDateTime);
 			Assert.False(csb.AutoEnlist);
 #if !BASELINE
+			Assert.Equal(-1, csb.CancellationTimeout);
 			// Connector/NET treats "CertificateFile" (client certificate) and "SslCa" (server CA) as aliases
 			Assert.Equal("file.pfx", csb.CertificateFile);
 #endif

@@ -259,7 +259,7 @@ namespace MySqlConnector
 			set => MySqlConnectionStringOption.DefaultCommandTimeout.SetValue(this, value);
 		}
 
-		public uint CancellationTimeout
+		public int CancellationTimeout
 		{
 			get => MySqlConnectionStringOption.CancellationTimeout.GetValue(this);
 			set => MySqlConnectionStringOption.CancellationTimeout.SetValue(this, value);
@@ -449,7 +449,7 @@ namespace MySqlConnector
 		public static readonly MySqlConnectionStringValueOption<bool> AllowZeroDateTime;
 		public static readonly MySqlConnectionStringReferenceOption<string> ApplicationName;
 		public static readonly MySqlConnectionStringValueOption<bool> AutoEnlist;
-		public static readonly MySqlConnectionStringValueOption<uint> CancellationTimeout;
+		public static readonly MySqlConnectionStringValueOption<int> CancellationTimeout;
 		public static readonly MySqlConnectionStringReferenceOption<string> CharacterSet;
 		public static readonly MySqlConnectionStringValueOption<uint> ConnectionTimeout;
 		public static readonly MySqlConnectionStringValueOption<bool> ConvertZeroDateTime;
@@ -658,7 +658,13 @@ namespace MySqlConnector
 
 			AddOption(CancellationTimeout = new(
 				keys: new[] { "CancellationTimeout", "Cancellation Timeout" },
-				defaultValue: 2u));
+				defaultValue: 2,
+				coerce: x =>
+				{
+					if (x < -1)
+						throw new ArgumentOutOfRangeException(nameof(CancellationTimeout), "CancellationTimeout must be greater than or equal to -1");
+					return x;
+				}));
 
 			AddOption(CharacterSet = new(
 				keys: new[] { "CharSet", "Character Set", "CharacterSet" },

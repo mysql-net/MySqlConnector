@@ -105,7 +105,7 @@ namespace MySqlConnector.Core
 			AllowZeroDateTime = csb.AllowZeroDateTime;
 			ApplicationName = csb.ApplicationName;
 			AutoEnlist = csb.AutoEnlist;
-			CancellationTimeout = ToSigned(csb.CancellationTimeout);
+			CancellationTimeout = csb.CancellationTimeout;
 			ConnectionTimeout = ToSigned(csb.ConnectionTimeout);
 			ConvertZeroDateTime = csb.ConvertZeroDateTime;
 			DateTimeKind = (DateTimeKind) csb.DateTimeKind;

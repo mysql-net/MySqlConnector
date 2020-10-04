@@ -242,6 +242,50 @@ namespace MySqlConnector.Tests
 			}
 		}
 
+		public class ExecuteXWithCancellationTimeoutIsNegativeOne : CancellationTests
+		{
+			[SkipCITheory]
+			[MemberData(nameof(GetSyncMethodSteps))]
+			public void Test(int step, int method)
+			{
+				var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString) { CancellationTimeout = -1 };
+				using var connection = new MySqlConnection(csb.ConnectionString);
+				connection.Open();
+				using var command = connection.CreateCommand();
+				command.CommandTimeout = 1;
+				command.CommandText = $"SELECT {10000 + step};";
+				var stopwatch = Stopwatch.StartNew();
+				var ex = Assert.Throws<MySqlException>(() => s_executeMethods[method](command));
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
+				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+
+				// connection is unusable
+				Assert.Equal(ConnectionState.Closed, connection.State);
+			}
+		}
+
+		public class ExecuteXAsyncWithCancellationTimeoutIsNegativeOne : CancellationTests
+		{
+			[SkipCITheory]
+			[MemberData(nameof(GetAsyncMethodSteps))]
+			public async Task Test(int step, int method)
+			{
+				var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString) { CancellationTimeout = -1 };
+				using var connection = new MySqlConnection(csb.ConnectionString);
+				connection.Open();
+				using var command = connection.CreateCommand();
+				command.CommandTimeout = 1;
+				command.CommandText = $"SELECT {10000 + step};";
+				var stopwatch = Stopwatch.StartNew();
+				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
+				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+
+				// connection is unusable
+				Assert.Equal(ConnectionState.Closed, connection.State);
+			}
+		}
+
 		public static IEnumerable<object[]> GetSyncMethodSteps()
 		{
 			for (var step = 1; step <=  12; step++)

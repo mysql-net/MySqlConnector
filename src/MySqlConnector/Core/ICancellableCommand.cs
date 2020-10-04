@@ -65,8 +65,17 @@ namespace MySqlConnector.Core
 				else
 				{
 					var commandTimeUntilCanceled = command.GetCommandTimeUntilCanceled() * 1000;
-					command.SetTimeout(commandTimeUntilCanceled);
-					session.SetTimeout(commandTimeUntilCanceled + session.CancellationTimeout * 1000);
+					if (session.CancellationTimeout > 0)
+					{
+						// try to cancel first, then close socket
+						command.SetTimeout(commandTimeUntilCanceled);
+						session.SetTimeout(commandTimeUntilCanceled + session.CancellationTimeout * 1000);
+					}
+					else
+					{
+						// close socket once the timeout is reached
+						session.SetTimeout(commandTimeUntilCanceled);
+					}
 				}
 			}
 		}
