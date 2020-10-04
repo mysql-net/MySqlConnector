@@ -4,6 +4,8 @@ title: Hour
 
 # MySqlDateTime.Hour property
 
+Gets or sets the hour.
+
 ```csharp
 public int Hour { get; set; }
 ```

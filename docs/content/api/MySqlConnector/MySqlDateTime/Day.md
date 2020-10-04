@@ -4,6 +4,8 @@ title: Day
 
 # MySqlDateTime.Day property
 
+Gets or sets the day of the month.
+
 ```csharp
 public int Day { get; set; }
 ```

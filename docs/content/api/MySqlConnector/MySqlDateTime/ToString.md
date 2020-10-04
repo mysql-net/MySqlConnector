@@ -4,6 +4,8 @@ title: ToString
 
 # MySqlDateTime.ToString method
 
+Converts this object to a String.
+
 ```csharp
 public override string ToString()
 ```

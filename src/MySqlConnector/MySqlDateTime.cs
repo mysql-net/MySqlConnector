@@ -2,8 +2,23 @@ using System;
 
 namespace MySqlConnector
 {
+	/// <summary>
+	/// Represents a MySQL date/time value. This type can be used to store <c>DATETIME</c> values such
+	/// as <c>0000-00-00</c> that can be stored in MySQL (when <see cref="MySqlConnectionStringBuilder.AllowZeroDateTime"/>
+	/// is true) but can't be stored in a <see cref="DateTime"/> value.
+	/// </summary>
 	public struct MySqlDateTime : IComparable, IConvertible
 	{
+		/// <summary>
+		/// Initializes a new instance of <see cref="MySqlDateTime"/>.
+		/// </summary>
+		/// <param name="year">The year.</param>
+		/// <param name="month">The (one-based) month.</param>
+		/// <param name="day">The (one-based) day of the month.</param>
+		/// <param name="hour">The hour.</param>
+		/// <param name="minute">The minute.</param>
+		/// <param name="second">The second.</param>
+		/// <param name="microsecond">The microsecond.</param>
 		public MySqlDateTime(int year, int month, int day, int hour, int minute, int second, int microsecond)
 		{
 			Year = year;
@@ -15,11 +30,19 @@ namespace MySqlConnector
 			Microsecond = microsecond;
 		}
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="MySqlDateTime"/> from a <see cref="DateTime"/>.
+		/// </summary>
+		/// <param name="dt">The <see cref="DateTime"/> whose values will be copied.</param>
 		public MySqlDateTime(DateTime dt)
 			: this(dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, dt.Second, (int) (dt.Ticks % 10_000_000) / 10)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="MySqlDateTime"/> from another <see cref="MySqlDateTime"/>.
+		/// </summary>
+		/// <param name="other">The <see cref="MySqlDateTime"/> whose values will be copied.</param>
 		public MySqlDateTime(MySqlDateTime other)
 		{
 			Year = other.Year;
@@ -31,30 +54,81 @@ namespace MySqlConnector
 			Microsecond = other.Microsecond;
 		}
 
+		/// <summary>
+		/// Returns <c>true</c> if this value is a valid <see cref="DateTime"/>.
+		/// </summary>
 		public readonly bool IsValidDateTime => Year != 0 && Month != 0 && Day != 0;
 
+		/// <summary>
+		/// Gets or sets the year.
+		/// </summary>
 		public int Year { get; set; }
+
+		/// <summary>
+		/// Gets or sets the month.
+		/// </summary>
 		public int Month { get; set; }
+
+		/// <summary>
+		/// Gets or sets the day of the month.
+		/// </summary>
 		public int Day { get; set; }
+
+		/// <summary>
+		/// Gets or sets the hour.
+		/// </summary>
 		public int Hour { get; set; }
+
+		/// <summary>
+		/// Gets or sets the minute.
+		/// </summary>
 		public int Minute { get; set; }
+
+		/// <summary>
+		/// Gets or sets the second.
+		/// </summary>
 		public int Second { get; set; }
+
+		/// <summary>
+		/// Gets or sets the microseconds.
+		/// </summary>
 		public int Microsecond { get; set; }
 
+		/// <summary>
+		/// Gets or sets the milliseconds.
+		/// </summary>
 		public int Millisecond
 		{
 			readonly get => Microsecond / 1000;
 			set => Microsecond = value * 1000;
 		}
 
+		/// <summary>
+		/// Returns a <see cref="DateTime"/> value (if <see cref="IsValidDateTime"/> is <c>true</c>), or throws a
+		/// <see cref="MySqlConversionException"/>.
+		/// </summary>
 		public readonly DateTime GetDateTime() =>
 			!IsValidDateTime ? throw new MySqlConversionException("Cannot convert MySqlDateTime to DateTime when IsValidDateTime is false.") :
 				new DateTime(Year, Month, Day, Hour, Minute, Second, DateTimeKind.Unspecified).AddTicks(Microsecond * 10);
 
+		/// <summary>
+		/// Converts this object to a <see cref="String"/>.
+		/// </summary>
 		public readonly override string ToString() => IsValidDateTime ? GetDateTime().ToString() : "0000-00-00";
 
+		/// <summary>
+		/// Converts this object to a <see cref="DateTime"/>.
+		/// </summary>
+		/// <param name="val"></param>
 		public static explicit operator DateTime(MySqlDateTime val) => !val.IsValidDateTime ? DateTime.MinValue : val.GetDateTime();
 
+		/// <summary>
+		/// Compares this object to another <see cref="MySqlDateTime"/>.
+		/// </summary>
+		/// <param name="obj"></param>
+		/// <returns>An <see cref="Int32"/> giving the results of the comparison: a negative value if this
+		/// object is less than <paramref name="obj"/>, zero if this object is equal, or a positive value if this
+		/// object is greater.</returns>
 		readonly int IComparable.CompareTo(object? obj)
 		{
 			if (!(obj is MySqlDateTime other))

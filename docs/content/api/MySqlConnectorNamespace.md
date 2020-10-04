@@ -24,7 +24,7 @@ title: MySqlConnector
 | class [MySqlConversionException](../MySqlConnector/MySqlConversionExceptionType/) |  |
 | class [MySqlDataAdapter](../MySqlConnector/MySqlDataAdapterType/) |  |
 | class [MySqlDataReader](../MySqlConnector/MySqlDataReaderType/) |  |
-| struct [MySqlDateTime](../MySqlConnector/MySqlDateTimeType/) |  |
+| struct [MySqlDateTime](../MySqlConnector/MySqlDateTimeType/) | Represents a MySQL date/time value. This type can be used to store `DATETIME` values such as `0000-00-00` that can be stored in MySQL (when [`AllowZeroDateTime`](../MySqlConnector/MySqlConnectionStringBuilder/AllowZeroDateTime/) is true) but can't be stored in a DateTime value. |
 | enum [MySqlDateTimeKind](../MySqlConnector/MySqlDateTimeKindType/) | The DateTimeKind used when reading DateTime from the database. |
 | class [MySqlDbColumn](../MySqlConnector/MySqlDbColumnType/) |  |
 | enum [MySqlDbType](../MySqlConnector/MySqlDbTypeType/) |  |

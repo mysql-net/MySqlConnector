@@ -4,6 +4,8 @@ title: IsValidDateTime
 
 # MySqlDateTime.IsValidDateTime property
 
+Returns `true` if this value is a valid DateTime.
+
 ```csharp
 public bool IsValidDateTime { get; }
 ```

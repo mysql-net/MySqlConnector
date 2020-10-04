@@ -4,6 +4,8 @@ title: Year
 
 # MySqlDateTime.Year property
 
+Gets or sets the year.
+
 ```csharp
 public int Year { get; set; }
 ```

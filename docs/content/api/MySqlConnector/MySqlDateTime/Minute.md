@@ -4,6 +4,8 @@ title: Minute
 
 # MySqlDateTime.Minute property
 
+Gets or sets the minute.
+
 ```csharp
 public int Minute { get; set; }
 ```

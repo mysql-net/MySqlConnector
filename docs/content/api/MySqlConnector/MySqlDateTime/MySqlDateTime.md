@@ -4,9 +4,15 @@ title: MySqlDateTime
 
 # MySqlDateTime constructor (1 of 3)
 
+Initializes a new instance of [`MySqlDateTime`](../../MySqlDateTimeType/) from a DateTime.
+
 ```csharp
 public MySqlDateTime(DateTime dt)
 ```
+
+| parameter | description |
+| --- | --- |
+| dt | The DateTime whose values will be copied. |
 
 ## See Also
 
@@ -18,9 +24,15 @@ public MySqlDateTime(DateTime dt)
 
 # MySqlDateTime constructor (2 of 3)
 
+Initializes a new instance of [`MySqlDateTime`](../../MySqlDateTimeType/) from another [`MySqlDateTime`](../../MySqlDateTimeType/).
+
 ```csharp
 public MySqlDateTime(MySqlDateTime other)
 ```
+
+| parameter | description |
+| --- | --- |
+| other | The [`MySqlDateTime`](../../MySqlDateTimeType/) whose values will be copied. |
 
 ## See Also
 
@@ -32,10 +44,22 @@ public MySqlDateTime(MySqlDateTime other)
 
 # MySqlDateTime constructor (3 of 3)
 
+Initializes a new instance of [`MySqlDateTime`](../../MySqlDateTimeType/).
+
 ```csharp
 public MySqlDateTime(int year, int month, int day, int hour, int minute, int second, 
     int microsecond)
 ```
+
+| parameter | description |
+| --- | --- |
+| year | The year. |
+| month | The (one-based) month. |
+| day | The (one-based) day of the month. |
+| hour | The hour. |
+| minute | The minute. |
+| second | The second. |
+| microsecond | The microsecond. |
 
 ## See Also
 

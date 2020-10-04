@@ -4,6 +4,8 @@ title: Second
 
 # MySqlDateTime.Second property
 
+Gets or sets the second.
+
 ```csharp
 public int Second { get; set; }
 ```

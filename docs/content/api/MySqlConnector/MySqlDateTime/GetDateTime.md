@@ -4,6 +4,8 @@ title: GetDateTime
 
 # MySqlDateTime.GetDateTime method
 
+Returns a DateTime value (if [`IsValidDateTime`](../IsValidDateTime/) is `true`), or throws a [`MySqlConversionException`](../../MySqlConversionExceptionType/).
+
 ```csharp
 public DateTime GetDateTime()
 ```

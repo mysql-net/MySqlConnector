@@ -4,6 +4,8 @@ title: Millisecond
 
 # MySqlDateTime.Millisecond property
 
+Gets or sets the milliseconds.
+
 ```csharp
 public int Millisecond { get; set; }
 ```

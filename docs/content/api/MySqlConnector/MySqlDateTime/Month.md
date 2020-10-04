@@ -4,6 +4,8 @@ title: Month
 
 # MySqlDateTime.Month property
 
+Gets or sets the month.
+
 ```csharp
 public int Month { get; set; }
 ```

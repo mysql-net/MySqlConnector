@@ -4,9 +4,15 @@ title: op_Explicit
 
 # MySqlDateTime Explicit operator
 
+Converts this object to a DateTime.
+
 ```csharp
 public static explicit operator DateTime(MySqlDateTime val)
 ```
+
+| parameter | description |
+| --- | --- |
+| val |  |
 
 ## See Also
 
