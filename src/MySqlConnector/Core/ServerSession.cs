@@ -479,6 +479,8 @@ namespace MySqlConnector.Core
 
 				if (ShouldGetRealServerDetails(cs))
 					await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+
+				m_payloadHandler.ByteHandler.RemainingTimeout = Constants.InfiniteTimeout;
 			}
 			catch (ArgumentException ex)
 			{
