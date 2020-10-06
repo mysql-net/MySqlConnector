@@ -124,9 +124,13 @@ namespace MySqlConnector
 				if (mySqlException?.SqlState is null)
 					Command!.Connection!.SetSessionFailed(m_resultSet.ReadResultSetHeaderException);
 
-				throw mySqlException?.ErrorCode == MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested ? new OperationCanceledException(mySqlException.Message, mySqlException, cancellationToken) :
-					mySqlException is not null ? new MySqlException(mySqlException.ErrorCode, mySqlException.SqlState, mySqlException.Message, mySqlException) :
-					new MySqlException("Failed to read the result set.", m_resultSet.ReadResultSetHeaderException);
+				if (mySqlException?.ErrorCode == MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
+					throw new OperationCanceledException(mySqlException.Message, mySqlException, cancellationToken);
+
+				if (mySqlException is not null)
+					throw new MySqlException(mySqlException.ErrorCode, mySqlException.SqlState, mySqlException.Message, mySqlException);
+
+				throw new MySqlException("Failed to read the result set.", m_resultSet.ReadResultSetHeaderException);
 			}
 
 			Command!.SetLastInsertedId(m_resultSet.LastInsertId);
