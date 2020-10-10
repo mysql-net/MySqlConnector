@@ -5,7 +5,7 @@ title: Home
 weight: 10
 menu:
   main:
-    url: ""
+    url: "/"
 ---
 
 # MySqlConnector: High Performance MySQL Library for .NET
