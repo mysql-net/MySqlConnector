@@ -34,7 +34,7 @@ namespace MySqlConnector
 		/// A <c>SQLSTATE</c> code identifying the kind of error.
 		/// </summary>
 		/// <remarks>See <a href="https://en.wikipedia.org/wiki/SQLSTATE">SQLSTATE</a> for more information.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || (NETCOREAPP3_1 && !NET5_0)
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
 		public string? SqlState { get; }
 #else
 		public override string? SqlState { get; }

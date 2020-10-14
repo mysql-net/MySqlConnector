@@ -551,7 +551,7 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task{DataTable}"/> containing schema information.</returns>
 		/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || (NETCOREAPP3_1 && !NET5_0)
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
 		public Task<DataTable> GetSchemaAsync(CancellationToken cancellationToken = default)
 #else
 		public override Task<DataTable> GetSchemaAsync(CancellationToken cancellationToken = default)
@@ -565,7 +565,7 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task{DataTable}"/> containing schema information.</returns>
 		/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || (NETCOREAPP3_1 && !NET5_0)
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
 		public Task<DataTable> GetSchemaAsync(string collectionName, CancellationToken cancellationToken = default)
 #else
 		public override Task<DataTable> GetSchemaAsync(string collectionName, CancellationToken cancellationToken = default)
@@ -580,7 +580,7 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task{DataTable}"/> containing schema information.</returns>
 		/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || (NETCOREAPP3_1 && !NET5_0)
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
 		public Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictions, CancellationToken cancellationToken = default)
 #else
 		public override Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictions, CancellationToken cancellationToken = default)
