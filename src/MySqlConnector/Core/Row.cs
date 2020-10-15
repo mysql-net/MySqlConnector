@@ -62,6 +62,8 @@ namespace MySqlConnector.Core
 				return (ulong) value != 0;
 			if (value is decimal)
 				return (decimal) value != 0;
+			if (value is byte[] byteArrayValue && byteArrayValue.Length == 1)
+				return byteArrayValue[0] != 0;
 			return (bool) value;
 		}
 
@@ -89,6 +91,8 @@ namespace MySqlConnector.Core
 				return (sbyte) decimalValue;
 			if (value is bool boolValue)
 				return boolValue ? (sbyte) 1 : (sbyte) 0;
+			if (value is byte[] byteArrayValue && byteArrayValue.Length == 1)
+				return checked((sbyte) byteArrayValue[0]);
 			return (sbyte) value;
 		}
 
@@ -116,6 +120,8 @@ namespace MySqlConnector.Core
 				return (byte) decimalValue;
 			if (value is bool boolValue)
 				return boolValue ? (byte) 1 : (byte) 0;
+			if (value is byte[] byteArrayValue && byteArrayValue.Length == 1)
+				return byteArrayValue[0];
 			return (byte) value;
 		}
 
@@ -199,6 +205,8 @@ namespace MySqlConnector.Core
 				return (short) (decimal) value;
 			if (value is bool)
 				return (bool) value ? (short) 1 : (short) 0;
+			if (value is byte[] byteArrayValue && byteArrayValue.Length == 1)
+				return byteArrayValue[0];
 			return (short) value;
 		}
 
@@ -270,6 +278,9 @@ namespace MySqlConnector.Core
 				return (long) (decimal) value;
 			if (value is bool)
 				return (bool) value ? 1 : 0;
+			if (value is byte[] byteArrayValue && byteArrayValue.Length == 1)
+				return byteArrayValue[0];
+
 			return (long) value;
 		}
 
@@ -297,6 +308,8 @@ namespace MySqlConnector.Core
 				return (ushort) (decimal) value;
 			if (value is bool)
 				return (bool) value ? (ushort) 1 : (ushort) 0;
+			if (value is byte[] byteArrayValue && byteArrayValue.Length == 1)
+				return byteArrayValue[0];
 			return (ushort) value;
 		}
 
@@ -324,6 +337,8 @@ namespace MySqlConnector.Core
 				return (uint) (decimal) value;
 			if (value is bool)
 				return (bool) value ? (uint) 1 : (uint) 0;
+			if (value is byte[] byteArrayValue && byteArrayValue.Length == 1)
+				return byteArrayValue[0];
 			return (uint) value;
 		}
 
@@ -351,6 +366,8 @@ namespace MySqlConnector.Core
 				return (ulong) (decimal) value;
 			if (value is bool)
 				return (bool) value ? (ulong) 1 : (ulong) 0;
+			if (value is byte[] byteArrayValue && byteArrayValue.Length == 1)
+				return byteArrayValue[0];
 			return (ulong) value;
 		}
 

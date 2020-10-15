@@ -119,6 +119,12 @@ namespace Conformance.Tests
 		public override void GetInt64_throws_for_maximum_Boolean() => TestGetValue(DbType.Boolean, ValueKind.Maximum, x => x.GetInt64(0), 1L);
 		public override void GetInt64_throws_for_maximum_Boolean_with_GetFieldValue() => TestGetValue(DbType.Boolean, ValueKind.Maximum, x => x.GetFieldValue<long>(0), 1L);
 
+		// GetByte allows binary (byte array) conversions with a length of one
+		public override void GetByte_throws_for_zero_Binary() => TestGetValue(DbType.Binary, ValueKind.Zero, x => x.GetByte(0), (byte) 0x00);
+		public override void GetByte_throws_for_zero_Binary_with_GetFieldValue() => TestGetValue(DbType.Binary, ValueKind.Zero, x => x.GetFieldValue<byte>(0), (byte) 0x00);
+		public override void GetByte_throws_for_one_Binary() => TestGetValue(DbType.Binary, ValueKind.One, x => x.GetByte(0), (byte) 0x11);
+		public override void GetByte_throws_for_one_Binary_with_GetFieldValue() => TestGetValue(DbType.Binary, ValueKind.One, x => x.GetFieldValue<byte>(0), (byte) 0x11);
+
 		// GetByte allows integral conversions
 		public override void GetByte_throws_for_maximum_Int16() => TestException(DbType.Int16, ValueKind.Maximum, x => x.GetByte(0), typeof(OverflowException));
 		public override void GetByte_throws_for_maximum_Int16_with_GetFieldValue() => TestException(DbType.Int16, ValueKind.Maximum, x => x.GetFieldValue<byte>(0), typeof(OverflowException));
