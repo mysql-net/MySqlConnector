@@ -549,6 +549,10 @@ namespace MySqlConnector.Core
 			{
 				Log.Debug(ex, "Session{0} ignoring IOException in TryResetConnectionAsync", m_logArguments);
 			}
+			catch (ObjectDisposedException ex)
+			{
+				Log.Debug(ex, "Session{0} ignoring ObjectDisposedException in TryResetConnectionAsync", m_logArguments);
+			}
 			catch (SocketException ex)
 			{
 				Log.Debug(ex, "Session{0} ignoring SocketException in TryResetConnectionAsync", m_logArguments);
@@ -1042,7 +1046,7 @@ namespace MySqlConnector.Core
 							await namedPipeStream.ConnectAsync(timeout, cancellationToken).ConfigureAwait(false);
 						else
 #endif
-							namedPipeStream.Connect(timeout);
+						namedPipeStream.Connect(timeout);
 					}
 					catch (Exception ex) when ((ex is ObjectDisposedException && cancellationToken.IsCancellationRequested) || ex is TimeoutException)
 					{
@@ -1177,7 +1181,8 @@ namespace MySqlConnector.Core
 #endif
 
 					m_clientCertificate = certificate;
-					clientCertificates = new() { certificate };
+					clientCertificates = new()
+					{ certificate };
 				}
 
 				catch (CryptographicException ex)
@@ -1204,7 +1209,8 @@ namespace MySqlConnector.Core
 							"CertificateFile should be in PKCS #12 (.pfx) format and contain both a Certificate and Private Key");
 					}
 					m_clientCertificate = certificate;
-					clientCertificates = new() { certificate };
+					clientCertificates = new()
+					{ certificate };
 				}
 				catch (CryptographicException ex)
 				{
