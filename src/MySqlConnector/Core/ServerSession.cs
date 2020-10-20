@@ -543,6 +543,10 @@ namespace MySqlConnector.Core
 			{
 				Log.Debug(ex, "Session{0} ignoring IOException in TryResetConnectionAsync", m_logArguments);
 			}
+			catch (ObjectDisposedException ex)
+			{
+				Log.Debug(ex, "Session{0} ignoring ObjectDisposedException in TryResetConnectionAsync", m_logArguments);
+			}
 			catch (SocketException ex)
 			{
 				Log.Debug(ex, "Session{0} ignoring SocketException in TryResetConnectionAsync", m_logArguments);
