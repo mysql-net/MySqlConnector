@@ -125,7 +125,11 @@ namespace SideBySide
 			Assert.Equal(MySqlDbType.Double, parameter.MySqlDbType);
 			Assert.Equal(DbType.Double, parameter.DbType);
 			Assert.False(parameter.IsNullable);
+#if BASELINE // https://bugs.mysql.com/bug.php?id=101253
+			Assert.Equal(0, parameter.Value);
+#else
 			Assert.Null(parameter.Value);
+#endif
 			Assert.Equal(ParameterDirection.Input, parameter.Direction);
 			Assert.Equal(0, parameter.Precision);
 			Assert.Equal(0, parameter.Scale);
@@ -150,7 +154,11 @@ namespace SideBySide
 			Assert.Equal(MySqlDbType.Double, parameter.MySqlDbType);
 			Assert.Equal(DbType.Double, parameter.DbType);
 			Assert.False(parameter.IsNullable);
+#if BASELINE // https://bugs.mysql.com/bug.php?id=101253
+			Assert.Equal(0, parameter.Value);
+#else
 			Assert.Null(parameter.Value);
+#endif
 			Assert.Equal(ParameterDirection.Input, parameter.Direction);
 			Assert.Equal(0, parameter.Precision);
 			Assert.Equal(0, parameter.Scale);
@@ -175,7 +183,11 @@ namespace SideBySide
 			Assert.Equal(MySqlDbType.Int32, parameter.MySqlDbType);
 			Assert.Equal(DbType.Int32, parameter.DbType);
 			Assert.False(parameter.IsNullable);
+#if BASELINE // https://bugs.mysql.com/bug.php?id=101253
+			Assert.Equal(0, parameter.Value);
+#else
 			Assert.Null(parameter.Value);
+#endif
 			Assert.Equal(ParameterDirection.Input, parameter.Direction);
 			Assert.Equal(0, parameter.Precision);
 			Assert.Equal(0, parameter.Scale);

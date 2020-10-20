@@ -38,10 +38,7 @@ namespace SideBySide
 			Assert.NotNull(table);
 			Assert.Single(table.Columns);
 			Assert.Equal("ReservedWord", table.Columns[0].ColumnName);
-#if !BASELINE
-			// https://bugs.mysql.com/bug.php?id=89639
 			Assert.Contains("CREATE", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
-#endif
 		}
 
 		[Fact]

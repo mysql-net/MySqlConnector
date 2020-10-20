@@ -225,9 +225,7 @@ namespace SideBySide
 
 		[Theory]
 		[InlineData(true)]
-#if !BASELINE
-		[InlineData(false)] // https://bugs.mysql.com/bug.php?id=99793
-#endif
+		[InlineData(false)]
 		public async Task StoredProcedureOutIncorrectType(bool ignorePrepare)
 		{
 			using var connection = CreateOpenConnection(ignorePrepare);
@@ -241,8 +239,11 @@ namespace SideBySide
 				Direction = ParameterDirection.Output,
 			});
 
-			await cmd.PrepareAsync();
-			await Assert.ThrowsAsync<FormatException>(cmd.ExecuteNonQueryAsync);
+			await Assert.ThrowsAsync<FormatException>(async () =>
+			{
+				await cmd.PrepareAsync();
+				await cmd.ExecuteNonQueryAsync();
+			});
 		}
 
 		[Theory]
@@ -697,12 +698,7 @@ namespace SideBySide
 				Assert.Equal(DBNull.Value, row["DTD_IDENTIFIER"]);
 			else
 				Assert.Equal(dtdIdentifier, ((string) row["DTD_IDENTIFIER"]).Split(' ')[0]);
-#if BASELINE
-			// https://bugs.mysql.com/bug.php?id=100208
-			Assert.NotEmpty(routineDefinition);
-#else
 			Assert.Equal(routineDefinition, NormalizeSpaces((string) row["ROUTINE_DEFINITION"]));
-#endif
 			Assert.Equal(isDeterministic, row["IS_DETERMINISTIC"]);
 			Assert.Equal(dataAccess, ((string) row["SQL_DATA_ACCESS"]).Replace('_', ' '));
 		}

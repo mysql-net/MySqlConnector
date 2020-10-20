@@ -357,7 +357,7 @@ namespace SideBySide
 		}
 		const string c_251ByteString = "This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating \"this field is null\". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.";
 
-		[Theory]
+		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=101252")]
 		[InlineData("guid", "CHAR(36)", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f", "6A0E0A40-6228-11D3-A996-0050041896C8" })]
 		[InlineData("guidbin", "CHAR(36)", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f", "6A0E0A40-6228-11D3-A996-0050041896C8" })]
 		public void QueryGuid(string column, string dataTypeName, object[] expected)
@@ -393,7 +393,7 @@ namespace SideBySide
 			}
 		}
 
-		[Theory]
+		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=101252")]
 		[InlineData(false)]
 		[InlineData(true)]
 		public void QueryBinaryGuid(bool oldGuids)

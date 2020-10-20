@@ -38,11 +38,15 @@ namespace SideBySide
 			Assert.Equal(defaultCommandTimeout, command.CommandTimeout);
 		}
 
-		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=87316")]
+		[Fact]
 		public void NegativeCommandTimeout()
 		{
 			using var command = m_connection.CreateCommand();
+#if BASELINE
+			Assert.Throws<ArgumentException>(() => command.CommandTimeout = -1);
+#else
 			Assert.Throws<ArgumentOutOfRangeException>(() => command.CommandTimeout = -1);
+#endif
 		}
 
 		[Fact]
