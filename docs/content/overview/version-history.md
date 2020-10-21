@@ -11,6 +11,11 @@ weight: 30
 Version History
 ===============
 
+### 0.69.10
+
+* Ignore `ObjectDisposedException` thrown in `TryResetConnectionAsync`: [#897](https://github.com/mysql-net/MySqlConnector/pull/897).
+* Thanks to [laurent-jeancler-realist](https://github.com/laurent-jeancler-realist) for contributions to this release.
+
 ### 0.69.9
 
 * Return `null` from `MySqlDataReader.GetSchemaTable` when there is no result set: [#877](https://github.com/mysql-net/MySqlConnector/issues/877).
