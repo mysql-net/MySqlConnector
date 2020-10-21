@@ -30,7 +30,7 @@ needed to query and update databases from managed code.
 
 Install MySqlConnector from [NuGet](https://www.nuget.org/packages/MySqlConnector/): `dotnet add package MySqlConnector`
 
-Connecting to your database is simple:
+Connecting to your database is simple. For example, in C#:
 
 ```csharp
 using (var connection = new MySqlConnection("Server=myserver;User ID=mylogin;Password=mypass;Database=mydatabase"))
