@@ -261,3 +261,4 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#100306](https://bugs.mysql.com/bug.php?id=100306): `Command.Prepare` sends wrong statement to server~~
 * [#101252](https://bugs.mysql.com/bug.php?id=101252): Can't query `CHAR(36)` column containing `NULL`
 * [#101253](https://bugs.mysql.com/bug.php?id=101253): Default value for `MySqlParameter.Value` changed from null to `0`
+* [#101302](https://bugs.mysql.com/bug.php?id=101302): Stored Procedure `BOOL` parameter can only be mapped to `MySqlDbType.Byte`
