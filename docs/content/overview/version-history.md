@@ -10,6 +10,18 @@ weight: 30
 
 # Version History
 
+### 1.1.0 Beta 1
+
+* Support .NET 5 RC 2
+* Cancel query (server-side) when `CommandTimeout` expires: [#455](https://github.com/mysql-net/MySqlConnector/issues/455).
+  * Add `CancellationTimeout` connection string option.
+  * Implementation details discussed in [this comment](https://github.com/mysql-net/MySqlConnector/issues/455#issuecomment-702424012).
+* Return `null` from `MySqlDataReader.GetSchemaTable` when there is no result set: [#877](https://github.com/mysql-net/MySqlConnector/issues/877).
+* Make `DisposeAsync` fully async: [#876](https://github.com/mysql-net/MySqlConnector/issues/876).
+* Ignore `ObjectDisposedException` thrown in `TryResetConnectionAsync`: [#897](https://github.com/mysql-net/MySqlConnector/pull/897).
+* Fix bug where sessions could time out if they were opened but no queries were ever executed.
+* Thanks to [Dirk Lemstra](https://github.com/dlemstra) for contributions to this release.
+
 ### 1.0.1
 
 * Support `ENUM` columns that use the `MYSQL_TYPE_ENUM` type in their column metadata: [#850](https://github.com/mysql-net/MySqlConnector/issues/850).
