@@ -187,7 +187,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#72494](https://bugs.mysql.com/bug.php?id=72494), [#83330](https://bugs.mysql.com/bug.php?id=83330): EndOfStreamException inserting large blob with UseCompression=True
 * [#73610](https://bugs.mysql.com/bug.php?id=73610): Invalid password exception has wrong number
 * [#73788](https://bugs.mysql.com/bug.php?id=73788): Can’t use `DateTimeOffset`
-* [#75604](https://bugs.mysql.com/bug.php?id=75604): Crash after 29.4 days of uptime
+* ~~[#75604](https://bugs.mysql.com/bug.php?id=75604): Crash after 29.4 days of uptime~~
 * [#75917](https://bugs.mysql.com/bug.php?id=75917), [#76597](https://bugs.mysql.com/bug.php?id=76597), [#77691](https://bugs.mysql.com/bug.php?id=77691), [#78650](https://bugs.mysql.com/bug.php?id=78650), [#78919](https://bugs.mysql.com/bug.php?id=78919), [#80921](https://bugs.mysql.com/bug.php?id=80921), [#82136](https://bugs.mysql.com/bug.php?id=82136): “Reading from the stream has failed” when connecting to a server
 * [#77421](https://bugs.mysql.com/bug.php?id=77421): Connection is not reset when pulled from the connection pool
 * [#78426](https://bugs.mysql.com/bug.php?id=78426): Unknown database exception has wrong number
@@ -200,7 +200,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#84220](https://bugs.mysql.com/bug.php?id=84220): Cannot call a stored procedure with `.` in its name
 * [#84701](https://bugs.mysql.com/bug.php?id=84701): Can’t create a parameter using a 64-bit enum with a value greater than int.MaxValue
 * [#85185](https://bugs.mysql.com/bug.php?id=85185): `ConnectionReset=True` does not preserve connection charset
-* [#86263](https://bugs.mysql.com/bug.php?id=86263): Transaction isolation level affects all transactions in session
+* ~~[#86263](https://bugs.mysql.com/bug.php?id=86263): Transaction isolation level affects all transactions in session~~
 * ~~[#87307](https://bugs.mysql.com/bug.php?id=87307): NextResult hangs instead of timing out~~
 * ~~[#87316](https://bugs.mysql.com/bug.php?id=87316): MySqlCommand.CommandTimeout can be set to a negative value~~
 * ~~[#87868](https://bugs.mysql.com/bug.php?id=87868): `ColumnSize` in schema table is incorrect for `CHAR(36)` and `BLOB` columns~~
