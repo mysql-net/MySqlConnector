@@ -555,7 +555,7 @@ namespace SideBySide
 			}
 		}
 
-		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=84220")]
+		[Theory]
 		[InlineData(false, true)]
 		[InlineData(false, false)]
 		[InlineData(true, true)]
