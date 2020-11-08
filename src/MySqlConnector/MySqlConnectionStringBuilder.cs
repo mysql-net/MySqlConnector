@@ -786,7 +786,11 @@ namespace MySqlConnector
 			{
 				try
 				{
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 					return (T) Enum.Parse(typeof(T), enumString, ignoreCase: true);
+#else
+					return Enum.Parse<T>(enumString, ignoreCase: true);
+#endif
 				}
 				catch (Exception ex) when (ex is not ArgumentException)
 				{
