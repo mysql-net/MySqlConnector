@@ -283,6 +283,26 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 			cmd.Cancel();
 		}
 
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=101507")]
+		public void CancelCommandForClosedConnectionIsNoop()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+			using var cmd = connection.CreateCommand();
+			connection.Close();
+			cmd.Cancel();
+		}
+
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=101507")]
+		public void CancelCommandForDisposedConnectionIsNoop()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+			using var cmd = connection.CreateCommand();
+			connection.Dispose();
+			cmd.Cancel();
+		}
+
 		[Fact]
 		public void CommandsAreIndependent()
 		{

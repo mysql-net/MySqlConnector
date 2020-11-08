@@ -687,8 +687,7 @@ namespace MySqlConnector
 
 		internal void Cancel(ICancellableCommand command)
 		{
-			var session = Session;
-			if (!session.TryStartCancel(command))
+			if (m_session is null || State != ConnectionState.Open || !m_session.TryStartCancel(command))
 				return;
 
 			try
@@ -696,20 +695,20 @@ namespace MySqlConnector
 				// open a dedicated connection to the server to kill the active query
 				var csb = new MySqlConnectionStringBuilder(m_connectionString);
 				csb.Pooling = false;
-				if (m_session!.IPAddress is not null)
+				if (m_session.IPAddress is not null)
 					csb.Server = m_session.IPAddress.ToString();
 				csb.ConnectionTimeout = 3u;
 
 				using var connection = new MySqlConnection(csb.ConnectionString);
 				connection.Open();
 				using var killCommand = new MySqlCommand("KILL QUERY {0}".FormatInvariant(command.Connection!.ServerThread), connection);
-				session.DoCancel(command, killCommand);
+				m_session.DoCancel(command, killCommand);
 			}
 			catch (MySqlException ex)
 			{
 				// cancelling the query failed; setting the state back to 'Querying' will allow another call to 'Cancel' to try again
 				Log.Warn(ex, "Session{0} cancelling command {1} failed", m_session!.Id, command.CommandId);
-				session.AbortCancel(command);
+				m_session.AbortCancel(command);
 			}
 		}
 
