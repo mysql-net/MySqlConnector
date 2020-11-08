@@ -1554,9 +1554,14 @@ namespace MySqlConnector.Core
 			catch (PlatformNotSupportedException)
 			{
 			}
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
 			using var process = Process.GetCurrentProcess();
+			var processId = process.Id;
+#else
+			var processId = Environment.ProcessId;
+#endif
 			attributesWriter.WriteLengthEncodedString("_pid");
-			attributesWriter.WriteLengthEncodedString(process.Id.ToString(CultureInfo.InvariantCulture));
+			attributesWriter.WriteLengthEncodedString(processId.ToString(CultureInfo.InvariantCulture));
 			if (programName.Length != 0)
 			{
 				attributesWriter.WriteLengthEncodedString("program_name");
