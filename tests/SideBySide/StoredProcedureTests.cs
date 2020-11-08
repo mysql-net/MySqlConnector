@@ -671,6 +671,19 @@ namespace SideBySide
 				AssertParameter("@vJson", ParameterDirection.Input, MySqlDbType.JSON));
 		}
 
+		[SkippableFact(ServerFeatures.Json, Baseline = "https://bugs.mysql.com/bug.php?id=101485")]
+		public void PassJsonParameter()
+		{
+			using var cmd = new MySqlCommand("SetJson", m_database.Connection);
+			cmd.CommandType = CommandType.StoredProcedure;
+			var json = "{\"prop\":[null]}";
+			cmd.Parameters.AddWithValue("@vJson", json).MySqlDbType = MySqlDbType.JSON;
+			using var reader = cmd.ExecuteReader();
+			Assert.True(reader.Read());
+			Assert.Equal(json, reader.GetString(0).Replace(" ", ""));
+			Assert.False(reader.Read());
+		}
+
 		private static Action<MySqlParameter> AssertParameter(string name, ParameterDirection direction, MySqlDbType mySqlDbType)
 		{
 			return x =>
