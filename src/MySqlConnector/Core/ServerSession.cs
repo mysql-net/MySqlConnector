@@ -19,6 +19,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using MySqlConnector.Authentication;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
@@ -1321,11 +1322,39 @@ namespace MySqlConnector.Core
 			{
 				if (ioBehavior == IOBehavior.Asynchronous)
 				{
+#if NET5_0
+					var isAurora = OperatingSystem.IsLinux() && sslProtocols == SslProtocols.Tls12 && HostName.EndsWith("rds.amazonaws.com", StringComparison.Ordinal);
+
+					var options = new SslClientAuthenticationOptions {
+						EnabledSslProtocols = sslProtocols,
+						ClientCertificates = clientCertificates,
+						TargetHost = HostName,
+						CipherSuitesPolicy = isAurora ? KnownCipherSuitePolicy.Net50_Aurora2 : null,
+						CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck
+					};
+
+					await sslStream.AuthenticateAsClientAsync(options).ConfigureAwait(false);
+
+#else
 					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+#endif
 				}
 				else
 				{
-#if NETSTANDARD1_3
+#if NET5_0
+					var isAurora = OperatingSystem.IsLinux() && sslProtocols == SslProtocols.Tls12 && HostName.EndsWith("rds.amazonaws.com", StringComparison.Ordinal);
+
+					var options = new SslClientAuthenticationOptions {
+						EnabledSslProtocols = sslProtocols,
+						ClientCertificates = clientCertificates,
+						TargetHost = HostName,
+						CipherSuitesPolicy = isAurora ? KnownCipherSuitePolicy.Net50_Aurora2 : null,
+						CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck
+					};
+
+					await sslStream.AuthenticateAsClientAsync(options).ConfigureAwait(false);
+
+#elif NETSTANDARD1_3
 					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
 #else
 					sslStream.AuthenticateAsClient(HostName, clientCertificates, sslProtocols, checkCertificateRevocation);
