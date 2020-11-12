@@ -1321,14 +1321,38 @@ namespace MySqlConnector.Core
 			{
 				if (ioBehavior == IOBehavior.Asynchronous)
 				{
+#if SUPPORTS_CIPHERSUITES
+					var options = new SslClientAuthenticationOptions
+					{
+						EnabledSslProtocols = sslProtocols,
+						ClientCertificates = clientCertificates,
+						TargetHost = HostName,
+						CipherSuitesPolicy = MySqlConnection.DefaultCipherSuitesPolicy,
+						CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck
+					};
+
+					await sslStream.AuthenticateAsClientAsync(options).ConfigureAwait(false);
+#else
 					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+#endif
 				}
 				else
 				{
-#if NETSTANDARD1_3
+#if SUPPORTS_CIPHERSUITES
+					var options = new SslClientAuthenticationOptions
+					{
+						EnabledSslProtocols = sslProtocols,
+						ClientCertificates = clientCertificates,
+						TargetHost = HostName,
+						CipherSuitesPolicy = MySqlConnection.DefaultCipherSuitesPolicy,
+						CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck
+					};
+
+					sslStream.AuthenticateAsClient(options);
+#elif NETSTANDARD1_3
 					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
 #else
-					sslStream.AuthenticateAsClient(HostName, clientCertificates, sslProtocols, checkCertificateRevocation);
+					sslStream.AuthenticateAsClient(HostName, clientCertificates, sslProtocols, checkCertificateRevocation);					
 #endif
 				}
 				var sslByteHandler = new StreamByteHandler(sslStream);

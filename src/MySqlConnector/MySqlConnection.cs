@@ -1038,6 +1038,20 @@ namespace MySqlConnector
 		static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = new();
 #endif
 
+#if SUPPORTS_CIPHERSUITES
+		private static System.Net.Security.CipherSuitesPolicy? _defaultCipherSuitesPolicy;
+
+		/// <summary>
+		/// Overrides the cipher suites when connecting over SSL
+		/// If null, the operating system defaults are used
+		/// </summary>
+		public static System.Net.Security.CipherSuitesPolicy? DefaultCipherSuitesPolicy
+		{
+			get => _defaultCipherSuitesPolicy;
+			set => _defaultCipherSuitesPolicy = value;
+		}
+#endif
+
 		string m_connectionString;
 		ConnectionSettings? m_connectionSettings;
 		ServerSession? m_session;
