@@ -1038,7 +1038,7 @@ namespace MySqlConnector
 		static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = new();
 #endif
 
-#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1
+#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1 && !NETCOREAPP3_1
 		private static System.Net.Security.CipherSuitesPolicy? _defaultCipherSuitesPolicy;
 
 		/// <summary>
