@@ -1322,7 +1322,9 @@ namespace MySqlConnector.Core
 			{
 				if (ioBehavior == IOBehavior.Asynchronous)
 				{
-#if NET5_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
+					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+#else
 					var options = new SslClientAuthenticationOptions {
 						EnabledSslProtocols = sslProtocols,
 						ClientCertificates = clientCertificates,
@@ -1332,14 +1334,15 @@ namespace MySqlConnector.Core
 					};
 
 					await sslStream.AuthenticateAsClientAsync(options).ConfigureAwait(false);
-
-#else
-					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
 #endif
 				}
 				else
 				{
-#if NET5_0
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
+					sslStream.AuthenticateAsClient(HostName, clientCertificates, sslProtocols, checkCertificateRevocation);
+#elif NETSTANDARD1_3
+					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+#else
 					var options = new SslClientAuthenticationOptions {
 						EnabledSslProtocols = sslProtocols,
 						ClientCertificates = clientCertificates,
@@ -1349,11 +1352,6 @@ namespace MySqlConnector.Core
 					};
 
 					await sslStream.AuthenticateAsClientAsync(options).ConfigureAwait(false);
-
-#elif NETSTANDARD1_3
-					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
-#else
-					sslStream.AuthenticateAsClient(HostName, clientCertificates, sslProtocols, checkCertificateRevocation);
 #endif
 				}
 				var sslByteHandler = new StreamByteHandler(sslStream);
