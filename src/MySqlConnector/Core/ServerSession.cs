@@ -1323,13 +1323,11 @@ namespace MySqlConnector.Core
 				if (ioBehavior == IOBehavior.Asynchronous)
 				{
 #if NET5_0
-					var isAurora = OperatingSystem.IsLinux() && sslProtocols == SslProtocols.Tls12 && HostName.EndsWith("rds.amazonaws.com", StringComparison.Ordinal);
-
 					var options = new SslClientAuthenticationOptions {
 						EnabledSslProtocols = sslProtocols,
 						ClientCertificates = clientCertificates,
 						TargetHost = HostName,
-						CipherSuitesPolicy = isAurora ? KnownCipherSuitePolicy.Net50_Aurora2 : null,
+						CipherSuitesPolicy = MySqlConnection.DefaultCipherSuitesPolicy,
 						CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck
 					};
 
@@ -1342,13 +1340,11 @@ namespace MySqlConnector.Core
 				else
 				{
 #if NET5_0
-					var isAurora = OperatingSystem.IsLinux() && sslProtocols == SslProtocols.Tls12 && HostName.EndsWith("rds.amazonaws.com", StringComparison.Ordinal);
-
 					var options = new SslClientAuthenticationOptions {
 						EnabledSslProtocols = sslProtocols,
 						ClientCertificates = clientCertificates,
 						TargetHost = HostName,
-						CipherSuitesPolicy = isAurora ? KnownCipherSuitePolicy.Net50_Aurora2 : null,
+						CipherSuitesPolicy = MySqlConnection.DefaultCipherSuitesPolicy,
 						CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck
 					};
 
