@@ -74,6 +74,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal("", csb.SslCa);
 			Assert.Equal("", csb.SslCert);
 			Assert.Equal("", csb.SslKey);
+			Assert.Equal("", csb.TlsCipherSuites);
 			Assert.Equal("", csb.TlsVersion);
 #else
 			Assert.Null(csb.SslCa);
@@ -130,6 +131,7 @@ namespace MySqlConnector.Tests
 					"nobackslashescapes=true;" +
 					"server spn=mariadb/host.example.com@EXAMPLE.COM;" +
 					"use xa transactions=false;" +
+					"tls cipher suites=TLS_AES_128_CCM_8_SHA256,TLS_RSA_WITH_RC4_128_MD5;" +
 #endif
 					"ignore prepare=false;" +
 					"interactive=true;" +
@@ -148,6 +150,7 @@ namespace MySqlConnector.Tests
 					"ssl-cert=client-cert.pem;" +
 					"ssl-key=client-key.pem;" +
 					"ssl mode=verifyca;" +
+					"tls version=Tls10, TLS v1.2;" +
 					"Uid=username;" +
 					"useaffectedrows=true"
 			};
@@ -187,6 +190,7 @@ namespace MySqlConnector.Tests
 			Assert.True(csb.NoBackslashEscapes);
 			Assert.Equal("mariadb/host.example.com@EXAMPLE.COM", csb.ServerSPN);
 			Assert.False(csb.UseXaTransactions);
+			Assert.Equal("TLS_AES_128_CCM_8_SHA256,TLS_RSA_WITH_RC4_128_MD5", csb.TlsCipherSuites);
 #endif
 			Assert.False(csb.IgnorePrepare);
 			Assert.True(csb.InteractiveSession);
@@ -205,6 +209,11 @@ namespace MySqlConnector.Tests
 			Assert.Equal("client-cert.pem", csb.SslCert);
 			Assert.Equal("client-key.pem", csb.SslKey);
 			Assert.Equal(MySqlSslMode.VerifyCA, csb.SslMode);
+#if BASELINE
+			Assert.Equal("Tls, Tls12", csb.TlsVersion);
+#else
+			Assert.Equal("TLS 1.0, TLS 1.2", csb.TlsVersion);
+#endif
 			Assert.True(csb.UseAffectedRows);
 			Assert.True(csb.UseCompression);
 			Assert.Equal("username", csb.UserID);

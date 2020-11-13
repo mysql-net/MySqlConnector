@@ -143,6 +143,13 @@ namespace MySqlConnector
 			set => MySqlConnectionStringOption.TlsVersion.SetValue(this, value);
 		}
 
+		[AllowNull]
+		public string TlsCipherSuites
+		{
+			get => MySqlConnectionStringOption.TlsCipherSuites.GetValue(this);
+			set => MySqlConnectionStringOption.TlsCipherSuites.SetValue(this, value);
+		}
+
 		// Connection Pooling Options
 		public bool Pooling
 		{
@@ -432,6 +439,7 @@ namespace MySqlConnector
 		public static readonly MySqlConnectionStringReferenceOption<string> SslCert;
 		public static readonly MySqlConnectionStringReferenceOption<string> SslKey;
 		public static readonly MySqlConnectionStringReferenceOption<string> TlsVersion;
+		public static readonly MySqlConnectionStringReferenceOption<string> TlsCipherSuites;
 
 		// Connection Pooling Options
 		public static readonly MySqlConnectionStringValueOption<bool> Pooling;
@@ -601,6 +609,10 @@ namespace MySqlConnector
 					}
 					return coercedValue;
 				}));
+
+			AddOption(TlsCipherSuites = new(
+				keys: new[] { "TlsCipherSuites", "Tls Cipher Suites" },
+				defaultValue: ""));
 
 			// Connection Pooling Options
 			AddOption(Pooling = new(

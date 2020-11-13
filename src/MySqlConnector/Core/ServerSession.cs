@@ -1317,26 +1317,57 @@ namespace MySqlConnector.Core
 			using (var initSsl = HandshakeResponse41Payload.CreateWithSsl(serverCapabilities, cs, m_useCompression, m_characterSet))
 				await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
 
+			var clientAuthenticationOptions = new SslClientAuthenticationOptions
+			{
+				EnabledSslProtocols = sslProtocols,
+				ClientCertificates = clientCertificates,
+				TargetHost = HostName,
+				CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck
+			};
+
+#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
+			if (cs.TlsCipherSuites is { Count: > 0 })
+				clientAuthenticationOptions.CipherSuitesPolicy = new CipherSuitesPolicy(cs.TlsCipherSuites);
+#endif
+
 			try
 			{
 				if (ioBehavior == IOBehavior.Asynchronous)
 				{
-					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+					await sslStream.AuthenticateAsClientAsync(clientAuthenticationOptions.TargetHost,
+						clientAuthenticationOptions.ClientCertificates,
+						clientAuthenticationOptions.EnabledSslProtocols,
+						checkCertificateRevocation).ConfigureAwait(false);
+#else
+					await sslStream.AuthenticateAsClientAsync(clientAuthenticationOptions, cancellationToken).ConfigureAwait(false);
+#endif
 				}
 				else
 				{
 #if NETSTANDARD1_3
 					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
+#elif NET45 || NET461 || NET471 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP3_1
+					sslStream.AuthenticateAsClient(clientAuthenticationOptions.TargetHost,
+						clientAuthenticationOptions.ClientCertificates,
+						clientAuthenticationOptions.EnabledSslProtocols,
+						checkCertificateRevocation);
 #else
-					sslStream.AuthenticateAsClient(HostName, clientCertificates, sslProtocols, checkCertificateRevocation);
+					sslStream.AuthenticateAsClient(clientAuthenticationOptions);
 #endif
 				}
 				var sslByteHandler = new StreamByteHandler(sslStream);
 				m_payloadHandler!.ByteHandler = sslByteHandler;
 				m_isSecureConnection = true;
 				m_sslStream = sslStream;
-				m_logArguments[1] = sslStream.SslProtocol;
-				Log.Info("Session{0} connected TLS with Protocol {1}", m_logArguments);
+				if (Log.IsInfoEnabled())
+				{
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1
+					Log.Info("Session{0} connected TLS with SslProtocol={1}, CipherAlgorithm={2}, HashAlgorithm={3}, KeyExchangeAlgorithm={4}, KeyExchangeStrength={5}", m_logArguments[0], sslStream.SslProtocol, sslStream.CipherAlgorithm, sslStream.HashAlgorithm, sslStream.KeyExchangeAlgorithm, sslStream.KeyExchangeStrength);
+#else
+					Log.Info("Session{0} connected TLS with SslProtocol={1}, NegotiatedCipherSuite={2}", m_logArguments[0], sslStream.SslProtocol, sslStream.NegotiatedCipherSuite);
+#endif
+				}
 			}
 			catch (Exception ex)
 			{
@@ -1363,6 +1394,17 @@ namespace MySqlConnector.Core
 #endif
 			}
 		}
+
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+		// a stripped-down version of this POCO options class for TFMs that don't have it buit-in
+		internal sealed class SslClientAuthenticationOptions
+		{
+			public X509RevocationMode CertificateRevocationCheckMode { get; set; }
+			public X509CertificateCollection? ClientCertificates { get; set; }
+			public SslProtocols EnabledSslProtocols { get; set; }
+			public string? TargetHost { get; set; }
+		}
+#endif
 
 		// Some servers are exposed through a proxy, which handles the initial handshake and gives the proxy's
 		// server version and thread ID. Detect this situation and return `true` if the real server's details should

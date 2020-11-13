@@ -60,6 +60,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 | [SslCert](../MySqlConnectionStringBuilder/SslCert/) { get; set; } |  |
 | [SslKey](../MySqlConnectionStringBuilder/SslKey/) { get; set; } |  |
 | [SslMode](../MySqlConnectionStringBuilder/SslMode/) { get; set; } |  |
+| [TlsCipherSuites](../MySqlConnectionStringBuilder/TlsCipherSuites/) { get; set; } |  |
 | [TlsVersion](../MySqlConnectionStringBuilder/TlsVersion/) { get; set; } |  |
 | [TreatTinyAsBoolean](../MySqlConnectionStringBuilder/TreatTinyAsBoolean/) { get; set; } |  |
 | [UseAffectedRows](../MySqlConnectionStringBuilder/UseAffectedRows/) { get; set; } |  |

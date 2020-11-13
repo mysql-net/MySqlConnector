@@ -133,6 +133,11 @@ These are the options that need to be used in order to configure a connection to
     <td></td>
     <td>Specifies which certificate should be used from the Certificate Store specified in the setting above. This option must be used to indicate which certificate in the store should be used for authentication.</td>
   </tr>
+  <tr id="TlsCipherSuites">
+    <td>Tls Cipher Suites,TlsCipherSuites</td>
+    <td></td>
+    <td>Specifies which TLS cipher suites may be used during TLS negotiation. The default value (the empty string) allows the OS to determine the TLS cipher suites to use; this is the recommended setting. Otherwise, specify a comma-delimited list of <a href="https://docs.microsoft.com/en-us/dotnet/api/system.net.security.tlsciphersuite"><code>TlsCipherSuite</code> enum values</a> to allow just those cipher suites. (This option is only supported on Linux when using .NET Core 3.1 or .NET 5.0 or later.)</td>
+  </tr>
   <tr id="TlsVersion">
     <td>Tls Version, TlsVersion, Tls-Version</td>
     <td></td>

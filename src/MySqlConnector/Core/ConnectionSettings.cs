@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Security;
 using System.Security.Authentication;
 using MySqlConnector.Utilities;
 
@@ -85,6 +86,28 @@ namespace MySqlConnector.Core
 				}
 				if (TlsVersions == default)
 					throw new NotSupportedException("All specified TLS versions are incompatible with this platform.");
+			}
+
+			if (csb.TlsCipherSuites != "")
+			{
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1
+				throw new PlatformNotSupportedException("The TlsCipherSuites connection string option is only supported on .NET Core 3.1 (or later) on Linux.");
+#else
+				var tlsCipherSuites = new List<TlsCipherSuite>();
+				foreach (var token in csb.TlsCipherSuites.Split(','))
+				{
+					var suiteName = token.Trim();
+					if (Enum.TryParse<TlsCipherSuite>(suiteName, ignoreCase: true, out var cipherSuite))
+						tlsCipherSuites.Add(cipherSuite);
+					else if (int.TryParse(suiteName, out var value) && Enum.IsDefined(typeof(TlsCipherSuite), value))
+						tlsCipherSuites.Add((TlsCipherSuite) value);
+					else if (Enum.TryParse<TlsCipherSuite>("TLS_" + suiteName, ignoreCase: true, out cipherSuite))
+						tlsCipherSuites.Add(cipherSuite);
+					else
+						throw new NotSupportedException("Unknown value '{0}' for TlsCipherSuites.".FormatInvariant(suiteName));
+				}
+				TlsCipherSuites = tlsCipherSuites;
+#endif
 			}
 
 			// Connection Pooling Options
@@ -176,6 +199,9 @@ namespace MySqlConnector.Core
 		public MySqlCertificateStoreLocation CertificateStoreLocation { get; }
 		public string CertificateThumbprint { get; }
 		public SslProtocols TlsVersions { get; }
+#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
+		public IReadOnlyList<TlsCipherSuite>? TlsCipherSuites { get; }
+#endif
 
 		// Connection Pooling Options
 		public bool Pooling { get; }
