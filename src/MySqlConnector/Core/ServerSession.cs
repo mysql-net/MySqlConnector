@@ -1396,7 +1396,7 @@ namespace MySqlConnector.Core
 		}
 
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
-		// a stripped-down version of this POCO options class for TFMs that don't have it buit-in
+		// a stripped-down version of this POCO options class for TFMs that don't have it built in
 		internal sealed class SslClientAuthenticationOptions
 		{
 			public X509RevocationMode CertificateRevocationCheckMode { get; set; }
