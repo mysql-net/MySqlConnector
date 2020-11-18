@@ -998,7 +998,7 @@ namespace MySqlConnector.Core
 			using (var command = m_connection.CreateCommand())
 			{
 #pragma warning disable CA2100
-				command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(x => x!.ColumnName)) + " FROM INFORMATION_SCHEMA." + tableName + ";";
+				command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(static x => x!.ColumnName)) + " FROM INFORMATION_SCHEMA." + tableName + ";";
 #pragma warning restore CA2100
 				using var reader = await command.ExecuteReaderAsync(default, ioBehavior, cancellationToken).ConfigureAwait(false);
 				while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))

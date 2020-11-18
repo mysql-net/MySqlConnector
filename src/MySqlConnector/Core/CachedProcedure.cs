@@ -114,7 +114,7 @@ namespace MySqlConnector.Core
 		internal MySqlParameterCollection AlignParamsWithDb(MySqlParameterCollection? parameterCollection)
 		{
 			var alignedParams = new MySqlParameterCollection();
-			var returnParam = parameterCollection?.FirstOrDefault(x => x.Direction == ParameterDirection.ReturnValue);
+			var returnParam = parameterCollection?.FirstOrDefault(static x => x.Direction == ParameterDirection.ReturnValue);
 
 			foreach (var cachedParam in Parameters)
 			{

@@ -35,8 +35,8 @@ namespace MySqlConnector.Logging
 				_ => throw new ArgumentOutOfRangeException(nameof(level), level, "Invalid value for 'level'.")
 			};
 
-			static readonly Func<string, Exception, string> s_getMessage = (s, e) => s;
-			static readonly Func<(string Message, object?[] Args), Exception, string> s_messageFormatter = (s, e) => string.Format(CultureInfo.InvariantCulture, s.Message, s.Args);
+			static readonly Func<string, Exception, string> s_getMessage = static (s, e) => s;
+			static readonly Func<(string Message, object?[] Args), Exception, string> s_messageFormatter = static (s, e) => string.Format(CultureInfo.InvariantCulture, s.Message, s.Args);
 
 			readonly ILogger m_logger;
 		}

@@ -23,18 +23,18 @@ namespace MySqlConnector.Core
 			m_mySqlDbTypeToColumnTypeMetadata = new();
 
 			// boolean
-			var typeBoolean = AddDbTypeMapping(new(typeof(bool), new[] { DbType.Boolean }, convert: o => Convert.ToBoolean(o)));
+			var typeBoolean = AddDbTypeMapping(new(typeof(bool), new[] { DbType.Boolean }, convert: static o => Convert.ToBoolean(o)));
 			AddColumnTypeMetadata(new("TINYINT", typeBoolean, MySqlDbType.Bool, isUnsigned: false, length: 1, columnSize: 1, simpleDataTypeName: "BOOL", createFormat: "BOOL"));
 
 			// integers
-			var typeSbyte = AddDbTypeMapping(new(typeof(sbyte), new[] { DbType.SByte }, convert: o => Convert.ToSByte(o)));
-			var typeByte = AddDbTypeMapping(new(typeof(byte), new[] { DbType.Byte }, convert: o => Convert.ToByte(o)));
-			var typeShort = AddDbTypeMapping(new(typeof(short), new[] { DbType.Int16 }, convert: o => Convert.ToInt16(o)));
-			var typeUshort = AddDbTypeMapping(new(typeof(ushort), new[] { DbType.UInt16 }, convert: o => Convert.ToUInt16(o)));
-			var typeInt = AddDbTypeMapping(new(typeof(int), new[] { DbType.Int32 }, convert: o => Convert.ToInt32(o)));
-			var typeUint = AddDbTypeMapping(new(typeof(uint), new[] { DbType.UInt32 }, convert: o => Convert.ToUInt32(o)));
-			var typeLong = AddDbTypeMapping(new(typeof(long), new[] { DbType.Int64 }, convert: o => Convert.ToInt64(o)));
-			var typeUlong = AddDbTypeMapping(new(typeof(ulong), new[] { DbType.UInt64 }, convert: o => Convert.ToUInt64(o)));
+			var typeSbyte = AddDbTypeMapping(new(typeof(sbyte), new[] { DbType.SByte }, convert: static o => Convert.ToSByte(o)));
+			var typeByte = AddDbTypeMapping(new(typeof(byte), new[] { DbType.Byte }, convert: static o => Convert.ToByte(o)));
+			var typeShort = AddDbTypeMapping(new(typeof(short), new[] { DbType.Int16 }, convert: static o => Convert.ToInt16(o)));
+			var typeUshort = AddDbTypeMapping(new(typeof(ushort), new[] { DbType.UInt16 }, convert: static o => Convert.ToUInt16(o)));
+			var typeInt = AddDbTypeMapping(new(typeof(int), new[] { DbType.Int32 }, convert: static o => Convert.ToInt32(o)));
+			var typeUint = AddDbTypeMapping(new(typeof(uint), new[] { DbType.UInt32 }, convert: static o => Convert.ToUInt32(o)));
+			var typeLong = AddDbTypeMapping(new(typeof(long), new[] { DbType.Int64 }, convert: static o => Convert.ToInt64(o)));
+			var typeUlong = AddDbTypeMapping(new(typeof(ulong), new[] { DbType.UInt64 }, convert: static o => Convert.ToUInt64(o)));
 			AddColumnTypeMetadata(new("TINYINT", typeSbyte, MySqlDbType.Byte, isUnsigned: false));
 			AddColumnTypeMetadata(new("TINYINT", typeByte, MySqlDbType.UByte, isUnsigned: true, length: 1));
 			AddColumnTypeMetadata(new("TINYINT", typeByte, MySqlDbType.UByte, isUnsigned: true));
@@ -49,9 +49,9 @@ namespace MySqlConnector.Core
 			AddColumnTypeMetadata(new("BIT", typeUlong, MySqlDbType.Bit));
 
 			// decimals
-			var typeDecimal = AddDbTypeMapping(new(typeof(decimal), new[] { DbType.Decimal, DbType.Currency, DbType.VarNumeric }, convert: o => Convert.ToDecimal(o)));
-			var typeDouble = AddDbTypeMapping(new(typeof(double), new[] { DbType.Double }, convert: o => Convert.ToDouble(o)));
-			var typeFloat = AddDbTypeMapping(new(typeof(float), new[] { DbType.Single }, convert: o => Convert.ToSingle(o)));
+			var typeDecimal = AddDbTypeMapping(new(typeof(decimal), new[] { DbType.Decimal, DbType.Currency, DbType.VarNumeric }, convert: static o => Convert.ToDecimal(o)));
+			var typeDouble = AddDbTypeMapping(new(typeof(double), new[] { DbType.Double }, convert: static o => Convert.ToDouble(o)));
+			var typeFloat = AddDbTypeMapping(new(typeof(float), new[] { DbType.Single }, convert: static o => Convert.ToSingle(o)));
 			AddColumnTypeMetadata(new("DECIMAL", typeDecimal, MySqlDbType.NewDecimal, createFormat: "DECIMAL({0},{1});precision,scale"));
 			AddColumnTypeMetadata(new("DECIMAL", typeDecimal, MySqlDbType.Decimal));
 			AddColumnTypeMetadata(new("DOUBLE", typeDouble, MySqlDbType.Double));
@@ -95,7 +95,7 @@ namespace MySqlConnector.Core
 			var typeDate = AddDbTypeMapping(new(typeof(DateTime), new[] { DbType.Date }));
 			var typeDateTime = AddDbTypeMapping(new(typeof(DateTime), new[] { DbType.DateTime, DbType.DateTime2, DbType.DateTimeOffset }));
 			AddDbTypeMapping(new(typeof(DateTimeOffset), new[] { DbType.DateTimeOffset }));
-			var typeTime = AddDbTypeMapping(new(typeof(TimeSpan), new[] { DbType.Time }, convert: o => o is string s ? Utility.ParseTimeSpan(Encoding.UTF8.GetBytes(s)) : Convert.ChangeType(o, typeof(TimeSpan))));
+			var typeTime = AddDbTypeMapping(new(typeof(TimeSpan), new[] { DbType.Time }, convert: static o => o is string s ? Utility.ParseTimeSpan(Encoding.UTF8.GetBytes(s)) : Convert.ChangeType(o, typeof(TimeSpan))));
 			AddColumnTypeMetadata(new("DATETIME", typeDateTime, MySqlDbType.DateTime));
 			AddColumnTypeMetadata(new("DATE", typeDate, MySqlDbType.Date));
 			AddColumnTypeMetadata(new("DATE", typeDate, MySqlDbType.Newdate));
@@ -104,7 +104,7 @@ namespace MySqlConnector.Core
 			AddColumnTypeMetadata(new("YEAR", typeInt, MySqlDbType.Year));
 
 			// guid
-				var typeGuid = AddDbTypeMapping(new(typeof(Guid), new[] { DbType.Guid }, convert: o => Guid.Parse(Convert.ToString(o)!)));
+				var typeGuid = AddDbTypeMapping(new(typeof(Guid), new[] { DbType.Guid }, convert: static o => Guid.Parse(Convert.ToString(o)!)));
 			AddColumnTypeMetadata(new("CHAR", typeGuid, MySqlDbType.Guid, length: 36, simpleDataTypeName: "CHAR(36)", createFormat: "CHAR(36)"));
 
 			// null

@@ -509,7 +509,7 @@ namespace MySqlConnector.Core
 			public IEnumerable<string> LoadBalance(IReadOnlyList<string> hosts)
 			{
 				lock (m_hostSessions)
-					return m_hostSessions.OrderBy(x => x.Value).Select(x => x.Key).ToList();
+					return m_hostSessions.OrderBy(static x => x.Value).Select(static x => x.Key).ToList();
 			}
 
 			readonly Dictionary<string, int> m_hostSessions;

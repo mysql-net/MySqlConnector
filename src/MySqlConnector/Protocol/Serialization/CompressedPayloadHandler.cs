@@ -39,7 +39,7 @@ namespace MySqlConnector.Protocol.Serialization
 		public ValueTask<ArraySegment<byte>> ReadPayloadAsync(ArraySegmentHolder<byte> cache, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
 			using var compressedByteHandler = new CompressedByteHandler(this, protocolErrorBehavior);
-			return ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader, compressedByteHandler, () => -1, cache, protocolErrorBehavior, ioBehavior);
+			return ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader, compressedByteHandler, static () => -1, cache, protocolErrorBehavior, ioBehavior);
 		}
 
 		public ValueTask<int> WritePayloadAsync(ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
