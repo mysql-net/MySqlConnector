@@ -216,22 +216,28 @@ namespace MySqlConnector.Core
 				var type = columnDefinition.ColumnType;
 				if (columnDefinition.CharacterSet == CharacterSet.Binary)
 				{
-					if ((guidFormat == MySqlGuidFormat.Binary16 || guidFormat == MySqlGuidFormat.TimeSwapBinary16 || guidFormat == MySqlGuidFormat.LittleEndianBinary16) && columnDefinition.ColumnLength == 16)
+					if ((guidFormat is MySqlGuidFormat.Binary16 or MySqlGuidFormat.TimeSwapBinary16 or MySqlGuidFormat.LittleEndianBinary16) && columnDefinition.ColumnLength == 16)
 						return MySqlDbType.Guid;
 
-					return type == ColumnType.String ? MySqlDbType.Binary :
-						type == ColumnType.VarString ? MySqlDbType.VarBinary :
-						type == ColumnType.TinyBlob ? MySqlDbType.TinyBlob :
-						type == ColumnType.Blob ? MySqlDbType.Blob :
-						type == ColumnType.MediumBlob ? MySqlDbType.MediumBlob :
-						MySqlDbType.LongBlob;
+					return type switch
+					{
+						ColumnType.String => MySqlDbType.Binary,
+						ColumnType.VarString => MySqlDbType.VarBinary,
+						ColumnType.TinyBlob => MySqlDbType.TinyBlob,
+						ColumnType.Blob => MySqlDbType.Blob,
+						ColumnType.MediumBlob => MySqlDbType.MediumBlob,
+						_ => MySqlDbType.LongBlob,
+					};
 				}
-				return type == ColumnType.String ? MySqlDbType.String :
-					type == ColumnType.VarString ? MySqlDbType.VarChar :
-					type == ColumnType.TinyBlob ? MySqlDbType.TinyText :
-					type == ColumnType.Blob ? MySqlDbType.Text :
-					type == ColumnType.MediumBlob ? MySqlDbType.MediumText :
-					MySqlDbType.LongText;
+				return type switch
+				{
+					ColumnType.String => MySqlDbType.String,
+					ColumnType.VarString => MySqlDbType.VarChar,
+					ColumnType.TinyBlob => MySqlDbType.TinyText,
+					ColumnType.Blob => MySqlDbType.Text,
+					ColumnType.MediumBlob => MySqlDbType.MediumText,
+					_ => MySqlDbType.LongText,
+				};
 
 			case ColumnType.Json:
 				return MySqlDbType.JSON;
@@ -285,8 +291,7 @@ namespace MySqlConnector.Core
 
 		public static ushort ConvertToColumnTypeAndFlags(MySqlDbType dbType, MySqlGuidFormat guidFormat)
 		{
-			var isUnsigned = dbType == MySqlDbType.UByte || dbType == MySqlDbType.UInt16 ||
-				dbType == MySqlDbType.UInt24 || dbType == MySqlDbType.UInt32 || dbType == MySqlDbType.UInt64;
+			var isUnsigned = dbType is MySqlDbType.UByte or MySqlDbType.UInt16 or MySqlDbType.UInt24 or MySqlDbType.UInt32 or MySqlDbType.UInt64;
 			var columnType = dbType switch
 			{
 				MySqlDbType.Bool or MySqlDbType.Byte or MySqlDbType.UByte => ColumnType.Tiny,
@@ -295,7 +300,7 @@ namespace MySqlConnector.Core
 				MySqlDbType.Int32 or MySqlDbType.UInt32 => ColumnType.Long,
 				MySqlDbType.Int64 or MySqlDbType.UInt64 => ColumnType.Longlong,
 				MySqlDbType.Bit => ColumnType.Bit,
-				MySqlDbType.Guid => (guidFormat == MySqlGuidFormat.Char36 || guidFormat == MySqlGuidFormat.Char32) ? ColumnType.String : ColumnType.Blob,
+				MySqlDbType.Guid => (guidFormat is MySqlGuidFormat.Char36 or MySqlGuidFormat.Char32) ? ColumnType.String : ColumnType.Blob,
 				MySqlDbType.Enum or MySqlDbType.Set => ColumnType.String,
 				MySqlDbType.Binary or MySqlDbType.String => ColumnType.String,
 				MySqlDbType.VarBinary or MySqlDbType.VarChar or MySqlDbType.VarString => ColumnType.VarString,

@@ -246,7 +246,7 @@ namespace MySqlConnector.Core
 		{
 			lock (m_lock)
 			{
-				if (m_state == State.Querying || m_state == State.CancelingQuery)
+				if (m_state is State.Querying or State.CancelingQuery)
 				{
 					m_logArguments[1] = m_state;
 					Log.Error("Session{0} can't execute new command when in SessionState: {1}", m_logArguments[0], m_state);
@@ -289,7 +289,7 @@ namespace MySqlConnector.Core
 
 			lock (m_lock)
 			{
-				if (m_state == State.Querying || m_state == State.ClearingPendingCancellation)
+				if (m_state is State.Querying or State.ClearingPendingCancellation)
 					m_state = State.Connected;
 				else
 					VerifyState(State.Failed);
@@ -307,7 +307,7 @@ namespace MySqlConnector.Core
 				State state;
 				lock (m_lock)
 				{
-					if (m_state == State.Connected || m_state == State.Failed)
+					if (m_state is State.Connected or State.Failed)
 						m_state = State.Closing;
 					state = m_state;
 				}
@@ -1099,7 +1099,7 @@ namespace MySqlConnector.Core
 					}
 					else
 					{
-						var requireValid = cs.SslMode == MySqlSslMode.VerifyCA || cs.SslMode == MySqlSslMode.VerifyFull;
+						var requireValid = cs.SslMode is MySqlSslMode.VerifyCA or MySqlSslMode.VerifyFull;
 						var foundCertificates = store.Certificates.Find(X509FindType.FindByThumbprint, cs.CertificateThumbprint, requireValid);
 						if (foundCertificates.Count == 0)
 						{
@@ -1290,7 +1290,7 @@ namespace MySqlConnector.Core
 
 			bool ValidateRemoteCertificate(object rcbSender, X509Certificate? rcbCertificate, X509Chain? rcbChain, SslPolicyErrors rcbPolicyErrors)
 			{
-				if (cs.SslMode == MySqlSslMode.Preferred || cs.SslMode == MySqlSslMode.Required)
+				if (cs.SslMode is MySqlSslMode.Preferred or MySqlSslMode.Required)
 					return true;
 
 				if ((rcbPolicyErrors & SslPolicyErrors.RemoteCertificateChainErrors) != 0 && caCertificateChain is not null && rcbCertificate is not null)
@@ -1412,7 +1412,7 @@ namespace MySqlConnector.Core
 		private bool ShouldGetRealServerDetails(ConnectionSettings cs)
 		{
 			// currently hardcoded to the version(s) returned by the Azure Database for MySQL proxy
-			if (ServerVersion.OriginalString == "5.6.42.0" || ServerVersion.OriginalString == "5.6.39.0" || ServerVersion.OriginalString == "5.6.26.0")
+			if (ServerVersion.OriginalString is "5.6.42.0" or "5.6.39.0" or "5.6.26.0")
 				return true;
 
 			// detect Azure Database for MySQL DNS suffixes

@@ -69,7 +69,7 @@ namespace MySqlConnector.Protocol.Serialization
 				{
 					bytesRead = await m_stream.ReadAsync(buffer_).ConfigureAwait(false);
 				}
-				catch (Exception ex) when (ex is ObjectDisposedException || ex is IOException)
+				catch (Exception ex) when (ex is ObjectDisposedException or IOException)
 				{
 					if (RemainingTimeout != Constants.InfiniteTimeout)
 					{

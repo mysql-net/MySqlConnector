@@ -587,13 +587,13 @@ namespace MySqlConnector
 						if (!match.Success)
 							throw new ArgumentException($"Unrecognized TlsVersion protocol version '{part}'; permitted versions are: TLS 1.0, TLS 1.1, TLS 1.2, TLS 1.3.");
 						var version = match.Groups[2].Value;
-						if (version == "" || version == "1" || version == "10" || version == "1.0")
+						if (version is "" or "1" or "10" or "1.0")
 							versions[0] = true;
-						else if (version == "11" || version == "1.1")
+						else if (version is "11" or "1.1")
 							versions[1] = true;
-						else if (version == "12" || version == "1.2")
+						else if (version is "12" or "1.2")
 							versions[2] = true;
-						else if (version == "13" || version == "1.3")
+						else if (version is "13" or "1.3")
 							versions[3] = true;
 					}
 

@@ -211,17 +211,13 @@ namespace MySqlConnector.Core
 				throw new InvalidCastException();
 
 			var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
-			if (columnDefinition.ColumnType == ColumnType.Decimal || columnDefinition.ColumnType == ColumnType.NewDecimal)
+			if (columnDefinition.ColumnType is ColumnType.Decimal or ColumnType.NewDecimal)
 			{
 				return (int) (decimal) GetValue(ordinal);
 			}
-			else if (columnDefinition.ColumnType != ColumnType.Tiny &&
-				columnDefinition.ColumnType != ColumnType.Short &&
-				columnDefinition.ColumnType != ColumnType.Int24 &&
-				columnDefinition.ColumnType != ColumnType.Long &&
-				columnDefinition.ColumnType != ColumnType.Longlong &&
-				columnDefinition.ColumnType != ColumnType.Bit &&
-				columnDefinition.ColumnType != ColumnType.Year)
+			else if (columnDefinition.ColumnType is not ColumnType.Tiny and not ColumnType.Short
+				and not ColumnType.Int24 and not ColumnType.Long and not ColumnType.Longlong
+				and not ColumnType.Bit and not ColumnType.Year)
 			{
 				throw new InvalidCastException("Can't convert {0} to Int32".FormatInvariant(ResultSet.ColumnTypes![ordinal]));
 			}

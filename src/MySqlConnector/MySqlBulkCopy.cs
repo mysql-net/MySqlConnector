@@ -265,7 +265,7 @@ namespace MySqlConnector
 					else
 					{
 						var type = schema[i].DataType;
-						if (type == typeof(byte[]) || (type == typeof(Guid) && (m_connection.GuidFormat == MySqlGuidFormat.Binary16 || m_connection.GuidFormat == MySqlGuidFormat.LittleEndianBinary16 || m_connection.GuidFormat == MySqlGuidFormat.TimeSwapBinary16)))
+						if (type == typeof(byte[]) || (type == typeof(Guid) && (m_connection.GuidFormat is MySqlGuidFormat.Binary16 or MySqlGuidFormat.LittleEndianBinary16 or MySqlGuidFormat.TimeSwapBinary16)))
 						{
 							AddColumnMapping(columnMappings, addDefaultMappings, i, destinationColumn, $"@`\uE002\bcol{i}`", $"%COL% = UNHEX(%VAR%)");
 						}
@@ -479,13 +479,16 @@ namespace MySqlConnector
 				{
 					return Utf8Formatter.TryFormat(decimalValue, output, out bytesWritten);
 				}
-				else if (value is byte[] || value is ReadOnlyMemory<byte> || value is Memory<byte> || value is ArraySegment<byte> || value is MySqlGeometry)
+				else if (value is byte[] or ReadOnlyMemory<byte> or Memory<byte> or ArraySegment<byte> or MySqlGeometry)
 				{
-					var inputSpan = value is byte[] byteArray ? byteArray.AsSpan() :
-						value is ArraySegment<byte> arraySegment ? arraySegment.AsSpan() :
-						value is Memory<byte> memory ? memory.Span :
-						value is MySqlGeometry geometry ? geometry.ValueSpan :
-						((ReadOnlyMemory<byte>) value).Span;
+					var inputSpan = value switch
+					{
+						byte[] byteArray => byteArray.AsSpan(),
+						ArraySegment<byte> arraySegment => arraySegment.AsSpan(),
+						Memory<byte> memory => memory.Span,
+						MySqlGeometry geometry => geometry.ValueSpan,
+						_ => ((ReadOnlyMemory<byte>) value).Span,
+					};
 
 					return WriteBytes(inputSpan, ref inputIndex, output, out bytesWritten);
 				}
@@ -500,7 +503,7 @@ namespace MySqlConnector
 					bytesWritten = 1;
 					return true;
 				}
-				else if (value is float || value is double)
+				else if (value is float or double)
 				{
 					// NOTE: Utf8Formatter doesn't support "R"
 					return WriteString("{0:R}".FormatInvariant(value), ref utf8Encoder, output, out bytesWritten);
@@ -538,9 +541,7 @@ namespace MySqlConnector
 				}
 				else if (value is Guid guidValue)
 				{
-					if (connection.GuidFormat == MySqlGuidFormat.Binary16 ||
-						connection.GuidFormat == MySqlGuidFormat.TimeSwapBinary16 ||
-						connection.GuidFormat == MySqlGuidFormat.LittleEndianBinary16)
+					if (connection.GuidFormat is MySqlGuidFormat.Binary16 or MySqlGuidFormat.TimeSwapBinary16 or MySqlGuidFormat.LittleEndianBinary16)
 					{
 						var bytes = guidValue.ToByteArray();
 						if (connection.GuidFormat != MySqlGuidFormat.LittleEndianBinary16)

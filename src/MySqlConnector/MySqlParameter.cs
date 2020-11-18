@@ -251,7 +251,7 @@ namespace MySqlConnector
 				}
 				writer.Write((byte) '\'');
 			}
-			else if (Value is byte || Value is sbyte || Value is decimal)
+			else if (Value is byte or sbyte or decimal)
 			{
 				writer.Write("{0}".FormatInvariant(Value));
 			}
@@ -279,19 +279,22 @@ namespace MySqlConnector
 			{
 				writer.WriteString(ulongValue);
 			}
-			else if (Value is byte[] || Value is ReadOnlyMemory<byte> || Value is Memory<byte> || Value is ArraySegment<byte> || Value is MySqlGeometry)
+			else if (Value is byte[] or ReadOnlyMemory<byte> or Memory<byte> or ArraySegment<byte> or MySqlGeometry)
 			{
-				var inputSpan = Value is byte[] byteArray ? byteArray.AsSpan() :
-					Value is ArraySegment<byte> arraySegment ? arraySegment.AsSpan() :
-					Value is Memory<byte> memory ? memory.Span :
-					Value is MySqlGeometry geometry ? geometry.ValueSpan :
-					((ReadOnlyMemory<byte>) Value).Span;
+				var inputSpan = Value switch
+				{
+					byte[] byteArray => byteArray.AsSpan(),
+					ArraySegment<byte> arraySegment => arraySegment.AsSpan(),
+					Memory<byte> memory => memory.Span,
+					MySqlGeometry geometry => geometry.ValueSpan,
+					_ => ((ReadOnlyMemory<byte>) Value).Span,
+				};
 
 				// determine the number of bytes to be written
 				var length = inputSpan.Length + BinaryBytes.Length + 1;
 				foreach (var by in inputSpan)
 				{
-					if (by == 0x27 || by == 0x5C)
+					if (by is 0x27 or 0x5C)
 						length++;
 				}
 
@@ -300,7 +303,7 @@ namespace MySqlConnector
 				var index = BinaryBytes.Length;
 				foreach (var by in inputSpan)
 				{
-					if (by == 0x27 || by == 0x5C)
+					if (by is 0x27 or 0x5C)
 						outputSpan[index++] = 0x5C;
 					outputSpan[index++] = by;
 				}
@@ -314,7 +317,7 @@ namespace MySqlConnector
 				ReadOnlySpan<byte> falseBytes = new byte[] { 0x66, 0x61, 0x6C, 0x73, 0x65 }; // false
 				writer.Write(boolValue ? trueBytes : falseBytes);
 			}
-			else if (Value is float || Value is double)
+			else if (Value is float or double)
 			{
 				// NOTE: Utf8Formatter doesn't support "R"
 				writer.Write("{0:R}".FormatInvariant(Value));
@@ -353,9 +356,7 @@ namespace MySqlConnector
 			else if (Value is Guid guidValue)
 			{
 				StatementPreparerOptions guidOptions = options & StatementPreparerOptions.GuidFormatMask;
-				if (guidOptions == StatementPreparerOptions.GuidFormatBinary16 ||
-					guidOptions == StatementPreparerOptions.GuidFormatTimeSwapBinary16 ||
-					guidOptions == StatementPreparerOptions.GuidFormatLittleEndianBinary16)
+				if (guidOptions is StatementPreparerOptions.GuidFormatBinary16 or StatementPreparerOptions.GuidFormatTimeSwapBinary16 or StatementPreparerOptions.GuidFormatLittleEndianBinary16)
 				{
 					var bytes = guidValue.ToByteArray();
 					if (guidOptions != StatementPreparerOptions.GuidFormatLittleEndianBinary16)
@@ -378,7 +379,7 @@ namespace MySqlConnector
 					writer.Write(BinaryBytes);
 					foreach (var by in bytes)
 					{
-						if (by == 0x27 || by == 0x5C)
+						if (by is 0x27 or 0x5C)
 							writer.Write((byte) 0x5C);
 						writer.Write(by);
 					}
@@ -419,7 +420,7 @@ namespace MySqlConnector
 			{
 				writer.WriteString((ulong) Value);
 			}
-			else if ((MySqlDbType == MySqlDbType.String || MySqlDbType == MySqlDbType.VarChar) && HasSetDbType && Value is Enum)
+			else if ((MySqlDbType is MySqlDbType.String or MySqlDbType.VarChar) && HasSetDbType && Value is Enum)
 			{
 				writer.Write("'{0:G}'".FormatInvariant(Value));
 			}
@@ -548,9 +549,7 @@ namespace MySqlConnector
 			else if (Value is Guid guidValue)
 			{
 				StatementPreparerOptions guidOptions = options & StatementPreparerOptions.GuidFormatMask;
-				if (guidOptions == StatementPreparerOptions.GuidFormatBinary16 ||
-					guidOptions == StatementPreparerOptions.GuidFormatTimeSwapBinary16 ||
-					guidOptions == StatementPreparerOptions.GuidFormatLittleEndianBinary16)
+				if (guidOptions is StatementPreparerOptions.GuidFormatBinary16 or StatementPreparerOptions.GuidFormatTimeSwapBinary16 or StatementPreparerOptions.GuidFormatLittleEndianBinary16)
 				{
 					var bytes = guidValue.ToByteArray();
 					if (guidOptions != StatementPreparerOptions.GuidFormatLittleEndianBinary16)
@@ -607,7 +606,7 @@ namespace MySqlConnector
 			{
 				writer.Write((ulong) Value);
 			}
-			else if ((MySqlDbType == MySqlDbType.String || MySqlDbType == MySqlDbType.VarChar) && HasSetDbType && Value is Enum)
+			else if ((MySqlDbType is MySqlDbType.String or MySqlDbType.VarChar) && HasSetDbType && Value is Enum)
 			{
 				writer.WriteLengthEncodedString("{0:G}".FormatInvariant(Value));
 			}

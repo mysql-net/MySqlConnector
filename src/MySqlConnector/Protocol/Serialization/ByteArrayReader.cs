@@ -65,11 +65,11 @@ namespace MySqlConnector.Protocol.Serialization
 
 		public uint ReadFixedLengthUInt32(int length)
 		{
-			if (length <= 0 || length > 4)
+			if (length is <= 0 or > 4)
 				throw new ArgumentOutOfRangeException(nameof(length));
 			VerifyRead(length);
 			uint result = 0;
-			for (int i = 0; i < length; i++)
+			for (var i = 0; i < length; i++)
 				result |= ((uint) m_buffer[m_offset + i]) << (8 * i);
 			m_offset += length;
 			return result;
@@ -77,11 +77,11 @@ namespace MySqlConnector.Protocol.Serialization
 
 		public ulong ReadFixedLengthUInt64(int length)
 		{
-			if (length <= 0 || length > 8)
+			if (length is <= 0 or > 8)
 				throw new ArgumentOutOfRangeException(nameof(length));
 			VerifyRead(length);
 			ulong result = 0;
-			for (int i = 0; i < length; i++)
+			for (var i = 0; i < length; i++)
 				result |= ((ulong) m_buffer[m_offset + i]) << (8 * i);
 			m_offset += length;
 			return result;

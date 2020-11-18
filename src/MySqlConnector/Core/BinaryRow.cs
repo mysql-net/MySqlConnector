@@ -115,7 +115,7 @@ namespace MySqlConnector.Core
 				if (columnDefinition.CharacterSet == CharacterSet.Binary)
 				{
 					var guidFormat = Connection.GuidFormat;
-					if ((guidFormat == MySqlGuidFormat.Binary16 || guidFormat == MySqlGuidFormat.TimeSwapBinary16 || guidFormat == MySqlGuidFormat.LittleEndianBinary16) && columnDefinition.ColumnLength == 16)
+					if ((guidFormat is MySqlGuidFormat.Binary16 or MySqlGuidFormat.TimeSwapBinary16 or MySqlGuidFormat.LittleEndianBinary16) && columnDefinition.ColumnLength == 16)
 						return CreateGuidFromBytes(guidFormat, data);
 
 					return data.ToArray();

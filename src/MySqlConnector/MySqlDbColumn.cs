@@ -69,10 +69,10 @@ namespace MySqlConnector
 			IsHidden = false;
 			IsKey = (column.ColumnFlags & ColumnFlags.PrimaryKey) != 0;
 			IsLong = column.ColumnLength > 255 &&
-				((column.ColumnFlags & ColumnFlags.Blob) != 0 || column.ColumnType == ColumnType.TinyBlob || column.ColumnType == ColumnType.Blob || column.ColumnType == ColumnType.MediumBlob || column.ColumnType == ColumnType.LongBlob);
+				((column.ColumnFlags & ColumnFlags.Blob) != 0 || column.ColumnType is ColumnType.TinyBlob or ColumnType.Blob or ColumnType.MediumBlob or ColumnType.LongBlob);
 			IsReadOnly = false;
 			IsUnique = (column.ColumnFlags & ColumnFlags.UniqueKey) != 0;
-			if (column.ColumnType == ColumnType.Decimal || column.ColumnType == ColumnType.NewDecimal)
+			if (column.ColumnType is ColumnType.Decimal or ColumnType.NewDecimal)
 			{
 				NumericPrecision = (int) column.ColumnLength;
 				if ((column.ColumnFlags & ColumnFlags.Unsigned) == 0)

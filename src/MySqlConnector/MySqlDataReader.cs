@@ -143,7 +143,7 @@ namespace MySqlConnector
 			if (!m_hasMoreResults)
 				return default;
 
-			if (resultSet.BufferState == ResultSetState.NoMoreData || resultSet.BufferState == ResultSetState.None)
+			if (resultSet.BufferState is ResultSetState.NoMoreData or ResultSetState.None)
 			{
 				m_hasMoreResults = false;
 				return default;

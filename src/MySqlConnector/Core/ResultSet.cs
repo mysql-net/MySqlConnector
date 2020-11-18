@@ -182,7 +182,7 @@ namespace MySqlConnector.Core
 
 		public async Task ReadEntireAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			while (State == ResultSetState.ReadingRows || State == ResultSetState.ReadResultSetHeader)
+			while (State is ResultSetState.ReadingRows or ResultSetState.ReadResultSetHeader)
 				await ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
@@ -227,7 +227,7 @@ namespace MySqlConnector.Core
 		private ValueTask<Row?> ScanRowAsync(IOBehavior ioBehavior, Row? row, CancellationToken cancellationToken)
 		{
 			// if we've already read past the end of this resultset, Read returns false
-			if (BufferState == ResultSetState.HasMoreData || BufferState == ResultSetState.NoMoreData || BufferState == ResultSetState.None)
+			if (BufferState is ResultSetState.HasMoreData or ResultSetState.NoMoreData or ResultSetState.None)
 				return new ValueTask<Row?>(default(Row?));
 
 			using var registration = Command.CancellableCommand.RegisterCancel(cancellationToken); // lgtm[cs/useless-assignment-to-local]

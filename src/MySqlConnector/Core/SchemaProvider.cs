@@ -254,32 +254,31 @@ namespace MySqlConnector.Core
 			foreach (var columnType in TypeMapper.Instance.GetColumnTypeMetadata())
 			{
 				// hard-code a few types to not appear in the schema table
-				var mySqlDbType = columnType.MySqlDbType;
-				if (mySqlDbType == MySqlDbType.Decimal || mySqlDbType == MySqlDbType.Newdate || mySqlDbType == MySqlDbType.Null || mySqlDbType == MySqlDbType.VarString)
+				if (columnType.MySqlDbType is MySqlDbType.Decimal or MySqlDbType.Newdate or MySqlDbType.Null or MySqlDbType.VarString)
 					continue;
-				if (mySqlDbType == MySqlDbType.Bool && columnType.IsUnsigned)
+				if (columnType is { MySqlDbType: MySqlDbType.Bool, IsUnsigned: true })
 					continue;
 
 				// set miscellaneous properties in code (rather than being data-driven)
 				var clrType = columnType.DbTypeMapping.ClrType;
 				var clrTypeName = clrType.ToString();
+				var mySqlDbType = columnType.MySqlDbType;
 				var dataTypeName = mySqlDbType == MySqlDbType.Guid ? "GUID" :
 					mySqlDbType == MySqlDbType.Bool ? "BOOL" : columnType.DataTypeName;
-				var isAutoIncrementable = mySqlDbType == MySqlDbType.Byte || mySqlDbType == MySqlDbType.Int16 || mySqlDbType == MySqlDbType.Int24 || mySqlDbType == MySqlDbType.Int32 || mySqlDbType == MySqlDbType.Int64 ||
-					mySqlDbType == MySqlDbType.UByte || mySqlDbType == MySqlDbType.UInt16 || mySqlDbType == MySqlDbType.UInt24 || mySqlDbType == MySqlDbType.UInt32 || mySqlDbType == MySqlDbType.UInt64;
+				var isAutoIncrementable = mySqlDbType is MySqlDbType.Byte or MySqlDbType.Int16 or MySqlDbType.Int24 or MySqlDbType.Int32 or MySqlDbType.Int64
+					or MySqlDbType.UByte or MySqlDbType.UInt16 or MySqlDbType.UInt24 or MySqlDbType.UInt32 or MySqlDbType.UInt64;
 				var isBestMatch = clrTypes.Add(clrTypeName);
 				var isFixedLength = isAutoIncrementable ||
-					mySqlDbType == MySqlDbType.Date || mySqlDbType == MySqlDbType.DateTime || mySqlDbType == MySqlDbType.Time || mySqlDbType == MySqlDbType.Timestamp ||
-					mySqlDbType == MySqlDbType.Double || mySqlDbType == MySqlDbType.Float || mySqlDbType == MySqlDbType.Year || mySqlDbType == MySqlDbType.Guid || mySqlDbType == MySqlDbType.Bool;
-				var isFixedPrecisionScale = isFixedLength ||
-					mySqlDbType == MySqlDbType.Bit || mySqlDbType == MySqlDbType.NewDecimal;
-				var isLong = mySqlDbType == MySqlDbType.Blob || mySqlDbType == MySqlDbType.MediumBlob || mySqlDbType == MySqlDbType.LongBlob;
+					mySqlDbType is MySqlDbType.Date or MySqlDbType.DateTime or MySqlDbType.Time or MySqlDbType.Timestamp
+					or MySqlDbType.Double or MySqlDbType.Float or MySqlDbType.Year or MySqlDbType.Guid or MySqlDbType.Bool;
+				var isFixedPrecisionScale = isFixedLength || mySqlDbType is MySqlDbType.Bit or MySqlDbType.NewDecimal;
+				var isLong = mySqlDbType is MySqlDbType.Blob or MySqlDbType.MediumBlob or MySqlDbType.LongBlob;
 
 				// map ColumnTypeMetadata to the row for this data type
 				var createFormatParts = columnType.CreateFormat.Split(';');
 				dataTable.Rows.Add(
 					dataTypeName,
-					(int)mySqlDbType,
+					(int) mySqlDbType,
 					columnType.ColumnSize,
 					createFormatParts[0],
 					createFormatParts.Length == 1 ? null : createFormatParts[1],

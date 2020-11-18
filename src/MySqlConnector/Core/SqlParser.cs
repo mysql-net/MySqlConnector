@@ -270,7 +270,7 @@ namespace MySqlConnector.Core
 				states |= FinalParseStates.NeedsNewline;
 				state = beforeCommentState;
 			}
-			else if (state == State.SingleQuotedStringSingleQuote || state == State.DoubleQuotedStringDoubleQuote || state == State.BacktickQuotedStringBacktick)
+			else if (state is State.SingleQuotedStringSingleQuote or State.DoubleQuotedStringDoubleQuote or State.BacktickQuotedStringBacktick)
 			{
 				state = State.Statement;
 			}
@@ -334,9 +334,9 @@ namespace MySqlConnector.Core
 			NeedsSemicolon = 4,
 		}
 
-		private static bool IsWhitespace(char ch) => ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
+		private static bool IsWhitespace(char ch) => ch is ' ' or '\t' or '\r' or '\n';
 
-		private static bool IsVariableName(char ch) => (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '.' || ch == '_' || ch == '$' || (ch >= 0x0080 && ch <= 0xFFFF); // lgtm[cs/constant-comparison]
+		private static bool IsVariableName(char ch) => ch is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z') or (>= '0' and <= '9') or '.' or '_'  or '$' or (>= (char) 0x0080 and <= (char) 0xFFFF);
 
 		private enum State
 		{

@@ -20,7 +20,7 @@ namespace MySqlConnector
 			int last = -1;
 			for (int i = 0; i < value.Length; i++)
 			{
-				if (value[i] == '\'' || value[i] == '\"' || value[i] == '\\')
+				if (value[i] is '\'' or '\"' or '\\')
 				{
 					sb ??= new();
 					sb.Append(value, last + 1, i - (last + 1));
