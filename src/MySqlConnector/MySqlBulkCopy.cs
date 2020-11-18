@@ -543,7 +543,7 @@ namespace MySqlConnector
 						connection.GuidFormat == MySqlGuidFormat.LittleEndianBinary16)
 					{
 						var bytes = guidValue.ToByteArray();
-						if (connection.GuidFormat == MySqlGuidFormat.LittleEndianBinary16)
+						if (connection.GuidFormat != MySqlGuidFormat.LittleEndianBinary16)
 						{
 							Utility.SwapBytes(bytes, 0, 3);
 							Utility.SwapBytes(bytes, 1, 2);
