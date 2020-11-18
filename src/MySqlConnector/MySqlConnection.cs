@@ -607,14 +607,14 @@ namespace MySqlConnector
 		/// </summary>
 		/// <returns></returns>
 		public MySqlBatch CreateBatch() => CreateDbBatch();
-		private MySqlBatch CreateDbBatch() => new MySqlBatch(this);
+		private MySqlBatch CreateDbBatch() => new(this);
 
 		/// <summary>
 		/// Creates a <see cref="MySqlBatchCommand"/> object (that can be used with <see cref="MySqlBatch.BatchCommands"/>).
 		/// </summary>
 		/// <returns></returns>
 		public MySqlBatchCommand CreateBatchCommand() => CreateDbBatchCommand();
-		private MySqlBatchCommand CreateDbBatchCommand() => new MySqlBatchCommand();
+		private MySqlBatchCommand CreateDbBatchCommand() => new();
 		public bool CanCreateBatch => true;
 
 		protected override void Dispose(bool disposing)
@@ -647,7 +647,7 @@ namespace MySqlConnector
 			}
 		}
 
-		public MySqlConnection Clone() => new MySqlConnection(m_connectionString, m_hasBeenOpened);
+		public MySqlConnection Clone() => new(m_connectionString, m_hasBeenOpened);
 
 #if !NETSTANDARD1_3
 		object ICloneable.Clone() => Clone();

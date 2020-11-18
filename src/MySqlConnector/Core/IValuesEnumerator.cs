@@ -41,7 +41,7 @@ namespace MySqlConnector.Core
 
 		public int FieldCount => m_dataReader.FieldCount;
 
-		public ValueTask<bool> MoveNextAsync() => new ValueTask<bool>(MoveNext());
+		public ValueTask<bool> MoveNextAsync() => new(MoveNext());
 
 		public bool MoveNext() => m_dataReader.Read();
 
@@ -63,7 +63,7 @@ namespace MySqlConnector.Core
 
 		public int FieldCount { get; }
 
-		public ValueTask<bool> MoveNextAsync() => new ValueTask<bool>(MoveNext());
+		public ValueTask<bool> MoveNextAsync() => new(MoveNext());
 
 		public bool MoveNext()
 		{

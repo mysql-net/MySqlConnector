@@ -319,7 +319,7 @@ namespace MySqlConnector
 			return CommandExecutor.ExecuteReaderAsync(new IMySqlCommand[] { this }, SingleCommandPayloadCreator.Instance, behavior, ioBehavior, cancellationToken);
 		}
 
-		public MySqlCommand Clone() => new MySqlCommand(this);
+		public MySqlCommand Clone() => new(this);
 
 #if !NETSTANDARD1_3
 		object ICloneable.Clone() => Clone();
