@@ -10,6 +10,12 @@ weight: 30
 
 # Version History
 
+### 1.2.0
+
+* Add `TlsCipherSuites` connection string option for fine-grained control of TLS cipher suites: [#904](https://github.com/mysql-net/MySqlConnector/issues/904).
+  * This option is only supported on Linux when using .NET Core 3.1 or .NET 5.0 or later.
+* Fix bug loading GUIDs with `MySqlBulkCopy`.
+
 ### 1.1.0
 
 * Support .NET 5.0
