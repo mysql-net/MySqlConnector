@@ -1,5 +1,5 @@
 ---
-lastmod: 2020-07-20
+lastmod: 2020-12-11
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,11 @@ weight: 30
 
 # Version History
 
+### 1.2.1
+
+* Fix bug in extracting PEM data when there's extra data in the certificate file: [#912](https://github.com/mysql-net/MySqlConnector/issues/912).
+* Thanks to [Laurents Meyer](https://github.com/lauxjpn) for contributions to this release.
+
 ### 1.2.0
 
 * Add `TlsCipherSuites` connection string option for fine-grained control of TLS cipher suites: [#904](https://github.com/mysql-net/MySqlConnector/issues/904).
@@ -18,7 +23,7 @@ weight: 30
 
 ### 1.1.0
 
-* Support .NET 5.0
+* Support .NET 5.0.
 * Cancel query (server-side) when `CommandTimeout` expires: [#455](https://github.com/mysql-net/MySqlConnector/issues/455).
   * Add `CancellationTimeout` connection string option.
   * Implementation details discussed in [this comment](https://github.com/mysql-net/MySqlConnector/issues/455#issuecomment-702424012).
