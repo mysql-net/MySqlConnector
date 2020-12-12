@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Buffers.Text;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -116,9 +117,31 @@ namespace MySqlConnector.Utilities
 			if (keyEndIndex <= -1)
 				throw new FormatException($"Missing expected '{pemFooter}' PEM footer: " + key.Substring(Math.Max(key.Length - 80, 0)));
 
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 			key = key.Substring(keyStartIndex, keyEndIndex - keyStartIndex);
-
 			return GetRsaParameters(System.Convert.FromBase64String(key), isPrivate);
+#else
+			var keyChars = key.AsSpan().Slice(keyStartIndex, keyEndIndex - keyStartIndex);
+			var bufferLength = keyChars.Length / 4 * 3;
+			byte[]? buffer = null;
+			Span<byte> bufferBytes = bufferLength <= 1024 ? stackalloc byte[bufferLength] : default;
+			if (bufferLength > 1024)
+			{
+				buffer = ArrayPool<byte>.Shared.Rent(bufferLength);
+				bufferBytes = buffer.AsSpan();
+			}
+			try
+			{
+				if (!System.Convert.TryFromBase64Chars(keyChars, bufferBytes, out var bytesWritten))
+					throw new FormatException("The input is not a valid Base-64 string.");
+				return GetRsaParameters(bufferBytes.Slice(0, bytesWritten), isPrivate);
+			}
+			finally
+			{
+				if (buffer is not null)
+					ArrayPool<byte>.Shared.Return(buffer);
+			}
+#endif
 		}
 
 		// Derived from: https://stackoverflow.com/a/32243171/, https://stackoverflow.com/a/26978561/, http://luca.ntop.org/Teaching/Appunti/asn1.html
