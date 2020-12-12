@@ -85,21 +85,38 @@ namespace MySqlConnector.Utilities
 		/// <returns>An RSA key.</returns>
 		public static RSAParameters GetRsaParameters(string key)
 		{
+			const string beginRsaPrivateKey = "-----BEGIN RSA PRIVATE KEY-----";
+			const string endRsaPrivateKey = "-----END RSA PRIVATE KEY-----";
+			const string beginPublicKey = "-----BEGIN PUBLIC KEY-----";
+			const string endPublicKey = "-----END PUBLIC KEY-----";
+
+			int keyStartIndex;
+			string pemFooter;
 			bool isPrivate;
-			if (key.StartsWith("-----BEGIN RSA PRIVATE KEY-----", StringComparison.Ordinal))
+
+			if ((keyStartIndex = key.IndexOf(beginRsaPrivateKey, StringComparison.Ordinal)) > -1)
 			{
-				key = key.Replace("-----BEGIN RSA PRIVATE KEY-----", "").Replace("-----END RSA PRIVATE KEY-----", "");
+				keyStartIndex += beginRsaPrivateKey.Length;
+				pemFooter = endRsaPrivateKey;
 				isPrivate = true;
 			}
-			else if (key.StartsWith("-----BEGIN PUBLIC KEY-----", StringComparison.Ordinal))
+			else if ((keyStartIndex = key.IndexOf(beginPublicKey, StringComparison.Ordinal)) > -1)
 			{
-				key = key.Replace("-----BEGIN PUBLIC KEY-----", "").Replace("-----END PUBLIC KEY-----", "");
+				keyStartIndex += beginPublicKey.Length;
+				pemFooter = endPublicKey;
 				isPrivate = false;
 			}
 			else
 			{
 				throw new FormatException("Unrecognized PEM header: " + key.Substring(0, Math.Min(key.Length, 80)));
 			}
+
+			var keyEndIndex = key.IndexOf(pemFooter, keyStartIndex, StringComparison.Ordinal);
+
+			if (keyEndIndex <= -1)
+				throw new FormatException($"Missing expected '{pemFooter}' PEM footer: " + key.Substring(Math.Max(key.Length - 80, 0)));
+
+			key = key.Substring(keyStartIndex, keyEndIndex - keyStartIndex);
 
 			return GetRsaParameters(System.Convert.FromBase64String(key), isPrivate);
 		}

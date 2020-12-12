@@ -64,8 +64,10 @@ namespace SideBySide
 #if !NETCOREAPP1_1_2
 		[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
 		[InlineData("ssl-client-cert.pem", "ssl-client-key.pem", null)]
+		[InlineData("ssl-client-cert.pem", "ssl-client-key-null.pem", null)]
 #if !BASELINE
 		[InlineData("ssl-client-cert.pem", "ssl-client-key.pem", "ssl-ca-cert.pem")] // https://bugs.mysql.com/bug.php?id=95436
+		[InlineData("ssl-client-cert.pem", "ssl-client-key-null.pem", "ssl-ca-cert.pem")] // https://bugs.mysql.com/bug.php?id=95436
 #endif
 		public async Task ConnectSslClientCertificatePem(string certFile, string keyFile, string caCertFile)
 		{
