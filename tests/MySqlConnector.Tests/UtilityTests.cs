@@ -57,18 +57,26 @@ namespace MySqlConnector.Tests
 			Assert.Throws<FormatException>(() => Utility.ParseTimeSpan(Encoding.ASCII.GetBytes(input)));
 		}
 
-		[Fact]
-		public void DecodePublicKey()
+		[Theory]
+		[InlineData("", "")]
+		[InlineData("pre", "")]
+		[InlineData("", "post")]
+		[InlineData("pre", "post")]
+		public void DecodePublicKey(string pre, string post)
 		{
-			var parameters = Utility.GetRsaParameters(c_publicKey);
+			var parameters = Utility.GetRsaParameters(pre + c_publicKey + post);
 			Assert.Equal(s_modulus, parameters.Modulus);
 			Assert.Equal(s_exponent, parameters.Exponent);
 		}
 
-		[Fact]
-		public void DecodePrivateKey()
+		[Theory]
+		[InlineData("", "")]
+		[InlineData("pre", "")]
+		[InlineData("", "post")]
+		[InlineData("pre", "post")]
+		public void DecodePrivateKey(string pre, string post)
 		{
-			var parameters = Utility.GetRsaParameters(c_privateKey);
+			var parameters = Utility.GetRsaParameters(pre + c_privateKey + post);
 			Assert.Equal(s_modulus, parameters.Modulus);
 			Assert.Equal(s_exponent, parameters.Exponent);
 			Assert.Equal(s_d, parameters.D);
