@@ -812,8 +812,9 @@ namespace MySqlConnector
 			{
 				var errors = new List<MySqlError>();
 				using (var command = new MySqlCommand("SHOW WARNINGS;", this))
-				using (var reader = command.ExecuteReader())
 				{
+					command.Transaction = CurrentTransaction;
+					using var reader = command.ExecuteReader();
 					while (reader.Read())
 						errors.Add(new(reader.GetString(0), reader.GetInt32(1), reader.GetString(2)));
 				}

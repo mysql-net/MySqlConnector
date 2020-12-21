@@ -41,6 +41,30 @@ namespace SideBySide
 		}
 
 		[Fact]
+		public void GotInfoMessageForNonExistentTableInTransaction()
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+			using var transaction = connection.BeginTransaction();
+
+			var gotEvent = false;
+			connection.InfoMessage += (s, a) =>
+			{
+				gotEvent = true;
+#if BASELINE
+				Assert.Single(a.errors);
+				Assert.Equal((int) MySqlErrorCode.BadTable, a.errors[0].Code);
+#else
+				Assert.Single(a.Errors);
+				Assert.Equal((int) MySqlErrorCode.BadTable, a.Errors[0].Code);
+#endif
+			};
+
+			connection.Execute(@"drop table if exists table_does_not_exist;", transaction: transaction);
+			Assert.True(gotEvent);
+		}
+
+		[Fact]
 		public void NoInfoMessageWhenNotLastStatementInBatch()
 		{
 			using var connection = new MySqlConnection(AppConfig.ConnectionString);
