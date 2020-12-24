@@ -261,11 +261,16 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>Sets the <c>program_name</c> connection attribute passed to MySQL Server. This value may be displayed by diagnostic tools,
     e.g., as the “Program” column in “Client Connections” in <a href="https://www.mysql.com/products/workbench/">MySQL Workbench</a>.</td>
   </tr>
+  <tr id="AutoEnlist">
+    <td>AutoEnlist, Auto Enlist</td>
+    <td>true</td>
+    <td>If <code>true</code> (default), <code>MySqlConnection</code> will detect if there is an active <code>TransactionScope</code> when it's opened and automatically enlist in it. If <code>false</code>, connections must be manually enlisted by calling <code>EnlistTransaction</code>.</td>
+  </tr>
   <tr id="CancellationTimeout">
     <td>CancellationTimeout, Cancellation Timeout</td>
     <td>2</td>
     <td>The length of time (in seconds) to wait for a query to be canceled when <code>MySqlCommand.CommandTimeout</code> expires, or zero for no timeout. If a response isn’t received from the server in this
-    time, the local socket will be closed and a <code>MySqlException</code> will be thrown</td>
+    time, the local socket will be closed and a <code>MySqlException</code> will be thrown.</td>
   </tr>
   <tr id="CharSet">
     <td>CharSet, Character Set, CharacterSet</td>
