@@ -78,7 +78,10 @@ namespace MySqlConnector.Core
 			LastReturnedTicks = unchecked((uint) Environment.TickCount);
 			if (Pool is null)
 				return Utility.CompletedTask;
-			return Pool.ReturnAsync(ioBehavior, this);
+			if (!Pool.ConnectionSettings.ConnectionReset || Pool.ConnectionSettings.DeferConnectionReset)
+				return Pool.ReturnAsync(ioBehavior, this);
+			BackgroundConnectionResetHelper.AddSession(this);
+			return Utility.CompletedTask;
 		}
 
 		public bool IsConnected

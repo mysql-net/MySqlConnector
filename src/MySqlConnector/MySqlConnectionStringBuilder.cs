@@ -181,6 +181,12 @@ namespace MySqlConnector
 			set => MySqlConnectionStringOption.ConnectionIdleTimeout.SetValue(this, value);
 		}
 
+		public bool DeferConnectionReset
+		{
+			get => MySqlConnectionStringOption.DeferConnectionReset.GetValue(this);
+			set => MySqlConnectionStringOption.DeferConnectionReset.SetValue(this, value);
+		}
+
 		public uint MinimumPoolSize
 		{
 			get => MySqlConnectionStringOption.MinimumPoolSize.GetValue(this);
@@ -445,6 +451,7 @@ namespace MySqlConnector
 		public static readonly MySqlConnectionStringValueOption<bool> Pooling;
 		public static readonly MySqlConnectionStringValueOption<uint> ConnectionLifeTime;
 		public static readonly MySqlConnectionStringValueOption<bool> ConnectionReset;
+		public static readonly MySqlConnectionStringValueOption<bool> DeferConnectionReset;
 		public static readonly MySqlConnectionStringValueOption<uint> ConnectionIdlePingTime;
 		public static readonly MySqlConnectionStringValueOption<uint> ConnectionIdleTimeout;
 		public static readonly MySqlConnectionStringValueOption<uint> MinimumPoolSize;
@@ -626,6 +633,10 @@ namespace MySqlConnector
 			AddOption(ConnectionReset = new(
 				keys: new[] { "Connection Reset", "ConnectionReset" },
 				defaultValue: true));
+
+			AddOption(DeferConnectionReset = new(
+				keys: new[] { "Defer Connection Reset", "DeferConnectionReset" },
+				defaultValue: false));
 
 			AddOption(ConnectionIdlePingTime = new(
 				keys: new[] { "Connection Idle Ping Time", "ConnectionIdlePingTime" },
