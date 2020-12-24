@@ -109,9 +109,11 @@ namespace MySqlConnector.Core
 							var completedTask = await Task.WhenAny(localTasks).ConfigureAwait(false);
 							var index = localTasks.IndexOf(completedTask);
 							var session = localSessions[index].Session;
-							await session.Pool!.ReturnAsync(IOBehavior.Asynchronous, session).ConfigureAwait(false);
+							var connection = localSessions[index].OwningConnection;
 							localSessions.RemoveAt(index);
 							localTasks.RemoveAt(index);
+							await session.Pool!.ReturnAsync(IOBehavior.Asynchronous, session).ConfigureAwait(false);
+							GC.KeepAlive(connection);
 						}
 					}
 				}
