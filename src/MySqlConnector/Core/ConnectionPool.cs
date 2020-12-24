@@ -66,7 +66,7 @@ namespace MySqlConnector.Core
 					}
 					else
 					{
-						if ((ConnectionSettings.ConnectionReset && !ConnectionSettings.DeferConnectionReset) || session.DatabaseOverride is not null)
+						if ((ConnectionSettings.ConnectionReset && ConnectionSettings.DeferConnectionReset) || session.DatabaseOverride is not null)
 						{
 							reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
 						}
