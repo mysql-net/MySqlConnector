@@ -9,13 +9,11 @@ namespace MySqlConnector.Core
 {
 	internal static class BackgroundConnectionResetHelper
 	{
-		public static void AddSession(ServerSession session)
+		public static void AddSession(ServerSession session, MySqlConnection? owningConnection)
 		{
-			// TODO: save the MySqlConnection object so this session isn't considered leaked
-
 			var resetTask = session.TryResetConnectionAsync(session.Pool!.ConnectionSettings, IOBehavior.Asynchronous, default);
 			lock (s_lock)
-				s_sessions.Add(new SessionResetTask(session, resetTask));
+				s_sessions.Add(new SessionResetTask(session, resetTask, owningConnection));
 
 			if (Log.IsDebugEnabled())
 				Log.Debug("Started Session{0} reset in background; waiting SessionCount: {1}.", session.Id, s_sessions.Count);
@@ -71,7 +69,7 @@ namespace MySqlConnector.Core
 			Log.Info("Started BackgroundConnectionResetHelper worker.");
 
 			List<Task<bool>> localTasks = new();
-			List<ServerSession> localSessions = new();
+			List<SessionResetTask> localSessions = new();
 
 			// keep running until stopped
 			while (!s_cancellationTokenSource.IsCancellationRequested)
@@ -94,10 +92,10 @@ namespace MySqlConnector.Core
 							}
 							else
 							{
-								foreach (var data in s_sessions)
+								foreach (var session in s_sessions)
 								{
-									localSessions.Add(data.Session);
-									localTasks.Add(data.ResetTask);
+									localSessions.Add(session);
+									localTasks.Add(session.ResetTask);
 								}
 								s_sessions.Clear();
 							}
@@ -110,7 +108,7 @@ namespace MySqlConnector.Core
 						{
 							var completedTask = await Task.WhenAny(localTasks).ConfigureAwait(false);
 							var index = localTasks.IndexOf(completedTask);
-							var session = localSessions[index];
+							var session = localSessions[index].Session;
 							await session.Pool!.ReturnAsync(IOBehavior.Asynchronous, session).ConfigureAwait(false);
 							localSessions.RemoveAt(index);
 							localTasks.RemoveAt(index);
@@ -126,21 +124,23 @@ namespace MySqlConnector.Core
 
 		internal struct SessionResetTask
 		{
-			public SessionResetTask(ServerSession session, Task<bool> resetTask)
+			public SessionResetTask(ServerSession session, Task<bool> resetTask, MySqlConnection? owningConnection)
 			{
 				Session = session;
 				ResetTask = resetTask;
+				OwningConnection = owningConnection;
 			}
 
 			public ServerSession Session { get; }
 			public Task<bool> ResetTask { get; }
+			public MySqlConnection? OwningConnection { get; }
 		}
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(BackgroundConnectionResetHelper));
 		static readonly object s_lock = new();
 		static readonly SemaphoreSlim s_semaphore = new(1, 1);
 		static readonly CancellationTokenSource s_cancellationTokenSource = new();
-		static List<SessionResetTask> s_sessions = new();
+		static readonly List<SessionResetTask> s_sessions = new();
 		static Task? s_workerTask;
 	}
 }

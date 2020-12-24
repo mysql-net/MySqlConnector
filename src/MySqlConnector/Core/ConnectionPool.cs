@@ -249,7 +249,7 @@ namespace MySqlConnector.Core
 			else
 				Log.Warn("Pool{0}: RecoveredSessionCount={1}", m_logArguments[0], recoveredSessions.Count);
 			foreach (var session in recoveredSessions)
-				await session.ReturnToPoolAsync(ioBehavior).ConfigureAwait(false);
+				await session.ReturnToPoolAsync(ioBehavior, null).ConfigureAwait(false);
 		}
 
 		private async Task CleanPoolAsync(IOBehavior ioBehavior, Func<ServerSession, bool> shouldCleanFn, bool respectMinPoolSize, CancellationToken cancellationToken)

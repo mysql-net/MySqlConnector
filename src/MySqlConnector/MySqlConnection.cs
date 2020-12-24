@@ -925,7 +925,7 @@ namespace MySqlConnector
 				m_cachedProcedures = null;
 				if (m_session is not null)
 				{
-					await m_session.ReturnToPoolAsync(ioBehavior).ConfigureAwait(false);
+					await m_session.ReturnToPoolAsync(ioBehavior, this).ConfigureAwait(false);
 					m_session = null;
 				}
 				if (changeState)
@@ -994,7 +994,7 @@ namespace MySqlConnector
 				{
 					if (GetInitializedConnectionSettings().Pooling)
 					{
-						await m_session.ReturnToPoolAsync(ioBehavior).ConfigureAwait(false);
+						await m_session.ReturnToPoolAsync(ioBehavior, this).ConfigureAwait(false);
 					}
 					else
 					{
