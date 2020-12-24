@@ -76,43 +76,50 @@ namespace MySqlConnector.Core
 			// keep running until stopped
 			while (!s_cancellationTokenSource.IsCancellationRequested)
 			{
-				// block until AddSession releases the semaphore
-				Log.Info("Waiting for semaphore.");
-				await s_semaphore.WaitAsync(s_cancellationTokenSource.Token).ConfigureAwait(false);
-
-				// process all sessions that have started being returned
-				while (true)
+				try
 				{
-					lock (s_lock)
+					// block until AddSession releases the semaphore
+					Log.Info("Waiting for semaphore.");
+					await s_semaphore.WaitAsync(s_cancellationTokenSource.Token).ConfigureAwait(false);
+
+					// process all sessions that have started being returned
+					while (true)
 					{
-						if (s_sessions.Count == 0)
+						lock (s_lock)
 						{
-							if (localTasks.Count == 0)
-								break;
-						}
-						else
-						{
-							foreach (var data in s_sessions)
+							if (s_sessions.Count == 0)
 							{
-								localSessions.Add(data.Session);
-								localTasks.Add(data.ResetTask);
+								if (localTasks.Count == 0)
+									break;
 							}
-							s_sessions.Clear();
+							else
+							{
+								foreach (var data in s_sessions)
+								{
+									localSessions.Add(data.Session);
+									localTasks.Add(data.ResetTask);
+								}
+								s_sessions.Clear();
+							}
+						}
+
+						if (Log.IsDebugEnabled())
+							Log.Debug("Found SessionCount {0} session(s) to return.", localSessions.Count);
+
+						while (localTasks.Count != 0)
+						{
+							var completedTask = await Task.WhenAny(localTasks).ConfigureAwait(false);
+							var index = localTasks.IndexOf(completedTask);
+							var session = localSessions[index];
+							await session.Pool!.ReturnAsync(IOBehavior.Asynchronous, session).ConfigureAwait(false);
+							localSessions.RemoveAt(index);
+							localTasks.RemoveAt(index);
 						}
 					}
-
-					if (Log.IsDebugEnabled())
-						Log.Debug("Found SessionCount {0} session(s) to return.", localSessions.Count);
-
-					while (localTasks.Count != 0)
-					{
-						var completedTask = await Task.WhenAny(localTasks).ConfigureAwait(false);
-						var index = localTasks.IndexOf(completedTask);
-						var session = localSessions[index];
-						await session.Pool!.ReturnAsync(IOBehavior.Asynchronous, session).ConfigureAwait(false);
-						localSessions.RemoveAt(index);
-						localTasks.RemoveAt(index);
-					}
+				}
+				catch (Exception ex) when (!(ex is OperationCanceledException oce && oce.CancellationToken == s_cancellationTokenSource.Token))
+				{
+					Log.Error("Unhandled exception: {0}", ex);
 				}
 			}
 		}
