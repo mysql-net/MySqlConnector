@@ -394,7 +394,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>false</td>
     <td>When <code>false</code> (default), the connection reports found rows instead of changed (affected) rows. Set to <code>true</code> to report only the number of rows actually changed by <code>UPDATE</code> or <code>INSERT … ON DUPLICATE KEY UPDATE</code> statements.</td>
   </tr>
-  <tr id="UsaXaTransactions">
+  <tr id="UseXaTransactions">
     <td>Use XA Transactions, UseXaTransactions</td>
     <td>true</td>
     <td>When <code>true</code> (default), using <code>TransactionScope</code> or <code>MySqlConnection.EnlistTransaction</code>
