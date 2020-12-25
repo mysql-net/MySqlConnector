@@ -207,9 +207,6 @@ jobs:
       'MySQL 8.0':
         image: 'mysql:8.0'
         unsupportedFeatures: 'Ed25519,Tls11'
-      'Percona 5.7':
-        image: 'percona:5.7.22'
-        unsupportedFeatures: 'CachingSha2Password,Ed25519,Tls13,UuidToBin'
       'MariaDB 10.2':
         image: 'mariadb:10.2'
         unsupportedFeatures: 'Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,UuidToBin'
