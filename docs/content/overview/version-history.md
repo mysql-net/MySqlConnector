@@ -10,6 +10,14 @@ weight: 30
 
 # Version History
 
+### 1.3.0 Beta 1
+
+* Connections are now reset asynchronously in the background: [#178](https://github.com/mysql-net/MySqlConnector/issues/178).
+  * This speeds up `MySqlConnection.Open(Async)` but still cleans up connections between uses.
+  * Use `DeferConnectionReset=true` in the connection string to revert to the old behaviour.
+  * _Experimental_ Use `ConnectionIdlePingTime=300` in the connection string to avoid any network I/O when retrieving a connection from the pool; this is fastest but may return invalid connections from `Open`. This setting is experimental and may change in the future.
+* Use transaction for 'SHOW WARNINGS': [#918](https://github.com/mysql-net/MySqlConnector/issues/918).
+
 ### 1.2.1
 
 * Fix bug in extracting PEM data when there's extra data in the certificate file: [#912](https://github.com/mysql-net/MySqlConnector/issues/912).
