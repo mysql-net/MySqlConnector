@@ -169,7 +169,7 @@ Connection pooling is enabled by default. These options are used to configure it
   <tr id="ConnectionReset">
     <td>Connection Reset, ConnectionReset</td>
     <td><code>true</code></td>
-    <td>If <code>true</code>, the connection state is reset when it is retrieved from the pool. The default value of <code>true</code> ensures that the connection is in the same state whether it’s newly created or retrieved from the pool. A value of <code>false</code> avoids making an additional server round trip when obtaining a connection, but the connection state is not reset, meaning that session variables and other session state changes from any previous use of the connection are carried over.</td>
+    <td>If <code>true</code>, all connections retrieved from the pool will have been reset. The default value of <code>true</code> ensures that the connection is in the same state whether it’s newly created or retrieved from the pool. A value of <code>false</code> avoids making an additional server round trip to reset the connection, but the connection state is not reset, meaning that session variables and other session state changes from any previous use of the connection are carried over.</td>
   </tr>
   <tr id="ConnectionIdlePingTime">
     <td>Connection Idle Ping Time, ConnectionIdlePingTime <em>(Experimental)</em></td>
@@ -188,6 +188,11 @@ Connection pooling is enabled by default. These options are used to configure it
     <td>Connection Idle Timeout, ConnectionIdleTimeout</td>
     <td>180</td>
     <td>The amount of time (in seconds) that a connection can remain idle in the pool. Any connection above <code>MinimumPoolSize</code> connections that is idle for longer than <code>ConnectionIdleTimeout</code> is subject to being closed by a background task. The background task runs every minute, or half of <code>ConnectionIdleTimeout</code>, whichever is more frequent. A value of zero (0) means pooled connections will never incur a ConnectionIdleTimeout, and if the pool grows to its maximum size, it will never get smaller.</td>
+  </tr>
+  <tr id="DeferConnectionReset">
+    <td>Defer Connection Reset, DeferConnectionReset</td>
+    <td><code>false</code></td>
+    <td>If <code>true</code>, the connection state is not reset until the connection is retrieved from the pool. This was the default behaviour before MySqlConnector 1.3. The default value of <code>false</code> resets connections in the background after they’re closed which makes opening a connection faster, and releases server resources sooner.</td>
   </tr>
   <tr id="MaxPoolSize">
     <td>Maximum Pool Size, Max Pool Size, MaximumPoolsize, maxpoolsize</td>

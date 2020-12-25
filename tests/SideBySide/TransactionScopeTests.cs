@@ -608,7 +608,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		public void ReusingConnectionInOneTransactionReusesPhysicalConnection(string connectionString)
 		{
 			connectionString = AppConfig.ConnectionString + ";" + connectionString;
-			using (new CommittableTransaction())
+			using (var transactionScope = new TransactionScope())
 			{
 				using (var connection = new MySqlConnection(connectionString))
 				{

@@ -116,6 +116,7 @@ namespace MySqlConnector.Core
 			ConnectionReset = csb.ConnectionReset;
 			ConnectionIdlePingTime = Math.Min(csb.ConnectionIdlePingTime, uint.MaxValue / 1000) * 1000;
 			ConnectionIdleTimeout = (int) csb.ConnectionIdleTimeout;
+			DeferConnectionReset = csb.DeferConnectionReset;
 			if (csb.MinimumPoolSize > csb.MaximumPoolSize)
 				throw new MySqlException("MaximumPoolSize must be greater than or equal to MinimumPoolSize");
 			MinimumPoolSize = ToSigned(csb.MinimumPoolSize);
@@ -209,6 +210,7 @@ namespace MySqlConnector.Core
 		public bool ConnectionReset { get; }
 		public uint ConnectionIdlePingTime { get; }
 		public int ConnectionIdleTimeout { get; }
+		public bool DeferConnectionReset { get; }
 		public int MinimumPoolSize { get; }
 		public int MaximumPoolSize { get; }
 

@@ -68,7 +68,7 @@ namespace MySqlConnector.Core
 		public bool SupportsSessionTrack => m_supportsSessionTrack;
 		public bool ProcAccessDenied { get; set; }
 
-		public Task ReturnToPoolAsync(IOBehavior ioBehavior)
+		public Task ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
 		{
 			if (Log.IsDebugEnabled())
 			{
@@ -78,7 +78,10 @@ namespace MySqlConnector.Core
 			LastReturnedTicks = unchecked((uint) Environment.TickCount);
 			if (Pool is null)
 				return Utility.CompletedTask;
-			return Pool.ReturnAsync(ioBehavior, this);
+			if (!Pool.ConnectionSettings.ConnectionReset || Pool.ConnectionSettings.DeferConnectionReset)
+				return Pool.ReturnAsync(ioBehavior, this);
+			BackgroundConnectionResetHelper.AddSession(this, owningConnection);
+			return Utility.CompletedTask;
 		}
 
 		public bool IsConnected

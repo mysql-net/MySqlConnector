@@ -36,6 +36,7 @@ namespace MySqlConnector.Tests
 			Assert.False(csb.ConnectionReset);
 #else
 			Assert.True(csb.ConnectionReset);
+			Assert.False(csb.DeferConnectionReset);
 #endif
 			Assert.Equal(15u, csb.ConnectionTimeout);
 			Assert.False(csb.ConvertZeroDateTime);
@@ -123,6 +124,7 @@ namespace MySqlConnector.Tests
 					"cancellation timeout = -1;" +
 					"connection idle ping time=60;" +
 					"connectionidletimeout=30;" +
+					"defer connection reset=true;" +
 					"forcesynchronous=true;" +
 					"ignore command transaction=true;" +
 					"server rsa public key file=rsa.pem;" +
@@ -182,6 +184,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal("My Test Application", csb.ApplicationName);
 			Assert.Equal(60u, csb.ConnectionIdlePingTime);
 			Assert.Equal(30u, csb.ConnectionIdleTimeout);
+			Assert.True(csb.DeferConnectionReset);
 			Assert.True(csb.ForceSynchronous);
 			Assert.True(csb.IgnoreCommandTransaction);
 			Assert.Equal("rsa.pem", csb.ServerRsaPublicKeyFile);
