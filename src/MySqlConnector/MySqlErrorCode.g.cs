@@ -3056,6 +3056,9 @@ namespace MySqlConnector
 		/// <summary>
 		/// ER_CANT_CREATE_SROUTINE
 		/// </summary>
+		CannotCreateSubRoutine = 1607,
+
+		[System.Obsolete("Use CannotCreateSubRoutine")]
 		CannoCreateSubRoutine = 1607,
 
 		/// <summary>
