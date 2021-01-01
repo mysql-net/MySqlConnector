@@ -45,6 +45,7 @@ namespace MySqlConnector
 			: base(info, context)
 		{
 			Number = info.GetInt32("Number");
+			ErrorCode = (MySqlErrorCode) Number;
 			SqlState = info.GetString("SqlState");
 		}
 
