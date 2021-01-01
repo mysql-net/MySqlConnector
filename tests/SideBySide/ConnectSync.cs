@@ -30,6 +30,9 @@ namespace SideBySide
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			Assert.Equal(ConnectionState.Closed, connection.State);
 			var ex = Assert.Throws<MySqlException>(connection.Open);
+#if !BASELINE
+			Assert.True(ex.IsTransient);
+#endif
 			Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
 			Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Data["Server Error Code"]);
 			Assert.Equal(ConnectionState.Closed, connection.State);

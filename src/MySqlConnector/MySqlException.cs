@@ -40,6 +40,15 @@ namespace MySqlConnector
 		public override string? SqlState { get; }
 #endif
 
+		/// <summary>
+		/// Returns <c>true</c> if this exception could indicate a transient error condition (that could succeed if retried); otherwise, <c>false</c>.
+		/// </summary>
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
+		public bool IsTransient => IsErrorTransient(ErrorCode);
+#else
+		public override bool IsTransient => IsErrorTransient(ErrorCode);
+#endif
+
 #if !NETSTANDARD1_3
 		private MySqlException(SerializationInfo info, StreamingContext context)
 			: base(info, context)
@@ -115,7 +124,15 @@ namespace MySqlConnector
 		internal static MySqlException CreateForTimeout() => CreateForTimeout(null);
 
 		internal static MySqlException CreateForTimeout(Exception? innerException) =>
-			new MySqlException(MySqlErrorCode.CommandTimeoutExpired, "The Command Timeout expired before the operation completed.", innerException);
+			new(MySqlErrorCode.CommandTimeoutExpired, "The Command Timeout expired before the operation completed.", innerException);
+
+		private static bool IsErrorTransient(MySqlErrorCode errorCode) =>
+			errorCode is MySqlErrorCode.CommandTimeoutExpired
+				or MySqlErrorCode.ConnectionCountError
+				or MySqlErrorCode.LockDeadlock
+				or MySqlErrorCode.LockWaitTimeout
+				or MySqlErrorCode.UnableToConnectToHost
+				or MySqlErrorCode.XARBDeadlock;
 
 		IDictionary? m_data;
 	}

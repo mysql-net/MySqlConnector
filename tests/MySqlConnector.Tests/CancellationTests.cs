@@ -215,6 +215,7 @@ namespace MySqlConnector.Tests
 				var ex = Assert.Throws<MySqlException>(() => s_executeMethods[method](command));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 2900, 3500);
 				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+				Assert.True(ex.IsTransient);
 
 				// connection is unusable
 				Assert.Equal(ConnectionState.Closed, connection.State);
