@@ -962,6 +962,7 @@ namespace MySqlConnector.Core
 					HostName = hostName;
 					m_tcpClient = tcpClient;
 					m_socket = m_tcpClient.Client;
+					m_socket.NoDelay = true;
 					m_stream = m_tcpClient.GetStream();
 					m_socket.SetKeepAlive(cs.Keepalive);
 					lock (m_lock)
