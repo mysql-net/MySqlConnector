@@ -10,6 +10,13 @@ weight: 30
 
 # Version History
 
+### 1.3.0 Beta 2
+
+* Implement `MySqlException.IsTransient`: [#849](https://github.com/mysql-net/MySqlConnector/issues/849).
+* Nagle's Algorithm is disabled on TCP sockets: [#921](https://github.com/mysql-net/MySqlConnector/issues/921).
+* Prevent exceptions being thrown from `MySqlTransaction.Dispose`: [#923]((https://github.com/mysql-net/MySqlConnector/issues/923).
+* Fix error deserialising `MySqlException.ErrorCode` property.
+
 ### 1.3.0 Beta 1
 
 * Connections are now reset asynchronously in the background: [#178](https://github.com/mysql-net/MySqlConnector/issues/178).
