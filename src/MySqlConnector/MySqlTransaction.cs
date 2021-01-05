@@ -1,6 +1,8 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.IO;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlConnector.Protocol.Serialization;
@@ -224,8 +226,17 @@ namespace MySqlConnector
 			{
 				if (Connection.State == ConnectionState.Open && Connection.Session.IsConnected)
 				{
-					using (var cmd = new MySqlCommand("rollback", Connection, this))
+					try
+					{
+						using var cmd = new MySqlCommand("rollback", Connection, this);
 						await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					}
+					catch (IOException)
+					{
+					}
+					catch (SocketException)
+					{
+					}
 				}
 				Connection.CurrentTransaction = null;
 			}
