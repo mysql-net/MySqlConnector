@@ -1,5 +1,5 @@
 ---
-lastmod: 2020-12-11
+lastmod: 2021-01-04
 date: 2017-03-27
 menu:
   main:
@@ -14,7 +14,7 @@ weight: 30
 
 * Implement `MySqlException.IsTransient`: [#849](https://github.com/mysql-net/MySqlConnector/issues/849).
 * Nagle's Algorithm is disabled on TCP sockets: [#921](https://github.com/mysql-net/MySqlConnector/issues/921).
-* Prevent exceptions being thrown from `MySqlTransaction.Dispose`: [#923]((https://github.com/mysql-net/MySqlConnector/issues/923).
+* Prevent exceptions being thrown from `MySqlTransaction.Dispose`: [#923](https://github.com/mysql-net/MySqlConnector/issues/923).
 * Fix error deserialising `MySqlException.ErrorCode` property.
 
 ### 1.3.0 Beta 1
