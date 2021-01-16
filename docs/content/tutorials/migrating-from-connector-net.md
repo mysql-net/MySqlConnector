@@ -161,6 +161,14 @@ Well-known Binary bytes.
 
 The `MySqlError[] MySqlInfoMessageEventArgs.errors` property has changed to `IReadOnlyList<MySqlError> MySqlInfoMessageEventArgs.Errors`.
 
+### MySqlParameter
+
+Connector/NET will automatically convert unknown `MySqlParameter.Value` values to a `string` by calling `ToString()`,
+then convert that to bytes by calling `Encoding.GetBytes()` using the packet’s encoding. This is error-prone and
+can introduce culture-sensitive conversions.
+
+MySqlConnector requires all parameter values to be of a known, supported type. See [MySqlParameter Types](../../troubleshooting/parameter-types/) for details.
+
 ### MySqlParameterCollection
 
 Connector/NET will assign the names `@Parameter1`, `@Parameter2`, etc. to unnamed `MySqlParameter` objects that are

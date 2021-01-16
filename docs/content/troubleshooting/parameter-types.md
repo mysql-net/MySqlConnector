@@ -1,4 +1,5 @@
 ---
+lastmod: 2021-01-16
 date: 2021-01-15
 title: MySqlParameter Types
 customtitle: "Type of value supplied to MySqlParameter.Value isn’t supported"
@@ -20,6 +21,12 @@ sent to the MySQL Server. Calling `ToString()` on the object as a fallback is da
 implementations are culture-sensitive. Calling `ToString()` on unknown types can result in hard-to-debug
 data corruption issues when culture-sensitive conversions are performed.
 
+Additionally, since MySQL Server doesn't have built-in support for this particular .NET type, it will have to
+be retrieved as a `string` or `byte[]`, and the application will be responsible for converting that back
+to the original type. It doesn’t make sense for the conversion to `string` to occur in MySqlConnector, but
+the conversion from `string` back to the original type to exist in the application; the bidirectional
+conversion logic should exist in one place.
+
 ## Fix
 
 Convert your object to one of the supported types from the list below.
@@ -31,4 +38,4 @@ In some cases, this may be as simple as calling `.ToString()` or `.ToString(Cult
 * .NET primitives: `bool`, `byte`, `char`, `double`, `float`, `int`, `long`, `sbyte`, `short`, `uint`, `ulong`, `ushort`
 * Common types: `DateTime`, `DateTimeOffset`, `decimal`, `enum`, `Guid`, `string`, `TimeSpan`
 * BLOB types: `ArraySegment<byte>`, `byte[]`, `Memory<byte>`, `ReadOnlyMemory<byte>`
-* Custom MySQL types: `MySqlGeometry`, `MySqlDateTime`
+* Custom MySQL types: `MySqlDateTime`, `MySqlGeometry`
