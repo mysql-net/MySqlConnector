@@ -22,7 +22,7 @@ jobs:
     - name: Set up .NET 5.0
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.100
+        dotnet-version: 5.0.102
 
     - name: Restore
       run: dotnet restore
