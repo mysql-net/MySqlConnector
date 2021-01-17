@@ -36,6 +36,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 | [Database](../MySqlConnectionStringBuilder/Database/) { get; set; } |  |
 | [DateTimeKind](../MySqlConnectionStringBuilder/DateTimeKind/) { get; set; } |  |
 | [DefaultCommandTimeout](../MySqlConnectionStringBuilder/DefaultCommandTimeout/) { get; set; } |  |
+| [DeferConnectionReset](../MySqlConnectionStringBuilder/DeferConnectionReset/) { get; set; } |  |
 | [ForceSynchronous](../MySqlConnectionStringBuilder/ForceSynchronous/) { get; set; } |  |
 | [GuidFormat](../MySqlConnectionStringBuilder/GuidFormat/) { get; set; } |  |
 | [IgnoreCommandTransaction](../MySqlConnectionStringBuilder/IgnoreCommandTransaction/) { get; set; } |  |

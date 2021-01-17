@@ -624,7 +624,8 @@ public enum MySqlErrorCode
 | TriggerInvalidCreationContext | `1604` | ER_TRG_INVALID_CREATION_CTX |
 | EventInvalidCreationContext | `1605` | ER_EVENT_INVALID_CREATION_CTX |
 | TriggerCannotOpenTable | `1606` | ER_TRG_CANT_OPEN_TABLE |
-| CannoCreateSubRoutine | `1607` | ER_CANT_CREATE_SROUTINE |
+| CannotCreateSubRoutine | `1607` | ER_CANT_CREATE_SROUTINE |
+| CannoCreateSubRoutine | `1607` |  |
 | SlaveAmbiguousExecMode | `1608` | ER_NEVER_USED |
 | NoFormatDescriptionEventBeforeBinLogStatement | `1609` | ER_NO_FORMAT_DESCRIPTION_EVENT_BEFORE_BINLOG_STATEMENT |
 | SlaveCorruptEvent | `1610` | ER_SLAVE_CORRUPT_EVENT |
