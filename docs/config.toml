@@ -4,7 +4,6 @@ MetaDataFormat = "yaml"
 pluralizeListTitles = false
 pygmentsCodeFences = true
 pygmentsStyle = "friendly"
-disablePathToLower = true
 
 [blackfriday]
   plainIDAnchors = true
