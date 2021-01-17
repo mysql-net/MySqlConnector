@@ -1,5 +1,5 @@
 ---
-title: SelectCommand
+title: MySqlDataAdapter.SelectCommand property
 ---
 
 # MySqlDataAdapter.SelectCommand property

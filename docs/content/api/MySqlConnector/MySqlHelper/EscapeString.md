@@ -1,5 +1,5 @@
 ---
-title: EscapeString
+title: MySqlHelper.EscapeString method
 ---
 
 # MySqlHelper.EscapeString method

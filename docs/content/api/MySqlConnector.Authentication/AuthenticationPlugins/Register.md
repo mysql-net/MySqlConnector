@@ -1,5 +1,5 @@
 ---
-title: Register
+title: AuthenticationPlugins.Register method
 ---
 
 # AuthenticationPlugins.Register method

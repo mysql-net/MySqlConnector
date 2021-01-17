@@ -1,5 +1,5 @@
 ---
-title: Keepalive
+title: MySqlConnectionStringBuilder.Keepalive property
 ---
 
 # MySqlConnectionStringBuilder.Keepalive property

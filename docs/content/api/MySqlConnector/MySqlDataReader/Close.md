@@ -1,5 +1,5 @@
 ---
-title: Close
+title: MySqlDataReader.Close method
 ---
 
 # MySqlDataReader.Close method

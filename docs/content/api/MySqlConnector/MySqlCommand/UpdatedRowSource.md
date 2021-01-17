@@ -1,5 +1,5 @@
 ---
-title: UpdatedRowSource
+title: MySqlCommand.UpdatedRowSource property
 ---
 
 # MySqlCommand.UpdatedRowSource property

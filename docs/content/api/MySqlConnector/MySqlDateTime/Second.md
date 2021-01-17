@@ -1,5 +1,5 @@
 ---
-title: Second
+title: MySqlDateTime.Second property
 ---
 
 # MySqlDateTime.Second property

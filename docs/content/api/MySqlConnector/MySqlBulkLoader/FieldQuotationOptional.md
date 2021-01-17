@@ -1,5 +1,5 @@
 ---
-title: FieldQuotationOptional
+title: MySqlBulkLoader.FieldQuotationOptional property
 ---
 
 # MySqlBulkLoader.FieldQuotationOptional property

@@ -1,5 +1,5 @@
 ---
-title: AutoEnlist
+title: MySqlConnectionStringBuilder.AutoEnlist property
 ---
 
 # MySqlConnectionStringBuilder.AutoEnlist property

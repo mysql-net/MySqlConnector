@@ -1,5 +1,5 @@
 ---
-title: InitializeBatching
+title: MySqlDataAdapter.InitializeBatching method
 ---
 
 # MySqlDataAdapter.InitializeBatching method

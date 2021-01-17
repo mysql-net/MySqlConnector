@@ -1,5 +1,5 @@
 ---
-title: IsEnabled
+title: NoOpLogger.IsEnabled method
 ---
 
 # NoOpLogger.IsEnabled method

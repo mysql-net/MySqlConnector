@@ -1,5 +1,5 @@
 ---
-title: CanCreateCommandBuilder
+title: MySqlConnectorFactory.CanCreateCommandBuilder property
 ---
 
 # MySqlConnectorFactory.CanCreateCommandBuilder property

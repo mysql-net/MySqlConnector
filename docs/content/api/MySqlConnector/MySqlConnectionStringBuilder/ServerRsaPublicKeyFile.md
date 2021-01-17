@@ -1,5 +1,5 @@
 ---
-title: ServerRsaPublicKeyFile
+title: MySqlConnectionStringBuilder.ServerRsaPublicKeyFile property
 ---
 
 # MySqlConnectionStringBuilder.ServerRsaPublicKeyFile property

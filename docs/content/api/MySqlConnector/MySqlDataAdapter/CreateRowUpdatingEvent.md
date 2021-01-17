@@ -1,5 +1,5 @@
 ---
-title: CreateRowUpdatingEvent
+title: MySqlDataAdapter.CreateRowUpdatingEvent method
 ---
 
 # MySqlDataAdapter.CreateRowUpdatingEvent method

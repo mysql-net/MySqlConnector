@@ -1,5 +1,5 @@
 ---
-title: SourceColumnNullMapping
+title: MySqlParameter.SourceColumnNullMapping property
 ---
 
 # MySqlParameter.SourceColumnNullMapping property

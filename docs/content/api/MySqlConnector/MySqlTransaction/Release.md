@@ -1,5 +1,5 @@
 ---
-title: Release
+title: MySqlTransaction.Release method
 ---
 
 # MySqlTransaction.Release method

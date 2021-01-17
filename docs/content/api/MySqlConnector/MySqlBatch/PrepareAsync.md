@@ -1,5 +1,5 @@
 ---
-title: PrepareAsync
+title: MySqlBatch.PrepareAsync method
 ---
 
 # MySqlBatch.PrepareAsync method

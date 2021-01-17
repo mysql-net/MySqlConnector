@@ -1,5 +1,5 @@
 ---
-title: GetSchemaAsync
+title: MySqlConnection.GetSchemaAsync methods
 ---
 
 # MySqlConnection.GetSchemaAsync method (1 of 3)

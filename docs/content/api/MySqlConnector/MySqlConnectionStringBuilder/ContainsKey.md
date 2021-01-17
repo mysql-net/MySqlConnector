@@ -1,5 +1,5 @@
 ---
-title: ContainsKey
+title: MySqlConnectionStringBuilder.ContainsKey method
 ---
 
 # MySqlConnectionStringBuilder.ContainsKey method

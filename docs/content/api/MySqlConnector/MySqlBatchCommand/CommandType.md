@@ -1,5 +1,5 @@
 ---
-title: CommandType
+title: MySqlBatchCommand.CommandType property
 ---
 
 # MySqlBatchCommand.CommandType property

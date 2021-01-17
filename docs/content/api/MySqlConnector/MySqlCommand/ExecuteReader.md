@@ -1,5 +1,5 @@
 ---
-title: ExecuteReader
+title: MySqlCommand.ExecuteReader methods
 ---
 
 # MySqlCommand.ExecuteReader method (1 of 2)

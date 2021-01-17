@@ -1,5 +1,5 @@
 ---
-title: Minute
+title: MySqlDateTime.Minute property
 ---
 
 # MySqlDateTime.Minute property

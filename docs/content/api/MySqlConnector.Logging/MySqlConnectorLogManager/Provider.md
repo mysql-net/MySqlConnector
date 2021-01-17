@@ -1,5 +1,5 @@
 ---
-title: Provider
+title: MySqlConnectorLogManager.Provider property
 ---
 
 # MySqlConnectorLogManager.Provider property

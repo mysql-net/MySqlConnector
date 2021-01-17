@@ -1,5 +1,5 @@
 ---
-title: GetSchemaTableAsync
+title: MySqlDataReader.GetSchemaTableAsync method
 ---
 
 # MySqlDataReader.GetSchemaTableAsync method

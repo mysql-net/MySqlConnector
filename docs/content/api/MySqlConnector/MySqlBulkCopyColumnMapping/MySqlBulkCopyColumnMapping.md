@@ -1,5 +1,5 @@
 ---
-title: MySqlBulkCopyColumnMapping
+title: MySqlBulkCopyColumnMapping constructors
 ---
 
 # MySqlBulkCopyColumnMapping constructor (1 of 2)

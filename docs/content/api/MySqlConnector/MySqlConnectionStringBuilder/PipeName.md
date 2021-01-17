@@ -1,5 +1,5 @@
 ---
-title: PipeName
+title: MySqlConnectionStringBuilder.PipeName property
 ---
 
 # MySqlConnectionStringBuilder.PipeName property

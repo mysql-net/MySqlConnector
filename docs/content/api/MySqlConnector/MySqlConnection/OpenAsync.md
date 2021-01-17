@@ -1,5 +1,5 @@
 ---
-title: OpenAsync
+title: MySqlConnection.OpenAsync method
 ---
 
 # MySqlConnection.OpenAsync method

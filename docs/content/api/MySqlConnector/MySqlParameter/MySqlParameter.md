@@ -1,5 +1,5 @@
 ---
-title: MySqlParameter
+title: MySqlParameter constructors
 ---
 
 # MySqlParameter constructor (1 of 6)

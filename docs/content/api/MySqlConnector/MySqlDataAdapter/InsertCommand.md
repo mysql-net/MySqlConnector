@@ -1,5 +1,5 @@
 ---
-title: InsertCommand
+title: MySqlDataAdapter.InsertCommand property
 ---
 
 # MySqlDataAdapter.InsertCommand property

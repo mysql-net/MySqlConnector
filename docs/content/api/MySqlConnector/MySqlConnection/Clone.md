@@ -1,5 +1,5 @@
 ---
-title: Clone
+title: MySqlConnection.Clone method
 ---
 
 # MySqlConnection.Clone method

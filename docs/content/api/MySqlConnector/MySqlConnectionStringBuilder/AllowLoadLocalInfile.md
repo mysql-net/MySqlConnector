@@ -1,5 +1,5 @@
 ---
-title: AllowLoadLocalInfile
+title: MySqlConnectionStringBuilder.AllowLoadLocalInfile property
 ---
 
 # MySqlConnectionStringBuilder.AllowLoadLocalInfile property

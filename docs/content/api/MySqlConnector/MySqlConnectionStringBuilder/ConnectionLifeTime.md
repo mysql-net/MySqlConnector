@@ -1,5 +1,5 @@
 ---
-title: ConnectionLifeTime
+title: MySqlConnectionStringBuilder.ConnectionLifeTime property
 ---
 
 # MySqlConnectionStringBuilder.ConnectionLifeTime property

@@ -1,5 +1,5 @@
 ---
-title: LastInsertedId
+title: MySqlCommand.LastInsertedId property
 ---
 
 # MySqlCommand.LastInsertedId property

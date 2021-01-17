@@ -1,5 +1,5 @@
 ---
-title: Value
+title: MySqlGeometry.Value property
 ---
 
 # MySqlGeometry.Value property

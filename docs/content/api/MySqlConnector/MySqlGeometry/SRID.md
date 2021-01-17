@@ -1,5 +1,5 @@
 ---
-title: SRID
+title: MySqlGeometry.SRID property
 ---
 
 # MySqlGeometry.SRID property

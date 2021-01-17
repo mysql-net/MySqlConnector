@@ -1,5 +1,5 @@
 ---
-title: NoOpLogger
+title: NoOpLogger constructor
 ---
 
 # NoOpLogger constructor

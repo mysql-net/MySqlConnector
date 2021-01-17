@@ -1,5 +1,5 @@
 ---
-title: Expressions
+title: MySqlBulkLoader.Expressions property
 ---
 
 # MySqlBulkLoader.Expressions property

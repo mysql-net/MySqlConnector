@@ -1,5 +1,5 @@
 ---
-title: Millisecond
+title: MySqlDateTime.Millisecond property
 ---
 
 # MySqlDateTime.Millisecond property

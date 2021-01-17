@@ -1,5 +1,5 @@
 ---
-title: TerminateBatching
+title: MySqlDataAdapter.TerminateBatching method
 ---
 
 # MySqlDataAdapter.TerminateBatching method

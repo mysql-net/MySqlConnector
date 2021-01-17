@@ -1,5 +1,5 @@
 ---
-title: GuidFormat
+title: MySqlConnectionStringBuilder.GuidFormat property
 ---
 
 # MySqlConnectionStringBuilder.GuidFormat property

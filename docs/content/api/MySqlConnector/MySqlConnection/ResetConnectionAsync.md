@@ -1,5 +1,5 @@
 ---
-title: ResetConnectionAsync
+title: MySqlConnection.ResetConnectionAsync method
 ---
 
 # MySqlConnection.ResetConnectionAsync method

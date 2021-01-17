@@ -1,5 +1,5 @@
 ---
-title: ApplicationName
+title: MySqlConnectionStringBuilder.ApplicationName property
 ---
 
 # MySqlConnectionStringBuilder.ApplicationName property

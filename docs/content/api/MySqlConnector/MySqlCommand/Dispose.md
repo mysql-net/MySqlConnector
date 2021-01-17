@@ -1,5 +1,5 @@
 ---
-title: Dispose
+title: MySqlCommand.Dispose method
 ---
 
 # MySqlCommand.Dispose method

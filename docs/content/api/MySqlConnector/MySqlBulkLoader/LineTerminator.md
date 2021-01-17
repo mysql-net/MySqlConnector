@@ -1,5 +1,5 @@
 ---
-title: LineTerminator
+title: MySqlBulkLoader.LineTerminator property
 ---
 
 # MySqlBulkLoader.LineTerminator property

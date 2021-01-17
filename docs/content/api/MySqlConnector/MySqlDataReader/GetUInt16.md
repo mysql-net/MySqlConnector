@@ -1,5 +1,5 @@
 ---
-title: GetUInt16
+title: MySqlDataReader.GetUInt16 methods
 ---
 
 # MySqlDataReader.GetUInt16 method (1 of 2)

@@ -1,5 +1,5 @@
 ---
-title: Instance
+title: NoOpLogger.Instance property
 ---
 
 # NoOpLogger.Instance property

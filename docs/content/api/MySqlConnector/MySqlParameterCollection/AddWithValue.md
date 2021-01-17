@@ -1,5 +1,5 @@
 ---
-title: AddWithValue
+title: MySqlParameterCollection.AddWithValue method
 ---
 
 # MySqlParameterCollection.AddWithValue method

@@ -1,5 +1,5 @@
 ---
-title: InfoMessage
+title: MySqlConnection.InfoMessage event
 ---
 
 # MySqlConnection.InfoMessage event

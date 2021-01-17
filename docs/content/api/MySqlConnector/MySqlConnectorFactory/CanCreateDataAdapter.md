@@ -1,5 +1,5 @@
 ---
-title: CanCreateDataAdapter
+title: MySqlConnectorFactory.CanCreateDataAdapter property
 ---
 
 # MySqlConnectorFactory.CanCreateDataAdapter property

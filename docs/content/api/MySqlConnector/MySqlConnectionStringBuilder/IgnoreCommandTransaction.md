@@ -1,5 +1,5 @@
 ---
-title: IgnoreCommandTransaction
+title: MySqlConnectionStringBuilder.IgnoreCommandTransaction property
 ---
 
 # MySqlConnectionStringBuilder.IgnoreCommandTransaction property

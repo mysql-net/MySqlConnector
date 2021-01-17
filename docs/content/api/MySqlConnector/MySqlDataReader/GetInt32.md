@@ -1,5 +1,5 @@
 ---
-title: GetInt32
+title: MySqlDataReader.GetInt32 methods
 ---
 
 # MySqlDataReader.GetInt32 method (1 of 2)

@@ -1,5 +1,5 @@
 ---
-title: Prepare
+title: MySqlBatch.Prepare method
 ---
 
 # MySqlBatch.Prepare method

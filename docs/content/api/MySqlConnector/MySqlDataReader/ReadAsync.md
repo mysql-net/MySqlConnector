@@ -1,5 +1,5 @@
 ---
-title: ReadAsync
+title: MySqlDataReader.ReadAsync method
 ---
 
 # MySqlDataReader.ReadAsync method

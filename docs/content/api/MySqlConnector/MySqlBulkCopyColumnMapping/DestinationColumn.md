@@ -1,5 +1,5 @@
 ---
-title: DestinationColumn
+title: MySqlBulkCopyColumnMapping.DestinationColumn property
 ---
 
 # MySqlBulkCopyColumnMapping.DestinationColumn property

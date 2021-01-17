@@ -1,5 +1,5 @@
 ---
-title: ParameterName
+title: MySqlParameter.ParameterName property
 ---
 
 # MySqlParameter.ParameterName property

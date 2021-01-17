@@ -1,5 +1,5 @@
 ---
-title: GetColumnSchema
+title: MySqlDataReader.GetColumnSchema method
 ---
 
 # MySqlDataReader.GetColumnSchema method

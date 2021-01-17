@@ -1,5 +1,5 @@
 ---
-title: Precision
+title: MySqlParameter.Precision property
 ---
 
 # MySqlParameter.Precision property

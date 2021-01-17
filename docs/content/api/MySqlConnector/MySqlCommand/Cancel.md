@@ -1,5 +1,5 @@
 ---
-title: Cancel
+title: MySqlCommand.Cancel method
 ---
 
 # MySqlCommand.Cancel method

@@ -1,5 +1,5 @@
 ---
-title: Message
+title: MySqlError.Message property
 ---
 
 # MySqlError.Message property

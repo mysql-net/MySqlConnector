@@ -1,5 +1,5 @@
 ---
-title: ExecuteBatch
+title: MySqlDataAdapter.ExecuteBatch method
 ---
 
 # MySqlDataAdapter.ExecuteBatch method

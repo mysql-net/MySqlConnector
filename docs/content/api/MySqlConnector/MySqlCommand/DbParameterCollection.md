@@ -1,5 +1,5 @@
 ---
-title: DbParameterCollection
+title: MySqlCommand.DbParameterCollection property
 ---
 
 # MySqlCommand.DbParameterCollection property

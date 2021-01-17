@@ -1,5 +1,5 @@
 ---
-title: GetInsertCommand
+title: MySqlCommandBuilder.GetInsertCommand method
 ---
 
 # MySqlCommandBuilder.GetInsertCommand method

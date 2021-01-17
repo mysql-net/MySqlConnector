@@ -1,5 +1,5 @@
 ---
-title: GetMySqlGeometry
+title: MySqlDataReader.GetMySqlGeometry methods
 ---
 
 # MySqlDataReader.GetMySqlGeometry method (1 of 2)

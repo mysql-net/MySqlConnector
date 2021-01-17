@@ -1,5 +1,5 @@
 ---
-title: GetFloat
+title: MySqlDataReader.GetFloat methods
 ---
 
 # MySqlDataReader.GetFloat method (1 of 2)

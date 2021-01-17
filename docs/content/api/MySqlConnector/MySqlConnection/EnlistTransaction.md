@@ -1,5 +1,5 @@
 ---
-title: EnlistTransaction
+title: MySqlConnection.EnlistTransaction method
 ---
 
 # MySqlConnection.EnlistTransaction method

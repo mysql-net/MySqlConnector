@@ -1,5 +1,5 @@
 ---
-title: Command
+title: MySqlRowUpdatingEventArgs.Command property
 ---
 
 # MySqlRowUpdatingEventArgs.Command property

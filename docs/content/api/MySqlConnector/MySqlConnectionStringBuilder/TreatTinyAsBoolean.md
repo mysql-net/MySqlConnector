@@ -1,5 +1,5 @@
 ---
-title: TreatTinyAsBoolean
+title: MySqlConnectionStringBuilder.TreatTinyAsBoolean property
 ---
 
 # MySqlConnectionStringBuilder.TreatTinyAsBoolean property

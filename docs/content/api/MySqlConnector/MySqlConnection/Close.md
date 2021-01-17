@@ -1,5 +1,5 @@
 ---
-title: Close
+title: MySqlConnection.Close method
 ---
 
 # MySqlConnection.Close method

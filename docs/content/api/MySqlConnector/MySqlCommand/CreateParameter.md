@@ -1,5 +1,5 @@
 ---
-title: CreateParameter
+title: MySqlCommand.CreateParameter method
 ---
 
 # MySqlCommand.CreateParameter method

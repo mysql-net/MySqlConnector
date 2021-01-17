@@ -1,5 +1,5 @@
 ---
-title: UserID
+title: MySqlConnectionStringBuilder.UserID property
 ---
 
 # MySqlConnectionStringBuilder.UserID property

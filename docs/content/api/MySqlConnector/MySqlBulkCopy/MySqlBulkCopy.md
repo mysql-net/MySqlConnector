@@ -1,5 +1,5 @@
 ---
-title: MySqlBulkCopy
+title: MySqlBulkCopy constructor
 ---
 
 # MySqlBulkCopy constructor

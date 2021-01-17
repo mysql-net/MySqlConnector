@@ -1,5 +1,5 @@
 ---
-title: PersistSecurityInfo
+title: MySqlConnectionStringBuilder.PersistSecurityInfo property
 ---
 
 # MySqlConnectionStringBuilder.PersistSecurityInfo property

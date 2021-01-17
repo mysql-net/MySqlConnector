@@ -1,5 +1,5 @@
 ---
-title: ExecuteNonQueryAsync
+title: MySqlCommand.ExecuteNonQueryAsync method
 ---
 
 # MySqlCommand.ExecuteNonQueryAsync method

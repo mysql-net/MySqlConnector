@@ -1,5 +1,5 @@
 ---
-title: WriteToServer
+title: MySqlBulkCopy.WriteToServer methods
 ---
 
 # MySqlBulkCopy.WriteToServer method (1 of 3)

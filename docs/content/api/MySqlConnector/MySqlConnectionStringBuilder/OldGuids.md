@@ -1,5 +1,5 @@
 ---
-title: OldGuids
+title: MySqlConnectionStringBuilder.OldGuids property
 ---
 
 # MySqlConnectionStringBuilder.OldGuids property

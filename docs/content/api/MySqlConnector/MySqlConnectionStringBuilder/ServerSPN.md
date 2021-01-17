@@ -1,5 +1,5 @@
 ---
-title: ServerSPN
+title: MySqlConnectionStringBuilder.ServerSPN property
 ---
 
 # MySqlConnectionStringBuilder.ServerSPN property

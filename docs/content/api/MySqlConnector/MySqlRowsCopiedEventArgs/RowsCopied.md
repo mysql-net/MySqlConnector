@@ -1,5 +1,5 @@
 ---
-title: RowsCopied
+title: MySqlRowsCopiedEventArgs.RowsCopied property
 ---
 
 # MySqlRowsCopiedEventArgs.RowsCopied property

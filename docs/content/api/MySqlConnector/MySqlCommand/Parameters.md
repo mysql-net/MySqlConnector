@@ -1,5 +1,5 @@
 ---
-title: Parameters
+title: MySqlCommand.Parameters property
 ---
 
 # MySqlCommand.Parameters property

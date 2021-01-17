@@ -1,5 +1,5 @@
 ---
-title: VisibleFieldCount
+title: MySqlDataReader.VisibleFieldCount property
 ---
 
 # MySqlDataReader.VisibleFieldCount property

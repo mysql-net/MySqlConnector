@@ -1,5 +1,5 @@
 ---
-title: GetByte
+title: MySqlDataReader.GetByte methods
 ---
 
 # MySqlDataReader.GetByte method (1 of 2)

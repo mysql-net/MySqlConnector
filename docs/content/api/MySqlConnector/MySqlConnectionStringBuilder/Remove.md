@@ -1,5 +1,5 @@
 ---
-title: Remove
+title: MySqlConnectionStringBuilder.Remove method
 ---
 
 # MySqlConnectionStringBuilder.Remove method

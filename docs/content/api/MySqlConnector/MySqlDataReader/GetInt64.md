@@ -1,5 +1,5 @@
 ---
-title: GetInt64
+title: MySqlDataReader.GetInt64 methods
 ---
 
 # MySqlDataReader.GetInt64 method (1 of 2)

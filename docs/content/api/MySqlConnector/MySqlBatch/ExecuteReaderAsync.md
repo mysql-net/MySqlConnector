@@ -1,5 +1,5 @@
 ---
-title: ExecuteReaderAsync
+title: MySqlBatch.ExecuteReaderAsync method
 ---
 
 # MySqlBatch.ExecuteReaderAsync method

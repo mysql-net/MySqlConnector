@@ -1,5 +1,5 @@
 ---
-title: GetParameter
+title: MySqlParameterCollection.GetParameter methods
 ---
 
 # MySqlParameterCollection.GetParameter method (1 of 2)

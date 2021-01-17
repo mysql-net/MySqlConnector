@@ -1,5 +1,5 @@
 ---
-title: Item
+title: MySqlBatchCommandCollection indexer
 ---
 
 # MySqlBatchCommandCollection indexer

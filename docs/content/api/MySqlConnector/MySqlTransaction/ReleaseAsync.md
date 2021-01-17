@@ -1,5 +1,5 @@
 ---
-title: ReleaseAsync
+title: MySqlTransaction.ReleaseAsync method
 ---
 
 # MySqlTransaction.ReleaseAsync method

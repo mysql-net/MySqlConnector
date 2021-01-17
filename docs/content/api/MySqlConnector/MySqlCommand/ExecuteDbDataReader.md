@@ -1,5 +1,5 @@
 ---
-title: ExecuteDbDataReader
+title: MySqlCommand.ExecuteDbDataReader method
 ---
 
 # MySqlCommand.ExecuteDbDataReader method

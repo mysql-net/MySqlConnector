@@ -1,5 +1,5 @@
 ---
-title: ServerThread
+title: MySqlConnection.ServerThread property
 ---
 
 # MySqlConnection.ServerThread property

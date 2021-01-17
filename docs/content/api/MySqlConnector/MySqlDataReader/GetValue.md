@@ -1,5 +1,5 @@
 ---
-title: GetValue
+title: MySqlDataReader.GetValue method
 ---
 
 # MySqlDataReader.GetValue method

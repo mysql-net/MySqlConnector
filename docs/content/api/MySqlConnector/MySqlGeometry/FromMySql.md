@@ -1,5 +1,5 @@
 ---
-title: FromMySql
+title: MySqlGeometry.FromMySql method
 ---
 
 # MySqlGeometry.FromMySql method

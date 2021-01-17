@@ -1,5 +1,5 @@
 ---
-title: GetEnumerator
+title: MySqlParameterCollection.GetEnumerator method
 ---
 
 # MySqlParameterCollection.GetEnumerator method

@@ -1,5 +1,5 @@
 ---
-title: Priority
+title: MySqlBulkLoader.Priority property
 ---
 
 # MySqlBulkLoader.Priority property

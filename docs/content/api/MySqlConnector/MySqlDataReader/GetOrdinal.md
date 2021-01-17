@@ -1,5 +1,5 @@
 ---
-title: GetOrdinal
+title: MySqlDataReader.GetOrdinal method
 ---
 
 # MySqlDataReader.GetOrdinal method

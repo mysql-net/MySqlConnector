@@ -1,5 +1,5 @@
 ---
-title: ForceSynchronous
+title: MySqlConnectionStringBuilder.ForceSynchronous property
 ---
 
 # MySqlConnectionStringBuilder.ForceSynchronous property

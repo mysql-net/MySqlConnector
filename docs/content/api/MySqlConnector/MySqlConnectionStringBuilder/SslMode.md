@@ -1,5 +1,5 @@
 ---
-title: SslMode
+title: MySqlConnectionStringBuilder.SslMode property
 ---
 
 # MySqlConnectionStringBuilder.SslMode property

@@ -1,5 +1,5 @@
 ---
-title: IndexOf
+title: MySqlParameterCollection.IndexOf methods
 ---
 
 # MySqlParameterCollection.IndexOf method (1 of 2)

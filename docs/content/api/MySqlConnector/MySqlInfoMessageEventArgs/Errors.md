@@ -1,5 +1,5 @@
 ---
-title: Errors
+title: MySqlInfoMessageEventArgs.Errors property
 ---
 
 # MySqlInfoMessageEventArgs.Errors property

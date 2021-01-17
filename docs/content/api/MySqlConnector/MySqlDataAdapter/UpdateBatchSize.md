@@ -1,5 +1,5 @@
 ---
-title: UpdateBatchSize
+title: MySqlDataAdapter.UpdateBatchSize property
 ---
 
 # MySqlDataAdapter.UpdateBatchSize property

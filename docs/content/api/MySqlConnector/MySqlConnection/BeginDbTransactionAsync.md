@@ -1,5 +1,5 @@
 ---
-title: BeginDbTransactionAsync
+title: MySqlConnection.BeginDbTransactionAsync method
 ---
 
 # MySqlConnection.BeginDbTransactionAsync method

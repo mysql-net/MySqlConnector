@@ -1,5 +1,5 @@
 ---
-title: Add
+title: MySqlParameterCollection.Add methods
 ---
 
 # MySqlParameterCollection.Add method (1 of 5)

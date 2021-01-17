@@ -1,5 +1,5 @@
 ---
-title: UseXaTransactions
+title: MySqlConnectionStringBuilder.UseXaTransactions property
 ---
 
 # MySqlConnectionStringBuilder.UseXaTransactions property

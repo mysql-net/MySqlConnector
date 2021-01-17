@@ -1,5 +1,5 @@
 ---
-title: NotifyAfter
+title: MySqlBulkCopy.NotifyAfter property
 ---
 
 # MySqlBulkCopy.NotifyAfter property

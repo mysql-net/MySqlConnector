@@ -1,5 +1,5 @@
 ---
-title: GetUInt32
+title: MySqlDataReader.GetUInt32 methods
 ---
 
 # MySqlDataReader.GetUInt32 method (1 of 2)

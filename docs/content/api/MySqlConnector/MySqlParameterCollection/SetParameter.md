@@ -1,5 +1,5 @@
 ---
-title: SetParameter
+title: MySqlParameterCollection.SetParameter methods
 ---
 
 # MySqlParameterCollection.SetParameter method (1 of 2)

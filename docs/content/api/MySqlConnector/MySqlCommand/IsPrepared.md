@@ -1,5 +1,5 @@
 ---
-title: IsPrepared
+title: MySqlCommand.IsPrepared property
 ---
 
 # MySqlCommand.IsPrepared property

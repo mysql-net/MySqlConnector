@@ -1,5 +1,5 @@
 ---
-title: Clone
+title: MySqlParameter.Clone method
 ---
 
 # MySqlParameter.Clone method

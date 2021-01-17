@@ -1,5 +1,5 @@
 ---
-title: RowUpdated
+title: MySqlDataAdapter.RowUpdated event
 ---
 
 # MySqlDataAdapter.RowUpdated event

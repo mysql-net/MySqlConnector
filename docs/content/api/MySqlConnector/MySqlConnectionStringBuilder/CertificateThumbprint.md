@@ -1,5 +1,5 @@
 ---
-title: CertificateThumbprint
+title: MySqlConnectionStringBuilder.CertificateThumbprint property
 ---
 
 # MySqlConnectionStringBuilder.CertificateThumbprint property

@@ -1,5 +1,5 @@
 ---
-title: SyncRoot
+title: MySqlParameterCollection.SyncRoot property
 ---
 
 # MySqlParameterCollection.SyncRoot property

@@ -1,5 +1,5 @@
 ---
-title: UpdateCommand
+title: MySqlDataAdapter.UpdateCommand property
 ---
 
 # MySqlDataAdapter.UpdateCommand property

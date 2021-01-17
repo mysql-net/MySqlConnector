@@ -1,5 +1,5 @@
 ---
-title: ConflictOption
+title: MySqlBulkLoader.ConflictOption property
 ---
 
 # MySqlBulkLoader.ConflictOption property

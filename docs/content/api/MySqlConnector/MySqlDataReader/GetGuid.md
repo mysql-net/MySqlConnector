@@ -1,5 +1,5 @@
 ---
-title: GetGuid
+title: MySqlDataReader.GetGuid methods
 ---
 
 # MySqlDataReader.GetGuid method (1 of 2)

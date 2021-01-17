@@ -1,5 +1,5 @@
 ---
-title: ChangeDatabase
+title: MySqlConnection.ChangeDatabase method
 ---
 
 # MySqlConnection.ChangeDatabase method

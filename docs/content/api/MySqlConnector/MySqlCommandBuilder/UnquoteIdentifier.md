@@ -1,5 +1,5 @@
 ---
-title: UnquoteIdentifier
+title: MySqlCommandBuilder.UnquoteIdentifier method
 ---
 
 # MySqlCommandBuilder.UnquoteIdentifier method

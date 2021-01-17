@@ -1,5 +1,5 @@
 ---
-title: IsReadOnly
+title: MySqlParameterCollection.IsReadOnly property
 ---
 
 # MySqlParameterCollection.IsReadOnly property

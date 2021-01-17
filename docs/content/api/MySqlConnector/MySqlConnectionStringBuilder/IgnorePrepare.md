@@ -1,5 +1,5 @@
 ---
-title: IgnorePrepare
+title: MySqlConnectionStringBuilder.IgnorePrepare property
 ---
 
 # MySqlConnectionStringBuilder.IgnorePrepare property

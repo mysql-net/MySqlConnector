@@ -1,5 +1,5 @@
 ---
-title: Transaction
+title: MySqlBatch.Transaction property
 ---
 
 # MySqlBatch.Transaction property

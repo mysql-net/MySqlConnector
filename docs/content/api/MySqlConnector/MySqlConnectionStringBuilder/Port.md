@@ -1,5 +1,5 @@
 ---
-title: Port
+title: MySqlConnectionStringBuilder.Port property
 ---
 
 # MySqlConnectionStringBuilder.Port property

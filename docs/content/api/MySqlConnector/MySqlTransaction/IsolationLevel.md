@@ -1,5 +1,5 @@
 ---
-title: IsolationLevel
+title: MySqlTransaction.IsolationLevel property
 ---
 
 # MySqlTransaction.IsolationLevel property

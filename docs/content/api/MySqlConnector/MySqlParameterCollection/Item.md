@@ -1,5 +1,5 @@
 ---
-title: Item
+title: MySqlParameterCollection indexers
 ---
 
 # MySqlParameterCollection indexer (1 of 2)

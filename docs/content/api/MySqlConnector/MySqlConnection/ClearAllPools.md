@@ -1,5 +1,5 @@
 ---
-title: ClearAllPools
+title: MySqlConnection.ClearAllPools method
 ---
 
 # MySqlConnection.ClearAllPools method

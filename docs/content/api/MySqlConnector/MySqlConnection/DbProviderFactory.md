@@ -1,5 +1,5 @@
 ---
-title: DbProviderFactory
+title: MySqlConnection.DbProviderFactory property
 ---
 
 # MySqlConnection.DbProviderFactory property

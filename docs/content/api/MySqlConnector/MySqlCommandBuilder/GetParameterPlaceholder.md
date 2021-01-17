@@ -1,5 +1,5 @@
 ---
-title: GetParameterPlaceholder
+title: MySqlCommandBuilder.GetParameterPlaceholder method
 ---
 
 # MySqlCommandBuilder.GetParameterPlaceholder method

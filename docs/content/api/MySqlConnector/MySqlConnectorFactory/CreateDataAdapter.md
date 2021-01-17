@@ -1,5 +1,5 @@
 ---
-title: CreateDataAdapter
+title: MySqlConnectorFactory.CreateDataAdapter method
 ---
 
 # MySqlConnectorFactory.CreateDataAdapter method

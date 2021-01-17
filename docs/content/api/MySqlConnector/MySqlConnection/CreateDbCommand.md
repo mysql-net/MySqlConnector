@@ -1,5 +1,5 @@
 ---
-title: CreateDbCommand
+title: MySqlConnection.CreateDbCommand method
 ---
 
 # MySqlConnection.CreateDbCommand method

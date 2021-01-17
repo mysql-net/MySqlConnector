@@ -1,5 +1,5 @@
 ---
-title: AddRange
+title: MySqlParameterCollection.AddRange method
 ---
 
 # MySqlParameterCollection.AddRange method

@@ -1,5 +1,5 @@
 ---
-title: QuoteIdentifier
+title: MySqlCommandBuilder.QuoteIdentifier method
 ---
 
 # MySqlCommandBuilder.QuoteIdentifier method

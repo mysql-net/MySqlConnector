@@ -1,5 +1,5 @@
 ---
-title: DeferConnectionReset
+title: MySqlConnectionStringBuilder.DeferConnectionReset property
 ---
 
 # MySqlConnectionStringBuilder.DeferConnectionReset property

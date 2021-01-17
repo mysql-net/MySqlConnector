@@ -1,5 +1,5 @@
 ---
-title: Dispose
+title: MySqlBatch.Dispose method
 ---
 
 # MySqlBatch.Dispose method

@@ -1,5 +1,5 @@
 ---
-title: GetObjectData
+title: MySqlException.GetObjectData method
 ---
 
 # MySqlException.GetObjectData method

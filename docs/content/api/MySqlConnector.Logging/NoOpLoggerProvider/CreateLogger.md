@@ -1,5 +1,5 @@
 ---
-title: CreateLogger
+title: NoOpLoggerProvider.CreateLogger method
 ---
 
 # NoOpLoggerProvider.CreateLogger method

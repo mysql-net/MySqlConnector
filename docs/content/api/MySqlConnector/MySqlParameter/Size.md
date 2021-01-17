@@ -1,5 +1,5 @@
 ---
-title: Size
+title: MySqlParameter.Size property
 ---
 
 # MySqlParameter.Size property

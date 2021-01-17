@@ -1,5 +1,5 @@
 ---
-title: Scale
+title: MySqlParameter.Scale property
 ---
 
 # MySqlParameter.Scale property

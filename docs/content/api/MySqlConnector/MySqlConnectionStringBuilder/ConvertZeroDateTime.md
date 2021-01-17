@@ -1,5 +1,5 @@
 ---
-title: ConvertZeroDateTime
+title: MySqlConnectionStringBuilder.ConvertZeroDateTime property
 ---
 
 # MySqlConnectionStringBuilder.ConvertZeroDateTime property

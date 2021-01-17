@@ -1,5 +1,5 @@
 ---
-title: State
+title: MySqlConnection.State property
 ---
 
 # MySqlConnection.State property

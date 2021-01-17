@@ -1,5 +1,5 @@
 ---
-title: ResetDbType
+title: MySqlParameter.ResetDbType method
 ---
 
 # MySqlParameter.ResetDbType method

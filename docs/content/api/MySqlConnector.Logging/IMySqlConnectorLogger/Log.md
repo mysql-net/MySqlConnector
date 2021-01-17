@@ -1,5 +1,5 @@
 ---
-title: Log
+title: IMySqlConnectorLogger.Log method
 ---
 
 # IMySqlConnectorLogger.Log method

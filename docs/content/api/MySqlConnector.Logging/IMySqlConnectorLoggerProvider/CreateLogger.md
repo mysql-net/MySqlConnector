@@ -1,5 +1,5 @@
 ---
-title: CreateLogger
+title: IMySqlConnectorLoggerProvider.CreateLogger method
 ---
 
 # IMySqlConnectorLoggerProvider.CreateLogger method

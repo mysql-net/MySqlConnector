@@ -1,5 +1,5 @@
 ---
-title: ExecuteScalar
+title: MySqlBatch.ExecuteScalar method
 ---
 
 # MySqlBatch.ExecuteScalar method

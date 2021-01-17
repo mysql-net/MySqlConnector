@@ -1,5 +1,5 @@
 ---
-title: GetChar
+title: MySqlDataReader.GetChar methods
 ---
 
 # MySqlDataReader.GetChar method (1 of 2)

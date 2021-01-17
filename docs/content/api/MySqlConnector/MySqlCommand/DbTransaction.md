@@ -1,5 +1,5 @@
 ---
-title: DbTransaction
+title: MySqlCommand.DbTransaction property
 ---
 
 # MySqlCommand.DbTransaction property

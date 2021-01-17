@@ -1,5 +1,5 @@
 ---
-title: BulkCopyTimeout
+title: MySqlBulkCopy.BulkCopyTimeout property
 ---
 
 # MySqlBulkCopy.BulkCopyTimeout property

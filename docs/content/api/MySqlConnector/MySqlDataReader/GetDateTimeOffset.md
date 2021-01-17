@@ -1,5 +1,5 @@
 ---
-title: GetDateTimeOffset
+title: MySqlDataReader.GetDateTimeOffset methods
 ---
 
 # MySqlDataReader.GetDateTimeOffset method (1 of 2)

@@ -1,5 +1,5 @@
 ---
-title: MySqlHelper
+title: MySqlHelper constructor
 ---
 
 # MySqlHelper constructor

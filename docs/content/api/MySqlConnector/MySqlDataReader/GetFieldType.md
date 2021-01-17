@@ -1,5 +1,5 @@
 ---
-title: GetFieldType
+title: MySqlDataReader.GetFieldType methods
 ---
 
 # MySqlDataReader.GetFieldType method (1 of 2)

@@ -1,5 +1,5 @@
 ---
-title: Timeout
+title: MySqlBatch.Timeout property
 ---
 
 # MySqlBatch.Timeout property

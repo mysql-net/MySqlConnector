@@ -1,5 +1,5 @@
 ---
-title: Direction
+title: MySqlParameter.Direction property
 ---
 
 # MySqlParameter.Direction property

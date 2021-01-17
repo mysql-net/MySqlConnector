@@ -1,5 +1,5 @@
 ---
-title: Columns
+title: MySqlBulkLoader.Columns property
 ---
 
 # MySqlBulkLoader.Columns property

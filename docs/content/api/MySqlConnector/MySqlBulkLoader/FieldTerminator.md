@@ -1,5 +1,5 @@
 ---
-title: FieldTerminator
+title: MySqlBulkLoader.FieldTerminator property
 ---
 
 # MySqlBulkLoader.FieldTerminator property

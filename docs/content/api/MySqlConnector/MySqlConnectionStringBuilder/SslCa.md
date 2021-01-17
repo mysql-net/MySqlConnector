@@ -1,5 +1,5 @@
 ---
-title: SslCa
+title: MySqlConnectionStringBuilder.SslCa property
 ---
 
 # MySqlConnectionStringBuilder.SslCa property

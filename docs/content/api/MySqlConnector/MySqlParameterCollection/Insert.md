@@ -1,5 +1,5 @@
 ---
-title: Insert
+title: MySqlParameterCollection.Insert method
 ---
 
 # MySqlParameterCollection.Insert method

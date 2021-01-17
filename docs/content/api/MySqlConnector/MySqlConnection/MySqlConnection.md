@@ -1,5 +1,5 @@
 ---
-title: MySqlConnection
+title: MySqlConnection constructors
 ---
 
 # MySqlConnection constructor (1 of 2)

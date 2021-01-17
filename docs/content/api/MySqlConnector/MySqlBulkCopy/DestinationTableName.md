@@ -1,5 +1,5 @@
 ---
-title: DestinationTableName
+title: MySqlBulkCopy.DestinationTableName property
 ---
 
 # MySqlBulkCopy.DestinationTableName property

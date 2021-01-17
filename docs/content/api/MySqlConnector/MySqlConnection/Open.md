@@ -1,5 +1,5 @@
 ---
-title: Open
+title: MySqlConnection.Open method
 ---
 
 # MySqlConnection.Open method

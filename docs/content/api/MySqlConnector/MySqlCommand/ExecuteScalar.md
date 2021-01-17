@@ -1,5 +1,5 @@
 ---
-title: ExecuteScalar
+title: MySqlCommand.ExecuteScalar method
 ---
 
 # MySqlCommand.ExecuteScalar method

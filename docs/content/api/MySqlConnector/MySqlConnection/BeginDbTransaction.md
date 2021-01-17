@@ -1,5 +1,5 @@
 ---
-title: BeginDbTransaction
+title: MySqlConnection.BeginDbTransaction method
 ---
 
 # MySqlConnection.BeginDbTransaction method

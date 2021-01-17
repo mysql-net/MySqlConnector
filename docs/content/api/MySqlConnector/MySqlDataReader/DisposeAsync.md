@@ -1,5 +1,5 @@
 ---
-title: DisposeAsync
+title: MySqlDataReader.DisposeAsync method
 ---
 
 # MySqlDataReader.DisposeAsync method

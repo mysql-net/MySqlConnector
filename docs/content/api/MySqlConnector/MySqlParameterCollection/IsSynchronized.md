@@ -1,5 +1,5 @@
 ---
-title: IsSynchronized
+title: MySqlParameterCollection.IsSynchronized property
 ---
 
 # MySqlParameterCollection.IsSynchronized property

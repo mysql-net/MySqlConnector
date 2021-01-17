@@ -1,5 +1,5 @@
 ---
-title: ChangeDatabaseAsync
+title: MySqlConnection.ChangeDatabaseAsync method
 ---
 
 # MySqlConnection.ChangeDatabaseAsync method

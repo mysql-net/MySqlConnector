@@ -1,5 +1,5 @@
 ---
-title: IsNullable
+title: MySqlParameter.IsNullable property
 ---
 
 # MySqlParameter.IsNullable property

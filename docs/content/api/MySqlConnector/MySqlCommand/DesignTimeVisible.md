@@ -1,5 +1,5 @@
 ---
-title: DesignTimeVisible
+title: MySqlCommand.DesignTimeVisible property
 ---
 
 # MySqlCommand.DesignTimeVisible property

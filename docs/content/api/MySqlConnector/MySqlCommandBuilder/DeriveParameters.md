@@ -1,5 +1,5 @@
 ---
-title: DeriveParameters
+title: MySqlCommandBuilder.DeriveParameters method
 ---
 
 # MySqlCommandBuilder.DeriveParameters method

@@ -1,5 +1,5 @@
 ---
-title: GetDeleteCommand
+title: MySqlCommandBuilder.GetDeleteCommand method
 ---
 
 # MySqlCommandBuilder.GetDeleteCommand method

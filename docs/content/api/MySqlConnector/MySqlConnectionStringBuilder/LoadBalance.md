@@ -1,5 +1,5 @@
 ---
-title: LoadBalance
+title: MySqlConnectionStringBuilder.LoadBalance property
 ---
 
 # MySqlConnectionStringBuilder.LoadBalance property

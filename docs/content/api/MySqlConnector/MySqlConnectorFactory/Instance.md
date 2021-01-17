@@ -1,5 +1,5 @@
 ---
-title: Instance
+title: MySqlConnectorFactory.Instance field
 ---
 
 # MySqlConnectorFactory.Instance field

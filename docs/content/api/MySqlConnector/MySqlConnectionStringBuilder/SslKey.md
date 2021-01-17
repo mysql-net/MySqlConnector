@@ -1,5 +1,5 @@
 ---
-title: SslKey
+title: MySqlConnectionStringBuilder.SslKey property
 ---
 
 # MySqlConnectionStringBuilder.SslKey property

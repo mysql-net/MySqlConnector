@@ -1,5 +1,5 @@
 ---
-title: Parameters
+title: MySqlBatchCommand.Parameters property
 ---
 
 # MySqlBatchCommand.Parameters property

@@ -1,5 +1,5 @@
 ---
-title: CharacterSet
+title: MySqlBulkLoader.CharacterSet property
 ---
 
 # MySqlBulkLoader.CharacterSet property

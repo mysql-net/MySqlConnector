@@ -1,5 +1,5 @@
 ---
-title: UseCompression
+title: MySqlConnectionStringBuilder.UseCompression property
 ---
 
 # MySqlConnectionStringBuilder.UseCompression property

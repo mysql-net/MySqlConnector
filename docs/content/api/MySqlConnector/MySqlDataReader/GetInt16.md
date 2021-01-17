@@ -1,5 +1,5 @@
 ---
-title: GetInt16
+title: MySqlDataReader.GetInt16 methods
 ---
 
 # MySqlDataReader.GetInt16 method (1 of 2)

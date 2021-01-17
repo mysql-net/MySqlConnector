@@ -1,5 +1,5 @@
 ---
-title: AllowPublicKeyRetrieval
+title: MySqlConnectionStringBuilder.AllowPublicKeyRetrieval property
 ---
 
 # MySqlConnectionStringBuilder.AllowPublicKeyRetrieval property

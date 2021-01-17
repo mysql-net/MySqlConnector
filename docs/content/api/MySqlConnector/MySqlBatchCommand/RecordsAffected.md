@@ -1,5 +1,5 @@
 ---
-title: RecordsAffected
+title: MySqlBatchCommand.RecordsAffected property
 ---
 
 # MySqlBatchCommand.RecordsAffected property

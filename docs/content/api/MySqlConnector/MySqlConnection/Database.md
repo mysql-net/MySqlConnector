@@ -1,5 +1,5 @@
 ---
-title: Database
+title: MySqlConnection.Database property
 ---
 
 # MySqlConnection.Database property

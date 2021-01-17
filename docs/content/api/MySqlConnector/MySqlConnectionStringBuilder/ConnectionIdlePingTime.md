@@ -1,5 +1,5 @@
 ---
-title: ConnectionIdlePingTime
+title: MySqlConnectionStringBuilder.ConnectionIdlePingTime property
 ---
 
 # MySqlConnectionStringBuilder.ConnectionIdlePingTime property

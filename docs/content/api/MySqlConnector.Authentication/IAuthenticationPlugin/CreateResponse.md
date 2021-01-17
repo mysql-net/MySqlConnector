@@ -1,5 +1,5 @@
 ---
-title: CreateResponse
+title: IAuthenticationPlugin.CreateResponse method
 ---
 
 # IAuthenticationPlugin.CreateResponse method

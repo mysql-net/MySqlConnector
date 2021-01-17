@@ -1,5 +1,5 @@
 ---
-title: GetStream
+title: MySqlDataReader.GetStream methods
 ---
 
 # MySqlDataReader.GetStream method (1 of 2)

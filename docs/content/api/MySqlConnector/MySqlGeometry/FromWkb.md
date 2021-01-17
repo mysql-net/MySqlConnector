@@ -1,5 +1,5 @@
 ---
-title: FromWkb
+title: MySqlGeometry.FromWkb method
 ---
 
 # MySqlGeometry.FromWkb method

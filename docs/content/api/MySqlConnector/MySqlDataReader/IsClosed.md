@@ -1,5 +1,5 @@
 ---
-title: IsClosed
+title: MySqlDataReader.IsClosed property
 ---
 
 # MySqlDataReader.IsClosed property

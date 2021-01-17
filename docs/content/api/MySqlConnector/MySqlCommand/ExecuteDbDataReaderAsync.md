@@ -1,5 +1,5 @@
 ---
-title: ExecuteDbDataReaderAsync
+title: MySqlCommand.ExecuteDbDataReaderAsync method
 ---
 
 # MySqlCommand.ExecuteDbDataReaderAsync method

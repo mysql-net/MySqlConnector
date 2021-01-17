@@ -1,5 +1,5 @@
 ---
-title: GetColumnSchemaAsync
+title: MySqlDataReader.GetColumnSchemaAsync method
 ---
 
 # MySqlDataReader.GetColumnSchemaAsync method

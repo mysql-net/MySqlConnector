@@ -1,5 +1,5 @@
 ---
-title: RowsCopied
+title: MySqlBulkCopy.RowsCopied property
 ---
 
 # MySqlBulkCopy.RowsCopied property

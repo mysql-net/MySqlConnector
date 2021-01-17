@@ -1,5 +1,5 @@
 ---
-title: Commit
+title: MySqlTransaction.Commit method
 ---
 
 # MySqlTransaction.Commit method

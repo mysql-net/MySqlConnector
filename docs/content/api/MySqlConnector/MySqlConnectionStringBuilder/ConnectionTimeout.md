@@ -1,5 +1,5 @@
 ---
-title: ConnectionTimeout
+title: MySqlConnectionStringBuilder.ConnectionTimeout property
 ---
 
 # MySqlConnectionStringBuilder.ConnectionTimeout property

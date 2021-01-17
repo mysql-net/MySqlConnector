@@ -1,5 +1,5 @@
 ---
-title: op_Explicit
+title: MySqlDateTime Explicit operator
 ---
 
 # MySqlDateTime Explicit operator

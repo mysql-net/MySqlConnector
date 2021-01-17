@@ -1,5 +1,5 @@
 ---
-title: DataSource
+title: MySqlConnection.DataSource property
 ---
 
 # MySqlConnection.DataSource property

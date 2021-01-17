@@ -1,5 +1,5 @@
 ---
-title: ColumnMappings
+title: MySqlBulkCopy.ColumnMappings property
 ---
 
 # MySqlBulkCopy.ColumnMappings property

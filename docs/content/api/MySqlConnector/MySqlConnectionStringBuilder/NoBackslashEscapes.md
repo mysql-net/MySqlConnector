@@ -1,5 +1,5 @@
 ---
-title: NoBackslashEscapes
+title: MySqlConnectionStringBuilder.NoBackslashEscapes property
 ---
 
 # MySqlConnectionStringBuilder.NoBackslashEscapes property

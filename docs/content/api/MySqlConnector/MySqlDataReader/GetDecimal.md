@@ -1,5 +1,5 @@
 ---
-title: GetDecimal
+title: MySqlDataReader.GetDecimal methods
 ---
 
 # MySqlDataReader.GetDecimal method (1 of 2)

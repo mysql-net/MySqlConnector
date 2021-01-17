@@ -1,5 +1,5 @@
 ---
-title: PingAsync
+title: MySqlConnection.PingAsync method
 ---
 
 # MySqlConnection.PingAsync method

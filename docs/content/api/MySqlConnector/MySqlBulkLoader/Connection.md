@@ -1,5 +1,5 @@
 ---
-title: Connection
+title: MySqlBulkLoader.Connection property
 ---
 
 # MySqlBulkLoader.Connection property

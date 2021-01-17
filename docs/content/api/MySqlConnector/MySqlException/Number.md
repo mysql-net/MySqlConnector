@@ -1,5 +1,5 @@
 ---
-title: Number
+title: MySqlException.Number property
 ---
 
 # MySqlException.Number property

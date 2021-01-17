@@ -1,5 +1,5 @@
 ---
-title: Save
+title: MySqlTransaction.Save method
 ---
 
 # MySqlTransaction.Save method

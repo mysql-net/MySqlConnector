@@ -1,5 +1,5 @@
 ---
-title: Clone
+title: MySqlCommand.Clone method
 ---
 
 # MySqlCommand.Clone method

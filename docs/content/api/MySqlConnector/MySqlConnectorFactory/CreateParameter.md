@@ -1,5 +1,5 @@
 ---
-title: CreateParameter
+title: MySqlConnectorFactory.CreateParameter method
 ---
 
 # MySqlConnectorFactory.CreateParameter method

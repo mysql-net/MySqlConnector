@@ -1,5 +1,5 @@
 ---
-title: CommandType
+title: MySqlCommand.CommandType property
 ---
 
 # MySqlCommand.CommandType property

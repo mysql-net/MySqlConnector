@@ -1,5 +1,5 @@
 ---
-title: ApplyParameterInfo
+title: MySqlCommandBuilder.ApplyParameterInfo method
 ---
 
 # MySqlCommandBuilder.ApplyParameterInfo method

@@ -1,5 +1,5 @@
 ---
-title: Code
+title: MySqlError.Code property
 ---
 
 # MySqlError.Code property

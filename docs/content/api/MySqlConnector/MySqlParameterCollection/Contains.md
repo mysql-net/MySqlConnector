@@ -1,5 +1,5 @@
 ---
-title: Contains
+title: MySqlParameterCollection.Contains methods
 ---
 
 # MySqlParameterCollection.Contains method (1 of 2)

@@ -1,5 +1,5 @@
 ---
-title: ExecuteNonQuery
+title: MySqlBatch.ExecuteNonQuery method
 ---
 
 # MySqlBatch.ExecuteNonQuery method

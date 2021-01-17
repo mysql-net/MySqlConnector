@@ -1,5 +1,5 @@
 ---
-title: CharacterSet
+title: MySqlConnectionStringBuilder.CharacterSet property
 ---
 
 # MySqlConnectionStringBuilder.CharacterSet property

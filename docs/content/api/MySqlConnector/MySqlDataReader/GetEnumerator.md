@@ -1,5 +1,5 @@
 ---
-title: GetEnumerator
+title: MySqlDataReader.GetEnumerator method
 ---
 
 # MySqlDataReader.GetEnumerator method

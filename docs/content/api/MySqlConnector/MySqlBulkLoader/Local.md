@@ -1,5 +1,5 @@
 ---
-title: Local
+title: MySqlBulkLoader.Local property
 ---
 
 # MySqlBulkLoader.Local property

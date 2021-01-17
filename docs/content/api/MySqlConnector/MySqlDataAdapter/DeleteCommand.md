@@ -1,5 +1,5 @@
 ---
-title: DeleteCommand
+title: MySqlDataAdapter.DeleteCommand property
 ---
 
 # MySqlDataAdapter.DeleteCommand property

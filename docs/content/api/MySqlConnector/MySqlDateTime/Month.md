@@ -1,5 +1,5 @@
 ---
-title: Month
+title: MySqlDateTime.Month property
 ---
 
 # MySqlDateTime.Month property

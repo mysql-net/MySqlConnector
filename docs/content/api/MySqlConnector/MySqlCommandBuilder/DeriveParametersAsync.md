@@ -1,5 +1,5 @@
 ---
-title: DeriveParametersAsync
+title: MySqlCommandBuilder.DeriveParametersAsync methods
 ---
 
 # MySqlCommandBuilder.DeriveParametersAsync method (1 of 2)

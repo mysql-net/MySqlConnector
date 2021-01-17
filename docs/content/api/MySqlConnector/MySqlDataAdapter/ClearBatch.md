@@ -1,5 +1,5 @@
 ---
-title: ClearBatch
+title: MySqlDataAdapter.ClearBatch method
 ---
 
 # MySqlDataAdapter.ClearBatch method

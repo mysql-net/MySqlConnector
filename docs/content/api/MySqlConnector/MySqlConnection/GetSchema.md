@@ -1,5 +1,5 @@
 ---
-title: GetSchema
+title: MySqlConnection.GetSchema methods
 ---
 
 # MySqlConnection.GetSchema method (1 of 3)

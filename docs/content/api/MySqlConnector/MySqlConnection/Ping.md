@@ -1,5 +1,5 @@
 ---
-title: Ping
+title: MySqlConnection.Ping method
 ---
 
 # MySqlConnection.Ping method

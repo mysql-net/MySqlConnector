@@ -1,5 +1,5 @@
 ---
-title: CommandTimeout
+title: MySqlCommand.CommandTimeout property
 ---
 
 # MySqlCommand.CommandTimeout property

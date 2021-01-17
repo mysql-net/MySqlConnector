@@ -1,5 +1,5 @@
 ---
-title: CancellationTimeout
+title: MySqlConnectionStringBuilder.CancellationTimeout property
 ---
 
 # MySqlConnectionStringBuilder.CancellationTimeout property

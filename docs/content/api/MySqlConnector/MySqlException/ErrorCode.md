@@ -1,5 +1,5 @@
 ---
-title: ErrorCode
+title: MySqlException.ErrorCode property
 ---
 
 # MySqlException.ErrorCode property

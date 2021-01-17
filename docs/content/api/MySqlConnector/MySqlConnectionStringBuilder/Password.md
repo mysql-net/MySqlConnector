@@ -1,5 +1,5 @@
 ---
-title: Password
+title: MySqlConnectionStringBuilder.Password property
 ---
 
 # MySqlConnectionStringBuilder.Password property

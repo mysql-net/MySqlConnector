@@ -1,5 +1,5 @@
 ---
-title: Read
+title: MySqlDataReader.Read method
 ---
 
 # MySqlDataReader.Read method

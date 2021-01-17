@@ -1,5 +1,5 @@
 ---
-title: Data
+title: MySqlException.Data property
 ---
 
 # MySqlException.Data property

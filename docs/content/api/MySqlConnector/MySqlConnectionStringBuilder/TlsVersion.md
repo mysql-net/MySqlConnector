@@ -1,5 +1,5 @@
 ---
-title: TlsVersion
+title: MySqlConnectionStringBuilder.TlsVersion property
 ---
 
 # MySqlConnectionStringBuilder.TlsVersion property

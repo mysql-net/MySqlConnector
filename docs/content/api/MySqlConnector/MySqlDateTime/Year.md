@@ -1,5 +1,5 @@
 ---
-title: Year
+title: MySqlDateTime.Year property
 ---
 
 # MySqlDateTime.Year property

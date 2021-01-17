@@ -1,5 +1,5 @@
 ---
-title: IsFixedSize
+title: MySqlParameterCollection.IsFixedSize property
 ---
 
 # MySqlParameterCollection.IsFixedSize property

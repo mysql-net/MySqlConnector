@@ -1,5 +1,5 @@
 ---
-title: AllowUserVariables
+title: MySqlConnectionStringBuilder.AllowUserVariables property
 ---
 
 # MySqlConnectionStringBuilder.AllowUserVariables property

@@ -1,5 +1,5 @@
 ---
-title: Clear
+title: MySqlParameterCollection.Clear method
 ---
 
 # MySqlParameterCollection.Clear method

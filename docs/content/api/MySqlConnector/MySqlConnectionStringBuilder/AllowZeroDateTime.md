@@ -1,5 +1,5 @@
 ---
-title: AllowZeroDateTime
+title: MySqlConnectionStringBuilder.AllowZeroDateTime property
 ---
 
 # MySqlConnectionStringBuilder.AllowZeroDateTime property

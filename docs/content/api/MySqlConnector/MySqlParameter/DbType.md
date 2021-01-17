@@ -1,5 +1,5 @@
 ---
-title: DbType
+title: MySqlParameter.DbType property
 ---
 
 # MySqlParameter.DbType property

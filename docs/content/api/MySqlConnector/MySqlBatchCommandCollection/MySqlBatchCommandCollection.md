@@ -1,5 +1,5 @@
 ---
-title: MySqlBatchCommandCollection
+title: MySqlBatchCommandCollection constructor
 ---
 
 # MySqlBatchCommandCollection constructor

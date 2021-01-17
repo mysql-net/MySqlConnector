@@ -1,5 +1,5 @@
 ---
-title: Load
+title: MySqlBulkLoader.Load method
 ---
 
 # MySqlBulkLoader.Load method

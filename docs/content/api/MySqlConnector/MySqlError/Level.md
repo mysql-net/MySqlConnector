@@ -1,5 +1,5 @@
 ---
-title: Level
+title: MySqlError.Level property
 ---
 
 # MySqlError.Level property

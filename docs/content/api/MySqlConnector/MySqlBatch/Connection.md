@@ -1,5 +1,5 @@
 ---
-title: Connection
+title: MySqlBatch.Connection property
 ---
 
 # MySqlBatch.Connection property

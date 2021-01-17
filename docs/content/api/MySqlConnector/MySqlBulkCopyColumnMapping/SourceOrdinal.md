@@ -1,5 +1,5 @@
 ---
-title: SourceOrdinal
+title: MySqlBulkCopyColumnMapping.SourceOrdinal property
 ---
 
 # MySqlBulkCopyColumnMapping.SourceOrdinal property

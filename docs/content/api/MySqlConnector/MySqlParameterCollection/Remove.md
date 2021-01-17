@@ -1,5 +1,5 @@
 ---
-title: Remove
+title: MySqlParameterCollection.Remove method
 ---
 
 # MySqlParameterCollection.Remove method

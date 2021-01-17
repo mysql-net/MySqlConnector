@@ -1,5 +1,5 @@
 ---
-title: Depth
+title: MySqlDataReader.Depth property
 ---
 
 # MySqlDataReader.Depth property

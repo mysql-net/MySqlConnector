@@ -1,5 +1,5 @@
 ---
-title: Prepare
+title: MySqlCommand.Prepare method
 ---
 
 # MySqlCommand.Prepare method

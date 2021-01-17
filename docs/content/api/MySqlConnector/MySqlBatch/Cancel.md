@@ -1,5 +1,5 @@
 ---
-title: Cancel
+title: MySqlBatch.Cancel method
 ---
 
 # MySqlBatch.Cancel method

@@ -1,5 +1,5 @@
 ---
-title: GetDbDataReader
+title: MySqlDataReader.GetDbDataReader method
 ---
 
 # MySqlDataReader.GetDbDataReader method

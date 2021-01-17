@@ -1,5 +1,5 @@
 ---
-title: IsDBNull
+title: MySqlDataReader.IsDBNull method
 ---
 
 # MySqlDataReader.IsDBNull method

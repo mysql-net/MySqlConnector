@@ -1,5 +1,5 @@
 ---
-title: IsTransient
+title: MySqlException.IsTransient property
 ---
 
 # MySqlException.IsTransient property

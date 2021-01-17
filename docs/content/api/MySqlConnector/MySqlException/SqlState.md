@@ -1,5 +1,5 @@
 ---
-title: SqlState
+title: MySqlException.SqlState property
 ---
 
 # MySqlException.SqlState property

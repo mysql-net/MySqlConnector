@@ -1,5 +1,5 @@
 ---
-title: Server
+title: MySqlConnectionStringBuilder.Server property
 ---
 
 # MySqlConnectionStringBuilder.Server property

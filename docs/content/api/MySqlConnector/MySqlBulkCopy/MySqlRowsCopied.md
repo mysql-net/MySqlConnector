@@ -1,5 +1,5 @@
 ---
-title: MySqlRowsCopied
+title: MySqlBulkCopy.MySqlRowsCopied event
 ---
 
 # MySqlBulkCopy.MySqlRowsCopied event

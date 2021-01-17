@@ -1,5 +1,5 @@
 ---
-title: MySqlDateTime
+title: MySqlDateTime constructors
 ---
 
 # MySqlDateTime constructor (1 of 3)

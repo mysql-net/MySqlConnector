@@ -1,5 +1,5 @@
 ---
-title: IsValidDateTime
+title: MySqlDateTime.IsValidDateTime property
 ---
 
 # MySqlDateTime.IsValidDateTime property

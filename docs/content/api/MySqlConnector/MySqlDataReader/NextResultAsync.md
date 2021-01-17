@@ -1,5 +1,5 @@
 ---
-title: NextResultAsync
+title: MySqlDataReader.NextResultAsync method
 ---
 
 # MySqlDataReader.NextResultAsync method

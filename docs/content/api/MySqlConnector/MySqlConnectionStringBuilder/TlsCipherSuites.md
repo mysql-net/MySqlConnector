@@ -1,5 +1,5 @@
 ---
-title: TlsCipherSuites
+title: MySqlConnectionStringBuilder.TlsCipherSuites property
 ---
 
 # MySqlConnectionStringBuilder.TlsCipherSuites property

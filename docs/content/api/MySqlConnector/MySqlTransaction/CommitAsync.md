@@ -1,5 +1,5 @@
 ---
-title: CommitAsync
+title: MySqlTransaction.CommitAsync method
 ---
 
 # MySqlTransaction.CommitAsync method

@@ -1,5 +1,5 @@
 ---
-title: GetParameterName
+title: MySqlCommandBuilder.GetParameterName methods
 ---
 
 # MySqlCommandBuilder.GetParameterName method (1 of 2)

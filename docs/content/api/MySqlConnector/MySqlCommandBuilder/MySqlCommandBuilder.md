@@ -1,5 +1,5 @@
 ---
-title: MySqlCommandBuilder
+title: MySqlCommandBuilder constructors
 ---
 
 # MySqlCommandBuilder constructor (1 of 2)

@@ -1,5 +1,5 @@
 ---
-title: Count
+title: MySqlParameterCollection.Count property
 ---
 
 # MySqlParameterCollection.Count property

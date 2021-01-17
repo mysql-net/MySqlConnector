@@ -1,5 +1,5 @@
 ---
-title: MySqlDataAdapter
+title: MySqlDataAdapter constructors
 ---
 
 # MySqlDataAdapter constructor (1 of 4)

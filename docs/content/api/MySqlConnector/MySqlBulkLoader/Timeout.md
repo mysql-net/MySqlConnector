@@ -1,5 +1,5 @@
 ---
-title: Timeout
+title: MySqlBulkLoader.Timeout property
 ---
 
 # MySqlBulkLoader.Timeout property

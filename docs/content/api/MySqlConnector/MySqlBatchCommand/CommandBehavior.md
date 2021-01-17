@@ -1,5 +1,5 @@
 ---
-title: CommandBehavior
+title: MySqlBatchCommand.CommandBehavior property
 ---
 
 # MySqlBatchCommand.CommandBehavior property

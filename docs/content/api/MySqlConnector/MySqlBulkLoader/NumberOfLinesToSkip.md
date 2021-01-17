@@ -1,5 +1,5 @@
 ---
-title: NumberOfLinesToSkip
+title: MySqlBulkLoader.NumberOfLinesToSkip property
 ---
 
 # MySqlBulkLoader.NumberOfLinesToSkip property

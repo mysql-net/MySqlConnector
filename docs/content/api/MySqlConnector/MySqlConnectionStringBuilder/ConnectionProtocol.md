@@ -1,5 +1,5 @@
 ---
-title: ConnectionProtocol
+title: MySqlConnectionStringBuilder.ConnectionProtocol property
 ---
 
 # MySqlConnectionStringBuilder.ConnectionProtocol property

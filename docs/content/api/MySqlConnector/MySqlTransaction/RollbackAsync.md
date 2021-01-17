@@ -1,5 +1,5 @@
 ---
-title: RollbackAsync
+title: MySqlTransaction.RollbackAsync methods
 ---
 
 # MySqlTransaction.RollbackAsync method (1 of 2)

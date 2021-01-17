@@ -1,5 +1,5 @@
 ---
-title: LoadAsync
+title: MySqlBulkLoader.LoadAsync methods
 ---
 
 # MySqlBulkLoader.LoadAsync method (1 of 2)

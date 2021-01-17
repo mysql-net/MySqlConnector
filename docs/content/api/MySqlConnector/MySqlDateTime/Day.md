@@ -1,5 +1,5 @@
 ---
-title: Day
+title: MySqlDateTime.Day property
 ---
 
 # MySqlDateTime.Day property

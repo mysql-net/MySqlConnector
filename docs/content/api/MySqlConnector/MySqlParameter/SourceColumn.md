@@ -1,5 +1,5 @@
 ---
-title: SourceColumn
+title: MySqlParameter.SourceColumn property
 ---
 
 # MySqlParameter.SourceColumn property

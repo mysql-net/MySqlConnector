@@ -1,5 +1,5 @@
 ---
-title: PrepareAsync
+title: MySqlCommand.PrepareAsync method
 ---
 
 # MySqlCommand.PrepareAsync method

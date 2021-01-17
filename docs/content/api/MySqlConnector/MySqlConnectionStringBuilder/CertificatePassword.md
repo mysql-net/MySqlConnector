@@ -1,5 +1,5 @@
 ---
-title: CertificatePassword
+title: MySqlConnectionStringBuilder.CertificatePassword property
 ---
 
 # MySqlConnectionStringBuilder.CertificatePassword property

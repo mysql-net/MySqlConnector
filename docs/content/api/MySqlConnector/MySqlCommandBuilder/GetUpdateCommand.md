@@ -1,5 +1,5 @@
 ---
-title: GetUpdateCommand
+title: MySqlCommandBuilder.GetUpdateCommand method
 ---
 
 # MySqlCommandBuilder.GetUpdateCommand method

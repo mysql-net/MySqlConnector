@@ -1,5 +1,5 @@
 ---
-title: Abort
+title: MySqlRowsCopiedEventArgs.Abort property
 ---
 
 # MySqlRowsCopiedEventArgs.Abort property

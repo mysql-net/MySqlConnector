@@ -1,5 +1,5 @@
 ---
-title: CopyTo
+title: MySqlParameterCollection.CopyTo method
 ---
 
 # MySqlParameterCollection.CopyTo method

@@ -1,5 +1,5 @@
 ---
-title: GetBoolean
+title: MySqlDataReader.GetBoolean methods
 ---
 
 # MySqlDataReader.GetBoolean method (1 of 2)

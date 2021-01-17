@@ -1,5 +1,5 @@
 ---
-title: LinePrefix
+title: MySqlBulkLoader.LinePrefix property
 ---
 
 # MySqlBulkLoader.LinePrefix property

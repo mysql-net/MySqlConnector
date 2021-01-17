@@ -1,5 +1,5 @@
 ---
-title: DataAdapter
+title: MySqlCommandBuilder.DataAdapter property
 ---
 
 # MySqlCommandBuilder.DataAdapter property

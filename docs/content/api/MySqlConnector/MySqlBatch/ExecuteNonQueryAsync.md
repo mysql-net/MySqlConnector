@@ -1,5 +1,5 @@
 ---
-title: ExecuteNonQueryAsync
+title: MySqlBatch.ExecuteNonQueryAsync method
 ---
 
 # MySqlBatch.ExecuteNonQueryAsync method

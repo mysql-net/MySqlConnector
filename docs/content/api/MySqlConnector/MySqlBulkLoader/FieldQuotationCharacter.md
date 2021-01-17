@@ -1,5 +1,5 @@
 ---
-title: FieldQuotationCharacter
+title: MySqlBulkLoader.FieldQuotationCharacter property
 ---
 
 # MySqlBulkLoader.FieldQuotationCharacter property

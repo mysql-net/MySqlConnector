@@ -1,5 +1,5 @@
 ---
-title: CanCreateBatch
+title: MySqlConnectorFactory.CanCreateBatch property
 ---
 
 # MySqlConnectorFactory.CanCreateBatch property

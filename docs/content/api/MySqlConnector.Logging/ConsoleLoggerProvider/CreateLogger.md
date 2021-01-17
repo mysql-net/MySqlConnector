@@ -1,5 +1,5 @@
 ---
-title: CreateLogger
+title: ConsoleLoggerProvider.CreateLogger method
 ---
 
 # ConsoleLoggerProvider.CreateLogger method

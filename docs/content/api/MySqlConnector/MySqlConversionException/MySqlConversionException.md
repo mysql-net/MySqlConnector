@@ -1,5 +1,5 @@
 ---
-title: MySqlConversionException
+title: MySqlConversionException constructor
 ---
 
 # MySqlConversionException constructor

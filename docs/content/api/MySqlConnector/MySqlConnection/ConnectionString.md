@@ -1,5 +1,5 @@
 ---
-title: ConnectionString
+title: MySqlConnection.ConnectionString property
 ---
 
 # MySqlConnection.ConnectionString property

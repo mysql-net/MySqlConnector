@@ -1,5 +1,5 @@
 ---
-title: ConsoleLoggerProvider
+title: ConsoleLoggerProvider constructor
 ---
 
 # ConsoleLoggerProvider constructor

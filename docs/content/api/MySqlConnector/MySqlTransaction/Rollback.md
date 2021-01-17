@@ -1,5 +1,5 @@
 ---
-title: Rollback
+title: MySqlTransaction.Rollback methods
 ---
 
 # MySqlTransaction.Rollback method (1 of 2)

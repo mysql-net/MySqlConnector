@@ -1,5 +1,5 @@
 ---
-title: ConnectionReset
+title: MySqlConnectionStringBuilder.ConnectionReset property
 ---
 
 # MySqlConnectionStringBuilder.ConnectionReset property

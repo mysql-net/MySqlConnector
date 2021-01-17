@@ -1,5 +1,5 @@
 ---
-title: InteractiveSession
+title: MySqlConnectionStringBuilder.InteractiveSession property
 ---
 
 # MySqlConnectionStringBuilder.InteractiveSession property

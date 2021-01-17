@@ -1,5 +1,5 @@
 ---
-title: DisposeAsync
+title: MySqlConnection.DisposeAsync method
 ---
 
 # MySqlConnection.DisposeAsync method

@@ -1,5 +1,5 @@
 ---
-title: CreateCommand
+title: MySqlConnectorFactory.CreateCommand method
 ---
 
 # MySqlConnectorFactory.CreateCommand method

@@ -1,5 +1,5 @@
 ---
-title: Expression
+title: MySqlBulkCopyColumnMapping.Expression property
 ---
 
 # MySqlBulkCopyColumnMapping.Expression property

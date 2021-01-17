@@ -1,5 +1,5 @@
 ---
-title: Log
+title: NoOpLogger.Log method
 ---
 
 # NoOpLogger.Log method

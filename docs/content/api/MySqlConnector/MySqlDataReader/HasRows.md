@@ -1,5 +1,5 @@
 ---
-title: HasRows
+title: MySqlDataReader.HasRows property
 ---
 
 # MySqlDataReader.HasRows property

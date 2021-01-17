@@ -1,5 +1,5 @@
 ---
-title: GetSchemaTable
+title: MySqlDataReader.GetSchemaTable method
 ---
 
 # MySqlDataReader.GetSchemaTable method

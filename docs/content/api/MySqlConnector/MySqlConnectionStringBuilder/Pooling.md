@@ -1,5 +1,5 @@
 ---
-title: Pooling
+title: MySqlConnectionStringBuilder.Pooling property
 ---
 
 # MySqlConnectionStringBuilder.Pooling property

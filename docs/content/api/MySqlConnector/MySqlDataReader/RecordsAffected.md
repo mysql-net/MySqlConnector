@@ -1,5 +1,5 @@
 ---
-title: RecordsAffected
+title: MySqlDataReader.RecordsAffected property
 ---
 
 # MySqlDataReader.RecordsAffected property

@@ -1,5 +1,5 @@
 ---
-title: SourceStream
+title: MySqlBulkLoader.SourceStream property
 ---
 
 # MySqlBulkLoader.SourceStream property

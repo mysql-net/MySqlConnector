@@ -1,5 +1,5 @@
 ---
-title: ServerVersion
+title: MySqlConnection.ServerVersion property
 ---
 
 # MySqlConnection.ServerVersion property

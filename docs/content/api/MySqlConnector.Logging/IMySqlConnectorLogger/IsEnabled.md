@@ -1,5 +1,5 @@
 ---
-title: IsEnabled
+title: IMySqlConnectorLogger.IsEnabled method
 ---
 
 # IMySqlConnectorLogger.IsEnabled method

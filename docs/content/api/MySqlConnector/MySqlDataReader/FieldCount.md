@@ -1,5 +1,5 @@
 ---
-title: FieldCount
+title: MySqlDataReader.FieldCount property
 ---
 
 # MySqlDataReader.FieldCount property

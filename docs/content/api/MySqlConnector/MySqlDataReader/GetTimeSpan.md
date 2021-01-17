@@ -1,5 +1,5 @@
 ---
-title: GetTimeSpan
+title: MySqlDataReader.GetTimeSpan methods
 ---
 
 # MySqlDataReader.GetTimeSpan method (1 of 2)

@@ -1,5 +1,5 @@
 ---
-title: GetName
+title: MySqlDataReader.GetName method
 ---
 
 # MySqlDataReader.GetName method

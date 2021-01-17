@@ -1,5 +1,5 @@
 ---
-title: RemoveAt
+title: MySqlParameterCollection.RemoveAt methods
 ---
 
 # MySqlParameterCollection.RemoveAt method (1 of 2)

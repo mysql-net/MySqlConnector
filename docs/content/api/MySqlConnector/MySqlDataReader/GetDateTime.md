@@ -1,5 +1,5 @@
 ---
-title: GetDateTime
+title: MySqlDataReader.GetDateTime methods
 ---
 
 # MySqlDataReader.GetDateTime method (1 of 2)

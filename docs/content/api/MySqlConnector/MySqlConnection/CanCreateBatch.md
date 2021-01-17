@@ -1,5 +1,5 @@
 ---
-title: CanCreateBatch
+title: MySqlConnection.CanCreateBatch property
 ---
 
 # MySqlConnection.CanCreateBatch property

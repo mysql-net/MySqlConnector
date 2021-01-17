@@ -1,5 +1,5 @@
 ---
-title: TableName
+title: MySqlBulkLoader.TableName property
 ---
 
 # MySqlBulkLoader.TableName property

@@ -1,5 +1,5 @@
 ---
-title: SetRowUpdatingHandler
+title: MySqlCommandBuilder.SetRowUpdatingHandler method
 ---
 
 # MySqlCommandBuilder.SetRowUpdatingHandler method

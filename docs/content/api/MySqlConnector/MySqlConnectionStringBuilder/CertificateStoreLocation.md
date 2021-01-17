@@ -1,5 +1,5 @@
 ---
-title: CertificateStoreLocation
+title: MySqlConnectionStringBuilder.CertificateStoreLocation property
 ---
 
 # MySqlConnectionStringBuilder.CertificateStoreLocation property

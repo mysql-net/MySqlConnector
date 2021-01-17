@@ -1,5 +1,5 @@
 ---
-title: DefaultCommandTimeout
+title: MySqlConnectionStringBuilder.DefaultCommandTimeout property
 ---
 
 # MySqlConnectionStringBuilder.DefaultCommandTimeout property

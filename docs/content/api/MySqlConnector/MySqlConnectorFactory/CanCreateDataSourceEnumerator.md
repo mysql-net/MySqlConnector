@@ -1,5 +1,5 @@
 ---
-title: CanCreateDataSourceEnumerator
+title: MySqlConnectorFactory.CanCreateDataSourceEnumerator property
 ---
 
 # MySqlConnectorFactory.CanCreateDataSourceEnumerator property

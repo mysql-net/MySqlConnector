@@ -1,5 +1,5 @@
 ---
-title: EscapeCharacter
+title: MySqlBulkLoader.EscapeCharacter property
 ---
 
 # MySqlBulkLoader.EscapeCharacter property

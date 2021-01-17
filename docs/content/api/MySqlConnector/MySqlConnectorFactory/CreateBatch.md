@@ -1,5 +1,5 @@
 ---
-title: CreateBatch
+title: MySqlConnectorFactory.CreateBatch method
 ---
 
 # MySqlConnectorFactory.CreateBatch method

@@ -1,5 +1,5 @@
 ---
-title: FileName
+title: MySqlBulkLoader.FileName property
 ---
 
 # MySqlBulkLoader.FileName property

@@ -1,5 +1,5 @@
 ---
-title: MinimumPoolSize
+title: MySqlConnectionStringBuilder.MinimumPoolSize property
 ---
 
 # MySqlConnectionStringBuilder.MinimumPoolSize property

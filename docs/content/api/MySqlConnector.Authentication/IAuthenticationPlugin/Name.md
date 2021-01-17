@@ -1,5 +1,5 @@
 ---
-title: Name
+title: IAuthenticationPlugin.Name property
 ---
 
 # IAuthenticationPlugin.Name property

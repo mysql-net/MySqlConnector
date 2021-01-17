@@ -1,5 +1,5 @@
 ---
-title: DateTimeKind
+title: MySqlConnectionStringBuilder.DateTimeKind property
 ---
 
 # MySqlConnectionStringBuilder.DateTimeKind property

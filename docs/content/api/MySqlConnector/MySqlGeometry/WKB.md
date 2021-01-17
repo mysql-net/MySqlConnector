@@ -1,5 +1,5 @@
 ---
-title: WKB
+title: MySqlGeometry.WKB property
 ---
 
 # MySqlGeometry.WKB property

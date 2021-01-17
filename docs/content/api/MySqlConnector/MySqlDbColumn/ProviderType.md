@@ -1,5 +1,5 @@
 ---
-title: ProviderType
+title: MySqlDbColumn.ProviderType property
 ---
 
 # MySqlDbColumn.ProviderType property

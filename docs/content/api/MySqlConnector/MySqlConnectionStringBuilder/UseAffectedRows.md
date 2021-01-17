@@ -1,5 +1,5 @@
 ---
-title: UseAffectedRows
+title: MySqlConnectionStringBuilder.UseAffectedRows property
 ---
 
 # MySqlConnectionStringBuilder.UseAffectedRows property

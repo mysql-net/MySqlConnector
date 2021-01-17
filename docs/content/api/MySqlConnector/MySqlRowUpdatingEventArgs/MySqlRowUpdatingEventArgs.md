@@ -1,5 +1,5 @@
 ---
-title: MySqlRowUpdatingEventArgs
+title: MySqlRowUpdatingEventArgs constructor
 ---
 
 # MySqlRowUpdatingEventArgs constructor

@@ -1,5 +1,5 @@
 ---
-title: OnRowUpdating
+title: MySqlDataAdapter.OnRowUpdating method
 ---
 
 # MySqlDataAdapter.OnRowUpdating method

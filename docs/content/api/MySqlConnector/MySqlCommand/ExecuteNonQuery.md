@@ -1,5 +1,5 @@
 ---
-title: ExecuteNonQuery
+title: MySqlCommand.ExecuteNonQuery method
 ---
 
 # MySqlCommand.ExecuteNonQuery method

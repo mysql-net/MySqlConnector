@@ -1,5 +1,5 @@
 ---
-title: CreateConnectionStringBuilder
+title: MySqlConnectorFactory.CreateConnectionStringBuilder method
 ---
 
 # MySqlConnectorFactory.CreateConnectionStringBuilder method

@@ -1,5 +1,5 @@
 ---
-title: SslCert
+title: MySqlConnectionStringBuilder.SslCert property
 ---
 
 # MySqlConnectionStringBuilder.SslCert property

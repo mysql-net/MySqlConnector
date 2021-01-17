@@ -1,5 +1,5 @@
 ---
-title: MaximumPoolSize
+title: MySqlConnectionStringBuilder.MaximumPoolSize property
 ---
 
 # MySqlConnectionStringBuilder.MaximumPoolSize property

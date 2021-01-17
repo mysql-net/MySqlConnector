@@ -1,5 +1,5 @@
 ---
-title: CreateBatchCommand
+title: MySqlConnection.CreateBatchCommand method
 ---
 
 # MySqlConnection.CreateBatchCommand method

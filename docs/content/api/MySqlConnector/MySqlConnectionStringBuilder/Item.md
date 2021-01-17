@@ -1,5 +1,5 @@
 ---
-title: Item
+title: MySqlConnectionStringBuilder indexer
 ---
 
 # MySqlConnectionStringBuilder indexer

@@ -1,5 +1,5 @@
 ---
-title: MySqlConnectionStringBuilder
+title: MySqlConnectionStringBuilder constructors
 ---
 
 # MySqlConnectionStringBuilder constructor (1 of 2)

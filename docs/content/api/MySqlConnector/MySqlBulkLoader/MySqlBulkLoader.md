@@ -1,5 +1,5 @@
 ---
-title: MySqlBulkLoader
+title: MySqlBulkLoader constructor
 ---
 
 # MySqlBulkLoader constructor

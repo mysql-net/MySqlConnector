@@ -1,5 +1,5 @@
 ---
-title: GetDouble
+title: MySqlDataReader.GetDouble methods
 ---
 
 # MySqlDataReader.GetDouble method (1 of 2)

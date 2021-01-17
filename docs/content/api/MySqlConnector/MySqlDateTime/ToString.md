@@ -1,5 +1,5 @@
 ---
-title: ToString
+title: MySqlDateTime.ToString method
 ---
 
 # MySqlDateTime.ToString method
