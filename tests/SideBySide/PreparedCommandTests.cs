@@ -9,12 +9,18 @@ using MySqlConnector;
 #endif
 using Xunit;
 
+#if BASELINE
+#pragma warning disable 0618
+#endif
+
 namespace SideBySide
 {
 	public class PreparedCommandTests : IClassFixture<DatabaseFixture>
 	{
 		public PreparedCommandTests(DatabaseFixture database)
 		{
+			using var connection = CreatePrepareConnection();
+			connection.Execute(@"drop table if exists prepared_command_test; create table prepared_command_test(value int not null); insert into prepared_command_test(value) values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10);");
 		}
 
 		[SkippableFact(Baseline = "Parameter '@data' was not found during prepare.")]
@@ -299,7 +305,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		[InlineData(65535)]
 		public void ParametersAreBound(int parameterCount)
 		{
-			using var connection = CreateConnectionWithTableOfIntegers();
+			using var connection = CreatePrepareConnection();
 			using var cmd = CreateCommandWithParameters(connection, parameterCount);
 			cmd.Prepare();
 
@@ -315,17 +321,10 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		[Fact]
 		public void CannotUse64KParameters()
 		{
-			using var connection = CreateConnectionWithTableOfIntegers();
+			using var connection = CreatePrepareConnection();
 			using var cmd = CreateCommandWithParameters(connection, 65536);
 			var ex = Assert.Throws<MySqlException>(cmd.Prepare);
 			Assert.Equal(MySqlErrorCode.PreparedStatementManyParameters, (MySqlErrorCode) ex.Number);
-		}
-
-		private static MySqlConnection CreateConnectionWithTableOfIntegers()
-		{
-			var connection = CreatePrepareConnection();
-			connection.Execute(@"drop table if exists prepared_command_test; create table prepared_command_test(value int not null); insert into prepared_command_test(value) values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10);");
-			return connection;
 		}
 
 		private static MySqlCommand CreateCommandWithParameters(MySqlConnection connection, int parameterCount)

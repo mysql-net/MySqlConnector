@@ -1501,7 +1501,9 @@ end;";
 		public void QueryAggregateBit(bool shouldPrepare, string aggregation, ulong expected)
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
+#pragma warning disable 0618
 			csb.IgnorePrepare = !shouldPrepare;
+#pragma warning restore 0618
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			connection.Open();
 			using var command = new MySqlCommand($@"SELECT {aggregation}(Bit32) FROM datatypes_bits;", connection);

@@ -13,10 +13,8 @@ namespace MySqlConnector.Tests
 			m_collection = new MySqlCommand().Parameters;
 		}
 
-#if !BASELINE // https://bugs.mysql.com/bug.php?id=100522
 		[Fact]
 		public void InsertAtNegative() => Assert.Throws<ArgumentOutOfRangeException>(() => m_collection.Insert(-1, new MySqlParameter()));
-#endif
 
 		[Fact]
 		public void InsertPastEnd() => Assert.Throws<ArgumentOutOfRangeException>(() => m_collection.Insert(1, new MySqlParameter()));

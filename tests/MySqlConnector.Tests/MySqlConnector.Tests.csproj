@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'Baseline' ">
-    <PackageReference Include="MySql.Data" Version="8.0.21" />
+    <PackageReference Include="MySql.Data" Version="8.0.23" />
     <Compile Remove="ByteBufferWriterTests.cs;CachedProcedureTests.cs;CancellationTests.cs;ConnectionTests.cs;FakeMySqlServer.cs;FakeMySqlServerConnection.cs;LoadBalancerTests.cs;MySqlExceptionTests.cs;MySqlParameterCollectionNameToIndexTests.cs;NormalizeTests.cs;ServerVersionTests.cs;StatementPreparerTests.cs;TypeMapperTests.cs;UtilityTests.cs" />
   </ItemGroup>
 

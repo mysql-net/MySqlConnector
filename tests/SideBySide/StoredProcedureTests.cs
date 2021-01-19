@@ -223,7 +223,7 @@ namespace SideBySide
 		}
 #endif
 
-		[Theory]
+		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=102303")]
 		[InlineData(true)]
 		[InlineData(false)]
 		public async Task StoredProcedureOutIncorrectType(bool ignorePrepare)
@@ -785,7 +785,9 @@ namespace SideBySide
 		private static MySqlConnection CreateOpenConnection(bool ignorePrepare)
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
+#pragma warning disable 0618
 			csb.IgnorePrepare = ignorePrepare;
+#pragma warning restore 0618
 			var connection = new MySqlConnection(csb.ConnectionString);
 			connection.Open();
 			return connection;
