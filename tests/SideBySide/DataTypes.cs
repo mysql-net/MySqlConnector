@@ -159,7 +159,6 @@ namespace SideBySide
 		{
 			using var cmd = Connection.CreateCommand();
 			cmd.CommandText = $"select {column} from datatypes_integers order by rowid";
-			cmd.Prepare();
 			using var reader = (MySqlDataReader) await cmd.ExecuteReaderAsync().ConfigureAwait(false);
 			for (int i = 0; i < flags.Length; i++)
 			{
@@ -375,7 +374,6 @@ namespace SideBySide
 		{
 			using var cmd = Connection.CreateCommand();
 			cmd.CommandText = $@"select `{column}` from datatypes_strings order by rowid;";
-			cmd.Prepare();
 			using var reader = cmd.ExecuteReader();
 			for (var i = 0; i < expected.Length; i++)
 			{
@@ -404,7 +402,6 @@ namespace SideBySide
 			connection.Open();
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = @"select guidbin from datatypes_blobs order by rowid;";
-			cmd.Prepare();
 			using (var reader = cmd.ExecuteReader())
 			{
 				Assert.True(reader.Read());
@@ -474,7 +471,6 @@ namespace SideBySide
 		{
 			using var cmd = Connection.CreateCommand();
 			cmd.CommandText = $"select `{column}` from datatypes_guids order by rowid";
-			cmd.Prepare();
 			using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
 			Assert.Equal(fieldType, reader.GetFieldType(0));
 
@@ -584,7 +580,6 @@ insert into guid_format(c36, c32, b16, tsb16, leb16, t, b) values(
 			};
 			cmd.ExecuteNonQuery();
 			cmd.CommandText = "select c36, c32, b16, tsb16, leb16, t, b from guid_format;";
-			cmd.Prepare();
 
 			using var reader = cmd.ExecuteReader();
 			for (int row = 0; row < 3; row++)
@@ -670,7 +665,6 @@ insert into guid_format(c36, c32, b16, tsb16, leb16, t, b) values(
 
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = @"select cast(0 as date), cast(0 as datetime);";
-			cmd.Prepare();
 
 			using var reader = (MySqlDataReader) cmd.ExecuteReader();
 			Assert.True(reader.Read());
@@ -746,7 +740,6 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 				cmd.ExecuteNonQuery();
 				long lastInsertId = cmd.LastInsertedId;
 				cmd.CommandText = $"select d, dt0, dt1, dt2, dt3, dt4, dt5, dt6 from date_time_kind where rowid = {lastInsertId};";
-				cmd.Prepare();
 
 				using var reader = cmd.ExecuteReader();
 				Assert.True(reader.Read());
@@ -825,12 +818,6 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		[InlineData("LongBlob", 67108864)]
 		public async Task InsertLargeBlobAsync(string column, int size)
 		{
-#if BASELINE
-			// https://bugs.mysql.com/bug.php?id=91754
-			if (!CreateConnectionStringBuilder().IgnorePrepare && size >= 16_777_216)
-				return;
-#endif
-
 			// NOTE: MySQL Server will reset the connection when it receives an oversize packet, so we need to create a test-specific connection here
 			using var connection = new MySqlConnection(CreateConnectionStringBuilder().ConnectionString);
 			await connection.OpenAsync();
@@ -844,7 +831,6 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 				try
 				{
 					cmd.Parameters.AddWithValue("@data", data);
-					cmd.Prepare();
 					await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
 					lastInsertId = cmd.LastInsertedId;
 					Assert.True(isSupported);
@@ -874,12 +860,6 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		[InlineData("LongBlob", 67108864)]
 		public void InsertLargeBlobSync(string column, int size)
 		{
-#if BASELINE
-// https://bugs.mysql.com/bug.php?id=91754
-			if (!CreateConnectionStringBuilder().IgnorePrepare && size >= 16_777_216)
-				return;
-#endif
-
 			// NOTE: MySQL Server will reset the connection when it receives an oversize packet, so we need to create a test-specific connection here
 			using var connection = new MySqlConnection(CreateConnectionStringBuilder().ConnectionString);
 			connection.Open();
@@ -893,7 +873,6 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 				try
 				{
 					cmd.Parameters.AddWithValue("@data", data);
-					cmd.Prepare();
 					cmd.ExecuteNonQuery();
 					lastInsertId = cmd.LastInsertedId;
 					Assert.True(isSupported);
@@ -933,7 +912,6 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 			connection.Open();
 
 			using var cmd = new MySqlCommand($"SELECT `{columnName}` FROM datatypes_times WHERE `{columnName}` IS NOT NULL ORDER BY rowid", connection);
-			cmd.Prepare();
 			using var reader = cmd.ExecuteReader();
 			Assert.True(reader.Read());
 			Assert.Equal(expectedType, reader.GetFieldType(0));
@@ -958,7 +936,6 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		public void GetMySqlDateTime(string columnName)
 		{
 			using var cmd = new MySqlCommand($"SELECT `{columnName}` FROM datatypes_times WHERE `{columnName}` IS NOT NULL", Connection);
-			cmd.Prepare();
 			using var reader = cmd.ExecuteReader();
 			while (reader.Read())
 			{
@@ -1119,7 +1096,6 @@ create table schema_table({createColumn});");
 
 			using var command = Connection.CreateCommand();
 			command.CommandText = $"select `{column}` from `{table}`;";
-			command.Prepare();
 
 			using var reader = command.ExecuteReader(CommandBehavior.SchemaOnly);
 			Assert.False(reader.Read());
@@ -1272,7 +1248,6 @@ create table schema_table({createColumn});");
 
 			using var command = Connection.CreateCommand();
 			command.CommandText = $"select `{column}` from `{table}`;";
-			command.Prepare();
 
 			using var reader = command.ExecuteReader();
 			var columns = reader.GetColumnSchema();
@@ -1592,7 +1567,6 @@ end;";
 			assertEqual = assertEqual ?? Assert.Equal;
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = $"select {column} from datatypes_{table} order by rowid";
-			cmd.Prepare();
 			using (var reader = cmd.ExecuteReader())
 			{
 				Assert.Equal(dataTypeName, reader.GetDataTypeName(0));
@@ -1657,7 +1631,6 @@ end;";
 				p.ParameterName = "@value";
 				p.Value = expected.Last();
 				cmd.Parameters.Add(p);
-				cmd.Prepare();
 				var result = cmd.ExecuteScalar();
 				Assert.Equal(Array.IndexOf(expected, p.Value) + 1, result);
 			}
