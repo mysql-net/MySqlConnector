@@ -590,9 +590,6 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		public void SumShorts(bool prepareCommand)
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
-#pragma warning disable 0618
-			csb.IgnorePrepare = !prepareCommand;
-#pragma warning restore 0618
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			connection.Open();
 
@@ -602,7 +599,8 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "select sum(value) from sum_shorts";
-			cmd.Prepare();
+			if (prepareCommand)
+				cmd.Prepare();
 			Assert.Equal(65536m, cmd.ExecuteScalar());
 
 			using var reader = cmd.ExecuteReader();
@@ -619,9 +617,6 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		public void SumInts(bool prepareCommand)
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
-#pragma warning disable 0618
-			csb.IgnorePrepare = !prepareCommand;
-#pragma warning restore 0618
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			connection.Open();
 
@@ -631,7 +626,8 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = "select sum(value) from sum_ints";
-			cmd.Prepare();
+			if (prepareCommand)
+				cmd.Prepare();
 			Assert.Equal(4294967296m, cmd.ExecuteScalar());
 
 			using var reader = cmd.ExecuteReader();
@@ -647,14 +643,12 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		public void DivideInts(bool prepareCommand)
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
-#pragma warning disable 0618
-			csb.IgnorePrepare = !prepareCommand;
-#pragma warning restore 0618
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			connection.Open();
 
 			using var cmd = new MySqlCommand("select 2 / 1;", connection);
-			cmd.Prepare();
+			if (prepareCommand)
+				cmd.Prepare();
 			using var reader = cmd.ExecuteReader();
 			Assert.True(reader.Read());
 			Assert.Equal(2.000m, reader.GetValue(0));
@@ -1223,9 +1217,6 @@ FROM query_bit;", connection);
 		{
 			var csb = AppConfig.CreateConnectionStringBuilder();
 			csb.TreatTinyAsBoolean = treatTinyAsBoolean;
-#pragma warning disable 0618
-			csb.IgnorePrepare = false;
-#pragma warning restore 0618
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			connection.Open();
 			connection.Execute(@"drop table if exists datatypes_tinyint1;

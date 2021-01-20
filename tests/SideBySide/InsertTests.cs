@@ -383,7 +383,7 @@ create table insert_mysql_set(
 		[MemberData(nameof(GetBlobs))]
 		public void InsertBlob(object data, bool prepare)
 		{
-			using var connection = new MySqlConnection(AppConfig.ConnectionString + ";IgnorePrepare=false");
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
 			connection.Open();
 			connection.Execute(@"drop table if exists insert_mysql_blob;
 create table insert_mysql_blob(

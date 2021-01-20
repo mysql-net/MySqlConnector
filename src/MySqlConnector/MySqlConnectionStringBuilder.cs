@@ -723,7 +723,7 @@ namespace MySqlConnector
 
 			AddOption(IgnorePrepare = new(
 				keys: new[] { "IgnorePrepare", "Ignore Prepare" },
-				defaultValue: true));
+				defaultValue: false));
 
 			AddOption(InteractiveSession = new(
 				keys: new[] { "InteractiveSession", "Interactive", "Interactive Session" },

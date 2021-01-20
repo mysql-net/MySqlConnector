@@ -19,14 +19,14 @@ namespace SideBySide
 	{
 		public PreparedCommandTests(DatabaseFixture database)
 		{
-			using var connection = CreatePrepareConnection();
+			using var connection = CreateConnection();
 			connection.Execute(@"drop table if exists prepared_command_test; create table prepared_command_test(value int not null); insert into prepared_command_test(value) values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10);");
 		}
 
 		[SkippableFact(Baseline = "Parameter '@data' was not found during prepare.")]
 		public void PrepareBeforeBindingParameters()
 		{
-			using var connection = CreatePrepareConnection();
+			using var connection = CreateConnection();
 			connection.Execute($@"DROP TABLE IF EXISTS bind_parameters_test;
 CREATE TABLE bind_parameters_test(data TEXT NOT NULL);");
 
@@ -43,7 +43,7 @@ CREATE TABLE bind_parameters_test(data TEXT NOT NULL);");
 		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=91753")]
 		public void UnnamedParameters()
 		{
-			using var connection = CreatePrepareConnection();
+			using var connection = CreateConnection();
 			connection.Execute($@"DROP TABLE IF EXISTS bind_parameters_test;
 CREATE TABLE bind_parameters_test(data1 TEXT NOT NULL, data2 INTEGER);");
 
@@ -68,7 +68,7 @@ CREATE TABLE bind_parameters_test(data1 TEXT NOT NULL, data2 INTEGER);");
 		[Fact]
 		public void ReuseCommand()
 		{
-			using var connection = CreatePrepareConnection();
+			using var connection = CreateConnection();
 			connection.Execute($@"DROP TABLE IF EXISTS reuse_command_test;
 CREATE TABLE reuse_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT, data TEXT NOT NULL);");
 
@@ -92,10 +92,7 @@ CREATE TABLE reuse_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCREMEN
 		[MemberData(nameof(GetInsertAndQueryData))]
 		public void InsertAndQuery(bool isPrepared, string dataType, object dataValue, MySqlDbType dbType)
 		{
-			var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString)
-			{
-				IgnorePrepare = !isPrepared,
-			};
+			var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString);
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			connection.Open();
 			connection.Execute($@"DROP TABLE IF EXISTS prepared_command_test;
@@ -135,10 +132,7 @@ CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCRE
 		public void InsertAndQueryInferrredType(bool isPrepared, string dataType, object dataValue, MySqlDbType dbType)
 		{
 			GC.KeepAlive(dbType); // ignore the parameter
-			var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString)
-			{
-				IgnorePrepare = !isPrepared,
-			};
+			var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString);
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			connection.Open();
 			connection.Execute($@"DROP TABLE IF EXISTS prepared_command_test;
@@ -177,10 +171,7 @@ CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCRE
 		[MemberData(nameof(GetInsertAndQueryData))]
 		public void InsertAndQueryMultipleStatements(bool isPrepared, string dataType, object dataValue, MySqlDbType dbType)
 		{
-			var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString)
-			{
-				IgnorePrepare = !isPrepared,
-			};
+			var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString);
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			connection.Open();
 			connection.Execute($@"DROP TABLE IF EXISTS prepared_command_test;
@@ -210,7 +201,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		[Fact]
 		public void PrepareMultipleTimes()
 		{
-			using var connection = CreatePrepareConnection();
+			using var connection = CreateConnection();
 			using var cmd = new MySqlCommand("SELECT 'test';", connection);
 			Assert.False(cmd.IsPrepared);
 			cmd.Prepare();
@@ -222,7 +213,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		[SkippableFact(Baseline = "Connector/NET doesn't cache prepared commands")]
 		public void PreparedCommandIsCached()
 		{
-			using var connection = CreatePrepareConnection();
+			using var connection = CreateConnection();
 
 			using (var cmd = new MySqlCommand("SELECT 'test';", connection))
 			{
@@ -240,7 +231,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		[Fact]
 		public void ThrowsIfNamedParameterUsedButNoParametersDefined()
 		{
-			using var connection = CreatePrepareConnection();
+			using var connection = CreateConnection();
 			using var cmd = new MySqlCommand("SELECT @param;", connection);
 #if BASELINE
 			Assert.Throws<InvalidOperationException>(() => cmd.Prepare());
@@ -253,7 +244,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		[Fact]
 		public void ThrowsIfUnnamedParameterUsedButNoParametersDefined()
 		{
-			using var connection = CreatePrepareConnection();
+			using var connection = CreateConnection();
 			using var cmd = new MySqlCommand("SELECT ?;", connection);
 			cmd.Prepare();
 			Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
@@ -262,7 +253,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		[Fact]
 		public void ThrowsIfUndefinedNamedParameterUsed()
 		{
-			using var connection = CreatePrepareConnection();
+			using var connection = CreateConnection();
 			using var cmd = new MySqlCommand("SELECT @param;", connection);
 			cmd.Parameters.AddWithValue("@name", "test");
 #if BASELINE
@@ -276,7 +267,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		[Fact]
 		public void ThrowsIfTooManyUnnamedParametersUsed()
 		{
-			using var connection = CreatePrepareConnection();
+			using var connection = CreateConnection();
 			using var cmd = new MySqlCommand("SELECT ?, ?;", connection);
 			cmd.Parameters.Add(new() { Value = 1 });
 			cmd.Prepare();
@@ -305,7 +296,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		[InlineData(65535)]
 		public void ParametersAreBound(int parameterCount)
 		{
-			using var connection = CreatePrepareConnection();
+			using var connection = CreateConnection();
 			using var cmd = CreateCommandWithParameters(connection, parameterCount);
 			cmd.Prepare();
 
@@ -321,7 +312,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		[Fact]
 		public void CannotUse64KParameters()
 		{
-			using var connection = CreatePrepareConnection();
+			using var connection = CreateConnection();
 			using var cmd = CreateCommandWithParameters(connection, 65536);
 			var ex = Assert.Throws<MySqlException>(cmd.Prepare);
 			Assert.Equal(MySqlErrorCode.PreparedStatementManyParameters, (MySqlErrorCode) ex.Number);
@@ -400,10 +391,9 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 			}
 		}
 
-		private static MySqlConnection CreatePrepareConnection()
+		private static MySqlConnection CreateConnection()
 		{
-			var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString) { IgnorePrepare = false };
-			var connection = new MySqlConnection(csb.ConnectionString);
+			var connection = new MySqlConnection(AppConfig.ConnectionString);
 			connection.Open();
 			return connection;
 		}

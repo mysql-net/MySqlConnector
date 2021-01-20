@@ -342,6 +342,12 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>If <code>true</code>, the value of <code>MySqlCommand.Transaction</code> is ignored when commands are executed.
     This matches the Connector/NET behaviour and can make porting code easier. For more information, see <a href="troubleshooting/transaction-usage/">Transaction Usage</a>.</td>
   </tr>
+  <tr id="IgnorePrepare">
+    <td>IgnorePrepare, Ignore Prepare</td>
+    <td>false</td>
+    <td>If <code>true</code>, calls to <code>MySqlCommand.Prepare(Async)</code> are ignored (and will be no-ops).
+    This option is provided for backwards compatibility with MySQL Connector/NET (before 8.0.23) and should not be used.</td>
+  </tr>
   <tr id="InteractiveSession">
     <td>Interactive, Interactive Session, InteractiveSession</td>
     <td>false</td>

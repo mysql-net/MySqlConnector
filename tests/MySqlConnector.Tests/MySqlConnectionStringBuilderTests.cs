@@ -53,7 +53,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal(MySqlGuidFormat.Default, csb.GuidFormat);
 			Assert.False(csb.IgnoreCommandTransaction);
 			Assert.Equal(MySqlLoadBalance.RoundRobin, csb.LoadBalance);
-			Assert.True(csb.IgnorePrepare);
+			Assert.False(csb.IgnorePrepare);
 #endif
 			Assert.False(csb.InteractiveSession);
 			Assert.Equal(0u, csb.Keepalive);
@@ -135,7 +135,7 @@ namespace MySqlConnector.Tests
 					"use xa transactions=false;" +
 					"tls cipher suites=TLS_AES_128_CCM_8_SHA256,TLS_RSA_WITH_RC4_128_MD5;" +
 #endif
-					"ignore prepare=false;" +
+					"ignore prepare=true;" +
 					"interactive=true;" +
 					"Keep Alive=90;" +
 					"minpoolsize=5;" +
@@ -194,7 +194,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal("mariadb/host.example.com@EXAMPLE.COM", csb.ServerSPN);
 			Assert.False(csb.UseXaTransactions);
 			Assert.Equal("TLS_AES_128_CCM_8_SHA256,TLS_RSA_WITH_RC4_128_MD5", csb.TlsCipherSuites);
-			Assert.False(csb.IgnorePrepare);
+			Assert.True(csb.IgnorePrepare);
 #endif
 			Assert.True(csb.InteractiveSession);
 			Assert.Equal(90u, csb.Keepalive);

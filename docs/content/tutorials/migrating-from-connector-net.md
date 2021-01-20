@@ -71,6 +71,12 @@ MySqlConnector has some different default connection string options:
     <td>See remarks under <a href="#mysqlcommand">MySqlCommand</a> below.</td>
   </tr>
   <tr>
+    <td><code>IgnorePrepare</code></td>
+    <td>Default is <code>false</code></td>
+    <td><code>true</code> for ≤ 8.0.22; <code>false</code> for ≥ 8.0.23</td>
+    <td>This is a change if migrating from an older version of Connector/NET.</td>
+  </tr>
+  <tr>
     <td><code>LoadBalance</code></td>
     <td>Default is <code>RoundRobin</code></td>
     <td>(not configurable, effective default is <code>FailOver</code>)</td>
