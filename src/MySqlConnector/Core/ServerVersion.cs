@@ -11,15 +11,28 @@ namespace MySqlConnector.Core
 		{
 			OriginalString = Encoding.ASCII.GetString(versionString);
 
-			if (!Utf8Parser.TryParse(versionString, out int major, out var bytesConsumed) || versionString[bytesConsumed] != 0x2E)
-				throw new InvalidOperationException("Error parsing " + OriginalString);
-			versionString = versionString.Slice(bytesConsumed + 1);
-			if (!Utf8Parser.TryParse(versionString, out int minor, out bytesConsumed) || versionString[bytesConsumed] != 0x2E)
-				throw new InvalidOperationException("Error parsing " + OriginalString);
-			versionString = versionString.Slice(bytesConsumed + 1);
-			if (!Utf8Parser.TryParse(versionString, out int build, out bytesConsumed))
-				throw new InvalidOperationException("Error parsing " + OriginalString);
-			versionString = versionString.Slice(bytesConsumed);
+			var minor = 0;
+			var build = 0;
+			if (Utf8Parser.TryParse(versionString, out int major, out var bytesConsumed))
+			{
+				versionString = versionString.Slice(bytesConsumed);
+				if (versionString.Length > 0 && versionString[0] == 0x2E)
+				{
+					versionString = versionString.Slice(1);
+					if (Utf8Parser.TryParse(versionString, out minor, out bytesConsumed))
+					{
+						versionString = versionString.Slice(bytesConsumed);
+						if (versionString.Length > 0 && versionString[0] == 0x2E)
+						{
+							versionString = versionString.Slice(1);
+							if (Utf8Parser.TryParse(versionString, out build, out bytesConsumed))
+							{
+								versionString = versionString.Slice(bytesConsumed);
+							}
+						}
+					}
+				}
+			}
 
 			Version = new Version(major, minor, build);
 
