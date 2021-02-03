@@ -75,10 +75,8 @@ namespace MySqlConnector.Core
 						TlsVersions |= SslProtocols.Tls11;
 					else if (minorVersion == '2')
 						TlsVersions |= SslProtocols.Tls12;
+#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
 					else if (minorVersion == '3')
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1
-						TlsVersions |= 0;
-#else
 						TlsVersions |= SslProtocols.Tls13;
 #endif
 					else
