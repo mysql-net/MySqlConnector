@@ -56,16 +56,6 @@ namespace MySqlConnector.Utilities
 
 		public override EndPoint Create(SocketAddress socketAddress)
 		{
-			/*
-			 * Should also check this
-			 *
-			int addr = (int) AddressFamily.Unix;
-			if (socketAddress [0] != (addr & 0xFF))
-				throw new ArgumentException ("socketAddress is not a unix socket address.");
-			if (socketAddress [1] != ((addr & 0xFF00) >> 8))
-				throw new ArgumentException ("socketAddress is not a unix socket address.");
-			 */
-
 			if (socketAddress.Size == 2) {
 				// Empty filename.
 				// Probably from RemoteEndPoint which on linux does not return the file name.
@@ -103,6 +93,6 @@ namespace MySqlConnector.Utilities
 
 		public override int GetHashCode() => Filename.GetHashCode ();
 
-		public override bool Equals(object? o) => o is UnixEndPoint other && Filename == other.Filename;
+		public override bool Equals(object? obj) => obj is UnixEndPoint other && Filename == other.Filename;
 	}
 }
