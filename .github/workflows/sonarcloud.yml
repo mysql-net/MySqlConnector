@@ -47,6 +47,8 @@ jobs:
         run: |
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+      - name: Install minver
+        run: dotnet tool install --global minver-cli
       - name: Restore Packages
         run: dotnet restore
       - name: Build and analyze
@@ -55,6 +57,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"mysql-net_MySqlConnector" /o:"mysql-net" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+          $sonarProjectVersion = minver
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"mysql-net_MySqlConnector" /o:"mysql-net" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.projectVersion="$sonarProjectVersion"
           dotnet build --configuration Release --no-restore
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
