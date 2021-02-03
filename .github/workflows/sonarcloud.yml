@@ -58,6 +58,6 @@ jobs:
         shell: powershell
         run: |
           $sonarProjectVersion = minver
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"mysql-net_MySqlConnector" /o:"mysql-net" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.projectVersion="$sonarProjectVersion"
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"mysql-net_MySqlConnector" /o:"mysql-net" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /v:"$sonarProjectVersion"
           dotnet build --configuration Release --no-restore
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
