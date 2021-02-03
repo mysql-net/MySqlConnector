@@ -39,32 +39,22 @@ namespace MySqlConnector.Utilities
 {
 	internal sealed class UnixEndPoint : EndPoint
 	{
-		string filename;
-
-		public UnixEndPoint (string filename)
+		public UnixEndPoint(string filename)
 		{
 			if (filename is null)
-				throw new ArgumentNullException ("filename");
-
+				throw new ArgumentNullException (nameof(filename));
 			if (filename == "")
-				throw new ArgumentException ("Cannot be empty.", "filename");
-			this.filename = filename;
+				throw new ArgumentException ("Cannot be empty.", nameof(filename));
+			Filename = filename;
 		}
 
-		public string Filename {
-			get {
-				return(filename);
-			}
-			set {
-				filename=value;
-			}
-		}
+		private UnixEndPoint() => Filename = "";
 
-		public override AddressFamily AddressFamily {
-			get { return AddressFamily.Unix; }
-		}
+		public string Filename { get; }
 
-		public override EndPoint Create (SocketAddress socketAddress)
+		public override AddressFamily AddressFamily => AddressFamily.Unix;
+
+		public override EndPoint Create(SocketAddress socketAddress)
 		{
 			/*
 			 * Should also check this
@@ -79,32 +69,29 @@ namespace MySqlConnector.Utilities
 			if (socketAddress.Size == 2) {
 				// Empty filename.
 				// Probably from RemoteEndPoint which on linux does not return the file name.
-				UnixEndPoint uep = new UnixEndPoint ("a");
-				uep.filename = "";
-				return uep;
+				return new UnixEndPoint();
 			}
-			int size = socketAddress.Size - 2;
-			byte [] bytes = new byte [size];
-			for (int i = 0; i < bytes.Length; i++) {
-				bytes [i] = socketAddress [i + 2];
+			var size = socketAddress.Size - 2;
+			var bytes = new byte[size];
+			for (var i = 0; i < bytes.Length; i++) {
+				bytes[i] = socketAddress[i + 2];
 				// There may be junk after the null terminator, so ignore it all.
-				if (bytes [i] == 0) {
+				if (bytes[i] == 0) {
 					size = i;
 					break;
 				}
 			}
 
-			string name = Encoding.UTF8.GetString (bytes, 0, size);
-			return new UnixEndPoint (name);
+			return new UnixEndPoint(Encoding.UTF8.GetString(bytes, 0, size));
 		}
 
-		public override SocketAddress Serialize ()
+		public override SocketAddress Serialize()
 		{
-			byte [] bytes = Encoding.UTF8.GetBytes (filename);
-			SocketAddress sa = new SocketAddress (AddressFamily, 2 + bytes.Length + 1);
+			var bytes = Encoding.UTF8.GetBytes(Filename);
+			var sa = new SocketAddress(AddressFamily, 2 + bytes.Length + 1);
 			// sa [0] -> family low byte, sa [1] -> family high byte
-			for (int i = 0; i < bytes.Length; i++)
-				sa [2 + i] = bytes [i];
+			for (var i = 0; i < bytes.Length; i++)
+				sa[2 + i] = bytes[i];
 
 			//NULL suffix for non-abstract path
 			sa[2 + bytes.Length] = 0;
@@ -112,18 +99,10 @@ namespace MySqlConnector.Utilities
 			return sa;
 		}
 
-		public override string ToString() {
-			return(filename);
-		}
+		public override string ToString() => Filename;
 
-		public override int GetHashCode ()
-		{
-			return filename.GetHashCode ();
-		}
+		public override int GetHashCode() => Filename.GetHashCode ();
 
-		public override bool Equals (object? o)
-		{
-			return o is UnixEndPoint other && filename == other.filename;
-		}
+		public override bool Equals(object? o) => o is UnixEndPoint other && Filename == other.Filename;
 	}
 }
