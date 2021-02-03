@@ -521,17 +521,17 @@ namespace MySqlConnector.Core
 		private static void CheckBufferArguments<T>(long dataOffset, T[] buffer, int bufferOffset, int length)
 		{
 			if (dataOffset < 0)
-				throw new ArgumentOutOfRangeException(nameof(dataOffset), dataOffset, "dataOffset must be non-negative");
+				throw new ArgumentOutOfRangeException(nameof(dataOffset), dataOffset, nameof(dataOffset) + " must be non-negative");
 			if (dataOffset > int.MaxValue)
-				throw new ArgumentOutOfRangeException(nameof(dataOffset), dataOffset, "dataOffset must be a 32-bit integer");
+				throw new ArgumentOutOfRangeException(nameof(dataOffset), dataOffset, nameof(dataOffset) + " must be a 32-bit integer");
 			if (length < 0)
-				throw new ArgumentOutOfRangeException(nameof(length), length, "length must be non-negative");
+				throw new ArgumentOutOfRangeException(nameof(length), length, nameof(length) + " must be non-negative");
 			if (bufferOffset < 0)
-				throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, "bufferOffset must be non-negative");
+				throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, nameof(bufferOffset) + " must be non-negative");
 			if (bufferOffset > buffer.Length)
-				throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, "bufferOffset must be within the buffer");
+				throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, nameof(bufferOffset) + " must be within the buffer");
 			if (checked(bufferOffset + length) > buffer.Length)
-				throw new ArgumentException("bufferOffset + length cannot exceed buffer.Length", nameof(length));
+				throw new ArgumentException(nameof(bufferOffset) + " + " + nameof(length) + " cannot exceed buffer.Length", nameof(length));
 		}
 
 		ReadOnlyMemory<byte> m_data;
