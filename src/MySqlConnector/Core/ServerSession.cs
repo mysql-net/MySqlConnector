@@ -690,6 +690,7 @@ namespace MySqlConnector.Core
 		}
 #endif
 
+#if !NET45
 		private async Task<string> GetRsaPublicKeyAsync(string switchRequestName, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (cs.ServerRsaPublicKeyFile.Length != 0)
@@ -720,6 +721,7 @@ namespace MySqlConnector.Core
 			Log.Error("Session{0} couldn't use AuthenticationMethod '{1}' because RSA key wasn't specified or couldn't be retrieved", m_logArguments);
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Authentication method '{0}' failed. Either use a secure connection, specify the server's RSA public key with ServerRSAPublicKeyFile, or set AllowPublicKeyRetrieval=True.".FormatInvariant(switchRequestName));
 		}
+#endif
 
 		public async ValueTask<bool> TryPingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
