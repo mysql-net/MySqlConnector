@@ -110,9 +110,9 @@ namespace MySqlConnector.Core
 			dataTable.Rows.Add(row);
 
 			return Utility.CompletedTask;
-		}
 
-		private string GetVersion(Version v) => $"{v.Major:00}.{v.Minor:00}.{v.Build:0000}";
+			static string GetVersion(Version v) => "{0:00}.{1:00}.{2:0000}".FormatInvariant(v.Major, v.Minor, v.Build);
+		}
 
 		private Task FillMetadataCollections(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 		{
