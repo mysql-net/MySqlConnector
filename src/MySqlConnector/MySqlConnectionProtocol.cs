@@ -1,5 +1,6 @@
 namespace MySqlConnector
 {
+#pragma warning disable CA1069 // Enum values should not be duplicated
 	/// <summary>
 	/// Specifies the type of connection to make to the server.
 	/// </summary>
@@ -30,4 +31,5 @@ namespace MySqlConnector
 		SharedMemory = 4,
 		Memory = 4
 	}
+#pragma warning restore CA1069 // Enum values should not be duplicated
 }

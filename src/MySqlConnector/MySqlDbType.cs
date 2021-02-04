@@ -18,8 +18,10 @@ namespace MySqlConnector
 		Date,
 		Time,
 		DateTime,
+#pragma warning disable CA1069 // Enum values should not be duplicated
 		[Obsolete("The Datetime enum value is obsolete.  Please use DateTime.")]
 		Datetime = 12,
+#pragma warning restore CA1069
 		Year,
 		Newdate,
 		VarString,
