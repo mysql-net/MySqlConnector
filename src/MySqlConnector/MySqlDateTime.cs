@@ -7,7 +7,7 @@ namespace MySqlConnector
 	/// as <c>0000-00-00</c> that can be stored in MySQL (when <see cref="MySqlConnectionStringBuilder.AllowZeroDateTime"/>
 	/// is true) but can't be stored in a <see cref="DateTime"/> value.
 	/// </summary>
-	public struct MySqlDateTime : IComparable, IConvertible
+	public struct MySqlDateTime : IComparable, IComparable<MySqlDateTime>, IConvertible, IEquatable<MySqlDateTime>
 	{
 		/// <summary>
 		/// Initializes a new instance of <see cref="MySqlDateTime"/>.
@@ -123,17 +123,51 @@ namespace MySqlConnector
 		public static explicit operator DateTime(MySqlDateTime val) => !val.IsValidDateTime ? DateTime.MinValue : val.GetDateTime();
 
 		/// <summary>
+		/// Returns <c>true</c> if this <see cref="MySqlDateTime"/> is equal to <paramref name="obj"/>.
+		/// </summary>
+		/// <param name="obj">The object to compare against for equality.</param>
+		/// <returns><c>true</c> if the objects are equal, otherwise <c>false</c>.</returns>
+		public override bool Equals(object? obj) =>
+			obj is MySqlDateTime other && ((IEquatable<MySqlDateTime>) this).Equals(other);
+
+		/// <summary>
+		/// Returns a hash code for this instance.
+		/// </summary>
+		public override int GetHashCode() =>
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+			(((((Year * 33 ^ Month) * 33 ^ Day) * 33 ^ Hour) * 33 ^ Minute) * 33 ^ Second) * 33 ^ Microsecond;
+#else
+			HashCode.Combine(Year, Month, Day, Hour, Minute, Second, Microsecond);
+#endif
+
+		public static bool operator ==(MySqlDateTime left, MySqlDateTime right) => ((IComparable<MySqlDateTime>) left).CompareTo(right) == 0;
+		public static bool operator !=(MySqlDateTime left, MySqlDateTime right) => ((IComparable<MySqlDateTime>) left).CompareTo(right) != 0;
+		public static bool operator <(MySqlDateTime left, MySqlDateTime right) => ((IComparable<MySqlDateTime>) left).CompareTo(right) < 0;
+		public static bool operator <=(MySqlDateTime left, MySqlDateTime right) => ((IComparable<MySqlDateTime>) left).CompareTo(right) <= 0;
+		public static bool operator >(MySqlDateTime left, MySqlDateTime right) => ((IComparable<MySqlDateTime>) left).CompareTo(right) > 0;
+		public static bool operator >=(MySqlDateTime left, MySqlDateTime right) => ((IComparable<MySqlDateTime>) left).CompareTo(right) >= 0;
+
+		/// <summary>
 		/// Compares this object to another <see cref="MySqlDateTime"/>.
 		/// </summary>
-		/// <param name="obj"></param>
+		/// <param name="obj">The object to compare to.</param>
 		/// <returns>An <see cref="Int32"/> giving the results of the comparison: a negative value if this
 		/// object is less than <paramref name="obj"/>, zero if this object is equal, or a positive value if this
 		/// object is greater.</returns>
-		readonly int IComparable.CompareTo(object? obj)
-		{
-			if (!(obj is MySqlDateTime other))
+		readonly int IComparable.CompareTo(object? obj) =>
+			obj is MySqlDateTime other ?
+				((IComparable<MySqlDateTime>) this).CompareTo(other) :
 				throw new ArgumentException("CompareTo can only be called with another MySqlDateTime", nameof(obj));
 
+		/// <summary>
+		/// Compares this object to another <see cref="MySqlDateTime"/>.
+		/// </summary>
+		/// <param name="other">The <see cref="MySqlDateTime"/> to compare to.</param>
+		/// <returns>An <see cref="Int32"/> giving the results of the comparison: a negative value if this
+		/// object is less than <paramref name="other"/>, zero if this object is equal, or a positive value if this
+		/// object is greater.</returns>
+		readonly int IComparable<MySqlDateTime>.CompareTo(MySqlDateTime other)
+		{
 			if (Year < other.Year)
 				return -1;
 			if (Year > other.Year)
@@ -160,6 +194,8 @@ namespace MySqlConnector
 				return 1;
 			return Microsecond.CompareTo(other.Microsecond);
 		}
+
+		readonly bool IEquatable<MySqlDateTime>.Equals(MySqlDateTime other) => ((IComparable<MySqlDateTime>) this).CompareTo(other) == 0;
 
 		DateTime IConvertible.ToDateTime(IFormatProvider? provider) => IsValidDateTime ? GetDateTime() : throw new InvalidCastException();
 		string IConvertible.ToString(IFormatProvider? provider) => IsValidDateTime ? GetDateTime().ToString(provider) : "0000-00-00";

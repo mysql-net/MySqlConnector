@@ -226,6 +226,40 @@ namespace MySqlConnector.Tests
 			Assert.Equal(0, left.CompareTo(right));
 		}
 
+#if !BASELINE
+		[Fact]
+		public void Operators()
+		{
+			var left = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
+			var same = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
+			var right = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 2);
+			Assert.True(left < right);
+			Assert.True(left <= same);
+			Assert.True(left <= right);
+			Assert.False(right < left);
+			Assert.False(right <= left);
+			Assert.True(left == same);
+			Assert.True(left != right);
+			Assert.False(left > right);
+			Assert.False(left >= right);
+			Assert.True(right > left);
+			Assert.True(right >= left);
+			Assert.True(same >= left);
+		}
+
+		[Fact]
+		public void Equal()
+		{
+			IEquatable<MySqlDateTime> left = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
+			var same = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
+			var right = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 2);
+			Assert.True(left.Equals(same));
+			Assert.True(same.Equals(left));
+			Assert.False(left.Equals(right));
+			Assert.False(left.Equals(new object()));
+		}
+#endif
+
 		static readonly MySqlDateTime s_mySqlDateTime = new(2018, 6, 9, 12, 34, 56, 123456);
 		static readonly DateTime s_dateTime = new DateTime(2018, 6, 9, 12, 34, 56, 123).AddTicks(4560);
 	}

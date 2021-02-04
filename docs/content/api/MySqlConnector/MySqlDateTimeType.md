@@ -7,7 +7,8 @@ title: MySqlDateTime
 Represents a MySQL date/time value. This type can be used to store `DATETIME` values such as `0000-00-00` that can be stored in MySQL (when [`AllowZeroDateTime`](../MySqlConnectionStringBuilder/AllowZeroDateTime/) is true) but can't be stored in a DateTime value.
 
 ```csharp
-public struct MySqlDateTime : IComparable, IConvertible
+public struct MySqlDateTime : IComparable, IComparable<MySqlDateTime>, IConvertible, 
+    IEquatable<MySqlDateTime>
 ```
 
 ## Public Members
@@ -24,9 +25,17 @@ public struct MySqlDateTime : IComparable, IConvertible
 | [Month](../MySqlDateTime/Month/) { get; set; } | Gets or sets the month. |
 | [Second](../MySqlDateTime/Second/) { get; set; } | Gets or sets the second. |
 | [Year](../MySqlDateTime/Year/) { get; set; } | Gets or sets the year. |
+| override [Equals](../MySqlDateTime/Equals/)(…) | Returns `true` if this [`MySqlDateTime`](../MySqlDateTimeType/) is equal to *obj*. |
 | [GetDateTime](../MySqlDateTime/GetDateTime/)() | Returns a DateTime value (if [`IsValidDateTime`](../MySqlDateTime/IsValidDateTime/) is `true`), or throws a [`MySqlConversionException`](../MySqlConversionExceptionType/). |
+| override [GetHashCode](../MySqlDateTime/GetHashCode/)() | Returns a hash code for this instance. |
 | override [ToString](../MySqlDateTime/ToString/)() | Converts this object to a String. |
+| [operator ==](../MySqlDateTime/op_Equality/) |  |
 | [explicit operator](../MySqlDateTime/op_Explicit/) | Converts this object to a DateTime. |
+| [operator &gt;](../MySqlDateTime/op_GreaterThan/) |  |
+| [operator &gt;=](../MySqlDateTime/op_GreaterThanOrEqual/) |  |
+| [operator !=](../MySqlDateTime/op_Inequality/) |  |
+| [operator &lt;](../MySqlDateTime/op_LessThan/) |  |
+| [operator &lt;=](../MySqlDateTime/op_LessThanOrEqual/) |  |
 
 ## See Also
 
