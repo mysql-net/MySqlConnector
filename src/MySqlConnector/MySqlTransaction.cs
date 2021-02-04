@@ -180,8 +180,10 @@ namespace MySqlConnector
 		{
 			try
 			{
+#pragma warning disable CA2012 // Safe because method completes synchronously
 				if (disposing)
 					DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+#pragma warning restore CA2012
 			}
 			finally
 			{

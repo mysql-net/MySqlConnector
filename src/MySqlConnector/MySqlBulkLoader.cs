@@ -149,7 +149,9 @@ namespace MySqlConnector
 		/// Loads all data in the source file or stream into the destination table.
 		/// </summary>
 		/// <returns>The number of rows inserted.</returns>
+#pragma warning disable CA2012 // Safe because method completes synchronously
 		public int Load() => LoadAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+#pragma warning restore CA2012
 
 		/// <summary>
 		/// Asynchronously loads all data in the source file or stream into the destination table.

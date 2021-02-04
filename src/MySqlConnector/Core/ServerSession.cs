@@ -278,8 +278,10 @@ namespace MySqlConnector.Core
 				// See https://bugs.mysql.com/bug.php?id=45679
 				Log.Info("Session{0} sending 'DO SLEEP(0)' command to clear pending cancellation", m_logArguments);
 				var payload = QueryPayload.Create("DO SLEEP(0);");
+#pragma warning disable CA2012 // Safe because method completes synchronously
 				SendAsync(payload, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 				payload = ReceiveReplyAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+#pragma warning restore CA2012
 				OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 			}
 

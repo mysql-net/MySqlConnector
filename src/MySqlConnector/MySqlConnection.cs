@@ -34,6 +34,7 @@ namespace MySqlConnector
 			m_connectionString = connectionString ?? "";
 		}
 
+#pragma warning disable CA2012 // Safe because method completes synchronously
 		/// <summary>
 		/// Begins a database transaction.
 		/// </summary>
@@ -64,6 +65,7 @@ namespace MySqlConnector
 		/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
 		/// <returns>A <see cref="MySqlTransaction"/> representing the new database transaction.</returns>
 		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => BeginTransactionAsync(isolationLevel, default, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+#pragma warning restore CA2012
 
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
 		/// <summary>
@@ -353,7 +355,9 @@ namespace MySqlConnector
 
 		public new MySqlCommand CreateCommand() => (MySqlCommand)base.CreateCommand();
 
+#pragma warning disable CA2012 // Safe because method completes synchronously
 		public bool Ping() => PingAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+#pragma warning restore CA2012
 		public Task<bool> PingAsync(CancellationToken cancellationToken = default) => PingAsync(SimpleAsyncIOBehavior, cancellationToken).AsTask();
 
 		private async ValueTask<bool> PingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -524,6 +528,7 @@ namespace MySqlConnector
 #if !NETSTANDARD1_3
 		protected override DbProviderFactory DbProviderFactory => MySqlConnectorFactory.Instance;
 
+#pragma warning disable CA2012 // Safe because method completes synchronously
 		/// <summary>
 		/// Returns schema information for the data source of this <see cref="MySqlConnection"/>.
 		/// </summary>
@@ -544,6 +549,7 @@ namespace MySqlConnector
 		/// <param name="restrictionValues">The restrictions to apply to the schema; this parameter is currently ignored.</param>
 		/// <returns>A <see cref="DataTable"/> containing schema information.</returns>
 		public override DataTable GetSchema(string collectionName, string?[] restrictionValues) => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, collectionName, default).GetAwaiter().GetResult();
+#pragma warning restore CA2012
 
 		/// <summary>
 		/// Asynchronously returns schema information for the data source of this <see cref="MySqlConnection"/>.

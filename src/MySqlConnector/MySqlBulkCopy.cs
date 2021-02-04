@@ -102,7 +102,9 @@ namespace MySqlConnector
 		public void WriteToServer(DataTable dataTable)
 		{
 			m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable ?? throw new ArgumentNullException(nameof(dataTable)));
+#pragma warning disable CA2012 // Safe because method completes synchronously
 			WriteToServerAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+#pragma warning restore CA2012
 		}
 
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
@@ -140,7 +142,9 @@ namespace MySqlConnector
 		public void WriteToServer(IEnumerable<DataRow> dataRows, int columnCount)
 		{
 			m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows ?? throw new ArgumentNullException(nameof(dataRows)), columnCount);
+#pragma warning disable CA2012 // Safe because method completes synchronously
 			WriteToServerAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+#pragma warning restore CA2012
 		}
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 		/// <summary>
@@ -183,8 +187,11 @@ namespace MySqlConnector
 		public void WriteToServer(IDataReader dataReader)
 		{
 			m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader ?? throw new ArgumentNullException(nameof(dataReader)));
+#pragma warning disable CA2012 // Safe because method completes synchronously
 			WriteToServerAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+#pragma warning restore CA2012
 		}
+
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 		/// <summary>
 		/// Asynchronously copies all rows in the supplied <see cref="IDataReader"/> to the destination table specified by the
