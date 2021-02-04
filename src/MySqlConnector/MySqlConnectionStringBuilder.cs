@@ -371,15 +371,15 @@ namespace MySqlConnector
 		}
 
 		// Other Methods
-		public override bool ContainsKey(string key)
+		public override bool ContainsKey(string keyword)
 		{
-			var option = MySqlConnectionStringOption.TryGetOptionForKey(key);
+			var option = MySqlConnectionStringOption.TryGetOptionForKey(keyword);
 			return option is object && base.ContainsKey(option.Key);
 		}
 
-		public override bool Remove(string key)
+		public override bool Remove(string keyword)
 		{
-			var option = MySqlConnectionStringOption.TryGetOptionForKey(key);
+			var option = MySqlConnectionStringOption.TryGetOptionForKey(keyword);
 			return option is object && base.Remove(option.Key);
 		}
 

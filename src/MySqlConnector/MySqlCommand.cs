@@ -233,7 +233,7 @@ namespace MySqlConnector
 		/// </remarks>
 		public long LastInsertedId { get; private set; }
 
-		void IMySqlCommand.SetLastInsertedId(long value) => LastInsertedId = value;
+		void IMySqlCommand.SetLastInsertedId(long lastInsertedId) => LastInsertedId = lastInsertedId;
 
 		protected override DbConnection? DbConnection
 		{
@@ -346,19 +346,19 @@ namespace MySqlConnector
 		}
 
 		/// <summary>
-		/// Registers <see cref="Cancel"/> as a callback with <paramref name="token"/> if cancellation is supported.
+		/// Registers <see cref="Cancel"/> as a callback with <paramref name="cancellationToken"/> if cancellation is supported.
 		/// </summary>
-		/// <param name="token">The <see cref="CancellationToken"/>.</param>
+		/// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
 		/// <returns>An object that must be disposed to revoke the cancellation registration.</returns>
 		/// <remarks>This method is more efficient than calling <code>token.Register(Command.Cancel)</code> because it avoids
 		/// unnecessary allocations.</remarks>
-		IDisposable? ICancellableCommand.RegisterCancel(CancellationToken token)
+		IDisposable? ICancellableCommand.RegisterCancel(CancellationToken cancellationToken)
 		{
-			if (!token.CanBeCanceled)
+			if (!cancellationToken.CanBeCanceled)
 				return null;
 
 			m_cancelAction ??= Cancel;
-			return token.Register(m_cancelAction);
+			return cancellationToken.Register(m_cancelAction);
 		}
 
 		void ICancellableCommand.SetTimeout(int milliseconds)

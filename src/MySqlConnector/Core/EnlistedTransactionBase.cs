@@ -20,10 +20,10 @@ namespace MySqlConnector.Core
 			Transaction!.EnlistVolatile(this, EnlistmentOptions.None);
 		}
 
-		void IEnlistmentNotification.Prepare(PreparingEnlistment enlistment)
+		void IEnlistmentNotification.Prepare(PreparingEnlistment preparingEnlistment)
 		{
-			OnPrepare(enlistment);
-			enlistment.Prepared();
+			OnPrepare(preparingEnlistment);
+			preparingEnlistment.Prepared();
 		}
 
 		void IEnlistmentNotification.Commit(Enlistment enlistment)

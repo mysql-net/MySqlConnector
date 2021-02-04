@@ -541,9 +541,9 @@ namespace MySqlConnector
 		/// Returns schema information for the data source of this <see cref="MySqlConnection"/>.
 		/// </summary>
 		/// <param name="collectionName">The name of the schema to return.</param>
-		/// <param name="restrictions">The restrictions to apply to the schema; this parameter is currently ignored.</param>
+		/// <param name="restrictionValues">The restrictions to apply to the schema; this parameter is currently ignored.</param>
 		/// <returns>A <see cref="DataTable"/> containing schema information.</returns>
-		public override DataTable GetSchema(string collectionName, string?[] restrictions) => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, collectionName, default).GetAwaiter().GetResult();
+		public override DataTable GetSchema(string collectionName, string?[] restrictionValues) => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, collectionName, default).GetAwaiter().GetResult();
 
 		/// <summary>
 		/// Asynchronously returns schema information for the data source of this <see cref="MySqlConnection"/>.
@@ -576,14 +576,14 @@ namespace MySqlConnector
 		/// Asynchronously returns schema information for the data source of this <see cref="MySqlConnection"/>.
 		/// </summary>
 		/// <param name="collectionName">The name of the schema to return.</param>
-		/// <param name="restrictions">The restrictions to apply to the schema; this parameter is currently ignored.</param>
+		/// <param name="restrictionValues">The restrictions to apply to the schema; this parameter is currently ignored.</param>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task{DataTable}"/> containing schema information.</returns>
 		/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictions, CancellationToken cancellationToken = default)
+		public Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictionValues, CancellationToken cancellationToken = default)
 #else
-		public override Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictions, CancellationToken cancellationToken = default)
+		public override Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictionValues, CancellationToken cancellationToken = default)
 #endif
 			=> GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, collectionName, cancellationToken).AsTask();
 

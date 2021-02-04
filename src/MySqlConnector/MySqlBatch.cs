@@ -162,13 +162,13 @@ namespace MySqlConnector
 		int ICancellableCommand.CommandTimeout => Timeout;
 		int ICancellableCommand.CancelAttemptCount { get; set; }
 
-		IDisposable? ICancellableCommand.RegisterCancel(CancellationToken token)
+		IDisposable? ICancellableCommand.RegisterCancel(CancellationToken cancellationToken)
 		{
-			if (!token.CanBeCanceled)
+			if (!cancellationToken.CanBeCanceled)
 				return null;
 
 			m_cancelAction ??= Cancel;
-			return token.Register(m_cancelAction);
+			return cancellationToken.Register(m_cancelAction);
 		}
 
 		void ICancellableCommand.SetTimeout(int milliseconds)
