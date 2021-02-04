@@ -235,15 +235,8 @@ namespace MySqlConnector.Core
 			m_preparedStatements.Add(commandText, new(preparedStatements, parsedStatements));
 		}
 
-		public PreparedStatements? TryGetPreparedStatement(string commandText)
-		{
-			if (m_preparedStatements is not null)
-			{
-				if (m_preparedStatements.TryGetValue(commandText, out var statement))
-					return statement;
-			}
-			return null;
-		}
+		public PreparedStatements? TryGetPreparedStatement(string commandText) =>
+			m_preparedStatements is not null && m_preparedStatements.TryGetValue(commandText, out var statement) ? statement : null;
 
 		public void StartQuerying(ICancellableCommand command)
 		{
