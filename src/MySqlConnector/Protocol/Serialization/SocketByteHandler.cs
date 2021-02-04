@@ -70,9 +70,12 @@ namespace MySqlConnector.Protocol.Serialization
 		private async ValueTask<int> DoReadBytesAsync(Memory<byte> buffer)
 		{
 			var startTime = RemainingTimeout == Constants.InfiniteTimeout ? 0 : Environment.TickCount;
-			var timerId = RemainingTimeout == Constants.InfiniteTimeout ? 0 :
-				RemainingTimeout <= 0 ? throw MySqlException.CreateForTimeout() :
-				TimerQueue.Instance.Add(RemainingTimeout, m_closeSocket);
+			var timerId = RemainingTimeout switch
+			{
+				Constants.InfiniteTimeout => 0u,
+				<= 0 => throw MySqlException.CreateForTimeout(),
+				_ => TimerQueue.Instance.Add(RemainingTimeout, m_closeSocket),
+			};
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 			m_socketAwaitable.EventArgs.SetBuffer(buffer);
 #endif

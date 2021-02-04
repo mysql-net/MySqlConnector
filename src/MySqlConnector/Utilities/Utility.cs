@@ -489,9 +489,13 @@ namespace MySqlConnector.Utilities
 
 		public static void GetOSDetails(out string? os, out string osDescription, out string architecture)
 		{
-			os = Environment.OSVersion.Platform == PlatformID.Win32NT ? "Windows" :
-				Environment.OSVersion.Platform == PlatformID.Unix ? "Linux" :
-				Environment.OSVersion.Platform == PlatformID.MacOSX ? "macOS" : null;
+			os = Environment.OSVersion.Platform switch
+			{
+				PlatformID.Win32NT => "Windows",
+				PlatformID.Unix => "Linux",
+				PlatformID.MacOSX => "macOS",
+				_ => null,
+			};
 			osDescription = Environment.OSVersion.VersionString;
 			architecture = IntPtr.Size == 8 ? "X64" : "X86";
 		}
