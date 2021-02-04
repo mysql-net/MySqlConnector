@@ -404,7 +404,7 @@ namespace MySqlConnector.Protocol.Serialization
 		private static ValueTask<Packet> ReadPacketAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
 			var headerBytesTask = bufferedByteReader.ReadBytesAsync(byteHandler, 4, ioBehavior);
-			if (headerBytesTask.IsCompleted)
+			if (headerBytesTask.IsCompletedSuccessfully)
 				return ReadPacketAfterHeader(headerBytesTask.Result, bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior);
 			return AddContinuation(headerBytesTask, bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior);
 
@@ -429,7 +429,7 @@ namespace MySqlConnector.Protocol.Serialization
 				packetOutOfOrderException = MySqlProtocolException.CreateForPacketOutOfOrder(expectedSequenceNumber, packetSequenceNumber);
 
 			var payloadBytesTask = bufferedByteReader.ReadBytesAsync(byteHandler, payloadLength, ioBehavior);
-			if (payloadBytesTask.IsCompleted)
+			if (payloadBytesTask.IsCompletedSuccessfully)
 				return CreatePacketFromPayload(payloadBytesTask.Result, payloadLength, protocolErrorBehavior, packetOutOfOrderException);
 			return AddContinuation(payloadBytesTask, payloadLength, protocolErrorBehavior, packetOutOfOrderException);
 
@@ -464,7 +464,7 @@ namespace MySqlConnector.Protocol.Serialization
 		private static ValueTask<ArraySegment<byte>> DoReadPayloadAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegmentHolder<byte> previousPayloads, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 		{
 			var readPacketTask = ReadPacketAsync(bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior);
-			while (readPacketTask.IsCompleted)
+			while (readPacketTask.IsCompletedSuccessfully)
 			{
 				if (HasReadPayload(previousPayloads, readPacketTask.Result, protocolErrorBehavior, out var result))
 					return result;
