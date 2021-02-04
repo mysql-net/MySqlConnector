@@ -1154,7 +1154,7 @@ namespace MySqlConnector.Core
 						// SslStream on Windows needs a KeyContainerName to be set
 						var csp = new CspParameters
 						{
-							KeyContainerName = new Guid().ToString(),
+							KeyContainerName = Guid.NewGuid().ToString(),
 						};
 						rsa = new RSACryptoServiceProvider(csp)
 						{
