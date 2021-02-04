@@ -531,11 +531,11 @@ namespace MySqlConnector.Core
 			if (bufferOffset > buffer.Length)
 				throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, nameof(bufferOffset) + " must be within the buffer");
 			if (checked(bufferOffset + length) > buffer.Length)
-				throw new ArgumentException(nameof(bufferOffset) + " + " + nameof(length) + " cannot exceed buffer.Length", nameof(length));
+				throw new ArgumentException(nameof(bufferOffset) + " + " + nameof(length) + " cannot exceed " + nameof(buffer) + "." + nameof(buffer.Length), nameof(length));
 		}
 
 		ReadOnlyMemory<byte> m_data;
-		int[] m_dataOffsets;
-		int[] m_dataLengths;
+		readonly int[] m_dataOffsets;
+		readonly int[] m_dataLengths;
 	}
 }
