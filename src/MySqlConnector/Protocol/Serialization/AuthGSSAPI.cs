@@ -11,7 +11,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Serialization
 {
-	internal class NegotiateStreamConstants
+	internal static class NegotiateStreamConstants
 	{
 		public const int HeaderLength = 5;
 		public const byte MajorVersion = 1;
@@ -39,11 +39,11 @@ namespace MySqlConnector.Protocol.Serialization
 		bool m_clientHandshakeDone;
 
 		MemoryStream m_readBuffer;
-		MemoryStream m_writeBuffer;
+		readonly MemoryStream m_writeBuffer;
 		int m_writePayloadLength;
-		ServerSession m_serverSession;
-		IOBehavior m_ioBehavior;
-		CancellationToken m_cancellationToken;
+		readonly ServerSession m_serverSession;
+		readonly IOBehavior m_ioBehavior;
+		readonly CancellationToken m_cancellationToken;
 
 		public PayloadData? MySQLProtocolPayload { get; private set; }
 		public NegotiateToMySqlConverterStream(ServerSession serverSession, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -204,9 +204,9 @@ namespace MySqlConnector.Protocol.Serialization
 		public override long Seek(long offset, SeekOrigin origin) => throw new NotImplementedException();
 
 		public override void SetLength(long value) => throw new NotImplementedException();
-
 	}
-	internal class AuthGSSAPI
+
+	internal static class AuthGSSAPI
 	{
 		private static string GetServicePrincipalName(byte[] switchRequest)
 		{
