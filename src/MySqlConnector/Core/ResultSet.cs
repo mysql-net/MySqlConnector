@@ -174,7 +174,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private bool IsHostVerified(MySqlConnection connection)
+		private static bool IsHostVerified(MySqlConnection connection)
 		{
 			return connection.SslMode == MySqlSslMode.VerifyCA
 				|| connection.SslMode == MySqlSslMode.VerifyFull;
@@ -348,7 +348,9 @@ namespace MySqlConnector.Core
 			}
 		}
 
+#pragma warning disable CA1822 // Mark members as static
 		public int Depth => 0;
+#pragma warning restore CA1822 // Mark members as static
 
 		public string GetName(int ordinal)
 		{

@@ -63,6 +63,7 @@ namespace MySqlConnector
 #endif
 #endif
 
+#pragma warning disable CA1822 // Mark members as static
 		/// <summary>
 		/// Creates a new <see cref="MySqlBatch"/> object.
 		/// </summary>
@@ -77,6 +78,7 @@ namespace MySqlConnector
 		/// Returns <c>true</c>.
 		/// </summary>
 		public bool CanCreateBatch => true;
+#pragma warning restore CA1822 // Mark members as static
 
 		private MySqlConnectorFactory()
 		{

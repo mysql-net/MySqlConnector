@@ -225,7 +225,7 @@ namespace MySqlConnector.Protocol.Serialization
 					CompressAndWrite(remainingUncompressedData, ioBehavior));
 		}
 
-		private uint ComputeAdler32Checksum(byte[] data, int offset, int length)
+		private static uint ComputeAdler32Checksum(byte[] data, int offset, int length)
 		{
 			int s1 = 1, s2 = 0;
 			for (var i = 0; i < length; i++)

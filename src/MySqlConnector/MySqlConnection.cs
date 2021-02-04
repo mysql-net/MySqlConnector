@@ -614,8 +614,10 @@ namespace MySqlConnector
 		/// </summary>
 		/// <returns></returns>
 		public MySqlBatchCommand CreateBatchCommand() => CreateDbBatchCommand();
+#pragma warning disable CA1822 // Mark members as static
 		private MySqlBatchCommand CreateDbBatchCommand() => new();
 		public bool CanCreateBatch => true;
+#pragma warning restore CA1822 // Mark members as static
 
 		protected override void Dispose(bool disposing)
 		{

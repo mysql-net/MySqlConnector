@@ -284,7 +284,7 @@ namespace MySqlConnector
 			return sb.ToString();
 		}
 
-		private Stream CreateFileStream(string fileName)
+		private static Stream CreateFileStream(string fileName)
 		{
 			try
 			{
