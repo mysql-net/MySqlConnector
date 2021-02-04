@@ -144,6 +144,88 @@ namespace MySqlConnector.Tests
 		}
 #endif
 
+		[Fact]
+		public void CompareInvalidObject()
+		{
+			IComparable left = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
+#if BASELINE
+			Assert.Throws<InvalidCastException>(() => left.CompareTo(new object()));
+#else
+			Assert.Throws<ArgumentException>(() => left.CompareTo(new object()));
+#endif
+		}
+
+		[Fact]
+		public void CompareYear()
+		{
+			IComparable left = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
+			IComparable right = new MySqlDateTime(2001, 1, 1, 1, 1, 1, 1);
+			Assert.True(left.CompareTo(right) < 0);
+			Assert.True(right.CompareTo(left) > 0);
+		}
+
+		[Fact]
+		public void CompareMonth()
+		{
+			IComparable left = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
+			IComparable right = new MySqlDateTime(2000, 2, 1, 1, 1, 1, 1);
+			Assert.True(left.CompareTo(right) < 0);
+			Assert.True(right.CompareTo(left) > 0);
+		}
+
+		[Fact]
+		public void CompareDay()
+		{
+			IComparable left = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
+			IComparable right = new MySqlDateTime(2000, 1, 2, 1, 1, 1, 1);
+			Assert.True(left.CompareTo(right) < 0);
+			Assert.True(right.CompareTo(left) > 0);
+		}
+
+		[Fact]
+		public void CompareHour()
+		{
+			IComparable left = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
+			IComparable right = new MySqlDateTime(2000, 1, 1, 2, 1, 1, 1);
+			Assert.True(left.CompareTo(right) < 0);
+			Assert.True(right.CompareTo(left) > 0);
+		}
+
+		[Fact]
+		public void CompareMinute()
+		{
+			IComparable left = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
+			IComparable right = new MySqlDateTime(2000, 1, 1, 1, 2, 1, 1);
+			Assert.True(left.CompareTo(right) < 0);
+			Assert.True(right.CompareTo(left) > 0);
+		}
+
+		[Fact]
+		public void CompareSecond()
+		{
+			IComparable left = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
+			IComparable right = new MySqlDateTime(2000, 1, 1, 1, 1, 2, 1);
+			Assert.True(left.CompareTo(right) < 0);
+			Assert.True(right.CompareTo(left) > 0);
+		}
+
+		[Fact]
+		public void CompareMicrosecond()
+		{
+			IComparable left = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
+			IComparable right = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 2);
+			Assert.True(left.CompareTo(right) < 0);
+			Assert.True(right.CompareTo(left) > 0);
+		}
+
+		[Fact]
+		public void CompareEqual()
+		{
+			IComparable left = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
+			IComparable right = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
+			Assert.Equal(0, left.CompareTo(right));
+		}
+
 		static readonly MySqlDateTime s_mySqlDateTime = new(2018, 6, 9, 12, 34, 56, 123456);
 		static readonly DateTime s_dateTime = new DateTime(2018, 6, 9, 12, 34, 56, 123).AddTicks(4560);
 	}
