@@ -27,14 +27,14 @@ namespace MySqlConnector.Protocol.Serialization
 				m_stream.CanTimeout ? DoReadBytesSync(buffer) :
 				DoReadBytesSyncOverAsync(buffer);
 
-			ValueTask<int> DoReadBytesSync(Memory<byte> buffer_)
+			ValueTask<int> DoReadBytesSync(Memory<byte> buffer)
 			{
 				m_stream.ReadTimeout = RemainingTimeout == Constants.InfiniteTimeout ? Timeout.Infinite : RemainingTimeout;
 				var startTime = RemainingTimeout == Constants.InfiniteTimeout ? 0 : Environment.TickCount;
 				int bytesRead;
 				try
 				{
-					bytesRead = m_stream.Read(buffer_);
+					bytesRead = m_stream.Read(buffer);
 				}
 				catch (Exception ex)
 				{
@@ -47,12 +47,12 @@ namespace MySqlConnector.Protocol.Serialization
 				return new ValueTask<int>(bytesRead);
 			}
 
-			ValueTask<int> DoReadBytesSyncOverAsync(Memory<byte> buffer_)
+			ValueTask<int> DoReadBytesSyncOverAsync(Memory<byte> buffer)
 			{
 				try
 				{
 					// handle timeout by setting a timer to close the stream in the background
-					return new ValueTask<int>(DoReadBytesAsync(buffer_).GetAwaiter().GetResult());
+					return new ValueTask<int>(DoReadBytesAsync(buffer).GetAwaiter().GetResult());
 				}
 				catch (Exception ex)
 				{
@@ -60,14 +60,14 @@ namespace MySqlConnector.Protocol.Serialization
 				}
 			}
 
-			async Task<int> DoReadBytesAsync(Memory<byte> buffer_)
+			async Task<int> DoReadBytesAsync(Memory<byte> buffer)
 			{
 				var startTime = RemainingTimeout == Constants.InfiniteTimeout ? 0 : Environment.TickCount;
 				var timerId = RemainingTimeout == Constants.InfiniteTimeout ? 0 : TimerQueue.Instance.Add(RemainingTimeout, m_closeStream);
 				int bytesRead;
 				try
 				{
-					bytesRead = await m_stream.ReadAsync(buffer_).ConfigureAwait(false);
+					bytesRead = await m_stream.ReadAsync(buffer).ConfigureAwait(false);
 				}
 				catch (Exception ex) when (ex is ObjectDisposedException or IOException)
 				{
@@ -104,9 +104,9 @@ namespace MySqlConnector.Protocol.Serialization
 				return ValueTaskExtensions.FromException<int>(ex);
 			}
 
-			async Task<int> DoWriteBytesAsync(ReadOnlyMemory<byte> data_)
+			async Task<int> DoWriteBytesAsync(ReadOnlyMemory<byte> data)
 			{
-				await m_stream.WriteAsync(data_).ConfigureAwait(false);
+				await m_stream.WriteAsync(data).ConfigureAwait(false);
 				return 0;
 			}
 		}

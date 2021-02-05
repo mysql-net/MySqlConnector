@@ -236,7 +236,7 @@ namespace MySqlConnector.Core
 				? new ValueTask<Row?>(ScanRowAsyncRemainder(this, payloadValueTask.Result, row))
 				: new ValueTask<Row?>(ScanRowAsyncAwaited(this, payloadValueTask.AsTask(), row, cancellationToken));
 
-			static async Task<Row?> ScanRowAsyncAwaited(ResultSet this_, Task<PayloadData> payloadTask, Row? row_, CancellationToken token)
+			static async Task<Row?> ScanRowAsyncAwaited(ResultSet resultSet, Task<PayloadData> payloadTask, Row? row, CancellationToken token)
 			{
 				PayloadData payloadData;
 				try
@@ -245,37 +245,37 @@ namespace MySqlConnector.Core
 				}
 				catch (MySqlException ex)
 				{
-					this_.BufferState = this_.State = ResultSetState.NoMoreData;
+					resultSet.BufferState = resultSet.State = ResultSetState.NoMoreData;
 					if (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && token.IsCancellationRequested)
 						throw new OperationCanceledException(ex.Message, ex, token);
 					throw;
 				}
-				return ScanRowAsyncRemainder(this_, payloadData, row_);
+				return ScanRowAsyncRemainder(resultSet, payloadData, row);
 			}
 
-			static Row? ScanRowAsyncRemainder(ResultSet this_, PayloadData payload, Row? row_)
+			static Row? ScanRowAsyncRemainder(ResultSet resultSet, PayloadData payload, Row? row)
 			{
 				if (payload.HeaderByte == EofPayload.Signature)
 				{
 					var span = payload.Span;
-					if (this_.Session.SupportsDeprecateEof && OkPayload.IsOk(span, this_.Session.SupportsDeprecateEof))
+					if (resultSet.Session.SupportsDeprecateEof && OkPayload.IsOk(span, resultSet.Session.SupportsDeprecateEof))
 					{
-						var ok = OkPayload.Create(span, this_.Session.SupportsDeprecateEof, this_.Session.SupportsSessionTrack);
-						this_.BufferState = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
+						var ok = OkPayload.Create(span, resultSet.Session.SupportsDeprecateEof, resultSet.Session.SupportsSessionTrack);
+						resultSet.BufferState = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
 						return null;
 					}
-					if (!this_.Session.SupportsDeprecateEof && EofPayload.IsEof(payload))
+					if (!resultSet.Session.SupportsDeprecateEof && EofPayload.IsEof(payload))
 					{
 						var eof = EofPayload.Create(span);
-						this_.BufferState = (eof.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
+						resultSet.BufferState = (eof.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
 						return null;
 					}
 				}
 
-				if (row_ is null)
+				if (row is null)
 				{
 					bool isBinaryRow = false;
-					if (payload.HeaderByte == 0 && !this_.Connection.IgnorePrepare)
+					if (payload.HeaderByte == 0 && !resultSet.Connection.IgnorePrepare)
 					{
 						// this might be a binary row, but it might also be a text row whose first column is zero bytes long; try reading
 						// the row as a series of length-encoded values (the text format) to see if this might plausibly be a text row
@@ -328,7 +328,7 @@ namespace MySqlConnector.Core
 							reader.Offset += length;
 							columnCount++;
 
-							if (columnCount == this_.ColumnDefinitions!.Length)
+							if (columnCount == resultSet.ColumnDefinitions!.Length)
 							{
 								// if we used up all the bytes reading exactly 'ColumnDefinitions' length-encoded columns, then assume this is a text row
 								if (reader.BytesRemaining == 0)
@@ -339,12 +339,12 @@ namespace MySqlConnector.Core
 
 						isBinaryRow = !isTextRow;
 					}
-					row_ = isBinaryRow ? (Row) new BinaryRow(this_) : new TextRow(this_);
+					row = isBinaryRow ? (Row) new BinaryRow(resultSet) : new TextRow(resultSet);
 				}
-				row_.SetData(payload.Memory);
-				this_.m_hasRows = true;
-				this_.BufferState = ResultSetState.ReadingRows;
-				return row_;
+				row.SetData(payload.Memory);
+				resultSet.m_hasRows = true;
+				resultSet.BufferState = ResultSetState.ReadingRows;
+				return row;
 			}
 		}
 
