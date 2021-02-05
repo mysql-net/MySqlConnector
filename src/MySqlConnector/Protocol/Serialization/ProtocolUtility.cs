@@ -466,7 +466,7 @@ namespace MySqlConnector.Protocol.Serialization
 			var readPacketTask = ReadPacketAsync(bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior);
 			while (readPacketTask.IsCompletedSuccessfully)
 			{
-				if (HasReadPayload(previousPayloads, readPacketTask.Result, protocolErrorBehavior, out var result))
+				if (HasReadPayload(previousPayloads, readPacketTask.Result, out var result))
 					return result;
 
 				readPacketTask = ReadPacketAsync(bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior);
@@ -477,13 +477,13 @@ namespace MySqlConnector.Protocol.Serialization
 			static async ValueTask<ArraySegment<byte>> AddContinuation(ValueTask<Packet> readPacketTask, BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegmentHolder<byte> previousPayloads, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 			{
 				var packet = await readPacketTask.ConfigureAwait(false);
-				var resultTask = HasReadPayload(previousPayloads, packet, protocolErrorBehavior, out var result) ? result :
+				var resultTask = HasReadPayload(previousPayloads, packet, out var result) ? result :
 					DoReadPayloadAsync(bufferedByteReader, byteHandler, getNextSequenceNumber, previousPayloads, protocolErrorBehavior, ioBehavior);
 				return await resultTask.ConfigureAwait(false);
 			}
 		}
 
-		private static bool HasReadPayload(ArraySegmentHolder<byte> previousPayloads, Packet packet, ProtocolErrorBehavior protocolErrorBehavior, out ValueTask<ArraySegment<byte>> result)
+		private static bool HasReadPayload(ArraySegmentHolder<byte> previousPayloads, Packet packet, out ValueTask<ArraySegment<byte>> result)
 		{
 			if (previousPayloads.Count == 0 && packet.Contents.Count < MaxPacketSize)
 			{
