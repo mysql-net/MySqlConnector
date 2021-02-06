@@ -5,7 +5,7 @@ title: MySqlConnectionStringBuilder.Remove method
 # MySqlConnectionStringBuilder.Remove method
 
 ```csharp
-public override bool Remove(string key)
+public override bool Remove(string keyword)
 ```
 
 ## See Also

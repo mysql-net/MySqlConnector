@@ -51,13 +51,13 @@ A DataTable containing schema information.
 Returns schema information for the data source of this [`MySqlConnection`](../../MySqlConnectionType/).
 
 ```csharp
-public override DataTable GetSchema(string collectionName, string[] restrictions)
+public override DataTable GetSchema(string collectionName, string[] restrictionValues)
 ```
 
 | parameter | description |
 | --- | --- |
 | collectionName | The name of the schema to return. |
-| restrictions | The restrictions to apply to the schema; this parameter is currently ignored. |
+| restrictionValues | The restrictions to apply to the schema; this parameter is currently ignored. |
 
 ## Return Value
 

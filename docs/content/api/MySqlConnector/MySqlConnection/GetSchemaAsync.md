@@ -66,14 +66,14 @@ The proposed ADO.NET API that this is based on is not finalized; this API may ch
 Asynchronously returns schema information for the data source of this [`MySqlConnection`](../../MySqlConnectionType/).
 
 ```csharp
-public Task<DataTable> GetSchemaAsync(string collectionName, string[] restrictions, 
+public Task<DataTable> GetSchemaAsync(string collectionName, string[] restrictionValues, 
     CancellationToken cancellationToken = default(CancellationToken))
 ```
 
 | parameter | description |
 | --- | --- |
 | collectionName | The name of the schema to return. |
-| restrictions | The restrictions to apply to the schema; this parameter is currently ignored. |
+| restrictionValues | The restrictions to apply to the schema; this parameter is currently ignored. |
 | cancellationToken | A token to cancel the asynchronous operation. |
 
 ## Return Value

@@ -5,7 +5,7 @@ title: MySqlConnectionStringBuilder.ContainsKey method
 # MySqlConnectionStringBuilder.ContainsKey method
 
 ```csharp
-public override bool ContainsKey(string key)
+public override bool ContainsKey(string keyword)
 ```
 
 ## See Also
