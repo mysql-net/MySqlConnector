@@ -340,8 +340,10 @@ namespace MySqlConnector.Core
 				m_state = State.Closed;
 		}
 
-		public async Task ConnectAsync(ConnectionSettings cs, int startTickCount, ILoadBalancer? loadBalancer, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async Task<string?> ConnectAsync(ConnectionSettings cs, int startTickCount, ILoadBalancer? loadBalancer, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			string? statusInfo = null;
+
 			try
 			{
 				lock (m_lock)
@@ -350,7 +352,6 @@ namespace MySqlConnector.Core
 					m_state = State.Connecting;
 				}
 
-serverRedirection:
 				// TLS negotiation should automatically fall back to the best version supported by client and server. However,
 				// Windows Schannel clients will fail to connect to a yaSSL-based MySQL Server if TLS 1.2 is requested and
 				// have to use only TLS 1.1: https://github.com/mysql-net/MySqlConnector/pull/101
@@ -467,34 +468,7 @@ serverRedirection:
 				}
 
 				var ok = OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
-				if (ok.StatusInfo is not null && ok.StatusInfo.StartsWith("Location: mysql://", StringComparison.Ordinal))
-				{
-					// server redirection string has the format "Location: mysql://{host}:{port}/user={userId}[&ttl={ttl}]"
-					m_logArguments[1] = ok.StatusInfo;
-					Log.Info("Session{0} has server redirection header {1}", m_logArguments);
-
-					if (cs.IsRedirected)
-					{
-						Log.Info("Session{0} is already redirected; ignoring it.", m_logArguments);
-					}
-					else if (Utility.TryParseRedirectionHeader(ok.StatusInfo, out var host, out var port, out var user))
-					{
-						Log.Info("Session{0} found server redirection Host={1}; Port={2}; User={3}", m_logArguments[0], host, port, user);
-
-						if (host != cs.HostNames![0] || port != cs.Port || user != cs.UserID)
-						{
-							Log.Info("Session{0} closing existing connection", m_logArguments);
-							await SendAsync(QuitPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
-							Log.Info("Session{0} opening new connection to Host={1}; Port={2}; User={3}", m_logArguments[0], host, port, user);
-							cs = cs.CloneWith(host, port, user, isRedirected: true);
-							goto serverRedirection;
-						}
-						else
-						{
-							Log.Info("Session{0} is already connected to this server; ignoring redirection", m_logArguments);
-						}
-					}
-				}
+				statusInfo = ok.StatusInfo;
 
 				if (m_useCompression)
 					m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
@@ -519,6 +493,8 @@ serverRedirection:
 				Log.Error(ex, "Session{0} couldn't connect to server", m_logArguments);
 				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't connect to server", ex);
 			}
+
+			return statusInfo;
 		}
 
 		public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)

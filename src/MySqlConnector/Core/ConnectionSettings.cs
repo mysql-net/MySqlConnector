@@ -150,7 +150,7 @@ namespace MySqlConnector.Core
 			static int ToSigned(uint value) => value >= int.MaxValue ? int.MaxValue : (int) value;
 		}
 
-		public ConnectionSettings CloneWith(string host, int port, string userId, bool isRedirected) => new ConnectionSettings(this, host, port, userId, isRedirected);
+		public ConnectionSettings CloneWith(string host, int port, string userId) => new ConnectionSettings(this, host, port, userId);
 
 		private static MySqlGuidFormat GetEffectiveGuidFormat(MySqlGuidFormat guidFormat, bool oldGuids)
 		{
@@ -242,7 +242,6 @@ namespace MySqlConnector.Core
 		public bool UseXaTransactions { get; }
 
 		public byte[]? ConnectionAttributes { get; set; }
-		public bool IsRedirected { get; }
 
 		// Helper Functions
 		int? m_connectionTimeoutMilliseconds;
@@ -268,7 +267,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private ConnectionSettings(ConnectionSettings other, string host, int port, string userId, bool isRedirected)
+		private ConnectionSettings(ConnectionSettings other, string host, int port, string userId)
 		{
 			ConnectionStringBuilder = other.ConnectionStringBuilder;
 			ConnectionString = other.ConnectionString;
@@ -324,8 +323,6 @@ namespace MySqlConnector.Core
 			UseAffectedRows = other.UseAffectedRows;
 			UseCompression = other.UseCompression;
 			UseXaTransactions = other.UseXaTransactions;
-
-			IsRedirected = isRedirected;
 		}
 
 		static readonly string[] s_localhostPipeServer = { "." };

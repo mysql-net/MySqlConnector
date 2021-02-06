@@ -104,10 +104,7 @@ namespace MySqlConnector.Core
 				}
 
 				// create a new session
-				session = new(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
-				if (Log.IsInfoEnabled())
-					Log.Info("Pool{0} no pooled session available; created new Session{1}", m_logArguments[0], session.Id);
-				await session.ConnectAsync(ConnectionSettings, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+				session = await ConnectSessionAsync("Pool{0} no pooled session available; created new Session{1}", startTickCount, ioBehavior, cancellationToken).ConfigureAwait(false);
 				AdjustHostConnectionCount(session, 1);
 				session.OwningConnection = new(connection);
 				int leasedSessionsCountNew;
@@ -350,9 +347,7 @@ namespace MySqlConnector.Core
 
 				try
 				{
-					var session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
-					Log.Info("Pool{0} created Session{1} to reach minimum pool size", m_logArguments[0], session.Id);
-					await session.ConnectAsync(ConnectionSettings, Environment.TickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+					var session = await ConnectSessionAsync("Pool{0} created Session{1} to reach minimum pool size", Environment.TickCount, ioBehavior, cancellationToken).ConfigureAwait(false);
 					AdjustHostConnectionCount(session, 1);
 					lock (m_sessions)
 						m_sessions.AddFirst(session);
@@ -363,6 +358,42 @@ namespace MySqlConnector.Core
 					m_sessionSemaphore.Release();
 				}
 			}
+		}
+
+		private async ValueTask<ServerSession> ConnectSessionAsync(string logMessage, int startTickCount, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		{
+			var session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
+			if (Log.IsInfoEnabled())
+				Log.Info(logMessage, m_logArguments[0], session.Id);
+			var statusInfo = await session.ConnectAsync(ConnectionSettings, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+
+			if (statusInfo is not null && statusInfo.StartsWith("Location: mysql://", StringComparison.Ordinal))
+			{
+				// server redirection string has the format "Location: mysql://{host}:{port}/user={userId}[&ttl={ttl}]"
+				Log.Info("Session{0} has server redirection header {1}", session.Id, statusInfo);
+
+				if (Utility.TryParseRedirectionHeader(statusInfo, out var host, out var port, out var user))
+				{
+					Log.Info("Session{0} found server redirection Host={1}; Port={2}; User={3}", session.Id, host, port, user);
+
+					if (host != ConnectionSettings.HostNames![0] || port != ConnectionSettings.Port || user != ConnectionSettings.UserID)
+					{
+						var redirectedSettings = ConnectionSettings.CloneWith(host, port, user);
+						Log.Info("Pool{0} opening new connection to Host={1}; Port={2}; User={3}", m_logArguments[0], host, port, user);
+						var redirectedSession = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
+						await redirectedSession.ConnectAsync(redirectedSettings, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+						Log.Info("Pool{0} closing Session{1} to use redirected Session{2} instead", m_logArguments[0], session.Id, redirectedSession.Id);
+						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						return redirectedSession;
+					}
+					else
+					{
+						Log.Info("Session{0} is already connected to this server; ignoring redirection", session.Id);
+					}
+				}
+			}
+
+			return session;
 		}
 
 		public static ConnectionPool? GetPool(string connectionString)
