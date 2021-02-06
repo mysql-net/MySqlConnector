@@ -150,6 +150,8 @@ namespace MySqlConnector.Core
 			static int ToSigned(uint value) => value >= int.MaxValue ? int.MaxValue : (int) value;
 		}
 
+		public ConnectionSettings CloneWith(string host, int port, string userId, bool isRedirected) => new ConnectionSettings(this, host, port, userId, isRedirected);
+
 		private static MySqlGuidFormat GetEffectiveGuidFormat(MySqlGuidFormat guidFormat, bool oldGuids)
 		{
 			switch (guidFormat)
@@ -240,6 +242,7 @@ namespace MySqlConnector.Core
 		public bool UseXaTransactions { get; }
 
 		public byte[]? ConnectionAttributes { get; set; }
+		public bool IsRedirected { get; }
 
 		// Helper Functions
 		int? m_connectionTimeoutMilliseconds;
@@ -263,6 +266,66 @@ namespace MySqlConnector.Core
 				}
 				return m_connectionTimeoutMilliseconds.Value;
 			}
+		}
+
+		private ConnectionSettings(ConnectionSettings other, string host, int port, string userId, bool isRedirected)
+		{
+			ConnectionStringBuilder = other.ConnectionStringBuilder;
+			ConnectionString = other.ConnectionString;
+
+			ConnectionProtocol = MySqlConnectionProtocol.Sockets;
+			HostNames = new[] { host };
+			LoadBalance = other.LoadBalance;
+			Port = port;
+			PipeName = other.PipeName;
+
+			UserID = userId;
+			Password = other.Password;
+			Database = other.Database;
+
+			SslMode = other.SslMode;
+			CertificateFile = other.CertificateFile;
+			CertificatePassword = other.CertificatePassword;
+			SslCertificateFile = other.SslCertificateFile;
+			SslKeyFile = other.SslKeyFile;
+			CACertificateFile = other.CACertificateFile;
+			CertificateStoreLocation = other.CertificateStoreLocation;
+			CertificateThumbprint = other.CertificateThumbprint;
+
+			Pooling = other.Pooling;
+			ConnectionLifeTime = other.ConnectionLifeTime;
+			ConnectionReset = other.ConnectionReset;
+			ConnectionIdlePingTime = other.ConnectionIdlePingTime;
+			ConnectionIdleTimeout = other.ConnectionIdleTimeout;
+			MinimumPoolSize = other.MinimumPoolSize;
+			MaximumPoolSize = other.MaximumPoolSize;
+
+			AllowLoadLocalInfile = other.AllowLoadLocalInfile;
+			AllowPublicKeyRetrieval = other.AllowPublicKeyRetrieval;
+			AllowUserVariables = other.AllowUserVariables;
+			AllowZeroDateTime = other.AllowZeroDateTime;
+			ApplicationName = other.ApplicationName;
+			AutoEnlist = other.AutoEnlist;
+			ConnectionTimeout = other.ConnectionTimeout;
+			ConvertZeroDateTime = other.ConvertZeroDateTime;
+			DateTimeKind = other.DateTimeKind;
+			DefaultCommandTimeout = other.DefaultCommandTimeout;
+			ForceSynchronous = other.ForceSynchronous;
+			IgnoreCommandTransaction = other.IgnoreCommandTransaction;
+			IgnorePrepare = other.IgnorePrepare;
+			InteractiveSession = other.InteractiveSession;
+			GuidFormat = other.GuidFormat;
+			Keepalive = other.Keepalive;
+			NoBackslashEscapes = other.NoBackslashEscapes;
+			PersistSecurityInfo = other.PersistSecurityInfo;
+			ServerRsaPublicKeyFile = other.ServerRsaPublicKeyFile;
+			ServerSPN = other.ServerSPN;
+			TreatTinyAsBoolean = other.TreatTinyAsBoolean;
+			UseAffectedRows = other.UseAffectedRows;
+			UseCompression = other.UseCompression;
+			UseXaTransactions = other.UseXaTransactions;
+
+			IsRedirected = isRedirected;
 		}
 
 		static readonly string[] s_localhostPipeServer = { "." };
