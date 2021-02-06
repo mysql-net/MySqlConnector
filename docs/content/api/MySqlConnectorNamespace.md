@@ -46,6 +46,7 @@ title: MySqlConnector
 | delegate [MySqlRowUpdatedEventHandler](../MySqlConnector/MySqlRowUpdatedEventHandlerType/) |  |
 | class [MySqlRowUpdatingEventArgs](../MySqlConnector/MySqlRowUpdatingEventArgsType/) |  |
 | delegate [MySqlRowUpdatingEventHandler](../MySqlConnector/MySqlRowUpdatingEventHandlerType/) |  |
+| enum [MySqlServerRedirectionMode](../MySqlConnector/MySqlServerRedirectionModeType/) | Server redirection configuration. |
 | enum [MySqlSslMode](../MySqlConnector/MySqlSslModeType/) | SSL connection options. |
 | class [MySqlTransaction](../MySqlConnector/MySqlTransactionType/) | [`MySqlTransaction`](../MySqlConnector/MySqlTransactionType/) represents an in-progress transaction on a MySQL Server. |
 

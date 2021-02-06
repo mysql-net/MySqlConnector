@@ -140,6 +140,7 @@ namespace MySqlConnector.Core
 			Keepalive = csb.Keepalive;
 			NoBackslashEscapes = csb.NoBackslashEscapes;
 			PersistSecurityInfo = csb.PersistSecurityInfo;
+			ServerRedirectionMode = csb.ServerRedirectionMode;
 			ServerRsaPublicKeyFile = csb.ServerRsaPublicKeyFile;
 			ServerSPN = csb.ServerSPN;
 			TreatTinyAsBoolean = csb.TreatTinyAsBoolean;
@@ -234,6 +235,7 @@ namespace MySqlConnector.Core
 		public uint Keepalive { get; }
 		public bool NoBackslashEscapes { get; }
 		public bool PersistSecurityInfo { get; }
+		public MySqlServerRedirectionMode ServerRedirectionMode { get; }
 		public string ServerRsaPublicKeyFile { get; }
 		public string ServerSPN { get; }
 		public bool TreatTinyAsBoolean { get; }
@@ -317,6 +319,7 @@ namespace MySqlConnector.Core
 			Keepalive = other.Keepalive;
 			NoBackslashEscapes = other.NoBackslashEscapes;
 			PersistSecurityInfo = other.PersistSecurityInfo;
+			ServerRedirectionMode = other.ServerRedirectionMode;
 			ServerRsaPublicKeyFile = other.ServerRsaPublicKeyFile;
 			ServerSPN = other.ServerSPN;
 			TreatTinyAsBoolean = other.TreatTinyAsBoolean;

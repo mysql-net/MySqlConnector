@@ -366,25 +366,50 @@ namespace MySqlConnector.Core
 			if (Log.IsInfoEnabled())
 				Log.Info(logMessage, m_logArguments[0], session.Id);
 			var statusInfo = await session.ConnectAsync(ConnectionSettings, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+			Exception? redirectionException = null;
 
 			if (statusInfo is not null && statusInfo.StartsWith("Location: mysql://", StringComparison.Ordinal))
 			{
 				// server redirection string has the format "Location: mysql://{host}:{port}/user={userId}[&ttl={ttl}]"
 				Log.Info("Session{0} has server redirection header {1}", session.Id, statusInfo);
 
-				if (Utility.TryParseRedirectionHeader(statusInfo, out var host, out var port, out var user))
+				if (ConnectionSettings.ServerRedirectionMode == MySqlServerRedirectionMode.Disabled)
 				{
-					Log.Info("Session{0} found server redirection Host={1}; Port={2}; User={3}", session.Id, host, port, user);
-
+					Log.Info("Pool{0} server redirection is disabled; ignoring redirection", m_logArguments);
+				}
+				else if (Utility.TryParseRedirectionHeader(statusInfo, out var host, out var port, out var user))
+				{
 					if (host != ConnectionSettings.HostNames![0] || port != ConnectionSettings.Port || user != ConnectionSettings.UserID)
 					{
 						var redirectedSettings = ConnectionSettings.CloneWith(host, port, user);
 						Log.Info("Pool{0} opening new connection to Host={1}; Port={2}; User={3}", m_logArguments[0], host, port, user);
 						var redirectedSession = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
-						await redirectedSession.ConnectAsync(redirectedSettings, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
-						Log.Info("Pool{0} closing Session{1} to use redirected Session{2} instead", m_logArguments[0], session.Id, redirectedSession.Id);
-						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-						return redirectedSession;
+						try
+						{
+							await redirectedSession.ConnectAsync(redirectedSettings, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+						}
+						catch (Exception ex)
+						{
+							Log.Warn(ex, "Pool{0} failed to connect redirected Session{1}", m_logArguments[0], redirectedSession.Id);
+							redirectionException = ex;
+						}
+
+						if (redirectionException is null)
+						{
+							Log.Info("Pool{0} closing Session{1} to use redirected Session{2} instead", m_logArguments[0], session.Id, redirectedSession.Id);
+							await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+							return redirectedSession;
+						}
+						else
+						{
+							try
+							{
+								await redirectedSession.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+							}
+							catch (Exception)
+							{
+							}
+						}
 					}
 					else
 					{
@@ -393,6 +418,11 @@ namespace MySqlConnector.Core
 				}
 			}
 
+			if (ConnectionSettings.ServerRedirectionMode == MySqlServerRedirectionMode.Required)
+			{
+				Log.Error("Pool{0} requires server redirection but server doesn't support it", m_logArguments);
+				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Server does not support redirection", redirectionException);
+			}
 			return session;
 		}
 

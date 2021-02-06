@@ -332,6 +332,12 @@ namespace MySqlConnector
 			set => MySqlConnectionStringOption.PersistSecurityInfo.SetValue(this, value);
 		}
 
+		public MySqlServerRedirectionMode ServerRedirectionMode
+		{
+			get => MySqlConnectionStringOption.ServerRedirectionMode.GetValue(this);
+			set => MySqlConnectionStringOption.ServerRedirectionMode.SetValue(this, value);
+		}
+
 		[AllowNull]
 		public string ServerRsaPublicKeyFile
 		{
@@ -479,6 +485,7 @@ namespace MySqlConnector
 		public static readonly MySqlConnectionStringValueOption<bool> NoBackslashEscapes;
 		public static readonly MySqlConnectionStringValueOption<bool> OldGuids;
 		public static readonly MySqlConnectionStringValueOption<bool> PersistSecurityInfo;
+		public static readonly MySqlConnectionStringValueOption<MySqlServerRedirectionMode> ServerRedirectionMode;
 		public static readonly MySqlConnectionStringReferenceOption<string> ServerRsaPublicKeyFile;
 		public static readonly MySqlConnectionStringReferenceOption<string> ServerSPN;
 		public static readonly MySqlConnectionStringValueOption<bool> TreatTinyAsBoolean;
@@ -745,6 +752,10 @@ namespace MySqlConnector
 				keys: new[] { "Persist Security Info", "PersistSecurityInfo" },
 				defaultValue: false));
 
+			AddOption(ServerRedirectionMode = new(
+				keys: new[] { "Server Redirection Mode", "ServerRedirectionMode" },
+				defaultValue: MySqlServerRedirectionMode.Disabled));
+
 			AddOption(ServerRsaPublicKeyFile = new(
 				keys: new[] { "ServerRsaPublicKeyFile", "Server RSA Public Key File" },
 				defaultValue: ""));
@@ -805,7 +816,7 @@ namespace MySqlConnector
 					return (T) (object) false;
 			}
 
-			if ((typeof(T) == typeof(MySqlLoadBalance) || typeof(T) == typeof(MySqlSslMode) || typeof(T) == typeof(MySqlDateTimeKind) || typeof(T) == typeof(MySqlGuidFormat) || typeof(T) == typeof(MySqlConnectionProtocol) || typeof(T) == typeof(MySqlCertificateStoreLocation)) && objectValue is string enumString)
+			if ((typeof(T) == typeof(MySqlLoadBalance) || typeof(T) == typeof(MySqlSslMode) || typeof(T) == typeof(MySqlServerRedirectionMode) || typeof(T) == typeof(MySqlDateTimeKind) || typeof(T) == typeof(MySqlGuidFormat) || typeof(T) == typeof(MySqlConnectionProtocol) || typeof(T) == typeof(MySqlCertificateStoreLocation)) && objectValue is string enumString)
 			{
 				try
 				{

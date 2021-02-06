@@ -372,8 +372,9 @@ These are the other options that MySqlConnector supports. They are set to sensib
         <dt>Random</dt>
         <dd>Servers are tried in a random order.</dd>
         <dt>LeastConnections</dt>
-        <dd>Servers are tried in ascending order of number of currently-open connections in this connection pool. Requires <code>Pooling=True</code>.
+        <dd>Servers are tried in ascending order of number of currently-open connections in this connection pool. Requires <code>Pooling=True</code>.</dd>
       </dl>
+    </td>
   </tr>
   <tr id="NoBackslashEscapes">
     <td>No Backslash Escapes, NoBackslashEscapes</td>
@@ -389,6 +390,22 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>Persist Security Info, PersistSecurityInfo</td>
     <td>false</td>
     <td>When set to <code>false</code> or no (strongly recommended), security-sensitive information, such as the password, is not returned as part of the connection string if the connection is open or has ever been in an open state. Resetting the connection string resets all connection string values, including the password. Recognized values are true, false, yes, and no.</td>
+  </tr>
+  <tr id="ServerRedirectionMode">
+    <td>ServerRedirectionMode, Server Redirection Mode</td>
+    <td>Disabled</td>
+    <td><p>Whether to use server redirection. The options include:</p>
+      <dl>
+        <dt>Disabled</dt>
+        <dd>Server redirection is not used. All connections go through the proxy server (if there is one).</dd>
+        <dt>Preferred</dt>
+        <dd>If the server supports redirection, a redirected connection will be attempted. If it’s successful, the redirected connection will be used; otherwise, the original connection will be used.</dd>
+        <dt>Required</dt>
+        <dd>The server must support redirection, and making a redirected connection must be successful; otherwise, an exception will be thrown.</dd>
+      </dl>
+      <p>Server Redirection is supported by Azure Database for MySQL if the <code>redirect_enabled</code> server parameter is set to <code>ON</code>.</p>
+      <p>This option is only respected if <code>Pooling=True</code>.
+    </td>
   </tr>
   <tr id="ServerRsaPublicKeyFile">
     <td>ServerRsaPublicKeyFile, Server RSA Public Key File</td>

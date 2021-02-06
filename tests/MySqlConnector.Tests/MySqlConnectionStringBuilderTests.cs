@@ -63,6 +63,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal("MYSQL", csb.PipeName);
 #if !BASELINE
 			Assert.False(csb.NoBackslashEscapes);
+			Assert.Equal(MySqlServerRedirectionMode.Disabled, csb.ServerRedirectionMode);
 #endif
 			Assert.False(csb.OldGuids);
 			Assert.False(csb.PersistSecurityInfo);
@@ -131,6 +132,7 @@ namespace MySqlConnector.Tests
 					"load balance=random;" +
 					"guidformat=timeswapbinary16;" +
 					"nobackslashescapes=true;" +
+					"server redirection mode=required;" +
 					"server spn=mariadb/host.example.com@EXAMPLE.COM;" +
 					"use xa transactions=false;" +
 					"tls cipher suites=TLS_AES_128_CCM_8_SHA256,TLS_RSA_WITH_RC4_128_MD5;" +
@@ -191,6 +193,7 @@ namespace MySqlConnector.Tests
 			Assert.Equal(MySqlLoadBalance.Random, csb.LoadBalance);
 			Assert.Equal(MySqlGuidFormat.TimeSwapBinary16, csb.GuidFormat);
 			Assert.True(csb.NoBackslashEscapes);
+			Assert.Equal(MySqlServerRedirectionMode.Required, csb.ServerRedirectionMode);
 			Assert.Equal("mariadb/host.example.com@EXAMPLE.COM", csb.ServerSPN);
 			Assert.False(csb.UseXaTransactions);
 			Assert.Equal("TLS_AES_128_CCM_8_SHA256,TLS_RSA_WITH_RC4_128_MD5", csb.TlsCipherSuites);

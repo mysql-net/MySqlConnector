@@ -55,6 +55,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 | [Pooling](../MySqlConnectionStringBuilder/Pooling/) { get; set; } |  |
 | [Port](../MySqlConnectionStringBuilder/Port/) { get; set; } |  |
 | [Server](../MySqlConnectionStringBuilder/Server/) { get; set; } |  |
+| [ServerRedirectionMode](../MySqlConnectionStringBuilder/ServerRedirectionMode/) { get; set; } |  |
 | [ServerRsaPublicKeyFile](../MySqlConnectionStringBuilder/ServerRsaPublicKeyFile/) { get; set; } |  |
 | [ServerSPN](../MySqlConnectionStringBuilder/ServerSPN/) { get; set; } |  |
 | [SslCa](../MySqlConnectionStringBuilder/SslCa/) { get; set; } |  |
