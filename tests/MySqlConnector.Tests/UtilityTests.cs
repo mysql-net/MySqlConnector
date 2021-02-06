@@ -9,6 +9,32 @@ namespace MySqlConnector.Tests
 	public class UtilityTests
 	{
 		[Theory]
+		[InlineData("Location: mysql://host.example.com:1234/user=user@host", "host.example.com", 1234, "user@host")]
+		[InlineData("Location: mysql://host.example.com:1234/user=user@host&ttl=60", "host.example.com", 1234, "user@host")]
+		public void ParseRedirectionHeader(string input, string expectedHost, int expectedPort, string expectedUser)
+		{
+			Assert.True(Utility.TryParseRedirectionHeader(input, out var host, out var port, out var user));
+			Assert.Equal(expectedHost, host);
+			Assert.Equal(expectedPort, port);
+			Assert.Equal(expectedUser, user);
+		}
+
+		[Theory]
+		[InlineData("")]
+		[InlineData("Location: mysql")]
+		[InlineData("Location: mysql://host.example.com")]
+		[InlineData("Location: mysql://host.example.com:123")]
+		[InlineData("Location: mysql://host.example.com:123/")]
+		[InlineData("Location: mysql://host.example.com:/user=")]
+		[InlineData("Location: mysql://host.example.com:/user=user@host")]
+		[InlineData("Location: mysql://host.example.com:-1/user=user@host")]
+		[InlineData("Location: mysql://host.example.com:0/user=user@host")]
+		public void ParseRedirectionHeaderFails(string input)
+		{
+			Assert.False(Utility.TryParseRedirectionHeader(input, out _, out _, out _));
+		}
+
+		[Theory]
 		[InlineData("00:00:00", "00:00:00")]
 		[InlineData("00:00:01", "00:00:01")]
 		[InlineData("00:01:00", "00:01:00")]

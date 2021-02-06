@@ -477,37 +477,21 @@ serverRedirection:
 					{
 						Log.Info("Session{0} is already redirected; ignoring it.", m_logArguments);
 					}
-					else
+					else if (Utility.TryParseRedirectionHeader(ok.StatusInfo, out var host, out var port, out var user))
 					{
-						var hostIndex = 18;
-						var colonIndex = ok.StatusInfo.IndexOf(':', hostIndex);
-						if (colonIndex != -1)
-						{
-							var host = ok.StatusInfo.Substring(hostIndex, colonIndex - hostIndex);
-							var portIndex = colonIndex + 1;
-							var userIndex = ok.StatusInfo.IndexOf("/user=", StringComparison.Ordinal);
-							if (userIndex != -1)
-							{
-								if (int.TryParse(ok.StatusInfo.Substring(portIndex, userIndex - portIndex), out var port))
-								{
-									var ampersandIndex = ok.StatusInfo.IndexOf('&', userIndex);
-									var userId = ampersandIndex == -1 ? ok.StatusInfo.Substring(userIndex + 6) : ok.StatusInfo.Substring(userIndex + 6, ampersandIndex - userIndex - 6);
-									Log.Info("Session{0} found server redirection Host={1}; Port={2}; User={3}", m_logArguments[0], host, port, userId);
+						Log.Info("Session{0} found server redirection Host={1}; Port={2}; User={3}", m_logArguments[0], host, port, user);
 
-									if (host != cs.HostNames![0] || port != cs.Port || userId != cs.UserID)
-									{
-										Log.Info("Session{0} closing existing connection", m_logArguments);
-										await SendAsync(QuitPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
-										Log.Info("Session{0} opening new connection to Host={1}; Port={2}; User={3}", m_logArguments[0], host, port, userId);
-										cs = cs.CloneWith(host, port, userId, isRedirected: true);
-										goto serverRedirection;
-									}
-									else
-									{
-										Log.Info("Session{0} is already connected to this server; ignoring redirection", m_logArguments);
-									}
-								}
-							}
+						if (host != cs.HostNames![0] || port != cs.Port || user != cs.UserID)
+						{
+							Log.Info("Session{0} closing existing connection", m_logArguments);
+							await SendAsync(QuitPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
+							Log.Info("Session{0} opening new connection to Host={1}; Port={2}; User={3}", m_logArguments[0], host, port, user);
+							cs = cs.CloneWith(host, port, user, isRedirected: true);
+							goto serverRedirection;
+						}
+						else
+						{
+							Log.Info("Session{0} is already connected to this server; ignoring redirection", m_logArguments);
 						}
 					}
 				}

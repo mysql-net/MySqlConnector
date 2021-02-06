@@ -318,6 +318,34 @@ namespace MySqlConnector.Utilities
 			resizableArray.DoResize(newLength);
 		}
 
+		public static bool TryParseRedirectionHeader(string header, out string host, out int port, out string user)
+		{
+			host = "";
+			port = 0;
+			user = "";
+
+			if (!header.StartsWith("Location: mysql://", StringComparison.Ordinal))
+				return false;
+
+			var hostIndex = 18;
+			var colonIndex = header.IndexOf(':', hostIndex);
+			if (colonIndex == -1)
+				return false;
+
+			host = header.Substring(hostIndex, colonIndex - hostIndex);
+			var portIndex = colonIndex + 1;
+			var userIndex = header.IndexOf("/user=", StringComparison.Ordinal);
+			if (userIndex == -1)
+				return false;
+
+			if (!int.TryParse(header.Substring(portIndex, userIndex - portIndex), out port) || port <= 0)
+				return false;
+
+			var ampersandIndex = header.IndexOf('&', userIndex);
+			user = ampersandIndex == -1 ? header.Substring(userIndex + 6) : header.Substring(userIndex + 6, ampersandIndex - userIndex - 6);
+			return true;
+		}
+
 		public static TimeSpan ParseTimeSpan(ReadOnlySpan<byte> value)
 		{
 			var originalValue = value;
