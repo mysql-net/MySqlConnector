@@ -1546,15 +1546,6 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		private void VerifyState(State state1, State state2)
-		{
-			if (m_state != state1 && m_state != state2)
-			{
-				Log.Error("Session{0} should have SessionStateExpected {1} or SessionStateExpected2 {2} but was SessionState {3}", m_logArguments[0], state1, state2, m_state);
-				throw new InvalidOperationException("Expected state to be ({0}|{1}) but was {2}.".FormatInvariant(state1, state2, m_state));
-			}
-		}
-
 		private void VerifyState(State state1, State state2, State state3)
 		{
 			if (m_state != state1 && m_state != state2 && m_state != state3)
