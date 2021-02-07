@@ -17,7 +17,7 @@ namespace MySqlConnector
 		/// Initializes a new instance of <see cref="MySqlConversionException"/>.
 		/// </summary>
 		/// <param name="message">The exception message.</param>
-		public MySqlConversionException(string message)
+		internal MySqlConversionException(string message)
 			: base(message)
 		{
 		}
