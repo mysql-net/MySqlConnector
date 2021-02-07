@@ -1,5 +1,5 @@
 ---
-lastmod: 2020-04-04
+lastmod: 2021-02-06
 date: 2016-10-16
 title: Connection Options
 customtitle: MySQL Connection String for C# .NET Core Programs

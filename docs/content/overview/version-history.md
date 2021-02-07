@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-01-04
+lastmod: 2021-02-06
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,16 @@ weight: 30
 ---
 
 # Version History
+
+### 1.3.0 Beta 3
+
+* Implement Azure Server Redirection: [#789](https://github.com/mysql-net/MySqlConnector/issues/789).
+* Change default value of `IgnorePrepare` to `false`: [#929](https://github.com/mysql-net/MySqlConnector/issues/929).
+  * Calling `MySqlCommand.Prepare(Async)` will have an effect by default.
+* Implement `IComparable<MySqlDateTime>` and `IEquatable<MySqlDateTime>` on `MySqlDateTime`.
+* Improve exception message for unsupported parameter types: [#925](https://github.com/mysql-net/MySqlConnector/issues/925).
+* Fix exception in server version parsing: [#934](https://github.com/mysql-net/MySqlConnector/issues/934).
+* Fix silent failure to use TLS 1.3 (when explicitly requested) on older frameworks.
 
 ### 1.3.0 Beta 2
 
