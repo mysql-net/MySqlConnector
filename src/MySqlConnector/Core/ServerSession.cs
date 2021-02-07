@@ -1299,14 +1299,15 @@ namespace MySqlConnector.Core
 				if (cs.SslMode is MySqlSslMode.Preferred or MySqlSslMode.Required)
 					return true;
 
-				if ((rcbPolicyErrors & SslPolicyErrors.RemoteCertificateChainErrors) != 0 && caCertificateChain is not null && rcbCertificate is not null)
+				if ((rcbPolicyErrors & SslPolicyErrors.RemoteCertificateChainErrors) != 0 &&
+					rcbCertificate is not null &&
+					caCertificateChain is not null &&
+					caCertificateChain.Build((X509Certificate2) rcbCertificate) &&
+					caCertificateChain.ChainStatus.Length > 0)
 				{
-					if (caCertificateChain.Build((X509Certificate2) rcbCertificate) && caCertificateChain.ChainStatus.Length > 0)
-					{
-						var chainStatus = caCertificateChain.ChainStatus[0].Status & ~X509ChainStatusFlags.UntrustedRoot;
-						if (chainStatus == X509ChainStatusFlags.NoError)
-							rcbPolicyErrors &= ~SslPolicyErrors.RemoteCertificateChainErrors;
-					}
+					var chainStatus = caCertificateChain.ChainStatus[0].Status & ~X509ChainStatusFlags.UntrustedRoot;
+					if (chainStatus == X509ChainStatusFlags.NoError)
+						rcbPolicyErrors &= ~SslPolicyErrors.RemoteCertificateChainErrors;
 				}
 
 				if (cs.SslMode == MySqlSslMode.VerifyCA)
