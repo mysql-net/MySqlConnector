@@ -10,12 +10,6 @@ title: MySqlConversionException
 public class MySqlConversionException : Exception
 ```
 
-## Public Members
-
-| name | description |
-| --- | --- |
-| [MySqlConversionException](../MySqlConversionException/MySqlConversionException/)(…) | Initializes a new instance of [`MySqlConversionException`](../MySqlConversionExceptionType/). |
-
 ## See Also
 
 * namespace [MySqlConnector](../../MySqlConnectorNamespace/)
