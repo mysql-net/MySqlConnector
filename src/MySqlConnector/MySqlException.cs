@@ -126,13 +126,12 @@ namespace MySqlConnector
 		internal static MySqlException CreateForTimeout(Exception? innerException) =>
 			new(MySqlErrorCode.CommandTimeoutExpired, "The Command Timeout expired before the operation completed.", innerException);
 
-		private static bool IsErrorTransient(MySqlErrorCode errorCode) =>
-			errorCode is MySqlErrorCode.CommandTimeoutExpired
-				or MySqlErrorCode.ConnectionCountError
-				or MySqlErrorCode.LockDeadlock
-				or MySqlErrorCode.LockWaitTimeout
-				or MySqlErrorCode.UnableToConnectToHost
-				or MySqlErrorCode.XARBDeadlock;
+		private static bool IsErrorTransient(MySqlErrorCode errorCode) => errorCode
+			is MySqlErrorCode.ConnectionCountError
+			or MySqlErrorCode.LockDeadlock
+			or MySqlErrorCode.LockWaitTimeout
+			or MySqlErrorCode.UnableToConnectToHost
+			or MySqlErrorCode.XARBDeadlock;
 
 		IDictionary? m_data;
 	}
