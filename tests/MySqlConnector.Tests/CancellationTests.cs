@@ -40,7 +40,9 @@ namespace MySqlConnector.Tests
 				var stopwatch = Stopwatch.StartNew();
 				var ex = Assert.Throws<MySqlException>(() => s_executeMethods[method](command));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
-				Assert.Equal(MySqlErrorCode.QueryInterrupted, ex.ErrorCode);
+				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+				var inner = Assert.IsType<MySqlException>(ex.InnerException);
+				Assert.Equal(MySqlErrorCode.QueryInterrupted, inner.ErrorCode);
 
 				// connection should still be usable
 				Assert.Equal(ConnectionState.Open, connection.State);
@@ -63,7 +65,9 @@ namespace MySqlConnector.Tests
 				var stopwatch = Stopwatch.StartNew();
 				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
-				Assert.Equal(MySqlErrorCode.QueryInterrupted, ex.ErrorCode);
+				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+				var inner = Assert.IsType<MySqlException>(ex.InnerException);
+				Assert.Equal(MySqlErrorCode.QueryInterrupted, inner.ErrorCode);
 			}
 		}
 
@@ -147,7 +151,9 @@ namespace MySqlConnector.Tests
 				var stopwatch = Stopwatch.StartNew();
 				var ex = Assert.Throws<MySqlException>(() => s_executeMethods[method](command));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
-				Assert.Equal(MySqlErrorCode.QueryInterrupted, ex.ErrorCode);
+				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+				var inner = Assert.IsType<MySqlException>(ex.InnerException);
+				Assert.Equal(MySqlErrorCode.QueryInterrupted, inner.ErrorCode);
 			}
 
 			[SkipCITheory]
@@ -181,7 +187,9 @@ namespace MySqlConnector.Tests
 				var stopwatch = Stopwatch.StartNew();
 				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
-				Assert.Equal(MySqlErrorCode.QueryInterrupted, ex.ErrorCode);
+				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+				var inner = Assert.IsType<MySqlException>(ex.InnerException);
+				Assert.Equal(MySqlErrorCode.QueryInterrupted, inner.ErrorCode);
 			}
 
 			[SkipCITheory]

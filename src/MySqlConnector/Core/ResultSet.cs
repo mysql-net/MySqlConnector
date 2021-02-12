@@ -248,6 +248,8 @@ namespace MySqlConnector.Core
 					resultSet.BufferState = resultSet.State = ResultSetState.NoMoreData;
 					if (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && token.IsCancellationRequested)
 						throw new OperationCanceledException(ex.Message, ex, token);
+					if (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && resultSet.Command.CancellableCommand.IsTimedOut)
+						throw MySqlException.CreateForTimeout(ex);
 					throw;
 				}
 				return ScanRowAsyncRemainder(resultSet, payloadData, row);

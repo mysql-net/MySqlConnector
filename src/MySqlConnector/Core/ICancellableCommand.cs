@@ -15,6 +15,7 @@ namespace MySqlConnector.Core
 		MySqlConnection? Connection { get; }
 		IDisposable? RegisterCancel(CancellationToken cancellationToken);
 		void SetTimeout(int milliseconds);
+		bool IsTimedOut { get; }
 	}
 
 	internal static class ICancellableCommandExtensions

@@ -173,14 +173,24 @@ namespace MySqlConnector
 
 		void ICancellableCommand.SetTimeout(int milliseconds)
 		{
+			Volatile.Write(ref m_commandTimedOut, false);
+
 			if (m_cancelTimerId != 0)
 				TimerQueue.Instance.Remove(m_cancelTimerId);
 
 			if (milliseconds != Constants.InfiniteTimeout)
 			{
-				m_cancelAction ??= Cancel;
-				m_cancelTimerId = TimerQueue.Instance.Add(milliseconds, m_cancelAction);
+				m_cancelForCommandTimeoutAction ??= CancelCommandForTimeout;
+				m_cancelTimerId = TimerQueue.Instance.Add(milliseconds, m_cancelForCommandTimeoutAction);
 			}
+		}
+
+		bool ICancellableCommand.IsTimedOut => Volatile.Read(ref m_commandTimedOut);
+
+		private void CancelCommandForTimeout()
+		{
+			Volatile.Write(ref m_commandTimedOut, true);
+			Cancel();
 		}
 
 		private async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -309,6 +319,8 @@ namespace MySqlConnector
 		readonly int m_commandId;
 		bool m_isDisposed;
 		Action? m_cancelAction;
+		Action? m_cancelForCommandTimeoutAction;
 		uint m_cancelTimerId;
+		bool m_commandTimedOut;
 	}
 }

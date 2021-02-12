@@ -127,6 +127,9 @@ namespace MySqlConnector
 				if (mySqlException?.ErrorCode == MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
 					throw new OperationCanceledException(mySqlException.Message, mySqlException, cancellationToken);
 
+				if (mySqlException?.ErrorCode == MySqlErrorCode.QueryInterrupted && Command!.CancellableCommand.IsTimedOut)
+					throw MySqlException.CreateForTimeout(mySqlException);
+
 				if (mySqlException is not null)
 					throw new MySqlException(mySqlException.ErrorCode, mySqlException.SqlState, mySqlException.Message, mySqlException);
 
