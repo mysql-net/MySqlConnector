@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.IO;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlConnector.Protocol;
@@ -110,7 +111,7 @@ namespace MySqlConnector.Core
 						catch (Exception ex)
 						{
 							// store the exception, to be thrown after reading the response packet from the server
-							ReadResultSetHeaderException = new("Error during LOAD DATA LOCAL INFILE", ex);
+							ReadResultSetHeaderException = ExceptionDispatchInfo.Capture(new MySqlException("Error during LOAD DATA LOCAL INFILE", ex));
 						}
 
 						await Session.SendReplyAsync(EmptyPayload.Instance, ioBehavior, CancellationToken.None).ConfigureAwait(false);
@@ -166,7 +167,7 @@ namespace MySqlConnector.Core
 			}
 			catch (Exception ex)
 			{
-				ReadResultSetHeaderException = ex;
+				ReadResultSetHeaderException = ExceptionDispatchInfo.Capture(ex);
 			}
 			finally
 			{
@@ -425,7 +426,7 @@ namespace MySqlConnector.Core
 		}
 
 		public readonly MySqlDataReader DataReader;
-		public Exception? ReadResultSetHeaderException { get; private set; }
+		public ExceptionDispatchInfo? ReadResultSetHeaderException { get; private set; }
 		public IMySqlCommand Command => DataReader.Command!;
 		public MySqlConnection Connection => DataReader.Connection!;
 		public ServerSession Session => DataReader.Session!;

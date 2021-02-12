@@ -7,6 +7,7 @@ using System.Data.Common;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlConnector.Core;
@@ -117,12 +118,12 @@ namespace MySqlConnector
 		{
 			if (m_resultSet!.ReadResultSetHeaderException is not null)
 			{
-				var mySqlException = m_resultSet.ReadResultSetHeaderException as MySqlException;
+				var mySqlException = m_resultSet.ReadResultSetHeaderException.SourceException as MySqlException;
 
 				// for any exception not created from an ErrorPayload, mark the session as failed (because we can't guarantee that all data
 				// has been read from the connection and that the socket is still usable)
 				if (mySqlException?.SqlState is null)
-					Command!.Connection!.SetSessionFailed(m_resultSet.ReadResultSetHeaderException);
+					Command!.Connection!.SetSessionFailed(m_resultSet.ReadResultSetHeaderException.SourceException);
 
 				if (mySqlException?.ErrorCode == MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
 					throw new OperationCanceledException(mySqlException.Message, mySqlException, cancellationToken);
@@ -131,9 +132,9 @@ namespace MySqlConnector
 					throw MySqlException.CreateForTimeout(mySqlException);
 
 				if (mySqlException is not null)
-					throw new MySqlException(mySqlException.ErrorCode, mySqlException.SqlState, mySqlException.Message, mySqlException);
+					m_resultSet.ReadResultSetHeaderException.Throw();
 
-				throw new MySqlException("Failed to read the result set.", m_resultSet.ReadResultSetHeaderException);
+				throw new MySqlException("Failed to read the result set.", m_resultSet.ReadResultSetHeaderException.SourceException);
 			}
 
 			Command!.SetLastInsertedId(m_resultSet.LastInsertId);

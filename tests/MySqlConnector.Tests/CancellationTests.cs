@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -224,6 +225,7 @@ namespace MySqlConnector.Tests
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 2900, 3500);
 				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
 				Assert.True(ex.IsTransient);
+				Assert.Null(ex.InnerException);
 
 				// connection is unusable
 				Assert.Equal(ConnectionState.Closed, connection.State);
@@ -245,6 +247,7 @@ namespace MySqlConnector.Tests
 				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 2900, 3500);
 				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+				Assert.IsType<SocketException>(ex.InnerException);
 
 				// connection is unusable
 				Assert.Equal(ConnectionState.Closed, connection.State);
@@ -267,6 +270,7 @@ namespace MySqlConnector.Tests
 				var ex = Assert.Throws<MySqlException>(() => s_executeMethods[method](command));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
 				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+				Assert.Null(ex.InnerException);
 
 				// connection is unusable
 				Assert.Equal(ConnectionState.Closed, connection.State);
@@ -289,6 +293,7 @@ namespace MySqlConnector.Tests
 				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
 				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+				Assert.IsType<SocketException>(ex.InnerException);
 
 				// connection is unusable
 				Assert.Equal(ConnectionState.Closed, connection.State);
