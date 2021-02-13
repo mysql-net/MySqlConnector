@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text;
 using MySqlConnector.Utilities;
 using Xunit;
@@ -90,7 +91,9 @@ namespace MySqlConnector.Tests
 		[InlineData("pre", "post")]
 		public void DecodePublicKey(string pre, string post)
 		{
-			var parameters = Utility.GetRsaParameters(pre + c_publicKey + post);
+			using var rsa = RSA.Create();
+			Utility.LoadRsaParameters(pre + c_publicKey + post, rsa);
+			var parameters = rsa.ExportParameters(false);
 			Assert.Equal(s_modulus, parameters.Modulus);
 			Assert.Equal(s_exponent, parameters.Exponent);
 		}
@@ -102,7 +105,9 @@ namespace MySqlConnector.Tests
 		[InlineData("pre", "post")]
 		public void DecodePrivateKey(string pre, string post)
 		{
-			var parameters = Utility.GetRsaParameters(pre + c_privateKey + post);
+			using var rsa = RSA.Create();
+			Utility.LoadRsaParameters(pre + c_privateKey + post, rsa);
+			var parameters = rsa.ExportParameters(true);
 			Assert.Equal(s_modulus, parameters.Modulus);
 			Assert.Equal(s_exponent, parameters.Exponent);
 			Assert.Equal(s_d, parameters.D);

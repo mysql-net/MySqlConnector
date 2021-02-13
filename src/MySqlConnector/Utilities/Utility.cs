@@ -82,9 +82,11 @@ namespace MySqlConnector.Utilities
 		/// <summary>
 		/// Loads a RSA key from a PEM string.
 		/// </summary>
-		/// <param name="key">The key, in PEM format.</param>
-		/// <returns>An RSA key.</returns>
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
 		public static RSAParameters GetRsaParameters(string key)
+#else
+		public static void LoadRsaParameters(string key, RSA rsa)
+#endif
 		{
 			const string beginRsaPrivateKey = "-----BEGIN RSA PRIVATE KEY-----";
 			const string endRsaPrivateKey = "-----END RSA PRIVATE KEY-----";
@@ -134,7 +136,14 @@ namespace MySqlConnector.Utilities
 			{
 				if (!System.Convert.TryFromBase64Chars(keyChars, bufferBytes, out var bytesWritten))
 					throw new FormatException("The input is not a valid Base-64 string.");
+#if NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
 				return GetRsaParameters(bufferBytes.Slice(0, bytesWritten), isPrivate);
+#else
+				if (isPrivate)
+					rsa.ImportRSAPrivateKey(bufferBytes.Slice(0, bytesWritten), out var _);
+				else
+					rsa.ImportSubjectPublicKeyInfo(bufferBytes.Slice(0, bytesWritten), out var _);
+#endif
 			}
 			finally
 			{
@@ -144,6 +153,7 @@ namespace MySqlConnector.Utilities
 #endif
 		}
 
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
 		// Derived from: https://stackoverflow.com/a/32243171/, https://stackoverflow.com/a/26978561/, http://luca.ntop.org/Teaching/Appunti/asn1.html
 		private static RSAParameters GetRsaParameters(ReadOnlySpan<byte> data, bool isPrivate)
 		{
@@ -247,6 +257,7 @@ namespace MySqlConnector.Utilities
 				InverseQ = iq.ToArray(),
 			};
 		}
+#endif
 
 		/// <summary>
 		/// Returns a new <see cref="ArraySegment{T}"/> that starts at index <paramref name="index"/> into <paramref name="arraySegment"/>.

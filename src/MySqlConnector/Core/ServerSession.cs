@@ -664,6 +664,8 @@ namespace MySqlConnector.Core
 			IOBehavior ioBehavior,
 			CancellationToken cancellationToken)
 		{
+			using var rsa = RSA.Create();
+#if NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
 			// load the RSA public key
 			RSAParameters rsaParameters;
 			try
@@ -676,12 +678,22 @@ namespace MySqlConnector.Core
 				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't load server's RSA public key; try using a secure connection instead.", ex);
 			}
 
+			rsa.ImportParameters(rsaParameters);
+#else
+			try
+			{
+				Utility.LoadRsaParameters(rsaPublicKey, rsa);
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, "Session{0} couldn't load server's RSA public key", m_logArguments);
+				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't load server's RSA public key; try using a secure connection instead.", ex);
+			}
+#endif
+
 			// add NUL terminator to password
 			var passwordBytes = Encoding.UTF8.GetBytes(cs.Password);
 			Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
-
-			using var rsa = RSA.Create();
-			rsa.ImportParameters(rsaParameters);
 
 			// XOR the password bytes with the challenge
 			AuthPluginData = Utility.TrimZeroByte(switchRequest.Data);
