@@ -1332,7 +1332,9 @@ namespace MySqlConnector.Core
 			// Returns a X509CertificateCollection containing the single certificate contained in 'sslKeyFile' (PEM private key) and 'sslCertificateFile' (PEM certificate).
 			X509CertificateCollection LoadCertificate(string sslKeyFile, string sslCertificateFile)
 			{
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+#if NETSTANDARD1_3 || NETSTANDARD2_0
+				throw new NotSupportedException("SslCert and SslKey connection string options are not supported in netstandard1.3 or netstandard2.0.");
+#elif NET45 || NET461 || NET471 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
 				m_logArguments[1] = sslKeyFile;
 				Log.Debug("Session{0} loading client key from KeyFile '{1}'", m_logArguments);
 				string keyPem;
@@ -1402,7 +1404,8 @@ namespace MySqlConnector.Core
 					throw new MySqlException("Could not load the client key from " + sslKeyFile, ex);
 				}
 #else
-				throw new NotSupportedException("SslCert and SslKey connection string options are not supported in netstandard1.3 or netstandard2.0.");
+				m_clientCertificate = X509Certificate2.CreateFromPemFile(sslCertificateFile, sslKeyFile);
+				return new() { m_clientCertificate };
 #endif
 			}
 		}
