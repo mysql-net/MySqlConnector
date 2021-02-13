@@ -150,7 +150,8 @@ namespace MySqlConnector.Protocol.Serialization
 								var bytesRead = decompressingStream.Read(uncompressedData, 0, uncompressedLength);
 								m_remainingData = new(uncompressedData, 0, bytesRead);
 
-								var checksum = ComputeAdler32Checksum(uncompressedData, 0, bytesRead);
+								var checksum = Adler32.Calculate(uncompressedData, 0, (uint)bytesRead);
+
 								var adlerStartOffset = payloadReadBytes.Offset + payloadReadBytes.Count - 4;
 								if (payloadReadBytes.Array[adlerStartOffset + 0] != ((checksum >> 24) & 0xFF) ||
 									payloadReadBytes.Array[adlerStartOffset + 1] != ((checksum >> 16) & 0xFF) ||
@@ -194,8 +195,7 @@ namespace MySqlConnector.Protocol.Serialization
 				using (var deflateStream = new DeflateStream(compressedStream, CompressionLevel.Optimal, leaveOpen: true))
 					deflateStream.Write(remainingUncompressedData.Array!, remainingUncompressedData.Offset, remainingUncompressedBytes);
 
-				// write Adler-32 checksum to stream
-				var checksum = ComputeAdler32Checksum(remainingUncompressedData.Array!, remainingUncompressedData.Offset, remainingUncompressedBytes);
+				var checksum = Adler32.Calculate(remainingUncompressedData.Array!, (uint)remainingUncompressedData.Offset, (uint)remainingUncompressedBytes); 
 				compressedStream.WriteByte((byte) ((checksum >> 24) & 0xFF));
 				compressedStream.WriteByte((byte) ((checksum >> 16) & 0xFF));
 				compressedStream.WriteByte((byte) ((checksum >> 8) & 0xFF));
@@ -223,17 +223,6 @@ namespace MySqlConnector.Protocol.Serialization
 			return m_byteHandler!.WriteBytesAsync(new ArraySegment<byte>(buffer, 0, buffer.Length), ioBehavior)
 				.ContinueWith(_ => remainingUncompressedData.Count == 0 ? default :
 					CompressAndWrite(remainingUncompressedData, ioBehavior));
-		}
-
-		private static uint ComputeAdler32Checksum(byte[] data, int offset, int length)
-		{
-			int s1 = 1, s2 = 0;
-			for (var i = 0; i < length; i++)
-			{
-				s1 = (s1 + data[offset + i]) % 65521;
-				s2 = (s2 + s1) % 65521;
-			}
-			return (((uint) s2) << 16) | (uint) s1;
 		}
 
 		// CompressedByteHandler implements IByteHandler and delegates reading bytes back to the CompressedPayloadHandler class.
