@@ -1125,81 +1125,9 @@ namespace MySqlConnector.Core
 				}
 			}
 
-			if (cs.SslCertificateFile.Length != 0 && cs.SslKeyFile.Length != 0)
+			if (cs.SslKeyFile.Length != 0 && cs.SslCertificateFile.Length != 0)
 			{
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
-				m_logArguments[1] = cs.SslKeyFile;
-				Log.Debug("Session{0} loading client key from KeyFile '{1}'", m_logArguments);
-				string keyPem;
-				try
-				{
-					keyPem = File.ReadAllText(cs.SslKeyFile);
-				}
-				catch (Exception ex)
-				{
-					Log.Error(ex, "Session{0} couldn't load client key from KeyFile '{1}'", m_logArguments);
-					throw new MySqlException("Could not load client key file: " + cs.SslKeyFile, ex);
-				}
-
-				RSAParameters rsaParameters;
-				try
-				{
-					rsaParameters = Utility.GetRsaParameters(keyPem);
-				}
-				catch (FormatException ex)
-				{
-					Log.Error(ex, "Session{0} couldn't load client key from KeyFile '{1}'", m_logArguments);
-					throw new MySqlException("Could not load the client key from " + cs.SslKeyFile, ex);
-				}
-
-				try
-				{
-					RSA rsa;
-					try
-					{
-#pragma warning disable CA1416
-						// SslStream on Windows needs a KeyContainerName to be set
-						var csp = new CspParameters
-						{
-							KeyContainerName = Guid.NewGuid().ToString(),
-						};
-						rsa = new RSACryptoServiceProvider(csp)
-						{
-							PersistKeyInCsp = true,
-						};
-#pragma warning restore
-					}
-					catch (PlatformNotSupportedException)
-					{
-						rsa = RSA.Create();
-					}
-					rsa.ImportParameters(rsaParameters);
-
-#if NET45 || NET461 || NET471
-					var certificate = new X509Certificate2(cs.SslCertificateFile, "", X509KeyStorageFlags.MachineKeySet)
-					{
-						PrivateKey = rsa,
-					};
-#else
-					X509Certificate2 certificate;
-					using (var publicCertificate = new X509Certificate2(cs.SslCertificateFile))
-						certificate = publicCertificate.CopyWithPrivateKey(rsa);
-#endif
-
-					m_clientCertificate = certificate;
-					clientCertificates = new() { certificate };
-				}
-
-				catch (CryptographicException ex)
-				{
-					Log.Error(ex, "Session{0} couldn't load client key from KeyFile '{1}'", m_logArguments);
-					if (!File.Exists(cs.SslCertificateFile))
-						throw new MySqlException("Cannot find client certificate file: " + cs.SslCertificateFile, ex);
-					throw new MySqlException("Could not load the client key from " + cs.SslKeyFile, ex);
-				}
-#else
-				throw new NotSupportedException("SslCert and SslKey connection string options are not supported in netstandard1.3 or netstandard2.0.");
-#endif
+				clientCertificates = LoadCertificate(cs.SslKeyFile, cs.SslCertificateFile);
 			}
 			else if (cs.CertificateFile.Length != 0)
 			{
@@ -1398,6 +1326,83 @@ namespace MySqlConnector.Core
 				caCertificateChain?.Reset();
 #else
 				caCertificateChain?.Dispose();
+#endif
+			}
+
+			// Returns a X509CertificateCollection containing the single certificate contained in 'sslKeyFile' (PEM private key) and 'sslCertificateFile' (PEM certificate).
+			X509CertificateCollection LoadCertificate(string sslKeyFile, string sslCertificateFile)
+			{
+#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+				m_logArguments[1] = sslKeyFile;
+				Log.Debug("Session{0} loading client key from KeyFile '{1}'", m_logArguments);
+				string keyPem;
+				try
+				{
+					keyPem = File.ReadAllText(sslKeyFile);
+				}
+				catch (Exception ex)
+				{
+					Log.Error(ex, "Session{0} couldn't load client key from KeyFile '{1}'", m_logArguments);
+					throw new MySqlException("Could not load client key file: " + sslKeyFile, ex);
+				}
+
+				RSAParameters rsaParameters;
+				try
+				{
+					rsaParameters = Utility.GetRsaParameters(keyPem);
+				}
+				catch (FormatException ex)
+				{
+					Log.Error(ex, "Session{0} couldn't load client key from KeyFile '{1}'", m_logArguments);
+					throw new MySqlException("Could not load the client key from " + sslKeyFile, ex);
+				}
+
+				try
+				{
+					RSA rsa;
+					try
+					{
+#pragma warning disable CA1416
+						// SslStream on Windows needs a KeyContainerName to be set
+						var csp = new CspParameters
+						{
+							KeyContainerName = Guid.NewGuid().ToString(),
+						};
+						rsa = new RSACryptoServiceProvider(csp)
+						{
+							PersistKeyInCsp = true,
+						};
+#pragma warning restore
+					}
+					catch (PlatformNotSupportedException)
+					{
+						rsa = RSA.Create();
+					}
+					rsa.ImportParameters(rsaParameters);
+
+#if NET45 || NET461 || NET471
+					var certificate = new X509Certificate2(sslCertificateFile, "", X509KeyStorageFlags.MachineKeySet)
+					{
+						PrivateKey = rsa,
+					};
+#else
+					X509Certificate2 certificate;
+					using (var publicCertificate = new X509Certificate2(sslCertificateFile))
+						certificate = publicCertificate.CopyWithPrivateKey(rsa);
+#endif
+
+					m_clientCertificate = certificate;
+					return new() { certificate };
+				}
+				catch (CryptographicException ex)
+				{
+					Log.Error(ex, "Session{0} couldn't load client key from KeyFile '{1}'", m_logArguments);
+					if (!File.Exists(sslCertificateFile))
+						throw new MySqlException("Cannot find client certificate file: " + sslCertificateFile, ex);
+					throw new MySqlException("Could not load the client key from " + sslKeyFile, ex);
+				}
+#else
+				throw new NotSupportedException("SslCert and SslKey connection string options are not supported in netstandard1.3 or netstandard2.0.");
 #endif
 			}
 		}
