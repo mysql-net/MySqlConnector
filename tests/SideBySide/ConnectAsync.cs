@@ -145,9 +145,11 @@ namespace SideBySide
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			var stopwatch = Stopwatch.StartNew();
 			using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-			var ex = await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync(cts.Token));
+			var task = connection.OpenAsync(cts.Token);
+			var ex = await Assert.ThrowsAsync<OperationCanceledException>(async () => await task);
 			stopwatch.Stop();
-			Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
+			Assert.Equal(TaskStatus.Canceled, task.Status);
+			Assert.Equal(cts.Token, ex.CancellationToken);
 			TestUtilities.AssertDuration(stopwatch, 1900, 1500);
 		}
 

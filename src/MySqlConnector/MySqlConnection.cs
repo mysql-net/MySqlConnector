@@ -419,6 +419,7 @@ namespace MySqlConnector
 			catch (MySqlException)
 			{
 				SetState(ConnectionState.Closed);
+				cancellationToken.ThrowIfCancellationRequested();
 				throw;
 			}
 			catch (SocketException ex)
