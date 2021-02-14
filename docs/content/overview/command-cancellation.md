@@ -19,9 +19,9 @@ The mechanisms for cancelling a command are:
 
 **MySqlCommand.Cancel**. This attempts a soft cancellation for the specified command. If successful, the `ExecuteX(Async)` method will throw a `MySqlException` with `MySqlErrorCode.QueryInterrupted`.
 
-**ExecuteXAsync(CancellationToken)**. If the `CancellationToken` passed to any `ExecuteXAsync` method is cancelled, a soft cancellation will be attempted for that command. If successful, the `ExecuteXAsync` method will throw a `MySqlException` with `MySqlErrorCode.QueryInterrupted`.
+**ExecuteXAsync(CancellationToken)**. If the `CancellationToken` passed to any `ExecuteXAsync` method is cancelled, a soft cancellation will be attempted for that command. If successful, the `ExecuteXAsync` method will throw an `OperationCanceledException`; its inner exception will be a `MySqlException` with `MySqlErrorCode.QueryInterrupted`.
 
-**CommandTimeout**. Each `MySqlCommand` has a `CommandTimeout` property that specifies a timeout in seconds. (This is initialized from the [`DefaultCommandTimeout`](/connection-options/#DefaultCommandTimeout) setting in the connection string.) If this timeout is not `0`, then a soft cancellation will be attempted when the timeout expires. If successful, the `ExecuteX(Async)` method will throw a `MySqlException` with `MySqlErrorCode.CommandTimeoutExpired`.
+**CommandTimeout**. Each `MySqlCommand` has a `CommandTimeout` property that specifies a timeout in seconds. (This is initialized from the [`DefaultCommandTimeout`](/connection-options/#DefaultCommandTimeout) setting in the connection string.) If this timeout is not `0`, then a soft cancellation will be attempted when the timeout expires. If successful, the `ExecuteX(Async)` method will throw a `MySqlException` with `MySqlErrorCode.CommandTimeoutExpired`; its inner exception will be a `MySqlException` with `MySqlErrorCode.QueryInterrupted`.
 
 **CancellationTimeout**. The connection string can specify a [`CancellationTimeout`](/connection-options/#CancellationTimeout) timeout value. After `CommandTimeout` elapses (and a soft cancellation is started), the `CancellationTimeout` timer starts. If this times out, a hard cancellation is performed and the underlying network connection is closed. When this occurs, the `ExecuteX(Async)` method will throw a `MySqlException` with `MySqlErrorCode.CommandTimeoutExpired`.
 
