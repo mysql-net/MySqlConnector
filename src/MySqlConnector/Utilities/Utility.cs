@@ -335,26 +335,58 @@ namespace MySqlConnector.Utilities
 			port = 0;
 			user = "";
 
-			if (!header.StartsWith("Location: mysql://", StringComparison.Ordinal))
+			if (!header.StartsWith("Location: mysql://", StringComparison.Ordinal) || header.Length < 22)
 				return false;
 
-			var hostIndex = 18;
-			var colonIndex = header.IndexOf(':', hostIndex);
-			if (colonIndex == -1)
-				return false;
+			bool isCommunityFormat;
+			int portIndex;
+			if (header[18] == '[')
+			{
+				// Community protocol:
+				// Location: mysql://[redirectedHostName]:redirectedPort/?user=redirectedUser&ttl=%d\n
+				isCommunityFormat = true;
 
-			host = header.Substring(hostIndex, colonIndex - hostIndex);
-			var portIndex = colonIndex + 1;
-			var userIndex = header.IndexOf("/user=", StringComparison.Ordinal);
+				var hostIndex = 19;
+				var closeSquareBracketIndex = header.IndexOf(']', hostIndex);
+				if (closeSquareBracketIndex == -1)
+					return false;
+
+				host = header.Substring(hostIndex, closeSquareBracketIndex - hostIndex);
+				if (header.Length <= closeSquareBracketIndex + 2)
+					return false;
+				if (header[closeSquareBracketIndex + 1] != ':')
+					return false;
+				portIndex = closeSquareBracketIndex + 2;
+			}
+			else
+			{
+				// Azure protocol:
+				// Location: mysql://redirectedHostName:redirectedPort/user=redirectedUser&ttl=%d (where ttl is optional)
+				isCommunityFormat = false;
+
+				var hostIndex = 18;
+				var colonIndex = header.IndexOf(':', hostIndex);
+				if (colonIndex == -1)
+					return false;
+
+				host = header.Substring(hostIndex, colonIndex - hostIndex);
+				portIndex = colonIndex + 1;
+			}
+
+			var userIndex = header.IndexOf(isCommunityFormat ? "/?user=" : "/user=", StringComparison.Ordinal);
 			if (userIndex == -1)
 				return false;
 
 			if (!int.TryParse(header.Substring(portIndex, userIndex - portIndex), out port) || port <= 0)
 				return false;
 
+			userIndex += isCommunityFormat ? 7 : 6;
 			var ampersandIndex = header.IndexOf('&', userIndex);
-			user = ampersandIndex == -1 ? header.Substring(userIndex + 6) : header.Substring(userIndex + 6, ampersandIndex - userIndex - 6);
-			return true;
+			var newlineIndex = header.IndexOf('\n', userIndex);
+			var terminatorIndex = ampersandIndex == -1 ? (newlineIndex == -1 ? header.Length : newlineIndex) :
+				(newlineIndex == -1 ? ampersandIndex : Math.Min(ampersandIndex, newlineIndex));
+			user = header.Substring(userIndex, terminatorIndex - userIndex);
+			return user.Length != 0;
 		}
 
 		public static TimeSpan ParseTimeSpan(ReadOnlySpan<byte> value)

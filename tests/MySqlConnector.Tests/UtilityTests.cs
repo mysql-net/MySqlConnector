@@ -11,7 +11,17 @@ namespace MySqlConnector.Tests
 	{
 		[Theory]
 		[InlineData("Location: mysql://host.example.com:1234/user=user@host", "host.example.com", 1234, "user@host")]
+		[InlineData("Location: mysql://host.example.com:1234/user=user@host\n", "host.example.com", 1234, "user@host")]
 		[InlineData("Location: mysql://host.example.com:1234/user=user@host&ttl=60", "host.example.com", 1234, "user@host")]
+		[InlineData("Location: mysql://host.example.com:1234/user=user@host&ttl=60\n", "host.example.com", 1234, "user@host")]
+		[InlineData("Location: mysql://[host.example.com]:1234/?user=abcd", "host.example.com", 1234, "abcd")]
+		[InlineData("Location: mysql://[host.example.com]:1234/?user=abcd\n", "host.example.com", 1234, "abcd")]
+		[InlineData("Location: mysql://[host.example.com]:1234/?user=abcd&ttl=60", "host.example.com", 1234, "abcd")]
+		[InlineData("Location: mysql://[host.example.com]:1234/?user=abcd&ttl=60\n", "host.example.com", 1234, "abcd")]
+		[InlineData("Location: mysql://[2001:4860:4860::8888]:1234/?user=abcd", "2001:4860:4860::8888", 1234, "abcd")]
+		[InlineData("Location: mysql://[2001:4860:4860::8888]:1234/?user=abcd\n", "2001:4860:4860::8888", 1234, "abcd")]
+		[InlineData("Location: mysql://[2001:4860:4860::8888]:1234/?user=abcd&ttl=60", "2001:4860:4860::8888", 1234, "abcd")]
+		[InlineData("Location: mysql://[2001:4860:4860::8888]:1234/?user=abcd&ttl=60\n", "2001:4860:4860::8888", 1234, "abcd")]
 		public void ParseRedirectionHeader(string input, string expectedHost, int expectedPort, string expectedUser)
 		{
 			Assert.True(Utility.TryParseRedirectionHeader(input, out var host, out var port, out var user));
@@ -24,12 +34,21 @@ namespace MySqlConnector.Tests
 		[InlineData("")]
 		[InlineData("Location: mysql")]
 		[InlineData("Location: mysql://host.example.com")]
+		[InlineData("Location: mysql://host.example.com:")]
+		[InlineData("Location: mysql://[host.example.com")]
+		[InlineData("Location: mysql://[host.example.com]")]
+		[InlineData("Location: mysql://[host.example.com]:")]
 		[InlineData("Location: mysql://host.example.com:123")]
 		[InlineData("Location: mysql://host.example.com:123/")]
+		[InlineData("Location: mysql://[host.example.com]:123")]
+		[InlineData("Location: mysql://[host.example.com]:123/")]
 		[InlineData("Location: mysql://host.example.com:/user=")]
+		[InlineData("Location: mysql://host.example.com:123/user=")]
+		[InlineData("Location: mysql://[host.example.com]:123/?user=")]
 		[InlineData("Location: mysql://host.example.com:/user=user@host")]
 		[InlineData("Location: mysql://host.example.com:-1/user=user@host")]
 		[InlineData("Location: mysql://host.example.com:0/user=user@host")]
+		[InlineData("Location: mysql://[host.example.com]:123/user=abcd")]
 		public void ParseRedirectionHeaderFails(string input)
 		{
 			Assert.False(Utility.TryParseRedirectionHeader(input, out _, out _, out _));
