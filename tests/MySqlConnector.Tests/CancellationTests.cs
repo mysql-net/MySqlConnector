@@ -52,6 +52,36 @@ namespace MySqlConnector.Tests
 			}
 		}
 
+		public class CancelExecuteXWithCancel : CancellationTests
+		{
+			[SkipCITheory]
+			[MemberData(nameof(GetSyncMethodSteps))]
+			public void Test(int step, int method)
+			{
+				using var connection = new MySqlConnection(m_csb.ConnectionString);
+				connection.Open();
+				using var command = connection.CreateCommand();
+				command.CommandTimeout = 10;
+				command.CommandText = $"SELECT {4000 + step};";
+				var task = Task.Run(async () =>
+				{
+					await Task.Delay(TimeSpan.FromSeconds(1));
+					command.Cancel();
+				});
+				var stopwatch = Stopwatch.StartNew();
+				var ex = Assert.Throws<MySqlException>(() => s_executeMethods[method](command));
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
+				Assert.Equal(MySqlErrorCode.QueryInterrupted, ex.ErrorCode);
+				Assert.Null(ex.InnerException);
+				task.Wait();
+
+				// connection should still be usable
+				Assert.Equal(ConnectionState.Open, connection.State);
+				command.CommandText = "SELECT 1;";
+				Assert.Equal(1, command.ExecuteScalar());
+			}
+		}
+
 		public class CancelExecuteXAsyncWithCommandTimeout : CancellationTests
 		{
 			[SkipCITheory]
@@ -69,6 +99,41 @@ namespace MySqlConnector.Tests
 				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
 				var inner = Assert.IsType<MySqlException>(ex.InnerException);
 				Assert.Equal(MySqlErrorCode.QueryInterrupted, inner.ErrorCode);
+
+				// connection should still be usable
+				Assert.Equal(ConnectionState.Open, connection.State);
+				command.CommandText = "SELECT 1;";
+				Assert.Equal(1, command.ExecuteScalar());
+			}
+		}
+
+		public class CancelExecuteXAsyncWithCancel : CancellationTests
+		{
+			[SkipCITheory]
+			[MemberData(nameof(GetAsyncMethodSteps))]
+			public async Task Test(int step, int method)
+			{
+				using var connection = new MySqlConnection(m_csb.ConnectionString);
+				connection.Open();
+				using var command = connection.CreateCommand();
+				command.CommandTimeout = 10;
+				command.CommandText = $"SELECT {4000 + step};";
+				var task = Task.Run(async () =>
+				{
+					await Task.Delay(TimeSpan.FromSeconds(1));
+					command.Cancel();
+				});
+				var stopwatch = Stopwatch.StartNew();
+				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
+				Assert.Equal(MySqlErrorCode.QueryInterrupted, ex.ErrorCode);
+				Assert.Null(ex.InnerException);
+				task.Wait();
+
+				// connection should still be usable
+				Assert.Equal(ConnectionState.Open, connection.State);
+				command.CommandText = "SELECT 1;";
+				Assert.Equal(1, command.ExecuteScalar());
 			}
 		}
 
@@ -89,6 +154,11 @@ namespace MySqlConnector.Tests
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
 				var mySqlException = Assert.IsType<MySqlException>(ex.InnerException);
 				Assert.Equal(MySqlErrorCode.QueryInterrupted, mySqlException.ErrorCode);
+
+				// connection should still be usable
+				Assert.Equal(ConnectionState.Open, connection.State);
+				command.CommandText = "SELECT 1;";
+				Assert.Equal(1, command.ExecuteScalar());
 			}
 		}
 
