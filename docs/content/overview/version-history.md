@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-02-06
+lastmod: 2021-02-14
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,20 @@ weight: 30
 ---
 
 # Version History
+
+### 1.3.0 Beta 4
+
+* Adler32 checksum (for compressed packets) uses hardware acceleration: [#865](https://github.com/mysql-net/MySqlConnector/issues/865).
+* Report `CommandTimeoutExpired` consistently: [#939](https://github.com/mysql-net/MySqlConnector/issues/939).
+* `MySqlException.IsTransient` is now `false` for `CommandTimeoutExpired`: [#940](https://github.com/mysql-net/MySqlConnector/issues/940).
+* Support `MemoryStream` as a value for `MySqlParameter.Value`: [#943](https://github.com/mysql-net/MySqlConnector/issues/943).
+* Throw `OperationCanceledException` from `OpenAsync` when the `CancellationToken` is cancelled: [#931](https://github.com/mysql-net/MySqlConnector/issues/931).
+* Support community protocol for server redirection: [#945](https://github.com/mysql-net/MySqlConnector/issues/945).
+* Fix nested `MySqlException` (thrown in some scenarios from `ExecuteReader`).
+* Remove public constructor for `MySqlConversionException`.
+* Implement serialization for exceptions.
+* Use .NET 5.0 methods to load PEM certificates.
+* Thanks to [Oleksandr Novak](https://github.com/novak-as) for contributions to this release.
 
 ### 1.3.0 Beta 3
 
