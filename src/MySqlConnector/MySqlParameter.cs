@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -279,7 +280,7 @@ namespace MySqlConnector
 			{
 				writer.WriteString(ulongValue);
 			}
-			else if (Value is byte[] or ReadOnlyMemory<byte> or Memory<byte> or ArraySegment<byte> or MySqlGeometry)
+			else if (Value is byte[] or ReadOnlyMemory<byte> or Memory<byte> or ArraySegment<byte> or MySqlGeometry or MemoryStream)
 			{
 				var inputSpan = Value switch
 				{
@@ -287,6 +288,7 @@ namespace MySqlConnector
 					ArraySegment<byte> arraySegment => arraySegment.AsSpan(),
 					Memory<byte> memory => memory.Span,
 					MySqlGeometry geometry => geometry.ValueSpan,
+					MemoryStream memoryStream => memoryStream.TryGetBuffer(out var streamBuffer) ? streamBuffer.AsSpan() : memoryStream.ToArray().AsSpan(),
 					_ => ((ReadOnlyMemory<byte>) Value).Span,
 				};
 
@@ -508,6 +510,13 @@ namespace MySqlConnector
 			{
 				writer.WriteLengthEncodedInteger(unchecked((ulong) geometry.ValueSpan.Length));
 				writer.Write(geometry.ValueSpan);
+			}
+			else if (Value is MemoryStream memoryStream)
+			{
+				if (!memoryStream.TryGetBuffer(out var streamBuffer))
+					streamBuffer = new ArraySegment<byte>(memoryStream.ToArray());
+				writer.WriteLengthEncodedInteger(unchecked((ulong) streamBuffer.Count));
+				writer.Write(streamBuffer);
 			}
 			else if (Value is float floatValue)
 			{

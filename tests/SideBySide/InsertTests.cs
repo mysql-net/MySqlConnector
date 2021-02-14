@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
@@ -215,6 +216,36 @@ create table insert_mysqldatetime(rowid integer not null primary key auto_increm
 
 			var datetime = m_database.Connection.ExecuteScalar<DateTime>(@"select ts from insert_mysqldatetime order by rowid;");
 			Assert.Equal(new DateTime(2018, 6, 9, 12, 34, 56, 123).AddTicks(4560), datetime);
+		}
+
+		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=102593")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void InsertMemoryStream(bool prepare)
+		{
+			m_database.Connection.Execute(@"drop table if exists insert_stream;
+create table insert_stream(rowid integer not null primary key auto_increment, str text, blb blob);");
+
+			m_database.Connection.Open();
+			try
+			{
+				using var cmd = m_database.Connection.CreateCommand();
+				cmd.CommandText = @"insert into insert_stream(str, blb) values(@str, @blb);";
+				cmd.Parameters.AddWithValue("@str", new MemoryStream(new byte[] { 97, 98, 99, 100 }));
+				cmd.Parameters.AddWithValue("@blb", new MemoryStream(new byte[] { 97, 98, 99, 100 }, 0, 4, false, true));
+				if (prepare)
+					cmd.Prepare();
+				cmd.ExecuteNonQuery();
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+
+			using var reader = m_database.Connection.ExecuteReader(@"select str, blb from insert_stream order by rowid;");
+			Assert.True(reader.Read());
+			Assert.Equal("abcd", reader.GetValue(0));
+			Assert.Equal(new byte[] { 97, 98, 99, 100 }, reader.GetValue(1));
 		}
 
 		[Fact]

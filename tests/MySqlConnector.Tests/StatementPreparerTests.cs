@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
@@ -172,6 +173,9 @@ SELECT @'var' as R")]
 				new object[] { new TimeSpan(2, 3, 4, 5, 6), "time '51:04:05.006000'" },
 				new object[] { new TimeSpan(-2, -3, -4, -5, -6), "time '-51:04:05.006000'" },
 				new object[] { new Guid("00112233-4455-6677-8899-AABBCCDDEEFF"), "'00112233-4455-6677-8899-aabbccddeeff'" },
+				new object[] { new byte[] { 0x41, 0x42, 0x27, 0x61 }, "_binary'AB\\'a'" },
+				new object[] { new MemoryStream(new byte[] { 0x41, 0x42, 0x27, 0x61 }), "_binary'AB\\'a'" },
+				new object[] { new MemoryStream(new byte[] { 0, 0x41, 0x42, 0x27, 0x61, 0x62 }, 1, 4, false, true), "_binary'AB\\'a'" },
 			};
 
 		[Theory]

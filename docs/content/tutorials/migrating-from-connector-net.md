@@ -280,3 +280,4 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#101485](https://bugs.mysql.com/bug.php?id=101485): Stored Procedure `JSON` parameter throws “Unhandled type encountered” `MySqlException`
 * [#101507](https://bugs.mysql.com/bug.php?id=101507): `MySqlCommand.Cancel` throws `NullReferenceException` for a closed connection
 * [#101714](https://bugs.mysql.com/bug.php?id=101714): Extremely slow performance reading result sets
+* [#102593](https://bugs.mysql.com/bug.php?id=102593): Can't use `MemoryStream` as `MySqlParameter.Value`
