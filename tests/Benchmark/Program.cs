@@ -24,7 +24,7 @@ namespace Benchmark
 				.AddDiagnoser(MemoryDiagnoser.Default)
 				.AddColumn(StatisticColumn.AllStatistics)
 				.AddJob(Job.Default.WithRuntime(ClrRuntime.Net48))
-				.AddJob(Job.Default.WithRuntime(CoreRuntime.Core31))
+				.AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
 				.AddExporter(DefaultExporters.Csv);
 
 			var summary = BenchmarkRunner.Run<MySqlClient>(customConfig);
@@ -76,6 +76,8 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 			var mySqlConnector = new MySqlConnector.MySqlConnection(s_connectionString);
 			mySqlConnector.Open();
 			m_connections.Add("MySqlConnector", mySqlConnector);
+
+			Connection = m_connections[Library];
 		}
 
 		[GlobalCleanup]
@@ -181,7 +183,7 @@ insert into benchmark.blobs(`Blob`) values(null), (@Blob1), (@Blob2);";
 			return total;
 		}
 
-		private DbConnection Connection => m_connections[Library];
+		private DbConnection Connection { get; set; }
 
 		// TODO: move to config file
 		static string s_connectionString = "server=127.0.0.1;user id=root;password=pass;port=3306;ssl mode=none;Use Affected Rows=true;Connection Reset=false;Default Command Timeout=0;AutoEnlist=false;";
