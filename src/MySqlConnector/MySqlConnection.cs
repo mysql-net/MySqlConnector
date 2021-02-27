@@ -706,11 +706,13 @@ namespace MySqlConnector
 				csb.Pooling = false;
 				if (m_session.IPAddress is not null)
 					csb.Server = m_session.IPAddress.ToString();
-				csb.ConnectionTimeout = 3u;
+				var cancellationTimeout = GetConnectionSettings().CancellationTimeout;
+				csb.ConnectionTimeout = cancellationTimeout < 1 ? 3u : (uint) cancellationTimeout;
 
 				using var connection = new MySqlConnection(csb.ConnectionString);
 				connection.Open();
 				using var killCommand = new MySqlCommand("KILL QUERY {0}".FormatInvariant(command.Connection!.ServerThread), connection);
+				killCommand.CommandTimeout = cancellationTimeout < 1 ? 3 : cancellationTimeout;
 				m_session.DoCancel(command, killCommand);
 			}
 			catch (MySqlException ex)

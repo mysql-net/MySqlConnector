@@ -125,7 +125,6 @@ namespace MySqlConnector.Core
 				// command would be killed (because "KILL QUERY" specifies the connection whose command should be killed, not
 				// a unique identifier of the command itself). As a mitigation, we set the CommandTimeout to a low value to avoid
 				// blocking the other thread for an extended duration.
-				killCommand.CommandTimeout = 3;
 				killCommand.ExecuteNonQuery();
 			}
 		}
