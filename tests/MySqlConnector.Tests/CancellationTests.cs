@@ -27,11 +27,11 @@ namespace MySqlConnector.Tests
 
 		// NOTE: Multiple nested classes in order to force tests to run in parallel against each other
 
-		public class CancelExecuteXWithCommandTimeout : CancellationTests
+		public class CancelWithCommandTimeout : CancellationTests
 		{
 			[SkipCITheory]
 			[MemberData(nameof(GetSyncMethodSteps))]
-			public void Test(int step, int method)
+			public void Execute(int step, int method)
 			{
 				using var connection = new MySqlConnection(m_csb.ConnectionString);
 				connection.Open();
@@ -50,13 +50,35 @@ namespace MySqlConnector.Tests
 				command.CommandText = "SELECT 1;";
 				Assert.Equal(1, command.ExecuteScalar());
 			}
+
+			[SkipCITheory]
+			[MemberData(nameof(GetAsyncMethodSteps))]
+			public async Task ExecuteAsyncs(int step, int method)
+			{
+				using var connection = new MySqlConnection(m_csb.ConnectionString);
+				connection.Open();
+				using var command = connection.CreateCommand();
+				command.CommandTimeout = 1;
+				command.CommandText = $"SELECT {4000 + step};";
+				var stopwatch = Stopwatch.StartNew();
+				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
+				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+				var inner = Assert.IsType<MySqlException>(ex.InnerException);
+				Assert.Equal(MySqlErrorCode.QueryInterrupted, inner.ErrorCode);
+
+				// connection should still be usable
+				Assert.Equal(ConnectionState.Open, connection.State);
+				command.CommandText = "SELECT 1;";
+				Assert.Equal(1, command.ExecuteScalar());
+			}
 		}
 
-		public class CancelExecuteXWithCancel : CancellationTests
+		public class CancelWithCancel : CancellationTests
 		{
 			[SkipCITheory]
 			[MemberData(nameof(GetSyncMethodSteps))]
-			public void Test(int step, int method)
+			public void Execute(int step, int method)
 			{
 				using var connection = new MySqlConnection(m_csb.ConnectionString);
 				connection.Open();
@@ -80,38 +102,10 @@ namespace MySqlConnector.Tests
 				command.CommandText = "SELECT 1;";
 				Assert.Equal(1, command.ExecuteScalar());
 			}
-		}
 
-		public class CancelExecuteXAsyncWithCommandTimeout : CancellationTests
-		{
 			[SkipCITheory]
 			[MemberData(nameof(GetAsyncMethodSteps))]
-			public async Task Test(int step, int method)
-			{
-				using var connection = new MySqlConnection(m_csb.ConnectionString);
-				connection.Open();
-				using var command = connection.CreateCommand();
-				command.CommandTimeout = 1;
-				command.CommandText = $"SELECT {4000 + step};";
-				var stopwatch = Stopwatch.StartNew();
-				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
-				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
-				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
-				var inner = Assert.IsType<MySqlException>(ex.InnerException);
-				Assert.Equal(MySqlErrorCode.QueryInterrupted, inner.ErrorCode);
-
-				// connection should still be usable
-				Assert.Equal(ConnectionState.Open, connection.State);
-				command.CommandText = "SELECT 1;";
-				Assert.Equal(1, command.ExecuteScalar());
-			}
-		}
-
-		public class CancelExecuteXAsyncWithCancel : CancellationTests
-		{
-			[SkipCITheory]
-			[MemberData(nameof(GetAsyncMethodSteps))]
-			public async Task Test(int step, int method)
+			public async Task ExecuteAsync(int step, int method)
 			{
 				using var connection = new MySqlConnection(m_csb.ConnectionString);
 				connection.Open();
@@ -323,11 +317,11 @@ namespace MySqlConnector.Tests
 			}
 		}
 
-		public class ExecuteXWithCancellationTimeoutIsNegativeOne : CancellationTests
+		public class WithCancellationTimeoutIsNegativeOne : CancellationTests
 		{
 			[SkipCITheory]
 			[MemberData(nameof(GetSyncMethodSteps))]
-			public void Test(int step, int method)
+			public void Execute(int step, int method)
 			{
 				var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString) { CancellationTimeout = -1 };
 				using var connection = new MySqlConnection(csb.ConnectionString);
@@ -344,13 +338,10 @@ namespace MySqlConnector.Tests
 				// connection is unusable
 				Assert.Equal(ConnectionState.Closed, connection.State);
 			}
-		}
 
-		public class ExecuteXAsyncWithCancellationTimeoutIsNegativeOne : CancellationTests
-		{
 			[SkipCITheory]
 			[MemberData(nameof(GetAsyncMethodSteps))]
-			public async Task Test(int step, int method)
+			public async Task ExecuteAsync(int step, int method)
 			{
 				var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString) { CancellationTimeout = -1 };
 				using var connection = new MySqlConnection(csb.ConnectionString);
