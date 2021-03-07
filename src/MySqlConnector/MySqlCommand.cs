@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlConnector.Core;
+using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
@@ -94,7 +95,11 @@ namespace MySqlConnector
 		public new MySqlParameter CreateParameter() => (MySqlParameter) base.CreateParameter();
 
 		/// <inheritdoc/>
-		public override void Cancel() => Connection?.Cancel(this);
+		public override void Cancel()
+		{
+			Log.Info("CommandId {0} for Session{1} has been canceled via Cancel().", m_commandId, Connection?.Session.Id);
+			Connection?.Cancel(this);
+		}
 
 		/// <inheritdoc/>
 		public override int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -387,8 +392,9 @@ namespace MySqlConnector
 
 		private void CancelCommandForTimeout()
 		{
+			Log.Info("CommandId {0} for Session{1} has been canceled via command timeout.", m_commandId, Connection?.Session.Id);
 			Volatile.Write(ref m_commandTimedOut, true);
-			Cancel();
+			Connection?.Cancel(this);
 		}
 
 		private bool IsValid([NotNullWhen(false)] out Exception? exception)
@@ -413,6 +419,8 @@ namespace MySqlConnector
 		CommandBehavior IMySqlCommand.CommandBehavior => m_commandBehavior;
 		MySqlParameterCollection? IMySqlCommand.OutParameters { get; set; }
 		MySqlParameter? IMySqlCommand.ReturnParameter { get; set; }
+
+		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlCommand));
 
 		readonly int m_commandId;
 		bool m_isDisposed;

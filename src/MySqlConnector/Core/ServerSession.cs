@@ -113,11 +113,14 @@ namespace MySqlConnector.Core
 
 		public void DoCancel(ICancellableCommand commandToCancel, MySqlCommand killCommand)
 		{
-			Log.Info("Session{0} canceling CommandId {1}: CommandText: {2}", m_logArguments[0], commandToCancel.CommandId, (commandToCancel as MySqlCommand)?.CommandText);
+			Log.Info("Session{0} canceling CommandId {1} from Session{2}; CommandText: {3}", m_logArguments[0], commandToCancel.CommandId, killCommand.Connection!.Session.Id, (commandToCancel as MySqlCommand)?.CommandText);
 			lock (m_lock)
 			{
 				if (ActiveCommandId != commandToCancel.CommandId)
+				{
+					Log.Info("Session{0} ActiveCommandId {1} is not the CommandId {2} being canceled; ignoring cancellation.", m_logArguments[0], ActiveCommandId, commandToCancel.CommandId);
 					return;
+				}
 
 				// NOTE: This command is executed while holding the lock to prevent race conditions during asynchronous cancellation.
 				// For example, if the lock weren't held, the current command could finish and the other thread could set ActiveCommandId
@@ -125,6 +128,7 @@ namespace MySqlConnector.Core
 				// command would be killed (because "KILL QUERY" specifies the connection whose command should be killed, not
 				// a unique identifier of the command itself). As a mitigation, we set the CommandTimeout to a low value to avoid
 				// blocking the other thread for an extended duration.
+				Log.Info("Session{0} canceling CommandId {1} with CommandText {2}", killCommand.Connection!.Session.Id, commandToCancel.CommandId, killCommand.CommandText);
 				killCommand.ExecuteNonQuery();
 			}
 		}
