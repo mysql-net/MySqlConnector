@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-02-14
+lastmod: 2021-03-07
 date: 2017-03-27
 menu:
   main:
@@ -10,44 +10,37 @@ weight: 30
 
 # Version History
 
-### 1.3.0 Beta 4
-
-* Adler32 checksum (for compressed packets) uses hardware acceleration: [#865](https://github.com/mysql-net/MySqlConnector/issues/865).
-* Report `CommandTimeoutExpired` consistently: [#939](https://github.com/mysql-net/MySqlConnector/issues/939).
-* `MySqlException.IsTransient` is now `false` for `CommandTimeoutExpired`: [#940](https://github.com/mysql-net/MySqlConnector/issues/940).
-* Support `MemoryStream` as a value for `MySqlParameter.Value`: [#943](https://github.com/mysql-net/MySqlConnector/issues/943).
-* Throw `OperationCanceledException` from `OpenAsync` when the `CancellationToken` is cancelled: [#931](https://github.com/mysql-net/MySqlConnector/issues/931).
-* Support community protocol for server redirection: [#945](https://github.com/mysql-net/MySqlConnector/issues/945).
-* Fix nested `MySqlException` (thrown in some scenarios from `ExecuteReader`).
-* Remove public constructor for `MySqlConversionException`.
-* Implement serialization for exceptions.
-* Use .NET 5.0 methods to load PEM certificates.
-* Thanks to [Oleksandr Novak](https://github.com/novak-as) for contributions to this release.
-
-### 1.3.0 Beta 3
-
-* Implement Azure Server Redirection: [#789](https://github.com/mysql-net/MySqlConnector/issues/789).
-* Change default value of `IgnorePrepare` to `false`: [#929](https://github.com/mysql-net/MySqlConnector/issues/929).
-  * Calling `MySqlCommand.Prepare(Async)` will have an effect by default.
-* Implement `IComparable<MySqlDateTime>` and `IEquatable<MySqlDateTime>` on `MySqlDateTime`.
-* Improve exception message for unsupported parameter types: [#925](https://github.com/mysql-net/MySqlConnector/issues/925).
-* Fix exception in server version parsing: [#934](https://github.com/mysql-net/MySqlConnector/issues/934).
-* Fix silent failure to use TLS 1.3 (when explicitly requested) on older frameworks.
-
-### 1.3.0 Beta 2
-
-* Implement `MySqlException.IsTransient`: [#849](https://github.com/mysql-net/MySqlConnector/issues/849).
-* Nagle's Algorithm is disabled on TCP sockets: [#921](https://github.com/mysql-net/MySqlConnector/issues/921).
-* Prevent exceptions being thrown from `MySqlTransaction.Dispose`: [#923](https://github.com/mysql-net/MySqlConnector/issues/923).
-* Fix error deserialising `MySqlException.ErrorCode` property.
-
-### 1.3.0 Beta 1
+### 1.3.0
 
 * Connections are now reset asynchronously in the background: [#178](https://github.com/mysql-net/MySqlConnector/issues/178).
   * This speeds up `MySqlConnection.Open(Async)` but still cleans up connections between uses.
   * Use `DeferConnectionReset=true` in the connection string to revert to the old behaviour.
   * _Experimental_ Use `ConnectionIdlePingTime=300` in the connection string to avoid any network I/O when retrieving a connection from the pool; this is fastest but may return invalid connections from `Open`. This setting is experimental and may change in the future.
+* Change default value of `IgnorePrepare` to `false`: [#929](https://github.com/mysql-net/MySqlConnector/issues/929).
+  * Calling `MySqlCommand.Prepare(Async)` will have an effect by default.
+* Implement Azure Server Redirection: [#789](https://github.com/mysql-net/MySqlConnector/issues/789).
+  * Support community protocol for server redirection: [#945](https://github.com/mysql-net/MySqlConnector/issues/945).
+* Support `MemoryStream` as a value for `MySqlParameter.Value`: [#943](https://github.com/mysql-net/MySqlConnector/issues/943).
+* Implement `MySqlException.IsTransient`: [#849](https://github.com/mysql-net/MySqlConnector/issues/849).
+* Implement `IComparable<MySqlDateTime>` and `IEquatable<MySqlDateTime>` on `MySqlDateTime`.
+* **Breaking** Remove `public` constructor for `MySqlConversionException`.
+  * This constructor was never intended to be `public`.
+* Implement serialization for exceptions.
+* Report `CommandTimeoutExpired` consistently: [#939](https://github.com/mysql-net/MySqlConnector/issues/939).
+  * This changes the `MySqlException.ErrorCode` from `QueryInterrupted` to `CommandTimeoutExpired`.
+* Nagle's Algorithm is disabled on TCP sockets: [#921](https://github.com/mysql-net/MySqlConnector/issues/921).
+* Adler32 checksum (for compressed packets) uses hardware acceleration: [#865](https://github.com/mysql-net/MySqlConnector/issues/865).
+* Set timeouts for cancellation operations from `CancellationTimeout` connection string option: [#951](https://github.com/mysql-net/MySqlConnector/issues/951).
+* Throw `OperationCanceledException` from `OpenAsync` when the `CancellationToken` is cancelled: [#931](https://github.com/mysql-net/MySqlConnector/issues/931).
 * Use transaction for 'SHOW WARNINGS': [#918](https://github.com/mysql-net/MySqlConnector/issues/918).
+* Improve exception message for unsupported parameter types: [#925](https://github.com/mysql-net/MySqlConnector/issues/925).
+* Fix exception in server version parsing: [#934](https://github.com/mysql-net/MySqlConnector/issues/934).
+* Fix silent failure to use TLS 1.3 (when explicitly requested) on older frameworks.
+* Fix error deserialising `MySqlException.ErrorCode` property.
+* Prevent exceptions being thrown from `MySqlTransaction.Dispose`: [#923](https://github.com/mysql-net/MySqlConnector/issues/923).
+* Fix nested `MySqlException` (thrown in some scenarios from `ExecuteReader`).
+* Use .NET 5.0 methods to load PEM certificates.
+* Thanks to [Oleksandr Novak](https://github.com/novak-as) for contributions to this release.
 
 ### 1.2.1
 
