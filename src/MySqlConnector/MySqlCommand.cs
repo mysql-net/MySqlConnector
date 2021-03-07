@@ -95,11 +95,7 @@ namespace MySqlConnector
 		public new MySqlParameter CreateParameter() => (MySqlParameter) base.CreateParameter();
 
 		/// <inheritdoc/>
-		public override void Cancel()
-		{
-			Log.Info("CommandId {0} for Session{1} has been canceled via Cancel().", m_commandId, Connection?.Session.Id);
-			Connection?.Cancel(this);
-		}
+		public override void Cancel() => Connection?.Cancel(this, m_commandId, true);
 
 		/// <inheritdoc/>
 		public override int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -392,9 +388,8 @@ namespace MySqlConnector
 
 		private void CancelCommandForTimeout()
 		{
-			Log.Info("CommandId {0} for Session{1} has been canceled via command timeout.", m_commandId, Connection?.Session.Id);
 			Volatile.Write(ref m_commandTimedOut, true);
-			Connection?.Cancel(this);
+			Connection?.Cancel(this, m_commandId, false);
 		}
 
 		private bool IsValid([NotNullWhen(false)] out Exception? exception)

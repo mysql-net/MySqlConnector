@@ -694,10 +694,15 @@ namespace MySqlConnector
 
 		internal void SetSessionFailed(Exception exception) => m_session!.SetFailed(exception);
 
-		internal void Cancel(ICancellableCommand command)
+		internal void Cancel(ICancellableCommand command, int commandId, bool isCancel)
 		{
 			if (m_session is null || State != ConnectionState.Open || !m_session.TryStartCancel(command))
+			{
+				Log.Info("Ignoring cancellation for closed connection or invalid CommandId {0}", commandId);
 				return;
+			}
+
+			Log.Info("CommandId {0} for Session{1} has been canceled via {2}.", commandId, m_session.Id, isCancel ? "Cancel()" : "command timeout");
 
 			try
 			{
@@ -718,7 +723,7 @@ namespace MySqlConnector
 			catch (MySqlException ex)
 			{
 				// cancelling the query failed; setting the state back to 'Querying' will allow another call to 'Cancel' to try again
-				Log.Warn(ex, "Session{0} cancelling command {1} failed", m_session!.Id, command.CommandId);
+				Log.Warn(ex, "Session{0} cancelling CommandId {1} failed", m_session!.Id, command.CommandId);
 				m_session.AbortCancel(command);
 			}
 		}

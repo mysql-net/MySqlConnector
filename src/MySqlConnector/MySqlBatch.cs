@@ -151,7 +151,7 @@ namespace MySqlConnector
 
 		public Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
 
-		public void Cancel() => Connection?.Cancel(this);
+		public void Cancel() => Connection?.Cancel(this, m_commandId, true);
 
 		public void Dispose()
 		{
