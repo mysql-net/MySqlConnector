@@ -21,7 +21,7 @@ namespace MySqlConnector.Utilities
 	/// Calculates the 32 bit Adler checksum of a given buffer according to
 	/// RFC 1950. ZLIB Compressed Data Format Specification version 3.3)
 	/// </summary>
-	public static class Adler32
+	internal static class Adler32
 	{
 		/// <summary>
 		/// The default initial seed value of a Adler32 checksum calculation.
