@@ -2,15 +2,10 @@
 // Licensed under the Apache License, Version 2.0.
 // https://github.com/SixLabors/ImageSharp/blob/master/src/ImageSharp/Formats/Png/Zlib/Adler32.cs
 
-
-#if NETCOREAPP
 using System;
-
-#if !NETCOREAPP2_1
+#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
-#endif
-
 #endif
 
 #pragma warning disable IDE0007 // Use implicit type
@@ -34,7 +29,7 @@ namespace MySqlConnector.Utilities
 		// NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1
 		private const uint NMAX = 5552;
 
-#if NETCOREAPP && !NETCOREAPP2_1
+#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
 		private const int MinBufferSize = 64;
 
 		// The C# compiler emits this as a compile-time constant embedded in the PE file.
@@ -52,18 +47,14 @@ namespace MySqlConnector.Utilities
 		/// <param name="offset"></param>
 		/// <param name="length"></param>
 		/// <returns>The <see cref="uint"/>.</returns>
-#if NETCOREAPP
 		public static uint Calculate(ReadOnlySpan<byte> buffer, uint offset, uint length)
-#else
-		public static uint Calculate(byte[] buffer, uint offset, uint length)
-#endif
 		{
 			if (buffer.Length == 0)
 			{
 				return SeedValue;
 			}
 
-#if NETCOREAPP && !NETCOREAPP2_1
+#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
 			if (Ssse3.IsSupported && buffer.Length >= MinBufferSize)
 			{
 				return CalculateSse(buffer, offset, length);
@@ -74,7 +65,7 @@ namespace MySqlConnector.Utilities
 		}
 
 
-#if NETCOREAPP && !NETCOREAPP2_1
+#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
 		// Based on https://github.com/chromium/chromium/blob/master/third_party/zlib/adler32_simd.c
 		private static unsafe uint CalculateSse(ReadOnlySpan<byte> buffer, uint offset, uint length)
 		{
@@ -202,11 +193,7 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
-#if NETCOREAPP
 		private static unsafe uint CalculateScalar(ReadOnlySpan<byte> buffer, uint offset, uint length)
-#else
-		private static unsafe uint CalculateScalar(byte[] buffer, uint offset, uint length)
-#endif
 		{
 			uint s1 = SeedValue & 0xFFFF;
 			uint s2 = (SeedValue >> 16) & 0xFFFF;
