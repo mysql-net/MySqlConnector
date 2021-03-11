@@ -366,7 +366,7 @@ namespace MySqlConnector
 				return false;
 			try
 			{
-				if (await m_session.TryPingAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
+				if (await m_session.TryPingAsync(logInfo: true, ioBehavior, cancellationToken).ConfigureAwait(false))
 					return true;
 			}
 			catch (InvalidOperationException)

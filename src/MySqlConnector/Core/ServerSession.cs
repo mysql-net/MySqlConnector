@@ -745,7 +745,7 @@ namespace MySqlConnector.Core
 		}
 #endif
 
-		public async ValueTask<bool> TryPingAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async ValueTask<bool> TryPingAsync(bool logInfo, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyState(State.Connected);
 
@@ -756,7 +756,10 @@ namespace MySqlConnector.Core
 				await SendAsync(PingPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
-				Log.Info("Session{0} successfully pinged server", m_logArguments);
+				if (logInfo)
+					Log.Info("Session{0} successfully pinged server", m_logArguments);
+				else
+					Log.Debug("Session{0} successfully pinged server", m_logArguments);
 				return true;
 			}
 			catch (IOException ex)

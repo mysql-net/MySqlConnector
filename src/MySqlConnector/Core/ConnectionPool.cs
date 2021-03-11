@@ -72,7 +72,7 @@ namespace MySqlConnector.Core
 						}
 						else if ((unchecked((uint) Environment.TickCount) - session.LastReturnedTicks) >= ConnectionSettings.ConnectionIdlePingTime)
 						{
-							reuseSession = await session.TryPingAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+							reuseSession = await session.TryPingAsync(logInfo: false, ioBehavior, cancellationToken).ConfigureAwait(false);
 						}
 						else
 						{

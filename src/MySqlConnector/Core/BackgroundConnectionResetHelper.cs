@@ -77,7 +77,7 @@ namespace MySqlConnector.Core
 				try
 				{
 					// block until AddSession releases the semaphore
-					Log.Info("Waiting for semaphore.");
+					Log.Debug("Waiting for semaphore.");
 					await s_semaphore.WaitAsync(s_cancellationTokenSource.Token).ConfigureAwait(false);
 
 					// process all sessions that have started being returned
