@@ -10,6 +10,13 @@ weight: 30
 
 # Version History
 
+### 1.3.1
+
+* Remove two new `Info` log messages added in 1.3.0: [#956](https://github.com/mysql-net/MySqlConnector/issues/956).
+  * The equivalent messages in 1.2.1 were at `Debug` level.
+* Make `Adler32` class `internal`.
+  * This was not intended to be added to the public API in 1.3.0.
+
 ### 1.3.0
 
 * Connections are now reset asynchronously in the background: [#178](https://github.com/mysql-net/MySqlConnector/issues/178).
