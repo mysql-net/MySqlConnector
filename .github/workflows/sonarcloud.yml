@@ -23,7 +23,7 @@ jobs:
       - name: Set up .NET 5.0
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 5.0.x
+          dotnet-version: '5.0.x'
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0 # fetch all revisions
@@ -48,6 +48,10 @@ jobs:
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
       - name: Install minver
         run: dotnet tool install --global minver-cli
+      - name: Set up .NET 6.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.100-preview.2.21155.3
       - name: Restore Packages
         run: dotnet restore
       - name: Build and analyze

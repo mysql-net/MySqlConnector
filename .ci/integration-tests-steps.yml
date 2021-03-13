@@ -23,6 +23,11 @@ steps:
     version: 3.1.x
     packageType: runtime
 - task: UseDotNet@2
+  displayName: 'Install .NET Core 5.0'
+  inputs:
+    version: '5.0.x'
+    packageType: runtime
+- task: UseDotNet@2
   displayName: 'Install .NET Core'
   inputs:
     version: $(DotNetCoreSdkVersion)

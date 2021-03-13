@@ -1,5 +1,5 @@
 variables:
-  DotNetCoreSdkVersion: '5.0.102'
+  DotNetCoreSdkVersion: '6.0.100-preview.2.21155.3'
   NUGET_PACKAGES: '$(Pipeline.Workspace)/.nuget/packages'
 
 jobs:
@@ -41,27 +41,15 @@ jobs:
       contents: 'config.json'
       targetFolder: 'tests/SideBySide'
   - task: UseDotNet@2
-    displayName: 'Install .NET Core'
+    displayName: 'Install .NET Core 5.0'
     inputs:
-      version: $(DotNetCoreSdkVersion)
-  - task: DotNetCoreCLI@2
-    displayName: 'Restore packages'
-    inputs:
-      command: 'restore'
-      arguments: 'tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj /p:Configuration=Baseline'
-      verbosityRestore: 'minimal'
+      version: '5.0.x'
   - task: DotNetCoreCLI@2
     displayName: 'Unit tests'
     inputs:
       command: 'test'
       arguments: 'tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj -c Baseline'
       testRunTitle: 'Baseline unit tests'
-  - task: DotNetCoreCLI@2
-    displayName: 'Restore packages'
-    inputs:
-      command: 'restore'
-      arguments: 'tests\SideBySide\SideBySide.csproj /p:Configuration=Baseline'
-      verbosityRestore: 'minimal'
   - task: DotNetCoreCLI@2
     displayName: 'Baseline tests'
     inputs:
@@ -109,6 +97,11 @@ jobs:
       version: 3.1.x
       packageType: runtime
   - task: UseDotNet@2
+    displayName: 'Install .NET Core 5.0'
+    inputs:
+      version: '5.0.x'
+      packageType: runtime
+  - task: UseDotNet@2
     displayName: 'Install .NET Core'
     inputs:
       version: $(DotNetCoreSdkVersion)
@@ -124,6 +117,11 @@ jobs:
     vmimage: 'windows-latest'
   steps:
   - template: '.ci/install-mysql-windows.yml'
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core 5.0'
+    inputs:
+      version: '5.0.x'
+      packageType: runtime
   - task: UseDotNet@2
     displayName: 'Install .NET Core'
     inputs:
