@@ -1025,7 +1025,7 @@ namespace MySqlConnector
 			}
 		}
 
-#if NETCOREAPP3_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
 		private async ValueTask CloseDatabaseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #else
 		private async Task CloseDatabaseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
