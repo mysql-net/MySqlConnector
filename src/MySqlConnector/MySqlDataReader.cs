@@ -315,10 +315,10 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the operation.</param>
 		/// <returns>A <see cref="DataTable"/> containing metadata about the columns in the result set.</returns>
 		/// <remarks>This method runs synchronously; prefer to call <see cref="GetSchemaTable"/> to avoid the overhead of allocating an unnecessary <c>Task</c>.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public Task<DataTable?> GetSchemaTableAsync(CancellationToken cancellationToken = default)
-#else
+#if NET5_0_OR_GREATER
 		public override Task<DataTable?> GetSchemaTableAsync(CancellationToken cancellationToken = default)
+#else
+		public Task<DataTable?> GetSchemaTableAsync(CancellationToken cancellationToken = default)
 #endif
 		{
 			cancellationToken.ThrowIfCancellationRequested();
@@ -350,10 +350,10 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the operation.</param>
 		/// <returns>A <see cref="Task"/> containing <see cref="System.Collections.ObjectModel.ReadOnlyCollection{DbColumn}"/> containing metadata about the result set.</returns>
 		/// <remarks>This method runs synchronously; prefer to call <see cref="GetColumnSchema"/> to avoid the overhead of allocating an unnecessary <c>Task</c>.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public Task<ReadOnlyCollection<DbColumn>> GetColumnSchemaAsync(CancellationToken cancellationToken = default)
-#else
+#if NET5_0_OR_GREATER
 		public override Task<ReadOnlyCollection<DbColumn>> GetColumnSchemaAsync(CancellationToken cancellationToken = default)
+#else
+		public Task<ReadOnlyCollection<DbColumn>> GetColumnSchemaAsync(CancellationToken cancellationToken = default)
 #endif
 		{
 			cancellationToken.ThrowIfCancellationRequested();
@@ -423,10 +423,10 @@ namespace MySqlConnector
 			}
 		}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
 		public override ValueTask DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
+#else
+		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
 #endif
 
 		internal IMySqlCommand? Command { get; private set; }
@@ -565,10 +565,10 @@ namespace MySqlConnector
 			m_resultSet = new(this);
 		}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		internal async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
 		internal async ValueTask DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#else
+		internal async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #endif
 		{
 			if (!m_closed)

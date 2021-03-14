@@ -75,7 +75,7 @@ namespace MySqlConnector.Core
 						TlsVersions |= SslProtocols.Tls11;
 					else if (minorVersion == '2')
 						TlsVersions |= SslProtocols.Tls12;
-#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
+#if NETCOREAPP3_0_OR_GREATER
 					else if (minorVersion == '3')
 						TlsVersions |= SslProtocols.Tls13;
 #endif
@@ -88,9 +88,7 @@ namespace MySqlConnector.Core
 
 			if (csb.TlsCipherSuites != "")
 			{
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1
-				throw new PlatformNotSupportedException("The TlsCipherSuites connection string option is only supported on .NET Core 3.1 (or later) on Linux.");
-#else
+#if NETCOREAPP3_0_OR_GREATER
 				var tlsCipherSuites = new List<TlsCipherSuite>();
 				foreach (var token in csb.TlsCipherSuites.Split(','))
 				{
@@ -105,6 +103,8 @@ namespace MySqlConnector.Core
 						throw new NotSupportedException("Unknown value '{0}' for TlsCipherSuites.".FormatInvariant(suiteName));
 				}
 				TlsCipherSuites = tlsCipherSuites;
+#else
+				throw new PlatformNotSupportedException("The TlsCipherSuites connection string option is only supported on .NET Core 3.1 (or later) on Linux.");
 #endif
 			}
 
@@ -201,7 +201,7 @@ namespace MySqlConnector.Core
 		public MySqlCertificateStoreLocation CertificateStoreLocation { get; }
 		public string CertificateThumbprint { get; }
 		public SslProtocols TlsVersions { get; }
-#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
+#if NETCOREAPP3_0_OR_GREATER
 		public IReadOnlyList<TlsCipherSuite>? TlsCipherSuites { get; }
 #endif
 

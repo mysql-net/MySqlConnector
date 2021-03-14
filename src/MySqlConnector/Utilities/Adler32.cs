@@ -3,7 +3,7 @@
 // https://github.com/SixLabors/ImageSharp/blob/master/src/ImageSharp/Formats/Png/Zlib/Adler32.cs
 
 using System;
-#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
+#if NETCOREAPP3_0_OR_GREATER
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 #endif
@@ -29,7 +29,7 @@ namespace MySqlConnector.Utilities
 		// NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1
 		private const uint NMAX = 5552;
 
-#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
+#if NETCOREAPP3_0_OR_GREATER
 		private const int MinBufferSize = 64;
 
 		// The C# compiler emits this as a compile-time constant embedded in the PE file.
@@ -54,7 +54,7 @@ namespace MySqlConnector.Utilities
 				return SeedValue;
 			}
 
-#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
+#if NETCOREAPP3_0_OR_GREATER
 			if (Ssse3.IsSupported && buffer.Length >= MinBufferSize)
 			{
 				return CalculateSse(buffer, offset, length);
@@ -65,7 +65,7 @@ namespace MySqlConnector.Utilities
 		}
 
 
-#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
+#if NETCOREAPP3_0_OR_GREATER
 		// Based on https://github.com/chromium/chromium/blob/master/third_party/zlib/adler32_simd.c
 		private static unsafe uint CalculateSse(ReadOnlySpan<byte> buffer, uint offset, uint length)
 		{

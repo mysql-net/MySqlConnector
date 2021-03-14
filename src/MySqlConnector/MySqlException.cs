@@ -34,19 +34,19 @@ namespace MySqlConnector
 		/// A <c>SQLSTATE</c> code identifying the kind of error.
 		/// </summary>
 		/// <remarks>See <a href="https://en.wikipedia.org/wiki/SQLSTATE">SQLSTATE</a> for more information.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public string? SqlState { get; }
-#else
+#if NET5_0_OR_GREATER
 		public override string? SqlState { get; }
+#else
+		public string? SqlState { get; }
 #endif
 
 		/// <summary>
 		/// Returns <c>true</c> if this exception could indicate a transient error condition (that could succeed if retried); otherwise, <c>false</c>.
 		/// </summary>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public bool IsTransient => IsErrorTransient(ErrorCode);
-#else
+#if NET5_0_OR_GREATER
 		public override bool IsTransient => IsErrorTransient(ErrorCode);
+#else
+		public bool IsTransient => IsErrorTransient(ErrorCode);
 #endif
 
 #if !NETSTANDARD1_3
