@@ -127,6 +127,13 @@ namespace MySqlConnector.Protocol.Serialization
 							}
 							else
 							{
+#if NET6_0_OR_GREATER
+								var uncompressedData = new byte[uncompressedLength];
+								using var compressedStream = new MemoryStream(payloadReadBytes.Array!, payloadReadBytes.Offset, payloadReadBytes.Count);
+								using var decompressingStream = new ZLibStream(compressedStream, CompressionMode.Decompress);
+								var bytesRead = decompressingStream.Read(uncompressedData, 0, uncompressedLength);
+								m_remainingData = new(uncompressedData, 0, bytesRead);
+#else
 								// check CMF (Compression Method and Flags) and FLG (Flags) bytes for expected values
 								var cmf = payloadReadBytes.Array![payloadReadBytes.Offset];
 								var flg = payloadReadBytes.Array[payloadReadBytes.Offset + 1];
@@ -162,6 +169,7 @@ namespace MySqlConnector.Protocol.Serialization
 										default :
 										ValueTaskExtensions.FromException<int>(new NotSupportedException("Invalid Adler-32 checksum of uncompressed data."));
 								}
+#endif
 							}
 
 							var bytesToRead = Math.Min(m_remainingData.Count, buffer.Length);
@@ -186,6 +194,10 @@ namespace MySqlConnector.Protocol.Serialization
 			{
 				using var compressedStream = new MemoryStream();
 
+#if NET6_0_OR_GREATER
+				using (var zlibStream = new ZLibStream(compressedStream, CompressionLevel.Optimal, leaveOpen: true))
+					zlibStream.Write(remainingUncompressedData.Array!, remainingUncompressedData.Offset, remainingUncompressedBytes);
+#else
 				// write CMF: 32K window + deflate algorithm
 				compressedStream.WriteByte(0x78);
 
@@ -200,6 +212,7 @@ namespace MySqlConnector.Protocol.Serialization
 				compressedStream.WriteByte((byte) ((checksum >> 16) & 0xFF));
 				compressedStream.WriteByte((byte) ((checksum >> 8) & 0xFF));
 				compressedStream.WriteByte((byte) (checksum & 0xFF));
+#endif
 
 				if (!compressedStream.TryGetBuffer(out compressedData))
 					throw new InvalidOperationException("Couldn't get compressed stream buffer.");

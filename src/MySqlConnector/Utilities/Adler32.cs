@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0.
 // https://github.com/SixLabors/ImageSharp/blob/master/src/ImageSharp/Formats/Png/Zlib/Adler32.cs
 
+#if !NET6_0_OR_GREATER
 using System;
 #if NETCOREAPP3_0_OR_GREATER
 using System.Runtime.Intrinsics;
@@ -245,3 +246,4 @@ namespace MySqlConnector.Utilities
 		}
 	}
 }
+#endif
