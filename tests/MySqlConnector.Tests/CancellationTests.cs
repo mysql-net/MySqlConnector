@@ -53,13 +53,60 @@ namespace MySqlConnector.Tests
 
 			[SkipCITheory]
 			[MemberData(nameof(GetAsyncMethodSteps))]
-			public async Task ExecuteAsyncs(int step, int method)
+			public async Task ExecuteAsync(int step, int method)
 			{
 				using var connection = new MySqlConnection(m_csb.ConnectionString);
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 1;
 				command.CommandText = $"SELECT 0, 4000, {step}, 0;";
+				var stopwatch = Stopwatch.StartNew();
+				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
+				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+				var inner = Assert.IsType<MySqlException>(ex.InnerException);
+				Assert.Equal(MySqlErrorCode.QueryInterrupted, inner.ErrorCode);
+
+				// connection should still be usable
+				Assert.Equal(ConnectionState.Open, connection.State);
+				command.CommandText = "SELECT 1;";
+				Assert.Equal(1, command.ExecuteScalar());
+			}
+		}
+
+		public class CancelBufferedWithCommandTimeout : CancellationTests
+		{
+			[SkipCITheory]
+			[MemberData(nameof(GetSyncMethodSteps))]
+			public void Execute(int step, int method)
+			{
+				using var connection = new MySqlConnection(m_csb.ConnectionString);
+				connection.Open();
+				using var command = connection.CreateCommand();
+				command.CommandTimeout = 1;
+				command.CommandText = $"SELECT 0, 4000, {step}, 2;";
+				var stopwatch = Stopwatch.StartNew();
+				var ex = Assert.Throws<MySqlException>(() => s_executeMethods[method](command));
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
+				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+				var inner = Assert.IsType<MySqlException>(ex.InnerException);
+				Assert.Equal(MySqlErrorCode.QueryInterrupted, inner.ErrorCode);
+
+				// connection should still be usable
+				Assert.Equal(ConnectionState.Open, connection.State);
+				command.CommandText = "SELECT 1;";
+				Assert.Equal(1, command.ExecuteScalar());
+			}
+
+			[SkipCITheory]
+			[MemberData(nameof(GetAsyncMethodSteps))]
+			public async Task ExecuteAsync(int step, int method)
+			{
+				using var connection = new MySqlConnection(m_csb.ConnectionString);
+				connection.Open();
+				using var command = connection.CreateCommand();
+				command.CommandTimeout = 1;
+				command.CommandText = $"SELECT 0, 4000, {step}, 2;";
 				var stopwatch = Stopwatch.StartNew();
 				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);

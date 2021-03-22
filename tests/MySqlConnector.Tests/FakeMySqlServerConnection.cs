@@ -97,6 +97,7 @@ namespace MySqlConnector.Tests
 								var pauseStep = int.Parse(match.Groups[3].Value);
 								var flags = int.Parse(match.Groups[4].Value);
 								var ignoreCancellation = (flags & 1) == 1;
+								var bufferOutput = (flags & 2) == 2;
 
 								var data = new byte[number.Length + 1];
 								data[0] = (byte) number.Length;
@@ -120,18 +121,34 @@ namespace MySqlConnector.Tests
 									new byte[] { 0xFE, 0, 0, 2, 0 }, // EOF
 								};
 
-								var queryInterrupted = false;
-								for (var step = 1; step < packets.Length && !queryInterrupted; step++)
+								if (bufferOutput)
 								{
-									if (pauseStep == step || pauseStep == -1)
-									{
-										if (ignoreCancellation)
-											await Task.Delay(delay, token);
-										else
-											queryInterrupted = CancelQueryEvent.Wait(delay, token);
-									}
+									// if 'bufferOutput' is set, perform the delay immediately then send all the output afterwards, as though it were buffered on the server
+									var queryInterrupted = false;
+									if (ignoreCancellation)
+										await Task.Delay(delay, token);
+									else
+										queryInterrupted = CancelQueryEvent.Wait(delay, token);
 
-									await SendAsync(stream, step, x => x.Write(packets[queryInterrupted ? 0 : step]));
+									for (var step = 1; step < pauseStep; step++)
+										await SendAsync(stream, step, x => x.Write(packets[step]));
+									await SendAsync(stream, pauseStep, x => x.Write(packets[queryInterrupted ? 0 : pauseStep]));
+								}
+								else
+								{
+									var queryInterrupted = false;
+									for (var step = 1; step < packets.Length && !queryInterrupted; step++)
+									{
+										if (pauseStep == step || pauseStep == -1)
+										{
+											if (ignoreCancellation)
+												await Task.Delay(delay, token);
+											else
+												queryInterrupted = CancelQueryEvent.Wait(delay, token);
+										}
+
+										await SendAsync(stream, step, x => x.Write(packets[queryInterrupted ? 0 : step]));
+									}
 								}
 							}
 							else if ((match = Regex.Match(query, @"^KILL QUERY ([0-9]+)(;|$)", RegexOptions.IgnoreCase)).Success)
