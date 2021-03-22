@@ -88,16 +88,21 @@ namespace MySqlConnector.Tests
 								await SendAsync(stream, 4, x => x.Write(data));
 								await SendAsync(stream, 5, x => x.Write(new byte[] { 0xFE, 0, 0, 2, 0 })); // EOF
 							}
-							else if ((match = Regex.Match(query, @"^SELECT ([0-9]{3,})(;|$)")).Success)
+							else if ((match = Regex.Match(query, @"^SELECT ([0-9]+), ([0-9]+), ([0-9-]+), ([0-9]+)(;|$)")).Success)
 							{
+								// command is "SELECT {value}, {delay}, {pauseStep}, {respectCancellation}"
 								var number = match.Groups[1].Value;
+								var value = int.Parse(number);
+								var delay = int.Parse(match.Groups[2].Value);
+								var pauseStep = int.Parse(match.Groups[3].Value);
+								var respectCancellation = int.Parse(match.Groups[4].Value) != 0;
+
 								var data = new byte[number.Length + 1];
 								data[0] = (byte) number.Length;
 								Encoding.UTF8.GetBytes(number, 0, number.Length, data, 1);
-								var value = int.Parse(number);
+								
 								var negativeOne = new byte[] { 2, 0x2D, 0x31 };
-
-								var packets = new byte[][]
+								var packets = new[]
 								{
 									new byte[] { 0xFF, 0x25, 0x05, 0x23, 0x37, 0x30, 0x31, 0x30, 0x30 }.Concat(Encoding.ASCII.GetBytes("Query execution was interrupted")).ToArray(), // error
 									new byte[] { 1 }, // one column
@@ -113,18 +118,16 @@ namespace MySqlConnector.Tests
 									negativeOne,
 									new byte[] { 0xFE, 0, 0, 2, 0 }, // EOF
 								};
-								var pauseStep = value % 100;
-								var respectCancellation = value < 10000;
 
 								var queryInterrupted = false;
-								for (int step = 1; step < packets.Length && !queryInterrupted; step++)
+								for (var step = 1; step < packets.Length && !queryInterrupted; step++)
 								{
-									if (pauseStep == step || value == 100)
+									if (pauseStep == step || pauseStep == -1)
 									{
 										if (respectCancellation)
-											queryInterrupted = CancelQueryEvent.Wait(value, token);
+											queryInterrupted = CancelQueryEvent.Wait(delay, token);
 										else
-											await Task.Delay(value, token);
+											await Task.Delay(delay, token);
 									}
 
 									await SendAsync(stream, step, x => x.Write(packets[queryInterrupted ? 0 : step]));
