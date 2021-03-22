@@ -10,6 +10,10 @@ weight: 30
 
 # Version History
 
+### 1.3.2
+
+* Fix a bug that could cause a timed-out query to still throw a `QueryInterrupted` `MySqlException` instead of `CommandTimeoutExpired`.
+
 ### 1.3.1
 
 * Remove two new `Info` log messages added in 1.3.0: [#956](https://github.com/mysql-net/MySqlConnector/issues/956).
