@@ -90,12 +90,13 @@ namespace MySqlConnector.Tests
 							}
 							else if ((match = Regex.Match(query, @"^SELECT ([0-9]+), ([0-9]+), ([0-9-]+), ([0-9]+)(;|$)")).Success)
 							{
-								// command is "SELECT {value}, {delay}, {pauseStep}, {respectCancellation}"
+								// command is "SELECT {value}, {delay}, {pauseStep}, {flags}"
 								var number = match.Groups[1].Value;
 								var value = int.Parse(number);
 								var delay = int.Parse(match.Groups[2].Value);
 								var pauseStep = int.Parse(match.Groups[3].Value);
-								var respectCancellation = int.Parse(match.Groups[4].Value) != 0;
+								var flags = int.Parse(match.Groups[4].Value);
+								var ignoreCancellation = (flags & 1) == 1;
 
 								var data = new byte[number.Length + 1];
 								data[0] = (byte) number.Length;
@@ -124,10 +125,10 @@ namespace MySqlConnector.Tests
 								{
 									if (pauseStep == step || pauseStep == -1)
 									{
-										if (respectCancellation)
-											queryInterrupted = CancelQueryEvent.Wait(delay, token);
-										else
+										if (ignoreCancellation)
 											await Task.Delay(delay, token);
+										else
+											queryInterrupted = CancelQueryEvent.Wait(delay, token);
 									}
 
 									await SendAsync(stream, step, x => x.Write(packets[queryInterrupted ? 0 : step]));
