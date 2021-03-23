@@ -224,6 +224,7 @@ SELECT @'var' as R")]
 
 		[Theory]
 		[InlineData("SELECT 1", new[] { "SELECT 1" }, "")]
+		[InlineData("SELECT 1 ", new[] { "SELECT 1 " }, "")]
 		[InlineData("SELECT 1;", new[] { "SELECT 1" }, "")]
 		[InlineData("\r\n-- leading comment\r\nSELECT 1;\r\n\r\n-- trailing comment", new[] { "SELECT 1" }, "")]
 		[InlineData("SELECT 1; SELECT 2;", new[] { "SELECT 1", "SELECT 2" }, ";")]
@@ -234,6 +235,11 @@ SELECT @'var' as R")]
 		[InlineData("SELECT @one, @two; SELECT @zero, @three", new[] { "SELECT ?, ?", "SELECT ?, ?" }, "@one,@two;@zero,@three")]
 		[InlineData("SELECT ?, ?; SELECT ?, ?", new[] { "SELECT ?, ?", "SELECT ?, ?" }, "0,1;2,3")]
 		[InlineData("SELECT '@one' FROM `@three` WHERE `@zero` = @two;", new[] { "SELECT '@one' FROM `@three` WHERE `@zero` = ?" }, "@two")]
+		[InlineData(";SELECT 1", new[] { "SELECT 1" }, "")]
+		[InlineData(" ; SELECT 1 ; ", new[] { "SELECT 1 " }, "")]
+		[InlineData(";;;SELECT 1;;;", new[] { "SELECT 1" }, "")]
+		[InlineData("-- test\n; SELECT 1;", new[] { "SELECT 1" }, "")]
+		[InlineData("SELECT 1; -- test\n", new[] { "SELECT 1" }, "")]
 		public void SplitStatement(string sql, string[] expectedStatements, string expectedStatementParametersString)
 		{
 			// verify InlineData is in the expected format
