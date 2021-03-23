@@ -209,6 +209,12 @@ SELECT @'var' as R")]
 		[InlineData("SELECT * FROM `SELECT`", "SELECT * FROM `SELECT`;", true)]
 		[InlineData("SELECT * FROM test WHERE id = ?;", "SELECT * FROM test WHERE id = 0;", true)]
 		[InlineData("SELECT * FROM test WHERE id = ?", "SELECT * FROM test WHERE id = 0;", true)]
+		[InlineData(";SELECT 1", "SELECT 1;", true)]
+		[InlineData("; SELECT 1;", "SELECT 1;", true)]
+		[InlineData(" ; SELECT 1 ; ", "SELECT 1 ;", true)]
+		[InlineData(";;;SELECT 1;;;", "SELECT 1;", true)]
+		[InlineData("-- test\n; SELECT 1;", "SELECT 1;", true)]
+		[InlineData("SELECT 1; -- test\n", "SELECT 1;", true)]
 		public void CompleteStatements(string sql, string expectedSql, bool expectedComplete)
 		{
 			var parameters = new MySqlParameterCollection { new() { Value = 0 } };

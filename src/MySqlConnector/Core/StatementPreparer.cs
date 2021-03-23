@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using MySqlConnector.Protocol;
@@ -68,6 +69,20 @@ namespace MySqlConnector.Core
 
 			public bool IsComplete { get; private set; }
 
+			protected override void OnStatementBegin(int index)
+			{
+				// trim any text (whitespace, comments) before the beginning of the first statement
+				if (m_lastIndex == 0)
+					m_lastIndex = index;
+			}
+
+			protected override void OnStatementEnd(int index)
+			{
+				var pastStatementEnd = Math.Min(index + 1, Preparer.m_commandText.Length);
+				m_writer.Write(Preparer.m_commandText, m_lastIndex, pastStatementEnd - m_lastIndex);
+				m_lastIndex = pastStatementEnd;
+			}
+
 			protected override void OnNamedParameter(int index, int length)
 			{
 				var parameterIndex = Preparer.GetParameterIndex(Preparer.m_commandText.Substring(index, length));
@@ -91,12 +106,13 @@ namespace MySqlConnector.Core
 
 			protected override void OnParsed(FinalParseStates states)
 			{
-				m_writer.Write(Preparer.m_commandText, m_lastIndex, Preparer.m_commandText.Length - m_lastIndex);
+				IsComplete = (states & FinalParseStates.Complete) == FinalParseStates.Complete;
+				if (!IsComplete && Preparer.m_commandText.Length > m_lastIndex)
+					m_writer.Write(Preparer.m_commandText, m_lastIndex, Preparer.m_commandText.Length - m_lastIndex);
 				if ((states & FinalParseStates.NeedsNewline) == FinalParseStates.NeedsNewline)
 					m_writer.Write((byte) '\n');
 				if ((states & FinalParseStates.NeedsSemicolon) == FinalParseStates.NeedsSemicolon)
 					m_writer.Write((byte) ';');
-				IsComplete = (states & FinalParseStates.Complete) == FinalParseStates.Complete;
 			}
 
 			readonly ByteBufferWriter m_writer;

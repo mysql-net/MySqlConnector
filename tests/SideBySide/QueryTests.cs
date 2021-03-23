@@ -613,6 +613,23 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 
 		[Theory]
 		[InlineData(false)]
+#if !BASELINE
+		[InlineData(true)]
+#endif
+		public void EmptyStatements(bool prepareCommand)
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+
+			using var cmd = connection.CreateCommand();
+			cmd.CommandText = " ; select 1 ; ; ";
+			if (prepareCommand)
+				cmd.Prepare();
+			Assert.Equal(1L, cmd.ExecuteScalar());
+		}
+
+		[Theory]
+		[InlineData(false)]
 		[InlineData(true)]
 		public void SumInts(bool prepareCommand)
 		{
