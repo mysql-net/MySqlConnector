@@ -151,6 +151,10 @@ namespace MySqlConnector.Core
 
 		internal DbTypeMapping? GetDbTypeMapping(Type clrType)
 		{
+#if !NETSTANDARD1_3
+			if (clrType.IsEnum)
+				clrType = Enum.GetUnderlyingType(clrType);
+#endif
 			m_dbTypeMappingsByClrType.TryGetValue(clrType, out var dbTypeMapping);
 			return dbTypeMapping;
 		}
