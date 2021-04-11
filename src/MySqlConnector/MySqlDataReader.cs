@@ -211,7 +211,7 @@ namespace MySqlConnector
 		}
 
 		public override bool IsClosed => Command is null;
-		public override int RecordsAffected => m_recordsAffected.GetValueOrDefault(-1);
+		public override int RecordsAffected => m_recordsAffected.HasValue ? checked((int) m_recordsAffected) : -1;
 
 		public override int GetOrdinal(string name) => GetResultSet().GetOrdinal(name);
 
@@ -653,7 +653,7 @@ namespace MySqlConnector
 		readonly IDictionary<string, CachedProcedure?>? m_cachedProcedures;
 		CommandListPosition m_commandListPosition;
 		bool m_closed;
-		int? m_recordsAffected;
+		ulong? m_recordsAffected;
 		bool m_hasWarnings;
 		ResultSet? m_resultSet;
 		bool m_hasMoreResults;

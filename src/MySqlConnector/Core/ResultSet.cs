@@ -435,7 +435,7 @@ namespace MySqlConnector.Core
 		public ColumnDefinitionPayload[]? ColumnDefinitions { get; private set; }
 		public MySqlDbType[]? ColumnTypes { get; private set; }
 		public long LastInsertId { get; private set; }
-		public int? RecordsAffected { get; private set; }
+		public ulong? RecordsAffected { get; private set; }
 		public int WarningCount { get; private set; }
 		public ResultSetState State { get; private set; }
 		public bool ContainsCommandParameters { get; private set; }

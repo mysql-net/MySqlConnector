@@ -16,6 +16,8 @@ namespace MySqlConnector.Tests
 		[InlineData("SELECT Id\nFROM mytable\nWHERE column1 = 2  -- mycomment\nAND column2 = @param")]
 		[InlineData("SELECT Id\nFROM mytable\nWHERE column1 = 2 -- mycomment\nAND column2 = @param")]
 		[InlineData("SELECT Id\nFROM mytable\nWHERE column1 = 2 -- mycomment\n  AND column2 = @param")]
+		[InlineData("SELECT Id\nFROM mytable\nWHERE column1 = 2 /* mycomment */\n  AND column2 = @param")]
+		[InlineData("SELECT Id\nFROM mytable\nWHERE column1 = 2 /* mycomment */ AND column2 = @param")]
 		public void Bug429(string sql)
 		{
 			var parameters = new MySqlParameterCollection();

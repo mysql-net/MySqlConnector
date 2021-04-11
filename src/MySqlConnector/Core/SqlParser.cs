@@ -218,7 +218,10 @@ namespace MySqlConnector.Core
 						state = State.Hyphen;
 					}
 					else if (ch == '/' && index < sql.Length - 1 && sql[index + 1] == '*')
+					{
+						beforeCommentState = state;
 						state = State.ForwardSlash;
+					}
 					else if (ch == '\'')
 						state = State.SingleQuotedString;
 					else if (ch == '"')

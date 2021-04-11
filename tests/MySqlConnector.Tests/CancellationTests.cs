@@ -37,7 +37,7 @@ namespace MySqlConnector.Tests
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 1;
-				command.CommandText = $"SELECT {4000 + step};";
+				command.CommandText = $"SELECT 0, 4000, {step}, 0;";
 				var stopwatch = Stopwatch.StartNew();
 				var ex = Assert.Throws<MySqlException>(() => s_executeMethods[method](command));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
@@ -53,13 +53,60 @@ namespace MySqlConnector.Tests
 
 			[SkipCITheory]
 			[MemberData(nameof(GetAsyncMethodSteps))]
-			public async Task ExecuteAsyncs(int step, int method)
+			public async Task ExecuteAsync(int step, int method)
 			{
 				using var connection = new MySqlConnection(m_csb.ConnectionString);
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 1;
-				command.CommandText = $"SELECT {4000 + step};";
+				command.CommandText = $"SELECT 0, 4000, {step}, 0;";
+				var stopwatch = Stopwatch.StartNew();
+				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
+				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+				var inner = Assert.IsType<MySqlException>(ex.InnerException);
+				Assert.Equal(MySqlErrorCode.QueryInterrupted, inner.ErrorCode);
+
+				// connection should still be usable
+				Assert.Equal(ConnectionState.Open, connection.State);
+				command.CommandText = "SELECT 1;";
+				Assert.Equal(1, command.ExecuteScalar());
+			}
+		}
+
+		public class CancelBufferedWithCommandTimeout : CancellationTests
+		{
+			[SkipCITheory]
+			[MemberData(nameof(GetSyncMethodSteps))]
+			public void Execute(int step, int method)
+			{
+				using var connection = new MySqlConnection(m_csb.ConnectionString);
+				connection.Open();
+				using var command = connection.CreateCommand();
+				command.CommandTimeout = 1;
+				command.CommandText = $"SELECT 0, 4000, {step}, 2;";
+				var stopwatch = Stopwatch.StartNew();
+				var ex = Assert.Throws<MySqlException>(() => s_executeMethods[method](command));
+				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
+				Assert.Equal(MySqlErrorCode.CommandTimeoutExpired, ex.ErrorCode);
+				var inner = Assert.IsType<MySqlException>(ex.InnerException);
+				Assert.Equal(MySqlErrorCode.QueryInterrupted, inner.ErrorCode);
+
+				// connection should still be usable
+				Assert.Equal(ConnectionState.Open, connection.State);
+				command.CommandText = "SELECT 1;";
+				Assert.Equal(1, command.ExecuteScalar());
+			}
+
+			[SkipCITheory]
+			[MemberData(nameof(GetAsyncMethodSteps))]
+			public async Task ExecuteAsync(int step, int method)
+			{
+				using var connection = new MySqlConnection(m_csb.ConnectionString);
+				connection.Open();
+				using var command = connection.CreateCommand();
+				command.CommandTimeout = 1;
+				command.CommandText = $"SELECT 0, 4000, {step}, 2;";
 				var stopwatch = Stopwatch.StartNew();
 				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
@@ -84,7 +131,7 @@ namespace MySqlConnector.Tests
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 10;
-				command.CommandText = $"SELECT {4000 + step};";
+				command.CommandText = $"SELECT 0, 4000, {step}, 0;";
 				var task = Task.Run(async () =>
 				{
 					await Task.Delay(TimeSpan.FromSeconds(1));
@@ -111,7 +158,7 @@ namespace MySqlConnector.Tests
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 10;
-				command.CommandText = $"SELECT {4000 + step};";
+				command.CommandText = $"SELECT 0, 4000, {step}, 0;";
 				var task = Task.Run(async () =>
 				{
 					await Task.Delay(TimeSpan.FromSeconds(1));
@@ -141,7 +188,7 @@ namespace MySqlConnector.Tests
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 0;
-				command.CommandText = $"SELECT {4000 + step};";
+				command.CommandText = $"SELECT 0, 4000, {step}, 0;";
 				using var source = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 				var stopwatch = Stopwatch.StartNew();
 				var ex = await Assert.ThrowsAsync<OperationCanceledException>(async () => await s_executeAsyncMethods[method](command, source.Token));
@@ -166,14 +213,13 @@ namespace MySqlConnector.Tests
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 1;
-				var expected = 100 + step;
-				command.CommandText = $"SELECT {expected};";
+				command.CommandText = $"SELECT 42, 100, {step}, 0;";
 				var stopwatch = Stopwatch.StartNew();
 				var result = s_executeMethods[method](command);
 				if (method == 1)
 					Assert.Equal(0, result); // ExecuteNonQuery
 				else
-					Assert.Equal(expected, result);
+					Assert.Equal(42, result);
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 50, 250);
 			}
 		}
@@ -188,15 +234,14 @@ namespace MySqlConnector.Tests
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 0;
-				var expected = 100 + step;
-				command.CommandText = $"SELECT {expected};";
+				command.CommandText = $"SELECT 42, 100, {step}, 0;";
 				using var source = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 				var stopwatch = Stopwatch.StartNew();
 				var result = await s_executeAsyncMethods[method](command, source.Token);
 				if (method == 1)
 					Assert.Equal(0, result); // ExecuteNonQuery
 				else
-					Assert.Equal(expected, result);
+					Assert.Equal(42, result);
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 50, 250);
 			}
 		}
@@ -212,7 +257,7 @@ namespace MySqlConnector.Tests
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 1;
-				command.CommandText = $"SELECT 100;";
+				command.CommandText = $"SELECT 0, 100, -1, 0;";
 				var stopwatch = Stopwatch.StartNew();
 				var ex = Assert.Throws<MySqlException>(() => s_executeMethods[method](command));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
@@ -229,10 +274,10 @@ namespace MySqlConnector.Tests
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 1;
-				command.CommandText = $"SELECT 100;";
+				command.CommandText = $"SELECT 42, 100, -1, 0;";
 				var stopwatch = Stopwatch.StartNew();
 				var result = s_executeMethods[method](command);
-				Assert.Equal(100, result);
+				Assert.Equal(42, result);
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 1100, 1500);
 			}
 		}
@@ -248,7 +293,7 @@ namespace MySqlConnector.Tests
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 1;
-				command.CommandText = $"SELECT 100;";
+				command.CommandText = $"SELECT 0, 100, -1, 0;";
 				var stopwatch = Stopwatch.StartNew();
 				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
@@ -265,10 +310,10 @@ namespace MySqlConnector.Tests
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 1;
-				command.CommandText = $"SELECT 100;";
+				command.CommandText = $"SELECT 42, 100, -1, 0;";
 				var stopwatch = Stopwatch.StartNew();
 				var result = await s_executeAsyncMethods[method](command, default);
-				Assert.Equal(100, result);
+				Assert.Equal(42, result);
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 1100, 1500);
 			}
 		}
@@ -283,7 +328,7 @@ namespace MySqlConnector.Tests
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 1;
-				command.CommandText = $"SELECT {10000 + step};";
+				command.CommandText = $"SELECT 0, 10000, {step}, 1;";
 				var stopwatch = Stopwatch.StartNew();
 				var ex = Assert.Throws<MySqlException>(() => s_executeMethods[method](command));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 2900, 3500);
@@ -305,7 +350,7 @@ namespace MySqlConnector.Tests
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 1;
-				command.CommandText = $"SELECT {10000 + step};";
+				command.CommandText = $"SELECT 0, 10000, {step}, 1;";
 				var stopwatch = Stopwatch.StartNew();
 				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 2900, 3500);
@@ -328,7 +373,7 @@ namespace MySqlConnector.Tests
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 1;
-				command.CommandText = $"SELECT {10000 + step};";
+				command.CommandText = $"SELECT 0, 10000, {step}, 1;";
 				var stopwatch = Stopwatch.StartNew();
 				var ex = Assert.Throws<MySqlException>(() => s_executeMethods[method](command));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);
@@ -348,7 +393,7 @@ namespace MySqlConnector.Tests
 				connection.Open();
 				using var command = connection.CreateCommand();
 				command.CommandTimeout = 1;
-				command.CommandText = $"SELECT {10000 + step};";
+				command.CommandText = $"SELECT 0, 10000, {step}, 1;";
 				var stopwatch = Stopwatch.StartNew();
 				var ex = await Assert.ThrowsAsync<MySqlException>(async () => await s_executeAsyncMethods[method](command, default));
 				Assert.InRange(stopwatch.ElapsedMilliseconds, 900, 1500);

@@ -260,6 +260,7 @@ namespace MySqlConnector
 
 		internal async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			Volatile.Write(ref m_commandTimedOut, false);
 			this.ResetCommandTimeout();
 			using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
 			using var reader = await ExecuteReaderNoResetTimeoutAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -277,6 +278,7 @@ namespace MySqlConnector
 
 		internal async Task<object?> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			Volatile.Write(ref m_commandTimedOut, false);
 			this.ResetCommandTimeout();
 			using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
 			var hasSetResult = false;
@@ -306,6 +308,7 @@ namespace MySqlConnector
 
 		internal async Task<MySqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
+			Volatile.Write(ref m_commandTimedOut, false);
 			this.ResetCommandTimeout();
 			using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
 			return await ExecuteReaderNoResetTimeoutAsync(behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -364,8 +367,6 @@ namespace MySqlConnector
 
 		void ICancellableCommand.SetTimeout(int milliseconds)
 		{
-			Volatile.Write(ref m_commandTimedOut, false);
-
 			if (m_cancelTimerId != 0)
 				TimerQueue.Instance.Remove(m_cancelTimerId);
 
