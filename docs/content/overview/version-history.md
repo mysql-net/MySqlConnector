@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-03-07
+lastmod: 2021-04-11
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,12 @@ weight: 30
 ---
 
 # Version History
+
+### 1.3.3
+
+* Support `Enum` parameters in prepared commands: [#965](https://github.com/mysql-net/MySqlConnector/issues/965).
+* Fix `OverflowException` reading `OkPayload`: [#966](https://github.com/mysql-net/MySqlConnector/issues/966).
+* Fix internal SQL parsing error with C-style comments.
 
 ### 1.3.2
 
