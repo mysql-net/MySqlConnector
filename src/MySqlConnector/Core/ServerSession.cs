@@ -161,7 +161,7 @@ namespace MySqlConnector.Core
 				}
 
 				var parameterCount = cachedProcedure.Parameters.Count;
-#if NETCOREAPP2_1 || NETCOREAPP3_1 || NETSTANDARD2_1 || NET5_0
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
 				commandToPrepare = string.Create(commandText.Length + 7 + parameterCount * 2 + (parameterCount == 0 ? 1 : 0), (commandText, parameterCount), static (buffer, state) =>
 				{
 					buffer[0] = 'C';
