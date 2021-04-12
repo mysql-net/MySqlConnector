@@ -166,7 +166,7 @@ out param6 bool",
 param1 boolean,
 param2 nvarchar,
 param3 real(20,10),
-	-- ignored INT	
+	-- ignored INT
 param4 INTEGER(3)
 ",
 					new object[]
@@ -183,20 +183,33 @@ param4 INTEGER(3)
 		[Theory]
 		[InlineData("INT", "INT", false, 0)]
 		[InlineData("INTEGER", "INT", false, 0)]
+		[InlineData("INTEGER UNSIGNED", "INT", true, 0)]
 		[InlineData("INT(11)", "INT", false, 11)]
 		[InlineData("INTEGER(11)", "INT", false, 11)]
 		[InlineData("INT(11) UNSIGNED", "INT", true, 11)]
+		[InlineData("INT(11) UNSIGNED NOT NULL", "INT", true, 11)]
+		[InlineData("INT(11) UNSIGNED NULL", "INT", true, 11)]
+		[InlineData("INT(11) UNSIGNED NULL DEFAULT NULL", "INT", true, 11)]
 		[InlineData("INT(11) ZEROFILL", "INT", false, 11)]
 		[InlineData("INT(11) UNSIGNED ZEROFILL", "INT", true, 11)]
 		[InlineData("BIGINT(20)", "BIGINT", false, 20)]
 		[InlineData("TINYINT(1) UNSIGNED", "TINYINT", true, 1)]
 		[InlineData("BOOL", "TINYINT", false, 1)]
+		[InlineData("Bool", "TINYINT", false, 1)]
 		[InlineData("NUMERIC(30,20)", "DECIMAL", false, 30)]
 		[InlineData("VARCHAR(300)", "VARCHAR", false, 300)]
 		[InlineData("VARCHAR(300) CHARSET utf8mb4", "VARCHAR", false, 300)]
 		[InlineData("VARCHAR(300) COLLATE ascii_general_ci", "VARCHAR", false, 300)]
+		[InlineData("VARCHAR(300) COLLATE ascii_general_ci NOT NULL DEFAULT 'test'", "VARCHAR", false, 300)]
+		[InlineData("CHARACTER VARYING(300) COLLATE ascii_general_ci NOT NULL DEFAULT 'test'", "VARCHAR", false, 300)]
+		[InlineData("NATIONAL VARCHAR(50) COLLATE ascii_general_ci NOT NULL DEFAULT 'test'", "VARCHAR", false, 50)]
 		[InlineData("BINARY(16)", "BINARY", false, 16)]
+		[InlineData("CHAR BYTE(16)", "BINARY", false, 16)]
 		[InlineData("CHAR(36)", "CHAR", false, 36)]
+		[InlineData("REAL", "DOUBLE", false, 0)]
+		[InlineData("REAL NOT NULL DEFAULT 0", "DOUBLE", false, 0)]
+		[InlineData("NUMERIC(12)", "DECIMAL", false, 12)]
+		[InlineData("FIXED(12)", "DECIMAL", false, 12)]
 		[InlineData("ENUM('a','b','c')", "ENUM", false, 0)]
 		public void ParseDataType(string sql, string expectedDataType, bool expectedUnsigned, int expectedLength)
 		{
