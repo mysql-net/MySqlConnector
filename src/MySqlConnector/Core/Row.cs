@@ -370,19 +370,40 @@ namespace MySqlConnector.Core
 
 		public string GetString(int ordinal) => (string) GetValue(ordinal);
 
+		protected abstract decimal GetDecimalCore(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
+
 		public decimal GetDecimal(int ordinal)
 		{
-			var value = GetValue(ordinal);
-			if (value is decimal) // happy flow
-				return (decimal) value;
+			if (ordinal < 0 || ordinal > ResultSet.ColumnDefinitions!.Length)
+				throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ResultSet.ColumnDefinitions!.Length));
 
-			if (value is double doubleValue)
-				return (decimal) doubleValue;
+			if (m_dataOffsets[ordinal] == -1)
+				throw new InvalidCastException();
 
-			if (value is float floatValue)
-				return (decimal) floatValue;
+			var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
+			if (columnDefinition.ColumnType is not ColumnType.Decimal and not ColumnType.NewDecimal and not ColumnType.Float and not ColumnType.Double and not ColumnType.Tiny and not ColumnType.Short
+				and not ColumnType.Int24 and not ColumnType.Long and not ColumnType.Longlong
+				and not ColumnType.Bit and not ColumnType.Year)
+			{
+				throw new InvalidCastException("Can't convert {0} to Decimal".FormatInvariant(ResultSet.ColumnTypes![ordinal]));
+			}
 
-			return (decimal) value;
+			var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
+
+			if (columnDefinition.ColumnType == ColumnType.Bit)
+				return checked((decimal) ReadBit(data, columnDefinition));
+
+			var result = GetDecimalCore(data, columnDefinition);
+			if (columnDefinition.ColumnType == ColumnType.Tiny &&
+				Connection.TreatTinyAsBoolean &&
+				columnDefinition.ColumnLength == 1 &&
+				(columnDefinition.ColumnFlags & ColumnFlags.Unsigned) == 0 &&
+				result != 0)
+			{
+				// coerce all non-zero TINYINT(1) results to 1, since it represents a BOOL value
+				result = 1;
+			}
+			return result;
 		}
 
 		public double GetDouble(int ordinal)

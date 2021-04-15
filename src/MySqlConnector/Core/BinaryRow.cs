@@ -77,6 +77,23 @@ namespace MySqlConnector.Core
 			};
 		}
 
+		protected override decimal GetDecimalCore(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+		{
+			var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
+			return columnDefinition.ColumnType switch
+			{
+				ColumnType.Tiny => isUnsigned ? (decimal) data[0] : (sbyte) data[0],
+				ColumnType.Decimal or ColumnType.NewDecimal => Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) && bytesConsumed == data.Length ? decimalValue : throw new FormatException(),
+				ColumnType.Int24 or ColumnType.Long => isUnsigned ? checked((int) MemoryMarshal.Read<uint>(data)) : MemoryMarshal.Read<int>(data),
+				ColumnType.Longlong => isUnsigned ? checked((int) MemoryMarshal.Read<ulong>(data)) : checked((int) MemoryMarshal.Read<long>(data)),
+				ColumnType.Short => isUnsigned ? (int) MemoryMarshal.Read<ushort>(data) : MemoryMarshal.Read<short>(data),
+				ColumnType.Year => MemoryMarshal.Read<short>(data),
+				ColumnType.Float => (decimal) MemoryMarshal.Read<float>(data),
+				ColumnType.Double => (decimal) MemoryMarshal.Read<double>(data),
+				_ => throw new FormatException(),
+			};
+		}
+
 		protected override object GetValueCore(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 		{
 			var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
