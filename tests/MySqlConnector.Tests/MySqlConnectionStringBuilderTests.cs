@@ -136,8 +136,8 @@ namespace MySqlConnector.Tests
 					"server spn=mariadb/host.example.com@EXAMPLE.COM;" +
 					"use xa transactions=false;" +
 					"tls cipher suites=TLS_AES_128_CCM_8_SHA256,TLS_RSA_WITH_RC4_128_MD5;" +
-#endif
 					"ignore prepare=true;" +
+#endif
 					"interactive=true;" +
 					"Keep Alive=90;" +
 					"minpoolsize=5;" +

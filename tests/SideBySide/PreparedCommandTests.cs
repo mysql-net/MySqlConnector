@@ -394,9 +394,10 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 				yield return new object[] { isPrepared, "BINARY(5)", new byte[] { 5, 6, 7, 8, 9 }, MySqlDbType.Binary };
 				yield return new object[] { isPrepared, "VARBINARY(100)", new byte[] { 7, 8, 9, 10 }, MySqlDbType.VarBinary };
 				yield return new object[] { isPrepared, "BLOB", new byte[] { 5, 4, 3, 2, 1 }, MySqlDbType.Blob };
-#if !BASELINE // https://bugs.mysql.com/bug.php?id=101252
-				yield return new object[] { isPrepared, "CHAR(36)", new Guid("00112233-4455-6677-8899-AABBCCDDEEFF"), MySqlDbType.Guid };
+#if BASELINE // https://bugs.mysql.com/bug.php?id=103390
+				if (!isPrepared)
 #endif
+				yield return new object[] { isPrepared, "CHAR(36)", new Guid("00112233-4455-6677-8899-AABBCCDDEEFF"), MySqlDbType.Guid };
 				yield return new object[] { isPrepared, "FLOAT", 12.375f, MySqlDbType.Float };
 				yield return new object[] { isPrepared, "DOUBLE", 14.21875, MySqlDbType.Double };
 				yield return new object[] { isPrepared, "DECIMAL(9,3)", 123.45m, MySqlDbType.Decimal };
