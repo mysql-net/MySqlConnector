@@ -24,7 +24,7 @@ PORT=$2
 OMIT_FEATURES=$3
 MYSQL_EXTRA=
 
-if [ "$IMAGE" == "mysql:8.0" ]; then
+if [ "$IMAGE" == "mysql:8.0.23" ]; then
   MYSQL_EXTRA='--default-authentication-plugin=mysql_native_password'
 fi
 

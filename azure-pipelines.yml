@@ -205,7 +205,7 @@ jobs:
         image: 'mysql:5.7'
         unsupportedFeatures: 'Ed25519,CachingSha2Password,Tls11,Tls13,UuidToBin'
       'MySQL 8.0':
-        image: 'mysql:8.0'
+        image: 'mysql:8.0.23'
         unsupportedFeatures: 'Ed25519,Tls11'
       'MariaDB 10.2':
         image: 'mariadb:10.2'
