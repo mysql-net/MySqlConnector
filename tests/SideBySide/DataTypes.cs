@@ -660,7 +660,7 @@ insert into guid_format(c36, c32, b16, tsb16, leb16, t, b) values(
 #endif
 		}
 
-		[Theory]
+		[SkippableTheory(ServerFeatures.ZeroDateTime)]
 		[InlineData(false)]
 		[InlineData(true)]
 		public void QueryZeroDateTime(bool convertZeroDateTime)
