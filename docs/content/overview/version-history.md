@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-04-11
+lastmod: 2021-04-21
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,12 @@ weight: 30
 ---
 
 # Version History
+
+### 1.3.4
+
+* Improve compatibility with MySQL Server 8.0.24:
+  * Ignore new `ER_CLIENT_INTERACTION_TIMEOUT` error packet sent to timed-out connections: [#970](https://github.com/mysql-net/MySqlConnector/issues/970).
+  * Known Issue: Connections with `UseCompression=true` may throw a `MySqlProtocolException` when timed out.
 
 ### 1.3.3
 
