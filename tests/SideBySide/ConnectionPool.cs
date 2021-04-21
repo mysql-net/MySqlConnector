@@ -175,8 +175,19 @@ namespace SideBySide
 
 			using (var connection = new MySqlConnection(csb.ConnectionString))
 			{
-				await connection.OpenAsync();
-				Assert.NotEqual(serverThread, connection.ServerThread);
+#if !BASELINE
+				try
+#endif
+				{
+					await connection.OpenAsync();
+					Assert.NotEqual(serverThread, connection.ServerThread);
+				}
+#if !BASELINE
+				catch (MySqlProtocolException) when (csb.UseCompression)
+				{
+					// workaround for https://bugs.mysql.com/bug.php?id=103412
+				}
+#endif
 			}
 		}
 
