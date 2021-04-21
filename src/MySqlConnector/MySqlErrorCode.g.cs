@@ -3230,5 +3230,10 @@ namespace MySqlConnector
 		/// ER_CANT_EXECUTE_IN_READ_ONLY_TRANSACTION
 		/// </summary>
 		CannotExecuteInReadOnlyTransaction = 1792,
+
+		/// <summary>
+		/// ER_CLIENT_INTERACTION_TIMEOUT
+		/// </summary>
+		ClientInteractionTimeout = 4031
 	}
 }

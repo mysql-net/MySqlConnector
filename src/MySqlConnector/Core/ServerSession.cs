@@ -584,6 +584,10 @@ namespace MySqlConnector.Core
 			{
 				Log.Debug(ex, "Session{0} ignoring IOException in TryResetConnectionAsync", m_logArguments);
 			}
+			catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.ClientInteractionTimeout)
+			{
+				Log.Debug(ex, "Session{0} ignoring ClientInteractionTimeout MySqlException in TryResetConnectionAsync", m_logArguments);
+			}
 			catch (ObjectDisposedException ex)
 			{
 				Log.Debug(ex, "Session{0} ignoring ObjectDisposedException in TryResetConnectionAsync", m_logArguments);
@@ -794,6 +798,10 @@ namespace MySqlConnector.Core
 			catch (IOException ex)
 			{
 				Log.Debug(ex, "Session{0} ping failed due to IOException", m_logArguments);
+			}
+			catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.ClientInteractionTimeout)
+			{
+				Log.Debug(ex, "Session{0} ping failed due to ClientInteractionTimeout MySqlException", m_logArguments);
 			}
 			catch (SocketException ex)
 			{
@@ -1584,7 +1592,6 @@ namespace MySqlConnector.Core
 
 		internal void SetFailed(Exception exception)
 		{
-			m_logArguments[1] = exception.Message;
 			Log.Info(exception, "Session{0} setting state to Failed", m_logArguments);
 			lock (m_lock)
 				m_state = State.Failed;
@@ -1677,7 +1684,10 @@ namespace MySqlConnector.Core
 			var errorPayload = ErrorPayload.Create(span);
 			if (Log.IsDebugEnabled())
 				Log.Debug("Session{0} got error payload: Code={1}, State={2}, Message={3}", m_logArguments[0], errorPayload.ErrorCode, errorPayload.State, errorPayload.Message);
-			return errorPayload.ToException();
+			var exception = errorPayload.ToException();
+			if (exception.ErrorCode is MySqlErrorCode.ClientInteractionTimeout)
+				SetFailed(exception);
+			return exception;
 		}
 
 		private void ClearPreparedStatements()
