@@ -1,5 +1,5 @@
 ---
-lastmod: 2019-08-01
+lastmod: 2021-04-22
 date: 2019-07-30
 menu:
   main:
@@ -99,10 +99,8 @@ using (sshClient)
 		Password = databasePassword,
 	};
 
-	using (var connection = new MySqlConnection(csb.ConnectionString))
-	{
-		connection.Open();
-	}
+	using var connection = new MySqlConnection(csb.ConnectionString);
+	connection.Open();
 }
 ```
 
@@ -115,7 +113,7 @@ is reachable from the SSH Server, but not from the client computer), use the fol
 var sshServer = "your ssh server";
 var sshUserName = "your SSH user name";
 var sshPassword = "your SSH password";
-var databaseServer = "your ssh server";
+var databaseServer = "your database server";
 var databaseUserName = "your database user name";
 var databasePassword = "your database password";
 
@@ -130,9 +128,7 @@ using (sshClient)
 		Password = databasePassword,
 	};
 
-	using (var connection = new MySqlConnection(csb.ConnectionString))
-	{
-		connection.Open();
-	}
+	using var connection = new MySqlConnection(csb.ConnectionString);
+	connection.Open();
 }
 ```
