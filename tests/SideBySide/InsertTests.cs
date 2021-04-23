@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 #if BASELINE
@@ -246,6 +247,29 @@ create table insert_stream(rowid integer not null primary key auto_increment, st
 			Assert.True(reader.Read());
 			Assert.Equal("abcd", reader.GetValue(0));
 			Assert.Equal(new byte[] { 97, 98, 99, 100 }, reader.GetValue(1));
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void InsertStringBuilder(bool prepare)
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+			connection.Execute(@"drop table if exists insert_string_builder;
+create table insert_string_builder(rowid integer not null primary key auto_increment, str text);");
+
+			var value = "\aAB\\12'ab\\'\\'";
+			using var cmd = connection.CreateCommand();
+			cmd.CommandText = @"insert into insert_string_builder(str) values(@str);";
+			cmd.Parameters.AddWithValue("@str", new StringBuilder(value));
+			if (prepare)
+				cmd.Prepare();
+			cmd.ExecuteNonQuery();
+
+			using var reader = connection.ExecuteReader(@"select str from insert_string_builder order by rowid;");
+			Assert.True(reader.Read());
+			Assert.Equal(value, reader.GetValue(0));
 		}
 
 		[Fact]

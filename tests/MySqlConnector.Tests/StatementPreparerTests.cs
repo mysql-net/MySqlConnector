@@ -178,6 +178,8 @@ SELECT @'var' as R")]
 				new object[] { new byte[] { 0x41, 0x42, 0x27, 0x61 }, "_binary'AB\\'a'" },
 				new object[] { new MemoryStream(new byte[] { 0x41, 0x42, 0x27, 0x61 }), "_binary'AB\\'a'" },
 				new object[] { new MemoryStream(new byte[] { 0, 0x41, 0x42, 0x27, 0x61, 0x62 }, 1, 4, false, true), "_binary'AB\\'a'" },
+				new object[] { "\"AB\\ab'".AsMemory(), @"'""AB\\ab'''" },
+				new object[] { new StringBuilder("\"AB\\ab'"), @"'""AB\\ab'''" },
 			};
 
 		[Theory]

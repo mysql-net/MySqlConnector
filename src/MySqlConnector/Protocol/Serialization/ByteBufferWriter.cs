@@ -241,12 +241,23 @@ namespace MySqlConnector.Protocol.Serialization
 			}
 		}
 
+#if NET45 || NETSTANDARD1_3
 		public static void WriteLengthEncodedString(this ByteBufferWriter writer, string value)
 		{
 			var byteCount = Encoding.UTF8.GetByteCount(value);
 			writer.WriteLengthEncodedInteger((ulong) byteCount);
 			writer.Write(value);
 		}
+#else
+		public static void WriteLengthEncodedString(this ByteBufferWriter writer, string value) => writer.WriteLengthEncodedString(value.AsSpan());
+
+		public static void WriteLengthEncodedString(this ByteBufferWriter writer, ReadOnlySpan<char> value)
+		{
+			var byteCount = Encoding.UTF8.GetByteCount(value);
+			writer.WriteLengthEncodedInteger((ulong) byteCount);
+			writer.Write(value);
+		}
+#endif
 
 		public static void WriteNullTerminatedString(this ByteBufferWriter writer, string value)
 		{
