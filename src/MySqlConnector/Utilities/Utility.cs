@@ -77,6 +77,16 @@ namespace MySqlConnector.Utilities
 				encoder.Convert(charsPtr, chars.Length, bytesPtr is null ? (byte*) 1 : bytesPtr, bytes.Length, flush, out charsUsed, out bytesUsed, out completed);
 			}
 		}
+
+		public static unsafe int GetByteCount(this Encoder encoder, ReadOnlySpan<char> chars, bool flush)
+		{
+			fixed (char* charsPtr = &MemoryMarshal.GetReference(chars))
+			{
+				// MemoryMarshal.GetNonNullPinnableReference is internal, so fake it by using an invalid but non-null pointer; this
+				// prevents Convert from throwing an exception when the output buffer is empty
+				return encoder.GetByteCount(charsPtr, chars.Length, flush);
+			}
+		}
 #endif
 
 		/// <summary>
