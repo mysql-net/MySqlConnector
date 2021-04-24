@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-04-23
+lastmod: 2021-04-24
 date: 2017-03-27
 menu:
   main:
@@ -10,9 +10,13 @@ weight: 30
 
 # Version History
 
+### 1.3.6
+
+* Add NuGet Package ReadMe: [#978](https://github.com/mysql-net/MySqlConnector/issues/978).
+
 ### 1.3.5
 
-* Support `StringBuilder`, `Memory<char>`, and `ReadOnlyMemory<char>` as `MySqlParameter.Value` values: [#975](https://github.com/mysql-net/MySqlConnector/issues/975)
+* Support `StringBuilder`, `Memory<char>`, and `ReadOnlyMemory<char>` as `MySqlParameter.Value` values: [#975](https://github.com/mysql-net/MySqlConnector/issues/975).
 * Fix `ArgumentException` in `MySqlBulkCopy`: [#974](https://github.com/mysql-net/MySqlConnector/issues/974).
 
 ### 1.3.4
