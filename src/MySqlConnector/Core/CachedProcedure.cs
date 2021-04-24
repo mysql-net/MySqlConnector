@@ -154,7 +154,7 @@ namespace MySqlConnector.Core
 				return new List<CachedParameter>();
 
 			// strip precision specifier containing comma
-			parametersSql = Regex.Replace(parametersSql, @"(DECIMAL|DEC|FIXED|NUMERIC|FLOAT|DOUBLE PRECISION|DOUBLE|REAL)\s*\(\d+(,\s*\d+)\)", @"$1", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+			parametersSql = Regex.Replace(parametersSql, @"(DECIMAL|DEC|FIXED|NUMERIC|FLOAT|DOUBLE PRECISION|DOUBLE|REAL)\s*\([0-9]+(,\s*[0-9]+)\)", @"$1", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
 			// strip enum values containing commas (these would have been stripped by ParseDataType anyway)
 			parametersSql = Regex.Replace(parametersSql, @"ENUM\s*\([^)]+\)", "ENUM", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
@@ -194,60 +194,34 @@ namespace MySqlConnector.Core
 
 		internal static string ParseDataType(string sql, out bool unsigned, out int length)
 		{
-			if (sql.EndsWith(" ZEROFILL", StringComparison.OrdinalIgnoreCase))
-				sql = sql.Substring(0, sql.Length - 9);
-			unsigned = false;
-			if (sql.EndsWith(" UNSIGNED", StringComparison.OrdinalIgnoreCase))
-			{
-				unsigned = true;
-				sql = sql.Substring(0, sql.Length - 9);
-			}
 			sql = Regex.Replace(sql, " (CHARSET|CHARACTER SET) [A-Za-z0-9_]+", "", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 			sql = Regex.Replace(sql, " (COLLATE) [A-Za-z0-9_]+", "", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 			sql = Regex.Replace(sql, @"ENUM\s*\([^)]+\)", "ENUM", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
 			length = 0;
-			var match = Regex.Match(sql, @"\s*\(\s*(\d+)\s*(?:,\s*\d+\s*)?\)");
+			var match = Regex.Match(sql, @"\s*\(\s*([0-9]+)\s*(?:,\s*[0-9]+\s*)?\)");
 			if (match.Success)
 			{
 				length = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
-				sql = Regex.Replace(sql, @"\s*\(\s*\d+\s*(?:,\s*\d+\s*)?\)", "");
+				sql = Regex.Replace(sql, @"\s*\(\s*[0-9]+\s*(?:,\s*[0-9]+\s*)?\)", "");
 			}
 
-			sql = sql.Trim();
+			var list = sql.Trim().Split(new char[] {' '});
+			var type = string.Empty;
 
-			// normalize alternate data type names
-			if (sql.Equals("BOOL", StringComparison.OrdinalIgnoreCase) || sql.Equals("BOOLEAN", StringComparison.OrdinalIgnoreCase))
+			if (list.Length < 2 || !s_typeMapping.TryGetValue(list[0] + ' ' + list[1], out type))
 			{
-				sql = "TINYINT";
-				length = 1;
-			}
-			else if (sql.Equals("INTEGER", StringComparison.OrdinalIgnoreCase))
-			{
-				sql = "INT";
-			}
-			else if (sql.Equals("NUMERIC", StringComparison.OrdinalIgnoreCase) || sql.Equals("FIXED", StringComparison.OrdinalIgnoreCase))
-			{
-				sql = "DECIMAL";
-			}
-			else if (sql.Equals("REAL", StringComparison.OrdinalIgnoreCase) || sql.Equals("DOUBLE PRECISION", StringComparison.OrdinalIgnoreCase))
-			{
-				sql = "DOUBLE";
-			}
-			else if (sql.Equals("NVARCHAR", StringComparison.OrdinalIgnoreCase) || sql.Equals("CHARACTER VARYING", StringComparison.OrdinalIgnoreCase) || sql.Equals("NATIONAL VARCHAR", StringComparison.OrdinalIgnoreCase))
-			{
-				sql = "VARCHAR";
-			}
-			else if (sql.Equals("NCHAR", StringComparison.OrdinalIgnoreCase) || sql.Equals("CHARACTER", StringComparison.OrdinalIgnoreCase) || sql.Equals("NATIONAL CHAR", StringComparison.OrdinalIgnoreCase))
-			{
-				sql = "CHAR";
-			}
-			else if (sql.Equals("CHAR BYTE", StringComparison.OrdinalIgnoreCase))
-			{
-				sql = "BINARY";
+				if (s_typeMapping.TryGetValue(list[0], out type))
+				{
+					if (list[0].StartsWith("BOOL", StringComparison.OrdinalIgnoreCase))
+					{
+						length = 1;
+					}
+				}
 			}
 
-			return sql;
+			unsigned = list.Contains("UNSIGNED", StringComparer.OrdinalIgnoreCase);
+			return type ?? list[0];
 		}
 
 		private static CachedParameter CreateCachedParameter(int ordinal, string? direction, string name, string dataType, bool unsigned, int length, string originalSql)
@@ -265,6 +239,23 @@ namespace MySqlConnector.Core
 		string FullyQualified => $"`{m_schema}`.`{m_component}`";
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(CachedProcedure));
+		static readonly IReadOnlyDictionary<string, string> s_typeMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+		{
+			{ "BOOL", "TINYINT" },
+			{ "BOOLEAN", "TINYINT" },
+			{ "INTEGER", "INT" },
+			{ "NUMERIC", "DECIMAL" },
+			{ "FIXED", "DECIMAL" },
+			{ "REAL", "DOUBLE" },
+			{ "DOUBLE PRECISION", "DOUBLE" },
+			{ "NVARCHAR", "VARCHAR" },
+			{ "CHARACTER VARYING", "VARCHAR" },
+			{ "NATIONAL VARCHAR", "VARCHAR" },
+			{ "NCHAR", "CHAR" },
+			{ "CHARACTER", "CHAR" },
+			{ "NATIONAL CHAR", "CHAR" },
+			{ "CHAR BYTE", "BINARY" }
+		};
 
 		readonly string m_schema;
 		readonly string m_component;

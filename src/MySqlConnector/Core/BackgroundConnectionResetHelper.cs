@@ -124,7 +124,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		internal struct SessionResetTask
+		internal readonly struct SessionResetTask
 		{
 			public SessionResetTask(ServerSession session, Task<bool> resetTask, MySqlConnection? owningConnection)
 			{

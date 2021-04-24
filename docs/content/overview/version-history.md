@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-03-07
+lastmod: 2021-04-24
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,32 @@ weight: 30
 ---
 
 # Version History
+
+### 1.3.7
+
+* Add support for [SingleStore](https://www.singlestore.com/): [#968](https://github.com/mysql-net/MySqlConnector/pull/968).
+* Thanks to [Carl Sverre](https://github.com/carlsverre) and [Tigran Avanesov](https://github.com/tavanesov-ua) for contributions to this release.
+
+### 1.3.6
+
+* Add NuGet Package ReadMe: [#978](https://github.com/mysql-net/MySqlConnector/issues/978).
+
+### 1.3.5
+
+* Support `StringBuilder`, `Memory<char>`, and `ReadOnlyMemory<char>` as `MySqlParameter.Value` values: [#975](https://github.com/mysql-net/MySqlConnector/issues/975).
+* Fix `ArgumentException` in `MySqlBulkCopy`: [#974](https://github.com/mysql-net/MySqlConnector/issues/974).
+
+### 1.3.4
+
+* Improve compatibility with MySQL Server 8.0.24:
+  * Ignore new `ER_CLIENT_INTERACTION_TIMEOUT` error packet sent to timed-out connections: [#970](https://github.com/mysql-net/MySqlConnector/issues/970).
+  * Known Issue: Connections with `UseCompression=true` may throw a `MySqlProtocolException` when timed out.
+
+### 1.3.3
+
+* Support `Enum` parameters in prepared commands: [#965](https://github.com/mysql-net/MySqlConnector/issues/965).
+* Fix `OverflowException` reading `OkPayload`: [#966](https://github.com/mysql-net/MySqlConnector/issues/966).
+* Fix internal SQL parsing error with C-style comments.
 
 ### 1.3.2
 

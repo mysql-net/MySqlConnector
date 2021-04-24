@@ -1,4 +1,5 @@
 using System.Data;
+using System.Threading.Tasks;
 using Dapper;
 #if BASELINE
 using MySql.Data.MySqlClient;
@@ -35,7 +36,7 @@ namespace SideBySide
 		}
 
 		[SkippableFact(ConfigSettings.CsvFile)]
-		public async void CommandLoadCsvFile()
+		public async Task CommandLoadCsvFile()
 		{
 			var insertInlineCommand = string.Format(m_loadDataInfileCommand, "", AppConfig.MySqlBulkLoaderCsvFile.Replace("\\", "\\\\"));
 			using var command = new MySqlCommand(insertInlineCommand, m_database.Connection);
@@ -46,7 +47,7 @@ namespace SideBySide
 		}
 
 		[SkippableFact(ConfigSettings.LocalCsvFile | ConfigSettings.TrustedHost)]
-		public async void CommandLoadLocalCsvFile()
+		public async Task CommandLoadLocalCsvFile()
 		{
 			var insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL",
 				AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));
@@ -62,7 +63,7 @@ namespace SideBySide
 		}
 
 		[SkippableFact(ConfigSettings.LocalCsvFile | ConfigSettings.TrustedHost, Baseline = "Doesn't require trusted host for LOAD DATA LOCAL INFILE")]
-		public async void ThrowsNotSupportedExceptionForNotTrustedHostAndNotStream()
+		public async Task ThrowsNotSupportedExceptionForNotTrustedHostAndNotStream()
 		{
 			var insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL",
 				AppConfig.MySqlBulkLoaderLocalCsvFile.Replace("\\", "\\\\"));

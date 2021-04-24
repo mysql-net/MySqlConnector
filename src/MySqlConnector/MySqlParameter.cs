@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Text;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -218,17 +219,25 @@ namespace MySqlConnector
 				ReadOnlySpan<byte> nullBytes = new byte[] { 0x4E, 0x55, 0x4C, 0x4C }; // NULL
 				writer.Write(nullBytes);
 			}
+#if NET45 || NETSTANDARD1_3
 			else if (Value is string stringValue)
 			{
-				writer.Write((byte) '\'');
-
-				if (noBackslashEscapes)
-					writer.Write(stringValue.Replace("'", "''"));
-				else
-					writer.Write(stringValue.Replace("\\", "\\\\").Replace("'", "''"));
-
-				writer.Write((byte) '\'');
+				WriteString(writer, noBackslashEscapes, stringValue);
 			}
+#else
+			else if (Value is string stringValue)
+			{
+				WriteString(writer, noBackslashEscapes, writeDelimiters: true, stringValue.AsSpan());
+			}
+			else if (Value is ReadOnlyMemory<char> readOnlyMemoryChar)
+			{
+				WriteString(writer, noBackslashEscapes, writeDelimiters: true, readOnlyMemoryChar.Span);
+			}
+			else if (Value is Memory<char> memoryChar)
+			{
+				WriteString(writer, noBackslashEscapes, writeDelimiters: true, memoryChar.Span);
+			}
+#endif
 			else if (Value is char charValue)
 			{
 				writer.Write((byte) '\'');
@@ -398,6 +407,19 @@ namespace MySqlConnector
 					writer.Advance(guidLength);
 				}
 			}
+			else if (Value is StringBuilder stringBuilder)
+			{
+#if NETCOREAPP3_1 || NET5_0
+				writer.Write((byte) '\'');
+				foreach (var chunk in stringBuilder.GetChunks())
+					WriteString(writer, noBackslashEscapes, writeDelimiters: false, chunk.Span);
+				writer.Write((byte) '\'');
+#elif NET45 || NETSTANDARD1_3
+				WriteString(writer, noBackslashEscapes, stringBuilder.ToString());
+#else
+				WriteString(writer, noBackslashEscapes, writeDelimiters: true, stringBuilder.ToString().AsSpan());
+#endif
+			}
 			else if (MySqlDbType == MySqlDbType.Int16)
 			{
 				writer.WriteString((short) Value);
@@ -434,6 +456,52 @@ namespace MySqlConnector
 			{
 				throw new NotSupportedException("Parameter type {0} is not supported; see https://fl.vu/mysql-param-type. Value: {1}".FormatInvariant(Value.GetType().Name, Value));
 			}
+
+#if NET45 || NETSTANDARD1_3
+			static void WriteString(ByteBufferWriter writer, bool noBackslashEscapes, string value)
+			{
+				writer.Write((byte) '\'');
+
+				if (noBackslashEscapes)
+					writer.Write(value.Replace("'", "''"));
+				else
+					writer.Write(value.Replace("\\", "\\\\").Replace("'", "''"));
+
+				writer.Write((byte) '\'');
+			}
+#else
+			static void WriteString(ByteBufferWriter writer, bool noBackslashEscapes, bool writeDelimiters, ReadOnlySpan<char> value)
+			{
+				if (writeDelimiters)
+					writer.Write((byte) '\'');
+
+				var charsWritten = 0;
+				while (charsWritten < value.Length)
+				{
+					var remainingValue = value.Slice(charsWritten);
+					var nextDelimiterIndex = remainingValue.IndexOfAny('\'', '\\');
+					if (nextDelimiterIndex == -1)
+					{
+						// write the rest of the string
+						writer.Write(remainingValue);
+						charsWritten += remainingValue.Length;
+					}
+					else
+					{
+						// write up to (and including) the delimiter, then double it
+						writer.Write(remainingValue.Slice(0, nextDelimiterIndex + 1));
+						if (remainingValue[nextDelimiterIndex] == '\\' && !noBackslashEscapes)
+							writer.Write((byte) '\\');
+						else if (remainingValue[nextDelimiterIndex] == '\'')
+							writer.Write((byte) '\'');
+						charsWritten += nextDelimiterIndex + 1;
+					}
+				}
+
+				if (writeDelimiters)
+					writer.Write((byte) '\'');
+			}
+#endif
 		}
 
 		internal void AppendBinary(ByteBufferWriter writer, StatementPreparerOptions options)
@@ -590,6 +658,20 @@ namespace MySqlConnector
 					Utf8Formatter.TryFormat(guidValue, span, out _, is32Characters ? 'N' : 'D');
 					writer.Advance(guidLength);
 				}
+			}
+#if !NET45 && !NETSTANDARD1_3
+			else if (Value is ReadOnlyMemory<char> readOnlyMemoryChar)
+			{
+				writer.WriteLengthEncodedString(readOnlyMemoryChar.Span);
+			}
+			else if (Value is Memory<char> memoryChar)
+			{
+				writer.WriteLengthEncodedString(memoryChar.Span);
+			}
+#endif
+			else if (Value is StringBuilder stringBuilder)
+			{
+				writer.WriteLengthEncodedString(stringBuilder.ToString());
 			}
 			else if (MySqlDbType == MySqlDbType.Int16)
 			{

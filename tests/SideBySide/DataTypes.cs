@@ -356,7 +356,7 @@ namespace SideBySide
 		}
 		const string c_251ByteString = "This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating \"this field is null\". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.";
 
-		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=101252")]
+		[Theory]
 		[InlineData("guid", "CHAR(36)", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f", "6A0E0A40-6228-11D3-A996-0050041896C8" })]
 		[InlineData("guidbin", "CHAR(36)", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f", "6A0E0A40-6228-11D3-A996-0050041896C8" })]
 		public void QueryGuid(string column, string dataTypeName, object[] expected)
@@ -391,7 +391,7 @@ namespace SideBySide
 			}
 		}
 
-		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=101252")]
+		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
 		public void QueryBinaryGuid(bool oldGuids)
@@ -457,8 +457,15 @@ namespace SideBySide
 			csb.OldGuids = oldGuids;
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			await connection.OpenAsync().ConfigureAwait(false);
-			Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guid = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
-			Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guidbin = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
+			try
+			{
+				Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guid = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
+				Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guidbin = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
+			}
+			catch (MySqlException ex) when (oldGuids && ex.Number == 3854 /* MySqlErrorCode.CannotConvertString */)
+			{
+				// new error in MySQL 8.0.24
+			}
 			Assert.Equal(oldGuids ? 1L : 0L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_blobs where guidbin = @guid", new { guid = new Guid(0x33221100, 0x5544, 0x7766, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF) }).ConfigureAwait(false)).SingleOrDefault());
 		}
 
@@ -653,7 +660,7 @@ insert into guid_format(c36, c32, b16, tsb16, leb16, t, b) values(
 #endif
 		}
 
-		[Theory]
+		[SkippableTheory(ServerFeatures.ZeroDateTime)]
 		[InlineData(false)]
 		[InlineData(true)]
 		public void QueryZeroDateTime(bool convertZeroDateTime)

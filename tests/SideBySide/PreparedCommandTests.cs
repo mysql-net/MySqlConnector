@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Dapper;
 #if BASELINE
@@ -129,11 +130,10 @@ CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCRE
 
 		[Theory]
 		[MemberData(nameof(GetInsertAndQueryData))]
-		public void InsertAndQueryInferrredType(bool isPrepared, string dataType, object dataValue, MySqlDbType dbType)
+		public void InsertAndQueryInferredType(bool isPrepared, string dataType, object dataValue, MySqlDbType dbType)
 		{
 			GC.KeepAlive(dbType); // ignore the parameter
-			var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString);
-			using var connection = new MySqlConnection(csb.ConnectionString);
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
 			connection.Open();
 			connection.Execute($@"DROP TABLE IF EXISTS prepared_command_test;
 CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT, data {dataType});");
@@ -166,6 +166,40 @@ CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCRE
 				Assert.False(reader.NextResult());
 			}
 		}
+
+#if !NETCOREAPP1_1_2
+		[Theory]
+		[MemberData(nameof(GetDifferentTypeInsertAndQueryData))]
+		public void InsertAndQueryDifferentType(bool isPrepared, string dataType, object dataValue, object expectedValue)
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString);
+			connection.Open();
+			connection.Execute($@"DROP TABLE IF EXISTS prepared_command_test;
+CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT, data {dataType});");
+
+			using (var command = new MySqlCommand("INSERT INTO prepared_command_test(data) VALUES(@param);", connection))
+			{
+				command.Parameters.AddWithValue("@param", dataValue);
+				if (isPrepared)
+					command.Prepare();
+				command.ExecuteNonQuery();
+			}
+
+			using (var command = new MySqlCommand("SELECT data FROM prepared_command_test ORDER BY rowid;", connection))
+			{
+				if (isPrepared)
+					command.Prepare();
+
+				using var reader = command.ExecuteReader();
+				Assert.True(reader.Read());
+				Assert.False(reader.IsDBNull(0));
+				Assert.Equal(expectedValue, reader.GetValue(0));
+
+				Assert.False(reader.Read());
+				Assert.False(reader.NextResult());
+			}
+		}
+#endif
 
 		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=14115")]
 		[MemberData(nameof(GetInsertAndQueryData))]
@@ -360,9 +394,10 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 				yield return new object[] { isPrepared, "BINARY(5)", new byte[] { 5, 6, 7, 8, 9 }, MySqlDbType.Binary };
 				yield return new object[] { isPrepared, "VARBINARY(100)", new byte[] { 7, 8, 9, 10 }, MySqlDbType.VarBinary };
 				yield return new object[] { isPrepared, "BLOB", new byte[] { 5, 4, 3, 2, 1 }, MySqlDbType.Blob };
-#if !BASELINE // https://bugs.mysql.com/bug.php?id=101252
-				yield return new object[] { isPrepared, "CHAR(36)", new Guid("00112233-4455-6677-8899-AABBCCDDEEFF"), MySqlDbType.Guid };
+#if BASELINE // https://bugs.mysql.com/bug.php?id=103390
+				if (!isPrepared)
 #endif
+				yield return new object[] { isPrepared, "CHAR(36)", new Guid("00112233-4455-6677-8899-AABBCCDDEEFF"), MySqlDbType.Guid };
 				yield return new object[] { isPrepared, "FLOAT", 12.375f, MySqlDbType.Float };
 				yield return new object[] { isPrepared, "DOUBLE", 14.21875, MySqlDbType.Double };
 				yield return new object[] { isPrepared, "DECIMAL(9,3)", 123.45m, MySqlDbType.Decimal };
@@ -388,6 +423,28 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 				{
 					yield return new object[] { isPrepared, "JSON", "{\"test\": true}", MySqlDbType.JSON };
 				}
+			}
+		}
+		public static IEnumerable<object[]> GetDifferentTypeInsertAndQueryData()
+		{
+			foreach (var isPrepared in new[] { false, true })
+			{
+				yield return new object[] { isPrepared, "TINYINT", -123, (sbyte) -123 };
+				yield return new object[] { isPrepared, "TINYINT UNSIGNED", 123, (byte) 123 };
+				yield return new object[] { isPrepared, "SMALLINT", -12345, (short) -12345 };
+				yield return new object[] { isPrepared, "SMALLINT UNSIGNED", 12345, (ushort) 12345 };
+				yield return new object[] { isPrepared, "TINYINT", FileMode.Open, (sbyte) 3 };
+				yield return new object[] { isPrepared, "TINYINT", (int) FileMode.Open, (sbyte) 3 };
+				yield return new object[] { isPrepared, "INT", FileMode.Open, 3 };
+				yield return new object[] { isPrepared, "MEDIUMINT", -1234567, -1234567 };
+				yield return new object[] { isPrepared, "MEDIUMINT UNSIGNED", 1234567, 1234567u };
+				yield return new object[] { isPrepared, "INT", (sbyte) -123, -123 };
+				yield return new object[] { isPrepared, "INT", -123456789L, -123456789 };
+				yield return new object[] { isPrepared, "INT UNSIGNED", (sbyte) 123, 123u };
+				yield return new object[] { isPrepared, "INT UNSIGNED", (byte) 123, 123u };
+				yield return new object[] { isPrepared, "INT UNSIGNED", 123456789ul, 123456789u };
+				yield return new object[] { isPrepared, "BIGINT", -123456789, -123456789L };
+				yield return new object[] { isPrepared, "BIGINT UNSIGNED", 123456789U, 123456789UL };
 			}
 		}
 
