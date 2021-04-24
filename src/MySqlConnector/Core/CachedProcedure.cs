@@ -194,14 +194,6 @@ namespace MySqlConnector.Core
 
 		internal static string ParseDataType(string sql, out bool unsigned, out int length)
 		{
-			if (sql.EndsWith(" ZEROFILL", StringComparison.OrdinalIgnoreCase))
-				sql = sql.Substring(0, sql.Length - 9);
-			unsigned = false;
-			if (sql.EndsWith(" UNSIGNED", StringComparison.OrdinalIgnoreCase))
-			{
-				unsigned = true;
-				sql = sql.Substring(0, sql.Length - 9);
-			}
 			sql = Regex.Replace(sql, " (CHARSET|CHARACTER SET) [A-Za-z0-9_]+", "", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 			sql = Regex.Replace(sql, " (COLLATE) [A-Za-z0-9_]+", "", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 			sql = Regex.Replace(sql, @"ENUM\s*\([^)]+\)", "ENUM", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
@@ -214,40 +206,40 @@ namespace MySqlConnector.Core
 				sql = Regex.Replace(sql, @"\s*\(\s*\d+\s*(?:,\s*\d+\s*)?\)", "");
 			}
 
-			sql = sql.Trim();
+			var typeMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+			{
+				{"BOOL", "TINYINT"},
+				{"BOOLEAN", "TINYINT"},
+				{"INTEGER", "INT"},
+				{"NUMERIC", "DECIMAL"},
+				{"FIXED", "DECIMAL"},
+				{"REAL", "DOUBLE"},
+				{"DOUBLE PRECISION", "DOUBLE"},
+				{"NVARCHAR", "VARCHAR"},
+				{"CHARACTER VARYING", "VARCHAR"},
+				{"NATIONAL VARCHAR", "VARCHAR"},
+				{"NCHAR", "CHAR"},
+				{"CHARACTER", "CHAR"},
+				{"NATIONAL CHAR", "CHAR"},
+				{"CHAR BYTE", "BINARY"}
+			};
 
-			// normalize alternate data type names
-			if (sql.Equals("BOOL", StringComparison.OrdinalIgnoreCase) || sql.Equals("BOOLEAN", StringComparison.OrdinalIgnoreCase))
+			var list = sql.Trim().Split(new char[] {' '});
+			var type = string.Empty;
+
+			if (list.Length < 2 || !typeMapping.TryGetValue(list[0] + ' ' + list[1], out type))
 			{
-				sql = "TINYINT";
-				length = 1;
-			}
-			else if (sql.Equals("INTEGER", StringComparison.OrdinalIgnoreCase))
-			{
-				sql = "INT";
-			}
-			else if (sql.Equals("NUMERIC", StringComparison.OrdinalIgnoreCase) || sql.Equals("FIXED", StringComparison.OrdinalIgnoreCase))
-			{
-				sql = "DECIMAL";
-			}
-			else if (sql.Equals("REAL", StringComparison.OrdinalIgnoreCase) || sql.Equals("DOUBLE PRECISION", StringComparison.OrdinalIgnoreCase))
-			{
-				sql = "DOUBLE";
-			}
-			else if (sql.Equals("NVARCHAR", StringComparison.OrdinalIgnoreCase) || sql.Equals("CHARACTER VARYING", StringComparison.OrdinalIgnoreCase) || sql.Equals("NATIONAL VARCHAR", StringComparison.OrdinalIgnoreCase))
-			{
-				sql = "VARCHAR";
-			}
-			else if (sql.Equals("NCHAR", StringComparison.OrdinalIgnoreCase) || sql.Equals("CHARACTER", StringComparison.OrdinalIgnoreCase) || sql.Equals("NATIONAL CHAR", StringComparison.OrdinalIgnoreCase))
-			{
-				sql = "CHAR";
-			}
-			else if (sql.Equals("CHAR BYTE", StringComparison.OrdinalIgnoreCase))
-			{
-				sql = "BINARY";
+				if (typeMapping.TryGetValue(list[0], out type))
+				{
+					if (list[0].StartsWith("BOOL", StringComparison.OrdinalIgnoreCase))
+					{
+						length = 1;
+					}
+				}
 			}
 
-			return sql;
+			unsigned = list.Contains("UNSIGNED", StringComparer.OrdinalIgnoreCase);
+			return type ?? list[0];
 		}
 
 		private static CachedParameter CreateCachedParameter(int ordinal, string? direction, string name, string dataType, bool unsigned, int length, string originalSql)
