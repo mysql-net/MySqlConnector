@@ -10,6 +10,11 @@ weight: 30
 
 # Version History
 
+### 1.3.7
+
+* Add support for [SingleStore](https://www.singlestore.com/): [#968](https://github.com/mysql-net/MySqlConnector/pull/968).
+* Thanks to [Carl Sverre](https://github.com/carlsverre) and [Tigran Avanesov](https://github.com/tavanesov-ua) for contributions to this release.
+
 ### 1.3.6
 
 * Add NuGet Package ReadMe: [#978](https://github.com/mysql-net/MySqlConnector/issues/978).
