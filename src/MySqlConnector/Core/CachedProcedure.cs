@@ -206,30 +206,12 @@ namespace MySqlConnector.Core
 				sql = Regex.Replace(sql, @"\s*\(\s*\d+\s*(?:,\s*\d+\s*)?\)", "");
 			}
 
-			var typeMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-			{
-				{"BOOL", "TINYINT"},
-				{"BOOLEAN", "TINYINT"},
-				{"INTEGER", "INT"},
-				{"NUMERIC", "DECIMAL"},
-				{"FIXED", "DECIMAL"},
-				{"REAL", "DOUBLE"},
-				{"DOUBLE PRECISION", "DOUBLE"},
-				{"NVARCHAR", "VARCHAR"},
-				{"CHARACTER VARYING", "VARCHAR"},
-				{"NATIONAL VARCHAR", "VARCHAR"},
-				{"NCHAR", "CHAR"},
-				{"CHARACTER", "CHAR"},
-				{"NATIONAL CHAR", "CHAR"},
-				{"CHAR BYTE", "BINARY"}
-			};
-
 			var list = sql.Trim().Split(new char[] {' '});
 			var type = string.Empty;
 
-			if (list.Length < 2 || !typeMapping.TryGetValue(list[0] + ' ' + list[1], out type))
+			if (list.Length < 2 || !s_typeMapping.TryGetValue(list[0] + ' ' + list[1], out type))
 			{
-				if (typeMapping.TryGetValue(list[0], out type))
+				if (s_typeMapping.TryGetValue(list[0], out type))
 				{
 					if (list[0].StartsWith("BOOL", StringComparison.OrdinalIgnoreCase))
 					{
@@ -257,6 +239,23 @@ namespace MySqlConnector.Core
 		string FullyQualified => $"`{m_schema}`.`{m_component}`";
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(CachedProcedure));
+		static readonly IReadOnlyDictionary<string, string> s_typeMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+		{
+			{ "BOOL", "TINYINT" },
+			{ "BOOLEAN", "TINYINT" },
+			{ "INTEGER", "INT" },
+			{ "NUMERIC", "DECIMAL" },
+			{ "FIXED", "DECIMAL" },
+			{ "REAL", "DOUBLE" },
+			{ "DOUBLE PRECISION", "DOUBLE" },
+			{ "NVARCHAR", "VARCHAR" },
+			{ "CHARACTER VARYING", "VARCHAR" },
+			{ "NATIONAL VARCHAR", "VARCHAR" },
+			{ "NCHAR", "CHAR" },
+			{ "CHARACTER", "CHAR" },
+			{ "NATIONAL CHAR", "CHAR" },
+			{ "CHAR BYTE", "BINARY" }
+		};
 
 		readonly string m_schema;
 		readonly string m_component;
