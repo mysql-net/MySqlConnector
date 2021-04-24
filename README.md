@@ -1,6 +1,6 @@
 # Async MySQL Connector for .NET and .NET Core
 
-This is an [ADO.NET](https://msdn.microsoft.com/en-us/library/e80y5yhx.aspx) data
+This is an [ADO.NET](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/) data
 provider for [MySQL](https://www.mysql.com/). It provides implementations of
 `DbConnection`, `DbCommand`, `DbDataReader`, `DbTransaction`—the classes
 needed to query and update databases from managed code.
