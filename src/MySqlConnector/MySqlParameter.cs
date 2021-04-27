@@ -671,7 +671,7 @@ namespace MySqlConnector
 #endif
 			else if (Value is StringBuilder stringBuilder)
 			{
-				writer.WriteLengthEncodedString(stringBuilder.ToString());
+				writer.WriteLengthEncodedString(stringBuilder);
 			}
 			else if (MySqlDbType == MySqlDbType.Int16)
 			{

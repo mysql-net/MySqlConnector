@@ -217,6 +217,7 @@ namespace MySqlConnector.Protocol.Serialization
 
 	internal static class ByteBufferWriterExtensions
 	{
+
 		public static void WriteLengthEncodedInteger(this ByteBufferWriter writer, ulong value)
 		{
 			switch (value)
@@ -258,6 +259,37 @@ namespace MySqlConnector.Protocol.Serialization
 			writer.Write(value);
 		}
 #endif
+
+		public static void WriteLengthEncodedString(this ByteBufferWriter writer, StringBuilder builder)
+		{
+#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
+
+			char? byteCountSurrogatePartBuffer = null;
+			var totalLength = 0;
+
+			foreach (var chunk in builder.GetChunks())
+			{
+				totalLength += SlicedSurrogatesUtility.GetUtf8ByteCount(chunk.Span, ref byteCountSurrogatePartBuffer);
+			}
+
+			writer.WriteLengthEncodedInteger((ulong) totalLength);
+
+			char? preparationSurrogatePartBuffer = null;
+			foreach (var chunk in builder.GetChunks())
+			{
+				SlicedSurrogatesUtility.PrepareSurrogateFreeSpan(chunk,ref preparationSurrogatePartBuffer, out var previousSurrogate, out var nextSlice);
+
+				if (previousSurrogate != null)
+				{
+					writer.Write(previousSurrogate);
+				}
+
+				writer.Write(nextSlice);
+			}
+#else
+			writer.WriteLengthEncodedString(builder.ToString());
+#endif
+		}
 
 		public static void WriteNullTerminatedString(this ByteBufferWriter writer, string value)
 		{
