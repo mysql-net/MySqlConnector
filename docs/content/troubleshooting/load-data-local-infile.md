@@ -32,7 +32,7 @@ If you do this, you may receive one of the following errors:
 malicious server or proxy could send a fake “local infile request” packet to the client and
 read any file that the client has permission to open.
 
-For more information, see [the MySQL documentation](https://dev.mysql.com/doc/refman/8.0/en/load-data-local.html).
+For more information, see [the MySQL documentation](https://dev.mysql.com/doc/refman/8.0/en/load-data-local-security.html).
 
 ## How to Fix
 
