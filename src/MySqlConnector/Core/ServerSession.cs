@@ -68,7 +68,11 @@ namespace MySqlConnector.Core
 		public bool SupportsSessionTrack => m_supportsSessionTrack;
 		public bool ProcAccessDenied { get; set; }
 
-		public Task ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+		public ValueTask<int> ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
+#else
+		public ValueTask ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
+#endif
 		{
 			if (Log.IsDebugEnabled())
 			{
@@ -77,11 +81,11 @@ namespace MySqlConnector.Core
 			}
 			LastReturnedTicks = unchecked((uint) Environment.TickCount);
 			if (Pool is null)
-				return Utility.CompletedTask;
+				return default;
 			if (!Pool.ConnectionSettings.ConnectionReset || Pool.ConnectionSettings.DeferConnectionReset)
 				return Pool.ReturnAsync(ioBehavior, this);
 			BackgroundConnectionResetHelper.AddSession(this, owningConnection);
-			return Utility.CompletedTask;
+			return default;
 		}
 
 		public bool IsConnected
@@ -529,10 +533,11 @@ namespace MySqlConnector.Core
 			return statusInfo;
 		}
 
-		public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+		public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, MySqlConnection? owningConnection, bool returnToPool, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			VerifyState(State.Connected);
 
+			var success = false;
 			try
 			{
 				// clear all prepared statements; resetting the connection will clear them on the server
@@ -578,7 +583,7 @@ namespace MySqlConnector.Core
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 
-				return true;
+				success = true;
 			}
 			catch (IOException ex)
 			{
@@ -597,7 +602,15 @@ namespace MySqlConnector.Core
 				Log.Debug(ex, "Session{0} ignoring SocketException in TryResetConnectionAsync", m_logArguments);
 			}
 
-			return false;
+			if (returnToPool && Pool is not null)
+			{
+				await Pool.ReturnAsync(ioBehavior, this).ConfigureAwait(false);
+
+				// make sure the MySqlConnection is kept alive until the session is returned to the pool; this prevents it from potentially being detected as "leaked"
+				GC.KeepAlive(owningConnection);
+			}
+
+			return success;
 		}
 
 		private async Task<PayloadData> SwitchAuthenticationAsync(ConnectionSettings cs, PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)

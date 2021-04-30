@@ -11,12 +11,12 @@ namespace MySqlConnector.Core
 	{
 		public static void AddSession(ServerSession session, MySqlConnection? owningConnection)
 		{
-			var resetTask = session.TryResetConnectionAsync(session.Pool!.ConnectionSettings, IOBehavior.Asynchronous, default);
+			var resetTask = session.TryResetConnectionAsync(session.Pool!.ConnectionSettings, owningConnection, true, IOBehavior.Asynchronous, default);
 			lock (s_lock)
-				s_sessions.Add(new SessionResetTask(session, resetTask, owningConnection));
+				s_resetTasks.Add(resetTask);
 
 			if (Log.IsDebugEnabled())
-				Log.Debug("Started Session{0} reset in background; waiting SessionCount: {1}.", session.Id, s_sessions.Count);
+				Log.Debug("Started Session{0} reset in background; waiting TaskCount: {1}.", session.Id, s_resetTasks.Count);
 
 			// release only if it is likely to succeed
 			if (s_semaphore.CurrentCount == 0)
@@ -69,7 +69,6 @@ namespace MySqlConnector.Core
 			Log.Info("Started BackgroundConnectionResetHelper worker.");
 
 			List<Task<bool>> localTasks = new();
-			List<SessionResetTask> localSessions = new();
 
 			// keep running until stopped
 			while (!s_cancellationTokenSource.IsCancellationRequested)
@@ -85,36 +84,18 @@ namespace MySqlConnector.Core
 					{
 						lock (s_lock)
 						{
-							if (s_sessions.Count == 0)
-							{
-								if (localTasks.Count == 0)
-									break;
-							}
-							else
-							{
-								foreach (var session in s_sessions)
-								{
-									localSessions.Add(session);
-									localTasks.Add(session.ResetTask);
-								}
-								s_sessions.Clear();
-							}
+							localTasks.AddRange(s_resetTasks);
+							s_resetTasks.Clear();
 						}
+
+						if (localTasks.Count == 0)
+							break;
 
 						if (Log.IsDebugEnabled())
-							Log.Debug("Found SessionCount {0} session(s) to return.", localSessions.Count);
+							Log.Debug("Found TaskCount {0} task(s) to process.", localTasks.Count);
 
-						while (localTasks.Count != 0)
-						{
-							var completedTask = await Task.WhenAny(localTasks).ConfigureAwait(false);
-							var index = localTasks.IndexOf(completedTask);
-							var session = localSessions[index].Session;
-							var connection = localSessions[index].OwningConnection;
-							localSessions.RemoveAt(index);
-							localTasks.RemoveAt(index);
-							await session.Pool!.ReturnAsync(IOBehavior.Asynchronous, session).ConfigureAwait(false);
-							GC.KeepAlive(connection);
-						}
+						await Task.WhenAll(localTasks);
+						localTasks.Clear();
 					}
 				}
 				catch (Exception ex) when (!(ex is OperationCanceledException oce && oce.CancellationToken == s_cancellationTokenSource.Token))
@@ -124,25 +105,11 @@ namespace MySqlConnector.Core
 			}
 		}
 
-		internal readonly struct SessionResetTask
-		{
-			public SessionResetTask(ServerSession session, Task<bool> resetTask, MySqlConnection? owningConnection)
-			{
-				Session = session;
-				ResetTask = resetTask;
-				OwningConnection = owningConnection;
-			}
-
-			public ServerSession Session { get; }
-			public Task<bool> ResetTask { get; }
-			public MySqlConnection? OwningConnection { get; }
-		}
-
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(BackgroundConnectionResetHelper));
 		static readonly object s_lock = new();
 		static readonly SemaphoreSlim s_semaphore = new(1, 1);
 		static readonly CancellationTokenSource s_cancellationTokenSource = new();
-		static readonly List<SessionResetTask> s_sessions = new();
+		static readonly List<Task<bool>> s_resetTasks = new();
 		static Task? s_workerTask;
 	}
 }

@@ -68,7 +68,7 @@ namespace MySqlConnector.Core
 					{
 						if ((ConnectionSettings.ConnectionReset && ConnectionSettings.DeferConnectionReset) || session.DatabaseOverride is not null)
 						{
-							reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, ioBehavior, cancellationToken).ConfigureAwait(false);
+							reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, null, false, ioBehavior, cancellationToken).ConfigureAwait(false);
 						}
 						else if ((unchecked((uint) Environment.TickCount) - session.LastReturnedTicks) >= ConnectionSettings.ConnectionIdlePingTime)
 						{
@@ -158,7 +158,11 @@ namespace MySqlConnector.Core
 			return 0;
 		}
 
-		public async Task ReturnAsync(IOBehavior ioBehavior, ServerSession session)
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+		public async ValueTask<int> ReturnAsync(IOBehavior ioBehavior, ServerSession session)
+#else
+		public async ValueTask ReturnAsync(IOBehavior ioBehavior, ServerSession session)
+#endif
 		{
 			if (Log.IsDebugEnabled())
 				Log.Debug("Pool{0} receiving Session{1} back", m_logArguments[0], session.Id);
@@ -188,6 +192,10 @@ namespace MySqlConnector.Core
 			{
 				m_sessionSemaphore.Release();
 			}
+
+#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+			return default;
+#endif
 		}
 
 		public async Task ClearAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
