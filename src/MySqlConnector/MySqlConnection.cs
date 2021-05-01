@@ -730,8 +730,8 @@ namespace MySqlConnector
 
 		internal async Task<CachedProcedure?> GetCachedProcedure(string name, bool revalidateMissing, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			if (Log.IsDebugEnabled())
-				Log.Debug("Session{0} getting cached procedure Name={1}", m_session!.Id, name);
+			if (Log.IsTraceEnabled())
+				Log.Trace("Session{0} getting cached procedure Name={1}", m_session!.Id, name);
 			if (State != ConnectionState.Open)
 				throw new InvalidOperationException("Connection is not open.");
 
@@ -778,7 +778,7 @@ namespace MySqlConnector
 				if (cachedProcedure is null)
 					Log.Warn("Session{0} did not find cached procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
 				else
-					Log.Debug("Session{0} returning cached procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
+					Log.Trace("Session{0} returning cached procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
 			}
 			return cachedProcedure;
 		}

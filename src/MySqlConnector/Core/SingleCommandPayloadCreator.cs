@@ -25,8 +25,8 @@ namespace MySqlConnector.Core
 			var preparedStatements = command.TryGetPreparedStatements();
 			if (preparedStatements is null)
 			{
-				if (Log.IsDebugEnabled())
-					Log.Debug("Session{0} Preparing command payload; CommandText: {1}", command.Connection!.Session.Id, command.CommandText);
+				if (Log.IsTraceEnabled())
+					Log.Trace("Session{0} Preparing command payload; CommandText: {1}", command.Connection!.Session.Id, command.CommandText);
 
 				writer.Write((byte) CommandKind.Query);
 				WriteQueryPayload(command, cachedProcedures, writer);
@@ -62,8 +62,8 @@ namespace MySqlConnector.Core
 		{
 			var parameterCollection = command.RawParameters;
 
-			if (Log.IsDebugEnabled())
-				Log.Debug("Session{0} Preparing command payload; CommandId: {1}; CommandText: {2}", command.Connection!.Session.Id, preparedStatement.StatementId, command.CommandText);
+			if (Log.IsTraceEnabled())
+				Log.Trace("Session{0} Preparing command payload; CommandId: {1}; CommandText: {2}", command.Connection!.Session.Id, preparedStatement.StatementId, command.CommandText);
 
 			writer.Write(preparedStatement.StatementId);
 			writer.Write((byte) 0);

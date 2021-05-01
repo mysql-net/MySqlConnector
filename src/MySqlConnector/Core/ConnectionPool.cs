@@ -36,7 +36,7 @@ namespace MySqlConnector.Core
 				await CreateMinimumPooledSessions(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			// wait for an open slot (until the cancellationToken is cancelled, which is typically due to timeout)
-			Log.Debug("Pool{0} waiting for an available session", m_logArguments);
+			Log.Trace("Pool{0} waiting for an available session", m_logArguments);
 			if (ioBehavior == IOBehavior.Asynchronous)
 				await m_sessionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 			else
@@ -56,12 +56,12 @@ namespace MySqlConnector.Core
 				}
 				if (session is not null)
 				{
-					Log.Debug("Pool{0} found an existing session; checking it for validity", m_logArguments);
+					Log.Trace("Pool{0} found an existing session; checking it for validity", m_logArguments);
 					bool reuseSession;
 
 					if (session.PoolGeneration != m_generation)
 					{
-						Log.Debug("Pool{0} discarding session due to wrong generation", m_logArguments);
+						Log.Trace("Pool{0} discarding session due to wrong generation", m_logArguments);
 						reuseSession = false;
 					}
 					else
@@ -97,8 +97,8 @@ namespace MySqlConnector.Core
 							m_leasedSessions.Add(session.Id, session);
 							leasedSessionsCountPooled = m_leasedSessions.Count;
 						}
-						if (Log.IsDebugEnabled())
-							Log.Debug("Pool{0} returning pooled Session{1} to caller; LeasedSessionsCount={2}", m_logArguments[0], session.Id, leasedSessionsCountPooled);
+						if (Log.IsTraceEnabled())
+							Log.Trace("Pool{0} returning pooled Session{1} to caller; LeasedSessionsCount={2}", m_logArguments[0], session.Id, leasedSessionsCountPooled);
 						return session;
 					}
 				}
@@ -113,8 +113,8 @@ namespace MySqlConnector.Core
 					m_leasedSessions.Add(session.Id, session);
 					leasedSessionsCountNew = m_leasedSessions.Count;
 				}
-				if (Log.IsDebugEnabled())
-					Log.Debug("Pool{0} returning new Session{1} to caller; LeasedSessionsCount={2}", m_logArguments[0], session.Id, leasedSessionsCountNew);
+				if (Log.IsTraceEnabled())
+					Log.Trace("Pool{0} returning new Session{1} to caller; LeasedSessionsCount={2}", m_logArguments[0], session.Id, leasedSessionsCountNew);
 				return session;
 			}
 			catch (Exception ex)
@@ -164,8 +164,8 @@ namespace MySqlConnector.Core
 		public async ValueTask ReturnAsync(IOBehavior ioBehavior, ServerSession session)
 #endif
 		{
-			if (Log.IsDebugEnabled())
-				Log.Debug("Pool{0} receiving Session{1} back", m_logArguments[0], session.Id);
+			if (Log.IsTraceEnabled())
+				Log.Trace("Pool{0} receiving Session{1} back", m_logArguments[0], session.Id);
 
 			try
 			{
@@ -210,7 +210,7 @@ namespace MySqlConnector.Core
 
 		public async Task ReapAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			Log.Debug("Pool{0} reaping connection pool", m_logArguments);
+			Log.Trace("Pool{0} reaping connection pool", m_logArguments);
 			await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
 			await CleanPoolAsync(ioBehavior, session => (unchecked((uint) Environment.TickCount) - session.LastReturnedTicks) / 1000 >= ConnectionSettings.ConnectionIdleTimeout, true, cancellationToken).ConfigureAwait(false);
 		}
@@ -250,7 +250,7 @@ namespace MySqlConnector.Core
 				}
 			}
 			if (recoveredSessions.Count == 0)
-				Log.Debug("Pool{0} recovered no sessions", m_logArguments);
+				Log.Trace("Pool{0} recovered no sessions", m_logArguments);
 			else
 				Log.Warn("Pool{0}: RecoveredSessionCount={1}", m_logArguments[0], recoveredSessions.Count);
 			foreach (var session in recoveredSessions)

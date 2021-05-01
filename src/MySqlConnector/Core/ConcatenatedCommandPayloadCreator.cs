@@ -19,8 +19,8 @@ namespace MySqlConnector.Core
 			do
 			{
 				var command = commandListPosition.Commands[commandListPosition.CommandIndex];
-				if (Log.IsDebugEnabled())
-					Log.Debug("Session{0} Preparing command payload; CommandText: {1}", command.Connection!.Session.Id, command.CommandText);
+				if (Log.IsTraceEnabled())
+					Log.Trace("Session{0} Preparing command payload; CommandText: {1}", command.Connection!.Session.Id, command.CommandText);
 
 				isComplete = SingleCommandPayloadCreator.WriteQueryPayload(command, cachedProcedures, writer);
 				commandListPosition.CommandIndex++;

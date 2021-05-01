@@ -344,7 +344,7 @@ namespace MySqlConnector
 					}
 					else
 					{
-						Log.Debug("Setting expression to map SourceOrdinal {0} to DestinationColumn {1}", columnMapping.SourceOrdinal, destinationColumn);
+						Log.Trace("Setting expression to map SourceOrdinal {0} to DestinationColumn {1}", columnMapping.SourceOrdinal, destinationColumn);
 						columnMappings.Remove(columnMapping);
 						columnMappings.Add(new(columnMapping.SourceOrdinal, variableName, expression));
 					}
