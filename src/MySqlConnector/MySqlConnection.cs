@@ -698,11 +698,11 @@ namespace MySqlConnector
 		{
 			if (m_session is null || State != ConnectionState.Open || !m_session.TryStartCancel(command))
 			{
-				Log.Info("Ignoring cancellation for closed connection or invalid CommandId {0}", commandId);
+				Log.Trace("Ignoring cancellation for closed connection or invalid CommandId {0}", commandId);
 				return;
 			}
 
-			Log.Info("CommandId {0} for Session{1} has been canceled via {2}.", commandId, m_session.Id, isCancel ? "Cancel()" : "command timeout");
+			Log.Debug("CommandId {0} for Session{1} has been canceled via {2}.", commandId, m_session.Id, isCancel ? "Cancel()" : "command timeout");
 
 			try
 			{
@@ -761,7 +761,7 @@ namespace MySqlConnector
 					if (cachedProcedure is null)
 						Log.Warn("Session{0} failed to cache procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
 					else
-						Log.Info("Session{0} caching procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
+						Log.Trace("Session{0} caching procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
 				}
 				int count;
 				lock (cachedProcedures)
@@ -769,8 +769,8 @@ namespace MySqlConnector
 					cachedProcedures[normalized.FullyQualified] = cachedProcedure;
 					count = cachedProcedures.Count;
 				}
-				if (Log.IsInfoEnabled())
-					Log.Info("Session{0} procedure cache Count={1}", m_session.Id, count);
+				if (Log.IsTraceEnabled())
+					Log.Trace("Session{0} procedure cache Count={1}", m_session.Id, count);
 			}
 
 			if (Log.IsWarnEnabled())
@@ -870,7 +870,7 @@ namespace MySqlConnector
 
 					var session = new ServerSession();
 					session.OwningConnection = new WeakReference<MySqlConnection>(this);
-					Log.Info("Created new non-pooled Session{0}", session.Id);
+					Log.Debug("Created new non-pooled Session{0}", session.Id);
 					await session.ConnectAsync(connectionSettings, startTickCount, loadBalancer, actualIOBehavior, connectToken).ConfigureAwait(false);
 					return session;
 				}

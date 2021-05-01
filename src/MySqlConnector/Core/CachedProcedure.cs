@@ -97,8 +97,8 @@ namespace MySqlConnector.Core
 				}
 			}
 
-			if (Log.IsInfoEnabled())
-				Log.Info("Procedure for Schema={0} Component={1} has RoutineCount={2}, ParameterCount={3}", schema, component, routineCount, parameters.Count);
+			if (Log.IsTraceEnabled())
+				Log.Trace("Procedure for Schema={0} Component={1} has RoutineCount={2}, ParameterCount={3}", schema, component, routineCount, parameters.Count);
 			return routineCount == 0 ? null : new CachedProcedure(schema, component, parameters);
 		}
 

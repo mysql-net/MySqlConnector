@@ -35,7 +35,7 @@ namespace MySqlConnector.Core
 
 		public static void Start()
 		{
-			Log.Info("Starting BackgroundConnectionResetHelper worker.");
+			Log.Trace("Starting BackgroundConnectionResetHelper worker.");
 			lock (s_lock)
 			{
 				if (s_workerTask is null)
@@ -45,7 +45,7 @@ namespace MySqlConnector.Core
 
 		public static void Stop()
 		{
-			Log.Info("Stopping BackgroundConnectionResetHelper worker.");
+			Log.Trace("Stopping BackgroundConnectionResetHelper worker.");
 			s_cancellationTokenSource.Cancel();
 			Task? workerTask;
 			lock (s_lock)
@@ -61,12 +61,12 @@ namespace MySqlConnector.Core
 				{
 				}
 			}
-			Log.Info("Stopped BackgroundConnectionResetHelper worker.");
+			Log.Trace("Stopped BackgroundConnectionResetHelper worker.");
 		}
 
 		public static async Task ReturnSessionsAsync()
 		{
-			Log.Info("Started BackgroundConnectionResetHelper worker.");
+			Log.Trace("Started BackgroundConnectionResetHelper worker.");
 
 			List<Task<bool>> localTasks = new();
 

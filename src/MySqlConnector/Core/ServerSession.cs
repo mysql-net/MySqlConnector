@@ -111,7 +111,7 @@ namespace MySqlConnector.Core
 				m_state = State.CancelingQuery;
 			}
 
-			Log.Info("Session{0} will cancel CommandId: {1} (CancelledAttempts={2}) CommandText: {3}", m_logArguments[0], command.CommandId, command.CancelAttemptCount, (command as MySqlCommand)?.CommandText);
+			Log.Debug("Session{0} will cancel CommandId: {1} (CancelledAttempts={2}) CommandText: {3}", m_logArguments[0], command.CommandId, command.CancelAttemptCount, (command as MySqlCommand)?.CommandText);
 			return true;
 		}
 
@@ -122,7 +122,7 @@ namespace MySqlConnector.Core
 			{
 				if (ActiveCommandId != commandToCancel.CommandId)
 				{
-					Log.Info("Session{0} ActiveCommandId {1} is not the CommandId {2} being canceled; ignoring cancellation.", m_logArguments[0], ActiveCommandId, commandToCancel.CommandId);
+					Log.Debug("Session{0} ActiveCommandId {1} is not the CommandId {2} being canceled; ignoring cancellation.", m_logArguments[0], ActiveCommandId, commandToCancel.CommandId);
 					return;
 				}
 
@@ -132,7 +132,7 @@ namespace MySqlConnector.Core
 				// command would be killed (because "KILL QUERY" specifies the connection whose command should be killed, not
 				// a unique identifier of the command itself). As a mitigation, we set the CommandTimeout to a low value to avoid
 				// blocking the other thread for an extended duration.
-				Log.Info("Session{0} canceling CommandId {1} with CommandText {2}", killCommand.Connection!.Session.Id, commandToCancel.CommandId, killCommand.CommandText);
+				Log.Debug("Session{0} canceling CommandId {1} with CommandText {2}", killCommand.Connection!.Session.Id, commandToCancel.CommandId, killCommand.CommandText);
 				killCommand.ExecuteNonQuery();
 			}
 		}
@@ -312,7 +312,7 @@ namespace MySqlConnector.Core
 				// KILL QUERY will kill a subsequent query if the command it was intended to cancel has already completed.
 				// In order to handle this case, we issue a dummy query that will consume the pending cancellation.
 				// See https://bugs.mysql.com/bug.php?id=45679
-				Log.Info("Session{0} sending 'DO SLEEP(0)' command to clear pending cancellation", m_logArguments);
+				Log.Debug("Session{0} sending 'DO SLEEP(0)' command to clear pending cancellation", m_logArguments);
 				var payload = QueryPayload.Create("DO SLEEP(0);");
 #pragma warning disable CA2012 // Safe because method completes synchronously
 				SendAsync(payload, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -350,7 +350,7 @@ namespace MySqlConnector.Core
 				{
 					try
 					{
-						Log.Info("Session{0} sending QUIT command", m_logArguments);
+						Log.Trace("Session{0} sending QUIT command", m_logArguments);
 						m_payloadHandler.StartNewConversation();
 						await m_payloadHandler.WritePayloadAsync(QuitPayload.Instance.Memory, ioBehavior).ConfigureAwait(false);
 					}
@@ -453,7 +453,7 @@ namespace MySqlConnector.Core
 					m_characterSet = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? CharacterSet.Utf8Mb4GeneralCaseInsensitive : CharacterSet.Utf8GeneralCaseInsensitive;
 					m_setNamesPayload = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? s_setNamesUtf8mb4Payload : s_setNamesUtf8Payload;
 
-					Log.Info("Session{0} made connection; ServerVersion={1}; ConnectionId={2}; Compression={3}; Attributes={4}; DeprecateEof={5}; Ssl={6}; SessionTrack={7}",
+					Log.Debug("Session{0} made connection; ServerVersion={1}; ConnectionId={2}; Compression={3}; Attributes={4}; DeprecateEof={5}; Ssl={6}; SessionTrack={7}",
 						m_logArguments[0], ServerVersion.OriginalString, ConnectionId,
 						m_useCompression, m_supportsConnectionAttributes, m_supportsDeprecateEof, serverSupportsSsl, m_supportsSessionTrack);
 
@@ -850,7 +850,7 @@ namespace MySqlConnector.Core
 			}
 			catch (Exception ex)
 			{
-				Log.Info(ex, "Session{0} failed in ReceiveReplyAsync", m_logArguments);
+				Log.Debug(ex, "Session{0} failed in ReceiveReplyAsync", m_logArguments);
 				if ((ex as MySqlException)?.ErrorCode == MySqlErrorCode.CommandTimeoutExpired)
 					HandleTimeout();
 				task = ValueTaskExtensions.FromException<ArraySegment<byte>>(ex);
@@ -900,7 +900,7 @@ namespace MySqlConnector.Core
 			}
 			catch (Exception ex)
 			{
-				Log.Info(ex, "Session{0} failed in SendReplyAsync", m_logArguments);
+				Log.Debug(ex, "Session{0} failed in SendReplyAsync", m_logArguments);
 				task = ValueTaskExtensions.FromException<int>(ex);
 			}
 
@@ -971,7 +971,7 @@ namespace MySqlConnector.Core
 				// need to try IP Addresses one at a time: https://github.com/dotnet/corefx/issues/5829
 				foreach (var ipAddress in ipAddresses)
 				{
-					Log.Info("Session{0} connecting to IpAddress {1} for HostName '{2}'", m_logArguments[0], ipAddress, hostName);
+					Log.Trace("Session{0} connecting to IpAddress {1} for HostName '{2}'", m_logArguments[0], ipAddress, hostName);
 					TcpClient? tcpClient = null;
 					try
 					{
@@ -1047,7 +1047,7 @@ namespace MySqlConnector.Core
 		private async Task<bool> OpenUnixSocketAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			m_logArguments[1] = cs.UnixSocket;
-			Log.Info("Session{0} connecting to UNIX Socket '{1}'", m_logArguments);
+			Log.Trace("Session{0} connecting to UNIX Socket '{1}'", m_logArguments);
 			var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.IP);
 			var unixEp = new UnixEndPoint(cs.UnixSocket!);
 			try
@@ -1105,8 +1105,8 @@ namespace MySqlConnector.Core
 #if NETSTANDARD1_3
 			throw new NotSupportedException("Named pipe connections are not supported in netstandard1.3");
 #else
-			if (Log.IsInfoEnabled())
-				Log.Info("Session{0} connecting to NamedPipe '{1}' on Server '{2}'", m_logArguments[0], cs.PipeName, cs.HostNames![0]);
+			if (Log.IsTraceEnabled())
+				Log.Trace("Session{0} connecting to NamedPipe '{1}' on Server '{2}'", m_logArguments[0], cs.PipeName, cs.HostNames![0]);
 			var namedPipeStream = new NamedPipeClientStream(cs.HostNames![0], cs.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
 			var timeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - unchecked(Environment.TickCount - startTickCount));
 			try
@@ -1150,7 +1150,7 @@ namespace MySqlConnector.Core
 
 		private async Task InitSslAsync(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, SslProtocols sslProtocols, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			Log.Info("Session{0} initializing TLS connection", m_logArguments);
+			Log.Trace("Session{0} initializing TLS connection", m_logArguments);
 			X509CertificateCollection? clientCertificates = null;
 
 			if (cs.CertificateStoreLocation != MySqlCertificateStoreLocation.None)
@@ -1273,8 +1273,8 @@ namespace MySqlConnector.Core
 					}
 
 					// success
-					if (Log.IsInfoEnabled())
-						Log.Info("Session{0} loaded certificates from CertificateFile '{1}'; CertificateCount: {2}", m_logArguments[0], cs.CACertificateFile, certificateChain.ChainPolicy.ExtraStore.Count);
+					if (Log.IsTraceEnabled())
+						Log.Trace("Session{0} loaded certificates from CertificateFile '{1}'; CertificateCount: {2}", m_logArguments[0], cs.CACertificateFile, certificateChain.ChainPolicy.ExtraStore.Count);
 					caCertificateChain = certificateChain;
 					certificateChain = null;
 				}
@@ -1363,12 +1363,12 @@ namespace MySqlConnector.Core
 				m_payloadHandler!.ByteHandler = sslByteHandler;
 				m_isSecureConnection = true;
 				m_sslStream = sslStream;
-				if (Log.IsInfoEnabled())
+				if (Log.IsDebugEnabled())
 				{
 #if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1
-					Log.Info("Session{0} connected TLS with SslProtocol={1}, CipherAlgorithm={2}, HashAlgorithm={3}, KeyExchangeAlgorithm={4}, KeyExchangeStrength={5}", m_logArguments[0], sslStream.SslProtocol, sslStream.CipherAlgorithm, sslStream.HashAlgorithm, sslStream.KeyExchangeAlgorithm, sslStream.KeyExchangeStrength);
+					Log.Debug("Session{0} connected TLS with SslProtocol={1}, CipherAlgorithm={2}, HashAlgorithm={3}, KeyExchangeAlgorithm={4}, KeyExchangeStrength={5}", m_logArguments[0], sslStream.SslProtocol, sslStream.CipherAlgorithm, sslStream.HashAlgorithm, sslStream.KeyExchangeAlgorithm, sslStream.KeyExchangeStrength);
 #else
-					Log.Info("Session{0} connected TLS with SslProtocol={1}, NegotiatedCipherSuite={2}", m_logArguments[0], sslStream.SslProtocol, sslStream.NegotiatedCipherSuite);
+					Log.Debug("Session{0} connected TLS with SslProtocol={1}, NegotiatedCipherSuite={2}", m_logArguments[0], sslStream.SslProtocol, sslStream.NegotiatedCipherSuite);
 #endif
 				}
 			}
@@ -1511,7 +1511,7 @@ namespace MySqlConnector.Core
 
 		private async Task GetRealServerDetailsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
-			Log.Info("Session{0} detected proxy; getting CONNECTION_ID(), VERSION() from server", m_logArguments);
+			Log.Debug("Session{0} detected proxy; getting CONNECTION_ID(), VERSION() from server", m_logArguments);
 			try
 			{
 				await SendAsync(QueryPayload.Create("SELECT CONNECTION_ID(), VERSION();"), ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -1552,7 +1552,7 @@ namespace MySqlConnector.Core
 				if (connectionId.HasValue && serverVersion is not null)
 				{
 					var newServerVersion = new ServerVersion(serverVersion);
-					Log.Info("Session{0} changing ConnectionIdOld {1} to ConnectionId {2} and ServerVersionOld {3} to ServerVersion {4}", m_logArguments[0], ConnectionId, connectionId.Value, ServerVersion.OriginalString, newServerVersion.OriginalString);
+					Log.Debug("Session{0} changing ConnectionIdOld {1} to ConnectionId {2} and ServerVersionOld {3} to ServerVersion {4}", m_logArguments[0], ConnectionId, connectionId.Value, ServerVersion.OriginalString, newServerVersion.OriginalString);
 					ConnectionId = connectionId.Value;
 					ServerVersion = newServerVersion;
 				}
@@ -1565,7 +1565,7 @@ namespace MySqlConnector.Core
 
 		private void ShutdownSocket()
 		{
-			Log.Info("Session{0} closing stream/socket", m_logArguments);
+			Log.Debug("Session{0} closing stream/socket", m_logArguments);
 			Utility.Dispose(ref m_payloadHandler);
 			Utility.Dispose(ref m_stream);
 			SafeDispose(ref m_tcpClient);
@@ -1605,7 +1605,7 @@ namespace MySqlConnector.Core
 
 		internal void SetFailed(Exception exception)
 		{
-			Log.Info(exception, "Session{0} setting state to Failed", m_logArguments);
+			Log.Debug(exception, "Session{0} setting state to Failed", m_logArguments);
 			lock (m_lock)
 				m_state = State.Failed;
 			if (OwningConnection is not null && OwningConnection.TryGetTarget(out var connection))

@@ -28,7 +28,7 @@ namespace MySqlConnector.Core
 			// on the lock in RecoverLeakedSessions in high-concurrency situations
 			if (IsEmpty && unchecked(((uint) Environment.TickCount) - m_lastRecoveryTime) >= 1000u)
 			{
-				Log.Info("Pool{0} is empty; recovering leaked sessions", m_logArguments);
+				Log.Debug("Pool{0} is empty; trying to recover any leaked sessions", m_logArguments);
 				await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
 			}
 
@@ -183,7 +183,7 @@ namespace MySqlConnector.Core
 					if (sessionHealth == 1)
 						Log.Warn("Pool{0} received invalid Session{1}; destroying it", m_logArguments[0], session.Id);
 					else
-						Log.Info("Pool{0} received expired Session{1}; destroying it", m_logArguments[0], session.Id);
+						Log.Debug("Pool{0} received expired Session{1}; destroying it", m_logArguments[0], session.Id);
 					AdjustHostConnectionCount(session, -1);
 					await session.DisposeAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 				}
@@ -306,7 +306,7 @@ namespace MySqlConnector.Core
 						if (shouldCleanFn(session))
 						{
 							// session should be cleaned; dispose it and keep iterating
-							Log.Info("Pool{0} found Session{1} to clean up", m_logArguments[0], session.Id);
+							Log.Debug("Pool{0} found Session{1} to clean up", m_logArguments[0], session.Id);
 							await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 						}
 						else
@@ -371,26 +371,26 @@ namespace MySqlConnector.Core
 		private async ValueTask<ServerSession> ConnectSessionAsync(string logMessage, int startTickCount, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			var session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
-			if (Log.IsInfoEnabled())
-				Log.Info(logMessage, m_logArguments[0], session.Id);
+			if (Log.IsDebugEnabled())
+				Log.Debug(logMessage, m_logArguments[0], session.Id);
 			var statusInfo = await session.ConnectAsync(ConnectionSettings, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
 			Exception? redirectionException = null;
 
 			if (statusInfo is not null && statusInfo.StartsWith("Location: mysql://", StringComparison.Ordinal))
 			{
 				// server redirection string has the format "Location: mysql://{host}:{port}/user={userId}[&ttl={ttl}]"
-				Log.Info("Session{0} has server redirection header {1}", session.Id, statusInfo);
+				Log.Trace("Session{0} has server redirection header {1}", session.Id, statusInfo);
 
 				if (ConnectionSettings.ServerRedirectionMode == MySqlServerRedirectionMode.Disabled)
 				{
-					Log.Info("Pool{0} server redirection is disabled; ignoring redirection", m_logArguments);
+					Log.Trace("Pool{0} server redirection is disabled; ignoring redirection", m_logArguments);
 				}
 				else if (Utility.TryParseRedirectionHeader(statusInfo, out var host, out var port, out var user))
 				{
 					if (host != ConnectionSettings.HostNames![0] || port != ConnectionSettings.Port || user != ConnectionSettings.UserID)
 					{
 						var redirectedSettings = ConnectionSettings.CloneWith(host, port, user);
-						Log.Info("Pool{0} opening new connection to Host={1}; Port={2}; User={3}", m_logArguments[0], host, port, user);
+						Log.Debug("Pool{0} opening new connection to Host={1}; Port={2}; User={3}", m_logArguments[0], host, port, user);
 						var redirectedSession = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 						try
 						{
@@ -398,13 +398,13 @@ namespace MySqlConnector.Core
 						}
 						catch (Exception ex)
 						{
-							Log.Warn(ex, "Pool{0} failed to connect redirected Session{1}", m_logArguments[0], redirectedSession.Id);
+							Log.Info(ex, "Pool{0} failed to connect redirected Session{1}", m_logArguments[0], redirectedSession.Id);
 							redirectionException = ex;
 						}
 
 						if (redirectionException is null)
 						{
-							Log.Info("Pool{0} closing Session{1} to use redirected Session{2} instead", m_logArguments[0], session.Id, redirectedSession.Id);
+							Log.Trace("Pool{0} closing Session{1} to use redirected Session{2} instead", m_logArguments[0], session.Id, redirectedSession.Id);
 							await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 							return redirectedSession;
 						}
@@ -421,7 +421,7 @@ namespace MySqlConnector.Core
 					}
 					else
 					{
-						Log.Info("Session{0} is already connected to this server; ignoring redirection", session.Id);
+						Log.Trace("Session{0} is already connected to this server; ignoring redirection", session.Id);
 					}
 				}
 			}
@@ -486,9 +486,9 @@ namespace MySqlConnector.Core
 				if (connectionSettings.ConnectionReset)
 					BackgroundConnectionResetHelper.Start();
 			}
-			else if (pool != newPool && Log.IsInfoEnabled())
+			else if (pool != newPool && Log.IsDebugEnabled())
 			{
-				Log.Info("Pool{0} was created but will not be used (due to race)", newPool.m_logArguments);
+				Log.Debug("Pool{0} was created but will not be used (due to race)", newPool.m_logArguments);
 			}
 
 			return pool;
