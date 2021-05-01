@@ -1247,6 +1247,8 @@ namespace MySqlConnector.Core
 					catch (Exception ex)
 					{
 						Log.Error(ex, "Session{0} couldn't load CA certificate from CertificateFile '{1}'", m_logArguments);
+						if (!File.Exists(cs.CACertificateFile))
+							throw new MySqlException("Cannot find CA Certificate File: " + cs.CACertificateFile, ex);
 						throw new MySqlException("Could not load CA Certificate File: " + cs.CACertificateFile, ex);
 					}
 
@@ -1265,9 +1267,7 @@ namespace MySqlConnector.Core
 						catch (CryptographicException ex)
 						{
 							m_logArguments[1] = cs.CACertificateFile;
-							Log.Error(ex, "Session{0} couldn't load CA certificate from CertificateFile '{1}'", m_logArguments);
-							if (!File.Exists(cs.CACertificateFile))
-								throw new MySqlException("The CA Certificate File is invalid", ex);
+							Log.Warn(ex, "Session{0} couldn't load CA certificate from CertificateFile '{1}'", m_logArguments);
 						}
 						index = nextIndex;
 					}
@@ -1469,7 +1469,7 @@ namespace MySqlConnector.Core
 					Log.Error(ex, "Session{0} couldn't load client key from KeyFile '{1}'", m_logArguments);
 					if (!File.Exists(sslCertificateFile))
 						throw new MySqlException("Cannot find client certificate file: " + sslCertificateFile, ex);
-					throw new MySqlException("Could not load the client key from " + sslKeyFile, ex);
+					throw new MySqlException("Could not load the client key from " + sslCertificateFile, ex);
 				}
 #else
 				m_clientCertificate = X509Certificate2.CreateFromPemFile(sslCertificateFile, sslKeyFile);
@@ -1559,7 +1559,7 @@ namespace MySqlConnector.Core
 			}
 			catch (MySqlException ex)
 			{
-				Log.Error(ex, "Session{0} failed to get CONNECTION_ID(), VERSION()", m_logArguments);
+				Log.Info(ex, "Session{0} failed to get CONNECTION_ID(), VERSION()", m_logArguments);
 			}
 		}
 

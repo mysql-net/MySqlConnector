@@ -129,7 +129,7 @@ namespace MySqlConnector.Core
 					}
 					catch (Exception unexpectedException)
 					{
-						Log.Error(unexpectedException, "Pool{0} unexpected error in GetSessionAsync: {1}", m_logArguments[0], unexpectedException.Message);
+						Log.Warn(unexpectedException, "Pool{0} unexpected error in GetSessionAsync: {1}", m_logArguments[0], unexpectedException.Message);
 					}
 				}
 
