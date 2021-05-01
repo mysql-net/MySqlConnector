@@ -61,7 +61,7 @@ namespace MySqlConnector.Core
 			}
 			catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
 			{
-				Log.Warn("Session{0} query was interrupted", connection.Session.Id);
+				Log.Info("Session{0} query was interrupted", connection.Session.Id);
 				throw new OperationCanceledException(ex. Message, ex, cancellationToken);
 			}
 			catch (Exception ex) when (payload.Span.Length > 4_194_304 && (ex is SocketException or IOException or MySqlProtocolException))

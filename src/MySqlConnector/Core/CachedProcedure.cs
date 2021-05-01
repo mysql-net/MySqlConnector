@@ -51,7 +51,7 @@ namespace MySqlConnector.Core
 				}
 				catch (MySqlException ex)
 				{
-					Log.Warn("Session{0} failed to retrieve metadata for Schema={1} Component={2}; falling back to INFORMATION_SCHEMA. Error: {3}", connection.Session.Id, schema, component, ex.Message);
+					Log.Info("Session{0} failed to retrieve metadata for Schema={1} Component={2}; falling back to INFORMATION_SCHEMA. Error: {3}", connection.Session.Id, schema, component, ex.Message);
 					if (ex.ErrorCode == MySqlErrorCode.TableAccessDenied)
 						connection.Session.ProcAccessDenied = true;
 				}
@@ -59,7 +59,7 @@ namespace MySqlConnector.Core
 
 			if (connection.Session.ServerVersion.Version < ServerVersions.SupportsProcedureCache)
 			{
-				Log.Warn("Session{0} ServerVersion={1} does not support cached procedures", connection.Session.Id, connection.Session.ServerVersion.OriginalString);
+				Log.Info("Session{0} ServerVersion={1} does not support cached procedures", connection.Session.Id, connection.Session.ServerVersion.OriginalString);
 					return null;
 			}
 

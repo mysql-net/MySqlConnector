@@ -340,7 +340,7 @@ namespace MySqlConnector
 				{
 					if (columnMapping.Expression is not null)
 					{
-						Log.Warn("Column mapping for SourceOrdinal {0}, DestinationColumn {1} already has Expression {2}", columnMapping.SourceOrdinal, destinationColumn, columnMapping.Expression);
+						Log.Info("Column mapping for SourceOrdinal {0}, DestinationColumn {1} already has Expression {2}", columnMapping.SourceOrdinal, destinationColumn, columnMapping.Expression);
 					}
 					else
 					{

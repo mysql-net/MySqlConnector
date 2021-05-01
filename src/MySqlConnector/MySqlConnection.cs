@@ -723,7 +723,7 @@ namespace MySqlConnector
 			catch (MySqlException ex)
 			{
 				// cancelling the query failed; setting the state back to 'Querying' will allow another call to 'Cancel' to try again
-				Log.Warn(ex, "Session{0} cancelling CommandId {1} failed", m_session!.Id, command.CommandId);
+				Log.Info(ex, "Session{0} cancelling CommandId {1} failed", m_session!.Id, command.CommandId);
 				m_session.AbortCancel(command);
 			}
 		}
@@ -738,14 +738,14 @@ namespace MySqlConnector
 			var cachedProcedures = m_session!.Pool?.GetProcedureCache() ?? m_cachedProcedures;
 			if (cachedProcedures is null)
 			{
-				Log.Warn("Session{0} pool Pool{1} doesn't have a shared procedure cache; procedure will only be cached on this connection", m_session.Id, m_session.Pool?.Id);
+				Log.Info("Session{0} pool Pool{1} doesn't have a shared procedure cache; procedure will only be cached on this connection", m_session.Id, m_session.Pool?.Id);
 				cachedProcedures = m_cachedProcedures = new();
 			}
 
 			var normalized = NormalizedSchema.MustNormalize(name, Database);
 			if (string.IsNullOrEmpty(normalized.Schema))
 			{
-				Log.Warn("Session{0} couldn't normalize Database={1} Name={2}; not caching procedure", m_session.Id, Database, name);
+				Log.Info("Session{0} couldn't normalize Database={1} Name={2}; not caching procedure", m_session.Id, Database, name);
 				return null;
 			}
 
@@ -756,10 +756,10 @@ namespace MySqlConnector
 			if (!foundProcedure || (cachedProcedure is null && revalidateMissing))
 			{
 				cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema!, normalized.Component!, cancellationToken).ConfigureAwait(false);
-				if (Log.IsWarnEnabled())
+				if (Log.IsInfoEnabled())
 				{
 					if (cachedProcedure is null)
-						Log.Warn("Session{0} failed to cache procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
+						Log.Info("Session{0} failed to cache procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
 					else
 						Log.Trace("Session{0} caching procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
 				}
@@ -773,10 +773,10 @@ namespace MySqlConnector
 					Log.Trace("Session{0} procedure cache Count={1}", m_session.Id, count);
 			}
 
-			if (Log.IsWarnEnabled())
+			if (Log.IsInfoEnabled())
 			{
 				if (cachedProcedure is null)
-					Log.Warn("Session{0} did not find cached procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
+					Log.Info("Session{0} did not find cached procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
 				else
 					Log.Trace("Session{0} returning cached procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
 			}

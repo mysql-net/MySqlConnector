@@ -83,7 +83,7 @@ namespace MySqlConnector.Core
 					if (!reuseSession)
 					{
 						// session is either old or cannot communicate with the server
-						Log.Warn("Pool{0} Session{1} is unusable; destroying it", m_logArguments[0], session.Id);
+						Log.Info("Pool{0} Session{1} is unusable; destroying it", m_logArguments[0], session.Id);
 						AdjustHostConnectionCount(session, -1);
 						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
@@ -181,7 +181,7 @@ namespace MySqlConnector.Core
 				else
 				{
 					if (sessionHealth == 1)
-						Log.Warn("Pool{0} received invalid Session{1}; destroying it", m_logArguments[0], session.Id);
+						Log.Info("Pool{0} received invalid Session{1}; destroying it", m_logArguments[0], session.Id);
 					else
 						Log.Debug("Pool{0} received expired Session{1}; destroying it", m_logArguments[0], session.Id);
 					AdjustHostConnectionCount(session, -1);

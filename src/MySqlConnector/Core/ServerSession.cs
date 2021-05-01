@@ -472,13 +472,13 @@ namespace MySqlConnector.Core
 						}
 						catch (ArgumentException ex) when (ex.ParamName == "sslProtocolType" && sslProtocols == SslProtocols.None)
 						{
-							Log.Warn(ex, "Session{0} doesn't support SslProtocols.None; falling back to explicitly specifying SslProtocols", m_logArguments);
+							Log.Debug(ex, "Session{0} doesn't support SslProtocols.None; falling back to explicitly specifying SslProtocols", m_logArguments);
 							sslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
 						}
 						catch (Exception ex) when (shouldRetrySsl && ((ex is MySqlException && ex.InnerException is IOException) || ex is IOException))
 						{
 							// negotiating TLS 1.2 with a yaSSL-based server throws an exception on Windows, see comment at top of method
-							Log.Warn(ex, "Session{0} failed negotiating TLS; falling back to TLS 1.1", m_logArguments);
+							Log.Debug(ex, "Session{0} failed negotiating TLS; falling back to TLS 1.1", m_logArguments);
 							sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
 							if (Pool is not null)
 								Pool.SslProtocols = sslProtocols;
