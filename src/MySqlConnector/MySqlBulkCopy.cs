@@ -621,13 +621,13 @@ namespace MySqlConnector
 
 						utf8Encoder ??= s_utf8Encoding.GetEncoder();
 #if NETSTANDARD1_3
-						if (output.Length <= 4 && utf8Encoder.GetByteCount(value.ToCharArray(), inputIndex, 1, flush: false) > output.Length)
+						if (output.Length < 4 && utf8Encoder.GetByteCount(value.ToCharArray(), inputIndex, Math.Min(2, nextIndex - inputIndex), flush: false) > output.Length)
 							return false;
 						var buffer = new byte[output.Length];
 						utf8Encoder.Convert(value.ToCharArray(), inputIndex, nextIndex - inputIndex, buffer, 0, buffer.Length, nextIndex == value.Length, out var charsUsed, out var bytesUsed, out var completed);
 						buffer.AsSpan().CopyTo(output);
 #else
-						if (output.Length <= 4 && utf8Encoder.GetByteCount(value.AsSpan(inputIndex, 1), flush: false) > output.Length)
+						if (output.Length < 4 && utf8Encoder.GetByteCount(value.AsSpan(inputIndex, Math.Min(2, nextIndex - inputIndex)), flush: false) > output.Length)
 							return false;
 						utf8Encoder.Convert(value.AsSpan(inputIndex, nextIndex - inputIndex), output, nextIndex == value.Length, out var charsUsed, out var bytesUsed, out var completed);
 #endif
