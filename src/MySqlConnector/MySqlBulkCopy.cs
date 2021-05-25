@@ -107,7 +107,7 @@ namespace MySqlConnector
 #pragma warning restore CA2012
 		}
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		/// <summary>
 		/// Asynchronously copies all rows in the supplied <see cref="DataTable"/> to the destination table specified by the
 		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
@@ -147,7 +147,7 @@ namespace MySqlConnector
 #pragma warning restore CA2012
 		}
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		/// <summary>
 		/// Asynchronously copies all rows in the supplied sequence of <see cref="DataRow"/> objects to the destination table specified by the
 		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object. The number of columns
@@ -193,7 +193,7 @@ namespace MySqlConnector
 #pragma warning restore CA2012
 		}
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		/// <summary>
 		/// Asynchronously copies all rows in the supplied <see cref="IDataReader"/> to the destination table specified by the
 		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
@@ -219,7 +219,7 @@ namespace MySqlConnector
 		}
 #endif
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		private async ValueTask WriteToServerAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #else
 		private async ValueTask<int> WriteToServerAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -327,7 +327,7 @@ namespace MySqlConnector
 				throw new MySqlException(MySqlErrorCode.BulkCopyFailed, "{0} rows were copied to {1} but only {2} were inserted.".FormatInvariant(RowsCopied, tableName, rowsInserted));
 			}
 
-#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 			return default;
 #endif
 

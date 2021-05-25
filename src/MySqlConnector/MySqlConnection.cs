@@ -67,7 +67,7 @@ namespace MySqlConnector
 		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => BeginTransactionAsync(isolationLevel, default, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 #pragma warning restore CA2012
 
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		/// <summary>
 		/// Begins a database transaction asynchronously.
 		/// </summary>
@@ -325,7 +325,7 @@ namespace MySqlConnector
 #endif
 
 		public override void Close() => CloseAsync(changeState: true, IOBehavior.Synchronous).GetAwaiter().GetResult();
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override Task CloseAsync() => CloseAsync(changeState: true, SimpleAsyncIOBehavior);
 #else
 		public Task CloseAsync() => CloseAsync(changeState: true, SimpleAsyncIOBehavior);
@@ -333,7 +333,7 @@ namespace MySqlConnector
 		internal Task CloseAsync(IOBehavior ioBehavior) => CloseAsync(changeState: true, ioBehavior);
 
 		public override void ChangeDatabase(string databaseName) => ChangeDatabaseAsync(IOBehavior.Synchronous, databaseName, CancellationToken.None).GetAwaiter().GetResult();
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, cancellationToken);
 #else
 		public Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, cancellationToken);
@@ -442,7 +442,7 @@ namespace MySqlConnector
 		/// <remarks>This is an optional feature of the MySQL protocol and may not be supported by all servers.
 		/// It's known to be supported by MySQL Server 5.7.3 (and later) and MariaDB 10.2.4 (and later).
 		/// Other MySQL-compatible servers or proxies may not support this command.</remarks>
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public async ValueTask ResetConnectionAsync(CancellationToken cancellationToken = default)
 #else
 		public async Task ResetConnectionAsync(CancellationToken cancellationToken = default)
@@ -640,7 +640,7 @@ namespace MySqlConnector
 			}
 		}
 
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override async ValueTask DisposeAsync()
 #else
 		public async Task DisposeAsync()
@@ -1025,7 +1025,7 @@ namespace MySqlConnector
 			}
 		}
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		private async ValueTask CloseDatabaseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #else
 		private async Task CloseDatabaseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)

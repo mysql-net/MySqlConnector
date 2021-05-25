@@ -6,7 +6,7 @@ namespace MySqlConnector.Utilities
 {
 	internal static class SocketExtensions
 	{
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public static int Send(this Socket socket, ReadOnlyMemory<byte> data, SocketFlags flags) => socket.Send(data.Span, flags);
 #else
 		public static SocketAwaitable ReceiveAsync(this Socket socket, SocketAwaitable awaitable)

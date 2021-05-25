@@ -68,7 +68,7 @@ namespace MySqlConnector.Core
 		public bool SupportsSessionTrack => m_supportsSessionTrack;
 		public bool ProcAccessDenied { get; set; }
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public ValueTask ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
 #else
 		public ValueTask<int> ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
@@ -165,7 +165,7 @@ namespace MySqlConnector.Core
 				}
 
 				var parameterCount = cachedProcedure.Parameters.Count;
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 				commandToPrepare = string.Create(commandText.Length + 7 + parameterCount * 2 + (parameterCount == 0 ? 1 : 0), (commandText, parameterCount), static (buffer, state) =>
 				{
 					buffer[0] = 'C';
@@ -1337,7 +1337,7 @@ namespace MySqlConnector.Core
 			{
 				if (ioBehavior == IOBehavior.Asynchronous)
 				{
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 					await sslStream.AuthenticateAsClientAsync(clientAuthenticationOptions, cancellationToken).ConfigureAwait(false);
 #else
 					await sslStream.AuthenticateAsClientAsync(clientAuthenticationOptions.TargetHost,
@@ -1350,7 +1350,7 @@ namespace MySqlConnector.Core
 				{
 #if NET5_0_OR_GREATER
 					sslStream.AuthenticateAsClient(clientAuthenticationOptions);
-#elif NET45_OR_GREATER || NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_0 || NETSTANDARD2_1
+#elif NET45_OR_GREATER || NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
 					sslStream.AuthenticateAsClient(clientAuthenticationOptions.TargetHost,
 						clientAuthenticationOptions.ClientCertificates,
 						clientAuthenticationOptions.EnabledSslProtocols,
@@ -1478,7 +1478,7 @@ namespace MySqlConnector.Core
 			}
 		}
 
-#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 		// a stripped-down version of this POCO options class for TFMs that don't have it built in
 		internal sealed class SslClientAuthenticationOptions
 		{

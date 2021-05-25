@@ -423,7 +423,7 @@ namespace MySqlConnector
 			}
 		}
 
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override ValueTask DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
 #else
 		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
@@ -565,7 +565,7 @@ namespace MySqlConnector
 			m_resultSet = new(this);
 		}
 
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		internal async ValueTask DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #else
 		internal async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)

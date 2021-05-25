@@ -158,7 +158,7 @@ namespace MySqlConnector.Core
 			return 0;
 		}
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public async ValueTask ReturnAsync(IOBehavior ioBehavior, ServerSession session)
 #else
 		public async ValueTask<int> ReturnAsync(IOBehavior ioBehavior, ServerSession session)
@@ -193,7 +193,7 @@ namespace MySqlConnector.Core
 				m_sessionSemaphore.Release();
 			}
 
-#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 			return default;
 #endif
 		}

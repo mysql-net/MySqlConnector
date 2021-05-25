@@ -29,7 +29,7 @@ namespace MySqlConnector.Utilities
 		public static string FormatInvariant(this string format, params object?[] args) =>
 			string.Format(CultureInfo.InvariantCulture, format, args);
 
-#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 		public static string GetString(this Encoding encoding, ReadOnlySpan<byte> span)
 		{
 			if (span.Length == 0)
@@ -66,7 +66,7 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
-#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD1_3 && !NETSTANDARD2_1
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD1_3 && !NETSTANDARD2_1_OR_GREATER
 		public static unsafe void Convert(this Encoder encoder, ReadOnlySpan<char> chars, Span<byte> bytes, bool flush, out int charsUsed, out int bytesUsed, out bool completed)
 		{
 			fixed (char* charsPtr = &MemoryMarshal.GetReference(chars))
@@ -129,7 +129,7 @@ namespace MySqlConnector.Utilities
 			if (keyEndIndex <= -1)
 				throw new FormatException($"Missing expected '{pemFooter}' PEM footer: " + key.Substring(Math.Max(key.Length - 80, 0)));
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 			var keyChars = key.AsSpan().Slice(keyStartIndex, keyEndIndex - keyStartIndex);
 			var bufferLength = keyChars.Length / 4 * 3;
 			byte[]? buffer = null;
@@ -490,7 +490,7 @@ namespace MySqlConnector.Utilities
 		public static byte[] EmptyByteArray { get; } = Array.Empty<byte>();
 #endif
 
-#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 		public static bool TryComputeHash(this HashAlgorithm hashAlgorithm, ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten)
 		{
 			// assume caller supplies a large-enough buffer so we don't have to bounds-check it
@@ -528,7 +528,7 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
-#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 		public static int Read(this Stream stream, Memory<byte> buffer)
 		{
 			MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);

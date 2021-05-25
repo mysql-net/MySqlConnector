@@ -1,4 +1,4 @@
-#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 using System;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;

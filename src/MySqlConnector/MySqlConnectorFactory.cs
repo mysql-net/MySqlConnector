@@ -50,7 +50,7 @@ namespace MySqlConnector
 		/// <remarks><see cref="DbDataSourceEnumerator"/> is not supported by MySqlConnector.</remarks>
 		public override bool CanCreateDataSourceEnumerator => false;
 
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		/// <summary>
 		/// Returns <c>true</c>.
 		/// </summary>

@@ -25,7 +25,7 @@ namespace MySqlConnector
 		/// </summary>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override Task CommitAsync(CancellationToken cancellationToken = default) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #else
 		public Task CommitAsync(CancellationToken cancellationToken = default) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
@@ -51,7 +51,7 @@ namespace MySqlConnector
 		/// </summary>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override Task RollbackAsync(CancellationToken cancellationToken = default) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #else
 		public Task RollbackAsync(CancellationToken cancellationToken = default) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
@@ -195,13 +195,13 @@ namespace MySqlConnector
 		/// Asynchronously releases any resources associated with this transaction. If it was not committed, it will be rolled back.
 		/// </summary>
 		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override ValueTask DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
 #else
 		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
 #endif
 
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		internal ValueTask DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #else
 		internal Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -211,14 +211,14 @@ namespace MySqlConnector
 			if (Connection?.CurrentTransaction == this)
 				return DoDisposeAsync(ioBehavior, cancellationToken);
 			Connection = null;
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 			return default;
 #else
 			return Utility.CompletedTask;
 #endif
 		}
 
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		private async ValueTask DoDisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #else
 		private async Task DoDisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)

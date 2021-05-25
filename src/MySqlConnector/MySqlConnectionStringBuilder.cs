@@ -820,7 +820,7 @@ namespace MySqlConnector
 			{
 				try
 				{
-#if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 					return Enum.Parse<T>(enumString, ignoreCase: true);
 #else
 					return (T) Enum.Parse(typeof(T), enumString, ignoreCase: true);

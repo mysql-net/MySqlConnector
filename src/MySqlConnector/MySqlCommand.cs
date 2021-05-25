@@ -120,7 +120,7 @@ namespace MySqlConnector
 			Connection!.Session.PrepareAsync(this, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 		}
 
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
 #else
 		public Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
@@ -335,14 +335,14 @@ namespace MySqlConnector
 			base.Dispose(disposing);
 		}
 
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override ValueTask DisposeAsync()
 #else
 		public Task DisposeAsync()
 #endif
 		{
 			Dispose();
-#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 			return default;
 #else
 			return Utility.CompletedTask;
