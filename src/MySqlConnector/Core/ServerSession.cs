@@ -68,10 +68,10 @@ namespace MySqlConnector.Core
 		public bool SupportsSessionTrack => m_supportsSessionTrack;
 		public bool ProcAccessDenied { get; set; }
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
-		public ValueTask<int> ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
-#else
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
 		public ValueTask ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
+#else
+		public ValueTask<int> ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
 #endif
 		{
 			if (Log.IsDebugEnabled())

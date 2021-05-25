@@ -158,10 +158,10 @@ namespace MySqlConnector.Core
 			return 0;
 		}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
-		public async ValueTask<int> ReturnAsync(IOBehavior ioBehavior, ServerSession session)
-#else
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
 		public async ValueTask ReturnAsync(IOBehavior ioBehavior, ServerSession session)
+#else
+		public async ValueTask<int> ReturnAsync(IOBehavior ioBehavior, ServerSession session)
 #endif
 		{
 			if (Log.IsDebugEnabled())
@@ -193,7 +193,7 @@ namespace MySqlConnector.Core
 				m_sessionSemaphore.Release();
 			}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1
 			return default;
 #endif
 		}
