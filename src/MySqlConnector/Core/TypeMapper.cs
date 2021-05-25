@@ -92,9 +92,15 @@ namespace MySqlConnector.Core
 			AddColumnTypeMetadata(new("GEOMCOLLECTION", typeBinary, MySqlDbType.Geometry, binary: true));
 
 			// date/time
+#if NET6_0_OR_GREATER
+			AddDbTypeMapping(new(typeof(DateOnly), new[] { DbType.Date }));
+#endif
 			var typeDate = AddDbTypeMapping(new(typeof(DateTime), new[] { DbType.Date }));
 			var typeDateTime = AddDbTypeMapping(new(typeof(DateTime), new[] { DbType.DateTime, DbType.DateTime2, DbType.DateTimeOffset }));
 			AddDbTypeMapping(new(typeof(DateTimeOffset), new[] { DbType.DateTimeOffset }));
+#if NET6_0_OR_GREATER
+			AddDbTypeMapping(new(typeof(TimeOnly), new[] { DbType.Time }));
+#endif
 			var typeTime = AddDbTypeMapping(new(typeof(TimeSpan), new[] { DbType.Time }, convert: static o => o is string s ? Utility.ParseTimeSpan(Encoding.UTF8.GetBytes(s)) : Convert.ChangeType(o, typeof(TimeSpan))));
 			AddColumnTypeMetadata(new("DATETIME", typeDateTime, MySqlDbType.DateTime));
 			AddColumnTypeMetadata(new("DATE", typeDate, MySqlDbType.Date));

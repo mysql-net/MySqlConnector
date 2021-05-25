@@ -258,6 +258,11 @@ namespace MySqlConnector
 
 		protected override DbDataReader GetDbDataReader(int ordinal) => throw new NotSupportedException();
 
+#if NET6_0_OR_GREATER
+		public DateOnly GetDateOnly(int ordinal) => DateOnly.FromDateTime(GetDateTime(ordinal));
+		public DateOnly GetDateOnly(string name) => GetDateOnly(GetOrdinal(name));
+#endif
+
 		public override DateTime GetDateTime(int ordinal) => GetResultSet().GetCurrentRow().GetDateTime(ordinal);
 		public DateTime GetDateTime(string name) => GetDateTime(GetOrdinal(name));
 
@@ -269,6 +274,11 @@ namespace MySqlConnector
 
 		public MySqlGeometry GetMySqlGeometry(int ordinal) => GetResultSet().GetCurrentRow().GetMySqlGeometry(ordinal);
 		public MySqlGeometry GetMySqlGeometry(string name) => GetMySqlGeometry(GetOrdinal(name));
+
+#if NET6_0_OR_GREATER
+		public TimeOnly GetTimeOnly(int ordinal) => TimeOnly.FromTimeSpan(GetTimeSpan(ordinal));
+		public TimeOnly GetTimeOnly(string name) => GetTimeOnly(GetOrdinal(name));
+#endif
 
 		public TimeSpan GetTimeSpan(int ordinal) => (TimeSpan) GetValue(ordinal);
 		public TimeSpan GetTimeSpan(string name) => GetTimeSpan(GetOrdinal(name));
@@ -404,6 +414,12 @@ namespace MySqlConnector
 				return (T) (object) GetTextReader(ordinal);
 			if (typeof(T) == typeof(TimeSpan))
 				return (T) (object) GetTimeSpan(ordinal);
+#if NET6_0_OR_GREATER
+			if (typeof(T) == typeof(DateOnly))
+				return (T) (object) GetDateOnly(ordinal);
+			if (typeof(T) == typeof(TimeOnly))
+				return (T) (object) GetTimeOnly(ordinal);
+#endif
 
 			return base.GetFieldValue<T>(ordinal);
 		}

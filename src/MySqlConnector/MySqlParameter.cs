@@ -340,6 +340,12 @@ namespace MySqlConnector
 				else
 					writer.Write("timestamp('0000-00-00')");
 			}
+#if NET6_0_OR_GREATER
+			else if (Value is DateOnly dateOnlyValue)
+			{
+				writer.Write("timestamp('{0:yyyy'-'MM'-'dd}')".FormatInvariant(dateOnlyValue));
+			}
+#endif
 			else if (Value is DateTime dateTimeValue)
 			{
 				if ((options & StatementPreparerOptions.DateTimeUtc) != 0 && dateTimeValue.Kind == DateTimeKind.Local)
@@ -354,6 +360,13 @@ namespace MySqlConnector
 				// store as UTC as it will be read as such when deserialized from a timespan column
 				writer.Write("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(dateTimeOffsetValue.UtcDateTime));
 			}
+#if NET6_0_OR_GREATER
+			else if (Value is TimeOnly timeOnlyValue)
+			{
+				writer.Write("time '");
+				writer.Write("{0:HH':'mm':'ss'.'ffffff}'".FormatInvariant(timeOnlyValue));
+			}
+#endif
 			else if (Value is TimeSpan ts)
 			{
 				writer.Write("time '");
@@ -605,6 +618,12 @@ namespace MySqlConnector
 				else
 					writer.Write((byte) 0);
 			}
+#if NET6_0_OR_GREATER
+			else if (Value is DateOnly dateOnlyValue)
+			{
+				WriteDateOnly(writer, dateOnlyValue);
+			}
+#endif
 			else if (Value is DateTime dateTimeValue)
 			{
 				if ((options & StatementPreparerOptions.DateTimeUtc) != 0 && dateTimeValue.Kind == DateTimeKind.Local)
@@ -619,6 +638,12 @@ namespace MySqlConnector
 				// store as UTC as it will be read as such when deserialized from a timespan column
 				WriteDateTime(writer, dateTimeOffsetValue.UtcDateTime);
 			}
+#if NET6_0_OR_GREATER
+			else if (Value is TimeOnly timeOnlyValue)
+			{
+				WriteTime(writer, timeOnlyValue.ToTimeSpan());
+			}
+#endif
 			else if (Value is TimeSpan ts)
 			{
 				WriteTime(writer, ts);
@@ -724,6 +749,16 @@ namespace MySqlConnector
 
 			return name.StartsWith("@", StringComparison.Ordinal) || name.StartsWith("?", StringComparison.Ordinal) ? name.Substring(1) : name;
 		}
+
+#if NET6_0_OR_GREATER
+		private static void WriteDateOnly(ByteBufferWriter writer, DateOnly dateOnly)
+		{
+			writer.Write((byte) 4);
+			writer.Write((ushort) dateOnly.Year);
+			writer.Write((byte) dateOnly.Month);
+			writer.Write((byte) dateOnly.Day);
+		}
+#endif
 
 		private static void WriteDateTime(ByteBufferWriter writer, DateTime dateTime)
 		{

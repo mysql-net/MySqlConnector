@@ -171,15 +171,16 @@ create table datatypes_times(
   `DateTime` datetime(6) null,
   `Timestamp` timestamp(6) null,
   `Time` time(6) null,
+  TimeOnly time(6) null,
   `Year` year null);
 
-insert into datatypes_times(`Date`, `DateTime`, `Timestamp`, `Time`, `Year`)
+insert into datatypes_times(`Date`, `DateTime`, `Timestamp`, `Time`, `TimeOnly`, `Year`)
 values
-  (null, null, null, null, null),
-  (date '1000-01-01', timestamp '1000-01-01 00:00:00', timestamp '1970-01-01 00:00:01', time '-838:59:59' , 1901),
-  (date '9999-12-31', timestamp '9999-12-31 23:59:59.999999', '2038-01-18 03:14:07.999999', time '838:59:59.000', 2155), -- not actually maximum Timestamp value, due to TZ conversion
-  (null, null, null, time '00:00:00', 0),
-  (date '2016-04-05', timestamp '2016-04-05 14:03:04.56789', timestamp '2016-04-05 14:03:04.56789', time '14:03:04.56789', 2016);
+  (null, null, null, null, null, null),
+  (date '1000-01-01', timestamp '1000-01-01 00:00:00', timestamp '1970-01-01 00:00:01', time '-838:59:59' , time '00:00:00', 1901),
+  (date '9999-12-31', timestamp '9999-12-31 23:59:59.999999', '2038-01-18 03:14:07.999999', time '838:59:59.000', time '23:59:59.999999', 2155), -- not actually maximum Timestamp value, due to TZ conversion
+  (null, null, null, time '00:00:00', time '00:00:00', 0),
+  (date '2016-04-05', timestamp '2016-04-05 14:03:04.56789', timestamp '2016-04-05 14:03:04.56789', time '14:03:04.56789', time '14:03:04.56789', 2016);
 
 drop table if exists datatypes_guids;
 create table datatypes_guids (
