@@ -51,7 +51,7 @@ jobs:
       - name: Set up .NET 6.0
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 6.0.100-preview.3.21202.5
+          dotnet-version: 6.0.100-preview.4.21255.9
       - name: Restore Packages
         run: dotnet restore
       - name: Build and analyze
