@@ -1,8 +1,8 @@
 ## About
 
-MySqlConnector is an [ADO.NET](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/) data provider for [MySQL](https://www.mysql.com/), [MariaDB](https://mariadb.org/), [Amazon Aurora](https://aws.amazon.com/rds/aurora/), [Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/) and other MySQL-compatible databases. It provides implementations of `DbConnection`, `DbCommand`, `DbDataReader`, `DbTransaction`—the classes needed to query and update databases from managed code.
+MySqlConnector is an [ADO.NET](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/) data provider for [MySQL](https://www.mysql.com/), [MariaDB](https://mariadb.org/), [Amazon Aurora](https://aws.amazon.com/rds/aurora/), [Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/) and other MySQL-compatible databases.
 
-Complete documentation is available at the [MySqlConnector Documentation Website](https://mysqlconnector.net/).
+More documentation is available at the [MySqlConnector website](https://mysqlconnector.net/).
 
 ## How to Use
 
@@ -40,6 +40,21 @@ while (reader.Read())
 * Full support for async I/O
 * High performance
 * Supports. NET Framework, .NET Core, and .NET 5.0+
+
+## Main Types
+
+The main types provided by this library are:
+
+* `MySqlConnection` (implementation of `DbConnection`)
+* `MySqlCommand` (implementation of `DbCommand`)
+* `MySqlDataReader` (implementation of `DbDataReader`)
+* `MySqlBulkCopy`
+* `MySqlBulkLoader`
+* `MySqlConnectionStringBuilder`
+* `MySqlConnectorFactory`
+* `MySqlDataAdapter`
+* `MySqlException`
+* `MySqlTransaction` (implementation of `DbTransaction`)
 
 ## Related Packages
 

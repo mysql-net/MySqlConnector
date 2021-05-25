@@ -660,6 +660,8 @@ public enum MySqlErrorCode
 | DebugSyncTimeout | `1639` | ER_DEBUG_SYNC_TIMEOUT |
 | DebugSyncHitLimit | `1640` | ER_DEBUG_SYNC_HIT_LIMIT |
 | CannotExecuteInReadOnlyTransaction | `1792` | ER_CANT_EXECUTE_IN_READ_ONLY_TRANSACTION |
+| CannotConvertString | `3854` | ER_CANNOT_CONVERT_STRING |
+| ClientInteractionTimeout | `4031` | ER_CLIENT_INTERACTION_TIMEOUT |
 
 ## See Also
 

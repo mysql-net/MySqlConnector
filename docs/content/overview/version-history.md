@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-04-24
+lastmod: 2021-04-30
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,10 @@ weight: 30
 ---
 
 # Version History
+
+### 1.3.8
+
+* Reduce latency of resetting connections: [#982](https://github.com/mysql-net/MySqlConnector/pull/982).
 
 ### 1.3.7
 
