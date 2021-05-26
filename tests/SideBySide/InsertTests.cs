@@ -249,7 +249,7 @@ create table insert_stream(rowid integer not null primary key auto_increment, st
 			Assert.Equal(new byte[] { 97, 98, 99, 100 }, reader.GetValue(1));
 		}
 
-		[Theory]
+		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=103819")]
 		[InlineData(false)]
 		[InlineData(true)]
 		public void InsertStringBuilder(bool prepare)
@@ -257,19 +257,30 @@ create table insert_stream(rowid integer not null primary key auto_increment, st
 			using var connection = new MySqlConnection(AppConfig.ConnectionString);
 			connection.Open();
 			connection.Execute(@"drop table if exists insert_string_builder;
-create table insert_string_builder(rowid integer not null primary key auto_increment, str text);");
+create table insert_string_builder(rowid integer not null primary key auto_increment, str text collate utf8mb4_bin);");
 
-			var value = "\aAB\\12'ab\\'\\'";
+			var value = new StringBuilder("\aAB\\12'ab\\'\\'");
+			for (var i = 0; i < 100; i++)
+#if !NETCOREAPP3_1
+				value.Append("\U0001F600\uD800\'\U0001F601\uD800");
+#else
+				// the netcoreapp3.1 implementation is broken when handling an unpaired surrogate; probably https://github.com/dotnet/runtime/issues/33817
+				value.Append("\U0001F600\U0001F601");
+#endif
+
 			using var cmd = connection.CreateCommand();
 			cmd.CommandText = @"insert into insert_string_builder(str) values(@str);";
-			cmd.Parameters.AddWithValue("@str", new StringBuilder(value));
+			cmd.Parameters.AddWithValue("@str", value);
 			if (prepare)
 				cmd.Prepare();
 			cmd.ExecuteNonQuery();
 
 			using var reader = connection.ExecuteReader(@"select str from insert_string_builder order by rowid;");
 			Assert.True(reader.Read());
-			Assert.Equal(value, reader.GetValue(0));
+
+			// all unpaired high-surrogates will be converted to the Unicode Replacement Character when converted to UTF-8 to be transmitted to the server
+			var expected = value.ToString().Replace('\uD800', '\uFFFD');
+			Assert.Equal(expected, reader.GetValue(0));
 		}
 
 		[Fact]
