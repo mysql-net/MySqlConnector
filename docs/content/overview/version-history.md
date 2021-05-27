@@ -10,6 +10,12 @@ weight: 30
 
 # Version History
 
+### 1.3.9
+
+* Use `StringBuilder.GetChunks` (in .NET 5.0) for `MySqlParameter`: [#977](https://github.com/mysql-net/MySqlConnector/issues/977).
+* Fix error encoding multibyte characters in `MySqlBulkCopy`: [#974](https://github.com/mysql-net/MySqlConnector/issues/974).
+* Fix error encoding multibyte characters for `StringBuilder` `MySqlParameter` values in .NET 5.0.
+
 ### 1.3.8
 
 * Reduce latency of resetting connections: [#982](https://github.com/mysql-net/MySqlConnector/pull/982).
