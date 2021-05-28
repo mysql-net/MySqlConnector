@@ -1,4 +1,4 @@
-image: Visual Studio 2017
+image: Visual Studio 2019
 services:
 - mysql
 environment:
@@ -9,8 +9,8 @@ cache:
   - '%USERPROFILE%\.nuget\packages -> **\*.csproj'
 install:
   - ps: Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "install-dotnet.ps1"
-  - ps: .\install-dotnet.ps1 -Version 3.1.405 -InstallDir "dotnetcli"
-  - ps: .\install-dotnet.ps1 -Version 5.0.102 -InstallDir "dotnetcli"
+  - ps: .\install-dotnet.ps1 -Version 3.1.409 -InstallDir "dotnetcli"
+  - ps: .\install-dotnet.ps1 -Version 5.0.300 -InstallDir "dotnetcli"
 build_script:
 - dotnet --info
 before_test:
