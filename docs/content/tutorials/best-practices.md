@@ -1,5 +1,5 @@
 ---
-lastmod: 2020-02-08
+lastmod: 2021-06-07
 date: 2016-10-16
 menu:
   main:
@@ -12,7 +12,7 @@ weight: 10
 
 ## Store bool as TINYINT(1)
 
-In MySQL Server, [`BOOL` is an alias for `TINYINT(1)`](https://dev.mysql.com/doc/refman/8.0/en/numeric-type-overview.html).
+In MySQL Server, [`BOOL` is an alias for `TINYINT(1)`](https://dev.mysql.com/doc/refman/8.0/en/numeric-type-syntax.html#idm46095360188160).
 The MySQL ADO.NET connector understands this convention and will marshal `TINYINT(1)` back
 to managed code as the C# `bool` type (`System.Boolean`).
 
