@@ -305,7 +305,7 @@ namespace MySqlConnector
 				var length = inputSpan.Length + BinaryBytes.Length + 1;
 				foreach (var by in inputSpan)
 				{
-					if (by is 0x27 or 0x5C)
+					if (by is 0x27 || by is 0x5C && !noBackslashEscapes)
 						length++;
 				}
 
@@ -314,8 +314,8 @@ namespace MySqlConnector
 				var index = BinaryBytes.Length;
 				foreach (var by in inputSpan)
 				{
-					if (by is 0x27 or 0x5C)
-						outputSpan[index++] = 0x5C;
+					if (by is 0x27 || by is 0x5C && !noBackslashEscapes)
+						outputSpan[index++] = by;
 					outputSpan[index++] = by;
 				}
 				outputSpan[index++] = 0x27;
