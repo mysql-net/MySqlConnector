@@ -707,8 +707,11 @@ namespace MySqlConnector
 			try
 			{
 				// open a dedicated connection to the server to kill the active query
-				var csb = new MySqlConnectionStringBuilder(m_connectionString);
-				csb.Pooling = false;
+				var csb = new MySqlConnectionStringBuilder(m_connectionString)
+				{
+					AutoEnlist = false,
+					Pooling = false,
+				};
 				if (m_session.IPAddress is not null)
 					csb.Server = m_session.IPAddress.ToString();
 				var cancellationTimeout = GetConnectionSettings().CancellationTimeout;
