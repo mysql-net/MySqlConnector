@@ -191,8 +191,8 @@ Connection pooling is enabled by default. These options are used to configure it
   </tr>
   <tr id="DeferConnectionReset">
     <td>Defer Connection Reset, DeferConnectionReset</td>
-    <td><code>false</code></td>
-    <td>If <code>true</code>, the connection state is not reset until the connection is retrieved from the pool. This was the default behaviour before MySqlConnector 1.3. The default value of <code>false</code> resets connections in the background after they’re closed which makes opening a connection faster, and releases server resources sooner.</td>
+    <td><code>true</code></td>
+    <td>If <code>true</code>, the connection state is not reset until the connection is retrieved from the pool. The experimental value of <code>false</code> resets connections in the background after they’re closed which can make opening a connection faster, and releases server resources sooner; however, there are reports of connection pool exhaustion when using this value.</td>
   </tr>
   <tr id="MaxPoolSize">
     <td>Maximum Pool Size, Max Pool Size, MaximumPoolsize, maxpoolsize</td>

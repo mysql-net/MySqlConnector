@@ -36,7 +36,7 @@ namespace MySqlConnector.Tests
 			Assert.False(csb.ConnectionReset);
 #else
 			Assert.True(csb.ConnectionReset);
-			Assert.False(csb.DeferConnectionReset);
+			Assert.True(csb.DeferConnectionReset);
 #endif
 			Assert.Equal(15u, csb.ConnectionTimeout);
 			Assert.False(csb.ConvertZeroDateTime);
