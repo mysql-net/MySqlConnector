@@ -723,6 +723,13 @@ namespace MySqlConnector
 				killCommand.CommandTimeout = cancellationTimeout < 1 ? 3 : cancellationTimeout;
 				m_session.DoCancel(command, killCommand);
 			}
+			catch (InvalidOperationException ex)
+			{
+				// ignore a rare race condition where the connection is open at the beginning of the method, but closed by the time
+				// KILL QUERY is executed: https://github.com/mysql-net/MySqlConnector/issues/1002
+				Log.Info(ex, "Session{0} ignoring cancellation for closed connection.", m_session!.Id);
+				m_session.AbortCancel(command);
+			}
 			catch (MySqlException ex)
 			{
 				// cancelling the query failed; setting the state back to 'Querying' will allow another call to 'Cancel' to try again
