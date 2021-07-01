@@ -86,6 +86,7 @@ namespace MySqlConnector.Core
 
 			case ColumnType.Date:
 			case ColumnType.DateTime:
+			case ColumnType.NewDate:
 			case ColumnType.Timestamp:
 				return ParseDateTime(data);
 

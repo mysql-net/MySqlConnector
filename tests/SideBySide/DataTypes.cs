@@ -954,6 +954,37 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		}
 
 		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void ReadNewDate(bool prepare)
+		{
+			// returns a NEWDATE in MySQL < 5.7.22; see https://github.com/mysql-net/MySqlConnector/issues/1007
+			using var cmd = new MySqlCommand($"SELECT `Date` FROM datatypes_times UNION ALL SELECT `Date` FROM datatypes_times", Connection);
+			if (prepare)
+				cmd.Prepare();
+			using var reader = cmd.ExecuteReader();
+
+#if !BASELINE
+			var columnSchema = reader.GetColumnSchema()[0];
+			Assert.Equal("Date", columnSchema.ColumnName);
+			Assert.Equal(typeof(DateTime), columnSchema.DataType);
+			Assert.Equal("DATE", columnSchema.DataTypeName);
+#endif
+
+#if !NETCOREAPP1_1_2
+			var schemaRow = reader.GetSchemaTable().Rows[0];
+			Assert.Equal("Date", schemaRow["ColumnName"]);
+			Assert.Equal(typeof(DateTime), schemaRow["DataType"]);
+#endif
+
+			while (reader.Read())
+			{
+				if (!reader.IsDBNull(0))
+					reader.GetDateTime(0);
+			}
+		}
+
+		[Theory]
 		[InlineData("Geometry", "GEOMETRY", new byte[] { 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63 })]
 		[InlineData("Point", "GEOMETRY", new byte[] { 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63 })]
 		[InlineData("LineString", "GEOMETRY", new byte[] { 0, 0, 0, 0, 1, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 64 })]

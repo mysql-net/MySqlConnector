@@ -49,8 +49,8 @@ namespace MySqlConnector.Core
 						ColumnType.Long or ColumnType.Int24 or ColumnType.Float => 4,
 						ColumnType.Short or ColumnType.Year => 2,
 						ColumnType.Tiny => 1,
-						ColumnType.Date or ColumnType.DateTime or ColumnType.Timestamp or ColumnType.Time => reader.ReadByte(),
-						ColumnType.DateTime2 or ColumnType.NewDate or ColumnType.Timestamp2 => throw new NotSupportedException("ColumnType {0} is not supported".FormatInvariant(columnDefinition.ColumnType)),
+						ColumnType.Date or ColumnType.DateTime or ColumnType.NewDate or ColumnType.Timestamp or ColumnType.Time => reader.ReadByte(),
+						ColumnType.DateTime2 or ColumnType.Timestamp2 => throw new NotSupportedException("ColumnType {0} is not supported".FormatInvariant(columnDefinition.ColumnType)),
 						_ => checked((int) reader.ReadLengthEncodedInteger()),
 					};
 
@@ -130,6 +130,7 @@ namespace MySqlConnector.Core
 
 			case ColumnType.Date:
 			case ColumnType.DateTime:
+			case ColumnType.NewDate:
 			case ColumnType.Timestamp:
 				return ReadDateTime(data);
 
