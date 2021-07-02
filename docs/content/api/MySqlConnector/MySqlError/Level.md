@@ -4,6 +4,8 @@ title: MySqlError.Level property
 
 # MySqlError.Level property
 
+The error level. This comes from the MySQL Server. Possible values include `Note`, `Warning`, and `Error`.
+
 ```csharp
 public string Level { get; }
 ```

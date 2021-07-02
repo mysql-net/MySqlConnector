@@ -4,6 +4,8 @@ title: MySqlInfoMessageEventArgs.Errors property
 
 # MySqlInfoMessageEventArgs.Errors property
 
+The list of errors being reported.
+
 ```csharp
 public IReadOnlyList<MySqlError> Errors { get; }
 ```
