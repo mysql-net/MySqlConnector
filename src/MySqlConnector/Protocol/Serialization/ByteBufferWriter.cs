@@ -160,7 +160,7 @@ namespace MySqlConnector.Protocol.Serialization
 
 		public void WriteLengthEncodedString(StringBuilder stringBuilder)
 		{
-#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
+#if NETCOREAPP3_0_OR_GREATER
 			// save where the length will be written
 			var lengthPosition = Position;
 			if (m_output.Length < 9)
