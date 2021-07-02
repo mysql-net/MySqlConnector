@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-06-16
+lastmod: 2021-07-12
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,12 @@ weight: 30
 ---
 
 # Version History
+
+### 1.3.11
+
+* Add `MySqlError.ErrorCode`: [#1011](https://github.com/mysql-net/MySqlConnector/issues/1011).
+* Allow `MySqlDataReader.GetDateTime` to read a `VARCHAR` column as a `DateTime`: [#980](https://github.com/mysql-net/MySqlConnector/issues/980).
+* Support the `NEWDATE` column type: [#1007](https://github.com/mysql-net/MySqlConnector/issues/1007).
 
 ### 1.3.10
 
