@@ -2,6 +2,7 @@ using System;
 using System.Buffers.Text;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Utilities;
@@ -353,6 +354,16 @@ namespace MySqlConnector.Core
 		public DateTime GetDateTime(int ordinal)
 		{
 			var value = GetValue(ordinal);
+
+			if (value is string dateString)
+			{
+				// slightly inefficient to roundtrip the bytes through a string, but this is assumed to be an infrequent code path; this could be optimised to reprocess the original bytes
+				if (dateString.Length is >= 10 and <= 26)
+					value = ParseDateTime(Encoding.UTF8.GetBytes(dateString));
+				else
+					throw new FormatException("Couldn't interpret '{0}' as a valid DateTime".FormatInvariant(value));
+			}
+
 			if (value is MySqlDateTime mySqlDateTime)
 				return mySqlDateTime.GetDateTime();
 			return (DateTime) value;
@@ -461,6 +472,82 @@ namespace MySqlConnector.Core
 
 		protected ResultSet ResultSet { get; }
 		protected MySqlConnection Connection => ResultSet.Connection;
+
+		protected object ParseDateTime(ReadOnlySpan<byte> value)
+		{
+			Exception? exception = null;
+			if (!Utf8Parser.TryParse(value, out int year, out var bytesConsumed) || bytesConsumed != 4)
+				goto InvalidDateTime;
+			if (value.Length < 5 || value[4] != 45)
+				goto InvalidDateTime;
+			if (!Utf8Parser.TryParse(value.Slice(5), out int month, out bytesConsumed) || bytesConsumed != 2)
+				goto InvalidDateTime;
+			if (value.Length < 8 || value[7] != 45)
+				goto InvalidDateTime;
+			if (!Utf8Parser.TryParse(value.Slice(8), out int day, out bytesConsumed) || bytesConsumed != 2)
+				goto InvalidDateTime;
+
+			if (year == 0 && month == 0 && day == 0)
+			{
+				if (Connection.ConvertZeroDateTime)
+					return DateTime.MinValue;
+				if (Connection.AllowZeroDateTime)
+					return new MySqlDateTime();
+				throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime, set AllowZeroDateTime=True or ConvertZeroDateTime=True in the connection string. See https://mysqlconnector.net/connection-options/");
+			}
+
+			int hour, minute, second, microseconds;
+			if (value.Length == 10)
+			{
+				hour = 0;
+				minute = 0;
+				second = 0;
+				microseconds = 0;
+			}
+			else
+			{
+				if (value[10] != 32)
+					goto InvalidDateTime;
+				if (!Utf8Parser.TryParse(value.Slice(11), out hour, out bytesConsumed) || bytesConsumed != 2)
+					goto InvalidDateTime;
+				if (value.Length < 14 || value[13] != 58)
+					goto InvalidDateTime;
+				if (!Utf8Parser.TryParse(value.Slice(14), out minute, out bytesConsumed) || bytesConsumed != 2)
+					goto InvalidDateTime;
+				if (value.Length < 17 || value[16] != 58)
+					goto InvalidDateTime;
+				if (!Utf8Parser.TryParse(value.Slice(17), out second, out bytesConsumed) || bytesConsumed != 2)
+					goto InvalidDateTime;
+
+				if (value.Length == 19)
+				{
+					microseconds = 0;
+				}
+				else
+				{
+					if (value[19] != 46)
+						goto InvalidDateTime;
+
+					if (!Utf8Parser.TryParse(value.Slice(20), out microseconds, out bytesConsumed) || bytesConsumed != value.Length - 20)
+						goto InvalidDateTime;
+					for (; bytesConsumed < 6; bytesConsumed++)
+						microseconds *= 10;
+				}
+			}
+
+			try
+			{
+				return Connection.AllowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
+					new DateTime(year, month, day, hour, minute, second, microseconds / 1000, Connection.DateTimeKind).AddTicks(microseconds % 1000 * 10);
+			}
+			catch (Exception ex)
+			{
+				exception = ex;
+			}
+
+InvalidDateTime:
+			throw new FormatException("Couldn't interpret '{0}' as a valid DateTime".FormatInvariant(Encoding.UTF8.GetString(value)), exception);
+		}
 
 		protected unsafe static Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes) =>
 			guidFormat switch
