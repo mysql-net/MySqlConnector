@@ -4,9 +4,16 @@ title: MySqlInfoMessageEventHandler
 
 # MySqlInfoMessageEventHandler delegate
 
+Defines the event handler for [`InfoMessage`](../MySqlConnection/InfoMessage/).
+
 ```csharp
 public delegate void MySqlInfoMessageEventHandler(object sender, MySqlInfoMessageEventArgs args);
 ```
+
+| parameter | description |
+| --- | --- |
+| sender | The sender. This is the associated [`MySqlConnection`](../MySqlConnectionType/). |
+| args | The [`MySqlInfoMessageEventArgs`](../MySqlInfoMessageEventArgsType/) containing the errors. |
 
 ## See Also
 

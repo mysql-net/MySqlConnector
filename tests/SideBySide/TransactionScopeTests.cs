@@ -656,6 +656,19 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 			}
 		}
 
+		[Theory]
+		[MemberData(nameof(ConnectionStrings))]
+		public async Task CancelExecuteNonQueryAsync(string connectionString)
+		{
+			using var connection = new MySqlConnection(AppConfig.ConnectionString + ";" + connectionString);
+			using var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+			await connection.OpenAsync();
+
+			using var command = new MySqlCommand("DO SLEEP(3);", connection);
+			using var tokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+			await command.ExecuteNonQueryAsync(tokenSource.Token);
+		}
+
 		[SkippableFact(Baseline = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")]
 		public void CommitTwoTransactions()
 		{

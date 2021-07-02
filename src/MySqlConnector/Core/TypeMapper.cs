@@ -256,6 +256,7 @@ namespace MySqlConnector.Core
 				return isUnsigned ? MySqlDbType.UInt16 : MySqlDbType.Int16;
 
 			case ColumnType.Date:
+			case ColumnType.NewDate:
 				return MySqlDbType.Date;
 
 			case ColumnType.DateTime:

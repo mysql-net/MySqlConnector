@@ -978,6 +978,105 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		}
 
 		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void ReadNewDate(bool prepare)
+		{
+			// returns a NEWDATE in MySQL < 5.7.22; see https://github.com/mysql-net/MySqlConnector/issues/1007
+			using var cmd = new MySqlCommand($"SELECT `Date` FROM datatypes_times UNION ALL SELECT `Date` FROM datatypes_times", Connection);
+			if (prepare)
+				cmd.Prepare();
+			using var reader = cmd.ExecuteReader();
+
+#if !BASELINE
+			var columnSchema = reader.GetColumnSchema()[0];
+			Assert.Equal("Date", columnSchema.ColumnName);
+			Assert.Equal(typeof(DateTime), columnSchema.DataType);
+			Assert.Equal("DATE", columnSchema.DataTypeName);
+#endif
+
+#if !NETCOREAPP1_1_2
+			var schemaRow = reader.GetSchemaTable().Rows[0];
+			Assert.Equal("Date", schemaRow["ColumnName"]);
+			Assert.Equal(typeof(DateTime), schemaRow["DataType"]);
+#endif
+
+			while (reader.Read())
+			{
+				if (!reader.IsDBNull(0))
+					reader.GetDateTime(0);
+			}
+		}
+
+		[Theory]
+		[InlineData("Date", false, "9999 12 31")]
+		[InlineData("Date", true, "9999 12 31")]
+		[InlineData("DateTime", false, "9999 12 31 23 59 59 999999")]
+		[InlineData("DateTime", true, "9999 12 31 23 59 59 999999")]
+		[InlineData("Time", false, null)]
+		[InlineData("Time", true, null)]
+		public void ReadVarCharFromNestedQueryAsDate(string columnName, bool prepare, string expectedValue)
+		{
+			var expectedDate = (DateTime?) ConvertToDateTime(new object[] { expectedValue }, DateTimeKind.Unspecified)[0];
+
+			// returns VARCHAR in MySQL 5.7; DATE in MySQL 8.0
+			using var cmd = new MySqlCommand($@"SELECT MAX(CASE WHEN 1 = t.`Key` THEN t.`{columnName}` END) AS `Max`
+FROM (SELECT `{columnName}`, 1 AS `Key` FROM datatypes_times) t
+GROUP BY t.`Key`
+ORDER BY t.`Key`", Connection);
+			if (prepare)
+				cmd.Prepare();
+
+			using var reader = cmd.ExecuteReader();
+			Assert.True(reader.Read());
+			if (expectedDate.HasValue)
+				Assert.Equal(expectedDate.Value, reader.GetDateTime(0));
+			else
+				Assert.ThrowsAny<Exception>(() => reader.GetDateTime(0));
+		}
+
+		[Theory]
+#if !BASELINE
+		[InlineData("1001-02", false, null)]
+		[InlineData("1001-02", true, null)]
+		[InlineData("2000-01-02 03-04-05", true, null)]
+		[InlineData("2000-01-02 18:19:20.9876543", false, null)]
+		[InlineData("2000-01-02 18:19:20.9876543", true, null)]
+		[InlineData("2000-01-02 03-04-05 123456", false, null)]
+#endif
+		[InlineData("1001-02-03", false, "1001 2 3")]
+		[InlineData("1001-02-0A", true, null)]
+		[InlineData("2000-01-02 03:04:05", false, "2000 1 2 3 4 5")]
+		[InlineData("2000-01-02T03:04:05", false, null)]
+		[InlineData("2000-01-02 2003-04-05", true, null)]
+		[InlineData("2000-01-02 18:19:20.9", true, "2000 1 2 18 19 20 900000")]
+		[InlineData("2000-01-02 18:19:20.98", false, "2000 1 2 18 19 20 980000")]
+		[InlineData("2000-01-02 18:19:20.987", true, "2000 1 2 18 19 20 987000")]
+		[InlineData("2000-01-02 18:19:20.9876", false, "2000 1 2 18 19 20 987600")]
+		[InlineData("2000-01-02 18:19:20.98765", true, "2000 1 2 18 19 20 987650")]
+		[InlineData("2000-01-02 18:19:20.987654", false, "2000 1 2 18 19 20 987654")]
+		public void ReadVarCharAsDate(string value, bool prepare, string expectedValue)
+		{
+			var expectedDate = (DateTime?) ConvertToDateTime(new object[] { expectedValue }, DateTimeKind.Unspecified)[0];
+
+			// returns VARCHAR in MySQL 5.7; DATE in MySQL 8.0
+			using var cmd = new MySqlCommand($@"SELECT '{value}' AS value", Connection);
+			if (prepare)
+				cmd.Prepare();
+
+			using var reader = cmd.ExecuteReader();
+			Assert.True(reader.Read());
+			if (expectedDate.HasValue)
+				Assert.Equal(expectedDate.Value, reader.GetDateTime(0));
+			else
+#if BASELINE
+				Assert.ThrowsAny<Exception>(() => reader.GetDateTime(0));
+#else
+				Assert.Throws<FormatException>(() => reader.GetDateTime(0));
+#endif
+		}
+
+		[Theory]
 		[InlineData("Geometry", "GEOMETRY", new byte[] { 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63 })]
 		[InlineData("Point", "GEOMETRY", new byte[] { 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63 })]
 		[InlineData("LineString", "GEOMETRY", new byte[] { 0, 0, 0, 0, 1, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 64 })]
@@ -1756,8 +1855,7 @@ end;";
 
 		private static int[] SplitAndParse(object obj)
 		{
-			var value = obj as string;
-			if (value is null)
+			if (obj is not string value)
 				return null;
 
 			var split = value.Split();

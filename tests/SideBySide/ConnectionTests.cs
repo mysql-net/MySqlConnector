@@ -32,7 +32,7 @@ namespace SideBySide
 				Assert.Equal((int) MySqlErrorCode.BadTable, a.errors[0].Code);
 #else
 				Assert.Single(a.Errors);
-				Assert.Equal((int) MySqlErrorCode.BadTable, a.Errors[0].Code);
+				Assert.Equal(MySqlErrorCode.BadTable, a.Errors[0].ErrorCode);
 #endif
 			};
 
@@ -56,7 +56,7 @@ namespace SideBySide
 				Assert.Equal((int) MySqlErrorCode.BadTable, a.errors[0].Code);
 #else
 				Assert.Single(a.Errors);
-				Assert.Equal((int) MySqlErrorCode.BadTable, a.Errors[0].Code);
+				Assert.Equal(MySqlErrorCode.BadTable, a.Errors[0].ErrorCode);
 #endif
 			};
 

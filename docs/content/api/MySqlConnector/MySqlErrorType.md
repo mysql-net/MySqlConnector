@@ -4,6 +4,8 @@ title: MySqlError
 
 # MySqlError class
 
+[`MySqlError`](../MySqlErrorType/) represents an error or warning that occurred during the execution of a SQL statement.
+
 ```csharp
 public sealed class MySqlError
 ```
@@ -12,9 +14,10 @@ public sealed class MySqlError
 
 | name | description |
 | --- | --- |
-| [Code](../MySqlError/Code/) { get; } |  |
-| [Level](../MySqlError/Level/) { get; } |  |
-| [Message](../MySqlError/Message/) { get; } |  |
+| [Code](../MySqlError/Code/) { get; } | The numeric error code. Prefer to use [`ErrorCode`](../MySqlError/ErrorCode/). |
+| [ErrorCode](../MySqlError/ErrorCode/) { get; } | The [`MySqlErrorCode`](../MySqlErrorCodeType/) for the error or warning. |
+| [Level](../MySqlError/Level/) { get; } | The error level. This comes from the MySQL Server. Possible values include `Note`, `Warning`, and `Error`. |
+| [Message](../MySqlError/Message/) { get; } | A human-readable description of the error or warning. |
 
 ## See Also
 

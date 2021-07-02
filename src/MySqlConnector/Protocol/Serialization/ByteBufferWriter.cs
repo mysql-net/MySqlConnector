@@ -130,25 +130,75 @@ namespace MySqlConnector.Protocol.Serialization
 			}
 		}
 #else
-		public void Write(string value) => Write(value.AsSpan());
-		public void Write(string value, int offset, int length) => Write(value.AsSpan(offset, length));
+		public void Write(string value) => Write(value.AsSpan(), flush: true);
+		public void Write(string value, int offset, int length) => Write(value.AsSpan(offset, length), flush: true);
 
-		public void Write(ReadOnlySpan<char> chars)
+		public void Write(ReadOnlySpan<char> chars, bool flush)
 		{
 			m_encoder ??= Encoding.UTF8.GetEncoder();
 			while (chars.Length > 0)
 			{
 				if (m_output.Length < 4)
 					Reallocate();
-				m_encoder.Convert(chars, m_output.Span, true, out var charsUsed, out var bytesUsed, out var completed);
+				m_encoder.Convert(chars, m_output.Span, flush: false, out var charsUsed, out var bytesUsed, out var completed);
 				chars = chars.Slice(charsUsed);
 				m_output = m_output.Slice(bytesUsed);
 				if (!completed)
 					Reallocate();
 				Debug.Assert(completed == (chars.Length == 0));
 			}
+
+			if (flush && m_encoder is not null)
+			{
+				if (m_output.Length < 4)
+					Reallocate();
+				m_encoder.Convert("".AsSpan(), m_output.Span, flush: true, out _, out var bytesUsed, out _);
+				m_output = m_output.Slice(bytesUsed);
+			}
 		}
 #endif
+
+		public void WriteLengthEncodedString(StringBuilder stringBuilder)
+		{
+#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
+			// save where the length will be written
+			var lengthPosition = Position;
+			if (m_output.Length < 9)
+				Reallocate(9);
+			Advance(9);
+
+			// write all the text as UTF-8
+			m_encoder ??= Encoding.UTF8.GetEncoder();
+			foreach (var chunk in stringBuilder.GetChunks())
+			{
+				var currentSpan = chunk.Span;
+				while (currentSpan.Length > 0)
+				{
+					if (m_output.Length < 4)
+						Reallocate();
+					m_encoder.Convert(currentSpan, m_output.Span, false, out var charsUsed, out var bytesUsed, out var completed);
+					currentSpan = currentSpan.Slice(charsUsed);
+					m_output = m_output.Slice(bytesUsed);
+					if (!completed)
+						Reallocate();
+					Debug.Assert(completed == (currentSpan.Length == 0));
+				}
+			}
+
+			// flush the output
+			if (m_output.Length < 4)
+				Reallocate();
+			m_encoder.Convert("".AsSpan(), m_output.Span, true, out _, out var finalBytesUsed, out _);
+			m_output = m_output.Slice(finalBytesUsed);
+
+			// write the length (as a 64-bit integer) in the reserved space
+			var textLength = Position - (lengthPosition + 9);
+			m_buffer[lengthPosition] = 0xFE;
+			BinaryPrimitives.WriteUInt64LittleEndian(m_buffer.AsSpan(lengthPosition + 1), (ulong) textLength);
+#else
+			this.WriteLengthEncodedString(stringBuilder.ToString());
+#endif
+		}
 
 		public void WriteString(short value)
 		{
@@ -255,7 +305,7 @@ namespace MySqlConnector.Protocol.Serialization
 		{
 			var byteCount = Encoding.UTF8.GetByteCount(value);
 			writer.WriteLengthEncodedInteger((ulong) byteCount);
-			writer.Write(value);
+			writer.Write(value, flush: true);
 		}
 #endif
 

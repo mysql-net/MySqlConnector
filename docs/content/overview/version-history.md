@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-04-30
+lastmod: 2021-07-12
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,26 @@ weight: 30
 ---
 
 # Version History
+
+### 1.3.11
+
+* Add `MySqlError.ErrorCode`: [#1011](https://github.com/mysql-net/MySqlConnector/issues/1011).
+* Allow `MySqlDataReader.GetDateTime` to read a `VARCHAR` column as a `DateTime`: [#980](https://github.com/mysql-net/MySqlConnector/issues/980).
+* Support the `NEWDATE` column type: [#1007](https://github.com/mysql-net/MySqlConnector/issues/1007).
+
+### 1.3.10
+
+* Handle `NoBackslashEscapes` for binary parameter values: [#999](https://github.com/mysql-net/MySqlConnector/issues/999).
+* Fix `NotSupportedException` when cancelling a `MySqlCommand` in a `TransactionScope`: [#1001](https://github.com/mysql-net/MySqlConnector/issues/1001).
+* Ignore `InvalidOperationException` thrown from `MySqlConnection.Cancel`: [#1002](https://github.com/mysql-net/MySqlConnector/issues/1002).
+* Set the default value of `DeferConnectionReset` to `true`; this disables background connection reset and restores the pre-1.3 behavior.
+* Thanks to [Konstantin Preißer](https://github.com/kpreisser) for contributions to this release.
+
+### 1.3.9
+
+* Use `StringBuilder.GetChunks` (in .NET 5.0) for `MySqlParameter`: [#977](https://github.com/mysql-net/MySqlConnector/issues/977).
+* Fix error encoding multibyte characters in `MySqlBulkCopy`: [#974](https://github.com/mysql-net/MySqlConnector/issues/974).
+* Fix error encoding multibyte characters for `StringBuilder` `MySqlParameter` values in .NET 5.0.
 
 ### 1.3.8
 

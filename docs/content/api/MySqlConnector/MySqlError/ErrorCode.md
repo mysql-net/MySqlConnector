@@ -1,17 +1,18 @@
 ---
-title: MySqlError.Message property
+title: MySqlError.ErrorCode property
 ---
 
-# MySqlError.Message property
+# MySqlError.ErrorCode property
 
-A human-readable description of the error or warning.
+The [`MySqlErrorCode`](../../MySqlErrorCodeType/) for the error or warning.
 
 ```csharp
-public string Message { get; }
+public MySqlErrorCode ErrorCode { get; }
 ```
 
 ## See Also
 
+* enum [MySqlErrorCode](../../MySqlErrorCodeType/)
 * class [MySqlError](../../MySqlErrorType/)
 * namespace [MySqlConnector](../../MySqlErrorType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)

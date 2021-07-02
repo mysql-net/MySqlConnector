@@ -643,7 +643,7 @@ namespace MySqlConnector
 
 			AddOption(DeferConnectionReset = new(
 				keys: new[] { "Defer Connection Reset", "DeferConnectionReset" },
-				defaultValue: false));
+				defaultValue: true));
 
 			AddOption(ConnectionIdlePingTime = new(
 				keys: new[] { "Connection Idle Ping Time", "ConnectionIdlePingTime" },

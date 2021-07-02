@@ -4,6 +4,8 @@ title: MySqlError.Code property
 
 # MySqlError.Code property
 
+The numeric error code. Prefer to use [`ErrorCode`](../ErrorCode/).
+
 ```csharp
 public int Code { get; }
 ```

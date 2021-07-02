@@ -4,6 +4,8 @@ title: MySqlInfoMessageEventArgs
 
 # MySqlInfoMessageEventArgs class
 
+[`MySqlInfoMessageEventArgs`](../MySqlInfoMessageEventArgsType/) contains the data supplied to the [`MySqlInfoMessageEventHandler`](../MySqlInfoMessageEventHandlerType/) event handler.
+
 ```csharp
 public sealed class MySqlInfoMessageEventArgs : EventArgs
 ```
@@ -12,7 +14,7 @@ public sealed class MySqlInfoMessageEventArgs : EventArgs
 
 | name | description |
 | --- | --- |
-| [Errors](../MySqlInfoMessageEventArgs/Errors/) { get; } |  |
+| [Errors](../MySqlInfoMessageEventArgs/Errors/) { get; } | The list of errors being reported. |
 
 ## See Also
 

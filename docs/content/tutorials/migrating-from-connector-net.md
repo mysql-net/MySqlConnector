@@ -283,3 +283,4 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#102593](https://bugs.mysql.com/bug.php?id=102593): Can't use `MemoryStream` as `MySqlParameter.Value`
 * [#103390](https://bugs.mysql.com/bug.php?id=103390): Can't query `CHAR(36)` column if `MySqlCommand` is prepared
 * [#103801](https://bugs.mysql.com/bug.php?id=103801): `TimeSpan` parameters lose microseconds with prepared statement
+* [#103819](https://bugs.mysql.com/bug.php?id=103819): Can't use `StringBuilder` containing non-BMP characters as `MySqlParameter.Value`

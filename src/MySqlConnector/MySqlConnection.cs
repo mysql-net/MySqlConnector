@@ -707,8 +707,11 @@ namespace MySqlConnector
 			try
 			{
 				// open a dedicated connection to the server to kill the active query
-				var csb = new MySqlConnectionStringBuilder(m_connectionString);
-				csb.Pooling = false;
+				var csb = new MySqlConnectionStringBuilder(m_connectionString)
+				{
+					AutoEnlist = false,
+					Pooling = false,
+				};
 				if (m_session.IPAddress is not null)
 					csb.Server = m_session.IPAddress.ToString();
 				var cancellationTimeout = GetConnectionSettings().CancellationTimeout;
@@ -719,6 +722,13 @@ namespace MySqlConnector
 				using var killCommand = new MySqlCommand("KILL QUERY {0}".FormatInvariant(command.Connection!.ServerThread), connection);
 				killCommand.CommandTimeout = cancellationTimeout < 1 ? 3 : cancellationTimeout;
 				m_session.DoCancel(command, killCommand);
+			}
+			catch (InvalidOperationException ex)
+			{
+				// ignore a rare race condition where the connection is open at the beginning of the method, but closed by the time
+				// KILL QUERY is executed: https://github.com/mysql-net/MySqlConnector/issues/1002
+				Log.Info(ex, "Session{0} ignoring cancellation for closed connection.", m_session!.Id);
+				m_session.AbortCancel(command);
 			}
 			catch (MySqlException ex)
 			{

@@ -305,7 +305,7 @@ namespace MySqlConnector
 				var length = inputSpan.Length + BinaryBytes.Length + 1;
 				foreach (var by in inputSpan)
 				{
-					if (by is 0x27 or 0x5C)
+					if (by is 0x27 || by is 0x5C && !noBackslashEscapes)
 						length++;
 				}
 
@@ -314,8 +314,8 @@ namespace MySqlConnector
 				var index = BinaryBytes.Length;
 				foreach (var by in inputSpan)
 				{
-					if (by is 0x27 or 0x5C)
-						outputSpan[index++] = 0x5C;
+					if (by is 0x27 || by is 0x5C && !noBackslashEscapes)
+						outputSpan[index++] = by;
 					outputSpan[index++] = by;
 				}
 				outputSpan[index++] = 0x27;
@@ -426,6 +426,8 @@ namespace MySqlConnector
 				writer.Write((byte) '\'');
 				foreach (var chunk in stringBuilder.GetChunks())
 					WriteString(writer, noBackslashEscapes, writeDelimiters: false, chunk.Span);
+				if (stringBuilder.Length != 0)
+					writer.Write("".AsSpan(), flush: true);
 				writer.Write((byte) '\'');
 #elif NET45 || NETSTANDARD1_3
 				WriteString(writer, noBackslashEscapes, stringBuilder.ToString());
@@ -496,13 +498,13 @@ namespace MySqlConnector
 					if (nextDelimiterIndex == -1)
 					{
 						// write the rest of the string
-						writer.Write(remainingValue);
+						writer.Write(remainingValue, flush: writeDelimiters);
 						charsWritten += remainingValue.Length;
 					}
 					else
 					{
 						// write up to (and including) the delimiter, then double it
-						writer.Write(remainingValue.Slice(0, nextDelimiterIndex + 1));
+						writer.Write(remainingValue.Slice(0, nextDelimiterIndex + 1), flush: true);
 						if (remainingValue[nextDelimiterIndex] == '\\' && !noBackslashEscapes)
 							writer.Write((byte) '\\');
 						else if (remainingValue[nextDelimiterIndex] == '\'')
@@ -696,7 +698,7 @@ namespace MySqlConnector
 #endif
 			else if (Value is StringBuilder stringBuilder)
 			{
-				writer.WriteLengthEncodedString(stringBuilder.ToString());
+				writer.WriteLengthEncodedString(stringBuilder);
 			}
 			else if (MySqlDbType == MySqlDbType.Int16)
 			{
