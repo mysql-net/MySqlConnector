@@ -89,7 +89,7 @@ namespace MySqlConnector
 		public List<MySqlBulkCopyColumnMapping> ColumnMappings { get; }
 
 		/// <summary>
-		/// Returns the number of rows that were copied (after <code>WriteToServer(Async)</code> finishes).
+		/// Returns the number of rows that were copied (after <c>WriteToServer(Async)</c> finishes).
 		/// </summary>
 		public int RowsCopied { get; private set; }
 

@@ -4,13 +4,7 @@ title: MySqlBulkCopy.RowsCopied property
 
 # MySqlBulkCopy.RowsCopied property
 
-Returns the number of rows that were copied (after
-
-```csharp
-WriteToServer(Async)
-```
-
-finishes).
+Returns the number of rows that were copied (after `WriteToServer(Async)` finishes).
 
 ```csharp
 public int RowsCopied { get; }
