@@ -1,5 +1,7 @@
 ---
 date: 2020-01-06
+lastmod: 2021-07-04
+customtitle: "Start Using AddWithValue with MySQL"
 menu:
   main:
     parent: getting started
@@ -7,7 +9,7 @@ title: Using AddWithValue
 weight: 70
 ---
 
-# Start Using AddWithValue
+# Start Using AddWithValue with MySQL
 
 There's [some advice](https://blogs.msmvps.com/jcoehoorn/blog/2014/05/12/can-we-stop-using-addwithvalue-already/) out there
 that insists calling `cmd.Parameters.AddWithValue` "needs to stop".
