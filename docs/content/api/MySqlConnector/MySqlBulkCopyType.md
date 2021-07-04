@@ -17,11 +17,23 @@ Example code:
 // https://dev.mysql.com/doc/refman/8.0/en/insert-select.html
 var dataTable = GetDataTableFromExternalSource();
 
+// open the connection
 using var connection = new MySqlConnection("...;AllowLoadLocalInfile=True");
 await connection.OpenAsync();
+
+// attach an event handler to retrieve warnings/errors
+IReadOnlyList<MySqlError> errors = Array.Empty<MySqlError>();
+void InfoMessageHandler(object sender, MySqlInfoMessageEventArgs args) => errors = args.Errors;
+connection.InfoMessage += InfoMessageHandler;
+
+// bulk copy the data
 var bulkCopy = new MySqlBulkCopy(connection);
 bulkCopy.DestinationTableName = "some_table_name";
 await bulkCopy.WriteToServerAsync(dataTable);
+
+// check for errors
+connection.InfoMessage -= InfoMessageHandler;
+if (errors.Count != 0) { /* handle errors */ }
 ```
 
 ```csharp
