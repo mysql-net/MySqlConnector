@@ -10,7 +10,7 @@ steps:
     version: $(DotNetCoreSdkVersion)
 - task: DownloadPipelineArtifact@0
   inputs:
-    artifactName: 'MySqlConnector.Tests-5.0-$(Agent.OS)'
+    artifactName: 'MySqlConnector.Tests-6.0-$(Agent.OS)'
     targetPath: $(System.DefaultWorkingDirectory)
 - task: DotNetCoreCLI@2
   displayName: 'Run MySqlConnector.Tests'
@@ -22,4 +22,4 @@ steps:
   inputs:
     testResultsFormat: VSTest
     testResultsFiles: '**/*.trx'
-    testRunTitle: 'MySqlConnector.Tests-5.0-$(Agent.OS)'
+    testRunTitle: 'MySqlConnector.Tests-6.0-$(Agent.OS)'
