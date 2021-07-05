@@ -36,7 +36,9 @@ namespace MySqlConnector.Tests
 			Assert.False(csb.ConnectionReset);
 #else
 			Assert.True(csb.ConnectionReset);
+#pragma warning disable 618
 			Assert.True(csb.DeferConnectionReset);
+#pragma warning restore 618
 #endif
 			Assert.Equal(15u, csb.ConnectionTimeout);
 			Assert.False(csb.ConvertZeroDateTime);
@@ -186,7 +188,9 @@ namespace MySqlConnector.Tests
 			Assert.Equal("My Test Application", csb.ApplicationName);
 			Assert.Equal(60u, csb.ConnectionIdlePingTime);
 			Assert.Equal(30u, csb.ConnectionIdleTimeout);
+#pragma warning disable 618
 			Assert.True(csb.DeferConnectionReset);
+#pragma warning restore 618
 			Assert.True(csb.ForceSynchronous);
 			Assert.True(csb.IgnoreCommandTransaction);
 			Assert.Equal("rsa.pem", csb.ServerRsaPublicKeyFile);

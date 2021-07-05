@@ -181,6 +181,7 @@ namespace MySqlConnector
 			set => MySqlConnectionStringOption.ConnectionIdleTimeout.SetValue(this, value);
 		}
 
+		[Obsolete("This option is no longer supported in MySqlConnector >= 1.4.0.")]
 		public bool DeferConnectionReset
 		{
 			get => MySqlConnectionStringOption.DeferConnectionReset.GetValue(this);

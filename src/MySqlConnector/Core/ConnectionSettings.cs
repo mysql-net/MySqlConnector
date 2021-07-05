@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Security;
 using System.Security.Authentication;
+using MySqlConnector.Logging;
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core
@@ -114,7 +115,10 @@ namespace MySqlConnector.Core
 			ConnectionReset = csb.ConnectionReset;
 			ConnectionIdlePingTime = Math.Min(csb.ConnectionIdlePingTime, uint.MaxValue / 1000) * 1000;
 			ConnectionIdleTimeout = (int) csb.ConnectionIdleTimeout;
-			DeferConnectionReset = csb.DeferConnectionReset;
+#pragma warning disable 618
+			if (!csb.DeferConnectionReset)
+				Log.Warn("DeferConnectionReset=false is not supported; using regular connection reset behavior.");
+#pragma warning restore 618
 			if (csb.MinimumPoolSize > csb.MaximumPoolSize)
 				throw new MySqlException("MaximumPoolSize must be greater than or equal to MinimumPoolSize");
 			MinimumPoolSize = ToSigned(csb.MinimumPoolSize);
@@ -211,7 +215,6 @@ namespace MySqlConnector.Core
 		public bool ConnectionReset { get; }
 		public uint ConnectionIdlePingTime { get; }
 		public int ConnectionIdleTimeout { get; }
-		public bool DeferConnectionReset { get; }
 		public int MinimumPoolSize { get; }
 		public int MaximumPoolSize { get; }
 
@@ -328,6 +331,7 @@ namespace MySqlConnector.Core
 			UseXaTransactions = other.UseXaTransactions;
 		}
 
+		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConnectionSettings));
 		static readonly string[] s_localhostPipeServer = { "." };
 	}
 }

@@ -66,7 +66,7 @@ namespace MySqlConnector.Core
 					}
 					else
 					{
-						if ((ConnectionSettings.ConnectionReset && ConnectionSettings.DeferConnectionReset) || session.DatabaseOverride is not null)
+						if (ConnectionSettings.ConnectionReset || session.DatabaseOverride is not null)
 						{
 							reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, null, false, ioBehavior, cancellationToken).ConfigureAwait(false);
 						}
@@ -482,9 +482,6 @@ namespace MySqlConnector.Core
 				// if we won the race to create the new pool, also store it under the original connection string
 				if (connectionString != normalizedConnectionString)
 					s_pools.GetOrAdd(connectionString, pool);
-
-				if (connectionSettings.ConnectionReset)
-					BackgroundConnectionResetHelper.Start();
 			}
 			else if (pool != newPool && Log.IsDebugEnabled())
 			{
@@ -609,7 +606,6 @@ namespace MySqlConnector.Core
 		static void OnAppDomainShutDown(object? sender, EventArgs e)
 		{
 			ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-			BackgroundConnectionResetHelper.Stop();
 		}
 #endif
 

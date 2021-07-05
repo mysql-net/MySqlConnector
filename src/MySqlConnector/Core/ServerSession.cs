@@ -80,12 +80,7 @@ namespace MySqlConnector.Core
 				Log.Trace("Session{0} returning to Pool{1}", m_logArguments);
 			}
 			LastReturnedTicks = unchecked((uint) Environment.TickCount);
-			if (Pool is null)
-				return default;
-			if (!Pool.ConnectionSettings.ConnectionReset || Pool.ConnectionSettings.DeferConnectionReset)
-				return Pool.ReturnAsync(ioBehavior, this);
-			BackgroundConnectionResetHelper.AddSession(this, owningConnection);
-			return default;
+			return Pool is null ? default : Pool.ReturnAsync(ioBehavior, this);
 		}
 
 		public bool IsConnected
