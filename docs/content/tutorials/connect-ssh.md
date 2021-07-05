@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-04-22
+lastmod: 2021-07-05
 date: 2019-07-30
 menu:
   main:
@@ -11,17 +11,18 @@ weight: 15
 
 # Connecting to MySQL Server with SSH from C\#
 
-This tutorial demonstrates how to simulate the `SshHostName`, `SshPort`, `SshUserName`, `SshPassword`, `SshKeyFile`, and `SshPassPhrase`
-connection string options using MySqlConnector.
+This tutorial demonstrates how to use SSH.NET and MySqlConnector to connect to a MySQL database over SSH.
 
-The options are defined as follows:
+The arguments below are defined as follows:
 
-* `SshHostName`: (required) the host name or IP address of the SSH server
-* `SshPort`: (optional) the port of the SSH server (default 22)
-* `SshUserName`: (required) the user name on the SSH server
-* `SshPassword`: (optional) the password of the SSH user
-* `SshKeyFile`: (optional): the path to the private key file to use for SSH authentication; if specified, this option takes precedence over `SshPassword`
-* `SshPassPhrase`: (optional): the passphrase to unlock the SSH private key file specified by `SshKeyFile`
+* `sshHostName`: (required) the host name or IP address of the SSH server
+* `sshUserName`: (required) the user name on the SSH server
+* `sshPassword`: (optional) the password of the SSH user
+* `sshKeyFile`: (optional) the path to the private key file to use for SSH authentication; if specified, this option takes precedence over `sshPassword`
+* `sshPassPhrase`: (optional) the passphrase to unlock the SSH private key file specified by `sshKeyFile`
+* `sshPort`: (optional) the port of the SSH server (default `22`)
+* `databaseServer`: (optional) the host name or IP address of the database server (relative to the SSH server, default `localhost`)
+* `databasePort`: (optional) the port the MySQL server is listening on (default `3306`)
 
 ## Prerequisites
 
@@ -69,10 +70,6 @@ public static (SshClient SshClient, uint Port) ConnectSsh(string sshHostName, st
 ```
 
 ## Example Use
-
-The `ConnectSsh` method defines two extra parameters: `databaseServer` and `databasePort`. By default,
-it assumes that the database is running on the same machine as the SSH server, using the default port (3306).
-If this isn't true, use the `Server` and `Port` values from the connection string.
 
 Note that these examples dispose `sshClient`, which shuts down the forwarded port. In practice, you will
 want to keep the `SshClient` and forwarded port alive for the lifetime of your application.
