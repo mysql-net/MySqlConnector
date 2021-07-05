@@ -10,6 +10,18 @@ weight: 30
 
 # Version History
 
+### 1.4.0 Beta 1
+
+* Reduce default log message severity: [#981](https://github.com/mysql-net/MySqlConnector/issues/981).
+* Make `MySqlError.Code` obsolete: [#1011](https://github.com/mysql-net/MySqlConnector/issues/1011).
+  * Use `ErrorCode` property instead.
+* Remove `BackgroundConnectionResetHelper`: [#1013](https://github.com/mysql-net/MySqlConnector/issues/1013).
+  * `MySqlConnectionStringBuilder.DeferConnectionReset` is obsolete and will always be treated as if it's `true`.
+* Support .NET 6.0 Preview:
+  * Support `DateOnly` and `TimeOnly` structs: [#963](https://github.com/mysql-net/MySqlConnector/issues/963).
+  * Use `ZLibStream` for compression: [#957](https://github.com/mysql-net/MySqlConnector/issues/957).
+  * Use `X_OR_GREATER` preprocessor definitions: [#958](https://github.com/mysql-net/MySqlConnector/issues/958).
+
 ### 1.3.11
 
 * Add `MySqlError.ErrorCode`: [#1011](https://github.com/mysql-net/MySqlConnector/issues/1011).
