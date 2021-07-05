@@ -1,3 +1,5 @@
+using System;
+
 namespace MySqlConnector
 {
 	/// <summary>
@@ -8,7 +10,9 @@ namespace MySqlConnector
 		internal MySqlError(string level, int code, string message)
 		{
 			Level = level;
+#pragma warning disable 618
 			Code = code;
+#pragma warning restore
 			ErrorCode = (MySqlErrorCode) code;
 			Message = message;
 		}
@@ -21,6 +25,7 @@ namespace MySqlConnector
 		/// <summary>
 		/// The numeric error code. Prefer to use <see cref="ErrorCode"/>.
 		/// </summary>
+		[Obsolete("Use ErrorCode")]
 		public int Code { get; }
 
 		/// <summary>
