@@ -134,10 +134,10 @@ namespace MySqlConnector
 		/// Returns a hash code for this instance.
 		/// </summary>
 		public override int GetHashCode() =>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
-			(((((Year * 33 ^ Month) * 33 ^ Day) * 33 ^ Hour) * 33 ^ Minute) * 33 ^ Second) * 33 ^ Microsecond;
-#else
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 			HashCode.Combine(Year, Month, Day, Hour, Minute, Second, Microsecond);
+#else
+			(((((Year * 33 ^ Month) * 33 ^ Day) * 33 ^ Hour) * 33 ^ Minute) * 33 ^ Second) * 33 ^ Microsecond;
 #endif
 
 		public static bool operator ==(MySqlDateTime left, MySqlDateTime right) => ((IComparable<MySqlDateTime>) left).CompareTo(right) == 0;

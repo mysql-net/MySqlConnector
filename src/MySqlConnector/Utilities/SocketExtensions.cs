@@ -6,7 +6,9 @@ namespace MySqlConnector.Utilities
 {
 	internal static class SocketExtensions
 	{
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+		public static int Send(this Socket socket, ReadOnlyMemory<byte> data, SocketFlags flags) => socket.Send(data.Span, flags);
+#else
 		public static SocketAwaitable ReceiveAsync(this Socket socket, SocketAwaitable awaitable)
 		{
 			awaitable.Reset();
@@ -22,9 +24,7 @@ namespace MySqlConnector.Utilities
 				awaitable.WasCompleted = true;
 			return awaitable;
 		}
-#endif
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
 		public static void SetBuffer(this SocketAsyncEventArgs args, Memory<byte> buffer)
 		{
 			MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);
@@ -36,8 +36,6 @@ namespace MySqlConnector.Utilities
 			MemoryMarshal.TryGetArray(data, out var arraySegment);
 			return socket.Send(arraySegment.Array, arraySegment.Offset, arraySegment.Count, flags);
 		}
-#else
-		public static int Send(this Socket socket, ReadOnlyMemory<byte> data, SocketFlags flags) => socket.Send(data.Span, flags);
 #endif
 
 		public static void SetKeepAlive(this Socket socket, uint keepAliveTimeSeconds)
@@ -48,7 +46,11 @@ namespace MySqlConnector.Utilities
 				return;
 
 			// If keepAliveTimeSeconds > 0, override keepalive options on the socket
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1
+#if NETCOREAPP3_0_OR_GREATER
+			// cross-platform TCP KeepAlive settings were added in netcoreapp3.0: https://github.com/dotnet/runtime/issues/24041
+			socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveInterval, 1);
+			socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveTime, (int) keepAliveTimeSeconds);
+#else
 			if (Utility.IsWindows())
 			{
 				// http://stackoverflow.com/a/11834055/1419658
@@ -65,10 +67,6 @@ namespace MySqlConnector.Utilities
 				socket.IOControl(IOControlCode.KeepAliveValues, inOptionValues, null);
 			}
 			// Unix not supported: The appropriate socket options to set Keepalive options are not exposed: https://github.com/dotnet/runtime/issues/19568
-#else
-			// cross-platform TCP KeepAlive settings were added in netcoreapp3.0: https://github.com/dotnet/runtime/issues/24041
-			socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveInterval, 1);
-			socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveTime, (int) keepAliveTimeSeconds);
 #endif
 		}
 	}

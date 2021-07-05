@@ -29,7 +29,7 @@ namespace MySqlConnector.Utilities
 		public static string FormatInvariant(this string format, params object?[] args) =>
 			string.Format(CultureInfo.InvariantCulture, format, args);
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 		public static string GetString(this Encoding encoding, ReadOnlySpan<byte> span)
 		{
 			if (span.Length == 0)
@@ -66,7 +66,7 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
-#if NET45 || NET461 || NET471 || NETSTANDARD2_0
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD1_3 && !NETSTANDARD2_1_OR_GREATER
 		public static unsafe void Convert(this Encoder encoder, ReadOnlySpan<char> chars, Span<byte> bytes, bool flush, out int charsUsed, out int bytesUsed, out bool completed)
 		{
 			fixed (char* charsPtr = &MemoryMarshal.GetReference(chars))
@@ -92,10 +92,10 @@ namespace MySqlConnector.Utilities
 		/// <summary>
 		/// Loads a RSA key from a PEM string.
 		/// </summary>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public static RSAParameters GetRsaParameters(string key)
-#else
+#if NET5_0_OR_GREATER
 		public static void LoadRsaParameters(string key, RSA rsa)
+#else
+		public static RSAParameters GetRsaParameters(string key)
 #endif
 		{
 			const string beginRsaPrivateKey = "-----BEGIN RSA PRIVATE KEY-----";
@@ -129,10 +129,7 @@ namespace MySqlConnector.Utilities
 			if (keyEndIndex <= -1)
 				throw new FormatException($"Missing expected '{pemFooter}' PEM footer: " + key.Substring(Math.Max(key.Length - 80, 0)));
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
-			key = key.Substring(keyStartIndex, keyEndIndex - keyStartIndex);
-			return GetRsaParameters(System.Convert.FromBase64String(key), isPrivate);
-#else
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 			var keyChars = key.AsSpan().Slice(keyStartIndex, keyEndIndex - keyStartIndex);
 			var bufferLength = keyChars.Length / 4 * 3;
 			byte[]? buffer = null;
@@ -146,13 +143,13 @@ namespace MySqlConnector.Utilities
 			{
 				if (!System.Convert.TryFromBase64Chars(keyChars, bufferBytes, out var bytesWritten))
 					throw new FormatException("The input is not a valid Base-64 string.");
-#if NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-				return GetRsaParameters(bufferBytes.Slice(0, bytesWritten), isPrivate);
-#else
+#if NET5_0_OR_GREATER
 				if (isPrivate)
 					rsa.ImportRSAPrivateKey(bufferBytes.Slice(0, bytesWritten), out var _);
 				else
 					rsa.ImportSubjectPublicKeyInfo(bufferBytes.Slice(0, bytesWritten), out var _);
+#else
+				return GetRsaParameters(bufferBytes.Slice(0, bytesWritten), isPrivate);
 #endif
 			}
 			finally
@@ -160,10 +157,13 @@ namespace MySqlConnector.Utilities
 				if (buffer is not null)
 					ArrayPool<byte>.Shared.Return(buffer);
 			}
+#else
+			key = key.Substring(keyStartIndex, keyEndIndex - keyStartIndex);
+			return GetRsaParameters(System.Convert.FromBase64String(key), isPrivate);
 #endif
 		}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
+#if !NET5_0_OR_GREATER
 		// Derived from: https://stackoverflow.com/a/32243171/, https://stackoverflow.com/a/26978561/, http://luca.ntop.org/Teaching/Appunti/asn1.html
 		private static RSAParameters GetRsaParameters(ReadOnlySpan<byte> data, bool isPrivate)
 		{
@@ -490,7 +490,7 @@ namespace MySqlConnector.Utilities
 		public static byte[] EmptyByteArray { get; } = Array.Empty<byte>();
 #endif
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 		public static bool TryComputeHash(this HashAlgorithm hashAlgorithm, ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten)
 		{
 			// assume caller supplies a large-enough buffer so we don't have to bounds-check it
@@ -528,7 +528,7 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 		public static int Read(this Stream stream, Memory<byte> buffer)
 		{
 			MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);

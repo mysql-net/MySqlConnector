@@ -25,10 +25,10 @@ namespace MySqlConnector
 		/// </summary>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		public Task CommitAsync(CancellationToken cancellationToken = default) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override Task CommitAsync(CancellationToken cancellationToken = default) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+#else
+		public Task CommitAsync(CancellationToken cancellationToken = default) => CommitAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #endif
 
 		private async Task CommitAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -51,10 +51,10 @@ namespace MySqlConnector
 		/// </summary>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		public Task RollbackAsync(CancellationToken cancellationToken = default) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override Task RollbackAsync(CancellationToken cancellationToken = default) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+#else
+		public Task RollbackAsync(CancellationToken cancellationToken = default) => RollbackAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #endif
 
 		private async Task RollbackAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -72,10 +72,10 @@ namespace MySqlConnector
 		/// </summary>
 		/// <param name="savepointName">The savepoint name.</param>
 		/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public void Release(string savepointName) => ExecuteSavepointAsync("release ", savepointName, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
-#else
+#if NET5_0_OR_GREATER
 		public override void Release(string savepointName) => ExecuteSavepointAsync("release ", savepointName, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+#else
+		public void Release(string savepointName) => ExecuteSavepointAsync("release ", savepointName, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 #endif
 
 		/// <summary>
@@ -85,10 +85,10 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 		/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public Task ReleaseAsync(string savepointName, CancellationToken cancellationToken = default) => ExecuteSavepointAsync("release ", savepointName, Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
-#else
+#if NET5_0_OR_GREATER
 		public override Task ReleaseAsync(string savepointName, CancellationToken cancellationToken = default) => ExecuteSavepointAsync("release ", savepointName, Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+#else
+		public Task ReleaseAsync(string savepointName, CancellationToken cancellationToken = default) => ExecuteSavepointAsync("release ", savepointName, Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #endif
 
 		/// <summary>
@@ -97,10 +97,10 @@ namespace MySqlConnector
 		/// <param name="savepointName">The savepoint name.</param>
 		/// <remarks><para>The name must have been created with <see cref="Save"/>, but not released by calling <see cref="Release"/>.</para>
 		/// <para>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</para></remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public void Rollback(string savepointName) => ExecuteSavepointAsync("rollback to ", savepointName, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
-#else
+#if NET5_0_OR_GREATER
 		public override void Rollback(string savepointName) => ExecuteSavepointAsync("rollback to ", savepointName, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+#else
+		public void Rollback(string savepointName) => ExecuteSavepointAsync("rollback to ", savepointName, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 #endif
 
 		/// <summary>
@@ -111,10 +111,10 @@ namespace MySqlConnector
 		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 		/// <remarks><para>The name must have been created with <see cref="SaveAsync"/>, but not released by calling <see cref="ReleaseAsync"/>.</para>
 		/// <para>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</para></remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public Task RollbackAsync(string savepointName, CancellationToken cancellationToken = default) => ExecuteSavepointAsync("rollback to ", savepointName, Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
-#else
+#if NET5_0_OR_GREATER
 		public override Task RollbackAsync(string savepointName, CancellationToken cancellationToken = default) => ExecuteSavepointAsync("rollback to ", savepointName, Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+#else
+		public Task RollbackAsync(string savepointName, CancellationToken cancellationToken = default) => ExecuteSavepointAsync("rollback to ", savepointName, Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #endif
 
 		/// <summary>
@@ -123,10 +123,10 @@ namespace MySqlConnector
 		/// </summary>
 		/// <param name="savepointName">The savepoint name.</param>
 		/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public void Save(string savepointName) => ExecuteSavepointAsync("", savepointName, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
-#else
+#if NET5_0_OR_GREATER
 		public override void Save(string savepointName) => ExecuteSavepointAsync("", savepointName, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+#else
+		public void Save(string savepointName) => ExecuteSavepointAsync("", savepointName, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 #endif
 
 		/// <summary>
@@ -137,10 +137,10 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 		/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public Task SaveAsync(string savepointName, CancellationToken cancellationToken = default) => ExecuteSavepointAsync("", savepointName, Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
-#else
+#if NET5_0_OR_GREATER
 		public override Task SaveAsync(string savepointName, CancellationToken cancellationToken = default) => ExecuteSavepointAsync("", savepointName, Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
+#else
+		public Task SaveAsync(string savepointName, CancellationToken cancellationToken = default) => ExecuteSavepointAsync("", savepointName, Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken);
 #endif
 
 		private async Task ExecuteSavepointAsync(string command, string savepointName, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -195,33 +195,33 @@ namespace MySqlConnector
 		/// Asynchronously releases any resources associated with this transaction. If it was not committed, it will be rolled back.
 		/// </summary>
 		/// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override ValueTask DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
+#else
+		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
 #endif
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		internal Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		internal ValueTask DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#else
+		internal Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #endif
 		{
 			m_isDisposed = true;
 			if (Connection?.CurrentTransaction == this)
 				return DoDisposeAsync(ioBehavior, cancellationToken);
 			Connection = null;
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-			return Utility.CompletedTask;
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 			return default;
+#else
+			return Utility.CompletedTask;
 #endif
 		}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		private async Task DoDisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		private async ValueTask DoDisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#else
+		private async Task DoDisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #endif
 		{
 			if (Connection?.CurrentTransaction == this)

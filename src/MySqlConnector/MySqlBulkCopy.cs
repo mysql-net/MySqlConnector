@@ -119,13 +119,13 @@ namespace MySqlConnector
 #pragma warning restore CA2012
 		}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		/// <summary>
 		/// Asynchronously copies all rows in the supplied <see cref="DataTable"/> to the destination table specified by the
 		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
 		/// </summary>
 		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
-		public async Task WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default)
+		public async ValueTask WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable ?? throw new ArgumentNullException(nameof(dataTable)));
 			await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
@@ -136,7 +136,7 @@ namespace MySqlConnector
 		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
 		/// </summary>
 		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
-		public async ValueTask WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default)
+		public async Task WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable ?? throw new ArgumentNullException(nameof(dataTable)));
 			await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
@@ -158,7 +158,8 @@ namespace MySqlConnector
 			WriteToServerAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #pragma warning restore CA2012
 		}
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		/// <summary>
 		/// Asynchronously copies all rows in the supplied sequence of <see cref="DataRow"/> objects to the destination table specified by the
 		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object. The number of columns
@@ -168,7 +169,7 @@ namespace MySqlConnector
 		/// <param name="columnCount">The number of columns to copy (in each row).</param>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
-		public async Task WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, CancellationToken cancellationToken = default)
+		public async ValueTask WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows ?? throw new ArgumentNullException(nameof(dataRows)), columnCount);
 			await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
@@ -183,7 +184,7 @@ namespace MySqlConnector
 		/// <param name="columnCount">The number of columns to copy (in each row).</param>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
-		public async ValueTask WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, CancellationToken cancellationToken = default)
+		public async Task WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows ?? throw new ArgumentNullException(nameof(dataRows)), columnCount);
 			await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
@@ -204,19 +205,7 @@ namespace MySqlConnector
 #pragma warning restore CA2012
 		}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
-		/// <summary>
-		/// Asynchronously copies all rows in the supplied <see cref="IDataReader"/> to the destination table specified by the
-		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
-		/// </summary>
-		/// <param name="dataReader">The <see cref="IDataReader"/> to copy from.</param>
-		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-		public async Task WriteToServerAsync(IDataReader dataReader, CancellationToken cancellationToken = default)
-		{
-			m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader ?? throw new ArgumentNullException(nameof(dataReader)));
-			await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
-		}
-#else
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		/// <summary>
 		/// Asynchronously copies all rows in the supplied <see cref="IDataReader"/> to the destination table specified by the
 		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
@@ -228,12 +217,24 @@ namespace MySqlConnector
 			m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader ?? throw new ArgumentNullException(nameof(dataReader)));
 			await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 		}
+#else
+		/// <summary>
+		/// Asynchronously copies all rows in the supplied <see cref="IDataReader"/> to the destination table specified by the
+		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
+		/// </summary>
+		/// <param name="dataReader">The <see cref="IDataReader"/> to copy from.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		public async Task WriteToServerAsync(IDataReader dataReader, CancellationToken cancellationToken = default)
+		{
+			m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader ?? throw new ArgumentNullException(nameof(dataReader)));
+			await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
+		}
 #endif
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
-		private async ValueTask<int> WriteToServerAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-#else
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		private async ValueTask WriteToServerAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#else
+		private async ValueTask<int> WriteToServerAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #endif
 		{
 			var tableName = DestinationTableName ?? throw new InvalidOperationException("DestinationTableName must be set before calling WriteToServer");
@@ -338,7 +339,7 @@ namespace MySqlConnector
 				throw new MySqlException(MySqlErrorCode.BulkCopyFailed, "{0} rows were copied to {1} but only {2} were inserted.".FormatInvariant(RowsCopied, tableName, rowsInserted));
 			}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 			return default;
 #endif
 

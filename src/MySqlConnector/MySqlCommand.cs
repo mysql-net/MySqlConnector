@@ -120,10 +120,10 @@ namespace MySqlConnector
 			Connection!.Session.PrepareAsync(this, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 		}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		public Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
+#else
+		public Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
 #endif
 
 		internal MySqlParameterCollection? CloneRawParameters()
@@ -335,17 +335,17 @@ namespace MySqlConnector
 			base.Dispose(disposing);
 		}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		public Task DisposeAsync()
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override ValueTask DisposeAsync()
+#else
+		public Task DisposeAsync()
 #endif
 		{
 			Dispose();
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-			return Utility.CompletedTask;
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 			return default;
+#else
+			return Utility.CompletedTask;
 #endif
 		}
 

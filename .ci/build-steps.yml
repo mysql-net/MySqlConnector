@@ -81,3 +81,15 @@ steps:
   inputs:
     artifactName: 'SideBySide-net5.0-$(Agent.OS)'
     targetPath: 'tests/SideBySide/bin/Release/net5.0/publish'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Publish SideBySide (6.0)'
+  inputs:
+    command: 'publish'
+    arguments: '-c Release -f net6.0 --no-build tests/SideBySide/SideBySide.csproj'
+    publishWebProjects: false
+    zipAfterPublish: false
+- task: PublishPipelineArtifact@0
+  inputs:
+    artifactName: 'SideBySide-net6.0-$(Agent.OS)'
+    targetPath: 'tests/SideBySide/bin/Release/net6.0/publish'

@@ -67,34 +67,7 @@ namespace MySqlConnector
 		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => BeginTransactionAsync(isolationLevel, default, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 #pragma warning restore CA2012
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		/// <summary>
-		/// Begins a database transaction asynchronously.
-		/// </summary>
-		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-		/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
-		/// <remarks>Transactions may not be nested.</remarks>
-		public ValueTask<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) => BeginTransactionAsync(IsolationLevel.Unspecified, default, AsyncIOBehavior, cancellationToken);
-
-		/// <summary>
-		/// Begins a database transaction asynchronously.
-		/// </summary>
-		/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
-		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-		/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
-		/// <remarks>Transactions may not be nested.</remarks>
-		public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default) => BeginTransactionAsync(isolationLevel, default, AsyncIOBehavior, cancellationToken);
-
-		/// <summary>
-		/// Begins a database transaction asynchronously.
-		/// </summary>
-		/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
-		/// <param name="isReadOnly">If <c>true</c>, changes to tables used in the transaction are prohibited; otherwise, they are permitted.</param>
-		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-		/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
-		/// <remarks>Transactions may not be nested.</remarks>
-		public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, bool isReadOnly, CancellationToken cancellationToken = default) => BeginTransactionAsync(isolationLevel, isReadOnly, AsyncIOBehavior, cancellationToken);
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		/// <summary>
 		/// Begins a database transaction asynchronously.
 		/// </summary>
@@ -130,6 +103,33 @@ namespace MySqlConnector
 		/// <returns>A <see cref="ValueTask{DbTransaction}"/> representing the new database transaction.</returns>
 		protected override async ValueTask<DbTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken) =>
 			await BeginTransactionAsync(isolationLevel, default, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
+#else
+		/// <summary>
+		/// Begins a database transaction asynchronously.
+		/// </summary>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
+		/// <remarks>Transactions may not be nested.</remarks>
+		public ValueTask<MySqlTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) => BeginTransactionAsync(IsolationLevel.Unspecified, default, AsyncIOBehavior, cancellationToken);
+
+		/// <summary>
+		/// Begins a database transaction asynchronously.
+		/// </summary>
+		/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
+		/// <remarks>Transactions may not be nested.</remarks>
+		public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default) => BeginTransactionAsync(isolationLevel, default, AsyncIOBehavior, cancellationToken);
+
+		/// <summary>
+		/// Begins a database transaction asynchronously.
+		/// </summary>
+		/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
+		/// <param name="isReadOnly">If <c>true</c>, changes to tables used in the transaction are prohibited; otherwise, they are permitted.</param>
+		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+		/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
+		/// <remarks>Transactions may not be nested.</remarks>
+		public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, bool isReadOnly, CancellationToken cancellationToken = default) => BeginTransactionAsync(isolationLevel, isReadOnly, AsyncIOBehavior, cancellationToken);
 #endif
 
 		private async ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, bool? isReadOnly, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -325,18 +325,18 @@ namespace MySqlConnector
 #endif
 
 		public override void Close() => CloseAsync(changeState: true, IOBehavior.Synchronous).GetAwaiter().GetResult();
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		public Task CloseAsync() => CloseAsync(changeState: true, SimpleAsyncIOBehavior);
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override Task CloseAsync() => CloseAsync(changeState: true, SimpleAsyncIOBehavior);
+#else
+		public Task CloseAsync() => CloseAsync(changeState: true, SimpleAsyncIOBehavior);
 #endif
 		internal Task CloseAsync(IOBehavior ioBehavior) => CloseAsync(changeState: true, ioBehavior);
 
 		public override void ChangeDatabase(string databaseName) => ChangeDatabaseAsync(IOBehavior.Synchronous, databaseName, CancellationToken.None).GetAwaiter().GetResult();
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		public Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, cancellationToken);
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, cancellationToken);
+#else
+		public Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default) => ChangeDatabaseAsync(AsyncIOBehavior, databaseName, cancellationToken);
 #endif
 
 		private async Task ChangeDatabaseAsync(IOBehavior ioBehavior, string databaseName, CancellationToken cancellationToken)
@@ -442,10 +442,10 @@ namespace MySqlConnector
 		/// <remarks>This is an optional feature of the MySQL protocol and may not be supported by all servers.
 		/// It's known to be supported by MySQL Server 5.7.3 (and later) and MariaDB 10.2.4 (and later).
 		/// Other MySQL-compatible servers or proxies may not support this command.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
-		public async Task ResetConnectionAsync(CancellationToken cancellationToken = default)
-#else
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public async ValueTask ResetConnectionAsync(CancellationToken cancellationToken = default)
+#else
+		public async Task ResetConnectionAsync(CancellationToken cancellationToken = default)
 #endif
 		{
 			var session = Session;
@@ -558,10 +558,10 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task{DataTable}"/> containing schema information.</returns>
 		/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public Task<DataTable> GetSchemaAsync(CancellationToken cancellationToken = default)
-#else
+#if NET5_0_OR_GREATER
 		public override Task<DataTable> GetSchemaAsync(CancellationToken cancellationToken = default)
+#else
+		public Task<DataTable> GetSchemaAsync(CancellationToken cancellationToken = default)
 #endif
 			=> GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, cancellationToken).AsTask();
 
@@ -572,10 +572,10 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task{DataTable}"/> containing schema information.</returns>
 		/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public Task<DataTable> GetSchemaAsync(string collectionName, CancellationToken cancellationToken = default)
-#else
+#if NET5_0_OR_GREATER
 		public override Task<DataTable> GetSchemaAsync(string collectionName, CancellationToken cancellationToken = default)
+#else
+		public Task<DataTable> GetSchemaAsync(string collectionName, CancellationToken cancellationToken = default)
 #endif
 			=> GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, collectionName, cancellationToken).AsTask();
 
@@ -587,10 +587,10 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task{DataTable}"/> containing schema information.</returns>
 		/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictionValues, CancellationToken cancellationToken = default)
-#else
+#if NET5_0_OR_GREATER
 		public override Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictionValues, CancellationToken cancellationToken = default)
+#else
+		public Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictionValues, CancellationToken cancellationToken = default)
 #endif
 			=> GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, collectionName, cancellationToken).AsTask();
 
@@ -640,10 +640,10 @@ namespace MySqlConnector
 			}
 		}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		public async Task DisposeAsync()
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override async ValueTask DisposeAsync()
+#else
+		public async Task DisposeAsync()
 #endif
 		{
 			try
@@ -1035,10 +1035,10 @@ namespace MySqlConnector
 			}
 		}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		private async Task CloseDatabaseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-#else
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		private async ValueTask CloseDatabaseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#else
+		private async Task CloseDatabaseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #endif
 		{
 			if (m_activeReader is not null)

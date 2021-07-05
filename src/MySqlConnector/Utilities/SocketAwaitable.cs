@@ -1,4 +1,4 @@
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 using System;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;

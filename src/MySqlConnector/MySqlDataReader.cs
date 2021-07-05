@@ -258,6 +258,11 @@ namespace MySqlConnector
 
 		protected override DbDataReader GetDbDataReader(int ordinal) => throw new NotSupportedException();
 
+#if NET6_0_OR_GREATER
+		public DateOnly GetDateOnly(int ordinal) => DateOnly.FromDateTime(GetDateTime(ordinal));
+		public DateOnly GetDateOnly(string name) => GetDateOnly(GetOrdinal(name));
+#endif
+
 		public override DateTime GetDateTime(int ordinal) => GetResultSet().GetCurrentRow().GetDateTime(ordinal);
 		public DateTime GetDateTime(string name) => GetDateTime(GetOrdinal(name));
 
@@ -269,6 +274,11 @@ namespace MySqlConnector
 
 		public MySqlGeometry GetMySqlGeometry(int ordinal) => GetResultSet().GetCurrentRow().GetMySqlGeometry(ordinal);
 		public MySqlGeometry GetMySqlGeometry(string name) => GetMySqlGeometry(GetOrdinal(name));
+
+#if NET6_0_OR_GREATER
+		public TimeOnly GetTimeOnly(int ordinal) => TimeOnly.FromTimeSpan(GetTimeSpan(ordinal));
+		public TimeOnly GetTimeOnly(string name) => GetTimeOnly(GetOrdinal(name));
+#endif
 
 		public TimeSpan GetTimeSpan(int ordinal) => (TimeSpan) GetValue(ordinal);
 		public TimeSpan GetTimeSpan(string name) => GetTimeSpan(GetOrdinal(name));
@@ -315,10 +325,10 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the operation.</param>
 		/// <returns>A <see cref="DataTable"/> containing metadata about the columns in the result set.</returns>
 		/// <remarks>This method runs synchronously; prefer to call <see cref="GetSchemaTable"/> to avoid the overhead of allocating an unnecessary <c>Task</c>.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public Task<DataTable?> GetSchemaTableAsync(CancellationToken cancellationToken = default)
-#else
+#if NET5_0_OR_GREATER
 		public override Task<DataTable?> GetSchemaTableAsync(CancellationToken cancellationToken = default)
+#else
+		public Task<DataTable?> GetSchemaTableAsync(CancellationToken cancellationToken = default)
 #endif
 		{
 			cancellationToken.ThrowIfCancellationRequested();
@@ -350,10 +360,10 @@ namespace MySqlConnector
 		/// <param name="cancellationToken">A token to cancel the operation.</param>
 		/// <returns>A <see cref="Task"/> containing <see cref="System.Collections.ObjectModel.ReadOnlyCollection{DbColumn}"/> containing metadata about the result set.</returns>
 		/// <remarks>This method runs synchronously; prefer to call <see cref="GetColumnSchema"/> to avoid the overhead of allocating an unnecessary <c>Task</c>.</remarks>
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
-		public Task<ReadOnlyCollection<DbColumn>> GetColumnSchemaAsync(CancellationToken cancellationToken = default)
-#else
+#if NET5_0_OR_GREATER
 		public override Task<ReadOnlyCollection<DbColumn>> GetColumnSchemaAsync(CancellationToken cancellationToken = default)
+#else
+		public Task<ReadOnlyCollection<DbColumn>> GetColumnSchemaAsync(CancellationToken cancellationToken = default)
 #endif
 		{
 			cancellationToken.ThrowIfCancellationRequested();
@@ -404,6 +414,12 @@ namespace MySqlConnector
 				return (T) (object) GetTextReader(ordinal);
 			if (typeof(T) == typeof(TimeSpan))
 				return (T) (object) GetTimeSpan(ordinal);
+#if NET6_0_OR_GREATER
+			if (typeof(T) == typeof(DateOnly))
+				return (T) (object) GetDateOnly(ordinal);
+			if (typeof(T) == typeof(TimeOnly))
+				return (T) (object) GetTimeOnly(ordinal);
+#endif
 
 			return base.GetFieldValue<T>(ordinal);
 		}
@@ -423,10 +439,10 @@ namespace MySqlConnector
 			}
 		}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override ValueTask DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
+#else
+		public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
 #endif
 
 		internal IMySqlCommand? Command { get; private set; }
@@ -565,10 +581,10 @@ namespace MySqlConnector
 			m_resultSet = new(this);
 		}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETCOREAPP2_1
-		internal async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-#else
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		internal async ValueTask DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+#else
+		internal async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 #endif
 		{
 			if (!m_closed)

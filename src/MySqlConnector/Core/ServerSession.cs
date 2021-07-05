@@ -68,10 +68,10 @@ namespace MySqlConnector.Core
 		public bool SupportsSessionTrack => m_supportsSessionTrack;
 		public bool ProcAccessDenied { get; set; }
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
-		public ValueTask<int> ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
-#else
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public ValueTask ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
+#else
+		public ValueTask<int> ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
 #endif
 		{
 			if (Log.IsDebugEnabled())
@@ -165,7 +165,7 @@ namespace MySqlConnector.Core
 				}
 
 				var parameterCount = cachedProcedure.Parameters.Count;
-#if NETCOREAPP2_1 || NETCOREAPP3_1 || NETSTANDARD2_1 || NET5_0
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 				commandToPrepare = string.Create(commandText.Length + 7 + parameterCount * 2 + (parameterCount == 0 ? 1 : 0), (commandText, parameterCount), static (buffer, state) =>
 				{
 					buffer[0] = 'C';
@@ -714,7 +714,17 @@ namespace MySqlConnector.Core
 			CancellationToken cancellationToken)
 		{
 			using var rsa = RSA.Create();
-#if NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
+#if NET5_0_OR_GREATER
+			try
+			{
+				Utility.LoadRsaParameters(rsaPublicKey, rsa);
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, "Session{0} couldn't load server's RSA public key", m_logArguments);
+				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't load server's RSA public key; try using a secure connection instead.", ex);
+			}
+#else
 			// load the RSA public key
 			RSAParameters rsaParameters;
 			try
@@ -728,16 +738,6 @@ namespace MySqlConnector.Core
 			}
 
 			rsa.ImportParameters(rsaParameters);
-#else
-			try
-			{
-				Utility.LoadRsaParameters(rsaPublicKey, rsa);
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, "Session{0} couldn't load server's RSA public key", m_logArguments);
-				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't load server's RSA public key; try using a secure connection instead.", ex);
-			}
 #endif
 
 			// add NUL terminator to password
@@ -1328,7 +1328,7 @@ namespace MySqlConnector.Core
 				CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck
 			};
 
-#if !NET45 && !NET461 && !NET471 && !NETSTANDARD1_3 && !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_1
+#if NETCOREAPP3_0_OR_GREATER
 			if (cs.TlsCipherSuites is { Count: > 0 })
 				clientAuthenticationOptions.CipherSuitesPolicy = new CipherSuitesPolicy(cs.TlsCipherSuites);
 #endif
@@ -1337,26 +1337,26 @@ namespace MySqlConnector.Core
 			{
 				if (ioBehavior == IOBehavior.Asynchronous)
 				{
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+					await sslStream.AuthenticateAsClientAsync(clientAuthenticationOptions, cancellationToken).ConfigureAwait(false);
+#else
 					await sslStream.AuthenticateAsClientAsync(clientAuthenticationOptions.TargetHost,
 						clientAuthenticationOptions.ClientCertificates,
 						clientAuthenticationOptions.EnabledSslProtocols,
 						checkCertificateRevocation).ConfigureAwait(false);
-#else
-					await sslStream.AuthenticateAsClientAsync(clientAuthenticationOptions, cancellationToken).ConfigureAwait(false);
 #endif
 				}
 				else
 				{
-#if NETSTANDARD1_3
-					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
-#elif NET45 || NET461 || NET471 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP3_1
+#if NET5_0_OR_GREATER
+					sslStream.AuthenticateAsClient(clientAuthenticationOptions);
+#elif NET45_OR_GREATER || NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
 					sslStream.AuthenticateAsClient(clientAuthenticationOptions.TargetHost,
 						clientAuthenticationOptions.ClientCertificates,
 						clientAuthenticationOptions.EnabledSslProtocols,
 						checkCertificateRevocation);
 #else
-					sslStream.AuthenticateAsClient(clientAuthenticationOptions);
+					await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
 #endif
 				}
 				var sslByteHandler = new StreamByteHandler(sslStream);
@@ -1365,10 +1365,10 @@ namespace MySqlConnector.Core
 				m_sslStream = sslStream;
 				if (Log.IsInfoEnabled())
 				{
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1
-					Log.Info("Session{0} connected TLS with SslProtocol={1}, CipherAlgorithm={2}, HashAlgorithm={3}, KeyExchangeAlgorithm={4}, KeyExchangeStrength={5}", m_logArguments[0], sslStream.SslProtocol, sslStream.CipherAlgorithm, sslStream.HashAlgorithm, sslStream.KeyExchangeAlgorithm, sslStream.KeyExchangeStrength);
-#else
+#if NETCOREAPP3_0_OR_GREATER
 					Log.Info("Session{0} connected TLS with SslProtocol={1}, NegotiatedCipherSuite={2}", m_logArguments[0], sslStream.SslProtocol, sslStream.NegotiatedCipherSuite);
+#else
+					Log.Info("Session{0} connected TLS with SslProtocol={1}, CipherAlgorithm={2}, HashAlgorithm={3}, KeyExchangeAlgorithm={4}, KeyExchangeStrength={5}", m_logArguments[0], sslStream.SslProtocol, sslStream.CipherAlgorithm, sslStream.HashAlgorithm, sslStream.KeyExchangeAlgorithm, sslStream.KeyExchangeStrength);
 #endif
 				}
 			}
@@ -1402,7 +1402,10 @@ namespace MySqlConnector.Core
 			{
 #if NETSTANDARD1_3 || NETSTANDARD2_0
 				throw new NotSupportedException("SslCert and SslKey connection string options are not supported in netstandard1.3 or netstandard2.0.");
-#elif NET45 || NET461 || NET471 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
+#elif NET5_0_OR_GREATER
+				m_clientCertificate = X509Certificate2.CreateFromPemFile(sslCertificateFile, sslKeyFile);
+				return new() { m_clientCertificate };
+#else
 				m_logArguments[1] = sslKeyFile;
 				Log.Debug("Session{0} loading client key from KeyFile '{1}'", m_logArguments);
 				string keyPem;
@@ -1471,14 +1474,11 @@ namespace MySqlConnector.Core
 						throw new MySqlException("Cannot find client certificate file: " + sslCertificateFile, ex);
 					throw new MySqlException("Could not load the client key from " + sslKeyFile, ex);
 				}
-#else
-				m_clientCertificate = X509Certificate2.CreateFromPemFile(sslCertificateFile, sslKeyFile);
-				return new() { m_clientCertificate };
 #endif
 			}
 		}
 
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 		// a stripped-down version of this POCO options class for TFMs that don't have it built in
 		internal sealed class SslClientAuthenticationOptions
 		{
@@ -1670,11 +1670,11 @@ namespace MySqlConnector.Core
 			catch (PlatformNotSupportedException)
 			{
 			}
-#if NET45 || NET461 || NET471 || NETSTANDARD1_3 || NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_1 || NETCOREAPP3_1
+#if NET5_0_OR_GREATER
+			var processId = Environment.ProcessId;
+#else
 			using var process = Process.GetCurrentProcess();
 			var processId = process.Id;
-#else
-			var processId = Environment.ProcessId;
 #endif
 			attributesWriter.WriteLengthEncodedString("_pid");
 			attributesWriter.WriteLengthEncodedString(processId.ToString(CultureInfo.InvariantCulture));

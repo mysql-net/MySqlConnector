@@ -660,6 +660,16 @@ insert into guid_format(c36, c32, b16, tsb16, leb16, t, b) values(
 #endif
 		}
 
+#if NET6_0_OR_GREATER && !BASELINE
+		[Theory]
+		[InlineData("`Date`", "DATE", new object[] { null, "1000 01 01", "9999 12 31", null, "2016 04 05" })]
+		public void QueryDateOnly(string column, string dataTypeName, object[] expected)
+		{
+			DoQuery("times", column, dataTypeName, ConvertToDateOnly(expected), reader => reader.GetDateOnly(column.Replace("`", "")),
+				matchesDefaultType: false, assertEqual: (x, y) => Assert.Equal((DateOnly) x, y is DateTime dt ? DateOnly.FromDateTime(dt) : (DateOnly) y));
+		}
+#endif
+
 		[SkippableTheory(ServerFeatures.ZeroDateTime)]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -772,8 +782,22 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		[InlineData("`Time`", "TIME", new object[] { null, "-838 -59 -59", "838 59 59", "0 0 0", "0 14 3 4 567890" })]
 		public void QueryTime(string column, string dataTypeName, object[] expected)
 		{
-			DoQuery("times", column, dataTypeName, ConvertToTimeSpan(expected), reader => reader.GetTimeSpan(0));
+			DoQuery("times", column, dataTypeName, ConvertToTimeSpan(expected), reader => reader.GetTimeSpan(0)
+#if BASELINE // https://bugs.mysql.com/bug.php?id=103801
+				, omitWherePrepareTest: true
+#endif
+			);
 		}
+
+#if NET6_0_OR_GREATER && !BASELINE
+		[Theory]
+		[InlineData("TimeOnly", "TIME", new object[] { null, "0 0 0", "0 23 59 59 999999", "0 0 0", "0 14 3 4 567890" })]
+		public void QueryTimeOnly(string column, string dataTypeName, object[] expected)
+		{
+			DoQuery("times", column, dataTypeName, ConvertToTimeOnly(expected), reader => reader.GetTimeOnly(0),
+				matchesDefaultType: false, assertEqual: (x, y) => Assert.Equal((TimeOnly) x, y is TimeSpan ts ? TimeOnly.FromTimeSpan(ts) : (TimeOnly) y));
+		}
+#endif
 
 		[Theory]
 		[InlineData("`Year`", "YEAR", new object[] { null, 1901, 2155, 0, 2016 })]
@@ -1642,13 +1666,14 @@ end;";
 			Func<MySqlDataReader, object> getValue,
 			object baselineCoercedNullValue = null,
 			bool omitWhereTest = false,
+			bool omitWherePrepareTest = false,
 			bool matchesDefaultType = true,
 			MySqlConnection connection = null,
 			Action<object, object> assertEqual = null,
 			Type getFieldValueType = null,
 			bool omitGetFieldValueTest = false)
 		{
-			DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, baselineCoercedNullValue, omitWhereTest, matchesDefaultType, connection, assertEqual, getFieldValueType, omitGetFieldValueTest);
+			DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, baselineCoercedNullValue, omitWhereTest, omitWherePrepareTest, matchesDefaultType, connection, assertEqual, getFieldValueType, omitGetFieldValueTest);
 		}
 
 		// NOTE: baselineCoercedNullValue is to work around inconsistencies in mysql-connector-net; DBNull.Value will
@@ -1661,6 +1686,7 @@ end;";
 			Func<MySqlDataReader, object> getValue,
 			object baselineCoercedNullValue = null,
 			bool omitWhereTest = false,
+			bool omitWherePrepareTest = false,
 			bool matchesDefaultType = true,
 			MySqlConnection connection = null,
 			Action<object, object> assertEqual = null,
@@ -1738,8 +1764,31 @@ end;";
 				cmd.Parameters.Add(p);
 				var result = cmd.ExecuteScalar();
 				Assert.Equal(Array.IndexOf(expected, p.Value) + 1, result);
+
+				if (!omitWherePrepareTest)
+				{
+					cmd.Prepare();
+					result = cmd.ExecuteScalar();
+					Assert.Equal(Array.IndexOf(expected, p.Value) + 1, result);
+				}
 			}
 		}
+
+#if NET6_0_OR_GREATER
+		private static object[] ConvertToDateOnly(object[] input)
+		{
+			var output = new object[input.Length];
+			for (int i = 0; i < input.Length; i++)
+			{
+				var value = SplitAndParse(input[i]);
+				if (value?.Length == 3)
+					output[i] = new DateOnly(value[0], value[1], value[2]);
+				else if (value is not null)
+					throw new NotSupportedException("Can't convert to DateOnly");
+			}
+			return output;
+		}
+#endif
 
 		private static object[] ConvertToDateTime(object[] input, DateTimeKind kind)
 		{
@@ -1768,6 +1817,27 @@ end;";
 			}
 			return output;
 		}
+
+#if NET6_0_OR_GREATER
+		private static object[] ConvertToTimeOnly(object[] input)
+		{
+			var output = new object[input.Length];
+			for (int i = 0; i < input.Length; i++)
+			{
+				var value = SplitAndParse(input[i]);
+				if (value?.Length == 3)
+				{
+					output[i] = new TimeOnly(value[0], value[1], value[2]);
+				}
+				else if (value?.Length == 5)
+				{
+					Assert.Equal(0, value[0]);
+					output[i] = new TimeOnly(value[1], value[2], value[3], value[4] / 1000).Add(TimeSpan.FromTicks(value[4] % 1000 * 10));
+				}
+			}
+			return output;
+		}
+#endif
 
 		private static object[] ConvertToTimeSpan(object[] input)
 		{
