@@ -240,7 +240,7 @@ namespace MySqlConnector
 			var tableName = DestinationTableName ?? throw new InvalidOperationException("DestinationTableName must be set before calling WriteToServer");
 			m_wasAborted = false;
 
-			Log.Info("Starting bulk copy to {0}", tableName);
+			Log.Debug("Starting bulk copy to {0}", tableName);
 			var bulkLoader = new MySqlBulkLoader(m_connection)
 			{
 				CharacterSet = "utf8mb4",
@@ -331,7 +331,7 @@ namespace MySqlConnector
 			if (closeConnection)
 				m_connection.Close();
 
-			Log.Info("Finished bulk copy to {0}", tableName);
+			Log.Debug("Finished bulk copy to {0}", tableName);
 
 			if (!m_wasAborted && rowsInserted != RowsCopied)
 			{
@@ -353,11 +353,11 @@ namespace MySqlConnector
 				{
 					if (columnMapping.Expression is not null)
 					{
-						Log.Warn("Column mapping for SourceOrdinal {0}, DestinationColumn {1} already has Expression {2}", columnMapping.SourceOrdinal, destinationColumn, columnMapping.Expression);
+						Log.Info("Column mapping for SourceOrdinal {0}, DestinationColumn {1} already has Expression {2}", columnMapping.SourceOrdinal, destinationColumn, columnMapping.Expression);
 					}
 					else
 					{
-						Log.Debug("Setting expression to map SourceOrdinal {0} to DestinationColumn {1}", columnMapping.SourceOrdinal, destinationColumn);
+						Log.Trace("Setting expression to map SourceOrdinal {0} to DestinationColumn {1}", columnMapping.SourceOrdinal, destinationColumn);
 						columnMappings.Remove(columnMapping);
 						columnMappings.Add(new(columnMapping.SourceOrdinal, variableName, expression));
 					}

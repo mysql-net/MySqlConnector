@@ -15,13 +15,13 @@ namespace MySqlConnector.Core
 			lock (s_lock)
 				s_resetTasks.Add(resetTask);
 
-			if (Log.IsDebugEnabled())
-				Log.Debug("Started Session{0} reset in background; waiting TaskCount: {1}.", session.Id, s_resetTasks.Count);
+			if (Log.IsTraceEnabled())
+				Log.Trace("Started Session{0} reset in background; waiting TaskCount: {1}.", session.Id, s_resetTasks.Count);
 
 			// release only if it is likely to succeed
 			if (s_semaphore.CurrentCount == 0)
 			{
-				Log.Debug("Releasing semaphore.");
+				Log.Trace("Releasing semaphore.");
 				try
 				{
 					s_semaphore.Release();
@@ -35,7 +35,7 @@ namespace MySqlConnector.Core
 
 		public static void Start()
 		{
-			Log.Info("Starting BackgroundConnectionResetHelper worker.");
+			Log.Trace("Starting BackgroundConnectionResetHelper worker.");
 			lock (s_lock)
 			{
 				if (s_workerTask is null)
@@ -45,7 +45,7 @@ namespace MySqlConnector.Core
 
 		public static void Stop()
 		{
-			Log.Info("Stopping BackgroundConnectionResetHelper worker.");
+			Log.Trace("Stopping BackgroundConnectionResetHelper worker.");
 			s_cancellationTokenSource.Cancel();
 			Task? workerTask;
 			lock (s_lock)
@@ -61,12 +61,12 @@ namespace MySqlConnector.Core
 				{
 				}
 			}
-			Log.Info("Stopped BackgroundConnectionResetHelper worker.");
+			Log.Trace("Stopped BackgroundConnectionResetHelper worker.");
 		}
 
 		public static async Task ReturnSessionsAsync()
 		{
-			Log.Info("Started BackgroundConnectionResetHelper worker.");
+			Log.Trace("Started BackgroundConnectionResetHelper worker.");
 
 			List<Task<bool>> localTasks = new();
 
@@ -76,7 +76,7 @@ namespace MySqlConnector.Core
 				try
 				{
 					// block until AddSession releases the semaphore
-					Log.Debug("Waiting for semaphore.");
+					Log.Trace("Waiting for semaphore.");
 					await s_semaphore.WaitAsync(s_cancellationTokenSource.Token).ConfigureAwait(false);
 
 					// process all sessions that have started being returned
@@ -91,8 +91,8 @@ namespace MySqlConnector.Core
 						if (localTasks.Count == 0)
 							break;
 
-						if (Log.IsDebugEnabled())
-							Log.Debug("Found TaskCount {0} task(s) to process.", localTasks.Count);
+						if (Log.IsTraceEnabled())
+							Log.Trace("Found TaskCount {0} task(s) to process.", localTasks.Count);
 
 						await Task.WhenAll(localTasks);
 						localTasks.Clear();
