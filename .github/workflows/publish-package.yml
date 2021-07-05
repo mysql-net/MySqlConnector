@@ -40,8 +40,4 @@ jobs:
       run: dotnet tool install -g gpr --no-cache -v q
 
     - name: Publish packages
-      run: |
-        $files = Get-ChildItem -Path src -Filter *.nupkg -Recurse
-        foreach ($file in $files) {
-          gpr push --api-key $GITHUB_ACCESS_TOKEN $file
-        }
+      run: gpr push --api-key ${{ secrets.GITHUB_TOKEN }} ".\**\*.nupkg"
