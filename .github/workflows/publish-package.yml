@@ -22,7 +22,7 @@ jobs:
     - name: Set up .NET 6.0
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.100-preview.5.21302.13
+        dotnet-version: 6.0.100-preview.6.21355.2
 
     - name: Restore
       run: dotnet restore
