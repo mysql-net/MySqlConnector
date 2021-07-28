@@ -216,7 +216,17 @@ namespace MySqlConnector.Core
 			foreach (var statement in parsedStatements.Statements)
 			{
 				await SendAsync(new PayloadData(statement.StatementBytes), ioBehavior, cancellationToken).ConfigureAwait(false);
-				var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				PayloadData payload;
+				try
+				{
+					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
+				catch (MySqlException exception)
+				{
+					ThrowIfStatementContainsDelimiter(exception, command);
+					throw;
+				}
+
 				var response = StatementPrepareResponsePayload.Create(payload.Span);
 
 				ColumnDefinitionPayload[]? parameters = null;
@@ -915,6 +925,18 @@ namespace MySqlConnector.Core
 			{
 				SetFailed(ex);
 				throw;
+			}
+		}
+
+		public static void ThrowIfStatementContainsDelimiter(MySqlException exception, IMySqlCommand command)
+		{
+			// check if the command used "DELIMITER"
+			if (exception.ErrorCode == MySqlErrorCode.ParseError && command.CommandText?.IndexOf("delimiter", StringComparison.OrdinalIgnoreCase) >= 0)
+			{
+				var parser = new DelimiterSqlParser(command);
+				parser.Parse(command.CommandText);
+				if (parser.HasDelimiter)
+					throw new MySqlException(MySqlErrorCode.DelimiterNotSupported, "'DELIMITER' should not be used with MySqlConnector. See https://fl.vu/mysql-delimiter", exception);
 			}
 		}
 
@@ -1736,6 +1758,25 @@ namespace MySqlConnector.Core
 
 			// An unexpected error occurred; the session is in an unusable state.
 			Failed,
+		}
+
+		private sealed class DelimiterSqlParser : SqlParser
+		{
+			public DelimiterSqlParser(IMySqlCommand command)
+				: base(new StatementPreparer(command.CommandText!, null, command.CreateStatementPreparerOptions()))
+			{
+				m_sql = command.CommandText!;
+			}
+
+			public bool HasDelimiter { get; private set; }
+
+			protected override void OnStatementBegin(int index)
+			{
+				if (index + 10 < m_sql.Length && string.Equals("delimiter ", m_sql.Substring(index, 10), StringComparison.OrdinalIgnoreCase))
+					HasDelimiter = true;
+			}
+
+			readonly string m_sql;
 		}
 
 		static ReadOnlySpan<byte> BeginCertificateBytes => new byte[] { 45, 45, 45, 45, 45, 66, 69, 71, 73, 78, 32, 67, 69, 82, 84, 73, 70, 73, 67, 65, 84, 69, 45, 45, 45, 45, 45 }; // -----BEGIN CERTIFICATE-----

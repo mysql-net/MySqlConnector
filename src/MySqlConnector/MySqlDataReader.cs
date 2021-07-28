@@ -132,7 +132,11 @@ namespace MySqlConnector
 					throw MySqlException.CreateForTimeout(mySqlException);
 
 				if (mySqlException is not null)
+				{
+					ServerSession.ThrowIfStatementContainsDelimiter(mySqlException, Command!);
+
 					m_resultSet.ReadResultSetHeaderException.Throw();
+				}
 
 				throw new MySqlException("Failed to read the result set.", m_resultSet.ReadResultSetHeaderException.SourceException);
 			}

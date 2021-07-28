@@ -1253,6 +1253,41 @@ insert into datatypes_tinyint1(value) values(0), (1), (2), (-1), (-128), (127);"
 			Assert.False(reader.Read());
 		}
 
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(true, true)]
+		public async Task Delimiter(bool prepareCommand, bool isAsync)
+		{
+			using var command = m_database.Connection.CreateCommand();
+			command.CommandText = @"DELIMITER $$
+CREATE FUNCTION echo(
+  name VARCHAR(63)
+) RETURNS VARCHAR(63)
+BEGIN
+    RETURN name;
+END
+$$";
+			MySqlException exception;
+			if (prepareCommand)
+			{
+				exception = isAsync ? (await Assert.ThrowsAsync<MySqlException>(async () => await command.PrepareAsync())) :
+					Assert.Throws<MySqlException>(() => command.Prepare());
+			}
+			else
+			{
+				exception = isAsync ? (await Assert.ThrowsAsync<MySqlException>(async () => await command.ExecuteNonQueryAsync())) :
+					Assert.Throws<MySqlException>(() => command.ExecuteNonQuery());
+			}
+
+#if !BASELINE
+			Assert.Equal(MySqlErrorCode.DelimiterNotSupported, exception.ErrorCode);
+#else
+			Assert.Equal((int) MySqlErrorCode.ParseError, exception.Number);
+#endif
+		}
+
 #if !NETCOREAPP1_1_2
 		[Fact]
 		public void QueryDateTimeLiteral()

@@ -6,6 +6,8 @@ namespace MySqlConnector
 	[System.CodeDom.Compiler.GeneratedCode("https://gist.github.com/bgrainger/791cecb647d514a9dd2f3d83b2387e49", "2")]
 	public enum MySqlErrorCode
 	{
+		DelimiterNotSupported = -3,
+
 		/// <summary>
 		/// Not all rows from the source supplied to <see cref="MySqlBulkCopy"/> were copied to <see cref="MySqlBulkCopy.DestinationTableName"/>.
 		/// </summary>
