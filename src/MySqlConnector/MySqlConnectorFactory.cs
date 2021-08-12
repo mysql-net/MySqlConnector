@@ -67,17 +67,28 @@ namespace MySqlConnector
 		/// <summary>
 		/// Creates a new <see cref="MySqlBatch"/> object.
 		/// </summary>
+#if NET6_0_OR_GREATER
+		public override DbBatch CreateBatch() => new MySqlBatch();
+#else
 		public MySqlBatch CreateBatch() => new MySqlBatch();
-
+#endif
 		/// <summary>
 		/// Creates a new <see cref="MySqlBatchCommand"/> object.
 		/// </summary>
+#if NET6_0_OR_GREATER
+		public override DbBatchCommand CreateBatchCommand() => new MySqlBatchCommand();
+#else
 		public MySqlBatchCommand CreateBatchCommand() => new MySqlBatchCommand();
+#endif
 
 		/// <summary>
 		/// Returns <c>true</c>.
 		/// </summary>
+#if NET6_0_OR_GREATER
+		public override bool CanCreateBatch => true;
+#else
 		public bool CanCreateBatch => true;
+#endif
 #pragma warning restore CA1822 // Mark members as static
 
 		private MySqlConnectorFactory()

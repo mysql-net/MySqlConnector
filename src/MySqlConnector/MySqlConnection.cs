@@ -613,18 +613,15 @@ namespace MySqlConnector
 		/// Creates a <see cref="MySqlBatch"/> object for executing batched commands.
 		/// </summary>
 		/// <returns></returns>
-		public MySqlBatch CreateBatch() => CreateDbBatch();
-		private MySqlBatch CreateDbBatch() => new(this);
-
-		/// <summary>
-		/// Creates a <see cref="MySqlBatchCommand"/> object (that can be used with <see cref="MySqlBatch.BatchCommands"/>).
-		/// </summary>
-		/// <returns></returns>
-		public MySqlBatchCommand CreateBatchCommand() => CreateDbBatchCommand();
-#pragma warning disable CA1822 // Mark members as static
-		private MySqlBatchCommand CreateDbBatchCommand() => new();
+#if NET6_0_OR_GREATER
+		public new MySqlBatch CreateBatch() => new(this);
+		protected override DbBatch CreateDbBatch() => CreateBatch();
+		public override bool CanCreateBatch => true;
+#else
+		public MySqlBatch CreateBatch() => new(this);
 		public bool CanCreateBatch => true;
-#pragma warning restore CA1822 // Mark members as static
+#endif
+
 
 		protected override void Dispose(bool disposing)
 		{

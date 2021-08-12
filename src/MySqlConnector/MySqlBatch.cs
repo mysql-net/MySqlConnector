@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,7 +54,11 @@ namespace MySqlConnector
 	/// </code>
 	/// </summary>
 	/// <remarks>The proposed ADO.NET API that <see cref="MySqlBatch"/> is based on is not finalized. This API is experimental and may change in the future.</remarks>
-	public sealed class MySqlBatch : ICancellableCommand, IDisposable
+	public sealed class MySqlBatch : 
+#if NET6_0_OR_GREATER
+		DbBatch,
+#endif
+		ICancellableCommand, IDisposable
 	{
 		/// <summary>
 		/// Initializes a new <see cref="MySqlBatch"/> object. The <see cref="Connection"/> property must be set before this object can be used.
@@ -76,20 +81,37 @@ namespace MySqlConnector
 			m_commandId = ICancellableCommandExtensions.GetNextId();
 		}
 
+#if NET6_0_OR_GREATER
+		public new MySqlConnection? Connection { get; set; }
+		protected override DbConnection? DbConnection { get => Connection; set => Connection = (MySqlConnection?) value; }
+		public new MySqlTransaction? Transaction { get; set; }
+		protected override DbTransaction? DbTransaction { get => Transaction; set => Transaction = (MySqlTransaction?) value; }
+#else
 		public MySqlConnection? Connection { get; set; }
 		public MySqlTransaction? Transaction { get; set; }
+#endif
 
 		/// <summary>
 		/// The collection of commands that will be executed in the batch.
 		/// </summary>
+#if NET6_0_OR_GREATER
+		public new MySqlBatchCommandCollection BatchCommands { get; }
+		protected override DbBatchCommandCollection DbBatchCommands => BatchCommands;
+#else
 		public MySqlBatchCommandCollection BatchCommands { get; }
+#endif
 
 		/// <summary>
 		/// Executes all the commands in the batch, returning a <see cref="MySqlDataReader"/> that can iterate
 		/// over the result sets. If multiple resultsets are returned, use <see cref="MySqlDataReader.NextResult"/>
 		/// to access them.
 		/// </summary>
-		public MySqlDataReader ExecuteReader() => ExecuteDbDataReader();
+#if NET6_0_OR_GREATER
+		public new MySqlDataReader ExecuteReader(CommandBehavior commandBehavior = CommandBehavior.Default) =>
+#else
+		public MySqlDataReader ExecuteReader(CommandBehavior commandBehavior = CommandBehavior.Default) =>
+#endif
+			(MySqlDataReader) ExecuteDbDataReader(commandBehavior);
 
 		/// <summary>
 		/// Executes all the commands in the batch, returning a <see cref="MySqlDataReader"/> that can iterate
@@ -98,15 +120,30 @@ namespace MySqlConnector
 		/// </summary>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 		/// <returns>A <see cref="Task{MySqlDataReader}"/> containing the result of the asynchronous operation.</returns>
-		public Task<MySqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default) => ExecuteDbDataReaderAsync(cancellationToken);
+#if NET6_0_OR_GREATER
+		public new async Task<MySqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default) =>
+#else
+		public async Task<MySqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default) =>
+#endif
+			(MySqlDataReader) await ExecuteDbDataReaderAsync(CommandBehavior.Default, cancellationToken);
 
-		private MySqlDataReader ExecuteDbDataReader()
+		// TODO: new ExecuteReaderAsync(CommandBehavior)
+
+#if NET6_0_OR_GREATER
+		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
+#else
+		private DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
+#endif
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
 			return ExecuteReaderAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		}
 
-		private async Task<MySqlDataReader> ExecuteDbDataReaderAsync(CancellationToken cancellationToken)
+#if NET6_0_OR_GREATER
+		protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+#else
+		private async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+#endif
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
 			using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
@@ -118,26 +155,54 @@ namespace MySqlConnector
 			if (!IsValid(out var exception))
 			 	return Utility.TaskFromException<MySqlDataReader>(exception);
 
-			foreach (var batchCommand in BatchCommands)
+			foreach (MySqlBatchCommand batchCommand in BatchCommands)
 				batchCommand.Batch = this;
 
 			var payloadCreator = Connection!.Session.SupportsComMulti ? BatchedCommandPayloadCreator.Instance :
 				IsPrepared ? SingleCommandPayloadCreator.Instance :
 				ConcatenatedCommandPayloadCreator.Instance;
-			return CommandExecutor.ExecuteReaderAsync(BatchCommands!, payloadCreator, CommandBehavior.Default, ioBehavior, cancellationToken);
+			return CommandExecutor.ExecuteReaderAsync(BatchCommands!.Commands, payloadCreator, CommandBehavior.Default, ioBehavior, cancellationToken);
 		}
 
-		public int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+#if NET6_0_OR_GREATER
+		public override int ExecuteNonQuery() =>
+#else
+		public int ExecuteNonQuery() =>
+#endif
+			ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public object ExecuteScalar() => ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+#if NET6_0_OR_GREATER
+		public override object? ExecuteScalar() =>
+#else
+		public object? ExecuteScalar() =>
+#endif
+			ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-		public Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default) => ExecuteNonQueryAsync(AsyncIOBehavior, cancellationToken);
+#if NET6_0_OR_GREATER
+		public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default) =>
+#else
+		public Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default) =>
+#endif
+			ExecuteNonQueryAsync(AsyncIOBehavior, cancellationToken);
 
-		public Task<object> ExecuteScalarAsync(CancellationToken cancellationToken = default) => ExecuteScalarAsync(AsyncIOBehavior, cancellationToken);
+#if NET6_0_OR_GREATER
+		public override Task<object?> ExecuteScalarAsync(CancellationToken cancellationToken = default) =>
+#else
+		public Task<object?> ExecuteScalarAsync(CancellationToken cancellationToken = default) =>
+#endif
+			ExecuteScalarAsync(AsyncIOBehavior, cancellationToken);
 
+#if NET6_0_OR_GREATER
+		public override int Timeout { get; set; }
+#else
 		public int Timeout { get; set; }
+#endif
 
+#if NET6_0_OR_GREATER
+		public override void Prepare()
+#else
 		public void Prepare()
+#endif
 		{
 			if (!NeedsPrepare(out var exception))
 			{
@@ -149,11 +214,29 @@ namespace MySqlConnector
 			DoPrepareAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 		}
 
-		public Task PrepareAsync(CancellationToken cancellationToken = default) => PrepareAsync(AsyncIOBehavior, cancellationToken);
+#if NET6_0_OR_GREATER
+		public override Task PrepareAsync(CancellationToken cancellationToken = default) =>
+#else
+		public Task PrepareAsync(CancellationToken cancellationToken = default) =>
+#endif
+			PrepareAsync(AsyncIOBehavior, cancellationToken);
 
-		public void Cancel() => Connection?.Cancel(this, m_commandId, true);
+#if NET6_0_OR_GREATER
+		public override void Cancel() =>
+#else
+		public void Cancel() =>
+#endif
+			Connection?.Cancel(this, m_commandId, true);
 
+#if NET6_0_OR_GREATER
+		protected override DbBatchCommand CreateDbBatchCommand() => new MySqlBatchCommand();
+#endif
+
+#if NET6_0_OR_GREATER
+		public override void Dispose()
+#else
 		public void Dispose()
+#endif
 		{
 			m_isDisposed = true;
 		}
@@ -207,7 +290,7 @@ namespace MySqlConnector
 			return reader.RecordsAffected;
 		}
 
-		private async Task<object> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private async Task<object?> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
 			using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
@@ -224,7 +307,7 @@ namespace MySqlConnector
 					hasSetResult = true;
 				}
 			} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
-			return result!;
+			return result;
 		}
 
 		private bool IsValid([NotNullWhen(false)] out Exception? exception)
@@ -248,7 +331,6 @@ namespace MySqlConnector
 
 		private bool NeedsPrepare(out Exception? exception)
 		{
-			exception = null;
 			if (m_isDisposed)
 				exception = new ObjectDisposedException(GetType().Name);
 			else if (Connection is null)
@@ -271,8 +353,6 @@ namespace MySqlConnector
 			{
 				if (command is null)
 					return new InvalidOperationException("BatchCommands must not contain null");
-				if ((command.CommandBehavior & CommandBehavior.CloseConnection) != 0)
-					return new NotSupportedException("CommandBehavior.CloseConnection is not supported by MySqlBatch");
 				if (string.IsNullOrWhiteSpace(command.CommandText))
 					return new InvalidOperationException("CommandText must be specified on each batch command");
 			}

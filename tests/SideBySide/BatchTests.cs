@@ -19,7 +19,7 @@ namespace SideBySide
 			{
 				BatchCommands =
 				{
-					new("SELECT 1;"),
+					new MySqlBatchCommand("SELECT 1;"),
 				},
 			};
 			Assert.Throws<InvalidOperationException>(() => batch.ExecuteNonQuery());
@@ -33,7 +33,7 @@ namespace SideBySide
 			{
 				BatchCommands =
 				{
-					new("SELECT 1;"),
+					new MySqlBatchCommand("SELECT 1;"),
 				},
 			};
 			Assert.Throws<InvalidOperationException>(() => batch.ExecuteNonQuery());
@@ -67,7 +67,7 @@ namespace SideBySide
 			connection.Open();
 			using var batch = new MySqlBatch(connection)
 			{
-				BatchCommands = { new() },
+				BatchCommands = { new MySqlBatchCommand() },
 			};
 			Assert.Throws<InvalidOperationException>(() => batch.ExecuteNonQuery());
 		}
@@ -80,8 +80,8 @@ namespace SideBySide
 			Assert.Throws<ObjectDisposedException>(() => batch.ExecuteNonQuery());
 		}
 
-		[Fact]
-		public void NoCloseConnection()
+		[Fact(Skip = "Not implemented")]
+		public void CloseConnection()
 		{
 			using var connection = new MySqlConnection(AppConfig.ConnectionString);
 			connection.Open();
@@ -89,10 +89,18 @@ namespace SideBySide
 			{
 				BatchCommands =
 				{
-					new("SELECT 1;") { CommandBehavior = CommandBehavior.CloseConnection },
+					new MySqlBatchCommand("SELECT 1;"),
 				},
 			};
-			Assert.Throws<NotSupportedException>(() => batch.ExecuteNonQuery());
+			using (var reader = batch.ExecuteReader(CommandBehavior.CloseConnection))
+			{
+				while (reader.Read())
+				{
+				}
+
+				Assert.Equal(ConnectionState.Open, connection.State);
+			}
+			Assert.Equal(ConnectionState.Closed, connection.State);
 		}
 
 		[Fact]
@@ -112,7 +120,7 @@ namespace SideBySide
 			connection.Open();
 			using var transaction = connection.BeginTransaction();
 			using var batch = connection.CreateBatch();
-			batch.BatchCommands.Add(new("SELECT 1;"));
+			batch.BatchCommands.Add(new MySqlBatchCommand("SELECT 1;"));
 			Assert.Throws<InvalidOperationException>(() => batch.ExecuteScalar());
 
 			batch.Transaction = transaction;
@@ -126,7 +134,7 @@ namespace SideBySide
 			connection.Open();
 			using var transaction = connection.BeginTransaction();
 			using var batch = connection.CreateBatch();
-			batch.BatchCommands.Add(new("SELECT 1;"));
+			batch.BatchCommands.Add(new MySqlBatchCommand("SELECT 1;"));
 			TestUtilities.AssertIsOne(batch.ExecuteScalar());
 		}
 
@@ -141,7 +149,7 @@ namespace SideBySide
 			transaction.Dispose();
 
 			using var batch = connection.CreateBatch();
-			batch.BatchCommands.Add(new("SELECT 1;"));
+			batch.BatchCommands.Add(new MySqlBatchCommand("SELECT 1;"));
 			batch.Transaction = transaction;
 			TestUtilities.AssertIsOne(batch.ExecuteScalar());
 		}
@@ -156,7 +164,7 @@ namespace SideBySide
 			using var transaction1 = connection1.BeginTransaction();
 			using var batch2 = connection2.CreateBatch();
 			batch2.Transaction = transaction1;
-			batch2.BatchCommands.Add(new("SELECT 1;"));
+			batch2.BatchCommands.Add(new MySqlBatchCommand("SELECT 1;"));
 			TestUtilities.AssertIsOne(batch2.ExecuteScalar());
 		}
 
@@ -176,9 +184,9 @@ namespace SideBySide
 			{
 				BatchCommands =
 				{
-					new("SELECT 1" + suffix),
-					new("SELECT 2" + suffix),
-					new("SELECT 3" + suffix),
+					new MySqlBatchCommand("SELECT 1" + suffix),
+					new MySqlBatchCommand("SELECT 2" + suffix),
+					new MySqlBatchCommand("SELECT 3" + suffix),
 				},
 			};
 			using var reader = batch.ExecuteReader();
@@ -211,9 +219,9 @@ namespace SideBySide
 			{
 				BatchCommands =
 				{
-					new("SELECT 1;"),
-					new("SELECT 2 /* incomplete"),
-					new("SELECT 3;"),
+					new MySqlBatchCommand("SELECT 1;"),
+					new MySqlBatchCommand("SELECT 2 /* incomplete"),
+					new MySqlBatchCommand("SELECT 3;"),
 				},
 			};
 			using var reader = batch.ExecuteReader();
@@ -232,7 +240,7 @@ namespace SideBySide
 			}
 		}
 
-		[Fact]
+		[Fact(Skip = "Not implemented")]
 		public void SingleRow()
 		{
 			using var connection = new MySqlConnection(AppConfig.ConnectionString);
@@ -248,20 +256,10 @@ insert into batch_single_row(id) values(1),(2),(3);", connection))
 			{
 				BatchCommands =
 				{
-					new("SELECT id FROM batch_single_row ORDER BY id"),
-					new("SELECT id FROM batch_single_row ORDER BY id") { CommandBehavior = CommandBehavior.SingleRow },
+					new MySqlBatchCommand("SELECT id FROM batch_single_row ORDER BY id"),
 				},
 			};
-			using var reader = batch.ExecuteReader();
-			Assert.True(reader.Read());
-			Assert.Equal(1, reader.GetInt32(0));
-			Assert.True(reader.Read());
-			Assert.Equal(2, reader.GetInt32(0));
-			Assert.True(reader.Read());
-			Assert.Equal(3, reader.GetInt32(0));
-			Assert.False(reader.Read());
-
-			Assert.True(reader.NextResult());
+			using var reader = batch.ExecuteReader(CommandBehavior.SingleRow);
 			Assert.True(reader.Read());
 			Assert.Equal(1, reader.GetInt32(0));
 			Assert.False(reader.Read());
@@ -276,7 +274,7 @@ insert into batch_single_row(id) values(1),(2),(3);", connection))
 			{
 				BatchCommands =
 				{
-					new("SELECT 1;"),
+					new MySqlBatchCommand("SELECT 1;"),
 				},
 			};
 			Assert.Throws<InvalidOperationException>(() => batch.Prepare());
@@ -290,7 +288,7 @@ insert into batch_single_row(id) values(1),(2),(3);", connection))
 			{
 				BatchCommands =
 				{
-					new("SELECT 1;"),
+					new MySqlBatchCommand("SELECT 1;"),
 				},
 			};
 			Assert.Throws<InvalidOperationException>(() => batch.Prepare());
@@ -324,7 +322,7 @@ insert into batch_single_row(id) values(1),(2),(3);", connection))
 			connection.Open();
 			using var batch = new MySqlBatch(connection)
 			{
-				BatchCommands = { new() },
+				BatchCommands = { new MySqlBatchCommand() },
 			};
 			Assert.Throws<InvalidOperationException>(() => batch.Prepare());
 		}
