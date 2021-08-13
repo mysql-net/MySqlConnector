@@ -10,6 +10,13 @@ weight: 30
 
 # Version History
 
+### 1.4.0 Beta 2
+
+* Support .NET 6.0 Preview 7
+  * **Breaking** Update the `MySqlDbBatch` (experimental API) to match the latest .NET 6.0 API changes.
+* Throw an informative exception if `DELIMITER` is used in a SQL statement: [#1010](https://github.com/mysql-net/MySqlConnector/issues/1010).
+* Fix bug that failed to deserialize a binary row (from a prepared statement) correctly: [#1018](https://github.com/mysql-net/MySqlConnector/issues/1018).
+
 ### 1.4.0 Beta 1
 
 * Reduce default log message severity: [#981](https://github.com/mysql-net/MySqlConnector/issues/981).
