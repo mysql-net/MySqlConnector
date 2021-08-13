@@ -136,7 +136,7 @@ namespace MySqlConnector
 #endif
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
-			return ExecuteReaderAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+			return ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		}
 
 #if NET6_0_OR_GREATER
@@ -147,21 +147,22 @@ namespace MySqlConnector
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
 			using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
-			return await ExecuteReaderAsync(AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
+			return await ExecuteReaderAsync(behavior, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
 		}
 
-		private Task<MySqlDataReader> ExecuteReaderAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+		private Task<MySqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 		{
 			if (!IsValid(out var exception))
 			 	return Utility.TaskFromException<MySqlDataReader>(exception);
 
+			CurrentCommandBehavior = behavior;
 			foreach (MySqlBatchCommand batchCommand in BatchCommands)
 				batchCommand.Batch = this;
 
 			var payloadCreator = Connection!.Session.SupportsComMulti ? BatchedCommandPayloadCreator.Instance :
 				IsPrepared ? SingleCommandPayloadCreator.Instance :
 				ConcatenatedCommandPayloadCreator.Instance;
-			return CommandExecutor.ExecuteReaderAsync(BatchCommands!.Commands, payloadCreator, CommandBehavior.Default, ioBehavior, cancellationToken);
+			return CommandExecutor.ExecuteReaderAsync(BatchCommands!.Commands, payloadCreator, behavior, ioBehavior, cancellationToken);
 		}
 
 #if NET6_0_OR_GREATER
@@ -241,6 +242,8 @@ namespace MySqlConnector
 			m_isDisposed = true;
 		}
 
+		internal CommandBehavior CurrentCommandBehavior { get; set; }
+
 		int ICancellableCommand.CommandId => m_commandId;
 		int ICancellableCommand.CommandTimeout => Timeout;
 		int ICancellableCommand.CancelAttemptCount { get; set; }
@@ -280,7 +283,7 @@ namespace MySqlConnector
 		{
 			((ICancellableCommand) this).ResetCommandTimeout();
 			using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
-			using var reader = await ExecuteReaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			using var reader = await ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
 			do
 			{
 				while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
@@ -296,7 +299,7 @@ namespace MySqlConnector
 			using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
 			var hasSetResult = false;
 			object? result = null;
-			using var reader = await ExecuteReaderAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			using var reader = await ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
 			do
 			{
 				var hasResult = await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);

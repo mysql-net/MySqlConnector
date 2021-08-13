@@ -80,7 +80,7 @@ namespace SideBySide
 			Assert.Throws<ObjectDisposedException>(() => batch.ExecuteNonQuery());
 		}
 
-		[Fact(Skip = "Not implemented")]
+		[Fact]
 		public void CloseConnection()
 		{
 			using var connection = new MySqlConnection(AppConfig.ConnectionString);
@@ -229,19 +229,14 @@ namespace SideBySide
 			Assert.Equal(1, reader.GetInt32(0));
 			Assert.False(reader.Read());
 
-			try
-			{
-				reader.NextResult();
-				Assert.True(false, "Shouldn't get here");
-			}
-			catch (MySqlException ex)
-			{
-				Assert.Equal(MySqlErrorCode.ParseError, ex.ErrorCode);
-			}
+			var ex = Assert.Throws<MySqlException>(() => reader.NextResult());
+			Assert.Equal(MySqlErrorCode.ParseError, ex.ErrorCode);
 		}
 
-		[Fact(Skip = "Not implemented")]
-		public void SingleRow()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void SingleRow(bool prepare)
 		{
 			using var connection = new MySqlConnection(AppConfig.ConnectionString);
 			connection.Open();
@@ -257,8 +252,13 @@ insert into batch_single_row(id) values(1),(2),(3);", connection))
 				BatchCommands =
 				{
 					new MySqlBatchCommand("SELECT id FROM batch_single_row ORDER BY id"),
+					new MySqlBatchCommand("SELECT id FROM batch_single_row ORDER BY id"),
 				},
 			};
+
+			if (prepare)
+				batch.Prepare();
+
 			using var reader = batch.ExecuteReader(CommandBehavior.SingleRow);
 			Assert.True(reader.Read());
 			Assert.Equal(1, reader.GetInt32(0));

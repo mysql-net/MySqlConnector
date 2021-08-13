@@ -51,7 +51,7 @@ namespace MySqlConnector
 
 		bool IMySqlCommand.AllowUserVariables => false;
 
-		CommandBehavior IMySqlCommand.CommandBehavior => CommandBehavior.Default;
+		CommandBehavior IMySqlCommand.CommandBehavior => Batch!.CurrentCommandBehavior;
 
 		MySqlParameterCollection? IMySqlCommand.RawParameters => m_parameterCollection;
 
