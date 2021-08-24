@@ -81,6 +81,70 @@ create table insert_ai(rowid bigint unsigned not null primary key auto_increment
 		}
 
 		[Fact]
+		public async Task LastInsertedIdAfterSelect()
+		{
+			await m_database.Connection.ExecuteAsync(@"drop table if exists insert_ai;
+create table insert_ai(rowid integer not null primary key auto_increment, text varchar(100) not null);
+insert into insert_ai(text) values('test'); 
+");
+			try
+			{
+				await m_database.Connection.OpenAsync();
+				using var command = new MySqlCommand(@"SELECT * FROM insert_ai;
+INSERT INTO insert_ai (text) VALUES (@text);", m_database.Connection);
+				command.Parameters.Add(new() { ParameterName = "@text", Value = "test" });
+				await command.ExecuteNonQueryAsync();
+				Assert.Equal(2L, command.LastInsertedId);
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+		}
+
+		[Fact]
+		public async Task LastInsertedIdBeforeSelect()
+		{
+			await m_database.Connection.ExecuteAsync(@"drop table if exists insert_ai;
+create table insert_ai(rowid integer not null primary key auto_increment, text varchar(100) not null);
+insert into insert_ai(text) values('test'); 
+");
+			try
+			{
+				await m_database.Connection.OpenAsync();
+				using var command = new MySqlCommand(@"INSERT INTO insert_ai (text) VALUES (@text);
+SELECT * FROM insert_ai;", m_database.Connection);
+				command.Parameters.Add(new() { ParameterName = "@text", Value = "test" });
+				await command.ExecuteNonQueryAsync();
+				Assert.Equal(2L, command.LastInsertedId);
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+		}
+
+		[Fact]
+		public async Task LastInsertedIdTwoInserts()
+		{
+			await m_database.Connection.ExecuteAsync(@"drop table if exists insert_ai;
+create table insert_ai(rowid integer not null primary key auto_increment, text varchar(100) not null);
+");
+			try
+			{
+				await m_database.Connection.OpenAsync();
+				using var command = new MySqlCommand(@"INSERT INTO insert_ai (text) VALUES ('test1');
+INSERT INTO insert_ai (text) VALUES ('test2');", m_database.Connection);
+				await command.ExecuteNonQueryAsync();
+				Assert.Equal(2L, command.LastInsertedId);
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+		}
+
+		[Fact]
 		public async Task RowsAffected()
 		{
 			await m_database.Connection.ExecuteAsync(@"drop table if exists insert_rows_affected;

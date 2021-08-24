@@ -27,7 +27,6 @@ namespace MySqlConnector.Core
 			BufferState = ResultSetState.None;
 			ColumnDefinitions = null;
 			ColumnTypes = null;
-			LastInsertId = 0;
 			RecordsAffected = null;
 			WarningCount = 0;
 			State = ResultSetState.None;
@@ -54,7 +53,8 @@ namespace MySqlConnector.Core
 					{
 						var ok = OkPayload.Create(payload.Span, Session.SupportsDeprecateEof, Session.SupportsSessionTrack);
 						RecordsAffected = (RecordsAffected ?? 0) + ok.AffectedRowCount;
-						LastInsertId = unchecked((long) ok.LastInsertId);
+						if (ok.LastInsertId != 0)
+							Command?.SetLastInsertedId((long) ok.LastInsertId);
 						WarningCount = ok.WarningCount;
 						if (ok.NewSchema is not null)
 							Connection.Session.DatabaseOverride = ok.NewSchema;
@@ -158,7 +158,6 @@ namespace MySqlConnector.Core
 
 						if (ColumnDefinitions.Length == (Command?.OutParameters?.Count + 1) && ColumnDefinitions[0].Name == SingleCommandPayloadCreator.OutParameterSentinelColumnName)
 							ContainsCommandParameters = true;
-						LastInsertId = -1;
 						WarningCount = 0;
 						State = ResultSetState.ReadResultSetHeader;
 						break;
@@ -366,7 +365,6 @@ namespace MySqlConnector.Core
 		public ResultSetState BufferState { get; private set; }
 		public ColumnDefinitionPayload[]? ColumnDefinitions { get; private set; }
 		public MySqlDbType[]? ColumnTypes { get; private set; }
-		public long LastInsertId { get; private set; }
 		public ulong? RecordsAffected { get; private set; }
 		public int WarningCount { get; private set; }
 		public ResultSetState State { get; private set; }

@@ -141,7 +141,6 @@ namespace MySqlConnector
 				throw new MySqlException("Failed to read the result set.", m_resultSet.ReadResultSetHeaderException.SourceException);
 			}
 
-			Command!.SetLastInsertedId(m_resultSet.LastInsertId);
 			m_recordsAffected = m_recordsAffected is null ? m_resultSet.RecordsAffected : m_recordsAffected.Value + (m_resultSet.RecordsAffected ?? 0);
 			m_hasWarnings = m_resultSet.WarningCount != 0;
 		}
