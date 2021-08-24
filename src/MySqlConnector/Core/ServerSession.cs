@@ -1221,6 +1221,11 @@ namespace MySqlConnector.Core
 					var certificate = new X509Certificate2(cs.CertificateFile, cs.CertificatePassword, X509KeyStorageFlags.MachineKeySet);
 					if (!certificate.HasPrivateKey)
 					{
+#if NET45
+						certificate.Reset();
+#else
+						certificate.Dispose();
+#endif
 						m_logArguments[1] = cs.CertificateFile;
 						Log.Error("Session{0} no private key included with CertificateFile '{1}'", m_logArguments);
 						throw new MySqlException("CertificateFile does not contain a private key. " +
