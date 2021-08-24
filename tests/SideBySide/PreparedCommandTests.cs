@@ -280,8 +280,12 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		{
 			using var connection = CreateConnection();
 			using var cmd = new MySqlCommand("SELECT ?;", connection);
+#if BASELINE
+			Assert.Throws<IndexOutOfRangeException>(() => cmd.Prepare());
+#else
 			cmd.Prepare();
 			Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
+#endif
 		}
 
 		[Fact]
@@ -304,8 +308,12 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 			using var connection = CreateConnection();
 			using var cmd = new MySqlCommand("SELECT ?, ?;", connection);
 			cmd.Parameters.Add(new() { Value = 1 });
+#if BASELINE
+			Assert.Throws<IndexOutOfRangeException>(() => cmd.Prepare());
+#else
 			cmd.Prepare();
 			Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
+#endif
 		}
 
 		[Theory]
