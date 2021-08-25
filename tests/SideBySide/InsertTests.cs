@@ -144,6 +144,58 @@ INSERT INTO insert_ai (text) VALUES ('test2');", m_database.Connection);
 			}
 		}
 
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=97061")]
+		public async Task LastInsertedIdLockTables()
+		{
+			await m_database.Connection.ExecuteAsync(@"drop table if exists insert_ai;
+create table insert_ai(rowid integer not null primary key auto_increment, text varchar(100) not null);
+");
+			try
+			{
+				await m_database.Connection.OpenAsync();
+				using var command = new MySqlCommand(@"LOCK TABLES insert_ai WRITE;
+INSERT INTO insert_ai (text) VALUES ('test');
+UNLOCK TABLES;", m_database.Connection);
+				await command.ExecuteNonQueryAsync();
+				Assert.Equal(1L, command.LastInsertedId);
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+		}
+
+		[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=97061")]
+		public async Task LastInsertedIdInsertForeignKey()
+		{
+			await m_database.Connection.ExecuteAsync(@"drop table if exists TestTableWithForeignKey;
+drop table if exists TestTable;
+
+Create Table TestTable(
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    column1 CHAR(100),
+    Primary Key(id)
+);
+
+Create Table TestTableWithForeignKey(
+    foreign_id BIGINT NOT NULL,
+    column2 CHAR(100),
+    Foreign Key(foreign_id) REFERENCES TestTable(id)
+);");
+			try
+			{
+				await m_database.Connection.OpenAsync();
+				using var command = new MySqlCommand(@"INSERT INTO TestTable(column1) VALUES('hello');
+INSERT INTO TestTableWithForeignKey(foreign_id, column2) VALUES(LAST_INSERT_ID(), 'test');", m_database.Connection);
+				await command.ExecuteNonQueryAsync();
+				Assert.Equal(1L, command.LastInsertedId);
+			}
+			finally
+			{
+				m_database.Connection.Close();
+			}
+		}
+
 		[Fact]
 		public async Task RowsAffected()
 		{
