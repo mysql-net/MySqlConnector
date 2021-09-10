@@ -111,7 +111,7 @@ These are the options that need to be used in order to configure a connection to
   <tr id="SslCert">
     <td>SslCert, Ssl-Cert</td>
     <td></td>
-    <td>Specifies the path to the client’s SSL certificate file in PEM format. <code>SslKey</code> must also be specified, and <code>CertificateFile</code> should not be. This option is not supported on the <code>netstandard1.3</code> or <code>netstandard2.0</code> platforms.</td>
+    <td>Specifies the path to the client’s SSL certificate file in PEM format. <code>SslKey</code> must also be specified, and <code>CertificateFile</code> should not be. This option is not supported on <code>netstandard2.0</code>.</td>
   </tr>
   <tr id="SslKey">
     <td>SslKey, Ssl-Key</td>

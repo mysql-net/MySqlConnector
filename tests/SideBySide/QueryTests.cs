@@ -1288,7 +1288,6 @@ $$";
 #endif
 		}
 
-#if !NETCOREAPP1_1_2
 		[Fact]
 		public void QueryDateTimeLiteral()
 		{
@@ -1304,7 +1303,6 @@ $$";
 			var providerType = (MySqlDbType) (int) schema.Rows[0]["ProviderType"];
 			Assert.Equal(MySqlDbType.DateTime, providerType);
 		}
-#endif
 
 		class BoolTest
 		{

@@ -105,12 +105,10 @@ namespace MySqlConnector
 		/// </summary>
 		public int RowsCopied { get; private set; }
 
-#if !NETSTANDARD1_3
 		/// <summary>
 		/// Copies all rows in the supplied <see cref="DataTable"/> to the destination table specified by the
 		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
 		/// </summary>
-		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
 		public void WriteToServer(DataTable dataTable)
 		{
 			m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable ?? throw new ArgumentNullException(nameof(dataTable)));
@@ -124,7 +122,6 @@ namespace MySqlConnector
 		/// Asynchronously copies all rows in the supplied <see cref="DataTable"/> to the destination table specified by the
 		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
 		/// </summary>
-		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
 		public async ValueTask WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable ?? throw new ArgumentNullException(nameof(dataTable)));
@@ -135,7 +132,6 @@ namespace MySqlConnector
 		/// Asynchronously copies all rows in the supplied <see cref="DataTable"/> to the destination table specified by the
 		/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
 		/// </summary>
-		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
 		public async Task WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable ?? throw new ArgumentNullException(nameof(dataTable)));
@@ -150,7 +146,6 @@ namespace MySqlConnector
 		/// </summary>
 		/// <param name="dataRows">The collection of <see cref="DataRow"/> objects.</param>
 		/// <param name="columnCount">The number of columns to copy (in each row).</param>
-		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
 		public void WriteToServer(IEnumerable<DataRow> dataRows, int columnCount)
 		{
 			m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows ?? throw new ArgumentNullException(nameof(dataRows)), columnCount);
@@ -168,7 +163,6 @@ namespace MySqlConnector
 		/// <param name="dataRows">The collection of <see cref="DataRow"/> objects.</param>
 		/// <param name="columnCount">The number of columns to copy (in each row).</param>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
 		public async ValueTask WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows ?? throw new ArgumentNullException(nameof(dataRows)), columnCount);
@@ -183,13 +177,11 @@ namespace MySqlConnector
 		/// <param name="dataRows">The collection of <see cref="DataRow"/> objects.</param>
 		/// <param name="columnCount">The number of columns to copy (in each row).</param>
 		/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-		/// <remarks>This method is not available on <c>netstandard1.3</c>.</remarks>
 		public async Task WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, CancellationToken cancellationToken = default)
 		{
 			m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows ?? throw new ArgumentNullException(nameof(dataRows)), columnCount);
 			await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 		}
-#endif
 #endif
 
 		/// <summary>
@@ -633,17 +625,9 @@ namespace MySqlConnector
 							nextIndex = value.Length;
 
 						utf8Encoder ??= s_utf8Encoding.GetEncoder();
-#if NETSTANDARD1_3
-						if (output.Length < 4 && utf8Encoder.GetByteCount(value.ToCharArray(), inputIndex, Math.Min(2, nextIndex - inputIndex), flush: false) > output.Length)
-							return false;
-						var buffer = new byte[output.Length];
-						utf8Encoder.Convert(value.ToCharArray(), inputIndex, nextIndex - inputIndex, buffer, 0, buffer.Length, nextIndex == value.Length, out var charsUsed, out var bytesUsed, out var completed);
-						buffer.AsSpan().CopyTo(output);
-#else
 						if (output.Length < 4 && utf8Encoder.GetByteCount(value.AsSpan(inputIndex, Math.Min(2, nextIndex - inputIndex)), flush: false) > output.Length)
 							return false;
 						utf8Encoder.Convert(value.AsSpan(inputIndex, nextIndex - inputIndex), output, nextIndex == value.Length, out var charsUsed, out var bytesUsed, out var completed);
-#endif
 
 						bytesWritten += bytesUsed;
 						output = output.Slice(bytesUsed);

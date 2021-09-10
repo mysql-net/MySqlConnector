@@ -517,7 +517,6 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 			Assert.False(reader2.Read());
 		}
 
-#if !NETCOREAPP1_1_2
 		[Fact]
 		public void BulkCopyNullDataTable()
 		{
@@ -923,7 +922,6 @@ create table bulk_copy_duplicate_pk(id integer primary key, value text not null)
 			var ex = Assert.Throws<MySqlException>(() => bcp.WriteToServer(dataTable));
 			Assert.Equal(MySqlErrorCode.BulkCopyFailed, ex.ErrorCode);
 		}
-#endif
 
 		[Fact]
 		public void BulkCopyNullDataReader()

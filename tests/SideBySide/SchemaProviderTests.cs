@@ -1,4 +1,3 @@
-#if !NETCOREAPP1_1_2
 using System;
 using System.Data;
 using System.Data.Common;
@@ -112,4 +111,3 @@ namespace SideBySide
 		readonly DatabaseFixture m_database;
 	}
 }
-#endif

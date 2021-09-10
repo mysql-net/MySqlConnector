@@ -1,4 +1,3 @@
-#if !NETSTANDARD1_3
 using System.Globalization;
 using System.Threading;
 using System.Transactions;
@@ -53,4 +52,3 @@ namespace MySqlConnector.Core
 		string? m_xid;
 	}
 }
-#endif

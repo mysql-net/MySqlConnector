@@ -36,7 +36,6 @@ namespace SideBySide
 			Assert.IsType<MySqlParameter>(MySqlConnectorFactory.Instance.CreateParameter());
 		}
 
-#if !NETCOREAPP1_1_2
 		[Fact]
 		public void CreateCommandBuilder()
 		{
@@ -48,9 +47,7 @@ namespace SideBySide
 		{
 			Assert.IsType<MySqlDataAdapter>(MySqlConnectorFactory.Instance.CreateDataAdapter());
 		}
-#endif
 
-#if !NETCOREAPP1_1_2
 		[Fact]
 		public void DbProviderFactoriesGetFactory()
 		{
@@ -73,6 +70,5 @@ namespace SideBySide
 				Assert.Same(MySqlConnectorFactory.Instance, factory);
 			}
 		}
-#endif
 	}
 }

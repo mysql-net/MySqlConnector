@@ -27,9 +27,7 @@ namespace SideBySide
 		{
 			var builder = new ConfigurationBuilder()
 				.AddInMemoryCollection(DefaultConfig)
-#if NETCOREAPP1_1_2
-				.SetBasePath(Path.GetDirectoryName(typeof(AppConfig).GetTypeInfo().Assembly.Location))
-#elif NETCOREAPP2_1
+#if NETCOREAPP2_1
 				.SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
 #endif
 				.AddJsonFile("config.json")

@@ -50,7 +50,6 @@ namespace MySqlConnector.Core
 		readonly IDataReader m_dataReader;
 	}
 
-#if !NETSTANDARD1_3
 	internal sealed class DataRowsValuesEnumerator : IValuesEnumerator
 	{
 		public static IValuesEnumerator Create(DataTable dataTable) => new DataRowsValuesEnumerator(dataTable.Rows.Cast<DataRow>().Where(static x => x is not null).Select(static x => x!), dataTable.Columns.Count);
@@ -82,5 +81,4 @@ namespace MySqlConnector.Core
 
 		readonly IEnumerator<DataRow> m_dataRows;
 	}
-#endif
 }

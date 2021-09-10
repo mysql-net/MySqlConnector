@@ -1,4 +1,3 @@
-#if !NETSTANDARD1_3
 using System;
 using System.Data;
 using System.Data.Common;
@@ -130,4 +129,3 @@ namespace MySqlConnector
 		public new MySqlCommand? Command => (MySqlCommand?) base.Command;
 	}
 }
-#endif

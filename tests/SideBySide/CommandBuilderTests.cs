@@ -53,7 +53,6 @@ namespace SideBySide
 			Assert.Throws<ArgumentException>(() => MySqlCommandBuilder.DeriveParameters(cmd));
 		}
 
-#if !NETCOREAPP1_1_2
 		[Fact]
 		public void Insert()
 		{
@@ -154,7 +153,6 @@ insert into command_builder_delete values(1, 'one'), (2, 'two');
 			var cb = new MySqlCommandBuilder();
 			Assert.Equal(expected, cb.UnquoteIdentifier(input));
 		}
-#endif
 
 		readonly DatabaseFixture m_database;
 	}

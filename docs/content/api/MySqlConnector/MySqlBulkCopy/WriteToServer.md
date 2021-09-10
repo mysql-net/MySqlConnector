@@ -10,10 +10,6 @@ Copies all rows in the supplied DataTable to the destination table specified by 
 public void WriteToServer(DataTable dataTable)
 ```
 
-## Remarks
-
-This method is not available on `netstandard1.3`.
-
 ## See Also
 
 * class [MySqlBulkCopy](../../MySqlBulkCopyType/)
@@ -54,10 +50,6 @@ public void WriteToServer(IEnumerable<DataRow> dataRows, int columnCount)
 | --- | --- |
 | dataRows | The collection of DataRow objects. |
 | columnCount | The number of columns to copy (in each row). |
-
-## Remarks
-
-This method is not available on `netstandard1.3`.
 
 ## See Also
 

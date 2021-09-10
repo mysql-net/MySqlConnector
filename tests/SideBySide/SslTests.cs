@@ -61,7 +61,6 @@ namespace SideBySide
 			await DoTestSsl(csb.ConnectionString);
 		}
 
-#if !NETCOREAPP1_1_2
 		[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
 		[InlineData("ssl-client-cert.pem", "ssl-client-key.pem", null)]
 		[InlineData("ssl-client-cert.pem", "ssl-client-key-null.pem", null)]
@@ -82,7 +81,6 @@ namespace SideBySide
 			}
 			await DoTestSsl(csb.ConnectionString);
 		}
-#endif
 
 		private async Task DoTestSsl(string connectionString)
 		{
@@ -185,7 +183,7 @@ namespace SideBySide
 			var expectedProtocolString = expectedProtocol == SslProtocols.Tls12 ? "TLSv1.2" :
 				expectedProtocol == SslProtocols.Tls11 ? "TLSv1.1" : "TLSv1";
 
-#if !NET452 && !NET461 && !NET472 && !NETCOREAPP1_1_2 && !NETCOREAPP2_1
+#if !NET452 && !NET461 && !NET472 && !NETCOREAPP2_1
 			// https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0#tls-13--openssl-111-on-linux
 			if (expectedProtocol == SslProtocols.Tls12 && AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls13) && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 			{

@@ -66,7 +66,7 @@ namespace MySqlConnector.Utilities
 		}
 #endif
 
-#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD1_3 && !NETSTANDARD2_1_OR_GREATER
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 		public static unsafe void Convert(this Encoder encoder, ReadOnlySpan<char> chars, Span<byte> bytes, bool flush, out int charsUsed, out int bytesUsed, out bool completed)
 		{
 			fixed (char* charsPtr = &MemoryMarshal.GetReference(chars))
@@ -635,8 +635,6 @@ namespace MySqlConnector.Utilities
 		}
 
 		static SslProtocols? s_defaultSslProtocols;
-#elif NETSTANDARD1_3
-		public static SslProtocols GetDefaultSslProtocols() => SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
 #else
 		public static SslProtocols GetDefaultSslProtocols() => SslProtocols.None;
 #endif

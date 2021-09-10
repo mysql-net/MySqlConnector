@@ -219,9 +219,6 @@ namespace MySqlConnector.Protocol.Serialization
 			using var innerStream = new NegotiateToMySqlConverterStream(session, ioBehavior, cancellationToken);
 			using var negotiateStream = new NegotiateStream(innerStream);
 			var targetName = cs.ServerSPN.Length == 0 ? GetServicePrincipalName(switchRequestPayloadData) : cs.ServerSPN;
-#if NETSTANDARD1_3
-			await negotiateStream.AuthenticateAsClientAsync(CredentialCache.DefaultNetworkCredentials, targetName).ConfigureAwait(false);
-#else
 			if (ioBehavior == IOBehavior.Synchronous)
 			{
 				negotiateStream.AuthenticateAsClient(CredentialCache.DefaultNetworkCredentials, targetName);
@@ -230,7 +227,6 @@ namespace MySqlConnector.Protocol.Serialization
 			{
 				await negotiateStream.AuthenticateAsClientAsync(CredentialCache.DefaultNetworkCredentials, targetName).ConfigureAwait(false);
 			}
-#endif
 			if (cs.ServerSPN.Length != 0 && !negotiateStream.IsMutuallyAuthenticated)
 			{
 				// Negotiate used NTLM fallback, server name cannot be verified.

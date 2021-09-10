@@ -6,9 +6,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-#if !NETSTANDARD1_3
 using System.IO.Pipes;
-#endif
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -965,19 +963,9 @@ namespace MySqlConnector.Core
 				IPAddress[] ipAddresses;
 				try
 				{
-					if (ioBehavior == IOBehavior.Asynchronous)
-					{
-						ipAddresses = await Dns.GetHostAddressesAsync(hostName).ConfigureAwait(false);
-					}
-					else
-					{
-#if NETSTANDARD1_3
-						// Dns.GetHostAddresses isn't available until netstandard 2.0: https://github.com/dotnet/corefx/pull/11950
-						ipAddresses = await Dns.GetHostAddressesAsync(hostName).ConfigureAwait(false);
-#else
-						ipAddresses = Dns.GetHostAddresses(hostName);
-#endif
-					}
+					ipAddresses = ioBehavior == IOBehavior.Asynchronous
+						? await Dns.GetHostAddressesAsync(hostName).ConfigureAwait(false)
+						: Dns.GetHostAddresses(hostName);
 				}
 				catch (SocketException)
 				{
@@ -1004,9 +992,6 @@ namespace MySqlConnector.Core
 								}
 								else
 								{
-#if NETSTANDARD1_3
-									await tcpClient.ConnectAsync(ipAddress, cs.Port).ConfigureAwait(false);
-#else
 									if (Utility.IsWindows())
 									{
 										tcpClient.Connect(ipAddress, cs.Port);
@@ -1022,7 +1007,6 @@ namespace MySqlConnector.Core
 										tcpClient.Client.SendTimeout = originalSendTimeout;
 										tcpClient.Client.ReceiveTimeout = originalReceiveTimeout;
 									}
-#endif
 								}
 							}
 							catch (ObjectDisposedException ex) when (cancellationToken.IsCancellationRequested)
@@ -1075,11 +1059,7 @@ namespace MySqlConnector.Core
 					{
 						if (ioBehavior == IOBehavior.Asynchronous)
 						{
-#if NETSTANDARD1_3
-							await socket.ConnectAsync(unixEp).ConfigureAwait(false);
-#else
 							await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, unixEp, null).ConfigureAwait(false);
-#endif
 						}
 						else
 						{
@@ -1111,17 +1091,14 @@ namespace MySqlConnector.Core
 			return false;
 		}
 
-#if NET45 || NETSTANDARD1_3
+#if NET45
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #endif
 		private async Task<bool> OpenNamedPipeAsync(ConnectionSettings cs, int startTickCount, IOBehavior ioBehavior, CancellationToken cancellationToken)
-#if NET45 || NETSTANDARD1_3
+#if NET45
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 #endif
 		{
-#if NETSTANDARD1_3
-			throw new NotSupportedException("Named pipe connections are not supported in netstandard1.3");
-#else
 			if (Log.IsTraceEnabled())
 				Log.Trace("Session{0} connecting to NamedPipe '{1}' on Server '{2}'", m_logArguments[0], cs.PipeName, cs.HostNames![0]);
 			var namedPipeStream = new NamedPipeClientStream(cs.HostNames![0], cs.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
@@ -1162,7 +1139,6 @@ namespace MySqlConnector.Core
 			}
 
 			return false;
-#endif
 		}
 
 		private async Task InitSslAsync(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, SslProtocols sslProtocols, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -1422,8 +1398,8 @@ namespace MySqlConnector.Core
 			// Returns a X509CertificateCollection containing the single certificate contained in 'sslKeyFile' (PEM private key) and 'sslCertificateFile' (PEM certificate).
 			X509CertificateCollection LoadCertificate(string sslKeyFile, string sslCertificateFile)
 			{
-#if NETSTANDARD1_3 || NETSTANDARD2_0
-				throw new NotSupportedException("SslCert and SslKey connection string options are not supported in netstandard1.3 or netstandard2.0.");
+#if NETSTANDARD2_0
+				throw new NotSupportedException("SslCert and SslKey connection string options are not supported in netstandard2.0.");
 #elif NET5_0_OR_GREATER
 				m_clientCertificate = X509Certificate2.CreateFromPemFile(sslCertificateFile, sslKeyFile);
 				return new() { m_clientCertificate };

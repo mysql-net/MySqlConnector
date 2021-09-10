@@ -98,18 +98,14 @@ namespace MySqlConnector
 
 				if (!m_hasMoreResults)
 					m_resultSet.Reset();
-#if !NETSTANDARD1_3
 				m_schemaTable = null;
-#endif
 				return m_hasMoreResults;
 			}
 			catch (MySqlException)
 			{
 				m_resultSet!.Reset();
 				m_hasMoreResults = false;
-#if !NETSTANDARD1_3
 				m_schemaTable = null;
-#endif
 				throw;
 			}
 		}
@@ -315,7 +311,6 @@ namespace MySqlConnector
 
 		public override int VisibleFieldCount => FieldCount;
 
-#if !NETSTANDARD1_3
 		/// <summary>
 		/// Returns a <see cref="DataTable"/> that contains metadata about the columns in the result set.
 		/// </summary>
@@ -341,7 +336,6 @@ namespace MySqlConnector
 #pragma warning disable CA2012 // Safe because method completes synchronously
 		public override void Close() => DisposeAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #pragma warning restore CA2012
-#endif
 
 		/// <summary>
 		/// Returns metadata about the columns in the result set.
@@ -481,7 +475,6 @@ namespace MySqlConnector
 			return dataReader;
 		}
 
-#if !NETSTANDARD1_3
 		internal DataTable? BuildSchemaTable()
 		{
 			var columnDefinitions = m_resultSet?.ColumnDefinitions;
@@ -572,7 +565,6 @@ namespace MySqlConnector
 
 			return schemaTable;
 		}
-#endif
 
 		private MySqlDataReader(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary<string, CachedProcedure?>? cachedProcedures, IMySqlCommand command, CommandBehavior behavior)
 		{
@@ -676,8 +668,6 @@ namespace MySqlConnector
 		bool m_hasWarnings;
 		ResultSet? m_resultSet;
 		bool m_hasMoreResults;
-#if !NETSTANDARD1_3
 		DataTable? m_schemaTable;
-#endif
 	}
 }

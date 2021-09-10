@@ -182,7 +182,7 @@ namespace SideBySide
 			Assert.Equal(new[] { 1, 2 }, results);
 		}
 
-#if !NET452 && !NET461 && !NET472 && !NETCOREAPP1_1_2 && !NETCOREAPP2_1
+#if !NET452 && !NET461 && !NET472 && !NETCOREAPP2_1
 		[Fact]
 		public async Task DbConnectionCommitAsync()
 		{
@@ -254,7 +254,7 @@ namespace SideBySide
 			Assert.Equal(new int[0], results);
 		}
 
-#if !NET452 && !NET461 && !NET472 && !NETCOREAPP1_1_2 && !NETCOREAPP2_1
+#if !NET452 && !NET461 && !NET472 && !NETCOREAPP2_1
 		[Fact]
 		public async Task DbConnectionRollbackAsync()
 		{

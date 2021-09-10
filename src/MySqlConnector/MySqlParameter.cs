@@ -12,10 +12,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector
 {
-	public sealed class MySqlParameter : DbParameter, IDbDataParameter
-#if !NETSTANDARD1_3
-		, ICloneable
-#endif
+	public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 	{
 		public MySqlParameter()
 			: this(default(string?), default(object?))
@@ -29,9 +26,7 @@ namespace MySqlConnector
 			NormalizedParameterName = NormalizeParameterName(m_name);
 			Value = value;
 			m_sourceColumn = "";
-#if !NETSTANDARD1_3
 			SourceVersion = DataRowVersion.Current;
-#endif
 		}
 
 		public MySqlParameter(string name, MySqlDbType mySqlDbType)
@@ -51,12 +46,9 @@ namespace MySqlConnector
 			MySqlDbType = mySqlDbType;
 			Size = size;
 			m_sourceColumn = sourceColumn ?? "";
-#if !NETSTANDARD1_3
 			SourceVersion = DataRowVersion.Current;
-#endif
 		}
 
-#if !NETSTANDARD1_3
 		public MySqlParameter(string name, MySqlDbType mySqlDbType, int size, ParameterDirection direction, bool isNullable, byte precision, byte scale, string sourceColumn, DataRowVersion sourceVersion, object value)
 			: this(name, mySqlDbType, size, sourceColumn)
 		{
@@ -67,7 +59,6 @@ namespace MySqlConnector
 			SourceVersion = sourceVersion;
 			Value = value;
 		}
-#endif
 
 		public override DbType DbType
 		{
@@ -139,9 +130,7 @@ namespace MySqlConnector
 
 		public override bool SourceColumnNullMapping { get; set; }
 
-#if !NETSTANDARD1_3
 		public override DataRowVersion SourceVersion { get; set; }
-#endif
 
 		public override object? Value
 		{
@@ -170,9 +159,7 @@ namespace MySqlConnector
 
 		public MySqlParameter Clone() => new MySqlParameter(this);
 
-#if !NETSTANDARD1_3
 		object ICloneable.Clone() => Clone();
-#endif
 
 		internal MySqlParameter WithParameterName(string parameterName) => new MySqlParameter(this, parameterName);
 
@@ -191,9 +178,7 @@ namespace MySqlConnector
 			Scale = other.Scale;
 			m_sourceColumn = other.m_sourceColumn;
 			SourceColumnNullMapping = other.SourceColumnNullMapping;
-#if !NETSTANDARD1_3
 			SourceVersion = other.SourceVersion;
-#endif
 		}
 
 		private MySqlParameter(MySqlParameter other, string parameterName)
@@ -219,7 +204,7 @@ namespace MySqlConnector
 				ReadOnlySpan<byte> nullBytes = new byte[] { 0x4E, 0x55, 0x4C, 0x4C }; // NULL
 				writer.Write(nullBytes);
 			}
-#if NET45 || NETSTANDARD1_3
+#if NET45
 			else if (Value is string stringValue)
 			{
 				WriteString(writer, noBackslashEscapes, stringValue);
@@ -429,7 +414,7 @@ namespace MySqlConnector
 				if (stringBuilder.Length != 0)
 					writer.Write("".AsSpan(), flush: true);
 				writer.Write((byte) '\'');
-#elif NET45 || NETSTANDARD1_3
+#elif NET45
 				WriteString(writer, noBackslashEscapes, stringBuilder.ToString());
 #else
 				WriteString(writer, noBackslashEscapes, writeDelimiters: true, stringBuilder.ToString().AsSpan());
@@ -472,7 +457,7 @@ namespace MySqlConnector
 				throw new NotSupportedException("Parameter type {0} is not supported; see https://fl.vu/mysql-param-type. Value: {1}".FormatInvariant(Value.GetType().Name, Value));
 			}
 
-#if NET45 || NETSTANDARD1_3
+#if NET45
 			static void WriteString(ByteBufferWriter writer, bool noBackslashEscapes, string value)
 			{
 				writer.Write((byte) '\'');
@@ -686,7 +671,7 @@ namespace MySqlConnector
 					writer.Advance(guidLength);
 				}
 			}
-#if !NET45 && !NETSTANDARD1_3
+#if !NET45
 			else if (Value is ReadOnlyMemory<char> readOnlyMemoryChar)
 			{
 				writer.WriteLengthEncodedString(readOnlyMemoryChar.Span);

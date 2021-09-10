@@ -102,11 +102,9 @@ namespace MySqlConnector
 
 		public override void Insert(int index, object value) => AddParameter((MySqlParameter) (value ?? throw new ArgumentNullException(nameof(value))), index);
 
-#if !NETSTANDARD1_3
 		public override bool IsFixedSize => false;
 		public override bool IsReadOnly => false;
 		public override bool IsSynchronized => false;
-#endif
 
 		public override void Remove(object value) => RemoveAt(IndexOf(value ?? throw new ArgumentNullException(nameof(value))));
 

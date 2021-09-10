@@ -1,4 +1,3 @@
-#if !NETCOREAPP1_1_2
 using System;
 using System.Data;
 using Dapper;
@@ -248,4 +247,3 @@ insert into data_adapter(int_value, text_value) values
 		readonly MySqlConnection m_connection;
 	}
 }
-#endif

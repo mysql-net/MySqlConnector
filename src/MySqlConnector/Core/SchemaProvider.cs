@@ -1,4 +1,3 @@
-#if !NETSTANDARD1_3
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -1015,4 +1014,3 @@ namespace MySqlConnector.Core
 		readonly Dictionary<string, Func<IOBehavior, DataTable, CancellationToken, Task>> m_schemaCollections;
 	}
 }
-#endif

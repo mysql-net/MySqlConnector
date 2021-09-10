@@ -181,7 +181,6 @@ namespace SideBySide
 			Assert.Equal("test value", cmd.Parameters[0].Value);
 		}
 
-#if !NETCOREAPP1_1_2
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
@@ -206,7 +205,6 @@ namespace SideBySide
 			Assert.Null(table);
 			Assert.False(await reader.NextResultAsync());
 		}
-#endif
 
 #if !BASELINE
 		[Theory]
@@ -711,7 +709,6 @@ namespace SideBySide
 			};
 		}
 
-#if !NETCOREAPP1_1_2
 		[Theory]
 		[InlineData("echof", "FUNCTION", "varchar(63)", "BEGIN RETURN name; END", "NO", "CONTAINS SQL")]
 		[InlineData("echop", "PROCEDURE", null, "BEGIN SELECT name; END", "NO", "CONTAINS SQL")]
@@ -732,7 +729,6 @@ namespace SideBySide
 			Assert.Equal(isDeterministic, row["IS_DETERMINISTIC"]);
 			Assert.Equal(dataAccess, ((string) row["SQL_DATA_ACCESS"]).Replace('_', ' '));
 		}
-#endif
 
 		[Fact]
 		public void CallNonExistentStoredProcedure()

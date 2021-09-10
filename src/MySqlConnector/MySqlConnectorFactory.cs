@@ -33,7 +33,6 @@ namespace MySqlConnector
 		/// <returns></returns>
 		public override DbParameter CreateParameter() => new MySqlParameter();
 
-#if !NETSTANDARD1_3
 		/// <summary>
 		/// Creates a new <see cref="MySqlCommandBuilder"/> object.
 		/// </summary>
@@ -60,7 +59,6 @@ namespace MySqlConnector
 		/// Returns <c>true</c>.
 		/// </summary>
 		public override bool CanCreateDataAdapter => true;
-#endif
 #endif
 
 #pragma warning disable CA1822 // Mark members as static

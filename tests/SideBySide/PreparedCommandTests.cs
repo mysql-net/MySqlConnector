@@ -167,7 +167,6 @@ CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCRE
 			}
 		}
 
-#if !NETCOREAPP1_1_2
 		[Theory]
 		[MemberData(nameof(GetDifferentTypeInsertAndQueryData))]
 		public void InsertAndQueryDifferentType(bool isPrepared, string dataType, object dataValue, object expectedValue)
@@ -199,7 +198,6 @@ CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCRE
 				Assert.False(reader.NextResult());
 			}
 		}
-#endif
 
 		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=14115")]
 		[MemberData(nameof(GetInsertAndQueryData))]

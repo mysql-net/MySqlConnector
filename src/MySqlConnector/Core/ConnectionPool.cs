@@ -596,7 +596,6 @@ namespace MySqlConnector.Core
 			public ConnectionPool? Pool { get; }
 		}
 
-#if !NETSTANDARD1_3
 		static ConnectionPool()
 		{
 			AppDomain.CurrentDomain.DomainUnload += OnAppDomainShutDown;
@@ -607,7 +606,6 @@ namespace MySqlConnector.Core
 		{
 			ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 		}
-#endif
 
 		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConnectionPool));
 		static readonly ConcurrentDictionary<string, ConnectionPool?> s_pools = new();

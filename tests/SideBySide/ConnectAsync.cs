@@ -303,7 +303,6 @@ namespace SideBySide
 		}
 
 #if !BASELINE
-#if !NETCOREAPP1_1_2
 		[SkippableFact(ServerFeatures.Ed25519)]
 		public async Task Ed25519Authentication()
 		{
@@ -316,7 +315,6 @@ namespace SideBySide
 			using var connection = new MySqlConnection(csb.ConnectionString);
 			await connection.OpenAsync();
 		}
-#endif
 #endif
 
 		// To create a MariaDB GSSAPI user for a current user

@@ -1,9 +1,7 @@
 using System;
 using System.Collections;
 using System.Data.Common;
-#if !NETSTANDARD1_3
 using System.Runtime.Serialization;
-#endif
 
 namespace MySqlConnector
 {
@@ -11,9 +9,7 @@ namespace MySqlConnector
 	/// <see cref="MySqlException"/> is thrown when MySQL Server returns an error code, or there is a
 	/// communication error with the server.
 	/// </summary>
-#if !NETSTANDARD1_3
 	[Serializable]
-#endif
 	public sealed class MySqlException : DbException
 	{
 		/// <summary>
@@ -24,11 +20,7 @@ namespace MySqlConnector
 		/// <summary>
 		/// A <see cref="MySqlErrorCode"/> value identifying the kind of error.
 		/// </summary>
-#if NETSTANDARD1_3
-		public MySqlErrorCode ErrorCode { get; }
-#else
 		public new MySqlErrorCode ErrorCode { get; }
-#endif
 
 		/// <summary>
 		/// A <c>SQLSTATE</c> code identifying the kind of error.
@@ -49,7 +41,6 @@ namespace MySqlConnector
 		public bool IsTransient => IsErrorTransient(ErrorCode);
 #endif
 
-#if !NETSTANDARD1_3
 		private MySqlException(SerializationInfo info, StreamingContext context)
 			: base(info, context)
 		{
@@ -69,7 +60,6 @@ namespace MySqlConnector
 			info.AddValue("Number", Number);
 			info.AddValue("SqlState", SqlState);
 		}
-#endif
 
 		/// <summary>
 		/// Gets a collection of key/value pairs that provide additional information about the exception.

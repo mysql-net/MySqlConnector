@@ -947,10 +947,8 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 			Assert.True(reader.Read());
 			Assert.Equal(expectedType, reader.GetFieldType(0));
 			Assert.IsType(expectedType, reader.GetValue(0));
-#if !NETCOREAPP1_1_2
 			var dt = reader.GetSchemaTable();
 			Assert.Equal(expectedType, dt.Rows[0]["DataType"]);
-#endif
 
 			if (expectedDateTime is not null)
 			{
@@ -995,11 +993,9 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 			Assert.Equal("DATE", columnSchema.DataTypeName);
 #endif
 
-#if !NETCOREAPP1_1_2
 			var schemaRow = reader.GetSchemaTable().Rows[0];
 			Assert.Equal("Date", schemaRow["ColumnName"]);
 			Assert.Equal(typeof(DateTime), schemaRow["DataType"]);
-#endif
 
 			while (reader.Read())
 			{
@@ -1128,7 +1124,6 @@ ORDER BY t.`Key`", Connection);
 #endif
 		}
 
-#if !NETCOREAPP1_1_2
 		[Theory]
 		[InlineData("Bit1", "datatypes_bits", MySqlDbType.Bit, 1, typeof(ulong), "N", 0, 0)]
 		[InlineData("Bit32", "datatypes_bits", MySqlDbType.Bit, 32, typeof(ulong), "N", 0, 0)]
@@ -1304,7 +1299,6 @@ create table schema_table({createColumn});");
 			Assert.False(reader.NextResult());
 			Assert.Null(reader.GetSchemaTable());
 		}
-#endif
 
 #if !BASELINE
 		[Theory]

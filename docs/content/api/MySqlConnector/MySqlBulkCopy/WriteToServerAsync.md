@@ -11,10 +11,6 @@ public ValueTask WriteToServerAsync(DataTable dataTable,
     CancellationToken cancellationToken = default(CancellationToken))
 ```
 
-## Remarks
-
-This method is not available on `netstandard1.3`.
-
 ## See Also
 
 * class [MySqlBulkCopy](../../MySqlBulkCopyType/)
@@ -59,10 +55,6 @@ public ValueTask WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCou
 | dataRows | The collection of DataRow objects. |
 | columnCount | The number of columns to copy (in each row). |
 | cancellationToken | A token to cancel the asynchronous operation. |
-
-## Remarks
-
-This method is not available on `netstandard1.3`.
 
 ## See Also
 

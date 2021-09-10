@@ -87,7 +87,7 @@ namespace SideBySide
 			Assert.Equal(0, parameter.Size);
 #if BASELINE
 			Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
-#elif !NETCOREAPP1_1_2
+#else
 			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
 		}
@@ -107,7 +107,7 @@ namespace SideBySide
 			Assert.Equal(0, parameter.Size);
 #if BASELINE
 			Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
-#elif !NETCOREAPP1_1_2
+#else
 			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
 #if BASELINE
@@ -136,7 +136,7 @@ namespace SideBySide
 			Assert.Equal(0, parameter.Size);
 #if BASELINE
 			Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
-#elif !NETCOREAPP1_1_2
+#else
 			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
 #if BASELINE
@@ -165,7 +165,7 @@ namespace SideBySide
 			Assert.Equal(4, parameter.Size);
 #if BASELINE
 			Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
-#elif !NETCOREAPP1_1_2
+#else
 			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
 #if BASELINE
@@ -194,13 +194,12 @@ namespace SideBySide
 			Assert.Equal(4, parameter.Size);
 #if BASELINE
 			Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
-#elif !NETCOREAPP1_1_2
+#else
 			Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
 			Assert.Equal("source", parameter.SourceColumn);
 		}
 
-#if !NETCOREAPP1_1_2
 		[Fact]
 		public void ConstructorEverything()
 		{
@@ -222,7 +221,6 @@ namespace SideBySide
 			Assert.Equal(DataRowVersion.Original, parameter.SourceVersion);
 			Assert.Equal("source", parameter.SourceColumn);
 		}
-#endif
 
 		[Fact]
 		public void CloneParameterName()
@@ -304,7 +302,6 @@ namespace SideBySide
 			Assert.Equal(parameter.SourceColumnNullMapping, clone.SourceColumnNullMapping);
 		}
 
-#if !NETCOREAPP1_1_2
 		[Fact]
 		public void CloneSourceVersion()
 		{
@@ -312,7 +309,6 @@ namespace SideBySide
 			var clone = parameter.Clone();
 			Assert.Equal(parameter.SourceVersion, clone.SourceVersion);
 		}
-#endif
 
 		[Fact]
 		public void CloneValue()

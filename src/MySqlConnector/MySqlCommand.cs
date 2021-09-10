@@ -16,10 +16,7 @@ namespace MySqlConnector
 	/// <see cref="MySqlCommand"/> represents a SQL statement or stored procedure name
 	/// to execute against a MySQL database.
 	/// </summary>
-	public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
-#if !NETSTANDARD1_3
-		, ICloneable
-#endif
+	public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand, ICloneable
 	{
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MySqlCommand"/> class.
@@ -325,9 +322,7 @@ namespace MySqlConnector
 
 		public MySqlCommand Clone() => new(this);
 
-#if !NETSTANDARD1_3
 		object ICloneable.Clone() => Clone();
-#endif
 
 		protected override void Dispose(bool disposing)
 		{

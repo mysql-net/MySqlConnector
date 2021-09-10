@@ -103,7 +103,6 @@ namespace SideBySide
 		}
 #endif
 
-#if !NETCOREAPP1_1_2
 		[Fact]
 		public void NonExistentPipe()
 		{
@@ -124,7 +123,6 @@ namespace SideBySide
 			TestUtilities.AssertDuration(sw, 0, 500);
 #endif
 		}
-#endif
 
 		[Theory]
 		[InlineData(false, false)]

@@ -1,4 +1,3 @@
-#if !NETSTANDARD1_3
 using System;
 using System.Transactions;
 
@@ -54,4 +53,3 @@ namespace MySqlConnector.Core
 		protected abstract void OnRollback(Enlistment enlistment);
 	}
 }
-#endif

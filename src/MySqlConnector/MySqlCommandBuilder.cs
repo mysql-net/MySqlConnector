@@ -9,11 +9,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector
 {
-#if !NETSTANDARD1_3
 	public class MySqlCommandBuilder : DbCommandBuilder
-#else
-	public static class MySqlCommandBuilder
-#endif
 	{
 		public static void DeriveParameters(MySqlCommand command) => DeriveParametersAsync(IOBehavior.Synchronous, command, CancellationToken.None).GetAwaiter().GetResult();
 		public static Task DeriveParametersAsync(MySqlCommand command) => DeriveParametersAsync(command?.Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, command!, CancellationToken.None);
@@ -47,7 +43,6 @@ namespace MySqlConnector
 			}
 		}
 
-#if !NETSTANDARD1_3
 		public MySqlCommandBuilder()
 		{
 			GC.SuppressFinalize(this);
@@ -101,6 +96,5 @@ namespace MySqlConnector
 		}
 
 		private void RowUpdatingHandler(object sender, MySqlRowUpdatingEventArgs e) => RowUpdatingHandler(e);
-#endif
 	}
 }

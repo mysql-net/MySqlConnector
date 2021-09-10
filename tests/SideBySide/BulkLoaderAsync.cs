@@ -435,7 +435,6 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 			Assert.False(await reader2.ReadAsync());
 		}
 
-#if !NETCOREAPP1_1_2
 		[Fact]
 		public void BulkCopyNullDataTable()
 		{
@@ -564,7 +563,6 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			using (var cmd = new MySqlCommand("select count(value) from bulk_copy_abort;", connection))
 				Assert.Equal(expectedCount, await cmd.ExecuteScalarAsync());
 		}
-#endif
 
 		[Fact]
 		public void BulkCopyNullDataReader()

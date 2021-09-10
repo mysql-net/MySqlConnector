@@ -18,10 +18,7 @@ namespace MySqlConnector
 	/// <summary>
 	/// <see cref="MySqlConnection"/> represents a connection to a MySQL database.
 	/// </summary>
-	public sealed class MySqlConnection : DbConnection
-#if !NETSTANDARD1_3
-		, ICloneable
-#endif
+	public sealed class MySqlConnection : DbConnection, ICloneable
 	{
 		public MySqlConnection()
 			: this(default)
@@ -138,10 +135,8 @@ namespace MySqlConnector
 				throw new InvalidOperationException("Connection is not open.");
 			if (CurrentTransaction is not null)
 				throw new InvalidOperationException("Transactions may not be nested.");
-#if !NETSTANDARD1_3
 			if (m_enlistedTransaction is not null)
 				throw new InvalidOperationException("Cannot begin a transaction when already enlisted in a transaction.");
-#endif
 
 			var isolationLevelValue = isolationLevel switch
 			{
@@ -178,7 +173,6 @@ namespace MySqlConnector
 			return transaction;
 		}
 
-#if !NETSTANDARD1_3
 		public override void EnlistTransaction(System.Transactions.Transaction? transaction)
 		{
 			if (State != ConnectionState.Open)
@@ -321,9 +315,6 @@ namespace MySqlConnector
 			other.m_enlistedTransaction = null;
 		}
 
-		EnlistedTransactionBase? m_enlistedTransaction;
-#endif
-
 		public override void Close() => CloseAsync(changeState: true, IOBehavior.Synchronous).GetAwaiter().GetResult();
 #if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		public override Task CloseAsync() => CloseAsync(changeState: true, SimpleAsyncIOBehavior);
@@ -394,7 +385,6 @@ namespace MySqlConnector
 			var pool = ConnectionPool.GetPool(m_connectionString);
 			m_connectionSettings ??= pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
 
-#if !NETSTANDARD1_3
 			// check if there is an open session (in the current transaction) that can be adopted
 			if (m_connectionSettings.AutoEnlist && System.Transactions.Transaction.Current is not null)
 			{
@@ -407,7 +397,6 @@ namespace MySqlConnector
 					return;
 				}
 			}
-#endif
 
 			try
 			{
@@ -428,10 +417,8 @@ namespace MySqlConnector
 				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Unable to connect to any of the specified MySQL hosts.", ex);
 			}
 
-#if !NETSTANDARD1_3
 			if (m_connectionSettings.AutoEnlist && System.Transactions.Transaction.Current is not null)
 				EnlistTransaction(System.Transactions.Transaction.Current);
-#endif
 		}
 
 		/// <summary>
@@ -526,7 +513,6 @@ namespace MySqlConnector
 
 		protected override DbCommand CreateDbCommand() => new MySqlCommand(this, null);
 
-#if !NETSTANDARD1_3
 		protected override DbProviderFactory DbProviderFactory => MySqlConnectorFactory.Instance;
 
 #pragma warning disable CA2012 // Safe because method completes synchronously
@@ -596,9 +582,6 @@ namespace MySqlConnector
 
 		private SchemaProvider GetSchemaProvider() => m_schemaProvider ??= new(this);
 
-		SchemaProvider? m_schemaProvider;
-#endif
-
 		/// <summary>
 		/// Gets the time (in seconds) to wait while trying to establish a connection
 		/// before terminating the attempt and generating an error. This value
@@ -655,9 +638,7 @@ namespace MySqlConnector
 
 		public MySqlConnection Clone() => new(m_connectionString, m_hasBeenOpened);
 
-#if !NETSTANDARD1_3
 		object ICloneable.Clone() => Clone();
-#endif
 
 		/// <summary>
 		/// Returns an unopened copy of this connection with a new connection string. If the <c>Password</c>
@@ -798,11 +779,7 @@ namespace MySqlConnector
 		internal DateTimeKind DateTimeKind => GetInitializedConnectionSettings().DateTimeKind;
 		internal int DefaultCommandTimeout => GetConnectionSettings().DefaultCommandTimeout;
 		internal MySqlGuidFormat GuidFormat => GetInitializedConnectionSettings().GuidFormat;
-#if NETSTANDARD1_3
-		internal bool IgnoreCommandTransaction => GetInitializedConnectionSettings().IgnoreCommandTransaction;
-#else
 		internal bool IgnoreCommandTransaction => GetInitializedConnectionSettings().IgnoreCommandTransaction || m_enlistedTransaction is StandardEnlistedTransaction;
-#endif
 		internal bool IgnorePrepare => GetInitializedConnectionSettings().IgnorePrepare;
 		internal bool NoBackslashEscapes => GetInitializedConnectionSettings().NoBackslashEscapes;
 		internal bool TreatTinyAsBoolean => GetInitializedConnectionSettings().TreatTinyAsBoolean;
@@ -940,9 +917,7 @@ namespace MySqlConnector
 			// check fast path
 			if (m_activeReader is null &&
 				CurrentTransaction is null &&
-#if !NETSTANDARD1_3
 				m_enlistedTransaction is null &&
-#endif
 				(m_connectionSettings?.Pooling ?? false))
 			{
 				m_cachedProcedures = null;
@@ -962,7 +937,6 @@ namespace MySqlConnector
 
 		private async Task DoCloseAsync(bool changeState, IOBehavior ioBehavior)
 		{
-#if !NETSTANDARD1_3
 			// If participating in a distributed transaction, keep the connection open so we can commit or rollback.
 			// This handles the common pattern of disposing a connection before disposing a TransactionScope (e.g., nested using blocks)
 			if (m_enlistedTransaction is not null)
@@ -1002,7 +976,6 @@ namespace MySqlConnector
 					SetState(ConnectionState.Closed);
 				return;
 			}
-#endif
 
 			m_cachedProcedures = null;
 
@@ -1057,10 +1030,8 @@ namespace MySqlConnector
 		static readonly StateChangeEventArgs s_stateChangeClosedConnecting = new(ConnectionState.Closed, ConnectionState.Connecting);
 		static readonly StateChangeEventArgs s_stateChangeConnectingOpen = new(ConnectionState.Connecting, ConnectionState.Open);
 		static readonly StateChangeEventArgs s_stateChangeOpenClosed = new(ConnectionState.Open, ConnectionState.Closed);
-#if !NETSTANDARD1_3
 		static readonly object s_lock = new();
 		static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = new();
-#endif
 
 		string m_connectionString;
 		ConnectionSettings? m_connectionSettings;
@@ -1069,6 +1040,8 @@ namespace MySqlConnector
 		bool m_hasBeenOpened;
 		bool m_isDisposed;
 		Dictionary<string, CachedProcedure?>? m_cachedProcedures;
+		SchemaProvider? m_schemaProvider;
 		MySqlDataReader? m_activeReader;
+		EnlistedTransactionBase? m_enlistedTransaction;
 	}
 }

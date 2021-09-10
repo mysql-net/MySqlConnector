@@ -100,7 +100,7 @@ namespace MySqlConnector.Protocol.Serialization
 			m_output = m_output.Slice(span.Length);
 		}
 
-#if NET45 || NETSTANDARD1_3
+#if NET45
 		public void Write(string value)
 		{
 			Debug.Assert(value is not null, "value is not null");
@@ -258,7 +258,7 @@ namespace MySqlConnector.Protocol.Serialization
 			m_output = new(m_buffer, usedLength, m_buffer.Length - usedLength);
 		}
 
-#if !NET45 && !NETSTANDARD1_3
+#if !NET45
 		Encoder? m_encoder;
 #endif
 		byte[] m_buffer;
@@ -291,7 +291,7 @@ namespace MySqlConnector.Protocol.Serialization
 			}
 		}
 
-#if NET45 || NETSTANDARD1_3
+#if NET45
 		public static void WriteLengthEncodedString(this ByteBufferWriter writer, string value)
 		{
 			var byteCount = Encoding.UTF8.GetByteCount(value);

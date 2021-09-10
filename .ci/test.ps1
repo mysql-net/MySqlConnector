@@ -36,10 +36,6 @@ dotnet test -c Release -f net461
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
-dotnet test -c Release -f netcoreapp1.1.2
-if ($LASTEXITCODE -ne 0){
-    exit $LASTEXITCODE;
-}
 
 echo "Executing tests with Compression, No SSL"
 Copy-Item -Force ..\..\.ci\config\config.compression.json config.json
