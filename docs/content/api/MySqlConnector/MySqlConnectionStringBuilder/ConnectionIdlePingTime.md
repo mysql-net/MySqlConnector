@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.ConnectionIdlePingTime property
 
 # MySqlConnectionStringBuilder.ConnectionIdlePingTime property
 
+The delay (in seconds) before idle connections are pinged (to determine liveness) when being retrieved from the pool.
+
 ```csharp
 public uint ConnectionIdlePingTime { get; set; }
 ```

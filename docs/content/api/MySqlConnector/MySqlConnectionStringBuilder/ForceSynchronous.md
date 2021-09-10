@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.ForceSynchronous property
 
 # MySqlConnectionStringBuilder.ForceSynchronous property
 
+Forces all async methods to execute synchronously. This can be useful for debugging.
+
 ```csharp
 public bool ForceSynchronous { get; set; }
 ```

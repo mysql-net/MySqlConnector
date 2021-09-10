@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.Keepalive property
 
 # MySqlConnectionStringBuilder.Keepalive property
 
+TCP Keepalive idle time (in seconds), or 0 to use OS defaults.
+
 ```csharp
 public uint Keepalive { get; set; }
 ```

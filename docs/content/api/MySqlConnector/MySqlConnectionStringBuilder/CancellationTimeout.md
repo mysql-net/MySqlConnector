@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.CancellationTimeout property
 
 # MySqlConnectionStringBuilder.CancellationTimeout property
 
+The length of time (in seconds) to wait for a query to be canceled when [`CommandTimeout`](../../MySqlCommand/CommandTimeout/) expires, or zero for no timeout.
+
 ```csharp
 public int CancellationTimeout { get; set; }
 ```

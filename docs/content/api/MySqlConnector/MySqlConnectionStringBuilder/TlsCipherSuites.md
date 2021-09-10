@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.TlsCipherSuites property
 
 # MySqlConnectionStringBuilder.TlsCipherSuites property
 
+The TLS cipher suites which may be used during TLS negotiation. The default value (the empty string) allows the OS to determine the TLS cipher suites to use; this is the recommended setting.
+
 ```csharp
 public string TlsCipherSuites { get; set; }
 ```

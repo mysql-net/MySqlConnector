@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.PersistSecurityInfo property
 
 # MySqlConnectionStringBuilder.PersistSecurityInfo property
 
+If true, preserves security-sensitive information in the connection string retrieved from any open [`MySqlConnection`](../../MySqlConnectionType/).
+
 ```csharp
 public bool PersistSecurityInfo { get; set; }
 ```

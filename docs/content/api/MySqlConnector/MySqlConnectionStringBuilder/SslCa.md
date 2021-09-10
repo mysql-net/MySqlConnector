@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.SslCa property
 
 # MySqlConnectionStringBuilder.SslCa property
 
+The path to a CA certificate file in a PEM Encoded (.pem) format. This should be used with a value for the [`SslMode`](../SslMode/) property of VerifyCA or VerifyFull to enable verification of a CA certificate that is not trusted by the operating system’s certificate store.
+
 ```csharp
 public string SslCa { get; set; }
 ```

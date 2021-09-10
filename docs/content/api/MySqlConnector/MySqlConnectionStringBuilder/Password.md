@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.Password property
 
 # MySqlConnectionStringBuilder.Password property
 
+The password for the MySQL user.
+
 ```csharp
 public string Password { get; set; }
 ```

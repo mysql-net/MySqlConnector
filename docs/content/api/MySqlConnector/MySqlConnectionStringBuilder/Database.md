@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.Database property
 
 # MySqlConnectionStringBuilder.Database property
 
+(Optional) The case-sensitive name of the initial database to use. This may be required if the MySQL user account only has access rights to particular databases on the server.
+
 ```csharp
 public string Database { get; set; }
 ```

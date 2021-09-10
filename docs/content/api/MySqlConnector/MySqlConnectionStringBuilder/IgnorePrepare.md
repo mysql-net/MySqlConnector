@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.IgnorePrepare property
 
 # MySqlConnectionStringBuilder.IgnorePrepare property
 
+Ignores calls to [`Prepare`](../../MySqlCommand/Prepare/) and `PrepareAsync`.
+
 ```csharp
 public bool IgnorePrepare { get; set; }
 ```

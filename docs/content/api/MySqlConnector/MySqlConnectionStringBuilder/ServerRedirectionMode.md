@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.ServerRedirectionMode property
 
 # MySqlConnectionStringBuilder.ServerRedirectionMode property
 
+Whether to use server redirection.
+
 ```csharp
 public MySqlServerRedirectionMode ServerRedirectionMode { get; set; }
 ```

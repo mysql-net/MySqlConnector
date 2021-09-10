@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.CharacterSet property
 
 # MySqlConnectionStringBuilder.CharacterSet property
 
+Supported for backwards compatibility; MySqlConnector always uses `utf8mb4`.
+
 ```csharp
 public string CharacterSet { get; set; }
 ```

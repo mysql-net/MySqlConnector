@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.InteractiveSession property
 
 # MySqlConnectionStringBuilder.InteractiveSession property
 
+Instructs the MySQL server that this is an interactive session.
+
 ```csharp
 public bool InteractiveSession { get; set; }
 ```

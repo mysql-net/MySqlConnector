@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.ConnectionIdleTimeout property
 
 # MySqlConnectionStringBuilder.ConnectionIdleTimeout property
 
+The amount of time (in seconds) that a connection can remain idle in the pool.
+
 ```csharp
 public uint ConnectionIdleTimeout { get; set; }
 ```

@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.UseCompression property
 
 # MySqlConnectionStringBuilder.UseCompression property
 
+Compress packets sent to and from the server.
+
 ```csharp
 public bool UseCompression { get; set; }
 ```

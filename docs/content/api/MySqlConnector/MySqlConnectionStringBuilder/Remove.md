@@ -4,9 +4,15 @@ title: MySqlConnectionStringBuilder.Remove method
 
 # MySqlConnectionStringBuilder.Remove method
 
+Removes the option with the specified name.
+
 ```csharp
 public override bool Remove(string keyword)
 ```
+
+| parameter | description |
+| --- | --- |
+| keyword | The option name. |
 
 ## See Also
 

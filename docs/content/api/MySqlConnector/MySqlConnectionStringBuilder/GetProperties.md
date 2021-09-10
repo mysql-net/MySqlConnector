@@ -1,22 +1,18 @@
 ---
-title: MySqlConnectionStringBuilder indexer
+title: MySqlConnectionStringBuilder.GetProperties method
 ---
 
-# MySqlConnectionStringBuilder indexer
+# MySqlConnectionStringBuilder.GetProperties method
 
-Retrieves an option value by name.
+Fills in *propertyDescriptors* with information about the available properties on this object.
 
 ```csharp
-public override object this[string key] { get; set; }
+protected override void GetProperties(Hashtable propertyDescriptors)
 ```
 
 | parameter | description |
 | --- | --- |
-| key | The option name. |
-
-## Return Value
-
-That option's value, if set.
+| propertyDescriptors | The collection of PropertyDescriptor objects to populate. |
 
 ## See Also
 

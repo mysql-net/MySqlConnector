@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.AllowUserVariables property
 
 # MySqlConnectionStringBuilder.AllowUserVariables property
 
+Allows user-defined variables (prefixed with `@`) to be used in SQL statements.
+
 ```csharp
 public bool AllowUserVariables { get; set; }
 ```

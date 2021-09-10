@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.MaximumPoolSize property
 
 # MySqlConnectionStringBuilder.MaximumPoolSize property
 
+The maximum number of connections allowed in the pool.
+
 ```csharp
 public uint MaximumPoolSize { get; set; }
 ```

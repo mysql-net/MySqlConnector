@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.UseAffectedRows property
 
 # MySqlConnectionStringBuilder.UseAffectedRows property
 
+Report changed rows instead of found rows.
+
 ```csharp
 public bool UseAffectedRows { get; set; }
 ```

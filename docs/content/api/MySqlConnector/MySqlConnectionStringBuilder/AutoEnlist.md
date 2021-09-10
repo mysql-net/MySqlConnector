@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.AutoEnlist property
 
 # MySqlConnectionStringBuilder.AutoEnlist property
 
+Automatically enlists this connection in any active TransactionScope.
+
 ```csharp
 public bool AutoEnlist { get; set; }
 ```

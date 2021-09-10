@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.DefaultCommandTimeout property
 
 # MySqlConnectionStringBuilder.DefaultCommandTimeout property
 
+The length of time (in seconds) each command can execute before the query is cancelled on the server, or zero to disable timeouts.
+
 ```csharp
 public uint DefaultCommandTimeout { get; set; }
 ```

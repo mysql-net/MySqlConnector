@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.LoadBalance property
 
 # MySqlConnectionStringBuilder.LoadBalance property
 
+Specifies how load is distributed across backend servers.
+
 ```csharp
 public MySqlLoadBalance LoadBalance { get; set; }
 ```

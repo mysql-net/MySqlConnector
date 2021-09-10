@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.AllowPublicKeyRetrieval property
 
 # MySqlConnectionStringBuilder.AllowPublicKeyRetrieval property
 
+Allows the client to automatically request the RSA public key from the server.
+
 ```csharp
 public bool AllowPublicKeyRetrieval { get; set; }
 ```

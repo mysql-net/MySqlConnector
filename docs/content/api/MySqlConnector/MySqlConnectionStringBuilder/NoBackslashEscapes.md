@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.NoBackslashEscapes property
 
 # MySqlConnectionStringBuilder.NoBackslashEscapes property
 
+Doesn't escape backslashes in string parameters. For use with the `NO_BACKSLASH_ESCAPES` MySQL server mode.
+
 ```csharp
 public bool NoBackslashEscapes { get; set; }
 ```

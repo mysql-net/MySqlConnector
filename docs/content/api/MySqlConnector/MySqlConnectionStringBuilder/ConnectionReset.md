@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.ConnectionReset property
 
 # MySqlConnectionStringBuilder.ConnectionReset property
 
+Whether connections are reset when being retrieved from the pool.
+
 ```csharp
 public bool ConnectionReset { get; set; }
 ```

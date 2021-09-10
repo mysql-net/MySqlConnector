@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.DateTimeKind property
 
 # MySqlConnectionStringBuilder.DateTimeKind property
 
+The `DateTimeKind` to use when deserializing `DATETIME` values.
+
 ```csharp
 public MySqlDateTimeKind DateTimeKind { get; set; }
 ```

@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.CertificateStoreLocation property
 
 # MySqlConnectionStringBuilder.CertificateStoreLocation property
 
+Uses a certificate from the specified Certificate Store on the machine. The default value of None means the certificate store is not used; a value of CurrentUser or LocalMachine uses the specified store.
+
 ```csharp
 public MySqlCertificateStoreLocation CertificateStoreLocation { get; set; }
 ```

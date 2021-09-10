@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.IgnoreCommandTransaction property
 
 # MySqlConnectionStringBuilder.IgnoreCommandTransaction property
 
+Does not check the [`Transaction`](../../MySqlCommand/Transaction/) property for validity when executing a command.
+
 ```csharp
 public bool IgnoreCommandTransaction { get; set; }
 ```

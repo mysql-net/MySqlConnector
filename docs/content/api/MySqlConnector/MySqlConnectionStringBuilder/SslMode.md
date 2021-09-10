@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.SslMode property
 
 # MySqlConnectionStringBuilder.SslMode property
 
+Whether to use SSL/TLS when connecting to the MySQL server.
+
 ```csharp
 public MySqlSslMode SslMode { get; set; }
 ```

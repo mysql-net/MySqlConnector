@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.ServerSPN property
 
 # MySqlConnectionStringBuilder.ServerSPN property
 
+The server’s Service Principal Name (for `auth_gssapi_client` authentication).
+
 ```csharp
 public string ServerSPN { get; set; }
 ```

@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.ConnectionLifeTime property
 
 # MySqlConnectionStringBuilder.ConnectionLifeTime property
 
+The maximum lifetime (in seconds) for any connection, or `0` for no lifetime limit.
+
 ```csharp
 public uint ConnectionLifeTime { get; set; }
 ```

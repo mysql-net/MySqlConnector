@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.UserID property
 
 # MySqlConnectionStringBuilder.UserID property
 
+The MySQL user ID.
+
 ```csharp
 public string UserID { get; set; }
 ```

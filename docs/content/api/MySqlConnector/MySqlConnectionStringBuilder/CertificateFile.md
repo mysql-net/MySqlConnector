@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.CertificateFile property
 
 # MySqlConnectionStringBuilder.CertificateFile property
 
+The path to a certificate file in PKCS #12 (.pfx) format containing a bundled Certificate and Private Key used for mutual authentication.
+
 ```csharp
 public string CertificateFile { get; set; }
 ```

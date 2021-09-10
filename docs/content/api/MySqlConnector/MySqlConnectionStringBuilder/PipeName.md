@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.PipeName property
 
 # MySqlConnectionStringBuilder.PipeName property
 
+The name of the Windows named pipe to use to connect to the server. You must also set [`ConnectionProtocol`](../ConnectionProtocol/) to NamedPipe to used named pipes.
+
 ```csharp
 public string PipeName { get; set; }
 ```

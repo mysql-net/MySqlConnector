@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.GuidFormat property
 
 # MySqlConnectionStringBuilder.GuidFormat property
 
+Determines which column type (if any) should be read as a Guid.
+
 ```csharp
 public MySqlGuidFormat GuidFormat { get; set; }
 ```

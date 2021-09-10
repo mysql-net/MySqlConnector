@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.AllowZeroDateTime property
 
 # MySqlConnectionStringBuilder.AllowZeroDateTime property
 
+Returns `DATETIME` fields as [`MySqlDateTime`](../../MySqlDateTimeType/) objects instead of DateTime objects.
+
 ```csharp
 public bool AllowZeroDateTime { get; set; }
 ```

@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.TlsVersion property
 
 # MySqlConnectionStringBuilder.TlsVersion property
 
+The TLS versions which may be used during TLS negotiation, or empty to use OS defaults.
+
 ```csharp
 public string TlsVersion { get; set; }
 ```

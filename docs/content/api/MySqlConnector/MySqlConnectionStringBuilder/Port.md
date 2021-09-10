@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.Port property
 
 # MySqlConnectionStringBuilder.Port property
 
+The TCP port on which MySQL Server is listening for connections.
+
 ```csharp
 public uint Port { get; set; }
 ```

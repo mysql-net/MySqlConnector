@@ -101,27 +101,27 @@ These are the options that need to be used in order to configure a connection to
   <tr id="CertificateFile">
     <td>Certificate File, CertificateFile</td>
     <td></td>
-    <td>Specifies the path to a certificate file in PKCS #12 (.pfx) format containing a bundled Certificate and Private Key used for Mutual Authentication.  To create a PKCS #12 bundle from a PEM encoded Certificate and Key, use <code>openssl pkcs12 -in cert.pem -inkey key.pem -export -out bundle.pfx</code>. This option should not be specified if <code>SslCert</code> and <code>SslKey</code> are used.</td>
+    <td>The path to a certificate file in PKCS #12 (.pfx) format containing a bundled Certificate and Private Key used for mutual authentication. To create a PKCS #12 bundle from a PEM encoded Certificate and Key, use <code>openssl pkcs12 -in cert.pem -inkey key.pem -export -out bundle.pfx</code>. This option should not be specified if <code>SslCert</code> and <code>SslKey</code> are used.</td>
   </tr>
   <tr id="CertificatePassword">
     <td>Certificate Password, CertificatePassword</td>
     <td></td>
-    <td>Specifies the password for the certificate specified using the <code>CertificateFile</code> option. Not required if the certificate file is not password protected.</td>
+    <td>The password for the certificate specified using the <code>CertificateFile</code> option. Not required if the certificate file is not password protected.</td>
   </tr>
   <tr id="SslCert">
     <td>SSL Cert, SslCert, Ssl-Cert</td>
     <td></td>
-    <td>Specifies the path to the client’s SSL certificate file in PEM format. <code>SslKey</code> must also be specified, and <code>CertificateFile</code> should not be. This option is not supported on <code>netstandard2.0</code>.</td>
+    <td>The path to the client’s SSL certificate file in PEM format. <code>SslKey</code> must also be specified, and <code>CertificateFile</code> should not be. This option is not supported on <code>netstandard2.0</code>.</td>
   </tr>
   <tr id="SslKey">
     <td>SSL Key, SslKey, Ssl-Key</td>
     <td></td>
-    <td>Specifies the path to the client’s SSL private key in PEM format. <code>SslCert</code> must also be specified, and <code>CertificateFile</code> should not be.</td>
+    <td>The path to the client’s SSL private key in PEM format. <code>SslCert</code> must also be specified, and <code>CertificateFile</code> should not be.</td>
   </tr>
   <tr id="SslCa">
     <td>SSL CA, CA Certificate File, CACertificateFile, SslCa, Ssl-Ca</td>
     <td></td>
-    <td>This option specifies the path to a CA certificate file in a PEM Encoded (.pem) format. This should be used with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the Operating System’s certificate store.</td>
+    <td>The path to a CA certificate file in a PEM Encoded (.pem) format. This should be used with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the operating system’s certificate store.</td>
   </tr>
   <tr id="CertificateStoreLocation">
     <td>Certificate Store Location, CertificateStoreLocation</td>
@@ -131,17 +131,17 @@ These are the options that need to be used in order to configure a connection to
   <tr id="CertificateThumbprint">
     <td>Certificate Thumbprint, CertificateThumbprint</td>
     <td></td>
-    <td>Specifies which certificate should be used from the Certificate Store specified in the setting above. This option must be used to indicate which certificate in the store should be used for authentication.</td>
+    <td>Specifies which certificate should be used from the certificate store specified in the setting above. This option must be used to indicate which certificate in the store should be used for authentication.</td>
   </tr>
   <tr id="TlsCipherSuites">
     <td>TLS Cipher Suites,TlsCipherSuites</td>
     <td></td>
-    <td>Specifies which TLS cipher suites may be used during TLS negotiation. The default value (the empty string) allows the OS to determine the TLS cipher suites to use; this is the recommended setting. Otherwise, specify a comma-delimited list of <a href="https://docs.microsoft.com/en-us/dotnet/api/system.net.security.tlsciphersuite"><code>TlsCipherSuite</code> enum values</a> to allow just those cipher suites. (This option is only supported on Linux when using .NET Core 3.1 or .NET 5.0 or later.)</td>
+    <td>The TLS cipher suites which may be used during TLS negotiation. The default value (the empty string) allows the OS to determine the TLS cipher suites to use; this is the recommended setting. Otherwise, specify a comma-delimited list of <a href="https://docs.microsoft.com/en-us/dotnet/api/system.net.security.tlsciphersuite"><code>TlsCipherSuite</code> enum values</a> to allow just those cipher suites. (This option is only supported on Linux when using .NET Core 3.1 or .NET 5.0 or later.)</td>
   </tr>
   <tr id="TlsVersion">
     <td>TLS Version, TlsVersion, Tls-Version</td>
     <td></td>
-    <td>Specifies which TLS versions may be used during TLS negotiation. The default value of <code>null</code> allows the OS to determine the TLS version to use (see <a href="https://docs.microsoft.com/en-us/dotnet/framework/network-programming/tls" title="Transport Layer Security (TLS) best practices with the .NET Framework">documentation</a>); this is the recommended setting. Otherwise, to restrict the versions that can be used, specify a comma-delimited list of versions taken from the following: <code>TLS 1.0</code>, <code>TLS 1.1.</code>, <code>TLS 1.2</code>, <code>TLS 1.3</code>. (This option allows each version to be specified in a few different formats: <code>Tls12</code>, <code> Tlsv1.2</code>, <code>TLS 1.2</code>, <code>Tls v1.2</code>; they are treated equivalently.)</td>
+    <td>The TLS versions which may be used during TLS negotiation. The default value of <code>null</code> allows the OS to determine the TLS version to use (see <a href="https://docs.microsoft.com/en-us/dotnet/framework/network-programming/tls" title="Transport Layer Security (TLS) best practices with the .NET Framework">documentation</a>); this is the recommended setting. Otherwise, to restrict the versions that can be used, specify a comma-delimited list of versions taken from the following: <code>TLS 1.0</code>, <code>TLS 1.1.</code>, <code>TLS 1.2</code>, <code>TLS 1.3</code>. (This option allows each version to be specified in a few different formats: <code>Tls12</code>, <code> Tlsv1.2</code>, <code>TLS 1.2</code>, <code>Tls v1.2</code>; they are treated equivalently.)</td>
   </tr>
 </table>
 
@@ -356,7 +356,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
   <tr id="Keepalive">
     <td>Keep Alive, Keepalive</td>
     <td>0</td>
-    <td><p>TCP Keepalive idle time (in seconds). A value of 0 indicates that the OS Default keepalive settings are used; a value greater than 0 is the idle connection time (in seconds) before the first keepalive packet is sent.</p>
+    <td><p>TCP Keepalive idle time (in seconds). A value of 0 indicates that the OS default keepalive settings are used; a value greater than 0 is the idle connection time (in seconds) before the first keepalive packet is sent.</p>
     <p>On Windows, this option is always supported. On non-Windows platforms, this option only takes effect in .NET Core 3.0 and later. For earlier versions of .NET Core, the OS Default keepalive settings are used instead.</p></td>
   </tr>
   <tr id="LoadBalance">

@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.AllowLoadLocalInfile property
 
 # MySqlConnectionStringBuilder.AllowLoadLocalInfile property
 
+Allows the `LOAD DATA LOCAL` command to request files from the client.
+
 ```csharp
 public bool AllowLoadLocalInfile { get; set; }
 ```

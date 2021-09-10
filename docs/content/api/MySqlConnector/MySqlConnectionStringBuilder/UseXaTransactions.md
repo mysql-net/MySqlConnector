@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.UseXaTransactions property
 
 # MySqlConnectionStringBuilder.UseXaTransactions property
 
+Use XA transactions to implement TransactionScope distributed transactions.
+
 ```csharp
 public bool UseXaTransactions { get; set; }
 ```

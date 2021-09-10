@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.OldGuids property
 
 # MySqlConnectionStringBuilder.OldGuids property
 
+Use the [`GuidFormat`](../GuidFormat/) property instead.
+
 ```csharp
 public bool OldGuids { get; set; }
 ```

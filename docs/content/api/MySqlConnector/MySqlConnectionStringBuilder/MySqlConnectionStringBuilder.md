@@ -4,7 +4,7 @@ title: MySqlConnectionStringBuilder constructors
 
 # MySqlConnectionStringBuilder constructor (1 of 2)
 
-The default constructor.
+Initializes a new [`MySqlConnectionStringBuilder`](../../MySqlConnectionStringBuilderType/).
 
 ```csharp
 public MySqlConnectionStringBuilder()
@@ -20,9 +20,15 @@ public MySqlConnectionStringBuilder()
 
 # MySqlConnectionStringBuilder constructor (2 of 2)
 
+Initializes a new [`MySqlConnectionStringBuilder`](../../MySqlConnectionStringBuilderType/) with properties set from the specified connection string.
+
 ```csharp
 public MySqlConnectionStringBuilder(string connectionString)
 ```
+
+| parameter | description |
+| --- | --- |
+| connectionString | The connection string to use to set property values on this object. |
 
 ## See Also
 

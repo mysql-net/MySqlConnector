@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.TreatTinyAsBoolean property
 
 # MySqlConnectionStringBuilder.TreatTinyAsBoolean property
 
+Returns `TINYINT(1)` fields as Boolean values.
+
 ```csharp
 public bool TreatTinyAsBoolean { get; set; }
 ```

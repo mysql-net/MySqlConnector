@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.SslCert property
 
 # MySqlConnectionStringBuilder.SslCert property
 
+The path to the client’s SSL certificate file in PEM format. [`SslKey`](../SslKey/) must also be specified, and [`CertificateFile`](../CertificateFile/) should not be.
+
 ```csharp
 public string SslCert { get; set; }
 ```

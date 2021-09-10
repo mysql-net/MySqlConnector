@@ -21,7 +21,7 @@ title: MySqlConnector
 | class [MySqlCommandBuilder](../MySqlConnector/MySqlCommandBuilderType/) |  |
 | class [MySqlConnection](../MySqlConnector/MySqlConnectionType/) | [`MySqlConnection`](../MySqlConnector/MySqlConnectionType/) represents a connection to a MySQL database. |
 | enum [MySqlConnectionProtocol](../MySqlConnector/MySqlConnectionProtocolType/) | Specifies the type of connection to make to the server. |
-| class [MySqlConnectionStringBuilder](../MySqlConnector/MySqlConnectionStringBuilderType/) |  |
+| class [MySqlConnectionStringBuilder](../MySqlConnector/MySqlConnectionStringBuilderType/) | [`MySqlConnectionStringBuilder`](../MySqlConnector/MySqlConnectionStringBuilderType/) allows you to construct a MySQL connection string by setting properties on the builder then reading the ConnectionString property. |
 | class [MySqlConnectorFactory](../MySqlConnector/MySqlConnectorFactoryType/) | An implementation of DbProviderFactory that creates MySqlConnector objects. |
 | class [MySqlConversionException](../MySqlConnector/MySqlConversionExceptionType/) | [`MySqlConversionException`](../MySqlConnector/MySqlConversionExceptionType/) is thrown when a MySQL value can't be converted to another type. |
 | class [MySqlDataAdapter](../MySqlConnector/MySqlDataAdapterType/) |  |

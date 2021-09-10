@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.ApplicationName property
 
 # MySqlConnectionStringBuilder.ApplicationName property
 
+Sets the `program_name` connection attribute passed to MySQL Server.
+
 ```csharp
 public string ApplicationName { get; set; }
 ```

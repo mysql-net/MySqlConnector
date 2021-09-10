@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.MinimumPoolSize property
 
 # MySqlConnectionStringBuilder.MinimumPoolSize property
 
+The minimum number of connections to leave in the pool if [`ConnectionIdleTimeout`](../ConnectionIdleTimeout/) is reached.
+
 ```csharp
 public uint MinimumPoolSize { get; set; }
 ```

@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.Pooling property
 
 # MySqlConnectionStringBuilder.Pooling property
 
+Enables connection pooling.
+
 ```csharp
 public bool Pooling { get; set; }
 ```

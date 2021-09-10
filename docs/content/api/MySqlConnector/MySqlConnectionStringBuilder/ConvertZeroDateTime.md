@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.ConvertZeroDateTime property
 
 # MySqlConnectionStringBuilder.ConvertZeroDateTime property
 
+Whether invalid `DATETIME` fields should be converted to MinValue.
+
 ```csharp
 public bool ConvertZeroDateTime { get; set; }
 ```

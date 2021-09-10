@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.ServerRsaPublicKeyFile property
 
 # MySqlConnectionStringBuilder.ServerRsaPublicKeyFile property
 
+The path to a file containing the server's RSA public key.
+
 ```csharp
 public string ServerRsaPublicKeyFile { get; set; }
 ```

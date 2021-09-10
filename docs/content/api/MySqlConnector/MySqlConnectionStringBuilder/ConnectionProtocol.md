@@ -4,6 +4,8 @@ title: MySqlConnectionStringBuilder.ConnectionProtocol property
 
 # MySqlConnectionStringBuilder.ConnectionProtocol property
 
+The protocol to use to connect to the MySQL Server.
+
 ```csharp
 public MySqlConnectionProtocol ConnectionProtocol { get; set; }
 ```

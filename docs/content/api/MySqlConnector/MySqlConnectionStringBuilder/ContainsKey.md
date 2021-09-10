@@ -4,9 +4,19 @@ title: MySqlConnectionStringBuilder.ContainsKey method
 
 # MySqlConnectionStringBuilder.ContainsKey method
 
+Whether this [`MySqlConnectionStringBuilder`](../../MySqlConnectionStringBuilderType/) contains a set option with the specified name.
+
 ```csharp
 public override bool ContainsKey(string keyword)
 ```
+
+| parameter | description |
+| --- | --- |
+| keyword | The option name. |
+
+## Return Value
+
+`true` if an option with that name is set; otherwise, `false`.
 
 ## See Also
 
