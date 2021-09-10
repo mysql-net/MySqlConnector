@@ -7,7 +7,7 @@ namespace MySqlConnector
 	/// <see cref="MySqlConversionException"/> is thrown when a MySQL value can't be converted to another type.
 	/// </summary>
 	[Serializable]
-	public class MySqlConversionException : Exception
+	public sealed class MySqlConversionException : Exception
 	{
 		/// <summary>
 		/// Initializes a new instance of <see cref="MySqlConversionException"/>.

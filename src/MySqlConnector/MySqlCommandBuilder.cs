@@ -9,7 +9,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector
 {
-	public class MySqlCommandBuilder : DbCommandBuilder
+	public sealed class MySqlCommandBuilder : DbCommandBuilder
 	{
 		public static void DeriveParameters(MySqlCommand command) => DeriveParametersAsync(IOBehavior.Synchronous, command, CancellationToken.None).GetAwaiter().GetResult();
 		public static Task DeriveParametersAsync(MySqlCommand command) => DeriveParametersAsync(command?.Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, command!, CancellationToken.None);
