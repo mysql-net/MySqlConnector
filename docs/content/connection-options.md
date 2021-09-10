@@ -32,7 +32,7 @@ These are the basic options that need to be defined to connect to a MySQL databa
     <th style="width: 70%">Description</th>
   </thead>
   <tr id="Host">
-    <td><a name="Server"></a>Host, Server, Data Source, DataSource, Address, Addr, Network Address</td>
+    <td><a name="Server"></a>Server, Host, Data Source, DataSource, Address, Addr, Network Address</td>
     <td>localhost</td>
     <td>The host name or network address of the MySQL Server to which to connect. Multiple hosts can be specified in a comma-delimited list.<br>On Unix-like systems, this can be a fully qualified path to a MySQL socket file, which will cause a Unix socket to be used instead of a TCP/IP socket. Only a single socket name can be specified.</td>
   </tr>
@@ -42,7 +42,7 @@ These are the basic options that need to be defined to connect to a MySQL databa
     <td>The TCP port on which MySQL Server is listening for connections.</td>
   </tr>
   <tr id="UserId">
-    <td>User Id, UserID, Username, Uid, User name, User</td>
+    <td>User ID, UserID, Username, Uid, User name, User</td>
     <td></td>
     <td>The MySQL user ID.</td>
   </tr>
@@ -56,8 +56,8 @@ These are the basic options that need to be defined to connect to a MySQL databa
     <td></td>
     <td>(Optional) The case-sensitive name of the initial database to use. This may be required if the MySQL user account only has access rights to particular databases on the server.</td>
   </tr>
-  <tr id="Protocol">
-    <td>Protocol, ConnectionProtocol, Connection Protocol</td>
+  <tr id="ConnectionProtocol">
+    <td>Connection Protocol, ConnectionProtocol, Protocol</td>
     <td>Socket</td>
     <td>How to connect to the MySQL Server. This option has the following values:
       <ul>
@@ -68,7 +68,7 @@ These are the basic options that need to be defined to connect to a MySQL databa
     </td>
   </tr>
   <tr id="PipeName">
-    <td>Pipe, PipeName, Pipe Name</td>
+    <td>Pipe Name, Pipe, PipeName</td>
     <td>MYSQL</td>
     <td>The name of the Windows named pipe to use to connect to the server. You must also set <code>ConnectionProtocol=pipe</code> to used named pipes.</td>
   </tr>
@@ -109,17 +109,17 @@ These are the options that need to be used in order to configure a connection to
     <td>Specifies the password for the certificate specified using the <code>CertificateFile</code> option. Not required if the certificate file is not password protected.</td>
   </tr>
   <tr id="SslCert">
-    <td>SslCert, Ssl-Cert</td>
+    <td>SSL Cert, SslCert, Ssl-Cert</td>
     <td></td>
     <td>Specifies the path to the client’s SSL certificate file in PEM format. <code>SslKey</code> must also be specified, and <code>CertificateFile</code> should not be. This option is not supported on <code>netstandard2.0</code>.</td>
   </tr>
   <tr id="SslKey">
-    <td>SslKey, Ssl-Key</td>
+    <td>SSL Key, SslKey, Ssl-Key</td>
     <td></td>
     <td>Specifies the path to the client’s SSL private key in PEM format. <code>SslCert</code> must also be specified, and <code>CertificateFile</code> should not be.</td>
   </tr>
   <tr id="SslCa">
-    <td>CA Certificate File, CACertificateFile, SslCa, Ssl-Ca</td>
+    <td>SSL CA, CA Certificate File, CACertificateFile, SslCa, Ssl-Ca</td>
     <td></td>
     <td>This option specifies the path to a CA certificate file in a PEM Encoded (.pem) format. This should be used with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the Operating System’s certificate store.</td>
   </tr>
@@ -134,12 +134,12 @@ These are the options that need to be used in order to configure a connection to
     <td>Specifies which certificate should be used from the Certificate Store specified in the setting above. This option must be used to indicate which certificate in the store should be used for authentication.</td>
   </tr>
   <tr id="TlsCipherSuites">
-    <td>Tls Cipher Suites,TlsCipherSuites</td>
+    <td>TLS Cipher Suites,TlsCipherSuites</td>
     <td></td>
     <td>Specifies which TLS cipher suites may be used during TLS negotiation. The default value (the empty string) allows the OS to determine the TLS cipher suites to use; this is the recommended setting. Otherwise, specify a comma-delimited list of <a href="https://docs.microsoft.com/en-us/dotnet/api/system.net.security.tlsciphersuite"><code>TlsCipherSuite</code> enum values</a> to allow just those cipher suites. (This option is only supported on Linux when using .NET Core 3.1 or .NET 5.0 or later.)</td>
   </tr>
   <tr id="TlsVersion">
-    <td>Tls Version, TlsVersion, Tls-Version</td>
+    <td>TLS Version, TlsVersion, Tls-Version</td>
     <td></td>
     <td>Specifies which TLS versions may be used during TLS negotiation. The default value of <code>null</code> allows the OS to determine the TLS version to use (see <a href="https://docs.microsoft.com/en-us/dotnet/framework/network-programming/tls" title="Transport Layer Security (TLS) best practices with the .NET Framework">documentation</a>); this is the recommended setting. Otherwise, to restrict the versions that can be used, specify a comma-delimited list of versions taken from the following: <code>TLS 1.0</code>, <code>TLS 1.1.</code>, <code>TLS 1.2</code>, <code>TLS 1.3</code>. (This option allows each version to be specified in a few different formats: <code>Tls12</code>, <code> Tlsv1.2</code>, <code>TLS 1.2</code>, <code>Tls v1.2</code>; they are treated equivalently.)</td>
   </tr>
@@ -194,12 +194,12 @@ Connection pooling is enabled by default. These options are used to configure it
     <td><code>true</code></td>
     <td>If <code>true</code>, the connection state is not reset until the connection is retrieved from the pool. The experimental value of <code>false</code> resets connections in the background after they’re closed which can make opening a connection faster, and releases server resources sooner; however, there are reports of connection pool exhaustion when using this value.</td>
   </tr>
-  <tr id="MaxPoolSize">
+  <tr id="MaximumPoolSize">
     <td>Maximum Pool Size, Max Pool Size, MaximumPoolsize, maxpoolsize</td>
     <td>100</td>
     <td>The maximum number of connections allowed in the pool.</td>
   </tr>
-  <tr id="MinPoolSize">
+  <tr id="MinimumPoolSize">
     <td>Minimum Pool Size, Min Pool Size, MinimumPoolSize, minpoolsize</td>
     <td>0</td>
     <td>The minimum number of connections to leave in the pool if ConnectionIdleTimeout is reached.</td>
@@ -232,15 +232,15 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <th style="width: 70%">Description</th>
   </thead>
   <tr id="AllowLoadLocalInfile">
-    <td>AllowLoadLocalInfile, Allow Load Local Infile</td>
+    <td>Allow Load Local Infile, AllowLoadLocalInfile</td>
     <td>false</td>
     <td>Allows the <code>LOAD DATA LOCAL</code> command to request files from the client. This is disabled by
       default as a <a href="/troubleshooting/load-data-local-infile/" title="Using Load Data Local Infile">security precaution</a>.
       In order to use <code>MySqlBulkLoader</code> and set its <code>Local</code> property to <code>true</code>, you
       must set this option to <code>True</code> in  your connection string.</td>
   </tr>
-  <tr id="AllowublicKeyRetrieval">
-    <td>AllowPublicKeyRetrieval, Allow Public Key Retrieval</td>
+  <tr id="AllowPublicKeyRetrieval">
+    <td>Allow Public Key Retrieval, AllowPublicKeyRetrieval</td>
     <td>false</td>
     <td>If the user account uses <code>sha256_password</code> authentication, the password must be protected during transmission; TLS is the preferred mechanism for this,
       but if it is not available then RSA public key encryption will be used. To specify the server’s RSA public key, use the <code>ServerRSAPublicKeyFile</code> connection
@@ -248,66 +248,66 @@ These are the other options that MySqlConnector supports. They are set to sensib
       could allow a malicious proxy to perform a MITM attack to get the plaintext password, so it is <code>False</code> by default and must be explicitly enabled.</td>
   </tr>
   <tr id="AllowUserVariables">
-    <td>AllowUserVariables, Allow User Variables</td>
+    <td>Allow User Variables, AllowUserVariables</td>
     <td>false</td>
     <td>Allows user-defined variables (prefixed with <code>@</code>) to be used in SQL statements. The default value (<code>false</code>)
     only allows <code>@</code>-prefixed names to refer to command parameters.</td>
   </tr>
   <tr id="AllowZeroDateTime">
-    <td>AllowZeroDateTime, Allow Zero DateTime</td>
+    <td>Allow Zero DateTime, AllowZeroDateTime</td>
     <td>false</td>
     <td>If set to <c>true</c> all <code>DATE</code>, <code>DATETIME</code> and <code>TIMESTAMP</code> columns are returned as <code>MySqlDateTime</code> objects instead of <code>DateTime</code>.
     This allows the special “zero” date value <code>0000-00-00</code> to be retrieved from the database. If <code>false</code> (the default)
     date columns are returned as <code>DateTime</code> values, and an exception is thrown for unrepresentable dates.</td>
   </tr>
   <tr id="ApplicationName">
-    <td>ApplicationName, Application Name</td>
+    <td>Application Name, ApplicationName</td>
     <td>null</td>
     <td>Sets the <c>program_name</c> connection attribute passed to MySQL Server. This value may be displayed by diagnostic tools,
     e.g., as the “Program” column in “Client Connections” in <a href="https://www.mysql.com/products/workbench/">MySQL Workbench</a>.</td>
   </tr>
   <tr id="AutoEnlist">
-    <td>AutoEnlist, Auto Enlist</td>
+    <td>Auto Enlist, AutoEnlist</td>
     <td>true</td>
     <td>If <code>true</code> (default), <code>MySqlConnection</code> will detect if there is an active <code>TransactionScope</code> when it's opened and automatically enlist in it. If <code>false</code>, connections must be manually enlisted by calling <code>EnlistTransaction</code>.</td>
   </tr>
   <tr id="CancellationTimeout">
-    <td>CancellationTimeout, Cancellation Timeout</td>
+    <td>Cancellation Timeout, CancellationTimeout</td>
     <td>2</td>
     <td>The length of time (in seconds) to wait for a query to be canceled when <code>MySqlCommand.CommandTimeout</code> expires, or zero for no timeout. If a response isn’t received from the server in this
     time, the local socket will be closed and a <code>MySqlException</code> will be thrown.</td>
   </tr>
-  <tr id="CharSet">
-    <td>CharSet, Character Set, CharacterSet</td>
+  <tr id="CharacterSet">
+    <td>Character Set, CharSet, CharacterSet</td>
     <td>utf8mb4</td>
     <td>MySqlConnector always uses <code>utf8mb4</code> to send and receive strings from MySQL Server. This option may be specified (for backwards compatibility) but it will be ignored.</td>
   </tr>
-  <tr id="Compress">
-    <td>Compress, Use Compression, UseCompression</td>
+  <tr id="UseCompression">
+    <td>Use Compression, Compress, UseCompression</td>
     <td>false</td>
     <td>If true (and if the server supports compression), compresses packets sent between client and server. This option is unlikely to be useful in
       practice unless there is a high-latency or low-bandwidth network link between the application and the database server. You should measure
       performance with and without this option to determine if it’s beneficial in your environment.</td>
   </tr>
   <tr id="ConnectionTimeout">
-    <td>Connect Timeout, Connection Timeout, ConnectionTimeout</td>
+    <td>Connection Timeout, Connect Timeout, ConnectionTimeout</td>
     <td>15</td>
     <td>The length of time (in seconds) to wait for a connection to the server before terminating the attempt and generating an error.</td>
   </tr>
   <tr id="ConvertZeroDateTime">
-    <td>Convert Zero Datetime, ConvertZeroDateTime</td>
+    <td>Convert Zero DateTime, ConvertZeroDateTime</td>
     <td>false</td>
     <td>True to have <code>MySqlDataReader.GetValue()</code> and <code>MySqlDataReader.GetDateTime()</code> return <code>DateTime.MinValue</code> for date or datetime columns that have disallowed values.</td>
   </tr>
   <tr id="DateTimeKind">
-    <td>DateTimeKind</td>
+    <td>DateTime Kind, DateTimeKind</td>
     <td>Unspecified</td>
     <td>The <code>DateTimeKind</code> used when <code>MySqlDataReader</code> returns a <code>DateTime</code>. If set to <code>Utc</code> or <code>Local</code>,
     a <code>MySqlException</code> will be thrown if a <code>DateTime</code> command parameter has a <code>Kind</code> of <code>Local</code> or <code>Utc</code>,
     respectively.</td>
   </tr>
   <tr id="GuidFormat">
-    <td>GuidFormat</td>
+    <td>GUID Format, GuidFormat</td>
     <td>Default</td>
     <td><p>Determines which column type (if any) should be read as a <code>System.Guid</code>.
       The options include:</p>
@@ -337,19 +337,19 @@ These are the other options that MySqlConnector supports. They are set to sensib
       for more explanation of how this is determined.</td>
   </tr>
   <tr id="IgnoreCommandTransaction">
-    <td>IgnoreCommandTransaction, Ignore Command Transaction</td>
+    <td>Ignore Command Transaction, IgnoreCommandTransaction</td>
     <td>false</td>
     <td>If <code>true</code>, the value of <code>MySqlCommand.Transaction</code> is ignored when commands are executed.
     This matches the Connector/NET behaviour and can make porting code easier. For more information, see <a href="troubleshooting/transaction-usage/">Transaction Usage</a>.</td>
   </tr>
   <tr id="IgnorePrepare">
-    <td>IgnorePrepare, Ignore Prepare</td>
+    <td>Ignore Prepare, IgnorePrepare</td>
     <td>false</td>
     <td>If <code>true</code>, calls to <code>MySqlCommand.Prepare(Async)</code> are ignored (and will be no-ops).
     This option is provided for backwards compatibility with MySQL Connector/NET (before 8.0.23) and should not be used.</td>
   </tr>
   <tr id="InteractiveSession">
-    <td>Interactive, Interactive Session, InteractiveSession</td>
+    <td>Interactive Session, Interactive, InteractiveSession</td>
     <td>false</td>
     <td>If <code>true</code>, the session <code>wait_timeout</code> variable is initialized from the global <code>interactive_timeout<code> value instead of the global <code>wait_timeout</code> value.</td>
   </tr>
@@ -392,7 +392,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>When set to <code>false</code> or no (strongly recommended), security-sensitive information, such as the password, is not returned as part of the connection string if the connection is open or has ever been in an open state. Resetting the connection string resets all connection string values, including the password. Recognized values are true, false, yes, and no.</td>
   </tr>
   <tr id="ServerRedirectionMode">
-    <td>ServerRedirectionMode, Server Redirection Mode</td>
+    <td>Server Redirection Mode, ServerRedirectionMode</td>
     <td>Disabled</td>
     <td><p>Whether to use server redirection. The options include:</p>
       <dl>
@@ -408,12 +408,12 @@ These are the other options that MySqlConnector supports. They are set to sensib
     </td>
   </tr>
   <tr id="ServerRsaPublicKeyFile">
-    <td>ServerRsaPublicKeyFile, Server RSA Public Key File</td>
+    <td>Server RSA Public Key File, ServerRsaPublicKeyFile</td>
     <td></td>
     <td>For <code>sha256_password</code> authentication. See comments under <code>AllowPublicKeyRetrieval</code>.</td>
   </tr>
   <tr id="ServerSPN">
-    <td>ServerSPN, Server SPN</td>
+    <td>Server SPN, ServerSPN</td>
     <td></td>
     <td>For MariaDB <a href="https://mariadb.com/kb/en/library/authentication-plugin-gssapi/"><code>auth_gssapi_client</code></a> authentication. Specifies the server’s Service Principal Name (to verify that authentication is occurring with the correct server).</td>
   </tr>

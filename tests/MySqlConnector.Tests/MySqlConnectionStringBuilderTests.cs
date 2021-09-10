@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 #if BASELINE
 using MySql.Data.MySqlClient;
@@ -437,6 +439,118 @@ namespace MySqlConnector.Tests
 			var csb = new MySqlConnectionStringBuilder();
 			Assert.Throws<ArgumentException>(() => csb.TlsVersion = "Tls14");
 			Assert.Throws<ArgumentException>(() => new MySqlConnectionStringBuilder("TlsVersion=Tls14"));
+		}
+
+		[Theory]
+#if BASELINE
+		[InlineData("AllowPublicKeyRetrieval", false)]
+#else
+		[InlineData("Allow Public Key Retrieval", false)]
+#endif
+		[InlineData("Allow User Variables", true)]
+		[InlineData("Allow Zero DateTime", true)]
+		[InlineData("Auto Enlist", true)]
+		[InlineData("Certificate File", "C:\\cert.pfx")]
+		[InlineData("Certificate Password", "password")]
+		[InlineData("Certificate Store Location", MySqlCertificateStoreLocation.CurrentUser)]
+		[InlineData("Character Set", "utf8mb4")]
+		[InlineData("Connection Lifetime", 30u)]
+		[InlineData("Connection Protocol", MySqlConnectionProtocol.NamedPipe)]
+		[InlineData("Connection Reset", true)]
+#if BASELINE
+		[InlineData("Connect Timeout", 10u)]
+#else
+		[InlineData("Connection Timeout", 10u)]
+#endif
+		[InlineData("Convert Zero DateTime", true)]
+		[InlineData("Database", "test")]
+		[InlineData("Default Command Timeout", 15u)]
+		[InlineData("Interactive Session", false)]
+		[InlineData("Keep Alive", 5u)]
+		[InlineData("Minimum Pool Size", 1u)]
+		[InlineData("Maximum Pool Size", 5u)]
+		[InlineData("Old Guids", true)]
+		[InlineData("Password", "password")]
+		[InlineData("Persist Security Info", true)]
+		[InlineData("Pipe Name", "test")]
+		[InlineData("Pooling", false)]
+		[InlineData("Port", 3307u)]
+		[InlineData("Server", "localhost")]
+		[InlineData("SSL Mode", MySqlSslMode.Required)]
+#if BASELINE
+		[InlineData("TLS version", "Tls12")]
+#else
+		[InlineData("TLS Version", "TLS 1.2")]
+#endif
+		[InlineData("Treat Tiny As Boolean", false)]
+		[InlineData("Use Affected Rows", false)]
+		[InlineData("Use Compression", true)]
+		[InlineData("User ID", "user")]
+#if !BASELINE
+		// misspelled
+		[InlineData("Allow Load Local Infile", true)]
+
+		// property name doesn't work with a space
+		[InlineData("Certificate Thumbprint", "01020304")]
+		[InlineData("SSL CA", "C:\\ca.pem")]
+		[InlineData("SSL Cert", "C:\\cert.pem")]
+		[InlineData("SSL Key", "C:\\key.pem")]
+
+		// not supported
+		[InlineData("Application Name", "MyApp")]
+		[InlineData("Cancellation Timeout", 5)]
+		[InlineData("Connection Idle Ping Time", 100u)]
+		[InlineData("Connection Idle Timeout", 10u)]
+		[InlineData("DateTime Kind", MySqlDateTimeKind.Utc)]
+		[InlineData("Force Synchronous", true)]
+		[InlineData("GUID Format", MySqlGuidFormat.Binary16)]
+		[InlineData("Ignore Command Transaction", true)]
+		[InlineData("Ignore Prepare", false)]
+		[InlineData("Load Balance", MySqlLoadBalance.Random)]
+		[InlineData("No Backslash Escapes", true)]
+		[InlineData("Server Redirection Mode", MySqlServerRedirectionMode.Required)]
+		[InlineData("Server RSA Public Key File", "C:\\server.pem")]
+		[InlineData("Server SPN", "test")]
+		[InlineData("TLS Cipher Suites", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384")]
+		[InlineData("Use XA Transactions", false)]
+#endif
+		public void NamedProperty(string propertyName, object value)
+		{
+			var stringValue = Convert.ToString(value, CultureInfo.InvariantCulture);
+#if BASELINE
+			// fix some properties that are spelt differently
+			propertyName = propertyName.Replace("SSL ", "Ssl ").Replace("DateTime", "Datetime");
+#endif
+			for (var i = 0; i < 2; i++)
+			{
+				var csb = new MySqlConnectionStringBuilder();
+#if !BASELINE
+				// Connector/NET sets all properties to default values
+				Assert.False(csb.ContainsKey(propertyName));
+#endif
+				Assert.False(csb.TryGetValue(propertyName, out var setValue));
+				Assert.Null(setValue);
+
+				ICustomTypeDescriptor typeDescriptor = csb;
+				var propertyDescriptor = typeDescriptor.GetProperties().Cast<PropertyDescriptor>().SingleOrDefault(x => x.DisplayName == propertyName);
+				Assert.NotNull(propertyDescriptor);
+
+				if (i == 0)
+					csb[propertyName] = value;
+				else
+					csb.ConnectionString = propertyName + " = " + stringValue;
+
+				Assert.True(csb.ContainsKey(propertyName));
+#if !BASELINE
+				// https://bugs.mysql.com/bug.php?id=104910
+				Assert.True(csb.TryGetValue(propertyName, out setValue));
+				Assert.Equal(stringValue, setValue);
+
+				var propertyDescriptorValue = propertyDescriptor.GetValue(csb);
+				Assert.Equal(stringValue, propertyDescriptorValue);
+#endif
+				Assert.Equal(value, csb[propertyName]);
+			}
 		}
 	}
 }
