@@ -7,7 +7,7 @@ title: MySqlConversionException
 [`MySqlConversionException`](../MySqlConversionExceptionType/) is thrown when a MySQL value can't be converted to another type.
 
 ```csharp
-public class MySqlConversionException : Exception
+public sealed class MySqlConversionException : Exception
 ```
 
 ## See Also

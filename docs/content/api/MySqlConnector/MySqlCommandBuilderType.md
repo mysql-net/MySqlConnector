@@ -5,7 +5,7 @@ title: MySqlCommandBuilder
 # MySqlCommandBuilder class
 
 ```csharp
-public class MySqlCommandBuilder : DbCommandBuilder
+public sealed class MySqlCommandBuilder : DbCommandBuilder
 ```
 
 ## Public Members
