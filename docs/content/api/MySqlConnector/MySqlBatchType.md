@@ -63,7 +63,7 @@ public sealed class MySqlBatch : IDisposable
 | [Dispose](../MySqlBatch/Dispose/)() |  |
 | [ExecuteNonQuery](../MySqlBatch/ExecuteNonQuery/)() |  |
 | [ExecuteNonQueryAsync](../MySqlBatch/ExecuteNonQueryAsync/)(…) |  |
-| [ExecuteReader](../MySqlBatch/ExecuteReader/)() | Executes all the commands in the batch, returning a [`MySqlDataReader`](../MySqlDataReaderType/) that can iterate over the result sets. If multiple resultsets are returned, use [`NextResult`](../MySqlDataReader/NextResult/) to access them. |
+| [ExecuteReader](../MySqlBatch/ExecuteReader/)(…) | Executes all the commands in the batch, returning a [`MySqlDataReader`](../MySqlDataReaderType/) that can iterate over the result sets. If multiple resultsets are returned, use [`NextResult`](../MySqlDataReader/NextResult/) to access them. |
 | [ExecuteReaderAsync](../MySqlBatch/ExecuteReaderAsync/)(…) | Executes all the commands in the batch, returning a [`MySqlDataReader`](../MySqlDataReaderType/) that can iterate over the result sets. If multiple resultsets are returned, use [`NextResultAsync`](../MySqlDataReader/NextResultAsync/) to access them. |
 | [ExecuteScalar](../MySqlBatch/ExecuteScalar/)() |  |
 | [ExecuteScalarAsync](../MySqlBatch/ExecuteScalarAsync/)(…) |  |

@@ -35,7 +35,6 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 | override [Close](../MySqlConnection/Close/)() |  |
 | override [CloseAsync](../MySqlConnection/CloseAsync/)() |  |
 | [CreateBatch](../MySqlConnection/CreateBatch/)() | Creates a [`MySqlBatch`](../MySqlBatchType/) object for executing batched commands. |
-| [CreateBatchCommand](../MySqlConnection/CreateBatchCommand/)() | Creates a [`MySqlBatchCommand`](../MySqlBatchCommandType/) object (that can be used with [`BatchCommands`](../MySqlBatch/BatchCommands/)). |
 | [CreateCommand](../MySqlConnection/CreateCommand/)() |  |
 | override [DisposeAsync](../MySqlConnection/DisposeAsync/)() |  |
 | override [EnlistTransaction](../MySqlConnection/EnlistTransaction/)(…) |  |

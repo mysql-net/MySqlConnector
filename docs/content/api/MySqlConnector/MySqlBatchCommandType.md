@@ -14,11 +14,10 @@ public sealed class MySqlBatchCommand
 | --- | --- |
 | [MySqlBatchCommand](../MySqlBatchCommand/MySqlBatchCommand/)() | The default constructor. |
 | [MySqlBatchCommand](../MySqlBatchCommand/MySqlBatchCommand/)(…) |  |
-| [CommandBehavior](../MySqlBatchCommand/CommandBehavior/) { get; set; } |  |
 | [CommandText](../MySqlBatchCommand/CommandText/) { get; set; } |  |
 | [CommandType](../MySqlBatchCommand/CommandType/) { get; set; } |  |
 | [Parameters](../MySqlBatchCommand/Parameters/) { get; } |  |
-| [RecordsAffected](../MySqlBatchCommand/RecordsAffected/) { get; set; } |  |
+| [RecordsAffected](../MySqlBatchCommand/RecordsAffected/) { get; } |  |
 
 ## See Also
 

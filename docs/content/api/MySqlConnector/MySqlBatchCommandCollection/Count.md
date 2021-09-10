@@ -1,13 +1,11 @@
 ---
-title: MySqlBatchCommandCollection constructor
+title: MySqlBatchCommandCollection.Count property
 ---
 
-# MySqlBatchCommandCollection constructor
-
-The default constructor.
+# MySqlBatchCommandCollection.Count property
 
 ```csharp
-public MySqlBatchCommandCollection()
+public int Count { get; }
 ```
 
 ## See Also

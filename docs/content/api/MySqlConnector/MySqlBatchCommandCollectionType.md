@@ -5,16 +5,25 @@ title: MySqlBatchCommandCollection
 # MySqlBatchCommandCollection class
 
 ```csharp
-public sealed class MySqlBatchCommandCollection : Collection<MySqlBatchCommand>, 
-    IReadOnlyList<IMySqlCommand>
+public sealed class MySqlBatchCommandCollection : IList<MySqlBatchCommand>
 ```
 
 ## Public Members
 
 | name | description |
 | --- | --- |
-| [MySqlBatchCommandCollection](../MySqlBatchCommandCollection/MySqlBatchCommandCollection/)() | The default constructor. |
+| [Count](../MySqlBatchCommandCollection/Count/) { get; } |  |
+| [IsReadOnly](../MySqlBatchCommandCollection/IsReadOnly/) { get; } |  |
 | [Item](../MySqlBatchCommandCollection/Item/) { get; set; } |  |
+| [Add](../MySqlBatchCommandCollection/Add/)(…) |  |
+| [Clear](../MySqlBatchCommandCollection/Clear/)() |  |
+| [Contains](../MySqlBatchCommandCollection/Contains/)(…) |  |
+| [CopyTo](../MySqlBatchCommandCollection/CopyTo/)(…) |  |
+| [GetEnumerator](../MySqlBatchCommandCollection/GetEnumerator/)() |  |
+| [IndexOf](../MySqlBatchCommandCollection/IndexOf/)(…) |  |
+| [Insert](../MySqlBatchCommandCollection/Insert/)(…) |  |
+| [Remove](../MySqlBatchCommandCollection/Remove/)(…) |  |
+| [RemoveAt](../MySqlBatchCommandCollection/RemoveAt/)(…) |  |
 
 ## See Also
 

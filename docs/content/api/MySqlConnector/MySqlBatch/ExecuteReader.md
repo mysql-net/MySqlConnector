@@ -7,7 +7,7 @@ title: MySqlBatch.ExecuteReader method
 Executes all the commands in the batch, returning a [`MySqlDataReader`](../../MySqlDataReaderType/) that can iterate over the result sets. If multiple resultsets are returned, use [`NextResult`](../../MySqlDataReader/NextResult/) to access them.
 
 ```csharp
-public MySqlDataReader ExecuteReader()
+public MySqlDataReader ExecuteReader(CommandBehavior commandBehavior = CommandBehavior.Default)
 ```
 
 ## See Also
