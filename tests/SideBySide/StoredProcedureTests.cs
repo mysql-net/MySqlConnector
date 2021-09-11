@@ -783,6 +783,35 @@ namespace SideBySide
 			Assert.False(reader.Read());
 		}
 
+		[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=104913")]
+		[InlineData("`a b`")]
+		[InlineData("`a.b`")]
+		[InlineData("`a``b`")]
+		[InlineData("`a b.c ``d`")]
+		public void SprocNameSpecialCharacters(string sprocName)
+		{
+			using var connection = CreateOpenConnection();
+
+			using (var command = new MySqlCommand($@"DROP PROCEDURE IF EXISTS {sprocName};
+CREATE PROCEDURE {sprocName} ()
+	BEGIN
+		SELECT 'test' AS Result;
+	END;", connection))
+			{
+				command.ExecuteNonQuery();
+			}
+
+			using (var command = new MySqlCommand(sprocName, connection))
+			{
+				command.CommandType = CommandType.StoredProcedure;
+
+				using var reader = command.ExecuteReader();
+				Assert.True(reader.Read());
+				Assert.Equal("test", reader.GetString(0));
+				Assert.False(reader.Read());
+			}
+		}
+
 		private static string NormalizeSpaces(string input)
 		{
 			input = input.Replace('\r', ' ');

@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-07-12
+lastmod: 2021-09-10
 date: 2017-03-27
 menu:
   main:
@@ -40,6 +40,10 @@ weight: 30
   * Support `DateOnly` and `TimeOnly` structs: [#963](https://github.com/mysql-net/MySqlConnector/issues/963).
   * Use `ZLibStream` for compression: [#957](https://github.com/mysql-net/MySqlConnector/issues/957).
   * Use `X_OR_GREATER` preprocessor definitions: [#958](https://github.com/mysql-net/MySqlConnector/issues/958).
+
+### 1.3.12
+
+* Fix bug executing stored procedures with backticks in their names: [#1029](https://github.com/mysql-net/MySqlConnector/issues/1029).
 
 ### 1.3.11
 

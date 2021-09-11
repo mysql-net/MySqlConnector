@@ -170,7 +170,12 @@ namespace MySqlConnector
 			return Connection.Session.TryGetPreparedStatement(CommandText!) is null;
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Gets or sets the command text to execute.
+		/// </summary>
+		/// <remarks>If <see cref="CommandType"/> is <see cref="CommandType.Text"/>, this is one or more SQL statements to execute.
+		/// If <see cref="CommandType"/> is <see cref="CommandType.StoredProcedure"/>, this is the name of the stored procedure; any
+		/// special characters in the stored procedure name must be quoted or escaped.</remarks>
 		[AllowNull]
 		public override string CommandText
 		{

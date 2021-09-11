@@ -4,9 +4,15 @@ title: MySqlCommand.CommandText property
 
 # MySqlCommand.CommandText property
 
+Gets or sets the command text to execute.
+
 ```csharp
 public override string CommandText { get; set; }
 ```
+
+## Remarks
+
+If [`CommandType`](../CommandType/) is Text, this is one or more SQL statements to execute. If [`CommandType`](../CommandType/) is StoredProcedure, this is the name of the stored procedure; any special characters in the stored procedure name must be quoted or escaped.
 
 ## See Also
 

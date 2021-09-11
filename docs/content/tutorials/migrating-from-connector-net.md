@@ -148,6 +148,8 @@ property doesn’t reference the active transaction. This fixes <a href="https:/
 To disable this strict validation, set <code>IgnoreCommandTransaction=true</code>
 in the connection string. See [Transaction Usage](/troubleshooting/transaction-usage/) for more details.
 
+If `MySqlCommand.CommandType` is `CommandType.StoredProcedure`, the stored procedure name assigned to `MySqlCommand.CommandText` must have any special characters escaped or quoted. Connector/NET will automatically quote some characters (such as spaces); MySqlConnector leaves this up to the developer.
+
 ### MySqlDataAdapter
 
 Connector/NET provides `MySqlDataAdapter.FillAsync`, `FillSchemaAsync`, and `UpdateAsync` methods, but these methods
@@ -286,3 +288,4 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#103801](https://bugs.mysql.com/bug.php?id=103801): `TimeSpan` parameters lose microseconds with prepared statement
 * [#103819](https://bugs.mysql.com/bug.php?id=103819): Can't use `StringBuilder` containing non-BMP characters as `MySqlParameter.Value`
 * [#104910](https://bugs.mysql.com/bug.php?id=104910): `MySqlConnectionStringBuilder.TryGetValue` always returns `false`
+* [#104913](https://bugs.mysql.com/bug.php?id=104913): Cannot execute stored procedure with backtick in name
