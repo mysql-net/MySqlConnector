@@ -29,13 +29,13 @@ namespace MySqlConnector.Core
 			if (match.Success)
 			{
 				if (match.Groups[3].Success)
-					Component = match.Groups[3].Value.Trim();
+					Component = match.Groups[3].Value.Replace("``", "`").Trim();
 				else if (match.Groups[4].Success)
 					Component = match.Groups[4].Value.Trim();
 
 				string firstGroup = "";
 				if (match.Groups[1].Success)
-					firstGroup = match.Groups[1].Value.Trim();
+					firstGroup = match.Groups[1].Value.Replace("``", "`").Trim();
 				else if (match.Groups[2].Success)
 					firstGroup = match.Groups[2].Value.Trim();
 				if (Component is null)
