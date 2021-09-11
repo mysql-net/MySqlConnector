@@ -10,6 +10,18 @@ weight: 30
 
 # Version History
 
+### 1.4.0 Beta 3
+
+* **Breaking** Remove `netstandard1.3` target framework: [#1031](https://github.com/mysql-net/MySqlConnector/issues/1031).
+* **Breaking** Seal `MySqlCommandBuilder` and `MySqlConversionException`.
+* Fix incorrect value for `MySqlCommand.LastInsertedId` when executing multiple commands: [#1026](https://github.com/mysql-net/MySqlConnector/issues/1026).
+* Add `[Category]`, `[DefaultValue]`, and `[Description]` attributes to all `MySqlConnectionStringBuilder` properties.
+* Fix `MySqlConnectionStringBuilder.TryGetValue`: [#1030](https://github.com/mysql-net/MySqlConnector/issues/1030).
+* **Breaking** Change how option keys are serialized when retrieving the `MySqlConnectionStringBuilder.ConnectionString` property:
+  * For example, `User Id` is now `User ID`, `DefaultCommandTimeout` is now `Default Command Timeout`, etc.
+  * All existing connection strings are still valid, and all the previous aliases for connection string options are still accepted.
+  * The primary connection string option key is listed first in the documentation at https://mysqlconnector.net/connection-options/.
+
 ### 1.4.0 Beta 2
 
 * Support .NET 6.0 Preview 7
