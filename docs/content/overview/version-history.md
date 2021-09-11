@@ -10,6 +10,10 @@ weight: 30
 
 # Version History
 
+### 1.3.12
+
+* Fix bug executing stored procedures with backticks in their names: [#1029](https://github.com/mysql-net/MySqlConnector/issues/1029).
+
 ### 1.3.11
 
 * Add `MySqlError.ErrorCode`: [#1011](https://github.com/mysql-net/MySqlConnector/issues/1011).
