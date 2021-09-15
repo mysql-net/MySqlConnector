@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.Common;
-using MySqlConnector.Core;
 
 namespace MySqlConnector
 {
@@ -17,7 +16,7 @@ namespace MySqlConnector
 		internal MySqlBatchCommandCollection() => m_commands = new();
 
 #if NET6_0_OR_GREATER
-		public override DbBatchCommand this[int index] { get => m_commands[index]; set => m_commands[index] = (MySqlBatchCommand) value; }
+		public new MySqlBatchCommand this[int index] { get => (MySqlBatchCommand) base[index]; set => base[index] = value; }
 		public override int Count => m_commands.Count;
 		public override bool IsReadOnly => false;
 		public override void Add(DbBatchCommand item) => m_commands.Add((MySqlBatchCommand) item);
@@ -33,8 +32,10 @@ namespace MySqlConnector
 		public override void Insert(int index, DbBatchCommand item) => m_commands.Insert(index, (MySqlBatchCommand) item);
 		public override bool Remove(DbBatchCommand item) => m_commands.Remove((MySqlBatchCommand) item);
 		public override void RemoveAt(int index) => m_commands.RemoveAt(index);
+		protected override DbBatchCommand GetBatchCommand(int index) => m_commands[index];
+		protected override void SetBatchCommand(int index, DbBatchCommand batchCommand) => m_commands[index] = (MySqlBatchCommand) batchCommand;
 #else
-		public MySqlBatchCommand this[int index] { get => m_commands[index]; set => m_commands[index] = (MySqlBatchCommand) value; }
+		public MySqlBatchCommand this[int index] { get => m_commands[index]; set => m_commands[index] = value; }
 		public int Count => m_commands.Count;
 		public bool IsReadOnly => false;
 		public void Add(MySqlBatchCommand item) => m_commands.Add((MySqlBatchCommand) item);

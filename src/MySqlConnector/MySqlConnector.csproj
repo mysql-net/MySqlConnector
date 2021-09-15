@@ -11,6 +11,7 @@
     <PackageTags>mysql;mysqlconnector;async;ado.net;database;netcore</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'net461' OR '$(TargetFramework)' == 'net471' ">
