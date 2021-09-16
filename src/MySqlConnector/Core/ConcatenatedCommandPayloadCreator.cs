@@ -3,33 +3,32 @@ using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
 
-namespace MySqlConnector.Core
+namespace MySqlConnector.Core;
+
+internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
 {
-	internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
+	public static ICommandPayloadCreator Instance { get; } = new ConcatenatedCommandPayloadCreator();
+
+	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer)
 	{
-		public static ICommandPayloadCreator Instance { get; } = new ConcatenatedCommandPayloadCreator();
+		if (commandListPosition.CommandIndex == commandListPosition.Commands.Count)
+			return false;
 
-		public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer)
+		writer.Write((byte) CommandKind.Query);
+		bool isComplete;
+		do
 		{
-			if (commandListPosition.CommandIndex == commandListPosition.Commands.Count)
-				return false;
+			var command = commandListPosition.Commands[commandListPosition.CommandIndex];
+			if (Log.IsTraceEnabled())
+				Log.Trace("Session{0} Preparing command payload; CommandText: {1}", command.Connection!.Session.Id, command.CommandText);
 
-			writer.Write((byte) CommandKind.Query);
-			bool isComplete;
-			do
-			{
-				var command = commandListPosition.Commands[commandListPosition.CommandIndex];
-				if (Log.IsTraceEnabled())
-					Log.Trace("Session{0} Preparing command payload; CommandText: {1}", command.Connection!.Session.Id, command.CommandText);
-
-				isComplete = SingleCommandPayloadCreator.WriteQueryPayload(command, cachedProcedures, writer);
-				commandListPosition.CommandIndex++;
-			}
-			while (commandListPosition.CommandIndex < commandListPosition.Commands.Count && isComplete);
-
-			return true;
+			isComplete = SingleCommandPayloadCreator.WriteQueryPayload(command, cachedProcedures, writer);
+			commandListPosition.CommandIndex++;
 		}
+		while (commandListPosition.CommandIndex < commandListPosition.Commands.Count && isComplete);
 
-		static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConcatenatedCommandPayloadCreator));
+		return true;
 	}
+
+	static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConcatenatedCommandPayloadCreator));
 }

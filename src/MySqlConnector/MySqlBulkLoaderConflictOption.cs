@@ -1,9 +1,8 @@
-﻿namespace MySqlConnector
+namespace MySqlConnector;
+
+public enum MySqlBulkLoaderConflictOption
 {
-    public enum MySqlBulkLoaderConflictOption
-    {
-        None,
-        Replace,
-        Ignore
-    }
+	None,
+	Replace,
+	Ignore,
 }

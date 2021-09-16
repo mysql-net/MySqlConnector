@@ -1,9 +1,8 @@
-﻿namespace MySqlConnector
+namespace MySqlConnector;
+
+public enum MySqlBulkLoaderPriority
 {
-    public enum MySqlBulkLoaderPriority
-    {
-        None,
-        Low,
-        Concurrent
-    }
+	None,
+	Low,
+	Concurrent,
 }

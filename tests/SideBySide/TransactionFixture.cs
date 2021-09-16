@@ -1,16 +1,15 @@
-﻿using Dapper;
+using Dapper;
 
-namespace SideBySide
+namespace SideBySide;
+
+public class TransactionFixture : DatabaseFixture
 {
-	public class TransactionFixture : DatabaseFixture
+	public TransactionFixture()
 	{
-		public TransactionFixture()
-		{
-			Connection.Open();
-			Connection.Execute(@"
+		Connection.Open();
+		Connection.Execute(@"
 drop table if exists transactions_test;
 create table transactions_test(value integer null);
-			");
-		}
+		");
 	}
 }

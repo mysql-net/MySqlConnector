@@ -1,17 +1,16 @@
 using MySqlConnector.Protocol.Serialization;
 
-namespace MySqlConnector.Protocol.Payloads
+namespace MySqlConnector.Protocol.Payloads;
+
+internal static class InitDatabasePayload
 {
-	internal static class InitDatabasePayload
+	public static PayloadData Create(string databaseName)
 	{
-		public static PayloadData Create(string databaseName)
-		{
-			var writer = new ByteBufferWriter();
+		var writer = new ByteBufferWriter();
 
-			writer.Write((byte) CommandKind.InitDatabase);
-			writer.Write(databaseName);
+		writer.Write((byte) CommandKind.InitDatabase);
+		writer.Write(databaseName);
 
-			return writer.ToPayloadData();
-		}
+		return writer.ToPayloadData();
 	}
 }

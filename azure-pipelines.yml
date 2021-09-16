@@ -44,6 +44,10 @@ jobs:
     displayName: 'Install .NET Core 5.0'
     inputs:
       version: '5.0.x'
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core'
+    inputs:
+      version: $(DotNetCoreSdkVersion)
   - task: DotNetCoreCLI@2
     displayName: 'Unit tests'
     inputs:

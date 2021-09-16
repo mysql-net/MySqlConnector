@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace MySqlConnector.Tests
-{
-    public class ConnectionTests : IDisposable
+namespace MySqlConnector.Tests;
+
+public class ConnectionTests : IDisposable
 	{
 		public ConnectionTests()
 		{
@@ -214,4 +214,3 @@ namespace MySqlConnector.Tests
 		readonly FakeMySqlServer m_server;
 		readonly MySqlConnectionStringBuilder m_csb;
 	}
-}

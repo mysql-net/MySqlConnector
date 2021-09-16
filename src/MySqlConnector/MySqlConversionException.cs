@@ -1,26 +1,25 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace MySqlConnector
+namespace MySqlConnector;
+
+/// <summary>
+/// <see cref="MySqlConversionException"/> is thrown when a MySQL value can't be converted to another type.
+/// </summary>
+[Serializable]
+public sealed class MySqlConversionException : Exception
 {
 	/// <summary>
-	/// <see cref="MySqlConversionException"/> is thrown when a MySQL value can't be converted to another type.
+	/// Initializes a new instance of <see cref="MySqlConversionException"/>.
 	/// </summary>
-	[Serializable]
-	public sealed class MySqlConversionException : Exception
+	/// <param name="message">The exception message.</param>
+	internal MySqlConversionException(string message)
+		: base(message)
 	{
-		/// <summary>
-		/// Initializes a new instance of <see cref="MySqlConversionException"/>.
-		/// </summary>
-		/// <param name="message">The exception message.</param>
-		internal MySqlConversionException(string message)
-			: base(message)
-		{
-		}
+	}
 
-		private MySqlConversionException(SerializationInfo info, StreamingContext context)
-			: base(info, context)
-		{
-		}
+	private MySqlConversionException(SerializationInfo info, StreamingContext context)
+		: base(info, context)
+	{
 	}
 }

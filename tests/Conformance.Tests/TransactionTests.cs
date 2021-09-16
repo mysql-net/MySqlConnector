@@ -1,12 +1,11 @@
 using AdoNet.Specification.Tests;
 
-namespace Conformance.Tests
+namespace Conformance.Tests;
+
+public sealed class TransactionTests : TransactionTestBase<DbFactoryFixture>
 {
-	public sealed class TransactionTests : TransactionTestBase<DbFactoryFixture>
+	public TransactionTests(DbFactoryFixture fixture)
+		: base(fixture)
 	{
-		public TransactionTests(DbFactoryFixture fixture)
-			: base(fixture)
-		{
-		}
 	}
 }

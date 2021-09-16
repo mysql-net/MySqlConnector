@@ -1,11 +1,10 @@
-namespace MySqlConnector.Core
+namespace MySqlConnector.Core;
+
+internal enum ResultSetState
 {
-	internal enum ResultSetState
-	{
-		None,
-		ReadResultSetHeader,
-		ReadingRows,
-		HasMoreData,
-		NoMoreData,
-	}
+	None,
+	ReadResultSetHeader,
+	ReadingRows,
+	HasMoreData,
+	NoMoreData,
 }

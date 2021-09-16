@@ -4,141 +4,140 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using MySqlConnector.Utilities;
 
-namespace MySqlConnector.Protocol.Serialization
+namespace MySqlConnector.Protocol.Serialization;
+
+internal sealed class SocketByteHandler : IByteHandler
 {
-	internal sealed class SocketByteHandler : IByteHandler
+	public SocketByteHandler(Socket socket)
 	{
-		public SocketByteHandler(Socket socket)
-		{
-			m_socket = socket;
+		m_socket = socket;
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-			m_socketAwaitable = new(new());
+		m_socketAwaitable = new(new());
 #endif
-			m_closeSocket = socket.Dispose;
-			RemainingTimeout = Constants.InfiniteTimeout;
-		}
+		m_closeSocket = socket.Dispose;
+		RemainingTimeout = Constants.InfiniteTimeout;
+	}
 
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-		public void Dispose() => m_socketAwaitable.EventArgs.Dispose();
+	public void Dispose() => m_socketAwaitable.EventArgs.Dispose();
 #else
-		public void Dispose() { }
+	public void Dispose() { }
 #endif
 
-		public int RemainingTimeout { get; set; }
+	public int RemainingTimeout { get; set; }
 
-		public ValueTask<int> ReadBytesAsync(Memory<byte> buffer, IOBehavior ioBehavior) =>
-			ioBehavior == IOBehavior.Asynchronous ? DoReadBytesAsync(buffer) : DoReadBytesSync(buffer);
+	public ValueTask<int> ReadBytesAsync(Memory<byte> buffer, IOBehavior ioBehavior) =>
+		ioBehavior == IOBehavior.Asynchronous ? DoReadBytesAsync(buffer) : DoReadBytesSync(buffer);
 
-		private ValueTask<int> DoReadBytesSync(Memory<byte> buffer)
-		{
+	private ValueTask<int> DoReadBytesSync(Memory<byte> buffer)
+	{
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-			MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);
+		MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);
 #endif
 
-			try
+		try
+		{
+			if (RemainingTimeout == Constants.InfiniteTimeout)
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
+				return new ValueTask<int>(m_socket.Receive(arraySegment.Array, arraySegment.Offset, arraySegment.Count, SocketFlags.None));
+#else
+				return new ValueTask<int>(m_socket.Receive(buffer.Span, SocketFlags.None));
+#endif
+
+			while (RemainingTimeout > 0)
 			{
-				if (RemainingTimeout == Constants.InfiniteTimeout)
-#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-					return new ValueTask<int>(m_socket.Receive(arraySegment.Array, arraySegment.Offset, arraySegment.Count, SocketFlags.None));
-#else
-					return new ValueTask<int>(m_socket.Receive(buffer.Span, SocketFlags.None));
-#endif
-
-				while (RemainingTimeout > 0)
+				var startTime = Environment.TickCount;
+				if (m_socket.Poll(Math.Min(int.MaxValue / 1000, RemainingTimeout) * 1000, SelectMode.SelectRead))
 				{
-					var startTime = Environment.TickCount;
-					if (m_socket.Poll(Math.Min(int.MaxValue / 1000, RemainingTimeout) * 1000, SelectMode.SelectRead))
-					{
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-						var bytesRead = m_socket.Receive(arraySegment.Array, arraySegment.Offset, arraySegment.Count, SocketFlags.None);
+					var bytesRead = m_socket.Receive(arraySegment.Array, arraySegment.Offset, arraySegment.Count, SocketFlags.None);
 #else
-						var bytesRead = m_socket.Receive(buffer.Span, SocketFlags.None);
+					var bytesRead = m_socket.Receive(buffer.Span, SocketFlags.None);
 #endif
-						RemainingTimeout -= unchecked(Environment.TickCount - startTime);
-						return new ValueTask<int>(bytesRead);
-					}
 					RemainingTimeout -= unchecked(Environment.TickCount - startTime);
+					return new ValueTask<int>(bytesRead);
 				}
-				return ValueTaskExtensions.FromException<int>(MySqlException.CreateForTimeout());
+				RemainingTimeout -= unchecked(Environment.TickCount - startTime);
 			}
-			catch (Exception ex)
-			{
-				return ValueTaskExtensions.FromException<int>(ex);
-			}
+			return ValueTaskExtensions.FromException<int>(MySqlException.CreateForTimeout());
 		}
-
-		private async ValueTask<int> DoReadBytesAsync(Memory<byte> buffer)
+		catch (Exception ex)
 		{
-			var startTime = RemainingTimeout == Constants.InfiniteTimeout ? 0 : Environment.TickCount;
-			var timerId = RemainingTimeout switch
-			{
-				Constants.InfiniteTimeout => 0u,
-				<= 0 => throw MySqlException.CreateForTimeout(),
-				_ => TimerQueue.Instance.Add(RemainingTimeout, m_closeSocket),
-			};
+			return ValueTaskExtensions.FromException<int>(ex);
+		}
+	}
+
+	private async ValueTask<int> DoReadBytesAsync(Memory<byte> buffer)
+	{
+		var startTime = RemainingTimeout == Constants.InfiniteTimeout ? 0 : Environment.TickCount;
+		var timerId = RemainingTimeout switch
+		{
+			Constants.InfiniteTimeout => 0u,
+			<= 0 => throw MySqlException.CreateForTimeout(),
+			_ => TimerQueue.Instance.Add(RemainingTimeout, m_closeSocket),
+		};
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-			m_socketAwaitable.EventArgs.SetBuffer(buffer);
+		m_socketAwaitable.EventArgs.SetBuffer(buffer);
 #endif
-			int bytesRead;
-			try
-			{
+		int bytesRead;
+		try
+		{
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-				await m_socket.ReceiveAsync(m_socketAwaitable);
-				bytesRead = m_socketAwaitable.EventArgs.BytesTransferred;
+			await m_socket.ReceiveAsync(m_socketAwaitable);
+			bytesRead = m_socketAwaitable.EventArgs.BytesTransferred;
 #else
-				bytesRead = await m_socket.ReceiveAsync(buffer, SocketFlags.None).ConfigureAwait(false);
+			bytesRead = await m_socket.ReceiveAsync(buffer, SocketFlags.None).ConfigureAwait(false);
 #endif
-			}
-			catch (SocketException ex)
-			{
-				if (RemainingTimeout != Constants.InfiniteTimeout)
-				{
-					RemainingTimeout -= unchecked(Environment.TickCount - startTime);
-					if (!TimerQueue.Instance.Remove(timerId))
-						throw MySqlException.CreateForTimeout(ex);
-				}
-				throw;
-			}
+		}
+		catch (SocketException ex)
+		{
 			if (RemainingTimeout != Constants.InfiniteTimeout)
 			{
 				RemainingTimeout -= unchecked(Environment.TickCount - startTime);
 				if (!TimerQueue.Instance.Remove(timerId))
-					throw MySqlException.CreateForTimeout();
+					throw MySqlException.CreateForTimeout(ex);
 			}
-			return bytesRead;
+			throw;
 		}
-
-		public ValueTask<int> WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior)
+		if (RemainingTimeout != Constants.InfiniteTimeout)
 		{
-			if (ioBehavior == IOBehavior.Asynchronous)
-				return DoWriteBytesAsync(data);
-
-			try
-			{
-				m_socket.Send(data, SocketFlags.None);
-				return default;
-			}
-			catch (Exception ex)
-			{
-				return ValueTaskExtensions.FromException<int>(ex);
-			}
+			RemainingTimeout -= unchecked(Environment.TickCount - startTime);
+			if (!TimerQueue.Instance.Remove(timerId))
+				throw MySqlException.CreateForTimeout();
 		}
-
-		private async ValueTask<int> DoWriteBytesAsync(ReadOnlyMemory<byte> data)
-		{
-#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-			m_socketAwaitable.EventArgs.SetBuffer(MemoryMarshal.AsMemory(data));
-			await m_socket.SendAsync(m_socketAwaitable);
-#else
-			await m_socket.SendAsync(data, SocketFlags.None).ConfigureAwait(false);
-#endif
-			return 0;
-		}
-
-		readonly Socket m_socket;
-#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-		readonly SocketAwaitable m_socketAwaitable;
-#endif
-		readonly Action m_closeSocket;
+		return bytesRead;
 	}
+
+	public ValueTask<int> WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior)
+	{
+		if (ioBehavior == IOBehavior.Asynchronous)
+			return DoWriteBytesAsync(data);
+
+		try
+		{
+			m_socket.Send(data, SocketFlags.None);
+			return default;
+		}
+		catch (Exception ex)
+		{
+			return ValueTaskExtensions.FromException<int>(ex);
+		}
+	}
+
+	private async ValueTask<int> DoWriteBytesAsync(ReadOnlyMemory<byte> data)
+	{
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
+		m_socketAwaitable.EventArgs.SetBuffer(MemoryMarshal.AsMemory(data));
+		await m_socket.SendAsync(m_socketAwaitable);
+#else
+		await m_socket.SendAsync(data, SocketFlags.None).ConfigureAwait(false);
+#endif
+		return 0;
+	}
+
+	readonly Socket m_socket;
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
+	readonly SocketAwaitable m_socketAwaitable;
+#endif
+	readonly Action m_closeSocket;
 }

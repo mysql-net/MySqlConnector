@@ -8,10 +8,10 @@ using MySqlConnector;
 #endif
 using Xunit;
 
-namespace SideBySide
+namespace SideBySide;
+
+public class DataAdapterTests : IClassFixture<DatabaseFixture>, IDisposable
 {
-    public class DataAdapterTests : IClassFixture<DatabaseFixture>, IDisposable
-    {
 		public DataAdapterTests(DatabaseFixture database)
 		{
 			m_connection = database.Connection;
@@ -246,4 +246,3 @@ insert into data_adapter(int_value, text_value) values
 		}
 		readonly MySqlConnection m_connection;
 	}
-}

@@ -1,7 +1,6 @@
-namespace MySqlConnector.Protocol.Payloads
+namespace MySqlConnector.Protocol.Payloads;
+
+internal static class ResetConnectionPayload
 {
-	internal static class ResetConnectionPayload
-	{
-		public static PayloadData Instance { get; } = new(new[] { (byte) CommandKind.ResetConnection });
-	}
+	public static PayloadData Instance { get; } = new(new[] { (byte) CommandKind.ResetConnection });
 }

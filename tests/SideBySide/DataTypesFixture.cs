@@ -1,13 +1,13 @@
 using Dapper;
 
-namespace SideBySide
+namespace SideBySide;
+
+public class DataTypesFixture : DatabaseFixture
 {
-	public class DataTypesFixture : DatabaseFixture
+	public DataTypesFixture()
 	{
-		public DataTypesFixture()
-		{
-			Connection.Open();
-			Connection.Execute(@"
+		Connection.Open();
+		Connection.Execute(@"
 drop table if exists datatypes_bools;
 create table datatypes_bools(
   rowid integer not null primary key auto_increment,
@@ -221,9 +221,9 @@ values
    ST_GeomCollFromText('GEOMETRYCOLLECTION(POINT(10 10), POINT(30 30), LINESTRING(15 15, 20 20))'));
 ");
 
-			if (AppConfig.SupportsJson)
-			{
-				Connection.Execute(@"
+		if (AppConfig.SupportsJson)
+		{
+			Connection.Execute(@"
 drop table if exists datatypes_json_core;
 create table datatypes_json_core (
   rowid integer not null primary key auto_increment,
@@ -243,8 +243,7 @@ values
   ('{}'),
   ('{""a"": ""b""}');
 ");
-			}
-			Connection.Close();
 		}
+		Connection.Close();
 	}
 }

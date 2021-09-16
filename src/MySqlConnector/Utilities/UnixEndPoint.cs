@@ -35,64 +35,63 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace MySqlConnector.Utilities
+namespace MySqlConnector.Utilities;
+
+internal sealed class UnixEndPoint : EndPoint
 {
-	internal sealed class UnixEndPoint : EndPoint
+	public UnixEndPoint(string filename)
 	{
-		public UnixEndPoint(string filename)
-		{
-			if (filename is null)
-				throw new ArgumentNullException (nameof(filename));
-			if (filename == "")
-				throw new ArgumentException ("Cannot be empty.", nameof(filename));
-			Filename = filename;
-		}
-
-		private UnixEndPoint() => Filename = "";
-
-		public string Filename { get; }
-
-		public override AddressFamily AddressFamily => AddressFamily.Unix;
-
-		public override EndPoint Create(SocketAddress socketAddress)
-		{
-			if (socketAddress.Size == 2) {
-				// Empty filename.
-				// Probably from RemoteEndPoint which on linux does not return the file name.
-				return new UnixEndPoint();
-			}
-			var size = socketAddress.Size - 2;
-			var bytes = new byte[size];
-			for (var i = 0; i < bytes.Length; i++) {
-				bytes[i] = socketAddress[i + 2];
-				// There may be junk after the null terminator, so ignore it all.
-				if (bytes[i] == 0) {
-					size = i;
-					break;
-				}
-			}
-
-			return new UnixEndPoint(Encoding.UTF8.GetString(bytes, 0, size));
-		}
-
-		public override SocketAddress Serialize()
-		{
-			var bytes = Encoding.UTF8.GetBytes(Filename);
-			var sa = new SocketAddress(AddressFamily, 2 + bytes.Length + 1);
-			// sa [0] -> family low byte, sa [1] -> family high byte
-			for (var i = 0; i < bytes.Length; i++)
-				sa[2 + i] = bytes[i];
-
-			//NULL suffix for non-abstract path
-			sa[2 + bytes.Length] = 0;
-
-			return sa;
-		}
-
-		public override string ToString() => Filename;
-
-		public override int GetHashCode() => Filename.GetHashCode ();
-
-		public override bool Equals(object? obj) => obj is UnixEndPoint other && Filename == other.Filename;
+		if (filename is null)
+			throw new ArgumentNullException (nameof(filename));
+		if (filename == "")
+			throw new ArgumentException ("Cannot be empty.", nameof(filename));
+		Filename = filename;
 	}
+
+	private UnixEndPoint() => Filename = "";
+
+	public string Filename { get; }
+
+	public override AddressFamily AddressFamily => AddressFamily.Unix;
+
+	public override EndPoint Create(SocketAddress socketAddress)
+	{
+		if (socketAddress.Size == 2) {
+			// Empty filename.
+			// Probably from RemoteEndPoint which on linux does not return the file name.
+			return new UnixEndPoint();
+		}
+		var size = socketAddress.Size - 2;
+		var bytes = new byte[size];
+		for (var i = 0; i < bytes.Length; i++) {
+			bytes[i] = socketAddress[i + 2];
+			// There may be junk after the null terminator, so ignore it all.
+			if (bytes[i] == 0) {
+				size = i;
+				break;
+			}
+		}
+
+		return new UnixEndPoint(Encoding.UTF8.GetString(bytes, 0, size));
+	}
+
+	public override SocketAddress Serialize()
+	{
+		var bytes = Encoding.UTF8.GetBytes(Filename);
+		var sa = new SocketAddress(AddressFamily, 2 + bytes.Length + 1);
+		// sa [0] -> family low byte, sa [1] -> family high byte
+		for (var i = 0; i < bytes.Length; i++)
+			sa[2 + i] = bytes[i];
+
+		//NULL suffix for non-abstract path
+		sa[2 + bytes.Length] = 0;
+
+		return sa;
+	}
+
+	public override string ToString() => Filename;
+
+	public override int GetHashCode() => Filename.GetHashCode ();
+
+	public override bool Equals(object? obj) => obj is UnixEndPoint other && Filename == other.Filename;
 }

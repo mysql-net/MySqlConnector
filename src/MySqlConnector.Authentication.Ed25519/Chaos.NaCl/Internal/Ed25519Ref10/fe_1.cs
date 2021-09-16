@@ -1,13 +1,12 @@
-﻿using System;
+using System;
 
-namespace Chaos.NaCl.Internal.Ed25519Ref10
+namespace Chaos.NaCl.Internal.Ed25519Ref10;
+
+internal static partial class FieldOperations
 {
-	internal static partial class FieldOperations
+	public static void fe_1(out FieldElement h)
 	{
-		public static void fe_1(out FieldElement h)
-		{
-			h = default(FieldElement);
-			h.x0 = 1;
-		}
+		h = default(FieldElement);
+		h.x0 = 1;
 	}
 }

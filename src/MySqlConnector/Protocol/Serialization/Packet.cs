@@ -1,14 +1,13 @@
 using System;
 
-namespace MySqlConnector.Protocol.Serialization
-{
-	internal readonly struct Packet
-	{
-		public Packet(ArraySegment<byte> contents)
-		{
-			Contents = contents;
-		}
+namespace MySqlConnector.Protocol.Serialization;
 
-		public ArraySegment<byte> Contents { get; }
+internal readonly struct Packet
+{
+	public Packet(ArraySegment<byte> contents)
+	{
+		Contents = contents;
 	}
+
+	public ArraySegment<byte> Contents { get; }
 }

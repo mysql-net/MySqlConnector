@@ -1,15 +1,14 @@
-﻿using System;
+using System;
 
-namespace Chaos.NaCl.Internal.Ed25519Ref10
+namespace Chaos.NaCl.Internal.Ed25519Ref10;
+
+internal static partial class GroupOperations
 {
-	internal static partial class GroupOperations
+	public static void ge_p3_0(out GroupElementP3 h)
 	{
-		public static void ge_p3_0(out GroupElementP3 h)
-		{
-			FieldOperations.fe_0(out h.X);
-			FieldOperations.fe_1(out h.Y);
-			FieldOperations.fe_1(out h.Z);
-			FieldOperations.fe_0(out  h.T);
-		}
+		FieldOperations.fe_0(out h.X);
+		FieldOperations.fe_1(out h.Y);
+		FieldOperations.fe_1(out h.Z);
+		FieldOperations.fe_0(out  h.T);
 	}
 }

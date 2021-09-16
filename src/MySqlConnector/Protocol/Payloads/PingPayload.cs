@@ -1,7 +1,6 @@
-namespace MySqlConnector.Protocol.Payloads
+namespace MySqlConnector.Protocol.Payloads;
+
+internal static class PingPayload
 {
-	internal static class PingPayload
-	{
-		public static PayloadData Instance { get; } = new(new[] { (byte) CommandKind.Ping });
-	}
+	public static PayloadData Instance { get; } = new(new[] { (byte) CommandKind.Ping });
 }

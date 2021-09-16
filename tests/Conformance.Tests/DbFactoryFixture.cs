@@ -3,9 +3,9 @@ using System.Data.Common;
 using AdoNet.Specification.Tests;
 using MySqlConnector;
 
-namespace Conformance.Tests
-{
-    public class DbFactoryFixture : IDbFactoryFixture
+namespace Conformance.Tests;
+
+public class DbFactoryFixture : IDbFactoryFixture
 	{
 		public DbFactoryFixture()
 		{
@@ -15,4 +15,3 @@ namespace Conformance.Tests
 		public string ConnectionString { get; }
 		public DbProviderFactory Factory => MySqlConnectorFactory.Instance;
 	}
-}

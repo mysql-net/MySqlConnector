@@ -7,62 +7,61 @@ using MySql.Data.MySqlClient;
 using MySqlConnector;
 #endif
 
-namespace SideBySide
+namespace SideBySide;
+
+public class DatabaseFixture : IDisposable
 {
-	public class DatabaseFixture : IDisposable
+	public DatabaseFixture()
 	{
-		public DatabaseFixture()
+		lock (s_lock)
 		{
-			lock (s_lock)
+			if (!s_isInitialized)
 			{
-				if (!s_isInitialized)
+				// increase the number of worker threads to reduce number of spurious failures from threadpool starvation
+				ThreadPool.SetMinThreads(64, 64);
+
+				var csb = AppConfig.CreateConnectionStringBuilder();
+				var database = csb.Database;
+				csb.Database = "";
+				using (var db = new MySqlConnection(csb.ConnectionString))
 				{
-					// increase the number of worker threads to reduce number of spurious failures from threadpool starvation
-					ThreadPool.SetMinThreads(64, 64);
-
-					var csb = AppConfig.CreateConnectionStringBuilder();
-					var database = csb.Database;
-					csb.Database = "";
-					using (var db = new MySqlConnection(csb.ConnectionString))
+					db.Open();
+					using (var cmd = db.CreateCommand())
 					{
-						db.Open();
-						using (var cmd = db.CreateCommand())
+						cmd.CommandText = $"create schema if not exists {database};";
+						cmd.ExecuteNonQuery();
+
+						if (!string.IsNullOrEmpty(AppConfig.SecondaryDatabase))
 						{
-							cmd.CommandText = $"create schema if not exists {database};";
+							cmd.CommandText = $"create schema if not exists {AppConfig.SecondaryDatabase};";
 							cmd.ExecuteNonQuery();
-
-							if (!string.IsNullOrEmpty(AppConfig.SecondaryDatabase))
-							{
-								cmd.CommandText = $"create schema if not exists {AppConfig.SecondaryDatabase};";
-								cmd.ExecuteNonQuery();
-							}
 						}
-						db.Close();
 					}
-
-					s_isInitialized = true;
+					db.Close();
 				}
-			}
 
-			Connection = new MySqlConnection(AppConfig.ConnectionString);
-		}
-
-		public MySqlConnection Connection { get; }
-
-		public void Dispose()
-		{
-			Dispose(true);
-		}
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-				Connection.Dispose();
+				s_isInitialized = true;
 			}
 		}
 
-		static object s_lock = new object();
-		static bool s_isInitialized;
+		Connection = new MySqlConnection(AppConfig.ConnectionString);
 	}
+
+	public MySqlConnection Connection { get; }
+
+	public void Dispose()
+	{
+		Dispose(true);
+	}
+
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			Connection.Dispose();
+		}
+	}
+
+	static object s_lock = new object();
+	static bool s_isInitialized;
 }
