@@ -1008,11 +1008,11 @@ namespace MySqlConnector.Core
 #endif
 								}
 							}
-							catch (ObjectDisposedException ex) when (cancellationToken.IsCancellationRequested)
+							catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
 							{
 								SafeDispose(ref tcpClient);
 								Log.Info("Session{0} connect timeout expired connecting to IpAddress {1} for HostName '{2}'", m_logArguments[0], ipAddress, hostName);
-								throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
+								throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 							}
 						}
 					}
@@ -1069,10 +1069,10 @@ namespace MySqlConnector.Core
 							socket.Connect(unixEp);
 						}
 					}
-					catch (ObjectDisposedException ex) when (cancellationToken.IsCancellationRequested)
+					catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
 					{
 						Log.Info("Session{0} connect timeout expired connecting to UNIX Socket '{1}'", m_logArguments);
-						throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
+						throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 					}
 				}
 			}
@@ -1126,7 +1126,7 @@ namespace MySqlConnector.Core
 					{
 						m_logArguments[1] = cs.PipeName;
 						Log.Info("Session{0} connect timeout expired connecting to named pipe '{1}'", m_logArguments);
-						throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
+						throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 					}
 				}
 			}

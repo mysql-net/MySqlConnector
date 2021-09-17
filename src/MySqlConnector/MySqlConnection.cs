@@ -422,10 +422,10 @@ namespace MySqlConnector
 				cancellationToken.ThrowIfCancellationRequested();
 				throw;
 			}
-			catch (SocketException ex)
+			catch (SocketException)
 			{
 				SetState(ConnectionState.Closed);
-				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Unable to connect to any of the specified MySQL hosts.", ex);
+				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Unable to connect to any of the specified MySQL hosts.");
 			}
 
 #if !NETSTANDARD1_3
@@ -885,10 +885,10 @@ namespace MySqlConnector
 					return session;
 				}
 			}
-			catch (OperationCanceledException ex) when (timeoutSource?.IsCancellationRequested ?? false)
+			catch (OperationCanceledException) when (timeoutSource?.IsCancellationRequested ?? false)
 			{
 				var messageSuffix = (pool?.IsEmpty ?? false) ? " All pooled connections are in use." : "";
-				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired." + messageSuffix, ex);
+				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired." + messageSuffix);
 			}
 			catch (MySqlException ex) when ((timeoutSource?.IsCancellationRequested ?? false) || (ex.ErrorCode == MySqlErrorCode.CommandTimeoutExpired))
 			{
