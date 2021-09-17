@@ -38,7 +38,7 @@ namespace MySqlConnector.Protocol.Serialization
 				}
 				catch (Exception ex)
 				{
-					if (RemainingTimeout != Constants.InfiniteTimeout && ex is IOException ioException && ioException.InnerException is SocketException socketException && socketException.SocketErrorCode == SocketError.TimedOut)
+					if (RemainingTimeout != Constants.InfiniteTimeout && ex is IOException { InnerException: SocketException { SocketErrorCode: SocketError.TimedOut } })
 						return ValueTaskExtensions.FromException<int>(MySqlException.CreateForTimeout(ex));
 					return ValueTaskExtensions.FromException<int>(ex);
 				}

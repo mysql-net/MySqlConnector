@@ -620,7 +620,7 @@ namespace MySqlConnector.Utilities
 				try
 				{
 					var property = typeof(ServicePointManager).GetProperty("DisableSystemDefaultTlsVersions", BindingFlags.NonPublic | BindingFlags.Static);
-					disableSystemDefaultTlsVersions = property is null || (property.GetValue(null) is bool b && b);
+					disableSystemDefaultTlsVersions = property is null || property.GetValue(null) is true;
 				}
 				catch (Exception)
 				{

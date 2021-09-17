@@ -170,7 +170,7 @@ namespace MySqlConnector.Core
 			if (value is string stringValue && Guid.TryParse(stringValue, out guid))
 				return guid;
 
-			if (value is byte[] bytes && bytes.Length == 16)
+			if (value is byte[] { Length: 16 } bytes)
 				return CreateGuidFromBytes(Connection.GuidFormat, bytes);
 
 			throw new InvalidCastException("The value could not be converted to a GUID: {0}".FormatInvariant(value));
@@ -421,7 +421,7 @@ namespace MySqlConnector.Core
 			// Use explicit range checks to guard against that.
 			return value switch
 			{
-				double doubleValue => (doubleValue >= float.MinValue && doubleValue <= float.MaxValue ? (float) doubleValue : throw new InvalidCastException("The value cannot be safely cast to Single.")),
+				double doubleValue => (doubleValue is >= float.MinValue and <= float.MaxValue ? (float) doubleValue : throw new InvalidCastException("The value cannot be safely cast to Single.")),
 				decimal decimalValue => (float) decimalValue,
 				_ => (float) value
 			};

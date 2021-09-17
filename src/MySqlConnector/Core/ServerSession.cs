@@ -879,7 +879,7 @@ namespace MySqlConnector.Core
 			catch (Exception ex)
 			{
 				SetFailed(ex);
-				if (ex is MySqlException msex && msex.ErrorCode == MySqlErrorCode.CommandTimeoutExpired)
+				if (ex is MySqlException { ErrorCode: MySqlErrorCode.CommandTimeoutExpired })
 					HandleTimeout();
 				throw;
 			}
@@ -1384,7 +1384,7 @@ namespace MySqlConnector.Core
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL Authentication Error", ex);
 				if (ex is IOException && clientCertificates is not null)
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "MySQL Server rejected client certificate", ex);
-				if (ex is Win32Exception win32 && win32.NativeErrorCode == -2146893007) // SEC_E_ALGORITHM_MISMATCH (0x80090331)
+				if (ex is Win32Exception { NativeErrorCode: -2146893007 }) // SEC_E_ALGORITHM_MISMATCH (0x80090331)
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "The server doesn't support the client's specified TLS versions.", ex);
 				throw;
 			}
