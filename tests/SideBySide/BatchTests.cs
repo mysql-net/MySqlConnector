@@ -1,8 +1,4 @@
 #if !BASELINE
-using System;
-using System.Data;
-using MySqlConnector;
-using Xunit;
 
 namespace SideBySide;
 

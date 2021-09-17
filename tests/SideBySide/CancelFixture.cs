@@ -1,5 +1,3 @@
-using Dapper;
-
 namespace SideBySide;
 
 public class CancelFixture : DatabaseFixture

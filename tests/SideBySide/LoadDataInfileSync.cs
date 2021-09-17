@@ -1,13 +1,3 @@
-using System.Data;
-using System.Runtime.InteropServices.ComTypes;
-using Dapper;
-#if BASELINE
-using MySql.Data.MySqlClient;
-#else
-using MySqlConnector;
-#endif
-using Xunit;
-
 namespace SideBySide;
 
 [Collection("BulkLoaderCollection")]

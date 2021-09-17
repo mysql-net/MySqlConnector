@@ -1,13 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
-#if BASELINE
-using MySql.Data.MySqlClient;
-#else
-using MySqlConnector;
-#endif
 
 namespace SideBySide;
 

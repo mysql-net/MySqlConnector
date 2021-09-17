@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace SideBySide;
 
 public class SkippableFactAttribute : FactAttribute

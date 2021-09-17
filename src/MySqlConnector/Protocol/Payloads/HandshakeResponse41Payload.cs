@@ -1,4 +1,3 @@
-using System;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 

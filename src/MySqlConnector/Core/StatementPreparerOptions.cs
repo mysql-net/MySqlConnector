@@ -1,5 +1,3 @@
-using System;
-
 namespace MySqlConnector.Core;
 
 [Flags]

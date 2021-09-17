@@ -1,18 +1,11 @@
-using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Dapper;
 #if BASELINE
-using MySql.Data.MySqlClient;
 using MySql.Data.Types;
-#else
-using MySqlConnector;
 #endif
-using Xunit;
 
 namespace SideBySide;
 
@@ -85,7 +78,7 @@ create table insert_ai(rowid bigint unsigned not null primary key auto_increment
 	{
 		await m_database.Connection.ExecuteAsync(@"drop table if exists insert_ai;
 create table insert_ai(rowid integer not null primary key auto_increment, text varchar(100) not null);
-insert into insert_ai(text) values('test'); 
+insert into insert_ai(text) values('test');
 ");
 		try
 		{
@@ -107,7 +100,7 @@ INSERT INTO insert_ai (text) VALUES (@text);", m_database.Connection);
 	{
 		await m_database.Connection.ExecuteAsync(@"drop table if exists insert_ai;
 create table insert_ai(rowid integer not null primary key auto_increment, text varchar(100) not null);
-insert into insert_ai(text) values('test'); 
+insert into insert_ai(text) values('test');
 ");
 		try
 		{

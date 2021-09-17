@@ -3,7 +3,6 @@
 // https://github.com/SixLabors/ImageSharp/blob/master/src/ImageSharp/Formats/Png/Zlib/Adler32.cs
 
 #if !NET6_0_OR_GREATER
-using System;
 #if NETCOREAPP3_0_OR_GREATER
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;

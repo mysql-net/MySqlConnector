@@ -1,5 +1,3 @@
-using System;
-
 namespace MySqlConnector.Protocol;
 
 // From http://dev.mysql.com/doc/refman/5.7/en/c-api-data-structures.html.

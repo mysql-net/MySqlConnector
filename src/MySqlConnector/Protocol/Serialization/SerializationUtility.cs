@@ -1,5 +1,3 @@
-using System;
-
 namespace MySqlConnector.Protocol.Serialization;
 
 internal static class SerializationUtility

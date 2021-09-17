@@ -1,17 +1,8 @@
-using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
-using Dapper;
-#if BASELINE
-using MySql.Data.MySqlClient;
-#else
-using MySqlConnector;
-#endif
-using Xunit;
 
 namespace SideBySide;
 
@@ -752,7 +743,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		{
 			connection.Open();
 			connection.Execute(@"DROP TABLE IF EXISTS orders;
-				CREATE TABLE `orders`(  
+				CREATE TABLE `orders`(
 					`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 					`description` VARCHAR(50),
 					PRIMARY KEY (`id`)

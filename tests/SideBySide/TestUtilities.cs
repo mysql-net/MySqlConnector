@@ -1,11 +1,4 @@
-using System;
 using System.Diagnostics;
-#if BASELINE
-using MySql.Data.MySqlClient;
-#else
-using MySqlConnector;
-#endif
-using Xunit;
 
 namespace SideBySide;
 

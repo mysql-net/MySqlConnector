@@ -1,8 +1,6 @@
-using System;
 using System.Buffers;
 using System.Buffers.Text;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -611,7 +609,7 @@ public sealed class MySqlBulkCopy
 				{
 					if (output.Length <= 2)
 						return false;
-	
+
 					output[0] = (byte) '\\';
 					output[1] = (byte) value[inputIndex];
 					output = output.Slice(2);

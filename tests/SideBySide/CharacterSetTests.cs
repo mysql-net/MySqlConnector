@@ -1,13 +1,8 @@
 using System.Linq;
-using Dapper;
-#if BASELINE
-using MySql.Data.MySqlClient;
-#else
-using MySqlConnector;
+#if !BASELINE
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
 #endif
-using Xunit;
 
 namespace SideBySide;
 

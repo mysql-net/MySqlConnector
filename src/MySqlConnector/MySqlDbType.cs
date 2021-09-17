@@ -1,5 +1,3 @@
-using System;
-
 namespace MySqlConnector;
 
 public enum MySqlDbType

@@ -1,15 +1,6 @@
-using System;
-using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
-using Dapper;
-#if BASELINE
-using MySql.Data.MySqlClient;
-#else
-using MySqlConnector;
-#endif
-using Xunit;
 
 namespace SideBySide;
 

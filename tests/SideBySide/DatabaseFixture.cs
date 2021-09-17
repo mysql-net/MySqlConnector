@@ -1,11 +1,4 @@
-using System;
-using System.Reflection;
 using System.Threading;
-#if BASELINE
-using MySql.Data.MySqlClient;
-#else
-using MySqlConnector;
-#endif
 
 namespace SideBySide;
 

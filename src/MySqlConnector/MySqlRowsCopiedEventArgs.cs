@@ -1,5 +1,3 @@
-using System;
-
 namespace MySqlConnector;
 
 public sealed class MySqlRowsCopiedEventArgs : EventArgs

@@ -1,16 +1,10 @@
-using System;
-using System.Data;
 using System.Diagnostics;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
-#if BASELINE
-using MySql.Data.MySqlClient;
-#else
-using MySqlConnector;
+#if !BASELINE
 using MySqlConnector.Authentication.Ed25519;
 #endif
-using Xunit;
 
 namespace SideBySide;
 

@@ -1,19 +1,12 @@
-using System;
-using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Dapper;
 #if BASELINE
-using MySql.Data.MySqlClient;
 using MySql.Data.Types;
-#else
-using MySqlConnector;
 #endif
-using Xunit;
 
 // mysql-connector-net will throw SqlNullValueException, which is an exception type related to SQL Server:
 // "The exception that is thrown when the Value property of a System.Data.SqlTypes structure is set to null."

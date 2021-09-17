@@ -1,6 +1,3 @@
-using System;
-using System.Data;
-using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,7 +51,7 @@ namespace MySqlConnector;
 /// </code>
 /// </summary>
 /// <remarks>The proposed ADO.NET API that <see cref="MySqlBatch"/> is based on is not finalized. This API is experimental and may change in the future.</remarks>
-public sealed class MySqlBatch : 
+public sealed class MySqlBatch :
 #if NET6_0_OR_GREATER
 	DbBatch,
 #endif
