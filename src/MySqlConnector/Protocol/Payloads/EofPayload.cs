@@ -30,7 +30,7 @@ internal sealed class EofPayload
 	/// <param name="payload">The payload to examine.</param>
 	/// <returns><c>true</c> if this is an EOF packet; otherwise, <c>false</c>.</returns>
 	public static bool IsEof(PayloadData payload) =>
-		payload.Span.Length > 0 && payload.Span.Length < 9 && payload.HeaderByte == Signature;
+		payload.Span.Length is > 0 and < 9 && payload.HeaderByte == Signature;
 
 	public const byte Signature = 0xFE;
 

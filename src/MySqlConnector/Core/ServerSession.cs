@@ -882,7 +882,7 @@ internal sealed class ServerSession
 		catch (Exception ex)
 		{
 			SetFailed(ex);
-			if (ex is MySqlException msex && msex.ErrorCode == MySqlErrorCode.CommandTimeoutExpired)
+			if (ex is MySqlException { ErrorCode: MySqlErrorCode.CommandTimeoutExpired })
 				HandleTimeout();
 			throw;
 		}
@@ -1009,11 +1009,11 @@ internal sealed class ServerSession
 								}
 							}
 						}
-						catch (ObjectDisposedException ex) when (cancellationToken.IsCancellationRequested)
+						catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
 						{
 							SafeDispose(ref tcpClient);
 							Log.Info("Session{0} connect timeout expired connecting to IpAddress {1} for HostName '{2}'", m_logArguments[0], ipAddress, hostName);
-							throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
+							throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 						}
 					}
 				}
@@ -1066,10 +1066,10 @@ internal sealed class ServerSession
 						socket.Connect(unixEp);
 					}
 				}
-				catch (ObjectDisposedException ex) when (cancellationToken.IsCancellationRequested)
+				catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
 				{
 					Log.Info("Session{0} connect timeout expired connecting to UNIX Socket '{1}'", m_logArguments);
-					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
+					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 				}
 			}
 		}
@@ -1120,7 +1120,7 @@ internal sealed class ServerSession
 				{
 					m_logArguments[1] = cs.PipeName;
 					Log.Info("Session{0} connect timeout expired connecting to named pipe '{1}'", m_logArguments);
-					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
+					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 				}
 			}
 		}
@@ -1382,7 +1382,7 @@ internal sealed class ServerSession
 				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL Authentication Error", ex);
 			if (ex is IOException && clientCertificates is not null)
 				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "MySQL Server rejected client certificate", ex);
-			if (ex is Win32Exception win32 && win32.NativeErrorCode == -2146893007) // SEC_E_ALGORITHM_MISMATCH (0x80090331)
+			if (ex is Win32Exception { NativeErrorCode: -2146893007 }) // SEC_E_ALGORITHM_MISMATCH (0x80090331)
 				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "The server doesn't support the client's specified TLS versions.", ex);
 			throw;
 		}
