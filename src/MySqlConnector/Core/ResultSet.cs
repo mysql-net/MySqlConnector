@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using MySqlConnector.Protocol;
@@ -41,7 +42,6 @@ internal sealed class ResultSet
 			while (true)
 			{
 				var payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-
 				var firstByte = payload.HeaderByte;
 				if (firstByte == OkPayload.Signature)
 				{
@@ -112,7 +112,7 @@ internal sealed class ResultSet
 				}
 				else
 				{
-					int ReadColumnCount(ReadOnlySpan<byte> span)
+					static int ReadColumnCount(ReadOnlySpan<byte> span)
 					{
 						var reader = new ByteArrayReader(span);
 						var columnCount_ = (int) reader.ReadLengthEncodedInteger();
@@ -154,6 +154,8 @@ internal sealed class ResultSet
 						ContainsCommandParameters = true;
 					WarningCount = 0;
 					State = ResultSetState.ReadResultSetHeader;
+					if (DataReader.Activity is { IsAllDataRequested: true })
+						DataReader.Activity.AddEvent(new ActivityEvent("read-result-set-header"));
 					break;
 				}
 			}
