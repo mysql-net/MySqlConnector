@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-06-07
+lastmod: 2021-09-21
 date: 2016-10-16
 menu:
   main:
@@ -160,15 +160,11 @@ namespace MySqlConnector.Examples
     {
         public static async Task SleepOne()
         {
-            using (var db = new AppDb())
-            {
-                await db.Connection.OpenAsync();
-                using (var cmd = db.Connection.CreateCommand())
-                {
-                    cmd.CommandText = @"SELECT SLEEP(1)";
-                    await cmd.ExecuteNonQueryAsync();
-                }
-            }
+            using var db = new AppDb();
+            await db.Connection.OpenAsync();
+            using var cmd = db.Connection.CreateCommand();
+            cmd.CommandText = @"SELECT SLEEP(1)";
+            await cmd.ExecuteNonQueryAsync();
         }
     }
 }

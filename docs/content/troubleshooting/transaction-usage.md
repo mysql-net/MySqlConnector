@@ -1,5 +1,5 @@
 ---
-lastmod: 2019-07-30
+lastmod: 2021-09-21
 date: 2018-09-29
 title: Transaction Usage
 customtitle: "Fix: The transaction associated with this command is not the connection’s active transaction"
@@ -30,42 +30,38 @@ To easily migrate code from Connector/NET, use the `IgnoreCommandTransaction=tru
 ### ADO.NET example
 
 ```csharp
-using (var connection = new MySqlConnection(...))
-{
-    connection.Open();
-    using (var transaction = connection.BeginTransaction())
-    using (var command = connection.CreateCommand())
-    {
-        command.CommandText = "SELECT ...";
+using var connection = new MySqlConnection(...);
+connection.Open();
 
-        // *** ADD THIS LINE ***
-        command.Transaction = transaction;
+using var transaction = connection.BeginTransaction();
+using var command = connection.CreateCommand();
+command.CommandText = "SELECT ...";
 
-        // otherwise, this will throw System.InvalidOperationException: The transaction associated with this command is not the connection's active transaction.
-        command.ExecuteScalar();
+// *** ADD THIS LINE ***
+command.Transaction = transaction;
 
-        transaction.Commit();
-    }
-}
+// otherwise, this will throw System.InvalidOperationException: The transaction associated with this command is not the connection's active transaction.
+command.ExecuteScalar();
+
+// ... remaining code
+transaction.Commit();
 ```
 
 ### Dapper Example
 
 ```csharp
-using (var connection = new MySqlConnection(...))
-{
-    connection.Open();
-    using (var transaction = connection.BeginTransaction())
-    {
-        // this will throw System.InvalidOperationException: The transaction associated with this command is not the connection's active transaction.
-        connection.Query("SELECT ...");
+using var connection = new MySqlConnection(...);
+connection.Open();
+using var transaction = connection.BeginTransaction();
 
-        // use this instead:
-        connection.Query("SELECT ...", transaction: transaction);
+// this will throw System.InvalidOperationException: The transaction associated with this command is not the connection's active transaction.
+connection.Query("SELECT ...");
 
-        transaction.Commit();
-    }
-}
+// use this instead:
+connection.Query("SELECT ...", transaction: transaction);
+
+// ... remaining code
+transaction.Commit();
 ```
 
 ## Further Reading
