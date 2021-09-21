@@ -28,7 +28,7 @@ internal sealed class ConnectionPool
 		// on the lock in RecoverLeakedSessions in high-concurrency situations
 		if (IsEmpty && unchecked(((uint) Environment.TickCount) - m_lastRecoveryTime) >= 1000u)
 		{
-			Log.Debug("Pool{0} is empty; trying to recover any leaked sessions", m_logArguments);
+			Log.Debug("Pool{0} is empty; scanning for any leaked sessions", m_logArguments);
 			await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
 		}
 
