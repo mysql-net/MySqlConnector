@@ -28,7 +28,7 @@ namespace MySqlConnector.Core
 			// on the lock in RecoverLeakedSessions in high-concurrency situations
 			if (IsEmpty && unchecked(((uint) Environment.TickCount) - m_lastRecoveryTime) >= 1000u)
 			{
-				Log.Info("Pool{0} is empty; recovering leaked sessions", m_logArguments);
+				Log.Info("Pool{0} is empty; scanning for any leaked sessions", m_logArguments);
 				await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
 			}
 
