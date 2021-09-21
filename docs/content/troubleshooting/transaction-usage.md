@@ -43,6 +43,8 @@ using (var connection = new MySqlConnection(...))
 
         // otherwise, this will throw System.InvalidOperationException: The transaction associated with this command is not the connection's active transaction.
         command.ExecuteScalar();
+
+        transaction.Commit();
     }
 }
 ```
@@ -60,6 +62,8 @@ using (var connection = new MySqlConnection(...))
 
         // use this instead:
         connection.Query("SELECT ...", transaction: transaction);
+
+        transaction.Commit();
     }
 }
 ```
