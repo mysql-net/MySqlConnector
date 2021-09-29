@@ -18,7 +18,11 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591;NU5105</NoWarn>
-    <MinVerDefaultPreReleasePhase>beta</MinVerDefaultPreReleasePhase>
+ <!--   <MinVerDefaultPreReleasePhase>zwx</MinVerDefaultPreReleasePhase> 
+	<MinVerMinimumMajorMinor>1.4</MinVerMinimumMajorMinor> -->
+	<PackageVersion>1.4.3</PackageVersion>
+	<MinVerVersion>1.4.2</MinVerVersion>
+	 <MinVerSkip Condition="'$(Configuration)' == 'Release'">true</MinVerSkip>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' OR '$(APPVEYOR)' == 'True' OR '$(TF_BUILD)' == 'True' ">
