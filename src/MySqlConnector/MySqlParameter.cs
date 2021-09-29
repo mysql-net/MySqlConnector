@@ -9,7 +9,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector;
 
-public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
+public sealed partial class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 {
 	public MySqlParameter()
 		: this(default(string?), default(object?))
@@ -331,11 +331,13 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		else if (Value is DateTime dateTimeValue)
 		{
 			if ((options & StatementPreparerOptions.DateTimeUtc) != 0 && dateTimeValue.Kind == DateTimeKind.Local)
-				throw new MySqlException("DateTime.Kind must not be Local when DateTimeKind setting is Utc (parameter name: {0})".FormatInvariant(ParameterName));
+				writer.Write("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(dateTimeValue.ToUniversalTime()));
+			// throw new MySqlException("DateTime.Kind must not be Local when DateTimeKind setting is Utc (parameter name: {0})".FormatInvariant(ParameterName));
 			else if ((options & StatementPreparerOptions.DateTimeLocal) != 0 && dateTimeValue.Kind == DateTimeKind.Utc)
-				throw new MySqlException("DateTime.Kind must not be Utc when DateTimeKind setting is Local (parameter name: {0})".FormatInvariant(ParameterName));
-
-			writer.Write("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(dateTimeValue));
+				//throw new MySqlException("DateTime.Kind must not be Utc when DateTimeKind setting is Local (parameter name: {0})".FormatInvariant(ParameterName));
+				writer.Write("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(dateTimeValue.ToLocalTime()));
+			else
+				writer.Write("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(dateTimeValue));
 		}
 		else if (Value is DateTimeOffset dateTimeOffsetValue)
 		{
