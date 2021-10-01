@@ -187,12 +187,12 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
-	/// The path to the client�s SSL certificate file in PEM format. <see cref="SslKey"/> must also be specified, and <see cref="CertificateFile"/> should not be.
+	/// The path to the client’s SSL certificate file in PEM format. <see cref="SslKey"/> must also be specified, and <see cref="CertificateFile"/> should not be.
 	/// </summary>
 	[AllowNull]
 	[Category("TLS")]
 	[DefaultValue("")]
-	[Description("The path to the client�s SSL certificate file in PEM format.")]
+	[Description("The path to the client’s SSL certificate file in PEM format.")]
 	[DisplayName("SSL Cert")]
 	public string SslCert
 	{
@@ -201,12 +201,12 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
-	/// The path to the client�s SSL private key in PEM format. <see cref="SslCert"/> must also be specified, and <see cref="CertificateFile"/> should not be.
+	/// The path to the client’s SSL private key in PEM format. <see cref="SslCert"/> must also be specified, and <see cref="CertificateFile"/> should not be.
 	/// </summary>
 	[AllowNull]
 	[Category("TLS")]
 	[DefaultValue("")]
-	[Description("The path to the client�s SSL private key in PEM format.")]
+	[Description("The path to the client’s SSL private key in PEM format.")]
 	[DisplayName("SSL Key")]
 	public string SslKey
 	{
@@ -229,7 +229,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
-	/// The path to a CA certificate file in a PEM Encoded (.pem) format. This should be used with a value for the <see cref="SslMode"/> property of <see cref="MySqlSslMode.VerifyCA"/> or <see cref="MySqlSslMode.VerifyFull"/> to enable verification of a CA certificate that is not trusted by the operating system�s certificate store.
+	/// The path to a CA certificate file in a PEM Encoded (.pem) format. This should be used with a value for the <see cref="SslMode"/> property of <see cref="MySqlSslMode.VerifyCA"/> or <see cref="MySqlSslMode.VerifyFull"/> to enable verification of a CA certificate that is not trusted by the operating system’s certificate store.
 	/// </summary>
 	[AllowNull]
 	[Category("TLS")]
@@ -707,12 +707,12 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
-	/// The server�s Service Principal Name (for <c>auth_gssapi_client</c> authentication).
+	/// The server’s Service Principal Name (for <c>auth_gssapi_client</c> authentication).
 	/// </summary>
 	[AllowNull]
 	[Category("Connection")]
 	[DefaultValue("")]
-	[Description("The server�s Service Principal Name (for auth_gssapi_client authentication).")]
+	[Description("The server’s Service Principal Name (for auth_gssapi_client authentication).")]
 	[DisplayName("Server SPN")]
 	public string ServerSPN
 	{
