@@ -339,12 +339,12 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
-	/// The delay (in seconds) before idle connections are pinged (to determine liveness) when being retrieved from the pool.
+	/// This option is no longer supported.
 	/// </summary>
-	[Category("Pooling")]
+	[Category("Obsolete")]
 	[DefaultValue(0u)]
-	[Description("The delay (in seconds) before idle connections are pinged (to determine liveness) when being retrieved from the pool.")]
 	[DisplayName("Connection Idle Ping Time")]
+	[Obsolete("This option is no longer supported in MySqlConnector >= 1.4.0.")]
 	public uint ConnectionIdlePingTime
 	{
 		get => MySqlConnectionStringOption.ConnectionIdlePingTime.GetValue(this);
@@ -368,8 +368,8 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	/// This option is no longer supported.
 	/// </summary>
 	[Category("Obsolete")]
-	[DisplayName("Defer Connection Reset")]
 	[DefaultValue(true)]
+	[DisplayName("Defer Connection Reset")]
 	[Obsolete("This option is no longer supported in MySqlConnector >= 1.4.0.")]
 	public bool DeferConnectionReset
 	{

@@ -67,17 +67,9 @@ internal sealed class ConnectionPool
 				else
 				{
 					if (ConnectionSettings.ConnectionReset || session.DatabaseOverride is not null)
-					{
 						reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, null, false, ioBehavior, cancellationToken).ConfigureAwait(false);
-					}
-					else if ((unchecked((uint) Environment.TickCount) - session.LastReturnedTicks) >= ConnectionSettings.ConnectionIdlePingTime)
-					{
-						reuseSession = await session.TryPingAsync(logInfo: false, ioBehavior, cancellationToken).ConfigureAwait(false);
-					}
 					else
-					{
 						reuseSession = true;
-					}
 				}
 
 				if (!reuseSession)

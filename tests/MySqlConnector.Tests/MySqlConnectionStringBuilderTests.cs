@@ -39,6 +39,7 @@ public class MySqlConnectionStringBuilderTests
 #else
 		Assert.True(csb.ConnectionReset);
 #pragma warning disable 618
+		Assert.Equal(0u, csb.ConnectionIdlePingTime);
 		Assert.True(csb.DeferConnectionReset);
 #pragma warning restore 618
 #endif
@@ -51,7 +52,6 @@ public class MySqlConnectionStringBuilderTests
 		Assert.Equal(30u, csb.DefaultCommandTimeout);
 #if !BASELINE
 		Assert.Equal("", csb.ApplicationName);
-		Assert.Equal(0u, csb.ConnectionIdlePingTime);
 		Assert.Equal(180u, csb.ConnectionIdleTimeout);
 		Assert.False(csb.ForceSynchronous);
 		Assert.Equal(MySqlGuidFormat.Default, csb.GuidFormat);
@@ -127,7 +127,6 @@ public class MySqlConnectionStringBuilderTests
 #if !BASELINE
 				"application name=My Test Application;" +
 				"cancellation timeout = -1;" +
-				"connection idle ping time=60;" +
 				"connectionidletimeout=30;" +
 				"defer connection reset=true;" +
 				"forcesynchronous=true;" +
@@ -188,7 +187,6 @@ public class MySqlConnectionStringBuilderTests
 		Assert.Equal(123u, csb.DefaultCommandTimeout);
 #if !BASELINE
 		Assert.Equal("My Test Application", csb.ApplicationName);
-		Assert.Equal(60u, csb.ConnectionIdlePingTime);
 		Assert.Equal(30u, csb.ConnectionIdleTimeout);
 #pragma warning disable 618
 		Assert.True(csb.DeferConnectionReset);
@@ -499,7 +497,6 @@ public class MySqlConnectionStringBuilderTests
 	// not supported
 	[InlineData("Application Name", "MyApp")]
 	[InlineData("Cancellation Timeout", 5)]
-	[InlineData("Connection Idle Ping Time", 100u)]
 	[InlineData("Connection Idle Timeout", 10u)]
 	[InlineData("DateTime Kind", MySqlDateTimeKind.Utc)]
 	[InlineData("Force Synchronous", true)]

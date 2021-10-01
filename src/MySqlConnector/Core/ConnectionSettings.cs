@@ -112,7 +112,6 @@ internal sealed class ConnectionSettings
 		Pooling = csb.Pooling;
 		ConnectionLifeTime = Math.Min(csb.ConnectionLifeTime, uint.MaxValue / 1000) * 1000;
 		ConnectionReset = csb.ConnectionReset;
-		ConnectionIdlePingTime = Math.Min(csb.ConnectionIdlePingTime, uint.MaxValue / 1000) * 1000;
 		ConnectionIdleTimeout = (int) csb.ConnectionIdleTimeout;
 #pragma warning disable 618
 		if (!csb.DeferConnectionReset)
@@ -212,7 +211,6 @@ internal sealed class ConnectionSettings
 	public bool Pooling { get; }
 	public uint ConnectionLifeTime { get; }
 	public bool ConnectionReset { get; }
-	public uint ConnectionIdlePingTime { get; }
 	public int ConnectionIdleTimeout { get; }
 	public int MinimumPoolSize { get; }
 	public int MaximumPoolSize { get; }
@@ -298,7 +296,6 @@ internal sealed class ConnectionSettings
 		Pooling = other.Pooling;
 		ConnectionLifeTime = other.ConnectionLifeTime;
 		ConnectionReset = other.ConnectionReset;
-		ConnectionIdlePingTime = other.ConnectionIdlePingTime;
 		ConnectionIdleTimeout = other.ConnectionIdleTimeout;
 		MinimumPoolSize = other.MinimumPoolSize;
 		MaximumPoolSize = other.MaximumPoolSize;

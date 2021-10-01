@@ -169,20 +169,7 @@ Connection pooling is enabled by default. These options are used to configure it
   <tr id="ConnectionReset">
     <td>Connection Reset, ConnectionReset</td>
     <td><code>true</code></td>
-    <td>If <code>true</code>, all connections retrieved from the pool will have been reset. The default value of <code>true</code> ensures that the connection is in the same state whether it’s newly created or retrieved from the pool. A value of <code>false</code> avoids making an additional server round trip to reset the connection, but the connection state is not reset, meaning that session variables and other session state changes from any previous use of the connection are carried over.</td>
-  </tr>
-  <tr id="ConnectionIdlePingTime">
-    <td>Connection Idle Ping Time, ConnectionIdlePingTime <em>(Experimental)</em></td>
-    <td>0</td>
-    <td>When a connection is retrieved from the pool, and <code>ConnectionReset</code> is <code>false</code>, the server
-      will be pinged if the connection has been idle in the pool for longer than <code>ConnectionIdlePingTime</code> seconds.
-      If pinging the server fails, a new connection will be opened automatically by the connection pool. This ensures that the
-      <code>MySqlConnection</code> is in a valid, open state after the call to <code>Open</code>/<code>OpenAsync</code>,
-      at the cost of an extra server roundtrip. For high-performance scenarios, you may wish to set <code>ConnectionIdlePingTime</code>
-      to a non-zero value to make the connection pool assume that recently-returned connections are still open. If the
-      connection is broken, it will throw from the first call to <code>ExecuteNonQuery</code>, <code>ExecuteReader</code>,
-      etc.; your code should handle that failure and retry the connection. This option has no effect if <code>ConnectionReset</code>
-      is <code>true</code>, as that will cause a connection reset packet to be sent to the server, making ping redundant.
+    <td>If <code>true</code>, all connections retrieved from the pool will have been reset. The default value of <code>true</code> ensures that the connection is in the same state whether it’s newly created or retrieved from the pool. A value of <code>false</code> avoids making an additional server round trip to reset the connection, but the connection state is not reset, meaning that session variables and other session state changes from any previous use of the connection are carried over. Additionally (if <code>Connection Reset</code> is <code>false</false>), when <code>MySqlConnection.Open</code> returns a connection from the pool (instead of opening a new one), the connection may be invalid (and throw an exception on first use) if the server has closed the connection.</td>
   </tr>
   <tr id="ConnectionIdleTimeout">
     <td>Connection Idle Timeout, ConnectionIdleTimeout</td>
