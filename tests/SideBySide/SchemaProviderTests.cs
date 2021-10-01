@@ -1,5 +1,3 @@
-using System.Data.Common;
-
 namespace SideBySide;
 
 public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable

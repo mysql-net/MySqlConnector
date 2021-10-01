@@ -38,6 +38,9 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.2" />
     <Using Include="System" />
     <Using Include="System.Data" />
+    <Using Include="System.Data.Common" />
+    <Using Include="System.Diagnostics" />
+    <Using Include="System.Text" />
     <Using Include="Dapper" />
     <Using Include="Xunit" />
   </ItemGroup>

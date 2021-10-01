@@ -1,4 +1,3 @@
-using System.Text;
 #if BASELINE
 using MySql.Data.Types;
 #endif

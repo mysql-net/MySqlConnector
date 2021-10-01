@@ -1,5 +1,3 @@
-using System.Data.Common;
-using System.Text;
 using Xunit.Sdk;
 
 namespace SideBySide;

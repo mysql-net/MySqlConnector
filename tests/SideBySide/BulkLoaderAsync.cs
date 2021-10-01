@@ -1,4 +1,3 @@
-using System.Data.Common;
 using Xunit.Sdk;
 
 namespace SideBySide;

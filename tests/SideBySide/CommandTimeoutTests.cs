@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace SideBySide;
 
 public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable

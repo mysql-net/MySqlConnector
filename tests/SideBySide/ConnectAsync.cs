@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Security.Authentication;
 #if !BASELINE
 using MySqlConnector.Authentication.Ed25519;

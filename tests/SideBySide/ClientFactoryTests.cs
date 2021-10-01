@@ -1,4 +1,3 @@
-using System.Data.Common;
 #if BASELINE
 using MySqlConnectorFactory = MySql.Data.MySqlClient.MySqlClientFactory;
 #endif
