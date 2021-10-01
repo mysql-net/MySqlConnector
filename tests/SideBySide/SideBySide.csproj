@@ -35,15 +35,21 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="1.1.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.1.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.2" />
+    <Using Include="System" />
+    <Using Include="System.Data" />
+    <Using Include="Dapper" />
+    <Using Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'Baseline' ">
     <ProjectReference Include="..\..\src\MySqlConnector\MySqlConnector.csproj" />
     <ProjectReference Include="..\..\src\MySqlConnector.Authentication.Ed25519\MySqlConnector.Authentication.Ed25519.csproj" />
+    <Using Include="MySqlConnector" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'Baseline' ">
     <PackageReference Include="MySql.Data" Version="8.0.26" />
+    <Using Include="MySql.Data.MySqlClient" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' OR '$(TargetFramework)' == 'net461' OR '$(TargetFramework)' == 'net472' ">
