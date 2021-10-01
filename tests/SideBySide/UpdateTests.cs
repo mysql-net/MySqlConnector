@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace SideBySide;
 
 public class UpdateTests : IClassFixture<DatabaseFixture>, IDisposable
