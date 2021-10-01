@@ -1,5 +1,3 @@
-using System;
-
 namespace MySqlConnector.Logging;
 
 internal static class LoggerExtensions

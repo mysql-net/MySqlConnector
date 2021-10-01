@@ -1,4 +1,3 @@
-using System;
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads;

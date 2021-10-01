@@ -1,6 +1,4 @@
-using System;
 using System.Buffers.Text;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using MySqlConnector.Protocol;

@@ -1,16 +1,13 @@
-using System;
-using System.Buffers;
 using System.Buffers.Text;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
+using System.Buffers;
 
 namespace MySqlConnector.Utilities;
 

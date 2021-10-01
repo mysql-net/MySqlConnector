@@ -1,10 +1,6 @@
 using System.Buffers;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;

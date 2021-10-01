@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace MySqlConnector.Utilities;
 
 internal static class ValueTaskExtensions

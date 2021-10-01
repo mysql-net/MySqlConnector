@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Core;

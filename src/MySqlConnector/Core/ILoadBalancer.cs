@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MySqlConnector.Core;
 
 internal interface ILoadBalancer

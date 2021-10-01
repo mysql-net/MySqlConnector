@@ -1,9 +1,6 @@
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
 using System.Security.Authentication;
-using System.Threading;
-using System.Threading.Tasks;
 using MySqlConnector.Core;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Payloads;

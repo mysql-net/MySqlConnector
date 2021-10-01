@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace MySqlConnector.Core;
 
 internal sealed class PreparedStatements : IDisposable

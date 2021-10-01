@@ -1,10 +1,5 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Authentication;
-using System.Threading;
-using System.Threading.Tasks;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;

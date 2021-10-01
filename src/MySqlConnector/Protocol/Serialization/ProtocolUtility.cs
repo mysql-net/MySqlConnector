@@ -1,7 +1,4 @@
-using System;
 using System.Buffers;
-using System.IO;
-using System.Threading.Tasks;
 using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Utilities;
 

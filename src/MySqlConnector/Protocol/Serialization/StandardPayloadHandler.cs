@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Serialization;

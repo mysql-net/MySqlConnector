@@ -1,6 +1,3 @@
-using System;
-using System.Threading.Tasks;
-
 namespace MySqlConnector.Protocol.Serialization;
 
 internal interface IPayloadHandler : IDisposable
