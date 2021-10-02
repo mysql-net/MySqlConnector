@@ -10,6 +10,11 @@ weight: 30
 
 # Version History
 
+### 1.3.13
+
+* Remove inner exception for `UnableToConnectToHost` exception: [#1035](https://github.com/mysql-net/MySqlConnector/issues/1035).
+* Reword "recovering leaked sessions" log message.
+
 ### 1.3.12
 
 * Fix bug executing stored procedures with backticks in their names: [#1029](https://github.com/mysql-net/MySqlConnector/issues/1029).
