@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace SideBySide;
 
 public static class TestUtilities

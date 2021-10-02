@@ -1,6 +1,3 @@
-using System;
-using System.Data;
-
 namespace MySqlConnector.Core;
 
 /// <summary>

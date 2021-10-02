@@ -1,4 +1,3 @@
-using System;
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;

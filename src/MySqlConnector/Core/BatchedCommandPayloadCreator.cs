@@ -1,6 +1,4 @@
-using System;
 using System.Buffers.Binary;
-using System.Collections.Generic;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
 

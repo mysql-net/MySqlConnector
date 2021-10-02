@@ -1,5 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;

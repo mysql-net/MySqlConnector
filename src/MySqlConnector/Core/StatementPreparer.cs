@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Data;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;

@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;

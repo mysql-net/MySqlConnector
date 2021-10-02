@@ -1,7 +1,5 @@
-using System;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Serialization;

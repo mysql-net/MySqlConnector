@@ -1,5 +1,3 @@
-using System;
-
 namespace MySqlConnector.Core;
 
 internal static class ServerVersions

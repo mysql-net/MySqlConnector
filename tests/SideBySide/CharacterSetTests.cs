@@ -1,4 +1,3 @@
-using System.Linq;
 #if !BASELINE
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;

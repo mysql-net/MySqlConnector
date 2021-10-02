@@ -1,5 +1,3 @@
-using System.Data.Common;
-
 namespace SideBySide;
 
 public class ParameterTests

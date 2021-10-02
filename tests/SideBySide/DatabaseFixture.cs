@@ -1,5 +1,3 @@
-using System.Threading;
-
 namespace SideBySide;
 
 public class DatabaseFixture : IDisposable

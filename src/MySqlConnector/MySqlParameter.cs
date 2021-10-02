@@ -1,7 +1,6 @@
 using System.Buffers.Text;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Text;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
