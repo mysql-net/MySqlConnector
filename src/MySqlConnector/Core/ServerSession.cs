@@ -1024,12 +1024,24 @@ internal sealed class ServerSession
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 				}
 
-				HostName = hostName;
-				m_tcpClient = tcpClient;
-				m_socket = m_tcpClient.Client;
-				m_socket.NoDelay = true;
-				m_stream = m_tcpClient.GetStream();
-				m_socket.SetKeepAlive(cs.Keepalive);
+				try
+				{
+					HostName = hostName;
+					m_tcpClient = tcpClient;
+					m_socket = m_tcpClient.Client;
+					m_socket.NoDelay = true;
+					m_stream = m_tcpClient.GetStream();
+					m_socket.SetKeepAlive(cs.Keepalive);
+				}
+				catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
+				{
+					Utility.Dispose(ref m_stream);
+					SafeDispose(ref m_tcpClient);
+					SafeDispose(ref m_socket);
+					Log.Info("Session{0} connect timeout expired connecting to IpAddress {1} for HostName '{2}'", m_logArguments[0], ipAddress, hostName);
+					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
+				}
+
 				lock (m_lock)
 					m_state = State.Connected;
 				Log.Trace("Session{0} connected to IpAddress {1} for HostName '{2}' with local Port {3}", m_logArguments[0], ipAddress, hostName, (m_socket.LocalEndPoint as IPEndPoint)?.Port);
