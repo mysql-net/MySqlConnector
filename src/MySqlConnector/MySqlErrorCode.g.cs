@@ -1,9 +1,9 @@
 namespace MySqlConnector;
 
 /// <summary>
-/// MySQL Server error codes. Taken from <a href="https://dev.mysql.com/doc/refman/5.7/en/error-messages-server.html">Server Error Codes and Messages</a>.
+/// MySQL Server error codes. Taken from <a href="https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html">Server Error Codes and Messages</a>.
 /// </summary>
-[System.CodeDom.Compiler.GeneratedCode("https://gist.github.com/bgrainger/791cecb647d514a9dd2f3d83b2387e49", "2")]
+[System.CodeDom.Compiler.GeneratedCode("https://gist.github.com/bgrainger/791cecb647d514a9dd2f3d83b2387e49", "5")]
 public enum MySqlErrorCode
 {
 	DelimiterNotSupported = -3,
@@ -3229,9 +3229,204 @@ public enum MySqlErrorCode
 	DebugSyncHitLimit = 1640,
 
 	/// <summary>
+	/// ER_WARN_DEPRECATED_SYNTAX_NO_REPLACEMENT
+	/// </summary>
+	WarnDeprecatedSyntaxNoReplacement = 1681,
+
+	/// <summary>
+	/// ER_TOO_LONG_INDEX_COMMENT
+	/// </summary>
+	TooLongIndexComment = 1688,
+
+	/// <summary>
+	/// ER_LOCK_ABORTED
+	/// </summary>
+	LockAborted = 1689,
+
+	/// <summary>
+	/// ER_DATA_OUT_OF_RANGE
+	/// </summary>
+	DataOutOfRange = 1690,
+
+	/// <summary>
 	/// ER_CANT_EXECUTE_IN_READ_ONLY_TRANSACTION
 	/// </summary>
 	CannotExecuteInReadOnlyTransaction = 1792,
+
+	/// <summary>
+	/// ER_INNODB_READ_ONLY
+	/// </summary>
+	InnodbReadOnly = 1874,
+
+	/// <summary>
+	/// ER_TABLE_CORRUPT
+	/// </summary>
+	TableCorrupt = 1877,
+
+	/// <summary>
+	/// ER_TEMP_FILE_WRITE_FAILURE
+	/// </summary>
+	TempFileWriteFailure = 1878,
+
+	/// <summary>
+	/// ER_EXPLAIN_NOT_SUPPORTED
+	/// </summary>
+	ExplainNotSupported = 3012,
+
+	/// <summary>
+	/// ER_INVALID_FIELD_SIZE
+	/// </summary>
+	InvalidFieldSize = 3013,
+
+	/// <summary>
+	/// ER_QUERY_TIMEOUT
+	/// </summary>
+	QueryTimeout = 3024,
+
+	/// <summary>
+	/// ER_USER_LOCK_WRONG_NAME
+	/// </summary>
+	UserLockWrongName = 3057,
+
+	/// <summary>
+	/// ER_USER_LOCK_DEADLOCK
+	/// </summary>
+	UserLockDeadlock = 3058,
+
+	/// <summary>
+	/// ER_INVALID_JSON_DATA
+	/// </summary>
+	InvalidJsonData = 3069,
+
+	/// <summary>
+	/// ER_INVALID_JSON_TEXT
+	/// </summary>
+	InvalidJsonText = 3140,
+
+	/// <summary>
+	/// ER_INVALID_JSON_TEXT_IN_PARAM
+	/// </summary>
+	InvalidJsonTextInParam = 3141,
+
+	/// <summary>
+	/// ER_INVALID_JSON_BINARY_DATA
+	/// </summary>
+	InvalidJsonBinaryData = 3142,
+
+	/// <summary>
+	/// ER_INVALID_JSON_PATH
+	/// </summary>
+	InvalidJsonPath = 3143,
+
+	/// <summary>
+	/// ER_INVALID_JSON_CHARSET
+	/// </summary>
+	InvalidJsonCharset = 3144,
+
+	/// <summary>
+	/// ER_INVALID_JSON_CHARSET_IN_FUNCTION
+	/// </summary>
+	InvalidJsonCharsetInFunction = 3145,
+
+	/// <summary>
+	/// ER_INVALID_TYPE_FOR_JSON
+	/// </summary>
+	InvalidTypeForJson = 3146,
+
+	/// <summary>
+	/// ER_INVALID_CAST_TO_JSON
+	/// </summary>
+	InvalidCastToJson = 3147,
+
+	/// <summary>
+	/// ER_INVALID_JSON_PATH_CHARSET
+	/// </summary>
+	InvalidJsonPathCharset = 3148,
+
+	/// <summary>
+	/// ER_INVALID_JSON_PATH_WILDCARD
+	/// </summary>
+	InvalidJsonPathWildcard = 3149,
+
+	/// <summary>
+	/// ER_JSON_VALUE_TOO_BIG
+	/// </summary>
+	JsonValueTooBig = 3150,
+
+	/// <summary>
+	/// ER_JSON_KEY_TOO_BIG
+	/// </summary>
+	JsonKeyTooBig = 3151,
+
+	/// <summary>
+	/// ER_JSON_USED_AS_KEY
+	/// </summary>
+	JsonUsedAsKey = 3152,
+
+	/// <summary>
+	/// ER_JSON_VACUOUS_PATH
+	/// </summary>
+	JsonVacuousPath = 3153,
+
+	/// <summary>
+	/// ER_JSON_BAD_ONE_OR_ALL_ARG
+	/// </summary>
+	JsonBadOneOrAllArg = 3154,
+
+	/// <summary>
+	/// ER_NUMERIC_JSON_VALUE_OUT_OF_RANGE
+	/// </summary>
+	NumericJsonValueOutOfRange = 3155,
+
+	/// <summary>
+	/// ER_INVALID_JSON_VALUE_FOR_CAST
+	/// </summary>
+	InvalidJsonValueForCast = 3156,
+
+	/// <summary>
+	/// ER_JSON_DOCUMENT_TOO_DEEP
+	/// </summary>
+	JsonDocumentTooDeep = 3157,
+
+	/// <summary>
+	/// ER_JSON_DOCUMENT_NULL_KEY
+	/// </summary>
+	JsonDocumentNullKey = 3158,
+
+	/// <summary>
+	/// ER_INVALID_JSON_PATH_ARRAY_CELL
+	/// </summary>
+	InvalidJsonPathArrayCell = 3165,
+
+	/// <summary>
+	/// ER_NO_SUCH_DB
+	/// </summary>
+	NoSuchDb = 3503,
+
+	/// <summary>
+	/// ER_MISSING_JSON_TABLE_VALUE
+	/// </summary>
+	MissingJsonTableValue = 3665,
+
+	/// <summary>
+	/// ER_WRONG_JSON_TABLE_VALUE
+	/// </summary>
+	WrongJsonTableValue = 3666,
+
+	/// <summary>
+	/// ER_JT_VALUE_OUT_OF_RANGE
+	/// </summary>
+	JsonTableValueOutOfRange = 3669,
+
+	/// <summary>
+	/// ER_JT_MAX_NESTED_PATH
+	/// </summary>
+	JsonTableMaxNestedPath = 3670,
+
+	/// <summary>
+	/// ER_INVALID_JSON_TYPE
+	/// </summary>
+	InvalidJsonType = 3853,
 
 	/// <summary>
 	/// ER_CANNOT_CONVERT_STRING
