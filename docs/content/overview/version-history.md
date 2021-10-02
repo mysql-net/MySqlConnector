@@ -10,6 +10,18 @@ weight: 30
 
 # Version History
 
+### 1.4.0 Beta 4
+
+* **Breaking** Remove `ConnectionIdlePingTime`: [#1042](https://github.com/mysql-net/MySqlConnector/issues/1042).
+  * The `Connection Idle Ping Time` connection string option is still accepted, but has no effect.
+  * If `Connection Reset = False`, `MySqlConnection.Open` will return a pooled connection (if one is available) without testing it for liveness (by pinging the server). This improves performance but may degrade reliability. (`Connection Reset = True`, which is the default, is still recommended for greatest reliability.)
+  * If the server has closed the pooled connection, `MySqlConnection.Open` will succeed, but the first operation on that connection will fail. Command execution should be wrapped in a try/catch/retry loop to handle this scenario.
+* Add more values to `MySqlErrorCode`: [#1048](https://github.com/mysql-net/MySqlConnector/issues/1048).
+* Fix bug executing stored procedures with backticks in their names: [#1029](https://github.com/mysql-net/MySqlConnector/issues/1029).
+* Remove inner exception for `UnableToConnectToHost` exception: [#1035](https://github.com/mysql-net/MySqlConnector/issues/1035).
+* Fix rare `ObjectDisposedException` that could be thrown when a connection timeout occurred.
+* Reword "recovering leaked sessions" log message.
+
 ### 1.4.0 Beta 3
 
 * **Breaking** Remove `netstandard1.3` target framework: [#1031](https://github.com/mysql-net/MySqlConnector/issues/1031).
