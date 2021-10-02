@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-09-10
+lastmod: 2021-10-02
 date: 2017-03-27
 menu:
   main:
@@ -40,6 +40,11 @@ weight: 30
   * Support `DateOnly` and `TimeOnly` structs: [#963](https://github.com/mysql-net/MySqlConnector/issues/963).
   * Use `ZLibStream` for compression: [#957](https://github.com/mysql-net/MySqlConnector/issues/957).
   * Use `X_OR_GREATER` preprocessor definitions: [#958](https://github.com/mysql-net/MySqlConnector/issues/958).
+
+### 1.3.13
+
+* Remove inner exception for `UnableToConnectToHost` exception: [#1035](https://github.com/mysql-net/MySqlConnector/issues/1035).
+* Reword "recovering leaked sessions" log message.
 
 ### 1.3.12
 
