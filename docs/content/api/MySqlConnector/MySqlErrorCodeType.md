@@ -283,8 +283,10 @@ public enum MySqlErrorCode
 | WarningTooManyRecords | `1262` | ER_WARN_TOO_MANY_RECORDS |
 | WarningNullToNotNull | `1263` | ER_WARN_NULL_TO_NOTNULL |
 | WarningDataOutOfRange | `1264` | ER_WARN_DATA_OUT_OF_RANGE |
-| WaningDataTruncated | `1265` | WARN_DATA_TRUNCATED |
-| WaningUsingOtherHandler | `1266` | ER_WARN_USING_OTHER_HANDLER |
+| WaningDataTruncated | `1265` |  |
+| WarningDataTruncated | `1265` | WARN_DATA_TRUNCATED |
+| WaningUsingOtherHandler | `1266` |  |
+| WarningUsingOtherHandler | `1266` | ER_WARN_USING_OTHER_HANDLER |
 | CannotAggregateTwoCollations | `1267` | ER_CANT_AGGREGATE_2COLLATIONS |
 | DropUserError | `1268` | ER_DROP_USER |
 | RevokeGrantsError | `1269` | ER_REVOKE_GRANTS |
@@ -294,7 +296,8 @@ public enum MySqlErrorCode
 | UnknownCollation | `1273` | ER_UNKNOWN_COLLATION |
 | SlaveIgnoreSSLParameters | `1274` | ER_SLAVE_IGNORED_SSL_PARAMS |
 | ServerIsInSecureAuthMode | `1275` | ER_SERVER_IS_IN_SECURE_AUTH_MODE |
-| WaningFieldResolved | `1276` | ER_WARN_FIELD_RESOLVED |
+| WaningFieldResolved | `1276` |  |
+| WarningFieldResolved | `1276` | ER_WARN_FIELD_RESOLVED |
 | BadSlaveUntilCondition | `1277` | ER_BAD_SLAVE_UNTIL_COND |
 | MissingSkipSlave | `1278` | ER_MISSING_SKIP_SLAVE |
 | ErrorUntilConditionIgnored | `1279` | ER_UNTIL_COND_IGNORED |
@@ -305,7 +308,8 @@ public enum MySqlErrorCode
 | UnknownKeyCache | `1284` | ER_UNKNOWN_KEY_CACHE |
 | WarningHostnameWillNotWork | `1285` | ER_WARN_HOSTNAME_WONT_WORK |
 | UnknownStorageEngine | `1286` | ER_UNKNOWN_STORAGE_ENGINE |
-| WaningDeprecatedSyntax | `1287` | ER_WARN_DEPRECATED_SYNTAX |
+| WaningDeprecatedSyntax | `1287` |  |
+| WarningDeprecatedSyntax | `1287` | ER_WARN_DEPRECATED_SYNTAX |
 | NonUpdateableTable | `1288` | ER_NON_UPDATABLE_TABLE |
 | FeatureDisabled | `1289` | ER_FEATURE_DISABLED |
 | OptionPreventsStatement | `1290` | ER_OPTION_PREVENTS_STATEMENT |

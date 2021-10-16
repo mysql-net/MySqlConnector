@@ -13,6 +13,7 @@ title: MySqlConnector
 | class [MySqlBatchCommandCollection](../MySqlConnector/MySqlBatchCommandCollectionType/) |  |
 | class [MySqlBulkCopy](../MySqlConnector/MySqlBulkCopyType/) | [`MySqlBulkCopy`](../MySqlConnector/MySqlBulkCopyType/) lets you efficiently load a MySQL Server table with data from another source. It is similar to the [SqlBulkCopy](https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlbulkcopy) class for SQL Server. |
 | class [MySqlBulkCopyColumnMapping](../MySqlConnector/MySqlBulkCopyColumnMappingType/) | Use [`MySqlBulkCopyColumnMapping`](../MySqlConnector/MySqlBulkCopyColumnMappingType/) to specify how to map columns in the source data to columns in the destination table when using [`MySqlBulkCopy`](../MySqlConnector/MySqlBulkCopyType/). |
+| class [MySqlBulkCopyResult](../MySqlConnector/MySqlBulkCopyResultType/) | Represents the result of a [`MySqlBulkCopy`](../MySqlConnector/MySqlBulkCopyType/) operation. |
 | class [MySqlBulkLoader](../MySqlConnector/MySqlBulkLoaderType/) | [`MySqlBulkLoader`](../MySqlConnector/MySqlBulkLoaderType/) lets you efficiently load a MySQL Server Table with data from a CSV or TSV file or Stream. |
 | enum [MySqlBulkLoaderConflictOption](../MySqlConnector/MySqlBulkLoaderConflictOptionType/) |  |
 | enum [MySqlBulkLoaderPriority](../MySqlConnector/MySqlBulkLoaderPriorityType/) |  |

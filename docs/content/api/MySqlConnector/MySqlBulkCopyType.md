@@ -21,19 +21,13 @@ var dataTable = GetDataTableFromExternalSource();
 using var connection = new MySqlConnection("...;AllowLoadLocalInfile=True");
 await connection.OpenAsync();
 
-// attach an event handler to retrieve warnings/errors
-IReadOnlyList<MySqlError> errors = Array.Empty<MySqlError>();
-void InfoMessageHandler(object sender, MySqlInfoMessageEventArgs args) => errors = args.Errors;
-connection.InfoMessage += InfoMessageHandler;
-
 // bulk copy the data
 var bulkCopy = new MySqlBulkCopy(connection);
 bulkCopy.DestinationTableName = "some_table_name";
-await bulkCopy.WriteToServerAsync(dataTable);
+var result = await bulkCopy.WriteToServerAsync(dataTable);
 
-// check for errors
-connection.InfoMessage -= InfoMessageHandler;
-if (errors.Count != 0) { /* handle errors */ }
+// check for problems
+if (result.Warnings.Count != 0) { /* handle potential data loss warnings */ }
 ```
 
 ```csharp
@@ -49,7 +43,6 @@ public sealed class MySqlBulkCopy
 | [ColumnMappings](../MySqlBulkCopy/ColumnMappings/) { get; } | A collection of [`MySqlBulkCopyColumnMapping`](../MySqlBulkCopyColumnMappingType/) objects. If the columns being copied from the data source line up one-to-one with the columns in the destination table then populating this collection is unnecessary. Otherwise, this should be filled with a collection of [`MySqlBulkCopyColumnMapping`](../MySqlBulkCopyColumnMappingType/) objects specifying how source columns are to be mapped onto destination columns. If one column mapping is specified, then all must be specified. |
 | [DestinationTableName](../MySqlBulkCopy/DestinationTableName/) { get; set; } | The name of the table to insert rows into. |
 | [NotifyAfter](../MySqlBulkCopy/NotifyAfter/) { get; set; } | If non-zero, this specifies the number of rows to be processed before generating a notification event. |
-| [RowsCopied](../MySqlBulkCopy/RowsCopied/) { get; } | Returns the number of rows that were copied (after `WriteToServer(Async)` finishes). |
 | event [MySqlRowsCopied](../MySqlBulkCopy/MySqlRowsCopied/) | This event is raised every time that the number of rows specified by the [`NotifyAfter`](../MySqlBulkCopy/NotifyAfter/) property have been processed. |
 | [WriteToServer](../MySqlBulkCopy/WriteToServer/)(…) | Copies all rows in the supplied DataTable to the destination table specified by the [`DestinationTableName`](../MySqlBulkCopy/DestinationTableName/) property of the [`MySqlBulkCopy`](../MySqlBulkCopyType/) object. (3 methods) |
 | [WriteToServerAsync](../MySqlBulkCopy/WriteToServerAsync/)(…) | Asynchronously copies all rows in the supplied DataTable to the destination table specified by the [`DestinationTableName`](../MySqlBulkCopy/DestinationTableName/) property of the [`MySqlBulkCopy`](../MySqlBulkCopyType/) object. (3 methods) |

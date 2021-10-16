@@ -406,7 +406,9 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 		using (var reader = await cmd.ExecuteReaderAsync())
 		{
 			var bulkCopy = new MySqlBulkCopy(connection2) { DestinationTableName = "bulk_load_data_reader_destination", };
-			await bulkCopy.WriteToServerAsync(reader);
+			var result = await bulkCopy.WriteToServerAsync(reader);
+			Assert.Equal(7, result.RowsInserted);
+			Assert.Empty(result.Warnings);
 		}
 
 		using var cmd1 = new MySqlCommand("select * from bulk_load_data_reader_source order by value;", connection);
@@ -460,7 +462,9 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		{
 			DestinationTableName = "bulk_load_data_table",
 		};
-		await bulkCopy.WriteToServerAsync(dataTable);
+		var result = await bulkCopy.WriteToServerAsync(dataTable);
+		Assert.Equal(2, result.RowsInserted);
+		Assert.Empty(result.Warnings);
 	}
 
 	[Theory]
@@ -489,7 +493,6 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		{
 			eventCount++;
 			rowsCopied = e.RowsCopied;
-			Assert.Equal(bulkCopy.RowsCopied, e.RowsCopied);
 		};
 
 		var dataTable = new DataTable()
@@ -499,10 +502,11 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		foreach (var x in Enumerable.Range(1, rowCount))
 			dataTable.Rows.Add(new object[] { x });
 
-		await bulkCopy.WriteToServerAsync(dataTable);
+		var result = await bulkCopy.WriteToServerAsync(dataTable);
 		Assert.Equal(expectedEventCount, eventCount);
 		Assert.Equal(expectedRowsCopied, rowsCopied);
-		Assert.Equal(rowCount, bulkCopy.RowsCopied);
+		Assert.Equal(rowCount, result.RowsInserted);
+		Assert.Empty(result.Warnings);
 	}
 
 	[Theory]
@@ -543,12 +547,50 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		foreach (var x in Enumerable.Range(1, rowCount))
 			dataTable.Rows.Add(new object[] { str });
 
-		await bulkCopy.WriteToServerAsync(dataTable);
+		var result = await bulkCopy.WriteToServerAsync(dataTable);
 		Assert.Equal(expectedEventCount, eventCount);
 		Assert.Equal(expectedRowsCopied, rowsCopied);
+		Assert.Equal(expectedCount, result.RowsInserted);
+		Assert.Empty(result.Warnings);
 
 		using (var cmd = new MySqlCommand("select count(value) from bulk_copy_abort;", connection))
 			Assert.Equal(expectedCount, await cmd.ExecuteScalarAsync());
+	}
+
+	[Fact]
+	public async Task BulkCopyDataTableWithWarnings()
+	{
+		var dataTable = new DataTable()
+		{
+			Columns =
+			{
+				new DataColumn("str", typeof(string)),
+				new DataColumn("number", typeof(int)),
+			},
+			Rows =
+			{
+				new object[] { "1", 1000 },
+				new object[] { "12345678", 1 },
+			},
+		};
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(str varchar(5), number tinyint);", connection))
+		{
+			cmd.ExecuteNonQuery();
+		}
+
+		var bulkCopy = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_load_data_table",
+		};
+		var result = await bulkCopy.WriteToServerAsync(dataTable);
+		Assert.Equal(2, result.RowsInserted);
+		Assert.Equal(2, result.Warnings.Count);
+		Assert.Equal(MySqlErrorCode.WarningDataOutOfRange, result.Warnings[0].ErrorCode);
+		Assert.Equal(MySqlErrorCode.WarningDataTruncated, result.Warnings[1].ErrorCode);
 	}
 
 	[Fact]

@@ -7,11 +7,20 @@ title: MySqlBulkCopy.WriteToServer methods
 Copies all rows in the supplied DataTable to the destination table specified by the [`DestinationTableName`](../DestinationTableName/) property of the [`MySqlBulkCopy`](../../MySqlBulkCopyType/) object.
 
 ```csharp
-public void WriteToServer(DataTable dataTable)
+public MySqlBulkCopyResult WriteToServer(DataTable dataTable)
 ```
+
+| parameter | description |
+| --- | --- |
+| dataTable | The DataTable to copy. |
+
+## Return Value
+
+A [`MySqlBulkCopyResult`](../../MySqlBulkCopyResultType/) with the result of the bulk copy operation.
 
 ## See Also
 
+* class [MySqlBulkCopyResult](../../MySqlBulkCopyResultType/)
 * class [MySqlBulkCopy](../../MySqlBulkCopyType/)
 * namespace [MySqlConnector](../../MySqlBulkCopyType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)
@@ -23,15 +32,20 @@ public void WriteToServer(DataTable dataTable)
 Copies all rows in the supplied IDataReader to the destination table specified by the [`DestinationTableName`](../DestinationTableName/) property of the [`MySqlBulkCopy`](../../MySqlBulkCopyType/) object.
 
 ```csharp
-public void WriteToServer(IDataReader dataReader)
+public MySqlBulkCopyResult WriteToServer(IDataReader dataReader)
 ```
 
 | parameter | description |
 | --- | --- |
 | dataReader | The IDataReader to copy from. |
 
+## Return Value
+
+A [`MySqlBulkCopyResult`](../../MySqlBulkCopyResultType/) with the result of the bulk copy operation.
+
 ## See Also
 
+* class [MySqlBulkCopyResult](../../MySqlBulkCopyResultType/)
 * class [MySqlBulkCopy](../../MySqlBulkCopyType/)
 * namespace [MySqlConnector](../../MySqlBulkCopyType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)
@@ -43,7 +57,7 @@ public void WriteToServer(IDataReader dataReader)
 Copies all rows in the supplied sequence of DataRow objects to the destination table specified by the [`DestinationTableName`](../DestinationTableName/) property of the [`MySqlBulkCopy`](../../MySqlBulkCopyType/) object. The number of columns to be read from the DataRow objects must be specified in advance.
 
 ```csharp
-public void WriteToServer(IEnumerable<DataRow> dataRows, int columnCount)
+public MySqlBulkCopyResult WriteToServer(IEnumerable<DataRow> dataRows, int columnCount)
 ```
 
 | parameter | description |
@@ -51,8 +65,13 @@ public void WriteToServer(IEnumerable<DataRow> dataRows, int columnCount)
 | dataRows | The collection of DataRow objects. |
 | columnCount | The number of columns to copy (in each row). |
 
+## Return Value
+
+A [`MySqlBulkCopyResult`](../../MySqlBulkCopyResultType/) with the result of the bulk copy operation.
+
 ## See Also
 
+* class [MySqlBulkCopyResult](../../MySqlBulkCopyResultType/)
 * class [MySqlBulkCopy](../../MySqlBulkCopyType/)
 * namespace [MySqlConnector](../../MySqlBulkCopyType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)

@@ -7,12 +7,22 @@ title: MySqlBulkCopy.WriteToServerAsync methods
 Asynchronously copies all rows in the supplied DataTable to the destination table specified by the [`DestinationTableName`](../DestinationTableName/) property of the [`MySqlBulkCopy`](../../MySqlBulkCopyType/) object.
 
 ```csharp
-public ValueTask WriteToServerAsync(DataTable dataTable, 
+public ValueTask<MySqlBulkCopyResult> WriteToServerAsync(DataTable dataTable, 
     CancellationToken cancellationToken = default(CancellationToken))
 ```
 
+| parameter | description |
+| --- | --- |
+| dataTable | The DataTable to copy. |
+| cancellationToken | A token to cancel the asynchronous operation. |
+
+## Return Value
+
+A [`MySqlBulkCopyResult`](../../MySqlBulkCopyResultType/) with the result of the bulk copy operation.
+
 ## See Also
 
+* class [MySqlBulkCopyResult](../../MySqlBulkCopyResultType/)
 * class [MySqlBulkCopy](../../MySqlBulkCopyType/)
 * namespace [MySqlConnector](../../MySqlBulkCopyType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)
@@ -24,7 +34,7 @@ public ValueTask WriteToServerAsync(DataTable dataTable,
 Asynchronously copies all rows in the supplied IDataReader to the destination table specified by the [`DestinationTableName`](../DestinationTableName/) property of the [`MySqlBulkCopy`](../../MySqlBulkCopyType/) object.
 
 ```csharp
-public ValueTask WriteToServerAsync(IDataReader dataReader, 
+public ValueTask<MySqlBulkCopyResult> WriteToServerAsync(IDataReader dataReader, 
     CancellationToken cancellationToken = default(CancellationToken))
 ```
 
@@ -33,8 +43,13 @@ public ValueTask WriteToServerAsync(IDataReader dataReader,
 | dataReader | The IDataReader to copy from. |
 | cancellationToken | A token to cancel the asynchronous operation. |
 
+## Return Value
+
+A [`MySqlBulkCopyResult`](../../MySqlBulkCopyResultType/) with the result of the bulk copy operation.
+
 ## See Also
 
+* class [MySqlBulkCopyResult](../../MySqlBulkCopyResultType/)
 * class [MySqlBulkCopy](../../MySqlBulkCopyType/)
 * namespace [MySqlConnector](../../MySqlBulkCopyType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)
@@ -46,8 +61,8 @@ public ValueTask WriteToServerAsync(IDataReader dataReader,
 Asynchronously copies all rows in the supplied sequence of DataRow objects to the destination table specified by the [`DestinationTableName`](../DestinationTableName/) property of the [`MySqlBulkCopy`](../../MySqlBulkCopyType/) object. The number of columns to be read from the DataRow objects must be specified in advance.
 
 ```csharp
-public ValueTask WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, 
-    CancellationToken cancellationToken = default(CancellationToken))
+public ValueTask<MySqlBulkCopyResult> WriteToServerAsync(IEnumerable<DataRow> dataRows, 
+    int columnCount, CancellationToken cancellationToken = default(CancellationToken))
 ```
 
 | parameter | description |
@@ -56,8 +71,13 @@ public ValueTask WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCou
 | columnCount | The number of columns to copy (in each row). |
 | cancellationToken | A token to cancel the asynchronous operation. |
 
+## Return Value
+
+A [`MySqlBulkCopyResult`](../../MySqlBulkCopyResultType/) with the result of the bulk copy operation.
+
 ## See Also
 
+* class [MySqlBulkCopyResult](../../MySqlBulkCopyResultType/)
 * class [MySqlBulkCopy](../../MySqlBulkCopyType/)
 * namespace [MySqlConnector](../../MySqlBulkCopyType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)

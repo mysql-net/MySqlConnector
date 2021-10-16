@@ -488,7 +488,9 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 		using (var reader = cmd.ExecuteReader())
 		{
 			var bulkCopy = new MySqlBulkCopy(connection2) { DestinationTableName = "bulk_load_data_reader_destination", };
-			bulkCopy.WriteToServer(reader);
+			var result = bulkCopy.WriteToServer(reader);
+			Assert.Equal(7, result.RowsInserted);
+			Assert.Empty(result.Warnings);
 		}
 
 		using var cmd1 = new MySqlCommand("select * from bulk_load_data_reader_source order by value;", connection);
@@ -542,7 +544,9 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		{
 			DestinationTableName = "bulk_load_data_table",
 		};
-		bulkCopy.WriteToServer(dataTable);
+		var result = bulkCopy.WriteToServer(dataTable);
+		Assert.Equal(2, result.RowsInserted);
+		Assert.Empty(result.Warnings);
 
 		using (var cmd = new MySqlCommand(@"select sum(length(b)) from bulk_load_data_table;", connection))
 		{
@@ -596,7 +600,9 @@ create table bulk_load_data_table(a mediumtext collate utf8mb4_bin, b mediumblob
 		{
 			DestinationTableName = "bulk_load_data_table",
 		};
-		bulkCopy.WriteToServer(dataTable);
+		var result = bulkCopy.WriteToServer(dataTable);
+		Assert.Equal(rows, result.RowsInserted);
+		Assert.Empty(result.Warnings);
 
 		using (var cmd = new MySqlCommand("select a, b from bulk_load_data_table;", connection))
 		using (var reader = cmd.ExecuteReader())
@@ -642,7 +648,9 @@ create table bulk_load_data_table(a int, b text);", connection))
 		{
 			DestinationTableName = "bulk_load_data_table",
 		};
-		bulkCopy.WriteToServer(dataTable);
+		var result = bulkCopy.WriteToServer(dataTable);
+		Assert.Equal(strings.Length, result.RowsInserted);
+		Assert.Empty(result.Warnings);
 
 		using (var cmd = new MySqlCommand("select * from bulk_load_data_table order by a;", connection))
 		using (var reader = cmd.ExecuteReader())
@@ -683,7 +691,6 @@ create table bulk_load_data_table(a int, b text);", connection))
 		{
 			eventCount++;
 			rowsCopied = e.RowsCopied;
-			Assert.Equal(bulkCopy.RowsCopied, e.RowsCopied);
 		};
 
 		var dataTable = new DataTable()
@@ -693,10 +700,11 @@ create table bulk_load_data_table(a int, b text);", connection))
 		foreach (var x in Enumerable.Range(1, rowCount))
 			dataTable.Rows.Add(new object[] { x });
 
-		bulkCopy.WriteToServer(dataTable);
+		var result = bulkCopy.WriteToServer(dataTable);
 		Assert.Equal(expectedEventCount, eventCount);
 		Assert.Equal(expectedRowsCopied, rowsCopied);
-		Assert.Equal(rowCount, bulkCopy.RowsCopied);
+		Assert.Equal(rowCount, result.RowsInserted);
+		Assert.Empty(result.Warnings);
 	}
 
 	[Theory]
@@ -737,9 +745,11 @@ create table bulk_load_data_table(a int, b text);", connection))
 		foreach (var x in Enumerable.Range(1, rowCount))
 			dataTable.Rows.Add(new object[] { str });
 
-		bulkCopy.WriteToServer(dataTable);
+		var result = bulkCopy.WriteToServer(dataTable);
 		Assert.Equal(expectedEventCount, eventCount);
 		Assert.Equal(expectedRowsCopied, rowsCopied);
+		Assert.Equal(expectedCount, result.RowsInserted);
+		Assert.Empty(result.Warnings);
 
 		using (var cmd = new MySqlCommand("select count(value) from bulk_copy_abort;", connection))
 			Assert.Equal(expectedCount, cmd.ExecuteScalar());
@@ -785,7 +795,9 @@ create table bulk_load_data_table(a int, b text);", connection))
 			}
 		};
 
-		bulkCopy.WriteToServer(dataTable);
+		var result = bulkCopy.WriteToServer(dataTable);
+		Assert.Equal(3, result.RowsInserted);
+		Assert.Empty(result.Warnings);
 
 		using var reader = connection.ExecuteReader(@"select * from bulk_copy_column_mapping;");
 		Assert.True(reader.Read());
@@ -908,6 +920,42 @@ create table bulk_copy_duplicate_pk(id integer primary key, value text not null)
 
 		var ex = Assert.Throws<MySqlException>(() => bcp.WriteToServer(dataTable));
 		Assert.Equal(MySqlErrorCode.BulkCopyFailed, ex.ErrorCode);
+	}
+
+	[Fact]
+	public void BulkCopyDataTableWithWarnings()
+	{
+		var dataTable = new DataTable()
+		{
+			Columns =
+			{
+				new DataColumn("str", typeof(string)),
+				new DataColumn("number", typeof(int)),
+			},
+			Rows =
+			{
+				new object[] { "1", 1000 },
+				new object[] { "12345678", 1 },
+			},
+		};
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(str varchar(5), number tinyint);", connection))
+		{
+			cmd.ExecuteNonQuery();
+		}
+
+		var bulkCopy = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_load_data_table",
+		};
+		var result = bulkCopy.WriteToServer(dataTable);
+		Assert.Equal(2, result.RowsInserted);
+		Assert.Equal(2, result.Warnings.Count);
+		Assert.Equal(MySqlErrorCode.WarningDataOutOfRange, result.Warnings[0].ErrorCode);
+		Assert.Equal(MySqlErrorCode.WarningDataTruncated, result.Warnings[1].ErrorCode);
 	}
 
 	[Fact]

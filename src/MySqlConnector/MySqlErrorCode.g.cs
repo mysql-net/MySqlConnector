@@ -1345,15 +1345,21 @@ public enum MySqlErrorCode
 	/// </summary>
 	WarningDataOutOfRange = 1264,
 
+	[Obsolete("Use WarningDataTruncated.")]
+	WaningDataTruncated = 1265,
+
 	/// <summary>
 	/// WARN_DATA_TRUNCATED
 	/// </summary>
-	WaningDataTruncated = 1265,
+	WarningDataTruncated = 1265,
+
+	[Obsolete("Use WarningUsingOtherHandler.")]
+	WaningUsingOtherHandler = 1266,
 
 	/// <summary>
 	/// ER_WARN_USING_OTHER_HANDLER
 	/// </summary>
-	WaningUsingOtherHandler = 1266,
+	WarningUsingOtherHandler = 1266,
 
 	/// <summary>
 	/// ER_CANT_AGGREGATE_2COLLATIONS
@@ -1400,10 +1406,13 @@ public enum MySqlErrorCode
 	/// </summary>
 	ServerIsInSecureAuthMode = 1275,
 
+	[Obsolete("Use WarningFieldResolved.")]
+	WaningFieldResolved = 1276,
+
 	/// <summary>
 	/// ER_WARN_FIELD_RESOLVED
 	/// </summary>
-	WaningFieldResolved = 1276,
+	WarningFieldResolved = 1276,
 
 	/// <summary>
 	/// ER_BAD_SLAVE_UNTIL_COND
@@ -1455,10 +1464,13 @@ public enum MySqlErrorCode
 	/// </summary>
 	UnknownStorageEngine = 1286,
 
+	[Obsolete("Use WarningDeprecatedSyntax.")]
+	WaningDeprecatedSyntax = 1287,
+
 	/// <summary>
 	/// ER_WARN_DEPRECATED_SYNTAX
 	/// </summary>
-	WaningDeprecatedSyntax = 1287,
+	WarningDeprecatedSyntax = 1287,
 
 	/// <summary>
 	/// ER_NON_UPDATABLE_TABLE
