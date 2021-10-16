@@ -4,7 +4,7 @@ title: MySqlErrorCode
 
 # MySqlErrorCode enumeration
 
-MySQL Server error codes. Taken from [Server Error Codes and Messages](https://dev.mysql.com/doc/refman/5.7/en/error-messages-server.html).
+MySQL Server error codes. Taken from [Server Error Codes and Messages](https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html).
 
 ```csharp
 public enum MySqlErrorCode
@@ -660,7 +660,46 @@ public enum MySqlErrorCode
 | WarningNonASCIISeparatorNotImplemented | `1638` | WARN_NON_ASCII_SEPARATOR_NOT_IMPLEMENTED |
 | DebugSyncTimeout | `1639` | ER_DEBUG_SYNC_TIMEOUT |
 | DebugSyncHitLimit | `1640` | ER_DEBUG_SYNC_HIT_LIMIT |
+| WarnDeprecatedSyntaxNoReplacement | `1681` | ER_WARN_DEPRECATED_SYNTAX_NO_REPLACEMENT |
+| TooLongIndexComment | `1688` | ER_TOO_LONG_INDEX_COMMENT |
+| LockAborted | `1689` | ER_LOCK_ABORTED |
+| DataOutOfRange | `1690` | ER_DATA_OUT_OF_RANGE |
 | CannotExecuteInReadOnlyTransaction | `1792` | ER_CANT_EXECUTE_IN_READ_ONLY_TRANSACTION |
+| InnodbReadOnly | `1874` | ER_INNODB_READ_ONLY |
+| TableCorrupt | `1877` | ER_TABLE_CORRUPT |
+| TempFileWriteFailure | `1878` | ER_TEMP_FILE_WRITE_FAILURE |
+| ExplainNotSupported | `3012` | ER_EXPLAIN_NOT_SUPPORTED |
+| InvalidFieldSize | `3013` | ER_INVALID_FIELD_SIZE |
+| QueryTimeout | `3024` | ER_QUERY_TIMEOUT |
+| UserLockWrongName | `3057` | ER_USER_LOCK_WRONG_NAME |
+| UserLockDeadlock | `3058` | ER_USER_LOCK_DEADLOCK |
+| InvalidJsonData | `3069` | ER_INVALID_JSON_DATA |
+| InvalidJsonText | `3140` | ER_INVALID_JSON_TEXT |
+| InvalidJsonTextInParam | `3141` | ER_INVALID_JSON_TEXT_IN_PARAM |
+| InvalidJsonBinaryData | `3142` | ER_INVALID_JSON_BINARY_DATA |
+| InvalidJsonPath | `3143` | ER_INVALID_JSON_PATH |
+| InvalidJsonCharset | `3144` | ER_INVALID_JSON_CHARSET |
+| InvalidJsonCharsetInFunction | `3145` | ER_INVALID_JSON_CHARSET_IN_FUNCTION |
+| InvalidTypeForJson | `3146` | ER_INVALID_TYPE_FOR_JSON |
+| InvalidCastToJson | `3147` | ER_INVALID_CAST_TO_JSON |
+| InvalidJsonPathCharset | `3148` | ER_INVALID_JSON_PATH_CHARSET |
+| InvalidJsonPathWildcard | `3149` | ER_INVALID_JSON_PATH_WILDCARD |
+| JsonValueTooBig | `3150` | ER_JSON_VALUE_TOO_BIG |
+| JsonKeyTooBig | `3151` | ER_JSON_KEY_TOO_BIG |
+| JsonUsedAsKey | `3152` | ER_JSON_USED_AS_KEY |
+| JsonVacuousPath | `3153` | ER_JSON_VACUOUS_PATH |
+| JsonBadOneOrAllArg | `3154` | ER_JSON_BAD_ONE_OR_ALL_ARG |
+| NumericJsonValueOutOfRange | `3155` | ER_NUMERIC_JSON_VALUE_OUT_OF_RANGE |
+| InvalidJsonValueForCast | `3156` | ER_INVALID_JSON_VALUE_FOR_CAST |
+| JsonDocumentTooDeep | `3157` | ER_JSON_DOCUMENT_TOO_DEEP |
+| JsonDocumentNullKey | `3158` | ER_JSON_DOCUMENT_NULL_KEY |
+| InvalidJsonPathArrayCell | `3165` | ER_INVALID_JSON_PATH_ARRAY_CELL |
+| NoSuchDb | `3503` | ER_NO_SUCH_DB |
+| MissingJsonTableValue | `3665` | ER_MISSING_JSON_TABLE_VALUE |
+| WrongJsonTableValue | `3666` | ER_WRONG_JSON_TABLE_VALUE |
+| JsonTableValueOutOfRange | `3669` | ER_JT_VALUE_OUT_OF_RANGE |
+| JsonTableMaxNestedPath | `3670` | ER_JT_MAX_NESTED_PATH |
+| InvalidJsonType | `3853` | ER_INVALID_JSON_TYPE |
 | CannotConvertString | `3854` | ER_CANNOT_CONVERT_STRING |
 | ClientInteractionTimeout | `4031` | ER_CLIENT_INTERACTION_TIMEOUT |
 
