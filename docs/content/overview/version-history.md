@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-10-02
+lastmod: 2021-10-16
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,12 @@ weight: 30
 ---
 
 # Version History
+
+### 2.0.0 Beta 5
+
+* Update version to 2.0 due to scope of changes in the 1.4.0 beta releases.
+* Add `ActivitySource` for tracing: [#1036](https://github.com/mysql-net/MySqlConnector/issues/1036).
+* Build with .NET 6.0 RC 2.
 
 ### 1.4.0 Beta 4
 

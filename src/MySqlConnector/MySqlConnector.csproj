@@ -4,11 +4,41 @@
     <TargetFrameworks>net45;net461;net471;netstandard2.0;netstandard2.1;netcoreapp2.1;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
     <Description>A truly async MySQL ADO.NET provider, supporting MySQL Server, MariaDB, Percona Server, Amazon Aurora, Azure Database for MySQL and more.</Description>
     <Copyright>Copyright 2016–2021 Bradley Grainger</Copyright>
-    <Authors>Bradley Grainger;Caleb Lloyd</Authors>
+    <Authors>Bradley Grainger</Authors>
     <AssemblyName>MySqlConnector</AssemblyName>
     <PackageId>MySqlConnector</PackageId>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>mysql;mysqlconnector;async;ado.net;database;netcore</PackageTags>
+    <PackageReleaseNotes>* **Breaking** Remove `ConnectionIdlePingTime`.
+  * The `Connection Idle Ping Time` connection string option is still accepted, but has no effect.
+  * If `Connection Reset = False`, `MySqlConnection.Open` will return a pooled connection (if one is available) without testing it for liveness (by pinging the server). This improves performance but may degrade reliability. (`Connection Reset = True`, which is the default, is still recommended for greatest reliability.)
+  * If the server has closed the pooled connection, `MySqlConnection.Open` will succeed, but the first operation on that connection will fail. Command execution should be wrapped in a try/catch/retry loop to handle this scenario.
+* **Breaking** Change how option keys are serialized when retrieving the `MySqlConnectionStringBuilder.ConnectionString` property:
+  * For example, `User Id` is now `User ID`, `DefaultCommandTimeout` is now `Default Command Timeout`, etc.
+  * All existing connection strings are still valid, and all the previous aliases for connection string options are still accepted.
+  * The primary connection string option key is listed first in the documentation at https://mysqlconnector.net/connection-options/.
+* **Breaking** Remove `netstandard1.3` target framework.
+* **Breaking** Seal `MySqlCommandBuilder` and `MySqlConversionException`.
+* Support .NET 6.0 RC 2.
+  * **Breaking** Update the `MySqlBatch` (experimental API) to match the latest .NET 6.0 API changes.
+  * Support `DateOnly` and `TimeOnly` structs.
+  * Use `ZLibStream` for compression.
+* Add `ActivitySource` for tracing.
+* Make `MySqlError.Code` obsolete.
+  * Use `ErrorCode` property instead.
+* Remove `BackgroundConnectionResetHelper`.
+  * `MySqlConnectionStringBuilder.DeferConnectionReset` is obsolete and will always be treated as if it's `true`.
+* Add more values to `MySqlErrorCode`.
+* Reduce default log message severity.
+* Reword "recovering leaked sessions" log message.
+* Add `[Category]`, `[DefaultValue]`, and `[Description]` attributes to all `MySqlConnectionStringBuilder` properties.
+* Throw an informative exception if `DELIMITER` is used in a SQL statement.
+* Fix bug that failed to deserialize a binary row (from a prepared statement) correctly.
+* Fix incorrect value for `MySqlCommand.LastInsertedId` when executing multiple commands.
+* Remove inner exception for `UnableToConnectToHost` exception.
+* Fix bug executing stored procedures with backticks in their names.
+* Fix rare `ObjectDisposedException` that could be thrown when a connection timeout occurred.
+* Fix `MySqlConnectionStringBuilder.TryGetValue`.</PackageReleaseNotes>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
