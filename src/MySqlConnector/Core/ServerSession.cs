@@ -38,6 +38,10 @@ internal sealed class ServerSession
 		PoolGeneration = poolGeneration;
 		HostName = "";
 		m_logArguments = new object?[] { "{0}".FormatInvariant(Id), null };
+		m_activityTags = new ActivityTagsCollection
+		{
+			{ ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue },
+		};
 		Log.Trace("Session{0} created new session", m_logArguments);
 	}
 
@@ -59,6 +63,7 @@ internal sealed class ServerSession
 	public bool SupportsDeprecateEof => m_supportsDeprecateEof;
 	public bool SupportsSessionTrack => m_supportsSessionTrack;
 	public bool ProcAccessDenied { get; set; }
+	public ICollection<KeyValuePair<string, object?>> ActivityTags => m_activityTags;
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 	public ValueTask ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
@@ -330,6 +335,19 @@ internal sealed class ServerSession
 
 	public void SetTimeout(int timeoutMilliseconds) => m_payloadHandler!.ByteHandler.RemainingTimeout = timeoutMilliseconds;
 
+	public Activity? StartActivity(string name, string? tagName1 = null, object? tagValue1 = null)
+	{
+		var activity = ActivitySourceHelper.StartActivity(name, m_activityTags);
+		if (activity is { IsAllDataRequested: true })
+		{
+			if (DatabaseOverride is not null)
+				activity.SetTag(ActivitySourceHelper.DatabaseNameTagName, DatabaseOverride);
+			if (tagName1 is not null)
+				activity.SetTag(tagName1, tagValue1);
+		}
+		return activity;
+	}
+
 	public async Task DisposeAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (m_payloadHandler is not null)
@@ -515,6 +533,12 @@ internal sealed class ServerSession
 				await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 
 			m_payloadHandler.ByteHandler.RemainingTimeout = Constants.InfiniteTimeout;
+
+			m_activityTags.Add(ActivitySourceHelper.DatabaseConnectionIdTagName, ConnectionId.ToString(CultureInfo.InvariantCulture));
+			m_activityTags.Add(ActivitySourceHelper.DatabaseConnectionStringTagName, cs.ConnectionStringBuilder.GetConnectionString(cs.ConnectionStringBuilder.PersistSecurityInfo));
+			m_activityTags.Add(ActivitySourceHelper.DatabaseUserTagName, cs.UserID);
+			if (cs.Database.Length != 0)
+				m_activityTags.Add(ActivitySourceHelper.DatabaseNameTagName, cs.Database);
 		}
 		catch (ArgumentException ex)
 		{
@@ -1032,6 +1056,14 @@ internal sealed class ServerSession
 					m_socket.NoDelay = true;
 					m_stream = m_tcpClient.GetStream();
 					m_socket.SetKeepAlive(cs.Keepalive);
+
+					m_activityTags.Add(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportTcpIpValue);
+					var ipAddressString = ipAddress.ToString();
+					m_activityTags.Add(ActivitySourceHelper.NetPeerIpTagName, ipAddressString);
+					if (ipAddressString != hostName)
+						m_activityTags.Add(ActivitySourceHelper.NetPeerNameTagName, hostName);
+					if (cs.Port != 3306)
+						m_activityTags.Add(ActivitySourceHelper.NetPeerPortTagName, cs.Port.ToString(CultureInfo.InvariantCulture));
 				}
 				catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
 				{
@@ -1089,6 +1121,9 @@ internal sealed class ServerSession
 			m_socket = socket;
 			m_stream = new NetworkStream(socket);
 
+			m_activityTags.Add(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportUnixValue);
+			m_activityTags.Add(ActivitySourceHelper.NetPeerNameTagName, cs.UnixSocket);
+
 			lock (m_lock)
 				m_state = State.Connected;
 			return true;
@@ -1138,6 +1173,10 @@ internal sealed class ServerSession
 		if (namedPipeStream.IsConnected)
 		{
 			m_stream = namedPipeStream;
+
+			// see https://docs.microsoft.com/en-us/windows/win32/ipc/pipe-names for pipe name format
+			m_activityTags.Add(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportNamedPipeValue);
+			m_activityTags.Add(ActivitySourceHelper.NetPeerNameTagName, @"\\" + cs.HostNames![0] + @"\pipe\" + cs.PipeName);
 
 			lock (m_lock)
 				m_state = State.Connected;
@@ -1790,5 +1829,6 @@ internal sealed class ServerSession
 	bool m_supportsSessionTrack;
 	CharacterSet m_characterSet;
 	PayloadData m_setNamesPayload;
+	ActivityTagsCollection m_activityTags;
 	Dictionary<string, PreparedStatements>? m_preparedStatements;
 }

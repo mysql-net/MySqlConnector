@@ -4,7 +4,7 @@ using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;
 
-#if NET45
+#if NET45 || NET461
 namespace System.Data.Common
 {
 	public abstract class DbColumn

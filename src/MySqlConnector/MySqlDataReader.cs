@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
@@ -433,13 +434,14 @@ public sealed class MySqlDataReader : DbDataReader
 	public Task DisposeAsync() => DisposeAsync(Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, CancellationToken.None);
 #endif
 
+	internal Activity? Activity { get; }
 	internal IMySqlCommand? Command { get; private set; }
 	internal MySqlConnection? Connection => Command?.Connection;
 	internal ServerSession? Session => Command?.Connection!.Session;
 
-	internal static async Task<MySqlDataReader> CreateAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary<string, CachedProcedure?>? cachedProcedures, IMySqlCommand command, CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	internal static async Task<MySqlDataReader> CreateAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary<string, CachedProcedure?>? cachedProcedures, IMySqlCommand command, CommandBehavior behavior, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		var dataReader = new MySqlDataReader(commandListPosition, payloadCreator, cachedProcedures, command, behavior);
+		var dataReader = new MySqlDataReader(commandListPosition, payloadCreator, cachedProcedures, command, behavior, activity);
 		command.Connection!.SetActiveReader(dataReader);
 
 		try
@@ -557,7 +559,7 @@ public sealed class MySqlDataReader : DbDataReader
 		return schemaTable;
 	}
 
-	private MySqlDataReader(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary<string, CachedProcedure?>? cachedProcedures, IMySqlCommand command, CommandBehavior behavior)
+	private MySqlDataReader(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary<string, CachedProcedure?>? cachedProcedures, IMySqlCommand command, CommandBehavior behavior, Activity? activity)
 	{
 		m_commandListPosition = commandListPosition;
 		m_payloadCreator = payloadCreator;
@@ -565,6 +567,7 @@ public sealed class MySqlDataReader : DbDataReader
 		Command = command;
 		m_behavior = behavior;
 		m_resultSet = new(this);
+		Activity = activity;
 	}
 
 #if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
@@ -598,6 +601,9 @@ public sealed class MySqlDataReader : DbDataReader
 			var connection = Command!.Connection!;
 			Command.CancellableCommand.SetTimeout(Constants.InfiniteTimeout);
 			connection.FinishQuerying(m_hasWarnings);
+
+			Activity.SetSuccess();
+			Activity?.Stop();
 
 			if ((m_behavior & CommandBehavior.CloseConnection) != 0)
 				await connection.CloseAsync(ioBehavior).ConfigureAwait(false);
