@@ -335,14 +335,15 @@ internal sealed class ServerSession
 
 	public void SetTimeout(int timeoutMilliseconds) => m_payloadHandler!.ByteHandler.RemainingTimeout = timeoutMilliseconds;
 
-	public Activity? StartActivity(string name, string tagName1, object tagValue1)
+	public Activity? StartActivity(string name, string? tagName1 = null, object? tagValue1 = null)
 	{
 		var activity = ActivitySourceHelper.StartActivity(name, m_activityTags);
 		if (activity is { IsAllDataRequested: true })
 		{
 			if (DatabaseOverride is not null)
 				activity.SetTag(ActivitySourceHelper.DatabaseNameTagName, DatabaseOverride);
-			activity.SetTag(tagName1, tagValue1);
+			if (tagName1 is not null)
+				activity.SetTag(tagName1, tagValue1);
 		}
 		return activity;
 	}

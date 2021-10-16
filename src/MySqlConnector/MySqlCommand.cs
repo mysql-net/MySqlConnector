@@ -131,6 +131,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	bool IMySqlCommand.AllowUserVariables => AllowUserVariables;
 
 	internal bool AllowUserVariables { get; set; }
+	internal bool NoActivity { get; set; }
 
 	private Task PrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
@@ -316,7 +317,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		if (!IsValid(out var exception))
 			return Utility.TaskFromException<MySqlDataReader>(exception);
 
-		var activity = Connection!.Session.StartActivity(ActivitySourceHelper.ExecuteActivityName,
+		var activity = NoActivity ? null : Connection!.Session.StartActivity(ActivitySourceHelper.ExecuteActivityName,
 			ActivitySourceHelper.DatabaseStatementTagName, CommandText);
 		m_commandBehavior = behavior;
 		return CommandExecutor.ExecuteReaderAsync(new IMySqlCommand[] { this }, SingleCommandPayloadCreator.Instance, behavior, activity, ioBehavior, cancellationToken);

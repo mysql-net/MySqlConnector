@@ -148,7 +148,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			_ => throw new NotSupportedException("IsolationLevel.{0} is not supported.".FormatInvariant(isolationLevel))
 		};
 
-		using (var cmd = new MySqlCommand($"set session transaction isolation level {isolationLevelValue};", this))
+		using (var cmd = new MySqlCommand($"set session transaction isolation level {isolationLevelValue};", this) { NoActivity = true })
 		{
 			await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 

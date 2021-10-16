@@ -29,10 +29,20 @@ public sealed class MySqlTransaction : DbTransaction
 	{
 		VerifyValid();
 
-		using (var cmd = new MySqlCommand("commit", Connection, this))
-			await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-		Connection!.CurrentTransaction = null;
-		Connection = null;
+		using var activity = Connection!.Session.StartActivity("Commit");
+		try
+		{
+			using (var cmd = new MySqlCommand("commit", Connection, this) { NoActivity = true })
+				await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			Connection!.CurrentTransaction = null;
+			Connection = null;
+			activity.SetSuccess();
+		}
+		catch (Exception ex) when (activity is { IsAllDataRequested: true })
+		{
+			activity.SetException(ex);
+			throw;
+		}
 	}
 
 	/// <summary>
@@ -55,8 +65,7 @@ public sealed class MySqlTransaction : DbTransaction
 	{
 		VerifyValid();
 
-		using (var cmd = new MySqlCommand("rollback", Connection, this))
-			await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+		await DoRollback(ioBehavior, cancellationToken).ConfigureAwait(false);
 		Connection!.CurrentTransaction = null;
 		Connection = null;
 	}
@@ -146,7 +155,7 @@ public sealed class MySqlTransaction : DbTransaction
 		if (savepointName.Length == 0)
 			throw new ArgumentException("savepointName must not be empty", nameof(savepointName));
 
-		using var cmd = new MySqlCommand(command + "savepoint " + QuoteIdentifier(savepointName), Connection, this);
+		using var cmd = new MySqlCommand(command + "savepoint " + QuoteIdentifier(savepointName), Connection, this) { NoActivity = true };
 		await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
 
@@ -224,8 +233,7 @@ public sealed class MySqlTransaction : DbTransaction
 			{
 				try
 				{
-					using var cmd = new MySqlCommand("rollback", Connection, this);
-					await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					await DoRollback(ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				catch (IOException)
 				{
@@ -243,6 +251,22 @@ public sealed class MySqlTransaction : DbTransaction
 	{
 		Connection = connection;
 		IsolationLevel = isolationLevel;
+	}
+
+	private async Task DoRollback(IOBehavior ioBehavior, CancellationToken cancellationToken)
+	{
+		using var activity = Connection!.Session.StartActivity("Rollback");
+		try
+		{
+			using var cmd = new MySqlCommand("rollback", Connection, this) { NoActivity = true };
+			await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			activity.SetSuccess();
+		}
+		catch (Exception ex) when(activity is { IsAllDataRequested: true })
+		{
+			activity.SetException(ex);
+			throw;
+		}
 	}
 
 	private void VerifyValid()
