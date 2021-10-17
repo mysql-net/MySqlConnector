@@ -41,6 +41,7 @@ title: MySqlConnector
 | class [MySqlParameter](../MySqlConnector/MySqlParameterType/) |  |
 | class [MySqlParameterCollection](../MySqlConnector/MySqlParameterCollectionType/) |  |
 | class [MySqlProtocolException](../MySqlConnector/MySqlProtocolExceptionType/) | [`MySqlProtocolException`](../MySqlConnector/MySqlProtocolExceptionType/) is thrown when there is an internal protocol error communicating with MySQL Server. |
+| class [MySqlProvidePasswordContext](../MySqlConnector/MySqlProvidePasswordContextType/) | Provides context for the [`ProvidePasswordCallback`](../MySqlConnector/MySqlConnection/ProvidePasswordCallback/) delegate. |
 | class [MySqlRowsCopiedEventArgs](../MySqlConnector/MySqlRowsCopiedEventArgsType/) |  |
 | delegate [MySqlRowsCopiedEventHandler](../MySqlConnector/MySqlRowsCopiedEventHandlerType/) | Represents the method that handles the [`MySqlRowsCopied`](../MySqlConnector/MySqlBulkCopy/MySqlRowsCopied/) event of a [`MySqlBulkCopy`](../MySqlConnector/MySqlBulkCopyType/). |
 | class [MySqlRowUpdatedEventArgs](../MySqlConnector/MySqlRowUpdatedEventArgsType/) |  |

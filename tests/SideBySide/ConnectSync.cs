@@ -231,6 +231,124 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		TestUtilities.AssertDuration(stopwatch, 2900, 1500);
 	}
 
+#if !BASELINE
+	[Fact]
+	public void UsePasswordProvider()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = null;
+
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		MySqlConnection.ClearPool(connection);
+
+		var wasCalled = false;
+		connection.ProvidePasswordCallback = x =>
+		{
+			Assert.Equal(csb.Server, x.Server);
+			Assert.Equal((int) csb.Port, x.Port);
+			Assert.Equal(csb.UserID, x.UserId);
+			Assert.Equal(csb.Database, x.Database);
+			wasCalled = true;
+			return password;
+		};
+
+		connection.Open();
+		Assert.True(wasCalled);
+	}
+
+	[Fact]
+	public void UsePasswordProviderPasswordTakesPrecedence()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		MySqlConnection.ClearPool(connection);
+
+		var wasCalled = false;
+		connection.ProvidePasswordCallback = _ => { wasCalled = true; return password; };
+
+		connection.Open();
+		Assert.False(wasCalled);
+	}
+
+	[Fact]
+	public void UsePasswordProviderWithBadPassword()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = null;
+
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		MySqlConnection.ClearPool(connection);
+
+		connection.ProvidePasswordCallback = _ => $"wrong_{password}";
+
+		var ex = Assert.Throws<MySqlException>(() => connection.Open());
+		Assert.Equal(MySqlErrorCode.AccessDenied, ex.ErrorCode);
+	}
+
+	[Fact]
+	public void UsePasswordProviderWithException()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = null;
+		csb.ConnectionTimeout = 60;
+
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		MySqlConnection.ClearPool(connection);
+
+		var innerException = new NotSupportedException();
+		connection.ProvidePasswordCallback = _ => throw innerException;
+
+		var ex = Assert.Throws<MySqlException>(() => connection.Open());
+		Assert.Equal(MySqlErrorCode.ProvidePasswordCallbackFailed, ex.ErrorCode);
+		Assert.Same(innerException, ex.InnerException);
+	}
+
+	[Fact]
+	public void UsePasswordProviderClone()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = null;
+
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		MySqlConnection.ClearPool(connection);
+		connection.ProvidePasswordCallback = _ => password;
+
+		using var clonedConnection = connection.Clone();
+		clonedConnection.Open();
+		Assert.Equal(ConnectionState.Closed, connection.State);
+		Assert.Equal(ConnectionState.Open, clonedConnection.State);
+	}
+
+	[SkippableFact(ServerFeatures.ResetConnection)]
+	public void UsePasswordProviderWithMinimumPoolSize()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = null;
+		csb.MinimumPoolSize = 3;
+		csb.MaximumPoolSize = 102;
+
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		MySqlConnection.ClearPool(connection);
+
+		var invocationCount = 0;
+		connection.ProvidePasswordCallback = _ =>
+		{
+			invocationCount++;
+			return password;
+		};
+
+		connection.Open();
+		Assert.Equal((int) csb.MinimumPoolSize, invocationCount);
+	}
+#endif
+
 	[Fact]
 	public void ConnectionDatabase()
 	{

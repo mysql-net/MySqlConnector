@@ -391,7 +391,7 @@ internal sealed class ServerSession
 			m_state = State.Closed;
 	}
 
-	public async Task<string?> ConnectAsync(ConnectionSettings cs, int startTickCount, ILoadBalancer? loadBalancer, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public async Task<string?> ConnectAsync(ConnectionSettings cs, MySqlConnection connection, int startTickCount, ILoadBalancer? loadBalancer, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		string? statusInfo = null;
 
@@ -508,14 +508,15 @@ internal sealed class ServerSession
 			if (m_supportsConnectionAttributes && cs.ConnectionAttributes is null)
 				cs.ConnectionAttributes = CreateConnectionAttributes(cs.ApplicationName);
 
-			using (var handshakeResponsePayload = HandshakeResponse41Payload.Create(initialHandshake, cs, m_useCompression, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
+			var password = GetPassword(cs, connection);
+			using (var handshakeResponsePayload = HandshakeResponse41Payload.Create(initialHandshake, cs, password, m_useCompression, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
 				await SendReplyAsync(handshakeResponsePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			// if server doesn't support the authentication fast path, it will send a new challenge
 			if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 			{
-				payload = await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await SwitchAuthenticationAsync(cs, password, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 
 			var ok = OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
@@ -554,7 +555,7 @@ internal sealed class ServerSession
 		return statusInfo;
 	}
 
-	public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, MySqlConnection? owningConnection, bool returnToPool, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, MySqlConnection connection, bool returnToPool, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		VerifyState(State.Connected);
 
@@ -587,14 +588,15 @@ internal sealed class ServerSession
 					Log.Debug("Session{0} sending change user request due to changed Database={1}", m_logArguments);
 					DatabaseOverride = null;
 				}
-				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData!, cs.Password);
+				var password = GetPassword(cs, connection);
+				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData!, password);
 				using (var changeUserPayload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
 					await SendAsync(changeUserPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 				{
 					Log.Trace("Session{0} optimistic reauthentication failed; logging in again", m_logArguments);
-					payload = await SwitchAuthenticationAsync(cs, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+					payload = await SwitchAuthenticationAsync(cs, password, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 			}
@@ -626,15 +628,12 @@ internal sealed class ServerSession
 		if (returnToPool && Pool is not null)
 		{
 			await Pool.ReturnAsync(ioBehavior, this).ConfigureAwait(false);
-
-			// make sure the MySqlConnection is kept alive until the session is returned to the pool; this prevents it from potentially being detected as "leaked"
-			GC.KeepAlive(owningConnection);
 		}
 
 		return success;
 	}
 
-	private async Task<PayloadData> SwitchAuthenticationAsync(ConnectionSettings cs, PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task<PayloadData> SwitchAuthenticationAsync(ConnectionSettings cs, string password, PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		// if the server didn't support the hashed password; rehash with the new challenge
 		var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload.Span);
@@ -644,7 +643,7 @@ internal sealed class ServerSession
 		{
 		case "mysql_native_password":
 			AuthPluginData = switchRequest.Data;
-			var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, cs.Password);
+			var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, password);
 			payload = new(hashedPassword);
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -656,14 +655,14 @@ internal sealed class ServerSession
 				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Authentication method '{0}' requires a secure connection.".FormatInvariant(switchRequest.Name));
 			}
 			// send the password as a NULL-terminated UTF-8 string
-			var passwordBytes = Encoding.UTF8.GetBytes(cs.Password);
+			var passwordBytes = Encoding.UTF8.GetBytes(password);
 			Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
 			payload = new(passwordBytes);
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 		case "caching_sha2_password":
-			var scrambleBytes = AuthenticationUtility.CreateScrambleResponse(Utility.TrimZeroByte(switchRequest.Data.AsSpan()), cs.Password);
+			var scrambleBytes = AuthenticationUtility.CreateScrambleResponse(Utility.TrimZeroByte(switchRequest.Data.AsSpan()), password);
 			payload = new(scrambleBytes);
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -679,19 +678,19 @@ internal sealed class ServerSession
 			goto case "sha256_password";
 
 		case "sha256_password":
-			if (!m_isSecureConnection && cs.Password.Length > 1)
+			if (!m_isSecureConnection && password.Length > 1)
 			{
 #if NET45
 				Log.Error("Session{0} can't use AuthenticationMethod '{1}' without secure connection on .NET 4.5", m_logArguments);
 				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
 #else
 				var publicKey = await GetRsaPublicKeyAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
-				return await SendEncryptedPasswordAsync(switchRequest, publicKey, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+				return await SendEncryptedPasswordAsync(switchRequest, publicKey, password, ioBehavior, cancellationToken).ConfigureAwait(false);
 #endif
 			}
 			else
 			{
-				return await SendClearPasswordAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+				return await SendClearPasswordAsync(password, ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 
 		case "auth_gssapi_client":
@@ -704,7 +703,7 @@ internal sealed class ServerSession
 		case "client_ed25519":
 			if (!AuthenticationPlugins.TryGetPlugin(switchRequest.Name, out var ed25519Plugin))
 				throw new NotSupportedException("You must install the MySqlConnector.Authentication.Ed25519 package and call Ed25519AuthenticationPlugin.Install to use client_ed25519 authentication.");
-			payload = new(ed25519Plugin.CreateResponse(cs.Password, switchRequest.Data));
+			payload = new(ed25519Plugin.CreateResponse(password, switchRequest.Data));
 			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
@@ -714,10 +713,10 @@ internal sealed class ServerSession
 		}
 	}
 
-	private async Task<PayloadData> SendClearPasswordAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task<PayloadData> SendClearPasswordAsync(string password, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		// add NUL terminator to password
-		var passwordBytes = Encoding.UTF8.GetBytes(cs.Password);
+		var passwordBytes = Encoding.UTF8.GetBytes(password);
 		Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
 
 		// send plaintext password
@@ -730,7 +729,7 @@ internal sealed class ServerSession
 	private async Task<PayloadData> SendEncryptedPasswordAsync(
 		AuthenticationMethodSwitchRequestPayload switchRequest,
 		string rsaPublicKey,
-		ConnectionSettings cs,
+		string password,
 		IOBehavior ioBehavior,
 		CancellationToken cancellationToken)
 	{
@@ -762,7 +761,7 @@ internal sealed class ServerSession
 #endif
 
 		// add NUL terminator to password
-		var passwordBytes = Encoding.UTF8.GetBytes(cs.Password);
+		var passwordBytes = Encoding.UTF8.GetBytes(password);
 		Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
 
 		// XOR the password bytes with the challenge
@@ -1754,6 +1753,29 @@ internal sealed class ServerSession
 				pair.Value.Dispose();
 			m_preparedStatements.Clear();
 		}
+	}
+
+	private string GetPassword(ConnectionSettings cs, MySqlConnection connection)
+	{
+		if (cs.Password.Length != 0)
+			return cs.Password;
+
+		if (connection.ProvidePasswordCallback is { } passwordProvider)
+		{
+			try
+			{
+				Log.Trace("Session{0} obtaining password via ProvidePasswordCallback", m_logArguments);
+				return passwordProvider(new(HostName, cs.Port, cs.UserID, cs.Database));
+			}
+			catch (Exception e)
+			{
+				m_logArguments[1] = e.Message;
+				Log.Error("Session{0} failed to obtain password via ProvidePasswordCallback: {1}", m_logArguments);
+				throw new MySqlException(MySqlErrorCode.ProvidePasswordCallbackFailed, "Failed to obtain password via ProvidePasswordCallback", e);
+			}
+		}
+
+		return "";
 	}
 
 	private enum State

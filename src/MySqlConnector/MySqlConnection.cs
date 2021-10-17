@@ -497,6 +497,21 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	public int ServerThread => Session.ConnectionId;
 
 	/// <summary>
+	/// Gets or sets the delegate used to generate a password for new database connections.
+	/// </summary>
+	/// <remarks>
+	/// <para>This delegate is executed when a new database connection is opened that requires a password. Due to
+	/// connection pooling, this delegate is only executed when a new physical connection is established with a database
+	/// server, not when a connection is retrieved from the pool.</para>
+	/// <para>The <see cref="MySqlConnectionStringBuilder.Password"/> option takes precedence over this
+	/// delegate if it is specified.</para>
+	/// <para>Using this delegate can make more efficient use of connection pooling for servers that require
+	/// frequently-changing passwords or authentication tokens. Changing the password in the connection string
+	/// will create unique connection pools; this delegate allows a single connection pool to use multiple passwords.</para>
+	/// </remarks>
+	public Func<MySqlProvidePasswordContext, string>? ProvidePasswordCallback { get; set;}
+
+	/// <summary>
 	/// Clears the connection pool that <paramref name="connection"/> belongs to.
 	/// </summary>
 	/// <param name="connection">The <see cref="MySqlConnection"/> whose connection pool will be cleared.</param>
@@ -657,7 +672,10 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	public MySqlConnection Clone() => new(m_connectionString, m_hasBeenOpened);
+	public MySqlConnection Clone() => new(m_connectionString, m_hasBeenOpened)
+	{
+		ProvidePasswordCallback = ProvidePasswordCallback,
+	};
 
 	object ICloneable.Clone() => Clone();
 
@@ -677,7 +695,10 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		var shouldCopyPassword = newBuilder.Password.Length == 0 && (!newBuilder.PersistSecurityInfo || currentBuilder.PersistSecurityInfo);
 		if (shouldCopyPassword)
 			newBuilder.Password = currentBuilder.Password;
-		return new MySqlConnection(newBuilder.ConnectionString, m_hasBeenOpened && shouldCopyPassword && !currentBuilder.PersistSecurityInfo);
+		return new MySqlConnection(newBuilder.ConnectionString, m_hasBeenOpened && shouldCopyPassword && !currentBuilder.PersistSecurityInfo)
+		{
+			ProvidePasswordCallback = ProvidePasswordCallback,
+		};
 	}
 
 	internal ServerSession Session
@@ -876,7 +897,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				var session = new ServerSession();
 				session.OwningConnection = new WeakReference<MySqlConnection>(this);
 				Log.Debug("Created new non-pooled Session{0}", session.Id);
-				await session.ConnectAsync(connectionSettings, startTickCount, loadBalancer, actualIOBehavior, connectToken).ConfigureAwait(false);
+				await session.ConnectAsync(connectionSettings, this, startTickCount, loadBalancer, actualIOBehavior, connectToken).ConfigureAwait(false);
 				return session;
 			}
 		}

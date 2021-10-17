@@ -50,12 +50,12 @@ internal static class HandshakeResponse41Payload
 	public static PayloadData CreateWithSsl(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, bool useCompression, CharacterSet characterSet) =>
 		CreateCapabilitiesPayload(serverCapabilities, cs, useCompression, characterSet, ProtocolCapabilities.Ssl).ToPayloadData();
 
-	public static PayloadData Create(InitialHandshakePayload handshake, ConnectionSettings cs, bool useCompression, CharacterSet characterSet, byte[]? connectionAttributes)
+	public static PayloadData Create(InitialHandshakePayload handshake, ConnectionSettings cs, string password, bool useCompression, CharacterSet characterSet, byte[]? connectionAttributes)
 	{
 		// TODO: verify server capabilities
 		var writer = CreateCapabilitiesPayload(handshake.ProtocolCapabilities, cs, useCompression, characterSet);
 		writer.WriteNullTerminatedString(cs.UserID);
-		var authenticationResponse = AuthenticationUtility.CreateAuthenticationResponse(handshake.AuthPluginData, cs.Password);
+		var authenticationResponse = AuthenticationUtility.CreateAuthenticationResponse(handshake.AuthPluginData, password);
 		writer.Write((byte) authenticationResponse.Length);
 		writer.Write(authenticationResponse);
 

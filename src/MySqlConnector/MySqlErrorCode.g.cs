@@ -6,6 +6,11 @@ namespace MySqlConnector;
 [System.CodeDom.Compiler.GeneratedCode("https://gist.github.com/bgrainger/791cecb647d514a9dd2f3d83b2387e49", "5")]
 public enum MySqlErrorCode
 {
+	/// <summary>
+	/// The delegate provided to <see cref="MySqlConnection.ProvidePasswordCallback"/> failed.
+	/// </summary>
+	ProvidePasswordCallbackFailed = -4,
+
 	DelimiterNotSupported = -3,
 
 	/// <summary>

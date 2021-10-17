@@ -14,6 +14,7 @@ public enum MySqlErrorCode
 
 | name | value | description |
 | --- | --- | --- |
+| ProvidePasswordCallbackFailed | `-4` | The delegate provided to [`ProvidePasswordCallback`](../MySqlConnection/ProvidePasswordCallback/) failed. |
 | DelimiterNotSupported | `-3` |  |
 | BulkCopyFailed | `-2` | Not all rows from the source supplied to [`MySqlBulkCopy`](../MySqlBulkCopyType/) were copied to [`DestinationTableName`](../MySqlBulkCopy/DestinationTableName/). |
 | CommandTimeoutExpired | `-1` | The timeout period specified by [`CommandTimeout`](../MySqlCommand/CommandTimeout/) elapsed before the operation completed. |

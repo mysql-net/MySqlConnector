@@ -34,7 +34,10 @@ These are the basic options that need to be defined to connect to a MySQL databa
   <tr id="Host">
     <td><a name="Server"></a>Server, Host, Data Source, DataSource, Address, Addr, Network Address</td>
     <td>localhost</td>
-    <td>The host name or network address of the MySQL Server to which to connect. Multiple hosts can be specified in a comma-delimited list.<br>On Unix-like systems, this can be a fully qualified path to a MySQL socket file, which will cause a Unix socket to be used instead of a TCP/IP socket. Only a single socket name can be specified.</td>
+    <td>
+      <p>The host name or network address of the MySQL Server to which to connect. Multiple hosts can be specified in a comma-delimited list.</p>
+      <p>On Unix-like systems, this can be a fully qualified path to a MySQL socket file, which will cause a Unix socket to be used instead of a TCP/IP socket. Only a single socket name can be specified.</p>
+    </td>
   </tr>
   <tr id="Port">
     <td>Port</td>
@@ -49,7 +52,10 @@ These are the basic options that need to be defined to connect to a MySQL databa
   <tr id="Password">
     <td>Password, pwd</td>
     <td></td>
-    <td>The password for the MySQL user.</td>
+    <td>
+      <p>The password for the MySQL user.</p>
+      <p>For systems that use frequently-updated authentication tokens (such as Amazon Aurora RDS with IAM Authentication), leave this value empty, and set <a href="/api/mysqlconnector/mysqlconnection/providepasswordcallback/"><code>MySqlConnection.ProvidePasswordCallback</code></a> to a delegate that will provide the password (or authentication token) on demand before calling <a href="/api/mysqlconnector/mysqlconnection/open/"><code>MySqlConnection.Open</code></a>. This retains the benefits of connection pooling.</p>
+    </td>
   </tr>
   <tr id="Database">
     <td>Database, Initial Catalog</td>

@@ -144,6 +144,123 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		TestUtilities.AssertDuration(stopwatch, 1900, 1500);
 	}
 
+#if !BASELINE
+	[Fact]
+	public async Task UsePasswordProvider()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = null;
+
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		await MySqlConnection.ClearPoolAsync(connection);
+
+		var wasCalled = false;
+		connection.ProvidePasswordCallback = x =>
+		{
+			Assert.Equal(csb.Server, x.Server);
+			Assert.Equal((int) csb.Port, x.Port);
+			Assert.Equal(csb.UserID, x.UserId);
+			Assert.Equal(csb.Database, x.Database);
+			wasCalled = true;
+			return password;
+		};
+
+		await connection.OpenAsync();
+		Assert.True(wasCalled);
+	}
+
+	[Fact]
+	public async Task UsePasswordProviderPasswordTakesPrecedence()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		await MySqlConnection.ClearPoolAsync(connection);
+
+		var wasCalled = false;
+		connection.ProvidePasswordCallback = _ => { wasCalled = true; return password; };
+
+		await connection.OpenAsync();
+		Assert.False(wasCalled);
+	}
+
+	[Fact]
+	public async Task UsePasswordProviderWithBadPassword()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = null;
+
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		await MySqlConnection.ClearPoolAsync(connection);
+
+		connection.ProvidePasswordCallback = _ => $"wrong_{password}";
+
+		var ex = await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+		Assert.Equal(MySqlErrorCode.AccessDenied, ex.ErrorCode);
+	}
+
+	[Fact]
+	public async Task UsePasswordProviderWithException()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = null;
+
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		await MySqlConnection.ClearPoolAsync(connection);
+
+		var innerException = new NotSupportedException();
+		connection.ProvidePasswordCallback = _ => throw innerException;
+
+		var ex = await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+		Assert.Equal(MySqlErrorCode.ProvidePasswordCallbackFailed, ex.ErrorCode);
+		Assert.Same(innerException, ex.InnerException);
+	}
+
+	[Fact]
+	public async Task UsePasswordProviderClone()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = null;
+
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		MySqlConnection.ClearPool(connection);
+		connection.ProvidePasswordCallback = _ => password;
+
+		using var clonedConnection = connection.Clone();
+		await clonedConnection.OpenAsync();
+		Assert.Equal(ConnectionState.Closed, connection.State);
+		Assert.Equal(ConnectionState.Open, clonedConnection.State);
+	}
+
+	[SkippableFact(ServerFeatures.ResetConnection)]
+	public async Task UsePasswordProviderWithMinimumPoolSize()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = null;
+		csb.MinimumPoolSize = 3;
+		csb.MaximumPoolSize = 101;
+
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		MySqlConnection.ClearPool(connection);
+
+		var invocationCount = 0;
+		connection.ProvidePasswordCallback = _ =>
+		{
+			invocationCount++;
+			return password;
+		};
+
+		await connection.OpenAsync();
+		Assert.Equal((int) csb.MinimumPoolSize, invocationCount);
+	}
+#endif
+
 	[Fact]
 	public async Task ConnectionDatabase()
 	{

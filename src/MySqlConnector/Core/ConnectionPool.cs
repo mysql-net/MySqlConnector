@@ -28,7 +28,7 @@ internal sealed class ConnectionPool
 		}
 
 		if (ConnectionSettings.MinimumPoolSize > 0)
-			await CreateMinimumPooledSessions(ioBehavior, cancellationToken).ConfigureAwait(false);
+			await CreateMinimumPooledSessions(connection, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 		// wait for an open slot (until the cancellationToken is cancelled, which is typically due to timeout)
 		Log.Trace("Pool{0} waiting for an available session", m_logArguments);
@@ -62,7 +62,7 @@ internal sealed class ConnectionPool
 				else
 				{
 					if (ConnectionSettings.ConnectionReset || session.DatabaseOverride is not null)
-						reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, null, false, ioBehavior, cancellationToken).ConfigureAwait(false);
+						reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, connection, false, ioBehavior, cancellationToken).ConfigureAwait(false);
 					else
 						reuseSession = true;
 				}
@@ -91,7 +91,7 @@ internal sealed class ConnectionPool
 			}
 
 			// create a new session
-			session = await ConnectSessionAsync("Pool{0} no pooled session available; created new Session{1}", startTickCount, ioBehavior, cancellationToken).ConfigureAwait(false);
+			session = await ConnectSessionAsync(connection, "Pool{0} no pooled session available; created new Session{1}", startTickCount, ioBehavior, cancellationToken).ConfigureAwait(false);
 			AdjustHostConnectionCount(session, 1);
 			session.OwningConnection = new(connection);
 			int leasedSessionsCountNew;
@@ -316,7 +316,7 @@ internal sealed class ConnectionPool
 		}
 	}
 
-	private async Task CreateMinimumPooledSessions(IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task CreateMinimumPooledSessions(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		while (true)
 		{
@@ -342,7 +342,7 @@ internal sealed class ConnectionPool
 
 			try
 			{
-				var session = await ConnectSessionAsync("Pool{0} created Session{1} to reach minimum pool size", Environment.TickCount, ioBehavior, cancellationToken).ConfigureAwait(false);
+				var session = await ConnectSessionAsync(connection, "Pool{0} created Session{1} to reach minimum pool size", Environment.TickCount, ioBehavior, cancellationToken).ConfigureAwait(false);
 				AdjustHostConnectionCount(session, 1);
 				lock (m_sessions)
 					m_sessions.AddFirst(session);
@@ -355,12 +355,12 @@ internal sealed class ConnectionPool
 		}
 	}
 
-	private async ValueTask<ServerSession> ConnectSessionAsync(string logMessage, int startTickCount, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async ValueTask<ServerSession> ConnectSessionAsync(MySqlConnection connection, string logMessage, int startTickCount, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		var session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 		if (Log.IsDebugEnabled())
 			Log.Debug(logMessage, m_logArguments[0], session.Id);
-		var statusInfo = await session.ConnectAsync(ConnectionSettings, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+		var statusInfo = await session.ConnectAsync(ConnectionSettings, connection, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
 		Exception? redirectionException = null;
 
 		if (statusInfo is not null && statusInfo.StartsWith("Location: mysql://", StringComparison.Ordinal))
@@ -381,7 +381,7 @@ internal sealed class ConnectionPool
 					var redirectedSession = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 					try
 					{
-						await redirectedSession.ConnectAsync(redirectedSettings, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+						await redirectedSession.ConnectAsync(redirectedSettings, connection, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
 					catch (Exception ex)
 					{
