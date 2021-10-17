@@ -678,7 +678,7 @@ internal sealed class ServerSession
 			goto case "sha256_password";
 
 		case "sha256_password":
-			if (!m_isSecureConnection && password.Length > 1)
+			if (!m_isSecureConnection && password.Length != 0)
 			{
 #if NET45
 				Log.Error("Session{0} can't use AuthenticationMethod '{1}' without secure connection on .NET 4.5", m_logArguments);
