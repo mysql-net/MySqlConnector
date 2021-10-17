@@ -14,3 +14,4 @@
 *.woff2 binary
 *.pfx binary
 
+docs/content/api/** linguist-generated=true
