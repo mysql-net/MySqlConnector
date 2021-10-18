@@ -21,6 +21,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 | override [ConnectionTimeout](../MySqlConnection/ConnectionTimeout/) { get; } | Gets the time (in seconds) to wait while trying to establish a connection before terminating the attempt and generating an error. This value is controlled by [`ConnectionTimeout`](../MySqlConnectionStringBuilder/ConnectionTimeout/), which defaults to 15 seconds. |
 | override [Database](../MySqlConnection/Database/) { get; } |  |
 | override [DataSource](../MySqlConnection/DataSource/) { get; } |  |
+| [ProvideClientCertificatesCallback](../MySqlConnection/ProvideClientCertificatesCallback/) { get; set; } | Gets or sets the delegate used to provide client certificates for connecting to a server. |
 | [ProvidePasswordCallback](../MySqlConnection/ProvidePasswordCallback/) { get; set; } | Gets or sets the delegate used to generate a password for new database connections. |
 | [ServerThread](../MySqlConnection/ServerThread/) { get; } | The connection ID from MySQL Server. |
 | override [ServerVersion](../MySqlConnection/ServerVersion/) { get; } |  |

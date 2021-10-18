@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using MySqlConnector.Core;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Payloads;
@@ -497,6 +498,16 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	public int ServerThread => Session.ConnectionId;
 
 	/// <summary>
+	/// Gets or sets the delegate used to provide client certificates for connecting to a server.
+	/// </summary>
+	/// <remarks>The provided <see cref="X509CertificateCollection"/> should be filled with the client certificate(s) needed to connect to the server.</remarks>
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+	public Func<X509CertificateCollection, ValueTask>? ProvideClientCertificatesCallback { get; set; }
+#else
+	public Func<X509CertificateCollection, Task>? ProvideClientCertificatesCallback { get; set; }
+#endif
+
+	/// <summary>
 	/// Gets or sets the delegate used to generate a password for new database connections.
 	/// </summary>
 	/// <remarks>
@@ -674,6 +685,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	public MySqlConnection Clone() => new(m_connectionString, m_hasBeenOpened)
 	{
+		ProvideClientCertificatesCallback = ProvideClientCertificatesCallback,
 		ProvidePasswordCallback = ProvidePasswordCallback,
 	};
 
@@ -697,6 +709,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			newBuilder.Password = currentBuilder.Password;
 		return new MySqlConnection(newBuilder.ConnectionString, m_hasBeenOpened && shouldCopyPassword && !currentBuilder.PersistSecurityInfo)
 		{
+			ProvideClientCertificatesCallback = ProvideClientCertificatesCallback,
 			ProvidePasswordCallback = ProvidePasswordCallback,
 		};
 	}

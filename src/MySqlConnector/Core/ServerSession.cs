@@ -218,9 +218,9 @@ internal sealed class ServerSession
 			{
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
-			catch (MySqlException exception)
+			catch (MySqlException ex)
 			{
-				ThrowIfStatementContainsDelimiter(exception, command);
+				ThrowIfStatementContainsDelimiter(ex, command);
 				throw;
 			}
 
@@ -482,7 +482,7 @@ internal sealed class ServerSession
 
 					try
 					{
-						await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, sslProtocols, ioBehavior, cancellationToken).ConfigureAwait(false);
+						await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, connection, sslProtocols, ioBehavior, cancellationToken).ConfigureAwait(false);
 						shouldRetrySsl = false;
 					}
 					catch (ArgumentException ex) when (ex.ParamName == "sslProtocolType" && sslProtocols == SslProtocols.None)
@@ -1185,7 +1185,7 @@ internal sealed class ServerSession
 		return false;
 	}
 
-	private async Task InitSslAsync(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, SslProtocols sslProtocols, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task InitSslAsync(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, MySqlConnection connection, SslProtocols sslProtocols, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		Log.Trace("Session{0} initializing TLS connection", m_logArguments);
 		X509CertificateCollection? clientCertificates = null;
@@ -1261,6 +1261,21 @@ internal sealed class ServerSession
 				if (!File.Exists(cs.CertificateFile))
 					throw new MySqlException("Cannot find Certificate File", ex);
 				throw new MySqlException("Either the Certificate Password is incorrect or the Certificate File is invalid", ex);
+			}
+		}
+
+		if (clientCertificates is null && connection.ProvideClientCertificatesCallback is { } clientCertificatesProvider)
+		{
+			clientCertificates = new();
+			try
+			{
+				await clientCertificatesProvider(clientCertificates).ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				m_logArguments[1] = ex.Message;
+				Log.Error(ex, "Session{0} failed to obtain client certificates via ProvideClientCertificatesCallback: {1}", m_logArguments);
+				throw new MySqlException("Failed to obtain client certificates via ProvideClientCertificatesCallback", ex);
 			}
 		}
 
@@ -1767,11 +1782,11 @@ internal sealed class ServerSession
 				Log.Trace("Session{0} obtaining password via ProvidePasswordCallback", m_logArguments);
 				return passwordProvider(new(HostName, cs.Port, cs.UserID, cs.Database));
 			}
-			catch (Exception e)
+			catch (Exception ex)
 			{
-				m_logArguments[1] = e.Message;
-				Log.Error("Session{0} failed to obtain password via ProvidePasswordCallback: {1}", m_logArguments);
-				throw new MySqlException(MySqlErrorCode.ProvidePasswordCallbackFailed, "Failed to obtain password via ProvidePasswordCallback", e);
+				m_logArguments[1] = ex.Message;
+				Log.Error(ex, "Session{0} failed to obtain password via ProvidePasswordCallback: {1}", m_logArguments);
+				throw new MySqlException(MySqlErrorCode.ProvidePasswordCallbackFailed, "Failed to obtain password via ProvidePasswordCallback", ex);
 			}
 		}
 

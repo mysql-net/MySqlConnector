@@ -107,7 +107,10 @@ These are the options that need to be used in order to configure a connection to
   <tr id="CertificateFile">
     <td>Certificate File, CertificateFile</td>
     <td></td>
-    <td>The path to a certificate file in PKCS #12 (.pfx) format containing a bundled Certificate and Private Key used for mutual authentication. To create a PKCS #12 bundle from a PEM encoded Certificate and Key, use <code>openssl pkcs12 -in cert.pem -inkey key.pem -export -out bundle.pfx</code>. This option should not be specified if <code>SslCert</code> and <code>SslKey</code> are used.</td>
+    <td>
+      <p>The path to a certificate file in PKCS #12 (.pfx) format containing a bundled Certificate and Private Key used for mutual authentication. To create a PKCS #12 bundle from a PEM encoded Certificate and Key, use <code>openssl pkcs12 -in cert.pem -inkey key.pem -export -out bundle.pfx</code>. This option should not be specified if <code>SslCert</code> and <code>SslKey</code> are used.</p>
+      <p>If the certificate can't be loaded from a file path, leave this value empty and set <a href="/api/mysqlconnector/mysqlconnection/provideclientcertificatescallback/"><code>MySqlConnection.ProvideClientCertificatesCallback</code></a> before calling <a href="/api/mysqlconnector/mysqlconnection/open/"><code>MySqlConnection.Open</code></a>. The property should be set to an async delegate that will populate a <code>X509CertificateCollection</code> with the client certificate(s) needed to connect.</p>
+    </td>
   </tr>
   <tr id="CertificatePassword">
     <td>Certificate Password, CertificatePassword</td>
