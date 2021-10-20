@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-10-16
+lastmod: 2021-10-20
 date: 2017-03-27
 menu:
   main:
@@ -24,9 +24,7 @@ weight: 30
   * If the server has closed the pooled connection, `MySqlConnection.Open` will succeed, but the first operation on that connection will fail. Command execution should be wrapped in a try/catch/retry loop to handle this scenario.
 * Add more values to `MySqlErrorCode`: [#1048](https://github.com/mysql-net/MySqlConnector/issues/1048).
 * Fix bug executing stored procedures with backticks in their names: [#1029](https://github.com/mysql-net/MySqlConnector/issues/1029).
-* Remove inner exception for `UnableToConnectToHost` exception: [#1035](https://github.com/mysql-net/MySqlConnector/issues/1035).
 * Fix rare `ObjectDisposedException` that could be thrown when a connection timeout occurred.
-* Reword "recovering leaked sessions" log message.
 
 ### 1.4.0 Beta 3
 
@@ -45,7 +43,6 @@ weight: 30
 * Support .NET 6.0 Preview 7
   * **Breaking** Update the `MySqlBatch` (experimental API) to match the latest .NET 6.0 API changes.
 * Throw an informative exception if `DELIMITER` is used in a SQL statement: [#1010](https://github.com/mysql-net/MySqlConnector/issues/1010).
-* Fix bug that failed to deserialize a binary row (from a prepared statement) correctly: [#1018](https://github.com/mysql-net/MySqlConnector/issues/1018).
 
 ### 1.4.0 Beta 1
 
@@ -58,6 +55,10 @@ weight: 30
   * Support `DateOnly` and `TimeOnly` structs: [#963](https://github.com/mysql-net/MySqlConnector/issues/963).
   * Use `ZLibStream` for compression: [#957](https://github.com/mysql-net/MySqlConnector/issues/957).
   * Use `X_OR_GREATER` preprocessor definitions: [#958](https://github.com/mysql-net/MySqlConnector/issues/958).
+
+### 1.3.14
+
+* Fix bug that failed to deserialize a binary row (from a prepared statement) correctly: [#1018](https://github.com/mysql-net/MySqlConnector/issues/1018).
 
 ### 1.3.13
 
