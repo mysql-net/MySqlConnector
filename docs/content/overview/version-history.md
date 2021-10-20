@@ -10,6 +10,10 @@ weight: 30
 
 # Version History
 
+### 1.3.14
+
+* Fix bug that failed to deserialize a binary row (from a prepared statement) correctly: [#1018](https://github.com/mysql-net/MySqlConnector/issues/1018).
+
 ### 1.3.13
 
 * Remove inner exception for `UnableToConnectToHost` exception: [#1035](https://github.com/mysql-net/MySqlConnector/issues/1035).
