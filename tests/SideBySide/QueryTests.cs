@@ -1290,6 +1290,33 @@ $$";
 		Assert.Equal(MySqlDbType.DateTime, providerType);
 	}
 
+	[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=105209")]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void QueryTimeSpan(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+
+		connection.Execute(@"drop table if exists test_time;
+create table test_time(id int auto_increment not null primary key, tm time not null);
+insert into test_time(tm) values('00:00:00'),('01:01:01'),('00:00:00');");
+
+		string sql = "select tm from test_time order by id";
+		using var command = new MySqlCommand(sql, connection);
+		if (prepare)
+			command.Prepare();
+
+		using var reader = command.ExecuteReader();
+		Assert.True(reader.Read());
+		Assert.Equal(TimeSpan.Zero, reader.GetTimeSpan(0));
+		Assert.True(reader.Read());
+		Assert.Equal(new(1, 1, 1), reader.GetTimeSpan(0));
+		Assert.True(reader.Read());
+		Assert.Equal(TimeSpan.Zero, reader.GetTimeSpan(0));
+		Assert.False(reader.Read());
+	}
+
 	class BoolTest
 	{
 		public int Id { get; set; }

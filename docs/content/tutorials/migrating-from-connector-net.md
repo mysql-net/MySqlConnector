@@ -290,3 +290,4 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#103819](https://bugs.mysql.com/bug.php?id=103819): Can't use `StringBuilder` containing non-BMP characters as `MySqlParameter.Value`
 * [#104910](https://bugs.mysql.com/bug.php?id=104910): `MySqlConnectionStringBuilder.TryGetValue` always returns `false`
 * [#104913](https://bugs.mysql.com/bug.php?id=104913): Cannot execute stored procedure with backtick in name
+* [#105209](https://bugs.mysql.com/bug.php?id=105209): Timespan value of zero can't be read with prepared command
