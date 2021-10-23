@@ -91,11 +91,6 @@ jobs:
   steps:
   - template: '.ci/install-mysql-windows.yml'
   - task: UseDotNet@2
-    displayName: 'Install .NET Core 2.1'
-    inputs:
-      version: '2.1.x'
-      packageType: runtime
-  - task: UseDotNet@2
     displayName: 'Install .NET Core 3.1'
     inputs:
       version: 3.1.x
@@ -163,9 +158,9 @@ jobs:
   steps:
   - template: '.ci/install-mysql-windows.yml'
   - task: UseDotNet@2
-    displayName: 'Install .NET Core 2.1'
+    displayName: 'Install .NET Core 3.1'
     inputs:
-      version: '2.1.x'
+      version: 3.1.x
       packageType: runtime
   - task: UseDotNet@2
     displayName: 'Install .NET Core'
@@ -177,18 +172,18 @@ jobs:
     displayName: 'Remove target frameworks'
     inputs:
       targetType: 'inline'
-      script: '((Get-Content .\tests\SideBySide\SideBySide.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>'')) | Set-Content .\tests\SideBySide\SideBySide.csproj'
+      script: '((Get-Content .\tests\SideBySide\SideBySide.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>netcoreapp3.1;net6.0</TargetFrameworks>'')) | Set-Content .\tests\SideBySide\SideBySide.csproj'
   - task: DotNetCoreCLI@2
     displayName: 'Restore packages'
     inputs:
       command: 'restore'
   - task: DotNetCoreCLI@2
-    displayName: 'Side by Side tests (netcoreapp2.1/netcoreapp3.1)'
+    displayName: 'Side by Side tests (netcoreapp3.1/net6.0)'
     inputs:
       command: 'test'
       projects: 'tests/SideBySide/SideBySide.csproj'
-      arguments: '-c Release -f netcoreapp2.1 --no-restore'
-      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'netcoreapp2.1/netcoreapp3.1', 'No SSL') }}
+      arguments: '-c Release --no-restore'
+      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'netcoreapp3.1/net6.0', 'No SSL') }}
     env:
       DATA__UNSUPPORTEDFEATURES: 'Ed25519,Tls11,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'

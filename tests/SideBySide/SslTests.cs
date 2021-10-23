@@ -224,7 +224,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		var expectedProtocolString = expectedProtocol == SslProtocols.Tls12 ? "TLSv1.2" :
 			expectedProtocol == SslProtocols.Tls11 ? "TLSv1.1" : "TLSv1";
 
-#if !NET452 && !NET461 && !NET472 && !NETCOREAPP2_1
+#if !NET452 && !NET461 && !NET472
 		// https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0#tls-13--openssl-111-on-linux
 		if (expectedProtocol == SslProtocols.Tls12 && AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls13) && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 		{

@@ -19,9 +19,6 @@ public static class AppConfig
 	{
 		var builder = new ConfigurationBuilder()
 			.AddInMemoryCollection(DefaultConfig)
-#if NETCOREAPP2_1
-			.SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
-#endif
 			.AddJsonFile("config.json")
 			.AddEnvironmentVariables();
 		return builder.Build();

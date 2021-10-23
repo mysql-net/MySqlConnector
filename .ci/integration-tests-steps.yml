@@ -6,13 +6,6 @@ parameters:
 steps:
 - bash: ${{ format('.ci/docker-run.sh {0} 3300 {1}', parameters.image, parameters.unsupportedFeatures) }}
   displayName: 'Start Docker container'
-- template: 'sidebyside-test-steps.yml'
-  parameters:
-    image: ${{ parameters.image }}
-    unsupportedFeatures: ${{ parameters.unsupportedFeatures }}
-    connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600'
-    platform: 'netcoreapp2.1'
-    description: 'No SSL'
 - task: UseDotNet@2
   displayName: 'Install .NET Core 3.1'
   inputs:
