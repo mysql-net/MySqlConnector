@@ -107,7 +107,10 @@ These are the options that need to be used in order to configure a connection to
   <tr id="CertificateFile">
     <td>Certificate File, CertificateFile</td>
     <td></td>
-    <td>The path to a certificate file in PKCS #12 (.pfx) format containing a bundled Certificate and Private Key used for mutual authentication. To create a PKCS #12 bundle from a PEM encoded Certificate and Key, use <code>openssl pkcs12 -in cert.pem -inkey key.pem -export -out bundle.pfx</code>. This option should not be specified if <code>SslCert</code> and <code>SslKey</code> are used.</td>
+    <td>
+      <p>The path to a certificate file in PKCS #12 (.pfx) format containing a bundled Certificate and Private Key used for mutual authentication. To create a PKCS #12 bundle from a PEM encoded Certificate and Key, use <code>openssl pkcs12 -in cert.pem -inkey key.pem -export -out bundle.pfx</code>. This option should not be specified if <code>SslCert</code> and <code>SslKey</code> are used.</p>
+      <p>If the certificate can't be loaded from a file path, leave this value empty and set <a href="/api/mysqlconnector/mysqlconnection/provideclientcertificatescallback/"><code>MySqlConnection.ProvideClientCertificatesCallback</code></a> before calling <a href="/api/mysqlconnector/mysqlconnection/open/"><code>MySqlConnection.Open</code></a>. The property should be set to an async delegate that will populate a <code>X509CertificateCollection</code> with the client certificate(s) needed to connect.</p>
+    </td>
   </tr>
   <tr id="CertificatePassword">
     <td>Certificate Password, CertificatePassword</td>
@@ -127,7 +130,10 @@ These are the options that need to be used in order to configure a connection to
   <tr id="SslCa">
     <td>SSL CA, CA Certificate File, CACertificateFile, SslCa, Ssl-Ca</td>
     <td></td>
-    <td>The path to a CA certificate file in a PEM Encoded (.pem) format. This should be used with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the operating system’s certificate store.</td>
+    <td>
+      <p>The path to a CA certificate file in a PEM Encoded (.pem) format. This should be used with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the operating system’s certificate store.</p>
+      <p>To provide a custom callback to validate the remote certificate, leave this option empty and set <code>SslMode</code> to <code>Required</code> (or <code>Preferred</code>), then set <a href="/api/mysqlconnector/mysqlconnection/remotecertificatevalidationcallback/"><code>MySqlConnection.RemoteCertificateValidationCallback</code></a> before calling <a href="/api/mysqlconnector/mysqlconnection/open/"><code>MySqlConnection.Open</code></a>. The property should be set to a delegate that will validate the remote certificate, as per <a href="https://docs.microsoft.com/en-us/dotnet/api/system.net.security.remotecertificatevalidationcallback" title="RemoteCertificateValidationCallback Delegate (MSDN)">the documentation</a>.</p>
+    </td>
   </tr>
   <tr id="CertificateStoreLocation">
     <td>Certificate Store Location, CertificateStoreLocation</td>

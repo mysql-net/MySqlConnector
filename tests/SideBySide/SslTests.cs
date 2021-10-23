@@ -52,7 +52,36 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		await DoTestSsl(csb.ConnectionString);
 	}
 
+#if !BASELINE
 	[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
+	[InlineData("ssl-client.pfx", null)]
+	[InlineData("ssl-client-pw-test.pfx", "test")]
+	public async Task ConnectSslClientCertificateCallback(string certificateFile, string certificateFilePassword)
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var certificateFilePath = Path.Combine(AppConfig.CertsPath, certificateFile);
+
+		using var connection = new MySqlConnection(csb.ConnectionString);
+#if NETFRAMEWORK
+		connection.ProvideClientCertificatesCallback = x =>
+		{
+			x.Add(new X509Certificate2(certificateFilePath, certificateFilePassword));
+			return MySqlConnector.Utilities.Utility.CompletedTask;
+		};
+#else
+		connection.ProvideClientCertificatesCallback = async x =>
+		{
+			var certificateBytes = await File.ReadAllBytesAsync(certificateFilePath);
+			x.Add(new X509Certificate2(certificateBytes, certificateFilePassword));
+		};
+#endif
+
+		await connection.OpenAsync();
+		Assert.True(connection.SslIsEncrypted);
+	}
+#endif
+
+			[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
 	[InlineData("ssl-client-cert.pem", "ssl-client-key.pem", null)]
 	[InlineData("ssl-client-cert.pem", "ssl-client-key-null.pem", null)]
 #if !BASELINE
@@ -162,6 +191,27 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
 	}
+
+#if !BASELINE
+	[SkippableTheory(ServerFeatures.KnownCertificateAuthority, ConfigSettings.RequiresSsl)]
+	[InlineData(MySqlSslMode.VerifyCA, false, false)]
+	[InlineData(MySqlSslMode.VerifyCA, true, false)]
+	[InlineData(MySqlSslMode.Required, true, true)]
+	public async Task ConnectSslRemoteCertificateValidationCallback(MySqlSslMode sslMode, bool clearCA, bool expectedSuccess)
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.CertificateFile = Path.Combine(AppConfig.CertsPath, "ssl-client.pfx");
+		csb.SslMode = sslMode;
+		csb.SslCa = clearCA ? "" : Path.Combine(AppConfig.CertsPath, "non-ca-client-cert.pem");
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.RemoteCertificateValidationCallback = (s, c, h, e) => true;
+
+		if (expectedSuccess)
+			await connection.OpenAsync();
+		else
+			await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+	}
+#endif
 
 	[SkippableFact(ConfigSettings.RequiresSsl)]
 	public async Task ConnectSslTlsVersion()
