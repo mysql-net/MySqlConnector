@@ -6,6 +6,7 @@
     <Description>Writes MySqlConnector logging output to log4net with one line of code.</Description>
     <Copyright>Copyright 2017–2021 Bradley Grainger</Copyright>
     <Authors>Bradley Grainger</Authors>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>mysql;mysqlconnector;async;ado.net;database;netcore;log4net;logging</PackageTags>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -16,6 +17,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MySqlConnector\MySqlConnector.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="docs\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>

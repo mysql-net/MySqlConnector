@@ -6,6 +6,7 @@
     <Description>Writes lightly-structured MySqlConnector logging output to Serilog.</Description>
     <Copyright>Copyright 2017–2021 Bradley Grainger</Copyright>
     <Authors>Marc Lewandowski</Authors>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>mysql;mysqlconnector;async;ado.net;database;netcore;serilog;logging</PackageTags>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -16,6 +17,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MySqlConnector\MySqlConnector.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="docs\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>

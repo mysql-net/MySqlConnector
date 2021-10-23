@@ -1,6 +1,10 @@
+## About
+
+This package integrates MySqlConnector logging with [log4net](https://www.nuget.org/packages/log4net/).
+
 ## How to Use
 
-To integrate MySqlConnector with log4net, add the following line of code to your application startup routine (before any `MySqlConnector` objects have been used):
+Add the following line of code to your application startup routine (before any `MySqlConnector` objects have been used):
 
 ```csharp
 MySqlConnectorLogManager.Provider = new Log4netLoggerProvider();
