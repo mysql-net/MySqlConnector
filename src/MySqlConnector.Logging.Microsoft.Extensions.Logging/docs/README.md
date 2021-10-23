@@ -4,7 +4,13 @@ This package integrates MySqlConnector logging with the Microsoft.Extensions.Log
 
 ## How to Use
 
-Add the following line of code to your `Startup.Configure` method (before any `MySqlConnector` objects have been used):
+Add the following line of code to `Program.cs` method (before any `MySqlConnector` objects have been used):
+
+```csharp
+app.Services.UseMySqlConnectorLogging();
+```
+
+Alternatively, obtain an `ILoggerFactory` through dependency injection and add:
 
 ```csharp
 MySqlConnectorLogManager.Provider = new MicrosoftExtensionsLoggingLoggerProvider(loggerFactory);
