@@ -130,7 +130,10 @@ These are the options that need to be used in order to configure a connection to
   <tr id="SslCa">
     <td>SSL CA, CA Certificate File, CACertificateFile, SslCa, Ssl-Ca</td>
     <td></td>
-    <td>The path to a CA certificate file in a PEM Encoded (.pem) format. This should be used with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the operating system’s certificate store.</td>
+    <td>
+      <p>The path to a CA certificate file in a PEM Encoded (.pem) format. This should be used with <code>SslMode=VerifyCA</code> or <code>SslMode=VerifyFull</code> to enable verification of a CA certificate that is not trusted by the operating system’s certificate store.</p>
+      <p>To provide a custom callback to validate the remote certificate, leave this option empty and set <code>SslMode</code> to <code>Required</code> (or <code>Preferred</code>), then set <a href="/api/mysqlconnector/mysqlconnection/remotecertificatevalidationcallback/"><code>MySqlConnection.RemoteCertificateValidationCallback</code></a> before calling <a href="/api/mysqlconnector/mysqlconnection/open/"><code>MySqlConnection.Open</code></a>. The property should be set to a delegate that will validate the remote certificate, as per <a href="https://docs.microsoft.com/en-us/dotnet/api/system.net.security.remotecertificatevalidationcallback" title="RemoteCertificateValidationCallback Delegate (MSDN)">the documentation</a>.</p>
+    </td>
   </tr>
   <tr id="CertificateStoreLocation">
     <td>Certificate Store Location, CertificateStoreLocation</td>

@@ -192,6 +192,27 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
 	}
 
+#if !BASELINE
+	[SkippableTheory(ServerFeatures.KnownCertificateAuthority, ConfigSettings.RequiresSsl)]
+	[InlineData(MySqlSslMode.VerifyCA, false, false)]
+	[InlineData(MySqlSslMode.VerifyCA, true, false)]
+	[InlineData(MySqlSslMode.Required, true, true)]
+	public async Task ConnectSslRemoteCertificateValidationCallback(MySqlSslMode sslMode, bool clearCA, bool expectedSuccess)
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.CertificateFile = Path.Combine(AppConfig.CertsPath, "ssl-client.pfx");
+		csb.SslMode = sslMode;
+		csb.SslCa = clearCA ? "" : Path.Combine(AppConfig.CertsPath, "non-ca-client-cert.pem");
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.RemoteCertificateValidationCallback = (s, c, h, e) => true;
+
+		if (expectedSuccess)
+			await connection.OpenAsync();
+		else
+			await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+	}
+#endif
+
 	[SkippableFact(ConfigSettings.RequiresSsl)]
 	public async Task ConnectSslTlsVersion()
 	{

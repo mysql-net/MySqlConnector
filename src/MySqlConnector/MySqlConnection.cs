@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
@@ -521,6 +522,14 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// will create unique connection pools; this delegate allows a single connection pool to use multiple passwords.</para>
 	/// </remarks>
 	public Func<MySqlProvidePasswordContext, string>? ProvidePasswordCallback { get; set;}
+
+	/// <summary>
+	/// Gets or sets the delegate used to verify that the server's certificate is valid.
+	/// </summary>
+	/// <remarks><see cref="MySqlConnectionStringBuilder.SslMode"/> must be set to <see cref="MySqlSslMode.Preferred"/>
+	/// or <see cref="MySqlSslMode.Required"/> in order for this delegate to be invoked. See the documentation for
+	/// <see cref="RemoteCertificateValidationCallback"/> for more information on the values passed to this delegate.</remarks>
+	public RemoteCertificateValidationCallback? RemoteCertificateValidationCallback { get; set; }
 
 	/// <summary>
 	/// Clears the connection pool that <paramref name="connection"/> belongs to.

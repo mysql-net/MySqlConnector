@@ -1369,8 +1369,28 @@ internal sealed class ServerSession
 			return rcbPolicyErrors == SslPolicyErrors.None;
 		}
 
-		var sslStream = clientCertificates is null ? new SslStream(m_stream!, false, ValidateRemoteCertificate) :
-			new SslStream(m_stream!, false, ValidateRemoteCertificate, ValidateLocalCertificate);
+		// use the client's callback (if any) for Preferred or Required mode
+		RemoteCertificateValidationCallback validateRemoteCertificate = ValidateRemoteCertificate;
+		if (connection.RemoteCertificateValidationCallback is not null)
+		{
+			if (caCertificateChain is not null)
+			{
+				Log.Warn("Session{0} not using client-provided RemoteCertificateValidationCallback because SslCA is specified", m_logArguments);
+			}
+			else if (cs.SslMode is not MySqlSslMode.Preferred and not MySqlSslMode.Required)
+			{
+				m_logArguments[1] = cs.SslMode;
+				Log.Warn("Session{0} not using client-provided RemoteCertificateValidationCallback because SslMode is {1}", m_logArguments);
+			}
+			else
+			{
+				Log.Debug("Session{0} using client-provided RemoteCertificateValidationCallback", m_logArguments);
+				validateRemoteCertificate = connection.RemoteCertificateValidationCallback;
+			}
+		}
+
+		var sslStream = clientCertificates is null ? new SslStream(m_stream!, false, validateRemoteCertificate) :
+			new SslStream(m_stream!, false, validateRemoteCertificate, ValidateLocalCertificate);
 
 		var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
 

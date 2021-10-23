@@ -23,6 +23,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 | override [DataSource](../MySqlConnection/DataSource/) { get; } |  |
 | [ProvideClientCertificatesCallback](../MySqlConnection/ProvideClientCertificatesCallback/) { get; set; } | Gets or sets the delegate used to provide client certificates for connecting to a server. |
 | [ProvidePasswordCallback](../MySqlConnection/ProvidePasswordCallback/) { get; set; } | Gets or sets the delegate used to generate a password for new database connections. |
+| [RemoteCertificateValidationCallback](../MySqlConnection/RemoteCertificateValidationCallback/) { get; set; } | Gets or sets the delegate used to verify that the server's certificate is valid. |
 | [ServerThread](../MySqlConnection/ServerThread/) { get; } | The connection ID from MySQL Server. |
 | override [ServerVersion](../MySqlConnection/ServerVersion/) { get; } |  |
 | override [State](../MySqlConnection/State/) { get; } |  |
