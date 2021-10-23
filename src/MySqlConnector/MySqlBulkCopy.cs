@@ -108,7 +108,7 @@ public sealed class MySqlBulkCopy
 #pragma warning restore CA2012
 	}
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NETCOREAPP || NETSTANDARD2_0_OR_GREATER
 	/// <summary>
 	/// Asynchronously copies all rows in the supplied <see cref="DataTable"/> to the destination table specified by the
 	/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
@@ -152,7 +152,7 @@ public sealed class MySqlBulkCopy
 #pragma warning restore CA2012
 	}
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NETCOREAPP || NETSTANDARD2_0_OR_GREATER
 	/// <summary>
 	/// Asynchronously copies all rows in the supplied sequence of <see cref="DataRow"/> objects to the destination table specified by the
 	/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object. The number of columns
@@ -198,7 +198,7 @@ public sealed class MySqlBulkCopy
 #pragma warning restore CA2012
 	}
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NETCOREAPP || NETSTANDARD2_0_OR_GREATER
 	/// <summary>
 	/// Asynchronously copies all rows in the supplied <see cref="IDataReader"/> to the destination table specified by the
 	/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
