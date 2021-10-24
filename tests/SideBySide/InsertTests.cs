@@ -1,3 +1,4 @@
+using System.Numerics;
 #if BASELINE
 using MySql.Data.Types;
 #endif
@@ -385,6 +386,52 @@ create table insert_string_builder(rowid integer not null primary key auto_incre
 		// all unpaired high-surrogates will be converted to the Unicode Replacement Character when converted to UTF-8 to be transmitted to the server
 		var expected = value.ToString().Replace('\uD800', '\uFFFD');
 		Assert.Equal(expected, reader.GetValue(0));
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void InsertBigInteger(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+		connection.Execute(@"drop table if exists insert_big_integer;
+create table insert_big_integer(rowid integer not null primary key auto_increment, value bigint);");
+
+		var value = 1_000_000_000_000_000L;
+		using var cmd = connection.CreateCommand();
+		cmd.CommandText = @"insert into insert_big_integer(value) values(@value);";
+		cmd.Parameters.AddWithValue("@value", new BigInteger(value));
+		if (prepare)
+			cmd.Prepare();
+		cmd.ExecuteNonQuery();
+
+		using var reader = connection.ExecuteReader(@"select value from insert_big_integer order by rowid;");
+		Assert.True(reader.Read());
+		Assert.Equal(value, reader.GetValue(0));
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void InsertBigIntegerAsDecimal(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+		connection.Execute(@"drop table if exists insert_big_integer;
+create table insert_big_integer(rowid integer not null primary key auto_increment, value decimal(40, 2));");
+
+		var value = long.MaxValue * 1000m;
+		using var cmd = connection.CreateCommand();
+		cmd.CommandText = @"insert into insert_big_integer(value) values(@value);";
+		cmd.Parameters.AddWithValue("@value", new BigInteger(value));
+		if (prepare)
+			cmd.Prepare();
+		cmd.ExecuteNonQuery();
+
+		using var reader = connection.ExecuteReader(@"select value from insert_big_integer order by rowid;");
+		Assert.True(reader.Read());
+		Assert.Equal(value, reader.GetValue(0));
 	}
 
 	[Fact]

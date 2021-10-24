@@ -1,6 +1,8 @@
 using System.Buffers.Text;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Numerics;
 using System.Text;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
@@ -314,6 +316,10 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			// NOTE: Utf8Formatter doesn't support "R"
 			writer.Write("{0:R}".FormatInvariant(Value));
 		}
+		else if (Value is BigInteger bigInteger)
+		{
+			writer.Write(bigInteger.ToString(CultureInfo.InvariantCulture));
+		}
 		else if (Value is MySqlDateTime mySqlDateTimeValue)
 		{
 			if (mySqlDateTimeValue.IsValidDateTime)
@@ -593,6 +599,10 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		else if (Value is decimal)
 		{
 			writer.WriteLengthEncodedString("{0}".FormatInvariant(Value));
+		}
+		else if (Value is BigInteger bigInteger)
+		{
+			writer.WriteLengthEncodedString(bigInteger.ToString(CultureInfo.InvariantCulture));
 		}
 		else if (Value is MySqlDateTime mySqlDateTimeValue)
 		{
