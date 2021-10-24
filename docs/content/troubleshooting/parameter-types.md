@@ -36,7 +36,7 @@ In some cases, this may be as simple as calling `.ToString()` or `.ToString(Cult
 ## Supported Types
 
 * .NET primitives: `bool`, `byte`, `char`, `double`, `float`, `int`, `long`, `sbyte`, `short`, `uint`, `ulong`, `ushort`
-* Common types: `DateTime`, `DateTimeOffset`, `decimal`, `enum`, `Guid`, `string`, `TimeSpan`
+* Common types: `BigInteger`, `DateTime`, `DateTimeOffset`, `decimal`, `enum`, `Guid`, `string`, `TimeSpan`
 * BLOB types: `ArraySegment<byte>`, `byte[]`, `Memory<byte>`, `ReadOnlyMemory<byte>`
 * String types: `Memory<char>`, `ReadOnlyMemory<char>`, `StringBuilder`
 * Custom MySQL types: `MySqlDateTime`, `MySqlGeometry`
