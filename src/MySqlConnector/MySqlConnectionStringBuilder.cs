@@ -1024,7 +1024,7 @@ internal abstract class MySqlConnectionStringOption
 				Span<bool> versions = stackalloc bool[4];
 				foreach (var part in value!.TrimStart('[', '(').TrimEnd(')', ']').Split(','))
 				{
-					var match = Regex.Match(part, @"\s*TLS( ?v?(1|1\.?0|1\.?1|1\.?2|1\.?3))?$", RegexOptions.IgnoreCase);
+					var match = s_tlsVersions.Match(part);
 					if (!match.Success)
 						throw new ArgumentException($"Unrecognized TlsVersion protocol version '{part}'; permitted versions are: TLS 1.0, TLS 1.1, TLS 1.2, TLS 1.3.");
 					var version = match.Groups[2].Value;
@@ -1208,6 +1208,7 @@ internal abstract class MySqlConnectionStringOption
 			defaultValue: true));
 	}
 
+	static readonly Regex s_tlsVersions = new(@"\s*TLS( ?v?(1|1\.?0|1\.?1|1\.?2|1\.?3))?$", RegexOptions.IgnoreCase);
 	static readonly Dictionary<string, MySqlConnectionStringOption> s_options;
 
 	readonly IReadOnlyList<string> m_keys;

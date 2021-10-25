@@ -138,20 +138,20 @@ internal sealed class CachedProcedure
 	internal static List<CachedParameter> ParseParameters(string parametersSql)
 	{
 		// strip comments
-		parametersSql = Regex.Replace(parametersSql, @"/\*.*?\*/", "", RegexOptions.Singleline);
-		parametersSql = Regex.Replace(parametersSql, @"(^|\s)--.*?$", "", RegexOptions.Multiline);
+		parametersSql = s_cStyleComments.Replace(parametersSql, "");
+		parametersSql = s_singleLineComments.Replace(parametersSql, "");
 
 		// normalize spaces
-		parametersSql = Regex.Replace(parametersSql, @"\s+", " ");
+		parametersSql = s_multipleSpaces.Replace(parametersSql, " ");
 
 		if (string.IsNullOrWhiteSpace(parametersSql))
 			return new List<CachedParameter>();
 
 		// strip precision specifier containing comma
-		parametersSql = Regex.Replace(parametersSql, @"(DECIMAL|DEC|FIXED|NUMERIC|FLOAT|DOUBLE PRECISION|DOUBLE|REAL)\s*\([0-9]+(,\s*[0-9]+)\)", @"$1", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+		parametersSql = s_numericTypes.Replace(parametersSql, @"$1");
 
 		// strip enum values containing commas (these would have been stripped by ParseDataType anyway)
-		parametersSql = Regex.Replace(parametersSql, @"ENUM\s*\([^)]+\)", "ENUM", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+		parametersSql = s_enum.Replace(parametersSql, "ENUM");
 
 		var parameters = parametersSql.Split(',');
 		var cachedParameters = new List<CachedParameter>(parameters.Length);
@@ -176,7 +176,7 @@ internal sealed class CachedProcedure
 				parameter = parameter.Substring(3);
 			}
 
-			var parts = Regex.Match(parameter, @"^(?:`((?:[\u0001-\u005F\u0061-\uFFFF]+|``)+)`|([A-Za-z0-9$_\u0080-\uFFFF]+)) (.*)$");
+			var parts = s_parameterName.Match(parameter);
 			var name = parts.Groups[1].Success ? parts.Groups[1].Value.Replace("``", "`") : parts.Groups[2].Value;
 
 			var dataType = ParseDataType(parts.Groups[3].Value, out var unsigned, out var length);
@@ -188,16 +188,16 @@ internal sealed class CachedProcedure
 
 	internal static string ParseDataType(string sql, out bool unsigned, out int length)
 	{
-		sql = Regex.Replace(sql, " (CHARSET|CHARACTER SET) [A-Za-z0-9_]+", "", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-		sql = Regex.Replace(sql, " (COLLATE) [A-Za-z0-9_]+", "", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-		sql = Regex.Replace(sql, @"ENUM\s*\([^)]+\)", "ENUM", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+		sql = s_characterSet.Replace(sql, "");
+		sql = s_collate.Replace(sql, "");
+		sql = s_enum.Replace(sql, "ENUM");
 
 		length = 0;
-		var match = Regex.Match(sql, @"\s*\(\s*([0-9]+)\s*(?:,\s*[0-9]+\s*)?\)");
+		var match = s_length.Match(sql);
 		if (match.Success)
 		{
 			length = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
-			sql = Regex.Replace(sql, @"\s*\(\s*[0-9]+\s*(?:,\s*[0-9]+\s*)?\)", "");
+			sql = s_length.Replace(sql, "");
 		}
 
 		var list = sql.Trim().Split(new char[] {' '});
@@ -250,6 +250,16 @@ internal sealed class CachedProcedure
 		{ "NATIONAL CHAR", "CHAR" },
 		{ "CHAR BYTE", "BINARY" }
 	};
+
+	static readonly Regex s_cStyleComments = new(@"/\*.*?\*/", RegexOptions.Singleline);
+	static readonly Regex s_singleLineComments = new(@"(^|\s)--.*?$", RegexOptions.Multiline);
+	static readonly Regex s_multipleSpaces = new(@"\s+");
+	static readonly Regex s_numericTypes = new(@"(DECIMAL|DEC|FIXED|NUMERIC|FLOAT|DOUBLE PRECISION|DOUBLE|REAL)\s*\([0-9]+(,\s*[0-9]+)\)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+	static readonly Regex s_enum = new(@"ENUM\s*\([^)]+\)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+	static readonly Regex s_parameterName = new(@"^(?:`((?:[\u0001-\u005F\u0061-\uFFFF]+|``)+)`|([A-Za-z0-9$_\u0080-\uFFFF]+)) (.*)$");
+	static readonly Regex s_characterSet = new(" (CHARSET|CHARACTER SET) [A-Za-z0-9_]+", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+	static readonly Regex s_collate = new(" (COLLATE) [A-Za-z0-9_]+", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+	static readonly Regex s_length = new(@"\s*\(\s*([0-9]+)\s*(?:,\s*[0-9]+\s*)?\)");
 
 	readonly string m_schema;
 	readonly string m_component;
