@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-10-20
+lastmod: 2021-11-03
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,17 @@ weight: 30
 ---
 
 # Version History
+
+### 2.0.0 RC 1
+
+* **Breaking** Improve `MySqlBulkCopy` API: [#1012](https://github.com/mysql-net/MySqlConnector/issues/1012).
+* Remove `netcoreapp2.1` target framework: [#1067](https://github.com/mysql-net/MySqlConnector/issues/1067).
+* Support `BigInteger` as parameter value: [#1069](https://github.com/mysql-net/MySqlConnector/issues/1069).
+* Add `MySqlConnection.PasswordProviderCallback`: [#800](https://github.com/mysql-net/MySqlConnector/issues/800).
+* Add `MySqlConnection.ProvideClientCertificatesCallback`: [#976](https://github.com/mysql-net/MySqlConnector/issues/976).
+* Add `MySqlConnection.RemoteCertificateValidationCallback`: [#976](https://github.com/mysql-net/MySqlConnector/issues/976).
+* Add NuGet package READMEs: [#1053](https://github.com/mysql-net/MySqlConnector/issues/1053).
+* Improve performance of Regex usage internally.
 
 ### 2.0.0 Beta 5
 
