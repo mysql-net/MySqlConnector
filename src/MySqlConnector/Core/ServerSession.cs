@@ -1653,6 +1653,8 @@ internal sealed class ServerSession
 #else
 		Utility.Dispose(ref m_clientCertificate);
 #endif
+		m_activityTags.Clear();
+		m_activityTags.Add(ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue);
 	}
 
 	/// <summary>
@@ -1871,6 +1873,7 @@ internal sealed class ServerSession
 	readonly object m_lock;
 	readonly object?[] m_logArguments;
 	readonly ArraySegmentHolder<byte> m_payloadCache;
+	readonly ActivityTagsCollection m_activityTags;
 	State m_state;
 	TcpClient? m_tcpClient;
 	Socket? m_socket;
@@ -1886,6 +1889,5 @@ internal sealed class ServerSession
 	bool m_supportsSessionTrack;
 	CharacterSet m_characterSet;
 	PayloadData m_setNamesPayload;
-	ActivityTagsCollection m_activityTags;
 	Dictionary<string, PreparedStatements>? m_preparedStatements;
 }
