@@ -1,5 +1,5 @@
 variables:
-  DotNetCoreSdkVersion: '6.0.100-rc.2.21505.57'
+  DotNetCoreSdkVersion: '6.0.x'
   NUGET_PACKAGES: '$(Pipeline.Workspace)/.nuget/packages'
 
 jobs:

@@ -29,7 +29,7 @@ jobs:
     - name: Set up .NET 6.0
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.100-rc.2.21505.57
+        dotnet-version: 6.0.x
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
