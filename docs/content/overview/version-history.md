@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-11-03
+lastmod: 2021-11-09
 date: 2017-03-27
 menu:
   main:
@@ -10,62 +10,41 @@ weight: 30
 
 # Version History
 
-### 2.0.0 RC 1
+### 2.0.0
 
+* Target .NET 6.0.
+  * **Breaking** Update the `MySqlBatch` (experimental API) to match .NET 6.0 API changes.
+  * Support `DateOnly` and `TimeOnly` structs: [#963](https://github.com/mysql-net/MySqlConnector/issues/963).
+  * Use `ZLibStream` for compression: [#957](https://github.com/mysql-net/MySqlConnector/issues/957).
+  * Use `X_OR_GREATER` preprocessor definitions: [#958](https://github.com/mysql-net/MySqlConnector/issues/958).
 * **Breaking** Improve `MySqlBulkCopy` API: [#1012](https://github.com/mysql-net/MySqlConnector/issues/1012).
-* Remove `netcoreapp2.1` target framework: [#1067](https://github.com/mysql-net/MySqlConnector/issues/1067).
-* Support `BigInteger` as parameter value: [#1069](https://github.com/mysql-net/MySqlConnector/issues/1069).
-* Add `MySqlConnection.PasswordProviderCallback`: [#800](https://github.com/mysql-net/MySqlConnector/issues/800).
-* Add `MySqlConnection.ProvideClientCertificatesCallback`: [#976](https://github.com/mysql-net/MySqlConnector/issues/976).
-* Add `MySqlConnection.RemoteCertificateValidationCallback`: [#976](https://github.com/mysql-net/MySqlConnector/issues/976).
-* Add NuGet package READMEs: [#1053](https://github.com/mysql-net/MySqlConnector/issues/1053).
-* Improve performance of Regex usage internally.
-
-### 2.0.0 Beta 5
-
-* Update version to 2.0 due to scope of changes in the 1.4.0 beta releases.
-* Add `ActivitySource` for tracing: [#1036](https://github.com/mysql-net/MySqlConnector/issues/1036).
-* Build with .NET 6.0 RC 2.
-
-### 1.4.0 Beta 4
-
 * **Breaking** Remove `ConnectionIdlePingTime`: [#1042](https://github.com/mysql-net/MySqlConnector/issues/1042).
   * The `Connection Idle Ping Time` connection string option is still accepted, but has no effect.
   * If `Connection Reset = False`, `MySqlConnection.Open` will return a pooled connection (if one is available) without testing it for liveness (by pinging the server). This improves performance but may degrade reliability. (`Connection Reset = True`, which is the default, is still recommended for greatest reliability.)
   * If the server has closed the pooled connection, `MySqlConnection.Open` will succeed, but the first operation on that connection will fail. Command execution should be wrapped in a try/catch/retry loop to handle this scenario.
-* Add more values to `MySqlErrorCode`: [#1048](https://github.com/mysql-net/MySqlConnector/issues/1048).
-* Fix bug executing stored procedures with backticks in their names: [#1029](https://github.com/mysql-net/MySqlConnector/issues/1029).
-* Fix rare `ObjectDisposedException` that could be thrown when a connection timeout occurred.
-
-### 1.4.0 Beta 3
-
-* **Breaking** Remove `netstandard1.3` target framework: [#1031](https://github.com/mysql-net/MySqlConnector/issues/1031).
-* **Breaking** Seal `MySqlCommandBuilder` and `MySqlConversionException`.
-* Fix incorrect value for `MySqlCommand.LastInsertedId` when executing multiple commands: [#1026](https://github.com/mysql-net/MySqlConnector/issues/1026).
-* Add `[Category]`, `[DefaultValue]`, and `[Description]` attributes to all `MySqlConnectionStringBuilder` properties.
-* Fix `MySqlConnectionStringBuilder.TryGetValue`: [#1030](https://github.com/mysql-net/MySqlConnector/issues/1030).
 * **Breaking** Change how option keys are serialized when retrieving the `MySqlConnectionStringBuilder.ConnectionString` property:
   * For example, `User Id` is now `User ID`, `DefaultCommandTimeout` is now `Default Command Timeout`, etc.
   * All existing connection strings are still valid, and all the previous aliases for connection string options are still accepted.
   * The primary connection string option key is listed first in the documentation at https://mysqlconnector.net/connection-options/.
-
-### 1.4.0 Beta 2
-
-* Support .NET 6.0 Preview 7
-  * **Breaking** Update the `MySqlBatch` (experimental API) to match the latest .NET 6.0 API changes.
-* Throw an informative exception if `DELIMITER` is used in a SQL statement: [#1010](https://github.com/mysql-net/MySqlConnector/issues/1010).
-
-### 1.4.0 Beta 1
-
+* **Breaking** Seal `MySqlCommandBuilder` and `MySqlConversionException`.
+* Remove `netstandard1.3` and `netcoreapp2.1` target frameworks: [#1031](https://github.com/mysql-net/MySqlConnector/issues/1031), [#1067](https://github.com/mysql-net/MySqlConnector/issues/1067).
+* Add `ActivitySource` for tracing: [#1036](https://github.com/mysql-net/MySqlConnector/issues/1036).
 * Reduce default log message severity: [#981](https://github.com/mysql-net/MySqlConnector/issues/981).
+* Add `MySqlConnection.ProvideClientCertificatesCallback`, `MySqlConnection.ProvidePasswordCallback`, `MySqlConnection.RemoteCertificateValidationCallback`: [#800](https://github.com/mysql-net/MySqlConnector/issues/800), [#976](https://github.com/mysql-net/MySqlConnector/issues/976).
+* Support `BigInteger` as parameter value: [#1069](https://github.com/mysql-net/MySqlConnector/issues/1069).
+* Add more values to `MySqlErrorCode`: [#1048](https://github.com/mysql-net/MySqlConnector/issues/1048).
 * Make `MySqlError.Code` obsolete: [#1011](https://github.com/mysql-net/MySqlConnector/issues/1011).
   * Use `ErrorCode` property instead.
 * Remove `BackgroundConnectionResetHelper`: [#1013](https://github.com/mysql-net/MySqlConnector/issues/1013).
   * `MySqlConnectionStringBuilder.DeferConnectionReset` is obsolete and will always be treated as if it's `true`.
-* Support .NET 6.0 Preview:
-  * Support `DateOnly` and `TimeOnly` structs: [#963](https://github.com/mysql-net/MySqlConnector/issues/963).
-  * Use `ZLibStream` for compression: [#957](https://github.com/mysql-net/MySqlConnector/issues/957).
-  * Use `X_OR_GREATER` preprocessor definitions: [#958](https://github.com/mysql-net/MySqlConnector/issues/958).
+* Add NuGet package READMEs: [#1053](https://github.com/mysql-net/MySqlConnector/issues/1053).
+* Add `[Category]`, `[DefaultValue]`, and `[Description]` attributes to all `MySqlConnectionStringBuilder` properties.
+* Improve performance of Regex usage internally.
+* Throw an informative exception if `DELIMITER` is used in a SQL statement: [#1010](https://github.com/mysql-net/MySqlConnector/issues/1010).
+* Fix `MySqlConnectionStringBuilder.TryGetValue`: [#1030](https://github.com/mysql-net/MySqlConnector/issues/1030).
+* Fix incorrect value for `MySqlCommand.LastInsertedId` when executing multiple commands: [#1026](https://github.com/mysql-net/MySqlConnector/issues/1026).
+* Fix bug executing stored procedures with backticks in their names: [#1029](https://github.com/mysql-net/MySqlConnector/issues/1029).
+* Fix rare `ObjectDisposedException` that could be thrown when a connection timeout occurred.
 
 ### 1.3.14
 
