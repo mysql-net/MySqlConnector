@@ -846,7 +846,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 		// only report properties with a [Category] attribute that are not [Obsolete]
 		var propertiesToRemove = propertyDescriptors.Values
 			.Cast<PropertyDescriptor>()
-			.Where(x => !x.Attributes.OfType<CategoryAttribute>().Any() || x.Attributes.OfType<ObsoleteAttribute>().Any())
+			.Where(static x => !x.Attributes.OfType<CategoryAttribute>().Any() || x.Attributes.OfType<ObsoleteAttribute>().Any())
 			.ToList();
 		foreach (var property in propertiesToRemove)
 			propertyDescriptors.Remove(property.DisplayName);
