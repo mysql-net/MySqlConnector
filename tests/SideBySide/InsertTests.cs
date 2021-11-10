@@ -414,6 +414,52 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
+	public void InsertMySqlDecimal(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+		connection.Execute(@"drop table if exists insert_mysql_decimal;
+create table insert_mysql_decimal(rowid integer not null primary key auto_increment, value bigint);");
+
+		var value = "-12345678901234567890123456789012345678901234567890123456789012345";
+		using var cmd = connection.CreateCommand();
+		cmd.CommandText = @"insert into insert_mysql_decimal(value) values(@value);";
+		cmd.Parameters.AddWithValue("@value", new MySqlDecimal(value));
+		if (prepare)
+			cmd.Prepare();
+		cmd.ExecuteNonQuery();
+
+		using var reader = connection.ExecuteReader(@"select value from insert_mysql_decimal order by rowid;");
+		Assert.True(reader.Read());
+		Assert.Equal(value, reader.GetValue(0));
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void InsertMySqlDecimalAsDecimal(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+		connection.Execute(@"drop table if exists insert_mysql_decimal;
+create table insert_mysql_decimal(rowid integer not null primary key auto_increment, value decimal(40, 2));");
+
+		var value = "-12345678901234567890123456789012345.012345678901234567890123456789";
+		using var cmd = connection.CreateCommand();
+		cmd.CommandText = @"insert into insert_mysql_decimal(value) values(@value);";
+		cmd.Parameters.AddWithValue("@value", new MySqlDecimal(value));
+		if (prepare)
+			cmd.Prepare();
+		cmd.ExecuteNonQuery();
+
+		using var reader = connection.ExecuteReader(@"select value from insert_mysql_decimal order by rowid;");
+		Assert.True(reader.Read());
+		Assert.Equal(value, reader.GetValue(0));
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
 	public void InsertBigIntegerAsDecimal(bool prepare)
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);

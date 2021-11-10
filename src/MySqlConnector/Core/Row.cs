@@ -441,6 +441,14 @@ internal abstract class Row
 		throw new InvalidCastException("Can't convert {0} to MySqlGeometry.".FormatInvariant(ResultSet.ColumnDefinitions![ordinal].ColumnType));
 	}
 
+	public MySqlDecimal GetMySqlDecimal(int ordinal)
+	{
+		var value = GetValue(ordinal);
+		if (value is string decimalString && ResultSet.ColumnDefinitions![ordinal].ColumnType == ColumnType.Decimal)
+			return new MySqlDecimal(decimalString);
+		throw new InvalidCastException("Can't convert {0} to MySqlDecimal.".FormatInvariant(ResultSet.ColumnDefinitions![ordinal].ColumnType));
+	}
+
 	public int GetValues(object[] values)
 	{
 		int count = Math.Min((values ?? throw new ArgumentNullException(nameof(values))).Length, ResultSet.ColumnDefinitions!.Length);
