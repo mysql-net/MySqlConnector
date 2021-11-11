@@ -103,7 +103,7 @@ internal sealed class TextRow : Row
 
 		case ColumnType.Decimal:
 		case ColumnType.NewDecimal:
-			return Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) && bytesConsumed == data.Length ? decimalValue : throw new FormatException();
+			return Encoding.UTF8.GetString(data);
 
 		case ColumnType.Geometry:
 			return data.ToArray();

@@ -411,22 +411,18 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 		Assert.Equal(value, reader.GetValue(0));
 	}
 
-	[Theory]
-	[InlineData(false)]
-	[InlineData(true)]
-	public void InsertMySqlDecimal(bool prepare)
+	[Fact]
+	public void InsertMySqlDecimal()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
 		connection.Open();
 		connection.Execute(@"drop table if exists insert_mysql_decimal;
-create table insert_mysql_decimal(rowid integer not null primary key auto_increment, value bigint);");
+							create table insert_mysql_decimal(rowid integer not null primary key auto_increment, value decimal(65,0));");
 
-		var value = "-12345678901234567890123456789012345678901234567890123456789012345";
+		string value = "-12345678901234567890123456789012345678901234567890123456789012345";
 		using var cmd = connection.CreateCommand();
 		cmd.CommandText = @"insert into insert_mysql_decimal(value) values(@value);";
 		cmd.Parameters.AddWithValue("@value", new MySqlDecimal(value));
-		if (prepare)
-			cmd.Prepare();
 		cmd.ExecuteNonQuery();
 
 		using var reader = connection.ExecuteReader(@"select value from insert_mysql_decimal order by rowid;");
@@ -434,27 +430,24 @@ create table insert_mysql_decimal(rowid integer not null primary key auto_increm
 		Assert.Equal(value, reader.GetValue(0));
 	}
 
-	[Theory]
-	[InlineData(false)]
-	[InlineData(true)]
-	public void InsertMySqlDecimalAsDecimal(bool prepare)
+	[Fact]
+	public void InsertMySqlDecimalAsDecimal()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
 		connection.Open();
 		connection.Execute(@"drop table if exists insert_mysql_decimal;
-create table insert_mysql_decimal(rowid integer not null primary key auto_increment, value decimal(40, 2));");
+							create table insert_mysql_decimal(rowid integer not null primary key auto_increment, value decimal(65, 30));");
 
-		var value = "-12345678901234567890123456789012345.012345678901234567890123456789";
+		string value = "-12345678901234567890123456789012345.012345678901234567890123456789";
 		using var cmd = connection.CreateCommand();
 		cmd.CommandText = @"insert into insert_mysql_decimal(value) values(@value);";
 		cmd.Parameters.AddWithValue("@value", new MySqlDecimal(value));
-		if (prepare)
-			cmd.Prepare();
 		cmd.ExecuteNonQuery();
 
 		using var reader = connection.ExecuteReader(@"select value from insert_mysql_decimal order by rowid;");
 		Assert.True(reader.Read());
-		Assert.Equal(value, reader.GetValue(0));
+		var val = reader.GetValue(0);
+		Assert.Equal(value, val);
 	}
 
 	[Theory]

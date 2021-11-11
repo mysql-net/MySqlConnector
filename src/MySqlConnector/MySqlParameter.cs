@@ -615,6 +615,10 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			else
 				writer.Write((byte) 0);
 		}
+		else if (Value is MySqlDecimal mySqlDecimal)
+		{
+			writer.Write(mySqlDecimal.ToString());
+		}
 #if NET6_0_OR_GREATER
 		else if (Value is DateOnly dateOnlyValue)
 		{
