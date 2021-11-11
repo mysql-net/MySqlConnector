@@ -602,7 +602,7 @@ public sealed class MySqlDataReader : DbDataReader
 			Command.CancellableCommand.SetTimeout(Constants.InfiniteTimeout);
 			connection.FinishQuerying(m_hasWarnings);
 
-			Activity.SetSuccess();
+			Activity?.SetSuccess();
 			Activity?.Stop();
 
 			if ((m_behavior & CommandBehavior.CloseConnection) != 0)
