@@ -39,7 +39,7 @@ while (reader.Read())
 
 * Full support for async I/O
 * High performance
-* Supports. NET Framework, .NET Core, and .NET 5.0+
+* Supports .NET Framework, .NET Core, and .NET 5.0+
 
 ## Main Types
 
@@ -59,7 +59,7 @@ The main types provided by this library are:
 ## Related Packages
 
 * Entity Framework Core: [Pomelo.EntityFrameworkCore.MySql](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/)
-* Logging: [log4net](https://www.nuget.org/packages/MySqlConnector.Logging.log4net/), [Microsoft.Extensions](https://www.nuget.org/packages/MySqlConnector.Logging.Microsoft.Extensions.Logging/), [NLog](https://www.nuget.org/packages/MySqlConnector.Logging.NLog/), [Serilog](https://www.nuget.org/packages/MySqlConnector.Logging.Serilog/)
+* Logging: [log4net](https://www.nuget.org/packages/MySqlConnector.Logging.log4net/), [Microsoft.Extensions.Logging](https://www.nuget.org/packages/MySqlConnector.Logging.Microsoft.Extensions.Logging/), [NLog](https://www.nuget.org/packages/MySqlConnector.Logging.NLog/), [Serilog](https://www.nuget.org/packages/MySqlConnector.Logging.Serilog/)
 
 ## Feedback
 
