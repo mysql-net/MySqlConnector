@@ -241,6 +241,8 @@ internal abstract class Row
 
 	protected abstract int GetInt32Core(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
 
+	protected abstract MySqlDecimal GetMySqlDecimalAsStringCore(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
+
 	public long GetInt64(int ordinal)
 	{
 		var value = GetValue(ordinal);
@@ -443,9 +445,14 @@ internal abstract class Row
 
 	public MySqlDecimal GetMySqlDecimal(int ordinal)
 	{
-		var value = GetValue(ordinal);
-		if (value is string decimalString && ResultSet.ColumnDefinitions![ordinal].ColumnType == ColumnType.Decimal)
-			return new MySqlDecimal(decimalString);
+		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
+		var columnType = ResultSet.ColumnDefinitions![ordinal].ColumnType;
+		if (columnType == ColumnType.NewDecimal || columnType == ColumnType.Decimal)
+		{
+			var value = Encoding.UTF8.GetString(data);
+			return new MySqlDecimal(value);
+		}
+
 		throw new InvalidCastException("Can't convert {0} to MySqlDecimal.".FormatInvariant(ResultSet.ColumnDefinitions![ordinal].ColumnType));
 	}
 

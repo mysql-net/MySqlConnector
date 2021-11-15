@@ -7,17 +7,18 @@ namespace MySqlConnector;
 public readonly struct MySqlDecimal
 {
 	private readonly string value;
+	static readonly string regexWithDecimal = @"^-?([1-9][0-9]*|0)(\.[0-9]+)?$";
+	static readonly string regexWithOutDecimal = @"^-?([1-9][0-9]*)$";
 
 	internal MySqlDecimal(string val)
 	{
-		string regexWithDecimal = @"^-?([1-9][0-9]*|0)(\.[0-9]+)?$";
-		string regexWithOutDecimal = @"^-?([1-9][0-9]*|0)$";
+
 		var matchWithDecimal = Regex.Match(val, regexWithDecimal, RegexOptions.IgnoreCase);
 		var matchWithOutDecimal = Regex.Match(val, regexWithOutDecimal, RegexOptions.IgnoreCase);
 
 		if(!(matchWithDecimal.Success || matchWithOutDecimal.Success))
 		{
-			throw new MySqlConversionException("Format is wrong.");
+			throw new FormatException("Format is wrong.");
 		}
 
 		bool negative = val[0] == '-';
@@ -32,7 +33,7 @@ public readonly struct MySqlDecimal
 
 		if (withDecimalNegative || withDecimalPositive || withOutDecimalNegative || withOutDecimalPositive)
 		{
-			throw new MySqlConversionException("Value is too large for Conversion or Format is wrong.");
+			throw new FormatException("Value is too large for Conversion.");
 		}
 		value = val;
 	}

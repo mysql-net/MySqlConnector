@@ -38,14 +38,14 @@ public class MySqlDecimalTests
 	public void TestInvalidFormatWithDecimalPostive()
 	{
 		var invalidValue = "0323.323";
-		Assert.Throws<MySqlConversionException>(() => new MySqlDecimal(invalidValue));
+		Assert.Throws<FormatException>(() => new MySqlDecimal(invalidValue));
 	}
 
 	[Fact]
 	public void TestInvalidFormatWithDecimalNegative()
 	{
 		var invalidValue = "-0323.323";
-		Assert.Throws<MySqlConversionException>(() => new MySqlDecimal(invalidValue));
+		Assert.Throws<FormatException>(() => new MySqlDecimal(invalidValue));
 	}
 
 	[Fact]
@@ -53,7 +53,7 @@ public class MySqlDecimalTests
 	{
 		// If its valid negative value with . then length should be less than 68
 		var invalidValue = "-123456789012345678901234567890123456.012345678901234567890123456789";
-		Assert.Throws<MySqlConversionException>(() => new MySqlDecimal(invalidValue));
+		Assert.Throws<FormatException>(() => new MySqlDecimal(invalidValue));
 	}
 
 	[Fact]
@@ -61,7 +61,7 @@ public class MySqlDecimalTests
 	{
 		// If its valid positive value with . then length should be less than 67
 		var invalidValue = "123456789012345678901234567890123456.012345678901234567890123456789";
-		Assert.Throws<MySqlConversionException>(() => new MySqlDecimal(invalidValue));
+		Assert.Throws<FormatException>(() => new MySqlDecimal(invalidValue));
 	}
 
 	[Fact]
@@ -69,7 +69,7 @@ public class MySqlDecimalTests
 	{
 		// If its valid negative value without . then length should be less than 67
 		var invalidValue = "-123456789012345678901234567890123456012345678901234567890123456789";
-		Assert.Throws<MySqlConversionException>(() => new MySqlDecimal(invalidValue));
+		Assert.Throws<FormatException>(() => new MySqlDecimal(invalidValue));
 	}
 
 	[Fact]
@@ -77,7 +77,15 @@ public class MySqlDecimalTests
 	{
 		// If its valid positive value without . then length should be less than 66
 		var invalidValue = "123456789012345678901234567890123456012345678901234567890123456789";
-		Assert.Throws<MySqlConversionException>(() => new MySqlDecimal(invalidValue));
+		Assert.Throws<FormatException>(() => new MySqlDecimal(invalidValue));
+	}
+
+	[Fact]
+	public void TestValidFormatWithOutDecimalNegativeZero()
+	{
+		// If its valid positive value without . then length should be less than 66
+		var invalidValue = "-0";
+		Assert.Throws<FormatException>(() => new MySqlDecimal(invalidValue));
 	}
 
 	[Fact]

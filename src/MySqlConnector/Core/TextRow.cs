@@ -103,7 +103,7 @@ internal sealed class TextRow : Row
 
 		case ColumnType.Decimal:
 		case ColumnType.NewDecimal:
-			return Encoding.UTF8.GetString(data);
+			return Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) && bytesConsumed == data.Length ? decimalValue : throw new FormatException();
 
 		case ColumnType.Geometry:
 			return data.ToArray();
@@ -127,4 +127,8 @@ internal sealed class TextRow : Row
 
 	private static long ParseInt64(ReadOnlySpan<byte> data) =>
 		!Utf8Parser.TryParse(data, out long value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
+	protected override MySqlDecimal GetMySqlDecimalAsStringCore(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+	{
+		return new MySqlDecimal(Encoding.UTF8.GetString(data));
+	}
 }
