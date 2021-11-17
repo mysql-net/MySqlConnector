@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace MySqlConnector.Tests;
 public class MySqlDecimalTests
 {
+#if !BASELINE
 	[Fact]
 	public void TestMySqlDecimalToString()
 	{
@@ -105,4 +102,5 @@ public class MySqlDecimalTests
 		MySqlDecimal decimalVal = new MySqlDecimal(invalidValue);
 		Assert.Equal(invalidValue, decimalVal.ToString());
 	}
+#endif
 }
