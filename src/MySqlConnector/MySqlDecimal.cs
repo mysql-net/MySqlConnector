@@ -7,7 +7,7 @@ namespace MySqlConnector;
 public readonly struct MySqlDecimal
 {
 	private readonly string value;
-	static readonly string regexWithDecimal = @"^-?([1-9][0-9]*|0)(\.[0-9]+)?$";
+	static readonly string regexWithDecimal = @"^-?([1-9][0-9]*|0)(\.[0-9]+)$";
 	static readonly string regexWithOutDecimal = @"^-?([1-9][0-9]*)$";
 
 	internal MySqlDecimal(string val)
