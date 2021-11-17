@@ -241,8 +241,6 @@ internal abstract class Row
 
 	protected abstract int GetInt32Core(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
 
-	protected abstract MySqlDecimal GetMySqlDecimalAsStringCore(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
-
 	public long GetInt64(int ordinal)
 	{
 		var value = GetValue(ordinal);

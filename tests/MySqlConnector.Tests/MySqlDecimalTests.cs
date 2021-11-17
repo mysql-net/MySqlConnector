@@ -89,6 +89,15 @@ public class MySqlDecimalTests
 	}
 
 	[Fact]
+	public void TestValidFormatWithDecimalNegativeZero()
+	{
+		// If its valid positive value without . then length should be less than 66
+		var validValue = "-0.2342323";
+		MySqlDecimal decimalVal = new MySqlDecimal(validValue);
+		Assert.Equal(validValue, decimalVal.ToString());
+	}
+
+	[Fact]
 	public void TestValidFormatWithDecimalNegative67Length()
 	{
 		// valid value with negative and decimal

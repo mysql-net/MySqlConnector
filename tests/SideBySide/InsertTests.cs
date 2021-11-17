@@ -411,6 +411,7 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 		Assert.Equal(value, reader.GetValue(0));
 	}
 
+#if !BASELINE
 	[Fact]
 	public void InsertMySqlDecimal()
 	{
@@ -472,6 +473,7 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 		var val = mySqlDataReader.GetMySqlDecimal(0);
 		Assert.Equal(value, val.ToString());
 	}
+#endif
 
 	[Theory]
 	[InlineData(false)]

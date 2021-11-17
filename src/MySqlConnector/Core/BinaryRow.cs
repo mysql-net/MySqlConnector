@@ -222,9 +222,4 @@ internal sealed class BinaryRow : Row
 
 		return new TimeSpan(days, hours, minutes, seconds) + TimeSpan.FromTicks(microseconds * 10);
 	}
-
-	protected override MySqlDecimal GetMySqlDecimalAsStringCore(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		return new MySqlDecimal(Encoding.UTF8.GetString(data));
-	}
 }
