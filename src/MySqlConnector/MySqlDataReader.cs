@@ -266,6 +266,9 @@ public sealed class MySqlDataReader : DbDataReader
 	public MySqlGeometry GetMySqlGeometry(int ordinal) => GetResultSet().GetCurrentRow().GetMySqlGeometry(ordinal);
 	public MySqlGeometry GetMySqlGeometry(string name) => GetMySqlGeometry(GetOrdinal(name));
 
+	public MySqlDecimal GetMySqlDecimal(int ordinal) => GetResultSet().GetCurrentRow().GetMySqlDecimal(ordinal);
+	public MySqlDecimal GetMySqlDecimal(string name) => GetMySqlDecimal(GetOrdinal(name));
+
 #if NET6_0_OR_GREATER
 	public TimeOnly GetTimeOnly(int ordinal) => TimeOnly.FromTimeSpan(GetTimeSpan(ordinal));
 	public TimeOnly GetTimeOnly(string name) => GetTimeOnly(GetOrdinal(name));
@@ -403,6 +406,8 @@ public sealed class MySqlDataReader : DbDataReader
 			return (T) (object) GetTextReader(ordinal);
 		if (typeof(T) == typeof(TimeSpan))
 			return (T) (object) GetTimeSpan(ordinal);
+		if (typeof(T) == typeof(MySqlDecimal))
+			return (T) (object) GetMySqlDecimal(ordinal);
 #if NET6_0_OR_GREATER
 		if (typeof(T) == typeof(DateOnly))
 			return (T) (object) GetDateOnly(ordinal);
