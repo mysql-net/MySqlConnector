@@ -1,48 +1,37 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using MySqlConnector.Utilities;
 
 namespace MySqlConnector;
 
 public readonly struct MySqlDecimal
 {
-	private readonly string value;
-	static readonly string regexWithDecimal = @"^-?([1-9][0-9]*|0)(\.[0-9]+)$";
-	static readonly string regexWithOutDecimal = @"^-?([1-9][0-9]*)$";
+	public decimal Value => Convert.ToDecimal(m_value, CultureInfo.InvariantCulture);
 
-	internal MySqlDecimal(string val)
+	public double ToDouble() => double.Parse(m_value, CultureInfo.InvariantCulture);
+
+	public override string ToString() => m_value;
+
+	internal MySqlDecimal(string value)
 	{
-
-		var matchWithDecimal = Regex.Match(val, regexWithDecimal, RegexOptions.IgnoreCase);
-		var matchWithOutDecimal = Regex.Match(val, regexWithOutDecimal, RegexOptions.IgnoreCase);
-
-		if(!(matchWithDecimal.Success || matchWithOutDecimal.Success))
+		if (s_pattern.Match(value) is { Success: true } match)
 		{
-			throw new FormatException("Format is wrong.");
+			var wholeLength = match.Groups[1].Length;
+			var fractionLength = match.Groups[3].Value.TrimEnd('0').Length;
+
+			var isWithinLengthLimits = wholeLength + fractionLength <= 65 && fractionLength <= 30;
+			var isNegativeZero = value[0] == '-' && match.Groups[1].Value == "0" && fractionLength == 0;
+			if (isWithinLengthLimits && !isNegativeZero)
+			{
+				m_value = value;
+				return;
+			}
 		}
 
-		bool negative = val[0] == '-';
-		// If its valid negative value with . then length should be less than 68
-		bool withDecimalNegative = (matchWithDecimal.Success && (val.Length >= 68 && negative));
-		// If its valid positive value with . then length should be less than 67
-		bool withDecimalPositive = (matchWithDecimal.Success && (val.Length >= 67 && !negative));
-		// If its valid negative value without . then length should be less than 67
-		bool withOutDecimalNegative = (matchWithOutDecimal.Success && (val.Length >= 67 && negative));
-		// If its valid positive value without . then length should be less than 66
-		bool withOutDecimalPositive = (matchWithOutDecimal.Success && (val.Length >= 66 && !negative));
-
-		if (withDecimalNegative || withDecimalPositive || withOutDecimalNegative || withOutDecimalPositive)
-		{
-			throw new FormatException("Value is too large for Conversion.");
-		}
-		value = val;
+		throw new FormatException("Could not parse the value as a MySqlDecimal: {0}".FormatInvariant(value));
 	}
 
-	public decimal Value => Convert.ToDecimal(value, CultureInfo.InvariantCulture);
+	private static readonly Regex s_pattern = new(@"^-?([1-9][0-9]*|0)(\.([0-9]+))?$");
 
-	public double ToDouble()
-	{
-		return Double.Parse(value, CultureInfo.InvariantCulture);
-	}
-
-	public override string ToString() => value;
+	private readonly string m_value;
 }

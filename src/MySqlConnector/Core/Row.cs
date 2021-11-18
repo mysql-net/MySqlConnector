@@ -445,12 +445,8 @@ internal abstract class Row
 	{
 		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
 		var columnType = ResultSet.ColumnDefinitions![ordinal].ColumnType;
-		if (columnType == ColumnType.NewDecimal || columnType == ColumnType.Decimal)
-		{
-			var value = Encoding.UTF8.GetString(data);
-			return new MySqlDecimal(value);
-		}
-
+		if (columnType is ColumnType.NewDecimal or ColumnType.Decimal)
+			return new MySqlDecimal(Encoding.UTF8.GetString(data));
 		throw new InvalidCastException("Can't convert {0} to MySqlDecimal.".FormatInvariant(ResultSet.ColumnDefinitions![ordinal].ColumnType));
 	}
 

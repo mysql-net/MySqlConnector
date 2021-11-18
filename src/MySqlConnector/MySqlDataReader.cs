@@ -267,6 +267,7 @@ public sealed class MySqlDataReader : DbDataReader
 	public MySqlGeometry GetMySqlGeometry(string name) => GetMySqlGeometry(GetOrdinal(name));
 
 	public MySqlDecimal GetMySqlDecimal(int ordinal) => GetResultSet().GetCurrentRow().GetMySqlDecimal(ordinal);
+	public MySqlDecimal GetMySqlDecimal(string name) => GetMySqlDecimal(GetOrdinal(name));
 
 #if NET6_0_OR_GREATER
 	public TimeOnly GetTimeOnly(int ordinal) => TimeOnly.FromTimeSpan(GetTimeSpan(ordinal));

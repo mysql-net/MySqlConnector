@@ -412,18 +412,22 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 	}
 
 #if !BASELINE
-	[Fact]
-	public void InsertMySqlDecimal()
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void InsertMySqlDecimal(bool prepare)
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
 		connection.Open();
 		connection.Execute(@"drop table if exists insert_mysql_decimal;
-							create table insert_mysql_decimal(rowid integer not null primary key auto_increment, value decimal(65,0));");
+			create table insert_mysql_decimal(rowid integer not null primary key auto_increment, value decimal(65,0));");
 
 		string value = "22";
 		using var cmd = connection.CreateCommand();
 		cmd.CommandText = @"insert into insert_mysql_decimal(value) values(@value);";
 		cmd.Parameters.AddWithValue("@value", new MySqlDecimal(value));
+		if (prepare)
+			cmd.Prepare();
 		cmd.ExecuteNonQuery();
 
 		using var reader = connection.ExecuteReader(@"select value from insert_mysql_decimal order by rowid;");
@@ -431,18 +435,22 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 		Assert.Equal(value, reader.GetValue(0).ToString());
 	}
 
-	[Fact]
-	public void InsertMySqlDecimalAsDecimal()
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void InsertMySqlDecimalAsDecimal(bool prepare)
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
 		connection.Open();
 		connection.Execute(@"drop table if exists insert_mysql_decimal;
-							create table insert_mysql_decimal(rowid integer not null primary key auto_increment, value decimal(65, 30));");
+			create table insert_mysql_decimal(rowid integer not null primary key auto_increment, value decimal(65, 30));");
 
 		string value = "-123456789012345678901234.01234";
 		using var cmd = connection.CreateCommand();
 		cmd.CommandText = @"insert into insert_mysql_decimal(value) values(@value);";
 		cmd.Parameters.AddWithValue("@value", new MySqlDecimal(value));
+		if (prepare)
+			cmd.Prepare();
 		cmd.ExecuteNonQuery();
 
 		using var reader = connection.ExecuteReader(@"select value from insert_mysql_decimal order by rowid;");
@@ -450,30 +458,44 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 		var val = reader.GetValue(0).ToString();
 		Assert.Equal(value, val);
 	}
+#endif
 
-	[Fact]
-	public void ReadMySqlDecimalUsingReader()
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void ReadMySqlDecimalUsingReader(bool prepare)
 	{
 		using MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString);
 		connection.Open();
 		connection.Execute(@"drop table if exists insert_mysql_decimal;
-							create table insert_mysql_decimal(rowid integer not null primary key auto_increment, value decimal(65, 30));");
+			create table insert_mysql_decimal(rowid integer not null primary key auto_increment, value decimal(65, 30));");
 
 		string value = "-12345678901234567890123456789012345.012345678901234567890123456789";
-		using MySqlCommand mySqlCommand = connection.CreateCommand();
-		mySqlCommand.CommandText = @"insert into insert_mysql_decimal(value) values(@value);";
-		mySqlCommand.Parameters.AddWithValue("@value", new MySqlDecimal(value));
-		mySqlCommand.ExecuteNonQuery();
-		connection.Close();
-		connection.Open();
+		using var cmd = connection.CreateCommand();
+		cmd.CommandText = @"insert into insert_mysql_decimal(value) values(@value);";
+		cmd.Parameters.AddWithValue("@value", value);
+		cmd.ExecuteNonQuery();
 
-		mySqlCommand.CommandText = @"select value from insert_mysql_decimal order by rowid;";
-		MySqlDataReader mySqlDataReader = mySqlCommand.ExecuteReader();
-		Assert.True(mySqlDataReader.Read());
-		var val = mySqlDataReader.GetMySqlDecimal(0);
+		cmd.CommandText = @"select value from insert_mysql_decimal order by rowid;";
+		if (prepare)
+			cmd.Prepare();
+		using var reader = cmd.ExecuteReader();
+		Assert.True(reader.Read());
+		var val = reader.GetMySqlDecimal("value");
 		Assert.Equal(value, val.ToString());
-	}
+
+#if !BASELINE
+		val = reader.GetFieldValue<MySqlDecimal>(0);
+		Assert.Equal(value, val.ToString());
 #endif
+
+		// value is too large to read as a regular decimal
+#if BASELINE
+		Assert.Throws<OverflowException>(() => reader.GetValue(0));
+#else
+		Assert.Throws<FormatException>(() => reader.GetValue(0));
+#endif
+	}
 
 	[Theory]
 	[InlineData(false)]
