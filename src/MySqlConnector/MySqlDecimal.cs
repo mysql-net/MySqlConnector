@@ -6,7 +6,7 @@ namespace MySqlConnector;
 
 public readonly struct MySqlDecimal
 {
-	public decimal Value => Convert.ToDecimal(m_value, CultureInfo.InvariantCulture);
+	public decimal Value => decimal.Parse(m_value, CultureInfo.InvariantCulture);
 
 	public double ToDouble() => double.Parse(m_value, CultureInfo.InvariantCulture);
 
