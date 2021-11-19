@@ -25,8 +25,8 @@ internal sealed class InitialHandshakePayload
 		var protocolCapabilities = (ProtocolCapabilities) reader.ReadUInt16();
 		if (reader.BytesRemaining > 0)
 		{
-			var charSet = (CharacterSet) reader.ReadByte(); // lgtm[cs/useless-assignment-to-local]
-			var status = (ServerStatus) reader.ReadInt16(); // lgtm[cs/useless-assignment-to-local]
+			_ = (CharacterSet) reader.ReadByte();
+			_ = (ServerStatus) reader.ReadInt16();
 			var capabilityFlagsHigh = reader.ReadUInt16();
 			protocolCapabilities |= (ProtocolCapabilities) ((ulong) capabilityFlagsHigh << 16);
 			var authPluginDataLength = reader.ReadByte();

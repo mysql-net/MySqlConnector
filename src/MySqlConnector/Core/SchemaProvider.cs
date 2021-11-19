@@ -109,9 +109,9 @@ internal sealed class SchemaProvider
 	private Task FillMetadataCollections(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[] {
-			new("CollectionName", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("NumberOfRestrictions", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("NumberOfIdentifierParts", typeof(int)), // lgtm[cs/local-not-disposed]
+			new("CollectionName", typeof(string)),
+			new("NumberOfRestrictions", typeof(int)),
+			new("NumberOfIdentifierParts", typeof(int)),
 		});
 
 		foreach (var collectionName in m_schemaCollections.Keys)
@@ -124,10 +124,10 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DEFAULT_COLLATE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DESCRIPTION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("MAXLEN", typeof(int)), // lgtm[cs/local-not-disposed]
+			new("CHARACTER_SET_NAME", typeof(string)),
+			new("DEFAULT_COLLATE_NAME", typeof(string)),
+			new("DESCRIPTION", typeof(string)),
+			new("MAXLEN", typeof(int)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "CHARACTER_SETS", cancellationToken).ConfigureAwait(false);
@@ -137,12 +137,12 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ID", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("IS_DEFAULT", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("IS_COMPILED", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SORTLEN", typeof(int)), // lgtm[cs/local-not-disposed]
+			new("COLLATION_NAME", typeof(string)),
+			new("CHARACTER_SET_NAME", typeof(string)),
+			new("ID", typeof(int)),
+			new("IS_DEFAULT", typeof(string)),
+			new("IS_COMPILED", typeof(string)),
+			new("SORTLEN", typeof(int)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "COLLATIONS", cancellationToken).ConfigureAwait(false);
@@ -152,8 +152,8 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("COLLATION_NAME", typeof(string)),
+			new("CHARACTER_SET_NAME", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "COLLATION_CHARACTER_SET_APPLICABILITY", cancellationToken).ConfigureAwait(false);
@@ -163,37 +163,37 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("COLUMN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ORDINAL_POSITION", typeof(uint)), // lgtm[cs/local-not-disposed]
-			new("COLUMN_DEFAULT", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("IS_NULLABLE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DATA_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CHARACTER_MAXIMUM_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("NUMERIC_PRECISION", typeof(ulong)), // lgtm[cs/local-not-disposed]
-			new("NUMERIC_SCALE", typeof(ulong)), // lgtm[cs/local-not-disposed]
-			new("DATETIME_PRECISION", typeof(uint)), // lgtm[cs/local-not-disposed]
-			new("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("COLUMN_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("COLUMN_KEY", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("EXTRA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PRIVILEGES", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("COLUMN_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("TABLE_CATALOG", typeof(string)),
+			new("TABLE_SCHEMA", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("COLUMN_NAME", typeof(string)),
+			new("ORDINAL_POSITION", typeof(uint)),
+			new("COLUMN_DEFAULT", typeof(string)),
+			new("IS_NULLABLE", typeof(string)),
+			new("DATA_TYPE", typeof(string)),
+			new("CHARACTER_MAXIMUM_LENGTH", typeof(long)),
+			new("NUMERIC_PRECISION", typeof(ulong)),
+			new("NUMERIC_SCALE", typeof(ulong)),
+			new("DATETIME_PRECISION", typeof(uint)),
+			new("CHARACTER_SET_NAME", typeof(string)),
+			new("COLLATION_NAME", typeof(string)),
+			new("COLUMN_TYPE", typeof(string)),
+			new("COLUMN_KEY", typeof(string)),
+			new("EXTRA", typeof(string)),
+			new("PRIVILEGES", typeof(string)),
+			new("COLUMN_COMMENT", typeof(string)),
 		});
 
 		using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'GENERATION_EXPRESSION';", m_connection))
 		{
 			if (await command.ExecuteScalarAsync(ioBehavior, cancellationToken).ConfigureAwait(false) is not null)
-				dataTable.Columns.Add(new DataColumn("GENERATION_EXPRESSION", typeof(string))); // lgtm[cs/local-not-disposed]
+				dataTable.Columns.Add(new DataColumn("GENERATION_EXPRESSION", typeof(string)));
 		}
 
 		using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'SRS_ID';", m_connection))
 		{
 			if (await command.ExecuteScalarAsync(ioBehavior, cancellationToken).ConfigureAwait(false) is not null)
-				dataTable.Columns.Add(new DataColumn("SRS_ID", typeof(uint))); // lgtm[cs/local-not-disposed]
+				dataTable.Columns.Add(new DataColumn("SRS_ID", typeof(uint)));
 		}
 
 		await FillDataTableAsync(ioBehavior, dataTable, "COLUMNS", cancellationToken).ConfigureAwait(false);
@@ -203,11 +203,11 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("CATALOG_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SCHEMA_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DEFAULT_CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DEFAULT_COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SQL_PATH", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("CATALOG_NAME", typeof(string)),
+			new("SCHEMA_NAME", typeof(string)),
+			new("DEFAULT_CHARACTER_SET_NAME", typeof(string)),
+			new("DEFAULT_COLLATION_NAME", typeof(string)),
+			new("SQL_PATH", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "SCHEMATA", cancellationToken).ConfigureAwait(false);
@@ -217,29 +217,29 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("TypeName", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ProviderDbType", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("ColumnSize", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("CreateFormat", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CreateParameters", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DataType", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("IsAutoIncrementable", typeof(bool)), // lgtm[cs/local-not-disposed]
-			new("IsBestMatch", typeof(bool)), // lgtm[cs/local-not-disposed]
-			new("IsCaseSensitive", typeof(bool)), // lgtm[cs/local-not-disposed]
-			new("IsFixedLength", typeof(bool)), // lgtm[cs/local-not-disposed]
-			new("IsFixedPrecisionScale", typeof(bool)), // lgtm[cs/local-not-disposed]
-			new("IsLong", typeof(bool)), // lgtm[cs/local-not-disposed]
-			new("IsNullable", typeof(bool)), // lgtm[cs/local-not-disposed]
-			new("IsSearchable", typeof(bool)), // lgtm[cs/local-not-disposed]
-			new("IsSearchableWithLike", typeof(bool)), // lgtm[cs/local-not-disposed]
-			new("IsUnsigned", typeof(bool)), // lgtm[cs/local-not-disposed]
-			new("MaximumScale", typeof(short)), // lgtm[cs/local-not-disposed]
-			new("MinimumScale", typeof(short)), // lgtm[cs/local-not-disposed]
-			new("IsConcurrencyType", typeof(bool)), // lgtm[cs/local-not-disposed]
-			new("IsLiteralSupported", typeof(bool)), // lgtm[cs/local-not-disposed]
-			new("LiteralPrefix", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("LiteralSuffix", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("NativeDataType", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("TypeName", typeof(string)),
+			new("ProviderDbType", typeof(int)),
+			new("ColumnSize", typeof(long)),
+			new("CreateFormat", typeof(string)),
+			new("CreateParameters", typeof(string)),
+			new("DataType", typeof(string)),
+			new("IsAutoIncrementable", typeof(bool)),
+			new("IsBestMatch", typeof(bool)),
+			new("IsCaseSensitive", typeof(bool)),
+			new("IsFixedLength", typeof(bool)),
+			new("IsFixedPrecisionScale", typeof(bool)),
+			new("IsLong", typeof(bool)),
+			new("IsNullable", typeof(bool)),
+			new("IsSearchable", typeof(bool)),
+			new("IsSearchableWithLike", typeof(bool)),
+			new("IsUnsigned", typeof(bool)),
+			new("MaximumScale", typeof(short)),
+			new("MinimumScale", typeof(short)),
+			new("IsConcurrencyType", typeof(bool)),
+			new("IsLiteralSupported", typeof(bool)),
+			new("LiteralPrefix", typeof(string)),
+			new("LiteralSuffix", typeof(string)),
+			new("NativeDataType", typeof(string)),
 		});
 
 		var clrTypes = new HashSet<string>();
@@ -301,12 +301,12 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("ENGINE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SUPPORT", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TRANSACTIONS", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("XA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SAVEPOINTS", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("ENGINE", typeof(string)),
+			new("SUPPORT", typeof(string)),
+			new("COMMENT", typeof(string)),
+			new("TRANSACTIONS", typeof(string)),
+			new("XA", typeof(string)),
+			new("SAVEPOINTS", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "ENGINES", cancellationToken).ConfigureAwait(false);
@@ -316,18 +316,18 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("COLUMN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("POSITION_IN_UNIQUE_CONSTRAINT", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("REFERENCED_TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("REFERENCED_TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("REFERENCED_COLUMN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("CONSTRAINT_CATALOG", typeof(string)),
+			new("CONSTRAINT_SCHEMA", typeof(string)),
+			new("CONSTRAINT_NAME", typeof(string)),
+			new("TABLE_CATALOG", typeof(string)),
+			new("TABLE_SCHEMA", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("COLUMN_NAME", typeof(string)),
+			new("ORDINAL_POSITION", typeof(int)),
+			new("POSITION_IN_UNIQUE_CONSTRAINT", typeof(string)),
+			new("REFERENCED_TABLE_SCHEMA", typeof(string)),
+			new("REFERENCED_TABLE_NAME", typeof(string)),
+			new("REFERENCED_COLUMN_NAME", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", cancellationToken).ConfigureAwait(false);
@@ -337,8 +337,8 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("WORD", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("RESERVED", typeof(int)), // lgtm[cs/local-not-disposed]
+			new("WORD", typeof(string)),
+			new("RESERVED", typeof(int)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "KEYWORDS", cancellationToken).ConfigureAwait(false);
@@ -348,22 +348,22 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("SPECIFIC_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SPECIFIC_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SPECIFIC_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("PARAMETER_MODE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PARAMETER_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DATA_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CHARACTER_MAXIMUM_LENGTH", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("CHARACTER_OCTET_LENGTH", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("NUMERIC_PRECISION", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("NUMERIC_SCALE", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("DATETIME_PRECISION", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("CHARACTER_SET_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("COLLATION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DTD_IDENTIFIER", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ROUTINE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("SPECIFIC_CATALOG", typeof(string)),
+			new("SPECIFIC_SCHEMA", typeof(string)),
+			new("SPECIFIC_NAME", typeof(string)),
+			new("ORDINAL_POSITION", typeof(int)),
+			new("PARAMETER_MODE", typeof(string)),
+			new("PARAMETER_NAME", typeof(string)),
+			new("DATA_TYPE", typeof(string)),
+			new("CHARACTER_MAXIMUM_LENGTH", typeof(int)),
+			new("CHARACTER_OCTET_LENGTH", typeof(int)),
+			new("NUMERIC_PRECISION", typeof(int)),
+			new("NUMERIC_SCALE", typeof(int)),
+			new("DATETIME_PRECISION", typeof(int)),
+			new("CHARACTER_SET_NAME", typeof(string)),
+			new("COLLATION_NAME", typeof(string)),
+			new("DTD_IDENTIFIER", typeof(string)),
+			new("ROUTINE_TYPE", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "PARAMETERS", cancellationToken).ConfigureAwait(false);
@@ -373,31 +373,31 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PARTITION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SUBPARTITION_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PARTITION_ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("SUBPARTITION_ORDINAL_POSITION", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("PARTITION_METHOD", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SUBPARTITION_METHOD", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PARTITION_EXPRESSION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SUBPARTITION_EXPRESSION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PARTITION_DESCRIPTION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_ROWS", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("AVG_ROW_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("MAX_DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("INDEX_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("DATA_FREE", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("CREATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-			new("UPDATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-			new("CHECK_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-			new("CHECKSUM", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("PARTITION_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("NODEGROUP", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLESPACE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("TABLE_CATALOG", typeof(string)),
+			new("TABLE_SCHEMA", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("PARTITION_NAME", typeof(string)),
+			new("SUBPARTITION_NAME", typeof(string)),
+			new("PARTITION_ORDINAL_POSITION", typeof(int)),
+			new("SUBPARTITION_ORDINAL_POSITION", typeof(int)),
+			new("PARTITION_METHOD", typeof(string)),
+			new("SUBPARTITION_METHOD", typeof(string)),
+			new("PARTITION_EXPRESSION", typeof(string)),
+			new("SUBPARTITION_EXPRESSION", typeof(string)),
+			new("PARTITION_DESCRIPTION", typeof(string)),
+			new("TABLE_ROWS", typeof(long)),
+			new("AVG_ROW_LENGTH", typeof(long)),
+			new("DATA_LENGTH", typeof(long)),
+			new("MAX_DATA_LENGTH", typeof(long)),
+			new("INDEX_LENGTH", typeof(long)),
+			new("DATA_FREE", typeof(long)),
+			new("CREATE_TIME", typeof(DateTime)),
+			new("UPDATE_TIME", typeof(DateTime)),
+			new("CHECK_TIME", typeof(DateTime)),
+			new("CHECKSUM", typeof(long)),
+			new("PARTITION_COMMENT", typeof(string)),
+			new("NODEGROUP", typeof(string)),
+			new("TABLESPACE_NAME", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "PARTITIONS", cancellationToken).ConfigureAwait(false);
@@ -407,17 +407,17 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("PLUGIN_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PLUGIN_VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PLUGIN_STATUS", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PLUGIN_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PLUGIN_TYPE_VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PLUGIN_LIBRARY", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PLUGIN_LIBRARY_VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PLUGIN_AUTHOR", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PLUGIN_DESCRIPTION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PLUGIN_LICENSE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("LOAD_OPTION", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("PLUGIN_NAME", typeof(string)),
+			new("PLUGIN_VERSION", typeof(string)),
+			new("PLUGIN_STATUS", typeof(string)),
+			new("PLUGIN_TYPE", typeof(string)),
+			new("PLUGIN_TYPE_VERSION", typeof(string)),
+			new("PLUGIN_LIBRARY", typeof(string)),
+			new("PLUGIN_LIBRARY_VERSION", typeof(string)),
+			new("PLUGIN_AUTHOR", typeof(string)),
+			new("PLUGIN_DESCRIPTION", typeof(string)),
+			new("PLUGIN_LICENSE", typeof(string)),
+			new("LOAD_OPTION", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "PLUGINS", cancellationToken).ConfigureAwait(false);
@@ -427,26 +427,26 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("SPECIFIC_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ROUTINE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ROUTINE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ROUTINE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ROUTINE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DTD_IDENTIFIER", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ROUTINE_BODY", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ROUTINE_DEFINITION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("EXTERNAL_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("EXTERNAL_LANGUAGE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PARAMETER_STYLE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("IS_DETERMINISTIC", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SQL_DATA_ACCESS", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SQL_PATH", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SECURITY_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CREATED", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-			new("LAST_ALTERED", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-			new("SQL_MODE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ROUTINE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DEFINER", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("SPECIFIC_NAME", typeof(string)),
+			new("ROUTINE_CATALOG", typeof(string)),
+			new("ROUTINE_SCHEMA", typeof(string)),
+			new("ROUTINE_NAME", typeof(string)),
+			new("ROUTINE_TYPE", typeof(string)),
+			new("DTD_IDENTIFIER", typeof(string)),
+			new("ROUTINE_BODY", typeof(string)),
+			new("ROUTINE_DEFINITION", typeof(string)),
+			new("EXTERNAL_NAME", typeof(string)),
+			new("EXTERNAL_LANGUAGE", typeof(string)),
+			new("PARAMETER_STYLE", typeof(string)),
+			new("IS_DETERMINISTIC", typeof(string)),
+			new("SQL_DATA_ACCESS", typeof(string)),
+			new("SQL_PATH", typeof(string)),
+			new("SECURITY_TYPE", typeof(string)),
+			new("CREATED", typeof(DateTime)),
+			new("LAST_ALTERED", typeof(DateTime)),
+			new("SQL_MODE", typeof(string)),
+			new("ROUTINE_COMMENT", typeof(string)),
+			new("DEFINER", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "ROUTINES", cancellationToken).ConfigureAwait(false);
@@ -456,14 +456,14 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("ID", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("USER", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("HOST", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DB", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("COMMAND", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TIME", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("STATE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("INFO", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("ID", typeof(long)),
+			new("USER", typeof(string)),
+			new("HOST", typeof(string)),
+			new("DB", typeof(string)),
+			new("COMMAND", typeof(string)),
+			new("TIME", typeof(int)),
+			new("STATE", typeof(string)),
+			new("INFO", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "PROCESSLIST", cancellationToken).ConfigureAwait(false);
@@ -473,24 +473,24 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("QUERY_ID", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("SEQ", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("STATE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DURATION", typeof(decimal)), // lgtm[cs/local-not-disposed]
-			new("CPU_USER", typeof(decimal)), // lgtm[cs/local-not-disposed]
-			new("CPU_SYSTEM", typeof(decimal)), // lgtm[cs/local-not-disposed]
-			new("CONTEXT_VOLUNTARY", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("CONTEXT_INVOLUNTARY", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("BLOCK_OPS_IN", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("BLOCK_OPS_OUT", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("MESSAGES_SENT", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("MESSAGES_RECEIVED", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("PAGE_FAULTS_MAJOR", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("PAGE_FAULTS_MINOR", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("SWAPS", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("SOURCE_FUNCTION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SOURCE_FILE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SOURCE_LINE", typeof(int)), // lgtm[cs/local-not-disposed]
+			new("QUERY_ID", typeof(int)),
+			new("SEQ", typeof(int)),
+			new("STATE", typeof(string)),
+			new("DURATION", typeof(decimal)),
+			new("CPU_USER", typeof(decimal)),
+			new("CPU_SYSTEM", typeof(decimal)),
+			new("CONTEXT_VOLUNTARY", typeof(int)),
+			new("CONTEXT_INVOLUNTARY", typeof(int)),
+			new("BLOCK_OPS_IN", typeof(int)),
+			new("BLOCK_OPS_OUT", typeof(int)),
+			new("MESSAGES_SENT", typeof(int)),
+			new("MESSAGES_RECEIVED", typeof(int)),
+			new("PAGE_FAULTS_MAJOR", typeof(int)),
+			new("PAGE_FAULTS_MINOR", typeof(int)),
+			new("SWAPS", typeof(int)),
+			new("SOURCE_FUNCTION", typeof(string)),
+			new("SOURCE_FILE", typeof(string)),
+			new("SOURCE_LINE", typeof(int)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "PROFILING", cancellationToken).ConfigureAwait(false);
@@ -500,17 +500,17 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("UNIQUE_CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("UNIQUE_CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("UNIQUE_CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("MATCH_OPTION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("UPDATE_RULE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DELETE_RULE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("REFERENCED_TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("CONSTRAINT_CATALOG", typeof(string)),
+			new("CONSTRAINT_SCHEMA", typeof(string)),
+			new("CONSTRAINT_NAME", typeof(string)),
+			new("UNIQUE_CONSTRAINT_CATALOG", typeof(string)),
+			new("UNIQUE_CONSTRAINT_SCHEMA", typeof(string)),
+			new("UNIQUE_CONSTRAINT_NAME", typeof(string)),
+			new("MATCH_OPTION", typeof(string)),
+			new("UPDATE_RULE", typeof(string)),
+			new("DELETE_RULE", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("REFERENCED_TABLE_NAME", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "REFERENTIAL_CONSTRAINTS", cancellationToken).ConfigureAwait(false);
@@ -518,7 +518,7 @@ internal sealed class SchemaProvider
 
 	private Task FillReservedWords(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 	{
-		dataTable.Columns.Add(new DataColumn("ReservedWord", typeof(string))); // lgtm[cs/local-not-disposed]
+		dataTable.Columns.Add(new DataColumn("ReservedWord", typeof(string)));
 
 		// Note:
 		// For MySQL 8.0, the INFORMATION_SCHEMA.KEYWORDS table could be used to load the list at runtime,
@@ -810,11 +810,11 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("RESOURCE_GROUP_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("RESOURCE_GROUP_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("RESOURCE_GROUP_ENABLED", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("VCPU_IDS", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("THREAD_PRIORITY", typeof(int)), // lgtm[cs/local-not-disposed]
+			new("RESOURCE_GROUP_NAME", typeof(string)),
+			new("RESOURCE_GROUP_TYPE", typeof(string)),
+			new("RESOURCE_GROUP_ENABLED", typeof(int)),
+			new("VCPU_IDS", typeof(string)),
+			new("THREAD_PRIORITY", typeof(int)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "RESOURCE_GROUPS", cancellationToken).ConfigureAwait(false);
@@ -824,11 +824,11 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("GRANTEE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PRIVILEGE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("GRANTEE", typeof(string)),
+			new("TABLE_CATALOG", typeof(string)),
+			new("TABLE_SCHEMA", typeof(string)),
+			new("PRIVILEGE_TYPE", typeof(string)),
+			new("IS_GRANTABLE", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "SCHEMA_PRIVILEGES", cancellationToken).ConfigureAwait(false);
@@ -838,27 +838,27 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ENGINE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("VERSION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ROW_FORMAT", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_ROWS", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("AVG_ROW_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("MAX_DATA_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("INDEX_LENGTH", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("DATA_FREE", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("AUTO_INCREMENT", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("CREATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-			new("UPDATE_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-			new("CHECK_TIME", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-			new("TABLE_COLLATION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CHECKSUM", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CREATE_OPTIONS", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("TABLE_CATALOG", typeof(string)),
+			new("TABLE_SCHEMA", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("TABLE_TYPE", typeof(string)),
+			new("ENGINE", typeof(string)),
+			new("VERSION", typeof(string)),
+			new("ROW_FORMAT", typeof(string)),
+			new("TABLE_ROWS", typeof(long)),
+			new("AVG_ROW_LENGTH", typeof(long)),
+			new("DATA_LENGTH", typeof(long)),
+			new("MAX_DATA_LENGTH", typeof(long)),
+			new("INDEX_LENGTH", typeof(long)),
+			new("DATA_FREE", typeof(long)),
+			new("AUTO_INCREMENT", typeof(long)),
+			new("CREATE_TIME", typeof(DateTime)),
+			new("UPDATE_TIME", typeof(DateTime)),
+			new("CHECK_TIME", typeof(DateTime)),
+			new("TABLE_COLLATION", typeof(string)),
+			new("CHECKSUM", typeof(string)),
+			new("CREATE_OPTIONS", typeof(string)),
+			new("TABLE_COMMENT", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "TABLES", cancellationToken).ConfigureAwait(false);
@@ -868,12 +868,12 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("CONSTRAINT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CONSTRAINT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CONSTRAINT_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CONSTRAINT_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("CONSTRAINT_CATALOG", typeof(string)),
+			new("CONSTRAINT_SCHEMA", typeof(string)),
+			new("CONSTRAINT_NAME", typeof(string)),
+			new("TABLE_SCHEMA", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("CONSTRAINT_TYPE", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "TABLE_CONSTRAINTS", cancellationToken).ConfigureAwait(false);
@@ -883,12 +883,12 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("GRANTEE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PRIVILEGE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("GRANTEE", typeof(string)),
+			new("TABLE_CATALOG", typeof(string)),
+			new("TABLE_SCHEMA", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("PRIVILEGE_TYPE", typeof(string)),
+			new("IS_GRANTABLE", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "TABLE_PRIVILEGES", cancellationToken).ConfigureAwait(false);
@@ -898,15 +898,15 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("TABLESPACE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ENGINE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLESPACE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("LOGFILE_GROUP_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("EXTENT_SIZE", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("AUTOEXTEND_SIZE", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("MAXIMUM_SIZE", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("NODEGROUP_ID", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("TABLESPACE_COMMENT", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("TABLESPACE_NAME", typeof(string)),
+			new("ENGINE", typeof(string)),
+			new("TABLESPACE_TYPE", typeof(string)),
+			new("LOGFILE_GROUP_NAME", typeof(string)),
+			new("EXTENT_SIZE", typeof(long)),
+			new("AUTOEXTEND_SIZE", typeof(long)),
+			new("MAXIMUM_SIZE", typeof(long)),
+			new("NODEGROUP_ID", typeof(long)),
+			new("TABLESPACE_COMMENT", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "TABLESPACES", cancellationToken).ConfigureAwait(false);
@@ -916,28 +916,28 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("TRIGGER_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TRIGGER_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TRIGGER_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("EVENT_MANIPULATION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("EVENT_OBJECT_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("EVENT_OBJECT_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("EVENT_OBJECT_TABLE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ACTION_ORDER", typeof(long)), // lgtm[cs/local-not-disposed]
-			new("ACTION_CONDITION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ACTION_STATEMENT", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ACTION_ORIENTATION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ACTION_TIMING", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ACTION_REFERENCE_OLD_TABLE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ACTION_REFERENCE_NEW_TABLE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ACTION_REFERENCE_OLD_ROW", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("ACTION_REFERENCE_NEW_ROW", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CREATED", typeof(DateTime)), // lgtm[cs/local-not-disposed]
-			new("SQL_MODE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DEFINER", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CHARACTER_SET_CLIENT", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("COLLATION_CONNECTION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DATABASE_COLLATION", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("TRIGGER_CATALOG", typeof(string)),
+			new("TRIGGER_SCHEMA", typeof(string)),
+			new("TRIGGER_NAME", typeof(string)),
+			new("EVENT_MANIPULATION", typeof(string)),
+			new("EVENT_OBJECT_CATALOG", typeof(string)),
+			new("EVENT_OBJECT_SCHEMA", typeof(string)),
+			new("EVENT_OBJECT_TABLE", typeof(string)),
+			new("ACTION_ORDER", typeof(long)),
+			new("ACTION_CONDITION", typeof(string)),
+			new("ACTION_STATEMENT", typeof(string)),
+			new("ACTION_ORIENTATION", typeof(string)),
+			new("ACTION_TIMING", typeof(string)),
+			new("ACTION_REFERENCE_OLD_TABLE", typeof(string)),
+			new("ACTION_REFERENCE_NEW_TABLE", typeof(string)),
+			new("ACTION_REFERENCE_OLD_ROW", typeof(string)),
+			new("ACTION_REFERENCE_NEW_ROW", typeof(string)),
+			new("CREATED", typeof(DateTime)),
+			new("SQL_MODE", typeof(string)),
+			new("DEFINER", typeof(string)),
+			new("CHARACTER_SET_CLIENT", typeof(string)),
+			new("COLLATION_CONNECTION", typeof(string)),
+			new("DATABASE_COLLATION", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "TRIGGERS", cancellationToken).ConfigureAwait(false);
@@ -947,10 +947,10 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("GRANTEE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("PRIVILEGE_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("IS_GRANTABLE", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("GRANTEE", typeof(string)),
+			new("TABLE_CATALOG", typeof(string)),
+			new("PRIVILEGE_TYPE", typeof(string)),
+			new("IS_GRANTABLE", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "USER_PRIVILEGES", cancellationToken).ConfigureAwait(false);
@@ -960,16 +960,16 @@ internal sealed class SchemaProvider
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
-			new("TABLE_CATALOG", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_SCHEMA", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("TABLE_NAME", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("VIEW_DEFINITION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CHECK_OPTION", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("IS_UPDATABLE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("DEFINER", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("SECURITY_TYPE", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("CHARACTER_SET_CLIENT", typeof(string)), // lgtm[cs/local-not-disposed]
-			new("COLLATION_CONNECTION", typeof(string)), // lgtm[cs/local-not-disposed]
+			new("TABLE_CATALOG", typeof(string)),
+			new("TABLE_SCHEMA", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("VIEW_DEFINITION", typeof(string)),
+			new("CHECK_OPTION", typeof(string)),
+			new("IS_UPDATABLE", typeof(string)),
+			new("DEFINER", typeof(string)),
+			new("SECURITY_TYPE", typeof(string)),
+			new("CHARACTER_SET_CLIENT", typeof(string)),
+			new("COLLATION_CONNECTION", typeof(string)),
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "VIEWS", cancellationToken).ConfigureAwait(false);
