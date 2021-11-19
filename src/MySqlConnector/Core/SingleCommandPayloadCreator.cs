@@ -53,7 +53,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	/// <param name="writer">The output writer.</param>
 	/// <returns><c>true</c> if a complete command was written; otherwise, <c>false</c>.</returns>
 	public static bool WriteQueryPayload(IMySqlCommand command, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer) =>
-		(command.CommandType == CommandType.StoredProcedure) ? WriteStoredProcedure(command, cachedProcedures, writer) :  WriteCommand(command, writer);
+		(command.CommandType == CommandType.StoredProcedure) ? WriteStoredProcedure(command, cachedProcedures, writer) : WriteCommand(command, writer);
 
 	private static void WritePreparedStatement(IMySqlCommand command, PreparedStatement preparedStatement, ByteBufferWriter writer)
 	{

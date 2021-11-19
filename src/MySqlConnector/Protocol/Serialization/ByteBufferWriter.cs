@@ -144,7 +144,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 			m_output = m_output.Slice(bytesUsed);
 			if (!completed)
 				Reallocate();
-			Debug.Assert(completed == (chars.Length == 0));
+			Debug.Assert(completed == (chars.Length == 0), "completed == (chars.Length == 0)");
 		}
 
 		if (flush && m_encoder is not null)
@@ -180,7 +180,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 				m_output = m_output.Slice(bytesUsed);
 				if (!completed)
 					Reallocate();
-				Debug.Assert(completed == (currentSpan.Length == 0));
+				Debug.Assert(completed == (currentSpan.Length == 0), "completed == (currentSpan.Length == 0)");
 			}
 		}
 

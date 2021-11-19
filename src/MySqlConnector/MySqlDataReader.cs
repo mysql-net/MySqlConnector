@@ -8,9 +8,10 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector;
 
+#if NET45 || NET461
 public sealed class MySqlDataReader : DbDataReader
-#if !NET45 && !NET461
-	, IDbColumnSchemaGenerator
+#else
+public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 #endif
 {
 	public override bool NextResult()

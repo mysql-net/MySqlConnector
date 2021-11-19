@@ -10,7 +10,7 @@ internal sealed class SchemaProvider
 		m_connection = connection;
 		m_schemaCollections = new(StringComparer.OrdinalIgnoreCase)
 		{
-			{ "DataSourceInformation", FillDataSourceInformation},
+			{ "DataSourceInformation", FillDataSourceInformation },
 			{ "MetaDataCollections", FillMetadataCollections },
 			{ "CharacterSets", FillCharacterSets },
 			{ "Collations", FillCollations },
@@ -74,7 +74,7 @@ internal sealed class SchemaProvider
 			new("ParameterNamePattern", typeof(string)),
 			new("StatementSeparatorPattern", typeof(string)),
 			new("StringLiteralPattern", typeof(string)),
-			new("SupportedJoinOperators", typeof(SupportedJoinOperators))
+			new("SupportedJoinOperators", typeof(SupportedJoinOperators)),
 		});
 
 		var row = dataTable.NewRow();
@@ -111,7 +111,7 @@ internal sealed class SchemaProvider
 		dataTable.Columns.AddRange(new DataColumn[] {
 			new("CollectionName", typeof(string)), // lgtm[cs/local-not-disposed]
 			new("NumberOfRestrictions", typeof(int)), // lgtm[cs/local-not-disposed]
-			new("NumberOfIdentifierParts", typeof(int)) // lgtm[cs/local-not-disposed]
+			new("NumberOfIdentifierParts", typeof(int)), // lgtm[cs/local-not-disposed]
 		});
 
 		foreach (var collectionName in m_schemaCollections.Keys)
@@ -291,8 +291,7 @@ internal sealed class SchemaProvider
 				true,
 				DBNull.Value,
 				DBNull.Value,
-				null
-			);
+				null);
 		}
 
 		return Utility.CompletedTask;
@@ -516,7 +515,6 @@ internal sealed class SchemaProvider
 
 		await FillDataTableAsync(ioBehavior, dataTable, "REFERENTIAL_CONSTRAINTS", cancellationToken).ConfigureAwait(false);
 	}
-
 
 	private Task FillReservedWords(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
 	{

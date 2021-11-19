@@ -654,6 +654,7 @@ internal sealed class ServerSession
 				Log.Error("Session{0} needs a secure connection to use AuthenticationMethod '{1}'", m_logArguments);
 				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Authentication method '{0}' requires a secure connection.".FormatInvariant(switchRequest.Name));
 			}
+
 			// send the password as a NULL-terminated UTF-8 string
 			var passwordBytes = Encoding.UTF8.GetBytes(password);
 			Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
@@ -1287,8 +1288,8 @@ internal sealed class ServerSession
 				ChainPolicy =
 				{
 					RevocationMode = X509RevocationMode.NoCheck,
-					VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority
-				}
+					VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority,
+				},
 			};
 
 			try
@@ -1402,7 +1403,7 @@ internal sealed class ServerSession
 			EnabledSslProtocols = sslProtocols,
 			ClientCertificates = clientCertificates,
 			TargetHost = HostName,
-			CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck
+			CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
 		};
 
 #if NETCOREAPP3_0_OR_GREATER
@@ -1865,10 +1866,10 @@ internal sealed class ServerSession
 	}
 
 	static ReadOnlySpan<byte> BeginCertificateBytes => new byte[] { 45, 45, 45, 45, 45, 66, 69, 71, 73, 78, 32, 67, 69, 82, 84, 73, 70, 73, 67, 65, 84, 69, 45, 45, 45, 45, 45 }; // -----BEGIN CERTIFICATE-----
-	static int s_lastId;
 	static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ServerSession));
 	static readonly PayloadData s_setNamesUtf8Payload = QueryPayload.Create("SET NAMES utf8;");
 	static readonly PayloadData s_setNamesUtf8mb4Payload = QueryPayload.Create("SET NAMES utf8mb4;");
+	static int s_lastId;
 
 	readonly object m_lock;
 	readonly object?[] m_logArguments;

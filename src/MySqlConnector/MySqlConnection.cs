@@ -147,7 +147,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			// "In terms of the SQL:1992 transaction isolation levels, the default InnoDB level is REPEATABLE READ." - http://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-model.html
 			IsolationLevel.Unspecified => "repeatable read",
 
-			_ => throw new NotSupportedException("IsolationLevel.{0} is not supported.".FormatInvariant(isolationLevel))
+			_ => throw new NotSupportedException("IsolationLevel.{0} is not supported.".FormatInvariant(isolationLevel)),
 		};
 
 		using (var cmd = new MySqlCommand($"set session transaction isolation level {isolationLevelValue};", this) { NoActivity = true })
@@ -521,7 +521,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// frequently-changing passwords or authentication tokens. Changing the password in the connection string
 	/// will create unique connection pools; this delegate allows a single connection pool to use multiple passwords.</para>
 	/// </remarks>
-	public Func<MySqlProvidePasswordContext, string>? ProvidePasswordCallback { get; set;}
+	public Func<MySqlProvidePasswordContext, string>? ProvidePasswordCallback { get; set; }
 
 	/// <summary>
 	/// Gets or sets the delegate used to verify that the server's certificate is valid.
@@ -651,7 +651,6 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// <summary>
 	/// Creates a <see cref="MySqlBatch"/> object for executing batched commands.
 	/// </summary>
-	/// <returns></returns>
 #if NET6_0_OR_GREATER
 	public new MySqlBatch CreateBatch() => new(this);
 	protected override DbBatch CreateDbBatch() => CreateBatch();
@@ -660,7 +659,6 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	public MySqlBatch CreateBatch() => new(this);
 	public bool CanCreateBatch => true;
 #endif
-
 
 	protected override void Dispose(bool disposing)
 	{

@@ -12,7 +12,7 @@ internal sealed class NormalizedSchema
 		$@"^\s*{ReEither}\s*(?:\.\s*{ReEither}\s*)?$",
 		RegexOptions.Compiled);
 
-	internal static NormalizedSchema MustNormalize(string name, string? defaultSchema = null)
+	public static NormalizedSchema MustNormalize(string name, string? defaultSchema = null)
 	{
 		var normalized = new NormalizedSchema(name, defaultSchema);
 		if (normalized.Component is null)
@@ -46,8 +46,8 @@ internal sealed class NormalizedSchema
 		}
 	}
 
-	internal readonly string? Schema;
-	internal readonly string? Component;
+	public string? Schema { get; }
+	public string? Component { get; }
 
-	internal string FullyQualified => $"`{Schema}`.`{Component}`";
+	public string FullyQualified => $"`{Schema}`.`{Component}`";
 }

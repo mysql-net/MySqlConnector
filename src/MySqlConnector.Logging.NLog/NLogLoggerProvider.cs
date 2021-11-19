@@ -33,9 +33,9 @@ public sealed class NLogLoggerProvider : IMySqlConnectorLoggerProvider
 			MySqlConnectorLogLevel.Warn => LogLevel.Warn,
 			MySqlConnectorLogLevel.Error => LogLevel.Error,
 			MySqlConnectorLogLevel.Fatal => LogLevel.Fatal,
-			_ => throw new ArgumentOutOfRangeException(nameof(level), level, "Invalid value for 'level'.")
+			_ => throw new ArgumentOutOfRangeException(nameof(level), level, "Invalid value for 'level'."),
 		};
 
-	readonly Logger m_logger;
+		readonly Logger m_logger;
 	}
 }

@@ -204,7 +204,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 			using (var deflateStream = new DeflateStream(compressedStream, CompressionLevel.Optimal, leaveOpen: true))
 				deflateStream.Write(remainingUncompressedData.Array!, remainingUncompressedData.Offset, remainingUncompressedBytes);
 
-			var checksum = Adler32.Calculate(remainingUncompressedData.Array!, (uint)remainingUncompressedData.Offset, (uint)remainingUncompressedBytes); 
+			var checksum = Adler32.Calculate(remainingUncompressedData.Array!, (uint)remainingUncompressedData.Offset, (uint)remainingUncompressedBytes);
 			compressedStream.WriteByte((byte) ((checksum >> 24) & 0xFF));
 			compressedStream.WriteByte((byte) ((checksum >> 16) & 0xFF));
 			compressedStream.WriteByte((byte) ((checksum >> 8) & 0xFF));
@@ -263,11 +263,11 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		readonly ProtocolErrorBehavior m_protocolErrorBehavior;
 	}
 
+	readonly BufferedByteReader m_bufferedByteReader;
+	readonly BufferedByteReader m_compressedBufferedByteReader;
 	MemoryStream? m_uncompressedStream;
 	IByteHandler? m_uncompressedStreamByteHandler;
 	IByteHandler? m_byteHandler;
-	readonly BufferedByteReader m_bufferedByteReader;
-	readonly BufferedByteReader m_compressedBufferedByteReader;
 	byte m_compressedSequenceNumber;
 	byte m_uncompressedSequenceNumber;
 	ArraySegment<byte> m_remainingData;

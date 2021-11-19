@@ -160,7 +160,6 @@ internal sealed class StatementPreparer
 		int m_lastIndex;
 	}
 
-
 	readonly string m_commandText;
 	readonly MySqlParameterCollection? m_parameters;
 }

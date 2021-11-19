@@ -600,7 +600,6 @@ internal sealed class ConnectionPool
 	static int s_poolId;
 	static ConnectionStringPool? s_mruCache;
 
-	int m_generation;
 	readonly SemaphoreSlim m_cleanSemaphore;
 	readonly SemaphoreSlim m_sessionSemaphore;
 	readonly LinkedList<ServerSession> m_sessions;
@@ -608,6 +607,7 @@ internal sealed class ConnectionPool
 	readonly ILoadBalancer? m_loadBalancer;
 	readonly Dictionary<string, int>? m_hostSessions;
 	readonly object[] m_logArguments;
+	int m_generation;
 	Task? m_reaperTask;
 	uint m_lastRecoveryTime;
 	int m_lastSessionId;

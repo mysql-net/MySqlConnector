@@ -21,7 +21,6 @@ internal static class ICancellableCommandExtensions
 	/// <summary>
 	/// Returns a unique ID for all implementations of <see cref="ICancellableCommand"/>.
 	/// </summary>
-	/// <returns></returns>
 	public static int GetNextId() => Interlocked.Increment(ref s_id);
 
 	/// <summary>

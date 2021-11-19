@@ -54,7 +54,7 @@ internal sealed class CachedProcedure
 		if (connection.Session.ServerVersion.Version < ServerVersions.SupportsProcedureCache)
 		{
 			Log.Info("Session{0} ServerVersion={1} does not support cached procedures", connection.Session.Id, connection.Session.ServerVersion.OriginalString);
-				return null;
+			return null;
 		}
 
 		var parameters = new List<CachedParameter>();
@@ -200,7 +200,7 @@ internal sealed class CachedProcedure
 			sql = s_length.Replace(sql, "");
 		}
 
-		var list = sql.Trim().Split(new char[] {' '});
+		var list = sql.Trim().Split(new[] { ' ' });
 		var type = string.Empty;
 
 		if (list.Length < 2 || !s_typeMapping.TryGetValue(list[0] + ' ' + list[1], out type))
@@ -248,7 +248,7 @@ internal sealed class CachedProcedure
 		{ "NCHAR", "CHAR" },
 		{ "CHARACTER", "CHAR" },
 		{ "NATIONAL CHAR", "CHAR" },
-		{ "CHAR BYTE", "BINARY" }
+		{ "CHAR BYTE", "BINARY" },
 	};
 
 	static readonly Regex s_cStyleComments = new(@"/\*.*?\*/", RegexOptions.Singleline);

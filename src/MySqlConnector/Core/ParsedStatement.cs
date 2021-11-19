@@ -21,5 +21,5 @@ internal sealed class ParsedStatement
 	/// The indexes of the parameters in the prepared statement. There is one entry in this list for
 	/// each parameter; it will be <c>-1</c> if the parameter is named.
 	/// </summary>
-	public List<int> ParameterIndexes { get; }= new();
+	public List<int> ParameterIndexes { get; } = new();
 }

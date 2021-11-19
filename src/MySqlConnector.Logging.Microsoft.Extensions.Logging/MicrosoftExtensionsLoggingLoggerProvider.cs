@@ -32,7 +32,7 @@ public sealed class MicrosoftExtensionsLoggingLoggerProvider : IMySqlConnectorLo
 			MySqlConnectorLogLevel.Warn => LogLevel.Warning,
 			MySqlConnectorLogLevel.Error => LogLevel.Error,
 			MySqlConnectorLogLevel.Fatal => LogLevel.Critical,
-			_ => throw new ArgumentOutOfRangeException(nameof(level), level, "Invalid value for 'level'.")
+			_ => throw new ArgumentOutOfRangeException(nameof(level), level, "Invalid value for 'level'."),
 		};
 
 		static readonly Func<string, Exception, string> s_getMessage = static (s, e) => s;

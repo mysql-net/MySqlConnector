@@ -1,3 +1,5 @@
+#pragma warning disable SA1515 // Single-line comment should be preceded by blank line
+
 using System.Net;
 using System.Net.Security;
 using System.Security.Authentication;
@@ -29,17 +31,15 @@ internal static class NegotiateStreamConstants
 /// https://winprotocoldoc.blob.core.windows.net/productionwindowsarchives/MS-NNS/[MS-NNS].pdf
 /// We only use Handshake Messages for authentication.
 /// </summary>
-
 internal class NegotiateToMySqlConverterStream : Stream
 {
-	bool m_clientHandshakeDone;
-
-	MemoryStream m_readBuffer;
 	readonly MemoryStream m_writeBuffer;
-	int m_writePayloadLength;
 	readonly ServerSession m_serverSession;
 	readonly IOBehavior m_ioBehavior;
 	readonly CancellationToken m_cancellationToken;
+	MemoryStream m_readBuffer;
+	int m_writePayloadLength;
+	bool m_clientHandshakeDone;
 
 	public PayloadData? MySQLProtocolPayload { get; private set; }
 	public NegotiateToMySqlConverterStream(ServerSession serverSession, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -53,7 +53,7 @@ internal class NegotiateToMySqlConverterStream : Stream
 
 	static void CreateNegotiateStreamMessageHeader(byte[] buffer, int offset, byte messageId, long payloadLength)
 	{
-		buffer[offset] =  messageId;
+		buffer[offset] = messageId;
 		buffer[offset+1] = NegotiateStreamConstants.MajorVersion;
 		buffer[offset+2] = NegotiateStreamConstants.MinorVersion;
 		buffer[offset+3] = (byte) (payloadLength >> 8);
@@ -80,7 +80,7 @@ internal class NegotiateToMySqlConverterStream : Stream
 			var payloadMemory = payload.Memory;
 
 			if (payloadMemory.Length > NegotiateStreamConstants.MaxPayloadLength)
-				throw new InvalidDataException(String.Format("Payload too big for NegotiateStream - {0} bytes", payloadMemory.Length));
+				throw new InvalidDataException(string.Format("Payload too big for NegotiateStream - {0} bytes", payloadMemory.Length));
 
 			// Check the first byte of the incoming packet.
 			// It can be an OK packet indicating end of server processing,
@@ -129,12 +129,11 @@ internal class NegotiateToMySqlConverterStream : Stream
 			var payloadSizeLow = buffer[offset+4];
 			var payloadSizeHigh = buffer[offset+3];
 
-
 			if (majorProtocolVersion != NegotiateStreamConstants.MajorVersion ||
-				minorProtocolVersion !=  NegotiateStreamConstants.MinorVersion)
+				minorProtocolVersion != NegotiateStreamConstants.MinorVersion)
 			{
 				throw new FormatException(
-					String.Format("Unknown version of NegotiateStream protocol {0}.{1}, expected {2}.{3}",
+					string.Format("Unknown version of NegotiateStream protocol {0}.{1}, expected {2}.{3}",
 					majorProtocolVersion, minorProtocolVersion,
 					NegotiateStreamConstants.MajorVersion, NegotiateStreamConstants.MinorVersion));
 			}
@@ -143,7 +142,7 @@ internal class NegotiateToMySqlConverterStream : Stream
 				messageId != NegotiateStreamConstants.HandshakeInProgress)
 			{
 				throw new FormatException(
-					String.Format("Invalid NegotiateStream MessageId 0x{0:X2}", messageId));
+					string.Format("Invalid NegotiateStream MessageId 0x{0:X2}", messageId));
 			}
 
 			m_writePayloadLength = (int) payloadSizeLow + ((int) payloadSizeHigh << 8);
@@ -160,7 +159,7 @@ internal class NegotiateToMySqlConverterStream : Stream
 			throw new InvalidDataException("Attempt to write more than a single message");
 
 		PayloadData payload;
-		if (count <  m_writePayloadLength)
+		if (count < m_writePayloadLength)
 		{
 			m_writeBuffer.Write(buffer, offset, count);
 			if (m_writeBuffer.Length < m_writePayloadLength)
@@ -226,7 +225,7 @@ internal static class AuthGSSAPI
 		if (cs.ServerSPN.Length != 0 && !negotiateStream.IsMutuallyAuthenticated)
 		{
 			// Negotiate used NTLM fallback, server name cannot be verified.
-			throw new AuthenticationException(String.Format(
+			throw new AuthenticationException(string.Format(
 				"GSSAPI : Unable to verify server principal name using authentication type {0}",
 				negotiateStream.RemoteIdentity?.AuthenticationType));
 		}

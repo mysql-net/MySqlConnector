@@ -352,7 +352,7 @@ internal sealed class ResultSet
 		return m_row ?? throw new InvalidOperationException("There is no current row.");
 	}
 
-	public readonly MySqlDataReader DataReader;
+	public MySqlDataReader DataReader { get; }
 	public ExceptionDispatchInfo? ReadResultSetHeaderException { get; private set; }
 	public IMySqlCommand Command => DataReader.Command!;
 	public MySqlConnection Connection => DataReader.Connection!;

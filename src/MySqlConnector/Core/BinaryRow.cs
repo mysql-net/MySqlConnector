@@ -164,7 +164,7 @@ internal sealed class BinaryRow : Row
 			if (Connection.ConvertZeroDateTime)
 				return DateTime.MinValue;
 			if (Connection.AllowZeroDateTime)
-				return new MySqlDateTime();
+				return default(MySqlDateTime);
 			throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime.");
 		}
 

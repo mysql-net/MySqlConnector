@@ -260,7 +260,7 @@ internal sealed class ConnectionSettings
 				}
 				catch (OverflowException)
 				{
-					m_connectionTimeoutMilliseconds = Int32.MaxValue;
+					m_connectionTimeoutMilliseconds = int.MaxValue;
 				}
 			}
 			return m_connectionTimeoutMilliseconds.Value;

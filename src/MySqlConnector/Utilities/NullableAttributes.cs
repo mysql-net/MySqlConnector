@@ -6,11 +6,15 @@ namespace System.Diagnostics.CodeAnalysis;
 
 /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false)]
-sealed class AllowNullAttribute : Attribute { }
+sealed class AllowNullAttribute : Attribute
+{
+}
 
 /// <summary>Specifies that an output will not be null even if the corresponding type allows it.</summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue, Inherited = false)]
-internal sealed class NotNullAttribute : Attribute { }
+internal sealed class NotNullAttribute : Attribute
+{
+}
 
 /// <summary>Specifies that when a method returns <see cref="ReturnValue"/>, the parameter will not be null even if the corresponding type allows it.</summary>
 [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]

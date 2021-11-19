@@ -46,5 +46,5 @@ public enum MySqlDbType
 	MediumText,
 	LongText,
 	Text,
-	Guid = 800
+	Guid = 800,
 }

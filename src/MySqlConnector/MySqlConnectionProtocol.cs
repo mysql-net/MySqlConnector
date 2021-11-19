@@ -29,6 +29,6 @@ public enum MySqlConnectionProtocol
 	/// Shared memory connection. Not currently supported.
 	/// </summary>
 	SharedMemory = 4,
-	Memory = 4
+	Memory = 4,
 }
 #pragma warning restore CA1069 // Enum values should not be duplicated

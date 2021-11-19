@@ -24,8 +24,14 @@ public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin
 		}
 	}
 
+	/// <summary>
+	/// Gets the authentication plugin name.
+	/// </summary>
 	public string Name => "client_ed25519";
 
+	/// <summary>
+	/// Creates the authentication response.
+	/// </summary>
 	public byte[] CreateResponse(string password, ReadOnlySpan<byte> authenticationData)
 	{
 		// Java reference: https://github.com/MariaDB/mariadb-connector-j/blob/master/src/main/java/org/mariadb/jdbc/internal/com/send/authentication/Ed25519PasswordPlugin.java

@@ -65,6 +65,7 @@ internal static class SocketExtensions
 			inOptionValues[9] = 0x03;
 			socket.IOControl(IOControlCode.KeepAliveValues, inOptionValues, null);
 		}
+
 		// Unix not supported: The appropriate socket options to set Keepalive options are not exposed: https://github.com/dotnet/runtime/issues/19568
 #endif
 	}

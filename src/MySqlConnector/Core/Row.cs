@@ -318,7 +318,7 @@ internal abstract class Row
 		if (value is decimal)
 			return (uint) (decimal) value;
 		if (value is bool)
-			return (bool) value ? (uint) 1 : (uint) 0;
+			return (bool) value ? 1u : 0;
 		return (uint) value;
 	}
 
@@ -345,7 +345,7 @@ internal abstract class Row
 		if (value is decimal)
 			return (ulong) (decimal) value;
 		if (value is bool)
-			return (bool) value ? (ulong) 1 : (ulong) 0;
+			return (bool) value ? 1ul : 0;
 		return (ulong) value;
 	}
 
@@ -372,7 +372,7 @@ internal abstract class Row
 	public Stream GetStream(int ordinal)
 	{
 		CheckBinaryColumn(ordinal);
-		return (MemoryMarshal.TryGetArray(m_data, out var arraySegment)) ?
+		return MemoryMarshal.TryGetArray(m_data, out var arraySegment) ?
 			new MemoryStream(arraySegment.Array!, arraySegment.Offset + m_dataOffsets[ordinal], m_dataLengths[ordinal], writable: false) :
 			throw new InvalidOperationException("Can't get underlying array.");
 	}
@@ -419,9 +419,9 @@ internal abstract class Row
 		// Use explicit range checks to guard against that.
 		return value switch
 		{
-			double doubleValue => (doubleValue is >= float.MinValue and <= float.MaxValue ? (float) doubleValue : throw new InvalidCastException("The value cannot be safely cast to Single.")),
+			double doubleValue => doubleValue is >= float.MinValue and <= float.MaxValue ? (float) doubleValue : throw new InvalidCastException("The value cannot be safely cast to Single."),
 			decimal decimalValue => (float) decimalValue,
-			_ => (float) value
+			_ => (float) value,
 		};
 	}
 
@@ -499,7 +499,7 @@ internal abstract class Row
 			if (Connection.ConvertZeroDateTime)
 				return DateTime.MinValue;
 			if (Connection.AllowZeroDateTime)
-				return new MySqlDateTime();
+				return default(MySqlDateTime);
 			throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime, set AllowZeroDateTime=True or ConvertZeroDateTime=True in the connection string. See https://mysqlconnector.net/connection-options/");
 		}
 
@@ -556,7 +556,7 @@ InvalidDateTime:
 		throw new FormatException("Couldn't interpret '{0}' as a valid DateTime".FormatInvariant(Encoding.UTF8.GetString(value)), exception);
 	}
 
-	protected unsafe static Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes) =>
+	protected static unsafe Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes) =>
 		guidFormat switch
 		{
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
@@ -628,7 +628,7 @@ InvalidDateTime:
 			throw new ArgumentException(nameof(bufferOffset) + " + " + nameof(length) + " cannot exceed " + nameof(buffer) + "." + nameof(buffer.Length), nameof(length));
 	}
 
-	ReadOnlyMemory<byte> m_data;
 	readonly int[] m_dataOffsets;
 	readonly int[] m_dataLengths;
+	ReadOnlyMemory<byte> m_data;
 }

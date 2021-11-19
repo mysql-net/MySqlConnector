@@ -122,7 +122,7 @@ public sealed class MySqlBatch :
 #endif
 		(MySqlDataReader) await ExecuteDbDataReaderAsync(CommandBehavior.Default, cancellationToken);
 
-	// TODO: new ExecuteReaderAsync(CommandBehavior)
+	//// TODO: new ExecuteReaderAsync(CommandBehavior)
 
 #if NET6_0_OR_GREATER
 	protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)

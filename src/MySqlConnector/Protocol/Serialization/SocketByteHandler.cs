@@ -19,7 +19,9 @@ internal sealed class SocketByteHandler : IByteHandler
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 	public void Dispose() => m_socketAwaitable.EventArgs.Dispose();
 #else
-	public void Dispose() { }
+	public void Dispose()
+	{
+	}
 #endif
 
 	public int RemainingTimeout { get; set; }

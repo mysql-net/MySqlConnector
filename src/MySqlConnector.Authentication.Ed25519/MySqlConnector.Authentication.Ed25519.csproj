@@ -8,6 +8,7 @@
     <Authors>Bradley Grainger</Authors>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>mariadb;mysqlconnector;authentication;ed25519</PackageTags>
+    <NoWarn>SA1001;SA1002;SA1005;SA1011;SA1012;SA1021;SA1025;SA1106;SA1107;SA1111;SA1119;SA1121;SA1300;SA1307;SA1312;SA1401;SA1413;SA1501;SA1505;SA1507;SA1508;SA1512;SA1518;SA1601</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

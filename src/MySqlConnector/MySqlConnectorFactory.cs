@@ -28,7 +28,6 @@ public sealed class MySqlConnectorFactory : DbProviderFactory
 	/// <summary>
 	/// Creates a new <see cref="MySqlParameter"/> object.
 	/// </summary>
-	/// <returns></returns>
 	public override DbParameter CreateParameter() => new MySqlParameter();
 
 	/// <summary>
@@ -68,6 +67,7 @@ public sealed class MySqlConnectorFactory : DbProviderFactory
 #else
 	public MySqlBatch CreateBatch() => new MySqlBatch();
 #endif
+
 	/// <summary>
 	/// Creates a new <see cref="MySqlBatchCommand"/> object.
 	/// </summary>

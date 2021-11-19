@@ -7,7 +7,9 @@ namespace MySqlConnector.Logging;
 
 public sealed class SerilogLoggerProvider : IMySqlConnectorLoggerProvider
 {
-	public SerilogLoggerProvider() { }
+	public SerilogLoggerProvider()
+	{
+	}
 
 	public IMySqlConnectorLogger CreateLogger(string name) => new SerilogLogger(name);
 

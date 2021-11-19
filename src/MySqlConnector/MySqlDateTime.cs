@@ -110,14 +110,13 @@ public struct MySqlDateTime : IComparable, IComparable<MySqlDateTime>, IConverti
 			new DateTime(Year, Month, Day, Hour, Minute, Second, DateTimeKind.Unspecified).AddTicks(Microsecond * 10);
 
 	/// <summary>
-	/// Converts this object to a <see cref="String"/>.
+	/// Converts this object to a <see cref="string"/>.
 	/// </summary>
 	public readonly override string ToString() => IsValidDateTime ? GetDateTime().ToString() : "0000-00-00";
 
 	/// <summary>
 	/// Converts this object to a <see cref="DateTime"/>.
 	/// </summary>
-	/// <param name="val"></param>
 	public static explicit operator DateTime(MySqlDateTime val) => !val.IsValidDateTime ? DateTime.MinValue : val.GetDateTime();
 
 	/// <summary>
@@ -149,7 +148,7 @@ public struct MySqlDateTime : IComparable, IComparable<MySqlDateTime>, IConverti
 	/// Compares this object to another <see cref="MySqlDateTime"/>.
 	/// </summary>
 	/// <param name="obj">The object to compare to.</param>
-	/// <returns>An <see cref="Int32"/> giving the results of the comparison: a negative value if this
+	/// <returns>An <see cref="int"/> giving the results of the comparison: a negative value if this
 	/// object is less than <paramref name="obj"/>, zero if this object is equal, or a positive value if this
 	/// object is greater.</returns>
 	readonly int IComparable.CompareTo(object? obj) =>
@@ -161,7 +160,7 @@ public struct MySqlDateTime : IComparable, IComparable<MySqlDateTime>, IConverti
 	/// Compares this object to another <see cref="MySqlDateTime"/>.
 	/// </summary>
 	/// <param name="other">The <see cref="MySqlDateTime"/> to compare to.</param>
-	/// <returns>An <see cref="Int32"/> giving the results of the comparison: a negative value if this
+	/// <returns>An <see cref="int"/> giving the results of the comparison: a negative value if this
 	/// object is less than <paramref name="other"/>, zero if this object is equal, or a positive value if this
 	/// object is greater.</returns>
 	readonly int IComparable<MySqlDateTime>.CompareTo(MySqlDateTime other)

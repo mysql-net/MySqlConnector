@@ -35,4 +35,4 @@ public sealed class MySqlError
 	/// A human-readable description of the error or warning.
 	/// </summary>
 	public string Message { get; }
-};
+}

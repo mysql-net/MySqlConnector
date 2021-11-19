@@ -719,7 +719,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
-	/// Returns <c>TINYINT(1)</c> fields as <see cref="Boolean"/> values.
+	/// Returns <c>TINYINT(1)</c> fields as <see cref="bool"/> values.
 	/// </summary>
 	[Category("Other")]
 	[DisplayName("Treat Tiny As Boolean")]
@@ -787,7 +787,6 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	/// Removes the option with the specified name.
 	/// </summary>
 	/// <param name="keyword">The option name.</param>
-	/// <returns></returns>
 	public override bool Remove(string keyword)
 	{
 		var option = MySqlConnectionStringOption.TryGetOptionForKey(keyword);

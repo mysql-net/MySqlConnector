@@ -43,7 +43,7 @@ internal static class IMySqlCommandExtensions
 			MySqlGuidFormat.Binary16 => StatementPreparerOptions.GuidFormatBinary16,
 			MySqlGuidFormat.TimeSwapBinary16 => StatementPreparerOptions.GuidFormatTimeSwapBinary16,
 			MySqlGuidFormat.LittleEndianBinary16 => StatementPreparerOptions.GuidFormatLittleEndianBinary16,
-			_ => StatementPreparerOptions.None
+			_ => StatementPreparerOptions.None,
 		};
 
 		return statementPreparerOptions;

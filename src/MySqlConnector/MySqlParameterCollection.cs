@@ -48,7 +48,7 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 		var parameter = new MySqlParameter
 		{
 			ParameterName = parameterName,
-			Value = value
+			Value = value,
 		};
 		AddParameter(parameter, m_parameters.Count);
 		return parameter;
@@ -186,4 +186,3 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 	readonly List<MySqlParameter> m_parameters;
 	readonly Dictionary<string, int> m_nameToIndex;
 }
-

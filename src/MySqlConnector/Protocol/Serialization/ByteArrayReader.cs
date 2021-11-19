@@ -128,7 +128,7 @@ internal ref struct ByteArrayReader
 			0xFD => ReadFixedLengthUInt32(3),
 			0xFE => ReadFixedLengthUInt64(8),
 			0xFF => throw new FormatException("Length-encoded integer cannot have 0xFF prefix byte."),
-			_ => encodedLength
+			_ => encodedLength,
 		};
 	}
 

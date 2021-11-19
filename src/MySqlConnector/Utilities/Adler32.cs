@@ -36,7 +36,7 @@ internal static class Adler32
 	private static ReadOnlySpan<byte> Tap1Tap2 => new byte[]
 	{
 		32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, // tap1
-		16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 // tap2
+		16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, // tap2
 	};
 #endif
 
@@ -44,8 +44,8 @@ internal static class Adler32
 	/// Calculates the Adler32 checksum with the bytes taken from the span.
 	/// </summary>
 	/// <param name="buffer">The readonly span of bytes.</param>
-	/// <param name="offset"></param>
-	/// <param name="length"></param>
+	/// <param name="offset">The offset.</param>
+	/// <param name="length">The length.</param>
 	/// <returns>The <see cref="uint"/>.</returns>
 	public static uint Calculate(ReadOnlySpan<byte> buffer, uint offset, uint length)
 	{
@@ -63,7 +63,6 @@ internal static class Adler32
 
 		return CalculateScalar(buffer, offset, length);
 	}
-
 
 #if NETCOREAPP3_0_OR_GREATER
 	// Based on https://github.com/chromium/chromium/blob/master/third_party/zlib/adler32_simd.c

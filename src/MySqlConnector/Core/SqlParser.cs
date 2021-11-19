@@ -1,3 +1,5 @@
+#pragma warning disable SA1520 // Use braces consistently
+
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
@@ -338,7 +340,7 @@ internal abstract class SqlParser
 
 	private static bool IsWhitespace(char ch) => ch is ' ' or '\t' or '\r' or '\n';
 
-	private static bool IsVariableName(char ch) => ch is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z') or (>= '0' and <= '9') or '.' or '_'  or '$' or (>= (char) 0x0080 and <= (char) 0xFFFF);
+	private static bool IsVariableName(char ch) => ch is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z') or (>= '0' and <= '9') or '.' or '_' or '$' or (>= (char) 0x0080 and <= (char) 0xFFFF);
 
 	private enum State
 	{
