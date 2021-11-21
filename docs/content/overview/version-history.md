@@ -20,8 +20,8 @@ weight: 30
 * **Breaking** Improve `MySqlBulkCopy` API: [#1012](https://github.com/mysql-net/MySqlConnector/issues/1012).
 * **Breaking** Remove `ConnectionIdlePingTime`: [#1042](https://github.com/mysql-net/MySqlConnector/issues/1042).
   * The `Connection Idle Ping Time` connection string option is still accepted, but has no effect.
-  * If `Connection Reset = False`, `MySqlConnection.Open` will return a pooled connection (if one is available) without testing it for liveness (by pinging the server). This improves performance but may degrade reliability. (`Connection Reset = True`, which is the default, is still recommended for greatest reliability.)
-  * If the server has closed the pooled connection, `MySqlConnection.Open` will succeed, but the first operation on that connection will fail. Command execution should be wrapped in a try/catch/retry loop to handle this scenario.
+  * If `Connection Reset = False`, `MySqlConnection.Open` will return a pooled connection (if one is available) without testing it for liveness (by pinging the server). If the server has closed the pooled connection, `MySqlConnection.Open` will succeed, but the first operation on that connection will fail. Command execution should be wrapped in a try/catch/retry loop to handle this scenario.
+   * `Connection Reset = False` improves performance but may degrade reliability; `Connection Reset = True`, which is the default, is still recommended for greatest reliability.
 * **Breaking** Change how option keys are serialized when retrieving the `MySqlConnectionStringBuilder.ConnectionString` property:
   * For example, `User Id` is now `User ID`, `DefaultCommandTimeout` is now `Default Command Timeout`, etc.
   * All existing connection strings are still valid, and all the previous aliases for connection string options are still accepted.
