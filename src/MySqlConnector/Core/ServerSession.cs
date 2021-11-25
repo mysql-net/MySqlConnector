@@ -555,11 +555,10 @@ internal sealed class ServerSession
 		return statusInfo;
 	}
 
-	public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, MySqlConnection connection, bool returnToPool, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		VerifyState(State.Connected);
 
-		var success = false;
 		try
 		{
 			// clear all prepared statements; resetting the connection will clear them on the server
@@ -606,7 +605,7 @@ internal sealed class ServerSession
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 
-			success = true;
+			return true;
 		}
 		catch (IOException ex)
 		{
@@ -625,12 +624,7 @@ internal sealed class ServerSession
 			Log.Trace(ex, "Session{0} ignoring SocketException in TryResetConnectionAsync", m_logArguments);
 		}
 
-		if (returnToPool && Pool is not null)
-		{
-			await Pool.ReturnAsync(ioBehavior, this).ConfigureAwait(false);
-		}
-
-		return success;
+		return false;
 	}
 
 	private async Task<PayloadData> SwitchAuthenticationAsync(ConnectionSettings cs, string password, PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
