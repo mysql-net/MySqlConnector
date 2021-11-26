@@ -4,6 +4,8 @@ title: MySqlDecimal
 
 # MySqlDecimal structure
 
+[`MySqlDecimal`](../MySqlDecimalType/) represents a MySQL `DECIMAL` value that is too large to fit in a .NET Decimal.
+
 ```csharp
 public struct MySqlDecimal
 ```
@@ -12,9 +14,9 @@ public struct MySqlDecimal
 
 | name | description |
 | --- | --- |
-| [Value](../MySqlDecimal/Value/) { get; } |  |
-| [ToDouble](../MySqlDecimal/ToDouble/)() |  |
-| override [ToString](../MySqlDecimal/ToString/)() |  |
+| [Value](../MySqlDecimal/Value/) { get; } | Gets the value of this [`MySqlDecimal`](../MySqlDecimalType/) as a Decimal. |
+| [ToDouble](../MySqlDecimal/ToDouble/)() | Gets the value of this [`MySqlDecimal`](../MySqlDecimalType/) as a Double. |
+| override [ToString](../MySqlDecimal/ToString/)() | Gets the original value of this [`MySqlDecimal`](../MySqlDecimalType/) as a String. |
 
 ## See Also
 

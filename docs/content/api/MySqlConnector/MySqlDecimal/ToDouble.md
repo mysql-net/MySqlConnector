@@ -4,9 +4,15 @@ title: MySqlDecimal.ToDouble method
 
 # MySqlDecimal.ToDouble method
 
+Gets the value of this [`MySqlDecimal`](../../MySqlDecimalType/) as a Double.
+
 ```csharp
 public double ToDouble()
 ```
+
+## Remarks
+
+The return value may have lost precision.
 
 ## See Also
 

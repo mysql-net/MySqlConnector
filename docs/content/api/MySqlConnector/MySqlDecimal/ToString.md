@@ -4,6 +4,8 @@ title: MySqlDecimal.ToString method
 
 # MySqlDecimal.ToString method
 
+Gets the original value of this [`MySqlDecimal`](../../MySqlDecimalType/) as a String.
+
 ```csharp
 public override string ToString()
 ```

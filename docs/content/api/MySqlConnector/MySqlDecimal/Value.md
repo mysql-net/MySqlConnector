@@ -4,9 +4,15 @@ title: MySqlDecimal.Value property
 
 # MySqlDecimal.Value property
 
+Gets the value of this [`MySqlDecimal`](../../MySqlDecimalType/) as a Decimal.
+
 ```csharp
 public decimal Value { get; }
 ```
+
+## Remarks
+
+This method will throw an OverflowException if the value is too large to be represented.
 
 ## See Also
 
