@@ -678,8 +678,21 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
-	/// Whether to use server redirection.
+	/// Enables query pipelining.
 	/// </summary>
+	[Category("Other")]
+	[DefaultValue(true)]
+	[Description("Enables query pipelining.")]
+	[DisplayName("Pipelining")]
+	public bool Pipelining
+	{
+		get => MySqlConnectionStringOption.Pipelining.GetValue(this);
+		set => MySqlConnectionStringOption.Pipelining.SetValue(this, value);
+	}
+
+	/// <summary>
+		/// Whether to use server redirection.
+		/// </summary>
 	[Category("Connection")]
 	[DefaultValue(MySqlServerRedirectionMode.Disabled)]
 	[Description("Whether to use server redirection.")]
@@ -911,6 +924,7 @@ internal abstract class MySqlConnectionStringOption
 	public static readonly MySqlConnectionStringValueOption<bool> NoBackslashEscapes;
 	public static readonly MySqlConnectionStringValueOption<bool> OldGuids;
 	public static readonly MySqlConnectionStringValueOption<bool> PersistSecurityInfo;
+	public static readonly MySqlConnectionStringValueOption<bool> Pipelining;
 	public static readonly MySqlConnectionStringValueOption<MySqlServerRedirectionMode> ServerRedirectionMode;
 	public static readonly MySqlConnectionStringReferenceOption<string> ServerRsaPublicKeyFile;
 	public static readonly MySqlConnectionStringReferenceOption<string> ServerSPN;
@@ -1177,6 +1191,10 @@ internal abstract class MySqlConnectionStringOption
 		AddOption(PersistSecurityInfo = new(
 			keys: new[] { "Persist Security Info", "PersistSecurityInfo" },
 			defaultValue: false));
+
+		AddOption(Pipelining = new(
+			keys: new[] { "Pipelining" },
+			defaultValue: true));
 
 		AddOption(ServerRedirectionMode = new(
 			keys: new[] { "Server Redirection Mode", "ServerRedirectionMode" },

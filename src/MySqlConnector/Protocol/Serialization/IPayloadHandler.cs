@@ -9,6 +9,13 @@ internal interface IPayloadHandler : IDisposable
 	void StartNewConversation();
 
 	/// <summary>
+	/// Forces the next sequence number to be the specified value.
+	/// </summary>
+	/// <param name="sequenceNumber">The next sequence number.</param>
+	/// <remarks>This should only be used in advanced scenarios.</remarks>
+	void SetNextSequenceNumber(int sequenceNumber);
+
+	/// <summary>
 	/// Gets or sets the underlying <see cref="IByteHandler"/> that data is read from and written to.
 	/// </summary>
 	IByteHandler ByteHandler { get; set; }

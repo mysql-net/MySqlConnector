@@ -16,10 +16,11 @@ internal sealed class StandardPayloadHandler : IPayloadHandler
 		Utility.Dispose(ref m_byteHandler);
 	}
 
-	public void StartNewConversation()
-	{
+	public void StartNewConversation() =>
 		m_sequenceNumber = 0;
-	}
+
+	public void SetNextSequenceNumber(int sequenceNumber) =>
+		m_sequenceNumber = (byte) sequenceNumber;
 
 	public IByteHandler ByteHandler
 	{

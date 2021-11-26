@@ -71,6 +71,9 @@ public class MySqlConnectionStringBuilderTests
 #endif
 		Assert.False(csb.OldGuids);
 		Assert.False(csb.PersistSecurityInfo);
+#if !BASELINE
+		Assert.True(csb.Pipelining);
+#endif
 		Assert.True(csb.Pooling);
 		Assert.Equal(3306u, csb.Port);
 		Assert.Equal("", csb.Server);
@@ -135,6 +138,7 @@ public class MySqlConnectionStringBuilderTests
 				"load balance=random;" +
 				"guidformat=timeswapbinary16;" +
 				"nobackslashescapes=true;" +
+				"pipelining=false;" +
 				"server redirection mode=required;" +
 				"server spn=mariadb/host.example.com@EXAMPLE.COM;" +
 				"use xa transactions=false;" +
@@ -197,6 +201,7 @@ public class MySqlConnectionStringBuilderTests
 		Assert.Equal(MySqlLoadBalance.Random, csb.LoadBalance);
 		Assert.Equal(MySqlGuidFormat.TimeSwapBinary16, csb.GuidFormat);
 		Assert.True(csb.NoBackslashEscapes);
+		Assert.False(csb.Pipelining);
 		Assert.Equal(MySqlServerRedirectionMode.Required, csb.ServerRedirectionMode);
 		Assert.Equal("mariadb/host.example.com@EXAMPLE.COM", csb.ServerSPN);
 		Assert.False(csb.UseXaTransactions);

@@ -468,9 +468,36 @@ internal sealed class ServerSession
 				m_characterSet = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? CharacterSet.Utf8Mb4GeneralCaseInsensitive : CharacterSet.Utf8GeneralCaseInsensitive;
 				m_setNamesPayload = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? s_setNamesUtf8mb4Payload : s_setNamesUtf8Payload;
 
-				Log.Debug("Session{0} made connection; ServerVersion={1}; ConnectionId={2}; Compression={3}; Attributes={4}; DeprecateEof={5}; Ssl={6}; SessionTrack={7}",
+				// disable pipelining for RDS MySQL 5.7 (assuming Aurora); otherwise take it from the connection string or default to true
+				if (!cs.Pipelining.HasValue && ServerVersion.Version.Major == 5 && ServerVersion.Version.Minor == 7 && HostName.EndsWith(".rds.amazonaws.com", StringComparison.OrdinalIgnoreCase))
+				{
+					m_logArguments[1] = HostName;
+					Log.Debug("Session{0} auto-detected Aurora 5.7 at '{1}'; disabling pipelining", m_logArguments);
+					m_supportsPipelining = false;
+				}
+				else
+				{
+					// pipelining is not currently compatible with compression
+					m_supportsPipelining = !cs.UseCompression && (cs.Pipelining ?? true);
+
+					// for pipelining, concatenate reset connection and SET NAMES query into one buffer
+					if (m_supportsPipelining)
+					{
+						m_pipelinedResetConnectionBytes = new byte[m_setNamesPayload.Span.Length + 9];
+
+						// first packet: reset connection
+						m_pipelinedResetConnectionBytes[0] = 1;
+						m_pipelinedResetConnectionBytes[4] = (byte) CommandKind.ResetConnection;
+
+						// second packet: SET NAMES query
+						m_pipelinedResetConnectionBytes[5] = (byte) m_setNamesPayload.Span.Length;
+						m_setNamesPayload.Span.CopyTo(m_pipelinedResetConnectionBytes.AsSpan().Slice(9));
+					}
+				}
+
+				Log.Debug("Session{0} made connection; ServerVersion={1}; ConnectionId={2}; Compression={3}; Attributes={4}; DeprecateEof={5}; Ssl={6}; SessionTrack={7}; Pipelining={8}",
 					m_logArguments[0], ServerVersion.OriginalString, ConnectionId,
-					m_useCompression, m_supportsConnectionAttributes, m_supportsDeprecateEof, serverSupportsSsl, m_supportsSessionTrack);
+					m_useCompression, m_supportsConnectionAttributes, m_supportsDeprecateEof, serverSupportsSsl, m_supportsSessionTrack, m_supportsPipelining);
 
 				if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
 				{
@@ -568,6 +595,26 @@ internal sealed class ServerSession
 			if (DatabaseOverride is null && (ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0 || ServerVersion.MariaDbVersion?.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0))
 			{
 				m_logArguments[1] = ServerVersion.OriginalString;
+
+				if (m_supportsPipelining)
+				{
+					Log.Trace("Session{0} ServerVersion={1} supports reset connection and pipelining; sending pipelined reset connection request", m_logArguments);
+
+					// send both packets at once
+					await m_payloadHandler!.ByteHandler.WriteBytesAsync(m_pipelinedResetConnectionBytes!, ioBehavior).ConfigureAwait(false);
+
+					// read two OK replies
+					m_payloadHandler.SetNextSequenceNumber(1);
+					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+
+					m_payloadHandler.SetNextSequenceNumber(1);
+					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+
+					return true;
+				}
+
 				Log.Trace("Session{0} ServerVersion={1} supports reset connection; sending reset connection request", m_logArguments);
 				await SendAsync(ResetConnectionPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -1882,7 +1929,9 @@ internal sealed class ServerSession
 	bool m_supportsConnectionAttributes;
 	bool m_supportsDeprecateEof;
 	bool m_supportsSessionTrack;
+	bool m_supportsPipelining;
 	CharacterSet m_characterSet;
 	PayloadData m_setNamesPayload;
+	byte[]? m_pipelinedResetConnectionBytes;
 	Dictionary<string, PreparedStatements>? m_preparedStatements;
 }
