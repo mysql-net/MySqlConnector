@@ -17,11 +17,11 @@ improves the throughput of a web server that performs database operations.
 
 ### Performance
 
-This library outperforms Connector/NET (`MySql.Data`) on benchmarks:
+This library outperforms MySQL Connector/NET (`MySql.Data`) on benchmarks:
 
-![Benchmark 1](https://files.logoscdn.com/v1/files/12389056/content.png?signature=UE8FnU9ykb1f_7C68_D8lF2ZAzc) ![Benchmark 2](https://files.logoscdn.com/v1/files/12389051/content.png?signature=Gptw0KDjYREuulIk_37zuO6OToc)
+![Benchmark](https://files.logoscdn.com/v1/assets/12545033/optimized?w=800)
 
-(Client: MySqlConnector 0.44.0, Windows 10 x64; Server: MySQL Server 5.6.21, Unix)
+(Client: MySqlConnector 2.1.0, Ubuntu 20.04, .NET 6.0; Server: Azure Database for MySQL 8.0.21)
 
 ### Bug Fixes
 
