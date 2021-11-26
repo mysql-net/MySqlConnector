@@ -10,10 +10,6 @@ Converts this object to a DateTime.
 public static explicit operator DateTime(MySqlDateTime val)
 ```
 
-| parameter | description |
-| --- | --- |
-| val |  |
-
 ## See Also
 
 * struct [MySqlDateTime](../../MySqlDateTimeType/)

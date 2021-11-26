@@ -51,6 +51,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 | [OldGuids](../MySqlConnectionStringBuilder/OldGuids/) { get; set; } | Use the [`GuidFormat`](../MySqlConnectionStringBuilder/GuidFormat/) property instead. |
 | [Password](../MySqlConnectionStringBuilder/Password/) { get; set; } | The password for the MySQL user. |
 | [PersistSecurityInfo](../MySqlConnectionStringBuilder/PersistSecurityInfo/) { get; set; } | If true, preserves security-sensitive information in the connection string retrieved from any open [`MySqlConnection`](../MySqlConnectionType/). |
+| [Pipelining](../MySqlConnectionStringBuilder/Pipelining/) { get; set; } | Enables query pipelining. |
 | [PipeName](../MySqlConnectionStringBuilder/PipeName/) { get; set; } | The name of the Windows named pipe to use to connect to the server. You must also set [`ConnectionProtocol`](../MySqlConnectionStringBuilder/ConnectionProtocol/) to NamedPipe to used named pipes. |
 | [Pooling](../MySqlConnectionStringBuilder/Pooling/) { get; set; } | Enables connection pooling. |
 | [Port](../MySqlConnectionStringBuilder/Port/) { get; set; } | The TCP port on which MySQL Server is listening for connections. |

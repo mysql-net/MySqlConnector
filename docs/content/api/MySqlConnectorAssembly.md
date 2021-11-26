@@ -31,6 +31,7 @@ title: MySqlConnector
 | enum [MySqlDateTimeKind](../MySqlConnector/MySqlDateTimeKindType/) | The DateTimeKind used when reading DateTime from the database. |
 | class [MySqlDbColumn](../MySqlConnector/MySqlDbColumnType/) |  |
 | enum [MySqlDbType](../MySqlConnector/MySqlDbTypeType/) |  |
+| struct [MySqlDecimal](../MySqlConnector/MySqlDecimalType/) |  |
 | class [MySqlError](../MySqlConnector/MySqlErrorType/) | [`MySqlError`](../MySqlConnector/MySqlErrorType/) represents an error or warning that occurred during the execution of a SQL statement. |
 | enum [MySqlErrorCode](../MySqlConnector/MySqlErrorCodeType/) | MySQL Server error codes. Taken from [Server Error Codes and Messages](https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html). |
 | class [MySqlException](../MySqlConnector/MySqlExceptionType/) | [`MySqlException`](../MySqlConnector/MySqlExceptionType/) is thrown when MySQL Server returns an error code, or there is a communication error with the server. |

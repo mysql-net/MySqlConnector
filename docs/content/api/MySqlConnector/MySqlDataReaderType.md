@@ -54,6 +54,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 | override [GetInt64](../MySqlDataReader/GetInt64/)(…) |  |
 | [GetInt64](../MySqlDataReader/GetInt64/)(…) |  |
 | [GetMySqlDateTime](../MySqlDataReader/GetMySqlDateTime/)(…) |  (2 methods) |
+| [GetMySqlDecimal](../MySqlDataReader/GetMySqlDecimal/)(…) |  (2 methods) |
 | [GetMySqlGeometry](../MySqlDataReader/GetMySqlGeometry/)(…) |  (2 methods) |
 | override [GetName](../MySqlDataReader/GetName/)(…) |  |
 | override [GetOrdinal](../MySqlDataReader/GetOrdinal/)(…) |  |

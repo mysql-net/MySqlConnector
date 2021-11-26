@@ -15,6 +15,10 @@ public byte[] CreateResponse(string password, ReadOnlySpan<byte> authenticationD
 | password | The client's password. |
 | authenticationData | The authentication data supplied by the server; this is the |
 
+## Return Value
+
+The authentication response.
+
 ## See Also
 
 * interface [IAuthenticationPlugin](../../IAuthenticationPluginType/)

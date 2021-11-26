@@ -4,7 +4,7 @@ title: IAuthenticationPlugin.Name property
 
 # IAuthenticationPlugin.Name property
 
-The authentication plugin name.
+Gets the authentication plugin name.
 
 ```csharp
 public string Name { get; }

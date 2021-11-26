@@ -14,7 +14,7 @@ public interface IAuthenticationPlugin
 
 | name | description |
 | --- | --- |
-| [Name](../IAuthenticationPlugin/Name/) { get; } | The authentication plugin name. |
+| [Name](../IAuthenticationPlugin/Name/) { get; } | Gets the authentication plugin name. |
 | [CreateResponse](../IAuthenticationPlugin/CreateResponse/)(…) | Creates the authentication response. |
 
 ## See Also
