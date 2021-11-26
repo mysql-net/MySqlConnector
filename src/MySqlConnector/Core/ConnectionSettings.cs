@@ -140,6 +140,7 @@ internal sealed class ConnectionSettings
 		Keepalive = csb.Keepalive;
 		NoBackslashEscapes = csb.NoBackslashEscapes;
 		PersistSecurityInfo = csb.PersistSecurityInfo;
+		Pipelining = csb.ContainsKey("Pipelining") ? csb.Pipelining : default(bool?);
 		ServerRedirectionMode = csb.ServerRedirectionMode;
 		ServerRsaPublicKeyFile = csb.ServerRsaPublicKeyFile;
 		ServerSPN = csb.ServerSPN;
@@ -233,6 +234,7 @@ internal sealed class ConnectionSettings
 	public uint Keepalive { get; }
 	public bool NoBackslashEscapes { get; }
 	public bool PersistSecurityInfo { get; }
+	public bool? Pipelining { get; }
 	public MySqlServerRedirectionMode ServerRedirectionMode { get; }
 	public string ServerRsaPublicKeyFile { get; }
 	public string ServerSPN { get; }
@@ -316,6 +318,7 @@ internal sealed class ConnectionSettings
 		Keepalive = other.Keepalive;
 		NoBackslashEscapes = other.NoBackslashEscapes;
 		PersistSecurityInfo = other.PersistSecurityInfo;
+		Pipelining = other.Pipelining;
 		ServerRedirectionMode = other.ServerRedirectionMode;
 		ServerRsaPublicKeyFile = other.ServerRsaPublicKeyFile;
 		ServerSPN = other.ServerSPN;

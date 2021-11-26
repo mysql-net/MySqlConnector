@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-02-06
+lastmod: 2021-11-25
 date: 2016-10-16
 title: Connection Options
 customtitle: MySQL Connection String for C# .NET Core Programs
@@ -389,6 +389,11 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>Persist Security Info, PersistSecurityInfo</td>
     <td>false</td>
     <td>When set to <code>false</code> or no (strongly recommended), security-sensitive information, such as the password, is not returned as part of the connection string if the connection is open or has ever been in an open state. Resetting the connection string resets all connection string values, including the password. Recognized values are true, false, yes, and no.</td>
+  </tr>
+  <tr id="Pipelining">
+    <td>Pipelining</td>
+    <td>true</td>
+    <td>When set to <code>true</code>, queries will be "pipelined" (when possible) by sending multiple packets to the server before waiting for a response. This improves performance (by reducing latency) but is not compatible with some servers (most notably Amazon Aurora RDS). Set to <code>false</code> to disable this behavior.</td>
   </tr>
   <tr id="ServerRedirectionMode">
     <td>Server Redirection Mode, ServerRedirectionMode</td>

@@ -62,7 +62,7 @@ internal sealed class ConnectionPool
 				else
 				{
 					if (ConnectionSettings.ConnectionReset || session.DatabaseOverride is not null)
-						reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, connection, false, ioBehavior, cancellationToken).ConfigureAwait(false);
+						reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, connection, ioBehavior, cancellationToken).ConfigureAwait(false);
 					else
 						reuseSession = true;
 				}

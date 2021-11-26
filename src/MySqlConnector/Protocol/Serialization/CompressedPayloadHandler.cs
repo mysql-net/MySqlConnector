@@ -21,11 +21,11 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		Utility.Dispose(ref m_uncompressedStream);
 	}
 
-	public void StartNewConversation()
-	{
-		m_compressedSequenceNumber = 0;
-		m_uncompressedSequenceNumber = 0;
-	}
+	public void StartNewConversation() =>
+		m_compressedSequenceNumber = m_uncompressedSequenceNumber = 0;
+
+	public void SetNextSequenceNumber(int sequenceNumber) =>
+		throw new NotSupportedException();
 
 	public IByteHandler ByteHandler
 	{
