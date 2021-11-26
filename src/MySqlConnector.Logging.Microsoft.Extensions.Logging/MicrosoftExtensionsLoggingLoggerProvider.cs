@@ -4,11 +4,37 @@ using Microsoft.Extensions.Logging;
 
 namespace MySqlConnector.Logging;
 
+/// <summary>
+/// Implements MySqlConnector logging using the Microsoft.Extensions.Logging abstraction.
+/// </summary>
 public sealed class MicrosoftExtensionsLoggingLoggerProvider : IMySqlConnectorLoggerProvider
 {
-	public MicrosoftExtensionsLoggingLoggerProvider(ILoggerFactory loggerFactory) => m_loggerFactory = loggerFactory;
+	/// <summary>
+	/// Initializes a new instance of the <see cref="MicrosoftExtensionsLoggingLoggerProvider"/>.
+	/// </summary>
+	/// <param name="loggerFactory">The logging factory to use.</param>
+	public MicrosoftExtensionsLoggingLoggerProvider(ILoggerFactory loggerFactory)
+		: this(loggerFactory, false)
+	{
+	}
 
-	public IMySqlConnectorLogger CreateLogger(string name) => new MicrosoftExtensionsLoggingLogger(m_loggerFactory.CreateLogger(name));
+	/// <summary>
+	/// Initializes a new instance of the <see cref="MicrosoftExtensionsLoggingLoggerProvider"/>.
+	/// </summary>
+	/// <param name="loggerFactory">The logging factory to use.</param>
+	/// <param name="omitMySqlConnectorPrefix">True to omit the "MySqlConnector." prefix from logger names; this matches the default behavior prior to v2.1.0.</param>
+	public MicrosoftExtensionsLoggingLoggerProvider(ILoggerFactory loggerFactory, bool omitMySqlConnectorPrefix)
+	{
+		m_loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+		m_prefix = omitMySqlConnectorPrefix ? "" : "MySqlConnector.";
+	}
+
+	/// <summary>
+	/// Creates a new <see cref="IMySqlConnectorLogger"/> with the specified name.
+	/// </summary>
+	/// <param name="name">The logger name.</param>
+	/// <returns>A <see cref="IMySqlConnectorLogger"/> that logs with the specified logger name.</returns>
+	public IMySqlConnectorLogger CreateLogger(string name) => new MicrosoftExtensionsLoggingLogger(m_loggerFactory.CreateLogger(m_prefix + name));
 
 	private sealed class MicrosoftExtensionsLoggingLogger : IMySqlConnectorLogger
 	{
@@ -42,4 +68,5 @@ public sealed class MicrosoftExtensionsLoggingLoggerProvider : IMySqlConnectorLo
 	}
 
 	readonly ILoggerFactory m_loggerFactory;
+	readonly string m_prefix;
 }
