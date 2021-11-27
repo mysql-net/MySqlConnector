@@ -129,6 +129,11 @@ internal enum ProtocolCapabilities : ulong
 	DeprecateEof = 0x100_0000,
 
 	/// <summary>
+	/// Supports query attributes (CLIENT_QUERY_ATTRIBUTES).
+	/// </summary>
+	QueryAttributes = 0x800_0000,
+
+	/// <summary>
 	/// Client supports progress indicator.
 	/// </summary>
 	MariaDbClientProgress = 0x1_0000_0000,

@@ -26,6 +26,22 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 				Log.Trace("Session{0} Preparing command payload; CommandText: {1}", command.Connection!.Session.Id, command.CommandText);
 
 			writer.Write((byte) CommandKind.Query);
+			var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
+			if (supportsQueryAttributes)
+			{
+				// attribute count
+				writer.WriteLengthEncodedInteger((uint) (command.RawAttributes?.Count ?? 0));
+
+				// attribute set count (always 1)
+				writer.Write((byte) 1);
+
+				// TODO: write attributes
+			}
+			else if (command.RawAttributes?.Count > 0)
+			{
+				Log.Warn("Session{0} has query attributes but server doesn't support them; CommandText: {1}", command.Connection!.Session.Id, command.CommandText);
+			}
+
 			WriteQueryPayload(command, cachedProcedures, writer);
 
 			commandListPosition.CommandIndex++;
@@ -62,9 +78,26 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		if (Log.IsTraceEnabled())
 			Log.Trace("Session{0} Preparing command payload; CommandId: {1}; CommandText: {2}", command.Connection!.Session.Id, preparedStatement.StatementId, command.CommandText);
 
+		var attributes = command.RawAttributes;
+		var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
+
 		writer.Write(preparedStatement.StatementId);
-		writer.Write((byte) 0);
+
+		// NOTE: documentation is not updated yet, but due to bugs in MySQL Server 8.0.23-8.0.25, the PARAMETER_COUNT_AVAILABLE (0x08)
+		// flag has to be set in the 'flags' block in order for query attributes to be sent with a prepared statement; we do not version-sniff the
+		// server but assume that it must support this flag
+		writer.Write((byte) (supportsQueryAttributes ? 8 : 0));
 		writer.Write(1);
+
+		if (supportsQueryAttributes)
+		{
+			writer.WriteLengthEncodedInteger((uint) ((attributes?.Count ?? 0) + (preparedStatement.Parameters?.Length ?? 0)));
+		}
+		else if (attributes?.Count > 0)
+		{
+			Log.Warn("Session{0} has attributes for CommandId {1} but the server does not support them", command.Connection!.Session.Id, preparedStatement.StatementId);
+		}
+
 		if (preparedStatement.Parameters?.Length > 0)
 		{
 			// TODO: How to handle incorrect number of parameters?
@@ -114,6 +147,9 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 				}
 
 				writer.Write(TypeMapper.ConvertToColumnTypeAndFlags(mySqlDbType, command.Connection!.GuidFormat));
+
+				if (supportsQueryAttributes)
+					writer.Write((byte) 0); // empty string
 			}
 
 			var options = command.CreateStatementPreparerOptions();

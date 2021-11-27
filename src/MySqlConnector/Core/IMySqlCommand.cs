@@ -10,6 +10,7 @@ internal interface IMySqlCommand
 	bool AllowUserVariables { get; }
 	CommandBehavior CommandBehavior { get; }
 	MySqlParameterCollection? RawParameters { get; }
+	MySqlAttributeCollection? RawAttributes { get; }
 	PreparedStatements? TryGetPreparedStatements();
 	MySqlConnection? Connection { get; }
 	long LastInsertedId { get; }

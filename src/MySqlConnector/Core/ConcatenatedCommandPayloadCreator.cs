@@ -14,6 +14,18 @@ internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
 			return false;
 
 		writer.Write((byte) CommandKind.Query);
+
+		if (commandListPosition.Commands[commandListPosition.CommandIndex].Connection!.Session.SupportsQueryAttributes)
+		{
+			// attribute count
+			writer.WriteLengthEncodedInteger(0);
+
+			// attribute set count (always 1)
+			writer.Write((byte) 1);
+
+			// TODO: write attributes for all commands
+		}
+
 		bool isComplete;
 		do
 		{
