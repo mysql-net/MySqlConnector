@@ -75,7 +75,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		DesignTimeVisible = other.DesignTimeVisible;
 		UpdatedRowSource = other.UpdatedRowSource;
 		m_parameterCollection = other.CloneRawParameters();
-		//// TODO: clone attributes
+		m_attributeCollection = other.CloneRawAttributes();
 	}
 
 	/// <summary>
@@ -134,6 +134,16 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		foreach (var parameter in (IEnumerable<MySqlParameter>) m_parameterCollection)
 			parameters.Add(parameter.Clone());
 		return parameters;
+	}
+
+	private MySqlAttributeCollection? CloneRawAttributes()
+	{
+		if (m_attributeCollection is null)
+			return null;
+		var attributes = new MySqlAttributeCollection();
+		foreach (var attribute in m_attributeCollection)
+			attributes.Add(new MySqlAttribute(attribute.AttributeName, attribute.Value));
+		return attributes;
 	}
 
 	bool IMySqlCommand.AllowUserVariables => AllowUserVariables;

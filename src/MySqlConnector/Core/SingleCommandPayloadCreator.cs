@@ -30,12 +30,14 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			if (supportsQueryAttributes)
 			{
 				// attribute count
-				writer.WriteLengthEncodedInteger((uint) (command.RawAttributes?.Count ?? 0));
+				var attributes = command.RawAttributes;
+				writer.WriteLengthEncodedInteger((uint) (attributes?.Count ?? 0));
 
 				// attribute set count (always 1)
 				writer.Write((byte) 1);
 
-				// TODO: write attributes
+				if (attributes?.Count > 0)
+					WriteBinaryParameters(writer, attributes.Select(x => x.ToParameter()).ToArray(), command, true, 0);
 			}
 			else if (command.RawAttributes?.Count > 0)
 			{
@@ -89,24 +91,27 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		writer.Write((byte) (supportsQueryAttributes ? 8 : 0));
 		writer.Write(1);
 
+		var commandParameterCount = preparedStatement.Statement.ParameterNames?.Count ?? 0;
+		var attributeCount = attributes?.Count ?? 0;
 		if (supportsQueryAttributes)
 		{
-			writer.WriteLengthEncodedInteger((uint) ((attributes?.Count ?? 0) + (preparedStatement.Parameters?.Length ?? 0)));
+			writer.WriteLengthEncodedInteger((uint) (commandParameterCount + attributeCount));
 		}
-		else if (attributes?.Count > 0)
+		else if (attributeCount > 0)
 		{
 			Log.Warn("Session{0} has attributes for CommandId {1} but the server does not support them", command.Connection!.Session.Id, preparedStatement.StatementId);
+			attributeCount = 0;
 		}
 
-		if (preparedStatement.Parameters?.Length > 0)
+		if (commandParameterCount > 0 || attributeCount > 0)
 		{
 			// TODO: How to handle incorrect number of parameters?
 
 			// build subset of parameters for this statement
-			var parameters = new MySqlParameter[preparedStatement.Statement.ParameterNames.Count];
-			for (var i = 0; i < preparedStatement.Statement.ParameterNames.Count; i++)
+			var parameters = new MySqlParameter[commandParameterCount + attributeCount];
+			for (var i = 0; i < commandParameterCount; i++)
 			{
-				var parameterName = preparedStatement.Statement.ParameterNames[i];
+				var parameterName = preparedStatement.Statement.ParameterNames![i];
 				var parameterIndex = parameterName is not null ? (parameterCollection?.NormalizedIndexOf(parameterName) ?? -1) : preparedStatement.Statement.ParameterIndexes[i];
 				if (parameterIndex == -1 && parameterName is not null)
 					throw new MySqlException("Parameter '{0}' must be defined.".FormatInvariant(parameterName));
@@ -114,48 +119,60 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 					throw new MySqlException("Parameter index {0} is invalid when only {1} parameter{2} defined.".FormatInvariant(parameterIndex, parameterCollection?.Count ?? 0, parameterCollection?.Count == 1 ? " is" : "s are"));
 				parameters[i] = parameterCollection![parameterIndex];
 			}
-
-			// write null bitmap
-			byte nullBitmap = 0;
-			for (var i = 0; i < parameters.Length; i++)
-			{
-				var parameter = parameters[i];
-				if (parameter.Value is null || parameter.Value == DBNull.Value)
-					nullBitmap |= (byte) (1 << (i % 8));
-
-				if (i % 8 == 7)
-				{
-					writer.Write(nullBitmap);
-					nullBitmap = 0;
-				}
-			}
-			if (parameters.Length % 8 != 0)
-				writer.Write(nullBitmap);
-
-			// write "new parameters bound" flag
-			writer.Write((byte) 1);
-
-			foreach (var parameter in parameters)
-			{
-				// override explicit MySqlDbType with inferred type from the Value
-				var mySqlDbType = parameter.MySqlDbType;
-				var typeMapping = (parameter.Value is null || parameter.Value == DBNull.Value) ? null : TypeMapper.Instance.GetDbTypeMapping(parameter.Value.GetType());
-				if (typeMapping is not null)
-				{
-					var dbType = typeMapping.DbTypes[0];
-					mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbType(dbType);
-				}
-
-				writer.Write(TypeMapper.ConvertToColumnTypeAndFlags(mySqlDbType, command.Connection!.GuidFormat));
-
-				if (supportsQueryAttributes)
-					writer.Write((byte) 0); // empty string
-			}
-
-			var options = command.CreateStatementPreparerOptions();
-			foreach (var parameter in parameters)
-				parameter.AppendBinary(writer, options);
+			for (var i = 0; i < attributeCount; i++)
+				parameters[commandParameterCount + i] = attributes![i].ToParameter();
+			WriteBinaryParameters(writer, parameters, command, supportsQueryAttributes, commandParameterCount);
 		}
+	}
+
+	private static void WriteBinaryParameters(ByteBufferWriter writer, MySqlParameter[] parameters, IMySqlCommand command, bool supportsQueryAttributes, int parameterCount)
+	{
+		// write null bitmap
+		byte nullBitmap = 0;
+		for (var i = 0; i < parameters.Length; i++)
+		{
+			var parameter = parameters[i];
+			if (parameter.Value is null || parameter.Value == DBNull.Value)
+				nullBitmap |= (byte) (1 << (i % 8));
+
+			if (i % 8 == 7)
+			{
+				writer.Write(nullBitmap);
+				nullBitmap = 0;
+			}
+		}
+		if (parameters.Length % 8 != 0)
+			writer.Write(nullBitmap);
+
+		// write "new parameters bound" flag
+		writer.Write((byte) 1);
+
+		for (var index = 0; index < parameters.Length; index++)
+		{
+			// override explicit MySqlDbType with inferred type from the Value
+			var parameter = parameters[index];
+			var mySqlDbType = parameter.MySqlDbType;
+			var typeMapping = (parameter.Value is null || parameter.Value == DBNull.Value) ? null : TypeMapper.Instance.GetDbTypeMapping(parameter.Value.GetType());
+			if (typeMapping is not null)
+			{
+				var dbType = typeMapping.DbTypes[0];
+				mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbType(dbType);
+			}
+
+			writer.Write(TypeMapper.ConvertToColumnTypeAndFlags(mySqlDbType, command.Connection!.GuidFormat));
+
+			if (supportsQueryAttributes)
+			{
+				if (index < parameterCount)
+					writer.Write((byte) 0); // empty string
+				else
+					writer.WriteLengthEncodedString(parameter.ParameterName);
+			}
+		}
+
+		var options = command.CreateStatementPreparerOptions();
+		foreach (var parameter in parameters)
+			parameter.AppendBinary(writer, options);
 	}
 
 	private static bool WriteStoredProcedure(IMySqlCommand command, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer)

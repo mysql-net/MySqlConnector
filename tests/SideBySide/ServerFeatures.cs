@@ -23,4 +23,5 @@ public enum ServerFeatures
 	Tls13 = 0x1_0000,
 	ResetConnection = 0x2_0000,
 	ZeroDateTime = 0x4_0000,
+	QueryAttributes = 0x8_0000,
 }

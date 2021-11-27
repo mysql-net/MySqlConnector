@@ -16,6 +16,7 @@ public sealed class MySqlCommand : DbCommand, ICloneable
 | --- | --- |
 | [MySqlCommand](../MySqlCommand/MySqlCommand/)() | Initializes a new instance of the [`MySqlCommand`](../MySqlCommandType/) class. |
 | [MySqlCommand](../MySqlCommand/MySqlCommand/)(…) | Initializes a new instance of the [`MySqlCommand`](../MySqlCommandType/) class, setting [`CommandText`](../MySqlCommand/CommandText/) to *commandText*. (4 constructors) |
+| [Attributes](../MySqlCommand/Attributes/) { get; } | The collection of [`MySqlAttribute`](../MySqlAttributeType/) objects for this command. |
 | override [CommandText](../MySqlCommand/CommandText/) { get; set; } | Gets or sets the command text to execute. |
 | override [CommandTimeout](../MySqlCommand/CommandTimeout/) { get; set; } |  |
 | override [CommandType](../MySqlCommand/CommandType/) { get; set; } |  |

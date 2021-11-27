@@ -1317,6 +1317,92 @@ insert into test_time(tm) values('00:00:00'),('01:01:01'),('00:00:00');");
 		Assert.False(reader.Read());
 	}
 
+	[SkippableTheory(ServerFeatures.QueryAttributes)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void QueryAttributes(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+
+		using var cmd = new MySqlCommand("select mysql_query_attribute_string('name') as attribute;", connection);
+		cmd.Attributes.SetAttribute("name", "attr_value");
+
+		if (prepare)
+			cmd.Prepare();
+
+		using var reader = cmd.ExecuteReader();
+		while (reader.Read())
+		{
+			Assert.Equal(cmd.Attributes[0].Value, reader.GetValue(reader.GetOrdinal("attribute")));
+		}
+	}
+
+	[SkippableTheory(ServerFeatures.QueryAttributes)]
+	[InlineData(false)]
+#if !BASELINE
+	[InlineData(true)]
+#endif
+	public void QueryAttributesMultipleStatements(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+
+		using var cmd = new MySqlCommand(@"select mysql_query_attribute_string('attr1') as attribute, @param1 as parameter;
+select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;", connection);
+		cmd.Attributes.SetAttribute("attr1", "attr1_value");
+		cmd.Attributes.SetAttribute("attr2", "attr2_value");
+		cmd.Parameters.AddWithValue("@param1", "param1_value");
+		cmd.Parameters.AddWithValue("@param2", "param2_value");
+
+		if (prepare)
+			cmd.Prepare();
+
+		using var reader = cmd.ExecuteReader();
+		Assert.True(reader.Read());
+		Assert.Equal(cmd.Attributes[0].Value, reader.GetValue(reader.GetOrdinal("attribute")));
+		Assert.Equal(cmd.Parameters[0].Value, reader.GetValue(reader.GetOrdinal("parameter")));
+		Assert.False(reader.Read());
+		Assert.True(reader.NextResult());
+		Assert.True(reader.Read());
+		Assert.Equal(cmd.Attributes[1].Value, reader.GetValue(reader.GetOrdinal("attribute")));
+		Assert.Equal(cmd.Parameters[1].Value, reader.GetValue(reader.GetOrdinal("parameter")));
+		Assert.False(reader.Read());
+	}
+
+	[SkippableFact(ServerFeatures.QueryAttributes)]
+	public void QueryAttributeWithEmptyName()
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+
+		using var cmd = new MySqlCommand("select mysql_query_attribute_string('name') as attribute;", connection);
+		Assert.Throws<ArgumentException>(() => cmd.Attributes.SetAttribute("", "attr_value"));
+	}
+
+	[SkippableTheory(ServerFeatures.QueryAttributes, Baseline = "https://bugs.mysql.com/bug.php?id=105728")]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void QueryAttributeAndParameter(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+
+		using var cmd = new MySqlCommand("select mysql_query_attribute_string('name') as attribute, @name as parameter;", connection);
+		cmd.Attributes.SetAttribute("name", "attr_value");
+		cmd.Parameters.AddWithValue("name", "param_value");
+
+		if (prepare)
+			cmd.Prepare();
+
+		using var reader = cmd.ExecuteReader();
+		while (reader.Read())
+		{
+			Assert.Equal(cmd.Attributes[0].Value, reader.GetValue(reader.GetOrdinal("attribute")));
+			Assert.Equal(cmd.Parameters[0].Value, reader.GetValue(reader.GetOrdinal("parameter")));
+		}
+	}
+
 	class BoolTest
 	{
 		public int Id { get; set; }

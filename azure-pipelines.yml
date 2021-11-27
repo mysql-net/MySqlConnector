@@ -61,7 +61,7 @@ jobs:
       arguments: 'tests\SideBySide\SideBySide.csproj -c Baseline'
       testRunTitle: 'Baseline tests'
     env:
-      DATA__UNSUPPORTEDFEATURES: 'Ed25519,UnixDomainSocket'
+      DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=root;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600'
       DATA__CERTIFICATESPATH: '$(Build.Repository.LocalPath)\.ci\server\certs\'
       DATA__MYSQLBULKLOADERLOCALCSVFILE: '$(Build.Repository.LocalPath)\tests\TestData\LoadData_UTF8_BOM_Unix.CSV'
@@ -148,7 +148,7 @@ jobs:
       arguments: '-c Release --no-restore'
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net472/net5.0', 'No SSL') }}
     env:
-      DATA__UNSUPPORTEDFEATURES: 'Ed25519,Tls11,UnixDomainSocket'
+      DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,Tls11,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True;UseCompression=True'
 
 - job: windows_integration_tests_2
@@ -185,7 +185,7 @@ jobs:
       arguments: '-c Release --no-restore'
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'netcoreapp3.1/net6.0', 'No SSL') }}
     env:
-      DATA__UNSUPPORTEDFEATURES: 'Ed25519,Tls11,UnixDomainSocket'
+      DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,Tls11,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
 
 - job: linux_integration_tests
@@ -197,22 +197,22 @@ jobs:
     matrix:
       'MySQL 5.6':
         image: 'mysql:5.6'
-        unsupportedFeatures: 'Ed25519,Json,Sha256Password,LargePackets,CachingSha2Password,ResetConnection,SessionTrack,Tls11,Tls13,UuidToBin'
+        unsupportedFeatures: 'CachingSha2Password,Ed25519,Json,LargePackets,QueryAttributes,ResetConnection,SessionTrack,Sha256Password,Tls11,Tls13,UuidToBin'
       'MySQL 5.7':
         image: 'mysql:5.7'
-        unsupportedFeatures: 'Ed25519,CachingSha2Password,Tls11,Tls13,UuidToBin'
+        unsupportedFeatures: 'CachingSha2Password,Ed25519,QueryAttributes,Tls11,Tls13,UuidToBin'
       'MySQL 8.0':
         image: 'mysql:8.0'
         unsupportedFeatures: 'Ed25519,Tls11,ZeroDateTime'
       'MariaDB 10.2':
         image: 'mariadb:10.2'
-        unsupportedFeatures: 'Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,Tls11,UuidToBin'
+        unsupportedFeatures: 'CachingSha2Password,Ed25519,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
       'MariaDB 10.3':
         image: 'mariadb:10.3-bionic'
-        unsupportedFeatures: 'Ed25519,Json,Sha256Password,CachingSha2Password,RoundDateTime,Tls11,UuidToBin'
+        unsupportedFeatures: 'CachingSha2Password,Ed25519,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
       'MariaDB 10.4':
         image: 'mariadb:10.4.12'
-        unsupportedFeatures: 'Json,Sha256Password,CachingSha2Password,RoundDateTime,Tls11,UuidToBin'
+        unsupportedFeatures: 'CachingSha2Password,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
   steps:
   - template: '.ci/integration-tests-steps.yml'
     parameters:

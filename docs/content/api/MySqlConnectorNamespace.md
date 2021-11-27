@@ -6,6 +6,8 @@ title: MySqlConnector
 
 | public type | description |
 | --- | --- |
+| class [MySqlAttribute](../MySqlConnector/MySqlAttributeType/) | [`MySqlAttribute`](../MySqlConnector/MySqlAttributeType/) represents an attribute that can be sent with a MySQL query. |
+| class [MySqlAttributeCollection](../MySqlConnector/MySqlAttributeCollectionType/) | [`MySqlAttributeCollection`](../MySqlConnector/MySqlAttributeCollectionType/) represents a collection of query attributes that can be added to a [`MySqlCommand`](../MySqlConnector/MySqlCommandType/). |
 | class [MySqlBatch](../MySqlConnector/MySqlBatchType/) | [`MySqlBatch`](../MySqlConnector/MySqlBatchType/) implements the new [ADO.NET batching API](https://github.com/dotnet/runtime/issues/28633). It is currently experimental and may change in the future. |
 | class [MySqlBatchCommand](../MySqlConnector/MySqlBatchCommandType/) |  |
 | class [MySqlBatchCommandCollection](../MySqlConnector/MySqlBatchCommandCollectionType/) |  |

@@ -291,3 +291,5 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#104910](https://bugs.mysql.com/bug.php?id=104910): `MySqlConnectionStringBuilder.TryGetValue` always returns `false`
 * [#104913](https://bugs.mysql.com/bug.php?id=104913): Cannot execute stored procedure with backtick in name
 * [#105209](https://bugs.mysql.com/bug.php?id=105209): Timespan value of zero can't be read with prepared command
+* [#105728](https://bugs.mysql.com/bug.php?id=105728): Named command parameters override query attribute values
+* [#105730](https://bugs.mysql.com/bug.php?id=105730): `MySqlCommand.Clone` doesn't clone attributes

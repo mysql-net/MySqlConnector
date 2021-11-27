@@ -15,6 +15,8 @@ internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
 
 		writer.Write((byte) CommandKind.Query);
 
+		// ConcatenatedCommandPayloadCreator is only used by MySqlBatch, and MySqlBatchCommand doesn't expose attributes,
+		// so just write an empty attribute set if the server needs it.
 		if (commandListPosition.Commands[commandListPosition.CommandIndex].Connection!.Session.SupportsQueryAttributes)
 		{
 			// attribute count
@@ -22,8 +24,6 @@ internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
 
 			// attribute set count (always 1)
 			writer.Write((byte) 1);
-
-			// TODO: write attributes for all commands
 		}
 
 		bool isComplete;
