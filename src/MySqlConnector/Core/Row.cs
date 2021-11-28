@@ -26,8 +26,8 @@ internal abstract class Row
 
 	public object GetValue(int ordinal)
 	{
-		if (ordinal < 0 || ordinal > ResultSet.ColumnDefinitions!.Length)
-			throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ResultSet.ColumnDefinitions!.Length));
+		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length)
+			throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ResultSet.ColumnDefinitions!.Length - 1));
 
 		if (m_dataOffsets[ordinal] == -1)
 			return DBNull.Value;
@@ -171,7 +171,7 @@ internal abstract class Row
 		if (value is byte[] { Length: 16 } bytes)
 			return CreateGuidFromBytes(Connection.GuidFormat, bytes);
 
-		throw new InvalidCastException("The value could not be converted to a GUID: {0}".FormatInvariant(value));
+		return (Guid) value;
 	}
 
 	public short GetInt16(int ordinal)
@@ -203,11 +203,8 @@ internal abstract class Row
 
 	public int GetInt32(int ordinal)
 	{
-		if (ordinal < 0 || ordinal > ResultSet.ColumnDefinitions!.Length)
-			throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ResultSet.ColumnDefinitions!.Length));
-
-		if (m_dataOffsets[ordinal] == -1)
-			throw new InvalidCastException();
+		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length || m_dataOffsets[ordinal] == -1)
+			return (int) GetValue(ordinal);
 
 		var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
 		if (columnDefinition.ColumnType is ColumnType.Decimal or ColumnType.NewDecimal)
@@ -443,6 +440,8 @@ internal abstract class Row
 
 	public MySqlDecimal GetMySqlDecimal(int ordinal)
 	{
+		if (IsDBNull(ordinal))
+			return (MySqlDecimal) GetValue(ordinal);
 		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
 		var columnType = ResultSet.ColumnDefinitions![ordinal].ColumnType;
 		if (columnType is ColumnType.NewDecimal or ColumnType.Decimal)
