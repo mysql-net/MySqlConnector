@@ -515,7 +515,7 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 		Assert.Throws<ArgumentNullException>(() => bulkCopy.WriteToServer(default(DataTable)));
 	}
 
-	[Fact]
+	[SkippableFact(ServerFeatures.BulkCopyDataTable)]
 	public void BulkCopyDataTableWithLongBlob()
 	{
 		var dataTable = new DataTable()
@@ -554,7 +554,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 		}
 	}
 
-	[SkippableTheory(ServerFeatures.LargePackets)]
+	[SkippableTheory(ServerFeatures.LargePackets | ServerFeatures.BulkCopyDataTable)]
 	[InlineData(6)]
 	[InlineData(12)]
 	[InlineData(21)]
@@ -620,7 +620,7 @@ create table bulk_load_data_table(a mediumtext collate utf8mb4_bin, b mediumblob
 		}
 	}
 
-	[Fact]
+	[SkippableFact(ServerFeatures.BulkCopyDataTable)]
 	public void BulkCopyDataTableWithSpecialCharacters()
 	{
 		var dataTable = new DataTable()
@@ -922,7 +922,7 @@ create table bulk_copy_duplicate_pk(id integer primary key, value text not null)
 		Assert.Equal(MySqlErrorCode.BulkCopyFailed, ex.ErrorCode);
 	}
 
-	[Fact]
+	[SkippableFact(ServerFeatures.BulkCopyDataTable)]
 	public void BulkCopyDataTableWithWarnings()
 	{
 		var dataTable = new DataTable()

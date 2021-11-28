@@ -433,7 +433,7 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 		Assert.ThrowsAsync<ArgumentNullException>(async () => await bulkCopy.WriteToServerAsync(default(DataTable)));
 	}
 
-	[Fact]
+	[SkippableFact(ServerFeatures.BulkCopyDataTable)]
 	public async Task BulkCopyDataTableWithLongData()
 	{
 		var dataTable = new DataTable()
@@ -557,7 +557,7 @@ create table bulk_load_data_table(a int, b longblob);", connection))
 			Assert.Equal(expectedCount, await cmd.ExecuteScalarAsync());
 	}
 
-	[Fact]
+	[SkippableFact(ServerFeatures.BulkCopyDataTable)]
 	public async Task BulkCopyDataTableWithWarnings()
 	{
 		var dataTable = new DataTable()
