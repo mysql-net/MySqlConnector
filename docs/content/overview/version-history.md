@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-11-09
+lastmod: 2021-11-27
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,25 @@ weight: 30
 ---
 
 # Version History
+
+### 2.1.0
+
+* Opening a connection from the pool is now twice as fast: [#1089](https://github.com/mysql-net/MySqlConnector/issues/1089).
+  * This may fail with Amazon Aurora RDS; to explicitly disable this, set `Pipelining = False;` in the connection string.
+* Add support for [query attributes](https://dev.mysql.com/doc/refman/8.0/en/query-attributes.html): [#930](https://github.com/mysql-net/MySqlConnector/issues/930).
+  * This requires MySQL Server 8.0.23 (or later) for regular commands, and MySQL Server 8.0.26 (or later) for prepared commands.
+  * Add attributes to the `MySqlCommand.Attributes` collection to send them to the server when the command is executed.
+* Add `MySqlDecimal` support: [#1070](https://github.com/mysql-net/MySqlConnector/issues/1070).
+* Improve `MySqlDataReader.GetX` exceptions for `NULL` values: [#1092](https://github.com/mysql-net/MySqlConnector/issues/1092).
+* Improve detection of Azure Database for MySQL proxies: [#1093](https://github.com/mysql-net/MySqlConnector/issues/1093).
+* Update Microsoft.SourceLink.GitHub.
+* Thanks to [Ed Ball](https://github.com/ejball) and [Sumit Kumar](https://github.com/sumitdvlp) for contributions to this release.
+
+#### MySqlConnector.Logging.Microsoft.Extensions.Logging
+
+* Logger names are now prefixed with `MySqlConnector.` by default: [#1080](https://github.com/mysql-net/MySqlConnector/issues/1080).
+  * To return to the previous behavior, use `MicrosoftExtensionsLoggingLoggerProvider(loggingFactory, omitMySqlConnectorPrefix: true)`.
+* Added `.UseMySqlConnectorLogging()` extension method to add logging easily.
 
 ### 2.0.0
 
