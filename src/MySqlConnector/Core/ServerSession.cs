@@ -1618,15 +1618,15 @@ internal sealed class ServerSession
 	private bool ShouldGetRealServerDetails(ConnectionSettings cs)
 	{
 		// currently hardcoded to the version(s) returned by the Azure Database for MySQL proxy
-		if (ServerVersion.OriginalString is "5.6.42.0" or "5.6.39.0" or "5.6.26.0")
+		if (ServerVersion.OriginalString is "5.6.47.0" or "5.6.42.0" or "5.6.39.0")
 			return true;
 
-		// detect Azure Database for MySQL DNS suffixes
-		if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets && cs.HostNames!.Count == 1)
+		// detect Azure Database for MySQL DNS suffixes, if a "user@host" user ID is being used
+		if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets && cs.UserID.IndexOf('@') != -1)
 		{
-			return cs.HostNames[0].EndsWith(".mysql.database.azure.com", StringComparison.OrdinalIgnoreCase) ||
-				cs.HostNames[0].EndsWith(".database.windows.net", StringComparison.OrdinalIgnoreCase) ||
-				cs.HostNames[0].EndsWith(".mysql.database.chinacloudapi.cn", StringComparison.OrdinalIgnoreCase);
+			return HostName.EndsWith(".mysql.database.azure.com", StringComparison.OrdinalIgnoreCase) ||
+				HostName.EndsWith(".database.windows.net", StringComparison.OrdinalIgnoreCase) ||
+				HostName.EndsWith(".mysql.database.chinacloudapi.cn", StringComparison.OrdinalIgnoreCase);
 		}
 
 		return false;
