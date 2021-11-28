@@ -26,6 +26,7 @@ internal static class HandshakeResponse41Payload
 			(serverCapabilities & ProtocolCapabilities.ConnectionAttributes) |
 			(serverCapabilities & ProtocolCapabilities.SessionTrack) |
 			(serverCapabilities & ProtocolCapabilities.DeprecateEof) |
+			(serverCapabilities & ProtocolCapabilities.QueryAttributes) |
 			additionalCapabilities));
 		writer.Write(0x4000_0000);
 		writer.Write((byte) characterSet);

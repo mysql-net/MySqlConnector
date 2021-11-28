@@ -240,20 +240,26 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 		connection.Open();
 		using var transaction = connection.BeginTransaction();
 		var param = new MySqlParameter("@param", MySqlDbType.Decimal) { Value = 12.3m };
+		var attr = new MySqlAttribute("attr_name", 1.23);
 		using var cmd = new MySqlCommand("SELECT @param;", connection, transaction)
 		{
 			CommandType = CommandType.StoredProcedure,
 			Parameters = { param },
+#if !BASELINE
+			Attributes = { attr },
+#endif
 		};
+#if BASELINE
+		cmd.Attributes.SetAttribute(attr);
+#endif
 		using var cmd2 = (MySqlCommand) cmd.Clone();
 
 		Assert.Equal(cmd.Connection, cmd2.Connection);
 		Assert.Equal(cmd.Transaction, cmd2.Transaction);
 		Assert.Equal(cmd.CommandText, cmd2.CommandText);
 		Assert.Equal(cmd.CommandType, cmd2.CommandType);
-		Assert.Single(cmd2.Parameters);
+		var param2 = (MySqlParameter) Assert.Single(cmd2.Parameters);
 
-		var param2 = cmd2.Parameters[0];
 		Assert.Equal(param.ParameterName, param2.ParameterName);
 		Assert.Equal(param.MySqlDbType, param2.MySqlDbType);
 		Assert.Equal(param.Value, param2.Value);
@@ -263,6 +269,16 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 
 		param.Value = 0m;
 		Assert.NotEqual(0m, cmd2.Parameters[0].Value);
+
+#if !BASELINE // https://bugs.mysql.com/bug.php?id=105730
+		Assert.Equal(1, cmd2.Attributes.Count);
+		var attr2 = cmd2.Attributes[0];
+		Assert.Equal(attr.AttributeName, attr2.AttributeName);
+		Assert.Equal(attr.Value, attr2.Value);
+
+		attr.Value = 0;
+		Assert.NotEqual(0, cmd2.Attributes[0].Value);
+#endif
 	}
 
 	[Fact]

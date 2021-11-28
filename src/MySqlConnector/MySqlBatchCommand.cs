@@ -53,6 +53,8 @@ public sealed class MySqlBatchCommand :
 
 	MySqlParameterCollection? IMySqlCommand.RawParameters => m_parameterCollection;
 
+	MySqlAttributeCollection? IMySqlCommand.RawAttributes => null;
+
 	MySqlConnection? IMySqlCommand.Connection => Batch?.Connection;
 
 	long IMySqlCommand.LastInsertedId => m_lastInsertedId;

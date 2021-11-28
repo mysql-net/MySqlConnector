@@ -55,19 +55,29 @@ for i in `seq 1 120`; do
 	echo "Creating mysqltest user"
 	docker exec mysql bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init.sql'
 	if [ $? -ne 0 ]; then continue; fi
+
 	if [[ $OMIT_FEATURES != *"Sha256Password"* ]]; then
+		echo "Creating sha256_password user"
 	 	docker exec mysql bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_sha256.sql'
-		if [ $? -ne 0 ]; then continue; fi
+		if [ $? -ne 0 ]; then exit $?; fi
 	fi
 
 	if [[ $OMIT_FEATURES != *"CachingSha2Password"* ]]; then
+		echo "Creating caching_sha2_password user"
 		docker exec mysql bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_caching_sha2.sql'
-		if [ $? -ne 0 ]; then continue; fi
+		if [ $? -ne 0 ]; then exit $?; fi
 	fi
 
 	if [[ $OMIT_FEATURES != *"Ed25519"* ]]; then
+		echo "Installing auth_ed25519 component"
 		docker exec mysql bash -c 'mysql -uroot -ptest < /etc/mysql/conf.d/init_ed25519.sql'
-		if [ $? -ne 0 ]; then continue; fi
+		if [ $? -ne 0 ]; then exit $?; fi
+	fi
+
+	if [[ $OMIT_FEATURES != *"QueryAttributes"* ]]; then
+		echo "Installing query_attributes component"
+		docker exec mysql mysql -uroot -ptest -e "INSTALL COMPONENT 'file://component_query_attributes';"
+		if [ $? -ne 0 ]; then exit $?; fi
 	fi
 
 	# exit if successful

@@ -75,6 +75,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		DesignTimeVisible = other.DesignTimeVisible;
 		UpdatedRowSource = other.UpdatedRowSource;
 		m_parameterCollection = other.CloneRawParameters();
+		m_attributeCollection = other.CloneRawAttributes();
 	}
 
 	/// <summary>
@@ -83,6 +84,13 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	public new MySqlParameterCollection Parameters => m_parameterCollection ??= new();
 
 	MySqlParameterCollection? IMySqlCommand.RawParameters => m_parameterCollection;
+
+	/// <summary>
+	/// The collection of <see cref="MySqlAttribute"/> objects for this command.
+	/// </summary>
+	public MySqlAttributeCollection Attributes => m_attributeCollection ??= new();
+
+	MySqlAttributeCollection? IMySqlCommand.RawAttributes => m_attributeCollection;
 
 	public new MySqlParameter CreateParameter() => (MySqlParameter) base.CreateParameter();
 
@@ -126,6 +134,16 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		foreach (var parameter in (IEnumerable<MySqlParameter>) m_parameterCollection)
 			parameters.Add(parameter.Clone());
 		return parameters;
+	}
+
+	private MySqlAttributeCollection? CloneRawAttributes()
+	{
+		if (m_attributeCollection is null)
+			return null;
+		var attributes = new MySqlAttributeCollection();
+		foreach (var attribute in m_attributeCollection)
+			attributes.Add(new MySqlAttribute(attribute.AttributeName, attribute.Value));
+		return attributes;
 	}
 
 	bool IMySqlCommand.AllowUserVariables => AllowUserVariables;
@@ -421,6 +439,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	MySqlConnection? m_connection;
 	string m_commandText;
 	MySqlParameterCollection? m_parameterCollection;
+	MySqlAttributeCollection? m_attributeCollection;
 	int? m_commandTimeout;
 	CommandType m_commandType;
 	CommandBehavior m_commandBehavior;
