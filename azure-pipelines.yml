@@ -110,6 +110,35 @@ jobs:
       image: 'mysql:8.0'
       connectionString: 'server=localhost;port=3306;user id=mysqltest;password=test;database=conformance;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
 
+- job: azure_mysql_integration_tests
+  displayName: 'Azure MySQL Integration Tests'
+  pool:
+    vmimage: 'windows-latest'
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core'
+    inputs:
+      version: $(DotNetCoreSdkVersion)
+  - task: PowerShell@2
+    displayName: 'Copy Azure config'
+    inputs:
+      targetType: inline
+      script: Copy-Item -Path ".\.ci\config\config.ssl.json" -Destination ".\tests\SideBySide\config.json"
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore packages'
+    inputs:
+      command: 'restore'
+  - task: DotNetCoreCLI@2
+    displayName: 'Side by Side tests (net6.0)'
+    inputs:
+      command: 'test'
+      projects: 'tests/SideBySide/SideBySide.csproj'
+      arguments: '-c Release -f net6.0 --no-restore'
+      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'Azure', 'net6.0', 'SSL') }}
+    env:
+      DATA__UNSUPPORTEDFEATURES: 'CachingSha2Password,Ed25519,GlobalLog,KnownCertificateAuthority,QueryAttributes,RsaEncryption,Sha256Password,Timeout,Tls11,Tls13,UnixDomainSocket'
+      DATA__CONNECTIONSTRING: "$(AzureConnectionString);database=mysqltest;ssl mode=Required;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True"
+
 - job: windows_integration_tests_1
   displayName: 'Windows Integration Tests (Part 1)'
   pool:

@@ -43,7 +43,7 @@ public class Transaction : IClassFixture<TransactionFixture>
 		Assert.Equal(new[] { 1, 2 }, results);
 	}
 
-	[Theory]
+	[SkippableTheory(ServerFeatures.GlobalLog)]
 	[InlineData(IsolationLevel.ReadUncommitted, "read uncommitted")]
 	[InlineData(IsolationLevel.ReadCommitted, "read committed")]
 	[InlineData(IsolationLevel.RepeatableRead, "repeatable read")]
@@ -70,7 +70,7 @@ public class Transaction : IClassFixture<TransactionFixture>
 	}
 
 #if !BASELINE
-	[Theory]
+	[SkippableTheory(ServerFeatures.GlobalLog)]
 	[InlineData(IsolationLevel.ReadUncommitted, "start transaction")]
 	[InlineData(IsolationLevel.ReadCommitted, "start transaction")]
 	[InlineData(IsolationLevel.RepeatableRead, "start transaction")]
