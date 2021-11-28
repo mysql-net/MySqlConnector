@@ -92,3 +92,15 @@ This library is licensed under the [MIT License](LICENSE).
 ## Contributing
 
 If you'd like to contribute to MySqlConnector, please read our [contributing guidelines](.github/CONTRIBUTING.md).
+
+## Acknowledgements
+
+Development of MySqlConnector is supported by:
+
+[![Faithlife](https://files.logoscdn.com/v1/files/4319104/content.svg?signature=3szVb3XmOfYMAxIv-LmuNYL_290)](https://faithlife.com/about)
+
+[Faithlife](https://faithlife.com/about) ([View jobs](https://faithlife.com/careers))
+
+[![Microsoft Azure](https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Microsoft_Azure.svg/75px-Microsoft_Azure.svg.png)](https://azure.microsoft.com/en-us/overview/open-source/)
+
+[Azure Credits for Open Source](https://opensource.microsoft.com/azure-credits)
