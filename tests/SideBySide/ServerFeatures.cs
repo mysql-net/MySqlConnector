@@ -25,5 +25,4 @@ public enum ServerFeatures
 	ZeroDateTime = 0x4_0000,
 	QueryAttributes = 0x8_0000,
 	GlobalLog = 0x10_0000,
-	BulkCopyDataTable = 0x20_0000,
 }
