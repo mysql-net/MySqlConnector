@@ -204,14 +204,14 @@ jobs:
       'MySQL 8.0':
         image: 'mysql:8.0'
         unsupportedFeatures: 'Ed25519,Tls11,ZeroDateTime'
-      'MariaDB 10.2':
-        image: 'mariadb:10.2'
-        unsupportedFeatures: 'CachingSha2Password,Ed25519,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
-      'MariaDB 10.3':
-        image: 'mariadb:10.3-bionic'
-        unsupportedFeatures: 'CachingSha2Password,Ed25519,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
       'MariaDB 10.4':
-        image: 'mariadb:10.4.12'
+        image: 'mariadb:10.4'
+        unsupportedFeatures: 'CachingSha2Password,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
+      'MariaDB 10.5':
+        image: 'mariadb:10.5'
+        unsupportedFeatures: 'CachingSha2Password,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
+      'MariaDB 10.6':
+        image: 'mariadb:10.6'
         unsupportedFeatures: 'CachingSha2Password,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
   steps:
   - template: '.ci/integration-tests-steps.yml'

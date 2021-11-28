@@ -89,7 +89,7 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 		var table = await m_database.Connection.GetSchemaAsync("CharacterSets");
 		Assert.Equal(4, table.Columns.Count);
 		Assert.Contains("latin1", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
-		Assert.Contains("utf8", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
+		Assert.Contains("ascii", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
 	}
 
 	[Fact]
@@ -97,7 +97,7 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 	{
 		var table = m_database.Connection.GetSchema("Collations");
 		Assert.Contains("latin1_general_ci", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
-		Assert.Contains("utf8_bin", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
+		Assert.Contains("ascii_bin", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
 	}
 #endif
 

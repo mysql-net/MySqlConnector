@@ -451,9 +451,9 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 			Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guid = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
 			Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guidbin = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
 		}
-		catch (MySqlException ex) when (oldGuids && ex.Number == 3854 /* MySqlErrorCode.CannotConvertString */)
+		catch (MySqlException ex) when (oldGuids && ex.Number is 1300 or 3854) // InvalidCharacterString, CannotConvertString
 		{
-			// new error in MySQL 8.0.24
+			// new error in MySQL 8.0.24, MariaDB 10.5
 		}
 		Assert.Equal(oldGuids ? 1L : 0L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_blobs where guidbin = @guid", new { guid = new Guid(0x33221100, 0x5544, 0x7766, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF) }).ConfigureAwait(false)).SingleOrDefault());
 	}
