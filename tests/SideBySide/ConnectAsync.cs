@@ -52,6 +52,22 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 	}
 
 	[Fact]
+	public async Task ConnectCanceled()
+	{
+		using var cts = new CancellationTokenSource();
+		cts.Cancel();
+
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+#if BASELINE
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await connection.OpenAsync(cts.Token));
+#else
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await connection.OpenAsync(cts.Token));
+#endif
+		await connection.OpenAsync();
+		Assert.Equal(ConnectionState.Open, connection.State);
+	}
+
+	[Fact]
 	public async Task State()
 	{
 		using var connection = new MySqlConnection(m_database.Connection.ConnectionString);
