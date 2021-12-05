@@ -95,15 +95,6 @@ jobs:
     inputs:
       version: 3.1.x
       packageType: runtime
-  - task: UseDotNet@2
-    displayName: 'Install .NET Core 5.0'
-    inputs:
-      version: '5.0.x'
-      packageType: runtime
-  - task: UseDotNet@2
-    displayName: 'Install .NET Core'
-    inputs:
-      version: $(DotNetCoreSdkVersion)
   - template: '.ci/mysqlconnector-tests-steps.yml'
   - template: '.ci/conformance-test-steps.yml'
     parameters:
