@@ -373,6 +373,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	internal async Task OpenAsync(IOBehavior? ioBehavior, CancellationToken cancellationToken)
 	{
 		VerifyNotDisposed();
+		cancellationToken.ThrowIfCancellationRequested();
 		if (State != ConnectionState.Closed)
 			throw new InvalidOperationException("Cannot Open when State is {0}.".FormatInvariant(State));
 
