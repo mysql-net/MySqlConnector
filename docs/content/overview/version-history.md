@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-11-27
+lastmod: 2021-12-21
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,11 @@ weight: 30
 ---
 
 # Version History
+
+### 2.1.1
+
+* Fix `InvalidOperationException` when `OpenAsync` is called again after being canceled: [#1097](https://github.com/mysql-net/MySqlConnector/issues/1097).
+* Allow `OpenAsync` to be canceled earlier.
 
 ### 2.1.0
 
