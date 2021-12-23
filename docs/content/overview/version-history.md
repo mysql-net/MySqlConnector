@@ -12,7 +12,7 @@ weight: 30
 
 ### 2.1.2
 
-* Fix incorrect results when using prepared commands with MySQL Server 8.0.23–8.0.25.
+* Fix incorrect results when using prepared commands with MySQL Server 8.0.23–8.0.25: [#1106](https://github.com/mysql-net/MySqlConnector/issues/1106).
   * Those server versions advertise support for query attributes, but do not fully support them for prepared statements.
   * The server-side bug is triggered by the client-side support for query attributes added in MySqlConnector 2.1.0.
 
