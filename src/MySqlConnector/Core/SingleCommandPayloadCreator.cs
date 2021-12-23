@@ -82,25 +82,29 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 
 		var attributes = command.RawAttributes;
 		var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
-
 		writer.Write(preparedStatement.StatementId);
 
 		// NOTE: documentation is not updated yet, but due to bugs in MySQL Server 8.0.23-8.0.25, the PARAMETER_COUNT_AVAILABLE (0x08)
-		// flag has to be set in the 'flags' block in order for query attributes to be sent with a prepared statement; we do not version-sniff the
-		// server but assume that it must support this flag
-		writer.Write((byte) (supportsQueryAttributes ? 8 : 0));
+		// flag has to be set in the 'flags' block in order for query attributes to be sent with a prepared statement.
+		var sendQueryAttributes = supportsQueryAttributes && command.Connection.Session.ServerVersion.Version is not { Major: 8, Minor: 0, Build: >= 23 and <= 25 };
+		writer.Write((byte) (sendQueryAttributes ? 8 : 0));
 		writer.Write(1);
 
 		var commandParameterCount = preparedStatement.Statement.ParameterNames?.Count ?? 0;
 		var attributeCount = attributes?.Count ?? 0;
-		if (supportsQueryAttributes)
+		if (sendQueryAttributes)
 		{
 			writer.WriteLengthEncodedInteger((uint) (commandParameterCount + attributeCount));
 		}
-		else if (attributeCount > 0)
+		else
 		{
-			Log.Warn("Session{0} has attributes for CommandId {1} but the server does not support them", command.Connection!.Session.Id, preparedStatement.StatementId);
-			attributeCount = 0;
+			if (supportsQueryAttributes && commandParameterCount > 0)
+				writer.WriteLengthEncodedInteger((uint) commandParameterCount);
+			if (attributeCount > 0)
+			{
+				Log.Warn("Session{0} has attributes for CommandId {1} but the server does not support them", command.Connection!.Session.Id, preparedStatement.StatementId);
+				attributeCount = 0;
+			}
 		}
 
 		if (commandParameterCount > 0 || attributeCount > 0)
