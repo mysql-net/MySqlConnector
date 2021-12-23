@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-12-21
+lastmod: 2021-12-22
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,12 @@ weight: 30
 ---
 
 # Version History
+
+### 2.1.2
+
+* Fix incorrect results when using prepared commands with MySQL Server 8.0.23–8.0.25.
+  * Those server versions advertise support for query attributes, but do not fully support them for prepared statements.
+  * The server-side bug is triggered by the client-side support for query attributes added in MySqlConnector 2.1.0.
 
 ### 2.1.1
 
