@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-10-23
+lastmod: 2021-12-24
 date: 2016-10-16
 menu:
   main:
@@ -293,3 +293,5 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#105209](https://bugs.mysql.com/bug.php?id=105209): Timespan value of zero can't be read with prepared command
 * [#105728](https://bugs.mysql.com/bug.php?id=105728): Named command parameters override query attribute values
 * [#105730](https://bugs.mysql.com/bug.php?id=105730): `MySqlCommand.Clone` doesn't clone attributes
+* [#105768](https://bugs.mysql.com/bug.php?id=105768): `MySqlCommandBuilder` doesn't support tables with `BIGINT UNSIGNED` primary key
+* [#105965](https://bugs.mysql.com/bug.php?id=105965): `MySqlParameterCollection.Add(object)` has quadratic performance
