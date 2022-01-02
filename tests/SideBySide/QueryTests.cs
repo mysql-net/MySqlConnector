@@ -13,6 +13,58 @@ public class QueryTests : IClassFixture<DatabaseFixture>, IDisposable
 		m_database.Connection.Close();
 	}
 
+	[Theory]
+	[InlineData(true, false, false)]
+	[InlineData(false, true, false)]
+	[InlineData(false, false, true)]
+	[InlineData(true, true, true)]
+	public void Bug1096(bool spBeforeInsert, bool spAfterInsert, bool spTwiceBeforeInsert)
+	{
+		var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString);
+		csb.UseAffectedRows = true;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+
+		connection.Execute(@"
+DROP TABLE IF EXISTS bug_1096;
+CREATE TABLE bug_1096 (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR (50) NOT NULL,
+  PRIMARY KEY (`Id`)
+);
+
+DROP PROCEDURE IF EXISTS sp_bug_1096;
+CREATE PROCEDURE sp_bug_1096 (in pId INT, IN pName VARCHAR(50))
+BEGIN
+UPDATE bug_1096 SET `Name` = pName WHERE (`Id` = pId);
+SELECT 0 AS ResultCode;
+END;
+
+INSERT INTO bug_1096 (`Name`) VALUES ('Demo-Name');");
+
+		string sqlSp = "CALL sp_bug_1096 (1, 'Demo-Name-Updated');";
+		string sqlInsert = "INSERT INTO bug_1096 (`Name`) VALUES ('Demo-Name-Updated-Batch');";
+		int rowsAffected = 0;
+
+		if (spBeforeInsert)
+		{
+			rowsAffected = connection.Execute(sqlSp + sqlInsert);
+			Assert.Equal(1, rowsAffected);
+		}
+
+		if (spAfterInsert)
+		{
+		rowsAffected = connection.Execute(sqlInsert + sqlSp);
+		Assert.Equal(1, rowsAffected);
+		}
+
+		if (spTwiceBeforeInsert)
+		{
+			rowsAffected = connection.Execute(sqlSp + sqlSp + sqlInsert);
+			Assert.Equal(1, rowsAffected);
+		}
+	}
+
 	[Fact]
 	public void GetOrdinal()
 	{
