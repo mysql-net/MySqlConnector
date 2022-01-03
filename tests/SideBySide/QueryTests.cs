@@ -17,8 +17,7 @@ public class QueryTests : IClassFixture<DatabaseFixture>, IDisposable
 	[InlineData(true, false, false)]
 	[InlineData(false, true, false)]
 	[InlineData(false, false, true)]
-	[InlineData(true, true, true)]
-	public void Bug1096(bool spBeforeInsert, bool spAfterInsert, bool spTwiceBeforeInsert)
+	public void Bug1096(bool sprocBeforeInsert, bool sprocAfterInsert, bool sprocTwiceBeforeInsert)
 	{
 		var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString);
 		csb.UseAffectedRows = true;
@@ -42,26 +41,24 @@ END;
 
 INSERT INTO bug_1096 (`Name`) VALUES ('Demo-Name');");
 
-		string sqlSp = "CALL sp_bug_1096 (1, 'Demo-Name-Updated');";
-		string sqlInsert = "INSERT INTO bug_1096 (`Name`) VALUES ('Demo-Name-Updated-Batch');";
-		int rowsAffected = 0;
+		var sproc = "CALL sp_bug_1096 (1, 'Demo-Name-Updated');";
+		var insert = "INSERT INTO bug_1096 (`Name`) VALUES ('Demo-Name-Updated-Batch');";
+		var expectedRowsAffected = connection.ServerVersion.IndexOf("MariaDB") == -1 ? 1 : 2;
 
-		if (spBeforeInsert)
+		if (sprocBeforeInsert)
 		{
-			rowsAffected = connection.Execute(sqlSp + sqlInsert);
-			Assert.Equal(1, rowsAffected);
+			var rowsAffected = connection.Execute(sproc + insert);
+			Assert.Equal(expectedRowsAffected, rowsAffected);
 		}
-
-		if (spAfterInsert)
+		else if (sprocAfterInsert)
 		{
-		rowsAffected = connection.Execute(sqlInsert + sqlSp);
-		Assert.Equal(1, rowsAffected);
+			var rowsAffected = connection.Execute(insert + sproc);
+			Assert.Equal(expectedRowsAffected, rowsAffected);
 		}
-
-		if (spTwiceBeforeInsert)
+		else if (sprocTwiceBeforeInsert)
 		{
-			rowsAffected = connection.Execute(sqlSp + sqlSp + sqlInsert);
-			Assert.Equal(1, rowsAffected);
+			var rowsAffected = connection.Execute(sproc + sproc + insert);
+			Assert.Equal(expectedRowsAffected, rowsAffected);
 		}
 	}
 
