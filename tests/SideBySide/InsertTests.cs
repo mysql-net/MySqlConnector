@@ -22,7 +22,7 @@ create table insert_ai(rowid integer not null primary key auto_increment, text v
 			await m_database.Connection.OpenAsync();
 			using var command = new MySqlCommand("INSERT INTO insert_ai (text) VALUES (@text);", m_database.Connection);
 			command.Parameters.Add(new() { ParameterName = "@text", Value = "test" });
-			await command.ExecuteNonQueryAsync();
+			Assert.Equal(1, await command.ExecuteNonQueryAsync());
 			Assert.Equal(1L, command.LastInsertedId);
 		}
 		finally
@@ -41,7 +41,7 @@ create table insert_ai(rowid integer not null primary key auto_increment);");
 			await m_database.Connection.OpenAsync();
 			using var command = new MySqlCommand("INSERT INTO insert_ai(rowid) VALUES (@rowid);", m_database.Connection);
 			command.Parameters.AddWithValue("@rowid", -1);
-			await command.ExecuteNonQueryAsync();
+			Assert.Equal(1, await command.ExecuteNonQueryAsync());
 			Assert.Equal(-1L, command.LastInsertedId);
 		}
 		finally
@@ -60,7 +60,7 @@ create table insert_ai(rowid bigint unsigned not null primary key auto_increment
 			await m_database.Connection.OpenAsync();
 			using var command = new MySqlCommand("INSERT INTO insert_ai(rowid) VALUES (@rowid);", m_database.Connection);
 			command.Parameters.AddWithValue("@rowid", ((ulong) long.MaxValue) + 1);
-			await command.ExecuteNonQueryAsync();
+			Assert.Equal(1, await command.ExecuteNonQueryAsync());
 			Assert.Equal(long.MinValue, command.LastInsertedId);
 		}
 		finally
@@ -82,7 +82,7 @@ insert into insert_ai(text) values('test');
 			using var command = new MySqlCommand(@"SELECT * FROM insert_ai;
 INSERT INTO insert_ai (text) VALUES (@text);", m_database.Connection);
 			command.Parameters.Add(new() { ParameterName = "@text", Value = "test" });
-			await command.ExecuteNonQueryAsync();
+			Assert.Equal(1, await command.ExecuteNonQueryAsync());
 			Assert.Equal(2L, command.LastInsertedId);
 		}
 		finally
@@ -104,7 +104,7 @@ insert into insert_ai(text) values('test');
 			using var command = new MySqlCommand(@"INSERT INTO insert_ai (text) VALUES (@text);
 SELECT * FROM insert_ai;", m_database.Connection);
 			command.Parameters.Add(new() { ParameterName = "@text", Value = "test" });
-			await command.ExecuteNonQueryAsync();
+			Assert.Equal(1, await command.ExecuteNonQueryAsync());
 			Assert.Equal(2L, command.LastInsertedId);
 		}
 		finally
@@ -124,7 +124,7 @@ create table insert_ai(rowid integer not null primary key auto_increment, text v
 			await m_database.Connection.OpenAsync();
 			using var command = new MySqlCommand(@"INSERT INTO insert_ai (text) VALUES ('test1');
 INSERT INTO insert_ai (text) VALUES ('test2');", m_database.Connection);
-			await command.ExecuteNonQueryAsync();
+			Assert.Equal(2, await command.ExecuteNonQueryAsync());
 			Assert.Equal(2L, command.LastInsertedId);
 		}
 		finally
@@ -145,7 +145,7 @@ create table insert_ai(rowid integer not null primary key auto_increment, text v
 			using var command = new MySqlCommand(@"LOCK TABLES insert_ai WRITE;
 INSERT INTO insert_ai (text) VALUES ('test');
 UNLOCK TABLES;", m_database.Connection);
-			await command.ExecuteNonQueryAsync();
+			Assert.Equal(1, await command.ExecuteNonQueryAsync());
 			Assert.Equal(1L, command.LastInsertedId);
 		}
 		finally
@@ -176,7 +176,7 @@ Create Table TestTableWithForeignKey(
 			await m_database.Connection.OpenAsync();
 			using var command = new MySqlCommand(@"INSERT INTO TestTable(column1) VALUES('hello');
 INSERT INTO TestTableWithForeignKey(foreign_id, column2) VALUES(LAST_INSERT_ID(), 'test');", m_database.Connection);
-			await command.ExecuteNonQueryAsync();
+			Assert.Equal(2, await command.ExecuteNonQueryAsync());
 			Assert.Equal(1L, command.LastInsertedId);
 		}
 		finally
@@ -286,7 +286,7 @@ create table insert_datetimeoffset(rowid integer not null primary key auto_incre
 				DbType = DbType.DateTimeOffset,
 				Value = value.datetimeoffset1
 			});
-			cmd.ExecuteNonQuery();
+			Assert.Equal(1, cmd.ExecuteNonQuery());
 		}
 		finally
 		{
@@ -313,7 +313,7 @@ create table insert_mysqldatetime(rowid integer not null primary key auto_increm
 			using var cmd = m_database.Connection.CreateCommand();
 			cmd.CommandText = @"insert into insert_mysqldatetime(ts) values(@ts);";
 			cmd.Parameters.AddWithValue("@ts", new MySqlDateTime(2018, 6, 9, 12, 34, 56, 123456));
-			cmd.ExecuteNonQuery();
+			Assert.Equal(1, cmd.ExecuteNonQuery());
 		}
 		finally
 		{
@@ -341,7 +341,7 @@ create table insert_stream(rowid integer not null primary key auto_increment, st
 			cmd.Parameters.AddWithValue("@blb", new MemoryStream(new byte[] { 97, 98, 99, 100 }, 0, 4, false, true));
 			if (prepare)
 				cmd.Prepare();
-			cmd.ExecuteNonQuery();
+			Assert.Equal(1, cmd.ExecuteNonQuery());
 		}
 		finally
 		{
@@ -378,7 +378,7 @@ create table insert_string_builder(rowid integer not null primary key auto_incre
 		cmd.Parameters.AddWithValue("@str", value);
 		if (prepare)
 			cmd.Prepare();
-		cmd.ExecuteNonQuery();
+		Assert.Equal(1, cmd.ExecuteNonQuery());
 
 		using var reader = connection.ExecuteReader(@"select str from insert_string_builder order by rowid;");
 		Assert.True(reader.Read());
@@ -404,7 +404,7 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 		cmd.Parameters.AddWithValue("@value", new BigInteger(value));
 		if (prepare)
 			cmd.Prepare();
-		cmd.ExecuteNonQuery();
+		Assert.Equal(1, cmd.ExecuteNonQuery());
 
 		using var reader = connection.ExecuteReader(@"select value from insert_big_integer order by rowid;");
 		Assert.True(reader.Read());
@@ -451,7 +451,7 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 		cmd.Parameters.AddWithValue("@value", new MySqlDecimal(value));
 		if (prepare)
 			cmd.Prepare();
-		cmd.ExecuteNonQuery();
+		Assert.Equal(1, cmd.ExecuteNonQuery());
 
 		using var reader = connection.ExecuteReader(@"select value from insert_mysql_decimal order by rowid;");
 		Assert.True(reader.Read());
@@ -474,7 +474,7 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 		using var cmd = connection.CreateCommand();
 		cmd.CommandText = @"insert into insert_mysql_decimal(value) values(@value);";
 		cmd.Parameters.AddWithValue("@value", value);
-		cmd.ExecuteNonQuery();
+		Assert.Equal(1, cmd.ExecuteNonQuery());
 
 		cmd.CommandText = @"select value from insert_mysql_decimal order by rowid;";
 		if (prepare)

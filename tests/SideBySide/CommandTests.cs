@@ -118,17 +118,26 @@ public class CommandTests : IClassFixture<DatabaseFixture>
 		Assert.Equal(-1, command.ExecuteNonQuery());
 	}
 
-	[Fact]
+[Fact]
 	public async Task ExecuteNonQueryReturnValue()
 	{
 		using var connection = new MySqlConnection(m_database.Connection.ConnectionString);
 		await connection.OpenAsync();
-		await connection.ExecuteAsync(@"drop table if exists execute_non_query;
-create table execute_non_query(id integer not null primary key auto_increment, value text null);");
-		Assert.Equal(4, await connection.ExecuteAsync("insert into execute_non_query(value) values(null), (null), ('one'), ('two');"));
-		Assert.Equal(-1, await connection.ExecuteAsync("select value from execute_non_query;"));
-		Assert.Equal(2, await connection.ExecuteAsync("delete from execute_non_query where value is null;"));
-		Assert.Equal(1, await connection.ExecuteAsync("update execute_non_query set value = 'three' where value = 'one';"));
+		const string setUp = @"drop table if exists execute_non_query;
+create table execute_non_query(id integer not null primary key auto_increment, value text null);";
+		await connection.ExecuteAsync(setUp);
+
+		const string insert = "insert into execute_non_query(value) values(null), (null), ('one'), ('two');";
+		Assert.Equal(4, await connection.ExecuteAsync(insert));
+		const string select = "select value from execute_non_query;";
+		Assert.Equal(-1, await connection.ExecuteAsync(select));
+		const string delete = "delete from execute_non_query where value is null;";
+		Assert.Equal(2, await connection.ExecuteAsync(delete));
+		const string update = "update execute_non_query set value = 'three' where value = 'one';";
+		Assert.Equal(1, await connection.ExecuteAsync(update));
+
+		await connection.ExecuteAsync(setUp);
+		Assert.Equal(7, await connection.ExecuteAsync(insert + select + delete + update));
 	}
 
 	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=88611")]

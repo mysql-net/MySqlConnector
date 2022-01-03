@@ -22,7 +22,6 @@ internal sealed class ResultSet
 		BufferState = ResultSetState.None;
 		ColumnDefinitions = null;
 		ColumnTypes = null;
-		RecordsAffected = null;
 		WarningCount = 0;
 		State = ResultSetState.None;
 		ContainsCommandParameters = false;
@@ -46,7 +45,12 @@ internal sealed class ResultSet
 				if (firstByte == OkPayload.Signature)
 				{
 					var ok = OkPayload.Create(payload.Span, Session.SupportsDeprecateEof, Session.SupportsSessionTrack);
-					RecordsAffected = (RecordsAffected ?? 0) + ok.AffectedRowCount;
+
+					// if we've read a result set header then this is a SELECT statement, so we shouldn't overwrite RecordsAffected
+					// (which should be -1 for SELECT) unless the server reports a non-zero count
+					if (State != ResultSetState.ReadResultSetHeader || ok.AffectedRowCount != 0)
+						RecordsAffected = (RecordsAffected ?? 0) + ok.AffectedRowCount;
+
 					if (ok.LastInsertId != 0)
 						Command?.SetLastInsertedId((long) ok.LastInsertId);
 					WarningCount = ok.WarningCount;

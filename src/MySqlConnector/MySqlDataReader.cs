@@ -130,7 +130,6 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 			throw new MySqlException("Failed to read the result set.", m_resultSet.ReadResultSetHeaderException.SourceException);
 		}
 
-		m_recordsAffected = m_recordsAffected is null ? m_resultSet.RecordsAffected : m_recordsAffected.Value + (m_resultSet.RecordsAffected ?? 0);
 		m_hasWarnings = m_resultSet.WarningCount != 0;
 	}
 
@@ -203,7 +202,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	}
 
 	public override bool IsClosed => Command is null;
-	public override int RecordsAffected => m_recordsAffected.HasValue ? checked((int) m_recordsAffected) : -1;
+	public override int RecordsAffected => GetResultSet().RecordsAffected is ulong recordsAffected ? checked((int) recordsAffected) : -1;
 
 	public override int GetOrdinal(string name) => GetResultSet().GetOrdinal(name);
 
@@ -667,7 +666,6 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	readonly IDictionary<string, CachedProcedure?>? m_cachedProcedures;
 	CommandListPosition m_commandListPosition;
 	bool m_closed;
-	ulong? m_recordsAffected;
 	bool m_hasWarnings;
 	ResultSet? m_resultSet;
 	bool m_hasMoreResults;

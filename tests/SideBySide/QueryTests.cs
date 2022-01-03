@@ -13,6 +13,55 @@ public class QueryTests : IClassFixture<DatabaseFixture>, IDisposable
 		m_database.Connection.Close();
 	}
 
+	[Theory]
+	[InlineData(true, false, false)]
+	[InlineData(false, true, false)]
+	[InlineData(false, false, true)]
+	public void Bug1096(bool sprocBeforeInsert, bool sprocAfterInsert, bool sprocTwiceBeforeInsert)
+	{
+		var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString);
+		csb.UseAffectedRows = true;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+
+		connection.Execute(@"
+DROP TABLE IF EXISTS bug_1096;
+CREATE TABLE bug_1096 (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR (50) NOT NULL,
+  PRIMARY KEY (`Id`)
+);
+
+DROP PROCEDURE IF EXISTS sp_bug_1096;
+CREATE PROCEDURE sp_bug_1096 (in pId INT, IN pName VARCHAR(50))
+BEGIN
+UPDATE bug_1096 SET `Name` = pName WHERE (`Id` = pId);
+SELECT 0 AS ResultCode;
+END;
+
+INSERT INTO bug_1096 (`Name`) VALUES ('Demo-Name');");
+
+		var sproc = "CALL sp_bug_1096 (1, 'Demo-Name-Updated');";
+		var insert = "INSERT INTO bug_1096 (`Name`) VALUES ('Demo-Name-Updated-Batch');";
+		var expectedRowsAffected = connection.ServerVersion.IndexOf("MariaDB") == -1 ? 1 : 2;
+
+		if (sprocBeforeInsert)
+		{
+			var rowsAffected = connection.Execute(sproc + insert);
+			Assert.Equal(expectedRowsAffected, rowsAffected);
+		}
+		else if (sprocAfterInsert)
+		{
+			var rowsAffected = connection.Execute(insert + sproc);
+			Assert.Equal(expectedRowsAffected, rowsAffected);
+		}
+		else if (sprocTwiceBeforeInsert)
+		{
+			var rowsAffected = connection.Execute(sproc + sproc + insert);
+			Assert.Equal(expectedRowsAffected, rowsAffected);
+		}
+	}
+
 	[Fact]
 	public void GetOrdinal()
 	{
