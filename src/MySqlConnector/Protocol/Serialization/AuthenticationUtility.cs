@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using MySqlConnector.Utilities;
@@ -16,6 +17,9 @@ internal static class AuthenticationUtility
 	/// <param name="password">The password to hash.</param>
 	/// <returns>A 20-byte password hash.</returns>
 	/// <remarks>See <a href="https://dev.mysql.com/doc/internals/en/secure-password-authentication.html">Secure Password Authentication</a>.</remarks>
+#if NET5_0_OR_GREATER
+	[SkipLocalsInit]
+#endif
 	public static byte[] HashPassword(ReadOnlySpan<byte> challenge, string password)
 	{
 		using var sha1 = SHA1.Create();
@@ -46,6 +50,9 @@ internal static class AuthenticationUtility
 		return scrambleResponse;
 	}
 
+#if NET5_0_OR_GREATER
+	[SkipLocalsInit]
+#endif
 	private static byte[] HashPasswordWithNonce(ReadOnlySpan<byte> nonce, string password)
 	{
 		using var sha256 = SHA256.Create();

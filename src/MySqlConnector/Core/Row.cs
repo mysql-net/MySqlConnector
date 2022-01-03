@@ -1,4 +1,5 @@
 using System.Buffers.Text;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using MySqlConnector.Protocol;
@@ -555,6 +556,9 @@ InvalidDateTime:
 		throw new FormatException("Couldn't interpret '{0}' as a valid DateTime".FormatInvariant(Encoding.UTF8.GetString(value)), exception);
 	}
 
+#if NET5_0_OR_GREATER
+	[SkipLocalsInit]
+#endif
 	protected static unsafe Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes) =>
 		guidFormat switch
 		{
