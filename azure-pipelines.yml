@@ -102,6 +102,7 @@ jobs:
       connectionString: 'server=localhost;port=3306;user id=mysqltest;password=test;database=conformance;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
 
 - job: azure_mysql_integration_tests
+  condition: ne('True', variables['System.PullRequest.IsFork'])
   displayName: 'Azure MySQL Integration Tests'
   pool:
     vmimage: 'windows-latest'
