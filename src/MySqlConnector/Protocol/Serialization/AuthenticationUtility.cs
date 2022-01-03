@@ -22,7 +22,9 @@ internal static class AuthenticationUtility
 #endif
 	public static byte[] HashPassword(ReadOnlySpan<byte> challenge, string password)
 	{
+#if !NET5_0_OR_GREATER
 		using var sha1 = SHA1.Create();
+#endif
 		Span<byte> combined = stackalloc byte[40];
 		challenge.CopyTo(combined);
 
@@ -30,12 +32,21 @@ internal static class AuthenticationUtility
 		Span<byte> passwordBytes = stackalloc byte[passwordByteCount];
 		Encoding.UTF8.GetBytes(password.AsSpan(), passwordBytes);
 		Span<byte> hashedPassword = stackalloc byte[20];
+#if NET5_0_OR_GREATER
+		SHA1.TryHashData(passwordBytes, hashedPassword, out _);
+		SHA1.TryHashData(hashedPassword, combined.Slice(20), out _);
+#else
 		sha1.TryComputeHash(passwordBytes, hashedPassword, out _);
 		sha1.TryComputeHash(hashedPassword, combined.Slice(20), out _);
+#endif
 
 		Span<byte> xorBytes = stackalloc byte[20];
+#if NET5_0_OR_GREATER
+		SHA1.TryHashData(combined, xorBytes, out _);
+#else
 		sha1.TryComputeHash(combined, xorBytes, out _);
-		for (int i = 0; i < hashedPassword.Length; i++)
+#endif
+		for (var i = 0; i < hashedPassword.Length; i++)
 			hashedPassword[i] ^= xorBytes[i];
 
 		return hashedPassword.ToArray();
@@ -55,20 +66,34 @@ internal static class AuthenticationUtility
 #endif
 	private static byte[] HashPasswordWithNonce(ReadOnlySpan<byte> nonce, string password)
 	{
+#if !NET5_0_OR_GREATER
 		using var sha256 = SHA256.Create();
+#endif
 		var passwordByteCount = Encoding.UTF8.GetByteCount(password);
 		Span<byte> passwordBytes = stackalloc byte[passwordByteCount];
 		Encoding.UTF8.GetBytes(password.AsSpan(), passwordBytes);
 
 		Span<byte> hashedPassword = stackalloc byte[32];
+#if NET5_0_OR_GREATER
+		SHA256.TryHashData(passwordBytes, hashedPassword, out _);
+#else
 		sha256.TryComputeHash(passwordBytes, hashedPassword, out _);
+#endif
 
 		Span<byte> combined = stackalloc byte[32 + nonce.Length];
+#if NET5_0_OR_GREATER
+		SHA256.TryHashData(hashedPassword, combined, out _);
+#else
 		sha256.TryComputeHash(hashedPassword, combined, out _);
+#endif
 		nonce.CopyTo(combined.Slice(32));
 
 		Span<byte> xorBytes = stackalloc byte[32];
+#if NET5_0_OR_GREATER
+		SHA256.TryHashData(combined, xorBytes, out _);
+#else
 		sha256.TryComputeHash(combined, xorBytes, out _);
+#endif
 		for (int i = 0; i < hashedPassword.Length; i++)
 			hashedPassword[i] ^= xorBytes[i];
 
