@@ -98,9 +98,9 @@ internal sealed class BinaryRow : Row
 
 		case ColumnType.String:
 			if (Connection.GuidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
-				return Utf8Parser.TryParse(data, out Guid guid, out int guid36BytesConsumed, 'D') && guid36BytesConsumed == 36 ? guid : throw new FormatException();
+				return Utf8Parser.TryParse(data, out Guid guid, out int guid36BytesConsumed, 'D') && guid36BytesConsumed == 36 ? guid : throw new FormatException("Could not parse CHAR(36) value as Guid: {0}".FormatInvariant(Encoding.UTF8.GetString(data)));
 			if (Connection.GuidFormat == MySqlGuidFormat.Char32 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
-				return Utf8Parser.TryParse(data, out Guid guid, out int guid32BytesConsumed, 'N') && guid32BytesConsumed == 32 ? guid : throw new FormatException();
+				return Utf8Parser.TryParse(data, out Guid guid, out int guid32BytesConsumed, 'N') && guid32BytesConsumed == 32 ? guid : throw new FormatException("Could not parse CHAR(32) value as Guid: {0}".FormatInvariant(Encoding.UTF8.GetString(data)));
 			goto case ColumnType.VarString;
 
 		case ColumnType.VarString:
