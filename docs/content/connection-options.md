@@ -512,7 +512,7 @@ from your connection string when migrating from Connector/NET to MySqlConnector.
   <tr id="Password1">
     <td>Password1, Password2, Password3</td>
     <td></td>
-    <td>MySqlConnector does not currently support multifactor authentication; see [issue 1068](https://github.com/mysql-net/MySqlConnector/issues/1068).</td>
+    <td>MySqlConnector does not currently support multifactor authentication; see <a href="https://github.com/mysql-net/MySqlConnector/issues/1068" title="Support multifactor authentication">issue 1068</a>.</td>
   </tr>
   <tr id="ProcedureCacheSize">
     <td>ProcedureCacheSize, Procedure Cache Size, ProcedureCache, Procedure Cache</td>
