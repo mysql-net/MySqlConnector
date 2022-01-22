@@ -298,3 +298,4 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#106242](https://bugs.mysql.com/bug.php?id=106242): `MySqlConnection.Open` throws `AggregateException` instead of `MySqlException`
 * [#106243](https://bugs.mysql.com/bug.php?id=106243): `CancellationToken` doesn't cancel `MySqlConnection.OpenAsync`
 * [#106244](https://bugs.mysql.com/bug.php?id=106244): `MySqlDataReader.GetFieldValue<Stream>` throws `InvalidCastException`
+* [#106247](https://bugs.mysql.com/bug.php?id=106247): Can't use `MySqlDbType.Enum` or `MySqlDbType.Set` with prepared command

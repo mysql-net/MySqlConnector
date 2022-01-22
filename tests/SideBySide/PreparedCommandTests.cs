@@ -396,8 +396,11 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 			yield return new object[] { isPrepared, "TEXT", "testing testing", MySqlDbType.Text };
 			yield return new object[] { isPrepared, "DATE", new DateTime(2018, 7, 23), MySqlDbType.Date };
 			yield return new object[] { isPrepared, "DATETIME(3)", new DateTime(2018, 7, 23, 20, 46, 52, 123), MySqlDbType.DateTime };
+#if !BASELINE
+			// https://bugs.mysql.com/bug.php?id=106247
 			yield return new object[] { isPrepared, "ENUM('small', 'medium', 'large')", "medium", MySqlDbType.Enum };
 			yield return new object[] { isPrepared, "SET('one','two','four','eight')", "two,eight", MySqlDbType.Set };
+#endif
 #if !BASELINE
 			yield return new object[] { isPrepared, "BOOL", true, MySqlDbType.Bool };
 #else
