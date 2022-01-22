@@ -1616,6 +1616,11 @@ end;";
 		var csb = AppConfig.CreateConnectionStringBuilder();
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		connection.Open();
+
+		// https://bugs.mysql.com/bug.php?id=106241
+		if (connection.ServerVersion == "8.0.28")
+			return;
+
 		using var command = new MySqlCommand($@"SELECT {aggregation}(Bit32) FROM datatypes_bits;", connection);
 		if (shouldPrepare)
 			command.Prepare();
