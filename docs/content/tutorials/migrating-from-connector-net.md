@@ -241,14 +241,14 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#92367](https://bugs.mysql.com/bug.php?id=92367): `MySqlDataReader.GetDateTime` and `GetValue` return inconsistent values
 * [#92465](https://bugs.mysql.com/bug.php?id=92465): “There is already an open DataReader” `MySqlException` thrown from `TransactionScope.Dispose`
 * [#92734](https://bugs.mysql.com/bug.php?id=92734): `MySqlParameter.Clone` doesn't copy all property values
-* [#92789](https://bugs.mysql.com/bug.php?id=92789): Illegal connection attributes written for non-ASCII values
+* ~~[#92789](https://bugs.mysql.com/bug.php?id=92789): Illegal connection attributes written for non-ASCII values~~
 * ~~[#92912](https://bugs.mysql.com/bug.php?id=92912): `MySqlDbType.LongText` values encoded incorrectly with prepared statements~~
 * ~~[#92982](https://bugs.mysql.com/bug.php?id=92982), [#93399](https://bugs.mysql.com/bug.php?id=93399)~~: `FormatException` thrown when connecting to MySQL Server 8.0.13~~
 * [#93047](https://bugs.mysql.com/bug.php?id=93047): `MySqlDataAdapter` throws timeout exception when an error occurs
 * ~~[#93202](https://bugs.mysql.com/bug.php?id=93202): Connector runs `SHOW VARIABLES` when connection is made~~
 * [#93220](https://bugs.mysql.com/bug.php?id=93220): Can’t call FUNCTION when parameter name contains parentheses
 * [#93370](https://bugs.mysql.com/bug.php?id=93370): `MySqlParameterCollection.Add` precondition check isn't consistent
-* [#93374](https://bugs.mysql.com/bug.php?id=93374): `MySqlDataReader.GetStream` throws `IndexOutOfRangeException`
+* ~~[#93374](https://bugs.mysql.com/bug.php?id=93374): `MySqlDataReader.GetStream` throws `IndexOutOfRangeException`~~
 * [#93825](https://bugs.mysql.com/bug.php?id=93825): `MySqlException` loses data when serialized
 * ~~[#94075](https://bugs.mysql.com/bug.php?id=94075): `MySqlCommand.Cancel` throws exception~~
 * [#94760](https://bugs.mysql.com/bug.php?id=94760): `MySqlConnection.OpenAsync(CancellationToken)` doesn’t respect cancellation token
@@ -278,7 +278,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#100306](https://bugs.mysql.com/bug.php?id=100306): `Command.Prepare` sends wrong statement to server~~
 * ~~[#100522](https://bugs.mysql.com/bug.php?id=100522): `	MySqlCommand.Parameters.Insert(-1)` succeeds but should fail~~
 * ~~[#101252](https://bugs.mysql.com/bug.php?id=101252): Can't query `CHAR(36)` column containing `NULL`~~
-* [#101253](https://bugs.mysql.com/bug.php?id=101253): Default value for `MySqlParameter.Value` changed from null to `0`
+* ~~[#101253](https://bugs.mysql.com/bug.php?id=101253): Default value for `MySqlParameter.Value` changed from null to `0`~~
 * ~~[#101302](https://bugs.mysql.com/bug.php?id=101302): Stored Procedure `BOOL` parameter can only be mapped to `MySqlDbType.Byte`~~
 * [#101485](https://bugs.mysql.com/bug.php?id=101485): Stored Procedure `JSON` parameter throws “Unhandled type encountered” `MySqlException`
 * [#101507](https://bugs.mysql.com/bug.php?id=101507): `MySqlCommand.Cancel` throws `NullReferenceException` for a closed connection
@@ -286,12 +286,15 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#102593](https://bugs.mysql.com/bug.php?id=102593): Can't use `MemoryStream` as `MySqlParameter.Value`
 * ~~[#103390](https://bugs.mysql.com/bug.php?id=103390): Can't query `CHAR(36)` column if `MySqlCommand` is prepared~~
 * ~~[#103430](https://bugs.mysql.com/bug.php?id=103430): Can't connect using named pipe on Windows~~
-* [#103801](https://bugs.mysql.com/bug.php?id=103801): `TimeSpan` parameters lose microseconds with prepared statement
+* ~~[#103801](https://bugs.mysql.com/bug.php?id=103801): `TimeSpan` parameters lose microseconds with prepared statement~~
 * [#103819](https://bugs.mysql.com/bug.php?id=103819): Can't use `StringBuilder` containing non-BMP characters as `MySqlParameter.Value`
 * [#104910](https://bugs.mysql.com/bug.php?id=104910): `MySqlConnectionStringBuilder.TryGetValue` always returns `false`
 * [#104913](https://bugs.mysql.com/bug.php?id=104913): Cannot execute stored procedure with backtick in name
-* [#105209](https://bugs.mysql.com/bug.php?id=105209): Timespan value of zero can't be read with prepared command
+* ~~[#105209](https://bugs.mysql.com/bug.php?id=105209): Timespan value of zero can't be read with prepared command~~
 * [#105728](https://bugs.mysql.com/bug.php?id=105728): Named command parameters override query attribute values
 * [#105730](https://bugs.mysql.com/bug.php?id=105730): `MySqlCommand.Clone` doesn't clone attributes
 * [#105768](https://bugs.mysql.com/bug.php?id=105768): `MySqlCommandBuilder` doesn't support tables with `BIGINT UNSIGNED` primary key
 * [#105965](https://bugs.mysql.com/bug.php?id=105965): `MySqlParameterCollection.Add(object)` has quadratic performance
+* [#106242](https://bugs.mysql.com/bug.php?id=106242): `MySqlConnection.Open` throws `AggregateException` instead of `MySqlException`
+* [#106243](https://bugs.mysql.com/bug.php?id=106243): `CancellationToken` doesn't cancel `MySqlConnection.OpenAsync`
+* [#106244](https://bugs.mysql.com/bug.php?id=106244): `MySqlDataReader.GetFieldValue<Stream>` throws `InvalidCastException`

@@ -161,7 +161,7 @@ public class MySqlConnectionStringBuilderTests
 				"ssl-cert=client-cert.pem;" +
 				"ssl-key=client-key.pem;" +
 				"ssl mode=verifyca;" +
-				"tls version=Tls10, TLS v1.2;" +
+				"tls version=Tls12, TLS v1.3;" +
 				"Uid=username;" +
 				"useaffectedrows=true"
 		};
@@ -225,9 +225,9 @@ public class MySqlConnectionStringBuilderTests
 		Assert.Equal("client-key.pem", csb.SslKey);
 		Assert.Equal(MySqlSslMode.VerifyCA, csb.SslMode);
 #if BASELINE
-		Assert.Equal("Tls, Tls12", csb.TlsVersion);
+		Assert.Equal("Tls12, Tls13", csb.TlsVersion);
 #else
-		Assert.Equal("TLS 1.0, TLS 1.2", csb.TlsVersion);
+		Assert.Equal("TLS 1.2, TLS 1.3", csb.TlsVersion);
 #endif
 		Assert.True(csb.UseAffectedRows);
 		Assert.True(csb.UseCompression);
@@ -399,6 +399,7 @@ public class MySqlConnectionStringBuilderTests
 #endif
 
 	[Theory]
+#if !BASELINE
 	[InlineData("Tls", "0")]
 	[InlineData("Tls1", "0")]
 	[InlineData("Tlsv1", "0")]
@@ -410,6 +411,7 @@ public class MySqlConnectionStringBuilderTests
 	[InlineData("Tlsv1.1", "1")]
 	[InlineData("TLS 1.1", "1")]
 	[InlineData("TLS v1.1", "1")]
+#endif
 	[InlineData("Tls12", "2")]
 	[InlineData("Tlsv12", "2")]
 	[InlineData("Tlsv1.2", "2")]
@@ -420,10 +422,13 @@ public class MySqlConnectionStringBuilderTests
 	[InlineData("Tlsv1.3", "3")]
 	[InlineData("TLS 1.3", "3")]
 	[InlineData("TLS v1.3", "3")]
+#if !BASELINE
 	[InlineData("Tls,Tls", "0")]
 	[InlineData("Tls1.1,Tls v1.1, TLS 1.1", "1")]
 	[InlineData("Tls12,Tls10", "0,2")]
 	[InlineData("TLS v1.3, TLS12, Tls 1.1", "1,2,3")]
+#endif
+	[InlineData("TLS v1.3, TLS12", "2,3")]
 	public void ParseTlsVersion(string input, string expected)
 	{
 		var csb = new MySqlConnectionStringBuilder { TlsVersion = input };

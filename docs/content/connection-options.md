@@ -509,6 +509,11 @@ from your connection string when migrating from Connector/NET to MySqlConnector.
     <td>false</td>
     <td>This option is deprecated in Connector/NET and unsupported in MySqlConnector.</td>
   </tr>
+  <tr id="Password1">
+    <td>Password1, Password2, Password3</td>
+    <td></td>
+    <td>MySqlConnector does not currently support multifactor authentication; see [issue 1068](https://github.com/mysql-net/MySqlConnector/issues/1068).</td>
+  </tr>
   <tr id="ProcedureCacheSize">
     <td>ProcedureCacheSize, Procedure Cache Size, ProcedureCache, Procedure Cache</td>
     <td></td>

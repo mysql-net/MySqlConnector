@@ -59,15 +59,13 @@ public class ParameterTests
 	public void ConstructorSimple()
 	{
 		var parameter = new MySqlParameter();
+		Assert.Equal(MySqlDbType.VarChar, parameter.MySqlDbType);
+		Assert.Equal(DbType.String, parameter.DbType);
 #if BASELINE
 		Assert.Null(parameter.ParameterName);
-		Assert.Equal(MySqlDbType.Decimal, parameter.MySqlDbType);
-		Assert.Equal(DbType.AnsiString, parameter.DbType);
 		Assert.Null(parameter.SourceColumn);
 #else
 		Assert.Equal("", parameter.ParameterName);
-		Assert.Equal(MySqlDbType.VarChar, parameter.MySqlDbType);
-		Assert.Equal(DbType.String, parameter.DbType);
 		Assert.Equal("", parameter.SourceColumn);
 #endif
 		Assert.False(parameter.IsNullable);
@@ -116,11 +114,7 @@ public class ParameterTests
 		Assert.Equal(MySqlDbType.Double, parameter.MySqlDbType);
 		Assert.Equal(DbType.Double, parameter.DbType);
 		Assert.False(parameter.IsNullable);
-#if BASELINE // https://bugs.mysql.com/bug.php?id=101253
-		Assert.Equal(0, parameter.Value);
-#else
 		Assert.Null(parameter.Value);
-#endif
 		Assert.Equal(ParameterDirection.Input, parameter.Direction);
 		Assert.Equal(0, parameter.Precision);
 		Assert.Equal(0, parameter.Scale);
@@ -145,11 +139,7 @@ public class ParameterTests
 		Assert.Equal(MySqlDbType.Double, parameter.MySqlDbType);
 		Assert.Equal(DbType.Double, parameter.DbType);
 		Assert.False(parameter.IsNullable);
-#if BASELINE // https://bugs.mysql.com/bug.php?id=101253
-		Assert.Equal(0, parameter.Value);
-#else
 		Assert.Null(parameter.Value);
-#endif
 		Assert.Equal(ParameterDirection.Input, parameter.Direction);
 		Assert.Equal(0, parameter.Precision);
 		Assert.Equal(0, parameter.Scale);
@@ -174,11 +164,7 @@ public class ParameterTests
 		Assert.Equal(MySqlDbType.Int32, parameter.MySqlDbType);
 		Assert.Equal(DbType.Int32, parameter.DbType);
 		Assert.False(parameter.IsNullable);
-#if BASELINE // https://bugs.mysql.com/bug.php?id=101253
-		Assert.Equal(0, parameter.Value);
-#else
 		Assert.Null(parameter.Value);
-#endif
 		Assert.Equal(ParameterDirection.Input, parameter.Direction);
 		Assert.Equal(0, parameter.Precision);
 		Assert.Equal(0, parameter.Scale);

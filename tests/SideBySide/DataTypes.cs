@@ -13,11 +13,13 @@ using GetValueWhenNullException = System.Data.SqlTypes.SqlNullValueException;
 using GetGuidWhenNullException = MySql.Data.MySqlClient.MySqlException;
 using GetBytesWhenNullException = System.NullReferenceException;
 using GetGeometryWhenNullException = System.Exception;
+using GetStreamWhenNullException = System.ArgumentNullException;
 #else
 using GetValueWhenNullException = System.InvalidCastException;
 using GetGuidWhenNullException = System.InvalidCastException;
 using GetBytesWhenNullException = System.InvalidCastException;
 using GetGeometryWhenNullException = System.InvalidCastException;
+using GetStreamWhenNullException = System.InvalidCastException;
 #endif
 
 namespace SideBySide;
@@ -771,11 +773,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 	[InlineData("`Time`", "TIME", new object[] { null, "-838 -59 -59", "838 59 59", "0 0 0", "0 14 3 4 567890" })]
 	public void QueryTime(string column, string dataTypeName, object[] expected)
 	{
-		DoQuery("times", column, dataTypeName, ConvertToTimeSpan(expected), reader => reader.GetTimeSpan(0)
-#if BASELINE // https://bugs.mysql.com/bug.php?id=103801
-			, omitWherePrepareTest: true
-#endif
-		);
+		DoQuery("times", column, dataTypeName, ConvertToTimeSpan(expected), reader => reader.GetTimeSpan(0));
 	}
 
 #if NET6_0_OR_GREATER && !BASELINE
@@ -816,8 +814,8 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 			Array.Resize(ref data, padLength);
 
 		DoQuery<GetBytesWhenNullException>("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, GetBytes);
-#if !BASELINE // https://bugs.mysql.com/bug.php?id=93374
-		DoQuery("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, GetStreamBytes);
+		DoQuery<GetStreamWhenNullException>("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, GetStreamBytes);
+#if !BASELINE // https://bugs.mysql.com/bug.php?id=106244
 		DoQuery("blobs", "`" + column + "`", "BLOB", new object[] { null, data }, reader => reader.GetStream(0), matchesDefaultType: false, assertEqual: (e, a) =>
 		{
 			using var stream = (Stream) a;

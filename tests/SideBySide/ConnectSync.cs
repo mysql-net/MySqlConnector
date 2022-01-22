@@ -9,7 +9,7 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		m_database = database;
 	}
 
-	[Fact]
+	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=106242")]
 	public void ConnectBadHost()
 	{
 		var csb = new MySqlConnectionStringBuilder
@@ -27,7 +27,7 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		Assert.Equal(ConnectionState.Closed, connection.State);
 	}
 
-	[Fact]
+	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=106242")]
 	public void ConnectBadPort()
 	{
 		var csb = new MySqlConnectionStringBuilder

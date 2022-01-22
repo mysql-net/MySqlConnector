@@ -1339,7 +1339,7 @@ $$";
 		Assert.Equal(MySqlDbType.DateTime, providerType);
 	}
 
-	[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=105209")]
+	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
 	public void QueryTimeSpan(bool prepare)

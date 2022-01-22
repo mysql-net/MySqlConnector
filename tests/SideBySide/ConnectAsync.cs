@@ -12,7 +12,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		m_database = database;
 	}
 
-	[Fact]
+	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=106242")]
 	public async Task ConnectBadHost()
 	{
 		var csb = new MySqlConnectionStringBuilder
@@ -27,7 +27,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		Assert.Equal(ConnectionState.Closed, connection.State);
 	}
 
-	[Fact]
+	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=106242")]
 	public async Task ConnectBadPort()
 	{
 		var csb = new MySqlConnectionStringBuilder
@@ -51,7 +51,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		Assert.Equal(ConnectionState.Closed, connection.State);
 	}
 
-	[Fact]
+	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=106243")]
 	public async Task ConnectCanceled()
 	{
 		using var cts = new CancellationTokenSource();
