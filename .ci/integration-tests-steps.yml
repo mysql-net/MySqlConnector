@@ -43,7 +43,7 @@ steps:
     image: ${{ parameters.image }}
     unsupportedFeatures: ${{ parameters.unsupportedFeatures }}
     connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;UseCompression=True;DefaultCommandTimeout=3600'
-    platform: 'net5.0'
+    platform: 'net6.0'
     description: 'Compression'
 - template: 'sidebyside-test-steps.yml'
   parameters:

@@ -128,8 +128,15 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 							var uncompressedData = new byte[uncompressedLength];
 							using var compressedStream = new MemoryStream(payloadReadBytes.Array!, payloadReadBytes.Offset, payloadReadBytes.Count);
 							using var decompressingStream = new ZLibStream(compressedStream, CompressionMode.Decompress);
-							var bytesRead = decompressingStream.Read(uncompressedData, 0, uncompressedLength);
-							m_remainingData = new(uncompressedData, 0, bytesRead);
+							int bytesRead, totalBytesRead = 0;
+							do
+							{
+								bytesRead = decompressingStream.Read(uncompressedData, totalBytesRead, uncompressedLength - totalBytesRead);
+								totalBytesRead += bytesRead;
+							} while (bytesRead > 0);
+							if (totalBytesRead != uncompressedLength && protocolErrorBehavior == ProtocolErrorBehavior.Throw)
+								return ValueTaskExtensions.FromException<int>(new InvalidOperationException("Expected to read {0:n0} uncompressed bytes but only read {1:n0}".FormatInvariant(uncompressedLength, totalBytesRead)));
+							m_remainingData = new(uncompressedData, 0, totalBytesRead);
 #else
 							// check CMF (Compression Method and Flags) and FLG (Flags) bytes for expected values
 							var cmf = payloadReadBytes.Array![payloadReadBytes.Offset];
@@ -151,10 +158,17 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 							var uncompressedData = new byte[uncompressedLength];
 							using var compressedStream = new MemoryStream(payloadReadBytes.Array, payloadReadBytes.Offset + headerSize, payloadReadBytes.Count - headerSize - checksumSize);
 							using var decompressingStream = new DeflateStream(compressedStream, CompressionMode.Decompress);
-							var bytesRead = decompressingStream.Read(uncompressedData, 0, uncompressedLength);
-							m_remainingData = new(uncompressedData, 0, bytesRead);
+							int bytesRead, totalBytesRead = 0;
+							do
+							{
+								bytesRead = decompressingStream.Read(uncompressedData, totalBytesRead, uncompressedLength - totalBytesRead);
+								totalBytesRead += bytesRead;
+							} while (bytesRead > 0);
+							if (totalBytesRead != uncompressedLength && protocolErrorBehavior == ProtocolErrorBehavior.Throw)
+								return ValueTaskExtensions.FromException<int>(new InvalidOperationException("Expected to read {0:n0} uncompressed bytes but only read {1:n0}".FormatInvariant(uncompressedLength, totalBytesRead)));
+							m_remainingData = new(uncompressedData, 0, totalBytesRead);
 
-							var checksum = Adler32.Calculate(uncompressedData, 0, (uint)bytesRead);
+							var checksum = Adler32.Calculate(uncompressedData, 0, (uint) totalBytesRead);
 
 							var adlerStartOffset = payloadReadBytes.Offset + payloadReadBytes.Count - 4;
 							if (payloadReadBytes.Array[adlerStartOffset + 0] != ((checksum >> 24) & 0xFF) ||
