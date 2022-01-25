@@ -1,8 +1,9 @@
 // Copyright (c) Six Labors.
 // Licensed under the Apache License, Version 2.0.
-// https://github.com/SixLabors/ImageSharp/blob/master/src/ImageSharp/Formats/Png/Zlib/Adler32.cs
+// https://github.com/SixLabors/ImageSharp/blob/master/src/ImageSharp/Compression/Zlib/Adler32.cs
 
 #if !NET6_0_OR_GREATER
+using System.Runtime.CompilerServices;
 #if NETCOREAPP3_0_OR_GREATER
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
@@ -44,12 +45,11 @@ internal static class Adler32
 	/// Calculates the Adler32 checksum with the bytes taken from the span.
 	/// </summary>
 	/// <param name="buffer">The readonly span of bytes.</param>
-	/// <param name="offset">The offset.</param>
-	/// <param name="length">The length.</param>
 	/// <returns>The <see cref="uint"/>.</returns>
-	public static uint Calculate(ReadOnlySpan<byte> buffer, uint offset, uint length)
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static uint Calculate(ReadOnlySpan<byte> buffer)
 	{
-		if (buffer.Length == 0)
+		if (buffer.IsEmpty)
 		{
 			return SeedValue;
 		}
@@ -57,16 +57,17 @@ internal static class Adler32
 #if NETCOREAPP3_0_OR_GREATER
 		if (Ssse3.IsSupported && buffer.Length >= MinBufferSize)
 		{
-			return CalculateSse(buffer, offset, length);
+			return CalculateSse(buffer);
 		}
 #endif
 
-		return CalculateScalar(buffer, offset, length);
+		return CalculateScalar(buffer);
 	}
 
 #if NETCOREAPP3_0_OR_GREATER
 	// Based on https://github.com/chromium/chromium/blob/master/third_party/zlib/adler32_simd.c
-	private static unsafe uint CalculateSse(ReadOnlySpan<byte> buffer, uint offset, uint length)
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static unsafe uint CalculateSse(ReadOnlySpan<byte> buffer)
 	{
 		uint s1 = SeedValue & 0xFFFF;
 		uint s2 = (SeedValue >> 16) & 0xFFFF;
@@ -74,6 +75,7 @@ internal static class Adler32
 		// Process the data in blocks.
 		const int BLOCK_SIZE = 1 << 5;
 
+		uint length = (uint)buffer.Length;
 		uint blocks = length / BLOCK_SIZE;
 		length -= blocks * BLOCK_SIZE;
 
@@ -82,7 +84,7 @@ internal static class Adler32
 		fixed (byte* tapPtr = Tap1Tap2)
 		{
 			index += (int)blocks * BLOCK_SIZE;
-			var localBufferPtr = bufferPtr + offset;
+			var localBufferPtr = bufferPtr;
 
 			// _mm_setr_epi8 on x86
 			Vector128<sbyte> tap1 = Sse2.LoadVector128((sbyte*)tapPtr);
@@ -192,7 +194,8 @@ internal static class Adler32
 	}
 #endif
 
-	private static unsafe uint CalculateScalar(ReadOnlySpan<byte> buffer, uint offset, uint length)
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static unsafe uint CalculateScalar(ReadOnlySpan<byte> buffer)
 	{
 		uint s1 = SeedValue & 0xFFFF;
 		uint s2 = (SeedValue >> 16) & 0xFFFF;
@@ -200,7 +203,8 @@ internal static class Adler32
 
 		fixed (byte* bufferPtr = buffer)
 		{
-			var localBufferPtr = bufferPtr + offset;
+			var localBufferPtr = bufferPtr;
+			uint length = (uint) buffer.Length;
 
 			while (length > 0)
 			{

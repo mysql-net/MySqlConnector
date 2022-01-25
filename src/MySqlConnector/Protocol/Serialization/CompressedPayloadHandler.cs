@@ -168,7 +168,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 								return ValueTaskExtensions.FromException<int>(new InvalidOperationException("Expected to read {0:n0} uncompressed bytes but only read {1:n0}".FormatInvariant(uncompressedLength, totalBytesRead)));
 							m_remainingData = new(uncompressedData, 0, totalBytesRead);
 
-							var checksum = Adler32.Calculate(uncompressedData, 0, (uint) totalBytesRead);
+							var checksum = Adler32.Calculate(uncompressedData.AsSpan(0, totalBytesRead));
 
 							var adlerStartOffset = payloadReadBytes.Offset + payloadReadBytes.Count - 4;
 							if (payloadReadBytes.Array[adlerStartOffset + 0] != ((checksum >> 24) & 0xFF) ||
@@ -218,7 +218,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 			using (var deflateStream = new DeflateStream(compressedStream, CompressionLevel.Optimal, leaveOpen: true))
 				deflateStream.Write(remainingUncompressedData.Array!, remainingUncompressedData.Offset, remainingUncompressedBytes);
 
-			var checksum = Adler32.Calculate(remainingUncompressedData.Array!, (uint)remainingUncompressedData.Offset, (uint)remainingUncompressedBytes);
+			var checksum = Adler32.Calculate(remainingUncompressedData.AsSpan(0, remainingUncompressedBytes));
 			compressedStream.WriteByte((byte) ((checksum >> 24) & 0xFF));
 			compressedStream.WriteByte((byte) ((checksum >> 16) & 0xFF));
 			compressedStream.WriteByte((byte) ((checksum >> 8) & 0xFF));
