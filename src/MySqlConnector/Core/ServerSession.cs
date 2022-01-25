@@ -315,8 +315,8 @@ internal sealed class ServerSession
 			// KILL QUERY will kill a subsequent query if the command it was intended to cancel has already completed.
 			// In order to handle this case, we issue a dummy query that will consume the pending cancellation.
 			// See https://bugs.mysql.com/bug.php?id=45679
-			Log.Debug("Session{0} sending 'DO SLEEP(0)' command to clear pending cancellation", m_logArguments);
-			var payload = QueryPayload.Create(SupportsQueryAttributes, "DO SLEEP(0);");
+			Log.Debug("Session{0} sending 'SLEEP(0)' command to clear pending cancellation", m_logArguments);
+			var payload = QueryPayload.Create(SupportsQueryAttributes, "SELECT SLEEP(0) INTO @\uE001MySqlConnector\uE001Sleep;");
 #pragma warning disable CA2012 // Safe because method completes synchronously
 			SendAsync(payload, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 			payload = ReceiveReplyAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
