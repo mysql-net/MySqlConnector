@@ -226,16 +226,16 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			writer.Write((byte) '\'');
 			switch (charValue)
 			{
-			case '\'':
-				writer.Write((byte) '\'');
-				writer.Write((byte) charValue);
+			case '\0' when !noBackslashEscapes:
+				writer.Write((ushort) 0x305C); // \0
 				break;
 
-			case '\\':
-				if (!noBackslashEscapes)
-					writer.Write((byte) '\\');
+			case '\'':
+				writer.Write((ushort) 0x2727); // ''
+				break;
 
-				writer.Write((byte) charValue);
+			case '\\' when !noBackslashEscapes:
+				writer.Write((ushort) 0x5C5C); // \\
 				break;
 
 			default:
@@ -288,7 +288,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			var length = inputSpan.Length + BinaryBytes.Length + 1;
 			foreach (var by in inputSpan)
 			{
-				if (by is 0x27 || by is 0x5C && !noBackslashEscapes)
+				if (by is 0x27 || by is 0x00 or 0x5C && !noBackslashEscapes)
 					length++;
 			}
 
@@ -297,9 +297,18 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			var index = BinaryBytes.Length;
 			foreach (var by in inputSpan)
 			{
-				if (by is 0x27 || by is 0x5C && !noBackslashEscapes)
+				if (by == 0x00 && !noBackslashEscapes)
+				{
+					// \0
+					outputSpan[index++] = 0x5C;
+					outputSpan[index++] = 0x30;
+				}
+				else
+				{
+					if (by is 0x27 || by is 0x5C && !noBackslashEscapes)
+						outputSpan[index++] = by;
 					outputSpan[index++] = by;
-				outputSpan[index++] = by;
+				}
 			}
 			outputSpan[index++] = 0x27;
 			Debug.Assert(index == length, "index == length");
@@ -394,9 +403,9 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 				writer.Write(BinaryBytes);
 				foreach (var by in bytes)
 				{
-					if (by is 0x27 or 0x5C)
+					if (by is 0x00 or 0x27 or 0x5C)
 						writer.Write((byte) 0x5C);
-					writer.Write(by);
+					writer.Write(by == 0 ? (byte) 0x30 : by);
 				}
 				writer.Write((byte) '\'');
 			}
@@ -471,7 +480,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			if (noBackslashEscapes)
 				writer.Write(value.Replace("'", "''"));
 			else
-				writer.Write(value.Replace("\\", "\\\\").Replace("'", "''"));
+				writer.Write(value.Replace("\\", "\\\\").Replace("'", "''").Replace("\0", "\\0"));
 
 			writer.Write((byte) '\'');
 		}
@@ -485,7 +494,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			while (charsWritten < value.Length)
 			{
 				var remainingValue = value.Slice(charsWritten);
-				var nextDelimiterIndex = remainingValue.IndexOfAny('\'', '\\');
+				var nextDelimiterIndex = remainingValue.IndexOfAny('\0', '\'', '\\');
 				if (nextDelimiterIndex == -1)
 				{
 					// write the rest of the string
@@ -495,11 +504,17 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 				else
 				{
 					// write up to (and including) the delimiter, then double it
-					writer.Write(remainingValue.Slice(0, nextDelimiterIndex + 1), flush: true);
+					writer.Write(remainingValue.Slice(0, nextDelimiterIndex), flush: true);
 					if (remainingValue[nextDelimiterIndex] == '\\' && !noBackslashEscapes)
-						writer.Write((byte) '\\');
+						writer.Write((ushort) 0x5C5C); // \\
+					else if (remainingValue[nextDelimiterIndex] == '\\' && noBackslashEscapes)
+						writer.Write((byte) 0x5C); // \
 					else if (remainingValue[nextDelimiterIndex] == '\'')
-						writer.Write((byte) '\'');
+						writer.Write((ushort) 0x2727); // ''
+					else if (remainingValue[nextDelimiterIndex] == '\0' && !noBackslashEscapes)
+						writer.Write((ushort) 0x305C); // \0
+					else if (remainingValue[nextDelimiterIndex] == '\0' && noBackslashEscapes)
+						writer.Write((byte) 0x00); // (nul)
 					charsWritten += nextDelimiterIndex + 1;
 				}
 			}

@@ -680,6 +680,32 @@ create table insert_mysql_set(
 		Assert.Equal(new[] { "one", "one,two", "one,four", "one,two,four" }, m_database.Connection.Query<string>(@"select value from insert_mysql_set where find_in_set('one', value) order by rowid"));
 	}
 
+	[Theory]
+	[MemberData(nameof(GetChars))]
+	public void InsertChar(char ch, bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+		connection.Execute(@"drop table if exists insert_char;
+create table insert_char(
+rowid integer not null primary key auto_increment,
+value tinytext null
+);");
+
+		using (var cmd = new MySqlCommand("insert into insert_char(value) values(@data);", connection))
+		{
+			cmd.Parameters.AddWithValue("@data", ch);
+			if (prepare)
+				cmd.Prepare();
+			cmd.ExecuteNonQuery();
+		}
+		Assert.Equal(ch, connection.Query<char>(@"select value from insert_char;").Single());
+	}
+
+	public static IEnumerable<object[]> GetChars() =>
+		new[] { '\0', 'a', '\'', '\"', '\\', 'A', '\b', '\n', '\r', '\t', '\x1A' }
+			.SelectMany(x => new[] { false, true }.Select(y => new object[] { x, y }));
+
 
 #if !BASELINE
 	[Theory]
