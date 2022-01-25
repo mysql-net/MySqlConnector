@@ -32,11 +32,11 @@ internal sealed class InitialHandshakePayload
 			var authPluginDataLength = reader.ReadByte();
 			reader.Offset += 6;
 
-			long extendedCapabilites = reader.ReadInt32();
+			long extendedCapabilities = reader.ReadInt32();
 			if ((protocolCapabilities & ProtocolCapabilities.LongPassword) == 0)
 			{
 				// MariaDB clears the CLIENT_LONG_PASSWORD flag to indicate it's not a MySQL Server
-				protocolCapabilities |= (ProtocolCapabilities) (extendedCapabilites << 32);
+				protocolCapabilities |= (ProtocolCapabilities) (extendedCapabilities << 32);
 			}
 
 			if ((protocolCapabilities & ProtocolCapabilities.SecureConnection) != 0)
