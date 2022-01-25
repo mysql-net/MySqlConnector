@@ -49,7 +49,7 @@ internal sealed class ResultSet
 					// if we've read a result set header then this is a SELECT statement, so we shouldn't overwrite RecordsAffected
 					// (which should be -1 for SELECT) unless the server reports a non-zero count
 					if (State != ResultSetState.ReadResultSetHeader || ok.AffectedRowCount != 0)
-						RecordsAffected = (RecordsAffected ?? 0) + ok.AffectedRowCount;
+						DataReader.RealRecordsAffected = (DataReader.RealRecordsAffected ?? 0) + ok.AffectedRowCount;
 
 					if (ok.LastInsertId != 0)
 						Command?.SetLastInsertedId((long) ok.LastInsertId);
@@ -365,7 +365,6 @@ internal sealed class ResultSet
 	public ResultSetState BufferState { get; private set; }
 	public ColumnDefinitionPayload[]? ColumnDefinitions { get; private set; }
 	public MySqlDbType[]? ColumnTypes { get; private set; }
-	public ulong? RecordsAffected { get; private set; }
 	public int WarningCount { get; private set; }
 	public ResultSetState State { get; private set; }
 	public bool ContainsCommandParameters { get; private set; }
