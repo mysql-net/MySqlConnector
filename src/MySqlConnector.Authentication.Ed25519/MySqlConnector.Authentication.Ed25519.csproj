@@ -4,7 +4,7 @@
     <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
     <Title>MySqlConnector Ed25519 Authentication Plugin</Title>
     <Description>Implements the client_ed25519 authentication plugin for MariaDB.</Description>
-    <Copyright>Copyright 2019–2021 Bradley Grainger</Copyright>
+    <Copyright>Copyright 2019–2022 Bradley Grainger</Copyright>
     <Authors>Bradley Grainger</Authors>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>mariadb;mysqlconnector;authentication;ed25519</PackageTags>
