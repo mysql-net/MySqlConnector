@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-12-22
+lastmod: 2022-01-24
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,14 @@ weight: 30
 ---
 
 # Version History
+
+### 2.1.3
+
+* Fix `Use Compression = True` when running under .NET 6.0: [#1120](https://github.com/mysql-net/MySqlConnector/issues/1120).
+* Fix calculation of affected rows (the return value of `ExecuteNonQuery`) for compound statements: [#1096](https://github.com/mysql-net/MySqlConnector/issues/1096).
+* Use a better `FormatException` message when a GUID can't be read: [#1114](https://github.com/mysql-net/MySqlConnector/issues/1114).
+* Use cryptographic one-shot operations on .NET 5.0 and later.
+* Performance: Use `SkipLocalsInit` where possible.
 
 ### 2.1.2
 
