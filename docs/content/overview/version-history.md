@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-01-24
+lastmod: 2022-01-25
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,11 @@ weight: 30
 ---
 
 # Version History
+
+### 2.1.4
+
+* Fix `InvalidOperationException` if `MySqlDataReader.RecordsAffected` was read after calling `Close()` or `Dispose()`: [#1122](https://github.com/mysql-net/MySqlConnector/issues/1122).
+  * This was a regression introduced by [#1096](https://github.com/mysql-net/MySqlConnector/issues/1096) in 2.1.3.
 
 ### 2.1.3
 

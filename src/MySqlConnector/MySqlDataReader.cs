@@ -202,7 +202,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	}
 
 	public override bool IsClosed => Command is null;
-	public override int RecordsAffected => GetResultSet().RecordsAffected is ulong recordsAffected ? checked((int) recordsAffected) : -1;
+	public override int RecordsAffected => RealRecordsAffected is ulong recordsAffected ? checked((int) recordsAffected) : -1;
 
 	public override int GetOrdinal(string name) => GetResultSet().GetOrdinal(name);
 
@@ -442,6 +442,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	internal Activity? Activity { get; }
 	internal IMySqlCommand? Command { get; private set; }
 	internal MySqlConnection? Connection => Command?.Connection;
+	internal ulong? RealRecordsAffected { get; set; }
 	internal ServerSession? Session => Command?.Connection!.Session;
 
 	internal static async Task<MySqlDataReader> CreateAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary<string, CachedProcedure?>? cachedProcedures, IMySqlCommand command, CommandBehavior behavior, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)

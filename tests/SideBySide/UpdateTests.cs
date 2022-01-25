@@ -14,11 +14,8 @@ public class UpdateTests : IClassFixture<DatabaseFixture>, IDisposable
 	}
 
 	[Theory]
-	[InlineData(1, 2)]
-	[InlineData(2, 1)]
-	[InlineData(3, 0)]
-	[InlineData(4, 1)]
-	public async Task UpdateRowsExecuteReader(int oldValue, int expectedRowsUpdated)
+	[MemberData(nameof(GetUpdateRowsExecuteReaderData))]
+	public async Task UpdateRowsExecuteReader(int oldValue, int expectedRowsUpdated, int closeDispose)
 	{
 		using (var cmd = m_database.Connection.CreateCommand())
 		{
@@ -43,10 +40,21 @@ insert into update_rows_reader (value) VALUES (1), (2), (1), (4);
 
 			using var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false);
 			Assert.False(await reader.ReadAsync().ConfigureAwait(false));
+
+			if (closeDispose == 1)
+				reader.Close();
+			else if (closeDispose == 2)
+				reader.Dispose();
 			Assert.Equal(expectedRowsUpdated, reader.RecordsAffected);
-			Assert.False(await reader.NextResultAsync().ConfigureAwait(false));
+
+			if (closeDispose == 0)
+				Assert.False(await reader.NextResultAsync().ConfigureAwait(false));
 		}
 	}
+
+	public static IEnumerable<object[]> GetUpdateRowsExecuteReaderData() =>
+		new[] { new KeyValuePair<int, int>(1, 2), new KeyValuePair<int, int>(2, 1), new KeyValuePair<int, int>(3, 0), new KeyValuePair<int, int>(4, 1) }
+			.SelectMany(x => new[] { 0, 1, 2 }.Select(y => new object[] { x.Key, x.Value, y }));
 
 	[Theory]
 	[InlineData(1, 2)]
