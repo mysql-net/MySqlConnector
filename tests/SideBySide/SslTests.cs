@@ -81,7 +81,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 	}
 #endif
 
-			[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
+	[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
 	[InlineData("ssl-client-cert.pem", "ssl-client-key.pem", null)]
 	[InlineData("ssl-client-cert.pem", "ssl-client-key-null.pem", null)]
 #if !BASELINE
