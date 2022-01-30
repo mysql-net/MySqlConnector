@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-01-25
+lastmod: 2022-01-30
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,14 @@ weight: 30
 ---
 
 # Version History
+
+### 2.1.5
+
+* Speed up `MySqlDataAdapter.Update` when `UpdateBatchSize` is large: [#1124](https://github.com/mysql-net/MySqlConnector/issues/1124).
+* Remove `DO SLEEP(0)` use after cancelling a query: [#1115](https://github.com/mysql-net/MySqlConnector/issues/1115).
+  * This improves compatibility with MariaDB Xpand.
+* Encode NUL bytes as `\0` on the write: [#1121](https://github.com/mysql-net/MySqlConnector/issues/1121).
+  * This improves compatibility with SingleStore.
 
 ### 2.1.4
 
