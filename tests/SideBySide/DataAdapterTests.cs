@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace SideBySide;
 
 public class DataAdapterTests : IClassFixture<DatabaseFixture>, IDisposable
@@ -234,6 +236,110 @@ insert into data_adapter(int_value, text_value) values
 
 		Assert.Equal(new[] { null, "", "one", "two", "three", "four" }, m_connection.Query<string>("SELECT text_value FROM data_adapter ORDER BY id"));
 	}
+
+#if !BASELINE
+	[Theory]
+	[InlineData("INSERT INTO table(col1, col2) VALUES(@col1, @col2);", "@col1,@col2", "0,1")]
+	[InlineData("INSERT INTO table(col1, col2) VALUES(@col1, @col2);", "@col2,@col1", "1,0")]
+	[InlineData("INSERT INTO table(col1, col2) VALUES(@col1, @col2);", "@col1,@col2,@col3", "0,1")]
+	[InlineData("INSERT INTO table(col1, col2) VALUES(@col2, @col3);", "@col1,@col2,@col3", "1,2")]
+	[InlineData("INSERT INTO table(col1, col2) VALUES(?, ?);", "@col1,@col2", "0,1")]
+	[InlineData("INSERT INTO table(col1, col2)\nVALUES(@col1, @col2);", "@col1,@col2", "0,1")]
+	public void ExtractParameterIndexes(string sql, string parameterNames, string expectedIndexes)
+	{
+		var command = new MySqlCommand(sql, m_connection);
+		foreach (var parameterName in parameterNames.Split(','))
+			command.Parameters.Add(new MySqlParameter(parameterName, MySqlDbType.Int32));
+		var parser = new MySqlDataAdapter.InsertSqlParser(command);
+		parser.Parse(sql);
+		Assert.Equal(expectedIndexes.Split(',').Select(x => int.Parse(x, CultureInfo.InvariantCulture)), parser.ParameterIndexes);
+	}
+
+	[Theory]
+	[InlineData("SELECT * FROM table;", 2, 2, null)]
+	[InlineData("SELECT * FROM table VALUES;", 2, 2, null)]
+	[InlineData("INSERT INTO table VALUES(@param0, @param1)", 2, 2, "INSERT INTO table VALUES(@p0,@p1),(@p2,@p3);")]
+	[InlineData("INSERT INTO table VALUES(@param0, @param1)", 3, 2, "INSERT INTO table VALUES(@p0,@p1),(@p2,@p3),(@p4,@p5);")]
+	[InlineData("INSERT INTO table VALUES(@param0, @param1)", 2, 3, "INSERT INTO table VALUES(@p0,@p1),(@p2,@p3);")]
+	[InlineData("INSERT INTO table VALUES(@param0, @param1, @param2)", 2, 3, "INSERT INTO table VALUES(@p0,@p1,@p2),(@p3,@p4,@p5);")]
+	[InlineData("INSERT INTO table VALUES(@param0, @param1);", 2, 2, "INSERT INTO table VALUES(@p0,@p1),(@p2,@p3);")]
+	[InlineData("INSERT INTO table VALUES(?, ?)", 2, 2, "INSERT INTO table VALUES(@p0,@p1),(@p2,@p3);")]
+	[InlineData("INSERT INTO table  VALUES  (  @param0 , \n @param1  ) ;  ", 2, 2, "INSERT INTO table  VALUES(@p0,@p1),(@p2,@p3);")]
+	[InlineData("INSERT INTO table VALUES(@param0, @param2);", 2, 2, null)]
+	[InlineData("INSERT INTO table\nVALUES\n(@param0, @param1);", 2, 2, "INSERT INTO table\nVALUES(@p0,@p1),(@p2,@p3);")]
+	[InlineData("INSERT INTO `table` VALUES  (@\"param0\", @\"param1\");", 2, 2, "INSERT INTO `table` VALUES(@p0,@p1),(@p2,@p3);")]
+	[InlineData("INSERT\nINTO\ntable\nVALUES\n(@param0, @param1);", 2, 2, null)] // ideally should work but \n not supported
+	[InlineData("INSERT INTO table VALUES(1, @param0, @param1);", 2, 2, null)]
+	public void ConvertBatchToCommand(string insertSql, int commandCount, int parameterCount, string expected)
+	{
+		var batch = new MySqlBatch(m_connection);
+		for (var i = 0; i < commandCount; i++)
+		{
+			var batchCommand = new MySqlBatchCommand(insertSql);
+			for (var j = 0; j < parameterCount; j++)
+			{
+				batchCommand.Parameters.Add(new MySqlParameter($"@param{j}", MySqlDbType.Int32));
+			}
+			batch.BatchCommands.Add(batchCommand);
+		}
+
+		var command = MySqlDataAdapter.TryConvertToCommand(batch);
+		if (expected is null)
+		{
+			Assert.Null(command);
+		}
+		else
+		{
+			Assert.NotNull(command);
+			Assert.Equal(expected, command.CommandText);
+		}
+	}
+
+	[Fact]
+	public void ConvertBatchToCommandParameters()
+	{
+		var insertSql = "INSERT INTO table(col1, col2, col3) VALUES(@c1, @c2, @c1);";
+		var batch = new MySqlBatch(m_connection)
+		{
+			BatchCommands =
+			{
+				new MySqlBatchCommand(insertSql)
+				{
+					Parameters =
+					{
+						new MySqlParameter("@c1", 1),
+						new MySqlParameter("@c2", 2),
+					},
+				},
+				new MySqlBatchCommand(insertSql)
+				{
+					Parameters =
+					{
+						new MySqlParameter("@c1", 3),
+						new MySqlParameter("@c2", 4),
+					},
+				},
+			},
+		};
+
+		var command = MySqlDataAdapter.TryConvertToCommand(batch);
+		Assert.NotNull(command);
+		Assert.Equal("INSERT INTO table(col1, col2, col3) VALUES(@p0,@p1,@p2),(@p3,@p4,@p5);", command.CommandText);
+		Assert.Equal(6, command.Parameters.Count);
+		Assert.Equal("@p0", command.Parameters[0].ParameterName);
+		Assert.Equal(1, command.Parameters[0].Value);
+		Assert.Equal("@p1", command.Parameters[1].ParameterName);
+		Assert.Equal(2, command.Parameters[1].Value);
+		Assert.Equal("@p2", command.Parameters[2].ParameterName);
+		Assert.Equal(1, command.Parameters[2].Value);
+		Assert.Equal("@p3", command.Parameters[3].ParameterName);
+		Assert.Equal(3, command.Parameters[3].Value);
+		Assert.Equal("@p4", command.Parameters[4].ParameterName);
+		Assert.Equal(4, command.Parameters[4].Value);
+		Assert.Equal("@p5", command.Parameters[5].ParameterName);
+		Assert.Equal(3, command.Parameters[5].Value);
+	}
+#endif
 
 	readonly MySqlConnection m_connection;
 }
