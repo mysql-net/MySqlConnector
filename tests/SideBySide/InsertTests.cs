@@ -727,17 +727,17 @@ value mediumblob null
 				cmd.Prepare();
 			cmd.ExecuteNonQuery();
 		}
-		Assert.Equal(new byte[] { 1, 2, 3, 4, 5, 6 }, connection.Query<byte[]>(@"select value from insert_mysql_blob;").Single());
+		Assert.Equal(new byte[] { 1, 0, 2, 39, 3, 92, 4, 34, 5, 6  }, connection.Query<byte[]>(@"select value from insert_mysql_blob;").Single());
 	}
 
 	public static IEnumerable<object[]> GetBlobs()
 	{
 		foreach (var blob in new object[]
 		{
-			new byte[] { 1, 2, 3, 4, 5, 6 },
-			new ReadOnlyMemory<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, 1, 6),
-			new Memory<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, 1, 6),
-			new ArraySegment<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, 1, 6),
+			new byte[] { 1, 0, 2, 39, 3, 92, 4, 34, 5, 6 },
+			new ReadOnlyMemory<byte>(new byte[] { 0, 1, 0, 2, 39, 3, 92, 4, 34, 5, 6, 7, 8 }, 1, 10),
+			new Memory<byte>(new byte[] { 0, 1, 0, 2, 39, 3, 92, 4, 34, 5, 6, 7, 8 }, 1, 10),
+			new ArraySegment<byte>(new byte[] { 0, 1, 0, 2, 39, 3, 92, 4, 34, 5, 6, 7, 8 }, 1, 10),
 		})
 		{
 			yield return new[] { blob, false };
