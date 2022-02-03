@@ -11,6 +11,13 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 		m_nameToIndex = new(StringComparer.OrdinalIgnoreCase);
 	}
 
+	public void SetParameterCapacity(int capacity)
+	{
+		if(capacity < 0)
+			throw new ArgumentOutOfRangeException(nameof(capacity));
+		m_parameters.Capacity = capacity;
+	}
+
 	public MySqlParameter Add(string parameterName, DbType dbType)
 	{
 		var parameter = new MySqlParameter
