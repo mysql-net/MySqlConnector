@@ -74,6 +74,38 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 		}
 	}
 
+	[Theory]
+	[InlineData("Databases")]
+	[InlineData("DataTypes")]
+	// only in 8.0 - [InlineData("KeyWords")]
+	[InlineData("MetaDataCollections")]
+	[InlineData("Procedures")]
+	// only in 8.0 - [InlineData("ResourceGroups")]
+	[InlineData("Tables")]
+	[InlineData("Triggers")]
+	[InlineData("Views")]
+#if !BASELINE
+	[InlineData("CollationCharacterSetApplicability")]
+	[InlineData("Engines")]
+	[InlineData("KeyColumnUsage")]
+	[InlineData("Parameters")]
+	[InlineData("Partitions")]
+	[InlineData("Plugins")]
+	[InlineData("Profiling")]
+	[InlineData("ProcessList")]
+	[InlineData("ReferentialConstraints")]
+	[InlineData("SchemaPrivileges")]
+	[InlineData("TableConstraints")]
+	[InlineData("TablePrivileges")]
+	[InlineData("TableSpaces")]
+	[InlineData("UserPrivileges")]
+#endif
+	public void GetSchema(string schemaName)
+	{
+		var table = m_database.Connection.GetSchema(schemaName);
+		Assert.NotNull(table);
+	}
+
 #if !BASELINE
 	[Fact]
 	public async Task GetMetaDataCollectionsSchemaAsync()
