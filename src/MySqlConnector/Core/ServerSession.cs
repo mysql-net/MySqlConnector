@@ -96,7 +96,7 @@ internal sealed class ServerSession
 		{
 			if (ActiveCommandId != command.CommandId)
 				return false;
-			VerifyState(State.Querying, State.CancelingQuery, State.ClearingPendingCancellation, State.Failed);
+			VerifyState(State.Querying, State.CancelingQuery, State.ClearingPendingCancellation, State.Closing, State.Closed, State.Failed);
 			if (m_state != State.Querying)
 				return false;
 			if (command.CancelAttemptCount++ >= 10)
@@ -1746,9 +1746,9 @@ internal sealed class ServerSession
 		}
 	}
 
-	private void VerifyState(State state1, State state2, State state3, State state4)
+	private void VerifyState(State state1, State state2, State state3, State state4, State state5, State state6)
 	{
-		if (m_state != state1 && m_state != state2 && m_state != state3 && m_state != state4)
+		if (m_state != state1 && m_state != state2 && m_state != state3 && m_state != state4 && m_state != state5 && m_state != state6)
 		{
 			Log.Error("Session{0} should have SessionStateExpected {1} or SessionStateExpected2 {2} or SessionStateExpected3 {3} but was SessionState {4}", m_logArguments[0], state1, state2, state3, m_state);
 			throw new InvalidOperationException("Expected state to be ({0}|{1}|{2}) but was {3}.".FormatInvariant(state1, state2, state3, m_state));
