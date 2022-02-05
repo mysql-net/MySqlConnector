@@ -67,12 +67,14 @@ internal sealed class TimerQueue
 
 	private void Callback(object? obj)
 	{
+		var actionsToBeCalled = new List<Action>();
+
 		lock (m_lock)
 		{
 			// process all timers that have expired or will expire in the granularity of a clock tick
 			while (m_timeoutActions.Count > 0 && unchecked(m_timeoutActions[0].Time - Environment.TickCount) < 15)
 			{
-				m_timeoutActions[0].Action();
+				actionsToBeCalled.Add(m_timeoutActions[0].Action);
 				m_timeoutActions.RemoveAt(0);
 			}
 
@@ -85,6 +87,11 @@ internal sealed class TimerQueue
 				var delay = Math.Max(250, unchecked(m_timeoutActions[0].Time - Environment.TickCount));
 				UnsafeSetTimer(delay);
 			}
+		}
+
+		foreach (var action in actionsToBeCalled)
+		{
+			action();
 		}
 	}
 
