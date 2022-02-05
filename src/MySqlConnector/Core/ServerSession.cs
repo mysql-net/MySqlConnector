@@ -1750,8 +1750,9 @@ internal sealed class ServerSession
 	{
 		if (m_state != state1 && m_state != state2 && m_state != state3 && m_state != state4 && m_state != state5 && m_state != state6)
 		{
-			Log.Error("Session{0} should have SessionStateExpected {1} or SessionStateExpected2 {2} or SessionStateExpected3 {3} but was SessionState {4}", m_logArguments[0], state1, state2, state3, m_state);
-			throw new InvalidOperationException("Expected state to be ({0}|{1}|{2}) but was {3}.".FormatInvariant(state1, state2, state3, m_state));
+			Log.Error("Session{0} should have SessionStateExpected {1} or SessionStateExpected2 {2} or SessionStateExpected3 {3} or SessionStateExpected4 {4} or SessionStateExpected5 {5} or SessionStateExpected6 {6} but was SessionState {7}",
+				m_logArguments[0], state1, state2, state3, state4, state5, state6, m_state);
+			throw new InvalidOperationException("Expected state to be ({0}|{1}|{2}|{3}|{4}|{5}) but was {6}.".FormatInvariant(state1, state2, state3, state4, state5, state6, m_state));
 		}
 	}
 
