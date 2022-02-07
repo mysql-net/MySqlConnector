@@ -35,6 +35,7 @@ public sealed class MySqlCommandBuilder : DbCommandBuilder
 		{
 			var parameter = command.Parameters.Add("@" + cachedParameter.Name, cachedParameter.MySqlDbType);
 			parameter.Direction = cachedParameter.Direction;
+			parameter.Size = cachedParameter.Length;
 		}
 	}
 

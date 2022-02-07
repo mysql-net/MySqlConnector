@@ -663,6 +663,75 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		}
 	}
 
+	[Theory]
+	[InlineData("bit(1)", 1)]
+	[InlineData("bit(10)", 10)]
+#if !BASELINE
+	[InlineData("bool", 1)]
+	[InlineData("tinyint(1)", 1)]
+#endif
+	[InlineData("char(30)", 30)]
+	[InlineData("mediumtext", 0)]
+	[InlineData("varchar(50)", 50)]
+	// These return nonzero sizes for some versions of MySQL Server 8.0
+	// [InlineData("bit", 0)]
+	// [InlineData("tinyint", 0)]
+	// [InlineData("bigint", 0)]
+	// [InlineData("bigint unsigned", 0)]
+	public void DeriveParametersParameterSize(string parameterType, int expectedSize)
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.Pooling = false;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+
+		using (var cmd = new MySqlCommand($"drop procedure if exists parameter_size; create procedure parameter_size(in param1 {parameterType}) begin end;", connection))
+			cmd.ExecuteNonQuery();
+
+		using (var cmd = new MySqlCommand("parameter_size", connection))
+		{
+			cmd.CommandType = CommandType.StoredProcedure;
+			MySqlCommandBuilder.DeriveParameters(cmd);
+			var parameter = (MySqlParameter) Assert.Single(cmd.Parameters);
+			Assert.Equal(expectedSize, parameter.Size);
+		}
+	}
+
+	[Theory]
+	[InlineData("bit", MySqlDbType.Bit)]
+	[InlineData("bit(1)", MySqlDbType.Bit)]
+#if BASELINE
+	[InlineData("bool", MySqlDbType.Byte)]
+	[InlineData("tinyint(1)", MySqlDbType.Byte)]
+#else
+	[InlineData("bool", MySqlDbType.Bool)]
+	[InlineData("tinyint(1)", MySqlDbType.Bool)]
+#endif
+	[InlineData("tinyint", MySqlDbType.Byte)]
+	[InlineData("bigint", MySqlDbType.Int64)]
+	[InlineData("bigint unsigned", MySqlDbType.UInt64)]
+	[InlineData("char(30)", MySqlDbType.String)]
+	[InlineData("mediumtext", MySqlDbType.MediumText)]
+	[InlineData("varchar(50)", MySqlDbType.VarChar)]
+	public void DeriveParametersParameterType(string parameterType, MySqlDbType expectedType)
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.Pooling = false;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+
+		using (var cmd = new MySqlCommand($"drop procedure if exists parameter_size; create procedure parameter_size(in param1 {parameterType}) begin end;", connection))
+			cmd.ExecuteNonQuery();
+
+		using (var cmd = new MySqlCommand("parameter_size", connection))
+		{
+			cmd.CommandType = CommandType.StoredProcedure;
+			MySqlCommandBuilder.DeriveParameters(cmd);
+			var parameter = (MySqlParameter) Assert.Single(cmd.Parameters);
+			Assert.Equal(expectedType, parameter.MySqlDbType);
+		}
+	}
+
 	[SkippableFact(ServerFeatures.Json, Baseline = "https://bugs.mysql.com/bug.php?id=89335")]
 	public void DeriveParametersSetJson()
 	{

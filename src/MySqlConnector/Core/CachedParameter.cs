@@ -15,10 +15,12 @@ internal sealed class CachedParameter
 			Direction = ParameterDirection.Output;
 		Name = name;
 		MySqlDbType = TypeMapper.Instance.GetMySqlDbType(dataType, unsigned, length);
+		Length = length;
 	}
 
 	public int Position { get; }
 	public ParameterDirection Direction { get; }
 	public string Name { get; }
 	public MySqlDbType MySqlDbType { get; }
+	public int Length { get; }
 }
