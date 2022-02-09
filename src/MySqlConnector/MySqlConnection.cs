@@ -13,6 +13,10 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector;
 
+#if !NET6_0_OR_GREATER
+#pragma warning disable CA1822 // Mark members as static
+#endif
+
 /// <summary>
 /// <see cref="MySqlConnection"/> represents a connection to a MySQL database.
 /// </summary>

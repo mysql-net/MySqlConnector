@@ -1,5 +1,7 @@
 namespace MySqlConnector;
 
+#pragma warning disable CA1720 // Identifier contains type name
+
 public enum MySqlDbType
 {
 	Bool = -1,

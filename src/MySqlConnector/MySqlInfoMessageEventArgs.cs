@@ -18,4 +18,6 @@ public sealed class MySqlInfoMessageEventArgs : EventArgs
 /// </summary>
 /// <param name="sender">The sender. This is the associated <see cref="MySqlConnection"/>.</param>
 /// <param name="args">The <see cref="MySqlInfoMessageEventArgs"/> containing the errors.</param>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public delegate void MySqlInfoMessageEventHandler(object sender, MySqlInfoMessageEventArgs args);
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix

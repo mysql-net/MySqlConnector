@@ -118,13 +118,21 @@ internal static class Utility
 		}
 		else
 		{
+#if NETCOREAPP3_0_OR_GREATER
+			throw new FormatException(string.Concat("Unrecognized PEM header: ", key.AsSpan(0, Math.Min(key.Length, 80))));
+#else
 			throw new FormatException("Unrecognized PEM header: " + key.Substring(0, Math.Min(key.Length, 80)));
+#endif
 		}
 
 		var keyEndIndex = key.IndexOf(pemFooter, keyStartIndex, StringComparison.Ordinal);
 
 		if (keyEndIndex <= -1)
+#if NETCOREAPP3_0_OR_GREATER
+			throw new FormatException(string.Concat("Missing expected '", pemFooter, "' PEM footer: ", key.AsSpan(Math.Max(key.Length - 80, 0))));
+#else
 			throw new FormatException($"Missing expected '{pemFooter}' PEM footer: " + key.Substring(Math.Max(key.Length - 80, 0)));
+#endif
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		var keyChars = key.AsSpan().Slice(keyStartIndex, keyEndIndex - keyStartIndex);
@@ -286,12 +294,12 @@ internal static class Utility
 		new ArraySegment<T>(arraySegment.Array!, arraySegment.Offset + index, length);
 
 	/// <summary>
-	/// Returns a new <see cref="T:byte[]"/> that is a slice of <paramref name="input"/> starting at <paramref name="offset"/>.
+	/// Returns a new <see cref="byte"/> array that is a slice of <paramref name="input"/> starting at <paramref name="offset"/>.
 	/// </summary>
 	/// <param name="input">The array to slice.</param>
 	/// <param name="offset">The offset at which to slice.</param>
 	/// <param name="length">The length of the slice.</param>
-	/// <returns>A new <see cref="T:byte[]"/> that is a slice of <paramref name="input"/> from <paramref name="offset"/> to the end.</returns>
+	/// <returns>A new <see cref="byte"/> array that is a slice of <paramref name="input"/> from <paramref name="offset"/> to the end.</returns>
 	public static byte[] ArraySlice(byte[] input, int offset, int length)
 	{
 		if (offset == 0 && length == input.Length)
@@ -384,7 +392,11 @@ internal static class Utility
 		if (userIndex == -1)
 			return false;
 
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+		if (!int.TryParse(header.AsSpan(portIndex, userIndex - portIndex), out port) || port <= 0)
+#else
 		if (!int.TryParse(header.Substring(portIndex, userIndex - portIndex), out port) || port <= 0)
+#endif
 			return false;
 
 		userIndex += isCommunityFormat ? 7 : 6;

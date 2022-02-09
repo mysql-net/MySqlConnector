@@ -85,7 +85,7 @@ internal sealed class ResultSet
 							try
 							{
 								int byteCount;
-								while ((byteCount = await stream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
+								while ((byteCount = await stream.ReadAsync(buffer, 0, buffer.Length, CancellationToken.None).ConfigureAwait(false)) > 0)
 								{
 									payload = new(new ArraySegment<byte>(buffer, 0, byteCount));
 									await Session.SendReplyAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
@@ -285,6 +285,8 @@ internal sealed class ResultSet
 #pragma warning disable CA1822 // Mark members as static
 	public int Depth => 0;
 #pragma warning restore CA1822 // Mark members as static
+
+#pragma warning disable CA2201 // Do not raise reserved exception types (IndexOutOfRangeException)
 
 	public string GetName(int ordinal)
 	{

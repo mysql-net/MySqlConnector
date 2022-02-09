@@ -14,10 +14,11 @@
     <RepositoryUrl>https://github.com/mysql-net/MySqlConnector.git</RepositoryUrl>
     <DebugType>embedded</DebugType>
     <LangVersion>preview</LangVersion>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);1591;NU5105</NoWarn>
+    <NoWarn>$(NoWarn);1591;CA1708;CA1835;CA2215;CA5397;NU5105</NoWarn>
     <MinVerDefaultPreReleasePhase>beta</MinVerDefaultPreReleasePhase>
   </PropertyGroup>
 

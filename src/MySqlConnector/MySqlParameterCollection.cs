@@ -3,6 +3,8 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector;
 
+#pragma warning disable CA1010 // Generic interface should also be implemented
+
 public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerable<MySqlParameter>
 {
 	internal MySqlParameterCollection()

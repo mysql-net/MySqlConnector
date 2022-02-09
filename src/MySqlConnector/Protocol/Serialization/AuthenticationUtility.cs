@@ -5,6 +5,8 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Serialization;
 
+#pragma warning disable CA5350 // Do Not Use Weak Cryptographic Algorithms
+
 internal static class AuthenticationUtility
 {
 	public static byte[] CreateAuthenticationResponse(ReadOnlySpan<byte> challenge, string password) =>

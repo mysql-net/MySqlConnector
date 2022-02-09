@@ -112,7 +112,9 @@ public struct MySqlDateTime : IComparable, IComparable<MySqlDateTime>, IConverti
 	/// <summary>
 	/// Converts this object to a <see cref="string"/>.
 	/// </summary>
+#pragma warning disable CA1305 // Specify IFormatProvider
 	public readonly override string ToString() => IsValidDateTime ? GetDateTime().ToString() : "0000-00-00";
+#pragma warning restore CA1305 // Specify IFormatProvider
 
 	/// <summary>
 	/// Converts this object to a <see cref="DateTime"/>.

@@ -7,6 +7,8 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector;
 
+#pragma warning disable CA1010 // Generic interface should also be implemented
+
 /// <summary>
 /// <see cref="MySqlConnectionStringBuilder"/> allows you to construct a MySQL connection string by setting properties on the builder then reading the <see cref="DbConnectionStringBuilder.ConnectionString"/> property.
 /// </summary>

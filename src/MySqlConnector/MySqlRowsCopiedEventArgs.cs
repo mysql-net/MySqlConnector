@@ -20,4 +20,6 @@ public sealed class MySqlRowsCopiedEventArgs : EventArgs
 /// <summary>
 /// Represents the method that handles the <see cref="MySqlBulkCopy.MySqlRowsCopied"/> event of a <see cref="MySqlBulkCopy"/>.
 /// </summary>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public delegate void MySqlRowsCopiedEventHandler(object sender, MySqlRowsCopiedEventArgs e);
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix

@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace MySqlConnector.Core;
 
 internal sealed class DbTypeMapping
@@ -16,7 +18,7 @@ internal sealed class DbTypeMapping
 	{
 		if (obj.GetType() == ClrType)
 			return obj;
-		return m_convert is null ? Convert.ChangeType(obj, ClrType)! : m_convert(obj);
+		return m_convert is null ? Convert.ChangeType(obj, ClrType, CultureInfo.InvariantCulture)! : m_convert(obj);
 	}
 
 	readonly Func<object, object>? m_convert;

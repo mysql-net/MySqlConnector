@@ -235,6 +235,9 @@ public sealed class MySqlBatch :
 #endif
 	{
 		m_isDisposed = true;
+#if NET6_0_OR_GREATER
+		base.Dispose();
+#endif
 	}
 
 	internal CommandBehavior CurrentCommandBehavior { get; set; }

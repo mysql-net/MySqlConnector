@@ -273,7 +273,7 @@ public sealed class MySqlBulkLoader
 			sb.AppendFormat(CultureInfo.InvariantCulture, "({0}) ", string.Join(",", Columns));
 
 		if (Expressions.Count > 0)
-			sb.AppendFormat("SET {0}", string.Join(",", Expressions));
+			sb.AppendFormat(CultureInfo.InvariantCulture, "SET {0}", string.Join(",", Expressions));
 
 		sb.Append(';');
 

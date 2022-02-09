@@ -8,6 +8,8 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector;
 
+#pragma warning disable CA1010 // Generic interface should also be implemented
+
 #if NET45 || NET461
 public sealed class MySqlDataReader : DbDataReader
 #else
