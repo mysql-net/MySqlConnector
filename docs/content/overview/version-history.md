@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-01-30
+lastmod: 2022-02-10
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,15 @@ weight: 30
 ---
 
 # Version History
+
+### 2.1.6
+
+* Fix unintentional TLS downgrade: [#1134](https://github.com/mysql-net/MySqlConnector/issues/1134).
+  * To ensure the desired TLS version is used, set `TlsVersion` in your connection string.
+* Fix deadlock when cancelling a command.
+* Fix `ArgumentException` when calling `GetSchema("Parameters")` against MySQL 8.0: [#1128](https://github.com/mysql-net/MySqlConnector/issues/1128).
+* Set `MySqlParameter.Size` in `DeriveParameters`: [#1125](https://github.com/mysql-net/MySqlConnector/issues/1125).
+* Thanks to [Andrew Nagel](https://github.com/lostatredrock) and [Viktor Svyatokha](https://github.com/ahydrax) for contributions to this release.
 
 ### 2.1.5
 
