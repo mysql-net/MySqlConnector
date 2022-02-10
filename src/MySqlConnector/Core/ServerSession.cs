@@ -416,7 +416,9 @@ internal sealed class ServerSession
 			InitialHandshakePayload initialHandshake;
 			do
 			{
-				shouldRetrySsl = sslProtocols == SslProtocols.None && Utility.IsWindows();
+				bool tls11or10Supported = (sslProtocols & (SslProtocols.Tls | SslProtocols.Tls11)) != SslProtocols.None;
+				bool tls12Supported = (sslProtocols & SslProtocols.Tls12) == SslProtocols.Tls12;
+				shouldRetrySsl = (sslProtocols == SslProtocols.None || (tls12Supported && tls11or10Supported)) && Utility.IsWindows();
 
 				var connected = false;
 				if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets)
@@ -525,7 +527,7 @@ internal sealed class ServerSession
 					{
 						// negotiating TLS 1.2 with a yaSSL-based server throws an exception on Windows, see comment at top of method
 						Log.Debug(ex, "Session{0} failed negotiating TLS; falling back to TLS 1.1", m_logArguments);
-						sslProtocols = SslProtocols.Tls | SslProtocols.Tls11;
+						sslProtocols = sslProtocols == SslProtocols.None ? SslProtocols.Tls | SslProtocols.Tls11 : (SslProtocols.Tls | SslProtocols.Tls11) & sslProtocols;
 						if (Pool is not null)
 							Pool.SslProtocols = sslProtocols;
 					}
@@ -1200,7 +1202,7 @@ internal sealed class ServerSession
 						await namedPipeStream.ConnectAsync(timeout, cancellationToken).ConfigureAwait(false);
 					else
 #endif
-						namedPipeStream.Connect(timeout);
+					namedPipeStream.Connect(timeout);
 				}
 				catch (Exception ex) when ((ex is ObjectDisposedException && cancellationToken.IsCancellationRequested) || ex is TimeoutException)
 				{
