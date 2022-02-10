@@ -416,7 +416,7 @@ internal sealed class ServerSession
 			InitialHandshakePayload initialHandshake;
 			do
 			{
-				shouldRetrySsl = (sslProtocols == SslProtocols.None || (sslProtocols & SslProtocols.Tls12) == SslProtocols.Tls12) && Utility.IsWindows();
+				shouldRetrySsl = sslProtocols == SslProtocols.None && Utility.IsWindows();
 
 				var connected = false;
 				if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets)
