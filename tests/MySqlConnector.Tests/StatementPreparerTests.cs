@@ -23,7 +23,7 @@ public class StatementPreparerTests
 		var parameters = new MySqlParameterCollection();
 		parameters.AddWithValue("@param", 123);
 		var parsedSql = GetParsedSql(sql, parameters);
-		Assert.Equal(sql.Replace("@param", "123") + ";", parsedSql);
+		Assert.Equal(sql.Replace("@param", "123"), parsedSql);
 	}
 
 	[Theory]
@@ -131,7 +131,7 @@ SELECT @'var' as R")]
 		var parameters = new MySqlParameterCollection();
 		parameters.AddWithValue("@foo", 22);
 		var parsedSql = GetParsedSql(sql, parameters, StatementPreparerOptions.AllowUserVariables);
-		Assert.Equal(sql.Replace("@foo", "22") + ";", parsedSql);
+		Assert.Equal(sql.Replace("@foo", "22"), parsedSql);
 	}
 
 	[Theory]
@@ -200,24 +200,33 @@ SELECT @'var' as R")]
 	}
 
 	[Theory]
-	[InlineData("SELECT 1;", "SELECT 1;", true)]
-	[InlineData("SELECT 1", "SELECT 1;", true)]
-	[InlineData("SELECT 1 -- comment", "SELECT 1 -- comment\n;", true)]
-	[InlineData("SELECT 1 # comment", "SELECT 1 # comment\n;", true)]
-	[InlineData("SELECT '1", "SELECT '1", false)]
-	[InlineData("SELECT '1' /* test", "SELECT '1' /* test", false)]
-	[InlineData("SELECT '1';", "SELECT '1';", true)]
-	[InlineData("SELECT '1'", "SELECT '1';", true)]
-	[InlineData("SELECT \"1\";", "SELECT \"1\";", true)]
-	[InlineData("SELECT \"1\"", "SELECT \"1\";", true)]
-	[InlineData("SELECT * FROM `SELECT`;", "SELECT * FROM `SELECT`;", true)]
-	[InlineData("SELECT * FROM `SELECT`", "SELECT * FROM `SELECT`;", true)]
-	[InlineData("SELECT * FROM test WHERE id = ?;", "SELECT * FROM test WHERE id = 0;", true)]
-	[InlineData("SELECT * FROM test WHERE id = ?", "SELECT * FROM test WHERE id = 0;", true)]
-	public void CompleteStatements(string sql, string expectedSql, bool expectedComplete)
+	[InlineData("SELECT 1;", "SELECT 1;", false, true)]
+	[InlineData("SELECT 1;", "SELECT 1;", true, true)]
+	[InlineData("SELECT 1", "SELECT 1", false, true)]
+	[InlineData("SELECT 1", "SELECT 1;", true, true)]
+	[InlineData("SELECT 1 -- comment", "SELECT 1 -- comment\n", false, true)]
+	[InlineData("SELECT 1 -- comment", "SELECT 1 -- comment\n;", true, true)]
+	[InlineData("SELECT 1 # comment", "SELECT 1 # comment\n", false, true)]
+	[InlineData("SELECT 1 # comment", "SELECT 1 # comment\n;", true, true)]
+	[InlineData("SELECT '1", "SELECT '1", false, false)]
+	[InlineData("SELECT '1", "SELECT '1", true, false)]
+	[InlineData("SELECT '1' /* test", "SELECT '1' /* test", false, false)]
+	[InlineData("SELECT '1';", "SELECT '1';", false, true)]
+	[InlineData("SELECT '1';", "SELECT '1';", true, true)]
+	[InlineData("SELECT '1'", "SELECT '1'", false, true)]
+	[InlineData("SELECT '1'", "SELECT '1';", true, true)]
+	[InlineData("SELECT \"1\";", "SELECT \"1\";", false, true)]
+	[InlineData("SELECT \"1\";", "SELECT \"1\";", true, true)]
+	[InlineData("SELECT \"1\"", "SELECT \"1\"", false, true)]
+	[InlineData("SELECT \"1\"", "SELECT \"1\";", true, true)]
+	[InlineData("SELECT * FROM `SELECT`;", "SELECT * FROM `SELECT`;", false, true)]
+	[InlineData("SELECT * FROM `SELECT`", "SELECT * FROM `SELECT`", false, true)]
+	[InlineData("SELECT * FROM test WHERE id = ?;", "SELECT * FROM test WHERE id = 0;", false, true)]
+	[InlineData("SELECT * FROM test WHERE id = ?", "SELECT * FROM test WHERE id = 0", false, true)]
+	public void CompleteStatements(string sql, string expectedSql, bool appendSemicolon, bool expectedComplete)
 	{
 		var parameters = new MySqlParameterCollection { new() { Value = 0 } };
-		var preparer = new StatementPreparer(sql, parameters, new StatementPreparerOptions());
+		var preparer = new StatementPreparer(sql, parameters, appendSemicolon ? StatementPreparerOptions.AppendSemicolon : StatementPreparerOptions.None);
 		var writer = new ByteBufferWriter();
 		var isComplete = preparer.ParseAndBindParameters(writer);
 		Assert.Equal(expectedComplete, isComplete);

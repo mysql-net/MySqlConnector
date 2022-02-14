@@ -8,7 +8,7 @@ internal sealed class BatchedCommandPayloadCreator : ICommandPayloadCreator
 {
 	public static ICommandPayloadCreator Instance { get; } = new BatchedCommandPayloadCreator();
 
-	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer)
+	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon)
 	{
 		writer.Write((byte) CommandKind.Multi);
 		bool? firstResult = default;
@@ -20,7 +20,7 @@ internal sealed class BatchedCommandPayloadCreator : ICommandPayloadCreator
 			var position = writer.Position;
 			writer.Write(padding);
 
-			wroteCommand = SingleCommandPayloadCreator.Instance.WriteQueryCommand(ref commandListPosition, cachedProcedures, writer);
+			wroteCommand = SingleCommandPayloadCreator.Instance.WriteQueryCommand(ref commandListPosition, cachedProcedures, writer, appendSemicolon);
 			firstResult ??= wroteCommand;
 
 			// write command length

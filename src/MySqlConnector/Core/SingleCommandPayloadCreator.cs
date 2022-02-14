@@ -13,7 +13,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	// with this as the first column name, the result set will be treated as 'out' parameters for the previous command.
 	public static string OutParameterSentinelColumnName => "\uE001\b\x0B";
 
-	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer)
+	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon)
 	{
 		if (commandListPosition.CommandIndex == commandListPosition.Commands.Count)
 			return false;
@@ -44,7 +44,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 				Log.Warn("Session{0} has query attributes but server doesn't support them; CommandText: {1}", command.Connection!.Session.Id, command.CommandText);
 			}
 
-			WriteQueryPayload(command, cachedProcedures, writer);
+			WriteQueryPayload(command, cachedProcedures, writer, appendSemicolon);
 
 			commandListPosition.CommandIndex++;
 		}
@@ -69,9 +69,10 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	/// <param name="command">The command.</param>
 	/// <param name="cachedProcedures">The cached procedures.</param>
 	/// <param name="writer">The output writer.</param>
+	/// <param name="appendSemicolon">Whether a statement-separating semicolon should be appended if it's missing.</param>
 	/// <returns><c>true</c> if a complete command was written; otherwise, <c>false</c>.</returns>
-	public static bool WriteQueryPayload(IMySqlCommand command, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer) =>
-		(command.CommandType == CommandType.StoredProcedure) ? WriteStoredProcedure(command, cachedProcedures, writer) : WriteCommand(command, writer);
+	public static bool WriteQueryPayload(IMySqlCommand command, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon) =>
+		(command.CommandType == CommandType.StoredProcedure) ? WriteStoredProcedure(command, cachedProcedures, writer) : WriteCommand(command, writer, appendSemicolon);
 
 	private static void WritePreparedStatement(IMySqlCommand command, PreparedStatement preparedStatement, ByteBufferWriter writer)
 	{
@@ -242,7 +243,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		return preparer.ParseAndBindParameters(writer);
 	}
 
-	private static bool WriteCommand(IMySqlCommand command, ByteBufferWriter writer)
+	private static bool WriteCommand(IMySqlCommand command, ByteBufferWriter writer, bool appendSemicolon)
 	{
 		var isSchemaOnly = (command.CommandBehavior & CommandBehavior.SchemaOnly) != 0;
 		var isSingleRow = (command.CommandBehavior & CommandBehavior.SingleRow) != 0;
@@ -256,7 +257,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			ReadOnlySpan<byte> setSqlSelectLimit1 = new byte[] { 83, 69, 84, 32, 115, 113, 108, 95, 115, 101, 108, 101, 99, 116, 95, 108, 105, 109, 105, 116, 61, 49, 59, 10 }; // SET sql_select_limit=1;\n
 			writer.Write(setSqlSelectLimit1);
 		}
-		var preparer = new StatementPreparer(command.CommandText!, command.RawParameters, command.CreateStatementPreparerOptions());
+		var preparer = new StatementPreparer(command.CommandText!, command.RawParameters, command.CreateStatementPreparerOptions() | ((appendSemicolon || isSchemaOnly || isSingleRow) ? StatementPreparerOptions.AppendSemicolon : StatementPreparerOptions.None));
 		var isComplete = preparer.ParseAndBindParameters(writer);
 		if (isComplete && (isSchemaOnly || isSingleRow))
 		{

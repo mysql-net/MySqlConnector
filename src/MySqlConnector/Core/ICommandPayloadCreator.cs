@@ -13,6 +13,7 @@ internal interface ICommandPayloadCreator
 	/// <param name="commandListPosition">The command list and its current position. This will be updated to the position of the next command to write (or past the end if there are no more commands).</param>
 	/// <param name="cachedProcedures">A <see cref="CachedProcedure"/> for all the stored procedures in the command list, if any.</param>
 	/// <param name="writer">The <see cref="ByteBufferWriter"/> to write the payload to.</param>
+	/// <param name="appendSemicolon">Whether a statement-separating semicolon should be appended if it's missing.</param>
 	/// <returns><c>true</c> if a command was written; otherwise, <c>false</c> (if there were no more commands in the list).</returns>
-	bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer);
+	bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon);
 }

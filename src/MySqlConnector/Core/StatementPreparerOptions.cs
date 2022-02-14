@@ -15,4 +15,5 @@ internal enum StatementPreparerOptions
 	GuidFormatLittleEndianBinary16 = 0xA0,
 	GuidFormatMask = 0xE0,
 	NoBackslashEscapes = 0x100,
+	AppendSemicolon = 0x200,
 }

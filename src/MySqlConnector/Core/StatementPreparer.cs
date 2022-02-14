@@ -92,7 +92,7 @@ internal sealed class StatementPreparer
 			m_writer.Write(Preparer.m_commandText, m_lastIndex, Preparer.m_commandText.Length - m_lastIndex);
 			if ((states & FinalParseStates.NeedsNewline) == FinalParseStates.NeedsNewline)
 				m_writer.Write((byte) '\n');
-			if ((states & FinalParseStates.NeedsSemicolon) == FinalParseStates.NeedsSemicolon)
+			if ((states & FinalParseStates.NeedsSemicolon) == FinalParseStates.NeedsSemicolon && (Preparer.Options & StatementPreparerOptions.AppendSemicolon) == StatementPreparerOptions.AppendSemicolon)
 				m_writer.Write((byte) ';');
 			IsComplete = (states & FinalParseStates.Complete) == FinalParseStates.Complete;
 		}

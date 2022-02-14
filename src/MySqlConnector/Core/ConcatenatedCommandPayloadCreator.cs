@@ -8,7 +8,7 @@ internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
 {
 	public static ICommandPayloadCreator Instance { get; } = new ConcatenatedCommandPayloadCreator();
 
-	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer)
+	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon)
 	{
 		if (commandListPosition.CommandIndex == commandListPosition.Commands.Count)
 			return false;
@@ -33,7 +33,7 @@ internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
 			if (Log.IsTraceEnabled())
 				Log.Trace("Session{0} Preparing command payload; CommandText: {1}", command.Connection!.Session.Id, command.CommandText);
 
-			isComplete = SingleCommandPayloadCreator.WriteQueryPayload(command, cachedProcedures, writer);
+			isComplete = SingleCommandPayloadCreator.WriteQueryPayload(command, cachedProcedures, writer, commandListPosition.CommandIndex < commandListPosition.Commands.Count - 1 || appendSemicolon);
 			commandListPosition.CommandIndex++;
 		}
 		while (commandListPosition.CommandIndex < commandListPosition.Commands.Count && isComplete);
