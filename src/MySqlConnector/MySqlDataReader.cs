@@ -204,6 +204,13 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	}
 
 	public override bool IsClosed => Command is null;
+
+	/// <summary>
+	/// Gets the number of rows changed, inserted, or deleted by execution of the SQL statement.
+	/// </summary>
+	/// <remarks>For UPDATE, INSERT, and DELETE statements, the return value is the number of rows affected by the command.
+	/// For stored procedures, the return value is the number of rows affected by the last statement in the stored procedure,
+	/// or zero if the last statement is a SELECT. For all other types of statements, the return value is -1.</remarks>
 	public override int RecordsAffected => RealRecordsAffected is ulong recordsAffected ? checked((int) recordsAffected) : -1;
 
 	public override int GetOrdinal(string name) => GetResultSet().GetOrdinal(name);

@@ -36,6 +36,7 @@ weight: 30
 
 * Fix `Use Compression = True` when running under .NET 6.0: [#1120](https://github.com/mysql-net/MySqlConnector/issues/1120).
 * Fix calculation of affected rows (the return value of `ExecuteNonQuery`) for compound statements: [#1096](https://github.com/mysql-net/MySqlConnector/issues/1096).
+  * **Breaking** For a stored procedure, the return value of `ExecuteNonQuery` will be the number of rows affected by the last statement in the procedure, or zero if the last statement was a `SELECT`.
 * Use a better `FormatException` message when a GUID can't be read: [#1114](https://github.com/mysql-net/MySqlConnector/issues/1114).
 * Use cryptographic one-shot operations on .NET 5.0 and later.
 * Performance: Use `SkipLocalsInit` where possible.

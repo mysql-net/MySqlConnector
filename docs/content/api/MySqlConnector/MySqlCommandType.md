@@ -31,8 +31,8 @@ public sealed class MySqlCommand : DbCommand, ICloneable
 | [Clone](../MySqlCommand/Clone/)() |  |
 | [CreateParameter](../MySqlCommand/CreateParameter/)() |  |
 | override [DisposeAsync](../MySqlCommand/DisposeAsync/)() |  |
-| override [ExecuteNonQuery](../MySqlCommand/ExecuteNonQuery/)() |  |
-| override [ExecuteNonQueryAsync](../MySqlCommand/ExecuteNonQueryAsync/)(…) |  |
+| override [ExecuteNonQuery](../MySqlCommand/ExecuteNonQuery/)() | Executes this command on the associated [`MySqlConnection`](../MySqlConnectionType/). |
+| override [ExecuteNonQueryAsync](../MySqlCommand/ExecuteNonQueryAsync/)(…) | Executes this command asynchronously on the associated [`MySqlConnection`](../MySqlConnectionType/). |
 | [ExecuteReader](../MySqlCommand/ExecuteReader/)() |  |
 | [ExecuteReader](../MySqlCommand/ExecuteReader/)(…) |  |
 | [ExecuteReaderAsync](../MySqlCommand/ExecuteReaderAsync/)(…) |  (2 methods) |

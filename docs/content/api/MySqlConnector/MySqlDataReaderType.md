@@ -17,7 +17,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 | override [HasRows](../MySqlDataReader/HasRows/) { get; } |  |
 | override [IsClosed](../MySqlDataReader/IsClosed/) { get; } |  |
 | override [Item](../MySqlDataReader/Item/) { get; } |  (2 indexers) |
-| override [RecordsAffected](../MySqlDataReader/RecordsAffected/) { get; } |  |
+| override [RecordsAffected](../MySqlDataReader/RecordsAffected/) { get; } | Gets the number of rows changed, inserted, or deleted by execution of the SQL statement. |
 | override [VisibleFieldCount](../MySqlDataReader/VisibleFieldCount/) { get; } |  |
 | override [Close](../MySqlDataReader/Close/)() |  |
 | override [DisposeAsync](../MySqlDataReader/DisposeAsync/)() |  |

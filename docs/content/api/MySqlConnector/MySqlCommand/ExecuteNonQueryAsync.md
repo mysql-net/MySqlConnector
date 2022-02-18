@@ -4,9 +4,23 @@ title: MySqlCommand.ExecuteNonQueryAsync method
 
 # MySqlCommand.ExecuteNonQueryAsync method
 
+Executes this command asynchronously on the associated [`MySqlConnection`](../../MySqlConnectionType/).
+
 ```csharp
 public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
 ```
+
+| parameter | description |
+| --- | --- |
+| cancellationToken | A token to cancel the asynchronous operation. |
+
+## Return Value
+
+A task representing the asynchronous operation.
+
+## Remarks
+
+For UPDATE, INSERT, and DELETE statements, the return value is the number of rows affected by the command. For stored procedures, the return value is the number of rows affected by the last statement in the stored procedure, or zero if the last statement is a SELECT. For all other types of statements, the return value is -1.
 
 ## See Also
 

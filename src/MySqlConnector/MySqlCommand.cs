@@ -97,7 +97,13 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	/// <inheritdoc/>
 	public override void Cancel() => Connection?.Cancel(this, m_commandId, true);
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Executes this command on the associated <see cref="MySqlConnection"/>.
+	/// </summary>
+	/// <returns>The number of rows affected.</returns>
+	/// <remarks>For UPDATE, INSERT, and DELETE statements, the return value is the number of rows affected by the command.
+	/// For stored procedures, the return value is the number of rows affected by the last statement in the stored procedure,
+	/// or zero if the last statement is a SELECT. For all other types of statements, the return value is -1.</remarks>
 	public override int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 	/// <inheritdoc/>
@@ -271,6 +277,14 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) =>
 		ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
+	/// <summary>
+	/// Executes this command asynchronously on the associated <see cref="MySqlConnection"/>.
+	/// </summary>
+	/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+	/// <returns>A task representing the asynchronous operation.</returns>
+	/// <remarks>For UPDATE, INSERT, and DELETE statements, the return value is the number of rows affected by the command.
+	/// For stored procedures, the return value is the number of rows affected by the last statement in the stored procedure,
+	/// or zero if the last statement is a SELECT. For all other types of statements, the return value is -1.</remarks>
 	public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) =>
 		ExecuteNonQueryAsync(AsyncIOBehavior, cancellationToken);
 
