@@ -64,7 +64,7 @@ internal sealed class ConnectionSettings
 		else
 		{
 			TlsVersions = default;
-			for (var i = 6; i < csb.TlsVersion.Length; i += 8)
+			for (var i = 6; i < csb.TlsVersion.Length; i += 9)
 			{
 				char minorVersion = csb.TlsVersion[i];
 				if (minorVersion == '0')
