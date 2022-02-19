@@ -48,5 +48,5 @@ public sealed class MySqlGeometry
 
 	internal MySqlGeometry(byte[] bytes) => m_bytes = bytes;
 
-	readonly byte[] m_bytes;
+	private readonly byte[] m_bytes;
 }

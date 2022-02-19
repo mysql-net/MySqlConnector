@@ -27,5 +27,5 @@ internal readonly struct PayloadData : IDisposable
 			ArrayPool<byte>.Shared.Return(arraySegment.Array!);
 	}
 
-	readonly bool m_isPooled;
+	private readonly bool m_isPooled;
 }

@@ -125,10 +125,10 @@ internal sealed class TimerQueue
 		public Action Action { get; }
 	}
 
-	readonly object m_lock;
-	readonly Timer m_timer;
-	readonly List<Data> m_timeoutActions;
-	uint m_counter;
-	bool m_isTimerEnabled;
-	int m_nextTimerTick;
+	private readonly object m_lock;
+	private readonly Timer m_timer;
+	private readonly List<Data> m_timeoutActions;
+	private uint m_counter;
+	private bool m_isTimerEnabled;
+	private int m_nextTimerTick;
 }

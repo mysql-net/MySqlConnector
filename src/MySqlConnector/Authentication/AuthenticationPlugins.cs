@@ -28,6 +28,6 @@ public static class AuthenticationPlugins
 			return s_plugins.TryGetValue(name, out plugin);
 	}
 
-	static readonly object s_lock = new();
-	static readonly Dictionary<string, IAuthenticationPlugin> s_plugins = new();
+	private static readonly object s_lock = new();
+	private static readonly Dictionary<string, IAuthenticationPlugin> s_plugins = new();
 }

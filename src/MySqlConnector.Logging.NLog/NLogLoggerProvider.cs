@@ -8,7 +8,7 @@ public sealed class NLogLoggerProvider : IMySqlConnectorLoggerProvider
 {
 	public IMySqlConnectorLogger CreateLogger(string name) => new NLogLogger(LogManager.GetLogger("MySqlConnector." + name));
 
-	static readonly Type s_loggerType = typeof(NLogLogger);
+	private static readonly Type s_loggerType = typeof(NLogLogger);
 
 	private sealed class NLogLogger : IMySqlConnectorLogger
 	{
@@ -36,6 +36,6 @@ public sealed class NLogLoggerProvider : IMySqlConnectorLoggerProvider
 			_ => throw new ArgumentOutOfRangeException(nameof(level), level, "Invalid value for 'level'."),
 		};
 
-		readonly Logger m_logger;
+		private readonly Logger m_logger;
 	}
 }

@@ -121,5 +121,5 @@ public sealed class MySqlException : DbException
 		or MySqlErrorCode.UnableToConnectToHost
 		or MySqlErrorCode.XARBDeadlock;
 
-	IDictionary? m_data;
+	private IDictionary? m_data;
 }

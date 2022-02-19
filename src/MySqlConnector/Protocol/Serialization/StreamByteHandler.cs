@@ -107,6 +107,6 @@ internal sealed class StreamByteHandler : IByteHandler
 		}
 	}
 
-	readonly Stream m_stream;
-	readonly Action m_closeStream;
+	private readonly Stream m_stream;
+	private readonly Action m_closeStream;
 }

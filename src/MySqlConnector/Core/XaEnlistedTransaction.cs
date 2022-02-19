@@ -46,7 +46,7 @@ internal sealed class XaEnlistedTransaction : EnlistedTransactionBase
 		cmd.ExecuteNonQuery();
 	}
 
-	static int s_currentId;
+	private static int s_currentId;
 
-	string? m_xid;
+	private string? m_xid;
 }

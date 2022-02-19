@@ -78,5 +78,5 @@ internal static class ICancellableCommandExtensions
 		}
 	}
 
-	static int s_id = 1;
+	private static int s_id = 1;
 }

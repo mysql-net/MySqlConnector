@@ -75,6 +75,6 @@ public sealed class MySqlBatchCommand :
 
 	internal MySqlBatch? Batch { get; set; }
 
-	MySqlParameterCollection? m_parameterCollection;
-	long m_lastInsertedId;
+	private MySqlParameterCollection? m_parameterCollection;
+	private long m_lastInsertedId;
 }

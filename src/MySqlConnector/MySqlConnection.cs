@@ -1098,21 +1098,21 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	// This method may be called when it's known that the connection settings have been initialized.
 	private ConnectionSettings GetInitializedConnectionSettings() => m_connectionSettings!;
 
-	static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlConnection));
-	static readonly StateChangeEventArgs s_stateChangeClosedConnecting = new(ConnectionState.Closed, ConnectionState.Connecting);
-	static readonly StateChangeEventArgs s_stateChangeConnectingOpen = new(ConnectionState.Connecting, ConnectionState.Open);
-	static readonly StateChangeEventArgs s_stateChangeOpenClosed = new(ConnectionState.Open, ConnectionState.Closed);
-	static readonly object s_lock = new();
-	static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = new();
+	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlConnection));
+	private static readonly StateChangeEventArgs s_stateChangeClosedConnecting = new(ConnectionState.Closed, ConnectionState.Connecting);
+	private static readonly StateChangeEventArgs s_stateChangeConnectingOpen = new(ConnectionState.Connecting, ConnectionState.Open);
+	private static readonly StateChangeEventArgs s_stateChangeOpenClosed = new(ConnectionState.Open, ConnectionState.Closed);
+	private static readonly object s_lock = new();
+	private static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = new();
 
-	string m_connectionString;
-	ConnectionSettings? m_connectionSettings;
-	ServerSession? m_session;
-	ConnectionState m_connectionState;
-	bool m_hasBeenOpened;
-	bool m_isDisposed;
-	Dictionary<string, CachedProcedure?>? m_cachedProcedures;
-	SchemaProvider? m_schemaProvider;
-	MySqlDataReader? m_activeReader;
-	EnlistedTransactionBase? m_enlistedTransaction;
+	private string m_connectionString;
+	private ConnectionSettings? m_connectionSettings;
+	private ServerSession? m_session;
+	private ConnectionState m_connectionState;
+	private bool m_hasBeenOpened;
+	private bool m_isDisposed;
+	private Dictionary<string, CachedProcedure?>? m_cachedProcedures;
+	private SchemaProvider? m_schemaProvider;
+	private MySqlDataReader? m_activeReader;
+	private EnlistedTransactionBase? m_enlistedTransaction;
 }

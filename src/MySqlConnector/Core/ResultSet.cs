@@ -371,9 +371,9 @@ internal sealed class ResultSet
 	public ResultSetState State { get; private set; }
 	public bool ContainsCommandParameters { get; private set; }
 
-	ResizableArray<byte>? m_columnDefinitionPayloads;
-	int m_columnDefinitionPayloadUsedBytes;
-	Queue<Row>? m_readBuffer;
-	Row? m_row;
-	bool m_hasRows;
+	private ResizableArray<byte>? m_columnDefinitionPayloads;
+	private int m_columnDefinitionPayloadUsedBytes;
+	private Queue<Row>? m_readBuffer;
+	private Row? m_row;
+	private bool m_hasRows;
 }

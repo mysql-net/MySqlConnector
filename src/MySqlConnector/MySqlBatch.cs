@@ -397,10 +397,10 @@ public sealed class MySqlBatch :
 
 	private IOBehavior AsyncIOBehavior => Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous;
 
-	readonly int m_commandId;
-	bool m_isDisposed;
-	Action? m_cancelAction;
-	Action? m_cancelForCommandTimeoutAction;
-	uint m_cancelTimerId;
-	bool m_commandTimedOut;
+	private readonly int m_commandId;
+	private bool m_isDisposed;
+	private Action? m_cancelAction;
+	private Action? m_cancelForCommandTimeoutAction;
+	private uint m_cancelTimerId;
+	private bool m_commandTimedOut;
 }

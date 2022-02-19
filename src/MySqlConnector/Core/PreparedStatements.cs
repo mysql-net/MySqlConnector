@@ -16,5 +16,5 @@ internal sealed class PreparedStatements : IDisposable
 		m_parsedStatements = null;
 	}
 
-	ParsedStatements? m_parsedStatements;
+	private ParsedStatements? m_parsedStatements;
 }

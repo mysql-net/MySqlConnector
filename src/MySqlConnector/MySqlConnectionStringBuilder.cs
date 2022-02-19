@@ -866,8 +866,8 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 			propertyDescriptors.Remove(property.DisplayName);
 	}
 
-	string? m_cachedConnectionString;
-	string? m_cachedConnectionStringWithoutPassword;
+	private string? m_cachedConnectionString;
+	private string? m_cachedConnectionStringWithoutPassword;
 }
 
 internal abstract class MySqlConnectionStringOption
@@ -1227,10 +1227,10 @@ internal abstract class MySqlConnectionStringOption
 			defaultValue: true));
 	}
 
-	static readonly Regex s_tlsVersions = new(@"\s*TLS( ?v?(1|1\.?0|1\.?1|1\.?2|1\.?3))?$", RegexOptions.IgnoreCase);
-	static readonly Dictionary<string, MySqlConnectionStringOption> s_options;
+	private static readonly Regex s_tlsVersions = new(@"\s*TLS( ?v?(1|1\.?0|1\.?1|1\.?2|1\.?3))?$", RegexOptions.IgnoreCase);
+	private static readonly Dictionary<string, MySqlConnectionStringOption> s_options;
 
-	readonly IReadOnlyList<string> m_keys;
+	private readonly IReadOnlyList<string> m_keys;
 }
 
 internal sealed class MySqlConnectionStringValueOption<T> : MySqlConnectionStringOption
@@ -1289,8 +1289,8 @@ internal sealed class MySqlConnectionStringValueOption<T> : MySqlConnectionStrin
 		}
 	}
 
-	readonly T m_defaultValue;
-	readonly Func<T, T>? m_coerce;
+	private readonly T m_defaultValue;
+	private readonly Func<T, T>? m_coerce;
 }
 
 internal sealed class MySqlConnectionStringReferenceOption<T> : MySqlConnectionStringOption
@@ -1316,6 +1316,6 @@ internal sealed class MySqlConnectionStringReferenceOption<T> : MySqlConnectionS
 	private static T ChangeType(object objectValue) =>
 		(T) Convert.ChangeType(objectValue, typeof(T), CultureInfo.InvariantCulture);
 
-	readonly T m_defaultValue;
-	readonly Func<T?, T>? m_coerce;
+	private readonly T m_defaultValue;
+	private readonly Func<T?, T>? m_coerce;
 }

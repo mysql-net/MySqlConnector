@@ -52,6 +52,6 @@ internal sealed class BufferedByteReader
 		}
 	}
 
-	readonly byte[] m_buffer;
-	ArraySegment<byte> m_remainingData;
+	private readonly byte[] m_buffer;
+	private ArraySegment<byte> m_remainingData;
 }

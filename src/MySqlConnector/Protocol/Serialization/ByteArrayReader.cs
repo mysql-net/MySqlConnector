@@ -159,7 +159,7 @@ internal ref struct ByteArrayReader
 			throw new InvalidOperationException("Read past end of buffer.");
 	}
 
-	readonly ReadOnlySpan<byte> m_buffer;
-	readonly int m_maxOffset;
-	int m_offset;
+	private readonly ReadOnlySpan<byte> m_buffer;
+	private readonly int m_maxOffset;
+	private int m_offset;
 }

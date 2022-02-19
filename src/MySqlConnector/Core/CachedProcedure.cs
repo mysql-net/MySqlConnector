@@ -230,10 +230,10 @@ internal sealed class CachedProcedure
 		}
 	}
 
-	string FullyQualified => $"`{m_schema}`.`{m_component}`";
+	private string FullyQualified => $"`{m_schema}`.`{m_component}`";
 
-	static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(CachedProcedure));
-	static readonly IReadOnlyDictionary<string, string> s_typeMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(CachedProcedure));
+	private static readonly IReadOnlyDictionary<string, string> s_typeMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 	{
 		{ "BOOL", "TINYINT" },
 		{ "BOOLEAN", "TINYINT" },
@@ -251,16 +251,16 @@ internal sealed class CachedProcedure
 		{ "CHAR BYTE", "BINARY" },
 	};
 
-	static readonly Regex s_cStyleComments = new(@"/\*.*?\*/", RegexOptions.Singleline);
-	static readonly Regex s_singleLineComments = new(@"(^|\s)--.*?$", RegexOptions.Multiline);
-	static readonly Regex s_multipleSpaces = new(@"\s+");
-	static readonly Regex s_numericTypes = new(@"(DECIMAL|DEC|FIXED|NUMERIC|FLOAT|DOUBLE PRECISION|DOUBLE|REAL)\s*\([0-9]+(,\s*[0-9]+)\)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-	static readonly Regex s_enum = new(@"ENUM\s*\([^)]+\)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-	static readonly Regex s_parameterName = new(@"^(?:`((?:[\u0001-\u005F\u0061-\uFFFF]+|``)+)`|([A-Za-z0-9$_\u0080-\uFFFF]+)) (.*)$");
-	static readonly Regex s_characterSet = new(" (CHARSET|CHARACTER SET) [A-Za-z0-9_]+", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-	static readonly Regex s_collate = new(" (COLLATE) [A-Za-z0-9_]+", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-	static readonly Regex s_length = new(@"\s*\(\s*([0-9]+)\s*(?:,\s*[0-9]+\s*)?\)");
+	private static readonly Regex s_cStyleComments = new(@"/\*.*?\*/", RegexOptions.Singleline);
+	private static readonly Regex s_singleLineComments = new(@"(^|\s)--.*?$", RegexOptions.Multiline);
+	private static readonly Regex s_multipleSpaces = new(@"\s+");
+	private static readonly Regex s_numericTypes = new(@"(DECIMAL|DEC|FIXED|NUMERIC|FLOAT|DOUBLE PRECISION|DOUBLE|REAL)\s*\([0-9]+(,\s*[0-9]+)\)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+	private static readonly Regex s_enum = new(@"ENUM\s*\([^)]+\)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+	private static readonly Regex s_parameterName = new(@"^(?:`((?:[\u0001-\u005F\u0061-\uFFFF]+|``)+)`|([A-Za-z0-9$_\u0080-\uFFFF]+)) (.*)$");
+	private static readonly Regex s_characterSet = new(" (CHARSET|CHARACTER SET) [A-Za-z0-9_]+", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+	private static readonly Regex s_collate = new(" (COLLATE) [A-Za-z0-9_]+", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+	private static readonly Regex s_length = new(@"\s*\(\s*([0-9]+)\s*(?:,\s*[0-9]+\s*)?\)");
 
-	readonly string m_schema;
-	readonly string m_component;
+	private readonly string m_schema;
+	private readonly string m_component;
 }

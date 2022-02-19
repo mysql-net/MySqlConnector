@@ -45,7 +45,7 @@ internal sealed class RandomLoadBalancer : ILoadBalancer
 
 	private RandomLoadBalancer() => m_random = new();
 
-	readonly Random m_random;
+	private readonly Random m_random;
 }
 
 internal sealed class RoundRobinLoadBalancer : ILoadBalancer
@@ -66,6 +66,6 @@ internal sealed class RoundRobinLoadBalancer : ILoadBalancer
 		return shuffled;
 	}
 
-	readonly object m_lock;
-	uint m_counter;
+	private readonly object m_lock;
+	private uint m_counter;
 }

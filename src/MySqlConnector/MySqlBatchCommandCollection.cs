@@ -52,5 +52,5 @@ public sealed class MySqlBatchCommandCollection
 
 	internal IReadOnlyList<MySqlBatchCommand> Commands => m_commands;
 
-	readonly List<MySqlBatchCommand> m_commands;
+	private readonly List<MySqlBatchCommand> m_commands;
 }

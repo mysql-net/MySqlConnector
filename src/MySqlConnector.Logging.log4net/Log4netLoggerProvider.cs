@@ -10,8 +10,8 @@ public sealed class Log4netLoggerProvider : IMySqlConnectorLoggerProvider
 {
 	public IMySqlConnectorLogger CreateLogger(string name) => new Log4netLogger(LogManager.GetLogger(s_loggerAssembly, "MySqlConnector." + name));
 
-	static readonly Assembly s_loggerAssembly = typeof(Log4netLogger).GetTypeInfo().Assembly;
-	static readonly Type s_loggerType = typeof(Log4netLogger);
+	private static readonly Assembly s_loggerAssembly = typeof(Log4netLogger).GetTypeInfo().Assembly;
+	private static readonly Type s_loggerType = typeof(Log4netLogger);
 
 	private sealed class Log4netLogger : IMySqlConnectorLogger
 	{
@@ -38,6 +38,6 @@ public sealed class Log4netLoggerProvider : IMySqlConnectorLoggerProvider
 			_ => throw new ArgumentOutOfRangeException(nameof(level), level, "Invalid value for 'level'."),
 		};
 
-		readonly ILogger m_logger;
+		private readonly ILogger m_logger;
 	}
 }

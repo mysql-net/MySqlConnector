@@ -267,5 +267,5 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		return isComplete;
 	}
 
-	static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(SingleCommandPayloadCreator));
+	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(SingleCommandPayloadCreator));
 }

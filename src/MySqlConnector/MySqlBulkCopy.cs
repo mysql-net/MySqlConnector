@@ -671,9 +671,9 @@ public sealed class MySqlBulkCopy
 	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlBulkCopy));
 	private static readonly Encoding s_utf8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
-	readonly MySqlConnection m_connection;
-	readonly MySqlTransaction? m_transaction;
-	int m_rowsCopied;
-	IValuesEnumerator? m_valuesEnumerator;
-	bool m_wasAborted;
+	private readonly MySqlConnection m_connection;
+	private readonly MySqlTransaction? m_transaction;
+	private int m_rowsCopied;
+	private IValuesEnumerator? m_valuesEnumerator;
+	private bool m_wasAborted;
 }

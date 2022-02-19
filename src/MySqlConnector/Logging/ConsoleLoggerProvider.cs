@@ -62,7 +62,7 @@ public class ConsoleLoggerProvider : IMySqlConnectorLoggerProvider
 			}
 		}
 
-		static readonly string[] s_levels =
+		private static readonly string[] s_levels =
 		{
 			"",
 			"[TRACE]",
@@ -73,7 +73,7 @@ public class ConsoleLoggerProvider : IMySqlConnectorLoggerProvider
 			"[FATAL]",
 		};
 
-		static readonly ConsoleColor[] s_colors =
+		private static readonly ConsoleColor[] s_colors =
 		{
 			ConsoleColor.Black,
 			ConsoleColor.DarkGray,
@@ -84,10 +84,10 @@ public class ConsoleLoggerProvider : IMySqlConnectorLoggerProvider
 			ConsoleColor.Red,
 		};
 
-		readonly ConsoleLoggerProvider m_provider;
-		readonly string m_name;
+		private readonly ConsoleLoggerProvider m_provider;
+		private readonly string m_name;
 	}
 
-	readonly MySqlConnectorLogLevel m_minimumLevel;
-	readonly bool m_isColored;
+	private readonly MySqlConnectorLogLevel m_minimumLevel;
+	private readonly bool m_isColored;
 }

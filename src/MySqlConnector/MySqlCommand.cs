@@ -446,19 +446,19 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	MySqlParameterCollection? IMySqlCommand.OutParameters { get; set; }
 	MySqlParameter? IMySqlCommand.ReturnParameter { get; set; }
 
-	static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlCommand));
+	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlCommand));
 
-	readonly int m_commandId;
-	bool m_isDisposed;
-	MySqlConnection? m_connection;
-	string m_commandText;
-	MySqlParameterCollection? m_parameterCollection;
-	MySqlAttributeCollection? m_attributeCollection;
-	int? m_commandTimeout;
-	CommandType m_commandType;
-	CommandBehavior m_commandBehavior;
-	Action? m_cancelAction;
-	Action? m_cancelForCommandTimeoutAction;
-	uint m_cancelTimerId;
-	bool m_commandTimedOut;
+	private readonly int m_commandId;
+	private bool m_isDisposed;
+	private MySqlConnection? m_connection;
+	private string m_commandText;
+	private MySqlParameterCollection? m_parameterCollection;
+	private MySqlAttributeCollection? m_attributeCollection;
+	private int? m_commandTimeout;
+	private CommandType m_commandType;
+	private CommandBehavior m_commandBehavior;
+	private Action? m_cancelAction;
+	private Action? m_cancelForCommandTimeoutAction;
+	private uint m_cancelTimerId;
+	private bool m_commandTimedOut;
 }

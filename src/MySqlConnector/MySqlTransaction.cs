@@ -283,5 +283,5 @@ public sealed class MySqlTransaction : DbTransaction
 
 	private static string QuoteIdentifier(string identifier) => "`" + identifier.Replace("`", "``") + "`";
 
-	bool m_isDisposed;
+	private bool m_isDisposed;
 }

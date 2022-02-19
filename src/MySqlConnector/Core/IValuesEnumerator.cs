@@ -24,7 +24,7 @@ internal sealed class DbDataReaderValuesEnumerator : IValuesEnumerator
 
 	public void GetValues(object[] values) => m_dataReader.GetValues(values);
 
-	readonly DbDataReader m_dataReader;
+	private readonly DbDataReader m_dataReader;
 }
 
 internal sealed class DataReaderValuesEnumerator : IValuesEnumerator
@@ -41,7 +41,7 @@ internal sealed class DataReaderValuesEnumerator : IValuesEnumerator
 
 	public void GetValues(object[] values) => m_dataReader.GetValues(values);
 
-	readonly IDataReader m_dataReader;
+	private readonly IDataReader m_dataReader;
 }
 
 internal sealed class DataRowsValuesEnumerator : IValuesEnumerator
@@ -73,5 +73,5 @@ internal sealed class DataRowsValuesEnumerator : IValuesEnumerator
 			values[i] = row[i];
 	}
 
-	readonly IEnumerator<DataRow> m_dataRows;
+	private readonly IEnumerator<DataRow> m_dataRows;
 }

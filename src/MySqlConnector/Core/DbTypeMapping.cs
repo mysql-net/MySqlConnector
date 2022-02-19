@@ -21,5 +21,5 @@ internal sealed class DbTypeMapping
 		return m_convert is null ? Convert.ChangeType(obj, ClrType, CultureInfo.InvariantCulture)! : m_convert(obj);
 	}
 
-	readonly Func<object, object>? m_convert;
+	private readonly Func<object, object>? m_convert;
 }

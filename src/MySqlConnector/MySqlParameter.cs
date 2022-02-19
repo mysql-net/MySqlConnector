@@ -825,12 +825,12 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		}
 	}
 
-	static ReadOnlySpan<byte> BinaryBytes => new byte[] { 0x5F, 0x62, 0x69, 0x6E, 0x61, 0x72, 0x79, 0x27 }; // _binary'
+	private static ReadOnlySpan<byte> BinaryBytes => new byte[] { 0x5F, 0x62, 0x69, 0x6E, 0x61, 0x72, 0x79, 0x27 }; // _binary'
 
-	DbType m_dbType;
-	MySqlDbType m_mySqlDbType;
-	string m_name;
-	ParameterDirection? m_direction;
-	string m_sourceColumn;
-	object? m_value;
+	private DbType m_dbType;
+	private MySqlDbType m_mySqlDbType;
+	private string m_name;
+	private ParameterDirection? m_direction;
+	private string m_sourceColumn;
+	private object? m_value;
 }

@@ -185,6 +185,6 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 		parameter.ParameterCollection = this;
 	}
 
-	readonly List<MySqlParameter> m_parameters;
-	readonly Dictionary<string, int> m_nameToIndex;
+	private readonly List<MySqlParameter> m_parameters;
+	private readonly Dictionary<string, int> m_nameToIndex;
 }

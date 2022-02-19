@@ -18,5 +18,5 @@ internal sealed class ResizableArray<T>
 			System.Array.Resize(ref m_array, Math.Max(length, Count * 2));
 	}
 
-	T[]? m_array;
+	private T[]? m_array;
 }

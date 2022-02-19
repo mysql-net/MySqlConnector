@@ -35,13 +35,13 @@ internal static class NegotiateStreamConstants
 /// </summary>
 internal class NegotiateToMySqlConverterStream : Stream
 {
-	readonly MemoryStream m_writeBuffer;
-	readonly ServerSession m_serverSession;
-	readonly IOBehavior m_ioBehavior;
-	readonly CancellationToken m_cancellationToken;
-	MemoryStream m_readBuffer;
-	int m_writePayloadLength;
-	bool m_clientHandshakeDone;
+	private readonly MemoryStream m_writeBuffer;
+	private readonly ServerSession m_serverSession;
+	private readonly IOBehavior m_ioBehavior;
+	private readonly CancellationToken m_cancellationToken;
+	private MemoryStream m_readBuffer;
+	private int m_writePayloadLength;
+	private bool m_clientHandshakeDone;
 
 	public PayloadData? MySQLProtocolPayload { get; private set; }
 	public NegotiateToMySqlConverterStream(ServerSession serverSession, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -53,7 +53,7 @@ internal class NegotiateToMySqlConverterStream : Stream
 		m_cancellationToken = cancellationToken;
 	}
 
-	static void CreateNegotiateStreamMessageHeader(byte[] buffer, int offset, byte messageId, long payloadLength)
+	private static void CreateNegotiateStreamMessageHeader(byte[] buffer, int offset, byte messageId, long payloadLength)
 	{
 		buffer[offset] = messageId;
 		buffer[offset+1] = NegotiateStreamConstants.MajorVersion;

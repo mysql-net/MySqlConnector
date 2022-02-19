@@ -318,6 +318,6 @@ public sealed class MySqlBulkLoader
 
 	private static string GenerateSourceFileName() => SourcePrefix + Guid.NewGuid().ToString("N");
 
-	static readonly object s_lock = new();
-	static readonly Dictionary<string, object> s_sources = new();
+	private static readonly object s_lock = new();
+	private static readonly Dictionary<string, object> s_sources = new();
 }

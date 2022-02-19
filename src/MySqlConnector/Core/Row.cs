@@ -631,7 +631,7 @@ InvalidDateTime:
 			throw new ArgumentException(nameof(bufferOffset) + " + " + nameof(length) + " cannot exceed " + nameof(buffer) + "." + nameof(buffer.Length), nameof(length));
 	}
 
-	readonly int[] m_dataOffsets;
-	readonly int[] m_dataLengths;
-	ReadOnlyMemory<byte> m_data;
+	private readonly int[] m_dataOffsets;
+	private readonly int[] m_dataLengths;
+	private ReadOnlyMemory<byte> m_data;
 }

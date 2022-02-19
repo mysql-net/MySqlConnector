@@ -37,8 +37,8 @@ internal sealed class SocketAwaitable : INotifyCompletion
 		m_continuation = null;
 	}
 
-	static readonly Action s_sentinel = () => { };
+	private static readonly Action s_sentinel = () => { };
 
-	Action? m_continuation;
+	private Action? m_continuation;
 }
 #endif

@@ -23,6 +23,6 @@ internal sealed class ParsedStatements : IDisposable
 		m_payloadData = payloadData;
 	}
 
-	readonly List<ParsedStatement> m_statements;
-	PayloadData m_payloadData;
+	private readonly List<ParsedStatement> m_statements;
+	private PayloadData m_payloadData;
 }

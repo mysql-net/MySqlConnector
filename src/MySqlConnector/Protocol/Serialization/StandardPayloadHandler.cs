@@ -43,8 +43,8 @@ internal sealed class StandardPayloadHandler : IPayloadHandler
 	public ValueTask<int> WritePayloadAsync(ReadOnlyMemory<byte> payload, IOBehavior ioBehavior) =>
 		ProtocolUtility.WritePayloadAsync(m_byteHandler!, m_getNextSequenceNumber, payload, ioBehavior);
 
-	readonly Func<int> m_getNextSequenceNumber;
-	IByteHandler? m_byteHandler;
-	BufferedByteReader? m_bufferedByteReader;
-	byte m_sequenceNumber;
+	private readonly Func<int> m_getNextSequenceNumber;
+	private IByteHandler? m_byteHandler;
+	private BufferedByteReader? m_bufferedByteReader;
+	private byte m_sequenceNumber;
 }

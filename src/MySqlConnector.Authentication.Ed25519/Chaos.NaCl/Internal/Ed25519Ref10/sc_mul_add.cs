@@ -4,7 +4,7 @@ namespace Chaos.NaCl.Internal.Ed25519Ref10;
 
 internal static partial class ScalarOperations
 {
-    static Int64 load_3(byte[] input, int offset)
+    private static Int64 load_3(byte[] input, int offset)
     {
         Int64 result;
         result = (Int64)input[offset + 0];
@@ -13,7 +13,7 @@ internal static partial class ScalarOperations
         return result;
     }
 
-    static Int64 load_4(byte[] input, int offset)
+    private static Int64 load_4(byte[] input, int offset)
     {
         Int64 result;
         result = (Int64)input[offset + 0];

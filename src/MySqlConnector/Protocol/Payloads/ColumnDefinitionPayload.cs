@@ -125,13 +125,13 @@ internal sealed class ColumnDefinitionPayload
 		m_readNames = true;
 	}
 
-	ResizableArraySegment<byte> OriginalData { get; }
+	private ResizableArraySegment<byte> OriginalData { get; }
 
-	bool m_readNames;
-	string? m_name;
-	string? m_schemaName;
-	string? m_catalogName;
-	string? m_table;
-	string? m_physicalTable;
-	string? m_physicalName;
+	private bool m_readNames;
+	private string? m_name;
+	private string? m_schemaName;
+	private string? m_catalogName;
+	private string? m_table;
+	private string? m_physicalTable;
+	private string? m_physicalName;
 }

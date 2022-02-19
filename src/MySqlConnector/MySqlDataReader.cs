@@ -671,13 +671,13 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		return m_resultSet;
 	}
 
-	readonly CommandBehavior m_behavior;
-	readonly ICommandPayloadCreator m_payloadCreator;
-	readonly IDictionary<string, CachedProcedure?>? m_cachedProcedures;
-	CommandListPosition m_commandListPosition;
-	bool m_closed;
-	bool m_hasWarnings;
-	ResultSet? m_resultSet;
-	bool m_hasMoreResults;
-	DataTable? m_schemaTable;
+	private readonly CommandBehavior m_behavior;
+	private readonly ICommandPayloadCreator m_payloadCreator;
+	private readonly IDictionary<string, CachedProcedure?>? m_cachedProcedures;
+	private CommandListPosition m_commandListPosition;
+	private bool m_closed;
+	private bool m_hasWarnings;
+	private ResultSet? m_resultSet;
+	private bool m_hasMoreResults;
+	private DataTable? m_schemaTable;
 }

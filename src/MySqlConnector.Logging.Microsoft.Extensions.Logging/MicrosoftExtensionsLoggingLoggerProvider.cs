@@ -61,12 +61,12 @@ public sealed class MicrosoftExtensionsLoggingLoggerProvider : IMySqlConnectorLo
 			_ => throw new ArgumentOutOfRangeException(nameof(level), level, "Invalid value for 'level'."),
 		};
 
-		static readonly Func<string, Exception, string> s_getMessage = static (s, e) => s;
-		static readonly Func<(string Message, object?[] Args), Exception, string> s_messageFormatter = static (s, e) => string.Format(CultureInfo.InvariantCulture, s.Message, s.Args);
+		private static readonly Func<string, Exception, string> s_getMessage = static (s, e) => s;
+		private static readonly Func<(string Message, object?[] Args), Exception, string> s_messageFormatter = static (s, e) => string.Format(CultureInfo.InvariantCulture, s.Message, s.Args);
 
-		readonly ILogger m_logger;
+		private readonly ILogger m_logger;
 	}
 
-	readonly ILoggerFactory m_loggerFactory;
-	readonly string m_prefix;
+	private readonly ILoggerFactory m_loggerFactory;
+	private readonly string m_prefix;
 }

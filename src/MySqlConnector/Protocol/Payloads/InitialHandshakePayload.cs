@@ -66,5 +66,5 @@ internal sealed class InitialHandshakePayload
 		AuthPluginName = authPluginName;
 	}
 
-	const byte c_protocolVersion = 0x0A;
+	private const byte c_protocolVersion = 0x0A;
 }

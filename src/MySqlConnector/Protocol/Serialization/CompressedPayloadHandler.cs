@@ -273,17 +273,17 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 
 		public ValueTask<int> WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior) => throw new NotSupportedException();
 
-		readonly CompressedPayloadHandler m_compressedPayloadHandler;
-		readonly ProtocolErrorBehavior m_protocolErrorBehavior;
+		private readonly CompressedPayloadHandler m_compressedPayloadHandler;
+		private readonly ProtocolErrorBehavior m_protocolErrorBehavior;
 	}
 
-	readonly BufferedByteReader m_bufferedByteReader;
-	readonly BufferedByteReader m_compressedBufferedByteReader;
-	MemoryStream? m_uncompressedStream;
-	IByteHandler? m_uncompressedStreamByteHandler;
-	IByteHandler? m_byteHandler;
-	byte m_compressedSequenceNumber;
-	byte m_uncompressedSequenceNumber;
-	ArraySegment<byte> m_remainingData;
-	bool m_isContinuationPacket;
+	private readonly BufferedByteReader m_bufferedByteReader;
+	private readonly BufferedByteReader m_compressedBufferedByteReader;
+	private MemoryStream? m_uncompressedStream;
+	private IByteHandler? m_uncompressedStreamByteHandler;
+	private IByteHandler? m_byteHandler;
+	private byte m_compressedSequenceNumber;
+	private byte m_uncompressedSequenceNumber;
+	private ArraySegment<byte> m_remainingData;
+	private bool m_isContinuationPacket;
 }

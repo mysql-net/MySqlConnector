@@ -161,5 +161,5 @@ public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin
 	{
 	}
 
-	static bool s_isInstalled;
+	private static bool s_isInstalled;
 }

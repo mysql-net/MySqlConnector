@@ -258,10 +258,10 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 	}
 
 #if !NET45
-	Encoder? m_encoder;
+	private Encoder? m_encoder;
 #endif
-	byte[] m_buffer;
-	Memory<byte> m_output;
+	private byte[] m_buffer;
+	private Memory<byte> m_output;
 }
 
 internal static class ByteBufferWriterExtensions

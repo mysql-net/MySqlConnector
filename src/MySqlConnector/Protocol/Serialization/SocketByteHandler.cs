@@ -135,9 +135,9 @@ internal sealed class SocketByteHandler : IByteHandler
 		return 0;
 	}
 
-	readonly Socket m_socket;
+	private readonly Socket m_socket;
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-	readonly SocketAwaitable m_socketAwaitable;
+	private readonly SocketAwaitable m_socketAwaitable;
 #endif
-	readonly Action m_closeSocket;
+	private readonly Action m_closeSocket;
 }

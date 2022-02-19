@@ -568,7 +568,7 @@ internal sealed class ConnectionPool
 				return m_hostSessions.OrderBy(static x => x.Value).Select(static x => x.Key).ToList();
 		}
 
-		readonly Dictionary<string, int> m_hostSessions;
+		private readonly Dictionary<string, int> m_hostSessions;
 	}
 
 	private sealed class ConnectionStringPool
@@ -589,27 +589,25 @@ internal sealed class ConnectionPool
 		AppDomain.CurrentDomain.ProcessExit += OnAppDomainShutDown;
 	}
 
-	static void OnAppDomainShutDown(object? sender, EventArgs e)
-	{
+	private static void OnAppDomainShutDown(object? sender, EventArgs e) =>
 		ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
-	}
 
-	static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConnectionPool));
-	static readonly ConcurrentDictionary<string, ConnectionPool?> s_pools = new();
+	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConnectionPool));
+	private static readonly ConcurrentDictionary<string, ConnectionPool?> s_pools = new();
 
-	static int s_poolId;
-	static ConnectionStringPool? s_mruCache;
+	private static int s_poolId;
+	private static ConnectionStringPool? s_mruCache;
 
-	readonly SemaphoreSlim m_cleanSemaphore;
-	readonly SemaphoreSlim m_sessionSemaphore;
-	readonly LinkedList<ServerSession> m_sessions;
-	readonly Dictionary<string, ServerSession> m_leasedSessions;
-	readonly ILoadBalancer? m_loadBalancer;
-	readonly Dictionary<string, int>? m_hostSessions;
-	readonly object[] m_logArguments;
-	int m_generation;
-	Task? m_reaperTask;
-	uint m_lastRecoveryTime;
-	int m_lastSessionId;
-	Dictionary<string, CachedProcedure?>? m_procedureCache;
+	private readonly SemaphoreSlim m_cleanSemaphore;
+	private readonly SemaphoreSlim m_sessionSemaphore;
+	private readonly LinkedList<ServerSession> m_sessions;
+	private readonly Dictionary<string, ServerSession> m_leasedSessions;
+	private readonly ILoadBalancer? m_loadBalancer;
+	private readonly Dictionary<string, int>? m_hostSessions;
+	private readonly object[] m_logArguments;
+	private int m_generation;
+	private Task? m_reaperTask;
+	private uint m_lastRecoveryTime;
+	private int m_lastSessionId;
+	private Dictionary<string, CachedProcedure?>? m_procedureCache;
 }

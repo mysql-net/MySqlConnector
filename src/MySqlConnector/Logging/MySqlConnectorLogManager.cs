@@ -27,6 +27,6 @@ public static class MySqlConnectorLogManager
 
 	internal static IMySqlConnectorLogger CreateLogger(string name) => Provider.CreateLogger(name);
 
-	static IMySqlConnectorLoggerProvider s_provider = new NoOpLoggerProvider();
-	static bool s_providerRetrieved;
+	private static IMySqlConnectorLoggerProvider s_provider = new NoOpLoggerProvider();
+	private static bool s_providerRetrieved;
 }

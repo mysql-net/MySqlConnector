@@ -235,10 +235,10 @@ public sealed class MySqlDataAdapter : DbDataAdapter
 #endif
 		}
 
-		readonly MySqlParameterCollection? m_parameters;
+		private readonly MySqlParameterCollection? m_parameters;
 	}
 
-	MySqlBatch? m_batch;
+	private MySqlBatch? m_batch;
 }
 
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix

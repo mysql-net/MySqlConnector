@@ -44,8 +44,8 @@ public sealed class SerilogLoggerProvider : IMySqlConnectorLoggerProvider
 			_ => throw new ArgumentOutOfRangeException(nameof(level), level, "Invalid value for 'level'."),
 		};
 
-		static readonly Regex tokenReplacer = new(@"((\w+)?\s?(?:=|:)?\s?'?)\{(?:\d+)(\:\w+)?\}('?)", RegexOptions.Compiled);
+		private static readonly Regex tokenReplacer = new(@"((\w+)?\s?(?:=|:)?\s?'?)\{(?:\d+)(\:\w+)?\}('?)", RegexOptions.Compiled);
 
-		readonly ILogger m_logger;
+		private readonly ILogger m_logger;
 	}
 }

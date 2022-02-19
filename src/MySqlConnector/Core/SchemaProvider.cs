@@ -1001,6 +1001,6 @@ internal sealed class SchemaProvider
 		close?.Invoke();
 	}
 
-	readonly MySqlConnection m_connection;
-	readonly Dictionary<string, Func<IOBehavior, DataTable, CancellationToken, Task>> m_schemaCollections;
+	private readonly MySqlConnection m_connection;
+	private readonly Dictionary<string, Func<IOBehavior, DataTable, CancellationToken, Task>> m_schemaCollections;
 }

@@ -246,7 +246,7 @@ internal sealed class ConnectionSettings
 	public byte[]? ConnectionAttributes { get; set; }
 
 	// Helper Functions
-	int? m_connectionTimeoutMilliseconds;
+	private int? m_connectionTimeoutMilliseconds;
 	public int ConnectionTimeoutMilliseconds
 	{
 		get
@@ -328,6 +328,6 @@ internal sealed class ConnectionSettings
 		UseXaTransactions = other.UseXaTransactions;
 	}
 
-	static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConnectionSettings));
-	static readonly string[] s_localhostPipeServer = { "." };
+	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConnectionSettings));
+	private static readonly string[] s_localhostPipeServer = { "." };
 }

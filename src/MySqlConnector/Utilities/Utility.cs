@@ -481,7 +481,7 @@ internal static class Utility
 			return s_completedTask;
 		}
 	}
-	static Task? s_completedTask;
+	private static Task? s_completedTask;
 
 	public static Task TaskFromException(Exception exception) => TaskFromException<object>(exception);
 	public static Task<T> TaskFromException<T>(Exception exception)
@@ -643,7 +643,7 @@ internal static class Utility
 		return s_defaultSslProtocols.Value;
 	}
 
-	static SslProtocols? s_defaultSslProtocols;
+	private static SslProtocols? s_defaultSslProtocols;
 #else
 	public static SslProtocols GetDefaultSslProtocols() => SslProtocols.None;
 #endif

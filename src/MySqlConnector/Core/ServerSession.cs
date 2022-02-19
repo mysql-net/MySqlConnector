@@ -1916,41 +1916,41 @@ internal sealed class ServerSession
 				HasDelimiter = true;
 		}
 
-		readonly string m_sql;
+		private readonly string m_sql;
 	}
 
-	static ReadOnlySpan<byte> BeginCertificateBytes => new byte[] { 45, 45, 45, 45, 45, 66, 69, 71, 73, 78, 32, 67, 69, 82, 84, 73, 70, 73, 67, 65, 84, 69, 45, 45, 45, 45, 45 }; // -----BEGIN CERTIFICATE-----
-	static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ServerSession));
-	static readonly PayloadData s_setNamesUtf8NoAttributesPayload = QueryPayload.Create(false, "SET NAMES utf8;");
-	static readonly PayloadData s_setNamesUtf8mb4NoAttributesPayload = QueryPayload.Create(false, "SET NAMES utf8mb4;");
-	static readonly PayloadData s_setNamesUtf8WithAttributesPayload = QueryPayload.Create(true, "SET NAMES utf8;");
-	static readonly PayloadData s_setNamesUtf8mb4WithAttributesPayload = QueryPayload.Create(true, "SET NAMES utf8mb4;");
-	static readonly PayloadData s_sleepNoAttributesPayload = QueryPayload.Create(false, "SELECT SLEEP(0) INTO @\uE001MySqlConnector\uE001Sleep;");
-	static readonly PayloadData s_sleepWithAttributesPayload = QueryPayload.Create(true, "SELECT SLEEP(0) INTO @\uE001MySqlConnector\uE001Sleep;");
-	static readonly PayloadData s_selectConnectionIdVersionNoAttributesPayload = QueryPayload.Create(false, "SELECT CONNECTION_ID(), VERSION();");
-	static readonly PayloadData s_selectConnectionIdVersionWithAttributesPayload = QueryPayload.Create(true, "SELECT CONNECTION_ID(), VERSION();");
-	static int s_lastId;
+	private static ReadOnlySpan<byte> BeginCertificateBytes => new byte[] { 45, 45, 45, 45, 45, 66, 69, 71, 73, 78, 32, 67, 69, 82, 84, 73, 70, 73, 67, 65, 84, 69, 45, 45, 45, 45, 45 }; // -----BEGIN CERTIFICATE-----
+	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ServerSession));
+	private static readonly PayloadData s_setNamesUtf8NoAttributesPayload = QueryPayload.Create(false, "SET NAMES utf8;");
+	private static readonly PayloadData s_setNamesUtf8mb4NoAttributesPayload = QueryPayload.Create(false, "SET NAMES utf8mb4;");
+	private static readonly PayloadData s_setNamesUtf8WithAttributesPayload = QueryPayload.Create(true, "SET NAMES utf8;");
+	private static readonly PayloadData s_setNamesUtf8mb4WithAttributesPayload = QueryPayload.Create(true, "SET NAMES utf8mb4;");
+	private static readonly PayloadData s_sleepNoAttributesPayload = QueryPayload.Create(false, "SELECT SLEEP(0) INTO @\uE001MySqlConnector\uE001Sleep;");
+	private static readonly PayloadData s_sleepWithAttributesPayload = QueryPayload.Create(true, "SELECT SLEEP(0) INTO @\uE001MySqlConnector\uE001Sleep;");
+	private static readonly PayloadData s_selectConnectionIdVersionNoAttributesPayload = QueryPayload.Create(false, "SELECT CONNECTION_ID(), VERSION();");
+	private static readonly PayloadData s_selectConnectionIdVersionWithAttributesPayload = QueryPayload.Create(true, "SELECT CONNECTION_ID(), VERSION();");
+	private static int s_lastId;
 
-	readonly object m_lock;
-	readonly object?[] m_logArguments;
-	readonly ArraySegmentHolder<byte> m_payloadCache;
-	readonly ActivityTagsCollection m_activityTags;
-	State m_state;
-	TcpClient? m_tcpClient;
-	Socket? m_socket;
-	Stream? m_stream;
-	SslStream? m_sslStream;
-	X509Certificate2? m_clientCertificate;
-	IPayloadHandler? m_payloadHandler;
-	bool m_useCompression;
-	bool m_isSecureConnection;
-	bool m_supportsComMulti;
-	bool m_supportsConnectionAttributes;
-	bool m_supportsDeprecateEof;
-	bool m_supportsSessionTrack;
-	bool m_supportsPipelining;
-	CharacterSet m_characterSet;
-	PayloadData m_setNamesPayload;
-	byte[]? m_pipelinedResetConnectionBytes;
-	Dictionary<string, PreparedStatements>? m_preparedStatements;
+	private readonly object m_lock;
+	private readonly object?[] m_logArguments;
+	private readonly ArraySegmentHolder<byte> m_payloadCache;
+	private readonly ActivityTagsCollection m_activityTags;
+	private State m_state;
+	private TcpClient? m_tcpClient;
+	private Socket? m_socket;
+	private Stream? m_stream;
+	private SslStream? m_sslStream;
+	private X509Certificate2? m_clientCertificate;
+	private IPayloadHandler? m_payloadHandler;
+	private bool m_useCompression;
+	private bool m_isSecureConnection;
+	private bool m_supportsComMulti;
+	private bool m_supportsConnectionAttributes;
+	private bool m_supportsDeprecateEof;
+	private bool m_supportsSessionTrack;
+	private bool m_supportsPipelining;
+	private CharacterSet m_characterSet;
+	private PayloadData m_setNamesPayload;
+	private byte[]? m_pipelinedResetConnectionBytes;
+	private Dictionary<string, PreparedStatements>? m_preparedStatements;
 }
