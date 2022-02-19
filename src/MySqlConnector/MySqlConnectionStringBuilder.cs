@@ -839,9 +839,13 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 		{
 			var csb = new MySqlConnectionStringBuilder(connectionString);
 			foreach (string? key in Keys)
+			{
 				foreach (var passwordKey in MySqlConnectionStringOption.Password.Keys)
+				{
 					if (string.Equals(key, passwordKey, StringComparison.OrdinalIgnoreCase))
 						csb.Remove(key!);
+				}
+			}
 			m_cachedConnectionStringWithoutPassword = csb.ConnectionString;
 			m_cachedConnectionString = connectionString;
 		}

@@ -89,7 +89,6 @@ dotnet_diagnostic.SA1500.severity = none # Braces for multi-line statements shou
 dotnet_diagnostic.SA1503.severity = none # Braces should not be omitted.
 dotnet_diagnostic.SA1513.severity = none # Closing brace should be followed by blank line.
 dotnet_diagnostic.SA1516.severity = none # Elements should be separated by blank line.
-dotnet_diagnostic.SA1519.severity = silent # Braces should not be omitted from multi-line child statements.
 dotnet_diagnostic.SA1600.severity = none # Elements should be documented.
 dotnet_diagnostic.SA1602.severity = none # Enumeration items should be documented.
 dotnet_diagnostic.SA1611.severity = none # Element parameters should be documented.

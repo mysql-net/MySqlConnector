@@ -23,8 +23,10 @@ namespace MySqlConnector
 			if (string.IsNullOrEmpty((attribute ?? throw new ArgumentNullException(nameof(attribute))).AttributeName))
 				throw new ArgumentException("Attribute name must not be empty", nameof(attribute));
 			foreach (var existingAttribute in m_attributes)
+			{
 				if (existingAttribute.AttributeName == attribute.AttributeName)
 					throw new ArgumentException("An attribute with the name {0} already exists in the collection".FormatInvariant(attribute.AttributeName), nameof(attribute));
+			}
 			m_attributes.Add(attribute);
 		}
 

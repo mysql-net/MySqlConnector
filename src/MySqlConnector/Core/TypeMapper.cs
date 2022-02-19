@@ -136,8 +136,10 @@ internal sealed class TypeMapper
 		m_dbTypeMappingsByClrType[dbTypeMapping.ClrType] = dbTypeMapping;
 
 		if (dbTypeMapping.DbTypes is not null)
+		{
 			foreach (var dbType in dbTypeMapping.DbTypes)
 				m_dbTypeMappingsByDbType[dbType] = dbTypeMapping;
+		}
 
 		return dbTypeMapping;
 	}

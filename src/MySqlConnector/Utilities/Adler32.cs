@@ -80,8 +80,7 @@ internal static class Adler32
 		length -= blocks * BLOCK_SIZE;
 
 		int index = 0;
-		fixed (byte* bufferPtr = buffer)
-		fixed (byte* tapPtr = Tap1Tap2)
+		fixed (byte* bufferPtr = buffer, tapPtr = Tap1Tap2)
 		{
 			index += (int)blocks * BLOCK_SIZE;
 			var localBufferPtr = bufferPtr;

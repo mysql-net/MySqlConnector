@@ -259,9 +259,13 @@ internal sealed class ConnectionPool
 			{
 				// if respectMinPoolSize is true, return if (leased sessions + waiting sessions <= minPoolSize)
 				if (respectMinPoolSize)
+				{
 					lock (m_sessions)
+					{
 						if (ConnectionSettings.MaximumPoolSize - m_sessionSemaphore.CurrentCount + m_sessions.Count <= ConnectionSettings.MinimumPoolSize)
 							return;
+					}
+				}
 
 				// try to get an open slot; if this fails, connection pool is full and sessions will be disposed when returned to pool
 				if (ioBehavior == IOBehavior.Asynchronous)
