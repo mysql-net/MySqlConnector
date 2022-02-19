@@ -14,7 +14,7 @@
     <RepositoryUrl>https://github.com/mysql-net/MySqlConnector.git</RepositoryUrl>
     <DebugType>embedded</DebugType>
     <LangVersion>preview</LangVersion>
-    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <AnalysisLevel>latest-all</AnalysisLevel>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

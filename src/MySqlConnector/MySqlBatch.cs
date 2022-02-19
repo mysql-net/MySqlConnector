@@ -49,6 +49,9 @@ namespace MySqlConnector;
 /// </code>
 /// </summary>
 /// <remarks>The proposed ADO.NET API that <see cref="MySqlBatch"/> is based on is not finalized. This API is experimental and may change in the future.</remarks>
+#if NET6_0_OR_GREATER
+#pragma warning disable CA1063 // Implement IDisposable Correctly
+#endif
 public sealed class MySqlBatch :
 #if NET6_0_OR_GREATER
 	DbBatch,
@@ -120,7 +123,7 @@ public sealed class MySqlBatch :
 #else
 	public async Task<MySqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default) =>
 #endif
-		(MySqlDataReader) await ExecuteDbDataReaderAsync(CommandBehavior.Default, cancellationToken);
+		(MySqlDataReader) await ExecuteDbDataReaderAsync(CommandBehavior.Default, cancellationToken).ConfigureAwait(false);
 
 	//// TODO: new ExecuteReaderAsync(CommandBehavior)
 
@@ -340,7 +343,7 @@ public sealed class MySqlBatch :
 			exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
 		else if (BatchCommands.Count == 0)
 			exception = new InvalidOperationException("BatchCommands must contain a command");
-		else if (Connection?.HasActiveReader ?? false)
+		else if (Connection.HasActiveReader)
 			exception = new InvalidOperationException("Cannot call Prepare when there is an open DataReader for this command; it must be closed first.");
 		else
 			exception = GetExceptionForInvalidCommands();

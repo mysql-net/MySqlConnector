@@ -6,7 +6,7 @@ internal sealed class NormalizedSchema
 {
 	private const string ReQuoted = @"`((?:[^`]|``)+)`";
 	private const string ReUnQuoted = @"([^\.`]+)";
-	private static readonly string ReEither = $@"(?:{ReQuoted}|{ReUnQuoted})";
+	private const string ReEither = $@"(?:{ReQuoted}|{ReUnQuoted})";
 
 	private static readonly Regex NameRe = new(
 		$@"^\s*{ReEither}\s*(?:\.\s*{ReEither}\s*)?$",

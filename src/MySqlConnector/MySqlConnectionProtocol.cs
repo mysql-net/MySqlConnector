@@ -1,5 +1,6 @@
 namespace MySqlConnector;
 
+#pragma warning disable CA1027 // Mark enums with FlagsAttribute
 #pragma warning disable CA1069 // Enum values should not be duplicated
 /// <summary>
 /// Specifies the type of connection to make to the server.

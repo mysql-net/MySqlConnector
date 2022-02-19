@@ -42,7 +42,9 @@ public sealed class MySqlGeometry
 	/// <summary>
 	/// The internal MySQL form of this geometry.
 	/// </summary>
+#pragma warning disable CA1819 // Properties should not return arrays
 	public byte[] Value => ValueSpan.ToArray();
+#pragma warning restore CA1819 // Properties should not return arrays
 
 	internal ReadOnlySpan<byte> ValueSpan => m_bytes;
 

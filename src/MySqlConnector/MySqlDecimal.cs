@@ -4,6 +4,8 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector;
 
+#pragma warning disable CA1815 // Override equals and operator equals on value types
+
 /// <summary>
 /// <see cref="MySqlDecimal"/> represents a MySQL <c>DECIMAL</c> value that is too large to fit in a .NET <see cref="decimal"/>.
 /// </summary>

@@ -962,6 +962,8 @@ internal abstract class MySqlConnectionStringOption
 			s_options.Add(key, option);
 	}
 
+#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
+#pragma warning disable CA1810 // Initialize reference type static fields inline
 	static MySqlConnectionStringOption()
 	{
 		s_options = new(StringComparer.OrdinalIgnoreCase);

@@ -9,6 +9,7 @@ public static class MySqlConnectorLogManager
 	/// Allows the <see cref="IMySqlConnectorLoggerProvider"/> to be set for this library. <see cref="Provider"/> can
 	/// be set once, and must be set before any other library methods are used.
 	/// </summary>
+#pragma warning disable CA1044 // Properties should not be write only
 	public static IMySqlConnectorLoggerProvider Provider
 	{
 		internal get

@@ -47,7 +47,7 @@ internal sealed class UnixEndPoint : EndPoint
 	{
 		if (filename is null)
 			throw new ArgumentNullException (nameof(filename));
-		if (filename == "")
+		if (filename.Length == 0)
 			throw new ArgumentException ("Cannot be empty.", nameof(filename));
 		Filename = filename;
 	}

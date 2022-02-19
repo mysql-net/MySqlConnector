@@ -446,8 +446,6 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	MySqlParameterCollection? IMySqlCommand.OutParameters { get; set; }
 	MySqlParameter? IMySqlCommand.ReturnParameter { get; set; }
 
-	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlCommand));
-
 	private readonly int m_commandId;
 	private bool m_isDisposed;
 	private MySqlConnection? m_connection;

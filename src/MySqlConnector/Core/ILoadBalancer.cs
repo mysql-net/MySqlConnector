@@ -26,6 +26,7 @@ internal sealed class RandomLoadBalancer : ILoadBalancer
 
 	public IEnumerable<string> LoadBalance(IReadOnlyList<string> hosts)
 	{
+#pragma warning disable CA5394 // Do not use insecure randomness
 		// from https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm
 		var shuffled = new List<string>(hosts);
 		for (var i = hosts.Count - 1; i >= 1; i--)

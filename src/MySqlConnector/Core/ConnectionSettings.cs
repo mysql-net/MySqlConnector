@@ -84,7 +84,7 @@ internal sealed class ConnectionSettings
 				throw new NotSupportedException("All specified TLS versions are incompatible with this platform.");
 		}
 
-		if (csb.TlsCipherSuites != "")
+		if (csb.TlsCipherSuites.Length != 0)
 		{
 #if NETCOREAPP3_0_OR_GREATER
 			var tlsCipherSuites = new List<TlsCipherSuite>();
