@@ -1,5 +1,7 @@
 using System.Buffers;
 using System.Buffers.Text;
+using System.Globalization;
+using System.Numerics;
 using System.Text;
 using MySqlConnector.Core;
 using MySqlConnector.Logging;
@@ -550,6 +552,16 @@ public sealed class MySqlBulkCopy
 				// store as UTC as it will be read as such when deserialized from a timespan column
 				return WriteString("{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}".FormatInvariant(dateTimeOffsetValue.UtcDateTime), ref utf8Encoder, output, out bytesWritten);
 			}
+#if NET6_0_OR_GREATER
+			else if (value is DateOnly dateOnlyValue)
+			{
+				return WriteString("timestamp('{0:yyyy'-'MM'-'dd}')".FormatInvariant(dateOnlyValue), ref utf8Encoder, output, out bytesWritten);
+			}
+			else if (value is TimeOnly timeOnlyValue)
+			{
+				return WriteString("time '{0:HH':'mm':'ss'.'ffffff}'".FormatInvariant(timeOnlyValue), ref utf8Encoder, output, out bytesWritten);
+			}
+#endif
 			else if (value is TimeSpan ts)
 			{
 				var isNegative = false;
@@ -593,6 +605,14 @@ public sealed class MySqlBulkCopy
 			else if (value is Enum)
 			{
 				return WriteString("{0:d}".FormatInvariant(value), ref utf8Encoder, output, out bytesWritten);
+			}
+			else if (value is BigInteger bigInteger)
+			{
+				return WriteString(bigInteger.ToString(CultureInfo.InvariantCulture), ref utf8Encoder, output, out bytesWritten);
+			}
+			else if (value is MySqlDecimal mySqlDecimal)
+			{
+				return WriteString(mySqlDecimal.ToString(), ref utf8Encoder, output, out bytesWritten);
 			}
 			else
 			{

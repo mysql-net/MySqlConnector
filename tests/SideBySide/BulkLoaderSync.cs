@@ -515,6 +515,50 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 		Assert.Throws<ArgumentNullException>(() => bulkCopy.WriteToServer(default(DataTable)));
 	}
 
+#if !BASELINE
+	[Fact]
+	public void BulkCopyDataTableWithMySqlDecimal()
+	{
+		var dataTable = new DataTable()
+		{
+			Columns =
+			{
+				new DataColumn("id", typeof(int)),
+				new DataColumn("data", typeof(MySqlDecimal)),
+			},
+			Rows =
+			{
+				new object[] { 1, new MySqlDecimal("1.234") },
+				new object[] { 2, new MySqlDecimal("2.345") },
+			},
+		};
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(a int, b decimal(20, 10));", connection))
+		{
+			cmd.ExecuteNonQuery();
+		}
+
+		var bulkCopy = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_load_data_table",
+		};
+		var result = bulkCopy.WriteToServer(dataTable);
+		Assert.Equal(2, result.RowsInserted);
+		Assert.Empty(result.Warnings);
+
+		using (var cmd = new MySqlCommand(@"select sum(b) from bulk_load_data_table;", connection))
+		{
+			using var reader = cmd.ExecuteReader();
+			Assert.True(reader.Read());
+			Assert.Equal(3.579m, reader.GetValue(0));
+			Assert.Equal("3.579", reader.GetMySqlDecimal(0).ToString().TrimEnd('0'));
+		}
+	}
+#endif
+
 	[Fact]
 	public void BulkCopyDataTableWithLongBlob()
 	{
