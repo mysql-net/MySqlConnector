@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-02-18
+lastmod: 2022-02-19
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,13 @@ weight: 30
 ---
 
 # Version History
+
+### 2.1.7
+
+* `MySqlCommand` no longer automatically appends a semicolon to the user-provided `CommandText`: [#1133](https://github.com/mysql-net/MySqlConnector/issues/1133).
+  * This improves compatibility with Sphinx Search (SphinxQL).
+* `MySqlBulkCopy` supports `MySqlDecimal`, `BigInteger`, `DateOnly`, `TimeOnly`: [#1143](https://github.com/mysql-net/MySqlConnector/issues/1143).
+* Fix `InvalidOperationException` when the `TLS Version` connection string option contains multiple values: [#1138](https://github.com/mysql-net/MySqlConnector/issues/1138).
 
 ### 2.1.6
 
