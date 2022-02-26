@@ -49,7 +49,7 @@ internal static class CommandExecutor
 
 			using var payload = writer.ToPayloadData();
 			connection.Session.StartQuerying(command.CancellableCommand);
-			command.SetLastInsertedId(-1);
+			command.SetLastInsertedId(0);
 			try
 			{
 				await connection.Session.SendAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
