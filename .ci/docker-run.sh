@@ -27,6 +27,9 @@ MYSQL_EXTRA=
 if [ "$IMAGE" == "mysql:8.0" ]; then
   MYSQL_EXTRA='--default-authentication-plugin=mysql_native_password'
 fi
+if [[ "$IMAGE" == mariadb* ]]; then
+  MYSQL_EXTRA='--in-predicate-conversion-threshold=100000'
+fi
 
 sudo mkdir -p run/mysql
 sudo chmod 777 run/mysql
