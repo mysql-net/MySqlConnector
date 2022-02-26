@@ -555,11 +555,11 @@ public sealed class MySqlBulkCopy
 #if NET6_0_OR_GREATER
 			else if (value is DateOnly dateOnlyValue)
 			{
-				return WriteString("timestamp('{0:yyyy'-'MM'-'dd}')".FormatInvariant(dateOnlyValue), ref utf8Encoder, output, out bytesWritten);
+				return WriteString("{0:yyyy'-'MM'-'dd}".FormatInvariant(dateOnlyValue), ref utf8Encoder, output, out bytesWritten);
 			}
 			else if (value is TimeOnly timeOnlyValue)
 			{
-				return WriteString("time '{0:HH':'mm':'ss'.'ffffff}'".FormatInvariant(timeOnlyValue), ref utf8Encoder, output, out bytesWritten);
+				return WriteString("{0:HH':'mm':'ss'.'ffffff}".FormatInvariant(timeOnlyValue), ref utf8Encoder, output, out bytesWritten);
 			}
 #endif
 			else if (value is TimeSpan ts)
@@ -570,7 +570,7 @@ public sealed class MySqlBulkCopy
 					isNegative = true;
 					ts = TimeSpan.FromTicks(-ts.Ticks);
 				}
-				return WriteString("{0}{1}:{2:mm':'ss'.'ffffff}'".FormatInvariant(isNegative ? "-" : "", ts.Days * 24 + ts.Hours, ts), ref utf8Encoder, output, out bytesWritten);
+				return WriteString("{0}{1}:{2:mm':'ss'.'ffffff}".FormatInvariant(isNegative ? "-" : "", ts.Days * 24 + ts.Hours, ts), ref utf8Encoder, output, out bytesWritten);
 			}
 			else if (value is Guid guidValue)
 			{

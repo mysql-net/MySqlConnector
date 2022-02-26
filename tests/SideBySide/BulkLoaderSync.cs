@@ -557,6 +557,90 @@ create table bulk_load_data_table(a int, b decimal(20, 10));", connection))
 			Assert.Equal("3.579", reader.GetMySqlDecimal(0).ToString().TrimEnd('0'));
 		}
 	}
+
+#if NET6_0_OR_GREATER
+	[Fact]
+	public void BulkCopyDataTableWithDateOnly()
+	{
+		var dataTable = new DataTable()
+		{
+			Columns =
+			{
+				new DataColumn("id", typeof(int)),
+				new DataColumn("date1", typeof(DateOnly)),
+			},
+			Rows =
+			{
+				new object[] { 1, new DateOnly(2021, 3, 4) },
+			},
+		};
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(a int, date1 date);", connection))
+		{
+			cmd.ExecuteNonQuery();
+		}
+
+		var bulkCopy = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_load_data_table",
+		};
+		var result = bulkCopy.WriteToServer(dataTable);
+		Assert.Equal(1, result.RowsInserted);
+		Assert.Empty(result.Warnings);
+
+		using (var cmd = new MySqlCommand(@"select * from bulk_load_data_table;", connection))
+		{
+			using var reader = cmd.ExecuteReader();
+			Assert.True(reader.Read());
+			Assert.Equal(new DateOnly(2021, 3, 4), reader.GetDateOnly(1));
+		}
+	}
+
+	[Fact]
+	public void BulkCopyDataTableWithTimeOnly()
+	{
+		var dataTable = new DataTable()
+		{
+			Columns =
+			{
+				new DataColumn("id", typeof(int)),
+				new DataColumn("time1", typeof(TimeOnly)),
+				new DataColumn("time2", typeof(TimeOnly)),
+			},
+			Rows =
+			{
+				new object[] { 1, new TimeOnly(1, 2, 3, 456), new TimeOnly(1, 2, 3, 456) },
+			},
+		};
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(a int, time1 time, time2 time(3));", connection))
+		{
+			cmd.ExecuteNonQuery();
+		}
+
+		var bulkCopy = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_load_data_table",
+		};
+		var result = bulkCopy.WriteToServer(dataTable);
+		Assert.Equal(1, result.RowsInserted);
+		Assert.Empty(result.Warnings);
+
+		using (var cmd = new MySqlCommand(@"select * from bulk_load_data_table;", connection))
+		{
+			using var reader = cmd.ExecuteReader();
+			Assert.True(reader.Read());
+			Assert.Equal(new TimeOnly(1, 2, 3), reader.GetTimeOnly(1));
+			Assert.Equal(new TimeOnly(1, 2, 3, 456), reader.GetTimeOnly(2));
+		}
+	}
+#endif
 #endif
 
 	[Fact]
