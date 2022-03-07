@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-02-19
+lastmod: 2022-03-06
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,11 @@ weight: 30
 ---
 
 # Version History
+
+### 2.1.8
+
+* Fix bug that reset `MySqlCommand.LastInsertedId` to `-1` between commands: [#1147](https://github.com/mysql-net/MySqlConnector/issues/1147).
+* Fix bug using `MySqlBulkCopy` with `DateOnly` and `TimeOnly`: [#1146](https://github.com/mysql-net/MySqlConnector/issues/1146).
 
 ### 2.1.7
 
