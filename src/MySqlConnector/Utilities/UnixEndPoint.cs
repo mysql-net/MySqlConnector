@@ -36,11 +36,9 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
 
-namespace MySqlConnector.Utilities;
+namespace System.Net.Sockets;
 
 internal sealed class UnixDomainSocketEndPoint : EndPoint
 {
