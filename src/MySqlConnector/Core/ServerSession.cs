@@ -1141,7 +1141,7 @@ internal sealed class ServerSession
 		m_logArguments[1] = cs.UnixSocket;
 		Log.Trace("Session{0} connecting to UNIX Socket '{1}'", m_logArguments);
 		var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.IP);
-		var unixEp = new UnixEndPoint(cs.UnixSocket!);
+		var unixEp = new UnixDomainSocketEndPoint(cs.UnixSocket!);
 		try
 		{
 			using (cancellationToken.Register(() => socket.Dispose()))
