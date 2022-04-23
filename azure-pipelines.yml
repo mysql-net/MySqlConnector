@@ -31,7 +31,7 @@ jobs:
 - job: windows_baseline
   displayName: 'Baseline'
   pool:
-    vmimage: 'windows-latest'
+    vmimage: 'windows-2019'
   steps:
   - template: '.ci/install-mysql-windows.yml'
   - task: CopyFiles@2
@@ -87,7 +87,7 @@ jobs:
   dependsOn: windows_build
   displayName: 'Windows Tests'
   pool:
-    vmimage: 'windows-latest'
+    vmimage: 'windows-2019'
   steps:
   - template: '.ci/install-mysql-windows.yml'
   - task: UseDotNet@2
@@ -134,7 +134,7 @@ jobs:
 - job: windows_integration_tests_1
   displayName: 'Windows Integration Tests (Part 1)'
   pool:
-    vmimage: 'windows-latest'
+    vmimage: 'windows-2019'
   steps:
   - template: '.ci/install-mysql-windows.yml'
   - task: UseDotNet@2
@@ -175,7 +175,7 @@ jobs:
 - job: windows_integration_tests_2
   displayName: 'Windows Integration Tests (Part 2)'
   pool:
-    vmimage: 'windows-latest'
+    vmimage: 'windows-2019'
   steps:
   - template: '.ci/install-mysql-windows.yml'
   - task: UseDotNet@2
