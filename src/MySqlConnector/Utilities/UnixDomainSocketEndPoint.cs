@@ -1,3 +1,4 @@
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP3_1_OR_GREATER
 #pragma warning disable SA1005 // Single line comments should begin with single space
 #pragma warning disable SA1120 // Comments should contain text
 #pragma warning disable SA1512 // Single-line comments should not be followed by blank line
@@ -35,15 +36,13 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
 
-namespace MySqlConnector.Utilities;
+namespace System.Net.Sockets;
 
-internal sealed class UnixEndPoint : EndPoint
+internal sealed class UnixDomainSocketEndPoint : EndPoint
 {
-	public UnixEndPoint(string filename)
+	public UnixDomainSocketEndPoint(string filename)
 	{
 		if (filename is null)
 			throw new ArgumentNullException (nameof(filename));
@@ -52,7 +51,7 @@ internal sealed class UnixEndPoint : EndPoint
 		Filename = filename;
 	}
 
-	private UnixEndPoint() => Filename = "";
+	private UnixDomainSocketEndPoint() => Filename = "";
 
 	public string Filename { get; }
 
@@ -63,7 +62,7 @@ internal sealed class UnixEndPoint : EndPoint
 		if (socketAddress.Size == 2) {
 			// Empty filename.
 			// Probably from RemoteEndPoint which on linux does not return the file name.
-			return new UnixEndPoint();
+			return new UnixDomainSocketEndPoint();
 		}
 		var size = socketAddress.Size - 2;
 		var bytes = new byte[size];
@@ -76,7 +75,7 @@ internal sealed class UnixEndPoint : EndPoint
 			}
 		}
 
-		return new UnixEndPoint(Encoding.UTF8.GetString(bytes, 0, size));
+		return new UnixDomainSocketEndPoint(Encoding.UTF8.GetString(bytes, 0, size));
 	}
 
 	public override SocketAddress Serialize()
@@ -97,5 +96,6 @@ internal sealed class UnixEndPoint : EndPoint
 
 	public override int GetHashCode() => Filename.GetHashCode ();
 
-	public override bool Equals(object? obj) => obj is UnixEndPoint other && Filename == other.Filename;
+	public override bool Equals(object? obj) => obj is UnixDomainSocketEndPoint other && Filename == other.Filename;
 }
+#endif
