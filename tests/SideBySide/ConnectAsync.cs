@@ -12,7 +12,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		m_database = database;
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=106242")]
+	[Fact]
 	public async Task ConnectBadHost()
 	{
 		var csb = new MySqlConnectionStringBuilder
@@ -27,7 +27,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		Assert.Equal(ConnectionState.Closed, connection.State);
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=106242")]
+	[Fact]
 	public async Task ConnectBadPort()
 	{
 		var csb = new MySqlConnectionStringBuilder
@@ -399,7 +399,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 	public async Task Sha256WithoutSecureConnection()
 	{
 		var csb = AppConfig.CreateSha256ConnectionStringBuilder();
-		csb.SslMode = MySqlSslMode.None;
+		csb.SslMode = MySqlSslMode.Disabled;
 		csb.AllowPublicKeyRetrieval = true;
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.RsaEncryption))
@@ -420,7 +420,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 	public async Task CachingSha2WithoutSecureConnection()
 	{
 		var csb = AppConfig.CreateCachingSha2ConnectionStringBuilder();
-		csb.SslMode = MySqlSslMode.None;
+		csb.SslMode = MySqlSslMode.Disabled;
 		csb.AllowPublicKeyRetrieval = true;
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		await connection.OpenAsync();

@@ -207,7 +207,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#75917](https://bugs.mysql.com/bug.php?id=75917), [#76597](https://bugs.mysql.com/bug.php?id=76597), [#77691](https://bugs.mysql.com/bug.php?id=77691), [#78650](https://bugs.mysql.com/bug.php?id=78650), [#78919](https://bugs.mysql.com/bug.php?id=78919), [#80921](https://bugs.mysql.com/bug.php?id=80921), [#82136](https://bugs.mysql.com/bug.php?id=82136): “Reading from the stream has failed” when connecting to a server
 * [#77421](https://bugs.mysql.com/bug.php?id=77421): Connection is not reset when pulled from the connection pool
 * [#78426](https://bugs.mysql.com/bug.php?id=78426): Unknown database exception has wrong number
-* [#78760](https://bugs.mysql.com/bug.php?id=78760): Error when using tabs and newlines in SQL statements
+* ~~[#78760](https://bugs.mysql.com/bug.php?id=78760): Error when using tabs and newlines in SQL statements~~
 * ~~[#78917](https://bugs.mysql.com/bug.php?id=78917), [#79196](https://bugs.mysql.com/bug.php?id=79196), [#82292](https://bugs.mysql.com/bug.php?id=82292), [#89040](https://bugs.mysql.com/bug.php?id=89040): `TINYINT(1)` values start being returned as `sbyte` after `NULL`~~
 * ~~[#80030](https://bugs.mysql.com/bug.php?id=80030): Slow to connect with pooling disabled~~
 * ~~[#81650](https://bugs.mysql.com/bug.php?id=81650), [#88962](https://bugs.mysql.com/bug.php?id=88962): `Server` connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds~~
@@ -292,10 +292,10 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#104913](https://bugs.mysql.com/bug.php?id=104913): Cannot execute stored procedure with backtick in name
 * ~~[#105209](https://bugs.mysql.com/bug.php?id=105209): Timespan value of zero can't be read with prepared command~~
 * [#105728](https://bugs.mysql.com/bug.php?id=105728): Named command parameters override query attribute values
-* [#105730](https://bugs.mysql.com/bug.php?id=105730): `MySqlCommand.Clone` doesn't clone attributes
-* [#105768](https://bugs.mysql.com/bug.php?id=105768): `MySqlCommandBuilder` doesn't support tables with `BIGINT UNSIGNED` primary key
+* ~~[#105730](https://bugs.mysql.com/bug.php?id=105730): `MySqlCommand.Clone` doesn't clone attributes~~
+* ~~[#105768](https://bugs.mysql.com/bug.php?id=105768): `MySqlCommandBuilder` doesn't support tables with `BIGINT UNSIGNED` primary key~~
 * [#105965](https://bugs.mysql.com/bug.php?id=105965): `MySqlParameterCollection.Add(object)` has quadratic performance
-* [#106242](https://bugs.mysql.com/bug.php?id=106242): `MySqlConnection.Open` throws `AggregateException` instead of `MySqlException`
+* ~~[#106242](https://bugs.mysql.com/bug.php?id=106242): `MySqlConnection.Open` throws `AggregateException` instead of `MySqlException`~~
 * [#106243](https://bugs.mysql.com/bug.php?id=106243): `CancellationToken` doesn't cancel `MySqlConnection.OpenAsync`
-* [#106244](https://bugs.mysql.com/bug.php?id=106244): `MySqlDataReader.GetFieldValue<Stream>` throws `InvalidCastException`
+* ~~[#106244](https://bugs.mysql.com/bug.php?id=106244): `MySqlDataReader.GetFieldValue<Stream>` throws `InvalidCastException`~~
 * [#106247](https://bugs.mysql.com/bug.php?id=106247): Can't use `MySqlDbType.Enum` or `MySqlDbType.Set` with prepared command

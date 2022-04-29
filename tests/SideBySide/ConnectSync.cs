@@ -9,7 +9,7 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		m_database = database;
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=106242")]
+	[Fact]
 	public void ConnectBadHost()
 	{
 		var csb = new MySqlConnectionStringBuilder
@@ -27,7 +27,7 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		Assert.Equal(ConnectionState.Closed, connection.State);
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=106242")]
+	[Fact]
 	public void ConnectBadPort()
 	{
 		var csb = new MySqlConnectionStringBuilder
@@ -547,7 +547,7 @@ create table `{AppConfig.SecondaryDatabase}`.changedb2(value int not null);");
 	public void Sha256WithoutSecureConnection()
 	{
 		var csb = AppConfig.CreateSha256ConnectionStringBuilder();
-		csb.SslMode = MySqlSslMode.None;
+		csb.SslMode = MySqlSslMode.Disabled;
 		csb.AllowPublicKeyRetrieval = true;
 		using var connection = new MySqlConnection(csb.ConnectionString);
 #if NET45

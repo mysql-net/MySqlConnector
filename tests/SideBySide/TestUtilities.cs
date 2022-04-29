@@ -57,7 +57,7 @@ public static class TestUtilities
 			return null;
 
 		var csb = AppConfig.CreateConnectionStringBuilder();
-		if (configSettings.HasFlag(ConfigSettings.RequiresSsl) && (csb.SslMode == MySqlSslMode.None
+		if (configSettings.HasFlag(ConfigSettings.RequiresSsl) && (csb.SslMode == MySqlSslMode.Disabled
 #if !BASELINE
 		 || csb.SslMode == MySqlSslMode.Preferred
 #endif
@@ -65,7 +65,7 @@ public static class TestUtilities
 			return "Requires SslMode=Required or higher in connection string";
 
 		if (configSettings.HasFlag(ConfigSettings.TrustedHost) &&
-			(csb.SslMode == MySqlSslMode.None ||
+			(csb.SslMode == MySqlSslMode.Disabled ||
 #if !BASELINE
 			csb.SslMode == MySqlSslMode.Preferred ||
 #endif

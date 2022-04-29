@@ -534,7 +534,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		Assert.Null(rows[2].IsBold);
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=78760")]
+	[Fact]
 	public void TabsAndNewLines()
 	{
 		m_database.Connection.Execute(@"drop table if exists query_tabs;

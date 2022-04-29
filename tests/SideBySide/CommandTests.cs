@@ -279,7 +279,6 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 		param.Value = 0m;
 		Assert.NotEqual(0m, cmd2.Parameters[0].Value);
 
-#if !BASELINE // https://bugs.mysql.com/bug.php?id=105730
 		Assert.Equal(1, cmd2.Attributes.Count);
 		var attr2 = cmd2.Attributes[0];
 		Assert.Equal(attr.AttributeName, attr2.AttributeName);
@@ -287,7 +286,6 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 
 		attr.Value = 0;
 		Assert.NotEqual(0, cmd2.Attributes[0].Value);
-#endif
 	}
 
 	[Fact]
