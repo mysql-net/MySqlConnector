@@ -7,7 +7,7 @@ title: MySqlAttribute
 [`MySqlAttribute`](../MySqlAttributeType/) represents an attribute that can be sent with a MySQL query.
 
 ```csharp
-public sealed class MySqlAttribute
+public sealed class MySqlAttribute : ICloneable
 ```
 
 ## Public Members
@@ -18,6 +18,7 @@ public sealed class MySqlAttribute
 | [MySqlAttribute](../MySqlAttribute/MySqlAttribute/)(…) | Initializes a new [`MySqlAttribute`](../MySqlAttributeType/) with the specified attribute name and value. |
 | [AttributeName](../MySqlAttribute/AttributeName/) { get; set; } | Gets or sets the attribute name. |
 | [Value](../MySqlAttribute/Value/) { get; set; } | Gets or sets the attribute value. |
+| [Clone](../MySqlAttribute/Clone/)() | Returns a new [`MySqlAttribute`](../MySqlAttributeType/) with the same property values as this instance. |
 
 ## Remarks
 

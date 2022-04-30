@@ -5,7 +5,7 @@ namespace MySqlConnector
 	/// </summary>
 	/// <remarks>See <a href="https://dev.mysql.com/doc/refman/8.0/en/query-attributes.html">Query Attributes</a> for information on using query attributes.</remarks>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-	public sealed class MySqlAttribute
+	public sealed class MySqlAttribute : ICloneable
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 	{
 		/// <summary>
@@ -34,6 +34,13 @@ namespace MySqlConnector
 		/// Gets or sets the attribute value.
 		/// </summary>
 		public object? Value { get; set; }
+
+		/// <summary>
+		/// Returns a new <see cref="MySqlAttribute"/> with the same property values as this instance.
+		/// </summary>
+		public MySqlAttribute Clone() => new MySqlAttribute(AttributeName, Value);
+
+		object ICloneable.Clone() => Clone();
 
 		internal MySqlParameter ToParameter()
 		{

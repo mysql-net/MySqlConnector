@@ -27,4 +27,14 @@ public class MySqlAttributeTests
 		Assert.Equal("name", attribute.AttributeName);
 		Assert.Equal("value", attribute.Value);
 	}
+
+	[Fact]
+	public void Clone()
+	{
+		var attribute = new MySqlAttribute("name", "value");
+		var clone = attribute.Clone();
+		Assert.NotSame(attribute, clone);
+		Assert.Equal(attribute.AttributeName, clone.AttributeName);
+		Assert.Equal(attribute.Value, clone.Value);
+	}
 }
