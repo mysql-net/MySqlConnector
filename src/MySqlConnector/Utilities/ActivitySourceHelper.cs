@@ -36,7 +36,13 @@ internal static class ActivitySourceHelper
 		return activity;
 	}
 
-	public static void SetSuccess(this Activity activity) => activity.SetTag(StatusCodeTagName, "OK");
+	public static void SetSuccess(this Activity activity)
+	{
+		if (activity.Duration == TimeSpan.Zero)
+		{
+			activity.SetTag(StatusCodeTagName, "OK");
+		}
+	}
 
 	public static void SetException(this Activity activity, Exception exception)
 	{
