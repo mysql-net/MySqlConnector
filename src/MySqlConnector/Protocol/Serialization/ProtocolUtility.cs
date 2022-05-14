@@ -529,7 +529,7 @@ internal static class ProtocolUtility
 		var buffer = ArrayPool<byte>.Shared.Rent(bufferLength);
 		SerializationUtility.WriteUInt32((uint) contents.Length, buffer, 0, 3);
 		buffer[3] = (byte) sequenceNumber;
-		contents.CopyTo(buffer.AsMemory().Slice(4));
+		contents.CopyTo(buffer.AsMemory()[4..]);
 		var task = byteHandler.WriteBytesAsync(new ArraySegment<byte>(buffer, 0, bufferLength), ioBehavior);
 		if (task.IsCompletedSuccessfully)
 		{

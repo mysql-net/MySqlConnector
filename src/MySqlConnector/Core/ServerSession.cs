@@ -168,20 +168,20 @@ internal sealed class ServerSession
 				buffer[2] = 'L';
 				buffer[3] = 'L';
 				buffer[4] = ' ';
-				buffer = buffer.Slice(5);
+				buffer = buffer[5..];
 				state.commandText.AsSpan().CopyTo(buffer);
-				buffer = buffer.Slice(state.commandText.Length);
+				buffer = buffer[state.commandText.Length..];
 				buffer[0] = '(';
-				buffer = buffer.Slice(1);
+				buffer = buffer[1..];
 				if (state.parameterCount > 0)
 				{
 					buffer[0] = '?';
-					buffer = buffer.Slice(1);
+					buffer = buffer[1..];
 					for (var i = 1; i < state.parameterCount; i++)
 					{
 						buffer[0] = ',';
 						buffer[1] = '?';
-						buffer = buffer.Slice(2);
+						buffer = buffer[2..];
 					}
 				}
 				buffer[0] = ')';
@@ -238,7 +238,7 @@ internal sealed class ServerSession
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					var payloadLength = payload.Span.Length;
 					Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payloadLength);
-					payload.Span.CopyTo(columnsAndParameters.Array.AsSpan().Slice(columnsAndParametersSize));
+					payload.Span.CopyTo(columnsAndParameters.Array.AsSpan()[columnsAndParametersSize..]);
 					parameters[i] = ColumnDefinitionPayload.Create(new(columnsAndParameters, columnsAndParametersSize, payloadLength));
 					columnsAndParametersSize += payloadLength;
 				}
@@ -258,7 +258,7 @@ internal sealed class ServerSession
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					var payloadLength = payload.Span.Length;
 					Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payloadLength);
-					payload.Span.CopyTo(columnsAndParameters.Array.AsSpan().Slice(columnsAndParametersSize));
+					payload.Span.CopyTo(columnsAndParameters.Array.AsSpan()[columnsAndParametersSize..]);
 					columns[i] = ColumnDefinitionPayload.Create(new(columnsAndParameters, columnsAndParametersSize, payloadLength));
 					columnsAndParametersSize += payloadLength;
 				}
@@ -499,7 +499,7 @@ internal sealed class ServerSession
 
 						// second packet: SET NAMES query
 						m_pipelinedResetConnectionBytes[5] = (byte) m_setNamesPayload.Span.Length;
-						m_setNamesPayload.Span.CopyTo(m_pipelinedResetConnectionBytes.AsSpan().Slice(9));
+						m_setNamesPayload.Span.CopyTo(m_pipelinedResetConnectionBytes.AsSpan()[9..]);
 					}
 				}
 

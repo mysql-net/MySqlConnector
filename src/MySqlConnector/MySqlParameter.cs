@@ -415,7 +415,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 				var guidLength = is32Characters ? 34 : 38;
 				var span = writer.GetSpan(guidLength);
 				span[0] = 0x27;
-				Utf8Formatter.TryFormat(guidValue, span.Slice(1), out _, is32Characters ? 'N' : 'D');
+				Utf8Formatter.TryFormat(guidValue, span[1..], out _, is32Characters ? 'N' : 'D');
 				span[guidLength - 1] = 0x27;
 				writer.Advance(guidLength);
 			}
@@ -493,7 +493,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			var charsWritten = 0;
 			while (charsWritten < value.Length)
 			{
-				var remainingValue = value.Slice(charsWritten);
+				var remainingValue = value[charsWritten..];
 				var nextDelimiterIndex = remainingValue.IndexOfAny('\0', '\'', '\\');
 				if (nextDelimiterIndex == -1)
 				{
@@ -504,7 +504,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 				else
 				{
 					// write up to (and including) the delimiter, then double it
-					writer.Write(remainingValue.Slice(0, nextDelimiterIndex), flush: true);
+					writer.Write(remainingValue[..nextDelimiterIndex], flush: true);
 					if (remainingValue[nextDelimiterIndex] == '\\' && !noBackslashEscapes)
 						writer.Write((ushort) 0x5C5C); // \\
 					else if (remainingValue[nextDelimiterIndex] == '\\' && noBackslashEscapes)

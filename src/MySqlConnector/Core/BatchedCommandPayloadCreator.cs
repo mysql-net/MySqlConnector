@@ -27,7 +27,7 @@ internal sealed class BatchedCommandPayloadCreator : ICommandPayloadCreator
 			var commandLength = writer.Position - position - padding.Length;
 			var span = writer.ArraySegment.AsSpan().Slice(position);
 			span[0] = 0xFE;
-			BinaryPrimitives.WriteUInt64LittleEndian(span.Slice(1), (ulong) commandLength);
+			BinaryPrimitives.WriteUInt64LittleEndian(span[1..], (ulong) commandLength);
 		} while (wroteCommand);
 
 		// remove the padding that was saved for the final command (which wasn't written)

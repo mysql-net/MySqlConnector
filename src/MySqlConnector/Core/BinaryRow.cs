@@ -186,7 +186,7 @@ internal sealed class BinaryRow : Row
 			second = value[6];
 		}
 
-		var microseconds = value.Length <= 7 ? 0 : MemoryMarshal.Read<int>(value.Slice(7));
+		var microseconds = value.Length <= 7 ? 0 : MemoryMarshal.Read<int>(value[7..]);
 
 		try
 		{
@@ -209,11 +209,11 @@ internal sealed class BinaryRow : Row
 			return TimeSpan.Zero;
 
 		var isNegative = value[0];
-		var days = MemoryMarshal.Read<int>(value.Slice(1));
+		var days = MemoryMarshal.Read<int>(value[1..]);
 		var hours = (int) value[5];
 		var minutes = (int) value[6];
 		var seconds = (int) value[7];
-		var microseconds = value.Length == 8 ? 0 : MemoryMarshal.Read<int>(value.Slice(8));
+		var microseconds = value.Length == 8 ? 0 : MemoryMarshal.Read<int>(value[8..]);
 
 		if (isNegative != 0)
 		{

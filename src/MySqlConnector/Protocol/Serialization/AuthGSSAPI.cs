@@ -95,7 +95,7 @@ internal class NegotiateToMySqlConverterStream : Stream
 				CreateNegotiateStreamMessageHeader(buffer, offset, NegotiateStreamConstants.HandshakeDone, 0);
 				return NegotiateStreamConstants.HeaderLength;
 			case 0x1:
-				payloadMemory = payloadMemory.Slice(1);
+				payloadMemory = payloadMemory[1..];
 				break;
 			}
 

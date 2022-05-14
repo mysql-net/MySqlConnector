@@ -405,7 +405,7 @@ public sealed class MySqlBulkCopy
 
 					var inputIndex = 0;
 					var bytesWritten = 0;
-					while (outputIndex >= maxLength || !WriteValue(m_connection, values[valueIndex], ref inputIndex, ref utf8Encoder, buffer.AsSpan(0, maxLength).Slice(outputIndex), out bytesWritten))
+					while (outputIndex >= maxLength || !WriteValue(m_connection, values[valueIndex], ref inputIndex, ref utf8Encoder, buffer.AsSpan(0, maxLength)[outputIndex..], out bytesWritten))
 					{
 						var payload = new PayloadData(new ArraySegment<byte>(buffer, 0, outputIndex + bytesWritten));
 						await m_connection.Session.SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -643,7 +643,7 @@ public sealed class MySqlBulkCopy
 
 					output[0] = (byte) '\\';
 					output[1] = (byte) value[inputIndex];
-					output = output.Slice(2);
+					output = output[2..];
 					bytesWritten += 2;
 					inputIndex++;
 				}
@@ -659,7 +659,7 @@ public sealed class MySqlBulkCopy
 					utf8Encoder.Convert(value.AsSpan(inputIndex, nextIndex - inputIndex), output, nextIndex == value.Length, out var charsUsed, out var bytesUsed, out var completed);
 
 					bytesWritten += bytesUsed;
-					output = output.Slice(bytesUsed);
+					output = output[bytesUsed..];
 					inputIndex += charsUsed;
 
 					if (!completed)
@@ -679,7 +679,7 @@ public sealed class MySqlBulkCopy
 				var by = value[inputIndex];
 				output[0] = hex[(by >> 4) & 0xF];
 				output[1] = hex[by & 0xF];
-				output = output.Slice(2);
+				output = output[2..];
 				bytesWritten += 2;
 			}
 

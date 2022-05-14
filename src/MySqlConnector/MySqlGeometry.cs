@@ -17,7 +17,7 @@ public sealed class MySqlGeometry
 	{
 		var bytes = new byte[wkb.Length + 4];
 		BinaryPrimitives.WriteInt32LittleEndian(bytes, srid);
-		wkb.CopyTo(bytes.AsSpan().Slice(4));
+		wkb.CopyTo(bytes.AsSpan()[4..]);
 		return new MySqlGeometry(bytes);
 	}
 
@@ -37,7 +37,7 @@ public sealed class MySqlGeometry
 	/// <summary>
 	/// The Well-known Binary serialization of this geometry.
 	/// </summary>
-	public ReadOnlySpan<byte> WKB => ValueSpan.Slice(4);
+	public ReadOnlySpan<byte> WKB => ValueSpan[4..];
 
 	/// <summary>
 	/// The internal MySQL form of this geometry.

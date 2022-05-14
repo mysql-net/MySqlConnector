@@ -79,7 +79,7 @@ internal sealed class OkPayload
 			// try to detect if it was actually a length-prefixed string (up to 250 bytes); some servers send
 			// a length-prefixed status string even when CLIENT_SESSION_TRACK is not specified
 			if (statusBytes.Length != 0 && statusBytes[0] == statusBytes.Length - 1)
-				statusBytes = statusBytes.Slice(1);
+				statusBytes = statusBytes[1..];
 		}
 
 		var statusInfo = statusBytes.Length == 0 ? null : Encoding.UTF8.GetString(statusBytes);
