@@ -191,7 +191,11 @@ internal sealed class BinaryRow : Row
 		try
 		{
 			return Connection.AllowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
+#if NET7_0_OR_GREATER
+				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, Connection.DateTimeKind);
+#else
 				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, Connection.DateTimeKind).AddTicks(microseconds % 1000 * 10);
+#endif
 		}
 		catch (Exception ex)
 		{
@@ -220,6 +224,10 @@ internal sealed class BinaryRow : Row
 			microseconds = -microseconds;
 		}
 
+#if NET7_0_OR_GREATER
+		return new TimeSpan(days, hours, minutes, seconds, microseconds / 1000, microseconds % 1000);
+#else
 		return new TimeSpan(days, hours, minutes, seconds) + TimeSpan.FromTicks(microseconds * 10);
+#endif
 	}
 }

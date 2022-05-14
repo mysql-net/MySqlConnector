@@ -545,7 +545,11 @@ internal abstract class Row
 		try
 		{
 			return Connection.AllowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
+#if NET7_0_OR_GREATER
+				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, Connection.DateTimeKind);
+#else
 				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, Connection.DateTimeKind).AddTicks(microseconds % 1000 * 10);
+#endif
 		}
 		catch (Exception ex)
 		{

@@ -465,7 +465,11 @@ internal static class Utility
 			seconds = -seconds;
 			microseconds = -microseconds;
 		}
+#if NET7_0_OR_GREATER
+		return new TimeSpan(0, hours, minutes, seconds, microseconds / 1000, microseconds % 1000);
+#else
 		return new TimeSpan(0, hours, minutes, seconds, microseconds / 1000) + TimeSpan.FromTicks(microseconds % 1000 * 10);
+#endif
 
 		InvalidTimeSpan:
 		throw new FormatException("Couldn't interpret '{0}' as a valid TimeSpan".FormatInvariant(Encoding.UTF8.GetString(originalValue)));
