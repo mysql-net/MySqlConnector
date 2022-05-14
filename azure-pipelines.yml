@@ -1,5 +1,5 @@
 variables:
-  DotNetCoreSdkVersion: '6.0.x'
+  DotNetCoreSdkVersion: '7.0.100-preview.4.22252.9'
   NUGET_PACKAGES: '$(Pipeline.Workspace)/.nuget/packages'
 
 jobs:
@@ -44,6 +44,10 @@ jobs:
     displayName: 'Install .NET Core 5.0'
     inputs:
       version: '5.0.x'
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core 6.0'
+    inputs:
+      version: '6.0.x'
   - task: UseDotNet@2
     displayName: 'Install .NET Core'
     inputs:
@@ -107,6 +111,11 @@ jobs:
   pool:
     vmimage: 'windows-latest'
   steps:
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core 6.0'
+    inputs:
+      version: 6.0.x
+      packageType: runtime
   - task: UseDotNet@2
     displayName: 'Install .NET Core'
     inputs:
@@ -182,6 +191,11 @@ jobs:
     displayName: 'Install .NET Core 3.1'
     inputs:
       version: 3.1.x
+      packageType: runtime
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core 6.0'
+    inputs:
+      version: 6.0.x
       packageType: runtime
   - task: UseDotNet@2
     displayName: 'Install .NET Core'

@@ -1,8 +1,8 @@
 steps:
 - task: UseDotNet@2
-  displayName: 'Install .NET Core 5.0'
+  displayName: 'Install .NET Core'
   inputs:
-    version: '5.0.x'
+    version: 6.0.x
     packageType: runtime
 - task: UseDotNet@2
   displayName: 'Install .NET Core'
