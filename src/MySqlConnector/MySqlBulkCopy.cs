@@ -448,7 +448,7 @@ public sealed class MySqlBulkCopy
 
 			if (value is null || value == DBNull.Value)
 			{
-				ReadOnlySpan<byte> escapedNull = new byte[] { 0x5C, 0x4E };
+				ReadOnlySpan<byte> escapedNull = @"\N"; // a field value of \N is read as NULL for input
 				if (output.Length < escapedNull.Length)
 				{
 					bytesWritten = 0;
@@ -672,7 +672,7 @@ public sealed class MySqlBulkCopy
 
 		static bool WriteBytes(ReadOnlySpan<byte> value, ref int inputIndex, Span<byte> output, out int bytesWritten)
 		{
-			ReadOnlySpan<byte> hex = new byte[] { (byte) '0', (byte) '1', (byte) '2', (byte) '3', (byte) '4', (byte) '5', (byte) '6', (byte) '7', (byte) '8', (byte) '9', (byte) 'A', (byte) 'B', (byte) 'C', (byte) 'D', (byte) 'E', (byte) 'F' };
+			ReadOnlySpan<byte> hex = "0123456789ABCDEF";
 			bytesWritten = 0;
 			for (; inputIndex < value.Length && output.Length > 2; inputIndex++)
 			{

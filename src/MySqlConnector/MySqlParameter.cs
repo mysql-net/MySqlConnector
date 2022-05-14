@@ -199,7 +199,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 
 		if (Value is null || Value == DBNull.Value)
 		{
-			ReadOnlySpan<byte> nullBytes = new byte[] { 0x4E, 0x55, 0x4C, 0x4C }; // NULL
+			ReadOnlySpan<byte> nullBytes = "NULL";
 			writer.Write(nullBytes);
 		}
 #if NET45
@@ -316,8 +316,8 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		}
 		else if (Value is bool boolValue)
 		{
-			ReadOnlySpan<byte> trueBytes = new byte[] { 0x74, 0x72, 0x75, 0x65 }; // true
-			ReadOnlySpan<byte> falseBytes = new byte[] { 0x66, 0x61, 0x6C, 0x73, 0x65 }; // false
+			ReadOnlySpan<byte> trueBytes = "true";
+			ReadOnlySpan<byte> falseBytes = "false";
 			writer.Write(boolValue ? trueBytes : falseBytes);
 		}
 		else if (Value is float or double)
@@ -825,7 +825,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		}
 	}
 
-	private static ReadOnlySpan<byte> BinaryBytes => new byte[] { 0x5F, 0x62, 0x69, 0x6E, 0x61, 0x72, 0x79, 0x27 }; // _binary'
+	private static ReadOnlySpan<byte> BinaryBytes => "_binary'";
 
 	private DbType m_dbType;
 	private MySqlDbType m_mySqlDbType;
