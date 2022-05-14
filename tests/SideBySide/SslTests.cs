@@ -218,11 +218,13 @@ public class SslTests : IClassFixture<DatabaseFixture>
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
 		await connection.OpenAsync();
+#pragma warning disable SYSLIB0039 // SslProtocols.Tls11 is obsolete
 		var expectedProtocol = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls12) ? SslProtocols.Tls12 :
 			AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls11) ? SslProtocols.Tls11 :
 			SslProtocols.Tls;
 		var expectedProtocolString = expectedProtocol == SslProtocols.Tls12 ? "TLSv1.2" :
 			expectedProtocol == SslProtocols.Tls11 ? "TLSv1.1" : "TLSv1";
+#pragma warning restore SYSLIB0039 // SslProtocols.Tls11 is obsolete
 
 #if !NET452 && !NET461 && !NET472
 		// https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0#tls-13--openssl-111-on-linux
@@ -242,7 +244,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		Assert.Equal(expectedProtocolString, reader.GetString(1));
 	}
 
-#if !NET5_0
+#if !NET5_0_OR_GREATER
 	[SkippableFact(ConfigSettings.RequiresSsl)]
 	public async Task ForceTls11()
 	{

@@ -107,7 +107,12 @@ internal sealed class TypeMapper
 		AddColumnTypeMetadata(new("YEAR", typeInt, MySqlDbType.Year));
 
 		// guid
-		var typeGuid = AddDbTypeMapping(new(typeof(Guid), new[] { DbType.Guid }, convert: static o => Guid.Parse(Convert.ToString(o, CultureInfo.InvariantCulture)!)));
+#if NET7_0_OR_GREATER
+		Func<object, object> convertGuid = static o => Guid.Parse(Convert.ToString(o, CultureInfo.InvariantCulture)!, CultureInfo.InvariantCulture);
+#else
+		Func<object, object> convertGuid = static o => Guid.Parse(Convert.ToString(o, CultureInfo.InvariantCulture)!);
+#endif
+		var typeGuid = AddDbTypeMapping(new(typeof(Guid), new[] { DbType.Guid }, convert: convertGuid));
 		AddColumnTypeMetadata(new("CHAR", typeGuid, MySqlDbType.Guid, length: 36, simpleDataTypeName: "CHAR(36)", createFormat: "CHAR(36)"));
 
 		// null

@@ -12,11 +12,6 @@ steps:
     version: 3.1.x
     packageType: runtime
 - task: UseDotNet@2
-  displayName: 'Install .NET Core 5.0'
-  inputs:
-    version: '5.0.x'
-    packageType: runtime
-- task: UseDotNet@2
   displayName: 'Install .NET Core 6.0'
   inputs:
     version: 6.0.x
@@ -41,7 +36,7 @@ steps:
     image: ${{ parameters.image }}
     unsupportedFeatures: ${{ parameters.unsupportedFeatures }}
     connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=required;DefaultCommandTimeout=3600;certificate file=$(Build.Repository.LocalPath)/.ci/server/certs/ssl-client.pfx'
-    platform: 'net5.0'
+    platform: 'net7.0'
     description: 'SSL'
 - template: 'sidebyside-test-steps.yml'
   parameters:
