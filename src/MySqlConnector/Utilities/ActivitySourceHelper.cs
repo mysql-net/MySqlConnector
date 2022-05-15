@@ -17,9 +17,7 @@ internal static class ActivitySourceHelper
 	public const string NetPeerNameTagName = "net.peer.name";
 	public const string NetPeerPortTagName = "net.peer.port";
 	public const string NetTransportTagName = "net.transport";
-#if !NET6_0_OR_GREATER
 	public const string StatusCodeTagName = "otel.status_code";
-#endif
 	public const string ThreadIdTagName = "thread.id";
 
 	public const string DatabaseSystemValue = "mysql";
@@ -42,9 +40,8 @@ internal static class ActivitySourceHelper
 	{
 #if NET6_0_OR_GREATER
 		activity.SetStatus(ActivityStatusCode.Ok);
-#else
-		activity.SetTag(StatusCodeTagName, "OK");
 #endif
+		activity.SetTag(StatusCodeTagName, "OK");
 	}
 
 	public static void SetException(this Activity activity, Exception exception)
@@ -52,10 +49,9 @@ internal static class ActivitySourceHelper
 		var description = exception is MySqlException mySqlException ? mySqlException.ErrorCode.ToString() : exception.Message;
 #if NET6_0_OR_GREATER
 		activity.SetStatus(ActivityStatusCode.Error, description);
-#else
+#endif
 		activity.SetTag(StatusCodeTagName, "ERROR");
 		activity.SetTag("otel.status_description", description);
-#endif
 		activity.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
 		{
 			{ "exception.type", exception.GetType().FullName },
