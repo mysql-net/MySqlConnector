@@ -238,7 +238,7 @@ internal sealed class ServerSession
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					var payloadLength = payload.Span.Length;
 					Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payloadLength);
-					payload.Span.CopyTo(columnsAndParameters.Array.AsSpan()[columnsAndParametersSize..]);
+					payload.Span.CopyTo(columnsAndParameters.AsSpan(columnsAndParametersSize));
 					parameters[i] = ColumnDefinitionPayload.Create(new(columnsAndParameters, columnsAndParametersSize, payloadLength));
 					columnsAndParametersSize += payloadLength;
 				}
@@ -258,7 +258,7 @@ internal sealed class ServerSession
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					var payloadLength = payload.Span.Length;
 					Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payloadLength);
-					payload.Span.CopyTo(columnsAndParameters.Array.AsSpan()[columnsAndParametersSize..]);
+					payload.Span.CopyTo(columnsAndParameters.AsSpan(columnsAndParametersSize));
 					columns[i] = ColumnDefinitionPayload.Create(new(columnsAndParameters, columnsAndParametersSize, payloadLength));
 					columnsAndParametersSize += payloadLength;
 				}

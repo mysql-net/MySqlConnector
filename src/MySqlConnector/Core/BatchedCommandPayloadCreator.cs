@@ -25,7 +25,7 @@ internal sealed class BatchedCommandPayloadCreator : ICommandPayloadCreator
 
 			// write command length
 			var commandLength = writer.Position - position - padding.Length;
-			var span = writer.ArraySegment.AsSpan().Slice(position);
+			var span = writer.ArraySegment.AsSpan(position);
 			span[0] = 0xFE;
 			BinaryPrimitives.WriteUInt64LittleEndian(span[1..], (ulong) commandLength);
 		} while (wroteCommand);

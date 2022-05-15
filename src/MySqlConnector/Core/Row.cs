@@ -135,7 +135,7 @@ internal abstract class Row
 		var offset = (int) dataOffset;
 		var lengthToCopy = Math.Max(0, Math.Min(m_dataLengths[ordinal] - offset, length));
 		if (lengthToCopy > 0)
-			m_data.Slice(m_dataOffsets[ordinal] + offset, lengthToCopy).Span.CopyTo(buffer.AsSpan()[bufferOffset..]);
+			m_data.Slice(m_dataOffsets[ordinal] + offset, lengthToCopy).Span.CopyTo(buffer.AsSpan(bufferOffset));
 		return lengthToCopy;
 	}
 

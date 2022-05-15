@@ -46,7 +46,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 	public void TrimEnd(int byteCount)
 	{
 		Debug.Assert(byteCount <= m_output.Length, "byteCount <= m_output.Length");
-		m_output = m_buffer.AsMemory().Slice(Position - byteCount);
+		m_output = m_buffer.AsMemory(Position - byteCount);
 	}
 
 	public void Write(byte value)

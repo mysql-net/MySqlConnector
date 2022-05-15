@@ -278,6 +278,7 @@ internal static class Utility
 	}
 #endif
 
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_0_OR_GREATER
 	/// <summary>
 	/// Returns a new <see cref="ArraySegment{T}"/> that starts at index <paramref name="index"/> into <paramref name="arraySegment"/>.
 	/// </summary>
@@ -296,6 +297,7 @@ internal static class Utility
 	/// <returns>A new <see cref="ArraySegment{T}"/> of length <paramref name="length"/>, starting at the <paramref name="index"/>th element of <paramref name="arraySegment"/>.</returns>
 	public static ArraySegment<T> Slice<T>(this ArraySegment<T> arraySegment, int index, int length) =>
 		new ArraySegment<T>(arraySegment.Array!, arraySegment.Offset + index, length);
+#endif
 
 	/// <summary>
 	/// Returns a new <see cref="byte"/> array that is a slice of <paramref name="input"/> starting at <paramref name="offset"/>.

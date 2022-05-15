@@ -82,9 +82,9 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 						ValueTaskExtensions.FromException<int>(new EndOfStreamException("Wanted to read 7 bytes but only read {0} when reading compressed packet header".FormatInvariant(headerReadBytes.Count)));
 				}
 
-				var payloadLength = (int) SerializationUtility.ReadUInt32(headerReadBytes.Array!, headerReadBytes.Offset, 3);
+				var payloadLength = (int) SerializationUtility.ReadUInt32(headerReadBytes.AsSpan(0, 3));
 				var packetSequenceNumber = headerReadBytes.Array![headerReadBytes.Offset + 3];
-				var uncompressedLength = (int) SerializationUtility.ReadUInt32(headerReadBytes.Array, headerReadBytes.Offset + 4, 3);
+				var uncompressedLength = (int) SerializationUtility.ReadUInt32(headerReadBytes.AsSpan(4, 3));
 
 				// verify the compressed packet sequence number
 				var expectedSequenceNumber = GetNextCompressedSequenceNumber();
