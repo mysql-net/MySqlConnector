@@ -36,12 +36,22 @@ internal static class ActivitySourceHelper
 		return activity;
 	}
 
-	public static void SetSuccess(this Activity activity) => activity.SetTag(StatusCodeTagName, "OK");
+	public static void SetSuccess(this Activity activity)
+	{
+#if NET6_0_OR_GREATER
+		activity.SetStatus(ActivityStatusCode.Ok);
+#endif
+		activity.SetTag(StatusCodeTagName, "OK");
+	}
 
 	public static void SetException(this Activity activity, Exception exception)
 	{
+		var description = exception is MySqlException mySqlException ? mySqlException.ErrorCode.ToString() : exception.Message;
+#if NET6_0_OR_GREATER
+		activity.SetStatus(ActivityStatusCode.Error, description);
+#endif
 		activity.SetTag(StatusCodeTagName, "ERROR");
-		activity.SetTag("otel.status_description", exception is MySqlException mySqlException ? mySqlException.ErrorCode.ToString() : exception.Message);
+		activity.SetTag("otel.status_description", description);
 		activity.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
 		{
 			{ "exception.type", exception.GetType().FullName },

@@ -474,8 +474,14 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 				await dataReader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
+			if (activity is { IsAllDataRequested: true })
+			{
+				activity.SetException(ex);
+				activity.Stop();
+			}
+			dataReader.m_creationFailed = true;
 			dataReader.Dispose();
 			throw;
 		}
@@ -617,7 +623,8 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 			Command.CancellableCommand.SetTimeout(Constants.InfiniteTimeout);
 			connection.FinishQuerying(m_hasWarnings);
 
-			Activity?.SetSuccess();
+			if (!m_creationFailed)
+				Activity?.SetSuccess();
 			Activity?.Stop();
 
 			if ((m_behavior & CommandBehavior.CloseConnection) != 0)
@@ -677,7 +684,8 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	private CommandListPosition m_commandListPosition;
 	private bool m_closed;
 	private bool m_hasWarnings;
-	private ResultSet? m_resultSet;
 	private bool m_hasMoreResults;
+	private bool m_creationFailed;
+	private ResultSet? m_resultSet;
 	private DataTable? m_schemaTable;
 }
