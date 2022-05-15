@@ -38,7 +38,7 @@ internal static class ActivitySourceHelper
 
 	public static void SetSuccess(this Activity activity)
 	{
-#if NET6_0_OR_GREATER
+#if !NET45
 		activity.SetStatus(ActivityStatusCode.Ok);
 #endif
 		activity.SetTag(StatusCodeTagName, "OK");
@@ -47,7 +47,7 @@ internal static class ActivitySourceHelper
 	public static void SetException(this Activity activity, Exception exception)
 	{
 		var description = exception is MySqlException mySqlException ? mySqlException.ErrorCode.ToString() : exception.Message;
-#if NET6_0_OR_GREATER
+#if !NET45
 		activity.SetStatus(ActivityStatusCode.Error, description);
 #endif
 		activity.SetTag(StatusCodeTagName, "ERROR");
