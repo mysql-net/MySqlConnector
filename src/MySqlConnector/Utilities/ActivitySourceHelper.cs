@@ -41,15 +41,9 @@ internal static class ActivitySourceHelper
 	public static void SetSuccess(this Activity activity)
 	{
 #if NET6_0_OR_GREATER
-		if (activity.Status == ActivityStatusCode.Unset)
-		{
-			activity.SetStatus(ActivityStatusCode.Ok);
-		}
+		activity.SetStatus(ActivityStatusCode.Ok);
 #else
-		if (activity.Duration == TimeSpan.Zero)
-		{
-			activity.SetTag(StatusCodeTagName, "OK");
-		}
+		activity.SetTag(StatusCodeTagName, "OK");
 #endif
 	}
 
