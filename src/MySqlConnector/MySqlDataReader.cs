@@ -474,8 +474,13 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 				await dataReader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
+			if (activity is { IsAllDataRequested: true })
+			{
+				activity.SetException(ex);
+				activity.Stop();
+			}
 			dataReader.Dispose();
 			throw;
 		}
