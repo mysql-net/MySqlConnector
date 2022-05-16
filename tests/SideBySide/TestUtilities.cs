@@ -82,7 +82,7 @@ public static class TestUtilities
 
 		if (configSettings.HasFlag(ConfigSettings.KnownClientCertificate))
 		{
-			if (!((csb.CertificateFile?.EndsWith("ssl-client.pfx", StringComparison.OrdinalIgnoreCase) ?? false) || (csb.SslKey?.EndsWith("ssl-client-key.pem", StringComparison.OrdinalIgnoreCase) ?? false)))
+			if (!((csb.CertificateFile?.EndsWith("ssl-client.pfx", StringComparison.OrdinalIgnoreCase) is true) || (csb.SslKey?.EndsWith("ssl-client-key.pem", StringComparison.OrdinalIgnoreCase) is true)))
 				return "Requires CertificateFile=client.pfx in connection string";
 		}
 

@@ -486,7 +486,7 @@ internal sealed class ServerSession
 				else
 				{
 					// pipelining is not currently compatible with compression
-					m_supportsPipelining = !cs.UseCompression && (cs.Pipelining ?? true);
+					m_supportsPipelining = !cs.UseCompression && cs.Pipelining is not false;
 
 					// for pipelining, concatenate reset connection and SET NAMES query into one buffer
 					if (m_supportsPipelining)
@@ -1764,13 +1764,13 @@ internal sealed class ServerSession
 		}
 	}
 
-	internal bool SslIsEncrypted => m_sslStream?.IsEncrypted ?? false;
+	internal bool SslIsEncrypted => m_sslStream?.IsEncrypted is true;
 
-	internal bool SslIsSigned => m_sslStream?.IsSigned ?? false;
+	internal bool SslIsSigned => m_sslStream?.IsSigned is true;
 
-	internal bool SslIsAuthenticated => m_sslStream?.IsAuthenticated ?? false;
+	internal bool SslIsAuthenticated => m_sslStream?.IsAuthenticated is true;
 
-	internal bool SslIsMutuallyAuthenticated => m_sslStream?.IsMutuallyAuthenticated ?? false;
+	internal bool SslIsMutuallyAuthenticated => m_sslStream?.IsMutuallyAuthenticated is true;
 
 	internal SslProtocols SslProtocol => m_sslStream?.SslProtocol ?? SslProtocols.None;
 

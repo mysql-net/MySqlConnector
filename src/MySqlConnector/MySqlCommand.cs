@@ -174,7 +174,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 			exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
 		else if (string.IsNullOrWhiteSpace(CommandText))
 			exception = new InvalidOperationException("CommandText must be specified");
-		else if (Connection?.HasActiveReader ?? false)
+		else if (Connection?.HasActiveReader is true)
 			exception = new InvalidOperationException("Cannot call Prepare when there is an open DataReader for this command's connection; it must be closed first.");
 
 		if (exception is not null || Connection!.IgnorePrepare)

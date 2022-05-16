@@ -181,7 +181,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			throw new InvalidOperationException("Connection is not open.");
 
 		// ignore reenlistment of same connection in same transaction
-		if (m_enlistedTransaction?.Transaction.Equals(transaction) ?? false)
+		if (m_enlistedTransaction?.Transaction.Equals(transaction) is true)
 			return;
 
 		if (m_enlistedTransaction is not null)
@@ -858,7 +858,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	internal IOBehavior AsyncIOBehavior => GetConnectionSettings().ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
 
 	// Defaults to IOBehavior.Synchronous if the connection hasn't been opened yet; only use if it's a no-op for a closed connection.
-	internal IOBehavior SimpleAsyncIOBehavior => (m_connectionSettings?.ForceSynchronous ?? false) ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
+	internal IOBehavior SimpleAsyncIOBehavior => (m_connectionSettings?.ForceSynchronous is true) ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
 
 	internal MySqlSslMode SslMode => GetInitializedConnectionSettings().SslMode;
 
@@ -931,12 +931,12 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				return session;
 			}
 		}
-		catch (OperationCanceledException) when (timeoutSource?.IsCancellationRequested ?? false)
+		catch (OperationCanceledException) when (timeoutSource?.IsCancellationRequested is true)
 		{
-			var messageSuffix = (pool?.IsEmpty ?? false) ? " All pooled connections are in use." : "";
+			var messageSuffix = (pool?.IsEmpty is true) ? " All pooled connections are in use." : "";
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired." + messageSuffix);
 		}
-		catch (MySqlException ex) when ((timeoutSource?.IsCancellationRequested ?? false) || (ex.ErrorCode == MySqlErrorCode.CommandTimeoutExpired))
+		catch (MySqlException ex) when ((timeoutSource?.IsCancellationRequested is true) || (ex.ErrorCode == MySqlErrorCode.CommandTimeoutExpired))
 		{
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
 		}
@@ -990,7 +990,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		if (m_activeReader is null &&
 			CurrentTransaction is null &&
 			m_enlistedTransaction is null &&
-			(m_connectionSettings?.Pooling ?? false))
+			(m_connectionSettings?.Pooling is true))
 		{
 			m_cachedProcedures = null;
 			if (m_session is not null)

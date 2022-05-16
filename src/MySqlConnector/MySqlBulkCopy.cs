@@ -426,7 +426,7 @@ public sealed class MySqlBulkCopy
 				}
 			}
 
-			if (outputIndex != 0 && !(eventArgs?.Abort ?? false))
+			if (outputIndex != 0 && eventArgs?.Abort is not true)
 			{
 				var payload2 = new PayloadData(new ArraySegment<byte>(buffer, 0, outputIndex));
 				await m_connection.Session.SendReplyAsync(payload2, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -435,7 +435,7 @@ public sealed class MySqlBulkCopy
 		finally
 		{
 			ArrayPool<byte>.Shared.Return(buffer);
-			m_wasAborted = eventArgs?.Abort ?? false;
+			m_wasAborted = eventArgs?.Abort is true;
 		}
 
 		static bool WriteValue(MySqlConnection connection, object value, ref int inputIndex, ref Encoder? utf8Encoder, Span<byte> output, out int bytesWritten)
