@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-03-06
+lastmod: 2022-05-15
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,15 @@ weight: 30
 ---
 
 # Version History
+
+### 2.1.9
+
+* Set `Activity` status to ERROR if an exception occurs during `ExecuteReader`: [#1171](https://github.com/mysql-net/MySqlConnector/issues/1171).
+* `SSL Mode = Disabled` is supported as a synonym for `SSL Mode = None`: [#1168](https://github.com/mysql-net/MySqlConnector/issues/1168).
+  * Added `MySqlSslMode.Disabled` enum value.
+* `MySqlAttribute` implements `ICloneable`: [#1169](https://github.com/mysql-net/MySqlConnector/issues/1169).
+* (Internal) Unix domain socket connection uses `UnixDomainSocketEndPoint` class: [#1160](https://github.com/mysql-net/MySqlConnector/issues/1160).
+* Thanks to [qq362220083](https://github.com/qq362220083) for contributions to this release.
 
 ### 2.1.8
 
