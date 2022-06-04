@@ -1094,6 +1094,68 @@ create table bulk_load_data_table(str varchar(5), number tinyint);", connection)
 		var bulkCopy = new MySqlBulkCopy(connection);
 		Assert.Throws<ArgumentNullException>(() => bulkCopy.WriteToServer(default(DbDataReader)));
 	}
+
+	[Theory]
+	[InlineData(MySqlBulkLoaderConflictOption.None, 1, "one")]
+	[InlineData(MySqlBulkLoaderConflictOption.Ignore, 1, "one")]
+	[InlineData(MySqlBulkLoaderConflictOption.Replace, 3, "two")]
+	public void BulkCopyDataTableConflictOption(MySqlBulkLoaderConflictOption conflictOption, int expectedRowsInserted, string expected)
+	{
+		var dataTable = new DataTable()
+		{
+			Columns =
+			{
+				new DataColumn("id", typeof(int)),
+				new DataColumn("data", typeof(string)),
+			},
+			Rows =
+			{
+				new object[] { 1, "one" },
+				new object[] { 1, "two" },
+			},
+		};
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(a int not null primary key auto_increment, b text);", connection))
+		{
+			cmd.ExecuteNonQuery();
+		}
+
+		var bulkCopy = new MySqlBulkCopy(connection)
+		{
+			ConflictOption = conflictOption,
+			DestinationTableName = "bulk_load_data_table",
+		};
+
+		switch (conflictOption)
+		{
+		case MySqlBulkLoaderConflictOption.None:
+			var exception = Assert.Throws<MySqlException>(() => bulkCopy.WriteToServer(dataTable));
+			Assert.Equal(MySqlErrorCode.BulkCopyFailed, exception.ErrorCode);
+			break;
+
+		case MySqlBulkLoaderConflictOption.Replace:
+			var replaceResult = bulkCopy.WriteToServer(dataTable);
+			Assert.Equal(expectedRowsInserted, replaceResult.RowsInserted);
+			Assert.Empty(replaceResult.Warnings);
+			break;
+
+		case MySqlBulkLoaderConflictOption.Ignore:
+			var ignoreResult = bulkCopy.WriteToServer(dataTable);
+			Assert.Equal(expectedRowsInserted, ignoreResult.RowsInserted);
+			if (!connection.ServerVersion.StartsWith("5.6.", StringComparison.Ordinal))
+			{
+				var error = Assert.Single(ignoreResult.Warnings);
+				Assert.Equal(MySqlErrorCode.DuplicateKeyEntry, error.ErrorCode);
+			}
+			break;
+		}
+
+		using (var cmd = new MySqlCommand("select b from bulk_load_data_table;", connection))
+			Assert.Equal(expected, cmd.ExecuteScalar());
+	}
 #endif
 
 	internal static string GetConnectionString() => AppConfig.ConnectionString;

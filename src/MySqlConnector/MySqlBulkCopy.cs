@@ -344,7 +344,7 @@ public sealed class MySqlBulkCopy
 
 		Log.Debug("Finished bulk copy to {0}", tableName);
 
-		if (!m_wasAborted && rowsInserted != m_rowsCopied)
+		if (!m_wasAborted && rowsInserted != m_rowsCopied && ConflictOption is MySqlBulkLoaderConflictOption.None)
 		{
 			Log.Error("Bulk copy to DestinationTableName={0} failed; RowsCopied={1}; RowsInserted={2}", tableName, m_rowsCopied, rowsInserted);
 			throw new MySqlException(MySqlErrorCode.BulkCopyFailed, "{0} rows {1} copied to {2} but only {3} {4} inserted.".FormatInvariant(m_rowsCopied, m_rowsCopied == 1 ? "was" : "were", tableName, rowsInserted, rowsInserted == 1 ? "was" : "were"));
