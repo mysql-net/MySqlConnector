@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-05-15
+lastmod: 2022-06-04
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,11 @@ weight: 30
 ---
 
 # Version History
+
+### 2.1.10
+
+* Add `MySqlBulkCopy.ConflictOption` setting: [#1176](https://github.com/mysql-net/MySqlConnector/pull/1176).
+* Thanks to [Mykola Klymyuk](https://github.com/klym1) for contributions to this release.
 
 ### 2.1.9
 
