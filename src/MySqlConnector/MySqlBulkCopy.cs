@@ -57,6 +57,11 @@ public sealed class MySqlBulkCopy
 	}
 
 	/// <summary>
+	/// A <see cref="MySqlBulkLoaderConflictOption"/> value that specifies how conflicts are resolved (default <see cref="MySqlBulkLoaderConflictOption.None"/>).
+	/// </summary>
+	public MySqlBulkLoaderConflictOption ConflictOption { get; set; }
+
+	/// <summary>
 	/// The number of seconds for the operation to complete before it times out, or <c>0</c> for no timeout.
 	/// </summary>
 	public int BulkCopyTimeout { get; set; }
@@ -247,6 +252,7 @@ public sealed class MySqlBulkCopy
 			Source = this,
 			TableName = tableName,
 			Timeout = BulkCopyTimeout,
+			ConflictOption = ConflictOption,
 		};
 
 		var closeConnection = false;
