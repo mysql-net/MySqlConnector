@@ -15,7 +15,7 @@ internal static class ChangeUserPayload
 		writer.WriteNullTerminatedString(schemaName ?? "");
 		writer.Write((byte) characterSet);
 		writer.Write((byte) 0);
-		writer.WriteNullTerminatedString("mysql_native_password");
+		writer.Write("mysql_native_password\0"u8);
 		if (connectionAttributes is not null)
 			writer.Write(connectionAttributes);
 

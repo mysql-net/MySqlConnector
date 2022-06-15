@@ -338,7 +338,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			if (mySqlDateTimeValue.IsValidDateTime)
 				writer.Write("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(mySqlDateTimeValue.GetDateTime()));
 			else
-				writer.Write("timestamp('0000-00-00')");
+				writer.Write("timestamp('0000-00-00')"u8);
 		}
 #if NET6_0_OR_GREATER
 		else if (Value is DateOnly dateOnlyValue)
@@ -363,13 +363,13 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 #if NET6_0_OR_GREATER
 		else if (Value is TimeOnly timeOnlyValue)
 		{
-			writer.Write("time '");
+			writer.Write("time '"u8);
 			writer.Write("{0:HH':'mm':'ss'.'ffffff}'".FormatInvariant(timeOnlyValue));
 		}
 #endif
 		else if (Value is TimeSpan ts)
 		{
-			writer.Write("time '");
+			writer.Write("time '"u8);
 			if (ts.Ticks < 0)
 			{
 				writer.Write((byte) '-');
