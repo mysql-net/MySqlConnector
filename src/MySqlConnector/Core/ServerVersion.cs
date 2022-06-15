@@ -39,7 +39,7 @@ internal sealed class ServerVersion
 		if (versionString is [ 0x2D, .. ])
 		{
 			versionString = versionString[1..];
-			ReadOnlySpan<byte> mariaDb = "-MariaDB";
+			ReadOnlySpan<byte> mariaDb = "-MariaDB"u8;
 			var mariaDbIndex = versionString.IndexOf(mariaDb);
 			if (mariaDbIndex != -1)
 			{

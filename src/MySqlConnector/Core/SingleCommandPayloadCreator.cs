@@ -249,19 +249,19 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		var isSingleRow = (command.CommandBehavior & CommandBehavior.SingleRow) != 0;
 		if (isSchemaOnly)
 		{
-			ReadOnlySpan<byte> setSqlSelectLimit0 = "SET sql_select_limit=0;\n";
+			ReadOnlySpan<byte> setSqlSelectLimit0 = "SET sql_select_limit=0;\n"u8;
 			writer.Write(setSqlSelectLimit0);
 		}
 		else if (isSingleRow)
 		{
-			ReadOnlySpan<byte> setSqlSelectLimit1 = "SET sql_select_limit=1;\n";
+			ReadOnlySpan<byte> setSqlSelectLimit1 = "SET sql_select_limit=1;\n"u8;
 			writer.Write(setSqlSelectLimit1);
 		}
 		var preparer = new StatementPreparer(command.CommandText!, command.RawParameters, command.CreateStatementPreparerOptions() | ((appendSemicolon || isSchemaOnly || isSingleRow) ? StatementPreparerOptions.AppendSemicolon : StatementPreparerOptions.None));
 		var isComplete = preparer.ParseAndBindParameters(writer);
 		if (isComplete && (isSchemaOnly || isSingleRow))
 		{
-			ReadOnlySpan<byte> clearSqlSelectLimit = "\nSET sql_select_limit=default;";
+			ReadOnlySpan<byte> clearSqlSelectLimit = "\nSET sql_select_limit=default;"u8;
 			writer.Write(clearSqlSelectLimit);
 		}
 		return isComplete;
