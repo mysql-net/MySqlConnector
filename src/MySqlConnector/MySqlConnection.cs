@@ -746,13 +746,13 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	internal void Cancel(ICancellableCommand command, int commandId, bool isCancel)
 	{
-		if (m_session is null || State != ConnectionState.Open || !m_session.TryStartCancel(command))
+		if (m_session?.Id is not string sessionId || State != ConnectionState.Open || m_session?.TryStartCancel(command) is not true)
 		{
 			Log.Trace("Ignoring cancellation for closed connection or invalid CommandId {0}", commandId);
 			return;
 		}
 
-		Log.Debug("CommandId {0} for Session{1} has been canceled via {2}.", commandId, m_session.Id, isCancel ? "Cancel()" : "command timeout");
+		Log.Debug("CommandId {0} for Session{1} has been canceled via {2}.", commandId, sessionId, isCancel ? "Cancel()" : "command timeout");
 
 		try
 		{
@@ -762,8 +762,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				AutoEnlist = false,
 				Pooling = false,
 			};
-			if (m_session.IPAddress is not null)
-				csb.Server = m_session.IPAddress.ToString();
+			if (m_session?.IPAddress is { } ipAddress)
+				csb.Server = ipAddress.ToString();
 			var cancellationTimeout = GetConnectionSettings().CancellationTimeout;
 			csb.ConnectionTimeout = cancellationTimeout < 1 ? 3u : (uint) cancellationTimeout;
 
@@ -771,20 +771,20 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			connection.Open();
 			using var killCommand = new MySqlCommand("KILL QUERY {0}".FormatInvariant(command.Connection!.ServerThread), connection);
 			killCommand.CommandTimeout = cancellationTimeout < 1 ? 3 : cancellationTimeout;
-			m_session.DoCancel(command, killCommand);
+			m_session?.DoCancel(command, killCommand);
 		}
 		catch (InvalidOperationException ex)
 		{
 			// ignore a rare race condition where the connection is open at the beginning of the method, but closed by the time
 			// KILL QUERY is executed: https://github.com/mysql-net/MySqlConnector/issues/1002
-			Log.Info(ex, "Session{0} ignoring cancellation for closed connection.", m_session!.Id);
-			m_session.AbortCancel(command);
+			Log.Info(ex, "Session{0} ignoring cancellation for closed connection.", sessionId);
+			m_session?.AbortCancel(command);
 		}
 		catch (MySqlException ex)
 		{
 			// cancelling the query failed; setting the state back to 'Querying' will allow another call to 'Cancel' to try again
-			Log.Info(ex, "Session{0} cancelling CommandId {1} failed", m_session!.Id, command.CommandId);
-			m_session.AbortCancel(command);
+			Log.Info(ex, "Session{0} cancelling CommandId {1} failed", sessionId, command.CommandId);
+			m_session?.AbortCancel(command);
 		}
 	}
 
