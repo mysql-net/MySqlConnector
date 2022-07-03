@@ -96,10 +96,24 @@ internal sealed class TextRow : Row
 			return ParseInt32(data);
 
 		case ColumnType.Float:
-			return !Utf8Parser.TryParse(data, out float floatValue, out var floatBytesConsumed) || floatBytesConsumed != data.Length ? throw new FormatException() : floatValue;
+			if (Utf8Parser.TryParse(data, out float floatValue, out var floatBytesConsumed) && floatBytesConsumed == data.Length)
+				return floatValue;
+			ReadOnlySpan<byte> floatInfinity = new byte[] { 0x2D, 0x69, 0x6E, 0x66 }; // "-inf"
+			if (data.SequenceEqual(floatInfinity))
+				return float.NegativeInfinity;
+			if (data.SequenceEqual(floatInfinity.Slice(1)))
+				return float.PositiveInfinity;
+			throw new FormatException("Couldn't parse '{0}' as float".FormatInvariant(Encoding.UTF8.GetString(data)));
 
 		case ColumnType.Double:
-			return !Utf8Parser.TryParse(data, out double doubleValue, out var doubleBytesConsumed) || doubleBytesConsumed != data.Length ? throw new FormatException() : doubleValue;
+			if (Utf8Parser.TryParse(data, out double doubleValue, out var doubleBytesConsumed) && doubleBytesConsumed == data.Length)
+				return doubleValue;
+			ReadOnlySpan<byte> doubleInfinity = new byte[] { 0x2D, 0x69, 0x6E, 0x66 }; // "-inf"
+			if (data.SequenceEqual(doubleInfinity))
+				return double.NegativeInfinity;
+			if (data.SequenceEqual(doubleInfinity.Slice(1)))
+				return double.PositiveInfinity;
+			throw new FormatException("Couldn't parse '{0}' as double".FormatInvariant(Encoding.UTF8.GetString(data)));
 
 		case ColumnType.Decimal:
 		case ColumnType.NewDecimal:

@@ -203,6 +203,25 @@ public class ConnectionTests : IDisposable
 		}
 	}
 
+	[Fact]
+	public void ReadInfinity()
+	{
+		using var connection = new MySqlConnection(m_csb.ConnectionString);
+		connection.Open();
+		using var command = new MySqlCommand("select infinity", connection);
+		using var reader = command.ExecuteReader();
+		Assert.True(reader.Read());
+		Assert.Equal(float.NaN, reader.GetValue(0));
+		Assert.Equal(double.NaN, reader.GetValue(1));
+		Assert.True(reader.Read());
+		Assert.Equal(float.PositiveInfinity, reader.GetValue(0));
+		Assert.Equal(double.PositiveInfinity, reader.GetValue(1));
+		Assert.True(reader.Read());
+		Assert.Equal(float.NegativeInfinity, reader.GetValue(0));
+		Assert.Equal(double.NegativeInfinity, reader.GetValue(1));
+		Assert.False(reader.Read());
+	}
+
 	private static async Task WaitForConditionAsync<T>(T expected, Func<T> getValue)
 	{
 		var sw = Stopwatch.StartNew();
