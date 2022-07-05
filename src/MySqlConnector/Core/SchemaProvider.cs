@@ -1,3 +1,4 @@
+using System.Text;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
@@ -38,24 +39,62 @@ internal sealed class SchemaProvider
 			{ "Triggers", FillTriggers },
 			{ "UserPrivileges", FillUserPrivileges },
 			{ "Views", FillViews },
+			{ "ForeignKeys", FillForeignKeys },
+			{ "Indexes", FillIndexes },
+			{ "IndexColumns", FillIndexes },
 		};
 	}
 
-	public ValueTask<DataTable> GetSchemaAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) => GetSchemaAsync(ioBehavior, "MetaDataCollections", cancellationToken);
+	private async Task FillForeignKeys(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
+	{
+		dataTable.Columns.AddRange(new DataColumn[]
+		{
+			new("CONSTRAINT_CATALOG", typeof(string)),
+			new("CONSTRAINT_SCHEMA", typeof(string)),
+			new("CONSTRAINT_NAME", typeof(string)),
+			new("TABLE_CATALOG", typeof(string)),
+			new("TABLE_SCHEMA", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("COLUMN_NAME", typeof(string)),
+		});
 
-	public async ValueTask<DataTable> GetSchemaAsync(IOBehavior ioBehavior, string collectionName, CancellationToken cancellationToken)
+		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", restrictionValues, cancellationToken).ConfigureAwait(false);
+	}
+
+	private async Task FillIndexes(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
+	{
+		dataTable.Columns.AddRange(new DataColumn[]
+		{
+			new("TABLE_CATALOG", typeof(string)),
+			new("TABLE_SCHEMA", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("NON_UNIQUE", typeof(string)),
+			new("INDEX_SCHEMA", typeof(string)),
+			new("INDEX_NAME", typeof(string)),
+			new("COLUMN_NAME", typeof(string)),
+			new("COLLATION", typeof(string)),
+			new("CARDINALITY", typeof(string)),
+		});
+
+		await FillDataTableAsync(ioBehavior, dataTable, "STATISTICS", restrictionValues, cancellationToken).ConfigureAwait(false);
+	}
+
+	public ValueTask<DataTable> GetSchemaAsync(IOBehavior ioBehavior, string?[] restrictionValues, CancellationToken cancellationToken) => GetSchemaAsync(ioBehavior, "MetaDataCollections", restrictionValues, cancellationToken);
+
+	public async ValueTask<DataTable> GetSchemaAsync(IOBehavior ioBehavior, string collectionName, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		if (collectionName is null)
 			throw new ArgumentNullException(nameof(collectionName));
+		collectionName = collectionName.Replace(" ", "");
 		if (!m_schemaCollections.TryGetValue(collectionName, out var fillAction))
 			throw new ArgumentException("Invalid collection name.", nameof(collectionName));
 
 		var dataTable = new DataTable(collectionName);
-		await fillAction(ioBehavior, dataTable, cancellationToken).ConfigureAwait(false);
+		await fillAction(ioBehavior, dataTable, restrictionValues, cancellationToken).ConfigureAwait(false);
 		return dataTable;
 	}
 
-	private Task FillDataSourceInformation(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private Task FillDataSourceInformation(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[] {
 			new("CompositeIdentifierSeparatorPattern", typeof(string)),
@@ -106,7 +145,7 @@ internal sealed class SchemaProvider
 		static string GetVersion(Version v) => "{0:00}.{1:00}.{2:0000}".FormatInvariant(v.Major, v.Minor, v.Build);
 	}
 
-	private Task FillMetadataCollections(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private Task FillMetadataCollections(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[] {
 			new("CollectionName", typeof(string)),
@@ -120,7 +159,7 @@ internal sealed class SchemaProvider
 		return Utility.CompletedTask;
 	}
 
-	private async Task FillCharacterSets(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillCharacterSets(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -133,7 +172,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "CHARACTER_SETS", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillCollations(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillCollations(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -148,7 +187,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "COLLATIONS", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillCollationCharacterSetApplicability(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillCollationCharacterSetApplicability(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -159,7 +198,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "COLLATION_CHARACTER_SET_APPLICABILITY", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillColumns(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillColumns(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -196,10 +235,10 @@ internal sealed class SchemaProvider
 				dataTable.Columns.Add(new DataColumn("SRS_ID", typeof(uint)));
 		}
 
-		await FillDataTableAsync(ioBehavior, dataTable, "COLUMNS", cancellationToken).ConfigureAwait(false);
+		await FillDataTableAsync(ioBehavior, dataTable, "COLUMNS", restrictionValues, cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillDatabases(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillDatabases(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -210,10 +249,10 @@ internal sealed class SchemaProvider
 			new("SQL_PATH", typeof(string)),
 		});
 
-		await FillDataTableAsync(ioBehavior, dataTable, "SCHEMATA", cancellationToken).ConfigureAwait(false);
+		await FillDataTableAsync(ioBehavior, dataTable, "SCHEMATA", restrictionValues, cancellationToken).ConfigureAwait(false);
 	}
 
-	private Task FillDataTypes(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private Task FillDataTypes(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -297,7 +336,7 @@ internal sealed class SchemaProvider
 		return Utility.CompletedTask;
 	}
 
-	private async Task FillEngines(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillEngines(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -312,7 +351,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "ENGINES", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillKeyColumnUsage(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillKeyColumnUsage(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -330,10 +369,10 @@ internal sealed class SchemaProvider
 			new("REFERENCED_COLUMN_NAME", typeof(string)),
 		});
 
-		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", cancellationToken).ConfigureAwait(false);
+		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", restrictionValues, cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillKeyWords(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillKeyWords(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -344,7 +383,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "KEYWORDS", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillParameters(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillParameters(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -369,7 +408,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "PARAMETERS", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillPartitions(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillPartitions(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -403,7 +442,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "PARTITIONS", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillPlugins(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillPlugins(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -423,7 +462,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "PLUGINS", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillProcedures(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillProcedures(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -452,7 +491,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "ROUTINES", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillProcessList(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillProcessList(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -469,7 +508,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "PROCESSLIST", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillProfiling(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillProfiling(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -496,7 +535,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "PROFILING", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillReferentialConstraints(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillReferentialConstraints(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -516,7 +555,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "REFERENTIAL_CONSTRAINTS", cancellationToken).ConfigureAwait(false);
 	}
 
-	private Task FillReservedWords(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private Task FillReservedWords(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.Add(new DataColumn("ReservedWord", typeof(string)));
 
@@ -806,7 +845,7 @@ internal sealed class SchemaProvider
 		return Utility.CompletedTask;
 	}
 
-	private async Task FillResourceGroups(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillResourceGroups(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -820,7 +859,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "RESOURCE_GROUPS", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillSchemaPrivileges(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillSchemaPrivileges(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -834,7 +873,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "SCHEMA_PRIVILEGES", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillTables(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillTables(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -861,10 +900,10 @@ internal sealed class SchemaProvider
 			new("TABLE_COMMENT", typeof(string)),
 		});
 
-		await FillDataTableAsync(ioBehavior, dataTable, "TABLES", cancellationToken).ConfigureAwait(false);
+		await FillDataTableAsync(ioBehavior, dataTable, "TABLES", restrictionValues, cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillTableConstraints(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillTableConstraints(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -876,10 +915,10 @@ internal sealed class SchemaProvider
 			new("CONSTRAINT_TYPE", typeof(string)),
 		});
 
-		await FillDataTableAsync(ioBehavior, dataTable, "TABLE_CONSTRAINTS", cancellationToken).ConfigureAwait(false);
+		await FillDataTableAsync(ioBehavior, dataTable, "TABLE_CONSTRAINTS", restrictionValues, cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillTablePrivileges(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillTablePrivileges(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -894,7 +933,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "TABLE_PRIVILEGES", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillTableSpaces(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillTableSpaces(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -912,7 +951,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "TABLESPACES", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillTriggers(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillTriggers(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -943,7 +982,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "TRIGGERS", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillUserPrivileges(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillUserPrivileges(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -956,7 +995,7 @@ internal sealed class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "USER_PRIVILEGES", cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillViews(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	private async Task FillViews(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -972,10 +1011,16 @@ internal sealed class SchemaProvider
 			new("COLLATION_CONNECTION", typeof(string)),
 		});
 
-		await FillDataTableAsync(ioBehavior, dataTable, "VIEWS", cancellationToken).ConfigureAwait(false);
+		await FillDataTableAsync(ioBehavior, dataTable, "VIEWS", restrictionValues, cancellationToken).ConfigureAwait(false);
 	}
 
 	private async Task FillDataTableAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, CancellationToken cancellationToken)
+	{
+#pragma warning disable CA1825
+		await FillDataTableAsync(ioBehavior, dataTable, tableName, new string?[0], cancellationToken).ConfigureAwait(false);
+#pragma warning restore CA1825
+	}
+	private async Task FillDataTableAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		Action? close = null;
 		if (m_connection.State != ConnectionState.Open)
@@ -987,7 +1032,34 @@ internal sealed class SchemaProvider
 		using (var command = m_connection.CreateCommand())
 		{
 #pragma warning disable CA2100
-			command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(static x => x!.ColumnName)) + " FROM INFORMATION_SCHEMA." + tableName + ";";
+			command.CommandText = "SELECT "
+				+ string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(static x => x!.ColumnName))
+				+ " FROM INFORMATION_SCHEMA." + tableName;
+
+			if (restrictionValues.Any())
+			{
+				StringBuilder sbWhere = new StringBuilder();
+				List<string> whereParts = new List<string>(4);
+
+				if (restrictionValues.Length >= 1 && !string.IsNullOrEmpty(restrictionValues[0]))
+					whereParts.Add($"UPPER(TABLE_CATALOG) = '{restrictionValues[0]?.ToUpperInvariant()}'");
+
+				if (restrictionValues.Length >= 2 && !string.IsNullOrEmpty(restrictionValues[1]))
+				{
+					whereParts.Add($"UPPER(TABLE_SCHEMA) = '{restrictionValues[1]?.ToUpperInvariant()}'");
+				}
+
+				if (restrictionValues.Length >= 3 && !string.IsNullOrEmpty(restrictionValues[2]))
+					whereParts.Add($"UPPER(TABLE_NAME) = '{restrictionValues[2]?.ToUpperInvariant()}'");
+
+				if (restrictionValues.Length >= 4 && !string.IsNullOrEmpty(restrictionValues[3]))
+					whereParts.Add($"UPPER(COLUMN_NAME) = '{restrictionValues[3]?.ToUpperInvariant()}'");
+
+				if (whereParts.Count > 0)
+					command.CommandText += " WHERE " + string.Join(" and ", whereParts);
+			}
+			command.CommandText += ";";
+
 #pragma warning restore CA2100
 			using var reader = await command.ExecuteReaderAsync(default, ioBehavior, cancellationToken).ConfigureAwait(false);
 			while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
@@ -1002,5 +1074,5 @@ internal sealed class SchemaProvider
 	}
 
 	private readonly MySqlConnection m_connection;
-	private readonly Dictionary<string, Func<IOBehavior, DataTable, CancellationToken, Task>> m_schemaCollections;
+	private readonly Dictionary<string, Func<IOBehavior, DataTable, string?[], CancellationToken, Task>> m_schemaCollections;
 }

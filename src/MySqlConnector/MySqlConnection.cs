@@ -581,27 +581,27 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	protected override DbProviderFactory DbProviderFactory => MySqlConnectorFactory.Instance;
 
-#pragma warning disable CA2012 // Safe because method completes synchronously
+#pragma warning disable CA2012, CA1825 // Safe because method completes synchronously
 	/// <summary>
 	/// Returns schema information for the data source of this <see cref="MySqlConnection"/>.
 	/// </summary>
 	/// <returns>A <see cref="DataTable"/> containing schema information.</returns>
-	public override DataTable GetSchema() => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+	public override DataTable GetSchema() => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, new string?[0], default).GetAwaiter().GetResult();
 
 	/// <summary>
 	/// Returns schema information for the data source of this <see cref="MySqlConnection"/>.
 	/// </summary>
 	/// <param name="collectionName">The name of the schema to return.</param>
 	/// <returns>A <see cref="DataTable"/> containing schema information.</returns>
-	public override DataTable GetSchema(string collectionName) => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, collectionName, default).GetAwaiter().GetResult();
+	public override DataTable GetSchema(string collectionName) => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, collectionName, new string?[0], default).GetAwaiter().GetResult();
 
 	/// <summary>
 	/// Returns schema information for the data source of this <see cref="MySqlConnection"/>.
 	/// </summary>
 	/// <param name="collectionName">The name of the schema to return.</param>
-	/// <param name="restrictionValues">The restrictions to apply to the schema; this parameter is currently ignored.</param>
+	/// <param name="restrictionValues">The restrictions to apply to the schema</param>
 	/// <returns>A <see cref="DataTable"/> containing schema information.</returns>
-	public override DataTable GetSchema(string collectionName, string?[] restrictionValues) => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, collectionName, default).GetAwaiter().GetResult();
+	public override DataTable GetSchema(string collectionName, string?[] restrictionValues) => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, collectionName, restrictionValues, default).GetAwaiter().GetResult();
 #pragma warning restore CA2012
 
 	/// <summary>
@@ -615,7 +615,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 #else
 	public Task<DataTable> GetSchemaAsync(CancellationToken cancellationToken = default)
 #endif
-		=> GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, cancellationToken).AsTask();
+		=> GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, new string?[0], cancellationToken).AsTask();
 
 	/// <summary>
 	/// Asynchronously returns schema information for the data source of this <see cref="MySqlConnection"/>.
@@ -629,13 +629,13 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 #else
 	public Task<DataTable> GetSchemaAsync(string collectionName, CancellationToken cancellationToken = default)
 #endif
-		=> GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, collectionName, cancellationToken).AsTask();
+		=> GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, collectionName, new string?[0], cancellationToken).AsTask();
 
 	/// <summary>
 	/// Asynchronously returns schema information for the data source of this <see cref="MySqlConnection"/>.
-	/// </summary>
+	/// </summary>,
 	/// <param name="collectionName">The name of the schema to return.</param>
-	/// <param name="restrictionValues">The restrictions to apply to the schema; this parameter is currently ignored.</param>
+	/// <param name="restrictionValues">The restrictions to apply to the schema</param>
 	/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 	/// <returns>A <see cref="Task{DataTable}"/> containing schema information.</returns>
 	/// <remarks>The proposed ADO.NET API that this is based on is not finalized; this API may change in the future.</remarks>
@@ -644,7 +644,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 #else
 	public Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictionValues, CancellationToken cancellationToken = default)
 #endif
-		=> GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, collectionName, cancellationToken).AsTask();
+		=> GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, collectionName, restrictionValues, cancellationToken).AsTask();
 
 	private SchemaProvider GetSchemaProvider() => m_schemaProvider ??= new(this);
 
