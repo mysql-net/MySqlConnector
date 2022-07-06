@@ -39,7 +39,7 @@ internal sealed class SchemaProvider
 			{ "Triggers", FillTriggers },
 			{ "UserPrivileges", FillUserPrivileges },
 			{ "Views", FillViews },
-			{ "ForeignKeys", FillForeignKeys },
+			{ "Foreign Keys", FillForeignKeys },
 			{ "Indexes", FillIndexColumns },
 			{ "IndexColumns", FillIndexColumns },
 		};
@@ -123,8 +123,6 @@ internal sealed class SchemaProvider
 		if (collectionName is null)
 			throw new ArgumentNullException(nameof(collectionName));
 
-		// some variances exists: e.g. ForeignKeys = Foreign Keys
-		collectionName = collectionName.Replace(" ", "");
 		if (!m_schemaCollections.TryGetValue(collectionName, out var fillAction))
 			throw new ArgumentException("Invalid collection name.", nameof(collectionName));
 
