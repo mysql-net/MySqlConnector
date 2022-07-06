@@ -40,8 +40,21 @@ internal sealed class SchemaProvider
 			{ "UserPrivileges", FillUserPrivileges },
 			{ "Views", FillViews },
 			{ "ForeignKeys", FillForeignKeys },
-			{ "Indexes", FillIndexes },
-			{ "IndexColumns", FillIndexes },
+			{ "Indexes", FillIndexColumns },
+			{ "IndexColumns", FillIndexColumns },
+		};
+
+		m_restrictionMapping = new(StringComparer.OrdinalIgnoreCase)
+		{
+			{ nameof(FillColumns), new[] { "TABLE_CATALOG", "TABLE_SCHEMA", "TABLE_NAME", "COLUMN_NAME" } },
+			{ nameof(FillForeignKeys), new[] { "TABLE_CATALOG", "TABLE_SCHEMA", "TABLE_NAME", "COLUMN_NAME" } },
+			{ nameof(FillTableConstraints), new[] { "TABLE_CATALOG", "TABLE_SCHEMA", "TABLE_NAME", "COLUMN_NAME" } },
+			{ nameof(FillIndexColumns), new[] { "TABLE_CATALOG", "TABLE_SCHEMA", "TABLE_NAME", "COLUMN_NAME" } },
+			{ nameof(FillViews), new[] { "TABLE_CATALOG", "TABLE_SCHEMA", "TABLE_NAME" } },
+			{ nameof(FillTables), new[] { "TABLE_CATALOG", "TABLE_SCHEMA", "TABLE_NAME" } },
+			{ nameof(FillDatabases), new[] { "SCHEMA_NAME" } },
+
+			// propertly some restrictions are missing
 		};
 	}
 
@@ -58,10 +71,32 @@ internal sealed class SchemaProvider
 			new("COLUMN_NAME", typeof(string)),
 		});
 
-		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", restrictionValues, cancellationToken).ConfigureAwait(false);
+		var restrictionFilters = CreateRestrictionFilter(nameof(FillForeignKeys), dataTable, restrictionValues);
+
+		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", restrictionFilters, cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillIndexes(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
+	private List<string> CreateRestrictionFilter(string mappingKey, DataTable dataTable, string?[] restrictionValues)
+	{
+		List<string> restrictionFilters = new List<string>();
+		if (m_restrictionMapping.ContainsKey(mappingKey))
+		{
+			var restrictionMapping = m_restrictionMapping[mappingKey];
+			for (int i = 0; i < restrictionValues.Length; i++)
+			{
+				if (!string.IsNullOrEmpty(restrictionValues[i]))
+				{
+					if (i >= restrictionMapping.Length || !dataTable.Columns.Contains(restrictionMapping[i]))
+						throw new InvalidOperationException("Wrong restriction value mapping detected.");
+
+					restrictionFilters.Add($"UPPER({restrictionMapping[i]}) = '{restrictionValues[i]?.ToUpperInvariant()}'");
+				}
+			}
+		}
+		return restrictionFilters;
+	}
+
+	private async Task FillIndexColumns(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
 	{
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -76,7 +111,9 @@ internal sealed class SchemaProvider
 			new("CARDINALITY", typeof(string)),
 		});
 
-		await FillDataTableAsync(ioBehavior, dataTable, "STATISTICS", restrictionValues, cancellationToken).ConfigureAwait(false);
+		var restrictionFilters = CreateRestrictionFilter(nameof(FillForeignKeys), dataTable, restrictionValues);
+
+		await FillDataTableAsync(ioBehavior, dataTable, "STATISTICS", restrictionFilters, cancellationToken).ConfigureAwait(false);
 	}
 
 	public ValueTask<DataTable> GetSchemaAsync(IOBehavior ioBehavior, string?[] restrictionValues, CancellationToken cancellationToken) => GetSchemaAsync(ioBehavior, "MetaDataCollections", restrictionValues, cancellationToken);
@@ -85,6 +122,8 @@ internal sealed class SchemaProvider
 	{
 		if (collectionName is null)
 			throw new ArgumentNullException(nameof(collectionName));
+
+		// some variances exists: e.g. ForeignKeys = Foreign Keys
 		collectionName = collectionName.Replace(" ", "");
 		if (!m_schemaCollections.TryGetValue(collectionName, out var fillAction))
 			throw new ArgumentException("Invalid collection name.", nameof(collectionName));
@@ -169,6 +208,7 @@ internal sealed class SchemaProvider
 			new("MAXLEN", typeof(int)),
 		});
 
+		// no restrictions
 		await FillDataTableAsync(ioBehavior, dataTable, "CHARACTER_SETS", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -184,6 +224,7 @@ internal sealed class SchemaProvider
 			new("SORTLEN", typeof(int)),
 		});
 
+		// no restrictions
 		await FillDataTableAsync(ioBehavior, dataTable, "COLLATIONS", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -195,6 +236,7 @@ internal sealed class SchemaProvider
 			new("CHARACTER_SET_NAME", typeof(string)),
 		});
 
+		// no restrictions
 		await FillDataTableAsync(ioBehavior, dataTable, "COLLATION_CHARACTER_SET_APPLICABILITY", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -235,7 +277,9 @@ internal sealed class SchemaProvider
 				dataTable.Columns.Add(new DataColumn("SRS_ID", typeof(uint)));
 		}
 
-		await FillDataTableAsync(ioBehavior, dataTable, "COLUMNS", restrictionValues, cancellationToken).ConfigureAwait(false);
+		var restrictionFilters = CreateRestrictionFilter(nameof(FillColumns), dataTable, restrictionValues);
+
+		await FillDataTableAsync(ioBehavior, dataTable, "COLUMNS", restrictionFilters, cancellationToken).ConfigureAwait(false);
 	}
 
 	private async Task FillDatabases(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
@@ -249,7 +293,9 @@ internal sealed class SchemaProvider
 			new("SQL_PATH", typeof(string)),
 		});
 
-		await FillDataTableAsync(ioBehavior, dataTable, "SCHEMATA", restrictionValues, cancellationToken).ConfigureAwait(false);
+		var restrictionFilters = CreateRestrictionFilter(nameof(FillDatabases), dataTable, restrictionValues);
+
+		await FillDataTableAsync(ioBehavior, dataTable, "SCHEMATA", restrictionFilters, cancellationToken).ConfigureAwait(false);
 	}
 
 	private Task FillDataTypes(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
@@ -348,6 +394,7 @@ internal sealed class SchemaProvider
 			new("SAVEPOINTS", typeof(string)),
 		});
 
+		// no restrictions
 		await FillDataTableAsync(ioBehavior, dataTable, "ENGINES", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -369,7 +416,9 @@ internal sealed class SchemaProvider
 			new("REFERENCED_COLUMN_NAME", typeof(string)),
 		});
 
-		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", restrictionValues, cancellationToken).ConfigureAwait(false);
+		var restrictionFilters = CreateRestrictionFilter(nameof(FillKeyColumnUsage), dataTable, restrictionValues);
+
+		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", restrictionFilters, cancellationToken).ConfigureAwait(false);
 	}
 
 	private async Task FillKeyWords(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
@@ -380,6 +429,7 @@ internal sealed class SchemaProvider
 			new("RESERVED", typeof(int)),
 		});
 
+		// no restrictions
 		await FillDataTableAsync(ioBehavior, dataTable, "KEYWORDS", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -405,6 +455,7 @@ internal sealed class SchemaProvider
 			new("ROUTINE_TYPE", typeof(string)),
 		});
 
+		// no restrictions
 		await FillDataTableAsync(ioBehavior, dataTable, "PARAMETERS", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -439,6 +490,7 @@ internal sealed class SchemaProvider
 			new("TABLESPACE_NAME", typeof(string)),
 		});
 
+		// no restrictions
 		await FillDataTableAsync(ioBehavior, dataTable, "PARTITIONS", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -459,6 +511,7 @@ internal sealed class SchemaProvider
 			new("LOAD_OPTION", typeof(string)),
 		});
 
+		// no restrictions
 		await FillDataTableAsync(ioBehavior, dataTable, "PLUGINS", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -488,7 +541,9 @@ internal sealed class SchemaProvider
 			new("DEFINER", typeof(string)),
 		});
 
-		await FillDataTableAsync(ioBehavior, dataTable, "ROUTINES", cancellationToken).ConfigureAwait(false);
+		var restrictionFilters = CreateRestrictionFilter(nameof(FillProcedures), dataTable, restrictionValues);
+
+		await FillDataTableAsync(ioBehavior, dataTable, "ROUTINES", restrictionFilters, cancellationToken).ConfigureAwait(false);
 	}
 
 	private async Task FillProcessList(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
@@ -505,6 +560,7 @@ internal sealed class SchemaProvider
 			new("INFO", typeof(string)),
 		});
 
+		// no restriction support
 		await FillDataTableAsync(ioBehavior, dataTable, "PROCESSLIST", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -532,6 +588,7 @@ internal sealed class SchemaProvider
 			new("SOURCE_LINE", typeof(int)),
 		});
 
+		// no restriction support
 		await FillDataTableAsync(ioBehavior, dataTable, "PROFILING", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -552,6 +609,7 @@ internal sealed class SchemaProvider
 			new("REFERENCED_TABLE_NAME", typeof(string)),
 		});
 
+		// currently no restriction support: unkown mapping
 		await FillDataTableAsync(ioBehavior, dataTable, "REFERENTIAL_CONSTRAINTS", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -856,6 +914,7 @@ internal sealed class SchemaProvider
 			new("THREAD_PRIORITY", typeof(int)),
 		});
 
+		// currently no restriction support: unkown mapping
 		await FillDataTableAsync(ioBehavior, dataTable, "RESOURCE_GROUPS", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -870,6 +929,7 @@ internal sealed class SchemaProvider
 			new("IS_GRANTABLE", typeof(string)),
 		});
 
+		// currently no restriction support: unkown mapping
 		await FillDataTableAsync(ioBehavior, dataTable, "SCHEMA_PRIVILEGES", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -900,7 +960,9 @@ internal sealed class SchemaProvider
 			new("TABLE_COMMENT", typeof(string)),
 		});
 
-		await FillDataTableAsync(ioBehavior, dataTable, "TABLES", restrictionValues, cancellationToken).ConfigureAwait(false);
+		var restrictionFilters = CreateRestrictionFilter(nameof(FillTables), dataTable, restrictionValues);
+
+		await FillDataTableAsync(ioBehavior, dataTable, "TABLES", restrictionFilters, cancellationToken).ConfigureAwait(false);
 	}
 
 	private async Task FillTableConstraints(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
@@ -915,7 +977,9 @@ internal sealed class SchemaProvider
 			new("CONSTRAINT_TYPE", typeof(string)),
 		});
 
-		await FillDataTableAsync(ioBehavior, dataTable, "TABLE_CONSTRAINTS", restrictionValues, cancellationToken).ConfigureAwait(false);
+		var restrictionFilters = CreateRestrictionFilter(nameof(FillTableConstraints), dataTable, restrictionValues);
+
+		await FillDataTableAsync(ioBehavior, dataTable, "TABLE_CONSTRAINTS", restrictionFilters, cancellationToken).ConfigureAwait(false);
 	}
 
 	private async Task FillTablePrivileges(IOBehavior ioBehavior, DataTable dataTable, string?[] restrictionValues, CancellationToken cancellationToken)
@@ -930,6 +994,7 @@ internal sealed class SchemaProvider
 			new("IS_GRANTABLE", typeof(string)),
 		});
 
+		// no restriction support: unkown mapping
 		await FillDataTableAsync(ioBehavior, dataTable, "TABLE_PRIVILEGES", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -948,6 +1013,7 @@ internal sealed class SchemaProvider
 			new("TABLESPACE_COMMENT", typeof(string)),
 		});
 
+		// no known restrictions
 		await FillDataTableAsync(ioBehavior, dataTable, "TABLESPACES", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -979,6 +1045,7 @@ internal sealed class SchemaProvider
 			new("DATABASE_COLLATION", typeof(string)),
 		});
 
+		// no known restrictions
 		await FillDataTableAsync(ioBehavior, dataTable, "TRIGGERS", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -992,6 +1059,7 @@ internal sealed class SchemaProvider
 			new("IS_GRANTABLE", typeof(string)),
 		});
 
+		// no restriction support: i think idx 0 is USER?!
 		await FillDataTableAsync(ioBehavior, dataTable, "USER_PRIVILEGES", cancellationToken).ConfigureAwait(false);
 	}
 
@@ -1011,16 +1079,18 @@ internal sealed class SchemaProvider
 			new("COLLATION_CONNECTION", typeof(string)),
 		});
 
-		await FillDataTableAsync(ioBehavior, dataTable, "VIEWS", restrictionValues, cancellationToken).ConfigureAwait(false);
+		var restrictionFilters = CreateRestrictionFilter(nameof(FillViews), dataTable, restrictionValues);
+
+		await FillDataTableAsync(ioBehavior, dataTable, "VIEWS", restrictionFilters, cancellationToken).ConfigureAwait(false);
 	}
 
 	private async Task FillDataTableAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, CancellationToken cancellationToken)
 	{
 #pragma warning disable CA1825
-		await FillDataTableAsync(ioBehavior, dataTable, tableName, new string?[0], cancellationToken).ConfigureAwait(false);
+		await FillDataTableAsync(ioBehavior, dataTable, tableName, new List<string>(), cancellationToken).ConfigureAwait(false);
 #pragma warning restore CA1825
 	}
-	private async Task FillDataTableAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[] restrictionValues, CancellationToken cancellationToken)
+	private async Task FillDataTableAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, List<string> restrictionFilters, CancellationToken cancellationToken)
 	{
 		Action? close = null;
 		if (m_connection.State != ConnectionState.Open)
@@ -1036,28 +1106,9 @@ internal sealed class SchemaProvider
 				+ string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(static x => x!.ColumnName))
 				+ " FROM INFORMATION_SCHEMA." + tableName;
 
-			if (restrictionValues.Any())
-			{
-				StringBuilder sbWhere = new StringBuilder();
-				List<string> whereParts = new List<string>(4);
+			if (restrictionFilters.Any())
+				command.CommandText += " WHERE " + string.Join(" and ", restrictionFilters);
 
-				if (restrictionValues.Length >= 1 && !string.IsNullOrEmpty(restrictionValues[0]))
-					whereParts.Add($"UPPER(TABLE_CATALOG) = '{restrictionValues[0]?.ToUpperInvariant()}'");
-
-				if (restrictionValues.Length >= 2 && !string.IsNullOrEmpty(restrictionValues[1]))
-				{
-					whereParts.Add($"UPPER(TABLE_SCHEMA) = '{restrictionValues[1]?.ToUpperInvariant()}'");
-				}
-
-				if (restrictionValues.Length >= 3 && !string.IsNullOrEmpty(restrictionValues[2]))
-					whereParts.Add($"UPPER(TABLE_NAME) = '{restrictionValues[2]?.ToUpperInvariant()}'");
-
-				if (restrictionValues.Length >= 4 && !string.IsNullOrEmpty(restrictionValues[3]))
-					whereParts.Add($"UPPER(COLUMN_NAME) = '{restrictionValues[3]?.ToUpperInvariant()}'");
-
-				if (whereParts.Count > 0)
-					command.CommandText += " WHERE " + string.Join(" and ", whereParts);
-			}
 			command.CommandText += ";";
 
 #pragma warning restore CA2100
@@ -1074,5 +1125,6 @@ internal sealed class SchemaProvider
 	}
 
 	private readonly MySqlConnection m_connection;
+	private readonly Dictionary<string, string[]> m_restrictionMapping;
 	private readonly Dictionary<string, Func<IOBehavior, DataTable, string?[], CancellationToken, Task>> m_schemaCollections;
 }
