@@ -586,7 +586,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// Returns schema information for the data source of this <see cref="MySqlConnection"/>.
 	/// </summary>
 	/// <returns>A <see cref="DataTable"/> containing schema information.</returns>
-	public override DataTable GetSchema() => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+	public override DataTable GetSchema() => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, "MetaDataCollections", default).GetAwaiter().GetResult();
 
 	/// <summary>
 	/// Returns schema information for the data source of this <see cref="MySqlConnection"/>.
@@ -615,7 +615,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 #else
 	public Task<DataTable> GetSchemaAsync(CancellationToken cancellationToken = default)
 #endif
-		=> GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, cancellationToken).AsTask();
+		=> GetSchemaProvider().GetSchemaAsync(AsyncIOBehavior, "MetaDataCollections", cancellationToken).AsTask();
 
 	/// <summary>
 	/// Asynchronously returns schema information for the data source of this <see cref="MySqlConnection"/>.
