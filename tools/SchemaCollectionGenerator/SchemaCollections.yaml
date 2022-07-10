@@ -1,4 +1,5 @@
 - name: MetaDataCollections
+  description: information about available schemas
   columns:
   - name: CollectionName
     type: string
@@ -144,6 +145,7 @@
     type: SupportedJoinOperators
 
 - name: DataTypes
+  description: information about available data types
   custom: DoFillDataTypes
   columns:
   - name: TypeName
@@ -362,6 +364,7 @@
     type: string
 
 - name: Procedures
+  description: information about stored procedures
   table: ROUTINES
   columns:
   - name: SPECIFIC_NAME
@@ -492,6 +495,7 @@
     type: string
 
 - name: ReservedWords
+  description: information about reserved words in the server's SQL syntax
   custom: DoFillReservedWords
   columns:
   - name: ReservedWord

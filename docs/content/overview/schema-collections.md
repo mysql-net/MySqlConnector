@@ -1,5 +1,6 @@
 ---
 date: 2021-04-24
+lastmod: 2022-07-10
 menu:
   main:
     parent: getting started
@@ -20,6 +21,7 @@ weight: 80
 * `CollationCharacterSetApplicability`
 * `Columns`
 * `Databases`
+* `DataSourceInformation`
 * `DataTypes`—information about available data types
 * `Engines`
 * `KeyColumnUsage`
