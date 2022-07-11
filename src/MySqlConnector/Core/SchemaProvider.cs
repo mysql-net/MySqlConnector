@@ -381,7 +381,7 @@ internal sealed partial class SchemaProvider
 			dataTable.Rows.Add(word);
 	}
 
-	private async Task FillDataTableAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, CancellationToken cancellationToken)
+	private async Task FillDataTableAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, List<KeyValuePair<string, string>>? columns, CancellationToken cancellationToken)
 	{
 		Action? close = null;
 		if (m_connection.State != ConnectionState.Open)
@@ -409,8 +409,15 @@ internal sealed partial class SchemaProvider
 		using (var command = m_connection.CreateCommand())
 		{
 #pragma warning disable CA2100
-			command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(static x => x!.ColumnName)) + " FROM INFORMATION_SCHEMA." + tableName + ";";
+			command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(static x => x!.ColumnName)) + " FROM INFORMATION_SCHEMA." + tableName;
 #pragma warning restore CA2100
+			if (columns is { Count: > 0 })
+			{
+				command.CommandText += " WHERE " + string.Join(" AND ", columns.Select(x => $@"{x.Key} = @{x.Key}"));
+				foreach (var column in columns)
+					command.Parameters.AddWithValue("@" + column.Key, column.Value);
+			}
+
 			using var reader = await command.ExecuteReaderAsync(default, ioBehavior, cancellationToken).ConfigureAwait(false);
 			while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
 			{

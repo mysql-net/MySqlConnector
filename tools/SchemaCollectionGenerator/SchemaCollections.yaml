@@ -46,6 +46,15 @@
 
 - name: Columns
   table: COLUMNS
+  restrictions:
+  - name: Catalog
+    default: TABLE_CATALOG
+  - name: Schema
+    default: TABLE_SCHEMA
+  - name: Table
+    default: TABLE_NAME
+  - name: Column
+    default: COLUMN_NAME
   columns:
   - name: TABLE_CATALOG
     type: string

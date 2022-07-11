@@ -22,7 +22,7 @@ namespace MySqlConnector.Core;
 
 internal sealed partial class SchemaProvider
 {
-	public async ValueTask<DataTable> GetSchemaAsync(IOBehavior ioBehavior, string collectionName, CancellationToken cancellationToken)
+	public async ValueTask<DataTable> GetSchemaAsync(IOBehavior ioBehavior, string collectionName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
 		if (collectionName is null)
 			throw new ArgumentNullException(nameof(collectionName));
@@ -33,7 +33,7 @@ string elseIf = "if";
 foreach (var schema in schemaCollections)
 {
 	codeWriter.Write(@$"		{elseIf} (string.Equals(collectionName, ""{schema.Name}"", StringComparison.OrdinalIgnoreCase))
-			await Fill{schema.Name}Async(ioBehavior, dataTable, cancellationToken).ConfigureAwait(false);
+			await Fill{schema.Name}Async(ioBehavior, dataTable, restrictionValues, cancellationToken).ConfigureAwait(false);
 ");
 	elseIf = "else if";
 }
@@ -48,8 +48,24 @@ codeWriter.Write(@"		else
 foreach (var schema in schemaCollections)
 {
 	var isAsync = schema.Table is not null;
-	codeWriter.Write($@"	private {(isAsync ? "async " : "")}Task Fill{schema.Name}Async(IOBehavior ioBehavior, DataTable dataTable, CancellationToken cancellationToken)
+	var supportsRestrictions = schema.Restrictions is { Count: > 0 };
+	codeWriter.Write($@"	private {(isAsync ? "async " : "")}Task Fill{schema.Name}Async(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{{
+");
+	if (!supportsRestrictions)
+	{
+		codeWriter.Write($@"		if (restrictionValues is not null)
+			throw new ArgumentException(""restrictionValues is not supported for schema '{schema.Name}'."", nameof(restrictionValues));
+");
+	}
+	else
+	{
+		codeWriter.Write($@"		if (restrictionValues is {{ Length: > {schema.Restrictions!.Count} }})
+			throw new ArgumentException(""More than {schema.Restrictions.Count} restrictionValues are not supported for schema '{schema.Name}'."", nameof(restrictionValues));
+");
+	}
+
+	codeWriter.Write($@"
 		dataTable.Columns.AddRange(new DataColumn[]
 		{{
 ");
@@ -63,13 +79,32 @@ foreach (var schema in schemaCollections)
 ");
 	if (schema.Table is string table)
 	{
-		codeWriter.Write(@$"		await FillDataTableAsync(ioBehavior, dataTable, ""{table}"", cancellationToken).ConfigureAwait(false);");
+		if (supportsRestrictions)
+		{
+			codeWriter.Write($@"		var columns = new List<KeyValuePair<string, string>>();
+		if (restrictionValues is not null)
+		{{
+");
+			for (var i = 0; i < schema.Restrictions!.Count; i++)
+			{
+				if (!schema.Columns.Any(x => x.Name == schema.Restrictions[i].Default))
+					throw new InvalidOperationException("Restriction.Default must match a Column Name");
+				codeWriter.Write($@"			if (restrictionValues.Length > {i} && !string.IsNullOrEmpty(restrictionValues[{i}]))
+				columns.Add(new(""{schema.Restrictions[i].Default}"", restrictionValues[{i}]!));
+");
+			}
+			codeWriter.Write(@"		}
+
+");
+		}
+
+		codeWriter.Write(@$"		await FillDataTableAsync(ioBehavior, dataTable, ""{table}"", {(supportsRestrictions ? "columns," : "null,")} cancellationToken).ConfigureAwait(false);");
 	}
 	else if (schema.Name == "MetaDataCollections")
 	{
 		foreach (var schemaCollection in schemaCollections)
 		{
-			codeWriter.Write($@"		dataTable.Rows.Add(""{schemaCollection.Name}"", 0, 0);
+			codeWriter.Write($@"		dataTable.Rows.Add(""{schemaCollection.Name}"", {schemaCollection.Restrictions?.Count ?? 0}, 0);
 ");
 		}
 	}
@@ -129,6 +164,7 @@ class Schema
 	public string? Table { get; set; }
 	[AllowNull]
 	public List<Column> Columns { get; set; }
+	public List<Restriction>? Restrictions { get; set; }
 }
 
 class Column
@@ -138,4 +174,12 @@ class Column
 	[AllowNull]
 	public string Type { get; set; }
 	public bool Optional { get; set; }
+}
+
+class Restriction
+{
+	[AllowNull]
+	public string Name { get; set; }
+	[AllowNull]
+	public string Default { get; set; }
 }
