@@ -15,25 +15,25 @@ weight: 80
 
 `MySqlConnection.GetSchema` supports the following schemas:
 
-* `MetaDataCollections`—information about available schemas
+* `MetaDataCollections`—[information about available schemas](../schema/metadatacollections/)
 * `CharacterSets`
 * `Collations`
 * `CollationCharacterSetApplicability`
-* `Columns`
+* `Columns`—[information about columns (in all tables)](../schema/columns/)
 * `Databases`
 * `DataSourceInformation`
-* `DataTypes`—information about available data types
+* `DataTypes`—[information about available data types](../schema/datatypes/)
 * `Engines`
 * `KeyColumnUsage`
 * `KeyWords`
 * `Parameters`
 * `Partitions`
 * `Plugins`
-* `Procedures`—information about stored procedures
+* `Procedures`—[information about stored procedures](../schema/procedures/)
 * `ProcessList`
 * `Profiling`
 * `ReferentialConstraints`
-* `ReservedWords`—information about reserved words in the server's SQL syntax
+* `ReservedWords`—[information about reserved words in the server's SQL syntax](../schema/reservedwords/)
 * `ResourceGroups`
 * `SchemaPrivileges`
 * `Tables`

@@ -149,11 +149,32 @@ weight: 80
 
 ");
 foreach (var schema in schemaCollections)
-	docWriter.Write($@"* `{schema.Name}`{(schema.Description is not null ? "—" + schema.Description : "")}
+	docWriter.Write($@"* `{schema.Name}`{(schema.Description is not null ? "—[" + schema.Description + "](../schema/" + schema.Name.ToLowerInvariant() + "/)" : "")}
 ");
 docWriter.Write(@"
 The `GetSchema(string, string[])` overload that specifies restrictions is not supported.
 ");
+
+foreach (var schema in schemaCollections.Where(x => x.Description is not null))
+{
+	using var schemaDocWriter = new StreamWriter($@"..\..\..\..\..\docs\content\overview\schema\{schema.Name.ToLowerInvariant()}.md");
+	schemaDocWriter.Write($@"---
+date: 2022-07-10
+lastmod: {DateTime.UtcNow.ToString("yyyy-MM-dd")}
+title: {schema.Name} Schema
+---
+
+# {schema.Name} Schema
+
+The `{schema.Name}` schema provides {schema.Description}.
+
+Column Name | Data Type
+--- | ---
+");
+	foreach (var column in schema.Columns)
+		schemaDocWriter.WriteLine($@"{column.Name} | {column.Type}");
+	schemaDocWriter.WriteLine();
+}
 
 class Schema
 {

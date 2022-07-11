@@ -46,6 +46,7 @@
 
 - name: Columns
   table: COLUMNS
+  description: information about columns (in all tables)
   restrictions:
   - name: Catalog
     default: TABLE_CATALOG
