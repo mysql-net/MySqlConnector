@@ -8,7 +8,7 @@ title: ReservedWords Schema
 
 The `ReservedWords` schema provides information about reserved words in the server's SQL syntax.
 
-Column Name | Data Type
---- | ---
-ReservedWord | string
+Column Name | Data Type | Description
+--- | --- | ---
+ReservedWord | string | 
 

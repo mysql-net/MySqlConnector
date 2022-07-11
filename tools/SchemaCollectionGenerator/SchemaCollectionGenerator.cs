@@ -179,11 +179,11 @@ title: {schema.Name} Schema
 
 The `{schema.Name}` schema provides {schema.Description}.
 
-Column Name | Data Type
---- | ---
+Column Name | Data Type | Description
+--- | --- | ---
 ");
 	foreach (var column in schema.Columns)
-		schemaDocWriter.WriteLine($@"{column.Name} | {column.Type}");
+		schemaDocWriter.WriteLine($@"{column.Name} | {column.Type} | {column.Description}");
 	schemaDocWriter.WriteLine();
 
 	if (schema.Restrictions is { Count: > 0 })
@@ -217,6 +217,7 @@ class Column
 	public string Name { get; set; }
 	[AllowNull]
 	public string Type { get; set; }
+	public string? Description { get; set; }
 	public bool Optional { get; set; }
 }
 

@@ -3,10 +3,13 @@
   columns:
   - name: CollectionName
     type: string
+    description: The name of the collection to pass to the GetSchema method to return the collection.
   - name: NumberOfRestrictions
     type: int
+    description: The number of restrictions that may be specified for the collection.
   - name: NumberOfIdentifierParts
     type: int
+    description: The number of parts in the composite identifier/database object name.
 
 - name: CharacterSets
   table: CHARACTER_SETS
@@ -530,12 +533,16 @@
   columns:
   - name: CollectionName
     type: string
+    description: The name of the collection that these restrictions apply to.
   - name: RestrictionName
     type: string
+    description: The name of the restriction in the collection.
   - name: RestrictionDefault
     type: string
+    description: Ignored.
   - name: RestrictionNumber
     type: int
+    description: The actual location in the collections restrictions that this particular restriction falls in.
 
 - name: SchemaPrivileges
   table: SCHEMA_PRIVILEGES

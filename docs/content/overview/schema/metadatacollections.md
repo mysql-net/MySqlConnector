@@ -8,9 +8,9 @@ title: MetaDataCollections Schema
 
 The `MetaDataCollections` schema provides information about available schemas.
 
-Column Name | Data Type
---- | ---
-CollectionName | string
-NumberOfRestrictions | int
-NumberOfIdentifierParts | int
+Column Name | Data Type | Description
+--- | --- | ---
+CollectionName | string | The name of the collection to pass to the GetSchema method to return the collection.
+NumberOfRestrictions | int | The number of restrictions that may be specified for the collection.
+NumberOfIdentifierParts | int | The number of parts in the composite identifier/database object name.
 
