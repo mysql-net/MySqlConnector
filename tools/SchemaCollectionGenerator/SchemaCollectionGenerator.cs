@@ -104,7 +104,7 @@ foreach (var schema in schemaCollections)
 	{
 		foreach (var schemaCollection in schemaCollections)
 		{
-			codeWriter.Write($@"		dataTable.Rows.Add(""{schemaCollection.Name}"", {schemaCollection.Restrictions?.Count ?? 0}, 0);
+			codeWriter.Write($@"		dataTable.Rows.Add(""{schemaCollection.Name}"", {schemaCollection.Restrictions?.Count ?? 0}, {schemaCollection.IdentifierPartCount});
 ");
 		}
 	}
@@ -206,6 +206,7 @@ class Schema
 	public string? Description { get; set; }
 	public string? Custom { get; set; }
 	public string? Table { get; set; }
+	public int IdentifierPartCount { get; set; }
 	[AllowNull]
 	public List<Column> Columns { get; set; }
 	public List<Restriction>? Restrictions { get; set; }

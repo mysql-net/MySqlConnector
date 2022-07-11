@@ -93,8 +93,8 @@ internal sealed partial class SchemaProvider
 		dataTable.Rows.Add("CharacterSets", 0, 0);
 		dataTable.Rows.Add("Collations", 0, 0);
 		dataTable.Rows.Add("CollationCharacterSetApplicability", 0, 0);
-		dataTable.Rows.Add("Columns", 4, 0);
-		dataTable.Rows.Add("Databases", 0, 0);
+		dataTable.Rows.Add("Columns", 4, 4);
+		dataTable.Rows.Add("Databases", 0, 2);
 		dataTable.Rows.Add("DataSourceInformation", 0, 0);
 		dataTable.Rows.Add("DataTypes", 0, 0);
 		dataTable.Rows.Add("Engines", 0, 0);
@@ -103,21 +103,21 @@ internal sealed partial class SchemaProvider
 		dataTable.Rows.Add("Parameters", 0, 0);
 		dataTable.Rows.Add("Partitions", 0, 0);
 		dataTable.Rows.Add("Plugins", 0, 0);
-		dataTable.Rows.Add("Procedures", 0, 0);
+		dataTable.Rows.Add("Procedures", 0, 3);
 		dataTable.Rows.Add("ProcessList", 0, 0);
 		dataTable.Rows.Add("Profiling", 0, 0);
-		dataTable.Rows.Add("ReferentialConstraints", 0, 0);
+		dataTable.Rows.Add("ReferentialConstraints", 0, 3);
 		dataTable.Rows.Add("ReservedWords", 0, 0);
 		dataTable.Rows.Add("ResourceGroups", 0, 0);
 		dataTable.Rows.Add("Restrictions", 0, 0);
 		dataTable.Rows.Add("SchemaPrivileges", 0, 0);
-		dataTable.Rows.Add("Tables", 0, 0);
-		dataTable.Rows.Add("TableConstraints", 0, 0);
+		dataTable.Rows.Add("Tables", 0, 3);
+		dataTable.Rows.Add("TableConstraints", 0, 3);
 		dataTable.Rows.Add("TablePrivileges", 0, 0);
 		dataTable.Rows.Add("TableSpaces", 0, 0);
-		dataTable.Rows.Add("Triggers", 0, 0);
+		dataTable.Rows.Add("Triggers", 0, 3);
 		dataTable.Rows.Add("UserPrivileges", 0, 0);
-		dataTable.Rows.Add("Views", 0, 0);
+		dataTable.Rows.Add("Views", 0, 3);
 
 		return Utility.CompletedTask;
 	}

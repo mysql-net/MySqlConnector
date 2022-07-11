@@ -50,6 +50,7 @@
 - name: Columns
   table: COLUMNS
   description: information about columns (in all tables)
+  identifierPartCount: 4
   restrictions:
   - name: Catalog
     default: TABLE_CATALOG
@@ -107,6 +108,7 @@
 
 - name: Databases
   table: SCHEMATA
+  identifierPartCount: 2
   columns:
   - name: CATALOG_NAME
     type: string
@@ -378,6 +380,7 @@
 
 - name: Procedures
   description: information about stored procedures
+  identifierPartCount: 3
   table: ROUTINES
   columns:
   - name: SPECIFIC_NAME
@@ -483,6 +486,7 @@
 
 - name: ReferentialConstraints
   table: REFERENTIAL_CONSTRAINTS
+  identifierPartCount: 3
   columns:
   - name: CONSTRAINT_CATALOG
     type: string
@@ -560,6 +564,7 @@
 
 - name: Tables
   table: TABLES
+  identifierPartCount: 3
   columns:
   - name: TABLE_CATALOG
     type: string
@@ -606,6 +611,7 @@
 
 - name: TableConstraints
   table: TABLE_CONSTRAINTS
+  identifierPartCount: 3
   columns:
   - name: CONSTRAINT_CATALOG
     type: string
@@ -660,6 +666,7 @@
 
 - name: Triggers
   table: TRIGGERS
+  identifierPartCount: 3
   columns:
   - name: TRIGGER_CATALOG
     type: string
@@ -720,6 +727,7 @@
 
 - name: Views
   table: VIEWS
+  identifierPartCount: 3
   columns:
   - name: TABLE_CATALOG
     type: string
@@ -741,5 +749,3 @@
     type: string
   - name: COLLATION_CONNECTION
     type: string
-
-
