@@ -33,19 +33,32 @@ Install MySqlConnector from [NuGet](https://www.nuget.org/packages/MySqlConnecto
 Connecting to your database is simple. For example, in C#:
 
 ```csharp
-using (var connection = new MySqlConnection("Server=myserver;User ID=mylogin;Password=mypass;Database=mydatabase"))
-{
-    connection.Open();
+using var connection = new MySqlConnection("Server=myserver;User ID=mylogin;Password=mypass;Database=mydatabase");
+connection.Open();
 
-    using (var command = new MySqlCommand("SELECT field FROM table;", connection))
-    using (var reader = command.ExecuteReader())
-        while (reader.Read())
-            Console.WriteLine(reader.GetString(0));
-}
+using var command = new MySqlCommand("SELECT field FROM table;", connection);
+using var reader = command.ExecuteReader();
+while (reader.Read())
+    Console.WriteLine(reader.GetString(0));
 ```
 
 For more information, see [how to install](./overview/installing/) and a [basic example](./tutorials/basic-api/) of using the API.
 [Many ORMs](/overview/use-with-orms/) are supported.
+
+
+### Asynchronous I/O
+
+MySqlConnector also fully supports asynchronous I/O. The C# example above can be rewritten as:
+
+```csharp
+await using var connection = new MySqlConnection("Server=myserver;User ID=mylogin;Password=mypass;Database=mydatabase");
+await connection.OpenAsync();
+
+using var command = new MySqlCommand("SELECT field FROM table;", connection);
+await using var reader = await command.ExecuteReaderAsync();
+while (await reader.ReadAsync())
+    Console.WriteLine(reader.GetString(0));
+```
 
 ## Performance
 
