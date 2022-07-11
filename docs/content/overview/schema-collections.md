@@ -44,5 +44,3 @@ weight: 80
 * `Triggers`
 * `UserPrivileges`
 * `Views`
-
-The `GetSchema(string, string[])` overload that specifies restrictions is not supported.

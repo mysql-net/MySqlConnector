@@ -165,9 +165,6 @@ weight: 80
 foreach (var schema in schemaCollections)
 	docWriter.Write($@"* `{schema.Name}`{(schema.Description is not null ? "—[" + schema.Description + "](../schema/" + schema.Name.ToLowerInvariant() + "/)" : "")}
 ");
-docWriter.Write(@"
-The `GetSchema(string, string[])` overload that specifies restrictions is not supported.
-");
 
 foreach (var schema in schemaCollections.Where(x => x.Description is not null))
 {
