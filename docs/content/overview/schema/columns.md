@@ -32,3 +32,12 @@ COLUMN_COMMENT | string
 GENERATION_EXPRESSION | string
 SRS_ID | string
 
+The following restrictions are supported:
+
+Restriction Name | Restriction Default | Restriction Number
+--- | --- | --:
+Catalog | TABLE_CATALOG | 1
+Schema | TABLE_SCHEMA | 2
+Table | TABLE_NAME | 3
+Column | COLUMN_NAME | 4
+

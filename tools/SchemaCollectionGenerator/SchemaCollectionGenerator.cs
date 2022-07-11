@@ -174,6 +174,18 @@ Column Name | Data Type
 	foreach (var column in schema.Columns)
 		schemaDocWriter.WriteLine($@"{column.Name} | {column.Type}");
 	schemaDocWriter.WriteLine();
+
+	if (schema.Restrictions is { Count: > 0 })
+	{
+		schemaDocWriter.Write(@"The following restrictions are supported:
+
+Restriction Name | Restriction Default | Restriction Number
+--- | --- | --:
+");
+		for (var i = 0; i < schema.Restrictions.Count; i++)
+			schemaDocWriter.WriteLine($@"{schema.Restrictions[i].Name} | {schema.Restrictions[i].Default} | {i + 1}");
+		schemaDocWriter.WriteLine();
+	}
 }
 
 class Schema
