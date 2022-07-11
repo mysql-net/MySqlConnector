@@ -108,6 +108,20 @@ foreach (var schema in schemaCollections)
 ");
 		}
 	}
+	else if (schema.Name == "Restrictions")
+	{
+		foreach (var schemaCollection in schemaCollections)
+		{
+			if (schemaCollection.Restrictions is { Count: > 0 })
+			{
+				for (var i = 0; i < schemaCollection.Restrictions.Count; i++)
+				{
+					var restriction = schemaCollection.Restrictions[i];
+					codeWriter.WriteLine($@"		dataTable.Rows.Add(""{schemaCollection.Name}"", ""{restriction.Name}"", ""{restriction.Default}"", {i + 1});");
+				}
+			}
+		}
+	}
 	else
 	{
 		codeWriter.Write(@$"		{schema.Custom}(dataTable);

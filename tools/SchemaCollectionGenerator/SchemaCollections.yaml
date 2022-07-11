@@ -525,6 +525,18 @@
   - name: THREAD_PRIORITY
     type: int
 
+- name: Restrictions
+  description: information about the restrictions supported when retrieving schemas
+  columns:
+  - name: CollectionName
+    type: string
+  - name: RestrictionName
+    type: string
+  - name: RestrictionDefault
+    type: string
+  - name: RestrictionNumber
+    type: int
+
 - name: SchemaPrivileges
   table: SCHEMA_PRIVILEGES
   columns:

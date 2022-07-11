@@ -53,6 +53,8 @@ internal sealed partial class SchemaProvider
 			await FillReservedWordsAsync(ioBehavior, dataTable, restrictionValues, cancellationToken).ConfigureAwait(false);
 		else if (string.Equals(collectionName, "ResourceGroups", StringComparison.OrdinalIgnoreCase))
 			await FillResourceGroupsAsync(ioBehavior, dataTable, restrictionValues, cancellationToken).ConfigureAwait(false);
+		else if (string.Equals(collectionName, "Restrictions", StringComparison.OrdinalIgnoreCase))
+			await FillRestrictionsAsync(ioBehavior, dataTable, restrictionValues, cancellationToken).ConfigureAwait(false);
 		else if (string.Equals(collectionName, "SchemaPrivileges", StringComparison.OrdinalIgnoreCase))
 			await FillSchemaPrivilegesAsync(ioBehavior, dataTable, restrictionValues, cancellationToken).ConfigureAwait(false);
 		else if (string.Equals(collectionName, "Tables", StringComparison.OrdinalIgnoreCase))
@@ -107,6 +109,7 @@ internal sealed partial class SchemaProvider
 		dataTable.Rows.Add("ReferentialConstraints", 0, 0);
 		dataTable.Rows.Add("ReservedWords", 0, 0);
 		dataTable.Rows.Add("ResourceGroups", 0, 0);
+		dataTable.Rows.Add("Restrictions", 0, 0);
 		dataTable.Rows.Add("SchemaPrivileges", 0, 0);
 		dataTable.Rows.Add("Tables", 0, 0);
 		dataTable.Rows.Add("TableConstraints", 0, 0);
@@ -577,6 +580,27 @@ internal sealed partial class SchemaProvider
 		});
 
 		await FillDataTableAsync(ioBehavior, dataTable, "RESOURCE_GROUPS", null, cancellationToken).ConfigureAwait(false);
+	}
+
+	private Task FillRestrictionsAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
+	{
+		if (restrictionValues is not null)
+			throw new ArgumentException("restrictionValues is not supported for schema 'Restrictions'.", nameof(restrictionValues));
+
+		dataTable.Columns.AddRange(new DataColumn[]
+		{
+			new("CollectionName", typeof(string)),
+			new("RestrictionName", typeof(string)),
+			new("RestrictionDefault", typeof(string)),
+			new("RestrictionNumber", typeof(int)),
+		});
+
+		dataTable.Rows.Add("Columns", "Catalog", "TABLE_CATALOG", 1);
+		dataTable.Rows.Add("Columns", "Schema", "TABLE_SCHEMA", 2);
+		dataTable.Rows.Add("Columns", "Table", "TABLE_NAME", 3);
+		dataTable.Rows.Add("Columns", "Column", "COLUMN_NAME", 4);
+
+		return Utility.CompletedTask;
 	}
 
 	private async Task FillSchemaPrivilegesAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)

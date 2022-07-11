@@ -35,6 +35,7 @@ weight: 80
 * `ReferentialConstraints`
 * `ReservedWords`—[information about reserved words in the server's SQL syntax](../schema/reservedwords/)
 * `ResourceGroups`
+* `Restrictions`—[information about the restrictions supported when retrieving schemas](../schema/restrictions/)
 * `SchemaPrivileges`
 * `Tables`
 * `TableConstraints`

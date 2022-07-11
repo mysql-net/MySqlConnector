@@ -84,6 +84,25 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 		Assert.Equal("Bit32", table.Rows[0]["COLUMN_NAME"]);
 	}
 
+	[Fact]
+	public void SchemaRestrictionCount()
+	{
+		var metadata = m_database.Connection.GetSchema("MetaDataCollections");
+		var restrictions = m_database.Connection.GetSchema("Restrictions");
+		foreach (DataRow row in metadata.Rows)
+		{
+			var schema = (string) row["CollectionName"];
+#if BASELINE
+			if (schema is "Views" or "ViewColumns" or "Triggers")
+				continue;
+#endif
+
+			var restrictionCount = (int) row["NumberOfRestrictions"];
+			var actualCount = restrictions.Rows.Cast<DataRow>().Count(x => (string) x["CollectionName"] == schema);
+			Assert.Equal(restrictionCount, actualCount);
+		}
+	}
+
 #if !BASELINE
 	[Fact]
 	public void ExcessColumnsRestriction() =>
