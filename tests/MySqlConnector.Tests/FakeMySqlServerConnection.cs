@@ -162,6 +162,22 @@ internal sealed class FakeMySqlServerConnection
 							var wasSet = CancelQueryEvent.Wait(0, token);
 							await SendAsync(stream, 1, WriteOk);
 						}
+						else if (query == "select infinity")
+						{
+							var packets = new[]
+							{
+								new byte[] { 2 }, // two columns
+								new byte[] { 3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x46, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 4, 0x01, 0, 0x1F, 0, 0 }, // column definition (float)
+								new byte[] { 3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x44, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 5, 0x01, 0, 0x1F, 0, 0 }, // column definition (double)
+								new byte[] { 0xFE, 0, 0, 2, 0 }, // EOF
+								new byte[] { 3, 0x6e, 0x61, 0x6e, 3, 0x6e, 0x61, 0x6e }, // nan
+								new byte[] { 3, 0x69, 0x6e, 0x66, 3, 0x69, 0x6e, 0x66 }, // inf
+								new byte[] { 4, 0x2d, 0x69, 0x6e, 0x66, 4, 0x2d, 0x69, 0x6e, 0x66 }, // -inf
+								new byte[] { 0xFE, 0, 0, 2, 0 }, // EOF
+							};
+							for (var packetIndex = 0; packetIndex < packets.Length; packetIndex++)
+								await SendAsync(stream, packetIndex + 1, x => x.Write(packets[packetIndex]));
+						}
 						else
 						{
 							await SendAsync(stream, 1, x => WriteError(x, "Unhandled query: " + query));

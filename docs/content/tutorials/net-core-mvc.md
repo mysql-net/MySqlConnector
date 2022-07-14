@@ -379,5 +379,3 @@ GET https://localhost:5001/api/blog
 // Output:
 []
 ```
-
-If you would like to see all of this code and more on GitHub, check out [MySqlConnector.Performance](https://github.com/mysql-net/MySqlConnector/tree/master/tests/MySqlConnector.Performance).

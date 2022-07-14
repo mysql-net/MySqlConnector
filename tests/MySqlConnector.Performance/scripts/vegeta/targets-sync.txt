@@ -1,7 +1,0 @@
-POST http://localhost:5000/api/sync
-Content-Type: application/json
-@insert.json
-
-GET http://localhost:5000/api/sync
-GET http://localhost:5000/api/sync
-GET http://localhost:5000/api/sync
