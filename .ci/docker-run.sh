@@ -40,6 +40,7 @@ docker run -d \
 	-p $PORT:3306 \
 	--name mysql \
 	-e MYSQL_ROOT_PASSWORD='test' \
+	--tmpfs /var/lib/mysql \
 	$IMAGE \
   --log-bin-trust-function-creators=1 \
   --local-infile=1 \
