@@ -49,7 +49,6 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 		AssertHasColumn("CHARACTER_MAXIMUM_LENGTH", typeof(long));
 		AssertHasColumn("NUMERIC_PRECISION", typeof(ulong));
 		AssertHasColumn("NUMERIC_SCALE", typeof(ulong));
-		AssertHasColumn("DATETIME_PRECISION", typeof(uint));
 		AssertHasColumn("CHARACTER_SET_NAME", typeof(string));
 		AssertHasColumn("COLLATION_NAME", typeof(string));
 		AssertHasColumn("COLUMN_KEY", typeof(string));
