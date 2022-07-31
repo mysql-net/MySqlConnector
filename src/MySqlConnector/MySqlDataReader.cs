@@ -227,7 +227,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	public override long GetBytes(int ordinal, long dataOffset, byte[]? buffer, int bufferOffset, int length)
 		=> GetResultSet().GetCurrentRow().GetBytes(ordinal, dataOffset, buffer, bufferOffset, length);
 
-	public override long GetBytes(string name, long dataOffset, byte[]? buffer, int bufferOffset, int length)
+	public long GetBytes(string name, long dataOffset, byte[]? buffer, int bufferOffset, int length)
 		=> GetResultSet().GetCurrentRow().GetBytes(GetOrdinal(name), dataOffset, buffer, bufferOffset, length);
 
 	public override char GetChar(int ordinal) => GetResultSet().GetCurrentRow().GetChar(ordinal);
