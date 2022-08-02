@@ -840,7 +840,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		Assert.False(reader.Read());
 	}
 
-	[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=104913")]
+	[Theory]
 	[InlineData("`a b`")]
 	[InlineData("`a.b`")]
 	[InlineData("`a``b`")]
