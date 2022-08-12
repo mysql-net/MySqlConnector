@@ -1454,6 +1454,74 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 		}
 	}
 
+	[Fact]
+	public void GetBytesByOrdinal()
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+		using var cmd = new MySqlCommand("select X'0123456789ABCDEF';", connection);
+		using var reader = cmd.ExecuteReader();
+		Assert.True(reader.Read());
+
+		Assert.Equal(8, reader.GetBytes(0, 0, null, 0, 0));
+		var buffer = new byte[10];
+#if BASELINE
+		Assert.Throws<IndexOutOfRangeException>(() => reader.GetBytes(0, -1, buffer, 0, 8));
+		Assert.Throws<IndexOutOfRangeException>(() => reader.GetBytes(0, 0x1_0000_0000L, buffer, 0, 8));
+		Assert.Throws<IndexOutOfRangeException>(() => reader.GetBytes(0, 0, buffer, -1, 8));
+#else
+		Assert.Throws<ArgumentOutOfRangeException>(() => reader.GetBytes(0, -1, buffer, 0, 8));
+		Assert.Throws<ArgumentOutOfRangeException>(() => reader.GetBytes(0, 0x1_0000_0000L, buffer, 0, 8));
+		Assert.Throws<ArgumentOutOfRangeException>(() => reader.GetBytes(0, 0, buffer, -1, 8));
+#endif
+		Assert.Throws<ArgumentException>(() => reader.GetBytes(0, 0, buffer, 0, 11));
+
+#if BASELINE
+		Assert.Throws<IndexOutOfRangeException>(() => reader.GetBytes(0, 9, buffer, 0, 10));
+#else
+		Assert.Equal(0, reader.GetBytes(0, 9, buffer, 0, 10));
+#endif
+
+		Assert.Equal(8, reader.GetBytes(0, 0, buffer, 1, 9));
+		Assert.Equal(new byte[] { 0, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0 }, buffer);
+
+		Assert.Equal(5, reader.GetBytes(0, 0, buffer, 5, 5));
+		Assert.Equal(new byte[] { 0, 0x01, 0x23, 0x45, 0x67, 0x01, 0x23, 0x45, 0x67, 0x89 }, buffer);
+
+		Assert.Equal(5, reader.GetBytes(0, 3, buffer, 0, 5));
+		Assert.Equal(new byte[] { 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89 }, buffer);
+	}
+
+#if !BASELINE
+	[Fact]
+	public void GetBytesByName()
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+		using var cmd = new MySqlCommand("select X'0123456789ABCDEF' as tmp;", connection);
+		using var reader = cmd.ExecuteReader();
+		Assert.True(reader.Read());
+
+		Assert.Equal(8, reader.GetBytes("tmp", 0, null, 0, 0));
+		var buffer = new byte[10];
+		Assert.Throws<ArgumentOutOfRangeException>(() => reader.GetBytes("tmp", -1, buffer, 0, 8));
+		Assert.Throws<ArgumentOutOfRangeException>(() => reader.GetBytes("tmp", 0x1_0000_0000L, buffer, 0, 8));
+		Assert.Throws<ArgumentOutOfRangeException>(() => reader.GetBytes("tmp", 0, buffer, -1, 8));
+		Assert.Throws<ArgumentException>(() => reader.GetBytes("tmp", 0, buffer, 0, 11));
+
+		Assert.Equal(0, reader.GetBytes("tmp", 9, buffer, 0, 10));
+
+		Assert.Equal(8, reader.GetBytes("tmp", 0, buffer, 1, 9));
+		Assert.Equal(new byte[] { 0, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0 }, buffer);
+
+		Assert.Equal(5, reader.GetBytes("tmp", 0, buffer, 5, 5));
+		Assert.Equal(new byte[] { 0, 0x01, 0x23, 0x45, 0x67, 0x01, 0x23, 0x45, 0x67, 0x89 }, buffer);
+
+		Assert.Equal(5, reader.GetBytes("tmp", 3, buffer, 0, 5));
+		Assert.Equal(new byte[] { 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89 }, buffer);
+	}
+#endif
+	
 	class BoolTest
 	{
 		public int Id { get; set; }
