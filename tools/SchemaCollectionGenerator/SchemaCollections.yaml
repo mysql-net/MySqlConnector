@@ -565,6 +565,16 @@
 - name: Tables
   table: TABLES
   identifierPartCount: 3
+  description: information about tables
+  restrictions:
+  - name: Catalog
+    default: TABLE_CATALOG
+  - name: Schema
+    default: TABLE_SCHEMA
+  - name: Table
+    default: TABLE_NAME
+  - name: TableType
+    default: TABLE_TYPE
   columns:
   - name: TABLE_CATALOG
     type: string

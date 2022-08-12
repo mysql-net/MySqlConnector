@@ -1,6 +1,6 @@
 ---
 date: 2021-04-24
-lastmod: 2022-07-11
+lastmod: 2022-08-12
 menu:
   main:
     parent: getting started
@@ -37,7 +37,7 @@ weight: 80
 * `ResourceGroups`
 * `Restrictions`—[information about the restrictions supported when retrieving schemas](../schema/restrictions/)
 * `SchemaPrivileges`
-* `Tables`
+* `Tables`—[information about tables](../schema/tables/)
 * `TableConstraints`
 * `TablePrivileges`
 * `TableSpaces`

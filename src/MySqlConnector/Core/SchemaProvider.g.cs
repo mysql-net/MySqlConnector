@@ -111,7 +111,7 @@ internal sealed partial class SchemaProvider
 		dataTable.Rows.Add("ResourceGroups", 0, 0);
 		dataTable.Rows.Add("Restrictions", 0, 0);
 		dataTable.Rows.Add("SchemaPrivileges", 0, 0);
-		dataTable.Rows.Add("Tables", 0, 3);
+		dataTable.Rows.Add("Tables", 4, 3);
 		dataTable.Rows.Add("TableConstraints", 0, 3);
 		dataTable.Rows.Add("TablePrivileges", 0, 0);
 		dataTable.Rows.Add("TableSpaces", 0, 0);
@@ -599,6 +599,10 @@ internal sealed partial class SchemaProvider
 		dataTable.Rows.Add("Columns", "Schema", "TABLE_SCHEMA", 2);
 		dataTable.Rows.Add("Columns", "Table", "TABLE_NAME", 3);
 		dataTable.Rows.Add("Columns", "Column", "COLUMN_NAME", 4);
+		dataTable.Rows.Add("Tables", "Catalog", "TABLE_CATALOG", 1);
+		dataTable.Rows.Add("Tables", "Schema", "TABLE_SCHEMA", 2);
+		dataTable.Rows.Add("Tables", "Table", "TABLE_NAME", 3);
+		dataTable.Rows.Add("Tables", "TableType", "TABLE_TYPE", 4);
 
 		return Utility.CompletedTask;
 	}
@@ -622,8 +626,8 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillTablesAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
-			throw new ArgumentException("restrictionValues is not supported for schema 'Tables'.", nameof(restrictionValues));
+		if (restrictionValues is { Length: > 4 })
+			throw new ArgumentException("More than 4 restrictionValues are not supported for schema 'Tables'.", nameof(restrictionValues));
 
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -650,7 +654,20 @@ internal sealed partial class SchemaProvider
 			new("TABLE_COMMENT", typeof(string)),
 		});
 
-		await FillDataTableAsync(ioBehavior, dataTable, "TABLES", null, cancellationToken).ConfigureAwait(false);
+		var columns = new List<KeyValuePair<string, string>>();
+		if (restrictionValues is not null)
+		{
+			if (restrictionValues.Length > 0 && !string.IsNullOrEmpty(restrictionValues[0]))
+				columns.Add(new("TABLE_CATALOG", restrictionValues[0]!));
+			if (restrictionValues.Length > 1 && !string.IsNullOrEmpty(restrictionValues[1]))
+				columns.Add(new("TABLE_SCHEMA", restrictionValues[1]!));
+			if (restrictionValues.Length > 2 && !string.IsNullOrEmpty(restrictionValues[2]))
+				columns.Add(new("TABLE_NAME", restrictionValues[2]!));
+			if (restrictionValues.Length > 3 && !string.IsNullOrEmpty(restrictionValues[3]))
+				columns.Add(new("TABLE_TYPE", restrictionValues[3]!));
+		}
+
+		await FillDataTableAsync(ioBehavior, dataTable, "TABLES", columns, cancellationToken).ConfigureAwait(false);
 	}
 
 	private async Task FillTableConstraintsAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
