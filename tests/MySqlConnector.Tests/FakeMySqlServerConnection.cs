@@ -263,7 +263,7 @@ internal sealed class FakeMySqlServerConnection
 		writer.Write(authData, 0, 8); // auth plugin data part 1
 		writer.Write((byte) 0); // filler
 		writer.Write((ushort) capabilities);
-		writer.Write((byte) CharacterSet.Utf8Binary); // character set
+		writer.Write((byte) CharacterSet.Utf8Mb3Binary); // character set
 		writer.Write((ushort) 0); // status flags
 		writer.Write((ushort) ((uint) capabilities >> 16));
 		writer.Write((byte) authData.Length);

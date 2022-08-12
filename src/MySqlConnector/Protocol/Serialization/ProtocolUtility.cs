@@ -192,48 +192,48 @@ internal static class ProtocolUtility
 			return 2;
 
 		case CharacterSet.UjisJapaneseCaseInsensitive:
-		case CharacterSet.Utf8GeneralCaseInsensitive:
-		case CharacterSet.Utf8ToLowerCaseInsensitive:
-		case CharacterSet.Utf8Binary:
+		case CharacterSet.Utf8Mb3GeneralCaseInsensitive:
+		case CharacterSet.Utf8Mb3ToLowerCaseInsensitive:
+		case CharacterSet.Utf8Mb3Binary:
 		case CharacterSet.UjisBinary:
 		case CharacterSet.EucjpmsJapaneseCaseInsensitive:
 		case CharacterSet.EucjpmsBinary:
-		case CharacterSet.Utf8UnicodeCaseInsensitive:
-		case CharacterSet.Utf8IcelandicCaseInsensitive:
-		case CharacterSet.Utf8LatvianCaseInsensitive:
-		case CharacterSet.Utf8RomanianCaseInsensitive:
-		case CharacterSet.Utf8SlovenianCaseInsensitive:
-		case CharacterSet.Utf8PolishCaseInsensitive:
-		case CharacterSet.Utf8EstonianCaseInsensitive:
-		case CharacterSet.Utf8SpanishCaseInsensitive:
-		case CharacterSet.Utf8SwedishCaseInsensitive:
-		case CharacterSet.Utf8TurkishCaseInsensitive:
-		case CharacterSet.Utf8CzechCaseInsensitive:
-		case CharacterSet.Utf8DanishCaseInsensitive:
-		case CharacterSet.Utf8LithuanianCaseInsensitive:
-		case CharacterSet.Utf8SlovakCaseInsensitive:
-		case CharacterSet.Utf8Spanish2CaseInsensitive:
-		case CharacterSet.Utf8RomanCaseInsensitive:
-		case CharacterSet.Utf8PersianCaseInsensitive:
-		case CharacterSet.Utf8EsperantoCaseInsensitive:
-		case CharacterSet.Utf8HungarianCaseInsensitive:
-		case CharacterSet.Utf8SinhalaCaseInsensitive:
-		case CharacterSet.Utf8German2CaseInsensitive:
-		case CharacterSet.Utf8CroatianCaseInsensitive:
-		case CharacterSet.Utf8Unicode520CaseInsensitive:
-		case CharacterSet.Utf8VietnameseCaseInsensitive:
-		case CharacterSet.Utf8GeneralMySql500CaseInsensitive:
-		case CharacterSet.Utf8CroatianCaseInsensitiveMariaDb:
-		case CharacterSet.Utf8MyanmarCaseInsensitive:
-		case CharacterSet.Utf8ThaiUnicode520Weight2:
+		case CharacterSet.Utf8Mb3UnicodeCaseInsensitive:
+		case CharacterSet.Utf8Mb3IcelandicCaseInsensitive:
+		case CharacterSet.Utf8Mb3LatvianCaseInsensitive:
+		case CharacterSet.Utf8Mb3RomanianCaseInsensitive:
+		case CharacterSet.Utf8Mb3SlovenianCaseInsensitive:
+		case CharacterSet.Utf8Mb3PolishCaseInsensitive:
+		case CharacterSet.Utf8Mb3EstonianCaseInsensitive:
+		case CharacterSet.Utf8Mb3SpanishCaseInsensitive:
+		case CharacterSet.Utf8Mb3SwedishCaseInsensitive:
+		case CharacterSet.Utf8Mb3TurkishCaseInsensitive:
+		case CharacterSet.Utf8Mb3CzechCaseInsensitive:
+		case CharacterSet.Utf8Mb3DanishCaseInsensitive:
+		case CharacterSet.Utf8Mb3LithuanianCaseInsensitive:
+		case CharacterSet.Utf8Mb3SlovakCaseInsensitive:
+		case CharacterSet.Utf8Mb3Spanish2CaseInsensitive:
+		case CharacterSet.Utf8Mb3RomanCaseInsensitive:
+		case CharacterSet.Utf8Mb3PersianCaseInsensitive:
+		case CharacterSet.Utf8Mb3EsperantoCaseInsensitive:
+		case CharacterSet.Utf8Mb3HungarianCaseInsensitive:
+		case CharacterSet.Utf8Mb3SinhalaCaseInsensitive:
+		case CharacterSet.Utf8Mb3German2CaseInsensitive:
+		case CharacterSet.Utf8Mb3CroatianCaseInsensitive:
+		case CharacterSet.Utf8Mb3Unicode520CaseInsensitive:
+		case CharacterSet.Utf8Mb3VietnameseCaseInsensitive:
+		case CharacterSet.Utf8Mb3GeneralMySql500CaseInsensitive:
+		case CharacterSet.Utf8Mb3CroatianCaseInsensitiveMariaDb:
+		case CharacterSet.Utf8Mb3MyanmarCaseInsensitive:
+		case CharacterSet.Utf8Mb3ThaiUnicode520Weight2:
 		case CharacterSet.UjisJapaneseNoPadCaseInsensitive:
-		case CharacterSet.Utf8GeneralNoPadCaseInsensitive:
-		case CharacterSet.Utf8NoPadBinary:
+		case CharacterSet.Utf8Mb3GeneralNoPadCaseInsensitive:
+		case CharacterSet.Utf8Mb3NoPadBinary:
 		case CharacterSet.UjisNoPadBinary:
 		case CharacterSet.EucjpmsJapaneseNoPadCaseInsensitive:
 		case CharacterSet.EucjpmsNoPadBinary:
-		case CharacterSet.Utf8UnicodeNoPadCaseInsensitive:
-		case CharacterSet.Utf8Unicode520NoPadCaseInsensitive:
+		case CharacterSet.Utf8Mb3UnicodeNoPadCaseInsensitive:
+		case CharacterSet.Utf8Mb3Unicode520NoPadCaseInsensitive:
 			return 3;
 
 		case CharacterSet.Utf8Mb4GeneralCaseInsensitive:
@@ -368,6 +368,20 @@ internal static class ProtocolUtility
 		case CharacterSet.Utf8Mb4RussianUca900AccentSensitiveCaseSensitive:
 		case CharacterSet.Utf8Mb4ChineseUca900AccentSensitiveCaseSensitive:
 		case CharacterSet.Utf8Mb4Uca900Binary:
+		case CharacterSet.Utf8Mb4NorwegianBokmal0900AccentInsensitiveCaseInsensitive:
+		case CharacterSet.Utf8Mb4NorwegianBokmal0900AccentSensitiveCaseSensitive:
+		case CharacterSet.Utf8Mb4NorwegianNynorsk0900AccentInsensitiveCaseInsensitive:
+		case CharacterSet.Utf8Mb4NorwegianNynorsk0900AccentSensitiveCaseSensitive:
+		case CharacterSet.Utf8Mb4SerbianLatin0900AccentInsensitiveCaseInsensitive:
+		case CharacterSet.Utf8Mb4SerbianLatin0900AccentSensitiveCaseSensitive:
+		case CharacterSet.Utf8Mb4Bosnian0900AccentInsensitiveCaseInsensitive:
+		case CharacterSet.Utf8Mb4Bosnian0900AccentSensitiveCaseSensitive:
+		case CharacterSet.Utf8Mb4Bulgarian0900AccentInsensitiveCaseInsensitive:
+		case CharacterSet.Utf8Mb4Bulgarian0900AccentSensitiveCaseSensitive:
+		case CharacterSet.Utf8Mb4Galician0900AccentInsensitiveCaseInsensitive:
+		case CharacterSet.Utf8Mb4Galician0900AccentSensitiveCaseSensitive:
+		case CharacterSet.Utf8Mb4MongolianCyrillic0900AccentInsensitiveCaseInsensitive:
+		case CharacterSet.Utf8Mb4MongolianCyrillic0900AccentSensitiveCaseSensitive:
 		case CharacterSet.Utf8Mb4CroatianCaseInsensitiveMariaDb:
 		case CharacterSet.Utf8Mb4MyanmarCaseInsensitive:
 		case CharacterSet.Utf8Mb4ThaiUnicode520Weight2:

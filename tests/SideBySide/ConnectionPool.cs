@@ -3,46 +3,43 @@ namespace SideBySide;
 public class ConnectionPool : IClassFixture<DatabaseFixture>
 {
 	[Theory]
-	[InlineData(false, 11, 0L)]
-	[InlineData(true, 12, 1L)]
+	[InlineData(false, 11, 1L)]
+	[InlineData(true, 12, null)]
 #if BASELINE
 	// baseline default behaviour is to not reset the connection, which trades correctness for speed
 	// see bug report at http://bugs.mysql.com/bug.php?id=77421
-	[InlineData(null, 13, 0L)]
-#else
 	[InlineData(null, 13, 1L)]
+#else
+	[InlineData(null, 13, null)]
 #endif
-	public void ResetConnection(object connectionReset, int poolSize, long expected)
+	public void ResetConnection(object connectionReset, int poolSize, object expected)
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
 		csb.Pooling = true;
 		csb.MaximumPoolSize = (uint) poolSize; // use a different pool size to create a unique connection string to force a unique pool to be created
+		csb.AllowUserVariables = true;
 
 		if (connectionReset is bool connectionResetValue)
 			csb.ConnectionReset = connectionResetValue;
 
+		int serverThread;
 		using (var connection = new MySqlConnection(csb.ConnectionString))
 		{
 			connection.Open();
+			serverThread = connection.ServerThread;
 			using var command = connection.CreateCommand();
-			command.CommandText = "select @@autocommit;";
-			Assert.Equal(1L, command.ExecuteScalar());
-		}
-
-		using (var connection = new MySqlConnection(csb.ConnectionString))
-		{
-			connection.Open();
-			using var command = connection.CreateCommand();
-			command.CommandText = "SET autocommit=0;";
+			command.CommandText = "set @tmp_connection_reset = 1;";
 			command.ExecuteNonQuery();
 		}
 
 		using (var connection = new MySqlConnection(csb.ConnectionString))
 		{
 			connection.Open();
+			Assert.Equal(serverThread, connection.ServerThread);
 			using var command = connection.CreateCommand();
-			command.CommandText = "select @@autocommit;";
-			Assert.Equal(expected, command.ExecuteScalar());
+			command.CommandText = "select @tmp_connection_reset;";
+			var actual = command.ExecuteScalar();
+			Assert.Equal(expected, actual is DBNull ? null : actual);
 		}
 	}
 
