@@ -8,6 +8,7 @@ with Connector/NET and that [known bugs have been fixed](https://mysqlconnector.
 The tests require a MySQL server. The simplest way to run one is with [Docker](https://www.docker.com/community-edition):
 
     docker run -d --rm --name mysqlconnector -e MYSQL_ROOT_PASSWORD=pass -p 3306:3306 --tmpfs /var/lib/mysql mysql:8.0 --max-allowed-packet=96M --character-set-server=utf8mb4 --log-bin-trust-function-creators=1 --local-infile=1 --max-connections=250
+    docker exec mysqlconnector mysql -uroot -ppass -e "INSTALL COMPONENT 'file://component_query_attributes';"
 
 Copy the file `SideBySide/config.json.example` to `SideBySide/config.json`, then edit
 the `config.json` file in order to connect to your server. If you are using the Docker

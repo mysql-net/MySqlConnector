@@ -1429,9 +1429,11 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 		Assert.Throws<ArgumentException>(() => cmd.Attributes.SetAttribute("", "attr_value"));
 	}
 
-	[SkippableTheory(ServerFeatures.QueryAttributes, Baseline = "https://bugs.mysql.com/bug.php?id=105728")]
+	[SkippableTheory(ServerFeatures.QueryAttributes)]
 	[InlineData(false)]
+#if !BASELINE // https://bugs.mysql.com/bug.php?id=105728
 	[InlineData(true)]
+#endif
 	public void QueryAttributeAndParameter(bool prepare)
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);

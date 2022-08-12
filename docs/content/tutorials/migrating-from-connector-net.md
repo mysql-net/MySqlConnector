@@ -280,9 +280,10 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#101252](https://bugs.mysql.com/bug.php?id=101252): Can't query `CHAR(36)` column containing `NULL`~~
 * ~~[#101253](https://bugs.mysql.com/bug.php?id=101253): Default value for `MySqlParameter.Value` changed from null to `0`~~
 * ~~[#101302](https://bugs.mysql.com/bug.php?id=101302): Stored Procedure `BOOL` parameter can only be mapped to `MySqlDbType.Byte`~~
-* [#101485](https://bugs.mysql.com/bug.php?id=101485): Stored Procedure `JSON` parameter throws “Unhandled type encountered” `MySqlException`
+* ~~[#101485](https://bugs.mysql.com/bug.php?id=101485): Stored Procedure `JSON` parameter throws “Unhandled type encountered” `MySqlException`~~
 * [#101507](https://bugs.mysql.com/bug.php?id=101507): `MySqlCommand.Cancel` throws `NullReferenceException` for a closed connection
 * ~~[#101714](https://bugs.mysql.com/bug.php?id=101714): Extremely slow performance reading result sets~~
+* ~~[#102303](https://bugs.mysql.com/bug.php?id=102303): Preparing command with incorrect parameter type puts connection in bad state~~
 * [#102593](https://bugs.mysql.com/bug.php?id=102593): Can't use `MemoryStream` as `MySqlParameter.Value`
 * ~~[#103390](https://bugs.mysql.com/bug.php?id=103390): Can't query `CHAR(36)` column if `MySqlCommand` is prepared~~
 * ~~[#103430](https://bugs.mysql.com/bug.php?id=103430): Can't connect using named pipe on Windows~~
