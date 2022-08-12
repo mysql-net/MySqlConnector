@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-07-13
+lastmod: 2022-08-12
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,10 @@ weight: 30
 ---
 
 # Version History
+
+### 2.1.12
+
+* Support [new character sets added in MySQL Server 8.0.30](https://dev.mysql.com/doc/relnotes/mysql/8.0/en/news-8-0-30.html#mysqld-8-0-30-charset).
 
 ### 2.1.11
 
