@@ -188,11 +188,6 @@ Connection pooling is enabled by default. These options are used to configure it
     <td>180</td>
     <td>The amount of time (in seconds) that a connection can remain idle in the pool. Any connection above <code>MinimumPoolSize</code> connections that is idle for longer than <code>ConnectionIdleTimeout</code> is subject to being closed by a background task. The background task runs every minute, or half of <code>ConnectionIdleTimeout</code>, whichever is more frequent. A value of zero (0) means pooled connections will never incur a ConnectionIdleTimeout, and if the pool grows to its maximum size, it will never get smaller.</td>
   </tr>
-  <tr id="DeferConnectionReset">
-    <td>Defer Connection Reset, DeferConnectionReset</td>
-    <td><code>true</code></td>
-    <td>If <code>true</code>, the connection state is not reset until the connection is retrieved from the pool. The experimental value of <code>false</code> resets connections in the background after they’re closed which can make opening a connection faster, and releases server resources sooner; however, there are reports of connection pool exhaustion when using this value.</td>
-  </tr>
   <tr id="MaximumPoolSize">
     <td>Maximum Pool Size, Max Pool Size, MaximumPoolsize, maxpoolsize</td>
     <td>100</td>
@@ -304,6 +299,11 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>The <code>DateTimeKind</code> used when <code>MySqlDataReader</code> returns a <code>DateTime</code>. If set to <code>Utc</code> or <code>Local</code>,
     a <code>MySqlException</code> will be thrown if a <code>DateTime</code> command parameter has a <code>Kind</code> of <code>Local</code> or <code>Utc</code>,
     respectively.</td>
+  </tr>
+  <tr id="DeferConnectionReset">
+    <td>Defer Connection Reset, DeferConnectionReset</td>
+    <td></td>
+    <td>This option was obsoleted in MySqlConnector 2.0.</td>
   </tr>
   <tr id="GuidFormat">
     <td>GUID Format, GuidFormat</td>
