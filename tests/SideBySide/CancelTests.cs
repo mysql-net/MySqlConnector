@@ -164,7 +164,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		}
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[Fact]
 	public async Task CancelCommandWithTokenBeforeExecuteNonQuery()
 	{
 		using var cmd = new MySqlCommand("select 1;", m_database.Connection);
@@ -179,7 +179,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		}
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[Fact]
 	public async Task CancelCommandWithTokenBeforeExecuteReader()
 	{
 		using var cmd = new MySqlCommand("select 1;", m_database.Connection);
@@ -516,7 +516,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		task.Wait(); // shouldn't throw
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[Fact]
 	public async Task CancelBatchWithTokenBeforeExecuteScalar()
 	{
 		using var batch = new MySqlBatch(m_database.Connection)
@@ -537,7 +537,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		}
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[Fact]
 	public async Task CancelBatchWithTokenBeforeExecuteNonQuery()
 	{
 		using var batch = new MySqlBatch(m_database.Connection)
@@ -558,7 +558,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		}
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[Fact]
 	public async Task CancelBatchWithTokenBeforeExecuteReader()
 	{
 		using var batch = new MySqlBatch(m_database.Connection)
