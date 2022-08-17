@@ -25,4 +25,9 @@ public enum ServerFeatures
 	ZeroDateTime = 0x4_0000,
 	QueryAttributes = 0x8_0000,
 	GlobalLog = 0x10_0000,
+
+	/// <summary>
+	/// The MySQL server can start streaming rows back as soon as they are available, as opposed to buffering the entire result set in memory.
+	/// </summary>
+	StreamingResults = 0x20_0000,
 }
