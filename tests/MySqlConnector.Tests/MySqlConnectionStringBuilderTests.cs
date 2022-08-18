@@ -532,11 +532,14 @@ public class MySqlConnectionStringBuilderTests
 		{
 			var csb = new MySqlConnectionStringBuilder();
 #if !BASELINE
-			// Connector/NET sets all properties to default values
 			Assert.False(csb.ContainsKey(propertyName));
-#endif
 			Assert.False(csb.TryGetValue(propertyName, out var setValue));
 			Assert.Null(setValue);
+#else
+			// Connector/NET sets all properties to default values
+			Assert.True(csb.ContainsKey(propertyName));
+			Assert.True(csb.TryGetValue(propertyName, out var setValue));
+#endif
 
 			ICustomTypeDescriptor typeDescriptor = csb;
 			var propertyDescriptor = typeDescriptor.GetProperties().Cast<PropertyDescriptor>().SingleOrDefault(x => x.DisplayName == propertyName);
@@ -548,14 +551,21 @@ public class MySqlConnectionStringBuilderTests
 				csb.ConnectionString = propertyName + " = " + stringValue;
 
 			Assert.True(csb.ContainsKey(propertyName));
-#if !BASELINE
-			// https://bugs.mysql.com/bug.php?id=104910
+
 			Assert.True(csb.TryGetValue(propertyName, out setValue));
+#if !BASELINE
 			Assert.Equal(stringValue, setValue);
+#else
+			Assert.Equal(value, setValue);
+#endif
 
 			var propertyDescriptorValue = propertyDescriptor.GetValue(csb);
+#if !BASELINE
 			Assert.Equal(stringValue, propertyDescriptorValue);
+#else
+			Assert.Equal(value, propertyDescriptorValue);
 #endif
+
 			Assert.Equal(value, csb[propertyName]);
 		}
 	}

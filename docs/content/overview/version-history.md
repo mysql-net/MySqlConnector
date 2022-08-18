@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-06-04
+lastmod: 2022-08-12
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,16 @@ weight: 30
 ---
 
 # Version History
+
+### 2.1.12
+
+* Support [new character sets added in MySQL Server 8.0.30](https://dev.mysql.com/doc/relnotes/mysql/8.0/en/news-8-0-30.html#mysqld-8-0-30-charset).
+
+### 2.1.11
+
+* Fix `NullReferenceException` in `MySqlConnector.Utilities.TimerQueue.Callback`: [#1177](https://github.com/mysql-net/MySqlConnector/issues/1177).
+* Support floating point infinity: [#1185](https://github.com/mysql-net/MySqlConnector/issues/1185).
+* Thanks to [Maico Dionisio](https://github.com/maicodio) for contributions to this release.
 
 ### 2.1.10
 

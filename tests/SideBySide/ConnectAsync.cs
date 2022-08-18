@@ -51,7 +51,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		Assert.Equal(ConnectionState.Closed, connection.State);
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=106243")]
+	[Fact]
 	public async Task ConnectCanceled()
 	{
 		using var cts = new CancellationTokenSource();

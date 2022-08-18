@@ -220,7 +220,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 	}
 #endif
 
-	[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=102303")]
+	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
 	public async Task StoredProcedureOutIncorrectType(bool prepare)
@@ -743,7 +743,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 			AssertParameter("@vJson", ParameterDirection.Input, MySqlDbType.JSON));
 	}
 
-	[SkippableFact(ServerFeatures.Json, Baseline = "https://bugs.mysql.com/bug.php?id=101485")]
+	[SkippableFact(ServerFeatures.Json)]
 	public void PassJsonParameter()
 	{
 		using var cmd = new MySqlCommand("SetJson", m_database.Connection);
@@ -840,7 +840,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		Assert.False(reader.Read());
 	}
 
-	[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=104913")]
+	[Theory]
 	[InlineData("`a b`")]
 	[InlineData("`a.b`")]
 	[InlineData("`a``b`")]

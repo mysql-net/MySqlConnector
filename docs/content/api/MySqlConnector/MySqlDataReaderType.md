@@ -26,6 +26,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 | override [GetByte](../MySqlDataReader/GetByte/)(…) |  |
 | [GetByte](../MySqlDataReader/GetByte/)(…) |  |
 | override [GetBytes](../MySqlDataReader/GetBytes/)(…) |  |
+| [GetBytes](../MySqlDataReader/GetBytes/)(…) |  |
 | override [GetChar](../MySqlDataReader/GetChar/)(…) |  |
 | [GetChar](../MySqlDataReader/GetChar/)(…) |  |
 | override [GetChars](../MySqlDataReader/GetChars/)(…) |  |

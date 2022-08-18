@@ -21,7 +21,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 100, 1000);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
 	public void CancelCommand()
 	{
 		using var cmd = new MySqlCommand("SELECT SLEEP(5)", m_database.Connection);
@@ -38,7 +38,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		task.Wait(); // shouldn't throw
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout)]
 	public void CancelReaderAsynchronously()
 	{
 		using var barrier = new Barrier(2);
@@ -72,7 +72,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		task.Wait(); // shouldn't throw
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout)]
 	public void CancelCommandBeforeRead()
 	{
 		using var cmd = new MySqlCommand(c_hugeQuery, m_database.Connection);
@@ -95,7 +95,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		Assert.InRange(rows, 0, 10000000);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout, Baseline = "Hangs in NextResult")]
+	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout, Baseline = "Hangs in NextResult")]
 	public void CancelMultiStatementReader()
 	{
 		using var barrier = new Barrier(2);
@@ -131,7 +131,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		task.Wait(); // shouldn't throw
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout)]
 	public void DapperQueryMultiple()
 	{
 		Stopwatch stopwatch;
@@ -164,7 +164,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		}
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[Fact]
 	public async Task CancelCommandWithTokenBeforeExecuteNonQuery()
 	{
 		using var cmd = new MySqlCommand("select 1;", m_database.Connection);
@@ -179,7 +179,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		}
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[Fact]
 	public async Task CancelCommandWithTokenBeforeExecuteReader()
 	{
 		using var cmd = new MySqlCommand("select 1;", m_database.Connection);
@@ -241,7 +241,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		Assert.Equal("value", value);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout)]
 	public async Task CancelHugeQueryWithTokenAfterExecuteReader()
 	{
 		using var cmd = new MySqlCommand(c_hugeQuery, m_database.Connection);
@@ -265,7 +265,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		Assert.False(reader.NextResult());
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout)]
 	public async Task CancelHugeQueryWithTokenInNextResult()
 	{
 		using var cmd = new MySqlCommand(c_hugeQuery + "select 1, 2, 3;", m_database.Connection);
@@ -354,7 +354,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		Assert.False(await reader.NextResultAsync());
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout)]
 	public async Task CancelMultiStatementInRead()
 	{
 		using var cmd = new MySqlCommand(c_hugeQuery + c_hugeQuery + c_hugeQuery, m_database.Connection);
@@ -380,7 +380,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 	}
 
 #if !BASELINE
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
 	public void CancelBatchCommand()
 	{
 		using var batch = new MySqlBatch(m_database.Connection)
@@ -403,7 +403,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		task.Wait(); // shouldn't throw
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout)]
 	public void CancelBatchReaderAsynchronously()
 	{
 		using var barrier = new Barrier(2);
@@ -443,7 +443,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		task.Wait(); // shouldn't throw
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout)]
 	public void CancelBatchBeforeRead()
 	{
 		using var batch = new MySqlBatch(m_database.Connection)
@@ -472,7 +472,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		Assert.InRange(rows, 0, 10000000);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout, Skip = "COM_MULTI")]
+	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout, Skip = "COM_MULTI")]
 	public void CancelMultiCommandBatchReader()
 	{
 		using var barrier = new Barrier(2);
@@ -516,7 +516,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		task.Wait(); // shouldn't throw
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[Fact]
 	public async Task CancelBatchWithTokenBeforeExecuteScalar()
 	{
 		using var batch = new MySqlBatch(m_database.Connection)
@@ -537,7 +537,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		}
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[Fact]
 	public async Task CancelBatchWithTokenBeforeExecuteNonQuery()
 	{
 		using var batch = new MySqlBatch(m_database.Connection)
@@ -558,7 +558,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		}
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[Fact]
 	public async Task CancelBatchWithTokenBeforeExecuteReader()
 	{
 		using var batch = new MySqlBatch(m_database.Connection)
@@ -611,7 +611,7 @@ create table cancel_completed_command (
 		}
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout)]
 	public async Task CancelHugeQueryBatchWithTokenAfterExecuteReader()
 	{
 		using var batch = new MySqlBatch(m_database.Connection)
@@ -641,7 +641,7 @@ create table cancel_completed_command (
 		Assert.False(reader.NextResult());
 	}
 
-	[SkippableFact(ServerFeatures.Timeout, Skip = "COM_MULTI")]
+	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout, Skip = "COM_MULTI")]
 	public async Task CancelHugeQueryBatchWithTokenInNextResult()
 	{
 		using var batch = new MySqlBatch(m_database.Connection)
@@ -750,7 +750,7 @@ create table cancel_completed_command (
 		Assert.False(await reader.NextResultAsync());
 	}
 
-	[SkippableFact(ServerFeatures.Timeout, Skip = "COM_MULTI")]
+	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout, Skip = "COM_MULTI")]
 	public async Task CancelMultiStatementBatchInRead()
 	{
 		using var batch = new MySqlBatch(m_database.Connection)

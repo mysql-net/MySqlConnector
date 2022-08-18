@@ -61,7 +61,7 @@ jobs:
       arguments: 'tests\SideBySide\SideBySide.csproj -c Baseline'
       testRunTitle: 'Baseline tests'
     env:
-      DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,UnixDomainSocket'
+      DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,StreamingResults,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=root;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600'
       DATA__CERTIFICATESPATH: '$(Build.Repository.LocalPath)\.ci\server\certs\'
       DATA__MYSQLBULKLOADERLOCALCSVFILE: '$(Build.Repository.LocalPath)\tests\TestData\LoadData_UTF8_BOM_Unix.CSV'
@@ -133,7 +133,7 @@ jobs:
       arguments: '-c Release -f net6.0 --no-restore'
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'Azure', 'net6.0', 'SSL') }}
     env:
-      DATA__UNSUPPORTEDFEATURES: 'CachingSha2Password,Ed25519,GlobalLog,KnownCertificateAuthority,QueryAttributes,RsaEncryption,Sha256Password,Timeout,Tls11,Tls13,UnixDomainSocket,ZeroDateTime'
+      DATA__UNSUPPORTEDFEATURES: 'CachingSha2Password,Ed25519,GlobalLog,KnownCertificateAuthority,QueryAttributes,RsaEncryption,Sha256Password,StreamingResults,Timeout,Tls11,Tls13,UnixDomainSocket,ZeroDateTime'
       DATA__CONNECTIONSTRING: "$(AzureConnectionString);database=mysqltest;ssl mode=Required;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True"
 
 - job: windows_integration_tests_1
@@ -169,7 +169,7 @@ jobs:
       arguments: '-c Release --no-restore'
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net472/net7.0', 'No SSL') }}
     env:
-      DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,Tls11,UnixDomainSocket'
+      DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,StreamingResults,Tls11,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True;UseCompression=True'
 
 - job: windows_integration_tests_2
@@ -211,7 +211,7 @@ jobs:
       arguments: '-c Release --no-restore'
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'netcoreapp3.1/net6.0', 'No SSL') }}
     env:
-      DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,Tls11,UnixDomainSocket'
+      DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,StreamingResults,Tls11,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
 
 - job: linux_integration_tests
@@ -232,19 +232,19 @@ jobs:
       'MySQL 8.0':
         image: 'mysql:8.0'
         connectionStringExtra: ''
-        unsupportedFeatures: 'Ed25519,Tls11,ZeroDateTime'
-      'MariaDB 10.4':
-        image: 'mariadb:10.4'
-        connectionStringExtra: ''
-        unsupportedFeatures: 'CachingSha2Password,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
+        unsupportedFeatures: 'Ed25519,StreamingResults,Tls11,ZeroDateTime'
       'MariaDB 10.5':
         image: 'mariadb:10.5'
         connectionStringExtra: ''
-        unsupportedFeatures: 'CachingSha2Password,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
+        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
       'MariaDB 10.6':
         image: 'mariadb:10.6'
         connectionStringExtra: ''
-        unsupportedFeatures: 'CachingSha2Password,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
+        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
+      'MariaDB 10.8':
+        image: 'mariadb:10.8'
+        connectionStringExtra: ''
+        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
   steps:
   - template: '.ci/integration-tests-steps.yml'
     parameters:

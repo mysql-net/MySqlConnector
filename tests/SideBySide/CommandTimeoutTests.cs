@@ -46,7 +46,7 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 		Assert.Equal(2_147_483, command.CommandTimeout);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
 	public void CommandTimeoutWithSleepSync()
 	{
 		var connectionState = m_connection.State;
@@ -72,7 +72,7 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 		Assert.Equal(connectionState, m_connection.State);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout)]
 	public async Task CommandTimeoutWithSleepAsync()
 	{
 		var connectionState = m_connection.State;
@@ -98,7 +98,7 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 		Assert.Equal(connectionState, m_connection.State);
 	}
 
-	[SkippableTheory(ServerFeatures.Timeout)]
+	[SkippableTheory(ServerFeatures.CancelSleepSuccessfully)]
 	[InlineData(true)]
 	[InlineData(false)]
 	public void CommandTimeoutWithStoredProcedureSleepSync(bool pooling)
@@ -136,7 +136,7 @@ end;", m_connection))
 		TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
 	public void MultipleCommandTimeoutWithSleepSync()
 	{
 		var connectionState = m_connection.State;
@@ -170,7 +170,7 @@ end;", m_connection))
 		Assert.Equal(connectionState, m_connection.State);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout)]
 	public async Task MultipleCommandTimeoutWithSleepAsync()
 	{
 		var connectionState = m_connection.State;
@@ -203,7 +203,7 @@ end;", m_connection))
 		Assert.Equal(connectionState, m_connection.State);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully, Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
 	public void CommandTimeoutResetsOnReadSync()
 	{
 		var csb = new MySqlConnectionStringBuilder(m_connection.ConnectionString);
@@ -224,7 +224,7 @@ end;", m_connection))
 		Assert.Equal(ConnectionState.Open, m_connection.State);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
 	public async Task CommandTimeoutResetsOnReadAsync()
 	{
 		var csb = new MySqlConnectionStringBuilder(m_connection.ConnectionString);
@@ -246,7 +246,7 @@ end;", m_connection))
 	}
 
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
 	public void TransactionCommandTimeoutWithSleepSync()
 	{
 		var connectionState = m_connection.State;
@@ -273,7 +273,7 @@ end;", m_connection))
 		Assert.Equal(connectionState, m_connection.State);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
 	public async Task TransactionCommandTimeoutWithSleepAsync()
 	{
 		var connectionState = m_connection.State;

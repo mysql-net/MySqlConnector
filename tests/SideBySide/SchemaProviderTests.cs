@@ -74,6 +74,45 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 		}
 	}
 
+	[Fact(Skip = "Doesn't work on all server versions")]
+	public void ColumnsRestriction()
+	{
+		var table = m_database.Connection.GetSchema("Columns", new[] { null, null, null, "Bit32" });
+		Assert.NotNull(table);
+		Assert.Equal(1, table.Rows.Count);
+		Assert.Equal("datatypes_bits", table.Rows[0]["TABLE_NAME"]);
+		Assert.Equal("Bit32", table.Rows[0]["COLUMN_NAME"]);
+	}
+
+	[Fact]
+	public void SchemaRestrictionCount()
+	{
+		var metadata = m_database.Connection.GetSchema("MetaDataCollections");
+		var restrictions = m_database.Connection.GetSchema("Restrictions");
+		foreach (DataRow row in metadata.Rows)
+		{
+			var schema = (string) row["CollectionName"];
+#if BASELINE
+			if (schema is "Views" or "ViewColumns" or "Triggers")
+				continue;
+#endif
+
+			var restrictionCount = (int) row["NumberOfRestrictions"];
+			var actualCount = restrictions.Rows.Cast<DataRow>().Count(x => (string) x["CollectionName"] == schema);
+			Assert.Equal(restrictionCount, actualCount);
+		}
+	}
+
+#if !BASELINE
+	[Fact]
+	public void ExcessColumnsRestriction() =>
+		Assert.Throws<ArgumentException>(() => m_database.Connection.GetSchema("Columns", new[] { "1", "2", "3", "4", "too many" }));
+
+	[Fact]
+	public void MetaDataCollectionsRestriction() =>
+		Assert.Throws<ArgumentException>(() => m_database.Connection.GetSchema("MetaDataCollections", new[] { "xyzzy" }));
+#endif
+
 	[Theory]
 	[InlineData("Databases")]
 	[InlineData("DataTypes")]
@@ -85,14 +124,16 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 	[InlineData("Triggers")]
 	[InlineData("Views")]
 #if !BASELINE
+	[InlineData("CharacterSets")]
 	[InlineData("CollationCharacterSetApplicability")]
+	[InlineData("Collations")]
 	[InlineData("Engines")]
 	[InlineData("KeyColumnUsage")]
 	[InlineData("Parameters")]
 	[InlineData("Partitions")]
 	[InlineData("Plugins")]
-	[InlineData("Profiling")]
 	[InlineData("ProcessList")]
+	[InlineData("Profiling")]
 	[InlineData("ReferentialConstraints")]
 	[InlineData("SchemaPrivileges")]
 	[InlineData("TableConstraints")]
