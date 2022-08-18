@@ -228,16 +228,16 @@ jobs:
         image: 'mysql:8.0'
         connectionStringExtra: ''
         unsupportedFeatures: 'Ed25519,StreamingResults,Tls11,ZeroDateTime'
-      'MariaDB 10.4':
-        image: 'mariadb:10.4'
-        connectionStringExtra: ''
-        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
       'MariaDB 10.5':
         image: 'mariadb:10.5'
         connectionStringExtra: ''
         unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
       'MariaDB 10.6':
         image: 'mariadb:10.6'
+        connectionStringExtra: ''
+        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
+      'MariaDB 10.8':
+        image: 'mariadb:10.8'
         connectionStringExtra: ''
         unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
   steps:
