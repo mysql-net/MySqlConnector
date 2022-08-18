@@ -231,15 +231,15 @@ jobs:
       'MariaDB 10.4':
         image: 'mariadb:10.4'
         connectionStringExtra: ''
-        unsupportedFeatures: 'CachingSha2Password,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
+        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
       'MariaDB 10.5':
         image: 'mariadb:10.5'
         connectionStringExtra: ''
-        unsupportedFeatures: 'CachingSha2Password,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
+        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
       'MariaDB 10.6':
         image: 'mariadb:10.6'
         connectionStringExtra: ''
-        unsupportedFeatures: 'CachingSha2Password,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
+        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
   steps:
   - template: '.ci/integration-tests-steps.yml'
     parameters:

@@ -21,7 +21,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 100, 1000);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
 	public void CancelCommand()
 	{
 		using var cmd = new MySqlCommand("SELECT SLEEP(5)", m_database.Connection);
@@ -380,7 +380,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 	}
 
 #if !BASELINE
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
 	public void CancelBatchCommand()
 	{
 		using var batch = new MySqlBatch(m_database.Connection)

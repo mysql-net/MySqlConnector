@@ -30,4 +30,9 @@ public enum ServerFeatures
 	/// The MySQL server can start streaming rows back as soon as they are available, as opposed to buffering the entire result set in memory.
 	/// </summary>
 	StreamingResults = 0x20_0000,
+
+	/// <summary>
+	/// A "SLEEP" command produces a result set when it is cancelled, not an error payload.
+	/// </summary>
+	CancelSleepSuccessfully = 0x40_0000,
 }
