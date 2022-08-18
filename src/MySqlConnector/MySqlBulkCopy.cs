@@ -272,11 +272,11 @@ public sealed class MySqlBulkCopy
 			for (var i = 0; i < Math.Min(m_valuesEnumerator!.FieldCount, schema.Count); i++)
 			{
 				var destinationColumn = reader.GetName(i);
-				if (schema[i].DataTypeName == "BIT")
+				if (schema[i].DataTypeName is "BIT")
 				{
 					AddColumnMapping(columnMappings, addDefaultMappings, i, destinationColumn, $"@`\uE002\bcol{i}`", $"%COL% = CAST(%VAR% AS UNSIGNED)");
 				}
-				else if (schema[i].DataTypeName == "YEAR")
+				else if (schema[i].DataTypeName is "YEAR")
 				{
 					// the current code can't distinguish between 0 = 0000 and 0 = 2000
 					throw new NotSupportedException("'YEAR' columns are not supported by MySqlBulkLoader.");

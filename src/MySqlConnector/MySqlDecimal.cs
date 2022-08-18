@@ -36,7 +36,7 @@ public readonly struct MySqlDecimal
 			var fractionLength = match.Groups[3].Value.TrimEnd('0').Length;
 
 			var isWithinLengthLimits = wholeLength + fractionLength <= 65 && fractionLength <= 30;
-			var isNegativeZero = value[0] == '-' && match.Groups[1].Value == "0" && fractionLength == 0;
+			var isNegativeZero = value[0] is '-' && match.Groups[1].Value is "0" && fractionLength == 0;
 			if (isWithinLengthLimits && !isNegativeZero)
 			{
 				m_value = value;

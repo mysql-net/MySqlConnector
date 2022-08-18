@@ -27,7 +27,7 @@ internal sealed class ConnectionSettings
 			if (csb.LoadBalance != MySqlLoadBalance.RoundRobin)
 				throw new NotSupportedException("LoadBalance not supported when ConnectionProtocol=NamedPipe");
 			ConnectionProtocol = MySqlConnectionProtocol.NamedPipe;
-			HostNames = (csb.Server == "." || string.Equals(csb.Server, "localhost", StringComparison.OrdinalIgnoreCase)) ? s_localhostPipeServer : new[] { csb.Server };
+			HostNames = (csb.Server is "." || string.Equals(csb.Server, "localhost", StringComparison.OrdinalIgnoreCase)) ? s_localhostPipeServer : new[] { csb.Server };
 			PipeName = csb.PipeName;
 		}
 		else if (csb.ConnectionProtocol == MySqlConnectionProtocol.SharedMemory)

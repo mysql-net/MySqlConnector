@@ -391,7 +391,7 @@ internal sealed partial class SchemaProvider
 		}
 
 		// remove columns that the server doesn't support
-		if (dataTable.TableName == "Columns")
+		if (dataTable.TableName is "Columns")
 		{
 			using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'GENERATION_EXPRESSION';", m_connection))
 			{

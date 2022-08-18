@@ -520,7 +520,7 @@ internal sealed class ServerSession
 						await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, connection, sslProtocols, ioBehavior, cancellationToken).ConfigureAwait(false);
 						shouldRetrySsl = false;
 					}
-					catch (ArgumentException ex) when (ex.ParamName == "sslProtocolType" && sslProtocols == SslProtocols.None)
+					catch (ArgumentException ex) when (ex.ParamName is "sslProtocolType" && sslProtocols == SslProtocols.None)
 					{
 						Log.Debug(ex, "Session{0} doesn't support SslProtocols.None; falling back to explicitly specifying SslProtocols", m_logArguments);
 						sslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
@@ -848,7 +848,7 @@ internal sealed class ServerSession
 		if (cs.AllowPublicKeyRetrieval)
 		{
 			// request the RSA public key
-			var payloadContent = switchRequestName == "caching_sha2_password" ? (byte) 0x02 : (byte) 0x01;
+			var payloadContent = switchRequestName is "caching_sha2_password" ? (byte) 0x02 : (byte) 0x01;
 			await SendReplyAsync(new PayloadData(new[] { payloadContent }), ioBehavior, cancellationToken).ConfigureAwait(false);
 			var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload.Span);
@@ -1912,7 +1912,7 @@ internal sealed class ServerSession
 
 		protected override void OnStatementBegin(int index)
 		{
-			if (index + 10 < m_sql.Length && string.Equals("delimiter ", m_sql.Substring(index, 10), StringComparison.OrdinalIgnoreCase))
+			if (index + 10 < m_sql.Length && m_sql.AsSpan(index, 10).Equals("delimiter ".AsSpan(), StringComparison.OrdinalIgnoreCase))
 				HasDelimiter = true;
 		}
 

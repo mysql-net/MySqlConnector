@@ -21,7 +21,7 @@ internal sealed class ErrorPayload
 		var errorCode = reader.ReadUInt16();
 		var stateMarker = Encoding.ASCII.GetString(reader.ReadByteString(1));
 		string state, message;
-		if (stateMarker == "#")
+		if (stateMarker is "#")
 		{
 			state = Encoding.ASCII.GetString(reader.ReadByteString(5));
 			message = Encoding.UTF8.GetString(reader.ReadByteString(span.Length - 9));
