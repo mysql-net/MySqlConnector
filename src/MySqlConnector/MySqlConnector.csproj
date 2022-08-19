@@ -23,8 +23,8 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'net461' OR '$(TargetFramework)' == 'net471' OR '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="IndexRange" Version="1.0.2" PrivateAssets="All" />
     <PackageReference Include="System.Buffers" Version="4.5.1" />
-    <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.3.0" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
