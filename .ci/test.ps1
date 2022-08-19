@@ -28,11 +28,11 @@ pushd .\tests\SideBySide
 
 echo "Executing tests with No Compression, No SSL"
 Copy-Item -Force ..\..\.ci\config\config.json config.json
-dotnet test -c Release -f net452
+dotnet test -c Release -f net462
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
-dotnet test -c Release -f net461
+dotnet test -c Release -f net7.0
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
