@@ -5,7 +5,7 @@ title: MySqlBatchCommandCollection.IsReadOnly property
 # MySqlBatchCommandCollection.IsReadOnly property
 
 ```csharp
-public bool IsReadOnly { get; }
+public override bool IsReadOnly { get; }
 ```
 
 ## See Also

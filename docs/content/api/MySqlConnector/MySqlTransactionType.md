@@ -19,14 +19,13 @@ public sealed class MySqlTransaction : DbTransaction
 | override [Commit](../MySqlTransaction/Commit/)() | Commits the database transaction. |
 | override [CommitAsync](../MySqlTransaction/CommitAsync/)(…) | Asynchronously commits the database transaction. |
 | override [DisposeAsync](../MySqlTransaction/DisposeAsync/)() | Asynchronously releases any resources associated with this transaction. If it was not committed, it will be rolled back. |
-| [Release](../MySqlTransaction/Release/)(…) | Removes the named transaction savepoint with the specified *savepointName*. No commit or rollback occurs. |
-| [ReleaseAsync](../MySqlTransaction/ReleaseAsync/)(…) | Asynchronously removes the named transaction savepoint with the specified *savepointName*. No commit or rollback occurs. |
+| override [Release](../MySqlTransaction/Release/)(…) | Removes the named transaction savepoint with the specified *savepointName*. No commit or rollback occurs. |
+| override [ReleaseAsync](../MySqlTransaction/ReleaseAsync/)(…) | Asynchronously removes the named transaction savepoint with the specified *savepointName*. No commit or rollback occurs. |
 | override [Rollback](../MySqlTransaction/Rollback/)() | Rolls back the database transaction. |
-| [Rollback](../MySqlTransaction/Rollback/)(…) | Rolls back the current transaction to the savepoint with the specified *savepointName* without aborting the transaction. |
-| override [RollbackAsync](../MySqlTransaction/RollbackAsync/)(…) | Asynchronously rolls back the database transaction. |
-| [RollbackAsync](../MySqlTransaction/RollbackAsync/)(…) | Asynchronously rolls back the current transaction to the savepoint with the specified *savepointName* without aborting the transaction. |
-| [Save](../MySqlTransaction/Save/)(…) | Sets a named transaction savepoint with the specified *savepointName*. If the current transaction already has a savepoint with the same name, the old savepoint is deleted and a new one is set. |
-| [SaveAsync](../MySqlTransaction/SaveAsync/)(…) | Asynchronously sets a named transaction savepoint with the specified *savepointName*. If the current transaction already has a savepoint with the same name, the old savepoint is deleted and a new one is set. |
+| override [Rollback](../MySqlTransaction/Rollback/)(…) | Rolls back the current transaction to the savepoint with the specified *savepointName* without aborting the transaction. |
+| override [RollbackAsync](../MySqlTransaction/RollbackAsync/)(…) | Asynchronously rolls back the database transaction. (2 methods) |
+| override [Save](../MySqlTransaction/Save/)(…) | Sets a named transaction savepoint with the specified *savepointName*. If the current transaction already has a savepoint with the same name, the old savepoint is deleted and a new one is set. |
+| override [SaveAsync](../MySqlTransaction/SaveAsync/)(…) | Asynchronously sets a named transaction savepoint with the specified *savepointName*. If the current transaction already has a savepoint with the same name, the old savepoint is deleted and a new one is set. |
 
 ## Protected Members
 

@@ -5,12 +5,11 @@ title: MySqlBatchCommandCollection.GetEnumerator method
 # MySqlBatchCommandCollection.GetEnumerator method
 
 ```csharp
-public IEnumerator<MySqlBatchCommand> GetEnumerator()
+public override IEnumerator<DbBatchCommand> GetEnumerator()
 ```
 
 ## See Also
 
-* class [MySqlBatchCommand](../../MySqlBatchCommandType/)
 * class [MySqlBatchCommandCollection](../../MySqlBatchCommandCollectionType/)
 * namespace [MySqlConnector](../../MySqlBatchCommandCollectionType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)

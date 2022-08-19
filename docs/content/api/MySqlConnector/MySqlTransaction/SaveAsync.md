@@ -7,7 +7,7 @@ title: MySqlTransaction.SaveAsync method
 Asynchronously sets a named transaction savepoint with the specified *savepointName*. If the current transaction already has a savepoint with the same name, the old savepoint is deleted and a new one is set.
 
 ```csharp
-public Task SaveAsync(string savepointName, 
+public override Task SaveAsync(string savepointName, 
     CancellationToken cancellationToken = default(CancellationToken))
 ```
 

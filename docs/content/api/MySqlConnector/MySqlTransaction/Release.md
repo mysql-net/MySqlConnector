@@ -7,7 +7,7 @@ title: MySqlTransaction.Release method
 Removes the named transaction savepoint with the specified *savepointName*. No commit or rollback occurs.
 
 ```csharp
-public void Release(string savepointName)
+public override void Release(string savepointName)
 ```
 
 | parameter | description |

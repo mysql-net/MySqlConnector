@@ -7,12 +7,11 @@ title: MySqlConnectorFactory.CreateBatchCommand method
 Creates a new [`MySqlBatchCommand`](../../MySqlBatchCommandType/) object.
 
 ```csharp
-public MySqlBatchCommand CreateBatchCommand()
+public override DbBatchCommand CreateBatchCommand()
 ```
 
 ## See Also
 
-* class [MySqlBatchCommand](../../MySqlBatchCommandType/)
 * class [MySqlConnectorFactory](../../MySqlConnectorFactoryType/)
 * namespace [MySqlConnector](../../MySqlConnectorFactoryType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)

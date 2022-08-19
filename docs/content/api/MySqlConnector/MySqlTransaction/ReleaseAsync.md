@@ -7,7 +7,7 @@ title: MySqlTransaction.ReleaseAsync method
 Asynchronously removes the named transaction savepoint with the specified *savepointName*. No commit or rollback occurs.
 
 ```csharp
-public Task ReleaseAsync(string savepointName, 
+public override Task ReleaseAsync(string savepointName, 
     CancellationToken cancellationToken = default(CancellationToken))
 ```
 

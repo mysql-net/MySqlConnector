@@ -46,7 +46,7 @@ using var batch = new MySqlBatch(connection)
 ```
 
 ```csharp
-public sealed class MySqlBatch : IDisposable
+public sealed class MySqlBatch : DbBatch
 ```
 
 ## Public Members
@@ -57,18 +57,29 @@ public sealed class MySqlBatch : IDisposable
 | [MySqlBatch](../MySqlBatch/MySqlBatch/)(…) | Initializes a new [`MySqlBatch`](../MySqlBatchType/) object, setting the [`Connection`](../MySqlBatch/Connection/) and [`Transaction`](../MySqlBatch/Transaction/) if specified. |
 | [BatchCommands](../MySqlBatch/BatchCommands/) { get; } | The collection of commands that will be executed in the batch. |
 | [Connection](../MySqlBatch/Connection/) { get; set; } |  |
-| [Timeout](../MySqlBatch/Timeout/) { get; set; } |  |
+| override [Timeout](../MySqlBatch/Timeout/) { get; set; } |  |
 | [Transaction](../MySqlBatch/Transaction/) { get; set; } |  |
-| [Cancel](../MySqlBatch/Cancel/)() |  |
-| [Dispose](../MySqlBatch/Dispose/)() |  |
-| [ExecuteNonQuery](../MySqlBatch/ExecuteNonQuery/)() |  |
-| [ExecuteNonQueryAsync](../MySqlBatch/ExecuteNonQueryAsync/)(…) |  |
+| override [Cancel](../MySqlBatch/Cancel/)() |  |
+| override [Dispose](../MySqlBatch/Dispose/)() |  |
+| override [ExecuteNonQuery](../MySqlBatch/ExecuteNonQuery/)() |  |
+| override [ExecuteNonQueryAsync](../MySqlBatch/ExecuteNonQueryAsync/)(…) |  |
 | [ExecuteReader](../MySqlBatch/ExecuteReader/)(…) | Executes all the commands in the batch, returning a [`MySqlDataReader`](../MySqlDataReaderType/) that can iterate over the result sets. If multiple resultsets are returned, use [`NextResult`](../MySqlDataReader/NextResult/) to access them. |
 | [ExecuteReaderAsync](../MySqlBatch/ExecuteReaderAsync/)(…) | Executes all the commands in the batch, returning a [`MySqlDataReader`](../MySqlDataReaderType/) that can iterate over the result sets. If multiple resultsets are returned, use [`NextResultAsync`](../MySqlDataReader/NextResultAsync/) to access them. |
-| [ExecuteScalar](../MySqlBatch/ExecuteScalar/)() |  |
-| [ExecuteScalarAsync](../MySqlBatch/ExecuteScalarAsync/)(…) |  |
-| [Prepare](../MySqlBatch/Prepare/)() |  |
-| [PrepareAsync](../MySqlBatch/PrepareAsync/)(…) |  |
+| override [ExecuteScalar](../MySqlBatch/ExecuteScalar/)() |  |
+| override [ExecuteScalarAsync](../MySqlBatch/ExecuteScalarAsync/)(…) |  |
+| override [Prepare](../MySqlBatch/Prepare/)() |  |
+| override [PrepareAsync](../MySqlBatch/PrepareAsync/)(…) |  |
+
+## Protected Members
+
+| name | description |
+| --- | --- |
+| override [DbBatchCommands](../MySqlBatch/DbBatchCommands/) { get; } |  |
+| override [DbConnection](../MySqlBatch/DbConnection/) { get; set; } |  |
+| override [DbTransaction](../MySqlBatch/DbTransaction/) { get; set; } |  |
+| override [CreateDbBatchCommand](../MySqlBatch/CreateDbBatchCommand/)() |  |
+| override [ExecuteDbDataReader](../MySqlBatch/ExecuteDbDataReader/)(…) |  |
+| override [ExecuteDbDataReaderAsync](../MySqlBatch/ExecuteDbDataReaderAsync/)(…) |  |
 
 ## Remarks
 

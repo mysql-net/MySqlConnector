@@ -7,7 +7,7 @@ title: MySqlTransaction.Save method
 Sets a named transaction savepoint with the specified *savepointName*. If the current transaction already has a savepoint with the same name, the old savepoint is deleted and a new one is set.
 
 ```csharp
-public void Save(string savepointName)
+public override void Save(string savepointName)
 ```
 
 | parameter | description |

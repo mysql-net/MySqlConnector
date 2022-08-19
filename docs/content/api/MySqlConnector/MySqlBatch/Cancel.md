@@ -5,7 +5,7 @@ title: MySqlBatch.Cancel method
 # MySqlBatch.Cancel method
 
 ```csharp
-public void Cancel()
+public override void Cancel()
 ```
 
 ## See Also

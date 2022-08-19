@@ -5,7 +5,7 @@ title: MySqlBatch.ExecuteNonQuery method
 # MySqlBatch.ExecuteNonQuery method
 
 ```csharp
-public int ExecuteNonQuery()
+public override int ExecuteNonQuery()
 ```
 
 ## See Also

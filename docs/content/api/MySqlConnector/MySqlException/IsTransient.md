@@ -7,7 +7,7 @@ title: MySqlException.IsTransient property
 Returns `true` if this exception could indicate a transient error condition (that could succeed if retried); otherwise, `false`.
 
 ```csharp
-public bool IsTransient { get; }
+public override bool IsTransient { get; }
 ```
 
 ## See Also

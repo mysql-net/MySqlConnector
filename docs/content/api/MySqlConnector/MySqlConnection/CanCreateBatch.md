@@ -5,7 +5,7 @@ title: MySqlConnection.CanCreateBatch property
 # MySqlConnection.CanCreateBatch property
 
 ```csharp
-public bool CanCreateBatch { get; }
+public override bool CanCreateBatch { get; }
 ```
 
 ## See Also

@@ -5,7 +5,7 @@ title: MySqlBatchCommandCollection.Count property
 # MySqlBatchCommandCollection.Count property
 
 ```csharp
-public int Count { get; }
+public override int Count { get; }
 ```
 
 ## See Also

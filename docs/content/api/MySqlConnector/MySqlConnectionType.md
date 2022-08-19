@@ -16,7 +16,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 | --- | --- |
 | [MySqlConnection](../MySqlConnection/MySqlConnection/)() | The default constructor. |
 | [MySqlConnection](../MySqlConnection/MySqlConnection/)(…) |  |
-| [CanCreateBatch](../MySqlConnection/CanCreateBatch/) { get; } |  |
+| override [CanCreateBatch](../MySqlConnection/CanCreateBatch/) { get; } |  |
 | override [ConnectionString](../MySqlConnection/ConnectionString/) { get; set; } |  |
 | override [ConnectionTimeout](../MySqlConnection/ConnectionTimeout/) { get; } | Gets the time (in seconds) to wait while trying to establish a connection before terminating the attempt and generating an error. This value is controlled by [`ConnectionTimeout`](../MySqlConnectionStringBuilder/ConnectionTimeout/), which defaults to 15 seconds. |
 | override [Database](../MySqlConnection/Database/) { get; } |  |
@@ -43,7 +43,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 | override [EnlistTransaction](../MySqlConnection/EnlistTransaction/)(…) |  |
 | override [GetSchema](../MySqlConnection/GetSchema/)() | Returns schema information for the data source of this [`MySqlConnection`](../MySqlConnectionType/). |
 | override [GetSchema](../MySqlConnection/GetSchema/)(…) | Returns schema information for the data source of this [`MySqlConnection`](../MySqlConnectionType/). (2 methods) |
-| [GetSchemaAsync](../MySqlConnection/GetSchemaAsync/)(…) | Asynchronously returns schema information for the data source of this [`MySqlConnection`](../MySqlConnectionType/). (3 methods) |
+| override [GetSchemaAsync](../MySqlConnection/GetSchemaAsync/)(…) | Asynchronously returns schema information for the data source of this [`MySqlConnection`](../MySqlConnectionType/). (3 methods) |
 | override [Open](../MySqlConnection/Open/)() |  |
 | override [OpenAsync](../MySqlConnection/OpenAsync/)(…) |  |
 | [Ping](../MySqlConnection/Ping/)() |  |
@@ -61,6 +61,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 | override [DbProviderFactory](../MySqlConnection/DbProviderFactory/) { get; } |  |
 | override [BeginDbTransaction](../MySqlConnection/BeginDbTransaction/)(…) | Begins a database transaction. |
 | override [BeginDbTransactionAsync](../MySqlConnection/BeginDbTransactionAsync/)(…) | Begins a database transaction asynchronously. |
+| override [CreateDbBatch](../MySqlConnection/CreateDbBatch/)() |  |
 | override [CreateDbCommand](../MySqlConnection/CreateDbCommand/)() |  |
 | override [Dispose](../MySqlConnection/Dispose/)(…) |  |
 

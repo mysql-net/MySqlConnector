@@ -5,7 +5,7 @@ title: MySqlBatch.Prepare method
 # MySqlBatch.Prepare method
 
 ```csharp
-public void Prepare()
+public override void Prepare()
 ```
 
 ## See Also
