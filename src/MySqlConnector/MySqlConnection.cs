@@ -23,7 +23,7 @@ namespace MySqlConnector;
 public sealed class MySqlConnection : DbConnection, ICloneable
 {
 	public MySqlConnection()
-		: this(default)
+		: this("")
 	{
 	}
 
@@ -32,6 +32,14 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		GC.SuppressFinalize(this);
 		m_connectionString = connectionString ?? "";
 	}
+
+#if NET7_0_OR_GREATER
+	internal MySqlConnection(MySqlDataSource dataSource)
+		: this(dataSource.ConnectionString)
+	{
+		m_dataSource = dataSource;
+	}
+#endif
 
 #pragma warning disable CA2012 // Safe because method completes synchronously
 	/// <summary>
@@ -388,7 +396,11 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			SetState(ConnectionState.Connecting);
 
-			var pool = ConnectionPool.GetPool(m_connectionString);
+			var pool =
+#if NET7_0_OR_GREATER
+				m_dataSource?.Pool ??
+#endif
+				ConnectionPool.GetPool(m_connectionString);
 			m_connectionSettings ??= pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
 
 			// check if there is an open session (in the current transaction) that can be adopted
@@ -1105,6 +1117,9 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	private static readonly object s_lock = new();
 	private static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = new();
 
+#if NET7_0_OR_GREATER
+	private readonly MySqlDataSource? m_dataSource;
+#endif
 	private string m_connectionString;
 	private ConnectionSettings? m_connectionSettings;
 	private ServerSession? m_session;

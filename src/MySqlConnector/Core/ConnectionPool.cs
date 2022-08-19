@@ -425,6 +425,22 @@ internal sealed class ConnectionPool
 		return session;
 	}
 
+	public static ConnectionPool? CreatePool(string connectionString)
+	{
+		// parse connection string and check for 'Pooling' setting; return 'null' if pooling is disabled
+		var connectionStringBuilder = new MySqlConnectionStringBuilder(connectionString);
+		if (!connectionStringBuilder.Pooling)
+		{
+			return null;
+		}
+
+		// force a new pool to be created, ignoring the cache
+		var connectionSettings = new ConnectionSettings(connectionStringBuilder);
+		var pool = new ConnectionPool(connectionSettings);
+		pool.StartReaperTask();
+		return pool;
+	}
+
 	public static ConnectionPool? GetPool(string connectionString)
 	{
 		// check single-entry MRU cache for this exact connection string; most applications have just one
