@@ -1912,7 +1912,7 @@ internal sealed class ServerSession
 
 		protected override void OnStatementBegin(int index)
 		{
-			if (index + 10 < m_sql.Length && string.Equals("delimiter ", m_sql.Substring(index, 10), StringComparison.OrdinalIgnoreCase))
+			if (index + 10 < m_sql.Length && m_sql.AsSpan(index, 10).Equals("delimiter ".AsSpan(), StringComparison.OrdinalIgnoreCase))
 				HasDelimiter = true;
 		}
 
