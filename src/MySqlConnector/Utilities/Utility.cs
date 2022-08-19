@@ -473,9 +473,6 @@ internal static class Utility
 		throw new FormatException("Couldn't interpret '{0}' as a valid TimeSpan".FormatInvariant(Encoding.UTF8.GetString(originalValue)));
 	}
 
-	public static Task CompletedTask => Task.CompletedTask;
-	public static Task TaskFromException(Exception exception) => Task.FromException(exception);
-	public static Task<T> TaskFromException<T>(Exception exception) => Task.FromException<T>(exception);
 	public static byte[] EmptyByteArray { get; } = Array.Empty<byte>();
 
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
