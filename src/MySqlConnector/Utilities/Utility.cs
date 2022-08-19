@@ -299,6 +299,7 @@ internal static class Utility
 		new ArraySegment<T>(arraySegment.Array!, arraySegment.Offset + index, length);
 #endif
 
+#if !NET5_0_OR_GREATER
 	/// <summary>
 	/// Returns a new <see cref="byte"/> array that is a slice of <paramref name="input"/> starting at <paramref name="offset"/>.
 	/// </summary>
@@ -314,6 +315,7 @@ internal static class Utility
 		Array.Copy(input, offset, slice, 0, slice.Length);
 		return slice;
 	}
+#endif
 
 	/// <summary>
 	/// Finds the next index of <paramref name="pattern"/> in <paramref name="data"/>, starting at index <paramref name="offset"/>.
@@ -324,19 +326,8 @@ internal static class Utility
 	/// <returns>The offset of <paramref name="pattern"/> within <paramref name="data"/>, or <c>-1</c> if <paramref name="pattern"/> was not found.</returns>
 	public static int FindNextIndex(ReadOnlySpan<byte> data, int offset, ReadOnlySpan<byte> pattern)
 	{
-		var limit = data.Length - pattern.Length;
-		for (var start = offset; start <= limit; start++)
-		{
-			var i = 0;
-			for (; i < pattern.Length; i++)
-			{
-				if (data[start + i] != pattern[i])
-					break;
-			}
-			if (i == pattern.Length)
-				return start;
-		}
-		return -1;
+		var index = MemoryExtensions.IndexOf(data.Slice(offset), pattern);
+		return index == -1 ? -1 : offset + index;
 	}
 
 	/// <summary>

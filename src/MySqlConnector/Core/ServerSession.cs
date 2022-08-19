@@ -1372,7 +1372,11 @@ internal sealed class ServerSession
 						// load the certificate at this index; note that 'new X509Certificate' stops at the end of the first certificate it loads
 						m_logArguments[1] = index;
 						Log.Trace("Session{0} loading certificate at Index {1} in the CA certificate file.", m_logArguments);
+#if NET5_0_OR_GREATER
+						var caCertificate = new X509Certificate2(certificateBytes.AsSpan(index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index), default(ReadOnlySpan<char>), X509KeyStorageFlags.MachineKeySet);
+#else
 						var caCertificate = new X509Certificate2(Utility.ArraySlice(certificateBytes, index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index), default(string), X509KeyStorageFlags.MachineKeySet);
+#endif
 						certificateChain.ChainPolicy.ExtraStore.Add(caCertificate);
 					}
 					catch (CryptographicException ex)
