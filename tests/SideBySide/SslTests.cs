@@ -226,7 +226,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 			expectedProtocol == SslProtocols.Tls11 ? "TLSv1.1" : "TLSv1";
 #pragma warning restore SYSLIB0039 // SslProtocols.Tls11 is obsolete
 
-#if !NET452 && !NET461 && !NET472
+#if !NET461 && !NET472
 		// https://docs.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-3-0#tls-13--openssl-111-on-linux
 		if (expectedProtocol == SslProtocols.Tls12 && AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls13) && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 		{

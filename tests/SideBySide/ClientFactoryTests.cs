@@ -46,7 +46,7 @@ public class ClientFactoryTests
 	[Fact]
 	public void DbProviderFactoriesGetFactory()
 	{
-#if !NET452 && !NET461 && !NET472
+#if !NET461 && !NET472
 		DbProviderFactories.RegisterFactory("MySqlConnector", MySqlConnectorFactory.Instance);
 #endif
 #if BASELINE
