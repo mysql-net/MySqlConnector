@@ -10,6 +10,10 @@ weight: 30
 
 # Version History
 
+### 2.1.13 Beta 1
+
+* Swallow (but log) exceptions in `MySqlDataReader.Dispose(Async)`.
+
 ### 2.1.12
 
 * Support [new character sets added in MySQL Server 8.0.30](https://dev.mysql.com/doc/relnotes/mysql/8.0/en/news-8-0-30.html#mysqld-8-0-30-charset).
