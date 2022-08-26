@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using MySqlConnector.Core;
+using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
@@ -613,9 +614,11 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 					{
 					}
 				}
-				catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.QueryInterrupted)
+				catch (MySqlException ex)
 				{
-					// ignore "Query execution was interrupted" exceptions when closing a data reader
+					// ignore "Query execution was interrupted" exceptions when closing a data reader; log other exceptions
+					if (ex.ErrorCode != MySqlErrorCode.QueryInterrupted)
+						Log.Warn("Session{0} ignoring exception in MySqlDataReader.DisposeAsync. Message: {1}. CommandText: {2}", Command.Connection.Session.Id, ex.Message, Command.CommandText);
 				}
 				m_resultSet = null;
 			}
@@ -680,6 +683,8 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 			throw new InvalidOperationException("There is no current result set.");
 		return m_resultSet;
 	}
+
+	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlDataReader));
 
 	private readonly CommandBehavior m_behavior;
 	private readonly ICommandPayloadCreator m_payloadCreator;

@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-08-12
+lastmod: 2022-08-26
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,13 @@ weight: 30
 ---
 
 # Version History
+
+### 2.1.13
+
+* Swallow (but log) exceptions in `MySqlDataReader.Dispose(Async)`: [#1154](https://github.com/mysql-net/MySqlConnector/issues/1154).
+* Add `MySqlDataReader.GetBytes(string)`: [#1197](https://github.com/mysql-net/MySqlConnector/pull/1197).
+* Eliminate allocation in `OnStatementBegin`.
+* Thanks to [Corentin Pitrel](https://github.com/CorentinPtrl) and [Jason Nelson](https://github.com/iamcarbon) for contributions to this release.
 
 ### 2.1.12
 
