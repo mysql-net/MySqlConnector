@@ -704,6 +704,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	{
 		ProvideClientCertificatesCallback = ProvideClientCertificatesCallback,
 		ProvidePasswordCallback = ProvidePasswordCallback,
+		RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
 	};
 
 	object ICloneable.Clone() => Clone();
@@ -728,6 +729,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		{
 			ProvideClientCertificatesCallback = ProvideClientCertificatesCallback,
 			ProvidePasswordCallback = ProvidePasswordCallback,
+			RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
 		};
 	}
 
@@ -767,7 +769,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			var cancellationTimeout = GetConnectionSettings().CancellationTimeout;
 			csb.ConnectionTimeout = cancellationTimeout < 1 ? 3u : (uint) cancellationTimeout;
 
-			using var connection = new MySqlConnection(csb.ConnectionString);
+			using var connection = CloneWith(csb.ConnectionString);
 			connection.Open();
 			using var killCommand = new MySqlCommand("KILL QUERY {0}".FormatInvariant(command.Connection!.ServerThread), connection);
 			killCommand.CommandTimeout = cancellationTimeout < 1 ? 3 : cancellationTimeout;

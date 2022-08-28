@@ -38,6 +38,51 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		task.Wait(); // shouldn't throw
 	}
 
+#if !BASELINE
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout)]
+	public async Task CancelCommandWithPasswordCallback()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = null;
+		using var connection = new MySqlConnection(csb.ConnectionString)
+		{
+			ProvidePasswordCallback = _ => password,
+		};
+		await connection.OpenAsync();
+		using var command = new MySqlCommand("SELECT SLEEP(5)", connection);
+		var task = Task.Run(async () =>
+		{
+			await Task.Delay(TimeSpan.FromSeconds(0.5));
+			command.Cancel();
+		});
+
+		var stopwatch = Stopwatch.StartNew();
+		TestUtilities.AssertIsOne(await command.ExecuteScalarAsync());
+		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
+
+		task.Wait(); // shouldn't throw
+	}
+
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout)]
+	public async Task CancelCommandCancellationTokenWithPasswordCallback()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = null;
+		using var connection = new MySqlConnection(csb.ConnectionString)
+		{
+			ProvidePasswordCallback = _ => password,
+		};
+		await connection.OpenAsync();
+		using var command = new MySqlCommand("SELECT SLEEP(5)", connection);
+		using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
+		var stopwatch = Stopwatch.StartNew();
+		TestUtilities.AssertIsOne(await command.ExecuteScalarAsync(cts.Token));
+		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
+	}
+#endif
+
 	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout)]
 	public void CancelReaderAsynchronously()
 	{
