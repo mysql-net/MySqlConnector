@@ -5,29 +5,35 @@ title: MySqlBatchCommandCollection
 # MySqlBatchCommandCollection class
 
 ```csharp
-public sealed class MySqlBatchCommandCollection : IList<MySqlBatchCommand>
+public sealed class MySqlBatchCommandCollection : DbBatchCommandCollection
 ```
 
 ## Public Members
 
 | name | description |
 | --- | --- |
-| [Count](../MySqlBatchCommandCollection/Count/) { get; } |  |
-| [IsReadOnly](../MySqlBatchCommandCollection/IsReadOnly/) { get; } |  |
+| override [Count](../MySqlBatchCommandCollection/Count/) { get; } |  |
+| override [IsReadOnly](../MySqlBatchCommandCollection/IsReadOnly/) { get; } |  |
 | [Item](../MySqlBatchCommandCollection/Item/) { get; set; } |  |
-| [Add](../MySqlBatchCommandCollection/Add/)(…) |  |
-| [Clear](../MySqlBatchCommandCollection/Clear/)() |  |
-| [Contains](../MySqlBatchCommandCollection/Contains/)(…) |  |
-| [CopyTo](../MySqlBatchCommandCollection/CopyTo/)(…) |  |
-| [GetEnumerator](../MySqlBatchCommandCollection/GetEnumerator/)() |  |
-| [IndexOf](../MySqlBatchCommandCollection/IndexOf/)(…) |  |
-| [Insert](../MySqlBatchCommandCollection/Insert/)(…) |  |
-| [Remove](../MySqlBatchCommandCollection/Remove/)(…) |  |
-| [RemoveAt](../MySqlBatchCommandCollection/RemoveAt/)(…) |  |
+| override [Add](../MySqlBatchCommandCollection/Add/)(…) |  |
+| override [Clear](../MySqlBatchCommandCollection/Clear/)() |  |
+| override [Contains](../MySqlBatchCommandCollection/Contains/)(…) |  |
+| override [CopyTo](../MySqlBatchCommandCollection/CopyTo/)(…) |  |
+| override [GetEnumerator](../MySqlBatchCommandCollection/GetEnumerator/)() |  |
+| override [IndexOf](../MySqlBatchCommandCollection/IndexOf/)(…) |  |
+| override [Insert](../MySqlBatchCommandCollection/Insert/)(…) |  |
+| override [Remove](../MySqlBatchCommandCollection/Remove/)(…) |  |
+| override [RemoveAt](../MySqlBatchCommandCollection/RemoveAt/)(…) |  |
+
+## Protected Members
+
+| name | description |
+| --- | --- |
+| override [GetBatchCommand](../MySqlBatchCommandCollection/GetBatchCommand/)(…) |  |
+| override [SetBatchCommand](../MySqlBatchCommandCollection/SetBatchCommand/)(…) |  |
 
 ## See Also
 
-* class [MySqlBatchCommand](../MySqlBatchCommandType/)
 * namespace [MySqlConnector](../../MySqlConnectorNamespace/)
 * assembly [MySqlConnector](../../MySqlConnectorAssembly/)
 

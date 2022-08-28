@@ -4,7 +4,7 @@ title: MySqlBulkCopyColumnMapping.SourceOrdinal property
 
 # MySqlBulkCopyColumnMapping.SourceOrdinal property
 
-The ordinal position of the source column to map from.
+The zero-based ordinal position of the source column to map from.
 
 ```csharp
 public int SourceOrdinal { get; set; }

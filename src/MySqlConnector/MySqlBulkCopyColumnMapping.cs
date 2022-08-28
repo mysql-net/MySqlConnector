@@ -3,7 +3,7 @@ namespace MySqlConnector;
 /// <summary>
 /// <para>Use <see cref="MySqlBulkCopyColumnMapping"/> to specify how to map columns in the source data to
 /// columns in the destination table when using <see cref="MySqlBulkCopy"/>.</para>
-/// <para>Set <see cref="SourceOrdinal"/> to the index of the source column to map. Set <see cref="DestinationColumn"/> to
+/// <para>Set <see cref="SourceOrdinal"/> to the zero-based index of the source column to map. Set <see cref="DestinationColumn"/> to
 /// either the name of a column in the destination table, or the name of a user-defined variable.
 /// If a user-defined variable, you can use <see cref="Expression"/> to specify a MySQL expression that assigns
 /// its value to destination column.</para>
@@ -41,7 +41,7 @@ public sealed class MySqlBulkCopyColumnMapping
 	/// <summary>
 	/// Initializes <see cref="MySqlBulkCopyColumnMapping"/> to the specified values.
 	/// </summary>
-	/// <param name="sourceOrdinal">The ordinal position of the source column.</param>
+	/// <param name="sourceOrdinal">The zero-based ordinal position of the source column.</param>
 	/// <param name="destinationColumn">The name of the destination column.</param>
 	/// <param name="expression">The optional expression to be used to set the destination column.</param>
 	public MySqlBulkCopyColumnMapping(int sourceOrdinal, string destinationColumn, string? expression = null)
@@ -52,7 +52,7 @@ public sealed class MySqlBulkCopyColumnMapping
 	}
 
 	/// <summary>
-	/// The ordinal position of the source column to map from.
+	/// The zero-based ordinal position of the source column to map from.
 	/// </summary>
 	public int SourceOrdinal { get; set; }
 
