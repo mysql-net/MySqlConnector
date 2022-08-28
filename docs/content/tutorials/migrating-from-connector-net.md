@@ -46,13 +46,6 @@ MySqlConnector has some different default connection string options:
     <th style="width:40%">Notes</th>
   </thead>
   <tr>
-    <td><code>AllowPublicKeyRetrieval</code></td>
-    <td>Default is <code>false</code></td>
-    <td>(not configurable)</td>
-    <td>When using <code>sha256_password</code> authentication, this option allows the RSA public key to be retrieved from the server
-    (when not using a secure connection). It’s <code>false</code> by default to avoid disclosing the password to a malicious proxy.</td>
-  </tr>
-  <tr>
     <td><code>CharacterSet</code>, <code>CharSet</code></td>
     <td>Ignored; <code>utf8mb4</code> is always used</td>
     <td>(server-defined)</td>
