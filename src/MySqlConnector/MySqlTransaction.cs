@@ -217,7 +217,7 @@ public sealed class MySqlTransaction : DbTransaction
 #if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		return default;
 #else
-		return Utility.CompletedTask;
+		return Task.CompletedTask;
 #endif
 	}
 

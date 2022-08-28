@@ -99,36 +99,6 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		m_output = m_output[span.Length..];
 	}
 
-#if NET45
-	public void Write(string value)
-	{
-		Debug.Assert(value is not null, "value is not null");
-		if (value!.Length == 0)
-			return;
-
-		var byteCount = Encoding.UTF8.GetByteCount(value);
-		if (byteCount > m_output.Length)
-			Reallocate(byteCount);
-		Encoding.UTF8.GetBytes(value.AsSpan(), m_output.Span);
-		m_output = m_output.Slice(byteCount);
-	}
-
-	public unsafe void Write(string value, int offset, int length)
-	{
-		if (length == 0)
-			return;
-
-		Debug.Assert(value is not null, "value is not null");
-		fixed (char* charsPtr = value)
-		{
-			var byteCount = Encoding.UTF8.GetByteCount(charsPtr + offset, length);
-			if (byteCount > m_output.Length)
-				Reallocate(byteCount);
-			Encoding.UTF8.GetBytes(value.AsSpan(offset, length), m_output.Span);
-			m_output = m_output.Slice(byteCount);
-		}
-	}
-#else
 	public void Write(string value) => Write(value.AsSpan(), flush: true);
 	public void Write(string value, int offset, int length) => Write(value.AsSpan(offset, length), flush: true);
 
@@ -155,7 +125,6 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 			m_output = m_output[bytesUsed..];
 		}
 	}
-#endif
 
 	public void WriteLengthEncodedString(StringBuilder stringBuilder)
 	{
@@ -257,9 +226,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		m_output = new(m_buffer, usedLength, m_buffer.Length - usedLength);
 	}
 
-#if !NET45
 	private Encoder? m_encoder;
-#endif
 	private byte[] m_buffer;
 	private Memory<byte> m_output;
 }
@@ -290,14 +257,6 @@ internal static class ByteBufferWriterExtensions
 		}
 	}
 
-#if NET45
-	public static void WriteLengthEncodedString(this ByteBufferWriter writer, string value)
-	{
-		var byteCount = Encoding.UTF8.GetByteCount(value);
-		writer.WriteLengthEncodedInteger((ulong) byteCount);
-		writer.Write(value);
-	}
-#else
 	public static void WriteLengthEncodedString(this ByteBufferWriter writer, string value) => writer.WriteLengthEncodedString(value.AsSpan());
 
 	public static void WriteLengthEncodedString(this ByteBufferWriter writer, ReadOnlySpan<char> value)
@@ -306,7 +265,6 @@ internal static class ByteBufferWriterExtensions
 		writer.WriteLengthEncodedInteger((ulong) byteCount);
 		writer.Write(value, flush: true);
 	}
-#endif
 
 	public static void WriteNullTerminatedString(this ByteBufferWriter writer, string value)
 	{

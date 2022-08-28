@@ -730,13 +730,8 @@ internal sealed class ServerSession
 		case "sha256_password":
 			if (!m_isSecureConnection && password.Length != 0)
 			{
-#if NET45
-				Log.Error("Session{0} can't use AuthenticationMethod '{1}' without secure connection on .NET 4.5", m_logArguments);
-				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
-#else
 				var publicKey = await GetRsaPublicKeyAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await SendEncryptedPasswordAsync(switchRequest, publicKey, password, ioBehavior, cancellationToken).ConfigureAwait(false);
-#endif
 			}
 			else
 			{
@@ -775,7 +770,6 @@ internal sealed class ServerSession
 		return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
 
-#if !NET45
 	private async Task<PayloadData> SendEncryptedPasswordAsync(
 		AuthenticationMethodSwitchRequestPayload switchRequest,
 		string rsaPublicKey,
@@ -826,9 +820,7 @@ internal sealed class ServerSession
 		await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 		return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
-#endif
 
-#if !NET45
 	private async Task<string> GetRsaPublicKeyAsync(string switchRequestName, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (cs.ServerRsaPublicKeyFile.Length != 0)
@@ -859,7 +851,6 @@ internal sealed class ServerSession
 		Log.Error("Session{0} couldn't use AuthenticationMethod '{1}' because RSA key wasn't specified or couldn't be retrieved", m_logArguments);
 		throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Authentication method '{0}' failed. Either use a secure connection, specify the server's RSA public key with ServerRSAPublicKeyFile, or set AllowPublicKeyRetrieval=True.".FormatInvariant(switchRequestName));
 	}
-#endif
 
 	public async ValueTask<bool> TryPingAsync(bool logInfo, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
@@ -1185,13 +1176,7 @@ internal sealed class ServerSession
 		return false;
 	}
 
-#if NET45
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-#endif
 	private async Task<bool> OpenNamedPipeAsync(ConnectionSettings cs, int startTickCount, IOBehavior ioBehavior, CancellationToken cancellationToken)
-#if NET45
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-#endif
 	{
 		if (Log.IsTraceEnabled())
 			Log.Trace("Session{0} connecting to NamedPipe '{1}' on Server '{2}'", m_logArguments[0], cs.PipeName, cs.HostNames![0]);
@@ -1203,12 +1188,10 @@ internal sealed class ServerSession
 			{
 				try
 				{
-#if !NET45
 					if (ioBehavior == IOBehavior.Asynchronous)
 						await namedPipeStream.ConnectAsync(timeout, cancellationToken).ConfigureAwait(false);
 					else
-#endif
-					namedPipeStream.Connect(timeout);
+						namedPipeStream.Connect(timeout);
 				}
 				catch (Exception ex) when ((ex is ObjectDisposedException && cancellationToken.IsCancellationRequested) || ex is TimeoutException)
 				{
@@ -1295,11 +1278,8 @@ internal sealed class ServerSession
 				var certificate = new X509Certificate2(cs.CertificateFile, cs.CertificatePassword, X509KeyStorageFlags.MachineKeySet);
 				if (!certificate.HasPrivateKey)
 				{
-#if NET45
-					certificate.Reset();
-#else
 					certificate.Dispose();
-#endif
+
 					m_logArguments[1] = cs.CertificateFile;
 					Log.Error("Session{0} no private key included with CertificateFile '{1}'", m_logArguments);
 					throw new MySqlException("CertificateFile does not contain a private key. " +
@@ -1395,11 +1375,7 @@ internal sealed class ServerSession
 			}
 			finally
 			{
-#if NET45
-				certificateChain?.Reset();
-#else
 				certificateChain?.Dispose();
-#endif
 			}
 		}
 
@@ -1485,13 +1461,11 @@ internal sealed class ServerSession
 			{
 #if NET5_0_OR_GREATER
 				sslStream.AuthenticateAsClient(clientAuthenticationOptions);
-#elif NET45_OR_GREATER || NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#else
 				sslStream.AuthenticateAsClient(clientAuthenticationOptions.TargetHost,
 					clientAuthenticationOptions.ClientCertificates,
 					clientAuthenticationOptions.EnabledSslProtocols,
 					checkCertificateRevocation);
-#else
-				await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
 #endif
 			}
 			var sslByteHandler = new StreamByteHandler(sslStream);
@@ -1525,11 +1499,7 @@ internal sealed class ServerSession
 		}
 		finally
 		{
-#if NET45
-			caCertificateChain?.Reset();
-#else
 			caCertificateChain?.Dispose();
-#endif
 		}
 
 		// Returns a X509CertificateCollection containing the single certificate contained in 'sslKeyFile' (PEM private key) and 'sslCertificateFile' (PEM certificate).
@@ -1588,7 +1558,7 @@ internal sealed class ServerSession
 				}
 				rsa.ImportParameters(rsaParameters);
 
-#if NET45 || NET461 || NET471
+#if NET461 || NET471
 				var certificate = new X509Certificate2(sslCertificateFile, "", X509KeyStorageFlags.MachineKeySet)
 				{
 					PrivateKey = rsa,
@@ -1705,12 +1675,7 @@ internal sealed class ServerSession
 		Utility.Dispose(ref m_stream);
 		SafeDispose(ref m_tcpClient);
 		SafeDispose(ref m_socket);
-#if NET45
-		m_clientCertificate?.Reset();
-		m_clientCertificate = null;
-#else
 		Utility.Dispose(ref m_clientCertificate);
-#endif
 		m_activityTags.Clear();
 		m_activityTags.Add(ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue);
 	}

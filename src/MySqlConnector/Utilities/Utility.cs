@@ -31,15 +31,11 @@ internal static class Utility
 	{
 		if (span.Length == 0)
 			return "";
-#if NET45
-		return encoding.GetString(span.ToArray());
-#else
 		unsafe
 		{
 			fixed (byte* ptr = &MemoryMarshal.GetReference(span))
 				return encoding.GetString(ptr, span.Length);
 		}
-#endif
 	}
 
 	public static unsafe int GetByteCount(this Encoding encoding, ReadOnlySpan<char> chars)
@@ -468,38 +464,6 @@ internal static class Utility
 		throw new FormatException("Couldn't interpret '{0}' as a valid TimeSpan".FormatInvariant(Encoding.UTF8.GetString(originalValue)));
 	}
 
-#if NET45
-	public static Task CompletedTask
-	{
-		get
-		{
-			if (s_completedTask is null)
-			{
-				var tcs = new TaskCompletionSource<object>();
-				tcs.SetResult(tcs);
-				s_completedTask = tcs.Task;
-			}
-			return s_completedTask;
-		}
-	}
-	private static Task? s_completedTask;
-
-	public static Task TaskFromException(Exception exception) => TaskFromException<object>(exception);
-	public static Task<T> TaskFromException<T>(Exception exception)
-	{
-		var tcs = new TaskCompletionSource<T>();
-		tcs.SetException(exception);
-		return tcs.Task;
-	}
-
-	public static byte[] EmptyByteArray { get; } = new byte[0];
-#else
-	public static Task CompletedTask => Task.CompletedTask;
-	public static Task TaskFromException(Exception exception) => Task.FromException(exception);
-	public static Task<T> TaskFromException<T>(Exception exception) => Task.FromException<T>(exception);
-	public static byte[] EmptyByteArray { get; } = Array.Empty<byte>();
-#endif
-
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 	public static bool TryComputeHash(this HashAlgorithm hashAlgorithm, ReadOnlySpan<byte> source, Span<byte> destination, out int bytesWritten)
 	{
@@ -520,23 +484,6 @@ internal static class Utility
 
 	public static ReadOnlySpan<byte> TrimZeroByte(ReadOnlySpan<byte> value) =>
 		value is [ .., 0 ] ? value[..^1] : value;
-
-#if NET45
-	public static bool TryGetBuffer(this MemoryStream memoryStream, out ArraySegment<byte> buffer)
-	{
-		try
-		{
-			var rawBuffer = memoryStream.GetBuffer();
-			buffer = new(rawBuffer, 0, checked((int) memoryStream.Length));
-			return true;
-		}
-		catch (UnauthorizedAccessException)
-		{
-			buffer = default;
-			return false;
-		}
-	}
-#endif
 
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 	public static int Read(this Stream stream, Memory<byte> buffer)
@@ -575,7 +522,7 @@ internal static class Utility
 		bytes[offset2] = swap;
 	}
 
-#if NET45 || NET461
+#if NET461
 	public static bool IsWindows() => Environment.OSVersion.Platform == PlatformID.Win32NT;
 
 	public static void GetOSDetails(out string? os, out string osDescription, out string architecture)
@@ -614,7 +561,7 @@ internal static class Utility
 	}
 #endif
 
-#if NET45 || NET461
+#if NET461
 	public static SslProtocols GetDefaultSslProtocols()
 	{
 		if (!s_defaultSslProtocols.HasValue)
