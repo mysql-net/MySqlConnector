@@ -107,6 +107,11 @@ jobs:
   pool:
     vmimage: 'windows-latest'
   steps:
+  - task: PowerShell@2
+    displayName: Create Database
+    inputs:
+      targetType: inline
+      script: "mysql -u$(Azure MySQL Root User) -p$(Azure MySQL Root Password) -h '$(Azure MySQL Host)' -e 'create schema mysqltest_$(Build.BuildId) collate utf8mb4_0900_ai_ci;'"
   - task: UseDotNet@2
     displayName: 'Install .NET Core'
     inputs:
@@ -129,7 +134,13 @@ jobs:
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'Azure', 'net6.0', 'SSL') }}
     env:
       DATA__UNSUPPORTEDFEATURES: 'CachingSha2Password,Ed25519,GlobalLog,KnownCertificateAuthority,QueryAttributes,RsaEncryption,Sha256Password,StreamingResults,Timeout,Tls11,Tls13,UnixDomainSocket,ZeroDateTime'
-      DATA__CONNECTIONSTRING: "$(AzureConnectionString);database=mysqltest;ssl mode=Required;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True"
+      DATA__CONNECTIONSTRING: "$(AzureConnectionString);database=mysqltest_$(Build.BuildId);ssl mode=Required;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True"
+  - task: PowerShell@2
+    displayName: Drop Database
+    condition: always()
+    inputs:
+      targetType: inline
+      script: "mysql -u$(Azure MySQL Root User) -p$(Azure MySQL Root Password) -h '$(Azure MySQL Host)' -e 'drop schema if exists mysqltest_$(Build.BuildId);'"
 
 - job: windows_integration_tests_1
   displayName: 'Windows Integration Tests (Part 1)'
