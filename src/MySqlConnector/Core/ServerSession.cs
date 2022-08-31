@@ -1038,9 +1038,10 @@ internal sealed class ServerSession
 #endif
 					: Dns.GetHostAddresses(hostName);
 			}
-			catch (SocketException)
+			catch (SocketException ex)
 			{
 				// name couldn't be resolved
+				Log.Warn("Session{0} failed to resolve HostName '{1}': {2}", m_logArguments[0], hostName, ex.Message);
 				continue;
 			}
 
