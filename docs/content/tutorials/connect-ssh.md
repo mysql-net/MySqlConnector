@@ -53,7 +53,7 @@ public static (SshClient SshClient, uint Port) ConnectSsh(string sshHostName, st
 	}
 	if (!string.IsNullOrEmpty(sshPassword))
 	{
-		authenticationMethods.Add(new PasswordAuthenticationMethod(sshUserName, sshPassword).Dump());
+		authenticationMethods.Add(new PasswordAuthenticationMethod(sshUserName, sshPassword));
 	}
 
 	// connect to the SSH server
