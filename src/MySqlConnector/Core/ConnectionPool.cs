@@ -566,7 +566,7 @@ internal sealed class ConnectionPool
 	{
 		public LeastConnectionsLoadBalancer(Dictionary<string, int> hostSessions) => m_hostSessions = hostSessions;
 
-		public IEnumerable<string> LoadBalance(IReadOnlyList<string> hosts)
+		public IReadOnlyList<string> LoadBalance(IReadOnlyList<string> hosts)
 		{
 			lock (m_hostSessions)
 				return m_hostSessions.OrderBy(static x => x.Value).Select(static x => x.Key).ToList();

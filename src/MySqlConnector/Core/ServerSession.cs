@@ -1025,8 +1025,9 @@ internal sealed class ServerSession
 	private async Task<bool> OpenTcpSocketAsync(ConnectionSettings cs, ILoadBalancer loadBalancer, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		var hostNames = loadBalancer.LoadBalance(cs.HostNames!);
-		foreach (var hostName in hostNames)
+		for (var hostNameIndex = 0; hostNameIndex < hostNames.Count; hostNameIndex++)
 		{
+			var hostName = hostNames[hostNameIndex];
 			IPAddress[] ipAddresses;
 			try
 			{
@@ -1045,9 +1046,11 @@ internal sealed class ServerSession
 			}
 
 			// need to try IP Addresses one at a time: https://github.com/dotnet/corefx/issues/5829
-			foreach (var ipAddress in ipAddresses)
+			for (var ipAddressIndex = 0; ipAddressIndex < ipAddresses.Length; ipAddressIndex++)
 			{
-				Log.Trace("Session{0} connecting to IpAddress {1} for HostName '{2}'", m_logArguments[0], ipAddress, hostName);
+				var ipAddress = ipAddresses[ipAddressIndex];
+				if (Log.IsTraceEnabled())
+					Log.Trace("Session{0} connecting to IpAddress {1} ({2} of {3}) for HostName '{4}' ({5} of {6})", m_logArguments[0], ipAddress, ipAddressIndex + 1, ipAddresses.Length, hostName, hostNameIndex + 1, hostNames.Count);
 				TcpClient? tcpClient = null;
 				try
 				{
@@ -1080,7 +1083,7 @@ internal sealed class ServerSession
 								}
 							}
 						}
-						catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
+						catch (Exception ex) when (cancellationToken.IsCancellationRequested && ex is ObjectDisposedException or SocketException)
 						{
 							SafeDispose(ref tcpClient);
 							Log.Info("Session{0} connect timeout expired connecting to IpAddress {1} for HostName '{2}'", m_logArguments[0], ipAddress, hostName);
@@ -1088,9 +1091,23 @@ internal sealed class ServerSession
 						}
 					}
 				}
-				catch (SocketException)
+				catch (SocketException ex)
 				{
 					SafeDispose(ref tcpClient);
+
+					// if this is the final IP address in the list, throw a fatal exception; otherwise try the next IP address
+					if (hostNameIndex == hostNames.Count - 1 && ipAddressIndex == ipAddresses.Length - 1)
+					{
+						lock (m_lock)
+							m_state = State.Failed;
+						if (hostNames.Count == 1 && ipAddresses.Length == 1)
+							Log.Info("Session{0} failed to connect to IpAddress {1} for HostName '{2}': {3}", m_logArguments[0], ipAddress, hostName, ex.Message);
+						else
+							Log.Info("Session{0} failed to connect to IpAddress {1} ({2} of {3}) for HostName '{4}' ({5} of {6}): {7}", m_logArguments[0], ipAddress, ipAddressIndex + 1, ipAddresses.Length, hostName, hostNameIndex + 1, hostNames.Count, ex.Message);
+						throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Unable to connect to any of the specified MySQL hosts.");
+					}
+
+					Log.Trace("Session{0} failed to connect to IpAddress {1} ({2} of {3}) for HostName '{4}' ({5} of {6}): {7}", m_logArguments[0], ipAddress, ipAddressIndex + 1, ipAddresses.Length, hostName, hostNameIndex + 1, hostNames.Count, ex.Message);
 					continue;
 				}
 
