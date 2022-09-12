@@ -8,6 +8,11 @@ pygmentsStyle = "friendly"
 [blackfriday]
   plainIDAnchors = true
 
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
 [params]
   description = "Documentation for MySqlConnector: an Async MySQL Driver for .NET and .NET Core"
   author = "MySqlConnector Authors"
