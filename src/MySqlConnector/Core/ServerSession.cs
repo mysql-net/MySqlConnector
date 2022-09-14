@@ -1042,7 +1042,7 @@ internal sealed class ServerSession
 			catch (SocketException ex)
 			{
 				// name couldn't be resolved
-				Log.Warn("Session{0} failed to resolve HostName '{1}': {2}", m_logArguments[0], hostName, ex.Message);
+				Log.Warn("Session{0} failed to resolve HostName '{1}' ({2} of {3}): {4}", m_logArguments[0], hostName, hostNameIndex + 1, hostNames.Count, ex.Message);
 				continue;
 			}
 
