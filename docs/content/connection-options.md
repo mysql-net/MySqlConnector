@@ -222,15 +222,15 @@ Connection pooling is enabled by default. These options are used to configure it
     <td>180</td>
     <td>The amount of time (in seconds) that a connection can remain idle in the pool. Any connection above <code>MinimumPoolSize</code> connections that is idle for longer than <code>ConnectionIdleTimeout</code> is subject to being closed by a background task. The background task runs every minute, or half of <code>ConnectionIdleTimeout</code>, whichever is more frequent. A value of zero (0) means pooled connections will never incur a ConnectionIdleTimeout, and if the pool grows to its maximum size, it will never get smaller.</td>
   </tr>
-  <tr id="MaximumPoolSize">
-    <td>Maximum Pool Size, Max Pool Size, MaximumPoolsize, maxpoolsize</td>
-    <td>100</td>
-    <td>The maximum number of connections allowed in the pool.</td>
-  </tr>
   <tr id="MinimumPoolSize">
     <td>Minimum Pool Size, Min Pool Size, MinimumPoolSize, minpoolsize</td>
     <td>0</td>
     <td>The minimum number of connections to leave in the pool if ConnectionIdleTimeout is reached.</td>
+  </tr>
+  <tr id="MaximumPoolSize">
+    <td>Maximum Pool Size, Max Pool Size, MaximumPoolsize, maxpoolsize</td>
+    <td>100</td>
+    <td>The maximum number of connections allowed in the pool.</td>
   </tr>
 </table>
 
