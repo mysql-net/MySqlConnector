@@ -2,6 +2,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using MySqlConnector.Utilities;
 
@@ -788,6 +789,11 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	// Other Methods
 
 	/// <summary>
+	/// Returns an <see cref="ICollection"/> that contains the keys in the <see cref="MySqlConnectionStringBuilder"/>.
+	/// </summary>
+	public override ICollection Keys => base.Keys.Cast<string>().OrderBy(x => MySqlConnectionStringOption.OptionNames.IndexOf(x)).ToList();
+
+	/// <summary>
 	/// Whether this <see cref="MySqlConnectionStringBuilder"/> contains a set option with the specified name.
 	/// </summary>
 	/// <param name="keyword">The option name.</param>
@@ -876,6 +882,8 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 
 internal abstract class MySqlConnectionStringOption
 {
+	public static List<string> OptionNames { get; } = new();
+
 	// Connection Options
 	public static readonly MySqlConnectionStringReferenceOption<string> Server;
 	public static readonly MySqlConnectionStringValueOption<uint> Port;
@@ -892,9 +900,9 @@ internal abstract class MySqlConnectionStringOption
 	public static readonly MySqlConnectionStringReferenceOption<string> CertificatePassword;
 	public static readonly MySqlConnectionStringValueOption<MySqlCertificateStoreLocation> CertificateStoreLocation;
 	public static readonly MySqlConnectionStringReferenceOption<string> CertificateThumbprint;
-	public static readonly MySqlConnectionStringReferenceOption<string> SslCa;
 	public static readonly MySqlConnectionStringReferenceOption<string> SslCert;
 	public static readonly MySqlConnectionStringReferenceOption<string> SslKey;
+	public static readonly MySqlConnectionStringReferenceOption<string> SslCa;
 	public static readonly MySqlConnectionStringReferenceOption<string> TlsVersion;
 	public static readonly MySqlConnectionStringReferenceOption<string> TlsCipherSuites;
 
@@ -960,6 +968,7 @@ internal abstract class MySqlConnectionStringOption
 	{
 		foreach (string key in option.m_keys)
 			s_options.Add(key, option);
+		OptionNames.Add(option.m_keys[0]);
 	}
 
 #pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
@@ -1014,8 +1023,12 @@ internal abstract class MySqlConnectionStringOption
 			keys: new[] { "Certificate Password", "CertificatePassword" },
 			defaultValue: ""));
 
-		AddOption(SslCa = new(
-			keys: new[] { "SSL CA", "CACertificateFile", "CA Certificate File", "SslCa", "Ssl-Ca" },
+		AddOption(CertificateStoreLocation = new(
+			keys: new[] { "Certificate Store Location", "CertificateStoreLocation" },
+			defaultValue: MySqlCertificateStoreLocation.None));
+
+		AddOption(CertificateThumbprint = new(
+			keys: new[] { "Certificate Thumbprint", "CertificateThumbprint", "Certificate Thumb Print" },
 			defaultValue: ""));
 
 		AddOption(SslCert = new(
@@ -1026,12 +1039,8 @@ internal abstract class MySqlConnectionStringOption
 			keys: new[] { "SSL Key", "SslKey", "Ssl-Key" },
 			defaultValue: ""));
 
-		AddOption(CertificateStoreLocation = new(
-			keys: new[] { "Certificate Store Location", "CertificateStoreLocation" },
-			defaultValue: MySqlCertificateStoreLocation.None));
-
-		AddOption(CertificateThumbprint = new(
-			keys: new[] { "Certificate Thumbprint", "CertificateThumbprint", "Certificate Thumb Print" },
+		AddOption(SslCa = new(
+			keys: new[] { "SSL CA", "CACertificateFile", "CA Certificate File", "SslCa", "Ssl-Ca" },
 			defaultValue: ""));
 
 		AddOption(TlsVersion = new(
