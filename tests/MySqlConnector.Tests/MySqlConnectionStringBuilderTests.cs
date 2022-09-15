@@ -114,7 +114,7 @@ public class MySqlConnectionStringBuilderTests
 				"allow zero datetime=true;" +
 				"auto enlist=False;" +
 				"certificate file=file.pfx;" +
-				"certificate password=Pass1234;" +
+				"certificate password=Pass2345;" +
 				"certificate store location=CurrentUser;" +
 				"certificate thumb print=thumbprint123;" +
 				"Character Set=latin1;" +
@@ -175,7 +175,7 @@ public class MySqlConnectionStringBuilderTests
 		// Connector/NET treats "CertificateFile" (client certificate) and "SslCa" (server CA) as aliases
 		Assert.Equal("file.pfx", csb.CertificateFile);
 #endif
-		Assert.Equal("Pass1234", csb.CertificatePassword);
+		Assert.Equal("Pass2345", csb.CertificatePassword);
 		Assert.Equal(MySqlCertificateStoreLocation.CurrentUser, csb.CertificateStoreLocation);
 		Assert.Equal("thumbprint123", csb.CertificateThumbprint);
 		Assert.Equal("latin1", csb.CharacterSet);
