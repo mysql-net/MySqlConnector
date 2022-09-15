@@ -29,7 +29,7 @@ Or right-click your project, choose **Manage NuGet Packages...**, in the **Searc
 A typical connection string for MySQL is:
 
 ```
-server=YOURSERVER;user=YOURUSERID;password=YOURPASSWORD;database=YOURDATABASE
+Server=YOURSERVER;User ID=YOURUSERID;Password=YOURPASSWORD;Database=YOURDATABASE
 ```
 
 Replace the values in that string with the appropriate settings for your database. For more advanced
@@ -41,7 +41,7 @@ If you are using ASP.NET Core, your connection string will usually be stored in 
 {
     ....
     "ConnectionStrings": {
-        "Default": "server=YOURSERVER;user=YOURUSERID;password=YOURPASSWORD;database=YOURDATABASE"
+        "Default": "Server=YOURSERVER;User ID=YOURUSERID;Password=YOURPASSWORD;Database=YOURDATABASE"
     }
 }
 ```

@@ -12,7 +12,7 @@ menu:
 
 The simplest MySQL connection string for C# is:
 
-`new MySqlConnection("server=YOURSERVER;user=YOURUSERID;password=YOURPASSWORD")`
+`new MySqlConnection("Server=YOURSERVER;User ID=YOURUSERID;Password=YOURPASSWORD")`
 
 For all the other options, see the tables below. MySqlConnector supports most of Oracle’s
 [Connector/NET connection options](https://dev.mysql.com/doc/connector-net/en/connector-net-8-0-connection-options.html).

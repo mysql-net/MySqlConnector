@@ -49,7 +49,7 @@ to verify the project builds and runs successfully.
         }
     },
     "ConnectionStrings": {
-        "DefaultConnection": "server=127.0.0.1;user id=root;password=pass;port=3306;database=blog;"
+        "DefaultConnection": "Server=127.0.0.1;User ID=root;Password=pass;Port=3306;Database=blog"
     }
 }
 ```
