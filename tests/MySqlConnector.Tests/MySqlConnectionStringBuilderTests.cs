@@ -114,7 +114,7 @@ public class MySqlConnectionStringBuilderTests
 				"allow zero datetime=true;" +
 				"auto enlist=False;" +
 				"certificate file=file.pfx;" +
-				"certificate password=Pass1234;" +
+				"certificate password=Pass2345;" +
 				"certificate store location=CurrentUser;" +
 				"certificate thumb print=thumbprint123;" +
 				"Character Set=latin1;" +
@@ -175,7 +175,7 @@ public class MySqlConnectionStringBuilderTests
 		// Connector/NET treats "CertificateFile" (client certificate) and "SslCa" (server CA) as aliases
 		Assert.Equal("file.pfx", csb.CertificateFile);
 #endif
-		Assert.Equal("Pass1234", csb.CertificatePassword);
+		Assert.Equal("Pass2345", csb.CertificatePassword);
 		Assert.Equal(MySqlCertificateStoreLocation.CurrentUser, csb.CertificateStoreLocation);
 		Assert.Equal("thumbprint123", csb.CertificateThumbprint);
 		Assert.Equal("latin1", csb.CharacterSet);
@@ -232,6 +232,22 @@ public class MySqlConnectionStringBuilderTests
 		Assert.True(csb.UseAffectedRows);
 		Assert.True(csb.UseCompression);
 		Assert.Equal("username", csb.UserID);
+
+#if !BASELINE
+		Assert.Equal("Server=db-server;Port=1234;User ID=username;Password=Pass1234;Database=schema_name;Load Balance=Random;" +
+			"Connection Protocol=NamedPipe;Pipe Name=MyPipe;SSL Mode=VerifyCA;Certificate File=file.pfx;Certificate Password=Pass2345;" +
+			"Certificate Store Location=CurrentUser;Certificate Thumbprint=thumbprint123;SSL Cert=client-cert.pem;SSL Key=client-key.pem;" +
+			"SSL CA=ca.pem;TLS Version=\"TLS 1.2, TLS 1.3\";TLS Cipher Suites=TLS_AES_128_CCM_8_SHA256,TLS_RSA_WITH_RC4_128_MD5;" +
+			"Pooling=False;Connection Lifetime=15;Connection Reset=False;Defer Connection Reset=True;Connection Idle Timeout=30;" +
+			"Minimum Pool Size=5;Maximum Pool Size=15;Allow Load Local Infile=True;Allow Public Key Retrieval=True;Allow User Variables=True;" +
+			"Allow Zero DateTime=True;Application Name=\"My Test Application\";Auto Enlist=False;Cancellation Timeout=-1;Character Set=latin1;" +
+			"Connection Timeout=30;Convert Zero DateTime=True;DateTime Kind=Utc;Default Command Timeout=123;Force Synchronous=True;" +
+			"GUID Format=TimeSwapBinary16;Ignore Command Transaction=True;Ignore Prepare=True;Interactive Session=True;Keep Alive=90;" +
+			"No Backslash Escapes=True;Old Guids=True;Persist Security Info=True;Pipelining=False;Server Redirection Mode=Required;" +
+			"Server RSA Public Key File=rsa.pem;Server SPN=mariadb/host.example.com@EXAMPLE.COM;Treat Tiny As Boolean=False;" +
+			"Use Affected Rows=True;Use Compression=True;Use XA Transactions=False",
+			csb.ConnectionString);
+#endif
 	}
 
 	[Fact]

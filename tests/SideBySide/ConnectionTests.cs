@@ -208,7 +208,7 @@ public class ConnectionTests : IClassFixture<DatabaseFixture>
 		if (openConnection)
 			connection.Open();
 		using var connection2 = connection.CloneWith("user=root;password=pass;server=example.com;database=test");
-		Assert.Equal("User ID=root;Password=pass;Server=example.com;Database=test", connection2.ConnectionString);
+		Assert.Equal("Server=example.com;User ID=root;Password=pass;Database=test", connection2.ConnectionString);
 	}
 
 	[Fact]

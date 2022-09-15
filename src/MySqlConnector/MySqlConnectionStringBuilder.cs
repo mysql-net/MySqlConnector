@@ -2,6 +2,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using MySqlConnector.Utilities;
 
@@ -187,6 +188,33 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
+	/// Uses a certificate from the specified Certificate Store on the machine. The default value of <see cref="MySqlCertificateStoreLocation.None"/> means the certificate store is not used; a value of <see cref="MySqlCertificateStoreLocation.CurrentUser"/> or <see cref="MySqlCertificateStoreLocation.LocalMachine"/> uses the specified store.
+	/// </summary>
+	[Category("TLS")]
+	[DefaultValue(MySqlCertificateStoreLocation.None)]
+	[Description("Uses a certificate from the specified Certificate Store on the machine.")]
+	[DisplayName("Certificate Store Location")]
+	public MySqlCertificateStoreLocation CertificateStoreLocation
+	{
+		get => MySqlConnectionStringOption.CertificateStoreLocation.GetValue(this);
+		set => MySqlConnectionStringOption.CertificateStoreLocation.SetValue(this, value);
+	}
+
+	/// <summary>
+	/// Specifies which certificate should be used from the Certificate Store specified in <see cref="CertificateStoreLocation"/>. This option must be used to indicate which certificate in the store should be used for authentication.
+	/// </summary>
+	[AllowNull]
+	[Category("TLS")]
+	[DisplayName("Certificate Thumbprint")]
+	[DefaultValue("")]
+	[Description("Specifies which certificate should be used from the certificate store specified in Certificate Store Location")]
+	public string CertificateThumbprint
+	{
+		get => MySqlConnectionStringOption.CertificateThumbprint.GetValue(this);
+		set => MySqlConnectionStringOption.CertificateThumbprint.SetValue(this, value);
+	}
+
+	/// <summary>
 	/// The path to the client’s SSL certificate file in PEM format. <see cref="SslKey"/> must also be specified, and <see cref="CertificateFile"/> should not be.
 	/// </summary>
 	[AllowNull]
@@ -240,33 +268,6 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	{
 		get => MySqlConnectionStringOption.SslCa.GetValue(this);
 		set => MySqlConnectionStringOption.SslCa.SetValue(this, value);
-	}
-
-	/// <summary>
-	/// Uses a certificate from the specified Certificate Store on the machine. The default value of <see cref="MySqlCertificateStoreLocation.None"/> means the certificate store is not used; a value of <see cref="MySqlCertificateStoreLocation.CurrentUser"/> or <see cref="MySqlCertificateStoreLocation.LocalMachine"/> uses the specified store.
-	/// </summary>
-	[Category("TLS")]
-	[DefaultValue(MySqlCertificateStoreLocation.None)]
-	[Description("Uses a certificate from the specified Certificate Store on the machine.")]
-	[DisplayName("Certificate Store Location")]
-	public MySqlCertificateStoreLocation CertificateStoreLocation
-	{
-		get => MySqlConnectionStringOption.CertificateStoreLocation.GetValue(this);
-		set => MySqlConnectionStringOption.CertificateStoreLocation.SetValue(this, value);
-	}
-
-	/// <summary>
-	/// Specifies which certificate should be used from the Certificate Store specified in <see cref="CertificateStoreLocation"/>. This option must be used to indicate which certificate in the store should be used for authentication.
-	/// </summary>
-	[AllowNull]
-	[Category("TLS")]
-	[DisplayName("Certificate Thumbprint")]
-	[DefaultValue("")]
-	[Description("Specifies which certificate should be used from the certificate store specified in Certificate Store Location")]
-	public string CertificateThumbprint
-	{
-		get => MySqlConnectionStringOption.CertificateThumbprint.GetValue(this);
-		set => MySqlConnectionStringOption.CertificateThumbprint.SetValue(this, value);
 	}
 
 	/// <summary>
@@ -342,6 +343,19 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	/// This option is no longer supported.
 	/// </summary>
 	[Category("Obsolete")]
+	[DefaultValue(true)]
+	[DisplayName("Defer Connection Reset")]
+	[Obsolete("This option is no longer supported in MySqlConnector >= 1.4.0.")]
+	public bool DeferConnectionReset
+	{
+		get => MySqlConnectionStringOption.DeferConnectionReset.GetValue(this);
+		set => MySqlConnectionStringOption.DeferConnectionReset.SetValue(this, value);
+	}
+
+	/// <summary>
+	/// This option is no longer supported.
+	/// </summary>
+	[Category("Obsolete")]
 	[DefaultValue(0u)]
 	[DisplayName("Connection Idle Ping Time")]
 	[Obsolete("This option is no longer supported in MySqlConnector >= 1.4.0.")]
@@ -362,19 +376,6 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	{
 		get => MySqlConnectionStringOption.ConnectionIdleTimeout.GetValue(this);
 		set => MySqlConnectionStringOption.ConnectionIdleTimeout.SetValue(this, value);
-	}
-
-	/// <summary>
-	/// This option is no longer supported.
-	/// </summary>
-	[Category("Obsolete")]
-	[DefaultValue(true)]
-	[DisplayName("Defer Connection Reset")]
-	[Obsolete("This option is no longer supported in MySqlConnector >= 1.4.0.")]
-	public bool DeferConnectionReset
-	{
-		get => MySqlConnectionStringOption.DeferConnectionReset.GetValue(this);
-		set => MySqlConnectionStringOption.DeferConnectionReset.SetValue(this, value);
 	}
 
 	/// <summary>
@@ -485,6 +486,19 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
+	/// The length of time (in seconds) to wait for a query to be canceled when <see cref="MySqlCommand.CommandTimeout"/> expires, or zero for no timeout.
+	/// </summary>
+	[Category("Other")]
+	[DefaultValue(2)]
+	[Description("The length of time (in seconds) to wait for a query to be canceled when MySqlCommand.CommandTimeout expires, or zero for no timeout.")]
+	[DisplayName("Cancellation Timeout")]
+	public int CancellationTimeout
+	{
+		get => MySqlConnectionStringOption.CancellationTimeout.GetValue(this);
+		set => MySqlConnectionStringOption.CancellationTimeout.SetValue(this, value);
+	}
+
+	/// <summary>
 	/// Supported for backwards compatibility; MySqlConnector always uses <c>utf8mb4</c>.
 	/// </summary>
 	[AllowNull]
@@ -548,19 +562,6 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	{
 		get => MySqlConnectionStringOption.DefaultCommandTimeout.GetValue(this);
 		set => MySqlConnectionStringOption.DefaultCommandTimeout.SetValue(this, value);
-	}
-
-	/// <summary>
-	/// The length of time (in seconds) to wait for a query to be canceled when <see cref="MySqlCommand.CommandTimeout"/> expires, or zero for no timeout.
-	/// </summary>
-	[Category("Other")]
-	[DefaultValue(2)]
-	[Description("The length of time (in seconds) to wait for a query to be canceled when MySqlCommand.CommandTimeout expires, or zero for no timeout.")]
-	[DisplayName("Cancellation Timeout")]
-	public int CancellationTimeout
-	{
-		get => MySqlConnectionStringOption.CancellationTimeout.GetValue(this);
-		set => MySqlConnectionStringOption.CancellationTimeout.SetValue(this, value);
 	}
 
 	/// <summary>
@@ -788,6 +789,11 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	// Other Methods
 
 	/// <summary>
+	/// Returns an <see cref="ICollection"/> that contains the keys in the <see cref="MySqlConnectionStringBuilder"/>.
+	/// </summary>
+	public override ICollection Keys => base.Keys.Cast<string>().OrderBy(x => MySqlConnectionStringOption.OptionNames.IndexOf(x)).ToList();
+
+	/// <summary>
 	/// Whether this <see cref="MySqlConnectionStringBuilder"/> contains a set option with the specified name.
 	/// </summary>
 	/// <param name="keyword">The option name.</param>
@@ -876,6 +882,8 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 
 internal abstract class MySqlConnectionStringOption
 {
+	public static List<string> OptionNames { get; } = new();
+
 	// Connection Options
 	public static readonly MySqlConnectionStringReferenceOption<string> Server;
 	public static readonly MySqlConnectionStringValueOption<uint> Port;
@@ -892,9 +900,9 @@ internal abstract class MySqlConnectionStringOption
 	public static readonly MySqlConnectionStringReferenceOption<string> CertificatePassword;
 	public static readonly MySqlConnectionStringValueOption<MySqlCertificateStoreLocation> CertificateStoreLocation;
 	public static readonly MySqlConnectionStringReferenceOption<string> CertificateThumbprint;
-	public static readonly MySqlConnectionStringReferenceOption<string> SslCa;
 	public static readonly MySqlConnectionStringReferenceOption<string> SslCert;
 	public static readonly MySqlConnectionStringReferenceOption<string> SslKey;
+	public static readonly MySqlConnectionStringReferenceOption<string> SslCa;
 	public static readonly MySqlConnectionStringReferenceOption<string> TlsVersion;
 	public static readonly MySqlConnectionStringReferenceOption<string> TlsCipherSuites;
 
@@ -960,6 +968,7 @@ internal abstract class MySqlConnectionStringOption
 	{
 		foreach (string key in option.m_keys)
 			s_options.Add(key, option);
+		OptionNames.Add(option.m_keys[0]);
 	}
 
 #pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
@@ -1014,8 +1023,12 @@ internal abstract class MySqlConnectionStringOption
 			keys: new[] { "Certificate Password", "CertificatePassword" },
 			defaultValue: ""));
 
-		AddOption(SslCa = new(
-			keys: new[] { "SSL CA", "CACertificateFile", "CA Certificate File", "SslCa", "Ssl-Ca" },
+		AddOption(CertificateStoreLocation = new(
+			keys: new[] { "Certificate Store Location", "CertificateStoreLocation" },
+			defaultValue: MySqlCertificateStoreLocation.None));
+
+		AddOption(CertificateThumbprint = new(
+			keys: new[] { "Certificate Thumbprint", "CertificateThumbprint", "Certificate Thumb Print" },
 			defaultValue: ""));
 
 		AddOption(SslCert = new(
@@ -1026,12 +1039,8 @@ internal abstract class MySqlConnectionStringOption
 			keys: new[] { "SSL Key", "SslKey", "Ssl-Key" },
 			defaultValue: ""));
 
-		AddOption(CertificateStoreLocation = new(
-			keys: new[] { "Certificate Store Location", "CertificateStoreLocation" },
-			defaultValue: MySqlCertificateStoreLocation.None));
-
-		AddOption(CertificateThumbprint = new(
-			keys: new[] { "Certificate Thumbprint", "CertificateThumbprint", "Certificate Thumb Print" },
+		AddOption(SslCa = new(
+			keys: new[] { "SSL CA", "CACertificateFile", "CA Certificate File", "SslCa", "Ssl-Ca" },
 			defaultValue: ""));
 
 		AddOption(TlsVersion = new(

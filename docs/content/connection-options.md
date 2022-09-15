@@ -20,10 +20,9 @@ For all the other options, see the tables below. MySqlConnector supports most of
 There are also several unique options that are supported only by MySqlConnector, a replacement for `MySql.Data` that [fixes bugs](/tutorials/migrating-from-connector-net/#fixed-bugs),
 adds new features, and improves database access performance. [Install it now](/overview/installing/).
 
-Base Options
-------------
+## Connection Options
 
-These are the basic options that need to be defined to connect to a MySQL database.
+These options specify how to connect and authenticate to a MySQL database.
 
 <table class="table table-striped table-hover">
   <thead>
@@ -62,6 +61,23 @@ These are the basic options that need to be defined to connect to a MySQL databa
     <td></td>
     <td>(Optional) The case-sensitive name of the initial database to use. This may be required if the MySQL user account only has access rights to particular databases on the server.</td>
   </tr>
+  <tr id="LoadBalance">
+    <td>Load Balance, LoadBalance</td>
+    <td>RoundRobin</td>
+    <td><p>The load-balancing strategy to use when <code>Host</code> contains multiple, comma-delimited, host names.
+      The options include:</p>
+      <dl>
+        <dt>RoundRobin</dt>
+        <dd>Each new connection opened for this connection pool uses the next host name (sequentially with wraparound). Requires <code>Pooling=True</code>. This is the default if <code>Pooling=True</code>.</dd>
+        <dt>FailOver</dt>
+        <dd>Each new connection tries to connect to the first host; subsequent hosts are used only if connecting to the first one fails. This is the default if <code>Pooling=False</code>.</dd>
+        <dt>Random</dt>
+        <dd>Servers are tried in a random order.</dd>
+        <dt>LeastConnections</dt>
+        <dd>Servers are tried in ascending order of number of currently-open connections in this connection pool. Requires <code>Pooling=True</code>.</dd>
+      </dl>
+    </td>
+  </tr>
   <tr id="ConnectionProtocol">
     <td>Connection Protocol, ConnectionProtocol, Protocol</td>
     <td>Socket</td>
@@ -80,8 +96,22 @@ These are the basic options that need to be defined to connect to a MySQL databa
   </tr>
 </table>
 
-SSL/TLS Options
------------
+### Connecting to Multiple Servers
+
+The `Server` option supports multiple comma-delimited host names.
+The `LoadBalance` option controls how load is distributed across backend servers.
+Some of these options (`RoundRobin`, `LeastConnections`) only take effect if `Pooling=True`; however `Random` and `FailOver` can be used with `Pooling=False`.
+
+* `RoundRobin` (default), `Random`: A total of `MaximumPoolSize` connections will be opened, but they
+may be unevenly distributed across back ends.
+* `LeastConnections`: A total of `MaximumPoolSize` connections will be opened, and they will be evenly
+distributed across back ends. The active connections will be selected from the pool in least-recently-used
+order, which does not ensure even load across the back ends. You should set `MaximumPoolSize` to the
+number of servers multiplied by the desired maximum number of open connections per backend server.
+* `Failover`: All connections will initially be made to the first server in the list. You should set `MaximumPoolSize`
+to the maximum number of open connections you want per server.
+
+## SSL/TLS Options
 
 These are the options that need to be used in order to configure a connection to use SSL/TLS.
 
@@ -117,6 +147,16 @@ These are the options that need to be used in order to configure a connection to
     <td></td>
     <td>The password for the certificate specified using the <code>CertificateFile</code> option. Not required if the certificate file is not password protected.</td>
   </tr>
+  <tr id="CertificateStoreLocation">
+    <td>Certificate Store Location, CertificateStoreLocation</td>
+    <td>None</td>
+    <td>Specifies whether the connection should be encrypted with a certificate from the Certificate Store on the machine. The default value of <code>None</code> means the certificate store is not used; a value of <code>CurrentUser</code> or <code>LocalMachine</code> uses the specified store.</td>
+  </tr>
+  <tr id="CertificateThumbprint">
+    <td>Certificate Thumbprint, CertificateThumbprint</td>
+    <td></td>
+    <td>Specifies which certificate should be used from the certificate store specified in the setting above. This option must be used to indicate which certificate in the store should be used for authentication.</td>
+  </tr>
   <tr id="SslCert">
     <td>SSL Cert, SslCert, Ssl-Cert</td>
     <td></td>
@@ -135,30 +175,19 @@ These are the options that need to be used in order to configure a connection to
       <p>To provide a custom callback to validate the remote certificate, leave this option empty and set <code>SslMode</code> to <code>Required</code> (or <code>Preferred</code>), then set <a href="/api/mysqlconnector/mysqlconnection/remotecertificatevalidationcallback/"><code>MySqlConnection.RemoteCertificateValidationCallback</code></a> before calling <a href="/api/mysqlconnector/mysqlconnection/open/"><code>MySqlConnection.Open</code></a>. The property should be set to a delegate that will validate the remote certificate, as per <a href="https://docs.microsoft.com/en-us/dotnet/api/system.net.security.remotecertificatevalidationcallback" title="RemoteCertificateValidationCallback Delegate (MSDN)">the documentation</a>.</p>
     </td>
   </tr>
-  <tr id="CertificateStoreLocation">
-    <td>Certificate Store Location, CertificateStoreLocation</td>
-    <td>None</td>
-    <td>Specifies whether the connection should be encrypted with a certificate from the Certificate Store on the machine. The default value of <code>None</code> means the certificate store is not used; a value of <code>CurrentUser</code> or <code>LocalMachine</code> uses the specified store.</td>
-  </tr>
-  <tr id="CertificateThumbprint">
-    <td>Certificate Thumbprint, CertificateThumbprint</td>
+  <tr id="TlsVersion">
+    <td>TLS Version, TlsVersion, Tls-Version</td>
     <td></td>
-    <td>Specifies which certificate should be used from the certificate store specified in the setting above. This option must be used to indicate which certificate in the store should be used for authentication.</td>
+    <td>The TLS versions which may be used during TLS negotiation. The default value of <code>null</code> allows the OS to determine the TLS version to use (see <a href="https://docs.microsoft.com/en-us/dotnet/framework/network-programming/tls" title="Transport Layer Security (TLS) best practices with the .NET Framework">documentation</a>); this is the recommended setting. Otherwise, to restrict the versions that can be used, specify a comma-delimited list of versions taken from the following: <code>TLS 1.0</code>, <code>TLS 1.1.</code>, <code>TLS 1.2</code>, <code>TLS 1.3</code>. (This option allows each version to be specified in a few different formats: <code>Tls12</code>, <code> Tlsv1.2</code>, <code>TLS 1.2</code>, <code>Tls v1.2</code>; they are treated equivalently.)</td>
   </tr>
   <tr id="TlsCipherSuites">
     <td>TLS Cipher Suites,TlsCipherSuites</td>
     <td></td>
     <td>The TLS cipher suites which may be used during TLS negotiation. The default value (the empty string) allows the OS to determine the TLS cipher suites to use; this is the recommended setting. Otherwise, specify a comma-delimited list of <a href="https://docs.microsoft.com/en-us/dotnet/api/system.net.security.tlsciphersuite"><code>TlsCipherSuite</code> enum values</a> to allow just those cipher suites. (This option is only supported on Linux when using .NET Core 3.1 or .NET 5.0 or later.)</td>
   </tr>
-  <tr id="TlsVersion">
-    <td>TLS Version, TlsVersion, Tls-Version</td>
-    <td></td>
-    <td>The TLS versions which may be used during TLS negotiation. The default value of <code>null</code> allows the OS to determine the TLS version to use (see <a href="https://docs.microsoft.com/en-us/dotnet/framework/network-programming/tls" title="Transport Layer Security (TLS) best practices with the .NET Framework">documentation</a>); this is the recommended setting. Otherwise, to restrict the versions that can be used, specify a comma-delimited list of versions taken from the following: <code>TLS 1.0</code>, <code>TLS 1.1.</code>, <code>TLS 1.2</code>, <code>TLS 1.3</code>. (This option allows each version to be specified in a few different formats: <code>Tls12</code>, <code> Tlsv1.2</code>, <code>TLS 1.2</code>, <code>Tls v1.2</code>; they are treated equivalently.)</td>
-  </tr>
 </table>
 
-Connection Pooling Options
---------------------------
+## Connection Pooling Options
 
 Connection pooling is enabled by default. These options are used to configure it.
 
@@ -183,6 +212,11 @@ Connection pooling is enabled by default. These options are used to configure it
     <td><code>true</code></td>
     <td>If <code>true</code>, all connections retrieved from the pool will have been reset. The default value of <code>true</code> ensures that the connection is in the same state whether it’s newly created or retrieved from the pool. A value of <code>false</code> avoids making an additional server round trip to reset the connection, but the connection state is not reset, meaning that session variables and other session state changes from any previous use of the connection are carried over. Additionally (if <code>Connection Reset</code> is <code>false</code>), when <code>MySqlConnection.Open</code> returns a connection from the pool (instead of opening a new one), the connection may be invalid (and throw an exception on first use) if the server has closed the connection.</td>
   </tr>
+  <tr id="DeferConnectionReset">
+    <td>Defer Connection Reset, DeferConnectionReset</td>
+    <td></td>
+    <td>This option was obsoleted in MySqlConnector 2.0.</td>
+  </tr>
   <tr id="ConnectionIdleTimeout">
     <td>Connection Idle Timeout, ConnectionIdleTimeout</td>
     <td>180</td>
@@ -200,22 +234,7 @@ Connection pooling is enabled by default. These options are used to configure it
   </tr>
 </table>
 
-### Connection Pooling with Multiple Servers
-
-The `Server` option supports multiple comma-delimited host names. When this is used with connection
-pooling, the `LoadBalance` option controls how load is distributed across backend servers.
-
-* `RoundRobin` (default), `Random`: A total of `MaximumPoolSize` connections will be opened, but they
-may be unevenly distributed across back ends.
-* `LeastConnections`: A total of `MaximumPoolSize` connections will be opened, and they will be evenly
-distributed across back ends. The active connections will be selected from the pool in least-recently-used
-order, which does not ensure even load across the back ends. You should set `MaximumPoolSize` to the
-number of servers multiplied by the desired maximum number of open connections per backend server.
-* `Failover`: All connections will initially be made to the first server in the list. You should set `MaximumPoolSize`
-to the maximum number of open connections you want per server.
-
-Other Options
--------------
+## Other Options
 
 These are the other options that MySqlConnector supports. They are set to sensible defaults and typically do not need to be tweaked.
 
@@ -276,13 +295,6 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>utf8mb4</td>
     <td>MySqlConnector always uses <code>utf8mb4</code> to send and receive strings from MySQL Server. This option may be specified (for backwards compatibility) but it will be ignored.</td>
   </tr>
-  <tr id="UseCompression">
-    <td>Use Compression, Compress, UseCompression</td>
-    <td>false</td>
-    <td>If true (and if the server supports compression), compresses packets sent between client and server. This option is unlikely to be useful in
-      practice unless there is a high-latency or low-bandwidth network link between the application and the database server. You should measure
-      performance with and without this option to determine if it’s beneficial in your environment.</td>
-  </tr>
   <tr id="ConnectionTimeout">
     <td>Connection Timeout, Connect Timeout, ConnectionTimeout</td>
     <td>15</td>
@@ -300,10 +312,12 @@ These are the other options that MySqlConnector supports. They are set to sensib
     a <code>MySqlException</code> will be thrown if a <code>DateTime</code> command parameter has a <code>Kind</code> of <code>Local</code> or <code>Utc</code>,
     respectively.</td>
   </tr>
-  <tr id="DeferConnectionReset">
-    <td>Defer Connection Reset, DeferConnectionReset</td>
-    <td></td>
-    <td>This option was obsoleted in MySqlConnector 2.0.</td>
+  <tr id="DefaultCommandTimeout">
+    <td>Default Command Timeout, Command Timeout, DefaultCommandTimeout</td>
+    <td>30</td>
+    <td>The length of time (in seconds) each command can execute before the query is cancelled on the server, or zero to disable timeouts.
+      See the note in the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlcommand.commandtimeout">Microsoft documentation</a>
+      for more explanation of how this is determined.</td>
   </tr>
   <tr id="GuidFormat">
     <td>GUID Format, GuidFormat</td>
@@ -328,13 +342,6 @@ These are the other options that MySqlConnector supports. They are set to sensib
       </dl>
     </td>
   </tr>
-  <tr id="DefaultCommandTimeout">
-    <td>Default Command Timeout, Command Timeout, DefaultCommandTimeout</td>
-    <td>30</td>
-    <td>The length of time (in seconds) each command can execute before the query is cancelled on the server, or zero to disable timeouts.
-      See the note in the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlcommand.commandtimeout">Microsoft documentation</a>
-      for more explanation of how this is determined.</td>
-  </tr>
   <tr id="IgnoreCommandTransaction">
     <td>Ignore Command Transaction, IgnoreCommandTransaction</td>
     <td>false</td>
@@ -357,23 +364,6 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>0</td>
     <td><p>TCP Keepalive idle time (in seconds). A value of 0 indicates that the OS default keepalive settings are used; a value greater than 0 is the idle connection time (in seconds) before the first keepalive packet is sent.</p>
     <p>On Windows, this option is always supported. On non-Windows platforms, this option only takes effect in .NET Core 3.0 and later. For earlier versions of .NET Core, the OS Default keepalive settings are used instead.</p></td>
-  </tr>
-  <tr id="LoadBalance">
-    <td>Load Balance, LoadBalance</td>
-    <td>RoundRobin</td>
-    <td><p>The load-balancing strategy to use when <code>Host</code> contains multiple, comma-delimited, host names.
-      The options include:</p>
-      <dl>
-        <dt>RoundRobin</dt>
-        <dd>Each new connection opened for this connection pool uses the next host name (sequentially with wraparound). Requires <code>Pooling=True</code>. This is the default if <code>Pooling=True</code>.</dd>
-        <dt>FailOver</dt>
-        <dd>Each new connection tries to connect to the first host; subsequent hosts are used only if connecting to the first one fails. This is the default if <code>Pooling=False</code>.</dd>
-        <dt>Random</dt>
-        <dd>Servers are tried in a random order.</dd>
-        <dt>LeastConnections</dt>
-        <dd>Servers are tried in ascending order of number of currently-open connections in this connection pool. Requires <code>Pooling=True</code>.</dd>
-      </dl>
-    </td>
   </tr>
   <tr id="NoBackslashEscapes">
     <td>No Backslash Escapes, NoBackslashEscapes</td>
@@ -431,6 +421,13 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>false</td>
     <td>When <code>false</code> (default), the connection reports found rows instead of changed (affected) rows. Set to <code>true</code> to report only the number of rows actually changed by <code>UPDATE</code> or <code>INSERT … ON DUPLICATE KEY UPDATE</code> statements.</td>
   </tr>
+  <tr id="UseCompression">
+    <td>Use Compression, Compress, UseCompression</td>
+    <td>false</td>
+    <td>If true (and if the server supports compression), compresses packets sent between client and server. This option is unlikely to be useful in
+      practice unless there is a high-latency or low-bandwidth network link between the application and the database server. You should measure
+      performance with and without this option to determine if it’s beneficial in your environment.</td>
+  </tr>
   <tr id="UseXaTransactions">
     <td>Use XA Transactions, UseXaTransactions</td>
     <td>true</td>
@@ -441,9 +438,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
   </tr>
 </table>
 
-
-Unsupported Options
--------------
+## Unsupported Options
 
 These options are used by Connector/NET but not supported by MySqlConnector. In general, they should be removed
 from your connection string when migrating from Connector/NET to MySqlConnector.
