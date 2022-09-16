@@ -235,7 +235,7 @@ public class MySqlConnectionStringBuilderTests
 
 #if !BASELINE
 		Assert.Equal("Server=db-server;Port=1234;User ID=username;Password=Pass1234;Database=schema_name;Load Balance=Random;" +
-			"Connection Protocol=NamedPipe;Pipe Name=MyPipe;SSL Mode=VerifyCA;Certificate File=file.pfx;Certificate Password=Pass2345;" +
+			"Connection Protocol=Pipe;Pipe Name=MyPipe;SSL Mode=VerifyCA;Certificate File=file.pfx;Certificate Password=Pass2345;" +
 			"Certificate Store Location=CurrentUser;Certificate Thumbprint=thumbprint123;SSL Cert=client-cert.pem;SSL Key=client-key.pem;" +
 			"SSL CA=ca.pem;TLS Version=\"TLS 1.2, TLS 1.3\";TLS Cipher Suites=TLS_AES_128_CCM_8_SHA256,TLS_RSA_WITH_RC4_128_MD5;" +
 			"Pooling=False;Connection Lifetime=15;Connection Reset=False;Defer Connection Reset=True;Connection Idle Timeout=30;" +
@@ -246,7 +246,7 @@ public class MySqlConnectionStringBuilderTests
 			"No Backslash Escapes=True;Old Guids=True;Persist Security Info=True;Pipelining=False;Server Redirection Mode=Required;" +
 			"Server RSA Public Key File=rsa.pem;Server SPN=mariadb/host.example.com@EXAMPLE.COM;Treat Tiny As Boolean=False;" +
 			"Use Affected Rows=True;Use Compression=True;Use XA Transactions=False",
-			csb.ConnectionString);
+			csb.ConnectionString.Replace("Protocol=NamedPipe", "Protocol=Pipe"));
 #endif
 	}
 
