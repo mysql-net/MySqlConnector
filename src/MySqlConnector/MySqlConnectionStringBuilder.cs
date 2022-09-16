@@ -1235,7 +1235,7 @@ internal abstract partial class MySqlConnectionStringOption
 
 	private const string c_tlsVersionsRegexPattern = @"\s*TLS( ?v?(1|1\.?0|1\.?1|1\.?2|1\.?3))?$";
 #if NET7_0_OR_GREATER
-	[RegexGenerator(c_tlsVersionsRegexPattern, RegexOptions.IgnoreCase)]
+	[GeneratedRegex(c_tlsVersionsRegexPattern, RegexOptions.IgnoreCase)]
 	private static partial Regex TlsVersionsRegex();
 #else
 	private static Regex TlsVersionsRegex() => s_tlsVersionsRegex;

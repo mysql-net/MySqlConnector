@@ -10,7 +10,7 @@ internal sealed partial class NormalizedSchema
 	private const string ReName = $@"^\s*{ReEither}\s*(?:\.\s*{ReEither}\s*)?$";
 
 #if NET7_0_OR_GREATER
-	[RegexGenerator(ReName)]
+	[GeneratedRegex(ReName)]
 	private static partial Regex NameRegex();
 #else
 	private static Regex NameRegex() => s_nameRegex;
