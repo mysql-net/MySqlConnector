@@ -2,14 +2,6 @@ namespace MySqlConnector.Protocol.Serialization;
 
 internal static class SerializationUtility
 {
-	public static uint ReadUInt32(byte[] buffer, int offset, int count)
-	{
-		uint value = 0;
-		for (int i = 0; i < count; i++)
-			value |= ((uint) buffer[offset + i]) << (8 * i);
-		return value;
-	}
-
 	public static uint ReadUInt32(ReadOnlySpan<byte> span)
 	{
 		uint value = 0;

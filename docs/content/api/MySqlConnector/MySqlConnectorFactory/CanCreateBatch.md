@@ -7,7 +7,7 @@ title: MySqlConnectorFactory.CanCreateBatch property
 Returns `true`.
 
 ```csharp
-public bool CanCreateBatch { get; }
+public override bool CanCreateBatch { get; }
 ```
 
 ## See Also

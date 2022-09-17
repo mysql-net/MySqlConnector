@@ -880,7 +880,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	private string? m_cachedConnectionStringWithoutPassword;
 }
 
-internal abstract class MySqlConnectionStringOption
+internal abstract partial class MySqlConnectionStringOption
 {
 	public static List<string> OptionNames { get; } = new();
 
@@ -1054,7 +1054,7 @@ internal abstract class MySqlConnectionStringOption
 				Span<bool> versions = stackalloc bool[4];
 				foreach (var part in value!.TrimStart('[', '(').TrimEnd(')', ']').Split(','))
 				{
-					var match = s_tlsVersions.Match(part);
+					var match = TlsVersionsRegex().Match(part);
 					if (!match.Success)
 						throw new ArgumentException($"Unrecognized TlsVersion protocol version '{part}'; permitted versions are: TLS 1.0, TLS 1.1, TLS 1.2, TLS 1.3.");
 					var version = match.Groups[2].Value;
@@ -1242,7 +1242,14 @@ internal abstract class MySqlConnectionStringOption
 			defaultValue: true));
 	}
 
-	private static readonly Regex s_tlsVersions = new(@"\s*TLS( ?v?(1|1\.?0|1\.?1|1\.?2|1\.?3))?$", RegexOptions.IgnoreCase);
+	private const string c_tlsVersionsRegexPattern = @"\s*TLS( ?v?(1|1\.?0|1\.?1|1\.?2|1\.?3))?$";
+#if NET7_0_OR_GREATER
+	[GeneratedRegex(c_tlsVersionsRegexPattern, RegexOptions.IgnoreCase)]
+	private static partial Regex TlsVersionsRegex();
+#else
+	private static Regex TlsVersionsRegex() => s_tlsVersionsRegex;
+	private static readonly Regex s_tlsVersionsRegex = new(c_tlsVersionsRegexPattern, RegexOptions.IgnoreCase);
+#endif
 	private static readonly Dictionary<string, MySqlConnectionStringOption> s_options;
 
 	private readonly IReadOnlyList<string> m_keys;

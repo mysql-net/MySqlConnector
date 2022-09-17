@@ -5,7 +5,7 @@ title: MySqlBatch.Timeout property
 # MySqlBatch.Timeout property
 
 ```csharp
-public int Timeout { get; set; }
+public override int Timeout { get; set; }
 ```
 
 ## See Also

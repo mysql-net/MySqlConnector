@@ -431,7 +431,7 @@ internal static class ProtocolUtility
 				ValueTaskExtensions.FromException<Packet>(new EndOfStreamException("Expected to read 4 header bytes but only received {0}.".FormatInvariant(headerBytes.Length)));
 		}
 
-		var payloadLength = (int) SerializationUtility.ReadUInt32(headerBytes.Slice(0, 3));
+		var payloadLength = (int) SerializationUtility.ReadUInt32(headerBytes[..3]);
 		int packetSequenceNumber = headerBytes[3];
 
 		Exception? packetOutOfOrderException = null;
@@ -455,7 +455,11 @@ internal static class ProtocolUtility
 			if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
 				return default;
 
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+			if (payloadBytes is [ ErrorPayload.Signature, .. ])
+#else
 			if (payloadBytes.Count > 0 && payloadBytes.AsSpan()[0] == ErrorPayload.Signature)
+#endif
 				return new ValueTask<Packet>(new Packet(payloadBytes));
 
 			return ValueTaskExtensions.FromException<Packet>(exception);
@@ -543,7 +547,7 @@ internal static class ProtocolUtility
 		var buffer = ArrayPool<byte>.Shared.Rent(bufferLength);
 		SerializationUtility.WriteUInt32((uint) contents.Length, buffer, 0, 3);
 		buffer[3] = (byte) sequenceNumber;
-		contents.CopyTo(buffer.AsMemory().Slice(4));
+		contents.CopyTo(buffer.AsMemory()[4..]);
 		var task = byteHandler.WriteBytesAsync(new ArraySegment<byte>(buffer, 0, bufferLength), ioBehavior);
 		if (task.IsCompletedSuccessfully)
 		{

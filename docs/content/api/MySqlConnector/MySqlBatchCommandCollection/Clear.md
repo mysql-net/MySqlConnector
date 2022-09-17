@@ -5,7 +5,7 @@ title: MySqlBatchCommandCollection.Clear method
 # MySqlBatchCommandCollection.Clear method
 
 ```csharp
-public void Clear()
+public override void Clear()
 ```
 
 ## See Also

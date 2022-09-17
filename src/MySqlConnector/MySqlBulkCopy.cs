@@ -411,7 +411,7 @@ public sealed class MySqlBulkCopy
 
 					var inputIndex = 0;
 					var bytesWritten = 0;
-					while (outputIndex >= maxLength || !WriteValue(m_connection, values[valueIndex], ref inputIndex, ref utf8Encoder, buffer.AsSpan(0, maxLength).Slice(outputIndex), out bytesWritten))
+					while (outputIndex >= maxLength || !WriteValue(m_connection, values[valueIndex], ref inputIndex, ref utf8Encoder, buffer.AsSpan(0, maxLength)[outputIndex..], out bytesWritten))
 					{
 						var payload = new PayloadData(new ArraySegment<byte>(buffer, 0, outputIndex + bytesWritten));
 						await m_connection.Session.SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -432,7 +432,7 @@ public sealed class MySqlBulkCopy
 				}
 			}
 
-			if (outputIndex != 0 && !(eventArgs?.Abort ?? false))
+			if (outputIndex != 0 && eventArgs?.Abort is not true)
 			{
 				var payload2 = new PayloadData(new ArraySegment<byte>(buffer, 0, outputIndex));
 				await m_connection.Session.SendReplyAsync(payload2, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -441,7 +441,7 @@ public sealed class MySqlBulkCopy
 		finally
 		{
 			ArrayPool<byte>.Shared.Return(buffer);
-			m_wasAborted = eventArgs?.Abort ?? false;
+			m_wasAborted = eventArgs?.Abort is true;
 		}
 
 		static bool WriteValue(MySqlConnection connection, object value, ref int inputIndex, ref Encoder? utf8Encoder, Span<byte> output, out int bytesWritten)
@@ -454,7 +454,7 @@ public sealed class MySqlBulkCopy
 
 			if (value is null || value == DBNull.Value)
 			{
-				ReadOnlySpan<byte> escapedNull = new byte[] { 0x5C, 0x4E };
+				ReadOnlySpan<byte> escapedNull = @"\N"u8; // a field value of \N is read as NULL for input
 				if (output.Length < escapedNull.Length)
 				{
 					bytesWritten = 0;
@@ -649,7 +649,7 @@ public sealed class MySqlBulkCopy
 
 					output[0] = (byte) '\\';
 					output[1] = (byte) value[inputIndex];
-					output = output.Slice(2);
+					output = output[2..];
 					bytesWritten += 2;
 					inputIndex++;
 				}
@@ -665,7 +665,7 @@ public sealed class MySqlBulkCopy
 					utf8Encoder.Convert(value.AsSpan(inputIndex, nextIndex - inputIndex), output, nextIndex == value.Length, out var charsUsed, out var bytesUsed, out var completed);
 
 					bytesWritten += bytesUsed;
-					output = output.Slice(bytesUsed);
+					output = output[bytesUsed..];
 					inputIndex += charsUsed;
 
 					if (!completed)
@@ -678,14 +678,14 @@ public sealed class MySqlBulkCopy
 
 		static bool WriteBytes(ReadOnlySpan<byte> value, ref int inputIndex, Span<byte> output, out int bytesWritten)
 		{
-			ReadOnlySpan<byte> hex = new byte[] { (byte) '0', (byte) '1', (byte) '2', (byte) '3', (byte) '4', (byte) '5', (byte) '6', (byte) '7', (byte) '8', (byte) '9', (byte) 'A', (byte) 'B', (byte) 'C', (byte) 'D', (byte) 'E', (byte) 'F' };
+			ReadOnlySpan<byte> hex = "0123456789ABCDEF"u8;
 			bytesWritten = 0;
 			for (; inputIndex < value.Length && output.Length > 2; inputIndex++)
 			{
 				var by = value[inputIndex];
 				output[0] = hex[(by >> 4) & 0xF];
 				output[1] = hex[by & 0xF];
-				output = output.Slice(2);
+				output = output[2..];
 				bytesWritten += 2;
 			}
 

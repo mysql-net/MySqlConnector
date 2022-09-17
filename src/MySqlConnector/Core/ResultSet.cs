@@ -140,7 +140,7 @@ internal sealed class ResultSet
 						// 'Session.ReceiveReplyAsync' reuses a shared buffer; make a copy so that the column definitions can always be safely read at any future point
 						if (m_columnDefinitionPayloadUsedBytes + payloadLength > m_columnDefinitionPayloads.Count)
 							Utility.Resize(ref m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes + payloadLength);
-						payload.Span.CopyTo(m_columnDefinitionPayloads.Array.AsSpan().Slice(m_columnDefinitionPayloadUsedBytes));
+						payload.Span.CopyTo(m_columnDefinitionPayloads.AsSpan(m_columnDefinitionPayloadUsedBytes));
 
 						var columnDefinition = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, payloadLength));
 						ColumnDefinitions[column] = columnDefinition;

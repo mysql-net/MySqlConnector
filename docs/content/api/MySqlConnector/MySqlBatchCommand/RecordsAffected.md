@@ -5,7 +5,7 @@ title: MySqlBatchCommand.RecordsAffected property
 # MySqlBatchCommand.RecordsAffected property
 
 ```csharp
-public int RecordsAffected { get; }
+public override int RecordsAffected { get; }
 ```
 
 ## See Also

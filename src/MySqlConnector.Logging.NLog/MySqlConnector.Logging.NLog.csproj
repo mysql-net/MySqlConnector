@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
     <Title>MySqlConnector Logging Adapter for NLog</Title>
     <Description>Writes lightly-structured MySqlConnector logging output to NLog.</Description>
     <Copyright>Copyright 2018–2022 Bradley Grainger</Copyright>

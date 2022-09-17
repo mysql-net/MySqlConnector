@@ -5,12 +5,11 @@ title: MySqlBatchCommandCollection.Insert method
 # MySqlBatchCommandCollection.Insert method
 
 ```csharp
-public void Insert(int index, MySqlBatchCommand item)
+public override void Insert(int index, DbBatchCommand item)
 ```
 
 ## See Also
 
-* class [MySqlBatchCommand](../../MySqlBatchCommandType/)
 * class [MySqlBatchCommandCollection](../../MySqlBatchCommandCollectionType/)
 * namespace [MySqlConnector](../../MySqlBatchCommandCollectionType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)

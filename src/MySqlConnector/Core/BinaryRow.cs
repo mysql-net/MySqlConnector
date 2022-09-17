@@ -186,12 +186,16 @@ internal sealed class BinaryRow : Row
 			second = value[6];
 		}
 
-		var microseconds = value.Length <= 7 ? 0 : MemoryMarshal.Read<int>(value.Slice(7));
+		var microseconds = value.Length <= 7 ? 0 : MemoryMarshal.Read<int>(value[7..]);
 
 		try
 		{
 			return Connection.AllowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
+#if NET7_0_OR_GREATER
+				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, Connection.DateTimeKind);
+#else
 				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, Connection.DateTimeKind).AddTicks(microseconds % 1000 * 10);
+#endif
 		}
 		catch (Exception ex)
 		{
@@ -205,11 +209,11 @@ internal sealed class BinaryRow : Row
 			return TimeSpan.Zero;
 
 		var isNegative = value[0];
-		var days = MemoryMarshal.Read<int>(value.Slice(1));
+		var days = MemoryMarshal.Read<int>(value[1..]);
 		var hours = (int) value[5];
 		var minutes = (int) value[6];
 		var seconds = (int) value[7];
-		var microseconds = value.Length == 8 ? 0 : MemoryMarshal.Read<int>(value.Slice(8));
+		var microseconds = value.Length == 8 ? 0 : MemoryMarshal.Read<int>(value[8..]);
 
 		if (isNegative != 0)
 		{
@@ -220,6 +224,10 @@ internal sealed class BinaryRow : Row
 			microseconds = -microseconds;
 		}
 
+#if NET7_0_OR_GREATER
+		return new TimeSpan(days, hours, minutes, seconds, microseconds / 1000, microseconds % 1000);
+#else
 		return new TimeSpan(days, hours, minutes, seconds) + TimeSpan.FromTicks(microseconds * 10);
+#endif
 	}
 }

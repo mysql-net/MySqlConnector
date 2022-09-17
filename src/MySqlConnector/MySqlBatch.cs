@@ -151,7 +151,7 @@ public sealed class MySqlBatch :
 	private Task<MySqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (!IsValid(out var exception))
-		 	return Utility.TaskFromException<MySqlDataReader>(exception);
+		 	return Task.FromException<MySqlDataReader>(exception);
 
 		CurrentCommandBehavior = behavior;
 		foreach (MySqlBatchCommand batchCommand in BatchCommands)
@@ -366,7 +366,7 @@ public sealed class MySqlBatch :
 	private Task PrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (!NeedsPrepare(out var exception))
-			return exception is null ? Utility.CompletedTask : Utility.TaskFromException(exception);
+			return exception is null ? Task.CompletedTask : Task.FromException(exception);
 
 		return DoPrepareAsync(ioBehavior, cancellationToken);
 	}

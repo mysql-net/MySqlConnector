@@ -26,25 +26,25 @@ steps:
   displayName: 'Publish MySqlConnector.Tests'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f net6.0 --no-build tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj'
+    arguments: '-c Release -f net7.0 --no-build tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: 'MySqlConnector.Tests-6.0-$(Agent.OS)'
-    targetPath: 'tests/MySqlConnector.Tests/bin/Release/net6.0/publish'
+    artifactName: 'MySqlConnector.Tests-7.0-$(Agent.OS)'
+    targetPath: 'tests/MySqlConnector.Tests/bin/Release/net7.0/publish'
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish Conformance.Tests'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f net6.0 --no-build tests/Conformance.Tests/Conformance.Tests.csproj'
+    arguments: '-c Release -f net7.0 --no-build tests/Conformance.Tests/Conformance.Tests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: 'Conformance.Tests-6.0-$(Agent.OS)'
-    targetPath: 'tests/Conformance.Tests/bin/Release/net6.0/publish'
+    artifactName: 'Conformance.Tests-7.0-$(Agent.OS)'
+    targetPath: 'tests/Conformance.Tests/bin/Release/net7.0/publish'
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish SideBySide (3.1)'
@@ -59,16 +59,16 @@ steps:
     targetPath: 'tests/SideBySide/bin/Release/netcoreapp3.1/publish'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Publish SideBySide (5.0)'
+  displayName: 'Publish SideBySide (7.0)'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f net5.0 --no-build tests/SideBySide/SideBySide.csproj'
+    arguments: '-c Release -f net7.0 --no-build tests/SideBySide/SideBySide.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: 'SideBySide-net5.0-$(Agent.OS)'
-    targetPath: 'tests/SideBySide/bin/Release/net5.0/publish'
+    artifactName: 'SideBySide-net7.0-$(Agent.OS)'
+    targetPath: 'tests/SideBySide/bin/Release/net7.0/publish'
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish SideBySide (6.0)'

@@ -40,13 +40,13 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 	public void Advance(int count)
 	{
 		Debug.Assert(count <= m_output.Length, "count <= m_output.Length");
-		m_output = m_output.Slice(count);
+		m_output = m_output[count..];
 	}
 
 	public void TrimEnd(int byteCount)
 	{
 		Debug.Assert(byteCount <= m_output.Length, "byteCount <= m_output.Length");
-		m_output = m_buffer.AsMemory().Slice(Position - byteCount);
+		m_output = m_buffer.AsMemory(Position - byteCount);
 	}
 
 	public void Write(byte value)
@@ -54,7 +54,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		if (m_output.Length < 1)
 			Reallocate();
 		m_output.Span[0] = value;
-		m_output = m_output.Slice(1);
+		m_output = m_output[1..];
 	}
 
 	public void Write(ushort value)
@@ -62,7 +62,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		if (m_output.Length < 2)
 			Reallocate(2);
 		BinaryPrimitives.WriteUInt16LittleEndian(m_output.Span, value);
-		m_output = m_output.Slice(2);
+		m_output = m_output[2..];
 	}
 
 	public void Write(int value)
@@ -70,7 +70,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		if (m_output.Length < 4)
 			Reallocate(4);
 		BinaryPrimitives.WriteInt32LittleEndian(m_output.Span, value);
-		m_output = m_output.Slice(4);
+		m_output = m_output[4..];
 	}
 
 	public void Write(uint value)
@@ -78,7 +78,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		if (m_output.Length < 4)
 			Reallocate(4);
 		BinaryPrimitives.WriteUInt32LittleEndian(m_output.Span, value);
-		m_output = m_output.Slice(4);
+		m_output = m_output[4..];
 	}
 
 	public void Write(ulong value)
@@ -86,7 +86,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		if (m_output.Length < 8)
 			Reallocate(8);
 		BinaryPrimitives.WriteUInt64LittleEndian(m_output.Span, value);
-		m_output = m_output.Slice(8);
+		m_output = m_output[8..];
 	}
 
 	public void Write(ArraySegment<byte> arraySegment) => Write(arraySegment.AsSpan());
@@ -96,39 +96,9 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		if (m_output.Length < span.Length)
 			Reallocate(span.Length);
 		span.CopyTo(m_output.Span);
-		m_output = m_output.Slice(span.Length);
+		m_output = m_output[span.Length..];
 	}
 
-#if NET45
-	public void Write(string value)
-	{
-		Debug.Assert(value is not null, "value is not null");
-		if (value!.Length == 0)
-			return;
-
-		var byteCount = Encoding.UTF8.GetByteCount(value);
-		if (byteCount > m_output.Length)
-			Reallocate(byteCount);
-		Encoding.UTF8.GetBytes(value.AsSpan(), m_output.Span);
-		m_output = m_output.Slice(byteCount);
-	}
-
-	public unsafe void Write(string value, int offset, int length)
-	{
-		if (length == 0)
-			return;
-
-		Debug.Assert(value is not null, "value is not null");
-		fixed (char* charsPtr = value)
-		{
-			var byteCount = Encoding.UTF8.GetByteCount(charsPtr + offset, length);
-			if (byteCount > m_output.Length)
-				Reallocate(byteCount);
-			Encoding.UTF8.GetBytes(value.AsSpan(offset, length), m_output.Span);
-			m_output = m_output.Slice(byteCount);
-		}
-	}
-#else
 	public void Write(string value) => Write(value.AsSpan(), flush: true);
 	public void Write(string value, int offset, int length) => Write(value.AsSpan(offset, length), flush: true);
 
@@ -140,8 +110,8 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 			if (m_output.Length < 4)
 				Reallocate();
 			m_encoder.Convert(chars, m_output.Span, flush: false, out var charsUsed, out var bytesUsed, out var completed);
-			chars = chars.Slice(charsUsed);
-			m_output = m_output.Slice(bytesUsed);
+			chars = chars[charsUsed..];
+			m_output = m_output[bytesUsed..];
 			if (!completed)
 				Reallocate();
 			Debug.Assert(completed == (chars.Length == 0), "completed == (chars.Length == 0)");
@@ -152,10 +122,9 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 			if (m_output.Length < 4)
 				Reallocate();
 			m_encoder.Convert("".AsSpan(), m_output.Span, flush: true, out _, out var bytesUsed, out _);
-			m_output = m_output.Slice(bytesUsed);
+			m_output = m_output[bytesUsed..];
 		}
 	}
-#endif
 
 	public void WriteLengthEncodedString(StringBuilder stringBuilder)
 	{
@@ -176,8 +145,8 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 				if (m_output.Length < 4)
 					Reallocate();
 				m_encoder.Convert(currentSpan, m_output.Span, false, out var charsUsed, out var bytesUsed, out var completed);
-				currentSpan = currentSpan.Slice(charsUsed);
-				m_output = m_output.Slice(bytesUsed);
+				currentSpan = currentSpan[charsUsed..];
+				m_output = m_output[bytesUsed..];
 				if (!completed)
 					Reallocate();
 				Debug.Assert(completed == (currentSpan.Length == 0), "completed == (currentSpan.Length == 0)");
@@ -188,7 +157,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		if (m_output.Length < 4)
 			Reallocate();
 		m_encoder.Convert("".AsSpan(), m_output.Span, true, out _, out var finalBytesUsed, out _);
-		m_output = m_output.Slice(finalBytesUsed);
+		m_output = m_output[finalBytesUsed..];
 
 		// write the length (as a 64-bit integer) in the reserved space
 		var textLength = Position - (lengthPosition + 9);
@@ -204,7 +173,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		int bytesWritten;
 		while (!Utf8Formatter.TryFormat(value, m_output.Span, out bytesWritten))
 			Reallocate();
-		m_output = m_output.Slice(bytesWritten);
+		m_output = m_output[bytesWritten..];
 	}
 
 	public void WriteString(ushort value)
@@ -212,7 +181,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		int bytesWritten;
 		while (!Utf8Formatter.TryFormat(value, m_output.Span, out bytesWritten))
 			Reallocate();
-		m_output = m_output.Slice(bytesWritten);
+		m_output = m_output[bytesWritten..];
 	}
 
 	public void WriteString(int value)
@@ -220,7 +189,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		int bytesWritten;
 		while (!Utf8Formatter.TryFormat(value, m_output.Span, out bytesWritten))
 			Reallocate();
-		m_output = m_output.Slice(bytesWritten);
+		m_output = m_output[bytesWritten..];
 	}
 
 	public void WriteString(uint value)
@@ -228,7 +197,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		int bytesWritten;
 		while (!Utf8Formatter.TryFormat(value, m_output.Span, out bytesWritten))
 			Reallocate();
-		m_output = m_output.Slice(bytesWritten);
+		m_output = m_output[bytesWritten..];
 	}
 
 	public void WriteString(long value)
@@ -236,7 +205,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		int bytesWritten;
 		while (!Utf8Formatter.TryFormat(value, m_output.Span, out bytesWritten))
 			Reallocate();
-		m_output = m_output.Slice(bytesWritten);
+		m_output = m_output[bytesWritten..];
 	}
 
 	public void WriteString(ulong value)
@@ -244,7 +213,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		int bytesWritten;
 		while (!Utf8Formatter.TryFormat(value, m_output.Span, out bytesWritten))
 			Reallocate();
-		m_output = m_output.Slice(bytesWritten);
+		m_output = m_output[bytesWritten..];
 	}
 
 	private void Reallocate(int additional = 0)
@@ -257,9 +226,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		m_output = new(m_buffer, usedLength, m_buffer.Length - usedLength);
 	}
 
-#if !NET45
 	private Encoder? m_encoder;
-#endif
 	private byte[] m_buffer;
 	private Memory<byte> m_output;
 }
@@ -290,14 +257,6 @@ internal static class ByteBufferWriterExtensions
 		}
 	}
 
-#if NET45
-	public static void WriteLengthEncodedString(this ByteBufferWriter writer, string value)
-	{
-		var byteCount = Encoding.UTF8.GetByteCount(value);
-		writer.WriteLengthEncodedInteger((ulong) byteCount);
-		writer.Write(value);
-	}
-#else
 	public static void WriteLengthEncodedString(this ByteBufferWriter writer, string value) => writer.WriteLengthEncodedString(value.AsSpan());
 
 	public static void WriteLengthEncodedString(this ByteBufferWriter writer, ReadOnlySpan<char> value)
@@ -306,7 +265,6 @@ internal static class ByteBufferWriterExtensions
 		writer.WriteLengthEncodedInteger((ulong) byteCount);
 		writer.Write(value, flush: true);
 	}
-#endif
 
 	public static void WriteNullTerminatedString(this ByteBufferWriter writer, string value)
 	{

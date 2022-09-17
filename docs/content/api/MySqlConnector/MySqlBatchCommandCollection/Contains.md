@@ -5,12 +5,11 @@ title: MySqlBatchCommandCollection.Contains method
 # MySqlBatchCommandCollection.Contains method
 
 ```csharp
-public bool Contains(MySqlBatchCommand item)
+public override bool Contains(DbBatchCommand item)
 ```
 
 ## See Also
 
-* class [MySqlBatchCommand](../../MySqlBatchCommandType/)
 * class [MySqlBatchCommandCollection](../../MySqlBatchCommandCollectionType/)
 * namespace [MySqlConnector](../../MySqlBatchCommandCollectionType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)

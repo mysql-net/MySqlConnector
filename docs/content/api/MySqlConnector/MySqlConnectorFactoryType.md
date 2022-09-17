@@ -15,17 +15,18 @@ public sealed class MySqlConnectorFactory : DbProviderFactory
 | name | description |
 | --- | --- |
 | static readonly [Instance](../MySqlConnectorFactory/Instance/) | Provides an instance of DbProviderFactory that can create MySqlConnector objects. |
-| [CanCreateBatch](../MySqlConnectorFactory/CanCreateBatch/) { get; } | Returns `true`. |
+| override [CanCreateBatch](../MySqlConnectorFactory/CanCreateBatch/) { get; } | Returns `true`. |
 | override [CanCreateCommandBuilder](../MySqlConnectorFactory/CanCreateCommandBuilder/) { get; } | Returns `true`. |
 | override [CanCreateDataAdapter](../MySqlConnectorFactory/CanCreateDataAdapter/) { get; } | Returns `true`. |
 | override [CanCreateDataSourceEnumerator](../MySqlConnectorFactory/CanCreateDataSourceEnumerator/) { get; } | Returns `false`. |
-| [CreateBatch](../MySqlConnectorFactory/CreateBatch/)() | Creates a new [`MySqlBatch`](../MySqlBatchType/) object. |
-| [CreateBatchCommand](../MySqlConnectorFactory/CreateBatchCommand/)() | Creates a new [`MySqlBatchCommand`](../MySqlBatchCommandType/) object. |
+| override [CreateBatch](../MySqlConnectorFactory/CreateBatch/)() | Creates a new [`MySqlBatch`](../MySqlBatchType/) object. |
+| override [CreateBatchCommand](../MySqlConnectorFactory/CreateBatchCommand/)() | Creates a new [`MySqlBatchCommand`](../MySqlBatchCommandType/) object. |
 | override [CreateCommand](../MySqlConnectorFactory/CreateCommand/)() | Creates a new [`MySqlCommand`](../MySqlCommandType/) object. |
 | override [CreateCommandBuilder](../MySqlConnectorFactory/CreateCommandBuilder/)() | Creates a new [`MySqlCommandBuilder`](../MySqlCommandBuilderType/) object. |
 | override [CreateConnection](../MySqlConnectorFactory/CreateConnection/)() | Creates a new [`MySqlConnection`](../MySqlConnectionType/) object. |
 | override [CreateConnectionStringBuilder](../MySqlConnectorFactory/CreateConnectionStringBuilder/)() | Creates a new [`MySqlConnectionStringBuilder`](../MySqlConnectionStringBuilderType/) object. |
 | override [CreateDataAdapter](../MySqlConnectorFactory/CreateDataAdapter/)() | Creates a new [`MySqlDataAdapter`](../MySqlDataAdapterType/) object. |
+| override [CreateDataSource](../MySqlConnectorFactory/CreateDataSource/)(…) | Creates a new [`MySqlDataSource`](../MySqlDataSourceType/) object. |
 | override [CreateParameter](../MySqlConnectorFactory/CreateParameter/)() | Creates a new [`MySqlParameter`](../MySqlParameterType/) object. |
 
 ## See Also

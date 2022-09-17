@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
     <Title>MySqlConnector Logging Adapter for Serilog</Title>
     <Description>Writes lightly-structured MySqlConnector logging output to Serilog.</Description>
     <Copyright>Copyright 2017–2022 Bradley Grainger</Copyright>

@@ -5,12 +5,11 @@ title: MySqlBatchCommandCollection.Remove method
 # MySqlBatchCommandCollection.Remove method
 
 ```csharp
-public bool Remove(MySqlBatchCommand item)
+public override bool Remove(DbBatchCommand item)
 ```
 
 ## See Also
 
-* class [MySqlBatchCommand](../../MySqlBatchCommandType/)
 * class [MySqlBatchCommandCollection](../../MySqlBatchCommandCollectionType/)
 * namespace [MySqlConnector](../../MySqlBatchCommandCollectionType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)

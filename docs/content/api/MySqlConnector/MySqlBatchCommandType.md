@@ -5,7 +5,7 @@ title: MySqlBatchCommand
 # MySqlBatchCommand class
 
 ```csharp
-public sealed class MySqlBatchCommand
+public sealed class MySqlBatchCommand : DbBatchCommand
 ```
 
 ## Public Members
@@ -14,10 +14,16 @@ public sealed class MySqlBatchCommand
 | --- | --- |
 | [MySqlBatchCommand](../MySqlBatchCommand/MySqlBatchCommand/)() | The default constructor. |
 | [MySqlBatchCommand](../MySqlBatchCommand/MySqlBatchCommand/)(…) |  |
-| [CommandText](../MySqlBatchCommand/CommandText/) { get; set; } |  |
-| [CommandType](../MySqlBatchCommand/CommandType/) { get; set; } |  |
+| override [CommandText](../MySqlBatchCommand/CommandText/) { get; set; } |  |
+| override [CommandType](../MySqlBatchCommand/CommandType/) { get; set; } |  |
 | [Parameters](../MySqlBatchCommand/Parameters/) { get; } |  |
-| [RecordsAffected](../MySqlBatchCommand/RecordsAffected/) { get; } |  |
+| override [RecordsAffected](../MySqlBatchCommand/RecordsAffected/) { get; } |  |
+
+## Protected Members
+
+| name | description |
+| --- | --- |
+| override [DbParameterCollection](../MySqlBatchCommand/DbParameterCollection/) { get; } |  |
 
 ## See Also
 

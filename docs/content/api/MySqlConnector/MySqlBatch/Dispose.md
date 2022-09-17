@@ -5,7 +5,7 @@ title: MySqlBatch.Dispose method
 # MySqlBatch.Dispose method
 
 ```csharp
-public void Dispose()
+public override void Dispose()
 ```
 
 ## See Also

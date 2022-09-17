@@ -5,7 +5,7 @@ title: MySqlBatchCommandCollection.RemoveAt method
 # MySqlBatchCommandCollection.RemoveAt method
 
 ```csharp
-public void RemoveAt(int index)
+public override void RemoveAt(int index)
 ```
 
 ## See Also

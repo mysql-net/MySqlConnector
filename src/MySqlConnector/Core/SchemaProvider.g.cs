@@ -119,7 +119,7 @@ internal sealed partial class SchemaProvider
 		dataTable.Rows.Add("UserPrivileges", 0, 0);
 		dataTable.Rows.Add("Views", 0, 3);
 
-		return Utility.CompletedTask;
+		return Task.CompletedTask;
 	}
 
 	private async Task FillCharacterSetsAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
@@ -261,7 +261,7 @@ internal sealed partial class SchemaProvider
 
 		DoFillDataSourceInformation(dataTable);
 
-		return Utility.CompletedTask;
+		return Task.CompletedTask;
 	}
 
 	private Task FillDataTypesAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
@@ -298,7 +298,7 @@ internal sealed partial class SchemaProvider
 
 		DoFillDataTypes(dataTable);
 
-		return Utility.CompletedTask;
+		return Task.CompletedTask;
 	}
 
 	private async Task FillEnginesAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
@@ -562,7 +562,7 @@ internal sealed partial class SchemaProvider
 
 		DoFillReservedWords(dataTable);
 
-		return Utility.CompletedTask;
+		return Task.CompletedTask;
 	}
 
 	private async Task FillResourceGroupsAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
@@ -604,7 +604,7 @@ internal sealed partial class SchemaProvider
 		dataTable.Rows.Add("Tables", "Table", "TABLE_NAME", 3);
 		dataTable.Rows.Add("Tables", "TableType", "TABLE_TYPE", 4);
 
-		return Utility.CompletedTask;
+		return Task.CompletedTask;
 	}
 
 	private async Task FillSchemaPrivilegesAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)

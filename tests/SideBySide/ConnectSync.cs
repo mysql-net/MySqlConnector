@@ -550,14 +550,10 @@ create table `{AppConfig.SecondaryDatabase}`.changedb2(value int not null);");
 		csb.SslMode = MySqlSslMode.Disabled;
 		csb.AllowPublicKeyRetrieval = true;
 		using var connection = new MySqlConnection(csb.ConnectionString);
-#if NET45
-		Assert.Throws<NotImplementedException>(() => connection.Open());
-#else
 		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.RsaEncryption))
 			connection.Open();
 		else
 			Assert.Throws<MySqlException>(() => connection.Open());
-#endif
 	}
 
 	[Fact]

@@ -160,7 +160,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	private Task PrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (!NeedsPrepare(out var exception))
-			return exception is null ? Utility.CompletedTask : Utility.TaskFromException(exception);
+			return exception is null ? Task.CompletedTask : Task.FromException(exception);
 
 		return Connection!.Session.PrepareAsync(this, ioBehavior, cancellationToken);
 	}
@@ -174,7 +174,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 			exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
 		else if (string.IsNullOrWhiteSpace(CommandText))
 			exception = new InvalidOperationException("CommandText must be specified");
-		else if (Connection?.HasActiveReader ?? false)
+		else if (Connection?.HasActiveReader is true)
 			exception = new InvalidOperationException("Cannot call Prepare when there is an open DataReader for this command's connection; it must be closed first.");
 
 		if (exception is not null || Connection!.IgnorePrepare)
@@ -347,7 +347,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	internal Task<MySqlDataReader> ExecuteReaderNoResetTimeoutAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (!IsValid(out var exception))
-			return Utility.TaskFromException<MySqlDataReader>(exception);
+			return Task.FromException<MySqlDataReader>(exception);
 
 		var activity = NoActivity ? null : Connection!.Session.StartActivity(ActivitySourceHelper.ExecuteActivityName,
 			ActivitySourceHelper.DatabaseStatementTagName, CommandText);
@@ -375,7 +375,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 #if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		return default;
 #else
-		return Utility.CompletedTask;
+		return Task.CompletedTask;
 #endif
 	}
 

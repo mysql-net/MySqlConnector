@@ -23,7 +23,11 @@ internal sealed class StatementPreparer
 		var parser = new PreparedCommandSqlParser(this, statements, statementStartEndIndexes, writer);
 		parser.Parse(m_commandText);
 		for (var i = 0; i < statements.Count; i++)
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+			statements[i].StatementBytes = writer.ArraySegment[statementStartEndIndexes[i * 2]..statementStartEndIndexes[i * 2 + 1]];
+#else
 			statements[i].StatementBytes = writer.ArraySegment.Slice(statementStartEndIndexes[i * 2], statementStartEndIndexes[i * 2 + 1] - statementStartEndIndexes[i * 2]);
+#endif
 		return new ParsedStatements(statements, writer.ToPayloadData());
 	}
 

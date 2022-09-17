@@ -5,12 +5,11 @@ title: MySqlBatchCommandCollection.IndexOf method
 # MySqlBatchCommandCollection.IndexOf method
 
 ```csharp
-public int IndexOf(MySqlBatchCommand item)
+public override int IndexOf(DbBatchCommand item)
 ```
 
 ## See Also
 
-* class [MySqlBatchCommand](../../MySqlBatchCommandType/)
 * class [MySqlBatchCommandCollection](../../MySqlBatchCommandCollectionType/)
 * namespace [MySqlConnector](../../MySqlBatchCommandCollectionType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)

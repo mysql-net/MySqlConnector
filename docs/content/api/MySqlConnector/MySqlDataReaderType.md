@@ -31,8 +31,9 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 | [GetChar](../MySqlDataReader/GetChar/)(…) |  |
 | override [GetChars](../MySqlDataReader/GetChars/)(…) |  |
 | [GetColumnSchema](../MySqlDataReader/GetColumnSchema/)() | Returns metadata about the columns in the result set. |
-| [GetColumnSchemaAsync](../MySqlDataReader/GetColumnSchemaAsync/)(…) | Returns metadata about the columns in the result set. |
+| override [GetColumnSchemaAsync](../MySqlDataReader/GetColumnSchemaAsync/)(…) | Returns metadata about the columns in the result set. |
 | override [GetDataTypeName](../MySqlDataReader/GetDataTypeName/)(…) |  |
+| [GetDateOnly](../MySqlDataReader/GetDateOnly/)(…) |  (2 methods) |
 | override [GetDateTime](../MySqlDataReader/GetDateTime/)(…) |  |
 | [GetDateTime](../MySqlDataReader/GetDateTime/)(…) |  |
 | [GetDateTimeOffset](../MySqlDataReader/GetDateTimeOffset/)(…) |  (2 methods) |
@@ -61,13 +62,14 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 | override [GetOrdinal](../MySqlDataReader/GetOrdinal/)(…) |  |
 | [GetSByte](../MySqlDataReader/GetSByte/)(…) |  (2 methods) |
 | override [GetSchemaTable](../MySqlDataReader/GetSchemaTable/)() | Returns a DataTable that contains metadata about the columns in the result set. |
-| [GetSchemaTableAsync](../MySqlDataReader/GetSchemaTableAsync/)(…) | Returns a DataTable that contains metadata about the columns in the result set. |
+| override [GetSchemaTableAsync](../MySqlDataReader/GetSchemaTableAsync/)(…) | Returns a DataTable that contains metadata about the columns in the result set. |
 | override [GetStream](../MySqlDataReader/GetStream/)(…) |  |
 | [GetStream](../MySqlDataReader/GetStream/)(…) |  |
 | override [GetString](../MySqlDataReader/GetString/)(…) |  |
 | [GetString](../MySqlDataReader/GetString/)(…) |  |
 | override [GetTextReader](../MySqlDataReader/GetTextReader/)(…) |  |
 | [GetTextReader](../MySqlDataReader/GetTextReader/)(…) |  |
+| [GetTimeOnly](../MySqlDataReader/GetTimeOnly/)(…) |  (2 methods) |
 | [GetTimeSpan](../MySqlDataReader/GetTimeSpan/)(…) |  (2 methods) |
 | [GetUInt16](../MySqlDataReader/GetUInt16/)(…) |  (2 methods) |
 | [GetUInt32](../MySqlDataReader/GetUInt32/)(…) |  (2 methods) |

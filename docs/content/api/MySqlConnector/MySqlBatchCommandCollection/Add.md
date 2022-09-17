@@ -5,12 +5,11 @@ title: MySqlBatchCommandCollection.Add method
 # MySqlBatchCommandCollection.Add method
 
 ```csharp
-public void Add(MySqlBatchCommand item)
+public override void Add(DbBatchCommand item)
 ```
 
 ## See Also
 
-* class [MySqlBatchCommand](../../MySqlBatchCommandType/)
 * class [MySqlBatchCommandCollection](../../MySqlBatchCommandCollectionType/)
 * namespace [MySqlConnector](../../MySqlBatchCommandCollectionType/)
 * assembly [MySqlConnector](../../../MySqlConnectorAssembly/)

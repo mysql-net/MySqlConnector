@@ -10,7 +10,7 @@ namespace MySqlConnector.Protocol.Serialization;
 internal static class AuthenticationUtility
 {
 	public static byte[] CreateAuthenticationResponse(ReadOnlySpan<byte> challenge, string password) =>
-		string.IsNullOrEmpty(password) ? Utility.EmptyByteArray : HashPassword(challenge, password);
+		string.IsNullOrEmpty(password) ? Array.Empty<byte>() : HashPassword(challenge, password);
 
 	/// <summary>
 	/// Hashes a password with the "Secure Password Authentication" method.
@@ -36,7 +36,7 @@ internal static class AuthenticationUtility
 		Span<byte> hashedPassword = stackalloc byte[20];
 #if NET5_0_OR_GREATER
 		SHA1.TryHashData(passwordBytes, hashedPassword, out _);
-		SHA1.TryHashData(hashedPassword, combined.Slice(20), out _);
+		SHA1.TryHashData(hashedPassword, combined[20..], out _);
 #else
 		sha1.TryComputeHash(passwordBytes, hashedPassword, out _);
 		sha1.TryComputeHash(hashedPassword, combined.Slice(20), out _);
@@ -57,7 +57,7 @@ internal static class AuthenticationUtility
 	public static byte[] CreateScrambleResponse(ReadOnlySpan<byte> nonce, string password)
 	{
 		var scrambleResponse = string.IsNullOrEmpty(password)
-			? Utility.EmptyByteArray
+			? Array.Empty<byte>()
 			: HashPasswordWithNonce(nonce, password);
 
 		return scrambleResponse;
@@ -88,7 +88,7 @@ internal static class AuthenticationUtility
 #else
 		sha256.TryComputeHash(hashedPassword, combined, out _);
 #endif
-		nonce.CopyTo(combined.Slice(32));
+		nonce.CopyTo(combined[32..]);
 
 		Span<byte> xorBytes = stackalloc byte[32];
 #if NET5_0_OR_GREATER

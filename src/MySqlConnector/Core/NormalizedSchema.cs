@@ -2,15 +2,20 @@ using System.Text.RegularExpressions;
 
 namespace MySqlConnector.Core;
 
-internal sealed class NormalizedSchema
+internal sealed partial class NormalizedSchema
 {
 	private const string ReQuoted = @"`((?:[^`]|``)+)`";
 	private const string ReUnQuoted = @"([^\.`]+)";
 	private const string ReEither = $@"(?:{ReQuoted}|{ReUnQuoted})";
+	private const string ReName = $@"^\s*{ReEither}\s*(?:\.\s*{ReEither}\s*)?$";
 
-	private static readonly Regex NameRe = new(
-		$@"^\s*{ReEither}\s*(?:\.\s*{ReEither}\s*)?$",
-		RegexOptions.Compiled);
+#if NET7_0_OR_GREATER
+	[GeneratedRegex(ReName)]
+	private static partial Regex NameRegex();
+#else
+	private static Regex NameRegex() => s_nameRegex;
+	private static readonly Regex s_nameRegex = new(ReName, RegexOptions.Compiled);
+#endif
 
 	public static NormalizedSchema MustNormalize(string name, string? defaultSchema = null)
 	{
@@ -24,7 +29,7 @@ internal sealed class NormalizedSchema
 
 	public NormalizedSchema(string name, string? defaultSchema = null)
 	{
-		var match = NameRe.Match(name);
+		var match = NameRegex().Match(name);
 		if (match.Success)
 		{
 			if (match.Groups[3].Success)

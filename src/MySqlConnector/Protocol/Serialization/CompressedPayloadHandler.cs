@@ -66,7 +66,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		if (m_remainingData.Count > 0)
 		{
 			var bytesToRead = Math.Min(m_remainingData.Count, buffer.Length);
-			m_remainingData.AsSpan().Slice(0, bytesToRead).CopyTo(buffer.Span);
+			m_remainingData.AsSpan(0, bytesToRead).CopyTo(buffer.Span);
 			m_remainingData = m_remainingData.Slice(bytesToRead);
 			return new ValueTask<int>(bytesToRead);
 		}
@@ -82,9 +82,9 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 						ValueTaskExtensions.FromException<int>(new EndOfStreamException("Wanted to read 7 bytes but only read {0} when reading compressed packet header".FormatInvariant(headerReadBytes.Count)));
 				}
 
-				var payloadLength = (int) SerializationUtility.ReadUInt32(headerReadBytes.Array!, headerReadBytes.Offset, 3);
+				var payloadLength = (int) SerializationUtility.ReadUInt32(headerReadBytes.AsSpan(0, 3));
 				var packetSequenceNumber = headerReadBytes.Array![headerReadBytes.Offset + 3];
-				var uncompressedLength = (int) SerializationUtility.ReadUInt32(headerReadBytes.Array, headerReadBytes.Offset + 4, 3);
+				var uncompressedLength = (int) SerializationUtility.ReadUInt32(headerReadBytes.AsSpan(4, 3));
 
 				// verify the compressed packet sequence number
 				var expectedSequenceNumber = GetNextCompressedSequenceNumber();
@@ -184,7 +184,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 						}
 
 						var bytesToRead = Math.Min(m_remainingData.Count, buffer.Length);
-						m_remainingData.AsSpan().Slice(0, bytesToRead).CopyTo(buffer.Span);
+						m_remainingData.AsSpan(0, bytesToRead).CopyTo(buffer.Span);
 						m_remainingData = m_remainingData.Slice(bytesToRead);
 						return new ValueTask<int>(bytesToRead);
 					});

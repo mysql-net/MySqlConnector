@@ -168,20 +168,20 @@ internal sealed class ServerSession
 				buffer[2] = 'L';
 				buffer[3] = 'L';
 				buffer[4] = ' ';
-				buffer = buffer.Slice(5);
+				buffer = buffer[5..];
 				state.commandText.AsSpan().CopyTo(buffer);
-				buffer = buffer.Slice(state.commandText.Length);
+				buffer = buffer[state.commandText.Length..];
 				buffer[0] = '(';
-				buffer = buffer.Slice(1);
+				buffer = buffer[1..];
 				if (state.parameterCount > 0)
 				{
 					buffer[0] = '?';
-					buffer = buffer.Slice(1);
+					buffer = buffer[1..];
 					for (var i = 1; i < state.parameterCount; i++)
 					{
 						buffer[0] = ',';
 						buffer[1] = '?';
-						buffer = buffer.Slice(2);
+						buffer = buffer[2..];
 					}
 				}
 				buffer[0] = ')';
@@ -238,7 +238,7 @@ internal sealed class ServerSession
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					var payloadLength = payload.Span.Length;
 					Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payloadLength);
-					payload.Span.CopyTo(columnsAndParameters.Array.AsSpan().Slice(columnsAndParametersSize));
+					payload.Span.CopyTo(columnsAndParameters.AsSpan(columnsAndParametersSize));
 					parameters[i] = ColumnDefinitionPayload.Create(new(columnsAndParameters, columnsAndParametersSize, payloadLength));
 					columnsAndParametersSize += payloadLength;
 				}
@@ -258,7 +258,7 @@ internal sealed class ServerSession
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					var payloadLength = payload.Span.Length;
 					Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payloadLength);
-					payload.Span.CopyTo(columnsAndParameters.Array.AsSpan().Slice(columnsAndParametersSize));
+					payload.Span.CopyTo(columnsAndParameters.AsSpan(columnsAndParametersSize));
 					columns[i] = ColumnDefinitionPayload.Create(new(columnsAndParameters, columnsAndParametersSize, payloadLength));
 					columnsAndParametersSize += payloadLength;
 				}
@@ -486,7 +486,7 @@ internal sealed class ServerSession
 				else
 				{
 					// pipelining is not currently compatible with compression
-					m_supportsPipelining = !cs.UseCompression && (cs.Pipelining ?? true);
+					m_supportsPipelining = !cs.UseCompression && cs.Pipelining is not false;
 
 					// for pipelining, concatenate reset connection and SET NAMES query into one buffer
 					if (m_supportsPipelining)
@@ -499,7 +499,7 @@ internal sealed class ServerSession
 
 						// second packet: SET NAMES query
 						m_pipelinedResetConnectionBytes[5] = (byte) m_setNamesPayload.Span.Length;
-						m_setNamesPayload.Span.CopyTo(m_pipelinedResetConnectionBytes.AsSpan().Slice(9));
+						m_setNamesPayload.Span.CopyTo(m_pipelinedResetConnectionBytes.AsSpan()[9..]);
 					}
 				}
 
@@ -730,13 +730,8 @@ internal sealed class ServerSession
 		case "sha256_password":
 			if (!m_isSecureConnection && password.Length != 0)
 			{
-#if NET45
-				Log.Error("Session{0} can't use AuthenticationMethod '{1}' without secure connection on .NET 4.5", m_logArguments);
-				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Authentication method '{0}' requires a secure connection (prior to .NET 4.6).".FormatInvariant(switchRequest.Name));
-#else
 				var publicKey = await GetRsaPublicKeyAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await SendEncryptedPasswordAsync(switchRequest, publicKey, password, ioBehavior, cancellationToken).ConfigureAwait(false);
-#endif
 			}
 			else
 			{
@@ -775,7 +770,6 @@ internal sealed class ServerSession
 		return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
 
-#if !NET45
 	private async Task<PayloadData> SendEncryptedPasswordAsync(
 		AuthenticationMethodSwitchRequestPayload switchRequest,
 		string rsaPublicKey,
@@ -826,9 +820,7 @@ internal sealed class ServerSession
 		await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 		return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
-#endif
 
-#if !NET45
 	private async Task<string> GetRsaPublicKeyAsync(string switchRequestName, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (cs.ServerRsaPublicKeyFile.Length != 0)
@@ -859,7 +851,6 @@ internal sealed class ServerSession
 		Log.Error("Session{0} couldn't use AuthenticationMethod '{1}' because RSA key wasn't specified or couldn't be retrieved", m_logArguments);
 		throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Authentication method '{0}' failed. Either use a secure connection, specify the server's RSA public key with ServerRSAPublicKeyFile, or set AllowPublicKeyRetrieval=True.".FormatInvariant(switchRequestName));
 	}
-#endif
 
 	public async ValueTask<bool> TryPingAsync(bool logInfo, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
@@ -1203,13 +1194,7 @@ internal sealed class ServerSession
 		return false;
 	}
 
-#if NET45
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-#endif
 	private async Task<bool> OpenNamedPipeAsync(ConnectionSettings cs, int startTickCount, IOBehavior ioBehavior, CancellationToken cancellationToken)
-#if NET45
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-#endif
 	{
 		if (Log.IsTraceEnabled())
 			Log.Trace("Session{0} connecting to NamedPipe '{1}' on Server '{2}'", m_logArguments[0], cs.PipeName, cs.HostNames![0]);
@@ -1221,12 +1206,10 @@ internal sealed class ServerSession
 			{
 				try
 				{
-#if !NET45
 					if (ioBehavior == IOBehavior.Asynchronous)
 						await namedPipeStream.ConnectAsync(timeout, cancellationToken).ConfigureAwait(false);
 					else
-#endif
-					namedPipeStream.Connect(timeout);
+						namedPipeStream.Connect(timeout);
 				}
 				catch (Exception ex) when ((ex is ObjectDisposedException && cancellationToken.IsCancellationRequested) || ex is TimeoutException)
 				{
@@ -1313,11 +1296,8 @@ internal sealed class ServerSession
 				var certificate = new X509Certificate2(cs.CertificateFile, cs.CertificatePassword, X509KeyStorageFlags.MachineKeySet);
 				if (!certificate.HasPrivateKey)
 				{
-#if NET45
-					certificate.Reset();
-#else
 					certificate.Dispose();
-#endif
+
 					m_logArguments[1] = cs.CertificateFile;
 					Log.Error("Session{0} no private key included with CertificateFile '{1}'", m_logArguments);
 					throw new MySqlException("CertificateFile does not contain a private key. " +
@@ -1390,7 +1370,11 @@ internal sealed class ServerSession
 						// load the certificate at this index; note that 'new X509Certificate' stops at the end of the first certificate it loads
 						m_logArguments[1] = index;
 						Log.Trace("Session{0} loading certificate at Index {1} in the CA certificate file.", m_logArguments);
+#if NET5_0_OR_GREATER
+						var caCertificate = new X509Certificate2(certificateBytes.AsSpan(index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index), default(ReadOnlySpan<char>), X509KeyStorageFlags.MachineKeySet);
+#else
 						var caCertificate = new X509Certificate2(Utility.ArraySlice(certificateBytes, index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index), default(string), X509KeyStorageFlags.MachineKeySet);
+#endif
 						certificateChain.ChainPolicy.ExtraStore.Add(caCertificate);
 					}
 					catch (CryptographicException ex)
@@ -1409,11 +1393,7 @@ internal sealed class ServerSession
 			}
 			finally
 			{
-#if NET45
-				certificateChain?.Reset();
-#else
 				certificateChain?.Dispose();
-#endif
 			}
 		}
 
@@ -1499,13 +1479,11 @@ internal sealed class ServerSession
 			{
 #if NET5_0_OR_GREATER
 				sslStream.AuthenticateAsClient(clientAuthenticationOptions);
-#elif NET45_OR_GREATER || NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_0_OR_GREATER
+#else
 				sslStream.AuthenticateAsClient(clientAuthenticationOptions.TargetHost,
 					clientAuthenticationOptions.ClientCertificates,
 					clientAuthenticationOptions.EnabledSslProtocols,
 					checkCertificateRevocation);
-#else
-				await sslStream.AuthenticateAsClientAsync(HostName, clientCertificates, sslProtocols, checkCertificateRevocation).ConfigureAwait(false);
 #endif
 			}
 			var sslByteHandler = new StreamByteHandler(sslStream);
@@ -1539,11 +1517,7 @@ internal sealed class ServerSession
 		}
 		finally
 		{
-#if NET45
-			caCertificateChain?.Reset();
-#else
 			caCertificateChain?.Dispose();
-#endif
 		}
 
 		// Returns a X509CertificateCollection containing the single certificate contained in 'sslKeyFile' (PEM private key) and 'sslCertificateFile' (PEM certificate).
@@ -1602,7 +1576,7 @@ internal sealed class ServerSession
 				}
 				rsa.ImportParameters(rsaParameters);
 
-#if NET45 || NET461 || NET471
+#if NET461 || NET471
 				var certificate = new X509Certificate2(sslCertificateFile, "", X509KeyStorageFlags.MachineKeySet)
 				{
 					PrivateKey = rsa,
@@ -1719,12 +1693,7 @@ internal sealed class ServerSession
 		Utility.Dispose(ref m_stream);
 		SafeDispose(ref m_tcpClient);
 		SafeDispose(ref m_socket);
-#if NET45
-		m_clientCertificate?.Reset();
-		m_clientCertificate = null;
-#else
 		Utility.Dispose(ref m_clientCertificate);
-#endif
 		m_activityTags.Clear();
 		m_activityTags.Add(ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue);
 	}
@@ -1782,13 +1751,13 @@ internal sealed class ServerSession
 		}
 	}
 
-	internal bool SslIsEncrypted => m_sslStream?.IsEncrypted ?? false;
+	internal bool SslIsEncrypted => m_sslStream?.IsEncrypted is true;
 
-	internal bool SslIsSigned => m_sslStream?.IsSigned ?? false;
+	internal bool SslIsSigned => m_sslStream?.IsSigned is true;
 
-	internal bool SslIsAuthenticated => m_sslStream?.IsAuthenticated ?? false;
+	internal bool SslIsAuthenticated => m_sslStream?.IsAuthenticated is true;
 
-	internal bool SslIsMutuallyAuthenticated => m_sslStream?.IsMutuallyAuthenticated ?? false;
+	internal bool SslIsMutuallyAuthenticated => m_sslStream?.IsMutuallyAuthenticated is true;
 
 	internal SslProtocols SslProtocol => m_sslStream?.SslProtocol ?? SslProtocols.None;
 
@@ -1937,16 +1906,16 @@ internal sealed class ServerSession
 		private readonly string m_sql;
 	}
 
-	private static ReadOnlySpan<byte> BeginCertificateBytes => new byte[] { 45, 45, 45, 45, 45, 66, 69, 71, 73, 78, 32, 67, 69, 82, 84, 73, 70, 73, 67, 65, 84, 69, 45, 45, 45, 45, 45 }; // -----BEGIN CERTIFICATE-----
+	private static ReadOnlySpan<byte> BeginCertificateBytes => "-----BEGIN CERTIFICATE-----"u8;
 	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ServerSession));
-	private static readonly PayloadData s_setNamesUtf8NoAttributesPayload = QueryPayload.Create(false, "SET NAMES utf8;");
-	private static readonly PayloadData s_setNamesUtf8mb4NoAttributesPayload = QueryPayload.Create(false, "SET NAMES utf8mb4;");
-	private static readonly PayloadData s_setNamesUtf8WithAttributesPayload = QueryPayload.Create(true, "SET NAMES utf8;");
-	private static readonly PayloadData s_setNamesUtf8mb4WithAttributesPayload = QueryPayload.Create(true, "SET NAMES utf8mb4;");
-	private static readonly PayloadData s_sleepNoAttributesPayload = QueryPayload.Create(false, "SELECT SLEEP(0) INTO @\uE001MySqlConnector\uE001Sleep;");
-	private static readonly PayloadData s_sleepWithAttributesPayload = QueryPayload.Create(true, "SELECT SLEEP(0) INTO @\uE001MySqlConnector\uE001Sleep;");
-	private static readonly PayloadData s_selectConnectionIdVersionNoAttributesPayload = QueryPayload.Create(false, "SELECT CONNECTION_ID(), VERSION();");
-	private static readonly PayloadData s_selectConnectionIdVersionWithAttributesPayload = QueryPayload.Create(true, "SELECT CONNECTION_ID(), VERSION();");
+	private static readonly PayloadData s_setNamesUtf8NoAttributesPayload = QueryPayload.Create(false, "SET NAMES utf8;"u8);
+	private static readonly PayloadData s_setNamesUtf8mb4NoAttributesPayload = QueryPayload.Create(false, "SET NAMES utf8mb4;"u8);
+	private static readonly PayloadData s_setNamesUtf8WithAttributesPayload = QueryPayload.Create(true, "SET NAMES utf8;"u8);
+	private static readonly PayloadData s_setNamesUtf8mb4WithAttributesPayload = QueryPayload.Create(true, "SET NAMES utf8mb4;"u8);
+	private static readonly PayloadData s_sleepNoAttributesPayload = QueryPayload.Create(false, "SELECT SLEEP(0) INTO @\uE001MySqlConnector\uE001Sleep;"u8);
+	private static readonly PayloadData s_sleepWithAttributesPayload = QueryPayload.Create(true, "SELECT SLEEP(0) INTO @\uE001MySqlConnector\uE001Sleep;"u8);
+	private static readonly PayloadData s_selectConnectionIdVersionNoAttributesPayload = QueryPayload.Create(false, "SELECT CONNECTION_ID(), VERSION();"u8);
+	private static readonly PayloadData s_selectConnectionIdVersionWithAttributesPayload = QueryPayload.Create(true, "SELECT CONNECTION_ID(), VERSION();"u8);
 	private static int s_lastId;
 
 	private readonly object m_lock;

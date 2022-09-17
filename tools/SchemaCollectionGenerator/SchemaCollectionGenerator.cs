@@ -131,7 +131,7 @@ foreach (var schema in schemaCollections)
 	if (!isAsync)
 	{
 		codeWriter.Write(@"
-		return Utility.CompletedTask;");
+		return Task.CompletedTask;");
 	}
 
 	codeWriter.Write(@"

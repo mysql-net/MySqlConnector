@@ -23,7 +23,7 @@ namespace MySqlConnector;
 public sealed class MySqlConnection : DbConnection, ICloneable
 {
 	public MySqlConnection()
-		: this(default)
+		: this("")
 	{
 	}
 
@@ -32,6 +32,14 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		GC.SuppressFinalize(this);
 		m_connectionString = connectionString ?? "";
 	}
+
+#if NET7_0_OR_GREATER
+	internal MySqlConnection(MySqlDataSource dataSource)
+		: this(dataSource.ConnectionString)
+	{
+		m_dataSource = dataSource;
+	}
+#endif
 
 #pragma warning disable CA2012 // Safe because method completes synchronously
 	/// <summary>
@@ -181,7 +189,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			throw new InvalidOperationException("Connection is not open.");
 
 		// ignore reenlistment of same connection in same transaction
-		if (m_enlistedTransaction?.Transaction.Equals(transaction) ?? false)
+		if (m_enlistedTransaction?.Transaction.Equals(transaction) is true)
 			return;
 
 		if (m_enlistedTransaction is not null)
@@ -388,7 +396,11 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			SetState(ConnectionState.Connecting);
 
-			var pool = ConnectionPool.GetPool(m_connectionString);
+			var pool =
+#if NET7_0_OR_GREATER
+				m_dataSource?.Pool ??
+#endif
+				ConnectionPool.GetPool(m_connectionString);
 			m_connectionSettings ??= pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
 
 			// check if there is an open session (in the current transaction) that can be adopted
@@ -860,7 +872,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	internal IOBehavior AsyncIOBehavior => GetConnectionSettings().ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
 
 	// Defaults to IOBehavior.Synchronous if the connection hasn't been opened yet; only use if it's a no-op for a closed connection.
-	internal IOBehavior SimpleAsyncIOBehavior => (m_connectionSettings?.ForceSynchronous ?? false) ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
+	internal IOBehavior SimpleAsyncIOBehavior => (m_connectionSettings?.ForceSynchronous is true) ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
 
 	internal MySqlSslMode SslMode => GetInitializedConnectionSettings().SslMode;
 
@@ -933,12 +945,12 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				return session;
 			}
 		}
-		catch (OperationCanceledException) when (timeoutSource?.IsCancellationRequested ?? false)
+		catch (OperationCanceledException) when (timeoutSource?.IsCancellationRequested is true)
 		{
-			var messageSuffix = (pool?.IsEmpty ?? false) ? " All pooled connections are in use." : "";
+			var messageSuffix = (pool?.IsEmpty is true) ? " All pooled connections are in use." : "";
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired." + messageSuffix);
 		}
-		catch (MySqlException ex) when ((timeoutSource?.IsCancellationRequested ?? false) || (ex.ErrorCode == MySqlErrorCode.CommandTimeoutExpired))
+		catch (MySqlException ex) when ((timeoutSource?.IsCancellationRequested is true) || (ex.ErrorCode == MySqlErrorCode.CommandTimeoutExpired))
 		{
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.", ex);
 		}
@@ -992,7 +1004,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		if (m_activeReader is null &&
 			CurrentTransaction is null &&
 			m_enlistedTransaction is null &&
-			(m_connectionSettings?.Pooling ?? false))
+			(m_connectionSettings?.Pooling is true))
 		{
 			m_cachedProcedures = null;
 			if (m_session is not null)
@@ -1107,6 +1119,9 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	private static readonly object s_lock = new();
 	private static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = new();
 
+#if NET7_0_OR_GREATER
+	private readonly MySqlDataSource? m_dataSource;
+#endif
 	private string m_connectionString;
 	private ConnectionSettings? m_connectionSettings;
 	private ServerSession? m_session;

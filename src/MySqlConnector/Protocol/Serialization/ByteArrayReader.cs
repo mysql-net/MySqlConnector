@@ -33,7 +33,7 @@ internal ref struct ByteArrayReader
 	public short ReadInt16()
 	{
 		VerifyRead(2);
-		var result = BinaryPrimitives.ReadInt16LittleEndian(m_buffer.Slice(m_offset));
+		var result = BinaryPrimitives.ReadInt16LittleEndian(m_buffer[m_offset..]);
 		m_offset += 2;
 		return result;
 	}
@@ -41,7 +41,7 @@ internal ref struct ByteArrayReader
 	public ushort ReadUInt16()
 	{
 		VerifyRead(2);
-		var result = BinaryPrimitives.ReadUInt16LittleEndian(m_buffer.Slice(m_offset));
+		var result = BinaryPrimitives.ReadUInt16LittleEndian(m_buffer[m_offset..]);
 		m_offset += 2;
 		return result;
 	}
@@ -49,7 +49,7 @@ internal ref struct ByteArrayReader
 	public int ReadInt32()
 	{
 		VerifyRead(4);
-		var result = BinaryPrimitives.ReadInt32LittleEndian(m_buffer.Slice(m_offset));
+		var result = BinaryPrimitives.ReadInt32LittleEndian(m_buffer[m_offset..]);
 		m_offset += 4;
 		return result;
 	}
@@ -57,7 +57,7 @@ internal ref struct ByteArrayReader
 	public uint ReadUInt32()
 	{
 		VerifyRead(4);
-		var result = BinaryPrimitives.ReadUInt32LittleEndian(m_buffer.Slice(m_offset));
+		var result = BinaryPrimitives.ReadUInt32LittleEndian(m_buffer[m_offset..]);
 		m_offset += 4;
 		return result;
 	}
@@ -93,7 +93,7 @@ internal ref struct ByteArrayReader
 			index++;
 		if (index == m_maxOffset)
 			throw new FormatException("Read past end of buffer looking for NUL.");
-		var substring = m_buffer.Slice(m_offset, index - m_offset);
+		var substring = m_buffer[m_offset..index];
 		m_offset = index + 1;
 		return substring;
 	}
@@ -103,7 +103,7 @@ internal ref struct ByteArrayReader
 		int index = m_offset;
 		while (index < m_maxOffset && m_buffer[index] != 0)
 			index++;
-		var substring = m_buffer.Slice(m_offset, index - m_offset);
+		var substring = m_buffer[m_offset..index];
 		if (index < m_maxOffset && m_buffer[index] == 0)
 			index++;
 		m_offset = index;

@@ -5,7 +5,7 @@ title: MySqlBatchCommand.CommandText property
 # MySqlBatchCommand.CommandText property
 
 ```csharp
-public string CommandText { get; set; }
+public override string CommandText { get; set; }
 ```
 
 ## See Also

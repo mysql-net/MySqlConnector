@@ -31,7 +31,7 @@ A Task representing the asynchronous operation.
 Asynchronously rolls back the current transaction to the savepoint with the specified *savepointName* without aborting the transaction.
 
 ```csharp
-public Task RollbackAsync(string savepointName, 
+public override Task RollbackAsync(string savepointName, 
     CancellationToken cancellationToken = default(CancellationToken))
 ```
 

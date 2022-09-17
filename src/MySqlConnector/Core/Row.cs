@@ -135,7 +135,7 @@ internal abstract class Row
 		var offset = (int) dataOffset;
 		var lengthToCopy = Math.Max(0, Math.Min(m_dataLengths[ordinal] - offset, length));
 		if (lengthToCopy > 0)
-			m_data.Slice(m_dataOffsets[ordinal] + offset, lengthToCopy).Span.CopyTo(buffer.AsSpan().Slice(bufferOffset));
+			m_data.Slice(m_dataOffsets[ordinal] + offset, lengthToCopy).Span.CopyTo(buffer.AsSpan(bufferOffset));
 		return lengthToCopy;
 	}
 
@@ -487,11 +487,11 @@ internal abstract class Row
 			goto InvalidDateTime;
 		if (value.Length < 5 || value[4] != 45)
 			goto InvalidDateTime;
-		if (!Utf8Parser.TryParse(value.Slice(5), out int month, out bytesConsumed) || bytesConsumed != 2)
+		if (!Utf8Parser.TryParse(value[5..], out int month, out bytesConsumed) || bytesConsumed != 2)
 			goto InvalidDateTime;
 		if (value.Length < 8 || value[7] != 45)
 			goto InvalidDateTime;
-		if (!Utf8Parser.TryParse(value.Slice(8), out int day, out bytesConsumed) || bytesConsumed != 2)
+		if (!Utf8Parser.TryParse(value[8..], out int day, out bytesConsumed) || bytesConsumed != 2)
 			goto InvalidDateTime;
 
 		if (year == 0 && month == 0 && day == 0)
@@ -515,15 +515,15 @@ internal abstract class Row
 		{
 			if (value[10] != 32)
 				goto InvalidDateTime;
-			if (!Utf8Parser.TryParse(value.Slice(11), out hour, out bytesConsumed) || bytesConsumed != 2)
+			if (!Utf8Parser.TryParse(value[11..], out hour, out bytesConsumed) || bytesConsumed != 2)
 				goto InvalidDateTime;
 			if (value.Length < 14 || value[13] != 58)
 				goto InvalidDateTime;
-			if (!Utf8Parser.TryParse(value.Slice(14), out minute, out bytesConsumed) || bytesConsumed != 2)
+			if (!Utf8Parser.TryParse(value[14..], out minute, out bytesConsumed) || bytesConsumed != 2)
 				goto InvalidDateTime;
 			if (value.Length < 17 || value[16] != 58)
 				goto InvalidDateTime;
-			if (!Utf8Parser.TryParse(value.Slice(17), out second, out bytesConsumed) || bytesConsumed != 2)
+			if (!Utf8Parser.TryParse(value[17..], out second, out bytesConsumed) || bytesConsumed != 2)
 				goto InvalidDateTime;
 
 			if (value.Length == 19)
@@ -535,7 +535,7 @@ internal abstract class Row
 				if (value[19] != 46)
 					goto InvalidDateTime;
 
-				if (!Utf8Parser.TryParse(value.Slice(20), out microseconds, out bytesConsumed) || bytesConsumed != value.Length - 20)
+				if (!Utf8Parser.TryParse(value[20..], out microseconds, out bytesConsumed) || bytesConsumed != value.Length - 20)
 					goto InvalidDateTime;
 				for (; bytesConsumed < 6; bytesConsumed++)
 					microseconds *= 10;
@@ -545,7 +545,11 @@ internal abstract class Row
 		try
 		{
 			return Connection.AllowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
+#if NET7_0_OR_GREATER
+				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, Connection.DateTimeKind);
+#else
 				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, Connection.DateTimeKind).AddTicks(microseconds % 1000 * 10);
+#endif
 		}
 		catch (Exception ex)
 		{
