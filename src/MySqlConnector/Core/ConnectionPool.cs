@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net;
 using System.Security.Authentication;
 using MySqlConnector.Logging;
@@ -551,27 +552,50 @@ internal sealed class ConnectionPool
 
 	private void StartReaperTask()
 	{
-		if (ConnectionSettings.ConnectionIdleTimeout > 0)
+		if (ConnectionSettings.ConnectionIdleTimeout <= 0)
+			return;
+
+		var reaperInterval = TimeSpan.FromSeconds(Math.Max(1, Math.Min(60, ConnectionSettings.ConnectionIdleTimeout / 2)));
+
+#if NET6_0_OR_GREATER
+		m_reaperTimer = new PeriodicTimer(reaperInterval);
+		_ = RunTimer();
+
+		async Task RunTimer()
 		{
-			var reaperInterval = TimeSpan.FromSeconds(Math.Max(1, Math.Min(60, ConnectionSettings.ConnectionIdleTimeout / 2)));
-			m_reaperTask = Task.Run(async () =>
+			while (await m_reaperTimer.WaitForNextTickAsync().ConfigureAwait(false))
 			{
-				while (true)
+				try
 				{
-					var task = Task.Delay(reaperInterval);
-					try
-					{
-						using var source = new CancellationTokenSource(reaperInterval);
-						await ReapAsync(IOBehavior.Asynchronous, source.Token).ConfigureAwait(false);
-					}
-					catch
-					{
-						// do nothing; we'll try to reap again
-					}
-					await task.ConfigureAwait(false);
+					using var source = new CancellationTokenSource(reaperInterval);
+					await ReapAsync(IOBehavior.Asynchronous, source.Token).ConfigureAwait(false);
 				}
-			});
+				catch
+				{
+					// do nothing; we'll try to reap again
+				}
+			}
 		}
+#else
+		m_reaperTimer = new Timer(t =>
+		{
+			var stopwatch = Stopwatch.StartNew();
+			try
+			{
+				using var source = new CancellationTokenSource(reaperInterval);
+				ReapAsync(IOBehavior.Synchronous, source.Token).GetAwaiter().GetResult();
+			}
+			catch
+			{
+				// do nothing; we'll try to reap again
+			}
+
+			// restart the timer, accounting for the time spent reaping
+			var delay = reaperInterval - stopwatch.Elapsed;
+			((Timer) t!).Change(delay < TimeSpan.Zero ? TimeSpan.Zero : delay, TimeSpan.FromMilliseconds(-1));
+		});
+		m_reaperTimer.Change(reaperInterval, TimeSpan.FromMilliseconds(-1));
+#endif
 	}
 
 	private void StartDnsCheckTimer()
@@ -717,13 +741,14 @@ internal sealed class ConnectionPool
 	private readonly Dictionary<string, int>? m_hostSessions;
 	private readonly object[] m_logArguments;
 	private int m_generation;
-	private Task? m_reaperTask;
 	private uint m_lastRecoveryTime;
 	private int m_lastSessionId;
 	private Dictionary<string, CachedProcedure?>? m_procedureCache;
 #if NET6_0_OR_GREATER
 	private PeriodicTimer? m_dnsCheckTimer;
+	private PeriodicTimer? m_reaperTimer;
 #else
 	private Timer? m_dnsCheckTimer;
+	private Timer? m_reaperTimer;
 #endif
 }
