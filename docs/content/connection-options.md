@@ -232,6 +232,15 @@ Connection pooling is enabled by default. These options are used to configure it
     <td>100</td>
     <td>The maximum number of connections allowed in the pool.</td>
   </tr>
+  <tr id="DnsCheckInterval">
+    <td>DNS Check Interval, DnsCheckInterval</td>
+    <td>0</td>
+    <td>The number of seconds between checks for DNS changes, or 0 to disable periodic checks.
+    If the periodic check determines that one of the <code>Server</code> hostnames resolves to a different IP address, the pool will be cleared.
+    This is useful in HA scenarios where failover is accomplished by changing the IP address to which a hostname resolves.
+    Existing connections in the pool may have valid TCP connections to a server that is no longer responding or has been marked readonly;
+    clearing the pool (when DNS changes) forces all these existing connections to be reestablished.</td>
+  </tr>
 </table>
 
 ## Other Options

@@ -144,6 +144,7 @@ public class MySqlConnectionStringBuilderTests
 				"use xa transactions=false;" +
 				"tls cipher suites=TLS_AES_128_CCM_8_SHA256,TLS_RSA_WITH_RC4_128_MD5;" +
 				"ignore prepare=true;" +
+				"dnscheckinterval=15;" +
 #endif
 				"interactive=true;" +
 				"Keep Alive=90;" +
@@ -207,6 +208,7 @@ public class MySqlConnectionStringBuilderTests
 		Assert.False(csb.UseXaTransactions);
 		Assert.Equal("TLS_AES_128_CCM_8_SHA256,TLS_RSA_WITH_RC4_128_MD5", csb.TlsCipherSuites);
 		Assert.True(csb.IgnorePrepare);
+		Assert.Equal(15u, csb.DnsCheckInterval);
 #endif
 		Assert.True(csb.InteractiveSession);
 		Assert.Equal(90u, csb.Keepalive);
@@ -239,7 +241,8 @@ public class MySqlConnectionStringBuilderTests
 			"Certificate Store Location=CurrentUser;Certificate Thumbprint=thumbprint123;SSL Cert=client-cert.pem;SSL Key=client-key.pem;" +
 			"SSL CA=ca.pem;TLS Version=\"TLS 1.2, TLS 1.3\";TLS Cipher Suites=TLS_AES_128_CCM_8_SHA256,TLS_RSA_WITH_RC4_128_MD5;" +
 			"Pooling=False;Connection Lifetime=15;Connection Reset=False;Defer Connection Reset=True;Connection Idle Timeout=30;" +
-			"Minimum Pool Size=5;Maximum Pool Size=15;Allow Load Local Infile=True;Allow Public Key Retrieval=True;Allow User Variables=True;" +
+			"Minimum Pool Size=5;Maximum Pool Size=15;DNS Check Interval=15;" +
+			"Allow Load Local Infile=True;Allow Public Key Retrieval=True;Allow User Variables=True;" +
 			"Allow Zero DateTime=True;Application Name=\"My Test Application\";Auto Enlist=False;Cancellation Timeout=-1;Character Set=latin1;" +
 			"Connection Timeout=30;Convert Zero DateTime=True;DateTime Kind=Utc;Default Command Timeout=123;Force Synchronous=True;" +
 			"GUID Format=TimeSwapBinary16;Ignore Command Transaction=True;Ignore Prepare=True;Interactive Session=True;Keep Alive=90;" +
@@ -525,6 +528,7 @@ public class MySqlConnectionStringBuilderTests
 	[InlineData("Cancellation Timeout", 5)]
 	[InlineData("Connection Idle Timeout", 10u)]
 	[InlineData("DateTime Kind", MySqlDateTimeKind.Utc)]
+	[InlineData("DNS Check Interval", 15u)]
 	[InlineData("Force Synchronous", true)]
 	[InlineData("GUID Format", MySqlGuidFormat.Binary16)]
 	[InlineData("Ignore Command Transaction", true)]

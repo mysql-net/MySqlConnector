@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Net;
 using System.Security.Authentication;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Serialization;
@@ -6,7 +8,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
 
-internal sealed class ConnectionPool
+internal sealed class ConnectionPool : IDisposable
 {
 	public int Id { get; }
 
@@ -217,6 +219,30 @@ internal sealed class ConnectionPool
 			procedureCache = Interlocked.CompareExchange(ref m_procedureCache, newProcedureCache, null) ?? newProcedureCache;
 		}
 		return procedureCache;
+	}
+
+	public void Dispose()
+	{
+		Log.Debug("Pool{0} disposing connection pool", m_logArguments);
+#if NET6_0_OR_GREATER
+		m_dnsCheckTimer?.Dispose();
+		m_dnsCheckTimer = null;
+		m_reaperTimer?.Dispose();
+		m_reaperTimer = null;
+#else
+		if (m_dnsCheckTimer is not null)
+		{
+			using var dnsCheckWaitHandle = new ManualResetEvent(false);
+			m_dnsCheckTimer.Dispose(dnsCheckWaitHandle);
+			dnsCheckWaitHandle.WaitOne();
+		}
+		if (m_reaperTimer is not null)
+		{
+			using var reaperWaitHandle = new ManualResetEvent(false);
+			m_reaperTimer.Dispose(reaperWaitHandle);
+			reaperWaitHandle.WaitOne();
+		}
+#endif
 	}
 
 	/// <summary>
@@ -438,6 +464,7 @@ internal sealed class ConnectionPool
 		var connectionSettings = new ConnectionSettings(connectionStringBuilder);
 		var pool = new ConnectionPool(connectionSettings);
 		pool.StartReaperTask();
+		pool.StartDnsCheckTimer();
 		return pool;
 	}
 
@@ -485,6 +512,7 @@ internal sealed class ConnectionPool
 		{
 			s_mruCache = new(connectionString, pool);
 			pool.StartReaperTask();
+			pool.StartDnsCheckTimer();
 
 			// if we won the race to create the new pool, also store it under the original connection string
 			if (connectionString != normalizedConnectionString)
@@ -546,27 +574,136 @@ internal sealed class ConnectionPool
 
 	private void StartReaperTask()
 	{
-		if (ConnectionSettings.ConnectionIdleTimeout > 0)
+		if (ConnectionSettings.ConnectionIdleTimeout <= 0)
+			return;
+
+		var reaperInterval = TimeSpan.FromSeconds(Math.Max(1, Math.Min(60, ConnectionSettings.ConnectionIdleTimeout / 2)));
+
+#if NET6_0_OR_GREATER
+		m_reaperTimer = new PeriodicTimer(reaperInterval);
+		_ = RunTimer();
+
+		async Task RunTimer()
 		{
-			var reaperInterval = TimeSpan.FromSeconds(Math.Max(1, Math.Min(60, ConnectionSettings.ConnectionIdleTimeout / 2)));
-			m_reaperTask = Task.Run(async () =>
+			while (await m_reaperTimer.WaitForNextTickAsync().ConfigureAwait(false))
 			{
-				while (true)
+				try
 				{
-					var task = Task.Delay(reaperInterval);
+					using var source = new CancellationTokenSource(reaperInterval);
+					await ReapAsync(IOBehavior.Asynchronous, source.Token).ConfigureAwait(false);
+				}
+				catch
+				{
+					// do nothing; we'll try to reap again
+				}
+			}
+		}
+#else
+		m_reaperTimer = new Timer(t =>
+		{
+			var stopwatch = Stopwatch.StartNew();
+			try
+			{
+				using var source = new CancellationTokenSource(reaperInterval);
+				ReapAsync(IOBehavior.Synchronous, source.Token).GetAwaiter().GetResult();
+			}
+			catch
+			{
+				// do nothing; we'll try to reap again
+			}
+
+			// restart the timer, accounting for the time spent reaping
+			var delay = reaperInterval - stopwatch.Elapsed;
+			((Timer) t!).Change(delay < TimeSpan.Zero ? TimeSpan.Zero : delay, TimeSpan.FromMilliseconds(-1));
+		});
+		m_reaperTimer.Change(reaperInterval, TimeSpan.FromMilliseconds(-1));
+#endif
+	}
+
+	private void StartDnsCheckTimer()
+	{
+		if (ConnectionSettings.ConnectionProtocol != MySqlConnectionProtocol.Tcp || ConnectionSettings.DnsCheckInterval <= 0)
+			return;
+
+		var hostNames = ConnectionSettings.HostNames!;
+		var hostAddresses = new IPAddress[hostNames.Count][];
+
+#if NET6_0_OR_GREATER
+		m_dnsCheckTimer = new PeriodicTimer(TimeSpan.FromSeconds(ConnectionSettings.DnsCheckInterval));
+		_ = RunTimer();
+
+		async Task RunTimer()
+		{
+			while (await m_dnsCheckTimer.WaitForNextTickAsync().ConfigureAwait(false))
+			{
+				Log.Trace("Pool{0} checking for DNS changes", m_logArguments);
+				var hostNamesChanged = false;
+				for (var hostNameIndex = 0; hostNameIndex < hostNames.Count; hostNameIndex++)
+				{
 					try
 					{
-						using var source = new CancellationTokenSource(reaperInterval);
-						await ReapAsync(IOBehavior.Asynchronous, source.Token).ConfigureAwait(false);
+						var ipAddresses = await Dns.GetHostAddressesAsync(hostNames[hostNameIndex]).ConfigureAwait(false);
+						if (hostAddresses[hostNameIndex] is null)
+						{
+							hostAddresses[hostNameIndex] = ipAddresses;
+						}
+						else if (hostAddresses[hostNameIndex].Except(ipAddresses).Any())
+						{
+							Log.Debug("Pool{0} detected DNS change for HostName '{1}': {2} to {3}", m_logArguments[0], hostNames[hostNameIndex], string.Join<IPAddress>(',', hostAddresses[hostNameIndex]), string.Join<IPAddress>(',', ipAddresses));
+							hostAddresses[hostNameIndex] = ipAddresses;
+							hostNamesChanged = true;
+						}
 					}
-					catch
+					catch (Exception ex)
 					{
-						// do nothing; we'll try to reap again
+						// do nothing; we'll try again later
+						Log.Debug("Pool{0} DNS check failed; ignoring HostName '{1}': {2}", m_logArguments[0], hostNames[hostNameIndex], ex.Message);
 					}
-					await task.ConfigureAwait(false);
 				}
-			});
+				if (hostNamesChanged)
+				{
+					Log.Info("Pool{0} clearing pool due to DNS changes", m_logArguments);
+					await ClearAsync(IOBehavior.Asynchronous, CancellationToken.None).ConfigureAwait(false);
+				}
+			}
 		}
+#else
+		var interval = Math.Min(int.MaxValue / 1000, ConnectionSettings.DnsCheckInterval) * 1000;
+		m_dnsCheckTimer = new Timer(t =>
+		{
+			Log.Trace("Pool{0} checking for DNS changes", m_logArguments);
+			var hostNamesChanged = false;
+			for (var hostNameIndex = 0; hostNameIndex < hostNames.Count; hostNameIndex++)
+			{
+				try
+				{
+					var ipAddresses = Dns.GetHostAddresses(hostNames[hostNameIndex]);
+					if (hostAddresses[hostNameIndex] is null)
+					{
+						hostAddresses[hostNameIndex] = ipAddresses;
+					}
+					else if (hostAddresses[hostNameIndex].Except(ipAddresses).Any())
+					{
+						Log.Debug("Pool{0} detected DNS change for HostName '{1}': {2} to {3}", m_logArguments[0], hostNames[hostNameIndex], string.Join<IPAddress>(",", hostAddresses[hostNameIndex]), string.Join<IPAddress>(",", ipAddresses));
+						hostAddresses[hostNameIndex] = ipAddresses;
+						hostNamesChanged = true;
+					}
+				}
+				catch (Exception ex)
+				{
+					// do nothing; we'll try again later
+					Log.Debug("Pool{0} DNS check failed; ignoring HostName '{1}': {2}", m_logArguments[0], hostNames[hostNameIndex], ex.Message);
+				}
+			}
+			if (hostNamesChanged)
+			{
+				Log.Info("Pool{0} clearing pool due to DNS changes", m_logArguments);
+				ClearAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+			}
+			((Timer) t!).Change(interval, -1);
+		});
+		m_dnsCheckTimer.Change(interval, -1);
+#endif
 	}
 
 	private void AdjustHostConnectionCount(ServerSession session, int delta)
@@ -626,8 +763,14 @@ internal sealed class ConnectionPool
 	private readonly Dictionary<string, int>? m_hostSessions;
 	private readonly object[] m_logArguments;
 	private int m_generation;
-	private Task? m_reaperTask;
 	private uint m_lastRecoveryTime;
 	private int m_lastSessionId;
 	private Dictionary<string, CachedProcedure?>? m_procedureCache;
+#if NET6_0_OR_GREATER
+	private PeriodicTimer? m_dnsCheckTimer;
+	private PeriodicTimer? m_reaperTimer;
+#else
+	private Timer? m_dnsCheckTimer;
+	private Timer? m_reaperTimer;
+#endif
 }
