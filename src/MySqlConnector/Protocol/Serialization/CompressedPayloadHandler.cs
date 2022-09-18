@@ -128,12 +128,16 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 							var uncompressedData = new byte[uncompressedLength];
 							using var compressedStream = new MemoryStream(payloadReadBytes.Array!, payloadReadBytes.Offset, payloadReadBytes.Count);
 							using var decompressingStream = new ZLibStream(compressedStream, CompressionMode.Decompress);
+#if NET7_0_OR_GREATER
+							var totalBytesRead = decompressingStream.ReadAtLeast(uncompressedData, uncompressedLength, throwOnEndOfStream: false);
+#else
 							int bytesRead, totalBytesRead = 0;
 							do
 							{
 								bytesRead = decompressingStream.Read(uncompressedData, totalBytesRead, uncompressedLength - totalBytesRead);
 								totalBytesRead += bytesRead;
 							} while (bytesRead > 0);
+#endif
 							if (totalBytesRead != uncompressedLength && protocolErrorBehavior == ProtocolErrorBehavior.Throw)
 								return ValueTaskExtensions.FromException<int>(new InvalidOperationException("Expected to read {0:n0} uncompressed bytes but only read {1:n0}".FormatInvariant(uncompressedLength, totalBytesRead)));
 							m_remainingData = new(uncompressedData, 0, totalBytesRead);
