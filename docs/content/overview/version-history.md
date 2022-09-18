@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-08-26
+lastmod: 2022-09-18
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,22 @@ weight: 30
 ---
 
 # Version History
+
+### 2.2.0 Beta 1
+
+* Support .NET 7.0.
+  * Add `MySqlDataSource`, an implementation of `DbDataSource` for MySQL: [#1208](https://github.com/mysql-net/MySqlConnector/issues/1208).
+  * Use source-generated regular expressions.
+  * Use UTF-8 literals to perform UTF-8 conversion at compile-time instead of runtime.
+* Add `DNS Check Interval` connection string option: [#1201](https://github.com/mysql-net/MySqlConnector/issues/1201).
+* Support restrictions in `MySqlConnection.GetSchema`.
+  * Schema collections are code-generated: [#1190](https://github.com/mysql-net/MySqlConnector/pull/1190).
+* Use user-provided callbacks when opening new connection to `KILL QUERY`: [#1179](https://github.com/mysql-net/MySqlConnector/issues/1179).
+* **Possibly Breaking** Normalize the order of keys in the connection string returned by `MySqlConnectionStringBuilder.ConnectionString`: [#1217](https://github.com/mysql-net/MySqlConnector/issues/1217).
+* **Possibly Breaking** Update dependencies.
+  * Update System.Diagnostics.DiagnosticSource to 6.0.0.
+  * Update System.Threading.Tasks.Extensions to 4.5.4: [#1144](https://github.com/mysql-net/MySqlConnector/issues/1144).
+* **Breaking** Drop support for .NET 4.5: [#1209](https://github.com/mysql-net/MySqlConnector/issues/1209).
 
 ### 2.1.13
 
