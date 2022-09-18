@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Net;
 using System.Security.Authentication;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Serialization;
@@ -6,7 +7,9 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
 
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable
 internal sealed class ConnectionPool
+#pragma warning restore CA1001 // Types that own disposable fields should be disposable
 {
 	public int Id { get; }
 
@@ -438,6 +441,7 @@ internal sealed class ConnectionPool
 		var connectionSettings = new ConnectionSettings(connectionStringBuilder);
 		var pool = new ConnectionPool(connectionSettings);
 		pool.StartReaperTask();
+		pool.StartDnsCheckTimer();
 		return pool;
 	}
 
@@ -485,6 +489,7 @@ internal sealed class ConnectionPool
 		{
 			s_mruCache = new(connectionString, pool);
 			pool.StartReaperTask();
+			pool.StartDnsCheckTimer();
 
 			// if we won the race to create the new pool, also store it under the original connection string
 			if (connectionString != normalizedConnectionString)
@@ -569,6 +574,92 @@ internal sealed class ConnectionPool
 		}
 	}
 
+	private void StartDnsCheckTimer()
+	{
+		if (ConnectionSettings.ConnectionProtocol != MySqlConnectionProtocol.Tcp || ConnectionSettings.DnsCheckInterval <= 0)
+			return;
+
+		var hostNames = ConnectionSettings.HostNames!;
+		var hostAddresses = new IPAddress[hostNames.Count][];
+
+#if NET6_0_OR_GREATER
+		m_dnsCheckTimer = new PeriodicTimer(TimeSpan.FromSeconds(ConnectionSettings.DnsCheckInterval));
+		_ = RunTimer();
+
+		async Task RunTimer()
+		{
+			while (await m_dnsCheckTimer.WaitForNextTickAsync().ConfigureAwait(false))
+			{
+				Log.Trace("Pool{0} checking for DNS changes", m_logArguments);
+				var hostNamesChanged = false;
+				for (var hostNameIndex = 0; hostNameIndex < hostNames.Count; hostNameIndex++)
+				{
+					try
+					{
+						var ipAddresses = await Dns.GetHostAddressesAsync(hostNames[hostNameIndex]).ConfigureAwait(false);
+						if (hostAddresses[hostNameIndex] is null)
+						{
+							hostAddresses[hostNameIndex] = ipAddresses;
+						}
+						else if (hostAddresses[hostNameIndex].Except(ipAddresses).Any())
+						{
+							Log.Debug("Pool{0} detected DNS change for HostName '{1}': {2} to {3}", m_logArguments[0], hostNames[hostNameIndex], string.Join<IPAddress>(',', hostAddresses[hostNameIndex]), string.Join<IPAddress>(',', ipAddresses));
+							hostAddresses[hostNameIndex] = ipAddresses;
+							hostNamesChanged = true;
+						}
+					}
+					catch (Exception ex)
+					{
+						// do nothing; we'll try again later
+						Log.Debug("Pool{0} DNS check failed; ignoring HostName '{1}': {2}", m_logArguments[0], hostNames[hostNameIndex], ex.Message);
+					}
+				}
+				if (hostNamesChanged)
+				{
+					Log.Info("Pool{0} clearing pool due to DNS changes", m_logArguments);
+					await ClearAsync(IOBehavior.Asynchronous, CancellationToken.None).ConfigureAwait(false);
+				}
+			}
+		}
+#else
+		var interval = Math.Min(int.MaxValue / 1000, ConnectionSettings.DnsCheckInterval) * 1000;
+		m_dnsCheckTimer = new Timer(t =>
+		{
+			Log.Trace("Pool{0} checking for DNS changes", m_logArguments);
+			var hostNamesChanged = false;
+			for (var hostNameIndex = 0; hostNameIndex < hostNames.Count; hostNameIndex++)
+			{
+				try
+				{
+					var ipAddresses = Dns.GetHostAddresses(hostNames[hostNameIndex]);
+					if (hostAddresses[hostNameIndex] is null)
+					{
+						hostAddresses[hostNameIndex] = ipAddresses;
+					}
+					else if (hostAddresses[hostNameIndex].Except(ipAddresses).Any())
+					{
+						Log.Debug("Pool{0} detected DNS change for HostName '{1}': {2} to {3}", m_logArguments[0], hostNames[hostNameIndex], string.Join<IPAddress>(",", hostAddresses[hostNameIndex]), string.Join<IPAddress>(",", ipAddresses));
+						hostAddresses[hostNameIndex] = ipAddresses;
+						hostNamesChanged = true;
+					}
+				}
+				catch (Exception ex)
+				{
+					// do nothing; we'll try again later
+					Log.Debug("Pool{0} DNS check failed; ignoring HostName '{1}': {2}", m_logArguments[0], hostNames[hostNameIndex], ex.Message);
+				}
+			}
+			if (hostNamesChanged)
+			{
+				Log.Info("Pool{0} clearing pool due to DNS changes", m_logArguments);
+				ClearAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+			}
+			((Timer) t!).Change(interval, -1);
+		});
+		m_dnsCheckTimer.Change(interval, -1);
+#endif
+	}
+
 	private void AdjustHostConnectionCount(ServerSession session, int delta)
 	{
 		if (m_hostSessions is not null)
@@ -630,4 +721,9 @@ internal sealed class ConnectionPool
 	private uint m_lastRecoveryTime;
 	private int m_lastSessionId;
 	private Dictionary<string, CachedProcedure?>? m_procedureCache;
+#if NET6_0_OR_GREATER
+	private PeriodicTimer? m_dnsCheckTimer;
+#else
+	private Timer? m_dnsCheckTimer;
+#endif
 }

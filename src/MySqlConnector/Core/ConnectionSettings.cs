@@ -119,6 +119,7 @@ internal sealed class ConnectionSettings
 			throw new MySqlException("MaximumPoolSize must be greater than or equal to MinimumPoolSize");
 		MinimumPoolSize = ToSigned(csb.MinimumPoolSize);
 		MaximumPoolSize = ToSigned(csb.MaximumPoolSize);
+		DnsCheckInterval = ToSigned(csb.DnsCheckInterval);
 
 		// Other Options
 		AllowLoadLocalInfile = csb.AllowLoadLocalInfile;
@@ -213,6 +214,7 @@ internal sealed class ConnectionSettings
 	public int ConnectionIdleTimeout { get; }
 	public int MinimumPoolSize { get; }
 	public int MaximumPoolSize { get; }
+	public int DnsCheckInterval { get; }
 
 	// Other Options
 	public bool AllowLoadLocalInfile { get; }
@@ -299,6 +301,7 @@ internal sealed class ConnectionSettings
 		ConnectionIdleTimeout = other.ConnectionIdleTimeout;
 		MinimumPoolSize = other.MinimumPoolSize;
 		MaximumPoolSize = other.MaximumPoolSize;
+		DnsCheckInterval = other.DnsCheckInterval;
 
 		AllowLoadLocalInfile = other.AllowLoadLocalInfile;
 		AllowPublicKeyRetrieval = other.AllowPublicKeyRetrieval;

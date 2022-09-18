@@ -404,6 +404,19 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 		set => MySqlConnectionStringOption.MaximumPoolSize.SetValue(this, value);
 	}
 
+	/// <summary>
+	/// The number of seconds between checks for DNS changes, or 0 to disable periodic checks.
+	/// </summary>
+	[Category("Pooling")]
+	[DefaultValue(0u)]
+	[Description("The number of seconds between checks for DNS changes.")]
+	[DisplayName("DNS Check Interval")]
+	public uint DnsCheckInterval
+	{
+		get => MySqlConnectionStringOption.DnsCheckInterval.GetValue(this);
+		set => MySqlConnectionStringOption.DnsCheckInterval.SetValue(this, value);
+	}
+
 	// Other Options
 
 	/// <summary>
@@ -915,6 +928,7 @@ internal abstract partial class MySqlConnectionStringOption
 	public static readonly MySqlConnectionStringValueOption<uint> ConnectionIdleTimeout;
 	public static readonly MySqlConnectionStringValueOption<uint> MinimumPoolSize;
 	public static readonly MySqlConnectionStringValueOption<uint> MaximumPoolSize;
+	public static readonly MySqlConnectionStringValueOption<uint> DnsCheckInterval;
 
 	// Other Options
 	public static readonly MySqlConnectionStringValueOption<bool> AllowLoadLocalInfile;
@@ -1117,6 +1131,10 @@ internal abstract partial class MySqlConnectionStringOption
 		AddOption(MaximumPoolSize = new(
 			keys: new[] { "Maximum Pool Size", "Max Pool Size", "MaximumPoolSize", "maxpoolsize" },
 			defaultValue: 100u));
+
+		AddOption(DnsCheckInterval = new(
+			keys: new[] { "DNS Check Interval", "DnsCheckInterval" },
+			defaultValue: 0u));
 
 		// Other Options
 		AddOption(AllowLoadLocalInfile = new(
