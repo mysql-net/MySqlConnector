@@ -37,6 +37,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 | [Database](../MySqlConnectionStringBuilder/Database/) { get; set; } | (Optional) The case-sensitive name of the initial database to use. This may be required if the MySQL user account only has access rights to particular databases on the server. |
 | [DateTimeKind](../MySqlConnectionStringBuilder/DateTimeKind/) { get; set; } | The [`DateTimeKind`](../MySqlConnectionStringBuilder/DateTimeKind/) to use when deserializing `DATETIME` values. |
 | [DefaultCommandTimeout](../MySqlConnectionStringBuilder/DefaultCommandTimeout/) { get; set; } | The length of time (in seconds) each command can execute before the query is cancelled on the server, or zero to disable timeouts. |
+| [DnsCheckInterval](../MySqlConnectionStringBuilder/DnsCheckInterval/) { get; set; } | The number of seconds between checks for DNS changes, or 0 to disable periodic checks. |
 | [ForceSynchronous](../MySqlConnectionStringBuilder/ForceSynchronous/) { get; set; } | Forces all async methods to execute synchronously. This can be useful for debugging. |
 | [GuidFormat](../MySqlConnectionStringBuilder/GuidFormat/) { get; set; } | Determines which column type (if any) should be read as a Guid. |
 | [IgnoreCommandTransaction](../MySqlConnectionStringBuilder/IgnoreCommandTransaction/) { get; set; } | Does not check the [`Transaction`](../MySqlCommand/Transaction/) property for validity when executing a command. |
@@ -44,6 +45,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 | [InteractiveSession](../MySqlConnectionStringBuilder/InteractiveSession/) { get; set; } | Instructs the MySQL server that this is an interactive session. |
 | override [Item](../MySqlConnectionStringBuilder/Item/) { get; set; } | Retrieves an option value by name. |
 | [Keepalive](../MySqlConnectionStringBuilder/Keepalive/) { get; set; } | TCP Keepalive idle time (in seconds), or 0 to use OS defaults. |
+| override [Keys](../MySqlConnectionStringBuilder/Keys/) { get; } | Returns an ICollection that contains the keys in the [`MySqlConnectionStringBuilder`](../MySqlConnectionStringBuilderType/). |
 | [LoadBalance](../MySqlConnectionStringBuilder/LoadBalance/) { get; set; } | Specifies how load is distributed across backend servers. |
 | [MaximumPoolSize](../MySqlConnectionStringBuilder/MaximumPoolSize/) { get; set; } | The maximum number of connections allowed in the pool. |
 | [MinimumPoolSize](../MySqlConnectionStringBuilder/MinimumPoolSize/) { get; set; } | The minimum number of connections to leave in the pool if [`ConnectionIdleTimeout`](../MySqlConnectionStringBuilder/ConnectionIdleTimeout/) is reached. |
