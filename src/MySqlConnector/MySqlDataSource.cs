@@ -91,7 +91,10 @@ public sealed class MySqlDataSource : DbDataSource
 	private async ValueTask DisposeAsync(IOBehavior ioBehavior)
 	{
 		if (Pool is not null)
+		{
 			await Pool.ClearAsync(ioBehavior, default).ConfigureAwait(false);
+			Pool.Dispose();
+		}
 		m_isDisposed = true;
 	}
 

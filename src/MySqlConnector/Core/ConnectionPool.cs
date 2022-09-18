@@ -8,9 +8,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
 
-#pragma warning disable CA1001 // Types that own disposable fields should be disposable
-internal sealed class ConnectionPool
-#pragma warning restore CA1001 // Types that own disposable fields should be disposable
+internal sealed class ConnectionPool : IDisposable
 {
 	public int Id { get; }
 
@@ -221,6 +219,30 @@ internal sealed class ConnectionPool
 			procedureCache = Interlocked.CompareExchange(ref m_procedureCache, newProcedureCache, null) ?? newProcedureCache;
 		}
 		return procedureCache;
+	}
+
+	public void Dispose()
+	{
+		Log.Debug("Pool{0} disposing connection pool", m_logArguments);
+#if NET6_0_OR_GREATER
+		m_dnsCheckTimer?.Dispose();
+		m_dnsCheckTimer = null;
+		m_reaperTimer?.Dispose();
+		m_reaperTimer = null;
+#else
+		if (m_dnsCheckTimer is not null)
+		{
+			using var dnsCheckWaitHandle = new ManualResetEvent(false);
+			m_dnsCheckTimer.Dispose(dnsCheckWaitHandle);
+			dnsCheckWaitHandle.WaitOne();
+		}
+		if (m_reaperTimer is not null)
+		{
+			using var reaperWaitHandle = new ManualResetEvent(false);
+			m_reaperTimer.Dispose(reaperWaitHandle);
+			reaperWaitHandle.WaitOne();
+		}
+#endif
 	}
 
 	/// <summary>
