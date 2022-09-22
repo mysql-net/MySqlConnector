@@ -310,7 +310,7 @@ weight: 30
 
 ### 1.0.0
 
-* **Breaking** Change namespace to `MySqlConnector`: [#827](https://github.com/mysql-net/MySqlConnector/issues/827).
+* **Breaking** Change namespace to `MySqlConnector`: [#824](https://github.com/mysql-net/MySqlConnector/issues/824).
 * **Breaking** Rename `MySqlClientFactory` to `MySqlConnectorFactory`: [#839](https://github.com/mysql-net/MySqlConnector/issues/839).
 * **Breaking** All `MySqlConnectionStringBuilder` string properties return `""` (not `null`) when unset: [#837](https://github.com/mysql-net/MySqlConnector/issues/837).
 * **Breaking** Remove `MySqlInfoMessageEventArgs.errors` property; use `.Errors` instead.
