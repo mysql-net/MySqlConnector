@@ -1,16 +1,16 @@
 # Tests
 
-## Side-by-side Tests
+## Integration Tests
 
-The `SideBySide` project is intended to verify that MySqlConnector doesn't break compatibility
-with Connector/NET and that [known bugs have been fixed](https://mysqlconnector.net/tutorials/migrating-from-connector-net/#fixed-bugs).
+The `IntegrationTests` project is intended to verify that MySqlConnector performs as expected with various MySQL-compatible servers.
+It also verifies that MySqlConnector and MySQL Connector/NET (MySql.Data) have similar behavior, except where MySqlConnector [fixes known bugs](https://mysqlconnector.net/tutorials/migrating-from-connector-net/#fixed-bugs) or makes other [non-backwards-compatible changes](https://mysqlconnector.net/tutorials/migrating-from-connector-net/).
 
 The tests require a MySQL server. The simplest way to run one is with [Docker](https://www.docker.com/community-edition):
 
     docker run -d --rm --name mysqlconnector -e MYSQL_ROOT_PASSWORD=pass -p 3306:3306 --tmpfs /var/lib/mysql mysql:8.0 --max-allowed-packet=96M --character-set-server=utf8mb4 --log-bin-trust-function-creators=1 --local-infile=1 --max-connections=250
     docker exec mysqlconnector mysql -uroot -ppass -e "INSTALL COMPONENT 'file://component_query_attributes';"
 
-Copy the file `SideBySide/config.json.example` to `SideBySide/config.json`, then edit
+Copy the file `IntegrationTests/config.json.example` to `IntegrationTests/config.json`, then edit
 the `config.json` file in order to connect to your server. If you are using the Docker
 command above, then the default options will work and do not need to be modified.
 Otherwise, set the following options appropriately:
@@ -43,7 +43,7 @@ Otherwise, set the following options appropriately:
 
 There are two ways to run the tests: command line and Visual Studio.
 
-### Visual Studio 2017
+### Visual Studio 2022
 
 After building the solution, you should see a list of tests in the Test Explorer.  Click "Run All" to run them.
 
@@ -52,13 +52,13 @@ After building the solution, you should see a list of tests in the Test Explorer
 To run the tests against MySqlConnector:
 
 ```
-cd tests\SideBySide
+cd tests\IntegrationTests
 dotnet test -c Release
 ```
 
 To run the tests against MySql.Data:
 
 ```
-cd tests\SideBySide
+cd tests\IntegrationTests
 dotnet restore /p:Configuration=MySqlData && dotnet test -c MySqlData
 ```

@@ -68,7 +68,7 @@ dotnet restore
 dotnet test tests\MySqlConnector.Tests
 ```
 
-To run the side-by-side tests, see [the instructions](tests/README.md).
+To run the integration tests, see [the instructions](tests/README.md).
 
 ## Goals
 
