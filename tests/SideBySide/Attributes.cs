@@ -22,12 +22,12 @@ public class SkippableFactAttribute : FactAttribute
 		Skip = TestUtilities.GetSkipReason(serverFeatures, configSettings);
 	}
 
-	public string Baseline
+	public string MySqlData
 	{
 		get => null;
 		set
 		{
-#if BASELINE
+#if MYSQL_DATA
 			Skip = value;
 #endif
 		}
@@ -56,12 +56,12 @@ public class SkippableTheoryAttribute : TheoryAttribute
 		Skip = TestUtilities.GetSkipReason(serverFeatures, configSettings);
 	}
 
-	public string Baseline
+	public string MySqlData
 	{
 		get => null;
 		set
 		{
-#if BASELINE
+#if MYSQL_DATA
 			Skip = value;
 #endif
 		}

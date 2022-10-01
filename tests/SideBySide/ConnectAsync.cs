@@ -1,5 +1,5 @@
 using System.Security.Authentication;
-#if !BASELINE
+#if !MYSQL_DATA
 using MySqlConnector.Authentication.Ed25519;
 #endif
 
@@ -58,7 +58,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		cts.Cancel();
 
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
-#if BASELINE
+#if MYSQL_DATA
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await connection.OpenAsync(cts.Token));
 #else
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await connection.OpenAsync(cts.Token));
@@ -80,7 +80,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		Assert.Equal(ConnectionState.Open, connection.State);
 	}
 
-	[SkippableFact(ConfigSettings.TcpConnection, Baseline = "https://bugs.mysql.com/bug.php?id=81650")]
+	[SkippableFact(ConfigSettings.TcpConnection, MySqlData = "https://bugs.mysql.com/bug.php?id=81650")]
 	public async Task ConnectMultipleHostNames()
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
@@ -136,7 +136,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 	}
 
 
-	[SkippableFact(ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=94760")]
+	[SkippableFact(ServerFeatures.Timeout, MySqlData = "https://bugs.mysql.com/bug.php?id=94760")]
 	public async Task ConnectTimeoutAsyncCancellationToken()
 	{
 		// skip on Azure Pipelines, as this one seems to consistently time out
@@ -160,7 +160,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		TestUtilities.AssertDuration(stopwatch, 1900, 1500);
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public async Task UsePasswordProvider()
 	{
@@ -360,7 +360,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		}
 	}
 
-	[SkippableFact(ServerFeatures.SessionTrack, ConfigSettings.SecondaryDatabase, Baseline = "https://bugs.mysql.com/bug.php?id=89085")]
+	[SkippableFact(ServerFeatures.SessionTrack, ConfigSettings.SecondaryDatabase, MySqlData = "https://bugs.mysql.com/bug.php?id=89085")]
 	public async Task UseDatabase()
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
@@ -426,7 +426,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		await connection.OpenAsync();
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[SkippableFact(ServerFeatures.Ed25519)]
 	public async Task Ed25519Authentication()
 	{
@@ -460,7 +460,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		await connection.OpenAsync();
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[SkippableFact(ConfigSettings.GSSAPIUser | ConfigSettings.HasKerberos)]
 	public async Task GoodServerSPN()
 	{
@@ -527,10 +527,10 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 	readonly DatabaseFixture m_database;
 }
 
-#if BASELINE
-internal static class BaselineConnectionHelpers
+#if MYSQL_DATA
+internal static class MySqlDataConnectionHelpers
 {
-	// Baseline connector capitalizes the 'B' in 'Database'
+	// MySql.Data capitalizes the 'B' in 'Database'
 	public static Task ChangeDatabaseAsync(this MySqlConnection connection, string databaseName) => connection.ChangeDataBaseAsync(databaseName);
 }
 #endif

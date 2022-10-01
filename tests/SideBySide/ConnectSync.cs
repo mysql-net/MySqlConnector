@@ -19,7 +19,7 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		Assert.Equal(ConnectionState.Closed, connection.State);
 		var ex = Assert.Throws<MySqlException>(connection.Open);
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.True(ex.IsTransient);
 #endif
 		Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
@@ -60,7 +60,7 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		csb.Database = "wrong_database";
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		var ex = Assert.Throws<MySqlException>(connection.Open);
-#if !BASELINE // https://bugs.mysql.com/bug.php?id=78426
+#if !MYSQL_DATA // https://bugs.mysql.com/bug.php?id=78426
 		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.ErrorCode != default)
 			Assert.Equal(MySqlErrorCode.UnknownDatabase, ex.ErrorCode);
 #endif
@@ -74,14 +74,14 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		csb.Password = "wrong";
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		var ex = Assert.Throws<MySqlException>(connection.Open);
-#if !BASELINE // https://bugs.mysql.com/bug.php?id=78426
+#if !MYSQL_DATA // https://bugs.mysql.com/bug.php?id=78426
 		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.ErrorCode != default)
 			Assert.Equal(MySqlErrorCode.AccessDenied, ex.ErrorCode);
 #endif
 		Assert.Equal(ConnectionState.Closed, connection.State);
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Theory]
 	[InlineData("server=mysqld.sock;Protocol=Unix;LoadBalance=Failover")]
 	[InlineData("server=pipename;Protocol=Pipe;LoadBalance=Failover")]
@@ -106,7 +106,7 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		var sw = Stopwatch.StartNew();
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		Assert.Throws<MySqlException>(connection.Open);
-#if !BASELINE
+#if !MYSQL_DATA
 		TestUtilities.AssertDuration(sw, 900, 500);
 #else
 		TestUtilities.AssertDuration(sw, 0, 500);
@@ -168,7 +168,7 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		}
 	}
 
-	[SkippableFact(ConfigSettings.TcpConnection, Baseline = "https://bugs.mysql.com/bug.php?id=81650")]
+	[SkippableFact(ConfigSettings.TcpConnection, MySqlData = "https://bugs.mysql.com/bug.php?id=81650")]
 	public void ConnectMultipleHostNames()
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
@@ -231,7 +231,7 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		TestUtilities.AssertDuration(stopwatch, 2900, 1500);
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void UsePasswordProvider()
 	{
@@ -432,7 +432,7 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		}
 	}
 
-	[SkippableFact(ServerFeatures.SessionTrack, ConfigSettings.SecondaryDatabase, Baseline = "https://bugs.mysql.com/bug.php?id=89085")]
+	[SkippableFact(ServerFeatures.SessionTrack, ConfigSettings.SecondaryDatabase, MySqlData = "https://bugs.mysql.com/bug.php?id=89085")]
 	public void UseDatabase()
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
@@ -465,7 +465,7 @@ create table `{AppConfig.SecondaryDatabase}`.changedb2(value int not null);");
 
 		using var transaction = connection.BeginTransaction();
 
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal(transaction, connection.CurrentTransaction);
 #endif
 		using (var command = new MySqlCommand("SELECT 'abc';", connection, transaction))
@@ -475,7 +475,7 @@ create table `{AppConfig.SecondaryDatabase}`.changedb2(value int not null);");
 
 		connection.ChangeDatabase(AppConfig.SecondaryDatabase);
 
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal(transaction, connection.CurrentTransaction);
 #endif
 
@@ -508,7 +508,7 @@ create table `{AppConfig.SecondaryDatabase}`.changedb2(value int not null);");
 		Assert.Equal(csb.Database, connection.Database);
 
 		csb.Database = AppConfig.SecondaryDatabase;
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<MySqlException>(() =>
 #else
 		Assert.Throws<InvalidOperationException>(() =>

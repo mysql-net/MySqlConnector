@@ -49,7 +49,7 @@ public class Transaction : IClassFixture<TransactionFixture>
 	[InlineData(IsolationLevel.RepeatableRead, "repeatable read")]
 	[InlineData(IsolationLevel.Serializable, "serializable")]
 	[InlineData(IsolationLevel.Unspecified, "repeatable read")]
-#if !BASELINE
+#if !MYSQL_DATA
 	[InlineData(IsolationLevel.Snapshot, "repeatable read")]
 #endif
 	public void DbConnectionIsolationLevel(IsolationLevel inputIsolationLevel, string expectedTransactionIsolationLevel)
@@ -69,7 +69,7 @@ public class Transaction : IClassFixture<TransactionFixture>
 		Assert.Contains(expectedTransactionIsolationLevel.ToLower(), lastIsolationLevelQuery.ToLower());
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[SkippableTheory(ServerFeatures.GlobalLog)]
 	[InlineData(IsolationLevel.ReadUncommitted, "start transaction")]
 	[InlineData(IsolationLevel.ReadCommitted, "start transaction")]
@@ -210,7 +210,7 @@ public class Transaction : IClassFixture<TransactionFixture>
 		Assert.Equal(new int[0], results);
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public async Task RollbackAsync()
 	{
@@ -268,7 +268,7 @@ public class Transaction : IClassFixture<TransactionFixture>
 		Assert.Equal(new int[0], results);
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void SavepointNullName()
 	{

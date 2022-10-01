@@ -111,7 +111,7 @@ INSERT INTO bug_1096 (`Name`) VALUES ('Demo-Name');");
 		cmd.CommandText = "select 0 as zero, 1 as one;";
 		using var reader = cmd.ExecuteReader();
 		Assert.False(reader.NextResult());
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<Exception>(() => reader.GetOrdinal("zero"));
 #else
 		Assert.Throws<InvalidOperationException>(() => reader.GetOrdinal("zero"));
@@ -185,7 +185,7 @@ insert into query_test (value) VALUES (1);
 		cmd.CommandText = "SELECT 1;";
 		using var reader = cmd.ExecuteReader();
 		reader.Dispose();
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<MySqlException>(() => reader.Read());
 #else
 		Assert.Throws<InvalidOperationException>(() => reader.Read());
@@ -199,7 +199,7 @@ insert into query_test (value) VALUES (1);
 		cmd.CommandText = "SELECT 1;";
 		using var reader = cmd.ExecuteReader();
 		reader.Dispose();
-#if BASELINE
+#if MYSQL_DATA
 		await Assert.ThrowsAsync<MySqlException>(() => reader.ReadAsync());
 #else
 		await Assert.ThrowsAsync<InvalidOperationException>(() => reader.ReadAsync());
@@ -213,7 +213,7 @@ insert into query_test (value) VALUES (1);
 		cmd.CommandText = "SELECT 1;";
 		using var reader = cmd.ExecuteReader();
 		reader.Dispose();
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<MySqlException>(() => reader.NextResult());
 #else
 		Assert.Throws<InvalidOperationException>(() => reader.NextResult());
@@ -227,7 +227,7 @@ insert into query_test (value) VALUES (1);
 		cmd.CommandText = "SELECT 1;";
 		using var reader = cmd.ExecuteReader();
 		reader.Dispose();
-#if BASELINE
+#if MYSQL_DATA
 		await Assert.ThrowsAsync<MySqlException>(() => reader.NextResultAsync());
 #else
 		await Assert.ThrowsAsync<InvalidOperationException>(() => reader.NextResultAsync());
@@ -267,7 +267,7 @@ create table query_invalid_sql(id integer not null primary key auto_increment);"
 	[Fact]
 	public async Task MultipleReaders()
 	{
-#if BASELINE
+#if MYSQL_DATA
 		var exceptionType = typeof(MySqlException);
 #else
 		var exceptionType = typeof(InvalidOperationException);
@@ -392,7 +392,7 @@ insert into query_get_name (id, value) VALUES (1, 'one'), (2, 'two');
 				Assert.Equal("id", reader.GetName(0));
 
 				Assert.False(await reader.NextResultAsync());
-#if BASELINE
+#if MYSQL_DATA
 				Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(0));
 #else
 				Assert.Throws<InvalidOperationException>(() => reader.GetName(0));
@@ -409,7 +409,7 @@ insert into query_get_name (id, value) VALUES (1, 'one'), (2, 'two');
 				Assert.Equal("id", reader.GetName(0));
 
 				Assert.False(await reader.NextResultAsync());
-#if BASELINE
+#if MYSQL_DATA
 				Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(0));
 #else
 				Assert.Throws<InvalidOperationException>(() => reader.GetName(0));
@@ -519,7 +519,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		}
 	}
 
-	[SkippableFact(Baseline = "http://bugs.mysql.com/bug.php?id=82292")]
+	[SkippableFact(MySqlData = "http://bugs.mysql.com/bug.php?id=82292")]
 	public void DapperNullableBoolNullFirst()
 	{
 		// adapted from https://github.com/StackExchange/dapper-dot-net/issues/552
@@ -688,7 +688,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		Assert.True(reader.Read());
 		Assert.Equal(2.000m, reader.GetValue(0));
 		Assert.Equal(2.000m, reader.GetDecimal(0));
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal((byte) 2, reader.GetByte(0));
 		Assert.Equal((sbyte) 2, reader.GetSByte(0));
 #endif
@@ -728,7 +728,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 	}
 
 	[Theory]
-#if BASELINE
+#if MYSQL_DATA
 	[InlineData("null", typeof(string))]
 #else
 	[InlineData("null", typeof(object))]
@@ -771,7 +771,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		cmd.CommandText = "select 1;";
 		using var reader = cmd.ExecuteReader();
 		Assert.False(reader.NextResult());
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<IndexOutOfRangeException>(() => reader.GetFieldType(0));
 #else
 		Assert.Throws<InvalidOperationException>(() => reader.GetFieldType(0));
@@ -779,7 +779,7 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 	}
 
 	[Theory]
-#if BASELINE
+#if MYSQL_DATA
 	[InlineData("null", "VARCHAR")]
 #else
 	[InlineData("null", "NULL")]
@@ -821,14 +821,14 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		cmd.CommandText = "select 1;";
 		using var reader = cmd.ExecuteReader();
 		Assert.False(reader.NextResult());
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<IndexOutOfRangeException>(() => reader.GetDataTypeName(0));
 #else
 		Assert.Throws<InvalidOperationException>(() => reader.GetDataTypeName(0));
 #endif
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void GetColumnSchemaAfterNextResult()
 	{
@@ -935,7 +935,7 @@ insert into char_test (id, char1, char4, varchar1, varchar4) VALUES (1, '\'', 'b
 			Assert.False(reader.Read());
 		}
 
-#if !BASELINE
+#if !MYSQL_DATA
 		// can't repro test failure locally, but it fails on Appveyor
 		using (var command = new MySqlCommand("select id from char_test where varchar4 = @ch;", m_database.Connection))
 		{
@@ -1130,7 +1130,7 @@ create table command_behavior_single_row(id integer not null primary key);");
 			Assert.True(await reader.ReadAsync());
 			Assert.Equal(1, reader.GetInt32(0));
 			Assert.False(await reader.ReadAsync());
-#if !BASELINE
+#if !MYSQL_DATA
 			Assert.False(await reader.NextResultAsync());
 #endif
 		}
@@ -1166,7 +1166,7 @@ create table command_behavior_single_result(id integer not null primary key);");
 		}
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void NoBackslashEscapes()
 	{
@@ -1188,7 +1188,7 @@ create table command_behavior_single_result(id integer not null primary key);");
 	}
 #endif
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=97067")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=97067")]
 	public async Task QueryBit()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
@@ -1270,7 +1270,7 @@ insert into datatypes_tinyint1(value) values(0), (1), (2), (-1), (-128), (127);"
 		for (int i = 0; i < expected.Length; i++)
 		{
 			Assert.True(reader.Read());
-#if !BASELINE
+#if !MYSQL_DATA
 			// https://bugs.mysql.com/bug.php?id=99091
 			Assert.Equal((sbyte) expected[i], reader.GetSByte(0));
 			if (treatTinyAsBoolean)
@@ -1279,7 +1279,7 @@ insert into datatypes_tinyint1(value) values(0), (1), (2), (-1), (-128), (127);"
 			Assert.Equal((short) expected[i], reader.GetInt16(0));
 			Assert.Equal(expected[i], reader.GetInt32(0));
 			Assert.Equal((long) expected[i], reader.GetInt64(0));
-#if !BASELINE
+#if !MYSQL_DATA
 			// https://bugs.mysql.com/bug.php?id=99091
 			Assert.Equal(expected[i], reader.GetFieldValue<int>(0));
 #endif
@@ -1316,7 +1316,7 @@ $$";
 				Assert.Throws<MySqlException>(() => command.ExecuteNonQuery());
 		}
 
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal(MySqlErrorCode.DelimiterNotSupported, exception.ErrorCode);
 #else
 		Assert.Equal((int) MySqlErrorCode.ParseError, exception.Number);
@@ -1389,7 +1389,7 @@ insert into test_time(tm) values('00:00:00'),('01:01:01'),('00:00:00');");
 
 	[SkippableTheory(ServerFeatures.QueryAttributes)]
 	[InlineData(false)]
-#if !BASELINE
+#if !MYSQL_DATA
 	[InlineData(true)]
 #endif
 	public void QueryAttributesMultipleStatements(bool prepare)
@@ -1431,7 +1431,7 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 
 	[SkippableTheory(ServerFeatures.QueryAttributes)]
 	[InlineData(false)]
-#if !BASELINE // https://bugs.mysql.com/bug.php?id=105728
+#if !MYSQL_DATA // https://bugs.mysql.com/bug.php?id=105728
 	[InlineData(true)]
 #endif
 	public void QueryAttributeAndParameter(bool prepare)
@@ -1465,7 +1465,7 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 
 		Assert.Equal(8, reader.GetBytes(0, 0, null, 0, 0));
 		var buffer = new byte[10];
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<IndexOutOfRangeException>(() => reader.GetBytes(0, -1, buffer, 0, 8));
 		Assert.Throws<IndexOutOfRangeException>(() => reader.GetBytes(0, 0x1_0000_0000L, buffer, 0, 8));
 		Assert.Throws<IndexOutOfRangeException>(() => reader.GetBytes(0, 0, buffer, -1, 8));
@@ -1476,7 +1476,7 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 #endif
 		Assert.Throws<ArgumentException>(() => reader.GetBytes(0, 0, buffer, 0, 11));
 
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<IndexOutOfRangeException>(() => reader.GetBytes(0, 9, buffer, 0, 10));
 #else
 		Assert.Equal(0, reader.GetBytes(0, 9, buffer, 0, 10));
@@ -1492,7 +1492,7 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 		Assert.Equal(new byte[] { 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89 }, buffer);
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void GetBytesByName()
 	{
@@ -1521,7 +1521,7 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 		Assert.Equal(new byte[] { 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89 }, buffer);
 	}
 #endif
-	
+
 	class BoolTest
 	{
 		public int Id { get; set; }

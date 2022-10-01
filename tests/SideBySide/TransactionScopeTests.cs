@@ -11,7 +11,7 @@ public class TransactionScopeTests : IClassFixture<DatabaseFixture>
 
 	public static IEnumerable<object[]> ConnectionStrings = new[]
 	{
-#if BASELINE
+#if MYSQL_DATA
 		new object[] { "" },
 #else
 		new object[] { "UseXaTransactions=False" },
@@ -26,7 +26,7 @@ public class TransactionScopeTests : IClassFixture<DatabaseFixture>
 		using (new TransactionScope())
 		using (var connection = new MySqlConnection(AppConfig.ConnectionString + ";" + connectionString))
 		{
-#if !BASELINE
+#if !MYSQL_DATA
 			Assert.Throws<InvalidOperationException>(() => connection.EnlistTransaction(System.Transactions.Transaction.Current));
 #else
 			Assert.Throws<NullReferenceException>(() => connection.EnlistTransaction(System.Transactions.Transaction.Current));
@@ -245,7 +245,7 @@ public class TransactionScopeTests : IClassFixture<DatabaseFixture>
 			using var dbTransaction = conn.BeginTransaction();
 			conn.Execute("insert into transaction_scope_test(value) values(1), (2);", transaction: dbTransaction);
 
-#if BASELINE
+#if MYSQL_DATA
 			// With Connector/NET a MySqlTransaction can't roll back after TransactionScope has been completed;
 			// workaround is to explicitly dispose it first. In MySqlConnector (with AutoEnlist=false) they have
 			// independent lifetimes.
@@ -590,7 +590,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		}
 	}
 
-	[SkippableTheory(Baseline = "Different results")]
+	[SkippableTheory(MySqlData = "Different results")]
 	[MemberData(nameof(ConnectionStrings))]
 	public void ReusingConnectionInOneTransactionReusesPhysicalConnection(string connectionString)
 	{
@@ -656,7 +656,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		await command.ExecuteNonQueryAsync(tokenSource.Token);
 	}
 
-	[SkippableFact(Baseline = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")]
+	[SkippableFact(MySqlData = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")]
 	public void CommitTwoTransactions()
 	{
 		m_database.Connection.Execute(@"drop table if exists transaction_scope_test_1;
@@ -683,7 +683,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		Assert.Equal(new[] { 3, 4 }, values2);
 	}
 
-	[SkippableFact(Baseline = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")]
+	[SkippableFact(MySqlData = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")]
 	public void RollBackTwoTransactions()
 	{
 		m_database.Connection.Execute(@"drop table if exists transaction_scope_test_1;
@@ -712,7 +712,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 	public void TwoSimultaneousConnectionsThrowsWithNonXaTransactions()
 	{
 		var connectionString = AppConfig.ConnectionString;
-#if !BASELINE
+#if !MYSQL_DATA
 		connectionString += ";UseXaTransactions=False";
 #endif
 
@@ -730,7 +730,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 	public void SimultaneousConnectionsWithTransactionScopeReadCommittedWithNonXaTransactions()
 	{
 		var connectionString = AppConfig.ConnectionString;
-#if !BASELINE
+#if !MYSQL_DATA
 		connectionString += ";UseXaTransactions=False";
 #endif
 
@@ -782,7 +782,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 	public void TwoDifferentConnectionStringsThrowsWithNonXaTransactions()
 	{
 		var connectionString = AppConfig.ConnectionString;
-#if !BASELINE
+#if !MYSQL_DATA
 		connectionString += ";UseXaTransactions=False";
 #endif
 
@@ -796,7 +796,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		}
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void CannotMixXaAndNonXaTransactions()
 	{

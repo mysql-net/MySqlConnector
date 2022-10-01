@@ -52,7 +52,7 @@ public class LoadDataInfileAsync : IClassFixture<DatabaseFixture>
 		Assert.Equal(20, rowCount);
 	}
 
-	[SkippableFact(ConfigSettings.LocalCsvFile | ConfigSettings.TrustedHost, Baseline = "Doesn't require trusted host for LOAD DATA LOCAL INFILE")]
+	[SkippableFact(ConfigSettings.LocalCsvFile | ConfigSettings.TrustedHost, MySqlData = "Doesn't require trusted host for LOAD DATA LOCAL INFILE")]
 	public async Task ThrowsNotSupportedExceptionForNotTrustedHostAndNotStream()
 	{
 		var insertInlineCommand = string.Format(m_loadDataInfileCommand, " LOCAL",

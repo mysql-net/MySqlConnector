@@ -31,7 +31,7 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 	public void NegativeCommandTimeout()
 	{
 		using var command = m_connection.CreateCommand();
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<ArgumentException>(() => command.CommandTimeout = -1);
 #else
 		Assert.Throws<ArgumentOutOfRangeException>(() => command.CommandTimeout = -1);
@@ -54,7 +54,7 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 		{
 			cmd.CommandTimeout = 2;
 			var sw = Stopwatch.StartNew();
-#if BASELINE
+#if MYSQL_DATA
 			var ex = Assert.Throws<MySqlException>(cmd.ExecuteReader);
 			Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
 			connectionState = ConnectionState.Closed;
@@ -80,7 +80,7 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 		{
 			cmd.CommandTimeout = 2;
 			var sw = Stopwatch.StartNew();
-#if BASELINE
+#if MYSQL_DATA
 			var exception = await Assert.ThrowsAsync<MySqlException>(cmd.ExecuteReaderAsync);
 			Assert.Contains("fatal error", exception.Message, StringComparison.OrdinalIgnoreCase);
 			connectionState = ConnectionState.Closed;
@@ -122,7 +122,7 @@ end;", m_connection))
 		cmd.CommandTimeout = 2;
 
 		var sw = Stopwatch.StartNew();
-#if BASELINE
+#if MYSQL_DATA
 		var ex = Assert.Throws<MySqlException>(cmd.ExecuteReader);
 		Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
 #else
@@ -153,7 +153,7 @@ end;", m_connection))
 			// the following call to a public API resets the internal timer
 			sw.Restart();
 
-#if BASELINE
+#if MYSQL_DATA
 			var ex = Assert.Throws<MySqlException>(() => reader.NextResult());
 			Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
 			connectionState = ConnectionState.Closed;
@@ -186,7 +186,7 @@ end;", m_connection))
 			// the following call to a public API resets the internal timer
 			sw.Restart();
 
-#if BASELINE
+#if MYSQL_DATA
 			var ex = await Assert.ThrowsAsync<MySqlException>(async () => await reader.NextResultAsync());
 			Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
 			connectionState = ConnectionState.Closed;
@@ -203,7 +203,7 @@ end;", m_connection))
 		Assert.Equal(connectionState, m_connection.State);
 	}
 
-	[SkippableFact(ServerFeatures.CancelSleepSuccessfully, Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully, MySqlData = "https://bugs.mysql.com/bug.php?id=88124")]
 	public void CommandTimeoutResetsOnReadSync()
 	{
 		var csb = new MySqlConnectionStringBuilder(m_connection.ConnectionString);
@@ -224,7 +224,7 @@ end;", m_connection))
 		Assert.Equal(ConnectionState.Open, m_connection.State);
 	}
 
-	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout, Baseline = "https://bugs.mysql.com/bug.php?id=88124")]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout, MySqlData = "https://bugs.mysql.com/bug.php?id=88124")]
 	public async Task CommandTimeoutResetsOnReadAsync()
 	{
 		var csb = new MySqlConnectionStringBuilder(m_connection.ConnectionString);
@@ -255,7 +255,7 @@ end;", m_connection))
 		{
 			cmd.CommandTimeout = 2;
 			var sw = Stopwatch.StartNew();
-#if BASELINE
+#if MYSQL_DATA
 			var ex = Assert.Throws<MySqlException>(cmd.ExecuteReader);
 			Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
 			connectionState = ConnectionState.Closed;
@@ -282,7 +282,7 @@ end;", m_connection))
 		{
 			cmd.CommandTimeout = 2;
 			var sw = Stopwatch.StartNew();
-#if BASELINE
+#if MYSQL_DATA
 			var ex = await Assert.ThrowsAsync<MySqlException>(cmd.ExecuteReaderAsync);
 			Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
 			connectionState = ConnectionState.Closed;

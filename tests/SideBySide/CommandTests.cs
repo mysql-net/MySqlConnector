@@ -140,7 +140,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 		Assert.Equal(7, await connection.ExecuteAsync(insert + select + delete + update));
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=88611")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=88611")]
 	public void CommandTransactionMustBeSet()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
@@ -211,7 +211,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
 		connection.Open();
 		using var cmd = new MySqlCommand("SELECT ?;", connection);
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<IndexOutOfRangeException>(() => cmd.ExecuteScalar());
 #else
 		Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
@@ -235,7 +235,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 		connection.Open();
 		using var cmd = new MySqlCommand("SELECT ?, ?;", connection);
 		cmd.Parameters.Add(new() { Value = 1 });
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<IndexOutOfRangeException>(() => cmd.ExecuteScalar());
 #else
 		Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
@@ -254,11 +254,11 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 		{
 			CommandType = CommandType.StoredProcedure,
 			Parameters = { param },
-#if !BASELINE
+#if !MYSQL_DATA
 			Attributes = { attr },
 #endif
 		};
-#if BASELINE
+#if MYSQL_DATA
 		cmd.Attributes.SetAttribute(attr);
 #endif
 		using var cmd2 = (MySqlCommand) cmd.Clone();
@@ -295,7 +295,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 		cmd.Cancel();
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=101507")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=101507")]
 	public void CancelCommandForClosedConnectionIsNoop()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
@@ -305,7 +305,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 		cmd.Cancel();
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=101507")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=101507")]
 	public void CancelCommandForDisposedConnectionIsNoop()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
@@ -345,7 +345,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 		using var cmd2 = connection.CreateCommand();
 		cmd2.CommandText = "SELECT 'abc';";
 
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<MySqlException>(() => cmd2.ExecuteReader());
 #else
 		Assert.Throws<InvalidOperationException>(() => cmd2.ExecuteReader());
@@ -354,7 +354,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 
 	private static string GetIgnoreCommandTransactionConnectionString()
 	{
-#if BASELINE
+#if MYSQL_DATA
 		return AppConfig.ConnectionString;
 #else
 		return new MySqlConnectionStringBuilder(AppConfig.ConnectionString)

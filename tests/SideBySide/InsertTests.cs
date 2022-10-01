@@ -1,5 +1,5 @@
 using System.Numerics;
-#if BASELINE
+#if MYSQL_DATA
 using MySql.Data.Types;
 #endif
 
@@ -133,7 +133,7 @@ INSERT INTO insert_ai (text) VALUES ('test2');", m_database.Connection);
 		}
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=97061")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=97061")]
 	public async Task LastInsertedIdLockTables()
 	{
 		await m_database.Connection.ExecuteAsync(@"drop table if exists insert_ai;
@@ -154,7 +154,7 @@ UNLOCK TABLES;", m_database.Connection);
 		}
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=97061")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=97061")]
 	public async Task LastInsertedIdInsertForeignKey()
 	{
 		await m_database.Connection.ExecuteAsync(@"drop table if exists TestTableWithForeignKey;
@@ -289,7 +289,7 @@ create table insert_time(value TIME({precision}));");
 		}
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=73788")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=73788")]
 	public void InsertDateTimeOffset()
 	{
 		m_database.Connection.Execute(@"drop table if exists insert_datetimeoffset;
@@ -321,7 +321,7 @@ create table insert_datetimeoffset(rowid integer not null primary key auto_incre
 		Assert.Equal(value.datetimeoffset1.Value.UtcDateTime, datetime);
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=91199")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=91199")]
 	public void InsertMySqlDateTime()
 	{
 		m_database.Connection.Execute(@"drop table if exists insert_mysqldatetime;
@@ -345,7 +345,7 @@ create table insert_mysqldatetime(rowid integer not null primary key auto_increm
 		Assert.Equal(new DateTime(2018, 6, 9, 12, 34, 56, 123).AddTicks(4560), datetime);
 	}
 
-	[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=102593")]
+	[SkippableTheory(MySqlData = "https://bugs.mysql.com/bug.php?id=102593")]
 	[InlineData(false)]
 	[InlineData(true)]
 	public void InsertMemoryStream(bool prepare)
@@ -375,7 +375,7 @@ create table insert_stream(rowid integer not null primary key auto_increment, st
 		Assert.Equal(new byte[] { 97, 98, 99, 100 }, reader.GetValue(1));
 	}
 
-	[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=103819")]
+	[SkippableTheory(MySqlData = "https://bugs.mysql.com/bug.php?id=103819")]
 	[InlineData(false)]
 	[InlineData(true)]
 	public void InsertStringBuilder(bool prepare)
@@ -432,7 +432,7 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 		Assert.Equal(value, reader.GetValue(0));
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -505,13 +505,13 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 		var val = reader.GetMySqlDecimal("value");
 		Assert.Equal(value, val.ToString());
 
-#if !BASELINE
+#if !MYSQL_DATA
 		val = reader.GetFieldValue<MySqlDecimal>(0);
 		Assert.Equal(value, val.ToString());
 #endif
 
 		// value is too large to read as a regular decimal
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<OverflowException>(() => reader.GetValue(0));
 #else
 		Assert.Throws<FormatException>(() => reader.GetValue(0));
@@ -728,7 +728,7 @@ value tinytext null
 			.SelectMany(x => new[] { false, true }.Select(y => new object[] { x, y }));
 
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Theory]
 	[MemberData(nameof(GetBlobs))]
 	public void InsertBlob(object data, bool prepare)

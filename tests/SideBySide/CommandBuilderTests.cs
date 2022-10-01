@@ -13,13 +13,13 @@ public class CommandBuilderTests : IClassFixture<DatabaseFixture>, IDisposable
 		m_database.Connection.Close();
 	}
 
-	[SkippableFact(Baseline = "Throws NullReferenceException")]
+	[SkippableFact(MySqlData = "Throws NullReferenceException")]
 	public void DeriveParametersNull()
 	{
 		Assert.Throws<ArgumentNullException>(() => MySqlCommandBuilder.DeriveParameters(null));
 	}
 
-	[SkippableFact(Baseline = "Throws NullReferenceException")]
+	[SkippableFact(MySqlData = "Throws NullReferenceException")]
 	public void DeriveParametersNoConnection()
 	{
 		using var cmd = new MySqlCommand("test");
@@ -27,7 +27,7 @@ public class CommandBuilderTests : IClassFixture<DatabaseFixture>, IDisposable
 		Assert.Throws<ArgumentException>(() => MySqlCommandBuilder.DeriveParameters(cmd));
 	}
 
-	[SkippableFact(Baseline = "Throws InvalidOperationException")]
+	[SkippableFact(MySqlData = "Throws InvalidOperationException")]
 	public void DeriveParametersText()
 	{
 		using var cmd = m_database.Connection.CreateCommand();
@@ -35,7 +35,7 @@ public class CommandBuilderTests : IClassFixture<DatabaseFixture>, IDisposable
 		Assert.Throws<ArgumentException>(() => MySqlCommandBuilder.DeriveParameters(cmd));
 	}
 
-	[SkippableFact(Baseline = "Throws MySqlException")]
+	[SkippableFact(MySqlData = "Throws MySqlException")]
 	public void DeriveParametersNoCommandText()
 	{
 		using var cmd = m_database.Connection.CreateCommand();
@@ -123,7 +123,7 @@ insert into command_builder_delete values(1, 'one'), (2, 'two');
 	[InlineData("test", "`test`")]
 	[InlineData("te`st", "`te``st`")]
 	[InlineData("`test`", "```test```"
-#if BASELINE
+#if MYSQL_DATA
 		, Skip = "Doesn't quote leading quotes"
 #endif
 	)]

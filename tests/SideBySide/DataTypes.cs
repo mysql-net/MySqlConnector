@@ -1,6 +1,6 @@
 using System.Globalization;
 using System.Reflection;
-#if BASELINE
+#if MYSQL_DATA
 using MySql.Data.Types;
 #endif
 
@@ -8,7 +8,7 @@ using MySql.Data.Types;
 // "The exception that is thrown when the Value property of a System.Data.SqlTypes structure is set to null."
 // However, DbDataReader.GetString etc. are documented as throwing InvalidCastException: https://msdn.microsoft.com/en-us/library/system.data.common.dbdatareader.getstring.aspx
 // Additionally, that is what DbDataReader.GetFieldValue<T> throws. For consistency, we prefer InvalidCastException.
-#if BASELINE
+#if MYSQL_DATA
 using GetValueWhenNullException = System.Data.SqlTypes.SqlNullValueException;
 using GetGuidWhenNullException = MySql.Data.MySqlClient.MySqlException;
 using GetBytesWhenNullException = System.NullReferenceException;
@@ -180,7 +180,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 	[InlineData("color", "ENUM", new object[] { "red", "orange", "green" })]
 	public void QueryEnum(string column, string dataTypeName, object[] expected)
 	{
-#if BASELINE
+#if MYSQL_DATA
 		// mysql-connector-net incorrectly returns "VARCHAR" for "ENUM"
 		dataTypeName = "VARCHAR";
 #endif
@@ -191,7 +191,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 	[InlineData("value", "SET", new object[] { null, "", "one", "two", "one,two", "four", "one,four", "two,four", "one,two,four" })]
 	public void QuerySet(string column, string dataTypeName, object[] expected)
 	{
-#if BASELINE
+#if MYSQL_DATA
 		// mysql-connector-net incorrectly returns "VARCHAR" for "ENUM"
 		dataTypeName = "VARCHAR";
 #endif
@@ -203,7 +203,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 	[InlineData("TinyInt1", "BOOL", new object[] { null, false, true, false, true, true, true })]
 	public void QueryBoolean(string column, string dataTypeName, object[] expected)
 	{
-#if BASELINE
+#if MYSQL_DATA
 // Connector/NET returns "TINYINT" for "BOOL"
 		dataTypeName = "TINYINT";
 #endif
@@ -219,28 +219,28 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 		csb.TreatTinyAsBoolean = false;
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		connection.Open();
-		DoQuery("bools", column, dataTypeName, expected, reader => reader.GetSByte(0), baselineCoercedNullValue: default(sbyte), connection: connection);
+		DoQuery("bools", column, dataTypeName, expected, reader => reader.GetSByte(0), mySqlDataCoercedNullValue: default(sbyte), connection: connection);
 	}
 
 	[Theory()]
 	[InlineData("TinyInt1U", "TINYINT", new object[] { null, (byte) 0, (byte) 1, (byte) 0, (byte) 1, (byte) 255, (byte) 123 })]
 	public void QueryTinyInt1Unsigned(string column, string dataTypeName, object[] expected)
 	{
-		DoQuery("bools", column, dataTypeName, expected, reader => reader.GetByte(0), baselineCoercedNullValue: default(byte));
+		DoQuery("bools", column, dataTypeName, expected, reader => reader.GetByte(0), mySqlDataCoercedNullValue: default(byte));
 	}
 
 	[Theory]
 	[InlineData("SByte", "TINYINT", new object[] { null, default(sbyte), sbyte.MinValue, sbyte.MaxValue, (sbyte) 123 })]
 	public void QuerySByte(string column, string dataTypeName, object[] expected)
 	{
-		DoQuery("integers", column, dataTypeName, expected, reader => reader.GetSByte(column), baselineCoercedNullValue: default(sbyte));
+		DoQuery("integers", column, dataTypeName, expected, reader => reader.GetSByte(column), mySqlDataCoercedNullValue: default(sbyte));
 	}
 
 	[Theory]
 	[InlineData("Byte", "TINYINT", new object[] { null, default(byte), byte.MinValue, byte.MaxValue, (byte) 123 })]
 	public void QueryByte(string column, string dataTypeName, object[] expected)
 	{
-		DoQuery("integers", column, dataTypeName, expected, reader => reader.GetByte(0), baselineCoercedNullValue: default(byte));
+		DoQuery("integers", column, dataTypeName, expected, reader => reader.GetByte(0), mySqlDataCoercedNullValue: default(byte));
 	}
 
 	[Theory]
@@ -270,7 +270,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 	[InlineData("UInt32", "INT", new object[] { null, default(uint), uint.MinValue, uint.MaxValue, 123456789u })]
 	public void QueryUInt32(string column, string dataTypeName, object[] expected)
 	{
-#if BASELINE
+#if MYSQL_DATA
 		// mysql-connector-net incorrectly returns "INT" for "MEDIUMINT UNSIGNED"
 		dataTypeName = "INT";
 #endif
@@ -337,7 +337,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 	public void QueryString(string column, string[] expected)
 	{
 		DoQuery("strings", column, "VARCHAR", expected, reader => reader.GetString(0));
-#if !BASELINE
+#if !MYSQL_DATA
 		DoQuery("strings", column, "VARCHAR", expected, reader => reader.GetTextReader(0), matchesDefaultType: false, assertEqual: (e, a) =>
 		{
 			using var actualReader = (TextReader) a;
@@ -372,7 +372,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 			if (expected[i] is null)
 				Assert.True(reader.IsDBNull(0));
 			else if (expected[i].Length == 0)
-#if BASELINE
+#if MYSQL_DATA
 				Assert.Throws<IndexOutOfRangeException>(() => reader.GetChar(0));
 #else
 				Assert.Throws<InvalidCastException>(() => reader.GetChar(0));
@@ -412,7 +412,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 			}
 			Assert.Equal(expectedGuid, reader.GetGuid(0));
 			Assert.Equal(expectedBytes, GetBytes(reader));
-#if !BASELINE
+#if !MYSQL_DATA
 			Assert.Equal(expectedBytes, GetStreamBytes(reader));
 #endif
 			Assert.False(reader.Read());
@@ -482,8 +482,8 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 		Assert.IsType(fieldType, reader.GetValue(0));
 
 		Type exceptionType = typeof(GetGuidWhenNullException);
-#if BASELINE
-		// baseline throws FormatException when conversion from string fails
+#if MYSQL_DATA
+		// MySql.Data throws FormatException when conversion from string fails
 		if (fieldType == typeof(string))
 			exceptionType = typeof(FormatException);
 #endif
@@ -502,7 +502,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 		Assert.False(await reader.ReadAsync().ConfigureAwait(false));
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Theory]
 	[InlineData(MySqlGuidFormat.Default, false)]
 	[InlineData(MySqlGuidFormat.Default, true)]
@@ -646,12 +646,12 @@ UNHEX('33221100554477668899AABBCCDDEEFF'),
 	public void QueryDate(string column, string dataTypeName, object[] expected)
 	{
 		DoQuery("times", column, dataTypeName, ConvertToDateTime(expected, DateTimeKind.Unspecified), reader => reader.GetDateTime(column.Replace("`", "")));
-#if !BASELINE
+#if !MYSQL_DATA
 		DoQuery("times", column, dataTypeName, ConvertToDateTimeOffset(expected), reader => reader.GetDateTimeOffset(0), matchesDefaultType: false);
 #endif
 	}
 
-#if NET6_0_OR_GREATER && !BASELINE
+#if NET6_0_OR_GREATER && !MYSQL_DATA
 	[Theory]
 	[InlineData("`Date`", "DATE", new object[] { null, "1000 01 01", "9999 12 31", null, "2016 04 05" })]
 	public void QueryDateOnly(string column, string dataTypeName, object[] expected)
@@ -680,14 +680,14 @@ UNHEX('33221100554477668899AABBCCDDEEFF'),
 		{
 			Assert.Equal(DateTime.MinValue, reader.GetDateTime(0));
 			Assert.Equal(DateTime.MinValue, reader.GetDateTime(1));
-#if !BASELINE
+#if !MYSQL_DATA
 			Assert.Equal(DateTimeOffset.MinValue, reader.GetDateTimeOffset(0));
 			Assert.Equal(DateTimeOffset.MinValue, reader.GetDateTimeOffset(1));
 #endif
 		}
 		else
 		{
-#if BASELINE
+#if MYSQL_DATA
 			Assert.Throws<MySql.Data.Types.MySqlConversionException>(() => reader.GetDateTime(0));
 			Assert.Throws<MySql.Data.Types.MySqlConversionException>(() => reader.GetDateTime(1));
 #else
@@ -699,7 +699,7 @@ UNHEX('33221100554477668899AABBCCDDEEFF'),
 		}
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Theory]
 	[InlineData(MySqlDateTimeKind.Unspecified, DateTimeKind.Unspecified, true)]
 	[InlineData(MySqlDateTimeKind.Unspecified, DateTimeKind.Local, true)]
@@ -776,7 +776,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 		DoQuery("times", column, dataTypeName, ConvertToTimeSpan(expected), reader => reader.GetTimeSpan(0));
 	}
 
-#if NET6_0_OR_GREATER && !BASELINE
+#if NET6_0_OR_GREATER && !MYSQL_DATA
 	[Theory]
 	[InlineData("TimeOnly", "TIME", new object[] { null, "0 0 0", "0 23 59 59 999999", "0 0 0", "0 14 3 4 567890" })]
 	public void QueryTimeOnly(string column, string dataTypeName, object[] expected)
@@ -791,7 +791,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 	public void QueryYear(string column, string dataTypeName, object[] expected)
 	{
 		Func<MySqlDataReader, object> getValue = reader => reader.GetInt32(0);
-#if BASELINE
+#if MYSQL_DATA
 		// Connector/NET incorrectly returns "SMALLINT" for "YEAR", and returns all YEAR values as short values
 		dataTypeName = "SMALLINT";
 		expected = expected.Select(x => x is null ? null : (object) (short) (int) x).ToArray();
@@ -971,7 +971,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 			cmd.Prepare();
 		using var reader = cmd.ExecuteReader();
 
-#if !BASELINE
+#if !MYSQL_DATA
 		var columnSchema = reader.GetColumnSchema()[0];
 		Assert.Equal("Date", columnSchema.ColumnName);
 		Assert.Equal(typeof(DateTime), columnSchema.DataType);
@@ -1017,7 +1017,7 @@ ORDER BY t.`Key`", Connection);
 	}
 
 	[Theory]
-#if !BASELINE
+#if !MYSQL_DATA
 	[InlineData("1001-02", false, null)]
 	[InlineData("1001-02", true, null)]
 	[InlineData("2000-01-02 03-04-05", true, null)]
@@ -1050,7 +1050,7 @@ ORDER BY t.`Key`", Connection);
 		if (expectedDate.HasValue)
 			Assert.Equal(expectedDate.Value, reader.GetDateTime(0));
 		else
-#if BASELINE
+#if MYSQL_DATA
 			Assert.ThrowsAny<Exception>(() => reader.GetDateTime(0));
 #else
 			Assert.Throws<FormatException>(() => reader.GetDateTime(0));
@@ -1075,7 +1075,7 @@ ORDER BY t.`Key`", Connection);
 		};
 
 		DoQuery("geometry", columnName, dataTypeName, geometryData.ToArray(),
-#if !BASELINE
+#if !MYSQL_DATA
 			GetBytes
 #else
 			// NOTE: Connector/NET returns 'null' for NULL so simulate an exception for the tests
@@ -1086,11 +1086,11 @@ ORDER BY t.`Key`", Connection);
 		DoQuery<GetGeometryWhenNullException>("geometry", columnName, dataTypeName, geometryData.Select(CreateGeometry).ToArray(),
 			reader => reader.GetMySqlGeometry(0),
 			matchesDefaultType: false,
-#if BASELINE
+#if MYSQL_DATA
 			omitGetFieldValueTest: true, // https://bugs.mysql.com/bug.php?id=96500
 			omitWhereTest: true, // https://bugs.mysql.com/bug.php?id=96498
 #endif
-#if BASELINE
+#if MYSQL_DATA
 			assertEqual: (x, y) => Assert.Equal(((MySqlGeometry) x).Value, ((MySqlGeometry) y).Value)
 #else
 			assertEqual: (x, y) => Assert.Equal(((MySqlGeometry) x)?.Value.ToArray(), ((MySqlGeometry) y)?.Value.ToArray())
@@ -1102,7 +1102,7 @@ ORDER BY t.`Key`", Connection);
 	{
 		if (data is null)
 			return null;
-#if BASELINE
+#if MYSQL_DATA
 		return new MySqlGeometry(MySqlDbType.Geometry, data);
 #else
 		return MySqlGeometry.FromMySql(data);
@@ -1121,7 +1121,7 @@ ORDER BY t.`Key`", Connection);
 	[InlineData("LongBlob", "datatypes_blobs", MySqlDbType.Blob, int.MaxValue, typeof(byte[]), "LN", 0, 0)]
 	[InlineData("guidbin", "datatypes_blobs", MySqlDbType.Binary, 16, typeof(byte[]), "N", 0, 0)]
 	[InlineData("rowid", "datatypes_bools", MySqlDbType.Int32, 11, typeof(int), "AK", 0, 0)]
-#if BASELINE
+#if MYSQL_DATA
 	[InlineData("Boolean", "datatypes_bools", MySqlDbType.Byte, 1, typeof(bool), "N", 0, 0)]
 	[InlineData("TinyInt1", "datatypes_bools", MySqlDbType.Byte, 1, typeof(bool), "N", 0, 0)]
 #else
@@ -1163,7 +1163,7 @@ ORDER BY t.`Key`", Connection);
 	[InlineData("DateTime", "datatypes_times", MySqlDbType.DateTime, 26, typeof(DateTime), "N", 0, 6)]
 	[InlineData("Timestamp", "datatypes_times", MySqlDbType.Timestamp, 26, typeof(DateTime), "N", 0, 6)]
 	[InlineData("Time", "datatypes_times", MySqlDbType.Time, 17, typeof(TimeSpan), "N", 0, 6)]
-#if BASELINE
+#if MYSQL_DATA
 	[InlineData("Year", "datatypes_times", MySqlDbType.Year, 4, typeof(short), "N", 0, 0)]
 #else
 	[InlineData("Year", "datatypes_times", MySqlDbType.Year, 4, typeof(int), "N", 0, 0)]
@@ -1213,14 +1213,14 @@ create table schema_table({createColumn});");
 		Assert.Single(schemaTable.Rows);
 		var schema = schemaTable.Rows[0];
 		Assert.Equal(column, schema["ColumnName"]);
-#if BASELINE
+#if MYSQL_DATA
 		int ordinal = 1; // https://bugs.mysql.com/bug.php?id=61477
 #else
 		int ordinal = 0;
 #endif
 		Assert.Equal(ordinal, schema["ColumnOrdinal"]);
 		Assert.Equal(dataType, schema["DataType"]);
-#if BASELINE
+#if MYSQL_DATA
 		// https://bugs.mysql.com/bug.php?id=87876
 		if (columnSize != int.MaxValue)
 			Assert.Equal(columnSize, schema["ColumnSize"]);
@@ -1233,7 +1233,7 @@ create table schema_table({createColumn});");
 		Assert.Equal(allowDbNull, schema["AllowDBNull"]);
 		Assert.Equal(precision, schema["NumericPrecision"]);
 		Assert.Equal(scale, schema["NumericScale"]);
-#if BASELINE
+#if MYSQL_DATA
 		if (mySqlDbType == MySqlDbType.Enum || mySqlDbType == MySqlDbType.Set)
 			mySqlDbType = MySqlDbType.String;
 #endif
@@ -1285,7 +1285,7 @@ create table schema_table({createColumn});");
 		Assert.Null(reader.GetSchemaTable());
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Theory]
 	[InlineData("Bit1", "datatypes_bits", MySqlDbType.Bit, "BIT", 1, typeof(ulong), "N", -1, 0)]
 	[InlineData("Bit32", "datatypes_bits", MySqlDbType.Bit, "BIT", 32, typeof(ulong), "N", -1, 0)]
@@ -1396,7 +1396,7 @@ create table schema_table({createColumn});");
 	[InlineData("MediumBlob", "datatypes_blobs", MySqlDbType.MediumBlob, "MEDIUMBLOB", typeof(byte[]), 2, new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF })]
 	[InlineData("LongBlob", "datatypes_blobs", MySqlDbType.LongBlob, "LONGBLOB", typeof(byte[]), 2, new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF })]
 	[InlineData("guidbin", "datatypes_blobs", MySqlDbType.Binary, "BINARY(16)", typeof(byte[]), 2, new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF })]
-#if BASELINE
+#if MYSQL_DATA
 	[InlineData("Boolean", "datatypes_bools", MySqlDbType.Byte, "BOOL", typeof(sbyte), 3, (sbyte) 1)]
 	[InlineData("TinyInt1", "datatypes_bools", MySqlDbType.Byte, "TINYINT(1)", typeof(sbyte), 3, (sbyte) 1)]
 #else
@@ -1427,12 +1427,12 @@ create table schema_table({createColumn});");
 	[InlineData("DateTime", "datatypes_times", MySqlDbType.DateTime, "DATETIME", typeof(DateTime), 2, null)]
 	[InlineData("Timestamp", "datatypes_times", MySqlDbType.Timestamp, "TIMESTAMP", typeof(DateTime), 2, null)]
 	[InlineData("Time", "datatypes_times", MySqlDbType.Time, "TIME", typeof(TimeSpan), 2, null)]
-#if BASELINE
+#if MYSQL_DATA
 	[InlineData("Year", "datatypes_times", MySqlDbType.Year, "YEAR", typeof(short), 2, (short) 1901)]
 #else
 	[InlineData("Year", "datatypes_times", MySqlDbType.Year, "YEAR", typeof(int), 2, 1901)]
 #endif
-#if !BASELINE
+#if !MYSQL_DATA
 	[InlineData("value", "datatypes_json_core", MySqlDbType.JSON, "JSON", typeof(string), 4, "[]")]
 	[InlineData("Geometry", "datatypes_geometry", MySqlDbType.Geometry, "GEOMETRY", typeof(byte[]), 2, null)]
 	[InlineData("Point", "datatypes_geometry", MySqlDbType.Geometry, "POINT", typeof(byte[]), 2, null)]
@@ -1482,7 +1482,7 @@ end;";
 		}
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Theory]
 	[InlineData("Bit1", "datatypes_bits", "BIT(1)")]
 	[InlineData("Bit32", "datatypes_bits", "BIT(32)")]
@@ -1595,14 +1595,14 @@ end;";
 	public void QueryJson(string column, string[] expected)
 	{
 		string dataTypeName = "JSON";
-#if BASELINE
+#if MYSQL_DATA
 		// mysql-connector-net returns "VARCHAR" for "JSON"
 		dataTypeName = "VARCHAR";
 #endif
 		DoQuery("json_core", column, dataTypeName, expected, reader => reader.GetString(0), omitWhereTest: true);
 	}
 
-	[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=97067")]
+	[SkippableTheory(MySqlData = "https://bugs.mysql.com/bug.php?id=97067")]
 	[InlineData(false, "MIN", 0)]
 	[InlineData(false, "MAX", uint.MaxValue)]
 	[InlineData(true, "MIN", 0)]
@@ -1648,7 +1648,7 @@ end;";
 		string dataTypeName,
 		object[] expected,
 		Func<MySqlDataReader, object> getValue,
-		object baselineCoercedNullValue = null,
+		object mySqlDataCoercedNullValue = null,
 		bool omitWhereTest = false,
 		bool omitWherePrepareTest = false,
 		bool matchesDefaultType = true,
@@ -1657,10 +1657,10 @@ end;";
 		Type getFieldValueType = null,
 		bool omitGetFieldValueTest = false)
 	{
-		DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, baselineCoercedNullValue, omitWhereTest, omitWherePrepareTest, matchesDefaultType, connection, assertEqual, getFieldValueType, omitGetFieldValueTest);
+		DoQuery<GetValueWhenNullException>(table, column, dataTypeName, expected, getValue, mySqlDataCoercedNullValue, omitWhereTest, omitWherePrepareTest, matchesDefaultType, connection, assertEqual, getFieldValueType, omitGetFieldValueTest);
 	}
 
-	// NOTE: baselineCoercedNullValue is to work around inconsistencies in mysql-connector-net; DBNull.Value will
+	// NOTE: mySqlDataCoercedNullValue is to work around inconsistencies in mysql-connector-net; DBNull.Value will
 	// be coerced to 0 by some reader.GetX() methods, but not others.
 	private void DoQuery<TException>(
 		string table,
@@ -1668,7 +1668,7 @@ end;";
 		string dataTypeName,
 		object[] expected,
 		Func<MySqlDataReader, object> getValue,
-		object baselineCoercedNullValue = null,
+		object mySqlDataCoercedNullValue = null,
 		bool omitWhereTest = false,
 		bool omitWherePrepareTest = false,
 		bool matchesDefaultType = true,
@@ -1691,9 +1691,9 @@ end;";
 				if (value is null)
 				{
 					Assert.Equal(DBNull.Value, reader.GetValue(0));
-#if BASELINE
-					if (baselineCoercedNullValue is not null)
-						Assert.Equal(baselineCoercedNullValue, getValue(reader));
+#if MYSQL_DATA
+					if (mySqlDataCoercedNullValue is not null)
+						Assert.Equal(mySqlDataCoercedNullValue, getValue(reader));
 					else
 						Assert.Throws<TException>(() => getValue(reader));
 #else

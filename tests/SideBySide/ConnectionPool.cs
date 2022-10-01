@@ -5,8 +5,8 @@ public class ConnectionPool : IClassFixture<DatabaseFixture>
 	[Theory]
 	[InlineData(false, 11, 1L)]
 	[InlineData(true, 12, null)]
-#if BASELINE
-	// baseline default behaviour is to not reset the connection, which trades correctness for speed
+#if MYSQL_DATA
+	// MySql.Data default behaviour is to not reset the connection, which trades correctness for speed
 	// see bug report at http://bugs.mysql.com/bug.php?id=77421
 	[InlineData(null, 13, 1L)]
 #else
@@ -156,14 +156,14 @@ public class ConnectionPool : IClassFixture<DatabaseFixture>
 
 		using (var connection = new MySqlConnection(csb.ConnectionString))
 		{
-#if !BASELINE
+#if !MYSQL_DATA
 			try
 #endif
 			{
 				await connection.OpenAsync();
 				Assert.NotEqual(serverThread, connection.ServerThread);
 			}
-#if !BASELINE
+#if !MYSQL_DATA
 			catch (MySqlProtocolException) when (csb.UseCompression)
 			{
 				// workaround for https://bugs.mysql.com/bug.php?id=103412
@@ -179,7 +179,7 @@ public class ConnectionPool : IClassFixture<DatabaseFixture>
 		csb.Pooling = true;
 		csb.MinimumPoolSize = 0;
 		csb.MaximumPoolSize = 21; // use a uniqe pool size to create a unique connection string to force a unique pool to be created
-#if BASELINE
+#if MYSQL_DATA
 		csb.CharacterSet = "utf8mb4";
 #endif
 
@@ -270,7 +270,7 @@ public class ConnectionPool : IClassFixture<DatabaseFixture>
 			connection.Dispose();
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Theory]
 	[InlineData(1u, 3u, 0u, 5u)]
 	[InlineData(1u, 3u, 3u, 5u)]
@@ -305,7 +305,7 @@ public class ConnectionPool : IClassFixture<DatabaseFixture>
 
 	private Task ClearPoolAsync(MySqlConnection connection)
 	{
-#if BASELINE
+#if MYSQL_DATA
 		return connection.ClearPoolAsync(connection);
 #else
 		return MySqlConnection.ClearPoolAsync(connection);

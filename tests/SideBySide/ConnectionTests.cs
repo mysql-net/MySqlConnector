@@ -16,7 +16,7 @@ public class ConnectionTests : IClassFixture<DatabaseFixture>
 		connection.InfoMessage += (s, a) =>
 		{
 			gotEvent = true;
-#if BASELINE
+#if MYSQL_DATA
 			Assert.Single(a.errors);
 			Assert.Equal((int) MySqlErrorCode.BadTable, a.errors[0].Code);
 #else
@@ -40,7 +40,7 @@ public class ConnectionTests : IClassFixture<DatabaseFixture>
 		connection.InfoMessage += (s, a) =>
 		{
 			gotEvent = true;
-#if BASELINE
+#if MYSQL_DATA
 			Assert.Single(a.errors);
 			Assert.Equal((int) MySqlErrorCode.BadTable, a.errors[0].Code);
 #else
@@ -64,14 +64,14 @@ public class ConnectionTests : IClassFixture<DatabaseFixture>
 		{
 			gotEvent = true;
 
-#if BASELINE
+#if MYSQL_DATA
 			// seeming bug in Connector/NET raises an event with no errors
 			Assert.Empty(a.errors);
 #endif
 		};
 
 		connection.Execute(@"drop table if exists table_does_not_exist; select 1;");
-#if BASELINE
+#if MYSQL_DATA
 		Assert.True(gotEvent);
 #else
 		Assert.False(gotEvent);
@@ -108,14 +108,14 @@ public class ConnectionTests : IClassFixture<DatabaseFixture>
 		Assert.Equal("", connection.ConnectionString);
 	}
 
-	[SkippableFact(Baseline = "Throws NullReferenceException")]
+	[SkippableFact(MySqlData = "Throws NullReferenceException")]
 	public void ServerVersionThrows()
 	{
 		using var connection = new MySqlConnection();
 		Assert.Throws<InvalidOperationException>(() => connection.ServerVersion);
 	}
 
-	[SkippableFact(Baseline = "Throws NullReferenceException")]
+	[SkippableFact(MySqlData = "Throws NullReferenceException")]
 	public void ServerThreadThrows()
 	{
 		using var connection = new MySqlConnection();
@@ -174,7 +174,7 @@ public class ConnectionTests : IClassFixture<DatabaseFixture>
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
 		using var connection2 = (MySqlConnection) connection.Clone();
 		Assert.Equal(connection.ConnectionString, connection2.ConnectionString);
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal(AppConfig.ConnectionString, connection2.ConnectionString);
 #endif
 	}
@@ -188,7 +188,7 @@ public class ConnectionTests : IClassFixture<DatabaseFixture>
 		Assert.Equal(ConnectionState.Closed, connection2.State);
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=97473")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=97473")]
 	public void CloneDoesNotDisclosePassword()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
@@ -198,7 +198,7 @@ public class ConnectionTests : IClassFixture<DatabaseFixture>
 		Assert.DoesNotContain("password", connection2.ConnectionString, StringComparison.OrdinalIgnoreCase);
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]

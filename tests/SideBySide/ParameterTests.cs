@@ -29,7 +29,7 @@ public class ParameterTests
 	[InlineData(new[] { DbType.UInt64 }, new[] { MySqlDbType.UInt64, MySqlDbType.Bit })]
 	[InlineData(new[] { DbType.DateTime }, new[] { MySqlDbType.DateTime, MySqlDbType.Timestamp })]
 	[InlineData(new[] { DbType.Date }, new[] { MySqlDbType.Date, MySqlDbType.Newdate })]
-#if !BASELINE
+#if !MYSQL_DATA
 	[InlineData(new[] { DbType.Int32 }, new[] { MySqlDbType.Int32, MySqlDbType.Year })]
 	[InlineData(new[] { DbType.Binary }, new[] { MySqlDbType.Blob, MySqlDbType.Binary, MySqlDbType.TinyBlob, MySqlDbType.MediumBlob, MySqlDbType.LongBlob, MySqlDbType.Geometry })]
 	[InlineData(new[] { DbType.String, DbType.AnsiString, DbType.Xml },
@@ -61,7 +61,7 @@ public class ParameterTests
 		var parameter = new MySqlParameter();
 		Assert.Equal(MySqlDbType.VarChar, parameter.MySqlDbType);
 		Assert.Equal(DbType.String, parameter.DbType);
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Null(parameter.ParameterName);
 		Assert.Null(parameter.SourceColumn);
 #else
@@ -74,7 +74,7 @@ public class ParameterTests
 		Assert.Equal(0, parameter.Precision);
 		Assert.Equal(0, parameter.Scale);
 		Assert.Equal(0, parameter.Size);
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
 #else
 		Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
@@ -94,12 +94,12 @@ public class ParameterTests
 		Assert.Equal(0, parameter.Precision);
 		Assert.Equal(0, parameter.Scale);
 		Assert.Equal(0, parameter.Size);
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
 #else
 		Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Null(parameter.SourceColumn);
 #else
 		Assert.Equal("", parameter.SourceColumn);
@@ -119,12 +119,12 @@ public class ParameterTests
 		Assert.Equal(0, parameter.Precision);
 		Assert.Equal(0, parameter.Scale);
 		Assert.Equal(0, parameter.Size);
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
 #else
 		Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Null(parameter.SourceColumn);
 #else
 		Assert.Equal("", parameter.SourceColumn);
@@ -144,12 +144,12 @@ public class ParameterTests
 		Assert.Equal(0, parameter.Precision);
 		Assert.Equal(0, parameter.Scale);
 		Assert.Equal(4, parameter.Size);
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
 #else
 		Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
 #endif
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Null(parameter.SourceColumn);
 #else
 		Assert.Equal("", parameter.SourceColumn);
@@ -169,7 +169,7 @@ public class ParameterTests
 		Assert.Equal(0, parameter.Precision);
 		Assert.Equal(0, parameter.Scale);
 		Assert.Equal(4, parameter.Size);
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
 #else
 		Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
@@ -226,7 +226,7 @@ public class ParameterTests
 		Assert.Equal(parameter.Direction, clone.Direction);
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=92734")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=92734")]
 	public void CloneIsNullable()
 	{
 		var parameter = new MySqlParameter { IsNullable = true };
@@ -234,7 +234,7 @@ public class ParameterTests
 		Assert.Equal(parameter.IsNullable, clone.IsNullable);
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=92734")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=92734")]
 	public void ClonePrecision()
 	{
 		var parameter = new MySqlParameter { Precision = 10 };
@@ -242,7 +242,7 @@ public class ParameterTests
 		Assert.Equal(parameter.Precision, clone.Precision);
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=92734")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=92734")]
 	public void CloneScale()
 	{
 		var parameter = new MySqlParameter { Scale = 12 };
@@ -250,7 +250,7 @@ public class ParameterTests
 		Assert.Equal(parameter.Scale, clone.Scale);
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=92734")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=92734")]
 	public void CloneSize()
 	{
 		var parameter = new MySqlParameter { Size = 8 };
@@ -266,7 +266,7 @@ public class ParameterTests
 		Assert.Equal(parameter.SourceColumn, clone.SourceColumn);
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=92734")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=92734")]
 	public void CloneSourceColumnNullMapping()
 	{
 		var parameter = new MySqlParameter { SourceColumnNullMapping = true };
@@ -295,7 +295,7 @@ public class ParameterTests
 	[InlineData(1.0, DbType.Double, MySqlDbType.Double)]
 	[InlineData(1.0f, DbType.Single, MySqlDbType.Float)]
 	[InlineData("1", DbType.String, MySqlDbType.VarChar)]
-#if BASELINE
+#if MYSQL_DATA
 	[InlineData('1', DbType.Object, MySqlDbType.Blob)]
 #else
 	[InlineData('1', DbType.String, MySqlDbType.VarChar)]
@@ -311,7 +311,7 @@ public class ParameterTests
 	public void SetValueToByteArrayInfersType()
 	{
 		var parameter = new MySqlParameter { Value = new byte[1] };
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Equal(DbType.Object, parameter.DbType);
 #else
 		Assert.Equal(DbType.Binary, parameter.DbType);
@@ -340,7 +340,7 @@ public class ParameterTests
 		Assert.Equal(MySqlDbType.Int32, parameter.MySqlDbType);
 
 		parameter.ResetDbType();
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Equal(MySqlDbType.Int32, parameter.MySqlDbType);
 		Assert.Equal(DbType.Int32, parameter.DbType);
 #else

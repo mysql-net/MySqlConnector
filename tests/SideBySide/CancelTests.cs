@@ -38,7 +38,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		task.Wait(); // shouldn't throw
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout)]
 	public async Task CancelCommandWithPasswordCallback()
 	{
@@ -140,7 +140,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		Assert.InRange(rows, 0, 10000000);
 	}
 
-	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout, Baseline = "Hangs in NextResult")]
+	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout, MySqlData = "Hangs in NextResult")]
 	public void CancelMultiStatementReader()
 	{
 		using var barrier = new Barrier(2);
@@ -193,7 +193,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		TestUtilities.AssertDuration(stopwatch, 0, 1000);
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[SkippableFact(ServerFeatures.Timeout)]
 	public async Task CancelCommandWithTokenBeforeExecuteScalar()
 	{
@@ -424,7 +424,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		Assert.False(reader.NextResult());
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
 	public void CancelBatchCommand()
 	{

@@ -1,4 +1,4 @@
-#if BASELINE
+#if MYSQL_DATA
 #pragma warning disable 0618
 #endif
 
@@ -12,7 +12,7 @@ public class PreparedCommandTests : IClassFixture<DatabaseFixture>
 		connection.Execute(@"drop table if exists prepared_command_test; create table prepared_command_test(value int not null); insert into prepared_command_test(value) values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10);");
 	}
 
-	[SkippableFact(Baseline = "Parameter '@data' was not found during prepare.")]
+	[SkippableFact(MySqlData = "Parameter '@data' was not found during prepare.")]
 	public void PrepareBeforeBindingParameters()
 	{
 		using var connection = CreateConnection();
@@ -29,7 +29,7 @@ CREATE TABLE bind_parameters_test(data TEXT NOT NULL);");
 		Assert.Equal(new[] { "test" }, connection.Query<string>("SELECT data FROM bind_parameters_test;"));
 	}
 
-	[SkippableFact(Baseline = "https://bugs.mysql.com/bug.php?id=91753")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=91753")]
 	public void UnnamedParameters()
 	{
 		using var connection = CreateConnection();
@@ -187,7 +187,7 @@ CREATE TABLE prepared_command_test(rowid INTEGER NOT NULL PRIMARY KEY AUTO_INCRE
 		}
 	}
 
-	[SkippableTheory(Baseline = "https://bugs.mysql.com/bug.php?id=14115")]
+	[SkippableTheory(MySqlData = "https://bugs.mysql.com/bug.php?id=14115")]
 	[MemberData(nameof(GetInsertAndQueryData))]
 	public void InsertAndQueryMultipleStatements(bool isPrepared, string dataType, object dataValue, MySqlDbType dbType)
 	{
@@ -230,7 +230,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		Assert.Equal("test", cmd.ExecuteScalar());
 	}
 
-	[SkippableFact(Baseline = "Connector/NET doesn't cache prepared commands")]
+	[SkippableFact(MySqlData = "Connector/NET doesn't cache prepared commands")]
 	public void PreparedCommandIsCached()
 	{
 		using var connection = CreateConnection();
@@ -253,7 +253,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 	{
 		using var connection = CreateConnection();
 		using var cmd = new MySqlCommand("SELECT @param;", connection);
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<InvalidOperationException>(() => cmd.Prepare());
 #else
 		cmd.Prepare();
@@ -266,7 +266,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 	{
 		using var connection = CreateConnection();
 		using var cmd = new MySqlCommand("SELECT ?;", connection);
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<IndexOutOfRangeException>(() => cmd.Prepare());
 #else
 		cmd.Prepare();
@@ -280,7 +280,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		using var connection = CreateConnection();
 		using var cmd = new MySqlCommand("SELECT @param;", connection);
 		cmd.Parameters.AddWithValue("@name", "test");
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<InvalidOperationException>(() => cmd.Prepare());
 #else
 		cmd.Prepare();
@@ -294,7 +294,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		using var connection = CreateConnection();
 		using var cmd = new MySqlCommand("SELECT ?, ?;", connection);
 		cmd.Parameters.Add(new() { Value = 1 });
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<IndexOutOfRangeException>(() => cmd.Prepare());
 #else
 		cmd.Prepare();
@@ -373,7 +373,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 			yield return new object[] { isPrepared, "TINYINT UNSIGNED", (byte) 123, MySqlDbType.UByte };
 			yield return new object[] { isPrepared, "SMALLINT", (short) -12345, MySqlDbType.Int16 };
 			yield return new object[] { isPrepared, "SMALLINT UNSIGNED", (ushort) 12345, MySqlDbType.UInt16 };
-#if !BASELINE
+#if !MYSQL_DATA
 			yield return new object[] { isPrepared, "MEDIUMINT", -1234567, MySqlDbType.Int24 };
 #else
 			// https://bugs.mysql.com/bug.php?id=95986
@@ -397,18 +397,18 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 			yield return new object[] { isPrepared, "DATE", new DateTime(2018, 7, 23), MySqlDbType.Date };
 			yield return new object[] { isPrepared, "DATETIME(3)", new DateTime(2018, 7, 23, 20, 46, 52, 123), MySqlDbType.DateTime };
 			yield return new object[] { isPrepared, "ENUM('small', 'medium', 'large')", "medium", MySqlDbType.Enum };
-#if !BASELINE
+#if !MYSQL_DATA
 			// https://bugs.mysql.com/bug.php?id=106247
 			yield return new object[] { isPrepared, "SET('one','two','four','eight')", "two,eight", MySqlDbType.Set };
 #endif
-#if !BASELINE
+#if !MYSQL_DATA
 			yield return new object[] { isPrepared, "BOOL", true, MySqlDbType.Bool };
 #else
 			yield return new object[] { isPrepared, "BOOL", true, MySqlDbType.Int32 };
 #endif
 			yield return new object[] { isPrepared, "TIME(3)", TimeSpan.Zero.Subtract(new TimeSpan(15, 10, 34, 56, 789)), MySqlDbType.Time };
 
-#if !BASELINE
+#if !MYSQL_DATA
 			// https://bugs.mysql.com/bug.php?id=91751
 			yield return new object[] { isPrepared, "YEAR", 2134, MySqlDbType.Year };
 #endif

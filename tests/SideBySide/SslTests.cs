@@ -11,7 +11,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		m_database = database;
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[SkippableFact(ConfigSettings.RequiresSsl)]
 	public async Task ConnectSslPreferred()
 	{
@@ -35,7 +35,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 	[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
 	[InlineData("ssl-client.pfx", null, null)]
 	[InlineData("ssl-client-pw-test.pfx", "test", null)]
-#if !BASELINE
+#if !MYSQL_DATA
 	[InlineData("ssl-client.pfx", null, "ssl-ca-cert.pem")]
 	[InlineData("ssl-client-pw-test.pfx", "test", "ssl-ca-cert.pem")]
 #endif
@@ -52,7 +52,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		await DoTestSsl(csb.ConnectionString);
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
 	[InlineData("ssl-client.pfx", null)]
 	[InlineData("ssl-client-pw-test.pfx", "test")]
@@ -84,7 +84,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 	[SkippableTheory(ConfigSettings.RequiresSsl | ConfigSettings.KnownClientCertificate)]
 	[InlineData("ssl-client-cert.pem", "ssl-client-key.pem", null)]
 	[InlineData("ssl-client-cert.pem", "ssl-client-key-null.pem", null)]
-#if !BASELINE
+#if !MYSQL_DATA
 	[InlineData("ssl-client-cert.pem", "ssl-client-key.pem", "ssl-ca-cert.pem")] // https://bugs.mysql.com/bug.php?id=95436
 	[InlineData("ssl-client-cert.pem", "ssl-client-key-null.pem", "ssl-ca-cert.pem")] // https://bugs.mysql.com/bug.php?id=95436
 #endif
@@ -107,7 +107,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		using var connection = new MySqlConnection(connectionString);
 		using var cmd = connection.CreateCommand();
 		await connection.OpenAsync();
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.True(connection.SslIsEncrypted);
 		Assert.True(connection.SslIsSigned);
 		Assert.True(connection.SslIsAuthenticated);
@@ -137,7 +137,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		{
 			using var cmd = connection.CreateCommand();
 			await connection.OpenAsync();
-#if !BASELINE
+#if !MYSQL_DATA
 			Assert.True(connection.SslIsEncrypted);
 			Assert.True(connection.SslIsSigned);
 			Assert.True(connection.SslIsAuthenticated);
@@ -152,7 +152,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		store.Remove(certificate);
 	}
 
-	[SkippableFact(ConfigSettings.RequiresSsl, Baseline = "MySql.Data does not check for a private key")]
+	[SkippableFact(ConfigSettings.RequiresSsl, MySqlData = "MySql.Data does not check for a private key")]
 	public async Task ConnectSslClientCertificateNoPrivateKey()
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
@@ -169,7 +169,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		csb.CertificateFile = Path.Combine(AppConfig.CertsPath, "non-ca-client.pfx");
 		csb.CertificatePassword = "";
 		using var connection = new MySqlConnection(csb.ConnectionString);
-#if !BASELINE
+#if !MYSQL_DATA
 		await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
 #else
 		await Assert.ThrowsAsync<AuthenticationException>(async () => await connection.OpenAsync());
@@ -180,7 +180,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 	public async Task ConnectSslBadCaCertificate()
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
-#if !BASELINE
+#if !MYSQL_DATA
 		csb.CertificateFile = Path.Combine(AppConfig.CertsPath, "ssl-client.pfx");
 #else
 		csb.SslCert = Path.Combine(AppConfig.CertsPath, "ssl-client-cert.pem");
@@ -192,7 +192,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[SkippableTheory(ServerFeatures.KnownCertificateAuthority, ConfigSettings.RequiresSsl)]
 	[InlineData(MySqlSslMode.VerifyCA, false, false)]
 	[InlineData(MySqlSslMode.VerifyCA, true, false)]
@@ -235,7 +235,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		}
 #endif
 
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal(expectedProtocol, connection.SslProtocol);
 #endif
 		using var cmd = new MySqlCommand("show status like 'Ssl_version';", connection);
@@ -258,7 +258,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		await connection.OpenAsync();
 
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal(SslProtocols.Tls11, connection.SslProtocol);
 #endif
 		using var cmd = new MySqlCommand("show status like 'Ssl_version';", connection);
@@ -279,7 +279,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		csb.TlsVersion = "TLS 1.3";
 
 		using var connection = new MySqlConnection(csb.ConnectionString);
-#if !BASELINE
+#if !MYSQL_DATA
 		await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
 #else
 		await Assert.ThrowsAsync<Win32Exception>(async () => await connection.OpenAsync());

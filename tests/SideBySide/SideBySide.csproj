@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup Condition=" '$(Configuration)' != 'Baseline' ">
+  <PropertyGroup Condition=" '$(Configuration)' != 'MySqlData' ">
     <TargetFrameworks>net462;net472;netcoreapp3.1;net6.0;net7.0</TargetFrameworks>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Baseline' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'MySqlData' ">
     <TargetFrameworks>net472</TargetFrameworks>
-    <DefineConstants>BASELINE</DefineConstants>
+    <DefineConstants>MYSQL_DATA</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -45,13 +45,13 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(Configuration)' != 'Baseline' ">
+  <ItemGroup Condition=" '$(Configuration)' != 'MySqlData' ">
     <ProjectReference Include="..\..\src\MySqlConnector\MySqlConnector.csproj" />
     <ProjectReference Include="..\..\src\MySqlConnector.Authentication.Ed25519\MySqlConnector.Authentication.Ed25519.csproj" />
     <Using Include="MySqlConnector" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(Configuration)' == 'Baseline' ">
+  <ItemGroup Condition=" '$(Configuration)' == 'MySqlData' ">
     <PackageReference Include="MySql.Data" Version="8.0.30" />
     <Using Include="MySql.Data.MySqlClient" />
   </ItemGroup>

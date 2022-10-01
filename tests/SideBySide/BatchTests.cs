@@ -1,4 +1,4 @@
-#if !BASELINE
+#if !MYSQL_DATA
 
 namespace SideBySide;
 

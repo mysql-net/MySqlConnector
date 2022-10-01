@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-#if BASELINE
+#if MYSQL_DATA
 using MySql.Data.MySqlClient;
 #endif
 using Xunit;
@@ -20,7 +20,7 @@ public class MySqlConnectionStringBuilderTests
 		Assert.False(csb.AllowUserVariables);
 		Assert.False(csb.AllowZeroDateTime);
 		Assert.True(csb.AutoEnlist);
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Null(csb.CertificateFile);
 		Assert.Null(csb.CertificatePassword);
 		Assert.Null(csb.CertificateThumbprint);
@@ -34,7 +34,7 @@ public class MySqlConnectionStringBuilderTests
 		Assert.Equal("", csb.CharacterSet);
 		Assert.Equal(0u, csb.ConnectionLifeTime);
 		Assert.Equal(MySqlConnectionProtocol.Sockets, csb.ConnectionProtocol);
-#if BASELINE
+#if MYSQL_DATA
 		Assert.False(csb.ConnectionReset);
 #else
 		Assert.True(csb.ConnectionReset);
@@ -45,12 +45,12 @@ public class MySqlConnectionStringBuilderTests
 #endif
 		Assert.Equal(15u, csb.ConnectionTimeout);
 		Assert.False(csb.ConvertZeroDateTime);
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal(MySqlDateTimeKind.Unspecified, csb.DateTimeKind);
 #endif
 		Assert.Equal("", csb.Database);
 		Assert.Equal(30u, csb.DefaultCommandTimeout);
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal("", csb.ApplicationName);
 		Assert.Equal(180u, csb.ConnectionIdleTimeout);
 		Assert.False(csb.ForceSynchronous);
@@ -65,19 +65,19 @@ public class MySqlConnectionStringBuilderTests
 		Assert.Equal(0u, csb.MinimumPoolSize);
 		Assert.Equal("", csb.Password);
 		Assert.Equal("MYSQL", csb.PipeName);
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.False(csb.NoBackslashEscapes);
 		Assert.Equal(MySqlServerRedirectionMode.Disabled, csb.ServerRedirectionMode);
 #endif
 		Assert.False(csb.OldGuids);
 		Assert.False(csb.PersistSecurityInfo);
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.True(csb.Pipelining);
 #endif
 		Assert.True(csb.Pooling);
 		Assert.Equal(3306u, csb.Port);
 		Assert.Equal("", csb.Server);
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal("", csb.ServerRsaPublicKeyFile);
 		Assert.Equal("", csb.ServerSPN);
 		Assert.Equal("", csb.SslCa);
@@ -96,7 +96,7 @@ public class MySqlConnectionStringBuilderTests
 		Assert.False(csb.UseCompression);
 		Assert.Equal("", csb.UserID);
 		Assert.False(csb.UseAffectedRows);
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.True(csb.UseXaTransactions);
 #endif
 	}
@@ -123,11 +123,11 @@ public class MySqlConnectionStringBuilderTests
 				"connection lifetime=15;" +
 				"ConnectionReset=false;" +
 				"Convert Zero Datetime=true;" +
-#if !BASELINE
+#if !MYSQL_DATA
 				"datetimekind=utc;" +
 #endif
 				"default command timeout=123;" +
-#if !BASELINE
+#if !MYSQL_DATA
 				"application name=My Test Application;" +
 				"cancellation timeout = -1;" +
 				"connectionidletimeout=30;" +
@@ -171,7 +171,7 @@ public class MySqlConnectionStringBuilderTests
 		Assert.True(csb.AllowUserVariables);
 		Assert.True(csb.AllowZeroDateTime);
 		Assert.False(csb.AutoEnlist);
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal(-1, csb.CancellationTimeout);
 		// Connector/NET treats "CertificateFile" (client certificate) and "SslCa" (server CA) as aliases
 		Assert.Equal("file.pfx", csb.CertificateFile);
@@ -185,12 +185,12 @@ public class MySqlConnectionStringBuilderTests
 		Assert.False(csb.ConnectionReset);
 		Assert.Equal(30u, csb.ConnectionTimeout);
 		Assert.True(csb.ConvertZeroDateTime);
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal(MySqlDateTimeKind.Utc, csb.DateTimeKind);
 #endif
 		Assert.Equal("schema_name", csb.Database);
 		Assert.Equal(123u, csb.DefaultCommandTimeout);
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal("My Test Application", csb.ApplicationName);
 		Assert.Equal(30u, csb.ConnectionIdleTimeout);
 #pragma warning disable 618
@@ -226,7 +226,7 @@ public class MySqlConnectionStringBuilderTests
 		Assert.Equal("client-cert.pem", csb.SslCert);
 		Assert.Equal("client-key.pem", csb.SslKey);
 		Assert.Equal(MySqlSslMode.VerifyCA, csb.SslMode);
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Equal("Tls12, Tls13", csb.TlsVersion);
 #else
 		Assert.Equal("TLS 1.2, TLS 1.3", csb.TlsVersion);
@@ -235,7 +235,7 @@ public class MySqlConnectionStringBuilderTests
 		Assert.True(csb.UseCompression);
 		Assert.Equal("username", csb.UserID);
 
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal("Server=db-server;Port=1234;User ID=username;Password=Pass1234;Database=schema_name;Load Balance=Random;" +
 			"Connection Protocol=Pipe;Pipe Name=MyPipe;SSL Mode=VerifyCA;Certificate File=file.pfx;Certificate Password=Pass2345;" +
 			"Certificate Store Location=CurrentUser;Certificate Thumbprint=thumbprint123;SSL Cert=client-cert.pem;SSL Key=client-key.pem;" +
@@ -259,7 +259,7 @@ public class MySqlConnectionStringBuilderTests
 		Assert.Throws<ArgumentException>(() => new MySqlConnectionStringBuilder("ssl mode=invalid;"));
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void ConstructWithNull()
 	{
@@ -391,7 +391,7 @@ public class MySqlConnectionStringBuilderTests
 		Assert.Equal("", csb.ConnectionString);
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void SetApplicationNameToNull()
 	{
@@ -418,7 +418,7 @@ public class MySqlConnectionStringBuilderTests
 #endif
 
 	[Theory]
-#if !BASELINE
+#if !MYSQL_DATA
 	[InlineData("Tls", "0")]
 	[InlineData("Tls1", "0")]
 	[InlineData("Tlsv1", "0")]
@@ -441,7 +441,7 @@ public class MySqlConnectionStringBuilderTests
 	[InlineData("Tlsv1.3", "3")]
 	[InlineData("TLS 1.3", "3")]
 	[InlineData("TLS v1.3", "3")]
-#if !BASELINE
+#if !MYSQL_DATA
 	[InlineData("Tls,Tls", "0")]
 	[InlineData("Tls1.1,Tls v1.1, TLS 1.1", "1")]
 	[InlineData("Tls12,Tls10", "0,2")]
@@ -451,7 +451,7 @@ public class MySqlConnectionStringBuilderTests
 	public void ParseTlsVersion(string input, string expected)
 	{
 		var csb = new MySqlConnectionStringBuilder { TlsVersion = input };
-#if !BASELINE
+#if !MYSQL_DATA
 		string[] normalizedVersions = new[] { "TLS 1.0", "TLS 1.1", "TLS 1.2", "TLS 1.3" };
 #else
 		string[] normalizedVersions = new[] { "Tls", "Tls11", "Tls12", "Tls13" };
@@ -469,7 +469,7 @@ public class MySqlConnectionStringBuilderTests
 	}
 
 	[Theory]
-#if BASELINE
+#if MYSQL_DATA
 	[InlineData("AllowPublicKeyRetrieval", false)]
 #else
 	[InlineData("Allow Public Key Retrieval", false)]
@@ -484,7 +484,7 @@ public class MySqlConnectionStringBuilderTests
 	[InlineData("Connection Lifetime", 30u)]
 	[InlineData("Connection Protocol", MySqlConnectionProtocol.NamedPipe)]
 	[InlineData("Connection Reset", true)]
-#if BASELINE
+#if MYSQL_DATA
 	[InlineData("Connect Timeout", 10u)]
 #else
 	[InlineData("Connection Timeout", 10u)]
@@ -504,7 +504,7 @@ public class MySqlConnectionStringBuilderTests
 	[InlineData("Port", 3307u)]
 	[InlineData("Server", "localhost")]
 	[InlineData("SSL Mode", MySqlSslMode.Required)]
-#if BASELINE
+#if MYSQL_DATA
 	[InlineData("TLS version", "Tls12")]
 #else
 	[InlineData("TLS Version", "TLS 1.2")]
@@ -513,7 +513,7 @@ public class MySqlConnectionStringBuilderTests
 	[InlineData("Use Affected Rows", false)]
 	[InlineData("Use Compression", true)]
 	[InlineData("User ID", "user")]
-#if !BASELINE
+#if !MYSQL_DATA
 	// misspelled
 	[InlineData("Allow Load Local Infile", true)]
 
@@ -544,14 +544,14 @@ public class MySqlConnectionStringBuilderTests
 	public void NamedProperty(string propertyName, object value)
 	{
 		var stringValue = Convert.ToString(value, CultureInfo.InvariantCulture);
-#if BASELINE
+#if MYSQL_DATA
 		// fix some properties that are spelt differently
 		propertyName = propertyName.Replace("SSL ", "Ssl ").Replace("DateTime", "Datetime");
 #endif
 		for (var i = 0; i < 2; i++)
 		{
 			var csb = new MySqlConnectionStringBuilder();
-#if !BASELINE
+#if !MYSQL_DATA
 			Assert.False(csb.ContainsKey(propertyName));
 			Assert.False(csb.TryGetValue(propertyName, out var setValue));
 			Assert.Null(setValue);
@@ -573,14 +573,14 @@ public class MySqlConnectionStringBuilderTests
 			Assert.True(csb.ContainsKey(propertyName));
 
 			Assert.True(csb.TryGetValue(propertyName, out setValue));
-#if !BASELINE
+#if !MYSQL_DATA
 			Assert.Equal(stringValue, setValue);
 #else
 			Assert.Equal(value, setValue);
 #endif
 
 			var propertyDescriptorValue = propertyDescriptor.GetValue(csb);
-#if !BASELINE
+#if !MYSQL_DATA
 			Assert.Equal(stringValue, propertyDescriptorValue);
 #else
 			Assert.Equal(value, propertyDescriptorValue);

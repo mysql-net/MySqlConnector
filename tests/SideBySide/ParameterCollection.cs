@@ -21,7 +21,7 @@ public class ParameterCollection : IDisposable
 	[InlineData("@Bar", -1)]
 	[InlineData("?Bar", -1)]
 	[InlineData("", -1)]
-#if !BASELINE
+#if !MYSQL_DATA
 	[InlineData("@Baz", 0)]
 	[InlineData("?Baz", 0)]
 	[InlineData("@'Baz'", 0)]
@@ -58,7 +58,7 @@ public class ParameterCollection : IDisposable
 	[InlineData("@Test")]
 	[InlineData("@tEsT")]
 	[InlineData("@TEST")]
-#if !BASELINE
+#if !MYSQL_DATA
 	[InlineData("test")]
 	[InlineData("@`test`")]
 	[InlineData("@'test'")]
@@ -85,7 +85,7 @@ public class ParameterCollection : IDisposable
 	[Theory]
 	[InlineData("@test")]
 	[InlineData("@TEST")]
-#if !BASELINE
+#if !MYSQL_DATA
 	[InlineData("test")] // https://bugs.mysql.com/bug.php?id=93370
 	[InlineData("@'test'")]
 	[InlineData("@`TEST`")]
@@ -99,7 +99,7 @@ public class ParameterCollection : IDisposable
 	[Fact]
 	public void IndexOfNull()
 	{
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Equal(-1, m_parameterCollection.IndexOf(null));
 #else
 		Assert.Throws<ArgumentNullException>(() => m_parameterCollection.IndexOf(null));
@@ -292,7 +292,7 @@ public class ParameterCollection : IDisposable
 		var parameter2 = cmd.CreateParameter();
 		cmd.Parameters.Add(parameter2);
 		parameter1.ParameterName = "@a";
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Throws<MySqlException>(() => parameter2.ParameterName = "@a");
 #else
 		Assert.Throws<ArgumentException>(() => parameter2.ParameterName = "@a");

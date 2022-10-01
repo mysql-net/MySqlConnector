@@ -58,7 +58,7 @@ public static class TestUtilities
 
 		var csb = AppConfig.CreateConnectionStringBuilder();
 		if (configSettings.HasFlag(ConfigSettings.RequiresSsl) && (csb.SslMode == MySqlSslMode.Disabled
-#if !BASELINE
+#if !MYSQL_DATA
 		 || csb.SslMode == MySqlSslMode.Preferred
 #endif
 		 ))
@@ -66,7 +66,7 @@ public static class TestUtilities
 
 		if (configSettings.HasFlag(ConfigSettings.TrustedHost) &&
 			(csb.SslMode == MySqlSslMode.Disabled ||
-#if !BASELINE
+#if !MYSQL_DATA
 			csb.SslMode == MySqlSslMode.Preferred ||
 #endif
 			csb.SslMode == MySqlSslMode.Required))
@@ -116,7 +116,7 @@ public static class TestUtilities
 		return null;
 	}
 
-#if BASELINE
+#if MYSQL_DATA
 	public static System.Threading.Tasks.Task PrepareAsync(this MySqlCommand command)
 	{
 		command.Prepare();

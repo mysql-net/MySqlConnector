@@ -9,7 +9,7 @@ public class DataAdapterTests : IClassFixture<DatabaseFixture>, IDisposable
 		m_connection = database.Connection;
 		m_connection.Open();
 
-#if BASELINE
+#if MYSQL_DATA
 		// not sure why this is necessary
 		m_connection.Execute("drop table if exists data_adapter;");
 #endif
@@ -121,7 +121,7 @@ insert into data_adapter(int_value, text_value) values
 		Assert.Equal("one", dt.Rows[2]["text_value"]);
 	}
 
-	[SkippableFact(Baseline = "Throws FormatException: Input string was not in a correct format")]
+	[SkippableFact(MySqlData = "Throws FormatException: Input string was not in a correct format")]
 	public void InsertWithDataSet()
 	{
 		using (var ds = new DataSet())
@@ -237,7 +237,7 @@ insert into data_adapter(int_value, text_value) values
 		Assert.Equal(new[] { null, "", "one", "two", "three", "four" }, m_connection.Query<string>("SELECT text_value FROM data_adapter ORDER BY id"));
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Theory]
 	[InlineData("INSERT INTO table(col1, col2) VALUES(@col1, @col2);", "@col1,@col2", "0,1")]
 	[InlineData("INSERT INTO table(col1, col2) VALUES(@col1, @col2);", "@col2,@col1", "1,0")]

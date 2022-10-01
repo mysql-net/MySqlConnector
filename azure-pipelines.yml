@@ -28,8 +28,8 @@ jobs:
       artifactName: 'SideBySide-net472-$(Agent.OS)'
       targetPath: 'tests/SideBySide/bin/Release/net472/publish'
 
-- job: windows_baseline
-  displayName: 'Baseline'
+- job: windows_mysql_data
+  displayName: 'MySql.Data Tests'
   pool:
     vmimage: 'windows-2019'
   steps:
@@ -49,17 +49,17 @@ jobs:
     inputs:
       version: $(DotNetCoreSdkVersion)
   - task: DotNetCoreCLI@2
-    displayName: 'Unit tests'
+    displayName: 'MySql.Data unit tests'
     inputs:
       command: 'test'
-      arguments: 'tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj -c Baseline'
-      testRunTitle: 'Baseline unit tests'
+      arguments: 'tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj -c MySqlData'
+      testRunTitle: 'MySql.Data unit tests'
   - task: DotNetCoreCLI@2
-    displayName: 'Baseline tests'
+    displayName: 'MySql.Data integration tests'
     inputs:
       command: 'test'
-      arguments: 'tests\SideBySide\SideBySide.csproj -c Baseline'
-      testRunTitle: 'Baseline tests'
+      arguments: 'tests\SideBySide\SideBySide.csproj -c MySqlData'
+      testRunTitle: 'MySql.Data integration tests'
     env:
       DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,StreamingResults,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=root;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600'
@@ -72,7 +72,7 @@ jobs:
     inputs:
       testResultsFormat: VSTest
       testResultsFiles: '**/*.trx'
-      testRunTitle: 'Baseline Tests'
+      testRunTitle: 'MySql.Data Tests'
       failTaskOnFailedTests: true
 
 - job: linux_unit_tests

@@ -1,4 +1,4 @@
-#if BASELINE
+#if MYSQL_DATA
 using MySql.Data.MySqlClient;
 #endif
 using System;
@@ -51,7 +51,7 @@ public class MySqlAttributeCollectionTests
 		Assert.Equal("value2", attribute.Value);
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void SetAttributeTwice()
 	{
@@ -65,7 +65,7 @@ public class MySqlAttributeCollectionTests
 
 	private void AddAttribute()
 	{
-#if BASELINE
+#if MYSQL_DATA
 		m_collection.SetAttribute(m_attribute);
 #else
 		m_collection.Add(m_attribute);
@@ -74,7 +74,7 @@ public class MySqlAttributeCollectionTests
 
 	private void AssertEmpty()
 	{
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Equal(0, m_collection.Count);
 #else
 		Assert.Empty(m_collection);
@@ -83,7 +83,7 @@ public class MySqlAttributeCollectionTests
 
 	private MySqlAttribute AssertSingle()
 	{
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Equal(1, m_collection.Count);
 		return m_collection[0];
 #else

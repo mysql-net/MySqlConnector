@@ -60,5 +60,5 @@ To run the tests against MySql.Data:
 
 ```
 cd tests\SideBySide
-dotnet restore /p:Configuration=Baseline && dotnet test -c Baseline
+dotnet restore /p:Configuration=MySqlData && dotnet test -c MySqlData
 ```

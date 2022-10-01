@@ -1,4 +1,4 @@
-#if !BASELINE
+#if !MYSQL_DATA
 #if NET7_0_OR_GREATER
 using System;
 using System.Collections.Generic;

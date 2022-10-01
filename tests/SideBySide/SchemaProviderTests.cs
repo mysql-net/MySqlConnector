@@ -92,7 +92,7 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 		foreach (DataRow row in metadata.Rows)
 		{
 			var schema = (string) row["CollectionName"];
-#if BASELINE
+#if MYSQL_DATA
 			if (schema is "Views" or "ViewColumns" or "Triggers")
 				continue;
 #endif
@@ -103,7 +103,7 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 		}
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void ExcessColumnsRestriction() =>
 		Assert.Throws<ArgumentException>(() => m_database.Connection.GetSchema("Columns", new[] { "1", "2", "3", "4", "too many" }));
@@ -123,7 +123,7 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 	[InlineData("Tables")]
 	[InlineData("Triggers")]
 	[InlineData("Views")]
-#if !BASELINE
+#if !MYSQL_DATA
 	[InlineData("CharacterSets")]
 	[InlineData("CollationCharacterSetApplicability")]
 	[InlineData("Collations")]
@@ -147,7 +147,7 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 		Assert.NotNull(table);
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public async Task GetMetaDataCollectionsSchemaAsync()
 	{

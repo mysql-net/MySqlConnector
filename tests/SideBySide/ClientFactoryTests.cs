@@ -1,4 +1,4 @@
-#if BASELINE
+#if MYSQL_DATA
 using MySqlConnectorFactory = MySql.Data.MySqlClient.MySqlClientFactory;
 #endif
 
@@ -49,7 +49,7 @@ public class ClientFactoryTests
 #if !NET462 && !NET472
 		DbProviderFactories.RegisterFactory("MySqlConnector", MySqlConnectorFactory.Instance);
 #endif
-#if BASELINE
+#if MYSQL_DATA
 		var providerInvariantName = "MySql.Data.MySqlClient";
 #else
 		var providerInvariantName = "MySqlConnector";

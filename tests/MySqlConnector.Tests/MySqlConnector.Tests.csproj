@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup Condition=" '$(Configuration)' != 'Baseline' ">
+  <PropertyGroup Condition=" '$(Configuration)' != 'MySqlData' ">
     <TargetFrameworks>net7.0</TargetFrameworks>
   </PropertyGroup>
 
- <PropertyGroup Condition=" '$(Configuration)' == 'Baseline' ">
+ <PropertyGroup Condition=" '$(Configuration)' == 'MySqlData' ">
     <TargetFrameworks>net472</TargetFrameworks>
-    <DefineConstants>BASELINE</DefineConstants>
+    <DefineConstants>MYSQL_DATA</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -27,11 +27,11 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.1" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(Configuration)' != 'Baseline' ">
+  <ItemGroup Condition=" '$(Configuration)' != 'MySqlData' ">
     <ProjectReference Include="..\..\src\MySqlConnector\MySqlConnector.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(Configuration)' == 'Baseline' ">
+  <ItemGroup Condition=" '$(Configuration)' == 'MySqlData' ">
     <PackageReference Include="MySql.Data" Version="8.0.30" />
     <Compile Remove="ByteBufferWriterTests.cs;CachedProcedureTests.cs;CancellationTests.cs;ConnectionTests.cs;FakeMySqlServer.cs;FakeMySqlServerConnection.cs;LoadBalancerTests.cs;MySqlDecimalTests.cs;MySqlExceptionTests.cs;MySqlParameterCollectionNameToIndexTests.cs;NormalizeTests.cs;ServerVersionTests.cs;StatementPreparerTests.cs;TypeMapperTests.cs;UtilityTests.cs" />
   </ItemGroup>

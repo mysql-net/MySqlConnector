@@ -264,7 +264,7 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		bl.FieldQuotationOptional = true;
 		bl.Expressions.Add("five = UNHEX(five)");
 		bl.Local = false;
-#if BASELINE
+#if MYSQL_DATA
 		await Assert.ThrowsAsync<System.NullReferenceException>(async () =>
 		{
 			int rowCount = await bl.LoadAsync();
@@ -291,7 +291,7 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		bl.FieldQuotationOptional = true;
 		bl.Expressions.Add("five = UNHEX(five)");
 		bl.Local = false;
-#if BASELINE
+#if MYSQL_DATA
 		await Assert.ThrowsAsync<MySqlException>(async () =>
 		{
 			int rowCount = await bl.LoadAsync();
@@ -304,7 +304,7 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 #endif
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[SkippableFact(ConfigSettings.LocalCsvFile)]
 	public async Task BulkLoadFileStreamInvalidOperation()
 	{

@@ -99,7 +99,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 
 		if (prepare)
 		{
-#if BASELINE
+#if MYSQL_DATA
 			await Assert.ThrowsAsync<ArgumentException>(async () => await cmd.PrepareAsync());
 #else
 			await cmd.PrepareAsync();
@@ -194,7 +194,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		Assert.False(await reader.NextResultAsync());
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -366,7 +366,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		{
 			ParameterName = "@name",
 			Value = "awesome",
-#if BASELINE
+#if MYSQL_DATA
 			Direction = ParameterDirection.Input,
 #endif
 		});
@@ -374,14 +374,14 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		{
 			ParameterName = "@radius",
 			Value = 1.5,
-#if BASELINE
+#if MYSQL_DATA
 			Direction = ParameterDirection.Input,
 #endif
 		});
 		cmd.Parameters.Add(new()
 		{
 			ParameterName = "@shape",
-#if BASELINE
+#if MYSQL_DATA
 			Direction = ParameterDirection.Output,
 #endif
 		});
@@ -389,35 +389,35 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		{
 			ParameterName = "@height",
 			Value = 2.0,
-#if BASELINE
+#if MYSQL_DATA
 			Direction = ParameterDirection.Input,
 #endif
 		});
 		cmd.Parameters.Add(new()
 		{
 			ParameterName = "@diameter",
-#if BASELINE
+#if MYSQL_DATA
 			Direction = ParameterDirection.Output,
 #endif
 		});
 		cmd.Parameters.Add(new()
 		{
 			ParameterName = "@area",
-#if BASELINE
+#if MYSQL_DATA
 			Direction = ParameterDirection.Output,
 #endif
 		});
 		cmd.Parameters.Add(new()
 		{
 			ParameterName = "@volume",
-#if BASELINE
+#if MYSQL_DATA
 			Direction = ParameterDirection.Output,
 #endif
 		});
 		cmd.Parameters.Add(new()
 		{
 			ParameterName = "@circumference",
-#if BASELINE
+#if MYSQL_DATA
 			Direction = ParameterDirection.Output,
 #endif
 		});
@@ -666,7 +666,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 	[Theory]
 	[InlineData("bit(1)", 1)]
 	[InlineData("bit(10)", 10)]
-#if !BASELINE
+#if !MYSQL_DATA
 	[InlineData("bool", 1)]
 	[InlineData("tinyint(1)", 1)]
 #endif
@@ -700,7 +700,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 	[Theory]
 	[InlineData("bit", MySqlDbType.Bit)]
 	[InlineData("bit(1)", MySqlDbType.Bit)]
-#if BASELINE
+#if MYSQL_DATA
 	[InlineData("bool", MySqlDbType.Byte)]
 	[InlineData("tinyint(1)", MySqlDbType.Byte)]
 #else
@@ -732,7 +732,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		}
 	}
 
-	[SkippableFact(ServerFeatures.Json, Baseline = "https://bugs.mysql.com/bug.php?id=89335")]
+	[SkippableFact(ServerFeatures.Json, MySqlData = "https://bugs.mysql.com/bug.php?id=89335")]
 	public void DeriveParametersSetJson()
 	{
 		using var cmd = new MySqlCommand("SetJson", m_database.Connection);

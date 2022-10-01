@@ -1,4 +1,4 @@
-#if !BASELINE
+#if !MYSQL_DATA
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
 #endif
@@ -12,7 +12,7 @@ public class CharacterSetTests : IClassFixture<DatabaseFixture>
 		m_database = database;
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void MaxLength()
 	{
@@ -65,7 +65,7 @@ VALUES ('a'), ('b'), ('c'), ('d'), ('e'), ('f'), ('g'), ('h'), ('i'), ('j');");
 	public void CollationConnection(bool reopenConnection)
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
-#if BASELINE
+#if MYSQL_DATA
 		csb.CharacterSet = "utf8mb4";
 #endif
 		using var connection = new MySqlConnection(csb.ConnectionString);

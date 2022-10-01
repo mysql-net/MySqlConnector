@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-#if BASELINE
+#if MYSQL_DATA
 using MySql.Data.Types;
 #endif
 using Xunit;
@@ -99,7 +99,7 @@ public class MySqlDateTimeTests
 	public void NotConvertibleToDateTime()
 	{
 		IConvertible convertible = new MySqlDateTime();
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Throws<InvalidCastException>(() => convertible.ToDateTime(CultureInfo.InvariantCulture));
 #else
 		Assert.Throws<MySqlConversionException>(() => convertible.ToDateTime(CultureInfo.InvariantCulture));
@@ -110,7 +110,7 @@ public class MySqlDateTimeTests
 	public void NotConvertToDateTime()
 	{
 		object obj = new MySqlDateTime();
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Throws<InvalidCastException>(() => Convert.ToDateTime(obj));
 #else
 		Assert.Throws<MySqlConversionException>(() => Convert.ToDateTime(obj));
@@ -121,14 +121,14 @@ public class MySqlDateTimeTests
 	public void NotChangeTypeToDateTime()
 	{
 		object obj = new MySqlDateTime();
-#if !BASELINE
+#if !MYSQL_DATA
 		Assert.Throws<InvalidCastException>(() => Convert.ChangeType(obj, TypeCode.DateTime));
 #else
 		Assert.Throws<MySqlConversionException>(() => Convert.ChangeType(obj, TypeCode.DateTime));
 #endif
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void ValidDateTimeConvertibleToString()
 	{
@@ -148,7 +148,7 @@ public class MySqlDateTimeTests
 	public void CompareInvalidObject()
 	{
 		IComparable left = new MySqlDateTime(2000, 1, 1, 1, 1, 1, 1);
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<InvalidCastException>(() => left.CompareTo(new object()));
 #else
 		Assert.Throws<ArgumentException>(() => left.CompareTo(new object()));
@@ -226,7 +226,7 @@ public class MySqlDateTimeTests
 		Assert.Equal(0, left.CompareTo(right));
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void Operators()
 	{

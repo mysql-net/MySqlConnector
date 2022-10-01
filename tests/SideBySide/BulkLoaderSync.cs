@@ -30,7 +30,7 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 ");
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void FileNameAndSourceStream()
 	{
@@ -344,7 +344,7 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		bl.FieldQuotationOptional = true;
 		bl.Expressions.Add("five = UNHEX(five)");
 		bl.Local = false;
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<System.NullReferenceException>(() =>
 		{
 			int rowCount = bl.Load();
@@ -371,7 +371,7 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		bl.FieldQuotationOptional = true;
 		bl.Expressions.Add("five = UNHEX(five)");
 		bl.Local = false;
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Throws<MySqlException>(() =>
 		{
 			int rowCount = bl.Load();
@@ -384,7 +384,7 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 #endif
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[SkippableFact(ConfigSettings.LocalCsvFile)]
 	public void BulkLoadFileStreamInvalidOperation()
 	{
@@ -515,7 +515,7 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 		Assert.Throws<ArgumentNullException>(() => bulkCopy.WriteToServer(default(DataTable)));
 	}
 
-#if !BASELINE
+#if !MYSQL_DATA
 	[Fact]
 	public void BulkCopyDataTableWithMySqlDecimal()
 	{
