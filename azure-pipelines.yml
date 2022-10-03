@@ -17,19 +17,19 @@ jobs:
   steps:
   - template: '.ci/build-steps.yml'
   - task: DotNetCoreCLI@2
-    displayName: 'Publish SideBySide (net472)'
+    displayName: 'Publish IntegrationTests (net472)'
     inputs:
       command: 'publish'
-      arguments: '-c Release -f net472 tests/SideBySide/SideBySide.csproj'
+      arguments: '-c Release -f net472 tests/IntegrationTests/IntegrationTests.csproj'
       publishWebProjects: false
       zipAfterPublish: false
   - task: PublishPipelineArtifact@0
     inputs:
-      artifactName: 'SideBySide-net472-$(Agent.OS)'
-      targetPath: 'tests/SideBySide/bin/Release/net472/publish'
+      artifactName: 'IntegrationTests-net472-$(Agent.OS)'
+      targetPath: 'tests/IntegrationTests/bin/Release/net472/publish'
 
-- job: windows_baseline
-  displayName: 'Baseline'
+- job: windows_mysql_data
+  displayName: 'MySql.Data Tests'
   pool:
     vmimage: 'windows-2019'
   steps:
@@ -39,7 +39,7 @@ jobs:
     inputs:
       sourceFolder: '.ci/config'
       contents: 'config.json'
-      targetFolder: 'tests/SideBySide'
+      targetFolder: 'tests/IntegrationTests'
   - task: UseDotNet@2
     displayName: 'Install .NET Core 6.0'
     inputs:
@@ -49,17 +49,17 @@ jobs:
     inputs:
       version: $(DotNetCoreSdkVersion)
   - task: DotNetCoreCLI@2
-    displayName: 'Unit tests'
+    displayName: 'MySql.Data unit tests'
     inputs:
       command: 'test'
-      arguments: 'tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj -c Baseline'
-      testRunTitle: 'Baseline unit tests'
+      arguments: 'tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj -c MySqlData'
+      testRunTitle: 'MySql.Data unit tests'
   - task: DotNetCoreCLI@2
-    displayName: 'Baseline tests'
+    displayName: 'MySql.Data integration tests'
     inputs:
       command: 'test'
-      arguments: 'tests\SideBySide\SideBySide.csproj -c Baseline'
-      testRunTitle: 'Baseline tests'
+      arguments: 'tests\IntegrationTests\IntegrationTests.csproj -c MySqlData'
+      testRunTitle: 'MySql.Data integration tests'
     env:
       DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,StreamingResults,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=root;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600'
@@ -72,7 +72,7 @@ jobs:
     inputs:
       testResultsFormat: VSTest
       testResultsFiles: '**/*.trx'
-      testRunTitle: 'Baseline Tests'
+      testRunTitle: 'MySql.Data Tests'
       failTaskOnFailedTests: true
 
 - job: linux_unit_tests
@@ -125,16 +125,16 @@ jobs:
     displayName: 'Copy Azure config'
     inputs:
       targetType: inline
-      script: Copy-Item -Path ".\.ci\config\config.ssl.json" -Destination ".\tests\SideBySide\config.json"
+      script: Copy-Item -Path ".\.ci\config\config.ssl.json" -Destination ".\tests\IntegrationTests\config.json"
   - task: DotNetCoreCLI@2
     displayName: 'Restore packages'
     inputs:
       command: 'restore'
   - task: DotNetCoreCLI@2
-    displayName: 'Side by Side tests (net6.0)'
+    displayName: 'Integration tests (net6.0)'
     inputs:
       command: 'test'
-      projects: 'tests/SideBySide/SideBySide.csproj'
+      projects: 'tests/IntegrationTests/IntegrationTests.csproj'
       arguments: '-c Release -f net6.0 --no-restore'
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'Azure', 'net6.0', 'SSL') }}
     env:
@@ -162,21 +162,21 @@ jobs:
     inputs:
       sourceFolder: '.ci/config'
       contents: 'config.json'
-      targetFolder: 'tests/SideBySide'
+      targetFolder: 'tests/IntegrationTests'
   - task: PowerShell@2
     displayName: 'Remove target frameworks'
     inputs:
       targetType: 'inline'
-      script: '((Get-Content .\tests\SideBySide\SideBySide.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>net472;net7.0</TargetFrameworks>'')) | Set-Content .\tests\SideBySide\SideBySide.csproj'
+      script: '((Get-Content .\tests\IntegrationTests\IntegrationTests.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>net472;net7.0</TargetFrameworks>'')) | Set-Content .\tests\IntegrationTests\IntegrationTests.csproj'
   - task: DotNetCoreCLI@2
     displayName: 'Restore packages'
     inputs:
       command: 'restore'
   - task: DotNetCoreCLI@2
-    displayName: 'Side by Side tests (net472/net7.0)'
+    displayName: 'Integration tests (net472/net7.0)'
     inputs:
       command: 'test'
-      projects: 'tests/SideBySide/SideBySide.csproj'
+      projects: 'tests/IntegrationTests/IntegrationTests.csproj'
       arguments: '-c Release --no-restore'
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net472/net7.0', 'No SSL') }}
     env:
@@ -203,22 +203,22 @@ jobs:
     displayName: 'Install .NET Core'
     inputs:
       version: $(DotNetCoreSdkVersion)
-  - script: copy .ci\config\config.json tests\SideBySide\config.json
+  - script: copy .ci\config\config.json tests\IntegrationTests\config.json
     displayName: 'Copy config.json'
   - task: PowerShell@2
     displayName: 'Remove target frameworks'
     inputs:
       targetType: 'inline'
-      script: '((Get-Content .\tests\SideBySide\SideBySide.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>netcoreapp3.1;net6.0</TargetFrameworks>'')) | Set-Content .\tests\SideBySide\SideBySide.csproj'
+      script: '((Get-Content .\tests\IntegrationTests\IntegrationTests.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>netcoreapp3.1;net6.0</TargetFrameworks>'')) | Set-Content .\tests\IntegrationTests\IntegrationTests.csproj'
   - task: DotNetCoreCLI@2
     displayName: 'Restore packages'
     inputs:
       command: 'restore'
   - task: DotNetCoreCLI@2
-    displayName: 'Side by Side tests (netcoreapp3.1/net6.0)'
+    displayName: 'Integration tests (netcoreapp3.1/net6.0)'
     inputs:
       command: 'test'
-      projects: 'tests/SideBySide/SideBySide.csproj'
+      projects: 'tests/IntegrationTests/IntegrationTests.csproj'
       arguments: '-c Release --no-restore'
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'netcoreapp3.1/net6.0', 'No SSL') }}
     env:

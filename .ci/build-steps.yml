@@ -4,7 +4,7 @@ steps:
   inputs:
     sourceFolder: '.ci/config'
     contents: 'config.json'
-    targetFolder: 'tests/SideBySide'
+    targetFolder: 'tests/IntegrationTests'
 - task: UseDotNet@2
   displayName: 'Install .NET Core'
   inputs:
@@ -47,37 +47,37 @@ steps:
     targetPath: 'tests/Conformance.Tests/bin/Release/net7.0/publish'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Publish SideBySide (3.1)'
+  displayName: 'Publish IntegrationTests (3.1)'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f netcoreapp3.1 --no-build tests/SideBySide/SideBySide.csproj'
+    arguments: '-c Release -f netcoreapp3.1 --no-build tests/IntegrationTests/IntegrationTests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: 'SideBySide-netcoreapp3.1-$(Agent.OS)'
-    targetPath: 'tests/SideBySide/bin/Release/netcoreapp3.1/publish'
+    artifactName: 'IntegrationTests-netcoreapp3.1-$(Agent.OS)'
+    targetPath: 'tests/IntegrationTests/bin/Release/netcoreapp3.1/publish'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Publish SideBySide (7.0)'
+  displayName: 'Publish IntegrationTests (7.0)'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f net7.0 --no-build tests/SideBySide/SideBySide.csproj'
+    arguments: '-c Release -f net7.0 --no-build tests/IntegrationTests/IntegrationTests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: 'SideBySide-net7.0-$(Agent.OS)'
-    targetPath: 'tests/SideBySide/bin/Release/net7.0/publish'
+    artifactName: 'IntegrationTests-net7.0-$(Agent.OS)'
+    targetPath: 'tests/IntegrationTests/bin/Release/net7.0/publish'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Publish SideBySide (6.0)'
+  displayName: 'Publish IntegrationTests (6.0)'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f net6.0 --no-build tests/SideBySide/SideBySide.csproj'
+    arguments: '-c Release -f net6.0 --no-build tests/IntegrationTests/IntegrationTests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: 'SideBySide-net6.0-$(Agent.OS)'
-    targetPath: 'tests/SideBySide/bin/Release/net6.0/publish'
+    artifactName: 'IntegrationTests-net6.0-$(Agent.OS)'
+    targetPath: 'tests/IntegrationTests/bin/Release/net6.0/publish'

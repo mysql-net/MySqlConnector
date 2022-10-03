@@ -6,7 +6,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlConnector", "src\MySql
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlConnector.Tests", "tests\MySqlConnector.Tests\MySqlConnector.Tests.csproj", "{5E4FF768-D007-4D66-8220-AE789CC614C2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SideBySide", "tests\SideBySide\SideBySide.csproj", "{407C2AC9-0CCA-4D6B-8698-362976D97730}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "tests\IntegrationTests\IntegrationTests.csproj", "{407C2AC9-0CCA-4D6B-8698-362976D97730}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Conformance.Tests", "tests\Conformance.Tests\Conformance.Tests.csproj", "{CC0DA702-43E8-471E-9320-F36685C540A1}"
 EndProject

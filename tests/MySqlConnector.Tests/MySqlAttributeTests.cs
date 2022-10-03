@@ -1,4 +1,4 @@
-#if BASELINE
+#if MYSQL_DATA
 using MySql.Data.MySqlClient;
 #endif
 using System;
@@ -12,7 +12,7 @@ public class MySqlAttributeTests
 	public void Construct()
 	{
 		var attribute = new MySqlAttribute();
-#if BASELINE
+#if MYSQL_DATA
 		Assert.Null(attribute.AttributeName);
 #else
 		Assert.Equal("", attribute.AttributeName);
