@@ -42,4 +42,8 @@
     <Left>lib/netstandard2.0/MySqlConnector.dll</Left>
     <Right>lib/net461/MySqlConnector.dll</Right>
   </Suppression>
+  <Suppression>
+    <DiagnosticId>PKV006</DiagnosticId>
+    <Target>.NETFramework,Version=v4.5</Target>
+  </Suppression>
 </Suppressions>
