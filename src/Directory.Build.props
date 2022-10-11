@@ -13,6 +13,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/mysql-net/MySqlConnector.git</RepositoryUrl>
     <DebugType>embedded</DebugType>
+	<EnablePackageValidation>true</EnablePackageValidation>
     <LangVersion>preview</LangVersion>
     <AnalysisLevel>latest-all</AnalysisLevel>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>

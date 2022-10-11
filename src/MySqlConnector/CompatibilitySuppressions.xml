@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:MySqlConnector.MySqlRowUpdatingEventHandler.#ctor(System.Object,System.IntPtr)</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/net7.0/MySqlConnector.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:MySqlConnector.MySqlRowUpdatedEventHandler.#ctor(System.Object,System.IntPtr)</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/net7.0/MySqlConnector.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:MySqlConnector.MySqlInfoMessageEventHandler.#ctor(System.Object,System.IntPtr)</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/net7.0/MySqlConnector.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:MySqlConnector.MySqlRowsCopiedEventHandler.#ctor(System.Object,System.IntPtr)</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/net7.0/MySqlConnector.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlBatchCommandCollection</Target>
+    <Left>lib/netcoreapp3.1/MySqlConnector.dll</Left>
+    <Right>lib/net6.0/MySqlConnector.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:System.Data.Common.DbColumn</Target>
+    <Left>lib/net461/MySqlConnector.dll</Left>
+    <Right>lib/net471/MySqlConnector.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlDataReader</Target>
+    <Left>lib/netstandard2.0/MySqlConnector.dll</Left>
+    <Right>lib/net461/MySqlConnector.dll</Right>
+  </Suppression>
+</Suppressions>
