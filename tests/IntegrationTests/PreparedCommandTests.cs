@@ -376,7 +376,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 #if !MYSQL_DATA
 			yield return new object[] { isPrepared, "MEDIUMINT", -1234567, MySqlDbType.Int24 };
 #else
-			// https://bugs.mysql.com/bug.php?id=95986
+			// https://bugs.mysql.com/bug.php?id=108756
 			yield return new object[] { isPrepared, "MEDIUMINT", -1234567, MySqlDbType.Int32 };
 #endif
 			yield return new object[] { isPrepared, "MEDIUMINT UNSIGNED", 1234567u, MySqlDbType.UInt24 };

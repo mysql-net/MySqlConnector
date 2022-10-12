@@ -270,10 +270,6 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 	[InlineData("UInt32", "INT", new object[] { null, default(uint), uint.MinValue, uint.MaxValue, 123456789u })]
 	public void QueryUInt32(string column, string dataTypeName, object[] expected)
 	{
-#if MYSQL_DATA
-		// mysql-connector-net incorrectly returns "INT" for "MEDIUMINT UNSIGNED"
-		dataTypeName = "INT";
-#endif
 		DoQuery("integers", column, dataTypeName, expected, reader => reader.GetUInt32(column));
 	}
 

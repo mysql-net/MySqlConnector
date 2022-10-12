@@ -1431,9 +1431,7 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 
 	[SkippableTheory(ServerFeatures.QueryAttributes)]
 	[InlineData(false)]
-#if !MYSQL_DATA // https://bugs.mysql.com/bug.php?id=105728
 	[InlineData(true)]
-#endif
 	public void QueryAttributeAndParameter(bool prepare)
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);

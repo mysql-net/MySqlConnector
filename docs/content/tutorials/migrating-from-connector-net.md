@@ -248,7 +248,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#95348](https://bugs.mysql.com/bug.php?id=95348): Inefficient query when executing stored procedures
 * [#95436](https://bugs.mysql.com/bug.php?id=95436): Client doesn't authenticate with PEM certificate
 * ~~[#95984](https://bugs.mysql.com/bug.php?id=95984): “Incorrect arguments to mysqld_stmt_execute” using prepared statement with `MySqlDbType.JSON`~~
-* [#95986](https://bugs.mysql.com/bug.php?id=95986): “Incorrect integer value” using prepared statement with `MySqlDbType.Int24`
+* ~~[#95986](https://bugs.mysql.com/bug.php?id=95986): “Incorrect integer value” using prepared statement with `MySqlDbType.Int24`~~
 * ~~[#96355](https://bugs.mysql.com/bug.php?id=96355), [#96614](https://bugs.mysql.com/bug.php?id=96614): `Could not load file or assembly 'Renci.SshNet'` when opening connection~~
 * ~~[#96498](https://bugs.mysql.com/bug.php?id=96498): `WHERE` clause using `MySqlGeometry` as parameter finds no rows~~
 * ~~[#96499](https://bugs.mysql.com/bug.php?id=96499): `MySqlException` when inserting a `MySqlGeometry` value~~
@@ -277,7 +277,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#101507](https://bugs.mysql.com/bug.php?id=101507): `MySqlCommand.Cancel` throws `NullReferenceException` for a closed connection
 * ~~[#101714](https://bugs.mysql.com/bug.php?id=101714): Extremely slow performance reading result sets~~
 * ~~[#102303](https://bugs.mysql.com/bug.php?id=102303): Preparing command with incorrect parameter type puts connection in bad state~~
-* [#102593](https://bugs.mysql.com/bug.php?id=102593): Can't use `MemoryStream` as `MySqlParameter.Value`
+* ~~[#102593](https://bugs.mysql.com/bug.php?id=102593): Can't use `MemoryStream` as `MySqlParameter.Value`~~
 * ~~[#103390](https://bugs.mysql.com/bug.php?id=103390): Can't query `CHAR(36)` column if `MySqlCommand` is prepared~~
 * ~~[#103430](https://bugs.mysql.com/bug.php?id=103430): Can't connect using named pipe on Windows~~
 * ~~[#103801](https://bugs.mysql.com/bug.php?id=103801): `TimeSpan` parameters lose microseconds with prepared statement~~
@@ -285,7 +285,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#104910](https://bugs.mysql.com/bug.php?id=104910): `MySqlConnectionStringBuilder.TryGetValue` always returns `false`~~
 * ~~[#104913](https://bugs.mysql.com/bug.php?id=104913): Cannot execute stored procedure with backtick in name~~
 * ~~[#105209](https://bugs.mysql.com/bug.php?id=105209): Timespan value of zero can't be read with prepared command~~
-* [#105728](https://bugs.mysql.com/bug.php?id=105728): Named command parameters override query attribute values
+* ~~[#105728](https://bugs.mysql.com/bug.php?id=105728): Named command parameters override query attribute values~~
 * ~~[#105730](https://bugs.mysql.com/bug.php?id=105730): `MySqlCommand.Clone` doesn't clone attributes~~
 * ~~[#105768](https://bugs.mysql.com/bug.php?id=105768): `MySqlCommandBuilder` doesn't support tables with `BIGINT UNSIGNED` primary key~~
 * [#105965](https://bugs.mysql.com/bug.php?id=105965): `MySqlParameterCollection.Add(object)` has quadratic performance
@@ -293,3 +293,4 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#106243](https://bugs.mysql.com/bug.php?id=106243): `CancellationToken` doesn't cancel `MySqlConnection.OpenAsync`~~
 * ~~[#106244](https://bugs.mysql.com/bug.php?id=106244): `MySqlDataReader.GetFieldValue<Stream>` throws `InvalidCastException`~~
 * [#106247](https://bugs.mysql.com/bug.php?id=106247): Can't use ~~`MySqlDbType.Enum` or~~ `MySqlDbType.Set` with prepared command
+* [#108756](https://bugs.mysql.com/bug.php?id=108756): Can't insert negative number using prepared statement with MySqlDbType.Int24]

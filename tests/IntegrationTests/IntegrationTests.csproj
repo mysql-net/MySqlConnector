@@ -51,7 +51,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'MySqlData' ">
-    <PackageReference Include="MySql.Data" Version="8.0.30" />
+    <PackageReference Include="MySql.Data" Version="8.0.31" />
     <Using Include="MySql.Data.MySqlClient" />
   </ItemGroup>
 

@@ -345,7 +345,7 @@ create table insert_mysqldatetime(rowid integer not null primary key auto_increm
 		Assert.Equal(new DateTime(2018, 6, 9, 12, 34, 56, 123).AddTicks(4560), datetime);
 	}
 
-	[SkippableTheory(MySqlData = "https://bugs.mysql.com/bug.php?id=102593")]
+	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
 	public void InsertMemoryStream(bool prepare)
