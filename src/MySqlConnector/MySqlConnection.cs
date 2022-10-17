@@ -410,7 +410,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				if (existingConnection is not null)
 				{
 					TakeSessionFrom(existingConnection);
-					CopyActivityTags(m_session!, activity);
+					ActivitySourceHelper.CopyTags(m_session!.ActivityTags, activity);
 					m_hasBeenOpened = true;
 					SetState(ConnectionState.Open);
 					return;
@@ -419,9 +419,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			try
 			{
-				m_session = await CreateSessionAsync(pool, openStartTickCount, ioBehavior, cancellationToken).ConfigureAwait(false);
-				CopyActivityTags(m_session, activity);
-
+				m_session = await CreateSessionAsync(pool, openStartTickCount, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 				m_hasBeenOpened = true;
 				SetState(ConnectionState.Open);
 			}
@@ -454,15 +452,6 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				activity.SetTag(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionStringBuilder.GetConnectionString(connectionStringBuilder.PersistSecurityInfo));
 			activity.SetException(ex);
 			throw;
-		}
-
-		static void CopyActivityTags(ServerSession session, Activity? activity)
-		{
-			if (activity is { IsAllDataRequested: true })
-			{
-				foreach (var tag in session.ActivityTags)
-					activity.SetTag(tag.Key, tag.Value);
-			}
 		}
 	}
 
@@ -909,7 +898,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	private async ValueTask<ServerSession> CreateSessionAsync(ConnectionPool? pool, int startTickCount, IOBehavior? ioBehavior, CancellationToken cancellationToken)
+	private async ValueTask<ServerSession> CreateSessionAsync(ConnectionPool? pool, int startTickCount, Activity? activity, IOBehavior? ioBehavior, CancellationToken cancellationToken)
 	{
 		var connectionSettings = GetInitializedConnectionSettings();
 		var actualIOBehavior = ioBehavior ?? (connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous);
@@ -930,7 +919,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			if (pool is not null)
 			{
 				// this returns an open session
-				return await pool.GetSessionAsync(this, startTickCount, actualIOBehavior, connectToken).ConfigureAwait(false);
+				return await pool.GetSessionAsync(this, startTickCount, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
 			}
 			else
 			{
@@ -941,7 +930,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				var session = new ServerSession();
 				session.OwningConnection = new WeakReference<MySqlConnection>(this);
 				Log.Debug("Created new non-pooled Session{0}", session.Id);
-				await session.ConnectAsync(connectionSettings, this, startTickCount, loadBalancer, actualIOBehavior, connectToken).ConfigureAwait(false);
+				await session.ConnectAsync(connectionSettings, this, startTickCount, loadBalancer, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
 				return session;
 			}
 		}

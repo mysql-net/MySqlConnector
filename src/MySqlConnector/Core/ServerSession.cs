@@ -40,10 +40,7 @@ internal sealed class ServerSession
 		PoolGeneration = poolGeneration;
 		HostName = "";
 		m_logArguments = new object?[] { "{0}".FormatInvariant(Id), null };
-		m_activityTags = new ActivityTagsCollection
-		{
-			{ ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue },
-		};
+		m_activityTags = new ActivityTagsCollection();
 		Log.Trace("Session{0} created new session", m_logArguments);
 	}
 
@@ -394,7 +391,7 @@ internal sealed class ServerSession
 			m_state = State.Closed;
 	}
 
-	public async Task<string?> ConnectAsync(ConnectionSettings cs, MySqlConnection connection, int startTickCount, ILoadBalancer? loadBalancer, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public async Task<string?> ConnectAsync(ConnectionSettings cs, MySqlConnection connection, int startTickCount, ILoadBalancer? loadBalancer, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		string? statusInfo = null;
 
@@ -404,6 +401,24 @@ internal sealed class ServerSession
 			{
 				VerifyState(State.Created);
 				m_state = State.Connecting;
+			}
+
+			// set activity tags
+			{
+				var connectionString = cs.ConnectionStringBuilder.GetConnectionString(cs.ConnectionStringBuilder.PersistSecurityInfo);
+				m_activityTags.Add(ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue);
+				m_activityTags.Add(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionString);
+				m_activityTags.Add(ActivitySourceHelper.DatabaseUserTagName, cs.UserID);
+				if (cs.Database.Length != 0)
+					m_activityTags.Add(ActivitySourceHelper.DatabaseNameTagName, cs.Database);
+				if (activity is { IsAllDataRequested: true })
+				{
+					activity.SetTag(ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue);
+					activity.SetTag(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionString);
+					activity.SetTag(ActivitySourceHelper.DatabaseUserTagName, cs.UserID);
+					if (cs.Database.Length != 0)
+						activity.SetTag(ActivitySourceHelper.DatabaseNameTagName, cs.Database);
+				}
 			}
 
 			// TLS negotiation should automatically fall back to the best version supported by client and server. However,
@@ -424,11 +439,11 @@ internal sealed class ServerSession
 
 				var connected = false;
 				if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets)
-					connected = await OpenTcpSocketAsync(cs, loadBalancer ?? throw new ArgumentNullException(nameof(loadBalancer)), ioBehavior, cancellationToken).ConfigureAwait(false);
+					connected = await OpenTcpSocketAsync(cs, loadBalancer ?? throw new ArgumentNullException(nameof(loadBalancer)), activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 				else if (cs.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket)
-					connected = await OpenUnixSocketAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+					connected = await OpenUnixSocketAsync(cs, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 				else if (cs.ConnectionProtocol == MySqlConnectionProtocol.NamedPipe)
-					connected = await OpenNamedPipeAsync(cs, startTickCount, ioBehavior, cancellationToken).ConfigureAwait(false);
+					connected = await OpenNamedPipeAsync(cs, startTickCount, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 				if (!connected)
 				{
 					lock (m_lock)
@@ -464,6 +479,14 @@ internal sealed class ServerSession
 				AuthPluginData = initialHandshake.AuthPluginData;
 				m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
 				CancellationTimeout = cs.CancellationTimeout;
+
+				// set activity tags
+				{
+					var connectionId = ConnectionId.ToString(CultureInfo.InvariantCulture);
+					m_activityTags[ActivitySourceHelper.DatabaseConnectionIdTagName] = connectionId;
+					if (activity is { IsAllDataRequested: true })
+						activity.SetTag(ActivitySourceHelper.DatabaseConnectionIdTagName, connectionId);
+				}
 
 				m_supportsComMulti = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.MariaDbComMulti) != 0;
 				m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
@@ -569,12 +592,6 @@ internal sealed class ServerSession
 				await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 
 			m_payloadHandler.ByteHandler.RemainingTimeout = Constants.InfiniteTimeout;
-
-			m_activityTags.Add(ActivitySourceHelper.DatabaseConnectionIdTagName, ConnectionId.ToString(CultureInfo.InvariantCulture));
-			m_activityTags.Add(ActivitySourceHelper.DatabaseConnectionStringTagName, cs.ConnectionStringBuilder.GetConnectionString(cs.ConnectionStringBuilder.PersistSecurityInfo));
-			m_activityTags.Add(ActivitySourceHelper.DatabaseUserTagName, cs.UserID);
-			if (cs.Database.Length != 0)
-				m_activityTags.Add(ActivitySourceHelper.DatabaseNameTagName, cs.Database);
 		}
 		catch (ArgumentException ex)
 		{
@@ -1013,8 +1030,22 @@ internal sealed class ServerSession
 		}
 	}
 
-	private async Task<bool> OpenTcpSocketAsync(ConnectionSettings cs, ILoadBalancer loadBalancer, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task<bool> OpenTcpSocketAsync(ConnectionSettings cs, ILoadBalancer loadBalancer, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
+		// set activity tags for TCP/IP
+		{
+			m_activityTags.Add(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportTcpIpValue);
+			string? port = cs.Port == 3306 ? default : cs.Port.ToString(CultureInfo.InvariantCulture);
+			if (port is not null)
+				m_activityTags.Add(ActivitySourceHelper.NetPeerPortTagName, port);
+			if (activity is { IsAllDataRequested: true })
+			{
+				activity.SetTag(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportTcpIpValue);
+				if (port is not null)
+					activity.SetTag(ActivitySourceHelper.NetPeerPortTagName, port);
+			}
+		}
+
 		var hostNames = loadBalancer.LoadBalance(cs.HostNames!);
 		for (var hostNameIndex = 0; hostNameIndex < hostNames.Count; hostNameIndex++)
 		{
@@ -1041,8 +1072,28 @@ internal sealed class ServerSession
 			for (var ipAddressIndex = 0; ipAddressIndex < ipAddresses.Length; ipAddressIndex++)
 			{
 				var ipAddress = ipAddresses[ipAddressIndex];
+				var ipAddressString = ipAddress.ToString();
 				if (Log.IsTraceEnabled())
-					Log.Trace("Session{0} connecting to IpAddress {1} ({2} of {3}) for HostName '{4}' ({5} of {6})", m_logArguments[0], ipAddress, ipAddressIndex + 1, ipAddresses.Length, hostName, hostNameIndex + 1, hostNames.Count);
+					Log.Trace("Session{0} connecting to IpAddress {1} ({2} of {3}) for HostName '{4}' ({5} of {6})", m_logArguments[0], ipAddressString, ipAddressIndex + 1, ipAddresses.Length, hostName, hostNameIndex + 1, hostNames.Count);
+
+				// set activity tags for the current IP address/hostname
+				{
+					m_activityTags[ActivitySourceHelper.NetPeerIpTagName] = ipAddressString;
+					if (ipAddressString != hostName)
+						m_activityTags[ActivitySourceHelper.NetPeerNameTagName] = hostName;
+					else
+						m_activityTags.Remove(ActivitySourceHelper.NetPeerNameTagName);
+
+					if (activity is { IsAllDataRequested: true })
+					{
+						activity.SetTag(ActivitySourceHelper.NetPeerIpTagName, ipAddressString);
+						if (ipAddressString != hostName)
+							activity.SetTag(ActivitySourceHelper.NetPeerNameTagName, hostName);
+						else
+							activity.SetTag(ActivitySourceHelper.NetPeerNameTagName, null);
+					}
+				}
+
 				TcpClient? tcpClient = null;
 				try
 				{
@@ -1118,14 +1169,6 @@ internal sealed class ServerSession
 					m_socket.NoDelay = true;
 					m_stream = m_tcpClient.GetStream();
 					m_socket.SetKeepAlive(cs.Keepalive);
-
-					m_activityTags.Add(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportTcpIpValue);
-					var ipAddressString = ipAddress.ToString();
-					m_activityTags.Add(ActivitySourceHelper.NetPeerIpTagName, ipAddressString);
-					if (ipAddressString != hostName)
-						m_activityTags.Add(ActivitySourceHelper.NetPeerNameTagName, hostName);
-					if (cs.Port != 3306)
-						m_activityTags.Add(ActivitySourceHelper.NetPeerPortTagName, cs.Port.ToString(CultureInfo.InvariantCulture));
 				}
 				catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
 				{
@@ -1145,10 +1188,22 @@ internal sealed class ServerSession
 		return false;
 	}
 
-	private async Task<bool> OpenUnixSocketAsync(ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task<bool> OpenUnixSocketAsync(ConnectionSettings cs, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		m_logArguments[1] = cs.UnixSocket;
 		Log.Trace("Session{0} connecting to UNIX Socket '{1}'", m_logArguments);
+
+		// set activity tags
+		{
+			m_activityTags.Add(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportUnixValue);
+			m_activityTags.Add(ActivitySourceHelper.NetPeerNameTagName, cs.UnixSocket);
+			if (activity is { IsAllDataRequested: true })
+			{
+				activity.SetTag(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportUnixValue);
+				activity.SetTag(ActivitySourceHelper.NetPeerNameTagName, cs.UnixSocket);
+			}
+		}
+
 		var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.IP);
 		var unixEp = new UnixDomainSocketEndPoint(cs.UnixSocket!);
 		try
@@ -1183,9 +1238,6 @@ internal sealed class ServerSession
 			m_socket = socket;
 			m_stream = new NetworkStream(socket);
 
-			m_activityTags.Add(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportUnixValue);
-			m_activityTags.Add(ActivitySourceHelper.NetPeerNameTagName, cs.UnixSocket);
-
 			lock (m_lock)
 				m_state = State.Connected;
 			return true;
@@ -1194,10 +1246,24 @@ internal sealed class ServerSession
 		return false;
 	}
 
-	private async Task<bool> OpenNamedPipeAsync(ConnectionSettings cs, int startTickCount, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task<bool> OpenNamedPipeAsync(ConnectionSettings cs, int startTickCount, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (Log.IsTraceEnabled())
 			Log.Trace("Session{0} connecting to NamedPipe '{1}' on Server '{2}'", m_logArguments[0], cs.PipeName, cs.HostNames![0]);
+
+		// set activity tags
+		{
+			// see https://docs.microsoft.com/en-us/windows/win32/ipc/pipe-names for pipe name format
+			var pipeName = @"\\" + cs.HostNames![0] + @"\pipe\" + cs.PipeName;
+			m_activityTags.Add(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportNamedPipeValue);
+			m_activityTags.Add(ActivitySourceHelper.NetPeerNameTagName, pipeName);
+			if (activity is { IsAllDataRequested: true })
+			{
+				activity.SetTag(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportNamedPipeValue);
+				activity.SetTag(ActivitySourceHelper.NetPeerNameTagName, pipeName);
+			}
+		}
+
 		var namedPipeStream = new NamedPipeClientStream(cs.HostNames![0], cs.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
 		var timeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - unchecked(Environment.TickCount - startTickCount));
 		try
@@ -1227,10 +1293,6 @@ internal sealed class ServerSession
 		if (namedPipeStream.IsConnected)
 		{
 			m_stream = namedPipeStream;
-
-			// see https://docs.microsoft.com/en-us/windows/win32/ipc/pipe-names for pipe name format
-			m_activityTags.Add(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportNamedPipeValue);
-			m_activityTags.Add(ActivitySourceHelper.NetPeerNameTagName, @"\\" + cs.HostNames![0] + @"\pipe\" + cs.PipeName);
 
 			lock (m_lock)
 				m_state = State.Connected;
@@ -1695,7 +1757,6 @@ internal sealed class ServerSession
 		SafeDispose(ref m_socket);
 		Utility.Dispose(ref m_clientCertificate);
 		m_activityTags.Clear();
-		m_activityTags.Add(ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue);
 	}
 
 	/// <summary>

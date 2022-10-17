@@ -16,7 +16,7 @@ internal sealed class ConnectionPool : IDisposable
 
 	public SslProtocols SslProtocols { get; set; }
 
-	public async ValueTask<ServerSession> GetSessionAsync(MySqlConnection connection, int startTickCount, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public async ValueTask<ServerSession> GetSessionAsync(MySqlConnection connection, int startTickCount, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 
@@ -86,6 +86,7 @@ internal sealed class ConnectionPool : IDisposable
 						m_leasedSessions.Add(session.Id, session);
 						leasedSessionsCountPooled = m_leasedSessions.Count;
 					}
+					ActivitySourceHelper.CopyTags(session.ActivityTags, activity);
 					if (Log.IsTraceEnabled())
 						Log.Trace("Pool{0} returning pooled Session{1} to caller; LeasedSessionsCount={2}", m_logArguments[0], session.Id, leasedSessionsCountPooled);
 					return session;
@@ -93,7 +94,7 @@ internal sealed class ConnectionPool : IDisposable
 			}
 
 			// create a new session
-			session = await ConnectSessionAsync(connection, "Pool{0} no pooled session available; created new Session{1}", startTickCount, ioBehavior, cancellationToken).ConfigureAwait(false);
+			session = await ConnectSessionAsync(connection, "Pool{0} no pooled session available; created new Session{1}", startTickCount, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 			AdjustHostConnectionCount(session, 1);
 			session.OwningConnection = new(connection);
 			int leasedSessionsCountNew;
@@ -372,7 +373,7 @@ internal sealed class ConnectionPool : IDisposable
 
 			try
 			{
-				var session = await ConnectSessionAsync(connection, "Pool{0} created Session{1} to reach minimum pool size", Environment.TickCount, ioBehavior, cancellationToken).ConfigureAwait(false);
+				var session = await ConnectSessionAsync(connection, "Pool{0} created Session{1} to reach minimum pool size", Environment.TickCount, null, ioBehavior, cancellationToken).ConfigureAwait(false);
 				AdjustHostConnectionCount(session, 1);
 				lock (m_sessions)
 					m_sessions.AddFirst(session);
@@ -385,12 +386,12 @@ internal sealed class ConnectionPool : IDisposable
 		}
 	}
 
-	private async ValueTask<ServerSession> ConnectSessionAsync(MySqlConnection connection, string logMessage, int startTickCount, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async ValueTask<ServerSession> ConnectSessionAsync(MySqlConnection connection, string logMessage, int startTickCount, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		var session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 		if (Log.IsDebugEnabled())
 			Log.Debug(logMessage, m_logArguments[0], session.Id);
-		var statusInfo = await session.ConnectAsync(ConnectionSettings, connection, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+		var statusInfo = await session.ConnectAsync(ConnectionSettings, connection, startTickCount, m_loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 		Exception? redirectionException = null;
 
 		if (statusInfo is not null && statusInfo.StartsWith("Location: mysql://", StringComparison.Ordinal))
@@ -411,7 +412,7 @@ internal sealed class ConnectionPool : IDisposable
 					var redirectedSession = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 					try
 					{
-						await redirectedSession.ConnectAsync(redirectedSettings, connection, startTickCount, m_loadBalancer, ioBehavior, cancellationToken).ConfigureAwait(false);
+						await redirectedSession.ConnectAsync(redirectedSettings, connection, startTickCount, m_loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
 					catch (Exception ex)
 					{

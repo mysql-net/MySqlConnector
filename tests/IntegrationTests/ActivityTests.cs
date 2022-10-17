@@ -47,6 +47,72 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 	}
 
 	[Fact]
+	public void OpenFromPoolTags()
+	{
+		var activities = new Activity[2];
+
+		// create a unique pool
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.MaximumPoolSize = 7;
+		var connectionString = csb.ConnectionString;
+
+		for (var i = 0; i < activities.Length; i++)
+		{
+			using var parentActivity = new Activity(nameof(OpenFromPoolTags));
+			parentActivity.Start();
+
+			using var listener = new ActivityListener
+			{
+				ShouldListenTo = x => x.Name == "MySqlConnector",
+				Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+					options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+				ActivityStopped = x => activities[i] = x,
+			};
+			ActivitySource.AddActivityListener(listener);
+
+			using (var connection = new MySqlConnection(connectionString))
+				connection.Open();
+
+			Assert.NotNull(activities[i]);
+			AssertTag(activities[i].Tags, "otel.status_code", "OK");
+		}
+
+		// activities should have the same connection ID
+		Assert.Equal(activities[0].Tags.Single(x => x.Key == "db.connection_id").Value, activities[1].Tags.Single(x => x.Key == "db.connection_id").Value);
+	}
+
+	[Fact]
+	public void OpenFailedTags()
+	{
+		using var parentActivity = new Activity(nameof(OpenFailedTags));
+		parentActivity.Start();
+
+		Activity activity = null;
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = x => activity = x,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		var csb = new MySqlConnectionStringBuilder("Server=www.mysqlconnector.net;User Id=invaliduser;Database=invaliddb;Connection Timeout=1");
+		using (var connection = new MySqlConnection(csb.ConnectionString))
+			Assert.Throws<MySqlException>(() => connection.Open());
+
+		Assert.NotNull(activity);
+		Assert.Equal(ActivityKind.Client, activity.Kind);
+		Assert.Equal("Open", activity.OperationName);
+#if NET6_0_OR_GREATER
+		Assert.Equal(ActivityStatusCode.Error, activity.Status);
+#endif
+
+		AssertTags(activity.Tags, csb);
+		AssertTag(activity.Tags, "otel.status_code", "ERROR");
+	}
+
+	[Fact]
 	public void SelectTags()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
