@@ -19,9 +19,9 @@ improves the throughput of a web server that performs database operations.
 
 This library outperforms MySQL Connector/NET (`MySql.Data`) on benchmarks:
 
-![Benchmark](https://files.logoscdn.com/v1/assets/12545033/optimized?w=800)
+![Benchmark](https://files.logoscdn.com/v1/files/63673908/assets/13928411/content.png?signature=MVHBZxDfB0J-0Pueja8NtvuLD9A)
 
-(Client: MySqlConnector 2.1.0, Ubuntu 20.04, .NET 6.0; Server: Azure Database for MySQL 8.0.21)
+(Client: MySqlConnector 2.2.0, Ubuntu 20.04, .NET 7.0; Server: Azure Database for MySQL 8.0.28, TLS 1.2)
 
 ### Bug Fixes
 

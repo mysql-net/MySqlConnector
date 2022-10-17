@@ -23,8 +23,7 @@ class Program
 			.AddValidator(JitOptimizationsValidator.FailOnError)
 			.AddDiagnoser(MemoryDiagnoser.Default)
 			.AddColumn(StatisticColumn.AllStatistics)
-			.AddJob(Job.Default.WithRuntime(ClrRuntime.Net48))
-			.AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
+			.AddJob(Job.Default.WithRuntime(CoreRuntime.Core70))
 			.AddExporter(DefaultExporters.Csv);
 
 		var summary = BenchmarkRunner.Run<MySqlClient>(customConfig);

@@ -64,9 +64,9 @@ while (await reader.ReadAsync())
 
 MySqlConnector outperforms Connector/NET (MySql.Data) on benchmarks:
 
-![Benchmark 1](https://files.logoscdn.com/v1/assets/2533998/optimized?share=0xvvkseNVc6bzHkZ) ![Benchmark 2](https://files.logoscdn.com/v1/assets/2533995/optimized?share=tcaVS7frgdVm6PAz)
+![Benchmark](https://files.logoscdn.com/v1/files/63673908/assets/13928411/content.png?signature=MVHBZxDfB0J-0Pueja8NtvuLD9A)
 
-(Client: MySqlConnector 0.44.0, Windows 10 x64; Server: MySQL Server 5.6.21, Unix)
+(Client: MySqlConnector 2.2.0, Ubuntu 20.04, .NET 7.0; Server: Azure Database for MySQL 8.0.28, TLS 1.2)
 
 ## Why use MySqlConnector over Oracle’s Connector/NET?
 
