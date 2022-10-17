@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-09-18
+lastmod: 2022-10-17
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,10 @@ weight: 30
 ---
 
 # Version History
+
+### 2.2.0 RC 1
+
+* Set activity tags when opening a connection fails: [#1196](https://github.com/mysql-net/MySqlConnector/issues/1196).
 
 ### 2.2.0 Beta 1
 
