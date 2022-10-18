@@ -40,7 +40,7 @@ internal sealed class StandardPayloadHandler : IPayloadHandler
 	public ValueTask<ArraySegment<byte>> ReadPayloadAsync(ArraySegmentHolder<byte> cache, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) =>
 		ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader!, m_byteHandler!, m_getNextSequenceNumber, cache, protocolErrorBehavior, ioBehavior);
 
-	public ValueTask<int> WritePayloadAsync(ReadOnlyMemory<byte> payload, IOBehavior ioBehavior) =>
+	public ValueTask WritePayloadAsync(ReadOnlyMemory<byte> payload, IOBehavior ioBehavior) =>
 		ProtocolUtility.WritePayloadAsync(m_byteHandler!, m_getNextSequenceNumber, payload, ioBehavior);
 
 	private readonly Func<int> m_getNextSequenceNumber;

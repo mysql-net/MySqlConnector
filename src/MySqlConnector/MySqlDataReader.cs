@@ -136,7 +136,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		m_hasWarnings = m_resultSet.WarningCount != 0;
 	}
 
-	private ValueTask<int> ScanResultSetAsync(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
+	private ValueTask ScanResultSetAsync(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
 	{
 		if (!m_hasMoreResults)
 			return default;
@@ -150,10 +150,10 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		if (resultSet.BufferState != ResultSetState.HasMoreData)
 			throw new InvalidOperationException("Invalid state: {0}".FormatInvariant(resultSet.BufferState));
 
-		return new ValueTask<int>(ScanResultSetAsyncAwaited(ioBehavior, resultSet, cancellationToken));
+		return new ValueTask(ScanResultSetAsyncAwaited(ioBehavior, resultSet, cancellationToken));
 	}
 
-	private async Task<int> ScanResultSetAsyncAwaited(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
+	private async Task ScanResultSetAsyncAwaited(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
 	{
 		using (Command!.CancellableCommand.RegisterCancel(cancellationToken))
 		{
@@ -161,7 +161,6 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 			{
 				await resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
 				m_hasMoreResults = resultSet.BufferState != ResultSetState.NoMoreData;
-				return 0;
 			}
 			catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.QueryInterrupted)
 			{

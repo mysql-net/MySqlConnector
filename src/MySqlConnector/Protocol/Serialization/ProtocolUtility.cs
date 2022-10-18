@@ -525,23 +525,22 @@ internal static class ProtocolUtility
 		return false;
 	}
 
-	public static ValueTask<int> WritePayloadAsync(IByteHandler byteHandler, Func<int> getNextSequenceNumber, ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
+	public static ValueTask WritePayloadAsync(IByteHandler byteHandler, Func<int> getNextSequenceNumber, ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
 	{
 		return payload.Length <= MaxPacketSize ? WritePacketAsync(byteHandler, getNextSequenceNumber(), payload, ioBehavior) :
 			WritePayloadAsyncAwaited(byteHandler, getNextSequenceNumber, payload, ioBehavior);
 
-		static async ValueTask<int> WritePayloadAsyncAwaited(IByteHandler byteHandler, Func<int> getNextSequenceNumber, ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
+		static async ValueTask WritePayloadAsyncAwaited(IByteHandler byteHandler, Func<int> getNextSequenceNumber, ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
 		{
 			for (var bytesSent = 0; bytesSent < payload.Length; bytesSent += MaxPacketSize)
 			{
 				var contents = payload.Slice(bytesSent, Math.Min(MaxPacketSize, payload.Length - bytesSent));
 				await WritePacketAsync(byteHandler, getNextSequenceNumber(), contents, ioBehavior).ConfigureAwait(false);
 			}
-			return 0;
 		}
 	}
 
-	private static ValueTask<int> WritePacketAsync(IByteHandler byteHandler, int sequenceNumber, ReadOnlyMemory<byte> contents, IOBehavior ioBehavior)
+	private static ValueTask WritePacketAsync(IByteHandler byteHandler, int sequenceNumber, ReadOnlyMemory<byte> contents, IOBehavior ioBehavior)
 	{
 		var bufferLength = contents.Length + 4;
 		var buffer = ArrayPool<byte>.Shared.Rent(bufferLength);
@@ -556,11 +555,10 @@ internal static class ProtocolUtility
 		}
 		return WritePacketAsyncAwaited(task, buffer);
 
-		static async ValueTask<int> WritePacketAsyncAwaited(ValueTask<int> task, byte[] buffer)
+		static async ValueTask WritePacketAsyncAwaited(ValueTask task, byte[] buffer)
 		{
 			await task.ConfigureAwait(false);
 			ArrayPool<byte>.Shared.Return(buffer);
-			return 0;
 		}
 	}
 

@@ -148,11 +148,7 @@ internal sealed class ConnectionPool : IDisposable
 		return 0;
 	}
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 	public async ValueTask ReturnAsync(IOBehavior ioBehavior, ServerSession session)
-#else
-	public async ValueTask<int> ReturnAsync(IOBehavior ioBehavior, ServerSession session)
-#endif
 	{
 		if (Log.IsTraceEnabled())
 			Log.Trace("Pool{0} receiving Session{1} back", m_logArguments[0], session.Id);
@@ -182,10 +178,6 @@ internal sealed class ConnectionPool : IDisposable
 		{
 			m_sessionSemaphore.Release();
 		}
-
-#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
-		return default;
-#endif
 	}
 
 	public async Task ClearAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)

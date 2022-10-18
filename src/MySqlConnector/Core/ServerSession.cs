@@ -65,11 +65,7 @@ internal sealed class ServerSession
 	public bool ProcAccessDenied { get; set; }
 	public ICollection<KeyValuePair<string, object?>> ActivityTags => m_activityTags;
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 	public ValueTask ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
-#else
-	public ValueTask<int> ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
-#endif
 	{
 		if (Log.IsTraceEnabled())
 		{
@@ -904,7 +900,7 @@ internal sealed class ServerSession
 	}
 
 	// Starts a new conversation with the server by sending the first packet.
-	public ValueTask<int> SendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public ValueTask SendAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		m_payloadHandler!.StartNewConversation();
 		return SendReplyAsync(payload, ioBehavior, cancellationToken);
@@ -968,9 +964,9 @@ internal sealed class ServerSession
 	}
 
 	// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
-	public ValueTask<int> SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public ValueTask SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		ValueTask<int> task;
+		ValueTask task;
 		try
 		{
 			VerifyConnected();
@@ -979,7 +975,7 @@ internal sealed class ServerSession
 		catch (Exception ex)
 		{
 			Log.Debug(ex, "Session{0} failed in SendReplyAsync", m_logArguments);
-			task = ValueTaskExtensions.FromException<int>(ex);
+			task = ValueTaskExtensions.FromException(ex);
 		}
 
 		if (task.IsCompletedSuccessfully)
@@ -988,11 +984,11 @@ internal sealed class ServerSession
 		return SendReplyAsyncAwaited(task);
 	}
 
-	private async ValueTask<int> SendReplyAsyncAwaited(ValueTask<int> task)
+	private async ValueTask SendReplyAsyncAwaited(ValueTask task)
 	{
 		try
 		{
-			return await task.ConfigureAwait(false);
+			await task.ConfigureAwait(false);
 		}
 		catch (Exception ex)
 		{

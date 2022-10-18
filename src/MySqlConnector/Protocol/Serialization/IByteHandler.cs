@@ -22,6 +22,5 @@ internal interface IByteHandler : IDisposable
 	/// </summary>
 	/// <param name="data">The data to write.</param>
 	/// <param name="ioBehavior">The <see cref="IOBehavior"/> to use when writing.</param>
-	/// <returns>A <see cref="ValueTask{Int32}"/>. The value of this object is not defined.</returns>
-	ValueTask<int> WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior);
+	ValueTask WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior);
 }

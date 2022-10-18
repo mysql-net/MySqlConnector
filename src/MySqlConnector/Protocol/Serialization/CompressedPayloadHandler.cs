@@ -39,13 +39,13 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		return ProtocolUtility.ReadPayloadAsync(m_bufferedByteReader, compressedByteHandler, static () => -1, cache, protocolErrorBehavior, ioBehavior);
 	}
 
-	public async ValueTask<int> WritePayloadAsync(ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
+	public async ValueTask WritePayloadAsync(ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
 	{
 		// break the payload up into (possibly more than one) uncompressed packets
 		await ProtocolUtility.WritePayloadAsync(m_uncompressedStreamByteHandler!, GetNextUncompressedSequenceNumber, payload, ioBehavior).ConfigureAwait(false);
 
 		if (m_uncompressedStream!.Length == 0)
-			return default;
+			return;
 
 		if (!m_uncompressedStream.TryGetBuffer(out var uncompressedData))
 			throw new InvalidOperationException("Couldn't get uncompressed stream buffer.");
@@ -54,7 +54,6 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 
 		// reset the uncompressed stream to accept more data
 		m_uncompressedStream.SetLength(0);
-		return default;
 	}
 
 	private async ValueTask<int> ReadBytesAsync(Memory<byte> buffer, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
@@ -189,7 +188,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 
 	private int GetNextUncompressedSequenceNumber() => m_uncompressedSequenceNumber++;
 
-	private async ValueTask<int> CompressAndWrite(ArraySegment<byte> remainingUncompressedData, IOBehavior ioBehavior)
+	private async ValueTask CompressAndWrite(ArraySegment<byte> remainingUncompressedData, IOBehavior ioBehavior)
 	{
 		var remainingUncompressedBytes = Math.Min(remainingUncompressedData.Count, ProtocolUtility.MaxPacketSize);
 
@@ -239,7 +238,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 
 		remainingUncompressedData = remainingUncompressedData.Slice(remainingUncompressedBytes);
 		await m_byteHandler!.WriteBytesAsync(new ArraySegment<byte>(buffer, 0, buffer.Length), ioBehavior).ConfigureAwait(false);
-		return remainingUncompressedData.Count == 0 ? default :
+		if (remainingUncompressedData.Count != 0)
 			await CompressAndWrite(remainingUncompressedData, ioBehavior).ConfigureAwait(false);
 	}
 
@@ -265,7 +264,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		public ValueTask<int> ReadBytesAsync(Memory<byte> buffer, IOBehavior ioBehavior) =>
 			m_compressedPayloadHandler.ReadBytesAsync(buffer, m_protocolErrorBehavior, ioBehavior);
 
-		public ValueTask<int> WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior) => throw new NotSupportedException();
+		public ValueTask WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior) => throw new NotSupportedException();
 
 		private readonly CompressedPayloadHandler m_compressedPayloadHandler;
 		private readonly ProtocolErrorBehavior m_protocolErrorBehavior;

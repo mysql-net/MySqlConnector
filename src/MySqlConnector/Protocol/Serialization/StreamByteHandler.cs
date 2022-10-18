@@ -85,10 +85,10 @@ internal sealed class StreamByteHandler : IByteHandler
 		}
 	}
 
-	public ValueTask<int> WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior)
+	public ValueTask WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior)
 	{
 		if (ioBehavior == IOBehavior.Asynchronous)
-			return new ValueTask<int>(DoWriteBytesAsync(data));
+			return DoWriteBytesAsync(data);
 
 		try
 		{
@@ -97,14 +97,11 @@ internal sealed class StreamByteHandler : IByteHandler
 		}
 		catch (Exception ex)
 		{
-			return ValueTaskExtensions.FromException<int>(ex);
+			return ValueTaskExtensions.FromException(ex);
 		}
 
-		async Task<int> DoWriteBytesAsync(ReadOnlyMemory<byte> data)
-		{
+		async ValueTask DoWriteBytesAsync(ReadOnlyMemory<byte> data) =>
 			await m_stream.WriteAsync(data).ConfigureAwait(false);
-			return 0;
-		}
 	}
 
 	private readonly Stream m_stream;

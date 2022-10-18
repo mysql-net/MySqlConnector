@@ -463,11 +463,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// <remarks>This is an optional feature of the MySQL protocol and may not be supported by all servers.
 	/// It's known to be supported by MySQL Server 5.7.3 (and later) and MariaDB 10.2.4 (and later).
 	/// Other MySQL-compatible servers or proxies may not support this command.</remarks>
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 	public async ValueTask ResetConnectionAsync(CancellationToken cancellationToken = default)
-#else
-	public async Task ResetConnectionAsync(CancellationToken cancellationToken = default)
-#endif
 	{
 		var session = Session;
 		Log.Debug("Session{0} resetting connection", session.Id);
@@ -1080,11 +1076,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 	private async ValueTask CloseDatabaseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-#else
-	private async Task CloseDatabaseAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
-#endif
 	{
 		if (m_activeReader is not null)
 			await m_activeReader.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);

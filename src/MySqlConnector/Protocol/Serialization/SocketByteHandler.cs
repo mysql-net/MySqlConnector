@@ -108,7 +108,7 @@ internal sealed class SocketByteHandler : IByteHandler
 		return bytesRead;
 	}
 
-	public ValueTask<int> WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior)
+	public ValueTask WriteBytesAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior)
 	{
 		if (ioBehavior == IOBehavior.Asynchronous)
 			return DoWriteBytesAsync(data);
@@ -120,11 +120,11 @@ internal sealed class SocketByteHandler : IByteHandler
 		}
 		catch (Exception ex)
 		{
-			return ValueTaskExtensions.FromException<int>(ex);
+			return ValueTaskExtensions.FromException(ex);
 		}
 	}
 
-	private async ValueTask<int> DoWriteBytesAsync(ReadOnlyMemory<byte> data)
+	private async ValueTask DoWriteBytesAsync(ReadOnlyMemory<byte> data)
 	{
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 		m_socketAwaitable.EventArgs.SetBuffer(MemoryMarshal.AsMemory(data));
@@ -132,7 +132,6 @@ internal sealed class SocketByteHandler : IByteHandler
 #else
 		await m_socket.SendAsync(data, SocketFlags.None).ConfigureAwait(false);
 #endif
-		return 0;
 	}
 
 	private readonly Socket m_socket;
