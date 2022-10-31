@@ -589,5 +589,16 @@ create table `{AppConfig.SecondaryDatabase}`.changedb2(value int not null);");
 		Assert.Equal(ConnectionState.Open, connection.State);
 	}
 
+	[Fact]
+	public void DisposeRaisesDisposed()
+	{
+		var disposedCount = 0;
+		var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Disposed += (sender, args) => disposedCount++;
+		connection.Open();
+		connection.Dispose();
+		Assert.Equal(1, disposedCount);
+	}
+
 	readonly DatabaseFixture m_database;
 }

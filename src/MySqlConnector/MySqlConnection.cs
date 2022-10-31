@@ -694,6 +694,11 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		finally
 		{
 			m_isDisposed = true;
+
+			// Component implements the Dispose pattern, with some core logic implemented in Dispose(bool disposing). DbConnection
+			// adds DisposeAsync but doesn't implement the full DisposeAsyncCore pattern. Thus, although DisposeAsync is supposed
+			// to call Dispose(false), we call Dispose(true) here to execute that base class logic in both the sync and async paths.
+			base.Dispose(true);
 		}
 	}
 
