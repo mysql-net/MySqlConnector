@@ -46,13 +46,13 @@ public class ClientFactoryTests
 	[Fact]
 	public void DbProviderFactoriesGetFactory()
 	{
-#if !NET462 && !NET472
-		DbProviderFactories.RegisterFactory("MySqlConnector", MySqlConnectorFactory.Instance);
-#endif
 #if MYSQL_DATA
 		var providerInvariantName = "MySql.Data.MySqlClient";
 #else
 		var providerInvariantName = "MySqlConnector";
+#endif
+#if !NET462 && !NET472
+		DbProviderFactories.RegisterFactory(providerInvariantName, MySqlConnectorFactory.Instance);
 #endif
 		var factory = DbProviderFactories.GetFactory(providerInvariantName);
 		Assert.NotNull(factory);
