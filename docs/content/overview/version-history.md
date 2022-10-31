@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-10-17
+lastmod: 2022-10-31
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,12 @@ weight: 30
 ---
 
 # Version History
+
+### 2.2.0 RC 2
+
+* Raise `Component.Disposed` event from `MySqlConnection.DisposeAsync`: [#1235](https://github.com/mysql-net/MySqlConnector/issues/1235).
+* Use `ValueTask` instead of `ValueTask<int>`: [#1233](https://github.com/mysql-net/MySqlConnector/issues/1233).
+  * **Breaking** This changes the return type of `MySqlConnection.ResetConnectionAsync` for `netstandard2.0`, `net461`, `net471`.
 
 ### 2.2.0 RC 1
 
