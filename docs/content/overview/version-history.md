@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-10-31
+lastmod: 2022-11-08
 date: 2017-03-27
 menu:
   main:
@@ -10,31 +10,26 @@ weight: 30
 
 # Version History
 
-### 2.2.0 RC 2
-
-* Raise `Component.Disposed` event from `MySqlConnection.DisposeAsync`: [#1235](https://github.com/mysql-net/MySqlConnector/issues/1235).
-* Use `ValueTask` instead of `ValueTask<int>`: [#1233](https://github.com/mysql-net/MySqlConnector/issues/1233).
-  * **Breaking** This changes the return type of `MySqlConnection.ResetConnectionAsync` for `netstandard2.0`, `net461`, `net471`.
-
-### 2.2.0 RC 1
-
-* Set activity tags when opening a connection fails: [#1196](https://github.com/mysql-net/MySqlConnector/issues/1196).
-
-### 2.2.0 Beta 1
+### 2.2.0
 
 * Support .NET 7.0.
   * Add `MySqlDataSource`, an implementation of `DbDataSource` for MySQL: [#1208](https://github.com/mysql-net/MySqlConnector/issues/1208).
   * Use source-generated regular expressions.
   * Use UTF-8 literals to perform UTF-8 conversion at compile-time instead of runtime.
+* **Breaking** Drop support for .NET 4.5: [#1209](https://github.com/mysql-net/MySqlConnector/issues/1209).
 * Add `DNS Check Interval` connection string option: [#1201](https://github.com/mysql-net/MySqlConnector/issues/1201).
 * Support restrictions in `MySqlConnection.GetSchema`.
   * Schema collections are code-generated: [#1190](https://github.com/mysql-net/MySqlConnector/pull/1190).
 * Use user-provided callbacks when opening new connection to `KILL QUERY`: [#1179](https://github.com/mysql-net/MySqlConnector/issues/1179).
+* Set activity tags when opening a connection fails: [#1196](https://github.com/mysql-net/MySqlConnector/issues/1196).
+* Raise `Component.Disposed` event from `MySqlConnection.DisposeAsync`: [#1235](https://github.com/mysql-net/MySqlConnector/issues/1235).
+* Use `ValueTask` instead of `ValueTask<int>`: [#1233](https://github.com/mysql-net/MySqlConnector/issues/1233).
+  * **Breaking** This changes the return type of `MySqlConnection.ResetConnectionAsync` for `netstandard2.0`, `net461`, `net471`.
 * **Possibly Breaking** Normalize the order of keys in the connection string returned by `MySqlConnectionStringBuilder.ConnectionString`: [#1217](https://github.com/mysql-net/MySqlConnector/issues/1217).
 * **Possibly Breaking** Update dependencies.
   * Update System.Diagnostics.DiagnosticSource to 6.0.0.
+  * Update System.Memory to 4.5.5.
   * Update System.Threading.Tasks.Extensions to 4.5.4: [#1144](https://github.com/mysql-net/MySqlConnector/issues/1144).
-* **Breaking** Drop support for .NET 4.5: [#1209](https://github.com/mysql-net/MySqlConnector/issues/1209).
 
 ### 2.1.13
 
