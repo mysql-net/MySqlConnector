@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-11-08
+lastmod: 2022-11-20
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,11 @@ weight: 30
 ---
 
 # Version History
+
+### 2.2.1
+
+* Fix failure to load client SSL private key files: [#1242](https://github.com/mysql-net/MySqlConnector/issues/1242).
+  * Builds for .NET 6.0 and later were not affected.
 
 ### 2.2.0
 
