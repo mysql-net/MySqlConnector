@@ -110,9 +110,13 @@ public class UtilityTests
 	[InlineData("pre", "post")]
 	public void DecodePublicKey(string pre, string post)
 	{
+#if NET5_0_OR_GREATER
 		using var rsa = RSA.Create();
 		Utility.LoadRsaParameters(pre + c_publicKey + post, rsa);
 		var parameters = rsa.ExportParameters(false);
+#else
+		var parameters = Utility.GetRsaParameters(pre + c_publicKey + post);
+#endif
 		Assert.Equal(s_modulus, parameters.Modulus);
 		Assert.Equal(s_exponent, parameters.Exponent);
 	}
@@ -124,9 +128,13 @@ public class UtilityTests
 	[InlineData("pre", "post")]
 	public void DecodePrivateKey(string pre, string post)
 	{
+#if NET5_0_OR_GREATER
 		using var rsa = RSA.Create();
 		Utility.LoadRsaParameters(pre + c_privateKey + post, rsa);
 		var parameters = rsa.ExportParameters(true);
+#else
+		var parameters = Utility.GetRsaParameters(pre + c_privateKey + post);
+#endif
 		Assert.Equal(s_modulus, parameters.Modulus);
 		Assert.Equal(s_exponent, parameters.Exponent);
 		Assert.Equal(s_d, parameters.D);

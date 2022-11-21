@@ -653,7 +653,7 @@ internal static class Utility
 		bytesConsumed = lengthBytesConsumed + length + 1;
 
 		// trim leading zero bytes
-		while (number is [ 0, .. ])
+		while (number is [ 0, _, .. ])
 			number = number[1..];
 
 		return true;
