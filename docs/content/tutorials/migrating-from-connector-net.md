@@ -294,3 +294,5 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#106244](https://bugs.mysql.com/bug.php?id=106244): `MySqlDataReader.GetFieldValue<Stream>` throws `InvalidCastException`~~
 * [#106247](https://bugs.mysql.com/bug.php?id=106247): Can't use ~~`MySqlDbType.Enum` or~~ `MySqlDbType.Set` with prepared command
 * [#108756](https://bugs.mysql.com/bug.php?id=108756): Can't insert negative number using prepared statement with MySqlDbType.Int24]
+* [#108970](https://bugs.mysql.com/bug.php?id=108970): `MySqlConnectionStringBuilder.ContainsKey` method gives wrong result
+* [#109141](https://bugs.mysql.com/bug.php?id=109141): Insert of data into a table results in `System.ArgumentException`

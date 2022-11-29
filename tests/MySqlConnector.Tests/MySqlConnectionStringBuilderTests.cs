@@ -556,7 +556,7 @@ public class MySqlConnectionStringBuilderTests
 			Assert.False(csb.TryGetValue(propertyName, out var setValue));
 			Assert.Null(setValue);
 #else
-			// Connector/NET sets all properties to default values
+			// Connector/NET sets all properties to default values: https://bugs.mysql.com/bug.php?id=108970
 			Assert.True(csb.ContainsKey(propertyName));
 			Assert.True(csb.TryGetValue(propertyName, out var setValue));
 #endif
