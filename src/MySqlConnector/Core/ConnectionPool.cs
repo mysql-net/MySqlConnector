@@ -383,9 +383,18 @@ internal sealed class ConnectionPool : IDisposable
 		var session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 		if (Log.IsDebugEnabled())
 			Log.Debug(logMessage, m_logArguments[0], session.Id);
-		var statusInfo = await session.ConnectAsync(ConnectionSettings, connection, startTickCount, m_loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
-		Exception? redirectionException = null;
+		string? statusInfo;
+		try
+		{
+			statusInfo = await session.ConnectAsync(ConnectionSettings, connection, startTickCount, m_loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+		}
+		catch (Exception)
+		{
+			await session.DisposeAsync(ioBehavior, default).ConfigureAwait(false);
+			throw;
+		}
 
+		Exception? redirectionException = null;
 		if (statusInfo is not null && statusInfo.StartsWith("Location: mysql://", StringComparison.Ordinal))
 		{
 			// server redirection string has the format "Location: mysql://{host}:{port}/user={userId}[&ttl={ttl}]"

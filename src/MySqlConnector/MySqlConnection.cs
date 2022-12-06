@@ -931,8 +931,16 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				var session = new ServerSession();
 				session.OwningConnection = new WeakReference<MySqlConnection>(this);
 				Log.Debug("Created new non-pooled Session{0}", session.Id);
-				await session.ConnectAsync(connectionSettings, this, startTickCount, loadBalancer, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
-				return session;
+				try
+				{
+					await session.ConnectAsync(connectionSettings, this, startTickCount, loadBalancer, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
+					return session;
+				}
+				catch (Exception)
+				{
+					await session.DisposeAsync(actualIOBehavior, default).ConfigureAwait(false);
+					throw;
+				}
 			}
 		}
 		catch (OperationCanceledException) when (timeoutSource?.IsCancellationRequested is true)
