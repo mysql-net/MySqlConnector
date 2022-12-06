@@ -32,7 +32,9 @@ internal sealed class StandardPayloadHandler : IPayloadHandler
 		}
 		set
 		{
+			var oldByteHandler = m_byteHandler;
 			m_byteHandler = value ?? throw new ArgumentNullException(nameof(value));
+			oldByteHandler?.Dispose();
 			m_bufferedByteReader = new();
 		}
 	}
