@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace MySqlConnector.Utilities;
 
-// See http://blogs.msdn.com/b/pfxteam/archive/2011/12/15/10248293.aspx
+// See https://devblogs.microsoft.com/pfxteam/awaiting-socket-operations/
 internal sealed class SocketAwaitable : INotifyCompletion
 {
 	public SocketAwaitable(SocketAsyncEventArgs eventArgs)
