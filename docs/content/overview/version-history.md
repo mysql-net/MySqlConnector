@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-11-20
+lastmod: 2022-12-05
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,11 @@ weight: 30
 ---
 
 # Version History
+
+### 2.2.2
+
+* Fix memory leak when initializing a TLS connection: [#1247](https://github.com/mysql-net/MySqlConnector/issues/1247).
+* Fix failure to dispose objects if an exception is thrown when connecting: [#1248](https://github.com/mysql-net/MySqlConnector/issues/1248).
 
 ### 2.2.1
 
