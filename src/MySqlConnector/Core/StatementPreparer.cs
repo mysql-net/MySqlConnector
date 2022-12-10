@@ -147,6 +147,7 @@ internal sealed class StatementPreparer
 
 			// store the parameter index
 			m_statements[m_statements.Count - 1].ParameterNames.Add(parameterName);
+			m_statements[m_statements.Count - 1].NormalizedParameterNames.Add(parameterName == null ? null : MySqlParameter.NormalizeParameterName(parameterName));
 			m_statements[m_statements.Count - 1].ParameterIndexes.Add(parameterIndex);
 		}
 

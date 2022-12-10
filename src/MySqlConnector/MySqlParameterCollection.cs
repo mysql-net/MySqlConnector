@@ -96,6 +96,11 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 		return m_nameToIndex.TryGetValue(normalizedName, out var index) ? index : -1;
 	}
 
+	internal int UnsafeIndexOf(string? normalizedParameterName)
+	{
+		return m_nameToIndex.TryGetValue(normalizedParameterName ?? "", out var index) ? index : -1;
+	}
+
 	public override void Insert(int index, object value) => AddParameter((MySqlParameter) (value ?? throw new ArgumentNullException(nameof(value))), index);
 
 	public override bool IsFixedSize => false;
