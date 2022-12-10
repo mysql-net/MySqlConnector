@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Security.Authentication;
 using MySqlConnector.Logging;
@@ -569,7 +570,7 @@ internal sealed class ConnectionPool : IDisposable
 			(ILoadBalancer) new RoundRobinLoadBalancer();
 
 		Id = Interlocked.Increment(ref s_poolId);
-		m_logArguments = new object[] { "{0}".FormatInvariant(Id) };
+		m_logArguments = new object[] { Id.ToString(CultureInfo.InvariantCulture) };
 		if (Log.IsInfoEnabled())
 			Log.Info("Pool{0} creating new connection pool for ConnectionString: {1}", m_logArguments[0], cs.ConnectionStringBuilder.GetConnectionString(includePassword: false));
 	}

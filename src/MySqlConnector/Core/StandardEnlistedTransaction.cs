@@ -20,7 +20,7 @@ internal sealed class StandardEnlistedTransaction : EnlistedTransactionBase
 			IsolationLevel.ReadUncommitted => "read uncommitted",
 			IsolationLevel.RepeatableRead => "repeatable read",
 			IsolationLevel.Snapshot => "repeatable read",
-			IsolationLevel.Chaos => throw new NotSupportedException("IsolationLevel.{0} is not supported.".FormatInvariant(Transaction.IsolationLevel)),
+			IsolationLevel.Chaos => throw new NotSupportedException($"IsolationLevel.{Transaction.IsolationLevel} is not supported."),
 
 			// "In terms of the SQL:1992 transaction isolation levels, the default InnoDB level is REPEATABLE READ." - http://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-model.html
 			IsolationLevel.Unspecified => "repeatable read",
