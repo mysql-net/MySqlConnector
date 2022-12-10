@@ -90,16 +90,12 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 
 	// Finds the index of a parameter by name, regardless of whether 'parameterName' or the matching
 	// MySqlParameter.ParameterName has a leading '?' or '@'.
-	internal int NormalizedIndexOf(string? parameterName)
-	{
-		var normalizedName = MySqlParameter.NormalizeParameterName(parameterName ?? "");
-		return m_nameToIndex.TryGetValue(normalizedName, out var index) ? index : -1;
-	}
+	internal int NormalizedIndexOf(string? parameterName) =>
+		UnsafeIndexOf(MySqlParameter.NormalizeParameterName(parameterName ?? ""));
 
-	internal int UnsafeIndexOf(string? normalizedParameterName)
-	{
-		return m_nameToIndex.TryGetValue(normalizedParameterName ?? "", out var index) ? index : -1;
-	}
+	// Finds the index of a parameter by normalized name (i.e., the results of MySqlParameter.NormalizeParameterName).
+	internal int UnsafeIndexOf(string? normalizedParameterName) =>
+		m_nameToIndex.TryGetValue(normalizedParameterName ?? "", out var index) ? index : -1;
 
 	public override void Insert(int index, object value) => AddParameter((MySqlParameter) (value ?? throw new ArgumentNullException(nameof(value))), index);
 
