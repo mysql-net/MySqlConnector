@@ -1713,13 +1713,13 @@ internal sealed class ServerSession
 
 			// first (and only) row
 			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-			static void ReadRow(ReadOnlySpan<byte> span, out int? connectionId, out byte[]? serverVersion)
+			static void ReadRow(ReadOnlySpan<byte> span, out int? connectionId, out ServerVersion? serverVersion)
 			{
 				var reader = new ByteArrayReader(span);
 				var length = reader.ReadLengthEncodedIntegerOrNull();
 				connectionId = (length != -1 && Utf8Parser.TryParse(reader.ReadByteString(length), out int id, out _)) ? id : default(int?);
 				length = reader.ReadLengthEncodedIntegerOrNull();
-				serverVersion = length != -1 ? reader.ReadByteString(length).ToArray() : null;
+				serverVersion = length != -1 ? new ServerVersion(reader.ReadByteString(length)) : default;
 			}
 			ReadRow(payload.Span, out var connectionId, out var serverVersion);
 
@@ -1732,10 +1732,9 @@ internal sealed class ServerSession
 
 			if (connectionId.HasValue && serverVersion is not null)
 			{
-				var newServerVersion = new ServerVersion(serverVersion);
-				Log.Debug("Session{0} changing ConnectionIdOld {1} to ConnectionId {2} and ServerVersionOld {3} to ServerVersion {4}", m_logArguments[0], ConnectionId, connectionId.Value, ServerVersion.OriginalString, newServerVersion.OriginalString);
+				Log.Debug("Session{0} changing ConnectionIdOld {1} to ConnectionId {2} and ServerVersionOld {3} to ServerVersion {4}", m_logArguments[0], ConnectionId, connectionId.Value, ServerVersion.OriginalString, serverVersion.OriginalString);
 				ConnectionId = connectionId.Value;
-				ServerVersion = newServerVersion;
+				ServerVersion = serverVersion;
 			}
 		}
 		catch (MySqlException ex)
