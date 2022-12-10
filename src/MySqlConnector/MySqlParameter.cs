@@ -721,19 +721,15 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		}
 	}
 
-	internal static string NormalizeParameterName(string name)
-	{
-		name = name.Trim();
-
-		if ((name.StartsWith("@`", StringComparison.Ordinal) || name.StartsWith("?`", StringComparison.Ordinal)) && name.EndsWith("`", StringComparison.Ordinal))
-			return name.Substring(2, name.Length - 3).Replace("``", "`");
-		if ((name.StartsWith("@'", StringComparison.Ordinal) || name.StartsWith("?'", StringComparison.Ordinal)) && name.EndsWith("'", StringComparison.Ordinal))
-			return name.Substring(2, name.Length - 3).Replace("''", "'");
-		if ((name.StartsWith("@\"", StringComparison.Ordinal) || name.StartsWith("?\"", StringComparison.Ordinal)) && name.EndsWith("\"", StringComparison.Ordinal))
-			return name.Substring(2, name.Length - 3).Replace("\"\"", "\"");
-
-		return name.StartsWith("@", StringComparison.Ordinal) || name.StartsWith("?", StringComparison.Ordinal) ? name.Substring(1) : name;
-	}
+	internal static string NormalizeParameterName(string name) =>
+		name.Trim() switch
+		{
+			['@' or '?', '`', .. var middle, '`'] => middle.Replace("``", "`"),
+			['@' or '?', '\'', .. var middle, '\''] => middle.Replace("''", "'"),
+			['@' or '?', '"', .. var middle, '"'] => middle.Replace("\"\"", "\""),
+			['@' or '?', .. var rest] => rest,
+			{ } other => other,
+		};
 
 #if NET6_0_OR_GREATER
 	private static void WriteDateOnly(ByteBufferWriter writer, DateOnly dateOnly)
