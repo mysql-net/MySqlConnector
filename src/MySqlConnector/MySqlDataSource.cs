@@ -77,8 +77,10 @@ public sealed class MySqlDataSource : DbDataSource
 	{
 		try
 		{
+#pragma warning disable CA2012 // Safe because method completes synchronously
 			if (disposing)
 				DisposeAsync(IOBehavior.Synchronous).GetAwaiter().GetResult();
+#pragma warning restore CA2012
 		}
 		finally
 		{

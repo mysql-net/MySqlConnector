@@ -1,6 +1,8 @@
 namespace MySqlConnector.Utilities;
 
+#pragma warning disable CA1001 // this is a Singleton, so doesn't need to be IDisposable
 internal sealed class TimerQueue
+#pragma warning restore CA1001
 {
 	public static TimerQueue Instance { get; } = new();
 
