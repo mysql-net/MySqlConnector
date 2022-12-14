@@ -242,7 +242,7 @@ public sealed class MySqlBulkLoader
 		if (Local)
 			sb.Append("LOCAL ");
 
-		sb.AppendFormat(CultureInfo.InvariantCulture, "INFILE '{0}' ", MySqlHelper.EscapeString(FileName!));
+		sb.Append($"INFILE '{MySqlHelper.EscapeString(FileName!)}' ");
 
 		sb.Append(ConflictOption switch
 		{
@@ -251,29 +251,29 @@ public sealed class MySqlBulkLoader
 			_ => "",
 		});
 
-		sb.AppendFormat(CultureInfo.InvariantCulture, "INTO TABLE {0} ", TableName);
+		sb.Append($"INTO TABLE {TableName} ");
 
 		if (CharacterSet is not null)
-			sb.AppendFormat(CultureInfo.InvariantCulture, "CHARACTER SET {0} ", CharacterSet);
+			sb.Append($"CHARACTER SET {CharacterSet} ");
 
-		var fieldsTerminatedBy = FieldTerminator is null ? "" : "TERMINATED BY '{0}' ".FormatInvariant(MySqlHelper.EscapeString(FieldTerminator));
-		var fieldsEnclosedBy = FieldQuotationCharacter == default ? "" : "{0}ENCLOSED BY '{1}' ".FormatInvariant(FieldQuotationOptional ? "OPTIONALLY " : "", MySqlHelper.EscapeString(FieldQuotationCharacter.ToString()));
-		var fieldsEscapedBy = EscapeCharacter == default ? "" : "ESCAPED BY '{0}' ".FormatInvariant(MySqlHelper.EscapeString(EscapeCharacter.ToString()));
+		var fieldsTerminatedBy = FieldTerminator is null ? "" : $"TERMINATED BY '{MySqlHelper.EscapeString(FieldTerminator)}' ";
+		var fieldsEnclosedBy = FieldQuotationCharacter == default ? "" : $"{(FieldQuotationOptional ? "OPTIONALLY " : "")}ENCLOSED BY '{MySqlHelper.EscapeString(FieldQuotationCharacter.ToString())}' ";
+		var fieldsEscapedBy = EscapeCharacter == default ? "" : $"ESCAPED BY '{MySqlHelper.EscapeString(EscapeCharacter.ToString())}' ";
 		if (fieldsTerminatedBy.Length + fieldsEnclosedBy.Length + fieldsEscapedBy.Length > 0)
-			sb.AppendFormat(CultureInfo.InvariantCulture, "FIELDS {0}{1}{2}", fieldsTerminatedBy, fieldsEnclosedBy, fieldsEscapedBy);
+			sb.Append($"FIELDS {fieldsTerminatedBy}{fieldsEnclosedBy}{fieldsEscapedBy}");
 
-		var linesTerminatedBy = LineTerminator is null ? "" : "TERMINATED BY '{0}' ".FormatInvariant(MySqlHelper.EscapeString(LineTerminator));
-		var linesStartingBy = LinePrefix is null ? "" : "STARTING BY '{0}' ".FormatInvariant(MySqlHelper.EscapeString(LinePrefix));
+		var linesTerminatedBy = LineTerminator is null ? "" : $"TERMINATED BY '{MySqlHelper.EscapeString(LineTerminator)}' ";
+		var linesStartingBy = LinePrefix is null ? "" : $"STARTING BY '{MySqlHelper.EscapeString(LinePrefix)}' ";
 		if (linesTerminatedBy.Length + linesStartingBy.Length > 0)
-			sb.AppendFormat(CultureInfo.InvariantCulture, "LINES {0}{1}", linesTerminatedBy, linesStartingBy);
+			sb.Append($"LINES {linesTerminatedBy}{linesStartingBy}");
 
 		sb.AppendFormat(CultureInfo.InvariantCulture, "IGNORE {0} LINES ", NumberOfLinesToSkip);
 
 		if (Columns.Count > 0)
-			sb.AppendFormat(CultureInfo.InvariantCulture, "({0}) ", string.Join(",", Columns));
+			sb.Append($"({string.Join(",", Columns)}) ");
 
 		if (Expressions.Count > 0)
-			sb.AppendFormat(CultureInfo.InvariantCulture, "SET {0}", string.Join(",", Expressions));
+			sb.Append($"SET {string.Join(",", Expressions)}");
 
 		sb.Append(';');
 

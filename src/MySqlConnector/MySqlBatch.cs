@@ -322,7 +322,7 @@ public sealed class MySqlBatch :
 		else if (Connection is null)
 			exception = new InvalidOperationException("Connection property must be non-null.");
 		else if (Connection.State != ConnectionState.Open && Connection.State != ConnectionState.Connecting)
-			exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
+			exception = new InvalidOperationException($"Connection must be Open; current state is {Connection.State}");
 		else if (!Connection.IgnoreCommandTransaction && Transaction != Connection.CurrentTransaction)
 			exception = new InvalidOperationException("The transaction associated with this batch is not the connection's active transaction; see https://fl.vu/mysql-trans");
 		else if (BatchCommands.Count == 0)
@@ -340,7 +340,7 @@ public sealed class MySqlBatch :
 		else if (Connection is null)
 			exception = new InvalidOperationException("Connection property must be non-null.");
 		else if (Connection.State != ConnectionState.Open)
-			exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
+			exception = new InvalidOperationException($"Connection must be Open; current state is {Connection.State}");
 		else if (BatchCommands.Count == 0)
 			exception = new InvalidOperationException("BatchCommands must contain a command");
 		else if (Connection.HasActiveReader)

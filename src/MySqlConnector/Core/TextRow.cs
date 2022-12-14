@@ -54,9 +54,9 @@ internal sealed class TextRow : Row
 
 		case ColumnType.String:
 			if (Connection.GuidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
-				return Utf8Parser.TryParse(data, out Guid guid, out int guid36BytesConsumed, 'D') && guid36BytesConsumed == 36 ? guid : throw new FormatException("Could not parse CHAR(36) value as Guid: {0}".FormatInvariant(Encoding.UTF8.GetString(data)));
+				return Utf8Parser.TryParse(data, out Guid guid, out int guid36BytesConsumed, 'D') && guid36BytesConsumed == 36 ? guid : throw new FormatException($"Could not parse CHAR(36) value as Guid: {Encoding.UTF8.GetString(data)}");
 			if (Connection.GuidFormat == MySqlGuidFormat.Char32 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
-				return Utf8Parser.TryParse(data, out Guid guid, out int guid32BytesConsumed, 'N') && guid32BytesConsumed == 32 ? guid : throw new FormatException("Could not parse CHAR(32) value as Guid: {0}".FormatInvariant(Encoding.UTF8.GetString(data)));
+				return Utf8Parser.TryParse(data, out Guid guid, out int guid32BytesConsumed, 'N') && guid32BytesConsumed == 32 ? guid : throw new FormatException($"Could not parse CHAR(32) value as Guid: {Encoding.UTF8.GetString(data)}");
 			goto case ColumnType.VarString;
 
 		case ColumnType.VarString:
@@ -103,7 +103,7 @@ internal sealed class TextRow : Row
 				return float.NegativeInfinity;
 			if (data.SequenceEqual(floatInfinity.Slice(1)))
 				return float.PositiveInfinity;
-			throw new FormatException("Couldn't parse '{0}' as float".FormatInvariant(Encoding.UTF8.GetString(data)));
+			throw new FormatException($"Couldn't parse value as float: {Encoding.UTF8.GetString(data)}");
 
 		case ColumnType.Double:
 			if (Utf8Parser.TryParse(data, out double doubleValue, out var doubleBytesConsumed) && doubleBytesConsumed == data.Length)
@@ -113,7 +113,7 @@ internal sealed class TextRow : Row
 				return double.NegativeInfinity;
 			if (data.SequenceEqual(doubleInfinity.Slice(1)))
 				return double.PositiveInfinity;
-			throw new FormatException("Couldn't parse '{0}' as double".FormatInvariant(Encoding.UTF8.GetString(data)));
+			throw new FormatException($"Couldn't parse value as double: {Encoding.UTF8.GetString(data)}");
 
 		case ColumnType.Decimal:
 		case ColumnType.NewDecimal:
@@ -123,7 +123,7 @@ internal sealed class TextRow : Row
 			return data.ToArray();
 
 		default:
-			throw new NotImplementedException("Reading {0} not implemented".FormatInvariant(columnDefinition.ColumnType));
+			throw new NotImplementedException($"Reading {columnDefinition.ColumnType} not implemented");
 		}
 	}
 
