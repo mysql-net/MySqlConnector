@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -229,31 +227,25 @@ foreach (var schema in schemaCollections.Where(x => x.Description is not null))
 
 class Schema
 {
-	[AllowNull]
-	public string Name { get; set; }
-	public string? Description { get; set; }
-	public string? Custom { get; set; }
-	public string? Table { get; set; }
-	public int IdentifierPartCount { get; set; }
-	[AllowNull]
-	public List<Column> Columns { get; set; }
-	public List<Restriction>? Restrictions { get; set; }
+	public required string Name { get; init; }
+	public string? Description { get; init; }
+	public string? Custom { get; init; }
+	public string? Table { get; init; }
+	public int IdentifierPartCount { get; init; }
+	public required List<Column> Columns { get; init; }
+	public List<Restriction>? Restrictions { get; init; }
 }
 
 class Column
 {
-	[AllowNull]
-	public string Name { get; set; }
-	[AllowNull]
-	public string Type { get; set; }
-	public string? Description { get; set; }
-	public bool Optional { get; set; }
+	public required string Name { get; init; }
+	public required string Type { get; init; }
+	public string? Description { get; init; }
+	public bool Optional { get; init; }
 }
 
 class Restriction
 {
-	[AllowNull]
-	public string Name { get; set; }
-	[AllowNull]
-	public string Default { get; set; }
+	public required string Name { get; init; }
+	public required string Default { get; init; }
 }
