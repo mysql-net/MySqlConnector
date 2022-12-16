@@ -72,7 +72,7 @@ internal sealed partial class SchemaProvider
 		else if (string.Equals(collectionName, "Views", StringComparison.OrdinalIgnoreCase))
 			await FillViewsAsync(ioBehavior, dataTable, restrictionValues, cancellationToken).ConfigureAwait(false);
 		else
-			throw new ArgumentException("Invalid collection name: '" + collectionName + "'.", nameof(collectionName));
+			throw new ArgumentException($"Invalid collection name: '{collectionName}'.", nameof(collectionName));
 
 		return dataTable;
 	}

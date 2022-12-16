@@ -39,7 +39,7 @@ foreach (var schema in schemaCollections)
 }
 codeWriter.WriteLine("""
 			else
-				throw new ArgumentException("Invalid collection name: '" + collectionName + "'.", nameof(collectionName));
+				throw new ArgumentException($"Invalid collection name: '{collectionName}'.", nameof(collectionName));
 
 			return dataTable;
 		}
