@@ -26,14 +26,14 @@ codeWriter.WriteLine("""
 			if (collectionName is null)
 				throw new ArgumentNullException(nameof(collectionName));
 
-			var dataTable = new DataTable(collectionName);
+			var dataTable = new DataTable();
 	""");
 var elseIf = "if";
 foreach (var schema in schemaCollections)
 {
 	codeWriter.WriteLine($"""
 				{elseIf} (string.Equals(collectionName, "{schema.Name}", StringComparison.OrdinalIgnoreCase))
-					await Fill{schema.Name}Async(ioBehavior, dataTable, restrictionValues, cancellationToken).ConfigureAwait(false);
+					await Fill{schema.Name}Async(ioBehavior, dataTable, "{schema.Name}", restrictionValues, cancellationToken).ConfigureAwait(false);
 		""");
 	elseIf = "else if";
 }
@@ -51,7 +51,7 @@ foreach (var schema in schemaCollections)
 	var isAsync = schema.Table is not null;
 	var supportsRestrictions = schema.Restrictions is { Count: > 0 };
 	codeWriter.WriteLine($$"""
-			private {{(isAsync ? "async " : "")}}Task Fill{{schema.Name}}Async(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
+			private {{(isAsync ? "async " : "")}}Task Fill{{schema.Name}}Async(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 			{
 		""");
 	if (!supportsRestrictions)
@@ -71,6 +71,7 @@ foreach (var schema in schemaCollections)
 
 	codeWriter.WriteLine("""
 
+				dataTable.TableName = tableName;
 				dataTable.Columns.AddRange(new DataColumn[]
 				{
 		""");
