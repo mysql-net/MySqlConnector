@@ -174,7 +174,7 @@ docWriter.Write($"""
 	  main:
 	    parent: getting started
 	title: Schema Collections
-	customtitle: ""Supported Schema Collections""
+	customtitle: "Supported Schema Collections"
 	weight: 80
 	---
 
