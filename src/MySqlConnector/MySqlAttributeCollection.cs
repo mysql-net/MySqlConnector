@@ -1,5 +1,4 @@
 using System.Collections;
-using MySqlConnector.Utilities;
 
 namespace MySqlConnector
 {
@@ -25,7 +24,7 @@ namespace MySqlConnector
 			foreach (var existingAttribute in m_attributes)
 			{
 				if (existingAttribute.AttributeName == attribute.AttributeName)
-					throw new ArgumentException("An attribute with the name {0} already exists in the collection".FormatInvariant(attribute.AttributeName), nameof(attribute));
+					throw new ArgumentException($"An attribute with the name {attribute.AttributeName} already exists in the collection", nameof(attribute));
 			}
 			m_attributes.Add(attribute);
 		}

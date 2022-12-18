@@ -103,7 +103,7 @@ internal sealed class ResultSet
 							break;
 
 						default:
-							throw new InvalidOperationException("Unsupported Source type: {0}".FormatInvariant(source.GetType().Name));
+							throw new InvalidOperationException($"Unsupported Source type: {source.GetType().Name}");
 						}
 					}
 					catch (Exception ex)
@@ -293,7 +293,7 @@ internal sealed class ResultSet
 		if (ColumnDefinitions is null)
 			throw new InvalidOperationException("There is no current result set.");
 		if (ordinal < 0 || ordinal >= ColumnDefinitions.Length)
-			throw new IndexOutOfRangeException("value must be between 0 and {0}".FormatInvariant(ColumnDefinitions.Length - 1));
+			throw new IndexOutOfRangeException($"value must be between 0 and {ColumnDefinitions.Length - 1}");
 		return ColumnDefinitions[ordinal].Name;
 	}
 
@@ -302,7 +302,7 @@ internal sealed class ResultSet
 		if (ColumnDefinitions is null)
 			throw new InvalidOperationException("There is no current result set.");
 		if (ordinal < 0 || ordinal >= ColumnDefinitions.Length)
-			throw new IndexOutOfRangeException("value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
+			throw new IndexOutOfRangeException($"value must be between 0 and {ColumnDefinitions.Length - 1}");
 
 		var mySqlDbType = ColumnTypes![ordinal];
 		if (mySqlDbType == MySqlDbType.String)
@@ -315,7 +315,7 @@ internal sealed class ResultSet
 		if (ColumnDefinitions is null)
 			throw new InvalidOperationException("There is no current result set.");
 		if (ordinal < 0 || ordinal >= ColumnDefinitions.Length)
-			throw new IndexOutOfRangeException("value must be between 0 and {0}.".FormatInvariant(ColumnDefinitions.Length));
+			throw new IndexOutOfRangeException($"value must be between 0 and {ColumnDefinitions.Length - 1}");
 
 		var type = TypeMapper.Instance.GetColumnTypeMetadata(ColumnTypes![ordinal]).DbTypeMapping.ClrType;
 		if (Connection.AllowZeroDateTime && type == typeof(DateTime))
@@ -348,7 +348,7 @@ internal sealed class ResultSet
 				return column;
 		}
 
-		throw new IndexOutOfRangeException("The column name '{0}' does not exist in the result set.".FormatInvariant(name));
+		throw new IndexOutOfRangeException($"The column name '{name}' does not exist in the result set.");
 	}
 
 	public Row GetCurrentRow()

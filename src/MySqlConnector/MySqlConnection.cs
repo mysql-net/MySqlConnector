@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
@@ -159,7 +160,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			// "In terms of the SQL:1992 transaction isolation levels, the default InnoDB level is REPEATABLE READ." - http://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-model.html
 			IsolationLevel.Unspecified => "repeatable read",
 
-			_ => throw new NotSupportedException("IsolationLevel.{0} is not supported.".FormatInvariant(isolationLevel)),
+			_ => throw new NotSupportedException($"IsolationLevel.{isolationLevel} is not supported."),
 		};
 
 		using (var cmd = new MySqlCommand($"set session transaction isolation level {isolationLevelValue};", this) { NoActivity = true })
@@ -387,7 +388,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		VerifyNotDisposed();
 		cancellationToken.ThrowIfCancellationRequested();
 		if (State != ConnectionState.Closed)
-			throw new InvalidOperationException("Cannot Open when State is {0}.".FormatInvariant(State));
+			throw new InvalidOperationException($"Cannot Open when State is {State}.");
 
 		using var activity = ActivitySourceHelper.StartActivity(ActivitySourceHelper.OpenActivityName);
 		try
@@ -741,7 +742,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		{
 			VerifyNotDisposed();
 			if (m_session is null || State != ConnectionState.Open)
-				throw new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(State));
+				throw new InvalidOperationException($"Connection must be Open; current state is {State}");
 			return m_session;
 		}
 	}
@@ -773,7 +774,12 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			using var connection = CloneWith(csb.ConnectionString);
 			connection.Open();
-			using var killCommand = new MySqlCommand("KILL QUERY {0}".FormatInvariant(command.Connection!.ServerThread), connection);
+#if NET6_0_OR_GREATER
+			var killQuerySql = string.Create(CultureInfo.InvariantCulture, $"KILL QUERY {command.Connection!.ServerThread}");
+#else
+			var killQuerySql = FormattableString.Invariant($"KILL QUERY {command.Connection!.ServerThread}");
+#endif
+			using var killCommand = new MySqlCommand(killQuerySql, connection);
 			killCommand.CommandTimeout = cancellationTimeout < 1 ? 3 : cancellationTimeout;
 			m_session?.DoCancel(command, killCommand);
 		}

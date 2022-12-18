@@ -1,5 +1,5 @@
+using System.Globalization;
 using MySqlConnector.Protocol.Serialization;
-using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
 
@@ -36,7 +36,12 @@ internal sealed partial class SchemaProvider
 			SupportedJoinOperators.RightOuter;
 		dataTable.Rows.Add(row);
 
-		static string GetVersion(Version v) => "{0:00}.{1:00}.{2:0000}".FormatInvariant(v.Major, v.Minor, v.Build);
+		static string GetVersion(Version v) =>
+#if NET6_0_OR_GREATER
+			string.Create(CultureInfo.InvariantCulture, stackalloc char[10], $"{v.Major:00}.{v.Minor:00}.{v.Build:0000}");
+#else
+			FormattableString.Invariant($"{v.Major:00}.{v.Minor:00}.{v.Build:0000}");
+#endif
 	}
 
 	private static void DoFillDataTypes(DataTable dataTable)

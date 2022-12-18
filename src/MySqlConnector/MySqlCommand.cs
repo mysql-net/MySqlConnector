@@ -171,7 +171,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		if (Connection is null)
 			exception = new InvalidOperationException("Connection property must be non-null.");
 		else if (Connection.State != ConnectionState.Open)
-			exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
+			exception = new InvalidOperationException($"Connection must be Open; current state is {Connection.State}");
 		else if (string.IsNullOrWhiteSpace(CommandText))
 			exception = new InvalidOperationException("CommandText must be specified");
 		else if (Connection?.HasActiveReader is true)
@@ -431,7 +431,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		else if (Connection is null)
 			exception = new InvalidOperationException("Connection property must be non-null.");
 		else if (Connection.State != ConnectionState.Open && Connection.State != ConnectionState.Connecting)
-			exception = new InvalidOperationException("Connection must be Open; current state is {0}".FormatInvariant(Connection.State));
+			exception = new InvalidOperationException($"Connection must be Open; current state is {Connection.State}");
 		else if (!Connection.IgnoreCommandTransaction && Transaction != Connection.CurrentTransaction)
 			exception = new InvalidOperationException("The transaction associated with this command is not the connection's active transaction; see https://fl.vu/mysql-trans");
 		else if (string.IsNullOrWhiteSpace(CommandText))

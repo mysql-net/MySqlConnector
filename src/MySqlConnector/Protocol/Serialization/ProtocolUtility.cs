@@ -408,7 +408,7 @@ internal static class ProtocolUtility
 			return 4;
 
 		default:
-			throw new NotSupportedException("Maximum byte length of character set {0} is unknown.".FormatInvariant(characterSet));
+			throw new NotSupportedException($"Maximum byte length of character set {characterSet} is unknown.");
 		}
 	}
 
@@ -428,7 +428,7 @@ internal static class ProtocolUtility
 		if (headerBytes.Length < 4)
 		{
 			return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ? default :
-				ValueTaskExtensions.FromException<Packet>(new EndOfStreamException("Expected to read 4 header bytes but only received {0}.".FormatInvariant(headerBytes.Length)));
+				ValueTaskExtensions.FromException<Packet>(new EndOfStreamException($"Expected to read 4 header bytes but only received {headerBytes.Length:d}."));
 		}
 
 		var payloadLength = (int) SerializationUtility.ReadUInt32(headerBytes[..3]);
@@ -466,7 +466,7 @@ internal static class ProtocolUtility
 		}
 
 		return payloadBytes.Count >= payloadLength ? new ValueTask<Packet>(new Packet(payloadBytes)) :
-			protocolErrorBehavior == ProtocolErrorBehavior.Throw ? ValueTaskExtensions.FromException<Packet>(new EndOfStreamException("Expected to read {0} payload bytes but only received {1}.".FormatInvariant(payloadLength, payloadBytes.Count))) :
+			protocolErrorBehavior == ProtocolErrorBehavior.Throw ? ValueTaskExtensions.FromException<Packet>(new EndOfStreamException($"Expected to read {payloadLength:d} payload bytes but only received {payloadBytes.Count:d}.")) :
 			default;
 	}
 

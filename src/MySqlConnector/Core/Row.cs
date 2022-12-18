@@ -28,7 +28,7 @@ internal abstract class Row
 	public object GetValue(int ordinal)
 	{
 		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length)
-			throw new ArgumentOutOfRangeException(nameof(ordinal), "value must be between 0 and {0}.".FormatInvariant(ResultSet.ColumnDefinitions!.Length - 1));
+			throw new ArgumentOutOfRangeException(nameof(ordinal), $"value must be between 0 and {ResultSet.ColumnDefinitions!.Length - 1}");
 
 		if (m_dataOffsets[ordinal] == -1)
 			return DBNull.Value;
@@ -216,7 +216,7 @@ internal abstract class Row
 			and not ColumnType.Int24 and not ColumnType.Long and not ColumnType.Longlong
 			and not ColumnType.Bit and not ColumnType.Year)
 		{
-			throw new InvalidCastException("Can't convert {0} to Int32".FormatInvariant(ResultSet.ColumnTypes![ordinal]));
+			throw new InvalidCastException($"Can't convert {ResultSet.ColumnTypes![ordinal]} to Int32");
 		}
 
 		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
@@ -357,7 +357,7 @@ internal abstract class Row
 			if (dateString.Length is >= 10 and <= 26)
 				value = ParseDateTime(Encoding.UTF8.GetBytes(dateString));
 			else
-				throw new FormatException("Couldn't interpret '{0}' as a valid DateTime".FormatInvariant(value));
+				throw new FormatException($"Couldn't interpret value as a valid DateTime: {value}");
 		}
 
 		if (value is MySqlDateTime mySqlDateTime)
@@ -436,7 +436,7 @@ internal abstract class Row
 		var value = GetValue(ordinal);
 		if (value is byte[] bytes && ResultSet.ColumnDefinitions![ordinal].ColumnType == ColumnType.Geometry)
 			return new MySqlGeometry(bytes);
-		throw new InvalidCastException("Can't convert {0} to MySqlGeometry.".FormatInvariant(ResultSet.ColumnDefinitions![ordinal].ColumnType));
+		throw new InvalidCastException($"Can't convert {ResultSet.ColumnDefinitions![ordinal].ColumnType} to MySqlGeometry.");
 	}
 
 	public MySqlDecimal GetMySqlDecimal(int ordinal)
@@ -447,7 +447,7 @@ internal abstract class Row
 		var columnType = ResultSet.ColumnDefinitions![ordinal].ColumnType;
 		if (columnType is ColumnType.NewDecimal or ColumnType.Decimal)
 			return new MySqlDecimal(Encoding.UTF8.GetString(data));
-		throw new InvalidCastException("Can't convert {0} to MySqlDecimal.".FormatInvariant(ResultSet.ColumnDefinitions![ordinal].ColumnType));
+		throw new InvalidCastException($"Can't convert {ResultSet.ColumnDefinitions![ordinal].ColumnType} to MySqlDecimal.");
 	}
 
 	public int GetValues(object[] values)
@@ -557,7 +557,7 @@ internal abstract class Row
 		}
 
 InvalidDateTime:
-		throw new FormatException("Couldn't interpret '{0}' as a valid DateTime".FormatInvariant(Encoding.UTF8.GetString(value)), exception);
+		throw new FormatException($"Couldn't interpret value as a valid DateTime: {Encoding.UTF8.GetString(value)}", exception);
 	}
 
 #if NET5_0_OR_GREATER
@@ -615,7 +615,7 @@ InvalidDateTime:
 			columnType != ColumnType.Blob && columnType != ColumnType.MediumBlob && columnType != ColumnType.LongBlob &&
 			columnType != ColumnType.Geometry))
 		{
-			throw new InvalidCastException("Can't convert {0} to bytes.".FormatInvariant(columnType));
+			throw new InvalidCastException($"Can't convert {columnType} to bytes.");
 		}
 	}
 

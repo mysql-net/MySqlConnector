@@ -23,9 +23,6 @@ internal static class Utility
 		}
 	}
 
-	public static string FormatInvariant(this string format, params object?[] args) =>
-		string.Format(CultureInfo.InvariantCulture, format, args);
-
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 	public static string GetString(this Encoding encoding, ReadOnlySpan<byte> span)
 	{
@@ -173,7 +170,7 @@ internal static class Utility
 	{
 		// read header (30 81 xx, or 30 82 xx xx)
 		if (data[0] != 0x30)
-			throw new FormatException("Expected 0x30 but read {0:X2}".FormatInvariant(data[0]));
+			throw new FormatException($"Expected 0x30 but read 0x{data[0]:X2}");
 		data = data.Slice(1);
 
 		if (!TryReadAsnLength(data, out var length, out var bytesConsumed))
@@ -185,12 +182,12 @@ internal static class Utility
 			// encoded OID sequence for  PKCS #1 rsaEncryption szOID_RSA_RSA = "1.2.840.113549.1.1.1"
 			ReadOnlySpan<byte> rsaOid = new byte[] { 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00 };
 			if (!data.Slice(0, rsaOid.Length).SequenceEqual(rsaOid))
-				throw new FormatException("Expected RSA OID but read {0}".FormatInvariant(BitConverter.ToString(data.Slice(0, 15).ToArray())));
+				throw new FormatException($"Expected RSA OID but read {BitConverter.ToString(data.Slice(0, 15).ToArray())}");
 			data = data.Slice(rsaOid.Length);
 
 			// BIT STRING (0x03) followed by length
 			if (data[0] != 0x03)
-				throw new FormatException("Expected 0x03 but read {0:X2}".FormatInvariant(data[0]));
+				throw new FormatException($"Expected 0x03 but read 0x{data[0]:X2}");
 			data = data.Slice(1);
 
 			if (!TryReadAsnLength(data, out length, out bytesConsumed))
@@ -199,12 +196,12 @@ internal static class Utility
 
 			// skip NULL byte
 			if (data[0] != 0x00)
-				throw new FormatException("Expected 0x00 but read {0:X2}".FormatInvariant(data[0]));
+				throw new FormatException($"Expected 0x00 but read 0x{data[0]:X2}");
 			data = data.Slice(1);
 
 			// skip next header (30 81 xx, or 30 82 xx xx)
 			if (data[0] != 0x30)
-				throw new FormatException("Expected 0x30 but read {0:X2}".FormatInvariant(data[0]));
+				throw new FormatException($"Expected 0x30 but read 0x{data[0]:X2}");
 			data = data.Slice(1);
 
 			if (!TryReadAsnLength(data, out length, out bytesConsumed))
@@ -460,7 +457,7 @@ internal static class Utility
 #endif
 
 		InvalidTimeSpan:
-		throw new FormatException("Couldn't interpret '{0}' as a valid TimeSpan".FormatInvariant(Encoding.UTF8.GetString(originalValue)));
+		throw new FormatException($"Couldn't interpret value as a valid TimeSpan: {Encoding.UTF8.GetString(originalValue)}");
 	}
 
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER

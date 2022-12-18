@@ -74,7 +74,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		{
 			if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
 				return default;
-			throw new EndOfStreamException("Wanted to read 7 bytes but only read {0} when reading compressed packet header".FormatInvariant(headerReadBytes.Count));
+			throw new EndOfStreamException($"Wanted to read 7 bytes but only read {headerReadBytes.Count:d} when reading compressed packet header");
 		}
 
 		var payloadLength = (int) SerializationUtility.ReadUInt32(headerReadBytes.AsSpan(0, 3));
@@ -105,7 +105,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 		{
 			if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
 				return default;
-			throw new EndOfStreamException("Wanted to read {0} bytes but only read {1} when reading compressed payload".FormatInvariant(payloadLength, payloadReadBytes.Count));
+			throw new EndOfStreamException($"Wanted to read {payloadLength:d} bytes but only read {payloadReadBytes.Count:d} when reading compressed payload");
 		}
 
 		if (uncompressedLength == 0)
@@ -130,7 +130,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 			} while (bytesRead > 0);
 #endif
 			if (totalBytesRead != uncompressedLength && protocolErrorBehavior == ProtocolErrorBehavior.Throw)
-				throw new InvalidOperationException("Expected to read {0:n0} uncompressed bytes but only read {1:n0}".FormatInvariant(uncompressedLength, totalBytesRead));
+				throw new InvalidOperationException($"Expected to read {uncompressedLength:d} uncompressed bytes but only read {totalBytesRead:d}");
 			m_remainingData = new(uncompressedData, 0, totalBytesRead);
 #else
 			// check CMF (Compression Method and Flags) and FLG (Flags) bytes for expected values
@@ -143,7 +143,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 				// CMF*256+FLG is a multiple of 31: header checksum
 				if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
 					return default;
-				throw new NotSupportedException("Unsupported zlib header: {0:X2}{1:X2}".FormatInvariant(cmf, flg));
+				throw new NotSupportedException($"Unsupported zlib header: {cmf:X2}{flg:X2}");
 			}
 
 			// zlib format (https://www.ietf.org/rfc/rfc1950.txt) is: [two header bytes] [deflate-compressed data] [four-byte checksum]
@@ -160,7 +160,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 				totalBytesRead += bytesRead;
 			} while (bytesRead > 0);
 			if (totalBytesRead != uncompressedLength && protocolErrorBehavior == ProtocolErrorBehavior.Throw)
-				throw new InvalidOperationException("Expected to read {0:n0} uncompressed bytes but only read {1:n0}".FormatInvariant(uncompressedLength, totalBytesRead));
+				throw new InvalidOperationException($"Expected to read {uncompressedLength:d} uncompressed bytes but only read {totalBytesRead:d}");
 			m_remainingData = new(uncompressedData, 0, totalBytesRead);
 
 			var checksum = Adler32.Calculate(uncompressedData.AsSpan(0, totalBytesRead));

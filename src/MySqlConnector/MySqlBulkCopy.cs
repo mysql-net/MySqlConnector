@@ -309,7 +309,7 @@ public sealed class MySqlBulkCopy
 			else
 			{
 				if (columnMapping.DestinationColumn.Length == 0)
-					throw new InvalidOperationException("MySqlBulkCopyColumnMapping.DestinationName is not set for SourceOrdinal {0}".FormatInvariant(columnMapping.SourceOrdinal));
+					throw new InvalidOperationException($"MySqlBulkCopyColumnMapping.DestinationName is not set for SourceOrdinal {columnMapping.SourceOrdinal}");
 				if (columnMapping.DestinationColumn[0] == '@')
 					bulkLoader.Columns.Add(columnMapping.DestinationColumn);
 				else
@@ -322,7 +322,7 @@ public sealed class MySqlBulkCopy
 		foreach (var columnMapping in columnMappings)
 		{
 			if (columnMapping.SourceOrdinal < 0 || columnMapping.SourceOrdinal >= m_valuesEnumerator.FieldCount)
-				throw new InvalidOperationException("SourceOrdinal {0} is an invalid value".FormatInvariant(columnMapping.SourceOrdinal));
+				throw new InvalidOperationException($"SourceOrdinal {columnMapping.SourceOrdinal} is an invalid value");
 		}
 
 		var errors = new List<MySqlError>();
@@ -347,7 +347,7 @@ public sealed class MySqlBulkCopy
 		if (!m_wasAborted && rowsInserted != m_rowsCopied && ConflictOption is MySqlBulkLoaderConflictOption.None)
 		{
 			Log.Error("Bulk copy to DestinationTableName={0} failed; RowsCopied={1}; RowsInserted={2}", tableName, m_rowsCopied, rowsInserted);
-			throw new MySqlException(MySqlErrorCode.BulkCopyFailed, "{0} rows {1} copied to {2} but only {3} {4} inserted.".FormatInvariant(m_rowsCopied, m_rowsCopied == 1 ? "was" : "were", tableName, rowsInserted, rowsInserted == 1 ? "was" : "were"));
+			throw new MySqlException(MySqlErrorCode.BulkCopyFailed, $"{m_rowsCopied} row{(m_rowsCopied == 1 ? " was" : "s were")} copied to {tableName} but only {rowsInserted} {(rowsInserted == 1 ? "was" : "were")} inserted.");
 		}
 
 		return new(errors, rowsInserted);
@@ -532,15 +532,20 @@ public sealed class MySqlBulkCopy
 				bytesWritten = 1;
 				return true;
 			}
-			else if (value is float or double)
+			else if (value is float floatValue)
 			{
 				// NOTE: Utf8Formatter doesn't support "R"
-				return WriteString("{0:R}".FormatInvariant(value), ref utf8Encoder, output, out bytesWritten);
+				return WriteString(floatValue.ToString("R", CultureInfo.InvariantCulture), ref utf8Encoder, output, out bytesWritten);
+			}
+			else if (value is double doubleValue)
+			{
+				// NOTE: Utf8Formatter doesn't support "R"
+				return WriteString(doubleValue.ToString("R", CultureInfo.InvariantCulture), ref utf8Encoder, output, out bytesWritten);
 			}
 			else if (value is MySqlDateTime mySqlDateTimeValue)
 			{
 				if (mySqlDateTimeValue.IsValidDateTime)
-					return WriteString("{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}".FormatInvariant(mySqlDateTimeValue.GetDateTime()), ref utf8Encoder, output, out bytesWritten);
+					return WriteString(mySqlDateTimeValue.GetDateTime().ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff", CultureInfo.InvariantCulture), ref utf8Encoder, output, out bytesWritten);
 				else
 					return WriteString("0000-00-00", ref utf8Encoder, output, out bytesWritten);
 			}
@@ -551,21 +556,21 @@ public sealed class MySqlBulkCopy
 				else if (connection.DateTimeKind == DateTimeKind.Local && dateTimeValue.Kind == DateTimeKind.Utc)
 					throw new MySqlException("DateTime.Kind must not be Utc when DateTimeKind setting is Local");
 
-				return WriteString("{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}".FormatInvariant(dateTimeValue), ref utf8Encoder, output, out bytesWritten);
+				return WriteString(dateTimeValue.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff", CultureInfo.InvariantCulture), ref utf8Encoder, output, out bytesWritten);
 			}
 			else if (value is DateTimeOffset dateTimeOffsetValue)
 			{
 				// store as UTC as it will be read as such when deserialized from a timespan column
-				return WriteString("{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}".FormatInvariant(dateTimeOffsetValue.UtcDateTime), ref utf8Encoder, output, out bytesWritten);
+				return WriteString(dateTimeOffsetValue.UtcDateTime.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff", CultureInfo.InvariantCulture), ref utf8Encoder, output, out bytesWritten);
 			}
 #if NET6_0_OR_GREATER
 			else if (value is DateOnly dateOnlyValue)
 			{
-				return WriteString("{0:yyyy'-'MM'-'dd}".FormatInvariant(dateOnlyValue), ref utf8Encoder, output, out bytesWritten);
+				return WriteString(dateOnlyValue.ToString("yyyy'-'MM'-'dd", CultureInfo.InvariantCulture), ref utf8Encoder, output, out bytesWritten);
 			}
 			else if (value is TimeOnly timeOnlyValue)
 			{
-				return WriteString("{0:HH':'mm':'ss'.'ffffff}".FormatInvariant(timeOnlyValue), ref utf8Encoder, output, out bytesWritten);
+				return WriteString(timeOnlyValue.ToString("HH':'mm':'ss'.'ffffff", CultureInfo.InvariantCulture), ref utf8Encoder, output, out bytesWritten);
 			}
 #endif
 			else if (value is TimeSpan ts)
@@ -576,7 +581,12 @@ public sealed class MySqlBulkCopy
 					isNegative = true;
 					ts = TimeSpan.FromTicks(-ts.Ticks);
 				}
-				return WriteString("{0}{1}:{2:mm':'ss'.'ffffff}".FormatInvariant(isNegative ? "-" : "", ts.Days * 24 + ts.Hours, ts), ref utf8Encoder, output, out bytesWritten);
+#if NET6_0_OR_GREATER
+				var str = string.Create(CultureInfo.InvariantCulture, $"{(isNegative ? "-" : "")}{ts.Days * 24 + ts.Hours}:{ts:mm':'ss'.'ffffff}");
+#else
+				var str = FormattableString.Invariant($"{(isNegative ? "-" : "")}{ts.Days * 24 + ts.Hours}:{ts:mm':'ss'.'ffffff}");
+#endif
+				return WriteString(str, ref utf8Encoder, output, out bytesWritten);
 			}
 			else if (value is Guid guidValue)
 			{
@@ -608,9 +618,9 @@ public sealed class MySqlBulkCopy
 					return Utf8Formatter.TryFormat(guidValue, output, out bytesWritten, is32Characters ? 'N' : 'D');
 				}
 			}
-			else if (value is Enum)
+			else if (value is Enum enumValue)
 			{
-				return WriteString("{0:d}".FormatInvariant(value), ref utf8Encoder, output, out bytesWritten);
+				return WriteString(enumValue.ToString("d"), ref utf8Encoder, output, out bytesWritten);
 			}
 			else if (value is BigInteger bigInteger)
 			{
@@ -622,7 +632,7 @@ public sealed class MySqlBulkCopy
 			}
 			else
 			{
-				throw new NotSupportedException("Type {0} not currently supported. Value: {1}".FormatInvariant(value.GetType().Name, value));
+				throw new NotSupportedException($"Type {value.GetType().Name} not currently supported. Value: {value}");
 			}
 		}
 

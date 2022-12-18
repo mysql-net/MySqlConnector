@@ -30,7 +30,7 @@ internal sealed class OkPayload
 		var reader = new ByteArrayReader(span);
 		var signature = reader.ReadByte();
 		if (signature != Signature && (!deprecateEof || signature != EofPayload.Signature))
-			throw new FormatException("Expected to read 0x00 or 0xFE but got 0x{0:X2}".FormatInvariant(signature));
+			throw new FormatException($"Expected to read 0x00 or 0xFE but got 0x{signature:X2}");
 		var affectedRowCount = reader.ReadLengthEncodedInteger();
 		var lastInsertId = reader.ReadLengthEncodedInteger();
 		var serverStatus = (ServerStatus) reader.ReadUInt16();

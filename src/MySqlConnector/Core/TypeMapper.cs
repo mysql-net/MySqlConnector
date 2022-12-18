@@ -298,7 +298,7 @@ internal sealed class TypeMapper
 			return MySqlDbType.Set;
 
 		default:
-			throw new NotImplementedException("ConvertToMySqlDbType for {0} is not implemented".FormatInvariant(columnDefinition.ColumnType));
+			throw new NotImplementedException($"ConvertToMySqlDbType for {columnDefinition.ColumnType} is not implemented");
 		}
 	}
 
@@ -333,7 +333,7 @@ internal sealed class TypeMapper
 			MySqlDbType.NewDecimal => ColumnType.NewDecimal,
 			MySqlDbType.Geometry => ColumnType.Geometry,
 			MySqlDbType.Null => ColumnType.Null,
-			_ => throw new NotImplementedException("ConvertToColumnTypeAndFlags for {0} is not implemented".FormatInvariant(dbType)),
+			_ => throw new NotImplementedException($"ConvertToColumnTypeAndFlags for {dbType} is not implemented"),
 		};
 		return (ushort) ((byte) columnType | (isUnsigned ? 0x8000 : 0));
 	}

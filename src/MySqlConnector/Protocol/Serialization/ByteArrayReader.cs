@@ -1,5 +1,4 @@
 using System.Buffers.Binary;
-using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Serialization;
 
@@ -15,7 +14,7 @@ internal ref struct ByteArrayReader
 	public int Offset
 	{
 		readonly get => m_offset;
-		set => m_offset = value >= 0 && value <= m_maxOffset ? value : throw new ArgumentOutOfRangeException(nameof(value), "value must be between 0 and {0}".FormatInvariant(m_maxOffset));
+		set => m_offset = value >= 0 && value <= m_maxOffset ? value : throw new ArgumentOutOfRangeException(nameof(value), $"value must be between 0 and {m_maxOffset:d}");
 	}
 
 	public byte ReadByte()
@@ -27,7 +26,7 @@ internal ref struct ByteArrayReader
 	public void ReadByte(byte value)
 	{
 		if (ReadByte() != value)
-			throw new FormatException("Expected to read 0x{0:X2} but got 0x{1:X2}".FormatInvariant(value, m_buffer[m_offset - 1]));
+			throw new FormatException($"Expected to read 0x{value:X2} but got 0x{m_buffer[m_offset - 1]:X2}");
 	}
 
 	public short ReadInt16()

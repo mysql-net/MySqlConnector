@@ -1,7 +1,5 @@
 #pragma warning disable SA1520 // Use braces consistently
 
-using MySqlConnector.Utilities;
-
 namespace MySqlConnector.Core;
 
 internal abstract class SqlParser
@@ -211,7 +209,7 @@ internal abstract class SqlParser
 			else
 			{
 				if (state != State.Beginning && state != State.Statement)
-					throw new InvalidOperationException("Unexpected state: {0}".FormatInvariant(state));
+					throw new InvalidOperationException($"Unexpected state: {state}");
 
 				if (ch == '-' && index < sql.Length - 2 && sql[index + 1] == '-' && sql[index + 2] == ' ')
 				{

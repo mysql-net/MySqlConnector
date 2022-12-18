@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Serialization;
-using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
 
@@ -226,7 +225,7 @@ internal sealed class CachedProcedure
 		}
 		catch (NullReferenceException ex)
 		{
-			throw new MySqlException("Failed to parse stored procedure parameter '{0}'; extracted data type was {1}".FormatInvariant(originalSql, dataType), ex);
+			throw new MySqlException($"Failed to parse stored procedure parameter '{originalSql}'; extracted data type was {dataType}", ex);
 		}
 	}
 

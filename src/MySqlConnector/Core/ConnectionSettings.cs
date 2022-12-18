@@ -78,7 +78,7 @@ internal sealed class ConnectionSettings
 					TlsVersions |= SslProtocols.Tls13;
 #endif
 				else
-					throw new InvalidOperationException("Unexpected character '{0}' for TLS minor version.".FormatInvariant(minorVersion));
+					throw new InvalidOperationException($"Unexpected character '{minorVersion}' for TLS minor version.");
 			}
 			if (TlsVersions == default)
 				throw new NotSupportedException("All specified TLS versions are incompatible with this platform.");
@@ -95,10 +95,10 @@ internal sealed class ConnectionSettings
 					tlsCipherSuites.Add(cipherSuite);
 				else if (int.TryParse(suiteName, out var value) && Enum.IsDefined(typeof(TlsCipherSuite), value))
 					tlsCipherSuites.Add((TlsCipherSuite) value);
-				else if (Enum.TryParse<TlsCipherSuite>("TLS_" + suiteName, ignoreCase: true, out cipherSuite))
+				else if (Enum.TryParse("TLS_" + suiteName, ignoreCase: true, out cipherSuite))
 					tlsCipherSuites.Add(cipherSuite);
 				else
-					throw new NotSupportedException("Unknown value '{0}' for TlsCipherSuites.".FormatInvariant(suiteName));
+					throw new NotSupportedException($"Unknown value '{suiteName}' for TlsCipherSuites.");
 			}
 			TlsCipherSuites = tlsCipherSuites;
 #else
