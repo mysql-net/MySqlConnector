@@ -40,7 +40,7 @@ internal sealed partial class SchemaProvider
 #if NET6_0_OR_GREATER
 			string.Create(CultureInfo.InvariantCulture, stackalloc char[10], $"{v.Major:00}.{v.Minor:00}.{v.Build:0000}");
 #else
-			System.FormattableString.Invariant($"{v.Major:00}.{v.Minor:00}.{v.Build:0000}");
+			FormattableString.Invariant($"{v.Major:00}.{v.Minor:00}.{v.Build:0000}");
 #endif
 	}
 

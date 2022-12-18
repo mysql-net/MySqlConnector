@@ -1,7 +1,5 @@
 #pragma warning disable SA1520 // Use braces consistently
 
-using MySqlConnector.Utilities;
-
 namespace MySqlConnector.Core;
 
 internal abstract class SqlParser

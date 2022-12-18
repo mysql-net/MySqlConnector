@@ -347,7 +347,7 @@ public sealed class MySqlBulkCopy
 		if (!m_wasAborted && rowsInserted != m_rowsCopied && ConflictOption is MySqlBulkLoaderConflictOption.None)
 		{
 			Log.Error("Bulk copy to DestinationTableName={0} failed; RowsCopied={1}; RowsInserted={2}", tableName, m_rowsCopied, rowsInserted);
-			throw new MySqlException(MySqlErrorCode.BulkCopyFailed, $"{m_rowsCopied} rows {(m_rowsCopied == 1 ? "was" : "were")} copied to {tableName} but only {rowsInserted} {(rowsInserted == 1 ? "was" : "were")} inserted.");
+			throw new MySqlException(MySqlErrorCode.BulkCopyFailed, $"{m_rowsCopied} row{(m_rowsCopied == 1 ? " was" : "s were")} copied to {tableName} but only {rowsInserted} {(rowsInserted == 1 ? "was" : "were")} inserted.");
 		}
 
 		return new(errors, rowsInserted);
@@ -545,18 +545,9 @@ public sealed class MySqlBulkCopy
 			else if (value is MySqlDateTime mySqlDateTimeValue)
 			{
 				if (mySqlDateTimeValue.IsValidDateTime)
-				{
-#if NET6_0_OR_GREATER
-					var str = string.Create(CultureInfo.InvariantCulture, stackalloc char[26], $"{mySqlDateTimeValue.GetDateTime():yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}");
-#else
-					var str = FormattableString.Invariant($"{mySqlDateTimeValue.GetDateTime():yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}");
-#endif
-					return WriteString(str, ref utf8Encoder, output, out bytesWritten);
-				}
+					return WriteString(mySqlDateTimeValue.GetDateTime().ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff", CultureInfo.InvariantCulture), ref utf8Encoder, output, out bytesWritten);
 				else
-				{
 					return WriteString("0000-00-00", ref utf8Encoder, output, out bytesWritten);
-				}
 			}
 			else if (value is DateTime dateTimeValue)
 			{
@@ -565,31 +556,21 @@ public sealed class MySqlBulkCopy
 				else if (connection.DateTimeKind == DateTimeKind.Local && dateTimeValue.Kind == DateTimeKind.Utc)
 					throw new MySqlException("DateTime.Kind must not be Utc when DateTimeKind setting is Local");
 
-#if NET6_0_OR_GREATER
-				var str = string.Create(CultureInfo.InvariantCulture, stackalloc char[26], $"{dateTimeValue:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}");
-#else
-				var str = System.FormattableString.Invariant($"{dateTimeValue:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}");
-#endif
-				return WriteString(str, ref utf8Encoder, output, out bytesWritten);
+				return WriteString(dateTimeValue.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff", CultureInfo.InvariantCulture), ref utf8Encoder, output, out bytesWritten);
 			}
 			else if (value is DateTimeOffset dateTimeOffsetValue)
 			{
 				// store as UTC as it will be read as such when deserialized from a timespan column
-#if NET6_0_OR_GREATER
-				var str = string.Create(CultureInfo.InvariantCulture, stackalloc char[26], $"{dateTimeOffsetValue.UtcDateTime:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}");
-#else
-				var str = System.FormattableString.Invariant($"{dateTimeOffsetValue.UtcDateTime:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}");
-#endif
-				return WriteString(str, ref utf8Encoder, output, out bytesWritten);
+				return WriteString(dateTimeOffsetValue.UtcDateTime.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff", CultureInfo.InvariantCulture), ref utf8Encoder, output, out bytesWritten);
 			}
 #if NET6_0_OR_GREATER
 			else if (value is DateOnly dateOnlyValue)
 			{
-				return WriteString(string.Create(CultureInfo.InvariantCulture, stackalloc char[10], $"{dateOnlyValue:yyyy'-'MM'-'dd}"), ref utf8Encoder, output, out bytesWritten);
+				return WriteString(dateOnlyValue.ToString("yyyy'-'MM'-'dd", CultureInfo.InvariantCulture), ref utf8Encoder, output, out bytesWritten);
 			}
 			else if (value is TimeOnly timeOnlyValue)
 			{
-				return WriteString(string.Create(CultureInfo.InvariantCulture, stackalloc char[15], $"{timeOnlyValue:HH':'mm':'ss'.'ffffff}"), ref utf8Encoder, output, out bytesWritten);
+				return WriteString(timeOnlyValue.ToString("HH':'mm':'ss'.'ffffff", CultureInfo.InvariantCulture), ref utf8Encoder, output, out bytesWritten);
 			}
 #endif
 			else if (value is TimeSpan ts)
@@ -603,7 +584,7 @@ public sealed class MySqlBulkCopy
 #if NET6_0_OR_GREATER
 				var str = string.Create(CultureInfo.InvariantCulture, $"{(isNegative ? "-" : "")}{ts.Days * 24 + ts.Hours}:{ts:mm':'ss'.'ffffff}");
 #else
-				var str = System.FormattableString.Invariant($"{(isNegative ? "-" : "")}{ts.Days * 24 + ts.Hours}:{ts:mm':'ss'.'ffffff}");
+				var str = FormattableString.Invariant($"{(isNegative ? "-" : "")}{ts.Days * 24 + ts.Hours}:{ts:mm':'ss'.'ffffff}");
 #endif
 				return WriteString(str, ref utf8Encoder, output, out bytesWritten);
 			}

@@ -1,7 +1,6 @@
 using System.Globalization;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
-using MySqlConnector.Utilities;
 
 namespace MySqlConnector;
 

@@ -1,5 +1,4 @@
 using System.Buffers.Binary;
-using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Serialization;
 

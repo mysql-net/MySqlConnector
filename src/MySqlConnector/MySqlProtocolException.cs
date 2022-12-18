@@ -1,5 +1,4 @@
 using System.Runtime.Serialization;
-using MySqlConnector.Utilities;
 
 namespace MySqlConnector;
 

@@ -1,5 +1,4 @@
 using System.Transactions;
-using MySqlConnector.Utilities;
 using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace MySqlConnector.Core;

@@ -170,7 +170,7 @@ internal static class Utility
 	{
 		// read header (30 81 xx, or 30 82 xx xx)
 		if (data[0] != 0x30)
-			throw new FormatException($"Expected 0x30 but read {data[0]:X2}");
+			throw new FormatException($"Expected 0x30 but read 0x{data[0]:X2}");
 		data = data.Slice(1);
 
 		if (!TryReadAsnLength(data, out var length, out var bytesConsumed))
@@ -187,7 +187,7 @@ internal static class Utility
 
 			// BIT STRING (0x03) followed by length
 			if (data[0] != 0x03)
-				throw new FormatException($"Expected 0x03 but read {data[0]:X2}");
+				throw new FormatException($"Expected 0x03 but read 0x{data[0]:X2}");
 			data = data.Slice(1);
 
 			if (!TryReadAsnLength(data, out length, out bytesConsumed))
@@ -196,12 +196,12 @@ internal static class Utility
 
 			// skip NULL byte
 			if (data[0] != 0x00)
-				throw new FormatException($"Expected 0x00 but read {data[0]:X2}");
+				throw new FormatException($"Expected 0x00 but read 0x{data[0]:X2}");
 			data = data.Slice(1);
 
 			// skip next header (30 81 xx, or 30 82 xx xx)
 			if (data[0] != 0x30)
-				throw new FormatException($"Expected 0x30 but read {data[0]:X2}");
+				throw new FormatException($"Expected 0x30 but read 0x{data[0]:X2}");
 			data = data.Slice(1);
 
 			if (!TryReadAsnLength(data, out length, out bytesConsumed))
