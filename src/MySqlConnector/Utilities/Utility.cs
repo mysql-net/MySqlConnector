@@ -23,9 +23,6 @@ internal static class Utility
 		}
 	}
 
-	public static string FormatInvariant(this string format, params object?[] args) =>
-		string.Format(CultureInfo.InvariantCulture, format, args);
-
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 	public static string GetString(this Encoding encoding, ReadOnlySpan<byte> span)
 	{

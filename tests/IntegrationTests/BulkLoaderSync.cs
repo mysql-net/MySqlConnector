@@ -643,6 +643,61 @@ create table bulk_load_data_table(a int, time1 time, time2 time(3));", connectio
 #endif
 #endif
 
+	public static IEnumerable<object[]> GetBulkCopyData() =>
+		new object[][]
+		{
+			new object[] { "datetime(3)", new object[] { new DateTime(2021, 3, 4, 5, 6, 7, 890), new DateTime(2020, 1, 2, 3, 4, 5, 678) } },
+			new object[] { "float", new object[] { 1.0f, 0.1f, 0.000001f } },
+			new object[] { "double", new object[] { 1.0, 0.1, 0.000001 } },
+			new object[] { "time(3)", new object[] { TimeSpan.Zero, new TimeSpan(1, 2, 3, 4, 5), new TimeSpan(-1, -3, -5, -7, -9) } },
+		};
+
+	[Theory]
+	[MemberData(nameof(GetBulkCopyData))]
+	public void BulkCopyDataTable(string columnType, object[] rows)
+	{
+		var dataTable = new DataTable()
+		{
+			Columns =
+			{
+				new DataColumn("id", typeof(int)),
+				new DataColumn("data", rows[0].GetType()),
+			},
+		};
+		for (var i = 0; i < rows.Length; i++)
+			dataTable.Rows.Add(i + 1, rows[i]);
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+		using (var cmd = new MySqlCommand($"""
+			drop table if exists bulk_load_data_table;
+			create table bulk_load_data_table(id int, data {columnType});
+			""", connection))
+		{
+			cmd.ExecuteNonQuery();
+		}
+
+		var bulkCopy = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_load_data_table",
+		};
+		var result = bulkCopy.WriteToServer(dataTable);
+		Assert.Equal(rows.Length, result.RowsInserted);
+		Assert.Empty(result.Warnings);
+
+		using (var cmd = new MySqlCommand(@"select data from bulk_load_data_table order by id;", connection))
+		{
+			using var reader = cmd.ExecuteReader();
+			for (var i = 0; i < rows.Length; i++)
+			{
+				Assert.True(reader.Read());
+				Assert.Equal(rows[i], reader.GetValue(0));
+			}
+			Assert.False(reader.Read());
+			Assert.False(reader.NextResult());
+		}
+	}
+
 	[Fact]
 	public void BulkCopyDataTableWithLongBlob()
 	{
