@@ -80,7 +80,7 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 	{
 		var index = IndexOf(parameterName);
 		if (index == -1)
-			throw new ArgumentException("Parameter '{0}' not found in the collection".FormatInvariant(parameterName), nameof(parameterName));
+			throw new ArgumentException($"Parameter '{parameterName}' not found in the collection", nameof(parameterName));
 		return m_parameters[index];
 	}
 
@@ -163,7 +163,7 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 		if (newName.Length != 0)
 		{
 			if (m_nameToIndex.ContainsKey(newName))
-				throw new MySqlException(@"There is already a parameter with the name '{0}' in this collection.".FormatInvariant(parameter.ParameterName));
+				throw new MySqlException($"There is already a parameter with the name '{parameter.ParameterName}' in this collection.");
 			m_nameToIndex[newName] = index;
 		}
 	}
@@ -171,7 +171,7 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 	private void AddParameter(MySqlParameter parameter, int index)
 	{
 		if (!string.IsNullOrEmpty(parameter.NormalizedParameterName) && NormalizedIndexOf(parameter.NormalizedParameterName) != -1)
-			throw new MySqlException(@"Parameter '{0}' has already been defined.".FormatInvariant(parameter.ParameterName));
+			throw new MySqlException($"Parameter '{parameter.ParameterName}' has already been defined.");
 		if (index < m_parameters.Count)
 		{
 			foreach (var pair in m_nameToIndex.ToList())

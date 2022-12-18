@@ -44,7 +44,7 @@ public readonly struct MySqlDecimal
 			}
 		}
 
-		throw new FormatException("Could not parse the value as a MySqlDecimal: {0}".FormatInvariant(value));
+		throw new FormatException($"Could not parse the value as a MySqlDecimal: {value}");
 	}
 
 	private static readonly Regex s_pattern = new(@"^-?([1-9][0-9]*|0)(\.([0-9]+))?$");

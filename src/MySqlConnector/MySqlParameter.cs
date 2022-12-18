@@ -88,7 +88,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			if (value != ParameterDirection.Input && value != ParameterDirection.Output &&
 				value != ParameterDirection.InputOutput && value != ParameterDirection.ReturnValue)
 			{
-				throw new ArgumentOutOfRangeException(nameof(value), "{0} is not a supported value for ParameterDirection".FormatInvariant(value));
+				throw new ArgumentOutOfRangeException(nameof(value), $"{value} is not a supported value for ParameterDirection");
 			}
 			m_direction = value;
 		}
@@ -231,9 +231,19 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			}
 			writer.Write((byte) '\'');
 		}
-		else if (Value is byte or sbyte or decimal)
+		else if (Value is byte byteValue)
 		{
-			writer.Write("{0}".FormatInvariant(Value));
+			Utf8Formatter.TryFormat(byteValue, writer.GetSpan(3), out var bytesWritten);
+			writer.Advance(bytesWritten);
+		}
+		else if (Value is sbyte sbyteValue)
+		{
+			Utf8Formatter.TryFormat(sbyteValue, writer.GetSpan(4), out var bytesWritten);
+			writer.Advance(bytesWritten);
+		}
+		else if (Value is decimal decimalValue)
+		{
+			writer.Write(decimalValue.ToString(CultureInfo.InvariantCulture));
 		}
 		else if (Value is short shortValue)
 		{
@@ -307,10 +317,15 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			ReadOnlySpan<byte> falseBytes = "false"u8;
 			writer.Write(boolValue ? trueBytes : falseBytes);
 		}
-		else if (Value is float or double)
+		else if (Value is float floatValue)
 		{
 			// NOTE: Utf8Formatter doesn't support "R"
-			writer.Write("{0:R}".FormatInvariant(Value));
+			writer.Write(floatValue.ToString("R", CultureInfo.InvariantCulture));
+		}
+		else if (Value is double doubleValue)
+		{
+			// NOTE: Utf8Formatter doesn't support "R"
+			writer.Write(doubleValue.ToString("R", CultureInfo.InvariantCulture));
 		}
 		else if (Value is BigInteger bigInteger)
 		{
@@ -323,35 +338,53 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		else if (Value is MySqlDateTime mySqlDateTimeValue)
 		{
 			if (mySqlDateTimeValue.IsValidDateTime)
-				writer.Write("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(mySqlDateTimeValue.GetDateTime()));
+			{
+#if NET6_0_OR_GREATER
+				var str = string.Create(CultureInfo.InvariantCulture, stackalloc char[39], $"timestamp('{mySqlDateTimeValue.GetDateTime():yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
+#else
+				var str = FormattableString.Invariant($"timestamp('{mySqlDateTimeValue.GetDateTime():yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
+#endif
+				writer.Write(str);
+			}
 			else
+			{
 				writer.Write("timestamp('0000-00-00')"u8);
+			}
 		}
 #if NET6_0_OR_GREATER
 		else if (Value is DateOnly dateOnlyValue)
 		{
-			writer.Write("timestamp('{0:yyyy'-'MM'-'dd}')".FormatInvariant(dateOnlyValue));
+			writer.Write(string.Create(CultureInfo.InvariantCulture, stackalloc char[23], $"timestamp('{dateOnlyValue:yyyy'-'MM'-'dd}')"));
 		}
 #endif
 		else if (Value is DateTime dateTimeValue)
 		{
 			if ((options & StatementPreparerOptions.DateTimeUtc) != 0 && dateTimeValue.Kind == DateTimeKind.Local)
-				throw new MySqlException("DateTime.Kind must not be Local when DateTimeKind setting is Utc (parameter name: {0})".FormatInvariant(ParameterName));
+				throw new MySqlException($"DateTime.Kind must not be Local when DateTimeKind setting is Utc (parameter name: {ParameterName})");
 			else if ((options & StatementPreparerOptions.DateTimeLocal) != 0 && dateTimeValue.Kind == DateTimeKind.Utc)
-				throw new MySqlException("DateTime.Kind must not be Utc when DateTimeKind setting is Local (parameter name: {0})".FormatInvariant(ParameterName));
+				throw new MySqlException($"DateTime.Kind must not be Utc when DateTimeKind setting is Local (parameter name: {ParameterName})");
 
-			writer.Write("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(dateTimeValue));
+#if NET6_0_OR_GREATER
+			var str = string.Create(CultureInfo.InvariantCulture, stackalloc char[39], $"timestamp('{dateTimeValue:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
+#else
+			var str = FormattableString.Invariant($"timestamp('{dateTimeValue:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
+#endif
+			writer.Write(str);
 		}
 		else if (Value is DateTimeOffset dateTimeOffsetValue)
 		{
 			// store as UTC as it will be read as such when deserialized from a timespan column
-			writer.Write("timestamp('{0:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')".FormatInvariant(dateTimeOffsetValue.UtcDateTime));
+#if NET6_0_OR_GREATER
+			var str = string.Create(CultureInfo.InvariantCulture, stackalloc char[39], $"timestamp('{dateTimeOffsetValue.UtcDateTime:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
+#else
+			var str = FormattableString.Invariant($"timestamp('{dateTimeOffsetValue.UtcDateTime:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
+#endif
+			writer.Write(str);
 		}
 #if NET6_0_OR_GREATER
 		else if (Value is TimeOnly timeOnlyValue)
 		{
-			writer.Write("time '"u8);
-			writer.Write("{0:HH':'mm':'ss'.'ffffff}'".FormatInvariant(timeOnlyValue));
+			writer.Write(string.Create(CultureInfo.InvariantCulture, stackalloc char[22], $"time '{timeOnlyValue:HH':'mm':'ss'.'ffffff}'"));
 		}
 #endif
 		else if (Value is TimeSpan ts)
@@ -362,7 +395,12 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 				writer.Write((byte) '-');
 				ts = TimeSpan.FromTicks(-ts.Ticks);
 			}
-			writer.Write("{0}:{1:mm':'ss'.'ffffff}'".FormatInvariant(ts.Days * 24 + ts.Hours, ts));
+#if NET6_0_OR_GREATER
+			var str = string.Create(CultureInfo.InvariantCulture, stackalloc char[17], $"{ts.Days * 24 + ts.Hours}:{ts:mm':'ss'.'ffffff}'");
+#else
+			var str = FormattableString.Invariant($"{ts.Days * 24 + ts.Hours}:{ts:mm':'ss'.'ffffff}'");
+#endif
+			writer.Write(str);
 		}
 		else if (Value is Guid guidValue)
 		{
@@ -444,17 +482,19 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		{
 			writer.WriteString((ulong) Value);
 		}
-		else if ((MySqlDbType is MySqlDbType.String or MySqlDbType.VarChar) && HasSetDbType && Value is Enum)
+		else if ((MySqlDbType is MySqlDbType.String or MySqlDbType.VarChar) && HasSetDbType && Value is Enum stringEnumValue)
 		{
-			writer.Write("'{0:G}'".FormatInvariant(Value));
+			writer.Write((byte) '\'');
+			writer.Write(stringEnumValue.ToString("G"));
+			writer.Write((byte) '\'');
 		}
-		else if (Value is Enum)
+		else if (Value is Enum enumValue)
 		{
-			writer.Write("{0:d}".FormatInvariant(Value));
+			writer.Write(enumValue.ToString("d"));
 		}
 		else
 		{
-			throw new NotSupportedException("Parameter type {0} is not supported; see https://fl.vu/mysql-param-type. Value: {1}".FormatInvariant(Value.GetType().Name, Value));
+			throw new NotSupportedException($"Parameter type {Value.GetType().Name} is not supported; see https://fl.vu/mysql-param-type. Value: {Value}");
 		}
 
 		static void WriteString(ByteBufferWriter writer, bool noBackslashEscapes, bool writeDelimiters, ReadOnlySpan<char> value)
@@ -586,9 +626,9 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		{
 			writer.Write(unchecked((ulong) BitConverter.DoubleToInt64Bits(doubleValue)));
 		}
-		else if (Value is decimal)
+		else if (Value is decimal decimalValue)
 		{
-			writer.WriteLengthEncodedString("{0}".FormatInvariant(Value));
+			writer.WriteLengthEncodedString(decimalValue.ToString(CultureInfo.InvariantCulture));
 		}
 		else if (Value is BigInteger bigInteger)
 		{
@@ -614,9 +654,9 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		else if (Value is DateTime dateTimeValue)
 		{
 			if ((options & StatementPreparerOptions.DateTimeUtc) != 0 && dateTimeValue.Kind == DateTimeKind.Local)
-				throw new MySqlException("DateTime.Kind must not be Local when DateTimeKind setting is Utc (parameter name: {0})".FormatInvariant(ParameterName));
+				throw new MySqlException($"DateTime.Kind must not be Local when DateTimeKind setting is Utc (parameter name: {ParameterName})");
 			else if ((options & StatementPreparerOptions.DateTimeLocal) != 0 && dateTimeValue.Kind == DateTimeKind.Utc)
-				throw new MySqlException("DateTime.Kind must not be Utc when DateTimeKind setting is Local (parameter name: {0})".FormatInvariant(ParameterName));
+				throw new MySqlException($"DateTime.Kind must not be Utc when DateTimeKind setting is Local (parameter name: {ParameterName})");
 
 			WriteDateTime(writer, dateTimeValue);
 		}
@@ -707,9 +747,9 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		{
 			writer.Write((ulong) Value);
 		}
-		else if ((MySqlDbType is MySqlDbType.String or MySqlDbType.VarChar) && HasSetDbType && Value is Enum)
+		else if ((MySqlDbType is MySqlDbType.String or MySqlDbType.VarChar) && HasSetDbType && Value is Enum stringEnumValue)
 		{
-			writer.WriteLengthEncodedString("{0:G}".FormatInvariant(Value));
+			writer.WriteLengthEncodedString(stringEnumValue.ToString("G"));
 		}
 		else if (Value is Enum)
 		{
@@ -717,7 +757,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		}
 		else
 		{
-			throw new NotSupportedException("Parameter type {0} is not supported; see https://fl.vu/mysql-param-type. Value: {1}".FormatInvariant(Value.GetType().Name, Value));
+			throw new NotSupportedException($"Parameter type {Value.GetType().Name} is not supported; see https://fl.vu/mysql-param-type. Value: {Value}");
 		}
 	}
 

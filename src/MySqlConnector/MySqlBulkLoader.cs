@@ -242,6 +242,7 @@ public sealed class MySqlBulkLoader
 		if (Local)
 			sb.Append("LOCAL ");
 
+#pragma warning disable CA1305 // StringBuilder.Append is only being used with strings, which aren't locale-sensitive
 		sb.Append($"INFILE '{MySqlHelper.EscapeString(FileName!)}' ");
 
 		sb.Append(ConflictOption switch
@@ -276,6 +277,7 @@ public sealed class MySqlBulkLoader
 			sb.Append($"SET {string.Join(",", Expressions)}");
 
 		sb.Append(';');
+#pragma warning restore CA1305
 
 		return sb.ToString();
 	}

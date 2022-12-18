@@ -1,3 +1,4 @@
+using System.Globalization;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -15,19 +16,19 @@ public sealed class MySqlCommandBuilder : DbCommandBuilder
 		if (command is null)
 			throw new ArgumentNullException(nameof(command));
 		if (command.CommandType != CommandType.StoredProcedure)
-			throw new ArgumentException("MySqlCommand.CommandType must be StoredProcedure not {0}".FormatInvariant(command.CommandType), nameof(command));
+			throw new ArgumentException($"MySqlCommand.CommandType must be StoredProcedure not {command.CommandType}", nameof(command));
 		if (string.IsNullOrWhiteSpace(command.CommandText))
 			throw new ArgumentException("MySqlCommand.CommandText must be set to a stored procedure name", nameof(command));
 		if (command.Connection?.State != ConnectionState.Open)
 			throw new ArgumentException("MySqlCommand.Connection must be an open connection.", nameof(command));
 		if (command.Connection.Session.ServerVersion.Version < ServerVersions.SupportsProcedureCache)
-			throw new NotSupportedException("MySQL Server {0} doesn't support INFORMATION_SCHEMA".FormatInvariant(command.Connection.Session.ServerVersion.OriginalString));
+			throw new NotSupportedException($"MySQL Server {command.Connection.Session.ServerVersion.OriginalString} doesn't support INFORMATION_SCHEMA");
 
 		var cachedProcedure = await command.Connection.GetCachedProcedure(command.CommandText!, revalidateMissing: true, ioBehavior, cancellationToken).ConfigureAwait(false);
 		if (cachedProcedure is null)
 		{
 			var name = NormalizedSchema.MustNormalize(command.CommandText!, command.Connection.Database);
-			throw new MySqlException("Procedure or function '{0}' cannot be found in database '{1}'.".FormatInvariant(name.Component, name.Schema));
+			throw new MySqlException($"Procedure or function '{name.Component}' cannot be found in database '{name.Schema}'.");
 		}
 
 		command.Parameters.Clear();
@@ -67,9 +68,13 @@ public sealed class MySqlCommandBuilder : DbCommandBuilder
 		((MySqlParameter) parameter).MySqlDbType = (MySqlDbType) row[SchemaTableColumn.ProviderType];
 	}
 
-	protected override string GetParameterName(int parameterOrdinal) => "@p{0}".FormatInvariant(parameterOrdinal);
+#if NET6_0_OR_GREATER
+	protected override string GetParameterName(int parameterOrdinal) => string.Create(CultureInfo.InvariantCulture, $"@p{parameterOrdinal}");
+#else
+	protected override string GetParameterName(int parameterOrdinal) => FormattableString.Invariant($"@p{parameterOrdinal}");
+#endif
 	protected override string GetParameterName(string parameterName) => "@" + parameterName;
-	protected override string GetParameterPlaceholder(int parameterOrdinal) => "@p{0}".FormatInvariant(parameterOrdinal);
+	protected override string GetParameterPlaceholder(int parameterOrdinal) => GetParameterName(parameterOrdinal);
 
 	protected override void SetRowUpdatingHandler(DbDataAdapter adapter)
 	{

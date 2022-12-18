@@ -148,7 +148,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		}
 
 		if (resultSet.BufferState != ResultSetState.HasMoreData)
-			throw new InvalidOperationException("Invalid state: {0}".FormatInvariant(resultSet.BufferState));
+			throw new InvalidOperationException($"Invalid state: {resultSet.BufferState}");
 
 		return new ValueTask(ScanResultSetAsyncAwaited(ioBehavior, resultSet, cancellationToken));
 	}

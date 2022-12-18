@@ -965,7 +965,7 @@ internal abstract partial class MySqlConnectionStringOption
 		s_options.TryGetValue(key, out var option) ? option : null;
 
 	public static MySqlConnectionStringOption GetOptionForKey(string key) =>
-		TryGetOptionForKey(key) ?? throw new ArgumentException("Option '{0}' not supported.".FormatInvariant(key));
+		TryGetOptionForKey(key) ?? throw new ArgumentException($"Option '{key}' not supported.");
 
 	public string Key => m_keys[0];
 	public IReadOnlyList<string> Keys => m_keys;
@@ -1083,13 +1083,18 @@ internal abstract partial class MySqlConnectionStringOption
 				}
 
 				var coercedValue = "";
+				Span<char> temp = stackalloc char[7];
 				for (var i = 0; i < versions.Length; i++)
 				{
 					if (versions[i])
 					{
 						if (coercedValue.Length != 0)
 							coercedValue += ", ";
-						coercedValue += "TLS 1.{0}".FormatInvariant(i);
+#if NET6_0_OR_GREATER
+						coercedValue += string.Create(CultureInfo.InvariantCulture, temp, $"TLS 1.{i}");
+#else
+						coercedValue += FormattableString.Invariant($"TLS 1.{i}");
+#endif
 					}
 				}
 				return coercedValue;
@@ -1315,7 +1320,12 @@ internal sealed class MySqlConnectionStringValueOption<T> : MySqlConnectionStrin
 			}
 			catch (Exception ex) when (ex is not ArgumentException)
 			{
-				throw new ArgumentException("Value '{0}' not supported for option '{1}'.".FormatInvariant(objectValue, typeof(T).Name), ex);
+#if NET6_0_OR_GREATER
+				var exceptionMessage = string.Create(CultureInfo.InvariantCulture, $"Value '{objectValue}' not supported for option '{typeof(T).Name}'.");
+#else
+				var exceptionMessage = FormattableString.Invariant($"Value '{objectValue}' not supported for option '{typeof(T).Name}'.");
+#endif
+				throw new ArgumentException(exceptionMessage, ex);
 			}
 		}
 
@@ -1325,7 +1335,12 @@ internal sealed class MySqlConnectionStringValueOption<T> : MySqlConnectionStrin
 		}
 		catch (Exception ex)
 		{
-			throw new ArgumentException("Invalid value '{0}' for '{1}' connection string option.".FormatInvariant(objectValue, Key), ex);
+#if NET6_0_OR_GREATER
+			var exceptionMessage = string.Create(CultureInfo.InvariantCulture, $"Invalid value '{objectValue}' for '{Key}' connection string option.");
+#else
+			var exceptionMessage = FormattableString.Invariant($"Invalid value '{objectValue}' for '{Key}' connection string option.");
+#endif
+			throw new ArgumentException(exceptionMessage, ex);
 		}
 	}
 
