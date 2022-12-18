@@ -115,7 +115,9 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 
 	[Theory]
 	[InlineData("Databases")]
+	[InlineData("DATABASES", "Databases")]
 	[InlineData("DataTypes")]
+	[InlineData("datatypes", "DataTypes")]
 	// only in 8.0 - [InlineData("KeyWords")]
 	[InlineData("MetaDataCollections")]
 	[InlineData("Procedures")]
@@ -141,10 +143,11 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 	[InlineData("TableSpaces")]
 	[InlineData("UserPrivileges")]
 #endif
-	public void GetSchema(string schemaName)
+	public void GetSchema(string schemaName, string expectedSchemaName = null)
 	{
 		var table = m_database.Connection.GetSchema(schemaName);
 		Assert.NotNull(table);
+		Assert.Equal(expectedSchemaName ?? schemaName, table.TableName);
 	}
 
 #if !MYSQL_DATA
