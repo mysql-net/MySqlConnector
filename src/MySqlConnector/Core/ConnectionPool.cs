@@ -161,7 +161,7 @@ internal sealed class ConnectionPool : IDisposable
 				didRemove = m_leasedSessions.Remove(session.Id);
 
 			// Some concurrent thread has already returned this session to the pool, just noop
-			if (didRemove)
+			if (!didRemove)
 			{
 				return;
 			}
