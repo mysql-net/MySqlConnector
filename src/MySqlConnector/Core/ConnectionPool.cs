@@ -156,8 +156,15 @@ internal sealed class ConnectionPool : IDisposable
 
 		try
 		{
+			var didRemove = false;
 			lock (m_leasedSessions)
-				m_leasedSessions.Remove(session.Id);
+				didRemove = m_leasedSessions.Remove(session.Id);
+
+			// Some concurrent thread has already returned this session to the pool, just noop
+			if (didRemove)
+			{
+				return;
+			}
 			session.OwningConnection = null;
 			var sessionHealth = GetSessionHealth(session);
 			if (sessionHealth == 0)
