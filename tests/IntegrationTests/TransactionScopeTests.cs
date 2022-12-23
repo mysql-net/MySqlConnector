@@ -683,6 +683,24 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		Assert.Equal(new[] { 3, 4 }, values2);
 	}
 
+	[SkippableTheory(MySqlData = "https://bugs.mysql.com/bug.php?id=109476")]
+	[MemberData(nameof(ConnectionStrings))]
+	public void TransactionScopeNullReference(string connectionString)
+	{
+		// see https://bugs.mysql.com/bug.php?id=107110
+		using var scope = new TransactionScope();
+		using var connection = new MySqlConnection($"{AppConfig.ConnectionString};{connectionString}");
+		connection.Open();
+
+		using var command = connection.CreateCommand();
+		command.CommandText = "SELECT * from INFORMATION_SCHEMA.TABLES LIMIT 1; SELECT SLEEP(5);";
+		command.CommandTimeout = 1;
+		if (connection.ServerVersion.IndexOf("MariaDB") == -1)
+			command.ExecuteNonQuery();
+		else
+			Assert.Throws<MySqlException>(() => command.ExecuteNonQuery());
+	}
+
 	[SkippableFact(MySqlData = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")]
 	public void RollBackTwoTransactions()
 	{
