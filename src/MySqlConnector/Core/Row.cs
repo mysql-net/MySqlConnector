@@ -41,82 +41,58 @@ internal abstract class Row
 	public bool GetBoolean(int ordinal)
 	{
 		var value = GetValue(ordinal);
-		if (value is bool)
-			return (bool) value;
-
-		if (value is sbyte)
-			return (sbyte) value != 0;
-		if (value is byte)
-			return (byte) value != 0;
-		if (value is short)
-			return (short) value != 0;
-		if (value is ushort)
-			return (ushort) value != 0;
-		if (value is int)
-			return (int) value != 0;
-		if (value is uint)
-			return (uint) value != 0;
-		if (value is long)
-			return (long) value != 0;
-		if (value is ulong)
-			return (ulong) value != 0;
-		if (value is decimal)
-			return (decimal) value != 0;
-		return (bool) value;
+		return value switch
+		{
+			bool boolValue => boolValue,
+			sbyte sbyteValue => sbyteValue != 0,
+			byte byteValue => byteValue != 0,
+			short shortValue => shortValue != 0,
+			ushort ushortValue => ushortValue != 0,
+			int intValue => intValue != 0,
+			uint uintValue => uintValue != 0,
+			long longValue => longValue != 0,
+			ulong ulongValue => ulongValue != 0,
+			decimal decimalValue => decimalValue != 0,
+			_ => (bool) value,
+		};
 	}
 
 	public sbyte GetSByte(int ordinal)
 	{
 		var value = GetValue(ordinal);
-		if (value is sbyte sbyteValue)
-			return sbyteValue;
-
-		if (value is byte byteValue)
-			return checked((sbyte) byteValue);
-		if (value is short shortValue)
-			return checked((sbyte) shortValue);
-		if (value is ushort ushortValue)
-			return checked((sbyte) ushortValue);
-		if (value is int intValue)
-			return checked((sbyte) intValue);
-		if (value is uint uintValue)
-			return checked((sbyte) uintValue);
-		if (value is long longValue)
-			return checked((sbyte) longValue);
-		if (value is ulong ulongValue)
-			return checked((sbyte) ulongValue);
-		if (value is decimal decimalValue)
-			return (sbyte) decimalValue;
-		if (value is bool boolValue)
-			return boolValue ? (sbyte) 1 : (sbyte) 0;
-		return (sbyte) value;
+		return value switch
+		{
+			sbyte sbyteValue => sbyteValue,
+			byte byteValue => checked((sbyte) byteValue),
+			short shortValue => checked((sbyte) shortValue),
+			ushort ushortValue => checked((sbyte) ushortValue),
+			int intValue => checked((sbyte) intValue),
+			uint uintValue => checked((sbyte) uintValue),
+			long longValue => checked((sbyte) longValue),
+			ulong ulongValue => checked((sbyte) ulongValue),
+			decimal decimalValue => (sbyte) decimalValue,
+			bool boolValue => boolValue ? (sbyte) 1 : (sbyte) 0,
+			_ => (sbyte) value,
+		};
 	}
 
 	public byte GetByte(int ordinal)
 	{
 		var value = GetValue(ordinal);
-		if (value is byte byteValue)
-			return byteValue;
-
-		if (value is sbyte sbyteValue)
-			return checked((byte) sbyteValue);
-		if (value is short shortValue)
-			return checked((byte) shortValue);
-		if (value is ushort ushortValue)
-			return checked((byte) ushortValue);
-		if (value is int intValue)
-			return checked((byte) intValue);
-		if (value is uint uintValue)
-			return checked((byte) uintValue);
-		if (value is long longValue)
-			return checked((byte) longValue);
-		if (value is ulong ulongValue)
-			return checked((byte) ulongValue);
-		if (value is decimal decimalValue)
-			return (byte) decimalValue;
-		if (value is bool boolValue)
-			return boolValue ? (byte) 1 : (byte) 0;
-		return (byte) value;
+		return value switch
+		{
+			byte byteValue => byteValue,
+			sbyte sbyteValue => checked((byte) sbyteValue),
+			short shortValue => checked((byte) shortValue),
+			ushort ushortValue => checked((byte) ushortValue),
+			int intValue => checked((byte) intValue),
+			uint uintValue => checked((byte) uintValue),
+			long longValue => checked((byte) longValue),
+			ulong ulongValue => checked((byte) ulongValue),
+			decimal decimalValue => (byte) decimalValue,
+			bool boolValue => boolValue ? (byte) 1 : (byte) 0,
+			_ => (byte) value,
+		};
 	}
 
 	public long GetBytes(int ordinal, long dataOffset, byte[]? buffer, int bufferOffset, int length)
@@ -178,28 +154,20 @@ internal abstract class Row
 	public short GetInt16(int ordinal)
 	{
 		var value = GetValue(ordinal);
-		if (value is short)
-			return (short) value;
-
-		if (value is sbyte)
-			return (sbyte) value;
-		if (value is byte)
-			return (byte) value;
-		if (value is ushort)
-			return checked((short) (ushort) value);
-		if (value is int)
-			return checked((short) (int) value);
-		if (value is uint)
-			return checked((short) (uint) value);
-		if (value is long)
-			return checked((short) (long) value);
-		if (value is ulong)
-			return checked((short) (ulong) value);
-		if (value is decimal)
-			return (short) (decimal) value;
-		if (value is bool)
-			return (bool) value ? (short) 1 : (short) 0;
-		return (short) value;
+		return value switch
+		{
+			short shortValue => shortValue,
+			sbyte sbyteValue => sbyteValue,
+			byte byteValue => byteValue,
+			ushort ushortValue => checked((short) ushortValue),
+			int intValue => checked((short) intValue),
+			uint uintValue => checked((short) uintValue),
+			long longValue => checked((short) longValue),
+			ulong ulongValue => checked((short) ulongValue),
+			decimal decimalValue => (short) decimalValue,
+			bool boolValue => boolValue ? (short) 1 : (short) 0,
+			_ => (short) value,
+		};
 	}
 
 	public int GetInt32(int ordinal)
@@ -242,109 +210,77 @@ internal abstract class Row
 	public long GetInt64(int ordinal)
 	{
 		var value = GetValue(ordinal);
-		if (value is long)
-			return (long) value;
-
-		if (value is sbyte)
-			return (sbyte) value;
-		if (value is byte)
-			return (byte) value;
-		if (value is short)
-			return (short) value;
-		if (value is ushort)
-			return (ushort) value;
-		if (value is int)
-			return (int) value;
-		if (value is uint)
-			return (uint) value;
-		if (value is ulong)
-			return checked((long) (ulong) value);
-		if (value is decimal)
-			return (long) (decimal) value;
-		if (value is bool)
-			return (bool) value ? 1 : 0;
-		return (long) value;
+		return value switch
+		{
+			long longValue => longValue,
+			sbyte sbyteValue => sbyteValue,
+			byte byteValue => byteValue,
+			short shortValue => shortValue,
+			ushort ushortValue => ushortValue,
+			int intValue => intValue,
+			uint uintValue => uintValue,
+			ulong ulongValue => checked((long) ulongValue),
+			decimal decimalValue => (long) decimalValue,
+			bool boolValue => boolValue ? 1 : 0,
+			_ => (long) value,
+		};
 	}
 
 	public ushort GetUInt16(int ordinal)
 	{
 		var value = GetValue(ordinal);
-		if (value is ushort)
-			return (ushort) value;
-
-		if (value is sbyte)
-			return checked((ushort) (sbyte) value);
-		if (value is byte)
-			return (byte) value;
-		if (value is short)
-			return checked((ushort) (short) value);
-		if (value is int)
-			return checked((ushort) (int) value);
-		if (value is uint)
-			return checked((ushort) (uint) value);
-		if (value is long)
-			return checked((ushort) (long) value);
-		if (value is ulong)
-			return checked((ushort) (ulong) value);
-		if (value is decimal)
-			return (ushort) (decimal) value;
-		if (value is bool)
-			return (bool) value ? (ushort) 1 : (ushort) 0;
-		return (ushort) value;
+		return value switch
+		{
+			ushort ushortValue => ushortValue,
+			sbyte sbyteValue => checked((ushort) sbyteValue),
+			byte byteValue => byteValue,
+			short shortValue => checked((ushort) shortValue),
+			int intValue => checked((ushort) intValue),
+			uint uintValue => checked((ushort) uintValue),
+			long longValue => checked((ushort) longValue),
+			ulong ulongValue => checked((ushort) ulongValue),
+			decimal decimalValue => (ushort) decimalValue,
+			bool boolValue => boolValue ? (ushort) 1 : (ushort) 0,
+			_ => (ushort) value,
+		};
 	}
 
 	public uint GetUInt32(int ordinal)
 	{
 		var value = GetValue(ordinal);
-		if (value is uint)
-			return (uint) value;
-
-		if (value is sbyte)
-			return checked((uint) (sbyte) value);
-		if (value is byte)
-			return (byte) value;
-		if (value is short)
-			return checked((uint) (short) value);
-		if (value is ushort)
-			return (ushort) value;
-		if (value is int)
-			return checked((uint) (int) value);
-		if (value is long)
-			return checked((uint) (long) value);
-		if (value is ulong)
-			return checked((uint) (ulong) value);
-		if (value is decimal)
-			return (uint) (decimal) value;
-		if (value is bool)
-			return (bool) value ? 1u : 0;
-		return (uint) value;
+		return value switch
+		{
+			uint uintValue => uintValue,
+			sbyte sbyteValue => checked((uint) sbyteValue),
+			byte byteValue => byteValue,
+			short shortValue => checked((uint) shortValue),
+			ushort ushortValue => ushortValue,
+			int intValue => checked((uint) intValue),
+			long longValue => checked((uint) longValue),
+			ulong ulongValue => checked((uint) ulongValue),
+			decimal decimalValue => (uint) decimalValue,
+			bool boolValue => boolValue ? 1u : 0,
+			_ => (uint) value,
+		};
 	}
 
 	public ulong GetUInt64(int ordinal)
 	{
 		var value = GetValue(ordinal);
-		if (value is ulong)
-			return (ulong) value;
-
-		if (value is sbyte)
-			return checked((ulong) (sbyte) value);
-		if (value is byte)
-			return (byte) value;
-		if (value is short)
-			return checked((ulong) (short) value);
-		if (value is ushort)
-			return (ushort) value;
-		if (value is int)
-			return checked((ulong) (int) value);
-		if (value is uint)
-			return (uint) value;
-		if (value is long)
-			return checked((ulong) (long) value);
-		if (value is decimal)
-			return (ulong) (decimal) value;
-		if (value is bool)
-			return (bool) value ? 1ul : 0;
-		return (ulong) value;
+		return value switch
+		{
+			ulong ulongValue => ulongValue,
+			sbyte sbyteValue => checked((ulong) sbyteValue),
+			byte byteValue => byteValue,
+			short shortValue => checked((ulong) shortValue),
+			ushort ushortValue => ushortValue,
+			int intValue => checked((ulong) intValue),
+			uint uintValue => uintValue,
+			long longValue => checked((ulong) longValue),
+			decimal decimalValue => (ulong) decimalValue,
+			bool boolValue => boolValue ? 1ul : 0,
+			_ => (ulong) value,
+		};
 	}
 
 	public DateTime GetDateTime(int ordinal)
@@ -380,44 +316,37 @@ internal abstract class Row
 	public decimal GetDecimal(int ordinal)
 	{
 		var value = GetValue(ordinal);
-		if (value is decimal) // happy flow
-			return (decimal) value;
-
-		if (value is double doubleValue)
-			return (decimal) doubleValue;
-
-		if (value is float floatValue)
-			return (decimal) floatValue;
-
-		return (decimal) value;
+		return value switch
+		{
+			decimal decimalValue => decimalValue,
+			double doubleValue => (decimal) doubleValue,
+			float floatValue => (decimal) floatValue,
+			_ => (decimal) value,
+		};
 	}
 
 	public double GetDouble(int ordinal)
 	{
 		var value = GetValue(ordinal);
-		if (value is double) // happy flow
-			return (double) value;
-
-		if (value is float floatValue)
-			return floatValue;
-
-		if (value is decimal decimalValue)
-			return (double) decimalValue;
-
-		return (double) value;
+		return value switch
+		{
+			double doubleValue => doubleValue,
+			float floatValue => floatValue,
+			decimal decimalValue => (double) decimalValue,
+			_ => (double) value,
+		};
 	}
 
 	public float GetFloat(int ordinal)
 	{
-		var value = GetValue(ordinal);
-		if (value is float) // happy flow
-			return (float) value;
-
 		// Loss of precision is expected, significant loss of information is not.
 		// Use explicit range checks to guard against that.
+		var value = GetValue(ordinal);
 		return value switch
 		{
-			double doubleValue => doubleValue is >= float.MinValue and <= float.MaxValue ? (float) doubleValue : throw new InvalidCastException("The value cannot be safely cast to Single."),
+			float floatValue => floatValue,
+			double doubleValue when doubleValue is >= float.MinValue and <= float.MaxValue => (float) doubleValue,
+			double _ => throw new InvalidCastException("The value cannot be safely cast to Single."),
 			decimal decimalValue => (float) decimalValue,
 			_ => (float) value,
 		};
