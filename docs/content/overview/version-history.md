@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-12-18
+lastmod: 2022-12-23
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,10 @@ weight: 30
 ---
 
 # Version History
+
+### 2.2.4
+
+* Fix a race condition in recovering leaked sessions: [#1263](https://github.com/mysql-net/MySqlConnector/issues/1263).
 
 ### 2.2.3
 
