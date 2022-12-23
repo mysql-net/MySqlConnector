@@ -297,4 +297,5 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#108970](https://bugs.mysql.com/bug.php?id=108970): `MySqlConnectionStringBuilder.ContainsKey` method gives wrong result
 * [#109141](https://bugs.mysql.com/bug.php?id=109141): Insert of data into a table results in `System.ArgumentException`
 * [#109331](https://bugs.mysql.com/bug.php?id=109331): MySQL Connector/NET is incompatible with MariaDB 10.10 and later
+* [#109390](https://bugs.mysql.com/bug.php?id=109390): Transaction lock held after connection timeout exception
 * [#109476](https://bugs.mysql.com/bug.php?id=109476): `TransactionScope.Dispose` throws "Connection must be valid and open to rollback"

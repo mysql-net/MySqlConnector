@@ -385,6 +385,70 @@ public class Transaction : IClassFixture<TransactionFixture>
 	}
 #endif
 
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=109390")]
+	public void TransactionHoldsLocks()
+	{
+		using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+		{
+			connection.Open();
+			using var command = connection.CreateCommand();
+			command.CommandText = """
+				drop table if exists transaction_locks;
+				create table transaction_locks(id int not null primary key, val int);
+				insert into transaction_locks(id, val) values(1, 1);
+				""";
+			command.ExecuteNonQuery();
+		}
+		
+		using var barrier = new Barrier(2);
+		using var barrier2 = new Barrier(2);
+
+		var task1 = Task.Run(() =>
+		{
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using var transaction = connection.BeginTransaction();
+				using var command = connection.CreateCommand();
+				command.CommandText = "select * from transaction_locks where id = 1 for update";
+				command.Transaction = transaction;
+				command.ExecuteNonQuery();
+				barrier.SignalAndWait();
+				barrier2.SignalAndWait();
+			}
+		});
+		var task2 = Task.Run(() =>
+		{
+			barrier.SignalAndWait();
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using var transaction = connection.BeginTransaction();
+				using var command = connection.CreateCommand();
+				command.CommandText = "update transaction_locks set val = val + 1 where id = 1";
+				command.CommandTimeout = 3;
+				command.Transaction = transaction;
+				Assert.Throws<MySqlException>(() => command.ExecuteNonQuery());
+			}
+			barrier2.SignalAndWait();
+			using (var connection = new MySqlConnection(AppConfig.ConnectionString))
+			{
+				connection.Open();
+				using var transaction = connection.BeginTransaction();
+				using var command = connection.CreateCommand();
+				command.CommandText = "update transaction_locks set val = val + 1 where id = 1";
+				command.CommandTimeout = 3;
+				command.Transaction = transaction;
+				command.ExecuteNonQuery();
+				transaction.Commit();
+			}
+		});
+
+		task1.GetAwaiter().GetResult();
+		Assert.Equal(0, Task.WaitAny(task2, Task.Delay(TimeSpan.FromSeconds(10))));
+		task2.GetAwaiter().GetResult();
+	}
+
 	readonly TransactionFixture m_database;
 	readonly MySqlConnection m_connection;
 }
