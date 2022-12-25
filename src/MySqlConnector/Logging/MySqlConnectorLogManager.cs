@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace MySqlConnector.Logging;
 
 /// <summary>
@@ -23,6 +25,7 @@ public static class MySqlConnectorLogManager
 				throw new InvalidOperationException("The logging provider must be set before any MySqlConnector methods are called.");
 
 			s_provider = value;
+			MySqlConnectorLoggingConfiguration.GlobalConfiguration = new(new MySqlConnectorLoggerFactor(value));
 		}
 	}
 
@@ -30,4 +33,53 @@ public static class MySqlConnectorLogManager
 
 	private static IMySqlConnectorLoggerProvider s_provider = new NoOpLoggerProvider();
 	private static bool s_providerRetrieved;
+
+	// A helper class that adapts ILoggerFactory to the old-style IMySqlConnectorLoggerProvider interface.
+	private sealed class MySqlConnectorLoggerFactor : ILoggerFactory
+	{
+		public MySqlConnectorLoggerFactor(IMySqlConnectorLoggerProvider loggerProvider) =>
+			m_loggerProvider = loggerProvider;
+
+		public void AddProvider(ILoggerProvider provider) => throw new NotSupportedException();
+
+		public ILogger CreateLogger(string categoryName)
+		{
+			// assume all logger names start with "MySqlConnector." but the old API didn't expect that prefix
+			return new MySqlConnectorLogger(m_loggerProvider.CreateLogger(categoryName[15..]));
+		}
+
+		public void Dispose()
+		{
+		}
+
+		private readonly IMySqlConnectorLoggerProvider m_loggerProvider;
+	}
+
+	// A helper class that adapts ILogger to the old-style IMySqlConnectorLogger interface.
+	private sealed class MySqlConnectorLogger : ILogger
+	{
+		public MySqlConnectorLogger(IMySqlConnectorLogger logger) =>
+			m_logger = logger;
+
+		public IDisposable BeginScope<TState>(TState state) => throw new NotSupportedException();
+
+		public bool IsEnabled(LogLevel logLevel) => m_logger.IsEnabled(ConvertLogLevel(logLevel));
+
+		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+			m_logger.Log(ConvertLogLevel(logLevel), formatter(state, exception), exception: exception);
+
+		private static MySqlConnectorLogLevel ConvertLogLevel(LogLevel logLevel) =>
+			logLevel switch
+			{
+				LogLevel.Trace => MySqlConnectorLogLevel.Trace,
+				LogLevel.Debug => MySqlConnectorLogLevel.Debug,
+				LogLevel.Information => MySqlConnectorLogLevel.Info,
+				LogLevel.Warning => MySqlConnectorLogLevel.Warn,
+				LogLevel.Error => MySqlConnectorLogLevel.Error,
+				LogLevel.Critical => MySqlConnectorLogLevel.Fatal,
+				_ => MySqlConnectorLogLevel.Info,
+			};
+
+		private readonly IMySqlConnectorLogger m_logger;
+	}
 }
