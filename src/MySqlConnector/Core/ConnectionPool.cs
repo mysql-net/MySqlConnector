@@ -27,7 +27,7 @@ internal sealed class ConnectionPool : IDisposable
 		// on the lock in RecoverLeakedSessions in high-concurrency situations
 		if (IsEmpty && unchecked(((uint) Environment.TickCount) - m_lastRecoveryTime) >= 1000u)
 		{
-			Log.Debug("Pool{0} is empty; scanning for any leaked sessions", m_logArguments);
+			LogMessages.ScanningForLeakedSessions(m_logger, Id);
 			await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
 		}
 
@@ -55,12 +55,12 @@ internal sealed class ConnectionPool : IDisposable
 			}
 			if (session is not null)
 			{
-				Log.Trace("Pool{0} found an existing session; checking it for validity", m_logArguments);
+				LogMessages.FoundExistingSession(m_logger, Id);
 				bool reuseSession;
 
 				if (session.PoolGeneration != m_generation)
 				{
-					Log.Trace("Pool{0} discarding session due to wrong generation", m_logArguments);
+					LogMessages.DiscardingSessionDueToWrongGeneration(m_logger, Id);
 					reuseSession = false;
 				}
 				else
@@ -74,7 +74,7 @@ internal sealed class ConnectionPool : IDisposable
 				if (!reuseSession)
 				{
 					// session is either old or cannot communicate with the server
-					Log.Info("Pool{0} Session{1} is unusable; destroying it", m_logArguments[0], session.Id);
+					LogMessages.SessionIsUnusable(m_logger, Id, session.Id);
 					AdjustHostConnectionCount(session, -1);
 					await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
@@ -89,14 +89,13 @@ internal sealed class ConnectionPool : IDisposable
 						leasedSessionsCountPooled = m_leasedSessions.Count;
 					}
 					ActivitySourceHelper.CopyTags(session.ActivityTags, activity);
-					if (Log.IsTraceEnabled())
-						Log.Trace("Pool{0} returning pooled Session{1} to caller; LeasedSessionsCount={2}", m_logArguments[0], session.Id, leasedSessionsCountPooled);
+					LogMessages.ReturningPooledSession(m_logger, Id, session.Id, leasedSessionsCountPooled);
 					return session;
 				}
 			}
 
 			// create a new session
-			session = await ConnectSessionAsync(connection, "Pool{0} no pooled session available; created new Session{1}", startTickCount, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+			session = await ConnectSessionAsync(connection, s_createdNewSession, startTickCount, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 			AdjustHostConnectionCount(session, 1);
 			session.OwningConnection = new(connection);
 			int leasedSessionsCountNew;
@@ -105,8 +104,7 @@ internal sealed class ConnectionPool : IDisposable
 				m_leasedSessions.Add(session.Id, session);
 				leasedSessionsCountNew = m_leasedSessions.Count;
 			}
-			if (Log.IsTraceEnabled())
-				Log.Trace("Pool{0} returning new Session{1} to caller; LeasedSessionsCount={2}", m_logArguments[0], session.Id, leasedSessionsCountNew);
+			LogMessages.ReturningNewSession(m_logger, Id, session.Id, leasedSessionsCountNew);
 			return session;
 		}
 		catch (Exception ex)
@@ -115,13 +113,13 @@ internal sealed class ConnectionPool : IDisposable
 			{
 				try
 				{
-					Log.Debug(ex, "Pool{0} disposing created Session{1} due to exception: {2}", m_logArguments[0], session.Id, ex.Message);
+					LogMessages.DisposingCreatedSessionDueToException(m_logger, ex, Id, session.Id, ex.Message);
 					AdjustHostConnectionCount(session, -1);
 					await session.DisposeAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 				}
 				catch (Exception unexpectedException)
 				{
-					Log.Warn(unexpectedException, "Pool{0} unexpected error in GetSessionAsync: {1}", m_logArguments[0], unexpectedException.Message);
+					LogMessages.UnexpectedErrorInGetSessionAsync(m_logger, unexpectedException, Id, unexpectedException.Message);
 				}
 			}
 
@@ -152,8 +150,7 @@ internal sealed class ConnectionPool : IDisposable
 
 	public async ValueTask ReturnAsync(IOBehavior ioBehavior, ServerSession session)
 	{
-		if (Log.IsTraceEnabled())
-			Log.Trace("Pool{0} receiving Session{1} back", m_logArguments[0], session.Id);
+		LogMessages.ReceivingSessionBack(m_logger, Id, session.Id);
 
 		try
 		{
@@ -169,9 +166,9 @@ internal sealed class ConnectionPool : IDisposable
 			else
 			{
 				if (sessionHealth == 1)
-					Log.Info("Pool{0} received invalid Session{1}; destroying it", m_logArguments[0], session.Id);
+					LogMessages.ReceivedInvalidSession(m_logger, Id, session.Id);
 				else
-					Log.Debug("Pool{0} received expired Session{1}; destroying it", m_logArguments[0], session.Id);
+					LogMessages.ReceivedExpiredSession(m_logger, Id, session.Id);
 				AdjustHostConnectionCount(session, -1);
 				await session.DisposeAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			}
@@ -185,7 +182,7 @@ internal sealed class ConnectionPool : IDisposable
 	public async Task ClearAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		// increment the generation of the connection pool
-		Log.Info("Pool{0} clearing connection pool", m_logArguments);
+		LogMessages.ClearingConnectionPool(m_logger, Id);
 		Interlocked.Increment(ref m_generation);
 		m_procedureCache = null;
 		await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
@@ -194,7 +191,7 @@ internal sealed class ConnectionPool : IDisposable
 
 	public async Task ReapAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		Log.Trace("Pool{0} reaping connection pool", m_logArguments);
+		LogMessages.ReapingConnectionPool(m_logger, Id);
 		await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
 		await CleanPoolAsync(ioBehavior, session => (unchecked((uint) Environment.TickCount) - session.LastReturnedTicks) / 1000 >= ConnectionSettings.ConnectionIdleTimeout, true, cancellationToken).ConfigureAwait(false);
 	}
@@ -218,7 +215,7 @@ internal sealed class ConnectionPool : IDisposable
 
 	public void Dispose()
 	{
-		Log.Debug("Pool{0} disposing connection pool", m_logArguments);
+		LogMessages.DisposingConnectionPool(m_logger, Id);
 #if NET6_0_OR_GREATER
 		m_dnsCheckTimer?.Dispose();
 		m_dnsCheckTimer = null;
@@ -263,9 +260,9 @@ internal sealed class ConnectionPool : IDisposable
 			}
 		}
 		if (recoveredSessions.Count == 0)
-			Log.Trace("Pool{0} recovered no sessions", m_logArguments);
+			LogMessages.RecoveredNoSessions(m_logger, Id);
 		else
-			Log.Warn("Pool{0}: RecoveredSessionCount={1}", m_logArguments[0], recoveredSessions.Count);
+			LogMessages.RecoveredSessionCount(m_logger, Id, recoveredSessions.Count);
 
 		foreach (var (session, connection) in recoveredSessions)
 		{
@@ -331,7 +328,7 @@ internal sealed class ConnectionPool : IDisposable
 					if (shouldCleanFn(session))
 					{
 						// session should be cleaned; dispose it and keep iterating
-						Log.Debug("Pool{0} found Session{1} to clean up", m_logArguments[0], session.Id);
+						LogMessages.FoundSessionToCleanUp(m_logger, Id, session.Id);
 						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
 					else
@@ -380,7 +377,7 @@ internal sealed class ConnectionPool : IDisposable
 
 			try
 			{
-				var session = await ConnectSessionAsync(connection, "Pool{0} created Session{1} to reach minimum pool size", Environment.TickCount, null, ioBehavior, cancellationToken).ConfigureAwait(false);
+				var session = await ConnectSessionAsync(connection, s_createdToReachMinimumPoolSize, Environment.TickCount, null, ioBehavior, cancellationToken).ConfigureAwait(false);
 				AdjustHostConnectionCount(session, 1);
 				lock (m_sessions)
 					m_sessions.AddFirst(session);
@@ -393,11 +390,11 @@ internal sealed class ConnectionPool : IDisposable
 		}
 	}
 
-	private async ValueTask<ServerSession> ConnectSessionAsync(MySqlConnection connection, string logMessage, int startTickCount, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async ValueTask<ServerSession> ConnectSessionAsync(MySqlConnection connection, Action<ILogger, int, string, Exception?> logMessage, int startTickCount, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		var session = new ServerSession(m_connectionLogger, this, m_generation, Interlocked.Increment(ref m_lastSessionId));
-		if (Log.IsDebugEnabled())
-			Log.Debug(logMessage, m_logArguments[0], session.Id);
+		if (m_logger.IsEnabled(LogLevel.Debug))
+			logMessage(m_logger, Id, session.Id, null);
 		string? statusInfo;
 		try
 		{
@@ -413,18 +410,18 @@ internal sealed class ConnectionPool : IDisposable
 		if (statusInfo is not null && statusInfo.StartsWith("Location: mysql://", StringComparison.Ordinal))
 		{
 			// server redirection string has the format "Location: mysql://{host}:{port}/user={userId}[&ttl={ttl}]"
-			Log.Trace("Session{0} has server redirection header {1}", session.Id, statusInfo);
+			LogMessages.HasServerRedirectionHeader(m_logger, session.Id, statusInfo);
 
 			if (ConnectionSettings.ServerRedirectionMode == MySqlServerRedirectionMode.Disabled)
 			{
-				Log.Trace("Pool{0} server redirection is disabled; ignoring redirection", m_logArguments);
+				LogMessages.ServerRedirectionIsDisabled(m_logger, Id);
 			}
 			else if (Utility.TryParseRedirectionHeader(statusInfo, out var host, out var port, out var user))
 			{
 				if (host != ConnectionSettings.HostNames![0] || port != ConnectionSettings.Port || user != ConnectionSettings.UserID)
 				{
 					var redirectedSettings = ConnectionSettings.CloneWith(host, port, user);
-					Log.Debug("Pool{0} opening new connection to Host={1}; Port={2}; User={3}", m_logArguments[0], host, port, user);
+					LogMessages.OpeningNewConnection(m_logger, Id, host, port, user);
 					var redirectedSession = new ServerSession(m_connectionLogger, this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 					try
 					{
@@ -432,13 +429,13 @@ internal sealed class ConnectionPool : IDisposable
 					}
 					catch (Exception ex)
 					{
-						Log.Info(ex, "Pool{0} failed to connect redirected Session{1}", m_logArguments[0], redirectedSession.Id);
+						LogMessages.FailedToConnectRedirectedSession(m_logger, ex, Id, redirectedSession.Id);
 						redirectionException = ex;
 					}
 
 					if (redirectionException is null)
 					{
-						Log.Trace("Pool{0} closing Session{1} to use redirected Session{2} instead", m_logArguments[0], session.Id, redirectedSession.Id);
+						LogMessages.ClosingSessionToUseRedirectedSession(m_logger, Id, session.Id, redirectedSession.Id);
 						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 						return redirectedSession;
 					}
@@ -455,14 +452,14 @@ internal sealed class ConnectionPool : IDisposable
 				}
 				else
 				{
-					Log.Trace("Session{0} is already connected to this server; ignoring redirection", session.Id);
+					LogMessages.SessionAlreadyConnectedToServer(m_logger, session.Id);
 				}
 			}
 		}
 
 		if (ConnectionSettings.ServerRedirectionMode == MySqlServerRedirectionMode.Required)
 		{
-			Log.Error("Pool{0} requires server redirection but server doesn't support it", m_logArguments);
+			LogMessages.RequiresServerRedirection(m_logger, Id);
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Server does not support redirection", redirectionException);
 		}
 		return session;
@@ -538,9 +535,9 @@ internal sealed class ConnectionPool : IDisposable
 			if (connectionString != normalizedConnectionString)
 				s_pools.GetOrAdd(connectionString, pool);
 		}
-		else if (pool != newPool && Log.IsDebugEnabled())
+		else if (pool != newPool)
 		{
-			Log.Debug("Pool{0} was created but will not be used (due to race)", newPool.m_logArguments);
+			LogMessages.CreatedPoolWillNotBeUsed(newPool.m_logger, newPool.Id);
 		}
 
 		return pool;
@@ -589,7 +586,6 @@ internal sealed class ConnectionPool : IDisposable
 			(ILoadBalancer) new RoundRobinLoadBalancer();
 
 		Id = Interlocked.Increment(ref s_poolId);
-		m_logArguments = new object[] { Id.ToString(CultureInfo.InvariantCulture) };
 		LogMessages.CreatingNewConnectionPool(m_logger, Id, cs.ConnectionStringBuilder.GetConnectionString(includePassword: false));
 	}
 
@@ -657,7 +653,7 @@ internal sealed class ConnectionPool : IDisposable
 		{
 			while (await m_dnsCheckTimer.WaitForNextTickAsync().ConfigureAwait(false))
 			{
-				Log.Trace("Pool{0} checking for DNS changes", m_logArguments);
+				LogMessages.CheckingForDnsChanges(m_logger, Id);
 				var hostNamesChanged = false;
 				for (var hostNameIndex = 0; hostNameIndex < hostNames.Count; hostNameIndex++)
 				{
@@ -670,7 +666,7 @@ internal sealed class ConnectionPool : IDisposable
 						}
 						else if (hostAddresses[hostNameIndex].Except(ipAddresses).Any())
 						{
-							Log.Debug("Pool{0} detected DNS change for HostName '{1}': {2} to {3}", m_logArguments[0], hostNames[hostNameIndex], string.Join<IPAddress>(',', hostAddresses[hostNameIndex]), string.Join<IPAddress>(',', ipAddresses));
+							LogMessages.DetectedDnsChange(m_logger, Id, hostNames[hostNameIndex], string.Join<IPAddress>(',', hostAddresses[hostNameIndex]), string.Join<IPAddress>(',', ipAddresses));
 							hostAddresses[hostNameIndex] = ipAddresses;
 							hostNamesChanged = true;
 						}
@@ -678,12 +674,12 @@ internal sealed class ConnectionPool : IDisposable
 					catch (Exception ex)
 					{
 						// do nothing; we'll try again later
-						Log.Debug("Pool{0} DNS check failed; ignoring HostName '{1}': {2}", m_logArguments[0], hostNames[hostNameIndex], ex.Message);
+						LogMessages.DnsCheckFailed(m_logger, ex, Id, hostNames[hostNameIndex], ex.Message);
 					}
 				}
 				if (hostNamesChanged)
 				{
-					Log.Info("Pool{0} clearing pool due to DNS changes", m_logArguments);
+					LogMessages.ClearingPoolDueToDnsChanges(m_logger, Id);
 					await ClearAsync(IOBehavior.Asynchronous, CancellationToken.None).ConfigureAwait(false);
 				}
 			}
@@ -692,7 +688,7 @@ internal sealed class ConnectionPool : IDisposable
 		var interval = Math.Min(int.MaxValue / 1000, ConnectionSettings.DnsCheckInterval) * 1000;
 		m_dnsCheckTimer = new Timer(t =>
 		{
-			Log.Trace("Pool{0} checking for DNS changes", m_logArguments);
+			LogMessages.CheckingForDnsChanges(m_logger, Id);
 			var hostNamesChanged = false;
 			for (var hostNameIndex = 0; hostNameIndex < hostNames.Count; hostNameIndex++)
 			{
@@ -705,7 +701,7 @@ internal sealed class ConnectionPool : IDisposable
 					}
 					else if (hostAddresses[hostNameIndex].Except(ipAddresses).Any())
 					{
-						Log.Debug("Pool{0} detected DNS change for HostName '{1}': {2} to {3}", m_logArguments[0], hostNames[hostNameIndex], string.Join<IPAddress>(",", hostAddresses[hostNameIndex]), string.Join<IPAddress>(",", ipAddresses));
+						LogMessages.DetectedDnsChange(m_logger, Id, hostNames[hostNameIndex], string.Join<IPAddress>(",", hostAddresses[hostNameIndex]), string.Join<IPAddress>(",", ipAddresses));
 						hostAddresses[hostNameIndex] = ipAddresses;
 						hostNamesChanged = true;
 					}
@@ -713,12 +709,12 @@ internal sealed class ConnectionPool : IDisposable
 				catch (Exception ex)
 				{
 					// do nothing; we'll try again later
-					Log.Debug("Pool{0} DNS check failed; ignoring HostName '{1}': {2}", m_logArguments[0], hostNames[hostNameIndex], ex.Message);
+					LogMessages.DnsCheckFailed(m_logger, ex, Id, hostNames[hostNameIndex], ex.Message);
 				}
 			}
 			if (hostNamesChanged)
 			{
-				Log.Info("Pool{0} clearing pool due to DNS changes", m_logArguments);
+				LogMessages.ClearingPoolDueToDnsChanges(m_logger, Id);
 				ClearAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 			}
 			((Timer) t!).Change(interval, -1);
@@ -770,9 +766,13 @@ internal sealed class ConnectionPool : IDisposable
 	private static void OnAppDomainShutDown(object? sender, EventArgs e) =>
 		ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConnectionPool));
 	private static readonly ConcurrentDictionary<string, ConnectionPool?> s_pools = new();
-
+	private static readonly Action<ILogger, int, string, Exception?> s_createdNewSession = LoggerMessage.Define<int, string>(
+		LogLevel.Debug, new EventId(EventIds.PoolCreatedNewSession, nameof(EventIds.PoolCreatedNewSession)),
+		"Pool {PoolId} has no pooled session available; created new session {SessionId}");
+	private static readonly Action<ILogger, int, string, Exception?> s_createdToReachMinimumPoolSize = LoggerMessage.Define<int, string>(
+		LogLevel.Debug, new EventId(EventIds.CreatedSessionToReachMinimumPoolCount, nameof(EventIds.CreatedSessionToReachMinimumPoolCount)),
+		"Pool {PoolId} created session {SessionId} to reach minimum pool size");
 	private static int s_poolId;
 	private static ConnectionStringPool? s_mruCache;
 
@@ -784,7 +784,6 @@ internal sealed class ConnectionPool : IDisposable
 	private readonly Dictionary<string, ServerSession> m_leasedSessions;
 	private readonly ILoadBalancer? m_loadBalancer;
 	private readonly Dictionary<string, int>? m_hostSessions;
-	private readonly object[] m_logArguments;
 	private int m_generation;
 	private uint m_lastRecoveryTime;
 	private int m_lastSessionId;
