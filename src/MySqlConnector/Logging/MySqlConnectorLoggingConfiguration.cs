@@ -10,11 +10,13 @@ internal sealed class MySqlConnectorLoggingConfiguration
 		DataSourceLogger = loggerFactory.CreateLogger("MySqlConnector.MySqlDataSource");
 		ConnectionLogger = loggerFactory.CreateLogger("MySqlConnector.MySqlConnection");
 		CommandLogger = loggerFactory.CreateLogger("MySqlConnector.MySqlCommand");
+		PoolLogger = loggerFactory.CreateLogger("MySqlConnector.ConnectionPool");
 	}
 
 	public ILogger DataSourceLogger { get; }
 	public ILogger ConnectionLogger { get; }
 	public ILogger CommandLogger { get; }
+	public ILogger PoolLogger { get; }
 
 	public static MySqlConnectorLoggingConfiguration NullConfiguration { get; } = new MySqlConnectorLoggingConfiguration(NullLoggerFactory.Instance);
 	public static MySqlConnectorLoggingConfiguration GlobalConfiguration { get; set; } = NullConfiguration;

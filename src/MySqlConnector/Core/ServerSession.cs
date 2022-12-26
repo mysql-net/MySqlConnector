@@ -11,6 +11,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using MySqlConnector.Authentication;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
@@ -24,13 +25,14 @@ namespace MySqlConnector.Core;
 
 internal sealed class ServerSession
 {
-	public ServerSession()
-		: this(null, 0, Interlocked.Increment(ref s_lastId))
+	public ServerSession(ILogger logger)
+		: this(logger, null, 0, Interlocked.Increment(ref s_lastId))
 	{
 	}
 
-	public ServerSession(ConnectionPool? pool, int poolGeneration, int id)
+	public ServerSession(ILogger logger, ConnectionPool? pool, int poolGeneration, int id)
 	{
+		m_logger = logger;
 		m_lock = new();
 		m_payloadCache = new();
 		Id = (pool?.Id ?? 0) + "." + id;
@@ -41,7 +43,7 @@ internal sealed class ServerSession
 		HostName = "";
 		m_logArguments = new object?[] { Id.ToString(CultureInfo.InvariantCulture), null };
 		m_activityTags = new ActivityTagsCollection();
-		Log.Trace("Session{0} created new session", m_logArguments);
+		LogMessages.CreatedNewSession(m_logger, Id);
 	}
 
 	public string Id { get; }
@@ -1974,6 +1976,7 @@ internal sealed class ServerSession
 	private static readonly PayloadData s_selectConnectionIdVersionWithAttributesPayload = QueryPayload.Create(true, "SELECT CONNECTION_ID(), VERSION();"u8);
 	private static int s_lastId;
 
+	private readonly ILogger m_logger;
 	private readonly object m_lock;
 	private readonly object?[] m_logArguments;
 	private readonly ArraySegmentHolder<byte> m_payloadCache;

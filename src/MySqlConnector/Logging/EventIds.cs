@@ -7,6 +7,7 @@ internal static class EventIds
 
 	public const int CreatedNonPooledSession = 2000;
 	public const int ResettingConnection = 2001;
+	public const int CreatedNewSession = 2002;
 
 	public const int IgnoringCancellationForCommand = 2100;
 	public const int CancelingCommand = 2101;
@@ -21,4 +22,7 @@ internal static class EventIds
 	public const int ProcedureCacheCount = 2205;
 	public const int DidNotFindCachedProcedure = 2206;
 	public const int ReturningCachedProcedure = 2207;
+
+	public const int WaitingForAvailableSession = 3000;
+	public const int CreatingNewConnectionPool = 3001;
 }

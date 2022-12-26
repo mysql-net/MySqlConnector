@@ -27,7 +27,7 @@ public sealed class MySqlDataSource : DbDataSource
 		LoggingConfiguration = loggingConfiguration;
 		m_logger = loggingConfiguration.DataSourceLogger;
 
-		Pool = ConnectionPool.CreatePool(m_connectionString);
+		Pool = ConnectionPool.CreatePool(m_connectionString, LoggingConfiguration);
 		m_id = Interlocked.Increment(ref s_lastId);
 		if (Pool is not null)
 			LogMessages.DataSourceCreatedWithPool(m_logger, m_id, Pool.Id);

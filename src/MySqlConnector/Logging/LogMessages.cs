@@ -52,4 +52,13 @@ internal static partial class LogMessages
 
 	[LoggerMessage(EventIds.ReturningCachedProcedure, LogLevel.Trace, "Session {SessionId} returning cached procedure {Schema}.{Component}")]
 	public static partial void ReturningCachedProcedure(ILogger logger, string sessionId, string schema, string component);
+
+	[LoggerMessage(EventIds.CreatedNewSession, LogLevel.Trace, "Session {SessionId} created new session")]
+	public static partial void CreatedNewSession(ILogger logger, string sessionId);
+
+	[LoggerMessage(EventIds.WaitingForAvailableSession, LogLevel.Trace, "Pool {PoolId} waiting for an available session")]
+	public static partial void WaitingForAvailableSession(ILogger logger, int poolId);
+
+	[LoggerMessage(EventIds.CreatingNewConnectionPool, LogLevel.Information, "Pool {PoolId} creating new connection pool for {ConnectionString}")]
+	public static partial void CreatingNewConnectionPool(ILogger logger, int poolId, string connectionString);
 }

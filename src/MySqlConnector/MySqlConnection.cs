@@ -30,23 +30,24 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	}
 
 	public MySqlConnection(string? connectionString)
-		: this(connectionString ?? "", MySqlConnectorLoggingConfiguration.GlobalConfiguration.ConnectionLogger)
+		: this(connectionString ?? "", MySqlConnectorLoggingConfiguration.GlobalConfiguration)
 	{
 	}
 
 #if NET7_0_OR_GREATER
 	internal MySqlConnection(MySqlDataSource dataSource)
-		: this(dataSource.ConnectionString, dataSource.LoggingConfiguration.ConnectionLogger)
+		: this(dataSource.ConnectionString, dataSource.LoggingConfiguration)
 	{
 		m_dataSource = dataSource;
 	}
 #endif
 
-	private MySqlConnection(string connectionString, ILogger logger)
+	private MySqlConnection(string connectionString, MySqlConnectorLoggingConfiguration loggingConfiguration)
 	{
 		GC.SuppressFinalize(this);
 		m_connectionString = connectionString;
-		m_logger = logger;
+		m_loggingConfiguration = loggingConfiguration;
+		m_logger = loggingConfiguration.ConnectionLogger;
 	}
 
 #pragma warning disable CA2012 // Safe because method completes synchronously
@@ -408,7 +409,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 #if NET7_0_OR_GREATER
 				m_dataSource?.Pool ??
 #endif
-				ConnectionPool.GetPool(m_connectionString);
+				ConnectionPool.GetPool(m_connectionString, m_loggingConfiguration, createIfNotFound: true);
 			m_connectionSettings ??= pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
 
 			// check if there is an open session (in the current transaction) that can be adopted
@@ -577,7 +578,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		if (connection is null)
 			throw new ArgumentNullException(nameof(connection));
 
-		var pool = ConnectionPool.GetPool(connection.m_connectionString);
+		var pool = ConnectionPool.GetPool(connection.m_connectionString, null, createIfNotFound: false);
 		if (pool is not null)
 			await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
@@ -932,7 +933,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				var loadBalancer = connectionSettings.LoadBalance == MySqlLoadBalance.Random && connectionSettings.HostNames!.Count > 1 ?
 					RandomLoadBalancer.Instance : FailOverLoadBalancer.Instance;
 
-				var session = new ServerSession();
+				var session = new ServerSession(m_logger);
 				session.OwningConnection = new WeakReference<MySqlConnection>(this);
 				LogMessages.CreatedNonPooledSession(m_logger, session.Id);
 				try
@@ -1119,6 +1120,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 #if NET7_0_OR_GREATER
 	private readonly MySqlDataSource? m_dataSource;
 #endif
+	private readonly MySqlConnectorLoggingConfiguration m_loggingConfiguration;
 	private readonly ILogger m_logger;
 	private string m_connectionString;
 	private ConnectionSettings? m_connectionSettings;

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Security.Authentication;
+using Microsoft.Extensions.Logging;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -34,7 +35,7 @@ internal sealed class ConnectionPool : IDisposable
 			await CreateMinimumPooledSessions(connection, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 		// wait for an open slot (until the cancellationToken is cancelled, which is typically due to timeout)
-		Log.Trace("Pool{0} waiting for an available session", m_logArguments);
+		LogMessages.WaitingForAvailableSession(m_logger, Id);
 		if (ioBehavior == IOBehavior.Asynchronous)
 			await m_sessionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 		else
@@ -394,7 +395,7 @@ internal sealed class ConnectionPool : IDisposable
 
 	private async ValueTask<ServerSession> ConnectSessionAsync(MySqlConnection connection, string logMessage, int startTickCount, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		var session = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
+		var session = new ServerSession(m_connectionLogger, this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 		if (Log.IsDebugEnabled())
 			Log.Debug(logMessage, m_logArguments[0], session.Id);
 		string? statusInfo;
@@ -424,7 +425,7 @@ internal sealed class ConnectionPool : IDisposable
 				{
 					var redirectedSettings = ConnectionSettings.CloneWith(host, port, user);
 					Log.Debug("Pool{0} opening new connection to Host={1}; Port={2}; User={3}", m_logArguments[0], host, port, user);
-					var redirectedSession = new ServerSession(this, m_generation, Interlocked.Increment(ref m_lastSessionId));
+					var redirectedSession = new ServerSession(m_connectionLogger, this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 					try
 					{
 						await redirectedSession.ConnectAsync(redirectedSettings, connection, startTickCount, m_loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -467,24 +468,24 @@ internal sealed class ConnectionPool : IDisposable
 		return session;
 	}
 
-	public static ConnectionPool? CreatePool(string connectionString)
+	public static ConnectionPool? CreatePool(string connectionString, MySqlConnectorLoggingConfiguration loggingConfiguration)
 	{
 		// parse connection string and check for 'Pooling' setting; return 'null' if pooling is disabled
 		var connectionStringBuilder = new MySqlConnectionStringBuilder(connectionString);
 		if (!connectionStringBuilder.Pooling)
-		{
 			return null;
-		}
 
 		// force a new pool to be created, ignoring the cache
 		var connectionSettings = new ConnectionSettings(connectionStringBuilder);
-		var pool = new ConnectionPool(connectionSettings);
+		var pool = new ConnectionPool(loggingConfiguration, connectionSettings);
 		pool.StartReaperTask();
 		pool.StartDnsCheckTimer();
 		return pool;
 	}
 
-	public static ConnectionPool? GetPool(string connectionString)
+	// Gets an existing ConnectionPool, creating it if it's missing. If 'createIfNotFound' is false, then 'loggingConfiguration'
+	// may be set to null; otherwise, it must be provided.
+	public static ConnectionPool? GetPool(string connectionString, MySqlConnectorLoggingConfiguration? loggingConfiguration, bool createIfNotFound = true)
 	{
 		// check single-entry MRU cache for this exact connection string; most applications have just one
 		// connection string and will get a cache hit here
@@ -519,9 +520,12 @@ internal sealed class ConnectionPool : IDisposable
 			return pool;
 		}
 
+		if (!createIfNotFound)
+			return null;
+
 		// create a new pool and attempt to insert it; if someone else beats us to it, just use their value
 		var connectionSettings = new ConnectionSettings(connectionStringBuilder);
-		var newPool = new ConnectionPool(connectionSettings);
+		var newPool = new ConnectionPool(loggingConfiguration!, connectionSettings);
 		pool = s_pools.GetOrAdd(normalizedConnectionString, newPool);
 
 		if (pool == newPool)
@@ -560,8 +564,10 @@ internal sealed class ConnectionPool : IDisposable
 		return pools;
 	}
 
-	private ConnectionPool(ConnectionSettings cs)
+	private ConnectionPool(MySqlConnectorLoggingConfiguration loggingConfiguration, ConnectionSettings cs)
 	{
+		m_logger = loggingConfiguration.PoolLogger;
+		m_connectionLogger = loggingConfiguration.ConnectionLogger;
 		ConnectionSettings = cs;
 		SslProtocols = cs.TlsVersions;
 		m_generation = 0;
@@ -584,8 +590,7 @@ internal sealed class ConnectionPool : IDisposable
 
 		Id = Interlocked.Increment(ref s_poolId);
 		m_logArguments = new object[] { Id.ToString(CultureInfo.InvariantCulture) };
-		if (Log.IsInfoEnabled())
-			Log.Info("Pool{0} creating new connection pool for ConnectionString: {1}", m_logArguments[0], cs.ConnectionStringBuilder.GetConnectionString(includePassword: false));
+		LogMessages.CreatingNewConnectionPool(m_logger, Id, cs.ConnectionStringBuilder.GetConnectionString(includePassword: false));
 	}
 
 	private void StartReaperTask()
@@ -771,6 +776,8 @@ internal sealed class ConnectionPool : IDisposable
 	private static int s_poolId;
 	private static ConnectionStringPool? s_mruCache;
 
+	private readonly ILogger m_logger;
+	private readonly ILogger m_connectionLogger;
 	private readonly SemaphoreSlim m_cleanSemaphore;
 	private readonly SemaphoreSlim m_sessionSemaphore;
 	private readonly LinkedList<ServerSession> m_sessions;
