@@ -42,7 +42,7 @@ internal sealed partial class ServerSession
 		PoolGeneration = poolGeneration;
 		HostName = "";
 		m_activityTags = new ActivityTagsCollection();
-		LogMessages.CreatedNewSession(m_logger, Id);
+		Log.CreatedNewSession(m_logger, Id);
 	}
 
 	public string Id { get; }
@@ -68,7 +68,7 @@ internal sealed partial class ServerSession
 
 	public ValueTask ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
 	{
-		LogMessages.ReturningToPool(m_logger, Id, Pool?.Id ?? 0);
+		Log.ReturningToPool(m_logger, Id, Pool?.Id ?? 0);
 		LastReturnedTicks = unchecked((uint) Environment.TickCount);
 		return Pool is null ? default : Pool.ReturnAsync(ioBehavior, this);
 	}
@@ -96,18 +96,18 @@ internal sealed partial class ServerSession
 			m_state = State.CancelingQuery;
 		}
 
-		LogMessages.WillCancelCommand(m_logger, Id, command.CommandId, command.CancelAttemptCount, (command as MySqlCommand)?.CommandText);
+		Log.WillCancelCommand(m_logger, Id, command.CommandId, command.CancelAttemptCount, (command as MySqlCommand)?.CommandText);
 		return true;
 	}
 
 	public void DoCancel(ICancellableCommand commandToCancel, MySqlCommand killCommand)
 	{
-		LogMessages.CancelingCommandFromSession(m_logger, Id, commandToCancel.CommandId, killCommand.Connection!.Session.Id, (commandToCancel as MySqlCommand)?.CommandText);
+		Log.CancelingCommandFromSession(m_logger, Id, commandToCancel.CommandId, killCommand.Connection!.Session.Id, (commandToCancel as MySqlCommand)?.CommandText);
 		lock (m_lock)
 		{
 			if (ActiveCommandId != commandToCancel.CommandId)
 			{
-				LogMessages.IgnoringCancellationForInactiveCommand(m_logger, Id, ActiveCommandId, commandToCancel.CommandId);
+				Log.IgnoringCancellationForInactiveCommand(m_logger, Id, ActiveCommandId, commandToCancel.CommandId);
 				return;
 			}
 
@@ -117,7 +117,7 @@ internal sealed partial class ServerSession
 			// command would be killed (because "KILL QUERY" specifies the connection whose command should be killed, not
 			// a unique identifier of the command itself). As a mitigation, we set the CommandTimeout to a low value to avoid
 			// blocking the other thread for an extended duration.
-			LogMessages.CancelingCommand(m_logger, killCommand.Connection!.Session.Id, commandToCancel.CommandId, killCommand.CommandText);
+			Log.CancelingCommand(m_logger, killCommand.Connection!.Session.Id, commandToCancel.CommandId, killCommand.CommandText);
 			killCommand.ExecuteNonQuery();
 		}
 	}
@@ -305,7 +305,7 @@ internal sealed partial class ServerSession
 			// KILL QUERY will kill a subsequent query if the command it was intended to cancel has already completed.
 			// In order to handle this case, we issue a dummy query that will consume the pending cancellation.
 			// See https://bugs.mysql.com/bug.php?id=45679
-			LogMessages.SendingSleepToClearPendingCancellation(m_logger, Id);
+			Log.SendingSleepToClearPendingCancellation(m_logger, Id);
 			var payload = SupportsQueryAttributes ? s_sleepWithAttributesPayload : s_sleepNoAttributesPayload;
 #pragma warning disable CA2012 // Safe because method completes synchronously
 			SendAsync(payload, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -356,7 +356,7 @@ internal sealed partial class ServerSession
 			{
 				try
 				{
-					LogMessages.SendingQuitCommand(m_logger, Id);
+					Log.SendingQuitCommand(m_logger, Id);
 					m_payloadHandler.StartNewConversation();
 					await m_payloadHandler.WritePayloadAsync(QuitPayload.Instance.Memory, ioBehavior).ConfigureAwait(false);
 				}
@@ -439,7 +439,7 @@ internal sealed partial class ServerSession
 				{
 					lock (m_lock)
 						m_state = State.Failed;
-					LogMessages.ConnectingFailed(m_logger, Id);
+					Log.ConnectingFailed(m_logger, Id);
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Unable to connect to any of the specified MySQL hosts.");
 				}
 
@@ -457,10 +457,10 @@ internal sealed partial class ServerSession
 					authPluginName = initialHandshake.AuthPluginName!;
 				else
 					authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" : "mysql_native_password";
-				LogMessages.ServerSentAuthPluginName(m_logger, Id, authPluginName);
+				Log.ServerSentAuthPluginName(m_logger, Id, authPluginName);
 				if (authPluginName != "mysql_native_password" && authPluginName != "sha256_password" && authPluginName != "caching_sha2_password")
 				{
-					LogMessages.UnsupportedAuthenticationMethod(m_logger, Id, authPluginName);
+					Log.UnsupportedAuthenticationMethod(m_logger, Id, authPluginName);
 					throw new NotSupportedException($"Authentication method '{initialHandshake.AuthPluginName}' is not supported.");
 				}
 
@@ -492,7 +492,7 @@ internal sealed partial class ServerSession
 				// disable pipelining for RDS MySQL 5.7 (assuming Aurora); otherwise take it from the connection string or default to true
 				if (!cs.Pipelining.HasValue && ServerVersion.Version.Major == 5 && ServerVersion.Version.Minor == 7 && HostName.EndsWith(".rds.amazonaws.com", StringComparison.OrdinalIgnoreCase))
 				{
-					LogMessages.AutoDetectedAurora57(m_logger, Id, HostName);
+					Log.AutoDetectedAurora57(m_logger, Id, HostName);
 					m_supportsPipelining = false;
 				}
 				else
@@ -515,13 +515,13 @@ internal sealed partial class ServerSession
 					}
 				}
 
-				LogMessages.SessionMadeConnection(m_logger, Id, ServerVersion.OriginalString, ConnectionId, m_useCompression, m_supportsConnectionAttributes, m_supportsDeprecateEof, serverSupportsSsl, m_supportsSessionTrack, m_supportsPipelining, SupportsQueryAttributes);
+				Log.SessionMadeConnection(m_logger, Id, ServerVersion.OriginalString, ConnectionId, m_useCompression, m_supportsConnectionAttributes, m_supportsDeprecateEof, serverSupportsSsl, m_supportsSessionTrack, m_supportsPipelining, SupportsQueryAttributes);
 
 				if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
 				{
 					if (!serverSupportsSsl)
 					{
-						LogMessages.ServerDoesNotSupportSsl(m_logger, Id);
+						Log.ServerDoesNotSupportSsl(m_logger, Id);
 						throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Server does not support SSL");
 					}
 
@@ -532,13 +532,13 @@ internal sealed partial class ServerSession
 					}
 					catch (ArgumentException ex) when (ex.ParamName == "sslProtocolType" && sslProtocols == SslProtocols.None)
 					{
-						LogMessages.SessionDoesNotSupportSslProtocolsNone(m_logger, ex, Id);
+						Log.SessionDoesNotSupportSslProtocolsNone(m_logger, ex, Id);
 						sslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
 					}
 					catch (Exception ex) when (shouldRetrySsl && ((ex is MySqlException && ex.InnerException is IOException) || ex is IOException))
 					{
 						// negotiating TLS 1.2 with a yaSSL-based server throws an exception on Windows, see comment at top of method
-						LogMessages.FailedNegotiatingTls(m_logger, ex, Id);
+						Log.FailedNegotiatingTls(m_logger, ex, Id);
 						sslProtocols = sslProtocols == SslProtocols.None ? SslProtocols.Tls | SslProtocols.Tls11 : (SslProtocols.Tls | SslProtocols.Tls11) & sslProtocols;
 						if (Pool is not null)
 							Pool.SslProtocols = sslProtocols;
@@ -582,12 +582,12 @@ internal sealed partial class ServerSession
 		}
 		catch (ArgumentException ex)
 		{
-			LogMessages.CouldNotConnectToServer(m_logger, ex, Id);
+			Log.CouldNotConnectToServer(m_logger, ex, Id);
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't connect to server", ex);
 		}
 		catch (IOException ex)
 		{
-			LogMessages.CouldNotConnectToServer(m_logger, ex, Id);
+			Log.CouldNotConnectToServer(m_logger, ex, Id);
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't connect to server", ex);
 		}
 
@@ -608,7 +608,7 @@ internal sealed partial class ServerSession
 			{
 				if (m_supportsPipelining)
 				{
-					LogMessages.SendingPipelinedResetConnectionRequest(m_logger, Id, ServerVersion.OriginalString);
+					Log.SendingPipelinedResetConnectionRequest(m_logger, Id, ServerVersion.OriginalString);
 
 					// send both packets at once
 					await m_payloadHandler!.ByteHandler.WriteBytesAsync(m_pipelinedResetConnectionBytes!, ioBehavior).ConfigureAwait(false);
@@ -625,7 +625,7 @@ internal sealed partial class ServerSession
 					return true;
 				}
 
-				LogMessages.SendingResetConnectionRequest(m_logger, Id, ServerVersion.OriginalString);
+				Log.SendingResetConnectionRequest(m_logger, Id, ServerVersion.OriginalString);
 				await SendAsync(ResetConnectionPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
@@ -635,11 +635,11 @@ internal sealed partial class ServerSession
 				// optimistically hash the password with the challenge from the initial handshake (supported by MariaDB; doesn't appear to be supported by MySQL)
 				if (DatabaseOverride is null)
 				{
-					LogMessages.SendingChangeUserRequest(m_logger, Id, ServerVersion.OriginalString);
+					Log.SendingChangeUserRequest(m_logger, Id, ServerVersion.OriginalString);
 				}
 				else
 				{
-					LogMessages.SendingChangeUserRequestDueToChangedDatabase(m_logger, Id, DatabaseOverride);
+					Log.SendingChangeUserRequestDueToChangedDatabase(m_logger, Id, DatabaseOverride);
 					DatabaseOverride = null;
 				}
 				var password = GetPassword(cs, connection);
@@ -649,7 +649,7 @@ internal sealed partial class ServerSession
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 				{
-					LogMessages.OptimisticReauthenticationFailed(m_logger, Id);
+					Log.OptimisticReauthenticationFailed(m_logger, Id);
 					payload = await SwitchAuthenticationAsync(cs, password, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
@@ -664,19 +664,19 @@ internal sealed partial class ServerSession
 		}
 		catch (IOException ex)
 		{
-			LogMessages.IgnoringFailureInTryResetConnectionAsync(m_logger, ex, Id, "IOException");
+			Log.IgnoringFailureInTryResetConnectionAsync(m_logger, ex, Id, "IOException");
 		}
 		catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.ClientInteractionTimeout)
 		{
-			LogMessages.IgnoringFailureInTryResetConnectionAsync(m_logger, ex, Id, "ClientInteractionTimeout MySqlException");
+			Log.IgnoringFailureInTryResetConnectionAsync(m_logger, ex, Id, "ClientInteractionTimeout MySqlException");
 		}
 		catch (ObjectDisposedException ex)
 		{
-			LogMessages.IgnoringFailureInTryResetConnectionAsync(m_logger, ex, Id, "ObjectDisposedException");
+			Log.IgnoringFailureInTryResetConnectionAsync(m_logger, ex, Id, "ObjectDisposedException");
 		}
 		catch (SocketException ex)
 		{
-			LogMessages.IgnoringFailureInTryResetConnectionAsync(m_logger, ex, Id, "SocketException");
+			Log.IgnoringFailureInTryResetConnectionAsync(m_logger, ex, Id, "SocketException");
 		}
 
 		return false;
@@ -686,7 +686,7 @@ internal sealed partial class ServerSession
 	{
 		// if the server didn't support the hashed password; rehash with the new challenge
 		var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload.Span);
-		LogMessages.SwitchingToAuthenticationMethod(m_logger, Id, switchRequest.Name);
+		Log.SwitchingToAuthenticationMethod(m_logger, Id, switchRequest.Name);
 		switch (switchRequest.Name)
 		{
 		case "mysql_native_password":
@@ -699,7 +699,7 @@ internal sealed partial class ServerSession
 		case "mysql_clear_password":
 			if (!m_isSecureConnection)
 			{
-				LogMessages.NeedsSecureConnection(m_logger, Id, switchRequest.Name);
+				Log.NeedsSecureConnection(m_logger, Id, switchRequest.Name);
 				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, $"Authentication method '{switchRequest.Name}' requires a secure connection.");
 			}
 
@@ -741,7 +741,7 @@ internal sealed partial class ServerSession
 			return await AuthGSSAPI.AuthenticateAsync(cs, switchRequest.Data, this, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 		case "mysql_old_password":
-			LogMessages.AuthenticationMethodNotSupported(m_logger, Id, switchRequest.Name);
+			Log.AuthenticationMethodNotSupported(m_logger, Id, switchRequest.Name);
 			throw new NotSupportedException("'MySQL Server is requesting the insecure pre-4.1 auth mechanism (mysql_old_password). The user password must be upgraded; see https://dev.mysql.com/doc/refman/5.7/en/account-upgrades.html.");
 
 		case "client_ed25519":
@@ -752,7 +752,7 @@ internal sealed partial class ServerSession
 			return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 		default:
-			LogMessages.AuthenticationMethodNotSupported(m_logger, Id, switchRequest.Name);
+			Log.AuthenticationMethodNotSupported(m_logger, Id, switchRequest.Name);
 			throw new NotSupportedException($"Authentication method '{switchRequest.Name}' is not supported.");
 		}
 	}
@@ -784,7 +784,7 @@ internal sealed partial class ServerSession
 		}
 		catch (Exception ex)
 		{
-			LogMessages.CouldNotLoadServerRsaPublicKey(m_logger, ex, Id);
+			Log.CouldNotLoadServerRsaPublicKey(m_logger, ex, Id);
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't load server's RSA public key; try using a secure connection instead.", ex);
 		}
 #else
@@ -796,7 +796,7 @@ internal sealed partial class ServerSession
 		}
 		catch (Exception ex)
 		{
-			LogMessages.CouldNotLoadServerRsaPublicKey(m_logger, ex, Id);
+			Log.CouldNotLoadServerRsaPublicKey(m_logger, ex, Id);
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't load server's RSA public key; try using a secure connection instead.", ex);
 		}
 
@@ -830,7 +830,7 @@ internal sealed partial class ServerSession
 			}
 			catch (IOException ex)
 			{
-				LogMessages.CouldNotLoadServerRsaPublicKeyFromFile(m_logger, ex, Id, cs.ServerRsaPublicKeyFile);
+				Log.CouldNotLoadServerRsaPublicKeyFromFile(m_logger, ex, Id, cs.ServerRsaPublicKeyFile);
 				throw new MySqlException($"Couldn't load server's RSA public key from '{cs.ServerRsaPublicKeyFile}'", ex);
 			}
 		}
@@ -845,7 +845,7 @@ internal sealed partial class ServerSession
 			return Encoding.ASCII.GetString(publicKeyPayload.Data);
 		}
 
-		LogMessages.CouldNotUseAuthenticationMethodForRsa(m_logger, Id, switchRequestName);
+		Log.CouldNotUseAuthenticationMethodForRsa(m_logger, Id, switchRequestName);
 		throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, $"Authentication method '{switchRequestName}' failed. Either use a secure connection, specify the server's RSA public key with ServerRSAPublicKeyFile, or set AllowPublicKeyRetrieval=True.");
 	}
 
@@ -856,24 +856,24 @@ internal sealed partial class ServerSession
 		// send ping payload to verify client and server socket are still connected
 		try
 		{
-			LogMessages.PingingServer(m_logger, Id);
+			Log.PingingServer(m_logger, Id);
 			await SendAsync(PingPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 			var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
-			LogMessages.SuccessfullyPingedServer(m_logger, logInfo ? LogLevel.Information : LogLevel.Trace, Id);
+			Log.SuccessfullyPingedServer(m_logger, logInfo ? LogLevel.Information : LogLevel.Trace, Id);
 			return true;
 		}
 		catch (IOException ex)
 		{
-			LogMessages.PingFailed(m_logger, ex, Id, "IOException");
+			Log.PingFailed(m_logger, ex, Id, "IOException");
 		}
 		catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.ClientInteractionTimeout)
 		{
-			LogMessages.PingFailed(m_logger, ex, Id, "ClientInteractionTimeout MySqlException");
+			Log.PingFailed(m_logger, ex, Id, "ClientInteractionTimeout MySqlException");
 		}
 		catch (SocketException ex)
 		{
-			LogMessages.PingFailed(m_logger, ex, Id, "SocketException");
+			Log.PingFailed(m_logger, ex, Id, "SocketException");
 		}
 
 		VerifyState(State.Failed);
@@ -905,7 +905,7 @@ internal sealed partial class ServerSession
 		}
 		catch (Exception ex)
 		{
-			LogMessages.FailedInReceiveReplyAsync(m_logger, ex, Id);
+			Log.FailedInReceiveReplyAsync(m_logger, ex, Id);
 			if ((ex as MySqlException)?.ErrorCode == MySqlErrorCode.CommandTimeoutExpired)
 				HandleTimeout();
 			task = ValueTaskExtensions.FromException<ArraySegment<byte>>(ex);
@@ -955,7 +955,7 @@ internal sealed partial class ServerSession
 		}
 		catch (Exception ex)
 		{
-			LogMessages.FailedInSendReplyAsync(m_logger, ex, Id);
+			Log.FailedInSendReplyAsync(m_logger, ex, Id);
 			task = ValueTaskExtensions.FromException(ex);
 		}
 
@@ -1041,7 +1041,7 @@ internal sealed partial class ServerSession
 			catch (SocketException ex)
 			{
 				// name couldn't be resolved
-				LogMessages.FailedToResolveHostName(m_logger, ex, Id, hostName, hostNameIndex + 1, hostNames.Count, ex.Message);
+				Log.FailedToResolveHostName(m_logger, ex, Id, hostName, hostNameIndex + 1, hostNames.Count, ex.Message);
 				continue;
 			}
 
@@ -1050,7 +1050,7 @@ internal sealed partial class ServerSession
 			{
 				var ipAddress = ipAddresses[ipAddressIndex];
 				var ipAddressString = ipAddress.ToString();
-				LogMessages.ConnectingToIpAddress(m_logger, Id, ipAddressString, ipAddressIndex + 1, ipAddresses.Length, hostName, hostNameIndex + 1, hostNames.Count);
+				Log.ConnectingToIpAddress(m_logger, Id, ipAddressString, ipAddressIndex + 1, ipAddresses.Length, hostName, hostNameIndex + 1, hostNames.Count);
 
 				// set activity tags for the current IP address/hostname
 				{
@@ -1105,7 +1105,7 @@ internal sealed partial class ServerSession
 						catch (Exception ex) when (cancellationToken.IsCancellationRequested && ex is ObjectDisposedException or SocketException)
 						{
 							SafeDispose(ref tcpClient);
-							LogMessages.ConnectTimeoutExpired(m_logger, ex, Id, ipAddressString, hostName);
+							Log.ConnectTimeoutExpired(m_logger, ex, Id, ipAddressString, hostName);
 							throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 						}
 					}
@@ -1120,20 +1120,20 @@ internal sealed partial class ServerSession
 						lock (m_lock)
 							m_state = State.Failed;
 						if (hostNames.Count == 1 && ipAddresses.Length == 1)
-							LogMessages.FailedToConnectToSingleIpAddress(m_logger, ex, Id, ipAddressString, hostName, ex.Message);
+							Log.FailedToConnectToSingleIpAddress(m_logger, ex, Id, ipAddressString, hostName, ex.Message);
 						else
-							LogMessages.FailedToConnectToIpAddress(m_logger, ex, LogLevel.Information, Id, ipAddressString, ipAddressIndex + 1, ipAddresses.Length, hostName, hostNameIndex + 1, hostNames.Count, ex.Message);
+							Log.FailedToConnectToIpAddress(m_logger, ex, LogLevel.Information, Id, ipAddressString, ipAddressIndex + 1, ipAddresses.Length, hostName, hostNameIndex + 1, hostNames.Count, ex.Message);
 						throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Unable to connect to any of the specified MySQL hosts.");
 					}
 
-					LogMessages.FailedToConnectToIpAddress(m_logger, ex, LogLevel.Trace, Id, ipAddressString, ipAddressIndex + 1, ipAddresses.Length, hostName, hostNameIndex + 1, hostNames.Count, ex.Message);
+					Log.FailedToConnectToIpAddress(m_logger, ex, LogLevel.Trace, Id, ipAddressString, ipAddressIndex + 1, ipAddresses.Length, hostName, hostNameIndex + 1, hostNames.Count, ex.Message);
 					continue;
 				}
 
 				if (!tcpClient.Connected && cancellationToken.IsCancellationRequested)
 				{
 					SafeDispose(ref tcpClient);
-					LogMessages.ConnectTimeoutExpired(m_logger, null, Id, ipAddressString, hostName);
+					Log.ConnectTimeoutExpired(m_logger, null, Id, ipAddressString, hostName);
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 				}
 
@@ -1151,13 +1151,13 @@ internal sealed partial class ServerSession
 					Utility.Dispose(ref m_stream);
 					SafeDispose(ref m_tcpClient);
 					SafeDispose(ref m_socket);
-					LogMessages.ConnectTimeoutExpired(m_logger, null, Id, ipAddressString, hostName);
+					Log.ConnectTimeoutExpired(m_logger, null, Id, ipAddressString, hostName);
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 				}
 
 				lock (m_lock)
 					m_state = State.Connected;
-				LogMessages.ConnectedToIpAddress(m_logger, Id, ipAddressString, hostName, (m_socket.LocalEndPoint as IPEndPoint)?.Port);
+				Log.ConnectedToIpAddress(m_logger, Id, ipAddressString, hostName, (m_socket.LocalEndPoint as IPEndPoint)?.Port);
 				return true;
 			}
 		}
@@ -1166,7 +1166,7 @@ internal sealed partial class ServerSession
 
 	private async Task<bool> OpenUnixSocketAsync(ConnectionSettings cs, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		LogMessages.ConnectingToUnixSocket(m_logger, Id, cs.UnixSocket!);
+		Log.ConnectingToUnixSocket(m_logger, Id, cs.UnixSocket!);
 
 		// set activity tags
 		{
@@ -1198,7 +1198,7 @@ internal sealed partial class ServerSession
 				}
 				catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
 				{
-					LogMessages.ConnectTimeoutExpiredForUnixSocket(m_logger, Id, cs.UnixSocket!);
+					Log.ConnectTimeoutExpiredForUnixSocket(m_logger, Id, cs.UnixSocket!);
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 				}
 			}
@@ -1223,7 +1223,7 @@ internal sealed partial class ServerSession
 
 	private async Task<bool> OpenNamedPipeAsync(ConnectionSettings cs, int startTickCount, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		LogMessages.ConnectingToNamedPipe(m_logger, Id, cs.PipeName, cs.HostNames![0]);
+		Log.ConnectingToNamedPipe(m_logger, Id, cs.PipeName, cs.HostNames![0]);
 
 		// set activity tags
 		{
@@ -1253,7 +1253,7 @@ internal sealed partial class ServerSession
 				}
 				catch (Exception ex) when ((ex is ObjectDisposedException && cancellationToken.IsCancellationRequested) || ex is TimeoutException)
 				{
-					LogMessages.ConnectTimeoutExpiredForNamedPipe(m_logger, ex, Id, cs.PipeName, cs.HostNames![0]);
+					Log.ConnectTimeoutExpiredForNamedPipe(m_logger, ex, Id, cs.PipeName, cs.HostNames![0]);
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Connect Timeout expired.");
 				}
 			}
@@ -1277,7 +1277,7 @@ internal sealed partial class ServerSession
 
 	private async Task InitSslAsync(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, MySqlConnection connection, SslProtocols sslProtocols, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		LogMessages.InitializingTlsConnection(m_logger, Id);
+		Log.InitializingTlsConnection(m_logger, Id);
 		X509CertificateCollection? clientCertificates = null;
 
 		if (cs.CertificateStoreLocation != MySqlCertificateStoreLocation.None)
@@ -1292,7 +1292,7 @@ internal sealed partial class ServerSession
 				{
 					if (store.Certificates.Count == 0)
 					{
-						LogMessages.NoCertificatesFound(m_logger, Id);
+						Log.NoCertificatesFound(m_logger, Id);
 						throw new MySqlException("No certificates were found in the certificate store");
 					}
 
@@ -1304,7 +1304,7 @@ internal sealed partial class ServerSession
 					var foundCertificates = store.Certificates.Find(X509FindType.FindByThumbprint, cs.CertificateThumbprint, requireValid);
 					if (foundCertificates.Count == 0)
 					{
-						LogMessages.CertificateNotFoundInStore(m_logger, Id, cs.CertificateThumbprint);
+						Log.CertificateNotFoundInStore(m_logger, Id, cs.CertificateThumbprint);
 						throw new MySqlException($"Certificate with Thumbprint {cs.CertificateThumbprint} not found");
 					}
 
@@ -1313,7 +1313,7 @@ internal sealed partial class ServerSession
 			}
 			catch (CryptographicException ex)
 			{
-				LogMessages.CouldNotLoadCertificate(m_logger, ex, Id, cs.CertificateStoreLocation);
+				Log.CouldNotLoadCertificate(m_logger, ex, Id, cs.CertificateStoreLocation);
 				throw new MySqlException("Certificate couldn't be loaded from the CertificateStoreLocation", ex);
 			}
 		}
@@ -1331,7 +1331,7 @@ internal sealed partial class ServerSession
 				{
 					certificate.Dispose();
 
-					LogMessages.NoPrivateKeyIncludedWithCertificateFile(m_logger, Id, cs.CertificateFile);
+					Log.NoPrivateKeyIncludedWithCertificateFile(m_logger, Id, cs.CertificateFile);
 					throw new MySqlException("CertificateFile does not contain a private key. " +
 						"CertificateFile should be in PKCS #12 (.pfx) format and contain both a Certificate and Private Key");
 				}
@@ -1340,7 +1340,7 @@ internal sealed partial class ServerSession
 			}
 			catch (CryptographicException ex)
 			{
-				LogMessages.CouldNotLoadCertificateFromFile(m_logger, ex, Id, cs.CertificateFile);
+				Log.CouldNotLoadCertificateFromFile(m_logger, ex, Id, cs.CertificateFile);
 				if (!File.Exists(cs.CertificateFile))
 					throw new MySqlException("Cannot find Certificate File", ex);
 				throw new MySqlException("Either the Certificate Password is incorrect or the Certificate File is invalid", ex);
@@ -1356,7 +1356,7 @@ internal sealed partial class ServerSession
 			}
 			catch (Exception ex)
 			{
-				LogMessages.FailedToObtainClientCertificates(m_logger, ex, Id, ex.Message);
+				Log.FailedToObtainClientCertificates(m_logger, ex, Id, ex.Message);
 				throw new MySqlException("Failed to obtain client certificates via ProvideClientCertificatesCallback", ex);
 			}
 		}
@@ -1376,7 +1376,7 @@ internal sealed partial class ServerSession
 			try
 			{
 				// read the CA Certificate File
-				LogMessages.LoadingCaCertificatesFromFile(m_logger, Id, cs.CACertificateFile);
+				Log.LoadingCaCertificatesFromFile(m_logger, Id, cs.CACertificateFile);
 				byte[] certificateBytes;
 				try
 				{
@@ -1384,7 +1384,7 @@ internal sealed partial class ServerSession
 				}
 				catch (Exception ex)
 				{
-					LogMessages.CouldNotLoadCaCertificateFromFile(m_logger, ex, LogLevel.Error, Id, cs.CACertificateFile);
+					Log.CouldNotLoadCaCertificateFromFile(m_logger, ex, LogLevel.Error, Id, cs.CACertificateFile);
 					if (!File.Exists(cs.CACertificateFile))
 						throw new MySqlException("Cannot find CA Certificate File: " + cs.CACertificateFile, ex);
 					throw new MySqlException("Could not load CA Certificate File: " + cs.CACertificateFile, ex);
@@ -1397,7 +1397,7 @@ internal sealed partial class ServerSession
 					try
 					{
 						// load the certificate at this index; note that 'new X509Certificate' stops at the end of the first certificate it loads
-						LogMessages.LoadingCaCertificate(m_logger, Id, index);
+						Log.LoadingCaCertificate(m_logger, Id, index);
 #if NET5_0_OR_GREATER
 						var caCertificate = new X509Certificate2(certificateBytes.AsSpan(index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index), default(ReadOnlySpan<char>), X509KeyStorageFlags.MachineKeySet);
 #else
@@ -1407,13 +1407,13 @@ internal sealed partial class ServerSession
 					}
 					catch (CryptographicException ex)
 					{
-						LogMessages.CouldNotLoadCaCertificateFromFile(m_logger, ex, LogLevel.Warning, Id, cs.CACertificateFile);
+						Log.CouldNotLoadCaCertificateFromFile(m_logger, ex, LogLevel.Warning, Id, cs.CACertificateFile);
 					}
 					index = nextIndex;
 				}
 
 				// success
-				LogMessages.LoadedCaCertificatesFromFile(m_logger, Id, certificateChain.ChainPolicy.ExtraStore.Count, cs.CACertificateFile);
+				Log.LoadedCaCertificatesFromFile(m_logger, Id, certificateChain.ChainPolicy.ExtraStore.Count, cs.CACertificateFile);
 				caCertificateChain = certificateChain;
 				certificateChain = null;
 			}
@@ -1453,15 +1453,15 @@ internal sealed partial class ServerSession
 		{
 			if (caCertificateChain is not null)
 			{
-				LogMessages.NotUsingRemoteCertificateValidationCallbackDueToSslCa(m_logger, Id);
+				Log.NotUsingRemoteCertificateValidationCallbackDueToSslCa(m_logger, Id);
 			}
 			else if (cs.SslMode is not MySqlSslMode.Preferred and not MySqlSslMode.Required)
 			{
-				LogMessages.NotUsingRemoteCertificateValidationCallbackDueToSslMode(m_logger, Id, cs.SslMode);
+				Log.NotUsingRemoteCertificateValidationCallbackDueToSslMode(m_logger, Id, cs.SslMode);
 			}
 			else
 			{
-				LogMessages.UsingRemoteCertificateValidationCallback(m_logger, Id);
+				Log.UsingRemoteCertificateValidationCallback(m_logger, Id);
 				validateRemoteCertificate = connection.RemoteCertificateValidationCallback;
 			}
 		}
@@ -1516,14 +1516,14 @@ internal sealed partial class ServerSession
 			m_isSecureConnection = true;
 			m_sslStream = sslStream;
 #if NETCOREAPP3_0_OR_GREATER
-			LogMessages.ConnectedTlsBasic(m_logger, Id, sslStream.SslProtocol, sslStream.NegotiatedCipherSuite);
+			Log.ConnectedTlsBasic(m_logger, Id, sslStream.SslProtocol, sslStream.NegotiatedCipherSuite);
 #else
-			LogMessages.ConnectedTlsDetailed(m_logger, Id, sslStream.SslProtocol, sslStream.CipherAlgorithm, sslStream.HashAlgorithm, sslStream.KeyExchangeAlgorithm, sslStream.KeyExchangeStrength);
+			Log.ConnectedTlsDetailed(m_logger, Id, sslStream.SslProtocol, sslStream.CipherAlgorithm, sslStream.HashAlgorithm, sslStream.KeyExchangeAlgorithm, sslStream.KeyExchangeStrength);
 #endif
 		}
 		catch (Exception ex)
 		{
-			LogMessages.CouldNotInitializeTlsConnection(m_logger, ex, Id);
+			Log.CouldNotInitializeTlsConnection(m_logger, ex, Id);
 			sslStream.Dispose();
 			ShutdownSocket();
 			HostName = "";
@@ -1551,7 +1551,7 @@ internal sealed partial class ServerSession
 			m_clientCertificate = X509Certificate2.CreateFromPemFile(sslCertificateFile, sslKeyFile);
 			return new() { m_clientCertificate };
 #else
-			LogMessages.LoadingClientKeyFromKeyFile(m_logger, Id, sslKeyFile);
+			Log.LoadingClientKeyFromKeyFile(m_logger, Id, sslKeyFile);
 			string keyPem;
 			try
 			{
@@ -1559,7 +1559,7 @@ internal sealed partial class ServerSession
 			}
 			catch (Exception ex)
 			{
-				LogMessages.CouldNotLoadClientKeyFromKeyFile(m_logger, ex, Id, sslKeyFile);
+				Log.CouldNotLoadClientKeyFromKeyFile(m_logger, ex, Id, sslKeyFile);
 				throw new MySqlException($"Could not load the client key from '{sslKeyFile}'", ex);
 			}
 
@@ -1570,7 +1570,7 @@ internal sealed partial class ServerSession
 			}
 			catch (FormatException ex)
 			{
-				LogMessages.CouldNotLoadClientKeyFromKeyFile(m_logger, ex, Id, sslKeyFile);
+				Log.CouldNotLoadClientKeyFromKeyFile(m_logger, ex, Id, sslKeyFile);
 				throw new MySqlException($"Could not load the client key from '{sslKeyFile}'", ex);
 			}
 
@@ -1613,7 +1613,7 @@ internal sealed partial class ServerSession
 			}
 			catch (CryptographicException ex)
 			{
-				LogMessages.CouldNotLoadClientKeyFromKeyFile(m_logger, ex, Id, sslCertificateFile);
+				Log.CouldNotLoadClientKeyFromKeyFile(m_logger, ex, Id, sslCertificateFile);
 				if (!File.Exists(sslCertificateFile))
 					throw new MySqlException("Cannot find client certificate file: " + sslCertificateFile, ex);
 				throw new MySqlException("Could not load the client key from " + sslCertificateFile, ex);
@@ -1655,7 +1655,7 @@ internal sealed partial class ServerSession
 
 	private async Task GetRealServerDetailsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		LogMessages.DetectedProxy(m_logger, Id);
+		Log.DetectedProxy(m_logger, Id);
 		try
 		{
 			var payload = SupportsQueryAttributes ? s_selectConnectionIdVersionWithAttributesPayload : s_selectConnectionIdVersionNoAttributesPayload;
@@ -1695,20 +1695,20 @@ internal sealed partial class ServerSession
 
 			if (connectionId is int newConnectionId && serverVersion is not null)
 			{
-				LogMessages.ChangingConnectionId(m_logger, Id, ConnectionId, newConnectionId, ServerVersion.OriginalString, serverVersion.OriginalString);
+				Log.ChangingConnectionId(m_logger, Id, ConnectionId, newConnectionId, ServerVersion.OriginalString, serverVersion.OriginalString);
 				ConnectionId = newConnectionId;
 				ServerVersion = serverVersion;
 			}
 		}
 		catch (MySqlException ex)
 		{
-			LogMessages.FailedToGetConnectionId(m_logger, ex, Id);
+			Log.FailedToGetConnectionId(m_logger, ex, Id);
 		}
 	}
 
 	private void ShutdownSocket()
 	{
-		LogMessages.ClosingStreamSocket(m_logger, Id);
+		Log.ClosingStreamSocket(m_logger, Id);
 		Utility.Dispose(ref m_payloadHandler);
 		Utility.Dispose(ref m_stream);
 		SafeDispose(ref m_tcpClient);
@@ -1744,7 +1744,7 @@ internal sealed partial class ServerSession
 
 	internal void SetFailed(Exception exception)
 	{
-		LogMessages.SettingStateToFailed(m_logger, exception, Id);
+		Log.SettingStateToFailed(m_logger, exception, Id);
 		lock (m_lock)
 			m_state = State.Failed;
 		if (OwningConnection is not null && OwningConnection.TryGetTarget(out var connection))
@@ -1781,7 +1781,7 @@ internal sealed partial class ServerSession
 
 	private byte[] CreateConnectionAttributes(string programName)
 	{
-		LogMessages.CreatingConnectionAttributes(m_logger, Id);
+		Log.CreatingConnectionAttributes(m_logger, Id);
 		var attributesWriter = new ByteBufferWriter();
 		attributesWriter.WriteLengthEncodedString("_client_name");
 		attributesWriter.WriteLengthEncodedString("MySqlConnector");
@@ -1834,7 +1834,7 @@ internal sealed partial class ServerSession
 	private Exception CreateExceptionForErrorPayload(ReadOnlySpan<byte> span)
 	{
 		var errorPayload = ErrorPayload.Create(span);
-		LogMessages.ErrorPayload(m_logger, Id, errorPayload.ErrorCode, errorPayload.State, errorPayload.Message);
+		Log.ErrorPayload(m_logger, Id, errorPayload.ErrorCode, errorPayload.State, errorPayload.Message);
 		var exception = errorPayload.ToException();
 		if (exception.ErrorCode is MySqlErrorCode.ClientInteractionTimeout)
 			SetFailed(exception);
@@ -1860,12 +1860,12 @@ internal sealed partial class ServerSession
 		{
 			try
 			{
-				LogMessages.ObtainingPasswordViaProvidePasswordCallback(m_logger, Id);
+				Log.ObtainingPasswordViaProvidePasswordCallback(m_logger, Id);
 				return passwordProvider(new(HostName, cs.Port, cs.UserID, cs.Database));
 			}
 			catch (Exception ex)
 			{
-				LogMessages.FailedToObtainPassword(m_logger, ex, Id, ex.Message);
+				Log.FailedToObtainPassword(m_logger, ex, Id, ex.Message);
 				throw new MySqlException(MySqlErrorCode.ProvidePasswordCallbackFailed, "Failed to obtain password via ProvidePasswordCallback", ex);
 			}
 		}

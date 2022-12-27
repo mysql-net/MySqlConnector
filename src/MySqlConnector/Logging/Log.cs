@@ -1,12 +1,11 @@
 using System.Net.Security;
-using System.Security;
 using System.Security.Authentication;
 using Microsoft.Extensions.Logging;
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Logging;
 
-internal static partial class LogMessages
+internal static partial class Log
 {
 	[LoggerMessage(EventIds.DataSourceCreatedWithPool, LogLevel.Information, "DataSource {DataSourceId} created with pool {PoolId}")]
 	public static partial void DataSourceCreatedWithPool(ILogger logger, int dataSourceId, int poolId);

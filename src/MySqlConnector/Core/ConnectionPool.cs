@@ -27,7 +27,7 @@ internal sealed class ConnectionPool : IDisposable
 		// on the lock in RecoverLeakedSessions in high-concurrency situations
 		if (IsEmpty && unchecked(((uint) Environment.TickCount) - m_lastRecoveryTime) >= 1000u)
 		{
-			LogMessages.ScanningForLeakedSessions(m_logger, Id);
+			Log.ScanningForLeakedSessions(m_logger, Id);
 			await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
 		}
 
@@ -35,7 +35,7 @@ internal sealed class ConnectionPool : IDisposable
 			await CreateMinimumPooledSessions(connection, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 		// wait for an open slot (until the cancellationToken is cancelled, which is typically due to timeout)
-		LogMessages.WaitingForAvailableSession(m_logger, Id);
+		Log.WaitingForAvailableSession(m_logger, Id);
 		if (ioBehavior == IOBehavior.Asynchronous)
 			await m_sessionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 		else
@@ -55,12 +55,12 @@ internal sealed class ConnectionPool : IDisposable
 			}
 			if (session is not null)
 			{
-				LogMessages.FoundExistingSession(m_logger, Id);
+				Log.FoundExistingSession(m_logger, Id);
 				bool reuseSession;
 
 				if (session.PoolGeneration != m_generation)
 				{
-					LogMessages.DiscardingSessionDueToWrongGeneration(m_logger, Id);
+					Log.DiscardingSessionDueToWrongGeneration(m_logger, Id);
 					reuseSession = false;
 				}
 				else
@@ -74,7 +74,7 @@ internal sealed class ConnectionPool : IDisposable
 				if (!reuseSession)
 				{
 					// session is either old or cannot communicate with the server
-					LogMessages.SessionIsUnusable(m_logger, Id, session.Id);
+					Log.SessionIsUnusable(m_logger, Id, session.Id);
 					AdjustHostConnectionCount(session, -1);
 					await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
@@ -89,7 +89,7 @@ internal sealed class ConnectionPool : IDisposable
 						leasedSessionsCountPooled = m_leasedSessions.Count;
 					}
 					ActivitySourceHelper.CopyTags(session.ActivityTags, activity);
-					LogMessages.ReturningPooledSession(m_logger, Id, session.Id, leasedSessionsCountPooled);
+					Log.ReturningPooledSession(m_logger, Id, session.Id, leasedSessionsCountPooled);
 					return session;
 				}
 			}
@@ -104,7 +104,7 @@ internal sealed class ConnectionPool : IDisposable
 				m_leasedSessions.Add(session.Id, session);
 				leasedSessionsCountNew = m_leasedSessions.Count;
 			}
-			LogMessages.ReturningNewSession(m_logger, Id, session.Id, leasedSessionsCountNew);
+			Log.ReturningNewSession(m_logger, Id, session.Id, leasedSessionsCountNew);
 			return session;
 		}
 		catch (Exception ex)
@@ -113,13 +113,13 @@ internal sealed class ConnectionPool : IDisposable
 			{
 				try
 				{
-					LogMessages.DisposingCreatedSessionDueToException(m_logger, ex, Id, session.Id, ex.Message);
+					Log.DisposingCreatedSessionDueToException(m_logger, ex, Id, session.Id, ex.Message);
 					AdjustHostConnectionCount(session, -1);
 					await session.DisposeAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 				}
 				catch (Exception unexpectedException)
 				{
-					LogMessages.UnexpectedErrorInGetSessionAsync(m_logger, unexpectedException, Id, unexpectedException.Message);
+					Log.UnexpectedErrorInGetSessionAsync(m_logger, unexpectedException, Id, unexpectedException.Message);
 				}
 			}
 
@@ -150,7 +150,7 @@ internal sealed class ConnectionPool : IDisposable
 
 	public async ValueTask ReturnAsync(IOBehavior ioBehavior, ServerSession session)
 	{
-		LogMessages.ReceivingSessionBack(m_logger, Id, session.Id);
+		Log.ReceivingSessionBack(m_logger, Id, session.Id);
 
 		try
 		{
@@ -166,9 +166,9 @@ internal sealed class ConnectionPool : IDisposable
 			else
 			{
 				if (sessionHealth == 1)
-					LogMessages.ReceivedInvalidSession(m_logger, Id, session.Id);
+					Log.ReceivedInvalidSession(m_logger, Id, session.Id);
 				else
-					LogMessages.ReceivedExpiredSession(m_logger, Id, session.Id);
+					Log.ReceivedExpiredSession(m_logger, Id, session.Id);
 				AdjustHostConnectionCount(session, -1);
 				await session.DisposeAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			}
@@ -182,7 +182,7 @@ internal sealed class ConnectionPool : IDisposable
 	public async Task ClearAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		// increment the generation of the connection pool
-		LogMessages.ClearingConnectionPool(m_logger, Id);
+		Log.ClearingConnectionPool(m_logger, Id);
 		Interlocked.Increment(ref m_generation);
 		m_procedureCache = null;
 		await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
@@ -191,7 +191,7 @@ internal sealed class ConnectionPool : IDisposable
 
 	public async Task ReapAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		LogMessages.ReapingConnectionPool(m_logger, Id);
+		Log.ReapingConnectionPool(m_logger, Id);
 		await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
 		await CleanPoolAsync(ioBehavior, session => (unchecked((uint) Environment.TickCount) - session.LastReturnedTicks) / 1000 >= ConnectionSettings.ConnectionIdleTimeout, true, cancellationToken).ConfigureAwait(false);
 	}
@@ -215,7 +215,7 @@ internal sealed class ConnectionPool : IDisposable
 
 	public void Dispose()
 	{
-		LogMessages.DisposingConnectionPool(m_logger, Id);
+		Log.DisposingConnectionPool(m_logger, Id);
 #if NET6_0_OR_GREATER
 		m_dnsCheckTimer?.Dispose();
 		m_dnsCheckTimer = null;
@@ -260,9 +260,9 @@ internal sealed class ConnectionPool : IDisposable
 			}
 		}
 		if (recoveredSessions.Count == 0)
-			LogMessages.RecoveredNoSessions(m_logger, Id);
+			Log.RecoveredNoSessions(m_logger, Id);
 		else
-			LogMessages.RecoveredSessionCount(m_logger, Id, recoveredSessions.Count);
+			Log.RecoveredSessionCount(m_logger, Id, recoveredSessions.Count);
 
 		foreach (var (session, connection) in recoveredSessions)
 		{
@@ -328,7 +328,7 @@ internal sealed class ConnectionPool : IDisposable
 					if (shouldCleanFn(session))
 					{
 						// session should be cleaned; dispose it and keep iterating
-						LogMessages.FoundSessionToCleanUp(m_logger, Id, session.Id);
+						Log.FoundSessionToCleanUp(m_logger, Id, session.Id);
 						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
 					else
@@ -410,18 +410,18 @@ internal sealed class ConnectionPool : IDisposable
 		if (statusInfo is not null && statusInfo.StartsWith("Location: mysql://", StringComparison.Ordinal))
 		{
 			// server redirection string has the format "Location: mysql://{host}:{port}/user={userId}[&ttl={ttl}]"
-			LogMessages.HasServerRedirectionHeader(m_logger, session.Id, statusInfo);
+			Log.HasServerRedirectionHeader(m_logger, session.Id, statusInfo);
 
 			if (ConnectionSettings.ServerRedirectionMode == MySqlServerRedirectionMode.Disabled)
 			{
-				LogMessages.ServerRedirectionIsDisabled(m_logger, Id);
+				Log.ServerRedirectionIsDisabled(m_logger, Id);
 			}
 			else if (Utility.TryParseRedirectionHeader(statusInfo, out var host, out var port, out var user))
 			{
 				if (host != ConnectionSettings.HostNames![0] || port != ConnectionSettings.Port || user != ConnectionSettings.UserID)
 				{
 					var redirectedSettings = ConnectionSettings.CloneWith(host, port, user);
-					LogMessages.OpeningNewConnection(m_logger, Id, host, port, user);
+					Log.OpeningNewConnection(m_logger, Id, host, port, user);
 					var redirectedSession = new ServerSession(m_connectionLogger, this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 					try
 					{
@@ -429,13 +429,13 @@ internal sealed class ConnectionPool : IDisposable
 					}
 					catch (Exception ex)
 					{
-						LogMessages.FailedToConnectRedirectedSession(m_logger, ex, Id, redirectedSession.Id);
+						Log.FailedToConnectRedirectedSession(m_logger, ex, Id, redirectedSession.Id);
 						redirectionException = ex;
 					}
 
 					if (redirectionException is null)
 					{
-						LogMessages.ClosingSessionToUseRedirectedSession(m_logger, Id, session.Id, redirectedSession.Id);
+						Log.ClosingSessionToUseRedirectedSession(m_logger, Id, session.Id, redirectedSession.Id);
 						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 						return redirectedSession;
 					}
@@ -452,14 +452,14 @@ internal sealed class ConnectionPool : IDisposable
 				}
 				else
 				{
-					LogMessages.SessionAlreadyConnectedToServer(m_logger, session.Id);
+					Log.SessionAlreadyConnectedToServer(m_logger, session.Id);
 				}
 			}
 		}
 
 		if (ConnectionSettings.ServerRedirectionMode == MySqlServerRedirectionMode.Required)
 		{
-			LogMessages.RequiresServerRedirection(m_logger, Id);
+			Log.RequiresServerRedirection(m_logger, Id);
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Server does not support redirection", redirectionException);
 		}
 		return session;
@@ -537,7 +537,7 @@ internal sealed class ConnectionPool : IDisposable
 		}
 		else if (pool != newPool)
 		{
-			LogMessages.CreatedPoolWillNotBeUsed(newPool.m_logger, newPool.Id);
+			Log.CreatedPoolWillNotBeUsed(newPool.m_logger, newPool.Id);
 		}
 
 		return pool;
@@ -586,7 +586,7 @@ internal sealed class ConnectionPool : IDisposable
 			(ILoadBalancer) new RoundRobinLoadBalancer();
 
 		Id = Interlocked.Increment(ref s_poolId);
-		LogMessages.CreatingNewConnectionPool(m_logger, Id, cs.ConnectionStringBuilder.GetConnectionString(includePassword: false));
+		Log.CreatingNewConnectionPool(m_logger, Id, cs.ConnectionStringBuilder.GetConnectionString(includePassword: false));
 	}
 
 	private void StartReaperTask()
@@ -653,7 +653,7 @@ internal sealed class ConnectionPool : IDisposable
 		{
 			while (await m_dnsCheckTimer.WaitForNextTickAsync().ConfigureAwait(false))
 			{
-				LogMessages.CheckingForDnsChanges(m_logger, Id);
+				Log.CheckingForDnsChanges(m_logger, Id);
 				var hostNamesChanged = false;
 				for (var hostNameIndex = 0; hostNameIndex < hostNames.Count; hostNameIndex++)
 				{
@@ -666,7 +666,7 @@ internal sealed class ConnectionPool : IDisposable
 						}
 						else if (hostAddresses[hostNameIndex].Except(ipAddresses).Any())
 						{
-							LogMessages.DetectedDnsChange(m_logger, Id, hostNames[hostNameIndex], string.Join<IPAddress>(',', hostAddresses[hostNameIndex]), string.Join<IPAddress>(',', ipAddresses));
+							Log.DetectedDnsChange(m_logger, Id, hostNames[hostNameIndex], string.Join<IPAddress>(',', hostAddresses[hostNameIndex]), string.Join<IPAddress>(',', ipAddresses));
 							hostAddresses[hostNameIndex] = ipAddresses;
 							hostNamesChanged = true;
 						}
@@ -674,12 +674,12 @@ internal sealed class ConnectionPool : IDisposable
 					catch (Exception ex)
 					{
 						// do nothing; we'll try again later
-						LogMessages.DnsCheckFailed(m_logger, ex, Id, hostNames[hostNameIndex], ex.Message);
+						Log.DnsCheckFailed(m_logger, ex, Id, hostNames[hostNameIndex], ex.Message);
 					}
 				}
 				if (hostNamesChanged)
 				{
-					LogMessages.ClearingPoolDueToDnsChanges(m_logger, Id);
+					Log.ClearingPoolDueToDnsChanges(m_logger, Id);
 					await ClearAsync(IOBehavior.Asynchronous, CancellationToken.None).ConfigureAwait(false);
 				}
 			}
@@ -688,7 +688,7 @@ internal sealed class ConnectionPool : IDisposable
 		var interval = Math.Min(int.MaxValue / 1000, ConnectionSettings.DnsCheckInterval) * 1000;
 		m_dnsCheckTimer = new Timer(t =>
 		{
-			LogMessages.CheckingForDnsChanges(m_logger, Id);
+			Log.CheckingForDnsChanges(m_logger, Id);
 			var hostNamesChanged = false;
 			for (var hostNameIndex = 0; hostNameIndex < hostNames.Count; hostNameIndex++)
 			{
@@ -701,7 +701,7 @@ internal sealed class ConnectionPool : IDisposable
 					}
 					else if (hostAddresses[hostNameIndex].Except(ipAddresses).Any())
 					{
-						LogMessages.DetectedDnsChange(m_logger, Id, hostNames[hostNameIndex], string.Join<IPAddress>(",", hostAddresses[hostNameIndex]), string.Join<IPAddress>(",", ipAddresses));
+						Log.DetectedDnsChange(m_logger, Id, hostNames[hostNameIndex], string.Join<IPAddress>(",", hostAddresses[hostNameIndex]), string.Join<IPAddress>(",", ipAddresses));
 						hostAddresses[hostNameIndex] = ipAddresses;
 						hostNamesChanged = true;
 					}
@@ -709,12 +709,12 @@ internal sealed class ConnectionPool : IDisposable
 				catch (Exception ex)
 				{
 					// do nothing; we'll try again later
-					LogMessages.DnsCheckFailed(m_logger, ex, Id, hostNames[hostNameIndex], ex.Message);
+					Log.DnsCheckFailed(m_logger, ex, Id, hostNames[hostNameIndex], ex.Message);
 				}
 			}
 			if (hostNamesChanged)
 			{
-				LogMessages.ClearingPoolDueToDnsChanges(m_logger, Id);
+				Log.ClearingPoolDueToDnsChanges(m_logger, Id);
 				ClearAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 			}
 			((Timer) t!).Change(interval, -1);

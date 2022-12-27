@@ -30,9 +30,9 @@ public sealed class MySqlDataSource : DbDataSource
 		Pool = ConnectionPool.CreatePool(m_connectionString, LoggingConfiguration);
 		m_id = Interlocked.Increment(ref s_lastId);
 		if (Pool is not null)
-			LogMessages.DataSourceCreatedWithPool(m_logger, m_id, Pool.Id);
+			Log.DataSourceCreatedWithPool(m_logger, m_id, Pool.Id);
 		else
-			LogMessages.DataSourceCreatedWithoutPool(m_logger, m_id);
+			Log.DataSourceCreatedWithoutPool(m_logger, m_id);
 	}
 
 	/// <summary>

@@ -45,7 +45,7 @@ internal sealed class CachedProcedure
 			}
 			catch (MySqlException ex)
 			{
-				LogMessages.FailedToRetrieveProcedureMetadata(logger, ex, connection.Session.Id, schema, component, ex.Message);
+				Log.FailedToRetrieveProcedureMetadata(logger, ex, connection.Session.Id, schema, component, ex.Message);
 				if (ex.ErrorCode == MySqlErrorCode.TableAccessDenied)
 					connection.Session.ProcAccessDenied = true;
 			}
@@ -53,7 +53,7 @@ internal sealed class CachedProcedure
 
 		if (connection.Session.ServerVersion.Version < ServerVersions.SupportsProcedureCache)
 		{
-			LogMessages.ServerDoesNotSupportCachedProcedures(logger, connection.Session.Id, connection.Session.ServerVersion.OriginalString);
+			Log.ServerDoesNotSupportCachedProcedures(logger, connection.Session.Id, connection.Session.ServerVersion.OriginalString);
 			return null;
 		}
 
@@ -91,7 +91,7 @@ internal sealed class CachedProcedure
 			}
 		}
 
-		LogMessages.ProcedureHasRoutineCount(logger, schema, component, routineCount, parameters.Count);
+		Log.ProcedureHasRoutineCount(logger, schema, component, routineCount, parameters.Count);
 		return routineCount == 0 ? null : new CachedProcedure(schema, component, parameters);
 	}
 

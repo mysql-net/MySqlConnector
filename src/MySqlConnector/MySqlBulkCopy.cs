@@ -240,7 +240,7 @@ public sealed class MySqlBulkCopy
 		var tableName = DestinationTableName ?? throw new InvalidOperationException("DestinationTableName must be set before calling WriteToServer");
 		m_wasAborted = false;
 
-		LogMessages.StartingBulkCopy(m_logger, tableName);
+		Log.StartingBulkCopy(m_logger, tableName);
 		var bulkLoader = new MySqlBulkLoader(m_connection)
 		{
 			CharacterSet = "utf8mb4",
@@ -292,7 +292,7 @@ public sealed class MySqlBulkCopy
 					}
 					else if (addDefaultMappings)
 					{
-						LogMessages.AddingDefaultColumnMapping(m_logger, i, destinationColumn);
+						Log.AddingDefaultColumnMapping(m_logger, i, destinationColumn);
 						columnMappings.Add(new(i, destinationColumn));
 					}
 				}
@@ -305,7 +305,7 @@ public sealed class MySqlBulkCopy
 			var columnMapping = columnMappings.FirstOrDefault(x => x.SourceOrdinal == i);
 			if (columnMapping is null)
 			{
-				LogMessages.IgnoringColumn(m_logger, i);
+				Log.IgnoringColumn(m_logger, i);
 				bulkLoader.Columns.Add("@`\uE002\bignore`");
 			}
 			else
@@ -344,11 +344,11 @@ public sealed class MySqlBulkCopy
 		if (closeConnection)
 			m_connection.Close();
 
-		LogMessages.FinishedBulkCopy(m_logger, tableName);
+		Log.FinishedBulkCopy(m_logger, tableName);
 
 		if (!m_wasAborted && rowsInserted != m_rowsCopied && ConflictOption is MySqlBulkLoaderConflictOption.None)
 		{
-			LogMessages.BulkCopyFailed(m_logger, tableName, m_rowsCopied, rowsInserted);
+			Log.BulkCopyFailed(m_logger, tableName, m_rowsCopied, rowsInserted);
 			throw new MySqlException(MySqlErrorCode.BulkCopyFailed, $"{m_rowsCopied} row{(m_rowsCopied == 1 ? " was" : "s were")} copied to {tableName} but only {rowsInserted} {(rowsInserted == 1 ? "was" : "were")} inserted.");
 		}
 
@@ -364,18 +364,18 @@ public sealed class MySqlBulkCopy
 			{
 				if (columnMapping.Expression is not null)
 				{
-					LogMessages.ColumnMappingAlreadyHasExpression(logger, columnMapping.SourceOrdinal, destinationColumn, columnMapping.Expression);
+					Log.ColumnMappingAlreadyHasExpression(logger, columnMapping.SourceOrdinal, destinationColumn, columnMapping.Expression);
 				}
 				else
 				{
-					LogMessages.SettingExpressionToMapColumn(logger, columnMapping.SourceOrdinal, destinationColumn, expression);
+					Log.SettingExpressionToMapColumn(logger, columnMapping.SourceOrdinal, destinationColumn, expression);
 					columnMappings.Remove(columnMapping);
 					columnMappings.Add(new(columnMapping.SourceOrdinal, variableName, expression));
 				}
 			}
 			else if (addDefaultMappings)
 			{
-				LogMessages.AddingDefaultColumnMapping(logger, destinationOrdinal, destinationColumn);
+				Log.AddingDefaultColumnMapping(logger, destinationOrdinal, destinationColumn);
 				columnMappings.Add(new(destinationOrdinal, variableName, expression));
 			}
 		}

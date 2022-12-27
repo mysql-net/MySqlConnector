@@ -30,7 +30,7 @@ internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
 		do
 		{
 			var command = commandListPosition.Commands[commandListPosition.CommandIndex];
-			LogMessages.PreparingCommandPayload(command.Logger, command.Connection!.Session.Id, command.CommandText!);
+			Log.PreparingCommandPayload(command.Logger, command.Connection!.Session.Id, command.CommandText!);
 
 			isComplete = SingleCommandPayloadCreator.WriteQueryPayload(command, cachedProcedures, writer, commandListPosition.CommandIndex < commandListPosition.Commands.Count - 1 || appendSemicolon);
 			commandListPosition.CommandIndex++;

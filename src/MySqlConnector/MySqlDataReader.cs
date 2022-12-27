@@ -617,7 +617,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 				{
 					// ignore "Query execution was interrupted" exceptions when closing a data reader; log other exceptions
 					if (ex.ErrorCode != MySqlErrorCode.QueryInterrupted)
-						LogMessages.IgnoringExceptionInDisposeAsync(Command.Logger, ex, Command.Connection.Session.Id, ex.Message, Command.CommandText!);
+						Log.IgnoringExceptionInDisposeAsync(Command.Logger, ex, Command.Connection.Session.Id, ex.Message, Command.CommandText!);
 				}
 				m_resultSet = null;
 			}

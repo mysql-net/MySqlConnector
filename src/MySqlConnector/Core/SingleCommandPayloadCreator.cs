@@ -22,7 +22,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		var preparedStatements = command.TryGetPreparedStatements();
 		if (preparedStatements is null)
 		{
-			LogMessages.PreparingCommandPayload(command.Logger, command.Connection!.Session.Id, command.CommandText!);
+			Log.PreparingCommandPayload(command.Logger, command.Connection!.Session.Id, command.CommandText!);
 
 			writer.Write((byte) CommandKind.Query);
 			var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
@@ -40,7 +40,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			}
 			else if (command.RawAttributes?.Count > 0)
 			{
-				LogMessages.QueryAttributesNotSupported(command.Logger, command.Connection!.Session.Id, command.CommandText!);
+				Log.QueryAttributesNotSupported(command.Logger, command.Connection!.Session.Id, command.CommandText!);
 			}
 
 			WriteQueryPayload(command, cachedProcedures, writer, appendSemicolon);
@@ -77,7 +77,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	{
 		var parameterCollection = command.RawParameters;
 
-		LogMessages.PreparingCommandPayloadWithId(command.Logger, command.Connection!.Session.Id, preparedStatement.StatementId, command.CommandText!);
+		Log.PreparingCommandPayloadWithId(command.Logger, command.Connection!.Session.Id, preparedStatement.StatementId, command.CommandText!);
 
 		var attributes = command.RawAttributes;
 		var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
@@ -101,7 +101,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 				writer.WriteLengthEncodedInteger((uint) commandParameterCount);
 			if (attributeCount > 0)
 			{
-				LogMessages.QueryAttributesNotSupportedWithId(command.Logger, command.Connection!.Session.Id, preparedStatement.StatementId);
+				Log.QueryAttributesNotSupportedWithId(command.Logger, command.Connection!.Session.Id, preparedStatement.StatementId);
 				attributeCount = 0;
 			}
 		}
