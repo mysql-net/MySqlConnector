@@ -765,7 +765,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			return;
 		}
 
-		LogMessages.CancelingCommand(m_logger, commandId, sessionId, isCancel ? "Cancel()" : "command timeout");
+		LogMessages.CommandHasBeenCanceled(m_logger, commandId, sessionId, isCancel ? "Cancel()" : "command timeout");
 		try
 		{
 			// open a dedicated connection to the server to kill the active query
