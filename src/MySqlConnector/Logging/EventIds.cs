@@ -2,124 +2,132 @@ namespace MySqlConnector.Logging;
 
 internal static class EventIds
 {
+	// DataSource events, 1000-1999
 	public const int DataSourceCreatedWithPool = 1000;
 	public const int DataSourceCreatedWithoutPool = 1001;
 
-	public const int CreatedNonPooledSession = 2000;
-	public const int ResettingConnection = 2001;
-	public const int CreatedNewSession = 2002;
+	// Core Session events, 2000-2099
+	public const int CreatedNewSession = 2000;
+	public const int CreatedNonPooledSession = 2001;
+	public const int ResettingConnection = 2002;
 	public const int ReturningToPool = 2003;
 	public const int SendingQuitCommand = 2004;
-	public const int ConnectingFailed = 2005;
-	public const int ServerSentAuthPluginName = 2006;
-	public const int UnsupportedAuthenticationMethod = 2007;
-	public const int AutoDetectedAurora57 = 2008;
-	public const int SessionMadeConnection = 2009;
-	public const int ServerDoesNotSupportSsl = 2010;
-	public const int SessionDoesNotSupportSslProtocolsNone = 2011;
-	public const int FailedNegotiatingTls = 2012;
-	public const int CouldNotConnectToServer = 2013;
-	public const int SendingPipelinedResetConnectionRequest = 2014;
-	public const int SendingResetConnectionRequest = 2015;
-	public const int SendingChangeUserRequest = 2016;
-	public const int SendingChangeUserRequestDueToChangedDatabase = 2017;
-	public const int OptimisticReauthenticationFailed = 2018;
-	public const int IgnoringFailureInTryResetConnectionAsync = 2019;
-	public const int SwitchingToAuthenticationMethod = 2020;
-	public const int NeedsSecureConnection = 2021;
-	public const int AuthenticationMethodNotSupported = 2022;
-	public const int CouldNotLoadServerRsaPublicKey = 2023;
-	public const int CouldNotLoadServerRsaPublicKeyFromFile = 2024;
-	public const int CouldNotUseAuthenticationMethodForRsa = 2025;
-	public const int FailedToResolveHostName = 2026;
-	public const int ConnectingToIpAddress = 2027;
-	public const int ConnectTimeoutExpired = 2028;
-	public const int FailedToConnectToSingleIpAddress = 2029;
-	public const int FailedToConnectToIpAddress = 2030;
-	public const int ConnectedToIpAddress = 2031;
-	public const int ConnectingToUnixSocket = 2032;
-	public const int ConnectTimeoutExpiredForUnixSocket = 2033;
-	public const int ConnectingToNamedPipe = 2034;
-	public const int ConnectTimeoutExpiredForNamedPipe = 2035;
-	public const int InitializingTlsConnection = 2036;
-	public const int NoCertificatesFound = 2037;
-	public const int CertificateNotFoundInStore = 2038;
-	public const int CouldNotLoadCertificate = 2039;
-	public const int NoPrivateKeyIncludedWithCertificateFile = 2040;
-	public const int CouldNotLoadCertificateFromFile = 2041;
-	public const int FailedToObtainClientCertificates = 2042;
-	public const int LoadingCaCertificatesFromFile = 2043;
-	public const int CouldNotLoadCaCertificateFromFile = 2044;
-	public const int LoadingCaCertificate = 2045;
-	public const int LoadedCaCertificatesFromFile = 2046;
-	public const int NotUsingRemoteCertificateValidationCallbackDueToSslCa = 2047;
-	public const int NotUsingRemoteCertificateValidationCallbackDueToSslMode = 2048;
-	public const int UsingRemoteCertificateValidationCallback = 2049;
-	public const int ConnectedTlsBasic = 2050;
-	public const int ConnectedTlsDetailed = 2051;
-	public const int CouldNotInitializeTlsConnection = 2052;
-	public const int LoadingClientKeyFromKeyFile = 2053;
-	public const int CouldNotLoadClientKeyFromKeyFile = 2054;
-	public const int DetectedProxy = 2055;
-	public const int ChangingConnectionId = 2056;
-	public const int FailedToGetConnectionId = 2057;
-	public const int ClosingStreamSocket = 2058;
-	public const int CreatingConnectionAttributes = 2059;
-	public const int ObtainingPasswordViaProvidePasswordCallback = 2060;
-	public const int FailedToObtainPassword = 2061;
+	public const int ClosingStreamSocket = 2005;
+	public const int ErrorPayload = 2006;
+	public const int FailedInSendReplyAsync = 2007;
+	public const int FailedInReceiveReplyAsync = 2008;
+	public const int SettingStateToFailed = 2009;
+	public const int ExpectedSessionState1 = 2011;
+	public const int ExpectedSessionState6 = 2016;
 
-	public const int IgnoringCancellationForCommand = 2100;
-	public const int CommandHasBeenCanceled = 2101;
-	public const int IgnoringCancellationForClosedConnection = 2102;
-	public const int CancelingCommandFailed = 2103;
-	public const int WillCancelCommand = 2104;
-	public const int CancelingCommandFromSession = 2105;
-	public const int IgnoringCancellationForInactiveCommand = 2106;
-	public const int CancelingCommand = 2107;
-	public const int SendingSleepToClearPendingCancellation = 2108;
+	// Session connecting events, 2100-2199
+	public const int ConnectingFailed = 2100;
+	public const int ServerSentAuthPluginName = 2101;
+	public const int UnsupportedAuthenticationMethod = 2102;
+	public const int AutoDetectedAurora57 = 2103;
+	public const int SessionMadeConnection = 2104;
+	public const int ServerDoesNotSupportSsl = 2105;
+	public const int SessionDoesNotSupportSslProtocolsNone = 2106;
+	public const int FailedNegotiatingTls = 2107;
+	public const int CouldNotConnectToServer = 2108;
+	public const int SendingPipelinedResetConnectionRequest = 2109;
+	public const int SendingResetConnectionRequest = 2110;
+	public const int SendingChangeUserRequest = 2111;
+	public const int SendingChangeUserRequestDueToChangedDatabase = 2112;
+	public const int OptimisticReauthenticationFailed = 2113;
+	public const int IgnoringFailureInTryResetConnectionAsync = 2114;
+	public const int SwitchingToAuthenticationMethod = 2115;
+	public const int NeedsSecureConnection = 2116;
+	public const int AuthenticationMethodNotSupported = 2117;
+	public const int CouldNotLoadServerRsaPublicKey = 2118;
+	public const int CouldNotLoadServerRsaPublicKeyFromFile = 2119;
+	public const int CouldNotUseAuthenticationMethodForRsa = 2120;
+	public const int FailedToResolveHostName = 2121;
+	public const int ConnectingToIpAddress = 2122;
+	public const int ConnectTimeoutExpired = 2123;
+	public const int FailedToConnectToSingleIpAddress = 2124;
+	public const int FailedToConnectToIpAddress = 2125;
+	public const int ConnectedToIpAddress = 2126;
+	public const int ConnectingToUnixSocket = 2127;
+	public const int ConnectTimeoutExpiredForUnixSocket = 2128;
+	public const int ConnectingToNamedPipe = 2129;
+	public const int ConnectTimeoutExpiredForNamedPipe = 2130;
+	public const int InitializingTlsConnection = 2131;
+	public const int NoCertificatesFound = 2132;
+	public const int CertificateNotFoundInStore = 2133;
+	public const int CouldNotLoadCertificate = 2134;
+	public const int NoPrivateKeyIncludedWithCertificateFile = 2135;
+	public const int CouldNotLoadCertificateFromFile = 2136;
+	public const int FailedToObtainClientCertificates = 2137;
+	public const int LoadingCaCertificatesFromFile = 2138;
+	public const int CouldNotLoadCaCertificateFromFile = 2139;
+	public const int LoadingCaCertificate = 2140;
+	public const int LoadedCaCertificatesFromFile = 2141;
+	public const int NotUsingRemoteCertificateValidationCallbackDueToSslCa = 2142;
+	public const int NotUsingRemoteCertificateValidationCallbackDueToSslMode = 2143;
+	public const int UsingRemoteCertificateValidationCallback = 2144;
+	public const int ConnectedTlsBasic = 2145;
+	public const int ConnectedTlsDetailed = 2146;
+	public const int CouldNotInitializeTlsConnection = 2147;
+	public const int LoadingClientKeyFromKeyFile = 2148;
+	public const int CouldNotLoadClientKeyFromKeyFile = 2149;
+	public const int DetectedProxy = 2150;
+	public const int ChangingConnectionId = 2151;
+	public const int FailedToGetConnectionId = 2152;
+	public const int CreatingConnectionAttributes = 2153;
+	public const int ObtainingPasswordViaProvidePasswordCallback = 2154;
+	public const int FailedToObtainPassword = 2155;
 
-	public const int GettingCachedProcedure = 2200;
-	public const int PoolDoesNotHaveSharedProcedureCache = 2201;
-	public const int CouldNotNormalizeDatabaseAndName = 2202;
-	public const int FailedToCacheProcedure = 2203;
-	public const int CachingProcedure = 2204;
-	public const int ProcedureCacheCount = 2205;
-	public const int DidNotFindCachedProcedure = 2206;
-	public const int ReturningCachedProcedure = 2207;
-	public const int FailedToRetrieveProcedureMetadata = 2208;
-	public const int ServerDoesNotSupportCachedProcedures = 2209;
-	public const int ProcedureHasRoutineCount = 2210;
+	// Command execution events, 2200-2299
+	public const int CannotExecuteNewCommandInState = 2200;
+	public const int EnteringFinishQuerying = 2201;
+	public const int CommandExecutorExecuteReader = 2202;
+	public const int QueryWasInterrupted = 2203;
+	public const int PreparingCommandPayload = 2204;
+	public const int PreparingCommandPayloadWithId = 2205;
+	public const int QueryAttributesNotSupported = 2206;
+	public const int QueryAttributesNotSupportedWithId = 2207;
+	public const int IgnoringExceptionInDisposeAsync = 2208;
 
-	public const int CannotExecuteNewCommandInState = 2300;
-	public const int EnteringFinishQuerying = 2301;
+	// Command cancellation events, 2300-2399
+	public const int IgnoringCancellationForCommand = 2300;
+	public const int CommandHasBeenCanceled = 2301;
+	public const int IgnoringCancellationForClosedConnection = 2302;
+	public const int CancelingCommandFailed = 2303;
+	public const int WillCancelCommand = 2304;
+	public const int CancelingCommandFromSession = 2305;
+	public const int IgnoringCancellationForInactiveCommand = 2306;
+	public const int CancelingCommand = 2307;
+	public const int SendingSleepToClearPendingCancellation = 2308;
 
-	public const int PingingServer = 2400;
-	public const int SuccessfullyPingedServer = 2401;
-	public const int PingFailed = 2402;
+	// Cached procedure events, 2400-2499
+	public const int GettingCachedProcedure = 2400;
+	public const int PoolDoesNotHaveSharedProcedureCache = 2401;
+	public const int CouldNotNormalizeDatabaseAndName = 2402;
+	public const int FailedToCacheProcedure = 2403;
+	public const int CachingProcedure = 2404;
+	public const int ProcedureCacheCount = 2405;
+	public const int DidNotFindCachedProcedure = 2406;
+	public const int ReturningCachedProcedure = 2407;
+	public const int FailedToRetrieveProcedureMetadata = 2408;
+	public const int ServerDoesNotSupportCachedProcedures = 2409;
+	public const int ProcedureHasRoutineCount = 2410;
 
-	public const int FailedInReceiveReplyAsync = 2500;
-	public const int ExpectedSessionState1 = 2501;
-	public const int ExpectedSessionState6 = 2506;
-	public const int FailedInSendReplyAsync = 2510;
-	public const int SettingStateToFailed = 2511;
-	public const int ErrorPayload = 2512;
+	// Ping events, 2500-2599
+	public const int PingingServer = 2500;
+	public const int SuccessfullyPingedServer = 2501;
+	public const int PingFailed = 2502;
 
-	public const int CommandExecutorExecuteReader = 2600;
-	public const int QueryWasInterrupted = 2601;
-	public const int PreparingCommandPayload = 2602;
-	public const int PreparingCommandPayloadWithId = 2603;
-	public const int QueryAttributesNotSupported = 2604;
-	public const int QueryAttributesNotSupportedWithId = 2605;
-	public const int IgnoringExceptionInDisposeAsync = 2606;
+	// Bulk copy events, 2600-2699
+	public const int StartingBulkCopy = 2503;
+	public const int AddingDefaultColumnMapping = 2504;
+	public const int IgnoringColumn = 2505;
+	public const int FinishedBulkCopy = 2506;
+	public const int BulkCopyFailed = 2507;
+	public const int ColumnMappingAlreadyHasExpression = 2508;
+	public const int SettingExpressionToMapColumn = 2509;
 
-	public const int StartingBulkCopy = 2700;
-	public const int AddingDefaultColumnMapping = 2701;
-	public const int IgnoringColumn = 2702;
-	public const int FinishedBulkCopy = 2703;
-	public const int BulkCopyFailed = 2704;
-	public const int ColumnMappingAlreadyHasExpression = 2705;
-	public const int SettingExpressionToMapColumn = 2706;
-
+	// Connection pool events, 3000-3099
 	public const int WaitingForAvailableSession = 3000;
 	public const int CreatingNewConnectionPool = 3001;
 	public const int ScanningForLeakedSessions = 3002;
@@ -142,17 +150,19 @@ internal static class EventIds
 	public const int CreatedSessionToReachMinimumPoolCount = 3019;
 	public const int CreatedPoolWillNotBeUsed = 3020;
 
-	public const int HasServerRedirectionHeader = 3100;
-	public const int ServerRedirectionIsDisabled = 3101;
-	public const int OpeningNewConnection = 3102;
-	public const int FailedToConnectRedirectedSession = 3103;
-	public const int ClosingSessionToUseRedirectedSession = 3104;
-	public const int SessionAlreadyConnectedToServer = 3105;
-	public const int RequiresServerRedirection = 3106;
+	// Connection pool background events, 3100-3199
+	public const int ReapingConnectionPool = 3100;
+	public const int CheckingForDnsChanges = 3101;
+	public const int DetectedDnsChange = 3102;
+	public const int DnsCheckFailed = 3103;
+	public const int ClearingPoolDueToDnsChanges = 3104;
 
-	public const int ReapingConnectionPool = 3200;
-	public const int CheckingForDnsChanges = 3201;
-	public const int DetectedDnsChange = 3202;
-	public const int DnsCheckFailed = 3203;
-	public const int ClearingPoolDueToDnsChanges = 3204;
+	// Server redirection events, 3200-3299
+	public const int HasServerRedirectionHeader = 3200;
+	public const int ServerRedirectionIsDisabled = 3201;
+	public const int OpeningNewConnection = 3202;
+	public const int FailedToConnectRedirectedSession = 3203;
+	public const int ClosingSessionToUseRedirectedSession = 3204;
+	public const int SessionAlreadyConnectedToServer = 3205;
+	public const int RequiresServerRedirection = 3206;
 }
