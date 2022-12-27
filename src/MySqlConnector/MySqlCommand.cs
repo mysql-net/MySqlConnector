@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using MySqlConnector.Core;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Serialization;
@@ -445,6 +446,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	CommandBehavior IMySqlCommand.CommandBehavior => m_commandBehavior;
 	MySqlParameterCollection? IMySqlCommand.OutParameters { get; set; }
 	MySqlParameter? IMySqlCommand.ReturnParameter { get; set; }
+	ILogger IMySqlCommand.Logger => Connection!.LoggingConfiguration.CommandLogger;
 
 	private readonly int m_commandId;
 	private bool m_isDisposed;

@@ -14,25 +14,11 @@ public static class MySqlConnectorLogManager
 #pragma warning disable CA1044 // Properties should not be write only
 	public static IMySqlConnectorLoggerProvider Provider
 	{
-		internal get
-		{
-			s_providerRetrieved = true;
-			return s_provider;
-		}
 		set
 		{
-			if (s_providerRetrieved)
-				throw new InvalidOperationException("The logging provider must be set before any MySqlConnector methods are called.");
-
-			s_provider = value;
 			MySqlConnectorLoggingConfiguration.GlobalConfiguration = new(new MySqlConnectorLoggerFactor(value));
 		}
 	}
-
-	internal static IMySqlConnectorLogger CreateLogger(string name) => Provider.CreateLogger(name);
-
-	private static IMySqlConnectorLoggerProvider s_provider = new NoOpLoggerProvider();
-	private static bool s_providerRetrieved;
 
 	// A helper class that adapts ILoggerFactory to the old-style IMySqlConnectorLoggerProvider interface.
 	private sealed class MySqlConnectorLoggerFactor : ILoggerFactory

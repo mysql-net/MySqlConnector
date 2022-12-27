@@ -86,6 +86,9 @@ internal static class EventIds
 	public const int ProcedureCacheCount = 2205;
 	public const int DidNotFindCachedProcedure = 2206;
 	public const int ReturningCachedProcedure = 2207;
+	public const int FailedToRetrieveProcedureMetadata = 2208;
+	public const int ServerDoesNotSupportCachedProcedures = 2209;
+	public const int ProcedureHasRoutineCount = 2210;
 
 	public const int CannotExecuteNewCommandInState = 2300;
 	public const int EnteringFinishQuerying = 2301;
@@ -100,6 +103,22 @@ internal static class EventIds
 	public const int FailedInSendReplyAsync = 2510;
 	public const int SettingStateToFailed = 2511;
 	public const int ErrorPayload = 2512;
+
+	public const int CommandExecutorExecuteReader = 2600;
+	public const int QueryWasInterrupted = 2601;
+	public const int PreparingCommandPayload = 2602;
+	public const int PreparingCommandPayloadWithId = 2603;
+	public const int QueryAttributesNotSupported = 2604;
+	public const int QueryAttributesNotSupportedWithId = 2605;
+	public const int IgnoringExceptionInDisposeAsync = 2606;
+
+	public const int StartingBulkCopy = 2700;
+	public const int AddingDefaultColumnMapping = 2701;
+	public const int IgnoringColumn = 2702;
+	public const int FinishedBulkCopy = 2703;
+	public const int BulkCopyFailed = 2704;
+	public const int ColumnMappingAlreadyHasExpression = 2705;
+	public const int SettingExpressionToMapColumn = 2706;
 
 	public const int WaitingForAvailableSession = 3000;
 	public const int CreatingNewConnectionPool = 3001;

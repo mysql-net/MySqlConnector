@@ -22,8 +22,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		var preparedStatements = command.TryGetPreparedStatements();
 		if (preparedStatements is null)
 		{
-			if (Log.IsTraceEnabled())
-				Log.Trace("Session{0} Preparing command payload; CommandText: {1}", command.Connection!.Session.Id, command.CommandText);
+			LogMessages.PreparingCommandPayload(command.Logger, command.Connection!.Session.Id, command.CommandText!);
 
 			writer.Write((byte) CommandKind.Query);
 			var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
@@ -41,7 +40,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			}
 			else if (command.RawAttributes?.Count > 0)
 			{
-				Log.Warn("Session{0} has query attributes but server doesn't support them; CommandText: {1}", command.Connection!.Session.Id, command.CommandText);
+				LogMessages.QueryAttributesNotSupported(command.Logger, command.Connection!.Session.Id, command.CommandText!);
 			}
 
 			WriteQueryPayload(command, cachedProcedures, writer, appendSemicolon);
@@ -78,8 +77,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	{
 		var parameterCollection = command.RawParameters;
 
-		if (Log.IsTraceEnabled())
-			Log.Trace("Session{0} Preparing command payload; CommandId: {1}; CommandText: {2}", command.Connection!.Session.Id, preparedStatement.StatementId, command.CommandText);
+		LogMessages.PreparingCommandPayloadWithId(command.Logger, command.Connection!.Session.Id, preparedStatement.StatementId, command.CommandText!);
 
 		var attributes = command.RawAttributes;
 		var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
@@ -103,7 +101,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 				writer.WriteLengthEncodedInteger((uint) commandParameterCount);
 			if (attributeCount > 0)
 			{
-				Log.Warn("Session{0} has attributes for CommandId {1} but the server does not support them", command.Connection!.Session.Id, preparedStatement.StatementId);
+				LogMessages.QueryAttributesNotSupportedWithId(command.Logger, command.Connection!.Session.Id, preparedStatement.StatementId);
 				attributeCount = 0;
 			}
 		}
@@ -266,6 +264,4 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		}
 		return isComplete;
 	}
-
-	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(SingleCommandPayloadCreator));
 }

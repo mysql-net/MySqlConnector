@@ -46,7 +46,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	{
 		GC.SuppressFinalize(this);
 		m_connectionString = connectionString;
-		m_loggingConfiguration = loggingConfiguration;
+		LoggingConfiguration = loggingConfiguration;
 		m_logger = loggingConfiguration.ConnectionLogger;
 	}
 
@@ -409,7 +409,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 #if NET7_0_OR_GREATER
 				m_dataSource?.Pool ??
 #endif
-				ConnectionPool.GetPool(m_connectionString, m_loggingConfiguration, createIfNotFound: true);
+				ConnectionPool.GetPool(m_connectionString, LoggingConfiguration, createIfNotFound: true);
 			m_connectionSettings ??= pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
 
 			// check if there is an open session (in the current transaction) that can be adopted
@@ -711,7 +711,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	public MySqlConnection Clone() => new(m_connectionString, m_loggingConfiguration, m_hasBeenOpened)
+	public MySqlConnection Clone() => new(m_connectionString, LoggingConfiguration, m_hasBeenOpened)
 	{
 		ProvideClientCertificatesCallback = ProvideClientCertificatesCallback,
 		ProvidePasswordCallback = ProvidePasswordCallback,
@@ -736,7 +736,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		var shouldCopyPassword = newBuilder.Password.Length == 0 && (!newBuilder.PersistSecurityInfo || currentBuilder.PersistSecurityInfo);
 		if (shouldCopyPassword)
 			newBuilder.Password = currentBuilder.Password;
-		return new MySqlConnection(newBuilder.ConnectionString, m_loggingConfiguration, m_hasBeenOpened && shouldCopyPassword && !currentBuilder.PersistSecurityInfo)
+		return new MySqlConnection(newBuilder.ConnectionString, LoggingConfiguration, m_hasBeenOpened && shouldCopyPassword && !currentBuilder.PersistSecurityInfo)
 		{
 			ProvideClientCertificatesCallback = ProvideClientCertificatesCallback,
 			ProvidePasswordCallback = ProvidePasswordCallback,
@@ -831,7 +831,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			foundProcedure = cachedProcedures.TryGetValue(normalized.FullyQualified, out cachedProcedure);
 		if (!foundProcedure || (cachedProcedure is null && revalidateMissing))
 		{
-			cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema!, normalized.Component!, cancellationToken).ConfigureAwait(false);
+			cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema!, normalized.Component!, m_logger, cancellationToken).ConfigureAwait(false);
 			if (cachedProcedure is null)
 				LogMessages.FailedToCacheProcedure(m_logger, m_session.Id, normalized.Schema!, normalized.Component!);
 			else
@@ -853,6 +853,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	}
 
 	internal MySqlTransaction? CurrentTransaction { get; set; }
+	internal MySqlConnectorLoggingConfiguration LoggingConfiguration { get; }
 	internal bool AllowLoadLocalInfile => GetInitializedConnectionSettings().AllowLoadLocalInfile;
 	internal bool AllowUserVariables => GetInitializedConnectionSettings().AllowUserVariables;
 	internal bool AllowZeroDateTime => GetInitializedConnectionSettings().AllowZeroDateTime;
@@ -1120,7 +1121,6 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 #if NET7_0_OR_GREATER
 	private readonly MySqlDataSource? m_dataSource;
 #endif
-	private readonly MySqlConnectorLoggingConfiguration m_loggingConfiguration;
 	private readonly ILogger m_logger;
 	private string m_connectionString;
 	private ConnectionSettings? m_connectionSettings;

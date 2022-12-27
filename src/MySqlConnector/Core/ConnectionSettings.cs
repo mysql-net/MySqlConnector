@@ -111,10 +111,6 @@ internal sealed class ConnectionSettings
 		ConnectionLifeTime = Math.Min(csb.ConnectionLifeTime, uint.MaxValue / 1000) * 1000;
 		ConnectionReset = csb.ConnectionReset;
 		ConnectionIdleTimeout = (int) csb.ConnectionIdleTimeout;
-#pragma warning disable 618
-		if (!csb.DeferConnectionReset)
-			Log.Warn("DeferConnectionReset=false is not supported; using regular connection reset behavior.");
-#pragma warning restore 618
 		if (csb.MinimumPoolSize > csb.MaximumPoolSize)
 			throw new MySqlException("MaximumPoolSize must be greater than or equal to MinimumPoolSize");
 		MinimumPoolSize = ToSigned(csb.MinimumPoolSize);
@@ -331,6 +327,5 @@ internal sealed class ConnectionSettings
 		UseXaTransactions = other.UseXaTransactions;
 	}
 
-	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(ConnectionSettings));
 	private static readonly string[] s_localhostPipeServer = { "." };
 }

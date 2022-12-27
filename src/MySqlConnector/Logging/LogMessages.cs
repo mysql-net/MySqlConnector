@@ -2,6 +2,7 @@ using System.Net.Security;
 using System.Security;
 using System.Security.Authentication;
 using Microsoft.Extensions.Logging;
+using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Logging;
 
@@ -249,6 +250,15 @@ internal static partial class LogMessages
 	[LoggerMessage(EventIds.ReturningCachedProcedure, LogLevel.Trace, "Session {SessionId} returning cached procedure {Schema}.{Component}")]
 	public static partial void ReturningCachedProcedure(ILogger logger, string sessionId, string schema, string component);
 
+	[LoggerMessage(EventIds.FailedToRetrieveProcedureMetadata, LogLevel.Information, "Session {SessionId} failed to retrieve metadata for {Schema}.{Component}; falling back to INFORMATION_SCHEMA: {ExceptionMessage}")]
+	public static partial void FailedToRetrieveProcedureMetadata(ILogger logger, Exception exception, string sessionId, string schema, string component, string exceptionMessage);
+
+	[LoggerMessage(EventIds.ServerDoesNotSupportCachedProcedures, LogLevel.Information, "Session {SessionId} server version {ServerVersion} does not support cached procedures")]
+	public static partial void ServerDoesNotSupportCachedProcedures(ILogger logger, string sessionId, string serverVersion);
+
+	[LoggerMessage(EventIds.ProcedureHasRoutineCount, LogLevel.Trace, "Procedure for {Schema}.{Component} has {RoutineCount} routines and {ParameterCount} parameters")]
+	public static partial void ProcedureHasRoutineCount(ILogger logger, string schema, string component, int routineCount, int parameterCount);
+
 	[LoggerMessage(EventIds.CreatedNewSession, LogLevel.Trace, "Session {SessionId} created new session")]
 	public static partial void CreatedNewSession(ILogger logger, string sessionId);
 
@@ -266,6 +276,48 @@ internal static partial class LogMessages
 
 	[LoggerMessage(EventIds.ErrorPayload, LogLevel.Debug, "Session {SessionId} got error payload: {ErrorCode}, {State}, {Message}")]
 	public static partial void ErrorPayload(ILogger logger, string sessionId, int errorCode, string state, string message);
+
+	[LoggerMessage(EventIds.CommandExecutorExecuteReader, LogLevel.Trace, "Session {SessionId} ExecuteReader {IOBehavior} for {CommandCount} command(s)")]
+	public static partial void CommandExecutorExecuteReader(ILogger logger, string sessionId, IOBehavior ioBehavior, int commandCount);
+
+	[LoggerMessage(EventIds.QueryWasInterrupted, LogLevel.Information, "Session {SessionId} query was interrupted")]
+	public static partial void QueryWasInterrupted(ILogger logger, string sessionId);
+
+	[LoggerMessage(EventIds.PreparingCommandPayload, LogLevel.Trace, "Session {SessionId} preparing command payload for {CommandText}")]
+	public static partial void PreparingCommandPayload(ILogger logger, string sessionId, string commandText);
+
+	[LoggerMessage(EventIds.PreparingCommandPayloadWithId, LogLevel.Trace, "Session {SessionId} preparing statement payload with ID {StatementId} for {CommandText}")]
+	public static partial void PreparingCommandPayloadWithId(ILogger logger, string sessionId, int statementId, string commandText);
+
+	[LoggerMessage(EventIds.QueryAttributesNotSupported, LogLevel.Warning, "Session {SessionId} has query attributes but server doesn't support them; CommandText: {CommandText}")]
+	public static partial void QueryAttributesNotSupported(ILogger logger, string sessionId, string commandText);
+
+	[LoggerMessage(EventIds.QueryAttributesNotSupportedWithId, LogLevel.Warning, "Session {SessionId} has attributes for statement {StatementId} but the server does not support them")]
+	public static partial void QueryAttributesNotSupportedWithId(ILogger logger, string sessionId, int statementId);
+
+	[LoggerMessage(EventIds.IgnoringExceptionInDisposeAsync, LogLevel.Warning, "Session {SessionId} ignoring exception in MySqlDataReader.DisposeAsync. Message: {ExceptionMessage}. CommandText: {CommandText}")]
+	public static partial void IgnoringExceptionInDisposeAsync(ILogger logger, Exception exception, string sessionId, string exceptionMessage, string commandText);
+
+	[LoggerMessage(EventIds.StartingBulkCopy, LogLevel.Debug, "Starting bulk copy to {TableName}")]
+	public static partial void StartingBulkCopy(ILogger logger, string tableName);
+
+	[LoggerMessage(EventIds.AddingDefaultColumnMapping, LogLevel.Debug, "Adding default column mapping from {SourceOrdinal} to {DestinationColumn}")]
+	public static partial void AddingDefaultColumnMapping(ILogger logger, int sourceOrdinal, string destinationColumn);
+
+	[LoggerMessage(EventIds.IgnoringColumn, LogLevel.Debug, "Ignoring column with source ordinal {SourceOrdinal}")]
+	public static partial void IgnoringColumn(ILogger logger, int sourceOrdinal);
+
+	[LoggerMessage(EventIds.FinishedBulkCopy, LogLevel.Debug, "Finished bulk copy to {TableName}")]
+	public static partial void FinishedBulkCopy(ILogger logger, string tableName);
+
+	[LoggerMessage(EventIds.BulkCopyFailed, LogLevel.Error, "Bulk copy to {TableName} failed: {RowsCopied} row(s) copied; {RowsInserted} row(s) inserted")]
+	public static partial void BulkCopyFailed(ILogger logger, string tableName, int rowsCopied, int rowsInserted);
+
+	[LoggerMessage(EventIds.ColumnMappingAlreadyHasExpression, LogLevel.Information, "Column mapping for {SourceOrdinal} to {DestinationColumn} already has expression {Expression}")]
+	public static partial void ColumnMappingAlreadyHasExpression(ILogger logger, int sourceOrdinal, string destinationColumn, string expression);
+
+	[LoggerMessage(EventIds.SettingExpressionToMapColumn, LogLevel.Trace, "Setting expression to map column {SourceOrdinal} to {DestinationColumn}: {Expression}")]
+	public static partial void SettingExpressionToMapColumn(ILogger logger, int sourceOrdinal, string destinationColumn, string expression);
 
 	[LoggerMessage(EventIds.WaitingForAvailableSession, LogLevel.Trace, "Pool {PoolId} waiting for an available session")]
 	public static partial void WaitingForAvailableSession(ILogger logger, int poolId);
