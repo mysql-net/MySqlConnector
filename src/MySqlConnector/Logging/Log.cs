@@ -161,11 +161,11 @@ internal static partial class Log
 	public static partial void UsingRemoteCertificateValidationCallback(ILogger logger, string sessionId);
 
 #if NETCOREAPP3_0_OR_GREATER
-	[LoggerMessage(EventIds.ConnectedTlsBasic, LogLevel.Debug, "Session {SessionId} connected TLS with {SslProtocol}, {NegotiatedCipherSuite}")]
+	[LoggerMessage(EventIds.ConnectedTlsBasic, LogLevel.Debug, "Session {SessionId} connected TLS using {SslProtocol} and {NegotiatedCipherSuite}")]
 	public static partial void ConnectedTlsBasic(ILogger logger, string sessionId, SslProtocols sslProtocol, TlsCipherSuite negotiatedCipherSuite);
 #endif
 
-	[LoggerMessage(EventIds.ConnectedTlsDetailed, LogLevel.Debug, "Session {SessionId} connected TLS with {SslProtocol}, {CipherAlgorithm}, {HashAlgorithm}, {KeyExchangeAlgorithm}, {KeyExchangeStrength}")]
+	[LoggerMessage(EventIds.ConnectedTlsDetailed, LogLevel.Debug, "Session {SessionId} connected TLS using {SslProtocol}, {CipherAlgorithm}, {HashAlgorithm}, {KeyExchangeAlgorithm}, {KeyExchangeStrength}")]
 	public static partial void ConnectedTlsDetailed(ILogger logger, string sessionId, SslProtocols sslProtocol, CipherAlgorithmType cipherAlgorithm, HashAlgorithmType hashAlgorithm, ExchangeAlgorithmType keyExchangeAlgorithm, int keyExchangeStrength);
 
 	[LoggerMessage(EventIds.CouldNotInitializeTlsConnection, LogLevel.Error, "Session {SessionId} couldn't initialize TLS connection")]
