@@ -711,7 +711,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	public MySqlConnection Clone() => new(m_connectionString, m_hasBeenOpened)
+	public MySqlConnection Clone() => new(m_connectionString, m_loggingConfiguration, m_hasBeenOpened)
 	{
 		ProvideClientCertificatesCallback = ProvideClientCertificatesCallback,
 		ProvidePasswordCallback = ProvidePasswordCallback,
@@ -736,7 +736,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		var shouldCopyPassword = newBuilder.Password.Length == 0 && (!newBuilder.PersistSecurityInfo || currentBuilder.PersistSecurityInfo);
 		if (shouldCopyPassword)
 			newBuilder.Password = currentBuilder.Password;
-		return new MySqlConnection(newBuilder.ConnectionString, m_hasBeenOpened && shouldCopyPassword && !currentBuilder.PersistSecurityInfo)
+		return new MySqlConnection(newBuilder.ConnectionString, m_loggingConfiguration, m_hasBeenOpened && shouldCopyPassword && !currentBuilder.PersistSecurityInfo)
 		{
 			ProvideClientCertificatesCallback = ProvideClientCertificatesCallback,
 			ProvidePasswordCallback = ProvidePasswordCallback,
@@ -989,8 +989,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	private MySqlConnection(string connectionString, bool hasBeenOpened)
-		: this(connectionString)
+	private MySqlConnection(string connectionString, MySqlConnectorLoggingConfiguration loggingConfiguration, bool hasBeenOpened)
+		: this(connectionString, loggingConfiguration)
 	{
 		m_hasBeenOpened = hasBeenOpened;
 	}
