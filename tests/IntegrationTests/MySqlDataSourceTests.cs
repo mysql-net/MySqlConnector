@@ -1,11 +1,4 @@
 #if !MYSQL_DATA
-#if NET7_0_OR_GREATER
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace IntegrationTests;
 
 public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
@@ -102,5 +95,4 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 		Assert.Equal(AppConfig.ConnectionString, dbSource.ConnectionString);
 	}
 }
-#endif
 #endif

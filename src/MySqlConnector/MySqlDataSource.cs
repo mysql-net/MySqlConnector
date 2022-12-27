@@ -1,4 +1,3 @@
-#if NET7_0_OR_GREATER
 using Microsoft.Extensions.Logging;
 using MySqlConnector.Core;
 using MySqlConnector.Logging;
@@ -114,4 +113,3 @@ public sealed class MySqlDataSource : DbDataSource
 	private readonly string m_connectionString;
 	private bool m_isDisposed;
 }
-#endif

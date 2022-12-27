@@ -34,13 +34,11 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	{
 	}
 
-#if NET7_0_OR_GREATER
 	internal MySqlConnection(MySqlDataSource dataSource)
 		: this(dataSource.ConnectionString, dataSource.LoggingConfiguration)
 	{
 		m_dataSource = dataSource;
 	}
-#endif
 
 	private MySqlConnection(string connectionString, MySqlConnectorLoggingConfiguration loggingConfiguration)
 	{
@@ -405,10 +403,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			SetState(ConnectionState.Connecting);
 
-			var pool =
-#if NET7_0_OR_GREATER
-				m_dataSource?.Pool ??
-#endif
+			var pool = m_dataSource?.Pool ??
 				ConnectionPool.GetPool(m_connectionString, LoggingConfiguration, createIfNotFound: true);
 			m_connectionSettings ??= pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
 
@@ -1118,9 +1113,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	private static readonly object s_lock = new();
 	private static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = new();
 
-#if NET7_0_OR_GREATER
 	private readonly MySqlDataSource? m_dataSource;
-#endif
 	private readonly ILogger m_logger;
 	private string m_connectionString;
 	private ConnectionSettings? m_connectionSettings;

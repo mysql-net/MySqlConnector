@@ -41,10 +41,43 @@ public abstract class DbDataSource
 
 	protected abstract DbConnection CreateDbConnection();
 
-	// No need for actual implementations in this compat shim - its only implementation will be MySqlDataSource, which overrides these.
-	protected virtual DbConnection OpenDbConnection() => throw new NotSupportedException();
-	protected virtual ValueTask<DbConnection> OpenDbConnectionAsync(CancellationToken cancellationToken = default) =>
-		throw new NotSupportedException();
+	protected virtual DbConnection OpenDbConnection()
+	{
+		var connection = CreateDbConnection();
+
+		try
+		{
+			connection.Open();
+			return connection;
+		}
+		catch
+		{
+			connection.Dispose();
+			throw;
+		}
+	}
+
+	protected virtual async ValueTask<DbConnection> OpenDbConnectionAsync(CancellationToken cancellationToken = default)
+	{
+		var connection = CreateDbConnection();
+
+		try
+		{
+			await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+			return connection;
+		}
+		catch
+		{
+#if NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+			await connection.DisposeAsync().ConfigureAwait(false);
+#else
+			connection.Dispose();
+#endif
+			throw;
+		}
+	}
+
+	// The shim doesn't support these methods; to use the full DbDataSource the client needs to be on .NET 7.0.
 	protected virtual DbCommand CreateDbCommand(string? commandText = null) => throw new NotSupportedException();
 
 #if NET6_0_OR_GREATER
