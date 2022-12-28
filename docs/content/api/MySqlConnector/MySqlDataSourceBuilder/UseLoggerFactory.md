@@ -16,7 +16,7 @@ public MySqlDataSourceBuilder UseLoggerFactory(ILoggerFactory? loggerFactory)
 
 ## Return Value
 
-This object, so that method calls can be chained.
+This builder, so that method calls can be chained.
 
 ## See Also
 

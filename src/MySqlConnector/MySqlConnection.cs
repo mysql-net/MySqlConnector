@@ -513,11 +513,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// Gets or sets the delegate used to provide client certificates for connecting to a server.
 	/// </summary>
 	/// <remarks>The provided <see cref="X509CertificateCollection"/> should be filled with the client certificate(s) needed to connect to the server.</remarks>
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 	public Func<X509CertificateCollection, ValueTask>? ProvideClientCertificatesCallback { get; set; }
-#else
-	public Func<X509CertificateCollection, Task>? ProvideClientCertificatesCallback { get; set; }
-#endif
 
 	/// <summary>
 	/// Gets or sets the delegate used to generate a password for new database connections.

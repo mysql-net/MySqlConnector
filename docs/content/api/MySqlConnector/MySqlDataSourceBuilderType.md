@@ -17,7 +17,9 @@ public sealed class MySqlDataSourceBuilder
 | [MySqlDataSourceBuilder](../MySqlDataSourceBuilder/MySqlDataSourceBuilder/)(…) | Initializes a new [`MySqlDataSourceBuilder`](../MySqlDataSourceBuilderType/) with the specified connection string. |
 | [ConnectionStringBuilder](../MySqlDataSourceBuilder/ConnectionStringBuilder/) { get; } | A [`MySqlConnectionStringBuilder`](../MySqlConnectionStringBuilderType/) that can be used to configure the connection string on this [`MySqlDataSourceBuilder`](../MySqlDataSourceBuilderType/). |
 | [Build](../MySqlDataSourceBuilder/Build/)() | Builds a [`MySqlDataSource`](../MySqlDataSourceType/) which is ready for use. |
+| [UseClientCertificatesCallback](../MySqlDataSourceBuilder/UseClientCertificatesCallback/)(…) | Sets the callback used to provide client certificates for connecting to a server. |
 | [UseLoggerFactory](../MySqlDataSourceBuilder/UseLoggerFactory/)(…) | Sets the ILoggerFactory that will be used for logging. |
+| [UseRemoteCertificateValidationCallback](../MySqlDataSourceBuilder/UseRemoteCertificateValidationCallback/)(…) | Sets the callback used to verify that the server's certificate is valid. |
 
 ## See Also
 

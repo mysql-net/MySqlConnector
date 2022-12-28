@@ -1,3 +1,5 @@
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 using MySqlConnector.Core;
 using MySqlConnector.Logging;
@@ -16,14 +18,19 @@ public sealed class MySqlDataSource : DbDataSource
 	/// <param name="connectionString">The connection string for the MySQL Server. This parameter is required.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="connectionString"/> is <c>null</c>.</exception>
 	public MySqlDataSource(string connectionString)
-		: this(connectionString ?? throw new ArgumentNullException(nameof(connectionString)), MySqlConnectorLoggingConfiguration.NullConfiguration)
+		: this(connectionString ?? throw new ArgumentNullException(nameof(connectionString)), MySqlConnectorLoggingConfiguration.NullConfiguration, null, null)
 	{
 	}
 
-	internal MySqlDataSource(string connectionString, MySqlConnectorLoggingConfiguration loggingConfiguration)
+	internal MySqlDataSource(string connectionString,
+		MySqlConnectorLoggingConfiguration loggingConfiguration,
+		Func<X509CertificateCollection, ValueTask>? clientCertificatesCallback,
+		RemoteCertificateValidationCallback? remoteCertificateValidationCallback)
 	{
 		m_connectionString = connectionString;
 		LoggingConfiguration = loggingConfiguration;
+		m_clientCertificatesCallback = clientCertificatesCallback;
+		m_remoteCertificateValidationCallback = remoteCertificateValidationCallback;
 		m_logger = loggingConfiguration.DataSourceLogger;
 
 		Pool = ConnectionPool.CreatePool(m_connectionString, LoggingConfiguration);
@@ -72,7 +79,11 @@ public sealed class MySqlDataSource : DbDataSource
 	{
 		if (m_isDisposed)
 			throw new ObjectDisposedException(nameof(MySqlDataSource));
-		return new MySqlConnection(this);
+		return new MySqlConnection(this)
+		{
+			ProvideClientCertificatesCallback = m_clientCertificatesCallback,
+			RemoteCertificateValidationCallback = m_remoteCertificateValidationCallback,
+		};
 	}
 
 	protected override void Dispose(bool disposing)
@@ -111,5 +122,7 @@ public sealed class MySqlDataSource : DbDataSource
 	private readonly ILogger m_logger;
 	private readonly int m_id;
 	private readonly string m_connectionString;
+	private readonly Func<X509CertificateCollection, ValueTask>? m_clientCertificatesCallback;
+	private readonly RemoteCertificateValidationCallback? m_remoteCertificateValidationCallback;
 	private bool m_isDisposed;
 }

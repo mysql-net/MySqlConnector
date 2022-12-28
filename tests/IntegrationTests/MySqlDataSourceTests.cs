@@ -105,5 +105,26 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 		using var connection = dataSource.OpenConnection();
 		Assert.Equal(ConnectionState.Open, connection.State);
 	}
+
+	[SkippableTheory(ServerFeatures.KnownCertificateAuthority, ConfigSettings.RequiresSsl)]
+	[InlineData(MySqlSslMode.VerifyCA, false, false)]
+	[InlineData(MySqlSslMode.VerifyCA, true, false)]
+	[InlineData(MySqlSslMode.Required, true, true)]
+	public async Task ConnectSslRemoteCertificateValidationCallback(MySqlSslMode sslMode, bool clearCA, bool expectedSuccess)
+	{
+		var builder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
+			.UseRemoteCertificateValidationCallback((s, c, h, e) => true);
+		builder.ConnectionStringBuilder.CertificateFile = Path.Combine(AppConfig.CertsPath, "ssl-client.pfx");
+		builder.ConnectionStringBuilder.SslMode = sslMode;
+		builder.ConnectionStringBuilder.SslCa = clearCA ? "" : Path.Combine(AppConfig.CertsPath, "non-ca-client-cert.pem");
+
+		using var dataSource = builder.Build();
+		using var connection = dataSource.CreateConnection();
+		if (expectedSuccess)
+			await connection.OpenAsync();
+		else
+			await Assert.ThrowsAsync<MySqlException>(connection.OpenAsync);
+	}
+
 }
 #endif
