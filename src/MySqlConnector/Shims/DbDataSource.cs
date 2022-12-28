@@ -2,7 +2,7 @@
 namespace System.Data.Common;
 
 public abstract class DbDataSource
-#if NET5_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NETCOREAPP3_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 	: IDisposable, IAsyncDisposable
 #else
 	: IDisposable

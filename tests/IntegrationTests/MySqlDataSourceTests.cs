@@ -94,5 +94,16 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 		Assert.IsType<MySqlDataSource>(dbSource);
 		Assert.Equal(AppConfig.ConnectionString, dbSource.ConnectionString);
 	}
+
+	[Fact]
+	public void CreateFromDataSourceBuilder()
+	{
+		var connectionString = AppConfig.CreateConnectionStringBuilder().ConnectionString;
+		var builder = new MySqlDataSourceBuilder(connectionString);
+		using var dataSource = builder.Build();
+		Assert.Equal(connectionString, dataSource.ConnectionString);
+		using var connection = dataSource.OpenConnection();
+		Assert.Equal(ConnectionState.Open, connection.State);
+	}
 }
 #endif
