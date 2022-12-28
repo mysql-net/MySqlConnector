@@ -62,19 +62,11 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		var certificateFilePath = Path.Combine(AppConfig.CertsPath, certificateFile);
 
 		using var connection = new MySqlConnection(csb.ConnectionString);
-#if NETFRAMEWORK
 		connection.ProvideClientCertificatesCallback = x =>
 		{
 			x.Add(new X509Certificate2(certificateFilePath, certificateFilePassword));
-			return Task.CompletedTask;
+			return default;
 		};
-#else
-		connection.ProvideClientCertificatesCallback = async x =>
-		{
-			var certificateBytes = await File.ReadAllBytesAsync(certificateFilePath);
-			x.Add(new X509Certificate2(certificateBytes, certificateFilePassword));
-		};
-#endif
 
 		await connection.OpenAsync();
 		Assert.True(connection.SslIsEncrypted);

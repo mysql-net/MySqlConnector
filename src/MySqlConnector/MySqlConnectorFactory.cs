@@ -85,15 +85,17 @@ public sealed class MySqlConnectorFactory : DbProviderFactory
 #else
 	public bool CanCreateBatch => true;
 #endif
-#pragma warning restore CA1822 // Mark members as static
 
-#if NET7_0_OR_GREATER
 	/// <summary>
 	/// Creates a new <see cref="MySqlDataSource"/> object.
 	/// </summary>
 	/// <param name="connectionString">The connection string.</param>
-	public override DbDataSource CreateDataSource(string connectionString) => new MySqlDataSource(connectionString);
+	public
+#if NET7_0_OR_GREATER
+	override
 #endif
+	DbDataSource CreateDataSource(string connectionString) => new MySqlDataSource(connectionString);
+#pragma warning restore CA1822 // Mark members as static
 
 	private MySqlConnectorFactory()
 	{

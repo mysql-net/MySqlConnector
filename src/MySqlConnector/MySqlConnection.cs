@@ -34,13 +34,11 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	{
 	}
 
-#if NET7_0_OR_GREATER
 	internal MySqlConnection(MySqlDataSource dataSource)
 		: this(dataSource.ConnectionString, dataSource.LoggingConfiguration)
 	{
 		m_dataSource = dataSource;
 	}
-#endif
 
 	private MySqlConnection(string connectionString, MySqlConnectorLoggingConfiguration loggingConfiguration)
 	{
@@ -405,10 +403,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			SetState(ConnectionState.Connecting);
 
-			var pool =
-#if NET7_0_OR_GREATER
-				m_dataSource?.Pool ??
-#endif
+			var pool = m_dataSource?.Pool ??
 				ConnectionPool.GetPool(m_connectionString, LoggingConfiguration, createIfNotFound: true);
 			m_connectionSettings ??= pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
 
@@ -518,11 +513,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// Gets or sets the delegate used to provide client certificates for connecting to a server.
 	/// </summary>
 	/// <remarks>The provided <see cref="X509CertificateCollection"/> should be filled with the client certificate(s) needed to connect to the server.</remarks>
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 	public Func<X509CertificateCollection, ValueTask>? ProvideClientCertificatesCallback { get; set; }
-#else
-	public Func<X509CertificateCollection, Task>? ProvideClientCertificatesCallback { get; set; }
-#endif
 
 	/// <summary>
 	/// Gets or sets the delegate used to generate a password for new database connections.
@@ -1118,9 +1109,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	private static readonly object s_lock = new();
 	private static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = new();
 
-#if NET7_0_OR_GREATER
 	private readonly MySqlDataSource? m_dataSource;
-#endif
 	private readonly ILogger m_logger;
 	private string m_connectionString;
 	private ConnectionSettings? m_connectionSettings;

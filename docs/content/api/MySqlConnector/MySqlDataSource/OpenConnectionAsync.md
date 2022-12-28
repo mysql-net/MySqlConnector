@@ -7,8 +7,7 @@ title: MySqlDataSource.OpenConnectionAsync method
 Asynchronously returns a new, open [`MySqlConnection`](../../MySqlConnectionType/) to the database represented by this [`MySqlDataSource`](../../MySqlDataSourceType/).
 
 ```csharp
-public ValueTask<MySqlConnection> OpenConnectionAsync(
-    CancellationToken cancellationToken = default(CancellationToken))
+public ValueTask<MySqlConnection> OpenConnectionAsync(CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |

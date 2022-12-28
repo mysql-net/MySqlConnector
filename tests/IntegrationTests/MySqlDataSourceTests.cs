@@ -1,11 +1,4 @@
 #if !MYSQL_DATA
-#if NET7_0_OR_GREATER
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace IntegrationTests;
 
 public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
@@ -101,6 +94,37 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 		Assert.IsType<MySqlDataSource>(dbSource);
 		Assert.Equal(AppConfig.ConnectionString, dbSource.ConnectionString);
 	}
+
+	[Fact]
+	public void CreateFromDataSourceBuilder()
+	{
+		var connectionString = AppConfig.CreateConnectionStringBuilder().ConnectionString;
+		var builder = new MySqlDataSourceBuilder(connectionString);
+		using var dataSource = builder.Build();
+		Assert.Equal(connectionString, dataSource.ConnectionString);
+		using var connection = dataSource.OpenConnection();
+		Assert.Equal(ConnectionState.Open, connection.State);
+	}
+
+	[SkippableTheory(ServerFeatures.KnownCertificateAuthority, ConfigSettings.RequiresSsl)]
+	[InlineData(MySqlSslMode.VerifyCA, false, false)]
+	[InlineData(MySqlSslMode.VerifyCA, true, false)]
+	[InlineData(MySqlSslMode.Required, true, true)]
+	public async Task ConnectSslRemoteCertificateValidationCallback(MySqlSslMode sslMode, bool clearCA, bool expectedSuccess)
+	{
+		var builder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
+			.UseRemoteCertificateValidationCallback((s, c, h, e) => true);
+		builder.ConnectionStringBuilder.CertificateFile = Path.Combine(AppConfig.CertsPath, "ssl-client.pfx");
+		builder.ConnectionStringBuilder.SslMode = sslMode;
+		builder.ConnectionStringBuilder.SslCa = clearCA ? "" : Path.Combine(AppConfig.CertsPath, "non-ca-client-cert.pem");
+
+		using var dataSource = builder.Build();
+		using var connection = dataSource.CreateConnection();
+		if (expectedSuccess)
+			await connection.OpenAsync();
+		else
+			await Assert.ThrowsAsync<MySqlException>(connection.OpenAsync);
+	}
+
 }
-#endif
 #endif

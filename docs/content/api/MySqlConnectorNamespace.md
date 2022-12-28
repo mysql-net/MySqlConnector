@@ -28,6 +28,7 @@ title: MySqlConnector
 | class [MySqlDataAdapter](../MySqlConnector/MySqlDataAdapterType/) |  |
 | class [MySqlDataReader](../MySqlConnector/MySqlDataReaderType/) |  |
 | class [MySqlDataSource](../MySqlConnector/MySqlDataSourceType/) | [`MySqlDataSource`](../MySqlConnector/MySqlDataSourceType/) implements a MySQL data source which can be used to obtain open connections, and against which commands can be executed directly. |
+| class [MySqlDataSourceBuilder](../MySqlConnector/MySqlDataSourceBuilderType/) | [`MySqlDataSourceBuilder`](../MySqlConnector/MySqlDataSourceBuilderType/) provides an API for configuring and creating a [`MySqlDataSource`](../MySqlConnector/MySqlDataSourceType/), from which [`MySqlConnection`](../MySqlConnector/MySqlConnectionType/) objects can be obtained. |
 | struct [MySqlDateTime](../MySqlConnector/MySqlDateTimeType/) | Represents a MySQL date/time value. This type can be used to store `DATETIME` values such as `0000-00-00` that can be stored in MySQL (when [`AllowZeroDateTime`](../MySqlConnector/MySqlConnectionStringBuilder/AllowZeroDateTime/) is true) but can't be stored in a DateTime value. |
 | enum [MySqlDateTimeKind](../MySqlConnector/MySqlDateTimeKindType/) | The DateTimeKind used when reading DateTime from the database. |
 | class [MySqlDbColumn](../MySqlConnector/MySqlDbColumnType/) |  |
