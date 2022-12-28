@@ -1,4 +1,5 @@
 #if NET7_0_OR_GREATER
+using Microsoft.Extensions.Logging;
 using MySqlConnector.Core;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Serialization;
@@ -16,20 +17,22 @@ public sealed class MySqlDataSource : DbDataSource
 	/// <param name="connectionString">The connection string for the MySQL Server. This parameter is required.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="connectionString"/> is <c>null</c>.</exception>
 	public MySqlDataSource(string connectionString)
+		: this(connectionString ?? throw new ArgumentNullException(nameof(connectionString)), MySqlConnectorLoggingConfiguration.NullConfiguration)
 	{
-		m_connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
-		Pool = ConnectionPool.CreatePool(m_connectionString);
+	}
+
+	internal MySqlDataSource(string connectionString, MySqlConnectorLoggingConfiguration loggingConfiguration)
+	{
+		m_connectionString = connectionString;
+		LoggingConfiguration = loggingConfiguration;
+		m_logger = loggingConfiguration.DataSourceLogger;
+
+		Pool = ConnectionPool.CreatePool(m_connectionString, LoggingConfiguration);
 		m_id = Interlocked.Increment(ref s_lastId);
-		m_logArguments = new object?[2] { m_id, null };
 		if (Pool is not null)
-		{
-			m_logArguments[1] = Pool.Id;
-			Log.Info("DataSource{0} created with Pool {1}", m_logArguments);
-		}
+			Log.DataSourceCreatedWithPool(m_logger, m_id, Pool.Id);
 		else
-		{
-			Log.Info("DataSource{0} created with no pool", m_logArguments);
-		}
+			Log.DataSourceCreatedWithoutPool(m_logger, m_id);
 	}
 
 	/// <summary>
@@ -102,11 +105,12 @@ public sealed class MySqlDataSource : DbDataSource
 
 	internal ConnectionPool? Pool { get; }
 
-	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlDataSource));
+	internal MySqlConnectorLoggingConfiguration LoggingConfiguration { get; }
+
 	private static int s_lastId;
 
+	private readonly ILogger m_logger;
 	private readonly int m_id;
-	private readonly object?[] m_logArguments;
 	private readonly string m_connectionString;
 	private bool m_isDisposed;
 }

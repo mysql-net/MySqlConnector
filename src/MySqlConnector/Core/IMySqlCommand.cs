@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace MySqlConnector.Core;
 
 /// <summary>
@@ -18,6 +20,7 @@ internal interface IMySqlCommand
 	MySqlParameterCollection? OutParameters { get; set; }
 	MySqlParameter? ReturnParameter { get; set; }
 	ICancellableCommand CancellableCommand { get; }
+	ILogger Logger { get; }
 }
 
 internal static class IMySqlCommandExtensions

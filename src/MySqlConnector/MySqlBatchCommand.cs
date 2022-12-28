@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using MySqlConnector.Core;
 
 namespace MySqlConnector;
@@ -72,6 +73,7 @@ public sealed class MySqlBatchCommand :
 	MySqlParameter? IMySqlCommand.ReturnParameter { get; set; }
 
 	ICancellableCommand IMySqlCommand.CancellableCommand => Batch!;
+	ILogger IMySqlCommand.Logger => Batch!.Connection!.LoggingConfiguration.CommandLogger;
 
 	internal MySqlBatch? Batch { get; set; }
 

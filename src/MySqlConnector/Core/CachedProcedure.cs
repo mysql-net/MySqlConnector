@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Serialization;
 
@@ -8,7 +9,7 @@ namespace MySqlConnector.Core;
 
 internal sealed class CachedProcedure
 {
-	public static async Task<CachedProcedure?> FillAsync(IOBehavior ioBehavior, MySqlConnection connection, string schema, string component, CancellationToken cancellationToken)
+	public static async Task<CachedProcedure?> FillAsync(IOBehavior ioBehavior, MySqlConnection connection, string schema, string component, ILogger logger, CancellationToken cancellationToken)
 	{
 		// try to use mysql.proc first, as it is much faster
 		if (connection.Session.ServerVersion.Version < ServerVersions.RemovesMySqlProcTable && !connection.Session.ProcAccessDenied)
@@ -44,7 +45,7 @@ internal sealed class CachedProcedure
 			}
 			catch (MySqlException ex)
 			{
-				Log.Info("Session{0} failed to retrieve metadata for Schema={1} Component={2}; falling back to INFORMATION_SCHEMA. Error: {3}", connection.Session.Id, schema, component, ex.Message);
+				Log.FailedToRetrieveProcedureMetadata(logger, ex, connection.Session.Id, schema, component, ex.Message);
 				if (ex.ErrorCode == MySqlErrorCode.TableAccessDenied)
 					connection.Session.ProcAccessDenied = true;
 			}
@@ -52,7 +53,7 @@ internal sealed class CachedProcedure
 
 		if (connection.Session.ServerVersion.Version < ServerVersions.SupportsProcedureCache)
 		{
-			Log.Info("Session{0} ServerVersion={1} does not support cached procedures", connection.Session.Id, connection.Session.ServerVersion.OriginalString);
+			Log.ServerDoesNotSupportCachedProcedures(logger, connection.Session.Id, connection.Session.ServerVersion.OriginalString);
 			return null;
 		}
 
@@ -90,8 +91,7 @@ internal sealed class CachedProcedure
 			}
 		}
 
-		if (Log.IsTraceEnabled())
-			Log.Trace("Procedure for Schema={0} Component={1} has RoutineCount={2}, ParameterCount={3}", schema, component, routineCount, parameters.Count);
+		Log.ProcedureHasRoutineCount(logger, schema, component, routineCount, parameters.Count);
 		return routineCount == 0 ? null : new CachedProcedure(schema, component, parameters);
 	}
 
@@ -231,7 +231,6 @@ internal sealed class CachedProcedure
 
 	private string FullyQualified => $"`{m_schema}`.`{m_component}`";
 
-	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(CachedProcedure));
 	private static readonly IReadOnlyDictionary<string, string> s_typeMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 	{
 		{ "BOOL", "TINYINT" },

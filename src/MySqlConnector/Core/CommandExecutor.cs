@@ -19,8 +19,7 @@ internal static class CommandExecutor
 			// pre-requisite: Connection is non-null must be checked before calling this method
 			var connection = command.Connection!;
 
-			if (Log.IsTraceEnabled())
-				Log.Trace("Session{0} ExecuteReader {1} CommandCount: {2}", connection.Session.Id, ioBehavior, commands.Count);
+			Log.CommandExecutorExecuteReader(command.Logger, connection.Session.Id, ioBehavior, commands.Count);
 
 			Dictionary<string, CachedProcedure?>? cachedProcedures = null;
 			foreach (var command2 in commands)
@@ -57,7 +56,7 @@ internal static class CommandExecutor
 			}
 			catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
 			{
-				Log.Info("Session{0} query was interrupted", connection.Session.Id);
+				Log.QueryWasInterrupted(command.Logger, connection.Session.Id);
 				throw new OperationCanceledException(ex.Message, ex, cancellationToken);
 			}
 			catch (Exception ex) when (payload.Span.Length > 4_194_304 && (ex is SocketException or IOException or MySqlProtocolException))
@@ -75,6 +74,4 @@ internal static class CommandExecutor
 			throw;
 		}
 	}
-
-	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(CommandExecutor));
 }

@@ -3,6 +3,7 @@ using System.Buffers.Text;
 using System.Globalization;
 using System.Numerics;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using MySqlConnector.Core;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
@@ -53,6 +54,7 @@ public sealed class MySqlBulkCopy
 	{
 		m_connection = connection ?? throw new ArgumentNullException(nameof(connection));
 		m_transaction = transaction;
+		m_logger = m_connection.LoggingConfiguration.BulkCopyLogger;
 		ColumnMappings = new();
 	}
 
@@ -238,7 +240,7 @@ public sealed class MySqlBulkCopy
 		var tableName = DestinationTableName ?? throw new InvalidOperationException("DestinationTableName must be set before calling WriteToServer");
 		m_wasAborted = false;
 
-		Log.Debug("Starting bulk copy to {0}", tableName);
+		Log.StartingBulkCopy(m_logger, tableName);
 		var bulkLoader = new MySqlBulkLoader(m_connection)
 		{
 			CharacterSet = "utf8mb4",
@@ -274,7 +276,7 @@ public sealed class MySqlBulkCopy
 				var destinationColumn = reader.GetName(i);
 				if (schema[i].DataTypeName == "BIT")
 				{
-					AddColumnMapping(columnMappings, addDefaultMappings, i, destinationColumn, $"@`\uE002\bcol{i}`", $"%COL% = CAST(%VAR% AS UNSIGNED)");
+					AddColumnMapping(m_logger, columnMappings, addDefaultMappings, i, destinationColumn, $"@`\uE002\bcol{i}`", $"%COL% = CAST(%VAR% AS UNSIGNED)");
 				}
 				else if (schema[i].DataTypeName == "YEAR")
 				{
@@ -286,11 +288,11 @@ public sealed class MySqlBulkCopy
 					var type = schema[i].DataType;
 					if (type == typeof(byte[]) || (type == typeof(Guid) && (m_connection.GuidFormat is MySqlGuidFormat.Binary16 or MySqlGuidFormat.LittleEndianBinary16 or MySqlGuidFormat.TimeSwapBinary16)))
 					{
-						AddColumnMapping(columnMappings, addDefaultMappings, i, destinationColumn, $"@`\uE002\bcol{i}`", $"%COL% = UNHEX(%VAR%)");
+						AddColumnMapping(m_logger, columnMappings, addDefaultMappings, i, destinationColumn, $"@`\uE002\bcol{i}`", $"%COL% = UNHEX(%VAR%)");
 					}
 					else if (addDefaultMappings)
 					{
-						Log.Debug("Adding default column mapping from SourceOrdinal {0} to DestinationColumn {1}", i, destinationColumn);
+						Log.AddingDefaultColumnMapping(m_logger, i, destinationColumn);
 						columnMappings.Add(new(i, destinationColumn));
 					}
 				}
@@ -303,7 +305,7 @@ public sealed class MySqlBulkCopy
 			var columnMapping = columnMappings.FirstOrDefault(x => x.SourceOrdinal == i);
 			if (columnMapping is null)
 			{
-				Log.Debug("Ignoring column with SourceOrdinal {0}", i);
+				Log.IgnoringColumn(m_logger, i);
 				bulkLoader.Columns.Add("@`\uE002\bignore`");
 			}
 			else
@@ -342,11 +344,11 @@ public sealed class MySqlBulkCopy
 		if (closeConnection)
 			m_connection.Close();
 
-		Log.Debug("Finished bulk copy to {0}", tableName);
+		Log.FinishedBulkCopy(m_logger, tableName);
 
 		if (!m_wasAborted && rowsInserted != m_rowsCopied && ConflictOption is MySqlBulkLoaderConflictOption.None)
 		{
-			Log.Error("Bulk copy to DestinationTableName={0} failed; RowsCopied={1}; RowsInserted={2}", tableName, m_rowsCopied, rowsInserted);
+			Log.BulkCopyFailed(m_logger, tableName, m_rowsCopied, rowsInserted);
 			throw new MySqlException(MySqlErrorCode.BulkCopyFailed, $"{m_rowsCopied} row{(m_rowsCopied == 1 ? " was" : "s were")} copied to {tableName} but only {rowsInserted} {(rowsInserted == 1 ? "was" : "were")} inserted.");
 		}
 
@@ -354,7 +356,7 @@ public sealed class MySqlBulkCopy
 
 		static string QuoteIdentifier(string identifier) => "`" + identifier.Replace("`", "``") + "`";
 
-		static void AddColumnMapping(List<MySqlBulkCopyColumnMapping> columnMappings, bool addDefaultMappings, int destinationOrdinal, string destinationColumn, string variableName, string expression)
+		static void AddColumnMapping(ILogger logger, List<MySqlBulkCopyColumnMapping> columnMappings, bool addDefaultMappings, int destinationOrdinal, string destinationColumn, string variableName, string expression)
 		{
 			expression = expression.Replace("%COL%", "`" + destinationColumn + "`").Replace("%VAR%", variableName);
 			var columnMapping = columnMappings.FirstOrDefault(x => destinationColumn.Equals(x.DestinationColumn, StringComparison.OrdinalIgnoreCase));
@@ -362,18 +364,18 @@ public sealed class MySqlBulkCopy
 			{
 				if (columnMapping.Expression is not null)
 				{
-					Log.Info("Column mapping for SourceOrdinal {0}, DestinationColumn {1} already has Expression {2}", columnMapping.SourceOrdinal, destinationColumn, columnMapping.Expression);
+					Log.ColumnMappingAlreadyHasExpression(logger, columnMapping.SourceOrdinal, destinationColumn, columnMapping.Expression);
 				}
 				else
 				{
-					Log.Trace("Setting expression to map SourceOrdinal {0} to DestinationColumn {1}", columnMapping.SourceOrdinal, destinationColumn);
+					Log.SettingExpressionToMapColumn(logger, columnMapping.SourceOrdinal, destinationColumn, expression);
 					columnMappings.Remove(columnMapping);
 					columnMappings.Add(new(columnMapping.SourceOrdinal, variableName, expression));
 				}
 			}
 			else if (addDefaultMappings)
 			{
-				Log.Debug("Adding default column mapping from SourceOrdinal {0} to DestinationColumn {1}", destinationOrdinal, destinationColumn);
+				Log.AddingDefaultColumnMapping(logger, destinationOrdinal, destinationColumn);
 				columnMappings.Add(new(destinationOrdinal, variableName, expression));
 			}
 		}
@@ -704,11 +706,11 @@ public sealed class MySqlBulkCopy
 	}
 
 	private static readonly char[] s_specialCharacters = new char[] { '\t', '\\', '\n' };
-	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlBulkCopy));
 	private static readonly Encoding s_utf8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
 	private readonly MySqlConnection m_connection;
 	private readonly MySqlTransaction? m_transaction;
+	private readonly ILogger m_logger;
 	private int m_rowsCopied;
 	private IValuesEnumerator? m_valuesEnumerator;
 	private bool m_wasAborted;

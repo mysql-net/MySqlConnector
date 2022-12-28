@@ -6,6 +6,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.Logging;
 using MySqlConnector.Core;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Payloads;
@@ -29,18 +30,25 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	}
 
 	public MySqlConnection(string? connectionString)
+		: this(connectionString ?? "", MySqlConnectorLoggingConfiguration.GlobalConfiguration)
 	{
-		GC.SuppressFinalize(this);
-		m_connectionString = connectionString ?? "";
 	}
 
 #if NET7_0_OR_GREATER
 	internal MySqlConnection(MySqlDataSource dataSource)
-		: this(dataSource.ConnectionString)
+		: this(dataSource.ConnectionString, dataSource.LoggingConfiguration)
 	{
 		m_dataSource = dataSource;
 	}
 #endif
+
+	private MySqlConnection(string connectionString, MySqlConnectorLoggingConfiguration loggingConfiguration)
+	{
+		GC.SuppressFinalize(this);
+		m_connectionString = connectionString;
+		LoggingConfiguration = loggingConfiguration;
+		m_logger = loggingConfiguration.ConnectionLogger;
+	}
 
 #pragma warning disable CA2012 // Safe because method completes synchronously
 	/// <summary>
@@ -401,7 +409,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 #if NET7_0_OR_GREATER
 				m_dataSource?.Pool ??
 #endif
-				ConnectionPool.GetPool(m_connectionString);
+				ConnectionPool.GetPool(m_connectionString, LoggingConfiguration, createIfNotFound: true);
 			m_connectionSettings ??= pool?.ConnectionSettings ?? new ConnectionSettings(new MySqlConnectionStringBuilder(m_connectionString));
 
 			// check if there is an open session (in the current transaction) that can be adopted
@@ -467,7 +475,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	public async ValueTask ResetConnectionAsync(CancellationToken cancellationToken = default)
 	{
 		var session = Session;
-		Log.Debug("Session{0} resetting connection", session.Id);
+		Log.ResettingConnection(m_logger, session.Id);
 		await session.SendAsync(ResetConnectionPayload.Instance, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
 		var payload = await session.ReceiveReplyAsync(AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
 		OkPayload.Create(payload.Span, session.SupportsDeprecateEof, session.SupportsSessionTrack);
@@ -570,7 +578,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		if (connection is null)
 			throw new ArgumentNullException(nameof(connection));
 
-		var pool = ConnectionPool.GetPool(connection.m_connectionString);
+		var pool = ConnectionPool.GetPool(connection.m_connectionString, null, createIfNotFound: false);
 		if (pool is not null)
 			await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
@@ -703,7 +711,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	public MySqlConnection Clone() => new(m_connectionString, m_hasBeenOpened)
+	public MySqlConnection Clone() => new(m_connectionString, LoggingConfiguration, m_hasBeenOpened)
 	{
 		ProvideClientCertificatesCallback = ProvideClientCertificatesCallback,
 		ProvidePasswordCallback = ProvidePasswordCallback,
@@ -728,7 +736,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		var shouldCopyPassword = newBuilder.Password.Length == 0 && (!newBuilder.PersistSecurityInfo || currentBuilder.PersistSecurityInfo);
 		if (shouldCopyPassword)
 			newBuilder.Password = currentBuilder.Password;
-		return new MySqlConnection(newBuilder.ConnectionString, m_hasBeenOpened && shouldCopyPassword && !currentBuilder.PersistSecurityInfo)
+		return new MySqlConnection(newBuilder.ConnectionString, LoggingConfiguration, m_hasBeenOpened && shouldCopyPassword && !currentBuilder.PersistSecurityInfo)
 		{
 			ProvideClientCertificatesCallback = ProvideClientCertificatesCallback,
 			ProvidePasswordCallback = ProvidePasswordCallback,
@@ -753,12 +761,11 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	{
 		if (m_session?.Id is not string sessionId || State != ConnectionState.Open || m_session?.TryStartCancel(command) is not true)
 		{
-			Log.Trace("Ignoring cancellation for closed connection or invalid CommandId {0}", commandId);
+			Log.IgnoringCancellationForCommand(m_logger, commandId);
 			return;
 		}
 
-		Log.Debug("CommandId {0} for Session{1} has been canceled via {2}.", commandId, sessionId, isCancel ? "Cancel()" : "command timeout");
-
+		Log.CommandHasBeenCanceled(m_logger, commandId, sessionId, isCancel ? "Cancel()" : "command timeout");
 		try
 		{
 			// open a dedicated connection to the server to kill the active query
@@ -787,35 +794,34 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		{
 			// ignore a rare race condition where the connection is open at the beginning of the method, but closed by the time
 			// KILL QUERY is executed: https://github.com/mysql-net/MySqlConnector/issues/1002
-			Log.Info(ex, "Session{0} ignoring cancellation for closed connection.", sessionId);
+			Log.IgnoringCancellationForClosedConnection(m_logger, ex, sessionId);
 			m_session?.AbortCancel(command);
 		}
 		catch (MySqlException ex)
 		{
 			// cancelling the query failed; setting the state back to 'Querying' will allow another call to 'Cancel' to try again
-			Log.Info(ex, "Session{0} cancelling CommandId {1} failed", sessionId, command.CommandId);
+			Log.CancelingCommandFailed(m_logger, ex, sessionId, command.CommandId);
 			m_session?.AbortCancel(command);
 		}
 	}
 
 	internal async Task<CachedProcedure?> GetCachedProcedure(string name, bool revalidateMissing, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		if (Log.IsTraceEnabled())
-			Log.Trace("Session{0} getting cached procedure Name={1}", m_session!.Id, name);
+		Log.GettingCachedProcedure(m_logger, m_session!.Id, name);
 		if (State != ConnectionState.Open)
 			throw new InvalidOperationException("Connection is not open.");
 
 		var cachedProcedures = m_session!.Pool?.GetProcedureCache() ?? m_cachedProcedures;
 		if (cachedProcedures is null)
 		{
-			Log.Info("Session{0} pool Pool{1} doesn't have a shared procedure cache; procedure will only be cached on this connection", m_session.Id, m_session.Pool?.Id);
+			Log.PoolDoesNotHaveSharedProcedureCache(m_logger, m_session.Id, m_session.Pool?.Id);
 			cachedProcedures = m_cachedProcedures = new();
 		}
 
 		var normalized = NormalizedSchema.MustNormalize(name, Database);
 		if (string.IsNullOrEmpty(normalized.Schema))
 		{
-			Log.Info("Session{0} couldn't normalize Database={1} Name={2}; not caching procedure", m_session.Id, Database, name);
+			Log.CouldNotNormalizeDatabaseAndName(m_logger, m_session.Id, name, Database);
 			return null;
 		}
 
@@ -825,35 +831,29 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			foundProcedure = cachedProcedures.TryGetValue(normalized.FullyQualified, out cachedProcedure);
 		if (!foundProcedure || (cachedProcedure is null && revalidateMissing))
 		{
-			cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema!, normalized.Component!, cancellationToken).ConfigureAwait(false);
-			if (Log.IsInfoEnabled())
-			{
-				if (cachedProcedure is null)
-					Log.Info("Session{0} failed to cache procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
-				else
-					Log.Trace("Session{0} caching procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
-			}
+			cachedProcedure = await CachedProcedure.FillAsync(ioBehavior, this, normalized.Schema!, normalized.Component!, m_logger, cancellationToken).ConfigureAwait(false);
+			if (cachedProcedure is null)
+				Log.FailedToCacheProcedure(m_logger, m_session.Id, normalized.Schema!, normalized.Component!);
+			else
+				Log.CachingProcedure(m_logger, m_session.Id, normalized.Schema!, normalized.Component!);
 			int count;
 			lock (cachedProcedures)
 			{
 				cachedProcedures[normalized.FullyQualified] = cachedProcedure;
 				count = cachedProcedures.Count;
 			}
-			if (Log.IsTraceEnabled())
-				Log.Trace("Session{0} procedure cache Count={1}", m_session.Id, count);
+			Log.ProcedureCacheCount(m_logger, m_session.Id, count);
 		}
 
-		if (Log.IsInfoEnabled())
-		{
-			if (cachedProcedure is null)
-				Log.Info("Session{0} did not find cached procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
-			else
-				Log.Trace("Session{0} returning cached procedure Schema={1} Component={2}", m_session.Id, normalized.Schema, normalized.Component);
-		}
+		if (cachedProcedure is null)
+			Log.DidNotFindCachedProcedure(m_logger, m_session.Id, normalized.Schema!, normalized.Component!);
+		else
+			Log.ReturningCachedProcedure(m_logger, m_session.Id, normalized.Schema!, normalized.Component!);
 		return cachedProcedure;
 	}
 
 	internal MySqlTransaction? CurrentTransaction { get; set; }
+	internal MySqlConnectorLoggingConfiguration LoggingConfiguration { get; }
 	internal bool AllowLoadLocalInfile => GetInitializedConnectionSettings().AllowLoadLocalInfile;
 	internal bool AllowUserVariables => GetInitializedConnectionSettings().AllowUserVariables;
 	internal bool AllowZeroDateTime => GetInitializedConnectionSettings().AllowZeroDateTime;
@@ -934,9 +934,9 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				var loadBalancer = connectionSettings.LoadBalance == MySqlLoadBalance.Random && connectionSettings.HostNames!.Count > 1 ?
 					RandomLoadBalancer.Instance : FailOverLoadBalancer.Instance;
 
-				var session = new ServerSession();
+				var session = new ServerSession(m_logger);
 				session.OwningConnection = new WeakReference<MySqlConnection>(this);
-				Log.Debug("Created new non-pooled Session{0}", session.Id);
+				Log.CreatedNonPooledSession(m_logger, session.Id);
 				try
 				{
 					await session.ConnectAsync(connectionSettings, this, startTickCount, loadBalancer, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
@@ -990,8 +990,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	private MySqlConnection(string connectionString, bool hasBeenOpened)
-		: this(connectionString)
+	private MySqlConnection(string connectionString, MySqlConnectorLoggingConfiguration loggingConfiguration, bool hasBeenOpened)
+		: this(connectionString, loggingConfiguration)
 	{
 		m_hasBeenOpened = hasBeenOpened;
 	}
@@ -1112,7 +1112,6 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	// This method may be called when it's known that the connection settings have been initialized.
 	private ConnectionSettings GetInitializedConnectionSettings() => m_connectionSettings!;
 
-	private static readonly IMySqlConnectorLogger Log = MySqlConnectorLogManager.CreateLogger(nameof(MySqlConnection));
 	private static readonly StateChangeEventArgs s_stateChangeClosedConnecting = new(ConnectionState.Closed, ConnectionState.Connecting);
 	private static readonly StateChangeEventArgs s_stateChangeConnectingOpen = new(ConnectionState.Connecting, ConnectionState.Open);
 	private static readonly StateChangeEventArgs s_stateChangeOpenClosed = new(ConnectionState.Open, ConnectionState.Closed);
@@ -1122,6 +1121,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 #if NET7_0_OR_GREATER
 	private readonly MySqlDataSource? m_dataSource;
 #endif
+	private readonly ILogger m_logger;
 	private string m_connectionString;
 	private ConnectionSettings? m_connectionSettings;
 	private ServerSession? m_session;
