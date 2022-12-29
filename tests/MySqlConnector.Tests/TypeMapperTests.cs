@@ -69,6 +69,7 @@ public class TypeMapperTests
 	[InlineData("bigint", false, 0, DbType.Int64)]
 	[InlineData("bigint", true, 0, DbType.UInt64)]
 	[InlineData("decimal", false, 0, DbType.Decimal)]
+	[InlineData("decimal", true, 0, DbType.Decimal)]
 	[InlineData("double", false, 0, DbType.Double)]
 	[InlineData("float", false, 0, DbType.Single)]
 	[InlineData("char", false, 0, DbType.StringFixedLength)]

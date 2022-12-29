@@ -669,8 +669,9 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 #if !MYSQL_DATA
 	[InlineData("bool", 1)]
 	[InlineData("tinyint(1)", 1)]
+	[InlineData("decimal(10)", 10)]
 #endif
-	[InlineData("char(30)", 30)]
+    [InlineData("char(30)", 30)]
 	[InlineData("mediumtext", 0)]
 	[InlineData("varchar(50)", 50)]
 	// These return nonzero sizes for some versions of MySQL Server 8.0
@@ -713,6 +714,8 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 	[InlineData("char(30)", MySqlDbType.String)]
 	[InlineData("mediumtext", MySqlDbType.MediumText)]
 	[InlineData("varchar(50)", MySqlDbType.VarChar)]
+	[InlineData("decimal(10, 0)", MySqlDbType.NewDecimal)]
+	[InlineData("decimal(10, 0) unsigned", MySqlDbType.NewDecimal)]
 	public void DeriveParametersParameterType(string parameterType, MySqlDbType expectedType)
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
