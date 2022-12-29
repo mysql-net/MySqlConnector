@@ -7,8 +7,8 @@ title: IMySqlConnectorLogger.Log method
 Writes a log message to the target.
 
 ```csharp
-public void Log(MySqlConnectorLogLevel level, string message, object[] args = null, 
-    Exception exception = null)
+public void Log(MySqlConnectorLogLevel level, string message, object?[]? args = null, 
+    Exception? exception = null)
 ```
 
 | parameter | description |

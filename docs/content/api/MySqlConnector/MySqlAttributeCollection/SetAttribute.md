@@ -7,7 +7,7 @@ title: MySqlAttributeCollection.SetAttribute method
 Sets the attribute with the specified name to the given value, overwriting it if it already exists.
 
 ```csharp
-public void SetAttribute(string attributeName, object value)
+public void SetAttribute(string attributeName, object? value)
 ```
 
 | parameter | description |

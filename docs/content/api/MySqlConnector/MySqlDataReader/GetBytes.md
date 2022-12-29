@@ -5,7 +5,7 @@ title: MySqlDataReader.GetBytes methods
 # MySqlDataReader.GetBytes method (1 of 2)
 
 ```csharp
-public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, 
+public override long GetBytes(int ordinal, long dataOffset, byte[]? buffer, int bufferOffset, 
     int length)
 ```
 
@@ -20,7 +20,7 @@ public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int b
 # MySqlDataReader.GetBytes method (2 of 2)
 
 ```csharp
-public long GetBytes(string name, long dataOffset, byte[] buffer, int bufferOffset, int length)
+public long GetBytes(string name, long dataOffset, byte[]? buffer, int bufferOffset, int length)
 ```
 
 ## See Also

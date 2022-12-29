@@ -7,7 +7,7 @@ title: MySqlBulkCopy.DestinationTableName property
 The name of the table to insert rows into.
 
 ```csharp
-public string DestinationTableName { get; set; }
+public string? DestinationTableName { get; set; }
 ```
 
 ## Remarks

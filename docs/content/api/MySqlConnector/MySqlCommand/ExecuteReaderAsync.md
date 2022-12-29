@@ -5,8 +5,7 @@ title: MySqlCommand.ExecuteReaderAsync methods
 # MySqlCommand.ExecuteReaderAsync method (1 of 2)
 
 ```csharp
-public Task<MySqlDataReader> ExecuteReaderAsync(
-    CancellationToken cancellationToken = default(CancellationToken))
+public Task<MySqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default)
 ```
 
 ## See Also
@@ -22,7 +21,7 @@ public Task<MySqlDataReader> ExecuteReaderAsync(
 
 ```csharp
 public Task<MySqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, 
-    CancellationToken cancellationToken = default(CancellationToken))
+    CancellationToken cancellationToken = default)
 ```
 
 ## See Also

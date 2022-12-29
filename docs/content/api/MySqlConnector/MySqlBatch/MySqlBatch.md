@@ -23,7 +23,7 @@ public MySqlBatch()
 Initializes a new [`MySqlBatch`](../../MySqlBatchType/) object, setting the [`Connection`](../Connection/) and [`Transaction`](../Transaction/) if specified.
 
 ```csharp
-public MySqlBatch(MySqlConnection connection = null, MySqlTransaction transaction = null)
+public MySqlBatch(MySqlConnection? connection = null, MySqlTransaction? transaction = null)
 ```
 
 | parameter | description |

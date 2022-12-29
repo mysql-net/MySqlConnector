@@ -7,7 +7,7 @@ title: MySqlBulkCopyColumnMapping.Expression property
 An optional expression for setting a destination column. To use an expression, the [`DestinationColumn`](../DestinationColumn/) should be set to the name of a user-defined variable and this expression should set a column using that variable.
 
 ```csharp
-public string Expression { get; set; }
+public string? Expression { get; set; }
 ```
 
 ## Remarks

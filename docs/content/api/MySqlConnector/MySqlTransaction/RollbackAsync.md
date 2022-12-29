@@ -7,7 +7,7 @@ title: MySqlTransaction.RollbackAsync methods
 Asynchronously rolls back the database transaction.
 
 ```csharp
-public override Task RollbackAsync(CancellationToken cancellationToken = default(CancellationToken))
+public override Task RollbackAsync(CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |
@@ -32,7 +32,7 @@ Asynchronously rolls back the current transaction to the savepoint with the spec
 
 ```csharp
 public override Task RollbackAsync(string savepointName, 
-    CancellationToken cancellationToken = default(CancellationToken))
+    CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |

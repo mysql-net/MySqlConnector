@@ -5,7 +5,7 @@ title: MySqlParameter.Value property
 # MySqlParameter.Value property
 
 ```csharp
-public override object Value { get; set; }
+public override object? Value { get; set; }
 ```
 
 ## See Also

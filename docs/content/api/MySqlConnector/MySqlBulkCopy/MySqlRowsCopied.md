@@ -7,7 +7,7 @@ title: MySqlBulkCopy.MySqlRowsCopied event
 This event is raised every time that the number of rows specified by the [`NotifyAfter`](../NotifyAfter/) property have been processed.
 
 ```csharp
-public event MySqlRowsCopiedEventHandler MySqlRowsCopied;
+public event MySqlRowsCopiedEventHandler? MySqlRowsCopied;
 ```
 
 ## Remarks

@@ -24,7 +24,7 @@ Initializes [`MySqlBulkCopyColumnMapping`](../../MySqlBulkCopyColumnMappingType/
 
 ```csharp
 public MySqlBulkCopyColumnMapping(int sourceOrdinal, string destinationColumn, 
-    string expression = null)
+    string? expression = null)
 ```
 
 | parameter | description |

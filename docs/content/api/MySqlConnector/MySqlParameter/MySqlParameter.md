@@ -36,7 +36,7 @@ public MySqlParameter(string name, MySqlDbType mySqlDbType)
 # MySqlParameter constructor (3 of 6)
 
 ```csharp
-public MySqlParameter(string name, object value)
+public MySqlParameter(string? name, object? value)
 ```
 
 ## See Also

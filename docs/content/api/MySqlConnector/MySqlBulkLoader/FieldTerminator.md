@@ -7,7 +7,7 @@ title: MySqlBulkLoader.FieldTerminator property
 (Optional) The string fields are terminated with.
 
 ```csharp
-public string FieldTerminator { get; set; }
+public string? FieldTerminator { get; set; }
 ```
 
 ## See Also

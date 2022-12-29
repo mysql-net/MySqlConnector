@@ -5,7 +5,7 @@ title: MySqlConnection.PingAsync method
 # MySqlConnection.PingAsync method
 
 ```csharp
-public Task<bool> PingAsync(CancellationToken cancellationToken = default(CancellationToken))
+public Task<bool> PingAsync(CancellationToken cancellationToken = default)
 ```
 
 ## See Also

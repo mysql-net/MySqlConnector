@@ -5,7 +5,7 @@ title: MySqlBatch.ExecuteScalar method
 # MySqlBatch.ExecuteScalar method
 
 ```csharp
-public override object ExecuteScalar()
+public override object? ExecuteScalar()
 ```
 
 ## See Also

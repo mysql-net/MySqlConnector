@@ -7,8 +7,8 @@ title: NoOpLogger.Log method
 Ignores the specified log message.
 
 ```csharp
-public void Log(MySqlConnectorLogLevel level, string message, object[] args = null, 
-    Exception exception = null)
+public void Log(MySqlConnectorLogLevel level, string message, object?[]? args = null, 
+    Exception? exception = null)
 ```
 
 ## See Also

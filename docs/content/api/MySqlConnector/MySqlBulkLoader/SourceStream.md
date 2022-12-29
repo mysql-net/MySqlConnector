@@ -7,7 +7,7 @@ title: MySqlBulkLoader.SourceStream property
 A Stream containing the data to load. Either this or [`FileName`](../FileName/) must be set. The [`Local`](../Local/) property must be `true` if this is set.
 
 ```csharp
-public Stream SourceStream { get; set; }
+public Stream? SourceStream { get; set; }
 ```
 
 ## See Also

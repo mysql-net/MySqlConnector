@@ -5,7 +5,7 @@ title: MySqlParameterCollection.AddWithValue method
 # MySqlParameterCollection.AddWithValue method
 
 ```csharp
-public MySqlParameter AddWithValue(string parameterName, object value)
+public MySqlParameter AddWithValue(string parameterName, object? value)
 ```
 
 ## See Also

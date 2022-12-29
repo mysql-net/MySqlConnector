@@ -5,7 +5,7 @@ title: MySqlRowUpdatedEventArgs constructor
 # MySqlRowUpdatedEventArgs constructor
 
 ```csharp
-public MySqlRowUpdatedEventArgs(DataRow row, IDbCommand command, StatementType statementType, 
+public MySqlRowUpdatedEventArgs(DataRow row, IDbCommand? command, StatementType statementType, 
     DataTableMapping tableMapping)
 ```
 

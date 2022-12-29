@@ -7,7 +7,7 @@ title: MySqlTransaction.Connection property
 Gets the [`MySqlConnection`](../../MySqlConnectionType/) that this transaction is associated with.
 
 ```csharp
-public MySqlConnection Connection { get; }
+public MySqlConnection? Connection { get; }
 ```
 
 ## See Also

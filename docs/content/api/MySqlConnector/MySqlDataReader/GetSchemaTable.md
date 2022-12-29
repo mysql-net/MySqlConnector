@@ -7,7 +7,7 @@ title: MySqlDataReader.GetSchemaTable method
 Returns a DataTable that contains metadata about the columns in the result set.
 
 ```csharp
-public override DataTable GetSchemaTable()
+public override DataTable? GetSchemaTable()
 ```
 
 ## Return Value

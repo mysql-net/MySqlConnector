@@ -5,7 +5,7 @@ title: MySqlBatch.DbTransaction property
 # MySqlBatch.DbTransaction property
 
 ```csharp
-protected override DbTransaction DbTransaction { get; set; }
+protected override DbTransaction? DbTransaction { get; set; }
 ```
 
 ## See Also

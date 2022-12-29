@@ -5,7 +5,7 @@ title: MySqlDataAdapter.SelectCommand property
 # MySqlDataAdapter.SelectCommand property
 
 ```csharp
-public MySqlCommand SelectCommand { get; set; }
+public MySqlCommand? SelectCommand { get; set; }
 ```
 
 ## See Also

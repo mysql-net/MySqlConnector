@@ -21,7 +21,7 @@ public MySqlBatchCommand()
 # MySqlBatchCommand constructor (2 of 2)
 
 ```csharp
-public MySqlBatchCommand(string commandText)
+public MySqlBatchCommand(string? commandText)
 ```
 
 ## See Also

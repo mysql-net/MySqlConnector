@@ -7,7 +7,7 @@ title: MySqlConnection.ProvideClientCertificatesCallback property
 Gets or sets the delegate used to provide client certificates for connecting to a server.
 
 ```csharp
-public Func<X509CertificateCollection, ValueTask> ProvideClientCertificatesCallback { get; set; }
+public Func<X509CertificateCollection, ValueTask>? ProvideClientCertificatesCallback { get; set; }
 ```
 
 ## Remarks

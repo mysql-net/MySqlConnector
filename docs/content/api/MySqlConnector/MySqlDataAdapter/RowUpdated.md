@@ -5,7 +5,7 @@ title: MySqlDataAdapter.RowUpdated event
 # MySqlDataAdapter.RowUpdated event
 
 ```csharp
-public event MySqlRowUpdatedEventHandler RowUpdated;
+public event MySqlRowUpdatedEventHandler? RowUpdated;
 ```
 
 ## See Also

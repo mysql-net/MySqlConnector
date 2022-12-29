@@ -23,7 +23,7 @@ public MySqlCommand()
 Initializes a new instance of the [`MySqlCommand`](../../MySqlCommandType/) class, setting [`CommandText`](../CommandText/) to *commandText*.
 
 ```csharp
-public MySqlCommand(string commandText)
+public MySqlCommand(string? commandText)
 ```
 
 | parameter | description |
@@ -43,7 +43,7 @@ public MySqlCommand(string commandText)
 Initializes a new instance of the [`MySqlCommand`](../../MySqlCommandType/) class with the specified [`MySqlConnection`](../../MySqlConnectionType/) and [`MySqlTransaction`](../../MySqlTransactionType/).
 
 ```csharp
-public MySqlCommand(MySqlConnection connection, MySqlTransaction transaction)
+public MySqlCommand(MySqlConnection? connection, MySqlTransaction? transaction)
 ```
 
 | parameter | description |
@@ -66,7 +66,7 @@ public MySqlCommand(MySqlConnection connection, MySqlTransaction transaction)
 Initializes a new instance of the [`MySqlCommand`](../../MySqlCommandType/) class with the specified command text and [`MySqlConnection`](../../MySqlConnectionType/).
 
 ```csharp
-public MySqlCommand(string commandText, MySqlConnection connection)
+public MySqlCommand(string? commandText, MySqlConnection? connection)
 ```
 
 | parameter | description |
@@ -88,7 +88,7 @@ public MySqlCommand(string commandText, MySqlConnection connection)
 Initializes a new instance of the [`MySqlCommand`](../../MySqlCommandType/) class with the specified command text,[`MySqlConnection`](../../MySqlConnectionType/), and [`MySqlTransaction`](../../MySqlTransactionType/).
 
 ```csharp
-public MySqlCommand(string commandText, MySqlConnection connection, MySqlTransaction transaction)
+public MySqlCommand(string? commandText, MySqlConnection? connection, MySqlTransaction? transaction)
 ```
 
 | parameter | description |

@@ -5,7 +5,7 @@ title: MySqlBatch.PrepareAsync method
 # MySqlBatch.PrepareAsync method
 
 ```csharp
-public override Task PrepareAsync(CancellationToken cancellationToken = default(CancellationToken))
+public override Task PrepareAsync(CancellationToken cancellationToken = default)
 ```
 
 ## See Also

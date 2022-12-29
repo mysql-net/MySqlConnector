@@ -7,8 +7,7 @@ title: MySqlConnection.ResetConnectionAsync method
 Resets the session state of the current open connection; this clears temporary tables and user-defined variables.
 
 ```csharp
-public ValueTask ResetConnectionAsync(
-    CancellationToken cancellationToken = default(CancellationToken))
+public ValueTask ResetConnectionAsync(CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |

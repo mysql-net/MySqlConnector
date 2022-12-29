@@ -7,8 +7,7 @@ title: MySqlConnection.GetSchemaAsync methods
 Asynchronously returns schema information for the data source of this [`MySqlConnection`](../../MySqlConnectionType/).
 
 ```csharp
-public override Task<DataTable> GetSchemaAsync(
-    CancellationToken cancellationToken = default(CancellationToken))
+public override Task<DataTable> GetSchemaAsync(CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |
@@ -37,7 +36,7 @@ Asynchronously returns schema information for the data source of this [`MySqlCon
 
 ```csharp
 public override Task<DataTable> GetSchemaAsync(string collectionName, 
-    CancellationToken cancellationToken = default(CancellationToken))
+    CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |
@@ -66,8 +65,8 @@ The proposed ADO.NET API that this is based on is not finalized; this API may ch
 Asynchronously returns schema information for the data source of this [`MySqlConnection`](../../MySqlConnectionType/).
 
 ```csharp
-public override Task<DataTable> GetSchemaAsync(string collectionName, string[] restrictionValues, 
-    CancellationToken cancellationToken = default(CancellationToken))
+public override Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictionValues, 
+    CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |

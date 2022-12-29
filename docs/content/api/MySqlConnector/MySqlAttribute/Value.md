@@ -7,7 +7,7 @@ title: MySqlAttribute.Value property
 Gets or sets the attribute value.
 
 ```csharp
-public object Value { get; set; }
+public object? Value { get; set; }
 ```
 
 ## See Also

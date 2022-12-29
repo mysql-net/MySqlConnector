@@ -7,7 +7,7 @@ title: MySqlConnection.ProvidePasswordCallback property
 Gets or sets the delegate used to generate a password for new database connections.
 
 ```csharp
-public Func<MySqlProvidePasswordContext, string> ProvidePasswordCallback { get; set; }
+public Func<MySqlProvidePasswordContext, string>? ProvidePasswordCallback { get; set; }
 ```
 
 ## Remarks

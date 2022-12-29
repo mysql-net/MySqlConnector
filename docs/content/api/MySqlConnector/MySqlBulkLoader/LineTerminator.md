@@ -7,7 +7,7 @@ title: MySqlBulkLoader.LineTerminator property
 (Optional) The string lines are terminated with.
 
 ```csharp
-public string LineTerminator { get; set; }
+public string? LineTerminator { get; set; }
 ```
 
 ## See Also

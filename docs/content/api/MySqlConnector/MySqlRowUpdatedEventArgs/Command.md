@@ -5,7 +5,7 @@ title: MySqlRowUpdatedEventArgs.Command property
 # MySqlRowUpdatedEventArgs.Command property
 
 ```csharp
-public MySqlCommand Command { get; }
+public MySqlCommand? Command { get; }
 ```
 
 ## See Also

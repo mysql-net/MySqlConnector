@@ -5,7 +5,7 @@ title: MySqlBatch.DbConnection property
 # MySqlBatch.DbConnection property
 
 ```csharp
-protected override DbConnection DbConnection { get; set; }
+protected override DbConnection? DbConnection { get; set; }
 ```
 
 ## See Also

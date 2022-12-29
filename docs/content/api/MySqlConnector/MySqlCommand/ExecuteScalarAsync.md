@@ -5,7 +5,7 @@ title: MySqlCommand.ExecuteScalarAsync method
 # MySqlCommand.ExecuteScalarAsync method
 
 ```csharp
-public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
+public override Task<object?> ExecuteScalarAsync(CancellationToken cancellationToken)
 ```
 
 ## See Also

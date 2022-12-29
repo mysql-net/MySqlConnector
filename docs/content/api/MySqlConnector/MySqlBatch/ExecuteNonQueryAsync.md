@@ -5,8 +5,7 @@ title: MySqlBatch.ExecuteNonQueryAsync method
 # MySqlBatch.ExecuteNonQueryAsync method
 
 ```csharp
-public override Task<int> ExecuteNonQueryAsync(
-    CancellationToken cancellationToken = default(CancellationToken))
+public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken = default)
 ```
 
 ## See Also

@@ -5,7 +5,7 @@ title: MySqlDataAdapter.CreateRowUpdatedEvent method
 # MySqlDataAdapter.CreateRowUpdatedEvent method
 
 ```csharp
-protected override RowUpdatedEventArgs CreateRowUpdatedEvent(DataRow dataRow, IDbCommand command, 
+protected override RowUpdatedEventArgs CreateRowUpdatedEvent(DataRow dataRow, IDbCommand? command, 
     StatementType statementType, DataTableMapping tableMapping)
 ```
 

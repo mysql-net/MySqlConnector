@@ -23,7 +23,7 @@ public MySqlAttribute()
 Initializes a new [`MySqlAttribute`](../../MySqlAttributeType/) with the specified attribute name and value.
 
 ```csharp
-public MySqlAttribute(string attributeName, object value)
+public MySqlAttribute(string attributeName, object? value)
 ```
 
 ## See Also

@@ -5,7 +5,7 @@ title: MySqlDataAdapter.UpdateCommand property
 # MySqlDataAdapter.UpdateCommand property
 
 ```csharp
-public MySqlCommand UpdateCommand { get; set; }
+public MySqlCommand? UpdateCommand { get; set; }
 ```
 
 ## See Also

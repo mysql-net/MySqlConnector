@@ -5,7 +5,7 @@ title: MySqlBatch.Transaction property
 # MySqlBatch.Transaction property
 
 ```csharp
-public MySqlTransaction Transaction { get; set; }
+public MySqlTransaction? Transaction { get; set; }
 ```
 
 ## See Also

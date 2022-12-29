@@ -5,7 +5,7 @@ title: MySqlBatch.Connection property
 # MySqlBatch.Connection property
 
 ```csharp
-public MySqlConnection Connection { get; set; }
+public MySqlConnection? Connection { get; set; }
 ```
 
 ## See Also

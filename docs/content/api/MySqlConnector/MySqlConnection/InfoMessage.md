@@ -5,7 +5,7 @@ title: MySqlConnection.InfoMessage event
 # MySqlConnection.InfoMessage event
 
 ```csharp
-public event MySqlInfoMessageEventHandler InfoMessage;
+public event MySqlInfoMessageEventHandler? InfoMessage;
 ```
 
 ## See Also

@@ -6,7 +6,7 @@ title: MySqlConnection.ChangeDatabaseAsync method
 
 ```csharp
 public override Task ChangeDatabaseAsync(string databaseName, 
-    CancellationToken cancellationToken = default(CancellationToken))
+    CancellationToken cancellationToken = default)
 ```
 
 ## See Also

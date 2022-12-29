@@ -7,7 +7,7 @@ title: MySqlException.SqlState property
 A `SQLSTATE` code identifying the kind of error.
 
 ```csharp
-public override string SqlState { get; }
+public override string? SqlState { get; }
 ```
 
 ## Remarks

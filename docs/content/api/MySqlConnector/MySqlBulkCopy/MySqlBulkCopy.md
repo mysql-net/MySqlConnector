@@ -7,7 +7,7 @@ title: MySqlBulkCopy constructor
 Initializes a [`MySqlBulkCopy`](../../MySqlBulkCopyType/) object with the specified connection, and optionally the active transaction.
 
 ```csharp
-public MySqlBulkCopy(MySqlConnection connection, MySqlTransaction transaction = null)
+public MySqlBulkCopy(MySqlConnection connection, MySqlTransaction? transaction = null)
 ```
 
 | parameter | description |

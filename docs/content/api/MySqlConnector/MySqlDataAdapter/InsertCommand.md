@@ -5,7 +5,7 @@ title: MySqlDataAdapter.InsertCommand property
 # MySqlDataAdapter.InsertCommand property
 
 ```csharp
-public MySqlCommand InsertCommand { get; set; }
+public MySqlCommand? InsertCommand { get; set; }
 ```
 
 ## See Also

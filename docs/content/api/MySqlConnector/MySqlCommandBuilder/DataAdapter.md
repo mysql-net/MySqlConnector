@@ -5,7 +5,7 @@ title: MySqlCommandBuilder.DataAdapter property
 # MySqlCommandBuilder.DataAdapter property
 
 ```csharp
-public MySqlDataAdapter DataAdapter { get; set; }
+public MySqlDataAdapter? DataAdapter { get; set; }
 ```
 
 ## See Also

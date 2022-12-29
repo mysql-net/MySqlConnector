@@ -7,7 +7,7 @@ title: MySqlDateTime.Equals method
 Returns `true` if this [`MySqlDateTime`](../../MySqlDateTimeType/) is equal to *obj*.
 
 ```csharp
-public override bool Equals(object obj)
+public override bool Equals(object? obj)
 ```
 
 | parameter | description |

@@ -7,7 +7,7 @@ title: MySqlBulkLoader.CharacterSet property
 (Optional) The character set of the source data. By default, the database's character set is used.
 
 ```csharp
-public string CharacterSet { get; set; }
+public string? CharacterSet { get; set; }
 ```
 
 ## See Also

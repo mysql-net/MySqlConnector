@@ -7,8 +7,7 @@ title: MySqlBatch.ExecuteReaderAsync method
 Executes all the commands in the batch, returning a [`MySqlDataReader`](../../MySqlDataReaderType/) that can iterate over the result sets. If multiple resultsets are returned, use [`NextResultAsync`](../../MySqlDataReader/NextResultAsync/) to access them.
 
 ```csharp
-public Task<MySqlDataReader> ExecuteReaderAsync(
-    CancellationToken cancellationToken = default(CancellationToken))
+public Task<MySqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |

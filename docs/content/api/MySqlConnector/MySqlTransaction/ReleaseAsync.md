@@ -8,7 +8,7 @@ Asynchronously removes the named transaction savepoint with the specified *savep
 
 ```csharp
 public override Task ReleaseAsync(string savepointName, 
-    CancellationToken cancellationToken = default(CancellationToken))
+    CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |

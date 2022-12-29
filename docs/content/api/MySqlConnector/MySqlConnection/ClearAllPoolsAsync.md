@@ -7,8 +7,7 @@ title: MySqlConnection.ClearAllPoolsAsync method
 Asynchronously clears all connection pools.
 
 ```csharp
-public static Task ClearAllPoolsAsync(
-    CancellationToken cancellationToken = default(CancellationToken))
+public static Task ClearAllPoolsAsync(CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |

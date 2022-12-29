@@ -5,7 +5,7 @@ title: MySqlDataReader.GetChars method
 # MySqlDataReader.GetChars method
 
 ```csharp
-public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, 
+public override long GetChars(int ordinal, long dataOffset, char[]? buffer, int bufferOffset, 
     int length)
 ```
 

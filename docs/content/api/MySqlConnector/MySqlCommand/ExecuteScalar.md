@@ -5,7 +5,7 @@ title: MySqlCommand.ExecuteScalar method
 # MySqlCommand.ExecuteScalar method
 
 ```csharp
-public override object ExecuteScalar()
+public override object? ExecuteScalar()
 ```
 
 ## See Also

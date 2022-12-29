@@ -5,7 +5,7 @@ title: MySqlConnection.EnlistTransaction method
 # MySqlConnection.EnlistTransaction method
 
 ```csharp
-public override void EnlistTransaction(Transaction transaction)
+public override void EnlistTransaction(Transaction? transaction)
 ```
 
 ## See Also

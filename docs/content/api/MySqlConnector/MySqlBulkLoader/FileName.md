@@ -7,7 +7,7 @@ title: MySqlBulkLoader.FileName property
 The name of the local (if [`Local`](../Local/) is `true`) or remote (otherwise) file to load. Either this or [`SourceStream`](../SourceStream/) must be set.
 
 ```csharp
-public string FileName { get; set; }
+public string? FileName { get; set; }
 ```
 
 ## See Also

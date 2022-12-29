@@ -8,7 +8,7 @@ Asynchronously clears the connection pool that *connection* belongs to.
 
 ```csharp
 public static Task ClearPoolAsync(MySqlConnection connection, 
-    CancellationToken cancellationToken = default(CancellationToken))
+    CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |

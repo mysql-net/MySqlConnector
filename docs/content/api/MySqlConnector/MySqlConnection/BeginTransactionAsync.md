@@ -8,7 +8,7 @@ Begins a database transaction asynchronously.
 
 ```csharp
 public ValueTask<MySqlTransaction> BeginTransactionAsync(
-    CancellationToken cancellationToken = default(CancellationToken))
+    CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |
@@ -38,7 +38,7 @@ Begins a database transaction asynchronously.
 
 ```csharp
 public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, 
-    CancellationToken cancellationToken = default(CancellationToken))
+    CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |
@@ -69,7 +69,7 @@ Begins a database transaction asynchronously.
 
 ```csharp
 public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, 
-    bool isReadOnly, CancellationToken cancellationToken = default(CancellationToken))
+    bool isReadOnly, CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |

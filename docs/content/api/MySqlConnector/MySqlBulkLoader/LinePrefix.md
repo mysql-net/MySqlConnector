@@ -7,7 +7,7 @@ title: MySqlBulkLoader.LinePrefix property
 (Optional) A prefix in each line that should be skipped when loading.
 
 ```csharp
-public string LinePrefix { get; set; }
+public string? LinePrefix { get; set; }
 ```
 
 ## See Also

@@ -8,7 +8,7 @@ Asynchronously copies all rows in the supplied DataTable to the destination tabl
 
 ```csharp
 public ValueTask<MySqlBulkCopyResult> WriteToServerAsync(DataTable dataTable, 
-    CancellationToken cancellationToken = default(CancellationToken))
+    CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |
@@ -35,7 +35,7 @@ Asynchronously copies all rows in the supplied IDataReader to the destination ta
 
 ```csharp
 public ValueTask<MySqlBulkCopyResult> WriteToServerAsync(IDataReader dataReader, 
-    CancellationToken cancellationToken = default(CancellationToken))
+    CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |
@@ -62,7 +62,7 @@ Asynchronously copies all rows in the supplied sequence of DataRow objects to th
 
 ```csharp
 public ValueTask<MySqlBulkCopyResult> WriteToServerAsync(IEnumerable<DataRow> dataRows, 
-    int columnCount, CancellationToken cancellationToken = default(CancellationToken))
+    int columnCount, CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |

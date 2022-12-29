@@ -7,7 +7,7 @@ title: MySqlConnection.RemoteCertificateValidationCallback property
 Gets or sets the delegate used to verify that the server's certificate is valid.
 
 ```csharp
-public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
+public RemoteCertificateValidationCallback? RemoteCertificateValidationCallback { get; set; }
 ```
 
 ## Remarks

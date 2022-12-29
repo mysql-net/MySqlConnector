@@ -21,7 +21,7 @@ public MySqlConnection()
 # MySqlConnection constructor (2 of 2)
 
 ```csharp
-public MySqlConnection(string connectionString)
+public MySqlConnection(string? connectionString)
 ```
 
 ## See Also

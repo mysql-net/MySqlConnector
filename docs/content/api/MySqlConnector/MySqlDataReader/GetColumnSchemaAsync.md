@@ -8,7 +8,7 @@ Returns metadata about the columns in the result set.
 
 ```csharp
 public override Task<ReadOnlyCollection<DbColumn>> GetColumnSchemaAsync(
-    CancellationToken cancellationToken = default(CancellationToken))
+    CancellationToken cancellationToken = default)
 ```
 
 | parameter | description |

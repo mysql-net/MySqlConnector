@@ -5,7 +5,7 @@ title: MySqlDataAdapter.DeleteCommand property
 # MySqlDataAdapter.DeleteCommand property
 
 ```csharp
-public MySqlCommand DeleteCommand { get; set; }
+public MySqlCommand? DeleteCommand { get; set; }
 ```
 
 ## See Also
