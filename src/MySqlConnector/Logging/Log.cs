@@ -258,7 +258,7 @@ internal static partial class Log
 	[LoggerMessage(EventIds.ProcedureHasRoutineCount, LogLevel.Trace, "Procedure for {Schema}.{Component} has {RoutineCount} routines and {ParameterCount} parameters")]
 	public static partial void ProcedureHasRoutineCount(ILogger logger, string schema, string component, int routineCount, int parameterCount);
 
-	[LoggerMessage(EventIds.CreatedNewSession, LogLevel.Trace, "Session {SessionId} created new session")]
+	[LoggerMessage(EventIds.CreatedNewSession, LogLevel.Trace, "Created new session {SessionId}")]
 	public static partial void CreatedNewSession(ILogger logger, string sessionId);
 
 	[LoggerMessage(EventIds.PingingServer, LogLevel.Trace, "Session {SessionId} pinging server")]
@@ -282,10 +282,10 @@ internal static partial class Log
 	[LoggerMessage(EventIds.QueryWasInterrupted, LogLevel.Information, "Session {SessionId} query was interrupted")]
 	public static partial void QueryWasInterrupted(ILogger logger, string sessionId);
 
-	[LoggerMessage(EventIds.PreparingCommandPayload, LogLevel.Trace, "Session {SessionId} preparing command payload for {CommandText}")]
+	[LoggerMessage(EventIds.PreparingCommandPayload, LogLevel.Trace, "Session {SessionId} preparing command payload for: {CommandText}")]
 	public static partial void PreparingCommandPayload(ILogger logger, string sessionId, string commandText);
 
-	[LoggerMessage(EventIds.PreparingCommandPayloadWithId, LogLevel.Trace, "Session {SessionId} preparing statement payload with ID {StatementId} for {CommandText}")]
+	[LoggerMessage(EventIds.PreparingCommandPayloadWithId, LogLevel.Trace, "Session {SessionId} preparing statement payload with ID {StatementId} for: {CommandText}")]
 	public static partial void PreparingCommandPayloadWithId(ILogger logger, string sessionId, int statementId, string commandText);
 
 	[LoggerMessage(EventIds.QueryAttributesNotSupported, LogLevel.Warning, "Session {SessionId} has query attributes but server doesn't support them; CommandText: {CommandText}")]
@@ -327,7 +327,7 @@ internal static partial class Log
 	[LoggerMessage(EventIds.FailedInSendReplyAsync, LogLevel.Debug, "Session {SessionId} failed in SendReplyAsync")]
 	public static partial void FailedInSendReplyAsync(ILogger logger, Exception exception, string sessionId);
 
-	[LoggerMessage(EventIds.CreatingNewConnectionPool, LogLevel.Information, "Pool {PoolId} creating new connection pool for {ConnectionString}")]
+	[LoggerMessage(EventIds.CreatingNewConnectionPool, LogLevel.Information, "Creating new connection pool {PoolId} for {ConnectionString}")]
 	public static partial void CreatingNewConnectionPool(ILogger logger, int poolId, string connectionString);
 
 	[LoggerMessage(EventIds.ScanningForLeakedSessions, LogLevel.Debug, "Pool {PoolId} is empty; scanning for any leaked sessions")]
@@ -342,11 +342,11 @@ internal static partial class Log
 	[LoggerMessage(EventIds.SessionIsUnusable, LogLevel.Information, "Pool {PoolId} session {SessionId} is unusable; destroying it")]
 	public static partial void SessionIsUnusable(ILogger logger, int poolId, string sessionId);
 
-	[LoggerMessage(EventIds.ReturningPooledSession, LogLevel.Trace, "Pool {PoolId} returning pooled session {SessionId} to caller; {LeasedSessionsCount} leased sessions")]
-	public static partial void ReturningPooledSession(ILogger logger, int poolId, string sessionId, int leasedSessionsCount);
+	[LoggerMessage(EventIds.ReturningPooledSession, LogLevel.Trace, "Pool {PoolId} returning pooled session {SessionId} to caller; {LeasedSessionCount} leased session(s)")]
+	public static partial void ReturningPooledSession(ILogger logger, int poolId, string sessionId, int leasedSessionCount);
 
-	[LoggerMessage(EventIds.ReturningNewSession, LogLevel.Trace, "Pool {PoolId} returning new session {SessionId} to caller; {LeasedSessionsCount} leased sessions")]
-	public static partial void ReturningNewSession(ILogger logger, int poolId, string sessionId, int leasedSessionsCount);
+	[LoggerMessage(EventIds.ReturningNewSession, LogLevel.Trace, "Pool {PoolId} returning new session {SessionId} to caller; {LeasedSessionCount} leased session(s)")]
+	public static partial void ReturningNewSession(ILogger logger, int poolId, string sessionId, int leasedSessionCount);
 
 	[LoggerMessage(EventIds.DisposingCreatedSessionDueToException, LogLevel.Debug, "Pool {PoolId} disposing created session {SessionId} due to exception: {ExceptionMessage}")]
 	public static partial void DisposingCreatedSessionDueToException(ILogger logger, Exception exception, int poolId, string sessionId, string exceptionMessage);
