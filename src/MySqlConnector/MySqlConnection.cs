@@ -702,12 +702,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	public MySqlConnection Clone() => new(m_connectionString, LoggingConfiguration, m_hasBeenOpened)
-	{
-		ProvideClientCertificatesCallback = ProvideClientCertificatesCallback,
-		ProvidePasswordCallback = ProvidePasswordCallback,
-		RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
-	};
+	public MySqlConnection Clone() => new(this, m_connectionString, m_hasBeenOpened);
 
 	object ICloneable.Clone() => Clone();
 
@@ -727,12 +722,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		var shouldCopyPassword = newBuilder.Password.Length == 0 && (!newBuilder.PersistSecurityInfo || currentBuilder.PersistSecurityInfo);
 		if (shouldCopyPassword)
 			newBuilder.Password = currentBuilder.Password;
-		return new MySqlConnection(newBuilder.ConnectionString, LoggingConfiguration, m_hasBeenOpened && shouldCopyPassword && !currentBuilder.PersistSecurityInfo)
-		{
-			ProvideClientCertificatesCallback = ProvideClientCertificatesCallback,
-			ProvidePasswordCallback = ProvidePasswordCallback,
-			RemoteCertificateValidationCallback = RemoteCertificateValidationCallback,
-		};
+		return new MySqlConnection(this, newBuilder.ConnectionString, m_hasBeenOpened && shouldCopyPassword && !currentBuilder.PersistSecurityInfo);
 	}
 
 	internal ServerSession Session
@@ -981,10 +971,14 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	private MySqlConnection(string connectionString, MySqlConnectorLoggingConfiguration loggingConfiguration, bool hasBeenOpened)
-		: this(connectionString, loggingConfiguration)
+	private MySqlConnection(MySqlConnection other, string connectionString, bool hasBeenOpened)
+		: this(connectionString, other.LoggingConfiguration)
 	{
+		m_dataSource = other.m_dataSource;
 		m_hasBeenOpened = hasBeenOpened;
+		ProvideClientCertificatesCallback = other.ProvideClientCertificatesCallback;
+		ProvidePasswordCallback = other.ProvidePasswordCallback;
+		RemoteCertificateValidationCallback = other.RemoteCertificateValidationCallback;
 	}
 
 	private void VerifyNotDisposed()

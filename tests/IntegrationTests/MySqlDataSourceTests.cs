@@ -51,6 +51,22 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 	}
 
 	[Fact]
+	public void CloneReusesDataSource()
+	{
+		using var dbSource = new MySqlDataSource(AppConfig.ConnectionString);
+
+		using var connection1 = dbSource.CreateConnection();
+		using var connection2 = connection1.Clone();
+
+		connection1.Open();
+		var serverThread = connection1.ServerThread;
+		connection1.Close();
+
+		connection2.Open();
+		Assert.Equal(serverThread, connection2.ServerThread);
+	}
+
+	[Fact]
 	public void MultipleDataSourcesHaveDifferentPools()
 	{
 		using var dbSource1 = new MySqlDataSource(AppConfig.ConnectionString);
