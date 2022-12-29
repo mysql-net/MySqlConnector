@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{D0EDA522
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchemaCollectionGenerator", "tools\SchemaCollectionGenerator\SchemaCollectionGenerator.csproj", "{2C8FA08E-755D-454D-B98E-10A122673ABE}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlConnector.DependencyInjection", "src\MySqlConnector.DependencyInjection\MySqlConnector.DependencyInjection.csproj", "{D48B3619-7FE1-420C-A96C-B231B7EA73EA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,6 +72,10 @@ Global
 		{2C8FA08E-755D-454D-B98E-10A122673ABE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C8FA08E-755D-454D-B98E-10A122673ABE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C8FA08E-755D-454D-B98E-10A122673ABE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D48B3619-7FE1-420C-A96C-B231B7EA73EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D48B3619-7FE1-420C-A96C-B231B7EA73EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D48B3619-7FE1-420C-A96C-B231B7EA73EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D48B3619-7FE1-420C-A96C-B231B7EA73EA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
