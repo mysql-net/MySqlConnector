@@ -142,5 +142,83 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 			await Assert.ThrowsAsync<MySqlException>(connection.OpenAsync);
 	}
 
+	[Fact]
+	public void PasswordPropertyIsUsed()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = "";
+
+		using var dataSource = new MySqlDataSource(csb.ConnectionString)
+		{
+			Password = password,
+		};
+		using var connection = dataSource.OpenConnection();
+		Assert.Equal(ConnectionState.Open, connection.State);
+	}
+
+	[Fact]
+	public void PasswordProviderCallbackIsInvoked()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = "";
+
+		using var dataSource = new MySqlDataSourceBuilder(csb.ConnectionString)
+			.UsePeriodicPasswordProvider((_, _) => new ValueTask<string>(password), TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1))
+			.Build();
+		using var connection = dataSource.OpenConnection();
+		Assert.Equal(ConnectionState.Open, connection.State);
+	}
+
+	[Fact]
+	public void PasswordProviderCallbackIsWaitedFor()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = "";
+
+		using var dataSource = new MySqlDataSourceBuilder(csb.ConnectionString)
+			.UsePeriodicPasswordProvider(async (_, _) =>
+			{
+				await Task.Delay(TimeSpan.FromSeconds(0.5));
+				return password;
+			}, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1))
+			.Build();
+		using var connection = dataSource.OpenConnection();
+		Assert.Equal(ConnectionState.Open, connection.State);
+	}
+
+	[Fact]
+	public void PasswordProviderFailureIsRetried()
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		var password = csb.Password;
+		csb.Password = "";
+
+		using var barrier = new Barrier(2);
+
+		var count = 0;
+		using var dataSource = new MySqlDataSourceBuilder(csb.ConnectionString)
+			.UsePeriodicPasswordProvider((_, _) =>
+			{
+				if (count++ == 0)
+					throw new ApplicationException("First-time failure");
+				barrier.SignalAndWait();
+				return new ValueTask<string>(password);
+			}, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(0.5))
+			.Build();
+
+		// throws the first time
+		var exception = Assert.Throws<MySqlException>(dataSource.OpenConnection); // Failed to obtain password via ProvidePasswordCallback
+		Assert.IsType<MySqlException>(exception.InnerException); // The periodic password provider failed
+		Assert.IsType<ApplicationException>(exception.InnerException.InnerException); // First-time failure
+			
+		// succeeds after failure retry
+		barrier.SignalAndWait();
+		Thread.Sleep(10);
+		using var connection = dataSource.OpenConnection();
+		Assert.Equal(ConnectionState.Open, connection.State);
+	}
 }
 #endif

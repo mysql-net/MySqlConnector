@@ -44,6 +44,23 @@ public sealed class MySqlDataSourceBuilder
 	}
 
 	/// <summary>
+	/// Configures a periodic password provider, which is automatically called by the data source at some regular interval. This is the
+	/// recommended way to fetch a rotating access token.
+	/// </summary>
+	/// <param name="passwordProvider">A callback which returns the password to be used by any new MySQL connections that are made.</param>
+	/// <param name="successRefreshInterval">How long to cache the password before re-invoking the callback.</param>
+	/// <param name="failureRefreshInterval">How long to wait before re-invoking the callback on failure. This should
+	/// typically be much shorter than <paramref name="successRefreshInterval"/>.</param>
+	/// <returns>This builder, so that method calls can be chained.</returns>
+	public MySqlDataSourceBuilder UsePeriodicPasswordProvider(Func<MySqlProvidePasswordContext, CancellationToken, ValueTask<string>>? passwordProvider, TimeSpan successRefreshInterval, TimeSpan failureRefreshInterval)
+	{
+		m_periodicPasswordProvider = passwordProvider;
+		m_periodicPasswordProviderSuccessRefreshInterval = successRefreshInterval;
+		m_periodicPasswordProviderFailureRefreshInterval = failureRefreshInterval;
+		return this;
+	}
+
+	/// <summary>
 	/// Sets the callback used to verify that the server's certificate is valid.
 	/// </summary>
 	/// <param name="callback">The callback used to verify that the server's certificate is valid.</param>
@@ -67,7 +84,10 @@ public sealed class MySqlDataSourceBuilder
 		return new(ConnectionStringBuilder.ConnectionString,
 			loggingConfiguration,
 			m_clientCertificatesCallback,
-			m_remoteCertificateValidationCallback
+			m_remoteCertificateValidationCallback,
+			m_periodicPasswordProvider,
+			m_periodicPasswordProviderSuccessRefreshInterval,
+			m_periodicPasswordProviderFailureRefreshInterval
 			);
 	}
 
@@ -79,4 +99,7 @@ public sealed class MySqlDataSourceBuilder
 	private ILoggerFactory? m_loggerFactory;
 	private Func<X509CertificateCollection, ValueTask>? m_clientCertificatesCallback;
 	private RemoteCertificateValidationCallback? m_remoteCertificateValidationCallback;
+	private Func<MySqlProvidePasswordContext, CancellationToken, ValueTask<string>>? m_periodicPasswordProvider;
+	private TimeSpan m_periodicPasswordProviderSuccessRefreshInterval;
+	private TimeSpan m_periodicPasswordProviderFailureRefreshInterval;
 }

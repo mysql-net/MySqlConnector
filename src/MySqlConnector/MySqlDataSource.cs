@@ -18,14 +18,17 @@ public sealed class MySqlDataSource : DbDataSource
 	/// <param name="connectionString">The connection string for the MySQL Server. This parameter is required.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="connectionString"/> is <c>null</c>.</exception>
 	public MySqlDataSource(string connectionString)
-		: this(connectionString ?? throw new ArgumentNullException(nameof(connectionString)), MySqlConnectorLoggingConfiguration.NullConfiguration, null, null)
+		: this(connectionString ?? throw new ArgumentNullException(nameof(connectionString)), MySqlConnectorLoggingConfiguration.NullConfiguration, null, null, null, default, default)
 	{
 	}
 
 	internal MySqlDataSource(string connectionString,
 		MySqlConnectorLoggingConfiguration loggingConfiguration,
 		Func<X509CertificateCollection, ValueTask>? clientCertificatesCallback,
-		RemoteCertificateValidationCallback? remoteCertificateValidationCallback)
+		RemoteCertificateValidationCallback? remoteCertificateValidationCallback,
+		Func<MySqlProvidePasswordContext, CancellationToken, ValueTask<string>>? periodicPasswordProvider,
+		TimeSpan periodicPasswordProviderSuccessRefreshInterval,
+		TimeSpan periodicPasswordProviderFailureRefreshInterval)
 	{
 		m_connectionString = connectionString;
 		LoggingConfiguration = loggingConfiguration;
@@ -39,6 +42,25 @@ public sealed class MySqlDataSource : DbDataSource
 			Log.DataSourceCreatedWithPool(m_logger, m_id, Pool.Id);
 		else
 			Log.DataSourceCreatedWithoutPool(m_logger, m_id);
+
+		if (periodicPasswordProvider is not null)
+		{
+			m_periodicPasswordProvider = periodicPasswordProvider;
+			m_periodicPasswordProviderSuccessRefreshInterval = periodicPasswordProviderSuccessRefreshInterval;
+			m_periodicPasswordProviderFailureRefreshInterval = periodicPasswordProviderFailureRefreshInterval;
+
+			m_passwordProviderTimerCancellationTokenSource = new();
+			var csb = new MySqlConnectionStringBuilder(m_connectionString);
+			m_providePasswordContext = new(csb.Server, (int) csb.Port, csb.UserID, csb.Database);
+
+			// create the timer but don't start it; the manual run below will will schedule the first refresh
+			// see https://github.com/davidfowl/AspNetCoreDiagnosticScenarios/blob/master/AsyncGuidance.md#timer-callbacks for code pattern
+			m_passwordProviderTimer = new Timer(_ => _ = RefreshPassword(), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+
+			// trigger the first refresh attempt right now, outside the timer; this allows us to capture the Task so it can be observed in ComplexGetPassword
+			m_initialPasswordRefreshTask = Task.Run(RefreshPassword);
+			m_providePasswordCallback = ProvidePasswordFromInitialRefreshTask;
+		}
 	}
 
 	/// <summary>
@@ -75,6 +97,29 @@ public sealed class MySqlDataSource : DbDataSource
 	/// </summary>
 	public override string ConnectionString => m_connectionString;
 
+#pragma warning disable CA1044 // Properties should not be write only
+	/// <summary>
+	/// Sets the password that will be used by the next <see cref="MySqlConnection"/> created from this <see cref="MySqlDataSource"/>.
+	/// </summary>
+	/// <remarks>
+	/// <para>This can be used to update the password for database servers that periodically rotate authentication tokens, without
+	/// affecting connection pooling. The <see cref="MySqlConnectionStringBuilder.Password"/> property must not be specified in
+	/// order for this field to be used.</para>
+	/// <para>Consider using <see cref="MySqlDataSourceBuilder.UsePeriodicPasswordProvider"/> instead.</para>
+	/// </remarks>
+	public string Password
+	{
+		set
+		{
+			if (m_periodicPasswordProvider is not null)
+				throw new InvalidOperationException("Cannot set Password when this MySqlDataSource is configured with a PeriodicPasswordProvider.");
+
+			m_password = value ?? throw new ArgumentNullException(nameof(value));
+			m_providePasswordCallback = ProvidePasswordFromField;
+		}
+	}
+#pragma warning restore CA1044 // Properties should not be write only
+
 	protected override DbConnection CreateDbConnection()
 	{
 		if (m_isDisposed)
@@ -82,6 +127,7 @@ public sealed class MySqlDataSource : DbDataSource
 		return new MySqlConnection(this)
 		{
 			ProvideClientCertificatesCallback = m_clientCertificatesCallback,
+			ProvidePasswordCallback = m_providePasswordCallback,
 			RemoteCertificateValidationCallback = m_remoteCertificateValidationCallback,
 		};
 	}
@@ -105,6 +151,11 @@ public sealed class MySqlDataSource : DbDataSource
 
 	private async ValueTask DisposeAsync(IOBehavior ioBehavior)
 	{
+		if (m_passwordProviderTimerCancellationTokenSource is { } cts)
+		{
+			cts.Cancel();
+			cts.Dispose();
+		}
 		if (Pool is not null)
 		{
 			await Pool.ClearAsync(ioBehavior, default).ConfigureAwait(false);
@@ -113,9 +164,40 @@ public sealed class MySqlDataSource : DbDataSource
 		m_isDisposed = true;
 	}
 
+	private async Task RefreshPassword()
+	{
+		try
+		{
+			// set the password from the callback, then queue another refresh after the 'success' interval
+			m_password = await m_periodicPasswordProvider!(m_providePasswordContext!, m_passwordProviderTimerCancellationTokenSource!.Token).ConfigureAwait(false);
+			m_providePasswordCallback = ProvidePasswordFromField;
+			m_passwordProviderTimer!.Change(m_periodicPasswordProviderSuccessRefreshInterval, Timeout.InfiniteTimeSpan);
+		}
+		catch (Exception e)
+		{
+			// queue a refresh after the 'failure' interval
+			Log.PeriodicPasswordProviderFailed(m_logger, e, m_id, e.Message);
+			m_passwordProviderTimer!.Change(m_periodicPasswordProviderFailureRefreshInterval, Timeout.InfiniteTimeSpan);
+			throw new MySqlException("The periodic password provider failed", e);
+		}
+	}
+
 	internal ConnectionPool? Pool { get; }
 
 	internal MySqlConnectorLoggingConfiguration LoggingConfiguration { get; }
+
+	private string ProvidePasswordFromField(MySqlProvidePasswordContext context) => m_password!;
+
+	private string ProvidePasswordFromInitialRefreshTask(MySqlProvidePasswordContext context)
+	{
+		if (m_password is null)
+		{
+			// password hasn't been set up, so wait (synchronously) for the task to complete the first time
+			m_initialPasswordRefreshTask!.GetAwaiter().GetResult();
+			m_providePasswordCallback = ProvidePasswordFromField;
+		}
+		return m_password!;
+	}
 
 	private static int s_lastId;
 
@@ -124,5 +206,14 @@ public sealed class MySqlDataSource : DbDataSource
 	private readonly string m_connectionString;
 	private readonly Func<X509CertificateCollection, ValueTask>? m_clientCertificatesCallback;
 	private readonly RemoteCertificateValidationCallback? m_remoteCertificateValidationCallback;
+	private readonly Func<MySqlProvidePasswordContext, CancellationToken, ValueTask<string>>? m_periodicPasswordProvider;
+	private readonly TimeSpan m_periodicPasswordProviderSuccessRefreshInterval;
+	private readonly TimeSpan m_periodicPasswordProviderFailureRefreshInterval;
+	private readonly MySqlProvidePasswordContext? m_providePasswordContext;
+	private readonly CancellationTokenSource? m_passwordProviderTimerCancellationTokenSource;
+	private readonly Timer? m_passwordProviderTimer;
+	private readonly Task? m_initialPasswordRefreshTask;
 	private bool m_isDisposed;
+	private string? m_password;
+	private Func<MySqlProvidePasswordContext, string>? m_providePasswordCallback;
 }

@@ -7,11 +7,14 @@ namespace MySqlConnector.Logging;
 
 internal static partial class Log
 {
-	[LoggerMessage(EventIds.DataSourceCreatedWithPool, LogLevel.Information, "DataSource {DataSourceId} created with pool {PoolId}")]
+	[LoggerMessage(EventIds.DataSourceCreatedWithPool, LogLevel.Information, "Data source {DataSourceId} created with pool {PoolId}")]
 	public static partial void DataSourceCreatedWithPool(ILogger logger, int dataSourceId, int poolId);
 
-	[LoggerMessage(EventIds.DataSourceCreatedWithoutPool, LogLevel.Information, "DataSource {DataSourceId} created with no pool")]
+	[LoggerMessage(EventIds.DataSourceCreatedWithoutPool, LogLevel.Information, "Data source {DataSourceId} created with no pool")]
 	public static partial void DataSourceCreatedWithoutPool(ILogger logger, int dataSourceId);
+
+	[LoggerMessage(EventIds.PeriodicPasswordProviderFailed, LogLevel.Error, "Periodic password provider for data source {DataSourceId} failed: {ExceptionMessage}")]
+	public static partial void PeriodicPasswordProviderFailed(ILogger logger, Exception exception, int dataSourceId, string exceptionMessage);
 
 	[LoggerMessage(EventIds.CreatedNonPooledSession, LogLevel.Debug, "Created new non-pooled session {SessionId}")]
 	public static partial void CreatedNonPooledSession(ILogger logger, string sessionId);
