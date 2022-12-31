@@ -387,12 +387,7 @@ create table insert_string_builder(rowid integer not null primary key auto_incre
 
 		var value = new StringBuilder("\aAB\\12'ab\\'\\'");
 		for (var i = 0; i < 100; i++)
-#if !NETCOREAPP3_1
 			value.Append("\U0001F600\uD800\'\U0001F601\uD800");
-#else
-			// the netcoreapp3.1 implementation is broken when handling an unpaired surrogate; probably https://github.com/dotnet/runtime/issues/33817
-			value.Append("\U0001F600\U0001F601");
-#endif
 
 		using var cmd = connection.CreateCommand();
 		cmd.CommandText = @"insert into insert_string_builder(str) values(@str);";

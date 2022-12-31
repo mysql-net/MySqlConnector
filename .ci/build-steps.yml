@@ -47,18 +47,6 @@ steps:
     targetPath: 'tests/Conformance.Tests/bin/Release/net7.0/publish'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Publish IntegrationTests (3.1)'
-  inputs:
-    command: 'publish'
-    arguments: '-c Release -f netcoreapp3.1 --no-build tests/IntegrationTests/IntegrationTests.csproj'
-    publishWebProjects: false
-    zipAfterPublish: false
-- task: PublishPipelineArtifact@0
-  inputs:
-    artifactName: 'IntegrationTests-netcoreapp3.1-$(Agent.OS)'
-    targetPath: 'tests/IntegrationTests/bin/Release/netcoreapp3.1/publish'
-
-- task: DotNetCoreCLI@2
   displayName: 'Publish IntegrationTests (7.0)'
   inputs:
     command: 'publish'

@@ -260,24 +260,5 @@ public class SslTests : IClassFixture<DatabaseFixture>
 	}
 #endif
 
-#if NETCOREAPP3_1
-	[SkippableFact(ConfigSettings.RequiresSsl)]
-	public async Task RequireTls13()
-	{
-		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Tls13))
-			return;
-
-		var csb = AppConfig.CreateConnectionStringBuilder();
-		csb.TlsVersion = "TLS 1.3";
-
-		using var connection = new MySqlConnection(csb.ConnectionString);
-#if !MYSQL_DATA
-		await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
-#else
-		await Assert.ThrowsAsync<Win32Exception>(async () => await connection.OpenAsync());
-#endif
-	}
-#endif
-
 	readonly DatabaseFixture m_database;
 }
