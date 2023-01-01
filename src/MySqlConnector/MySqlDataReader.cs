@@ -11,7 +11,7 @@ namespace MySqlConnector;
 
 #pragma warning disable CA1010 // Generic interface should also be implemented
 
-#if NET461
+#if NET462
 public sealed class MySqlDataReader : DbDataReader
 #else
 public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator

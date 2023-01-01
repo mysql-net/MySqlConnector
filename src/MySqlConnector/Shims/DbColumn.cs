@@ -1,4 +1,4 @@
-#if NET461
+#if NET462
 #pragma warning disable CA1716 // Don't use reserved language keywords
 namespace System.Data.Common;
 

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
     <Title>MySqlConnector Logging Adapter for log4net</Title>
     <Description>Writes MySqlConnector logging output to log4net with one line of code.</Description>
     <Copyright>Copyright 2017–2022 Bradley Grainger</Copyright>

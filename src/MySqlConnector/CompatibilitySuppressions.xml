@@ -19,10 +19,23 @@
     <Right>lib/net471/MySqlConnector.dll</Right>
   </Suppression>
   <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:System.Data.Common.DbColumn</Target>
+    <Left>lib/net461/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.0/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:System.Data.Common.DbColumn</Target>
+    <Left>lib/net462/MySqlConnector.dll</Left>
+    <Right>lib/net471/MySqlConnector.dll</Right>
+  </Suppression>
+  <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:MySqlConnector.MySqlDataReader</Target>
     <Left>lib/netstandard2.0/MySqlConnector.dll</Left>
-    <Right>lib/net461/MySqlConnector.dll</Right>
+    <Right>lib/net462/MySqlConnector.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>PKV006</DiagnosticId>
