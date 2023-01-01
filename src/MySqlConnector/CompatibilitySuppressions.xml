@@ -9,7 +9,7 @@
   <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:MySqlConnector.MySqlBatchCommandCollection</Target>
-    <Left>lib/netcoreapp3.1/MySqlConnector.dll</Left>
+    <Left>lib/netstandard2.1/MySqlConnector.dll</Left>
     <Right>lib/net6.0/MySqlConnector.dll</Right>
   </Suppression>
   <Suppression>
@@ -23,12 +23,6 @@
     <Target>T:MySqlConnector.MySqlDataReader</Target>
     <Left>lib/netstandard2.0/MySqlConnector.dll</Left>
     <Right>lib/net461/MySqlConnector.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0008</DiagnosticId>
-    <Target>T:MySqlConnector.MySqlDataSource</Target>
-    <Left>lib/netstandard2.1/MySqlConnector.dll</Left>
-    <Right>lib/netcoreapp3.1/MySqlConnector.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>PKV006</DiagnosticId>
