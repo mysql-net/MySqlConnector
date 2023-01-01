@@ -50,6 +50,7 @@ internal sealed class TypeMapper
 		var typeDouble = AddDbTypeMapping(new(typeof(double), new[] { DbType.Double }, convert: static o => Convert.ToDouble(o, CultureInfo.InvariantCulture)));
 		var typeFloat = AddDbTypeMapping(new(typeof(float), new[] { DbType.Single }, convert: static o => Convert.ToSingle(o, CultureInfo.InvariantCulture)));
 		AddColumnTypeMetadata(new("DECIMAL", typeDecimal, MySqlDbType.NewDecimal, createFormat: "DECIMAL({0},{1});precision,scale"));
+		AddColumnTypeMetadata(new("DECIMAL", typeDecimal, MySqlDbType.NewDecimal, isUnsigned: true, createFormat: "DECIMAL({0},{1}) UNSIGNED;precision,scale"));
 		AddColumnTypeMetadata(new("DECIMAL", typeDecimal, MySqlDbType.Decimal));
 		AddColumnTypeMetadata(new("DOUBLE", typeDouble, MySqlDbType.Double));
 		AddColumnTypeMetadata(new("FLOAT", typeFloat, MySqlDbType.Float));
