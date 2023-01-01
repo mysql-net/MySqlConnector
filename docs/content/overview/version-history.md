@@ -1,5 +1,5 @@
 ---
-lastmod: 2022-12-23
+lastmod: 2023-01-01
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,11 @@ weight: 30
 ---
 
 # Version History
+
+### 2.2.5
+
+* Add support for `DECIMAL UNSIGNED`, fixing error in `DeriveParameters`: [#1272](https://github.com/mysql-net/MySqlConnector/issues/1272).
+* Fix parsing `nan` as float/double value on .NET Framework.
 
 ### 2.2.4
 
