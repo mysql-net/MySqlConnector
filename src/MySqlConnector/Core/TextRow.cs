@@ -98,21 +98,25 @@ internal sealed class TextRow : Row
 		case ColumnType.Float:
 			if (Utf8Parser.TryParse(data, out float floatValue, out var floatBytesConsumed) && floatBytesConsumed == data.Length)
 				return floatValue;
-			ReadOnlySpan<byte> floatInfinity = new byte[] { 0x2D, 0x69, 0x6E, 0x66 }; // "-inf"
+			ReadOnlySpan<byte> floatInfinity = "-inf"u8;
 			if (data.SequenceEqual(floatInfinity))
 				return float.NegativeInfinity;
 			if (data.SequenceEqual(floatInfinity.Slice(1)))
 				return float.PositiveInfinity;
+			if (data.SequenceEqual("nan"u8))
+				return float.NaN;
 			throw new FormatException($"Couldn't parse value as float: {Encoding.UTF8.GetString(data)}");
 
 		case ColumnType.Double:
 			if (Utf8Parser.TryParse(data, out double doubleValue, out var doubleBytesConsumed) && doubleBytesConsumed == data.Length)
 				return doubleValue;
-			ReadOnlySpan<byte> doubleInfinity = new byte[] { 0x2D, 0x69, 0x6E, 0x66 }; // "-inf"
+			ReadOnlySpan<byte> doubleInfinity = "-inf"u8;
 			if (data.SequenceEqual(doubleInfinity))
 				return double.NegativeInfinity;
 			if (data.SequenceEqual(doubleInfinity.Slice(1)))
 				return double.PositiveInfinity;
+			if (data.SequenceEqual("nan"u8))
+				return double.NaN;
 			throw new FormatException($"Couldn't parse value as double: {Encoding.UTF8.GetString(data)}");
 
 		case ColumnType.Decimal:
