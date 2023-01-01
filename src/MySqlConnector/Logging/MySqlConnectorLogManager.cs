@@ -47,7 +47,9 @@ public static class MySqlConnectorLogManager
 		public MySqlConnectorLogger(IMySqlConnectorLogger logger) =>
 			m_logger = logger;
 
-		public IDisposable BeginScope<TState>(TState state) => throw new NotSupportedException();
+		public IDisposable BeginScope<TState>(TState state)
+			where TState : notnull
+			=> throw new NotSupportedException();
 
 		public bool IsEnabled(LogLevel logLevel) => m_logger.IsEnabled(ConvertLogLevel(logLevel));
 

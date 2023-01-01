@@ -1597,7 +1597,7 @@ internal sealed partial class ServerSession
 				}
 				rsa.ImportParameters(rsaParameters);
 
-#if NET461 || NET471
+#if NET462 || NET471
 				var certificate = new X509Certificate2(sslCertificateFile, "", X509KeyStorageFlags.MachineKeySet)
 				{
 					PrivateKey = rsa,
