@@ -2,6 +2,7 @@
 
 MySqlConnector.DependencyInjection helps set up MySqlConnector in applications that use dependency injection, most notably in ASP.NET.
 It allows easy configuration of your MySQL connections and registers the appropriate services in your DI container.
+It also configures logging by integrating MySqlConnector with the `ILoggingFactory` registered with the service provider.
 
 ## How to Use
 
