@@ -23,6 +23,7 @@ after_test:
 - cmd: |-
     dotnet pack src\MySqlConnector\MySqlConnector.csproj -c Release
     dotnet pack src\MySqlConnector.Authentication.Ed25519\MySqlConnector.Authentication.Ed25519.csproj -c Release
+    dotnet pack src\MySqlConnector.DependencyInjection\MySqlConnector.DependencyInjection.csproj -c Release
     dotnet pack src\MySqlConnector.Logging.log4net\MySqlConnector.Logging.log4net.csproj -c Release
     dotnet pack src\MySqlConnector.Logging.Microsoft.Extensions.Logging\MySqlConnector.Logging.Microsoft.Extensions.Logging.csproj -c Release
     dotnet pack src\MySqlConnector.Logging.NLog\MySqlConnector.Logging.NLog.csproj -c Release
