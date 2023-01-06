@@ -47,16 +47,18 @@ internal static class CommandExecutor
 			cancellationToken.ThrowIfCancellationRequested();
 
 			using var payload = writer.ToPayloadData();
-			connection.Session.StartQuerying(command.CancellableCommand);
+			var session = connection.Session;
+			session.StartQuerying(command.CancellableCommand);
 			command.SetLastInsertedId(0);
 			try
 			{
-				await connection.Session.SendAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
-				return await MySqlDataReader.CreateAsync(commandListPosition, payloadCreator, cachedProcedures, command, behavior, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+				await session.SendAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
+				await session.DataReader.InitAsync(commandListPosition, payloadCreator, cachedProcedures, command, behavior, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+				return session.DataReader;
 			}
 			catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
 			{
-				Log.QueryWasInterrupted(command.Logger, connection.Session.Id);
+				Log.QueryWasInterrupted(command.Logger, session.Id);
 				throw new OperationCanceledException(ex.Message, ex, cancellationToken);
 			}
 			catch (Exception ex) when (payload.Span.Length > 4_194_304 && (ex is SocketException or IOException or MySqlProtocolException))

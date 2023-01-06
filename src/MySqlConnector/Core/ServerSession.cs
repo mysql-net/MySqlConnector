@@ -42,6 +42,7 @@ internal sealed partial class ServerSession
 		PoolGeneration = poolGeneration;
 		HostName = "";
 		m_activityTags = new ActivityTagsCollection();
+		DataReader = new();
 		Log.CreatedNewSession(m_logger, Id);
 	}
 
@@ -65,6 +66,7 @@ internal sealed partial class ServerSession
 	public bool SupportsSessionTrack => m_supportsSessionTrack;
 	public bool ProcAccessDenied { get; set; }
 	public ICollection<KeyValuePair<string, object?>> ActivityTags => m_activityTags;
+	public MySqlDataReader DataReader { get; }
 
 	public ValueTask ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
 	{
