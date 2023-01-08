@@ -1,6 +1,6 @@
 ## About
 
-MySqlConnector is an [ADO.NET](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/) data provider for [MySQL](https://www.mysql.com/), [MariaDB](https://mariadb.org/), [Amazon Aurora](https://aws.amazon.com/rds/aurora/), [Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/) and other MySQL-compatible databases.
+MySqlConnector is a C# [ADO.NET](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/) driver for [MySQL](https://www.mysql.com/), [MariaDB](https://mariadb.org/), [Amazon Aurora](https://aws.amazon.com/rds/aurora/), [Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/) and other MySQL-compatible databases.
 
 More documentation is available at the [MySqlConnector website](https://mysqlconnector.net/).
 

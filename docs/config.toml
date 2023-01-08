@@ -1,4 +1,4 @@
-title = "High-Performance Async MySQL Driver for .NET"
+title = "High-Performance .NET MySQL Driver"
 baseurl = "https://mysqlconnector.net/"
 MetaDataFormat = "yaml"
 pluralizeListTitles = false
@@ -15,7 +15,7 @@ disablePathToLower = true
       unsafe = true
 
 [params]
-  description = "Documentation for MySqlConnector: an Async MySQL Driver for .NET and .NET Core"
+  description = "Documentation for MySqlConnector: an Async MySQL Driver for .NET"
   author = "MySqlConnector Authors"
 
 [taxonomies]

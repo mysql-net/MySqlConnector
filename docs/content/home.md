@@ -18,8 +18,7 @@ menu:
 
 ## About
 
-MySqlConnector is an [ADO.NET](https://msdn.microsoft.com/en-us/library/e80y5yhx.aspx) data
-provider for [MySQL Server](https://www.mysql.com/), [MariaDB](https://mariadb.org/),
+MySqlConnector is a C# [ADO.NET](https://msdn.microsoft.com/en-us/library/e80y5yhx.aspx) driver for [MySQL Server](https://www.mysql.com/), [MariaDB](https://mariadb.org/),
 [Percona Server](https://www.percona.com/software/mysql-database/percona-server), [Amazon Aurora](https://aws.amazon.com/rds/aurora/),
 [Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/),
 [Google Cloud SQL for MySQL](https://cloud.google.com/sql/docs/mysql/) and more. It provides implementations of
