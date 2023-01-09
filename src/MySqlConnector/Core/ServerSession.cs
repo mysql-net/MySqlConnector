@@ -1585,6 +1585,14 @@ internal sealed class ServerSession
 			throw new NotSupportedException("SslCert and SslKey connection string options are not supported in netstandard2.0.");
 #elif NET5_0_OR_GREATER
 			m_clientCertificate = X509Certificate2.CreateFromPemFile(sslCertificateFile, sslKeyFile);
+			if (Utility.IsWindows())
+			{
+				// Schannel has a bug where ephemeral keys can't be loaded: https://github.com/dotnet/runtime/issues/23749#issuecomment-485947319
+				// The workaround is to export the key (which may make it "Perphemeral"): https://github.com/dotnet/runtime/issues/23749#issuecomment-739895373
+				var oldCertificate = m_clientCertificate;
+				m_clientCertificate = new X509Certificate2(m_clientCertificate.Export(X509ContentType.Pkcs12));
+				oldCertificate.Dispose();
+			}
 			return new() { m_clientCertificate };
 #else
 			m_logArguments[1] = sslKeyFile;
@@ -1616,7 +1624,6 @@ internal sealed class ServerSession
 				RSA rsa;
 				try
 				{
-#pragma warning disable CA1416
 					// SslStream on Windows needs a KeyContainerName to be set
 					var csp = new CspParameters
 					{
@@ -1626,7 +1633,6 @@ internal sealed class ServerSession
 					{
 						PersistKeyInCsp = true,
 					};
-#pragma warning restore
 				}
 				catch (PlatformNotSupportedException)
 				{
