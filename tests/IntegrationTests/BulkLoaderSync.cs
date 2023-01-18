@@ -345,15 +345,9 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		bl.Expressions.Add("five = UNHEX(five)");
 		bl.Local = false;
 #if MYSQL_DATA
-		Assert.Throws<System.NullReferenceException>(() =>
-		{
-			int rowCount = bl.Load();
-		});
+		Assert.Throws<MySqlException>(() => { var rowCount = bl.Load(); });
 #else
-		Assert.Throws<System.InvalidOperationException>(() =>
-		{
-			int rowCount = bl.Load();
-		});
+		Assert.Throws<InvalidOperationException>(() => { var rowCount = bl.Load(); });
 #endif
 	}
 
@@ -384,7 +378,6 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 #endif
 	}
 
-#if !MYSQL_DATA
 	[SkippableFact(ConfigSettings.LocalCsvFile)]
 	public void BulkLoadFileStreamInvalidOperation()
 	{
@@ -392,7 +385,9 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		connection.Open();
 		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
 		using var fileStream = new FileStream(AppConfig.MySqlBulkLoaderLocalCsvFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
+#if !MYSQL_DATA
 		bl.SourceStream = fileStream;
+#endif
 		bl.TableName = m_testTable;
 		bl.CharacterSet = "UTF8";
 		bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
@@ -402,10 +397,11 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		bl.FieldQuotationOptional = true;
 		bl.Expressions.Add("five = UNHEX(five)");
 		bl.Local = false;
-		Assert.Throws<System.InvalidOperationException>(() =>
-		{
-			int rowCount = bl.Load();
-		});
+#if !MYSQL_DATA
+		Assert.Throws<InvalidOperationException>(() => { int rowCount = bl.Load(); });
+#else
+		Assert.Throws<MySqlException>(() => { int rowCount = bl.Load(fileStream); });
+#endif
 	}
 
 	[SkippableFact(ConfigSettings.LocalCsvFile)]
@@ -415,7 +411,9 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		connection.Open();
 		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
 		using var fileStream = new FileStream(AppConfig.MySqlBulkLoaderLocalCsvFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
+#if !MYSQL_DATA
 		bl.SourceStream = fileStream;
+#endif
 		bl.TableName = m_testTable;
 		bl.CharacterSet = "UTF8";
 		bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
@@ -425,7 +423,11 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		bl.FieldQuotationOptional = true;
 		bl.Expressions.Add("five = UNHEX(five)");
 		bl.Local = true;
+#if !MYSQL_DATA
 		int rowCount = bl.Load();
+#else
+		int rowCount = bl.Load(fileStream);
+#endif
 		Assert.Equal(20, rowCount);
 	}
 
@@ -436,7 +438,9 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		connection.Open();
 		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
 		using var memoryStream = new MemoryStream(m_memoryStreamBytes, false);
+#if !MYSQL_DATA
 		bl.SourceStream = memoryStream;
+#endif
 		bl.TableName = m_testTable;
 		bl.CharacterSet = "UTF8";
 		bl.Columns.AddRange(new string[] { "one", "two", "three" });
@@ -445,7 +449,11 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		bl.FieldQuotationCharacter = '"';
 		bl.FieldQuotationOptional = true;
 		bl.Local = false;
-		Assert.Throws<System.InvalidOperationException>(() => bl.Load());
+#if !MYSQL_DATA
+		Assert.Throws<InvalidOperationException>(() => bl.Load());
+#else
+		Assert.Throws<MySqlException>(() => bl.Load(memoryStream));
+#endif
 	}
 
 	[Fact]
@@ -455,7 +463,9 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		connection.Open();
 		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
 		using var memoryStream = new MemoryStream(m_memoryStreamBytes, false);
+#if !MYSQL_DATA
 		bl.SourceStream = memoryStream;
+#endif
 		bl.TableName = m_testTable;
 		bl.CharacterSet = "UTF8";
 		bl.Columns.AddRange(new string[] { "one", "two", "three" });
@@ -464,10 +474,15 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		bl.FieldQuotationCharacter = '"';
 		bl.FieldQuotationOptional = true;
 		bl.Local = true;
+#if !MYSQL_DATA
 		int rowCount = bl.Load();
+#else
+		int rowCount = bl.Load(memoryStream);
+#endif
 		Assert.Equal(5, rowCount);
 	}
 
+#if !MYSQL_DATA
 	[Fact]
 	public void BulkCopyDataReader()
 	{
@@ -1213,7 +1228,7 @@ create table bulk_load_data_table(a int not null primary key auto_increment, b t
 	}
 #endif
 
-	internal static string GetConnectionString() => AppConfig.ConnectionString;
+		internal static string GetConnectionString() => AppConfig.ConnectionString;
 
 	internal static string GetLocalConnectionString()
 	{

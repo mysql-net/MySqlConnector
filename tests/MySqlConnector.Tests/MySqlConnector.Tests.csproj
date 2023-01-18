@@ -7,6 +7,7 @@
  <PropertyGroup Condition=" '$(Configuration)' == 'MySqlData' ">
     <TargetFrameworks>net472</TargetFrameworks>
     <DefineConstants>MYSQL_DATA</DefineConstants>
+    <NoWarn>$(NoWarn);MSB3246</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -36,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'MySqlData' ">
-    <PackageReference Include="MySql.Data" Version="8.0.31" />
+    <PackageReference Include="MySql.Data" Version="8.0.32" />
     <Compile Remove="ByteBufferWriterTests.cs;CachedProcedureTests.cs;CancellationTests.cs;ConnectionTests.cs;FakeMySqlServer.cs;FakeMySqlServerConnection.cs;LoadBalancerTests.cs;MySqlDecimalTests.cs;MySqlExceptionTests.cs;MySqlParameterCollectionNameToIndexTests.cs;NormalizeTests.cs;ServerVersionTests.cs;StatementPreparerTests.cs;TypeMapperTests.cs;UtilityTests.cs" />
   </ItemGroup>
 

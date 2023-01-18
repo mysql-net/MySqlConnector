@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Condition=" '$(Configuration)' != 'MySqlData' ">
     <TargetFrameworks>net462;net472;net6.0;net7.0</TargetFrameworks>
@@ -6,8 +6,9 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'MySqlData' ">
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>net7.0</TargetFrameworks>
     <DefineConstants>MYSQL_DATA</DefineConstants>
+    <NoWarn>$(NoWarn);MSB3246</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -51,7 +52,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'MySqlData' ">
-    <PackageReference Include="MySql.Data" Version="8.0.31" />
+    <PackageReference Include="MySql.Data" Version="8.0.32" />
     <Using Include="MySql.Data.MySqlClient" />
   </ItemGroup>
 

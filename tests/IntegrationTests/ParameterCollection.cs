@@ -85,8 +85,8 @@ public class ParameterCollection : IDisposable
 	[Theory]
 	[InlineData("@test")]
 	[InlineData("@TEST")]
-#if !MYSQL_DATA
-	[InlineData("test")] // https://bugs.mysql.com/bug.php?id=93370
+	[InlineData("test")]
+#if !MYSQL_DATA // https://bugs.mysql.com/bug.php?id=93370
 	[InlineData("@'test'")]
 	[InlineData("@`TEST`")]
 #endif

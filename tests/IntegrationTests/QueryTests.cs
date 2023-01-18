@@ -893,11 +893,15 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 		{
 			ParameterName = "@param",
 			Direction = ParameterDirection.Output,
+			MySqlDbType = MySqlDbType.Int32,
 		});
 
+#if MYSQL_DATA
+		cmd.ExecuteNonQuery();
+		Assert.Equal(1234, cmd.Parameters["@param"].Value);
+#else
 		Assert.Throws<MySqlException>(() => cmd.ExecuteNonQuery());
-
-		// Issue #231: Assert.Equal(1234, cmd.Parameters["@param"].Value);
+#endif
 	}
 
 	[Fact]
@@ -1246,8 +1250,10 @@ FROM query_bit;", connection);
 	[Theory]
 	[InlineData(false, false)]
 	[InlineData(false, true)]
+#if !MYSQL_DATA
 	[InlineData(true, false)]
 	[InlineData(true, true)]
+#endif
 	public void GetIntForTinyInt1(bool treatTinyAsBoolean, bool prepare)
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
@@ -1270,19 +1276,13 @@ insert into datatypes_tinyint1(value) values(0), (1), (2), (-1), (-128), (127);"
 		for (int i = 0; i < expected.Length; i++)
 		{
 			Assert.True(reader.Read());
-#if !MYSQL_DATA
-			// https://bugs.mysql.com/bug.php?id=99091
 			Assert.Equal((sbyte) expected[i], reader.GetSByte(0));
 			if (treatTinyAsBoolean)
 				Assert.Equal((byte) expected[i], reader.GetByte(0));
-#endif
 			Assert.Equal((short) expected[i], reader.GetInt16(0));
 			Assert.Equal(expected[i], reader.GetInt32(0));
 			Assert.Equal((long) expected[i], reader.GetInt64(0));
-#if !MYSQL_DATA
-			// https://bugs.mysql.com/bug.php?id=99091
 			Assert.Equal(expected[i], reader.GetFieldValue<int>(0));
-#endif
 		}
 
 		Assert.False(reader.Read());

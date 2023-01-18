@@ -295,7 +295,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 		cmd.Cancel();
 	}
 
-	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=101507")]
+	[Fact]
 	public void CancelCommandForClosedConnectionIsNoop()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
@@ -305,7 +305,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 		cmd.Cancel();
 	}
 
-	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=101507")]
+	[Fact]
 	public void CancelCommandForDisposedConnectionIsNoop()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);

@@ -196,10 +196,11 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#72494](https://bugs.mysql.com/bug.php?id=72494), [#83330](https://bugs.mysql.com/bug.php?id=83330): EndOfStreamException inserting large blob with UseCompression=True
 * [#73610](https://bugs.mysql.com/bug.php?id=73610): Invalid password exception has wrong number
 * [#73788](https://bugs.mysql.com/bug.php?id=73788): Can’t use `DateTimeOffset`
+* ~~[#74392](https://bugs.mysql.com/bug.php?id=74392): Can't use `Stream` to bulk load data~~
 * ~~[#75604](https://bugs.mysql.com/bug.php?id=75604): Crash after 29.4 days of uptime~~
 * [#75917](https://bugs.mysql.com/bug.php?id=75917), [#76597](https://bugs.mysql.com/bug.php?id=76597), [#77691](https://bugs.mysql.com/bug.php?id=77691), [#78650](https://bugs.mysql.com/bug.php?id=78650), [#78919](https://bugs.mysql.com/bug.php?id=78919), [#80921](https://bugs.mysql.com/bug.php?id=80921), [#82136](https://bugs.mysql.com/bug.php?id=82136): “Reading from the stream has failed” when connecting to a server
 * [#77421](https://bugs.mysql.com/bug.php?id=77421): Connection is not reset when pulled from the connection pool
-* [#78426](https://bugs.mysql.com/bug.php?id=78426): Unknown database exception has wrong number
+* ~~[#78426](https://bugs.mysql.com/bug.php?id=78426): Unknown database exception has wrong number~~
 * ~~[#78760](https://bugs.mysql.com/bug.php?id=78760): Error when using tabs and newlines in SQL statements~~
 * ~~[#78917](https://bugs.mysql.com/bug.php?id=78917), [#79196](https://bugs.mysql.com/bug.php?id=79196), [#82292](https://bugs.mysql.com/bug.php?id=82292), [#89040](https://bugs.mysql.com/bug.php?id=89040): `TINYINT(1)` values start being returned as `sbyte` after `NULL`~~
 * ~~[#80030](https://bugs.mysql.com/bug.php?id=80030): Slow to connect with pooling disabled~~
@@ -233,7 +234,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#91770](https://bugs.mysql.com/bug.php?id=91770): `TIME(n)` column loses microseconds with prepared command~~
 * [#92367](https://bugs.mysql.com/bug.php?id=92367): `MySqlDataReader.GetDateTime` and `GetValue` return inconsistent values
 * [#92465](https://bugs.mysql.com/bug.php?id=92465): “There is already an open DataReader” `MySqlException` thrown from `TransactionScope.Dispose`
-* [#92734](https://bugs.mysql.com/bug.php?id=92734): `MySqlParameter.Clone` doesn't copy all property values
+* ~~[#92734](https://bugs.mysql.com/bug.php?id=92734): `MySqlParameter.Clone` doesn't copy all property values~~
 * ~~[#92789](https://bugs.mysql.com/bug.php?id=92789): Illegal connection attributes written for non-ASCII values~~
 * ~~[#92912](https://bugs.mysql.com/bug.php?id=92912): `MySqlDbType.LongText` values encoded incorrectly with prepared statements~~
 * ~~[#92982](https://bugs.mysql.com/bug.php?id=92982), [#93399](https://bugs.mysql.com/bug.php?id=93399): `FormatException` thrown when connecting to MySQL Server 8.0.13~~
@@ -274,7 +275,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#101253](https://bugs.mysql.com/bug.php?id=101253): Default value for `MySqlParameter.Value` changed from null to `0`~~
 * ~~[#101302](https://bugs.mysql.com/bug.php?id=101302): Stored Procedure `BOOL` parameter can only be mapped to `MySqlDbType.Byte`~~
 * ~~[#101485](https://bugs.mysql.com/bug.php?id=101485): Stored Procedure `JSON` parameter throws “Unhandled type encountered” `MySqlException`~~
-* [#101507](https://bugs.mysql.com/bug.php?id=101507): `MySqlCommand.Cancel` throws `NullReferenceException` for a closed connection
+* ~~[#101507](https://bugs.mysql.com/bug.php?id=101507): `MySqlCommand.Cancel` throws `NullReferenceException` for a closed connection~~
 * ~~[#101714](https://bugs.mysql.com/bug.php?id=101714): Extremely slow performance reading result sets~~
 * ~~[#102303](https://bugs.mysql.com/bug.php?id=102303): Preparing command with incorrect parameter type puts connection in bad state~~
 * ~~[#102593](https://bugs.mysql.com/bug.php?id=102593): Can't use `MemoryStream` as `MySqlParameter.Value`~~
@@ -299,3 +300,6 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#109331](https://bugs.mysql.com/bug.php?id=109331): MySQL Connector/NET is incompatible with MariaDB 10.10 and later
 * [#109390](https://bugs.mysql.com/bug.php?id=109390): Transaction lock held after connection timeout exception
 * [#109476](https://bugs.mysql.com/bug.php?id=109476): `TransactionScope.Dispose` throws "Connection must be valid and open to rollback"
+* [#109670](https://bugs.mysql.com/bug.php?id=109670): Many MSB3246 errors when referencing MySql.Data 8.0.32
+* [#109682](https://bugs.mysql.com/bug.php?id=109682): `MySqlParameter.Clone` loses specific `MySqlDbType`.
+* [#109683](https://bugs.mysql.com/bug.php?id=109683): `MySqlCommand.LastInsertedId` is incorrect if multiple rows are inserted.

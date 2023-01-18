@@ -60,10 +60,8 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		csb.Database = "wrong_database";
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		var ex = Assert.Throws<MySqlException>(connection.Open);
-#if !MYSQL_DATA // https://bugs.mysql.com/bug.php?id=78426
-		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.ErrorCode != default)
-			Assert.Equal(MySqlErrorCode.UnknownDatabase, ex.ErrorCode);
-#endif
+		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.Number != 0)
+			Assert.Equal((int) MySqlErrorCode.UnknownDatabase, ex.Number);
 		Assert.Equal(ConnectionState.Closed, connection.State);
 	}
 
@@ -74,7 +72,7 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		csb.Password = "wrong";
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		var ex = Assert.Throws<MySqlException>(connection.Open);
-#if !MYSQL_DATA // https://bugs.mysql.com/bug.php?id=78426
+#if !MYSQL_DATA
 		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.ErrorCodes) || ex.ErrorCode != default)
 			Assert.Equal(MySqlErrorCode.AccessDenied, ex.ErrorCode);
 #endif

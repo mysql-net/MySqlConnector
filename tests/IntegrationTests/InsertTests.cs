@@ -113,7 +113,7 @@ SELECT * FROM insert_ai;", m_database.Connection);
 		}
 	}
 
-	[Fact]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=109683")]
 	public async Task LastInsertedIdTwoInserts()
 	{
 		await m_database.Connection.ExecuteAsync(@"drop table if exists insert_ai;
@@ -154,7 +154,7 @@ UNLOCK TABLES;", m_database.Connection);
 		}
 	}
 
-	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=97061")]
+	[Fact]
 	public async Task LastInsertedIdInsertForeignKey()
 	{
 		await m_database.Connection.ExecuteAsync(@"drop table if exists TestTableWithForeignKey;

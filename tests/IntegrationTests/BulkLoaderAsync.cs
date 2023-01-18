@@ -304,14 +304,15 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 #endif
 	}
 
-#if !MYSQL_DATA
 	[SkippableFact(ConfigSettings.LocalCsvFile)]
 	public async Task BulkLoadFileStreamInvalidOperation()
 	{
 		using var connection = new MySqlConnection(GetConnectionString());
 		var bl = new MySqlBulkLoader(connection);
 		using var fileStream = new FileStream(AppConfig.MySqlBulkLoaderLocalCsvFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
+#if !MYSQL_DATA
 		bl.SourceStream = fileStream;
+#endif
 		bl.TableName = m_testTable;
 		bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 		bl.NumberOfLinesToSkip = 1;
@@ -320,10 +321,11 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		bl.FieldQuotationOptional = true;
 		bl.Expressions.Add("five = UNHEX(five)");
 		bl.Local = false;
-		await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
-		{
-			int rowCount = await bl.LoadAsync();
-		});
+#if !MYSQL_DATA
+		await Assert.ThrowsAsync<InvalidOperationException>(async () => { var rowCount = await bl.LoadAsync(); });
+#else
+		await Assert.ThrowsAsync<MySqlException>(async () => { var rowCount = await bl.LoadAsync(fileStream); });
+#endif
 	}
 
 	[SkippableFact(ConfigSettings.LocalCsvFile)]
@@ -333,7 +335,9 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		await connection.OpenAsync();
 		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
 		using var fileStream = new FileStream(AppConfig.MySqlBulkLoaderLocalCsvFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
+#if !MYSQL_DATA
 		bl.SourceStream = fileStream;
+#endif
 		bl.TableName = m_testTable;
 		bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 		bl.NumberOfLinesToSkip = 1;
@@ -342,7 +346,11 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		bl.FieldQuotationOptional = true;
 		bl.Expressions.Add("five = UNHEX(five)");
 		bl.Local = true;
+#if !MYSQL_DATA
 		int rowCount = await bl.LoadAsync();
+#else
+		int rowCount = await bl.LoadAsync(fileStream);
+#endif
 		Assert.Equal(20, rowCount);
 	}
 
@@ -353,7 +361,9 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		await connection.OpenAsync();
 		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
 		using var memoryStream = new MemoryStream(m_memoryStreamBytes, false);
+#if !MYSQL_DATA
 		bl.SourceStream = memoryStream;
+#endif
 		bl.TableName = m_testTable;
 		bl.Columns.AddRange(new string[] { "one", "two", "three" });
 		bl.NumberOfLinesToSkip = 0;
@@ -361,10 +371,11 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		bl.FieldQuotationCharacter = '"';
 		bl.FieldQuotationOptional = true;
 		bl.Local = false;
-		await Assert.ThrowsAsync<System.InvalidOperationException>(async () =>
-		{
-			int rowCount = await bl.LoadAsync();
-		});
+#if !MYSQL_DATA
+		await Assert.ThrowsAsync<InvalidOperationException>(async () => { var rowCount = await bl.LoadAsync(); });
+#else
+		await Assert.ThrowsAsync<MySqlException>(async () => { var rowCount = await bl.LoadAsync(memoryStream); });
+#endif
 	}
 
 	[Fact]
@@ -374,7 +385,9 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		await connection.OpenAsync();
 		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
 		using var memoryStream = new MemoryStream(m_memoryStreamBytes, false);
+#if !MYSQL_DATA
 		bl.SourceStream = memoryStream;
+#endif
 		bl.TableName = m_testTable;
 		bl.Columns.AddRange(new string[] { "one", "two", "three" });
 		bl.NumberOfLinesToSkip = 0;
@@ -382,10 +395,15 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		bl.FieldQuotationCharacter = '"';
 		bl.FieldQuotationOptional = true;
 		bl.Local = true;
+#if !MYSQL_DATA
 		int rowCount = await bl.LoadAsync();
+#else
+		int rowCount = await bl.LoadAsync(memoryStream);
+#endif
 		Assert.Equal(5, rowCount);
 	}
 
+#if !MYSQL_DATA
 	[Fact]
 	public async Task BulkCopyDataReader()
 	{

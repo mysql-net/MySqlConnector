@@ -213,7 +213,11 @@ public class ParameterTests
 	[Fact]
 	public void CloneMySqlDbType()
 	{
+#if MYSQL_DATA // https://bugs.mysql.com/bug.php?id=109682
+		var parameter = new MySqlParameter { MySqlDbType = MySqlDbType.Int64 };
+#else
 		var parameter = new MySqlParameter { MySqlDbType = MySqlDbType.MediumText };
+#endif
 		var clone = parameter.Clone();
 		Assert.Equal(parameter.MySqlDbType, clone.MySqlDbType);
 	}
@@ -226,7 +230,7 @@ public class ParameterTests
 		Assert.Equal(parameter.Direction, clone.Direction);
 	}
 
-	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=92734")]
+	[Fact]
 	public void CloneIsNullable()
 	{
 		var parameter = new MySqlParameter { IsNullable = true };
@@ -234,7 +238,7 @@ public class ParameterTests
 		Assert.Equal(parameter.IsNullable, clone.IsNullable);
 	}
 
-	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=92734")]
+	[Fact]
 	public void ClonePrecision()
 	{
 		var parameter = new MySqlParameter { Precision = 10 };
@@ -242,7 +246,7 @@ public class ParameterTests
 		Assert.Equal(parameter.Precision, clone.Precision);
 	}
 
-	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=92734")]
+	[Fact]
 	public void CloneScale()
 	{
 		var parameter = new MySqlParameter { Scale = 12 };
@@ -250,7 +254,7 @@ public class ParameterTests
 		Assert.Equal(parameter.Scale, clone.Scale);
 	}
 
-	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=92734")]
+	[Fact]
 	public void CloneSize()
 	{
 		var parameter = new MySqlParameter { Size = 8 };
@@ -266,7 +270,7 @@ public class ParameterTests
 		Assert.Equal(parameter.SourceColumn, clone.SourceColumn);
 	}
 
-	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=92734")]
+	[Fact]
 	public void CloneSourceColumnNullMapping()
 	{
 		var parameter = new MySqlParameter { SourceColumnNullMapping = true };
