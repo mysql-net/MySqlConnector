@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="/js/site.js"></script>
+    {{ $js := resources.Get "js/site.js" | resources.Minify | resources.Fingerprint }}
+    <script src="{{ $js.Permalink }}"></script>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-142489411-1"></script>
     <script>
@@ -49,7 +50,8 @@
     <meta property="og:url" content="{{ .Page.Permalink }}" />
     <meta property="fb:app_id" content="422535981632483" />
 
-    <link href="/css/site.css" rel="stylesheet">
+    {{ $style := resources.Get "css/site.css" | resources.Minify | resources.Fingerprint }}
+    <link rel="stylesheet" href="{{ $style.Permalink }}">
     <link rel="canonical" href="{{ .Page.Permalink }}" />
   </head>
 
