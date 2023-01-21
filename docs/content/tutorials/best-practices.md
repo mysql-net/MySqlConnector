@@ -1,5 +1,5 @@
 ---
-lastmod: 2021-09-21
+lastmod: 2023-01-21
 date: 2016-10-16
 menu:
   main:
@@ -67,7 +67,7 @@ should be familiar with [Async/Await - Best Practices in Asynchronous Programmin
   </tr>
   <tr>
     <td>
-      <span class="text-danger">*</span><a href="api/mysql-connection">MySqlConnection</a>.BeginTransactionAsync
+      BeginTransactionAsync
     </td>
     <td>BeginTransaction</td>
   </tr>
@@ -102,20 +102,17 @@ should be familiar with [Async/Await - Best Practices in Asynchronous Programmin
       <a href="https://docs.microsoft.com/en-us/dotnet/core/api/system.data.common.dbtransaction">DbTransaction</a>
     </td>
     <td>
-      <span class="text-danger">*</span><a href="api/mysql-transaction">MySqlTransaction</a>.CommitAsync
+      CommitAsync
     </td>
     <td>Commit</td>
   </tr>
   <tr>
     <td>
-      <span class="text-danger">*</span><a href="api/mysql-transaction">MySqlTransaction</a>.RollbackAsync
+      RollbackAsync
     </td>
     <td>Rollback</td>
   </tr>
 </table>
-
-<span class="text-danger">*</span>Async Transaction methods are not part of ADO.NET, they are provided by
-MySqlConnector to allow database code to remain fully asynchronous.
 
 ### Exceptions: DbDataReader.GetFieldValueAsync and IsDBNullAsync
 
@@ -139,33 +136,32 @@ Example assumes a [configured AppDb](/overview/configuration) object in the `MyS
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace MySqlConnector.Examples
-{
-    public class Program
-    {
-        public static async Task Main(string[] args)
-        {
-            var tasks = new List<Task>();
-            for (var i=0; i<100; i++)
-            {
-                tasks.Add(Controllers.SleepOne());
-            }
-            // these 100 queries should all complete in around
-            // 1 second if "Max Pool Size=100" (the default)
-            await Task.WhenAll(tasks);
-        }
-    }
+namespace MySqlConnector.Examples;
 
-    public class Controllers
+public class Program
+{
+    public static async Task Main(string[] args)
     {
-        public static async Task SleepOne()
+        var tasks = new List<Task>();
+        for (var i=0; i<100; i++)
         {
-            using var db = new AppDb();
-            await db.Connection.OpenAsync();
-            using var cmd = db.Connection.CreateCommand();
-            cmd.CommandText = @"SELECT SLEEP(1)";
-            await cmd.ExecuteNonQueryAsync();
+            tasks.Add(Controllers.SleepOne());
         }
+        // these 100 queries should all complete in around
+        // 1 second if "Max Pool Size=100" (the default)
+        await Task.WhenAll(tasks);
+    }
+}
+
+public class Controllers
+{
+    public static async Task SleepOne()
+    {
+        using var db = new AppDb();
+        await db.Connection.OpenAsync();
+        using var cmd = db.Connection.CreateCommand();
+        cmd.CommandText = @"SELECT SLEEP(1)";
+        await cmd.ExecuteNonQueryAsync();
     }
 }
 ```

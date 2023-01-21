@@ -1,4 +1,5 @@
 ---
+lastmod: 2023-01-21
 date: 2018-06-05
 menu:
   main:
@@ -16,25 +17,23 @@ Here’s a basic code snippet to get you started.
 ```csharp
 var connString = "Server=myserver;User ID=mylogin;Password=mypass;Database=mydatabase";
 
-using (var conn = new MySqlConnection(connString))
+await using var connection = new MySqlConnection(connString);
+await connection.OpenAsync();
+
+// Insert some data
+using (var cmd = new MySqlCommand())
 {
-    await conn.OpenAsync();
-
-    // Insert some data
-    using (var cmd = new MySqlCommand())
-    {
-        cmd.Connection = conn;
-        cmd.CommandText = "INSERT INTO data (some_field) VALUES (@p)";
-        cmd.Parameters.AddWithValue("p", "Hello world");
-        await cmd.ExecuteNonQueryAsync();
-    }
-
-    // Retrieve all rows
-    using (var cmd = new MySqlCommand("SELECT some_field FROM data", conn))
-    using (var reader = await cmd.ExecuteReaderAsync())
-        while (await reader.ReadAsync())
-            Console.WriteLine(reader.GetString(0));
+    cmd.Connection = connection;
+    cmd.CommandText = "INSERT INTO data (some_field) VALUES (@p)";
+    cmd.Parameters.AddWithValue("p", "Hello world");
+    await cmd.ExecuteNonQueryAsync();
 }
+
+// Retrieve all rows
+using var command = new MySqlCommand("SELECT some_field FROM data", connection);
+using var reader = await cmd.ExecuteReaderAsync();
+while (await reader.ReadAsync())
+    Console.WriteLine(reader.GetString(0));
 ```
 
 You can find more info about the ADO.NET API in the [MSDN documentation](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/ado-net-overview) or in many tutorials on the Internet.

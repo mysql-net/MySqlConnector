@@ -1,5 +1,5 @@
 ---
-lastmod: 2020-01-07
+lastmod: 2023-01-21
 date: 2016-10-16
 menu:
   main:
@@ -16,7 +16,7 @@ Note that if you are using the `MySql.Data` NuGet package, it must be uninstalle
 
 ### Automatically
 
-If using the new project system, run: `dotnet add package MySqlConnector`
+At the command line, run: `dotnet add package MySqlConnector`
 
 Or, in Visual Studio, use the _NuGet Package Manager_ to browse for and install `MySqlConnector`.
 
@@ -30,11 +30,11 @@ Or, in Visual Studio, use the _NuGet Package Manager_ to browse for and install 
     <AssemblyTitle>My Application</AssemblyTitle>
     <Description>A great application</Description>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MySqlConnector" Version="0.61.0" />
+    <PackageReference Include="MySqlConnector" Version="2.2.5" />
   </ItemGroup>
 
 </Project>

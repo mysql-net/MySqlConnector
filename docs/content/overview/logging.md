@@ -1,5 +1,5 @@
 ---
-lastmod: 2018-12-14
+lastmod: 2023-01-21
 date: 2018-01-20
 menu:
   main:
@@ -17,7 +17,7 @@ the existing logging framework, and install it by setting `MySqlConnector.Loggin
 
 The `MySqlConnectorLogManager.Provider` property may only be set once, and must be set before any other MySqlConnector library methods are called.
 
-Debug-level logging is useful for diagnosing problems with MySqlConnector itself; it is recommend that applications limit MySqlConnector
+Debug-level logging is useful for diagnosing problems with MySqlConnector itself; it is recommended that applications limit MySqlConnector
 logging to Info or higher.
 
 ### Existing Logging Providers

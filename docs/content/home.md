@@ -1,5 +1,5 @@
 ---
-lastmod: 2019-06-20
+lastmod: 2023-01-21
 date: 2016-10-16
 title: Home
 weight: 10
@@ -8,22 +8,17 @@ menu:
     url: "/"
 ---
 
-# MySqlConnector: High Performance MySQL Library for .NET
-
-* **Asynchronous:** True asynchronous I/O for maximum throughput
-* **Fast:** Optimized for speed and low memory usage
-* **Reliable:** Fixes [dozens of open bugs](/tutorials/migrating-from-connector-net/#fixed-bugs) in Oracle’s Connector/NET; passes all [ADO.NET Specification Tests](https://mysql-net.github.io/AdoNetResults/)
-* **Leading Edge:** First MySQL library to support .NET Core; uses the latest .NET features
-* **Open:** MIT license; development [happens on GitHub](https://github.com/mysql-net/MySqlConnector) with publicly visible roadmaps, issues, and PRs
+# MySqlConnector: High Performance .NET MySQL Driver
 
 ## About
 
-MySqlConnector is a C# [ADO.NET](https://msdn.microsoft.com/en-us/library/e80y5yhx.aspx) driver for [MySQL Server](https://www.mysql.com/), [MariaDB](https://mariadb.org/),
-[Percona Server](https://www.percona.com/software/mysql-database/percona-server), [Amazon Aurora](https://aws.amazon.com/rds/aurora/),
-[Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/),
-[Google Cloud SQL for MySQL](https://cloud.google.com/sql/docs/mysql/) and more. It provides implementations of
+MySqlConnector is a C# [ADO.NET](https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/) driver for [MySQL Server](https://www.mysql.com/), [MariaDB](https://mariadb.org/),
+[Amazon Aurora](https://aws.amazon.com/rds/aurora/),
+[Azure Database for MySQL](https://azure.microsoft.com/en-us/products/mysql/),
+[Google Cloud SQL for MySQL](https://cloud.google.com/sql/docs/mysql/),
+[Percona Server](https://www.percona.com/software/mysql-database/percona-server) and more. It provides implementations of
 `DbConnection`, `DbCommand`, `DbDataReader`, `DbTransaction` &mdash; the classes
-needed to query and update databases from managed code.
+needed to query and update databases from C# code.
 
 ## Getting Started
 
@@ -67,10 +62,16 @@ MySqlConnector outperforms Connector/NET (MySql.Data) on benchmarks:
 
 (Client: MySqlConnector 2.2.0, Ubuntu 20.04, .NET 7.0; Server: Azure Database for MySQL 8.0.28, TLS 1.2)
 
-## Why use MySqlConnector over Oracle’s Connector/NET?
+## Why use MySqlConnector over Oracle’s MySQL Connector/NET?
 
 MySqlConnector is a clean-room reimplementation of the [MySQL Protocol](https://dev.mysql.com/doc/internals/en/client-server-protocol.html)
-and is not based on [Oracle’s Connector/NET](https://github.com/mysql/mysql-connector-net).
+and is not based on [Oracle’s MySQL Connector/NET](https://github.com/mysql/mysql-connector-net).
+
+* **Asynchronous:** True asynchronous I/O for maximum throughput
+* **Fast:** Optimized for speed and low memory usage
+* **Reliable:** Fixes [dozens of open bugs](/tutorials/migrating-from-connector-net/#fixed-bugs) in Oracle’s Connector/NET; passes all [ADO.NET Specification Tests](https://mysql-net.github.io/AdoNetResults/)
+* **Leading Edge:** First MySQL library to support .NET Core; uses the latest .NET features
+* **Open:** MIT license; development [happens on GitHub](https://github.com/mysql-net/MySqlConnector) with publicly visible roadmaps, issues, and PRs
 
 <table class="table table-striped table-hover" style="max-width: 650px">
   <thead>

@@ -1,4 +1,5 @@
 ---
+lastmod: 2023-01-21
 date: 2019-11-18
 menu:
   main:
@@ -39,16 +40,27 @@ If you are using ASP.NET Core, your connection string will usually be stored in 
 
 ```json
 {
-    ....
-    "ConnectionStrings": {
-        "Default": "Server=YOURSERVER;User ID=YOURUSERID;Password=YOURPASSWORD;Database=YOURDATABASE"
-    }
+  ....
+  "ConnectionStrings": {
+    "Default": "Server=YOURSERVER;User ID=YOURUSERID;Password=YOURPASSWORD;Database=YOURDATABASE"
+  }
 }
 ```
 
 ## 3. Configure Service (ASP.NET Core)
 
-If using ASP.NET Core, you will want to register a database connection in `Startup.cs`:
+### .NET 6.0
+
+If using ASP.NET Core, you will want to register a database connection in `Program.cs`:
+
+```csharp
+builder.services.AddTransient<MySqlConnection>(_ =>
+    new MySqlConnection(builder.Configuration.GetConnectionString["Default"]));
+```
+
+### .NET 5.0 and earlier
+
+For .NET 5.0 and earlier, register a database connection in `Startup.cs`:
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
@@ -57,6 +69,7 @@ public void ConfigureServices(IServiceCollection services)
     services.AddTransient<MySqlConnection>(_ => new MySqlConnection(Configuration["ConnectionStrings:Default"]));
 }
 ```
+
 
 ## 4. Open and Use the Connection
 
