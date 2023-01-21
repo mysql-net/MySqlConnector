@@ -1,17 +1,23 @@
-<div class="span3">
-    <ul class="nav nav-list" id="menu">
+<nav aria-label="Main" id="site-nav" class="site-nav">
+  {{ $currentPage := . }}
+  <ul class="nav-list">
 
-        {{ range $i, $el := .Site.Menus.main }}
-        <li class="nav-header" style="font-size:12pt;color:#606060;margin-top:20px;">
-            {{ if .HasChildren }}{{ .Name }}{{ else }}<a href="{{ .URL }}">{{ .Name }}</a>{{ end }}
-        </li>
+    {{ range $i, $el := .Site.Menus.main }}
+      <li class="nav-list-item{{ if $currentPage.HasMenuCurrent "main" . }} active{{ end }}">
+        {{ if .HasChildren }}<a href="#" class="nav-list-expander" aria-label="toggle links in UI Components category"> <svg viewBox="0 0 24 24"><use xlink:href="#svg-arrow-right"></use></svg> </a>{{ range first 1 .Children }}<a class="nav-list-link" href="{{ .URL }}">{{ end }}{{ .Name }}</a><ul class="nav-list">{{ else }}<a href="{{ .URL }}" class="nav-list-link{{ if $currentPage.IsMenuCurrent "main" . }} active{{ end }}">{{ .Name }}</a>{{ end }}
 
         {{ range .Children }}
-        <li>
-            <a href="{{.URL}}">{{ .Name }}</a>
-        </li>
+          <li class="nav-list-item{{ if $currentPage.HasMenuCurrent "main" . }} active{{ end }}">
+            <a href="{{.URL}}" class="nav-list-link{{ if $currentPage.IsMenuCurrent "main" . }} active{{ end }}">{{ .Name }}</a>
+          </li>
         {{ end }}
 
-        {{ end }}
-    </ul>
-</div>
+        {{ if .HasChildren }}</ul>{{ end }}
+      </li>
+    {{ end }}
+    <li class="nav-list-item external">
+      <a href="https://github.com/mysql-net/MySqlConnector" class="nav-list-link external">GitHub
+      <svg viewBox="0 0 24 24" aria-labelledby="svg-external-link-title"><use xlink:href="#svg-external-link"></use></svg></a>
+    </li>
+  </ul>
+</nav>
