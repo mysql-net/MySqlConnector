@@ -1,6 +1,8 @@
 ---
+lastmod: 2023-01-28
 date: 2021-11-25
 title: Aurora Freeze
+description: How to work around a hang when calling MySqlConnection.Open() with Amazon Aurora by setting Pipelining=False in the connection string.
 customtitle: "MySqlConnection.Open Freezes with Amazon Aurora"
 weight: 5
 menu:

@@ -1,8 +1,9 @@
 ---
-lastmod: 2019-08-21
+lastmod: 2023-01-28
 date: 2019-05-23
 title: Load Data Local Infile
 customtitle: "Fix: Using Load Data Local Infile"
+description: Add AllowLoadLocalInfile=true to the connection string to allow LOAD DATA LOCAL INFILE to succeed.
 weight: 30
 menu:
   main:

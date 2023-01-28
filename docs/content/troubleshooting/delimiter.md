@@ -1,7 +1,9 @@
 ---
+lastmod: 2023-01-28
 date: 2021-07-27
 title: Delimiter
 customtitle: "Fix: Using DELIMITER in SQL"
+description: DELIMITER $$ is unnecessary when using MySqlConnector and should be removed from SQL statements.
 weight: 28
 menu:
   main:

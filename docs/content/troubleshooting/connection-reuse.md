@@ -1,7 +1,8 @@
 ---
-lastmod: 2018-09-29
+lastmod: 2023-01-28
 date: 2018-09-29
 title: Connection Reuse
+description: Invalid usages of MySqlConnection in multithreaded scenarios and how to fix them.
 weight: 10
 menu:
   main:

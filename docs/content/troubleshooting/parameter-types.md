@@ -1,8 +1,9 @@
 ---
-lastmod: 2021-04-23
+lastmod: 2023-01-28
 date: 2021-01-15
 title: MySqlParameter Types
 customtitle: "Type of value supplied to MySqlParameter.Value isn’t supported"
+description: List of supported .NET types that can be stored in MySqlParameter.Value and what to do for unsupported types.
 weight: 35
 menu:
   main:

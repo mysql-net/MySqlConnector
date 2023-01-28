@@ -1,6 +1,8 @@
 ---
+lastmod: 2023-01-28
 date: 2020-02-08
 title: DateTime Storage
+description: How to store .NET DateTime and DateTimeOffset values in MySQL using DATETIME and TIME columns.
 weight: 24
 menu:
   main:

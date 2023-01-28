@@ -1,8 +1,9 @@
 ---
-lastmod: 2021-09-21
+lastmod: 2023-01-28
 date: 2018-09-29
 title: Transaction Usage
 customtitle: "Fix: The transaction associated with this command is not the connection’s active transaction"
+description: How to fix the error "The transaction associated with this command is not the connection’s active transaction" by setting the Transaction property on MySqlCommand.
 weight: 20
 menu:
   main:

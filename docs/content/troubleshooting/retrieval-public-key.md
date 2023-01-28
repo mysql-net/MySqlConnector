@@ -1,8 +1,9 @@
 ---
-lastmod: 2019-07-30
+lastmod: 2023-01-28
 date: 2019-07-07
 title: Retrieval of Public Key
 customtitle: "Fix: Retrieval of the RSA public key is not enabled for insecure connections"
+description: Fixing 'Retrieval of the RSA public key is not enabled for insecure connections' error by using MySqlConnector and AllowPublicKeyRetrieval=True in the connection string.
 weight: 40
 menu:
   main:

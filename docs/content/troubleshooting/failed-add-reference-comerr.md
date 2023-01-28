@@ -1,6 +1,7 @@
 ---
 date: 2023-01-28
 title: Failed to Add comerr
+description: How to fix the error "Failed to add reference to 'comerr64'" when installing MySql.Data using NuGet.
 customtitle: "Fix: Failed to add reference to 'comerr64' when installing MySql.Data"
 weight: 50
 menu:
@@ -39,7 +40,7 @@ Workarounds include switching to an SDK-style project (`.csproj` with `<PackageR
 
 ## Fix
 
-A better long-term fix is to switch to MySqlConnector, which fixes this problem and [many other bugs](https://mysqlconnector.net/tutorials/migrating-from-connector-net/#fixed-bugs) in MySql.Data.
+A better long-term fix is to [switch to MySqlConnector](/overview/installing), which fixes this problem and [many other bugs](/tutorials/migrating-from-connector-net/#fixed-bugs) in MySql.Data.
 To do this, uninstall the MySql.Data package and run `dotnet add package MySqlConnector` to replace it with MySqlConnector.
 
-For more information, see our guide on [migrating from MySql.Data to MySqlConnector](https://mysqlconnector.net/tutorials/migrating-from-connector-net/).
+For more information, see our guide on [migrating from MySql.Data to MySqlConnector](/tutorials/migrating-from-connector-net/).
