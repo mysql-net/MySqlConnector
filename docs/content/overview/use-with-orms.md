@@ -1,10 +1,11 @@
 ---
-lastmod: 2017-11-06
+lastmod: 2023-01-28
 date: 2016-10-16
+title: Use with ORMs
+description: A list of .NET object-relational mappers that work well with MySqlConnector.
 menu:
   main:
     parent: getting started
-title: Use with ORMs
 weight: 60
 ---
 

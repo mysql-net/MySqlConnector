@@ -1,15 +1,16 @@
 ---
-lastmod: 2020-06-14
+lastmod: 2023-01-28
 date: 2019-03-06
 menu:
   main:
     parent: getting started
 title: DbProviderFactories
+customtitle: "Using DbProviderFactories"
+description: How to install MySqlConnector into DbProviderFactories by using app.config or DbProviderFactories.RegisterFactory.
 weight: 15
 ---
 
-Using DbProviderFactories
-==========
+# Using DbProviderFactories
 
 MySqlConnector can be registered with `DbProviderFactories` and obtained via `DbProviderFactories.GetFactory("MySqlConnector")`, or by
 using the methods [described here](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/obtaining-a-dbproviderfactory).

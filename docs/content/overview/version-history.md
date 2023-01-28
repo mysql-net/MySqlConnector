@@ -1,10 +1,11 @@
 ---
-lastmod: 2023-01-01
+lastmod: 2023-01-28
 date: 2017-03-27
 menu:
   main:
     parent: getting started
 title: Version History
+description: Version history for the MySqlConnector NuGet package
 weight: 30
 ---
 

@@ -1,15 +1,15 @@
 ---
-lastmod: 2023-01-21
+lastmod: 2023-01-28
 date: 2016-10-16
+title: Installing
+description: How to install MySqlConnector from NuGet into your .NET application.
 menu:
   main:
     parent: getting started
-title: Installing
 weight: 10
 ---
 
-Installing
-==========
+# Installing
 
 The recommended way of installing MySqlConnector is through [NuGet](https://www.nuget.org/packages/MySqlConnector/).
 Note that if you are using the `MySql.Data` NuGet package, it must be uninstalled first.

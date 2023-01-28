@@ -1,11 +1,12 @@
 ---
+lastmod: 2023-01-28
 date: 2020-01-06
-lastmod: 2021-07-04
+title: Using AddWithValue
 customtitle: "Start Using AddWithValue with MySQL"
+description: Why you should use Parameters.AddWithValue with MySqlConnector, and why it's OK to use with MySQL.
 menu:
   main:
     parent: getting started
-title: Using AddWithValue
 weight: 70
 ---
 
