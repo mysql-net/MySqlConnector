@@ -1,21 +1,21 @@
 ---
 date: 2023-01-28
 title: Dapper
-customtitle: "Tutorial: Connect to MySQL with Dapper"
-description: How to create a .NET application that connects to MySQL with MySqlConnector and Dapper.
+customtitle: "Tutorial: Connect to MySQL with Dapper using C#"
+description: How to create a C# .NET application that connects to MySQL with MySqlConnector and Dapper.
 menu:
   main:
     parent: tutorials
 weight: 11
 ---
 
-# Tutorial: Connect to MySQL with Dapper
+# Tutorial: Connect to MySQL with Dapper using C#
 
 ## Introduction
 
 [Dapper](https://github.com/DapperLib/Dapper/blob/main/Readme.md) is a popular "micro-ORM" for connecting to databases from .NET.
 It can be used with MySqlConnector to connect to MySQL and retrieve data.
-Here's how.
+Here's how to do it using C#.
 
 ## 1. Create Your Project
 
