@@ -4,7 +4,7 @@ menu:
   main:
     parent: tutorials
 title: Tracing
-weight: 12
+weight: 13
 ---
 
 # Tracing
