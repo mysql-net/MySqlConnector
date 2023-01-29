@@ -26,10 +26,16 @@ In a .NET Framework application, make the following `app.config` change to regis
 <system.data>
   <DbProviderFactories>
     <!-- REMOVE THIS -->
-    <!-- add name="MySQL Data Provider" invariant="MySql.Data.MySqlClient" description=".Net Framework Data Provider for MySQL" type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=8.0.20.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
+    <!-- add name="MySQL Data Provider"
+      invariant="MySql.Data.MySqlClient"
+      description=".Net Framework Data Provider for MySQL"
+      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=8.0.20.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
 
     <!-- ADD THIS -->
-    <add name="MySqlConnector" invariant="MySqlConnector" description="MySQL Connector for .NET" type="MySqlConnector.MySqlConnectorFactory, MySqlConnector, Culture=neutral, PublicKeyToken=d33d3e53aa5f8c92" />
+    <add name="MySqlConnector"
+      invariant="MySqlConnector"
+      description="MySQL Connector for .NET"
+      type="MySqlConnector.MySqlConnectorFactory, MySqlConnector, Culture=neutral, PublicKeyToken=d33d3e53aa5f8c92" />
   </DbProviderFactories>
 </system.data>
 ```
