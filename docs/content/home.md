@@ -58,7 +58,7 @@ while (await reader.ReadAsync())
 
 MySqlConnector outperforms Connector/NET (MySql.Data) on benchmarks:
 
-<p><img src="https://files.logoscdn.com/v1/files/63673908/assets/13928411/content.png?signature=MVHBZxDfB0J-0Pueja8NtvuLD9A" alt="Benchmark results for MySql.Data vs MySqlConnector" style="width: 800px; height: 534px"></p>
+<p><img src="https://files.logoscdn.com/v1/files/63673908/assets/13928411/content.png?signature=MVHBZxDfB0J-0Pueja8NtvuLD9A" alt="Benchmark results for MySql.Data vs MySqlConnector" width="800" height="534"></p>
 
 (Client: MySqlConnector 2.2.0, Ubuntu 20.04, .NET 7.0; Server: Azure Database for MySQL 8.0.28, TLS 1.2)
 
