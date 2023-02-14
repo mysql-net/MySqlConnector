@@ -41,7 +41,8 @@ command.CommandText = "SELECT ...";
 // *** ADD THIS LINE ***
 command.Transaction = transaction;
 
-// otherwise, this will throw System.InvalidOperationException: The transaction associated with this command is not the connection's active transaction.
+// otherwise, this will throw System.InvalidOperationException: The transaction
+// associated with this command is not the connection's active transaction.
 command.ExecuteScalar();
 
 // ... remaining code
@@ -55,7 +56,8 @@ using var connection = new MySqlConnection(...);
 connection.Open();
 using var transaction = connection.BeginTransaction();
 
-// this will throw System.InvalidOperationException: The transaction associated with this command is not the connection's active transaction.
+// this will throw System.InvalidOperationException: The transaction
+// associated with this command is not the connection's active transaction.
 connection.Query("SELECT ...");
 
 // use this instead:
