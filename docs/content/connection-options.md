@@ -366,7 +366,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
   <tr id="InteractiveSession">
     <td>Interactive Session, Interactive, InteractiveSession</td>
     <td>false</td>
-    <td>If <code>true</code>, the session <code>wait_timeout</code> variable is initialized from the global <code>interactive_timeout<code> value instead of the global <code>wait_timeout</code> value.</td>
+    <td>If <code>true</code>, the session <code>wait_timeout</code> variable is initialized from the global <code>interactive_timeout</code> value instead of the global <code>wait_timeout</code> value.</td>
   </tr>
   <tr id="Keepalive">
     <td>Keep Alive, Keepalive</td>
