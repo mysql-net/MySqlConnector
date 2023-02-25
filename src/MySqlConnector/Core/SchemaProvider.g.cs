@@ -23,6 +23,10 @@ internal sealed partial class SchemaProvider
 			await FillCollationCharacterSetApplicabilityAsync(ioBehavior, dataTable, "CollationCharacterSetApplicability", restrictionValues, cancellationToken).ConfigureAwait(false);
 		else if (string.Equals(collectionName, "Columns", StringComparison.OrdinalIgnoreCase))
 			await FillColumnsAsync(ioBehavior, dataTable, "Columns", restrictionValues, cancellationToken).ConfigureAwait(false);
+		else if (string.Equals(collectionName, "Indexes", StringComparison.OrdinalIgnoreCase))
+			await FillIndexColumnAsync(ioBehavior, dataTable, "Indexes", restrictionValues, cancellationToken).ConfigureAwait(false);
+		else if (string.Equals(collectionName, "IndexColumns", StringComparison.OrdinalIgnoreCase))
+			await FillIndexColumnAsync(ioBehavior, dataTable, "IndexColumns", restrictionValues, cancellationToken).ConfigureAwait(false);
 		else if (string.Equals(collectionName, "Databases", StringComparison.OrdinalIgnoreCase))
 			await FillDatabasesAsync(ioBehavior, dataTable, "Databases", restrictionValues, cancellationToken).ConfigureAwait(false);
 		else if (string.Equals(collectionName, "DataSourceInformation", StringComparison.OrdinalIgnoreCase))
@@ -33,6 +37,8 @@ internal sealed partial class SchemaProvider
 			await FillEnginesAsync(ioBehavior, dataTable, "Engines", restrictionValues, cancellationToken).ConfigureAwait(false);
 		else if (string.Equals(collectionName, "KeyColumnUsage", StringComparison.OrdinalIgnoreCase))
 			await FillKeyColumnUsageAsync(ioBehavior, dataTable, "KeyColumnUsage", restrictionValues, cancellationToken).ConfigureAwait(false);
+		else if (string.Equals(collectionName, "Foreign Keys", StringComparison.OrdinalIgnoreCase))
+			await FillKeyColumnUsageAsync(ioBehavior, dataTable, "Foreign Keys", restrictionValues, cancellationToken).ConfigureAwait(false);
 		else if (string.Equals(collectionName, "KeyWords", StringComparison.OrdinalIgnoreCase))
 			await FillKeyWordsAsync(ioBehavior, dataTable, "KeyWords", restrictionValues, cancellationToken).ConfigureAwait(false);
 		else if (string.Equals(collectionName, "Parameters", StringComparison.OrdinalIgnoreCase))
@@ -329,10 +335,7 @@ internal sealed partial class SchemaProvider
 	}
 
 	private async Task FillKeyColumnUsageAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
-	{
-		if (restrictionValues is not null)
-			throw new ArgumentException("restrictionValues is not supported for schema 'KeyColumnUsage'.", nameof(restrictionValues));
-
+	{	
 		dataTable.TableName = tableName;
 		dataTable.Columns.AddRange(new DataColumn[]
 		{
@@ -349,10 +352,52 @@ internal sealed partial class SchemaProvider
 			new("REFERENCED_TABLE_NAME", typeof(string)),
 			new("REFERENCED_COLUMN_NAME", typeof(string)),
 		});
-
-		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", null, cancellationToken).ConfigureAwait(false);
+		var columns = new List<KeyValuePair<string, string>>();
+		if (restrictionValues is not null)
+		{
+			if (restrictionValues.Length > 0 && !string.IsNullOrEmpty(restrictionValues[0]))
+				columns.Add(new("TABLE_CATALOG", restrictionValues[0]!));
+			if (restrictionValues.Length > 1 && !string.IsNullOrEmpty(restrictionValues[1]))
+				columns.Add(new("TABLE_SCHEMA", restrictionValues[1]!));
+			if (restrictionValues.Length > 2 && !string.IsNullOrEmpty(restrictionValues[2]))
+				columns.Add(new("TABLE_NAME", restrictionValues[2]!));
+			if (restrictionValues.Length > 3 && !string.IsNullOrEmpty(restrictionValues[3]))
+				columns.Add(new("COLUMN_NAME", restrictionValues[3]!));
+		}
+		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", columns, cancellationToken).ConfigureAwait(false);
 	}
+	
+	private async Task FillIndexColumnAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
+	{
 
+		dataTable.TableName = tableName;
+		dataTable.Columns.AddRange(new DataColumn[]
+		{
+			new("TABLE_CATALOG", typeof(string)),
+			new("TABLE_SCHEMA", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("COLUMN_NAME", typeof(string)),
+			new("INDEX_SCHEMA", typeof(string)),
+			new("INDEX_NAME", typeof(string)),
+			new("INDEX_TYPE", typeof(string)),			
+			new("SEQ_IN_INDEX", typeof(int)),
+			new("NON_UNIQUE", typeof(bool))
+		
+		});
+		var columns = new List<KeyValuePair<string, string>>();
+		if (restrictionValues is not null)
+		{
+			if (restrictionValues.Length > 0 && !string.IsNullOrEmpty(restrictionValues[0]))
+				columns.Add(new("TABLE_CATALOG", restrictionValues[0]!));
+			if (restrictionValues.Length > 1 && !string.IsNullOrEmpty(restrictionValues[1]))
+				columns.Add(new("TABLE_SCHEMA", restrictionValues[1]!));
+			if (restrictionValues.Length > 2 && !string.IsNullOrEmpty(restrictionValues[2]))
+				columns.Add(new("TABLE_NAME", restrictionValues[2]!));
+			if (restrictionValues.Length > 3 && !string.IsNullOrEmpty(restrictionValues[3]))
+				columns.Add(new("INDEX_NAME", restrictionValues[3]!));
+		}
+		await FillDataTableAsync(ioBehavior, dataTable, "STATISTICS", columns, cancellationToken).ConfigureAwait(false);
+	}
 	private async Task FillKeyWordsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
 		if (restrictionValues is not null)
@@ -567,7 +612,7 @@ internal sealed partial class SchemaProvider
 
 		await FillDataTableAsync(ioBehavior, dataTable, "REFERENTIAL_CONSTRAINTS", null, cancellationToken).ConfigureAwait(false);
 	}
-
+	
 	private Task FillReservedWordsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
 		if (restrictionValues is not null)
