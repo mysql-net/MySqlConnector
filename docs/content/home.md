@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-01-21
+lastmod: 2023-02-25
 date: 2016-10-16
 title: Home
 weight: 10
@@ -67,54 +67,4 @@ MySqlConnector outperforms Connector/NET (MySql.Data) on benchmarks:
 MySqlConnector is a clean-room reimplementation of the [MySQL Protocol](https://dev.mysql.com/doc/internals/en/client-server-protocol.html)
 and is not based on [Oracle’s MySQL Connector/NET](https://github.com/mysql/mysql-connector-net).
 
-* **Asynchronous:** True asynchronous I/O for maximum throughput
-* **Fast:** Optimized for speed and low memory usage
-* **Reliable:** Fixes [dozens of open bugs](/tutorials/migrating-from-connector-net/#fixed-bugs) in Oracle’s Connector/NET; passes all [ADO.NET Specification Tests](https://mysql-net.github.io/AdoNetResults/)
-* **Leading Edge:** First MySQL library to support .NET Core; uses the latest .NET features
-* **Open:** MIT license; development [happens on GitHub](https://github.com/mysql-net/MySqlConnector) with publicly visible roadmaps, issues, and PRs
-
-<table class="table table-striped table-hover" style="max-width: 650px">
-  <thead>
-    <th style="width:25%"></th>
-    <th style="width:25%">MySqlConnector</th>
-    <th style="width:25%">Oracle’s Connector/NET</th>
-    <th style="width:25%">MySqlConnector Advantage</th>
-  </thead>
-  <tr>
-    <td><strong>Async</strong></td>
-    <td><strong>Fully asynchronous</strong> I/O</td>
-    <td>Async calls map to synchronous I/O</td>
-    <td>Uses fewer thread pool threads; higher throughput</td>
-  </tr>
-  <tr>
-    <td><strong>Development</strong></td>
-    <td>
-      <strong>Open and Collaborative</strong> Development on
-      <a href="https://github.com/mysql-net/MySqlConnector">GitHub</a>
-    </td>
-    <td>
-      Closed Development Roadmap. Code is viewable on
-      <a href="https://github.com/mysql/mysql-connector-net">GitHub</a>,
-      some issues addressed in <a href="http://forums.mysql.com/list.php?38">forums</a>
-    </td>
-    <td>
-      <a href="https://github.com/mysql-net/MySqlConnector/issues?q=is%3Aissue+is%3Aopen+label%3A%22up+for+grabs%22">Get involved!</a> View
-      <a href="https://github.com/mysql-net/MySqlConnector/milestones">our roadmap</a>,
-      discuss <a href="https://github.com/mysql-net/MySqlConnector/issues">issues</a>,
-      contribute <a href="https://github.com/mysql-net/MySqlConnector/pulls">pull requests</a>
-    </td>
-  </tr>
-  <tr>
-    <td><strong>License</strong></td>
-    <td>
-      The <strong><a href="https://github.com/mysql-net/MySqlConnector/blob/master/LICENSE">MIT License</a></strong>
-    </td>
-    <td>
-      <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GPLv2</a>
-      with <a href="http://www.mysql.com/about/legal/licensing/foss-exception/">FOSS Exception</a>; or
-      <a href="https://www.mysql.com/about/legal/licensing/oem/">commercial license</a>
-    </td>
-    <td>More Permissive</td>
-  </tr>
-</table>
-
+See [MySqlConnector vs MySql.Data](/tutorials/migrating-from-connector-net/) for reasons to switch to MySqlConnector and details on migrating.

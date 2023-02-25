@@ -1,15 +1,28 @@
 ---
-lastmod: 2022-01-21
+lastmod: 2023-02-25
 date: 2016-10-16
 menu:
   main:
     parent: tutorials
-title: Migrating from Connector/NET
+title: Migrating from MySql.Data
+customtitle: MySqlConnector vs MySql.Data
 weight: 20
 ---
 
-Migrating from Connector/NET
-============================
+# MySqlConnector vs MySql.Data
+
+Compared to MySql.Data (i.e., Oracle's MySQL Connector/NET), MySqlConnector has the following benefits:
+
+* Asynchronous I/O support
+* Higher performance (see [benchmarks](/#performance)) and lower memory usage
+* More reliable (see [bugs fixed](#fixed-bugs))
+* Leading edge: first MySQL driver to support .NET Core, `DbBatch`, `DateOnly`, `DbDataSource` and other new .NET features
+* Better compatibility with non-MySQL databases ([MariaDB](https://bugs.mysql.com/bug.php?id=109331), Amazon Aurora, etc.)
+* Better license (MIT, not [GPL 2.0](https://github.com/mysql/mysql-connector-net/blob/8.0/LICENSE) with [Universal FOSS Exception](https://oss.oracle.com/licenses/universal-foss-exception/) or [commercial license](https://www.mysql.com/about/legal/licensing/oem/))
+* Faster pace of development (regular [NuGet releases](https://www.nuget.org/packages/MySqlConnector#versions-body-tab), not once per quarter)
+* Development happens in the open on GitHub
+
+## Migrating from Connector/NET
 
 ### Namespace
 
@@ -132,7 +145,7 @@ Connector/NET allows a `MySqlConnection` object to be reused after it has been d
 object to be created. See [#331](https://github.com/mysql-net/MySqlConnector/issues/331) for more details.
 
 The return value of `MySqlConnection.BeginTransactionAsync` has changed from `Task<MySqlTransaction>` to
-`ValueTask<MySqlTransaction>` to match the [standard API in .NET Core 3.0](https://github.com/dotnet/corefx/issues/35012).
+`ValueTask<MySqlTransaction>` to match the [standard API in .NET Core 3.0](https://github.com/dotnet/runtime/issues/28596).
 (This method does always perform I/O, so `ValueTask` is not an optimization for MySqlConnector.)
 
 ### MySqlConnectionStringBuilder
@@ -153,7 +166,7 @@ If `MySqlCommand.CommandType` is `CommandType.StoredProcedure`, the stored proce
 
 Connector/NET provides `MySqlDataAdapter.FillAsync`, `FillSchemaAsync`, and `UpdateAsync` methods, but these methods
 have a synchronous implementation. MySqlConnector only adds “Async” methods when they can be implemented asynchronously.
-This functionality depends on [dotnet/corefx#20658](https://github.com/dotnet/corefx/issues/20658) being implemented first.
+This functionality depends on [dotnet/runtime#22109](https://github.com/dotnet/runtime/issues/22109) being implemented first.
 To migrate code, change it to call the synchronous methods instead.
 
 ### MySqlGeometry
@@ -188,7 +201,7 @@ or used only as positional parameters if they’re unnamed.
 For consistency with other ADO.NET providers, MySqlConnector will throw `InvalidOperationException` (instead of `MySqlException`)
 for various precondition checks that indicate misuse of the API (and not a problem related to MySQL Server).
 
-### Fixed Bugs
+## Fixed Bugs
 
 The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~~Strikethrough~~ indicates bugs that have since been fixed in a newer version of Connector/NET, but were fixed first in MySqlConnector.)
 
