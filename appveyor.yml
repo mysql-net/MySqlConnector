@@ -37,7 +37,7 @@ artifacts:
 deploy:
 - provider: NuGet
   api_key:
-    secure: v9rtj48AfjN8dXyqo+jZzD+pjacn+9TfiZ6kMP2k9K0Wvz+XLhnD6gOCfrZjqrow
+    secure: SCNhz02UXcSKv6UVgAlhbzGb0u7PAQF4w1kx+cCGw1tm95QNhy2yiKLsLjjQ0j7l
   artifact: /.*MySqlConnector[0-9.]+(-(alpha|beta|rc)\.?[0-9.]+)?nupkg/
   skip_symbols: true
   on:
