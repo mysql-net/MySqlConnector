@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-01-30
+lastmod: 2023-03-10
 date: 2023-01-28
 title: Failed to Add comerr
 description: How to fix the error "Failed to add reference to 'comerr64'" when installing MySql.Data using NuGet.
@@ -40,6 +40,10 @@ This is [a bug](https://bugs.mysql.com/bug.php?id=109716) in the MySql.Data NuGe
 
 ## Fix
 
+A fix from Oracle is now available in [MySql.Data version 8.0.32.1](https://www.nuget.org/packages/MySql.Data/8.0.32.1).
+This is mentioned in the fix for [bug 109670](https://bugs.mysql.com/bug.php?id=109670).
+Should that not resolve the problem, there are two other fixes:
+
 ### Recommended Fix
 
 The recommended fix for this problem is to [switch to MySqlConnector](/overview/installing), which fixes this problem and [many other bugs](/tutorials/migrating-from-connector-net/#fixed-bugs) in MySql.Data.
@@ -56,7 +60,3 @@ For more information see [Migrate from packages.config to PackageReference](http
 
 After doing this, the installation of MySql.Data 8.0.32 should succeed.
 A full conversion to SDK-style projects should not be required.
-
-### Workaround
-
-A workaround is to downgrade to MySql.Data 8.0.31 or earlier.
