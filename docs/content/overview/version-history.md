@@ -10,7 +10,8 @@ weight: 30
 ---
 
 # Version History
-
+### 2.3.0 Beta 1
+ * `Add More Schema for Create Table
 ### 2.3.0 Beta 1
 
 * `MySqlDataSource` is now available for all TFMs, not just .NET 7.0: [#1269](https://github.com/mysql-net/MySqlConnector/pull/1269).

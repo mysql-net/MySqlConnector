@@ -11,7 +11,7 @@
     <PackageIconUrl>https://mysqlconnector.net/img/logo.png</PackageIconUrl>
     <PackageIcon>logo.png</PackageIcon>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/mysql-net/MySqlConnector.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Gyyone/MySqlConnector.git</RepositoryUrl>
     <DebugType>embedded</DebugType>
     <EnablePackageValidation>true</EnablePackageValidation>
     <PackageValidationBaselineVersion>2.0.0</PackageValidationBaselineVersion>
@@ -36,7 +36,9 @@
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
-
+<PropertyGroup>
+  <Version>2.3.1.0</Version>
+</PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
     <PackageReference Include="MinVer" Version="4.2.0">
