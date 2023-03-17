@@ -17,7 +17,7 @@
     <PackageValidationBaselineVersion>2.0.0</PackageValidationBaselineVersion>
     <EnableStrictModeForCompatibleFrameworksInPackageValidation>true</EnableStrictModeForCompatibleFrameworksInPackageValidation>
     <EnableStrictModeForCompatibleTfms>true</EnableStrictModeForCompatibleTfms>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>11.0</LangVersion>
     <AnalysisLevel>latest-all</AnalysisLevel>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
