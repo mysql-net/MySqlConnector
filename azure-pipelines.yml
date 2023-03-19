@@ -1,5 +1,5 @@
 variables:
-  DotNetCoreSdkVersion: '7.x'
+  DotNetCoreSdkVersion: '8.x'
   NUGET_PACKAGES: '$(Pipeline.Workspace)/.nuget/packages'
 
 jobs:
@@ -41,13 +41,14 @@ jobs:
       contents: 'config.json'
       targetFolder: 'tests/IntegrationTests'
   - task: UseDotNet@2
-    displayName: 'Install .NET Core 7.0'
+    displayName: 'Install .NET 7.0'
     inputs:
       version: '7.0.x'
   - task: UseDotNet@2
-    displayName: 'Install .NET Core'
+    displayName: 'Install .NET'
     inputs:
       version: $(DotNetCoreSdkVersion)
+      includePreviewVersions: true
   - task: DotNetCoreCLI@2
     displayName: 'MySql.Data unit tests'
     inputs:
@@ -113,14 +114,15 @@ jobs:
       targetType: inline
       script: "mysql -u$(Azure MySQL Root User) -p$(Azure MySQL Root Password) -h '$(Azure MySQL Host)' -e 'create schema mysqltest_$(Build.BuildId) collate utf8mb4_0900_ai_ci;'"
   - task: UseDotNet@2
-    displayName: 'Install .NET Core 7.0'
+    displayName: 'Install .NET 7.0'
     inputs:
       version: 7.0.x
       packageType: runtime
   - task: UseDotNet@2
-    displayName: 'Install .NET Core'
+    displayName: 'Install .NET'
     inputs:
       version: $(DotNetCoreSdkVersion)
+      includePreviewVersions: true
   - task: PowerShell@2
     displayName: 'Copy Azure config'
     inputs:
@@ -131,11 +133,11 @@ jobs:
     inputs:
       command: 'restore'
   - task: DotNetCoreCLI@2
-    displayName: 'Integration tests (net7.0)'
+    displayName: 'Integration tests (net8.0)'
     inputs:
       command: 'test'
       projects: 'tests/IntegrationTests/IntegrationTests.csproj'
-      arguments: '-c Release -f net7.0 --no-restore'
+      arguments: '-c Release -f net8.0 --no-restore'
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'Azure', 'net6.0', 'SSL') }}
     env:
       DATA__UNSUPPORTEDFEATURES: 'CachingSha2Password,Ed25519,GlobalLog,KnownCertificateAuthority,QueryAttributes,RsaEncryption,Sha256Password,StreamingResults,Timeout,Tls11,Tls13,UnixDomainSocket,ZeroDateTime'
@@ -154,9 +156,10 @@ jobs:
   steps:
   - template: '.ci/install-mysql-windows.yml'
   - task: UseDotNet@2
-    displayName: 'Install .NET Core'
+    displayName: 'Install .NET'
     inputs:
       version: $(DotNetCoreSdkVersion)
+      includePreviewVersions: true
   - task: CopyFiles@2
     displayName: 'Copy config.json'
     inputs:
@@ -167,18 +170,18 @@ jobs:
     displayName: 'Remove target frameworks'
     inputs:
       targetType: 'inline'
-      script: '((Get-Content .\tests\IntegrationTests\IntegrationTests.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>net472;net7.0</TargetFrameworks>'')) | Set-Content .\tests\IntegrationTests\IntegrationTests.csproj'
+      script: '((Get-Content .\tests\IntegrationTests\IntegrationTests.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>net472;net8.0</TargetFrameworks>'')) | Set-Content .\tests\IntegrationTests\IntegrationTests.csproj'
   - task: DotNetCoreCLI@2
     displayName: 'Restore packages'
     inputs:
       command: 'restore'
   - task: DotNetCoreCLI@2
-    displayName: 'Integration tests (net472/net7.0)'
+    displayName: 'Integration tests (net472/net8.0)'
     inputs:
       command: 'test'
       projects: 'tests/IntegrationTests/IntegrationTests.csproj'
       arguments: '-c Release --no-restore'
-      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net472/net7.0', 'No SSL') }}
+      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net472/net8.0', 'No SSL') }}
     env:
       DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,StreamingResults,Tls11,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True;UseCompression=True'
@@ -190,14 +193,15 @@ jobs:
   steps:
   - template: '.ci/install-mysql-windows.yml'
   - task: UseDotNet@2
-    displayName: 'Install .NET Core 6.0'
+    displayName: 'Install .NET 6.0'
     inputs:
       version: 6.0.x
       packageType: runtime
   - task: UseDotNet@2
-    displayName: 'Install .NET Core'
+    displayName: 'Install .NET'
     inputs:
       version: $(DotNetCoreSdkVersion)
+      includePreviewVersions: true
   - script: copy .ci\config\config.json tests\IntegrationTests\config.json
     displayName: 'Copy config.json'
   - task: PowerShell@2

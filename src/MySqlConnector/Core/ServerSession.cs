@@ -1493,8 +1493,10 @@ internal sealed partial class ServerSession
 		};
 
 #if NETCOREAPP3_0_OR_GREATER
+#pragma warning disable CA1416 // Validate platform compatibility
 		if (cs.TlsCipherSuites is { Count: > 0 })
 			clientAuthenticationOptions.CipherSuitesPolicy = new CipherSuitesPolicy(cs.TlsCipherSuites);
+#pragma warning restore CA1416 // Validate platform compatibility
 #endif
 
 		try
