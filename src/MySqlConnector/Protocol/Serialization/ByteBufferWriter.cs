@@ -100,6 +100,9 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 	}
 
 	public void Write(string value) => Write(value.AsSpan(), flush: true);
+
+	public void WriteAscii(string value) => WriteAscii(value.AsSpan(), flush: true);
+
 	public void Write(string value, int offset, int length) => Write(value.AsSpan(offset, length), flush: true);
 
 	public void Write(ReadOnlySpan<char> chars, bool flush)
@@ -122,6 +125,30 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 			if (m_output.Length < 4)
 				Reallocate();
 			m_encoder.Convert("".AsSpan(), m_output.Span, flush: true, out _, out var bytesUsed, out _);
+			m_output = m_output[bytesUsed..];
+		}
+	}
+
+	public void WriteAscii(ReadOnlySpan<char> chars, bool flush)
+	{
+		var encoder = Encoding.ASCII.GetEncoder();
+		if (m_output.Length < chars.Length)
+			Reallocate(chars.Length);
+		while (chars.Length > 0)
+		{
+			encoder.Convert(chars, m_output.Span, false, out var charsUsed, out var bytesUsed, out var completed);
+			chars = chars[charsUsed..];
+			m_output = m_output[bytesUsed..];
+			if (!completed)
+				Reallocate();
+			Debug.Assert(completed == (chars.Length == 0), "completed == (chars.Length == 0)");
+		}
+
+		if (flush)
+		{
+			if (m_output.Length < 4)
+				Reallocate();
+			encoder.Convert("".AsSpan(), m_output.Span, flush: true, out _, out var bytesUsed, out _);
 			m_output = m_output[bytesUsed..];
 		}
 	}
@@ -259,10 +286,18 @@ internal static class ByteBufferWriterExtensions
 
 	public static void WriteLengthEncodedString(this ByteBufferWriter writer, string value) => writer.WriteLengthEncodedString(value.AsSpan());
 
+	public static void WriteLengthEncodedAsciiString(this ByteBufferWriter writer, string value) => writer.WriteLengthEncodedAsciiString(value.AsSpan());
+
 	public static void WriteLengthEncodedString(this ByteBufferWriter writer, ReadOnlySpan<char> value)
 	{
 		var byteCount = Encoding.UTF8.GetByteCount(value);
 		writer.WriteLengthEncodedInteger((ulong) byteCount);
+		writer.Write(value, flush: true);
+	}
+
+	public static void WriteLengthEncodedAsciiString(this ByteBufferWriter writer, ReadOnlySpan<char> value)
+	{
+		writer.WriteLengthEncodedInteger((ulong) value.Length);
 		writer.Write(value, flush: true);
 	}
 
