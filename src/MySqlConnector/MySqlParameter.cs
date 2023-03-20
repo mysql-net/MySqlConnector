@@ -243,7 +243,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		}
 		else if (Value is decimal decimalValue)
 		{
-			writer.Write(decimalValue.ToString(CultureInfo.InvariantCulture));
+			writer.WriteAscii(decimalValue.ToString(CultureInfo.InvariantCulture));
 		}
 		else if (Value is short shortValue)
 		{
@@ -320,20 +320,20 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		else if (Value is float floatValue)
 		{
 			// NOTE: Utf8Formatter doesn't support "R"
-			writer.Write(floatValue.ToString("R", CultureInfo.InvariantCulture));
+			writer.WriteAscii(floatValue.ToString("R", CultureInfo.InvariantCulture));
 		}
 		else if (Value is double doubleValue)
 		{
 			// NOTE: Utf8Formatter doesn't support "R"
-			writer.Write(doubleValue.ToString("R", CultureInfo.InvariantCulture));
+			writer.WriteAscii(doubleValue.ToString("R", CultureInfo.InvariantCulture));
 		}
 		else if (Value is BigInteger bigInteger)
 		{
-			writer.Write(bigInteger.ToString(CultureInfo.InvariantCulture));
+			writer.WriteAscii(bigInteger.ToString(CultureInfo.InvariantCulture));
 		}
 		else if (Value is MySqlDecimal mySqlDecimal)
 		{
-			writer.Write(mySqlDecimal.ToString());
+			writer.WriteAscii(mySqlDecimal.ToString());
 		}
 		else if (Value is MySqlDateTime mySqlDateTimeValue)
 		{
@@ -344,7 +344,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 #else
 				var str = FormattableString.Invariant($"timestamp('{mySqlDateTimeValue.GetDateTime():yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
 #endif
-				writer.Write(str);
+				writer.WriteAscii(str);
 			}
 			else
 			{
@@ -354,7 +354,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 #if NET6_0_OR_GREATER
 		else if (Value is DateOnly dateOnlyValue)
 		{
-			writer.Write(string.Create(CultureInfo.InvariantCulture, stackalloc char[23], $"timestamp('{dateOnlyValue:yyyy'-'MM'-'dd}')"));
+			writer.WriteAscii(string.Create(CultureInfo.InvariantCulture, stackalloc char[23], $"timestamp('{dateOnlyValue:yyyy'-'MM'-'dd}')"));
 		}
 #endif
 		else if (Value is DateTime dateTimeValue)
@@ -369,7 +369,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 #else
 			var str = FormattableString.Invariant($"timestamp('{dateTimeValue:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
 #endif
-			writer.Write(str);
+			writer.WriteAscii(str);
 		}
 		else if (Value is DateTimeOffset dateTimeOffsetValue)
 		{
@@ -379,12 +379,12 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 #else
 			var str = FormattableString.Invariant($"timestamp('{dateTimeOffsetValue.UtcDateTime:yyyy'-'MM'-'dd' 'HH':'mm':'ss'.'ffffff}')");
 #endif
-			writer.Write(str);
+			writer.WriteAscii(str);
 		}
 #if NET6_0_OR_GREATER
 		else if (Value is TimeOnly timeOnlyValue)
 		{
-			writer.Write(string.Create(CultureInfo.InvariantCulture, stackalloc char[22], $"time '{timeOnlyValue:HH':'mm':'ss'.'ffffff}'"));
+			writer.WriteAscii(string.Create(CultureInfo.InvariantCulture, stackalloc char[22], $"time '{timeOnlyValue:HH':'mm':'ss'.'ffffff}'"));
 		}
 #endif
 		else if (Value is TimeSpan ts)
@@ -400,7 +400,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 #else
 			var str = FormattableString.Invariant($"{ts.Days * 24 + ts.Hours}:{ts:mm':'ss'.'ffffff}'");
 #endif
-			writer.Write(str);
+			writer.WriteAscii(str);
 		}
 		else if (Value is Guid guidValue)
 		{
@@ -628,11 +628,11 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		}
 		else if (Value is decimal decimalValue)
 		{
-			writer.WriteLengthEncodedString(decimalValue.ToString(CultureInfo.InvariantCulture));
+			writer.WriteLengthEncodedAsciiString(decimalValue.ToString(CultureInfo.InvariantCulture));
 		}
 		else if (Value is BigInteger bigInteger)
 		{
-			writer.WriteLengthEncodedString(bigInteger.ToString(CultureInfo.InvariantCulture));
+			writer.WriteLengthEncodedAsciiString(bigInteger.ToString(CultureInfo.InvariantCulture));
 		}
 		else if (Value is MySqlDateTime mySqlDateTimeValue)
 		{
@@ -643,7 +643,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		}
 		else if (Value is MySqlDecimal mySqlDecimal)
 		{
-			writer.WriteLengthEncodedString(mySqlDecimal.ToString());
+			writer.WriteLengthEncodedAsciiString(mySqlDecimal.ToString());
 		}
 #if NET6_0_OR_GREATER
 		else if (Value is DateOnly dateOnlyValue)
