@@ -100,6 +100,9 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 	}
 
 	public void Write(string value) => Write(value.AsSpan(), flush: true);
+
+	public void WriteAscii(string value) => WriteAscii(value.AsSpan());
+
 	public void Write(string value, int offset, int length) => Write(value.AsSpan(offset, length), flush: true);
 
 	public void Write(ReadOnlySpan<char> chars, bool flush)
@@ -124,6 +127,13 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 			m_encoder.Convert("".AsSpan(), m_output.Span, flush: true, out _, out var bytesUsed, out _);
 			m_output = m_output[bytesUsed..];
 		}
+	}
+
+	public void WriteAscii(ReadOnlySpan<char> chars)
+	{
+		if (m_output.Length < chars.Length)
+			Reallocate(chars.Length - m_output.Length);
+		Encoding.ASCII.GetBytes(chars, m_output.Span);
 	}
 
 	public void WriteLengthEncodedString(StringBuilder stringBuilder)
@@ -264,6 +274,12 @@ internal static class ByteBufferWriterExtensions
 		var byteCount = Encoding.UTF8.GetByteCount(value);
 		writer.WriteLengthEncodedInteger((ulong) byteCount);
 		writer.Write(value, flush: true);
+	}
+
+	public static void WriteLengthEncodedAsciiString(this ByteBufferWriter writer, string value)
+	{
+		writer.WriteLengthEncodedInteger((ulong) value.Length);
+		writer.WriteAscii(value.AsSpan());
 	}
 
 	public static void WriteNullTerminatedString(this ByteBufferWriter writer, string value)
