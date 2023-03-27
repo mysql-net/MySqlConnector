@@ -133,7 +133,7 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 	{
 		if (m_output.Length < chars.Length)
 			Reallocate(chars.Length - m_output.Length);
-		Encoding.ASCII.GetBytes(chars, m_output.Span);
+		m_output = m_output[Encoding.ASCII.GetBytes(chars, m_output.Span)..];
 	}
 
 	public void WriteLengthEncodedString(StringBuilder stringBuilder)
