@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Numerics;
 #if MYSQL_DATA
 using MySql.Data.Types;
@@ -471,7 +472,7 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 
 		using var reader = connection.ExecuteReader(@"select value from insert_mysql_decimal order by rowid;");
 		Assert.True(reader.Read());
-		var val = reader.GetValue(0).ToString();
+		var val = ((decimal) reader.GetValue(0)).ToString(CultureInfo.InvariantCulture);
 		Assert.Equal(value, val);
 	}
 #endif
