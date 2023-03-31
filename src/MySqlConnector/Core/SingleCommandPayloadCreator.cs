@@ -1,7 +1,6 @@
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
-using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
 
@@ -19,8 +18,8 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			return false;
 
 		var command = commandListPosition.Commands[commandListPosition.CommandIndex];
-		var preparedStatements = command.TryGetPreparedStatements();
-		if (preparedStatements is null)
+		commandListPosition.PreparedStatements = command.TryGetPreparedStatements();
+		if (commandListPosition.PreparedStatements is null)
 		{
 			Log.PreparingCommandPayload(command.Logger, command.Connection!.Session.Id, command.CommandText!);
 
@@ -44,16 +43,18 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			}
 
 			WriteQueryPayload(command, cachedProcedures, writer, appendSemicolon);
-
+			commandListPosition.LastUsedPreparedStatement = null;
 			commandListPosition.CommandIndex++;
 		}
 		else
 		{
 			writer.Write((byte) CommandKind.StatementExecute);
-			WritePreparedStatement(command, preparedStatements.Statements[commandListPosition.PreparedStatementIndex], writer);
+			commandListPosition.LastUsedPreparedStatement =
+				commandListPosition.PreparedStatements.Statements[commandListPosition.PreparedStatementIndex];
+			WritePreparedStatement(command, commandListPosition.LastUsedPreparedStatement, writer);
 
 			// advance to next prepared statement or next command
-			if (++commandListPosition.PreparedStatementIndex == preparedStatements.Statements.Count)
+			if (++commandListPosition.PreparedStatementIndex == commandListPosition.PreparedStatements.Statements.Count)
 			{
 				commandListPosition.CommandIndex++;
 				commandListPosition.PreparedStatementIndex = 0;

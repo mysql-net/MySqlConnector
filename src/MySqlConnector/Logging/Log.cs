@@ -40,8 +40,8 @@ internal static partial class Log
 	[LoggerMessage(EventIds.AutoDetectedAurora57, LogLevel.Debug, "Session {SessionId} auto-detected Aurora 5.7 at '{HostName}'; disabling pipelining")]
 	public static partial void AutoDetectedAurora57(ILogger logger, string sessionId, string hostName);
 
-	[LoggerMessage(EventIds.SessionMadeConnection, LogLevel.Debug, "Session {SessionId} made connection; server version {ServerVersion}; connection ID {ConnectionId}; supports: compression {SupportsCompression}, attributes {SupportsAttributes}, deprecate EOF {SupportsDeprecateEof}, SSL {SupportsSsl}, session track {SupportsSessionTrack}, pipelining {SupportsPipelining}, query attributes {SupportsQueryAttributes}")]
-	public static partial void SessionMadeConnection(ILogger logger, string sessionId, string serverVersion, int connectionId, bool supportsCompression, bool supportsAttributes, bool supportsDeprecateEof, bool supportsSsl, bool supportsSessionTrack, bool supportsPipelining, bool supportsQueryAttributes);
+	[LoggerMessage(EventIds.SessionMadeConnection, LogLevel.Debug, "Session {SessionId} made connection; server version {ServerVersion}; connection ID {ConnectionId}; supports: compression {SupportsCompression}, attributes {SupportsAttributes}, deprecate EOF {SupportsDeprecateEof}, metadata skip {supportsMetaSkip}, SSL {SupportsSsl}, session track {SupportsSessionTrack}, pipelining {SupportsPipelining}, query attributes {SupportsQueryAttributes}")]
+	public static partial void SessionMadeConnection(ILogger logger, string sessionId, string serverVersion, int connectionId, bool supportsCompression, bool supportsAttributes, bool supportsDeprecateEof, bool supportsMetaSkip, bool supportsSsl, bool supportsSessionTrack, bool supportsPipelining, bool supportsQueryAttributes);
 
 	[LoggerMessage(EventIds.ServerDoesNotSupportSsl, LogLevel.Error, "Session {SessionId} requires SSL but server doesn't support it")]
 	public static partial void ServerDoesNotSupportSsl(ILogger logger, string sessionId);
