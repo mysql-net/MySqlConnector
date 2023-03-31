@@ -116,42 +116,55 @@ internal sealed class ResultSet
 				}
 				else
 				{
-					static int ReadColumnCount(ReadOnlySpan<byte> span)
+					var columnCountPacket = ColumnCountPayload.Create(payload.Span, Session.SupportsMetaSkip);
+					if (!columnCountPacket.MetadataFollows)
 					{
-						var reader = new ByteArrayReader(span);
-						var columnCount_ = (int) reader.ReadLengthEncodedInteger();
-						if (reader.BytesRemaining != 0)
-							throw new MySqlException("Unexpected data at end of column_count packet; see https://github.com/mysql-net/MySqlConnector/issues/324");
-						return columnCount_;
+						// reuse previous metadata
+						var preparedStatement = DataReader.CurrentPrepareStmt()!;
+						ColumnDefinitions = preparedStatement.Columns!;
+						ColumnTypes = new MySqlDbType[columnCountPacket.ColumnCount];
+						for (var column = 0; column < columnCountPacket.ColumnCount; column++)
+						{
+							ColumnTypes[column] = TypeMapper.ConvertToMySqlDbType(ColumnDefinitions[column],
+								Connection.TreatTinyAsBoolean, Connection.GuidFormat);
+						}
 					}
-					var columnCount = ReadColumnCount(payload.Span);
-
-					// reserve adequate space to hold a copy of all column definitions (but note that this can be resized below if we guess too small)
-					Utility.Resize(ref m_columnDefinitionPayloads, columnCount * 96);
-
-					ColumnDefinitions = new ColumnDefinitionPayload[columnCount];
-					ColumnTypes = new MySqlDbType[columnCount];
-
-					for (var column = 0; column < ColumnDefinitions.Length; column++)
+					else
 					{
-						payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-						var payloadLength = payload.Span.Length;
+						// parse columns
+						// reserve adequate space to hold a copy of all column definitions (but note that this can be resized below if we guess too small)
+						Utility.Resize(ref m_columnDefinitionPayloads, columnCountPacket.ColumnCount * 96);
 
-						// 'Session.ReceiveReplyAsync' reuses a shared buffer; make a copy so that the column definitions can always be safely read at any future point
-						if (m_columnDefinitionPayloadUsedBytes + payloadLength > m_columnDefinitionPayloads.Count)
-							Utility.Resize(ref m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes + payloadLength);
-						payload.Span.CopyTo(m_columnDefinitionPayloads.AsSpan(m_columnDefinitionPayloadUsedBytes));
+						ColumnDefinitions = new ColumnDefinitionPayload[columnCountPacket.ColumnCount];
+						ColumnTypes = new MySqlDbType[columnCountPacket.ColumnCount];
+						for (var column = 0; column < ColumnDefinitions.Length; column++)
+						{
+							payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+							var payloadLength = payload.Span.Length;
 
-						var columnDefinition = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, payloadLength));
-						ColumnDefinitions[column] = columnDefinition;
-						ColumnTypes[column] = TypeMapper.ConvertToMySqlDbType(columnDefinition, treatTinyAsBoolean: Connection.TreatTinyAsBoolean, guidFormat: Connection.GuidFormat);
-						m_columnDefinitionPayloadUsedBytes += payloadLength;
-					}
+							// 'Session.ReceiveReplyAsync' reuses a shared buffer; make a copy so that the column definitions can always be safely read at any future point
+							if (m_columnDefinitionPayloadUsedBytes + payloadLength > m_columnDefinitionPayloads.Count)
+								Utility.Resize(ref m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes + payloadLength);
+							payload.Span.CopyTo(m_columnDefinitionPayloads.AsSpan(m_columnDefinitionPayloadUsedBytes));
 
-					if (!Session.SupportsDeprecateEof)
-					{
-						payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-						EofPayload.Create(payload.Span);
+							var columnDefinition = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, payloadLength));
+							ColumnDefinitions[column] = columnDefinition;
+							ColumnTypes[column] = TypeMapper.ConvertToMySqlDbType(columnDefinition, Connection.TreatTinyAsBoolean, Connection.GuidFormat);
+							m_columnDefinitionPayloadUsedBytes += payloadLength;
+						}
+
+						if (Session.SupportsMetaSkip)
+						{
+							// server support metadata skipping, but has resend them, so something has change since last prepare/execution
+							var preparedStatement = DataReader.CurrentPrepareStmt();
+							if (preparedStatement != null) preparedStatement.Columns = ColumnDefinitions;
+						}
+
+						if (!Session.SupportsDeprecateEof)
+						{
+							payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+							EofPayload.Create(payload.Span);
+						}
 					}
 
 					if (ColumnDefinitions.Length == (Command?.OutParameters?.Count + 1) && ColumnDefinitions[0].Name == SingleCommandPayloadCreator.OutParameterSentinelColumnName)
