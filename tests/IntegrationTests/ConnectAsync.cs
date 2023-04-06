@@ -439,6 +439,18 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		await connection.OpenAsync();
 	}
+
+	[SkippableFact(ServerFeatures.Ed25519)]
+	public async Task MultiAuthentication()
+	{
+		Ed25519AuthenticationPlugin.Install();
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.UserID = "multiAuthUser";
+		csb.Password = "secret";
+		csb.Database = null;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		await connection.OpenAsync();
+	}
 #endif
 
 	// To create a MariaDB GSSAPI user for a current user

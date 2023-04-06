@@ -561,7 +561,7 @@ internal sealed partial class ServerSession
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			// if server doesn't support the authentication fast path, it will send a new challenge
-			if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
+			while (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 			{
 				payload = await SwitchAuthenticationAsync(cs, password, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
