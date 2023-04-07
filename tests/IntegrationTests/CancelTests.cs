@@ -24,7 +24,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
 	public void CancelCommand()
 	{
-		using var cmd = new MySqlCommand("SELECT SLEEP(5)", m_database.Connection);
+		using var cmd = new MySqlCommand(c_hugeQuery, m_database.Connection);
 		var task = Task.Run(async () =>
 		{
 			await Task.Delay(TimeSpan.FromSeconds(0.5));
@@ -32,7 +32,10 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		});
 
 		var stopwatch = Stopwatch.StartNew();
-		TestUtilities.AssertIsOne(cmd.ExecuteScalar());
+		var ex = Assert.Throws<MySqlException>(cmd.ExecuteScalar);
+		Assert.Contains("Query execution was interrupted", ex.Message,
+			StringComparison.OrdinalIgnoreCase);
+
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
 
 		task.Wait(); // shouldn't throw
@@ -50,7 +53,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 			ProvidePasswordCallback = _ => password,
 		};
 		await connection.OpenAsync();
-		using var command = new MySqlCommand("SELECT SLEEP(5)", connection);
+		using var command = new MySqlCommand(c_hugeQuery, connection);
 		var task = Task.Run(async () =>
 		{
 			await Task.Delay(TimeSpan.FromSeconds(0.5));
@@ -58,7 +61,10 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		});
 
 		var stopwatch = Stopwatch.StartNew();
-		TestUtilities.AssertIsOne(await command.ExecuteScalarAsync());
+		var ex = await Assert.ThrowsAsync<MySqlException>(command.ExecuteScalarAsync);
+		Assert.Contains("Query execution was interrupted", ex.Message,
+			StringComparison.OrdinalIgnoreCase);
+
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
 
 		task.Wait(); // shouldn't throw
@@ -75,10 +81,12 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 			ProvidePasswordCallback = _ => password,
 		};
 		await connection.OpenAsync();
-		using var command = new MySqlCommand("SELECT SLEEP(5)", connection);
+		using var command = new MySqlCommand(c_hugeQuery, connection);
 		using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
 		var stopwatch = Stopwatch.StartNew();
-		TestUtilities.AssertIsOne(await command.ExecuteScalarAsync(cts.Token));
+		var ex = await Assert.ThrowsAsync<OperationCanceledException>(() =>  command.ExecuteScalarAsync(cts.Token));
+		Assert.Contains("Query execution was interrupted", ex.Message,
+			StringComparison.OrdinalIgnoreCase);
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
 	}
 #endif
@@ -432,7 +440,7 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		{
 			BatchCommands =
 			{
-				new MySqlBatchCommand("SELECT SLEEP(5)"),
+				new MySqlBatchCommand(c_hugeQuery),
 			},
 		};
 		var task = Task.Run(async () =>
@@ -442,7 +450,9 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		});
 
 		var stopwatch = Stopwatch.StartNew();
-		TestUtilities.AssertIsOne(batch.ExecuteScalar());
+		var ex = Assert.Throws<MySqlException>(batch.ExecuteScalar);
+		Assert.Contains("Query execution was interrupted", ex.Message,
+			StringComparison.OrdinalIgnoreCase);
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
 
 		task.Wait(); // shouldn't throw
@@ -840,7 +850,7 @@ create table cancel_completed_command (
 #endif
 
 	// returns billions of rows
-	const string c_hugeQuery = @"select * from integers a join integers b join integers c join integers d join integers e join integers f join integers g join integers h;";
+	const string c_hugeQuery = "select * from information_schema.columns as c1,  information_schema.tables, information_schema.tables as t2;";
 
 	// takes a long time to return any rows
 	const string c_slowQuery = @"select * from integers a join integers b join integers c join integers d join integers e join integers f join integers g join integers h

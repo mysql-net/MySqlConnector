@@ -46,13 +46,16 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 		Assert.Equal(2_147_483, command.CommandTimeout);
 	}
 
-	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
-	public void CommandTimeoutWithSleepSync()
+	[SkippableTheory(ServerFeatures.CancelSleepSuccessfully)]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void CommandTimeoutWithSleepSync(bool prepare)
 	{
 		var connectionState = m_connection.State;
 		using (var cmd = new MySqlCommand("SELECT SLEEP(120);", m_connection))
 		{
 			cmd.CommandTimeout = 2;
+			if (prepare) cmd.Prepare();
 			var sw = Stopwatch.StartNew();
 #if MYSQL_DATA
 			var ex = Assert.Throws<MySqlException>(cmd.ExecuteReader);
@@ -61,9 +64,9 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 #else
 			using (var reader = cmd.ExecuteReader())
 			{
-				Assert.True(reader.Read());
-				Assert.Equal(1, reader.GetInt32(0));
+				ReadResult(reader);
 			}
+			Assert.Equal(ConnectionState.Open, m_connection.State);
 #endif
 			sw.Stop();
 			TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
@@ -72,13 +75,16 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 		Assert.Equal(connectionState, m_connection.State);
 	}
 
-	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout)]
-	public async Task CommandTimeoutWithSleepAsync()
+	[SkippableTheory(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout)]
+	[InlineData(true)]
+	[InlineData(false)]
+	public async Task CommandTimeoutWithSleepAsync(bool prepare)
 	{
 		var connectionState = m_connection.State;
 		using (var cmd = new MySqlCommand("SELECT SLEEP(120);", m_connection))
 		{
 			cmd.CommandTimeout = 2;
+			if (prepare) cmd.Prepare();
 			var sw = Stopwatch.StartNew();
 #if MYSQL_DATA
 			var exception = await Assert.ThrowsAsync<MySqlException>(cmd.ExecuteReaderAsync);
@@ -87,8 +93,7 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 #else
 			using (var reader = await cmd.ExecuteReaderAsync())
 			{
-				Assert.True(await reader.ReadAsync());
-				Assert.Equal(1, reader.GetInt32(0));
+				ReadResultAsync(reader);
 			}
 #endif
 			sw.Stop();
@@ -128,8 +133,7 @@ end;", m_connection))
 #else
 		using (var reader = cmd.ExecuteReader())
 		{
-			Assert.True(reader.Read());
-			Assert.Equal(1, reader.GetInt32(0));
+			ReadResult(reader);
 		}
 #endif
 		sw.Stop();
@@ -159,8 +163,7 @@ end;", m_connection))
 			connectionState = ConnectionState.Closed;
 #else
 			Assert.True(reader.NextResult());
-			Assert.True(reader.Read());
-			Assert.Equal(1, reader.GetInt32(0));
+			ReadResult(reader);
 #endif
 
 			sw.Stop();
@@ -192,8 +195,7 @@ end;", m_connection))
 			connectionState = ConnectionState.Closed;
 #else
 			Assert.True(await reader.NextResultAsync());
-			Assert.True(reader.Read());
-			Assert.Equal(1, reader.GetInt32(0));
+			ReadResult(reader);
 #endif
 
 			sw.Stop();
@@ -262,8 +264,7 @@ end;", m_connection))
 #else
 			using (var reader = cmd.ExecuteReader())
 			{
-				Assert.True(reader.Read());
-				Assert.Equal(1, reader.GetInt32(0));
+				ReadResult(reader);
 			}
 #endif
 			sw.Stop();
@@ -289,14 +290,43 @@ end;", m_connection))
 #else
 			using (var reader = await cmd.ExecuteReaderAsync())
 			{
-				Assert.True(await reader.ReadAsync());
-				Assert.Equal(1, reader.GetInt32(0));
+				ReadResultAsync(reader);
 			}
 #endif
 			sw.Stop();
 		}
 
 		Assert.Equal(connectionState, m_connection.State);
+	}
+
+	private void ReadResult(MySqlDataReader reader)
+	{
+		try
+		{
+			reader.Read();
+			Assert.Equal(1, reader.GetInt32(0));
+		}
+		catch (MySqlException ex)
+		{
+			// MariaDB will throw an exception on interruption
+			Assert.Contains("Query execution was interrupted (max_statement_time exceeded)", ex.Message,
+				StringComparison.OrdinalIgnoreCase);
+		}
+	}
+
+	private async void ReadResultAsync(MySqlDataReader reader)
+	{
+		try
+		{
+			await reader.ReadAsync();
+			Assert.Equal(1, reader.GetInt32(0));
+		}
+		catch (MySqlException ex)
+		{
+			// MariaDB will throw an exception on interruption
+			Assert.Contains("Query execution was interrupted (max_statement_time exceeded)", ex.Message,
+				StringComparison.OrdinalIgnoreCase);
+		}
 	}
 
 	readonly DatabaseFixture m_database;

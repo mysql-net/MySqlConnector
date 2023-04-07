@@ -121,9 +121,10 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		{
 			if (exception is not null)
 				throw exception;
+			m_prepared = true;
 			return;
 		}
-
+		m_prepared = true;
 		Connection!.Session.PrepareAsync(this, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
 	}
 
@@ -161,8 +162,16 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	private Task PrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (!NeedsPrepare(out var exception))
-			return exception is null ? Task.CompletedTask : Task.FromException(exception);
+		{
+			if (exception is null)
+			{
+				m_prepared = true;
+				return Task.CompletedTask;
+			}
 
+			return Task.FromException(exception);
+		}
+		m_prepared = true;
 		return Connection!.Session.PrepareAsync(this, ioBehavior, cancellationToken);
 	}
 
@@ -188,7 +197,10 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		}
 
 		// don't prepare the same SQL twice
-		return Connection.Session.TryGetPreparedStatement(CommandText!) is null;
+		var cmd = (m_commandTimeout ?? 0) > 0 && Connection.SupportPerQueryVariables ?
+			"SET STATEMENT max_statement_time=" + m_commandTimeout + " FOR " +CommandText! :
+			CommandText!;
+		return Connection.Session.TryGetPreparedStatement(cmd) is null;
 	}
 
 	/// <summary>
@@ -203,6 +215,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		get => m_commandText;
 		set
 		{
+			m_prepared = false;
 			if (m_connection?.ActiveCommandId == m_commandId)
 				throw new InvalidOperationException("Cannot set MySqlCommand.CommandText when there is an open DataReader for this command; it must be closed first.");
 			m_commandText = value ?? "";
@@ -228,7 +241,15 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	public override int CommandTimeout
 	{
 		get => Math.Min(m_commandTimeout ?? Connection?.DefaultCommandTimeout ?? 0, int.MaxValue / 1000);
-		set => m_commandTimeout = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value), "CommandTimeout must be greater than or equal to zero.");
+		set
+		{
+			bool needReprepare = m_prepared && m_commandTimeout != value;
+			m_commandTimeout = value >= 0
+				? value
+				: throw new ArgumentOutOfRangeException(nameof(value),
+					"CommandTimeout must be greater than or equal to zero.");
+			if (needReprepare) Prepare();
+		}
 	}
 
 	/// <inheritdoc/>
@@ -461,4 +482,5 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	private Action? m_cancelForCommandTimeoutAction;
 	private uint m_cancelTimerId;
 	private bool m_commandTimedOut;
+	private bool m_prepared;
 }

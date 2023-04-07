@@ -1,7 +1,6 @@
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
-using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
 
@@ -237,6 +236,13 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		command.OutParameters = outParameters;
 		command.ReturnParameter = returnParameter;
 
+		if (command.Connection!.SupportPerQueryVariables
+		    && command.CommandTimeout > 0
+		    && command.CommandTimeout != command.Connection!.DefaultCommandTimeout)
+		{
+			commandText = "SET STATEMENT max_statement_time=" + command.CommandTimeout + " FOR " + commandText;
+		}
+
 		var preparer = new StatementPreparer(commandText, inParameters, command.CreateStatementPreparerOptions());
 		return preparer.ParseAndBindParameters(writer);
 	}
@@ -245,23 +251,57 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	{
 		var isSchemaOnly = (command.CommandBehavior & CommandBehavior.SchemaOnly) != 0;
 		var isSingleRow = (command.CommandBehavior & CommandBehavior.SingleRow) != 0;
-		if (isSchemaOnly)
+
+		if (!command.Connection!.SupportPerQueryVariables)
 		{
-			ReadOnlySpan<byte> setSqlSelectLimit0 = "SET sql_select_limit=0;\n"u8;
-			writer.Write(setSqlSelectLimit0);
+			// server doesn't support per query variables, so using multi-statements
+			if (isSchemaOnly)
+			{
+				ReadOnlySpan<byte> setSqlSelectLimit0 = "SET sql_select_limit=0;\n"u8;
+				writer.Write(setSqlSelectLimit0);
+			}
+			else if (isSingleRow)
+			{
+				ReadOnlySpan<byte> setSqlSelectLimit1 = "SET sql_select_limit=1;\n"u8;
+				writer.Write(setSqlSelectLimit1);
+			}
+			var preparer = new StatementPreparer(command.CommandText!, command.RawParameters, command.CreateStatementPreparerOptions() | ((appendSemicolon || isSchemaOnly || isSingleRow) ? StatementPreparerOptions.AppendSemicolon : StatementPreparerOptions.None));
+			var isComplete = preparer.ParseAndBindParameters(writer);
+			if (isComplete && (isSchemaOnly || isSingleRow))
+			{
+				ReadOnlySpan<byte> clearSqlSelectLimit = "\nSET sql_select_limit=default;"u8;
+				writer.Write(clearSqlSelectLimit);
+			}
+			return isComplete;
 		}
-		else if (isSingleRow)
+
+		// server support per query variables, so using SET STATEMENT ... FOR command
+		if (isSchemaOnly || isSingleRow ||
+		    (command.CommandTimeout > 0 && command.CommandTimeout != command.Connection!.DefaultCommandTimeout))
 		{
-			ReadOnlySpan<byte> setSqlSelectLimit1 = "SET sql_select_limit=1;\n"u8;
-			writer.Write(setSqlSelectLimit1);
+			writer.Write("SET STATEMENT "u8);
+			if (isSchemaOnly)
+			{
+				ReadOnlySpan<byte> setSqlSelectLimit0 = "sql_select_limit=0"u8;
+				writer.Write(setSqlSelectLimit0);
+			} else if (isSingleRow)
+			{
+				writer.Write("sql_select_limit=1"u8);
+			}
+
+			if (command.CommandTimeout > 0 && command.CommandTimeout != command.Connection!.DefaultCommandTimeout)
+			{
+				if (isSchemaOnly || isSingleRow) writer.Write(',');
+				writer.WriteAscii("max_statement_time=" + command.CommandTimeout);
+			}
+			writer.Write(" FOR "u8);
+			var preparer = new StatementPreparer(command.CommandText!, command.RawParameters, command.CreateStatementPreparerOptions() | ((appendSemicolon || isSchemaOnly || isSingleRow) ? StatementPreparerOptions.AppendSemicolon : StatementPreparerOptions.None));
+			var isComplete = preparer.ParseAndBindParameters(writer);
+			return isComplete;
 		}
-		var preparer = new StatementPreparer(command.CommandText!, command.RawParameters, command.CreateStatementPreparerOptions() | ((appendSemicolon || isSchemaOnly || isSingleRow) ? StatementPreparerOptions.AppendSemicolon : StatementPreparerOptions.None));
-		var isComplete = preparer.ParseAndBindParameters(writer);
-		if (isComplete && (isSchemaOnly || isSingleRow))
-		{
-			ReadOnlySpan<byte> clearSqlSelectLimit = "\nSET sql_select_limit=default;"u8;
-			writer.Write(clearSqlSelectLimit);
-		}
-		return isComplete;
+
+		var preparer1 = new StatementPreparer(command.CommandText!, command.RawParameters, command.CreateStatementPreparerOptions() | ((appendSemicolon || isSchemaOnly || isSingleRow) ? StatementPreparerOptions.AppendSemicolon : StatementPreparerOptions.None));
+		var isComplete1 = preparer1.ParseAndBindParameters(writer);
+		return isComplete1;
 	}
 }

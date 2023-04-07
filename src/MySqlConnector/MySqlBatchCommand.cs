@@ -41,6 +41,8 @@ public sealed class MySqlBatchCommand :
 #endif
 		0;
 
+	public int CommandTimeout => 0;
+
 #if NET6_0_OR_GREATER
 	public new MySqlParameterCollection Parameters =>
 #else

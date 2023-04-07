@@ -9,6 +9,7 @@ internal interface IMySqlCommand
 {
 	string? CommandText { get; }
 	CommandType CommandType { get; }
+	int CommandTimeout { get; }
 	bool AllowUserVariables { get; }
 	CommandBehavior CommandBehavior { get; }
 	MySqlParameterCollection? RawParameters { get; }

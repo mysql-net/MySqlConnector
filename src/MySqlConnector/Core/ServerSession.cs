@@ -48,6 +48,7 @@ internal sealed partial class ServerSession
 
 	public string Id { get; }
 	public ServerVersion ServerVersion { get; set; }
+	public bool SupportPerQueryVariables => ServerVersion.MariaDbVersion is not null && ServerVersion.MariaDbVersion >= ServerVersions.MariaDbSupportPerQueryVariables;
 	public int ActiveCommandId { get; private set; }
 	public int CancellationTimeout { get; private set; }
 	public int ConnectionId { get; set; }
@@ -195,7 +196,11 @@ internal sealed partial class ServerSession
 		}
 		else
 		{
-			commandToPrepare = commandText;
+			commandToPrepare = SupportPerQueryVariables
+			                   && command.CommandTimeout > 0
+			                   && command.CommandTimeout != command.Connection!.DefaultCommandTimeout
+				? "SET STATEMENT max_statement_time=" + command.CommandTimeout + " FOR " + commandText
+				: commandText;
 		}
 
 		var statementPreparer = new StatementPreparer(commandToPrepare, command.RawParameters, command.CreateStatementPreparerOptions());
@@ -572,13 +577,8 @@ internal sealed partial class ServerSession
 			if (m_useCompression)
 				m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
 
-			// set 'collation_connection' to the server default
-			await SendAsync(m_setNamesPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
-			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
-
-			if (ShouldGetRealServerDetails(cs))
-				await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+			// execute Post Connection commands
+			await PostConnectionsQueriesAsync(cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			m_payloadHandler.ByteHandler.RemainingTimeout = Constants.InfiniteTimeout;
 		}
@@ -594,6 +594,63 @@ internal sealed partial class ServerSession
 		}
 
 		return statusInfo;
+	}
+
+	public async Task PostConnectionsQueriesAsync(ConnectionSettings cs,
+		IOBehavior ioBehavior, CancellationToken cancellationToken)
+	{
+		var payloadDatas = new List<PayloadData>();
+		var responses = new List<Func<Task>>();
+		var okReponse = async () =>
+		{
+			var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+		};
+
+		// set 'collation_connection' to the server default
+		payloadDatas.Add(m_setNamesPayload);
+		responses.Add(okReponse);
+
+		// if server permit it, set default timeout for commands
+		if (cs.DefaultCommandTimeout > 0 && SupportPerQueryVariables)
+		{
+			payloadDatas.Add(QueryPayload.Create(false,
+				Encoding.ASCII.GetBytes("SET SESSION max_statement_time=" + cs.DefaultCommandTimeout)));
+			responses.Add(okReponse);
+		}
+
+		// retrieve real server version
+		if (ShouldGetRealServerDetails(cs))
+		{
+			payloadDatas.Add(SupportsQueryAttributes ? s_selectConnectionIdVersionWithAttributesPayload : s_selectConnectionIdVersionNoAttributesPayload);
+			responses.Add(async () =>
+			{
+				await ReadRealServerDetailsAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			});
+		}
+
+		var querySendTasks = new List<Task>();
+		if (m_supportsPipelining)
+		{
+			foreach (var payloadData in payloadDatas)
+			{
+				querySendTasks.Add(SendAsync(payloadData, ioBehavior, cancellationToken).AsTask());
+			}
+			await Task.WhenAll(querySendTasks.ToArray()).ConfigureAwait(false);
+			foreach (var response in responses)
+			{
+				m_payloadHandler!.SetNextSequenceNumber(1);
+				await response().ConfigureAwait(false);
+			}
+		}
+		else
+		{
+			for (var i = 0; i < payloadDatas.Count; i++)
+			{
+				await SendAsync(payloadDatas[i], ioBehavior, cancellationToken).ConfigureAwait(false);
+				await responses[i]().ConfigureAwait(false);
+			}
+		}
 	}
 
 	public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -1659,13 +1716,12 @@ internal sealed partial class ServerSession
 		return false;
 	}
 
-	private async Task GetRealServerDetailsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task ReadRealServerDetailsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		Log.DetectedProxy(m_logger, Id);
 		try
 		{
-			var payload = SupportsQueryAttributes ? s_selectConnectionIdVersionWithAttributesPayload : s_selectConnectionIdVersionNoAttributesPayload;
-			await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+			PayloadData payload;
 
 			// column count: 2
 			await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
