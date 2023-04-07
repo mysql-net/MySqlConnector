@@ -21,6 +21,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 100, 1000);
 	}
 
+#if !MYSQL_DATA
 	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
 	public void CancelCommand()
 	{
@@ -41,7 +42,6 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		task.Wait(); // shouldn't throw
 	}
 
-#if !MYSQL_DATA
 	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout)]
 	public async Task CancelCommandWithPasswordCallback()
 	{

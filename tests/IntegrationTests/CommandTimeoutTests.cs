@@ -47,7 +47,9 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 	}
 
 	[SkippableTheory(ServerFeatures.CancelSleepSuccessfully)]
+#if !MYSQL_DATA
 	[InlineData(true)]
+#endif
 	[InlineData(false)]
 	public void CommandTimeoutWithSleepSync(bool prepare)
 	{
