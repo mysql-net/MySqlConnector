@@ -427,9 +427,11 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				m_hasBeenOpened = true;
 				SetState(ConnectionState.Open);
 			}
-			catch (OperationCanceledException)
+			catch (OperationCanceledException ex)
 			{
 				SetState(ConnectionState.Closed);
+				if (!cancellationToken.Equals(ex.CancellationToken))
+					cancellationToken.ThrowIfCancellationRequested();
 				throw;
 			}
 			catch (MySqlException)
