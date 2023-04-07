@@ -48,7 +48,7 @@ internal sealed partial class ServerSession
 
 	public string Id { get; }
 	public ServerVersion ServerVersion { get; set; }
-	public bool SupportPerQueryVariables => ServerVersion.MariaDbVersion is not null && ServerVersion.MariaDbVersion >= ServerVersions.MariaDbSupportPerQueryVariables;
+	public bool SupportsPerQueryVariables => ServerVersion.MariaDbVersion is not null && ServerVersion.MariaDbVersion >= ServerVersions.MariaDbSupportsPerQueryVariables;
 	public int ActiveCommandId { get; private set; }
 	public int CancellationTimeout { get; private set; }
 	public int ConnectionId { get; set; }
@@ -196,7 +196,7 @@ internal sealed partial class ServerSession
 		}
 		else
 		{
-			commandToPrepare = SupportPerQueryVariables
+			commandToPrepare = SupportsPerQueryVariables
 			                   && command.CommandTimeout > 0
 			                   && command.CommandTimeout != command.Connection!.DefaultCommandTimeout
 				? "SET STATEMENT max_statement_time=" + command.CommandTimeout + " FOR " + commandText
@@ -612,7 +612,7 @@ internal sealed partial class ServerSession
 		responses.Add(okReponse);
 
 		// if server permit it, set default timeout for commands
-		if (cs.DefaultCommandTimeout > 0 && SupportPerQueryVariables)
+		if (cs.DefaultCommandTimeout > 0 && SupportsPerQueryVariables)
 		{
 			payloadDatas.Add(QueryPayload.Create(false,
 				Encoding.ASCII.GetBytes("SET SESSION max_statement_time=" + cs.DefaultCommandTimeout)));
@@ -629,14 +629,12 @@ internal sealed partial class ServerSession
 			});
 		}
 
-		var querySendTasks = new List<Task>();
 		if (m_supportsPipelining)
 		{
-			foreach (var payloadData in payloadDatas)
+			for (var i = 0; i < payloadDatas.Count; i++)
 			{
-				querySendTasks.Add(SendAsync(payloadData, ioBehavior, cancellationToken).AsTask());
+				await SendAsync(payloadDatas[i], ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
-			await Task.WhenAll(querySendTasks.ToArray()).ConfigureAwait(false);
 			foreach (var response in responses)
 			{
 				m_payloadHandler!.SetNextSequenceNumber(1);

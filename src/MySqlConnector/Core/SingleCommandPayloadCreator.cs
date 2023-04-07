@@ -236,7 +236,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		command.OutParameters = outParameters;
 		command.ReturnParameter = returnParameter;
 
-		if (command.Connection!.SupportPerQueryVariables
+		if (command.Connection!.SupportsPerQueryVariables
 		    && command.CommandTimeout > 0
 		    && command.CommandTimeout != command.Connection!.DefaultCommandTimeout)
 		{
@@ -252,7 +252,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		var isSchemaOnly = (command.CommandBehavior & CommandBehavior.SchemaOnly) != 0;
 		var isSingleRow = (command.CommandBehavior & CommandBehavior.SingleRow) != 0;
 
-		if (!command.Connection!.SupportPerQueryVariables)
+		if (!command.Connection!.SupportsPerQueryVariables)
 		{
 			// server doesn't support per query variables, so using multi-statements
 			if (isSchemaOnly)

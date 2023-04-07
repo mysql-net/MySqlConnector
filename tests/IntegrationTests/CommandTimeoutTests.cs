@@ -47,7 +47,9 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 	}
 
 	[SkippableTheory(ServerFeatures.CancelSleepSuccessfully)]
+#if !MYSQL_DATA
 	[InlineData(true)]
+#endif
 	[InlineData(false)]
 	public void CommandTimeoutWithSleepSync(bool prepare)
 	{
@@ -84,7 +86,7 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 		using (var cmd = new MySqlCommand("SELECT SLEEP(120);", m_connection))
 		{
 			cmd.CommandTimeout = 2;
-			if (prepare) cmd.Prepare();
+			if (prepare) await cmd.PrepareAsync();
 			var sw = Stopwatch.StartNew();
 #if MYSQL_DATA
 			var exception = await Assert.ThrowsAsync<MySqlException>(cmd.ExecuteReaderAsync);

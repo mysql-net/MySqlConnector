@@ -60,7 +60,7 @@ internal static class ICancellableCommandExtensions
 			{
 				session.SetTimeout(Constants.InfiniteTimeout);
 			}
-			else if (!command.Connection!.SupportPerQueryVariables)
+			else if (!command.Connection!.SupportsPerQueryVariables)
 			{
 				var commandTimeUntilCanceled = command.GetCommandTimeUntilCanceled() * 1000;
 				if (session.CancellationTimeout > 0)

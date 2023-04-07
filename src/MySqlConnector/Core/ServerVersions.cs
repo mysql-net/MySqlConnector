@@ -18,5 +18,5 @@ internal static class ServerVersions
 	public static readonly Version RemovesMySqlProcTable = new(8, 0, 0);
 
 	// https://mariadb.com/kb/en/set-statement/
-	public static readonly Version MariaDbSupportPerQueryVariables = new(10, 1, 2);
+	public static readonly Version MariaDbSupportsPerQueryVariables = new(10, 1, 2);
 }

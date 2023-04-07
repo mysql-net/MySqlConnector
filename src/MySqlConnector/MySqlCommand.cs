@@ -197,7 +197,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		}
 
 		// don't prepare the same SQL twice
-		var cmd = (m_commandTimeout ?? 0) > 0 && Connection.SupportPerQueryVariables ?
+		var cmd = (m_commandTimeout ?? 0) > 0 && Connection.SupportsPerQueryVariables ?
 			"SET STATEMENT max_statement_time=" + m_commandTimeout + " FOR " +CommandText! :
 			CommandText!;
 		return Connection.Session.TryGetPreparedStatement(cmd) is null;
