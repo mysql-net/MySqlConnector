@@ -759,6 +759,10 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			};
 			if (m_session?.IPAddress is { } ipAddress)
 				csb.Server = ipAddress.ToString();
+			if (m_session?.Port is { } port)
+				csb.Port = (uint) port;
+			if (m_session?.UserID is { Length: > 0 } userId)
+				csb.UserID = userId;
 			var cancellationTimeout = GetConnectionSettings().CancellationTimeout;
 			csb.ConnectionTimeout = cancellationTimeout < 1 ? 3u : (uint) cancellationTimeout;
 
