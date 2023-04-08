@@ -704,7 +704,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	public MySqlConnection Clone() => new(this, m_connectionString, m_hasBeenOpened);
+	public MySqlConnection Clone() => new(this, m_dataSource, m_connectionString, m_hasBeenOpened);
 
 	object ICloneable.Clone() => Clone();
 
@@ -720,11 +720,13 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	public MySqlConnection CloneWith(string connectionString)
 	{
 		var newBuilder = new MySqlConnectionStringBuilder(connectionString ?? throw new ArgumentNullException(nameof(connectionString)));
-		var currentBuilder = new MySqlConnectionStringBuilder(m_connectionString);
+		var currentBuilder = GetConnectionSettings().ConnectionStringBuilder;
 		var shouldCopyPassword = newBuilder.Password.Length == 0 && (!newBuilder.PersistSecurityInfo || currentBuilder.PersistSecurityInfo);
 		if (shouldCopyPassword)
 			newBuilder.Password = currentBuilder.Password;
-		return new MySqlConnection(this, newBuilder.ConnectionString, m_hasBeenOpened && shouldCopyPassword && !currentBuilder.PersistSecurityInfo);
+		var newConnectionString = newBuilder.ConnectionString;
+		var dataSource = newConnectionString == currentBuilder.ConnectionString ? m_dataSource : null;
+		return new MySqlConnection(this, dataSource, newConnectionString, m_hasBeenOpened && shouldCopyPassword && !currentBuilder.PersistSecurityInfo);
 	}
 
 	internal ServerSession Session
@@ -973,10 +975,10 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	private MySqlConnection(MySqlConnection other, string connectionString, bool hasBeenOpened)
+	private MySqlConnection(MySqlConnection other, MySqlDataSource? dataSource, string connectionString, bool hasBeenOpened)
 		: this(connectionString, other.LoggingConfiguration)
 	{
-		m_dataSource = other.m_dataSource;
+		m_dataSource = dataSource;
 		m_hasBeenOpened = hasBeenOpened;
 		ProvideClientCertificatesCallback = other.ProvideClientCertificatesCallback;
 		ProvidePasswordCallback = other.ProvidePasswordCallback;
