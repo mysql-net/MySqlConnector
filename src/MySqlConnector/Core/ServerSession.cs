@@ -58,7 +58,8 @@ internal sealed partial class ServerSession
 	public uint LastReturnedTicks { get; private set; }
 	public string? DatabaseOverride { get; set; }
 	public string HostName { get; private set; }
-	public IPAddress? IPAddress => (m_tcpClient?.Client.RemoteEndPoint as IPEndPoint)?.Address;
+	public IPEndPoint? IPEndPoint => m_tcpClient?.Client.RemoteEndPoint as IPEndPoint;
+	public string? UserID { get; private set; }
 	public WeakReference<MySqlConnection>? OwningConnection { get; set; }
 	public bool SupportsComMulti => m_supportsComMulti;
 	public bool SupportsDeprecateEof => m_supportsDeprecateEof;
@@ -471,6 +472,7 @@ internal sealed partial class ServerSession
 				AuthPluginData = initialHandshake.AuthPluginData;
 				m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
 				CancellationTimeout = cs.CancellationTimeout;
+				UserID = cs.UserID;
 
 				// set activity tags
 				{
