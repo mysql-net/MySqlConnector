@@ -44,6 +44,7 @@ public class CommandTests : IClassFixture<DatabaseFixture>
 		Assert.Equal(m_database.Connection, command.Connection);
 	}
 
+#if !MYSQL_DATA
 	[Fact]
 	public void SingleQueryWithPrepareReuse()
 	{
@@ -148,6 +149,7 @@ public class CommandTests : IClassFixture<DatabaseFixture>
 			}
 		}
 	}
+#endif
 
 	[Fact]
 	public void CreateCommandDoesNotSetTransaction()
