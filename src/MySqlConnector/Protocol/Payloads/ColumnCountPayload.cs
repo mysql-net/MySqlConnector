@@ -18,11 +18,11 @@ internal sealed class ColumnCountPayload
 	public int ColumnCount { get; }
 	public bool MetadataFollows { get; }
 
-	public static ColumnCountPayload Create(ReadOnlySpan<byte> span, bool supportsMetaSkip)
+	public static ColumnCountPayload Create(ReadOnlySpan<byte> span, bool supportsOptionalMetadata)
 	{
 		var reader = new ByteArrayReader(span);
 		var columnCount = (int) reader.ReadLengthEncodedInteger();
-		var metadataFollows = supportsMetaSkip ? reader.ReadByte() == 1 : true;
+		var metadataFollows = !supportsOptionalMetadata || reader.ReadByte() == 1;
 		return new ColumnCountPayload(columnCount, metadataFollows);
 	}
 }

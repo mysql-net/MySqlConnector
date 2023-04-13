@@ -57,20 +57,18 @@ public class CommandTests : IClassFixture<DatabaseFixture>
 			cmd.Parameters.Add(new() { Value = 1 });
 			using (var reader = cmd.ExecuteReader())
 			{
-				while (reader.Read())
-				{
-					Assert.Equal(1, reader.GetInt32(0));
-				}
+				Assert.True(reader.Read());
+				Assert.Equal(1, reader.GetInt32(0));
+				Assert.False(reader.Read());
 			}
 
 			cmd.Parameters.Clear();
 			cmd.Parameters.Add(new() { Value = 100 });
 			using (var reader = cmd.ExecuteReader())
 			{
-				while (reader.Read())
-				{
-					Assert.Equal(100, reader.GetInt32(0));
-				}
+				Assert.True(reader.Read());
+				Assert.Equal(100, reader.GetInt32(0));
+				Assert.False(reader.Read());
 			}
 		}
 
@@ -80,10 +78,9 @@ public class CommandTests : IClassFixture<DatabaseFixture>
 			cmd.Prepare();
 			cmd.Parameters.Add(new() { Value = 2 });
 			using var reader = cmd.ExecuteReader();
-			while (reader.Read())
-			{
-				Assert.Equal(2, reader.GetInt32(0));
-			}
+			Assert.True(reader.Read());
+			Assert.Equal(2, reader.GetInt32(0));
+			Assert.False(reader.Read());
 		}
 	}
 
@@ -100,16 +97,17 @@ public class CommandTests : IClassFixture<DatabaseFixture>
 			cmd.Parameters.Add(new() { Value = 4 });
 			using (var reader = cmd.ExecuteReader())
 			{
-				while (reader.Read())
-				{
-					Assert.Equal(1, reader.GetInt32(0));
-				}
+				Assert.True(reader.Read());
+				Assert.Equal(1, reader.GetInt32(0));
+				Assert.False(reader.Read());
 
 				Assert.True(reader.NextResult());
-				while (reader.Read())
-				{
-					Assert.Equal(6, reader.GetInt32(0));
-				}
+
+				Assert.True(reader.Read());
+				Assert.Equal(6, reader.GetInt32(0));
+				Assert.False(reader.Read());
+
+				Assert.False(reader.NextResult());
 			}
 
 			cmd.Parameters.Clear();
@@ -117,16 +115,17 @@ public class CommandTests : IClassFixture<DatabaseFixture>
 			cmd.Parameters.Add(new() { Value = 400 });
 			using (var reader = cmd.ExecuteReader())
 			{
-				while (reader.Read())
-				{
-					Assert.Equal(100, reader.GetInt32(0));
-				}
+				Assert.True(reader.Read());
+				Assert.Equal(100, reader.GetInt32(0));
+				Assert.False(reader.Read());
 
 				Assert.True(reader.NextResult());
-				while (reader.Read())
-				{
-					Assert.Equal(402, reader.GetInt32(0));
-				}
+
+				Assert.True(reader.Read());
+				Assert.Equal(402, reader.GetInt32(0));
+				Assert.False(reader.Read());
+
+				Assert.False(reader.NextResult());
 			}
 		}
 
@@ -137,16 +136,18 @@ public class CommandTests : IClassFixture<DatabaseFixture>
 			cmd.Parameters.Add(new() { Value = 2 });
 			cmd.Parameters.Add(new() { Value = 5 });
 			using var reader = cmd.ExecuteReader();
-			while (reader.Read())
-			{
-				Assert.Equal(2, reader.GetInt32(0));
-			}
+
+			Assert.True(reader.Read());
+			Assert.Equal(2, reader.GetInt32(0));
+			Assert.False(reader.Read());
 
 			Assert.True(reader.NextResult());
-			while (reader.Read())
-			{
-				Assert.Equal(7, reader.GetInt32(0));
-			}
+
+			Assert.True(reader.Read());
+			Assert.Equal(7, reader.GetInt32(0));
+			Assert.False(reader.Read());
+
+			Assert.False(reader.NextResult());
 		}
 	}
 #endif

@@ -116,11 +116,11 @@ internal sealed class ResultSet
 				}
 				else
 				{
-					var columnCountPacket = ColumnCountPayload.Create(payload.Span, Session.SupportsMetaSkip);
+					var columnCountPacket = ColumnCountPayload.Create(payload.Span, Session.SupportsCachedPreparedMetadata);
 					if (!columnCountPacket.MetadataFollows)
 					{
 						// reuse previous metadata
-						var preparedStatement = DataReader.CurrentPrepareStmt()!;
+						var preparedStatement = DataReader.LastUsedPreparedStatement!;
 						ColumnDefinitions = preparedStatement.Columns!;
 						ColumnTypes = new MySqlDbType[columnCountPacket.ColumnCount];
 						for (var column = 0; column < columnCountPacket.ColumnCount; column++)
@@ -153,10 +153,10 @@ internal sealed class ResultSet
 							m_columnDefinitionPayloadUsedBytes += payloadLength;
 						}
 
-						if (Session.SupportsMetaSkip)
+						if (Session.SupportsCachedPreparedMetadata)
 						{
-							// server support metadata skipping, but has resend them, so something has change since last prepare/execution
-							var preparedStatement = DataReader.CurrentPrepareStmt();
+							// server supports metadata caching, but has resent it, so something has changed since last prepare/execution
+							var preparedStatement = DataReader.LastUsedPreparedStatement;
 							if (preparedStatement != null) preparedStatement.Columns = ColumnDefinitions;
 						}
 

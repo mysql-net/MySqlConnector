@@ -154,7 +154,7 @@ internal enum ProtocolCapabilities : ulong
 	MariaDbExtendedTypeInfo = 0x8_0000_0000,
 
 	/// <summary>
-	/// permit metadata caching
+	/// Client supports caching metadata for prepared statements (MARIADB_CLIENT_CACHE_METADATA).
 	/// </summary>
 	MariaDbCacheMetadata = 0x10_0000_0000,
 }

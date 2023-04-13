@@ -691,7 +691,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 			throw new InvalidOperationException("Can't call this method when MySqlDataReader is closed.");
 	}
 
-	internal PreparedStatement? CurrentPrepareStmt() => m_commandListPosition.LastUsedPreparedStatement;
+	internal PreparedStatement? LastUsedPreparedStatement => m_commandListPosition.LastUsedPreparedStatement;
 
 	private ResultSet GetResultSet()
 	{
