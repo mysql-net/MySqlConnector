@@ -23,6 +23,17 @@ The mechanisms for cancelling a command are:
 
 **CommandTimeout**. Each `MySqlCommand` has a `CommandTimeout` property that specifies a timeout in seconds. (This is initialized from the [`DefaultCommandTimeout`](/connection-options/#DefaultCommandTimeout) setting in the connection string.) If this timeout is not `0`, then a soft cancellation will be attempted when the timeout expires. If successful, the `ExecuteX(Async)` method will throw a `MySqlException` with `MySqlErrorCode.CommandTimeoutExpired`; its inner exception will be a `MySqlException` with `MySqlErrorCode.QueryInterrupted`.
 
+> **NOTE**
+>
+> `CommandTimeout` does not specify a timeout for the entire result set to be read.
+> Instead, as per [the documentation for `SqlCommand.CommandTimeout`](https://learn.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlcommand.commandtimeout), it specifies "the cumulative time-out for all network packets that are read during the invocation of a method".
+> That is, the timeout is reset at the beginning of each call to a public API method, e.g., `MySqlDataReader.Read` or `MySqlDataReader.NextResult`.
+>
+> For methods such as `MySqlCommand.ExecuteNonQuery`, which perform all their work within a single public API method, then `CommandTimeout` does apply to the entirety of that operation.
+> However, it still only controls the cumulative timeout for all network packets, not the total time taken to execute the command.
+>
+> To stop a MySQL operation after a specified amount of time, use an `ExecuteXAsync(CancellationToken)` overload and pass a `CancellationToken` that is cancelled after the desired timeout.
+
 **CancellationTimeout**. The connection string can specify a [`CancellationTimeout`](/connection-options/#CancellationTimeout) timeout value. After `CommandTimeout` elapses (and a soft cancellation is started), the `CancellationTimeout` timer starts. If this times out, a hard cancellation is performed and the underlying network connection is closed. When this occurs, the `ExecuteX(Async)` method will throw a `MySqlException` with `MySqlErrorCode.CommandTimeoutExpired`.
 
 ### Notes
