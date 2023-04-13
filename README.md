@@ -23,6 +23,11 @@ This library outperforms MySQL Connector/NET (`MySql.Data`) on benchmarks:
 
 (Client: MySqlConnector 2.2.0, Ubuntu 20.04, .NET 7.0; Server: Azure Database for MySQL 8.0.28, TLS 1.2)
 
+### Server Compatibility
+
+This library is compatible with [many MySQL-compatible servers](https://mysqlconnector.net/#server-compatibility).
+MySql.Data [only supports MySQL Server](https://bugs.mysql.com/bug.php?id=109331).
+
 ### Bug Fixes
 
 This library [fixes dozens of outstanding bugs](https://mysqlconnector.net/tutorials/migrating-from-connector-net/#fixed-bugs) in Connector/NET.

@@ -54,6 +54,24 @@ while (await reader.ReadAsync())
     Console.WriteLine(reader.GetString(0));
 ```
 
+## Server Compatibility
+
+MySqlConnector is compatible with the following servers.
+Version numbers in **bold** indicate versions that are regularly tested by the [integration tests](https://dev.azure.com/mysqlnet/MySqlConnector/_build?definitionId=2&_a=summary) run on every commit.
+
+Server  | Versions | Notes
+--- | --- | ---
+Amazon Aurora RDS | 2.x, 3.x | Use `Pipelining=False` [for Aurora 2.x](https://mysqlconnector.net/troubleshooting/aurora-freeze/)
+Azure Database for MySQL | 5.7, **8.0** | Single Server and Flexible Server
+Google Cloud SQL for MySQL | 5.6, 5.7, 8.0 |
+MariaDB | 10.x, 11.x (**10.6**, **10.10**, **10.11**) |
+MySQL | 5.5, **5.6**, **5.7**, **8.0** | 5.5 is EOL and has some [compatibility issues](https://github.com/mysql-net/MySqlConnector/issues/1192); 5.6 is EOL
+Percona Server | 5.6, 5.7, 8.0 |
+PlanetScale | | See PlanetScale [MySQL compatibility notes](https://planetscale.com/docs/reference/mysql-compatibility)
+ProxySQL | 2.x | Some [compatibility issues](https://github.com/search?q=repo%3Amysql-net%2FMySqlConnector+proxysql&type=issues)
+SingleStoreDB | |
+TiDB | |
+
 ## Performance
 
 MySqlConnector outperforms Connector/NET (MySql.Data) on benchmarks:
