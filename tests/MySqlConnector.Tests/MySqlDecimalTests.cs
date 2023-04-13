@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Xunit;
 
 namespace MySqlConnector.Tests;
@@ -90,7 +91,7 @@ public class MySqlDecimalTests
 		var value = "-0.2342323";
 		var decimalVal = new MySqlDecimal(value);
 		Assert.Equal(value, decimalVal.ToString());
-		Assert.Equal(decimal.Parse(value), decimalVal.Value);
+		Assert.Equal(decimal.Parse(value, CultureInfo.InvariantCulture), decimalVal.Value);
 	}
 
 	[Fact]

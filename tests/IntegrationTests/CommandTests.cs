@@ -44,6 +44,113 @@ public class CommandTests : IClassFixture<DatabaseFixture>
 		Assert.Equal(m_database.Connection, command.Connection);
 	}
 
+#if !MYSQL_DATA
+	[Fact]
+	public void SingleQueryWithPrepareReuse()
+	{
+		using var connection = new MySqlConnection(m_database.Connection.ConnectionString);
+		connection.Open();
+		using (var cmd = connection.CreateCommand())
+		{
+			cmd.CommandText = "select ?";
+			cmd.Prepare();
+			cmd.Parameters.Add(new() { Value = 1 });
+			using (var reader = cmd.ExecuteReader())
+			{
+				while (reader.Read())
+				{
+					Assert.Equal(1, reader.GetInt32(0));
+				}
+			}
+
+			cmd.Parameters.Clear();
+			cmd.Parameters.Add(new() { Value = 100 });
+			using (var reader = cmd.ExecuteReader())
+			{
+				while (reader.Read())
+				{
+					Assert.Equal(100, reader.GetInt32(0));
+				}
+			}
+		}
+
+		using (var cmd = connection.CreateCommand())
+		{
+			cmd.CommandText = "select ?";
+			cmd.Prepare();
+			cmd.Parameters.Add(new() { Value = 2 });
+			using var reader = cmd.ExecuteReader();
+			while (reader.Read())
+			{
+				Assert.Equal(2, reader.GetInt32(0));
+			}
+		}
+	}
+
+	[Fact]
+	public void MultiQueryWithPrepareReuse()
+	{
+		using var connection = new MySqlConnection(m_database.Connection.ConnectionString);
+		connection.Open();
+		using (var cmd = connection.CreateCommand())
+		{
+			cmd.CommandText = "select ?; select ? + 2";
+			cmd.Prepare();
+			cmd.Parameters.Add(new() { Value = 1 });
+			cmd.Parameters.Add(new() { Value = 4 });
+			using (var reader = cmd.ExecuteReader())
+			{
+				while (reader.Read())
+				{
+					Assert.Equal(1, reader.GetInt32(0));
+				}
+
+				Assert.True(reader.NextResult());
+				while (reader.Read())
+				{
+					Assert.Equal(6, reader.GetInt32(0));
+				}
+			}
+
+			cmd.Parameters.Clear();
+			cmd.Parameters.Add(new() { Value = 100 });
+			cmd.Parameters.Add(new() { Value = 400 });
+			using (var reader = cmd.ExecuteReader())
+			{
+				while (reader.Read())
+				{
+					Assert.Equal(100, reader.GetInt32(0));
+				}
+
+				Assert.True(reader.NextResult());
+				while (reader.Read())
+				{
+					Assert.Equal(402, reader.GetInt32(0));
+				}
+			}
+		}
+
+		using (var cmd = connection.CreateCommand())
+		{
+			cmd.CommandText = "select ?; select ? + 2";
+			cmd.Prepare();
+			cmd.Parameters.Add(new() { Value = 2 });
+			cmd.Parameters.Add(new() { Value = 5 });
+			using var reader = cmd.ExecuteReader();
+			while (reader.Read())
+			{
+				Assert.Equal(2, reader.GetInt32(0));
+			}
+
+			Assert.True(reader.NextResult());
+			while (reader.Read())
+			{
+				Assert.Equal(7, reader.GetInt32(0));
+			}
+		}
+	}
+#endif
+
 	[Fact]
 	public void CreateCommandDoesNotSetTransaction()
 	{

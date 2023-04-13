@@ -180,7 +180,7 @@ public class BatchTests : IClassFixture<DatabaseFixture>
 		{
 			BatchCommands =
 			{
-				new MySqlBatchCommand("SELECT 1" + suffix),
+				new MySqlBatchCommand("SELECT 10; SELECT 1" + suffix),
 				new MySqlBatchCommand("SELECT 2" + suffix),
 				new MySqlBatchCommand("SELECT 3" + suffix),
 			},
@@ -201,9 +201,14 @@ public class BatchTests : IClassFixture<DatabaseFixture>
 		Assert.True(reader.Read());
 		total += reader.GetInt32(0);
 		Assert.False(reader.Read());
+		Assert.True(reader.NextResult());
+
+		Assert.True(reader.Read());
+		total += reader.GetInt32(0);
+		Assert.False(reader.Read());
 		Assert.False(reader.NextResult());
 
-		Assert.Equal(6, total);
+		Assert.Equal(16, total);
 	}
 
 	[Fact(Skip = "COM_MULTI")]
@@ -247,7 +252,7 @@ insert into batch_single_row(id) values(1),(2),(3);", connection))
 		{
 			BatchCommands =
 			{
-				new MySqlBatchCommand("SELECT id FROM batch_single_row ORDER BY id"),
+				new MySqlBatchCommand("SELECT id FROM batch_single_row ORDER BY id; SELECT 10"),
 				new MySqlBatchCommand("SELECT id FROM batch_single_row ORDER BY id"),
 			},
 		};
@@ -255,12 +260,36 @@ insert into batch_single_row(id) values(1),(2),(3);", connection))
 		if (prepare)
 			batch.Prepare();
 
-		using var reader = batch.ExecuteReader(CommandBehavior.SingleRow);
-		Assert.True(reader.Read());
-		Assert.Equal(1, reader.GetInt32(0));
-		Assert.False(reader.Read());
+		using (var reader = batch.ExecuteReader(CommandBehavior.SingleRow))
+		{
+			Assert.True(reader.Read());
+			Assert.Equal(1, reader.GetInt32(0));
+			Assert.False(reader.Read());
+			Assert.False(reader.NextResult());
+		}
 
-		Assert.False(reader.NextResult());
+		using (var reader = batch.ExecuteReader())
+		{
+			Assert.True(reader.Read());
+			Assert.Equal(1, reader.GetInt32(0));
+			Assert.True(reader.Read());
+			Assert.Equal(2, reader.GetInt32(0));
+			Assert.True(reader.Read());
+			Assert.Equal(3, reader.GetInt32(0));
+			Assert.False(reader.Read());
+			Assert.True(reader.NextResult());
+			Assert.True(reader.Read());
+			Assert.Equal(10, reader.GetInt32(0));
+			Assert.True(reader.NextResult());
+			Assert.True(reader.Read());
+			Assert.Equal(1, reader.GetInt32(0));
+			Assert.True(reader.Read());
+			Assert.Equal(2, reader.GetInt32(0));
+			Assert.True(reader.Read());
+			Assert.Equal(3, reader.GetInt32(0));
+			Assert.False(reader.Read());
+		}
+
 	}
 
 	[Fact]
