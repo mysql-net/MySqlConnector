@@ -736,7 +736,7 @@ internal sealed partial class ServerSession
 			if (!m_isSecureConnection && password.Length != 0)
 			{
 				var publicKey = await GetRsaPublicKeyAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
-				return await SendEncryptedPasswordAsync(switchRequest, publicKey, password, ioBehavior, cancellationToken).ConfigureAwait(false);
+				return await SendEncryptedPasswordAsync(switchRequest.Data, publicKey, password, ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 			else
 			{
@@ -776,7 +776,7 @@ internal sealed partial class ServerSession
 	}
 
 	private async Task<PayloadData> SendEncryptedPasswordAsync(
-		AuthenticationMethodSwitchRequestPayload switchRequest,
+		byte[] switchRequestData,
 		string rsaPublicKey,
 		string password,
 		IOBehavior ioBehavior,
@@ -814,7 +814,7 @@ internal sealed partial class ServerSession
 		Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
 
 		// XOR the password bytes with the challenge
-		AuthPluginData = Utility.TrimZeroByte(switchRequest.Data);
+		AuthPluginData = Utility.TrimZeroByte(switchRequestData);
 		for (var i = 0; i < passwordBytes.Length; i++)
 			passwordBytes[i] ^= AuthPluginData[i % AuthPluginData.Length];
 

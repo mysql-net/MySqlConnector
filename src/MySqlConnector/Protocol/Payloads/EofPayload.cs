@@ -3,7 +3,7 @@ using MySqlConnector.Protocol.Serialization;
 namespace MySqlConnector.Protocol.Payloads;
 
 // See https://dev.mysql.com/doc/internals/en/packet-EOF_Packet.html
-internal sealed class EofPayload
+internal readonly struct EofPayload
 {
 	public int WarningCount { get; }
 	public ServerStatus ServerStatus { get; }

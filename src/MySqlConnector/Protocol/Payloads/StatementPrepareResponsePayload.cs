@@ -2,7 +2,7 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Protocol.Payloads;
 
-internal sealed class StatementPrepareResponsePayload
+internal readonly struct StatementPrepareResponsePayload
 {
 	public int StatementId { get; }
 	public int ColumnCount { get; }

@@ -4,7 +4,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Payloads;
 
-internal sealed class AuthenticationMethodSwitchRequestPayload
+internal readonly struct AuthenticationMethodSwitchRequestPayload
 {
 	public string Name { get; }
 	public byte[] Data { get; }

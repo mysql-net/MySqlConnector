@@ -7,7 +7,7 @@ namespace MySqlConnector.Protocol.Payloads;
 ///     https://mariadb.com/kb/en/result-set-packets/#column-count-packet
 ///     Packet contains a columnCount, and - if capability MARIADB_CLIENT_CACHE_METADATA is set - a flag to indicate if metadata follows
 /// </summary>
-internal sealed class ColumnCountPayload
+internal readonly struct ColumnCountPayload
 {
 	private ColumnCountPayload(int columnCount, bool metadataFollows)
 	{
