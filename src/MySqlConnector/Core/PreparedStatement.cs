@@ -17,6 +17,6 @@ internal sealed class PreparedStatement
 
 	public int StatementId { get; }
 	public ParsedStatement Statement { get; }
-	public ColumnDefinitionPayload[]? Columns { get; internal set; }
+	public ColumnDefinitionPayload[]? Columns { get; set; }
 	public ColumnDefinitionPayload[]? Parameters { get; }
 }

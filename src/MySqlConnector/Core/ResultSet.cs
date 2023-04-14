@@ -120,14 +120,9 @@ internal sealed class ResultSet
 					if (!columnCountPacket.MetadataFollows)
 					{
 						// reuse previous metadata
-						var preparedStatement = DataReader.LastUsedPreparedStatement!;
-						ColumnDefinitions = preparedStatement.Columns!;
-						ColumnTypes = new MySqlDbType[columnCountPacket.ColumnCount];
-						for (var column = 0; column < columnCountPacket.ColumnCount; column++)
-						{
-							ColumnTypes[column] = TypeMapper.ConvertToMySqlDbType(ColumnDefinitions[column],
-								Connection.TreatTinyAsBoolean, Connection.GuidFormat);
-						}
+						ColumnDefinitions = DataReader.LastUsedPreparedStatement!.Columns!;
+						if (ColumnDefinitions.Length != columnCountPacket.ColumnCount)
+							throw new InvalidOperationException($"Expected result set to have {ColumnDefinitions.Length} columns, but it contains {columnCountPacket.ColumnCount} columns");
 					}
 					else
 					{
@@ -136,7 +131,6 @@ internal sealed class ResultSet
 						Utility.Resize(ref m_columnDefinitionPayloads, columnCountPacket.ColumnCount * 96);
 
 						ColumnDefinitions = new ColumnDefinitionPayload[columnCountPacket.ColumnCount];
-						ColumnTypes = new MySqlDbType[columnCountPacket.ColumnCount];
 						for (var column = 0; column < ColumnDefinitions.Length; column++)
 						{
 							payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
@@ -149,16 +143,12 @@ internal sealed class ResultSet
 
 							var columnDefinition = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, payloadLength));
 							ColumnDefinitions[column] = columnDefinition;
-							ColumnTypes[column] = TypeMapper.ConvertToMySqlDbType(columnDefinition, Connection.TreatTinyAsBoolean, Connection.GuidFormat);
 							m_columnDefinitionPayloadUsedBytes += payloadLength;
 						}
 
-						if (Session.SupportsCachedPreparedMetadata)
-						{
-							// server supports metadata caching, but has resent it, so something has changed since last prepare/execution
-							var preparedStatement = DataReader.LastUsedPreparedStatement;
-							if (preparedStatement != null) preparedStatement.Columns = ColumnDefinitions;
-						}
+						// server supports metadata caching, but has re-sent it, so something has changed since last prepare/execution
+						if (Session.SupportsCachedPreparedMetadata && DataReader.LastUsedPreparedStatement is { } preparedStatement)
+							preparedStatement.Columns = ColumnDefinitions;
 
 						if (!Session.SupportsDeprecateEof)
 						{
@@ -166,6 +156,11 @@ internal sealed class ResultSet
 							EofPayload.Create(payload.Span);
 						}
 					}
+
+					// determine MySqlDbType for each column
+					ColumnTypes = new MySqlDbType[columnCountPacket.ColumnCount];
+					for (var column = 0; column < ColumnTypes.Length; column++)
+						ColumnTypes[column] = TypeMapper.ConvertToMySqlDbType(ColumnDefinitions[column], Connection.TreatTinyAsBoolean, Connection.GuidFormat);
 
 					if (ColumnDefinitions.Length == (Command?.OutParameters?.Count + 1) && ColumnDefinitions[0].Name == SingleCommandPayloadCreator.OutParameterSentinelColumnName)
 						ContainsCommandParameters = true;
