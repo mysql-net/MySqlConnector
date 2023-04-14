@@ -354,7 +354,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		var hasNoSchema = columnDefinitions is null || m_resultSet.ContainsCommandParameters;
 		return hasNoSchema ? new List<DbColumn>().AsReadOnly() :
 			columnDefinitions!
-				.Select((c, n) => (DbColumn) new MySqlDbColumn(n, c, Connection!.AllowZeroDateTime, GetResultSet().ColumnTypes![n]))
+				.Select((c, n) => (DbColumn) new MySqlDbColumn(n, c, Connection!.AllowZeroDateTime, GetResultSet().GetColumnType(n)))
 				.ToList().AsReadOnly();
 	}
 

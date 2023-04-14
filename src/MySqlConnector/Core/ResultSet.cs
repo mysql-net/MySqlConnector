@@ -21,7 +21,6 @@ internal sealed class ResultSet
 		// ResultSet can be re-used, so initialize everything
 		BufferState = ResultSetState.None;
 		ColumnDefinitions = null;
-		ColumnTypes = null;
 		WarningCount = 0;
 		State = ResultSetState.None;
 		ContainsCommandParameters = false;
@@ -57,7 +56,6 @@ internal sealed class ResultSet
 					if (ok.NewSchema is not null)
 						Connection.Session.DatabaseOverride = ok.NewSchema;
 					ColumnDefinitions = null;
-					ColumnTypes = null;
 					State = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0
 						? ResultSetState.NoMoreData
 						: ResultSetState.HasMoreData;
@@ -156,11 +154,6 @@ internal sealed class ResultSet
 							EofPayload.Create(payload.Span);
 						}
 					}
-
-					// determine MySqlDbType for each column
-					ColumnTypes = new MySqlDbType[columnCountPacket.ColumnCount];
-					for (var column = 0; column < ColumnTypes.Length; column++)
-						ColumnTypes[column] = TypeMapper.ConvertToMySqlDbType(ColumnDefinitions[column], Connection.TreatTinyAsBoolean, Connection.GuidFormat);
 
 					if (ColumnDefinitions.Length == (Command?.OutParameters?.Count + 1) && ColumnDefinitions[0].Name == SingleCommandPayloadCreator.OutParameterSentinelColumnName)
 						ContainsCommandParameters = true;
@@ -312,7 +305,7 @@ internal sealed class ResultSet
 		if (ordinal < 0 || ordinal >= ColumnDefinitions.Length)
 			throw new IndexOutOfRangeException($"value must be between 0 and {ColumnDefinitions.Length - 1}");
 
-		var mySqlDbType = ColumnTypes![ordinal];
+		var mySqlDbType = GetColumnType(ordinal);
 		if (mySqlDbType == MySqlDbType.String)
 			return string.Format(CultureInfo.InvariantCulture, "CHAR({0})", ColumnDefinitions[ordinal].ColumnLength / ProtocolUtility.GetBytesPerCharacter(ColumnDefinitions[ordinal].CharacterSet));
 		return TypeMapper.Instance.GetColumnTypeMetadata(mySqlDbType).SimpleDataTypeName;
@@ -325,11 +318,14 @@ internal sealed class ResultSet
 		if (ordinal < 0 || ordinal >= ColumnDefinitions.Length)
 			throw new IndexOutOfRangeException($"value must be between 0 and {ColumnDefinitions.Length - 1}");
 
-		var type = TypeMapper.Instance.GetColumnTypeMetadata(ColumnTypes![ordinal]).DbTypeMapping.ClrType;
+		var type = TypeMapper.Instance.GetColumnTypeMetadata(GetColumnType(ordinal)).DbTypeMapping.ClrType;
 		if (Connection.AllowZeroDateTime && type == typeof(DateTime))
 			type = typeof(MySqlDateTime);
 		return type;
 	}
+
+	public MySqlDbType GetColumnType(int ordinal) =>
+		TypeMapper.ConvertToMySqlDbType(ColumnDefinitions![ordinal], Connection.TreatTinyAsBoolean, Connection.GuidFormat);
 
 	public int FieldCount => ColumnDefinitions?.Length ?? 0;
 
@@ -374,7 +370,6 @@ internal sealed class ResultSet
 
 	public ResultSetState BufferState { get; private set; }
 	public ColumnDefinitionPayload[]? ColumnDefinitions { get; private set; }
-	public MySqlDbType[]? ColumnTypes { get; private set; }
 	public int WarningCount { get; private set; }
 	public ResultSetState State { get; private set; }
 	public bool ContainsCommandParameters { get; private set; }

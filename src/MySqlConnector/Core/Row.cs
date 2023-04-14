@@ -184,7 +184,7 @@ internal abstract class Row
 			and not ColumnType.Int24 and not ColumnType.Long and not ColumnType.Longlong
 			and not ColumnType.Bit and not ColumnType.Year)
 		{
-			throw new InvalidCastException($"Can't convert {ResultSet.ColumnTypes![ordinal]} to Int32");
+			throw new InvalidCastException($"Can't convert {ResultSet.GetColumnType(ordinal)} to Int32");
 		}
 
 		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
