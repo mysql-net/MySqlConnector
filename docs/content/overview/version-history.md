@@ -11,6 +11,19 @@ weight: 30
 
 # Version History
 
+### 2.3.0 Beta 2
+
+* Support skipping metadata for prepared statements with MariaDB 10.6 and later: [#1301](https://github.com/mysql-net/MySqlConnector/pull/1301).
+* Support multiple authentication methods when connecting: [#1303](https://github.com/mysql-net/MySqlConnector/pull/1303).
+* Recycle `MySqlDataReader` objects: [#1277](https://github.com/mysql-net/MySqlConnector/issues/1277).
+* Optimize parameter encoding for ASCII strings: [#1296](https://github.com/mysql-net/MySqlConnector/pull/1296).
+* Use `TcpClient.ConnectAsync` overload with `CancellationToken` on .NET 5.0 and later: [#1291](https://github.com/mysql-net/MySqlConnector/pull/1291).
+* Fix cancellation when using a redirected connection: [#1305](https://github.com/mysql-net/MySqlConnector/pull/1305).
+* Fix `MySqlConnection.CloneWith` for connections created from a `MySqlDataSource`: [#1306](https://github.com/mysql-net/MySqlConnector/issues/1306).
+* Work around ephemeral PEM bug on Windows: [#1278](https://github.com/mysql-net/MySqlConnector/issues/1278).
+* Remove some unnecessary allocations.
+* Thanks to [Guillaume Boucher](https://github.com/gboucher90),  [Diego Dupin](https://github.com/rusher), and [Nickolay Batov](https://github.com/stilettk) for contributions to this release.
+
 ### 2.3.0 Beta 1
 
 * `MySqlDataSource` is now available for all TFMs, not just .NET 7.0: [#1269](https://github.com/mysql-net/MySqlConnector/pull/1269).
