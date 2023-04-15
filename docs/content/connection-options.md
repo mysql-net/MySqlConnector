@@ -1,8 +1,9 @@
 ---
-lastmod: 2022-08-13
+lastmod: 2023-04-15
 date: 2016-10-16
 title: Connection Options
-customtitle: MySQL Connection String for C# .NET Core Programs
+customtitle: MySQL Connection String Options for .NET/C#
+description: A MySqlConnection is configured using a connection string. The connection string options are key/value pairs described on this page.
 weight: 30
 menu:
   main:
