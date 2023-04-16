@@ -811,21 +811,15 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	/// </summary>
 	/// <param name="keyword">The option name.</param>
 	/// <returns><c>true</c> if an option with that name is set; otherwise, <c>false</c>.</returns>
-	public override bool ContainsKey(string keyword)
-	{
-		var option = MySqlConnectionStringOption.TryGetOptionForKey(keyword);
-		return option is object && base.ContainsKey(option.Key);
-	}
+	public override bool ContainsKey(string keyword) =>
+		MySqlConnectionStringOption.TryGetOptionForKey(keyword) is { } option && base.ContainsKey(option.Key);
 
 	/// <summary>
 	/// Removes the option with the specified name.
 	/// </summary>
 	/// <param name="keyword">The option name.</param>
-	public override bool Remove(string keyword)
-	{
-		var option = MySqlConnectionStringOption.TryGetOptionForKey(keyword);
-		return option is object && base.Remove(option.Key);
-	}
+	public override bool Remove(string keyword) =>
+		MySqlConnectionStringOption.TryGetOptionForKey(keyword) is { } option && base.Remove(option.Key);
 
 	/// <summary>
 	/// Retrieves an option value by name.
