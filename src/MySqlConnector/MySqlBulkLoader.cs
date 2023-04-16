@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using MySqlConnector.Protocol.Serialization;
-using MySqlConnector.Utilities;
 
 namespace MySqlConnector;
 

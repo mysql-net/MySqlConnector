@@ -1,8 +1,6 @@
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
-using MySqlConnector.Core;
 
 namespace MySqlConnector.Utilities;
 

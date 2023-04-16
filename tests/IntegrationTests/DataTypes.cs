@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Reflection;
 #if MYSQL_DATA
 using MySql.Data.Types;
 #endif

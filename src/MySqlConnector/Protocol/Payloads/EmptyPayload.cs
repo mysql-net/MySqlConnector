@@ -1,5 +1,3 @@
-using MySqlConnector.Utilities;
-
 namespace MySqlConnector.Protocol.Payloads;
 
 internal static class EmptyPayload

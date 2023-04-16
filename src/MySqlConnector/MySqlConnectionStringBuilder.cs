@@ -2,9 +2,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
-using MySqlConnector.Utilities;
 
 namespace MySqlConnector;
 

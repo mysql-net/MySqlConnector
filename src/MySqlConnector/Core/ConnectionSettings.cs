@@ -1,6 +1,5 @@
 using System.Net.Security;
 using System.Security.Authentication;
-using MySqlConnector.Logging;
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;

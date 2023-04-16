@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace MySqlConnector.Protocol.Payloads;
 
 internal static class QueryPayload
