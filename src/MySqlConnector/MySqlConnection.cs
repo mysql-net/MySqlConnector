@@ -589,14 +589,14 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// <summary>
 	/// Returns schema information for the data source of this <see cref="MySqlConnection"/>.
 	/// </summary>
-	/// <param name="collectionName">The name of the schema to return.</param>
+	/// <param name="collectionName">The name of the schema to return. See <a href="https://mysqlconnector.net/overview/schema-collections/">Supported Schema Collections</a> for the list of supported schema names.</param>
 	/// <returns>A <see cref="DataTable"/> containing schema information.</returns>
 	public override DataTable GetSchema(string collectionName) => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, collectionName, default, default).GetAwaiter().GetResult();
 
 	/// <summary>
 	/// Returns schema information for the data source of this <see cref="MySqlConnection"/>.
 	/// </summary>
-	/// <param name="collectionName">The name of the schema to return.</param>
+	/// <param name="collectionName">The name of the schema to return. See <a href="https://mysqlconnector.net/overview/schema-collections/">Supported Schema Collections</a> for the list of supported schema names.</param>
 	/// <param name="restrictionValues">The restrictions to apply to the schema.</param>
 	/// <returns>A <see cref="DataTable"/> containing schema information.</returns>
 	public override DataTable GetSchema(string collectionName, string?[] restrictionValues) => GetSchemaProvider().GetSchemaAsync(IOBehavior.Synchronous, collectionName, restrictionValues, default).GetAwaiter().GetResult();
