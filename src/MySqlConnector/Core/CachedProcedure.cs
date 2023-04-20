@@ -11,7 +11,9 @@ internal sealed class CachedProcedure
 	public static async Task<CachedProcedure?> FillAsync(IOBehavior ioBehavior, MySqlConnection connection, string schema, string component, CancellationToken cancellationToken)
 	{
 		// try to use mysql.proc first, as it is much faster
-		if (connection.Session.ServerVersion.Version < ServerVersions.RemovesMySqlProcTable && !connection.Session.ProcAccessDenied)
+		if (!connection.Session.ServerVersion.MariaDb
+		    && connection.Session.ServerVersion.Version < ServerVersions.RemovesMySqlProcTable
+		    && !connection.Session.ProcAccessDenied)
 		{
 			try
 			{
@@ -127,7 +129,7 @@ internal sealed class CachedProcedure
 			if (!alignParam.HasSetDbType)
 				alignParam.MySqlDbType = cachedParam.MySqlDbType;
 
-			// cached parameters are oredered by ordinal position
+			// cached parameters are ordered by ordinal position
 			alignedParams.Add(alignParam);
 		}
 
