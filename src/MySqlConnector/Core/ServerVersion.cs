@@ -9,7 +9,7 @@ internal sealed class ServerVersion
 	public ServerVersion(ReadOnlySpan<byte> versionString)
 	{
 		OriginalString = Encoding.ASCII.GetString(versionString);
-		if (versionString.IndexOf("5.5.5-"u8) == 0)
+		if (versionString.StartsWith("5.5.5-"u8))
 		{
 			// for MariaDB < 11.0.1
 			versionString = versionString[6..];
