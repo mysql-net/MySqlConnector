@@ -55,6 +55,6 @@ internal sealed class ServerVersion
 	private ServerVersion()
 	{
 		OriginalString = "";
-		Version = new Version(0, 0);
+		Version = new();
 	}
 }
