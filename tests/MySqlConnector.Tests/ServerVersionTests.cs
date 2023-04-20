@@ -34,6 +34,6 @@ public class ServerVersionTests
 		var serverVersion = new ServerVersion(Encoding.UTF8.GetBytes(input));
 		var expected = Version.Parse(expectedString);
 		Assert.Equal(expected, serverVersion.Version);
-		Assert.Equal(expectedMariaDb, serverVersion.MariaDb);
+		Assert.Equal(expectedMariaDb, serverVersion.IsMariaDb);
 	}
 }

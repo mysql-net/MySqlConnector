@@ -614,8 +614,8 @@ internal sealed class ServerSession
 
 			PayloadData payload;
 			if (DatabaseOverride is null
-			    && ((!ServerVersion.MariaDb && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
-			    || (ServerVersion.MariaDb && ServerVersion.Version.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0)))
+			    && ((!ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
+			    || (ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0)))
 			{
 				m_logArguments[1] = ServerVersion.OriginalString;
 

@@ -13,11 +13,11 @@ internal sealed class ServerVersion
 		{
 			// for MariaDB < 11.0.1
 			versionString = versionString[6..];
-			MariaDb = true;
+			IsMariaDb = true;
 		}
 		else if (versionString.IndexOf("MariaDB"u8) != -1)
 		{
-			MariaDb = true;
+			IsMariaDb = true;
 		}
 
 		var minor = 0;
@@ -25,7 +25,7 @@ internal sealed class ServerVersion
 		if (Utf8Parser.TryParse(versionString, out int major, out var bytesConsumed))
 		{
 			versionString = versionString[bytesConsumed..];
-			if (versionString is [ 0x2E, ..])
+			if (versionString is [ 0x2E, .. ])
 			{
 				versionString = versionString[1..];
 				if (Utf8Parser.TryParse(versionString, out minor, out bytesConsumed))
@@ -46,9 +46,9 @@ internal sealed class ServerVersion
 		Version = new Version(major, minor, build);
 	}
 
-	public bool MariaDb { get; }
 	public string OriginalString { get; }
 	public Version Version { get; }
+	public bool IsMariaDb { get; }
 
 	public static ServerVersion Empty { get; } = new();
 
