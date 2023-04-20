@@ -611,8 +611,8 @@ internal sealed partial class ServerSession
 
 			PayloadData payload;
 			if (DatabaseOverride is null
-			    && ((!ServerVersion.MariaDb && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
-			    || (ServerVersion.MariaDb && ServerVersion.Version.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0)))
+			    && ((!ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
+			    || (ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0)))
 			{
 				if (m_supportsPipelining)
 				{

@@ -7,6 +7,15 @@ namespace MySqlConnector.Tests;
 
 public class ServerVersionTests
 {
+	[Fact]
+	public void Empty()
+	{
+		var empty = ServerVersion.Empty;
+		Assert.Equal("", empty.OriginalString);
+		Assert.Equal(new Version(0, 0), empty.Version);
+		Assert.False(empty.IsMariaDb);
+	}
+
 	[Theory]
 	[InlineData("5.5.5-10.1.38-MariaDB-1~bionic", "10.1.38", true)]
 	[InlineData("5.5.5-10.2.13-MariaDB", "10.2.13", true)]
@@ -34,6 +43,6 @@ public class ServerVersionTests
 		var serverVersion = new ServerVersion(Encoding.UTF8.GetBytes(input));
 		var expected = Version.Parse(expectedString);
 		Assert.Equal(expected, serverVersion.Version);
-		Assert.Equal(expectedMariaDb, serverVersion.MariaDb);
+		Assert.Equal(expectedMariaDb, serverVersion.IsMariaDb);
 	}
 }
