@@ -862,6 +862,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	internal int? ActiveCommandId => m_session?.ActiveCommandId;
 
+	internal bool SupportsPerQueryVariables => m_session is not null && m_session.SupportsPerQueryVariables;
 	internal bool HasActiveReader => m_activeReader is not null;
 
 	internal void SetActiveReader(MySqlDataReader dataReader)
