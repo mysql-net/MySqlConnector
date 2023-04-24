@@ -210,7 +210,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#50773](https://bugs.mysql.com/bug.php?id=50773): Can’t use multiple connections within one TransactionScope
 * [#61477](https://bugs.mysql.com/bug.php?id=61477): `ColumnOrdinal` in schema table is 1-based
 * ~~[#66476](https://bugs.mysql.com/bug.php?id=66476), [#106368](https://bugs.mysql.com/bug.php?id=106368): Connection pool uses queue instead of stack~~
-* [#70111](https://bugs.mysql.com/bug.php?id=70111): `Async` methods execute synchronously
+* ~[#70111](https://bugs.mysql.com/bug.php?id=70111): `Async` methods execute synchronously~
 * ~~[#70686](https://bugs.mysql.com/bug.php?id=70686): `TIME(3)` and `TIME(6)` fields serialize milliseconds incorrectly~~
 * [#72494](https://bugs.mysql.com/bug.php?id=72494), [#83330](https://bugs.mysql.com/bug.php?id=83330): EndOfStreamException inserting large blob with UseCompression=True
 * [#73610](https://bugs.mysql.com/bug.php?id=73610): Invalid password exception has wrong number
@@ -321,7 +321,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#109331](https://bugs.mysql.com/bug.php?id=109331): MySQL Connector/NET is incompatible with MariaDB 10.10 and later
 * [#109390](https://bugs.mysql.com/bug.php?id=109390): Transaction lock held after connection timeout exception
 * [#109476](https://bugs.mysql.com/bug.php?id=109476): `TransactionScope.Dispose` throws "Connection must be valid and open to rollback"
-* [#109670](https://bugs.mysql.com/bug.php?id=109670), [#109752](https://bugs.mysql.com/bug.php?id=109752): Many MSB3246 errors when referencing MySql.Data 8.0.32
+* ~[#109670](https://bugs.mysql.com/bug.php?id=109670), [#109752](https://bugs.mysql.com/bug.php?id=109752): Many MSB3246 errors when referencing MySql.Data 8.0.32~
 * [#109682](https://bugs.mysql.com/bug.php?id=109682): `MySqlParameter.Clone` loses specific `MySqlDbType`.
 * [#109683](https://bugs.mysql.com/bug.php?id=109683): `MySqlCommand.LastInsertedId` is incorrect if multiple rows are inserted.
 * [#109716](https://bugs.mysql.com/bug.php?id=109716), [#109727](https://bugs.mysql.com/bug.php?id=109727): Failed to add reference to 'comerr64'
