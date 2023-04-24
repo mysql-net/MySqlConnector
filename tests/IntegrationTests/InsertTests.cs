@@ -114,7 +114,7 @@ SELECT * FROM insert_ai;", m_database.Connection);
 		}
 	}
 
-	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=109683")]
+	[Fact]
 	public async Task LastInsertedIdTwoInserts()
 	{
 		await m_database.Connection.ExecuteAsync(@"drop table if exists insert_ai;
@@ -134,7 +134,7 @@ INSERT INTO insert_ai (text) VALUES ('test2');", m_database.Connection);
 		}
 	}
 
-	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=97061")]
+	[Fact]
 	public async Task LastInsertedIdLockTables()
 	{
 		await m_database.Connection.ExecuteAsync(@"drop table if exists insert_ai;
