@@ -159,8 +159,14 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	private Task PrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (!NeedsPrepare(out var exception))
+		{
+			if (CommandType == CommandType.StoredProcedure && ((IMySqlCommand)this).CachedProc == null)
+			{
+				// commands have been prepared, so already cached.
+				((IMySqlCommand)this).CachedProc = Connection!.GetCachedProcedure(m_commandText, revalidateMissing: false, ioBehavior, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
+			}
 			return exception is null ? Task.CompletedTask : Task.FromException(exception);
-
+		}
 		return Connection!.Session.PrepareAsync(this, ioBehavior, cancellationToken);
 	}
 
@@ -176,7 +182,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		else if (Connection?.HasActiveReader is true)
 			exception = new InvalidOperationException("Cannot call Prepare when there is an open DataReader for this command's connection; it must be closed first.");
 
-		if (exception is not null || Connection!.IgnorePrepare)
+		if (exception is not null || Connection!.IgnorePrepare || ((IMySqlCommand)this).PreparedStmts is not null)
 			return false;
 
 		if (CommandType != CommandType.StoredProcedure && CommandType != CommandType.Text)
@@ -186,7 +192,8 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		}
 
 		// don't prepare the same SQL twice
-		return Connection.Session.TryGetPreparedStatement(CommandText!) is null;
+		((IMySqlCommand)this).PreparedStmts = Connection.Session.TryGetPreparedStatement(CommandText!);
+		return ((IMySqlCommand)this).PreparedStmts is null;
 	}
 
 	/// <summary>
@@ -203,6 +210,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		{
 			if (m_connection?.ActiveCommandId == m_commandId)
 				throw new InvalidOperationException("Cannot set MySqlCommand.CommandText when there is an open DataReader for this command; it must be closed first.");
+			((IMySqlCommand)this).PreparedStmts = null;
 			m_commandText = value ?? "";
 		}
 	}
@@ -422,6 +430,9 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		Connection?.Cancel(this, m_commandId, false);
 	}
 
+	PreparedStatements? IMySqlCommand.PreparedStmts { get; set; }
+	CachedProcedure? IMySqlCommand.CachedProc { get; set; }
+
 	private bool IsValid([NotNullWhen(false)] out Exception? exception)
 	{
 		exception = null;
@@ -438,8 +449,14 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		return exception is null;
 	}
 
-	PreparedStatements? IMySqlCommand.TryGetPreparedStatements() => CommandType == CommandType.Text && !string.IsNullOrWhiteSpace(CommandText) && m_connection is not null &&
-		m_connection.State == ConnectionState.Open ? m_connection.Session.TryGetPreparedStatement(CommandText!) : null;
+	PreparedStatements? IMySqlCommand.TryGetPreparedStatements()
+	{
+		if (((IMySqlCommand)this).PreparedStmts != null) return ((IMySqlCommand)this).PreparedStmts;
+		return CommandType == CommandType.Text && !string.IsNullOrWhiteSpace(CommandText) && m_connection is not null &&
+		       m_connection.State == ConnectionState.Open
+			? m_connection.Session.TryGetPreparedStatement(CommandText!)
+			: null;
+	}
 
 	CommandBehavior IMySqlCommand.CommandBehavior => m_commandBehavior;
 	MySqlParameterCollection? IMySqlCommand.OutParameters { get; set; }

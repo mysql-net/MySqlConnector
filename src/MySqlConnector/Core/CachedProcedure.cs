@@ -20,9 +20,10 @@ internal sealed class CachedProcedure
 			{
 				using var cmd = connection.CreateCommand();
 				cmd.Transaction = connection.CurrentTransaction;
-				cmd.CommandText = @"SELECT param_list, returns FROM mysql.proc WHERE db = @schema AND name = @component";
-				cmd.Parameters.AddWithValue("@schema", schema);
-				cmd.Parameters.AddWithValue("@component", component);
+				cmd.CommandText = "SELECT param_list, returns FROM mysql.proc WHERE db = ? AND name = ?";
+				cmd.Prepare();
+				cmd.Parameters.Add(new() { Value = schema });
+				cmd.Parameters.Add(new() { Value = component });
 
 				using var reader = await cmd.ExecuteReaderNoResetTimeoutAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
 				var exists = await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -66,13 +67,16 @@ internal sealed class CachedProcedure
 			cmd.Transaction = connection.CurrentTransaction;
 			cmd.CommandText = @"SELECT COUNT(*)
 				FROM information_schema.routines
-				WHERE ROUTINE_SCHEMA = @schema AND ROUTINE_NAME = @component;
+				WHERE ROUTINE_SCHEMA = ? AND ROUTINE_NAME = ?;
 				SELECT ORDINAL_POSITION, PARAMETER_MODE, PARAMETER_NAME, DTD_IDENTIFIER
 				FROM information_schema.parameters
-				WHERE SPECIFIC_SCHEMA = @schema AND SPECIFIC_NAME = @component
+				WHERE SPECIFIC_SCHEMA = ? AND SPECIFIC_NAME = ?
 				ORDER BY ORDINAL_POSITION";
-			cmd.Parameters.AddWithValue("@schema", schema);
-			cmd.Parameters.AddWithValue("@component", component);
+			cmd.Prepare();
+			cmd.Parameters.Add(new() { Value = schema });
+			cmd.Parameters.Add(new() { Value = component });
+			cmd.Parameters.Add(new() { Value = schema });
+			cmd.Parameters.Add(new() { Value = component });
 
 			using var reader = await cmd.ExecuteReaderNoResetTimeoutAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
 			await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);

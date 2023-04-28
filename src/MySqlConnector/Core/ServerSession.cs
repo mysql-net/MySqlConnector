@@ -152,48 +152,18 @@ internal sealed partial class ServerSession
 				var name = NormalizedSchema.MustNormalize(command.CommandText!, command.Connection.Database);
 				throw new MySqlException($"Procedure or function '{name.Component}' cannot be found in database '{name.Schema}'.");
 			}
-
+			command.CachedProc = cachedProcedure;
 			var parameterCount = cachedProcedure.Parameters.Count;
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-			commandToPrepare = string.Create(commandText.Length + 7 + parameterCount * 2 + (parameterCount == 0 ? 1 : 0), (commandText, parameterCount), static (buffer, state) =>
+			commandToPrepare = StoredProcedureUtils.Format(commandText, parameterCount);
+
+			// if already in cache, just returns immediately
+			var cached = TryGetPreparedStatement(commandToPrepare);
+
+			if (cached != null)
 			{
-				buffer[0] = 'C';
-				buffer[1] = 'A';
-				buffer[2] = 'L';
-				buffer[3] = 'L';
-				buffer[4] = ' ';
-				buffer = buffer[5..];
-				state.commandText.AsSpan().CopyTo(buffer);
-				buffer = buffer[state.commandText.Length..];
-				buffer[0] = '(';
-				buffer = buffer[1..];
-				if (state.parameterCount > 0)
-				{
-					buffer[0] = '?';
-					buffer = buffer[1..];
-					for (var i = 1; i < state.parameterCount; i++)
-					{
-						buffer[0] = ',';
-						buffer[1] = '?';
-						buffer = buffer[2..];
-					}
-				}
-				buffer[0] = ')';
-				buffer[1] = ';';
-			});
-#else
-			var callStatement = new StringBuilder("CALL ", commandText.Length + 8 + parameterCount * 2);
-			callStatement.Append(commandText);
-			callStatement.Append('(');
-			for (int i = 0; i < parameterCount; i++)
-				callStatement.Append("?,");
-			if (parameterCount == 0)
-				callStatement.Append(')');
-			else
-				callStatement[callStatement.Length - 1] = ')';
-			callStatement.Append(';');
-			commandToPrepare = callStatement.ToString();
-#endif
+				command.PreparedStmts = cached;
+				return;
+			}
 		}
 		else
 		{
@@ -206,7 +176,7 @@ internal sealed partial class ServerSession
 		var columnsAndParameters = new ResizableArray<byte>();
 		var columnsAndParametersSize = 0;
 
-		var preparedStatements = new List<PreparedStatement>(parsedStatements.Statements.Count);
+		var preparedStatementList = new List<PreparedStatement>(parsedStatements.Statements.Count);
 		foreach (var statement in parsedStatements.Statements)
 		{
 			await SendAsync(new PayloadData(statement.StatementBytes), ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -263,11 +233,14 @@ internal sealed partial class ServerSession
 				}
 			}
 
-			preparedStatements.Add(new(response.StatementId, statement, columns, parameters));
+			preparedStatementList.Add(new(response.StatementId, statement, columns, parameters));
 		}
 
+		var preparedStmts = new PreparedStatements(preparedStatementList, parsedStatements);
+
 		m_preparedStatements ??= new();
-		m_preparedStatements.Add(commandText, new(preparedStatements, parsedStatements));
+		m_preparedStatements.Add(commandText, preparedStmts);
+		command.PreparedStmts = preparedStmts;
 	}
 
 	public PreparedStatements? TryGetPreparedStatement(string commandText) =>
@@ -426,6 +399,7 @@ internal sealed partial class ServerSession
 			var sslProtocols = Pool?.SslProtocols ?? cs.TlsVersions;
 			PayloadData payload;
 			InitialHandshakePayload initialHandshake;
+			ProtocolCapabilities clientCapabilities;
 			do
 			{
 				bool tls11or10Supported = (sslProtocols & (SslProtocols.Tls | SslProtocols.Tls11)) != SslProtocols.None;
@@ -471,7 +445,11 @@ internal sealed partial class ServerSession
 				ServerVersion = new(initialHandshake.ServerVersion);
 				ConnectionId = initialHandshake.ConnectionId;
 				AuthPluginData = initialHandshake.AuthPluginData;
-				m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
+				clientCapabilities =
+					HandshakeResponse41Payload.CreateClientCapabilities(initialHandshake.ProtocolCapabilities, cs, m_useCompression,
+						ProtocolCapabilities.Ssl);
+
+				m_useCompression = cs.UseCompression && (clientCapabilities & ProtocolCapabilities.Compress) != 0;
 				CancellationTimeout = cs.CancellationTimeout;
 				UserID = cs.UserID;
 
@@ -483,13 +461,13 @@ internal sealed partial class ServerSession
 						activity.SetTag(ActivitySourceHelper.DatabaseConnectionIdTagName, connectionId);
 				}
 
-				m_supportsComMulti = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.MariaDbComMulti) != 0;
-				m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
-				m_supportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
-				SupportsCachedPreparedMetadata = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.MariaDbCacheMetadata) != 0;
-				SupportsQueryAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.QueryAttributes) != 0;
-				m_supportsSessionTrack = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SessionTrack) != 0;
-				var serverSupportsSsl = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Ssl) != 0;
+				m_supportsComMulti = (clientCapabilities & ProtocolCapabilities.MariaDbComMulti) != 0;
+				m_supportsConnectionAttributes = (clientCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
+				m_supportsDeprecateEof = (clientCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
+				SupportsCachedPreparedMetadata = (clientCapabilities & ProtocolCapabilities.MariaDbCacheMetadata) != 0;
+				SupportsQueryAttributes = (clientCapabilities & ProtocolCapabilities.QueryAttributes) != 0;
+				m_supportsSessionTrack = (clientCapabilities & ProtocolCapabilities.SessionTrack) != 0;
+				var serverSupportsSsl = (clientCapabilities & ProtocolCapabilities.Ssl) != 0;
 				m_characterSet = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? CharacterSet.Utf8Mb4GeneralCaseInsensitive : CharacterSet.Utf8Mb3GeneralCaseInsensitive;
 				m_setNamesPayload = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ?
 					(SupportsQueryAttributes ? s_setNamesUtf8mb4WithAttributesPayload : s_setNamesUtf8mb4NoAttributesPayload) :
@@ -533,7 +511,7 @@ internal sealed partial class ServerSession
 
 					try
 					{
-						await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, connection, sslProtocols, ioBehavior, cancellationToken).ConfigureAwait(false);
+						await InitSslAsync(clientCapabilities, cs, connection, sslProtocols, ioBehavior, cancellationToken).ConfigureAwait(false);
 						shouldRetrySsl = false;
 					}
 					catch (ArgumentException ex) when (ex.ParamName == "sslProtocolType" && sslProtocols == SslProtocols.None)
@@ -560,7 +538,7 @@ internal sealed partial class ServerSession
 				cs.ConnectionAttributes = CreateConnectionAttributes(cs.ApplicationName);
 
 			var password = GetPassword(cs, connection);
-			using (var handshakeResponsePayload = HandshakeResponse41Payload.Create(initialHandshake, cs, password, m_useCompression, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
+			using (var handshakeResponsePayload = HandshakeResponse41Payload.Create(initialHandshake, clientCapabilities, cs, password, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
 				await SendReplyAsync(handshakeResponsePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
@@ -1287,11 +1265,11 @@ internal sealed partial class ServerSession
 		return false;
 	}
 
-	private async Task InitSslAsync(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, MySqlConnection connection, SslProtocols sslProtocols, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task InitSslAsync(ProtocolCapabilities clientCapabilities, ConnectionSettings cs, MySqlConnection connection, SslProtocols sslProtocols, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		Log.InitializingTlsConnection(m_logger, Id);
 		X509CertificateCollection? clientCertificates = null;
-
+		clientCapabilities |= ProtocolCapabilities.Ssl;
 		if (cs.CertificateStoreLocation != MySqlCertificateStoreLocation.None)
 		{
 			try
@@ -1483,7 +1461,7 @@ internal sealed partial class ServerSession
 
 		var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
 
-		using (var initSsl = HandshakeResponse41Payload.CreateWithSsl(serverCapabilities, cs, m_useCompression, m_characterSet))
+		using (var initSsl = HandshakeResponse41Payload.CreateWithSsl(clientCapabilities, m_characterSet))
 			await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 		var clientAuthenticationOptions = new SslClientAuthenticationOptions

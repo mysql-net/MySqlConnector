@@ -107,26 +107,62 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			}
 		}
 
-		if (commandParameterCount > 0 || attributeCount > 0)
+		MySqlParameter[] parameters;
+		if (command.CommandType == CommandType.StoredProcedure)
 		{
-			// TODO: How to handle incorrect number of parameters?
-
+			// only IN and INOUT parameters must be send.
+			var outParameters = new MySqlParameterCollection();
+			MySqlParameter? returnParameter = null;
+			List<MySqlParameter> parameterList = new List<MySqlParameter>();
+			for (var i = 0; i < command.CachedProc!.Parameters.Count; i++)
+			{
+				CachedParameter param = command.CachedProc!.Parameters[i];
+				var mySqlParameter = SearchParameterByNameOrIndex(param.Name, preparedStatement, i, parameterCollection);
+				switch (param.Direction)
+				{
+					case ParameterDirection.Input:
+						parameterList.Add(mySqlParameter);
+						break;
+					case ParameterDirection.InputOutput:
+						parameterList.Add(mySqlParameter);
+						outParameters.Add(mySqlParameter);
+						break;
+					case ParameterDirection.Output:
+						parameterList.Add(MySqlParameter.NullParameter);
+						outParameters.Add(mySqlParameter);
+						break;
+					case ParameterDirection.ReturnValue:
+						returnParameter = mySqlParameter;
+						break;
+				}
+			}
+			command.OutParameters = outParameters;
+			command.ReturnParameter = returnParameter;
+			parameters = parameterList.ToArray();
+		}
+		else
+		{
 			// build subset of parameters for this statement
-			var parameters = new MySqlParameter[commandParameterCount + attributeCount];
+			parameters = new MySqlParameter[commandParameterCount + attributeCount];
 			for (var i = 0; i < commandParameterCount; i++)
 			{
 				var parameterName = preparedStatement.Statement.NormalizedParameterNames![i];
-				var parameterIndex = parameterName is not null ? (parameterCollection?.UnsafeIndexOf(parameterName) ?? -1) : preparedStatement.Statement.ParameterIndexes[i];
-				if (parameterIndex == -1 && parameterName is not null)
-					throw new MySqlException($"Parameter '{preparedStatement.Statement.ParameterNames![i]}' must be defined.");
-				else if (parameterIndex < 0 || parameterIndex >= (parameterCollection?.Count ?? 0))
-					throw new MySqlException($"Parameter index {parameterIndex} is invalid when only {parameterCollection?.Count ?? 0} parameter{(parameterCollection?.Count == 1 ? " is" : "s are")} defined.");
-				parameters[i] = parameterCollection![parameterIndex];
+				parameters[i] = SearchParameterByNameOrIndex(parameterName, preparedStatement, i, parameterCollection);
 			}
-			for (var i = 0; i < attributeCount; i++)
-				parameters[commandParameterCount + i] = attributes![i].ToParameter();
-			WriteBinaryParameters(writer, parameters, command, supportsQueryAttributes, commandParameterCount);
 		}
+		for (var i = 0; i < attributeCount; i++)
+			parameters[commandParameterCount + i] = attributes![i].ToParameter();
+		WriteBinaryParameters(writer, parameters, command, supportsQueryAttributes, commandParameterCount);
+	}
+
+	private static MySqlParameter SearchParameterByNameOrIndex(string? parameterName, PreparedStatement preparedStatement, int index, MySqlParameterCollection? parameterCollection)
+	{
+		var parameterIndex = parameterName is not null ? (parameterCollection?.UnsafeIndexOf(parameterName) ?? -1) : preparedStatement.Statement.ParameterIndexes[index];
+		if (parameterIndex == -1 && parameterName is not null)
+			throw new ArgumentException($"Parameter '{parameterName}' must be defined.");
+		if (parameterIndex < 0 || parameterIndex >= (parameterCollection?.Count ?? 0))
+			throw new ArgumentException($"Parameter index {parameterIndex} is invalid when only {parameterCollection?.Count ?? 0} parameter{(parameterCollection?.Count == 1 ? " is" : "s are")} defined.");
+		return parameterCollection![parameterIndex];
 	}
 
 	private static void WriteBinaryParameters(ByteBufferWriter writer, MySqlParameter[] parameters, IMySqlCommand command, bool supportsQueryAttributes, int parameterCount)

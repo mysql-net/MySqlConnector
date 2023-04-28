@@ -13,6 +13,8 @@ internal interface IMySqlCommand
 	CommandBehavior CommandBehavior { get; }
 	MySqlParameterCollection? RawParameters { get; }
 	MySqlAttributeCollection? RawAttributes { get; }
+	CachedProcedure? CachedProc { get; set; }
+	PreparedStatements? PreparedStmts { get; set; }
 	PreparedStatements? TryGetPreparedStatements();
 	MySqlConnection? Connection { get; }
 	long LastInsertedId { get; }

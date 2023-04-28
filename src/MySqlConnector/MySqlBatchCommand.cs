@@ -60,6 +60,21 @@ public sealed class MySqlBatchCommand :
 
 	MySqlAttributeCollection? IMySqlCommand.RawAttributes => null;
 
+	CachedProcedure? IMySqlCommand.CachedProc
+	{
+		get => null;
+		set
+		{
+		}
+	}
+	PreparedStatements? IMySqlCommand.PreparedStmts
+	{
+		get => null;
+		set
+		{
+		}
+	}
+
 	MySqlConnection? IMySqlCommand.Connection => Batch?.Connection;
 
 	long IMySqlCommand.LastInsertedId => m_lastInsertedId;

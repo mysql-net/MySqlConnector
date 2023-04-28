@@ -12,6 +12,8 @@ namespace MySqlConnector;
 
 public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 {
+	public static readonly MySqlParameter NullParameter = new MySqlParameter("", null);
+
 	public MySqlParameter()
 		: this(default(string?), default(object?))
 	{
