@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-01-01
+lastmod: 2023-05-04
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,13 @@ weight: 30
 ---
 
 # Version History
+
+### 2.2.6
+
+* Ignore deadlock exception when rolling back an XA transaction: [#1317](https://github.com/mysql-net/MySqlConnector/issues/1317).
+* Work around ephemeral PEM bug on Windows: [#1278](https://github.com/mysql-net/MySqlConnector/issues/1278).
+* Support new MariaDB version numbers: [#1259](https://github.com/mysql-net/MySqlConnector/issues/1259).
+* Thanks to [Diego Dupin](https://github.com/rusher) for contributions to this release.
 
 ### 2.2.5
 
