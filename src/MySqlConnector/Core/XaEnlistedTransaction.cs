@@ -35,8 +35,15 @@ internal sealed class XaEnlistedTransaction : EnlistedTransactionBase
 
 	protected override void OnRollback(Enlistment enlistment)
 	{
-		ExecuteXaCommand("END");
-		ExecuteXaCommand("ROLLBACK");
+		try
+		{
+			ExecuteXaCommand("END");
+			ExecuteXaCommand("ROLLBACK");
+		}
+		catch (MySqlException ex) when (ex.ErrorCode is MySqlErrorCode.XARBDeadlock)
+		{
+			// ignore deadlock when rolling back
+		}
 	}
 
 	private void ExecuteXaCommand(string statement)
