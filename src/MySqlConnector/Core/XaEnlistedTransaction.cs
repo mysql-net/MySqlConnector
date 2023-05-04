@@ -43,7 +43,14 @@ internal sealed class XaEnlistedTransaction : EnlistedTransactionBase
 	{
 		using var cmd = Connection.CreateCommand();
 		cmd.CommandText = "XA " + statement + " " + m_xid;
-		cmd.ExecuteNonQuery();
+		try
+		{
+			cmd.ExecuteNonQuery();
+		}
+		catch (MySqlException ex) when (ex.ErrorCode is MySqlErrorCode.XARBDeadlock)
+		{
+			// ignore deadlock when rolling back
+		}
 	}
 
 	private static int s_currentId;
