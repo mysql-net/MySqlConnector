@@ -1,6 +1,13 @@
-namespace IntegrationTests;
+using System.Data;
+using System.Data.Common;
+#if MYSQL_DATA
+using MySql.Data.MySqlClient;
+#endif
+using Xunit;
 
-public class ParameterTests
+namespace MySqlConnector.Tests;
+
+public class MySqlParameterTests
 {
 	[Theory]
 	[InlineData(DbType.Byte, MySqlDbType.UByte)]
