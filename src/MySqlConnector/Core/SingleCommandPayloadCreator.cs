@@ -42,7 +42,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 				Log.QueryAttributesNotSupported(command.Logger, command.Connection!.Session.Id, command.CommandText!);
 			}
 
-			WriteQueryPayload(command, cachedProcedures, writer, appendSemicolon, true, true);
+			WriteQueryPayload(command, cachedProcedures, writer, appendSemicolon, isFirstCommand: true, isLastCommand: true);
 			commandListPosition.LastUsedPreparedStatement = null;
 			commandListPosition.CommandIndex++;
 		}
@@ -70,11 +70,11 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	/// <param name="cachedProcedures">The cached procedures.</param>
 	/// <param name="writer">The output writer.</param>
 	/// <param name="appendSemicolon">Whether a statement-separating semicolon should be appended if it's missing.</param>
-	/// <param name="firstCommand">Whether is command is the first one</param>
-	/// <param name="lastCommand">Whether is command is the last one</param>
+	/// <param name="isFirstCommand">Whether this command is the first one.</param>
+	/// <param name="isLastCommand">Whether this command is the last one.</param>
 	/// <returns><c>true</c> if a complete command was written; otherwise, <c>false</c>.</returns>
-	public static bool WriteQueryPayload(IMySqlCommand command, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon, bool firstCommand, bool lastCommand) =>
-		(command.CommandType == CommandType.StoredProcedure) ? WriteStoredProcedure(command, cachedProcedures, writer) : WriteCommand(command, writer, appendSemicolon, firstCommand, lastCommand);
+	public static bool WriteQueryPayload(IMySqlCommand command, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon, bool isFirstCommand, bool isLastCommand) =>
+		(command.CommandType == CommandType.StoredProcedure) ? WriteStoredProcedure(command, cachedProcedures, writer) : WriteCommand(command, writer, appendSemicolon, isFirstCommand, isLastCommand);
 
 	private static void WritePreparedStatement(IMySqlCommand command, PreparedStatement preparedStatement, ByteBufferWriter writer)
 	{
@@ -244,39 +244,34 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		return preparer.ParseAndBindParameters(writer);
 	}
 
-	private static bool WriteCommand(IMySqlCommand command, ByteBufferWriter writer, bool appendSemicolon, bool firstCommand, bool lastCommand)
+	private static bool WriteCommand(IMySqlCommand command, ByteBufferWriter writer, bool appendSemicolon, bool isFirstCommand, bool isLastCommand)
 	{
 		var isSchemaOnly = (command.CommandBehavior & CommandBehavior.SchemaOnly) != 0;
 		var isSingleRow = (command.CommandBehavior & CommandBehavior.SingleRow) != 0;
-		if (isSchemaOnly || isSingleRow)
+		if ((isSchemaOnly || isSingleRow) && isFirstCommand)
 		{
-			if (!command.Connection!.SupportsPerQueryVariables)
+			if (command.Connection!.SupportsPerQueryVariables)
 			{
-				// server doesn't support per query variables, so using multi-statements
-				if (firstCommand)
-				{
-					writer.WriteAscii(isSchemaOnly ? "SET sql_select_limit=0;\n" : "SET sql_select_limit=1;\n");
-				}
-				var preparer = new StatementPreparer(command.CommandText!, command.RawParameters, command.CreateStatementPreparerOptions() | ((appendSemicolon || isSchemaOnly || isSingleRow) ? StatementPreparerOptions.AppendSemicolon : StatementPreparerOptions.None));
-				var isComplete = preparer.ParseAndBindParameters(writer);
-				if (isComplete && lastCommand)
-				{
-					writer.WriteAscii("\nSET sql_select_limit=default;");
-				}
-				return isComplete;
-			}
-
-			// server support per query variables, so using SET STATEMENT ... FOR on first command
-			if (firstCommand)
-			{
+				// server supports per-query variables, so using SET STATEMENT ... FOR on first command
 				writer.WriteAscii("SET STATEMENT ");
 				writer.WriteAscii(isSchemaOnly ? "sql_select_limit=0" : "sql_select_limit=1");
 				writer.WriteAscii(" FOR ");
 			}
+			else
+			{
+				// server doesn't support per-query variables, so use multi-statements
+				writer.WriteAscii(isSchemaOnly ? "SET sql_select_limit=0;\n" : "SET sql_select_limit=1;\n");
+			}
 		}
 
-		var preparer1 = new StatementPreparer(command.CommandText!, command.RawParameters, command.CreateStatementPreparerOptions() | ((appendSemicolon || isSchemaOnly || isSingleRow) ? StatementPreparerOptions.AppendSemicolon : StatementPreparerOptions.None));
-		var isComplete1 = preparer1.ParseAndBindParameters(writer);
-		return isComplete1;
+		var preparer = new StatementPreparer(command.CommandText!, command.RawParameters, command.CreateStatementPreparerOptions() | ((appendSemicolon || isSchemaOnly || isSingleRow) ? StatementPreparerOptions.AppendSemicolon : StatementPreparerOptions.None));
+		var isComplete = preparer.ParseAndBindParameters(writer);
+
+		if ((isSchemaOnly || isSingleRow) && isLastCommand && isComplete && !command.Connection!.SupportsPerQueryVariables)
+		{
+			writer.WriteAscii("\nSET sql_select_limit=default;");
+		}
+
+		return isComplete;
 	}
 }
