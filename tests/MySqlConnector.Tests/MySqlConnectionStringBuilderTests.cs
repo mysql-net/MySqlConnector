@@ -1,11 +1,5 @@
-using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
-#if MYSQL_DATA
-using MySql.Data.MySqlClient;
-#endif
-using Xunit;
 
 namespace MySqlConnector.Tests;
 

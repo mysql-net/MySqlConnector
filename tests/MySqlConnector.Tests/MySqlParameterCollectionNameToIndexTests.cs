@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace MySqlConnector.Tests;
 
 public class MySqlParameterCollectionNameToIndexTests

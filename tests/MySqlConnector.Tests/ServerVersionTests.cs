@@ -1,7 +1,4 @@
-using System;
 using System.Text;
-using MySqlConnector.Core;
-using Xunit;
 
 namespace MySqlConnector.Tests;
 

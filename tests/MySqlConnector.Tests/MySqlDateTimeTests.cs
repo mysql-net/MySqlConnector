@@ -1,9 +1,4 @@
-using System;
 using System.Globalization;
-#if MYSQL_DATA
-using MySql.Data.Types;
-#endif
-using Xunit;
 
 namespace MySqlConnector.Tests;
 

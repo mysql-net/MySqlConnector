@@ -1,9 +1,3 @@
-using System;
-using System.Data;
-using System.Linq;
-using MySqlConnector.Core;
-using Xunit;
-
 namespace MySqlConnector.Tests;
 
 public class TypeMapperTests

@@ -1,6 +1,3 @@
-using System;
-using Xunit;
-
 namespace MySqlConnector.Tests;
 
 public class SkipCITheoryAttribute : TheoryAttribute
