@@ -32,10 +32,12 @@ internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
 			var command = commandListPosition.Commands[commandListPosition.CommandIndex];
 			Log.PreparingCommandPayload(command.Logger, command.Connection!.Session.Id, command.CommandText!);
 
-			isComplete = SingleCommandPayloadCreator.WriteQueryPayload(command, cachedProcedures, writer, commandListPosition.CommandIndex < commandListPosition.Commands.Count - 1 || appendSemicolon);
+			isComplete = SingleCommandPayloadCreator.WriteQueryPayload(command, cachedProcedures, writer,
+				commandListPosition.CommandIndex < commandListPosition.Commands.Count - 1 || appendSemicolon,
+				commandListPosition.CommandIndex == 0,
+				commandListPosition.CommandIndex == commandListPosition.Commands.Count - 1);
 			commandListPosition.CommandIndex++;
-		}
-		while (commandListPosition.CommandIndex < commandListPosition.Commands.Count && isComplete);
+		} while (commandListPosition.CommandIndex < commandListPosition.Commands.Count && isComplete);
 
 		return true;
 	}
