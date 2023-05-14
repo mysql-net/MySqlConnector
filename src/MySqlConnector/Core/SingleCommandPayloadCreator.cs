@@ -250,27 +250,23 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		var isSingleRow = (command.CommandBehavior & CommandBehavior.SingleRow) != 0;
 		if ((isSchemaOnly || isSingleRow) && isFirstCommand)
 		{
-			if (command.Connection!.SupportsPerQueryVariables)
+			writer.Write((command.Connection!.SupportsPerQueryVariables, isSingleRow) switch
 			{
-				// server supports per-query variables, so using SET STATEMENT ... FOR on first command
-				writer.WriteAscii("SET STATEMENT ");
-				writer.WriteAscii(isSchemaOnly ? "sql_select_limit=0" : "sql_select_limit=1");
-				writer.WriteAscii(" FOR ");
-			}
-			else
-			{
-				// server doesn't support per-query variables, so use multi-statements
-				writer.WriteAscii(isSchemaOnly ? "SET sql_select_limit=0;\n" : "SET sql_select_limit=1;\n");
-			}
+				// server doesn't support per-query variables; use multi-statements
+				(false, false) => "SET sql_select_limit=0;\n"u8,
+				(false, true) => "SET sql_select_limit=1;\n"u8,
+
+				// server supports per-query variables; use SET STATEMENT
+				(true, false) => "SET STATEMENT sql_select_limit=0 FOR "u8,
+				(true, true) => "SET STATEMENT sql_select_limit=1 FOR "u8,
+			});
 		}
 
 		var preparer = new StatementPreparer(command.CommandText!, command.RawParameters, command.CreateStatementPreparerOptions() | ((appendSemicolon || isSchemaOnly || isSingleRow) ? StatementPreparerOptions.AppendSemicolon : StatementPreparerOptions.None));
 		var isComplete = preparer.ParseAndBindParameters(writer);
 
 		if ((isSchemaOnly || isSingleRow) && isLastCommand && isComplete && !command.Connection!.SupportsPerQueryVariables)
-		{
-			writer.WriteAscii("\nSET sql_select_limit=default;");
-		}
+			writer.Write("\nSET sql_select_limit=default;"u8);
 
 		return isComplete;
 	}
