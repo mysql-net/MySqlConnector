@@ -1,8 +1,6 @@
 #if MYSQL_DATA
-using MySql.Data.MySqlClient;
 using MySqlConnectorFactory = MySql.Data.MySqlClient.MySqlClientFactory;
 #endif
-using Xunit;
 
 namespace MySqlConnector.Tests;
 

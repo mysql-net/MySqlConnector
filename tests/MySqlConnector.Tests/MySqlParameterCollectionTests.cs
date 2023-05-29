@@ -1,9 +1,3 @@
-#if MYSQL_DATA
-using MySql.Data.MySqlClient;
-#endif
-using System;
-using Xunit;
-
 namespace MySqlConnector.Tests;
 
 public class MySqlParameterCollectionTests

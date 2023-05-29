@@ -1,5 +1,9 @@
 using Microsoft.Extensions.Configuration;
 
+#if MYSQL_DATA
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
+#endif
+
 namespace IntegrationTests;
 
 public static class AppConfig

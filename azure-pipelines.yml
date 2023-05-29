@@ -102,53 +102,6 @@ jobs:
       image: 'mysql:8.0'
       connectionString: 'server=localhost;port=3306;user id=mysqltest;password=test;database=conformance;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'
 
-- job: azure_mysql_integration_tests
-  condition: ne('True', variables['System.PullRequest.IsFork'])
-  displayName: 'Azure MySQL Integration Tests'
-  pool:
-    vmimage: 'windows-latest'
-  steps:
-  - task: PowerShell@2
-    displayName: Create Database
-    inputs:
-      targetType: inline
-      script: "mysql -u$(Azure MySQL Root User) -p$(Azure MySQL Root Password) -h '$(Azure MySQL Host)' -e 'create schema mysqltest_$(Build.BuildId) collate utf8mb4_0900_ai_ci;'"
-  - task: UseDotNet@2
-    displayName: 'Install .NET 7.0'
-    inputs:
-      version: 7.0.x
-      packageType: runtime
-  - task: UseDotNet@2
-    displayName: 'Install .NET'
-    inputs:
-      version: $(DotNetCoreSdkVersion)
-      includePreviewVersions: true
-  - task: PowerShell@2
-    displayName: 'Copy Azure config'
-    inputs:
-      targetType: inline
-      script: Copy-Item -Path ".\.ci\config\config.ssl.json" -Destination ".\tests\IntegrationTests\config.json"
-  - task: DotNetCoreCLI@2
-    displayName: 'Restore packages'
-    inputs:
-      command: 'restore'
-  - task: DotNetCoreCLI@2
-    displayName: 'Integration tests (net8.0)'
-    inputs:
-      command: 'test'
-      projects: 'tests/IntegrationTests/IntegrationTests.csproj'
-      arguments: '-c Release -f net8.0 --no-restore'
-      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'Azure', 'net6.0', 'SSL') }}
-    env:
-      DATA__UNSUPPORTEDFEATURES: 'CachingSha2Password,Ed25519,GlobalLog,KnownCertificateAuthority,QueryAttributes,RsaEncryption,Sha256Password,StreamingResults,Timeout,Tls11,Tls13,UnixDomainSocket,ZeroDateTime'
-      DATA__CONNECTIONSTRING: "$(AzureConnectionString);database=mysqltest_$(Build.BuildId);ssl mode=Required;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True"
-  - task: PowerShell@2
-    displayName: Drop Database
-    condition: always()
-    inputs:
-      targetType: inline
-      script: "mysql -u$(Azure MySQL Root User) -p$(Azure MySQL Root Password) -h '$(Azure MySQL Host)' -e 'drop schema if exists mysqltest_$(Build.BuildId);'"
-
 - job: windows_integration_tests_1
   displayName: 'Windows Integration Tests (Part 1)'
   pool:

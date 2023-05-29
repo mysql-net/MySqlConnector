@@ -1,5 +1,4 @@
 using MySqlConnector.Protocol.Serialization;
-using Xunit;
 
 namespace MySqlConnector.Tests;
 

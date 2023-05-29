@@ -72,7 +72,7 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 		Assert.Equal(connectionState, m_connection.State);
 	}
 
-	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout, MySqlData = "https://bugs.mysql.com/bug.php?id=110790")]
 	public async Task CommandTimeoutWithSleepAsync()
 	{
 		var connectionState = m_connection.State;
@@ -170,7 +170,7 @@ end;", m_connection))
 		Assert.Equal(connectionState, m_connection.State);
 	}
 
-	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout, MySqlData = "https://bugs.mysql.com/bug.php?id=110790")]
 	public async Task MultipleCommandTimeoutWithSleepAsync()
 	{
 		var connectionState = m_connection.State;
@@ -273,7 +273,7 @@ end;", m_connection))
 		Assert.Equal(connectionState, m_connection.State);
 	}
 
-	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
+	[SkippableFact(ServerFeatures.CancelSleepSuccessfully, MySqlData = "https://bugs.mysql.com/bug.php?id=110790")]
 	public async Task TransactionCommandTimeoutWithSleepAsync()
 	{
 		var connectionState = m_connection.State;

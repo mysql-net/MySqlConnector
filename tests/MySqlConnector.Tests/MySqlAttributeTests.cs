@@ -1,8 +1,3 @@
-#if MYSQL_DATA
-using MySql.Data.MySqlClient;
-#endif
-using Xunit;
-
 namespace MySqlConnector.Tests;
 
 public class MySqlAttributeTests

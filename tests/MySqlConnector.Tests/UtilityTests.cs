@@ -1,9 +1,7 @@
-using System;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using MySqlConnector.Utilities;
-using Xunit;
 
 namespace MySqlConnector.Tests;
 

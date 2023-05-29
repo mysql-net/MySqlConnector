@@ -48,6 +48,7 @@ internal sealed partial class ServerSession
 
 	public string Id { get; }
 	public ServerVersion ServerVersion { get; set; }
+	public bool SupportsPerQueryVariables => ServerVersion.IsMariaDb && ServerVersion.Version >= ServerVersions.MariaDbSupportsPerQueryVariables;
 	public int ActiveCommandId { get; private set; }
 	public int CancellationTimeout { get; private set; }
 	public int ConnectionId { get; set; }
@@ -610,7 +611,9 @@ internal sealed partial class ServerSession
 			ClearPreparedStatements();
 
 			PayloadData payload;
-			if (DatabaseOverride is null && (ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0 || ServerVersion.MariaDbVersion?.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0))
+			if (DatabaseOverride is null
+			    && ((!ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
+			    || (ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0)))
 			{
 				if (m_supportsPipelining)
 				{

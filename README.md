@@ -1,4 +1,4 @@
-# Async MySQL Connector for .NET and .NET Core
+# MySQL Connector for .NET and .NET Core
 
 This is an [ADO.NET](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/) data
 provider for [MySQL](https://www.mysql.com/). It provides implementations of
@@ -8,12 +8,6 @@ needed to query and update databases from managed code.
 Complete documentation is available at the [MySqlConnector Documentation Website](https://mysqlconnector.net/).
 
 ## Why Use This Library?
-
-### Async Support
-
-This library implements true asynchronous I/O for database operations, without blocking
-(or using `Task.Run` to run synchronous methods on a background thread). This greatly
-improves the throughput of a web server that performs database operations.
 
 ### Performance
 
@@ -31,6 +25,10 @@ MySql.Data [only supports MySQL Server](https://bugs.mysql.com/bug.php?id=109331
 ### Bug Fixes
 
 This library [fixes dozens of outstanding bugs](https://mysqlconnector.net/tutorials/migrating-from-connector-net/#fixed-bugs) in Connector/NET.
+
+### Cutting Edge
+
+This library implements the latest ADO.NET APIs, from async (introduced in .NET Framework 4.5), through `DbBatch` (.NET 6.0) and `DbDataSource` (.NET 7.0).
 
 ### License
 
@@ -106,6 +104,3 @@ Development of MySqlConnector is supported by:
 
 [Faithlife](https://faithlife.com/about) ([View jobs](https://faithlife.com/careers))
 
-[![Microsoft Azure](https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Microsoft_Azure.svg/75px-Microsoft_Azure.svg.png)](https://azure.microsoft.com/en-us/overview/open-source/)
-
-[Azure Credits for Open Source](https://opensource.microsoft.com/azure-credits)

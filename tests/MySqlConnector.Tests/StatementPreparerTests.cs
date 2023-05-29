@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
-using Xunit;
 
 namespace MySqlConnector.Tests;
 

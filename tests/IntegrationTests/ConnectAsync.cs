@@ -51,18 +51,14 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		Assert.Equal(ConnectionState.Closed, connection.State);
 	}
 
-	[Fact]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=110791")]
 	public async Task ConnectCanceled()
 	{
 		using var cts = new CancellationTokenSource();
 		cts.Cancel();
 
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
-#if MYSQL_DATA
-		await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await connection.OpenAsync(cts.Token));
-#else
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await connection.OpenAsync(cts.Token));
-#endif
 		await connection.OpenAsync();
 		Assert.Equal(ConnectionState.Open, connection.State);
 	}
@@ -117,7 +113,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		await Task.Delay(3000);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.Timeout, MySqlData = "https://bugs.mysql.com/bug.php?id=110789")]
 	public async Task ConnectTimeoutAsync()
 	{
 		var csb = new MySqlConnectionStringBuilder
@@ -134,7 +130,6 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
 		TestUtilities.AssertDuration(stopwatch, 1900, 1500);
 	}
-
 
 	[SkippableFact(ServerFeatures.Timeout, MySqlData = "https://bugs.mysql.com/bug.php?id=94760")]
 	public async Task ConnectTimeoutAsyncCancellationToken()
@@ -536,7 +531,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		Assert.Equal(ConnectionState.Open, connection.State);
 	}
 
-	[Fact]
+	[SkippableFact(MySqlData = "Not raised")]
 	public async Task DisposeAsyncRaisesDisposed()
 	{
 		var disposedCount = 0;
@@ -549,11 +544,3 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 
 	readonly DatabaseFixture m_database;
 }
-
-#if MYSQL_DATA
-internal static class MySqlDataConnectionHelpers
-{
-	// MySql.Data capitalizes the 'B' in 'Database'
-	public static Task ChangeDatabaseAsync(this MySqlConnection connection, string databaseName) => connection.ChangeDataBaseAsync(databaseName);
-}
-#endif

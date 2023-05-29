@@ -1,7 +1,3 @@
-using System.Linq;
-using MySqlConnector.Core;
-using Xunit;
-
 namespace MySqlConnector.Tests;
 
 public class LoadBalancerTests

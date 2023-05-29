@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using MySqlConnector.Core;
-using Xunit;
-
 namespace MySqlConnector.Tests;
 
 public class CachedProcedureTests

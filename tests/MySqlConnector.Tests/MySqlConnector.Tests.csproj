@@ -29,15 +29,27 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <Using Include="System" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Data" />
+    <Using Include="System.Data.Common" />
+    <Using Include="System.Diagnostics" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
+    <Using Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' != 'MySqlData' ">
     <ProjectReference Include="..\..\src\MySqlConnector\MySqlConnector.csproj" />
+    <Using Include="MySqlConnector.Core" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'MySqlData' ">
-    <PackageReference Include="MySql.Data" Version="8.0.32" />
+    <PackageReference Include="MySql.Data" Version="8.0.33" />
     <Compile Remove="ByteBufferWriterTests.cs;CachedProcedureTests.cs;CancellationTests.cs;ConnectionTests.cs;FakeMySqlServer.cs;FakeMySqlServerConnection.cs;LoadBalancerTests.cs;MySqlDecimalTests.cs;MySqlExceptionTests.cs;MySqlParameterCollectionNameToIndexTests.cs;NormalizeTests.cs;ServerVersionTests.cs;StatementPreparerTests.cs;TypeMapperTests.cs;UtilityTests.cs" />
+    <Using Include="MySql.Data.MySqlClient" />
+    <Using Include="MySql.Data.Types" />
   </ItemGroup>
 
 </Project>

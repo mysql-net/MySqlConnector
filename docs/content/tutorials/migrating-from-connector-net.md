@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-02-25
+lastmod: 2023-04-24
 date: 2016-10-16
 menu:
   main:
@@ -13,9 +13,8 @@ weight: 20
 
 Compared to MySql.Data (i.e., Oracle's MySQL Connector/NET), MySqlConnector has the following benefits:
 
-* Asynchronous I/O support
 * Higher performance (see [benchmarks](/#performance)) and lower memory usage
-* More reliable (see [bugs fixed](#fixed-bugs))
+* More reliable, particularly when using `Async` methods (see [bugs fixed](#fixed-bugs))
 * Leading edge: first MySQL driver to support .NET Core, `DbBatch`, `DateOnly`, `DbDataSource` and other new .NET features
 * Better compatibility with non-MySQL databases ([MariaDB](https://bugs.mysql.com/bug.php?id=109331), Amazon Aurora, etc.)
 * Better license (MIT, not [GPL 2.0](https://github.com/mysql/mysql-connector-net/blob/8.0/LICENSE) with [Universal FOSS Exception](https://oss.oracle.com/licenses/universal-foss-exception/) or [commercial license](https://www.mysql.com/about/legal/licensing/oem/))
@@ -42,7 +41,7 @@ In a .NET Framework application, make the following `app.config` change to regis
     <!-- add name="MySQL Data Provider"
       invariant="MySql.Data.MySqlClient"
       description=".Net Framework Data Provider for MySQL"
-      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=8.0.20.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
+      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=8.0.33.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
 
     <!-- ADD THIS -->
     <add name="MySqlConnector"
@@ -210,7 +209,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#50773](https://bugs.mysql.com/bug.php?id=50773): Can’t use multiple connections within one TransactionScope
 * [#61477](https://bugs.mysql.com/bug.php?id=61477): `ColumnOrdinal` in schema table is 1-based
 * ~~[#66476](https://bugs.mysql.com/bug.php?id=66476), [#106368](https://bugs.mysql.com/bug.php?id=106368): Connection pool uses queue instead of stack~~
-* [#70111](https://bugs.mysql.com/bug.php?id=70111): `Async` methods execute synchronously
+* ~[#70111](https://bugs.mysql.com/bug.php?id=70111): `Async` methods execute synchronously~
 * ~~[#70686](https://bugs.mysql.com/bug.php?id=70686): `TIME(3)` and `TIME(6)` fields serialize milliseconds incorrectly~~
 * [#72494](https://bugs.mysql.com/bug.php?id=72494), [#83330](https://bugs.mysql.com/bug.php?id=83330): EndOfStreamException inserting large blob with UseCompression=True
 * [#73610](https://bugs.mysql.com/bug.php?id=73610): Invalid password exception has wrong number
@@ -252,7 +251,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#91754](https://bugs.mysql.com/bug.php?id=91754): Inserting 16MiB `BLOB` shifts it by four bytes when prepared
 * ~~[#91770](https://bugs.mysql.com/bug.php?id=91770): `TIME(n)` column loses microseconds with prepared command~~
 * [#92367](https://bugs.mysql.com/bug.php?id=92367): `MySqlDataReader.GetDateTime` and `GetValue` return inconsistent values
-* [#92465](https://bugs.mysql.com/bug.php?id=92465): “There is already an open DataReader” `MySqlException` thrown from `TransactionScope.Dispose`
+* ~~[#92465](https://bugs.mysql.com/bug.php?id=92465): “There is already an open DataReader” `MySqlException` thrown from `TransactionScope.Dispose`~~
 * ~~[#92734](https://bugs.mysql.com/bug.php?id=92734): `MySqlParameter.Clone` doesn't copy all property values~~
 * ~~[#92789](https://bugs.mysql.com/bug.php?id=92789): Illegal connection attributes written for non-ASCII values~~
 * ~~[#92912](https://bugs.mysql.com/bug.php?id=92912): `MySqlDbType.LongText` values encoded incorrectly with prepared statements~~
@@ -260,7 +259,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#93047](https://bugs.mysql.com/bug.php?id=93047): `MySqlDataAdapter` throws timeout exception when an error occurs
 * ~~[#93202](https://bugs.mysql.com/bug.php?id=93202): Connector runs `SHOW VARIABLES` when connection is made~~
 * [#93220](https://bugs.mysql.com/bug.php?id=93220): Can’t call FUNCTION when parameter name contains parentheses
-* [#93370](https://bugs.mysql.com/bug.php?id=93370): `MySqlParameterCollection.Add` precondition check isn't consistent
+* ~~[#93370](https://bugs.mysql.com/bug.php?id=93370): `MySqlParameterCollection.Add` precondition check isn't consistent~~
 * ~~[#93374](https://bugs.mysql.com/bug.php?id=93374): `MySqlDataReader.GetStream` throws `IndexOutOfRangeException`~~
 * [#93825](https://bugs.mysql.com/bug.php?id=93825): `MySqlException` loses data when serialized
 * ~~[#94075](https://bugs.mysql.com/bug.php?id=94075): `MySqlCommand.Cancel` throws exception~~
@@ -275,15 +274,15 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#96500](https://bugs.mysql.com/bug.php?id=96500): `MySqlDataReader.GetFieldValue<MySqlGeometry>` throws `InvalidCastException`
 * [#96636](https://bugs.mysql.com/bug.php?id=96636): `MySqlConnection.Open()` slow under load when using SSL
 * [#96717](https://bugs.mysql.com/bug.php?id=96717): Not compatible with MySQL Server 5.0
-* [#97061](https://bugs.mysql.com/bug.php?id=97061): `MySqlCommand.LastInsertedId` returns 0 after executing multiple statements
+* ~~[#97061](https://bugs.mysql.com/bug.php?id=97061): `MySqlCommand.LastInsertedId` returns 0 after executing multiple statements~~
 * [#97067](https://bugs.mysql.com/bug.php?id=97067): Aggregate functions on BIT(n) columns return wrong result
 * ~~[#97300](https://bugs.mysql.com/bug.php?id=97300): `GetSchemaTable()` returns table for stored procedure with output parameters~~
 * ~~[#97448](https://bugs.mysql.com/bug.php?id=97448): Connecting fails if more than one IP is found in DNS for a named host~~
-* [#97473](https://bugs.mysql.com/bug.php?id=97473): `MySqlConnection.Clone` discloses connection password
+* ~~[#97473](https://bugs.mysql.com/bug.php?id=97473): `MySqlConnection.Clone` discloses connection password~~
 * [#97738](https://bugs.mysql.com/bug.php?id=97738): Cannot use PEM files when account uses `require subject`
 * [#97872](https://bugs.mysql.com/bug.php?id=97872): `KeepAlive` in connection string throws exception on .NET Core
 * ~~[#98322](https://bugs.mysql.com/bug.php?id=98322): `new MySqlConnection(null)` throws `NullReferenceException`~~
-* [#99091](https://bugs.mysql.com/bug.php?id=99091): Unexpected return value getting integer for `TINYINT(1)` column
+* ~~[#99091](https://bugs.mysql.com/bug.php?id=99091): Unexpected return value getting integer for `TINYINT(1)` column~~
 * ~~[#99793](https://bugs.mysql.com/bug.php?id=99793): Prepared stored procedure command doesn't verify parameter types~~
 * ~~[#100159](https://bugs.mysql.com/bug.php?id=100159): SQL with DateTime parameter returns String value~~
 * ~~[#100208](https://bugs.mysql.com/bug.php?id=100208): `GetSchema("Procedures")` returns `ROUTINE_DEFINITION` of `"System.Byte[]"`~~
@@ -313,7 +312,7 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#106242](https://bugs.mysql.com/bug.php?id=106242): `MySqlConnection.Open` throws `AggregateException` instead of `MySqlException`~~
 * ~~[#106243](https://bugs.mysql.com/bug.php?id=106243): `CancellationToken` doesn't cancel `MySqlConnection.OpenAsync`~~
 * ~~[#106244](https://bugs.mysql.com/bug.php?id=106244): `MySqlDataReader.GetFieldValue<Stream>` throws `InvalidCastException`~~
-* [#106247](https://bugs.mysql.com/bug.php?id=106247): Can't use ~~`MySqlDbType.Enum` or~~ `MySqlDbType.Set` with prepared command
+* ~~[#106247](https://bugs.mysql.com/bug.php?id=106247): Can't use ~~`MySqlDbType.Enum` or~~ `MySqlDbType.Set` with prepared command~~
 * [#107259](https://bugs.mysql.com/bug.php?id=107259): Character Set 'utf8mb3' is not supported by .NET Framework
 * [#108756](https://bugs.mysql.com/bug.php?id=108756): Can't insert negative number using prepared statement with `MySqlDbType.Int24`
 * [#108970](https://bugs.mysql.com/bug.php?id=108970): `MySqlConnectionStringBuilder.ContainsKey` method gives wrong result
@@ -321,7 +320,11 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#109331](https://bugs.mysql.com/bug.php?id=109331): MySQL Connector/NET is incompatible with MariaDB 10.10 and later
 * [#109390](https://bugs.mysql.com/bug.php?id=109390): Transaction lock held after connection timeout exception
 * [#109476](https://bugs.mysql.com/bug.php?id=109476): `TransactionScope.Dispose` throws "Connection must be valid and open to rollback"
-* [#109670](https://bugs.mysql.com/bug.php?id=109670), [#109752](https://bugs.mysql.com/bug.php?id=109752): Many MSB3246 errors when referencing MySql.Data 8.0.32
+* ~[#109670](https://bugs.mysql.com/bug.php?id=109670), [#109752](https://bugs.mysql.com/bug.php?id=109752): Many MSB3246 errors when referencing MySql.Data 8.0.32~
 * [#109682](https://bugs.mysql.com/bug.php?id=109682): `MySqlParameter.Clone` loses specific `MySqlDbType`.
-* [#109683](https://bugs.mysql.com/bug.php?id=109683): `MySqlCommand.LastInsertedId` is incorrect if multiple rows are inserted.
-* [#109716](https://bugs.mysql.com/bug.php?id=109716), [#109727](https://bugs.mysql.com/bug.php?id=109727): Failed to add reference to 'comerr64'
+* ~~[#109683](https://bugs.mysql.com/bug.php?id=109683): `MySqlCommand.LastInsertedId` is incorrect if multiple rows are inserted.~~
+* ~~[#109716](https://bugs.mysql.com/bug.php?id=109716), [#109727](https://bugs.mysql.com/bug.php?id=109727): Failed to add reference to 'comerr64'~~
+* [110717](https://bugs.mysql.com/bug.php?id=110717): Opening two MySqlConnections simultaneously can crash
+* [110789](https://bugs.mysql.com/bug.php?id=110789): `OpenAsync` throws unhandled exception from thread pool
+* [110790](https://bugs.mysql.com/bug.php?id=110790): `ExecuteReaderAsync` hangs instead of cancelling query after `CommandTimeout`
+* [110791](https://bugs.mysql.com/bug.php?id=110791): `OpenAsync(CancellationToken)` doesn't throw for cancelled token

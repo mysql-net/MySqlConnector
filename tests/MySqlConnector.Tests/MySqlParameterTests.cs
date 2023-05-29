@@ -1,6 +1,6 @@
-namespace IntegrationTests;
+namespace MySqlConnector.Tests;
 
-public class ParameterTests
+public class MySqlParameterTests
 {
 	[Theory]
 	[InlineData(DbType.Byte, MySqlDbType.UByte)]
