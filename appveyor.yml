@@ -22,19 +22,13 @@ test_script:
 - ps: .\.ci\test.ps1
 after_test:
 - cmd: |-
-    dotnet pack src\MySqlConnector\MySqlConnector.csproj -c Release
-    dotnet pack src\MySqlConnector.Authentication.Ed25519\MySqlConnector.Authentication.Ed25519.csproj -c Release
-    dotnet pack src\MySqlConnector.DependencyInjection\MySqlConnector.DependencyInjection.csproj -c Release
-    dotnet pack src\MySqlConnector.Logging.log4net\MySqlConnector.Logging.log4net.csproj -c Release
-    dotnet pack src\MySqlConnector.Logging.Microsoft.Extensions.Logging\MySqlConnector.Logging.Microsoft.Extensions.Logging.csproj -c Release
-    dotnet pack src\MySqlConnector.Logging.NLog\MySqlConnector.Logging.NLog.csproj -c Release
-    dotnet pack src\MySqlConnector.Logging.Serilog\MySqlConnector.Logging.Serilog.csproj -c Release
+    dotnet pack -c Release
 notifications:
 - provider: Slack
   incoming_webhook:
     secure: SRJ5fYQE4tvelyqeX3Lkv0gXta3O2pl4/+wNaqmqmcFkmYBe+U31T5YCGhipBOVhHBIZLevihOJZ78sFVJrmAFV5bHgtX/VPIKEXN+7ytis=
 artifacts:
-- path: src\*\bin\Release\*.nupkg
+- path: artifacts\package\release\*.nupkg
 deploy:
 - provider: NuGet
   api_key:
