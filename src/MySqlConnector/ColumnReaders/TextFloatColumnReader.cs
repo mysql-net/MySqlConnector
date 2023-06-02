@@ -13,10 +13,9 @@ internal sealed class TextFloatColumnReader : ColumnReader
 	{
 		if (Utf8Parser.TryParse(data, out float floatValue, out var floatBytesConsumed) && floatBytesConsumed == data.Length)
 			return floatValue;
-		ReadOnlySpan<byte> floatInfinity = "-inf"u8;
-		if (data.SequenceEqual(floatInfinity))
+		if (data.SequenceEqual("-inf"u8))
 			return float.NegativeInfinity;
-		if (data.SequenceEqual(floatInfinity.Slice(1)))
+		if (data.SequenceEqual("inf"u8))
 			return float.PositiveInfinity;
 		if (data.SequenceEqual("nan"u8))
 			return float.NaN;
