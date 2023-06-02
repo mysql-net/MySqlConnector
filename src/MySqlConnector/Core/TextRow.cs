@@ -98,10 +98,9 @@ internal sealed class TextRow : Row
 		case ColumnType.Float:
 			if (Utf8Parser.TryParse(data, out float floatValue, out var floatBytesConsumed) && floatBytesConsumed == data.Length)
 				return floatValue;
-			ReadOnlySpan<byte> floatInfinity = "-inf"u8;
-			if (data.SequenceEqual(floatInfinity))
+			if (data.SequenceEqual("-inf"u8))
 				return float.NegativeInfinity;
-			if (data.SequenceEqual(floatInfinity.Slice(1)))
+			if (data.SequenceEqual("inf"u8))
 				return float.PositiveInfinity;
 			if (data.SequenceEqual("nan"u8))
 				return float.NaN;
@@ -110,10 +109,9 @@ internal sealed class TextRow : Row
 		case ColumnType.Double:
 			if (Utf8Parser.TryParse(data, out double doubleValue, out var doubleBytesConsumed) && doubleBytesConsumed == data.Length)
 				return doubleValue;
-			ReadOnlySpan<byte> doubleInfinity = "-inf"u8;
-			if (data.SequenceEqual(doubleInfinity))
+			if (data.SequenceEqual("-inf"u8))
 				return double.NegativeInfinity;
-			if (data.SequenceEqual(doubleInfinity.Slice(1)))
+			if (data.SequenceEqual("inf"u8))
 				return double.PositiveInfinity;
 			if (data.SequenceEqual("nan"u8))
 				return double.NaN;

@@ -1406,7 +1406,7 @@ internal sealed partial class ServerSession
 				// find the index of each individual certificate in the file (assuming there may be multiple certificates concatenated together)
 				for (var index = 0; index != -1;)
 				{
-					var nextIndex = Utility.FindNextIndex(certificateBytes, index + 1, BeginCertificateBytes);
+					var nextIndex = Utility.FindNextIndex(certificateBytes, index + 1, "-----BEGIN CERTIFICATE-----"u8);
 					try
 					{
 						// load the certificate at this index; note that 'new X509Certificate' stops at the end of the first certificate it loads
@@ -1955,7 +1955,6 @@ internal sealed partial class ServerSession
 	[LoggerMessage(EventIds.ExpectedSessionState6, LogLevel.Error, "Session {SessionId} should have state {ExpectedState1} or {ExpectedState2} or {ExpectedState3} or {ExpectedState4} or {ExpectedState5} or {ExpectedState6} but was {SessionState}")]
 	private static partial void ExpectedSessionState6(ILogger logger, string sessionId, State expectedState1, State expectedState2, State expectedState3, State expectedState4, State expectedState5, State expectedState6, State sessionState);
 
-	private static ReadOnlySpan<byte> BeginCertificateBytes => "-----BEGIN CERTIFICATE-----"u8;
 	private static readonly PayloadData s_setNamesUtf8NoAttributesPayload = QueryPayload.Create(false, "SET NAMES utf8;"u8);
 	private static readonly PayloadData s_setNamesUtf8mb4NoAttributesPayload = QueryPayload.Create(false, "SET NAMES utf8mb4;"u8);
 	private static readonly PayloadData s_setNamesUtf8WithAttributesPayload = QueryPayload.Create(true, "SET NAMES utf8;"u8);
