@@ -281,7 +281,7 @@ public sealed class MySqlBulkLoader
 		return sb.ToString();
 	}
 
-	private static Stream CreateFileStream(string fileName)
+	private static FileStream CreateFileStream(string fileName)
 	{
 		try
 		{

@@ -1852,7 +1852,7 @@ internal sealed partial class ServerSession
 		return payload.Memory.ToArray();
 	}
 
-	private Exception CreateExceptionForErrorPayload(ReadOnlySpan<byte> span)
+	private MySqlException CreateExceptionForErrorPayload(ReadOnlySpan<byte> span)
 	{
 		var errorPayload = ErrorPayload.Create(span);
 		Log.ErrorPayload(m_logger, Id, errorPayload.ErrorCode, errorPayload.State, errorPayload.Message);

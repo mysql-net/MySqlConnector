@@ -546,18 +546,18 @@ internal sealed class ConnectionPool : IDisposable
 	{
 		foreach (var pool in GetAllPools())
 			await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-	}
 
-	private static IReadOnlyList<ConnectionPool> GetAllPools()
-	{
-		var pools = new List<ConnectionPool>(s_pools.Count);
-		var uniquePools = new HashSet<ConnectionPool>();
-		foreach (var pool in s_pools.Values)
+		static List<ConnectionPool> GetAllPools()
 		{
-			if (pool is not null && uniquePools.Add(pool))
-				pools.Add(pool);
+			var pools = new List<ConnectionPool>(s_pools.Count);
+			var uniquePools = new HashSet<ConnectionPool>();
+			foreach (var pool in s_pools.Values)
+			{
+				if (pool is not null && uniquePools.Add(pool))
+					pools.Add(pool);
+			}
+			return pools;
 		}
-		return pools;
 	}
 
 	private ConnectionPool(MySqlConnectorLoggingConfiguration loggingConfiguration, ConnectionSettings cs)
