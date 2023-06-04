@@ -17,7 +17,7 @@ internal sealed class ConnectionPool : IDisposable
 
 	public SslProtocols SslProtocols { get; set; }
 
-	public async ValueTask<ServerSession> GetSessionAsync(MySqlConnection connection, int startTickCount, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public async ValueTask<ServerSession> GetSessionAsync(MySqlConnection connection, int startTickCount, int timeoutMilliseconds, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 
@@ -65,9 +65,16 @@ internal sealed class ConnectionPool : IDisposable
 				else
 				{
 					if (ConnectionSettings.ConnectionReset || session.DatabaseOverride is not null)
+					{
+						if (timeoutMilliseconds != 0)
+							session.SetTimeout(Math.Max(1, timeoutMilliseconds - (Environment.TickCount - startTickCount)));
 						reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, connection, ioBehavior, cancellationToken).ConfigureAwait(false);
+						session.SetTimeout(Constants.InfiniteTimeout);
+					}
 					else
+					{
 						reuseSession = true;
+					}
 				}
 
 				if (!reuseSession)

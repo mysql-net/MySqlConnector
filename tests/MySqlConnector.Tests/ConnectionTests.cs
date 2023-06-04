@@ -204,6 +204,21 @@ public class ConnectionTests : IDisposable
 	}
 
 	[Fact]
+	public void ResetConnectionTimeout()
+	{
+		var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString);
+		csb.ConnectionTimeout = 4;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+		connection.Close();
+		m_server.ResetDelay = TimeSpan.FromSeconds(10);
+		var stopwatch = Stopwatch.StartNew();
+		var ex = Assert.Throws<MySqlException>(() => connection.Open());
+		Assert.InRange(stopwatch.ElapsedMilliseconds, 3900, 4100);
+		Assert.Equal(MySqlErrorCode.UnableToConnectToHost, (MySqlErrorCode) ex.Number);
+	}
+
+	[Fact]
 	public void ReadInfinity()
 	{
 		using var connection = new MySqlConnection(m_csb.ConnectionString);
