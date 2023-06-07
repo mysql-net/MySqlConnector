@@ -32,6 +32,17 @@ public sealed class MySqlDataSourceBuilder
 	}
 
 	/// <summary>
+	/// Sets the name of the <see cref="MySqlDataSource"/> that will be created.
+	/// </summary>
+	/// <param name="name">The data source name.</param>
+	/// <returns>This builder, so that method calls can be chained.</returns>
+	public MySqlDataSourceBuilder UseName(string? name)
+	{
+		m_name = name;
+		return this;
+	}
+
+	/// <summary>
 	/// Sets the callback used to provide client certificates for connecting to a server.
 	/// </summary>
 	/// <param name="callback">The callback that will provide client certificates. The <see cref="X509CertificateCollection"/>
@@ -83,6 +94,7 @@ public sealed class MySqlDataSourceBuilder
 		var loggingConfiguration = m_loggerFactory is null ? MySqlConnectorLoggingConfiguration.NullConfiguration : new(m_loggerFactory);
 		return new(ConnectionStringBuilder.ConnectionString,
 			loggingConfiguration,
+			m_name,
 			m_clientCertificatesCallback,
 			m_remoteCertificateValidationCallback,
 			m_periodicPasswordProvider,
@@ -97,6 +109,7 @@ public sealed class MySqlDataSourceBuilder
 	public MySqlConnectionStringBuilder ConnectionStringBuilder { get; }
 
 	private ILoggerFactory? m_loggerFactory;
+	private string? m_name;
 	private Func<X509CertificateCollection, ValueTask>? m_clientCertificatesCallback;
 	private RemoteCertificateValidationCallback? m_remoteCertificateValidationCallback;
 	private Func<MySqlProvidePasswordContext, CancellationToken, ValueTask<string>>? m_periodicPasswordProvider;

@@ -13,6 +13,8 @@ internal sealed class ConnectionPool : IDisposable
 {
 	public int Id { get; }
 
+	public string? Name { get; }
+
 	public ConnectionSettings ConnectionSettings { get; }
 
 	public SslProtocols SslProtocols { get; set; }
@@ -464,7 +466,7 @@ internal sealed class ConnectionPool : IDisposable
 		return session;
 	}
 
-	public static ConnectionPool? CreatePool(string connectionString, MySqlConnectorLoggingConfiguration loggingConfiguration)
+	public static ConnectionPool? CreatePool(string connectionString, MySqlConnectorLoggingConfiguration loggingConfiguration, string? name)
 	{
 		// parse connection string and check for 'Pooling' setting; return 'null' if pooling is disabled
 		var connectionStringBuilder = new MySqlConnectionStringBuilder(connectionString);
@@ -473,13 +475,13 @@ internal sealed class ConnectionPool : IDisposable
 
 		// force a new pool to be created, ignoring the cache
 		var connectionSettings = new ConnectionSettings(connectionStringBuilder);
-		var pool = new ConnectionPool(loggingConfiguration, connectionSettings);
+		var pool = new ConnectionPool(loggingConfiguration, connectionSettings, name);
 		pool.StartReaperTask();
 		pool.StartDnsCheckTimer();
 		return pool;
 	}
 
-	// Gets an existing ConnectionPool, creating it if it's missing. If 'createIfNotFound' is false, then 'loggingConfiguration'
+	// Gets an existing (unnamed) ConnectionPool, creating it if it's missing. If 'createIfNotFound' is false, then 'loggingConfiguration'
 	// may be set to null; otherwise, it must be provided.
 	public static ConnectionPool? GetPool(string connectionString, MySqlConnectorLoggingConfiguration? loggingConfiguration, bool createIfNotFound = true)
 	{
@@ -521,7 +523,7 @@ internal sealed class ConnectionPool : IDisposable
 
 		// create a new pool and attempt to insert it; if someone else beats us to it, just use their value
 		var connectionSettings = new ConnectionSettings(connectionStringBuilder);
-		var newPool = new ConnectionPool(loggingConfiguration!, connectionSettings);
+		var newPool = new ConnectionPool(loggingConfiguration!, connectionSettings, name: null);
 		pool = s_pools.GetOrAdd(normalizedConnectionString, newPool);
 
 		if (pool == newPool)
@@ -560,11 +562,12 @@ internal sealed class ConnectionPool : IDisposable
 		return pools;
 	}
 
-	private ConnectionPool(MySqlConnectorLoggingConfiguration loggingConfiguration, ConnectionSettings cs)
+	private ConnectionPool(MySqlConnectorLoggingConfiguration loggingConfiguration, ConnectionSettings cs, string? name)
 	{
 		m_logger = loggingConfiguration.PoolLogger;
 		m_connectionLogger = loggingConfiguration.ConnectionLogger;
 		ConnectionSettings = cs;
+		Name = name;
 		SslProtocols = cs.TlsVersions;
 		m_generation = 0;
 		m_cleanSemaphore = new(1);
