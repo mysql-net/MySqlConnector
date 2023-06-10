@@ -662,13 +662,14 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		await resultSet.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 		var row = resultSet.GetCurrentRow();
-		if (row.GetString(0) != SingleCommandPayloadCreator.OutParameterSentinelColumnName)
-			throw new InvalidOperationException("Expected out parameter values.");
 
+		// when using text protocol, first column is a marker OutParameterSentinelColumnName that has to be skipped
+		// binary protocol contains just output parameters
+		var additionalIndex = (row.GetType() == typeof(BinaryRow)) ? 0 : 1;
 		for (var i = 0; i < command.OutParameters!.Count; i++)
 		{
 			var param = command.OutParameters[i];
-			var columnIndex = i + 1;
+			var columnIndex = i + additionalIndex;
 			if (param.HasSetDbType && !row.IsDBNull(columnIndex))
 			{
 				var dbTypeMapping = TypeMapper.Instance.GetDbTypeMapping(param.DbType);

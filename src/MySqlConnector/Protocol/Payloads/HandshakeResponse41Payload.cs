@@ -5,11 +5,8 @@ namespace MySqlConnector.Protocol.Payloads;
 
 internal static class HandshakeResponse41Payload
 {
-	private static ByteBufferWriter CreateCapabilitiesPayload(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, bool useCompression, CharacterSet characterSet, ProtocolCapabilities additionalCapabilities = 0)
-	{
-		var writer = new ByteBufferWriter();
-
-		var clientCapabilities = (ProtocolCapabilities.Protocol41 |
+	public static ProtocolCapabilities CreateClientCapabilities(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, bool useCompression, ProtocolCapabilities additionalCapabilities = 0) =>
+		(ProtocolCapabilities.Protocol41 |
 		                          (cs.InteractiveSession ? ProtocolCapabilities.Interactive : 0) |
 		                          ProtocolCapabilities.LongPassword |
 		                          ProtocolCapabilities.Transactions |
@@ -18,6 +15,7 @@ internal static class HandshakeResponse41Payload
 		                          ProtocolCapabilities.PluginAuthLengthEncodedClientData |
 		                          ProtocolCapabilities.MultiStatements |
 		                          ProtocolCapabilities.MultiResults |
+		                          ProtocolCapabilities.PreparedStatementMultiResults |
 		                          (cs.AllowLoadLocalInfile ? ProtocolCapabilities.LocalFiles : 0) |
 		                          (string.IsNullOrWhiteSpace(cs.Database)
 			                          ? 0
@@ -26,12 +24,16 @@ internal static class HandshakeResponse41Payload
 		                          (useCompression ? ProtocolCapabilities.Compress : ProtocolCapabilities.None) |
 		                          ProtocolCapabilities.ConnectionAttributes |
 		                          ProtocolCapabilities.SessionTrack |
-		                          ProtocolCapabilities.DeprecateEof |
+
+		                          // ProtocolCapabilities.DeprecateEof |
 		                          ProtocolCapabilities.QueryAttributes |
 		                          ProtocolCapabilities.MariaDbComMulti |
 		                          ProtocolCapabilities.MariaDbCacheMetadata |
 		                          additionalCapabilities) & serverCapabilities;
 
+	private static ByteBufferWriter CreateCapabilitiesPayload(ProtocolCapabilities clientCapabilities, CharacterSet characterSet)
+	{
+		var writer = new ByteBufferWriter();
 		writer.Write((int) clientCapabilities);
 		writer.Write(0x4000_0000);
 		writer.Write((byte) characterSet);
@@ -40,7 +42,7 @@ internal static class HandshakeResponse41Payload
 		ReadOnlySpan<byte> padding = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		writer.Write(padding);
 
-		if ((serverCapabilities & ProtocolCapabilities.LongPassword) == 0)
+		if ((clientCapabilities & ProtocolCapabilities.LongPassword) == 0)
 		{
 			// MariaDB writes extended capabilities at the end of the padding
 			writer.Write((int) ((ulong) clientCapabilities >> 32));
@@ -53,13 +55,13 @@ internal static class HandshakeResponse41Payload
 		return writer;
 	}
 
-	public static PayloadData CreateWithSsl(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, bool useCompression, CharacterSet characterSet) =>
-		CreateCapabilitiesPayload(serverCapabilities, cs, useCompression, characterSet, ProtocolCapabilities.Ssl).ToPayloadData();
+	public static PayloadData CreateWithSsl(ProtocolCapabilities clientCapabilities, CharacterSet characterSet) =>
+		CreateCapabilitiesPayload(clientCapabilities, characterSet).ToPayloadData();
 
-	public static PayloadData Create(InitialHandshakePayload handshake, ConnectionSettings cs, string password, bool useCompression, CharacterSet characterSet, byte[]? connectionAttributes)
+	public static PayloadData Create(InitialHandshakePayload handshake, ProtocolCapabilities clientCapabilities, ConnectionSettings cs, string password, CharacterSet characterSet, byte[]? connectionAttributes)
 	{
 		// TODO: verify server capabilities
-		var writer = CreateCapabilitiesPayload(handshake.ProtocolCapabilities, cs, useCompression, characterSet);
+		var writer = CreateCapabilitiesPayload(clientCapabilities, characterSet);
 		writer.WriteNullTerminatedString(cs.UserID);
 		var authenticationResponse = AuthenticationUtility.CreateAuthenticationResponse(handshake.AuthPluginData, password);
 		writer.Write((byte) authenticationResponse.Length);
