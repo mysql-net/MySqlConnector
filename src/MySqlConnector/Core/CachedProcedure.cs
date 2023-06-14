@@ -201,7 +201,7 @@ internal sealed class CachedProcedure
 			sql = s_length.Replace(sql, "");
 		}
 
-		var list = sql.Trim().Split(new[] { ' ' });
+		var list = sql.Trim().Split(' ');
 		var type = string.Empty;
 
 		if (list.Length < 2 || !s_typeMapping.TryGetValue(list[0] + ' ' + list[1], out type))
