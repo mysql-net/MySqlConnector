@@ -2,6 +2,7 @@ using System.Buffers.Text;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using MySqlConnector.ColumnReaders;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Utilities;
@@ -35,7 +36,7 @@ internal abstract class Row
 
 		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
 		var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
-		return GetValueCore(data, columnDefinition);
+		return columnReaders[ordinal].ReadValue(data, columnDefinition);
 	}
 
 	public bool GetBoolean(int ordinal)
@@ -172,40 +173,16 @@ internal abstract class Row
 
 	public int GetInt32(int ordinal)
 	{
-		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length || m_dataOffsets[ordinal] == -1)
-			return (int) GetValue(ordinal);
+		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length)
+			throw new ArgumentOutOfRangeException(nameof(ordinal), $"value must be between 0 and {ResultSet.ColumnDefinitions!.Length - 1}");
 
-		var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
-		if (columnDefinition.ColumnType is ColumnType.Decimal or ColumnType.NewDecimal)
-		{
-			return (int) (decimal) GetValue(ordinal);
-		}
-		else if (columnDefinition.ColumnType is not ColumnType.Tiny and not ColumnType.Short
-			and not ColumnType.Int24 and not ColumnType.Long and not ColumnType.Longlong
-			and not ColumnType.Bit and not ColumnType.Year)
-		{
-			throw new InvalidCastException($"Can't convert {ResultSet.GetColumnType(ordinal)} to Int32");
-		}
+		if (m_dataOffsets[ordinal] == -1)
+			throw new InvalidCastException("Couldn't interpret null value as int");
 
 		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
-
-		if (columnDefinition.ColumnType == ColumnType.Bit)
-			return checked((int) ReadBit(data, columnDefinition));
-
-		var result = GetInt32Core(data, columnDefinition);
-		if (columnDefinition.ColumnType == ColumnType.Tiny &&
-			Connection.TreatTinyAsBoolean &&
-			columnDefinition.ColumnLength == 1 &&
-			(columnDefinition.ColumnFlags & ColumnFlags.Unsigned) == 0 &&
-			result != 0)
-		{
-			// coerce all non-zero TINYINT(1) results to 1, since it represents a BOOL value
-			result = 1;
-		}
-		return result;
+		var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
+		return columnReaders[ordinal].ReadInt32(data, columnDefinition);
 	}
-
-	protected abstract int GetInt32Core(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
 
 	public long GetInt64(int ordinal)
 	{
@@ -393,16 +370,16 @@ internal abstract class Row
 
 	public object this[string name] => GetValue(ResultSet.GetOrdinal(name));
 
-	protected Row(ResultSet resultSet)
+	protected Row(bool binary, ResultSet resultSet)
 	{
 		ResultSet = resultSet;
 		m_dataOffsets = new int[ResultSet.ColumnDefinitions!.Length];
 		m_dataLengths = new int[ResultSet.ColumnDefinitions.Length];
+		columnReaders = Array.ConvertAll(ResultSet.ColumnDefinitions,
+			new Converter<ColumnDefinitionPayload, IColumnReader>(column => ColumnReaderFactory.GetReader(binary, column, resultSet.Connection)));
 	}
 
 	protected abstract Row CloneCore();
-
-	protected abstract object GetValueCore(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
 
 	protected abstract void GetDataOffsets(ReadOnlySpan<byte> data, int[] dataOffsets, int[] dataLengths);
 
@@ -506,32 +483,6 @@ InvalidDateTime:
 #endif
 		};
 
-	protected static ulong ReadBit(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		if ((columnDefinition.ColumnFlags & ColumnFlags.Binary) == 0)
-		{
-			// when the Binary flag IS NOT set, the BIT column is transmitted as MSB byte array
-			ulong bitValue = 0;
-			for (int i = 0; i < data.Length; i++)
-				bitValue = bitValue * 256 + data[i];
-			return bitValue;
-		}
-		else if (columnDefinition.ColumnLength <= 5 && data.Length == 1 && data[0] < (byte) (1 << (int) columnDefinition.ColumnLength))
-		{
-			// a server bug may return the data as binary even when we expect text: https://github.com/mysql-net/MySqlConnector/issues/713
-			// in this case, the data can't possibly be an ASCII digit, so assume it's the binary serialisation of BIT(n) where n <= 5
-			return (ulong) data[0];
-		}
-		else
-		{
-			// when the Binary flag IS set, the BIT column is transmitted as text
-			return ParseUInt64(data);
-		}
-	}
-
-	protected static ulong ParseUInt64(ReadOnlySpan<byte> data) =>
-		!Utf8Parser.TryParse(data, out ulong value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
-
 	private void CheckBinaryColumn(int ordinal)
 	{
 		if (m_dataOffsets[ordinal] == -1)
@@ -567,4 +518,5 @@ InvalidDateTime:
 	private readonly int[] m_dataOffsets;
 	private readonly int[] m_dataLengths;
 	private ReadOnlyMemory<byte> m_data;
+	private IColumnReader[] columnReaders;
 }
