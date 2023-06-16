@@ -2,9 +2,9 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class GuidBytesColumnReader : IColumnReader
+internal sealed class GuidLittleEndianBinary16ColumnReader : IColumnReader
 {
-	public static GuidBytesColumnReader Instance { get; } = new();
+	public static GuidLittleEndianBinary16ColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{

@@ -31,10 +31,10 @@ internal class ColumnReaderFactory
 				case ColumnType.String:
 					if (connection.GuidFormat == MySqlGuidFormat.Char36
 					    && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
-						return Guid36ColumnReader.Instance;
+						return GuidChar36ColumnReader.Instance;
 					if (connection.GuidFormat == MySqlGuidFormat.Char32
 					    && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
-						return Guid32ColumnReader.Instance;
+						return GuidChar32ColumnReader.Instance;
 					goto case ColumnType.VarString;
 
 				case ColumnType.VarString:
@@ -54,11 +54,11 @@ internal class ColumnReaderFactory
 							switch (guidFormat)
 							{
 							case MySqlGuidFormat.Binary16:
-								return Guid16ColumnReader.Instance;
+								return GuidBinary16ColumnReader.Instance;
 							case MySqlGuidFormat.TimeSwapBinary16:
-								return TimeSwapBinary16ColumnReader.Instance;
+								return GuidTimeSwapBinary16ColumnReader.Instance;
 							default:
-								return GuidBytesColumnReader.Instance;
+								return GuidLittleEndianBinary16ColumnReader.Instance;
 							}
 						}
 						return BytesColumnReader.Instance;
@@ -129,10 +129,10 @@ internal class ColumnReaderFactory
 				case ColumnType.String:
 					if (connection.GuidFormat == MySqlGuidFormat.Char36
 					    && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
-						return Guid36ColumnReader.Instance;
+						return GuidChar36ColumnReader.Instance;
 					if (connection.GuidFormat == MySqlGuidFormat.Char32
 					    && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
-						return Guid32ColumnReader.Instance;
+						return GuidChar32ColumnReader.Instance;
 					goto case ColumnType.VarString;
 
 				case ColumnType.VarString:
@@ -152,11 +152,11 @@ internal class ColumnReaderFactory
 							switch (guidFormat)
 							{
 								case MySqlGuidFormat.Binary16:
-									return Guid16ColumnReader.Instance;
+									return GuidBinary16ColumnReader.Instance;
 								case MySqlGuidFormat.TimeSwapBinary16:
-									return TimeSwapBinary16ColumnReader.Instance;
+									return GuidTimeSwapBinary16ColumnReader.Instance;
 								default:
-									return GuidBytesColumnReader.Instance;
+									return GuidLittleEndianBinary16ColumnReader.Instance;
 							}
 						}
 						return BytesColumnReader.Instance;
