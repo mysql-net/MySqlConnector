@@ -84,6 +84,7 @@ dotnet_diagnostic.CA2000.severity = none # Use recommended Dispose pattern.
 dotnet_diagnostic.CA2100.severity = none # Review SQL queries for security vulnerabilities.
 dotnet_diagnostic.CA2213.severity = silent # Disposable fields should be disposed.
 dotnet_diagnostic.CA5398.severity = none # Avoid hardcoded SslProtocols values.
+dotnet_diagnostic.IDE0044.severity = error # Make fields readonly.
 dotnet_diagnostic.IDE0065.severity = error # Using directives must be placed outside of a namespace declaration.
 dotnet_diagnostic.SA1003.severity = none # Operator must not be followed by whitespace.
 dotnet_diagnostic.SA1008.severity = none # Opening parenthesis must not be preceded by a space.

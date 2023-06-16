@@ -36,7 +36,7 @@ internal abstract class Row
 
 		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
 		var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
-		return columnReaders[ordinal].ReadValue(data, columnDefinition);
+		return m_columnReaders[ordinal].ReadValue(data, columnDefinition);
 	}
 
 	public bool GetBoolean(int ordinal)
@@ -181,7 +181,7 @@ internal abstract class Row
 
 		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
 		var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
-		return columnReaders[ordinal].ReadInt32(data, columnDefinition);
+		return m_columnReaders[ordinal].ReadInt32(data, columnDefinition);
 	}
 
 	public long GetInt64(int ordinal)
@@ -375,7 +375,7 @@ internal abstract class Row
 		ResultSet = resultSet;
 		m_dataOffsets = new int[ResultSet.ColumnDefinitions!.Length];
 		m_dataLengths = new int[ResultSet.ColumnDefinitions.Length];
-		columnReaders = Array.ConvertAll(ResultSet.ColumnDefinitions,
+		m_columnReaders = Array.ConvertAll(ResultSet.ColumnDefinitions,
 			new Converter<ColumnDefinitionPayload, IColumnReader>(column => ColumnReaderFactory.GetReader(binary, column, resultSet.Connection)));
 	}
 
@@ -517,6 +517,6 @@ InvalidDateTime:
 
 	private readonly int[] m_dataOffsets;
 	private readonly int[] m_dataLengths;
+	private readonly IColumnReader[] m_columnReaders;
 	private ReadOnlyMemory<byte> m_data;
-	private IColumnReader[] columnReaders;
 }
