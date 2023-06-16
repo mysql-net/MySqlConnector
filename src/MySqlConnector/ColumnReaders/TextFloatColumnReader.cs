@@ -7,7 +7,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class TextFloatColumnReader : IColumnReader
 {
-	internal static TextFloatColumnReader Instance { get; } = new TextFloatColumnReader();
+	public static TextFloatColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{

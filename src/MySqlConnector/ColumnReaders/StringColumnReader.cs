@@ -6,7 +6,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class StringColumnReader : IColumnReader
 {
-	internal static StringColumnReader Instance { get; } = new StringColumnReader();
+	public static StringColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{

@@ -5,7 +5,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class BinaryYearColumnReader : IColumnReader
 {
-	internal static BinaryYearColumnReader Instance { get; } = new BinaryYearColumnReader();
+	public static BinaryYearColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{

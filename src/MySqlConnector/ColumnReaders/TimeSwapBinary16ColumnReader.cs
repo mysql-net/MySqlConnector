@@ -4,7 +4,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class TimeSwapBinary16ColumnReader : IColumnReader
 {
-	internal static TimeSwapBinary16ColumnReader Instance { get; } = new TimeSwapBinary16ColumnReader();
+	public static TimeSwapBinary16ColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{

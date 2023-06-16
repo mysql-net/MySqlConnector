@@ -7,7 +7,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class BinaryDateTimeColumnReader : IColumnReader
 {
-	internal BinaryDateTimeColumnReader(MySqlConnection connection)
+	public BinaryDateTimeColumnReader(MySqlConnection connection)
 	{
 		m_allowZeroDateTime = connection.AllowZeroDateTime;
 		m_convertZeroDateTime = connection.ConvertZeroDateTime;

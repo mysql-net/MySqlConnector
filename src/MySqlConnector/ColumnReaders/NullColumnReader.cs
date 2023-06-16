@@ -4,7 +4,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class NullColumnReader : IColumnReader
 {
-	internal static NullColumnReader Instance { get; } = new NullColumnReader();
+	public static NullColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{

@@ -5,7 +5,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class BinaryUnsignedInt16ColumnReader : IColumnReader
 {
-	internal static BinaryUnsignedInt16ColumnReader Instance { get; } = new BinaryUnsignedInt16ColumnReader();
+	public static BinaryUnsignedInt16ColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{

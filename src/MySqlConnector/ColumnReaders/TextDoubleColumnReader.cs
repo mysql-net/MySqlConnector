@@ -7,7 +7,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class TextDoubleColumnReader : IColumnReader
 {
-	internal static TextDoubleColumnReader Instance { get; } = new TextDoubleColumnReader();
+	public static TextDoubleColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{

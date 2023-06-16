@@ -4,7 +4,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class Guid16ColumnReader : IColumnReader
 {
-	internal static Guid16ColumnReader Instance { get; } = new Guid16ColumnReader();
+	public static Guid16ColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{

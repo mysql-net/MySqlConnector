@@ -4,7 +4,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class BytesColumnReader : IColumnReader
 {
-	internal static BytesColumnReader Instance { get; } = new BytesColumnReader();
+	public static BytesColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{

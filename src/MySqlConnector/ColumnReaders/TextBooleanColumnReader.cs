@@ -4,7 +4,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class TextBooleanColumnReader : IColumnReader
 {
-	internal static TextBooleanColumnReader Instance { get; } = new TextBooleanColumnReader();
+	public static TextBooleanColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{

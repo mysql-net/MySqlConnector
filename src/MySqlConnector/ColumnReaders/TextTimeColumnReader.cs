@@ -5,7 +5,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class TextTimeColumnReader : IColumnReader
 {
-	internal static TextTimeColumnReader Instance { get; } = new TextTimeColumnReader();
+	public static TextTimeColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{

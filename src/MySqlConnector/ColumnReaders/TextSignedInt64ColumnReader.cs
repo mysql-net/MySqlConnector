@@ -5,7 +5,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class TextSignedInt64ColumnReader : IColumnReader
 {
-	internal static TextSignedInt64ColumnReader Instance { get; } = new TextSignedInt64ColumnReader();
+	public static TextSignedInt64ColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{

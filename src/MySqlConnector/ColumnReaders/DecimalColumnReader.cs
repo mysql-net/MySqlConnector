@@ -5,7 +5,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class DecimalColumnReader : IColumnReader
 {
-	internal static DecimalColumnReader Instance { get; } = new DecimalColumnReader();
+	public static DecimalColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{

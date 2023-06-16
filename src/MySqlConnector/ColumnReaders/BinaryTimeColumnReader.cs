@@ -5,7 +5,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class BinaryTimeColumnReader : IColumnReader
 {
-	internal static BinaryTimeColumnReader Instance { get; } = new BinaryTimeColumnReader();
+	public static BinaryTimeColumnReader Instance { get; } = new();
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{
