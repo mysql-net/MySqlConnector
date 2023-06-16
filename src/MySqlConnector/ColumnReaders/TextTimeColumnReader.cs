@@ -7,8 +7,6 @@ internal sealed class TextTimeColumnReader : ColumnReader
 {
 	public static TextTimeColumnReader Instance { get; } = new();
 
-	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		return Utility.ParseTimeSpan(data);
-	}
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		Utility.ParseTimeSpan(data);
 }

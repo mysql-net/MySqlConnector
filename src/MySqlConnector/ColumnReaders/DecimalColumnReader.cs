@@ -7,17 +7,9 @@ internal sealed class DecimalColumnReader : ColumnReader
 {
 	public static DecimalColumnReader Instance { get; } = new();
 
-	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		return Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) && bytesConsumed == data.Length ? decimalValue : throw new FormatException();
-	}
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		!Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : decimalValue;
 
-	public override int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		if (!Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) || bytesConsumed != data.Length)
-		{
-			throw new FormatException();
-		}
-		return (int) decimalValue;
-	}
+	public override int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		!Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : (int) decimalValue;
 }

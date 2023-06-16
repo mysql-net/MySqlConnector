@@ -7,8 +7,6 @@ internal sealed class BinaryFloatColumnReader : ColumnReader
 {
 	public static BinaryFloatColumnReader Instance { get; } = new();
 
-	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		return MemoryMarshal.Read<float>(data);
-	}
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		MemoryMarshal.Read<float>(data);
 }
