@@ -4,11 +4,11 @@ using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class BitColumnReader : IColumnReader
+internal sealed class BitColumnReader : ColumnReader
 {
 	public static BitColumnReader Instance { get; } = new();
 
-	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{
 		if ((columnDefinition.ColumnFlags & ColumnFlags.Binary) == 0)
 		{
@@ -31,7 +31,7 @@ internal sealed class BitColumnReader : IColumnReader
 		}
 	}
 
-	public int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+	public override int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{
 		if ((columnDefinition.ColumnFlags & ColumnFlags.Binary) == 0)
 		{

@@ -6,7 +6,7 @@ namespace MySqlConnector.ColumnReaders;
 
 internal class ColumnReaderFactory
 {
-	internal static IColumnReader GetReader(bool binary, ColumnDefinitionPayload columnDefinition, MySqlConnection connection)
+	internal static ColumnReader GetReader(bool binary, ColumnDefinitionPayload columnDefinition, MySqlConnection connection)
 	{
 		var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
 		if (binary)

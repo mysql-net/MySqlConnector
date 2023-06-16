@@ -5,7 +5,7 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class BinaryDateTimeColumnReader : IColumnReader
+internal sealed class BinaryDateTimeColumnReader : ColumnReader
 {
 	public BinaryDateTimeColumnReader(MySqlConnection connection)
 	{
@@ -14,7 +14,7 @@ internal sealed class BinaryDateTimeColumnReader : IColumnReader
 		m_dateTimeKind = connection.DateTimeKind;
 	}
 
-	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{
 		if (data.Length == 0)
 		{
@@ -58,11 +58,6 @@ internal sealed class BinaryDateTimeColumnReader : IColumnReader
 		{
 			throw new FormatException($"Couldn't interpret value as a valid DateTime: {Encoding.UTF8.GetString(data)}", ex);
 		}
-	}
-
-	public int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		throw new InvalidCastException($"Can't convert {columnDefinition.ColumnType} to Int32");
 	}
 
 	private readonly bool m_allowZeroDateTime;

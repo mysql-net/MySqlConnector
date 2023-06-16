@@ -5,11 +5,11 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class TextDoubleColumnReader : IColumnReader
+internal sealed class TextDoubleColumnReader : ColumnReader
 {
 	public static TextDoubleColumnReader Instance { get; } = new();
 
-	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{
 		if (Utf8Parser.TryParse(data, out double doubleValue, out var doubleBytesConsumed) && doubleBytesConsumed == data.Length)
 			return doubleValue;
@@ -21,10 +21,5 @@ internal sealed class TextDoubleColumnReader : IColumnReader
 		if (data.SequenceEqual("nan"u8))
 			return double.NaN;
 		throw new FormatException($"Couldn't parse value as double: {Encoding.UTF8.GetString(data)}");
-	}
-
-	public int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		throw new InvalidCastException($"Can't convert {columnDefinition.ColumnType} to Int32");
 	}
 }

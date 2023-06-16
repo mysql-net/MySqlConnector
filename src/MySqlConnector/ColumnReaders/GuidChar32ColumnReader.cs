@@ -5,21 +5,16 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.ColumnReaders;
 
-internal sealed class GuidChar32ColumnReader : IColumnReader
+internal sealed class GuidChar32ColumnReader : ColumnReader
 {
 	public static GuidChar32ColumnReader Instance { get; } = new();
 
-	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{
 		return Utf8Parser.TryParse(data, out Guid guid, out int guid32BytesConsumed, 'N') &&
 		       guid32BytesConsumed == 32
 			? guid
 			: throw new FormatException(
 				$"Could not parse CHAR(32) value as Guid: {Encoding.UTF8.GetString(data)}");
-	}
-
-	public int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		throw new InvalidCastException($"Can't convert {columnDefinition.ColumnType} to Int32");
 	}
 }

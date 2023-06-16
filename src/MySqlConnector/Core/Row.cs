@@ -376,7 +376,7 @@ internal abstract class Row
 		m_dataOffsets = new int[ResultSet.ColumnDefinitions!.Length];
 		m_dataLengths = new int[ResultSet.ColumnDefinitions.Length];
 		m_columnReaders = Array.ConvertAll(ResultSet.ColumnDefinitions,
-			new Converter<ColumnDefinitionPayload, IColumnReader>(column => ColumnReaderFactory.GetReader(binary, column, resultSet.Connection)));
+			new Converter<ColumnDefinitionPayload, ColumnReader>(column => ColumnReaderFactory.GetReader(binary, column, resultSet.Connection)));
 	}
 
 	protected abstract Row CloneCore();
@@ -517,6 +517,6 @@ InvalidDateTime:
 
 	private readonly int[] m_dataOffsets;
 	private readonly int[] m_dataLengths;
-	private readonly IColumnReader[] m_columnReaders;
+	private readonly ColumnReader[] m_columnReaders;
 	private ReadOnlyMemory<byte> m_data;
 }
