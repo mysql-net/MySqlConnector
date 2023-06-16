@@ -7,14 +7,11 @@ namespace MySqlConnector.ColumnReaders;
 
 internal sealed class TextDateTimeColumnReader : IColumnReader
 {
-	private bool allowZeroDateTime;
-	private bool convertZeroDateTime;
-	private DateTimeKind dateTimeKind;
 	internal TextDateTimeColumnReader(MySqlConnection connection)
 	{
-		this.allowZeroDateTime = connection.AllowZeroDateTime;
-		this.convertZeroDateTime = connection.ConvertZeroDateTime;
-		this.dateTimeKind = connection.DateTimeKind;
+		m_allowZeroDateTime = connection.AllowZeroDateTime;
+		m_convertZeroDateTime = connection.ConvertZeroDateTime;
+		m_dateTimeKind = connection.DateTimeKind;
 	}
 
 	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
@@ -33,9 +30,9 @@ internal sealed class TextDateTimeColumnReader : IColumnReader
 
 		if (year == 0 && month == 0 && day == 0)
 		{
-			if (this.convertZeroDateTime)
+			if (m_convertZeroDateTime)
 				return DateTime.MinValue;
-			if (this.allowZeroDateTime)
+			if (m_allowZeroDateTime)
 				return default(MySqlDateTime);
 			throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime, set AllowZeroDateTime=True or ConvertZeroDateTime=True in the connection string. See https://mysqlconnector.net/connection-options/");
 		}
@@ -81,11 +78,11 @@ internal sealed class TextDateTimeColumnReader : IColumnReader
 
 		try
 		{
-			return this.allowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
+			return m_allowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
 #if NET7_0_OR_GREATER
-				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, this.dateTimeKind);
+				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, m_dateTimeKind);
 #else
-				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, this.dateTimeKind).AddTicks(microseconds % 1000 * 10);
+				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, m_dateTimeKind).AddTicks(microseconds % 1000 * 10);
 #endif
 		}
 		catch (Exception ex)
@@ -101,4 +98,8 @@ InvalidDateTime:
 	{
 		throw new InvalidCastException($"Can't convert {columnDefinition.ColumnType} to Int32");
 	}
+
+	private readonly bool m_allowZeroDateTime;
+	private readonly bool m_convertZeroDateTime;
+	private readonly DateTimeKind m_dateTimeKind;
 }
