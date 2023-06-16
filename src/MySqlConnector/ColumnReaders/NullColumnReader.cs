@@ -1,13 +1,6 @@
-namespace MySqlConnector.ColumnReaders;
-
-using System;
-using System.Buffers.Text;
-using System.Runtime.InteropServices;
-using System.Text;
-using MySqlConnector.Core;
 using MySqlConnector.Protocol.Payloads;
-using MySqlConnector.Protocol.Serialization;
-using MySqlConnector.Utilities;
+
+namespace MySqlConnector.ColumnReaders;
 
 internal sealed class NullColumnReader : IColumnReader
 {

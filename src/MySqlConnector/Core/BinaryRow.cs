@@ -1,10 +1,5 @@
-using System.Buffers.Text;
-using System.Runtime.InteropServices;
-using System.Text;
 using MySqlConnector.Protocol;
-using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;
-using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
 

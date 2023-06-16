@@ -1,7 +1,8 @@
-namespace MySqlConnector.ColumnReaders;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;
+
+namespace MySqlConnector.ColumnReaders;
 
 internal class ColumnReaderFactory
 {

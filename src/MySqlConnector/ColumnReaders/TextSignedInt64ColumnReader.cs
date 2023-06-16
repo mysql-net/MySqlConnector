@@ -1,8 +1,7 @@
-namespace MySqlConnector.ColumnReaders;
 using System.Buffers.Text;
 using MySqlConnector.Protocol.Payloads;
-using MySqlConnector.Protocol.Serialization;
-using MySqlConnector.Utilities;
+
+namespace MySqlConnector.ColumnReaders;
 
 internal sealed class TextSignedInt64ColumnReader : IColumnReader
 {

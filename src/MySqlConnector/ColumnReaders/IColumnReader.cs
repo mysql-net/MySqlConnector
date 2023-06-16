@@ -1,5 +1,6 @@
-namespace MySqlConnector.ColumnReaders;
 using MySqlConnector.Protocol.Payloads;
+
+namespace MySqlConnector.ColumnReaders;
 
 internal interface IColumnReader
 {
