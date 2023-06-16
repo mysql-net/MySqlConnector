@@ -147,12 +147,12 @@ internal sealed class ResultSet
 						// server supports metadata caching, but has re-sent it, so something has changed since last prepare/execution
 						if (Session.SupportsCachedPreparedMetadata && DataReader.LastUsedPreparedStatement is { } preparedStatement)
 							preparedStatement.Columns = ColumnDefinitions;
+					}
 
-						if (!Session.SupportsDeprecateEof)
-						{
-							payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-							EofPayload.Create(payload.Span);
-						}
+					if (!Session.SupportsDeprecateEof)
+					{
+						payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+						EofPayload.Create(payload.Span);
 					}
 
 					if (ColumnDefinitions.Length == (Command?.OutParameters?.Count + 1) && ColumnDefinitions[0].Name == SingleCommandPayloadCreator.OutParameterSentinelColumnName)
