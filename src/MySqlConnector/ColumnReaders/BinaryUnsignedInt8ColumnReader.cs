@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using MySqlConnector.Protocol.Payloads;
 
 namespace MySqlConnector.ColumnReaders;
@@ -7,8 +8,12 @@ internal sealed class BinaryUnsignedInt8ColumnReader : ColumnReader
 	public static BinaryUnsignedInt8ColumnReader Instance { get; } = new();
 
 	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		data[0];
+		DoReadValue(data);
 
 	public override int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		DoReadValue(data);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static byte DoReadValue(ReadOnlySpan<byte> data) =>
 		data[0];
 }

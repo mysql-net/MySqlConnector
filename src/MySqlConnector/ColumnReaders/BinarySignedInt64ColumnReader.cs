@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using MySqlConnector.Protocol.Payloads;
 
@@ -8,8 +9,12 @@ internal sealed class BinarySignedInt64ColumnReader : ColumnReader
 	public static BinarySignedInt64ColumnReader Instance { get; } = new();
 
 	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		MemoryMarshal.Read<long>(data);
+		DoReadValue(data);
 
 	public override int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		checked((int) MemoryMarshal.Read<long>(data));
+		checked((int) DoReadValue(data));
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static long DoReadValue(ReadOnlySpan<byte> data) =>
+		MemoryMarshal.Read<long>(data);
 }

@@ -8,8 +8,11 @@ internal sealed class TextUnsignedInt32ColumnReader : ColumnReader
 	public static TextUnsignedInt32ColumnReader Instance { get; } = new();
 
 	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		!Utf8Parser.TryParse(data, out uint value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
+		DoReadValue(data);
 
 	public override int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
-		!Utf8Parser.TryParse(data, out uint value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : checked((int) value);
+		checked((int) DoReadValue(data));
+
+	private static uint DoReadValue(ReadOnlySpan<byte> data) =>
+		!Utf8Parser.TryParse(data, out uint value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
 }
