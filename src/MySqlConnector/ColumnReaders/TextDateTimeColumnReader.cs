@@ -14,7 +14,10 @@ internal sealed class TextDateTimeColumnReader : ColumnReader
 		m_dateTimeKind = connection.DateTimeKind;
 	}
 
-	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		ParseDateTime(data, m_convertZeroDateTime, m_allowZeroDateTime, m_dateTimeKind);
+
+	public static object ParseDateTime(ReadOnlySpan<byte> data, bool convertZeroDateTime, bool allowZeroDateTime, DateTimeKind dateTimeKind)
 	{
 		Exception? exception = null;
 		if (!Utf8Parser.TryParse(data, out int year, out var bytesConsumed) || bytesConsumed != 4)
@@ -30,9 +33,9 @@ internal sealed class TextDateTimeColumnReader : ColumnReader
 
 		if (year == 0 && month == 0 && day == 0)
 		{
-			if (m_convertZeroDateTime)
+			if (convertZeroDateTime)
 				return DateTime.MinValue;
-			if (m_allowZeroDateTime)
+			if (allowZeroDateTime)
 				return default(MySqlDateTime);
 			throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime, set AllowZeroDateTime=True or ConvertZeroDateTime=True in the connection string. See https://mysqlconnector.net/connection-options/");
 		}
@@ -78,11 +81,11 @@ internal sealed class TextDateTimeColumnReader : ColumnReader
 
 		try
 		{
-			return m_allowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
+			return allowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
 #if NET7_0_OR_GREATER
-				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, m_dateTimeKind);
+				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, dateTimeKind);
 #else
-				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, m_dateTimeKind).AddTicks(microseconds % 1000 * 10);
+				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, dateTimeKind).AddTicks(microseconds % 1000 * 10);
 #endif
 		}
 		catch (Exception ex)
