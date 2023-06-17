@@ -1,10 +1,8 @@
-using System.Buffers.Text;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using MySqlConnector.ColumnReaders;
 using MySqlConnector.Protocol;
-using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
@@ -375,9 +373,10 @@ internal abstract class Row
 	{
 		ResultSet = resultSet;
 		m_dataOffsets = new int[ResultSet.ColumnDefinitions!.Length];
-		m_dataLengths = new int[ResultSet.ColumnDefinitions.Length];
-		m_columnReaders = Array.ConvertAll(ResultSet.ColumnDefinitions,
-			new Converter<ColumnDefinitionPayload, ColumnReader>(column => ColumnReader.Create(binary, column, resultSet.Connection)));
+		m_dataLengths = new int[m_dataOffsets.Length];
+		m_columnReaders = new ColumnReader[m_dataOffsets.Length];
+		for (var i = 0; i < m_columnReaders.Length; i++)
+			m_columnReaders[i] = ColumnReader.Create(binary, ResultSet.ColumnDefinitions[i], resultSet.Connection);
 	}
 
 	protected abstract Row CloneCore();
