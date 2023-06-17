@@ -1,0 +1,19 @@
+using System.Runtime.CompilerServices;
+using MySqlConnector.Protocol.Payloads;
+
+namespace MySqlConnector.ColumnReaders;
+
+internal sealed class BinaryBooleanColumnReader : ColumnReader
+{
+	public static BinaryBooleanColumnReader Instance { get; } = new();
+
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		DoReadValue(data);
+
+	public override int? TryReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		DoReadValue(data) ? 1 : 0;
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static bool DoReadValue(ReadOnlySpan<byte> data) =>
+		data[0] != 0;
+}

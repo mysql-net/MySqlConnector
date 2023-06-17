@@ -1,28 +1,85 @@
-using System.Buffers.Text;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using MySqlConnector.ColumnReaders;
 using MySqlConnector.Protocol;
-using MySqlConnector.Protocol.Payloads;
+using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
 
-internal abstract class Row
+internal sealed class Row
 {
+	public Row(bool isBinary, ResultSet resultSet)
+	{
+		m_isBinary = isBinary;
+		ResultSet = resultSet;
+
+		var columnDefinitions = ResultSet.ColumnDefinitions!;
+		m_dataOffsets = new int[columnDefinitions.Length];
+		m_dataLengths = new int[columnDefinitions.Length];
+		m_columnReaders = new ColumnReader[columnDefinitions.Length];
+		for (var column = 0; column < m_columnReaders.Length; column++)
+			m_columnReaders[column] = ColumnReader.Create(isBinary, columnDefinitions[column], resultSet.Connection);
+	}
+
 	public void SetData(ReadOnlyMemory<byte> data)
 	{
 		m_data = data;
-		GetDataOffsets(m_data.Span, m_dataOffsets, m_dataLengths!);
-	}
+		if (m_isBinary)
+		{
+			Array.Clear(m_dataOffsets, 0, m_dataOffsets.Length);
+			for (var column = 0; column < m_dataOffsets.Length; column++)
+			{
+				if ((data.Span[(column + 2) / 8 + 1] & (1 << ((column + 2) % 8))) != 0)
+				{
+					// column is NULL
+					m_dataOffsets[column] = -1;
+				}
+			}
 
-	public Row Clone()
-	{
-		var clonedRow = CloneCore();
-		var clonedData = new byte[m_data.Length];
-		m_data.CopyTo(clonedData);
-		clonedRow.SetData(clonedData);
-		return clonedRow;
+			var reader = new ByteArrayReader(data.Span);
+
+			// skip packet header (1 byte) and NULL bitmap (formula for length at https://dev.mysql.com/doc/internals/en/null-bitmap.html)
+			reader.Offset += 1 + (m_dataOffsets.Length + 7 + 2) / 8;
+			for (var column = 0; column < m_dataOffsets.Length; column++)
+			{
+				if (m_dataOffsets[column] == -1)
+				{
+					m_dataLengths[column] = 0;
+				}
+				else
+				{
+					var columnDefinition = ResultSet.ColumnDefinitions![column];
+					var length = columnDefinition.ColumnType switch
+					{
+						ColumnType.Longlong or ColumnType.Double => 8,
+						ColumnType.Long or ColumnType.Int24 or ColumnType.Float => 4,
+						ColumnType.Short or ColumnType.Year => 2,
+						ColumnType.Tiny => 1,
+						ColumnType.Date or ColumnType.DateTime or ColumnType.NewDate or ColumnType.Timestamp or ColumnType.Time => reader.ReadByte(),
+						ColumnType.DateTime2 or ColumnType.Timestamp2 => throw new NotSupportedException($"ColumnType {columnDefinition.ColumnType} is not supported"),
+						_ => checked((int)reader.ReadLengthEncodedInteger()),
+					};
+
+					m_dataLengths[column] = length;
+					m_dataOffsets[column] = reader.Offset;
+				}
+
+				reader.Offset += m_dataLengths[column];
+			}
+		}
+		else
+		{
+			var reader = new ByteArrayReader(data.Span);
+			for (var column = 0; column < m_dataOffsets.Length; column++)
+			{
+				var length = reader.ReadLengthEncodedIntegerOrNull();
+				m_dataLengths[column] = length == -1 ? 0 : length;
+				m_dataOffsets[column] = length == -1 ? -1 : reader.Offset;
+				reader.Offset += m_dataLengths[column];
+			}
+		}
 	}
 
 	public object GetValue(int ordinal)
@@ -35,7 +92,7 @@ internal abstract class Row
 
 		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
 		var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
-		return GetValueCore(data, columnDefinition);
+		return m_columnReaders[ordinal].ReadValue(data, columnDefinition);
 	}
 
 	public bool GetBoolean(int ordinal)
@@ -146,7 +203,14 @@ internal abstract class Row
 			return guid;
 
 		if (value is byte[] { Length: 16 } bytes)
-			return CreateGuidFromBytes(Connection.GuidFormat, bytes);
+		{
+			return Connection.GuidFormat switch
+			{
+				MySqlGuidFormat.Binary16 => GuidBinary16ColumnReader.ReadGuid(bytes),
+				MySqlGuidFormat.TimeSwapBinary16 => GuidTimeSwapBinary16ColumnReader.ReadGuid(bytes),
+				_ => GuidLittleEndianBinary16ColumnReader.ReadGuid(bytes),
+			};
+		}
 
 		return (Guid) value;
 	}
@@ -172,40 +236,17 @@ internal abstract class Row
 
 	public int GetInt32(int ordinal)
 	{
-		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length || m_dataOffsets[ordinal] == -1)
-			return (int) GetValue(ordinal);
-
-		var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
-		if (columnDefinition.ColumnType is ColumnType.Decimal or ColumnType.NewDecimal)
-		{
-			return (int) (decimal) GetValue(ordinal);
-		}
-		else if (columnDefinition.ColumnType is not ColumnType.Tiny and not ColumnType.Short
-			and not ColumnType.Int24 and not ColumnType.Long and not ColumnType.Longlong
-			and not ColumnType.Bit and not ColumnType.Year)
-		{
-			throw new InvalidCastException($"Can't convert {ResultSet.GetColumnType(ordinal)} to Int32");
-		}
+		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length)
+			throw new ArgumentOutOfRangeException(nameof(ordinal), $"value must be between 0 and {ResultSet.ColumnDefinitions!.Length - 1}");
+		if (m_dataOffsets[ordinal] == -1)
+			throw new InvalidCastException("Can't convert NULL to Int32");
 
 		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
-
-		if (columnDefinition.ColumnType == ColumnType.Bit)
-			return checked((int) ReadBit(data, columnDefinition));
-
-		var result = GetInt32Core(data, columnDefinition);
-		if (columnDefinition.ColumnType == ColumnType.Tiny &&
-			Connection.TreatTinyAsBoolean &&
-			columnDefinition.ColumnLength == 1 &&
-			(columnDefinition.ColumnFlags & ColumnFlags.Unsigned) == 0 &&
-			result != 0)
-		{
-			// coerce all non-zero TINYINT(1) results to 1, since it represents a BOOL value
-			result = 1;
-		}
-		return result;
+		var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
+		if (m_columnReaders[ordinal].TryReadInt32(data, columnDefinition) is { } value)
+			return value;
+		throw new InvalidCastException($"Can't convert {ResultSet.GetColumnType(ordinal)} to Int32");
 	}
-
-	protected abstract int GetInt32Core(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
 
 	public long GetInt64(int ordinal)
 	{
@@ -291,7 +332,7 @@ internal abstract class Row
 		{
 			// slightly inefficient to roundtrip the bytes through a string, but this is assumed to be an infrequent code path; this could be optimised to reprocess the original bytes
 			if (dateString.Length is >= 10 and <= 26)
-				value = ParseDateTime(Encoding.UTF8.GetBytes(dateString));
+				value = TextDateTimeColumnReader.ParseDateTime(Encoding.UTF8.GetBytes(dateString), Connection.ConvertZeroDateTime, Connection.AllowZeroDateTime, Connection.DateTimeKind);
 			else
 				throw new FormatException($"Couldn't interpret value as a valid DateTime: {value}");
 		}
@@ -393,144 +434,8 @@ internal abstract class Row
 
 	public object this[string name] => GetValue(ResultSet.GetOrdinal(name));
 
-	protected Row(ResultSet resultSet)
-	{
-		ResultSet = resultSet;
-		m_dataOffsets = new int[ResultSet.ColumnDefinitions!.Length];
-		m_dataLengths = new int[ResultSet.ColumnDefinitions.Length];
-	}
-
-	protected abstract Row CloneCore();
-
-	protected abstract object GetValueCore(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
-
-	protected abstract void GetDataOffsets(ReadOnlySpan<byte> data, int[] dataOffsets, int[] dataLengths);
-
-	protected ResultSet ResultSet { get; }
-	protected MySqlConnection Connection => ResultSet.Connection;
-
-	protected object ParseDateTime(ReadOnlySpan<byte> value)
-	{
-		Exception? exception = null;
-		if (!Utf8Parser.TryParse(value, out int year, out var bytesConsumed) || bytesConsumed != 4)
-			goto InvalidDateTime;
-		if (value.Length < 5 || value[4] != 45)
-			goto InvalidDateTime;
-		if (!Utf8Parser.TryParse(value[5..], out int month, out bytesConsumed) || bytesConsumed != 2)
-			goto InvalidDateTime;
-		if (value.Length < 8 || value[7] != 45)
-			goto InvalidDateTime;
-		if (!Utf8Parser.TryParse(value[8..], out int day, out bytesConsumed) || bytesConsumed != 2)
-			goto InvalidDateTime;
-
-		if (year == 0 && month == 0 && day == 0)
-		{
-			if (Connection.ConvertZeroDateTime)
-				return DateTime.MinValue;
-			if (Connection.AllowZeroDateTime)
-				return default(MySqlDateTime);
-			throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime, set AllowZeroDateTime=True or ConvertZeroDateTime=True in the connection string. See https://mysqlconnector.net/connection-options/");
-		}
-
-		int hour, minute, second, microseconds;
-		if (value.Length == 10)
-		{
-			hour = 0;
-			minute = 0;
-			second = 0;
-			microseconds = 0;
-		}
-		else
-		{
-			if (value[10] != 32)
-				goto InvalidDateTime;
-			if (!Utf8Parser.TryParse(value[11..], out hour, out bytesConsumed) || bytesConsumed != 2)
-				goto InvalidDateTime;
-			if (value.Length < 14 || value[13] != 58)
-				goto InvalidDateTime;
-			if (!Utf8Parser.TryParse(value[14..], out minute, out bytesConsumed) || bytesConsumed != 2)
-				goto InvalidDateTime;
-			if (value.Length < 17 || value[16] != 58)
-				goto InvalidDateTime;
-			if (!Utf8Parser.TryParse(value[17..], out second, out bytesConsumed) || bytesConsumed != 2)
-				goto InvalidDateTime;
-
-			if (value.Length == 19)
-			{
-				microseconds = 0;
-			}
-			else
-			{
-				if (value[19] != 46)
-					goto InvalidDateTime;
-
-				if (!Utf8Parser.TryParse(value[20..], out microseconds, out bytesConsumed) || bytesConsumed != value.Length - 20)
-					goto InvalidDateTime;
-				for (; bytesConsumed < 6; bytesConsumed++)
-					microseconds *= 10;
-			}
-		}
-
-		try
-		{
-			return Connection.AllowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
-#if NET7_0_OR_GREATER
-				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, Connection.DateTimeKind);
-#else
-				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, Connection.DateTimeKind).AddTicks(microseconds % 1000 * 10);
-#endif
-		}
-		catch (Exception ex)
-		{
-			exception = ex;
-		}
-
-InvalidDateTime:
-		throw new FormatException($"Couldn't interpret value as a valid DateTime: {Encoding.UTF8.GetString(value)}", exception);
-	}
-
-#if NET5_0_OR_GREATER
-	[SkipLocalsInit]
-#endif
-	protected static unsafe Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes) =>
-		guidFormat switch
-		{
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-			MySqlGuidFormat.Binary16 => new Guid(stackalloc byte[16] { bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4], bytes[7], bytes[6], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] }),
-			MySqlGuidFormat.TimeSwapBinary16 => new Guid(stackalloc byte[16] { bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] }),
-			_ => new Guid(bytes),
-#else
-			MySqlGuidFormat.Binary16 => new Guid(new[] { bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4], bytes[7], bytes[6], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] }),
-			MySqlGuidFormat.TimeSwapBinary16 => new Guid(new[] { bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15] }),
-			_ => new Guid(bytes.ToArray()),
-#endif
-		};
-
-	protected static ulong ReadBit(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		if ((columnDefinition.ColumnFlags & ColumnFlags.Binary) == 0)
-		{
-			// when the Binary flag IS NOT set, the BIT column is transmitted as MSB byte array
-			ulong bitValue = 0;
-			for (int i = 0; i < data.Length; i++)
-				bitValue = bitValue * 256 + data[i];
-			return bitValue;
-		}
-		else if (columnDefinition.ColumnLength <= 5 && data.Length == 1 && data[0] < (byte) (1 << (int) columnDefinition.ColumnLength))
-		{
-			// a server bug may return the data as binary even when we expect text: https://github.com/mysql-net/MySqlConnector/issues/713
-			// in this case, the data can't possibly be an ASCII digit, so assume it's the binary serialisation of BIT(n) where n <= 5
-			return (ulong) data[0];
-		}
-		else
-		{
-			// when the Binary flag IS set, the BIT column is transmitted as text
-			return ParseUInt64(data);
-		}
-	}
-
-	protected static ulong ParseUInt64(ReadOnlySpan<byte> data) =>
-		!Utf8Parser.TryParse(data, out ulong value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
+	private ResultSet ResultSet { get; }
+	private MySqlConnection Connection => ResultSet.Connection;
 
 	private void CheckBinaryColumn(int ordinal)
 	{
@@ -564,7 +469,9 @@ InvalidDateTime:
 			throw new ArgumentException(nameof(bufferOffset) + " + " + nameof(length) + " cannot exceed " + nameof(buffer) + "." + nameof(buffer.Length), nameof(length));
 	}
 
+	private readonly bool m_isBinary;
 	private readonly int[] m_dataOffsets;
 	private readonly int[] m_dataLengths;
+	private readonly ColumnReader[] m_columnReaders;
 	private ReadOnlyMemory<byte> m_data;
 }
