@@ -377,7 +377,7 @@ internal abstract class Row
 		m_dataOffsets = new int[ResultSet.ColumnDefinitions!.Length];
 		m_dataLengths = new int[ResultSet.ColumnDefinitions.Length];
 		m_columnReaders = Array.ConvertAll(ResultSet.ColumnDefinitions,
-			new Converter<ColumnDefinitionPayload, ColumnReader>(column => ColumnReaderFactory.GetReader(binary, column, resultSet.Connection)));
+			new Converter<ColumnDefinitionPayload, ColumnReader>(column => ColumnReader.Create(binary, column, resultSet.Connection)));
 	}
 
 	protected abstract Row CloneCore();
