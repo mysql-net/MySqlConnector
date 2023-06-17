@@ -3,25 +3,83 @@ using System.Runtime.InteropServices;
 using System.Text;
 using MySqlConnector.ColumnReaders;
 using MySqlConnector.Protocol;
+using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
 
-internal abstract class Row
+internal sealed class Row
 {
+	public Row(bool isBinary, ResultSet resultSet)
+	{
+		m_isBinary = isBinary;
+		ResultSet = resultSet;
+
+		var columnDefinitions = ResultSet.ColumnDefinitions!;
+		m_dataOffsets = new int[columnDefinitions.Length];
+		m_dataLengths = new int[columnDefinitions.Length];
+		m_columnReaders = new ColumnReader[columnDefinitions.Length];
+		for (var column = 0; column < m_columnReaders.Length; column++)
+			m_columnReaders[column] = ColumnReader.Create(isBinary, columnDefinitions[column], resultSet.Connection);
+	}
+
 	public void SetData(ReadOnlyMemory<byte> data)
 	{
 		m_data = data;
-		GetDataOffsets(m_data.Span, m_dataOffsets, m_dataLengths!);
-	}
+		if (m_isBinary)
+		{
+			Array.Clear(m_dataOffsets, 0, m_dataOffsets.Length);
+			for (var column = 0; column < m_dataOffsets.Length; column++)
+			{
+				if ((data.Span[(column + 2) / 8 + 1] & (1 << ((column + 2) % 8))) != 0)
+				{
+					// column is NULL
+					m_dataOffsets[column] = -1;
+				}
+			}
 
-	public Row Clone()
-	{
-		var clonedRow = CloneCore();
-		var clonedData = new byte[m_data.Length];
-		m_data.CopyTo(clonedData);
-		clonedRow.SetData(clonedData);
-		return clonedRow;
+			var reader = new ByteArrayReader(data.Span);
+
+			// skip packet header (1 byte) and NULL bitmap (formula for length at https://dev.mysql.com/doc/internals/en/null-bitmap.html)
+			reader.Offset += 1 + (m_dataOffsets.Length + 7 + 2) / 8;
+			for (var column = 0; column < m_dataOffsets.Length; column++)
+			{
+				if (m_dataOffsets[column] == -1)
+				{
+					m_dataLengths[column] = 0;
+				}
+				else
+				{
+					var columnDefinition = ResultSet.ColumnDefinitions![column];
+					var length = columnDefinition.ColumnType switch
+					{
+						ColumnType.Longlong or ColumnType.Double => 8,
+						ColumnType.Long or ColumnType.Int24 or ColumnType.Float => 4,
+						ColumnType.Short or ColumnType.Year => 2,
+						ColumnType.Tiny => 1,
+						ColumnType.Date or ColumnType.DateTime or ColumnType.NewDate or ColumnType.Timestamp or ColumnType.Time => reader.ReadByte(),
+						ColumnType.DateTime2 or ColumnType.Timestamp2 => throw new NotSupportedException($"ColumnType {columnDefinition.ColumnType} is not supported"),
+						_ => checked((int)reader.ReadLengthEncodedInteger()),
+					};
+
+					m_dataLengths[column] = length;
+					m_dataOffsets[column] = reader.Offset;
+				}
+
+				reader.Offset += m_dataLengths[column];
+			}
+		}
+		else
+		{
+			var reader = new ByteArrayReader(data.Span);
+			for (var column = 0; column < m_dataOffsets.Length; column++)
+			{
+				var length = reader.ReadLengthEncodedIntegerOrNull();
+				m_dataLengths[column] = length == -1 ? 0 : length;
+				m_dataOffsets[column] = length == -1 ? -1 : reader.Offset;
+				reader.Offset += m_dataLengths[column];
+			}
+		}
 	}
 
 	public object GetValue(int ordinal)
@@ -369,27 +427,13 @@ internal abstract class Row
 
 	public object this[string name] => GetValue(ResultSet.GetOrdinal(name));
 
-	protected Row(bool binary, ResultSet resultSet)
-	{
-		ResultSet = resultSet;
-		m_dataOffsets = new int[ResultSet.ColumnDefinitions!.Length];
-		m_dataLengths = new int[m_dataOffsets.Length];
-		m_columnReaders = new ColumnReader[m_dataOffsets.Length];
-		for (var i = 0; i < m_columnReaders.Length; i++)
-			m_columnReaders[i] = ColumnReader.Create(binary, ResultSet.ColumnDefinitions[i], resultSet.Connection);
-	}
-
-	protected abstract Row CloneCore();
-
-	protected abstract void GetDataOffsets(ReadOnlySpan<byte> data, int[] dataOffsets, int[] dataLengths);
-
-	protected ResultSet ResultSet { get; }
-	protected MySqlConnection Connection => ResultSet.Connection;
+	private ResultSet ResultSet { get; }
+	private MySqlConnection Connection => ResultSet.Connection;
 
 #if NET5_0_OR_GREATER
 	[SkipLocalsInit]
 #endif
-	protected static unsafe Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes) =>
+	private static unsafe Guid CreateGuidFromBytes(MySqlGuidFormat guidFormat, ReadOnlySpan<byte> bytes) =>
 		guidFormat switch
 		{
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
@@ -435,6 +479,7 @@ internal abstract class Row
 			throw new ArgumentException(nameof(bufferOffset) + " + " + nameof(length) + " cannot exceed " + nameof(buffer) + "." + nameof(buffer.Length), nameof(length));
 	}
 
+	private readonly bool m_isBinary;
 	private readonly int[] m_dataOffsets;
 	private readonly int[] m_dataLengths;
 	private readonly ColumnReader[] m_columnReaders;
