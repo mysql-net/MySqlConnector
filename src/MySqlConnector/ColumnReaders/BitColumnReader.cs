@@ -11,7 +11,7 @@ internal sealed class BitColumnReader : ColumnReader
 	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
 		DoReadValue(data, columnDefinition);
 
-	public override int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+	public override int? TryReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
 		checked((int) DoReadValue(data, columnDefinition));
 
 	private static ulong DoReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)

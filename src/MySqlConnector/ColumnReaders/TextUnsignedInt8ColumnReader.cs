@@ -11,7 +11,7 @@ internal sealed class TextUnsignedInt8ColumnReader : ColumnReader
 	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
 		DoReadValue(data);
 
-	public override int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+	public override int? TryReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
 		DoReadValue(data);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

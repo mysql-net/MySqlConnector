@@ -175,13 +175,14 @@ internal abstract class Row
 	{
 		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length)
 			throw new ArgumentOutOfRangeException(nameof(ordinal), $"value must be between 0 and {ResultSet.ColumnDefinitions!.Length - 1}");
-
 		if (m_dataOffsets[ordinal] == -1)
-			throw new InvalidCastException("Couldn't interpret null value as int");
+			throw new InvalidCastException("Can't convert NULL to Int32");
 
 		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
 		var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
-		return m_columnReaders[ordinal].ReadInt32(data, columnDefinition);
+		if (m_columnReaders[ordinal].TryReadInt32(data, columnDefinition) is { } value)
+			return value;
+		throw new InvalidCastException($"Can't convert {ResultSet.GetColumnType(ordinal)} to Int32");
 	}
 
 	public long GetInt64(int ordinal)
