@@ -1,24 +1,20 @@
-namespace MySqlConnector.ColumnReaders;
 using System.Buffers.Text;
+using System.Runtime.CompilerServices;
 using MySqlConnector.Protocol.Payloads;
-using MySqlConnector.Protocol.Serialization;
-using MySqlConnector.Utilities;
 
-internal sealed class DecimalColumnReader : IColumnReader
+namespace MySqlConnector.ColumnReaders;
+
+internal sealed class DecimalColumnReader : ColumnReader
 {
-	internal static DecimalColumnReader Instance { get; } = new DecimalColumnReader();
+	public static DecimalColumnReader Instance { get; } = new();
 
-	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		return Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) && bytesConsumed == data.Length ? decimalValue : throw new FormatException();
-	}
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		DoReadValue(data);
 
-	public int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		if (!Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) || bytesConsumed != data.Length)
-		{
-			throw new FormatException();
-		}
-		return (int) decimalValue;
-	}
+	public override int? TryReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		(int) DoReadValue(data);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static decimal DoReadValue(ReadOnlySpan<byte> data) =>
+		!Utf8Parser.TryParse(data, out decimal decimalValue, out int bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : decimalValue;
 }

@@ -1,20 +1,19 @@
-namespace MySqlConnector.ColumnReaders;
-using System.Buffers.Text;
+using System.Runtime.CompilerServices;
 using MySqlConnector.Protocol.Payloads;
-using MySqlConnector.Protocol.Serialization;
-using MySqlConnector.Utilities;
 
-internal sealed class TextBooleanColumnReader : IColumnReader
+namespace MySqlConnector.ColumnReaders;
+
+internal sealed class TextBooleanColumnReader : ColumnReader
 {
-	internal static TextBooleanColumnReader Instance { get; } = new TextBooleanColumnReader();
+	public static TextBooleanColumnReader Instance { get; } = new();
 
-	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		return data[0] != (byte) '0';
-	}
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		DoReadValue(data);
 
-	public int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		return data[0] != (byte) '0' ? 1 : 0;
-	}
+	public override int? TryReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		DoReadValue(data) ? 1 : 0;
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static bool DoReadValue(ReadOnlySpan<byte> data) =>
+		data[0] != (byte) '0';
 }

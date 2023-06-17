@@ -1,21 +1,20 @@
-namespace MySqlConnector.ColumnReaders;
-using System.Buffers.Text;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using MySqlConnector.Protocol.Payloads;
-using MySqlConnector.Protocol.Serialization;
-using MySqlConnector.Utilities;
 
-internal sealed class BinaryYearColumnReader : IColumnReader
+namespace MySqlConnector.ColumnReaders;
+
+internal sealed class BinaryYearColumnReader : ColumnReader
 {
-	internal static BinaryYearColumnReader Instance { get; } = new BinaryYearColumnReader();
+	public static BinaryYearColumnReader Instance { get; } = new();
 
-	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		return (int) MemoryMarshal.Read<short>(data);
-	}
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		DoReadValue(data);
 
-	public int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		return (int) MemoryMarshal.Read<short>(data);
-	}
+	public override int? TryReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		DoReadValue(data);
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static int DoReadValue(ReadOnlySpan<byte> data) =>
+		MemoryMarshal.Read<short>(data);
 }

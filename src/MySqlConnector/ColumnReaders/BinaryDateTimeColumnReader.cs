@@ -1,33 +1,26 @@
-namespace MySqlConnector.ColumnReaders;
-
-using System;
-using System.Buffers.Text;
 using System.Runtime.InteropServices;
 using System.Text;
-using MySqlConnector.Core;
 using MySqlConnector.Protocol.Payloads;
-using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
-internal sealed class BinaryDateTimeColumnReader : IColumnReader
+namespace MySqlConnector.ColumnReaders;
+
+internal sealed class BinaryDateTimeColumnReader : ColumnReader
 {
-	private bool allowZeroDateTime;
-	private bool convertZeroDateTime;
-	private DateTimeKind dateTimeKind;
-	internal BinaryDateTimeColumnReader(MySqlConnection connection)
+	public BinaryDateTimeColumnReader(MySqlConnection connection)
 	{
-		this.allowZeroDateTime = connection.AllowZeroDateTime;
-		this.convertZeroDateTime = connection.ConvertZeroDateTime;
-		this.dateTimeKind = connection.DateTimeKind;
+		m_allowZeroDateTime = connection.AllowZeroDateTime;
+		m_convertZeroDateTime = connection.ConvertZeroDateTime;
+		m_dateTimeKind = connection.DateTimeKind;
 	}
 
-	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{
 		if (data.Length == 0)
 		{
-			if (this.convertZeroDateTime)
+			if (m_convertZeroDateTime)
 				return DateTime.MinValue;
-			if (this.allowZeroDateTime)
+			if (m_allowZeroDateTime)
 				return default(MySqlDateTime);
 			throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime.");
 		}
@@ -54,11 +47,11 @@ internal sealed class BinaryDateTimeColumnReader : IColumnReader
 
 		try
 		{
-			return this.allowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
+			return m_allowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
 #if NET7_0_OR_GREATER
-				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, this.dateTimeKind);
+				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, m_dateTimeKind);
 #else
-				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, this.dateTimeKind).AddTicks(microseconds % 1000 * 10);
+				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, m_dateTimeKind).AddTicks(microseconds % 1000 * 10);
 #endif
 		}
 		catch (Exception ex)
@@ -67,8 +60,7 @@ internal sealed class BinaryDateTimeColumnReader : IColumnReader
 		}
 	}
 
-	public int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		throw new InvalidCastException($"Can't convert {columnDefinition.ColumnType} to Int32");
-	}
+	private readonly bool m_allowZeroDateTime;
+	private readonly bool m_convertZeroDateTime;
+	private readonly DateTimeKind m_dateTimeKind;
 }

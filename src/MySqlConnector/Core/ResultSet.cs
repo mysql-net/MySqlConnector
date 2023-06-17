@@ -275,7 +275,7 @@ internal sealed class ResultSet
 				}
 			}
 
-			row ??= resultSet.Command.TryGetPreparedStatements() is null ? new TextRow(resultSet) : new BinaryRow(resultSet);
+			row ??= new Row(resultSet.Command.TryGetPreparedStatements() is not null, resultSet);
 			row.SetData(payload.Memory);
 			resultSet.m_hasRows = true;
 			resultSet.BufferState = ResultSetState.ReadingRows;

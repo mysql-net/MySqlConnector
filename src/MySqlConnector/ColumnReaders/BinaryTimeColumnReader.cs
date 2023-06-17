@@ -1,15 +1,13 @@
-namespace MySqlConnector.ColumnReaders;
-using System.Buffers.Text;
 using System.Runtime.InteropServices;
 using MySqlConnector.Protocol.Payloads;
-using MySqlConnector.Protocol.Serialization;
-using MySqlConnector.Utilities;
 
-internal sealed class BinaryTimeColumnReader : IColumnReader
+namespace MySqlConnector.ColumnReaders;
+
+internal sealed class BinaryTimeColumnReader : ColumnReader
 {
-	internal static BinaryTimeColumnReader Instance { get; } = new BinaryTimeColumnReader();
+	public static BinaryTimeColumnReader Instance { get; } = new();
 
-	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
 	{
 		if (data.Length == 0)
 			return TimeSpan.Zero;
@@ -35,10 +33,5 @@ internal sealed class BinaryTimeColumnReader : IColumnReader
 #else
 		return new TimeSpan(days, hours, minutes, seconds) + TimeSpan.FromTicks(microseconds * 10);
 #endif
-	}
-
-	public int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		throw new InvalidCastException($"Can't convert {columnDefinition.ColumnType} to Int32");
 	}
 }

@@ -1,27 +1,23 @@
-namespace MySqlConnector.ColumnReaders;
-
-using System;
 using System.Buffers.Text;
-using System.Runtime.InteropServices;
 using System.Text;
-using MySqlConnector.Core;
 using MySqlConnector.Protocol.Payloads;
-using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
-internal sealed class TextDateTimeColumnReader : IColumnReader
+namespace MySqlConnector.ColumnReaders;
+
+internal sealed class TextDateTimeColumnReader : ColumnReader
 {
-	private bool allowZeroDateTime;
-	private bool convertZeroDateTime;
-	private DateTimeKind dateTimeKind;
-	internal TextDateTimeColumnReader(MySqlConnection connection)
+	public TextDateTimeColumnReader(MySqlConnection connection)
 	{
-		this.allowZeroDateTime = connection.AllowZeroDateTime;
-		this.convertZeroDateTime = connection.ConvertZeroDateTime;
-		this.dateTimeKind = connection.DateTimeKind;
+		m_allowZeroDateTime = connection.AllowZeroDateTime;
+		m_convertZeroDateTime = connection.ConvertZeroDateTime;
+		m_dateTimeKind = connection.DateTimeKind;
 	}
 
-	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		ParseDateTime(data, m_convertZeroDateTime, m_allowZeroDateTime, m_dateTimeKind);
+
+	public static object ParseDateTime(ReadOnlySpan<byte> data, bool convertZeroDateTime, bool allowZeroDateTime, DateTimeKind dateTimeKind)
 	{
 		Exception? exception = null;
 		if (!Utf8Parser.TryParse(data, out int year, out var bytesConsumed) || bytesConsumed != 4)
@@ -37,9 +33,9 @@ internal sealed class TextDateTimeColumnReader : IColumnReader
 
 		if (year == 0 && month == 0 && day == 0)
 		{
-			if (this.convertZeroDateTime)
+			if (convertZeroDateTime)
 				return DateTime.MinValue;
-			if (this.allowZeroDateTime)
+			if (allowZeroDateTime)
 				return default(MySqlDateTime);
 			throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime, set AllowZeroDateTime=True or ConvertZeroDateTime=True in the connection string. See https://mysqlconnector.net/connection-options/");
 		}
@@ -85,11 +81,11 @@ internal sealed class TextDateTimeColumnReader : IColumnReader
 
 		try
 		{
-			return this.allowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
+			return allowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
 #if NET7_0_OR_GREATER
-				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, this.dateTimeKind);
+				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, dateTimeKind);
 #else
-				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, this.dateTimeKind).AddTicks(microseconds % 1000 * 10);
+				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, dateTimeKind).AddTicks(microseconds % 1000 * 10);
 #endif
 		}
 		catch (Exception ex)
@@ -101,8 +97,7 @@ InvalidDateTime:
 		throw new FormatException($"Couldn't interpret value as a valid DateTime: {Encoding.UTF8.GetString(data)}", exception);
 	}
 
-	public int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		throw new InvalidCastException($"Can't convert {columnDefinition.ColumnType} to Int32");
-	}
+	private readonly bool m_allowZeroDateTime;
+	private readonly bool m_convertZeroDateTime;
+	private readonly DateTimeKind m_dateTimeKind;
 }

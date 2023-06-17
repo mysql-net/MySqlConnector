@@ -1,24 +1,20 @@
-namespace MySqlConnector.ColumnReaders;
 using System.Buffers.Text;
+using System.Runtime.CompilerServices;
 using MySqlConnector.Protocol.Payloads;
-using MySqlConnector.Protocol.Serialization;
-using MySqlConnector.Utilities;
 
-internal sealed class TextUnsignedInt64ColumnReader : IColumnReader
+namespace MySqlConnector.ColumnReaders;
+
+internal sealed class TextUnsignedInt64ColumnReader : ColumnReader
 {
-	internal static TextUnsignedInt64ColumnReader Instance { get; } = new TextUnsignedInt64ColumnReader();
+	public static TextUnsignedInt64ColumnReader Instance { get; } = new();
 
-	public object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		return !Utf8Parser.TryParse(data, out ulong value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
-	}
+	public override object ReadValue(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		DoReadValue(data);
 
-	public int ReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition)
-	{
-		if (!Utf8Parser.TryParse(data, out ulong value, out var bytesConsumed) || bytesConsumed != data.Length)
-		{
-			throw new FormatException();
-		}
-		return checked((int) value);
-	}
+	public override int? TryReadInt32(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition) =>
+		checked((int) DoReadValue(data));
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static ulong DoReadValue(ReadOnlySpan<byte> data) =>
+		!Utf8Parser.TryParse(data, out ulong value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
 }
