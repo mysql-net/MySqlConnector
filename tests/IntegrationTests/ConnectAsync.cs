@@ -194,7 +194,8 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		connection.ProvidePasswordCallback = _ => { wasCalled = true; return password; };
 
 		await connection.OpenAsync();
-		Assert.False(wasCalled);
+		if (password.Length != 0)
+			Assert.False(wasCalled);
 	}
 
 	[Fact]

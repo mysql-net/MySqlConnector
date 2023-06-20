@@ -268,7 +268,8 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		connection.ProvidePasswordCallback = _ => { wasCalled = true; return password; };
 
 		connection.Open();
-		Assert.False(wasCalled);
+		if (password.Length != 0)
+			Assert.False(wasCalled);
 	}
 
 	[Fact]

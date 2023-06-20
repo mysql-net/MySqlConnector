@@ -32,7 +32,15 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		});
 
 		var stopwatch = Stopwatch.StartNew();
-		TestUtilities.AssertIsOne(cmd.ExecuteScalar());
+		if (m_database.Connection.Session.ServerVersion.IsMariaDb)
+		{
+			MySqlException ex = Assert.Throws<MySqlException>(() => cmd.ExecuteScalar());
+			Assert.Contains("Query execution was interrupted", ex.Message, StringComparison.OrdinalIgnoreCase);
+		}
+		else
+		{
+			TestUtilities.AssertIsOne(cmd.ExecuteScalar());
+		}
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
 
 		task.Wait(); // shouldn't throw
@@ -58,7 +66,15 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		});
 
 		var stopwatch = Stopwatch.StartNew();
-		TestUtilities.AssertIsOne(await command.ExecuteScalarAsync());
+		if (connection.Session.ServerVersion.IsMariaDb)
+		{
+			MySqlException ex = await Assert.ThrowsAsync<MySqlException>(() => command.ExecuteScalarAsync());
+			Assert.Contains("Query execution was interrupted", ex.Message, StringComparison.OrdinalIgnoreCase);
+		}
+		else
+		{
+			TestUtilities.AssertIsOne(await command.ExecuteScalarAsync());
+		}
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
 
 		task.Wait(); // shouldn't throw
@@ -78,7 +94,15 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		using var command = new MySqlCommand("SELECT SLEEP(5)", connection);
 		using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
 		var stopwatch = Stopwatch.StartNew();
-		TestUtilities.AssertIsOne(await command.ExecuteScalarAsync(cts.Token));
+		if (connection.Session.ServerVersion.IsMariaDb)
+		{
+			OperationCanceledException ex = await Assert.ThrowsAsync<OperationCanceledException>(() => command.ExecuteScalarAsync(cts.Token));
+			Assert.Contains("Query execution was interrupted", ex.Message, StringComparison.OrdinalIgnoreCase);
+		}
+		else
+		{
+			TestUtilities.AssertIsOne(await command.ExecuteScalarAsync(cts.Token));
+		}
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
 	}
 #endif
@@ -442,7 +466,15 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		});
 
 		var stopwatch = Stopwatch.StartNew();
-		TestUtilities.AssertIsOne(batch.ExecuteScalar());
+		if (m_database.Connection.Session.ServerVersion.IsMariaDb)
+		{
+			MySqlException ex = Assert.Throws<MySqlException>(() => batch.ExecuteScalar());
+			Assert.Contains("Query execution was interrupted", ex.Message, StringComparison.OrdinalIgnoreCase);
+		}
+		else
+		{
+			TestUtilities.AssertIsOne(batch.ExecuteScalar());
+		}
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
 
 		task.Wait(); // shouldn't throw

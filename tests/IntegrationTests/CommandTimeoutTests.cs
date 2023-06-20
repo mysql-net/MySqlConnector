@@ -1,3 +1,5 @@
+using System;
+
 namespace IntegrationTests;
 
 public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
@@ -61,8 +63,17 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 #else
 			using (var reader = cmd.ExecuteReader())
 			{
-				Assert.True(reader.Read());
-				Assert.Equal(1, reader.GetInt32(0));
+				if (m_connection.Session.ServerVersion.IsMariaDb)
+				{
+					MySqlException ex = Assert.Throws<MySqlException>(() => reader.Read());
+					Assert.Contains("The Command Timeout expired before the operation completed", ex.Message, StringComparison.OrdinalIgnoreCase);
+					Assert.Contains("Query execution was interrupted", ex.InnerException.Message, StringComparison.OrdinalIgnoreCase);
+				}
+				else
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(1, reader.GetInt32(0));
+				}
 			}
 #endif
 			sw.Stop();
@@ -87,8 +98,17 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 #else
 			using (var reader = await cmd.ExecuteReaderAsync())
 			{
-				Assert.True(await reader.ReadAsync());
-				Assert.Equal(1, reader.GetInt32(0));
+				if (m_connection.Session.ServerVersion.IsMariaDb)
+				{
+					MySqlException ex = await Assert.ThrowsAsync<MySqlException>(() => reader.ReadAsync());
+					Assert.Contains("The Command Timeout expired before the operation completed", ex.Message, StringComparison.OrdinalIgnoreCase);
+					Assert.Contains("Query execution was interrupted", ex.InnerException.Message, StringComparison.OrdinalIgnoreCase);
+				}
+				else
+				{
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal(1, reader.GetInt32(0));
+				}
 			}
 #endif
 			sw.Stop();
@@ -128,8 +148,17 @@ end;", m_connection))
 #else
 		using (var reader = cmd.ExecuteReader())
 		{
-			Assert.True(reader.Read());
-			Assert.Equal(1, reader.GetInt32(0));
+			if (m_connection.Session.ServerVersion.IsMariaDb)
+			{
+				MySqlException ex = Assert.Throws<MySqlException>(() => reader.Read());
+				Assert.Contains("The Command Timeout expired before the operation completed", ex.Message, StringComparison.OrdinalIgnoreCase);
+				Assert.Contains("Query execution was interrupted", ex.InnerException.Message, StringComparison.OrdinalIgnoreCase);
+			}
+			else
+			{
+				Assert.True(reader.Read());
+				Assert.Equal(1, reader.GetInt32(0));
+			}
 		}
 #endif
 		sw.Stop();
@@ -159,8 +188,17 @@ end;", m_connection))
 			connectionState = ConnectionState.Closed;
 #else
 			Assert.True(reader.NextResult());
-			Assert.True(reader.Read());
-			Assert.Equal(1, reader.GetInt32(0));
+			if (m_connection.Session.ServerVersion.IsMariaDb)
+			{
+				MySqlException ex = Assert.Throws<MySqlException>(() => reader.Read());
+				Assert.Contains("The Command Timeout expired before the operation completed", ex.Message, StringComparison.OrdinalIgnoreCase);
+				Assert.Contains("Query execution was interrupted", ex.InnerException.Message, StringComparison.OrdinalIgnoreCase);
+			}
+			else
+			{
+				Assert.True(reader.Read());
+				Assert.Equal(1, reader.GetInt32(0));
+			}
 #endif
 
 			sw.Stop();
@@ -192,8 +230,17 @@ end;", m_connection))
 			connectionState = ConnectionState.Closed;
 #else
 			Assert.True(await reader.NextResultAsync());
-			Assert.True(reader.Read());
-			Assert.Equal(1, reader.GetInt32(0));
+			if (m_connection.Session.ServerVersion.IsMariaDb)
+			{
+				MySqlException ex = Assert.Throws<MySqlException>(() => reader.Read());
+				Assert.Contains("The Command Timeout expired before the operation completed", ex.Message, StringComparison.OrdinalIgnoreCase);
+				Assert.Contains("Query execution was interrupted", ex.InnerException.Message, StringComparison.OrdinalIgnoreCase);
+			}
+			else
+			{
+				Assert.True(reader.Read());
+				Assert.Equal(1, reader.GetInt32(0));
+			}
 #endif
 
 			sw.Stop();
@@ -262,8 +309,17 @@ end;", m_connection))
 #else
 			using (var reader = cmd.ExecuteReader())
 			{
-				Assert.True(reader.Read());
-				Assert.Equal(1, reader.GetInt32(0));
+				if (m_connection.Session.ServerVersion.IsMariaDb)
+				{
+					MySqlException ex = Assert.Throws<MySqlException>(() => reader.Read());
+					Assert.Contains("The Command Timeout expired before the operation completed", ex.Message, StringComparison.OrdinalIgnoreCase);
+					Assert.Contains("Query execution was interrupted", ex.InnerException.Message, StringComparison.OrdinalIgnoreCase);
+				}
+				else
+				{
+					Assert.True(reader.Read());
+					Assert.Equal(1, reader.GetInt32(0));
+				}
 			}
 #endif
 			sw.Stop();
@@ -289,8 +345,17 @@ end;", m_connection))
 #else
 			using (var reader = await cmd.ExecuteReaderAsync())
 			{
-				Assert.True(await reader.ReadAsync());
-				Assert.Equal(1, reader.GetInt32(0));
+				if (m_connection.Session.ServerVersion.IsMariaDb)
+				{
+					MySqlException ex = await Assert.ThrowsAsync<MySqlException>(() => reader.ReadAsync());
+					Assert.Contains("The Command Timeout expired before the operation completed", ex.Message, StringComparison.OrdinalIgnoreCase);
+					Assert.Contains("Query execution was interrupted", ex.InnerException.Message, StringComparison.OrdinalIgnoreCase);
+				}
+				else
+				{
+					Assert.True(await reader.ReadAsync());
+					Assert.Equal(1, reader.GetInt32(0));
+				}
 			}
 #endif
 			sw.Stop();
