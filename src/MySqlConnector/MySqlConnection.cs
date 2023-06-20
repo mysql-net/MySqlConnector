@@ -447,8 +447,6 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			if (m_connectionSettings.AutoEnlist && System.Transactions.Transaction.Current is not null)
 				EnlistTransaction(System.Transactions.Transaction.Current);
-
-			activity?.SetSuccess();
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
