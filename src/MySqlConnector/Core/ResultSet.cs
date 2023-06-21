@@ -39,7 +39,7 @@ internal sealed class ResultSet
 		{
 			while (true)
 			{
-				var payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+				var payload = await Session.ReceiveReplyAsync(ioBehavior).ConfigureAwait(false);
 				var firstByte = payload.HeaderByte;
 				if (firstByte == OkPayload.Signature)
 				{
@@ -86,7 +86,7 @@ internal sealed class ResultSet
 								while ((byteCount = await stream.ReadAsync(buffer, 0, buffer.Length, CancellationToken.None).ConfigureAwait(false)) > 0)
 								{
 									payload = new(new ArraySegment<byte>(buffer, 0, byteCount));
-									await Session.SendReplyAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
+									await Session.SendReplyAsync(payload, ioBehavior).ConfigureAwait(false);
 								}
 							}
 							finally
@@ -110,7 +110,7 @@ internal sealed class ResultSet
 						ReadResultSetHeaderException = ExceptionDispatchInfo.Capture(new MySqlException("Error during LOAD DATA LOCAL INFILE", ex));
 					}
 
-					await Session.SendReplyAsync(EmptyPayload.Instance, ioBehavior, CancellationToken.None).ConfigureAwait(false);
+					await Session.SendReplyAsync(EmptyPayload.Instance, ioBehavior).ConfigureAwait(false);
 				}
 				else
 				{
@@ -131,7 +131,7 @@ internal sealed class ResultSet
 						ColumnDefinitions = new ColumnDefinitionPayload[columnCountPacket.ColumnCount];
 						for (var column = 0; column < ColumnDefinitions.Length; column++)
 						{
-							payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+							payload = await Session.ReceiveReplyAsync(ioBehavior).ConfigureAwait(false);
 							var payloadLength = payload.Span.Length;
 
 							// 'Session.ReceiveReplyAsync' reuses a shared buffer; make a copy so that the column definitions can always be safely read at any future point
@@ -151,7 +151,7 @@ internal sealed class ResultSet
 
 					if (!Session.SupportsDeprecateEof)
 					{
-						payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+						payload = await Session.ReceiveReplyAsync(ioBehavior).ConfigureAwait(false);
 						EofPayload.Create(payload.Span);
 					}
 
@@ -231,8 +231,7 @@ internal sealed class ResultSet
 		if (BufferState is ResultSetState.HasMoreData or ResultSetState.NoMoreData or ResultSetState.None)
 			return new ValueTask<Row?>(default(Row?));
 
-		using var registration = Command.CancellableCommand.RegisterCancel(cancellationToken);
-		var payloadValueTask = Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None);
+		var payloadValueTask = Session.ReceiveReplyAsync(ioBehavior);
 		return payloadValueTask.IsCompletedSuccessfully
 			? new ValueTask<Row?>(ScanRowAsyncRemainder(this, payloadValueTask.Result, row))
 			: new ValueTask<Row?>(ScanRowAsyncAwaited(this, payloadValueTask.AsTask(), row, cancellationToken));

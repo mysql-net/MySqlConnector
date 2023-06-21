@@ -78,7 +78,7 @@ internal class NegotiateToMySqlConverterStream : Stream
 				return NegotiateStreamConstants.HeaderLength;
 			}
 			// Read and cache packet from server.
-			var payload = await m_serverSession.ReceiveReplyAsync(m_ioBehavior, cancellationToken).ConfigureAwait(false);
+			var payload = await m_serverSession.ReceiveReplyAsync(m_ioBehavior).ConfigureAwait(false);
 			var payloadMemory = payload.Memory;
 
 			if (payloadMemory.Length > NegotiateStreamConstants.MaxPayloadLength)
@@ -173,7 +173,7 @@ internal class NegotiateToMySqlConverterStream : Stream
 			// full payload provided
 			payload = new(new ArraySegment<byte>(buffer, offset, m_writePayloadLength));
 		}
-		await m_serverSession.SendReplyAsync(payload, m_ioBehavior, cancellationToken).ConfigureAwait(false);
+		await m_serverSession.SendReplyAsync(payload, m_ioBehavior).ConfigureAwait(false);
 		// Need to parse NegotiateStream header next time
 		m_writePayloadLength = 0;
 	}
@@ -230,6 +230,6 @@ internal static class AuthGSSAPI
 			return payload;
 
 		// Read final OK packet from server
-		return await session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+		return await session.ReceiveReplyAsync(ioBehavior).ConfigureAwait(false);
 	}
 }

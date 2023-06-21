@@ -134,7 +134,7 @@ public sealed class MySqlBatch :
 	private DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
 #endif
 	{
-		((ICancellableCommand) this).ResetCommandTimeout();
+		ResetCommandTimeout();
 		return ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 	}
 
@@ -144,7 +144,7 @@ public sealed class MySqlBatch :
 	private async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
 #endif
 	{
-		((ICancellableCommand) this).ResetCommandTimeout();
+		ResetCommandTimeout();
 		using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
 		return await ExecuteReaderAsync(behavior, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
 	}
@@ -255,8 +255,7 @@ public sealed class MySqlBatch :
 		if (!cancellationToken.CanBeCanceled)
 			return null;
 
-		m_cancelAction ??= Cancel;
-		return cancellationToken.Register(m_cancelAction);
+		return cancellationToken.Register(Cancel);
 	}
 
 	void ICancellableCommand.SetTimeout(int milliseconds)
@@ -268,8 +267,7 @@ public sealed class MySqlBatch :
 
 		if (milliseconds != Constants.InfiniteTimeout)
 		{
-			m_cancelForCommandTimeoutAction ??= CancelCommandForTimeout;
-			m_cancelTimerId = TimerQueue.Instance.Add(milliseconds, m_cancelForCommandTimeoutAction);
+			m_cancelTimerId = TimerQueue.Instance.Add(milliseconds, CancelCommandForTimeout);
 		}
 	}
 
@@ -283,7 +281,7 @@ public sealed class MySqlBatch :
 
 	private async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		((ICancellableCommand) this).ResetCommandTimeout();
+		ResetCommandTimeout();
 		using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
 		using var reader = await ExecuteReaderAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
 		do
@@ -297,7 +295,7 @@ public sealed class MySqlBatch :
 
 	private async Task<object?> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		((ICancellableCommand) this).ResetCommandTimeout();
+		ResetCommandTimeout();
 		using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
 		var hasSetResult = false;
 		object? result = null;
@@ -313,6 +311,26 @@ public sealed class MySqlBatch :
 			}
 		} while (await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false));
 		return result;
+	}
+
+	public void ResetCommandTimeout()
+	{
+		var session = Connection?.Session;
+		if (session is not null)
+		{
+			if (Timeout == 0 || session.CancellationTimeout == 0)
+			{
+				session.SetTimeout(Constants.InfiniteTimeout);
+			}
+			else
+			{
+				((ICancellableCommand) this).SetTimeout(Timeout * 1000);
+				session.SetTimeout((session.CancellationTimeout <= 0 ?
+					                   Timeout :
+					                   Timeout + session.CancellationTimeout)
+				                   * 1000);
+			}
+		}
 	}
 
 	private bool IsValid([NotNullWhen(false)] out Exception? exception)
@@ -403,8 +421,6 @@ public sealed class MySqlBatch :
 
 	private readonly int m_commandId;
 	private bool m_isDisposed;
-	private Action? m_cancelAction;
-	private Action? m_cancelForCommandTimeoutAction;
 	private uint m_cancelTimerId;
 	private bool m_commandTimedOut;
 }

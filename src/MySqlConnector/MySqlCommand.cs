@@ -186,7 +186,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		}
 
 		// don't prepare the same SQL twice
-		return Connection.Session.TryGetPreparedStatement(CommandText!) is null;
+		return Connection.Session.TryGetPreparedStatement(CommandText) is null;
 	}
 
 	/// <summary>
@@ -226,7 +226,14 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	public override int CommandTimeout
 	{
 		get => Math.Min(m_commandTimeout ?? Connection?.DefaultCommandTimeout ?? 0, int.MaxValue / 1000);
-		set => m_commandTimeout = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value), "CommandTimeout must be greater than or equal to zero.");
+		set
+		{
+			m_reset = null;
+			m_commandTimeout = value >= 0
+				? value
+				: throw new ArgumentOutOfRangeException(nameof(value),
+					"CommandTimeout must be greater than or equal to zero.");
+		}
 	}
 
 	/// <inheritdoc/>
@@ -290,7 +297,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	internal async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		Volatile.Write(ref m_commandTimedOut, false);
-		this.ResetCommandTimeout();
+		ResetCommandTimeout();
 		using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
 		using var reader = await ExecuteReaderNoResetTimeoutAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
 		do
@@ -308,7 +315,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	internal async Task<object?> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		Volatile.Write(ref m_commandTimedOut, false);
-		this.ResetCommandTimeout();
+		ResetCommandTimeout();
 		using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
 		var hasSetResult = false;
 		object? result = null;
@@ -338,7 +345,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	internal async Task<MySqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		Volatile.Write(ref m_commandTimedOut, false);
-		this.ResetCommandTimeout();
+		ResetCommandTimeout();
 		using var registration = ((ICancellableCommand) this).RegisterCancel(cancellationToken);
 		return await ExecuteReaderNoResetTimeoutAsync(behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
@@ -390,8 +397,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		if (!cancellationToken.CanBeCanceled)
 			return null;
 
-		m_cancelAction ??= Cancel;
-		return cancellationToken.Register(m_cancelAction);
+		return cancellationToken.Register(Cancel);
 	}
 
 	void ICancellableCommand.SetTimeout(int milliseconds)
@@ -401,8 +407,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 
 		if (milliseconds != Constants.InfiniteTimeout)
 		{
-			m_cancelForCommandTimeoutAction ??= CancelCommandForTimeout;
-			m_cancelTimerId = TimerQueue.Instance.Add(milliseconds, m_cancelForCommandTimeoutAction);
+			m_cancelTimerId = TimerQueue.Instance.Add(milliseconds, CancelCommandForTimeout);
 		}
 	}
 
@@ -422,6 +427,58 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		Connection?.Cancel(this, m_commandId, false);
 	}
 
+	public void ResetCommandTimeout()
+	{
+		if (m_reset == null)
+			ResetCommandTimeoutDefault();
+		else m_reset();
+	}
+
+	/// <summary>
+	/// Causes the effective command timeout to be reset back to the value specified by <see cref="ICancellableCommand.CommandTimeout"/>
+	/// plus <see cref="MySqlConnectionStringBuilder.CancellationTimeout"/>. This allows for the command to time out, a cancellation to attempt
+	/// to happen, then the "hard" timeout to occur.
+	/// </summary>
+	/// <remarks>As per the <a href="https://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlcommand.commandtimeout.aspx">MSDN documentation</a>,
+	/// "This property is the cumulative time-out (for all network packets that are read during the invocation of a method) for all network reads during command
+	/// execution or processing of the results. A time-out can still occur after the first row is returned, and does not include user processing time, only network
+	/// read time. For example, with a 30 second time out, if Read requires two network packets, then it has 30 seconds to read both network packets. If you call
+	/// Read again, it will have another 30 seconds to read any data that it requires."
+	/// The <see cref="ResetCommandTimeout"/> method is called by public ADO.NET API methods to reset the effective time remaining at the beginning of a new
+	/// method call.</remarks>
+	private void ResetCommandTimeoutDefault()
+	{
+		var session = Connection?.Session;
+		if (session is not null)
+		{
+			if (CommandTimeout == 0)
+			{
+				session.SetTimeout(Constants.InfiniteTimeout);
+				m_reset = m_noOp;
+			}
+			else
+			{
+				((ICancellableCommand) this).SetTimeout(CommandTimeout * 1000);
+				session.SetTimeout((session.CancellationTimeout <= 0 ?
+					                   CommandTimeout : CommandTimeout + session.CancellationTimeout)
+				                   * 1000);
+				m_reset = ResetCommandTimeoutSet;
+			}
+		}
+	}
+
+	private void ResetCommandTimeoutSet()
+	{
+		var session = Connection?.Session;
+		if (session is not null)
+		{
+			((ICancellableCommand) this).SetTimeout(CommandTimeout * 1000);
+			session.SetTimeout((session.CancellationTimeout <= 0 ?
+				                   CommandTimeout : CommandTimeout + session.CancellationTimeout)
+			                   * 1000);
+		}
+	}
+
 	private bool IsValid([NotNullWhen(false)] out Exception? exception)
 	{
 		exception = null;
@@ -439,7 +496,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	}
 
 	PreparedStatements? IMySqlCommand.TryGetPreparedStatements() => CommandType == CommandType.Text && !string.IsNullOrWhiteSpace(CommandText) && m_connection is not null &&
-		m_connection.State == ConnectionState.Open ? m_connection.Session.TryGetPreparedStatement(CommandText!) : null;
+		m_connection.State == ConnectionState.Open ? m_connection.Session.TryGetPreparedStatement(CommandText) : null;
 
 	CommandBehavior IMySqlCommand.CommandBehavior => m_commandBehavior;
 	MySqlParameterCollection? IMySqlCommand.OutParameters { get; set; }
@@ -455,8 +512,8 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	private int? m_commandTimeout;
 	private CommandType m_commandType;
 	private CommandBehavior m_commandBehavior;
-	private Action? m_cancelAction;
-	private Action? m_cancelForCommandTimeoutAction;
+	private Action? m_reset;
 	private uint m_cancelTimerId;
 	private bool m_commandTimedOut;
+	private static readonly Action m_noOp = () => { };
 }

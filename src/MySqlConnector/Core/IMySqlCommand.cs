@@ -20,6 +20,7 @@ internal interface IMySqlCommand
 	MySqlParameterCollection? OutParameters { get; set; }
 	MySqlParameter? ReturnParameter { get; set; }
 	ICancellableCommand CancellableCommand { get; }
+	void ResetCommandTimeout();
 	ILogger Logger { get; }
 }
 

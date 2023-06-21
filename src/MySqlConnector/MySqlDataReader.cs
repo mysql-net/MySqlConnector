@@ -19,21 +19,21 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 {
 	public override bool NextResult()
 	{
-		Command?.CancellableCommand.ResetCommandTimeout();
+		Command?.ResetCommandTimeout();
 		return NextResultAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 	}
 
 	public override bool Read()
 	{
 		VerifyNotDisposed();
-		Command!.CancellableCommand.ResetCommandTimeout();
+		Command!.ResetCommandTimeout();
 		return m_resultSet.Read();
 	}
 
 	public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
 	{
 		VerifyNotDisposed();
-		Command!.CancellableCommand.ResetCommandTimeout();
+		Command!.ResetCommandTimeout();
 		using var registration = Command.CancellableCommand.RegisterCancel(cancellationToken);
 		return await m_resultSet.ReadAsync(cancellationToken).ConfigureAwait(false);
 	}
@@ -44,7 +44,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	public override async Task<bool> NextResultAsync(CancellationToken cancellationToken)
 	{
 		VerifyNotDisposed();
-		Command!.CancellableCommand.ResetCommandTimeout();
+		Command!.ResetCommandTimeout();
 		using var registration = Command.CancellableCommand.RegisterCancel(cancellationToken);
 		return await NextResultAsync(Command?.Connection?.AsyncIOBehavior ?? IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 	}
@@ -77,7 +77,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 							if (!Command.Connection!.Session.IsCancelingQuery && m_payloadCreator!.WriteQueryCommand(ref m_commandListPosition, m_cachedProcedures!, writer, false))
 							{
 								using var payload = writer.ToPayloadData();
-								await Command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+								await Command.Connection.Session.SendAsync(payload, ioBehavior).ConfigureAwait(false);
 								await m_resultSet.ReadResultSetHeaderAsync(ioBehavior).ConfigureAwait(false);
 								ActivateResultSet(cancellationToken);
 								m_hasMoreResults = true;
