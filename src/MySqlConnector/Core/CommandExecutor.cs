@@ -34,7 +34,7 @@ internal static class CommandExecutor
 
 						// because the connection was used to execute a MySqlDataReader with the connection's DefaultCommandTimeout,
 						// we need to reapply the command's CommandTimeout (even if some of the time has elapsed)
-						command.CancellableCommand.ResetCommandTimeout();
+						command.ResetCommandTimeout();
 					}
 				}
 			}
@@ -52,7 +52,7 @@ internal static class CommandExecutor
 			command.SetLastInsertedId(0);
 			try
 			{
-				await session.SendAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
+				await session.SendAsync(payload, ioBehavior).ConfigureAwait(false);
 				await session.DataReader.InitAsync(commandListPosition, payloadCreator, cachedProcedures, command, behavior, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return session.DataReader;
 			}

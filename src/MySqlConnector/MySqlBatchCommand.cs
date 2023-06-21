@@ -53,6 +53,7 @@ public sealed class MySqlBatchCommand :
 #endif
 
 	bool IMySqlCommand.AllowUserVariables => false;
+	void IMySqlCommand.ResetCommandTimeout() => Batch!.ResetCommandTimeout();
 
 	CommandBehavior IMySqlCommand.CommandBehavior => Batch!.CurrentCommandBehavior;
 

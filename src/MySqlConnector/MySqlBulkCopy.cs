@@ -416,7 +416,7 @@ public sealed class MySqlBulkCopy
 					while (outputIndex >= maxLength || !WriteValue(m_connection, values[valueIndex], ref inputIndex, ref utf8Encoder, buffer.AsSpan(0, maxLength)[outputIndex..], out bytesWritten))
 					{
 						var payload = new PayloadData(new ArraySegment<byte>(buffer, 0, outputIndex + bytesWritten));
-						await m_connection.Session.SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+						await m_connection.Session.SendReplyAsync(payload, ioBehavior).ConfigureAwait(false);
 						outputIndex = 0;
 						bytesWritten = 0;
 					}
@@ -437,7 +437,7 @@ public sealed class MySqlBulkCopy
 			if (outputIndex != 0 && eventArgs?.Abort is not true)
 			{
 				var payload2 = new PayloadData(new ArraySegment<byte>(buffer, 0, outputIndex));
-				await m_connection.Session.SendReplyAsync(payload2, ioBehavior, cancellationToken).ConfigureAwait(false);
+				await m_connection.Session.SendReplyAsync(payload2, ioBehavior).ConfigureAwait(false);
 			}
 		}
 		finally
