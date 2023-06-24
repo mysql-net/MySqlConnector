@@ -36,7 +36,6 @@ public sealed class MySqlTransaction : DbTransaction
 				await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			Connection!.CurrentTransaction = null;
 			Connection = null;
-			activity?.SetSuccess();
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
@@ -260,7 +259,6 @@ public sealed class MySqlTransaction : DbTransaction
 		{
 			using var cmd = new MySqlCommand("rollback", Connection, this) { NoActivity = true };
 			await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			activity?.SetSuccess();
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{

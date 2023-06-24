@@ -468,7 +468,6 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 			throw new InvalidOperationException("Expected ColumnDefinitions to be null");
 		m_closed = false;
 		m_hasWarnings = false;
-		m_initializationFailed = false;
 		RealRecordsAffected = null;
 
 		// initialize for new command
@@ -503,7 +502,6 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 				activity.SetException(ex);
 				activity.Stop();
 			}
-			m_initializationFailed = true;
 			Dispose();
 			throw;
 		}
@@ -638,8 +636,6 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 			Command.CancellableCommand.SetTimeout(Constants.InfiniteTimeout);
 			connection.FinishQuerying(m_hasWarnings);
 
-			if (!m_initializationFailed)
-				Activity?.SetSuccess();
 			Activity?.Stop();
 			Activity = null;
 
@@ -709,6 +705,5 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	private bool m_closed;
 	private bool m_hasWarnings;
 	private bool m_hasMoreResults;
-	private bool m_initializationFailed;
 	private DataTable? m_schemaTable;
 }
