@@ -9,9 +9,10 @@ internal interface ICancellableCommand
 {
 	int CommandId { get; }
 	int CommandTimeout { get; }
+	int? EffectiveCommandTimeout { get; set; }
 	int CancelAttemptCount { get; set; }
 	MySqlConnection? Connection { get; }
-	IDisposable? RegisterCancel(CancellationToken cancellationToken);
+	CancellationTokenRegistration RegisterCancel(CancellationToken cancellationToken);
 	void SetTimeout(int milliseconds);
 	bool IsTimedOut { get; }
 }
@@ -22,22 +23,6 @@ internal static class ICancellableCommandExtensions
 	/// Returns a unique ID for all implementations of <see cref="ICancellableCommand"/>.
 	/// </summary>
 	public static int GetNextId() => Interlocked.Increment(ref s_id);
-
-	/// <summary>
-	/// Returns the time (in seconds) until a command should be canceled, clamping it to the maximum time
-	/// allowed including CancellationTimeout.
-	/// </summary>
-	public static int GetCommandTimeUntilCanceled(this ICancellableCommand command)
-	{
-		var commandTimeout = command.CommandTimeout;
-		var session = command.Connection?.Session;
-		if (commandTimeout == 0 || session is null)
-			return 0;
-
-		// the total cancellation period (graphically) is [===CommandTimeout===][=CancellationTimeout=], which can't
-		// exceed int.MaxValue/1000 because it has to be multiplied by 1000 to be converted to milliseconds
-		return Math.Min(commandTimeout, Math.Max(1, (int.MaxValue / 1000) - session.CancellationTimeout));
-	}
 
 	/// <summary>
 	/// Causes the effective command timeout to be reset back to the value specified by <see cref="ICancellableCommand.CommandTimeout"/>
@@ -53,28 +38,53 @@ internal static class ICancellableCommandExtensions
 	/// method call.</remarks>
 	public static void ResetCommandTimeout(this ICancellableCommand command)
 	{
+		// read value cached on the command
+		var effectiveCommandTimeout = command.EffectiveCommandTimeout;
+
+		// early out if there is no timeout
+		if (effectiveCommandTimeout == Constants.InfiniteTimeout)
+			return;
+
 		var session = command.Connection?.Session;
-		if (session is not null)
+		if (session is null)
+			return;
+
+		// determine the effective command timeout if not already cached
+		if (effectiveCommandTimeout is null)
 		{
-			if (command.CommandTimeout == 0 || session.CancellationTimeout == 0)
+			var commandTimeout = command.CommandTimeout;
+			var cancellationTimeout = session.CancellationTimeout;
+
+			if (commandTimeout == 0 || cancellationTimeout == 0)
 			{
-				session.SetTimeout(Constants.InfiniteTimeout);
+				// if commandTimeout is zero, then cancellation doesn't occur
+				effectiveCommandTimeout = Constants.InfiniteTimeout;
 			}
 			else
 			{
-				var commandTimeUntilCanceled = command.GetCommandTimeUntilCanceled() * 1000;
-				if (session.CancellationTimeout > 0)
-				{
-					// try to cancel first, then close socket
-					command.SetTimeout(commandTimeUntilCanceled);
-					session.SetTimeout(commandTimeUntilCanceled + session.CancellationTimeout * 1000);
-				}
-				else
-				{
-					// close socket once the timeout is reached
-					session.SetTimeout(commandTimeUntilCanceled);
-				}
+				// the total cancellation period (graphically) is [===CommandTimeout===][=CancellationTimeout=], which can't
+				// exceed int.MaxValue/1000 because it has to be multiplied by 1000 to be converted to milliseconds
+				effectiveCommandTimeout = Math.Min(commandTimeout, Math.Max(1, (int.MaxValue / 1000) - Math.Max(0, session.CancellationTimeout))) * 1000;
 			}
+
+			command.EffectiveCommandTimeout = effectiveCommandTimeout;
+		}
+
+		if (effectiveCommandTimeout == Constants.InfiniteTimeout)
+		{
+			// for no timeout, we set an infinite timeout once (then early out above)
+			session.SetTimeout(Constants.InfiniteTimeout);
+		}
+		else if (session.CancellationTimeout > 0)
+		{
+			// try to cancel first, then close socket
+			command.SetTimeout(effectiveCommandTimeout.Value);
+			session.SetTimeout(effectiveCommandTimeout.Value + (session.CancellationTimeout * 1000));
+		}
+		else
+		{
+			// close socket once the timeout is reached
+			session.SetTimeout(effectiveCommandTimeout.Value);
 		}
 	}
 
