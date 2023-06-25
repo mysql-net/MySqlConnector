@@ -25,22 +25,6 @@ internal static class ICancellableCommandExtensions
 	public static int GetNextId() => Interlocked.Increment(ref s_id);
 
 	/// <summary>
-	/// Returns the time (in seconds) until a command should be canceled, clamping it to the maximum time
-	/// allowed including CancellationTimeout.
-	/// </summary>
-	private static int GetCommandTimeUntilCanceled(ICancellableCommand command)
-	{
-		var commandTimeout = command.CommandTimeout;
-		var session = command.Connection?.Session;
-		if (commandTimeout == 0 || session is null)
-			return 0;
-
-		// the total cancellation period (graphically) is [===CommandTimeout===][=CancellationTimeout=], which can't
-		// exceed int.MaxValue/1000 because it has to be multiplied by 1000 to be converted to milliseconds
-		return Math.Min(commandTimeout, Math.Max(1, (int.MaxValue / 1000) - Math.Max(0, session.CancellationTimeout)));
-	}
-
-	/// <summary>
 	/// Causes the effective command timeout to be reset back to the value specified by <see cref="ICancellableCommand.CommandTimeout"/>
 	/// plus <see cref="MySqlConnectionStringBuilder.CancellationTimeout"/>. This allows for the command to time out, a cancellation to attempt
 	/// to happen, then the "hard" timeout to occur.
@@ -68,9 +52,21 @@ internal static class ICancellableCommandExtensions
 		// determine the effective command timeout if not already cached
 		if (effectiveCommandTimeout is null)
 		{
-			effectiveCommandTimeout = command.CommandTimeout == 0 || session.CancellationTimeout == 0 ?
-				Constants.InfiniteTimeout :
-				GetCommandTimeUntilCanceled(command);
+			var commandTimeout = command.CommandTimeout;
+			var cancellationTimeout = session.CancellationTimeout;
+
+			if (commandTimeout == 0 || cancellationTimeout == 0)
+			{
+				// if commandTimeout is zero, then cancellation doesn't occur
+				effectiveCommandTimeout = Constants.InfiniteTimeout;
+			}
+			else
+			{
+				// the total cancellation period (graphically) is [===CommandTimeout===][=CancellationTimeout=], which can't
+				// exceed int.MaxValue/1000 because it has to be multiplied by 1000 to be converted to milliseconds
+				effectiveCommandTimeout = Math.Min(commandTimeout, Math.Max(1, (int.MaxValue / 1000) - Math.Max(0, session.CancellationTimeout))) * 1000;
+			}
+
 			command.EffectiveCommandTimeout = effectiveCommandTimeout;
 		}
 
@@ -82,13 +78,13 @@ internal static class ICancellableCommandExtensions
 		else if (session.CancellationTimeout > 0)
 		{
 			// try to cancel first, then close socket
-			command.SetTimeout(effectiveCommandTimeout.Value * 1000);
-			session.SetTimeout((effectiveCommandTimeout.Value + session.CancellationTimeout) * 1000);
+			command.SetTimeout(effectiveCommandTimeout.Value);
+			session.SetTimeout(effectiveCommandTimeout.Value + (session.CancellationTimeout * 1000));
 		}
 		else
 		{
 			// close socket once the timeout is reached
-			session.SetTimeout(effectiveCommandTimeout.Value * 1000);
+			session.SetTimeout(effectiveCommandTimeout.Value);
 		}
 	}
 
