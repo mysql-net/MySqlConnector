@@ -231,7 +231,6 @@ internal sealed class ResultSet
 		if (BufferState is ResultSetState.HasMoreData or ResultSetState.NoMoreData or ResultSetState.None)
 			return new ValueTask<Row?>(default(Row?));
 
-		using var registration = Command.CancellableCommand.RegisterCancel(cancellationToken);
 		var payloadValueTask = Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None);
 		return payloadValueTask.IsCompletedSuccessfully
 			? new ValueTask<Row?>(ScanRowAsyncRemainder(this, payloadValueTask.Result, row))
