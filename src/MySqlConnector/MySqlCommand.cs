@@ -70,6 +70,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	{
 		GC.SuppressFinalize(this);
 		m_commandTimeout = other.m_commandTimeout;
+		((ICancellableCommand) this).EffectiveCommandTimeout = null;
 		m_commandType = other.m_commandType;
 		DesignTimeVisible = other.DesignTimeVisible;
 		UpdatedRowSource = other.UpdatedRowSource;
@@ -226,7 +227,11 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	public override int CommandTimeout
 	{
 		get => Math.Min(m_commandTimeout ?? Connection?.DefaultCommandTimeout ?? 0, int.MaxValue / 1000);
-		set => m_commandTimeout = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value), "CommandTimeout must be greater than or equal to zero.");
+		set
+		{
+			m_commandTimeout = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value), "CommandTimeout must be greater than or equal to zero.");
+			((ICancellableCommand) this).EffectiveCommandTimeout = null;
+		}
 	}
 
 	/// <inheritdoc/>
@@ -409,6 +414,8 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	bool ICancellableCommand.IsTimedOut => Volatile.Read(ref m_commandTimedOut);
 
 	int ICancellableCommand.CommandId => m_commandId;
+
+	int? ICancellableCommand.EffectiveCommandTimeout { get; set; }
 
 	int ICancellableCommand.CancelAttemptCount { get; set; }
 
