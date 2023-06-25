@@ -255,7 +255,7 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		Assert.True(wasCalled);
 	}
 
-	[Fact]
+	[SkippableFact(ConfigSettings.UserHasPassword)]
 	public void UsePasswordProviderPasswordTakesPrecedence()
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();

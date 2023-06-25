@@ -181,7 +181,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		Assert.True(wasCalled);
 	}
 
-	[Fact]
+	[SkippableFact(ConfigSettings.UserHasPassword)]
 	public async Task UsePasswordProviderPasswordTakesPrecedence()
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();

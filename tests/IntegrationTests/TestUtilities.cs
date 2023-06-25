@@ -139,6 +139,9 @@ public static class TestUtilities
 		if (configSettings.HasFlag(ConfigSettings.PasswordlessUser) && string.IsNullOrWhiteSpace(AppConfig.PasswordlessUser))
 			return "Requires PasswordlessUser in config.json";
 
+		if (configSettings.HasFlag(ConfigSettings.UserHasPassword) && csb.Password.Length == 0)
+			return "Requires password in connection string";
+
 		if (configSettings.HasFlag(ConfigSettings.GSSAPIUser) && string.IsNullOrWhiteSpace(AppConfig.GSSAPIUser))
 			return "Requires GSSAPIUser in config.json";
 
