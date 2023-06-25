@@ -38,6 +38,56 @@ public static class TestUtilities
 		}
 	}
 
+	public static void AssertExecuteScalarReturnsOneOrIsCanceled(MySqlCommand command) =>
+		AssertExecuteScalarReturnsOneOrThrowsException(command, MySqlErrorCode.QueryInterrupted);
+
+#if !MYSQL_DATA
+	public static void AssertExecuteScalarReturnsOneOrTimesOut(MySqlCommand command) =>
+		AssertExecuteScalarReturnsOneOrThrowsException(command, MySqlErrorCode.CommandTimeoutExpired);
+#endif
+
+	private static void AssertExecuteScalarReturnsOneOrThrowsException(MySqlCommand command, MySqlErrorCode expectedCode)
+	{
+		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.CancelSleepSuccessfully))
+		{
+			AssertIsOne(command.ExecuteScalar());
+		}
+		else
+		{
+			var ex = Assert.Throws<MySqlException>(command.ExecuteScalar);
+#if MYSQL_DATA
+			Assert.Equal((int) expectedCode, ex.Number);
+#else
+			Assert.Equal(expectedCode, ex.ErrorCode);
+#endif
+		}
+	}
+
+	public static async Task AssertExecuteScalarReturnsOneOrIsCanceledAsync(MySqlCommand command, CancellationToken token = default) =>
+		await AssertExecuteScalarReturnsOneOrThrowsExceptionAsync(command, MySqlErrorCode.QueryInterrupted, token);
+
+#if !MYSQL_DATA
+	public static async Task AssertExecuteScalarReturnsOneOrTimesOutAsync(MySqlCommand command, CancellationToken token = default) =>
+		await AssertExecuteScalarReturnsOneOrThrowsExceptionAsync(command, MySqlErrorCode.CommandTimeoutExpired, token);
+#endif
+
+	private static async Task AssertExecuteScalarReturnsOneOrThrowsExceptionAsync(MySqlCommand command, MySqlErrorCode expectedCode, CancellationToken token)
+	{
+		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.CancelSleepSuccessfully))
+		{
+			AssertIsOne(await command.ExecuteScalarAsync(token));
+		}
+		else
+		{
+			var ex = await Assert.ThrowsAsync<MySqlException>(async () => await command.ExecuteScalarAsync(token));
+#if MYSQL_DATA
+			Assert.Equal((int) expectedCode, ex.Number);
+#else
+			Assert.Equal(expectedCode, ex.ErrorCode);
+#endif
+		}
+	}
+
 	/// <summary>
 	/// Asserts that <paramref name="stopwatch"/> is in the range [minimumMilliseconds, minimumMilliseconds + lengthMilliseconds].
 	/// </summary>

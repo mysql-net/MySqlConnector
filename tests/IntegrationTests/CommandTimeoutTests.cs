@@ -46,7 +46,7 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 		Assert.Equal(2_147_483, command.CommandTimeout);
 	}
 
-	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
+	[Fact]
 	public void CommandTimeoutWithSleepSync()
 	{
 		var connectionState = m_connection.State;
@@ -59,11 +59,7 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 			Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
 			connectionState = ConnectionState.Closed;
 #else
-			using (var reader = cmd.ExecuteReader())
-			{
-				Assert.True(reader.Read());
-				Assert.Equal(1, reader.GetInt32(0));
-			}
+			TestUtilities.AssertExecuteScalarReturnsOneOrTimesOut(cmd);
 #endif
 			sw.Stop();
 			TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
@@ -72,7 +68,7 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 		Assert.Equal(connectionState, m_connection.State);
 	}
 
-	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout, MySqlData = "https://bugs.mysql.com/bug.php?id=110790")]
+	[SkippableFact(ServerFeatures.Timeout, MySqlData = "https://bugs.mysql.com/bug.php?id=110790")]
 	public async Task CommandTimeoutWithSleepAsync()
 	{
 		var connectionState = m_connection.State;
@@ -85,11 +81,7 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 			Assert.Contains("fatal error", exception.Message, StringComparison.OrdinalIgnoreCase);
 			connectionState = ConnectionState.Closed;
 #else
-			using (var reader = await cmd.ExecuteReaderAsync())
-			{
-				Assert.True(await reader.ReadAsync());
-				Assert.Equal(1, reader.GetInt32(0));
-			}
+			await TestUtilities.AssertExecuteScalarReturnsOneOrTimesOutAsync(cmd);
 #endif
 			sw.Stop();
 			TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 700);
@@ -98,7 +90,7 @@ public class CommandTimeoutTests : IClassFixture<DatabaseFixture>, IDisposable
 		Assert.Equal(connectionState, m_connection.State);
 	}
 
-	[SkippableTheory(ServerFeatures.CancelSleepSuccessfully)]
+	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
 	public void CommandTimeoutWithStoredProcedureSleepSync(bool pooling)
@@ -126,11 +118,7 @@ end;", m_connection))
 		var ex = Assert.Throws<MySqlException>(cmd.ExecuteReader);
 		Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
 #else
-		using (var reader = cmd.ExecuteReader())
-		{
-			Assert.True(reader.Read());
-			Assert.Equal(1, reader.GetInt32(0));
-		}
+		TestUtilities.AssertExecuteScalarReturnsOneOrTimesOut(cmd);
 #endif
 		sw.Stop();
 		TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
@@ -245,8 +233,7 @@ end;", m_connection))
 		Assert.Equal(ConnectionState.Open, m_connection.State);
 	}
 
-
-	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
+	[Fact]
 	public void TransactionCommandTimeoutWithSleepSync()
 	{
 		var connectionState = m_connection.State;
@@ -260,11 +247,7 @@ end;", m_connection))
 			Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
 			connectionState = ConnectionState.Closed;
 #else
-			using (var reader = cmd.ExecuteReader())
-			{
-				Assert.True(reader.Read());
-				Assert.Equal(1, reader.GetInt32(0));
-			}
+			TestUtilities.AssertExecuteScalarReturnsOneOrTimesOut(cmd);
 #endif
 			sw.Stop();
 			TestUtilities.AssertDuration(sw, cmd.CommandTimeout * 1000 - 100, 500);
@@ -273,7 +256,7 @@ end;", m_connection))
 		Assert.Equal(connectionState, m_connection.State);
 	}
 
-	[SkippableFact(ServerFeatures.CancelSleepSuccessfully, MySqlData = "https://bugs.mysql.com/bug.php?id=110790")]
+	[SkippableFact(MySqlData = "https://bugs.mysql.com/bug.php?id=110790")]
 	public async Task TransactionCommandTimeoutWithSleepAsync()
 	{
 		var connectionState = m_connection.State;
@@ -287,11 +270,7 @@ end;", m_connection))
 			Assert.Contains("fatal error", ex.Message, StringComparison.OrdinalIgnoreCase);
 			connectionState = ConnectionState.Closed;
 #else
-			using (var reader = await cmd.ExecuteReaderAsync())
-			{
-				Assert.True(await reader.ReadAsync());
-				Assert.Equal(1, reader.GetInt32(0));
-			}
+			await TestUtilities.AssertExecuteScalarReturnsOneOrTimesOutAsync(cmd);
 #endif
 			sw.Stop();
 		}
