@@ -11,7 +11,7 @@ internal interface ICancellableCommand
 	int CommandTimeout { get; }
 	int CancelAttemptCount { get; set; }
 	MySqlConnection? Connection { get; }
-	IDisposable? RegisterCancel(CancellationToken cancellationToken);
+	CancellationTokenRegistration RegisterCancel(CancellationToken cancellationToken);
 	void SetTimeout(int milliseconds);
 	bool IsTimedOut { get; }
 }

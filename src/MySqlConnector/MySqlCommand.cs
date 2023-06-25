@@ -385,10 +385,10 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	/// <returns>An object that must be disposed to revoke the cancellation registration.</returns>
 	/// <remarks>This method is more efficient than calling <code>token.Register(Command.Cancel)</code> because it avoids
 	/// unnecessary allocations.</remarks>
-	IDisposable? ICancellableCommand.RegisterCancel(CancellationToken cancellationToken)
+	CancellationTokenRegistration ICancellableCommand.RegisterCancel(CancellationToken cancellationToken)
 	{
 		if (!cancellationToken.CanBeCanceled)
-			return null;
+			return default;
 
 		m_cancelAction ??= Cancel;
 		return cancellationToken.Register(m_cancelAction);

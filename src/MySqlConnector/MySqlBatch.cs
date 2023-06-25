@@ -249,10 +249,10 @@ public sealed class MySqlBatch :
 	int ICancellableCommand.CommandTimeout => Timeout;
 	int ICancellableCommand.CancelAttemptCount { get; set; }
 
-	IDisposable? ICancellableCommand.RegisterCancel(CancellationToken cancellationToken)
+	CancellationTokenRegistration ICancellableCommand.RegisterCancel(CancellationToken cancellationToken)
 	{
 		if (!cancellationToken.CanBeCanceled)
-			return null;
+			return default;
 
 		m_cancelAction ??= Cancel;
 		return cancellationToken.Register(m_cancelAction);
