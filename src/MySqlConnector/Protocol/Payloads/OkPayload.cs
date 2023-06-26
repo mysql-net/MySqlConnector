@@ -55,13 +55,13 @@ internal sealed class OkPayload
 						var dataLength = (int) reader.ReadLengthEncodedInteger();
 						switch (kind)
 						{
-						case SessionTrackKind.Schema:
-							newSchema = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
-							break;
+							case SessionTrackKind.Schema:
+								newSchema = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
+								break;
 
-						default:
-							reader.Offset += dataLength;
-							break;
+							default:
+								reader.Offset += dataLength;
+								break;
 						}
 					}
 				}

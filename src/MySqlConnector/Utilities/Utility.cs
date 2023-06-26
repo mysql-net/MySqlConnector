@@ -138,7 +138,7 @@ internal static class Utility
 		if (bufferLength > 1024)
 			bufferBytes = buffer = ArrayPool<byte>.Shared.Rent(bufferLength);
 		else
-			 bufferBytes = stackalloc byte[bufferLength];
+			bufferBytes = stackalloc byte[bufferLength];
 		try
 		{
 			if (!System.Convert.TryFromBase64Chars(keyChars, bufferBytes, out var bytesWritten))

@@ -201,25 +201,25 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			var outName = "@outParam" + i;
 			switch (param.Direction)
 			{
-			case ParameterDirection.Input:
-			case ParameterDirection.InputOutput:
-				var inParam = param.WithParameterName(inName);
-				inParameters.Add(inParam);
-				if (param.Direction == ParameterDirection.InputOutput)
-				{
-					inOutSetParameters += $"SET {outName}={inName}; ";
-					goto case ParameterDirection.Output;
-				}
-				argParameterNames.Add(inName);
-				break;
-			case ParameterDirection.Output:
-				outParameters.Add(param);
-				outParameterNames.Add(outName);
-				argParameterNames.Add(outName);
-				break;
-			case ParameterDirection.ReturnValue:
-				returnParameter = param;
-				break;
+				case ParameterDirection.Input:
+				case ParameterDirection.InputOutput:
+					var inParam = param.WithParameterName(inName);
+					inParameters.Add(inParam);
+					if (param.Direction == ParameterDirection.InputOutput)
+					{
+						inOutSetParameters += $"SET {outName}={inName}; ";
+						goto case ParameterDirection.Output;
+					}
+					argParameterNames.Add(inName);
+					break;
+				case ParameterDirection.Output:
+					outParameters.Add(param);
+					outParameterNames.Add(outName);
+					argParameterNames.Add(outName);
+					break;
+				case ParameterDirection.ReturnValue:
+					returnParameter = param;
+					break;
 			}
 		}
 

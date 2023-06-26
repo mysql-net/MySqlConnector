@@ -611,9 +611,9 @@ internal sealed partial class ServerSession
 			ClearPreparedStatements();
 
 			PayloadData payload;
-			if (DatabaseOverride is null
-			    && ((!ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0)
-			    || (ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0)))
+			if (DatabaseOverride is null &&
+				((!ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0) ||
+				(ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0)))
 			{
 				if (m_supportsPipelining)
 				{
@@ -698,71 +698,71 @@ internal sealed partial class ServerSession
 		Log.SwitchingToAuthenticationMethod(m_logger, Id, switchRequest.Name);
 		switch (switchRequest.Name)
 		{
-		case "mysql_native_password":
-			AuthPluginData = switchRequest.Data;
-			var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, password);
-			payload = new(hashedPassword);
-			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-			return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-
-		case "mysql_clear_password":
-			if (!m_isSecureConnection)
-			{
-				Log.NeedsSecureConnection(m_logger, Id, switchRequest.Name);
-				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, $"Authentication method '{switchRequest.Name}' requires a secure connection.");
-			}
-
-			// send the password as a NULL-terminated UTF-8 string
-			var passwordBytes = Encoding.UTF8.GetBytes(password);
-			Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
-			payload = new(passwordBytes);
-			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-			return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-
-		case "caching_sha2_password":
-			var scrambleBytes = AuthenticationUtility.CreateScrambleResponse(Utility.TrimZeroByte(switchRequest.Data.AsSpan()), password);
-			payload = new(scrambleBytes);
-			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-
-			// OK payload can be sent immediately (e.g., if password is empty( (short-circuiting the )
-			if (OkPayload.IsOk(payload.Span, SupportsDeprecateEof))
-				return payload;
-
-			var cachingSha2ServerResponsePayload = CachingSha2ServerResponsePayload.Create(payload.Span);
-			if (cachingSha2ServerResponsePayload.Succeeded)
+			case "mysql_native_password":
+				AuthPluginData = switchRequest.Data;
+				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, password);
+				payload = new(hashedPassword);
+				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
-			goto case "sha256_password";
+			case "mysql_clear_password":
+				if (!m_isSecureConnection)
+				{
+					Log.NeedsSecureConnection(m_logger, Id, switchRequest.Name);
+					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, $"Authentication method '{switchRequest.Name}' requires a secure connection.");
+				}
 
-		case "sha256_password":
-			if (!m_isSecureConnection && password.Length != 0)
-			{
-				var publicKey = await GetRsaPublicKeyAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
-				return await SendEncryptedPasswordAsync(switchRequest.Data, publicKey, password, ioBehavior, cancellationToken).ConfigureAwait(false);
-			}
-			else
-			{
-				return await SendClearPasswordAsync(password, ioBehavior, cancellationToken).ConfigureAwait(false);
-			}
+				// send the password as a NULL-terminated UTF-8 string
+				var passwordBytes = Encoding.UTF8.GetBytes(password);
+				Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
+				payload = new(passwordBytes);
+				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
-		case "auth_gssapi_client":
-			return await AuthGSSAPI.AuthenticateAsync(cs, switchRequest.Data, this, ioBehavior, cancellationToken).ConfigureAwait(false);
+			case "caching_sha2_password":
+				var scrambleBytes = AuthenticationUtility.CreateScrambleResponse(Utility.TrimZeroByte(switchRequest.Data.AsSpan()), password);
+				payload = new(scrambleBytes);
+				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
-		case "mysql_old_password":
-			Log.AuthenticationMethodNotSupported(m_logger, Id, switchRequest.Name);
-			throw new NotSupportedException("'MySQL Server is requesting the insecure pre-4.1 auth mechanism (mysql_old_password). The user password must be upgraded; see https://dev.mysql.com/doc/refman/5.7/en/account-upgrades.html.");
+				// OK payload can be sent immediately (e.g., if password is empty( (short-circuiting the )
+				if (OkPayload.IsOk(payload.Span, SupportsDeprecateEof))
+					return payload;
 
-		case "client_ed25519":
-			if (!AuthenticationPlugins.TryGetPlugin(switchRequest.Name, out var ed25519Plugin))
-				throw new NotSupportedException("You must install the MySqlConnector.Authentication.Ed25519 package and call Ed25519AuthenticationPlugin.Install to use client_ed25519 authentication.");
-			payload = new(ed25519Plugin.CreateResponse(password, switchRequest.Data));
-			await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
-			return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				var cachingSha2ServerResponsePayload = CachingSha2ServerResponsePayload.Create(payload.Span);
+				if (cachingSha2ServerResponsePayload.Succeeded)
+					return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
-		default:
-			Log.AuthenticationMethodNotSupported(m_logger, Id, switchRequest.Name);
-			throw new NotSupportedException($"Authentication method '{switchRequest.Name}' is not supported.");
+				goto case "sha256_password";
+
+			case "sha256_password":
+				if (!m_isSecureConnection && password.Length != 0)
+				{
+					var publicKey = await GetRsaPublicKeyAsync(switchRequest.Name, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+					return await SendEncryptedPasswordAsync(switchRequest.Data, publicKey, password, ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
+				else
+				{
+					return await SendClearPasswordAsync(password, ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
+
+			case "auth_gssapi_client":
+				return await AuthGSSAPI.AuthenticateAsync(cs, switchRequest.Data, this, ioBehavior, cancellationToken).ConfigureAwait(false);
+
+			case "mysql_old_password":
+				Log.AuthenticationMethodNotSupported(m_logger, Id, switchRequest.Name);
+				throw new NotSupportedException("'MySQL Server is requesting the insecure pre-4.1 auth mechanism (mysql_old_password). The user password must be upgraded; see https://dev.mysql.com/doc/refman/5.7/en/account-upgrades.html.");
+
+			case "client_ed25519":
+				if (!AuthenticationPlugins.TryGetPlugin(switchRequest.Name, out var ed25519Plugin))
+					throw new NotSupportedException("You must install the MySqlConnector.Authentication.Ed25519 package and call Ed25519AuthenticationPlugin.Install to use client_ed25519 authentication.");
+				payload = new(ed25519Plugin.CreateResponse(password, switchRequest.Data));
+				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
+			default:
+				Log.AuthenticationMethodNotSupported(m_logger, Id, switchRequest.Name);
+				throw new NotSupportedException($"Authentication method '{switchRequest.Name}' is not supported.");
 		}
 	}
 

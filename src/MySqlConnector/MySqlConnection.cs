@@ -216,7 +216,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			else
 			{
 				m_enlistedTransaction = GetInitializedConnectionSettings().UseXaTransactions ?
-					(EnlistedTransactionBase)new XaEnlistedTransaction(transaction, this) :
+					(EnlistedTransactionBase) new XaEnlistedTransaction(transaction, this) :
 					new StandardEnlistedTransaction(transaction, this);
 				m_enlistedTransaction.Start();
 
@@ -360,7 +360,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		m_session.DatabaseOverride = databaseName;
 	}
 
-	public new MySqlCommand CreateCommand() => (MySqlCommand)base.CreateCommand();
+	public new MySqlCommand CreateCommand() => (MySqlCommand) base.CreateCommand();
 
 #pragma warning disable CA2012 // Safe because method completes synchronously
 	public bool Ping() => PingAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();

@@ -705,8 +705,8 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	}
 
 	/// <summary>
-		/// Whether to use server redirection.
-		/// </summary>
+	/// Whether to use server redirection.
+	/// </summary>
 	[Category("Connection")]
 	[DefaultValue(MySqlServerRedirectionMode.Disabled)]
 	[Description("Whether to use server redirection.")]

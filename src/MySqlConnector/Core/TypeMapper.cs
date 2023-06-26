@@ -193,113 +193,113 @@ internal sealed class TypeMapper
 		var isUnsigned = (columnDefinition.ColumnFlags & ColumnFlags.Unsigned) != 0;
 		switch (columnDefinition.ColumnType)
 		{
-		case ColumnType.Tiny:
-			return treatTinyAsBoolean && columnDefinition.ColumnLength == 1 && !isUnsigned ? MySqlDbType.Bool :
-				isUnsigned ? MySqlDbType.UByte : MySqlDbType.Byte;
+			case ColumnType.Tiny:
+				return treatTinyAsBoolean && columnDefinition.ColumnLength == 1 && !isUnsigned ? MySqlDbType.Bool :
+					isUnsigned ? MySqlDbType.UByte : MySqlDbType.Byte;
 
-		case ColumnType.Int24:
-			return isUnsigned ? MySqlDbType.UInt24 : MySqlDbType.Int24;
+			case ColumnType.Int24:
+				return isUnsigned ? MySqlDbType.UInt24 : MySqlDbType.Int24;
 
-		case ColumnType.Long:
-			return isUnsigned ? MySqlDbType.UInt32 : MySqlDbType.Int32;
+			case ColumnType.Long:
+				return isUnsigned ? MySqlDbType.UInt32 : MySqlDbType.Int32;
 
-		case ColumnType.Longlong:
-			return isUnsigned ? MySqlDbType.UInt64 : MySqlDbType.Int64;
+			case ColumnType.Longlong:
+				return isUnsigned ? MySqlDbType.UInt64 : MySqlDbType.Int64;
 
-		case ColumnType.Bit:
-			return MySqlDbType.Bit;
+			case ColumnType.Bit:
+				return MySqlDbType.Bit;
 
-		case ColumnType.String:
-			if (guidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
-				return MySqlDbType.Guid;
-			if (guidFormat == MySqlGuidFormat.Char32 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
-				return MySqlDbType.Guid;
-			if ((columnDefinition.ColumnFlags & ColumnFlags.Enum) != 0)
-				return MySqlDbType.Enum;
-			if ((columnDefinition.ColumnFlags & ColumnFlags.Set) != 0)
-				return MySqlDbType.Set;
-			goto case ColumnType.VarString;
-
-		case ColumnType.VarChar:
-		case ColumnType.VarString:
-		case ColumnType.TinyBlob:
-		case ColumnType.Blob:
-		case ColumnType.MediumBlob:
-		case ColumnType.LongBlob:
-			var type = columnDefinition.ColumnType;
-			if (columnDefinition.CharacterSet == CharacterSet.Binary)
-			{
-				if ((guidFormat is MySqlGuidFormat.Binary16 or MySqlGuidFormat.TimeSwapBinary16 or MySqlGuidFormat.LittleEndianBinary16) && columnDefinition.ColumnLength == 16)
+			case ColumnType.String:
+				if (guidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
 					return MySqlDbType.Guid;
+				if (guidFormat == MySqlGuidFormat.Char32 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
+					return MySqlDbType.Guid;
+				if ((columnDefinition.ColumnFlags & ColumnFlags.Enum) != 0)
+					return MySqlDbType.Enum;
+				if ((columnDefinition.ColumnFlags & ColumnFlags.Set) != 0)
+					return MySqlDbType.Set;
+				goto case ColumnType.VarString;
 
+			case ColumnType.VarChar:
+			case ColumnType.VarString:
+			case ColumnType.TinyBlob:
+			case ColumnType.Blob:
+			case ColumnType.MediumBlob:
+			case ColumnType.LongBlob:
+				var type = columnDefinition.ColumnType;
+				if (columnDefinition.CharacterSet == CharacterSet.Binary)
+				{
+					if ((guidFormat is MySqlGuidFormat.Binary16 or MySqlGuidFormat.TimeSwapBinary16 or MySqlGuidFormat.LittleEndianBinary16) && columnDefinition.ColumnLength == 16)
+						return MySqlDbType.Guid;
+
+					return type switch
+					{
+						ColumnType.String => MySqlDbType.Binary,
+						ColumnType.VarString => MySqlDbType.VarBinary,
+						ColumnType.TinyBlob => MySqlDbType.TinyBlob,
+						ColumnType.Blob => MySqlDbType.Blob,
+						ColumnType.MediumBlob => MySqlDbType.MediumBlob,
+						_ => MySqlDbType.LongBlob,
+					};
+				}
 				return type switch
 				{
-					ColumnType.String => MySqlDbType.Binary,
-					ColumnType.VarString => MySqlDbType.VarBinary,
-					ColumnType.TinyBlob => MySqlDbType.TinyBlob,
-					ColumnType.Blob => MySqlDbType.Blob,
-					ColumnType.MediumBlob => MySqlDbType.MediumBlob,
-					_ => MySqlDbType.LongBlob,
+					ColumnType.String => MySqlDbType.String,
+					ColumnType.VarString => MySqlDbType.VarChar,
+					ColumnType.TinyBlob => MySqlDbType.TinyText,
+					ColumnType.Blob => MySqlDbType.Text,
+					ColumnType.MediumBlob => MySqlDbType.MediumText,
+					_ => MySqlDbType.LongText,
 				};
-			}
-			return type switch
-			{
-				ColumnType.String => MySqlDbType.String,
-				ColumnType.VarString => MySqlDbType.VarChar,
-				ColumnType.TinyBlob => MySqlDbType.TinyText,
-				ColumnType.Blob => MySqlDbType.Text,
-				ColumnType.MediumBlob => MySqlDbType.MediumText,
-				_ => MySqlDbType.LongText,
-			};
 
-		case ColumnType.Json:
-			return MySqlDbType.JSON;
+			case ColumnType.Json:
+				return MySqlDbType.JSON;
 
-		case ColumnType.Short:
-			return isUnsigned ? MySqlDbType.UInt16 : MySqlDbType.Int16;
+			case ColumnType.Short:
+				return isUnsigned ? MySqlDbType.UInt16 : MySqlDbType.Int16;
 
-		case ColumnType.Date:
-		case ColumnType.NewDate:
-			return MySqlDbType.Date;
+			case ColumnType.Date:
+			case ColumnType.NewDate:
+				return MySqlDbType.Date;
 
-		case ColumnType.DateTime:
-			return MySqlDbType.DateTime;
+			case ColumnType.DateTime:
+				return MySqlDbType.DateTime;
 
-		case ColumnType.Timestamp:
-			return MySqlDbType.Timestamp;
+			case ColumnType.Timestamp:
+				return MySqlDbType.Timestamp;
 
-		case ColumnType.Time:
-			return MySqlDbType.Time;
+			case ColumnType.Time:
+				return MySqlDbType.Time;
 
-		case ColumnType.Year:
-			return MySqlDbType.Year;
+			case ColumnType.Year:
+				return MySqlDbType.Year;
 
-		case ColumnType.Float:
-			return MySqlDbType.Float;
+			case ColumnType.Float:
+				return MySqlDbType.Float;
 
-		case ColumnType.Double:
-			return MySqlDbType.Double;
+			case ColumnType.Double:
+				return MySqlDbType.Double;
 
-		case ColumnType.Decimal:
-			return MySqlDbType.Decimal;
+			case ColumnType.Decimal:
+				return MySqlDbType.Decimal;
 
-		case ColumnType.NewDecimal:
-			return MySqlDbType.NewDecimal;
+			case ColumnType.NewDecimal:
+				return MySqlDbType.NewDecimal;
 
-		case ColumnType.Geometry:
-			return MySqlDbType.Geometry;
+			case ColumnType.Geometry:
+				return MySqlDbType.Geometry;
 
-		case ColumnType.Null:
-			return MySqlDbType.Null;
+			case ColumnType.Null:
+				return MySqlDbType.Null;
 
-		case ColumnType.Enum:
-			return MySqlDbType.Enum;
+			case ColumnType.Enum:
+				return MySqlDbType.Enum;
 
-		case ColumnType.Set:
-			return MySqlDbType.Set;
+			case ColumnType.Set:
+				return MySqlDbType.Set;
 
-		default:
-			throw new NotImplementedException($"ConvertToMySqlDbType for {columnDefinition.ColumnType} is not implemented");
+			default:
+				throw new NotImplementedException($"ConvertToMySqlDbType for {columnDefinition.ColumnType} is not implemented");
 		}
 	}
 
