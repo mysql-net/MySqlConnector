@@ -223,7 +223,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 
 	public sbyte GetSByte(int ordinal) => GetResultSet().GetCurrentRow().GetSByte(ordinal);
 	public sbyte GetSByte(string name) => GetSByte(GetOrdinal(name));
-
+	public sbyte XGetSByte(int ordinal) => GetResultSet().GetCurrentRow().XGetSByte(ordinal);
 	public override long GetBytes(int ordinal, long dataOffset, byte[]? buffer, int bufferOffset, int length)
 		=> GetResultSet().GetCurrentRow().GetBytes(ordinal, dataOffset, buffer, bufferOffset, length);
 
@@ -241,13 +241,13 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 
 	public override short GetInt16(int ordinal) => GetResultSet().GetCurrentRow().GetInt16(ordinal);
 	public short GetInt16(string name) => GetInt16(GetOrdinal(name));
-
+	public short XGetInt16(int ordinal) => GetResultSet().GetCurrentRow().XGetInt16(ordinal);
 	public override int GetInt32(int ordinal) => GetResultSet().GetCurrentRow().GetInt32(ordinal);
 	public int GetInt32(string name) => GetInt32(GetOrdinal(name));
-
+	public int XGetInt32(int ordinal) => GetResultSet().GetCurrentRow().XGetInt32(ordinal);
 	public override long GetInt64(int ordinal) => GetResultSet().GetCurrentRow().GetInt64(ordinal);
 	public long GetInt64(string name) => GetInt64(GetOrdinal(name));
-
+	public long XGetInt64(int ordinal) => GetResultSet().GetCurrentRow().XGetInt64(ordinal);
 	public override string GetDataTypeName(int ordinal) => GetResultSet().GetDataTypeName(ordinal);
 
 	public Type GetFieldType(string name) => GetFieldType(GetOrdinal(name));
@@ -297,7 +297,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 
 	public override string GetString(int ordinal) => GetResultSet().GetCurrentRow().GetString(ordinal);
 	public string GetString(string name) => GetString(GetOrdinal(name));
-
+	public string XGetString(int ordinal) => GetResultSet().GetCurrentRow().XGetString(ordinal);
 	public override decimal GetDecimal(int ordinal) => GetResultSet().GetCurrentRow().GetDecimal(ordinal);
 	public decimal GetDecimal(string name) => GetDecimal(GetOrdinal(name));
 
