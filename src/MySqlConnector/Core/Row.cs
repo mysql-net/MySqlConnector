@@ -38,6 +38,17 @@ internal abstract class Row
 		return GetValueCore(data, columnDefinition);
 	}
 
+	public ReadOnlySpan<byte> CheckAndGetData(int ordinal)
+	{
+		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length)
+			throw new ArgumentOutOfRangeException(nameof(ordinal), $"value must be between 0 and {ResultSet.ColumnDefinitions!.Length - 1}");
+
+		if (m_dataOffsets[ordinal] == -1)
+			throw new InvalidCastException("Can't convert NULL to Xdata");
+
+		return m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
+	}
+
 	public bool GetBoolean(int ordinal)
 	{
 		var value = GetValue(ordinal);
@@ -74,6 +85,12 @@ internal abstract class Row
 			bool boolValue => boolValue ? (sbyte) 1 : (sbyte) 0,
 			_ => (sbyte) value,
 		};
+	}
+
+	public sbyte XGetSByte(int ordinal)
+	{
+		var data = CheckAndGetData(ordinal);
+		return !Utf8Parser.TryParse(data, out sbyte value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
 	}
 
 	public byte GetByte(int ordinal)
@@ -170,6 +187,12 @@ internal abstract class Row
 		};
 	}
 
+	public short XGetInt16(int ordinal)
+	{
+		var data = CheckAndGetData(ordinal);
+		return !Utf8Parser.TryParse(data, out short value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
+	}
+
 	public int GetInt32(int ordinal)
 	{
 		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length || m_dataOffsets[ordinal] == -1)
@@ -205,6 +228,12 @@ internal abstract class Row
 		return result;
 	}
 
+	public int XGetInt32(int ordinal)
+	{
+		var data = CheckAndGetData(ordinal);
+		return !Utf8Parser.TryParse(data, out int value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
+	}
+
 	protected abstract int GetInt32Core(ReadOnlySpan<byte> data, ColumnDefinitionPayload columnDefinition);
 
 	public long GetInt64(int ordinal)
@@ -224,6 +253,12 @@ internal abstract class Row
 			bool boolValue => boolValue ? 1 : 0,
 			_ => (long) value,
 		};
+	}
+
+	public long XGetInt64(int ordinal)
+	{
+		var data = CheckAndGetData(ordinal);
+		return !Utf8Parser.TryParse(data, out long value, out var bytesConsumed) || bytesConsumed != data.Length ? throw new FormatException() : value;
 	}
 
 	public ushort GetUInt16(int ordinal)
@@ -312,6 +347,12 @@ internal abstract class Row
 	}
 
 	public string GetString(int ordinal) => (string) GetValue(ordinal);
+
+	public string XGetString(int ordinal)
+	{
+		var data = CheckAndGetData(ordinal);
+		return Encoding.UTF8.GetString(data);
+	}
 
 	public decimal GetDecimal(int ordinal)
 	{
@@ -485,7 +526,7 @@ internal abstract class Row
 			exception = ex;
 		}
 
-InvalidDateTime:
+		InvalidDateTime:
 		throw new FormatException($"Couldn't interpret value as a valid DateTime: {Encoding.UTF8.GetString(value)}", exception);
 	}
 
