@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-05-04
+lastmod: 2023-07-21
 date: 2017-03-27
 menu:
   main:
@@ -9,6 +9,11 @@ weight: 30
 ---
 
 # Version History
+
+### 2.2.7
+
+* Respect ConnectTimeout when resetting connection: [#1321](https://github.com/mysql-net/MySqlConnector/issues/1321).
+* Prevent connection pool falling back to an unsupported TLS version: [#1349](https://github.com/mysql-net/MySqlConnector/issues/1349).
 
 ### 2.2.6
 
