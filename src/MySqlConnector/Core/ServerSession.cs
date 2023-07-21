@@ -424,14 +424,15 @@ internal sealed partial class ServerSession
 			// (which is SslProtocols.None; see https://docs.microsoft.com/en-us/dotnet/framework/network-programming/tls),
 			// then fall back to SslProtocols.Tls11 if that fails and it's possible that the cause is a yaSSL server.
 			bool shouldRetrySsl;
+			var shouldUpdatePoolSslProtocols = false;
 			var sslProtocols = Pool?.SslProtocols ?? cs.TlsVersions;
 			PayloadData payload;
 			InitialHandshakePayload initialHandshake;
 			do
 			{
-				bool tls11or10Supported = (sslProtocols & (SslProtocols.Tls | SslProtocols.Tls11)) != SslProtocols.None;
-				bool tls12Supported = (sslProtocols & SslProtocols.Tls12) == SslProtocols.Tls12;
-				shouldRetrySsl = (sslProtocols == SslProtocols.None || (tls12Supported && tls11or10Supported)) && Utility.IsWindows();
+				var isTls11or10Supported = (sslProtocols & (SslProtocols.Tls | SslProtocols.Tls11)) != SslProtocols.None;
+				var isTls12Supported = (sslProtocols & SslProtocols.Tls12) == SslProtocols.Tls12;
+				shouldRetrySsl = (sslProtocols == SslProtocols.None || (isTls12Supported && isTls11or10Supported)) && Utility.IsWindows();
 
 				var connected = false;
 				if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets)
@@ -536,19 +537,20 @@ internal sealed partial class ServerSession
 					{
 						await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, connection, sslProtocols, ioBehavior, cancellationToken).ConfigureAwait(false);
 						shouldRetrySsl = false;
+						if (shouldUpdatePoolSslProtocols && Pool is not null)
+							Pool.SslProtocols = sslProtocols;
 					}
 					catch (ArgumentException ex) when (ex.ParamName == "sslProtocolType" && sslProtocols == SslProtocols.None)
 					{
 						Log.SessionDoesNotSupportSslProtocolsNone(m_logger, ex, Id);
 						sslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
 					}
-					catch (Exception ex) when (shouldRetrySsl && ((ex is MySqlException && ex.InnerException is IOException) || ex is IOException))
+					catch (Exception ex) when (shouldRetrySsl && ((ex is MySqlException && ex.InnerException is AuthenticationException or IOException) || ex is AuthenticationException or IOException))
 					{
 						// negotiating TLS 1.2 with a yaSSL-based server throws an exception on Windows, see comment at top of method
 						Log.FailedNegotiatingTls(m_logger, ex, Id);
 						sslProtocols = sslProtocols == SslProtocols.None ? SslProtocols.Tls | SslProtocols.Tls11 : (SslProtocols.Tls | SslProtocols.Tls11) & sslProtocols;
-						if (Pool is not null)
-							Pool.SslProtocols = sslProtocols;
+						shouldUpdatePoolSslProtocols = true;
 					}
 				}
 				else

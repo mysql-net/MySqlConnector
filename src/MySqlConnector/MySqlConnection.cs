@@ -913,7 +913,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			if (pool is not null)
 			{
 				// this returns an open session
-				return await pool.GetSessionAsync(this, startTickCount, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
+				return await pool.GetSessionAsync(this, startTickCount, connectionSettings.ConnectionTimeoutMilliseconds, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
 			}
 			else
 			{

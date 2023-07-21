@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-05-04
+lastmod: 2023-07-21
 date: 2017-03-27
 menu:
   main:
@@ -39,6 +39,11 @@ weight: 30
   * .NET 4.6.1 support ended on 26 April 2022, and .NET Core 3.1 on 13 December 2022.
   * The minimum supported versions are now .NET Framework 4.6.2 and .NET 6.0, although other frameworks should be supported via `netstandard2.0`.
 * Fix bug that didn't copy `MySqlDataSource` in `MySqlConnection.Clone`: [#1267](https://github.com/mysql-net/MySqlConnector/issues/1267).
+
+### 2.2.7
+
+* Respect ConnectTimeout when resetting connection: [#1321](https://github.com/mysql-net/MySqlConnector/issues/1321).
+* Prevent connection pool falling back to an unsupported TLS version: [#1349](https://github.com/mysql-net/MySqlConnector/issues/1349).
 
 ### 2.2.6
 * Ignore deadlock exception when rolling back an XA transaction: [#1317](https://github.com/mysql-net/MySqlConnector/issues/1317).
