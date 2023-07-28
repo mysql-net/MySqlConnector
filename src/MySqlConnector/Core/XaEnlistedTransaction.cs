@@ -37,7 +37,9 @@ internal sealed class XaEnlistedTransaction : EnlistedTransactionBase
 	{
 		try
 		{
-			ExecuteXaCommand("END");
+			if (!IsPrepared)
+				ExecuteXaCommand("END");
+
 			ExecuteXaCommand("ROLLBACK");
 		}
 		catch (MySqlException ex) when (ex.ErrorCode is MySqlErrorCode.XARBDeadlock)
