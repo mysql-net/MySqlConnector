@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-07-21
+lastmod: 2023-07-30
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,18 @@ weight: 30
 ---
 
 # Version History
+
+### 2.3.0 Beta 3
+
+* Fix version parsing for MariaDB 11.0 and later: [#1311](https://github.com/mysql-net/MySqlConnector/pull/1311).
+* Support per-query variables for `CommandBehavior.SchemaOnly` and `SingleRow`: [#1312](https://github.com/mysql-net/MySqlConnector/pull/1312).
+* Perform XA rollback when preparing a transaction fails: [#1348](https://github.com/mysql-net/MySqlConnector/issues/1348).
+* Implement faster parsing for result sets with multiple rows: [#1330](https://github.com/mysql-net/MySqlConnector/pull/1330).
+* Add `MySqlDataSource.Name` and `MySqlDataSourceBuilder.UseName`.
+* Fix potential error in reallocating an internal buffer when writing ASCII text.
+* Update handling of `ActivityStatus` to latest conventions: [#1334](https://github.com/mysql-net/MySqlConnector/pull/1334).
+* Reduce overhead of `CommandTimeout`: [#1338](https://github.com/mysql-net/MySqlConnector/pull/1338)
+* Thanks to [Diego Dupin](https://github.com/rusher), [JackBOBO](https://github.com/JackBOBO), and [Piotr Kiełkowicz](https://github.com/Kielek) for contributions to this release.
 
 ### 2.3.0 Beta 2
 
