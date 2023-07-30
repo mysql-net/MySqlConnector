@@ -20,7 +20,7 @@ weight: 30
 * Add `MySqlDataSource.Name` and `MySqlDataSourceBuilder.UseName`.
 * Fix potential error in reallocating an internal buffer when writing ASCII text.
 * Update handling of `ActivityStatus` to latest conventions: [#1334](https://github.com/mysql-net/MySqlConnector/pull/1334).
-* Reduce overhead of `CommandTimeout`: [#1338](https://github.com/mysql-net/MySqlConnector/pull/1338)
+* Reduce overhead of `CommandTimeout`: [#1338](https://github.com/mysql-net/MySqlConnector/pull/1338).
 * Thanks to [Diego Dupin](https://github.com/rusher), [JackBOBO](https://github.com/JackBOBO), and [Piotr Kiełkowicz](https://github.com/Kielek) for contributions to this release.
 
 ### 2.3.0 Beta 2
