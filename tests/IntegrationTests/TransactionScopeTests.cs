@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Transactions;
 
 namespace IntegrationTests;
