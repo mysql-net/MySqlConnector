@@ -10,6 +10,9 @@ internal abstract class EnlistedTransactionBase : IEnlistmentNotification
 	// Whether the connection is idle, i.e., a client has closed it and is no longer using it
 	public bool IsIdle { get; set; }
 
+	// Whether to enter the PREPARED state, The rollback operation needs to determine if the Xa transaction has entered the PREPARED state.
+	public bool IsPrepared { get; set; }
+
 	public Transaction Transaction { get; private set; }
 
 	public void Start()
@@ -20,8 +23,16 @@ internal abstract class EnlistedTransactionBase : IEnlistmentNotification
 
 	void IEnlistmentNotification.Prepare(PreparingEnlistment preparingEnlistment)
 	{
-		OnPrepare(preparingEnlistment);
-		preparingEnlistment.Prepared();
+		try
+		{
+			OnPrepare(preparingEnlistment);
+			IsPrepared = true;
+			preparingEnlistment.Prepared();
+		}
+		catch (Exception ex)
+		{
+			preparingEnlistment.ForceRollback(ex);
+		}
 	}
 
 	void IEnlistmentNotification.Commit(Enlistment enlistment)
