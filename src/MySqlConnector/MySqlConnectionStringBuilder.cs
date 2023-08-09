@@ -1262,7 +1262,7 @@ internal abstract partial class MySqlConnectionStringOption
 #pragma warning restore SA1118 // Parameter should not span multiple lines
 
 #if NET8_0_OR_GREATER
-		s_options = options.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase, optimizeForReading: true);
+		s_options = options.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 #else
 		s_options = options;
 #endif
