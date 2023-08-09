@@ -840,6 +840,50 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 			Assert.Throws<NotSupportedException>(() => conn2.Open());
 		}
 	}
+
+	[Fact]
+	public void Bug1348()
+	{
+		var xid = string.Empty;
+		// TransactionAbortedException、MySqlException
+		Assert.ThrowsAny<Exception>(() =>
+		{
+			using (TransactionScope scope = new())
+			{
+				xid = System.Transactions.Transaction.Current.TransactionInformation.LocalIdentifier;
+				using var conn1 = new MySqlConnection(AppConfig.ConnectionString);
+				conn1.Open();
+
+				using var conn2 = new MySqlConnection(AppConfig.ConnectionString);
+				conn2.Open();
+				// Rolling back the second branch transaction early so that it has an exception in the preparation phase
+				var command2 = conn2.CreateCommand();
+				command2.CommandText = $"XA END '{xid}','2';XA ROLLBACK '{xid}','2'";
+				command2.ExecuteNonQuery();
+
+				scope.Complete();
+			}
+		});
+
+		// Asserts whether the first branch transaction is rolled back
+		using var conn = new MySqlConnection(AppConfig.ConnectionString);
+		conn.Open();
+		var command = conn.CreateCommand();
+		command.CommandText = $"XA RECOVER;";
+		using var reader = command.ExecuteReader();
+		var rollbacked = true;
+		while (reader.Read())
+		{
+			var branchID = reader.GetString(3);
+			if (branchID == $"{xid}1")
+			{
+				rollbacked = false;
+				break;
+			}
+		}
+
+		Assert.True(rollbacked, $"First branch transaction '{xid}1' not rolled back");
+	}
 #endif
 
 	DatabaseFixture m_database;

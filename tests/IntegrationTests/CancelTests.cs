@@ -21,7 +21,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 100, 1000);
 	}
 
-	[SkippableFact(ServerFeatures.CancelSleepSuccessfully)]
+	[Fact]
 	public void CancelCommand()
 	{
 		using var cmd = new MySqlCommand("SELECT SLEEP(5)", m_database.Connection);
@@ -32,14 +32,14 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		});
 
 		var stopwatch = Stopwatch.StartNew();
-		TestUtilities.AssertIsOne(cmd.ExecuteScalar());
+		TestUtilities.AssertExecuteScalarReturnsOneOrIsCanceled(cmd);
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
 
 		task.Wait(); // shouldn't throw
 	}
 
 #if !MYSQL_DATA
-	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.Timeout)]
 	public async Task CancelCommandWithPasswordCallback()
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
@@ -58,13 +58,13 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		});
 
 		var stopwatch = Stopwatch.StartNew();
-		TestUtilities.AssertIsOne(await command.ExecuteScalarAsync());
+		await TestUtilities.AssertExecuteScalarReturnsOneOrIsCanceledAsync(command);
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
 
 		task.Wait(); // shouldn't throw
 	}
 
-	[SkippableFact(ServerFeatures.CancelSleepSuccessfully | ServerFeatures.Timeout)]
+	[SkippableFact(ServerFeatures.Timeout)]
 	public async Task CancelCommandCancellationTokenWithPasswordCallback()
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
@@ -78,7 +78,7 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		using var command = new MySqlCommand("SELECT SLEEP(5)", connection);
 		using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
 		var stopwatch = Stopwatch.StartNew();
-		TestUtilities.AssertIsOne(await command.ExecuteScalarAsync(cts.Token));
+		await TestUtilities.AssertExecuteScalarReturnsOneOrIsCanceledAsync(command, cts.Token);
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
 	}
 #endif

@@ -235,23 +235,23 @@ internal static class ByteBufferWriterExtensions
 	{
 		switch (value)
 		{
-		case < 251:
-			writer.Write((byte) value);
-			break;
+			case < 251:
+				writer.Write((byte) value);
+				break;
 
-		case < 65536:
-			writer.Write((byte) 0xfc);
-			writer.Write((ushort) value);
-			break;
+			case < 65536:
+				writer.Write((byte) 0xfc);
+				writer.Write((ushort) value);
+				break;
 
-		case < 16777216:
-			writer.Write((uint) ((value << 8) | 0xfd));
-			break;
+			case < 16777216:
+				writer.Write((uint) ((value << 8) | 0xfd));
+				break;
 
-		default:
-			writer.Write((byte) 0xfe);
-			writer.Write(value);
-			break;
+			default:
+				writer.Write((byte) 0xfe);
+				writer.Write(value);
+				break;
 		}
 	}
 

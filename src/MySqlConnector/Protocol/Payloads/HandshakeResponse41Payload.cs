@@ -10,27 +10,27 @@ internal static class HandshakeResponse41Payload
 		var writer = new ByteBufferWriter();
 
 		var clientCapabilities = (ProtocolCapabilities.Protocol41 |
-		                          (cs.InteractiveSession ? ProtocolCapabilities.Interactive : 0) |
-		                          ProtocolCapabilities.LongPassword |
-		                          ProtocolCapabilities.Transactions |
-		                          ProtocolCapabilities.SecureConnection |
-		                          ProtocolCapabilities.PluginAuth |
-		                          ProtocolCapabilities.PluginAuthLengthEncodedClientData |
-		                          ProtocolCapabilities.MultiStatements |
-		                          ProtocolCapabilities.MultiResults |
-		                          (cs.AllowLoadLocalInfile ? ProtocolCapabilities.LocalFiles : 0) |
-		                          (string.IsNullOrWhiteSpace(cs.Database)
-			                          ? 0
-			                          : ProtocolCapabilities.ConnectWithDatabase) |
-		                          (cs.UseAffectedRows ? 0 : ProtocolCapabilities.FoundRows) |
-		                          (useCompression ? ProtocolCapabilities.Compress : ProtocolCapabilities.None) |
-		                          ProtocolCapabilities.ConnectionAttributes |
-		                          ProtocolCapabilities.SessionTrack |
-		                          ProtocolCapabilities.DeprecateEof |
-		                          ProtocolCapabilities.QueryAttributes |
-		                          ProtocolCapabilities.MariaDbComMulti |
-		                          ProtocolCapabilities.MariaDbCacheMetadata |
-		                          additionalCapabilities) & serverCapabilities;
+			(cs.InteractiveSession ? ProtocolCapabilities.Interactive : 0) |
+			ProtocolCapabilities.LongPassword |
+			ProtocolCapabilities.Transactions |
+			ProtocolCapabilities.SecureConnection |
+			ProtocolCapabilities.PluginAuth |
+			ProtocolCapabilities.PluginAuthLengthEncodedClientData |
+			ProtocolCapabilities.MultiStatements |
+			ProtocolCapabilities.MultiResults |
+			(cs.AllowLoadLocalInfile ? ProtocolCapabilities.LocalFiles : 0) |
+			(string.IsNullOrWhiteSpace(cs.Database)
+				? 0
+				: ProtocolCapabilities.ConnectWithDatabase) |
+			(cs.UseAffectedRows ? 0 : ProtocolCapabilities.FoundRows) |
+			(useCompression ? ProtocolCapabilities.Compress : ProtocolCapabilities.None) |
+			ProtocolCapabilities.ConnectionAttributes |
+			ProtocolCapabilities.SessionTrack |
+			ProtocolCapabilities.DeprecateEof |
+			ProtocolCapabilities.QueryAttributes |
+			ProtocolCapabilities.MariaDbComMulti |
+			ProtocolCapabilities.MariaDbCacheMetadata |
+			additionalCapabilities) & serverCapabilities;
 
 		writer.Write((int) clientCapabilities);
 		writer.Write(0x4000_0000);

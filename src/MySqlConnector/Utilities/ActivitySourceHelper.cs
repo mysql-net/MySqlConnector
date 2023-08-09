@@ -16,7 +16,6 @@ internal static class ActivitySourceHelper
 	public const string NetPeerNameTagName = "net.peer.name";
 	public const string NetPeerPortTagName = "net.peer.port";
 	public const string NetTransportTagName = "net.transport";
-	public const string StatusCodeTagName = "otel.status_code";
 	public const string ThreadIdTagName = "thread.id";
 
 	public const string DatabaseSystemValue = "mysql";
@@ -35,18 +34,10 @@ internal static class ActivitySourceHelper
 		return activity;
 	}
 
-	public static void SetSuccess(this Activity activity)
-	{
-		activity.SetStatus(ActivityStatusCode.Ok);
-		activity.SetTag(StatusCodeTagName, "OK");
-	}
-
 	public static void SetException(this Activity activity, Exception exception)
 	{
 		var description = exception is MySqlException mySqlException ? mySqlException.ErrorCode.ToString() : exception.Message;
 		activity.SetStatus(ActivityStatusCode.Error, description);
-		activity.SetTag(StatusCodeTagName, "ERROR");
-		activity.SetTag("otel.status_description", description);
 		activity.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
 		{
 			{ "exception.type", exception.GetType().FullName },

@@ -60,7 +60,12 @@ internal sealed class FakeMySqlServerConnection
 						break;
 
 					case CommandKind.Ping:
+						await SendAsync(stream, 1, WriteOk);
+						break;
+
 					case CommandKind.ResetConnection:
+						if (m_server.ResetDelay is { } resetDelay)
+							await Task.Delay(resetDelay);
 						await SendAsync(stream, 1, WriteOk);
 						break;
 

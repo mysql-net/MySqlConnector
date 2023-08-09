@@ -216,7 +216,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			else
 			{
 				m_enlistedTransaction = GetInitializedConnectionSettings().UseXaTransactions ?
-					(EnlistedTransactionBase)new XaEnlistedTransaction(transaction, this) :
+					(EnlistedTransactionBase) new XaEnlistedTransaction(transaction, this) :
 					new StandardEnlistedTransaction(transaction, this);
 				m_enlistedTransaction.Start();
 
@@ -360,7 +360,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		m_session.DatabaseOverride = databaseName;
 	}
 
-	public new MySqlCommand CreateCommand() => (MySqlCommand)base.CreateCommand();
+	public new MySqlCommand CreateCommand() => (MySqlCommand) base.CreateCommand();
 
 #pragma warning disable CA2012 // Safe because method completes synchronously
 	public bool Ping() => PingAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
@@ -447,8 +447,6 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			if (m_connectionSettings.AutoEnlist && System.Transactions.Transaction.Current is not null)
 				EnlistTransaction(System.Transactions.Transaction.Current);
-
-			activity?.SetSuccess();
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
@@ -915,7 +913,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			if (pool is not null)
 			{
 				// this returns an open session
-				return await pool.GetSessionAsync(this, startTickCount, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
+				return await pool.GetSessionAsync(this, startTickCount, connectionSettings.ConnectionTimeoutMilliseconds, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
 			}
 			else
 			{

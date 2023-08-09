@@ -45,9 +45,9 @@ internal sealed class UnixDomainSocketEndPoint : EndPoint
 	public UnixDomainSocketEndPoint(string filename)
 	{
 		if (filename is null)
-			throw new ArgumentNullException (nameof(filename));
+			throw new ArgumentNullException(nameof(filename));
 		if (filename.Length == 0)
-			throw new ArgumentException ("Cannot be empty.", nameof(filename));
+			throw new ArgumentException("Cannot be empty.", nameof(filename));
 		Filename = filename;
 	}
 

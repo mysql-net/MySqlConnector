@@ -154,19 +154,19 @@ internal sealed class ConnectionSettings
 	{
 		switch (guidFormat)
 		{
-		case MySqlGuidFormat.Default:
-			return oldGuids ? MySqlGuidFormat.LittleEndianBinary16 : MySqlGuidFormat.Char36;
-		case MySqlGuidFormat.None:
-		case MySqlGuidFormat.Char36:
-		case MySqlGuidFormat.Char32:
-		case MySqlGuidFormat.Binary16:
-		case MySqlGuidFormat.TimeSwapBinary16:
-		case MySqlGuidFormat.LittleEndianBinary16:
-			if (oldGuids)
-				throw new MySqlException("OldGuids cannot be used with GuidFormat");
-			return guidFormat;
-		default:
-			throw new MySqlException("Unknown GuidFormat");
+			case MySqlGuidFormat.Default:
+				return oldGuids ? MySqlGuidFormat.LittleEndianBinary16 : MySqlGuidFormat.Char36;
+			case MySqlGuidFormat.None:
+			case MySqlGuidFormat.Char36:
+			case MySqlGuidFormat.Char32:
+			case MySqlGuidFormat.Binary16:
+			case MySqlGuidFormat.TimeSwapBinary16:
+			case MySqlGuidFormat.LittleEndianBinary16:
+				if (oldGuids)
+					throw new MySqlException("OldGuids cannot be used with GuidFormat");
+				return guidFormat;
+			default:
+				throw new MySqlException("Unknown GuidFormat");
 		}
 	}
 

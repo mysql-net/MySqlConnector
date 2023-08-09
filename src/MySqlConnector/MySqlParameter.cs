@@ -215,21 +215,21 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			writer.Write((byte) '\'');
 			switch (charValue)
 			{
-			case '\0' when !noBackslashEscapes:
-				writer.Write((ushort) 0x305C); // \0
-				break;
+				case '\0' when !noBackslashEscapes:
+					writer.Write((ushort) 0x305C); // \0
+					break;
 
-			case '\'':
-				writer.Write((ushort) 0x2727); // ''
-				break;
+				case '\'':
+					writer.Write((ushort) 0x2727); // ''
+					break;
 
-			case '\\' when !noBackslashEscapes:
-				writer.Write((ushort) 0x5C5C); // \\
-				break;
+				case '\\' when !noBackslashEscapes:
+					writer.Write((ushort) 0x5C5C); // \\
+					break;
 
-			default:
-				writer.Write(charValue.ToString());
-				break;
+				default:
+					writer.Write(charValue.ToString());
+					break;
 			}
 			writer.Write((byte) '\'');
 		}

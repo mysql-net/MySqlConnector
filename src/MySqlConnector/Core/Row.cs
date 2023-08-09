@@ -59,7 +59,7 @@ internal sealed class Row
 						ColumnType.Tiny => 1,
 						ColumnType.Date or ColumnType.DateTime or ColumnType.NewDate or ColumnType.Timestamp or ColumnType.Time => reader.ReadByte(),
 						ColumnType.DateTime2 or ColumnType.Timestamp2 => throw new NotSupportedException($"ColumnType {columnDefinition.ColumnType} is not supported"),
-						_ => checked((int)reader.ReadLengthEncodedInteger()),
+						_ => checked((int) reader.ReadLengthEncodedInteger()),
 					};
 
 					m_dataLengths[column] = length;

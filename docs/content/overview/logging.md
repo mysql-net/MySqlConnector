@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-01-21
+lastmod: 2023-07-07
 date: 2018-01-20
 menu:
   main:
@@ -71,5 +71,5 @@ Install [MySqlConnector.Logging.Serilog](https://www.nuget.org/packages/MySqlCon
 Add the following line of code to your application startup routine:
 
 ```csharp
-MySqlConnectorLogManager.Provider = new SerilogLoggerProvider(loggerFactory);
+MySqlConnectorLogManager.Provider = new SerilogLoggerProvider();
 ```

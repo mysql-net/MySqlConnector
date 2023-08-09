@@ -78,30 +78,30 @@ internal sealed class ResultSet
 							File.OpenRead(localInfile.FileName);
 						switch (source)
 						{
-						case Stream stream:
-							var buffer = ArrayPool<byte>.Shared.Rent(1048576);
-							try
-							{
-								int byteCount;
-								while ((byteCount = await stream.ReadAsync(buffer, 0, buffer.Length, CancellationToken.None).ConfigureAwait(false)) > 0)
+							case Stream stream:
+								var buffer = ArrayPool<byte>.Shared.Rent(1048576);
+								try
 								{
-									payload = new(new ArraySegment<byte>(buffer, 0, byteCount));
-									await Session.SendReplyAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
+									int byteCount;
+									while ((byteCount = await stream.ReadAsync(buffer, 0, buffer.Length, CancellationToken.None).ConfigureAwait(false)) > 0)
+									{
+										payload = new(new ArraySegment<byte>(buffer, 0, byteCount));
+										await Session.SendReplyAsync(payload, ioBehavior, CancellationToken.None).ConfigureAwait(false);
+									}
 								}
-							}
-							finally
-							{
-								ArrayPool<byte>.Shared.Return(buffer);
-								stream.Dispose();
-							}
-							break;
+								finally
+								{
+									ArrayPool<byte>.Shared.Return(buffer);
+									stream.Dispose();
+								}
+								break;
 
-						case MySqlBulkCopy bulkCopy:
-							await bulkCopy.SendDataReaderAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-							break;
+							case MySqlBulkCopy bulkCopy:
+								await bulkCopy.SendDataReaderAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+								break;
 
-						default:
-							throw new InvalidOperationException($"Unsupported Source type: {source.GetType().Name}");
+							default:
+								throw new InvalidOperationException($"Unsupported Source type: {source.GetType().Name}");
 						}
 					}
 					catch (Exception ex)
@@ -231,7 +231,6 @@ internal sealed class ResultSet
 		if (BufferState is ResultSetState.HasMoreData or ResultSetState.NoMoreData or ResultSetState.None)
 			return new ValueTask<Row?>(default(Row?));
 
-		using var registration = Command.CancellableCommand.RegisterCancel(cancellationToken);
 		var payloadValueTask = Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None);
 		return payloadValueTask.IsCompletedSuccessfully
 			? new ValueTask<Row?>(ScanRowAsyncRemainder(this, payloadValueTask.Result, row))

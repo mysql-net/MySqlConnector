@@ -56,10 +56,10 @@ internal class NegotiateToMySqlConverterStream : Stream
 	private static void CreateNegotiateStreamMessageHeader(byte[] buffer, int offset, byte messageId, long payloadLength)
 	{
 		buffer[offset] = messageId;
-		buffer[offset+1] = NegotiateStreamConstants.MajorVersion;
-		buffer[offset+2] = NegotiateStreamConstants.MinorVersion;
-		buffer[offset+3] = (byte) (payloadLength >> 8);
-		buffer[offset+4] = (byte) (payloadLength & 0xff);
+		buffer[offset + 1] = NegotiateStreamConstants.MajorVersion;
+		buffer[offset + 2] = NegotiateStreamConstants.MinorVersion;
+		buffer[offset + 3] = (byte) (payloadLength >> 8);
+		buffer[offset + 4] = (byte) (payloadLength & 0xff);
 	}
 	public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
 	{
@@ -90,13 +90,13 @@ internal class NegotiateToMySqlConverterStream : Stream
 			// during pluggable authentication packet exchanges.
 			switch (payloadMemory.Span[0])
 			{
-			case 0x0:
-				MySQLProtocolPayload = payload;
-				CreateNegotiateStreamMessageHeader(buffer, offset, NegotiateStreamConstants.HandshakeDone, 0);
-				return NegotiateStreamConstants.HeaderLength;
-			case 0x1:
-				payloadMemory = payloadMemory[1..];
-				break;
+				case 0x0:
+					MySQLProtocolPayload = payload;
+					CreateNegotiateStreamMessageHeader(buffer, offset, NegotiateStreamConstants.HandshakeDone, 0);
+					return NegotiateStreamConstants.HeaderLength;
+				case 0x1:
+					payloadMemory = payloadMemory[1..];
+					break;
 			}
 
 			m_readBuffer = new(payloadMemory.ToArray());
@@ -125,11 +125,11 @@ internal class NegotiateToMySqlConverterStream : Stream
 				throw new InvalidDataException("Cannot parse NegotiateStream handshake message header");
 
 			// Parse NegotiateStream handshake header
-			var messageId = buffer[offset+0];
-			var majorProtocolVersion = buffer[offset+1];
-			var minorProtocolVersion = buffer[offset+2];
-			var payloadSizeLow = buffer[offset+4];
-			var payloadSizeHigh = buffer[offset+3];
+			var messageId = buffer[offset + 0];
+			var majorProtocolVersion = buffer[offset + 1];
+			var minorProtocolVersion = buffer[offset + 2];
+			var payloadSizeLow = buffer[offset + 4];
+			var payloadSizeHigh = buffer[offset + 3];
 
 			if (majorProtocolVersion != NegotiateStreamConstants.MajorVersion ||
 				minorProtocolVersion != NegotiateStreamConstants.MinorVersion)
