@@ -1,23 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:System.Data.Common.DbDataSource</Target>
-    <Left>lib/net6.0/MySqlConnector.dll</Left>
-    <Right>lib/net7.0/MySqlConnector.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0008</DiagnosticId>
-    <Target>T:MySqlConnector.MySqlBatchCommandCollection</Target>
-    <Left>lib/netstandard2.1/MySqlConnector.dll</Left>
-    <Right>lib/net6.0/MySqlConnector.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:System.Data.Common.DbColumn</Target>
-    <Left>lib/net461/MySqlConnector.dll</Left>
-    <Right>lib/net471/MySqlConnector.dll</Right>
-  </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:System.Data.Common.DbColumn</Target>
@@ -32,10 +15,50 @@
     <Right>lib/net471/MySqlConnector.dll</Right>
   </Suppression>
   <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:System.Data.Common.DbDataSource</Target>
+    <Left>lib/net6.0/MySqlConnector.dll</Left>
+    <Right>lib/net7.0/MySqlConnector.dll</Right>
+  </Suppression>
+  <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:MySqlConnector.MySqlDataReader</Target>
     <Left>lib/netstandard2.0/MySqlConnector.dll</Left>
     <Right>lib/net462/MySqlConnector.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0008</DiagnosticId>
+    <Target>T:MySqlConnector.MySqlBatchCommandCollection</Target>
+    <Left>lib/netstandard2.1/MySqlConnector.dll</Left>
+    <Right>lib/net6.0/MySqlConnector.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP1002</DiagnosticId>
+    <Target>System.Data.Common, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</Target>
+    <Left>lib/net5.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP1002</DiagnosticId>
+    <Target>System.Runtime, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</Target>
+    <Left>lib/net5.0/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP1002</DiagnosticId>
+    <Target>System.Data.Common, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</Target>
+    <Left>lib/netcoreapp3.1/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP1002</DiagnosticId>
+    <Target>System.Runtime, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</Target>
+    <Left>lib/netcoreapp3.1/MySqlConnector.dll</Left>
+    <Right>lib/netstandard2.1/MySqlConnector.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>PKV006</DiagnosticId>
