@@ -354,11 +354,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	internal ValueTask<MySqlDataReader> ExecuteReaderNoResetTimeoutAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (!IsValid(out var exception))
-#if NET5_0_OR_GREATER
-			return ValueTask.FromException<MySqlDataReader>(exception);
-#else
-			return new ValueTask<MySqlDataReader>(Task.FromException<MySqlDataReader>(exception));
-#endif
+			return ValueTaskExtensions.FromException<MySqlDataReader>(exception);
 
 		var activity = NoActivity ? null : Connection!.Session.StartActivity(ActivitySourceHelper.ExecuteActivityName,
 			ActivitySourceHelper.DatabaseStatementTagName, CommandText);

@@ -1,8 +1,22 @@
+using System.Runtime.CompilerServices;
+
 namespace MySqlConnector.Utilities;
 
 internal static class ValueTaskExtensions
 {
-	public static ValueTask FromException(Exception exception) => new(Task.FromException(exception));
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static ValueTask FromException(Exception exception) =>
+#if NET5_0_OR_GREATER
+		ValueTask.FromException(exception);
+#else
+		new(Task.FromException(exception));
+#endif
 
-	public static ValueTask<T> FromException<T>(Exception exception) => new(Task.FromException<T>(exception));
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static ValueTask<T> FromException<T>(Exception exception) =>
+#if NET5_0_OR_GREATER
+		ValueTask.FromException<T>(exception);
+#else
+		new(Task.FromException<T>(exception));
+#endif
 }

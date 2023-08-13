@@ -153,7 +153,7 @@ public sealed class MySqlBatch :
 	private ValueTask<MySqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (!IsValid(out var exception))
-			return new ValueTask<MySqlDataReader>(Task.FromException<MySqlDataReader>(exception));
+			return ValueTaskExtensions.FromException<MySqlDataReader>(exception);
 
 		CurrentCommandBehavior = behavior;
 		foreach (MySqlBatchCommand batchCommand in BatchCommands)
