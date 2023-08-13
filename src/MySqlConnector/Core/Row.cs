@@ -16,8 +16,7 @@ internal sealed class Row
 		ResultSet = resultSet;
 
 		var columnDefinitions = ResultSet.ColumnDefinitions!;
-		m_dataOffsets = new int[columnDefinitions.Length];
-		m_dataLengths = new int[columnDefinitions.Length];
+		m_dataOffsetLengths = new OffsetLength[columnDefinitions.Length];
 		m_columnReaders = new ColumnReader[columnDefinitions.Length];
 		for (var column = 0; column < m_columnReaders.Length; column++)
 			m_columnReaders[column] = ColumnReader.Create(isBinary, columnDefinitions[column], resultSet.Connection);
@@ -28,27 +27,23 @@ internal sealed class Row
 		m_data = data;
 		if (m_isBinary)
 		{
-			Array.Clear(m_dataOffsets, 0, m_dataOffsets.Length);
-			for (var column = 0; column < m_dataOffsets.Length; column++)
+			Array.Clear(m_dataOffsetLengths, 0, m_dataOffsetLengths.Length);
+			for (var column = 0; column < m_dataOffsetLengths.Length; column++)
 			{
 				if ((data.Span[(column + 2) / 8 + 1] & (1 << ((column + 2) % 8))) != 0)
 				{
 					// column is NULL
-					m_dataOffsets[column] = -1;
+					m_dataOffsetLengths[column] = (-1, 0);
 				}
 			}
 
 			var reader = new ByteArrayReader(data.Span);
 
 			// skip packet header (1 byte) and NULL bitmap (formula for length at https://dev.mysql.com/doc/internals/en/null-bitmap.html)
-			reader.Offset += 1 + (m_dataOffsets.Length + 7 + 2) / 8;
-			for (var column = 0; column < m_dataOffsets.Length; column++)
+			reader.Offset += 1 + (m_dataOffsetLengths.Length + 7 + 2) / 8;
+			for (var column = 0; column < m_dataOffsetLengths.Length; column++)
 			{
-				if (m_dataOffsets[column] == -1)
-				{
-					m_dataLengths[column] = 0;
-				}
-				else
+				if (m_dataOffsetLengths[column].Offset != -1)
 				{
 					var columnDefinition = ResultSet.ColumnDefinitions![column];
 					var length = columnDefinition.ColumnType switch
@@ -62,22 +57,19 @@ internal sealed class Row
 						_ => checked((int) reader.ReadLengthEncodedInteger()),
 					};
 
-					m_dataLengths[column] = length;
-					m_dataOffsets[column] = reader.Offset;
+					m_dataOffsetLengths[column] = (reader.Offset, length);
+					reader.Offset += length;
 				}
-
-				reader.Offset += m_dataLengths[column];
 			}
 		}
 		else
 		{
 			var reader = new ByteArrayReader(data.Span);
-			for (var column = 0; column < m_dataOffsets.Length; column++)
+			for (var column = 0; column < m_dataOffsetLengths.Length; column++)
 			{
 				var length = reader.ReadLengthEncodedIntegerOrNull();
-				m_dataLengths[column] = length == -1 ? 0 : length;
-				m_dataOffsets[column] = length == -1 ? -1 : reader.Offset;
-				reader.Offset += m_dataLengths[column];
+				m_dataOffsetLengths[column] = length == -1 ? (-1, 0) : (reader.Offset, length);
+				reader.Offset += m_dataOffsetLengths[column].Length;
 			}
 		}
 	}
@@ -87,10 +79,11 @@ internal sealed class Row
 		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length)
 			throw new ArgumentOutOfRangeException(nameof(ordinal), $"value must be between 0 and {ResultSet.ColumnDefinitions!.Length - 1}");
 
-		if (m_dataOffsets[ordinal] == -1)
+		if (m_dataOffsetLengths[ordinal].Offset == -1)
 			return DBNull.Value;
 
-		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
+		var (offset, length) = m_dataOffsetLengths[ordinal];
+		var data = m_data.Slice(offset, length).Span;
 		var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
 		return m_columnReaders[ordinal].ReadValue(data, columnDefinition);
 	}
@@ -160,15 +153,15 @@ internal sealed class Row
 		{
 			// this isn't required by the DbDataReader.GetBytes API documentation, but is what mysql-connector-net does
 			// (as does SqlDataReader: http://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqldatareader.getbytes.aspx)
-			return m_dataLengths[ordinal];
+			return m_dataOffsetLengths[ordinal].Length;
 		}
 
 		CheckBufferArguments(dataOffset, buffer, bufferOffset, length);
 
 		var offset = (int) dataOffset;
-		var lengthToCopy = Math.Max(0, Math.Min(m_dataLengths[ordinal] - offset, length));
+		var lengthToCopy = Math.Max(0, Math.Min(m_dataOffsetLengths[ordinal].Length - offset, length));
 		if (lengthToCopy > 0)
-			m_data.Slice(m_dataOffsets[ordinal] + offset, lengthToCopy).Span.CopyTo(buffer.AsSpan(bufferOffset));
+			m_data.Slice(m_dataOffsetLengths[ordinal].Offset + offset, lengthToCopy).Span.CopyTo(buffer.AsSpan(bufferOffset));
 		return lengthToCopy;
 	}
 
@@ -238,10 +231,11 @@ internal sealed class Row
 	{
 		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length)
 			throw new ArgumentOutOfRangeException(nameof(ordinal), $"value must be between 0 and {ResultSet.ColumnDefinitions!.Length - 1}");
-		if (m_dataOffsets[ordinal] == -1)
+		if (m_dataOffsetLengths[ordinal].Offset == -1)
 			throw new InvalidCastException("Can't convert NULL to Int32");
 
-		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
+		var (offset, length) = m_dataOffsetLengths[ordinal];
+		var data = m_data.Slice(offset, length).Span;
 		var columnDefinition = ResultSet.ColumnDefinitions[ordinal];
 		if (m_columnReaders[ordinal].TryReadInt32(data, columnDefinition) is { } value)
 			return value;
@@ -347,8 +341,9 @@ internal sealed class Row
 	public Stream GetStream(int ordinal)
 	{
 		CheckBinaryColumn(ordinal);
+		var (offset, length) = m_dataOffsetLengths[ordinal];
 		return MemoryMarshal.TryGetArray(m_data, out var arraySegment) ?
-			new MemoryStream(arraySegment.Array!, arraySegment.Offset + m_dataOffsets[ordinal], m_dataLengths[ordinal], writable: false) :
+			new MemoryStream(arraySegment.Array!, arraySegment.Offset + offset, length, writable: false) :
 			throw new InvalidOperationException("Can't get underlying array.");
 	}
 
@@ -413,7 +408,8 @@ internal sealed class Row
 	{
 		if (IsDBNull(ordinal))
 			return (MySqlDecimal) GetValue(ordinal);
-		var data = m_data.Slice(m_dataOffsets[ordinal], m_dataLengths[ordinal]).Span;
+		var (offset, length) = m_dataOffsetLengths[ordinal];
+		var data = m_data.Slice(offset, length).Span;
 		var columnType = ResultSet.ColumnDefinitions![ordinal].ColumnType;
 		if (columnType is ColumnType.NewDecimal or ColumnType.Decimal)
 			return new MySqlDecimal(Encoding.UTF8.GetString(data));
@@ -428,7 +424,7 @@ internal sealed class Row
 		return count;
 	}
 
-	public bool IsDBNull(int ordinal) => m_dataOffsets[ordinal] == -1;
+	public bool IsDBNull(int ordinal) => m_dataOffsetLengths[ordinal].Offset == -1;
 
 	public object this[int ordinal] => GetValue(ordinal);
 
@@ -439,7 +435,7 @@ internal sealed class Row
 
 	private void CheckBinaryColumn(int ordinal)
 	{
-		if (m_dataOffsets[ordinal] == -1)
+		if (m_dataOffsetLengths[ordinal].Offset == -1)
 			throw new InvalidCastException("Column is NULL.");
 
 		var column = ResultSet.ColumnDefinitions![ordinal];
@@ -469,9 +465,28 @@ internal sealed class Row
 			throw new ArgumentException(nameof(bufferOffset) + " + " + nameof(length) + " cannot exceed " + nameof(buffer) + "." + nameof(buffer.Length), nameof(length));
 	}
 
+	private readonly struct OffsetLength
+	{
+		public OffsetLength(int offset, int length)
+		{
+			Offset = offset;
+			Length = length;
+		}
+
+		public static implicit operator OffsetLength((int Offset, int Length) x) => new(x.Offset, x.Length);
+
+		public void Deconstruct(out int offset, out int length)
+		{
+			offset = Offset;
+			length = Length;
+		}
+
+		public int Offset { get; }
+		public int Length { get; }
+	}
+
 	private readonly bool m_isBinary;
-	private readonly int[] m_dataOffsets;
-	private readonly int[] m_dataLengths;
+	private readonly OffsetLength[] m_dataOffsetLengths;
 	private readonly ColumnReader[] m_columnReaders;
 	private ReadOnlyMemory<byte> m_data;
 }
