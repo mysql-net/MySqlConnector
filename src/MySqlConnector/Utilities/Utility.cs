@@ -3,6 +3,7 @@ using System.Buffers.Text;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography;
@@ -512,9 +513,8 @@ internal static class Utility
 
 	public static void SwapBytes(Span<byte> bytes, int offset1, int offset2)
 	{
-		byte swap = bytes[offset1];
-		bytes[offset1] = bytes[offset2];
-		bytes[offset2] = swap;
+		ref var first = ref Unsafe.AsRef(bytes[0]);
+		(Unsafe.Add(ref first, offset2), Unsafe.Add(ref first, offset1)) = (Unsafe.Add(ref first, offset1), Unsafe.Add(ref first, offset2));
 	}
 
 #if NET462
