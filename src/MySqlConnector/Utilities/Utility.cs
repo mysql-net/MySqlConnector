@@ -510,7 +510,7 @@ internal static class Utility
 	public static void Write(this Stream stream, ReadOnlyMemory<byte> data) => stream.Write(data.Span);
 #endif
 
-	public static void SwapBytes(byte[] bytes, int offset1, int offset2)
+	public static void SwapBytes(Span<byte> bytes, int offset1, int offset2)
 	{
 		byte swap = bytes[offset1];
 		bytes[offset1] = bytes[offset2];

@@ -404,7 +404,12 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			StatementPreparerOptions guidOptions = options & StatementPreparerOptions.GuidFormatMask;
 			if (guidOptions is StatementPreparerOptions.GuidFormatBinary16 or StatementPreparerOptions.GuidFormatTimeSwapBinary16 or StatementPreparerOptions.GuidFormatLittleEndianBinary16)
 			{
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+				Span<byte> bytes = stackalloc byte[16];
+				guidValue.TryWriteBytes(bytes);
+#else
 				var bytes = guidValue.ToByteArray();
+#endif
 				if (guidOptions != StatementPreparerOptions.GuidFormatLittleEndianBinary16)
 				{
 					Utility.SwapBytes(bytes, 0, 3);
@@ -710,7 +715,12 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			StatementPreparerOptions guidOptions = options & StatementPreparerOptions.GuidFormatMask;
 			if (guidOptions is StatementPreparerOptions.GuidFormatBinary16 or StatementPreparerOptions.GuidFormatTimeSwapBinary16 or StatementPreparerOptions.GuidFormatLittleEndianBinary16)
 			{
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+				Span<byte> bytes = stackalloc byte[16];
+				guidValue.TryWriteBytes(bytes);
+#else
 				var bytes = guidValue.ToByteArray();
+#endif
 				if (guidOptions != StatementPreparerOptions.GuidFormatLittleEndianBinary16)
 				{
 					Utility.SwapBytes(bytes, 0, 3);
