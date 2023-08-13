@@ -412,117 +412,65 @@ internal static class ProtocolUtility
 		}
 	}
 
-	private static ValueTask<Packet> ReadPacketAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
+	public static async ValueTask<ArraySegment<byte>> ReadPayloadAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegmentHolder<byte> previousPayloads, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
 	{
-		var headerBytesTask = bufferedByteReader.ReadBytesAsync(byteHandler, 4, ioBehavior);
-		if (headerBytesTask.IsCompletedSuccessfully)
-			return ReadPacketAfterHeader(headerBytesTask.Result, bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior);
-		return AddContinuation(headerBytesTask, bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior);
-
-		static async ValueTask<Packet> AddContinuation(ValueTask<ArraySegment<byte>> headerBytes, BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior) =>
-			await ReadPacketAfterHeader(await headerBytes.ConfigureAwait(false), bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior).ConfigureAwait(false);
-	}
-
-	private static ValueTask<Packet> ReadPacketAfterHeader(ReadOnlySpan<byte> headerBytes, BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
-	{
-		if (headerBytes.Length < 4)
+		previousPayloads.Clear();
+		while (true)
 		{
-			return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ? default :
-				ValueTaskExtensions.FromException<Packet>(new EndOfStreamException($"Expected to read 4 header bytes but only received {headerBytes.Length:d}."));
-		}
+			// read the packet header
+			var headerBytes = await bufferedByteReader.ReadBytesAsync(byteHandler, 4, ioBehavior).ConfigureAwait(false);
+			if (headerBytes.Count < 4)
+			{
+				return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ? default :
+					throw new EndOfStreamException($"Expected to read 4 header bytes but only received {headerBytes.Count:d}.");
+			}
 
-		var payloadLength = (int) SerializationUtility.ReadUInt32(headerBytes[..3]);
-		int packetSequenceNumber = headerBytes[3];
+			// read values from the header before the memory is potentially overwritten by ReadBytesAsync
+			var payloadLength = (int) SerializationUtility.ReadUInt32(headerBytes.AsSpan()[..3]);
+			int packetSequenceNumber = headerBytes.AsSpan()[3];
+			var expectedSequenceNumber = getNextSequenceNumber() % 256;
 
-		Exception? packetOutOfOrderException = null;
-		var expectedSequenceNumber = getNextSequenceNumber() % 256;
-		if (expectedSequenceNumber != -1 && packetSequenceNumber != expectedSequenceNumber)
-			packetOutOfOrderException = MySqlProtocolException.CreateForPacketOutOfOrder(expectedSequenceNumber, packetSequenceNumber);
+			// read the packet payload
+			var payloadBytes = await bufferedByteReader.ReadBytesAsync(byteHandler, payloadLength, ioBehavior).ConfigureAwait(false);
 
-		var payloadBytesTask = bufferedByteReader.ReadBytesAsync(byteHandler, payloadLength, ioBehavior);
-		if (payloadBytesTask.IsCompletedSuccessfully)
-			return CreatePacketFromPayload(payloadBytesTask.Result, payloadLength, protocolErrorBehavior, packetOutOfOrderException);
-		return AddContinuation(payloadBytesTask, payloadLength, protocolErrorBehavior, packetOutOfOrderException);
-
-		static async ValueTask<Packet> AddContinuation(ValueTask<ArraySegment<byte>> payloadBytesTask, int payloadLength, ProtocolErrorBehavior protocolErrorBehavior, Exception? packetOutOfOrderException) =>
-			await CreatePacketFromPayload(await payloadBytesTask.ConfigureAwait(false), payloadLength, protocolErrorBehavior, packetOutOfOrderException).ConfigureAwait(false);
-	}
-
-	private static ValueTask<Packet> CreatePacketFromPayload(ArraySegment<byte> payloadBytes, int payloadLength, ProtocolErrorBehavior protocolErrorBehavior, Exception? exception)
-	{
-		if (exception is not null)
-		{
-			if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
-				return default;
-
+			Packet packet;
+			if (expectedSequenceNumber != -1 && packetSequenceNumber != expectedSequenceNumber)
+			{
+				if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
+					packet = default;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-			if (payloadBytes is [ ErrorPayload.Signature, .. ])
+				else if (payloadBytes is [ ErrorPayload.Signature, .. ])
 #else
-			if (payloadBytes.Count > 0 && payloadBytes.AsSpan()[0] == ErrorPayload.Signature)
+				else if (payloadBytes.Count > 0 && payloadBytes.AsSpan()[0] == ErrorPayload.Signature)
 #endif
-				return new ValueTask<Packet>(new Packet(payloadBytes));
+					packet = new(payloadBytes);
+				else
+					throw MySqlProtocolException.CreateForPacketOutOfOrder(expectedSequenceNumber, packetSequenceNumber);
+			}
+			else
+			{
+				packet = payloadBytes.Count >= payloadLength ? new(payloadBytes) :
+					protocolErrorBehavior == ProtocolErrorBehavior.Throw ? throw new EndOfStreamException($"Expected to read {payloadLength:d} payload bytes but only received {payloadBytes.Count:d}.") :
+					default;
+			}
 
-			return ValueTaskExtensions.FromException<Packet>(exception);
+			// if this is a complete packet, return it
+			if (previousPayloads.Count == 0 && packet.Contents.Count < MaxPacketSize)
+				return packet.Contents;
+
+			// resize the buffer of previous payloads if necessary, then append this payload to it
+			var previousPayloadsArray = previousPayloads.Array;
+			if (previousPayloadsArray is null)
+				previousPayloadsArray = new byte[ProtocolUtility.MaxPacketSize + 1];
+			else if (previousPayloads.Offset + previousPayloads.Count + packet.Contents.Count > previousPayloadsArray.Length)
+				Array.Resize(ref previousPayloadsArray, previousPayloadsArray.Length * 2);
+
+			packet.Contents.AsSpan().CopyTo(previousPayloadsArray.AsSpan(previousPayloads.Offset + previousPayloads.Count));
+			previousPayloads.ArraySegment = new(previousPayloadsArray, previousPayloads.Offset, previousPayloads.Count + packet.Contents.Count);
+
+			if (packet.Contents.Count < ProtocolUtility.MaxPacketSize)
+				return previousPayloads.ArraySegment;
 		}
-
-		return payloadBytes.Count >= payloadLength ? new ValueTask<Packet>(new Packet(payloadBytes)) :
-			protocolErrorBehavior == ProtocolErrorBehavior.Throw ? ValueTaskExtensions.FromException<Packet>(new EndOfStreamException($"Expected to read {payloadLength:d} payload bytes but only received {payloadBytes.Count:d}.")) :
-			default;
-	}
-
-	public static ValueTask<ArraySegment<byte>> ReadPayloadAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegmentHolder<byte> cache, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
-	{
-		cache.Clear();
-		return DoReadPayloadAsync(bufferedByteReader, byteHandler, getNextSequenceNumber, cache, protocolErrorBehavior, ioBehavior);
-	}
-
-	private static ValueTask<ArraySegment<byte>> DoReadPayloadAsync(BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegmentHolder<byte> previousPayloads, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
-	{
-		var readPacketTask = ReadPacketAsync(bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior);
-		while (readPacketTask.IsCompletedSuccessfully)
-		{
-			if (HasReadPayload(previousPayloads, readPacketTask.Result, out var result))
-				return result;
-
-			readPacketTask = ReadPacketAsync(bufferedByteReader, byteHandler, getNextSequenceNumber, protocolErrorBehavior, ioBehavior);
-		}
-
-		return AddContinuation(readPacketTask, bufferedByteReader, byteHandler, getNextSequenceNumber, previousPayloads, protocolErrorBehavior, ioBehavior);
-
-		static async ValueTask<ArraySegment<byte>> AddContinuation(ValueTask<Packet> readPacketTask, BufferedByteReader bufferedByteReader, IByteHandler byteHandler, Func<int> getNextSequenceNumber, ArraySegmentHolder<byte> previousPayloads, ProtocolErrorBehavior protocolErrorBehavior, IOBehavior ioBehavior)
-		{
-			var packet = await readPacketTask.ConfigureAwait(false);
-			var resultTask = HasReadPayload(previousPayloads, packet, out var result) ? result :
-				DoReadPayloadAsync(bufferedByteReader, byteHandler, getNextSequenceNumber, previousPayloads, protocolErrorBehavior, ioBehavior);
-			return await resultTask.ConfigureAwait(false);
-		}
-	}
-
-	private static bool HasReadPayload(ArraySegmentHolder<byte> previousPayloads, Packet packet, out ValueTask<ArraySegment<byte>> result)
-	{
-		if (previousPayloads.Count == 0 && packet.Contents.Count < MaxPacketSize)
-		{
-			result = new(packet.Contents);
-			return true;
-		}
-
-		var previousPayloadsArray = previousPayloads.Array;
-		if (previousPayloadsArray is null)
-			previousPayloadsArray = new byte[ProtocolUtility.MaxPacketSize + 1];
-		else if (previousPayloads.Offset + previousPayloads.Count + packet.Contents.Count > previousPayloadsArray.Length)
-			Array.Resize(ref previousPayloadsArray, previousPayloadsArray.Length * 2);
-
-		Buffer.BlockCopy(packet.Contents.Array!, packet.Contents.Offset, previousPayloadsArray, previousPayloads.Offset + previousPayloads.Count, packet.Contents.Count);
-		previousPayloads.ArraySegment = new(previousPayloadsArray, previousPayloads.Offset, previousPayloads.Count + packet.Contents.Count);
-
-		if (packet.Contents.Count < ProtocolUtility.MaxPacketSize)
-		{
-			result = new(previousPayloads.ArraySegment);
-			return true;
-		}
-
-		result = default;
-		return false;
 	}
 
 	public static ValueTask WritePayloadAsync(IByteHandler byteHandler, Func<int> getNextSequenceNumber, ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
