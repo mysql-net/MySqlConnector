@@ -197,15 +197,15 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		}
 		else if (Value is string stringValue)
 		{
-			WriteString(writer, noBackslashEscapes, writeDelimiters: true, stringValue.AsSpan());
+			WriteString(writer, noBackslashEscapes, stringValue.AsSpan());
 		}
 		else if (Value is ReadOnlyMemory<char> readOnlyMemoryChar)
 		{
-			WriteString(writer, noBackslashEscapes, writeDelimiters: true, readOnlyMemoryChar.Span);
+			WriteString(writer, noBackslashEscapes, readOnlyMemoryChar.Span);
 		}
 		else if (Value is Memory<char> memoryChar)
 		{
-			WriteString(writer, noBackslashEscapes, writeDelimiters: true, memoryChar.Span);
+			WriteString(writer, noBackslashEscapes, memoryChar.Span);
 		}
 		else if (Value is char charValue)
 		{
@@ -447,12 +447,12 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 #if NETCOREAPP3_1_OR_GREATER
 			writer.Write((byte) '\'');
 			foreach (var chunk in stringBuilder.GetChunks())
-				WriteString(writer, noBackslashEscapes, writeDelimiters: false, chunk.Span);
+				WriteStringChunk(writer, noBackslashEscapes, chunk.Span);
 			if (stringBuilder.Length != 0)
 				writer.Write("".AsSpan(), flush: true);
 			writer.Write((byte) '\'');
 #else
-			WriteString(writer, noBackslashEscapes, writeDelimiters: true, stringBuilder.ToString().AsSpan());
+			WriteString(writer, noBackslashEscapes, stringBuilder.ToString().AsSpan());
 #endif
 		}
 		else if (MySqlDbType == MySqlDbType.Int16)
@@ -494,10 +494,9 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			throw new NotSupportedException($"Parameter type {Value.GetType().Name} is not supported; see https://fl.vu/mysql-param-type. Value: {Value}");
 		}
 
-		static void WriteString(ByteBufferWriter writer, bool noBackslashEscapes, bool writeDelimiters, ReadOnlySpan<char> value)
+		static void WriteString(ByteBufferWriter writer, bool noBackslashEscapes, ReadOnlySpan<char> value)
 		{
-			if (writeDelimiters)
-				writer.Write((byte) '\'');
+			writer.Write((byte) '\'');
 
 			var charsWritten = 0;
 			while (charsWritten < value.Length)
@@ -507,7 +506,43 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 				if (nextDelimiterIndex == -1)
 				{
 					// write the rest of the string
-					writer.Write(remainingValue, flush: writeDelimiters);
+					writer.Write(remainingValue);
+					charsWritten += remainingValue.Length;
+				}
+				else
+				{
+					// write up to (and including) the delimiter, then double it
+					writer.Write(remainingValue[..nextDelimiterIndex]);
+					if (remainingValue[nextDelimiterIndex] == '\\' && !noBackslashEscapes)
+						writer.Write((ushort) 0x5C5C); // \\
+					else if (remainingValue[nextDelimiterIndex] == '\\' && noBackslashEscapes)
+						writer.Write((byte) 0x5C); // \
+					else if (remainingValue[nextDelimiterIndex] == '\'')
+						writer.Write((ushort) 0x2727); // ''
+					else if (remainingValue[nextDelimiterIndex] == '\0' && !noBackslashEscapes)
+						writer.Write((ushort) 0x305C); // \0
+					else if (remainingValue[nextDelimiterIndex] == '\0' && noBackslashEscapes)
+						writer.Write((byte) 0x00); // (nul)
+					charsWritten += nextDelimiterIndex + 1;
+				}
+			}
+
+			writer.Write((byte) '\'');
+		}
+
+#if NETCOREAPP3_1_OR_GREATER
+		// Writes a partial chunk of a string (that may end with half of a surrogate pair), escaping any delimiter characters.
+		static void WriteStringChunk(ByteBufferWriter writer, bool noBackslashEscapes, ReadOnlySpan<char> value)
+		{
+			var charsWritten = 0;
+			while (charsWritten < value.Length)
+			{
+				var remainingValue = value[charsWritten..];
+				var nextDelimiterIndex = remainingValue.IndexOfAny('\0', '\'', '\\');
+				if (nextDelimiterIndex == -1)
+				{
+					// write the rest of the string
+					writer.Write(remainingValue, flush: false);
 					charsWritten += remainingValue.Length;
 				}
 				else
@@ -527,10 +562,8 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 					charsWritten += nextDelimiterIndex + 1;
 				}
 			}
-
-			if (writeDelimiters)
-				writer.Write((byte) '\'');
 		}
+#endif
 	}
 
 	internal void AppendBinary(ByteBufferWriter writer, StatementPreparerOptions options)
