@@ -97,6 +97,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	/// <inheritdoc/>
 	public override void Cancel() => Connection?.Cancel(this, m_commandId, true);
 
+#pragma warning disable CA2012 // OK to read .Result because the ValueTask is completed
 	/// <summary>
 	/// Executes this command on the associated <see cref="MySqlConnection"/>.
 	/// </summary>
@@ -104,16 +105,14 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	/// <remarks>For UPDATE, INSERT, and DELETE statements, the return value is the number of rows affected by the command.
 	/// For stored procedures, the return value is the number of rows affected by the last statement in the stored procedure,
 	/// or zero if the last statement is a SELECT. For all other types of statements, the return value is -1.</remarks>
-	public override int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+	public override int ExecuteNonQuery() => ExecuteNonQueryAsync(IOBehavior.Synchronous, CancellationToken.None).Result;
 
-	/// <inheritdoc/>
-	public override object? ExecuteScalar() => ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+	public override object? ExecuteScalar() => ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).Result;
 
-#pragma warning disable CA2012 // OK to read .Result because the ValueTask is completed
 	public new MySqlDataReader ExecuteReader() => ExecuteReaderAsync(default, IOBehavior.Synchronous, default).Result;
 
 	public new MySqlDataReader ExecuteReader(CommandBehavior commandBehavior) => ExecuteReaderAsync(commandBehavior, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
-#pragma warning restore CA2012
+#pragma warning restore CA2012 // OK to read .Result because the ValueTask is completed
 
 	/// <inheritdoc/>
 	public override void Prepare()
@@ -294,9 +293,9 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	/// For stored procedures, the return value is the number of rows affected by the last statement in the stored procedure,
 	/// or zero if the last statement is a SELECT. For all other types of statements, the return value is -1.</remarks>
 	public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken) =>
-		ExecuteNonQueryAsync(AsyncIOBehavior, cancellationToken);
+		ExecuteNonQueryAsync(AsyncIOBehavior, cancellationToken).AsTask();
 
-	internal async Task<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+	internal async ValueTask<int> ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		Volatile.Write(ref m_commandTimedOut, false);
 		this.ResetCommandTimeout();
@@ -312,9 +311,9 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	}
 
 	public override Task<object?> ExecuteScalarAsync(CancellationToken cancellationToken) =>
-		ExecuteScalarAsync(AsyncIOBehavior, cancellationToken);
+		ExecuteScalarAsync(AsyncIOBehavior, cancellationToken).AsTask();
 
-	internal async Task<object?> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+	internal async ValueTask<object?> ExecuteScalarAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		Volatile.Write(ref m_commandTimedOut, false);
 		this.ResetCommandTimeout();
