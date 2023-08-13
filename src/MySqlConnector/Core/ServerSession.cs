@@ -316,7 +316,7 @@ internal sealed partial class ServerSession
 			SendAsync(payload, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 			payload = ReceiveReplyAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #pragma warning restore CA2012
-			OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 		}
 
 		lock (m_lock)
@@ -582,7 +582,7 @@ internal sealed partial class ServerSession
 			// set 'collation_connection' to the server default
 			await SendAsync(m_setNamesPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 
 			if (ShouldGetRealServerDetails(cs))
 				await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
@@ -627,11 +627,11 @@ internal sealed partial class ServerSession
 					// read two OK replies
 					m_payloadHandler.SetNextSequenceNumber(1);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+					OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 
 					m_payloadHandler.SetNextSequenceNumber(1);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+					OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 
 					return true;
 				}
@@ -639,7 +639,7 @@ internal sealed partial class ServerSession
 				Log.SendingResetConnectionRequest(m_logger, Id, ServerVersion.OriginalString);
 				await SendAsync(ResetConnectionPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+				OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 			}
 			else
 			{
@@ -663,13 +663,13 @@ internal sealed partial class ServerSession
 					Log.OptimisticReauthenticationFailed(m_logger, Id);
 					payload = await SwitchAuthenticationAsync(cs, password, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
-				OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+				OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 			}
 
 			// set 'collation_connection' to the server default
 			await SendAsync(m_setNamesPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 
 			return true;
 		}
@@ -870,7 +870,7 @@ internal sealed partial class ServerSession
 			Log.PingingServer(m_logger, Id);
 			await SendAsync(PingPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 			var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 			Log.SuccessfullyPingedServer(m_logger, logInfo ? LogLevel.Information : LogLevel.Trace, Id);
 			return true;
 		}
@@ -1710,7 +1710,7 @@ internal sealed partial class ServerSession
 			// OK/EOF payload
 			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			if (OkPayload.IsOk(payload.Span, SupportsDeprecateEof))
-				OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+				OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 			else
 				EofPayload.Create(payload.Span);
 

@@ -356,7 +356,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		using (var initDatabasePayload = InitDatabasePayload.Create(databaseName))
 			await m_session!.SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 		var payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-		OkPayload.Create(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
+		OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
 		m_session.DatabaseOverride = databaseName;
 	}
 
@@ -472,7 +472,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		Log.ResettingConnection(m_logger, session.Id);
 		await session.SendAsync(ResetConnectionPayload.Instance, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
 		var payload = await session.ReceiveReplyAsync(AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
-		OkPayload.Create(payload.Span, session.SupportsDeprecateEof, session.SupportsSessionTrack);
+		OkPayload.Verify(payload.Span, session.SupportsDeprecateEof, session.SupportsSessionTrack);
 	}
 
 	[AllowNull]
