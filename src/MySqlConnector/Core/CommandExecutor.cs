@@ -8,7 +8,7 @@ namespace MySqlConnector.Core;
 
 internal static class CommandExecutor
 {
-	public static async Task<MySqlDataReader> ExecuteReaderAsync(IReadOnlyList<IMySqlCommand> commands, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public static async ValueTask<MySqlDataReader> ExecuteReaderAsync(IReadOnlyList<IMySqlCommand> commands, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		try
 		{

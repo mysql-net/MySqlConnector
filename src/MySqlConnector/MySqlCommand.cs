@@ -109,9 +109,11 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	/// <inheritdoc/>
 	public override object? ExecuteScalar() => ExecuteScalarAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
-	public new MySqlDataReader ExecuteReader() => ExecuteReaderAsync(default, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+#pragma warning disable CA2012 // OK to read .Result because the ValueTask is completed
+	public new MySqlDataReader ExecuteReader() => ExecuteReaderAsync(default, IOBehavior.Synchronous, default).Result;
 
 	public new MySqlDataReader ExecuteReader(CommandBehavior commandBehavior) => ExecuteReaderAsync(commandBehavior, IOBehavior.Synchronous, default).GetAwaiter().GetResult();
+#pragma warning restore CA2012
 
 	/// <inheritdoc/>
 	public override void Prepare()
@@ -278,8 +280,10 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 
 	protected override DbParameter CreateDbParameter() => new MySqlParameter();
 
+#pragma warning disable CA2012 // OK to read .Result because the ValueTask is completed
 	protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior) =>
-		ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+		ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).Result;
+#pragma warning restore CA2012
 
 	/// <summary>
 	/// Executes this command asynchronously on the associated <see cref="MySqlConnection"/>.
@@ -332,15 +336,15 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	}
 
 	public new Task<MySqlDataReader> ExecuteReaderAsync(CancellationToken cancellationToken = default) =>
-		ExecuteReaderAsync(default, AsyncIOBehavior, cancellationToken);
+		ExecuteReaderAsync(default, AsyncIOBehavior, cancellationToken).AsTask();
 
 	public new Task<MySqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken = default) =>
-		ExecuteReaderAsync(behavior, AsyncIOBehavior, cancellationToken);
+		ExecuteReaderAsync(behavior, AsyncIOBehavior, cancellationToken).AsTask();
 
 	protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken) =>
 		await ExecuteReaderAsync(behavior, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
 
-	internal async Task<MySqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	internal async ValueTask<MySqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		Volatile.Write(ref m_commandTimedOut, false);
 		this.ResetCommandTimeout();
@@ -348,10 +352,14 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		return await ExecuteReaderNoResetTimeoutAsync(behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
 
-	internal Task<MySqlDataReader> ExecuteReaderNoResetTimeoutAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	internal ValueTask<MySqlDataReader> ExecuteReaderNoResetTimeoutAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (!IsValid(out var exception))
-			return Task.FromException<MySqlDataReader>(exception);
+#if NET5_0_OR_GREATER
+			return ValueTask.FromException<MySqlDataReader>(exception);
+#else
+			return new ValueTask<MySqlDataReader>(Task.FromException<MySqlDataReader>(exception));
+#endif
 
 		var activity = NoActivity ? null : Connection!.Session.StartActivity(ActivitySourceHelper.ExecuteActivityName,
 			ActivitySourceHelper.DatabaseStatementTagName, CommandText);

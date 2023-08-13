@@ -134,7 +134,9 @@ public sealed class MySqlBatch :
 #endif
 	{
 		this.ResetCommandTimeout();
-		return ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
+#pragma warning disable CA2012 // OK to read .Result because the ValueTask is completed
+		return ExecuteReaderAsync(behavior, IOBehavior.Synchronous, CancellationToken.None).Result;
+#pragma warning restore CA2012
 	}
 
 #if NET6_0_OR_GREATER
@@ -148,10 +150,10 @@ public sealed class MySqlBatch :
 		return await ExecuteReaderAsync(behavior, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
 	}
 
-	private Task<MySqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private ValueTask<MySqlDataReader> ExecuteReaderAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (!IsValid(out var exception))
-			return Task.FromException<MySqlDataReader>(exception);
+			return new ValueTask<MySqlDataReader>(Task.FromException<MySqlDataReader>(exception));
 
 		CurrentCommandBehavior = behavior;
 		foreach (MySqlBatchCommand batchCommand in BatchCommands)
