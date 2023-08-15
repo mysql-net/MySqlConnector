@@ -473,39 +473,28 @@ internal static class ProtocolUtility
 		}
 	}
 
-	public static ValueTask WritePayloadAsync(IByteHandler byteHandler, Func<int> getNextSequenceNumber, ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
+	public static async ValueTask WritePayloadAsync(IByteHandler byteHandler, Func<int> getNextSequenceNumber, ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
 	{
-		return payload.Length <= MaxPacketSize ? WritePacketAsync(byteHandler, getNextSequenceNumber(), payload, ioBehavior) :
-			WritePayloadAsyncAwaited(byteHandler, getNextSequenceNumber, payload, ioBehavior);
-
-		static async ValueTask WritePayloadAsyncAwaited(IByteHandler byteHandler, Func<int> getNextSequenceNumber, ReadOnlyMemory<byte> payload, IOBehavior ioBehavior)
+		var buffer = ArrayPool<byte>.Shared.Rent(Math.Min(MaxPacketSize, payload.Length) + 4);
+		try
 		{
-			for (var bytesSent = 0; bytesSent < payload.Length; bytesSent += MaxPacketSize)
+			var bytesSent = 0;
+			do
 			{
 				var contents = payload.Slice(bytesSent, Math.Min(MaxPacketSize, payload.Length - bytesSent));
-				await WritePacketAsync(byteHandler, getNextSequenceNumber(), contents, ioBehavior).ConfigureAwait(false);
+				var bufferLength = contents.Length + 4;
+
+				SerializationUtility.WriteUInt32((uint) contents.Length, buffer, 0, 3);
+				buffer[3] = (byte) getNextSequenceNumber();
+				contents.CopyTo(buffer.AsMemory(4));
+
+				await byteHandler.WriteBytesAsync(new ArraySegment<byte>(buffer, 0, bufferLength), ioBehavior).ConfigureAwait(false);
+				bytesSent += contents.Length;
 			}
+			while (bytesSent < payload.Length);
 		}
-	}
-
-	private static ValueTask WritePacketAsync(IByteHandler byteHandler, int sequenceNumber, ReadOnlyMemory<byte> contents, IOBehavior ioBehavior)
-	{
-		var bufferLength = contents.Length + 4;
-		var buffer = ArrayPool<byte>.Shared.Rent(bufferLength);
-		SerializationUtility.WriteUInt32((uint) contents.Length, buffer, 0, 3);
-		buffer[3] = (byte) sequenceNumber;
-		contents.CopyTo(buffer.AsMemory()[4..]);
-		var task = byteHandler.WriteBytesAsync(new ArraySegment<byte>(buffer, 0, bufferLength), ioBehavior);
-		if (task.IsCompletedSuccessfully)
+		finally
 		{
-			ArrayPool<byte>.Shared.Return(buffer);
-			return default;
-		}
-		return WritePacketAsyncAwaited(task, buffer);
-
-		static async ValueTask WritePacketAsyncAwaited(ValueTask task, byte[] buffer)
-		{
-			await task.ConfigureAwait(false);
 			ArrayPool<byte>.Shared.Return(buffer);
 		}
 	}

@@ -136,25 +136,20 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		m_hasWarnings = m_resultSet.WarningCount != 0;
 	}
 
-	private ValueTask ScanResultSetAsync(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
+	private async ValueTask ScanResultSetAsync(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
 	{
 		if (!m_hasMoreResults)
-			return default;
+			return;
 
 		if (resultSet.BufferState is ResultSetState.NoMoreData or ResultSetState.None)
 		{
 			m_hasMoreResults = false;
-			return default;
+			return;
 		}
 
 		if (resultSet.BufferState != ResultSetState.HasMoreData)
 			throw new InvalidOperationException($"Invalid state: {resultSet.BufferState}");
 
-		return new ValueTask(ScanResultSetAsyncAwaited(ioBehavior, resultSet, cancellationToken));
-	}
-
-	private async Task ScanResultSetAsyncAwaited(IOBehavior ioBehavior, ResultSet resultSet, CancellationToken cancellationToken)
-	{
 		using (Command!.CancellableCommand.RegisterCancel(cancellationToken))
 		{
 			try

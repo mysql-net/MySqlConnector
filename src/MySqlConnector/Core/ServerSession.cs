@@ -906,81 +906,44 @@ internal sealed partial class ServerSession
 	}
 
 	// Continues a conversation with the server by receiving a response to a packet sent with 'Send' or 'SendReply'.
-	public ValueTask<PayloadData> ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public async ValueTask<PayloadData> ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		ValueTask<ArraySegment<byte>> task;
-		try
+		if (CreateExceptionForInvalidState() is { } exception)
 		{
-			VerifyConnected();
-			task = m_payloadHandler!.ReadPayloadAsync(m_payloadCache, ProtocolErrorBehavior.Throw, ioBehavior);
-		}
-		catch (Exception ex)
-		{
-			Log.FailedInReceiveReplyAsync(m_logger, ex, Id);
-			if ((ex as MySqlException)?.ErrorCode == MySqlErrorCode.CommandTimeoutExpired)
-				HandleTimeout();
-			task = ValueTaskExtensions.FromException<ArraySegment<byte>>(ex);
+			Log.FailedInReceiveReplyAsync(m_logger, exception, Id);
+			throw exception;
 		}
 
-		if (task.IsCompletedSuccessfully)
-		{
-			var payload = new PayloadData(task.Result);
-			if (payload.HeaderByte != ErrorPayload.Signature)
-				return new ValueTask<PayloadData>(payload);
-
-			var exception = CreateExceptionForErrorPayload(payload.Span);
-			return ValueTaskExtensions.FromException<PayloadData>(exception);
-		}
-
-		return ReceiveReplyAsyncAwaited(task);
-	}
-
-	private async ValueTask<PayloadData> ReceiveReplyAsyncAwaited(ValueTask<ArraySegment<byte>> task)
-	{
 		ArraySegment<byte> bytes;
 		try
 		{
-			bytes = await task.ConfigureAwait(false);
+			bytes = await m_payloadHandler!.ReadPayloadAsync(m_payloadCache, ProtocolErrorBehavior.Throw, ioBehavior).ConfigureAwait(false);
 		}
 		catch (Exception ex)
 		{
 			SetFailed(ex);
-			if (ex is MySqlException { ErrorCode: MySqlErrorCode.CommandTimeoutExpired })
-				HandleTimeout();
 			throw;
 		}
+
 		var payload = new PayloadData(bytes);
 		if (payload.HeaderByte == ErrorPayload.Signature)
 			throw CreateExceptionForErrorPayload(payload.Span);
+
 		return payload;
 	}
 
 	// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
-	public ValueTask SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public async ValueTask SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		ValueTask task;
-		try
+		if (CreateExceptionForInvalidState() is { } exception)
 		{
-			VerifyConnected();
-			task = m_payloadHandler!.WritePayloadAsync(payload.Memory, ioBehavior);
-		}
-		catch (Exception ex)
-		{
-			Log.FailedInSendReplyAsync(m_logger, ex, Id);
-			task = ValueTaskExtensions.FromException(ex);
+			Log.FailedInSendReplyAsync(m_logger, exception, Id);
+			throw exception;
 		}
 
-		if (task.IsCompletedSuccessfully)
-			return task;
-
-		return SendReplyAsyncAwaited(task);
-	}
-
-	private async ValueTask SendReplyAsyncAwaited(ValueTask task)
-	{
 		try
 		{
-			await task.ConfigureAwait(false);
+			await m_payloadHandler!.WritePayloadAsync(payload.Memory, ioBehavior).ConfigureAwait(false);
 		}
 		catch (Exception ex)
 		{
@@ -1001,20 +964,15 @@ internal sealed partial class ServerSession
 		}
 	}
 
-	internal void HandleTimeout()
-	{
-		if (OwningConnection is not null && OwningConnection.TryGetTarget(out var connection))
-			connection.SetState(ConnectionState.Closed);
-	}
-
-	private void VerifyConnected()
+	private Exception? CreateExceptionForInvalidState()
 	{
 		lock (m_lock)
 		{
 			if (m_state == State.Closed)
-				throw new ObjectDisposedException(nameof(ServerSession));
+				return new ObjectDisposedException(nameof(ServerSession));
 			if (m_state != State.Connected && m_state != State.Querying && m_state != State.CancelingQuery && m_state != State.ClearingPendingCancellation && m_state != State.Closing)
-				throw new InvalidOperationException("ServerSession is not connected.");
+				return new InvalidOperationException("ServerSession is not connected.");
+			return null;
 		}
 	}
 

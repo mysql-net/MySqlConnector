@@ -225,61 +225,48 @@ internal sealed class ResultSet
 		return row;
 	}
 
-	private ValueTask<Row?> ScanRowAsync(IOBehavior ioBehavior, Row? row, CancellationToken cancellationToken)
+	private async ValueTask<Row?> ScanRowAsync(IOBehavior ioBehavior, Row? row, CancellationToken cancellationToken)
 	{
 		// if we've already read past the end of this resultset, Read returns false
 		if (BufferState is ResultSetState.HasMoreData or ResultSetState.NoMoreData or ResultSetState.None)
-			return new ValueTask<Row?>(default(Row?));
+			return null;
 
-		var payloadValueTask = Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None);
-		return payloadValueTask.IsCompletedSuccessfully
-			? new ValueTask<Row?>(ScanRowAsyncRemainder(this, payloadValueTask.Result, row))
-			: new ValueTask<Row?>(ScanRowAsyncAwaited(this, payloadValueTask.AsTask(), row, cancellationToken));
-
-		static async Task<Row?> ScanRowAsyncAwaited(ResultSet resultSet, Task<PayloadData> payloadTask, Row? row, CancellationToken token)
+		PayloadData payload;
+		try
 		{
-			PayloadData payloadData;
-			try
-			{
-				payloadData = await payloadTask.ConfigureAwait(false);
-			}
-			catch (MySqlException ex)
-			{
-				resultSet.BufferState = resultSet.State = ResultSetState.NoMoreData;
-				if (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && token.IsCancellationRequested)
-					throw new OperationCanceledException(ex.Message, ex, token);
-				if (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && resultSet.Command.CancellableCommand.IsTimedOut)
-					throw MySqlException.CreateForTimeout(ex);
-				throw;
-			}
-			return ScanRowAsyncRemainder(resultSet, payloadData, row);
+			payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+		}
+		catch (MySqlException ex)
+		{
+			BufferState = State = ResultSetState.NoMoreData;
+			if (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
+				throw new OperationCanceledException(ex.Message, ex, cancellationToken);
+			if (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && Command.CancellableCommand.IsTimedOut)
+				throw MySqlException.CreateForTimeout(ex);
+			throw;
 		}
 
-		static Row? ScanRowAsyncRemainder(ResultSet resultSet, PayloadData payload, Row? row)
+		if (payload.HeaderByte == EofPayload.Signature)
 		{
-			if (payload.HeaderByte == EofPayload.Signature)
+			if (Session.SupportsDeprecateEof && OkPayload.IsOk(payload.Span, Session.SupportsDeprecateEof))
 			{
-				var span = payload.Span;
-				if (resultSet.Session.SupportsDeprecateEof && OkPayload.IsOk(span, resultSet.Session.SupportsDeprecateEof))
-				{
-					var ok = OkPayload.Create(span, resultSet.Session.SupportsDeprecateEof, resultSet.Session.SupportsSessionTrack);
-					resultSet.BufferState = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
-					return null;
-				}
-				if (!resultSet.Session.SupportsDeprecateEof && EofPayload.IsEof(payload))
-				{
-					var eof = EofPayload.Create(span);
-					resultSet.BufferState = (eof.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
-					return null;
-				}
+				var ok = OkPayload.Create(payload.Span, Session.SupportsDeprecateEof, Session.SupportsSessionTrack);
+				BufferState = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
+				return null;
 			}
-
-			row ??= new Row(resultSet.Command.TryGetPreparedStatements() is not null, resultSet);
-			row.SetData(payload.Memory);
-			resultSet.m_hasRows = true;
-			resultSet.BufferState = ResultSetState.ReadingRows;
-			return row;
+			if (!Session.SupportsDeprecateEof && EofPayload.IsEof(payload))
+			{
+				var eof = EofPayload.Create(payload.Span);
+				BufferState = (eof.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
+				return null;
+			}
 		}
+
+		row ??= new Row(Command.TryGetPreparedStatements() is not null, this);
+		row.SetData(payload.Memory);
+		m_hasRows = true;
+		BufferState = ResultSetState.ReadingRows;
+		return row;
 	}
 
 #pragma warning disable CA1822 // Mark members as static
