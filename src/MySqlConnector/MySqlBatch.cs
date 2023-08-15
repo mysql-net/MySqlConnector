@@ -162,7 +162,7 @@ public sealed class MySqlBatch :
 		var payloadCreator = Connection!.Session.SupportsComMulti ? BatchedCommandPayloadCreator.Instance :
 			IsPrepared ? SingleCommandPayloadCreator.Instance :
 			ConcatenatedCommandPayloadCreator.Instance;
-		return CommandExecutor.ExecuteReaderAsync(BatchCommands!.Commands, payloadCreator, behavior, default, ioBehavior, cancellationToken);
+		return CommandExecutor.ExecuteReaderAsync(new(BatchCommands!.Commands), payloadCreator, behavior, default, ioBehavior, cancellationToken);
 	}
 
 #if NET6_0_OR_GREATER

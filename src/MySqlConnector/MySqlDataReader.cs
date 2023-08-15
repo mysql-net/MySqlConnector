@@ -68,9 +68,9 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 
 				if (!m_hasMoreResults)
 				{
-					if (m_commandListPosition.CommandIndex < m_commandListPosition.Commands.Count)
+					if (m_commandListPosition.CommandIndex < m_commandListPosition.CommandCount)
 					{
-						Command = m_commandListPosition.Commands[m_commandListPosition.CommandIndex];
+						Command = m_commandListPosition.CommandAt(m_commandListPosition.CommandIndex);
 						using (Command.CancellableCommand.RegisterCancel(cancellationToken))
 						{
 							var writer = new ByteBufferWriter();
@@ -485,7 +485,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 				await ReadOutParametersAsync(command, m_resultSet, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			// if the command list has multiple commands, keep reading until a result set is found
-			while (m_resultSet.State == ResultSetState.NoMoreData && commandListPosition.CommandIndex < commandListPosition.Commands.Count)
+			while (m_resultSet.State == ResultSetState.NoMoreData && commandListPosition.CommandIndex < commandListPosition.CommandCount)
 			{
 				await NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
