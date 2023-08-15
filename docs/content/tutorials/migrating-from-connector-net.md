@@ -324,7 +324,8 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * [#109682](https://bugs.mysql.com/bug.php?id=109682): `MySqlParameter.Clone` loses specific `MySqlDbType`.
 * ~~[#109683](https://bugs.mysql.com/bug.php?id=109683): `MySqlCommand.LastInsertedId` is incorrect if multiple rows are inserted.~~
 * ~~[#109716](https://bugs.mysql.com/bug.php?id=109716), [#109727](https://bugs.mysql.com/bug.php?id=109727): Failed to add reference to 'comerr64'~~
-* [110717](https://bugs.mysql.com/bug.php?id=110717): Opening two MySqlConnections simultaneously can crash
+* [110717](https://bugs.mysql.com/bug.php?id=110717), [#111759](https://bugs.mysql.com/bug.php?id=111759): MySql.Data is not thread-safe
 * [110789](https://bugs.mysql.com/bug.php?id=110789): `OpenAsync` throws unhandled exception from thread pool
 * [110790](https://bugs.mysql.com/bug.php?id=110790): `ExecuteReaderAsync` hangs instead of cancelling query after `CommandTimeout`
 * [110791](https://bugs.mysql.com/bug.php?id=110791): `OpenAsync(CancellationToken)` doesn't throw for cancelled token
+* [110797](https://bugs.mysql.com/bug.php?id=110797): Certain sequence of special characters can break connection string validation.
