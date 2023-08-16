@@ -234,7 +234,7 @@ internal sealed partial class ServerSession
 					var payloadLength = payload.Span.Length;
 					Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payloadLength);
 					payload.Span.CopyTo(columnsAndParameters.AsSpan(columnsAndParametersSize));
-					parameters[i] = ColumnDefinitionPayload.Create(new(columnsAndParameters, columnsAndParametersSize, payloadLength));
+					ColumnDefinitionPayload.Initialize(ref parameters[i], new(columnsAndParameters, columnsAndParametersSize, payloadLength));
 					columnsAndParametersSize += payloadLength;
 				}
 				if (!SupportsDeprecateEof)
@@ -254,7 +254,7 @@ internal sealed partial class ServerSession
 					var payloadLength = payload.Span.Length;
 					Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payloadLength);
 					payload.Span.CopyTo(columnsAndParameters.AsSpan(columnsAndParametersSize));
-					columns[i] = ColumnDefinitionPayload.Create(new(columnsAndParameters, columnsAndParametersSize, payloadLength));
+					ColumnDefinitionPayload.Initialize(ref columns[i], new(columnsAndParameters, columnsAndParametersSize, payloadLength));
 					columnsAndParametersSize += payloadLength;
 				}
 				if (!SupportsDeprecateEof)

@@ -345,12 +345,16 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	/// <returns>A <see cref="System.Collections.ObjectModel.ReadOnlyCollection{DbColumn}"/> containing metadata about the result set.</returns>
 	public ReadOnlyCollection<DbColumn> GetColumnSchema()
 	{
+		var hasNoSchema = !m_resultSet.HasResultSet || m_resultSet.ContainsCommandParameters;
+		if (hasNoSchema)
+			return new ReadOnlyCollection<DbColumn>(Array.Empty<DbColumn>());
+
 		var columnDefinitions = m_resultSet.ColumnDefinitions;
-		var hasNoSchema = columnDefinitions is null || m_resultSet.ContainsCommandParameters;
-		return hasNoSchema ? new List<DbColumn>().AsReadOnly() :
-			columnDefinitions!
-				.Select((c, n) => (DbColumn) new MySqlDbColumn(n, c, Connection!.AllowZeroDateTime, GetResultSet().GetColumnType(n)))
-				.ToList().AsReadOnly();
+		var resultSet = GetResultSet();
+		var schema = new List<DbColumn>(columnDefinitions.Length);
+		for (var n = 0; n < columnDefinitions.Length; n++)
+			schema.Add(new MySqlDbColumn(n, columnDefinitions[n], Connection!.AllowZeroDateTime, resultSet.GetColumnType(n)));
+		return schema.AsReadOnly();
 	}
 
 	/// <summary>
@@ -459,8 +463,6 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 			throw new InvalidOperationException("Expected m_hasMoreResults to be false");
 		if (m_resultSet.BufferState != ResultSetState.None || m_resultSet.State != ResultSetState.None)
 			throw new InvalidOperationException("Expected BufferState and State to be ResultSetState.None.");
-		if (m_resultSet.ColumnDefinitions is not null)
-			throw new InvalidOperationException("Expected ColumnDefinitions to be null");
 		m_closed = false;
 		m_hasWarnings = false;
 		RealRecordsAffected = null;
@@ -504,12 +506,11 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 
 	internal DataTable? BuildSchemaTable()
 	{
-		var columnDefinitions = m_resultSet.ColumnDefinitions;
-		if (columnDefinitions is null || m_resultSet.ContainsCommandParameters)
+		if (!m_resultSet.HasResultSet || m_resultSet.ContainsCommandParameters)
 			return null;
 
 		var schemaTable = new DataTable("SchemaTable") { Locale = CultureInfo.InvariantCulture };
-		schemaTable.MinimumCapacity = columnDefinitions.Length;
+		schemaTable.MinimumCapacity = m_resultSet.ColumnDefinitions.Length;
 
 		var columnName = new DataColumn(SchemaTableColumn.ColumnName, typeof(string));
 		var ordinal = new DataColumn(SchemaTableColumn.ColumnOrdinal, typeof(int));
