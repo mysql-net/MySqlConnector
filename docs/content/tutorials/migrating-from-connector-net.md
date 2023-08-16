@@ -41,7 +41,7 @@ In a .NET Framework application, make the following `app.config` change to regis
     <!-- add name="MySQL Data Provider"
       invariant="MySql.Data.MySqlClient"
       description=".Net Framework Data Provider for MySQL"
-      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=8.0.33.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
+      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=8.1.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
 
     <!-- ADD THIS -->
     <add name="MySqlConnector"
@@ -314,18 +314,19 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#106244](https://bugs.mysql.com/bug.php?id=106244): `MySqlDataReader.GetFieldValue<Stream>` throws `InvalidCastException`~~
 * ~~[#106247](https://bugs.mysql.com/bug.php?id=106247): Can't use ~~`MySqlDbType.Enum` or~~ `MySqlDbType.Set` with prepared command~~
 * [#107259](https://bugs.mysql.com/bug.php?id=107259): Character Set 'utf8mb3' is not supported by .NET Framework
-* [#108756](https://bugs.mysql.com/bug.php?id=108756): Can't insert negative number using prepared statement with `MySqlDbType.Int24`
+* ~~[#108756](https://bugs.mysql.com/bug.php?id=108756): Can't insert negative number using prepared statement with `MySqlDbType.Int24`~~
 * [#108970](https://bugs.mysql.com/bug.php?id=108970): `MySqlConnectionStringBuilder.ContainsKey` method gives wrong result
 * [#109141](https://bugs.mysql.com/bug.php?id=109141): Insert of data into a table results in `System.ArgumentException`
 * [#109331](https://bugs.mysql.com/bug.php?id=109331): MySQL Connector/NET is incompatible with MariaDB 10.10 and later
 * [#109390](https://bugs.mysql.com/bug.php?id=109390): Transaction lock held after connection timeout exception
 * [#109476](https://bugs.mysql.com/bug.php?id=109476): `TransactionScope.Dispose` throws "Connection must be valid and open to rollback"
-* ~[#109670](https://bugs.mysql.com/bug.php?id=109670), [#109752](https://bugs.mysql.com/bug.php?id=109752): Many MSB3246 errors when referencing MySql.Data 8.0.32~
-* [#109682](https://bugs.mysql.com/bug.php?id=109682): `MySqlParameter.Clone` loses specific `MySqlDbType`.
+* ~~[#109670](https://bugs.mysql.com/bug.php?id=109670), [#109752](https://bugs.mysql.com/bug.php?id=109752): Many MSB3246 errors when referencing MySql.Data 8.0.32~~
+* ~~[#109682](https://bugs.mysql.com/bug.php?id=109682): `MySqlParameter.Clone` loses specific `MySqlDbType`.~~
 * ~~[#109683](https://bugs.mysql.com/bug.php?id=109683): `MySqlCommand.LastInsertedId` is incorrect if multiple rows are inserted.~~
 * ~~[#109716](https://bugs.mysql.com/bug.php?id=109716), [#109727](https://bugs.mysql.com/bug.php?id=109727): Failed to add reference to 'comerr64'~~
-* [110717](https://bugs.mysql.com/bug.php?id=110717), [#111759](https://bugs.mysql.com/bug.php?id=111759): MySql.Data is not thread-safe
-* [110789](https://bugs.mysql.com/bug.php?id=110789): `OpenAsync` throws unhandled exception from thread pool
-* [110790](https://bugs.mysql.com/bug.php?id=110790): `ExecuteReaderAsync` hangs instead of cancelling query after `CommandTimeout`
-* [110791](https://bugs.mysql.com/bug.php?id=110791): `OpenAsync(CancellationToken)` doesn't throw for cancelled token
-* [110797](https://bugs.mysql.com/bug.php?id=110797): Certain sequence of special characters can break connection string validation.
+* [#110717](https://bugs.mysql.com/bug.php?id=110717), [#111759](https://bugs.mysql.com/bug.php?id=111759): MySql.Data is not thread-safe
+* [#110789](https://bugs.mysql.com/bug.php?id=110789): `OpenAsync` throws unhandled exception from thread pool
+* [#110790](https://bugs.mysql.com/bug.php?id=110790): `ExecuteReaderAsync` hangs instead of cancelling query after `CommandTimeout`
+* [#110791](https://bugs.mysql.com/bug.php?id=110791): `OpenAsync(CancellationToken)` doesn't throw for cancelled token
+* [#110797](https://bugs.mysql.com/bug.php?id=110797): Certain sequence of special characters can break connection string validation.
+* [#112088](https://bugs.mysql.com/bug.php?id=112088): `BIT(n)` parameter size incorrectly returns 0

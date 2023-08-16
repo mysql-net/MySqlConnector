@@ -373,12 +373,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 			yield return new object[] { isPrepared, "TINYINT UNSIGNED", (byte) 123, MySqlDbType.UByte };
 			yield return new object[] { isPrepared, "SMALLINT", (short) -12345, MySqlDbType.Int16 };
 			yield return new object[] { isPrepared, "SMALLINT UNSIGNED", (ushort) 12345, MySqlDbType.UInt16 };
-#if !MYSQL_DATA
 			yield return new object[] { isPrepared, "MEDIUMINT", -1234567, MySqlDbType.Int24 };
-#else
-			// https://bugs.mysql.com/bug.php?id=108756
-			yield return new object[] { isPrepared, "MEDIUMINT", -1234567, MySqlDbType.Int32 };
-#endif
 			yield return new object[] { isPrepared, "MEDIUMINT UNSIGNED", 1234567u, MySqlDbType.UInt24 };
 			yield return new object[] { isPrepared, "INT", -123456789, MySqlDbType.Int32 };
 			yield return new object[] { isPrepared, "INT UNSIGNED", 123456789u, MySqlDbType.UInt32 };
