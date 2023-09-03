@@ -72,7 +72,7 @@ internal sealed class ConnectionSettings
 					TlsVersions |= SslProtocols.Tls11;
 				else if (minorVersion == '2')
 					TlsVersions |= SslProtocols.Tls12;
-#if NETCOREAPP3_0_OR_GREATER
+#if NETCOREAPP3_0_OR_GREATER || NET48_OR_GREATER
 				else if (minorVersion == '3')
 					TlsVersions |= SslProtocols.Tls13;
 #endif
