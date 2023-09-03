@@ -117,7 +117,6 @@ public sealed class MySqlBulkCopy
 #pragma warning restore CA2012
 	}
 
-#if NETCOREAPP || NETSTANDARD2_0_OR_GREATER
 	/// <summary>
 	/// Asynchronously copies all rows in the supplied <see cref="DataTable"/> to the destination table specified by the
 	/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
@@ -130,20 +129,6 @@ public sealed class MySqlBulkCopy
 		m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable ?? throw new ArgumentNullException(nameof(dataTable)));
 		return await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 	}
-#else
-	/// <summary>
-	/// Asynchronously copies all rows in the supplied <see cref="DataTable"/> to the destination table specified by the
-	/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
-	/// </summary>
-	/// <param name="dataTable">The <see cref="DataTable"/> to copy.</param>
-	/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
-	public async Task<MySqlBulkCopyResult> WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default)
-	{
-		m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable ?? throw new ArgumentNullException(nameof(dataTable)));
-		return await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
-	}
-#endif
 
 	/// <summary>
 	/// Copies all rows in the supplied sequence of <see cref="DataRow"/> objects to the destination table specified by the
@@ -161,7 +146,6 @@ public sealed class MySqlBulkCopy
 #pragma warning restore CA2012
 	}
 
-#if NETCOREAPP || NETSTANDARD2_0_OR_GREATER
 	/// <summary>
 	/// Asynchronously copies all rows in the supplied sequence of <see cref="DataRow"/> objects to the destination table specified by the
 	/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object. The number of columns
@@ -176,22 +160,6 @@ public sealed class MySqlBulkCopy
 		m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows ?? throw new ArgumentNullException(nameof(dataRows)), columnCount);
 		return await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 	}
-#else
-	/// <summary>
-	/// Asynchronously copies all rows in the supplied sequence of <see cref="DataRow"/> objects to the destination table specified by the
-	/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object. The number of columns
-	/// to be read from the <see cref="DataRow"/> objects must be specified in advance.
-	/// </summary>
-	/// <param name="dataRows">The collection of <see cref="DataRow"/> objects.</param>
-	/// <param name="columnCount">The number of columns to copy (in each row).</param>
-	/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
-	public async Task<MySqlBulkCopyResult> WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, CancellationToken cancellationToken = default)
-	{
-		m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows ?? throw new ArgumentNullException(nameof(dataRows)), columnCount);
-		return await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
-	}
-#endif
 
 	/// <summary>
 	/// Copies all rows in the supplied <see cref="IDataReader"/> to the destination table specified by the
@@ -207,7 +175,6 @@ public sealed class MySqlBulkCopy
 #pragma warning restore CA2012
 	}
 
-#if NETCOREAPP || NETSTANDARD2_0_OR_GREATER
 	/// <summary>
 	/// Asynchronously copies all rows in the supplied <see cref="IDataReader"/> to the destination table specified by the
 	/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
@@ -220,20 +187,6 @@ public sealed class MySqlBulkCopy
 		m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader ?? throw new ArgumentNullException(nameof(dataReader)));
 		return await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 	}
-#else
-	/// <summary>
-	/// Asynchronously copies all rows in the supplied <see cref="IDataReader"/> to the destination table specified by the
-	/// <see cref="DestinationTableName"/> property of the <see cref="MySqlBulkCopy"/> object.
-	/// </summary>
-	/// <param name="dataReader">The <see cref="IDataReader"/> to copy from.</param>
-	/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
-	public async Task<MySqlBulkCopyResult> WriteToServerAsync(IDataReader dataReader, CancellationToken cancellationToken = default)
-	{
-		m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader ?? throw new ArgumentNullException(nameof(dataReader)));
-		return await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
-	}
-#endif
 
 	private async ValueTask<MySqlBulkCopyResult> WriteToServerAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
