@@ -9,13 +9,8 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
 
-internal sealed class ResultSet
+internal sealed class ResultSet(MySqlDataReader dataReader)
 {
-	public ResultSet(MySqlDataReader dataReader)
-	{
-		DataReader = dataReader;
-	}
-
 	public void Reset()
 	{
 		// ResultSet can be re-used, so initialize everything
@@ -360,7 +355,7 @@ internal sealed class ResultSet
 		return m_row ?? throw new InvalidOperationException("There is no current row.");
 	}
 
-	public MySqlDataReader DataReader { get; }
+	public MySqlDataReader DataReader { get; } = dataReader;
 	public ExceptionDispatchInfo? ReadResultSetHeaderException { get; private set; }
 	public IMySqlCommand Command => DataReader.Command!;
 	public MySqlConnection Connection => DataReader.Connection!;

@@ -1,20 +1,12 @@
 namespace MySqlConnector.Core;
 
-internal sealed class PreparedStatements : IDisposable
+internal sealed class PreparedStatements(IReadOnlyList<PreparedStatement> preparedStatements, ParsedStatements parsedStatements) : IDisposable
 {
-	public IReadOnlyList<PreparedStatement> Statements { get; }
-
-	public PreparedStatements(IReadOnlyList<PreparedStatement> preparedStatements, ParsedStatements parsedStatements)
-	{
-		Statements = preparedStatements;
-		m_parsedStatements = parsedStatements;
-	}
+	public IReadOnlyList<PreparedStatement> Statements { get; } = preparedStatements;
 
 	public void Dispose()
 	{
-		m_parsedStatements?.Dispose();
-		m_parsedStatements = null;
+		parsedStatements?.Dispose();
+		parsedStatements = null!;
 	}
-
-	private ParsedStatements? m_parsedStatements;
 }

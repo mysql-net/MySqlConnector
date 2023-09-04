@@ -3,20 +3,15 @@ using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Core;
 
-internal sealed partial class SchemaProvider
+internal sealed partial class SchemaProvider(MySqlConnection connection)
 {
-	public SchemaProvider(MySqlConnection connection)
-	{
-		m_connection = connection;
-	}
-
 	private void DoFillDataSourceInformation(DataTable dataTable)
 	{
 		var row = dataTable.NewRow();
 		row["CompositeIdentifierSeparatorPattern"] = @"\.";
 		row["DataSourceProductName"] = "MySQL";
-		row["DataSourceProductVersion"] = m_connection.ServerVersion;
-		row["DataSourceProductVersionNormalized"] = GetVersion(m_connection.Session.ServerVersion.Version);
+		row["DataSourceProductVersion"] = connection.ServerVersion;
+		row["DataSourceProductVersionNormalized"] = GetVersion(connection.Session.ServerVersion.Version);
 		row["GroupByBehavior"] = GroupByBehavior.Unrelated;
 		row["IdentifierPattern"] = @"(^\[\p{Lo}\p{Lu}\p{Ll}_@#][\p{Lo}\p{Lu}\p{Ll}\p{Nd}@$#_]*$)|(^\[[^\]\0]|\]\]+\]$)|(^\""[^\""\0]|\""\""+\""$)";
 		row["IdentifierCase"] = IdentifierCase.Insensitive;
@@ -389,29 +384,29 @@ internal sealed partial class SchemaProvider
 	private async Task FillDataTableAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, List<KeyValuePair<string, string>>? columns, CancellationToken cancellationToken)
 	{
 		Action? close = null;
-		if (m_connection.State != ConnectionState.Open)
+		if (connection.State != ConnectionState.Open)
 		{
-			await m_connection.OpenAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			close = m_connection.Close;
+			await connection.OpenAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			close = connection.Close;
 		}
 
 		// remove columns that the server doesn't support
 		if (dataTable.TableName == "Columns")
 		{
-			using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'GENERATION_EXPRESSION';", m_connection))
+			using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'GENERATION_EXPRESSION';", connection))
 			{
 				if (await command.ExecuteScalarAsync(ioBehavior, cancellationToken).ConfigureAwait(false) is null)
 					dataTable.Columns.Remove("GENERATION_EXPRESSION");
 			}
 
-			using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'SRS_ID';", m_connection))
+			using (var command = new MySqlCommand("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'information_schema' AND table_name = 'COLUMNS' AND column_name = 'SRS_ID';", connection))
 			{
 				if (await command.ExecuteScalarAsync(ioBehavior, cancellationToken).ConfigureAwait(false) is null)
 					dataTable.Columns.Remove("SRS_ID");
 			}
 		}
 
-		using (var command = m_connection.CreateCommand())
+		using (var command = connection.CreateCommand())
 		{
 #pragma warning disable CA2100
 			command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(static x => x!.ColumnName)) + " FROM INFORMATION_SCHEMA." + tableName;
@@ -434,6 +429,4 @@ internal sealed partial class SchemaProvider
 
 		close?.Invoke();
 	}
-
-	private readonly MySqlConnection m_connection;
 }

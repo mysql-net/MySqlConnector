@@ -4,24 +4,17 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
 
-internal sealed class StatementPreparer
+internal sealed class StatementPreparer(string commandText, MySqlParameterCollection? parameters, StatementPreparerOptions options)
 {
-	public StatementPreparerOptions Options { get; }
-
-	public StatementPreparer(string commandText, MySqlParameterCollection? parameters, StatementPreparerOptions options)
-	{
-		m_commandText = commandText;
-		m_parameters = parameters;
-		Options = options;
-	}
+	public StatementPreparerOptions Options { get; } = options;
 
 	public ParsedStatements SplitStatements()
 	{
 		var statements = new List<ParsedStatement>();
 		var statementStartEndIndexes = new List<int>();
-		var writer = new ByteBufferWriter(m_commandText.Length + 1);
+		var writer = new ByteBufferWriter(CommandText.Length + 1);
 		var parser = new PreparedCommandSqlParser(this, statements, statementStartEndIndexes, writer);
-		parser.Parse(m_commandText);
+		parser.Parse(CommandText);
 		for (var i = 0; i < statements.Count; i++)
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 			statements[i].StatementBytes = writer.ArraySegment[statementStartEndIndexes[i * 2]..statementStartEndIndexes[i * 2 + 1]];
@@ -33,10 +26,10 @@ internal sealed class StatementPreparer
 
 	public bool ParseAndBindParameters(ByteBufferWriter writer)
 	{
-		if (!string.IsNullOrWhiteSpace(m_commandText))
+		if (!string.IsNullOrWhiteSpace(CommandText))
 		{
 			var parser = new ParameterSqlParser(this, writer);
-			parser.Parse(m_commandText);
+			parser.Parse(CommandText);
 			return parser.IsComplete;
 		}
 		return true;
@@ -44,7 +37,7 @@ internal sealed class StatementPreparer
 
 	private int GetParameterIndex(string name)
 	{
-		var index = m_parameters?.NormalizedIndexOf(name) ?? -1;
+		var index = parameters?.NormalizedIndexOf(name) ?? -1;
 		if (index == -1 && (Options & StatementPreparerOptions.AllowUserVariables) == 0)
 			throw new MySqlException($"Parameter '{name}' must be defined. To use this as a variable, set 'Allow User Variables=true' in the connection string.");
 		return index;
@@ -52,9 +45,9 @@ internal sealed class StatementPreparer
 
 	private MySqlParameter GetInputParameter(int index)
 	{
-		if (index >= (m_parameters?.Count ?? 0))
-			throw new MySqlException($"Parameter index {index} is invalid when only {m_parameters?.Count ?? 0} parameter{(m_parameters?.Count == 1 ? " is" : "s are")} defined.");
-		var parameter = m_parameters![index];
+		if (index >= (parameters?.Count ?? 0))
+			throw new MySqlException($"Parameter index {index} is invalid when only {parameters?.Count ?? 0} parameter{(parameters?.Count == 1 ? " is" : "s are")} defined.");
+		var parameter = parameters![index];
 		if (parameter.Direction != ParameterDirection.Input && (Options & StatementPreparerOptions.AllowOutputParameters) == 0)
 			throw new MySqlException($"Only ParameterDirection.Input is supported when CommandType is Text (parameter name: {parameter.ParameterName})");
 		return parameter;
@@ -72,7 +65,7 @@ internal sealed class StatementPreparer
 
 		protected override void OnNamedParameter(int index, int length)
 		{
-			var parameterIndex = Preparer.GetParameterIndex(Preparer.m_commandText.Substring(index, length));
+			var parameterIndex = Preparer.GetParameterIndex(Preparer.CommandText.Substring(index, length));
 			if (parameterIndex != -1)
 				DoAppendParameter(parameterIndex, index, length);
 		}
@@ -85,7 +78,7 @@ internal sealed class StatementPreparer
 
 		private void DoAppendParameter(int parameterIndex, int textIndex, int textLength)
 		{
-			m_writer.Write(Preparer.m_commandText, m_lastIndex, textIndex - m_lastIndex);
+			m_writer.Write(Preparer.CommandText, m_lastIndex, textIndex - m_lastIndex);
 			var parameter = Preparer.GetInputParameter(parameterIndex);
 			parameter.AppendSqlString(m_writer, Preparer.Options);
 			m_lastIndex = textIndex + textLength;
@@ -93,7 +86,7 @@ internal sealed class StatementPreparer
 
 		protected override void OnParsed(FinalParseStates states)
 		{
-			m_writer.Write(Preparer.m_commandText, m_lastIndex, Preparer.m_commandText.Length - m_lastIndex);
+			m_writer.Write(Preparer.CommandText, m_lastIndex, Preparer.CommandText.Length - m_lastIndex);
 			if ((states & FinalParseStates.NeedsNewline) == FinalParseStates.NeedsNewline)
 				m_writer.Write((byte) '\n');
 			if ((states & FinalParseStates.NeedsSemicolon) == FinalParseStates.NeedsSemicolon && (Preparer.Options & StatementPreparerOptions.AppendSemicolon) == StatementPreparerOptions.AppendSemicolon)
@@ -126,7 +119,7 @@ internal sealed class StatementPreparer
 
 		protected override void OnNamedParameter(int index, int length)
 		{
-			var parameterName = Preparer.m_commandText.Substring(index, length);
+			var parameterName = Preparer.CommandText.Substring(index, length);
 			DoAppendParameter(parameterName, -1, index, length);
 		}
 
@@ -139,7 +132,7 @@ internal sealed class StatementPreparer
 		private void DoAppendParameter(string? parameterName, int parameterIndex, int textIndex, int textLength)
 		{
 			// write all SQL up to the parameter
-			m_writer.Write(Preparer.m_commandText, m_lastIndex, textIndex - m_lastIndex);
+			m_writer.Write(Preparer.CommandText, m_lastIndex, textIndex - m_lastIndex);
 			m_lastIndex = textIndex + textLength;
 
 			// replace the parameter with a ? placeholder
@@ -153,7 +146,7 @@ internal sealed class StatementPreparer
 
 		protected override void OnStatementEnd(int index)
 		{
-			m_writer.Write(Preparer.m_commandText, m_lastIndex, index - m_lastIndex);
+			m_writer.Write(Preparer.CommandText, m_lastIndex, index - m_lastIndex);
 			m_lastIndex = index;
 			m_statementStartEndIndexes.Add(m_writer.Position);
 		}
@@ -165,6 +158,5 @@ internal sealed class StatementPreparer
 		private int m_lastIndex;
 	}
 
-	private readonly string m_commandText;
-	private readonly MySqlParameterCollection? m_parameters;
+	private string CommandText { get; } = commandText;
 }

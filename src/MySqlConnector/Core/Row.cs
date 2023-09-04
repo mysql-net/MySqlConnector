@@ -465,14 +465,8 @@ internal sealed class Row
 			throw new ArgumentException(nameof(bufferOffset) + " + " + nameof(length) + " cannot exceed " + nameof(buffer) + "." + nameof(buffer.Length), nameof(length));
 	}
 
-	private readonly struct OffsetLength
+	private readonly struct OffsetLength(int offset, int length)
 	{
-		public OffsetLength(int offset, int length)
-		{
-			Offset = offset;
-			Length = length;
-		}
-
 		public static implicit operator OffsetLength((int Offset, int Length) x) => new(x.Offset, x.Length);
 
 		public void Deconstruct(out int offset, out int length)
@@ -481,8 +475,8 @@ internal sealed class Row
 			length = Length;
 		}
 
-		public int Offset { get; }
-		public int Length { get; }
+		public int Offset { get; } = offset;
+		public int Length { get; } = length;
 	}
 
 	private readonly bool m_isBinary;

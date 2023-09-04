@@ -7,29 +7,15 @@ namespace MySqlConnector;
 /// as <c>0000-00-00</c> that can be stored in MySQL (when <see cref="MySqlConnectionStringBuilder.AllowZeroDateTime"/>
 /// is true) but can't be stored in a <see cref="DateTime"/> value.
 /// </summary>
-public struct MySqlDateTime : IComparable, IComparable<MySqlDateTime>, IConvertible, IEquatable<MySqlDateTime>
+/// <param name="year">The year.</param>
+/// <param name="month">The (one-based) month.</param>
+/// <param name="day">The (one-based) day of the month.</param>
+/// <param name="hour">The hour.</param>
+/// <param name="minute">The minute.</param>
+/// <param name="second">The second.</param>
+/// <param name="microsecond">The microsecond.</param>
+public struct MySqlDateTime(int year, int month, int day, int hour, int minute, int second, int microsecond) : IComparable, IComparable<MySqlDateTime>, IConvertible, IEquatable<MySqlDateTime>
 {
-	/// <summary>
-	/// Initializes a new instance of <see cref="MySqlDateTime"/>.
-	/// </summary>
-	/// <param name="year">The year.</param>
-	/// <param name="month">The (one-based) month.</param>
-	/// <param name="day">The (one-based) day of the month.</param>
-	/// <param name="hour">The hour.</param>
-	/// <param name="minute">The minute.</param>
-	/// <param name="second">The second.</param>
-	/// <param name="microsecond">The microsecond.</param>
-	public MySqlDateTime(int year, int month, int day, int hour, int minute, int second, int microsecond)
-	{
-		Year = year;
-		Month = month;
-		Day = day;
-		Hour = hour;
-		Minute = minute;
-		Second = second;
-		Microsecond = microsecond;
-	}
-
 	/// <summary>
 	/// Initializes a new instance of <see cref="MySqlDateTime"/> from a <see cref="DateTime"/>.
 	/// </summary>
@@ -44,14 +30,8 @@ public struct MySqlDateTime : IComparable, IComparable<MySqlDateTime>, IConverti
 	/// </summary>
 	/// <param name="other">The <see cref="MySqlDateTime"/> whose values will be copied.</param>
 	public MySqlDateTime(MySqlDateTime other)
+		: this(other.Year, other.Month, other.Day, other.Hour, other.Minute, other.Second, other.Microsecond)
 	{
-		Year = other.Year;
-		Month = other.Month;
-		Day = other.Day;
-		Hour = other.Hour;
-		Minute = other.Minute;
-		Second = other.Second;
-		Microsecond = other.Microsecond;
 	}
 
 	/// <summary>
@@ -62,37 +42,37 @@ public struct MySqlDateTime : IComparable, IComparable<MySqlDateTime>, IConverti
 	/// <summary>
 	/// Gets or sets the year.
 	/// </summary>
-	public int Year { get; set; }
+	public int Year { get; set; } = year;
 
 	/// <summary>
 	/// Gets or sets the month.
 	/// </summary>
-	public int Month { get; set; }
+	public int Month { get; set; } = month;
 
 	/// <summary>
 	/// Gets or sets the day of the month.
 	/// </summary>
-	public int Day { get; set; }
+	public int Day { get; set; } = day;
 
 	/// <summary>
 	/// Gets or sets the hour.
 	/// </summary>
-	public int Hour { get; set; }
+	public int Hour { get; set; } = hour;
 
 	/// <summary>
 	/// Gets or sets the minute.
 	/// </summary>
-	public int Minute { get; set; }
+	public int Minute { get; set; } = minute;
 
 	/// <summary>
 	/// Gets or sets the second.
 	/// </summary>
-	public int Second { get; set; }
+	public int Second { get; set; } = second;
 
 	/// <summary>
 	/// Gets or sets the microseconds.
 	/// </summary>
-	public int Microsecond { get; set; }
+	public int Microsecond { get; set; } = microsecond;
 
 	/// <summary>
 	/// Gets or sets the milliseconds.
