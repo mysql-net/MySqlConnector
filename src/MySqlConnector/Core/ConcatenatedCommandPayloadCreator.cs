@@ -10,14 +10,14 @@ internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
 
 	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon)
 	{
-		if (commandListPosition.CommandIndex == commandListPosition.Commands.Count)
+		if (commandListPosition.CommandIndex == commandListPosition.CommandCount)
 			return false;
 
 		writer.Write((byte) CommandKind.Query);
 
 		// ConcatenatedCommandPayloadCreator is only used by MySqlBatch, and MySqlBatchCommand doesn't expose attributes,
 		// so just write an empty attribute set if the server needs it.
-		if (commandListPosition.Commands[commandListPosition.CommandIndex].Connection!.Session.SupportsQueryAttributes)
+		if (commandListPosition.CommandAt(commandListPosition.CommandIndex).Connection!.Session.SupportsQueryAttributes)
 		{
 			// attribute count
 			writer.WriteLengthEncodedInteger(0);
@@ -29,15 +29,15 @@ internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
 		bool isComplete;
 		do
 		{
-			var command = commandListPosition.Commands[commandListPosition.CommandIndex];
+			var command = commandListPosition.CommandAt(commandListPosition.CommandIndex);
 			Log.PreparingCommandPayload(command.Logger, command.Connection!.Session.Id, command.CommandText!);
 
 			isComplete = SingleCommandPayloadCreator.WriteQueryPayload(command, cachedProcedures, writer,
-				commandListPosition.CommandIndex < commandListPosition.Commands.Count - 1 || appendSemicolon,
+				commandListPosition.CommandIndex < commandListPosition.CommandCount - 1 || appendSemicolon,
 				commandListPosition.CommandIndex == 0,
-				commandListPosition.CommandIndex == commandListPosition.Commands.Count - 1);
+				commandListPosition.CommandIndex == commandListPosition.CommandCount - 1);
 			commandListPosition.CommandIndex++;
-		} while (commandListPosition.CommandIndex < commandListPosition.Commands.Count && isComplete);
+		} while (commandListPosition.CommandIndex < commandListPosition.CommandCount && isComplete);
 
 		return true;
 	}

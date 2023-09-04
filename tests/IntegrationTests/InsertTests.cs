@@ -517,6 +517,40 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
+	public void ReadMySqlDecimalZeroFill(bool prepare)
+	{
+		using MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+		connection.Execute("""
+			drop table if exists mysql_decimal_zerofill;
+			create table mysql_decimal_zerofill(rowid integer not null primary key auto_increment, value decimal(20, 10) zerofill);
+			insert into mysql_decimal_zerofill(value) values(0),(1),(0.1);
+			""");
+
+		using var cmd = connection.CreateCommand();
+		cmd.CommandText = @"select value from mysql_decimal_zerofill order by rowid;";
+		if (prepare)
+			cmd.Prepare();
+		using var reader = cmd.ExecuteReader();
+
+		Assert.True(reader.Read());
+		Assert.Equal("0000000000.0000000000", reader.GetMySqlDecimal("value").ToString());
+		Assert.Equal(0m, reader.GetDecimal(0));
+
+		Assert.True(reader.Read());
+		Assert.Equal("0000000001.0000000000", reader.GetMySqlDecimal("value").ToString());
+		Assert.Equal(1m, reader.GetDecimal(0));
+
+		Assert.True(reader.Read());
+		Assert.Equal("0000000000.1000000000", reader.GetMySqlDecimal("value").ToString());
+		Assert.Equal(0.1m, reader.GetDecimal(0));
+
+		Assert.False(reader.Read());
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
 	public void InsertBigIntegerAsDecimal(bool prepare)
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);

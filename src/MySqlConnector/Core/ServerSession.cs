@@ -234,7 +234,7 @@ internal sealed partial class ServerSession
 					var payloadLength = payload.Span.Length;
 					Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payloadLength);
 					payload.Span.CopyTo(columnsAndParameters.AsSpan(columnsAndParametersSize));
-					parameters[i] = ColumnDefinitionPayload.Create(new(columnsAndParameters, columnsAndParametersSize, payloadLength));
+					ColumnDefinitionPayload.Initialize(ref parameters[i], new(columnsAndParameters, columnsAndParametersSize, payloadLength));
 					columnsAndParametersSize += payloadLength;
 				}
 				if (!SupportsDeprecateEof)
@@ -254,7 +254,7 @@ internal sealed partial class ServerSession
 					var payloadLength = payload.Span.Length;
 					Utility.Resize(ref columnsAndParameters, columnsAndParametersSize + payloadLength);
 					payload.Span.CopyTo(columnsAndParameters.AsSpan(columnsAndParametersSize));
-					columns[i] = ColumnDefinitionPayload.Create(new(columnsAndParameters, columnsAndParametersSize, payloadLength));
+					ColumnDefinitionPayload.Initialize(ref columns[i], new(columnsAndParameters, columnsAndParametersSize, payloadLength));
 					columnsAndParametersSize += payloadLength;
 				}
 				if (!SupportsDeprecateEof)
@@ -316,7 +316,7 @@ internal sealed partial class ServerSession
 			SendAsync(payload, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 			payload = ReceiveReplyAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #pragma warning restore CA2012
-			OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 		}
 
 		lock (m_lock)
@@ -582,7 +582,7 @@ internal sealed partial class ServerSession
 			// set 'collation_connection' to the server default
 			await SendAsync(m_setNamesPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 
 			if (ShouldGetRealServerDetails(cs))
 				await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
@@ -627,11 +627,11 @@ internal sealed partial class ServerSession
 					// read two OK replies
 					m_payloadHandler.SetNextSequenceNumber(1);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+					OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 
 					m_payloadHandler.SetNextSequenceNumber(1);
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+					OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 
 					return true;
 				}
@@ -639,7 +639,7 @@ internal sealed partial class ServerSession
 				Log.SendingResetConnectionRequest(m_logger, Id, ServerVersion.OriginalString);
 				await SendAsync(ResetConnectionPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+				OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 			}
 			else
 			{
@@ -663,13 +663,13 @@ internal sealed partial class ServerSession
 					Log.OptimisticReauthenticationFailed(m_logger, Id);
 					payload = await SwitchAuthenticationAsync(cs, password, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
-				OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+				OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 			}
 
 			// set 'collation_connection' to the server default
 			await SendAsync(m_setNamesPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 
 			return true;
 		}
@@ -870,7 +870,7 @@ internal sealed partial class ServerSession
 			Log.PingingServer(m_logger, Id);
 			await SendAsync(PingPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 			var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 			Log.SuccessfullyPingedServer(m_logger, logInfo ? LogLevel.Information : LogLevel.Trace, Id);
 			return true;
 		}
@@ -906,81 +906,44 @@ internal sealed partial class ServerSession
 	}
 
 	// Continues a conversation with the server by receiving a response to a packet sent with 'Send' or 'SendReply'.
-	public ValueTask<PayloadData> ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public async ValueTask<PayloadData> ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		ValueTask<ArraySegment<byte>> task;
-		try
+		if (CreateExceptionForInvalidState() is { } exception)
 		{
-			VerifyConnected();
-			task = m_payloadHandler!.ReadPayloadAsync(m_payloadCache, ProtocolErrorBehavior.Throw, ioBehavior);
-		}
-		catch (Exception ex)
-		{
-			Log.FailedInReceiveReplyAsync(m_logger, ex, Id);
-			if ((ex as MySqlException)?.ErrorCode == MySqlErrorCode.CommandTimeoutExpired)
-				HandleTimeout();
-			task = ValueTaskExtensions.FromException<ArraySegment<byte>>(ex);
+			Log.FailedInReceiveReplyAsync(m_logger, exception, Id);
+			throw exception;
 		}
 
-		if (task.IsCompletedSuccessfully)
-		{
-			var payload = new PayloadData(task.Result);
-			if (payload.HeaderByte != ErrorPayload.Signature)
-				return new ValueTask<PayloadData>(payload);
-
-			var exception = CreateExceptionForErrorPayload(payload.Span);
-			return ValueTaskExtensions.FromException<PayloadData>(exception);
-		}
-
-		return ReceiveReplyAsyncAwaited(task);
-	}
-
-	private async ValueTask<PayloadData> ReceiveReplyAsyncAwaited(ValueTask<ArraySegment<byte>> task)
-	{
 		ArraySegment<byte> bytes;
 		try
 		{
-			bytes = await task.ConfigureAwait(false);
+			bytes = await m_payloadHandler!.ReadPayloadAsync(m_payloadCache, ProtocolErrorBehavior.Throw, ioBehavior).ConfigureAwait(false);
 		}
 		catch (Exception ex)
 		{
 			SetFailed(ex);
-			if (ex is MySqlException { ErrorCode: MySqlErrorCode.CommandTimeoutExpired })
-				HandleTimeout();
 			throw;
 		}
+
 		var payload = new PayloadData(bytes);
 		if (payload.HeaderByte == ErrorPayload.Signature)
 			throw CreateExceptionForErrorPayload(payload.Span);
+
 		return payload;
 	}
 
 	// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
-	public ValueTask SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public async ValueTask SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		ValueTask task;
-		try
+		if (CreateExceptionForInvalidState() is { } exception)
 		{
-			VerifyConnected();
-			task = m_payloadHandler!.WritePayloadAsync(payload.Memory, ioBehavior);
-		}
-		catch (Exception ex)
-		{
-			Log.FailedInSendReplyAsync(m_logger, ex, Id);
-			task = ValueTaskExtensions.FromException(ex);
+			Log.FailedInSendReplyAsync(m_logger, exception, Id);
+			throw exception;
 		}
 
-		if (task.IsCompletedSuccessfully)
-			return task;
-
-		return SendReplyAsyncAwaited(task);
-	}
-
-	private async ValueTask SendReplyAsyncAwaited(ValueTask task)
-	{
 		try
 		{
-			await task.ConfigureAwait(false);
+			await m_payloadHandler!.WritePayloadAsync(payload.Memory, ioBehavior).ConfigureAwait(false);
 		}
 		catch (Exception ex)
 		{
@@ -1001,20 +964,15 @@ internal sealed partial class ServerSession
 		}
 	}
 
-	internal void HandleTimeout()
-	{
-		if (OwningConnection is not null && OwningConnection.TryGetTarget(out var connection))
-			connection.SetState(ConnectionState.Closed);
-	}
-
-	private void VerifyConnected()
+	private Exception? CreateExceptionForInvalidState()
 	{
 		lock (m_lock)
 		{
 			if (m_state == State.Closed)
-				throw new ObjectDisposedException(nameof(ServerSession));
+				return new ObjectDisposedException(nameof(ServerSession));
 			if (m_state != State.Connected && m_state != State.Querying && m_state != State.CancelingQuery && m_state != State.ClearingPendingCancellation && m_state != State.Closing)
-				throw new InvalidOperationException("ServerSession is not connected.");
+				return new InvalidOperationException("ServerSession is not connected.");
+			return null;
 		}
 	}
 
@@ -1712,7 +1670,7 @@ internal sealed partial class ServerSession
 			// OK/EOF payload
 			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			if (OkPayload.IsOk(payload.Span, SupportsDeprecateEof))
-				OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+				OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 			else
 				EofPayload.Create(payload.Span);
 

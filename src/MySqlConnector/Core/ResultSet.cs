@@ -20,7 +20,7 @@ internal sealed class ResultSet
 	{
 		// ResultSet can be re-used, so initialize everything
 		BufferState = ResultSetState.None;
-		ColumnDefinitions = null;
+		m_columnDefinitions = default;
 		WarningCount = 0;
 		State = ResultSetState.None;
 		ContainsCommandParameters = false;
@@ -55,7 +55,7 @@ internal sealed class ResultSet
 					WarningCount = ok.WarningCount;
 					if (ok.NewSchema is not null)
 						Connection.Session.DatabaseOverride = ok.NewSchema;
-					ColumnDefinitions = null;
+					m_columnDefinitions = default;
 					State = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0
 						? ResultSetState.NoMoreData
 						: ResultSetState.HasMoreData;
@@ -115,38 +115,50 @@ internal sealed class ResultSet
 				else
 				{
 					var columnCountPacket = ColumnCountPayload.Create(payload.Span, Session.SupportsCachedPreparedMetadata);
+					var columnCount = columnCountPacket.ColumnCount;
 					if (!columnCountPacket.MetadataFollows)
 					{
 						// reuse previous metadata
-						ColumnDefinitions = DataReader.LastUsedPreparedStatement!.Columns!;
-						if (ColumnDefinitions.Length != columnCountPacket.ColumnCount)
-							throw new InvalidOperationException($"Expected result set to have {ColumnDefinitions.Length} columns, but it contains {columnCountPacket.ColumnCount} columns");
+						m_columnDefinitions = DataReader.LastUsedPreparedStatement!.Columns!;
+						if (m_columnDefinitions.Length != columnCount)
+							throw new InvalidOperationException($"Expected result set to have {m_columnDefinitions.Length} columns, but it contains {columnCount} columns");
 					}
 					else
 					{
 						// parse columns
 						// reserve adequate space to hold a copy of all column definitions (but note that this can be resized below if we guess too small)
-						Utility.Resize(ref m_columnDefinitionPayloads, columnCountPacket.ColumnCount * 96);
+						Utility.Resize(ref m_columnDefinitionPayloadBytes, columnCount * 96);
 
-						ColumnDefinitions = new ColumnDefinitionPayload[columnCountPacket.ColumnCount];
-						for (var column = 0; column < ColumnDefinitions.Length; column++)
+						// increase the cache size to be large enough to hold all the column definitions
+						if (m_columnDefinitionPayloadCache is null)
+							m_columnDefinitionPayloadCache = new ColumnDefinitionPayload[columnCount];
+						else if (m_columnDefinitionPayloadCache.Length < columnCount)
+							Array.Resize(ref m_columnDefinitionPayloadCache, Math.Max(columnCount, m_columnDefinitionPayloadCache.Length * 2));
+						m_columnDefinitions = m_columnDefinitionPayloadCache.AsMemory(0, columnCount);
+
+						// if the server supports metadata caching but has re-sent it, something has changed since last prepare/execution and we need to update the columns
+						var preparedColumns = Session.SupportsCachedPreparedMetadata ? DataReader.LastUsedPreparedStatement?.Columns : null;
+
+						for (var column = 0; column < columnCount; column++)
 						{
 							payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 							var payloadLength = payload.Span.Length;
 
 							// 'Session.ReceiveReplyAsync' reuses a shared buffer; make a copy so that the column definitions can always be safely read at any future point
-							if (m_columnDefinitionPayloadUsedBytes + payloadLength > m_columnDefinitionPayloads.Count)
-								Utility.Resize(ref m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes + payloadLength);
-							payload.Span.CopyTo(m_columnDefinitionPayloads.AsSpan(m_columnDefinitionPayloadUsedBytes));
+							if (m_columnDefinitionPayloadUsedBytes + payloadLength > m_columnDefinitionPayloadBytes.Count)
+								Utility.Resize(ref m_columnDefinitionPayloadBytes, m_columnDefinitionPayloadUsedBytes + payloadLength);
+							payload.Span.CopyTo(m_columnDefinitionPayloadBytes.AsSpan(m_columnDefinitionPayloadUsedBytes));
 
-							var columnDefinition = ColumnDefinitionPayload.Create(new ResizableArraySegment<byte>(m_columnDefinitionPayloads, m_columnDefinitionPayloadUsedBytes, payloadLength));
-							ColumnDefinitions[column] = columnDefinition;
+							// create/update the column definition in our cache
+							var payloadBytesSegment = new ResizableArraySegment<byte>(m_columnDefinitionPayloadBytes, m_columnDefinitionPayloadUsedBytes, payloadLength);
+							ColumnDefinitionPayload.Initialize(ref m_columnDefinitionPayloadCache[column], payloadBytesSegment);
+
+							// if there was a prepared statement, update its cached columns too
+							if (preparedColumns is not null)
+								ColumnDefinitionPayload.Initialize(ref preparedColumns[column], payloadBytesSegment);
+
 							m_columnDefinitionPayloadUsedBytes += payloadLength;
 						}
-
-						// server supports metadata caching, but has re-sent it, so something has changed since last prepare/execution
-						if (Session.SupportsCachedPreparedMetadata && DataReader.LastUsedPreparedStatement is { } preparedStatement)
-							preparedStatement.Columns = ColumnDefinitions;
 					}
 
 					if (!Session.SupportsDeprecateEof)
@@ -225,61 +237,48 @@ internal sealed class ResultSet
 		return row;
 	}
 
-	private ValueTask<Row?> ScanRowAsync(IOBehavior ioBehavior, Row? row, CancellationToken cancellationToken)
+	private async ValueTask<Row?> ScanRowAsync(IOBehavior ioBehavior, Row? row, CancellationToken cancellationToken)
 	{
 		// if we've already read past the end of this resultset, Read returns false
 		if (BufferState is ResultSetState.HasMoreData or ResultSetState.NoMoreData or ResultSetState.None)
-			return new ValueTask<Row?>(default(Row?));
+			return null;
 
-		var payloadValueTask = Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None);
-		return payloadValueTask.IsCompletedSuccessfully
-			? new ValueTask<Row?>(ScanRowAsyncRemainder(this, payloadValueTask.Result, row))
-			: new ValueTask<Row?>(ScanRowAsyncAwaited(this, payloadValueTask.AsTask(), row, cancellationToken));
-
-		static async Task<Row?> ScanRowAsyncAwaited(ResultSet resultSet, Task<PayloadData> payloadTask, Row? row, CancellationToken token)
+		PayloadData payload;
+		try
 		{
-			PayloadData payloadData;
-			try
-			{
-				payloadData = await payloadTask.ConfigureAwait(false);
-			}
-			catch (MySqlException ex)
-			{
-				resultSet.BufferState = resultSet.State = ResultSetState.NoMoreData;
-				if (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && token.IsCancellationRequested)
-					throw new OperationCanceledException(ex.Message, ex, token);
-				if (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && resultSet.Command.CancellableCommand.IsTimedOut)
-					throw MySqlException.CreateForTimeout(ex);
-				throw;
-			}
-			return ScanRowAsyncRemainder(resultSet, payloadData, row);
+			payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+		}
+		catch (MySqlException ex)
+		{
+			BufferState = State = ResultSetState.NoMoreData;
+			if (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && cancellationToken.IsCancellationRequested)
+				throw new OperationCanceledException(ex.Message, ex, cancellationToken);
+			if (ex.ErrorCode == MySqlErrorCode.QueryInterrupted && Command.CancellableCommand.IsTimedOut)
+				throw MySqlException.CreateForTimeout(ex);
+			throw;
 		}
 
-		static Row? ScanRowAsyncRemainder(ResultSet resultSet, PayloadData payload, Row? row)
+		if (payload.HeaderByte == EofPayload.Signature)
 		{
-			if (payload.HeaderByte == EofPayload.Signature)
+			if (Session.SupportsDeprecateEof && OkPayload.IsOk(payload.Span, Session.SupportsDeprecateEof))
 			{
-				var span = payload.Span;
-				if (resultSet.Session.SupportsDeprecateEof && OkPayload.IsOk(span, resultSet.Session.SupportsDeprecateEof))
-				{
-					var ok = OkPayload.Create(span, resultSet.Session.SupportsDeprecateEof, resultSet.Session.SupportsSessionTrack);
-					resultSet.BufferState = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
-					return null;
-				}
-				if (!resultSet.Session.SupportsDeprecateEof && EofPayload.IsEof(payload))
-				{
-					var eof = EofPayload.Create(span);
-					resultSet.BufferState = (eof.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
-					return null;
-				}
+				var ok = OkPayload.Create(payload.Span, Session.SupportsDeprecateEof, Session.SupportsSessionTrack);
+				BufferState = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
+				return null;
 			}
-
-			row ??= new Row(resultSet.Command.TryGetPreparedStatements() is not null, resultSet);
-			row.SetData(payload.Memory);
-			resultSet.m_hasRows = true;
-			resultSet.BufferState = ResultSetState.ReadingRows;
-			return row;
+			if (!Session.SupportsDeprecateEof && EofPayload.IsEof(payload))
+			{
+				var eof = EofPayload.Create(payload.Span);
+				BufferState = (eof.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
+				return null;
+			}
 		}
+
+		row ??= new Row(Command.TryGetPreparedStatements() is not null, this);
+		row.SetData(payload.Memory);
+		m_hasRows = true;
+		BufferState = ResultSetState.ReadingRows;
+		return row;
 	}
 
 #pragma warning disable CA1822 // Mark members as static
@@ -290,7 +289,7 @@ internal sealed class ResultSet
 
 	public string GetName(int ordinal)
 	{
-		if (ColumnDefinitions is null)
+		if (!HasResultSet)
 			throw new InvalidOperationException("There is no current result set.");
 		if (ordinal < 0 || ordinal >= ColumnDefinitions.Length)
 			throw new IndexOutOfRangeException($"value must be between 0 and {ColumnDefinitions.Length - 1}");
@@ -299,7 +298,7 @@ internal sealed class ResultSet
 
 	public string GetDataTypeName(int ordinal)
 	{
-		if (ColumnDefinitions is null)
+		if (!HasResultSet)
 			throw new InvalidOperationException("There is no current result set.");
 		if (ordinal < 0 || ordinal >= ColumnDefinitions.Length)
 			throw new IndexOutOfRangeException($"value must be between 0 and {ColumnDefinitions.Length - 1}");
@@ -312,7 +311,7 @@ internal sealed class ResultSet
 
 	public Type GetFieldType(int ordinal)
 	{
-		if (ColumnDefinitions is null)
+		if (!HasResultSet)
 			throw new InvalidOperationException("There is no current result set.");
 		if (ordinal < 0 || ordinal >= ColumnDefinitions.Length)
 			throw new IndexOutOfRangeException($"value must be between 0 and {ColumnDefinitions.Length - 1}");
@@ -324,9 +323,9 @@ internal sealed class ResultSet
 	}
 
 	public MySqlDbType GetColumnType(int ordinal) =>
-		TypeMapper.ConvertToMySqlDbType(ColumnDefinitions![ordinal], Connection.TreatTinyAsBoolean, Connection.GuidFormat);
+		TypeMapper.ConvertToMySqlDbType(ColumnDefinitions[ordinal], Connection.TreatTinyAsBoolean, Connection.GuidFormat);
 
-	public int FieldCount => ColumnDefinitions?.Length ?? 0;
+	public int FieldCount => ColumnDefinitions.Length;
 
 	public bool HasRows
 	{
@@ -342,7 +341,7 @@ internal sealed class ResultSet
 	{
 		if (name is null)
 			throw new ArgumentNullException(nameof(name));
-		if (ColumnDefinitions is null)
+		if (!HasResultSet)
 			throw new InvalidOperationException("There is no current result set.");
 
 		for (var column = 0; column < ColumnDefinitions.Length; column++)
@@ -368,14 +367,17 @@ internal sealed class ResultSet
 	public ServerSession Session => DataReader.Session!;
 
 	public ResultSetState BufferState { get; private set; }
-	public ColumnDefinitionPayload[]? ColumnDefinitions { get; private set; }
+	public ReadOnlySpan<ColumnDefinitionPayload> ColumnDefinitions => m_columnDefinitions.Span;
 	public int WarningCount { get; private set; }
 	public ResultSetState State { get; private set; }
+	public bool HasResultSet => !(State == ResultSetState.None || ColumnDefinitions.Length == 0);
 	public bool ContainsCommandParameters { get; private set; }
 
-	private ResizableArray<byte>? m_columnDefinitionPayloads;
+	private ResizableArray<byte>? m_columnDefinitionPayloadBytes;
 	private int m_columnDefinitionPayloadUsedBytes;
 	private Queue<Row>? m_readBuffer;
 	private Row? m_row;
 	private bool m_hasRows;
+	private ReadOnlyMemory<ColumnDefinitionPayload> m_columnDefinitions;
+	private ColumnDefinitionPayload[]? m_columnDefinitionPayloadCache;
 }

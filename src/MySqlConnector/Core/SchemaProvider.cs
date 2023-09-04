@@ -103,12 +103,12 @@ internal sealed partial class SchemaProvider
 	{
 		// Note:
 		// For MySQL 8.0, the INFORMATION_SCHEMA.KEYWORDS table could be used to load the list at runtime,
-		// unfortunately this bug https://bugs.mysql.com/bug.php?id=90160 makes it impratical to do it
+		// unfortunately this bug https://bugs.mysql.com/bug.php?id=90160 makes it impractical to do it
 		// (the bug is marked as fixed in MySQL 8.0.13, not published yet at the time of writing this note).
 		//
 		// Note:
 		// Once the previously mentioned bug will be fixed, for versions >= 8.0.13 reserved words could be
-		// loaded at runtime form INFORMATION_SCHEMA.KEYWORDS, and for other versions the hard coded list
+		// loaded at runtime from INFORMATION_SCHEMA.KEYWORDS, and for other versions the hard coded list
 		// could be used (notice the list could change with the release, adopting the 8.0.12 list is a
 		// suboptimal one-size-fits-it-all solution.
 		// To get the current MySQL version at runtime one could query SELECT VERSION(); which returns a

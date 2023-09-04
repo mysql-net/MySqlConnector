@@ -8,22 +8,22 @@ namespace MySqlConnector.Core;
 
 internal static class CommandExecutor
 {
-	public static async Task<MySqlDataReader> ExecuteReaderAsync(IReadOnlyList<IMySqlCommand> commands, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public static async ValueTask<MySqlDataReader> ExecuteReaderAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		try
 		{
 			cancellationToken.ThrowIfCancellationRequested();
-			var commandListPosition = new CommandListPosition(commands);
-			var command = commands[0];
+			var command = commandListPosition.CommandAt(0);
 
 			// pre-requisite: Connection is non-null must be checked before calling this method
 			var connection = command.Connection!;
 
-			Log.CommandExecutorExecuteReader(command.Logger, connection.Session.Id, ioBehavior, commands.Count);
+			Log.CommandExecutorExecuteReader(command.Logger, connection.Session.Id, ioBehavior, commandListPosition.CommandCount);
 
 			Dictionary<string, CachedProcedure?>? cachedProcedures = null;
-			foreach (var command2 in commands)
+			for (var commandIndex = 0; commandIndex < commandListPosition.CommandCount; commandIndex++)
 			{
+				var command2 = commandListPosition.CommandAt(commandIndex);
 				if (command2.CommandType == CommandType.StoredProcedure)
 				{
 					cachedProcedures ??= new();

@@ -530,7 +530,6 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 		Assert.Throws<ArgumentNullException>(() => bulkCopy.WriteToServer(default(DataTable)));
 	}
 
-#if !MYSQL_DATA
 	[Fact]
 	public void BulkCopyDataTableWithMySqlDecimal()
 	{
@@ -656,7 +655,6 @@ create table bulk_load_data_table(a int, time1 time, time2 time(3));", connectio
 		}
 	}
 #endif
-#endif
 
 	public static IEnumerable<object[]> GetBulkCopyData() =>
 		new object[][]
@@ -708,6 +706,50 @@ create table bulk_load_data_table(a int, time1 time, time2 time(3));", connectio
 				Assert.True(reader.Read());
 				Assert.Equal(rows[i], reader.GetValue(0));
 			}
+			Assert.False(reader.Read());
+			Assert.False(reader.NextResult());
+		}
+	}
+
+	[Fact]
+	public void BulkCopyToColumnNeedingQuoting()
+	{
+		var dataTable = new DataTable()
+		{
+			Columns =
+			{
+				new DataColumn("id", typeof(int)),
+				new DataColumn("@a", typeof(string)),
+			},
+		};
+		dataTable.Rows.Add(2, "two");
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+		using (var cmd = new MySqlCommand($"""
+			drop table if exists bulk_load_quoted_identifier;
+			create table bulk_load_quoted_identifier(id int, `@a` text);
+			insert into bulk_load_quoted_identifier values (1, 'one');
+			""", connection))
+		{
+			cmd.ExecuteNonQuery();
+		}
+
+		var bulkCopy = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_load_quoted_identifier",
+		};
+		var result = bulkCopy.WriteToServer(dataTable);
+		Assert.Equal(1, result.RowsInserted);
+		Assert.Empty(result.Warnings);
+
+		using (var cmd = new MySqlCommand(@"select `@a` from bulk_load_quoted_identifier order by id;", connection))
+		{
+			using var reader = cmd.ExecuteReader();
+			Assert.True(reader.Read());
+			Assert.Equal("one", reader.GetString(0));
+			Assert.True(reader.Read());
+			Assert.Equal("two", reader.GetString(0));
 			Assert.False(reader.Read());
 			Assert.False(reader.NextResult());
 		}

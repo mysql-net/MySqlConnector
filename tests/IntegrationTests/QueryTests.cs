@@ -122,7 +122,7 @@ INSERT INTO bug_1096 (`Name`) VALUES ('Demo-Name');");
 	public void GetOrdinalBeforeAndAfterRead()
 	{
 		using var cmd = m_database.Connection.CreateCommand();
-		cmd.CommandText = "select 0 as zero, 1 as one;";
+		cmd.CommandText = "select 0 as zero, 1 as one; select 2 as two;";
 
 		using var reader = cmd.ExecuteReader();
 		Assert.Equal(1, reader.GetOrdinal("one"));
@@ -130,6 +130,13 @@ INSERT INTO bug_1096 (`Name`) VALUES ('Demo-Name');");
 		Assert.Equal(1, reader.GetOrdinal("one"));
 		Assert.False(reader.Read());
 		Assert.Equal(1, reader.GetOrdinal("one"));
+
+		Assert.True(reader.NextResult());
+		Assert.Equal(0, reader.GetOrdinal("two"));
+		Assert.True(reader.Read());
+		Assert.Equal(0, reader.GetOrdinal("two"));
+		Assert.False(reader.Read());
+		Assert.Equal(0, reader.GetOrdinal("two"));
 	}
 
 	[Fact]
@@ -727,6 +734,44 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 			throw ex;
 	}
 
+	[Fact]
+	public void GetNameAfterNextResult()
+	{
+		using var cmd = m_database.Connection.CreateCommand();
+		cmd.CommandText = "select 1 as a;";
+		using var reader = cmd.ExecuteReader();
+		Assert.False(reader.NextResult());
+#if MYSQL_DATA
+		Assert.Throws<IndexOutOfRangeException>(() => reader.GetName(0));
+#else
+		Assert.Throws<InvalidOperationException>(() => reader.GetName(0));
+#endif
+	}
+
+	[Fact]
+	public void GetNameBeforeAndAfterRead()
+	{
+		using var cmd = m_database.Connection.CreateCommand();
+		cmd.CommandText = "select '1' as a; select 1.0 as b;";
+		using var reader = cmd.ExecuteReader();
+		Assert.Equal("a", reader.GetName(0));
+
+		Assert.True(reader.Read());
+		Assert.Equal("a", reader.GetName(0));
+
+		Assert.False(reader.Read());
+		Assert.Equal("a", reader.GetName(0));
+
+		Assert.True(reader.NextResult());
+		Assert.Equal("b", reader.GetName(0));
+
+		Assert.True(reader.Read());
+		Assert.Equal("b", reader.GetName(0));
+
+		Assert.False(reader.Read());
+		Assert.Equal("b", reader.GetName(0));
+	}
+
 	[Theory]
 #if MYSQL_DATA
 	[InlineData("null", typeof(string))]
@@ -778,6 +823,30 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 #endif
 	}
 
+	[Fact]
+	public void GetFieldTypeBeforeAndAfterRead()
+	{
+		using var cmd = m_database.Connection.CreateCommand();
+		cmd.CommandText = "select '1' as a; select 1.0 as b;";
+		using var reader = cmd.ExecuteReader();
+		Assert.Equal(typeof(string), reader.GetFieldType(0));
+
+		Assert.True(reader.Read());
+		Assert.Equal(typeof(string), reader.GetFieldType(0));
+
+		Assert.False(reader.Read());
+		Assert.Equal(typeof(string), reader.GetFieldType(0));
+
+		Assert.True(reader.NextResult());
+		Assert.Equal(typeof(decimal), reader.GetFieldType(0));
+
+		Assert.True(reader.Read());
+		Assert.Equal(typeof(decimal), reader.GetFieldType(0));
+
+		Assert.False(reader.Read());
+		Assert.Equal(typeof(decimal), reader.GetFieldType(0));
+	}
+
 	[Theory]
 #if MYSQL_DATA
 	[InlineData("null", "VARCHAR")]
@@ -826,6 +895,30 @@ insert into query_null_parameter (id, value) VALUES (1, 'one'), (2, 'two'), (3, 
 #else
 		Assert.Throws<InvalidOperationException>(() => reader.GetDataTypeName(0));
 #endif
+	}
+
+	[Fact]
+	public void GetDataTypeNameBeforeAndAfterRead()
+	{
+		using var cmd = m_database.Connection.CreateCommand();
+		cmd.CommandText = "select '1' as a; select 1.0 as b;";
+		using var reader = cmd.ExecuteReader();
+		Assert.Equal("VARCHAR", reader.GetDataTypeName(0));
+
+		Assert.True(reader.Read());
+		Assert.Equal("VARCHAR", reader.GetDataTypeName(0));
+
+		Assert.False(reader.Read());
+		Assert.Equal("VARCHAR", reader.GetDataTypeName(0));
+
+		Assert.True(reader.NextResult());
+		Assert.Equal("DECIMAL", reader.GetDataTypeName(0));
+
+		Assert.True(reader.Read());
+		Assert.Equal("DECIMAL", reader.GetDataTypeName(0));
+
+		Assert.False(reader.Read());
+		Assert.Equal("DECIMAL", reader.GetDataTypeName(0));
 	}
 
 #if !MYSQL_DATA
@@ -1078,6 +1171,9 @@ insert into has_rows(value) values(1),(2),(3);");
 		Assert.True(reader.HasRows);
 		Assert.True(reader.HasRows);
 		Assert.True(reader.HasRows);
+
+		Assert.False(reader.NextResult());
+		Assert.False(reader.HasRows);
 	}
 
 	[Fact]

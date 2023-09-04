@@ -155,7 +155,7 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 	{
 		var tag = tags.SingleOrDefault(x => x.Key == expectedTag);
 		if (tag.Key is null)
-			Assert.True(false, $"tags did not contain '{expectedTag}'");
+			Assert.Fail($"tags did not contain '{expectedTag}'");
 		Assert.Equal(expectedValue, tag.Value);
 	}
 }

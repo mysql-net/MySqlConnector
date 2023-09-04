@@ -213,11 +213,7 @@ public class MySqlParameterTests
 	[Fact]
 	public void CloneMySqlDbType()
 	{
-#if MYSQL_DATA // https://bugs.mysql.com/bug.php?id=109682
-		var parameter = new MySqlParameter { MySqlDbType = MySqlDbType.Int64 };
-#else
 		var parameter = new MySqlParameter { MySqlDbType = MySqlDbType.MediumText };
-#endif
 		var clone = parameter.Clone();
 		Assert.Equal(parameter.MySqlDbType, clone.MySqlDbType);
 	}

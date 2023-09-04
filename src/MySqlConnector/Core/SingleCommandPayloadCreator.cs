@@ -14,10 +14,10 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 
 	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon)
 	{
-		if (commandListPosition.CommandIndex == commandListPosition.Commands.Count)
+		if (commandListPosition.CommandIndex == commandListPosition.CommandCount)
 			return false;
 
-		var command = commandListPosition.Commands[commandListPosition.CommandIndex];
+		var command = commandListPosition.CommandAt(commandListPosition.CommandIndex);
 		commandListPosition.PreparedStatements = command.TryGetPreparedStatements();
 		if (commandListPosition.PreparedStatements is null)
 		{

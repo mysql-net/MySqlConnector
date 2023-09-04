@@ -102,16 +102,6 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// Begins a database transaction asynchronously.
 	/// </summary>
 	/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
-	/// <param name="isReadOnly">If <c>true</c>, changes to tables used in the transaction are prohibited; otherwise, they are permitted.</param>
-	/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-	/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
-	/// <remarks>Transactions may not be nested.</remarks>
-	public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, bool isReadOnly, CancellationToken cancellationToken = default) => BeginTransactionAsync(isolationLevel, isReadOnly, AsyncIOBehavior, cancellationToken);
-
-	/// <summary>
-	/// Begins a database transaction asynchronously.
-	/// </summary>
-	/// <param name="isolationLevel">The <see cref="IsolationLevel"/> for the transaction.</param>
 	/// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
 	/// <returns>A <see cref="ValueTask{DbTransaction}"/> representing the new database transaction.</returns>
 	protected override async ValueTask<DbTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken) =>
@@ -133,6 +123,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
 	/// <remarks>Transactions may not be nested.</remarks>
 	public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default) => BeginTransactionAsync(isolationLevel, default, AsyncIOBehavior, cancellationToken);
+#endif
 
 	/// <summary>
 	/// Begins a database transaction asynchronously.
@@ -143,7 +134,6 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// <returns>A <see cref="Task{MySqlTransaction}"/> representing the new database transaction.</returns>
 	/// <remarks>Transactions may not be nested.</remarks>
 	public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, bool isReadOnly, CancellationToken cancellationToken = default) => BeginTransactionAsync(isolationLevel, isReadOnly, AsyncIOBehavior, cancellationToken);
-#endif
 
 	private async ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, bool? isReadOnly, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
@@ -356,7 +346,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		using (var initDatabasePayload = InitDatabasePayload.Create(databaseName))
 			await m_session!.SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 		var payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-		OkPayload.Create(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
+		OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
 		m_session.DatabaseOverride = databaseName;
 	}
 
@@ -472,7 +462,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		Log.ResettingConnection(m_logger, session.Id);
 		await session.SendAsync(ResetConnectionPayload.Instance, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
 		var payload = await session.ReceiveReplyAsync(AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
-		OkPayload.Create(payload.Span, session.SupportsDeprecateEof, session.SupportsSessionTrack);
+		OkPayload.Verify(payload.Span, session.SupportsDeprecateEof, session.SupportsSessionTrack);
 	}
 
 	[AllowNull]

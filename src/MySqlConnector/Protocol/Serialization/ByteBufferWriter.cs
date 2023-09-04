@@ -99,11 +99,22 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 		m_output = m_output[span.Length..];
 	}
 
-	public void Write(string value) => Write(value.AsSpan(), flush: true);
+	public void Write(string value) => Write(value.AsSpan());
 
 	public void WriteAscii(string value) => WriteAscii(value.AsSpan());
 
-	public void Write(string value, int offset, int length) => Write(value.AsSpan(offset, length), flush: true);
+	public void Write(string value, int offset, int length) => Write(value.AsSpan(offset, length));
+
+	public void Write(ReadOnlySpan<char> chars)
+	{
+		if (m_output.Length < chars.Length * 3)
+		{
+			var neededBytes = Encoding.UTF8.GetByteCount(chars);
+			if (m_output.Length < neededBytes)
+				Reallocate(neededBytes);
+		}
+		m_output = m_output[Encoding.UTF8.GetBytes(chars, m_output.Span)..];
+	}
 
 	public void Write(ReadOnlySpan<char> chars, bool flush)
 	{
@@ -261,7 +272,7 @@ internal static class ByteBufferWriterExtensions
 	{
 		var byteCount = Encoding.UTF8.GetByteCount(value);
 		writer.WriteLengthEncodedInteger((ulong) byteCount);
-		writer.Write(value, flush: true);
+		writer.Write(value);
 	}
 
 	public static void WriteLengthEncodedAsciiString(this ByteBufferWriter writer, string value)

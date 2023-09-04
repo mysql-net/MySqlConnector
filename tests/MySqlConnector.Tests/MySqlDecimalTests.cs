@@ -31,20 +31,6 @@ public class MySqlDecimalTests
 	}
 
 	[Fact]
-	public void TestInvalidFormatWithDecimalPostive()
-	{
-		var invalidValue = "0323.323";
-		Assert.Throws<FormatException>(() => new MySqlDecimal(invalidValue));
-	}
-
-	[Fact]
-	public void TestInvalidFormatWithDecimalNegative()
-	{
-		var invalidValue = "-0323.323";
-		Assert.Throws<FormatException>(() => new MySqlDecimal(invalidValue));
-	}
-
-	[Fact]
 	public void TestValidFormatWithDecimalNegative68Length()
 	{
 		// If it's valid negative value with . then length should be less than 68
@@ -109,6 +95,10 @@ public class MySqlDecimalTests
 	[InlineData("-0.1")]
 	[InlineData("1.0")]
 	[InlineData("1.23")]
+	[InlineData("00")]
+	[InlineData("01")]
+	[InlineData("0323.323")]
+	[InlineData("-0323.323")]
 	[InlineData("12345678901234567890123456789012345678901234567890123456789012345")]
 	[InlineData("-12345678901234567890123456789012345678901234567890123456789012345")]
 	[InlineData("12345678901234567890123456789012345.012345678901234567890123456789")]
@@ -120,8 +110,6 @@ public class MySqlDecimalTests
 	[InlineData("")]
 	[InlineData("-0")]
 	[InlineData("-0.0")]
-	[InlineData("00")]
-	[InlineData("01")]
 	[InlineData("123456789012345678901234567890123456789012345678901234567890123456")]
 	[InlineData("-123456789012345678901234567890123456789012345678901234567890123456")]
 	[InlineData("123456789012345678901234567890123456.012345678901234567890123456789")]

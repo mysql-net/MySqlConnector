@@ -184,16 +184,16 @@ jobs:
     vmimage: 'ubuntu-20.04'
   strategy:
     matrix:
-      'MySQL 5.6':
-        image: 'mysql:5.6'
-        connectionStringExtra: ''
-        unsupportedFeatures: 'CachingSha2Password,Ed25519,Json,LargePackets,QueryAttributes,ResetConnection,SessionTrack,Sha256Password,Tls11,Tls13,UuidToBin'
       'MySQL 5.7':
         image: 'mysql:5.7'
         connectionStringExtra: 'Tls Cipher Suites=TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256'
         unsupportedFeatures: 'CachingSha2Password,Ed25519,QueryAttributes,Tls11,Tls13,UuidToBin'
       'MySQL 8.0':
         image: 'mysql:8.0'
+        connectionStringExtra: ''
+        unsupportedFeatures: 'Ed25519,StreamingResults,Tls11,ZeroDateTime'
+      'MySQL 8.1':
+        image: 'mysql:8.1'
         connectionStringExtra: ''
         unsupportedFeatures: 'Ed25519,StreamingResults,Tls11,ZeroDateTime'
       'MariaDB 10.6':

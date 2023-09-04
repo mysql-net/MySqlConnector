@@ -25,7 +25,7 @@ OMIT_FEATURES=$3
 MYSQL_EXTRA=
 MYSQL=mysql
 
-if [ "$IMAGE" == "mysql:8.0" ]; then
+if [[ "$IMAGE" == mysql:8.0 || "$IMAGE" == mysql:8.1 ]]; then
   MYSQL_EXTRA='--default-authentication-plugin=mysql_native_password'
 fi
 if [[ "$IMAGE" == mariadb* ]]; then

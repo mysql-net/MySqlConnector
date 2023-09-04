@@ -16,13 +16,13 @@ internal sealed class ColumnDefinitionPayload
 		}
 	}
 
-	public CharacterSet CharacterSet { get; }
+	public CharacterSet CharacterSet { get; private set; }
 
-	public uint ColumnLength { get; }
+	public uint ColumnLength { get; private set; }
 
-	public ColumnType ColumnType { get; }
+	public ColumnType ColumnType { get; private set; }
 
-	public ColumnFlags ColumnFlags { get; }
+	public ColumnFlags ColumnFlags { get; private set; }
 
 	public string SchemaName
 	{
@@ -74,11 +74,18 @@ internal sealed class ColumnDefinitionPayload
 		}
 	}
 
-	public byte Decimals { get; }
+	public byte Decimals { get; private set; }
 
-	public static ColumnDefinitionPayload Create(ResizableArraySegment<byte> arraySegment)
+	public static void Initialize(ref ColumnDefinitionPayload payload, ResizableArraySegment<byte> arraySegment)
 	{
-		var reader = new ByteArrayReader(arraySegment);
+		payload ??= new ColumnDefinitionPayload();
+		payload.Initialize(arraySegment);
+	}
+
+	private void Initialize(ResizableArraySegment<byte> originalData)
+	{
+		m_originalData = originalData;
+		var reader = new ByteArrayReader(originalData);
 		SkipLengthEncodedByteString(ref reader); // catalog
 		SkipLengthEncodedByteString(ref reader); // schema
 		SkipLengthEncodedByteString(ref reader); // table
@@ -86,15 +93,24 @@ internal sealed class ColumnDefinitionPayload
 		SkipLengthEncodedByteString(ref reader); // name
 		SkipLengthEncodedByteString(ref reader); // physical name
 		reader.ReadByte(0x0C); // length of fixed-length fields, always 0x0C
-		var characterSet = (CharacterSet) reader.ReadUInt16();
-		var columnLength = reader.ReadUInt32();
-		var columnType = (ColumnType) reader.ReadByte();
-		var columnFlags = (ColumnFlags) reader.ReadUInt16();
-		var decimals = reader.ReadByte(); // 0x00 for integers and static strings, 0x1f for dynamic strings, double, float, 0x00 to 0x51 for decimals
+		CharacterSet = (CharacterSet) reader.ReadUInt16();
+		ColumnLength = reader.ReadUInt32();
+		ColumnType = (ColumnType) reader.ReadByte();
+		ColumnFlags = (ColumnFlags) reader.ReadUInt16();
+		Decimals = reader.ReadByte(); // 0x00 for integers and static strings, 0x1f for dynamic strings, double, float, 0x00 to 0x51 for decimals
 		reader.ReadByte(0); // reserved byte 1
 		reader.ReadByte(0); // reserved byte 2
 
-		return new ColumnDefinitionPayload(arraySegment, characterSet, columnLength, columnType, columnFlags, decimals);
+		if (m_readNames)
+		{
+			m_catalogName = null;
+			m_schemaName = null;
+			m_table = null;
+			m_physicalTable = null;
+			m_name = null;
+			m_physicalName = null;
+			m_readNames = false;
+		}
 	}
 
 	private static void SkipLengthEncodedByteString(ref ByteArrayReader reader)
@@ -103,19 +119,13 @@ internal sealed class ColumnDefinitionPayload
 		reader.Offset += length;
 	}
 
-	private ColumnDefinitionPayload(ResizableArraySegment<byte> originalData, CharacterSet characterSet, uint columnLength, ColumnType columnType, ColumnFlags columnFlags, byte decimals)
+	private ColumnDefinitionPayload()
 	{
-		OriginalData = originalData;
-		CharacterSet = characterSet;
-		ColumnLength = columnLength;
-		ColumnType = columnType;
-		ColumnFlags = columnFlags;
-		Decimals = decimals;
 	}
 
 	private void ReadNames()
 	{
-		var reader = new ByteArrayReader(OriginalData);
+		var reader = new ByteArrayReader(m_originalData);
 		m_catalogName = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
 		m_schemaName = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
 		m_table = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
@@ -125,8 +135,7 @@ internal sealed class ColumnDefinitionPayload
 		m_readNames = true;
 	}
 
-	private ResizableArraySegment<byte> OriginalData { get; }
-
+	private ResizableArraySegment<byte> m_originalData;
 	private bool m_readNames;
 	private string? m_name;
 	private string? m_schemaName;
