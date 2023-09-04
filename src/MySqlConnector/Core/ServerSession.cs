@@ -850,7 +850,7 @@ internal sealed partial class ServerSession
 		{
 			// request the RSA public key
 			var payloadContent = switchRequestName == "caching_sha2_password" ? (byte) 0x02 : (byte) 0x01;
-			await SendReplyAsync(new PayloadData(new[] { payloadContent }), ioBehavior, cancellationToken).ConfigureAwait(false);
+			await SendReplyAsync(new PayloadData([ payloadContent ]), ioBehavior, cancellationToken).ConfigureAwait(false);
 			var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload.Span);
 			return Encoding.ASCII.GetString(publicKeyPayload.Data);

@@ -989,72 +989,72 @@ internal abstract partial class MySqlConnectionStringOption
 		// Base Options
 #pragma warning disable SA1118 // Parameter should not span multiple lines
 		AddOption(options, Server = new(
-			keys: new[] { "Server", "Host", "Data Source", "DataSource", "Address", "Addr", "Network Address" },
+			keys: [ "Server", "Host", "Data Source", "DataSource", "Address", "Addr", "Network Address" ],
 			defaultValue: ""));
 
 		AddOption(options, Port = new(
-			keys: new[] { "Port" },
+			keys: [ "Port" ],
 			defaultValue: 3306u));
 
 		AddOption(options, UserID = new(
-			keys: new[] { "User ID", "UserID", "Username", "Uid", "User name", "User" },
+			keys: [ "User ID", "UserID", "Username", "Uid", "User name", "User" ],
 			defaultValue: ""));
 
 		AddOption(options, Password = new(
-			keys: new[] { "Password", "pwd" },
+			keys: [ "Password", "pwd" ],
 			defaultValue: ""));
 
 		AddOption(options, Database = new(
-			keys: new[] { "Database", "Initial Catalog" },
+			keys: [ "Database", "Initial Catalog" ],
 			defaultValue: ""));
 
 		AddOption(options, LoadBalance = new(
-			keys: new[] { "Load Balance", "LoadBalance" },
+			keys: [ "Load Balance", "LoadBalance" ],
 			defaultValue: MySqlLoadBalance.RoundRobin));
 
 		AddOption(options, ConnectionProtocol = new(
-			keys: new[] { "Connection Protocol", "ConnectionProtocol", "Protocol" },
+			keys: [ "Connection Protocol", "ConnectionProtocol", "Protocol" ],
 			defaultValue: MySqlConnectionProtocol.Socket));
 
 		AddOption(options, PipeName = new(
-			keys: new[] { "Pipe Name", "PipeName", "Pipe" },
+			keys: [ "Pipe Name", "PipeName", "Pipe" ],
 			defaultValue: "MYSQL"));
 
 		// SSL/TLS Options
 		AddOption(options, SslMode = new(
-			keys: new[] { "SSL Mode", "SslMode" },
+			keys: [ "SSL Mode", "SslMode" ],
 			defaultValue: MySqlSslMode.Preferred));
 
 		AddOption(options, CertificateFile = new(
-			keys: new[] { "Certificate File", "CertificateFile" },
+			keys: [ "Certificate File", "CertificateFile" ],
 			defaultValue: ""));
 
 		AddOption(options, CertificatePassword = new(
-			keys: new[] { "Certificate Password", "CertificatePassword" },
+			keys: [ "Certificate Password", "CertificatePassword" ],
 			defaultValue: ""));
 
 		AddOption(options, CertificateStoreLocation = new(
-			keys: new[] { "Certificate Store Location", "CertificateStoreLocation" },
+			keys: [ "Certificate Store Location", "CertificateStoreLocation" ],
 			defaultValue: MySqlCertificateStoreLocation.None));
 
 		AddOption(options, CertificateThumbprint = new(
-			keys: new[] { "Certificate Thumbprint", "CertificateThumbprint", "Certificate Thumb Print" },
+			keys: [ "Certificate Thumbprint", "CertificateThumbprint", "Certificate Thumb Print" ],
 			defaultValue: ""));
 
 		AddOption(options, SslCert = new(
-			keys: new[] { "SSL Cert", "SslCert", "Ssl-Cert" },
+			keys: [ "SSL Cert", "SslCert", "Ssl-Cert" ],
 			defaultValue: ""));
 
 		AddOption(options, SslKey = new(
-			keys: new[] { "SSL Key", "SslKey", "Ssl-Key" },
+			keys: [ "SSL Key", "SslKey", "Ssl-Key" ],
 			defaultValue: ""));
 
 		AddOption(options, SslCa = new(
-			keys: new[] { "SSL CA", "CACertificateFile", "CA Certificate File", "SslCa", "Ssl-Ca" },
+			keys: [ "SSL CA", "CACertificateFile", "CA Certificate File", "SslCa", "Ssl-Ca" ],
 			defaultValue: ""));
 
 		AddOption(options, TlsVersion = new(
-			keys: new[] { "TLS Version", "TlsVersion", "Tls-Version" },
+			keys: [ "TLS Version", "TlsVersion", "Tls-Version" ],
 			defaultValue: "",
 			coerce: value =>
 			{
@@ -1097,73 +1097,73 @@ internal abstract partial class MySqlConnectionStringOption
 			}));
 
 		AddOption(options, TlsCipherSuites = new(
-			keys: new[] { "TLS Cipher Suites", "TlsCipherSuites" },
+			keys: [ "TLS Cipher Suites", "TlsCipherSuites" ],
 			defaultValue: ""));
 
 		// Connection Pooling Options
 		AddOption(options, Pooling = new(
-			keys: new[] { "Pooling" },
+			keys: [ "Pooling" ],
 			defaultValue: true));
 
 		AddOption(options, ConnectionLifeTime = new(
-			keys: new[] { "Connection Lifetime", "ConnectionLifeTime" },
+			keys: [ "Connection Lifetime", "ConnectionLifeTime" ],
 			defaultValue: 0u));
 
 		AddOption(options, ConnectionReset = new(
-			keys: new[] { "Connection Reset", "ConnectionReset" },
+			keys: [ "Connection Reset", "ConnectionReset" ],
 			defaultValue: true));
 
 		AddOption(options, DeferConnectionReset = new(
-			keys: new[] { "Defer Connection Reset", "DeferConnectionReset" },
+			keys: [ "Defer Connection Reset", "DeferConnectionReset" ],
 			defaultValue: true));
 
 		AddOption(options, ConnectionIdlePingTime = new(
-			keys: new[] { "Connection Idle Ping Time", "ConnectionIdlePingTime" },
+			keys: [ "Connection Idle Ping Time", "ConnectionIdlePingTime" ],
 			defaultValue: 0u));
 
 		AddOption(options, ConnectionIdleTimeout = new(
-			keys: new[] { "Connection Idle Timeout", "ConnectionIdleTimeout" },
+			keys: [ "Connection Idle Timeout", "ConnectionIdleTimeout" ],
 			defaultValue: 180u));
 
 		AddOption(options, MinimumPoolSize = new(
-			keys: new[] { "Minimum Pool Size", "Min Pool Size", "MinimumPoolSize", "minpoolsize" },
+			keys: [ "Minimum Pool Size", "Min Pool Size", "MinimumPoolSize", "minpoolsize" ],
 			defaultValue: 0u));
 
 		AddOption(options, MaximumPoolSize = new(
-			keys: new[] { "Maximum Pool Size", "Max Pool Size", "MaximumPoolSize", "maxpoolsize" },
+			keys: [ "Maximum Pool Size", "Max Pool Size", "MaximumPoolSize", "maxpoolsize" ],
 			defaultValue: 100u));
 
 		AddOption(options, DnsCheckInterval = new(
-			keys: new[] { "DNS Check Interval", "DnsCheckInterval" },
+			keys: [ "DNS Check Interval", "DnsCheckInterval" ],
 			defaultValue: 0u));
 
 		// Other Options
 		AddOption(options, AllowLoadLocalInfile = new(
-			keys: new[] { "Allow Load Local Infile", "AllowLoadLocalInfile" },
+			keys: [ "Allow Load Local Infile", "AllowLoadLocalInfile" ],
 			defaultValue: false));
 
 		AddOption(options, AllowPublicKeyRetrieval = new(
-			keys: new[] { "Allow Public Key Retrieval", "AllowPublicKeyRetrieval" },
+			keys: [ "Allow Public Key Retrieval", "AllowPublicKeyRetrieval" ],
 			defaultValue: false));
 
 		AddOption(options, AllowUserVariables = new(
-			keys: new[] { "Allow User Variables", "AllowUserVariables" },
+			keys: [ "Allow User Variables", "AllowUserVariables" ],
 			defaultValue: false));
 
 		AddOption(options, AllowZeroDateTime = new(
-			keys: new[] { "Allow Zero DateTime", "AllowZeroDateTime" },
+			keys: [ "Allow Zero DateTime", "AllowZeroDateTime" ],
 			defaultValue: false));
 
 		AddOption(options, ApplicationName = new(
-			keys: new[] { "Application Name", "ApplicationName" },
+			keys: [ "Application Name", "ApplicationName" ],
 			defaultValue: ""));
 
 		AddOption(options, AutoEnlist = new(
-			keys: new[] { "Auto Enlist", "AutoEnlist" },
+			keys: [ "Auto Enlist", "AutoEnlist" ],
 			defaultValue: true));
 
 		AddOption(options, CancellationTimeout = new(
-			keys: new[] { "Cancellation Timeout", "CancellationTimeout" },
+			keys: [ "Cancellation Timeout", "CancellationTimeout" ],
 			defaultValue: 2,
 			coerce: x =>
 			{
@@ -1173,91 +1173,91 @@ internal abstract partial class MySqlConnectionStringOption
 			}));
 
 		AddOption(options, CharacterSet = new(
-			keys: new[] { "Character Set", "CharSet", "CharacterSet" },
+			keys: [ "Character Set", "CharSet", "CharacterSet" ],
 			defaultValue: ""));
 
 		AddOption(options, ConnectionTimeout = new(
-			keys: new[] { "Connection Timeout", "ConnectionTimeout", "Connect Timeout" },
+			keys: [ "Connection Timeout", "ConnectionTimeout", "Connect Timeout" ],
 			defaultValue: 15u));
 
 		AddOption(options, ConvertZeroDateTime = new(
-			keys: new[] { "Convert Zero DateTime", "ConvertZeroDateTime" },
+			keys: [ "Convert Zero DateTime", "ConvertZeroDateTime" ],
 			defaultValue: false));
 
 		AddOption(options, DateTimeKind = new(
-			keys: new[] { "DateTime Kind", "DateTimeKind" },
+			keys: [ "DateTime Kind", "DateTimeKind" ],
 			defaultValue: MySqlDateTimeKind.Unspecified));
 
 		AddOption(options, DefaultCommandTimeout = new(
-			keys: new[] { "Default Command Timeout", "DefaultCommandTimeout", "Command Timeout" },
+			keys: [ "Default Command Timeout", "DefaultCommandTimeout", "Command Timeout" ],
 			defaultValue: 30u));
 
 		AddOption(options, ForceSynchronous = new(
-			keys: new[] { "Force Synchronous", "ForceSynchronous" },
+			keys: [ "Force Synchronous", "ForceSynchronous" ],
 			defaultValue: false));
 
 		AddOption(options, GuidFormat = new(
-			keys: new[] { "GUID Format", "GuidFormat" },
+			keys: [ "GUID Format", "GuidFormat" ],
 			defaultValue: MySqlGuidFormat.Default));
 
 		AddOption(options, IgnoreCommandTransaction = new(
-			keys: new[] { "Ignore Command Transaction", "IgnoreCommandTransaction" },
+			keys: [ "Ignore Command Transaction", "IgnoreCommandTransaction" ],
 			defaultValue: false));
 
 		AddOption(options, IgnorePrepare = new(
-			keys: new[] { "Ignore Prepare", "IgnorePrepare" },
+			keys: [ "Ignore Prepare", "IgnorePrepare" ],
 			defaultValue: false));
 
 		AddOption(options, InteractiveSession = new(
-			keys: new[] { "Interactive Session", "InteractiveSession", "Interactive" },
+			keys: [ "Interactive Session", "InteractiveSession", "Interactive" ],
 			defaultValue: false));
 
 		AddOption(options, Keepalive = new(
-			keys: new[] { "Keep Alive", "Keepalive" },
+			keys: [ "Keep Alive", "Keepalive" ],
 			defaultValue: 0u));
 
 		AddOption(options, NoBackslashEscapes = new(
-			keys: new[] { "No Backslash Escapes", "NoBackslashEscapes" },
+			keys: [ "No Backslash Escapes", "NoBackslashEscapes" ],
 			defaultValue: false));
 
 		AddOption(options, OldGuids = new(
-			keys: new[] { "Old Guids", "OldGuids" },
+			keys: [ "Old Guids", "OldGuids" ],
 			defaultValue: false));
 
 		AddOption(options, PersistSecurityInfo = new(
-			keys: new[] { "Persist Security Info", "PersistSecurityInfo" },
+			keys: [ "Persist Security Info", "PersistSecurityInfo" ],
 			defaultValue: false));
 
 		AddOption(options, Pipelining = new(
-			keys: new[] { "Pipelining" },
+			keys: [ "Pipelining" ],
 			defaultValue: true));
 
 		AddOption(options, ServerRedirectionMode = new(
-			keys: new[] { "Server Redirection Mode", "ServerRedirectionMode" },
+			keys: [ "Server Redirection Mode", "ServerRedirectionMode" ],
 			defaultValue: MySqlServerRedirectionMode.Disabled));
 
 		AddOption(options, ServerRsaPublicKeyFile = new(
-			keys: new[] { "Server RSA Public Key File", "ServerRsaPublicKeyFile" },
+			keys: [ "Server RSA Public Key File", "ServerRsaPublicKeyFile" ],
 			defaultValue: ""));
 
 		AddOption(options, ServerSPN = new(
-			keys: new[] { "Server SPN", "ServerSPN" },
+			keys: [ "Server SPN", "ServerSPN" ],
 			defaultValue: ""));
 
 		AddOption(options, TreatTinyAsBoolean = new(
-			keys: new[] { "Treat Tiny As Boolean", "TreatTinyAsBoolean" },
+			keys: [ "Treat Tiny As Boolean", "TreatTinyAsBoolean" ],
 			defaultValue: true));
 
 		AddOption(options, UseAffectedRows = new(
-			keys: new[] { "Use Affected Rows", "UseAffectedRows" },
+			keys: [ "Use Affected Rows", "UseAffectedRows" ],
 			defaultValue: false));
 
 		AddOption(options, UseCompression = new(
-			keys: new[] { "Use Compression", "Compress", "UseCompression" },
+			keys: [ "Use Compression", "Compress", "UseCompression" ],
 			defaultValue: false));
 
 		AddOption(options, UseXaTransactions = new(
-			keys: new[] { "Use XA Transactions", "UseXaTransactions" },
+			keys: [ "Use XA Transactions", "UseXaTransactions" ],
 			defaultValue: true));
 #pragma warning restore SA1118 // Parameter should not span multiple lines
 

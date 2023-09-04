@@ -20,18 +20,18 @@ internal sealed class TypeMapper
 		m_mySqlDbTypeToColumnTypeMetadata = new();
 
 		// boolean
-		var typeBoolean = AddDbTypeMapping(new(typeof(bool), new[] { DbType.Boolean }, convert: static o => Convert.ToBoolean(o, CultureInfo.InvariantCulture)));
+		var typeBoolean = AddDbTypeMapping(new(typeof(bool), [ DbType.Boolean ], convert: static o => Convert.ToBoolean(o, CultureInfo.InvariantCulture)));
 		AddColumnTypeMetadata(new("TINYINT", typeBoolean, MySqlDbType.Bool, isUnsigned: false, length: 1, columnSize: 1, simpleDataTypeName: "BOOL", createFormat: "BOOL"));
 
 		// integers
-		var typeSbyte = AddDbTypeMapping(new(typeof(sbyte), new[] { DbType.SByte }, convert: static o => Convert.ToSByte(o, CultureInfo.InvariantCulture)));
-		var typeByte = AddDbTypeMapping(new(typeof(byte), new[] { DbType.Byte }, convert: static o => Convert.ToByte(o, CultureInfo.InvariantCulture)));
-		var typeShort = AddDbTypeMapping(new(typeof(short), new[] { DbType.Int16 }, convert: static o => Convert.ToInt16(o, CultureInfo.InvariantCulture)));
-		var typeUshort = AddDbTypeMapping(new(typeof(ushort), new[] { DbType.UInt16 }, convert: static o => Convert.ToUInt16(o, CultureInfo.InvariantCulture)));
-		var typeInt = AddDbTypeMapping(new(typeof(int), new[] { DbType.Int32 }, convert: static o => Convert.ToInt32(o, CultureInfo.InvariantCulture)));
-		var typeUint = AddDbTypeMapping(new(typeof(uint), new[] { DbType.UInt32 }, convert: static o => Convert.ToUInt32(o, CultureInfo.InvariantCulture)));
-		var typeLong = AddDbTypeMapping(new(typeof(long), new[] { DbType.Int64 }, convert: static o => Convert.ToInt64(o, CultureInfo.InvariantCulture)));
-		var typeUlong = AddDbTypeMapping(new(typeof(ulong), new[] { DbType.UInt64 }, convert: static o => Convert.ToUInt64(o, CultureInfo.InvariantCulture)));
+		var typeSbyte = AddDbTypeMapping(new(typeof(sbyte), [ DbType.SByte ], convert: static o => Convert.ToSByte(o, CultureInfo.InvariantCulture)));
+		var typeByte = AddDbTypeMapping(new(typeof(byte), [ DbType.Byte ], convert: static o => Convert.ToByte(o, CultureInfo.InvariantCulture)));
+		var typeShort = AddDbTypeMapping(new(typeof(short), [ DbType.Int16 ], convert: static o => Convert.ToInt16(o, CultureInfo.InvariantCulture)));
+		var typeUshort = AddDbTypeMapping(new(typeof(ushort), [ DbType.UInt16 ], convert: static o => Convert.ToUInt16(o, CultureInfo.InvariantCulture)));
+		var typeInt = AddDbTypeMapping(new(typeof(int), [ DbType.Int32 ], convert: static o => Convert.ToInt32(o, CultureInfo.InvariantCulture)));
+		var typeUint = AddDbTypeMapping(new(typeof(uint), [ DbType.UInt32 ], convert: static o => Convert.ToUInt32(o, CultureInfo.InvariantCulture)));
+		var typeLong = AddDbTypeMapping(new(typeof(long), [ DbType.Int64 ], convert: static o => Convert.ToInt64(o, CultureInfo.InvariantCulture)));
+		var typeUlong = AddDbTypeMapping(new(typeof(ulong), [ DbType.UInt64 ], convert: static o => Convert.ToUInt64(o, CultureInfo.InvariantCulture)));
 		AddColumnTypeMetadata(new("TINYINT", typeSbyte, MySqlDbType.Byte, isUnsigned: false));
 		AddColumnTypeMetadata(new("TINYINT", typeByte, MySqlDbType.UByte, isUnsigned: true, length: 1));
 		AddColumnTypeMetadata(new("TINYINT", typeByte, MySqlDbType.UByte, isUnsigned: true));
@@ -46,9 +46,9 @@ internal sealed class TypeMapper
 		AddColumnTypeMetadata(new("BIT", typeUlong, MySqlDbType.Bit));
 
 		// decimals
-		var typeDecimal = AddDbTypeMapping(new(typeof(decimal), new[] { DbType.Decimal, DbType.Currency, DbType.VarNumeric }, convert: static o => Convert.ToDecimal(o, CultureInfo.InvariantCulture)));
-		var typeDouble = AddDbTypeMapping(new(typeof(double), new[] { DbType.Double }, convert: static o => Convert.ToDouble(o, CultureInfo.InvariantCulture)));
-		var typeFloat = AddDbTypeMapping(new(typeof(float), new[] { DbType.Single }, convert: static o => Convert.ToSingle(o, CultureInfo.InvariantCulture)));
+		var typeDecimal = AddDbTypeMapping(new(typeof(decimal), [ DbType.Decimal, DbType.Currency, DbType.VarNumeric ], convert: static o => Convert.ToDecimal(o, CultureInfo.InvariantCulture)));
+		var typeDouble = AddDbTypeMapping(new(typeof(double), [ DbType.Double ], convert: static o => Convert.ToDouble(o, CultureInfo.InvariantCulture)));
+		var typeFloat = AddDbTypeMapping(new(typeof(float), [ DbType.Single ], convert: static o => Convert.ToSingle(o, CultureInfo.InvariantCulture)));
 		AddColumnTypeMetadata(new("DECIMAL", typeDecimal, MySqlDbType.NewDecimal, createFormat: "DECIMAL({0},{1});precision,scale"));
 		AddColumnTypeMetadata(new("DECIMAL", typeDecimal, MySqlDbType.NewDecimal, isUnsigned: true, createFormat: "DECIMAL({0},{1}) UNSIGNED;precision,scale"));
 		AddColumnTypeMetadata(new("DECIMAL", typeDecimal, MySqlDbType.Decimal));
@@ -56,8 +56,8 @@ internal sealed class TypeMapper
 		AddColumnTypeMetadata(new("FLOAT", typeFloat, MySqlDbType.Float));
 
 		// string
-		var typeFixedString = AddDbTypeMapping(new(typeof(string), new[] { DbType.StringFixedLength, DbType.AnsiStringFixedLength }, convert: Convert.ToString!));
-		var typeString = AddDbTypeMapping(new(typeof(string), new[] { DbType.String, DbType.AnsiString, DbType.Xml }, convert: Convert.ToString!));
+		var typeFixedString = AddDbTypeMapping(new(typeof(string), [ DbType.StringFixedLength, DbType.AnsiStringFixedLength ], convert: Convert.ToString!));
+		var typeString = AddDbTypeMapping(new(typeof(string), [ DbType.String, DbType.AnsiString, DbType.Xml ], convert: Convert.ToString!));
 		AddColumnTypeMetadata(new("VARCHAR", typeString, MySqlDbType.VarChar, createFormat: "VARCHAR({0});size"));
 		AddColumnTypeMetadata(new("VARCHAR", typeString, MySqlDbType.VarString));
 		AddColumnTypeMetadata(new("CHAR", typeFixedString, MySqlDbType.String, createFormat: "CHAR({0});size"));
@@ -70,7 +70,7 @@ internal sealed class TypeMapper
 		AddColumnTypeMetadata(new("JSON", typeString, MySqlDbType.JSON));
 
 		// binary
-		var typeBinary = AddDbTypeMapping(new(typeof(byte[]), new[] { DbType.Binary }));
+		var typeBinary = AddDbTypeMapping(new(typeof(byte[]), [ DbType.Binary ]));
 		AddColumnTypeMetadata(new("BLOB", typeBinary, MySqlDbType.Blob, binary: true, columnSize: ushort.MaxValue, simpleDataTypeName: "BLOB"));
 		AddColumnTypeMetadata(new("BINARY", typeBinary, MySqlDbType.Binary, binary: true, simpleDataTypeName: "BLOB", createFormat: "BINARY({0});length"));
 		AddColumnTypeMetadata(new("VARBINARY", typeBinary, MySqlDbType.VarBinary, binary: true, simpleDataTypeName: "BLOB", createFormat: "VARBINARY({0});length"));
@@ -91,15 +91,15 @@ internal sealed class TypeMapper
 
 		// date/time
 #if NET6_0_OR_GREATER
-		AddDbTypeMapping(new(typeof(DateOnly), new[] { DbType.Date }));
+		AddDbTypeMapping(new(typeof(DateOnly), [ DbType.Date ]));
 #endif
-		var typeDate = AddDbTypeMapping(new(typeof(DateTime), new[] { DbType.Date }));
-		var typeDateTime = AddDbTypeMapping(new(typeof(DateTime), new[] { DbType.DateTime, DbType.DateTime2, DbType.DateTimeOffset }));
-		AddDbTypeMapping(new(typeof(DateTimeOffset), new[] { DbType.DateTimeOffset }));
+		var typeDate = AddDbTypeMapping(new(typeof(DateTime), [ DbType.Date ]));
+		var typeDateTime = AddDbTypeMapping(new(typeof(DateTime), [ DbType.DateTime, DbType.DateTime2, DbType.DateTimeOffset ]));
+		AddDbTypeMapping(new(typeof(DateTimeOffset), [ DbType.DateTimeOffset ]));
 #if NET6_0_OR_GREATER
-		AddDbTypeMapping(new(typeof(TimeOnly), new[] { DbType.Time }));
+		AddDbTypeMapping(new(typeof(TimeOnly), [ DbType.Time ]));
 #endif
-		var typeTime = AddDbTypeMapping(new(typeof(TimeSpan), new[] { DbType.Time }, convert: static o => o is string s ? Utility.ParseTimeSpan(Encoding.UTF8.GetBytes(s)) : Convert.ChangeType(o, typeof(TimeSpan), CultureInfo.InvariantCulture)));
+		var typeTime = AddDbTypeMapping(new(typeof(TimeSpan), [ DbType.Time ], convert: static o => o is string s ? Utility.ParseTimeSpan(Encoding.UTF8.GetBytes(s)) : Convert.ChangeType(o, typeof(TimeSpan), CultureInfo.InvariantCulture)));
 		AddColumnTypeMetadata(new("DATETIME", typeDateTime, MySqlDbType.DateTime));
 		AddColumnTypeMetadata(new("DATE", typeDate, MySqlDbType.Date));
 		AddColumnTypeMetadata(new("DATE", typeDate, MySqlDbType.Newdate));
@@ -113,11 +113,11 @@ internal sealed class TypeMapper
 #else
 		Func<object, object> convertGuid = static o => Guid.Parse(Convert.ToString(o, CultureInfo.InvariantCulture)!);
 #endif
-		var typeGuid = AddDbTypeMapping(new(typeof(Guid), new[] { DbType.Guid }, convert: convertGuid));
+		var typeGuid = AddDbTypeMapping(new(typeof(Guid), [ DbType.Guid ], convert: convertGuid));
 		AddColumnTypeMetadata(new("CHAR", typeGuid, MySqlDbType.Guid, length: 36, simpleDataTypeName: "CHAR(36)", createFormat: "CHAR(36)"));
 
 		// null
-		var typeNull = AddDbTypeMapping(new(typeof(object), new[] { DbType.Object }));
+		var typeNull = AddDbTypeMapping(new(typeof(object), [ DbType.Object ]));
 		AddColumnTypeMetadata(new("NULL", typeNull, MySqlDbType.Null));
 	}
 

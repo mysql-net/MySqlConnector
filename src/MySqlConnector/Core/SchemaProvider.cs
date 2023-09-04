@@ -116,8 +116,8 @@ internal sealed partial class SchemaProvider
 		// (but has a higher version number)
 
 		// select word from information_schema.keywords where reserved = 1; on MySQL Server 8.0.18
-		var reservedWords = new[]
-		{
+		string[] reservedWords =
+		[
 			"ACCESSIBLE",
 			"ADD",
 			"ALL",
@@ -380,7 +380,7 @@ internal sealed partial class SchemaProvider
 			"XOR",
 			"YEAR_MONTH",
 			"ZEROFILL",
-		};
+		];
 
 		foreach (string word in reservedWords)
 			dataTable.Rows.Add(word);

@@ -180,7 +180,7 @@ internal static class Utility
 		if (!isPrivate)
 		{
 			// encoded OID sequence for  PKCS #1 rsaEncryption szOID_RSA_RSA = "1.2.840.113549.1.1.1"
-			ReadOnlySpan<byte> rsaOid = new byte[] { 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00 };
+			ReadOnlySpan<byte> rsaOid = [ 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00 ];
 			if (!data.Slice(0, rsaOid.Length).SequenceEqual(rsaOid))
 				throw new FormatException($"Expected RSA OID but read {BitConverter.ToString(data.Slice(0, 15).ToArray())}");
 			data = data.Slice(rsaOid.Length);

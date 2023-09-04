@@ -72,8 +72,8 @@ foreach (var schema in schemaCollections)
 	codeWriter.WriteLine("""
 
 				dataTable.TableName = tableName;
-				dataTable.Columns.AddRange(new DataColumn[]
-				{
+				dataTable.Columns.AddRange(
+				[
 		""");
 	foreach (var column in schema.Columns)
 	{
@@ -82,7 +82,7 @@ foreach (var schema in schemaCollections)
 			""");
 	}
 	codeWriter.WriteLine("""
-				});
+				]);
 
 		""");
 	if (schema.Table is string table)

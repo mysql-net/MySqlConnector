@@ -13,7 +13,7 @@ internal sealed class BatchedCommandPayloadCreator : ICommandPayloadCreator
 		writer.Write((byte) CommandKind.Multi);
 		bool? firstResult = default;
 		bool wroteCommand;
-		ReadOnlySpan<byte> padding = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		ReadOnlySpan<byte> padding = [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
 		do
 		{
 			// save room for command length

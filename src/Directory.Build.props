@@ -17,7 +17,7 @@
     <PackageValidationBaselineVersion>2.0.0</PackageValidationBaselineVersion>
     <EnableStrictModeForCompatibleFrameworksInPackageValidation>true</EnableStrictModeForCompatibleFrameworksInPackageValidation>
     <EnableStrictModeForCompatibleTfms>true</EnableStrictModeForCompatibleTfms>
-    <LangVersion>11.0</LangVersion>
+    <LangVersion>preview</LangVersion>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
     <AnalysisLevel>latest-all</AnalysisLevel>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
