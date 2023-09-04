@@ -265,7 +265,7 @@ public sealed class MySqlBulkCopy
 			{
 				if (columnMapping.DestinationColumn.Length == 0)
 					throw new InvalidOperationException($"MySqlBulkCopyColumnMapping.DestinationName is not set for SourceOrdinal {columnMapping.SourceOrdinal}");
-				if (columnMapping.DestinationColumn[0] == '@')
+				if (columnMapping.DestinationColumn[0] == '@' && columnMapping.Expression is not null)
 					bulkLoader.Columns.Add(columnMapping.DestinationColumn);
 				else
 					bulkLoader.Columns.Add(QuoteIdentifier(columnMapping.DestinationColumn));
