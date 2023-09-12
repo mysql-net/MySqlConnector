@@ -1624,7 +1624,7 @@ internal sealed partial class ServerSession
 			return true;
 
 		// detect Azure Database for MySQL DNS suffixes, if a "user@host" user ID is being used
-		if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets && cs.UserID.IndexOf('@') != -1)
+		if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets && cs.UserID.Contains('@'))
 		{
 			return HostName.EndsWith(".mysql.database.azure.com", StringComparison.OrdinalIgnoreCase) ||
 				HostName.EndsWith(".database.windows.net", StringComparison.OrdinalIgnoreCase) ||

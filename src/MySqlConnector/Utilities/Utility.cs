@@ -511,9 +511,17 @@ internal static class Utility
 	public static void Write(this Stream stream, ReadOnlyMemory<byte> data) => stream.Write(data.Span);
 #endif
 
+#if !NETCOREAPP2_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
+	public static bool StartsWith(this string str, char value) => !string.IsNullOrEmpty(str) && str[0] == value;
+#endif
+
 	public static void SwapBytes(Span<byte> bytes, int offset1, int offset2)
 	{
+#if NET8_0_OR_GREATER
+		ref var first = ref Unsafe.AsRef(ref bytes[0]);
+#else
 		ref var first = ref Unsafe.AsRef(bytes[0]);
+#endif
 		(Unsafe.Add(ref first, offset2), Unsafe.Add(ref first, offset1)) = (Unsafe.Add(ref first, offset1), Unsafe.Add(ref first, offset2));
 	}
 

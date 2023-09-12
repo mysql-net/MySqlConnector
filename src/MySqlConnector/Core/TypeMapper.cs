@@ -154,10 +154,15 @@ internal sealed class TypeMapper
 	{
 		m_columnTypeMetadata.Add(columnTypeMetadata);
 		var lookupKey = columnTypeMetadata.CreateLookupKey();
+#if !NETCOREAPP2_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 		if (!m_columnTypeMetadataLookup.ContainsKey(lookupKey))
 			m_columnTypeMetadataLookup.Add(lookupKey, columnTypeMetadata);
 		if (!m_mySqlDbTypeToColumnTypeMetadata.ContainsKey(columnTypeMetadata.MySqlDbType))
 			m_mySqlDbTypeToColumnTypeMetadata.Add(columnTypeMetadata.MySqlDbType, columnTypeMetadata);
+#else
+		m_columnTypeMetadataLookup.TryAdd(lookupKey, columnTypeMetadata);
+		m_mySqlDbTypeToColumnTypeMetadata.TryAdd(columnTypeMetadata.MySqlDbType, columnTypeMetadata);
+#endif
 	}
 
 	internal DbTypeMapping? GetDbTypeMapping(Type clrType)

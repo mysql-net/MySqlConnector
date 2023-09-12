@@ -11,7 +11,7 @@ internal sealed class ConnectionSettings
 		ConnectionStringBuilder = csb;
 		ConnectionString = csb.ConnectionString;
 
-		if (csb.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket || (!Utility.IsWindows() && (csb.Server.StartsWith("/", StringComparison.Ordinal) || csb.Server.StartsWith("./", StringComparison.Ordinal))))
+		if (csb.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket || (!Utility.IsWindows() && (csb.Server.StartsWith('/') || csb.Server.StartsWith("./", StringComparison.Ordinal))))
 		{
 			if (csb.LoadBalance != MySqlLoadBalance.RoundRobin)
 				throw new NotSupportedException("LoadBalance not supported when ConnectionProtocol=UnixSocket");
