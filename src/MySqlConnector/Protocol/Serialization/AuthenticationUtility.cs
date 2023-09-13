@@ -10,7 +10,7 @@ namespace MySqlConnector.Protocol.Serialization;
 internal static class AuthenticationUtility
 {
 	public static byte[] CreateAuthenticationResponse(ReadOnlySpan<byte> challenge, string password) =>
-		string.IsNullOrEmpty(password) ? Array.Empty<byte>() : HashPassword(challenge, password);
+		string.IsNullOrEmpty(password) ? [] : HashPassword(challenge, password);
 
 	/// <summary>
 	/// Hashes a password with the "Secure Password Authentication" method.
@@ -54,14 +54,8 @@ internal static class AuthenticationUtility
 		return hashedPassword.ToArray();
 	}
 
-	public static byte[] CreateScrambleResponse(ReadOnlySpan<byte> nonce, string password)
-	{
-		var scrambleResponse = string.IsNullOrEmpty(password)
-			? Array.Empty<byte>()
-			: HashPasswordWithNonce(nonce, password);
-
-		return scrambleResponse;
-	}
+	public static byte[] CreateScrambleResponse(ReadOnlySpan<byte> nonce, string password) =>
+		string.IsNullOrEmpty(password) ? [] : HashPasswordWithNonce(nonce, password);
 
 #if NET5_0_OR_GREATER
 	[SkipLocalsInit]
