@@ -48,6 +48,20 @@ public sealed class MySqlBatchCommand :
 #endif
 		m_parameterCollection ??= new();
 
+#pragma warning disable CA1822 // Mark members as static
+	public
+#if NET8_0_OR_GREATER
+		override
+#endif
+		DbParameter CreateParameter() => new MySqlParameter();
+
+	public
+#if NET8_0_OR_GREATER
+		override
+#endif
+		bool CanCreateParameter => true;
+#pragma warning restore CA1822 // Mark members as static
+
 #if NET6_0_OR_GREATER
 	protected override DbParameterCollection DbParameterCollection => Parameters;
 #endif
