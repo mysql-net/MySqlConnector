@@ -1770,7 +1770,7 @@ internal sealed partial class ServerSession
 	{
 		if (m_state != state1 && m_state != state2 && m_state != state3 && m_state != state4 && m_state != state5 && m_state != state6)
 		{
-			ExpectedSessionState6(m_logger, Id, state1, state2, state3, state4, state5, state5, m_state);
+			ExpectedSessionState6(m_logger, Id, state1, state2, state3, state4, state5, state6, m_state);
 			throw new InvalidOperationException($"Expected state to be ({state1}|{state2}|{state3}|{state4}|{state5}|{state6}) but was {m_state}.");
 		}
 	}
