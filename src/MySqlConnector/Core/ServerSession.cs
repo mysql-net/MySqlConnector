@@ -1291,7 +1291,7 @@ internal sealed partial class ServerSession
 			try
 			{
 				var storeLocation = (cs.CertificateStoreLocation == MySqlCertificateStoreLocation.CurrentUser) ? StoreLocation.CurrentUser : StoreLocation.LocalMachine;
-				var store = new X509Store(StoreName.My, storeLocation);
+				using var store = new X509Store(StoreName.My, storeLocation);
 				store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
 
 				if (cs.CertificateThumbprint.Length == 0)
