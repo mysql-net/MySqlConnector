@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Reflection;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -168,7 +169,7 @@ using var docWriter = new StreamWriter(@"..\..\..\..\..\docs\content\overview\sc
 docWriter.Write($"""
 	---
 	date: 2021-04-24
-	lastmod: {DateTime.UtcNow.ToString("yyyy-MM-dd")}
+	lastmod: {DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}
 	menu:
 	  main:
 	    parent: getting started
@@ -185,6 +186,7 @@ docWriter.Write($"""
 
 
 	""");
+#pragma warning disable CA1308 // Normalize strings to uppercase
 foreach (var schema in schemaCollections)
 	docWriter.Write($@"* `{schema.Name}`{(schema.Description is not null ? "—[" + schema.Description + "](../schema/" + schema.Name.ToLowerInvariant() + "/)" : "")}
 ");
@@ -192,10 +194,11 @@ foreach (var schema in schemaCollections)
 foreach (var schema in schemaCollections.Where(x => x.Description is not null))
 {
 	using var schemaDocWriter = new StreamWriter($@"..\..\..\..\..\docs\content\overview\schema\{schema.Name.ToLowerInvariant()}.md");
+#pragma warning restore CA1308 // Normalize strings to uppercase
 	schemaDocWriter.Write($"""
 		---
 		date: 2022-07-10
-		lastmod: {DateTime.UtcNow.ToString("yyyy-MM-dd")}
+		lastmod: {DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}
 		title: {schema.Name} Schema
 		---
 
@@ -226,7 +229,8 @@ foreach (var schema in schemaCollections.Where(x => x.Description is not null))
 	}
 }
 
-class Schema
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+internal sealed class Schema
 {
 	public required string Name { get; init; }
 	public string? Description { get; init; }
@@ -237,7 +241,7 @@ class Schema
 	public List<Restriction>? Restrictions { get; init; }
 }
 
-class Column
+internal sealed class Column
 {
 	public required string Name { get; init; }
 	public required string Type { get; init; }
@@ -245,7 +249,7 @@ class Column
 	public bool Optional { get; init; }
 }
 
-class Restriction
+internal sealed class Restriction
 {
 	public required string Name { get; init; }
 	public required string Default { get; init; }
