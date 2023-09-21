@@ -144,7 +144,12 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 	{
 		if (m_output.Length < chars.Length)
 			Reallocate(chars.Length);
+#if NET8_0_OR_GREATER
+		Ascii.FromUtf16(chars, m_output.Span, out var bytesWritten);
+		m_output = m_output[bytesWritten..];
+#else
 		m_output = m_output[Encoding.ASCII.GetBytes(chars, m_output.Span)..];
+#endif
 	}
 
 	public void WriteLengthEncodedString(StringBuilder stringBuilder)
