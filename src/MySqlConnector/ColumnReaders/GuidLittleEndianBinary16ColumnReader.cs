@@ -12,9 +12,11 @@ internal sealed class GuidLittleEndianBinary16ColumnReader : ColumnReader
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static Guid ReadGuid(ReadOnlySpan<byte> data) =>
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-		new Guid(data);
+#if NET8_0_OR_GREATER
+		new(data, bigEndian: false);
+#elif NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+		new(data);
 #else
-		new Guid(data.ToArray());
+		new(data.ToArray());
 #endif
 }
