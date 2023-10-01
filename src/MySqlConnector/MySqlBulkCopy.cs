@@ -52,7 +52,13 @@ public sealed class MySqlBulkCopy
 	/// <param name="transaction">(Optional) The <see cref="MySqlTransaction"/> to use.</param>
 	public MySqlBulkCopy(MySqlConnection connection, MySqlTransaction? transaction = null)
 	{
-		m_connection = connection ?? throw new ArgumentNullException(nameof(connection));
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(connection);
+#else
+		if (connection is null)
+			throw new ArgumentNullException(nameof(connection));
+#endif
+		m_connection = connection;
 		m_transaction = transaction;
 		m_logger = m_connection.LoggingConfiguration.BulkCopyLogger;
 		ColumnMappings = new();
@@ -111,7 +117,13 @@ public sealed class MySqlBulkCopy
 	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
 	public MySqlBulkCopyResult WriteToServer(DataTable dataTable)
 	{
-		m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable ?? throw new ArgumentNullException(nameof(dataTable)));
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(dataTable);
+#else
+		if (dataTable is null)
+			throw new ArgumentNullException(nameof(dataTable));
+#endif
+		m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable);
 #pragma warning disable CA2012 // Safe because method completes synchronously
 		return WriteToServerAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #pragma warning restore CA2012
@@ -126,7 +138,13 @@ public sealed class MySqlBulkCopy
 	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
 	public async ValueTask<MySqlBulkCopyResult> WriteToServerAsync(DataTable dataTable, CancellationToken cancellationToken = default)
 	{
-		m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable ?? throw new ArgumentNullException(nameof(dataTable)));
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(dataTable);
+#else
+		if (dataTable is null)
+			throw new ArgumentNullException(nameof(dataTable));
+#endif
+		m_valuesEnumerator = DataRowsValuesEnumerator.Create(dataTable);
 		return await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 	}
 
@@ -140,7 +158,13 @@ public sealed class MySqlBulkCopy
 	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
 	public MySqlBulkCopyResult WriteToServer(IEnumerable<DataRow> dataRows, int columnCount)
 	{
-		m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows ?? throw new ArgumentNullException(nameof(dataRows)), columnCount);
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(dataRows);
+#else
+		if (dataRows is null)
+			throw new ArgumentNullException(nameof(dataRows));
+#endif
+		m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows, columnCount);
 #pragma warning disable CA2012 // Safe because method completes synchronously
 		return WriteToServerAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #pragma warning restore CA2012
@@ -157,7 +181,13 @@ public sealed class MySqlBulkCopy
 	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
 	public async ValueTask<MySqlBulkCopyResult> WriteToServerAsync(IEnumerable<DataRow> dataRows, int columnCount, CancellationToken cancellationToken = default)
 	{
-		m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows ?? throw new ArgumentNullException(nameof(dataRows)), columnCount);
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(dataRows);
+#else
+		if (dataRows is null)
+			throw new ArgumentNullException(nameof(dataRows));
+#endif
+		m_valuesEnumerator = new DataRowsValuesEnumerator(dataRows, columnCount);
 		return await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 	}
 
@@ -169,7 +199,13 @@ public sealed class MySqlBulkCopy
 	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
 	public MySqlBulkCopyResult WriteToServer(IDataReader dataReader)
 	{
-		m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader ?? throw new ArgumentNullException(nameof(dataReader)));
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(dataReader);
+#else
+		if (dataReader is null)
+			throw new ArgumentNullException(nameof(dataReader));
+#endif
+		m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader);
 #pragma warning disable CA2012 // Safe because method completes synchronously
 		return WriteToServerAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #pragma warning restore CA2012
@@ -184,7 +220,13 @@ public sealed class MySqlBulkCopy
 	/// <returns>A <see cref="MySqlBulkCopyResult"/> with the result of the bulk copy operation.</returns>
 	public async ValueTask<MySqlBulkCopyResult> WriteToServerAsync(IDataReader dataReader, CancellationToken cancellationToken = default)
 	{
-		m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader ?? throw new ArgumentNullException(nameof(dataReader)));
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(dataReader);
+#else
+		if (dataReader is null)
+			throw new ArgumentNullException(nameof(dataReader));
+#endif
+		m_valuesEnumerator = DataReaderValuesEnumerator.Create(dataReader);
 		return await WriteToServerAsync(IOBehavior.Asynchronous, cancellationToken).ConfigureAwait(false);
 	}
 

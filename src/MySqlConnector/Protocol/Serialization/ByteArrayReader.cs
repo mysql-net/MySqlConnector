@@ -14,7 +14,17 @@ internal ref struct ByteArrayReader
 	public int Offset
 	{
 		readonly get => m_offset;
-		set => m_offset = value >= 0 && value <= m_maxOffset ? value : throw new ArgumentOutOfRangeException(nameof(value), $"value must be between 0 and {m_maxOffset:d}");
+		set
+		{
+#if NET8_0_OR_GREATER
+			ArgumentOutOfRangeException.ThrowIfNegative(value);
+			ArgumentOutOfRangeException.ThrowIfGreaterThan(value, m_maxOffset);
+#else
+			if (value < 0 || value > m_maxOffset)
+				throw new ArgumentOutOfRangeException(nameof(value), $"value must be between 0 and {m_maxOffset:d}");
+#endif
+			m_offset = value; 
+		}
 	}
 
 	public byte ReadByte()
@@ -63,8 +73,13 @@ internal ref struct ByteArrayReader
 
 	public uint ReadFixedLengthUInt32(int length)
 	{
+#if NET8_0_OR_GREATER
+		ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(length, 0);
+		ArgumentOutOfRangeException.ThrowIfGreaterThan(length, 4);
+#else
 		if (length is <= 0 or > 4)
 			throw new ArgumentOutOfRangeException(nameof(length));
+#endif
 		VerifyRead(length);
 		uint result = 0;
 		for (var i = 0; i < length; i++)
@@ -75,8 +90,13 @@ internal ref struct ByteArrayReader
 
 	public ulong ReadFixedLengthUInt64(int length)
 	{
+#if NET8_0_OR_GREATER
+		ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(length, 0);
+		ArgumentOutOfRangeException.ThrowIfGreaterThan(length, 8);
+#else
 		if (length is <= 0 or > 8)
 			throw new ArgumentOutOfRangeException(nameof(length));
+#endif
 		VerifyRead(length);
 		ulong result = 0;
 		for (var i = 0; i < length; i++)

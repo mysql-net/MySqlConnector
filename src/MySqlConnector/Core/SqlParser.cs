@@ -10,7 +10,13 @@ internal abstract class SqlParser
 
 	public void Parse(string sql)
 	{
-		OnBeforeParse(sql ?? throw new ArgumentNullException(nameof(sql)));
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(sql);
+#else
+		if (sql is null)
+			throw new ArgumentNullException(nameof(sql));
+#endif
+		OnBeforeParse(sql);
 
 		int parameterStartIndex = -1;
 		var noBackslashEscapes = (Preparer.Options & StatementPreparerOptions.NoBackslashEscapes) == StatementPreparerOptions.NoBackslashEscapes;
