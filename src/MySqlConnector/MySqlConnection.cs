@@ -991,8 +991,12 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	private void VerifyNotDisposed()
 	{
+#if NET7_0_OR_GREATER
+		ObjectDisposedException.ThrowIf(m_isDisposed, this);
+#else
 		if (m_isDisposed)
 			throw new ObjectDisposedException(GetType().Name);
+#endif
 	}
 
 	private async Task CloseAsync(bool changeState, IOBehavior ioBehavior)

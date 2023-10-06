@@ -277,8 +277,12 @@ public sealed class MySqlTransaction : DbTransaction
 
 	private void VerifyValid()
 	{
+#if NET7_0_OR_GREATER
+		ObjectDisposedException.ThrowIf(m_isDisposed, this);
+#else
 		if (m_isDisposed)
 			throw new ObjectDisposedException(nameof(MySqlTransaction));
+#endif
 		if (Connection is null)
 			throw new InvalidOperationException("Already committed or rolled back.");
 		if (Connection.CurrentTransaction is null)
