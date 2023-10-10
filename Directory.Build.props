@@ -5,7 +5,7 @@
     <LangVersion>preview</LangVersion>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
     <NoWarn>$(NoWarn);1591;CA1708;CA1835;CA2215;CA5397;NU5105;SYSLIB0039</NoWarn>
-    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
     <NuGetAudit>true</NuGetAudit>
     <NuGetAuditLevel>low</NuGetAuditLevel>
   </PropertyGroup>
