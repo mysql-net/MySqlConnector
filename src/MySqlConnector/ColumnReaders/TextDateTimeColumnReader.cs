@@ -40,13 +40,13 @@ internal sealed class TextDateTimeColumnReader : ColumnReader
 			throw new InvalidCastException("Unable to convert MySQL date/time to System.DateTime, set AllowZeroDateTime=True or ConvertZeroDateTime=True in the connection string. See https://mysqlconnector.net/connection-options/");
 		}
 
-		int hour, minute, second, microseconds;
+		int hour, minute, second, ticks;
 		if (data.Length == 10)
 		{
 			hour = 0;
 			minute = 0;
 			second = 0;
-			microseconds = 0;
+			ticks = 0;
 		}
 		else
 		{
@@ -65,28 +65,24 @@ internal sealed class TextDateTimeColumnReader : ColumnReader
 
 			if (data.Length == 19)
 			{
-				microseconds = 0;
+				ticks = 0;
 			}
 			else
 			{
 				if (data[19] != 46)
 					goto InvalidDateTime;
 
-				if (!Utf8Parser.TryParse(data[20..], out microseconds, out bytesConsumed) || bytesConsumed != data.Length - 20)
+				if (!Utf8Parser.TryParse(data[20..], out ticks, out bytesConsumed) || bytesConsumed != data.Length - 20 || bytesConsumed > 7)
 					goto InvalidDateTime;
-				for (; bytesConsumed < 6; bytesConsumed++)
-					microseconds *= 10;
+				for (; bytesConsumed < 7; bytesConsumed++)
+					ticks *= 10;
 			}
 		}
 
 		try
 		{
-			return allowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
-#if NET7_0_OR_GREATER
-				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, dateTimeKind);
-#else
-				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, dateTimeKind).AddTicks(microseconds % 1000 * 10);
-#endif
+			return allowZeroDateTime ? (ticks % 10 == 0 ? (object) new MySqlDateTime(year, month, day, hour, minute, second, ticks / 10) : throw new NotSupportedException("MySqlDateTime does not support sub-microsecond precision")) :
+				new DateTime(year, month, day, hour, minute, second, dateTimeKind).AddTicks(ticks);
 		}
 		catch (Exception ex)
 		{
