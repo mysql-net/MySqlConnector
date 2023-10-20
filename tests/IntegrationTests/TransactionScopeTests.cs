@@ -766,7 +766,9 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 
 		var task = Task.Run(() => UseTransaction());
 		UseTransaction();
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
 		task.Wait();
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
 		void UseTransaction()
 		{

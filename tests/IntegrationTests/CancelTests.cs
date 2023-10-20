@@ -35,7 +35,9 @@ public class CancelTests : IClassFixture<CancelFixture>, IDisposable
 		TestUtilities.AssertExecuteScalarReturnsOneOrIsCanceled(cmd);
 		Assert.InRange(stopwatch.ElapsedMilliseconds, 250, 2500);
 
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
 		task.Wait(); // shouldn't throw
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 	}
 
 #if !MYSQL_DATA

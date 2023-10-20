@@ -76,7 +76,7 @@ public class ConnectionPool : IClassFixture<DatabaseFixture>
 			Assert.InRange(stopwatch.ElapsedMilliseconds, 4500, 7500);
 		}
 
-		closeTask.Wait();
+		await closeTask.ConfigureAwait(true);
 
 		foreach (var connection in connections)
 			connection.Dispose();
