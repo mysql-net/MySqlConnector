@@ -147,7 +147,7 @@ internal sealed class CachedProcedure
 		parametersSql = s_multipleSpaces.Replace(parametersSql, " ");
 
 		if (string.IsNullOrWhiteSpace(parametersSql))
-			return new List<CachedParameter>();
+			return [];
 
 		// strip precision specifier containing comma
 		parametersSql = s_numericTypes.Replace(parametersSql, @"$1");

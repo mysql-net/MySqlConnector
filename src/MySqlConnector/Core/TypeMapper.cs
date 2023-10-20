@@ -13,11 +13,11 @@ internal sealed class TypeMapper
 
 	private TypeMapper()
 	{
-		m_columnTypeMetadata = new();
-		m_dbTypeMappingsByClrType = new();
-		m_dbTypeMappingsByDbType = new();
+		m_columnTypeMetadata = [];
+		m_dbTypeMappingsByClrType = [];
+		m_dbTypeMappingsByDbType = [];
 		m_columnTypeMetadataLookup = new(StringComparer.OrdinalIgnoreCase);
-		m_mySqlDbTypeToColumnTypeMetadata = new();
+		m_mySqlDbTypeToColumnTypeMetadata = [];
 
 		// boolean
 		var typeBoolean = AddDbTypeMapping(new(typeof(bool), [ DbType.Boolean ], convert: static o => Convert.ToBoolean(o, CultureInfo.InvariantCulture)));

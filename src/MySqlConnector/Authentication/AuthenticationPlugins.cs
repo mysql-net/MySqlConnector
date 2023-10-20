@@ -36,5 +36,5 @@ public static class AuthenticationPlugins
 	}
 
 	private static readonly object s_lock = new();
-	private static readonly Dictionary<string, IAuthenticationPlugin> s_plugins = new();
+	private static readonly Dictionary<string, IAuthenticationPlugin> s_plugins = [];
 }

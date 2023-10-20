@@ -580,10 +580,10 @@ internal sealed class ConnectionPool : IDisposable
 		m_cleanSemaphore = new(1);
 		m_sessionSemaphore = new(cs.MaximumPoolSize);
 		m_sessions = new();
-		m_leasedSessions = new();
+		m_leasedSessions = [];
 		if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets && cs.LoadBalance == MySqlLoadBalance.LeastConnections)
 		{
-			m_hostSessions = new();
+			m_hostSessions = [];
 			foreach (var hostName in cs.HostNames!)
 				m_hostSessions[hostName] = 0;
 		}

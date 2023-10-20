@@ -92,7 +92,7 @@ namespace MySqlConnector
 		/// </summary>
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-		internal MySqlAttributeCollection() => m_attributes = new();
+		internal MySqlAttributeCollection() => m_attributes = [];
 
 		private readonly List<MySqlAttribute> m_attributes;
 	}

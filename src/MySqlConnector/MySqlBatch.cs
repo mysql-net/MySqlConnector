@@ -75,7 +75,7 @@ public sealed class MySqlBatch :
 	{
 		Connection = connection;
 		Transaction = transaction;
-		BatchCommands = new();
+		BatchCommands = [];
 		m_commandId = ICancellableCommandExtensions.GetNextId();
 	}
 

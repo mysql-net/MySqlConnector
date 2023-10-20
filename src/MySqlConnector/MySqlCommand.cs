@@ -81,14 +81,14 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	/// <summary>
 	/// The collection of <see cref="MySqlParameter"/> objects for this command.
 	/// </summary>
-	public new MySqlParameterCollection Parameters => m_parameterCollection ??= new();
+	public new MySqlParameterCollection Parameters => m_parameterCollection ??= [];
 
 	MySqlParameterCollection? IMySqlCommand.RawParameters => m_parameterCollection;
 
 	/// <summary>
 	/// The collection of <see cref="MySqlAttribute"/> objects for this command.
 	/// </summary>
-	public MySqlAttributeCollection Attributes => m_attributeCollection ??= new();
+	public MySqlAttributeCollection Attributes => m_attributeCollection ??= [];
 
 	MySqlAttributeCollection? IMySqlCommand.RawAttributes => m_attributeCollection;
 

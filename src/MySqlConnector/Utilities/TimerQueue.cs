@@ -68,7 +68,7 @@ internal sealed class TimerQueue
 	{
 		m_lock = new();
 		m_timer = new(Callback, this, -1, -1);
-		m_timeoutActions = new();
+		m_timeoutActions = [];
 	}
 
 	private void Callback(object? obj)

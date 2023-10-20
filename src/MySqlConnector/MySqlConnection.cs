@@ -213,7 +213,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				lock (s_lock)
 				{
 					if (!s_transactionConnections.TryGetValue(transaction, out var enlistedTransactions))
-						s_transactionConnections[transaction] = enlistedTransactions = new();
+						s_transactionConnections[transaction] = enlistedTransactions = [];
 					enlistedTransactions.Add(m_enlistedTransaction);
 				}
 			}
@@ -799,7 +799,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		if (cachedProcedures is null)
 		{
 			Log.PoolDoesNotHaveSharedProcedureCache(m_logger, m_session.Id, m_session.Pool?.Id);
-			cachedProcedures = m_cachedProcedures = new();
+			cachedProcedures = m_cachedProcedures = [];
 		}
 
 		var normalized = NormalizedSchema.MustNormalize(name, Database);
@@ -1113,7 +1113,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	private static readonly StateChangeEventArgs s_stateChangeConnectingOpen = new(ConnectionState.Connecting, ConnectionState.Open);
 	private static readonly StateChangeEventArgs s_stateChangeOpenClosed = new(ConnectionState.Open, ConnectionState.Closed);
 	private static readonly object s_lock = new();
-	private static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = new();
+	private static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = [];
 
 	private readonly MySqlDataSource? m_dataSource;
 	private readonly ILogger m_logger;

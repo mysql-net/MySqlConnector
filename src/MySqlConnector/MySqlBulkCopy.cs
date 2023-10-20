@@ -61,7 +61,7 @@ public sealed class MySqlBulkCopy
 		m_connection = connection;
 		m_transaction = transaction;
 		m_logger = m_connection.LoggingConfiguration.BulkCopyLogger;
-		ColumnMappings = new();
+		ColumnMappings = [];
 	}
 
 	/// <summary>

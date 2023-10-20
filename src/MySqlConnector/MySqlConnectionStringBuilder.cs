@@ -890,7 +890,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 
 internal abstract partial class MySqlConnectionStringOption
 {
-	public static List<string> OptionNames { get; } = new();
+	public static List<string> OptionNames { get; } = [];
 
 	// Connection Options
 	public static readonly MySqlConnectionStringReferenceOption<string> Server;

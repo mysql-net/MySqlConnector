@@ -8,7 +8,7 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 {
 	internal MySqlParameterCollection()
 	{
-		m_parameters = new();
+		m_parameters = [];
 		m_nameToIndex = new(StringComparer.OrdinalIgnoreCase);
 	}
 

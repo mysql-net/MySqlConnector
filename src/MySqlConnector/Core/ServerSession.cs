@@ -41,7 +41,7 @@ internal sealed partial class ServerSession
 		Pool = pool;
 		PoolGeneration = poolGeneration;
 		HostName = "";
-		m_activityTags = new ActivityTagsCollection();
+		m_activityTags = [];
 		DataReader = new();
 		Log.CreatedNewSession(m_logger, Id);
 	}
@@ -267,7 +267,7 @@ internal sealed partial class ServerSession
 			preparedStatements.Add(new(response.StatementId, statement, columns, parameters));
 		}
 
-		m_preparedStatements ??= new();
+		m_preparedStatements ??= [];
 		m_preparedStatements.Add(commandText, new(preparedStatements, parsedStatements));
 	}
 
@@ -1309,7 +1309,7 @@ internal sealed partial class ServerSession
 						"CertificateFile should be in PKCS #12 (.pfx) format and contain both a Certificate and Private Key");
 				}
 				m_clientCertificate = certificate;
-				clientCertificates = new() { certificate };
+				clientCertificates = [certificate];
 			}
 			catch (CryptographicException ex)
 			{
@@ -1322,7 +1322,7 @@ internal sealed partial class ServerSession
 
 		if (clientCertificates is null && connection.ProvideClientCertificatesCallback is { } clientCertificatesProvider)
 		{
-			clientCertificates = new();
+			clientCertificates = [];
 			try
 			{
 				await clientCertificatesProvider(clientCertificates).ConfigureAwait(false);
@@ -1532,7 +1532,7 @@ internal sealed partial class ServerSession
 				m_clientCertificate = new X509Certificate2(m_clientCertificate.Export(X509ContentType.Pkcs12));
 				oldCertificate.Dispose();
 			}
-			return new() { m_clientCertificate };
+			return [m_clientCertificate];
 #else
 			Log.LoadingClientKeyFromKeyFile(m_logger, Id, sslKeyFile);
 			string keyPem;
@@ -1590,7 +1590,7 @@ internal sealed partial class ServerSession
 #endif
 
 				m_clientCertificate = certificate;
-				return new() { certificate };
+				return [certificate];
 			}
 			catch (CryptographicException ex)
 			{

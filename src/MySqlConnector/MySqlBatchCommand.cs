@@ -46,7 +46,7 @@ public sealed class MySqlBatchCommand :
 #else
 	public MySqlParameterCollection Parameters =>
 #endif
-		m_parameterCollection ??= new();
+		m_parameterCollection ??= [];
 
 #pragma warning disable CA1822 // Mark members as static
 	public
