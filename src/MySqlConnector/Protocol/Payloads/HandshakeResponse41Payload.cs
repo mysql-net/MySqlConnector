@@ -37,7 +37,7 @@ internal static class HandshakeResponse41Payload
 		writer.Write((byte) characterSet);
 
 		// NOTE: not new byte[19]; see https://github.com/dotnet/roslyn/issues/33088
-		ReadOnlySpan<byte> padding = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		ReadOnlySpan<byte> padding = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
 		writer.Write(padding);
 
 		if ((serverCapabilities & ProtocolCapabilities.LongPassword) == 0)

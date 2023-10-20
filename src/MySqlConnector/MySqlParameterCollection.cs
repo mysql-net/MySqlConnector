@@ -8,7 +8,7 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 {
 	internal MySqlParameterCollection()
 	{
-		m_parameters = new();
+		m_parameters = [];
 		m_nameToIndex = new(StringComparer.OrdinalIgnoreCase);
 	}
 
@@ -25,13 +25,25 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 
 	public override int Add(object value)
 	{
-		AddParameter((MySqlParameter) (value ?? throw new ArgumentNullException(nameof(value))), m_parameters.Count);
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(value);
+#else
+		if (value is null)
+			throw new ArgumentNullException(nameof(value));
+#endif
+		AddParameter((MySqlParameter) value, m_parameters.Count);
 		return m_parameters.Count - 1;
 	}
 
 	public MySqlParameter Add(MySqlParameter parameter)
 	{
-		AddParameter(parameter ?? throw new ArgumentNullException(nameof(parameter)), m_parameters.Count);
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(parameter);
+#else
+		if (parameter is null)
+			throw new ArgumentNullException(nameof(parameter));
+#endif
+		AddParameter(parameter, m_parameters.Count);
 		return parameter;
 	}
 
@@ -123,7 +135,13 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 
 	protected override void SetParameter(int index, DbParameter value)
 	{
-		var newParameter = (MySqlParameter) (value ?? throw new ArgumentNullException(nameof(value)));
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(value);
+#else
+		if (value is null)
+			throw new ArgumentNullException(nameof(value));
+#endif
+		var newParameter = (MySqlParameter) value;
 		var oldParameter = m_parameters[index];
 		if (oldParameter.NormalizedParameterName is not null)
 			m_nameToIndex.Remove(oldParameter.NormalizedParameterName);

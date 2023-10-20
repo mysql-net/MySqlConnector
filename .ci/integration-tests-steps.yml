@@ -8,19 +8,15 @@ steps:
 - bash: ${{ format('.ci/docker-run.sh {0} 3300 {1}', parameters.image, parameters.unsupportedFeatures) }}
   displayName: 'Start Docker container'
 - task: UseDotNet@2
-  displayName: 'Install .NET Core 3.1'
-  inputs:
-    version: 3.1.x
-    packageType: runtime
-- task: UseDotNet@2
-  displayName: 'Install .NET Core 6.0'
+  displayName: 'Install .NET 6.0'
   inputs:
     version: 6.0.x
     packageType: runtime
 - task: UseDotNet@2
-  displayName: 'Install .NET Core'
+  displayName: 'Install .NET'
   inputs:
     version: $(DotNetCoreSdkVersion)
+    includePreviewVersions: true
 - template: 'conformance-test-steps.yml'
   parameters:
     image: ${{ parameters.image }}
@@ -30,7 +26,7 @@ steps:
     image: ${{ parameters.image }}
     unsupportedFeatures: ${{ parameters.unsupportedFeatures }}
     connectionString: server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=required;DefaultCommandTimeout=3600;certificate file=$(Build.Repository.LocalPath)/.ci/server/certs/ssl-client.pfx;${{ parameters.connectionStringExtra }}
-    platform: 'net7.0'
+    platform: 'net8.0'
     description: 'SSL'
 - template: 'integration-test-steps.yml'
   parameters:

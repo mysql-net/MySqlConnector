@@ -9,7 +9,7 @@ public sealed class MySqlBatchCommandCollection
 	: IList<MySqlBatchCommand>, ICollection<MySqlBatchCommand>, IEnumerable<MySqlBatchCommand>, IEnumerable
 #endif
 {
-	internal MySqlBatchCommandCollection() => m_commands = new();
+	internal MySqlBatchCommandCollection() => m_commands = [];
 
 #if NET6_0_OR_GREATER
 	public new MySqlBatchCommand this[int index] { get => (MySqlBatchCommand) base[index]; set => base[index] = value; }

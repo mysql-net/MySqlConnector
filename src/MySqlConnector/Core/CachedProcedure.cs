@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -146,7 +147,7 @@ internal sealed class CachedProcedure
 		parametersSql = s_multipleSpaces.Replace(parametersSql, " ");
 
 		if (string.IsNullOrWhiteSpace(parametersSql))
-			return new List<CachedParameter>();
+			return [];
 
 		// strip precision specifier containing comma
 		parametersSql = s_numericTypes.Replace(parametersSql, @"$1");
@@ -233,6 +234,7 @@ internal sealed class CachedProcedure
 
 	private string FullyQualified => $"`{m_schema}`.`{m_component}`";
 
+	[SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance", Justification = "Avoid mutable static field")]
 	private static readonly IReadOnlyDictionary<string, string> s_typeMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 	{
 		{ "BOOL", "TINYINT" },

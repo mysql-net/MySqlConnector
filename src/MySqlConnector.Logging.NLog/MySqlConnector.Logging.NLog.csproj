@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NLog" Version="4.5.0" />
+    <PackageReference Include="NLog" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="docs\README.md" Pack="true" PackagePath="\"/>
+    <None Include="docs\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

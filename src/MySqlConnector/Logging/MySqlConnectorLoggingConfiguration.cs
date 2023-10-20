@@ -3,22 +3,13 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace MySqlConnector.Logging;
 
-internal sealed class MySqlConnectorLoggingConfiguration
+internal sealed class MySqlConnectorLoggingConfiguration(ILoggerFactory loggerFactory)
 {
-	public MySqlConnectorLoggingConfiguration(ILoggerFactory loggerFactory)
-	{
-		DataSourceLogger = loggerFactory.CreateLogger("MySqlConnector.MySqlDataSource");
-		ConnectionLogger = loggerFactory.CreateLogger("MySqlConnector.MySqlConnection");
-		CommandLogger = loggerFactory.CreateLogger("MySqlConnector.MySqlCommand");
-		PoolLogger = loggerFactory.CreateLogger("MySqlConnector.ConnectionPool");
-		BulkCopyLogger = loggerFactory.CreateLogger("MySqlConnector.MySqlBulkCopy");
-	}
-
-	public ILogger DataSourceLogger { get; }
-	public ILogger ConnectionLogger { get; }
-	public ILogger CommandLogger { get; }
-	public ILogger PoolLogger { get; }
-	public ILogger BulkCopyLogger { get; }
+	public ILogger DataSourceLogger { get; } = loggerFactory.CreateLogger("MySqlConnector.MySqlDataSource");
+	public ILogger ConnectionLogger { get; } = loggerFactory.CreateLogger("MySqlConnector.MySqlConnection");
+	public ILogger CommandLogger { get; } = loggerFactory.CreateLogger("MySqlConnector.MySqlCommand");
+	public ILogger PoolLogger { get; } = loggerFactory.CreateLogger("MySqlConnector.ConnectionPool");
+	public ILogger BulkCopyLogger { get; } = loggerFactory.CreateLogger("MySqlConnector.MySqlBulkCopy");
 
 	public static MySqlConnectorLoggingConfiguration NullConfiguration { get; } = new MySqlConnectorLoggingConfiguration(NullLoggerFactory.Instance);
 	public static MySqlConnectorLoggingConfiguration GlobalConfiguration { get; set; } = NullConfiguration;

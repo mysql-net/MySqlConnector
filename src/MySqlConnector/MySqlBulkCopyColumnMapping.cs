@@ -28,38 +28,28 @@ namespace MySqlConnector;
 /// },
 /// </code>
 /// </summary>
-public sealed class MySqlBulkCopyColumnMapping
+/// <param name="sourceOrdinal">The zero-based ordinal position of the source column.</param>
+/// <param name="destinationColumn">The name of the destination column.</param>
+/// <param name="expression">The optional expression to be used to set the destination column.</param>
+public sealed class MySqlBulkCopyColumnMapping(int sourceOrdinal, string destinationColumn, string? expression = null)
 {
 	/// <summary>
 	/// Initializes <see cref="MySqlBulkCopyColumnMapping"/> with the default values.
 	/// </summary>
 	public MySqlBulkCopyColumnMapping()
+		: this(0, "", null)
 	{
-		DestinationColumn = "";
-	}
-
-	/// <summary>
-	/// Initializes <see cref="MySqlBulkCopyColumnMapping"/> to the specified values.
-	/// </summary>
-	/// <param name="sourceOrdinal">The zero-based ordinal position of the source column.</param>
-	/// <param name="destinationColumn">The name of the destination column.</param>
-	/// <param name="expression">The optional expression to be used to set the destination column.</param>
-	public MySqlBulkCopyColumnMapping(int sourceOrdinal, string destinationColumn, string? expression = null)
-	{
-		SourceOrdinal = sourceOrdinal;
-		DestinationColumn = destinationColumn ?? throw new ArgumentNullException(nameof(destinationColumn));
-		Expression = expression;
 	}
 
 	/// <summary>
 	/// The zero-based ordinal position of the source column to map from.
 	/// </summary>
-	public int SourceOrdinal { get; set; }
+	public int SourceOrdinal { get; set; } = sourceOrdinal;
 
 	/// <summary>
 	/// The name of the destination column to copy to. To use an expression, this should be the name of a unique user-defined variable.
 	/// </summary>
-	public string DestinationColumn { get; set; }
+	public string DestinationColumn { get; set; } = destinationColumn;
 
 	/// <summary>
 	/// An optional expression for setting a destination column. To use an expression, the <see cref="DestinationColumn"/> should
@@ -67,5 +57,5 @@ public sealed class MySqlBulkCopyColumnMapping
 	/// </summary>
 	/// <remarks>To populate a binary column, you must set <see cref="DestinationColumn"/> to a variable name, and <see cref="Expression"/> to an
 	/// expression that uses <code>UNHEX</code> to set the column value, e.g., <code>`destColumn` = UNHEX(@variableName)</code>.</remarks>
-	public string? Expression { get; set; }
+	public string? Expression { get; set; } = expression;
 }

@@ -36,6 +36,9 @@ public sealed class FakeMySqlServer
 			}
 			m_connections.Clear();
 			m_tasks.Clear();
+#if NET8_0_OR_GREATER
+			m_tcpListener.Dispose();
+#endif
 			m_cts.Dispose();
 			m_cts = null;
 		}

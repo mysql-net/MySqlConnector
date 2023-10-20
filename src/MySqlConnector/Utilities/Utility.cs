@@ -180,7 +180,7 @@ internal static class Utility
 		if (!isPrivate)
 		{
 			// encoded OID sequence for  PKCS #1 rsaEncryption szOID_RSA_RSA = "1.2.840.113549.1.1.1"
-			ReadOnlySpan<byte> rsaOid = new byte[] { 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00 };
+			ReadOnlySpan<byte> rsaOid = [ 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00 ];
 			if (!data.Slice(0, rsaOid.Length).SequenceEqual(rsaOid))
 				throw new FormatException($"Expected RSA OID but read {BitConverter.ToString(data.Slice(0, 15).ToArray())}");
 			data = data.Slice(rsaOid.Length);
@@ -511,9 +511,17 @@ internal static class Utility
 	public static void Write(this Stream stream, ReadOnlyMemory<byte> data) => stream.Write(data.Span);
 #endif
 
+#if !NETCOREAPP2_0_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
+	public static bool StartsWith(this string str, char value) => !string.IsNullOrEmpty(str) && str[0] == value;
+#endif
+
 	public static void SwapBytes(Span<byte> bytes, int offset1, int offset2)
 	{
+#if NET8_0_OR_GREATER
+		ref var first = ref Unsafe.AsRef(ref bytes[0]);
+#else
 		ref var first = ref Unsafe.AsRef(bytes[0]);
+#endif
 		(Unsafe.Add(ref first, offset2), Unsafe.Add(ref first, offset1)) = (Unsafe.Add(ref first, offset1), Unsafe.Add(ref first, offset2));
 	}
 

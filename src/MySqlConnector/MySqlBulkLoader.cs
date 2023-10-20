@@ -134,8 +134,8 @@ public sealed class MySqlBulkLoader
 	{
 		Connection = connection;
 		Local = true;
-		Columns = new();
-		Expressions = new();
+		Columns = [];
+		Expressions = [];
 	}
 
 	/// <summary>
@@ -281,7 +281,7 @@ public sealed class MySqlBulkLoader
 		return sb.ToString();
 	}
 
-	private static Stream CreateFileStream(string fileName)
+	private static FileStream CreateFileStream(string fileName)
 	{
 		try
 		{
@@ -320,5 +320,5 @@ public sealed class MySqlBulkLoader
 	private static string GenerateSourceFileName() => SourcePrefix + Guid.NewGuid().ToString("N");
 
 	private static readonly object s_lock = new();
-	private static readonly Dictionary<string, object> s_sources = new();
+	private static readonly Dictionary<string, object> s_sources = [];
 }

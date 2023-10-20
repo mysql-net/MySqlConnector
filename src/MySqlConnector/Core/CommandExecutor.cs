@@ -26,7 +26,7 @@ internal static class CommandExecutor
 				var command2 = commandListPosition.CommandAt(commandIndex);
 				if (command2.CommandType == CommandType.StoredProcedure)
 				{
-					cachedProcedures ??= new();
+					cachedProcedures ??= [];
 					var commandText = command2.CommandText!;
 					if (!cachedProcedures.ContainsKey(commandText))
 					{

@@ -26,14 +26,24 @@ internal sealed class StandardPayloadHandler : IPayloadHandler
 	{
 		get
 		{
+#if NET7_0_OR_GREATER
+			ObjectDisposedException.ThrowIf(m_byteHandler is null, this);
+#else
 			if (m_byteHandler is null)
 				throw new ObjectDisposedException(nameof(StandardPayloadHandler));
+#endif
 			return m_byteHandler;
 		}
 		set
 		{
 			var oldByteHandler = m_byteHandler;
-			m_byteHandler = value ?? throw new ArgumentNullException(nameof(value));
+#if NET6_0_OR_GREATER
+			ArgumentNullException.ThrowIfNull(value);
+#else
+			if (value is null)
+				throw new ArgumentNullException(nameof(value));
+#endif
+			m_byteHandler = value;
 			oldByteHandler?.Dispose();
 			m_bufferedByteReader = new();
 		}

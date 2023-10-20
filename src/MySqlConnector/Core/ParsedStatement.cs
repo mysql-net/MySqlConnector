@@ -15,17 +15,17 @@ internal sealed class ParsedStatement
 	/// The names of the parameters (if known) of the parameters in the prepared statement. There
 	/// is one entry in this list for each parameter, which will be <c>null</c> if the name is unknown.
 	/// </summary>
-	public List<string?> ParameterNames { get; } = new();
+	public List<string?> ParameterNames { get; } = [];
 
 	/// <summary>
 	/// The normalized names of the parameters (if known) of the parameters in the prepared statement. There
 	/// is one entry in this list for each parameter, which will be <c>null</c> if the name is unknown.
 	/// </summary>
-	public List<string?> NormalizedParameterNames { get; } = new();
+	public List<string?> NormalizedParameterNames { get; } = [];
 
 	/// <summary>
 	/// The indexes of the parameters in the prepared statement. There is one entry in this list for
 	/// each parameter; it will be <c>-1</c> if the parameter is named.
 	/// </summary>
-	public List<int> ParameterIndexes { get; } = new();
+	public List<int> ParameterIndexes { get; } = [];
 }

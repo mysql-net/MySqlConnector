@@ -39,6 +39,9 @@ public sealed class MySqlException : DbException
 	public bool IsTransient => IsErrorTransient(ErrorCode);
 #endif
 
+#if NET8_0_OR_GREATER
+	[Obsolete(DiagnosticId = "SYSLIB0051")]
+#endif
 	private MySqlException(SerializationInfo info, StreamingContext context)
 		: base(info, context)
 	{
@@ -52,6 +55,9 @@ public sealed class MySqlException : DbException
 	/// </summary>
 	/// <param name="info">The <see cref="SerializationInfo"/> that will be set.</param>
 	/// <param name="context">The context.</param>
+#if NET8_0_OR_GREATER
+	[Obsolete("Do not use legacy serialization infrastructure APIs", DiagnosticId = "SYSLIB0051")]
+#endif
 	public override void GetObjectData(SerializationInfo info, StreamingContext context)
 	{
 		base.GetObjectData(info, context);

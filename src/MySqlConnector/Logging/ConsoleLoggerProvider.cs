@@ -16,15 +16,9 @@ public class ConsoleLoggerProvider : IMySqlConnectorLoggerProvider
 
 	public IMySqlConnectorLogger CreateLogger(string name) => new ConsoleLogger(this, name);
 
-	private sealed class ConsoleLogger : IMySqlConnectorLogger
+	private sealed class ConsoleLogger(ConsoleLoggerProvider provider, string name) : IMySqlConnectorLogger
 	{
-		public ConsoleLogger(ConsoleLoggerProvider provider, string name)
-		{
-			m_provider = provider;
-			m_name = name;
-		}
-
-		public bool IsEnabled(MySqlConnectorLogLevel level) => level >= m_provider.m_minimumLevel && level <= MySqlConnectorLogLevel.Fatal;
+		public bool IsEnabled(MySqlConnectorLogLevel level) => level >= Provider.m_minimumLevel && level <= MySqlConnectorLogLevel.Fatal;
 
 		public void Log(MySqlConnectorLogLevel level, string message, object?[]? args = null, Exception? exception = null)
 		{
@@ -34,7 +28,7 @@ public class ConsoleLoggerProvider : IMySqlConnectorLoggerProvider
 			var sb = new StringBuilder();
 			sb.Append(s_levels[(int) level]);
 			sb.Append('\t');
-			sb.Append(m_name);
+			sb.Append(Name);
 			sb.Append('\t');
 
 			if (args is null || args.Length == 0)
@@ -46,9 +40,9 @@ public class ConsoleLoggerProvider : IMySqlConnectorLoggerProvider
 			if (exception is not null)
 				sb.AppendLine(exception.ToString());
 
-			if (m_provider.m_isColored)
+			if (Provider.m_isColored)
 			{
-				lock (m_provider)
+				lock (Provider)
 				{
 					var oldColor = Console.ForegroundColor;
 					Console.ForegroundColor = s_colors[(int) level];
@@ -84,8 +78,8 @@ public class ConsoleLoggerProvider : IMySqlConnectorLoggerProvider
 			ConsoleColor.Red,
 		};
 
-		private readonly ConsoleLoggerProvider m_provider;
-		private readonly string m_name;
+		private ConsoleLoggerProvider Provider { get; } = provider;
+		private string Name { get; } = name;
 	}
 
 	private readonly MySqlConnectorLogLevel m_minimumLevel;

@@ -6,9 +6,10 @@ steps:
     contents: 'config.json'
     targetFolder: 'tests/IntegrationTests'
 - task: UseDotNet@2
-  displayName: 'Install .NET Core'
+  displayName: 'Install .NET'
   inputs:
     version: $(DotNetCoreSdkVersion)
+    includePreviewVersions: true
 
 - task: DotNetCoreCLI@2
   displayName: 'Restore packages'
@@ -26,37 +27,37 @@ steps:
   displayName: 'Publish MySqlConnector.Tests'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f net7.0 --no-build tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj'
+    arguments: '-c Release -f net8.0 --no-build tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: 'MySqlConnector.Tests-7.0-$(Agent.OS)'
-    targetPath: 'tests/MySqlConnector.Tests/bin/Release/net7.0/publish'
+    artifactName: 'MySqlConnector.Tests-8.0-$(Agent.OS)'
+    targetPath: 'artifacts/publish/MySqlConnector.Tests/release_net8.0'
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish Conformance.Tests'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f net7.0 --no-build tests/Conformance.Tests/Conformance.Tests.csproj'
+    arguments: '-c Release -f net8.0 --no-build tests/Conformance.Tests/Conformance.Tests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: 'Conformance.Tests-7.0-$(Agent.OS)'
-    targetPath: 'tests/Conformance.Tests/bin/Release/net7.0/publish'
+    artifactName: 'Conformance.Tests-8.0-$(Agent.OS)'
+    targetPath: 'artifacts/publish/Conformance.Tests/release_net8.0'
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish IntegrationTests (7.0)'
   inputs:
     command: 'publish'
-    arguments: '-c Release -f net7.0 --no-build tests/IntegrationTests/IntegrationTests.csproj'
+    arguments: '-c Release -f net8.0 --no-build tests/IntegrationTests/IntegrationTests.csproj'
     publishWebProjects: false
     zipAfterPublish: false
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: 'IntegrationTests-net7.0-$(Agent.OS)'
-    targetPath: 'tests/IntegrationTests/bin/Release/net7.0/publish'
+    artifactName: 'IntegrationTests-net8.0-$(Agent.OS)'
+    targetPath: 'artifacts/publish/IntegrationTests/release_net8.0'
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish IntegrationTests (6.0)'
@@ -68,4 +69,4 @@ steps:
 - task: PublishPipelineArtifact@0
   inputs:
     artifactName: 'IntegrationTests-net6.0-$(Agent.OS)'
-    targetPath: 'tests/IntegrationTests/bin/Release/net6.0/publish'
+    targetPath: 'artifacts/publish/IntegrationTests/release_net6.0'

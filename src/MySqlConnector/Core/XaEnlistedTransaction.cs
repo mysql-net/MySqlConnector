@@ -3,13 +3,8 @@ using System.Transactions;
 
 namespace MySqlConnector.Core;
 
-internal sealed class XaEnlistedTransaction : EnlistedTransactionBase
+internal sealed class XaEnlistedTransaction(Transaction transaction, MySqlConnection connection) : EnlistedTransactionBase(transaction, connection)
 {
-	public XaEnlistedTransaction(Transaction transaction, MySqlConnection connection)
-		: base(transaction, connection)
-	{
-	}
-
 	protected override void OnStart()
 	{
 		// generate an "xid" with "gtrid" (Global TRansaction ID) from the .NET Transaction and "bqual" (Branch QUALifier)

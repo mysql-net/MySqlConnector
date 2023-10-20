@@ -75,7 +75,7 @@ public sealed class MySqlBatch :
 	{
 		Connection = connection;
 		Transaction = transaction;
-		BatchCommands = new();
+		BatchCommands = [];
 		m_commandId = ICancellableCommandExtensions.GetNextId();
 	}
 
@@ -130,6 +130,7 @@ public sealed class MySqlBatch :
 #if NET6_0_OR_GREATER
 	protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
 #else
+	[SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance", Justification = "Matches .NET 6.0 override")]
 	private DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
 #endif
 	{
@@ -362,7 +363,7 @@ public sealed class MySqlBatch :
 		return exception is null && !Connection!.IgnorePrepare;
 	}
 
-	private Exception? GetExceptionForInvalidCommands()
+	private InvalidOperationException? GetExceptionForInvalidCommands()
 	{
 		foreach (var command in BatchCommands)
 		{

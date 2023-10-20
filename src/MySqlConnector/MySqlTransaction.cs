@@ -149,10 +149,18 @@ public sealed class MySqlTransaction : DbTransaction
 	{
 		VerifyValid();
 
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(savepointName);
+#else
 		if (savepointName is null)
 			throw new ArgumentNullException(nameof(savepointName));
+#endif
+#if NET8_0_OR_GREATER
+		ArgumentException.ThrowIfNullOrEmpty(savepointName);
+#else
 		if (savepointName.Length == 0)
 			throw new ArgumentException("savepointName must not be empty", nameof(savepointName));
+#endif
 
 		using var cmd = new MySqlCommand(command + "savepoint " + QuoteIdentifier(savepointName), Connection, this) { NoActivity = true };
 		await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -269,8 +277,12 @@ public sealed class MySqlTransaction : DbTransaction
 
 	private void VerifyValid()
 	{
+#if NET7_0_OR_GREATER
+		ObjectDisposedException.ThrowIf(m_isDisposed, this);
+#else
 		if (m_isDisposed)
 			throw new ObjectDisposedException(nameof(MySqlTransaction));
+#endif
 		if (Connection is null)
 			throw new InvalidOperationException("Already committed or rolled back.");
 		if (Connection.CurrentTransaction is null)

@@ -555,18 +555,18 @@ internal sealed class ConnectionPool : IDisposable
 	{
 		foreach (var pool in GetAllPools())
 			await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-	}
 
-	private static IReadOnlyList<ConnectionPool> GetAllPools()
-	{
-		var pools = new List<ConnectionPool>(s_pools.Count);
-		var uniquePools = new HashSet<ConnectionPool>();
-		foreach (var pool in s_pools.Values)
+		static List<ConnectionPool> GetAllPools()
 		{
-			if (pool is not null && uniquePools.Add(pool))
-				pools.Add(pool);
+			var pools = new List<ConnectionPool>(s_pools.Count);
+			var uniquePools = new HashSet<ConnectionPool>();
+			foreach (var pool in s_pools.Values)
+			{
+				if (pool is not null && uniquePools.Add(pool))
+					pools.Add(pool);
+			}
+			return pools;
 		}
-		return pools;
 	}
 
 	private ConnectionPool(MySqlConnectorLoggingConfiguration loggingConfiguration, ConnectionSettings cs, string? name)
@@ -580,10 +580,10 @@ internal sealed class ConnectionPool : IDisposable
 		m_cleanSemaphore = new(1);
 		m_sessionSemaphore = new(cs.MaximumPoolSize);
 		m_sessions = new();
-		m_leasedSessions = new();
+		m_leasedSessions = [];
 		if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets && cs.LoadBalance == MySqlLoadBalance.LeastConnections)
 		{
-			m_hostSessions = new();
+			m_hostSessions = [];
 			foreach (var hostName in cs.HostNames!)
 				m_hostSessions[hostName] = 0;
 		}
@@ -741,29 +741,19 @@ internal sealed class ConnectionPool : IDisposable
 		}
 	}
 
-	private sealed class LeastConnectionsLoadBalancer : ILoadBalancer
+	private sealed class LeastConnectionsLoadBalancer(Dictionary<string, int> hostSessions) : ILoadBalancer
 	{
-		public LeastConnectionsLoadBalancer(Dictionary<string, int> hostSessions) => m_hostSessions = hostSessions;
-
 		public IReadOnlyList<string> LoadBalance(IReadOnlyList<string> hosts)
 		{
-			lock (m_hostSessions)
-				return m_hostSessions.OrderBy(static x => x.Value).Select(static x => x.Key).ToList();
+			lock (hostSessions)
+				return hostSessions.OrderBy(static x => x.Value).Select(static x => x.Key).ToList();
 		}
-
-		private readonly Dictionary<string, int> m_hostSessions;
 	}
 
-	private sealed class ConnectionStringPool
+	private sealed class ConnectionStringPool(string connectionString, ConnectionPool? pool)
 	{
-		public ConnectionStringPool(string connectionString, ConnectionPool? pool)
-		{
-			ConnectionString = connectionString;
-			Pool = pool;
-		}
-
-		public string ConnectionString { get; }
-		public ConnectionPool? Pool { get; }
+		public string ConnectionString { get; } = connectionString;
+		public ConnectionPool? Pool { get; } = pool;
 	}
 
 	static ConnectionPool()

@@ -21,40 +21,32 @@ public static class MySqlConnectorLogManager
 	}
 
 	// A helper class that adapts ILoggerFactory to the old-style IMySqlConnectorLoggerProvider interface.
-	private sealed class MySqlConnectorLoggerFactor : ILoggerFactory
+	private sealed class MySqlConnectorLoggerFactor(IMySqlConnectorLoggerProvider loggerProvider) : ILoggerFactory
 	{
-		public MySqlConnectorLoggerFactor(IMySqlConnectorLoggerProvider loggerProvider) =>
-			m_loggerProvider = loggerProvider;
-
 		public void AddProvider(ILoggerProvider provider) => throw new NotSupportedException();
 
 		public ILogger CreateLogger(string categoryName)
 		{
 			// assume all logger names start with "MySqlConnector." but the old API didn't expect that prefix
-			return new MySqlConnectorLogger(m_loggerProvider.CreateLogger(categoryName[15..]));
+			return new MySqlConnectorLogger(loggerProvider.CreateLogger(categoryName[15..]));
 		}
 
 		public void Dispose()
 		{
 		}
-
-		private readonly IMySqlConnectorLoggerProvider m_loggerProvider;
 	}
 
 	// A helper class that adapts ILogger to the old-style IMySqlConnectorLogger interface.
-	private sealed class MySqlConnectorLogger : ILogger
+	private sealed class MySqlConnectorLogger(IMySqlConnectorLogger logger) : ILogger
 	{
-		public MySqlConnectorLogger(IMySqlConnectorLogger logger) =>
-			m_logger = logger;
-
 		public IDisposable BeginScope<TState>(TState state)
 			where TState : notnull
 			=> throw new NotSupportedException();
 
-		public bool IsEnabled(LogLevel logLevel) => m_logger.IsEnabled(ConvertLogLevel(logLevel));
+		public bool IsEnabled(LogLevel logLevel) => logger.IsEnabled(ConvertLogLevel(logLevel));
 
 		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
-			m_logger.Log(ConvertLogLevel(logLevel), formatter(state, exception), exception: exception);
+			logger.Log(ConvertLogLevel(logLevel), formatter(state, exception), exception: exception);
 
 		private static MySqlConnectorLogLevel ConvertLogLevel(LogLevel logLevel) =>
 			logLevel switch
@@ -67,7 +59,5 @@ public static class MySqlConnectorLogManager
 				LogLevel.Critical => MySqlConnectorLogLevel.Fatal,
 				_ => MySqlConnectorLogLevel.Info,
 			};
-
-		private readonly IMySqlConnectorLogger m_logger;
 	}
 }

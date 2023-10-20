@@ -1,10 +1,10 @@
 <Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <AssemblyOriginatorKeyFile>..\..\MySqlConnector.snk</AssemblyOriginatorKeyFile>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageReleaseNotes>https://mysqlconnector.net/overview/version-history/</PackageReleaseNotes>
     <PackageProjectUrl>https://mysqlconnector.net/</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -17,8 +17,6 @@
     <PackageValidationBaselineVersion>2.0.0</PackageValidationBaselineVersion>
     <EnableStrictModeForCompatibleFrameworksInPackageValidation>true</EnableStrictModeForCompatibleFrameworksInPackageValidation>
     <EnableStrictModeForCompatibleTfms>true</EnableStrictModeForCompatibleTfms>
-    <LangVersion>11.0</LangVersion>
-    <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
     <AnalysisLevel>latest-all</AnalysisLevel>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
@@ -26,33 +24,18 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);1591;CA1708;CA1835;CA2215;CA5397;NU5105;SYSLIB0039</NoWarn>
     <MinVerDefaultPreReleaseIdentifiers>beta.0</MinVerDefaultPreReleaseIdentifiers>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' OR '$(APPVEYOR)' == 'True' OR '$(TF_BUILD)' == 'True' ">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <Deterministic>true</Deterministic>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
-    <PackageReference Include="MinVer" Version="4.3.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
+    <PackageReference Include="StyleCop.Analyzers">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\docs\static\img\logo.png" Pack="true" PackagePath="\"/>
+    <None Include="..\..\docs\static\img\logo.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

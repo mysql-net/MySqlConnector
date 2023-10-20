@@ -76,8 +76,13 @@ internal sealed class Row
 
 	public object GetValue(int ordinal)
 	{
+#if NET8_0_OR_GREATER
+		ArgumentOutOfRangeException.ThrowIfNegative(ordinal);
+		ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(ordinal, ResultSet.ColumnDefinitions!.Length);
+#else
 		if (ordinal < 0 || ordinal >= ResultSet.ColumnDefinitions!.Length)
 			throw new ArgumentOutOfRangeException(nameof(ordinal), $"value must be between 0 and {ResultSet.ColumnDefinitions!.Length - 1}");
+#endif
 
 		if (m_dataOffsetLengths[ordinal].Offset == -1)
 			return DBNull.Value;
@@ -418,7 +423,13 @@ internal sealed class Row
 
 	public int GetValues(object[] values)
 	{
-		int count = Math.Min((values ?? throw new ArgumentNullException(nameof(values))).Length, ResultSet.ColumnDefinitions!.Length);
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(values);
+#else
+		if (values is null)
+			throw new ArgumentNullException(nameof(values));
+#endif
+		int count = Math.Min(values.Length, ResultSet.ColumnDefinitions!.Length);
 		for (int i = 0; i < count; i++)
 			values[i] = GetValue(i);
 		return count;
@@ -451,6 +462,13 @@ internal sealed class Row
 
 	private static void CheckBufferArguments<T>(long dataOffset, T[] buffer, int bufferOffset, int length)
 	{
+#if NET8_0_OR_GREATER
+		ArgumentOutOfRangeException.ThrowIfNegative(dataOffset);
+		ArgumentOutOfRangeException.ThrowIfGreaterThan(dataOffset, int.MaxValue);
+		ArgumentOutOfRangeException.ThrowIfNegative(length);
+		ArgumentOutOfRangeException.ThrowIfNegative(bufferOffset);
+		ArgumentOutOfRangeException.ThrowIfGreaterThan(bufferOffset, buffer.Length);
+#else
 		if (dataOffset < 0)
 			throw new ArgumentOutOfRangeException(nameof(dataOffset), dataOffset, nameof(dataOffset) + " must be non-negative");
 		if (dataOffset > int.MaxValue)
@@ -461,18 +479,13 @@ internal sealed class Row
 			throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, nameof(bufferOffset) + " must be non-negative");
 		if (bufferOffset > buffer.Length)
 			throw new ArgumentOutOfRangeException(nameof(bufferOffset), bufferOffset, nameof(bufferOffset) + " must be within the buffer");
+#endif
 		if (checked(bufferOffset + length) > buffer.Length)
 			throw new ArgumentException(nameof(bufferOffset) + " + " + nameof(length) + " cannot exceed " + nameof(buffer) + "." + nameof(buffer.Length), nameof(length));
 	}
 
-	private readonly struct OffsetLength
+	private readonly struct OffsetLength(int offset, int length)
 	{
-		public OffsetLength(int offset, int length)
-		{
-			Offset = offset;
-			Length = length;
-		}
-
 		public static implicit operator OffsetLength((int Offset, int Length) x) => new(x.Offset, x.Length);
 
 		public void Deconstruct(out int offset, out int length)
@@ -481,8 +494,8 @@ internal sealed class Row
 			length = Length;
 		}
 
-		public int Offset { get; }
-		public int Length { get; }
+		public int Offset { get; } = offset;
+		public int Length { get; } = length;
 	}
 
 	private readonly bool m_isBinary;

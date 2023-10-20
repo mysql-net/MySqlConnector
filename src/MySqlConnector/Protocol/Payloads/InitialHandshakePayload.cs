@@ -42,9 +42,11 @@ internal sealed class InitialHandshakePayload
 			if ((protocolCapabilities & ProtocolCapabilities.SecureConnection) != 0)
 			{
 				var authPluginData2 = reader.ReadByteString(Math.Max(13, authPluginDataLength - 8));
+
+				// TODO: authPluginData = [..authPluginData1, ..authPluginData2]; when codegen doesn't use an intermediate List<byte>
 				authPluginData = new byte[authPluginData1.Length + authPluginData2.Length];
 				authPluginData1.CopyTo(authPluginData);
-				authPluginData2.CopyTo(new Span<byte>(authPluginData)[authPluginData1.Length..]);
+				authPluginData2.CopyTo(authPluginData.AsSpan(authPluginData1.Length));
 			}
 			if ((protocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
 				authPluginName = Encoding.UTF8.GetString(reader.ReadNullOrEofTerminatedByteString());

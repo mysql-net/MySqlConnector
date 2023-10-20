@@ -3,13 +3,9 @@ using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace MySqlConnector.Core;
 
-internal sealed class StandardEnlistedTransaction : EnlistedTransactionBase
+internal sealed class StandardEnlistedTransaction(Transaction transaction, MySqlConnection connection)
+	: EnlistedTransactionBase(transaction, connection)
 {
-	public StandardEnlistedTransaction(Transaction transaction, MySqlConnection connection)
-		: base(transaction, connection)
-	{
-	}
-
 	protected override void OnStart()
 	{
 		var isolationLevel = Transaction.IsolationLevel switch

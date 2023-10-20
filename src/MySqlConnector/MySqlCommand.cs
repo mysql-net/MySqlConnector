@@ -81,14 +81,14 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	/// <summary>
 	/// The collection of <see cref="MySqlParameter"/> objects for this command.
 	/// </summary>
-	public new MySqlParameterCollection Parameters => m_parameterCollection ??= new();
+	public new MySqlParameterCollection Parameters => m_parameterCollection ??= [];
 
 	MySqlParameterCollection? IMySqlCommand.RawParameters => m_parameterCollection;
 
 	/// <summary>
 	/// The collection of <see cref="MySqlAttribute"/> objects for this command.
 	/// </summary>
-	public MySqlAttributeCollection Attributes => m_attributeCollection ??= new();
+	public MySqlAttributeCollection Attributes => m_attributeCollection ??= [];
 
 	MySqlAttributeCollection? IMySqlCommand.RawAttributes => m_attributeCollection;
 
@@ -230,7 +230,13 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		get => Math.Min(m_commandTimeout ?? Connection?.DefaultCommandTimeout ?? 0, int.MaxValue / 1000);
 		set
 		{
-			m_commandTimeout = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value), "CommandTimeout must be greater than or equal to zero.");
+#if NET8_0_OR_GREATER
+			ArgumentOutOfRangeException.ThrowIfNegative(value);
+#else
+			if (value < 0)
+				throw new ArgumentOutOfRangeException(nameof(value), "CommandTimeout must be greater than or equal to zero.");
+#endif
+			m_commandTimeout = value;
 			((ICancellableCommand) this).EffectiveCommandTimeout = null;
 		}
 	}

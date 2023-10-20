@@ -128,8 +128,12 @@ public sealed class MySqlDataSource : DbDataSource
 
 	protected override DbConnection CreateDbConnection()
 	{
+#if NET7_0_OR_GREATER
+		ObjectDisposedException.ThrowIf(m_isDisposed, this);
+#else
 		if (m_isDisposed)
 			throw new ObjectDisposedException(nameof(MySqlDataSource));
+#endif
 		return new MySqlConnection(this)
 		{
 			ProvideClientCertificatesCallback = m_clientCertificatesCallback,

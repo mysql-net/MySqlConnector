@@ -9,8 +9,12 @@ internal sealed partial class SchemaProvider
 {
 	public async ValueTask<DataTable> GetSchemaAsync(IOBehavior ioBehavior, string collectionName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(collectionName);
+#else
 		if (collectionName is null)
 			throw new ArgumentNullException(nameof(collectionName));
+#endif
 
 		var dataTable = new DataTable();
 		if (string.Equals(collectionName, "MetaDataCollections", StringComparison.OrdinalIgnoreCase))
@@ -83,12 +87,12 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'MetaDataCollections'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("CollectionName", typeof(string)),
 			new("NumberOfRestrictions", typeof(int)),
 			new("NumberOfIdentifierParts", typeof(int)),
-		});
+		]);
 
 		dataTable.Rows.Add("MetaDataCollections", 0, 0);
 		dataTable.Rows.Add("CharacterSets", 0, 0);
@@ -129,13 +133,13 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'CharacterSets'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("CHARACTER_SET_NAME", typeof(string)),
 			new("DEFAULT_COLLATE_NAME", typeof(string)),
 			new("DESCRIPTION", typeof(string)),
 			new("MAXLEN", typeof(int)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "CHARACTER_SETS", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -146,15 +150,15 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'Collations'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("COLLATION_NAME", typeof(string)),
 			new("CHARACTER_SET_NAME", typeof(string)),
 			new("ID", typeof(int)),
 			new("IS_DEFAULT", typeof(string)),
 			new("IS_COMPILED", typeof(string)),
 			new("SORTLEN", typeof(int)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "COLLATIONS", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -165,11 +169,11 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'CollationCharacterSetApplicability'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("COLLATION_NAME", typeof(string)),
 			new("CHARACTER_SET_NAME", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "COLLATION_CHARACTER_SET_APPLICABILITY", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -180,8 +184,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("More than 4 restrictionValues are not supported for schema 'Columns'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("TABLE_CATALOG", typeof(string)),
 			new("TABLE_SCHEMA", typeof(string)),
 			new("TABLE_NAME", typeof(string)),
@@ -203,7 +207,7 @@ internal sealed partial class SchemaProvider
 			new("COLUMN_COMMENT", typeof(string)),
 			new("GENERATION_EXPRESSION", typeof(string)),
 			new("SRS_ID", typeof(string)),
-		});
+		]);
 
 		var columns = new List<KeyValuePair<string, string>>();
 		if (restrictionValues is not null)
@@ -227,14 +231,14 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'Databases'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("CATALOG_NAME", typeof(string)),
 			new("SCHEMA_NAME", typeof(string)),
 			new("DEFAULT_CHARACTER_SET_NAME", typeof(string)),
 			new("DEFAULT_COLLATION_NAME", typeof(string)),
 			new("SQL_PATH", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "SCHEMATA", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -245,8 +249,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'DataSourceInformation'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("CompositeIdentifierSeparatorPattern", typeof(string)),
 			new("DataSourceProductName", typeof(string)),
 			new("DataSourceProductVersion", typeof(string)),
@@ -264,7 +268,7 @@ internal sealed partial class SchemaProvider
 			new("StatementSeparatorPattern", typeof(string)),
 			new("StringLiteralPattern", typeof(string)),
 			new("SupportedJoinOperators", typeof(SupportedJoinOperators)),
-		});
+		]);
 
 		DoFillDataSourceInformation(dataTable);
 
@@ -277,8 +281,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'DataTypes'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("TypeName", typeof(string)),
 			new("ProviderDbType", typeof(int)),
 			new("ColumnSize", typeof(long)),
@@ -302,7 +306,7 @@ internal sealed partial class SchemaProvider
 			new("LiteralPrefix", typeof(string)),
 			new("LiteralSuffix", typeof(string)),
 			new("NativeDataType", typeof(string)),
-		});
+		]);
 
 		DoFillDataTypes(dataTable);
 
@@ -315,15 +319,15 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'Engines'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("ENGINE", typeof(string)),
 			new("SUPPORT", typeof(string)),
 			new("COMMENT", typeof(string)),
 			new("TRANSACTIONS", typeof(string)),
 			new("XA", typeof(string)),
 			new("SAVEPOINTS", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "ENGINES", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -334,8 +338,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'KeyColumnUsage'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("CONSTRAINT_CATALOG", typeof(string)),
 			new("CONSTRAINT_SCHEMA", typeof(string)),
 			new("CONSTRAINT_NAME", typeof(string)),
@@ -348,7 +352,7 @@ internal sealed partial class SchemaProvider
 			new("REFERENCED_TABLE_SCHEMA", typeof(string)),
 			new("REFERENCED_TABLE_NAME", typeof(string)),
 			new("REFERENCED_COLUMN_NAME", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -359,11 +363,11 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'KeyWords'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("WORD", typeof(string)),
 			new("RESERVED", typeof(int)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "KEYWORDS", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -374,8 +378,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'Parameters'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("SPECIFIC_CATALOG", typeof(string)),
 			new("SPECIFIC_SCHEMA", typeof(string)),
 			new("SPECIFIC_NAME", typeof(string)),
@@ -392,7 +396,7 @@ internal sealed partial class SchemaProvider
 			new("COLLATION_NAME", typeof(string)),
 			new("DTD_IDENTIFIER", typeof(string)),
 			new("ROUTINE_TYPE", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "PARAMETERS", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -403,8 +407,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'Partitions'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("TABLE_CATALOG", typeof(string)),
 			new("TABLE_SCHEMA", typeof(string)),
 			new("TABLE_NAME", typeof(string)),
@@ -430,7 +434,7 @@ internal sealed partial class SchemaProvider
 			new("PARTITION_COMMENT", typeof(string)),
 			new("NODEGROUP", typeof(string)),
 			new("TABLESPACE_NAME", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "PARTITIONS", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -441,8 +445,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'Plugins'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("PLUGIN_NAME", typeof(string)),
 			new("PLUGIN_VERSION", typeof(string)),
 			new("PLUGIN_STATUS", typeof(string)),
@@ -454,7 +458,7 @@ internal sealed partial class SchemaProvider
 			new("PLUGIN_DESCRIPTION", typeof(string)),
 			new("PLUGIN_LICENSE", typeof(string)),
 			new("LOAD_OPTION", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "PLUGINS", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -465,8 +469,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'Procedures'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("SPECIFIC_NAME", typeof(string)),
 			new("ROUTINE_CATALOG", typeof(string)),
 			new("ROUTINE_SCHEMA", typeof(string)),
@@ -487,7 +491,7 @@ internal sealed partial class SchemaProvider
 			new("SQL_MODE", typeof(string)),
 			new("ROUTINE_COMMENT", typeof(string)),
 			new("DEFINER", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "ROUTINES", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -498,8 +502,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'ProcessList'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("ID", typeof(long)),
 			new("USER", typeof(string)),
 			new("HOST", typeof(string)),
@@ -508,7 +512,7 @@ internal sealed partial class SchemaProvider
 			new("TIME", typeof(int)),
 			new("STATE", typeof(string)),
 			new("INFO", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "PROCESSLIST", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -519,8 +523,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'Profiling'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("QUERY_ID", typeof(int)),
 			new("SEQ", typeof(int)),
 			new("STATE", typeof(string)),
@@ -539,7 +543,7 @@ internal sealed partial class SchemaProvider
 			new("SOURCE_FUNCTION", typeof(string)),
 			new("SOURCE_FILE", typeof(string)),
 			new("SOURCE_LINE", typeof(int)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "PROFILING", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -550,8 +554,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'ReferentialConstraints'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("CONSTRAINT_CATALOG", typeof(string)),
 			new("CONSTRAINT_SCHEMA", typeof(string)),
 			new("CONSTRAINT_NAME", typeof(string)),
@@ -563,7 +567,7 @@ internal sealed partial class SchemaProvider
 			new("DELETE_RULE", typeof(string)),
 			new("TABLE_NAME", typeof(string)),
 			new("REFERENCED_TABLE_NAME", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "REFERENTIAL_CONSTRAINTS", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -574,10 +578,10 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'ReservedWords'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("ReservedWord", typeof(string)),
-		});
+		]);
 
 		DoFillReservedWords(dataTable);
 
@@ -590,14 +594,14 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'ResourceGroups'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("RESOURCE_GROUP_NAME", typeof(string)),
 			new("RESOURCE_GROUP_TYPE", typeof(string)),
 			new("RESOURCE_GROUP_ENABLED", typeof(int)),
 			new("VCPU_IDS", typeof(string)),
 			new("THREAD_PRIORITY", typeof(int)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "RESOURCE_GROUPS", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -608,13 +612,13 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'Restrictions'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("CollectionName", typeof(string)),
 			new("RestrictionName", typeof(string)),
 			new("RestrictionDefault", typeof(string)),
 			new("RestrictionNumber", typeof(int)),
-		});
+		]);
 
 		dataTable.Rows.Add("Columns", "Catalog", "TABLE_CATALOG", 1);
 		dataTable.Rows.Add("Columns", "Schema", "TABLE_SCHEMA", 2);
@@ -634,14 +638,14 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'SchemaPrivileges'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("GRANTEE", typeof(string)),
 			new("TABLE_CATALOG", typeof(string)),
 			new("TABLE_SCHEMA", typeof(string)),
 			new("PRIVILEGE_TYPE", typeof(string)),
 			new("IS_GRANTABLE", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "SCHEMA_PRIVILEGES", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -652,8 +656,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("More than 4 restrictionValues are not supported for schema 'Tables'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("TABLE_CATALOG", typeof(string)),
 			new("TABLE_SCHEMA", typeof(string)),
 			new("TABLE_NAME", typeof(string)),
@@ -675,7 +679,7 @@ internal sealed partial class SchemaProvider
 			new("CHECKSUM", typeof(string)),
 			new("CREATE_OPTIONS", typeof(string)),
 			new("TABLE_COMMENT", typeof(string)),
-		});
+		]);
 
 		var columns = new List<KeyValuePair<string, string>>();
 		if (restrictionValues is not null)
@@ -699,15 +703,15 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'TableConstraints'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("CONSTRAINT_CATALOG", typeof(string)),
 			new("CONSTRAINT_SCHEMA", typeof(string)),
 			new("CONSTRAINT_NAME", typeof(string)),
 			new("TABLE_SCHEMA", typeof(string)),
 			new("TABLE_NAME", typeof(string)),
 			new("CONSTRAINT_TYPE", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "TABLE_CONSTRAINTS", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -718,15 +722,15 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'TablePrivileges'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("GRANTEE", typeof(string)),
 			new("TABLE_CATALOG", typeof(string)),
 			new("TABLE_SCHEMA", typeof(string)),
 			new("TABLE_NAME", typeof(string)),
 			new("PRIVILEGE_TYPE", typeof(string)),
 			new("IS_GRANTABLE", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "TABLE_PRIVILEGES", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -737,8 +741,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'TableSpaces'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("TABLESPACE_NAME", typeof(string)),
 			new("ENGINE", typeof(string)),
 			new("TABLESPACE_TYPE", typeof(string)),
@@ -748,7 +752,7 @@ internal sealed partial class SchemaProvider
 			new("MAXIMUM_SIZE", typeof(long)),
 			new("NODEGROUP_ID", typeof(long)),
 			new("TABLESPACE_COMMENT", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "TABLESPACES", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -759,8 +763,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'Triggers'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("TRIGGER_CATALOG", typeof(string)),
 			new("TRIGGER_SCHEMA", typeof(string)),
 			new("TRIGGER_NAME", typeof(string)),
@@ -783,7 +787,7 @@ internal sealed partial class SchemaProvider
 			new("CHARACTER_SET_CLIENT", typeof(string)),
 			new("COLLATION_CONNECTION", typeof(string)),
 			new("DATABASE_COLLATION", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "TRIGGERS", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -794,13 +798,13 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'UserPrivileges'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("GRANTEE", typeof(string)),
 			new("TABLE_CATALOG", typeof(string)),
 			new("PRIVILEGE_TYPE", typeof(string)),
 			new("IS_GRANTABLE", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "USER_PRIVILEGES", null, cancellationToken).ConfigureAwait(false);
 	}
@@ -811,8 +815,8 @@ internal sealed partial class SchemaProvider
 			throw new ArgumentException("restrictionValues is not supported for schema 'Views'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(new DataColumn[]
-		{
+		dataTable.Columns.AddRange(
+		[
 			new("TABLE_CATALOG", typeof(string)),
 			new("TABLE_SCHEMA", typeof(string)),
 			new("TABLE_NAME", typeof(string)),
@@ -823,7 +827,7 @@ internal sealed partial class SchemaProvider
 			new("SECURITY_TYPE", typeof(string)),
 			new("CHARACTER_SET_CLIENT", typeof(string)),
 			new("COLLATION_CONNECTION", typeof(string)),
-		});
+		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "VIEWS", null, cancellationToken).ConfigureAwait(false);
 	}

@@ -41,7 +41,7 @@ internal sealed partial class ServerSession
 		Pool = pool;
 		PoolGeneration = poolGeneration;
 		HostName = "";
-		m_activityTags = new ActivityTagsCollection();
+		m_activityTags = [];
 		DataReader = new();
 		Log.CreatedNewSession(m_logger, Id);
 	}
@@ -267,7 +267,7 @@ internal sealed partial class ServerSession
 			preparedStatements.Add(new(response.StatementId, statement, columns, parameters));
 		}
 
-		m_preparedStatements ??= new();
+		m_preparedStatements ??= [];
 		m_preparedStatements.Add(commandText, new(preparedStatements, parsedStatements));
 	}
 
@@ -850,7 +850,7 @@ internal sealed partial class ServerSession
 		{
 			// request the RSA public key
 			var payloadContent = switchRequestName == "caching_sha2_password" ? (byte) 0x02 : (byte) 0x01;
-			await SendReplyAsync(new PayloadData(new[] { payloadContent }), ioBehavior, cancellationToken).ConfigureAwait(false);
+			await SendReplyAsync(new PayloadData([ payloadContent ]), ioBehavior, cancellationToken).ConfigureAwait(false);
 			var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload.Span);
 			return Encoding.ASCII.GetString(publicKeyPayload.Data);
@@ -1309,7 +1309,7 @@ internal sealed partial class ServerSession
 						"CertificateFile should be in PKCS #12 (.pfx) format and contain both a Certificate and Private Key");
 				}
 				m_clientCertificate = certificate;
-				clientCertificates = new() { certificate };
+				clientCertificates = [certificate];
 			}
 			catch (CryptographicException ex)
 			{
@@ -1322,7 +1322,7 @@ internal sealed partial class ServerSession
 
 		if (clientCertificates is null && connection.ProvideClientCertificatesCallback is { } clientCertificatesProvider)
 		{
-			clientCertificates = new();
+			clientCertificates = [];
 			try
 			{
 				await clientCertificatesProvider(clientCertificates).ConfigureAwait(false);
@@ -1456,8 +1456,10 @@ internal sealed partial class ServerSession
 		};
 
 #if NETCOREAPP3_0_OR_GREATER
+#pragma warning disable CA1416 // Validate platform compatibility
 		if (cs.TlsCipherSuites is { Count: > 0 })
 			clientAuthenticationOptions.CipherSuitesPolicy = new CipherSuitesPolicy(cs.TlsCipherSuites);
+#pragma warning restore CA1416 // Validate platform compatibility
 #endif
 
 		try
@@ -1530,7 +1532,7 @@ internal sealed partial class ServerSession
 				m_clientCertificate = new X509Certificate2(m_clientCertificate.Export(X509ContentType.Pkcs12));
 				oldCertificate.Dispose();
 			}
-			return new() { m_clientCertificate };
+			return [m_clientCertificate];
 #else
 			Log.LoadingClientKeyFromKeyFile(m_logger, Id, sslKeyFile);
 			string keyPem;
@@ -1588,7 +1590,7 @@ internal sealed partial class ServerSession
 #endif
 
 				m_clientCertificate = certificate;
-				return new() { certificate };
+				return [certificate];
 			}
 			catch (CryptographicException ex)
 			{
@@ -1622,7 +1624,7 @@ internal sealed partial class ServerSession
 			return true;
 
 		// detect Azure Database for MySQL DNS suffixes, if a "user@host" user ID is being used
-		if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets && cs.UserID.IndexOf('@') != -1)
+		if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets && cs.UserID.Contains('@'))
 		{
 			return HostName.EndsWith(".mysql.database.azure.com", StringComparison.OrdinalIgnoreCase) ||
 				HostName.EndsWith(".database.windows.net", StringComparison.OrdinalIgnoreCase) ||
@@ -1810,7 +1812,7 @@ internal sealed partial class ServerSession
 		return payload.Memory.ToArray();
 	}
 
-	private Exception CreateExceptionForErrorPayload(ReadOnlySpan<byte> span)
+	private MySqlException CreateExceptionForErrorPayload(ReadOnlySpan<byte> span)
 	{
 		var errorPayload = ErrorPayload.Create(span);
 		Log.ErrorPayload(m_logger, Id, errorPayload.ErrorCode, errorPayload.State, errorPayload.Message);
@@ -1882,23 +1884,18 @@ internal sealed partial class ServerSession
 		Failed,
 	}
 
-	private sealed class DelimiterSqlParser : SqlParser
+	private sealed class DelimiterSqlParser(IMySqlCommand command)
+		: SqlParser(new StatementPreparer(command.CommandText!, null, command.CreateStatementPreparerOptions()))
 	{
-		public DelimiterSqlParser(IMySqlCommand command)
-			: base(new StatementPreparer(command.CommandText!, null, command.CreateStatementPreparerOptions()))
-		{
-			m_sql = command.CommandText!;
-		}
-
 		public bool HasDelimiter { get; private set; }
 
 		protected override void OnStatementBegin(int index)
 		{
-			if (index + 10 < m_sql.Length && m_sql.AsSpan(index, 10).Equals("delimiter ".AsSpan(), StringComparison.OrdinalIgnoreCase))
+			if (index + 10 < Sql.Length && Sql.AsSpan(index, 10).Equals("delimiter ".AsSpan(), StringComparison.OrdinalIgnoreCase))
 				HasDelimiter = true;
 		}
 
-		private readonly string m_sql;
+		private string Sql { get; } = command.CommandText!;
 	}
 
 	[LoggerMessage(EventIds.CannotExecuteNewCommandInState, LogLevel.Error, "Session {SessionId} can't execute new command when in state {SessionState}")]

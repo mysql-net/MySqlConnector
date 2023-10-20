@@ -9,6 +9,18 @@ public class BatchTests : IClassFixture<DatabaseFixture>
 	}
 
 	[Fact]
+	public void CanCreateParameter()
+	{
+		Assert.True(new MySqlBatchCommand().CanCreateParameter);
+	}
+
+	[Fact]
+	public void CreateParameter()
+	{
+		Assert.IsType<MySqlParameter>(new MySqlBatchCommand().CreateParameter());
+	}
+
+	[Fact]
 	public void NeedsConnection()
 	{
 		using var batch = new MySqlBatch

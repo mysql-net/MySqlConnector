@@ -12,49 +12,35 @@ internal interface IValuesEnumerator
 	void GetValues(object[] values);
 }
 
-internal sealed class DbDataReaderValuesEnumerator : IValuesEnumerator
+internal sealed class DbDataReaderValuesEnumerator(DbDataReader dataReader) : IValuesEnumerator
 {
-	public DbDataReaderValuesEnumerator(DbDataReader dataReader) => m_dataReader = dataReader;
+	public int FieldCount => dataReader.FieldCount;
 
-	public int FieldCount => m_dataReader.FieldCount;
+	public ValueTask<bool> MoveNextAsync() => new(dataReader.ReadAsync());
 
-	public ValueTask<bool> MoveNextAsync() => new ValueTask<bool>(m_dataReader.ReadAsync());
+	public bool MoveNext() => dataReader.Read();
 
-	public bool MoveNext() => m_dataReader.Read();
-
-	public void GetValues(object[] values) => m_dataReader.GetValues(values);
-
-	private readonly DbDataReader m_dataReader;
+	public void GetValues(object[] values) => dataReader.GetValues(values);
 }
 
-internal sealed class DataReaderValuesEnumerator : IValuesEnumerator
+internal sealed class DataReaderValuesEnumerator(IDataReader dataReader) : IValuesEnumerator
 {
 	public static IValuesEnumerator Create(IDataReader dataReader) => dataReader is DbDataReader dbDataReader ? (IValuesEnumerator) new DbDataReaderValuesEnumerator(dbDataReader) : new DataReaderValuesEnumerator(dataReader);
 
-	public DataReaderValuesEnumerator(IDataReader dataReader) => m_dataReader = dataReader;
-
-	public int FieldCount => m_dataReader.FieldCount;
+	public int FieldCount => dataReader.FieldCount;
 
 	public ValueTask<bool> MoveNextAsync() => new(MoveNext());
 
-	public bool MoveNext() => m_dataReader.Read();
+	public bool MoveNext() => dataReader.Read();
 
-	public void GetValues(object[] values) => m_dataReader.GetValues(values);
-
-	private readonly IDataReader m_dataReader;
+	public void GetValues(object[] values) => dataReader.GetValues(values);
 }
 
-internal sealed class DataRowsValuesEnumerator : IValuesEnumerator
+internal sealed class DataRowsValuesEnumerator(IEnumerable<DataRow> dataRows, int columnCount) : IValuesEnumerator
 {
 	public static IValuesEnumerator Create(DataTable dataTable) => new DataRowsValuesEnumerator(dataTable.Rows.Cast<DataRow>().Where(static x => x is not null).Select(static x => x!), dataTable.Columns.Count);
 
-	public DataRowsValuesEnumerator(IEnumerable<DataRow> dataRows, int columnCount)
-	{
-		m_dataRows = dataRows.GetEnumerator();
-		FieldCount = columnCount;
-	}
-
-	public int FieldCount { get; }
+	public int FieldCount { get; } = columnCount;
 
 	public ValueTask<bool> MoveNextAsync() => new(MoveNext());
 
@@ -73,5 +59,5 @@ internal sealed class DataRowsValuesEnumerator : IValuesEnumerator
 			values[i] = row[i];
 	}
 
-	private readonly IEnumerator<DataRow> m_dataRows;
+	private readonly IEnumerator<DataRow> m_dataRows = dataRows.GetEnumerator();
 }

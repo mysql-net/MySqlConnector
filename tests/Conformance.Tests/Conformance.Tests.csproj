@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
  <PropertyGroup>
-    <TargetFrameworks>net7.0</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <VersionPrefix>0.1.0</VersionPrefix>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
@@ -11,10 +11,10 @@
   </PropertyGroup>
 
  <ItemGroup>
-    <PackageReference Include="AdoNet.Specification.Tests" Version="2.0.0-beta.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
-    <PackageReference Include="xunit" Version="2.5.3" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3">
+    <PackageReference Include="AdoNet.Specification.Tests" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

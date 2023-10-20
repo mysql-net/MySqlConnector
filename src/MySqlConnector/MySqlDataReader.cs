@@ -347,7 +347,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	{
 		var hasNoSchema = !m_resultSet.HasResultSet || m_resultSet.ContainsCommandParameters;
 		if (hasNoSchema)
-			return new ReadOnlyCollection<DbColumn>(Array.Empty<DbColumn>());
+			return new ReadOnlyCollection<DbColumn>([]);
 
 		var columnDefinitions = m_resultSet.ColumnDefinitions;
 		var resultSet = GetResultSet();
