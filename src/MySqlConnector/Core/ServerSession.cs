@@ -1258,7 +1258,7 @@ internal sealed partial class ServerSession
 			try
 			{
 				var storeLocation = (cs.CertificateStoreLocation == MySqlCertificateStoreLocation.CurrentUser) ? StoreLocation.CurrentUser : StoreLocation.LocalMachine;
-				var store = new X509Store(StoreName.My, storeLocation);
+				using var store = new X509Store(StoreName.My, storeLocation);
 				store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
 
 				if (cs.CertificateThumbprint.Length == 0)
@@ -1745,7 +1745,7 @@ internal sealed partial class ServerSession
 	{
 		if (m_state != state1 && m_state != state2 && m_state != state3 && m_state != state4 && m_state != state5 && m_state != state6)
 		{
-			ExpectedSessionState6(m_logger, Id, state1, state2, state3, state4, state5, state5, m_state);
+			ExpectedSessionState6(m_logger, Id, state1, state2, state3, state4, state5, state6, m_state);
 			throw new InvalidOperationException($"Expected state to be ({state1}|{state2}|{state3}|{state4}|{state5}|{state6}) but was {m_state}.");
 		}
 	}

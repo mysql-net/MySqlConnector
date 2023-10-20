@@ -24,6 +24,7 @@
     <ThreadPoolMinThreads>64</ThreadPoolMinThreads>
     <LangVersion>11.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>$(NoWarn);xUnit1030</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
