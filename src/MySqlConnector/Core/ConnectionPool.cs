@@ -741,29 +741,19 @@ internal sealed class ConnectionPool : IDisposable
 		}
 	}
 
-	private sealed class LeastConnectionsLoadBalancer : ILoadBalancer
+	private sealed class LeastConnectionsLoadBalancer(Dictionary<string, int> hostSessions) : ILoadBalancer
 	{
-		public LeastConnectionsLoadBalancer(Dictionary<string, int> hostSessions) => m_hostSessions = hostSessions;
-
 		public IReadOnlyList<string> LoadBalance(IReadOnlyList<string> hosts)
 		{
-			lock (m_hostSessions)
-				return m_hostSessions.OrderBy(static x => x.Value).Select(static x => x.Key).ToList();
+			lock (hostSessions)
+				return hostSessions.OrderBy(static x => x.Value).Select(static x => x.Key).ToList();
 		}
-
-		private readonly Dictionary<string, int> m_hostSessions;
 	}
 
-	private sealed class ConnectionStringPool
+	private sealed class ConnectionStringPool(string connectionString, ConnectionPool? pool)
 	{
-		public ConnectionStringPool(string connectionString, ConnectionPool? pool)
-		{
-			ConnectionString = connectionString;
-			Pool = pool;
-		}
-
-		public string ConnectionString { get; }
-		public ConnectionPool? Pool { get; }
+		public string ConnectionString { get; } = connectionString;
+		public ConnectionPool? Pool { get; } = pool;
 	}
 
 	static ConnectionPool()

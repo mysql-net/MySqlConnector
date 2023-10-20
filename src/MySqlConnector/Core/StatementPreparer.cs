@@ -53,14 +53,9 @@ internal sealed class StatementPreparer(string commandText, MySqlParameterCollec
 		return parameter;
 	}
 
-	private sealed class ParameterSqlParser : SqlParser
+	private sealed class ParameterSqlParser(StatementPreparer preparer, ByteBufferWriter writer)
+		: SqlParser(preparer)
 	{
-		public ParameterSqlParser(StatementPreparer preparer, ByteBufferWriter writer)
-			: base(preparer)
-		{
-			m_writer = writer;
-		}
-
 		public bool IsComplete { get; private set; }
 
 		protected override void OnNamedParameter(int index, int length)
@@ -78,42 +73,36 @@ internal sealed class StatementPreparer(string commandText, MySqlParameterCollec
 
 		private void DoAppendParameter(int parameterIndex, int textIndex, int textLength)
 		{
-			m_writer.Write(Preparer.CommandText, m_lastIndex, textIndex - m_lastIndex);
+			Writer.Write(Preparer.CommandText, m_lastIndex, textIndex - m_lastIndex);
 			var parameter = Preparer.GetInputParameter(parameterIndex);
-			parameter.AppendSqlString(m_writer, Preparer.Options);
+			parameter.AppendSqlString(Writer, Preparer.Options);
 			m_lastIndex = textIndex + textLength;
 		}
 
 		protected override void OnParsed(FinalParseStates states)
 		{
-			m_writer.Write(Preparer.CommandText, m_lastIndex, Preparer.CommandText.Length - m_lastIndex);
+			Writer.Write(Preparer.CommandText, m_lastIndex, Preparer.CommandText.Length - m_lastIndex);
 			if ((states & FinalParseStates.NeedsNewline) == FinalParseStates.NeedsNewline)
-				m_writer.Write((byte) '\n');
+				Writer.Write((byte) '\n');
 			if ((states & FinalParseStates.NeedsSemicolon) == FinalParseStates.NeedsSemicolon && (Preparer.Options & StatementPreparerOptions.AppendSemicolon) == StatementPreparerOptions.AppendSemicolon)
-				m_writer.Write((byte) ';');
+				Writer.Write((byte) ';');
 			IsComplete = (states & FinalParseStates.Complete) == FinalParseStates.Complete;
 		}
 
-		private readonly ByteBufferWriter m_writer;
+		private ByteBufferWriter Writer { get; } = writer;
+
 		private int m_currentParameterIndex;
 		private int m_lastIndex;
 	}
 
-	private sealed class PreparedCommandSqlParser : SqlParser
+	private sealed class PreparedCommandSqlParser(StatementPreparer preparer, List<ParsedStatement> statements, List<int> statementStartEndIndexes, ByteBufferWriter writer)
+		: SqlParser(preparer)
 	{
-		public PreparedCommandSqlParser(StatementPreparer preparer, List<ParsedStatement> statements, List<int> statementStartEndIndexes, ByteBufferWriter writer)
-			: base(preparer)
-		{
-			m_statements = statements;
-			m_statementStartEndIndexes = statementStartEndIndexes;
-			m_writer = writer;
-		}
-
 		protected override void OnStatementBegin(int index)
 		{
-			m_statements.Add(new ParsedStatement());
-			m_statementStartEndIndexes.Add(m_writer.Position);
-			m_writer.Write((byte) CommandKind.StatementPrepare);
+			Statements.Add(new ParsedStatement());
+			StatementStartEndIndexes.Add(Writer.Position);
+			Writer.Write((byte) CommandKind.StatementPrepare);
 			m_lastIndex = index;
 		}
 
@@ -132,28 +121,29 @@ internal sealed class StatementPreparer(string commandText, MySqlParameterCollec
 		private void DoAppendParameter(string? parameterName, int parameterIndex, int textIndex, int textLength)
 		{
 			// write all SQL up to the parameter
-			m_writer.Write(Preparer.CommandText, m_lastIndex, textIndex - m_lastIndex);
+			Writer.Write(Preparer.CommandText, m_lastIndex, textIndex - m_lastIndex);
 			m_lastIndex = textIndex + textLength;
 
 			// replace the parameter with a ? placeholder
-			m_writer.Write((byte) '?');
+			Writer.Write((byte) '?');
 
 			// store the parameter index
-			m_statements[m_statements.Count - 1].ParameterNames.Add(parameterName);
-			m_statements[m_statements.Count - 1].NormalizedParameterNames.Add(parameterName == null ? null : MySqlParameter.NormalizeParameterName(parameterName));
-			m_statements[m_statements.Count - 1].ParameterIndexes.Add(parameterIndex);
+			Statements[Statements.Count - 1].ParameterNames.Add(parameterName);
+			Statements[Statements.Count - 1].NormalizedParameterNames.Add(parameterName == null ? null : MySqlParameter.NormalizeParameterName(parameterName));
+			Statements[Statements.Count - 1].ParameterIndexes.Add(parameterIndex);
 		}
 
 		protected override void OnStatementEnd(int index)
 		{
-			m_writer.Write(Preparer.CommandText, m_lastIndex, index - m_lastIndex);
+			Writer.Write(Preparer.CommandText, m_lastIndex, index - m_lastIndex);
 			m_lastIndex = index;
-			m_statementStartEndIndexes.Add(m_writer.Position);
+			StatementStartEndIndexes.Add(Writer.Position);
 		}
 
-		private readonly List<ParsedStatement> m_statements;
-		private readonly List<int> m_statementStartEndIndexes;
-		private readonly ByteBufferWriter m_writer;
+		private List<ParsedStatement> Statements { get; } = statements;
+		private List<int> StatementStartEndIndexes { get; } = statementStartEndIndexes;
+		private ByteBufferWriter Writer { get; } = writer;
+
 		private int m_currentParameterIndex;
 		private int m_lastIndex;
 	}

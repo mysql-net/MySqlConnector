@@ -2,11 +2,9 @@
 
 namespace MySqlConnector.Core;
 
-internal abstract class SqlParser
+internal abstract class SqlParser(StatementPreparer preparer)
 {
-	protected StatementPreparer Preparer { get; }
-
-	protected SqlParser(StatementPreparer preparer) => Preparer = preparer;
+	protected StatementPreparer Preparer { get; } = preparer;
 
 	public void Parse(string sql)
 	{

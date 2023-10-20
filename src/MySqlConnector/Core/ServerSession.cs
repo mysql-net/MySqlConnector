@@ -1884,23 +1884,18 @@ internal sealed partial class ServerSession
 		Failed,
 	}
 
-	private sealed class DelimiterSqlParser : SqlParser
+	private sealed class DelimiterSqlParser(IMySqlCommand command)
+		: SqlParser(new StatementPreparer(command.CommandText!, null, command.CreateStatementPreparerOptions()))
 	{
-		public DelimiterSqlParser(IMySqlCommand command)
-			: base(new StatementPreparer(command.CommandText!, null, command.CreateStatementPreparerOptions()))
-		{
-			m_sql = command.CommandText!;
-		}
-
 		public bool HasDelimiter { get; private set; }
 
 		protected override void OnStatementBegin(int index)
 		{
-			if (index + 10 < m_sql.Length && m_sql.AsSpan(index, 10).Equals("delimiter ".AsSpan(), StringComparison.OrdinalIgnoreCase))
+			if (index + 10 < Sql.Length && Sql.AsSpan(index, 10).Equals("delimiter ".AsSpan(), StringComparison.OrdinalIgnoreCase))
 				HasDelimiter = true;
 		}
 
-		private readonly string m_sql;
+		private string Sql { get; } = command.CommandText!;
 	}
 
 	[LoggerMessage(EventIds.CannotExecuteNewCommandInState, LogLevel.Error, "Session {SessionId} can't execute new command when in state {SessionState}")]
