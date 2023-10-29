@@ -1,11 +1,10 @@
-#if METRICS_TESTS
 #nullable enable
 
 namespace MySqlConnector.Tests.Metrics;
 
 public class ConnectionsUsageTests : MetricsTestsBase
 {
-    [Fact]
+    [Fact(Skip = MetricsSkip)]
 	public void NamedDataSource()
     {
 		PoolName = "metrics-test";
@@ -59,7 +58,7 @@ public class ConnectionsUsageTests : MetricsTestsBase
 		Assert.Equal(2, Server.ActiveConnections);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public void NamedDataSourceWithMinPoolSize()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -92,7 +91,7 @@ public class ConnectionsUsageTests : MetricsTestsBase
 		Assert.Equal(3, Server.ActiveConnections);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public void UnnamedDataSource()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -149,7 +148,7 @@ public class ConnectionsUsageTests : MetricsTestsBase
 		Assert.Equal(2, Server.ActiveConnections);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public void NoDataSource()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -207,7 +206,7 @@ public class ConnectionsUsageTests : MetricsTestsBase
 		Assert.Equal(2, Server.ActiveConnections);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public async Task PendingRequestForCreation()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -224,7 +223,7 @@ public class ConnectionsUsageTests : MetricsTestsBase
 		AssertMeasurement("db.client.connections.pending_requests", 0);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public async Task PendingRequestForOpenFromPool()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -244,4 +243,3 @@ public class ConnectionsUsageTests : MetricsTestsBase
 		AssertMeasurement("db.client.connections.pending_requests", 0);
 	}
 }
-#endif

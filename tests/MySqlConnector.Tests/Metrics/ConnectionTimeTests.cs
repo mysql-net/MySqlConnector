@@ -1,9 +1,8 @@
-#if METRICS_TESTS
 namespace MySqlConnector.Tests.Metrics;
 
 public class ConnectionTimeTests : MetricsTestsBase
 {
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public async Task ConnectionTime()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -15,7 +14,7 @@ public class ConnectionTimeTests : MetricsTestsBase
 		Assert.InRange(time, 0, 300);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public async Task ConnectionTimeWithDelay()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -29,7 +28,7 @@ public class ConnectionTimeTests : MetricsTestsBase
 		Assert.InRange(time, 1000, 1300);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public async Task OpenFromPoolTime()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -45,7 +44,7 @@ public class ConnectionTimeTests : MetricsTestsBase
 		Assert.InRange(time, 0, 200);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public async Task OpenFromPoolTimeWithDelay()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -62,7 +61,7 @@ public class ConnectionTimeTests : MetricsTestsBase
 		Assert.InRange(time, 1000, 1200);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public async Task UseTime()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -76,7 +75,7 @@ public class ConnectionTimeTests : MetricsTestsBase
 		Assert.InRange(time, 0, 100);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public async Task UseTimeWithDelay()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -91,4 +90,3 @@ public class ConnectionTimeTests : MetricsTestsBase
 		Assert.InRange(time, 500, 600);
 	}
 }
-#endif

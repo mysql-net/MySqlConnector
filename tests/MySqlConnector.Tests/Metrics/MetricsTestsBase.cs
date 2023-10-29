@@ -76,6 +76,12 @@ public abstract class MetricsTestsBase : IDisposable
 		return list;
 	}
 
+#if NO_METRICS_TESTS
+	protected const string MetricsSkip = "Metrics tests are skipped";
+#else
+	protected const string MetricsSkip = null;
+#endif
+
 	private void OnMeasurementRecorded(Instrument instrument, int measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state)
 	{
 		var (poolName, stateTag) = GetTags(tags);

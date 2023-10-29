@@ -1,11 +1,10 @@
-#if METRICS_TESTS
 #nullable enable
 
 namespace MySqlConnector.Tests.Metrics;
 
 public class MinMaxConnectionsTests : MetricsTestsBase
 {
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public void SetsMinimumIdleToDefault()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -19,7 +18,7 @@ public class MinMaxConnectionsTests : MetricsTestsBase
 		AssertMeasurement("db.client.connections.idle.min", 0);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public void SetsMaximumIdleToDefault()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -33,7 +32,7 @@ public class MinMaxConnectionsTests : MetricsTestsBase
 		AssertMeasurement("db.client.connections.idle.max", 100);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public void SetsMaximumToDefault()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -47,7 +46,7 @@ public class MinMaxConnectionsTests : MetricsTestsBase
 		AssertMeasurement("db.client.connections.max", 100);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public void SetsMinimumIdleToCustom()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -66,7 +65,7 @@ public class MinMaxConnectionsTests : MetricsTestsBase
 		AssertMeasurement("db.client.connections.idle.min", 0);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public void SetsMaximumIdleToCustom()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -85,7 +84,7 @@ public class MinMaxConnectionsTests : MetricsTestsBase
 		AssertMeasurement("db.client.connections.idle.max", 0);
 	}
 
-	[Fact]
+	[Fact(Skip = MetricsSkip)]
 	public void SetsMaximumToCustom()
 	{
 		var csb = CreateConnectionStringBuilder();
@@ -104,4 +103,3 @@ public class MinMaxConnectionsTests : MetricsTestsBase
 		AssertMeasurement("db.client.connections.max", 0);
 	}
 }
-#endif
