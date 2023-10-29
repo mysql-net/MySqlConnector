@@ -56,6 +56,14 @@ public abstract class MetricsTestsBase : IDisposable
 
 	protected void AssertMeasurement(string name, int expected)
 	{
+		// clear cached measurements from observable counters
+		lock (m_measurements)
+		{
+			m_measurements.Remove("db.client.connections.idle.max");
+			m_measurements.Remove("db.client.connections.idle.min");
+			m_measurements.Remove("db.client.connections.max");
+		}
+		m_meterListener.RecordObservableInstruments();
 		lock (m_measurements)
 			Assert.Equal(expected, m_measurements.GetValueOrDefault(name));
 	}

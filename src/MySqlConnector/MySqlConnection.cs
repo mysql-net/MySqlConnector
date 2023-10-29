@@ -896,7 +896,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	private async ValueTask<ServerSession> CreateSessionAsync(ConnectionPool? pool, int startTickCount, Activity? activity, IOBehavior? ioBehavior, CancellationToken cancellationToken)
 	{
-		pool?.AddPendingRequestCount(1);
+		MetricsReporter.AddPendingRequest(pool);
 		var connectionSettings = GetInitializedConnectionSettings();
 		var actualIOBehavior = ioBehavior ?? (connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous);
 
@@ -950,7 +950,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 		finally
 		{
-			pool?.AddPendingRequestCount(-1);
+			MetricsReporter.RemovePendingRequest(pool);
 			linkedSource?.Dispose();
 			timeoutSource?.Dispose();
 		}
