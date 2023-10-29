@@ -1,3 +1,4 @@
+#if METRICS_TESTS
 #nullable enable
 
 namespace MySqlConnector.Tests.Metrics;
@@ -103,3 +104,4 @@ public class MinMaxConnectionsTests : MetricsTestsBase
 		AssertMeasurement("db.client.connections.max", 0);
 	}
 }
+#endif

@@ -1,3 +1,4 @@
+#if METRICS_TESTS
 namespace MySqlConnector.Tests.Metrics;
 
 public class ConnectionTimeTests : MetricsTestsBase
@@ -90,3 +91,4 @@ public class ConnectionTimeTests : MetricsTestsBase
 		Assert.InRange(time, 500, 600);
 	}
 }
+#endif

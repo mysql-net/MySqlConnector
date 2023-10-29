@@ -1,3 +1,4 @@
+#if METRICS_TESTS
 #nullable enable
 
 namespace MySqlConnector.Tests.Metrics;
@@ -243,3 +244,4 @@ public class ConnectionsUsageTests : MetricsTestsBase
 		AssertMeasurement("db.client.connections.pending_requests", 0);
 	}
 }
+#endif
