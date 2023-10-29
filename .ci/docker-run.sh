@@ -31,7 +31,7 @@ fi
 if [[ "$IMAGE" == mariadb* ]]; then
   MYSQL_EXTRA='--in-predicate-conversion-threshold=100000'
 fi
-if [ "$IMAGE" == "mariadb:11.0" ]; then
+if [ "$IMAGE" == "mariadb:11.1" ]; then
   MYSQL='mariadb'
 fi
 
