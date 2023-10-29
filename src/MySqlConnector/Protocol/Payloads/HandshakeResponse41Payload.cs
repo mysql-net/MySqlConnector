@@ -28,7 +28,6 @@ internal static class HandshakeResponse41Payload
 			ProtocolCapabilities.SessionTrack |
 			ProtocolCapabilities.DeprecateEof |
 			ProtocolCapabilities.QueryAttributes |
-			ProtocolCapabilities.MariaDbComMulti |
 			ProtocolCapabilities.MariaDbCacheMetadata |
 			additionalCapabilities) & serverCapabilities;
 

@@ -160,8 +160,7 @@ public sealed class MySqlBatch :
 		foreach (MySqlBatchCommand batchCommand in BatchCommands)
 			batchCommand.Batch = this;
 
-		var payloadCreator = Connection!.Session.SupportsComMulti ? BatchedCommandPayloadCreator.Instance :
-			IsPrepared ? SingleCommandPayloadCreator.Instance :
+		var payloadCreator = IsPrepared ? SingleCommandPayloadCreator.Instance :
 			ConcatenatedCommandPayloadCreator.Instance;
 		return CommandExecutor.ExecuteReaderAsync(new(BatchCommands!.Commands), payloadCreator, behavior, default, ioBehavior, cancellationToken);
 	}

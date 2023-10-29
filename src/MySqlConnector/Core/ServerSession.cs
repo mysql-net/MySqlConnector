@@ -62,7 +62,6 @@ internal sealed partial class ServerSession
 	public IPEndPoint? IPEndPoint => m_tcpClient?.Client.RemoteEndPoint as IPEndPoint;
 	public string? UserID { get; private set; }
 	public WeakReference<MySqlConnection>? OwningConnection { get; set; }
-	public bool SupportsComMulti => m_supportsComMulti;
 	public bool SupportsDeprecateEof => m_supportsDeprecateEof;
 	public bool SupportsCachedPreparedMetadata { get; private set; }
 	public bool SupportsQueryAttributes { get; private set; }
@@ -485,7 +484,6 @@ internal sealed partial class ServerSession
 						activity.SetTag(ActivitySourceHelper.DatabaseConnectionIdTagName, connectionId);
 				}
 
-				m_supportsComMulti = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.MariaDbComMulti) != 0;
 				m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
 				m_supportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
 				SupportsCachedPreparedMetadata = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.MariaDbCacheMetadata) != 0;
@@ -1933,7 +1931,6 @@ internal sealed partial class ServerSession
 	private IPayloadHandler? m_payloadHandler;
 	private bool m_useCompression;
 	private bool m_isSecureConnection;
-	private bool m_supportsComMulti;
 	private bool m_supportsConnectionAttributes;
 	private bool m_supportsDeprecateEof;
 	private bool m_supportsSessionTrack;

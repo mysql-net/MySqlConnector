@@ -223,29 +223,6 @@ public class BatchTests : IClassFixture<DatabaseFixture>
 		Assert.Equal(16, total);
 	}
 
-	[Fact(Skip = "COM_MULTI")]
-	public void ExecuteInvalidSqlBatch()
-	{
-		using var connection = new MySqlConnection(AppConfig.ConnectionString);
-		connection.Open();
-		using var batch = new MySqlBatch(connection)
-		{
-			BatchCommands =
-			{
-				new MySqlBatchCommand("SELECT 1;"),
-				new MySqlBatchCommand("SELECT 2 /* incomplete"),
-				new MySqlBatchCommand("SELECT 3;"),
-			},
-		};
-		using var reader = batch.ExecuteReader();
-		Assert.True(reader.Read());
-		Assert.Equal(1, reader.GetInt32(0));
-		Assert.False(reader.Read());
-
-		var ex = Assert.Throws<MySqlException>(() => reader.NextResult());
-		Assert.Equal(MySqlErrorCode.ParseError, ex.ErrorCode);
-	}
-
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]

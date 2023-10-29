@@ -519,50 +519,6 @@ create table cancel_completed_command(id integer not null primary key, value tex
 		Assert.InRange(rows, 0, 10000000);
 	}
 
-	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout, Skip = "COM_MULTI")]
-	public void CancelMultiCommandBatchReader()
-	{
-		using var barrier = new Barrier(2);
-		using var batch = new MySqlBatch(m_database.Connection)
-		{
-			BatchCommands =
-			{
-				new MySqlBatchCommand(c_hugeQuery),
-				new MySqlBatchCommand(c_hugeQuery),
-				new MySqlBatchCommand(c_hugeQuery),
-			},
-		};
-		var task = Task.Run(() =>
-		{
-			barrier.SignalAndWait();
-			batch.Cancel();
-		});
-
-		int rows = 0;
-		using (var reader = batch.ExecuteReader())
-		{
-			Assert.True(reader.Read());
-
-			barrier.SignalAndWait();
-			try
-			{
-				while (reader.Read())
-					rows++;
-			}
-			catch (MySqlException ex)
-			{
-				Assert.Equal(MySqlErrorCode.QueryInterrupted, ex.ErrorCode);
-			}
-
-			// query returns 25 billion rows; we shouldn't have read many of them
-			Assert.InRange(rows, 0, 10000000);
-
-			Assert.False(reader.NextResult());
-		}
-
-		task.Wait(); // shouldn't throw
-	}
-
 	[Fact]
 	public async Task CancelBatchWithTokenBeforeExecuteScalar()
 	{
@@ -688,41 +644,6 @@ create table cancel_completed_command (
 		Assert.False(reader.NextResult());
 	}
 
-	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout, Skip = "COM_MULTI")]
-	public async Task CancelHugeQueryBatchWithTokenInNextResult()
-	{
-		using var batch = new MySqlBatch(m_database.Connection)
-		{
-			BatchCommands =
-			{
-				new MySqlBatchCommand(c_hugeQuery),
-				new MySqlBatchCommand("select 1, 2, 3;"),
-			},
-		};
-		using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5));
-		using var reader = await batch.ExecuteReaderAsync(cts.Token);
-
-		// read first result set
-		Assert.True(await reader.ReadAsync(cts.Token));
-
-		try
-		{
-			// skip to the next result set
-			Assert.True(await reader.NextResultAsync(cts.Token));
-
-			// shouldn't get here
-			Assert.True(false);
-		}
-		catch (OperationCanceledException ex)
-		{
-			Assert.Equal(cts.Token, ex.CancellationToken);
-		}
-
-		// no more result sets
-		Assert.False(reader.Read());
-		Assert.False(reader.NextResult());
-	}
-
 	[SkippableFact(ServerFeatures.Timeout)]
 	public async Task CancelSlowQueryBatchWithTokenAfterExecuteReader()
 	{
@@ -795,39 +716,6 @@ create table cancel_completed_command (
 		}
 
 		Assert.False(await reader.NextResultAsync());
-	}
-
-	[SkippableFact(ServerFeatures.StreamingResults | ServerFeatures.Timeout, Skip = "COM_MULTI")]
-	public async Task CancelMultiStatementBatchInRead()
-	{
-		using var batch = new MySqlBatch(m_database.Connection)
-		{
-			BatchCommands =
-			{
-				new MySqlBatchCommand(c_hugeQuery),
-				new MySqlBatchCommand(c_hugeQuery),
-				new MySqlBatchCommand(c_hugeQuery),
-			},
-		};
-		using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(0.5));
-		using var reader = await batch.ExecuteReaderAsync();
-		var rows = 0;
-		try
-		{
-			while (await reader.ReadAsync(cts.Token))
-				rows++;
-
-			Assert.True(false);
-		}
-		catch (OperationCanceledException ex)
-		{
-			Assert.Equal(cts.Token, ex.CancellationToken);
-			Assert.InRange(rows, 0, 10000000);
-		}
-
-		// no more result sets; the whole command was cancelled
-		Assert.False(reader.Read());
-		Assert.False(reader.NextResult());
 	}
 #endif
 
