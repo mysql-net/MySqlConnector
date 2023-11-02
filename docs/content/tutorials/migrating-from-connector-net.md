@@ -41,7 +41,7 @@ In a .NET Framework application, make the following `app.config` change to regis
     <!-- add name="MySQL Data Provider"
       invariant="MySql.Data.MySqlClient"
       description=".Net Framework Data Provider for MySQL"
-      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=8.1.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
+      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=8.2.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
 
     <!-- ADD THIS -->
     <add name="MySqlConnector"
@@ -324,9 +324,9 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#109682](https://bugs.mysql.com/bug.php?id=109682): `MySqlParameter.Clone` loses specific `MySqlDbType`.~~
 * ~~[#109683](https://bugs.mysql.com/bug.php?id=109683): `MySqlCommand.LastInsertedId` is incorrect if multiple rows are inserted.~~
 * ~~[#109716](https://bugs.mysql.com/bug.php?id=109716), [#109727](https://bugs.mysql.com/bug.php?id=109727): Failed to add reference to 'comerr64'~~
-* [#110717](https://bugs.mysql.com/bug.php?id=110717), [#111759](https://bugs.mysql.com/bug.php?id=111759): MySql.Data is not thread-safe
+* ~~[#110717](https://bugs.mysql.com/bug.php?id=110717), [#111759](https://bugs.mysql.com/bug.php?id=111759): MySql.Data is not thread-safe~~
 * [#110789](https://bugs.mysql.com/bug.php?id=110789): `OpenAsync` throws unhandled exception from thread pool
 * [#110790](https://bugs.mysql.com/bug.php?id=110790): `ExecuteReaderAsync` hangs instead of cancelling query after `CommandTimeout`
 * [#110791](https://bugs.mysql.com/bug.php?id=110791): `OpenAsync(CancellationToken)` doesn't throw for cancelled token
-* [#110797](https://bugs.mysql.com/bug.php?id=110797): Certain sequence of special characters can break connection string validation.
+* [#111797](https://bugs.mysql.com/bug.php?id=111797): Certain sequence of special characters can break connection string validation.
 * [#112088](https://bugs.mysql.com/bug.php?id=112088): `BIT(n)` parameter size incorrectly returns 0
