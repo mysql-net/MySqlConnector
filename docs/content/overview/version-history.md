@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-07-30
+lastmod: 2023-11-04
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,23 @@ weight: 30
 ---
 
 # Version History
+
+### 2.3.0 Beta 4
+
+* Support .NET 8.0.
+  * Mark some serialization APIs as `[Obsolete]`.
+  * Implement `DbBatchCommand.CreateParameter`: [#1352](https://github.com/mysql-net/MySqlConnector/issues/1352).
+  * Optimizations: Use `IUtf8SpanFormattable`, `Ascii.FromUtf16`, `Guid(bigEndian: true)` constructor, argument-throwing helpers, etc.
+* Expose connection pool metrics: [#491](https://github.com/mysql-net/MySqlConnector/issues/491).
+* Support .NET Framework 4.8 (`net48`) TFM: [#1355](https://github.com/mysql-net/MySqlConnector/discussions/1355)
+  * This allows `TlsVersion = TLSv1.3` to be used on .NET Framework 4.8.
+* Remove `COM_MULTI` protocol support: [#946](https://github.com/mysql-net/MySqlConnector/issues/946).
+* Reduce allocations on common code paths.
+* Support `ZEROFILL` columns in `MySqlDecimal`: [#1354](https://github.com/mysql-net/MySqlConnector/issues/1354).
+* Support higher-precision `DateTime` values: [#1379](https://github.com/mysql-net/MySqlConnector/issues/1379).
+* Use `ValueTask` in `MySqlBulkCopy` API for all TFMs: [#1364](https://github.com/mysql-net/MySqlConnector/issues/1364).
+* Fix bug when column name begins with `@` in `MySqlBulkCopy`: [#1365](https://github.com/mysql-net/MySqlConnector/issues/1365).
+* Ignore `MySqlDbType` when serializing enum values: [#1384](https://github.com/mysql-net/MySqlConnector/issues/1384).
 
 ### 2.3.0 Beta 3
 
