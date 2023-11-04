@@ -520,6 +520,16 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			WriteString(writer, noBackslashEscapes, stringBuilder.ToString().AsSpan());
 #endif
 		}
+		else if ((MySqlDbType is MySqlDbType.String or MySqlDbType.VarChar) && HasSetDbType && Value is Enum stringEnumValue)
+		{
+			writer.Write((byte) '\'');
+			writer.Write(stringEnumValue.ToString("G"));
+			writer.Write((byte) '\'');
+		}
+		else if (Value is Enum enumValue)
+		{
+			writer.Write(enumValue.ToString("d"));
+		}
 		else if (MySqlDbType == MySqlDbType.Int16)
 		{
 			writer.WriteString((short) Value);
@@ -543,16 +553,6 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		else if (MySqlDbType == MySqlDbType.UInt64)
 		{
 			writer.WriteString((ulong) Value);
-		}
-		else if ((MySqlDbType is MySqlDbType.String or MySqlDbType.VarChar) && HasSetDbType && Value is Enum stringEnumValue)
-		{
-			writer.Write((byte) '\'');
-			writer.Write(stringEnumValue.ToString("G"));
-			writer.Write((byte) '\'');
-		}
-		else if (Value is Enum enumValue)
-		{
-			writer.Write(enumValue.ToString("d"));
 		}
 		else
 		{
@@ -829,6 +829,14 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		{
 			writer.WriteLengthEncodedString(stringBuilder);
 		}
+		else if ((MySqlDbType is MySqlDbType.String or MySqlDbType.VarChar) && HasSetDbType && Value is Enum stringEnumValue)
+		{
+			writer.WriteLengthEncodedString(stringEnumValue.ToString("G"));
+		}
+		else if (Value is Enum)
+		{
+			writer.Write(Convert.ToInt32(Value, CultureInfo.InvariantCulture));
+		}
 		else if (MySqlDbType == MySqlDbType.Int16)
 		{
 			writer.Write((ushort) (short) Value);
@@ -852,14 +860,6 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		else if (MySqlDbType == MySqlDbType.UInt64)
 		{
 			writer.Write((ulong) Value);
-		}
-		else if ((MySqlDbType is MySqlDbType.String or MySqlDbType.VarChar) && HasSetDbType && Value is Enum stringEnumValue)
-		{
-			writer.WriteLengthEncodedString(stringEnumValue.ToString("G"));
-		}
-		else if (Value is Enum)
-		{
-			writer.Write(Convert.ToInt32(Value, CultureInfo.InvariantCulture));
 		}
 		else
 		{

@@ -1081,6 +1081,33 @@ insert into long_enum_test (id, value) VALUES (0x7FFFFFFFFFFFFFFF, 1);
 		Assert.False(reader.Read());
 	}
 
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void QueryEnumWithMySqlDbTypeInt16(bool prepare)
+	{
+		m_database.Connection.Execute(@"drop table if exists bug_1384;
+create table bug_1384(name text not null, enum1 smallint not null, enum2 smallint not null);
+insert into bug_1384 values('CreateNew', 1, 1), ('OpenOrCreate', 4, 4);
+");
+
+		using var command = new MySqlCommand("select * from bug_1384 where enum1 = @enum1 or enum2 = @enum2;", m_database.Connection)
+		{
+			Parameters =
+			{
+				new MySqlParameter("@enum1", MySqlDbType.Int16) { Value = (short) FileMode.OpenOrCreate },
+				new MySqlParameter("@enum2", MySqlDbType.Int16) { Value = FileMode.OpenOrCreate },
+			},
+		};
+		if (prepare)
+			command.Prepare();
+
+		using var reader = command.ExecuteReader();
+		Assert.True(reader.Read());
+		Assert.Equal("OpenOrCreate", reader.GetValue(0));
+		Assert.False(reader.Read());
+	}
+
 	[Fact]
 	public void ReturnDerivedTypes()
 	{
