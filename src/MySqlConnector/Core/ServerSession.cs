@@ -1,6 +1,7 @@
 using System.Buffers.Text;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.IO.Pipes;
 using System.Net;
@@ -56,6 +57,7 @@ internal sealed partial class ServerSession
 	public uint CreatedTicks { get; }
 	public ConnectionPool? Pool { get; }
 	public int PoolGeneration { get; }
+	public uint LastLeasedTicks { get; set; }
 	public uint LastReturnedTicks { get; private set; }
 	public string? DatabaseOverride { get; set; }
 	public string HostName { get; private set; }
@@ -74,7 +76,11 @@ internal sealed partial class ServerSession
 	{
 		Log.ReturningToPool(m_logger, Id, Pool?.Id ?? 0);
 		LastReturnedTicks = unchecked((uint) Environment.TickCount);
-		return Pool is null ? default : Pool.ReturnAsync(ioBehavior, this);
+		if (Pool is null)
+			return default;
+		MetricsReporter.RecordUseTime(Pool, unchecked(LastReturnedTicks - LastLeasedTicks));
+		LastLeasedTicks = 0;
+		return Pool.ReturnAsync(ioBehavior, this);
 	}
 
 	public bool IsConnected

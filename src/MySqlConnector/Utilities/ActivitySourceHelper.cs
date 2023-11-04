@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Reflection;
 
@@ -55,12 +56,10 @@ internal static class ActivitySourceHelper
 		}
 	}
 
-	private static ActivitySource ActivitySource { get; } = CreateActivitySource();
+	public static Meter Meter { get; } = new("MySqlConnector", GetVersion());
 
-	private static ActivitySource CreateActivitySource()
-	{
-		var assembly = typeof(ActivitySourceHelper).Assembly;
-		var version = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version;
-		return new("MySqlConnector", version);
-	}
+	private static ActivitySource ActivitySource { get; } = new("MySqlConnector", GetVersion());
+
+	private static string GetVersion() =>
+		typeof(ActivitySourceHelper).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version;
 }

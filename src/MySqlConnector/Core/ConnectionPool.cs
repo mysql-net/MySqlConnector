@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Security.Authentication;
 using Microsoft.Extensions.Logging;
@@ -50,12 +51,14 @@ internal sealed class ConnectionPool : IDisposable
 			{
 				if (m_sessions.Count > 0)
 				{
+					// NOTE: MetricsReporter updated outside lock below
 					session = m_sessions.First!.Value;
 					m_sessions.RemoveFirst();
 				}
 			}
 			if (session is not null)
 			{
+				MetricsReporter.RemoveIdle(this);
 				Log.FoundExistingSession(m_logger, Id);
 				bool reuseSession;
 
@@ -96,8 +99,12 @@ internal sealed class ConnectionPool : IDisposable
 						m_leasedSessions.Add(session.Id, session);
 						leasedSessionsCountPooled = m_leasedSessions.Count;
 					}
+					MetricsReporter.AddUsed(this);
 					ActivitySourceHelper.CopyTags(session.ActivityTags, activity);
 					Log.ReturningPooledSession(m_logger, Id, session.Id, leasedSessionsCountPooled);
+
+					session.LastLeasedTicks = unchecked((uint) Environment.TickCount);
+					MetricsReporter.RecordWaitTime(this, unchecked(session.LastLeasedTicks - (uint) startTickCount));
 					return session;
 				}
 			}
@@ -112,7 +119,11 @@ internal sealed class ConnectionPool : IDisposable
 				m_leasedSessions.Add(session.Id, session);
 				leasedSessionsCountNew = m_leasedSessions.Count;
 			}
+			MetricsReporter.AddUsed(this);
 			Log.ReturningNewSession(m_logger, Id, session.Id, leasedSessionsCountNew);
+
+			session.LastLeasedTicks = unchecked((uint) Environment.TickCount);
+			MetricsReporter.RecordCreateTime(this, unchecked(session.LastLeasedTicks - (uint) startTickCount));
 			return session;
 		}
 		catch (Exception ex)
@@ -164,12 +175,14 @@ internal sealed class ConnectionPool : IDisposable
 		{
 			lock (m_leasedSessions)
 				m_leasedSessions.Remove(session.Id);
+			MetricsReporter.RemoveUsed(this);
 			session.OwningConnection = null;
 			var sessionHealth = GetSessionHealth(session);
 			if (sessionHealth == 0)
 			{
 				lock (m_sessions)
 					m_sessions.AddFirst(session);
+				MetricsReporter.AddIdle(this);
 			}
 			else
 			{
@@ -224,6 +237,8 @@ internal sealed class ConnectionPool : IDisposable
 	public void Dispose()
 	{
 		Log.DisposingConnectionPool(m_logger, Id);
+		lock (s_allPools)
+			s_allPools.Remove(this);
 #if NET6_0_OR_GREATER
 		m_dnsCheckTimer?.Dispose();
 		m_dnsCheckTimer = null;
@@ -326,12 +341,14 @@ internal sealed class ConnectionPool : IDisposable
 					{
 						if (m_sessions.Count > 0)
 						{
+							// NOTE: MetricsReporter updated outside lock below
 							session = m_sessions.Last!.Value;
 							m_sessions.RemoveLast();
 						}
 					}
 					if (session is null)
 						return;
+					MetricsReporter.RemoveIdle(this);
 
 					if (shouldCleanFn(session))
 					{
@@ -344,6 +361,7 @@ internal sealed class ConnectionPool : IDisposable
 						// session should not be cleaned; put it back in the queue and stop iterating
 						lock (m_sessions)
 							m_sessions.AddLast(session);
+						MetricsReporter.AddIdle(this);
 						return;
 					}
 				}
@@ -389,6 +407,7 @@ internal sealed class ConnectionPool : IDisposable
 				AdjustHostConnectionCount(session, 1);
 				lock (m_sessions)
 					m_sessions.AddFirst(session);
+				MetricsReporter.AddIdle(this);
 			}
 			finally
 			{
@@ -546,6 +565,7 @@ internal sealed class ConnectionPool : IDisposable
 		else if (pool != newPool)
 		{
 			Log.CreatedPoolWillNotBeUsed(newPool.m_logger, newPool.Id);
+			newPool.Dispose();
 		}
 
 		return pool;
@@ -553,10 +573,10 @@ internal sealed class ConnectionPool : IDisposable
 
 	public static async Task ClearPoolsAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		foreach (var pool in GetAllPools())
+		foreach (var pool in GetCachedPools())
 			await pool.ClearAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
-		static List<ConnectionPool> GetAllPools()
+		static List<ConnectionPool> GetCachedPools()
 		{
 			var pools = new List<ConnectionPool>(s_pools.Count);
 			var uniquePools = new HashSet<ConnectionPool>();
@@ -594,8 +614,19 @@ internal sealed class ConnectionPool : IDisposable
 			cs.LoadBalance == MySqlLoadBalance.LeastConnections ? new LeastConnectionsLoadBalancer(m_hostSessions!) :
 			(ILoadBalancer) new RoundRobinLoadBalancer();
 
+		// create tag lists for reporting pool metrics
+		var connectionString = cs.ConnectionStringBuilder.GetConnectionString(includePassword: false);
+		m_stateTagList =
+		[
+			new("state", "idle"),
+			new("pool.name", Name ?? connectionString),
+			new("state", "used"),
+		];
+
 		Id = Interlocked.Increment(ref s_poolId);
-		Log.CreatingNewConnectionPool(m_logger, Id, cs.ConnectionStringBuilder.GetConnectionString(includePassword: false));
+		lock (s_allPools)
+			s_allPools.Add(this);
+		Log.CreatingNewConnectionPool(m_logger, Id, connectionString);
 	}
 
 	private void StartReaperTask()
@@ -741,6 +772,19 @@ internal sealed class ConnectionPool : IDisposable
 		}
 	}
 
+	// Provides a slice of m_stateTagList that contains either the 'idle' or 'used' state tag along with the pool name.
+	public ReadOnlySpan<KeyValuePair<string, object?>> IdleStateTagList => m_stateTagList.AsSpan(0, 2);
+	public ReadOnlySpan<KeyValuePair<string, object?>> UsedStateTagList => m_stateTagList.AsSpan(1, 2);
+
+	// A slice of m_stateTagList that contains only the pool name tag.
+	public ReadOnlySpan<KeyValuePair<string, object?>> PoolNameTagList => m_stateTagList.AsSpan(1, 1);
+
+	public static List<ConnectionPool> GetAllPools()
+	{
+		lock (s_allPools)
+			return new(s_allPools);
+	}
+
 	private sealed class LeastConnectionsLoadBalancer(Dictionary<string, int> hostSessions) : ILoadBalancer
 	{
 		public IReadOnlyList<string> LoadBalance(IReadOnlyList<string> hosts)
@@ -766,6 +810,7 @@ internal sealed class ConnectionPool : IDisposable
 		ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 	private static readonly ConcurrentDictionary<string, ConnectionPool?> s_pools = new();
+	private static readonly List<ConnectionPool> s_allPools = new();
 	private static readonly Action<ILogger, int, string, Exception?> s_createdNewSession = LoggerMessage.Define<int, string>(
 		LogLevel.Debug, new EventId(EventIds.PoolCreatedNewSession, nameof(EventIds.PoolCreatedNewSession)),
 		"Pool {PoolId} has no pooled session available; created new session {SessionId}");
@@ -777,6 +822,7 @@ internal sealed class ConnectionPool : IDisposable
 
 	private readonly ILogger m_logger;
 	private readonly ILogger m_connectionLogger;
+	private readonly KeyValuePair<string, object?>[] m_stateTagList;
 	private readonly SemaphoreSlim m_cleanSemaphore;
 	private readonly SemaphoreSlim m_sessionSemaphore;
 	private readonly LinkedList<ServerSession> m_sessions;

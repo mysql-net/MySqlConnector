@@ -6,7 +6,7 @@
 
  <PropertyGroup Condition=" '$(Configuration)' == 'MySqlData' ">
     <TargetFrameworks>net472</TargetFrameworks>
-    <DefineConstants>MYSQL_DATA</DefineConstants>
+    <DefineConstants>$(DefineConstants);MYSQL_DATA</DefineConstants>
     <NoWarn>$(NoWarn);MSB3246</NoWarn>
   </PropertyGroup>
 
@@ -16,6 +16,10 @@
     <AssemblyOriginatorKeyFile>..\..\MySqlConnector.snk</AssemblyOriginatorKeyFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>11.0</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(GITHUB_ACTIONS)' == 'true' OR '$(APPVEYOR)' == 'True' OR '$(TF_BUILD)' == 'True' ">
+    <DefineConstants>$(DefineConstants);NO_METRICS_TESTS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,6 +48,7 @@
   <ItemGroup Condition=" '$(Configuration)' == 'MySqlData' ">
     <PackageReference Include="MySql.Data" />
     <Compile Remove="ByteBufferWriterTests.cs;CachedProcedureTests.cs;CancellationTests.cs;ColumnReaderTests.cs;ConnectionTests.cs;FakeMySqlServer.cs;FakeMySqlServerConnection.cs;LoadBalancerTests.cs;MySqlDecimalTests.cs;MySqlExceptionTests.cs;MySqlParameterCollectionNameToIndexTests.cs;NormalizeTests.cs;ServerVersionTests.cs;StatementPreparerTests.cs;TypeMapperTests.cs;UtilityTests.cs" />
+    <Compile Remove="Metrics\*.cs" />
     <Using Include="MySql.Data.MySqlClient" />
     <Using Include="MySql.Data.Types" />
   </ItemGroup>

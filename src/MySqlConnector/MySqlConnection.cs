@@ -384,6 +384,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	internal async Task OpenAsync(IOBehavior? ioBehavior, CancellationToken cancellationToken)
 	{
+		var openStartTickCount = Environment.TickCount;
+
 		VerifyNotDisposed();
 		cancellationToken.ThrowIfCancellationRequested();
 		if (State != ConnectionState.Closed)
@@ -392,8 +394,6 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		using var activity = ActivitySourceHelper.StartActivity(ActivitySourceHelper.OpenActivityName);
 		try
 		{
-			var openStartTickCount = Environment.TickCount;
-
 			SetState(ConnectionState.Connecting);
 
 			var pool = m_dataSource?.Pool ??
@@ -896,6 +896,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	private async ValueTask<ServerSession> CreateSessionAsync(ConnectionPool? pool, int startTickCount, Activity? activity, IOBehavior? ioBehavior, CancellationToken cancellationToken)
 	{
+		MetricsReporter.AddPendingRequest(pool);
 		var connectionSettings = GetInitializedConnectionSettings();
 		var actualIOBehavior = ioBehavior ?? (connectionSettings.ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous);
 
@@ -949,6 +950,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 		finally
 		{
+			MetricsReporter.RemovePendingRequest(pool);
 			linkedSource?.Dispose();
 			timeoutSource?.Dispose();
 		}
