@@ -20,6 +20,18 @@ public static class MySqlConnectorLogManager
 		}
 	}
 
+	/// <summary>
+	/// Allows the <see cref="ILoggerFactory"/> to be set for this library. <see cref="LoggerFactory"/> can
+	/// be set once, and must be set before any other library methods are used.
+	/// </summary>
+	public static ILoggerFactory LoggerFactory
+	{
+		set
+		{
+			MySqlConnectorLoggingConfiguration.GlobalConfiguration = new(value);
+		}
+	}
+
 	// A helper class that adapts ILoggerFactory to the old-style IMySqlConnectorLoggerProvider interface.
 	private sealed class MySqlConnectorLoggerFactor(IMySqlConnectorLoggerProvider loggerProvider) : ILoggerFactory
 	{
