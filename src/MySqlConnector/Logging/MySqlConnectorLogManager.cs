@@ -16,12 +16,12 @@ public static class MySqlConnectorLogManager
 	{
 		set
 		{
-			MySqlConnectorLoggingConfiguration.GlobalConfiguration = new(new MySqlConnectorLoggerFactor(value));
+			MySqlConnectorLoggingConfiguration.GlobalConfiguration = new(new MySqlConnectorLoggerFactory(value));
 		}
 	}
 
 	// A helper class that adapts ILoggerFactory to the old-style IMySqlConnectorLoggerProvider interface.
-	private sealed class MySqlConnectorLoggerFactor(IMySqlConnectorLoggerProvider loggerProvider) : ILoggerFactory
+	private sealed class MySqlConnectorLoggerFactory(IMySqlConnectorLoggerProvider loggerProvider) : ILoggerFactory
 	{
 		public void AddProvider(ILoggerProvider provider) => throw new NotSupportedException();
 
