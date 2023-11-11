@@ -1,9 +1,9 @@
 using System.Data.Common;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using MySqlConnector;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace MySqlConnector;
 
 /// <summary>
 /// Extension method for setting up MySqlConnector services in an <see cref="IServiceCollection" />.

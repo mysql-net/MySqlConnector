@@ -1,8 +1,7 @@
 using System;
 using Microsoft.Extensions.Logging;
-using MySqlConnector.Logging;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace MySqlConnector.Logging;
 
 public static class MySqlConnectorLoggingExtensions
 {
