@@ -1,5 +1,5 @@
 ---
-lastmod: 2020-06-14
+lastmod: 2023-11-10
 date: 2016-10-16
 menu:
   main:
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `BlogPost` (
 ### Initialize ASP.NET Core Web API
 
 Create a folder named `BlogPostApi`, then run `dotnet new webapi` at the root to create the initial project.
-Run `dotnet add package MySqlConnector`. You should have a working project at this point, use `dotnet run`
+Run `dotnet add package MySqlConnector.DependencyInjection`. You should have a working project at this point, use `dotnet run`
 to verify the project builds and runs successfully.
 
 ### Update Configuration Files
@@ -48,334 +48,219 @@ to verify the project builds and runs successfully.
             "Microsoft.Hosting.Lifetime": "Information"
         }
     },
+    "AllowedHosts": "*",
     "ConnectionStrings": {
-        "DefaultConnection": "Server=127.0.0.1;User ID=root;Password=pass;Port=3306;Database=blog"
-    }
-}
-```
-
-`AppDb.cs` is a disposable [Application Database Object](/overview/configuration/), adapted to read the ConnectionString
-from the Configuration Object:
-
-```csharp
-using System;
-using MySqlConnector;
-
-namespace BlogPostApi
-{
-    public class AppDb : IDisposable
-    {
-        public MySqlConnection Connection { get; }
-
-        public AppDb(string connectionString)
-        {
-            Connection = new MySqlConnection(connectionString);
-        }
-
-        public void Dispose() => Connection.Dispose();
+        "Default": "Server=127.0.0.1;User ID=root;Password=pass;Port=3306;Database=blog"
     }
 }
 ```
 
 ### .NET Core Startup
 
-`Startup.cs` contains runtime configuration and framework services. Add this call to `ConfigureServices` to make an instance of `AppDb` available to controller methods.
+`Program.cs` contains runtime configuration and framework services.
+Add this call (before `var app = builder.Build();`) to register a MySQL data source:
 
 ```csharp
-services.AddTransient<AppDb>(_ => new AppDb(Configuration["ConnectionStrings:DefaultConnection"]));
+builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("Default")!);
 ```
 
 Now our app is configured and we can focus on writing the core functionality!
 
 ### Models
 
-`BlogPost.cs` represents a single Blog Post, and contains Insert, Update, and Delete methods.
+`BlogPost.cs` is a Plain Old C# Object that represents a single Blog Post.
 
 ```csharp
-using System.Data;
-using System.Threading.Tasks;
-using MySqlConnector;
+namespace BlogPostApi;
 
-namespace BlogPostApi
+public class BlogPost
 {
-    public class BlogPost
-    {
-        public int Id { get; set; }
-        public string Title { get; set; }
-        public string Content { get; set; }
-
-        internal AppDb Db { get; set; }
-
-        public BlogPost()
-        {
-        }
-
-        internal BlogPost(AppDb db)
-        {
-            Db = db;
-        }
-
-        public async Task InsertAsync()
-        {
-            using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = @"INSERT INTO `BlogPost` (`Title`, `Content`) VALUES (@title, @content);";
-            BindParams(cmd);
-            await cmd.ExecuteNonQueryAsync();
-            Id = (int) cmd.LastInsertedId;
-        }
-
-        public async Task UpdateAsync()
-        {
-            using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = @"UPDATE `BlogPost` SET `Title` = @title, `Content` = @content WHERE `Id` = @id;";
-            BindParams(cmd);
-            BindId(cmd);
-            await cmd.ExecuteNonQueryAsync();
-        }
-
-        public async Task DeleteAsync()
-        {
-            using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = @"DELETE FROM `BlogPost` WHERE `Id` = @id;";
-            BindId(cmd);
-            await cmd.ExecuteNonQueryAsync();
-        }
-
-        private void BindId(MySqlCommand cmd)
-        {
-            cmd.Parameters.Add(new MySqlParameter
-            {
-                ParameterName = "@id",
-                DbType = DbType.Int32,
-                Value = Id,
-            });
-        }
-
-        private void BindParams(MySqlCommand cmd)
-        {
-            cmd.Parameters.Add(new MySqlParameter
-            {
-                ParameterName = "@title",
-                DbType = DbType.String,
-                Value = Title,
-            });
-            cmd.Parameters.Add(new MySqlParameter
-            {
-                ParameterName = "@content",
-                DbType = DbType.String,
-                Value = Content,
-            });
-        }
-    }
+    public int Id { get; set; }
+    public string? Title { get; set; }
+    public string? Content { get; set; }
 }
 ```
 
-`BlogPostQuery.cs` contains commands to query Blog Posts from the database:
+`BlogPostRepository.cs` contains commands to create, retrieve, update, and delete blog posts from the database:
 
 ```csharp
-using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
-using System.Threading.Tasks;
 using MySqlConnector;
 
-namespace BlogPostApi
+namespace BlogPostApi;
+
+public class BlogPostRepository(MySqlDataSource database)
 {
-    public class BlogPostQuery
+    public async Task<BlogPost?> FindOneAsync(int id)
     {
-        public AppDb Db { get; }
+        using var connection = await database.OpenConnectionAsync();
+        using var command = connection.CreateCommand();
+        command.CommandText = @"SELECT `Id`, `Title`, `Content` FROM `BlogPost` WHERE `Id` = @id";
+        command.Parameters.AddWithValue("@id", id);
+        var result = await ReadAllAsync(await command.ExecuteReaderAsync());
+        return result.FirstOrDefault();
+    }
 
-        public BlogPostQuery(AppDb db)
-        {
-            Db = db;
-        }
+    public async Task<IReadOnlyList<BlogPost>> LatestPostsAsync()
+    {
+        using var connection = await database.OpenConnectionAsync();
+        using var command = connection.CreateCommand();
+        command.CommandText = @"SELECT `Id`, `Title`, `Content` FROM `BlogPost` ORDER BY `Id` DESC LIMIT 10;";
+        return await ReadAllAsync(await command.ExecuteReaderAsync());
+    }
 
-        public async Task<BlogPost> FindOneAsync(int id)
+    public async Task DeleteAllAsync()
+    {
+        using var connection = await database.OpenConnectionAsync();
+        using var command = connection.CreateCommand();
+        command.CommandText = @"DELETE FROM `BlogPost`";
+        await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task InsertAsync(BlogPost blogPost)
+    {
+        using var connection = await database.OpenConnectionAsync();
+        using var command = connection.CreateCommand();
+        command.CommandText = @"INSERT INTO `BlogPost` (`Title`, `Content`) VALUES (@title, @content);";
+        BindParams(command, blogPost);
+        await command.ExecuteNonQueryAsync();
+        blogPost.Id = (int)command.LastInsertedId;
+    }
+
+    public async Task UpdateAsync(BlogPost blogPost)
+    {
+        using var connection = await database.OpenConnectionAsync();
+        using var command = connection.CreateCommand();
+        command.CommandText = @"UPDATE `BlogPost` SET `Title` = @title, `Content` = @content WHERE `Id` = @id;";
+        BindParams(command, blogPost);
+        BindId(command, blogPost);
+        await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task DeleteAsync(BlogPost blogPost)
+    {
+        using var connection = await database.OpenConnectionAsync();
+        using var command = connection.CreateCommand();
+        command.CommandText = @"DELETE FROM `BlogPost` WHERE `Id` = @id;";
+        BindId(command, blogPost);
+        await command.ExecuteNonQueryAsync();
+    }
+
+    private async Task<IReadOnlyList<BlogPost>> ReadAllAsync(DbDataReader reader)
+    {
+        var posts = new List<BlogPost>();
+        using (reader)
         {
-            using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = @"SELECT `Id`, `Title`, `Content` FROM `BlogPost` WHERE `Id` = @id";
-            cmd.Parameters.Add(new MySqlParameter
+            while (await reader.ReadAsync())
             {
-                ParameterName = "@id",
-                DbType = DbType.Int32,
-                Value = id,
-            });
-            var result = await ReadAllAsync(await cmd.ExecuteReaderAsync());
-            return result.Count > 0 ? result[0] : null;
-        }
-
-        public async Task<List<BlogPost>> LatestPostsAsync()
-        {
-            using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = @"SELECT `Id`, `Title`, `Content` FROM `BlogPost` ORDER BY `Id` DESC LIMIT 10;";
-            return await ReadAllAsync(await cmd.ExecuteReaderAsync());
-        }
-
-        public async Task DeleteAllAsync()
-        {
-            using var txn = await Db.Connection.BeginTransactionAsync();
-            using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = @"DELETE FROM `BlogPost`";
-            await cmd.ExecuteNonQueryAsync();
-            await txn.CommitAsync();
-        }
-
-        private async Task<List<BlogPost>> ReadAllAsync(DbDataReader reader)
-        {
-            var posts = new List<BlogPost>();
-            using (reader)
-            {
-                while (await reader.ReadAsync())
+                var post = new BlogPost
                 {
-                    var post = new BlogPost(Db)
-                    {
-                        Id = reader.GetInt32(0),
-                        Title = reader.GetString(1),
-                        Content = reader.GetString(2),
-                    };
-                    posts.Add(post);
-                }
+                    Id = reader.GetInt32(0),
+                    Title = reader.GetString(1),
+                    Content = reader.GetString(2),
+                };
+                posts.Add(post);
             }
-            return posts;
         }
+        return posts;
+    }
+
+    private static void BindId(MySqlCommand cmd, BlogPost blogPost)
+    {
+        cmd.Parameters.AddWithValue("@id", blogPost.Id);
+    }
+
+    private static void BindParams(MySqlCommand cmd, BlogPost blogPost)
+    {
+        cmd.Parameters.AddWithValue("@title", blogPost.Title);
+        cmd.Parameters.AddWithValue("@content", blogPost.Content);
     }
 }
 ```
 
-### Controller
+### Program.cs
 
-`BlogController.cs` expose Async API Endpoints for CRUD operations on Blog Posts:
+`Program.cs` exposes Async API Endpoints for CRUD operations on Blog Posts (using an ASP.NET Minimal API).
+Add the following methods before `app.Run();`:
 
 ```csharp
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-
-namespace BlogPostApi.Controllers
+// GET api/blog
+app.MapGet("/api/blog", async ([FromServices] MySqlDataSource db) =>
 {
-    [Route("api/[controller]")]
-    public class BlogController : ControllerBase
-    {
-        public BlogController(AppDb db)
-        {
-            Db = db;
-        }
+    var repository = new BlogPostRepository(db);
+    return await repository.LatestPostsAsync();
+});
 
-        // GET api/blog
-        [HttpGet]
-        public async Task<IActionResult> GetLatest()
-        {
-            await Db.Connection.OpenAsync();
-            var query = new BlogPostQuery(Db);
-            var result = await query.LatestPostsAsync();
-            return new OkObjectResult(result);
-        }
+// GET api/blog/5
+app.MapGet("/api/blog/{id}", async ([FromServices] MySqlDataSource db, int id) =>
+{
+    var repository = new BlogPostRepository(db);
+    var result = await repository.FindOneAsync(id);
+    return result is null ? Results.NotFound() : Results.Ok(result);
+});
 
-        // GET api/blog/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetOne(int id)
-        {
-            await Db.Connection.OpenAsync();
-            var query = new BlogPostQuery(Db);
-            var result = await query.FindOneAsync(id);
-            if (result is null)
-                return new NotFoundResult();
-            return new OkObjectResult(result);
-        }
+// POST api/blog
+app.MapPost("/api/blog", async ([FromServices] MySqlDataSource db, [FromBody] BlogPost body) =>
+{
+    var repository = new BlogPostRepository(db);
+    await repository.InsertAsync(body);
+    return body;
+});
 
-        // POST api/blog
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody]BlogPost body)
-        {
-            await Db.Connection.OpenAsync();
-            body.Db = Db;
-            await body.InsertAsync();
-            return new OkObjectResult(body);
-        }
+// PUT api/blog/5
+app.MapPut("/api/blog/{id}", async (int id, [FromServices] MySqlDataSource db, [FromBody] BlogPost body) =>
+{
+    var repository = new BlogPostRepository(db);
+    var result = await repository.FindOneAsync(id);
+    if (result is null)
+        return Results.NotFound();
+    result.Title = body.Title;
+    result.Content = body.Content;
+    await repository.UpdateAsync(result);
+    return Results.Ok(result);
+});
 
-        // PUT api/blog/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutOne(int id, [FromBody]BlogPost body)
-        {
-            await Db.Connection.OpenAsync();
-            var query = new BlogPostQuery(Db);
-            var result = await query.FindOneAsync(id);
-            if (result is null)
-                return new NotFoundResult();
-            result.Title = body.Title;
-            result.Content = body.Content;
-            await result.UpdateAsync();
-            return new OkObjectResult(result);
-        }
+// DELETE api/blog/5
+app.MapDelete("/api/blog/{id}", async ([FromServices] MySqlDataSource db, int id) =>
+{
+    var repository = new BlogPostRepository(db);
+    var result = await repository.FindOneAsync(id);
+    if (result is null)
+        return Results.NotFound();
+    await repository.DeleteAsync(result);
+    return Results.NoContent();
+});
 
-        // DELETE api/blog/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteOne(int id)
-        {
-            await Db.Connection.OpenAsync();
-            var query = new BlogPostQuery(Db);
-            var result = await query.FindOneAsync(id);
-            if (result is null)
-                return new NotFoundResult();
-            await result.DeleteAsync();
-            return new OkResult();
-        }
-
-        // DELETE api/blog
-        [HttpDelete]
-        public async Task<IActionResult> DeleteAll()
-        {
-            await Db.Connection.OpenAsync();
-            var query = new BlogPostQuery(Db);
-            await query.DeleteAllAsync();
-            return new OkResult();
-        }
-
-        public AppDb Db { get; }
-    }
-}
+// DELETE api/blog
+app.MapDelete("/api/blog", async ([FromServices] MySqlDataSource db) =>
+{
+    var repository = new BlogPostRepository(db);
+    await repository.DeleteAllAsync();
+    return Results.NoContent();
+});
 ```
 
 ### Run the App
 
 Congratulations, you should have a fully functional app at this point!  You should be able to run `dotnet run` to start your application.
 
-The following API Endpoints should work.  Note to set `Content-Type: application/json` headers on `POST` and `PUT` methods.
+The following API Endpoints should work:
 
-```txt
-POST https://localhost:5001/api/blog
-{ "Title": "One", "Content": "First Blog Post!" }
+```http
+@BlostPostApi_HostAddress = http://localhost:5001
 
-POST https://localhost:5001/api/blog
-{ "Title": "Two", "Content": "Second Blog Post!" }
+GET {{BlostPostApi_HostAddress}}/api/blog
+Accept: application/json
+###
+POST {{BlostPostApi_HostAddress}}/api/blog
+Accept: application/json
+Content-Type: application/json
 
-POST https://localhost:5001/api/blog
-{ "Title": "Three", "Content": "Third Blog Post!" }
+{"title":"test", "content":"test content"}
+###
+PUT {{BlostPostApi_HostAddress}}/api/blog/1
+Accept: application/json
+Content-Type: application/json
 
-GET https://localhost:5001/api/blog
-// Output:
-[
-    { "id": 3, "title": "Three", "content": "Third Blog Post!" },
-    { "id": 2, "title": "Two", "content": "Second Blog Post!" },
-    { "id": 1, "title": "One", "content": "First Blog Post!"}
-]
-
-DELETE https://localhost:5001/api/blog/1
-// blog post 1 is gone
-
-PUT https://localhost:5001/api/blog/2
-{ "Title": "Two", "Content": "Second Blog Post Revised" }
-
-GET https://localhost:5001/api/blog
-// Output:
-[
-    { "id": 3, "title": "Three", "content": "Third Blog Post!" },
-    { "id": 2, "title": "Two", "content": "Second Blog Post Revised" },
-]
-
-DELETE https://localhost:5001/api/blog
-// all blog posts are gone
-
-GET https://localhost:5001/api/blog
-// Output:
-[]
+{"title":"test put", "content":"test content updated"}
 ```

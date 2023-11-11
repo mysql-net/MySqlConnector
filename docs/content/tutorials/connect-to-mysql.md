@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-01-21
+lastmod: 2023-11-10
 date: 2019-11-18
 menu:
   main:
@@ -49,27 +49,22 @@ If you are using ASP.NET Core, your connection string will usually be stored in 
 
 ## 3. Configure Service (ASP.NET Core)
 
-### .NET 6.0
-
 If using ASP.NET Core, you will want to register a database connection in `Program.cs`:
+
+**Recommended** Install [MySqlConnector.DependencyInjection](https://www.nuget.org/packages/MySqlConnector.DependencyInjection/) via `dotnet add package MySqlConnector.DependencyInjection`. Then add the following to `Program.cs`:
+
+```csharp
+builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("Default")!);
+```
+
+Alternatively, register a transient `MySqlConnection` object explicitly:
 
 ```csharp
 builder.services.AddTransient<MySqlConnection>(_ =>
     new MySqlConnection(builder.Configuration.GetConnectionString["Default"]));
 ```
 
-### .NET 5.0 and earlier
-
-For .NET 5.0 and earlier, register a database connection in `Startup.cs`:
-
-```csharp
-public void ConfigureServices(IServiceCollection services)
-{
-    // ...
-    services.AddTransient<MySqlConnection>(_ => new MySqlConnection(Configuration["ConnectionStrings:Default"]));
-}
-```
-
+The advantage of using `AddMySqlDataSource` is that it will automatically integrate with logging, and also register `DbDataSource` and `DbConnection` with the service collection.
 
 ## 4. Open and Use the Connection
 
