@@ -100,3 +100,15 @@ from = "/tutorials/"
 to = "/"
 status = 302
 force = true
+
+[[redirects]]
+from = "/overview/logging/"
+to = "/diagnostics/logging/"
+status = 302
+force = true
+
+[[redirects]]
+from = "/tutorials/tracing/"
+to = "/diagnostics/tracing/"
+status = 302
+force = true

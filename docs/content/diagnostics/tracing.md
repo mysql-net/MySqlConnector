@@ -1,10 +1,11 @@
 ---
+lastmod: 2023-11-11
 date: 2021-10-16
 menu:
   main:
-    parent: tutorials
+    parent: diagnostics
 title: Tracing
-weight: 13
+weight: 20
 ---
 
 # Tracing

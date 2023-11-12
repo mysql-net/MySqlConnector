@@ -28,16 +28,21 @@ disablePathToLower = true
     pre = "<i class='fa fa-road'></i>"
     weight = 20
 [[menu.main]]
-    name = "Tutorials"
-    identifier = "tutorials"
-    pre = "<i class='fa fa-lightbulb-o'></i>"
-    weight = 40
-[[menu.main]]
     name = "API"
     identifier = "api"
     pre = "<i class='fa fa-file-text'></i>"
     url = "/api/MySqlConnectorAssembly/"
-    weight = 35
+    weight = 30
+[[menu.main]]
+    name = "Diagnostics"
+    identifier = "diagnostics"
+    pre = "<i class='fa fa-road'></i>"
+    weight = 40
+[[menu.main]]
+    name = "Tutorials"
+    identifier = "tutorials"
+    pre = "<i class='fa fa-lightbulb-o'></i>"
+    weight = 50
 [[menu.main]]
     name = "Troubleshooting"
     identifier = "troubleshooting"

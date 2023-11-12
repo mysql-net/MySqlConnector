@@ -1,11 +1,11 @@
 ---
-lastmod: 2023-07-07
+lastmod: 2023-11-11
 date: 2018-01-20
 menu:
   main:
-    parent: getting started
+    parent: diagnostics
 title: Logging
-weight: 50
+weight: 10
 ---
 
 Logging
