@@ -422,7 +422,7 @@ internal static class ProtocolUtility
 			if (headerBytes.Count < 4)
 			{
 				return protocolErrorBehavior == ProtocolErrorBehavior.Ignore ? default :
-					throw new EndOfStreamException($"Expected to read 4 header bytes but only received {headerBytes.Count:d}.");
+					throw new MySqlEndOfStreamException(4, headerBytes.Count);
 			}
 
 			// read values from the header before the memory is potentially overwritten by ReadBytesAsync
@@ -450,7 +450,7 @@ internal static class ProtocolUtility
 			else
 			{
 				packet = payloadBytes.Count >= payloadLength ? new(payloadBytes) :
-					protocolErrorBehavior == ProtocolErrorBehavior.Throw ? throw new EndOfStreamException($"Expected to read {payloadLength:d} payload bytes but only received {payloadBytes.Count:d}.") :
+					protocolErrorBehavior == ProtocolErrorBehavior.Throw ? throw new MySqlEndOfStreamException(payloadLength, payloadBytes.Count) :
 					default;
 			}
 

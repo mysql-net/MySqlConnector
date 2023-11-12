@@ -130,7 +130,8 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 			} while (bytesRead > 0);
 #endif
 			if (totalBytesRead != uncompressedLength && protocolErrorBehavior == ProtocolErrorBehavior.Throw)
-				throw new InvalidOperationException($"Expected to read {uncompressedLength:d} uncompressed bytes but only read {totalBytesRead:d}");
+				throw new MySqlEndOfStreamException(uncompressedLength, totalBytesRead);
+
 			m_remainingData = new(uncompressedData, 0, totalBytesRead);
 #else
 			// check CMF (Compression Method and Flags) and FLG (Flags) bytes for expected values
@@ -160,7 +161,7 @@ internal sealed class CompressedPayloadHandler : IPayloadHandler
 				totalBytesRead += bytesRead;
 			} while (bytesRead > 0);
 			if (totalBytesRead != uncompressedLength && protocolErrorBehavior == ProtocolErrorBehavior.Throw)
-				throw new InvalidOperationException($"Expected to read {uncompressedLength:d} uncompressed bytes but only read {totalBytesRead:d}");
+				throw new MySqlEndOfStreamException(uncompressedLength, totalBytesRead);
 			m_remainingData = new(uncompressedData, 0, totalBytesRead);
 
 			var checksum = Adler32.Calculate(uncompressedData.AsSpan(0, totalBytesRead));

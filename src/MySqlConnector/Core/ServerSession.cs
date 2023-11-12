@@ -925,6 +925,8 @@ internal sealed partial class ServerSession
 		}
 		catch (Exception ex)
 		{
+			if (ex is MySqlEndOfStreamException endOfStream)
+				Log.ExpectedToReadMoreBytes(m_logger, Id, endOfStream.ExpectedByteCount, endOfStream.ReadByteCount);
 			SetFailed(ex);
 			throw;
 		}

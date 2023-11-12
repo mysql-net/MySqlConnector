@@ -282,6 +282,9 @@ internal static partial class Log
 	[LoggerMessage(EventIds.SettingStateToFailed, LogLevel.Debug, "Session {SessionId} setting state to Failed")]
 	public static partial void SettingStateToFailed(ILogger logger, Exception exception, string sessionId);
 
+	[LoggerMessage(EventIds.ExpectedToReadMoreBytes, LogLevel.Error, "Session {SessionId} expected to read {ExpectedByteCount} bytes but only read {ReadByteCount}")]
+	public static partial void ExpectedToReadMoreBytes(ILogger logger, string sessionId, int expectedByteCount, int readByteCount);
+
 	[LoggerMessage(EventIds.ErrorPayload, LogLevel.Debug, "Session {SessionId} got error payload: {ErrorCode}, {State}, {Message}")]
 	public static partial void ErrorPayload(ILogger logger, string sessionId, int errorCode, string state, string message);
 

@@ -22,6 +22,7 @@ internal static class EventIds
 	public const int FailedInSendReplyAsync = 2007;
 	public const int FailedInReceiveReplyAsync = 2008;
 	public const int SettingStateToFailed = 2009;
+	public const int ExpectedToReadMoreBytes = 2010;
 	public const int ExpectedSessionState1 = 2011;
 	public const int ExpectedSessionState6 = 2016;
 
