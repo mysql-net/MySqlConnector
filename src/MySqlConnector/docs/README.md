@@ -35,6 +35,31 @@ while (reader.Read())
 }
 ```
 
+### ASP.NET
+
+For ASP.NET, use the [MySqlConnector.DependencyInjection package](https://www.nuget.org/packages/MySqlConnector.DependencyInjection/) to integrate with dependency injection and logging.
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// use AddMySqlDataSource to configure MySqlConnector
+builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("Default"));
+
+var app = builder.Build();
+
+// use dependency injection to get a MySqlConnection in minimal APIs or in controllers
+app.MapGet("/", async (MySqlConnection connection) =>
+{
+    // open and use the connection here
+    await connection.OpenAsync();
+    await using var command = connection.CreateCommand();
+    command.CommandText = "SELECT name FROM users LIMIT 1";
+    return "Hello World: " + await command.ExecuteScalarAsync();
+});
+
+app.Run();
+```
+
 ## Key Features
 
 * Full support for async I/O
@@ -58,8 +83,8 @@ The main types provided by this library are:
 
 ## Related Packages
 
+* Dependency Injection: [MySqlConnector.DependencyInjection](https://www.nuget.org/packages/MySqlConnector.DependencyInjection/)
 * Entity Framework Core: [Pomelo.EntityFrameworkCore.MySql](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/)
-* Logging: [log4net](https://www.nuget.org/packages/MySqlConnector.Logging.log4net/), [Microsoft.Extensions.Logging](https://www.nuget.org/packages/MySqlConnector.Logging.Microsoft.Extensions.Logging/), [NLog](https://www.nuget.org/packages/MySqlConnector.Logging.NLog/), [Serilog](https://www.nuget.org/packages/MySqlConnector.Logging.Serilog/)
 
 ## Feedback
 

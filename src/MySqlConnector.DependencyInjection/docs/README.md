@@ -11,7 +11,7 @@ For example, if using the ASP.NET minimal web API, use the following to register
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddMySqlDataSource("Server=server;User ID=test;Password=test;Database=test");
+builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("Default"));
 ```
 
 This registers a transient `MySqlConnection` which can get injected into your controllers:
@@ -21,7 +21,7 @@ app.MapGet("/", async (MySqlConnection connection) =>
 {
     await connection.OpenAsync();
     await using var command = connection.CreateCommand();
-	command.CommandText = "SELECT name FROM users LIMIT 1";
+    command.CommandText = "SELECT name FROM users LIMIT 1";
     return "Hello World: " + await command.ExecuteScalarAsync();
 });
 ```
