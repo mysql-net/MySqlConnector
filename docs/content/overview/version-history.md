@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-11-04
+lastmod: 2023-11-14
 date: 2017-03-27
 menu:
   main:
@@ -11,63 +11,54 @@ weight: 30
 
 # Version History
 
-### 2.3.0 Beta 4
+### 2.3.0
 
 * Support .NET 8.0.
   * Mark some serialization APIs as `[Obsolete]`.
   * Implement `DbBatchCommand.CreateParameter`: [#1352](https://github.com/mysql-net/MySqlConnector/issues/1352).
   * Optimizations: Use `IUtf8SpanFormattable`, `Ascii.FromUtf16`, `Guid(bigEndian: true)` constructor, argument-throwing helpers, etc.
-* Expose connection pool metrics: [#491](https://github.com/mysql-net/MySqlConnector/issues/491).
 * Support .NET Framework 4.8 (`net48`) TFM: [#1355](https://github.com/mysql-net/MySqlConnector/discussions/1355)
   * This allows `TlsVersion = TLSv1.3` to be used on .NET Framework 4.8.
-* Remove `COM_MULTI` protocol support: [#946](https://github.com/mysql-net/MySqlConnector/issues/946).
-* Reduce allocations on common code paths.
-* Support `ZEROFILL` columns in `MySqlDecimal`: [#1354](https://github.com/mysql-net/MySqlConnector/issues/1354).
-* Support higher-precision `DateTime` values: [#1379](https://github.com/mysql-net/MySqlConnector/issues/1379).
-* Use `ValueTask` in `MySqlBulkCopy` API for all TFMs: [#1364](https://github.com/mysql-net/MySqlConnector/issues/1364).
-* Fix bug when column name begins with `@` in `MySqlBulkCopy`: [#1365](https://github.com/mysql-net/MySqlConnector/issues/1365).
-* Ignore `MySqlDbType` when serializing enum values: [#1384](https://github.com/mysql-net/MySqlConnector/issues/1384).
-
-### 2.3.0 Beta 3
-
-* Fix version parsing for MariaDB 11.0 and later: [#1311](https://github.com/mysql-net/MySqlConnector/pull/1311).
-* Support per-query variables for `CommandBehavior.SchemaOnly` and `SingleRow`: [#1312](https://github.com/mysql-net/MySqlConnector/pull/1312).
-* Perform XA rollback when preparing a transaction fails: [#1348](https://github.com/mysql-net/MySqlConnector/issues/1348).
-* Implement faster parsing for result sets with multiple rows: [#1330](https://github.com/mysql-net/MySqlConnector/pull/1330).
-* Add `MySqlDataSource.Name` and `MySqlDataSourceBuilder.UseName`.
-* Fix potential error in reallocating an internal buffer when writing ASCII text.
-* Update handling of `ActivityStatus` to latest conventions: [#1334](https://github.com/mysql-net/MySqlConnector/pull/1334).
-* Reduce overhead of `CommandTimeout`: [#1338](https://github.com/mysql-net/MySqlConnector/pull/1338).
-* Thanks to [Diego Dupin](https://github.com/rusher), [JackBOBO](https://github.com/JackBOBO), and [Piotr Kiełkowicz](https://github.com/Kielek) for contributions to this release.
-
-### 2.3.0 Beta 2
-
-* Support skipping metadata for prepared statements with MariaDB 10.6 and later: [#1301](https://github.com/mysql-net/MySqlConnector/pull/1301).
-* Support multiple authentication methods when connecting: [#1303](https://github.com/mysql-net/MySqlConnector/pull/1303).
-* Recycle `MySqlDataReader` objects: [#1277](https://github.com/mysql-net/MySqlConnector/issues/1277).
-* Optimize parameter encoding for ASCII strings: [#1296](https://github.com/mysql-net/MySqlConnector/pull/1296).
-* Use `TcpClient.ConnectAsync` overload with `CancellationToken` on .NET 5.0 and later: [#1291](https://github.com/mysql-net/MySqlConnector/pull/1291).
-* Fix cancellation when using a redirected connection: [#1305](https://github.com/mysql-net/MySqlConnector/pull/1305).
-* Fix `MySqlConnection.CloneWith` for connections created from a `MySqlDataSource`: [#1306](https://github.com/mysql-net/MySqlConnector/issues/1306).
-* Work around ephemeral PEM bug on Windows: [#1278](https://github.com/mysql-net/MySqlConnector/issues/1278).
-* Remove some unnecessary allocations.
-* Thanks to [Guillaume Boucher](https://github.com/gboucher90),  [Diego Dupin](https://github.com/rusher), and [Nickolay Batov](https://github.com/stilettk) for contributions to this release.
-
-### 2.3.0 Beta 1
-
+* Drop support for .NET 4.6.1 and .NET Core 3.1: [#636](https://github.com/mysql-net/MySqlConnector/issues/636), [#1273](https://github.com/mysql-net/MySqlConnector/issues/1273).
+  * .NET 4.6.1 support ended on 26 April 2022, and .NET Core 3.1 on 13 December 2022.
+  * The minimum supported versions are now .NET Framework 4.6.2 and .NET 6.0, although other frameworks should be supported via `netstandard2.0`.
 * `MySqlDataSource` is now available for all TFMs, not just .NET 7.0: [#1269](https://github.com/mysql-net/MySqlConnector/pull/1269).
   * This provides a single place to configure a MySQL connection and makes it easier to register `MySqlConnection` with dependency injection.
   * Add `MySqlDataSourceBuilder` class to configure `MySqlDataSource` instances.
+  * Add `MySqlDataSource.Name` and `MySqlDataSourceBuilder.UseName`.
 * Microsoft.Extensions.Logging is now used as the core logging abstraction: [#1110](https://github.com/mysql-net/MySqlConnector/issues/1110).
   * `MySqlConnectorLogManager.Provider` can still be used to add a logging destination, but it is now deprecated.
   * Use `MySqlDataSourceBuilder.UseLoggerFactory` to configure logging.
 * Add new MySqlConnector.DependencyInjection package: [#1271](https://github.com/mysql-net/MySqlConnector/issues/1271).
   * `MySqlDataSource` and `MySqlConnection` can be registered with dependency injection by using `builder.Services.AddMySqlDataSource(connectionString)`.
   * This also configures logging automatically.
-* Drop support for .NET 4.6.1 and .NET Core 3.1: [#636](https://github.com/mysql-net/MySqlConnector/issues/636), [#1273](https://github.com/mysql-net/MySqlConnector/issues/1273).
-  * .NET 4.6.1 support ended on 26 April 2022, and .NET Core 3.1 on 13 December 2022.
-  * The minimum supported versions are now .NET Framework 4.6.2 and .NET 6.0, although other frameworks should be supported via `netstandard2.0`.
+* Expose connection pool metrics: [#491](https://github.com/mysql-net/MySqlConnector/issues/491).
+* Remove `COM_MULTI` protocol support: [#946](https://github.com/mysql-net/MySqlConnector/issues/946).
+* Support `ZEROFILL` columns in `MySqlDecimal`: [#1354](https://github.com/mysql-net/MySqlConnector/issues/1354).
+* Support higher-precision `DateTime` values: [#1379](https://github.com/mysql-net/MySqlConnector/issues/1379).
+* Use `ValueTask` in `MySqlBulkCopy` API for all TFMs: [#1364](https://github.com/mysql-net/MySqlConnector/issues/1364).
+  * **Breaking** This changes the return type of `WriteToServerAsync` from `Task<MySqlBulkCopyResult>` to `ValueTask<MySqlBulkCopyResult>` on .NET Framework
+* Support skipping metadata for prepared statements with MariaDB 10.6 and later: [#1301](https://github.com/mysql-net/MySqlConnector/pull/1301).
+* Support multiple authentication methods when connecting: [#1303](https://github.com/mysql-net/MySqlConnector/pull/1303).
+* Support per-query variables for `CommandBehavior.SchemaOnly` and `SingleRow`: [#1312](https://github.com/mysql-net/MySqlConnector/pull/1312).
+* Recycle `MySqlDataReader` objects: [#1277](https://github.com/mysql-net/MySqlConnector/issues/1277).
+* Perform XA rollback when preparing a transaction fails: [#1348](https://github.com/mysql-net/MySqlConnector/issues/1348).
+* Implement faster parsing for result sets with multiple rows: [#1330](https://github.com/mysql-net/MySqlConnector/pull/1330).
+* Optimize parameter encoding for ASCII strings: [#1296](https://github.com/mysql-net/MySqlConnector/pull/1296).
+* Use `TcpClient.ConnectAsync` overload with `CancellationToken` on .NET 5.0 and later: [#1291](https://github.com/mysql-net/MySqlConnector/pull/1291).
+* Fix cancellation when using a redirected connection: [#1305](https://github.com/mysql-net/MySqlConnector/pull/1305).
+* Fix `MySqlConnection.CloneWith` for connections created from a `MySqlDataSource`: [#1306](https://github.com/mysql-net/MySqlConnector/issues/1306).
+* Work around ephemeral PEM bug on Windows: [#1278](https://github.com/mysql-net/MySqlConnector/issues/1278).
+* Reduce allocations on common code paths.
+* Fix bug when column name begins with `@` in `MySqlBulkCopy`: [#1365](https://github.com/mysql-net/MySqlConnector/issues/1365).
+* Ignore `MySqlDbType` when serializing enum values: [#1384](https://github.com/mysql-net/MySqlConnector/issues/1384).
 * Fix bug that didn't copy `MySqlDataSource` in `MySqlConnection.Clone`: [#1267](https://github.com/mysql-net/MySqlConnector/issues/1267).
+* Fix version parsing for MariaDB 11.0 and later: [#1311](https://github.com/mysql-net/MySqlConnector/pull/1311).
+* Fix potential error in reallocating an internal buffer when writing ASCII text.
+* Update handling of `ActivityStatus` to latest conventions: [#1334](https://github.com/mysql-net/MySqlConnector/pull/1334).
+* Reduce overhead of `CommandTimeout`: [#1338](https://github.com/mysql-net/MySqlConnector/pull/1338).
+* Reword end-of-stream message to be more generic: [#1383](https://github.com/mysql-net/MySqlConnector/issues/1383).
+* Thanks to [Guillaume Boucher](https://github.com/gboucher90), [JackBOBO](https://github.com/JackBOBO), [Piotr Kiełkowicz](https://github.com/Kielek), [Diego Dupin](https://github.com/rusher), and [Nickolay Batov](https://github.com/stilettk) for contributions to this release.
 
 ### 2.2.7
 
