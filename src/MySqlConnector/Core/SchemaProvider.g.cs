@@ -83,7 +83,7 @@ internal sealed partial class SchemaProvider
 
 	private Task FillMetaDataCollectionsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'MetaDataCollections'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -129,7 +129,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillCharacterSetsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'CharacterSets'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -146,7 +146,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillCollationsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'Collations'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -165,7 +165,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillCollationCharacterSetApplicabilityAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'CollationCharacterSetApplicability'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -227,7 +227,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillDatabasesAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'Databases'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -245,7 +245,7 @@ internal sealed partial class SchemaProvider
 
 	private Task FillDataSourceInformationAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'DataSourceInformation'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -277,7 +277,7 @@ internal sealed partial class SchemaProvider
 
 	private Task FillDataTypesAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'DataTypes'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -315,7 +315,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillEnginesAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'Engines'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -334,7 +334,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillKeyColumnUsageAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'KeyColumnUsage'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -359,7 +359,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillKeyWordsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'KeyWords'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -374,7 +374,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillParametersAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'Parameters'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -403,7 +403,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillPartitionsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'Partitions'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -441,7 +441,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillPluginsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'Plugins'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -465,7 +465,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillProceduresAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'Procedures'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -498,7 +498,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillProcessListAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'ProcessList'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -519,7 +519,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillProfilingAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'Profiling'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -550,7 +550,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillReferentialConstraintsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'ReferentialConstraints'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -574,7 +574,7 @@ internal sealed partial class SchemaProvider
 
 	private Task FillReservedWordsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'ReservedWords'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -590,7 +590,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillResourceGroupsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'ResourceGroups'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -608,7 +608,7 @@ internal sealed partial class SchemaProvider
 
 	private Task FillRestrictionsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'Restrictions'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -634,7 +634,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillSchemaPrivilegesAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'SchemaPrivileges'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -699,7 +699,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillTableConstraintsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'TableConstraints'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -718,7 +718,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillTablePrivilegesAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'TablePrivileges'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -737,7 +737,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillTableSpacesAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'TableSpaces'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -759,7 +759,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillTriggersAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'Triggers'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -794,7 +794,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillUserPrivilegesAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'UserPrivileges'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
@@ -811,7 +811,7 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillViewsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is not null)
+		if (restrictionValues is not null && restrictionValues.Length > 0)
 			throw new ArgumentException("restrictionValues is not supported for schema 'Views'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
