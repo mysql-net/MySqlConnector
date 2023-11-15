@@ -62,7 +62,7 @@ foreach (var schema in schemaCollections)
 	if (!supportsRestrictions)
 	{
 		codeWriter.WriteLine($"""
-					if (restrictionValues is not null)
+					if (restrictionValues is not null && restrictionValues.Length > 0)
 						throw new ArgumentException("restrictionValues is not supported for schema '{schema.Name}'.", nameof(restrictionValues));
 			""");
 	}
