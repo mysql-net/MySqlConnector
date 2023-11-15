@@ -384,7 +384,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	internal async Task OpenAsync(IOBehavior? ioBehavior, CancellationToken cancellationToken)
 	{
-		var openStartTickCount = Environment.TickCount;
+		var openStartingTimestamp = Stopwatch.GetTimestamp();
 
 		VerifyNotDisposed();
 		cancellationToken.ThrowIfCancellationRequested();
@@ -416,7 +416,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			try
 			{
-				m_session = await CreateSessionAsync(pool, openStartTickCount, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+				m_session = await CreateSessionAsync(pool, openStartingTimestamp, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 				m_hasBeenOpened = true;
 				SetState(ConnectionState.Open);
 			}
@@ -894,7 +894,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	private async ValueTask<ServerSession> CreateSessionAsync(ConnectionPool? pool, int startTickCount, Activity? activity, IOBehavior? ioBehavior, CancellationToken cancellationToken)
+	private async ValueTask<ServerSession> CreateSessionAsync(ConnectionPool? pool, long startingTimestamp, Activity? activity, IOBehavior? ioBehavior, CancellationToken cancellationToken)
 	{
 		MetricsReporter.AddPendingRequest(pool);
 		var connectionSettings = GetInitializedConnectionSettings();
@@ -907,7 +907,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			// the cancellation token for connection is controlled by 'cancellationToken' (if it can be cancelled), ConnectionTimeout
 			// (from the connection string, if non-zero), or a combination of both
 			if (connectionSettings.ConnectionTimeout != 0)
-				timeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(Math.Max(1, connectionSettings.ConnectionTimeoutMilliseconds - unchecked(Environment.TickCount - startTickCount))));
+				timeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(Math.Max(1, connectionSettings.ConnectionTimeoutMilliseconds - (int) Utility.GetElapsedMilliseconds(startingTimestamp))));
 			if (cancellationToken.CanBeCanceled && timeoutSource is not null)
 				linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
 			var connectToken = linkedSource?.Token ?? timeoutSource?.Token ?? cancellationToken;
@@ -916,7 +916,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			if (pool is not null)
 			{
 				// this returns an open session
-				return await pool.GetSessionAsync(this, startTickCount, connectionSettings.ConnectionTimeoutMilliseconds, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
+				return await pool.GetSessionAsync(this, startingTimestamp, connectionSettings.ConnectionTimeoutMilliseconds, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
 			}
 			else
 			{
@@ -929,7 +929,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				Log.CreatedNonPooledSession(m_logger, session.Id);
 				try
 				{
-					await session.ConnectAsync(connectionSettings, this, startTickCount, loadBalancer, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
+					await session.ConnectAsync(connectionSettings, this, startingTimestamp, loadBalancer, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
 					return session;
 				}
 				catch (Exception)

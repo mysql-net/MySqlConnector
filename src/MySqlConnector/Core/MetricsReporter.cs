@@ -9,9 +9,9 @@ internal static class MetricsReporter
 	public static void RemoveIdle(ConnectionPool pool) => s_connectionsUsageCounter.Add(-1, pool.IdleStateTagList);
 	public static void AddUsed(ConnectionPool pool) => s_connectionsUsageCounter.Add(1, pool.UsedStateTagList);
 	public static void RemoveUsed(ConnectionPool pool) => s_connectionsUsageCounter.Add(-1, pool.UsedStateTagList);
-	public static void RecordCreateTime(ConnectionPool pool, uint ticks) => s_createTimeHistory.Record(ticks, pool.PoolNameTagList);
-	public static void RecordUseTime(ConnectionPool pool, uint ticks) => s_useTimeHistory.Record(ticks, pool.PoolNameTagList);
-	public static void RecordWaitTime(ConnectionPool pool, uint ticks) => s_waitTimeHistory.Record(ticks, pool.PoolNameTagList);
+	public static void RecordCreateTime(ConnectionPool pool, float milliseconds) => s_createTimeHistory.Record(milliseconds, pool.PoolNameTagList);
+	public static void RecordUseTime(ConnectionPool pool, float milliseconds) => s_useTimeHistory.Record(milliseconds, pool.PoolNameTagList);
+	public static void RecordWaitTime(ConnectionPool pool, float milliseconds) => s_waitTimeHistory.Record(milliseconds, pool.PoolNameTagList);
 
 	public static void AddPendingRequest(ConnectionPool? pool)
 	{

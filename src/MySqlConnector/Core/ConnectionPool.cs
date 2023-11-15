@@ -20,7 +20,7 @@ internal sealed class ConnectionPool : IDisposable
 
 	public SslProtocols SslProtocols { get; set; }
 
-	public async ValueTask<ServerSession> GetSessionAsync(MySqlConnection connection, int startTickCount, int timeoutMilliseconds, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public async ValueTask<ServerSession> GetSessionAsync(MySqlConnection connection, long startingTimestamp, int timeoutMilliseconds, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 
@@ -72,7 +72,7 @@ internal sealed class ConnectionPool : IDisposable
 					if (ConnectionSettings.ConnectionReset || session.DatabaseOverride is not null)
 					{
 						if (timeoutMilliseconds != 0)
-							session.SetTimeout(Math.Max(1, timeoutMilliseconds - (Environment.TickCount - startTickCount)));
+							session.SetTimeout(Math.Max(1, timeoutMilliseconds - (int) Utility.GetElapsedMilliseconds(startingTimestamp)));
 						reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, connection, ioBehavior, cancellationToken).ConfigureAwait(false);
 						session.SetTimeout(Constants.InfiniteTimeout);
 					}
@@ -103,14 +103,14 @@ internal sealed class ConnectionPool : IDisposable
 					ActivitySourceHelper.CopyTags(session.ActivityTags, activity);
 					Log.ReturningPooledSession(m_logger, Id, session.Id, leasedSessionsCountPooled);
 
-					session.LastLeasedTicks = unchecked((uint) Environment.TickCount);
-					MetricsReporter.RecordWaitTime(this, unchecked(session.LastLeasedTicks - (uint) startTickCount));
+					session.LastLeasedTimestamp = Stopwatch.GetTimestamp();
+					MetricsReporter.RecordWaitTime(this, Utility.GetElapsedMilliseconds(startingTimestamp, session.LastLeasedTimestamp));
 					return session;
 				}
 			}
 
 			// create a new session
-			session = await ConnectSessionAsync(connection, s_createdNewSession, startTickCount, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+			session = await ConnectSessionAsync(connection, s_createdNewSession, startingTimestamp, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 			AdjustHostConnectionCount(session, 1);
 			session.OwningConnection = new(connection);
 			int leasedSessionsCountNew;
@@ -122,8 +122,8 @@ internal sealed class ConnectionPool : IDisposable
 			MetricsReporter.AddUsed(this);
 			Log.ReturningNewSession(m_logger, Id, session.Id, leasedSessionsCountNew);
 
-			session.LastLeasedTicks = unchecked((uint) Environment.TickCount);
-			MetricsReporter.RecordCreateTime(this, unchecked(session.LastLeasedTicks - (uint) startTickCount));
+			session.LastLeasedTimestamp = Stopwatch.GetTimestamp();
+			MetricsReporter.RecordCreateTime(this, Utility.GetElapsedMilliseconds(startingTimestamp, session.LastLeasedTimestamp));
 			return session;
 		}
 		catch (Exception ex)
@@ -161,7 +161,7 @@ internal sealed class ConnectionPool : IDisposable
 		if (session.PoolGeneration != m_generation)
 			return 2;
 		if (ConnectionSettings.ConnectionLifeTime > 0
-			&& unchecked((uint) Environment.TickCount) - session.CreatedTicks >= ConnectionSettings.ConnectionLifeTime)
+			&& Utility.GetElapsedMilliseconds(session.CreatedTimestamp) >= ConnectionSettings.ConnectionLifeTime)
 			return 3;
 
 		return 0;
@@ -214,7 +214,7 @@ internal sealed class ConnectionPool : IDisposable
 	{
 		Log.ReapingConnectionPool(m_logger, Id);
 		await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
-		await CleanPoolAsync(ioBehavior, session => (unchecked((uint) Environment.TickCount) - session.LastReturnedTicks) / 1000 >= ConnectionSettings.ConnectionIdleTimeout, true, cancellationToken).ConfigureAwait(false);
+		await CleanPoolAsync(ioBehavior, session => Utility.GetElapsedMilliseconds(session.LastReturnedTimestamp) / 1000 >= ConnectionSettings.ConnectionIdleTimeout, true, cancellationToken).ConfigureAwait(false);
 	}
 
 	/// <summary>
@@ -403,7 +403,7 @@ internal sealed class ConnectionPool : IDisposable
 
 			try
 			{
-				var session = await ConnectSessionAsync(connection, s_createdToReachMinimumPoolSize, Environment.TickCount, null, ioBehavior, cancellationToken).ConfigureAwait(false);
+				var session = await ConnectSessionAsync(connection, s_createdToReachMinimumPoolSize, Stopwatch.GetTimestamp(), null, ioBehavior, cancellationToken).ConfigureAwait(false);
 				AdjustHostConnectionCount(session, 1);
 				lock (m_sessions)
 					m_sessions.AddFirst(session);
@@ -417,7 +417,7 @@ internal sealed class ConnectionPool : IDisposable
 		}
 	}
 
-	private async ValueTask<ServerSession> ConnectSessionAsync(MySqlConnection connection, Action<ILogger, int, string, Exception?> logMessage, int startTickCount, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async ValueTask<ServerSession> ConnectSessionAsync(MySqlConnection connection, Action<ILogger, int, string, Exception?> logMessage, long startingTimestamp, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		var session = new ServerSession(m_connectionLogger, this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 		if (m_logger.IsEnabled(LogLevel.Debug))
@@ -425,7 +425,7 @@ internal sealed class ConnectionPool : IDisposable
 		string? statusInfo;
 		try
 		{
-			statusInfo = await session.ConnectAsync(ConnectionSettings, connection, startTickCount, m_loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+			statusInfo = await session.ConnectAsync(ConnectionSettings, connection, startingTimestamp, m_loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 		}
 		catch (Exception)
 		{
@@ -452,7 +452,7 @@ internal sealed class ConnectionPool : IDisposable
 					var redirectedSession = new ServerSession(m_connectionLogger, this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 					try
 					{
-						await redirectedSession.ConnectAsync(redirectedSettings, connection, startTickCount, m_loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+						await redirectedSession.ConnectAsync(redirectedSettings, connection, startingTimestamp, m_loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
 					catch (Exception ex)
 					{

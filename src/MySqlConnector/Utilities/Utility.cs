@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Buffers.Text;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Reflection;
@@ -562,6 +563,26 @@ internal static class Utility
 		osDescription = RuntimeInformation.OSDescription;
 		architecture = RuntimeInformation.ProcessArchitecture.ToString();
 	}
+#endif
+
+	/// <summary>
+	/// Gets the elapsed time (in milliseconds) since the specified <paramref name="startingTimestamp"/> (which must be a value returned from <see cref="Stopwatch.GetTimestamp"/>.
+	/// </summary>
+	public static float GetElapsedMilliseconds(long startingTimestamp) =>
+#if NET7_0_OR_GREATER
+		(float) Stopwatch.GetElapsedTime(startingTimestamp).TotalMilliseconds;
+#else
+		GetElapsedMilliseconds(startingTimestamp, Stopwatch.GetTimestamp());
+#endif
+
+	/// <summary>
+	/// Gets the elapsed time (in milliseconds) between the specified <paramref name="startingTimestamp"/> and <paramref name="endingTimestamp"/>. (These must be values returned from <see cref="Stopwatch.GetTimestamp"/>.)
+	/// </summary>
+	public static float GetElapsedMilliseconds(long startingTimestamp, long endingTimestamp) =>
+#if NET7_0_OR_GREATER
+		(float) Stopwatch.GetElapsedTime(startingTimestamp, endingTimestamp).TotalMilliseconds;
+#else
+		(endingTimestamp - startingTimestamp) * 1000.0f / Stopwatch.Frequency;
 #endif
 
 #if NET462

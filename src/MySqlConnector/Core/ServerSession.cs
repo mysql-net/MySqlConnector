@@ -38,7 +38,7 @@ internal sealed partial class ServerSession
 		m_payloadCache = new();
 		Id = (pool?.Id ?? 0) + "." + id;
 		ServerVersion = ServerVersion.Empty;
-		CreatedTicks = unchecked((uint) Environment.TickCount);
+		CreatedTimestamp = Stopwatch.GetTimestamp();
 		Pool = pool;
 		PoolGeneration = poolGeneration;
 		HostName = "";
@@ -54,11 +54,11 @@ internal sealed partial class ServerSession
 	public int CancellationTimeout { get; private set; }
 	public int ConnectionId { get; set; }
 	public byte[]? AuthPluginData { get; set; }
-	public uint CreatedTicks { get; }
+	public long CreatedTimestamp { get; }
 	public ConnectionPool? Pool { get; }
 	public int PoolGeneration { get; }
-	public uint LastLeasedTicks { get; set; }
-	public uint LastReturnedTicks { get; private set; }
+	public long LastLeasedTimestamp { get; set; }
+	public long LastReturnedTimestamp { get; private set; }
 	public string? DatabaseOverride { get; set; }
 	public string HostName { get; private set; }
 	public IPEndPoint? IPEndPoint => m_tcpClient?.Client.RemoteEndPoint as IPEndPoint;
@@ -75,11 +75,11 @@ internal sealed partial class ServerSession
 	public ValueTask ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
 	{
 		Log.ReturningToPool(m_logger, Id, Pool?.Id ?? 0);
-		LastReturnedTicks = unchecked((uint) Environment.TickCount);
+		LastReturnedTimestamp = Stopwatch.GetTimestamp();
 		if (Pool is null)
 			return default;
-		MetricsReporter.RecordUseTime(Pool, unchecked(LastReturnedTicks - LastLeasedTicks));
-		LastLeasedTicks = 0;
+		MetricsReporter.RecordUseTime(Pool, Utility.GetElapsedMilliseconds(LastLeasedTimestamp, LastReturnedTimestamp));
+		LastLeasedTimestamp = 0;
 		return Pool.ReturnAsync(ioBehavior, this);
 	}
 
@@ -392,7 +392,7 @@ internal sealed partial class ServerSession
 			m_state = State.Closed;
 	}
 
-	public async Task<string?> ConnectAsync(ConnectionSettings cs, MySqlConnection connection, int startTickCount, ILoadBalancer? loadBalancer, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public async Task<string?> ConnectAsync(ConnectionSettings cs, MySqlConnection connection, long startingTimestamp, ILoadBalancer? loadBalancer, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		string? statusInfo = null;
 
@@ -445,7 +445,7 @@ internal sealed partial class ServerSession
 				else if (cs.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket)
 					connected = await OpenUnixSocketAsync(cs, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 				else if (cs.ConnectionProtocol == MySqlConnectionProtocol.NamedPipe)
-					connected = await OpenNamedPipeAsync(cs, startTickCount, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+					connected = await OpenNamedPipeAsync(cs, startingTimestamp, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 				if (!connected)
 				{
 					lock (m_lock)
@@ -456,7 +456,7 @@ internal sealed partial class ServerSession
 
 				var byteHandler = m_socket is null ? new StreamByteHandler(m_stream!) : (IByteHandler) new SocketByteHandler(m_socket);
 				if (cs.ConnectionTimeout != 0)
-					byteHandler.RemainingTimeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - unchecked(Environment.TickCount - startTickCount));
+					byteHandler.RemainingTimeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - (int) Utility.GetElapsedMilliseconds(startingTimestamp));
 				m_payloadHandler = new StandardPayloadHandler(byteHandler);
 
 				payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -1200,7 +1200,7 @@ internal sealed partial class ServerSession
 		return false;
 	}
 
-	private async Task<bool> OpenNamedPipeAsync(ConnectionSettings cs, int startTickCount, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task<bool> OpenNamedPipeAsync(ConnectionSettings cs, long startingTimestamp, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		Log.ConnectingToNamedPipe(m_logger, Id, cs.PipeName, cs.HostNames![0]);
 
@@ -1218,7 +1218,7 @@ internal sealed partial class ServerSession
 		}
 
 		var namedPipeStream = new NamedPipeClientStream(cs.HostNames![0], cs.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-		var timeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - unchecked(Environment.TickCount - startTickCount));
+		var timeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - (int) Utility.GetElapsedMilliseconds(startingTimestamp));
 		try
 		{
 			using (cancellationToken.Register(namedPipeStream.Dispose))
