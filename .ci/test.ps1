@@ -23,6 +23,12 @@ if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
 popd
+pushd tests\MySqlConnector.DependencyInjection.Tests
+dotnet test -c Release
+if ($LASTEXITCODE -ne 0){
+    exit $LASTEXITCODE;
+}
+popd
 
 pushd .\tests\IntegrationTests
 

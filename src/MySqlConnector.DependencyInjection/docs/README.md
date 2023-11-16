@@ -48,3 +48,33 @@ builder.Services.AddMySqlDataSource("Server=server;User ID=test;Password=test;Da
 	x => x.UseRemoteCertificateValidationCallback((sender, certificate, chain, sslPolicyErrors) => { /* custom logic */ })
 );
 ```
+
+## Keyed Services
+
+Use the `AddKeyedMySqlDataSource` method to register a `MySqlDataSource` as a [keyed service](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8#keyed-di-services).
+This is useful if you have multiple connection strings or need to connect to multiple databases.
+If the service key is a string, it will automatically be used as the `MySqlDataSource` name;
+to customize this, call the `AddKeyedMySqlDataSource(object?, string, Action<MySqlDataSourceBuilder>)` overload and call `MySqlDataSourceBuilder.UseName`.
+
+```csharp
+builder.Services.AddKeyedMySqlDataSource("users", builder.Configuration.GetConnectionString("Users"));
+builder.Services.AddKeyedMySqlDataSource("products", builder.Configuration.GetConnectionString("Products"));
+
+app.MapGet("/users/{userId}", async (int userId, [FromKeyedServices("users")] MySqlConnection connection) =>
+{
+    await connection.OpenAsync();
+    await using var command = connection.CreateCommand();
+    command.CommandText = "SELECT name FROM users WHERE user_id = @userId LIMIT 1";
+    command.Parameters.AddWithValue("@userId", userId);
+    return $"Hello, {await command.ExecuteScalarAsync()}";
+});
+
+app.MapGet("/products/{productId}", async (int productId, [FromKeyedServices("products")] MySqlConnection connection) =>
+{
+    await connection.OpenAsync();
+    await using var command = connection.CreateCommand();
+    command.CommandText = "SELECT name FROM products WHERE product_id = @productId LIMIT 1";
+    command.Parameters.AddWithValue("@productId", productId);
+    return await command.ExecuteScalarAsync();
+});
+```

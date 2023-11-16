@@ -48,6 +48,18 @@ steps:
     targetPath: 'artifacts/publish/Conformance.Tests/release_net8.0'
 
 - task: DotNetCoreCLI@2
+  displayName: 'Publish MySqlConnector.DependencyInjection.Tests'
+  inputs:
+    command: 'publish'
+    arguments: '-c Release -f net8.0 --no-build tests/MySqlConnector.DependencyInjection.Tests/MySqlConnector.DependencyInjection.Tests.csproj'
+    publishWebProjects: false
+    zipAfterPublish: false
+- task: PublishPipelineArtifact@0
+  inputs:
+    artifactName: 'MySqlConnector.DependencyInjection.Tests-8.0-$(Agent.OS)'
+    targetPath: 'artifacts/publish/MySqlConnector.DependencyInjection.Tests/release_net8.0'
+
+- task: DotNetCoreCLI@2
   displayName: 'Publish IntegrationTests (7.0)'
   inputs:
     command: 'publish'

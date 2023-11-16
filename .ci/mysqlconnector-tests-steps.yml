@@ -14,6 +14,16 @@ steps:
     command: 'custom'
     custom: 'vstest'
     arguments: 'MySqlConnector.Tests.dll /logger:trx'
+- task: DownloadPipelineArtifact@0
+  inputs:
+    artifactName: 'MySqlConnector.DependencyInjection.Tests-8.0-$(Agent.OS)'
+    targetPath: $(System.DefaultWorkingDirectory)
+- task: DotNetCoreCLI@2
+  displayName: 'Run MySqlConnector.DependencyInjection.Tests'
+  inputs:
+    command: 'custom'
+    custom: 'vstest'
+    arguments: 'MySqlConnector.DependencyInjection.Tests.dll /logger:trx'
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: VSTest
