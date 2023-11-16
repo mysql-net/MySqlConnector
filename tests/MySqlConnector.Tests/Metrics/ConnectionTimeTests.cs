@@ -11,7 +11,7 @@ public class ConnectionTimeTests : MetricsTestsBase
 		await connection.OpenAsync();
 		var measurements = GetAndClearMeasurements("db.client.connections.create_time");
 		var time = Assert.Single(measurements);
-		Assert.InRange(time, 0, 300);
+		Assert.InRange(time, 0, 0.3);
 	}
 
 	[Fact(Skip = MetricsSkip)]
@@ -25,7 +25,7 @@ public class ConnectionTimeTests : MetricsTestsBase
 		await connection.OpenAsync();
 		var measurements = GetAndClearMeasurements("db.client.connections.create_time");
 		var time = Assert.Single(measurements);
-		Assert.InRange(time, 1000, 1300);
+		Assert.InRange(time, 1.0, 1.3);
 	}
 
 	[Fact(Skip = MetricsSkip)]
@@ -41,7 +41,7 @@ public class ConnectionTimeTests : MetricsTestsBase
 		await connection.OpenAsync();
 		var measurements = GetAndClearMeasurements("db.client.connections.wait_time");
 		var time = Assert.Single(measurements);
-		Assert.InRange(time, 0, 200);
+		Assert.InRange(time, 0, 0.2);
 	}
 
 	[Fact(Skip = MetricsSkip)]
@@ -58,7 +58,7 @@ public class ConnectionTimeTests : MetricsTestsBase
 		await connection.OpenAsync();
 		var measurements = GetAndClearMeasurements("db.client.connections.wait_time");
 		var time = Assert.Single(measurements);
-		Assert.InRange(time, 1000, 1200);
+		Assert.InRange(time, 1.0, 1.2);
 	}
 
 	[Fact(Skip = MetricsSkip)]
@@ -72,7 +72,7 @@ public class ConnectionTimeTests : MetricsTestsBase
 		connection.Close();
 
 		var time = Assert.Single(GetAndClearMeasurements("db.client.connections.use_time"));
-		Assert.InRange(time, 0, 100);
+		Assert.InRange(time, 0, 0.1);
 	}
 
 	[Fact(Skip = MetricsSkip)]
@@ -87,6 +87,6 @@ public class ConnectionTimeTests : MetricsTestsBase
 		connection.Close();
 
 		var time = Assert.Single(GetAndClearMeasurements("db.client.connections.use_time"));
-		Assert.InRange(time, 500, 600);
+		Assert.InRange(time, 0.5, 0.6);
 	}
 }

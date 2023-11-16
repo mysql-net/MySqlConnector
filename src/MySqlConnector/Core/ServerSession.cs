@@ -78,7 +78,7 @@ internal sealed partial class ServerSession
 		LastReturnedTimestamp = Stopwatch.GetTimestamp();
 		if (Pool is null)
 			return default;
-		MetricsReporter.RecordUseTime(Pool, Utility.GetElapsedMilliseconds(LastLeasedTimestamp, LastReturnedTimestamp));
+		MetricsReporter.RecordUseTime(Pool, Utility.GetElapsedSeconds(LastLeasedTimestamp, LastReturnedTimestamp));
 		LastLeasedTimestamp = 0;
 		return Pool.ReturnAsync(ioBehavior, this);
 	}
@@ -456,7 +456,7 @@ internal sealed partial class ServerSession
 
 				var byteHandler = m_socket is null ? new StreamByteHandler(m_stream!) : (IByteHandler) new SocketByteHandler(m_socket);
 				if (cs.ConnectionTimeout != 0)
-					byteHandler.RemainingTimeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - (int) Utility.GetElapsedMilliseconds(startingTimestamp));
+					byteHandler.RemainingTimeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - Utility.GetElapsedMilliseconds(startingTimestamp));
 				m_payloadHandler = new StandardPayloadHandler(byteHandler);
 
 				payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -1218,7 +1218,7 @@ internal sealed partial class ServerSession
 		}
 
 		var namedPipeStream = new NamedPipeClientStream(cs.HostNames![0], cs.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-		var timeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - (int) Utility.GetElapsedMilliseconds(startingTimestamp));
+		var timeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - Utility.GetElapsedMilliseconds(startingTimestamp));
 		try
 		{
 			using (cancellationToken.Register(namedPipeStream.Dispose))

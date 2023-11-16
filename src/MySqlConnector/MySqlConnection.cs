@@ -907,7 +907,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			// the cancellation token for connection is controlled by 'cancellationToken' (if it can be cancelled), ConnectionTimeout
 			// (from the connection string, if non-zero), or a combination of both
 			if (connectionSettings.ConnectionTimeout != 0)
-				timeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(Math.Max(1, connectionSettings.ConnectionTimeoutMilliseconds - (int) Utility.GetElapsedMilliseconds(startingTimestamp))));
+				timeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(Math.Max(1, connectionSettings.ConnectionTimeoutMilliseconds - Utility.GetElapsedMilliseconds(startingTimestamp))));
 			if (cancellationToken.CanBeCanceled && timeoutSource is not null)
 				linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
 			var connectToken = linkedSource?.Token ?? timeoutSource?.Token ?? cancellationToken;

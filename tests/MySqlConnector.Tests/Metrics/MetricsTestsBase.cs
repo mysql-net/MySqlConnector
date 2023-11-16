@@ -23,7 +23,7 @@ public abstract class MetricsTestsBase : IDisposable
 			}
 		};
 		m_meterListener.SetMeasurementEventCallback<int>(OnMeasurementRecorded);
-		m_meterListener.SetMeasurementEventCallback<float>(OnMeasurementRecorded);
+		m_meterListener.SetMeasurementEventCallback<double>(OnMeasurementRecorded);
 		m_meterListener.Start();
 	}
 
@@ -68,11 +68,11 @@ public abstract class MetricsTestsBase : IDisposable
 			Assert.Equal(expected, m_measurements.GetValueOrDefault(name));
 	}
 
-	protected List<float> GetAndClearMeasurements(string name)
+	protected List<double> GetAndClearMeasurements(string name)
 	{
 		if (!m_timeMeasurements.TryGetValue(name, out var list))
-			list = new List<float>();
-		m_timeMeasurements[name] = new List<float>();
+			list = new();
+		m_timeMeasurements[name] = new List<double>();
 		return list;
 	}
 
@@ -96,7 +96,7 @@ public abstract class MetricsTestsBase : IDisposable
 		}
 	}
 
-	private void OnMeasurementRecorded(Instrument instrument, float measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state)
+	private void OnMeasurementRecorded(Instrument instrument, double measurement, ReadOnlySpan<KeyValuePair<string, object?>> tags, object? state)
 	{
 		var (poolName, stateTag) = GetTags(tags);
 		if (poolName != PoolName)
@@ -105,7 +105,7 @@ public abstract class MetricsTestsBase : IDisposable
 		lock (m_timeMeasurements)
 		{
 			if (!m_timeMeasurements.TryGetValue(instrument.Name, out var list))
-				list = m_timeMeasurements[instrument.Name] = new List<float>();
+				list = m_timeMeasurements[instrument.Name] = new List<double>();
 			list.Add(measurement);
 		}
 	}
@@ -126,6 +126,6 @@ public abstract class MetricsTestsBase : IDisposable
 
 
 	private readonly Dictionary<string, int> m_measurements;
-	private readonly Dictionary<string, List<float>> m_timeMeasurements;
+	private readonly Dictionary<string, List<double>> m_timeMeasurements;
 	private readonly MeterListener m_meterListener;
 }

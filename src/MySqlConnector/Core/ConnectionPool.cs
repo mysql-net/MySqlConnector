@@ -72,7 +72,7 @@ internal sealed class ConnectionPool : IDisposable
 					if (ConnectionSettings.ConnectionReset || session.DatabaseOverride is not null)
 					{
 						if (timeoutMilliseconds != 0)
-							session.SetTimeout(Math.Max(1, timeoutMilliseconds - (int) Utility.GetElapsedMilliseconds(startingTimestamp)));
+							session.SetTimeout(Math.Max(1, timeoutMilliseconds - Utility.GetElapsedMilliseconds(startingTimestamp)));
 						reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, connection, ioBehavior, cancellationToken).ConfigureAwait(false);
 						session.SetTimeout(Constants.InfiniteTimeout);
 					}
@@ -104,7 +104,7 @@ internal sealed class ConnectionPool : IDisposable
 					Log.ReturningPooledSession(m_logger, Id, session.Id, leasedSessionsCountPooled);
 
 					session.LastLeasedTimestamp = Stopwatch.GetTimestamp();
-					MetricsReporter.RecordWaitTime(this, Utility.GetElapsedMilliseconds(startingTimestamp, session.LastLeasedTimestamp));
+					MetricsReporter.RecordWaitTime(this, Utility.GetElapsedSeconds(startingTimestamp, session.LastLeasedTimestamp));
 					return session;
 				}
 			}
@@ -123,7 +123,7 @@ internal sealed class ConnectionPool : IDisposable
 			Log.ReturningNewSession(m_logger, Id, session.Id, leasedSessionsCountNew);
 
 			session.LastLeasedTimestamp = Stopwatch.GetTimestamp();
-			MetricsReporter.RecordCreateTime(this, Utility.GetElapsedMilliseconds(startingTimestamp, session.LastLeasedTimestamp));
+			MetricsReporter.RecordCreateTime(this, Utility.GetElapsedSeconds(startingTimestamp, session.LastLeasedTimestamp));
 			return session;
 		}
 		catch (Exception ex)

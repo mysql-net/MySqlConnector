@@ -9,9 +9,9 @@ internal static class MetricsReporter
 	public static void RemoveIdle(ConnectionPool pool) => s_connectionsUsageCounter.Add(-1, pool.IdleStateTagList);
 	public static void AddUsed(ConnectionPool pool) => s_connectionsUsageCounter.Add(1, pool.UsedStateTagList);
 	public static void RemoveUsed(ConnectionPool pool) => s_connectionsUsageCounter.Add(-1, pool.UsedStateTagList);
-	public static void RecordCreateTime(ConnectionPool pool, float milliseconds) => s_createTimeHistory.Record(milliseconds, pool.PoolNameTagList);
-	public static void RecordUseTime(ConnectionPool pool, float milliseconds) => s_useTimeHistory.Record(milliseconds, pool.PoolNameTagList);
-	public static void RecordWaitTime(ConnectionPool pool, float milliseconds) => s_waitTimeHistory.Record(milliseconds, pool.PoolNameTagList);
+	public static void RecordCreateTime(ConnectionPool pool, double seconds) => s_createTimeHistory.Record(seconds, pool.PoolNameTagList);
+	public static void RecordUseTime(ConnectionPool pool, double seconds) => s_useTimeHistory.Record(seconds, pool.PoolNameTagList);
+	public static void RecordWaitTime(ConnectionPool pool, double seconds) => s_waitTimeHistory.Record(seconds, pool.PoolNameTagList);
 
 	public static void AddPendingRequest(ConnectionPool? pool)
 	{
@@ -48,10 +48,10 @@ internal static class MetricsReporter
 			unit: "{connection}", description: "The number of connections that are currently in the state described by the state tag.");
 	private static readonly UpDownCounter<int> s_pendingRequestsCounter = ActivitySourceHelper.Meter.CreateUpDownCounter<int>("db.client.connections.pending_requests",
 			unit: "{request}", description: "The number of pending requests for an open connection, cumulative for the entire pool.");
-	private static readonly Histogram<float> s_createTimeHistory = ActivitySourceHelper.Meter.CreateHistogram<float>("db.client.connections.create_time",
-			unit: "ms", description: "The time it took to create a new connection.");
-	private static readonly Histogram<float> s_useTimeHistory = ActivitySourceHelper.Meter.CreateHistogram<float>("db.client.connections.use_time",
-		unit: "ms", description: "The time between borrowing a connection and returning it to the pool.");
-	private static readonly Histogram<float> s_waitTimeHistory = ActivitySourceHelper.Meter.CreateHistogram<float>("db.client.connections.wait_time",
-			unit: "ms", description: "The time it took to obtain an open connection from the pool.");
+	private static readonly Histogram<double> s_createTimeHistory = ActivitySourceHelper.Meter.CreateHistogram<double>("db.client.connections.create_time",
+			unit: "s", description: "The time it took to create a new connection.");
+	private static readonly Histogram<double> s_useTimeHistory = ActivitySourceHelper.Meter.CreateHistogram<double>("db.client.connections.use_time",
+		unit: "s", description: "The time between borrowing a connection and returning it to the pool.");
+	private static readonly Histogram<double> s_waitTimeHistory = ActivitySourceHelper.Meter.CreateHistogram<double>("db.client.connections.wait_time",
+			unit: "s", description: "The time it took to obtain an open connection from the pool.");
 }

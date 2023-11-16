@@ -568,21 +568,21 @@ internal static class Utility
 	/// <summary>
 	/// Gets the elapsed time (in milliseconds) since the specified <paramref name="startingTimestamp"/> (which must be a value returned from <see cref="Stopwatch.GetTimestamp"/>.
 	/// </summary>
-	public static float GetElapsedMilliseconds(long startingTimestamp) =>
+	public static int GetElapsedMilliseconds(long startingTimestamp) =>
 #if NET7_0_OR_GREATER
-		(float) Stopwatch.GetElapsedTime(startingTimestamp).TotalMilliseconds;
+		(int) Stopwatch.GetElapsedTime(startingTimestamp).TotalMilliseconds;
 #else
-		GetElapsedMilliseconds(startingTimestamp, Stopwatch.GetTimestamp());
+		(int) ((Stopwatch.GetTimestamp() - startingTimestamp) * 1000L / Stopwatch.Frequency);
 #endif
 
 	/// <summary>
-	/// Gets the elapsed time (in milliseconds) between the specified <paramref name="startingTimestamp"/> and <paramref name="endingTimestamp"/>. (These must be values returned from <see cref="Stopwatch.GetTimestamp"/>.)
+	/// Gets the elapsed time (in seconds) between the specified <paramref name="startingTimestamp"/> and <paramref name="endingTimestamp"/>. (These must be values returned from <see cref="Stopwatch.GetTimestamp"/>.)
 	/// </summary>
-	public static float GetElapsedMilliseconds(long startingTimestamp, long endingTimestamp) =>
+	public static double GetElapsedSeconds(long startingTimestamp, long endingTimestamp) =>
 #if NET7_0_OR_GREATER
-		(float) Stopwatch.GetElapsedTime(startingTimestamp, endingTimestamp).TotalMilliseconds;
+		Stopwatch.GetElapsedTime(startingTimestamp, endingTimestamp).TotalSeconds;
 #else
-		(endingTimestamp - startingTimestamp) * 1000.0f / Stopwatch.Frequency;
+		(endingTimestamp - startingTimestamp) / (double) Stopwatch.Frequency;
 #endif
 
 #if NET462
