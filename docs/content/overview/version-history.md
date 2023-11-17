@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-11-14
+lastmod: 2023-11-16
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,19 @@ weight: 30
 ---
 
 # Version History
+
+### 2.3.1
+
+* Add `db.client.connections.timeouts` counter to metrics: [#1392](https://github.com/mysql-net/MySqlConnector/pull/1392)
+* Allow empty `schemaRestrictions` array to be passed to `GetSchema`: [#1394](https://github.com/mysql-net/MySqlConnector/pull/1394)
+* Use higher-resolution timestamps for duration metrics: [#1395](https://github.com/mysql-net/MySqlConnector/issues/1395).
+* **Possibly Breaking** Use seconds as the units for duration metrics; change type to `double`: [#1396](https://github.com/mysql-net/MySqlConnector/issues/1396).
+* Thanks to [Tuomas Hietanen](https://github.com/Thorium) for contributions to this release.
+
+#### MySqlConnector.DependencyInjection
+
+* Add `AddKeyedMySqlDataSource` to support keyed services: [#1391](https://github.com/mysql-net/MySqlConnector/pull/1391).
+* Update `Microsoft.Extensions.DependencyInjection.Abstractions` dependency to 8.0.0.
 
 ### 2.3.0
 
