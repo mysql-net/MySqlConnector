@@ -104,3 +104,6 @@ Development of MySqlConnector is supported by:
 
 [Faithlife](https://faithlife.com/about) ([View jobs](https://faithlife.com/careers))
 
+[![Microsoft Azure](https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Microsoft_Azure.svg/75px-Microsoft_Azure.svg.png)](https://azure.microsoft.com/en-us/overview/open-source/)
+
+[Azure Credits for Open Source](https://opensource.microsoft.com/azure-credits)
