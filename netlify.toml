@@ -72,6 +72,12 @@ status = 301
 force = true
 
 [[redirects]]
+from = "/diagnostics/"
+to = "/"
+status = 302
+force = true
+
+[[redirects]]
 from = "/groups/"
 to = "/"
 status = 302
