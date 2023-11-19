@@ -112,3 +112,9 @@ from = "/tutorials/tracing/"
 to = "/diagnostics/tracing/"
 status = 302
 force = true
+
+[[redirects]]
+from = "/connection%E2%80%91options/"
+to = "/connection-options/"
+status = 301
+force = true

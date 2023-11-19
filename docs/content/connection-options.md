@@ -542,7 +542,7 @@ from your connection string when migrating from Connector/NET to MySqlConnector.
   <tr id="SshHostName">
     <td>SshHostName, SshPort, SshUserName, SshPassword, SshKeyFile, SshPassPhrase</td>
     <td></td>
-    <td>Connecting via SSH isn’t built into MySqlConnector, but can be set up easily by following <a href="../tutorials/connect-ssh/" title="Connecting to MySQL Server with SSH from C#">these instructions</a>.</td>
+    <td>Connecting via SSH isn’t built into MySqlConnector, but can be set up easily by following <a href="/tutorials/connect-ssh/" title="Connecting to MySQL Server with SSH from C#">these instructions</a>.</td>
   </tr>
   <tr id="SqlServerMode">
     <td>SqlServerMode, Sql Server Mode</td>
