@@ -443,12 +443,12 @@ insert into bulk_load_data_reader_source values(0, 'zero'),(1,'one'),(2,'two'),(
 	}
 
 	[Fact]
-	public void BulkCopyNullDataTable()
+	public async Task BulkCopyNullDataTable()
 	{
 		using var connection = new MySqlConnection(GetLocalConnectionString());
-		connection.Open();
+		await connection.OpenAsync();
 		var bulkCopy = new MySqlBulkCopy(connection);
-		Assert.ThrowsAsync<ArgumentNullException>(async () => await bulkCopy.WriteToServerAsync(default(DataTable)));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await bulkCopy.WriteToServerAsync(default(DataTable)));
 	}
 
 	[Fact]
@@ -612,12 +612,12 @@ create table bulk_load_data_table(str varchar(5), number tinyint);", connection)
 	}
 
 	[Fact]
-	public void BulkCopyNullDataReader()
+	public async Task BulkCopyNullDataReader()
 	{
 		using var connection = new MySqlConnection(GetLocalConnectionString());
-		connection.Open();
+		await connection.OpenAsync();
 		var bulkCopy = new MySqlBulkCopy(connection);
-		Assert.ThrowsAsync<ArgumentNullException>(async () => await bulkCopy.WriteToServerAsync(default(DbDataReader)));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await bulkCopy.WriteToServerAsync(default(DbDataReader)));
 	}
 #endif
 
