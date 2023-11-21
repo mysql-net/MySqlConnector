@@ -22,7 +22,7 @@ internal readonly struct ColumnCountPayload
 	{
 		var reader = new ByteArrayReader(span);
 		var columnCount = (int) reader.ReadLengthEncodedInteger();
-		var metadataFollows = !supportsOptionalMetadata || reader.ReadByte() == 1;
+		var metadataFollows = !supportsOptionalMetadata || reader.BytesRemaining == 0 || reader.ReadByte() == 1;
 		return new ColumnCountPayload(columnCount, metadataFollows);
 	}
 }
