@@ -11,7 +11,7 @@ public class ColumnCountPayloadTests
 	[InlineData(new byte[] { 2 }, false, 2, true)]
 	[InlineData(new byte[] { 2, 1 }, true, 2, true)]
 	[InlineData(new byte[] { 2, 0 }, true, 2, false)]
-	[InlineData(new byte[] { 2 }, true, 2, true)]
+	[InlineData(new byte[] { 2 }, true, 2, true)] // this seems like invalid data, but a server may return this
 	public void ParseResultSetHeader(byte[] span, bool supportsOptionalMetadata, int expectedColumnCount, bool expectedMetadataFollows)
 	{
 		var columnCountPayload = ColumnCountPayload.Create(span.AsSpan(), supportsOptionalMetadata);
