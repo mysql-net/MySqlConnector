@@ -14,10 +14,12 @@ public sealed class MySqlBatchCommand : DbBatchCommand
 | --- | --- |
 | [MySqlBatchCommand](../MySqlBatchCommand/MySqlBatchCommand/)() | The default constructor. |
 | [MySqlBatchCommand](../MySqlBatchCommand/MySqlBatchCommand/)(…) |  |
+| override [CanCreateParameter](../MySqlBatchCommand/CanCreateParameter/) { get; } |  |
 | override [CommandText](../MySqlBatchCommand/CommandText/) { get; set; } |  |
 | override [CommandType](../MySqlBatchCommand/CommandType/) { get; set; } |  |
 | [Parameters](../MySqlBatchCommand/Parameters/) { get; } |  |
 | override [RecordsAffected](../MySqlBatchCommand/RecordsAffected/) { get; } |  |
+| override [CreateParameter](../MySqlBatchCommand/CreateParameter/)() |  |
 
 ## Protected Members
 

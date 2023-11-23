@@ -15,7 +15,7 @@ public sealed class MySqlAttribute : ICloneable
 | name | description |
 | --- | --- |
 | [MySqlAttribute](../MySqlAttribute/MySqlAttribute/)() | Initializes a new [`MySqlAttribute`](../MySqlAttributeType/). |
-| [MySqlAttribute](../MySqlAttribute/MySqlAttribute/)(…) | Initializes a new [`MySqlAttribute`](../MySqlAttributeType/) with the specified attribute name and value. |
+| [MySqlAttribute](../MySqlAttribute/MySqlAttribute/)(…) | [`MySqlAttribute`](../MySqlAttributeType/) represents an attribute that can be sent with a MySQL query. |
 | [AttributeName](../MySqlAttribute/AttributeName/) { get; set; } | Gets or sets the attribute name. |
 | [Value](../MySqlAttribute/Value/) { get; set; } | Gets or sets the attribute value. |
 | [Clone](../MySqlAttribute/Clone/)() | Returns a new [`MySqlAttribute`](../MySqlAttributeType/) with the same property values as this instance. |

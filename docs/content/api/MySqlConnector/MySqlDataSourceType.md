@@ -4,7 +4,7 @@ title: MySqlDataSource
 
 # MySqlDataSource class
 
-[`MySqlDataSource`](../MySqlDataSourceType/) implements a MySQL data source which can be used to obtain open connections, and against which commands can be executed directly.
+[`MySqlDataSource`](../MySqlDataSourceType/) implements a MySQL data source which can be used to obtain open connections.
 
 ```csharp
 public sealed class MySqlDataSource : DbDataSource
@@ -16,6 +16,7 @@ public sealed class MySqlDataSource : DbDataSource
 | --- | --- |
 | [MySqlDataSource](../MySqlDataSource/MySqlDataSource/)(…) | Initializes a new instance of the [`MySqlDataSource`](../MySqlDataSourceType/) class. |
 | override [ConnectionString](../MySqlDataSource/ConnectionString/) { get; } | Gets the connection string of the database represented by this [`MySqlDataSource`](../MySqlDataSourceType/). |
+| [Password](../MySqlDataSource/Password/) { set; } | Sets the password that will be used by the next [`MySqlConnection`](../MySqlConnectionType/) created from this [`MySqlDataSource`](../MySqlDataSourceType/). |
 | [CreateConnection](../MySqlDataSource/CreateConnection/)() | Creates a new [`MySqlConnection`](../MySqlConnectionType/) that can connect to the database represented by this [`MySqlDataSource`](../MySqlDataSourceType/). |
 | [OpenConnection](../MySqlDataSource/OpenConnection/)() | Returns a new, open [`MySqlConnection`](../MySqlConnectionType/) to the database represented by this [`MySqlDataSource`](../MySqlDataSourceType/). |
 | [OpenConnectionAsync](../MySqlDataSource/OpenConnectionAsync/)(…) | Asynchronously returns a new, open [`MySqlConnection`](../MySqlConnectionType/) to the database represented by this [`MySqlDataSource`](../MySqlDataSourceType/). |

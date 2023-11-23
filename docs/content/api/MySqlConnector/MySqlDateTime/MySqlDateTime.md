@@ -44,7 +44,7 @@ public MySqlDateTime(MySqlDateTime other)
 
 # MySqlDateTime constructor (3 of 3)
 
-Initializes a new instance of [`MySqlDateTime`](../../MySqlDateTimeType/).
+Represents a MySQL date/time value. This type can be used to store `DATETIME` values such as `0000-00-00` that can be stored in MySQL (when [`AllowZeroDateTime`](../../MySqlConnectionStringBuilder/AllowZeroDateTime/) is true) but can't be stored in a DateTime value.
 
 ```csharp
 public MySqlDateTime(int year, int month, int day, int hour, int minute, int second, 

@@ -8,7 +8,7 @@ using MySqlConnector.Protocol.Serialization;
 namespace MySqlConnector;
 
 /// <summary>
-/// <see cref="MySqlDataSource"/> implements a MySQL data source which can be used to obtain open connections, and against which commands can be executed directly.
+/// <see cref="MySqlDataSource"/> implements a MySQL data source which can be used to obtain open connections.
 /// </summary>
 public sealed class MySqlDataSource : DbDataSource
 {

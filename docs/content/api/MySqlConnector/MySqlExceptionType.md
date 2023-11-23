@@ -19,7 +19,6 @@ public sealed class MySqlException : DbException
 | override [IsTransient](../MySqlException/IsTransient/) { get; } | Returns `true` if this exception could indicate a transient error condition (that could succeed if retried); otherwise, `false`. |
 | [Number](../MySqlException/Number/) { get; } | A [`MySqlErrorCode`](../MySqlErrorCodeType/) value identifying the kind of error. Prefer to use the [`ErrorCode`](../MySqlException/ErrorCode/) property. |
 | override [SqlState](../MySqlException/SqlState/) { get; } | A `SQLSTATE` code identifying the kind of error. |
-| override [GetObjectData](../MySqlException/GetObjectData/)(…) | Sets the SerializationInfo with information about the exception. |
 
 ## See Also
 

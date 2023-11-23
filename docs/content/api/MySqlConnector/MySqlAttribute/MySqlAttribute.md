@@ -20,11 +20,15 @@ public MySqlAttribute()
 
 # MySqlAttribute constructor (2 of 2)
 
-Initializes a new [`MySqlAttribute`](../../MySqlAttributeType/) with the specified attribute name and value.
+[`MySqlAttribute`](../../MySqlAttributeType/) represents an attribute that can be sent with a MySQL query.
 
 ```csharp
 public MySqlAttribute(string attributeName, object? value)
 ```
+
+## Remarks
+
+See [Query Attributes](https://dev.mysql.com/doc/refman/8.0/en/query-attributes.html) for information on using query attributes.
 
 ## See Also
 

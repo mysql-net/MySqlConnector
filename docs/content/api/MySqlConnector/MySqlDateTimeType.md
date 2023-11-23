@@ -11,11 +11,21 @@ public struct MySqlDateTime : IComparable, IComparable<MySqlDateTime>, IConverti
     IEquatable<MySqlDateTime>
 ```
 
+| parameter | description |
+| --- | --- |
+| year | The year. |
+| month | The (one-based) month. |
+| day | The (one-based) day of the month. |
+| hour | The hour. |
+| minute | The minute. |
+| second | The second. |
+| microsecond | The microsecond. |
+
 ## Public Members
 
 | name | description |
 | --- | --- |
-| [MySqlDateTime](../MySqlDateTime/MySqlDateTime/)(…) | Initializes a new instance of [`MySqlDateTime`](../MySqlDateTimeType/). (3 constructors) |
+| [MySqlDateTime](../MySqlDateTime/MySqlDateTime/)(…) | Represents a MySQL date/time value. This type can be used to store `DATETIME` values such as `0000-00-00` that can be stored in MySQL (when [`AllowZeroDateTime`](../MySqlConnectionStringBuilder/AllowZeroDateTime/) is true) but can't be stored in a DateTime value. (3 constructors) |
 | [Day](../MySqlDateTime/Day/) { get; set; } | Gets or sets the day of the month. |
 | [Hour](../MySqlDateTime/Hour/) { get; set; } | Gets or sets the hour. |
 | [IsValidDateTime](../MySqlDateTime/IsValidDateTime/) { get; } | Returns `true` if this value is a valid DateTime. |

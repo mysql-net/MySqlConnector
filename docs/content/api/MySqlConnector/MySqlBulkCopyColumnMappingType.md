@@ -32,12 +32,18 @@ new MySqlBulkCopyColumnMapping
 public sealed class MySqlBulkCopyColumnMapping
 ```
 
+| parameter | description |
+| --- | --- |
+| sourceOrdinal | The zero-based ordinal position of the source column. |
+| destinationColumn | The name of the destination column. |
+| expression | The optional expression to be used to set the destination column. |
+
 ## Public Members
 
 | name | description |
 | --- | --- |
 | [MySqlBulkCopyColumnMapping](../MySqlBulkCopyColumnMapping/MySqlBulkCopyColumnMapping/)() | Initializes [`MySqlBulkCopyColumnMapping`](../MySqlBulkCopyColumnMappingType/) with the default values. |
-| [MySqlBulkCopyColumnMapping](../MySqlBulkCopyColumnMapping/MySqlBulkCopyColumnMapping/)(…) | Initializes [`MySqlBulkCopyColumnMapping`](../MySqlBulkCopyColumnMappingType/) to the specified values. |
+| [MySqlBulkCopyColumnMapping](../MySqlBulkCopyColumnMapping/MySqlBulkCopyColumnMapping/)(…) | Use [`MySqlBulkCopyColumnMapping`](../MySqlBulkCopyColumnMappingType/) to specify how to map columns in the source data to columns in the destination table when using [`MySqlBulkCopy`](../MySqlBulkCopyType/). |
 | [DestinationColumn](../MySqlBulkCopyColumnMapping/DestinationColumn/) { get; set; } | The name of the destination column to copy to. To use an expression, this should be the name of a unique user-defined variable. |
 | [Expression](../MySqlBulkCopyColumnMapping/Expression/) { get; set; } | An optional expression for setting a destination column. To use an expression, the [`DestinationColumn`](../MySqlBulkCopyColumnMapping/DestinationColumn/) should be set to the name of a user-defined variable and this expression should set a column using that variable. |
 | [SourceOrdinal](../MySqlBulkCopyColumnMapping/SourceOrdinal/) { get; set; } | The zero-based ordinal position of the source column to map from. |

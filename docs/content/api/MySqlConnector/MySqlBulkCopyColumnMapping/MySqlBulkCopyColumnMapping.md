@@ -20,7 +20,29 @@ public MySqlBulkCopyColumnMapping()
 
 # MySqlBulkCopyColumnMapping constructor (2 of 2)
 
-Initializes [`MySqlBulkCopyColumnMapping`](../../MySqlBulkCopyColumnMappingType/) to the specified values.
+Use [`MySqlBulkCopyColumnMapping`](../../MySqlBulkCopyColumnMappingType/) to specify how to map columns in the source data to columns in the destination table when using [`MySqlBulkCopy`](../../MySqlBulkCopyType/).
+
+Set [`SourceOrdinal`](../SourceOrdinal/) to the zero-based index of the source column to map. Set [`DestinationColumn`](../DestinationColumn/) to either the name of a column in the destination table, or the name of a user-defined variable. If a user-defined variable, you can use [`Expression`](../Expression/) to specify a MySQL expression that assigns its value to destination column.
+
+Source columns that don't have an entry in [`ColumnMappings`](../../MySqlBulkCopy/ColumnMappings/) will be ignored (unless the [`ColumnMappings`](../../MySqlBulkCopy/ColumnMappings/) collection is empty, in which case all columns will be mapped one-to-one).
+
+MySqlConnector will transmit all binary data as hex, so any expression that operates on it must decode it with the `UNHEX` function first. (This will be performed automatically if no [`Expression`](../Expression/) is specified, but will be necessary to specify manually for more complex expressions.)
+
+Example code:
+
+```csharp
+new MySqlBulkCopyColumnMapping
+{
+    SourceOrdinal = 2,
+    DestinationColumn = "user_name",
+},
+new MySqlBulkCopyColumnMapping
+{
+    SourceOrdinal = 0,
+    DestinationColumn = "@tmp",
+    Expression = "column_value = @tmp * 2",
+},
+```
 
 ```csharp
 public MySqlBulkCopyColumnMapping(int sourceOrdinal, string destinationColumn, 

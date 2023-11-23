@@ -29,13 +29,14 @@ title: MySqlConnector
 | class [MySqlConversionException](../MySqlConnector/MySqlConversionExceptionType/) | [`MySqlConversionException`](../MySqlConnector/MySqlConversionExceptionType/) is thrown when a MySQL value can't be converted to another type. |
 | class [MySqlDataAdapter](../MySqlConnector/MySqlDataAdapterType/) |  |
 | class [MySqlDataReader](../MySqlConnector/MySqlDataReaderType/) |  |
-| class [MySqlDataSource](../MySqlConnector/MySqlDataSourceType/) | [`MySqlDataSource`](../MySqlConnector/MySqlDataSourceType/) implements a MySQL data source which can be used to obtain open connections, and against which commands can be executed directly. |
+| class [MySqlDataSource](../MySqlConnector/MySqlDataSourceType/) | [`MySqlDataSource`](../MySqlConnector/MySqlDataSourceType/) implements a MySQL data source which can be used to obtain open connections. |
 | class [MySqlDataSourceBuilder](../MySqlConnector/MySqlDataSourceBuilderType/) | [`MySqlDataSourceBuilder`](../MySqlConnector/MySqlDataSourceBuilderType/) provides an API for configuring and creating a [`MySqlDataSource`](../MySqlConnector/MySqlDataSourceType/), from which [`MySqlConnection`](../MySqlConnector/MySqlConnectionType/) objects can be obtained. |
 | struct [MySqlDateTime](../MySqlConnector/MySqlDateTimeType/) | Represents a MySQL date/time value. This type can be used to store `DATETIME` values such as `0000-00-00` that can be stored in MySQL (when [`AllowZeroDateTime`](../MySqlConnector/MySqlConnectionStringBuilder/AllowZeroDateTime/) is true) but can't be stored in a DateTime value. |
 | enum [MySqlDateTimeKind](../MySqlConnector/MySqlDateTimeKindType/) | The DateTimeKind used when reading DateTime from the database. |
 | class [MySqlDbColumn](../MySqlConnector/MySqlDbColumnType/) |  |
 | enum [MySqlDbType](../MySqlConnector/MySqlDbTypeType/) |  |
 | struct [MySqlDecimal](../MySqlConnector/MySqlDecimalType/) | [`MySqlDecimal`](../MySqlConnector/MySqlDecimalType/) represents a MySQL `DECIMAL` value that is too large to fit in a .NET Decimal. |
+| class [MySqlEndOfStreamException](../MySqlConnector/MySqlEndOfStreamExceptionType/) |  |
 | class [MySqlError](../MySqlConnector/MySqlErrorType/) | [`MySqlError`](../MySqlConnector/MySqlErrorType/) represents an error or warning that occurred during the execution of a SQL statement. |
 | enum [MySqlErrorCode](../MySqlConnector/MySqlErrorCodeType/) | MySQL Server error codes. Taken from [Server Error Codes and Messages](https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html). |
 | class [MySqlException](../MySqlConnector/MySqlExceptionType/) | [`MySqlException`](../MySqlConnector/MySqlExceptionType/) is thrown when MySQL Server returns an error code, or there is a communication error with the server. |
