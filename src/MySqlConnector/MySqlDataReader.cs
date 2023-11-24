@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using MySqlConnector.Core;
 using MySqlConnector.Logging;
@@ -245,7 +246,14 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 
 	public override string GetDataTypeName(int ordinal) => GetResultSet().GetDataTypeName(ordinal);
 
+#if NET6_0_OR_GREATER
+	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicFields)]
+#endif
 	public Type GetFieldType(string name) => GetFieldType(GetOrdinal(name));
+
+#if NET6_0_OR_GREATER
+	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicFields)]
+#endif
 	public override Type GetFieldType(int ordinal) => GetResultSet().GetFieldType(ordinal);
 
 	public override object GetValue(int ordinal) => GetResultSet().GetCurrentRow().GetValue(ordinal);

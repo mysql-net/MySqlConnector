@@ -1,9 +1,17 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace MySqlConnector.Core;
 
-internal sealed class DbTypeMapping(Type clrType, DbType[] dbTypes, Func<object, object>? convert = null)
+internal sealed class DbTypeMapping(
+#if NET6_0_OR_GREATER
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicFields)]
+#endif
+	Type clrType, DbType[] dbTypes, Func<object, object>? convert = null)
 {
+#if NET6_0_OR_GREATER
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicFields)]
+#endif
 	public Type ClrType { get; } = clrType;
 	public DbType[] DbTypes { get; } = dbTypes;
 

@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using MySqlConnector.Protocol;
@@ -304,6 +305,9 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 		return TypeMapper.Instance.GetColumnTypeMetadata(mySqlDbType).SimpleDataTypeName;
 	}
 
+#if NET6_0_OR_GREATER
+	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicFields)]
+#endif
 	public Type GetFieldType(int ordinal)
 	{
 		if (!HasResultSet)
