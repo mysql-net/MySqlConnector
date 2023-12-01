@@ -549,13 +549,16 @@ internal sealed partial class ServerSession
 						Log.SessionDoesNotSupportSslProtocolsNone(m_logger, ex, Id);
 						sslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
 					}
-					catch (Exception ex) when (shouldRetrySsl && ((ex is MySqlException && ex.InnerException is AuthenticationException or IOException) || ex is AuthenticationException or IOException))
+					catch (Exception ex) when (shouldRetrySsl && IsRetryableException(ex))
 					{
 						// negotiating TLS 1.2 with a yaSSL-based server throws an exception on Windows, see comment at top of method
 						Log.FailedNegotiatingTls(m_logger, ex, Id);
 						sslProtocols = sslProtocols == SslProtocols.None ? SslProtocols.Tls | SslProtocols.Tls11 : (SslProtocols.Tls | SslProtocols.Tls11) & sslProtocols;
 						shouldUpdatePoolSslProtocols = true;
 					}
+
+					static bool IsRetryableException(Exception? ex) => (ex is MySqlException && IsRetryableException(ex.InnerException)) ||
+						(ex is AuthenticationException or (IOException and not FileNotFoundException and not DirectoryNotFoundException and not DriveNotFoundException and not PathTooLongException));
 				}
 				else
 				{
