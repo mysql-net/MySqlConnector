@@ -561,6 +561,14 @@ internal sealed partial class ServerSession
 				{
 					shouldRetrySsl = false;
 				}
+
+				if (shouldRetrySsl)
+				{
+					// avoid "The collection already contains item with same key 'net.transport'" exception when retrying SSL
+					m_activityTags.Remove(ActivitySourceHelper.NetTransportTagName);
+					m_activityTags.Remove(ActivitySourceHelper.NetPeerNameTagName);
+					m_activityTags.Remove(ActivitySourceHelper.NetPeerPortTagName);
+				}
 			} while (shouldRetrySsl);
 
 			if (m_supportsConnectionAttributes && cs.ConnectionAttributes is null)
