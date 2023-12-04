@@ -9,7 +9,7 @@ public class DbFactoryFixture : IDbFactoryFixture
 	{
 		public DbFactoryFixture()
 		{
-			ConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? "Server=localhost;User Id=mysqltest;Password=test;SSL Mode=None";
+			ConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? "Server=localhost;User Id=mysqltest;Password=test;SSL Mode=None;AllowPublicKeyRetrieval=true";
 		}
 
 		public string ConnectionString { get; }
