@@ -1,791 +1,252 @@
-- name:  MetaDataCollections
-  description:  information about available schemas
-  columns: 
-  - name:  CollectionName
-    type:  string
-    description:  The name of the collection to pass to the GetSchema method to return the collection.
-  - name:  NumberOfRestrictions
-    type:  int
-    description:  The number of restrictions that may be specified for the collection.
-  - name:  NumberOfIdentifierParts
-    type:  int
-    description:  The number of parts in the composite identifier/database object name.
+- name: MetaDataCollections
+  description: information about available schemas
+  columns:
+  - name: CollectionName
+    type: string
+    description: The name of the collection to pass to the GetSchema method to return the collection.
+  - name: NumberOfRestrictions
+    type: int
+    description: The number of restrictions that may be specified for the collection.
+  - name: NumberOfIdentifierParts
+    type: int
+    description: The number of parts in the composite identifier/database object name.
 
-- name:  CharacterSets
-  table:  CHARACTER_SETS
-  columns: 
-  - name:  CHARACTER_SET_NAME
-    type:  string
-  - name:  DEFAULT_COLLATE_NAME
-    type:  string
-  - name:  DESCRIPTION
-    type:  string
-  - name:  MAXLEN
-    type:  int
+- name: CharacterSets
+  table: CHARACTER_SETS
+  columns:
+  - name: CHARACTER_SET_NAME
+    type: string
+  - name: DEFAULT_COLLATE_NAME
+    type: string
+  - name: DESCRIPTION
+    type: string
+  - name: MAXLEN
+    type: int
 
-- name:  Collations
-  table:  COLLATIONS
-  columns: 
-  - name:  COLLATION_NAME
-    type:  string
-  - name:  CHARACTER_SET_NAME
-    type:  string
-  - name:  ID
-    type:  int
-  - name:  IS_DEFAULT
-    type:  string
-  - name:  IS_COMPILED
-    type:  string
-  - name:  SORTLEN
-    type:  int
+- name: Collations
+  table: COLLATIONS
+  columns:
+  - name: COLLATION_NAME
+    type: string
+  - name: CHARACTER_SET_NAME
+    type: string
+  - name: ID
+    type: int
+  - name: IS_DEFAULT
+    type: string
+  - name: IS_COMPILED
+    type: string
+  - name: SORTLEN
+    type: int
 
-- name:  CollationCharacterSetApplicability
-  table:  COLLATION_CHARACTER_SET_APPLICABILITY
-  columns: 
-  - name:  COLLATION_NAME
-    type:  string
-  - name:  CHARACTER_SET_NAME
-    type:  string
+- name: CollationCharacterSetApplicability
+  table: COLLATION_CHARACTER_SET_APPLICABILITY
+  columns:
+  - name: COLLATION_NAME
+    type: string
+  - name: CHARACTER_SET_NAME
+    type: string
 
-- name:  Columns
-  table:  COLUMNS
-  description:  information about columns (in all tables)
-  identifierPartCount:  4
-  restrictions: 
-  - name:  Catalog
-    default:  TABLE_CATALOG
-  - name:  Schema
-    default:  TABLE_SCHEMA
-  - name:  Table
-    default:  TABLE_NAME
-  - name:  Column
-    default:  COLUMN_NAME
-  columns: 
-  - name:  TABLE_CATALOG
-    type:  string
-  - name:  TABLE_SCHEMA
-    type:  string
-  - name:  TABLE_NAME
-    type:  string
-  - name:  COLUMN_NAME
-    type:  string
-  - name:  ORDINAL_POSITION
-    type:  uint
-  - name:  COLUMN_DEFAULT
-    type:  string
-  - name:  IS_NULLABLE
-    type:  string
-  - name:  DATA_TYPE
-    type:  string
-  - name:  CHARACTER_MAXIMUM_LENGTH
-    type:  long
-  - name:  NUMERIC_PRECISION
-    type:  ulong
-  - name:  NUMERIC_SCALE
-    type:  ulong
-  - name:  DATETIME_PRECISION
-    type:  uint
-  - name:  CHARACTER_SET_NAME
-    type:  string
-  - name:  COLLATION_NAME
-    type:  string
-  - name:  COLUMN_TYPE
-    type:  string
-  - name:  COLUMN_KEY
-    type:  string
-  - name:  EXTRA
-    type:  string
-  - name:  PRIVILEGES
-    type:  string
-  - name:  COLUMN_COMMENT
-    type:  string
-  - name:  GENERATION_EXPRESSION
-    type:  string
-    optional:  true
-  - name:  SRS_ID
-    type:  string
-    optional:  true
-
-- name:  Databases
-  table:  SCHEMATA
-  identifierPartCount:  2
-  columns: 
-  - name:  CATALOG_NAME
-    type:  string
-  - name:  SCHEMA_NAME
-    type:  string
-  - name:  DEFAULT_CHARACTER_SET_NAME
-    type:  string
-  - name:  DEFAULT_COLLATION_NAME
-    type:  string
-  - name:  SQL_PATH
-    type:  string
-
-- name:  DataSourceInformation
-  custom:  DoFillDataSourceInformation
-  columns: 
-  - name:  CompositeIdentifierSeparatorPattern
-    type:  string
-  - name:  DataSourceProductName
-    type:  string
-  - name:  DataSourceProductVersion
-    type:  string
-  - name:  DataSourceProductVersionNormalized
-    type:  string
-  - name:  GroupByBehavior
-    type:  GroupByBehavior
-  - name:  IdentifierPattern
-    type:  string
-  - name:  IdentifierCase
-    type:  IdentifierCase
-  - name:  OrderByColumnsInSelect
-    type:  bool
-  - name:  ParameterMarkerFormat
-    type:  string
-  - name:  ParameterMarkerPattern
-    type:  string
-  - name:  ParameterNameMaxLength
-    type:  int
-  - name:  QuotedIdentifierPattern
-    type:  string
-  - name:  QuotedIdentifierCase
-    type:  IdentifierCase
-  - name:  ParameterNamePattern
-    type:  string
-  - name:  StatementSeparatorPattern
-    type:  string
-  - name:  StringLiteralPattern
-    type:  string
-  - name:  SupportedJoinOperators
-    type:  SupportedJoinOperators
-
-- name:  DataTypes
-  description:  information about available data types
-  custom:  DoFillDataTypes
-  columns: 
-  - name:  TypeName
-    type:  string
-  - name:  ProviderDbType
-    type:  int
-  - name:  ColumnSize
-    type:  long
-  - name:  CreateFormat
-    type:  string
-  - name:  CreateParameters
-    type:  string
-  - name:  DataType
-    type:  string
-  - name:  IsAutoIncrementable
-    type:  bool
-  - name:  IsBestMatch
-    type:  bool
-  - name:  IsCaseSensitive
-    type:  bool
-  - name:  IsFixedLength
-    type:  bool
-  - name:  IsFixedPrecisionScale
-    type:  bool
-  - name:  IsLong
-    type:  bool
-  - name:  IsNullable
-    type:  bool
-  - name:  IsSearchable
-    type:  bool
-  - name:  IsSearchableWithLike
-    type:  bool
-  - name:  IsUnsigned
-    type:  bool
-  - name:  MaximumScale
-    type:  short
-  - name:  MinimumScale
-    type:  short
-  - name:  IsConcurrencyType
-    type:  bool
-  - name:  IsLiteralSupported
-    type:  bool
-  - name:  LiteralPrefix
-    type:  string
-  - name:  LiteralSuffix
-    type:  string
-  - name:  NativeDataType
-    type:  string
-
-- name:  Engines
-  table:  ENGINES
-  columns: 
-  - name:  ENGINE
-    type:  string
-  - name:  SUPPORT
-    type:  string
-  - name:  COMMENT
-    type:  string
-  - name:  TRANSACTIONS
-    type:  string
-  - name:  XA
-    type:  string
-  - name:  SAVEPOINTS
-    type:  string
-
-- name:  KeyColumnUsage
-  table:  KEY_COLUMN_USAGE
-  columns: 
-  - name:  CONSTRAINT_CATALOG
-    type:  string
-  - name:  CONSTRAINT_SCHEMA
-    type:  string
-  - name:  CONSTRAINT_NAME
-    type:  string
-  - name:  TABLE_CATALOG
-    type:  string
-  - name:  TABLE_SCHEMA
-    type:  string
-  - name:  TABLE_NAME
-    type:  string
-  - name:  COLUMN_NAME
-    type:  string
-  - name:  ORDINAL_POSITION
-    type:  int
-  - name:  POSITION_IN_UNIQUE_CONSTRAINT
-    type:  string
-  - name:  REFERENCED_TABLE_SCHEMA
-    type:  string
-  - name:  REFERENCED_TABLE_NAME
-    type:  string
-  - name:  REFERENCED_COLUMN_NAME
-    type:  string
-
-- name:  KeyWords
-  table:  KEYWORDS
-  columns: 
-  - name:  WORD
-    type:  string
-  - name:  RESERVED
-    type:  int
-
-- name:  Parameters
-  table:  PARAMETERS
-  columns: 
-  - name:  SPECIFIC_CATALOG
-    type:  string
-  - name:  SPECIFIC_SCHEMA
-    type:  string
-  - name:  SPECIFIC_NAME
-    type:  string
-  - name:  ORDINAL_POSITION
-    type:  int
-  - name:  PARAMETER_MODE
-    type:  string
-  - name:  PARAMETER_NAME
-    type:  string
-  - name:  DATA_TYPE
-    type:  string
-  - name:  CHARACTER_MAXIMUM_LENGTH
-    type:  long
-  - name:  CHARACTER_OCTET_LENGTH
-    type:  long
-  - name:  NUMERIC_PRECISION
-    type:  int
-  - name:  NUMERIC_SCALE
-    type:  int
-  - name:  DATETIME_PRECISION
-    type:  int
-  - name:  CHARACTER_SET_NAME
-    type:  string
-  - name:  COLLATION_NAME
-    type:  string
-  - name:  DTD_IDENTIFIER
-    type:  string
-  - name:  ROUTINE_TYPE
-    type:  string
-
-- name:  Partitions
-  table:  PARTITIONS
-  columns: 
-  - name:  TABLE_CATALOG
-    type:  string
-  - name:  TABLE_SCHEMA
-    type:  string
-  - name:  TABLE_NAME
-    type:  string
-  - name:  PARTITION_NAME
-    type:  string
-  - name:  SUBPARTITION_NAME
-    type:  string
-  - name:  PARTITION_ORDINAL_POSITION
-    type:  int
-  - name:  SUBPARTITION_ORDINAL_POSITION
-    type:  int
-  - name:  PARTITION_METHOD
-    type:  string
-  - name:  SUBPARTITION_METHOD
-    type:  string
-  - name:  PARTITION_EXPRESSION
-    type:  string
-  - name:  SUBPARTITION_EXPRESSION
-    type:  string
-  - name:  PARTITION_DESCRIPTION
-    type:  string
-  - name:  TABLE_ROWS
-    type:  long
-  - name:  AVG_ROW_LENGTH
-    type:  long
-  - name:  DATA_LENGTH
-    type:  long
-  - name:  MAX_DATA_LENGTH
-    type:  long
-  - name:  INDEX_LENGTH
-    type:  long
-  - name:  DATA_FREE
-    type:  long
-  - name:  CREATE_TIME
-    type:  DateTime
-  - name:  UPDATE_TIME
-    type:  DateTime
-  - name:  CHECK_TIME
-    type:  DateTime
-  - name:  CHECKSUM
-    type:  long
-  - name:  PARTITION_COMMENT
-    type:  string
-  - name:  NODEGROUP
-    type:  string
-  - name:  TABLESPACE_NAME
-    type:  string
-
-- name:  Plugins
-  table:  PLUGINS
-  columns: 
-  - name:  PLUGIN_NAME
-    type:  string
-  - name:  PLUGIN_VERSION
-    type:  string
-  - name:  PLUGIN_STATUS
-    type:  string
-  - name:  PLUGIN_TYPE
-    type:  string
-  - name:  PLUGIN_TYPE_VERSION
-    type:  string
-  - name:  PLUGIN_LIBRARY
-    type:  string
-  - name:  PLUGIN_LIBRARY_VERSION
-    type:  string
-  - name:  PLUGIN_AUTHOR
-    type:  string
-  - name:  PLUGIN_DESCRIPTION
-    type:  string
-  - name:  PLUGIN_LICENSE
-    type:  string
-  - name:  LOAD_OPTION
-    type:  string
-
-- name:  Procedures
-  description:  information about stored procedures
-  identifierPartCount:  3
-  table:  ROUTINES
-  columns: 
-  - name:  SPECIFIC_NAME
-    type:  string
-  - name:  ROUTINE_CATALOG
-    type:  string
-  - name:  ROUTINE_SCHEMA
-    type:  string
-  - name:  ROUTINE_NAME
-    type:  string
-  - name:  ROUTINE_TYPE
-    type:  string
-  - name:  DTD_IDENTIFIER
-    type:  string
-  - name:  ROUTINE_BODY
-    type:  string
-  - name:  ROUTINE_DEFINITION
-    type:  string
-  - name:  EXTERNAL_NAME
-    type:  string
-  - name:  EXTERNAL_LANGUAGE
-    type:  string
-  - name:  PARAMETER_STYLE
-    type:  string
-  - name:  IS_DETERMINISTIC
-    type:  string
-  - name:  SQL_DATA_ACCESS
-    type:  string
-  - name:  SQL_PATH
-    type:  string
-  - name:  SECURITY_TYPE
-    type:  string
-  - name:  CREATED
-    type:  DateTime
-  - name:  LAST_ALTERED
-    type:  DateTime
-  - name:  SQL_MODE
-    type:  string
-  - name:  ROUTINE_COMMENT
-    type:  string
-  - name:  DEFINER
-    type:  string
-
-- name:  ProcessList
-  table:  PROCESSLIST
-  columns: 
-  - name:  ID
-    type:  long
-  - name:  USER
-    type:  string
-  - name:  HOST
-    type:  string
-  - name:  DB
-    type:  string
-  - name:  COMMAND
-    type:  string
-  - name:  TIME
-    type:  int
-  - name:  STATE
-    type:  string
-  - name:  INFO
-    type:  string
-
-- name:  Profiling
-  table:  PROFILING
-  columns: 
-  - name:  QUERY_ID
-    type:  int
-  - name:  SEQ
-    type:  int
-  - name:  STATE
-    type:  string
-  - name:  DURATION
-    type:  decimal
-  - name:  CPU_USER
-    type:  decimal
-  - name:  CPU_SYSTEM
-    type:  decimal
-  - name:  CONTEXT_VOLUNTARY
-    type:  int
-  - name:  CONTEXT_INVOLUNTARY
-    type:  int
-  - name:  BLOCK_OPS_IN
-    type:  int
-  - name:  BLOCK_OPS_OUT
-    type:  int
-  - name:  MESSAGES_SENT
-    type:  int
-  - name:  MESSAGES_RECEIVED
-    type:  int
-  - name:  PAGE_FAULTS_MAJOR
-    type:  int
-  - name:  PAGE_FAULTS_MINOR
-    type:  int
-  - name:  SWAPS
-    type:  int
-  - name:  SOURCE_FUNCTION
-    type:  string
-  - name:  SOURCE_FILE
-    type:  string
-  - name:  SOURCE_LINE
-    type:  int
-
-- name:  ReferentialConstraints
-  table:  REFERENTIAL_CONSTRAINTS
-  identifierPartCount:  3
-  columns: 
-  - name:  CONSTRAINT_CATALOG
-    type:  string
-  - name:  CONSTRAINT_SCHEMA
-    type:  string
-  - name:  CONSTRAINT_NAME
-    type:  string
-  - name:  UNIQUE_CONSTRAINT_CATALOG
-    type:  string
-  - name:  UNIQUE_CONSTRAINT_SCHEMA
-    type:  string
-  - name:  UNIQUE_CONSTRAINT_NAME
-    type:  string
-  - name:  MATCH_OPTION
-    type:  string
-  - name:  UPDATE_RULE
-    type:  string
-  - name:  DELETE_RULE
-    type:  string
-  - name:  TABLE_NAME
-    type:  string
-  - name:  REFERENCED_TABLE_NAME
-    type:  string
-
-- name:  ReservedWords
-  description:  information about reserved words in the server's SQL syntax
-  custom:  DoFillReservedWords
-  columns: 
-  - name:  ReservedWord
-    type:  string
-
-- name:  ResourceGroups
-  table:  RESOURCE_GROUPS
-  columns: 
-  - name:  RESOURCE_GROUP_NAME
-    type:  string
-  - name:  RESOURCE_GROUP_TYPE
-    type:  string
-  - name:  RESOURCE_GROUP_ENABLED
-    type:  int
-  - name:  VCPU_IDS
-    type:  string
-  - name:  THREAD_PRIORITY
-    type:  int
-
-- name:  Restrictions
-  description:  information about the restrictions supported when retrieving schemas
-  columns: 
-  - name:  CollectionName
-    type:  string
-    description:  The name of the collection that these restrictions apply to.
-  - name:  RestrictionName
-    type:  string
-    description:  The name of the restriction in the collection.
-  - name:  RestrictionDefault
-    type:  string
-    description:  Ignored.
-  - name:  RestrictionNumber
-    type:  int
-    description:  The actual location in the collections restrictions that this particular restriction falls in.
-
-- name:  SchemaPrivileges
-  table:  SCHEMA_PRIVILEGES
-  columns: 
-  - name:  GRANTEE
-    type:  string
-  - name:  TABLE_CATALOG
-    type:  string
-  - name:  TABLE_SCHEMA
-    type:  string
-  - name:  PRIVILEGE_TYPE
-    type:  string
-  - name:  IS_GRANTABLE
-    type:  string
-
-- name:  Tables
-  table:  TABLES
-  identifierPartCount:  3
-  description:  information about tables
-  restrictions: 
-  - name:  Catalog
-    default:  TABLE_CATALOG
-  - name:  Schema
-    default:  TABLE_SCHEMA
-  - name:  Table
-    default:  TABLE_NAME
-  - name:  TableType
-    default:  TABLE_TYPE
-  columns: 
-  - name:  TABLE_CATALOG
-    type:  string
-  - name:  TABLE_SCHEMA
-    type:  string
-  - name:  TABLE_NAME
-    type:  string
-  - name:  TABLE_TYPE
-    type:  string
-  - name:  ENGINE
-    type:  string
-  - name:  VERSION
-    type:  string
-  - name:  ROW_FORMAT
-    type:  string
-  - name:  TABLE_ROWS
-    type:  long
-  - name:  AVG_ROW_LENGTH
-    type:  long
-  - name:  DATA_LENGTH
-    type:  long
-  - name:  MAX_DATA_LENGTH
-    type:  long
-  - name:  INDEX_LENGTH
-    type:  long
-  - name:  DATA_FREE
-    type:  long
-  - name:  AUTO_INCREMENT
-    type:  long
-  - name:  CREATE_TIME
-    type:  DateTime
-  - name:  UPDATE_TIME
-    type:  DateTime
-  - name:  CHECK_TIME
-    type:  DateTime
-  - name:  TABLE_COLLATION
-    type:  string
-  - name:  CHECKSUM
-    type:  string
-  - name:  CREATE_OPTIONS
-    type:  string
-  - name:  TABLE_COMMENT
-    type:  string
-
-- name:  TableConstraints
-  table:  TABLE_CONSTRAINTS
-  identifierPartCount:  3
-  columns: 
-  - name:  CONSTRAINT_CATALOG
-    type:  string
-  - name:  CONSTRAINT_SCHEMA
-    type:  string
-  - name:  CONSTRAINT_NAME
-    type:  string
-  - name:  TABLE_SCHEMA
-    type:  string
-  - name:  TABLE_NAME
-    type:  string
-  - name:  CONSTRAINT_TYPE
-    type:  string
-
-- name:  TablePrivileges
-  table:  TABLE_PRIVILEGES
-  columns: 
-  - name:  GRANTEE
-    type:  string
-  - name:  TABLE_CATALOG
-    type:  string
-  - name:  TABLE_SCHEMA
-    type:  string
-  - name:  TABLE_NAME
-    type:  string
-  - name:  PRIVILEGE_TYPE
-    type:  string
-  - name:  IS_GRANTABLE
-    type:  string
-
-- name:  TableSpaces
-  table:  TABLESPACES
-  columns: 
-  - name:  TABLESPACE_NAME
-    type:  string
-  - name:  ENGINE
-    type:  string
-  - name:  TABLESPACE_TYPE
-    type:  string
-  - name:  LOGFILE_GROUP_NAME
-    type:  string
-  - name:  EXTENT_SIZE
-    type:  long
-  - name:  AUTOEXTEND_SIZE
-    type:  long
-  - name:  MAXIMUM_SIZE
-    type:  long
-  - name:  NODEGROUP_ID
-    type:  long
-  - name:  TABLESPACE_COMMENT
-    type:  string
-
-- name:  Triggers
-  table:  TRIGGERS
-  identifierPartCount:  3
-  columns: 
-  - name:  TRIGGER_CATALOG
-    type:  string
-  - name:  TRIGGER_SCHEMA
-    type:  string
-  - name:  TRIGGER_NAME
-    type:  string
-  - name:  EVENT_MANIPULATION
-    type:  string
-  - name:  EVENT_OBJECT_CATALOG
-    type:  string
-  - name:  EVENT_OBJECT_SCHEMA
-    type:  string
-  - name:  EVENT_OBJECT_TABLE
-    type:  string
-  - name:  ACTION_ORDER
-    type:  long
-  - name:  ACTION_CONDITION
-    type:  string
-  - name:  ACTION_STATEMENT
-    type:  string
-  - name:  ACTION_ORIENTATION
-    type:  string
-  - name:  ACTION_TIMING
-    type:  string
-  - name:  ACTION_REFERENCE_OLD_TABLE
-    type:  string
-  - name:  ACTION_REFERENCE_NEW_TABLE
-    type:  string
-  - name:  ACTION_REFERENCE_OLD_ROW
-    type:  string
-  - name:  ACTION_REFERENCE_NEW_ROW
-    type:  string
-  - name:  CREATED
-    type:  DateTime
-  - name:  SQL_MODE
-    type:  string
-  - name:  DEFINER
-    type:  string
-  - name:  CHARACTER_SET_CLIENT
-    type:  string
-  - name:  COLLATION_CONNECTION
-    type:  string
-  - name:  DATABASE_COLLATION
-    type:  string
-
-- name:  UserPrivileges
-  table:  USER_PRIVILEGES
-  columns: 
-  - name:  GRANTEE
-    type:  string
-  - name:  TABLE_CATALOG
-    type:  string
-  - name:  PRIVILEGE_TYPE
-    type:  string
-  - name:  IS_GRANTABLE
-    type:  string
-
-- name:  Views
-  table:  VIEWS
-  identifierPartCount:  3
-  columns: 
-  - name:  TABLE_CATALOG
-    type:  string
-  - name:  TABLE_SCHEMA
-    type:  string
-  - name:  TABLE_NAME
-    type:  string
-  - name:  VIEW_DEFINITION
-    type:  string
-  - name:  CHECK_OPTION
-    type:  string
-  - name:  IS_UPDATABLE
-    type:  string
-  - name:  DEFINER
-    type:  string
-  - name:  SECURITY_TYPE
-    type:  string
-  - name:  CHARACTER_SET_CLIENT
-    type:  string
-  - name:  COLLATION_CONNECTION
-    type:  string
-
-- name:  Foreign Keys
-  table: KEY_COLUMN_USAGE
-  restrictions: 
-  - name:  Catalog
-    default:  TABLE_CATALOG
-  - name:  Schema
-    default:  TABLE_SCHEMA
-  - name:  Table
-    default:  TABLE_NAME
-  - name:  Column
-    default:  COLUMN_NAME
-  columns: 
-  - name:  CONSTRAINT_CATALOG
-    type:  string
-  - name:  CONSTRAINT_SCHEMA
-    type:  string
-  - name:  CONSTRAINT_NAME
-    type:  string
+- name: Columns
+  table: COLUMNS
+  description: information about columns (in all tables)
+  identifierPartCount: 4
+  restrictions:
+  - name: Catalog
+    default: TABLE_CATALOG
+  - name: Schema
+    default: TABLE_SCHEMA
+  - name: Table
+    default: TABLE_NAME
+  - name: Column
+    default: COLUMN_NAME
+  columns:
   - name: TABLE_CATALOG
     type: string
   - name: TABLE_SCHEMA
     type: string
   - name: TABLE_NAME
     type: string
-  - name:  COLUMN_NAME
-    type:  string
+  - name: COLUMN_NAME
+    type: string
+  - name: ORDINAL_POSITION
+    type: uint
+  - name: COLUMN_DEFAULT
+    type: string
+  - name: IS_NULLABLE
+    type: string
+  - name: DATA_TYPE
+    type: string
+  - name: CHARACTER_MAXIMUM_LENGTH
+    type: long
+  - name: NUMERIC_PRECISION
+    type: ulong
+  - name: NUMERIC_SCALE
+    type: ulong
+  - name: DATETIME_PRECISION
+    type: uint
+  - name: CHARACTER_SET_NAME
+    type: string
+  - name: COLLATION_NAME
+    type: string
+  - name: COLUMN_TYPE
+    type: string
+  - name: COLUMN_KEY
+    type: string
+  - name: EXTRA
+    type: string
+  - name: PRIVILEGES
+    type: string
+  - name: COLUMN_COMMENT
+    type: string
+  - name: GENERATION_EXPRESSION
+    type: string
+    optional: true
+  - name: SRS_ID
+    type: string
+    optional: true
+
+- name: Databases
+  table: SCHEMATA
+  identifierPartCount: 2
+  columns:
+  - name: CATALOG_NAME
+    type: string
+  - name: SCHEMA_NAME
+    type: string
+  - name: DEFAULT_CHARACTER_SET_NAME
+    type: string
+  - name: DEFAULT_COLLATION_NAME
+    type: string
+  - name: SQL_PATH
+    type: string
+
+- name: DataSourceInformation
+  custom: DoFillDataSourceInformation
+  columns:
+  - name: CompositeIdentifierSeparatorPattern
+    type: string
+  - name: DataSourceProductName
+    type: string
+  - name: DataSourceProductVersion
+    type: string
+  - name: DataSourceProductVersionNormalized
+    type: string
+  - name: GroupByBehavior
+    type: GroupByBehavior
+  - name: IdentifierPattern
+    type: string
+  - name: IdentifierCase
+    type: IdentifierCase
+  - name: OrderByColumnsInSelect
+    type: bool
+  - name: ParameterMarkerFormat
+    type: string
+  - name: ParameterMarkerPattern
+    type: string
+  - name: ParameterNameMaxLength
+    type: int
+  - name: QuotedIdentifierPattern
+    type: string
+  - name: QuotedIdentifierCase
+    type: IdentifierCase
+  - name: ParameterNamePattern
+    type: string
+  - name: StatementSeparatorPattern
+    type: string
+  - name: StringLiteralPattern
+    type: string
+  - name: SupportedJoinOperators
+    type: SupportedJoinOperators
+
+- name: DataTypes
+  description: information about available data types
+  custom: DoFillDataTypes
+  columns:
+  - name: TypeName
+    type: string
+  - name: ProviderDbType
+    type: int
+  - name: ColumnSize
+    type: long
+  - name: CreateFormat
+    type: string
+  - name: CreateParameters
+    type: string
+  - name: DataType
+    type: string
+  - name: IsAutoIncrementable
+    type: bool
+  - name: IsBestMatch
+    type: bool
+  - name: IsCaseSensitive
+    type: bool
+  - name: IsFixedLength
+    type: bool
+  - name: IsFixedPrecisionScale
+    type: bool
+  - name: IsLong
+    type: bool
+  - name: IsNullable
+    type: bool
+  - name: IsSearchable
+    type: bool
+  - name: IsSearchableWithLike
+    type: bool
+  - name: IsUnsigned
+    type: bool
+  - name: MaximumScale
+    type: short
+  - name: MinimumScale
+    type: short
+  - name: IsConcurrencyType
+    type: bool
+  - name: IsLiteralSupported
+    type: bool
+  - name: LiteralPrefix
+    type: string
+  - name: LiteralSuffix
+    type: string
+  - name: NativeDataType
+    type: string
+
+- name: Engines
+  table: ENGINES
+  columns:
+  - name: ENGINE
+    type: string
+  - name: SUPPORT
+    type: string
+  - name: COMMENT
+    type: string
+  - name: TRANSACTIONS
+    type: string
+  - name: XA
+    type: string
+  - name: SAVEPOINTS
+    type: string
+
+- name: KeyColumnUsage
+  table: KEY_COLUMN_USAGE
+  columns:
+  - name: CONSTRAINT_CATALOG
+    type: string
+  - name: CONSTRAINT_SCHEMA
+    type: string
+  - name: CONSTRAINT_NAME
+    type: string
+  - name: TABLE_CATALOG
+    type: string
+  - name: TABLE_SCHEMA
+    type: string
+  - name: TABLE_NAME
+    type: string
+  - name: COLUMN_NAME
+    type: string
+  - name: ORDINAL_POSITION
+    type: int
+  - name: POSITION_IN_UNIQUE_CONSTRAINT
+    type: string
   - name: REFERENCED_TABLE_SCHEMA
     type: string
   - name: REFERENCED_TABLE_NAME
@@ -793,44 +254,583 @@
   - name: REFERENCED_COLUMN_NAME
     type: string
 
-- name:  Indexes
-  table: STATISTICS
-  restrictions: 
-  - name:  Catalog
-    default:  TABLE_CATALOG
-  - name:  Schema
-    default:  TABLE_SCHEMA
-  - name:  Table
-    default:  TABLE_NAME
-  - name:  Column # it is only a guess - might need to be changed, but NHibernate passes 4 values, with last one is null
-    default:  COLUMN_NAME
-  columns: 
+- name: KeyWords
+  table: KEYWORDS
+  columns:
+  - name: WORD
+    type: string
+  - name: RESERVED
+    type: int
+
+- name: Parameters
+  table: PARAMETERS
+  columns:
+  - name: SPECIFIC_CATALOG
+    type: string
+  - name: SPECIFIC_SCHEMA
+    type: string
+  - name: SPECIFIC_NAME
+    type: string
+  - name: ORDINAL_POSITION
+    type: int
+  - name: PARAMETER_MODE
+    type: string
+  - name: PARAMETER_NAME
+    type: string
+  - name: DATA_TYPE
+    type: string
+  - name: CHARACTER_MAXIMUM_LENGTH
+    type: long
+  - name: CHARACTER_OCTET_LENGTH
+    type: long
+  - name: NUMERIC_PRECISION
+    type: int
+  - name: NUMERIC_SCALE
+    type: int
+  - name: DATETIME_PRECISION
+    type: int
+  - name: CHARACTER_SET_NAME
+    type: string
+  - name: COLLATION_NAME
+    type: string
+  - name: DTD_IDENTIFIER
+    type: string
+  - name: ROUTINE_TYPE
+    type: string
+
+- name: Partitions
+  table: PARTITIONS
+  columns:
   - name: TABLE_CATALOG
     type: string
   - name: TABLE_SCHEMA
     type: string
   - name: TABLE_NAME
     type: string
-  - name:  COLUMN_NAME
-    type:  string
-  - name:  INDEX_NAME
-    type:  string
+  - name: PARTITION_NAME
+    type: string
+  - name: SUBPARTITION_NAME
+    type: string
+  - name: PARTITION_ORDINAL_POSITION
+    type: int
+  - name: SUBPARTITION_ORDINAL_POSITION
+    type: int
+  - name: PARTITION_METHOD
+    type: string
+  - name: SUBPARTITION_METHOD
+    type: string
+  - name: PARTITION_EXPRESSION
+    type: string
+  - name: SUBPARTITION_EXPRESSION
+    type: string
+  - name: PARTITION_DESCRIPTION
+    type: string
+  - name: TABLE_ROWS
+    type: long
+  - name: AVG_ROW_LENGTH
+    type: long
+  - name: DATA_LENGTH
+    type: long
+  - name: MAX_DATA_LENGTH
+    type: long
+  - name: INDEX_LENGTH
+    type: long
+  - name: DATA_FREE
+    type: long
+  - name: CREATE_TIME
+    type: DateTime
+  - name: UPDATE_TIME
+    type: DateTime
+  - name: CHECK_TIME
+    type: DateTime
+  - name: CHECKSUM
+    type: long
+  - name: PARTITION_COMMENT
+    type: string
+  - name: NODEGROUP
+    type: string
+  - name: TABLESPACE_NAME
+    type: string
 
+- name: Plugins
+  table: PLUGINS
+  columns:
+  - name: PLUGIN_NAME
+    type: string
+  - name: PLUGIN_VERSION
+    type: string
+  - name: PLUGIN_STATUS
+    type: string
+  - name: PLUGIN_TYPE
+    type: string
+  - name: PLUGIN_TYPE_VERSION
+    type: string
+  - name: PLUGIN_LIBRARY
+    type: string
+  - name: PLUGIN_LIBRARY_VERSION
+    type: string
+  - name: PLUGIN_AUTHOR
+    type: string
+  - name: PLUGIN_DESCRIPTION
+    type: string
+  - name: PLUGIN_LICENSE
+    type: string
+  - name: LOAD_OPTION
+    type: string
 
-- name:  IndexColumns
+- name: Procedures
+  description: information about stored procedures
+  identifierPartCount: 3
+  table: ROUTINES
+  columns:
+  - name: SPECIFIC_NAME
+    type: string
+  - name: ROUTINE_CATALOG
+    type: string
+  - name: ROUTINE_SCHEMA
+    type: string
+  - name: ROUTINE_NAME
+    type: string
+  - name: ROUTINE_TYPE
+    type: string
+  - name: DTD_IDENTIFIER
+    type: string
+  - name: ROUTINE_BODY
+    type: string
+  - name: ROUTINE_DEFINITION
+    type: string
+  - name: EXTERNAL_NAME
+    type: string
+  - name: EXTERNAL_LANGUAGE
+    type: string
+  - name: PARAMETER_STYLE
+    type: string
+  - name: IS_DETERMINISTIC
+    type: string
+  - name: SQL_DATA_ACCESS
+    type: string
+  - name: SQL_PATH
+    type: string
+  - name: SECURITY_TYPE
+    type: string
+  - name: CREATED
+    type: DateTime
+  - name: LAST_ALTERED
+    type: DateTime
+  - name: SQL_MODE
+    type: string
+  - name: ROUTINE_COMMENT
+    type: string
+  - name: DEFINER
+    type: string
+
+- name: ProcessList
+  table: PROCESSLIST
+  columns:
+  - name: ID
+    type: long
+  - name: USER
+    type: string
+  - name: HOST
+    type: string
+  - name: DB
+    type: string
+  - name: COMMAND
+    type: string
+  - name: TIME
+    type: int
+  - name: STATE
+    type: string
+  - name: INFO
+    type: string
+
+- name: Profiling
+  table: PROFILING
+  columns:
+  - name: QUERY_ID
+    type: int
+  - name: SEQ
+    type: int
+  - name: STATE
+    type: string
+  - name: DURATION
+    type: decimal
+  - name: CPU_USER
+    type: decimal
+  - name: CPU_SYSTEM
+    type: decimal
+  - name: CONTEXT_VOLUNTARY
+    type: int
+  - name: CONTEXT_INVOLUNTARY
+    type: int
+  - name: BLOCK_OPS_IN
+    type: int
+  - name: BLOCK_OPS_OUT
+    type: int
+  - name: MESSAGES_SENT
+    type: int
+  - name: MESSAGES_RECEIVED
+    type: int
+  - name: PAGE_FAULTS_MAJOR
+    type: int
+  - name: PAGE_FAULTS_MINOR
+    type: int
+  - name: SWAPS
+    type: int
+  - name: SOURCE_FUNCTION
+    type: string
+  - name: SOURCE_FILE
+    type: string
+  - name: SOURCE_LINE
+    type: int
+
+- name: ReferentialConstraints
+  table: REFERENTIAL_CONSTRAINTS
+  identifierPartCount: 3
+  columns:
+  - name: CONSTRAINT_CATALOG
+    type: string
+  - name: CONSTRAINT_SCHEMA
+    type: string
+  - name: CONSTRAINT_NAME
+    type: string
+  - name: UNIQUE_CONSTRAINT_CATALOG
+    type: string
+  - name: UNIQUE_CONSTRAINT_SCHEMA
+    type: string
+  - name: UNIQUE_CONSTRAINT_NAME
+    type: string
+  - name: MATCH_OPTION
+    type: string
+  - name: UPDATE_RULE
+    type: string
+  - name: DELETE_RULE
+    type: string
+  - name: TABLE_NAME
+    type: string
+  - name: REFERENCED_TABLE_NAME
+    type: string
+
+- name: ReservedWords
+  description: information about reserved words in the server's SQL syntax
+  custom: DoFillReservedWords
+  columns:
+  - name: ReservedWord
+    type: string
+
+- name: ResourceGroups
+  table: RESOURCE_GROUPS
+  columns:
+  - name: RESOURCE_GROUP_NAME
+    type: string
+  - name: RESOURCE_GROUP_TYPE
+    type: string
+  - name: RESOURCE_GROUP_ENABLED
+    type: int
+  - name: VCPU_IDS
+    type: string
+  - name: THREAD_PRIORITY
+    type: int
+
+- name: Restrictions
+  description: information about the restrictions supported when retrieving schemas
+  columns:
+  - name: CollectionName
+    type: string
+    description: The name of the collection that these restrictions apply to.
+  - name: RestrictionName
+    type: string
+    description: The name of the restriction in the collection.
+  - name: RestrictionDefault
+    type: string
+    description: Ignored.
+  - name: RestrictionNumber
+    type: int
+    description: The actual location in the collections restrictions that this particular restriction falls in.
+
+- name: SchemaPrivileges
+  table: SCHEMA_PRIVILEGES
+  columns:
+  - name: GRANTEE
+    type: string
+  - name: TABLE_CATALOG
+    type: string
+  - name: TABLE_SCHEMA
+    type: string
+  - name: PRIVILEGE_TYPE
+    type: string
+  - name: IS_GRANTABLE
+    type: string
+
+- name: Tables
+  table: TABLES
+  identifierPartCount: 3
+  description: information about tables
+  restrictions:
+  - name: Catalog
+    default: TABLE_CATALOG
+  - name: Schema
+    default: TABLE_SCHEMA
+  - name: Table
+    default: TABLE_NAME
+  - name: TableType
+    default: TABLE_TYPE
+  columns:
+  - name: TABLE_CATALOG
+    type: string
+  - name: TABLE_SCHEMA
+    type: string
+  - name: TABLE_NAME
+    type: string
+  - name: TABLE_TYPE
+    type: string
+  - name: ENGINE
+    type: string
+  - name: VERSION
+    type: string
+  - name: ROW_FORMAT
+    type: string
+  - name: TABLE_ROWS
+    type: long
+  - name: AVG_ROW_LENGTH
+    type: long
+  - name: DATA_LENGTH
+    type: long
+  - name: MAX_DATA_LENGTH
+    type: long
+  - name: INDEX_LENGTH
+    type: long
+  - name: DATA_FREE
+    type: long
+  - name: AUTO_INCREMENT
+    type: long
+  - name: CREATE_TIME
+    type: DateTime
+  - name: UPDATE_TIME
+    type: DateTime
+  - name: CHECK_TIME
+    type: DateTime
+  - name: TABLE_COLLATION
+    type: string
+  - name: CHECKSUM
+    type: string
+  - name: CREATE_OPTIONS
+    type: string
+  - name: TABLE_COMMENT
+    type: string
+
+- name: TableConstraints
+  table: TABLE_CONSTRAINTS
+  identifierPartCount: 3
+  columns:
+  - name: CONSTRAINT_CATALOG
+    type: string
+  - name: CONSTRAINT_SCHEMA
+    type: string
+  - name: CONSTRAINT_NAME
+    type: string
+  - name: TABLE_SCHEMA
+    type: string
+  - name: TABLE_NAME
+    type: string
+  - name: CONSTRAINT_TYPE
+    type: string
+
+- name: TablePrivileges
+  table: TABLE_PRIVILEGES
+  columns:
+  - name: GRANTEE
+    type: string
+  - name: TABLE_CATALOG
+    type: string
+  - name: TABLE_SCHEMA
+    type: string
+  - name: TABLE_NAME
+    type: string
+  - name: PRIVILEGE_TYPE
+    type: string
+  - name: IS_GRANTABLE
+    type: string
+
+- name: TableSpaces
+  table: TABLESPACES
+  columns:
+  - name: TABLESPACE_NAME
+    type: string
+  - name: ENGINE
+    type: string
+  - name: TABLESPACE_TYPE
+    type: string
+  - name: LOGFILE_GROUP_NAME
+    type: string
+  - name: EXTENT_SIZE
+    type: long
+  - name: AUTOEXTEND_SIZE
+    type: long
+  - name: MAXIMUM_SIZE
+    type: long
+  - name: NODEGROUP_ID
+    type: long
+  - name: TABLESPACE_COMMENT
+    type: string
+
+- name: Triggers
+  table: TRIGGERS
+  identifierPartCount: 3
+  columns:
+  - name: TRIGGER_CATALOG
+    type: string
+  - name: TRIGGER_SCHEMA
+    type: string
+  - name: TRIGGER_NAME
+    type: string
+  - name: EVENT_MANIPULATION
+    type: string
+  - name: EVENT_OBJECT_CATALOG
+    type: string
+  - name: EVENT_OBJECT_SCHEMA
+    type: string
+  - name: EVENT_OBJECT_TABLE
+    type: string
+  - name: ACTION_ORDER
+    type: long
+  - name: ACTION_CONDITION
+    type: string
+  - name: ACTION_STATEMENT
+    type: string
+  - name: ACTION_ORIENTATION
+    type: string
+  - name: ACTION_TIMING
+    type: string
+  - name: ACTION_REFERENCE_OLD_TABLE
+    type: string
+  - name: ACTION_REFERENCE_NEW_TABLE
+    type: string
+  - name: ACTION_REFERENCE_OLD_ROW
+    type: string
+  - name: ACTION_REFERENCE_NEW_ROW
+    type: string
+  - name: CREATED
+    type: DateTime
+  - name: SQL_MODE
+    type: string
+  - name: DEFINER
+    type: string
+  - name: CHARACTER_SET_CLIENT
+    type: string
+  - name: COLLATION_CONNECTION
+    type: string
+  - name: DATABASE_COLLATION
+    type: string
+
+- name: UserPrivileges
+  table: USER_PRIVILEGES
+  columns:
+  - name: GRANTEE
+    type: string
+  - name: TABLE_CATALOG
+    type: string
+  - name: PRIVILEGE_TYPE
+    type: string
+  - name: IS_GRANTABLE
+    type: string
+
+- name: Views
+  table: VIEWS
+  identifierPartCount: 3
+  columns:
+  - name: TABLE_CATALOG
+    type: string
+  - name: TABLE_SCHEMA
+    type: string
+  - name: TABLE_NAME
+    type: string
+  - name: VIEW_DEFINITION
+    type: string
+  - name: CHECK_OPTION
+    type: string
+  - name: IS_UPDATABLE
+    type: string
+  - name: DEFINER
+    type: string
+  - name: SECURITY_TYPE
+    type: string
+  - name: CHARACTER_SET_CLIENT
+    type: string
+  - name: COLLATION_CONNECTION
+    type: string
+
+- name: Foreign Keys
   table: KEY_COLUMN_USAGE
-  restrictions: 
-  - name:  Catalog
-    default:  TABLE_CATALOG
-  - name:  Schema
-    default:  TABLE_SCHEMA
-  - name:  Table
-    default:  TABLE_NAME
-  - name:  Constraint
-    default:  CONSTRAINT_NAME
-  - name:  Column # it is only a guess - might need to be changed, but NHibernate passes 5 values, with last one is null
-    default:  COLUMN_NAME
-  columns: 
+  restrictions:
+  - name: Catalog
+    default: TABLE_CATALOG
+  - name: Schema
+    default: TABLE_SCHEMA
+  - name: Table
+    default: TABLE_NAME
+  - name: Column
+    default: COLUMN_NAME
+  columns:
+  - name: CONSTRAINT_CATALOG
+    type: string
+  - name: CONSTRAINT_SCHEMA
+    type: string
+  - name: CONSTRAINT_NAME
+    type: string
+  - name: TABLE_CATALOG
+    type: string
+  - name: TABLE_SCHEMA
+    type: string
+  - name: TABLE_NAME
+    type: string
+  - name: COLUMN_NAME
+    type: string
+  - name: REFERENCED_TABLE_SCHEMA
+    type: string
+  - name: REFERENCED_TABLE_NAME
+    type: string
+  - name: REFERENCED_COLUMN_NAME
+    type: string
+
+- name: Indexes
+  table: STATISTICS
+  restrictions:
+  - name: Catalog
+    default: TABLE_CATALOG
+  - name: Schema
+    default: TABLE_SCHEMA
+  - name: Table
+    default: TABLE_NAME
+  - name: Column # it is only a guess - might need to be changed, but NHibernate passes 4 values, with last one is null
+    default: COLUMN_NAME
+  columns:
+  - name: TABLE_CATALOG
+    type: string
+  - name: TABLE_SCHEMA
+    type: string
+  - name: TABLE_NAME
+    type: string
+  - name: COLUMN_NAME
+    type: string
+  - name: INDEX_NAME
+    type: string
+
+
+- name: IndexColumns
+  table: KEY_COLUMN_USAGE
+  restrictions:
+  - name: Catalog
+    default: TABLE_CATALOG
+  - name: Schema
+    default: TABLE_SCHEMA
+  - name: Table
+    default: TABLE_NAME
+  - name: Constraint
+    default: CONSTRAINT_NAME
+  - name: Column # it is only a guess - might need to be changed, but NHibernate passes 5 values, with last one is null
+    default: COLUMN_NAME
+  columns:
   - name: TABLE_CATALOG
     type: string
   - name: TABLE_SCHEMA
@@ -839,5 +839,5 @@
     type: string
   - name: CONSTRAINT_NAME
     type: string
-  - name:  COLUMN_NAME
-    type:  string
+  - name: COLUMN_NAME
+    type: string
