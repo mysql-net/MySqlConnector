@@ -75,6 +75,12 @@ internal sealed partial class SchemaProvider
 			await FillUserPrivilegesAsync(ioBehavior, dataTable, "UserPrivileges", restrictionValues, cancellationToken).ConfigureAwait(false);
 		else if (string.Equals(collectionName, "Views", StringComparison.OrdinalIgnoreCase))
 			await FillViewsAsync(ioBehavior, dataTable, "Views", restrictionValues, cancellationToken).ConfigureAwait(false);
+		else if (string.Equals(collectionName, "Foreign Keys", StringComparison.OrdinalIgnoreCase))
+			await FillForeignKeysAsync(ioBehavior, dataTable, "Foreign Keys", restrictionValues, cancellationToken).ConfigureAwait(false);
+		else if (string.Equals(collectionName, "Indexes", StringComparison.OrdinalIgnoreCase))
+			await FillIndexesAsync(ioBehavior, dataTable, "Indexes", restrictionValues, cancellationToken).ConfigureAwait(false);
+		else if (string.Equals(collectionName, "IndexColumns", StringComparison.OrdinalIgnoreCase))
+			await FillIndexColumnsAsync(ioBehavior, dataTable, "IndexColumns", restrictionValues, cancellationToken).ConfigureAwait(false);
 		else
 			throw new ArgumentException($"Invalid collection name: '{collectionName}'.", nameof(collectionName));
 
@@ -123,6 +129,9 @@ internal sealed partial class SchemaProvider
 		dataTable.Rows.Add("Triggers", 0, 3);
 		dataTable.Rows.Add("UserPrivileges", 0, 0);
 		dataTable.Rows.Add("Views", 0, 3);
+		dataTable.Rows.Add("Foreign Keys", 4, 0);
+		dataTable.Rows.Add("Indexes", 4, 0);
+		dataTable.Rows.Add("IndexColumns", 5, 0);
 
 		return Task.CompletedTask;
 	}
@@ -628,6 +637,19 @@ internal sealed partial class SchemaProvider
 		dataTable.Rows.Add("Tables", "Schema", "TABLE_SCHEMA", 2);
 		dataTable.Rows.Add("Tables", "Table", "TABLE_NAME", 3);
 		dataTable.Rows.Add("Tables", "TableType", "TABLE_TYPE", 4);
+		dataTable.Rows.Add("Foreign Keys", "Catalog", "TABLE_CATALOG", 1);
+		dataTable.Rows.Add("Foreign Keys", "Schema", "TABLE_SCHEMA", 2);
+		dataTable.Rows.Add("Foreign Keys", "Table", "TABLE_NAME", 3);
+		dataTable.Rows.Add("Foreign Keys", "Column", "COLUMN_NAME", 4);
+		dataTable.Rows.Add("Indexes", "Catalog", "TABLE_CATALOG", 1);
+		dataTable.Rows.Add("Indexes", "Schema", "TABLE_SCHEMA", 2);
+		dataTable.Rows.Add("Indexes", "Table", "TABLE_NAME", 3);
+		dataTable.Rows.Add("Indexes", "Column", "COLUMN_NAME", 4);
+		dataTable.Rows.Add("IndexColumns", "Catalog", "TABLE_CATALOG", 1);
+		dataTable.Rows.Add("IndexColumns", "Schema", "TABLE_SCHEMA", 2);
+		dataTable.Rows.Add("IndexColumns", "Table", "TABLE_NAME", 3);
+		dataTable.Rows.Add("IndexColumns", "Constraint", "CONSTRAINT_NAME", 4);
+		dataTable.Rows.Add("IndexColumns", "Column", "COLUMN_NAME", 5);
 
 		return Task.CompletedTask;
 	}
@@ -830,6 +852,106 @@ internal sealed partial class SchemaProvider
 		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "VIEWS", null, cancellationToken).ConfigureAwait(false);
+	}
+
+	private async Task FillForeignKeysAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
+	{
+		if (restrictionValues is { Length: > 4 })
+			throw new ArgumentException("More than 4 restrictionValues are not supported for schema 'Foreign Keys'.", nameof(restrictionValues));
+
+		dataTable.TableName = tableName;
+		dataTable.Columns.AddRange(
+		[
+			new("CONSTRAINT_CATALOG", typeof(string)),
+			new("CONSTRAINT_SCHEMA", typeof(string)),
+			new("CONSTRAINT_NAME", typeof(string)),
+			new("TABLE_CATALOG", typeof(string)),
+			new("TABLE_SCHEMA", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("COLUMN_NAME", typeof(string)),
+			new("REFERENCED_TABLE_SCHEMA", typeof(string)),
+			new("REFERENCED_TABLE_NAME", typeof(string)),
+			new("REFERENCED_COLUMN_NAME", typeof(string)),
+		]);
+
+		var columns = new List<KeyValuePair<string, string>>();
+		if (restrictionValues is not null)
+		{
+			if (restrictionValues.Length > 0 && !string.IsNullOrEmpty(restrictionValues[0]))
+				columns.Add(new("TABLE_CATALOG", restrictionValues[0]!));
+			if (restrictionValues.Length > 1 && !string.IsNullOrEmpty(restrictionValues[1]))
+				columns.Add(new("TABLE_SCHEMA", restrictionValues[1]!));
+			if (restrictionValues.Length > 2 && !string.IsNullOrEmpty(restrictionValues[2]))
+				columns.Add(new("TABLE_NAME", restrictionValues[2]!));
+			if (restrictionValues.Length > 3 && !string.IsNullOrEmpty(restrictionValues[3]))
+				columns.Add(new("COLUMN_NAME", restrictionValues[3]!));
+		}
+
+		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", columns, cancellationToken).ConfigureAwait(false);
+	}
+
+	private async Task FillIndexesAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
+	{
+		if (restrictionValues is { Length: > 4 })
+			throw new ArgumentException("More than 4 restrictionValues are not supported for schema 'Indexes'.", nameof(restrictionValues));
+
+		dataTable.TableName = tableName;
+		dataTable.Columns.AddRange(
+		[
+			new("TABLE_CATALOG", typeof(string)),
+			new("TABLE_SCHEMA", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("COLUMN_NAME", typeof(string)),
+			new("INDEX_NAME", typeof(string)),
+		]);
+
+		var columns = new List<KeyValuePair<string, string>>();
+		if (restrictionValues is not null)
+		{
+			if (restrictionValues.Length > 0 && !string.IsNullOrEmpty(restrictionValues[0]))
+				columns.Add(new("TABLE_CATALOG", restrictionValues[0]!));
+			if (restrictionValues.Length > 1 && !string.IsNullOrEmpty(restrictionValues[1]))
+				columns.Add(new("TABLE_SCHEMA", restrictionValues[1]!));
+			if (restrictionValues.Length > 2 && !string.IsNullOrEmpty(restrictionValues[2]))
+				columns.Add(new("TABLE_NAME", restrictionValues[2]!));
+			if (restrictionValues.Length > 3 && !string.IsNullOrEmpty(restrictionValues[3]))
+				columns.Add(new("COLUMN_NAME", restrictionValues[3]!));
+		}
+
+		await FillDataTableAsync(ioBehavior, dataTable, "STATISTICS", columns, cancellationToken).ConfigureAwait(false);
+	}
+
+	private async Task FillIndexColumnsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
+	{
+		if (restrictionValues is { Length: > 5 })
+			throw new ArgumentException("More than 5 restrictionValues are not supported for schema 'IndexColumns'.", nameof(restrictionValues));
+
+		dataTable.TableName = tableName;
+		dataTable.Columns.AddRange(
+		[
+			new("TABLE_CATALOG", typeof(string)),
+			new("TABLE_SCHEMA", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("CONSTRAINT_NAME", typeof(string)),
+			new("COLUMN_NAME", typeof(string)),
+		]);
+
+		var columns = new List<KeyValuePair<string, string>>();
+		if (restrictionValues is not null)
+		{
+			if (restrictionValues.Length > 0 && !string.IsNullOrEmpty(restrictionValues[0]))
+				columns.Add(new("TABLE_CATALOG", restrictionValues[0]!));
+			if (restrictionValues.Length > 1 && !string.IsNullOrEmpty(restrictionValues[1]))
+				columns.Add(new("TABLE_SCHEMA", restrictionValues[1]!));
+			if (restrictionValues.Length > 2 && !string.IsNullOrEmpty(restrictionValues[2]))
+				columns.Add(new("TABLE_NAME", restrictionValues[2]!));
+			if (restrictionValues.Length > 3 && !string.IsNullOrEmpty(restrictionValues[3]))
+				columns.Add(new("CONSTRAINT_NAME", restrictionValues[3]!));
+			if (restrictionValues.Length > 4 && !string.IsNullOrEmpty(restrictionValues[4]))
+				columns.Add(new("COLUMN_NAME", restrictionValues[4]!));
+		}
+
+		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", columns, cancellationToken).ConfigureAwait(false);
 	}
 
 }
