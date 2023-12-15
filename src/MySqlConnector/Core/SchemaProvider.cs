@@ -384,6 +384,22 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 
 	private async Task FillDataTableAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, List<KeyValuePair<string, string>>? columns, CancellationToken cancellationToken)
 	{
+		await FillDataTableAsync(ioBehavior, dataTable, command =>
+		{
+#pragma warning disable CA2100
+			command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(static x => x!.ColumnName)) + " FROM INFORMATION_SCHEMA." + tableName;
+#pragma warning restore CA2100
+			if (columns is { Count: > 0 })
+			{
+				command.CommandText += " WHERE " + string.Join(" AND ", columns.Select(x => $@"{x.Key} = @{x.Key}"));
+				foreach (var column in columns)
+					command.Parameters.AddWithValue("@" + column.Key, column.Value);
+			}
+		}, cancellationToken).ConfigureAwait(false);
+	}
+
+	private async Task FillDataTableAsync(IOBehavior ioBehavior, DataTable dataTable, Action<MySqlCommand> configureCommand, CancellationToken cancellationToken)
+	{
 		Action? close = null;
 		if (connection.State != ConnectionState.Open)
 		{
@@ -409,15 +425,7 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 
 		using (var command = connection.CreateCommand())
 		{
-#pragma warning disable CA2100
-			command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(static x => x!.ColumnName)) + " FROM INFORMATION_SCHEMA." + tableName;
-#pragma warning restore CA2100
-			if (columns is { Count: > 0 })
-			{
-				command.CommandText += " WHERE " + string.Join(" AND ", columns.Select(x => $@"{x.Key} = @{x.Key}"));
-				foreach (var column in columns)
-					command.Parameters.AddWithValue("@" + column.Key, column.Value);
-			}
+			configureCommand(command);
 
 			using var reader = await command.ExecuteReaderAsync(default, ioBehavior, cancellationToken).ConfigureAwait(false);
 			while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
@@ -431,7 +439,7 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 		close?.Invoke();
 	}
 
-	private void DoFillForeignKeys(DataTable dataTable, string?[]? restrictionValues)
+	private async Task DoFillForeignKeysAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
 		void ConfigurateCommand(MySqlCommand command)
 		{
@@ -468,10 +476,11 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 			}
 			command.CommandText = sql;
 		}
-		ReadIntoTableFromSQL(ConfigurateCommand, dataTable, connection);
+
+		await FillDataTableAsync(IOBehavior.Synchronous, dataTable, ConfigurateCommand, default).ConfigureAwait(false);
 	}
 
-	private void DoFillIndexes(DataTable dataTable, string?[]? restrictionValues)
+	private async Task DoFillIndexesAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
 		void ConfigurateCommand(MySqlCommand command)
 		{
@@ -500,9 +509,10 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 			}
 			command.CommandText = sql;
 		}
-		ReadIntoTableFromSQL(ConfigurateCommand, dataTable, connection);
+		await FillDataTableAsync(ioBehavior, dataTable, ConfigurateCommand, cancellationToken).ConfigureAwait(false);
 	}
-	private void DoFillIndexColumns(DataTable dataTable, string?[]? restrictionValues)
+
+	private async Task DoFillIndexColumnsAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
 		string sql = @"SELECT null AS INDEX_CATALOG, INDEX_SCHEMA,
                 INDEX_NAME, TABLE_NAME,
@@ -536,29 +546,7 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 			}
 			command.CommandText = sql;
 		}
-		ReadIntoTableFromSQL(ConfigurateCommand, dataTable, connection);
-	}
 
-	private static void ReadIntoTableFromSQL(Action<MySqlCommand> commandConfigurator, DataTable dataTableToFill, MySqlConnection connection)
-	{
-		Action? close = null;
-		if (connection.State != ConnectionState.Open)
-		{
-			connection.Open();
-			close = connection.Close;
-		}
-
-		using (var command = connection.CreateCommand())
-		{
-			commandConfigurator?.Invoke(command);
-			using var reader = command.ExecuteReader();
-			while (reader.Read())
-			{
-				var rowValues = new object[dataTableToFill.Columns.Count];
-				reader.GetValues(rowValues);
-				dataTableToFill.Rows.Add(rowValues);
-			}
-		}
-		close?.Invoke();
+		await FillDataTableAsync(ioBehavior, dataTable, ConfigurateCommand, cancellationToken).ConfigureAwait(false);
 	}
 }

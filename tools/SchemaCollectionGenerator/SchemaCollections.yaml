@@ -762,7 +762,7 @@
 
 - name: Foreign Keys
   description: information about foreign keys in the server's SQL syntax
-  custom: DoFillForeignKeys
+  custom: DoFillForeignKeysAsync
   restrictions:
   - name: Catalog
     default: TABLE_CATALOG
@@ -800,7 +800,7 @@
 
 - name: Indexes
   description: information about indexes in the server's SQL syntax
-  custom: DoFillIndexes
+  custom: DoFillIndexesAsync
   restrictions:
   - name: Catalog
     default: TABLE_CATALOG
@@ -828,10 +828,9 @@
   - name: COMMENT
     type: string
 
-
 - name: IndexColumns
   description: information about indexes in the server's SQL syntax
-  custom: DoFillIndexColumns
+  custom: DoFillIndexColumnsAsync
   restrictions:
   - name: Catalog
     default: TABLE_CATALOG

@@ -55,7 +55,7 @@ codeWriter.WriteLine("""
 
 foreach (var schema in schemaCollections)
 {
-	var isAsync = schema.Table is not null;
+	var isAsync = schema.Table is not null || schema.Custom?.EndsWith("Async") is true;
 	string schemaNameWithoutInvalidChars = SchemaCollectionGeneratorHelpers.RemoveInvalidCharactersFromStringToBeValidInCSharpMethodName(schema.Name);
 	var supportsRestrictions = schema.Restrictions is { Count: > 0 };
 	codeWriter.WriteLine($$"""
@@ -148,11 +148,13 @@ foreach (var schema in schemaCollections)
 	}
 	else
 	{
-		// custom cunction will be called here
+		// custom function will be called here
 		string restrictions = (schema.Restrictions?.Count > 0) ? ", restrictionValues" : "";
-		codeWriter.WriteLine($"""
-					{schema.Custom}(dataTable{restrictions});
+		codeWriter.Write($"""
+					{(isAsync ? "await " : "")}{schema.Custom}({(isAsync ? "ioBehavior, " : "")}dataTable{restrictions}{(isAsync ? ", cancellationToken" : "")}){(isAsync ? ".ConfigureAwait(false)" : "")};
 			""");
+		if (!isAsync)
+			codeWriter.WriteLine();
 	}
 
 	if (!isAsync)

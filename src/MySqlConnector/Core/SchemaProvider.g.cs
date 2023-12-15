@@ -854,7 +854,7 @@ internal sealed partial class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "VIEWS", null, cancellationToken).ConfigureAwait(false);
 	}
 
-	private Task FillForeignKeysAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
+	private async Task FillForeignKeysAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
 		if (restrictionValues is { Length: > 4 })
 			throw new ArgumentException("More than 4 restrictionValues are not supported for schema 'Foreign Keys'.", nameof(restrictionValues));
@@ -876,12 +876,10 @@ internal sealed partial class SchemaProvider
 			new("REFERENCED_TABLE_NAME", typeof(string)),
 		]);
 
-		DoFillForeignKeys(dataTable, restrictionValues);
-
-		return Task.CompletedTask;
+		await DoFillForeignKeysAsync(ioBehavior, dataTable, restrictionValues, cancellationToken).ConfigureAwait(false);
 	}
 
-	private Task FillIndexesAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
+	private async Task FillIndexesAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
 		if (restrictionValues is { Length: > 4 })
 			throw new ArgumentException("More than 4 restrictionValues are not supported for schema 'Indexes'.", nameof(restrictionValues));
@@ -899,12 +897,10 @@ internal sealed partial class SchemaProvider
 			new("COMMENT", typeof(string)),
 		]);
 
-		DoFillIndexes(dataTable, restrictionValues);
-
-		return Task.CompletedTask;
+		await DoFillIndexesAsync(ioBehavior, dataTable, restrictionValues, cancellationToken).ConfigureAwait(false);
 	}
 
-	private Task FillIndexColumnsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
+	private async Task FillIndexColumnsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
 		if (restrictionValues is { Length: > 5 })
 			throw new ArgumentException("More than 5 restrictionValues are not supported for schema 'IndexColumns'.", nameof(restrictionValues));
@@ -921,9 +917,7 @@ internal sealed partial class SchemaProvider
 			new("SORT_ORDER", typeof(string)),
 		]);
 
-		DoFillIndexColumns(dataTable, restrictionValues);
-
-		return Task.CompletedTask;
+		await DoFillIndexColumnsAsync(ioBehavior, dataTable, restrictionValues, cancellationToken).ConfigureAwait(false);
 	}
 
 }
