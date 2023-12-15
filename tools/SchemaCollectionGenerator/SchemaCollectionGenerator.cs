@@ -37,10 +37,10 @@ codeWriter.WriteLine("""
 var elseIf = "if";
 foreach (var schema in schemaCollections)
 {
-	string schemaNameWithoutInvalidChars = SchemaCollectionGeneratorHelpers.RemoveInvalidCharactersFromStringToBeValidInCSharpMethodName(schema.Name);
+	string methodSchemaName = Regexes.NonAsciiAlphaNumeric().Replace(schema.Name, "");
 	codeWriter.WriteLine($"""
 				{elseIf} (string.Equals(collectionName, "{schema.Name}", StringComparison.OrdinalIgnoreCase))
-					await Fill{schemaNameWithoutInvalidChars}Async(ioBehavior, dataTable, "{schema.Name}", restrictionValues, cancellationToken).ConfigureAwait(false);
+					await Fill{methodSchemaName}Async(ioBehavior, dataTable, "{schema.Name}", restrictionValues, cancellationToken).ConfigureAwait(false);
 		""");
 	elseIf = "else if";
 }
@@ -56,10 +56,10 @@ codeWriter.WriteLine("""
 foreach (var schema in schemaCollections)
 {
 	var isAsync = schema.Table is not null || schema.Custom?.EndsWith("Async") is true;
-	string schemaNameWithoutInvalidChars = SchemaCollectionGeneratorHelpers.RemoveInvalidCharactersFromStringToBeValidInCSharpMethodName(schema.Name);
+	string methodSchemaName = Regexes.NonAsciiAlphaNumeric().Replace(schema.Name, "");
 	var supportsRestrictions = schema.Restrictions is { Count: > 0 };
 	codeWriter.WriteLine($$"""
-			private {{(isAsync ? "async " : "")}}Task Fill{{schemaNameWithoutInvalidChars}}Async(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
+			private {{(isAsync ? "async " : "")}}Task Fill{{methodSchemaName}}Async(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 			{
 		""");
 	if (!supportsRestrictions)
@@ -266,11 +266,8 @@ internal sealed class Restriction
 	public required string Default { get; init; }
 }
 
-internal sealed class SchemaCollectionGeneratorHelpers
+internal sealed partial class Regexes
 {
-	private static readonly Regex _invalidCharInCSharpMethodNameRegex = new("[^a-z0-9]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-	internal static string RemoveInvalidCharactersFromStringToBeValidInCSharpMethodName(string collectionName)
-	{
-		return _invalidCharInCSharpMethodNameRegex.Replace(collectionName, "");
-	}
+	[GeneratedRegex("[^a-z0-9]", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
+	public static partial Regex NonAsciiAlphaNumeric();
 }

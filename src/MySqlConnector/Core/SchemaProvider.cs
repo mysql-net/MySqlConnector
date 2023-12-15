@@ -439,114 +439,108 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 		close?.Invoke();
 	}
 
-	private async Task DoFillForeignKeysAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
-	{
-		void ConfigurateCommand(MySqlCommand command)
+	private Task DoFillForeignKeysAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken) =>
+		FillDataTableAsync(IOBehavior.Synchronous, dataTable, command =>
 		{
-			string sql = @"SELECT rc.constraint_catalog, rc.constraint_schema,
-                rc.constraint_name, kcu.table_catalog, kcu.table_schema, rc.table_name,
-                rc.match_option, rc.update_rule, rc.delete_rule, 
-                NULL as referenced_table_catalog,
-                kcu.referenced_table_schema, rc.referenced_table_name 
-                FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
-                LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu ON 
-                kcu.constraint_catalog <=> rc.constraint_catalog AND
-                kcu.constraint_schema <=> rc.constraint_schema AND 
-                kcu.constraint_name <=> rc.constraint_name 
-                WHERE 1=1 AND kcu.ORDINAL_POSITION=1";
-			if (restrictionValues != null)
+			command.CommandText = """
+				SELECT rc.constraint_catalog, rc.constraint_schema,
+					rc.constraint_name, kcu.table_catalog, kcu.table_schema, rc.table_name,
+					rc.match_option, rc.update_rule, rc.delete_rule, 
+					NULL as referenced_table_catalog,
+					kcu.referenced_table_schema, rc.referenced_table_name 
+				FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
+					LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu ON 
+					kcu.constraint_catalog <=> rc.constraint_catalog AND
+					kcu.constraint_schema <=> rc.constraint_schema AND 
+					kcu.constraint_name <=> rc.constraint_name 
+				WHERE 1=1 AND kcu.ORDINAL_POSITION=1
+				""";
+
+			if (restrictionValues is not null)
 			{
-				var where = new StringBuilder();
+				var where = "";
 				if (restrictionValues.Length >= 2 && !string.IsNullOrEmpty(restrictionValues[1]))
 				{
-					where.Append(" AND rc.constraint_schema LIKE @schema");
+					where += " AND rc.constraint_schema LIKE @schema";
 					command.Parameters.AddWithValue("@schema", restrictionValues[1]);
 				}
 				if (restrictionValues.Length >= 3 && !string.IsNullOrEmpty(restrictionValues[2]))
 				{
-					where.Append(" AND rc.table_name LIKE @table");
+					where += " AND rc.table_name LIKE @table";
 					command.Parameters.AddWithValue("@table", restrictionValues[2]);
 				}
 				if (restrictionValues.Length >= 4 && !string.IsNullOrEmpty(restrictionValues[3]))
 				{
-					where.Append(" AND rc.constraint_name LIKE @constraint");
+					where += " AND rc.constraint_name LIKE @constraint";
 					command.Parameters.AddWithValue("@constraint", restrictionValues[3]);
 				}
-				sql += where.ToString();
+				command.CommandText += where;
 			}
-			command.CommandText = sql;
-		}
+		}, cancellationToken);
 
-		await FillDataTableAsync(IOBehavior.Synchronous, dataTable, ConfigurateCommand, default).ConfigureAwait(false);
-	}
-
-	private async Task DoFillIndexesAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
-	{
-		void ConfigurateCommand(MySqlCommand command)
+	private Task DoFillIndexesAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken) =>
+		FillDataTableAsync(ioBehavior, dataTable, command =>
 		{
-			string sql = @"SELECT DISTINCT null AS INDEX_CATALOG, INDEX_SCHEMA,
-                INDEX_NAME, TABLE_NAME,
-                !NON_UNIQUE as `UNIQUE`, 
-                INDEX_NAME=""PRIMARY"" as `PRIMARY`,
-                INDEX_TYPE as TYPE, COMMENT 
-                FROM INFORMATION_SCHEMA.STATISTICS
-                WHERE 1=1";
-			if (restrictionValues != null)
+			command.CommandText = """
+				SELECT DISTINCT null AS INDEX_CATALOG, INDEX_SCHEMA,
+					INDEX_NAME, TABLE_NAME,
+					!NON_UNIQUE as `UNIQUE`, 
+					INDEX_NAME='PRIMARY' as `PRIMARY`,
+					INDEX_TYPE as TYPE, COMMENT 
+				FROM INFORMATION_SCHEMA.STATISTICS
+				WHERE 1=1
+				""";
+
+			if (restrictionValues is not null)
 			{
-				var where = new StringBuilder();
+				var where = "";
 				if (restrictionValues.Length >= 2 && !string.IsNullOrEmpty(restrictionValues[1]))
 				{
-					where.Append(" AND INDEX_SCHEMA LIKE @schema");
+					where += " AND INDEX_SCHEMA LIKE @schema";
 					command.Parameters.AddWithValue("@schema", restrictionValues[1]);
 				}
 				if (restrictionValues.Length >= 3 && !string.IsNullOrEmpty(restrictionValues[2]))
 				{
-					where.Append(" AND TABLE_NAME LIKE @table");
+					where += " AND TABLE_NAME LIKE @table";
 					command.Parameters.AddWithValue("@table", restrictionValues[2]);
 				}
 
-				sql += where.ToString();
+				command.CommandText += where;
 			}
-			command.CommandText = sql;
-		}
-		await FillDataTableAsync(ioBehavior, dataTable, ConfigurateCommand, cancellationToken).ConfigureAwait(false);
-	}
+		}, cancellationToken);
 
-	private async Task DoFillIndexColumnsAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken)
-	{
-		string sql = @"SELECT null AS INDEX_CATALOG, INDEX_SCHEMA,
-                INDEX_NAME, TABLE_NAME,
-                COLUMN_NAME,
-                SEQ_IN_INDEX as `ORDINAL_POSITION`,
-				COLLATION as SORT_ORDER
-
-                FROM INFORMATION_SCHEMA.STATISTICS
-                WHERE 1=1";
-		void ConfigurateCommand(MySqlCommand command)
+	private Task DoFillIndexColumnsAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken) =>
+		FillDataTableAsync(ioBehavior, dataTable, command =>
 		{
-			if (restrictionValues != null)
+			command.CommandText = """
+				SELECT null AS INDEX_CATALOG, INDEX_SCHEMA,
+					INDEX_NAME, TABLE_NAME,
+					COLUMN_NAME,
+					SEQ_IN_INDEX as `ORDINAL_POSITION`,
+					COLLATION as SORT_ORDER
+				FROM INFORMATION_SCHEMA.STATISTICS
+				WHERE 1=1
+				""";
+
+			if (restrictionValues is not null)
 			{
-				var where = new StringBuilder();
+				var where = "";
 				if (restrictionValues.Length >= 2 && !string.IsNullOrEmpty(restrictionValues[1]))
 				{
-					where.Append(" AND INDEX_SCHEMA LIKE @schema");
+					where += " AND INDEX_SCHEMA LIKE @schema";
 					command.Parameters.AddWithValue("@schema", restrictionValues[1]);
 				}
 				if (restrictionValues.Length >= 3 && !string.IsNullOrEmpty(restrictionValues[2]))
 				{
-					where.Append(" AND TABLE_NAME LIKE @table");
+					where += " AND TABLE_NAME LIKE @table";
 					command.Parameters.AddWithValue("@table", restrictionValues[2]);
 				}
 				if (restrictionValues.Length >= 4 && !string.IsNullOrEmpty(restrictionValues[3]))
 				{
-					where.Append(" AND INDEX_NAME LIKE @index");
+					where += " AND INDEX_NAME LIKE @index";
 					command.Parameters.AddWithValue("@index", restrictionValues[3]);
 				}
-				sql += where.ToString();
+				command.CommandText += where;
 			}
-			command.CommandText = sql;
-		}
-
-		await FillDataTableAsync(ioBehavior, dataTable, ConfigurateCommand, cancellationToken).ConfigureAwait(false);
-	}
+		}, cancellationToken);
 }
