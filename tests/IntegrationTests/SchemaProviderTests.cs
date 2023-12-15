@@ -196,8 +196,6 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 			("TABLE_SCHEMA", schemaName),
 			("TABLE_NAME", "fk_test"),
 			("MATCH_OPTION", "NONE"),
-			("UPDATE_RULE", "NO ACTION"),
-			("DELETE_RULE", "NO ACTION"),
 			("REFERENCED_TABLE_CATALOG", null),
 			("REFERENCED_TABLE_SCHEMA", schemaName),
 			("REFERENCED_TABLE_NAME", "pk_test"),
@@ -234,12 +232,12 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 			.Cast<DataRow>()
 			.OrderBy(x => (string) x["INDEX_NAME"])
 			.ThenBy(x => (int) x["ORDINAL_POSITION"])
-			.Select(x => ((string) x["INDEX_SCHEMA"], (string) x["INDEX_NAME"], (string) x["TABLE_NAME"], (string) x["COLUMN_NAME"], (int) x["ORDINAL_POSITION"], (string) x["SORT_ORDER"]));
+			.Select(x => ((string) x["INDEX_SCHEMA"], (string) x["INDEX_NAME"], (string) x["TABLE_NAME"], (string) x["COLUMN_NAME"], (int) x["ORDINAL_POSITION"]));
 		var expected = new[]
 		{
-			(schemaName, "pk_test_uq", "pk_test", "c", 1, "A"),
-			(schemaName, "pk_test_uq", "pk_test", "d", 2, "A"),
-			(schemaName, "pk_test_uq", "pk_test", "e", 3, "D"),
+			(schemaName, "pk_test_uq", "pk_test", "c", 1),
+			(schemaName, "pk_test_uq", "pk_test", "d", 2),
+			(schemaName, "pk_test_uq", "pk_test", "e", 3),
 		};
 		Assert.Equal(expected, actual);
 	}

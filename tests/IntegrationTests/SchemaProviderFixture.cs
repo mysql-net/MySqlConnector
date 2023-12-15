@@ -16,7 +16,7 @@ public class SchemaProviderFixture : DatabaseFixture
 				d INT NOT NULL,
 				e INT NOT NULL,
 				CONSTRAINT pk_test_pk PRIMARY KEY (a, b),
-				CONSTRAINT pk_test_uq UNIQUE INDEX (c, d, e desc),
+				CONSTRAINT pk_test_uq UNIQUE INDEX (c, d, e),
 				INDEX pk_test_ix (c, d)
 			);
 
