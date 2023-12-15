@@ -475,7 +475,7 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 	{
 		void ConfigurateCommand(MySqlCommand command)
 		{
-			string sql = @"SELECT SEQ_IN_INDEX, null AS INDEX_CATALAG, INDEX_SCHEMA,
+			string sql = @"SELECT SEQ_IN_INDEX, null AS INDEX_CATALOG, INDEX_SCHEMA,
                 INDEX_NAME, TABLE_NAME,
                 !NON_UNIQUE as `UNIQUE`, 
                 INDEX_NAME=""PRIMARY"" as `PRIMARY`,
@@ -504,7 +504,7 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 	}
 	private void DoFillIndexColumns(DataTable dataTable, string?[]? restrictionValues)
 	{
-		string sql = @"SELECT null AS INDEX_CATALAG, INDEX_SCHEMA,
+		string sql = @"SELECT null AS INDEX_CATALOG, INDEX_SCHEMA,
                 INDEX_NAME, TABLE_NAME,
                 COLUMN_NAME,
                 SEQ_IN_INDEX as `ORDINAL_POSITION`,
@@ -529,8 +529,8 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 				}
 
 				sql += where.ToString();
-				command.CommandText = sql;
 			}
+			command.CommandText = sql;
 		}
 		ReadIntoTableFromSQL(ConfigurateCommand, dataTable, connection);
 	}
