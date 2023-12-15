@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Core;
@@ -427,6 +428,133 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 			}
 		}
 
+		close?.Invoke();
+	}
+
+	private void DoFillForeignKeys(DataTable dataTable, string?[]? restrictionValues)
+	{
+		void ConfigurateCommand(MySqlCommand command)
+		{
+			string sql = @"SELECT rc.constraint_catalog, rc.constraint_schema,
+                rc.constraint_name, kcu.table_catalog, kcu.table_schema, rc.table_name,
+                rc.match_option, rc.update_rule, rc.delete_rule, 
+                NULL as referenced_table_catalog,
+                kcu.referenced_table_schema, rc.referenced_table_name 
+                FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
+                LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu ON 
+                kcu.constraint_catalog <=> rc.constraint_catalog AND
+                kcu.constraint_schema <=> rc.constraint_schema AND 
+                kcu.constraint_name <=> rc.constraint_name 
+                WHERE 1=1 AND kcu.ORDINAL_POSITION=1";
+			if (restrictionValues != null)
+			{
+				var where = new StringBuilder();
+				if (restrictionValues.Length >= 2 && !string.IsNullOrEmpty(restrictionValues[1]))
+				{
+					where.Append(" AND rc.constraint_schema LIKE @schema");
+					command.Parameters.AddWithValue("@schema", restrictionValues[1]);
+				}
+				if (restrictionValues.Length >= 3 && !string.IsNullOrEmpty(restrictionValues[2]))
+				{
+					where.Append(" AND rc.table_name LIKE @table");
+					command.Parameters.AddWithValue("@table", restrictionValues[2]);
+				}
+				if (restrictionValues.Length >= 4 && !string.IsNullOrEmpty(restrictionValues[3]))
+				{
+					where.Append(" AND rc.constraint_name LIKE @constraint");
+					command.Parameters.AddWithValue("@constraint", restrictionValues[2]);
+				}
+				sql += where.ToString();
+			}
+			command.CommandText = sql;
+		}
+		ReadIntoTableFromSQL(ConfigurateCommand, dataTable, connection);
+	}
+
+	private void DoFillIndexes(DataTable dataTable, string?[]? restrictionValues)
+	{
+		void ConfigurateCommand(MySqlCommand command)
+		{
+			string sql = @"SELECT SEQ_IN_INDEX, null AS INDEX_CATALAG, INDEX_SCHEMA,
+                INDEX_NAME, TABLE_NAME,
+                !NON_UNIQUE as `UNIQUE`, 
+                INDEX_NAME=""PRIMARY"" as `PRIMARY`,
+                INDEX_TYPE as TYPE, COMMENT 
+                FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE 1=1";
+			if (restrictionValues != null)
+			{
+				var where = new StringBuilder();
+				if (restrictionValues.Length >= 2 && !string.IsNullOrEmpty(restrictionValues[1]))
+				{
+					where.Append(" AND INDEX_SCHEMA LIKE @schema");
+					command.Parameters.AddWithValue("@schema", restrictionValues[1]);
+				}
+				if (restrictionValues.Length >= 3 && !string.IsNullOrEmpty(restrictionValues[2]))
+				{
+					where.Append(" AND TABLE_NAME LIKE @table");
+					command.Parameters.AddWithValue("@table", restrictionValues[2]);
+				}
+
+				sql += where.ToString();
+			}
+			command.CommandText = sql;
+		}
+		ReadIntoTableFromSQL(ConfigurateCommand, dataTable, connection);
+	}
+	private void DoFillIndexColumns(DataTable dataTable, string?[]? restrictionValues)
+	{
+		string sql = @"SELECT null AS INDEX_CATALAG, INDEX_SCHEMA,
+                INDEX_NAME, TABLE_NAME,
+                COLUMN_NAME,
+                SEQ_IN_INDEX as `ORDINAL_POSITION`,
+				COLLATION as SORT_ORDER
+
+                FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE 1=1";
+		void ConfigurateCommand(MySqlCommand command)
+		{
+			if (restrictionValues != null)
+			{
+				var where = new StringBuilder();
+				if (restrictionValues.Length >= 2 && !string.IsNullOrEmpty(restrictionValues[1]))
+				{
+					where.Append(" AND INDEX_SCHEMA LIKE @schema");
+					command.Parameters.AddWithValue("@schema", restrictionValues[1]);
+				}
+				if (restrictionValues.Length >= 3 && !string.IsNullOrEmpty(restrictionValues[2]))
+				{
+					where.Append(" AND TABLE_NAME LIKE @table");
+					command.Parameters.AddWithValue("@table", restrictionValues[2]);
+				}
+
+				sql += where.ToString();
+				command.CommandText = sql;
+			}
+		}
+		ReadIntoTableFromSQL(ConfigurateCommand, dataTable, connection);
+	}
+
+	private static void ReadIntoTableFromSQL(Action<MySqlCommand> commandConfigurator, DataTable dataTableToFill, MySqlConnection connection)
+	{
+		Action? close = null;
+		if (connection.State != ConnectionState.Open)
+		{
+			connection.Open();
+			close = connection.Close;
+		}
+
+		using (var command = connection.CreateCommand())
+		{
+			commandConfigurator?.Invoke(command);
+			using var reader = command.ExecuteReader();
+			while (reader.Read())
+			{
+				var rowValues = new object[dataTableToFill.Columns.Count];
+				reader.GetValues(rowValues);
+				dataTableToFill.Rows.Add(rowValues);
+			}
+		}
 		close?.Invoke();
 	}
 }

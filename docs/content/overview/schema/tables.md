@@ -1,6 +1,6 @@
 ---
 date: 2022-07-10
-lastmod: 2022-08-12
+lastmod: 2023-12-15
 title: Tables Schema
 ---
 

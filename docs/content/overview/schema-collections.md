@@ -1,6 +1,6 @@
 ---
 date: 2021-04-24
-lastmod: 2023-12-14
+lastmod: 2023-12-15
 menu:
   main:
     parent: getting started
@@ -44,6 +44,6 @@ weight: 80
 * `Triggers`
 * `UserPrivileges`
 * `Views`
-* `Foreign Keys`
-* `Indexes`
-* `IndexColumns`
+* `Foreign Keys`—[information about foreign keys in the server's SQL syntax](../schema/foreign keys/)
+* `Indexes`—[information about indexes in the server's SQL syntax](../schema/indexes/)
+* `IndexColumns`—[information about indexes in the server's SQL syntax](../schema/indexcolumns/)

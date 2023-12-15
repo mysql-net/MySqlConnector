@@ -854,7 +854,7 @@ internal sealed partial class SchemaProvider
 		await FillDataTableAsync(ioBehavior, dataTable, "VIEWS", null, cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task FillForeignKeysAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
+	private Task FillForeignKeysAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
 		if (restrictionValues is { Length: > 4 })
 			throw new ArgumentException("More than 4 restrictionValues are not supported for schema 'Foreign Keys'.", nameof(restrictionValues));
@@ -868,29 +868,20 @@ internal sealed partial class SchemaProvider
 			new("TABLE_CATALOG", typeof(string)),
 			new("TABLE_SCHEMA", typeof(string)),
 			new("TABLE_NAME", typeof(string)),
-			new("COLUMN_NAME", typeof(string)),
+			new("MATCH_OPTION", typeof(string)),
+			new("UPDATE_RULE", typeof(string)),
+			new("DELETE_RULE", typeof(string)),
+			new("REFERENCED_TABLE_CATALOG", typeof(string)),
 			new("REFERENCED_TABLE_SCHEMA", typeof(string)),
 			new("REFERENCED_TABLE_NAME", typeof(string)),
-			new("REFERENCED_COLUMN_NAME", typeof(string)),
 		]);
 
-		var columns = new List<KeyValuePair<string, string>>();
-		if (restrictionValues is not null)
-		{
-			if (restrictionValues.Length > 0 && !string.IsNullOrEmpty(restrictionValues[0]))
-				columns.Add(new("TABLE_CATALOG", restrictionValues[0]!));
-			if (restrictionValues.Length > 1 && !string.IsNullOrEmpty(restrictionValues[1]))
-				columns.Add(new("TABLE_SCHEMA", restrictionValues[1]!));
-			if (restrictionValues.Length > 2 && !string.IsNullOrEmpty(restrictionValues[2]))
-				columns.Add(new("TABLE_NAME", restrictionValues[2]!));
-			if (restrictionValues.Length > 3 && !string.IsNullOrEmpty(restrictionValues[3]))
-				columns.Add(new("COLUMN_NAME", restrictionValues[3]!));
-		}
+		DoFillForeignKeys(dataTable, restrictionValues);
 
-		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", columns, cancellationToken).ConfigureAwait(false);
+		return Task.CompletedTask;
 	}
 
-	private async Task FillIndexesAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
+	private Task FillIndexesAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
 		if (restrictionValues is { Length: > 4 })
 			throw new ArgumentException("More than 4 restrictionValues are not supported for schema 'Indexes'.", nameof(restrictionValues));
@@ -898,30 +889,23 @@ internal sealed partial class SchemaProvider
 		dataTable.TableName = tableName;
 		dataTable.Columns.AddRange(
 		[
-			new("TABLE_CATALOG", typeof(string)),
-			new("TABLE_SCHEMA", typeof(string)),
-			new("TABLE_NAME", typeof(string)),
-			new("COLUMN_NAME", typeof(string)),
+			new("SEQ_IN_INDEX", typeof(long)),
+			new("INDEX_CATALOG", typeof(string)),
+			new("INDEX_SCHEMA", typeof(string)),
 			new("INDEX_NAME", typeof(string)),
+			new("TABLE_NAME", typeof(string)),
+			new("UNIQUE", typeof(bool)),
+			new("PRIMARY", typeof(bool)),
+			new("TYPE", typeof(string)),
+			new("COMMENT", typeof(string)),
 		]);
 
-		var columns = new List<KeyValuePair<string, string>>();
-		if (restrictionValues is not null)
-		{
-			if (restrictionValues.Length > 0 && !string.IsNullOrEmpty(restrictionValues[0]))
-				columns.Add(new("TABLE_CATALOG", restrictionValues[0]!));
-			if (restrictionValues.Length > 1 && !string.IsNullOrEmpty(restrictionValues[1]))
-				columns.Add(new("TABLE_SCHEMA", restrictionValues[1]!));
-			if (restrictionValues.Length > 2 && !string.IsNullOrEmpty(restrictionValues[2]))
-				columns.Add(new("TABLE_NAME", restrictionValues[2]!));
-			if (restrictionValues.Length > 3 && !string.IsNullOrEmpty(restrictionValues[3]))
-				columns.Add(new("COLUMN_NAME", restrictionValues[3]!));
-		}
+		DoFillIndexes(dataTable, restrictionValues);
 
-		await FillDataTableAsync(ioBehavior, dataTable, "STATISTICS", columns, cancellationToken).ConfigureAwait(false);
+		return Task.CompletedTask;
 	}
 
-	private async Task FillIndexColumnsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
+	private Task FillIndexColumnsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
 		if (restrictionValues is { Length: > 5 })
 			throw new ArgumentException("More than 5 restrictionValues are not supported for schema 'IndexColumns'.", nameof(restrictionValues));
@@ -929,29 +913,18 @@ internal sealed partial class SchemaProvider
 		dataTable.TableName = tableName;
 		dataTable.Columns.AddRange(
 		[
-			new("TABLE_CATALOG", typeof(string)),
-			new("TABLE_SCHEMA", typeof(string)),
+			new("INDEX_CATALOG", typeof(string)),
+			new("INDEX_SCHEMA", typeof(string)),
+			new("INDEX_NAME", typeof(string)),
 			new("TABLE_NAME", typeof(string)),
-			new("CONSTRAINT_NAME", typeof(string)),
 			new("COLUMN_NAME", typeof(string)),
+			new("ORDINAL_POSITION", typeof(int)),
+			new("SORT_ORDER", typeof(string)),
 		]);
 
-		var columns = new List<KeyValuePair<string, string>>();
-		if (restrictionValues is not null)
-		{
-			if (restrictionValues.Length > 0 && !string.IsNullOrEmpty(restrictionValues[0]))
-				columns.Add(new("TABLE_CATALOG", restrictionValues[0]!));
-			if (restrictionValues.Length > 1 && !string.IsNullOrEmpty(restrictionValues[1]))
-				columns.Add(new("TABLE_SCHEMA", restrictionValues[1]!));
-			if (restrictionValues.Length > 2 && !string.IsNullOrEmpty(restrictionValues[2]))
-				columns.Add(new("TABLE_NAME", restrictionValues[2]!));
-			if (restrictionValues.Length > 3 && !string.IsNullOrEmpty(restrictionValues[3]))
-				columns.Add(new("CONSTRAINT_NAME", restrictionValues[3]!));
-			if (restrictionValues.Length > 4 && !string.IsNullOrEmpty(restrictionValues[4]))
-				columns.Add(new("COLUMN_NAME", restrictionValues[4]!));
-		}
+		DoFillIndexColumns(dataTable, restrictionValues);
 
-		await FillDataTableAsync(ioBehavior, dataTable, "KEY_COLUMN_USAGE", columns, cancellationToken).ConfigureAwait(false);
+		return Task.CompletedTask;
 	}
 
 }

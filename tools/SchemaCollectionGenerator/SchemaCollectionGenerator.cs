@@ -148,8 +148,10 @@ foreach (var schema in schemaCollections)
 	}
 	else
 	{
+		// custom cunction will be called here
+		string restrictions = (schema.Restrictions?.Count > 0) ? ", restrictionValues" : "";
 		codeWriter.WriteLine($"""
-					{schema.Custom}(dataTable);
+					{schema.Custom}(dataTable{restrictions});
 			""");
 	}
 

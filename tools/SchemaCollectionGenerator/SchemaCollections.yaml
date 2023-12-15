@@ -761,7 +761,8 @@
     type: string
 
 - name: Foreign Keys
-  table: KEY_COLUMN_USAGE
+  description: information about foreign keys in the server's SQL syntax
+  custom: DoFillForeignKeys
   restrictions:
   - name: Catalog
     default: TABLE_CATALOG
@@ -784,17 +785,22 @@
     type: string
   - name: TABLE_NAME
     type: string
-  - name: COLUMN_NAME
+  - name: MATCH_OPTION
+    type: string
+  - name: UPDATE_RULE
+    type: string
+  - name: DELETE_RULE
+    type: string
+  - name: REFERENCED_TABLE_CATALOG
     type: string
   - name: REFERENCED_TABLE_SCHEMA
     type: string
   - name: REFERENCED_TABLE_NAME
     type: string
-  - name: REFERENCED_COLUMN_NAME
-    type: string
 
 - name: Indexes
-  table: STATISTICS
+  description: information about indexes in the server's SQL syntax
+  custom: DoFillIndexes
   restrictions:
   - name: Catalog
     default: TABLE_CATALOG
@@ -805,20 +811,29 @@
   - name: Column # it is only a guess - might need to be changed, but NHibernate passes 4 values, with last one is null
     default: COLUMN_NAME
   columns:
-  - name: TABLE_CATALOG
+  - name: SEQ_IN_INDEX
+    type: long
+  - name: INDEX_CATALOG # placeholder  - will be filled by SQL query
     type: string
-  - name: TABLE_SCHEMA
+  - name: INDEX_SCHEMA # same as TABLE_SCHEMA, see https://mariadb.com/kb/en/information-schema-statistics-table/
+    type: string
+  - name: INDEX_NAME
     type: string
   - name: TABLE_NAME
     type: string
-  - name: COLUMN_NAME
+  - name: UNIQUE
+    type: bool
+  - name: PRIMARY
+    type: bool
+  - name: TYPE
     type: string
-  - name: INDEX_NAME
+  - name: COMMENT
     type: string
 
 
 - name: IndexColumns
-  table: KEY_COLUMN_USAGE
+  description: information about indexes in the server's SQL syntax
+  custom: DoFillIndexColumns
   restrictions:
   - name: Catalog
     default: TABLE_CATALOG
@@ -828,16 +843,20 @@
     default: TABLE_NAME
   - name: Constraint
     default: CONSTRAINT_NAME
-  - name: Column # it is only a guess - might need to be changed, but NHibernate passes 5 values, with last one is null
+  - name: Column # it comes fro
     default: COLUMN_NAME
   columns:
-  - name: TABLE_CATALOG
+  - name: INDEX_CATALOG # placeholder  - will be filled by SQL query
     type: string
-  - name: TABLE_SCHEMA
+  - name: INDEX_SCHEMA # same as TABLE_SCHEMA, see https://mariadb.com/kb/en/information-schema-statistics-table/
+    type: string
+  - name: INDEX_NAME
     type: string
   - name: TABLE_NAME
     type: string
-  - name: CONSTRAINT_NAME
-    type: string
   - name: COLUMN_NAME
+    type: string
+  - name: ORDINAL_POSITION
+    type: int
+  - name: SORT_ORDER
     type: string
