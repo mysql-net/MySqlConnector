@@ -10,7 +10,6 @@ The `Indexes` schema provides information about indexes in the server's SQL synt
 
 Column Name | Data Type | Description
 --- | --- | ---
-SEQ_IN_INDEX | long | 
 INDEX_CATALOG | string | 
 INDEX_SCHEMA | string | 
 INDEX_NAME | string | 

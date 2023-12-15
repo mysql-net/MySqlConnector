@@ -462,7 +462,7 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 				if (restrictionValues.Length >= 4 && !string.IsNullOrEmpty(restrictionValues[3]))
 				{
 					where.Append(" AND rc.constraint_name LIKE @constraint");
-					command.Parameters.AddWithValue("@constraint", restrictionValues[2]);
+					command.Parameters.AddWithValue("@constraint", restrictionValues[3]);
 				}
 				sql += where.ToString();
 			}
@@ -475,7 +475,7 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 	{
 		void ConfigurateCommand(MySqlCommand command)
 		{
-			string sql = @"SELECT SEQ_IN_INDEX, null AS INDEX_CATALOG, INDEX_SCHEMA,
+			string sql = @"SELECT DISTINCT null AS INDEX_CATALOG, INDEX_SCHEMA,
                 INDEX_NAME, TABLE_NAME,
                 !NON_UNIQUE as `UNIQUE`, 
                 INDEX_NAME=""PRIMARY"" as `PRIMARY`,
@@ -527,7 +527,11 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 					where.Append(" AND TABLE_NAME LIKE @table");
 					command.Parameters.AddWithValue("@table", restrictionValues[2]);
 				}
-
+				if (restrictionValues.Length >= 4 && !string.IsNullOrEmpty(restrictionValues[3]))
+				{
+					where.Append(" AND INDEX_NAME LIKE @index");
+					command.Parameters.AddWithValue("@index", restrictionValues[3]);
+				}
 				sql += where.ToString();
 			}
 			command.CommandText = sql;

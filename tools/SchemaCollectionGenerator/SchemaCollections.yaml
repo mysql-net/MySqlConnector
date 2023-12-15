@@ -811,8 +811,6 @@
   - name: Column # it is only a guess - might need to be changed, but NHibernate passes 4 values, with last one is null
     default: COLUMN_NAME
   columns:
-  - name: SEQ_IN_INDEX
-    type: long
   - name: INDEX_CATALOG # placeholder  - will be filled by SQL query
     type: string
   - name: INDEX_SCHEMA # same as TABLE_SCHEMA, see https://mariadb.com/kb/en/information-schema-statistics-table/

@@ -1,8 +1,9 @@
+#nullable enable
 namespace IntegrationTests;
 
-public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
+public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDisposable
 {
-	public SchemaProviderTests(DatabaseFixture database)
+	public SchemaProviderTests(SchemaProviderFixture database)
 	{
 		m_database = database;
 		m_database.Connection.Open();
@@ -118,6 +119,8 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 	[InlineData("DATABASES", "Databases")]
 	[InlineData("DataTypes")]
 	[InlineData("datatypes", "DataTypes")]
+	[InlineData("Indexes")]
+	[InlineData("IndexColumns")]
 	// only in 8.0 - [InlineData("KeyWords")]
 	[InlineData("MetaDataCollections")]
 	[InlineData("Procedures")]
@@ -130,6 +133,7 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 	[InlineData("CollationCharacterSetApplicability")]
 	[InlineData("Collations")]
 	[InlineData("Engines")]
+	[InlineData("Foreign Keys")]
 	[InlineData("KeyColumnUsage")]
 	[InlineData("Parameters")]
 	[InlineData("Partitions")]
@@ -143,7 +147,7 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 	[InlineData("TableSpaces")]
 	[InlineData("UserPrivileges")]
 #endif
-	public void GetSchema(string schemaName, string expectedSchemaName = null)
+	public void GetSchema(string schemaName, string? expectedSchemaName = null)
 	{
 		var table = m_database.Connection.GetSchema(schemaName);
 		Assert.NotNull(table);
@@ -176,6 +180,69 @@ public class SchemaProviderTests : IClassFixture<DatabaseFixture>, IDisposable
 		Assert.Contains("ascii_bin", table.Rows.Cast<DataRow>().Select(x => (string) x[0]));
 	}
 #endif
+
+	[Fact]
+	public void ForeignKeys()
+    {
+        var schemaName = m_database.Connection.Database;
+        var table = m_database.Connection.GetSchema("Foreign Keys", new[] { null, schemaName, "fk_test" });
+        var row = table.Rows.Cast<DataRow>().Single();
+        foreach (var (column, value) in new[]
+        {
+			("CONSTRAINT_CATALOG", "def"),
+			("CONSTRAINT_SCHEMA", schemaName),
+			("CONSTRAINT_NAME", "fk_test_fk"),
+			("TABLE_CATALOG", "def"),
+			("TABLE_SCHEMA", schemaName),
+			("TABLE_NAME", "fk_test"),
+			("MATCH_OPTION", "NONE"),
+			("UPDATE_RULE", "NO ACTION"),
+			("DELETE_RULE", "NO ACTION"),
+			("REFERENCED_TABLE_CATALOG", null),
+			("REFERENCED_TABLE_SCHEMA", schemaName),
+			("REFERENCED_TABLE_NAME", "pk_test"),
+		})
+        {
+			Assert.Equal(value, row[column] is DBNull ? null : (string?) row[column]);
+        }
+    }
+
+	[Fact]
+	public void Indexes()
+	{
+		var schemaName = m_database.Connection.Database;
+		var table = m_database.Connection.GetSchema("Indexes", new[] { null, schemaName, "pk_test" });
+		var actual = table.Rows
+			.Cast<DataRow>()
+			.OrderBy(x => (string) x["INDEX_NAME"])
+			.Select(x => ((string) x["INDEX_SCHEMA"], (string) x["INDEX_NAME"], (string) x["TABLE_NAME"], (bool) x["UNIQUE"], (bool) x["PRIMARY"], (string) x["TYPE"]));
+		var expected = new[]
+		{
+			(schemaName, "pk_test_ix", "pk_test", false, false, "BTREE"),
+			(schemaName, "pk_test_uq", "pk_test", true, false, "BTREE"),
+			(schemaName, "PRIMARY", "pk_test", true, true, "BTREE"),
+		};
+		Assert.Equal(expected, actual);
+	}
+
+	[Fact]
+	public void IndexColumns()
+	{
+		var schemaName = m_database.Connection.Database;
+		var table = m_database.Connection.GetSchema("IndexColumns", new[] { null, schemaName, "pk_test", "pk_test_uq" });
+		var actual = table.Rows
+			.Cast<DataRow>()
+			.OrderBy(x => (string) x["INDEX_NAME"])
+			.ThenBy(x => (int) x["ORDINAL_POSITION"])
+			.Select(x => ((string) x["INDEX_SCHEMA"], (string) x["INDEX_NAME"], (string) x["TABLE_NAME"], (string) x["COLUMN_NAME"], (int) x["ORDINAL_POSITION"], (string) x["SORT_ORDER"]));
+		var expected = new[]
+		{
+			(schemaName, "pk_test_uq", "pk_test", "c", 1, "A"),
+			(schemaName, "pk_test_uq", "pk_test", "d", 2, "A"),
+			(schemaName, "pk_test_uq", "pk_test", "e", 3, "D"),
+		};
+		Assert.Equal(expected, actual);
+	}
 
 	readonly DatabaseFixture m_database;
 }

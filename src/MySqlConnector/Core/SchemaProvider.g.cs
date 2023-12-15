@@ -889,7 +889,6 @@ internal sealed partial class SchemaProvider
 		dataTable.TableName = tableName;
 		dataTable.Columns.AddRange(
 		[
-			new("SEQ_IN_INDEX", typeof(long)),
 			new("INDEX_CATALOG", typeof(string)),
 			new("INDEX_SCHEMA", typeof(string)),
 			new("INDEX_NAME", typeof(string)),
