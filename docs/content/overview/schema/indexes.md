@@ -1,6 +1,6 @@
 ---
 date: 2022-07-10
-lastmod: 2023-12-15
+lastmod: 2023-12-16
 title: Indexes Schema
 ---
 
@@ -26,5 +26,5 @@ Restriction Name | Restriction Default | Restriction Number
 Catalog | TABLE_CATALOG | 1
 Schema | TABLE_SCHEMA | 2
 Table | TABLE_NAME | 3
-Column | COLUMN_NAME | 4
+Name | INDEX_NAME | 4
 

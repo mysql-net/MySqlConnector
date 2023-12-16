@@ -770,8 +770,8 @@
     default: TABLE_SCHEMA
   - name: Table
     default: TABLE_NAME
-  - name: Column
-    default: COLUMN_NAME
+  - name: Constraint Name
+    default: CONSTRAINT_NAME
   columns:
   - name: CONSTRAINT_CATALOG
     type: string
@@ -808,10 +808,10 @@
     default: TABLE_SCHEMA
   - name: Table
     default: TABLE_NAME
-  - name: Column # it is only a guess - might need to be changed, but NHibernate passes 4 values, with last one is null
-    default: COLUMN_NAME
+  - name: Name
+    default: INDEX_NAME
   columns:
-  - name: INDEX_CATALOG # placeholder  - will be filled by SQL query
+  - name: INDEX_CATALOG
     type: string
   - name: INDEX_SCHEMA # same as TABLE_SCHEMA, see https://mariadb.com/kb/en/information-schema-statistics-table/
     type: string
@@ -838,12 +838,10 @@
     default: TABLE_SCHEMA
   - name: Table
     default: TABLE_NAME
-  - name: Constraint
-    default: CONSTRAINT_NAME
-  - name: Column # it comes fro
-    default: COLUMN_NAME
+  - name: Name
+    default: INDEX_NAME
   columns:
-  - name: INDEX_CATALOG # placeholder  - will be filled by SQL query
+  - name: INDEX_CATALOG
     type: string
   - name: INDEX_SCHEMA # same as TABLE_SCHEMA, see https://mariadb.com/kb/en/information-schema-statistics-table/
     type: string

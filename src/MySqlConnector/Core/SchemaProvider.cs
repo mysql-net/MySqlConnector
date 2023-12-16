@@ -443,38 +443,34 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 		FillDataTableAsync(IOBehavior.Synchronous, dataTable, command =>
 		{
 			command.CommandText = """
-				SELECT rc.constraint_catalog, rc.constraint_schema,
-					rc.constraint_name, kcu.table_catalog, kcu.table_schema, rc.table_name,
-					rc.match_option, rc.update_rule, rc.delete_rule, 
-					NULL as referenced_table_catalog,
-					kcu.referenced_table_schema, rc.referenced_table_name 
+				SELECT rc.constraint_catalog, rc.constraint_schema, rc.constraint_name,
+					kcu.table_catalog, kcu.table_schema,
+					rc.table_name, rc.match_option, rc.update_rule, rc.delete_rule, 
+					NULL as referenced_table_catalog, kcu.referenced_table_schema, rc.referenced_table_name 
 				FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
 					LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu ON 
-					kcu.constraint_catalog <=> rc.constraint_catalog AND
-					kcu.constraint_schema <=> rc.constraint_schema AND 
-					kcu.constraint_name <=> rc.constraint_name 
-				WHERE 1=1 AND kcu.ORDINAL_POSITION=1
+					(
+						(kcu.constraint_catalog = rc.constraint_catalog OR (kcu.constraint_catalog IS NULL AND rc.constraint_catalog IS NULL)) AND
+						(kcu.constraint_schema = rc.constraint_schema OR (kcu.constraint_schema IS NULL AND rc.constraint_schema IS NULL)) AND
+						(kcu.constraint_name = rc.constraint_name OR (kcu.constraint_name IS NULL AND rc.constraint_name IS NULL))
+					)
+				WHERE kcu.ORDINAL_POSITION = 1
 				""";
 
-			if (restrictionValues is not null)
+			if (restrictionValues is [_, { Length: > 0 } schema, ..])
 			{
-				var where = "";
-				if (restrictionValues.Length >= 2 && !string.IsNullOrEmpty(restrictionValues[1]))
-				{
-					where += " AND rc.constraint_schema LIKE @schema";
-					command.Parameters.AddWithValue("@schema", restrictionValues[1]);
-				}
-				if (restrictionValues.Length >= 3 && !string.IsNullOrEmpty(restrictionValues[2]))
-				{
-					where += " AND rc.table_name LIKE @table";
-					command.Parameters.AddWithValue("@table", restrictionValues[2]);
-				}
-				if (restrictionValues.Length >= 4 && !string.IsNullOrEmpty(restrictionValues[3]))
-				{
-					where += " AND rc.constraint_name LIKE @constraint";
-					command.Parameters.AddWithValue("@constraint", restrictionValues[3]);
-				}
-				command.CommandText += where;
+				command.CommandText += " AND rc.constraint_schema LIKE @schema";
+				command.Parameters.AddWithValue("@schema", schema);
+			}
+			if (restrictionValues is [_, _, { Length: > 0 } table, ..])
+			{
+				command.CommandText += " AND rc.table_name LIKE @table";
+				command.Parameters.AddWithValue("@table", table);
+			}
+			if (restrictionValues is [_, _, _, { Length: > 0 } constraint, ..])
+			{
+				command.CommandText += " AND rc.constraint_name LIKE @constraint";
+				command.Parameters.AddWithValue("@constraint", constraint);
 			}
 		}, cancellationToken);
 
@@ -482,30 +478,29 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 		FillDataTableAsync(ioBehavior, dataTable, command =>
 		{
 			command.CommandText = """
-				SELECT DISTINCT null AS INDEX_CATALOG, INDEX_SCHEMA,
+				SELECT null AS INDEX_CATALOG, INDEX_SCHEMA,
 					INDEX_NAME, TABLE_NAME,
 					!NON_UNIQUE as `UNIQUE`, 
 					INDEX_NAME='PRIMARY' as `PRIMARY`,
 					INDEX_TYPE as TYPE, COMMENT 
 				FROM INFORMATION_SCHEMA.STATISTICS
-				WHERE 1=1
+				WHERE SEQ_IN_INDEX=1
 				""";
 
-			if (restrictionValues is not null)
+			if (restrictionValues is [_, { Length: > 0 } schema, ..])
 			{
-				var where = "";
-				if (restrictionValues.Length >= 2 && !string.IsNullOrEmpty(restrictionValues[1]))
-				{
-					where += " AND INDEX_SCHEMA LIKE @schema";
-					command.Parameters.AddWithValue("@schema", restrictionValues[1]);
-				}
-				if (restrictionValues.Length >= 3 && !string.IsNullOrEmpty(restrictionValues[2]))
-				{
-					where += " AND TABLE_NAME LIKE @table";
-					command.Parameters.AddWithValue("@table", restrictionValues[2]);
-				}
-
-				command.CommandText += where;
+				command.CommandText += " AND INDEX_SCHEMA LIKE @schema";
+				command.Parameters.AddWithValue("@schema", schema);
+			}
+			if (restrictionValues is [_, _, { Length: > 0 } table, ..])
+			{
+				command.CommandText += " AND TABLE_NAME LIKE @table";
+				command.Parameters.AddWithValue("@table", table);
+			}
+			if (restrictionValues is [_, _, _, { Length: > 0 } index, ..])
+			{
+				command.CommandText += " AND INDEX_NAME LIKE @index";
+				command.Parameters.AddWithValue("@index", index);
 			}
 		}, cancellationToken);
 
@@ -522,25 +517,20 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 				WHERE 1=1
 				""";
 
-			if (restrictionValues is not null)
+			if (restrictionValues is [_, { Length: > 0 } schema, ..])
 			{
-				var where = "";
-				if (restrictionValues.Length >= 2 && !string.IsNullOrEmpty(restrictionValues[1]))
-				{
-					where += " AND INDEX_SCHEMA LIKE @schema";
-					command.Parameters.AddWithValue("@schema", restrictionValues[1]);
-				}
-				if (restrictionValues.Length >= 3 && !string.IsNullOrEmpty(restrictionValues[2]))
-				{
-					where += " AND TABLE_NAME LIKE @table";
-					command.Parameters.AddWithValue("@table", restrictionValues[2]);
-				}
-				if (restrictionValues.Length >= 4 && !string.IsNullOrEmpty(restrictionValues[3]))
-				{
-					where += " AND INDEX_NAME LIKE @index";
-					command.Parameters.AddWithValue("@index", restrictionValues[3]);
-				}
-				command.CommandText += where;
+				command.CommandText += " AND INDEX_SCHEMA LIKE @schema";
+				command.Parameters.AddWithValue("@schema", schema);
+			}
+			if (restrictionValues is [_, _, { Length: > 0 } table, ..])
+			{
+				command.CommandText += " AND TABLE_NAME LIKE @table";
+				command.Parameters.AddWithValue("@table", table);
+			}
+			if (restrictionValues is [_, _, _, { Length: > 0 } index, ..])
+			{
+				command.CommandText += " AND INDEX_NAME LIKE @index";
+				command.Parameters.AddWithValue("@index", index);
 			}
 		}, cancellationToken);
 }

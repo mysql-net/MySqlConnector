@@ -131,7 +131,7 @@ internal sealed partial class SchemaProvider
 		dataTable.Rows.Add("Views", 0, 3);
 		dataTable.Rows.Add("Foreign Keys", 4, 0);
 		dataTable.Rows.Add("Indexes", 4, 0);
-		dataTable.Rows.Add("IndexColumns", 5, 0);
+		dataTable.Rows.Add("IndexColumns", 4, 0);
 
 		return Task.CompletedTask;
 	}
@@ -640,16 +640,15 @@ internal sealed partial class SchemaProvider
 		dataTable.Rows.Add("Foreign Keys", "Catalog", "TABLE_CATALOG", 1);
 		dataTable.Rows.Add("Foreign Keys", "Schema", "TABLE_SCHEMA", 2);
 		dataTable.Rows.Add("Foreign Keys", "Table", "TABLE_NAME", 3);
-		dataTable.Rows.Add("Foreign Keys", "Column", "COLUMN_NAME", 4);
+		dataTable.Rows.Add("Foreign Keys", "Constraint Name", "CONSTRAINT_NAME", 4);
 		dataTable.Rows.Add("Indexes", "Catalog", "TABLE_CATALOG", 1);
 		dataTable.Rows.Add("Indexes", "Schema", "TABLE_SCHEMA", 2);
 		dataTable.Rows.Add("Indexes", "Table", "TABLE_NAME", 3);
-		dataTable.Rows.Add("Indexes", "Column", "COLUMN_NAME", 4);
+		dataTable.Rows.Add("Indexes", "Name", "INDEX_NAME", 4);
 		dataTable.Rows.Add("IndexColumns", "Catalog", "TABLE_CATALOG", 1);
 		dataTable.Rows.Add("IndexColumns", "Schema", "TABLE_SCHEMA", 2);
 		dataTable.Rows.Add("IndexColumns", "Table", "TABLE_NAME", 3);
-		dataTable.Rows.Add("IndexColumns", "Constraint", "CONSTRAINT_NAME", 4);
-		dataTable.Rows.Add("IndexColumns", "Column", "COLUMN_NAME", 5);
+		dataTable.Rows.Add("IndexColumns", "Name", "INDEX_NAME", 4);
 
 		return Task.CompletedTask;
 	}
@@ -902,8 +901,8 @@ internal sealed partial class SchemaProvider
 
 	private async Task FillIndexColumnsAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
 	{
-		if (restrictionValues is { Length: > 5 })
-			throw new ArgumentException("More than 5 restrictionValues are not supported for schema 'IndexColumns'.", nameof(restrictionValues));
+		if (restrictionValues is { Length: > 4 })
+			throw new ArgumentException("More than 4 restrictionValues are not supported for schema 'IndexColumns'.", nameof(restrictionValues));
 
 		dataTable.TableName = tableName;
 		dataTable.Columns.AddRange(
