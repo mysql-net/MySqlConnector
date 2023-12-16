@@ -1,5 +1,7 @@
 # MySQL Connector for .NET and .NET Core
 
+[![NuGet](https://img.shields.io/nuget/vpre/MySqlConnector.svg)](https://www.nuget.org/packages/MySqlConnector/)
+
 This is an [ADO.NET](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/) data
 provider for [MySQL](https://www.mysql.com/). It provides implementations of
 `DbConnection`, `DbCommand`, `DbDataReader`, `DbTransaction`—the classes
@@ -56,13 +58,12 @@ For Entity Framework support, use:
 
 ## Build Status
 
-Appveyor | Azure Pipelines | NuGet
---- | --- | ---
-[![AppVeyor](https://img.shields.io/appveyor/ci/mysqlnet/mysqlconnector/master.svg)](https://ci.appveyor.com/project/mysqlnet/mysqlconnector) | [![Azure Pipelines](https://dev.azure.com/mysqlnet/MySqlConnector/_apis/build/status/mysql-net.MySqlConnector?branchName=master)](https://dev.azure.com/mysqlnet/MySqlConnector/_build/latest?definitionId=2&branchName=master) | [![NuGet](https://img.shields.io/nuget/vpre/MySqlConnector.svg)](https://www.nuget.org/packages/MySqlConnector/)
+[![AppVeyor](https://img.shields.io/appveyor/ci/mysqlnet/mysqlconnector/master.svg)](https://ci.appveyor.com/project/mysqlnet/mysqlconnector)
+[![Azure Pipelines](https://dev.azure.com/mysqlnet/MySqlConnector/_apis/build/status/mysql-net.MySqlConnector?branchName=master)](https://dev.azure.com/mysqlnet/MySqlConnector/_build/latest?definitionId=2&branchName=master)
 
 ## Building
 
-Install the latest [.NET Core](https://www.microsoft.com/net/core).
+Install the latest [.NET](https://dotnet.microsoft.com/en-us/download).
 
 To build and run the tests, clone the repo and execute:
 
