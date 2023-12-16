@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-01-28
+lastmod: 2023-12-15
 date: 2021-04-24
 title: Schema Collections
 customtitle: "Supported Schema Collections"
@@ -45,3 +45,6 @@ weight: 80
 * `Triggers`
 * `UserPrivileges`
 * `Views`
+* `Foreign Keys`—[information about foreign keys in the server's SQL syntax](../schema/foreign keys/)
+* `Indexes`—[information about indexes in the server's SQL syntax](../schema/indexes/)
+* `IndexColumns`—[information about indexes in the server's SQL syntax](../schema/indexcolumns/)

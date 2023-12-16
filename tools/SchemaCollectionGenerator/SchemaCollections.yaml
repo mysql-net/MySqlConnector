@@ -759,3 +759,101 @@
     type: string
   - name: COLLATION_CONNECTION
     type: string
+
+- name: Foreign Keys
+  description: information about foreign keys in the server's SQL syntax
+  custom: DoFillForeignKeysAsync
+  restrictions:
+  - name: Catalog
+    default: TABLE_CATALOG
+  - name: Schema
+    default: TABLE_SCHEMA
+  - name: Table
+    default: TABLE_NAME
+  - name: Column
+    default: COLUMN_NAME
+  columns:
+  - name: CONSTRAINT_CATALOG
+    type: string
+  - name: CONSTRAINT_SCHEMA
+    type: string
+  - name: CONSTRAINT_NAME
+    type: string
+  - name: TABLE_CATALOG
+    type: string
+  - name: TABLE_SCHEMA
+    type: string
+  - name: TABLE_NAME
+    type: string
+  - name: MATCH_OPTION
+    type: string
+  - name: UPDATE_RULE
+    type: string
+  - name: DELETE_RULE
+    type: string
+  - name: REFERENCED_TABLE_CATALOG
+    type: string
+  - name: REFERENCED_TABLE_SCHEMA
+    type: string
+  - name: REFERENCED_TABLE_NAME
+    type: string
+
+- name: Indexes
+  description: information about indexes in the server's SQL syntax
+  custom: DoFillIndexesAsync
+  restrictions:
+  - name: Catalog
+    default: TABLE_CATALOG
+  - name: Schema
+    default: TABLE_SCHEMA
+  - name: Table
+    default: TABLE_NAME
+  - name: Column # it is only a guess - might need to be changed, but NHibernate passes 4 values, with last one is null
+    default: COLUMN_NAME
+  columns:
+  - name: INDEX_CATALOG # placeholder  - will be filled by SQL query
+    type: string
+  - name: INDEX_SCHEMA # same as TABLE_SCHEMA, see https://mariadb.com/kb/en/information-schema-statistics-table/
+    type: string
+  - name: INDEX_NAME
+    type: string
+  - name: TABLE_NAME
+    type: string
+  - name: UNIQUE
+    type: bool
+  - name: PRIMARY
+    type: bool
+  - name: TYPE
+    type: string
+  - name: COMMENT
+    type: string
+
+- name: IndexColumns
+  description: information about indexes in the server's SQL syntax
+  custom: DoFillIndexColumnsAsync
+  restrictions:
+  - name: Catalog
+    default: TABLE_CATALOG
+  - name: Schema
+    default: TABLE_SCHEMA
+  - name: Table
+    default: TABLE_NAME
+  - name: Constraint
+    default: CONSTRAINT_NAME
+  - name: Column # it comes fro
+    default: COLUMN_NAME
+  columns:
+  - name: INDEX_CATALOG # placeholder  - will be filled by SQL query
+    type: string
+  - name: INDEX_SCHEMA # same as TABLE_SCHEMA, see https://mariadb.com/kb/en/information-schema-statistics-table/
+    type: string
+  - name: INDEX_NAME
+    type: string
+  - name: TABLE_NAME
+    type: string
+  - name: COLUMN_NAME
+    type: string
+  - name: ORDINAL_POSITION
+    type: int
+  - name: SORT_ORDER
+    type: string
