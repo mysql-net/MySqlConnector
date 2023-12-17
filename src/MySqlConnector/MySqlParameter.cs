@@ -835,7 +835,45 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		}
 		else if (Value is Enum)
 		{
-			writer.Write(Convert.ToInt32(Value, CultureInfo.InvariantCulture));
+			var enumType = Value.GetType();
+			var enumUnderlyingType = enumType.GetEnumUnderlyingType();
+
+			if (enumUnderlyingType == typeof(byte))
+			{
+				writer.Write((byte) Value);
+			}
+			else if (enumUnderlyingType == typeof(sbyte))
+			{
+				writer.Write(unchecked((byte) (sbyte) Value));
+			}
+			else if (enumUnderlyingType == typeof(short))
+			{
+				writer.Write(unchecked((ushort) (short) Value));
+			}
+			else if (enumUnderlyingType == typeof(ushort))
+			{
+				writer.Write((ushort) Value);
+			}
+			else if (enumUnderlyingType == typeof(int))
+			{
+				writer.Write((int) Value);
+			}
+			else if (enumUnderlyingType == typeof(uint))
+			{
+				writer.Write((uint) Value);
+			}
+			else if (enumUnderlyingType == typeof(long))
+			{
+				writer.Write(unchecked((ulong) (long) Value));
+			}
+			else if (enumUnderlyingType == typeof(ulong))
+			{
+				writer.Write((ulong) Value);
+			}
+			else
+			{
+				throw new NotSupportedException($"Parameter type {Value.GetType().Name} is not supported; see https://fl.vu/mysql-param-type. Value: {Value}");
+			}
 		}
 		else if (MySqlDbType == MySqlDbType.Int16)
 		{
