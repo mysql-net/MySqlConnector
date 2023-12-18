@@ -433,6 +433,63 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 		}
 	}
 
+	[Theory, MemberData(nameof(GetDifferentWidthData))]
+	public void InsertDifferentWidthParameters(string dataType1, object value1, string dataType2, object value2)
+	{
+		using var connection = CreateConnection();
+		using var command = connection.CreateCommand();
+		command.CommandText = $"""
+			drop table if exists parameter_width;
+			create table parameter_width(value1 {dataType1} not null, value2 {dataType2} not null);
+			""";
+		command.ExecuteNonQuery();
+
+		command.CommandText = "insert into parameter_width(value1, value2) values(@value1, @value2);";
+		command.Parameters.AddWithValue("@value1", value1);
+		command.Parameters.AddWithValue("@value2", value2);
+		command.Prepare();
+		command.ExecuteNonQuery();
+
+		using var queryCommand = connection.CreateCommand();
+		queryCommand.CommandText = "select value1, value2 from parameter_width;";
+		using var reader = queryCommand.ExecuteReader();
+		Assert.True(reader.Read());
+		Assert.Equal(Convert.ToInt32(value1), reader.GetInt32(0));
+		Assert.Equal(Convert.ToInt32(value2), reader.GetInt32(1));
+		Assert.False(reader.Read());
+	}
+
+	public static IEnumerable<object[]> GetDifferentWidthData()
+	{
+		var dataTypes = new string[] { "TINYINT", "SMALLINT", "INT" };
+		var values = new object[] { (sbyte) 100, (short) 110, 120, OneByteEnum.Value, TwoByteEnum.Value };
+
+		foreach (var dataType1 in dataTypes)
+		{
+			foreach (var value1 in values)
+			{
+				foreach (var dataType2 in dataTypes)
+				{
+					foreach (var value2 in values)
+					{
+						yield return new object[] { dataType1, value1, dataType2, value2 };
+					}
+				}
+			}
+		}
+	}
+
+	private enum OneByteEnum : sbyte
+	{
+		Value = 101,
+	}
+
+	private enum TwoByteEnum : short
+	{
+		Value = 111,
+	}
+		
+
 	private static MySqlConnection CreateConnection()
 	{
 		var connection = new MySqlConnection(AppConfig.ConnectionString);
