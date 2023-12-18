@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-11-16
+lastmod: 2023-12-18
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,15 @@ weight: 30
 ---
 
 # Version History
+
+### 2.3.2
+
+* Add `Foreign Keys`, `Indexes`, `Index Columns` schemas: [#1419](https://github.com/mysql-net/MySqlConnector/pull/1419).
+* Fix exception when server doesn't send expected metadata: [#1398](https://github.com/mysql-net/MySqlConnector/issues/1398).
+* Clear activity tags when retrying TLS: [#1405](https://github.com/mysql-net/MySqlConnector/issues/1405).
+* Use underlying enum type when writing binary parameters: [#1421](https://github.com/mysql-net/MySqlConnector/pull/1421).
+* Avoid retrying TLS negotiation when a non-recoverable exception occurs.
+* Thanks to [Alisha Kim](https://github.com/daebo01), [Evgeni Alesinskyy](https://github.com/eaexo), and [Jan Trejbal](https://github.com/trejjam) for contributions to this release.
 
 ### 2.3.1
 
