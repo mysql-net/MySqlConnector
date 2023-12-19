@@ -1,6 +1,6 @@
 ---
 date: 2022-07-10
-lastmod: 2023-12-16
+lastmod: 2023-12-19
 title: IndexColumns Schema
 ---
 
@@ -26,4 +26,5 @@ Catalog | TABLE_CATALOG | 1
 Schema | TABLE_SCHEMA | 2
 Table | TABLE_NAME | 3
 Name | INDEX_NAME | 4
+Column | COLUMN_NAME | 5
 

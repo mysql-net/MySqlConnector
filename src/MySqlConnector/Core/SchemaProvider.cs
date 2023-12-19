@@ -532,5 +532,10 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 				command.CommandText += " AND INDEX_NAME LIKE @index";
 				command.Parameters.AddWithValue("@index", index);
 			}
+			if (restrictionValues is [_, _, _, _, { Length: > 0 } column, ..])
+			{
+				command.CommandText += " AND COLUMN_NAME LIKE @column";
+				command.Parameters.AddWithValue("@column", column);
+			}
 		}, cancellationToken);
 }

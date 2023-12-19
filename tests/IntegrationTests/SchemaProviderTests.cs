@@ -242,5 +242,22 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 		Assert.Equal(expected, actual);
 	}
 
+	[Fact]
+	public void IndexColumnsWithColumnName()
+	{
+		var schemaName = m_database.Connection.Database;
+		var table = m_database.Connection.GetSchema("IndexColumns", new[] { null, schemaName, "pk_test", "pk_test_uq", "d" });
+		var actual = table.Rows
+			.Cast<DataRow>()
+			.OrderBy(x => (string) x["INDEX_NAME"])
+			.ThenBy(x => (int) x["ORDINAL_POSITION"])
+			.Select(x => ((string) x["INDEX_SCHEMA"], (string) x["INDEX_NAME"], (string) x["TABLE_NAME"], (string) x["COLUMN_NAME"], (int) x["ORDINAL_POSITION"]));
+		var expected = new[]
+		{
+			(schemaName, "pk_test_uq", "pk_test", "d", 2),
+		};
+		Assert.Equal(expected, actual);
+	}
+
 	readonly DatabaseFixture m_database;
 }

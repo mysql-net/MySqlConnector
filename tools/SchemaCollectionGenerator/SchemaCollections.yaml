@@ -840,6 +840,8 @@
     default: TABLE_NAME
   - name: Name
     default: INDEX_NAME
+  - name: Column
+    default: COLUMN_NAME
   columns:
   - name: INDEX_CATALOG
     type: string
