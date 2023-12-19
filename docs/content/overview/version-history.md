@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-12-18
+lastmod: 2023-12-19
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,10 @@ weight: 30
 ---
 
 # Version History
+
+### 2.3.3
+
+* Support `COLUMN_NAME` restriction for `IndexColumns` schema; this improves NHibernate compatibility.
 
 ### 2.3.2
 
