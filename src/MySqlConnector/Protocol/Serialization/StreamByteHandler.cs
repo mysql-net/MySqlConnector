@@ -18,8 +18,9 @@ internal sealed class StreamByteHandler : IByteHandler
 
 	public ValueTask<int> ReadBytesAsync(Memory<byte> buffer, IOBehavior ioBehavior)
 	{
-		return ioBehavior == IOBehavior.Asynchronous ? new ValueTask<int>(DoReadBytesAsync(buffer)) :
+		return
 			RemainingTimeout <= 0 ? ValueTaskExtensions.FromException<int>(MySqlException.CreateForTimeout()) :
+			ioBehavior == IOBehavior.Asynchronous ? new ValueTask<int>(DoReadBytesAsync(buffer)) :
 			m_stream.CanTimeout ? DoReadBytesSync(buffer) :
 			DoReadBytesSyncOverAsync(buffer);
 
