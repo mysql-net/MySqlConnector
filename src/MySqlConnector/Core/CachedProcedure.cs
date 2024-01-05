@@ -31,12 +31,21 @@ internal sealed class CachedProcedure
 					return null;
 
 				var parametersSqlBytes = (byte[]) reader.GetValue(0);
-				var returnsSqlBytes = (byte[]) reader.GetValue(1);
 
 				// ASSUME this is UTF-8 encoded; it's possible that the `character_set_client` column would need to be used?
 				var parametersSql = Encoding.UTF8.GetString(parametersSqlBytes);
-				var returnsSql = Encoding.UTF8.GetString(returnsSqlBytes);
 
+				string returnsSql = string.Empty;
+				if (reader.GetValue(1) is string stringValue)
+				{
+					returnsSql = stringValue;
+				}
+				else
+				{
+					var returnsSqlBytes = (byte[])reader.GetValue(1);
+					returnsSql = Encoding.UTF8.GetString(returnsSqlBytes);
+				}
+				
 				var parsedParameters = ParseParameters(parametersSql);
 				if (returnsSql.Length != 0)
 				{
