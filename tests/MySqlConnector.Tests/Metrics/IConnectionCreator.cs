@@ -4,44 +4,46 @@ namespace MySqlConnector.Tests.Metrics;
 
 public interface IConnectionCreator : IDisposable
 {
-	void SetConnectionStringBuilder(MySqlConnectionStringBuilder connectionStringBuilder);
 	string PoolName { get; }
 	MySqlConnection OpenConnection();
 }
 
-internal sealed class DataSourceConnectionCreator(string? poolName) : IConnectionCreator
+internal sealed class DataSourceConnectionCreator : IConnectionCreator
 {
-	public void SetConnectionStringBuilder(MySqlConnectionStringBuilder connectionStringBuilder)
+	public DataSourceConnectionCreator(bool usePooling, string? poolName, MySqlConnectionStringBuilder connectionStringBuilder)
 	{
-		m_connectionStringBuilder = connectionStringBuilder;
+        connectionStringBuilder.Pooling =	usePooling;
 		m_dataSource = new MySqlDataSourceBuilder(connectionStringBuilder.ConnectionString)
-			.UseName(m_poolName)
+			.UseName(poolName)
 			.Build();
-	}
+        PoolName = poolName ?? connectionStringBuilder!.GetConnectionString(includePassword: false);
+    }
 
-	public MySqlConnection OpenConnection() => m_dataSource!.OpenConnection();
-	public string PoolName => m_poolName ?? m_connectionStringBuilder!.GetConnectionString(includePassword: false);
-	public override string ToString() => $"DataSource: {m_poolName ?? "(unnamed)"}";
+    public MySqlConnection OpenConnection() => m_dataSource!.OpenConnection();
+	public string PoolName { get; }
 	public void Dispose() => m_dataSource!.Dispose();
 
-	private readonly string? m_poolName = poolName;
-	private MySqlConnectionStringBuilder? m_connectionStringBuilder;
-	private MySqlDataSource? m_dataSource;
+	private readonly MySqlDataSource m_dataSource;
 }
 
 internal sealed class PlainConnectionCreator : IConnectionCreator
 {
+	public PlainConnectionCreator(bool usePooling, MySqlConnectionStringBuilder connectionStringBuilder)
+	{
+		connectionStringBuilder.Pooling = usePooling;
+		m_connectionString = connectionStringBuilder.ConnectionString;
+		PoolName = connectionStringBuilder.GetConnectionString(includePassword: false);
+    }
+
 	public MySqlConnection OpenConnection()
 	{
-		var connection = new MySqlConnection(m_connectionStringBuilder!.ConnectionString);
+		var connection = new MySqlConnection(m_connectionString);
 		connection.Open();
 		return connection;
 	}
 
-	public void SetConnectionStringBuilder(MySqlConnectionStringBuilder connectionStringBuilder) => m_connectionStringBuilder = connectionStringBuilder;
-	public string PoolName => m_connectionStringBuilder!.GetConnectionString(includePassword: false);
-	public override string ToString() => "Plain";
+	public string PoolName { get; }
 	public void Dispose() { }
 
-	private MySqlConnectionStringBuilder? m_connectionStringBuilder;
+	private readonly string m_connectionString;
 }
