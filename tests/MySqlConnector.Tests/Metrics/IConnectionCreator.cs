@@ -10,9 +10,10 @@ public interface IConnectionCreator : IDisposable
 
 internal sealed class DataSourceConnectionCreator : IConnectionCreator
 {
-	public DataSourceConnectionCreator(bool usePooling, string? poolName, MySqlConnectionStringBuilder connectionStringBuilder)
+	public DataSourceConnectionCreator(bool usePooling, string? poolName, string? applicationName, MySqlConnectionStringBuilder connectionStringBuilder)
 	{
         connectionStringBuilder.Pooling =	usePooling;
+		connectionStringBuilder.ApplicationName = applicationName;
 		m_dataSource = new MySqlDataSourceBuilder(connectionStringBuilder.ConnectionString)
 			.UseName(poolName)
 			.Build();
@@ -28,9 +29,10 @@ internal sealed class DataSourceConnectionCreator : IConnectionCreator
 
 internal sealed class PlainConnectionCreator : IConnectionCreator
 {
-	public PlainConnectionCreator(bool usePooling, MySqlConnectionStringBuilder connectionStringBuilder)
+	public PlainConnectionCreator(bool usePooling, string? applicationName, MySqlConnectionStringBuilder connectionStringBuilder)
 	{
 		connectionStringBuilder.Pooling = usePooling;
+		connectionStringBuilder.ApplicationName = applicationName;
 		m_connectionString = connectionStringBuilder.ConnectionString;
 		PoolName = connectionStringBuilder.GetConnectionString(includePassword: false);
     }

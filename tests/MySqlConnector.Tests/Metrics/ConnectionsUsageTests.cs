@@ -5,9 +5,12 @@ namespace MySqlConnector.Tests.Metrics;
 public class ConnectionsUsageTests : MetricsTestsBase
 {
     [Theory(Skip = MetricsSkip)]
-	[InlineData("DataSource|true|")]
-	[InlineData("DataSource|true|metrics-test")]
-	[InlineData("Plain|true")]
+	[InlineData("DataSource|true||")]
+	[InlineData("DataSource|true||app-name")]
+    [InlineData("DataSource|true|pool-name|")]
+    [InlineData("DataSource|true|pool-name|app-name")]
+	[InlineData("Plain|true|")]
+	[InlineData("Plain|true|app-name")]
 	public void ConnectionsWithPoolsHaveMetrics(string connectionCreatorSpec)
     {
 		using var connectionCreator = CreateConnectionCreator(connectionCreatorSpec, CreateConnectionStringBuilder());
@@ -60,9 +63,12 @@ public class ConnectionsUsageTests : MetricsTestsBase
 	}
 
 	[Theory(Skip = MetricsSkip)]
-    [InlineData("DataSource|false|")]
-    [InlineData("DataSource|false|metrics-test")]
-    [InlineData("Plain|false")]
+    [InlineData("DataSource|false||")]
+    [InlineData("DataSource|false||app-name")]
+    [InlineData("DataSource|false|pool-name|")]
+    [InlineData("DataSource|false|pool-name|app-name")]
+    [InlineData("Plain|false|")]
+    [InlineData("Plain|false|app-name")]
     public void ConnectionsWithoutPoolsHaveNoMetrics(string connectionCreatorSpec)
 	{
 		using var connectionCreator = CreateConnectionCreator(connectionCreatorSpec, CreateConnectionStringBuilder());
@@ -172,8 +178,8 @@ public class ConnectionsUsageTests : MetricsTestsBase
 		var parts = spec.Split('|');
 		return parts[0] switch
 		{
-			"DataSource" => new DataSourceConnectionCreator(bool.Parse(parts[1]), parts[2] == "" ? null : parts[2], connectionStringBuilder),
-			"Plain" => new PlainConnectionCreator(bool.Parse(parts[1]), connectionStringBuilder),
+			"DataSource" => new DataSourceConnectionCreator(bool.Parse(parts[1]), parts[2] == "" ? null : parts[2], parts[3] == "" ? null : parts[3], connectionStringBuilder),
+			"Plain" => new PlainConnectionCreator(bool.Parse(parts[1]), parts[2] == "" ? null : parts[2], connectionStringBuilder),
 			_ => throw new NotSupportedException(),
 		};
 	}
