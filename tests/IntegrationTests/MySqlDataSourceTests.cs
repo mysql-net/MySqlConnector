@@ -25,6 +25,17 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 		Assert.Equal(ConnectionState.Open, connection.State);
 	}
 
+    [Fact]
+    public void DoubleDispose()
+    {
+        using var dbSource = new MySqlDataSource(AppConfig.ConnectionString);
+		using (var connection = dbSource.OpenConnection())
+		{
+            Assert.Equal(ConnectionState.Open, connection.State);
+        }
+		dbSource.Dispose();
+    }
+    
 	[Fact]
 	public async Task OpenConnectionAsync()
 	{

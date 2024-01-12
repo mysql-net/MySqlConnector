@@ -250,12 +250,14 @@ internal sealed class ConnectionPool : IDisposable
 			using var dnsCheckWaitHandle = new ManualResetEvent(false);
 			m_dnsCheckTimer.Dispose(dnsCheckWaitHandle);
 			dnsCheckWaitHandle.WaitOne();
+			m_dnsCheckTimer = null;
 		}
 		if (m_reaperTimer is not null)
 		{
 			using var reaperWaitHandle = new ManualResetEvent(false);
 			m_reaperTimer.Dispose(reaperWaitHandle);
 			reaperWaitHandle.WaitOne();
+			m_reaperTimer = null;
 		}
 #endif
 	}
