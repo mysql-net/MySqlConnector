@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-12-19
+lastmod: 2024-01-14
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,14 @@ weight: 30
 ---
 
 # Version History
+
+### 2.3.4
+
+* Unify `Application Name` connection string option and `MySqlDataSourceBuilder.UseName`: [#1434](https://github.com/mysql-net/MySqlConnector/issues/1434).
+* Remove TLS version fallback code: [#1409](https://github.com/mysql-net/MySqlConnector/issues/1409).
+* Fix `ArgumentOutOfRangeException` in `TimerQueue.Add`: [#1424](https://github.com/mysql-net/MySqlConnector/issues/1424).
+* Fix `InvalidCastException` when using stored procedures with MySQL 5.0: [#1431](https://github.com/mysql-net/MySqlConnector/issues/1431).
+* Fix hang when disposing `MySqlDataSource` twice on .NET Framework.
 
 ### 2.3.3
 

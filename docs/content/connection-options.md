@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-04-15
+lastmod: 2024-01-14
 date: 2016-10-16
 title: Connection Options
 customtitle: MySQL Connection String Options for .NET/C#
