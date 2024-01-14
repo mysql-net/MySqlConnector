@@ -9,7 +9,7 @@ internal static class MetricsReporter
 	public static void RemoveIdle(ConnectionPool pool) => s_connectionsUsageCounter.Add(-1, pool.IdleStateTagList);
 	public static void AddUsed(ConnectionPool pool) => s_connectionsUsageCounter.Add(1, pool.UsedStateTagList);
 	public static void RemoveUsed(ConnectionPool pool) => s_connectionsUsageCounter.Add(-1, pool.UsedStateTagList);
-	public static void AddTimeout(ConnectionPool? pool, ConnectionSettings connectionSettings) => s_connectionTimeouts.Add(1, new KeyValuePair<string, object?>("pool.name", pool?.Name ?? connectionSettings.ConnectionStringBuilder.GetConnectionString(includePassword: false)));
+	public static void AddTimeout(ConnectionPool? pool, ConnectionSettings connectionSettings) => s_connectionTimeouts.Add(1, new KeyValuePair<string, object?>("pool.name", pool?.Name ?? connectionSettings.ApplicationName ?? connectionSettings.ConnectionStringBuilder.GetConnectionString(includePassword: false)));
 	public static void RecordCreateTime(ConnectionPool pool, double seconds) => s_createTimeHistory.Record(seconds, pool.PoolNameTagList);
 	public static void RecordUseTime(ConnectionPool pool, double seconds) => s_useTimeHistory.Record(seconds, pool.PoolNameTagList);
 	public static void RecordWaitTime(ConnectionPool pool, double seconds) => s_waitTimeHistory.Record(seconds, pool.PoolNameTagList);

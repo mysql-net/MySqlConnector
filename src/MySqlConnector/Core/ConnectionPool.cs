@@ -501,9 +501,12 @@ internal sealed class ConnectionPool : IDisposable
 		if (!connectionStringBuilder.Pooling)
 			return null;
 
+		if (name is not null)
+			connectionStringBuilder.ApplicationName = name;
+
 		// force a new pool to be created, ignoring the cache
 		var connectionSettings = new ConnectionSettings(connectionStringBuilder);
-		var pool = new ConnectionPool(loggingConfiguration, connectionSettings, name);
+		var pool = new ConnectionPool(loggingConfiguration, connectionSettings);
 		pool.StartReaperTask();
 		pool.StartDnsCheckTimer();
 		return pool;
@@ -551,7 +554,7 @@ internal sealed class ConnectionPool : IDisposable
 
 		// create a new pool and attempt to insert it; if someone else beats us to it, just use their value
 		var connectionSettings = new ConnectionSettings(connectionStringBuilder);
-		var newPool = new ConnectionPool(loggingConfiguration!, connectionSettings, name: null);
+		var newPool = new ConnectionPool(loggingConfiguration!, connectionSettings);
 		pool = s_pools.GetOrAdd(normalizedConnectionString, newPool);
 
 		if (pool == newPool)
@@ -591,12 +594,12 @@ internal sealed class ConnectionPool : IDisposable
 		}
 	}
 
-	private ConnectionPool(MySqlConnectorLoggingConfiguration loggingConfiguration, ConnectionSettings cs, string? name)
+	private ConnectionPool(MySqlConnectorLoggingConfiguration loggingConfiguration, ConnectionSettings cs)
 	{
 		m_logger = loggingConfiguration.PoolLogger;
 		m_connectionLogger = loggingConfiguration.ConnectionLogger;
 		ConnectionSettings = cs;
-		Name = name;
+		Name = cs.ApplicationName;
 		SslProtocols = cs.TlsVersions;
 		m_generation = 0;
 		m_cleanSemaphore = new(1);

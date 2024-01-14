@@ -286,8 +286,13 @@ These are the other options that MySqlConnector supports. They are set to sensib
   <tr id="ApplicationName">
     <td>Application Name, ApplicationName</td>
     <td>null</td>
-    <td>Sets the <c>program_name</c> connection attribute passed to MySQL Server. This value may be displayed by diagnostic tools,
-    e.g., as the “Program” column in “Client Connections” in <a href="https://www.mysql.com/products/workbench/">MySQL Workbench</a>.</td>
+    <td><p>Sets the <c>program_name</c> connection attribute passed to MySQL Server. This value may be displayed by diagnostic tools,
+    e.g., as the “Program” column in “Client Connections” in <a href="https://www.mysql.com/products/workbench/">MySQL Workbench</a>.
+    It also sets the connection pool name reported by the <code>pool.name</code> tag associated with connection pool metrics.</p>
+    <p>This connection string option is deprecated and is provided for backwards compatibility. Newer applications should
+    use <a href="/api/MySqlConnector/MySqlDataSourceBuilder/UseName/"><code>MySqlDataSourceBuilder.UseName</code></a> instead.
+    </p></td>
+    </td>
   </tr>
   <tr id="AutoEnlist">
     <td>Auto Enlist, AutoEnlist</td>

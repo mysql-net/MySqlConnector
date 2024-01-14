@@ -1777,7 +1777,7 @@ internal sealed partial class ServerSession
 
 	internal SslProtocols SslProtocol => m_sslStream?.SslProtocol ?? SslProtocols.None;
 
-	private byte[] CreateConnectionAttributes(string programName)
+	private byte[] CreateConnectionAttributes(string? programName)
 	{
 		Log.CreatingConnectionAttributes(m_logger, Id);
 		var attributesWriter = new ByteBufferWriter();
@@ -1815,7 +1815,7 @@ internal sealed partial class ServerSession
 #endif
 		attributesWriter.WriteLengthEncodedString("_pid");
 		attributesWriter.WriteLengthEncodedString(processId.ToString(CultureInfo.InvariantCulture));
-		if (programName.Length != 0)
+		if (!string.IsNullOrEmpty(programName))
 		{
 			attributesWriter.WriteLengthEncodedString("program_name");
 			attributesWriter.WriteLengthEncodedString(programName!);

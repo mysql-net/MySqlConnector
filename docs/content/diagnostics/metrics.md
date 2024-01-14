@@ -41,3 +41,55 @@ Name | Type | Unit | Description
 `db.client.connections.idle.max` | UpDownCounter | `{connection}` | The maximum number of idle open connections allowed; this corresponds to `MaximumPoolSize` in the connection string.
 `db.client.connections.idle.min` | UpDownCounter | `{connection}` | The minimum number of idle open connections allowed; this corresponds to `MinimumPoolSize` in the connection string.
 `db.client.connections.max` | UpDownCounter | `{connection}` | The maximum number of open connections allowed; this corresponds to `MaximumPoolSize` in the connection string.
+
+## Supported Tags
+
+Name | Description
+--- | ---
+`pool.name` | The name of the connection pool (see below).
+`state` | `idle` or `used`; this tag is used with the `db.client.connections.usage` instrument.
+
+## Connection Pool Name
+
+A connection pool name can be specified by one of the following means:
+
+### UseName
+
+The `MySqlDataSourceBuilder.UseName` method can be used to specify a name for the connection pool:
+
+```csharp
+using var dataSource = new MySqlDataSourceBuilder("...connection string...")
+    .UseName("MyPoolName")
+    .Build();
+```
+
+This can also be used with dependency injection:
+
+```csharp
+builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("Default"),
+    x => x.UseName("MyPoolName"));
+```
+
+### Keyed Services
+
+Use the `AddKeyedMySqlDataSource` method to register a `MySqlDataSource` as a [keyed service](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8#keyed-di-services).
+If the service key is a string, it will automatically be used as the `MySqlDataSource` name.
+
+```csharp
+builder.Services.AddKeyedMySqlDataSource("MyPoolName",
+    builder.Configuration.GetConnectionString("MyConnectionString"));
+```
+
+### Application Name
+
+Finally, the connection pool name can be specified by setting the `Application Name` connection string option:
+
+```csharp
+using var connection = new MySqlConnection("server=dbserver;...;Application Name=MyPoolName");
+```
+
+If `UseName` is used, it will override the `Application Name` connection string option.
+
+### Default
+
+For metrics, if no pool name is specified, the connection string (without a password) will be used as the pool name.

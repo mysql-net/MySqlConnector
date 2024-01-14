@@ -17,7 +17,7 @@ internal sealed class DataSourceConnectionCreator : IConnectionCreator
 		m_dataSource = new MySqlDataSourceBuilder(connectionStringBuilder.ConnectionString)
 			.UseName(poolName)
 			.Build();
-        PoolName = poolName ?? connectionStringBuilder!.GetConnectionString(includePassword: false);
+        PoolName = poolName ?? applicationName ?? connectionStringBuilder!.GetConnectionString(includePassword: false);
     }
 
     public MySqlConnection OpenConnection() => m_dataSource!.OpenConnection();
@@ -34,7 +34,7 @@ internal sealed class PlainConnectionCreator : IConnectionCreator
 		connectionStringBuilder.Pooling = usePooling;
 		connectionStringBuilder.ApplicationName = applicationName;
 		m_connectionString = connectionStringBuilder.ConnectionString;
-		PoolName = connectionStringBuilder.GetConnectionString(includePassword: false);
+		PoolName = applicationName ?? connectionStringBuilder.GetConnectionString(includePassword: false);
     }
 
 	public MySqlConnection OpenConnection()

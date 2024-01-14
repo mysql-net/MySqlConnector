@@ -121,7 +121,7 @@ internal sealed class ConnectionSettings
 		AllowPublicKeyRetrieval = csb.AllowPublicKeyRetrieval;
 		AllowUserVariables = csb.AllowUserVariables;
 		AllowZeroDateTime = csb.AllowZeroDateTime;
-		ApplicationName = csb.ApplicationName;
+		ApplicationName = csb.ApplicationName is { Length: 0 } ? null : csb.ApplicationName;
 		AutoEnlist = csb.AutoEnlist;
 		CancellationTimeout = csb.CancellationTimeout;
 		ConnectionTimeout = ToSigned(csb.ConnectionTimeout);
@@ -216,7 +216,7 @@ internal sealed class ConnectionSettings
 	public bool AllowPublicKeyRetrieval { get; }
 	public bool AllowUserVariables { get; }
 	public bool AllowZeroDateTime { get; }
-	public string ApplicationName { get; }
+	public string? ApplicationName { get; }
 	public bool AutoEnlist { get; }
 	public int CancellationTimeout { get; }
 	public int ConnectionTimeout { get; }

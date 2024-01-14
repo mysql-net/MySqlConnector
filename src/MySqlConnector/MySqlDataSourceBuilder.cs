@@ -36,6 +36,9 @@ public sealed class MySqlDataSourceBuilder
 	/// </summary>
 	/// <param name="name">The data source name.</param>
 	/// <returns>This builder, so that method calls can be chained.</returns>
+	/// <remarks>The connection pool name is used to set the <c>program_name</c> connection attribute
+	/// (which is visible to some diagnostic tools) and the <c>pool.name</c> tag supplied with
+	/// <a href="https://mysqlconnector.net/diagnostics/metrics/">connection pool metrics</a>.</remarks>
 	public MySqlDataSourceBuilder UseName(string? name)
 	{
 		m_name = name;
