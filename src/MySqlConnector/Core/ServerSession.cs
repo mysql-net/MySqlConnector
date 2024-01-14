@@ -422,13 +422,13 @@ internal sealed partial class ServerSession
 				}
 			}
 
-			var connected = false;
-			if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets)
-				connected = await OpenTcpSocketAsync(cs, loadBalancer ?? throw new ArgumentNullException(nameof(loadBalancer)), activity, ioBehavior, cancellationToken).ConfigureAwait(false);
-			else if (cs.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket)
-				connected = await OpenUnixSocketAsync(cs, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
-			else if (cs.ConnectionProtocol == MySqlConnectionProtocol.NamedPipe)
-				connected = await OpenNamedPipeAsync(cs, startingTimestamp, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+			var connected = cs.ConnectionProtocol switch
+			{
+				MySqlConnectionProtocol.Sockets => await OpenTcpSocketAsync(cs, loadBalancer ?? throw new ArgumentNullException(nameof(loadBalancer)), activity, ioBehavior, cancellationToken).ConfigureAwait(false),
+				MySqlConnectionProtocol.UnixSocket => await OpenUnixSocketAsync(cs, activity, ioBehavior, cancellationToken).ConfigureAwait(false),
+				MySqlConnectionProtocol.NamedPipe => await OpenNamedPipeAsync(cs, startingTimestamp, activity, ioBehavior, cancellationToken).ConfigureAwait(false),
+				_ => false,
+			};
 			if (!connected)
 			{
 				lock (m_lock)
@@ -686,12 +686,13 @@ internal sealed partial class ServerSession
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			case "caching_sha2_password":
+				// see https://dev.mysql.com/doc/dev/mysql-server/latest/page_caching_sha2_authentication_exchanges.html
 				var scrambleBytes = AuthenticationUtility.CreateScrambleResponse(Utility.TrimZeroByte(switchRequest.Data.AsSpan()), password);
 				payload = new(scrambleBytes);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
-				// OK payload can be sent immediately (e.g., if password is empty( (short-circuiting the )
+				// OK payload can be sent immediately (e.g., if password is empty) bypassing even the fast authentication path
 				if (OkPayload.IsOk(payload.Span, SupportsDeprecateEof))
 					return payload;
 
@@ -814,7 +815,7 @@ internal sealed partial class ServerSession
 		{
 			// request the RSA public key
 			var payloadContent = switchRequestName == "caching_sha2_password" ? (byte) 0x02 : (byte) 0x01;
-			await SendReplyAsync(new PayloadData([ payloadContent ]), ioBehavior, cancellationToken).ConfigureAwait(false);
+			await SendReplyAsync(new PayloadData([payloadContent]), ioBehavior, cancellationToken).ConfigureAwait(false);
 			var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload.Span);
 			return Encoding.ASCII.GetString(publicKeyPayload.Data);
