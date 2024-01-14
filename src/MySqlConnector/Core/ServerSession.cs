@@ -422,157 +422,106 @@ internal sealed partial class ServerSession
 				}
 			}
 
-			// TLS negotiation should automatically fall back to the best version supported by client and server. However,
-			// Windows Schannel clients will fail to connect to a yaSSL-based MySQL Server if TLS 1.2 is requested and
-			// have to use only TLS 1.1: https://github.com/mysql-net/MySqlConnector/pull/101
-			// In order to use the best protocol possible (i.e., not always default to TLS 1.1), we try the OS-default protocol
-			// (which is SslProtocols.None; see https://docs.microsoft.com/en-us/dotnet/framework/network-programming/tls),
-			// then fall back to SslProtocols.Tls11 if that fails and it's possible that the cause is a yaSSL server.
-			bool shouldRetrySsl;
-			var shouldUpdatePoolSslProtocols = false;
-			var sslProtocols = Pool?.SslProtocols ?? cs.TlsVersions;
-			PayloadData payload;
-			InitialHandshakePayload initialHandshake;
-			do
+			var connected = false;
+			if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets)
+				connected = await OpenTcpSocketAsync(cs, loadBalancer ?? throw new ArgumentNullException(nameof(loadBalancer)), activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+			else if (cs.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket)
+				connected = await OpenUnixSocketAsync(cs, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+			else if (cs.ConnectionProtocol == MySqlConnectionProtocol.NamedPipe)
+				connected = await OpenNamedPipeAsync(cs, startingTimestamp, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+			if (!connected)
 			{
-				var isTls11or10Supported = (sslProtocols & (SslProtocols.Tls | SslProtocols.Tls11)) != SslProtocols.None;
-				var isTls12Supported = (sslProtocols & SslProtocols.Tls12) == SslProtocols.Tls12;
-				shouldRetrySsl = (sslProtocols == SslProtocols.None || (isTls12Supported && isTls11or10Supported)) && Utility.IsWindows();
+				lock (m_lock)
+					m_state = State.Failed;
+				Log.ConnectingFailed(m_logger, Id);
+				throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Unable to connect to any of the specified MySQL hosts.");
+			}
 
-				var connected = false;
-				if (cs.ConnectionProtocol == MySqlConnectionProtocol.Sockets)
-					connected = await OpenTcpSocketAsync(cs, loadBalancer ?? throw new ArgumentNullException(nameof(loadBalancer)), activity, ioBehavior, cancellationToken).ConfigureAwait(false);
-				else if (cs.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket)
-					connected = await OpenUnixSocketAsync(cs, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
-				else if (cs.ConnectionProtocol == MySqlConnectionProtocol.NamedPipe)
-					connected = await OpenNamedPipeAsync(cs, startingTimestamp, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
-				if (!connected)
+			var byteHandler = m_socket is null ? new StreamByteHandler(m_stream!) : (IByteHandler) new SocketByteHandler(m_socket);
+			if (cs.ConnectionTimeout != 0)
+				byteHandler.RemainingTimeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - Utility.GetElapsedMilliseconds(startingTimestamp));
+			m_payloadHandler = new StandardPayloadHandler(byteHandler);
+
+			var payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			var initialHandshake = InitialHandshakePayload.Create(payload.Span);
+
+			// if PluginAuth is supported, then use the specified auth plugin; else, fall back to protocol capabilities to determine the auth type to use
+			string authPluginName;
+			if ((initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
+				authPluginName = initialHandshake.AuthPluginName!;
+			else
+				authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" : "mysql_native_password";
+			Log.ServerSentAuthPluginName(m_logger, Id, authPluginName);
+			if (authPluginName != "mysql_native_password" && authPluginName != "sha256_password" && authPluginName != "caching_sha2_password")
+			{
+				Log.UnsupportedAuthenticationMethod(m_logger, Id, authPluginName);
+				throw new NotSupportedException($"Authentication method '{initialHandshake.AuthPluginName}' is not supported.");
+			}
+
+			ServerVersion = new(initialHandshake.ServerVersion);
+			ConnectionId = initialHandshake.ConnectionId;
+			AuthPluginData = initialHandshake.AuthPluginData;
+			m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
+			CancellationTimeout = cs.CancellationTimeout;
+			UserID = cs.UserID;
+
+			// set activity tags
+			{
+				var connectionId = ConnectionId.ToString(CultureInfo.InvariantCulture);
+				m_activityTags[ActivitySourceHelper.DatabaseConnectionIdTagName] = connectionId;
+				if (activity is { IsAllDataRequested: true })
+					activity.SetTag(ActivitySourceHelper.DatabaseConnectionIdTagName, connectionId);
+			}
+
+			m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
+			m_supportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
+			SupportsCachedPreparedMetadata = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.MariaDbCacheMetadata) != 0;
+			SupportsQueryAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.QueryAttributes) != 0;
+			m_supportsSessionTrack = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SessionTrack) != 0;
+			var serverSupportsSsl = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Ssl) != 0;
+			m_characterSet = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? CharacterSet.Utf8Mb4GeneralCaseInsensitive : CharacterSet.Utf8Mb3GeneralCaseInsensitive;
+			m_setNamesPayload = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ?
+				(SupportsQueryAttributes ? s_setNamesUtf8mb4WithAttributesPayload : s_setNamesUtf8mb4NoAttributesPayload) :
+				(SupportsQueryAttributes ? s_setNamesUtf8WithAttributesPayload : s_setNamesUtf8NoAttributesPayload);
+
+			// disable pipelining for RDS MySQL 5.7 (assuming Aurora); otherwise take it from the connection string or default to true
+			if (!cs.Pipelining.HasValue && ServerVersion.Version.Major == 5 && ServerVersion.Version.Minor == 7 && HostName.EndsWith(".rds.amazonaws.com", StringComparison.OrdinalIgnoreCase))
+			{
+				Log.AutoDetectedAurora57(m_logger, Id, HostName);
+				m_supportsPipelining = false;
+			}
+			else
+			{
+				// pipelining is not currently compatible with compression
+				m_supportsPipelining = !cs.UseCompression && cs.Pipelining is not false;
+
+				// for pipelining, concatenate reset connection and SET NAMES query into one buffer
+				if (m_supportsPipelining)
 				{
-					lock (m_lock)
-						m_state = State.Failed;
-					Log.ConnectingFailed(m_logger, Id);
-					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Unable to connect to any of the specified MySQL hosts.");
+					m_pipelinedResetConnectionBytes = new byte[m_setNamesPayload.Span.Length + 9];
+
+					// first packet: reset connection
+					m_pipelinedResetConnectionBytes[0] = 1;
+					m_pipelinedResetConnectionBytes[4] = (byte) CommandKind.ResetConnection;
+
+					// second packet: SET NAMES query
+					m_pipelinedResetConnectionBytes[5] = (byte) m_setNamesPayload.Span.Length;
+					m_setNamesPayload.Span.CopyTo(m_pipelinedResetConnectionBytes.AsSpan()[9..]);
+				}
+			}
+
+			Log.SessionMadeConnection(m_logger, Id, ServerVersion.OriginalString, ConnectionId, m_useCompression, m_supportsConnectionAttributes, m_supportsDeprecateEof, SupportsCachedPreparedMetadata, serverSupportsSsl, m_supportsSessionTrack, m_supportsPipelining, SupportsQueryAttributes);
+
+			if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
+			{
+				if (!serverSupportsSsl)
+				{
+					Log.ServerDoesNotSupportSsl(m_logger, Id);
+					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Server does not support SSL");
 				}
 
-				var byteHandler = m_socket is null ? new StreamByteHandler(m_stream!) : (IByteHandler) new SocketByteHandler(m_socket);
-				if (cs.ConnectionTimeout != 0)
-					byteHandler.RemainingTimeout = Math.Max(1, cs.ConnectionTimeoutMilliseconds - Utility.GetElapsedMilliseconds(startingTimestamp));
-				m_payloadHandler = new StandardPayloadHandler(byteHandler);
-
-				payload = await ReceiveAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				initialHandshake = InitialHandshakePayload.Create(payload.Span);
-
-				// if PluginAuth is supported, then use the specified auth plugin; else, fall back to protocol capabilities to determine the auth type to use
-				string authPluginName;
-				if ((initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
-					authPluginName = initialHandshake.AuthPluginName!;
-				else
-					authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" : "mysql_native_password";
-				Log.ServerSentAuthPluginName(m_logger, Id, authPluginName);
-				if (authPluginName != "mysql_native_password" && authPluginName != "sha256_password" && authPluginName != "caching_sha2_password")
-				{
-					Log.UnsupportedAuthenticationMethod(m_logger, Id, authPluginName);
-					throw new NotSupportedException($"Authentication method '{initialHandshake.AuthPluginName}' is not supported.");
-				}
-
-				ServerVersion = new(initialHandshake.ServerVersion);
-				ConnectionId = initialHandshake.ConnectionId;
-				AuthPluginData = initialHandshake.AuthPluginData;
-				m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
-				CancellationTimeout = cs.CancellationTimeout;
-				UserID = cs.UserID;
-
-				// set activity tags
-				{
-					var connectionId = ConnectionId.ToString(CultureInfo.InvariantCulture);
-					m_activityTags[ActivitySourceHelper.DatabaseConnectionIdTagName] = connectionId;
-					if (activity is { IsAllDataRequested: true })
-						activity.SetTag(ActivitySourceHelper.DatabaseConnectionIdTagName, connectionId);
-				}
-
-				m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
-				m_supportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
-				SupportsCachedPreparedMetadata = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.MariaDbCacheMetadata) != 0;
-				SupportsQueryAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.QueryAttributes) != 0;
-				m_supportsSessionTrack = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SessionTrack) != 0;
-				var serverSupportsSsl = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Ssl) != 0;
-				m_characterSet = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? CharacterSet.Utf8Mb4GeneralCaseInsensitive : CharacterSet.Utf8Mb3GeneralCaseInsensitive;
-				m_setNamesPayload = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ?
-					(SupportsQueryAttributes ? s_setNamesUtf8mb4WithAttributesPayload : s_setNamesUtf8mb4NoAttributesPayload) :
-					(SupportsQueryAttributes ? s_setNamesUtf8WithAttributesPayload : s_setNamesUtf8NoAttributesPayload);
-
-				// disable pipelining for RDS MySQL 5.7 (assuming Aurora); otherwise take it from the connection string or default to true
-				if (!cs.Pipelining.HasValue && ServerVersion.Version.Major == 5 && ServerVersion.Version.Minor == 7 && HostName.EndsWith(".rds.amazonaws.com", StringComparison.OrdinalIgnoreCase))
-				{
-					Log.AutoDetectedAurora57(m_logger, Id, HostName);
-					m_supportsPipelining = false;
-				}
-				else
-				{
-					// pipelining is not currently compatible with compression
-					m_supportsPipelining = !cs.UseCompression && cs.Pipelining is not false;
-
-					// for pipelining, concatenate reset connection and SET NAMES query into one buffer
-					if (m_supportsPipelining)
-					{
-						m_pipelinedResetConnectionBytes = new byte[m_setNamesPayload.Span.Length + 9];
-
-						// first packet: reset connection
-						m_pipelinedResetConnectionBytes[0] = 1;
-						m_pipelinedResetConnectionBytes[4] = (byte) CommandKind.ResetConnection;
-
-						// second packet: SET NAMES query
-						m_pipelinedResetConnectionBytes[5] = (byte) m_setNamesPayload.Span.Length;
-						m_setNamesPayload.Span.CopyTo(m_pipelinedResetConnectionBytes.AsSpan()[9..]);
-					}
-				}
-
-				Log.SessionMadeConnection(m_logger, Id, ServerVersion.OriginalString, ConnectionId, m_useCompression, m_supportsConnectionAttributes, m_supportsDeprecateEof, SupportsCachedPreparedMetadata, serverSupportsSsl, m_supportsSessionTrack, m_supportsPipelining, SupportsQueryAttributes);
-
-				if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
-				{
-					if (!serverSupportsSsl)
-					{
-						Log.ServerDoesNotSupportSsl(m_logger, Id);
-						throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Server does not support SSL");
-					}
-
-					try
-					{
-						await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, connection, sslProtocols, ioBehavior, cancellationToken).ConfigureAwait(false);
-						shouldRetrySsl = false;
-						if (shouldUpdatePoolSslProtocols && Pool is not null)
-							Pool.SslProtocols = sslProtocols;
-					}
-					catch (ArgumentException ex) when (ex.ParamName == "sslProtocolType" && sslProtocols == SslProtocols.None)
-					{
-						Log.SessionDoesNotSupportSslProtocolsNone(m_logger, ex, Id);
-						sslProtocols = SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
-					}
-					catch (Exception ex) when (shouldRetrySsl && IsRetryableException(ex))
-					{
-						// negotiating TLS 1.2 with a yaSSL-based server throws an exception on Windows, see comment at top of method
-						Log.FailedNegotiatingTls(m_logger, ex, Id);
-						sslProtocols = sslProtocols == SslProtocols.None ? SslProtocols.Tls | SslProtocols.Tls11 : (SslProtocols.Tls | SslProtocols.Tls11) & sslProtocols;
-						shouldUpdatePoolSslProtocols = true;
-					}
-
-					static bool IsRetryableException(Exception? ex) => (ex is MySqlException && IsRetryableException(ex.InnerException)) ||
-						(ex is AuthenticationException or (IOException and not FileNotFoundException and not DirectoryNotFoundException and not DriveNotFoundException and not PathTooLongException));
-				}
-				else
-				{
-					shouldRetrySsl = false;
-				}
-
-				if (shouldRetrySsl)
-				{
-					// avoid "The collection already contains item with same key 'net.transport'" exception when retrying SSL
-					m_activityTags.Remove(ActivitySourceHelper.NetTransportTagName);
-					m_activityTags.Remove(ActivitySourceHelper.NetPeerNameTagName);
-					m_activityTags.Remove(ActivitySourceHelper.NetPeerPortTagName);
-				}
-			} while (shouldRetrySsl);
+				await InitSslAsync(initialHandshake.ProtocolCapabilities, cs, connection, cs.TlsVersions, ioBehavior, cancellationToken).ConfigureAwait(false);
+			}
 
 			if (m_supportsConnectionAttributes && cs.ConnectionAttributes is null)
 				cs.ConnectionAttributes = CreateConnectionAttributes(cs.ApplicationName);

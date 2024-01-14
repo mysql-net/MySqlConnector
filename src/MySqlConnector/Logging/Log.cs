@@ -52,12 +52,6 @@ internal static partial class Log
 	[LoggerMessage(EventIds.ServerDoesNotSupportSsl, LogLevel.Error, "Session {SessionId} requires SSL but server doesn't support it")]
 	public static partial void ServerDoesNotSupportSsl(ILogger logger, string sessionId);
 
-	[LoggerMessage(EventIds.SessionDoesNotSupportSslProtocolsNone, LogLevel.Debug, "Session {SessionId} doesn't support SslProtocols.None; falling back to explicitly specifying SslProtocols")]
-	public static partial void SessionDoesNotSupportSslProtocolsNone(ILogger logger, Exception exception, string sessionId);
-
-	[LoggerMessage(EventIds.FailedNegotiatingTls, LogLevel.Warning, "Session {SessionId} failed negotiating TLS; falling back to TLS 1.1")]
-	public static partial void FailedNegotiatingTls(ILogger logger, Exception exception, string sessionId);
-
 	[LoggerMessage(EventIds.CouldNotConnectToServer, LogLevel.Error, "Session {SessionId} couldn't connect to server")]
 	public static partial void CouldNotConnectToServer(ILogger logger, Exception exception, string sessionId);
 

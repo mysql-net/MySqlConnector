@@ -18,8 +18,6 @@ internal sealed class ConnectionPool : IDisposable
 
 	public ConnectionSettings ConnectionSettings { get; }
 
-	public SslProtocols SslProtocols { get; set; }
-
 	public async ValueTask<ServerSession> GetSessionAsync(MySqlConnection connection, long startingTimestamp, int timeoutMilliseconds, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
@@ -600,7 +598,6 @@ internal sealed class ConnectionPool : IDisposable
 		m_connectionLogger = loggingConfiguration.ConnectionLogger;
 		ConnectionSettings = cs;
 		Name = cs.ApplicationName;
-		SslProtocols = cs.TlsVersions;
 		m_generation = 0;
 		m_cleanSemaphore = new(1);
 		m_sessionSemaphore = new(cs.MaximumPoolSize);

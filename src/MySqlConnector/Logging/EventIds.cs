@@ -33,8 +33,6 @@ internal static class EventIds
 	public const int AutoDetectedAurora57 = 2103;
 	public const int SessionMadeConnection = 2104;
 	public const int ServerDoesNotSupportSsl = 2105;
-	public const int SessionDoesNotSupportSslProtocolsNone = 2106;
-	public const int FailedNegotiatingTls = 2107;
 	public const int CouldNotConnectToServer = 2108;
 	public const int SendingPipelinedResetConnectionRequest = 2109;
 	public const int SendingResetConnectionRequest = 2110;
