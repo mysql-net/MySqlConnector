@@ -30,7 +30,8 @@ public class LoadDataInfileAsync : IClassFixture<DatabaseFixture>
 	{
 		var insertInlineCommand = string.Format(m_loadDataInfileCommand, "", AppConfig.MySqlBulkLoaderCsvFile.Replace("\\", "\\\\"));
 		using var command = new MySqlCommand(insertInlineCommand, m_database.Connection);
-		if (m_database.Connection.State != ConnectionState.Open) await m_database.Connection.OpenAsync();
+		if (m_database.Connection.State != ConnectionState.Open)
+			await m_database.Connection.OpenAsync();
 		var rowCount = await command.ExecuteNonQueryAsync();
 		m_database.Connection.Close();
 		Assert.Equal(20, rowCount);

@@ -488,7 +488,7 @@ SELECT data FROM prepared_command_test ORDER BY rowid;", connection);
 	{
 		Value = 111,
 	}
-		
+
 
 	private static MySqlConnection CreateConnection()
 	{

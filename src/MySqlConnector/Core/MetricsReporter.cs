@@ -50,7 +50,7 @@ internal static class MetricsReporter
 	private static readonly UpDownCounter<int> s_pendingRequestsCounter = ActivitySourceHelper.Meter.CreateUpDownCounter<int>("db.client.connections.pending_requests",
 			unit: "{request}", description: "The number of pending requests for an open connection, cumulative for the entire pool.");
 	private static readonly Counter<int> s_connectionTimeouts = ActivitySourceHelper.Meter.CreateCounter<int>("db.client.connections.timeouts",
-            unit: "{timeout}", description: "The number of connection timeouts that have occurred trying to obtain a connection from the pool.");
+			unit: "{timeout}", description: "The number of connection timeouts that have occurred trying to obtain a connection from the pool.");
 	private static readonly Histogram<double> s_createTimeHistory = ActivitySourceHelper.Meter.CreateHistogram<double>("db.client.connections.create_time",
 			unit: "s", description: "The time it took to create a new connection.");
 	private static readonly Histogram<double> s_useTimeHistory = ActivitySourceHelper.Meter.CreateHistogram<double>("db.client.connections.use_time",

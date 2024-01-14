@@ -226,7 +226,7 @@ public class CommandTests : IClassFixture<DatabaseFixture>
 		Assert.Equal(-1, command.ExecuteNonQuery());
 	}
 
-[Fact]
+	[Fact]
 	public async Task ExecuteNonQueryReturnValue()
 	{
 		using var connection = new MySqlConnection(m_database.Connection.ConnectionString);

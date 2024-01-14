@@ -4,15 +4,15 @@ namespace MySqlConnector.Tests.Metrics;
 
 public class ConnectionsUsageTests : MetricsTestsBase
 {
-    [Theory(Skip = MetricsSkip)]
+	[Theory(Skip = MetricsSkip)]
 	[InlineData("DataSource|true||")]
 	[InlineData("DataSource|true||app-name")]
-    [InlineData("DataSource|true|pool-name|")]
-    [InlineData("DataSource|true|pool-name|app-name")]
+	[InlineData("DataSource|true|pool-name|")]
+	[InlineData("DataSource|true|pool-name|app-name")]
 	[InlineData("Plain|true|")]
 	[InlineData("Plain|true|app-name")]
 	public void ConnectionsWithPoolsHaveMetrics(string connectionCreatorSpec)
-    {
+	{
 		using var connectionCreator = CreateConnectionCreator(connectionCreatorSpec, CreateConnectionStringBuilder());
 		PoolName = connectionCreator.PoolName;
 
@@ -63,13 +63,13 @@ public class ConnectionsUsageTests : MetricsTestsBase
 	}
 
 	[Theory(Skip = MetricsSkip)]
-    [InlineData("DataSource|false||")]
-    [InlineData("DataSource|false||app-name")]
-    [InlineData("DataSource|false|pool-name|")]
-    [InlineData("DataSource|false|pool-name|app-name")]
-    [InlineData("Plain|false|")]
-    [InlineData("Plain|false|app-name")]
-    public void ConnectionsWithoutPoolsHaveNoMetrics(string connectionCreatorSpec)
+	[InlineData("DataSource|false||")]
+	[InlineData("DataSource|false||app-name")]
+	[InlineData("DataSource|false|pool-name|")]
+	[InlineData("DataSource|false|pool-name|app-name")]
+	[InlineData("Plain|false|")]
+	[InlineData("Plain|false|app-name")]
+	public void ConnectionsWithoutPoolsHaveNoMetrics(string connectionCreatorSpec)
 	{
 		using var connectionCreator = CreateConnectionCreator(connectionCreatorSpec, CreateConnectionStringBuilder());
 		PoolName = connectionCreator.PoolName;

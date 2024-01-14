@@ -400,7 +400,7 @@ public class CancellationTests : IDisposable
 
 	public static IEnumerable<object[]> GetSyncMethodSteps()
 	{
-		for (var step = 1; step <=  12; step++)
+		for (var step = 1; step <= 12; step++)
 		{
 			for (var method = 0; method < s_executeMethods.Length; method++)
 			{

@@ -778,7 +778,7 @@ value mediumblob null
 				cmd.Prepare();
 			cmd.ExecuteNonQuery();
 		}
-		Assert.Equal(new byte[] { 1, 0, 2, 39, 3, 92, 4, 34, 5, 6  }, connection.Query<byte[]>(@"select value from insert_mysql_blob;").Single());
+		Assert.Equal(new byte[] { 1, 0, 2, 39, 3, 92, 4, 34, 5, 6 }, connection.Query<byte[]>(@"select value from insert_mysql_blob;").Single());
 	}
 
 	public static IEnumerable<object[]> GetBlobs()

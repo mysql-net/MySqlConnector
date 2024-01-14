@@ -183,12 +183,12 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 
 	[Fact]
 	public void ForeignKeys()
-    {
-        var schemaName = m_database.Connection.Database;
-        var table = m_database.Connection.GetSchema("Foreign Keys", new[] { null, schemaName, "fk_test" });
-        var row = table.Rows.Cast<DataRow>().Single();
-        foreach (var (column, value) in new[]
-        {
+	{
+		var schemaName = m_database.Connection.Database;
+		var table = m_database.Connection.GetSchema("Foreign Keys", new[] { null, schemaName, "fk_test" });
+		var row = table.Rows.Cast<DataRow>().Single();
+		foreach (var (column, value) in new[]
+		{
 			("CONSTRAINT_CATALOG", "def"),
 			("CONSTRAINT_SCHEMA", schemaName),
 			("CONSTRAINT_NAME", "fk_test_fk"),
@@ -200,10 +200,10 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 			("REFERENCED_TABLE_SCHEMA", schemaName),
 			("REFERENCED_TABLE_NAME", "pk_test"),
 		})
-        {
+		{
 			Assert.Equal(value, row[column] is DBNull ? null : (string?) row[column]);
-        }
-    }
+		}
+	}
 
 	[Fact]
 	public void Indexes()

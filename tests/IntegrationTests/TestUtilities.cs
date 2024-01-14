@@ -24,17 +24,17 @@ public static class TestUtilities
 	{
 		switch (value)
 		{
-		case int intValue:
-			Assert.Equal(1, intValue);
-			break;
+			case int intValue:
+				Assert.Equal(1, intValue);
+				break;
 
-		case long longValue:
-			Assert.Equal(1L, longValue);
-			break;
+			case long longValue:
+				Assert.Equal(1L, longValue);
+				break;
 
-		default:
-			Assert.Equal(1L, value);
-			break;
+			default:
+				Assert.Equal(1L, value);
+				break;
 		}
 	}
 

@@ -155,19 +155,19 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 			Assert.True(await reader.ReadAsync().ConfigureAwait(false));
 			switch (flags[i])
 			{
-			case 0: // normal
-				Assert.Equal(values[i], getInt(reader, 0));
-				Assert.Equal(values[i], getIntByName(reader, column));
-				break;
+				case 0: // normal
+					Assert.Equal(values[i], getInt(reader, 0));
+					Assert.Equal(values[i], getIntByName(reader, column));
+					break;
 
-			case 1: // null
-				Assert.True(await reader.IsDBNullAsync(0).ConfigureAwait(false));
-				break;
+				case 1: // null
+					Assert.True(await reader.IsDBNullAsync(0).ConfigureAwait(false));
+					break;
 
-			case 2: // overflow
-				Assert.Throws<OverflowException>(() => getInt(reader, 0));
-				Assert.Throws<OverflowException>(() => getIntByName(reader, column));
-				break;
+				case 2: // overflow
+					Assert.Throws<OverflowException>(() => getInt(reader, 0));
+					Assert.Throws<OverflowException>(() => getIntByName(reader, column));
+					break;
 			}
 		}
 		Assert.False(await reader.ReadAsync().ConfigureAwait(false));

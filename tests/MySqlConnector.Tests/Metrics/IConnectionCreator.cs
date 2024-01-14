@@ -12,15 +12,15 @@ internal sealed class DataSourceConnectionCreator : IConnectionCreator
 {
 	public DataSourceConnectionCreator(bool usePooling, string? poolName, string? applicationName, MySqlConnectionStringBuilder connectionStringBuilder)
 	{
-        connectionStringBuilder.Pooling =	usePooling;
+		connectionStringBuilder.Pooling = usePooling;
 		connectionStringBuilder.ApplicationName = applicationName;
 		m_dataSource = new MySqlDataSourceBuilder(connectionStringBuilder.ConnectionString)
 			.UseName(poolName)
 			.Build();
-        PoolName = poolName ?? applicationName ?? connectionStringBuilder!.GetConnectionString(includePassword: false);
-    }
+		PoolName = poolName ?? applicationName ?? connectionStringBuilder!.GetConnectionString(includePassword: false);
+	}
 
-    public MySqlConnection OpenConnection() => m_dataSource!.OpenConnection();
+	public MySqlConnection OpenConnection() => m_dataSource!.OpenConnection();
 	public string PoolName { get; }
 	public void Dispose() => m_dataSource!.Dispose();
 
@@ -35,7 +35,7 @@ internal sealed class PlainConnectionCreator : IConnectionCreator
 		connectionStringBuilder.ApplicationName = applicationName;
 		m_connectionString = connectionStringBuilder.ConnectionString;
 		PoolName = applicationName ?? connectionStringBuilder.GetConnectionString(includePassword: false);
-    }
+	}
 
 	public MySqlConnection OpenConnection()
 	{

@@ -25,17 +25,17 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 		Assert.Equal(ConnectionState.Open, connection.State);
 	}
 
-    [Fact]
-    public void DoubleDispose()
-    {
-        using var dbSource = new MySqlDataSource(AppConfig.ConnectionString);
+	[Fact]
+	public void DoubleDispose()
+	{
+		using var dbSource = new MySqlDataSource(AppConfig.ConnectionString);
 		using (var connection = dbSource.OpenConnection())
 		{
-            Assert.Equal(ConnectionState.Open, connection.State);
-        }
+			Assert.Equal(ConnectionState.Open, connection.State);
+		}
 		dbSource.Dispose();
-    }
-    
+	}
+
 	[Fact]
 	public async Task OpenConnectionAsync()
 	{
@@ -224,7 +224,7 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 		var exception = Assert.Throws<MySqlException>(dataSource.OpenConnection); // Failed to obtain password via ProvidePasswordCallback
 		Assert.IsType<MySqlException>(exception.InnerException); // The periodic password provider failed
 		Assert.IsType<ApplicationException>(exception.InnerException.InnerException); // First-time failure
-			
+
 		// succeeds after failure retry
 		barrier.SignalAndWait();
 		Thread.Sleep(10);

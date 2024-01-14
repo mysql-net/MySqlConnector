@@ -399,7 +399,7 @@ public class Transaction : IClassFixture<TransactionFixture>
 				""";
 			command.ExecuteNonQuery();
 		}
-		
+
 		using var barrier = new Barrier(2);
 		using var barrier2 = new Barrier(2);
 

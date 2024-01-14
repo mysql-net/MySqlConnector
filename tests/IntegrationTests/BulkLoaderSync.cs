@@ -1243,26 +1243,26 @@ create table bulk_load_data_table(a int not null primary key auto_increment, b t
 
 		switch (conflictOption)
 		{
-		case MySqlBulkLoaderConflictOption.None:
-			var exception = Assert.Throws<MySqlException>(() => bulkCopy.WriteToServer(dataTable));
-			Assert.Equal(MySqlErrorCode.BulkCopyFailed, exception.ErrorCode);
-			break;
+			case MySqlBulkLoaderConflictOption.None:
+				var exception = Assert.Throws<MySqlException>(() => bulkCopy.WriteToServer(dataTable));
+				Assert.Equal(MySqlErrorCode.BulkCopyFailed, exception.ErrorCode);
+				break;
 
-		case MySqlBulkLoaderConflictOption.Replace:
-			var replaceResult = bulkCopy.WriteToServer(dataTable);
-			Assert.Equal(expectedRowsInserted, replaceResult.RowsInserted);
-			Assert.Empty(replaceResult.Warnings);
-			break;
+			case MySqlBulkLoaderConflictOption.Replace:
+				var replaceResult = bulkCopy.WriteToServer(dataTable);
+				Assert.Equal(expectedRowsInserted, replaceResult.RowsInserted);
+				Assert.Empty(replaceResult.Warnings);
+				break;
 
-		case MySqlBulkLoaderConflictOption.Ignore:
-			var ignoreResult = bulkCopy.WriteToServer(dataTable);
-			Assert.Equal(expectedRowsInserted, ignoreResult.RowsInserted);
-			if (!connection.ServerVersion.StartsWith("5.6.", StringComparison.Ordinal))
-			{
-				var error = Assert.Single(ignoreResult.Warnings);
-				Assert.Equal(MySqlErrorCode.DuplicateKeyEntry, error.ErrorCode);
-			}
-			break;
+			case MySqlBulkLoaderConflictOption.Ignore:
+				var ignoreResult = bulkCopy.WriteToServer(dataTable);
+				Assert.Equal(expectedRowsInserted, ignoreResult.RowsInserted);
+				if (!connection.ServerVersion.StartsWith("5.6.", StringComparison.Ordinal))
+				{
+					var error = Assert.Single(ignoreResult.Warnings);
+					Assert.Equal(MySqlErrorCode.DuplicateKeyEntry, error.ErrorCode);
+				}
+				break;
 		}
 
 		using (var cmd = new MySqlCommand("select b from bulk_load_data_table;", connection))
@@ -1270,7 +1270,7 @@ create table bulk_load_data_table(a int not null primary key auto_increment, b t
 	}
 #endif
 
-		internal static string GetConnectionString() => AppConfig.ConnectionString;
+	internal static string GetConnectionString() => AppConfig.ConnectionString;
 
 	internal static string GetLocalConnectionString()
 	{

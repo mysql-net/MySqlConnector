@@ -23,7 +23,7 @@ internal ref struct ByteArrayReader
 			if (value < 0 || value > m_maxOffset)
 				throw new ArgumentOutOfRangeException(nameof(value), $"value must be between 0 and {m_maxOffset:d}");
 #endif
-			m_offset = value; 
+			m_offset = value;
 		}
 	}
 

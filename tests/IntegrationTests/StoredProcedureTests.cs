@@ -443,18 +443,18 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 	{
 		switch (executorType)
 		{
-		case "NonQuery":
-			await cmd.ExecuteNonQueryAsync();
-			return null;
-		case "Scalar":
-			return await cmd.ExecuteScalarAsync();
-		default:
-			using (var reader = await cmd.ExecuteReaderAsync())
-			{
-				if (await reader.ReadAsync())
-					return reader.GetValue(0);
+			case "NonQuery":
+				await cmd.ExecuteNonQueryAsync();
 				return null;
-			}
+			case "Scalar":
+				return await cmd.ExecuteScalarAsync();
+			default:
+				using (var reader = await cmd.ExecuteReaderAsync())
+				{
+					if (await reader.ReadAsync())
+						return reader.GetValue(0);
+					return null;
+				}
 		}
 	}
 
