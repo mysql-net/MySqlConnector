@@ -18,6 +18,7 @@ weight: 30
 * Fix `ArgumentOutOfRangeException` in `TimerQueue.Add`: [#1424](https://github.com/mysql-net/MySqlConnector/issues/1424).
 * Fix `InvalidCastException` when using stored procedures with MySQL 5.0: [#1431](https://github.com/mysql-net/MySqlConnector/issues/1431).
 * Fix hang when disposing `MySqlDataSource` twice on .NET Framework.
+* Thanks to [Yong Yao](https://github.com/SolacomYongYao) for contributions to this release.
 
 ### 2.3.3
 
