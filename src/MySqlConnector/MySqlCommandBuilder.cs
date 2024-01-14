@@ -94,7 +94,7 @@ public sealed class MySqlCommandBuilder : DbCommandBuilder
 
 	public override string UnquoteIdentifier(string quotedIdentifier)
 	{
-		if (quotedIdentifier is [ '`', .., '`' ])
+		if (quotedIdentifier is ['`', .., '`'])
 			quotedIdentifier = quotedIdentifier[1..^1];
 		return quotedIdentifier.Replace("``", "`");
 	}

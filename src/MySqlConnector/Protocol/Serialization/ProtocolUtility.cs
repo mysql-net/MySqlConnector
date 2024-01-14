@@ -439,7 +439,7 @@ internal static class ProtocolUtility
 				if (protocolErrorBehavior == ProtocolErrorBehavior.Ignore)
 					packet = default;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-				else if (payloadBytes is [ ErrorPayload.Signature, .. ])
+				else if (payloadBytes is [ErrorPayload.Signature, ..])
 #else
 				else if (payloadBytes.Count > 0 && payloadBytes.AsSpan()[0] == ErrorPayload.Signature)
 #endif

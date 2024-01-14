@@ -181,7 +181,7 @@ internal static class Utility
 		if (!isPrivate)
 		{
 			// encoded OID sequence for  PKCS #1 rsaEncryption szOID_RSA_RSA = "1.2.840.113549.1.1.1"
-			ReadOnlySpan<byte> rsaOid = [ 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00 ];
+			ReadOnlySpan<byte> rsaOid = [0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00];
 			if (!data.Slice(0, rsaOid.Length).SequenceEqual(rsaOid))
 				throw new FormatException($"Expected RSA OID but read {BitConverter.ToString(data.Slice(0, 15).ToArray())}");
 			data = data.Slice(rsaOid.Length);
@@ -404,7 +404,7 @@ internal static class Utility
 
 		// parse (optional) leading minus sign
 		var isNegative = false;
-		if (value is [ 0x2D, .. ])
+		if (value is [0x2D, ..])
 		{
 			isNegative = true;
 			value = value[1..];
@@ -474,13 +474,13 @@ internal static class Utility
 
 	public static byte[] TrimZeroByte(byte[] value)
 	{
-		if (value is [ .., 0 ])
+		if (value is [.., 0])
 			Array.Resize(ref value, value.Length - 1);
 		return value;
 	}
 
 	public static ReadOnlySpan<byte> TrimZeroByte(ReadOnlySpan<byte> value) =>
-		value is [ .., 0 ] ? value[..^1] : value;
+		value is [.., 0] ? value[..^1] : value;
 
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 	public static int Read(this Stream stream, Memory<byte> buffer)
@@ -656,7 +656,7 @@ internal static class Utility
 	private static bool TryReadAsnInteger(ReadOnlySpan<byte> data, out ReadOnlySpan<byte> number, out int bytesConsumed)
 	{
 		// integer tag is 2
-		if (data is not [ 0x02, .. ])
+		if (data is not [0x02, ..])
 		{
 			number = default;
 			bytesConsumed = 0;
@@ -677,7 +677,7 @@ internal static class Utility
 		bytesConsumed = lengthBytesConsumed + length + 1;
 
 		// trim leading zero bytes
-		while (number is [ 0, _, .. ])
+		while (number is [0, _, ..])
 			number = number[1..];
 
 		return true;

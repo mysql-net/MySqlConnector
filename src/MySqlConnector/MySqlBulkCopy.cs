@@ -700,7 +700,7 @@ public sealed class MySqlBulkCopy
 		}
 	}
 
-	private static readonly char[] s_specialCharacters = [ '\t', '\\', '\n' ];
+	private static readonly char[] s_specialCharacters = ['\t', '\\', '\n'];
 	private static readonly UTF8Encoding s_utf8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
 	private readonly MySqlConnection m_connection;
