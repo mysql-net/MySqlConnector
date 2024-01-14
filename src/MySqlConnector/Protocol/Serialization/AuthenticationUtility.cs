@@ -9,6 +9,17 @@ namespace MySqlConnector.Protocol.Serialization;
 
 internal static class AuthenticationUtility
 {
+	/// <summary>
+	/// Returns the UTF-8 bytes for <paramref name="password"/>, followed by a null byte.
+	/// </summary>
+	public static byte[] GetNullTerminatedPasswordBytes(string password)
+	{
+		var passwordByteCount = Encoding.UTF8.GetByteCount(password);
+		var passwordBytes = new byte[passwordByteCount + 1];
+		Encoding.UTF8.GetBytes(password.AsSpan(), passwordBytes);
+		return passwordBytes;
+	}
+
 	public static byte[] CreateAuthenticationResponse(ReadOnlySpan<byte> challenge, string password) =>
 		string.IsNullOrEmpty(password) ? [] : HashPassword(challenge, password);
 

@@ -679,8 +679,7 @@ internal sealed partial class ServerSession
 				}
 
 				// send the password as a NULL-terminated UTF-8 string
-				var passwordBytes = Encoding.UTF8.GetBytes(password);
-				Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
+				var passwordBytes = AuthenticationUtility.GetNullTerminatedPasswordBytes(password);
 				payload = new(passwordBytes);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -736,8 +735,7 @@ internal sealed partial class ServerSession
 	private async Task<PayloadData> SendClearPasswordAsync(string password, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		// add NUL terminator to password
-		var passwordBytes = Encoding.UTF8.GetBytes(password);
-		Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
+		var passwordBytes = AuthenticationUtility.GetNullTerminatedPasswordBytes(password);
 
 		// send plaintext password
 		var payload = new PayloadData(passwordBytes);
@@ -780,8 +778,7 @@ internal sealed partial class ServerSession
 #endif
 
 		// add NUL terminator to password
-		var passwordBytes = Encoding.UTF8.GetBytes(password);
-		Array.Resize(ref passwordBytes, passwordBytes.Length + 1);
+		var passwordBytes = AuthenticationUtility.GetNullTerminatedPasswordBytes(password);
 
 		// XOR the password bytes with the challenge
 		AuthPluginData = Utility.TrimZeroByte(switchRequestData);
