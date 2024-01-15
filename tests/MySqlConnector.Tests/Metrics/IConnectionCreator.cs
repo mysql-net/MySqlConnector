@@ -17,12 +17,12 @@ internal sealed class DataSourceConnectionCreator : IConnectionCreator
 		m_dataSource = new MySqlDataSourceBuilder(connectionStringBuilder.ConnectionString)
 			.UseName(poolName)
 			.Build();
-		PoolName = poolName ?? applicationName ?? connectionStringBuilder!.GetConnectionString(includePassword: false);
+		PoolName = poolName ?? applicationName ?? connectionStringBuilder.GetConnectionString(includePassword: false);
 	}
 
-	public MySqlConnection OpenConnection() => m_dataSource!.OpenConnection();
+	public MySqlConnection OpenConnection() => m_dataSource.OpenConnection();
 	public string PoolName { get; }
-	public void Dispose() => m_dataSource!.Dispose();
+	public void Dispose() => m_dataSource.Dispose();
 
 	private readonly MySqlDataSource m_dataSource;
 }
