@@ -35,7 +35,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 				writer.Write((byte) 1);
 
 				if (attributes?.Count > 0)
-					WriteBinaryParameters(writer, attributes.Select(x => x.ToParameter()).ToArray(), command, true, 0);
+					WriteBinaryParameters(writer, attributes.Select(static x => x.ToParameter()).ToArray(), command, true, 0);
 			}
 			else if (command.RawAttributes?.Count > 0)
 			{

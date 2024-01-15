@@ -100,13 +100,13 @@ public static class MySqlConnectorServiceCollectionExtensions
 				},
 				dataSourceLifetime));
 
-		serviceCollection.TryAdd(new ServiceDescriptor(typeof(MySqlConnection), x => x.GetRequiredService<MySqlDataSource>().CreateConnection(), connectionLifetime));
+		serviceCollection.TryAdd(new ServiceDescriptor(typeof(MySqlConnection), static x => x.GetRequiredService<MySqlDataSource>().CreateConnection(), connectionLifetime));
 
 #if NET7_0_OR_GREATER
-		serviceCollection.TryAdd(new ServiceDescriptor(typeof(DbDataSource), x => x.GetRequiredService<MySqlDataSource>(), dataSourceLifetime));
+		serviceCollection.TryAdd(new ServiceDescriptor(typeof(DbDataSource), static x => x.GetRequiredService<MySqlDataSource>(), dataSourceLifetime));
 #endif
 
-		serviceCollection.TryAdd(new ServiceDescriptor(typeof(DbConnection), x => x.GetRequiredService<MySqlConnection>(), connectionLifetime));
+		serviceCollection.TryAdd(new ServiceDescriptor(typeof(DbConnection), static x => x.GetRequiredService<MySqlConnection>(), connectionLifetime));
 
 		return serviceCollection;
 	}
@@ -133,13 +133,13 @@ public static class MySqlConnectorServiceCollectionExtensions
 				},
 				dataSourceLifetime));
 
-		serviceCollection.TryAdd(new ServiceDescriptor(typeof(MySqlConnection), serviceKey, (sp, sk) => sp.GetRequiredKeyedService<MySqlDataSource>(sk).CreateConnection(), connectionLifetime));
+		serviceCollection.TryAdd(new ServiceDescriptor(typeof(MySqlConnection), serviceKey, static (sp, sk) => sp.GetRequiredKeyedService<MySqlDataSource>(sk).CreateConnection(), connectionLifetime));
 
 #if NET7_0_OR_GREATER
-		serviceCollection.TryAdd(new ServiceDescriptor(typeof(DbDataSource), serviceKey, (sp, sk) => sp.GetRequiredKeyedService<MySqlDataSource>(sk), dataSourceLifetime));
+		serviceCollection.TryAdd(new ServiceDescriptor(typeof(DbDataSource), serviceKey, static (sp, sk) => sp.GetRequiredKeyedService<MySqlDataSource>(sk), dataSourceLifetime));
 #endif
 
-		serviceCollection.TryAdd(new ServiceDescriptor(typeof(DbConnection), serviceKey, (sp, sk) => sp.GetRequiredKeyedService<MySqlConnection>(sk), connectionLifetime));
+		serviceCollection.TryAdd(new ServiceDescriptor(typeof(DbConnection), serviceKey, static (sp, sk) => sp.GetRequiredKeyedService<MySqlConnection>(sk), connectionLifetime));
 
 		return serviceCollection;
 	}

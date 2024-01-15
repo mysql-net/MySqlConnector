@@ -391,7 +391,7 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 #pragma warning restore CA2100
 			if (columns is { Count: > 0 })
 			{
-				command.CommandText += " WHERE " + string.Join(" AND ", columns.Select(x => $@"{x.Key} = @{x.Key}"));
+				command.CommandText += " WHERE " + string.Join(" AND ", columns.Select(static x => $@"{x.Key} = @{x.Key}"));
 				foreach (var column in columns)
 					command.Parameters.AddWithValue("@" + column.Key, column.Value);
 			}

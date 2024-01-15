@@ -39,10 +39,10 @@ internal static class MetricsReporter
 			description: "The maximum number of open connections allowed; this corresponds to MaximumPoolSize in the connection string.");
 
 		static IEnumerable<Measurement<int>> GetMaximumConnections() =>
-			ConnectionPool.GetAllPools().Select(x => new Measurement<int>(x.ConnectionSettings.MaximumPoolSize, x.PoolNameTagList));
+			ConnectionPool.GetAllPools().Select(static x => new Measurement<int>(x.ConnectionSettings.MaximumPoolSize, x.PoolNameTagList));
 
 		static IEnumerable<Measurement<int>> GetMinimumConnections() =>
-			ConnectionPool.GetAllPools().Select(x => new Measurement<int>(x.ConnectionSettings.MinimumPoolSize, x.PoolNameTagList));
+			ConnectionPool.GetAllPools().Select(static x => new Measurement<int>(x.ConnectionSettings.MinimumPoolSize, x.PoolNameTagList));
 	}
 
 	private static readonly UpDownCounter<int> s_connectionsUsageCounter = ActivitySourceHelper.Meter.CreateUpDownCounter<int>("db.client.connections.usage",

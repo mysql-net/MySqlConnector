@@ -805,7 +805,7 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 	/// <summary>
 	/// Returns an <see cref="ICollection"/> that contains the keys in the <see cref="MySqlConnectionStringBuilder"/>.
 	/// </summary>
-	public override ICollection Keys => base.Keys.Cast<string>().OrderBy(x => MySqlConnectionStringOption.OptionNames.IndexOf(x)).ToList();
+	public override ICollection Keys => base.Keys.Cast<string>().OrderBy(static x => MySqlConnectionStringOption.OptionNames.IndexOf(x)).ToList();
 
 	/// <summary>
 	/// Whether this <see cref="MySqlConnectionStringBuilder"/> contains a set option with the specified name.
@@ -1165,7 +1165,7 @@ internal abstract partial class MySqlConnectionStringOption
 		AddOption(options, CancellationTimeout = new(
 			keys: ["Cancellation Timeout", "CancellationTimeout"],
 			defaultValue: 2,
-			coerce: x =>
+			coerce: static x =>
 			{
 				if (x < -1)
 					throw new ArgumentOutOfRangeException(nameof(CancellationTimeout), "CancellationTimeout must be greater than or equal to -1");
