@@ -1,5 +1,5 @@
 ---
-lastmod: 2024-01-14
+lastmod: 2024-01-20
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,11 @@ weight: 30
 ---
 
 # Version History
+
+### 2.3.5
+
+* DLL files within the NuGet packages are now digitally signed.
+* Thanks to [Devolutions](https://devolutions.net/) for sponsoring this change.
 
 ### 2.3.4
 
