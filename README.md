@@ -101,6 +101,10 @@ If you'd like to contribute to MySqlConnector, please read our [contributing gui
 
 Development of MySqlConnector is supported by:
 
+[![Devolutions](https://webdevolutions.blob.core.windows.net/images/projects/devolutions/logos/devolutions-icon-shadow.svg)](https://devolutions.net/)
+
+[Devolutions](https://devolutions.net/)
+
 [![Faithlife](https://files.logoscdn.com/v1/files/4319104/content.svg?signature=3szVb3XmOfYMAxIv-LmuNYL_290)](https://faithlife.com/about)
 
 [Faithlife](https://faithlife.com/about) ([View jobs](https://faithlife.com/careers))
