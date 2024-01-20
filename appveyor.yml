@@ -32,11 +32,3 @@ notifications:
     secure: SRJ5fYQE4tvelyqeX3Lkv0gXta3O2pl4/+wNaqmqmcFkmYBe+U31T5YCGhipBOVhHBIZLevihOJZ78sFVJrmAFV5bHgtX/VPIKEXN+7ytis=
 artifacts:
 - path: artifacts\package\release\*.nupkg
-deploy:
-- provider: NuGet
-  api_key:
-    secure: SCNhz02UXcSKv6UVgAlhbzGb0u7PAQF4w1kx+cCGw1tm95QNhy2yiKLsLjjQ0j7l
-  artifact: /.*MySqlConnector[0-9.]+(-(alpha|beta|rc)\.?[0-9.]+)?nupkg/
-  skip_symbols: true
-  on:
-    appveyor_repo_tag: true
