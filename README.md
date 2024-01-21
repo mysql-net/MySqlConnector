@@ -38,7 +38,7 @@ This library is [MIT-licensed](LICENSE) and may be freely distributed with comme
 Commercial software that uses Connector/NET may have to purchase a [commercial license](https://www.mysql.com/about/legal/licensing/oem/)
 from Oracle.
 
-## ORMs
+## Related Projects
 
 This library is compatible with popular .NET ORMs including:
 
@@ -55,6 +55,10 @@ This library is compatible with popular .NET ORMs including:
 For Entity Framework support, use:
 
 * Pomelo.EntityFrameworkCore.MySql ([GitHub](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql), [NuGet](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql))
+
+For ASP.NET Core health checks, use:
+
+* AspNetCore.HealthChecks.MySql ([GitHub](https://github.com/Xabaril/AspNetCore.Diagnostics.HealthChecks), [NuGet](https://www.nuget.org/packages/AspNetCore.HealthChecks.MySql))
 
 ## Build Status
 
