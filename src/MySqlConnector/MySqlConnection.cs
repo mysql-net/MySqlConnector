@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 using MySqlConnector.Core;
 using MySqlConnector.Logging;
+using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -135,6 +136,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// <remarks>Transactions may not be nested.</remarks>
 	public ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, bool isReadOnly, CancellationToken cancellationToken = default) => BeginTransactionAsync(isolationLevel, isReadOnly, AsyncIOBehavior, cancellationToken);
 
+	// set session transaction isolation level read uncommitted;start transaction with consistent snapshot,read write;
 	private async ValueTask<MySqlTransaction> BeginTransactionAsync(IsolationLevel isolationLevel, bool? isReadOnly, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (State != ConnectionState.Open)
@@ -144,39 +146,154 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		if (m_enlistedTransaction is not null)
 			throw new InvalidOperationException("Cannot begin a transaction when already enlisted in a transaction.");
 
-		var isolationLevelValue = isolationLevel switch
-		{
-			IsolationLevel.ReadUncommitted => "read uncommitted",
-			IsolationLevel.ReadCommitted => "read committed",
-			IsolationLevel.RepeatableRead => "repeatable read",
-			IsolationLevel.Serializable => "serializable",
-			IsolationLevel.Snapshot => "repeatable read",
+		// get the bytes for both payloads concatenated together (suitable for pipelining)
+		var startTransactionPayload = GetStartTransactionPayload(isolationLevel, isReadOnly, m_session!.SupportsQueryAttributes);
 
-			// "In terms of the SQL:1992 transaction isolation levels, the default InnoDB level is REPEATABLE READ." - http://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-model.html
-			IsolationLevel.Unspecified => "repeatable read",
+		// send the two packets separately
+		await m_session.SendAsync(new Protocol.PayloadData(startTransactionPayload.Slice(4, startTransactionPayload.Span[0])), ioBehavior, cancellationToken).ConfigureAwait(false);
 
-			_ => throw new NotSupportedException($"IsolationLevel.{isolationLevel} is not supported."),
-		};
+		var payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+		OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
 
-		using (var cmd = new MySqlCommand($"set session transaction isolation level {isolationLevelValue};", this) { NoActivity = true })
-		{
-			await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+		await m_session.SendAsync(new Protocol.PayloadData(startTransactionPayload.Slice(8 + startTransactionPayload.Span[0], startTransactionPayload.Span[startTransactionPayload.Span[0] + 4])), ioBehavior, cancellationToken).ConfigureAwait(false);
 
-			var consistentSnapshotText = isolationLevel == IsolationLevel.Snapshot ? " with consistent snapshot" : "";
-			var readOnlyText = isReadOnly switch
-			{
-				true => " read only",
-				false => " read write",
-				null => "",
-			};
-			var separatorText = (consistentSnapshotText.Length == 0 || readOnlyText.Length == 0) ? "" : ",";
-			cmd.CommandText = $"start transaction{consistentSnapshotText}{separatorText}{readOnlyText};";
-			await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-		}
+		payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+		OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
 
 		var transaction = new MySqlTransaction(this, isolationLevel);
 		CurrentTransaction = transaction;
 		return transaction;
+	}
+
+	/// <summary>
+	/// Returns a <see cref="ReadOnlyMemory{Byte}"/> containing two payloads to set the isolation level and start a transaction.
+	/// </summary>
+	internal static ReadOnlyMemory<byte> GetStartTransactionPayload(IsolationLevel isolationLevel, bool? isReadOnly, bool supportsQueryAttributes)
+	{
+		var isolationLevelIndex = isolationLevel switch
+		{
+			IsolationLevel.ReadUncommitted => 0,
+			IsolationLevel.ReadCommitted => 1,
+			IsolationLevel.Serializable => 2,
+			IsolationLevel.RepeatableRead => 3,
+			IsolationLevel.Snapshot => 3,
+
+			// "In terms of the SQL:1992 transaction isolation levels, the default InnoDB level is REPEATABLE READ." - http://dev.mysql.com/doc/refman/5.7/en/innodb-transaction-model.html
+			IsolationLevel.Unspecified => 3,
+
+			_ => throw new NotSupportedException($"IsolationLevel.{isolationLevel} is not supported."),
+		};
+
+		var consistentSnapshotIndex = isolationLevel == IsolationLevel.Snapshot ? 1 : 0;
+
+		var readOnlyIndex = isReadOnly switch
+		{
+			null => 0,
+			false => 1,
+			true => 2,
+		};
+
+		var index = ((supportsQueryAttributes ? 1 : 0) * 5 + isolationLevelIndex + consistentSnapshotIndex) * 3 + readOnlyIndex;
+
+		if (s_startTransactionPayloads[index].IsEmpty)
+		{
+			// create payload that's (four-byte header)(query)(set isolation level X)(four-byte header)(query)(start transaction)
+			var payload = new byte[125];
+			var startIndex = 4;
+			var length = 0;
+
+			payload[startIndex] = (byte) CommandKind.Query;
+			startIndex++;
+			length++;
+
+			if (supportsQueryAttributes)
+			{
+				payload[startIndex + 1] = 1;
+				startIndex += 2;
+				length += 2;
+			}
+
+			// copy in 'set isolation level' prefix
+			ReadOnlySpan<byte> setIsolationLevelText = "set session transaction isolation level "u8;
+			setIsolationLevelText.CopyTo(payload.AsSpan(startIndex));
+			length += setIsolationLevelText.Length;
+			startIndex += setIsolationLevelText.Length;
+
+			// copy in isolation level
+			ReadOnlySpan<byte> isolationLevelText = isolationLevelIndex switch
+			{
+				0 => "read uncommitted"u8,
+				1 => "read committed"u8,
+				2 => "serializable"u8,
+				_ => "repeatable read"u8,
+			};
+			isolationLevelText.CopyTo(payload.AsSpan(startIndex));
+			startIndex += isolationLevelText.Length;
+			length += isolationLevelText.Length;
+
+			payload[startIndex] = (byte) ';';
+			startIndex++;
+			length++;
+
+			// set the length of the first payload
+			payload[0] = (byte) length;
+
+			startIndex += 4;
+
+			payload[startIndex] = (byte) CommandKind.Query;
+			startIndex++;
+			length = 1;
+
+			if (supportsQueryAttributes)
+			{
+				payload[startIndex + 1] = 1;
+				startIndex += 2;
+				length += 2;
+			}
+
+			// copy in 'start transaction' prefix
+			ReadOnlySpan<byte> startTransactionText = "start transaction"u8;
+			startTransactionText.CopyTo(payload.AsSpan(startIndex));
+			length += startTransactionText.Length;
+			startIndex += startTransactionText.Length;
+
+			// copy in 'with consistent snapshot'
+			if (consistentSnapshotIndex == 1)
+			{
+				ReadOnlySpan<byte> consistentSnapshotText = " with consistent snapshot"u8;
+				consistentSnapshotText.CopyTo(payload.AsSpan(startIndex));
+				length += consistentSnapshotText.Length;
+				startIndex += consistentSnapshotText.Length;
+			}
+
+			if (consistentSnapshotIndex > 0 && readOnlyIndex > 0)
+			{
+				payload[startIndex] = (byte) ',';
+				startIndex++;
+				length++;
+			}
+
+			ReadOnlySpan<byte> readOnlyText = readOnlyIndex switch
+			{
+				1 => " read write"u8,
+				2 => " read only"u8,
+				_ => ""u8,
+			};
+			readOnlyText.CopyTo(payload.AsSpan(startIndex));
+			startIndex += readOnlyText.Length;
+			length += readOnlyText.Length;
+
+			payload[startIndex] = (byte) ';';
+			startIndex++;
+			length++;
+
+			// store length at the beginning of the second payload
+			payload[payload[0] + 4] = (byte) length;
+
+			s_startTransactionPayloads[index] = new ReadOnlyMemory<byte>(payload, 0, payload[0] + payload[payload[0] + 4] + 8);
+		}
+
+		return s_startTransactionPayloads[index];
 	}
 
 	public override void EnlistTransaction(System.Transactions.Transaction? transaction)
@@ -1123,6 +1240,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	private static readonly StateChangeEventArgs s_stateChangeOpenClosed = new(ConnectionState.Open, ConnectionState.Closed);
 	private static readonly object s_lock = new();
 	private static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = [];
+	private static readonly ReadOnlyMemory<byte>[] s_startTransactionPayloads = new ReadOnlyMemory<byte>[5 * 3 * 2];
 
 	private readonly MySqlDataSource? m_dataSource;
 	private readonly ILogger m_logger;
