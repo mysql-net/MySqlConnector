@@ -1,5 +1,5 @@
 ---
-lastmod: 2024-01-14
+lastmod: 2024-01-22
 date: 2016-10-16
 title: Connection Options
 customtitle: MySQL Connection String Options for .NET/C#
@@ -513,6 +513,11 @@ from your connection string when migrating from Connector/NET to MySqlConnector.
     <td>Logging</td>
     <td>false</td>
     <td>Use <a href="/overview/logging/">MySqlConnector logging</a> (which is more flexible) instead.</td>
+  </tr>
+  <tr id="OldGetStringBehavior">
+    <td></td>
+    <td>false</td>
+    <td>This option is temporary in Connector/NET and unsupported in MySqlConnector.</td>
   </tr>
   <tr id="OldSyntax">
     <td>OldSyntax, Old Syntax, UseOldSyntax, Use Old Syntax</td>

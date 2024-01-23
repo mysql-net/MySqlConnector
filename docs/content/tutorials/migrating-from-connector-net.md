@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-04-24
+lastmod: 2024-01-22
 date: 2016-10-16
 menu:
   main:
@@ -41,7 +41,7 @@ In a .NET Framework application, make the following `app.config` change to regis
     <!-- add name="MySQL Data Provider"
       invariant="MySql.Data.MySqlClient"
       description=".Net Framework Data Provider for MySQL"
-      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=8.2.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
+      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=8.3.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
 
     <!-- ADD THIS -->
     <add name="MySqlConnector"
@@ -122,7 +122,7 @@ and follow the [best practices in async programming](https://msdn.microsoft.com/
 
 ### Implicit Conversions
 
-Connector/NET allows `MySqlDataReader.GetString()` to be called on many non-textual columns, and will implicitly
+Prior to v8.3.0, Connector/NET allows `MySqlDataReader.GetString()` to be called on many non-textual columns, and will implicitly
 convert the value to a `string` (using the current locale). This is a frequent source of locale-dependent bugs, so
 MySqlConnector follows typical ADO.NET practice (e.g., SqlClient, npgsql) and disallows this (by throwing an `InvalidCastException`).
 

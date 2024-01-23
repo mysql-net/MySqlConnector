@@ -233,8 +233,8 @@ jobs:
         image: 'mysql:8.0'
         connectionStringExtra: ''
         unsupportedFeatures: 'Ed25519,StreamingResults,Tls11,ZeroDateTime'
-      'MySQL 8.2':
-        image: 'mysql:8.2'
+      'MySQL 8.3':
+        image: 'mysql:8.3'
         connectionStringExtra: ''
         unsupportedFeatures: 'Ed25519,StreamingResults,Tls11,ZeroDateTime'
       'MariaDB 10.6':
