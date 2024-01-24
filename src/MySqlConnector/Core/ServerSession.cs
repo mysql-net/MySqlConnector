@@ -586,15 +586,13 @@ internal sealed partial class ServerSession
 					Log.SendingPipelinedResetConnectionRequest(m_logger, Id, ServerVersion.OriginalString);
 
 					// send both packets at once
-					await m_payloadHandler!.ByteHandler.WriteBytesAsync(m_pipelinedResetConnectionBytes!, ioBehavior).ConfigureAwait(false);
+					await SendRawAsync(m_pipelinedResetConnectionBytes, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 					// read two OK replies
-					m_payloadHandler.SetNextSequenceNumber(1);
-					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					payload = await ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
 					OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 
-					m_payloadHandler.SetNextSequenceNumber(1);
-					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+					payload = await ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
 					OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
 
 					return true;
@@ -896,6 +894,12 @@ internal sealed partial class ServerSession
 		return payload;
 	}
 
+	public ValueTask<PayloadData> ReceiveReplyAsync(int expectedSequenceNumber, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	{
+		m_payloadHandler!.SetNextSequenceNumber(expectedSequenceNumber);
+		return ReceiveReplyAsync(ioBehavior, cancellationToken);
+	}
+
 	// Continues a conversation with the server by sending a reply to a packet received with 'Receive' or 'ReceiveReply'.
 	public async ValueTask SendReplyAsync(PayloadData payload, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
@@ -908,6 +912,27 @@ internal sealed partial class ServerSession
 		try
 		{
 			await m_payloadHandler!.WritePayloadAsync(payload.Memory, ioBehavior).ConfigureAwait(false);
+		}
+		catch (Exception ex)
+		{
+			SetFailed(ex);
+			throw;
+		}
+	}
+
+	// Sends raw bytes over the wire without formatting them into a payload. The caller is expected to set the packet header(s) correctly.
+	public async ValueTask SendRawAsync(ReadOnlyMemory<byte> data, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	{
+		if (CreateExceptionForInvalidState() is { } exception)
+		{
+			Log.FailedInSendReplyAsync(m_logger, exception, Id);
+			throw exception;
+		}
+
+		try
+		{
+			// send both packets at once
+			await m_payloadHandler!.ByteHandler.WriteBytesAsync(data, ioBehavior).ConfigureAwait(false);
 		}
 		catch (Exception ex)
 		{
