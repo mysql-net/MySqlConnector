@@ -46,6 +46,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		m_connectionString = connectionString;
 		LoggingConfiguration = loggingConfiguration;
 		m_logger = loggingConfiguration.ConnectionLogger;
+		m_transactionLogger = loggingConfiguration.TransactionLogger;
 	}
 
 #pragma warning disable CA2012 // Safe because method completes synchronously
@@ -146,8 +147,10 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		if (m_enlistedTransaction is not null)
 			throw new InvalidOperationException("Cannot begin a transaction when already enlisted in a transaction.");
 
+		Log.StartingTransaction(m_transactionLogger, m_session!.Id);
+
 		// get the bytes for both payloads concatenated together (suitable for pipelining)
-		var startTransactionPayload = GetStartTransactionPayload(isolationLevel, isReadOnly, m_session!.SupportsQueryAttributes);
+		var startTransactionPayload = GetStartTransactionPayload(isolationLevel, isReadOnly, m_session.SupportsQueryAttributes);
 
 		if (GetInitializedConnectionSettings() is { UseCompression: false, Pipelining: not false })
 		{
@@ -175,7 +178,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
 		}
 
-		var transaction = new MySqlTransaction(this, isolationLevel);
+		var transaction = new MySqlTransaction(this, isolationLevel, m_transactionLogger);
 		CurrentTransaction = transaction;
 		return transaction;
 	}
@@ -1259,6 +1262,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	private readonly MySqlDataSource? m_dataSource;
 	private readonly ILogger m_logger;
+	private readonly ILogger m_transactionLogger;
 	private string m_connectionString;
 	private ConnectionSettings? m_connectionSettings;
 	private ServerSession? m_session;

@@ -10,6 +10,7 @@ internal sealed class MySqlConnectorLoggingConfiguration(ILoggerFactory loggerFa
 	public ILogger CommandLogger { get; } = loggerFactory.CreateLogger("MySqlConnector.MySqlCommand");
 	public ILogger PoolLogger { get; } = loggerFactory.CreateLogger("MySqlConnector.ConnectionPool");
 	public ILogger BulkCopyLogger { get; } = loggerFactory.CreateLogger("MySqlConnector.MySqlBulkCopy");
+	public ILogger TransactionLogger { get; } = loggerFactory.CreateLogger("MySqlConnector.Transaction");
 
 	public static MySqlConnectorLoggingConfiguration NullConfiguration { get; } = new MySqlConnectorLoggingConfiguration(NullLoggerFactory.Instance);
 	public static MySqlConnectorLoggingConfiguration GlobalConfiguration { get; set; } = NullConfiguration;

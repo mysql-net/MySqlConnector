@@ -1,4 +1,6 @@
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
+using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
@@ -30,11 +32,13 @@ public sealed class MySqlTransaction : DbTransaction
 		VerifyValid();
 
 		using var activity = Connection!.Session.StartActivity("Commit");
+		Log.CommittingTransaction(m_logger, Connection.Session.Id);
 		try
 		{
 			using (var cmd = new MySqlCommand("commit", Connection, this) { NoActivity = true })
 				await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			Connection!.CurrentTransaction = null;
+			Log.CommittedTransaction(m_logger, Connection.Session.Id);
 			Connection = null;
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
@@ -254,19 +258,24 @@ public sealed class MySqlTransaction : DbTransaction
 		Connection = null;
 	}
 
-	internal MySqlTransaction(MySqlConnection connection, IsolationLevel isolationLevel)
+	internal MySqlTransaction(MySqlConnection connection, IsolationLevel isolationLevel, ILogger logger)
 	{
 		Connection = connection;
 		IsolationLevel = isolationLevel;
+		m_logger = logger;
+
+		Log.StartedTransaction(m_logger, Connection.Session.Id);
 	}
 
 	private async Task DoRollback(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		using var activity = Connection!.Session.StartActivity("Rollback");
+		Log.RollingBackTransaction(m_logger, Connection.Session.Id);
 		try
 		{
 			using var cmd = new MySqlCommand("rollback", Connection, this) { NoActivity = true };
 			await cmd.ExecuteNonQueryAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			Log.RolledBackTransaction(m_logger, Connection.Session.Id);
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
@@ -293,5 +302,6 @@ public sealed class MySqlTransaction : DbTransaction
 
 	private static string QuoteIdentifier(string identifier) => "`" + identifier.Replace("`", "``") + "`";
 
+	private readonly ILogger m_logger;
 	private bool m_isDisposed;
 }

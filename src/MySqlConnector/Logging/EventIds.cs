@@ -131,6 +131,14 @@ internal static class EventIds
 	public const int ColumnMappingAlreadyHasExpression = 2508;
 	public const int SettingExpressionToMapColumn = 2509;
 
+	// Transaction events, 2700-2799
+	public const int StartingTransaction = 2700;
+	public const int StartedTransaction = 2701;
+	public const int CommittingTransaction = 2702;
+	public const int CommittedTransaction = 2703;
+	public const int RollingBackTransaction = 2704;
+	public const int RolledBackTransaction = 2705;
+
 	// Connection pool events, 3000-3099
 	public const int WaitingForAvailableSession = 3000;
 	public const int CreatingNewConnectionPool = 3001;

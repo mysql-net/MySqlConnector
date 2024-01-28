@@ -324,6 +324,24 @@ internal static partial class Log
 	[LoggerMessage(EventIds.SettingExpressionToMapColumn, LogLevel.Trace, "Setting expression to map column {SourceOrdinal} to {DestinationColumn}: {Expression}")]
 	public static partial void SettingExpressionToMapColumn(ILogger logger, int sourceOrdinal, string destinationColumn, string expression);
 
+	[LoggerMessage(EventIds.StartingTransaction, LogLevel.Debug, "Session {SessionId} starting transaction")]
+	public static partial void StartingTransaction(ILogger logger, string sessionId);
+
+	[LoggerMessage(EventIds.StartedTransaction, LogLevel.Trace, "Session {SessionId} started transaction")]
+	public static partial void StartedTransaction(ILogger logger, string sessionId);
+
+	[LoggerMessage(EventIds.CommittingTransaction, LogLevel.Trace, "Session {SessionId} committing transaction")]
+	public static partial void CommittingTransaction(ILogger logger, string sessionId);
+
+	[LoggerMessage(EventIds.CommittedTransaction, LogLevel.Debug, "Session {SessionId} committed transaction")]
+	public static partial void CommittedTransaction(ILogger logger, string sessionId);
+
+	[LoggerMessage(EventIds.RollingBackTransaction, LogLevel.Trace, "Session {SessionId} rolling back transaction")]
+	public static partial void RollingBackTransaction(ILogger logger, string sessionId);
+
+	[LoggerMessage(EventIds.RolledBackTransaction, LogLevel.Debug, "Session {SessionId} rolled back transaction")]
+	public static partial void RolledBackTransaction(ILogger logger, string sessionId);
+
 	[LoggerMessage(EventIds.WaitingForAvailableSession, LogLevel.Trace, "Pool {PoolId} waiting for an available session")]
 	public static partial void WaitingForAvailableSession(ILogger logger, int poolId);
 
