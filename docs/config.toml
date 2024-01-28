@@ -14,6 +14,10 @@ disablePathToLower = true
     [markup.goldmark.renderer]
       unsafe = true
 
+  [markup.highlight]
+    noClasses=false
+    style = 'vs'
+
 [params]
   description = "MySqlConnector is a high-performance, asynchronous C# ADO.NET driver for MySQL Server, MariaDB, Amazon Aurora, Azure Database for MySQL, Google Cloud SQL for MySQL, Percona Server and more."
   author = "MySqlConnector Authors"

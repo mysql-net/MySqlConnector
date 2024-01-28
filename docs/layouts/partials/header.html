@@ -14,6 +14,8 @@
 
       gtag('config', 'UA-142489411-1');
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     {{ .Scratch.Add "description" "" }}{{ if .Description }}{{ .Scratch.Set "description" .Description }}{{ else }}{{ .Scratch.Set "description" .Site.Params.description }}{{ end }}
     <meta name="description" content="{{ .Scratch.Get "description" }}">
     {{ with .Site.Params.author }}<meta name="author" content="{{ . }}">{{ end }}
@@ -53,6 +55,7 @@
 
     {{ $style := resources.Get "css/site.css" | resources.Minify | resources.Fingerprint }}
     <link rel="stylesheet" href="{{ $style.Permalink }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <link rel="canonical" href="{{ .Page.Permalink }}" />
   </head>
 
