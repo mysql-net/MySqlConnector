@@ -245,8 +245,8 @@ jobs:
         image: 'mariadb:10.11'
         connectionStringExtra: ''
         unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
-      'MariaDB 11.1':
-        image: 'mariadb:11.1'
+      'MariaDB 11.2':
+        image: 'mariadb:11.2'
         connectionStringExtra: ''
         unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
   steps:
