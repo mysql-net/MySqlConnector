@@ -25,9 +25,6 @@ OMIT_FEATURES=$3
 MYSQL_EXTRA=
 MYSQL=mysql
 
-if [[ "$IMAGE" == mysql:8.0 || "$IMAGE" == mysql:8.3 ]]; then
-  MYSQL_EXTRA='--default-authentication-plugin=mysql_native_password'
-fi
 if [[ "$IMAGE" == mariadb* ]]; then
   MYSQL_EXTRA='--in-predicate-conversion-threshold=100000'
 fi
