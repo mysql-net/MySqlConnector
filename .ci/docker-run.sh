@@ -43,7 +43,7 @@ docker run -d \
 	-e MYSQL_ROOT_PASSWORD='test' \
 	--tmpfs /var/lib/mysql \
 	$IMAGE \
-  --log-bin-trust-function-creators=1 \
+  --disable-log-bin \
   --local-infile=1 \
   --secure-file-priv=/var/tmp \
   --max-connections=250 \
