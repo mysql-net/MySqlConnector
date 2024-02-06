@@ -91,7 +91,7 @@ MySqlConnector has some different default connection string options:
     <td><code>LoadBalance</code></td>
     <td>Default is <code>RoundRobin</code></td>
     <td>(not configurable, effective default is <code>FailOver</code>)</td>
-    <td>Connector/NET currently has <a href="https://bugs.mysql.com/bug.php?id=81650" title="MySQL bug #81650">a bug</a> that prevents multiple host names being used.</td>
+    <td>Connector/NET versions prior to v8.0.19 have <a href="https://bugs.mysql.com/bug.php?id=81650" title="MySQL bug #81650">a bug</a> that prevents multiple host names being used.</td>
   </tr>
   <tr>
     <td><code>ServerRSAPublicKeyFile</code></td>
@@ -112,8 +112,8 @@ supported in MySqlConnector, see the [Connection Options](/connection-options).
 
 Connector/NET implements the standard ADO.NET async methods, and adds some new ones (e.g., `MySqlConnection.BeginTransactionAsync`,
 `MySqlDataAdapter.FillAsync`) that don't exist in ADO.NET. None of these methods have an asynchronous implementation,
-but all execute synchronously then return a completed `Task`. This is a [longstanding known bug](https://bugs.mysql.com/bug.php?id=70111)
-in Connector/NET.
+but all execute synchronously then return a completed `Task`. This [longstanding known bug](https://bugs.mysql.com/bug.php?id=70111) was fixed in
+in Connector/NET v8.0.33.
 
 Because the Connector/NET methods aren't actually asynchronous, porting client code to MySqlConnector (which is asynchronous)
 can expose bugs that only occur when an async method completes asynchronously and resumes the `await`-ing code
@@ -202,85 +202,102 @@ for various precondition checks that indicate misuse of the API (and not a probl
 
 ## Fixed Bugs
 
-The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~~Strikethrough~~ indicates bugs that have since been fixed in a newer version of Connector/NET, but were fixed first in MySqlConnector.)
+The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 
-* [#14115](https://bugs.mysql.com/bug.php?id=14115): Compound statements are not supported by `MySqlCommand.Prepare`
+Open Bugs:
+
+* [#14115](https://bugs.mysql.com/bug.php?id=14115): Compound statements are not supported by `MySqlCommand.Prepare` (Will never be supported)
 * [#37283](https://bugs.mysql.com/bug.php?id=37283), [#70587](https://bugs.mysql.com/bug.php?id=70587): Distributed transactions are not supported
 * [#50773](https://bugs.mysql.com/bug.php?id=50773): Can’t use multiple connections within one TransactionScope
 * [#61477](https://bugs.mysql.com/bug.php?id=61477): `ColumnOrdinal` in schema table is 1-based
-* ~~[#66476](https://bugs.mysql.com/bug.php?id=66476), [#106368](https://bugs.mysql.com/bug.php?id=106368): Connection pool uses queue instead of stack~~
-* ~[#70111](https://bugs.mysql.com/bug.php?id=70111): `Async` methods execute synchronously~
-* ~~[#70686](https://bugs.mysql.com/bug.php?id=70686): `TIME(3)` and `TIME(6)` fields serialize milliseconds incorrectly~~
 * [#72494](https://bugs.mysql.com/bug.php?id=72494), [#83330](https://bugs.mysql.com/bug.php?id=83330): EndOfStreamException inserting large blob with UseCompression=True
-* [#73610](https://bugs.mysql.com/bug.php?id=73610): Invalid password exception has wrong number
 * [#73788](https://bugs.mysql.com/bug.php?id=73788): Can’t use `DateTimeOffset`
-* ~~[#74392](https://bugs.mysql.com/bug.php?id=74392): Can't use `Stream` to bulk load data~~
-* ~~[#75604](https://bugs.mysql.com/bug.php?id=75604): Crash after 29.4 days of uptime~~
 * [#75917](https://bugs.mysql.com/bug.php?id=75917), [#76597](https://bugs.mysql.com/bug.php?id=76597), [#77691](https://bugs.mysql.com/bug.php?id=77691), [#78650](https://bugs.mysql.com/bug.php?id=78650), [#78919](https://bugs.mysql.com/bug.php?id=78919), [#80921](https://bugs.mysql.com/bug.php?id=80921), [#82136](https://bugs.mysql.com/bug.php?id=82136): “Reading from the stream has failed” when connecting to a server
 * [#77421](https://bugs.mysql.com/bug.php?id=77421): Connection is not reset when pulled from the connection pool
+* [#83229](https://bugs.mysql.com/bug.php?id=83329): “Unknown command” exception inserting large blob with UseCompression=True
+* [#85185](https://bugs.mysql.com/bug.php?id=85185): `ConnectionReset=True` does not preserve connection charset
+* [#88124](https://bugs.mysql.com/bug.php?id=88124): CommandTimeout isn’t reset when calling Read/NextResult
+* [#88611](https://bugs.mysql.com/bug.php?id=88611): `MySqlCommand` can be executed even if it has “wrong” transaction
+* [#89085](https://bugs.mysql.com/bug.php?id=89085): `MySqlConnection.Database` not updated after `USE database;`
+* [#89335](https://bugs.mysql.com/bug.php?id=89335): `MySqlCommandBuilder.DeriveParameters` fails for `JSON` type
+* [#91123](https://bugs.mysql.com/bug.php?id=91123): Database names are case-sensitive when calling a stored procedure
+* [#91199](https://bugs.mysql.com/bug.php?id=91199): Can't insert `MySqlDateTime` values
+* [#91753](https://bugs.mysql.com/bug.php?id=91753): Unnamed parameter not supported by `MySqlCommand.Prepare`
+* [#91754](https://bugs.mysql.com/bug.php?id=91754): Inserting 16MiB `BLOB` shifts it by four bytes when prepared
+* [#92367](https://bugs.mysql.com/bug.php?id=92367): `MySqlDataReader.GetDateTime` and `GetValue` return inconsistent values
+* [#93047](https://bugs.mysql.com/bug.php?id=93047): `MySqlDataAdapter` throws timeout exception when an error occurs
+* [#93220](https://bugs.mysql.com/bug.php?id=93220): Can’t call FUNCTION when parameter name contains parentheses
+* [#93825](https://bugs.mysql.com/bug.php?id=93825): `MySqlException` loses data when serialized
+* [#94760](https://bugs.mysql.com/bug.php?id=94760): `MySqlConnection.OpenAsync(CancellationToken)` doesn’t respect cancellation token
+* [#95348](https://bugs.mysql.com/bug.php?id=95348): Inefficient query when executing stored procedures
+* [#95436](https://bugs.mysql.com/bug.php?id=95436): Client doesn't authenticate with PEM certificate
+* [#96500](https://bugs.mysql.com/bug.php?id=96500): `MySqlDataReader.GetFieldValue<MySqlGeometry>` throws `InvalidCastException`
+* [#96636](https://bugs.mysql.com/bug.php?id=96636): `MySqlConnection.Open()` slow under load when using SSL
+* [#96717](https://bugs.mysql.com/bug.php?id=96717): Not compatible with MySQL Server 5.0
+* [#97067](https://bugs.mysql.com/bug.php?id=97067): Aggregate functions on BIT(n) columns return wrong result
+* [#97738](https://bugs.mysql.com/bug.php?id=97738): Cannot use PEM files when account uses `require subject`
+* [#97872](https://bugs.mysql.com/bug.php?id=97872): `KeepAlive` in connection string throws exception on .NET Core
+* [#103819](https://bugs.mysql.com/bug.php?id=103819): Can't use `StringBuilder` containing non-BMP characters as `MySqlParameter.Value`
+* [#105965](https://bugs.mysql.com/bug.php?id=105965): `MySqlParameterCollection.Add(object)` has quadratic performance
+* [#107259](https://bugs.mysql.com/bug.php?id=107259): Character Set 'utf8mb3' is not supported by .NET Framework
+* [#108970](https://bugs.mysql.com/bug.php?id=108970): `MySqlConnectionStringBuilder.ContainsKey` method gives wrong result
+* [#109141](https://bugs.mysql.com/bug.php?id=109141): Insert of data into a table results in `System.ArgumentException`
+* [#109331](https://bugs.mysql.com/bug.php?id=109331): MySQL Connector/NET is incompatible with MariaDB 10.10 and later
+* [#109390](https://bugs.mysql.com/bug.php?id=109390): Transaction lock held after connection timeout exception
+* [#109476](https://bugs.mysql.com/bug.php?id=109476): `TransactionScope.Dispose` throws "Connection must be valid and open to rollback"
+* [#110789](https://bugs.mysql.com/bug.php?id=110789): `OpenAsync` throws unhandled exception from thread pool
+* [#110790](https://bugs.mysql.com/bug.php?id=110790): `ExecuteReaderAsync` hangs instead of cancelling query after `CommandTimeout`
+* [#110791](https://bugs.mysql.com/bug.php?id=110791): `OpenAsync(CancellationToken)` doesn't throw for cancelled token
+* [#111797](https://bugs.mysql.com/bug.php?id=111797): Certain sequence of special characters can break connection string validation.
+* [#112088](https://bugs.mysql.com/bug.php?id=112088): `BIT(n)` parameter size incorrectly returns 0
+
+Fixed first by MySqlConnector:
+* ~~[#66476](https://bugs.mysql.com/bug.php?id=66476), [#106368](https://bugs.mysql.com/bug.php?id=106368): Connection pool uses queue instead of stack (fixed in v8.0.30)~~
+* ~~[#70111](https://bugs.mysql.com/bug.php?id=70111): `Async` methods execute synchronously (fixed in v8.0.33)~~
+* ~~[#70686](https://bugs.mysql.com/bug.php?id=70686): `TIME(3)` and `TIME(6)` fields serialize milliseconds incorrectly~~
+* ~~[#73610](https://bugs.mysql.com/bug.php?id=73610): Invalid password exception has wrong number (fixed in v8.0.32)~~
+* ~~[#74392](https://bugs.mysql.com/bug.php?id=74392): Can't use `Stream` to bulk load data~~
+* ~~[#75604](https://bugs.mysql.com/bug.php?id=75604): Crash after 29.4 days of uptime~~
 * ~~[#78426](https://bugs.mysql.com/bug.php?id=78426): Unknown database exception has wrong number~~
 * ~~[#78760](https://bugs.mysql.com/bug.php?id=78760): Error when using tabs and newlines in SQL statements~~
 * ~~[#78917](https://bugs.mysql.com/bug.php?id=78917), [#79196](https://bugs.mysql.com/bug.php?id=79196), [#82292](https://bugs.mysql.com/bug.php?id=82292), [#89040](https://bugs.mysql.com/bug.php?id=89040): `TINYINT(1)` values start being returned as `sbyte` after `NULL`~~
 * ~~[#80030](https://bugs.mysql.com/bug.php?id=80030): Slow to connect with pooling disabled~~
 * ~~[#81650](https://bugs.mysql.com/bug.php?id=81650), [#88962](https://bugs.mysql.com/bug.php?id=88962): `Server` connection string option may now contain multiple, comma separated hosts that will be tried in order until a connection succeeds~~
-* [#83229](https://bugs.mysql.com/bug.php?id=83329): “Unknown command” exception inserting large blob with UseCompression=True
 * ~~[#83649](https://bugs.mysql.com/bug.php?id=83649): Connection cannot be made using IPv6~~
 * ~~[#84220](https://bugs.mysql.com/bug.php?id=84220): Cannot call a stored procedure with `.` in its name~~
 * ~~[#84701](https://bugs.mysql.com/bug.php?id=84701): Can’t create a parameter using a 64-bit enum with a value greater than int.MaxValue~~
-* [#85185](https://bugs.mysql.com/bug.php?id=85185): `ConnectionReset=True` does not preserve connection charset
 * ~~[#86263](https://bugs.mysql.com/bug.php?id=86263): Transaction isolation level affects all transactions in session~~
 * ~~[#87307](https://bugs.mysql.com/bug.php?id=87307): NextResult hangs instead of timing out~~
 * ~~[#87316](https://bugs.mysql.com/bug.php?id=87316): MySqlCommand.CommandTimeout can be set to a negative value~~
 * ~~[#87868](https://bugs.mysql.com/bug.php?id=87868): `ColumnSize` in schema table is incorrect for `CHAR(36)` and `BLOB` columns~~
 * ~~[#87876](https://bugs.mysql.com/bug.php?id=87876): `IsLong` is schema table is incorrect for `LONGTEXT` and `LONGBLOB` columns~~
 * ~~[#88058](https://bugs.mysql.com/bug.php?id=88058): `decimal(n, 0)` has wrong `NumericPrecision`~~
-* [#88124](https://bugs.mysql.com/bug.php?id=88124): CommandTimeout isn’t reset when calling Read/NextResult
 * ~~[#88472](https://bugs.mysql.com/bug.php?id=88472): `TINYINT(1)` is not returned as `bool` if `MySqlCommand.Prepare` is called~~
-* [#88611](https://bugs.mysql.com/bug.php?id=88611): `MySqlCommand` can be executed even if it has “wrong” transaction
 * ~~[#88660](https://bugs.mysql.com/bug.php?id=88660): `MySqlClientFactory.Instance.CreateDataAdapter()` and `CreateCommandBuilder` return `null`~~
-* [#89085](https://bugs.mysql.com/bug.php?id=89085): `MySqlConnection.Database` not updated after `USE database;`
 * ~~[#89159](https://bugs.mysql.com/bug.php?id=89159), [#97242](https://bugs.mysql.com/bug.php?id=97242): `MySqlDataReader` cannot outlive `MySqlCommand`~~
-* [#89335](https://bugs.mysql.com/bug.php?id=89335): `MySqlCommandBuilder.DeriveParameters` fails for `JSON` type
 * ~~[#89639](https://bugs.mysql.com/bug.php?id=89639): `ReservedWords` schema contains incorrect data~~
 * ~~[#90086](https://bugs.mysql.com/bug.php?id=90086): `MySqlDataReader` is closed by an unrelated command disposal~~
-* [#91123](https://bugs.mysql.com/bug.php?id=91123): Database names are case-sensitive when calling a stored procedure
-* [#91199](https://bugs.mysql.com/bug.php?id=91199): Can't insert `MySqlDateTime` values
 * ~~[#91751](https://bugs.mysql.com/bug.php?id=91751): `YEAR` column retrieved incorrectly with prepared command~~
 * ~~[#91752](https://bugs.mysql.com/bug.php?id=91752): `00:00:00` is converted to `NULL` with prepared command~~
-* [#91753](https://bugs.mysql.com/bug.php?id=91753): Unnamed parameter not supported by `MySqlCommand.Prepare`
-* [#91754](https://bugs.mysql.com/bug.php?id=91754): Inserting 16MiB `BLOB` shifts it by four bytes when prepared
 * ~~[#91770](https://bugs.mysql.com/bug.php?id=91770): `TIME(n)` column loses microseconds with prepared command~~
-* [#92367](https://bugs.mysql.com/bug.php?id=92367): `MySqlDataReader.GetDateTime` and `GetValue` return inconsistent values
 * ~~[#92465](https://bugs.mysql.com/bug.php?id=92465): “There is already an open DataReader” `MySqlException` thrown from `TransactionScope.Dispose`~~
 * ~~[#92734](https://bugs.mysql.com/bug.php?id=92734): `MySqlParameter.Clone` doesn't copy all property values~~
 * ~~[#92789](https://bugs.mysql.com/bug.php?id=92789): Illegal connection attributes written for non-ASCII values~~
 * ~~[#92912](https://bugs.mysql.com/bug.php?id=92912): `MySqlDbType.LongText` values encoded incorrectly with prepared statements~~
 * ~~[#92982](https://bugs.mysql.com/bug.php?id=92982), [#93399](https://bugs.mysql.com/bug.php?id=93399): `FormatException` thrown when connecting to MySQL Server 8.0.13~~
-* [#93047](https://bugs.mysql.com/bug.php?id=93047): `MySqlDataAdapter` throws timeout exception when an error occurs
 * ~~[#93202](https://bugs.mysql.com/bug.php?id=93202): Connector runs `SHOW VARIABLES` when connection is made~~
-* [#93220](https://bugs.mysql.com/bug.php?id=93220): Can’t call FUNCTION when parameter name contains parentheses
 * ~~[#93370](https://bugs.mysql.com/bug.php?id=93370): `MySqlParameterCollection.Add` precondition check isn't consistent~~
 * ~~[#93374](https://bugs.mysql.com/bug.php?id=93374): `MySqlDataReader.GetStream` throws `IndexOutOfRangeException`~~
-* [#93825](https://bugs.mysql.com/bug.php?id=93825): `MySqlException` loses data when serialized
 * ~~[#94075](https://bugs.mysql.com/bug.php?id=94075): `MySqlCommand.Cancel` throws exception~~
-* [#94760](https://bugs.mysql.com/bug.php?id=94760): `MySqlConnection.OpenAsync(CancellationToken)` doesn’t respect cancellation token
-* [#95348](https://bugs.mysql.com/bug.php?id=95348): Inefficient query when executing stored procedures
-* [#95436](https://bugs.mysql.com/bug.php?id=95436): Client doesn't authenticate with PEM certificate
 * ~~[#95984](https://bugs.mysql.com/bug.php?id=95984): “Incorrect arguments to mysqld_stmt_execute” using prepared statement with `MySqlDbType.JSON`~~
 * ~~[#95986](https://bugs.mysql.com/bug.php?id=95986): “Incorrect integer value” using prepared statement with `MySqlDbType.Int24`~~
 * ~~[#96355](https://bugs.mysql.com/bug.php?id=96355), [#96614](https://bugs.mysql.com/bug.php?id=96614): `Could not load file or assembly 'Renci.SshNet'` when opening connection~~
 * ~~[#96498](https://bugs.mysql.com/bug.php?id=96498): `WHERE` clause using `MySqlGeometry` as parameter finds no rows~~
 * ~~[#96499](https://bugs.mysql.com/bug.php?id=96499): `MySqlException` when inserting a `MySqlGeometry` value~~
-* [#96500](https://bugs.mysql.com/bug.php?id=96500): `MySqlDataReader.GetFieldValue<MySqlGeometry>` throws `InvalidCastException`
-* [#96636](https://bugs.mysql.com/bug.php?id=96636): `MySqlConnection.Open()` slow under load when using SSL
-* [#96717](https://bugs.mysql.com/bug.php?id=96717): Not compatible with MySQL Server 5.0
 * ~~[#97061](https://bugs.mysql.com/bug.php?id=97061): `MySqlCommand.LastInsertedId` returns 0 after executing multiple statements~~
-* [#97067](https://bugs.mysql.com/bug.php?id=97067): Aggregate functions on BIT(n) columns return wrong result
 * ~~[#97300](https://bugs.mysql.com/bug.php?id=97300): `GetSchemaTable()` returns table for stored procedure with output parameters~~
 * ~~[#97448](https://bugs.mysql.com/bug.php?id=97448): Connecting fails if more than one IP is found in DNS for a named host~~
 * ~~[#97473](https://bugs.mysql.com/bug.php?id=97473): `MySqlConnection.Clone` discloses connection password~~
-* [#97738](https://bugs.mysql.com/bug.php?id=97738): Cannot use PEM files when account uses `require subject`
-* [#97872](https://bugs.mysql.com/bug.php?id=97872): `KeepAlive` in connection string throws exception on .NET Core
 * ~~[#98322](https://bugs.mysql.com/bug.php?id=98322): `new MySqlConnection(null)` throws `NullReferenceException`~~
 * ~~[#99091](https://bugs.mysql.com/bug.php?id=99091): Unexpected return value getting integer for `TINYINT(1)` column~~
 * ~~[#99793](https://bugs.mysql.com/bug.php?id=99793): Prepared stored procedure command doesn't verify parameter types~~
@@ -300,7 +317,6 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#103390](https://bugs.mysql.com/bug.php?id=103390): Can't query `CHAR(36)` column if `MySqlCommand` is prepared~~
 * ~~[#103430](https://bugs.mysql.com/bug.php?id=103430): Can't connect using named pipe on Windows~~
 * ~~[#103801](https://bugs.mysql.com/bug.php?id=103801): `TimeSpan` parameters lose microseconds with prepared statement~~
-* [#103819](https://bugs.mysql.com/bug.php?id=103819): Can't use `StringBuilder` containing non-BMP characters as `MySqlParameter.Value`
 * ~~[#104910](https://bugs.mysql.com/bug.php?id=104910): `MySqlConnectionStringBuilder.TryGetValue` always returns `false`~~
 * ~~[#104913](https://bugs.mysql.com/bug.php?id=104913): Cannot execute stored procedure with backtick in name~~
 * ~~[#105209](https://bugs.mysql.com/bug.php?id=105209): Timespan value of zero can't be read with prepared command~~
@@ -308,25 +324,13 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector. (~
 * ~~[#105728](https://bugs.mysql.com/bug.php?id=105728): Named command parameters override query attribute values~~
 * ~~[#105730](https://bugs.mysql.com/bug.php?id=105730): `MySqlCommand.Clone` doesn't clone attributes~~
 * ~~[#105768](https://bugs.mysql.com/bug.php?id=105768): `MySqlCommandBuilder` doesn't support tables with `BIGINT UNSIGNED` primary key~~
-* [#105965](https://bugs.mysql.com/bug.php?id=105965): `MySqlParameterCollection.Add(object)` has quadratic performance
 * ~~[#106242](https://bugs.mysql.com/bug.php?id=106242): `MySqlConnection.Open` throws `AggregateException` instead of `MySqlException`~~
 * ~~[#106243](https://bugs.mysql.com/bug.php?id=106243): `CancellationToken` doesn't cancel `MySqlConnection.OpenAsync`~~
 * ~~[#106244](https://bugs.mysql.com/bug.php?id=106244): `MySqlDataReader.GetFieldValue<Stream>` throws `InvalidCastException`~~
 * ~~[#106247](https://bugs.mysql.com/bug.php?id=106247): Can't use ~~`MySqlDbType.Enum` or~~ `MySqlDbType.Set` with prepared command~~
-* [#107259](https://bugs.mysql.com/bug.php?id=107259): Character Set 'utf8mb3' is not supported by .NET Framework
 * ~~[#108756](https://bugs.mysql.com/bug.php?id=108756): Can't insert negative number using prepared statement with `MySqlDbType.Int24`~~
-* [#108970](https://bugs.mysql.com/bug.php?id=108970): `MySqlConnectionStringBuilder.ContainsKey` method gives wrong result
-* [#109141](https://bugs.mysql.com/bug.php?id=109141): Insert of data into a table results in `System.ArgumentException`
-* [#109331](https://bugs.mysql.com/bug.php?id=109331): MySQL Connector/NET is incompatible with MariaDB 10.10 and later
-* [#109390](https://bugs.mysql.com/bug.php?id=109390): Transaction lock held after connection timeout exception
-* [#109476](https://bugs.mysql.com/bug.php?id=109476): `TransactionScope.Dispose` throws "Connection must be valid and open to rollback"
 * ~~[#109670](https://bugs.mysql.com/bug.php?id=109670), [#109752](https://bugs.mysql.com/bug.php?id=109752): Many MSB3246 errors when referencing MySql.Data 8.0.32~~
 * ~~[#109682](https://bugs.mysql.com/bug.php?id=109682): `MySqlParameter.Clone` loses specific `MySqlDbType`.~~
 * ~~[#109683](https://bugs.mysql.com/bug.php?id=109683): `MySqlCommand.LastInsertedId` is incorrect if multiple rows are inserted.~~
 * ~~[#109716](https://bugs.mysql.com/bug.php?id=109716), [#109727](https://bugs.mysql.com/bug.php?id=109727): Failed to add reference to 'comerr64'~~
 * ~~[#110717](https://bugs.mysql.com/bug.php?id=110717), [#111759](https://bugs.mysql.com/bug.php?id=111759): MySql.Data is not thread-safe~~
-* [#110789](https://bugs.mysql.com/bug.php?id=110789): `OpenAsync` throws unhandled exception from thread pool
-* [#110790](https://bugs.mysql.com/bug.php?id=110790): `ExecuteReaderAsync` hangs instead of cancelling query after `CommandTimeout`
-* [#110791](https://bugs.mysql.com/bug.php?id=110791): `OpenAsync(CancellationToken)` doesn't throw for cancelled token
-* [#111797](https://bugs.mysql.com/bug.php?id=111797): Certain sequence of special characters can break connection string validation.
-* [#112088](https://bugs.mysql.com/bug.php?id=112088): `BIT(n)` parameter size incorrectly returns 0
