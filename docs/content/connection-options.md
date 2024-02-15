@@ -515,7 +515,7 @@ from your connection string when migrating from Connector/NET to MySqlConnector.
     <td>Use <a href="/overview/logging/">MySqlConnector logging</a> (which is more flexible) instead.</td>
   </tr>
   <tr id="OldGetStringBehavior">
-    <td></td>
+    <td>OldGetStringBehavior</td>
     <td>false</td>
     <td>This option is temporary in Connector/NET and unsupported in MySqlConnector.</td>
   </tr>
