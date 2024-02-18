@@ -38,14 +38,14 @@ dotnet test -c Release -f net462
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
-dotnet test -c Release -f net7.0
+dotnet test -c Release -f net9.0
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
 
 echo "Executing integration tests with Compression, No SSL"
 Copy-Item -Force ..\..\.ci\config\config.compression.json config.json
-dotnet test -c Release -f net6.0
+dotnet test -c Release -f net8.0
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
