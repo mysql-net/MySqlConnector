@@ -159,7 +159,7 @@ jobs:
     inputs:
       command: 'test'
       projects: 'tests/IntegrationTests/IntegrationTests.csproj'
-      arguments: '-c Release --no-restore'
+      arguments: '-c Release --no-restore -p:TestTfmsInParallel=false'
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net481/net9.0', 'No SSL') }}
     env:
       DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,StreamingResults,Tls11,UnixDomainSocket'
@@ -197,7 +197,7 @@ jobs:
     inputs:
       command: 'test'
       projects: 'tests/IntegrationTests/IntegrationTests.csproj'
-      arguments: '-c Release --no-restore'
+      arguments: '-c Release --no-restore -p:TestTfmsInParallel=false'
       testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net8.0', 'No SSL') }}
     env:
       DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,StreamingResults,Tls11,UnixDomainSocket'
