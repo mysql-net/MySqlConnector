@@ -27,12 +27,18 @@ internal sealed class RandomLoadBalancer : ILoadBalancer
 	public IReadOnlyList<string> LoadBalance(IReadOnlyList<string> hosts)
 	{
 #pragma warning disable CA5394 // Do not use insecure randomness
-		// from https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm
+#if NET8_0_OR_GREATER
+		var shuffled = hosts.ToArray();
+		lock (m_lock)
+			m_random.Shuffle(shuffled);
+		return shuffled;
+#else
 		var shuffled = new List<string>(hosts);
+		// from https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm
 		for (var i = hosts.Count - 1; i >= 1; i--)
 		{
 			int j;
-			lock (m_random)
+			lock (m_lock)
 				j = m_random.Next(i + 1);
 			if (i != j)
 			{
@@ -42,11 +48,21 @@ internal sealed class RandomLoadBalancer : ILoadBalancer
 			}
 		}
 		return shuffled;
+#endif
 	}
 
-	private RandomLoadBalancer() => m_random = new();
+	private RandomLoadBalancer()
+	{
+		m_random = new();
+		m_lock = new();
+	}
 
 	private readonly Random m_random;
+#if NET9_0_OR_GREATER
+	private readonly Lock m_lock;
+#else
+	private readonly object m_lock;
+#endif
 }
 
 internal sealed class RoundRobinLoadBalancer : ILoadBalancer
@@ -67,6 +83,10 @@ internal sealed class RoundRobinLoadBalancer : ILoadBalancer
 		return shuffled;
 	}
 
+#if NET9_0_OR_GREATER
+	private readonly Lock m_lock;
+#else
 	private readonly object m_lock;
+#endif
 	private uint m_counter;
 }

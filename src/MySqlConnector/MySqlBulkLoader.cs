@@ -176,8 +176,7 @@ public sealed class MySqlBulkLoader
 			{
 				// replace the file name with a sentinel so that we know (when processing the result set) that it's not spoofed by the server
 				var newFileName = GenerateSourceFileName();
-				lock (s_lock)
-					s_sources.Add(newFileName, CreateFileStream(FileName!));
+				AddSource(newFileName, CreateFileStream(FileName!));
 				FileName = newFileName;
 			}
 		}
@@ -187,8 +186,7 @@ public sealed class MySqlBulkLoader
 				throw new InvalidOperationException("Local must be true to use SourceStream, SourceDataTable, or SourceDataReader.");
 
 			FileName = GenerateSourceFileName();
-			lock (s_lock)
-				s_sources.Add(FileName, Source!);
+			AddSource(FileName, Source!);
 		}
 
 		var closeConnection = false;
@@ -220,6 +218,12 @@ public sealed class MySqlBulkLoader
 
 			if (closeConnection)
 				Connection.Close();
+		}
+
+		static void AddSource(string name, object source)
+		{
+			lock (s_lock)
+				s_sources.Add(name, source);
 		}
 	}
 
@@ -319,6 +323,10 @@ public sealed class MySqlBulkLoader
 
 	private static string GenerateSourceFileName() => SourcePrefix + Guid.NewGuid().ToString("N");
 
+#if NET9_0_OR_GREATER
+	private static readonly Lock s_lock = new();
+#else
 	private static readonly object s_lock = new();
+#endif
 	private static readonly Dictionary<string, object> s_sources = [];
 }

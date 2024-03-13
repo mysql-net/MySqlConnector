@@ -1189,16 +1189,20 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			};
 			connection.TakeSessionFrom(this);
 
-			// put the new, idle, connection into the list of sessions for this transaction (replacing this MySqlConnection)
-			lock (s_lock)
+			ReplaceConnection(this, connection);
+			static void ReplaceConnection(MySqlConnection thisConnection, MySqlConnection connection)
 			{
-				foreach (var enlistedTransaction in s_transactionConnections[connection.m_enlistedTransaction!.Transaction])
+				// put the new, idle, connection into the list of sessions for this transaction (replacing this MySqlConnection)
+				lock (s_lock)
 				{
-					if (enlistedTransaction.Connection == this)
+					foreach (var enlistedTransaction in s_transactionConnections[connection.m_enlistedTransaction!.Transaction])
 					{
-						enlistedTransaction.Connection = connection;
-						enlistedTransaction.IsIdle = true;
-						break;
+						if (enlistedTransaction.Connection == thisConnection)
+						{
+							enlistedTransaction.Connection = connection;
+							enlistedTransaction.IsIdle = true;
+							break;
+						}
 					}
 				}
 			}
@@ -1256,7 +1260,11 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	private static readonly StateChangeEventArgs s_stateChangeClosedConnecting = new(ConnectionState.Closed, ConnectionState.Connecting);
 	private static readonly StateChangeEventArgs s_stateChangeConnectingOpen = new(ConnectionState.Connecting, ConnectionState.Open);
 	private static readonly StateChangeEventArgs s_stateChangeOpenClosed = new(ConnectionState.Open, ConnectionState.Closed);
+#if NET9_0_OR_GREATER
+	private static readonly Lock s_lock = new();
+#else
 	private static readonly object s_lock = new();
+#endif
 	private static readonly Dictionary<System.Transactions.Transaction, List<EnlistedTransactionBase>> s_transactionConnections = [];
 	private static readonly ReadOnlyMemory<byte>[] s_startTransactionPayloads = new ReadOnlyMemory<byte>[5 * 3 * 2];
 

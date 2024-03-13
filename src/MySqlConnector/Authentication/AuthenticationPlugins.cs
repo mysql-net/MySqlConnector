@@ -35,6 +35,10 @@ public static class AuthenticationPlugins
 			return s_plugins.TryGetValue(name, out plugin);
 	}
 
+#if NET9_0_OR_GREATER
+	private static readonly Lock s_lock = new();
+#else
 	private static readonly object s_lock = new();
+#endif
 	private static readonly Dictionary<string, IAuthenticationPlugin> s_plugins = [];
 }
