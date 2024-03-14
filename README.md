@@ -3,7 +3,8 @@
 [![NuGet](https://img.shields.io/nuget/vpre/MySqlConnector.svg)](https://www.nuget.org/packages/MySqlConnector/)
 
 This is an [ADO.NET](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/) data
-provider for [MySQL](https://www.mysql.com/). It provides implementations of
+provider for [MySQL](https://www.mysql.com/) and other compatible servers including [MariaDB](https://www.mariadb.org).
+It provides implementations of
 `DbConnection`, `DbCommand`, `DbDataReader`, `DbTransaction`—the classes
 needed to query and update databases from managed code.
 
@@ -21,7 +22,7 @@ This library outperforms MySQL Connector/NET (`MySql.Data`) on benchmarks:
 
 ### Server Compatibility
 
-This library is compatible with [many MySQL-compatible servers](https://mysqlconnector.net/#server-compatibility).
+This library is compatible with [many MySQL-compatible servers](https://mysqlconnector.net/#server-compatibility), including MySQL 5.5 and newer and MariaDB 10.x and newer.
 MySql.Data [only supports MySQL Server](https://bugs.mysql.com/bug.php?id=109331).
 
 ### Bug Fixes
