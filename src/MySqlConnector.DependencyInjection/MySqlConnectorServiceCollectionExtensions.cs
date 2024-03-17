@@ -23,7 +23,7 @@ public static class MySqlConnectorServiceCollectionExtensions
 		string connectionString,
 		ServiceLifetime connectionLifetime = ServiceLifetime.Transient,
 		ServiceLifetime dataSourceLifetime = ServiceLifetime.Singleton) =>
-		DoAddMySqlDataSource(serviceCollection, connectionString, dataSourceBuilderAction: null, connectionLifetime, dataSourceLifetime);
+		DoAddMySqlDataSource(serviceCollection, connectionString, dataSourceBuilderAction: null, connectionLifetime, dataSourceLifetime, builderActionState: null);
 
 	/// <summary>
 	/// Registers a <see cref="MySqlDataSource" /> and a <see cref="MySqlConnection" /> in the <see cref="IServiceCollection" />.
@@ -40,7 +40,24 @@ public static class MySqlConnectorServiceCollectionExtensions
 		Action<MySqlDataSourceBuilder> dataSourceBuilderAction,
 		ServiceLifetime connectionLifetime = ServiceLifetime.Transient,
 		ServiceLifetime dataSourceLifetime = ServiceLifetime.Singleton) =>
-		DoAddMySqlDataSource(serviceCollection, connectionString, dataSourceBuilderAction, connectionLifetime, dataSourceLifetime);
+		DoAddMySqlDataSource(serviceCollection, connectionString, DataSourceBuilderThunk, connectionLifetime, dataSourceLifetime, builderActionState: dataSourceBuilderAction);
+
+	/// <summary>
+	/// Registers a <see cref="MySqlDataSource" /> and a <see cref="MySqlConnection" /> in the <see cref="IServiceCollection" />.
+	/// </summary>
+	/// <param name="serviceCollection">The <see cref="IServiceCollection" /> to add services to.</param>
+	/// <param name="connectionString">A MySQL connection string.</param>
+	/// <param name="dataSourceBuilderAction">An action to configure the <see cref="MySqlDataSourceBuilder" /> for further customizations of the <see cref="MySqlDataSource" />.</param>
+	/// <param name="connectionLifetime">The lifetime with which to register the <see cref="MySqlConnection" /> in the container. Defaults to <see cref="ServiceLifetime.Transient" />.</param>
+	/// <param name="dataSourceLifetime">The lifetime with which to register the <see cref="MySqlDataSource" /> service in the container. Defaults to <see cref="ServiceLifetime.Singleton" />.</param>
+	/// <returns>The same service collection so that multiple calls can be chained.</returns>
+	public static IServiceCollection AddMySqlDataSource(
+		this IServiceCollection serviceCollection,
+		string connectionString,
+		Action<IServiceProvider, MySqlDataSourceBuilder> dataSourceBuilderAction,
+		ServiceLifetime connectionLifetime = ServiceLifetime.Transient,
+		ServiceLifetime dataSourceLifetime = ServiceLifetime.Singleton) =>
+		DoAddMySqlDataSource(serviceCollection, connectionString, ServiceProviderDataSourceBuilderThunk, connectionLifetime, dataSourceLifetime, builderActionState: dataSourceBuilderAction);
 
 	/// <summary>
 	/// Registers a <see cref="MySqlDataSource" /> and a <see cref="MySqlConnection" /> in the <see cref="IServiceCollection" />.
@@ -58,7 +75,7 @@ public static class MySqlConnectorServiceCollectionExtensions
 		string connectionString,
 		ServiceLifetime connectionLifetime = ServiceLifetime.Transient,
 		ServiceLifetime dataSourceLifetime = ServiceLifetime.Singleton) =>
-		DoAddMySqlDataSource(serviceCollection, serviceKey, connectionString, dataSourceBuilderAction: null, connectionLifetime, dataSourceLifetime);
+		DoAddMySqlDataSource(serviceCollection, serviceKey, connectionString, dataSourceBuilderAction: null, connectionLifetime, dataSourceLifetime, builderActionState: null);
 
 	/// <summary>
 	/// Registers a <see cref="MySqlDataSource" /> and a <see cref="MySqlConnection" /> in the <see cref="IServiceCollection" />.
@@ -79,14 +96,36 @@ public static class MySqlConnectorServiceCollectionExtensions
 		Action<MySqlDataSourceBuilder> dataSourceBuilderAction,
 		ServiceLifetime connectionLifetime = ServiceLifetime.Transient,
 		ServiceLifetime dataSourceLifetime = ServiceLifetime.Singleton) =>
-		DoAddMySqlDataSource(serviceCollection, serviceKey, connectionString, dataSourceBuilderAction, connectionLifetime, dataSourceLifetime);
+		DoAddMySqlDataSource(serviceCollection, serviceKey, connectionString, DataSourceBuilderThunk, connectionLifetime, dataSourceLifetime, builderActionState: dataSourceBuilderAction);
+
+	/// <summary>
+	/// Registers a <see cref="MySqlDataSource" /> and a <see cref="MySqlConnection" /> in the <see cref="IServiceCollection" />.
+	/// </summary>
+	/// <param name="serviceCollection">The <see cref="IServiceCollection" /> to add services to.</param>
+	/// <param name="serviceKey">The <see cref="ServiceDescriptor.ServiceKey"/> of the service.</param>
+	/// <param name="connectionString">A MySQL connection string.</param>
+	/// <param name="dataSourceBuilderAction">An action to configure the <see cref="MySqlDataSourceBuilder" /> for further customizations of the <see cref="MySqlDataSource" />.</param>
+	/// <param name="connectionLifetime">The lifetime with which to register the <see cref="MySqlConnection" /> in the container. Defaults to <see cref="ServiceLifetime.Transient" />.</param>
+	/// <param name="dataSourceLifetime">The lifetime with which to register the <see cref="MySqlDataSource" /> service in the container. Defaults to <see cref="ServiceLifetime.Singleton" />.</param>
+	/// <returns>The same service collection so that multiple calls can be chained.</returns>
+	/// <remarks>If the <paramref name="serviceKey"/> is a <see langword="string"/>, it will automatically be used to initialize the data source name; this can
+	/// be overridden by the <paramref name="dataSourceBuilderAction"/> configuration action.</remarks>
+	public static IServiceCollection AddKeyedMySqlDataSource(
+		this IServiceCollection serviceCollection,
+		object? serviceKey,
+		string connectionString,
+		Action<IServiceProvider, MySqlDataSourceBuilder> dataSourceBuilderAction,
+		ServiceLifetime connectionLifetime = ServiceLifetime.Transient,
+		ServiceLifetime dataSourceLifetime = ServiceLifetime.Singleton) =>
+		DoAddMySqlDataSource(serviceCollection, serviceKey, connectionString, ServiceProviderDataSourceBuilderThunk, connectionLifetime, dataSourceLifetime, builderActionState: dataSourceBuilderAction);
 
 	private static IServiceCollection DoAddMySqlDataSource(
 		this IServiceCollection serviceCollection,
 		string connectionString,
-		Action<MySqlDataSourceBuilder>? dataSourceBuilderAction,
+		Action<IServiceProvider, MySqlDataSourceBuilder, object?>? dataSourceBuilderAction,
 		ServiceLifetime connectionLifetime,
-		ServiceLifetime dataSourceLifetime)
+		ServiceLifetime dataSourceLifetime,
+		object? builderActionState)
 	{
 		serviceCollection.TryAdd(
 			new ServiceDescriptor(
@@ -95,7 +134,7 @@ public static class MySqlConnectorServiceCollectionExtensions
 				{
 					var dataSourceBuilder = new MySqlDataSourceBuilder(connectionString)
 						.UseLoggerFactory(serviceProvider.GetService<ILoggerFactory>());
-					dataSourceBuilderAction?.Invoke(dataSourceBuilder);
+					dataSourceBuilderAction?.Invoke(serviceProvider, dataSourceBuilder, builderActionState);
 					return dataSourceBuilder.Build();
 				},
 				dataSourceLifetime));
@@ -115,9 +154,10 @@ public static class MySqlConnectorServiceCollectionExtensions
 		this IServiceCollection serviceCollection,
 		object? serviceKey,
 		string connectionString,
-		Action<MySqlDataSourceBuilder>? dataSourceBuilderAction,
+		Action<IServiceProvider, MySqlDataSourceBuilder, object?>? dataSourceBuilderAction,
 		ServiceLifetime connectionLifetime,
-		ServiceLifetime dataSourceLifetime)
+		ServiceLifetime dataSourceLifetime,
+		object? builderActionState)
 	{
 		serviceCollection.TryAdd(
 			new ServiceDescriptor(
@@ -128,7 +168,7 @@ public static class MySqlConnectorServiceCollectionExtensions
 					var dataSourceBuilder = new MySqlDataSourceBuilder(connectionString)
 						.UseLoggerFactory(serviceProvider.GetService<ILoggerFactory>())
 						.UseName(serviceKey as string);
-					dataSourceBuilderAction?.Invoke(dataSourceBuilder);
+					dataSourceBuilderAction?.Invoke(serviceProvider, dataSourceBuilder, builderActionState);
 					return dataSourceBuilder.Build();
 				},
 				dataSourceLifetime));
@@ -143,4 +183,10 @@ public static class MySqlConnectorServiceCollectionExtensions
 
 		return serviceCollection;
 	}
+
+	private static void DataSourceBuilderThunk(IServiceProvider serviceProvider, MySqlDataSourceBuilder dataSourceBuilder, object? state) =>
+		((Action<MySqlDataSourceBuilder>) state!)(dataSourceBuilder);
+
+	private static void ServiceProviderDataSourceBuilderThunk(IServiceProvider serviceProvider, MySqlDataSourceBuilder dataSourceBuilder, object? state) =>
+		((Action<IServiceProvider, MySqlDataSourceBuilder>) state!)(serviceProvider, dataSourceBuilder);
 }
