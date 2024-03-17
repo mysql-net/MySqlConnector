@@ -1389,18 +1389,30 @@ internal sealed partial class ServerSession
 
 		bool ValidateRemoteCertificate(object rcbSender, X509Certificate? rcbCertificate, X509Chain? rcbChain, SslPolicyErrors rcbPolicyErrors)
 		{
+			// if no CA verification is required, then we trust any remote certificate
 			if (cs.SslMode is MySqlSslMode.Preferred or MySqlSslMode.Required)
 				return true;
 
+			// if there are errors, then try to build a path to a root certificate from the certificates presented by the remote host
 			if ((rcbPolicyErrors & SslPolicyErrors.RemoteCertificateChainErrors) != 0 &&
-				rcbCertificate is not null &&
+				rcbChain is not null &&
 				caCertificateChain is not null &&
-				caCertificateChain.Build((X509Certificate2) rcbCertificate) &&
+				caCertificateChain.Build(rcbChain.ChainElements[^1].Certificate) &&
 				caCertificateChain.ChainStatus.Length > 0)
 			{
-				var chainStatus = caCertificateChain.ChainStatus[0].Status & ~X509ChainStatusFlags.UntrustedRoot;
-				if (chainStatus == X509ChainStatusFlags.NoError)
-					rcbPolicyErrors &= ~SslPolicyErrors.RemoteCertificateChainErrors;
+				// if the only error is an Untrusted Root Certificate, then check all provided SSL CA certificates to see if one is the root
+				if (caCertificateChain.ChainStatus[0].Status == X509ChainStatusFlags.UntrustedRoot)
+				{
+					var rootCertificate = caCertificateChain.ChainElements[^1].Certificate;
+					foreach (var sslCaCertificate in caCertificateChain.ChainPolicy.ExtraStore)
+					{
+						if (rootCertificate.RawData.AsSpan().SequenceEqual(sslCaCertificate.RawData))
+						{
+							rcbPolicyErrors &= ~SslPolicyErrors.RemoteCertificateChainErrors;
+							break;
+						}
+					}
+				}
 			}
 
 			if (cs.SslMode == MySqlSslMode.VerifyCA)
