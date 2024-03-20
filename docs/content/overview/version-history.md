@@ -1,5 +1,5 @@
 ---
-lastmod: 2024-01-20
+lastmod: 2024-03-20
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,21 @@ weight: 30
 ---
 
 # Version History
+
+### 2.3.6
+
+* Fix `VerifyCA` incompatibility with AWS Aurora: [#1462](https://github.com/mysql-net/MySqlConnector/issues/1462).
+* Verify that the server's root certificate is present (in the list of provided CA certificates) when using the `SslCa` connection string option and `SslMode` is `VerifyCA` or `VerifyFull`.
+* Optimization: Use pipelining to begin a transaction: [#1286](https://github.com/mysql-net/MySqlConnector/issues/1286).
+  * Use `Pipelining = False;` in your connection string to disable this optimization if there are compatibility issues.
+* Optimization: cache `START TRANSACTION` payloads.
+* Add transaction logging: [#1411](https://github.com/mysql-net/MySqlConnector/issues/1411).
+* Fix incompatibility with MySQL Server 5.1: [#1445](https://github.com/mysql-net/MySqlConnector/issues/1445).
+  * This fixes a regression introduced in 2.3.0.
+
+#### MySqlConnector.DependencyInjection
+
+* Add overload of `AddMySqlDataSource` that takes an `Action<IServiceProvider, MySqlDataSourceBuilder>` action to configure the `MySqlDataSourceBuilder` instance: [#1316](https://github.com/mysql-net/MySqlConnector/issues/1316).
 
 ### 2.3.5
 
