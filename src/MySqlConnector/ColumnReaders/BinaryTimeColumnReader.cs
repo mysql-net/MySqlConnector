@@ -28,7 +28,9 @@ internal sealed class BinaryTimeColumnReader : ColumnReader
 			microseconds = -microseconds;
 		}
 
-#if NET7_0_OR_GREATER
+#if NET9_0_OR_GREATER
+		return TimeSpan.FromDays(days, hours, minutes, seconds, microseconds: microseconds);
+#elif NET7_0_OR_GREATER
 		return new TimeSpan(days, hours, minutes, seconds, microseconds / 1000, microseconds % 1000);
 #else
 		return new TimeSpan(days, hours, minutes, seconds) + TimeSpan.FromTicks(microseconds * 10);
