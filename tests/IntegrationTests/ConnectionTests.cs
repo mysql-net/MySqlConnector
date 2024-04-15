@@ -218,8 +218,10 @@ public class ConnectionTests : IClassFixture<DatabaseFixture>
 		var newConnectionString = "user=root;server=example.com;database=test";
 		using var connection2 = connection.CloneWith(newConnectionString);
 
-		var builder = new MySqlConnectionStringBuilder(newConnectionString);
-		builder.Password = AppConfig.CreateConnectionStringBuilder().Password;
+		var builder = new MySqlConnectionStringBuilder(newConnectionString)
+		{
+			Password = AppConfig.CreateConnectionStringBuilder().Password,
+		};
 		Assert.Equal(builder.ConnectionString, connection2.ConnectionString);
 	}
 
@@ -249,8 +251,10 @@ public class ConnectionTests : IClassFixture<DatabaseFixture>
 		var newConnectionString = "user=root;server=example.com;database=test;Persist Security Info=" + persistSecurityInfo;
 		using var connection2 = connection.CloneWith(newConnectionString);
 
-		var builder = new MySqlConnectionStringBuilder(newConnectionString);
-		builder.Password = AppConfig.CreateConnectionStringBuilder().Password;
+		var builder = new MySqlConnectionStringBuilder(newConnectionString)
+		{
+			Password = AppConfig.CreateConnectionStringBuilder().Password,
+		};
 		Assert.Equal(builder.ConnectionString, connection2.ConnectionString);
 	}
 

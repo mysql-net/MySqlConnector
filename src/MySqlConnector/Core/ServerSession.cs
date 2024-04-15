@@ -1,7 +1,6 @@
 using System.Buffers.Text;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.IO.Pipes;
 using System.Net;
@@ -64,10 +63,10 @@ internal sealed partial class ServerSession
 	public IPEndPoint? IPEndPoint => m_tcpClient?.Client.RemoteEndPoint as IPEndPoint;
 	public string? UserID { get; private set; }
 	public WeakReference<MySqlConnection>? OwningConnection { get; set; }
-	public bool SupportsDeprecateEof => m_supportsDeprecateEof;
+	public bool SupportsDeprecateEof { get; private set; }
 	public bool SupportsCachedPreparedMetadata { get; private set; }
 	public bool SupportsQueryAttributes { get; private set; }
-	public bool SupportsSessionTrack => m_supportsSessionTrack;
+	public bool SupportsSessionTrack { get; private set; }
 	public bool ProcAccessDenied { get; set; }
 	public ICollection<KeyValuePair<string, object?>> ActivityTags => m_activityTags;
 	public MySqlDataReader DataReader { get; }
@@ -128,7 +127,7 @@ internal sealed partial class ServerSession
 			// a unique identifier of the command itself). As a mitigation, we set the CommandTimeout to a low value to avoid
 			// blocking the other thread for an extended duration.
 			Log.CancelingCommand(m_logger, killCommand.Connection!.Session.Id, commandToCancel.CommandId, killCommand.CommandText);
-			killCommand.ExecuteNonQuery();
+			_ = killCommand.ExecuteNonQuery();
 		}
 	}
 
@@ -161,7 +160,7 @@ internal sealed partial class ServerSession
 
 			var parameterCount = cachedProcedure.Parameters.Count;
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-			commandToPrepare = string.Create(commandText.Length + 7 + parameterCount * 2 + (parameterCount == 0 ? 1 : 0), (commandText, parameterCount), static (buffer, state) =>
+			commandToPrepare = string.Create(commandText.Length + 7 + (parameterCount * 2) + (parameterCount == 0 ? 1 : 0), (commandText, parameterCount), static (buffer, state) =>
 			{
 				buffer[0] = 'C';
 				buffer[1] = 'A';
@@ -188,7 +187,7 @@ internal sealed partial class ServerSession
 				buffer[1] = ';';
 			});
 #else
-			var callStatement = new StringBuilder("CALL ", commandText.Length + 8 + parameterCount * 2);
+			var callStatement = new StringBuilder("CALL ", commandText.Length + 8 + (parameterCount * 2));
 			callStatement.Append(commandText);
 			callStatement.Append('(');
 			for (int i = 0; i < parameterCount; i++)
@@ -196,7 +195,7 @@ internal sealed partial class ServerSession
 			if (parameterCount == 0)
 				callStatement.Append(')');
 			else
-				callStatement[callStatement.Length - 1] = ')';
+				callStatement[^1] = ')';
 			callStatement.Append(';');
 			commandToPrepare = callStatement.ToString();
 #endif
@@ -394,8 +393,6 @@ internal sealed partial class ServerSession
 
 	public async Task<string?> ConnectAsync(ConnectionSettings cs, MySqlConnection connection, long startingTimestamp, ILoadBalancer? loadBalancer, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		string? statusInfo = null;
-
 		try
 		{
 			lock (m_lock)
@@ -414,9 +411,9 @@ internal sealed partial class ServerSession
 					m_activityTags.Add(ActivitySourceHelper.DatabaseNameTagName, cs.Database);
 				if (activity is { IsAllDataRequested: true })
 				{
-					activity.SetTag(ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue);
-					activity.SetTag(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionString);
-					activity.SetTag(ActivitySourceHelper.DatabaseUserTagName, cs.UserID);
+					activity.SetTag(ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue)
+						.SetTag(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionString)
+						.SetTag(ActivitySourceHelper.DatabaseUserTagName, cs.UserID);
 					if (cs.Database.Length != 0)
 						activity.SetTag(ActivitySourceHelper.DatabaseNameTagName, cs.Database);
 				}
@@ -446,13 +443,11 @@ internal sealed partial class ServerSession
 			var initialHandshake = InitialHandshakePayload.Create(payload.Span);
 
 			// if PluginAuth is supported, then use the specified auth plugin; else, fall back to protocol capabilities to determine the auth type to use
-			string authPluginName;
-			if ((initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
-				authPluginName = initialHandshake.AuthPluginName!;
-			else
-				authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" : "mysql_native_password";
+			var authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0 ? initialHandshake.AuthPluginName! :
+				(initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" :
+				"mysql_native_password";
 			Log.ServerSentAuthPluginName(m_logger, Id, authPluginName);
-			if (authPluginName != "mysql_native_password" && authPluginName != "sha256_password" && authPluginName != "caching_sha2_password")
+			if (authPluginName is not "mysql_native_password" and not "sha256_password" and not "caching_sha2_password")
 			{
 				Log.UnsupportedAuthenticationMethod(m_logger, Id, authPluginName);
 				throw new NotSupportedException($"Authentication method '{initialHandshake.AuthPluginName}' is not supported.");
@@ -474,10 +469,10 @@ internal sealed partial class ServerSession
 			}
 
 			m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
-			m_supportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
+			SupportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
 			SupportsCachedPreparedMetadata = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.MariaDbCacheMetadata) != 0;
 			SupportsQueryAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.QueryAttributes) != 0;
-			m_supportsSessionTrack = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SessionTrack) != 0;
+			SupportsSessionTrack = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SessionTrack) != 0;
 			var serverSupportsSsl = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Ssl) != 0;
 			m_characterSet = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? CharacterSet.Utf8Mb4GeneralCaseInsensitive : CharacterSet.Utf8Mb3GeneralCaseInsensitive;
 			m_setNamesPayload = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ?
@@ -510,7 +505,7 @@ internal sealed partial class ServerSession
 				}
 			}
 
-			Log.SessionMadeConnection(m_logger, Id, ServerVersion.OriginalString, ConnectionId, m_useCompression, m_supportsConnectionAttributes, m_supportsDeprecateEof, SupportsCachedPreparedMetadata, serverSupportsSsl, m_supportsSessionTrack, m_supportsPipelining, SupportsQueryAttributes);
+			Log.SessionMadeConnection(m_logger, Id, ServerVersion.OriginalString, ConnectionId, m_useCompression, m_supportsConnectionAttributes, SupportsDeprecateEof, SupportsCachedPreparedMetadata, serverSupportsSsl, SupportsSessionTrack, m_supportsPipelining, SupportsQueryAttributes);
 
 			if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
 			{
@@ -538,7 +533,7 @@ internal sealed partial class ServerSession
 			}
 
 			var ok = OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
-			statusInfo = ok.StatusInfo;
+			var statusInfo = ok.StatusInfo;
 
 			if (m_useCompression)
 				m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
@@ -552,6 +547,7 @@ internal sealed partial class ServerSession
 				await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 
 			m_payloadHandler.ByteHandler.RemainingTimeout = Constants.InfiniteTimeout;
+			return statusInfo;
 		}
 		catch (ArgumentException ex)
 		{
@@ -563,8 +559,6 @@ internal sealed partial class ServerSession
 			Log.CouldNotConnectToServer(m_logger, ex, Id);
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't connect to server", ex);
 		}
-
-		return statusInfo;
 	}
 
 	public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -888,10 +882,7 @@ internal sealed partial class ServerSession
 		}
 
 		var payload = new PayloadData(bytes);
-		if (payload.HeaderByte == ErrorPayload.Signature)
-			throw CreateExceptionForErrorPayload(payload.Span);
-
-		return payload;
+		return payload.HeaderByte == ErrorPayload.Signature ? throw CreateExceptionForErrorPayload(payload.Span) : payload;
 	}
 
 	public ValueTask<PayloadData> ReceiveReplyAsync(int expectedSequenceNumber, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -953,15 +944,16 @@ internal sealed partial class ServerSession
 		}
 	}
 
-	private Exception? CreateExceptionForInvalidState()
+	private InvalidOperationException? CreateExceptionForInvalidState()
 	{
 		lock (m_lock)
 		{
-			if (m_state == State.Closed)
-				return new ObjectDisposedException(nameof(ServerSession));
-			if (m_state != State.Connected && m_state != State.Querying && m_state != State.CancelingQuery && m_state != State.ClearingPendingCancellation && m_state != State.Closing)
-				return new InvalidOperationException("ServerSession is not connected.");
-			return null;
+			return m_state switch
+			{
+				State.Closed => new ObjectDisposedException(nameof(ServerSession)),
+				State.Connected or State.Querying or State.CancelingQuery or State.ClearingPendingCancellation or State.Closing => null,
+				_ => new InvalidOperationException("ServerSession is not connected."),
+			};
 		}
 	}
 
@@ -1136,8 +1128,8 @@ internal sealed partial class ServerSession
 			m_activityTags.Add(ActivitySourceHelper.NetPeerNameTagName, cs.UnixSocket);
 			if (activity is { IsAllDataRequested: true })
 			{
-				activity.SetTag(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportUnixValue);
-				activity.SetTag(ActivitySourceHelper.NetPeerNameTagName, cs.UnixSocket);
+				activity.SetTag(ActivitySourceHelper.NetTransportTagName, ActivitySourceHelper.NetTransportUnixValue)
+					.SetTag(ActivitySourceHelper.NetPeerNameTagName, cs.UnixSocket);
 			}
 		}
 
@@ -1145,7 +1137,7 @@ internal sealed partial class ServerSession
 		var unixEp = new UnixDomainSocketEndPoint(cs.UnixSocket!);
 		try
 		{
-			using (cancellationToken.Register(() => socket.Dispose()))
+			using (cancellationToken.Register(socket.Dispose))
 			{
 				try
 				{
@@ -1644,16 +1636,16 @@ internal sealed partial class ServerSession
 			await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			// column count: 2
-			await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			_ = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			// CONNECTION_ID() and VERSION() columns
-			await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-			await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+			_ = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+			_ = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 
 			if (!SupportsDeprecateEof)
 			{
 				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-				EofPayload.Create(payload.Span);
+				_ = EofPayload.Create(payload.Span);
 			}
 
 			// first (and only) row
@@ -1935,8 +1927,6 @@ internal sealed partial class ServerSession
 	private bool m_useCompression;
 	private bool m_isSecureConnection;
 	private bool m_supportsConnectionAttributes;
-	private bool m_supportsDeprecateEof;
-	private bool m_supportsSessionTrack;
 	private bool m_supportsPipelining;
 	private CharacterSet m_characterSet;
 	private PayloadData m_setNamesPayload;

@@ -1,5 +1,6 @@
+#if NET6_0_OR_GREATER
 using System.Globalization;
-using System.Text;
+#endif
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector.Core;
@@ -431,7 +432,7 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 			while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
 			{
 				var rowValues = new object[dataTable.Columns.Count];
-				reader.GetValues(rowValues);
+				_ = reader.GetValues(rowValues);
 				dataTable.Rows.Add(rowValues);
 			}
 		}

@@ -327,12 +327,11 @@ public sealed class MySqlBatch :
 
 	private bool IsValid([NotNullWhen(false)] out Exception? exception)
 	{
-		exception = null;
 		if (m_isDisposed)
 			exception = new ObjectDisposedException(GetType().Name);
 		else if (Connection is null)
 			exception = new InvalidOperationException("Connection property must be non-null.");
-		else if (Connection.State != ConnectionState.Open && Connection.State != ConnectionState.Connecting)
+		else if (Connection.State is not ConnectionState.Open and not ConnectionState.Connecting)
 			exception = new InvalidOperationException($"Connection must be Open; current state is {Connection.State}");
 		else if (!Connection.IgnoreCommandTransaction && Transaction != Connection.CurrentTransaction)
 			exception = new InvalidOperationException("The transaction associated with this batch is not the connection's active transaction; see https://fl.vu/mysql-trans");

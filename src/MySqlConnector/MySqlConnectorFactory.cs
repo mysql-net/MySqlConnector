@@ -65,7 +65,7 @@ public sealed class MySqlConnectorFactory : DbProviderFactory
 #if NET6_0_OR_GREATER
 	public override DbBatch CreateBatch() => new MySqlBatch();
 #else
-	public MySqlBatch CreateBatch() => new MySqlBatch();
+	public MySqlBatch CreateBatch() => new();
 #endif
 
 	/// <summary>
@@ -74,7 +74,7 @@ public sealed class MySqlConnectorFactory : DbProviderFactory
 #if NET6_0_OR_GREATER
 	public override DbBatchCommand CreateBatchCommand() => new MySqlBatchCommand();
 #else
-	public MySqlBatchCommand CreateBatchCommand() => new MySqlBatchCommand();
+	public MySqlBatchCommand CreateBatchCommand() => new();
 #endif
 
 	/// <summary>

@@ -17,15 +17,13 @@ internal sealed partial class NormalizedSchema
 	private static readonly Regex s_nameRegex = new(ReName, RegexOptions.Compiled);
 #endif
 
-	public static NormalizedSchema MustNormalize(string name, string? defaultSchema = null)
-	{
-		var normalized = new NormalizedSchema(name, defaultSchema);
-		if (normalized.Component is null)
-			throw new ArgumentException("Could not determine function/procedure name", nameof(name));
-		if (normalized.Schema is null)
-			throw new ArgumentException("Could not determine schema", nameof(defaultSchema));
-		return normalized;
-	}
+	public static NormalizedSchema MustNormalize(string name, string? defaultSchema = null) =>
+		new NormalizedSchema(name, defaultSchema) switch
+		{
+			{ Component: null } => throw new ArgumentException("Could not determine function/procedure name", nameof(name)),
+			{ Schema: null } => throw new ArgumentException("Could not determine schema", nameof(defaultSchema)),
+			{ } normalized => normalized,
+		};
 
 	public NormalizedSchema(string name, string? defaultSchema = null)
 	{

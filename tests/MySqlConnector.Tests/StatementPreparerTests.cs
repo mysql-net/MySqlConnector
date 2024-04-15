@@ -146,44 +146,44 @@ SELECT @'var' as R")]
 		new[]
 		{
 			new object[] { (byte) 200, "200" },
-			new object[] { (sbyte) -100, "-100" },
-			new object[] { (short) -12345, "-12345" },
-			new object[] { (ushort) 45678, "45678" },
-			new object[] { -1_234_567_890, "-1234567890" },
-			new object[] { 3_456_789_012u, "3456789012" },
-			new object[] { -12_345_678_901L, "-12345678901" },
-			new object[] { 12_345_678_901UL, "12345678901" },
+			[(sbyte) -100, "-100"],
+			[(short) -12345, "-12345"],
+			[(ushort) 45678, "45678"],
+			[-1_234_567_890, "-1234567890"],
+			[3_456_789_012u, "3456789012"],
+			[-12_345_678_901L, "-12345678901"],
+			[12_345_678_901UL, "12345678901"],
 #if NET481
-			new object[] { 1.0123456f, "1.01234555" },
+			[1.0123456f, "1.01234555"],
 #else
-			new object[] { 1.0123456f, "1.0123456" },
+			[1.0123456f, "1.0123456"],
 #endif
-			new object[] { 1.0123456789012346, "1.0123456789012346" },
-			new object[] { 123456789.123456789m, "123456789.123456789" },
-			new object[] { "1234", "'1234'" },
-			new object[] { "it's", "'it''s'" },
-			new object[] { "it's", "'it''s'", true },
-			new object[] { 'a', "'a'" },
-			new object[] { '\'', "''''" },
-			new object[] { '\'', "''''", true },
-			new object[] { '\\', "'\\\\'" },
-			new object[] { '\\', "'\\'", true },
-			new object[] { "\\'", "'\\\\'''" },
-			new object[] { "\\'", "'\\'''", true },
-			new object[] { 'ﬃ', "'ﬃ'" },
-			new object[] { new DateTime(1234, 12, 23, 12, 34, 56, 789), "timestamp('1234-12-23 12:34:56.789000')" },
-			new object[] { new DateTimeOffset(1234, 12, 23, 12, 34, 56, 789, TimeSpan.FromHours(2)), "timestamp('1234-12-23 10:34:56.789000')" },
-			new object[] { new TimeSpan(2, 3, 4, 5, 6), "time '51:04:05.006000'" },
-			new object[] { new TimeSpan(-2, -3, -4, -5, -6), "time '-51:04:05.006000'" },
-			new object[] { new Guid("00112233-4455-6677-8899-AABBCCDDEEFF"), "'00112233-4455-6677-8899-aabbccddeeff'" },
-			new object[] { new byte[] { 0x41, 0x42, 0x27, 0x61, 0x5c, 0x62 }, @"_binary'AB''a\\b'" },
-			new object[] { new byte[] { 0x41, 0x42, 0x27, 0x61, 0x5c, 0x62 }, @"_binary'AB''a\b'", true },
-			new object[] { new MemoryStream(new byte[] { 0x41, 0x42, 0x27, 0x61, 0x5c, 0x62 }), @"_binary'AB''a\\b'" },
-			new object[] { new MemoryStream(new byte[] { 0x41, 0x42, 0x27, 0x61, 0x5c, 0x62 }), @"_binary'AB''a\b'", true },
-			new object[] { new MemoryStream(new byte[] { 0, 0x41, 0x42, 0x27, 0x61, 0x5c, 0x62, 0x63 }, 1, 6, false, true), @"_binary'AB''a\\b'" },
-			new object[] { new MemoryStream(new byte[] { 0, 0x41, 0x42, 0x27, 0x61, 0x5c, 0x62, 0x63 }, 1, 6, false, true), @"_binary'AB''a\b'", true },
-			new object[] { "\"AB\\ab'".AsMemory(), @"'""AB\\ab'''" },
-			new object[] { new StringBuilder("\"AB\\ab'"), @"'""AB\\ab'''" },
+			[1.0123456789012346, "1.0123456789012346"],
+			[123456789.123456789m, "123456789.123456789"],
+			["1234", "'1234'"],
+			["it's", "'it''s'"],
+			["it's", "'it''s'", true],
+			['a', "'a'"],
+			['\'', "''''"],
+			['\'', "''''", true],
+			['\\', "'\\\\'"],
+			['\\', "'\\'", true],
+			["\\'", "'\\\\'''"],
+			["\\'", "'\\'''", true],
+			['ﬃ', "'ﬃ'"],
+			[new DateTime(1234, 12, 23, 12, 34, 56, 789), "timestamp('1234-12-23 12:34:56.789000')"],
+			[new DateTimeOffset(1234, 12, 23, 12, 34, 56, 789, TimeSpan.FromHours(2)), "timestamp('1234-12-23 10:34:56.789000')"],
+			[new TimeSpan(2, 3, 4, 5, 6), "time '51:04:05.006000'"],
+			[new TimeSpan(-2, -3, -4, -5, -6), "time '-51:04:05.006000'"],
+			[new Guid("00112233-4455-6677-8899-AABBCCDDEEFF"), "'00112233-4455-6677-8899-aabbccddeeff'"],
+			[new byte[] { 0x41, 0x42, 0x27, 0x61, 0x5c, 0x62 }, @"_binary'AB''a\\b'"],
+			[new byte[] { 0x41, 0x42, 0x27, 0x61, 0x5c, 0x62 }, @"_binary'AB''a\b'", true],
+			[new MemoryStream([0x41, 0x42, 0x27, 0x61, 0x5c, 0x62]), @"_binary'AB''a\\b'"],
+			[new MemoryStream([0x41, 0x42, 0x27, 0x61, 0x5c, 0x62]), @"_binary'AB''a\b'", true],
+			[new MemoryStream([0, 0x41, 0x42, 0x27, 0x61, 0x5c, 0x62, 0x63], 1, 6, false, true), @"_binary'AB''a\\b'"],
+			[new MemoryStream([0, 0x41, 0x42, 0x27, 0x61, 0x5c, 0x62, 0x63], 1, 6, false, true), @"_binary'AB''a\b'", true],
+			["\"AB\\ab'".AsMemory(), @"'""AB\\ab'''"],
+			[new StringBuilder("\"AB\\ab'"), @"'""AB\\ab'''"],
 		};
 
 	[Theory]
@@ -296,7 +296,7 @@ SELECT @'var' as R")]
 
 	private static string GetParsedSql(string input, MySqlParameterCollection parameters = null, StatementPreparerOptions options = StatementPreparerOptions.None)
 	{
-		var preparer = new StatementPreparer(input, parameters ?? new MySqlParameterCollection(), options);
+		var preparer = new StatementPreparer(input, parameters ?? [], options);
 		var writer = new ByteBufferWriter();
 		preparer.ParseAndBindParameters(writer);
 		using var payload = writer.ToPayloadData();

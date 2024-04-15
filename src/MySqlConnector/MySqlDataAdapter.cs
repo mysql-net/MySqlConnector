@@ -158,7 +158,7 @@ public sealed class MySqlDataAdapter : DbDataAdapter
 		}
 
 		// ensure that the VALUES(...) clause contained only parameters, and that all were consumed
-		var remainingValues = parser.CommandText.Substring(match.Index + 6).Trim();
+		var remainingValues = parser.CommandText[(match.Index + 6)..].Trim();
 		remainingValues = remainingValues.TrimEnd(';').Trim().TrimStart('(').TrimEnd(')');
 		remainingValues = remainingValues.Replace(",", "");
 		if (!string.IsNullOrWhiteSpace(remainingValues))
@@ -166,7 +166,7 @@ public sealed class MySqlDataAdapter : DbDataAdapter
 
 		// build one INSERT statement with concatenated VALUES
 		var combinedCommand = new MySqlCommand();
-		var sqlBuilder = new StringBuilder(sql.Substring(0, match.Index + 6));
+		var sqlBuilder = new StringBuilder(sql[..(match.Index + 6)]);
 		var combinedParameterIndex = 0;
 		for (var i = 0; i < batch.BatchCommands.Count; i++)
 		{
@@ -219,7 +219,7 @@ public sealed class MySqlDataAdapter : DbDataAdapter
 #if NETCOREAPP3_0_OR_GREATER
 			CommandText = string.Concat(CommandText.AsSpan(0, index), new string(' ', length), CommandText.AsSpan(index + length));
 #else
-			CommandText = CommandText.Substring(0, index) + new string(' ', length) + CommandText.Substring(index + length);
+			CommandText = CommandText[..index] + new string(' ', length) + CommandText[(index + length)..];
 #endif
 		}
 
@@ -231,7 +231,7 @@ public sealed class MySqlDataAdapter : DbDataAdapter
 #if NETCOREAPP3_0_OR_GREATER
 			CommandText = string.Concat(CommandText.AsSpan(0, index), " ", CommandText.AsSpan(index + 1));
 #else
-			CommandText = CommandText.Substring(0, index) + " " + CommandText.Substring(index + 1);
+			CommandText = CommandText[..index] + " " + CommandText[(index + 1)..];
 #endif
 		}
 

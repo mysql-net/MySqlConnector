@@ -313,5 +313,5 @@ public class ConnectionPool : IClassFixture<DatabaseFixture>
 	}
 
 	private static HashSet<long> GetConnectionIds(IEnumerable<MySqlConnection> connections)
-		=> new HashSet<long>(connections.Select(x => (long) x.ServerThread));
+		=> new(connections.Select(x => (long) x.ServerThread));
 }

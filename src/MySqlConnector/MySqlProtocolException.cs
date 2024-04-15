@@ -15,7 +15,7 @@ public sealed class MySqlProtocolException : InvalidOperationException
 	/// <param name="packetSequenceNumber">The actual packet sequence number.</param>
 	/// <returns>A new <see cref="MySqlProtocolException"/>.</returns>
 	internal static MySqlProtocolException CreateForPacketOutOfOrder(int expectedSequenceNumber, int packetSequenceNumber) =>
-		new MySqlProtocolException($"Packet received out-of-order. Expected {expectedSequenceNumber:d}; got {packetSequenceNumber:d}.");
+		new($"Packet received out-of-order. Expected {expectedSequenceNumber:d}; got {packetSequenceNumber:d}.");
 
 #if NET8_0_OR_GREATER
 	[Obsolete(DiagnosticId = "SYSLIB0051")]

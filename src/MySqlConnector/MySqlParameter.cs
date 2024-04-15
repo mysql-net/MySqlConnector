@@ -88,8 +88,8 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		get => m_direction.GetValueOrDefault(ParameterDirection.Input);
 		set
 		{
-			if (value != ParameterDirection.Input && value != ParameterDirection.Output &&
-				value != ParameterDirection.InputOutput && value != ParameterDirection.ReturnValue)
+			if (value is not (ParameterDirection.Input or ParameterDirection.Output or
+				ParameterDirection.InputOutput or ParameterDirection.ReturnValue))
 			{
 				throw new ArgumentOutOfRangeException(nameof(value), $"{value} is not a supported value for ParameterDirection");
 			}
@@ -152,11 +152,11 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		HasSetDbType = false;
 	}
 
-	public MySqlParameter Clone() => new MySqlParameter(this);
+	public MySqlParameter Clone() => new(this);
 
 	object ICloneable.Clone() => Clone();
 
-	internal MySqlParameter WithParameterName(string parameterName) => new MySqlParameter(this, parameterName);
+	internal MySqlParameter WithParameterName(string parameterName) => new(this, parameterName);
 
 	private MySqlParameter(MySqlParameter other)
 	{

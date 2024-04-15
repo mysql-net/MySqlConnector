@@ -7,7 +7,7 @@ public class ConsoleLoggerProvider : IMySqlConnectorLoggerProvider
 {
 	public ConsoleLoggerProvider(MySqlConnectorLogLevel minimumLevel = MySqlConnectorLogLevel.Info, bool isColored = true)
 	{
-		if (minimumLevel < MySqlConnectorLogLevel.Trace || minimumLevel > MySqlConnectorLogLevel.Fatal)
+		if (minimumLevel is < MySqlConnectorLogLevel.Trace or > MySqlConnectorLogLevel.Fatal)
 			throw new ArgumentOutOfRangeException(nameof(minimumLevel), "minimumLevel must be between Trace and Fatal");
 
 		m_minimumLevel = minimumLevel;
@@ -57,7 +57,7 @@ public class ConsoleLoggerProvider : IMySqlConnectorLoggerProvider
 		}
 
 		private static readonly string[] s_levels =
-		{
+		[
 			"",
 			"[TRACE]",
 			"[DEBUG]",
@@ -65,10 +65,10 @@ public class ConsoleLoggerProvider : IMySqlConnectorLoggerProvider
 			"[WARN]",
 			"[ERROR]",
 			"[FATAL]",
-		};
+		];
 
 		private static readonly ConsoleColor[] s_colors =
-		{
+		[
 			ConsoleColor.Black,
 			ConsoleColor.DarkGray,
 			ConsoleColor.Gray,
@@ -76,7 +76,7 @@ public class ConsoleLoggerProvider : IMySqlConnectorLoggerProvider
 			ConsoleColor.Yellow,
 			ConsoleColor.Red,
 			ConsoleColor.Red,
-		};
+		];
 
 		private ConsoleLoggerProvider Provider { get; } = provider;
 		private string Name { get; } = name;

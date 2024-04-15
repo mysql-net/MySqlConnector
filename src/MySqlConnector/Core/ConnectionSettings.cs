@@ -1,4 +1,6 @@
+#if NETCOREAPP3_0_OR_GREATER
 using System.Net.Security;
+#endif
 using System.Security.Authentication;
 using MySqlConnector.Utilities;
 
@@ -148,7 +150,7 @@ internal sealed class ConnectionSettings
 		static int ToSigned(uint value) => value >= int.MaxValue ? int.MaxValue : (int) value;
 	}
 
-	public ConnectionSettings CloneWith(string host, int port, string userId) => new ConnectionSettings(this, host, port, userId);
+	public ConnectionSettings CloneWith(string host, int port, string userId) => new(this, host, port, userId);
 
 	private static MySqlGuidFormat GetEffectiveGuidFormat(MySqlGuidFormat guidFormat, bool oldGuids)
 	{
@@ -326,5 +328,5 @@ internal sealed class ConnectionSettings
 		UseXaTransactions = other.UseXaTransactions;
 	}
 
-	private static readonly string[] s_localhostPipeServer = { "." };
+	private static readonly string[] s_localhostPipeServer = ["."];
 }

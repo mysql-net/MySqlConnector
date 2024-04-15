@@ -1,7 +1,11 @@
+#if NET5_0_OR_GREATER
 using System.Runtime.CompilerServices;
+#endif
 using System.Security.Cryptography;
 using System.Text;
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 using MySqlConnector.Utilities;
+#endif
 
 namespace MySqlConnector.Protocol.Serialization;
 
@@ -50,7 +54,7 @@ internal static class AuthenticationUtility
 		SHA1.TryHashData(hashedPassword, combined[20..], out _);
 #else
 		sha1.TryComputeHash(passwordBytes, hashedPassword, out _);
-		sha1.TryComputeHash(hashedPassword, combined.Slice(20), out _);
+		sha1.TryComputeHash(hashedPassword, combined[20..], out _);
 #endif
 
 		Span<byte> xorBytes = stackalloc byte[20];

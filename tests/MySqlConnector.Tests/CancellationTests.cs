@@ -420,8 +420,8 @@ public class CancellationTests : IDisposable
 		}
 	}
 
-	private static readonly Func<MySqlCommand, int>[] s_executeMethods = new Func<MySqlCommand, int>[] { ExecuteScalar, ExecuteNonQuery, ExecuteReader };
-	private static readonly Func<MySqlCommand, CancellationToken, Task<int>>[] s_executeAsyncMethods = new Func<MySqlCommand, CancellationToken, Task<int>>[] { ExecuteScalarAsync, ExecuteNonQueryAsync, ExecuteReaderAsync };
+	private static readonly Func<MySqlCommand, int>[] s_executeMethods = [ExecuteScalar, ExecuteNonQuery, ExecuteReader];
+	private static readonly Func<MySqlCommand, CancellationToken, Task<int>>[] s_executeAsyncMethods = [ExecuteScalarAsync, ExecuteNonQueryAsync, ExecuteReaderAsync];
 
 	private static int ExecuteScalar(MySqlCommand command) => (int) command.ExecuteScalar();
 	private static async Task<int> ExecuteScalarAsync(MySqlCommand command, CancellationToken token) => (int) await command.ExecuteScalarAsync(token);

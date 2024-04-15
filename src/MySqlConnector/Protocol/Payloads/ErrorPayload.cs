@@ -11,7 +11,7 @@ internal readonly struct ErrorPayload
 	public string State { get; }
 	public string Message { get; }
 
-	public MySqlException ToException() => new MySqlException((MySqlErrorCode) ErrorCode, State, Message);
+	public MySqlException ToException() => new((MySqlErrorCode) ErrorCode, State, Message);
 
 	public static ErrorPayload Create(ReadOnlySpan<byte> span)
 	{

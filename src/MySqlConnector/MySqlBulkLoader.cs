@@ -298,7 +298,7 @@ public sealed class MySqlBulkLoader
 		lock (s_lock)
 		{
 			var source = s_sources[sourceKey];
-			s_sources.Remove(sourceKey);
+			_ = s_sources.Remove(sourceKey);
 			return source;
 		}
 	}
@@ -308,10 +308,7 @@ public sealed class MySqlBulkLoader
 		lock (s_lock)
 		{
 			if (s_sources.TryGetValue(sourceKey, out source))
-			{
-				s_sources.Remove(sourceKey);
-				return true;
-			}
+				return s_sources.Remove(sourceKey);
 		}
 
 		return false;

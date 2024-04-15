@@ -16,13 +16,16 @@ indent_style = tab
 indent_size = 4
 
 # changes from VS2017 defaults
+csharp_style_expression_bodied_local_functions = true:suggestion
 csharp_style_expression_bodied_methods = true:suggestion
 csharp_style_expression_bodied_constructors = true:suggestion
 csharp_style_expression_bodied_operators = true:suggestion
+csharp_style_namespace_declarations = file_scoped
 csharp_prefer_braces = false:none
 csharp_indent_switch_labels = true
 csharp_space_after_cast = true
 csharp_preserve_single_line_statements = false
+dotnet_style_prefer_conditional_expression_over_return = false:suggestion
 
 # use VS2017 defaults, but make them warnings (instead of none)
 dotnet_style_qualification_for_field = false:warning
@@ -84,7 +87,11 @@ dotnet_diagnostic.CA2100.severity = none # Review SQL queries for security vulne
 dotnet_diagnostic.CA2213.severity = silent # Disposable fields should be disposed.
 dotnet_diagnostic.CA5398.severity = none # Avoid hardcoded SslProtocols values.
 dotnet_diagnostic.IDE0044.severity = error # Make fields readonly.
+dotnet_diagnostic.IDE0045.severity = suggestion # Use conditional expression for assignment.
+dotnet_diagnostic.IDE0058.severity = none # Remove unnecessary expression value.
+dotnet_diagnostic.IDE0059.severity = none # Remove unnecessary value assignment.
 dotnet_diagnostic.IDE0065.severity = error # Using directives must be placed outside of a namespace declaration.
+dotnet_diagnostic.IDE0072.severity = silent # Add missing cases to switch expression.
 dotnet_diagnostic.SA1003.severity = none # Operator must not be followed by whitespace.
 dotnet_diagnostic.SA1008.severity = none # Opening parenthesis must not be preceded by a space.
 dotnet_diagnostic.SA1009.severity = none # Closing parenthesis must not be followed by a space.

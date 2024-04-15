@@ -182,7 +182,7 @@ public struct MySqlDateTime(int year, int month, int day, int hour, int minute, 
 	string IConvertible.ToString(IFormatProvider? provider) => IsValidDateTime ? GetDateTime().ToString(provider) : "0000-00-00";
 
 	object IConvertible.ToType(Type conversionType, IFormatProvider? provider) =>
-		conversionType == typeof(DateTime) ? (object) GetDateTime() :
+		conversionType == typeof(DateTime) ? GetDateTime() :
 		conversionType == typeof(string) ? ((IConvertible) this).ToString(provider) :
 		throw new InvalidCastException();
 

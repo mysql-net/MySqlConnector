@@ -446,7 +446,7 @@ public class MySqlConnectionStringBuilderTests
 	{
 		var csb = new MySqlConnectionStringBuilder { TlsVersion = input };
 #if !MYSQL_DATA
-		string[] normalizedVersions = new[] { "TLS 1.0", "TLS 1.1", "TLS 1.2", "TLS 1.3" };
+		string[] normalizedVersions = ["TLS 1.0", "TLS 1.1", "TLS 1.2", "TLS 1.3"];
 #else
 		string[] normalizedVersions = new[] { "Tls", "Tls11", "Tls12", "Tls13" };
 #endif

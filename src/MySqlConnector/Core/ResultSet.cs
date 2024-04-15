@@ -159,7 +159,7 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 					if (!Session.SupportsDeprecateEof)
 					{
 						payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-						EofPayload.Create(payload.Span);
+						_ = EofPayload.Create(payload.Span);
 					}
 
 					if (ColumnDefinitions.Length == (Command?.OutParameters?.Count + 1) && ColumnDefinitions[0].Name == SingleCommandPayloadCreator.OutParameterSentinelColumnName)
@@ -182,16 +182,13 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 		}
 	}
 
-	private static bool IsHostVerified(MySqlConnection connection)
-	{
-		return connection.SslMode == MySqlSslMode.VerifyCA
-			|| connection.SslMode == MySqlSslMode.VerifyFull;
-	}
+	private static bool IsHostVerified(MySqlConnection connection) =>
+		connection.SslMode is MySqlSslMode.VerifyCA or MySqlSslMode.VerifyFull;
 
 	public async Task ReadEntireAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		while (State is ResultSetState.ReadingRows or ResultSetState.ReadResultSetHeader)
-			await ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			_ = await ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
 
 	public bool Read()

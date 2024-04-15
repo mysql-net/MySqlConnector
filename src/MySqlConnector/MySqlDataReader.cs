@@ -177,9 +177,9 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		get
 		{
 			VerifyNotDisposed();
-			if (m_resultSet is null)
-				throw new InvalidOperationException("There is no current result set.");
-			return m_resultSet.ContainsCommandParameters ? 0 : m_resultSet.FieldCount;
+			return m_resultSet is null ? throw new InvalidOperationException("There is no current result set.") :
+				m_resultSet.ContainsCommandParameters ? 0 :
+				m_resultSet.FieldCount;
 		}
 	}
 
@@ -192,9 +192,8 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		get
 		{
 			VerifyNotDisposed();
-			if (m_resultSet is null)
-				throw new InvalidOperationException("There is no current result set.");
-			return !m_resultSet.ContainsCommandParameters && m_resultSet.HasRows;
+			return m_resultSet is null ? throw new InvalidOperationException("There is no current result set.") :
+				!m_resultSet.ContainsCommandParameters && m_resultSet.HasRows;
 		}
 	}
 
@@ -489,7 +488,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 			// if the command list has multiple commands, keep reading until a result set is found
 			while (m_resultSet.State == ResultSetState.NoMoreData && commandListPosition.CommandIndex < commandListPosition.CommandCount)
 			{
-				await NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				_ = await NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 		}
 		catch (Exception ex)
@@ -509,8 +508,11 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		if (!m_resultSet.HasResultSet || m_resultSet.ContainsCommandParameters)
 			return null;
 
-		var schemaTable = new DataTable("SchemaTable") { Locale = CultureInfo.InvariantCulture };
-		schemaTable.MinimumCapacity = m_resultSet.ColumnDefinitions.Length;
+		var schemaTable = new DataTable("SchemaTable")
+		{
+			Locale = CultureInfo.InvariantCulture,
+			MinimumCapacity = m_resultSet.ColumnDefinitions.Length,
+		};
 
 		var columnName = new DataColumn(SchemaTableColumn.ColumnName, typeof(string));
 		var ordinal = new DataColumn(SchemaTableColumn.ColumnOrdinal, typeof(int));
@@ -651,7 +653,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	// execution. These values will be stored in the parameters of the associated command.
 	private static async Task ReadOutParametersAsync(IMySqlCommand command, ResultSet resultSet, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		await resultSet.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+		_ = await resultSet.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 		var row = resultSet.GetCurrentRow();
 		if (row.GetString(0) != SingleCommandPayloadCreator.OutParameterSentinelColumnName)
@@ -688,9 +690,9 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	private ResultSet GetResultSet()
 	{
 		VerifyNotDisposed();
-		if (m_resultSet is null || m_resultSet.ContainsCommandParameters)
-			throw new InvalidOperationException("There is no current result set.");
-		return m_resultSet;
+		return m_resultSet is null || m_resultSet.ContainsCommandParameters ?
+			throw new InvalidOperationException("There is no current result set.") :
+			m_resultSet;
 	}
 
 	private readonly ResultSet m_resultSet;
