@@ -714,12 +714,9 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			writer.WriteLengthEncodedInteger(unchecked((ulong) geometry.ValueSpan.Length));
 			writer.Write(geometry.ValueSpan);
 		}
-		else if (value is MemoryStream memoryStream)
+		else if (value is Stream)
 		{
-			if (!memoryStream.TryGetBuffer(out var streamBuffer))
-				streamBuffer = new ArraySegment<byte>(memoryStream.ToArray());
-			writer.WriteLengthEncodedInteger(unchecked((ulong) streamBuffer.Count));
-			writer.Write(streamBuffer);
+			// do nothing; this will be sent via CommandKind.StatementSendLongData
 		}
 		else if (value is float floatValue)
 		{
