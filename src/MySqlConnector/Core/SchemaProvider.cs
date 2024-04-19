@@ -441,7 +441,7 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 	}
 
 	private Task DoFillForeignKeysAsync(IOBehavior ioBehavior, DataTable dataTable, string?[]? restrictionValues, CancellationToken cancellationToken) =>
-		FillDataTableAsync(IOBehavior.Synchronous, dataTable, command =>
+		FillDataTableAsync(ioBehavior, dataTable, command =>
 		{
 			command.CommandText = """
 				SELECT rc.constraint_catalog, rc.constraint_schema, rc.constraint_name,
