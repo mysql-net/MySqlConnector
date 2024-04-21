@@ -69,7 +69,7 @@ internal sealed partial class ServerSession
 	public bool SupportsSessionTrack { get; private set; }
 	public bool ProcAccessDenied { get; set; }
 	public ICollection<KeyValuePair<string, object?>> ActivityTags => m_activityTags;
-	public MySqlDataReader DataReader { get; }
+	public MySqlDataReader DataReader { get; set; }
 
 	public ValueTask ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
 	{
