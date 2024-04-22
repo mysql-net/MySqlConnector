@@ -1,5 +1,5 @@
 ---
-lastmod: 2024-03-20
+lastmod: 2024-04-22
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,14 @@ weight: 30
 ---
 
 # Version History
+
+### 2.3.7
+
+* Fix `NullReferenceException` in `MySqlDataReader.ActivateResultSet` and `MySqlDataReader.DisposeAsync`: [#1459](https://github.com/mysql-net/MySqlConnector/issues/1459).
+  * This bug likely also caused "Packet received out-of-order" errors.
+  * This was introduced in 2.3.0.
+* Fix rare `NullReferenceException` in `ServerSession` during cancellation: [#1472](https://github.com/mysql-net/MySqlConnector/issues/1472).
+* Fix `Foreign Keys` schema not being generated asynchronously.
 
 ### 2.3.6
 
