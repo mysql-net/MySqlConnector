@@ -1025,7 +1025,7 @@ internal sealed partial class ServerSession
 				{
 					tcpClient = new(ipAddress.AddressFamily);
 
-					using (cancellationToken.Register(() => tcpClient.Client?.Dispose()))
+					using (cancellationToken.Register(() => tcpClient?.Client?.Dispose()))
 					{
 						try
 						{
