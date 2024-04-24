@@ -124,3 +124,34 @@ from = "/connection%E2%80%91options/"
 to = "/connection-options/"
 status = 301
 force = true
+
+[[redirects]]
+from = "/conn-reuse"
+to = "/troubleshooting/connection-reuse/"
+status = 301
+force = true
+
+[[redirects]]
+from = "/delimiter"
+to = "/troubleshooting/delimiter/"
+status = 301
+force = true
+
+[[redirects]]
+from = "/load-data"
+to = "/troubleshooting/load-data-local-infile/"
+status = 301
+force = true
+
+[[redirects]]
+from = "/param-type"
+to = "/troubleshooting/parameter-types/"
+status = 301
+force = true
+
+[[redirects]]
+from = "/trans"
+to = "/troubleshooting/transaction-usage/"
+status = 301
+force = true
+

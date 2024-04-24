@@ -448,7 +448,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		else if (Connection.State is not ConnectionState.Open and not ConnectionState.Connecting)
 			exception = new InvalidOperationException($"Connection must be Open; current state is {Connection.State}");
 		else if (!Connection.IgnoreCommandTransaction && Transaction != Connection.CurrentTransaction)
-			exception = new InvalidOperationException("The transaction associated with this command is not the connection's active transaction; see https://fl.vu/mysql-trans");
+			exception = new InvalidOperationException("The transaction associated with this command is not the connection's active transaction; see https://mysqlconnector.net/trans");
 		else if (string.IsNullOrWhiteSpace(CommandText))
 			exception = new InvalidOperationException("CommandText must be specified");
 		return exception is null;

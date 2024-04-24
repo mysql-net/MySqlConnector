@@ -334,7 +334,7 @@ public sealed class MySqlBatch :
 		else if (Connection.State is not ConnectionState.Open and not ConnectionState.Connecting)
 			exception = new InvalidOperationException($"Connection must be Open; current state is {Connection.State}");
 		else if (!Connection.IgnoreCommandTransaction && Transaction != Connection.CurrentTransaction)
-			exception = new InvalidOperationException("The transaction associated with this batch is not the connection's active transaction; see https://fl.vu/mysql-trans");
+			exception = new InvalidOperationException("The transaction associated with this batch is not the connection's active transaction; see https://mysqlconnector.net/trans");
 		else if (BatchCommands.Count == 0)
 			exception = new InvalidOperationException("BatchCommands must contain a command");
 		else

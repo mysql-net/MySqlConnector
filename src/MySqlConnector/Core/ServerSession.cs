@@ -285,7 +285,7 @@ internal sealed partial class ServerSession
 			if (m_state is State.Querying or State.CancelingQuery)
 			{
 				CannotExecuteNewCommandInState(m_logger, Id, m_state);
-				throw new InvalidOperationException("This MySqlConnection is already in use. See https://fl.vu/mysql-conn-reuse");
+				throw new InvalidOperationException("This MySqlConnection is already in use. See https://mysqlconnector.net/conn-reuse");
 			}
 
 			VerifyState(State.Connected);
@@ -940,7 +940,7 @@ internal sealed partial class ServerSession
 			var parser = new DelimiterSqlParser(command);
 			parser.Parse(command.CommandText);
 			if (parser.HasDelimiter)
-				throw new MySqlException(MySqlErrorCode.DelimiterNotSupported, "'DELIMITER' should not be used with MySqlConnector. See https://fl.vu/mysql-delimiter", exception);
+				throw new MySqlException(MySqlErrorCode.DelimiterNotSupported, "'DELIMITER' should not be used with MySqlConnector. See https://mysqlconnector.net/delimiter", exception);
 		}
 	}
 
