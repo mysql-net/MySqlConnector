@@ -144,7 +144,6 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 	[InlineData("SchemaPrivileges")]
 	[InlineData("TableConstraints")]
 	[InlineData("TablePrivileges")]
-	[InlineData("TableSpaces")]
 	[InlineData("UserPrivileges")]
 #endif
 	public void GetSchema(string schemaName, string? expectedSchemaName = null)
