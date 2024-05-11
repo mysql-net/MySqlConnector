@@ -142,6 +142,29 @@ SELECT @'var' as R")]
 		Assert.Equal(sql.Replace("@param", replacedValue), parsedSql);
 	}
 
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void AlterUserHardcoded(bool noBackslashEscapes)
+	{
+		const string sql = "ALTER USER 'root'@'%' IDENTIFIED BY 'password';";
+		var options = noBackslashEscapes ? StatementPreparerOptions.NoBackslashEscapes : StatementPreparerOptions.None;
+		var parsedSql = GetParsedSql(sql, options: options);
+		Assert.Equal(sql, parsedSql);
+	}
+
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void AlterUserWithParameters(bool noBackslashEscapes)
+	{
+		const string sql = "ALTER USER @user@'localhost' IDENTIFIED BY @password;";
+		var parameters = new MySqlParameterCollection { new("@user", "root"), new("@password", "P@ssw0rd") };
+		var options = noBackslashEscapes ? StatementPreparerOptions.NoBackslashEscapes : StatementPreparerOptions.None;
+		var parsedSql = GetParsedSql(sql, parameters, options);
+		Assert.Equal("ALTER USER 'root'@'localhost' IDENTIFIED BY 'P@ssw0rd';", parsedSql);
+	}
+
 	public static IEnumerable<object[]> FormatParameterData =>
 		new[]
 		{
