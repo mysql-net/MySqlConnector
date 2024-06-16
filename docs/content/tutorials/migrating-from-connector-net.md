@@ -248,8 +248,12 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 * [#110789](https://bugs.mysql.com/bug.php?id=110789): `OpenAsync` throws unhandled exception from thread pool
 * [#110790](https://bugs.mysql.com/bug.php?id=110790): `ExecuteReaderAsync` hangs instead of cancelling query after `CommandTimeout`
 * [#110791](https://bugs.mysql.com/bug.php?id=110791): `OpenAsync(CancellationToken)` doesn't throw for cancelled token
-* [#111797](https://bugs.mysql.com/bug.php?id=111797): Certain sequence of special characters can break connection string validation.
+* [#111797](https://bugs.mysql.com/bug.php?id=111797): Certain sequence of special characters can break connection string validation
 * [#112088](https://bugs.mysql.com/bug.php?id=112088): `BIT(n)` parameter size incorrectly returns 0
+* [#114567](https://bugs.mysql.com/bug.php?id=114567): MySql.Data 8.0.33 is twice as slow as previous versions
+* [#115155](https://bugs.mysql.com/bug.php?id=115155): MySql.Data executes `SET NAMES` using an unsupported value
+* [#115168](https://bugs.mysql.com/bug.php?id=115168): `MySqlDataReader.GetX` performs culture-sensitive conversions
+* [#115222](https://bugs.mysql.com/bug.php?id=115222): `MySqlPool.ClearAsync` is not thread-safe
 
 ### Fixed First by MySqlConnector
 
@@ -308,7 +312,7 @@ These bugs are fixed in the latest version of MySQL Connector/NET, but were fixe
 * [#100208](https://bugs.mysql.com/bug.php?id=100208): `GetSchema("Procedures")` returns `ROUTINE_DEFINITION` of `"System.Byte[]"`
 * [#100218](https://bugs.mysql.com/bug.php?id=100218): `TIME(n)` microsecond values deserialized incorrectly with prepared command
 * [#100306](https://bugs.mysql.com/bug.php?id=100306): `Command.Prepare` sends wrong statement to server
-* [#100522](https://bugs.mysql.com/bug.php?id=100522): `	MySqlCommand.Parameters.Insert(-1)` succeeds but should fail
+* [#100522](https://bugs.mysql.com/bug.php?id=100522): `MySqlCommand.Parameters.Insert(-1)` succeeds but should fail
 * [#101252](https://bugs.mysql.com/bug.php?id=101252): Can't query `CHAR(36)` column containing `NULL`
 * [#101253](https://bugs.mysql.com/bug.php?id=101253): Default value for `MySqlParameter.Value` changed from null to `0`
 * [#101302](https://bugs.mysql.com/bug.php?id=101302): Stored Procedure `BOOL` parameter can only be mapped to `MySqlDbType.Byte`
@@ -337,3 +341,4 @@ These bugs are fixed in the latest version of MySQL Connector/NET, but were fixe
 * [#109683](https://bugs.mysql.com/bug.php?id=109683): `MySqlCommand.LastInsertedId` is incorrect if multiple rows are inserted.
 * [#109716](https://bugs.mysql.com/bug.php?id=109716), [#109727](https://bugs.mysql.com/bug.php?id=109727): Failed to add reference to 'comerr64'
 * [#110717](https://bugs.mysql.com/bug.php?id=110717), [#111759](https://bugs.mysql.com/bug.php?id=111759): MySql.Data is not thread-safe
+* [#114527](https://bugs.mysql.com/bug.php?id=114527): Connector/NET hangs on second connection attempt to non-running database
