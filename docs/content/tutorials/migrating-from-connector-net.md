@@ -41,7 +41,7 @@ In a .NET Framework application, make the following `app.config` change to regis
     <!-- add name="MySQL Data Provider"
       invariant="MySql.Data.MySqlClient"
       description=".Net Framework Data Provider for MySQL"
-      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=8.4.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
+      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=9.0.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
 
     <!-- ADD THIS -->
     <add name="MySqlConnector"
