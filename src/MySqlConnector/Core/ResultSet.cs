@@ -62,11 +62,11 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 					try
 					{
 						if (!Connection.AllowLoadLocalInfile)
-							throw new NotSupportedException("To use LOAD DATA LOCAL INFILE, set AllowLoadLocalInfile=true in the connection string. See https://fl.vu/mysql-load-data");
+							throw new NotSupportedException("To use LOAD DATA LOCAL INFILE, set AllowLoadLocalInfile=true in the connection string. See https://mysqlconnector.net/load-data");
 						var localInfile = LocalInfilePayload.Create(payload.Span);
 						var hasSourcePrefix = localInfile.FileName.StartsWith(MySqlBulkLoader.SourcePrefix, StringComparison.Ordinal);
 						if (!IsHostVerified(Connection) && !hasSourcePrefix)
-							throw new NotSupportedException("Use SourceStream or SslMode >= VerifyCA for LOAD DATA LOCAL INFILE. See https://fl.vu/mysql-load-data");
+							throw new NotSupportedException("Use SourceStream or SslMode >= VerifyCA for LOAD DATA LOCAL INFILE. See https://mysqlconnector.net/load-data");
 
 						var source = hasSourcePrefix ?
 							MySqlBulkLoader.GetAndRemoveSource(localInfile.FileName) :
@@ -159,7 +159,7 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 					if (!Session.SupportsDeprecateEof)
 					{
 						payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-						EofPayload.Create(payload.Span);
+						_ = EofPayload.Create(payload.Span);
 					}
 
 					if (ColumnDefinitions.Length == (Command?.OutParameters?.Count + 1) && ColumnDefinitions[0].Name == SingleCommandPayloadCreator.OutParameterSentinelColumnName)
@@ -182,16 +182,13 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 		}
 	}
 
-	private static bool IsHostVerified(MySqlConnection connection)
-	{
-		return connection.SslMode == MySqlSslMode.VerifyCA
-			|| connection.SslMode == MySqlSslMode.VerifyFull;
-	}
+	private static bool IsHostVerified(MySqlConnection connection) =>
+		connection.SslMode is MySqlSslMode.VerifyCA or MySqlSslMode.VerifyFull;
 
 	public async Task ReadEntireAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		while (State is ResultSetState.ReadingRows or ResultSetState.ReadResultSetHeader)
-			await ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			_ = await ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
 
 	public bool Read()

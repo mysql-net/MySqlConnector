@@ -1,8 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using System.Net;
-using System.Security.Authentication;
 using Microsoft.Extensions.Logging;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol.Serialization;
@@ -140,7 +138,7 @@ internal sealed class ConnectionPool : IDisposable
 				}
 			}
 
-			m_sessionSemaphore.Release();
+			_ = m_sessionSemaphore.Release();
 			throw;
 		}
 	}
@@ -172,14 +170,15 @@ internal sealed class ConnectionPool : IDisposable
 		try
 		{
 			lock (m_leasedSessions)
-				m_leasedSessions.Remove(session.Id);
+				_ = m_leasedSessions.Remove(session.Id);
 			MetricsReporter.RemoveUsed(this);
 			session.OwningConnection = null;
+			session.DataReader = new();
 			var sessionHealth = GetSessionHealth(session);
 			if (sessionHealth == 0)
 			{
 				lock (m_sessions)
-					m_sessions.AddFirst(session);
+					_ = m_sessions.AddFirst(session);
 				MetricsReporter.AddIdle(this);
 			}
 			else
@@ -194,7 +193,7 @@ internal sealed class ConnectionPool : IDisposable
 		}
 		finally
 		{
-			m_sessionSemaphore.Release();
+			_ = m_sessionSemaphore.Release();
 		}
 	}
 
@@ -202,7 +201,7 @@ internal sealed class ConnectionPool : IDisposable
 	{
 		// increment the generation of the connection pool
 		Log.ClearingConnectionPool(m_logger, Id);
-		Interlocked.Increment(ref m_generation);
+		_ = Interlocked.Increment(ref m_generation);
 		m_procedureCache = null;
 		await RecoverLeakedSessionsAsync(ioBehavior).ConfigureAwait(false);
 		await CleanPoolAsync(ioBehavior, session => session.PoolGeneration != m_generation, false, cancellationToken).ConfigureAwait(false);
@@ -406,13 +405,13 @@ internal sealed class ConnectionPool : IDisposable
 				var session = await ConnectSessionAsync(connection, s_createdToReachMinimumPoolSize, Stopwatch.GetTimestamp(), null, ioBehavior, cancellationToken).ConfigureAwait(false);
 				AdjustHostConnectionCount(session, 1);
 				lock (m_sessions)
-					m_sessions.AddFirst(session);
+					_ = m_sessions.AddFirst(session);
 				MetricsReporter.AddIdle(this);
 			}
 			finally
 			{
 				// connection is in pool; semaphore shouldn't be held any more
-				m_sessionSemaphore.Release();
+				_ = m_sessionSemaphore.Release();
 			}
 		}
 	}
@@ -452,7 +451,7 @@ internal sealed class ConnectionPool : IDisposable
 					var redirectedSession = new ServerSession(m_connectionLogger, this, m_generation, Interlocked.Increment(ref m_lastSessionId));
 					try
 					{
-						await redirectedSession.ConnectAsync(redirectedSettings, connection, startingTimestamp, m_loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+						_ = await redirectedSession.ConnectAsync(redirectedSettings, connection, startingTimestamp, m_loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
 					catch (Exception ex)
 					{
@@ -614,7 +613,7 @@ internal sealed class ConnectionPool : IDisposable
 			cs.HostNames!.Count == 1 || cs.LoadBalance == MySqlLoadBalance.FailOver ? FailOverLoadBalancer.Instance :
 			cs.LoadBalance == MySqlLoadBalance.Random ? RandomLoadBalancer.Instance :
 			cs.LoadBalance == MySqlLoadBalance.LeastConnections ? new LeastConnectionsLoadBalancer(m_hostSessions!) :
-			(ILoadBalancer) new RoundRobinLoadBalancer();
+			 new RoundRobinLoadBalancer();
 
 		// create tag lists for reporting pool metrics
 		var connectionString = cs.ConnectionStringBuilder.GetConnectionString(includePassword: false);
@@ -812,7 +811,7 @@ internal sealed class ConnectionPool : IDisposable
 		ClearPoolsAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 
 	private static readonly ConcurrentDictionary<string, ConnectionPool?> s_pools = new();
-	private static readonly List<ConnectionPool> s_allPools = new();
+	private static readonly List<ConnectionPool> s_allPools = [];
 	private static readonly Action<ILogger, int, string, Exception?> s_createdNewSession = LoggerMessage.Define<int, string>(
 		LogLevel.Debug, new EventId(EventIds.PoolCreatedNewSession, nameof(EventIds.PoolCreatedNewSession)),
 		"Pool {PoolId} has no pooled session available; created new session {SessionId}");

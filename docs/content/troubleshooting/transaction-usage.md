@@ -16,7 +16,7 @@ menu:
 
 When using `MySqlTransaction` from a C# program, you may receive the following error:
 
-* **System.InvalidOperationException: The transaction associated with this command is not the connection's active transaction; see https://fl.vu/mysql-trans**
+* **System.InvalidOperationException: The transaction associated with this command is not the connection's active transaction**
 
 By default, MySqlConnector requires `MySqlCommand.Transaction` to be set to the connection's active transaction in order for the command to be executed successfully. This strictness is intended to catch programming bugs related to using the wrong transaction, a disposed transaction, or forgetting to set the transaction (and using the default value `null`).
 
@@ -24,7 +24,7 @@ However, this strictness can make migrating from Connector/NET more difficult, a
 
 ## Workaround: Use IgnoreCommandTransaction=true
 
-To easily migrate code from Connector/NET, use the `IgnoreCommandTransaction=true` connection string setting to emulate Connector/NET's behaviour and not validate the value of `MySqlCommand.Transaction`. By doing this, you will not need the code fixes prescribed below.
+To easily migrate code from Connector/NET, use the `IgnoreCommandTransaction=true` connection string setting to emulate Connector/NET's behavior and not validate the value of `MySqlCommand.Transaction`. By doing this, you will not need the code fixes prescribed below.
 
 ## Code Fix: Set MySqlCommand.Transaction
 

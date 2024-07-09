@@ -81,7 +81,7 @@ public sealed class MySqlCommandBuilder : DbCommandBuilder
 
 	protected override void SetRowUpdatingHandler(DbDataAdapter adapter)
 	{
-		if (!(adapter is MySqlDataAdapter mySqlDataAdapter))
+		if (adapter is not MySqlDataAdapter mySqlDataAdapter)
 			throw new ArgumentException("adapter needs to be a MySqlDataAdapter", nameof(adapter));
 
 		if (adapter == DataAdapter)

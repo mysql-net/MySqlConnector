@@ -52,7 +52,7 @@ public static class AppConfig
 	public static string MySqlBulkLoaderTsvFile => Config.GetValue<string>("Data:MySqlBulkLoaderTsvFile");
 	public static string MySqlBulkLoaderLocalTsvFile => Config.GetValue<string>("Data:MySqlBulkLoaderLocalTsvFile");
 
-	public static MySqlConnectionStringBuilder CreateConnectionStringBuilder() => new MySqlConnectionStringBuilder(ConnectionString);
+	public static MySqlConnectionStringBuilder CreateConnectionStringBuilder() => new(ConnectionString);
 
 	public static MySqlConnectionStringBuilder CreateSha256ConnectionStringBuilder()
 	{

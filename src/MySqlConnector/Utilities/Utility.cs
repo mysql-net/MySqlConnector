@@ -1,9 +1,13 @@
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 using System.Buffers;
+#endif
 using System.Buffers.Text;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+#if NET462
 using System.Net;
 using System.Reflection;
+#endif
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
@@ -119,7 +123,7 @@ internal static class Utility
 #if NETCOREAPP3_0_OR_GREATER
 			throw new FormatException(string.Concat("Unrecognized PEM header: ", key.AsSpan(0, Math.Min(key.Length, 80))));
 #else
-			throw new FormatException("Unrecognized PEM header: " + key.Substring(0, Math.Min(key.Length, 80)));
+			throw new FormatException("Unrecognized PEM header: " + key[..Math.Min(key.Length, 80)]);
 #endif
 		}
 
@@ -129,18 +133,16 @@ internal static class Utility
 #if NETCOREAPP3_0_OR_GREATER
 			throw new FormatException(string.Concat("Missing expected '", pemFooter, "' PEM footer: ", key.AsSpan(Math.Max(key.Length - 80, 0))));
 #else
-			throw new FormatException($"Missing expected '{pemFooter}' PEM footer: " + key.Substring(Math.Max(key.Length - 80, 0)));
+			throw new FormatException($"Missing expected '{pemFooter}' PEM footer: " + key[Math.Max(key.Length - 80, 0)..]);
 #endif
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		var keyChars = key.AsSpan()[keyStartIndex..keyEndIndex];
 		var bufferLength = keyChars.Length / 4 * 3;
 		byte[]? buffer = null;
-		scoped Span<byte> bufferBytes;
-		if (bufferLength > 1024)
-			bufferBytes = buffer = ArrayPool<byte>.Shared.Rent(bufferLength);
-		else
-			bufferBytes = stackalloc byte[bufferLength];
+		Span<byte> bufferBytes = bufferLength > 1024 ?
+			(Span<byte>) (buffer = ArrayPool<byte>.Shared.Rent(bufferLength)) :
+			stackalloc byte[bufferLength];
 		try
 		{
 			if (!System.Convert.TryFromBase64Chars(keyChars, bufferBytes, out var bytesWritten))
@@ -160,7 +162,7 @@ internal static class Utility
 				ArrayPool<byte>.Shared.Return(buffer);
 		}
 #else
-		key = key.Substring(keyStartIndex, keyEndIndex - keyStartIndex);
+		key = key[keyStartIndex..keyEndIndex];
 		return GetRsaParameters(System.Convert.FromBase64String(key), isPrivate);
 #endif
 	}
@@ -172,57 +174,57 @@ internal static class Utility
 		// read header (30 81 xx, or 30 82 xx xx)
 		if (data[0] != 0x30)
 			throw new FormatException($"Expected 0x30 but read 0x{data[0]:X2}");
-		data = data.Slice(1);
+		data = data[1..];
 
 		if (!TryReadAsnLength(data, out var length, out var bytesConsumed))
 			throw new FormatException("Couldn't read key length");
-		data = data.Slice(bytesConsumed);
+		data = data[bytesConsumed..];
 
 		if (!isPrivate)
 		{
 			// encoded OID sequence for  PKCS #1 rsaEncryption szOID_RSA_RSA = "1.2.840.113549.1.1.1"
 			ReadOnlySpan<byte> rsaOid = [0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00];
-			if (!data.Slice(0, rsaOid.Length).SequenceEqual(rsaOid))
-				throw new FormatException($"Expected RSA OID but read {BitConverter.ToString(data.Slice(0, 15).ToArray())}");
-			data = data.Slice(rsaOid.Length);
+			if (!data[..rsaOid.Length].SequenceEqual(rsaOid))
+				throw new FormatException($"Expected RSA OID but read {BitConverter.ToString(data[..15].ToArray())}");
+			data = data[rsaOid.Length..];
 
 			// BIT STRING (0x03) followed by length
 			if (data[0] != 0x03)
 				throw new FormatException($"Expected 0x03 but read 0x{data[0]:X2}");
-			data = data.Slice(1);
+			data = data[1..];
 
 			if (!TryReadAsnLength(data, out length, out bytesConsumed))
 				throw new FormatException("Couldn't read length");
-			data = data.Slice(bytesConsumed);
+			data = data[bytesConsumed..];
 
 			// skip NULL byte
 			if (data[0] != 0x00)
 				throw new FormatException($"Expected 0x00 but read 0x{data[0]:X2}");
-			data = data.Slice(1);
+			data = data[1..];
 
 			// skip next header (30 81 xx, or 30 82 xx xx)
 			if (data[0] != 0x30)
 				throw new FormatException($"Expected 0x30 but read 0x{data[0]:X2}");
-			data = data.Slice(1);
+			data = data[1..];
 
 			if (!TryReadAsnLength(data, out length, out bytesConsumed))
 				throw new FormatException("Couldn't read length");
-			data = data.Slice(bytesConsumed);
+			data = data[bytesConsumed..];
 		}
 		else
 		{
 			if (!TryReadAsnInteger(data, out var zero, out bytesConsumed) || zero.Length != 1 || zero[0] != 0)
 				throw new FormatException("Couldn't read zero.");
-			data = data.Slice(bytesConsumed);
+			data = data[bytesConsumed..];
 		}
 
 		if (!TryReadAsnInteger(data, out var modulus, out bytesConsumed))
 			throw new FormatException("Couldn't read modulus");
-		data = data.Slice(bytesConsumed);
+		data = data[bytesConsumed..];
 
 		if (!TryReadAsnInteger(data, out var exponent, out bytesConsumed))
 			throw new FormatException("Couldn't read exponent");
-		data = data.Slice(bytesConsumed);
+		data = data[bytesConsumed..];
 
 		if (!isPrivate)
 		{
@@ -235,27 +237,27 @@ internal static class Utility
 
 		if (!TryReadAsnInteger(data, out var d, out bytesConsumed))
 			throw new FormatException("Couldn't read D");
-		data = data.Slice(bytesConsumed);
+		data = data[bytesConsumed..];
 
 		if (!TryReadAsnInteger(data, out var p, out bytesConsumed))
 			throw new FormatException("Couldn't read P");
-		data = data.Slice(bytesConsumed);
+		data = data[bytesConsumed..];
 
 		if (!TryReadAsnInteger(data, out var q, out bytesConsumed))
 			throw new FormatException("Couldn't read Q");
-		data = data.Slice(bytesConsumed);
+		data = data[bytesConsumed..];
 
 		if (!TryReadAsnInteger(data, out var dp, out bytesConsumed))
 			throw new FormatException("Couldn't read DP");
-		data = data.Slice(bytesConsumed);
+		data = data[bytesConsumed..];
 
 		if (!TryReadAsnInteger(data, out var dq, out bytesConsumed))
 			throw new FormatException("Couldn't read DQ");
-		data = data.Slice(bytesConsumed);
+		data = data[bytesConsumed..];
 
 		if (!TryReadAsnInteger(data, out var iq, out bytesConsumed))
 			throw new FormatException("Couldn't read IQ");
-		data = data.Slice(bytesConsumed);
+		data = data[bytesConsumed..];
 
 		return new RSAParameters
 		{
@@ -279,7 +281,7 @@ internal static class Utility
 	/// <param name="index">The non-negative, zero-based starting index of the new slice (relative to <see cref="ArraySegment{T}.Offset"/> of <paramref name="arraySegment"/>.</param>
 	/// <returns>A new <see cref="ArraySegment{T}"/> starting at the <paramref name="index"/>th element of <paramref name="arraySegment"/> and continuing to the end of <paramref name="arraySegment"/>.</returns>
 	public static ArraySegment<T> Slice<T>(this ArraySegment<T> arraySegment, int index) =>
-		new ArraySegment<T>(arraySegment.Array!, arraySegment.Offset + index, arraySegment.Count - index);
+		new(arraySegment.Array!, arraySegment.Offset + index, arraySegment.Count - index);
 
 	/// <summary>
 	/// Returns a new <see cref="ArraySegment{T}"/> that starts at index <paramref name="index"/> into <paramref name="arraySegment"/> and has a length of <paramref name="length"/>.
@@ -289,7 +291,7 @@ internal static class Utility
 	/// <param name="length">The non-negative length of the new slice.</param>
 	/// <returns>A new <see cref="ArraySegment{T}"/> of length <paramref name="length"/>, starting at the <paramref name="index"/>th element of <paramref name="arraySegment"/>.</returns>
 	public static ArraySegment<T> Slice<T>(this ArraySegment<T> arraySegment, int index, int length) =>
-		new ArraySegment<T>(arraySegment.Array!, arraySegment.Offset + index, length);
+		new(arraySegment.Array!, arraySegment.Offset + index, length);
 #endif
 
 #if !NET5_0_OR_GREATER
@@ -319,7 +321,7 @@ internal static class Utility
 	/// <returns>The offset of <paramref name="pattern"/> within <paramref name="data"/>, or <c>-1</c> if <paramref name="pattern"/> was not found.</returns>
 	public static int FindNextIndex(ReadOnlySpan<byte> data, int offset, ReadOnlySpan<byte> pattern)
 	{
-		var index = MemoryExtensions.IndexOf(data.Slice(offset), pattern);
+		var index = MemoryExtensions.IndexOf(data[offset..], pattern);
 		return index == -1 ? -1 : offset + index;
 	}
 
@@ -356,7 +358,7 @@ internal static class Utility
 			if (closeSquareBracketIndex == -1)
 				return false;
 
-			host = header.Substring(hostIndex, closeSquareBracketIndex - hostIndex);
+			host = header[hostIndex..closeSquareBracketIndex];
 			if (header.Length <= closeSquareBracketIndex + 2)
 				return false;
 			if (header[closeSquareBracketIndex + 1] != ':')
@@ -374,7 +376,7 @@ internal static class Utility
 			if (colonIndex == -1)
 				return false;
 
-			host = header.Substring(hostIndex, colonIndex - hostIndex);
+			host = header[hostIndex..colonIndex];
 			portIndex = colonIndex + 1;
 		}
 
@@ -385,7 +387,7 @@ internal static class Utility
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
 		if (!int.TryParse(header.AsSpan(portIndex, userIndex - portIndex), out port) || port <= 0)
 #else
-		if (!int.TryParse(header.Substring(portIndex, userIndex - portIndex), out port) || port <= 0)
+		if (!int.TryParse(header[portIndex..userIndex], out port) || port <= 0)
 #endif
 			return false;
 
@@ -394,7 +396,7 @@ internal static class Utility
 		var newlineIndex = header.IndexOf('\n', userIndex);
 		var terminatorIndex = ampersandIndex == -1 ? (newlineIndex == -1 ? header.Length : newlineIndex) :
 			(newlineIndex == -1 ? ampersandIndex : Math.Min(ampersandIndex, newlineIndex));
-		user = header.Substring(userIndex, terminatorIndex - userIndex);
+		user = header[userIndex..terminatorIndex];
 		return user.Length != 0;
 	}
 
@@ -415,7 +417,7 @@ internal static class Utility
 			goto InvalidTimeSpan;
 		if (value.Length == bytesConsumed || value[bytesConsumed] != 58)
 			goto InvalidTimeSpan;
-		value = value.Slice(bytesConsumed + 1);
+		value = value[(bytesConsumed + 1)..];
 
 		// parse minutes (0-59)
 		if (!Utf8Parser.TryParse(value, out int minutes, out bytesConsumed) || bytesConsumed != 2 || minutes < 0 || minutes > 59)
@@ -487,25 +489,25 @@ internal static class Utility
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 	public static int Read(this Stream stream, Memory<byte> buffer)
 	{
-		MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);
+		_ = MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);
 		return stream.Read(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
 	}
 
 	public static Task<int> ReadAsync(this Stream stream, Memory<byte> buffer)
 	{
-		MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);
+		_ = MemoryMarshal.TryGetArray<byte>(buffer, out var arraySegment);
 		return stream.ReadAsync(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
 	}
 
 	public static void Write(this Stream stream, ReadOnlyMemory<byte> data)
 	{
-		MemoryMarshal.TryGetArray(data, out var arraySegment);
+		_ = MemoryMarshal.TryGetArray(data, out var arraySegment);
 		stream.Write(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
 	}
 
 	public static Task WriteAsync(this Stream stream, ReadOnlyMemory<byte> data)
 	{
-		MemoryMarshal.TryGetArray(data, out var arraySegment);
+		_ = MemoryMarshal.TryGetArray(data, out var arraySegment);
 		return stream.WriteAsync(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
 	}
 #else
@@ -644,7 +646,7 @@ internal static class Utility
 
 		if (leadByte == 0x82)
 		{
-			length = data[1] * 256 + data[2];
+			length = (data[1] * 256) + data[2];
 			bytesConsumed = 3;
 			return true;
 		}

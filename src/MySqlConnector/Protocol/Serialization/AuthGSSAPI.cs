@@ -136,14 +136,14 @@ internal class NegotiateToMySqlConverterStream : Stream
 			{
 				throw new FormatException($"Unknown version of NegotiateStream protocol {majorProtocolVersion:d}.{minorProtocolVersion:d}, expected {NegotiateStreamConstants.MajorVersion:d}.{NegotiateStreamConstants.MinorVersion:d}");
 			}
-			if (messageId != NegotiateStreamConstants.HandshakeDone &&
-				messageId != NegotiateStreamConstants.HandshakeError &&
-				messageId != NegotiateStreamConstants.HandshakeInProgress)
+			if (messageId is not NegotiateStreamConstants.HandshakeDone and
+				not NegotiateStreamConstants.HandshakeError and
+				not NegotiateStreamConstants.HandshakeInProgress)
 			{
 				throw new FormatException($"Invalid NegotiateStream MessageId 0x{messageId:X2}");
 			}
 
-			m_writePayloadLength = (int) payloadSizeLow + ((int) payloadSizeHigh << 8);
+			m_writePayloadLength = payloadSizeLow + (payloadSizeHigh << 8);
 			if (messageId == NegotiateStreamConstants.HandshakeDone)
 				m_clientHandshakeDone = true;
 

@@ -19,8 +19,10 @@ public class QueryTests : IClassFixture<DatabaseFixture>, IDisposable
 	[InlineData(false, false, true)]
 	public void Bug1096(bool sprocBeforeInsert, bool sprocAfterInsert, bool sprocTwiceBeforeInsert)
 	{
-		var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString);
-		csb.UseAffectedRows = true;
+		var csb = new MySqlConnectionStringBuilder(AppConfig.ConnectionString)
+		{
+			UseAffectedRows = true,
+		};
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		connection.Open();
 
@@ -1404,7 +1406,7 @@ insert into datatypes_tinyint1(value) values(0), (1), (2), (-1), (-128), (127);"
 				Assert.Equal((byte) expected[i], reader.GetByte(0));
 			Assert.Equal((short) expected[i], reader.GetInt16(0));
 			Assert.Equal(expected[i], reader.GetInt32(0));
-			Assert.Equal((long) expected[i], reader.GetInt64(0));
+			Assert.Equal(expected[i], reader.GetInt64(0));
 			Assert.Equal(expected[i], reader.GetFieldValue<int>(0));
 		}
 

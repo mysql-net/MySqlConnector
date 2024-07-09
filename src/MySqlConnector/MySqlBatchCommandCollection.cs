@@ -34,18 +34,18 @@ public sealed class MySqlBatchCommandCollection
 	public MySqlBatchCommand this[int index] { get => m_commands[index]; set => m_commands[index] = value; }
 	public int Count => m_commands.Count;
 	public bool IsReadOnly => false;
-	public void Add(MySqlBatchCommand item) => m_commands.Add((MySqlBatchCommand) item);
+	public void Add(MySqlBatchCommand item) => m_commands.Add(item);
 	public void Clear() => m_commands.Clear();
-	public bool Contains(MySqlBatchCommand item) => m_commands.Contains((MySqlBatchCommand) item);
+	public bool Contains(MySqlBatchCommand item) => m_commands.Contains(item);
 	public void CopyTo(MySqlBatchCommand[] array, int arrayIndex) => throw new NotImplementedException();
 	public IEnumerator<MySqlBatchCommand> GetEnumerator()
 	{
 		foreach (var command in m_commands)
 			yield return command;
 	}
-	public int IndexOf(MySqlBatchCommand item) => m_commands.IndexOf((MySqlBatchCommand) item);
-	public void Insert(int index, MySqlBatchCommand item) => m_commands.Insert(index, (MySqlBatchCommand) item);
-	public bool Remove(MySqlBatchCommand item) => m_commands.Remove((MySqlBatchCommand) item);
+	public int IndexOf(MySqlBatchCommand item) => m_commands.IndexOf(item);
+	public void Insert(int index, MySqlBatchCommand item) => m_commands.Insert(index, item);
+	public bool Remove(MySqlBatchCommand item) => m_commands.Remove(item);
 	public void RemoveAt(int index) => m_commands.RemoveAt(index);
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 #endif

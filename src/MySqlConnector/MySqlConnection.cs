@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+#if NET6_0_OR_GREATER
 using System.Globalization;
+#endif
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
@@ -211,7 +213,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			true => 2,
 		};
 
-		var index = ((supportsQueryAttributes ? 1 : 0) * 5 + isolationLevelIndex + consistentSnapshotIndex) * 3 + readOnlyIndex;
+		var index = ((((supportsQueryAttributes ? 1 : 0) * 5) + isolationLevelIndex + consistentSnapshotIndex) * 3) + readOnlyIndex;
 
 		if (s_startTransactionPayloads[index].IsEmpty)
 		{
@@ -341,7 +343,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			else
 			{
 				m_enlistedTransaction = GetInitializedConnectionSettings().UseXaTransactions ?
-					(EnlistedTransactionBase) new XaEnlistedTransaction(transaction, this) :
+					 new XaEnlistedTransaction(transaction, this) :
 					new StandardEnlistedTransaction(transaction, this);
 				m_enlistedTransaction.Start();
 
@@ -1059,12 +1061,14 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				var loadBalancer = connectionSettings.LoadBalance == MySqlLoadBalance.Random && connectionSettings.HostNames!.Count > 1 ?
 					RandomLoadBalancer.Instance : FailOverLoadBalancer.Instance;
 
-				var session = new ServerSession(m_logger);
-				session.OwningConnection = new WeakReference<MySqlConnection>(this);
+				var session = new ServerSession(m_logger)
+				{
+					OwningConnection = new WeakReference<MySqlConnection>(this),
+				};
 				Log.CreatedNonPooledSession(m_logger, session.Id);
 				try
 				{
-					await session.ConnectAsync(connectionSettings, this, startingTimestamp, loadBalancer, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
+					_ = await session.ConnectAsync(connectionSettings, this, startingTimestamp, loadBalancer, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
 					return session;
 				}
 				catch (Exception)

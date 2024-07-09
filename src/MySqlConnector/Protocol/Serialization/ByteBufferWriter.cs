@@ -17,9 +17,9 @@ internal sealed class ByteBufferWriter : IBufferWriter<byte>
 
 	public int Position => m_buffer.Length - m_output.Length;
 
-	public ArraySegment<byte> ArraySegment => new ArraySegment<byte>(m_buffer, 0, Position);
+	public ArraySegment<byte> ArraySegment => new(m_buffer, 0, Position);
 
-	public PayloadData ToPayloadData() => new PayloadData(ArraySegment, isPooled: true);
+	public PayloadData ToPayloadData() => new(ArraySegment, isPooled: true);
 
 	public Memory<byte> GetMemory(int sizeHint = 0)
 	{

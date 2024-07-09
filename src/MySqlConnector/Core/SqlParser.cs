@@ -212,7 +212,7 @@ internal abstract class SqlParser(StatementPreparer preparer)
 			}
 			else
 			{
-				if (state != State.Beginning && state != State.Statement)
+				if (state is not State.Beginning and not State.Statement)
 					throw new InvalidOperationException($"Unexpected state: {state}");
 
 				if (ch == '-' && index < sql.Length - 2 && sql[index + 1] == '-' && sql[index + 2] == ' ')

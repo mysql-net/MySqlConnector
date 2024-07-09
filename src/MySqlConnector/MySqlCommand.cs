@@ -181,7 +181,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		if (exception is not null || Connection!.IgnorePrepare)
 			return false;
 
-		if (CommandType != CommandType.StoredProcedure && CommandType != CommandType.Text)
+		if (CommandType is not CommandType.StoredProcedure and not CommandType.Text)
 		{
 			exception = new NotSupportedException("Only CommandType.Text and CommandType.StoredProcedure are currently supported by MySqlCommand.Prepare.");
 			return false;
@@ -247,7 +247,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		get => m_commandType;
 		set
 		{
-			if (value != CommandType.Text && value != CommandType.StoredProcedure)
+			if (value is not CommandType.Text and not CommandType.StoredProcedure)
 				throw new ArgumentException("CommandType must be Text or StoredProcedure.", nameof(value));
 			m_commandType = value;
 		}
@@ -445,10 +445,10 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 			exception = new ObjectDisposedException(GetType().Name);
 		else if (Connection is null)
 			exception = new InvalidOperationException("Connection property must be non-null.");
-		else if (Connection.State != ConnectionState.Open && Connection.State != ConnectionState.Connecting)
+		else if (Connection.State is not ConnectionState.Open and not ConnectionState.Connecting)
 			exception = new InvalidOperationException($"Connection must be Open; current state is {Connection.State}");
 		else if (!Connection.IgnoreCommandTransaction && Transaction != Connection.CurrentTransaction)
-			exception = new InvalidOperationException("The transaction associated with this command is not the connection's active transaction; see https://fl.vu/mysql-trans");
+			exception = new InvalidOperationException("The transaction associated with this command is not the connection's active transaction; see https://mysqlconnector.net/trans");
 		else if (string.IsNullOrWhiteSpace(CommandText))
 			exception = new InvalidOperationException("CommandText must be specified");
 		return exception is null;

@@ -1,10 +1,11 @@
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using MySqlConnector.ColumnReaders;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
+#if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
 using MySqlConnector.Utilities;
+#endif
 
 namespace MySqlConnector.Core;
 
@@ -30,7 +31,7 @@ internal sealed class Row
 			Array.Clear(m_dataOffsetLengths, 0, m_dataOffsetLengths.Length);
 			for (var column = 0; column < m_dataOffsetLengths.Length; column++)
 			{
-				if ((data.Span[(column + 2) / 8 + 1] & (1 << ((column + 2) % 8))) != 0)
+				if ((data.Span[((column + 2) / 8) + 1] & (1 << ((column + 2) % 8))) != 0)
 				{
 					// column is NULL
 					m_dataOffsetLengths[column] = (-1, 0);
@@ -40,7 +41,7 @@ internal sealed class Row
 			var reader = new ByteArrayReader(data.Span);
 
 			// skip packet header (1 byte) and NULL bitmap (formula for length at https://dev.mysql.com/doc/internals/en/null-bitmap.html)
-			reader.Offset += 1 + (m_dataOffsetLengths.Length + 7 + 2) / 8;
+			reader.Offset += 1 + ((m_dataOffsetLengths.Length + 7 + 2) / 8);
 			for (var column = 0; column < m_dataOffsetLengths.Length; column++)
 			{
 				if (m_dataOffsetLengths[column].Offset != -1)
@@ -341,7 +342,7 @@ internal sealed class Row
 		return (DateTime) value;
 	}
 
-	public DateTimeOffset GetDateTimeOffset(int ordinal) => new DateTimeOffset(DateTime.SpecifyKind(GetDateTime(ordinal), DateTimeKind.Utc));
+	public DateTimeOffset GetDateTimeOffset(int ordinal) => new(DateTime.SpecifyKind(GetDateTime(ordinal), DateTimeKind.Utc));
 
 	public Stream GetStream(int ordinal)
 	{
@@ -387,7 +388,7 @@ internal sealed class Row
 		{
 			float floatValue => floatValue,
 			double doubleValue when doubleValue is >= float.MinValue and <= float.MaxValue => (float) doubleValue,
-			double _ => throw new InvalidCastException("The value cannot be safely cast to Single."),
+			double => throw new InvalidCastException("The value cannot be safely cast to Single."),
 			decimal decimalValue => (float) decimalValue,
 			_ => (float) value,
 		};

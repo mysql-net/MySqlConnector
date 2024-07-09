@@ -71,6 +71,22 @@ public class DependencyInjectionTests
 	}
 
 	[Fact]
+	public async Task MySqlDataSourceCanSetNameFromServiceProvider()
+	{
+		var serviceCollection = new ServiceCollection();
+
+		serviceCollection.AddSingleton("MyName");
+		serviceCollection.AddMySqlDataSource(c_connectionString, (sp, builder) =>
+		{
+			builder.UseName(sp.GetRequiredService<string>());
+		});
+
+		await using var serviceProvider = serviceCollection.BuildServiceProvider();
+		var dataSource = serviceProvider.GetRequiredService<MySqlDataSource>();
+		Assert.Equal("MyName", dataSource.Name);
+	}
+
+	[Fact]
 	public async Task KeyedMySqlDataSourceIsRegistered()
 	{
 		var serviceCollection = new ServiceCollection();
@@ -94,6 +110,35 @@ public class DependencyInjectionTests
 
 		var dataSource = serviceProvider.GetRequiredKeyedService<MySqlDataSource>("key");
 		Assert.Equal("key", dataSource.Name);
+		await using var connection = dataSource.CreateConnection();
+		Assert.Equal(c_connectionString, connection.ConnectionString);
+	}
+
+	[Fact]
+	public async Task KeyedMySqlDataSourceCanSetName()
+	{
+		var serviceCollection = new ServiceCollection();
+		serviceCollection.AddKeyedMySqlDataSource("key", c_connectionString, builder => builder.UseName("MyName"));
+
+		await using var serviceProvider = serviceCollection.BuildServiceProvider();
+
+		var dataSource = serviceProvider.GetRequiredKeyedService<MySqlDataSource>("key");
+		Assert.Equal("MyName", dataSource.Name);
+		await using var connection = dataSource.CreateConnection();
+		Assert.Equal(c_connectionString, connection.ConnectionString);
+	}
+
+	[Fact]
+	public async Task KeyedMySqlDataSourceCanSetNameFromServiceProvider()
+	{
+		var serviceCollection = new ServiceCollection();
+		serviceCollection.AddSingleton("MyName");
+		serviceCollection.AddKeyedMySqlDataSource("key", c_connectionString, (sp, builder) => builder.UseName(sp.GetRequiredService<string>()));
+
+		await using var serviceProvider = serviceCollection.BuildServiceProvider();
+
+		var dataSource = serviceProvider.GetRequiredKeyedService<MySqlDataSource>("key");
+		Assert.Equal("MyName", dataSource.Name);
 		await using var connection = dataSource.CreateConnection();
 		Assert.Equal(c_connectionString, connection.ConnectionString);
 	}

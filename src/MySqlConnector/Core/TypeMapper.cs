@@ -169,13 +169,13 @@ internal sealed class TypeMapper
 	{
 		if (clrType.IsEnum)
 			clrType = Enum.GetUnderlyingType(clrType);
-		m_dbTypeMappingsByClrType.TryGetValue(clrType, out var dbTypeMapping);
+		_ = m_dbTypeMappingsByClrType.TryGetValue(clrType, out var dbTypeMapping);
 		return dbTypeMapping;
 	}
 
 	internal DbTypeMapping? GetDbTypeMapping(DbType dbType)
 	{
-		m_dbTypeMappingsByDbType.TryGetValue(dbType, out var dbTypeMapping);
+		_ = m_dbTypeMappingsByDbType.TryGetValue(dbType, out var dbTypeMapping);
 		return dbTypeMapping;
 	}
 

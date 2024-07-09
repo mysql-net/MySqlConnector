@@ -888,6 +888,6 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 	}
 #endif
 
-	DatabaseFixture m_database;
+	readonly DatabaseFixture m_database;
 }
 

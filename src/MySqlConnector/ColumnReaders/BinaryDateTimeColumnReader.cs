@@ -47,7 +47,7 @@ internal sealed class BinaryDateTimeColumnReader : ColumnReader
 
 		try
 		{
-			return m_allowZeroDateTime ? (object) new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
+			return m_allowZeroDateTime ? new MySqlDateTime(year, month, day, hour, minute, second, microseconds) :
 #if NET7_0_OR_GREATER
 				new DateTime(year, month, day, hour, minute, second, microseconds / 1000, microseconds % 1000, m_dateTimeKind);
 #else

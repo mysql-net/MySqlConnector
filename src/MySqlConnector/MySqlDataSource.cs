@@ -181,13 +181,13 @@ public sealed class MySqlDataSource : DbDataSource
 			// set the password from the callback, then queue another refresh after the 'success' interval
 			m_password = await m_periodicPasswordProvider!(m_providePasswordContext!, m_passwordProviderTimerCancellationTokenSource!.Token).ConfigureAwait(false);
 			m_providePasswordCallback = ProvidePasswordFromField;
-			m_passwordProviderTimer!.Change(m_periodicPasswordProviderSuccessRefreshInterval, Timeout.InfiniteTimeSpan);
+			_ = m_passwordProviderTimer!.Change(m_periodicPasswordProviderSuccessRefreshInterval, Timeout.InfiniteTimeSpan);
 		}
 		catch (Exception e)
 		{
 			// queue a refresh after the 'failure' interval
 			Log.PeriodicPasswordProviderFailed(m_logger, e, m_id, e.Message);
-			m_passwordProviderTimer!.Change(m_periodicPasswordProviderFailureRefreshInterval, Timeout.InfiniteTimeSpan);
+			_ = m_passwordProviderTimer!.Change(m_periodicPasswordProviderFailureRefreshInterval, Timeout.InfiniteTimeSpan);
 			throw new MySqlException("The periodic password provider failed", e);
 		}
 	}

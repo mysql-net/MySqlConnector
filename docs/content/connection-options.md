@@ -229,7 +229,7 @@ Connection pooling is enabled by default. These options are used to configure it
     <td>The minimum number of connections to leave in the pool if ConnectionIdleTimeout is reached.</td>
   </tr>
   <tr id="MaximumPoolSize">
-    <td>Maximum Pool Size, Max Pool Size, MaximumPoolsize, maxpoolsize</td>
+    <td>Maximum Pool Size, Max Pool Size, MaximumPoolSize, maxpoolsize</td>
     <td>100</td>
     <td>The maximum number of connections allowed in the pool.</td>
   </tr>
@@ -515,7 +515,7 @@ from your connection string when migrating from Connector/NET to MySqlConnector.
     <td>Use <a href="/overview/logging/">MySqlConnector logging</a> (which is more flexible) instead.</td>
   </tr>
   <tr id="OldGetStringBehavior">
-    <td></td>
+    <td>OldGetStringBehavior</td>
     <td>false</td>
     <td>This option is temporary in Connector/NET and unsupported in MySqlConnector.</td>
   </tr>

@@ -35,9 +35,9 @@ internal sealed class StreamByteHandler : IByteHandler
 			}
 			catch (Exception ex)
 			{
-				if (RemainingTimeout != Constants.InfiniteTimeout && ex is IOException { InnerException: SocketException { SocketErrorCode: SocketError.TimedOut } })
-					return ValueTaskExtensions.FromException<int>(MySqlException.CreateForTimeout(ex));
-				return ValueTaskExtensions.FromException<int>(ex);
+				return RemainingTimeout != Constants.InfiniteTimeout && ex is IOException { InnerException: SocketException { SocketErrorCode: SocketError.TimedOut } } ?
+					ValueTaskExtensions.FromException<int>(MySqlException.CreateForTimeout(ex)) :
+					ValueTaskExtensions.FromException<int>(ex);
 			}
 			if (RemainingTimeout != Constants.InfiniteTimeout)
 				RemainingTimeout -= unchecked(Environment.TickCount - startTime);

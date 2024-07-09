@@ -8,8 +8,8 @@ public abstract class MetricsTestsBase : IDisposable
 {
 	public MetricsTestsBase()
 	{
-		m_measurements = new();
-		m_timeMeasurements = new();
+		m_measurements = [];
+		m_timeMeasurements = [];
 
 		Server = new FakeMySqlServer();
 		Server.Start();
@@ -46,7 +46,7 @@ public abstract class MetricsTestsBase : IDisposable
 	protected FakeMySqlServer Server { get; }
 
 	protected MySqlConnectionStringBuilder CreateConnectionStringBuilder() =>
-		new MySqlConnectionStringBuilder
+		new()
 		{
 			Server = "localhost",
 			Port = (uint) Server.Port,
@@ -71,8 +71,8 @@ public abstract class MetricsTestsBase : IDisposable
 	protected List<double> GetAndClearMeasurements(string name)
 	{
 		if (!m_timeMeasurements.TryGetValue(name, out var list))
-			list = new();
-		m_timeMeasurements[name] = new List<double>();
+			list = [];
+		m_timeMeasurements[name] = [];
 		return list;
 	}
 
@@ -105,7 +105,7 @@ public abstract class MetricsTestsBase : IDisposable
 		lock (m_timeMeasurements)
 		{
 			if (!m_timeMeasurements.TryGetValue(instrument.Name, out var list))
-				list = m_timeMeasurements[instrument.Name] = new List<double>();
+				list = m_timeMeasurements[instrument.Name] = [];
 			list.Add(measurement);
 		}
 	}

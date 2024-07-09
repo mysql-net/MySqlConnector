@@ -28,13 +28,13 @@ internal static class MetricsReporter
 
 	static MetricsReporter()
 	{
-		ActivitySourceHelper.Meter.CreateObservableUpDownCounter<int>("db.client.connections.idle.max",
+		_ = ActivitySourceHelper.Meter.CreateObservableUpDownCounter<int>("db.client.connections.idle.max",
 			observeValues: GetMaximumConnections, unit: "{connection}",
 			description: "The maximum number of idle open connections allowed; this corresponds to MaximumPoolSize in the connection string.");
-		ActivitySourceHelper.Meter.CreateObservableUpDownCounter<int>("db.client.connections.idle.min",
+		_ = ActivitySourceHelper.Meter.CreateObservableUpDownCounter<int>("db.client.connections.idle.min",
 			observeValues: GetMinimumConnections, unit: "{connection}",
 			description: "The minimum number of idle open connections allowed; this corresponds to MinimumPoolSize in the connection string.");
-		ActivitySourceHelper.Meter.CreateObservableUpDownCounter<int>("db.client.connections.max",
+		_ = ActivitySourceHelper.Meter.CreateObservableUpDownCounter<int>("db.client.connections.max",
 			observeValues: GetMaximumConnections, unit: "{connection}",
 			description: "The maximum number of open connections allowed; this corresponds to MaximumPoolSize in the connection string.");
 

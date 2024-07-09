@@ -51,9 +51,11 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 	{
 		using var connection = new MySqlConnection(GetConnectionString());
 		connection.Open();
-		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-		bl.FileName = AppConfig.MySqlBulkLoaderTsvFile;
-		bl.TableName = m_testTable;
+		MySqlBulkLoader bl = new MySqlBulkLoader(connection)
+		{
+			FileName = AppConfig.MySqlBulkLoaderTsvFile,
+			TableName = m_testTable,
+		};
 		bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 		bl.NumberOfLinesToSkip = 1;
 		bl.Expressions.Add("five = UNHEX(five)");
@@ -67,9 +69,11 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 	{
 		using var connection = new MySqlConnection(GetLocalConnectionString());
 		connection.Open();
-		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-		bl.FileName = AppConfig.MySqlBulkLoaderLocalTsvFile;
-		bl.TableName = m_testTable;
+		MySqlBulkLoader bl = new MySqlBulkLoader(connection)
+		{
+			FileName = AppConfig.MySqlBulkLoaderLocalTsvFile,
+			TableName = m_testTable,
+		};
 		bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 		bl.NumberOfLinesToSkip = 1;
 		bl.Expressions.Add("five = UNHEX(five)");
@@ -83,10 +87,12 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 	{
 		using var connection = new MySqlConnection(GetConnectionString());
 		connection.Open();
-		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-		bl.FileName = AppConfig.MySqlBulkLoaderCsvFile;
-		bl.TableName = m_testTable;
-		bl.CharacterSet = "UTF8";
+		MySqlBulkLoader bl = new MySqlBulkLoader(connection)
+		{
+			FileName = AppConfig.MySqlBulkLoaderCsvFile,
+			TableName = m_testTable,
+			CharacterSet = "UTF8",
+		};
 		bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 		bl.NumberOfLinesToSkip = 1;
 		bl.FieldTerminator = ",";
@@ -103,10 +109,12 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 	{
 		using var connection = new MySqlConnection(GetLocalConnectionString());
 		connection.Open();
-		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-		bl.FileName = AppConfig.MySqlBulkLoaderLocalCsvFile;
-		bl.TableName = m_testTable;
-		bl.CharacterSet = "UTF8";
+		MySqlBulkLoader bl = new MySqlBulkLoader(connection)
+		{
+			FileName = AppConfig.MySqlBulkLoaderLocalCsvFile,
+			TableName = m_testTable,
+			CharacterSet = "UTF8",
+		};
 		bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 		bl.NumberOfLinesToSkip = 1;
 		bl.FieldTerminator = ",";
@@ -127,10 +135,12 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		if (string.IsNullOrEmpty(secureFilePath) || secureFilePath == "NULL")
 			return;
 
-		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-		bl.FileName = Path.Combine(secureFilePath, AppConfig.MySqlBulkLoaderCsvFile + "-junk");
-		bl.TableName = m_testTable;
-		bl.CharacterSet = "UTF8";
+		MySqlBulkLoader bl = new MySqlBulkLoader(connection)
+		{
+			FileName = Path.Combine(secureFilePath, AppConfig.MySqlBulkLoaderCsvFile + "-junk"),
+			TableName = m_testTable,
+			CharacterSet = "UTF8",
+		};
 		bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 		bl.NumberOfLinesToSkip = 1;
 		bl.FieldTerminator = ",";
@@ -167,11 +177,13 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 	{
 		using var connection = new MySqlConnection(GetLocalConnectionString());
 		connection.Open();
-		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-		bl.Timeout = 3; //Set a short timeout for this test because the file not found exception takes a long time otherwise, the timeout does not change the result
-		bl.FileName = AppConfig.MySqlBulkLoaderLocalCsvFile + "-junk";
-		bl.TableName = m_testTable;
-		bl.CharacterSet = "UTF8";
+		MySqlBulkLoader bl = new MySqlBulkLoader(connection)
+		{
+			Timeout = 3, //Set a short timeout for this test because the file not found exception takes a long time otherwise, the timeout does not change the result
+			FileName = AppConfig.MySqlBulkLoaderLocalCsvFile + "-junk",
+			TableName = m_testTable,
+			CharacterSet = "UTF8",
+		};
 		bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 		bl.NumberOfLinesToSkip = 1;
 		bl.FieldTerminator = ",";
@@ -334,9 +346,11 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 	{
 		using var connection = new MySqlConnection(GetConnectionString());
 		connection.Open();
-		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-		bl.TableName = m_testTable;
-		bl.CharacterSet = "UTF8";
+		MySqlBulkLoader bl = new MySqlBulkLoader(connection)
+		{
+			TableName = m_testTable,
+			CharacterSet = "UTF8",
+		};
 		bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 		bl.NumberOfLinesToSkip = 1;
 		bl.FieldTerminator = ",";
@@ -356,8 +370,10 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 	{
 		using var connection = new MySqlConnection(GetConnectionString());
 		connection.Open();
-		MySqlBulkLoader bl = new MySqlBulkLoader(connection);
-		bl.FileName = AppConfig.MySqlBulkLoaderLocalCsvFile;
+		MySqlBulkLoader bl = new MySqlBulkLoader(connection)
+		{
+			FileName = AppConfig.MySqlBulkLoaderLocalCsvFile,
+		};
 		bl.Columns.AddRange(new string[] { "one", "two", "three", "four", "five" });
 		bl.NumberOfLinesToSkip = 1;
 		bl.FieldTerminator = ",";

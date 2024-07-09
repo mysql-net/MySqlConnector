@@ -4,12 +4,12 @@ public class MySqlParameterCollectionNameToIndexTests
 {
 	public MySqlParameterCollectionNameToIndexTests()
 	{
-		m_collection = new MySqlParameterCollection
-		{
+		m_collection =
+		[
 			new MySqlParameter { ParameterName = "A", Value = 1 },
 			new MySqlParameter { ParameterName = "B", Value = 2 },
 			new MySqlParameter { ParameterName = "C", Value = 3 },
-		};
+		];
 	}
 
 	[Fact]
@@ -124,5 +124,5 @@ public class MySqlParameterCollectionNameToIndexTests
 		Assert.Equal(1, m_collection.NormalizedIndexOf("D"));
 	}
 
-	MySqlParameterCollection m_collection;
+	readonly MySqlParameterCollection m_collection;
 }

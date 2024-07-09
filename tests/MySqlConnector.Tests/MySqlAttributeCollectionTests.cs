@@ -81,7 +81,7 @@ public class MySqlAttributeCollectionTests
 		Assert.Equal(1, m_collection.Count);
 		return m_collection[0];
 #else
-		return (MySqlAttribute) Assert.Single(m_collection);
+		return Assert.Single(m_collection);
 #endif
 	}
 

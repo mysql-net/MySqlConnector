@@ -27,7 +27,7 @@ public sealed class MySqlGeometry
 	/// <param name="value">The raw bytes of MySQL's internal GEOMETRY format.</param>
 	/// <returns>A new <see cref="MySqlGeometry"/> containing the specified geometry.</returns>
 	/// <remarks>See <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-data-formats.html#gis-internal-format">Internal Geometry Storage Format</a>.</remarks>
-	public static MySqlGeometry FromMySql(ReadOnlySpan<byte> value) => new MySqlGeometry(value.ToArray());
+	public static MySqlGeometry FromMySql(ReadOnlySpan<byte> value) => new(value.ToArray());
 
 	/// <summary>
 	/// The Spatial Reference System ID of this geometry.

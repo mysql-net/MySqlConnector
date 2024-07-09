@@ -10,5 +10,5 @@ internal readonly struct ResizableArraySegment<T>(ResizableArray<T> array, int o
 	public int Offset { get; } = offset;
 	public int Count { get; } = count;
 
-	public static implicit operator ReadOnlySpan<T>(ResizableArraySegment<T> segment) => new ReadOnlySpan<T>(segment.Array.Array, segment.Offset, segment.Count);
+	public static implicit operator ReadOnlySpan<T>(ResizableArraySegment<T> segment) => new(segment.Array.Array, segment.Offset, segment.Count);
 }

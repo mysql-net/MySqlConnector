@@ -200,7 +200,7 @@ public sealed class MySqlBulkLoader
 		try
 		{
 			if (Local && !Connection.AllowLoadLocalInfile)
-				throw new NotSupportedException("To use MySqlBulkLoader.Local=true, set AllowLoadLocalInfile=true in the connection string. See https://fl.vu/mysql-load-data");
+				throw new NotSupportedException("To use MySqlBulkLoader.Local=true, set AllowLoadLocalInfile=true in the connection string. See https://mysqlconnector.net/load-data");
 
 			using var cmd = new MySqlCommand(CreateSql(), Connection, Connection.CurrentTransaction)
 			{
@@ -302,7 +302,7 @@ public sealed class MySqlBulkLoader
 		lock (s_lock)
 		{
 			var source = s_sources[sourceKey];
-			s_sources.Remove(sourceKey);
+			_ = s_sources.Remove(sourceKey);
 			return source;
 		}
 	}
@@ -312,10 +312,7 @@ public sealed class MySqlBulkLoader
 		lock (s_lock)
 		{
 			if (s_sources.TryGetValue(sourceKey, out source))
-			{
-				s_sources.Remove(sourceKey);
-				return true;
-			}
+				return s_sources.Remove(sourceKey);
 		}
 
 		return false;

@@ -79,9 +79,9 @@ internal sealed class CachedProcedure
 			cmd.Parameters.AddWithValue("@component", component);
 
 			using var reader = await cmd.ExecuteReaderNoResetTimeoutAsync(CommandBehavior.Default, ioBehavior, cancellationToken).ConfigureAwait(false);
-			await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			_ = await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			routineCount = reader.GetInt32(0);
-			await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+			_ = await reader.NextResultAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			while (await reader.ReadAsync(ioBehavior, cancellationToken).ConfigureAwait(false))
 			{
@@ -168,17 +168,17 @@ internal sealed class CachedProcedure
 			if (parameter.StartsWith("INOUT ", StringComparison.OrdinalIgnoreCase))
 			{
 				direction = "INOUT";
-				parameter = parameter.Substring(6);
+				parameter = parameter[6..];
 			}
 			else if (parameter.StartsWith("OUT ", StringComparison.OrdinalIgnoreCase))
 			{
 				direction = "OUT";
-				parameter = parameter.Substring(4);
+				parameter = parameter[4..];
 			}
 			else if (parameter.StartsWith("IN ", StringComparison.OrdinalIgnoreCase))
 			{
 				direction = "IN";
-				parameter = parameter.Substring(3);
+				parameter = parameter[3..];
 			}
 
 			var parts = s_parameterName.Match(parameter);
@@ -206,7 +206,7 @@ internal sealed class CachedProcedure
 		}
 
 		var list = sql.Trim().Split(' ');
-		var type = string.Empty;
+		string? type;
 
 		if (list.Length < 2 || !s_typeMapping.TryGetValue(list[0] + ' ' + list[1], out type))
 		{

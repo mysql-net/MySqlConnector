@@ -1,5 +1,5 @@
 ---
-lastmod: 2024-01-20
+lastmod: 2024-04-22
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +10,29 @@ weight: 30
 ---
 
 # Version History
+
+### 2.3.7
+
+* Fix `NullReferenceException` in `MySqlDataReader.ActivateResultSet` and `MySqlDataReader.DisposeAsync`: [#1459](https://github.com/mysql-net/MySqlConnector/issues/1459).
+  * This bug likely also caused "Packet received out-of-order" errors.
+  * This was introduced in 2.3.0.
+* Fix rare `NullReferenceException` in `ServerSession` during cancellation: [#1472](https://github.com/mysql-net/MySqlConnector/issues/1472).
+* Fix `Foreign Keys` schema not being generated asynchronously.
+
+### 2.3.6
+
+* Fix `VerifyCA` incompatibility with AWS Aurora: [#1462](https://github.com/mysql-net/MySqlConnector/issues/1462).
+* Verify that the server's root certificate is present (in the list of provided CA certificates) when using the `SslCa` connection string option and `SslMode` is `VerifyCA` or `VerifyFull`.
+* Optimization: Use pipelining to begin a transaction: [#1286](https://github.com/mysql-net/MySqlConnector/issues/1286).
+  * Use `Pipelining = False;` in your connection string to disable this optimization if there are compatibility issues.
+* Optimization: cache `START TRANSACTION` payloads.
+* Add transaction logging: [#1411](https://github.com/mysql-net/MySqlConnector/issues/1411).
+* Fix incompatibility with MySQL Server 5.1: [#1445](https://github.com/mysql-net/MySqlConnector/issues/1445).
+  * This fixes a regression introduced in 2.3.0.
+
+#### MySqlConnector.DependencyInjection
+
+* Add overload of `AddMySqlDataSource` that takes an `Action<IServiceProvider, MySqlDataSourceBuilder>` action to configure the `MySqlDataSourceBuilder` instance: [#1316](https://github.com/mysql-net/MySqlConnector/issues/1316).
 
 ### 2.3.5
 
@@ -700,7 +723,7 @@ weight: 30
 
 * **Breaking** `MySqlBulkLoader` (for local files) and `LOAD DATA LOCAL INFILE` are disabled by default.
   * Set `AllowLoadLocalInfile=true` in the connection string to enable loading local data.
-  * This is a security measure; see https://fl.vu/mysql-load-data for details.
+  * This is a security measure; see https://mysqlconnector.net/load-data for details.
 * Add `AllowLoadLocalInfile` connection string option: [#643](https://github.com/mysql-net/MySqlConnector/issues/643).
 * Add `SslCert` and `SslKey` connection string options to specify a client certificate using PEM files: [#641](https://github.com/mysql-net/MySqlConnector/issues/641).
 * Add `SslCa` alias for the `CACertificateFile` connection string option: [#640](https://github.com/mysql-net/MySqlConnector/issues/640).

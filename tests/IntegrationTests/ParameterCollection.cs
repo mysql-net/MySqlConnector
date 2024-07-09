@@ -299,6 +299,6 @@ public class ParameterCollection : IDisposable
 #endif
 	}
 
-	MySqlCommand m_command;
-	MySqlParameterCollection m_parameterCollection;
+	readonly MySqlCommand m_command;
+	readonly MySqlParameterCollection m_parameterCollection;
 }

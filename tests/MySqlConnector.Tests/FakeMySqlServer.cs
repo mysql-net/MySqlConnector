@@ -9,8 +9,8 @@ public sealed class FakeMySqlServer
 	{
 		m_tcpListener = new(IPAddress.Any, 0);
 		m_lock = new();
-		m_connections = new();
-		m_tasks = new();
+		m_connections = [];
+		m_tasks = [];
 	}
 
 	public void Start()
