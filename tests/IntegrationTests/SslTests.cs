@@ -103,7 +103,9 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		Assert.True(connection.SslIsEncrypted);
 		Assert.True(connection.SslIsSigned);
 		Assert.True(connection.SslIsAuthenticated);
+#if !NET9_0_OR_GREATER
 		Assert.True(connection.SslIsMutuallyAuthenticated);
+#endif
 #endif
 		cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
 		var sslVersion = (string) await cmd.ExecuteScalarAsync();
@@ -133,9 +135,11 @@ public class SslTests : IClassFixture<DatabaseFixture>
 			Assert.True(connection.SslIsEncrypted);
 			Assert.True(connection.SslIsSigned);
 			Assert.True(connection.SslIsAuthenticated);
+#if !NET9_0_OR_GREATER
 			Assert.True(connection.SslIsMutuallyAuthenticated);
 #endif
-			cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
+#endif
+            cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
 			var sslVersion = (string) await cmd.ExecuteScalarAsync();
 			Assert.False(string.IsNullOrWhiteSpace(sslVersion));
 		}
