@@ -1189,20 +1189,16 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			};
 			connection.TakeSessionFrom(this);
 
-			ReplaceConnection(this, connection);
-			static void ReplaceConnection(MySqlConnection thisConnection, MySqlConnection connection)
+			// put the new, idle, connection into the list of sessions for this transaction (replacing this MySqlConnection)
+			lock (s_lock)
 			{
-				// put the new, idle, connection into the list of sessions for this transaction (replacing this MySqlConnection)
-				lock (s_lock)
+				foreach (var enlistedTransaction in s_transactionConnections[connection.m_enlistedTransaction!.Transaction])
 				{
-					foreach (var enlistedTransaction in s_transactionConnections[connection.m_enlistedTransaction!.Transaction])
+					if (enlistedTransaction.Connection == this)
 					{
-						if (enlistedTransaction.Connection == thisConnection)
-						{
-							enlistedTransaction.Connection = connection;
-							enlistedTransaction.IsIdle = true;
-							break;
-						}
+						enlistedTransaction.Connection = connection;
+						enlistedTransaction.IsIdle = true;
+						break;
 					}
 				}
 			}

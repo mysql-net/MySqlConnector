@@ -1646,15 +1646,12 @@ internal sealed partial class ServerSession
 
 			// first (and only) row
 			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-			static void ReadRow(ReadOnlySpan<byte> span, out int? connectionId, out ServerVersion? serverVersion)
-			{
-				var reader = new ByteArrayReader(span);
-				var length = reader.ReadLengthEncodedIntegerOrNull();
-				connectionId = (length != -1 && Utf8Parser.TryParse(reader.ReadByteString(length), out int id, out _)) ? id : default(int?);
-				length = reader.ReadLengthEncodedIntegerOrNull();
-				serverVersion = length != -1 ? new ServerVersion(reader.ReadByteString(length)) : default;
-			}
-			ReadRow(payload.Span, out var connectionId, out var serverVersion);
+
+			var reader = new ByteArrayReader(payload.Span);
+			var length = reader.ReadLengthEncodedIntegerOrNull();
+			var connectionId = (length != -1 && Utf8Parser.TryParse(reader.ReadByteString(length), out int id, out _)) ? id : default(int?);
+			length = reader.ReadLengthEncodedIntegerOrNull();
+			var serverVersion = length != -1 ? new ServerVersion(reader.ReadByteString(length)) : default;
 
 			// OK/EOF payload
 			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
