@@ -6,30 +6,31 @@
 
   <ItemGroup>
     <PackageVersion Include="AdoNet.Specification.Tests" Version="2.0.0-beta.2" />
-    <PackageVersion Include="Dapper.StrongName" Version="2.1.28" />
+    <PackageVersion Include="Dapper.StrongName" Version="2.1.35" />
     <PackageVersion Include="IndexRange" Version="1.0.2" />
     <PackageVersion Include="log4net" Version="2.0.10" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
     <PackageVersion Include="MySql.Data" Version="9.0.0" />
     <PackageVersion Include="NLog" Version="4.5.0" />
     <PackageVersion Include="Serilog" Version="2.6.0" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
+    <PackageVersion Include="System.Text.Json" Version="8.0.4" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
-    <PackageVersion Include="xunit" Version="2.7.0" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.7" />
-    <PackageVersion Include="YamlDotNet" Version="13.7.1" />
+    <PackageVersion Include="xunit" Version="2.9.0" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
   </ItemGroup>
 
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
-    <GlobalPackageReference Include="MinVer" Version="4.3.0" />
+    <GlobalPackageReference Include="MinVer" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

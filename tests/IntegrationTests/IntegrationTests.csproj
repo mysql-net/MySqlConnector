@@ -40,6 +40,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="System.Text.Json" />
     <Using Include="System" />
     <Using Include="System.Data" />
     <Using Include="System.Data.Common" />
