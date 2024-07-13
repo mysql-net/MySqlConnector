@@ -153,10 +153,10 @@ internal sealed class CachedProcedure
 			return [];
 
 		// strip precision specifier containing comma
-		parametersSql = s_numericTypes.Replace(parametersSql, @"$1");
+		parametersSql = s_numericTypes.Replace(parametersSql, "$1");
 
 		// strip enum values containing commas (these would have been stripped by ParseDataType anyway)
-		parametersSql = s_enum.Replace(parametersSql, "ENUM");
+		parametersSql = s_enumOrSet.Replace(parametersSql, "$1");
 
 		var parameters = parametersSql.Split(',');
 		var cachedParameters = new List<CachedParameter>(parameters.Length);
@@ -195,7 +195,7 @@ internal sealed class CachedProcedure
 	{
 		sql = s_characterSet.Replace(sql, "");
 		sql = s_collate.Replace(sql, "");
-		sql = s_enum.Replace(sql, "ENUM");
+		sql = s_enumOrSet.Replace(sql, "$1");
 
 		length = 0;
 		var match = s_length.Match(sql);
@@ -260,7 +260,7 @@ internal sealed class CachedProcedure
 	private static readonly Regex s_singleLineComments = new(@"(^|\s)--.*?$", RegexOptions.Multiline);
 	private static readonly Regex s_multipleSpaces = new(@"\s+");
 	private static readonly Regex s_numericTypes = new(@"(DECIMAL|DEC|FIXED|NUMERIC|FLOAT|DOUBLE PRECISION|DOUBLE|REAL)\s*\([0-9]+(,\s*[0-9]+)\)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-	private static readonly Regex s_enum = new(@"ENUM\s*\([^)]+\)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+	private static readonly Regex s_enumOrSet = new(@"(ENUM|SET)\s*\([^)]+\)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 	private static readonly Regex s_parameterName = new(@"^(?:`((?:[\u0001-\u005F\u0061-\uFFFF]+|``)+)`|([A-Za-z0-9$_\u0080-\uFFFF]+)) (.*)$");
 	private static readonly Regex s_characterSet = new(" (CHARSET|CHARACTER SET) [A-Za-z0-9_]+", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 	private static readonly Regex s_collate = new(" (COLLATE) [A-Za-z0-9_]+", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);

@@ -122,6 +122,12 @@ public class CachedProcedureTests
 				}
 			],
 			[
+				"ColSet set('set1','set2','set3')", new object[]
+				{
+					new CachedParameter(1, "IN", "ColSet", "SET", false, 0),
+				}
+			],
+			[
 				@"IN param1 DATETIME(6),
 -- ignored1
 OUT param2 /* ignore */ INT,
@@ -189,6 +195,7 @@ param4 INTEGER(3)
 	[InlineData("NUMERIC(12)", "DECIMAL", false, 12)]
 	[InlineData("FIXED(12)", "DECIMAL", false, 12)]
 	[InlineData("ENUM('a','b','c')", "ENUM", false, 0)]
+	[InlineData("SET('a','b','c')", "SET", false, 0)]
 	public void ParseDataType(string sql, string expectedDataType, bool expectedUnsigned, int expectedLength)
 	{
 		var dataType = CachedProcedure.ParseDataType(sql, out var unsigned, out var length);
