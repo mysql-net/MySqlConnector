@@ -152,7 +152,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		Log.StartingTransaction(m_transactionLogger, m_session!.Id);
 
 		// get the bytes for both payloads concatenated together (suitable for pipelining)
-		var startTransactionPayload = GetStartTransactionPayload(isolationLevel, isReadOnly, m_session.SupportsQueryAttributes);
+		var startTransactionPayload = GetStartTransactionPayload(isolationLevel, isReadOnly, m_session.Context.SupportsQueryAttributes);
 
 		if (GetInitializedConnectionSettings() is { UseCompression: false, Pipelining: not false })
 		{
@@ -161,10 +161,10 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			// read the two OK replies
 			var payload = await m_session.ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, m_session.Context);
 
 			payload = await m_session.ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, m_session.Context);
 		}
 		else
 		{
@@ -172,12 +172,12 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			await m_session.SendAsync(new Protocol.PayloadData(startTransactionPayload.Slice(4, startTransactionPayload.Span[0])), ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			var payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, m_session.Context);
 
 			await m_session.SendAsync(new Protocol.PayloadData(startTransactionPayload.Slice(8 + startTransactionPayload.Span[0], startTransactionPayload.Span[startTransactionPayload.Span[0] + 4])), ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, m_session.Context);
 		}
 
 		var transaction = new MySqlTransaction(this, isolationLevel, m_transactionLogger);
@@ -487,8 +487,10 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		using (var initDatabasePayload = InitDatabasePayload.Create(databaseName))
 			await m_session!.SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 		var payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-		OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
-		m_session.DatabaseOverride = databaseName;
+		OkPayload.Verify(payload.Span, m_session.Context);
+
+		// for non session tracking servers
+		m_session.Context.Database = databaseName;
 	}
 
 	public new MySqlCommand CreateCommand() => (MySqlCommand) base.CreateCommand();
@@ -603,7 +605,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		Log.ResettingConnection(m_logger, session.Id);
 		await session.SendAsync(ResetConnectionPayload.Instance, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
 		var payload = await session.ReceiveReplyAsync(AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
-		OkPayload.Verify(payload.Span, session.SupportsDeprecateEof, session.SupportsSessionTrack);
+		OkPayload.Verify(payload.Span, session.Context);
 	}
 
 	[AllowNull]
@@ -626,7 +628,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	public override string Database => m_session?.DatabaseOverride ?? GetConnectionSettings().Database;
+	public override string Database => m_session?.Context.Database ?? GetConnectionSettings().Database;
 
 	public override ConnectionState State => m_connectionState;
 
@@ -637,7 +639,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// <summary>
 	/// The connection ID from MySQL Server.
 	/// </summary>
-	public int ServerThread => Session.ConnectionId;
+	public int ServerThread => Session.Context.ConnectionId;
 
 	/// <summary>
 	/// Gets or sets the delegate used to provide client certificates for connecting to a server.

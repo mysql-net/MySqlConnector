@@ -47,7 +47,7 @@ internal static partial class Log
 	public static partial void AutoDetectedAurora57(ILogger logger, string sessionId, string hostName);
 
 	[LoggerMessage(EventIds.SessionMadeConnection, LogLevel.Debug, "Session {SessionId} made connection; server version {ServerVersion}; connection ID {ConnectionId}; supports: compression {SupportsCompression}, attributes {SupportsAttributes}, deprecate EOF {SupportsDeprecateEof}, cached metadata {SupportsCachedMetadata}, SSL {SupportsSsl}, session track {SupportsSessionTrack}, pipelining {SupportsPipelining}, query attributes {SupportsQueryAttributes}")]
-	public static partial void SessionMadeConnection(ILogger logger, string sessionId, string serverVersion, int connectionId, bool supportsCompression, bool supportsAttributes, bool supportsDeprecateEof, bool supportsCachedMetadata, bool supportsSsl, bool supportsSessionTrack, bool supportsPipelining, bool supportsQueryAttributes);
+	public static partial void SessionMadeConnection(ILogger logger, string sessionId, string serverVersion, long connectionId, bool supportsCompression, bool supportsAttributes, bool supportsDeprecateEof, bool supportsCachedMetadata, bool supportsSsl, bool supportsSessionTrack, bool supportsPipelining, bool supportsQueryAttributes);
 
 	[LoggerMessage(EventIds.ServerDoesNotSupportSsl, LogLevel.Error, "Session {SessionId} requires SSL but server doesn't support it")]
 	public static partial void ServerDoesNotSupportSsl(ILogger logger, string sessionId);
@@ -184,7 +184,7 @@ internal static partial class Log
 	public static partial void DetectedProxy(ILogger logger, string sessionId);
 
 	[LoggerMessage(EventIds.ChangingConnectionId, LogLevel.Debug, "Session {SessionId} changing connection id from {OldConnectionId} to {ConnectionId} and server version from {OldServerVersion} to {ServerVersion}")]
-	public static partial void ChangingConnectionId(ILogger logger, string sessionId, int oldConnectionId, int connectionId, string oldServerVersion, string serverVersion);
+	public static partial void ChangingConnectionId(ILogger logger, string sessionId, long oldConnectionId, long connectionId, string oldServerVersion, string serverVersion);
 
 	[LoggerMessage(EventIds.FailedToGetConnectionId, LogLevel.Information, "Session {SessionId} failed to get CONNECTION_ID(), VERSION()")]
 	public static partial void FailedToGetConnectionId(ILogger logger, Exception exception, string sessionId);

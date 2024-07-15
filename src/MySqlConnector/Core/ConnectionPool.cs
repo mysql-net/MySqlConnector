@@ -65,7 +65,7 @@ internal sealed class ConnectionPool : IDisposable
 				}
 				else
 				{
-					if (ConnectionSettings.ConnectionReset || session.DatabaseOverride is not null)
+					if (ConnectionSettings.ConnectionReset || !session.Context.IsInitialDatabase())
 					{
 						if (timeoutMilliseconds != 0)
 							session.SetTimeout(Math.Max(1, timeoutMilliseconds - Utility.GetElapsedMilliseconds(startingTimestamp)));
