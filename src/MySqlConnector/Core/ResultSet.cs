@@ -38,7 +38,7 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 				var firstByte = payload.HeaderByte;
 				if (firstByte == OkPayload.Signature)
 				{
-					var ok = OkPayload.Create(payload.Span, Session.Context);
+					var ok = OkPayload.Create(payload.Span, Session);
 
 					// if we've read a result set header then this is a SELECT statement, so we shouldn't overwrite RecordsAffected
 					// (which should be -1 for SELECT) unless the server reports a non-zero count
@@ -109,7 +109,7 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 				}
 				else
 				{
-					var columnCountPacket = ColumnCountPayload.Create(payload.Span, Session.Context.SupportsCachedPreparedMetadata);
+					var columnCountPacket = ColumnCountPayload.Create(payload.Span, Session.SupportsCachedPreparedMetadata);
 					var columnCount = columnCountPacket.ColumnCount;
 					if (!columnCountPacket.MetadataFollows)
 					{
@@ -132,7 +132,7 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 						m_columnDefinitions = m_columnDefinitionPayloadCache.AsMemory(0, columnCount);
 
 						// if the server supports metadata caching but has re-sent it, something has changed since last prepare/execution and we need to update the columns
-						var preparedColumns = Session.Context.SupportsCachedPreparedMetadata ? DataReader.LastUsedPreparedStatement?.Columns : null;
+						var preparedColumns = Session.SupportsCachedPreparedMetadata ? DataReader.LastUsedPreparedStatement?.Columns : null;
 
 						for (var column = 0; column < columnCount; column++)
 						{
@@ -156,7 +156,7 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 						}
 					}
 
-					if (!Session.Context.SupportsDeprecateEof)
+					if (!Session.SupportsDeprecateEof)
 					{
 						payload = await Session.ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 						_ = EofPayload.Create(payload.Span);
@@ -252,13 +252,13 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 
 		if (payload.HeaderByte == EofPayload.Signature)
 		{
-			if (Session.Context.SupportsDeprecateEof && OkPayload.IsOk(payload.Span, Session.Context))
+			if (Session.SupportsDeprecateEof && OkPayload.IsOk(payload.Span, Session))
 			{
-				var ok = OkPayload.Create(payload.Span, Session.Context);
+				var ok = OkPayload.Create(payload.Span, Session);
 				BufferState = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
 				return null;
 			}
-			if (!Session.Context.SupportsDeprecateEof && EofPayload.IsEof(payload))
+			if (!Session.SupportsDeprecateEof && EofPayload.IsEof(payload))
 			{
 				var eof = EofPayload.Create(payload.Span);
 				BufferState = (eof.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;

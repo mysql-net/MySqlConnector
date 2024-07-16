@@ -24,37 +24,37 @@ internal sealed class OkPayload
 	 * https://mariadb.com/kb/en/the-mariadb-library/resultset/
 	 * https://github.com/MariaDB/mariadb-connector-j/blob/5fa814ac6e1b4c9cb6d141bd221cbd5fc45c8a78/src/main/java/org/mariadb/jdbc/internal/com/read/resultset/SelectResultSet.java#L443-L444
 	 */
-	public static bool IsOk(ReadOnlySpan<byte> span, Context context) =>
+	public static bool IsOk(ReadOnlySpan<byte> span, IServerCapabilities serverCapabilities) =>
 		span.Length > 0 &&
 			(span.Length > 6 && span[0] == Signature ||
-			 context.SupportsDeprecateEof && span.Length < 0xFF_FFFF && span[0] == EofPayload.Signature);
+			 serverCapabilities.SupportsDeprecateEof && span.Length < 0xFF_FFFF && span[0] == EofPayload.Signature);
 
 	/// <summary>
 	/// Creates an <see cref="OkPayload"/> from the given <paramref name="span"/>, or throws <see cref="FormatException"/>
 	/// if the bytes do not represent a valid <see cref="OkPayload"/>.
 	/// </summary>
 	/// <param name="span">The bytes from which to read an OK packet.</param>
-	/// <param name="context">Current connection variables context</param>
+	/// <param name="serverCapabilities">The server capabilities.</param>
 	/// <returns>A <see cref="OkPayload"/> with the contents of the OK packet.</returns>
 	/// <exception cref="FormatException">Thrown when the bytes are not a valid OK packet.</exception>
-	public static OkPayload Create(ReadOnlySpan<byte> span, Context context) =>
-		Read(span, context, true)!;
+	public static OkPayload Create(ReadOnlySpan<byte> span, IServerCapabilities serverCapabilities) =>
+		Read(span, serverCapabilities, true)!;
 
 	/// <summary>
 	/// Verifies that the bytes in the given <paramref name="span"/> form a valid <see cref="OkPayload"/>, or throws
 	/// <see cref="FormatException"/> if they do not.
 	/// </summary>
 	/// <param name="span">The bytes from which to read an OK packet.</param>
-	/// <param name="context">Current connection variables context</param>
+	/// <param name="serverCapabilities">The server capabilities.</param>
 	/// <exception cref="FormatException">Thrown when the bytes are not a valid OK packet.</exception>
-	public static void Verify(ReadOnlySpan<byte> span, Context context) =>
-		Read(span, context, createPayload: false);
+	public static void Verify(ReadOnlySpan<byte> span, IServerCapabilities serverCapabilities) =>
+		Read(span, serverCapabilities, createPayload: false);
 
-	private static OkPayload? Read(ReadOnlySpan<byte> span, Context context, bool createPayload)
+	private static OkPayload? Read(ReadOnlySpan<byte> span, IServerCapabilities serverCapabilities, bool createPayload)
 	{
 		var reader = new ByteArrayReader(span);
 		var signature = reader.ReadByte();
-		if (signature != Signature && (!context.SupportsDeprecateEof || signature != EofPayload.Signature))
+		if (signature != Signature && (!serverCapabilities.SupportsDeprecateEof || signature != EofPayload.Signature))
 			throw new FormatException($"Expected to read 0x00 or 0xFE but got 0x{signature:X2}");
 		var affectedRowCount = reader.ReadLengthEncodedInteger();
 		var lastInsertId = reader.ReadLengthEncodedInteger();
@@ -65,7 +65,7 @@ internal sealed class OkPayload
 		int? connectionId = null;
 		ReadOnlySpan<byte> statusBytes;
 
-		if (context.SupportsSessionTrack)
+		if (serverCapabilities.SupportsSessionTrack)
 		{
 			if (reader.BytesRemaining > 0)
 			{

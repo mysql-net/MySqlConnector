@@ -24,7 +24,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			Log.PreparingCommandPayload(command.Logger, command.Connection!.Session.Id, command.CommandText!);
 
 			writer.Write((byte) CommandKind.Query);
-			var supportsQueryAttributes = command.Connection!.Session.Context.SupportsQueryAttributes;
+			var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
 			if (supportsQueryAttributes)
 			{
 				// attribute count
@@ -83,7 +83,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		Log.PreparingCommandPayloadWithId(command.Logger, command.Connection!.Session.Id, preparedStatement.StatementId, command.CommandText!);
 
 		var attributes = command.RawAttributes;
-		var supportsQueryAttributes = command.Connection!.Session.Context.SupportsQueryAttributes;
+		var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
 		writer.Write(preparedStatement.StatementId);
 
 		// NOTE: documentation is not updated yet, but due to bugs in MySQL Server 8.0.23-8.0.25, the PARAMETER_COUNT_AVAILABLE (0x08)

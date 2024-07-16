@@ -23,7 +23,7 @@ namespace MySqlConnector.Core;
 
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable
 
-internal sealed partial class ServerSession
+internal sealed partial class ServerSession : IServerCapabilities
 {
 	public ServerSession(ILogger logger)
 		: this(logger, null, 0, Interlocked.Increment(ref s_lastId))
@@ -44,7 +44,6 @@ internal sealed partial class ServerSession
 		m_activityTags = [];
 		DataReader = new();
 		Log.CreatedNewSession(m_logger, Id);
-		Context = new Context(default);
 	}
 
 	public string Id { get; }
@@ -60,13 +59,14 @@ internal sealed partial class ServerSession
 	public long LastLeasedTimestamp { get; set; }
 	public long LastReturnedTimestamp { get; private set; }
 	public string? DatabaseOverride { get; set; }
-
 	public string HostName { get; private set; }
 	public IPEndPoint? IPEndPoint => m_tcpClient?.Client.RemoteEndPoint as IPEndPoint;
 	public string? UserID { get; private set; }
 	public WeakReference<MySqlConnection>? OwningConnection { get; set; }
-	public Context Context { get; private set; }
-
+	public bool SupportsDeprecateEof { get; private set; }
+	public bool SupportsCachedPreparedMetadata { get; private set; }
+	public bool SupportsQueryAttributes { get; private set; }
+	public bool SupportsSessionTrack { get; private set; }
 	public bool ProcAccessDenied { get; set; }
 	public ICollection<KeyValuePair<string, object?>> ActivityTags => m_activityTags;
 	public MySqlDataReader DataReader { get; set; }
@@ -241,7 +241,7 @@ internal sealed partial class ServerSession
 					ColumnDefinitionPayload.Initialize(ref parameters[i], new(columnsAndParameters, columnsAndParametersSize, payloadLength));
 					columnsAndParametersSize += payloadLength;
 				}
-				if (!Context.SupportsDeprecateEof)
+				if (!SupportsDeprecateEof)
 				{
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					EofPayload.Create(payload.Span);
@@ -261,7 +261,7 @@ internal sealed partial class ServerSession
 					ColumnDefinitionPayload.Initialize(ref columns[i], new(columnsAndParameters, columnsAndParametersSize, payloadLength));
 					columnsAndParametersSize += payloadLength;
 				}
-				if (!Context.SupportsDeprecateEof)
+				if (!SupportsDeprecateEof)
 				{
 					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 					EofPayload.Create(payload.Span);
@@ -315,12 +315,12 @@ internal sealed partial class ServerSession
 			// In order to handle this case, we issue a dummy query that will consume the pending cancellation.
 			// See https://bugs.mysql.com/bug.php?id=45679
 			Log.SendingSleepToClearPendingCancellation(m_logger, Id);
-			var payload = Context.SupportsQueryAttributes ? s_sleepWithAttributesPayload : s_sleepNoAttributesPayload;
+			var payload = SupportsQueryAttributes ? s_sleepWithAttributesPayload : s_sleepNoAttributesPayload;
 #pragma warning disable CA2012 // Safe because method completes synchronously
 			SendAsync(payload, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 			payload = ReceiveReplyAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #pragma warning restore CA2012
-			OkPayload.Verify(payload.Span, Context);
+			OkPayload.Verify(payload.Span, this);
 		}
 
 		lock (m_lock)
@@ -455,7 +455,6 @@ internal sealed partial class ServerSession
 
 			ServerVersion = new(initialHandshake.ServerVersion);
 			ConnectionId = initialHandshake.ConnectionId;
-			Context = new Context(initialHandshake.ProtocolCapabilities);
 			AuthPluginData = initialHandshake.AuthPluginData;
 			m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
 			CancellationTimeout = cs.CancellationTimeout;
@@ -470,11 +469,15 @@ internal sealed partial class ServerSession
 			}
 
 			m_supportsConnectionAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ConnectionAttributes) != 0;
+			SupportsDeprecateEof = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.DeprecateEof) != 0;
+			SupportsCachedPreparedMetadata = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.MariaDbCacheMetadata) != 0;
+			SupportsQueryAttributes = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.QueryAttributes) != 0;
+			SupportsSessionTrack = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SessionTrack) != 0;
 			var serverSupportsSsl = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Ssl) != 0;
 			m_characterSet = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? CharacterSet.Utf8Mb4GeneralCaseInsensitive : CharacterSet.Utf8Mb3GeneralCaseInsensitive;
 			m_setNamesPayload = ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ?
-				(Context.SupportsQueryAttributes ? s_setNamesUtf8mb4WithAttributesPayload : s_setNamesUtf8mb4NoAttributesPayload) :
-				(Context.SupportsQueryAttributes ? s_setNamesUtf8WithAttributesPayload : s_setNamesUtf8NoAttributesPayload);
+				(SupportsQueryAttributes ? s_setNamesUtf8mb4WithAttributesPayload : s_setNamesUtf8mb4NoAttributesPayload) :
+				(SupportsQueryAttributes ? s_setNamesUtf8WithAttributesPayload : s_setNamesUtf8NoAttributesPayload);
 
 			// disable pipelining for RDS MySQL 5.7 (assuming Aurora); otherwise take it from the connection string or default to true
 			if (!cs.Pipelining.HasValue && ServerVersion.Version.Major == 5 && ServerVersion.Version.Minor == 7 && HostName.EndsWith(".rds.amazonaws.com", StringComparison.OrdinalIgnoreCase))
@@ -502,7 +505,7 @@ internal sealed partial class ServerSession
 				}
 			}
 
-			Log.SessionMadeConnection(m_logger, Id, ServerVersion.OriginalString, ConnectionId, m_useCompression, m_supportsConnectionAttributes, Context.SupportsDeprecateEof, Context.SupportsCachedPreparedMetadata, serverSupportsSsl, Context.SupportsSessionTrack, m_supportsPipelining, Context.SupportsQueryAttributes);
+			Log.SessionMadeConnection(m_logger, Id, ServerVersion.OriginalString, ConnectionId, m_useCompression, m_supportsConnectionAttributes, SupportsDeprecateEof, SupportsCachedPreparedMetadata, serverSupportsSsl, SupportsSessionTrack, m_supportsPipelining, SupportsQueryAttributes);
 
 			if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
 			{
@@ -529,7 +532,7 @@ internal sealed partial class ServerSession
 				payload = await SwitchAuthenticationAsync(cs, password, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 
-			var ok = OkPayload.Create(payload.Span, Context);
+			var ok = OkPayload.Create(payload.Span, this);
 			var statusInfo = ok.StatusInfo;
 
 			if (m_useCompression)
@@ -540,7 +543,7 @@ internal sealed partial class ServerSession
 				// set 'collation_connection' to the server default
 				await SendAsync(m_setNamesPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				OkPayload.Verify(payload.Span, Context);
+				OkPayload.Verify(payload.Span, this);
 			}
 
 			if (ShouldGetRealServerDetails(cs))
@@ -591,10 +594,10 @@ internal sealed partial class ServerSession
 
 					// read two OK replies
 					payload = await ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Verify(payload.Span, Context);
+					OkPayload.Verify(payload.Span, this);
 
 					payload = await ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Verify(payload.Span, Context);
+					OkPayload.Verify(payload.Span, this);
 
 					return true;
 				}
@@ -602,7 +605,7 @@ internal sealed partial class ServerSession
 				Log.SendingResetConnectionRequest(m_logger, Id, ServerVersion.OriginalString);
 				await SendAsync(ResetConnectionPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				OkPayload.Verify(payload.Span, Context);
+				OkPayload.Verify(payload.Span, this);
 			}
 			else
 			{
@@ -626,13 +629,13 @@ internal sealed partial class ServerSession
 					Log.OptimisticReauthenticationFailed(m_logger, Id);
 					payload = await SwitchAuthenticationAsync(cs, password, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
-				OkPayload.Verify(payload.Span, Context);
+				OkPayload.Verify(payload.Span, this);
 			}
 
 			// set 'collation_connection' to the server default
 			await SendAsync(m_setNamesPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Verify(payload.Span, Context);
+			OkPayload.Verify(payload.Span, this);
 
 			return true;
 		}
@@ -691,7 +694,7 @@ internal sealed partial class ServerSession
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				// OK payload can be sent immediately (e.g., if password is empty) bypassing even the fast authentication path
-				if (OkPayload.IsOk(payload.Span, Context))
+				if (OkPayload.IsOk(payload.Span, this))
 					return payload;
 
 				var cachingSha2ServerResponsePayload = CachingSha2ServerResponsePayload.Create(payload.Span);
@@ -831,7 +834,7 @@ internal sealed partial class ServerSession
 			Log.PingingServer(m_logger, Id);
 			await SendAsync(PingPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 			var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Verify(payload.Span, Context);
+			OkPayload.Verify(payload.Span, this);
 			Log.SuccessfullyPingedServer(m_logger, logInfo ? LogLevel.Information : LogLevel.Trace, Id);
 			return true;
 		}
@@ -1639,7 +1642,7 @@ internal sealed partial class ServerSession
 		Log.DetectedProxy(m_logger, Id);
 		try
 		{
-			var payload = Context.SupportsQueryAttributes ? s_selectConnectionIdVersionWithAttributesPayload : s_selectConnectionIdVersionNoAttributesPayload;
+			var payload = SupportsQueryAttributes ? s_selectConnectionIdVersionWithAttributesPayload : s_selectConnectionIdVersionNoAttributesPayload;
 			await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			// column count: 2
@@ -1649,7 +1652,7 @@ internal sealed partial class ServerSession
 			_ = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			_ = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 
-			if (!Context.SupportsDeprecateEof)
+			if (!SupportsDeprecateEof)
 			{
 				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 				_ = EofPayload.Create(payload.Span);
@@ -1669,8 +1672,8 @@ internal sealed partial class ServerSession
 
 			// OK/EOF payload
 			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-			if (OkPayload.IsOk(payload.Span, Context))
-				OkPayload.Verify(payload.Span, Context);
+			if (OkPayload.IsOk(payload.Span, this))
+				OkPayload.Verify(payload.Span, this);
 			else
 				EofPayload.Create(payload.Span);
 
