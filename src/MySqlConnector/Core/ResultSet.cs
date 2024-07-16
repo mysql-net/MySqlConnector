@@ -48,6 +48,8 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 					if (ok.LastInsertId != 0)
 						Command?.SetLastInsertedId((long) ok.LastInsertId);
 					WarningCount = ok.WarningCount;
+					if (ok.NewSchema is not null)
+						Connection.Session.DatabaseOverride = ok.NewSchema;
 					m_columnDefinitions = default;
 					State = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0
 						? ResultSetState.NoMoreData

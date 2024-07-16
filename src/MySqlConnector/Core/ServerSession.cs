@@ -44,7 +44,7 @@ internal sealed partial class ServerSession
 		m_activityTags = [];
 		DataReader = new();
 		Log.CreatedNewSession(m_logger, Id);
-		Context = new Context(0, null, 0);
+		Context = new Context(default);
 	}
 
 	public string Id { get; }
@@ -52,12 +52,14 @@ internal sealed partial class ServerSession
 	public bool SupportsPerQueryVariables => ServerVersion.IsMariaDb && ServerVersion.Version >= ServerVersions.MariaDbSupportsPerQueryVariables;
 	public int ActiveCommandId { get; private set; }
 	public int CancellationTimeout { get; private set; }
+	public int ConnectionId { get; set; }
 	public byte[]? AuthPluginData { get; set; }
 	public long CreatedTimestamp { get; }
 	public ConnectionPool? Pool { get; }
 	public int PoolGeneration { get; }
 	public long LastLeasedTimestamp { get; set; }
 	public long LastReturnedTimestamp { get; private set; }
+	public string? DatabaseOverride { get; set; }
 
 	public string HostName { get; private set; }
 	public IPEndPoint? IPEndPoint => m_tcpClient?.Client.RemoteEndPoint as IPEndPoint;
@@ -338,8 +340,8 @@ internal sealed partial class ServerSession
 		var activity = ActivitySourceHelper.StartActivity(name, m_activityTags);
 		if (activity is { IsAllDataRequested: true })
 		{
-			if (!Context.IsInitialDatabase())
-				activity.SetTag(ActivitySourceHelper.DatabaseNameTagName, Context.Database);
+			if (DatabaseOverride is not null)
+				activity.SetTag(ActivitySourceHelper.DatabaseNameTagName, DatabaseOverride);
 			if (tagName1 is not null)
 				activity.SetTag(tagName1, tagValue1);
 		}
@@ -452,7 +454,8 @@ internal sealed partial class ServerSession
 			}
 
 			ServerVersion = new(initialHandshake.ServerVersion);
-			Context = new Context(initialHandshake.ProtocolCapabilities, cs.Database, initialHandshake.ConnectionId);
+			ConnectionId = initialHandshake.ConnectionId;
+			Context = new Context(initialHandshake.ProtocolCapabilities);
 			AuthPluginData = initialHandshake.AuthPluginData;
 			m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
 			CancellationTimeout = cs.CancellationTimeout;
@@ -460,7 +463,7 @@ internal sealed partial class ServerSession
 
 			// set activity tags
 			{
-				var connectionId = Context.ConnectionId.ToString(CultureInfo.InvariantCulture);
+				var connectionId = ConnectionId.ToString(CultureInfo.InvariantCulture);
 				m_activityTags[ActivitySourceHelper.DatabaseConnectionIdTagName] = connectionId;
 				if (activity is { IsAllDataRequested: true })
 					activity.SetTag(ActivitySourceHelper.DatabaseConnectionIdTagName, connectionId);
@@ -499,7 +502,7 @@ internal sealed partial class ServerSession
 				}
 			}
 
-			Log.SessionMadeConnection(m_logger, Id, ServerVersion.OriginalString, Context.ConnectionId, m_useCompression, m_supportsConnectionAttributes, Context.SupportsDeprecateEof, Context.SupportsCachedPreparedMetadata, serverSupportsSsl, Context.SupportsSessionTrack, m_supportsPipelining, Context.SupportsQueryAttributes);
+			Log.SessionMadeConnection(m_logger, Id, ServerVersion.OriginalString, ConnectionId, m_useCompression, m_supportsConnectionAttributes, Context.SupportsDeprecateEof, Context.SupportsCachedPreparedMetadata, serverSupportsSsl, Context.SupportsSessionTrack, m_supportsPipelining, Context.SupportsQueryAttributes);
 
 			if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
 			{
@@ -532,18 +535,23 @@ internal sealed partial class ServerSession
 			if (m_useCompression)
 				m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
 
-			// set 'collation_connection' to the server default
-			if (Context.ClientCharset == null || ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4
-				    ? !string.Equals(Context.ClientCharset, "utf8mb4", StringComparison.Ordinal)
-				    : !string.Equals(Context.ClientCharset, "utf8", StringComparison.Ordinal))
+			if (ok.ClientCharacterSet != (ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? "utf8mb4" : "utf8"))
 			{
+				// set 'collation_connection' to the server default
 				await SendAsync(m_setNamesPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				OkPayload.Verify(payload.Span, Context);
 			}
 
 			if (ShouldGetRealServerDetails(cs))
+			{
 				await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+			}
+			else if (ok.ConnectionId is int newConnectionId && newConnectionId != ConnectionId)
+			{
+				Log.ChangingConnectionId(m_logger, Id, ConnectionId, newConnectionId, ServerVersion.OriginalString, ServerVersion.OriginalString);
+				ConnectionId = newConnectionId;
+			}
 
 			m_payloadHandler.ByteHandler.RemainingTimeout = Constants.InfiniteTimeout;
 			return statusInfo;
@@ -570,9 +578,9 @@ internal sealed partial class ServerSession
 			ClearPreparedStatements();
 
 			PayloadData payload;
-			if (Context.IsInitialDatabase() &&
-			    ((!ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0) ||
-			     (ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0)))
+			if (DatabaseOverride is null &&
+				((!ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.SupportsResetConnection) >= 0) ||
+				(ServerVersion.IsMariaDb && ServerVersion.Version.CompareTo(ServerVersions.MariaDbSupportsResetConnection) >= 0)))
 			{
 				if (m_supportsPipelining)
 				{
@@ -599,14 +607,14 @@ internal sealed partial class ServerSession
 			else
 			{
 				// optimistically hash the password with the challenge from the initial handshake (supported by MariaDB; doesn't appear to be supported by MySQL)
-				if (Context.IsInitialDatabase())
+				if (DatabaseOverride is null)
 				{
 					Log.SendingChangeUserRequest(m_logger, Id, ServerVersion.OriginalString);
 				}
 				else
 				{
-					Log.SendingChangeUserRequestDueToChangedDatabase(m_logger, Id, Context.Database!);
-					Context.Database = cs.Database;
+					Log.SendingChangeUserRequestDueToChangedDatabase(m_logger, Id, DatabaseOverride);
+					DatabaseOverride = null;
 				}
 				var password = GetPassword(cs, connection);
 				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData!, password);
@@ -1668,8 +1676,8 @@ internal sealed partial class ServerSession
 
 			if (connectionId is int newConnectionId && serverVersion is not null)
 			{
-				Log.ChangingConnectionId(m_logger, Id, Context.ConnectionId, newConnectionId, ServerVersion.OriginalString, serverVersion.OriginalString);
-				Context.ConnectionId = newConnectionId;
+				Log.ChangingConnectionId(m_logger, Id, ConnectionId, newConnectionId, ServerVersion.OriginalString, serverVersion.OriginalString);
+				ConnectionId = newConnectionId;
 				ServerVersion = serverVersion;
 			}
 		}

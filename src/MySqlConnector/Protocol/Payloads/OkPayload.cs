@@ -13,6 +13,9 @@ internal sealed class OkPayload
 	public ServerStatus ServerStatus { get; }
 	public int WarningCount { get; }
 	public string? StatusInfo { get; }
+	public string? NewSchema { get; }
+	public string? ClientCharacterSet { get; }
+	public int? ConnectionId { get; }
 
 	public const byte Signature = 0x00;
 
@@ -57,6 +60,9 @@ internal sealed class OkPayload
 		var lastInsertId = reader.ReadLengthEncodedInteger();
 		var serverStatus = (ServerStatus) reader.ReadUInt16();
 		var warningCount = (int) reader.ReadUInt16();
+		string? newSchema = null;
+		string? clientCharacterSet = null;
+		int? connectionId = null;
 		ReadOnlySpan<byte> statusBytes;
 
 		if (context.SupportsSessionTrack)
@@ -75,7 +81,7 @@ internal sealed class OkPayload
 						switch (kind)
 						{
 							case SessionTrackKind.Schema:
-								context.Database = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
+								newSchema = Encoding.UTF8.GetString(reader.ReadLengthEncodedByteString());
 								break;
 
 							case SessionTrackKind.SystemVariables:
@@ -90,10 +96,10 @@ internal sealed class OkPayload
 									switch (variableSv)
 									{
 										case "character_set_client":
-											context.ClientCharset = valueSv;
+											clientCharacterSet = valueSv;
 											break;
 										case "connection_id":
-											context.ConnectionId = Convert.ToInt32(valueSv, CultureInfo.InvariantCulture);
+											connectionId = Convert.ToInt32(valueSv, CultureInfo.InvariantCulture);
 											break;
 									}
 								} while (reader.Offset < systemVariableOffset);
@@ -126,7 +132,7 @@ internal sealed class OkPayload
 		{
 			var statusInfo = statusBytes.Length == 0 ? null : Encoding.UTF8.GetString(statusBytes);
 
-			if (affectedRowCount == 0 && lastInsertId == 0 && warningCount == 0 && statusInfo is null)
+			if (affectedRowCount == 0 && lastInsertId == 0 && warningCount == 0 && statusInfo is null && newSchema is null && clientCharacterSet is null && connectionId is null)
 			{
 				if (serverStatus == ServerStatus.AutoCommit)
 					return s_autoCommitOk;
@@ -134,7 +140,7 @@ internal sealed class OkPayload
 					return s_autoCommitSessionStateChangedOk;
 			}
 
-			return new OkPayload(affectedRowCount, lastInsertId, serverStatus, warningCount, statusInfo);
+			return new OkPayload(affectedRowCount, lastInsertId, serverStatus, warningCount, statusInfo, newSchema, clientCharacterSet, connectionId);
 		}
 		else
 		{
@@ -142,15 +148,18 @@ internal sealed class OkPayload
 		}
 	}
 
-	private OkPayload(ulong affectedRowCount, ulong lastInsertId, ServerStatus serverStatus, int warningCount, string? statusInfo)
+	private OkPayload(ulong affectedRowCount, ulong lastInsertId, ServerStatus serverStatus, int warningCount, string? statusInfo, string? newSchema, string? clientCharacterSet, int? connectionId)
 	{
 		AffectedRowCount = affectedRowCount;
 		LastInsertId = lastInsertId;
 		ServerStatus = serverStatus;
 		WarningCount = warningCount;
 		StatusInfo = statusInfo;
+		NewSchema = newSchema;
+		ClientCharacterSet = clientCharacterSet;
+		ConnectionId = connectionId;
 	}
 
-	private static readonly OkPayload s_autoCommitOk = new(0, 0, ServerStatus.AutoCommit, 0, null);
-	private static readonly OkPayload s_autoCommitSessionStateChangedOk = new(0, 0, ServerStatus.AutoCommit | ServerStatus.SessionStateChanged, 0, null);
+	private static readonly OkPayload s_autoCommitOk = new(0, 0, ServerStatus.AutoCommit, 0, default, default, default, default);
+	private static readonly OkPayload s_autoCommitSessionStateChangedOk = new(0, 0, ServerStatus.AutoCommit | ServerStatus.SessionStateChanged, 0, default, default, default, default);
 }

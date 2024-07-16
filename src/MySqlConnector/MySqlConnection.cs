@@ -490,7 +490,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		OkPayload.Verify(payload.Span, m_session.Context);
 
 		// for non session tracking servers
-		m_session.Context.Database = databaseName;
+		m_session.DatabaseOverride = databaseName;
 	}
 
 	public new MySqlCommand CreateCommand() => (MySqlCommand) base.CreateCommand();
@@ -628,7 +628,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	public override string Database => m_session?.Context.Database ?? GetConnectionSettings().Database;
+	public override string Database => m_session?.DatabaseOverride ?? GetConnectionSettings().Database;
 
 	public override ConnectionState State => m_connectionState;
 
@@ -639,7 +639,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	/// <summary>
 	/// The connection ID from MySQL Server.
 	/// </summary>
-	public int ServerThread => Session.Context.ConnectionId;
+	public int ServerThread => Session.ConnectionId;
 
 	/// <summary>
 	/// Gets or sets the delegate used to provide client certificates for connecting to a server.
