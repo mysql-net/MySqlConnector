@@ -538,7 +538,8 @@ internal sealed partial class ServerSession : IServerCapabilities
 			if (m_useCompression)
 				m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
 
-			if (ok.ClientCharacterSet != (ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? "utf8mb4" : "utf8"))
+			// send 'SET NAMES' to set the character set and collation unless the server reports that it's already using the desired character set (e.g., MariaDB >= 11.5)
+			if (ok.NewCharacterSet != (ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? CharacterSet.Utf8Mb4Binary : CharacterSet.Utf8Mb3Binary))
 			{
 				// set 'collation_connection' to the server default
 				await SendAsync(m_setNamesPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -550,7 +551,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			{
 				await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 			}
-			else if (ok.ConnectionId is int newConnectionId && newConnectionId != ConnectionId)
+			else if (ok.NewConnectionId is int newConnectionId && newConnectionId != ConnectionId)
 			{
 				Log.ChangingConnectionId(m_logger, Id, ConnectionId, newConnectionId, ServerVersion.OriginalString, ServerVersion.OriginalString);
 				ConnectionId = newConnectionId;

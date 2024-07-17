@@ -14,8 +14,8 @@ internal sealed class OkPayload
 	public int WarningCount { get; }
 	public string? StatusInfo { get; }
 	public string? NewSchema { get; }
-	public string? ClientCharacterSet { get; }
-	public int? ConnectionId { get; }
+	public CharacterSet? NewCharacterSet { get; }
+	public int? NewConnectionId { get; }
 
 	public const byte Signature = 0x00;
 
@@ -61,7 +61,9 @@ internal sealed class OkPayload
 		var serverStatus = (ServerStatus) reader.ReadUInt16();
 		var warningCount = (int) reader.ReadUInt16();
 		string? newSchema = null;
-		string? clientCharacterSet = null;
+		CharacterSet clientCharacterSet = default;
+		CharacterSet connectionCharacterSet = default;
+		CharacterSet resultsCharacterSet = default;
 		int? connectionId = null;
 		ReadOnlySpan<byte> statusBytes;
 
@@ -93,7 +95,21 @@ internal sealed class OkPayload
 									var systemVariableValue = systemVariableValueLength == -1 ? default : reader.ReadByteString(systemVariableValueLength);
 									if (systemVariableName.SequenceEqual("character_set_client"u8) && systemVariableValueLength != 0)
 									{
-										clientCharacterSet = Encoding.ASCII.GetString(systemVariableValue);
+										clientCharacterSet = systemVariableValue.SequenceEqual("utf8mb4"u8) ? CharacterSet.Utf8Mb4Binary :
+											systemVariableValue.SequenceEqual("utf8"u8) ? CharacterSet.Utf8Mb3Binary :
+											CharacterSet.None;
+									}
+									else if (systemVariableName.SequenceEqual("character_set_connection"u8) && systemVariableValueLength != 0)
+									{
+										connectionCharacterSet = systemVariableValue.SequenceEqual("utf8mb4"u8) ? CharacterSet.Utf8Mb4Binary :
+											systemVariableValue.SequenceEqual("utf8"u8) ? CharacterSet.Utf8Mb3Binary :
+											CharacterSet.None;
+									}
+									else if (systemVariableName.SequenceEqual("character_set_results"u8) && systemVariableValueLength != 0)
+									{
+										resultsCharacterSet = systemVariableValue.SequenceEqual("utf8mb4"u8) ? CharacterSet.Utf8Mb4Binary :
+											systemVariableValue.SequenceEqual("utf8"u8) ? CharacterSet.Utf8Mb3Binary :
+											CharacterSet.None;
 									}
 									else if (systemVariableName.SequenceEqual("connection_id"u8))
 									{
@@ -129,7 +145,12 @@ internal sealed class OkPayload
 		{
 			var statusInfo = statusBytes.Length == 0 ? null : Encoding.UTF8.GetString(statusBytes);
 
-			if (affectedRowCount == 0 && lastInsertId == 0 && warningCount == 0 && statusInfo is null && newSchema is null && clientCharacterSet is null && connectionId is null)
+			// detect the connection character set as utf8mb4 (or utf8) if all three system variables are set to the same value
+			var characterSet = clientCharacterSet == CharacterSet.Utf8Mb4Binary && connectionCharacterSet == CharacterSet.Utf8Mb4Binary && resultsCharacterSet == CharacterSet.Utf8Mb4Binary ? CharacterSet.Utf8Mb4Binary :
+				clientCharacterSet == CharacterSet.Utf8Mb3Binary && connectionCharacterSet == CharacterSet.Utf8Mb3Binary && resultsCharacterSet == CharacterSet.Utf8Mb3Binary ? CharacterSet.Utf8Mb3Binary :
+				CharacterSet.None;
+
+			if (affectedRowCount == 0 && lastInsertId == 0 && warningCount == 0 && statusInfo is null && newSchema is null && clientCharacterSet is CharacterSet.None && connectionId is null)
 			{
 				if (serverStatus == ServerStatus.AutoCommit)
 					return s_autoCommitOk;
@@ -137,7 +158,7 @@ internal sealed class OkPayload
 					return s_autoCommitSessionStateChangedOk;
 			}
 
-			return new OkPayload(affectedRowCount, lastInsertId, serverStatus, warningCount, statusInfo, newSchema, clientCharacterSet, connectionId);
+			return new OkPayload(affectedRowCount, lastInsertId, serverStatus, warningCount, statusInfo, newSchema, characterSet, connectionId);
 		}
 		else
 		{
@@ -145,7 +166,7 @@ internal sealed class OkPayload
 		}
 	}
 
-	private OkPayload(ulong affectedRowCount, ulong lastInsertId, ServerStatus serverStatus, int warningCount, string? statusInfo, string? newSchema, string? clientCharacterSet, int? connectionId)
+	private OkPayload(ulong affectedRowCount, ulong lastInsertId, ServerStatus serverStatus, int warningCount, string? statusInfo, string? newSchema, CharacterSet newCharacterSet, int? connectionId)
 	{
 		AffectedRowCount = affectedRowCount;
 		LastInsertId = lastInsertId;
@@ -153,8 +174,8 @@ internal sealed class OkPayload
 		WarningCount = warningCount;
 		StatusInfo = statusInfo;
 		NewSchema = newSchema;
-		ClientCharacterSet = clientCharacterSet;
-		ConnectionId = connectionId;
+		NewCharacterSet = newCharacterSet;
+		NewConnectionId = connectionId;
 	}
 
 	private static readonly OkPayload s_autoCommitOk = new(0, 0, ServerStatus.AutoCommit, 0, default, default, default, default);
