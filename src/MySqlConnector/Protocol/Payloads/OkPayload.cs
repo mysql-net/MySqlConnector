@@ -69,7 +69,7 @@ internal sealed class OkPayload
 
 		if (serverCapabilities.SupportsSessionTrack)
 		{
-			if (reader.BytesRemaining > 0)
+			if (reader.BytesRemaining > 0 && createPayload)
 			{
 				statusBytes = reader.ReadLengthEncodedByteString(); // human-readable info
 				while (reader.BytesRemaining > 0)
