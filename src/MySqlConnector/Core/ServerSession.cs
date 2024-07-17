@@ -23,7 +23,7 @@ namespace MySqlConnector.Core;
 
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable
 
-internal sealed partial class ServerSession
+internal sealed partial class ServerSession : IServerCapabilities
 {
 	public ServerSession(ILogger logger)
 		: this(logger, null, 0, Interlocked.Increment(ref s_lastId))
@@ -320,7 +320,7 @@ internal sealed partial class ServerSession
 			SendAsync(payload, IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 			payload = ReceiveReplyAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #pragma warning restore CA2012
-			OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, this);
 		}
 
 		lock (m_lock)
@@ -532,19 +532,30 @@ internal sealed partial class ServerSession
 				payload = await SwitchAuthenticationAsync(cs, password, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			}
 
-			var ok = OkPayload.Create(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+			var ok = OkPayload.Create(payload.Span, this);
 			var statusInfo = ok.StatusInfo;
 
 			if (m_useCompression)
 				m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
 
-			// set 'collation_connection' to the server default
-			await SendAsync(m_setNamesPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
-			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+			// send 'SET NAMES' to set the character set and collation unless the server reports that it's already using the desired character set (e.g., MariaDB >= 11.5)
+			if (ok.NewCharacterSet != (ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? CharacterSet.Utf8Mb4Binary : CharacterSet.Utf8Mb3Binary))
+			{
+				// set 'collation_connection' to the server default
+				await SendAsync(m_setNamesPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				OkPayload.Verify(payload.Span, this);
+			}
 
 			if (ShouldGetRealServerDetails(cs))
+			{
 				await GetRealServerDetailsAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+			}
+			else if (ok.NewConnectionId is int newConnectionId && newConnectionId != ConnectionId)
+			{
+				Log.ChangingConnectionId(m_logger, Id, ConnectionId, newConnectionId, ServerVersion.OriginalString, ServerVersion.OriginalString);
+				ConnectionId = newConnectionId;
+			}
 
 			m_payloadHandler.ByteHandler.RemainingTimeout = Constants.InfiniteTimeout;
 			return statusInfo;
@@ -584,10 +595,10 @@ internal sealed partial class ServerSession
 
 					// read two OK replies
 					payload = await ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+					OkPayload.Verify(payload.Span, this);
 
 					payload = await ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
-					OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+					OkPayload.Verify(payload.Span, this);
 
 					return true;
 				}
@@ -595,7 +606,7 @@ internal sealed partial class ServerSession
 				Log.SendingResetConnectionRequest(m_logger, Id, ServerVersion.OriginalString);
 				await SendAsync(ResetConnectionPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-				OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+				OkPayload.Verify(payload.Span, this);
 			}
 			else
 			{
@@ -619,13 +630,13 @@ internal sealed partial class ServerSession
 					Log.OptimisticReauthenticationFailed(m_logger, Id);
 					payload = await SwitchAuthenticationAsync(cs, password, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
-				OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+				OkPayload.Verify(payload.Span, this);
 			}
 
 			// set 'collation_connection' to the server default
 			await SendAsync(m_setNamesPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, this);
 
 			return true;
 		}
@@ -684,7 +695,7 @@ internal sealed partial class ServerSession
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 				// OK payload can be sent immediately (e.g., if password is empty) bypassing even the fast authentication path
-				if (OkPayload.IsOk(payload.Span, SupportsDeprecateEof))
+				if (OkPayload.IsOk(payload.Span, this))
 					return payload;
 
 				var cachingSha2ServerResponsePayload = CachingSha2ServerResponsePayload.Create(payload.Span);
@@ -824,7 +835,7 @@ internal sealed partial class ServerSession
 			Log.PingingServer(m_logger, Id);
 			await SendAsync(PingPayload.Instance, ioBehavior, cancellationToken).ConfigureAwait(false);
 			var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, this);
 			Log.SuccessfullyPingedServer(m_logger, logInfo ? LogLevel.Information : LogLevel.Trace, Id);
 			return true;
 		}
@@ -1662,8 +1673,8 @@ internal sealed partial class ServerSession
 
 			// OK/EOF payload
 			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-			if (OkPayload.IsOk(payload.Span, SupportsDeprecateEof))
-				OkPayload.Verify(payload.Span, SupportsDeprecateEof, SupportsSessionTrack);
+			if (OkPayload.IsOk(payload.Span, this))
+				OkPayload.Verify(payload.Span, this);
 			else
 				EofPayload.Create(payload.Span);
 

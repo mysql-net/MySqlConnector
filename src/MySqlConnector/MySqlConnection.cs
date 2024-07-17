@@ -161,10 +161,10 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			// read the two OK replies
 			var payload = await m_session.ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, m_session);
 
 			payload = await m_session.ReceiveReplyAsync(1, ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, m_session);
 		}
 		else
 		{
@@ -172,12 +172,12 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			await m_session.SendAsync(new Protocol.PayloadData(startTransactionPayload.Slice(4, startTransactionPayload.Span[0])), ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			var payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, m_session);
 
 			await m_session.SendAsync(new Protocol.PayloadData(startTransactionPayload.Slice(8 + startTransactionPayload.Span[0], startTransactionPayload.Span[startTransactionPayload.Span[0] + 4])), ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
+			OkPayload.Verify(payload.Span, m_session);
 		}
 
 		var transaction = new MySqlTransaction(this, isolationLevel, m_transactionLogger);
@@ -487,7 +487,9 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		using (var initDatabasePayload = InitDatabasePayload.Create(databaseName))
 			await m_session!.SendAsync(initDatabasePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 		var payload = await m_session.ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-		OkPayload.Verify(payload.Span, m_session.SupportsDeprecateEof, m_session.SupportsSessionTrack);
+		OkPayload.Verify(payload.Span, m_session);
+
+		// for non session tracking servers
 		m_session.DatabaseOverride = databaseName;
 	}
 
@@ -603,7 +605,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		Log.ResettingConnection(m_logger, session.Id);
 		await session.SendAsync(ResetConnectionPayload.Instance, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
 		var payload = await session.ReceiveReplyAsync(AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
-		OkPayload.Verify(payload.Span, session.SupportsDeprecateEof, session.SupportsSessionTrack);
+		OkPayload.Verify(payload.Span, session);
 	}
 
 	[AllowNull]
