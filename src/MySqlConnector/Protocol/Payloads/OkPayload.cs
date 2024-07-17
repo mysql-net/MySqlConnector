@@ -1,4 +1,4 @@
-using System.Globalization;
+using System.Buffers.Text;
 using System.Text;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
@@ -85,24 +85,21 @@ internal sealed class OkPayload
 								break;
 
 							case SessionTrackKind.SystemVariables:
-								var systemVariableOffset = reader.Offset + dataLength;
+								var systemVariablesEndOffset = reader.Offset + dataLength;
 								do
 								{
-									var variableSv = Encoding.ASCII.GetString(reader.ReadLengthEncodedByteString());
-									var lenSv = reader.ReadLengthEncodedIntegerOrNull();
-									var valueSv = lenSv == -1
-										? null
-										: Encoding.ASCII.GetString(reader.ReadByteString(lenSv));
-									switch (variableSv)
+									var systemVariableName = reader.ReadLengthEncodedByteString();
+									var systemVariableValueLength = reader.ReadLengthEncodedIntegerOrNull();
+									var systemVariableValue = systemVariableValueLength == -1 ? default : reader.ReadByteString(systemVariableValueLength);
+									if (systemVariableName.SequenceEqual("character_set_client"u8) && systemVariableValueLength != 0)
 									{
-										case "character_set_client":
-											clientCharacterSet = valueSv;
-											break;
-										case "connection_id":
-											connectionId = Convert.ToInt32(valueSv, CultureInfo.InvariantCulture);
-											break;
+										clientCharacterSet = Encoding.ASCII.GetString(systemVariableValue);
 									}
-								} while (reader.Offset < systemVariableOffset);
+									else if (systemVariableName.SequenceEqual("connection_id"u8))
+									{
+										connectionId = Utf8Parser.TryParse(systemVariableValue, out int parsedConnectionId, out var bytesConsumed) && bytesConsumed == systemVariableValue.Length ? parsedConnectionId : default(int?);
+									}
+								} while (reader.Offset < systemVariablesEndOffset);
 								break;
 
 							default:
