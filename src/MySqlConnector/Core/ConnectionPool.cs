@@ -68,8 +68,11 @@ internal sealed class ConnectionPool : IDisposable
 					if (ConnectionSettings.ConnectionReset || session.DatabaseOverride is not null)
 					{
 						if (timeoutMilliseconds != 0)
-							session.SetTimeout(Math.Max(1, timeoutMilliseconds - Utility.GetElapsedMilliseconds(startingTimestamp)));
-						reuseSession = await session.TryResetConnectionAsync(ConnectionSettings, connection, ioBehavior, cancellationToken).ConfigureAwait(false);
+							session.SetTimeout(Math.Max(1,
+								timeoutMilliseconds - Utility.GetElapsedMilliseconds(startingTimestamp)));
+						reuseSession = await session
+							.TryResetConnectionAsync(ConnectionSettings, connection, ioBehavior, cancellationToken)
+							.ConfigureAwait(false);
 						session.SetTimeout(Constants.InfiniteTimeout);
 					}
 					else
@@ -95,18 +98,24 @@ internal sealed class ConnectionPool : IDisposable
 						m_leasedSessions.Add(session.Id, session);
 						leasedSessionsCountPooled = m_leasedSessions.Count;
 					}
+
 					MetricsReporter.AddUsed(this);
 					ActivitySourceHelper.CopyTags(session.ActivityTags, activity);
 					Log.ReturningPooledSession(m_logger, Id, session.Id, leasedSessionsCountPooled);
 
 					session.LastLeasedTimestamp = Stopwatch.GetTimestamp();
-					MetricsReporter.RecordWaitTime(this, Utility.GetElapsedSeconds(startingTimestamp, session.LastLeasedTimestamp));
+					MetricsReporter.RecordWaitTime(this,
+						Utility.GetElapsedSeconds(startingTimestamp, session.LastLeasedTimestamp));
 					return session;
 				}
 			}
 
 			// create a new session
-			session = await ConnectSessionAsync(connection, s_createdNewSession, startingTimestamp, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+			session = await ServerSession.ConnectAndRedirectAsync(
+					() => new ServerSession(m_connectionLogger, this, m_generation,
+						Interlocked.Increment(ref m_lastSessionId)), m_logger, Id, ConnectionSettings, m_loadBalancer,
+					connection, s_createdNewSession, startingTimestamp, activity, ioBehavior, cancellationToken)
+				.ConfigureAwait(false);
 			AdjustHostConnectionCount(session, 1);
 			session.OwningConnection = new(connection);
 			int leasedSessionsCountNew;
@@ -402,7 +411,11 @@ internal sealed class ConnectionPool : IDisposable
 
 			try
 			{
-				var session = await ConnectSessionAsync(connection, s_createdToReachMinimumPoolSize, Stopwatch.GetTimestamp(), null, ioBehavior, cancellationToken).ConfigureAwait(false);
+				var session = await ServerSession.ConnectAndRedirectAsync(
+					() => new ServerSession(m_connectionLogger, this, m_generation,
+						Interlocked.Increment(ref m_lastSessionId)), m_logger, Id, ConnectionSettings, m_loadBalancer,
+					connection, s_createdToReachMinimumPoolSize, Stopwatch.GetTimestamp(), null, ioBehavior,
+					cancellationToken).ConfigureAwait(false);
 				AdjustHostConnectionCount(session, 1);
 				lock (m_sessions)
 					_ = m_sessions.AddFirst(session);
@@ -414,81 +427,6 @@ internal sealed class ConnectionPool : IDisposable
 				_ = m_sessionSemaphore.Release();
 			}
 		}
-	}
-
-	private async ValueTask<ServerSession> ConnectSessionAsync(MySqlConnection connection, Action<ILogger, int, string, Exception?> logMessage, long startingTimestamp, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
-	{
-		var session = new ServerSession(m_connectionLogger, this, m_generation, Interlocked.Increment(ref m_lastSessionId));
-		if (m_logger.IsEnabled(LogLevel.Debug))
-			logMessage(m_logger, Id, session.Id, null);
-		string? statusInfo;
-		try
-		{
-			statusInfo = await session.ConnectAsync(ConnectionSettings, connection, startingTimestamp, m_loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
-		}
-		catch (Exception)
-		{
-			await session.DisposeAsync(ioBehavior, default).ConfigureAwait(false);
-			throw;
-		}
-
-		Exception? redirectionException = null;
-		if (statusInfo is not null && statusInfo.StartsWith("Location: mysql://", StringComparison.Ordinal))
-		{
-			// server redirection string has the format "Location: mysql://{host}:{port}/user={userId}[&ttl={ttl}]"
-			Log.HasServerRedirectionHeader(m_logger, session.Id, statusInfo);
-
-			if (ConnectionSettings.ServerRedirectionMode == MySqlServerRedirectionMode.Disabled)
-			{
-				Log.ServerRedirectionIsDisabled(m_logger, Id);
-			}
-			else if (Utility.TryParseRedirectionHeader(statusInfo, out var host, out var port, out var user))
-			{
-				if (host != ConnectionSettings.HostNames![0] || port != ConnectionSettings.Port || user != ConnectionSettings.UserID)
-				{
-					var redirectedSettings = ConnectionSettings.CloneWith(host, port, user);
-					Log.OpeningNewConnection(m_logger, Id, host, port, user);
-					var redirectedSession = new ServerSession(m_connectionLogger, this, m_generation, Interlocked.Increment(ref m_lastSessionId));
-					try
-					{
-						_ = await redirectedSession.ConnectAsync(redirectedSettings, connection, startingTimestamp, m_loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
-					}
-					catch (Exception ex)
-					{
-						Log.FailedToConnectRedirectedSession(m_logger, ex, Id, redirectedSession.Id);
-						redirectionException = ex;
-					}
-
-					if (redirectionException is null)
-					{
-						Log.ClosingSessionToUseRedirectedSession(m_logger, Id, session.Id, redirectedSession.Id);
-						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-						return redirectedSession;
-					}
-					else
-					{
-						try
-						{
-							await redirectedSession.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-						}
-						catch (Exception)
-						{
-						}
-					}
-				}
-				else
-				{
-					Log.SessionAlreadyConnectedToServer(m_logger, session.Id);
-				}
-			}
-		}
-
-		if (ConnectionSettings.ServerRedirectionMode == MySqlServerRedirectionMode.Required)
-		{
-			Log.RequiresServerRedirection(m_logger, Id);
-			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Server does not support redirection", redirectionException);
-		}
-		return session;
 	}
 
 	public static ConnectionPool? CreatePool(string connectionString, MySqlConnectorLoggingConfiguration loggingConfiguration, string? name)

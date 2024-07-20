@@ -16,6 +16,7 @@ internal sealed class OkPayload
 	public string? NewSchema { get; }
 	public CharacterSet? NewCharacterSet { get; }
 	public int? NewConnectionId { get; }
+	public string? RedirectionUrl { get; }
 
 	public const byte Signature = 0x00;
 
@@ -64,6 +65,7 @@ internal sealed class OkPayload
 		CharacterSet clientCharacterSet = default;
 		CharacterSet connectionCharacterSet = default;
 		CharacterSet resultsCharacterSet = default;
+		string? redirectionUrl = default;
 		int? connectionId = null;
 		ReadOnlySpan<byte> statusBytes;
 
@@ -115,6 +117,13 @@ internal sealed class OkPayload
 									{
 										connectionId = Utf8Parser.TryParse(systemVariableValue, out int parsedConnectionId, out var bytesConsumed) && bytesConsumed == systemVariableValue.Length ? parsedConnectionId : default(int?);
 									}
+									else if (systemVariableName.SequenceEqual("redirect_url"u8))
+									{
+										if (systemVariableValue.Length > 0)
+										{
+											redirectionUrl = Encoding.UTF8.GetString(systemVariableValue);
+										}
+									}
 								} while (reader.Offset < systemVariablesEndOffset);
 								break;
 
@@ -150,7 +159,7 @@ internal sealed class OkPayload
 				clientCharacterSet == CharacterSet.Utf8Mb3Binary && connectionCharacterSet == CharacterSet.Utf8Mb3Binary && resultsCharacterSet == CharacterSet.Utf8Mb3Binary ? CharacterSet.Utf8Mb3Binary :
 				CharacterSet.None;
 
-			if (affectedRowCount == 0 && lastInsertId == 0 && warningCount == 0 && statusInfo is null && newSchema is null && clientCharacterSet is CharacterSet.None && connectionId is null)
+			if (affectedRowCount == 0 && lastInsertId == 0 && warningCount == 0 && statusInfo is null && newSchema is null && clientCharacterSet is CharacterSet.None && connectionId is null && redirectionUrl is null)
 			{
 				if (serverStatus == ServerStatus.AutoCommit)
 					return s_autoCommitOk;
@@ -158,7 +167,7 @@ internal sealed class OkPayload
 					return s_autoCommitSessionStateChangedOk;
 			}
 
-			return new OkPayload(affectedRowCount, lastInsertId, serverStatus, warningCount, statusInfo, newSchema, characterSet, connectionId);
+			return new OkPayload(affectedRowCount, lastInsertId, serverStatus, warningCount, statusInfo, newSchema, characterSet, connectionId, redirectionUrl);
 		}
 		else
 		{
@@ -166,7 +175,7 @@ internal sealed class OkPayload
 		}
 	}
 
-	private OkPayload(ulong affectedRowCount, ulong lastInsertId, ServerStatus serverStatus, int warningCount, string? statusInfo, string? newSchema, CharacterSet newCharacterSet, int? connectionId)
+	private OkPayload(ulong affectedRowCount, ulong lastInsertId, ServerStatus serverStatus, int warningCount, string? statusInfo, string? newSchema, CharacterSet newCharacterSet, int? connectionId, string? redirectionUrl)
 	{
 		AffectedRowCount = affectedRowCount;
 		LastInsertId = lastInsertId;
@@ -176,8 +185,9 @@ internal sealed class OkPayload
 		NewSchema = newSchema;
 		NewCharacterSet = newCharacterSet;
 		NewConnectionId = connectionId;
+		RedirectionUrl = redirectionUrl;
 	}
 
-	private static readonly OkPayload s_autoCommitOk = new(0, 0, ServerStatus.AutoCommit, 0, default, default, default, default);
-	private static readonly OkPayload s_autoCommitSessionStateChangedOk = new(0, 0, ServerStatus.AutoCommit | ServerStatus.SessionStateChanged, 0, default, default, default, default);
+	private static readonly OkPayload s_autoCommitOk = new(0, 0, ServerStatus.AutoCommit, 0, default, default, default, default, default);
+	private static readonly OkPayload s_autoCommitSessionStateChangedOk = new(0, 0, ServerStatus.AutoCommit | ServerStatus.SessionStateChanged, 0, default, default, default, default, default);
 }

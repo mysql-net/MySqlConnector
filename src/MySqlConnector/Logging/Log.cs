@@ -402,26 +402,26 @@ internal static partial class Log
 	[LoggerMessage(EventIds.FoundSessionToCleanUp, LogLevel.Debug, "Pool {PoolId} found session {SessionId} to clean up")]
 	public static partial void FoundSessionToCleanUp(ILogger logger, int poolId, string sessionId);
 
-	[LoggerMessage(EventIds.HasServerRedirectionHeader, LogLevel.Trace, "Session {SessionId} has server redirection header {Header}")]
-	public static partial void HasServerRedirectionHeader(ILogger logger, string sessionId, string header);
+	[LoggerMessage(EventIds.HasServerRedirectionHeader, LogLevel.Trace, "{poolPrefix}Session {SessionId} has server redirection header {Header}")]
+	public static partial void HasServerRedirectionHeader(ILogger logger, string poolPrefix, string sessionId, string header);
 
-	[LoggerMessage(EventIds.ServerRedirectionIsDisabled, LogLevel.Trace, "Pool {PoolId} server redirection is disabled; ignoring redirection")]
-	public static partial void ServerRedirectionIsDisabled(ILogger logger, int poolId);
+	[LoggerMessage(EventIds.ServerRedirectionIsDisabled, LogLevel.Trace, "{poolPrefix}server redirection is disabled; ignoring redirection")]
+	public static partial void ServerRedirectionIsDisabled(ILogger logger, string poolPrefix);
 
-	[LoggerMessage(EventIds.OpeningNewConnection, LogLevel.Debug, "Pool {PoolId} opening new connection to {Host}:{Port} as {User}")]
-	public static partial void OpeningNewConnection(ILogger logger, int poolId, string host, int port, string user);
+	[LoggerMessage(EventIds.OpeningNewConnection, LogLevel.Debug, "{poolPrefix}opening new connection to {Host}:{Port} as {User}")]
+	public static partial void OpeningNewConnection(ILogger logger, string poolPrefix, string host, int port, string user);
 
-	[LoggerMessage(EventIds.FailedToConnectRedirectedSession, LogLevel.Information, "Pool {PoolId} failed to connect redirected session {SessionId}")]
-	public static partial void FailedToConnectRedirectedSession(ILogger logger, Exception ex, int poolId, string sessionId);
+	[LoggerMessage(EventIds.FailedToConnectRedirectedSession, LogLevel.Information, "{poolPrefix}failed to connect redirected session {SessionId}")]
+	public static partial void FailedToConnectRedirectedSession(ILogger logger, Exception ex, string poolPrefix, string sessionId);
 
-	[LoggerMessage(EventIds.ClosingSessionToUseRedirectedSession, LogLevel.Trace, "Pool {PoolId} closing session {SessionId} to use redirected session {RedirectedSessionId} instead")]
-	public static partial void ClosingSessionToUseRedirectedSession(ILogger logger, int poolId, string sessionId, string redirectedSessionId);
+	[LoggerMessage(EventIds.ClosingSessionToUseRedirectedSession, LogLevel.Trace, "{poolPrefix}closing session {SessionId} to use redirected session {RedirectedSessionId} instead")]
+	public static partial void ClosingSessionToUseRedirectedSession(ILogger logger, string poolPrefix, string sessionId, string redirectedSessionId);
 
-	[LoggerMessage(EventIds.SessionAlreadyConnectedToServer, LogLevel.Trace, "Session {SessionId} is already connected to this server; ignoring redirection")]
-	public static partial void SessionAlreadyConnectedToServer(ILogger logger, string sessionId);
+	[LoggerMessage(EventIds.SessionAlreadyConnectedToServer, LogLevel.Trace, "{poolPrefix}Session {SessionId} is already connected to this server; ignoring redirection")]
+	public static partial void SessionAlreadyConnectedToServer(ILogger logger, string poolPrefix, string sessionId);
 
-	[LoggerMessage(EventIds.RequiresServerRedirection, LogLevel.Error, "Pool {PoolId} requires server redirection but server doesn't support it")]
-	public static partial void RequiresServerRedirection(ILogger logger, int poolId);
+	[LoggerMessage(EventIds.RequiresServerRedirection, LogLevel.Error, "{poolPrefix}new connection requires server redirection but server doesn't support it")]
+	public static partial void RequiresServerRedirection(ILogger logger, string poolPrefix);
 
 	[LoggerMessage(EventIds.CreatedPoolWillNotBeUsed, LogLevel.Debug, "Pool {PoolId} was created but will not be used (due to race)")]
 	public static partial void CreatedPoolWillNotBeUsed(ILogger logger, int poolId);

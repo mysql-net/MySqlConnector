@@ -336,68 +336,45 @@ internal static class Utility
 		resizableArray.DoResize(newLength);
 	}
 
-	public static bool TryParseRedirectionHeader(string header, out string host, out int port, out string user)
+	public static bool TryParseRedirectionHeader(string redirectUrl, string initialUser, out string host, out int port, out string user)
 	{
 		host = "";
 		port = 0;
 		user = "";
 
-		if (!header.StartsWith("Location: mysql://", StringComparison.Ordinal) || header.Length < 22)
+		// "mariadb/mysql://[{user}[:{password}]@]{host}[:{port}]/[{db}[?{opt1}={value1}[&{opt2}={value2}]]]']"
+		if (!redirectUrl.StartsWith("mysql://", StringComparison.Ordinal) && !redirectUrl.StartsWith("mariadb://", StringComparison.Ordinal))
 			return false;
 
-		bool isCommunityFormat;
-		int portIndex;
-		if (header[18] == '[')
+		try
 		{
-			// Community protocol:
-			// Location: mysql://[redirectedHostName]:redirectedPort/?user=redirectedUser&ttl=%d\n
-			isCommunityFormat = true;
+			var uri = new Uri(redirectUrl);
+			host = uri.Host;
+			if (string.IsNullOrEmpty(host)) return false;
+			if (host.StartsWith('[') && host.EndsWith("]", StringComparison.InvariantCulture)) host = host.Substring(1, host.Length - 2);
 
-			var hostIndex = 19;
-			var closeSquareBracketIndex = header.IndexOf(']', hostIndex);
-			if (closeSquareBracketIndex == -1)
-				return false;
+			port = uri.Port;
+			user = Uri.UnescapeDataString(uri.UserInfo.Split(':')[0]);
+			if (string.IsNullOrEmpty(user) && !string.IsNullOrEmpty(uri.Query))
+			{
+				// query format "?{opt1}={value1}[&{opt2}={value2}]"
+				var q = uri.Query.Substring(1);
+				foreach (var token in q.Split('&'))
+				{
+					if (token.StartsWith("user=", StringComparison.InvariantCulture))
+					{
+						user = Uri.UnescapeDataString(token.Substring(5));
+					}
+				}
+			}
 
-			host = header[hostIndex..closeSquareBracketIndex];
-			if (header.Length <= closeSquareBracketIndex + 2)
-				return false;
-			if (header[closeSquareBracketIndex + 1] != ':')
-				return false;
-			portIndex = closeSquareBracketIndex + 2;
+			if (string.IsNullOrEmpty(user)) user = initialUser;
+			return true;
 		}
-		else
+		catch (UriFormatException)
 		{
-			// Azure protocol:
-			// Location: mysql://redirectedHostName:redirectedPort/user=redirectedUser&ttl=%d (where ttl is optional)
-			isCommunityFormat = false;
-
-			var hostIndex = 18;
-			var colonIndex = header.IndexOf(':', hostIndex);
-			if (colonIndex == -1)
-				return false;
-
-			host = header[hostIndex..colonIndex];
-			portIndex = colonIndex + 1;
+			return false;
 		}
-
-		var userIndex = header.IndexOf(isCommunityFormat ? "/?user=" : "/user=", StringComparison.Ordinal);
-		if (userIndex == -1)
-			return false;
-
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-		if (!int.TryParse(header.AsSpan(portIndex, userIndex - portIndex), out port) || port <= 0)
-#else
-		if (!int.TryParse(header[portIndex..userIndex], out port) || port <= 0)
-#endif
-			return false;
-
-		userIndex += isCommunityFormat ? 7 : 6;
-		var ampersandIndex = header.IndexOf('&', userIndex);
-		var newlineIndex = header.IndexOf('\n', userIndex);
-		var terminatorIndex = ampersandIndex == -1 ? (newlineIndex == -1 ? header.Length : newlineIndex) :
-			(newlineIndex == -1 ? ampersandIndex : Math.Min(ampersandIndex, newlineIndex));
-		user = header[userIndex..terminatorIndex];
-		return user.Length != 0;
 	}
 
 	public static TimeSpan ParseTimeSpan(ReadOnlySpan<byte> value)

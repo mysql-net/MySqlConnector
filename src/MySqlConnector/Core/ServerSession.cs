@@ -51,6 +51,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 	public bool SupportsPerQueryVariables => ServerVersion.IsMariaDb && ServerVersion.Version >= ServerVersions.MariaDbSupportsPerQueryVariables;
 	public int ActiveCommandId { get; private set; }
 	public int CancellationTimeout { get; private set; }
+	public string? ConnectionString { get; private set; }
 	public int ConnectionId { get; set; }
 	public byte[]? AuthPluginData { get; set; }
 	public long CreatedTimestamp { get; }
@@ -391,7 +392,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			m_state = State.Closed;
 	}
 
-	public async Task<string?> ConnectAsync(ConnectionSettings cs, MySqlConnection connection, long startingTimestamp, ILoadBalancer? loadBalancer, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task<string?> ConnectAsync(ConnectionSettings cs, MySqlConnection connection, long startingTimestamp, ILoadBalancer? loadBalancer, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		try
 		{
@@ -403,16 +404,16 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 			// set activity tags
 			{
-				var connectionString = cs.ConnectionStringBuilder.GetConnectionString(cs.ConnectionStringBuilder.PersistSecurityInfo);
+				ConnectionString = cs.ConnectionStringBuilder.GetConnectionString(cs.ConnectionStringBuilder.PersistSecurityInfo);
 				m_activityTags.Add(ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue);
-				m_activityTags.Add(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionString);
+				m_activityTags.Add(ActivitySourceHelper.DatabaseConnectionStringTagName, ConnectionString);
 				m_activityTags.Add(ActivitySourceHelper.DatabaseUserTagName, cs.UserID);
 				if (cs.Database.Length != 0)
 					m_activityTags.Add(ActivitySourceHelper.DatabaseNameTagName, cs.Database);
 				if (activity is { IsAllDataRequested: true })
 				{
 					activity.SetTag(ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue)
-						.SetTag(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionString)
+						.SetTag(ActivitySourceHelper.DatabaseConnectionStringTagName, ConnectionString)
 						.SetTag(ActivitySourceHelper.DatabaseUserTagName, cs.UserID);
 					if (cs.Database.Length != 0)
 						activity.SetTag(ActivitySourceHelper.DatabaseNameTagName, cs.Database);
@@ -533,7 +534,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			}
 
 			var ok = OkPayload.Create(payload.Span, this);
-			var statusInfo = ok.StatusInfo;
+			var redirectionUrl = ok.RedirectionUrl;
 
 			if (m_useCompression)
 				m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
@@ -558,7 +559,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			}
 
 			m_payloadHandler.ByteHandler.RemainingTimeout = Constants.InfiniteTimeout;
-			return statusInfo;
+			return redirectionUrl;
 		}
 		catch (ArgumentException ex)
 		{
@@ -570,6 +571,82 @@ internal sealed partial class ServerSession : IServerCapabilities
 			Log.CouldNotConnectToServer(m_logger, ex, Id);
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't connect to server", ex);
 		}
+	}
+
+	public static async ValueTask<ServerSession> ConnectAndRedirectAsync(Func<ServerSession> createSession, ILogger logger, int? poolId, ConnectionSettings cs, ILoadBalancer? loadBalancer, MySqlConnection connection, Action<ILogger, int, string, Exception?>? logMessage, long startingTimestamp, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	{
+		var session = createSession();
+		if (poolId is not null)
+		{
+			if (logger.IsEnabled(LogLevel.Debug)) logMessage!(logger, poolId.Value, session.Id, null);
+		}
+		else
+		{
+			Log.CreatedNonPooledSession(logger, session.Id);
+		}
+
+		string? redirectionUrl;
+		try
+		{
+			redirectionUrl = await session.ConnectAsync(cs, connection, startingTimestamp, loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+		}
+		catch (Exception)
+		{
+			await session.DisposeAsync(ioBehavior, default).ConfigureAwait(false);
+			throw;
+		}
+
+		Exception? redirectionException = null;
+		var poolPrefix = poolId is not null ? "Pool {PoolId} " : "";
+		if (redirectionUrl is not null)
+		{
+			Log.HasServerRedirectionHeader(logger, poolPrefix, session.Id, redirectionUrl!);
+			if (cs.ServerRedirectionMode == MySqlServerRedirectionMode.Disabled)
+			{
+				Log.ServerRedirectionIsDisabled(logger, poolPrefix);
+				return session;
+			}
+
+			if (Utility.TryParseRedirectionHeader(redirectionUrl, cs.UserID, out var host, out var port, out var user))
+			{
+				if (host != cs.HostNames![0] || port != cs.Port || user != cs.UserID)
+				{
+					var redirectedSettings = cs.CloneWith(host, port, user);
+					Log.OpeningNewConnection(logger, poolPrefix, host, port, user);
+					var redirectedSession = createSession();
+					try
+					{
+						await redirectedSession.ConnectAsync(redirectedSettings, connection, startingTimestamp, loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
+						Log.ClosingSessionToUseRedirectedSession(logger, poolPrefix, session.Id, redirectedSession.Id);
+						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						return redirectedSession;
+					}
+					catch (Exception ex)
+					{
+						redirectionException = ex;
+						Log.FailedToConnectRedirectedSession(logger, ex, poolPrefix, redirectedSession.Id);
+						try
+						{
+							await redirectedSession.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+						}
+						catch (Exception)
+						{
+						}
+					}
+				}
+				else
+				{
+					Log.SessionAlreadyConnectedToServer(logger, poolPrefix, session.Id);
+				}
+			}
+		}
+
+		if (cs.ServerRedirectionMode == MySqlServerRedirectionMode.Required)
+		{
+			Log.RequiresServerRedirection(logger, poolPrefix);
+			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Server does not support redirection", redirectionException);
+		}
+		return session;
 	}
 
 	public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
