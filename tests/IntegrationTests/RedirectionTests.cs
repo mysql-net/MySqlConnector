@@ -139,7 +139,8 @@ public class RedirectionTests : IClassFixture<DatabaseFixture>, IDisposable
         public int    ListenPort;
         public Socket ServerSocket;
         public ServerConfiguration(String remoteAddress, int remotePort) {
-            RemoteAddress = IPAddress.Parse( remoteAddress );
+			var ipHostEntry = Dns.GetHostEntry(remoteAddress);
+			RemoteAddress = ipHostEntry.AddressList[0];
             RemotePort    = remotePort;
             ListenPort    = 0;
         }
