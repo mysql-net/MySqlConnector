@@ -1066,6 +1066,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 					RandomLoadBalancer.Instance : FailOverLoadBalancer.Instance;
 				var session = await ServerSession.ConnectAndRedirectAsync(() => new ServerSession(m_logger), m_logger, null, connectionSettings, loadBalancer, this, null, startingTimestamp, null, actualIOBehavior, cancellationToken).ConfigureAwait(false);
 				session.OwningConnection = new WeakReference<MySqlConnection>(this);
+				Log.CreatedNonPooledSession(m_logger, session.Id);
 				return session;
 			}
 		}

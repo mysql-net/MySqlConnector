@@ -35,4 +35,10 @@ public enum ServerFeatures
 	/// A "SLEEP" command produces a result set when it is cancelled, not an error payload.
 	/// </summary>
 	CancelSleepSuccessfully = 0x40_0000,
+
+	/// <summary>
+	/// Server permit redirection, available on first OK_Packet
+	/// </summary>
+	Redirection = 0x80_0000,
+
 }

@@ -576,14 +576,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 	public static async ValueTask<ServerSession> ConnectAndRedirectAsync(Func<ServerSession> createSession, ILogger logger, int? poolId, ConnectionSettings cs, ILoadBalancer? loadBalancer, MySqlConnection connection, Action<ILogger, int, string, Exception?>? logMessage, long startingTimestamp, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		var session = createSession();
-		if (poolId is not null)
-		{
-			if (logger.IsEnabled(LogLevel.Debug)) logMessage!(logger, poolId.Value, session.Id, null);
-		}
-		else
-		{
-			Log.CreatedNonPooledSession(logger, session.Id);
-		}
+		if (poolId is not null && logger.IsEnabled(LogLevel.Debug)) logMessage!(logger, poolId.Value, session.Id, null);
 
 		string? redirectionUrl;
 		try
@@ -597,13 +590,12 @@ internal sealed partial class ServerSession : IServerCapabilities
 		}
 
 		Exception? redirectionException = null;
-		var poolPrefix = poolId is not null ? "Pool {PoolId} " : "";
 		if (redirectionUrl is not null)
 		{
-			Log.HasServerRedirectionHeader(logger, poolPrefix, session.Id, redirectionUrl!);
+			Log.HasServerRedirectionHeader(logger, session.Id, redirectionUrl);
 			if (cs.ServerRedirectionMode == MySqlServerRedirectionMode.Disabled)
 			{
-				Log.ServerRedirectionIsDisabled(logger, poolPrefix);
+				Log.ServerRedirectionIsDisabled(logger, session.Id);
 				return session;
 			}
 
@@ -612,19 +604,19 @@ internal sealed partial class ServerSession : IServerCapabilities
 				if (host != cs.HostNames![0] || port != cs.Port || user != cs.UserID)
 				{
 					var redirectedSettings = cs.CloneWith(host, port, user);
-					Log.OpeningNewConnection(logger, poolPrefix, host, port, user);
+					Log.OpeningNewConnection(logger, host, port, user);
 					var redirectedSession = createSession();
 					try
 					{
 						await redirectedSession.ConnectAsync(redirectedSettings, connection, startingTimestamp, loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
-						Log.ClosingSessionToUseRedirectedSession(logger, poolPrefix, session.Id, redirectedSession.Id);
+						Log.ClosingSessionToUseRedirectedSession(logger, session.Id, redirectedSession.Id);
 						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 						return redirectedSession;
 					}
 					catch (Exception ex)
 					{
 						redirectionException = ex;
-						Log.FailedToConnectRedirectedSession(logger, ex, poolPrefix, redirectedSession.Id);
+						Log.FailedToConnectRedirectedSession(logger, ex, redirectedSession.Id);
 						try
 						{
 							await redirectedSession.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -636,14 +628,14 @@ internal sealed partial class ServerSession : IServerCapabilities
 				}
 				else
 				{
-					Log.SessionAlreadyConnectedToServer(logger, poolPrefix, session.Id);
+					Log.SessionAlreadyConnectedToServer(logger, session.Id);
 				}
 			}
 		}
 
 		if (cs.ServerRedirectionMode == MySqlServerRedirectionMode.Required)
 		{
-			Log.RequiresServerRedirection(logger, poolPrefix);
+			Log.RequiresServerRedirection(logger, session.Id);
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Server does not support redirection", redirectionException);
 		}
 		return session;

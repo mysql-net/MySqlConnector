@@ -187,27 +187,27 @@ jobs:
       'MySQL 8.0':
         image: 'mysql:8.0'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
-        unsupportedFeatures: 'Ed25519,StreamingResults,Tls11,ZeroDateTime'
+        unsupportedFeatures: 'Ed25519,StreamingResults,Tls11,ZeroDateTime,Redirection'
       'MySQL 8.4':
         image: 'mysql:8.4'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
-        unsupportedFeatures: 'Ed25519,StreamingResults,Tls11,ZeroDateTime'
+        unsupportedFeatures: 'Ed25519,StreamingResults,Tls11,ZeroDateTime,Redirection'
       'MySQL 9.0':
         image: 'mysql:9.0'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
-        unsupportedFeatures: 'Ed25519,StreamingResults,Tls11,ZeroDateTime'
+        unsupportedFeatures: 'Ed25519,StreamingResults,Tls11,ZeroDateTime,Redirection'
       'MariaDB 10.6':
         image: 'mariadb:10.6'
         connectionStringExtra: ''
-        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
+        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin,Redirection'
       'MariaDB 10.11':
         image: 'mariadb:10.11'
         connectionStringExtra: ''
-        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
+        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin,Redirection'
       'MariaDB 11.4':
         image: 'mariadb:11.4'
         connectionStringExtra: ''
-        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin'
+        unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Sha256Password,Tls11,UuidToBin,Redirection'
   steps:
   - template: '.ci/integration-tests-steps.yml'
     parameters:

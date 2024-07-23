@@ -17,8 +17,7 @@ public class RedirectionTests : IClassFixture<DatabaseFixture>, IDisposable
 		m_database.Connection.Close();
 	}
 
-
-	[Fact]
+	[SkippableFact(ServerFeatures.Redirection)]
 	public void RedirectionTest()
 	{
 		StartProxy();
