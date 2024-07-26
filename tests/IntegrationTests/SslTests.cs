@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using MySqlConnector.Authentication.Ed25519;
 
 namespace IntegrationTests;
 
@@ -202,6 +203,67 @@ public class SslTests : IClassFixture<DatabaseFixture>
 			await connection.OpenAsync();
 		else
 			await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+	}
+#endif
+
+#if !MYSQL_DATA
+	[SkippableFact(ServerFeatures.TlsFingerprintValidation)]
+	public async Task ConnectZeroConfigurationSslNative()
+	{
+		// permit connection without any Ssl configuration.
+		// reference https://mariadb.org/mission-impossible-zero-configuration-ssl/
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		await m_database.Connection.ExecuteAsync(
+			@"CREATE USER IF NOT EXISTS 'sslUser'@'%' IDENTIFIED WITH mysql_native_password USING PASSWORD('!Passw0rd3Works') REQUIRE SSL;
+GRANT SELECT ON *.* TO 'sslUser'@'%'");
+		try {
+			csb.CertificateFile = null;
+			csb.SslMode = MySqlSslMode.VerifyFull;
+			csb.SslCa = "";
+			csb.UserID = "sslUser";
+			csb.Password = "!Passw0rd3Works";
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			await connection.OpenAsync();
+			connection.Close();
+		}
+		finally
+		{
+			await m_database.Connection.ExecuteAsync("DROP USER IF EXISTS 'sslUser'@'%'");
+			m_database.Connection.Close();
+		}
+	}
+
+	[SkippableFact(new ServerFeatures[]{ServerFeatures.TlsFingerprintValidation,ServerFeatures.Ed25519})]
+	public async Task ConnectZeroConfigurationSslEd25519()
+	{
+		Ed25519AuthenticationPlugin.Install();
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		try
+		{
+			await m_database.Connection.ExecuteAsync("INSTALL SONAME 'auth_ed25519'");
+		}
+		catch (Exception)
+		{
+			// eat if already installed
+		}
+		await m_database.Connection.ExecuteAsync(
+			@"CREATE USER IF NOT EXISTS 'sslUser'@'%' IDENTIFIED WITH ed25519 USING PASSWORD('!Passw0rd3Works') REQUIRE SSL;
+GRANT SELECT ON *.* TO 'sslUser'@'%'");
+		try {
+			csb.CertificateFile = null;
+			csb.SslMode = MySqlSslMode.VerifyFull;
+			csb.SslCa = "";
+			csb.UserID = "sslUser";
+			csb.Password = "!Passw0rd3Works";
+			using var connection = new MySqlConnection(csb.ConnectionString);
+			await connection.OpenAsync();
+			connection.Close();
+		}
+		finally
+		{
+			await m_database.Connection.ExecuteAsync("DROP USER IF EXISTS 'sslUser'@'%'");
+			m_database.Connection.Close();
+		}
 	}
 #endif
 

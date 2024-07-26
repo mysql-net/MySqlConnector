@@ -41,4 +41,8 @@ public enum ServerFeatures
 	/// </summary>
 	Redirection = 0x80_0000,
 
+	/// <summary>
+	/// Server permit redirection, available on first OK_Packet
+	/// </summary>
+	TlsFingerprintValidation = 0x100_0000,
 }

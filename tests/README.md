@@ -38,6 +38,7 @@ Otherwise, set the following options appropriately:
   * `Tls13`: server supports TLS 1.3
   * `UnixDomainSocket`: server is accessible via a Unix domain socket
   * `UuidToBin`: server supports `UUID_TO_BIN` (MySQL 8.0 and later)
+  * `UnsupportedFeatures`: server supports
 
 ## Running Tests
 

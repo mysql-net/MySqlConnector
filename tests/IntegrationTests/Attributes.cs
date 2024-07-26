@@ -12,6 +12,11 @@ public class SkippableFactAttribute : FactAttribute
 	{
 	}
 
+	public SkippableFactAttribute(ServerFeatures[] serverFeatureList)
+		: this(serverFeatureList, ConfigSettings.None)
+	{
+	}
+
 	public SkippableFactAttribute(ConfigSettings configSettings)
 		: this(ServerFeatures.None, configSettings)
 	{
@@ -20,6 +25,16 @@ public class SkippableFactAttribute : FactAttribute
 	public SkippableFactAttribute(ServerFeatures serverFeatures, ConfigSettings configSettings)
 	{
 		Skip = TestUtilities.GetSkipReason(serverFeatures, configSettings);
+	}
+
+	public SkippableFactAttribute(ServerFeatures[] serverFeatureList, ConfigSettings configSettings)
+	{
+		Skip = null;
+		foreach (ServerFeatures serverFeatures in serverFeatureList)
+		{
+			Skip = TestUtilities.GetSkipReason(serverFeatures, configSettings);
+			if (Skip is not null) break;
+		}
 	}
 
 	public string MySqlData

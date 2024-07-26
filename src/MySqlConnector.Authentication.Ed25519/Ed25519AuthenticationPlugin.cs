@@ -157,6 +157,29 @@ public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin
 		return result;
 	}
 
+	/// <summary>
+	/// Creates the ed25519 password hash.
+	/// </summary>
+	public byte[] CreatePasswordHash(string password, ReadOnlySpan<byte> authenticationData)
+	{
+		byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+		using var sha512 = SHA512.Create();
+		byte[] az = sha512.ComputeHash(passwordBytes);
+		ScalarOperations.sc_clamp(az, 0);
+
+		byte[] sm = new byte[64 + authenticationData.Length];
+		authenticationData.CopyTo(sm.AsSpan().Slice(64));
+		Buffer.BlockCopy(az, 32, sm, 32, 32);
+		sha512.ComputeHash(sm, 32, authenticationData.Length + 32);
+
+		GroupOperations.ge_scalarmult_base(out var A, az, 0);
+		GroupOperations.ge_p3_tobytes(sm, 32, ref A);
+
+		byte[] res = new byte[32];
+		Array.Copy(sm, 32, res, 0, 32);
+		return res;
+	}
+
 	private Ed25519AuthenticationPlugin()
 	{
 	}

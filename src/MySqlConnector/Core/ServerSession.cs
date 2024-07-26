@@ -18,6 +18,9 @@ using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
+#if NET5_0_OR_GREATER
+using System.Runtime.CompilerServices;
+#endif
 
 namespace MySqlConnector.Core;
 
@@ -534,6 +537,44 @@ internal sealed partial class ServerSession : IServerCapabilities
 			}
 
 			var ok = OkPayload.Create(payload.Span, this);
+			if (m_rcbPolicyErrors != SslPolicyErrors.None)
+			{
+				// SSL would normally have thrown error, so connector need to ensure server certificates
+				// pass only if :
+				// * connection method is MitM-proof (e.g. unix socket)
+				// * auth plugin is MitM-proof and check SHA2(user's hashed password, scramble, certificate fingerprint)
+				if (cs.ConnectionProtocol != MySqlConnectionProtocol.UnixSocket)
+				{
+					if (string.IsNullOrEmpty(password) ||
+					    !ValidateFingerPrint(ok.StatusInfo, initialHandshake.AuthPluginData, password!))
+					{
+						// fingerprint validation fail.
+						// now throwing SSL exception depending on m_rcbPolicyErrors
+						ShutdownSocket();
+						HostName = "";
+						lock (m_lock) m_state = State.Failed;
+						MySqlException ex;
+						switch (m_rcbPolicyErrors)
+						{
+							case SslPolicyErrors.RemoteCertificateNotAvailable:
+								// impossible
+								ex = new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL not validated, no remote certificate available");
+								break;
+
+							case SslPolicyErrors.RemoteCertificateNameMismatch:
+								ex = new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL not validated, certificate name mismatch");
+								break;
+
+							default:
+								ex = new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL not validated, certificate chain validation fail");
+								break;
+						}
+						Log.CouldNotInitializeTlsConnection(m_logger, ex, Id);
+						throw ex;
+					}
+				}
+			}
+
 			var redirectionUrl = ok.RedirectionUrl;
 
 			if (m_useCompression)
@@ -571,6 +612,57 @@ internal sealed partial class ServerSession : IServerCapabilities
 			Log.CouldNotConnectToServer(m_logger, ex, Id);
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't connect to server", ex);
 		}
+	}
+
+	/// <summary>
+	/// Validate SSL validation has
+	/// </summary>
+	/// <param name="validationHash">received validation hash</param>
+	/// <param name="challenge">initial seed</param>
+	/// <param name="password">password</param>
+	/// <returns>true if validated</returns>
+	private bool ValidateFingerPrint(byte[]? validationHash, ReadOnlySpan<byte> challenge, string password)
+	{
+		if (validationHash is null || validationHash.Length == 0) return false;
+
+		// ensure using SHA256 encryption
+		if (validationHash[0] != 0x01)
+			throw new FormatException($"Unexpected validation hash format. expected 0x01 but got 0x{validationHash[0]:X2}");
+
+		byte[] passwordHashResult;
+		switch (m_pluginName)
+		{
+			case "mysql_native_password":
+				passwordHashResult = AuthenticationUtility.HashPassword(challenge, password, false);
+				break;
+
+			case "client_ed25519":
+				AuthenticationPlugins.TryGetPlugin("client_ed25519", out var ed25519Plugin);
+				passwordHashResult = ed25519Plugin!.CreatePasswordHash(password, challenge);
+				break;
+
+			default:
+				return false;
+		}
+
+		Span<byte> combined = stackalloc byte[32 + (challenge.Length - 1) + passwordHashResult.Length];
+		passwordHashResult.CopyTo(combined);
+		challenge.CopyTo(combined[passwordHashResult.Length..]);
+		m_sha2Thumbprint!.CopyTo(combined[(passwordHashResult.Length + challenge.Length - 1)..]);
+
+		byte[] hashBytes;
+#if NET5_0_OR_GREATER
+		hashBytes = SHA256.HashData(combined);
+#else
+		using (var sha256 = SHA256.Create())
+		{
+			hashBytes = sha256.ComputeHash(combined.ToArray());
+		}
+#endif
+
+		var clientGeneratedHash = hashBytes.Aggregate(string.Empty, (str, hashByte) => str + hashByte.ToString("X2", CultureInfo.InvariantCulture));
+		var serverGeneratedHash = Encoding.ASCII.GetString(validationHash, 1, validationHash.Length - 1);
+		return string.Equals(clientGeneratedHash, serverGeneratedHash, StringComparison.Ordinal);
 	}
 
 	public static async ValueTask<ServerSession> ConnectAndRedirectAsync(Func<ServerSession> createSession, ILogger logger, int? poolId, ConnectionSettings cs, ILoadBalancer? loadBalancer, MySqlConnection connection, Action<ILogger, int, string, Exception?>? logMessage, long startingTimestamp, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
@@ -734,6 +826,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 		// if the server didn't support the hashed password; rehash with the new challenge
 		var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload.Span);
 		Log.SwitchingToAuthenticationMethod(m_logger, Id, switchRequest.Name);
+		m_pluginName = switchRequest.Name;
 		switch (switchRequest.Name)
 		{
 			case "mysql_native_password":
@@ -1490,6 +1583,21 @@ internal sealed partial class ServerSession : IServerCapabilities
 			if (cs.SslMode == MySqlSslMode.VerifyCA)
 				rcbPolicyErrors &= ~SslPolicyErrors.RemoteCertificateNameMismatch;
 
+			if (rcbCertificate is X509Certificate2 cert2)
+			{
+				// saving sha256 thumbprint and SSL errors until thumbprint validation
+#if !NET5_0_OR_GREATER
+				using (var sha256 = SHA256.Create())
+				{
+					m_sha2Thumbprint = sha256.ComputeHash(cert2.RawData);
+				}
+#else
+				m_sha2Thumbprint = SHA256.HashData(cert2.RawData);
+#endif
+				m_rcbPolicyErrors = rcbPolicyErrors;
+				return true;
+			}
+
 			return rcbPolicyErrors == SslPolicyErrors.None;
 		}
 
@@ -2012,4 +2120,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private PayloadData m_setNamesPayload;
 	private byte[]? m_pipelinedResetConnectionBytes;
 	private Dictionary<string, PreparedStatements>? m_preparedStatements;
+	private string m_pluginName = "mysql_native_password";
+	private byte[]? m_sha2Thumbprint;
+	private SslPolicyErrors m_rcbPolicyErrors;
 }
