@@ -28,90 +28,79 @@ public class RedirectionTests : IClassFixture<DatabaseFixture>, IDisposable
 		var csb = AppConfig.CreateConnectionStringBuilder();
 		var initialServer = csb.Server;
 		var initialPort = csb.Port;
-		var permitRedirection = true;
+		m_database.Connection.Execute($"set @@global.redirect_url=\"mariadb://{initialServer}:{initialPort}\"");
+
 		try
 		{
-			m_database.Connection.Execute(
-				$"set @@global.redirect_url=\"mariadb://{initialServer}:{initialPort}\"");
-		}
-		catch (Exception)
-		{
-			permitRedirection = false;
-		}
+			// changing to proxy port
+			csb.Server = "localhost";
+			csb.Port = (uint)proxy.ListenPort;
+			csb.ServerRedirectionMode = MySqlServerRedirectionMode.Preferred;
 
-		if (permitRedirection)
-		{
-			try
+			// ensure that connection has been redirected
+			using (var db = new MySqlConnection(csb.ConnectionString))
 			{
-				// changing to proxy port
-				csb.Server = "localhost";
-				csb.Port = (uint)proxy.ListenPort;
-				csb.ServerRedirectionMode = MySqlServerRedirectionMode.Preferred;
-
-				// ensure that connection has been redirected
-				using (var db = new MySqlConnection(csb.ConnectionString))
+				db.Open();
+				using (var cmd = db.CreateCommand())
 				{
-					db.Open();
-					using (var cmd = db.CreateCommand())
-					{
-						cmd.CommandText = "SELECT 1";
-						cmd.ExecuteNonQuery();
-					}
-
-					Assert.Equal((int) initialPort, db.SessionEndPoint!.Port);
-					db.Close();
+					cmd.CommandText = "SELECT 1";
+					cmd.ExecuteNonQuery();
 				}
 
-				// ensure that connection has been redirected with Required
-				csb.ServerRedirectionMode = MySqlServerRedirectionMode.Required;
-				using (var db = new MySqlConnection(csb.ConnectionString))
-				{
-					db.Open();
-					using (var cmd = db.CreateCommand())
-					{
-						cmd.CommandText = "SELECT 1";
-						cmd.ExecuteNonQuery();
-					}
-
-					Assert.Equal((int) initialPort, db.SessionEndPoint!.Port);
-					db.Close();
-				}
-
-				// ensure that redirection is not done
-				csb.ServerRedirectionMode = MySqlServerRedirectionMode.Disabled;
-				using (var db = new MySqlConnection(csb.ConnectionString))
-				{
-					db.Open();
-					using (var cmd = db.CreateCommand())
-					{
-						cmd.CommandText = "SELECT 1";
-						cmd.ExecuteNonQuery();
-					}
-
-					Assert.Equal(proxy.ListenPort, db.SessionEndPoint!.Port);
-					db.Close();
-				}
-
-			} finally{
-				m_database.Connection.Execute(
-					$"set @@global.redirect_url=\"\"");
+				Assert.Equal((int) initialPort, db.SessionEndPoint!.Port);
+				db.Close();
 			}
-			MySqlConnection.ClearAllPools();
-			// ensure that when required, throwing error if no redirection
+
+			// ensure that connection has been redirected with Required
 			csb.ServerRedirectionMode = MySqlServerRedirectionMode.Required;
 			using (var db = new MySqlConnection(csb.ConnectionString))
 			{
-				try
+				db.Open();
+				using (var cmd = db.CreateCommand())
 				{
-					db.Open();
-					Assert.Fail("must have thrown error");
+					cmd.CommandText = "SELECT 1";
+					cmd.ExecuteNonQuery();
 				}
-				catch (MySqlException ex)
+
+				Assert.Equal((int) initialPort, db.SessionEndPoint!.Port);
+				db.Close();
+			}
+
+			// ensure that redirection is not done
+			csb.ServerRedirectionMode = MySqlServerRedirectionMode.Disabled;
+			using (var db = new MySqlConnection(csb.ConnectionString))
+			{
+				db.Open();
+				using (var cmd = db.CreateCommand())
 				{
-					Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
+					cmd.CommandText = "SELECT 1";
+					cmd.ExecuteNonQuery();
 				}
+
+				Assert.Equal(proxy.ListenPort, db.SessionEndPoint!.Port);
+				db.Close();
+			}
+
+		} finally{
+			m_database.Connection.Execute(
+				$"set @@global.redirect_url=\"\"");
+		}
+		MySqlConnection.ClearAllPools();
+		// ensure that when required, throwing error if no redirection
+		csb.ServerRedirectionMode = MySqlServerRedirectionMode.Required;
+		using (var db = new MySqlConnection(csb.ConnectionString))
+		{
+			try
+			{
+				db.Open();
+				Assert.Fail("must have thrown error");
+			}
+			catch (MySqlException ex)
+			{
+				Assert.Equal((int) MySqlErrorCode.UnableToConnectToHost, ex.Number);
 			}
 		}
+
 		StopProxy();
 	}
 

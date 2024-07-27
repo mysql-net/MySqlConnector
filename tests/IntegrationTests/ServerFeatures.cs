@@ -40,5 +40,4 @@ public enum ServerFeatures
 	/// Server permit redirection, available on first OK_Packet
 	/// </summary>
 	Redirection = 0x80_0000,
-
 }
