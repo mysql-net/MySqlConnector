@@ -7,7 +7,6 @@ namespace MySqlConnector.Tests;
 
 public class UtilityTests
 {
-
 	[Theory]
 	[InlineData("mariadb://host.example.com:1234/?user=user@host", "host.example.com", 1234, "user@host")]
 	[InlineData("mariadb://user%40host:password@host.example.com:1234/", "host.example.com", 1234, "user@host")]
