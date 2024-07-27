@@ -405,23 +405,23 @@ internal static partial class Log
 	[LoggerMessage(EventIds.HasServerRedirectionHeader, LogLevel.Trace, "Session {SessionId} has server redirection header {Header}")]
 	public static partial void HasServerRedirectionHeader(ILogger logger, string sessionId, string header);
 
-	[LoggerMessage(EventIds.ServerRedirectionIsDisabled, LogLevel.Trace, "Session {SessionId}, server redirection is disabled; ignoring redirection")]
+	[LoggerMessage(EventIds.ServerRedirectionIsDisabled, LogLevel.Trace, "Session {SessionId} server redirection is disabled; ignoring redirection")]
 	public static partial void ServerRedirectionIsDisabled(ILogger logger, string sessionId);
 
-	[LoggerMessage(EventIds.OpeningNewConnection, LogLevel.Debug, "opening new connection to {Host}:{Port} as {User}")]
-	public static partial void OpeningNewConnection(ILogger logger, string host, int port, string user);
+	[LoggerMessage(EventIds.OpeningNewConnection, LogLevel.Debug, "Session {SessionId} opening new connection to {Host}:{Port} as {User}")]
+	public static partial void OpeningNewConnection(ILogger logger, string sessionId, string host, int port, string user);
 
-	[LoggerMessage(EventIds.FailedToConnectRedirectedSession, LogLevel.Information, "failed to connect redirected session {SessionId}")]
-	public static partial void FailedToConnectRedirectedSession(ILogger logger, Exception ex, string sessionId);
+	[LoggerMessage(EventIds.FailedToConnectRedirectedSession, LogLevel.Information, "Session {SessionId} failed to connect redirected session {RedirectedSessionId}")]
+	public static partial void FailedToConnectRedirectedSession(ILogger logger, Exception ex, string sessionId, string redirectedSessionId);
 
-	[LoggerMessage(EventIds.ClosingSessionToUseRedirectedSession, LogLevel.Trace, "closing session {SessionId} to use redirected session {RedirectedSessionId} instead")]
+	[LoggerMessage(EventIds.ClosingSessionToUseRedirectedSession, LogLevel.Trace, "Closing session {SessionId} to use redirected session {RedirectedSessionId} instead")]
 	public static partial void ClosingSessionToUseRedirectedSession(ILogger logger, string sessionId, string redirectedSessionId);
 
 	[LoggerMessage(EventIds.SessionAlreadyConnectedToServer, LogLevel.Trace, "Session {SessionId} is already connected to this server; ignoring redirection")]
 	public static partial void SessionAlreadyConnectedToServer(ILogger logger, string sessionId);
 
-	[LoggerMessage(EventIds.RequiresServerRedirection, LogLevel.Error, "Session {SessionId}, new connection requires server redirection but server doesn't support it")]
-	public static partial void RequiresServerRedirection(ILogger logger, string SessionId);
+	[LoggerMessage(EventIds.RequiresServerRedirection, LogLevel.Error, "Session {SessionId} requires server redirection but server doesn't support it")]
+	public static partial void RequiresServerRedirection(ILogger logger, string sessionId);
 
 	[LoggerMessage(EventIds.CreatedPoolWillNotBeUsed, LogLevel.Debug, "Pool {PoolId} was created but will not be used (due to race)")]
 	public static partial void CreatedPoolWillNotBeUsed(ILogger logger, int poolId);

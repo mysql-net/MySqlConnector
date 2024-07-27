@@ -588,10 +588,10 @@ internal sealed partial class ServerSession : IServerCapabilities
 		Exception? redirectionException = null;
 		if (redirectionUrl is not null)
 		{
-			Log.HasServerRedirectionHeader(poolLogger, session.Id, redirectionUrl);
+			Log.HasServerRedirectionHeader(connectionLogger, session.Id, redirectionUrl);
 			if (cs.ServerRedirectionMode == MySqlServerRedirectionMode.Disabled)
 			{
-				Log.ServerRedirectionIsDisabled(poolLogger, session.Id);
+				Log.ServerRedirectionIsDisabled(connectionLogger, session.Id);
 				return session;
 			}
 
@@ -600,19 +600,19 @@ internal sealed partial class ServerSession : IServerCapabilities
 				if (host != cs.HostNames![0] || port != cs.Port || user != cs.UserID)
 				{
 					var redirectedSettings = cs.CloneWith(host, port, user);
-					Log.OpeningNewConnection(poolLogger, host, port, user);
+					Log.OpeningNewConnection(connectionLogger, session.Id, host, port, user);
 					var redirectedSession = new ServerSession(connectionLogger, pool);
 					try
 					{
 						await redirectedSession.ConnectAsync(redirectedSettings, connection, startingTimestamp, loadBalancer, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
-						Log.ClosingSessionToUseRedirectedSession(poolLogger, session.Id, redirectedSession.Id);
+						Log.ClosingSessionToUseRedirectedSession(connectionLogger, session.Id, redirectedSession.Id);
 						await session.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 						return redirectedSession;
 					}
 					catch (Exception ex)
 					{
 						redirectionException = ex;
-						Log.FailedToConnectRedirectedSession(poolLogger, ex, redirectedSession.Id);
+						Log.FailedToConnectRedirectedSession(connectionLogger, ex, session.Id, redirectedSession.Id);
 						try
 						{
 							await redirectedSession.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -624,14 +624,14 @@ internal sealed partial class ServerSession : IServerCapabilities
 				}
 				else
 				{
-					Log.SessionAlreadyConnectedToServer(poolLogger, session.Id);
+					Log.SessionAlreadyConnectedToServer(connectionLogger, session.Id);
 				}
 			}
 		}
 
 		if (cs.ServerRedirectionMode == MySqlServerRedirectionMode.Required)
 		{
-			Log.RequiresServerRedirection(poolLogger, session.Id);
+			Log.RequiresServerRedirection(connectionLogger, session.Id);
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Server does not support redirection", redirectionException);
 		}
 		return session;
