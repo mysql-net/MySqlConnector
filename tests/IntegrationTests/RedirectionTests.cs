@@ -58,8 +58,7 @@ public class RedirectionTests : IClassFixture<DatabaseFixture>, IDisposable
 						cmd.ExecuteNonQuery();
 					}
 
-					Assert.Contains(";Port=" + initialPort + ";", db.SessionConnectionString,
-						StringComparison.OrdinalIgnoreCase);
+					Assert.Equal((int) initialPort, db.SessionEndPoint!.Port);
 					db.Close();
 				}
 
@@ -74,8 +73,7 @@ public class RedirectionTests : IClassFixture<DatabaseFixture>, IDisposable
 						cmd.ExecuteNonQuery();
 					}
 
-					Assert.Contains(";Port=" + initialPort + ";", db.SessionConnectionString,
-						StringComparison.OrdinalIgnoreCase);
+					Assert.Equal((int) initialPort, db.SessionEndPoint!.Port);
 					db.Close();
 				}
 
@@ -90,8 +88,7 @@ public class RedirectionTests : IClassFixture<DatabaseFixture>, IDisposable
 						cmd.ExecuteNonQuery();
 					}
 
-					Assert.Contains(";Port=" + proxy.ListenPort + ";", db.SessionConnectionString,
-						StringComparison.OrdinalIgnoreCase);
+					Assert.Equal(proxy.ListenPort, db.SessionEndPoint!.Port);
 					db.Close();
 				}
 

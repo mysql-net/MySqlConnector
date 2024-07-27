@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 #if NET6_0_OR_GREATER
 using System.Globalization;
 #endif
+using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
@@ -628,8 +629,6 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	public string? SessionConnectionString => m_session?.ConnectionString;
-
 	public override string Database => m_session?.DatabaseOverride ?? GetConnectionSettings().Database;
 
 	public override ConnectionState State => m_connectionState;
@@ -1103,6 +1102,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	internal bool SslIsMutuallyAuthenticated => m_session!.SslIsMutuallyAuthenticated;
 
 	internal SslProtocols SslProtocol => m_session!.SslProtocol;
+
+	internal IPEndPoint? SessionEndPoint => m_session!.IPEndPoint;
 
 	internal void SetState(ConnectionState newState)
 	{
