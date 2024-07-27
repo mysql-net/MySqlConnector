@@ -155,9 +155,16 @@ public class RedirectionTests : IClassFixture<DatabaseFixture>, IDisposable
         config.ListenPort = ((IPEndPoint) serverSocket.LocalEndPoint).Port;
         config.ServerSocket = serverSocket;
         while( config.RunServer ) {
-            Socket client = serverSocket.Accept();
-            Thread clientThread = new Thread( ClientThread );
-            clientThread.Start( new ClientContext() { Config = config, Client = client } );
+			try
+			{
+				Socket client = serverSocket.Accept();
+				Thread clientThread = new Thread(ClientThread);
+				clientThread.Start(new ClientContext() { Config = config, Client = client });
+			}
+			catch (SocketException) when (!config.RunServer)
+			{
+				return;
+			}
         }
     }
 
