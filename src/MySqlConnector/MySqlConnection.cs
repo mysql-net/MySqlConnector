@@ -1064,7 +1064,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				// only "fail over" and "random" load balancers supported without connection pooling
 				var loadBalancer = connectionSettings.LoadBalance == MySqlLoadBalance.Random && connectionSettings.HostNames!.Count > 1 ?
 					RandomLoadBalancer.Instance : FailOverLoadBalancer.Instance;
-				var session = await ServerSession.ConnectAndRedirectAsync(() => new ServerSession(m_logger), m_logger, null, connectionSettings, loadBalancer, this, null, startingTimestamp, null, actualIOBehavior, connectToken).ConfigureAwait(false);
+				var session = await ServerSession.ConnectAndRedirectAsync(m_logger, m_logger, NonPooledConnectionPoolMetadata.Instance, connectionSettings, loadBalancer, this, null, startingTimestamp, null, actualIOBehavior, connectToken).ConfigureAwait(false);
 				session.OwningConnection = new WeakReference<MySqlConnection>(this);
 				Log.CreatedNonPooledSession(m_logger, session.Id);
 				return session;
