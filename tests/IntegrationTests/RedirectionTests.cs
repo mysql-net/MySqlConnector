@@ -1,3 +1,4 @@
+#if !MYSQL_DATA
 using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
@@ -204,3 +205,4 @@ public class RedirectionTests : IClassFixture<DatabaseFixture>, IDisposable
 	readonly DatabaseFixture m_database;
 	private ServerConfiguration proxy;
 }
+#endif
