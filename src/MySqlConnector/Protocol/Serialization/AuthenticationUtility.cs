@@ -25,20 +25,22 @@ internal static class AuthenticationUtility
 	}
 
 	public static byte[] CreateAuthenticationResponse(ReadOnlySpan<byte> challenge, string password) =>
-		string.IsNullOrEmpty(password) ? [] : HashPassword(challenge, password, true);
+		string.IsNullOrEmpty(password) ? [] : HashPassword(challenge, password, false);
 
 	/// <summary>
 	/// Hashes a password with the "Secure Password Authentication" method.
 	/// </summary>
 	/// <param name="challenge">The 20-byte random challenge (from the "auth-plugin-data" in the initial handshake).</param>
 	/// <param name="password">The password to hash.</param>
-	/// <param name="withXor">must xor results.</param>
+	/// <param name="onlyHashPassword">If true, <paramref name="challenge"/> is ignored and only the twice-hashed password
+	/// is returned, instead of performing the full "secure password authentication" algorithm that XORs the hashed password against
+	/// a hash derived from the challenge.</param>
 	/// <returns>A 20-byte password hash.</returns>
 	/// <remarks>See <a href="https://dev.mysql.com/doc/internals/en/secure-password-authentication.html">Secure Password Authentication</a>.</remarks>
 #if NET5_0_OR_GREATER
 	[SkipLocalsInit]
 #endif
-	public static byte[] HashPassword(ReadOnlySpan<byte> challenge, string password, bool withXor)
+	public static byte[] HashPassword(ReadOnlySpan<byte> challenge, string password, bool onlyHashPassword)
 	{
 #if !NET5_0_OR_GREATER
 		using var sha1 = SHA1.Create();
@@ -56,7 +58,7 @@ internal static class AuthenticationUtility
 		sha1.TryComputeHash(passwordBytes, hashedPassword, out _);
 		sha1.TryComputeHash(hashedPassword, combined[20..], out _);
 #endif
-		if (!withXor)
+		if (onlyHashPassword)
 			return combined[20..].ToArray();
 
 		challenge[..20].CopyTo(combined);
