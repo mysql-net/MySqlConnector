@@ -44,7 +44,6 @@ internal static class AuthenticationUtility
 		using var sha1 = SHA1.Create();
 #endif
 		Span<byte> combined = stackalloc byte[40];
-		challenge.CopyTo(combined);
 
 		var passwordByteCount = Encoding.UTF8.GetByteCount(password);
 		Span<byte> passwordBytes = stackalloc byte[passwordByteCount];
@@ -57,8 +56,10 @@ internal static class AuthenticationUtility
 		sha1.TryComputeHash(passwordBytes, hashedPassword, out _);
 		sha1.TryComputeHash(hashedPassword, combined[20..], out _);
 #endif
-		if (!withXor) return combined[20..].ToArray();
+		if (!withXor)
+			return combined[20..].ToArray();
 
+		challenge[..20].CopyTo(combined);
 		Span<byte> xorBytes = stackalloc byte[20];
 #if NET5_0_OR_GREATER
 		SHA1.TryHashData(combined, xorBytes, out _);

@@ -624,7 +624,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 		switch (m_pluginName)
 		{
 			case "mysql_native_password":
-				passwordHashResult = AuthenticationUtility.HashPassword(challenge, password, false);
+				passwordHashResult = AuthenticationUtility.HashPassword([], password, false);
 				break;
 
 			case "client_ed25519":
