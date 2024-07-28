@@ -181,7 +181,10 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		csb.SslMode = MySqlSslMode.VerifyCA;
 		csb.SslCa = Path.Combine(AppConfig.CertsPath, "non-ca-client-cert.pem");
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.TlsFingerprintValidation))
+			await connection.OpenAsync();
+		else
+			await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
 	}
 
 #if !MYSQL_DATA
@@ -198,7 +201,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		connection.RemoteCertificateValidationCallback = (s, c, h, e) => true;
 
-		if (expectedSuccess)
+		if (expectedSuccess || AppConfig.SupportedFeatures.HasFlag(ServerFeatures.TlsFingerprintValidation))
 			await connection.OpenAsync();
 		else
 			await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
