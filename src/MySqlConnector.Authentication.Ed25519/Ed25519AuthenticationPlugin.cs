@@ -45,9 +45,6 @@ public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin2
 		return passwordHash;
 	}
 
-	/// <summary>
-	/// Creates the authentication response.
-	/// </summary>
 	private static void CreateResponseAndHash(string password, ReadOnlySpan<byte> authenticationData, out byte[] passwordHash, out byte[] authenticationResponse)
 	{
 		// Java reference: https://github.com/MariaDB/mariadb-connector-j/blob/master/src/main/java/org/mariadb/jdbc/internal/com/send/authentication/Ed25519PasswordPlugin.java

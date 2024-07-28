@@ -438,13 +438,13 @@ internal sealed partial class ServerSession : IServerCapabilities
 			var initialHandshake = InitialHandshakePayload.Create(payload.Span);
 
 			// if PluginAuth is supported, then use the specified auth plugin; else, fall back to protocol capabilities to determine the auth type to use
-			var authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0 ? initialHandshake.AuthPluginName! :
+			m_currentAuthenticationMethod = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0 ? initialHandshake.AuthPluginName! :
 				(initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" :
 				"mysql_native_password";
-			Log.ServerSentAuthPluginName(m_logger, Id, authPluginName);
-			if (authPluginName is not "mysql_native_password" and not "sha256_password" and not "caching_sha2_password")
+			Log.ServerSentAuthPluginName(m_logger, Id, m_currentAuthenticationMethod);
+			if (m_currentAuthenticationMethod is not "mysql_native_password" and not "sha256_password" and not "caching_sha2_password")
 			{
-				Log.UnsupportedAuthenticationMethod(m_logger, Id, authPluginName);
+				Log.UnsupportedAuthenticationMethod(m_logger, Id, m_currentAuthenticationMethod);
 				throw new NotSupportedException($"Authentication method '{initialHandshake.AuthPluginName}' is not supported.");
 			}
 
@@ -608,30 +608,27 @@ internal sealed partial class ServerSession : IServerCapabilities
 	}
 
 	/// <summary>
-	/// Validate SSL validation has
+	/// Validate SSL validation hash (from OK packet).
 	/// </summary>
-	/// <param name="validationHash">received validation hash</param>
-	/// <param name="challenge">initial seed</param>
-	/// <param name="password">password</param>
-	/// <returns>true if validated</returns>
+	/// <param name="validationHash">The validation hash received from the server.</param>
+	/// <param name="challenge">The auth plugin data from the initial handshake.</param>
+	/// <param name="password">The user's password.</param>
+	/// <returns><c>true</c> if the validation hash matches the locally-computed value; otherwise, <c>false</c>.</returns>
 	private bool ValidateFingerprint(byte[]? validationHash, ReadOnlySpan<byte> challenge, string password)
 	{
-		if (validationHash?.Length != 65)
+		// expect 0x01 followed by 64 hex characters giving a SHA2 hash
+		if (validationHash?.Length != 65 || validationHash[0] != 1)
 			return false;
 
-		// ensure using SHA256 encryption
-		if (validationHash[0] != 0x01)
-			throw new FormatException($"Unexpected validation hash format. expected 0x01 but got 0x{validationHash[0]:X2}");
-
 		byte[]? passwordHashResult = null;
-		switch (m_pluginName)
+		switch (m_currentAuthenticationMethod)
 		{
 			case "mysql_native_password":
 				passwordHashResult = AuthenticationUtility.HashPassword([], password, onlyHashPassword: true);
 				break;
 
 			case "client_ed25519":
-				AuthenticationPlugins.TryGetPlugin(m_pluginName, out var ed25519Plugin);
+				AuthenticationPlugins.TryGetPlugin(m_currentAuthenticationMethod, out var ed25519Plugin);
 				if (ed25519Plugin is IAuthenticationPlugin2 plugin2)
 					passwordHashResult = plugin2.CreatePasswordHash(password, challenge);
 				break;
@@ -836,7 +833,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 		// if the server didn't support the hashed password; rehash with the new challenge
 		var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload.Span);
 		Log.SwitchingToAuthenticationMethod(m_logger, Id, switchRequest.Name);
-		m_pluginName = switchRequest.Name;
+		m_currentAuthenticationMethod = switchRequest.Name;
 		switch (switchRequest.Name)
 		{
 			case "mysql_native_password":
@@ -2140,7 +2137,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private PayloadData m_setNamesPayload;
 	private byte[]? m_pipelinedResetConnectionBytes;
 	private Dictionary<string, PreparedStatements>? m_preparedStatements;
-	private string m_pluginName = "mysql_native_password";
+	private string? m_currentAuthenticationMethod;
 	private byte[]? m_remoteCertificateSha2Thumbprint;
 	private SslPolicyErrors m_sslPolicyErrors;
 }

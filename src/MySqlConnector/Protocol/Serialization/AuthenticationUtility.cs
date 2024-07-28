@@ -25,7 +25,7 @@ internal static class AuthenticationUtility
 	}
 
 	public static byte[] CreateAuthenticationResponse(ReadOnlySpan<byte> challenge, string password) =>
-		string.IsNullOrEmpty(password) ? [] : HashPassword(challenge, password, false);
+		string.IsNullOrEmpty(password) ? [] : HashPassword(challenge, password, onlyHashPassword: false);
 
 	/// <summary>
 	/// Hashes a password with the "Secure Password Authentication" method.

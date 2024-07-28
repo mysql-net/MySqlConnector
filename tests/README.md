@@ -27,6 +27,7 @@ Otherwise, set the following options appropriately:
   * `ErrorCodes`: server returns error codes in error packet (some MySQL proxies do not)
   * `Json`: the `JSON` data type (MySQL 5.7 and later)
   * `LargePackets`: large packets (over 4MB)
+  * `Redirection`: server supports sending redirection information in a server variable in the first OK packet
   * `RoundDateTime`: server rounds `datetime` values to the specified precision (not implemented in MariaDB)
   * `RsaEncryption`: server supports RSA public key encryption (for `sha256_password` and `caching_sha2_password`)
   * `SessionTrack`: server supports `CLIENT_SESSION_TRACK` capability (MySQL 5.7 and later)
@@ -36,9 +37,9 @@ Otherwise, set the following options appropriately:
   * `Tls11`: server supports TLS 1.1
   * `Tls12`: server supports TLS 1.2
   * `Tls13`: server supports TLS 1.3
+  * `TlsFingerprintValidation`: server provides a hash of the TLS certificate fingerprint in the first OK packet
   * `UnixDomainSocket`: server is accessible via a Unix domain socket
   * `UuidToBin`: server supports `UUID_TO_BIN` (MySQL 8.0 and later)
-  * `UnsupportedFeatures`: server supports
 
 ## Running Tests
 
