@@ -238,14 +238,6 @@ GRANT SELECT ON *.* TO 'sslUser'@'%'");
 	{
 		Ed25519AuthenticationPlugin.Install();
 		var csb = AppConfig.CreateConnectionStringBuilder();
-		try
-		{
-			await m_database.Connection.ExecuteAsync("INSTALL SONAME 'auth_ed25519'");
-		}
-		catch (Exception)
-		{
-			// eat if already installed
-		}
 		await m_database.Connection.ExecuteAsync(
 			@"CREATE USER IF NOT EXISTS 'sslUser'@'%' IDENTIFIED WITH ed25519 USING PASSWORD('!Passw0rd3Works') REQUIRE SSL;
 GRANT SELECT ON *.* TO 'sslUser'@'%'");
