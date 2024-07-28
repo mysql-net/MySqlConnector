@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 #if NET6_0_OR_GREATER
 using System.Globalization;
 #endif
+using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
@@ -1062,22 +1063,10 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				// only "fail over" and "random" load balancers supported without connection pooling
 				var loadBalancer = connectionSettings.LoadBalance == MySqlLoadBalance.Random && connectionSettings.HostNames!.Count > 1 ?
 					RandomLoadBalancer.Instance : FailOverLoadBalancer.Instance;
-
-				var session = new ServerSession(m_logger)
-				{
-					OwningConnection = new WeakReference<MySqlConnection>(this),
-				};
+				var session = await ServerSession.ConnectAndRedirectAsync(m_logger, m_logger, NonPooledConnectionPoolMetadata.Instance, connectionSettings, loadBalancer, this, null, startingTimestamp, null, actualIOBehavior, connectToken).ConfigureAwait(false);
+				session.OwningConnection = new WeakReference<MySqlConnection>(this);
 				Log.CreatedNonPooledSession(m_logger, session.Id);
-				try
-				{
-					_ = await session.ConnectAsync(connectionSettings, this, startingTimestamp, loadBalancer, activity, actualIOBehavior, connectToken).ConfigureAwait(false);
-					return session;
-				}
-				catch (Exception)
-				{
-					await session.DisposeAsync(actualIOBehavior, default).ConfigureAwait(false);
-					throw;
-				}
+				return session;
 			}
 		}
 		catch (OperationCanceledException) when (timeoutSource?.IsCancellationRequested is true)
@@ -1113,6 +1102,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	internal bool SslIsMutuallyAuthenticated => m_session!.SslIsMutuallyAuthenticated;
 
 	internal SslProtocols SslProtocol => m_session!.SslProtocol;
+
+	internal IPEndPoint? SessionEndPoint => m_session!.IPEndPoint;
 
 	internal void SetState(ConnectionState newState)
 	{

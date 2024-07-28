@@ -270,8 +270,12 @@ internal sealed class ConnectionSettings
 
 	private ConnectionSettings(ConnectionSettings other, string host, int port, string userId)
 	{
-		ConnectionStringBuilder = other.ConnectionStringBuilder;
-		ConnectionString = other.ConnectionString;
+		ConnectionStringBuilder = new MySqlConnectionStringBuilder(other.ConnectionString);
+		ConnectionStringBuilder.Port = (uint)port;
+		ConnectionStringBuilder.Server = host;
+		ConnectionStringBuilder.UserID = userId;
+
+		ConnectionString = ConnectionStringBuilder.ConnectionString;
 
 		ConnectionProtocol = MySqlConnectionProtocol.Sockets;
 		HostNames = [host];
