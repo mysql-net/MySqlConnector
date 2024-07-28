@@ -213,24 +213,13 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		// permit connection without any Ssl configuration.
 		// reference https://mariadb.org/mission-impossible-zero-configuration-ssl/
 		var csb = AppConfig.CreateConnectionStringBuilder();
-		await m_database.Connection.ExecuteAsync(
-			@"CREATE USER IF NOT EXISTS 'sslUser'@'%' IDENTIFIED WITH mysql_native_password USING PASSWORD('!Passw0rd3Works') REQUIRE SSL;
-GRANT SELECT ON *.* TO 'sslUser'@'%'");
-		try {
-			csb.CertificateFile = null;
-			csb.SslMode = MySqlSslMode.VerifyFull;
-			csb.SslCa = "";
-			csb.UserID = "sslUser";
-			csb.Password = "!Passw0rd3Works";
-			using var connection = new MySqlConnection(csb.ConnectionString);
-			await connection.OpenAsync();
-			connection.Close();
-		}
-		finally
-		{
-			await m_database.Connection.ExecuteAsync("DROP USER IF EXISTS 'sslUser'@'%'");
-			m_database.Connection.Close();
-		}
+		csb.CertificateFile = null;
+		csb.SslMode = MySqlSslMode.VerifyFull;
+		csb.SslCa = "";
+		csb.UserID = "ssltest";
+		csb.Password = "test";
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		await connection.OpenAsync();
 	}
 
 	[SkippableFact(ServerFeatures.TlsFingerprintValidation | ServerFeatures.Ed25519)]
@@ -238,24 +227,13 @@ GRANT SELECT ON *.* TO 'sslUser'@'%'");
 	{
 		Ed25519AuthenticationPlugin.Install();
 		var csb = AppConfig.CreateConnectionStringBuilder();
-		await m_database.Connection.ExecuteAsync(
-			@"CREATE USER IF NOT EXISTS 'sslUser'@'%' IDENTIFIED WITH ed25519 USING PASSWORD('!Passw0rd3Works') REQUIRE SSL;
-GRANT SELECT ON *.* TO 'sslUser'@'%'");
-		try {
-			csb.CertificateFile = null;
-			csb.SslMode = MySqlSslMode.VerifyFull;
-			csb.SslCa = "";
-			csb.UserID = "sslUser";
-			csb.Password = "!Passw0rd3Works";
-			using var connection = new MySqlConnection(csb.ConnectionString);
-			await connection.OpenAsync();
-			connection.Close();
-		}
-		finally
-		{
-			await m_database.Connection.ExecuteAsync("DROP USER IF EXISTS 'sslUser'@'%'");
-			m_database.Connection.Close();
-		}
+		csb.CertificateFile = null;
+		csb.SslMode = MySqlSslMode.VerifyFull;
+		csb.SslCa = "";
+		csb.UserID = "ed25519user";
+		csb.Password = "Ed255!9";
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		await connection.OpenAsync();
 	}
 #endif
 
