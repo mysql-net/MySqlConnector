@@ -628,9 +628,9 @@ internal sealed partial class ServerSession : IServerCapabilities
 				break;
 
 			case "client_ed25519":
-				AuthenticationPlugins.TryGetPlugin("client_ed25519", out var ed25519Plugin);
+				AuthenticationPlugins.TryGetPlugin(m_pluginName, out var ed25519Plugin);
 				if (ed25519Plugin is IAuthenticationPlugin2 plugin2)
-					passwordHashResult = plugin2!.CreatePasswordHash(password, challenge);
+					passwordHashResult = plugin2.CreatePasswordHash(password, challenge);
 				break;
 		}
 		if (passwordHashResult is null)
@@ -641,19 +641,34 @@ internal sealed partial class ServerSession : IServerCapabilities
 		challenge.CopyTo(combined[passwordHashResult.Length..]);
 		m_sha2Thumbprint!.CopyTo(combined[(passwordHashResult.Length + challenge.Length)..]);
 
-		byte[] hashBytes;
+		Span<byte> hashBytes = stackalloc byte[32];
 #if NET5_0_OR_GREATER
-		hashBytes = SHA256.HashData(combined);
+		SHA256.TryHashData(combined, hashBytes, out _);
 #else
-		using (var sha256 = SHA256.Create())
-		{
-			hashBytes = sha256.ComputeHash(combined.ToArray());
-		}
+		using var sha256 = SHA256.Create();
+		sha256.TryComputeHash(combined, hashBytes, out _);
 #endif
 
-		var clientGeneratedHash = hashBytes.Aggregate(string.Empty, (str, hashByte) => str + hashByte.ToString("X2", CultureInfo.InvariantCulture));
-		var serverGeneratedHash = Encoding.ASCII.GetString(validationHash, 1, validationHash.Length - 1);
-		return string.Equals(clientGeneratedHash, serverGeneratedHash, StringComparison.Ordinal);
+		Span<byte> serverHash = combined[0..32];
+		return TryConvertFromHexString(validationHash.AsSpan(1), serverHash) && serverHash.SequenceEqual(hashBytes);
+
+		static bool TryConvertFromHexString(ReadOnlySpan<byte> hexChars, Span<byte> data)
+		{
+			ReadOnlySpan<byte> hexDigits = "0123456789ABCDEFabcdef"u8;
+			for (var i = 0; i < hexChars.Length; i += 2)
+			{
+				var high = hexDigits.IndexOf(hexChars[i]);
+				var low = hexDigits.IndexOf(hexChars[i + 1]);
+				if (high == -1 || low == -1)
+					return false;
+				if (high > 15)
+					high -= 6;
+				if (low > 15)
+					low -= 6;
+				data[i / 2] = (byte) ((high << 4) | low);
+			}
+			return true;
+		}
 	}
 
 	public static async ValueTask<ServerSession> ConnectAndRedirectAsync(ILogger connectionLogger, ILogger poolLogger, IConnectionPoolMetadata pool, ConnectionSettings cs, ILoadBalancer? loadBalancer, MySqlConnection connection, Action<ILogger, int, string, Exception?>? logMessage, long startingTimestamp, Activity? activity, IOBehavior ioBehavior, CancellationToken cancellationToken)
