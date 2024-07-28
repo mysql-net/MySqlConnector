@@ -49,7 +49,6 @@ internal sealed partial class ServerSession : IServerCapabilities
 	public bool SupportsPerQueryVariables => ServerVersion.IsMariaDb && ServerVersion.Version >= ServerVersions.MariaDbSupportsPerQueryVariables;
 	public int ActiveCommandId { get; private set; }
 	public int CancellationTimeout { get; private set; }
-	public string? ConnectionString { get; private set; }
 	public int ConnectionId { get; set; }
 	public byte[]? AuthPluginData { get; set; }
 	public long CreatedTimestamp { get; }
@@ -402,16 +401,16 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 			// set activity tags
 			{
-				ConnectionString = cs.ConnectionStringBuilder.GetConnectionString(cs.ConnectionStringBuilder.PersistSecurityInfo);
+				var connectionString = cs.ConnectionStringBuilder.GetConnectionString(cs.ConnectionStringBuilder.PersistSecurityInfo);
 				m_activityTags.Add(ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue);
-				m_activityTags.Add(ActivitySourceHelper.DatabaseConnectionStringTagName, ConnectionString);
+				m_activityTags.Add(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionString);
 				m_activityTags.Add(ActivitySourceHelper.DatabaseUserTagName, cs.UserID);
 				if (cs.Database.Length != 0)
 					m_activityTags.Add(ActivitySourceHelper.DatabaseNameTagName, cs.Database);
 				if (activity is { IsAllDataRequested: true })
 				{
 					activity.SetTag(ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue)
-						.SetTag(ActivitySourceHelper.DatabaseConnectionStringTagName, ConnectionString)
+						.SetTag(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionString)
 						.SetTag(ActivitySourceHelper.DatabaseUserTagName, cs.UserID);
 					if (cs.Database.Length != 0)
 						activity.SetTag(ActivitySourceHelper.DatabaseNameTagName, cs.Database);

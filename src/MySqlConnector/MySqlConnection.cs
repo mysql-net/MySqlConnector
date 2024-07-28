@@ -629,8 +629,6 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		}
 	}
 
-	public string? SessionConnectionString => m_session?.ConnectionString;
-
 	public override string Database => m_session?.DatabaseOverride ?? GetConnectionSettings().Database;
 
 	public override ConnectionState State => m_connectionState;
