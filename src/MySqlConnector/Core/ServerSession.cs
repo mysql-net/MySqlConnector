@@ -639,7 +639,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 		Span<byte> combined = stackalloc byte[32 + challenge.Length + passwordHashResult.Length];
 		passwordHashResult.CopyTo(combined);
 		challenge.CopyTo(combined[passwordHashResult.Length..]);
-		m_sha2Thumbprint!.CopyTo(combined[(passwordHashResult.Length + challenge.Length)..]);
+		m_remoteCertificateSha2Thumbprint!.CopyTo(combined[(passwordHashResult.Length + challenge.Length)..]);
 
 		Span<byte> hashBytes = stackalloc byte[32];
 #if NET5_0_OR_GREATER
@@ -1593,13 +1593,13 @@ internal sealed partial class ServerSession : IServerCapabilities
 			if (rcbCertificate is X509Certificate2 cert2)
 			{
 				// saving sha256 thumbprint and SSL errors until thumbprint validation
-#if !NET5_0_OR_GREATER
-				using (var sha256 = SHA256.Create())
-				{
-					m_sha2Thumbprint = sha256.ComputeHash(cert2.RawData);
-				}
+#if NET7_0_OR_GREATER
+				m_remoteCertificateSha2Thumbprint = SHA256.HashData(cert2.RawDataMemory.Span);
+#elif NET5_0_OR_GREATER
+				m_remoteCertificateSha2Thumbprint = SHA256.HashData(cert2.RawData);
 #else
-				m_sha2Thumbprint = SHA256.HashData(cert2.RawData);
+				using var sha256 = SHA256.Create();
+				m_remoteCertificateSha2Thumbprint = sha256.ComputeHash(cert2.RawData);
 #endif
 				m_rcbPolicyErrors = rcbPolicyErrors;
 				return true;
@@ -2127,6 +2127,6 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private byte[]? m_pipelinedResetConnectionBytes;
 	private Dictionary<string, PreparedStatements>? m_preparedStatements;
 	private string m_pluginName = "mysql_native_password";
-	private byte[]? m_sha2Thumbprint;
+	private byte[]? m_remoteCertificateSha2Thumbprint;
 	private SslPolicyErrors m_rcbPolicyErrors;
 }
