@@ -201,6 +201,23 @@ internal static partial class Log
 	[LoggerMessage(EventIds.FailedToObtainPassword, LogLevel.Error, "Session {SessionId} failed to obtain password via ProvidePasswordCallback: {ExceptionMessage}")]
 	public static partial void FailedToObtainPassword(ILogger logger, Exception exception, string sessionId, string exceptionMessage);
 
+#if NETCOREAPP3_0_OR_GREATER
+	[LoggerMessage(EventIds.ConnectedTlsBasicPreliminary, LogLevel.Debug, "Session {SessionId} provisionally connected TLS with error {SslPolicyErrors} using {SslProtocol} and {NegotiatedCipherSuite}")]
+	public static partial void ConnectedTlsBasicPreliminary(ILogger logger, string sessionId, SslPolicyErrors sslPolicyErrors, SslProtocols sslProtocol, TlsCipherSuite negotiatedCipherSuite);
+#endif
+
+	[LoggerMessage(EventIds.ConnectedTlsDetailedPreliminary, LogLevel.Debug, "Session {SessionId} provisionally connected TLS with error {SslPolicyErrors} using {SslProtocol}, {CipherAlgorithm}, {HashAlgorithm}, {KeyExchangeAlgorithm}, {KeyExchangeStrength}")]
+	public static partial void ConnectedTlsDetailedPreliminary(ILogger logger, string sessionId, SslPolicyErrors sslPolicyErrors, SslProtocols sslProtocol, CipherAlgorithmType cipherAlgorithm, HashAlgorithmType hashAlgorithm, ExchangeAlgorithmType keyExchangeAlgorithm, int keyExchangeStrength);
+
+	[LoggerMessage(EventIds.CertificateErrorUnixSocket, LogLevel.Trace, "Session {SessionId} ignoring remote certificate error {SslPolicyErrors} due to Unix socket connection")]
+	public static partial void CertificateErrorUnixSocket(ILogger logger, string sessionId, SslPolicyErrors sslPolicyErrors);
+
+	[LoggerMessage(EventIds.CertificateErrorNoPassword, LogLevel.Trace, "Session {SessionId} acknowledging remote certificate error {SslPolicyErrors} due to passwordless connection")]
+	public static partial void CertificateErrorNoPassword(ILogger logger, string sessionId, SslPolicyErrors sslPolicyErrors);
+
+	[LoggerMessage(EventIds.CertificateErrorValidThumbprint, LogLevel.Trace, "Session {SessionId} ignoring remote certificate error {SslPolicyErrors} due to valid signature in OK packet")]
+	public static partial void CertificateErrorValidThumbprint(ILogger logger, string sessionId, SslPolicyErrors sslPolicyErrors);
+
 	[LoggerMessage(EventIds.IgnoringCancellationForCommand, LogLevel.Trace, "Ignoring cancellation for closed connection or invalid command {CommandId}")]
 	public static partial void IgnoringCancellationForCommand(ILogger logger, int commandId);
 

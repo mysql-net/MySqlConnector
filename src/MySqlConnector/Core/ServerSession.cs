@@ -528,26 +528,43 @@ internal sealed partial class ServerSession : IServerCapabilities
 			}
 
 			var ok = OkPayload.Create(payload.Span, this);
+
 			if (m_sslPolicyErrors != SslPolicyErrors.None)
 			{
-				// SSL would normally have thrown error, so connector need to ensure server certificates
+				// SSL would normally have thrown error, but this was suppressed in ValidateRemoteCertificate; now we need to verify the server certificate
 				// pass only if :
 				// * connection method is MitM-proof (e.g. unix socket)
 				// * auth plugin is MitM-proof and check SHA2(user's hashed password, scramble, certificate fingerprint)
-				if (cs.ConnectionProtocol != MySqlConnectionProtocol.UnixSocket)
-				{
-					if (string.IsNullOrEmpty(password) || !ValidateFingerprint(ok.StatusInfo, initialHandshake.AuthPluginData.AsSpan(0, 20), password!))
-					{
-						ShutdownSocket();
-						HostName = "";
-						lock (m_lock)
-							m_state = State.Failed;
+				// see https://mariadb.org/mission-impossible-zero-configuration-ssl/
+				var ignoreCertificateError = false;
 
-						// throw a MySqlException with an AuthenticationException InnerException to mimic what would have happened if ValidateRemoteCertificate returned false
-						var innerException = new AuthenticationException($"The remote certificate was rejected due to the following error: {m_sslPolicyErrors}");
-						Log.CouldNotInitializeTlsConnection(m_logger, innerException, Id);
-						throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL Authentication Error", innerException);
-					}
+				if (cs.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket)
+				{
+					Log.CertificateErrorUnixSocket(m_logger, Id, m_sslPolicyErrors);
+					ignoreCertificateError = true;
+				}
+				else if (string.IsNullOrEmpty(password))
+				{
+					// there is no shared secret that can be used to validate the certificate
+					Log.CertificateErrorNoPassword(m_logger, Id, m_sslPolicyErrors);
+				}
+				else if (ValidateFingerprint(ok.StatusInfo, initialHandshake.AuthPluginData.AsSpan(0, 20), password))
+				{
+					Log.CertificateErrorValidThumbprint(m_logger, Id, m_sslPolicyErrors);
+					ignoreCertificateError = true;
+				}
+
+				if (!ignoreCertificateError)
+				{
+					ShutdownSocket();
+					HostName = "";
+					lock (m_lock)
+						m_state = State.Failed;
+
+					// throw a MySqlException with an AuthenticationException InnerException to mimic what would have happened if ValidateRemoteCertificate returned false
+					var innerException = new AuthenticationException($"The remote certificate was rejected due to the following error: {m_sslPolicyErrors}");
+					Log.CouldNotInitializeTlsConnection(m_logger, innerException, Id);
+					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL Authentication Error", innerException);
 				}
 			}
 
@@ -1664,11 +1681,22 @@ internal sealed partial class ServerSession : IServerCapabilities
 			m_payloadHandler!.ByteHandler = sslByteHandler;
 			m_isSecureConnection = true;
 			m_sslStream = sslStream;
+			if (m_sslPolicyErrors != SslPolicyErrors.None)
+			{
 #if NETCOREAPP3_0_OR_GREATER
-			Log.ConnectedTlsBasic(m_logger, Id, sslStream.SslProtocol, sslStream.NegotiatedCipherSuite);
+				Log.ConnectedTlsBasicPreliminary(m_logger, Id, m_sslPolicyErrors, sslStream.SslProtocol, sslStream.NegotiatedCipherSuite);
 #else
-			Log.ConnectedTlsDetailed(m_logger, Id, sslStream.SslProtocol, sslStream.CipherAlgorithm, sslStream.HashAlgorithm, sslStream.KeyExchangeAlgorithm, sslStream.KeyExchangeStrength);
+				Log.ConnectedTlsDetailedPreliminary(m_logger, Id, m_sslPolicyErrors, sslStream.SslProtocol, sslStream.CipherAlgorithm, sslStream.HashAlgorithm, sslStream.KeyExchangeAlgorithm, sslStream.KeyExchangeStrength);
 #endif
+			}
+			else
+			{
+#if NETCOREAPP3_0_OR_GREATER
+				Log.ConnectedTlsBasic(m_logger, Id, sslStream.SslProtocol, sslStream.NegotiatedCipherSuite);
+#else
+				Log.ConnectedTlsDetailed(m_logger, Id, sslStream.SslProtocol, sslStream.CipherAlgorithm, sslStream.HashAlgorithm, sslStream.KeyExchangeAlgorithm, sslStream.KeyExchangeStrength);
+#endif
+			}
 		}
 		catch (Exception ex)
 		{
