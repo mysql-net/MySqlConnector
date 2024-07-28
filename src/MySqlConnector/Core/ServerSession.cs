@@ -18,9 +18,6 @@ using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
-#if NET5_0_OR_GREATER
-using System.Runtime.CompilerServices;
-#endif
 
 namespace MySqlConnector.Core;
 
@@ -539,8 +536,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				// * auth plugin is MitM-proof and check SHA2(user's hashed password, scramble, certificate fingerprint)
 				if (cs.ConnectionProtocol != MySqlConnectionProtocol.UnixSocket)
 				{
-					if (string.IsNullOrEmpty(password) ||
-					    !ValidateFingerPrint(ok.StatusInfo, initialHandshake.AuthPluginData, password!))
+					if (string.IsNullOrEmpty(password) || !ValidateFingerprint(ok.StatusInfo, initialHandshake.AuthPluginData.AsSpan(0, 20), password!))
 					{
 						// fingerprint validation fail.
 						// now throwing SSL exception depending on m_rcbPolicyErrors
@@ -615,15 +611,16 @@ internal sealed partial class ServerSession : IServerCapabilities
 	/// <param name="challenge">initial seed</param>
 	/// <param name="password">password</param>
 	/// <returns>true if validated</returns>
-	private bool ValidateFingerPrint(byte[]? validationHash, ReadOnlySpan<byte> challenge, string password)
+	private bool ValidateFingerprint(byte[]? validationHash, ReadOnlySpan<byte> challenge, string password)
 	{
-		if (validationHash is null || validationHash.Length == 0) return false;
+		if (validationHash?.Length != 65)
+			return false;
 
 		// ensure using SHA256 encryption
 		if (validationHash[0] != 0x01)
 			throw new FormatException($"Unexpected validation hash format. expected 0x01 but got 0x{validationHash[0]:X2}");
 
-		byte[] passwordHashResult;
+		byte[]? passwordHashResult = null;
 		switch (m_pluginName)
 		{
 			case "mysql_native_password":
@@ -632,17 +629,17 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 			case "client_ed25519":
 				AuthenticationPlugins.TryGetPlugin("client_ed25519", out var ed25519Plugin);
-				passwordHashResult = ed25519Plugin!.CreatePasswordHash(password, challenge);
+				if (ed25519Plugin is IAuthenticationPlugin2 plugin2)
+					passwordHashResult = plugin2!.CreatePasswordHash(password, challenge);
 				break;
-
-			default:
-				return false;
 		}
+		if (passwordHashResult is null)
+			return false;
 
-		Span<byte> combined = stackalloc byte[32 + (challenge.Length - 1) + passwordHashResult.Length];
+		Span<byte> combined = stackalloc byte[32 + challenge.Length + passwordHashResult.Length];
 		passwordHashResult.CopyTo(combined);
 		challenge.CopyTo(combined[passwordHashResult.Length..]);
-		m_sha2Thumbprint!.CopyTo(combined[(passwordHashResult.Length + challenge.Length - 1)..]);
+		m_sha2Thumbprint!.CopyTo(combined[(passwordHashResult.Length + challenge.Length)..]);
 
 		byte[] hashBytes;
 #if NET5_0_OR_GREATER
