@@ -528,7 +528,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			}
 
 			var ok = OkPayload.Create(payload.Span, this);
-			if (m_rcbPolicyErrors != SslPolicyErrors.None)
+			if (m_sslPolicyErrors != SslPolicyErrors.None)
 			{
 				// SSL would normally have thrown error, so connector need to ensure server certificates
 				// pass only if :
@@ -538,29 +538,15 @@ internal sealed partial class ServerSession : IServerCapabilities
 				{
 					if (string.IsNullOrEmpty(password) || !ValidateFingerprint(ok.StatusInfo, initialHandshake.AuthPluginData.AsSpan(0, 20), password!))
 					{
-						// fingerprint validation fail.
-						// now throwing SSL exception depending on m_rcbPolicyErrors
 						ShutdownSocket();
 						HostName = "";
-						lock (m_lock) m_state = State.Failed;
-						MySqlException ex;
-						switch (m_rcbPolicyErrors)
-						{
-							case SslPolicyErrors.RemoteCertificateNotAvailable:
-								// impossible
-								ex = new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL not validated, no remote certificate available");
-								break;
+						lock (m_lock)
+							m_state = State.Failed;
 
-							case SslPolicyErrors.RemoteCertificateNameMismatch:
-								ex = new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL not validated, certificate name mismatch");
-								break;
-
-							default:
-								ex = new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL not validated, certificate chain validation fail");
-								break;
-						}
-						Log.CouldNotInitializeTlsConnection(m_logger, ex, Id);
-						throw ex;
+						// throw a MySqlException with an AuthenticationException InnerException to mimic what would have happened if ValidateRemoteCertificate returned false
+						var innerException = new AuthenticationException($"The remote certificate was rejected due to the following error: {m_sslPolicyErrors}");
+						Log.CouldNotInitializeTlsConnection(m_logger, innerException, Id);
+						throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL Authentication Error", innerException);
 					}
 				}
 			}
@@ -1601,7 +1587,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				using var sha256 = SHA256.Create();
 				m_remoteCertificateSha2Thumbprint = sha256.ComputeHash(cert2.RawData);
 #endif
-				m_rcbPolicyErrors = rcbPolicyErrors;
+				m_sslPolicyErrors = rcbPolicyErrors;
 				return true;
 			}
 
@@ -2128,5 +2114,5 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private Dictionary<string, PreparedStatements>? m_preparedStatements;
 	private string m_pluginName = "mysql_native_password";
 	private byte[]? m_remoteCertificateSha2Thumbprint;
-	private SslPolicyErrors m_rcbPolicyErrors;
+	private SslPolicyErrors m_sslPolicyErrors;
 }
