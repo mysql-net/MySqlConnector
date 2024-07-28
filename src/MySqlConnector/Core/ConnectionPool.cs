@@ -8,9 +8,15 @@ using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Core;
 
-internal sealed class ConnectionPool : IDisposable
+internal sealed class ConnectionPool : IConnectionPoolMetadata, IDisposable
 {
 	public int Id { get; }
+
+	ConnectionPool? IConnectionPoolMetadata.ConnectionPool => this;
+
+	int IConnectionPoolMetadata.Generation => m_generation;
+
+	int IConnectionPoolMetadata.GetNewSessionId() => Interlocked.Increment(ref m_lastSessionId); 
 
 	public string? Name { get; }
 
@@ -111,11 +117,8 @@ internal sealed class ConnectionPool : IDisposable
 			}
 
 			// create a new session
-			session = await ServerSession.ConnectAndRedirectAsync(
-					() => new ServerSession(m_connectionLogger, this, m_generation,
-						Interlocked.Increment(ref m_lastSessionId)), m_logger, Id, ConnectionSettings, m_loadBalancer,
-					connection, s_createdNewSession, startingTimestamp, activity, ioBehavior, cancellationToken)
-				.ConfigureAwait(false);
+			session = await ServerSession.ConnectAndRedirectAsync(m_connectionLogger, m_logger, this, ConnectionSettings, m_loadBalancer,
+				connection, s_createdNewSession, startingTimestamp, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 			AdjustHostConnectionCount(session, 1);
 			session.OwningConnection = new(connection);
 			int leasedSessionsCountNew;
@@ -411,11 +414,8 @@ internal sealed class ConnectionPool : IDisposable
 
 			try
 			{
-				var session = await ServerSession.ConnectAndRedirectAsync(
-					() => new ServerSession(m_connectionLogger, this, m_generation,
-						Interlocked.Increment(ref m_lastSessionId)), m_logger, Id, ConnectionSettings, m_loadBalancer,
-					connection, s_createdToReachMinimumPoolSize, Stopwatch.GetTimestamp(), null, ioBehavior,
-					cancellationToken).ConfigureAwait(false);
+				var session = await ServerSession.ConnectAndRedirectAsync(m_connectionLogger, m_logger, this, ConnectionSettings, m_loadBalancer,
+					connection, s_createdToReachMinimumPoolSize, Stopwatch.GetTimestamp(), null, ioBehavior, cancellationToken).ConfigureAwait(false);
 				AdjustHostConnectionCount(session, 1);
 				lock (m_sessions)
 					_ = m_sessions.AddFirst(session);
