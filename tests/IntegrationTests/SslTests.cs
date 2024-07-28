@@ -1,7 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using MySqlConnector.Authentication.Ed25519;
 
 namespace IntegrationTests;
 
@@ -206,7 +205,6 @@ public class SslTests : IClassFixture<DatabaseFixture>
 	}
 #endif
 
-#if !MYSQL_DATA
 	[SkippableFact(ServerFeatures.TlsFingerprintValidation)]
 	public async Task ConnectZeroConfigurationSslNative()
 	{
@@ -222,10 +220,11 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		await connection.OpenAsync();
 	}
 
+#if !MYSQL_DATA
 	[SkippableFact(ServerFeatures.TlsFingerprintValidation | ServerFeatures.Ed25519)]
 	public async Task ConnectZeroConfigurationSslEd25519()
 	{
-		Ed25519AuthenticationPlugin.Install();
+		MySqlConnector.Authentication.Ed25519.Ed25519AuthenticationPlugin.Install();
 		var csb = AppConfig.CreateConnectionStringBuilder();
 		csb.CertificateFile = null;
 		csb.SslMode = MySqlSslMode.VerifyFull;
