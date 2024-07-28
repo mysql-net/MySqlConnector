@@ -233,7 +233,7 @@ GRANT SELECT ON *.* TO 'sslUser'@'%'");
 		}
 	}
 
-	[SkippableFact(new ServerFeatures[]{ServerFeatures.TlsFingerprintValidation,ServerFeatures.Ed25519})]
+	[SkippableFact(ServerFeatures.TlsFingerprintValidation | ServerFeatures.Ed25519)]
 	public async Task ConnectZeroConfigurationSslEd25519()
 	{
 		Ed25519AuthenticationPlugin.Install();
