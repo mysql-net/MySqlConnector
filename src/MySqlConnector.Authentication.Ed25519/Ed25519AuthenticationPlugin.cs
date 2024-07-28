@@ -1,6 +1,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using Chaos.NaCl.Internal.Ed25519Ref10;
 
 namespace MySqlConnector.Authentication.Ed25519;
@@ -17,11 +18,8 @@ public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin
 	/// </summary>
 	public static void Install()
 	{
-		if (!s_isInstalled)
-		{
+		if (Interlocked.CompareExchange(ref s_isInstalled, 1, 0) == 0)
 			AuthenticationPlugins.Register(new Ed25519AuthenticationPlugin());
-			s_isInstalled = true;
-		}
 	}
 
 	/// <summary>
@@ -184,5 +182,5 @@ public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin
 	{
 	}
 
-	private static bool s_isInstalled;
+	private static int s_isInstalled;
 }
