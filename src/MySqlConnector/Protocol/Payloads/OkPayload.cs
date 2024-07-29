@@ -12,7 +12,7 @@ internal sealed class OkPayload
 	public ulong LastInsertId { get; }
 	public ServerStatus ServerStatus { get; }
 	public int WarningCount { get; }
-	public string? StatusInfo { get; }
+	public byte[]? StatusInfo { get; }
 	public string? NewSchema { get; }
 	public CharacterSet? NewCharacterSet { get; }
 	public int? NewConnectionId { get; }
@@ -152,7 +152,7 @@ internal sealed class OkPayload
 
 		if (createPayload)
 		{
-			var statusInfo = statusBytes.Length == 0 ? null : Encoding.UTF8.GetString(statusBytes);
+			var statusInfo = statusBytes.Length == 0 ? null : statusBytes.ToArray();
 
 			// detect the connection character set as utf8mb4 (or utf8) if all three system variables are set to the same value
 			var characterSet = clientCharacterSet == CharacterSet.Utf8Mb4Binary && connectionCharacterSet == CharacterSet.Utf8Mb4Binary && resultsCharacterSet == CharacterSet.Utf8Mb4Binary ? CharacterSet.Utf8Mb4Binary :
@@ -175,7 +175,7 @@ internal sealed class OkPayload
 		}
 	}
 
-	private OkPayload(ulong affectedRowCount, ulong lastInsertId, ServerStatus serverStatus, int warningCount, string? statusInfo, string? newSchema, CharacterSet newCharacterSet, int? connectionId, string? redirectionUrl)
+	private OkPayload(ulong affectedRowCount, ulong lastInsertId, ServerStatus serverStatus, int warningCount, byte[]? statusInfo, string? newSchema, CharacterSet newCharacterSet, int? connectionId, string? redirectionUrl)
 	{
 		AffectedRowCount = affectedRowCount;
 		LastInsertId = lastInsertId;

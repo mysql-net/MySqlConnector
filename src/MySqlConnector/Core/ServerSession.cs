@@ -438,13 +438,13 @@ internal sealed partial class ServerSession : IServerCapabilities
 			var initialHandshake = InitialHandshakePayload.Create(payload.Span);
 
 			// if PluginAuth is supported, then use the specified auth plugin; else, fall back to protocol capabilities to determine the auth type to use
-			var authPluginName = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0 ? initialHandshake.AuthPluginName! :
+			m_currentAuthenticationMethod = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0 ? initialHandshake.AuthPluginName! :
 				(initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" :
 				"mysql_native_password";
-			Log.ServerSentAuthPluginName(m_logger, Id, authPluginName);
-			if (authPluginName is not "mysql_native_password" and not "sha256_password" and not "caching_sha2_password")
+			Log.ServerSentAuthPluginName(m_logger, Id, m_currentAuthenticationMethod);
+			if (m_currentAuthenticationMethod is not "mysql_native_password" and not "sha256_password" and not "caching_sha2_password")
 			{
-				Log.UnsupportedAuthenticationMethod(m_logger, Id, authPluginName);
+				Log.UnsupportedAuthenticationMethod(m_logger, Id, m_currentAuthenticationMethod);
 				throw new NotSupportedException($"Authentication method '{initialHandshake.AuthPluginName}' is not supported.");
 			}
 
@@ -528,6 +528,46 @@ internal sealed partial class ServerSession : IServerCapabilities
 			}
 
 			var ok = OkPayload.Create(payload.Span, this);
+
+			if (m_sslPolicyErrors != SslPolicyErrors.None)
+			{
+				// SSL would normally have thrown error, but this was suppressed in ValidateRemoteCertificate; now we need to verify the server certificate
+				// pass only if :
+				// * connection method is MitM-proof (e.g. unix socket)
+				// * auth plugin is MitM-proof and check SHA2(user's hashed password, scramble, certificate fingerprint)
+				// see https://mariadb.org/mission-impossible-zero-configuration-ssl/
+				var ignoreCertificateError = false;
+
+				if (cs.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket)
+				{
+					Log.CertificateErrorUnixSocket(m_logger, Id, m_sslPolicyErrors);
+					ignoreCertificateError = true;
+				}
+				else if (string.IsNullOrEmpty(password))
+				{
+					// there is no shared secret that can be used to validate the certificate
+					Log.CertificateErrorNoPassword(m_logger, Id, m_sslPolicyErrors);
+				}
+				else if (ValidateFingerprint(ok.StatusInfo, initialHandshake.AuthPluginData.AsSpan(0, 20), password))
+				{
+					Log.CertificateErrorValidThumbprint(m_logger, Id, m_sslPolicyErrors);
+					ignoreCertificateError = true;
+				}
+
+				if (!ignoreCertificateError)
+				{
+					ShutdownSocket();
+					HostName = "";
+					lock (m_lock)
+						m_state = State.Failed;
+
+					// throw a MySqlException with an AuthenticationException InnerException to mimic what would have happened if ValidateRemoteCertificate returned false
+					var innerException = new AuthenticationException($"The remote certificate was rejected due to the following error: {m_sslPolicyErrors}");
+					Log.CouldNotInitializeTlsConnection(m_logger, innerException, Id);
+					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "SSL Authentication Error", innerException);
+				}
+			}
+
 			var redirectionUrl = ok.RedirectionUrl;
 
 			if (m_useCompression)
@@ -564,6 +604,70 @@ internal sealed partial class ServerSession : IServerCapabilities
 		{
 			Log.CouldNotConnectToServer(m_logger, ex, Id);
 			throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, "Couldn't connect to server", ex);
+		}
+	}
+
+	/// <summary>
+	/// Validate SSL validation hash (from OK packet).
+	/// </summary>
+	/// <param name="validationHash">The validation hash received from the server.</param>
+	/// <param name="challenge">The auth plugin data from the initial handshake.</param>
+	/// <param name="password">The user's password.</param>
+	/// <returns><c>true</c> if the validation hash matches the locally-computed value; otherwise, <c>false</c>.</returns>
+	private bool ValidateFingerprint(byte[]? validationHash, ReadOnlySpan<byte> challenge, string password)
+	{
+		// expect 0x01 followed by 64 hex characters giving a SHA2 hash
+		if (validationHash?.Length != 65 || validationHash[0] != 1)
+			return false;
+
+		byte[]? passwordHashResult = null;
+		switch (m_currentAuthenticationMethod)
+		{
+			case "mysql_native_password":
+				passwordHashResult = AuthenticationUtility.HashPassword([], password, onlyHashPassword: true);
+				break;
+
+			case "client_ed25519":
+				AuthenticationPlugins.TryGetPlugin(m_currentAuthenticationMethod, out var ed25519Plugin);
+				if (ed25519Plugin is IAuthenticationPlugin2 plugin2)
+					passwordHashResult = plugin2.CreatePasswordHash(password, challenge);
+				break;
+		}
+		if (passwordHashResult is null)
+			return false;
+
+		Span<byte> combined = stackalloc byte[32 + challenge.Length + passwordHashResult.Length];
+		passwordHashResult.CopyTo(combined);
+		challenge.CopyTo(combined[passwordHashResult.Length..]);
+		m_remoteCertificateSha2Thumbprint!.CopyTo(combined[(passwordHashResult.Length + challenge.Length)..]);
+
+		Span<byte> hashBytes = stackalloc byte[32];
+#if NET5_0_OR_GREATER
+		SHA256.TryHashData(combined, hashBytes, out _);
+#else
+		using var sha256 = SHA256.Create();
+		sha256.TryComputeHash(combined, hashBytes, out _);
+#endif
+
+		Span<byte> serverHash = combined[0..32];
+		return TryConvertFromHexString(validationHash.AsSpan(1), serverHash) && serverHash.SequenceEqual(hashBytes);
+
+		static bool TryConvertFromHexString(ReadOnlySpan<byte> hexChars, Span<byte> data)
+		{
+			ReadOnlySpan<byte> hexDigits = "0123456789ABCDEFabcdef"u8;
+			for (var i = 0; i < hexChars.Length; i += 2)
+			{
+				var high = hexDigits.IndexOf(hexChars[i]);
+				var low = hexDigits.IndexOf(hexChars[i + 1]);
+				if (high == -1 || low == -1)
+					return false;
+				if (high > 15)
+					high -= 6;
+				if (low > 15)
+					low -= 6;
+				data[i / 2] = (byte) ((high << 4) | low);
+			}
+			return true;
 		}
 	}
 
@@ -729,6 +833,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 		// if the server didn't support the hashed password; rehash with the new challenge
 		var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload.Span);
 		Log.SwitchingToAuthenticationMethod(m_logger, Id, switchRequest.Name);
+		m_currentAuthenticationMethod = switchRequest.Name;
 		switch (switchRequest.Name)
 		{
 			case "mysql_native_password":
@@ -1485,6 +1590,21 @@ internal sealed partial class ServerSession : IServerCapabilities
 			if (cs.SslMode == MySqlSslMode.VerifyCA)
 				rcbPolicyErrors &= ~SslPolicyErrors.RemoteCertificateNameMismatch;
 
+			if (rcbCertificate is X509Certificate2 cert2)
+			{
+				// saving sha256 thumbprint and SSL errors until thumbprint validation
+#if NET7_0_OR_GREATER
+				m_remoteCertificateSha2Thumbprint = SHA256.HashData(cert2.RawDataMemory.Span);
+#elif NET5_0_OR_GREATER
+				m_remoteCertificateSha2Thumbprint = SHA256.HashData(cert2.RawData);
+#else
+				using var sha256 = SHA256.Create();
+				m_remoteCertificateSha2Thumbprint = sha256.ComputeHash(cert2.RawData);
+#endif
+				m_sslPolicyErrors = rcbPolicyErrors;
+				return true;
+			}
+
 			return rcbPolicyErrors == SslPolicyErrors.None;
 		}
 
@@ -1558,11 +1678,22 @@ internal sealed partial class ServerSession : IServerCapabilities
 			m_payloadHandler!.ByteHandler = sslByteHandler;
 			m_isSecureConnection = true;
 			m_sslStream = sslStream;
+			if (m_sslPolicyErrors != SslPolicyErrors.None)
+			{
 #if NETCOREAPP3_0_OR_GREATER
-			Log.ConnectedTlsBasic(m_logger, Id, sslStream.SslProtocol, sslStream.NegotiatedCipherSuite);
+				Log.ConnectedTlsBasicPreliminary(m_logger, Id, m_sslPolicyErrors, sslStream.SslProtocol, sslStream.NegotiatedCipherSuite);
 #else
-			Log.ConnectedTlsDetailed(m_logger, Id, sslStream.SslProtocol, sslStream.CipherAlgorithm, sslStream.HashAlgorithm, sslStream.KeyExchangeAlgorithm, sslStream.KeyExchangeStrength);
+				Log.ConnectedTlsDetailedPreliminary(m_logger, Id, m_sslPolicyErrors, sslStream.SslProtocol, sslStream.CipherAlgorithm, sslStream.HashAlgorithm, sslStream.KeyExchangeAlgorithm, sslStream.KeyExchangeStrength);
 #endif
+			}
+			else
+			{
+#if NETCOREAPP3_0_OR_GREATER
+				Log.ConnectedTlsBasic(m_logger, Id, sslStream.SslProtocol, sslStream.NegotiatedCipherSuite);
+#else
+				Log.ConnectedTlsDetailed(m_logger, Id, sslStream.SslProtocol, sslStream.CipherAlgorithm, sslStream.HashAlgorithm, sslStream.KeyExchangeAlgorithm, sslStream.KeyExchangeStrength);
+#endif
+			}
 		}
 		catch (Exception ex)
 		{
@@ -2006,4 +2137,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private PayloadData m_setNamesPayload;
 	private byte[]? m_pipelinedResetConnectionBytes;
 	private Dictionary<string, PreparedStatements>? m_preparedStatements;
+	private string? m_currentAuthenticationMethod;
+	private byte[]? m_remoteCertificateSha2Thumbprint;
+	private SslPolicyErrors m_sslPolicyErrors;
 }

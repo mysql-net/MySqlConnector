@@ -147,7 +147,7 @@ public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 
 		using var dataSource = builder.Build();
 		using var connection = dataSource.CreateConnection();
-		if (expectedSuccess)
+		if (expectedSuccess || AppConfig.SupportedFeatures.HasFlag(ServerFeatures.TlsFingerprintValidation))
 			await connection.OpenAsync();
 		else
 			await Assert.ThrowsAsync<MySqlException>(connection.OpenAsync);

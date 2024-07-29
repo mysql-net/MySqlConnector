@@ -1,6 +1,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using Chaos.NaCl.Internal.Ed25519Ref10;
 
 namespace MySqlConnector.Authentication.Ed25519;
@@ -9,7 +10,7 @@ namespace MySqlConnector.Authentication.Ed25519;
 /// Provides an implementation of the <c>client_ed25519</c> authentication plugin for MariaDB.
 /// </summary>
 /// <remarks>See <a href="https://mariadb.com/kb/en/library/authentication-plugin-ed25519/">Authentication Plugin - ed25519</a>.</remarks>
-public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin
+public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin2
 {
 	/// <summary>
 	/// Registers the Ed25519 authentication plugin with MySqlConnector. You must call this method once before
@@ -17,11 +18,8 @@ public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin
 	/// </summary>
 	public static void Install()
 	{
-		if (!s_isInstalled)
-		{
+		if (Interlocked.CompareExchange(ref s_isInstalled, 1, 0) == 0)
 			AuthenticationPlugins.Register(new Ed25519AuthenticationPlugin());
-			s_isInstalled = true;
-		}
 	}
 
 	/// <summary>
@@ -33,6 +31,21 @@ public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin
 	/// Creates the authentication response.
 	/// </summary>
 	public byte[] CreateResponse(string password, ReadOnlySpan<byte> authenticationData)
+	{
+		CreateResponseAndHash(password, authenticationData, out _, out var authenticationResponse);
+		return authenticationResponse;
+	}
+
+	/// <summary>
+	/// Creates the Ed25519 password hash.
+	/// </summary>
+	public byte[] CreatePasswordHash(string password, ReadOnlySpan<byte> authenticationData)
+	{
+		CreateResponseAndHash(password, authenticationData, out var passwordHash, out _);
+		return passwordHash;
+	}
+
+	private static void CreateResponseAndHash(string password, ReadOnlySpan<byte> authenticationData, out byte[] passwordHash, out byte[] authenticationResponse)
 	{
 		// Java reference: https://github.com/MariaDB/mariadb-connector-j/blob/master/src/main/java/org/mariadb/jdbc/internal/com/send/authentication/Ed25519PasswordPlugin.java
 		// C reference:  https://github.com/MariaDB/server/blob/592fe954ef82be1bc08b29a8e54f7729eb1e1343/plugin/auth_ed25519/ref10/sign.c#L7
@@ -111,6 +124,9 @@ public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin
 		GroupOperations.ge_scalarmult_base(out var A, az, 0);
 		GroupOperations.ge_p3_tobytes(sm, 32, ref A);
 
+		passwordHash = new byte[32];
+		Array.Copy(sm, 32, passwordHash, 0, 32);
+
 		/*** Java
 			nonce = scalar.reduce(nonce);
 			GroupElement elementRvalue = spec.getB().scalarMultiply(nonce);
@@ -154,12 +170,12 @@ public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin
 
 		var result = new byte[64];
 		Buffer.BlockCopy(sm, 0, result, 0, result.Length);
-		return result;
+		authenticationResponse = result;
 	}
 
 	private Ed25519AuthenticationPlugin()
 	{
 	}
 
-	private static bool s_isInstalled;
+	private static int s_isInstalled;
 }

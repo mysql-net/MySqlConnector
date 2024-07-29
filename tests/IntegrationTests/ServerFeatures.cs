@@ -37,7 +37,12 @@ public enum ServerFeatures
 	CancelSleepSuccessfully = 0x40_0000,
 
 	/// <summary>
-	/// Server permit redirection, available on first OK_Packet
+	/// Server permits redirection (sent as a server variable in first OK packet).
 	/// </summary>
 	Redirection = 0x80_0000,
+
+	/// <summary>
+	/// Server provides hash of TLS certificate in first OK packet.
+	/// </summary>
+	TlsFingerprintValidation = 0x100_0000,
 }

@@ -181,7 +181,10 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		csb.SslMode = MySqlSslMode.VerifyCA;
 		csb.SslCa = Path.Combine(AppConfig.CertsPath, "non-ca-client-cert.pem");
 		using var connection = new MySqlConnection(csb.ConnectionString);
-		await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.TlsFingerprintValidation))
+			await connection.OpenAsync();
+		else
+			await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
 	}
 
 #if !MYSQL_DATA
@@ -198,10 +201,41 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		connection.RemoteCertificateValidationCallback = (s, c, h, e) => true;
 
-		if (expectedSuccess)
+		if (expectedSuccess || AppConfig.SupportedFeatures.HasFlag(ServerFeatures.TlsFingerprintValidation))
 			await connection.OpenAsync();
 		else
 			await Assert.ThrowsAsync<MySqlException>(async () => await connection.OpenAsync());
+	}
+#endif
+
+	[SkippableFact(ServerFeatures.TlsFingerprintValidation)]
+	public async Task ConnectZeroConfigurationSslNative()
+	{
+		// permit connection without any Ssl configuration.
+		// reference https://mariadb.org/mission-impossible-zero-configuration-ssl/
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.CertificateFile = null;
+		csb.SslMode = MySqlSslMode.VerifyFull;
+		csb.SslCa = "";
+		csb.UserID = "ssltest";
+		csb.Password = "test";
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		await connection.OpenAsync();
+	}
+
+#if !MYSQL_DATA
+	[SkippableFact(ServerFeatures.TlsFingerprintValidation | ServerFeatures.Ed25519)]
+	public async Task ConnectZeroConfigurationSslEd25519()
+	{
+		MySqlConnector.Authentication.Ed25519.Ed25519AuthenticationPlugin.Install();
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.CertificateFile = null;
+		csb.SslMode = MySqlSslMode.VerifyFull;
+		csb.SslCa = "";
+		csb.UserID = "ed25519user";
+		csb.Password = "Ed255!9";
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		await connection.OpenAsync();
 	}
 #endif
 
