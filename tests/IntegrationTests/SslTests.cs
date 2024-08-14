@@ -64,7 +64,11 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		connection.ProvideClientCertificatesCallback = x =>
 		{
+#if NET9_0_OR_GREATER
+			x.Add(X509CertificateLoader.LoadPkcs12FromFile(certificateFilePath, certificateFilePassword));
+#else
 			x.Add(new X509Certificate2(certificateFilePath, certificateFilePassword));
+#endif
 			return default;
 		};
 
@@ -119,7 +123,11 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		// Create a mock of certificate store
 		var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
 		store.Open(OpenFlags.ReadWrite);
+#if NET9_0_OR_GREATER
+		var certificate = X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(AppConfig.CertsPath, certFile), null);
+#else
 		var certificate = new X509Certificate2(Path.Combine(AppConfig.CertsPath, certFile));
+#endif
 		store.Add(certificate);
 
 		var csb = AppConfig.CreateConnectionStringBuilder();

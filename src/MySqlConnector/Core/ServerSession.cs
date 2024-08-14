@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.ConstrainedExecution;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -1280,7 +1281,11 @@ internal sealed partial class ServerSession
 		{
 			try
 			{
+#if NET9_0_OR_GREATER
+				var certificate = X509CertificateLoader.LoadPkcs12FromFile(cs.CertificateFile, cs.CertificatePassword, X509KeyStorageFlags.MachineKeySet);
+#else
 				var certificate = new X509Certificate2(cs.CertificateFile, cs.CertificatePassword, X509KeyStorageFlags.MachineKeySet);
+#endif
 				if (!certificate.HasPrivateKey)
 				{
 					certificate.Dispose();
@@ -1352,7 +1357,9 @@ internal sealed partial class ServerSession
 					{
 						// load the certificate at this index; note that 'new X509Certificate' stops at the end of the first certificate it loads
 						Log.LoadingCaCertificate(m_logger, Id, index);
-#if NET5_0_OR_GREATER
+#if NET9_0_OR_GREATER
+						var caCertificate = X509CertificateLoader.LoadCertificate(certificateBytes.AsSpan(index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index));
+#elif NET5_0_OR_GREATER
 						var caCertificate = new X509Certificate2(certificateBytes.AsSpan(index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index), default(ReadOnlySpan<char>), X509KeyStorageFlags.MachineKeySet);
 #else
 						var caCertificate = new X509Certificate2(Utility.ArraySlice(certificateBytes, index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index), default(string), X509KeyStorageFlags.MachineKeySet);
@@ -1522,7 +1529,11 @@ internal sealed partial class ServerSession
 				// Schannel has a bug where ephemeral keys can't be loaded: https://github.com/dotnet/runtime/issues/23749#issuecomment-485947319
 				// The workaround is to export the key (which may make it "Perphemeral"): https://github.com/dotnet/runtime/issues/23749#issuecomment-739895373
 				var oldCertificate = m_clientCertificate;
+#if NET9_0_OR_GREATER
+				m_clientCertificate = X509CertificateLoader.LoadPkcs12(m_clientCertificate.Export(X509ContentType.Pkcs12, default(string?)), null);
+#else
 				m_clientCertificate = new X509Certificate2(m_clientCertificate.Export(X509ContentType.Pkcs12));
+#endif
 				oldCertificate.Dispose();
 			}
 			return [m_clientCertificate];
@@ -1593,7 +1604,7 @@ internal sealed partial class ServerSession
 				throw new MySqlException("Could not load the client key from " + sslCertificateFile, ex);
 			}
 #endif
-		}
+			}
 	}
 
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
