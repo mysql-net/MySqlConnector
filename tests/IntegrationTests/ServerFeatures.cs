@@ -35,4 +35,14 @@ public enum ServerFeatures
 	/// A "SLEEP" command produces a result set when it is cancelled, not an error payload.
 	/// </summary>
 	CancelSleepSuccessfully = 0x40_0000,
+
+	/// <summary>
+	/// Server permits redirection (sent as a server variable in first OK packet).
+	/// </summary>
+	Redirection = 0x80_0000,
+
+	/// <summary>
+	/// Server provides hash of TLS certificate in first OK packet.
+	/// </summary>
+	TlsFingerprintValidation = 0x100_0000,
 }

@@ -38,7 +38,7 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 				var firstByte = payload.HeaderByte;
 				if (firstByte == OkPayload.Signature)
 				{
-					var ok = OkPayload.Create(payload.Span, Session.SupportsDeprecateEof, Session.SupportsSessionTrack);
+					var ok = OkPayload.Create(payload.Span, Session);
 
 					// if we've read a result set header then this is a SELECT statement, so we shouldn't overwrite RecordsAffected
 					// (which should be -1 for SELECT) unless the server reports a non-zero count
@@ -252,9 +252,9 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 
 		if (payload.HeaderByte == EofPayload.Signature)
 		{
-			if (Session.SupportsDeprecateEof && OkPayload.IsOk(payload.Span, Session.SupportsDeprecateEof))
+			if (Session.SupportsDeprecateEof && OkPayload.IsOk(payload.Span, Session))
 			{
-				var ok = OkPayload.Create(payload.Span, Session.SupportsDeprecateEof, Session.SupportsSessionTrack);
+				var ok = OkPayload.Create(payload.Span, Session);
 				BufferState = (ok.ServerStatus & ServerStatus.MoreResultsExist) == 0 ? ResultSetState.NoMoreData : ResultSetState.HasMoreData;
 				return null;
 			}

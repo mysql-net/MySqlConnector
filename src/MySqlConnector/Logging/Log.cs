@@ -201,6 +201,23 @@ internal static partial class Log
 	[LoggerMessage(EventIds.FailedToObtainPassword, LogLevel.Error, "Session {SessionId} failed to obtain password via ProvidePasswordCallback: {ExceptionMessage}")]
 	public static partial void FailedToObtainPassword(ILogger logger, Exception exception, string sessionId, string exceptionMessage);
 
+#if NETCOREAPP3_0_OR_GREATER
+	[LoggerMessage(EventIds.ConnectedTlsBasicPreliminary, LogLevel.Debug, "Session {SessionId} provisionally connected TLS with error {SslPolicyErrors} using {SslProtocol} and {NegotiatedCipherSuite}")]
+	public static partial void ConnectedTlsBasicPreliminary(ILogger logger, string sessionId, SslPolicyErrors sslPolicyErrors, SslProtocols sslProtocol, TlsCipherSuite negotiatedCipherSuite);
+#endif
+
+	[LoggerMessage(EventIds.ConnectedTlsDetailedPreliminary, LogLevel.Debug, "Session {SessionId} provisionally connected TLS with error {SslPolicyErrors} using {SslProtocol}, {CipherAlgorithm}, {HashAlgorithm}, {KeyExchangeAlgorithm}, {KeyExchangeStrength}")]
+	public static partial void ConnectedTlsDetailedPreliminary(ILogger logger, string sessionId, SslPolicyErrors sslPolicyErrors, SslProtocols sslProtocol, CipherAlgorithmType cipherAlgorithm, HashAlgorithmType hashAlgorithm, ExchangeAlgorithmType keyExchangeAlgorithm, int keyExchangeStrength);
+
+	[LoggerMessage(EventIds.CertificateErrorUnixSocket, LogLevel.Trace, "Session {SessionId} ignoring remote certificate error {SslPolicyErrors} due to Unix socket connection")]
+	public static partial void CertificateErrorUnixSocket(ILogger logger, string sessionId, SslPolicyErrors sslPolicyErrors);
+
+	[LoggerMessage(EventIds.CertificateErrorNoPassword, LogLevel.Trace, "Session {SessionId} acknowledging remote certificate error {SslPolicyErrors} due to passwordless connection")]
+	public static partial void CertificateErrorNoPassword(ILogger logger, string sessionId, SslPolicyErrors sslPolicyErrors);
+
+	[LoggerMessage(EventIds.CertificateErrorValidThumbprint, LogLevel.Trace, "Session {SessionId} ignoring remote certificate error {SslPolicyErrors} due to valid signature in OK packet")]
+	public static partial void CertificateErrorValidThumbprint(ILogger logger, string sessionId, SslPolicyErrors sslPolicyErrors);
+
 	[LoggerMessage(EventIds.IgnoringCancellationForCommand, LogLevel.Trace, "Ignoring cancellation for closed connection or invalid command {CommandId}")]
 	public static partial void IgnoringCancellationForCommand(ILogger logger, int commandId);
 
@@ -405,23 +422,23 @@ internal static partial class Log
 	[LoggerMessage(EventIds.HasServerRedirectionHeader, LogLevel.Trace, "Session {SessionId} has server redirection header {Header}")]
 	public static partial void HasServerRedirectionHeader(ILogger logger, string sessionId, string header);
 
-	[LoggerMessage(EventIds.ServerRedirectionIsDisabled, LogLevel.Trace, "Pool {PoolId} server redirection is disabled; ignoring redirection")]
-	public static partial void ServerRedirectionIsDisabled(ILogger logger, int poolId);
+	[LoggerMessage(EventIds.ServerRedirectionIsDisabled, LogLevel.Trace, "Session {SessionId} server redirection is disabled; ignoring redirection")]
+	public static partial void ServerRedirectionIsDisabled(ILogger logger, string sessionId);
 
-	[LoggerMessage(EventIds.OpeningNewConnection, LogLevel.Debug, "Pool {PoolId} opening new connection to {Host}:{Port} as {User}")]
-	public static partial void OpeningNewConnection(ILogger logger, int poolId, string host, int port, string user);
+	[LoggerMessage(EventIds.OpeningNewConnection, LogLevel.Debug, "Session {SessionId} opening new connection to {Host}:{Port} as {User}")]
+	public static partial void OpeningNewConnection(ILogger logger, string sessionId, string host, int port, string user);
 
-	[LoggerMessage(EventIds.FailedToConnectRedirectedSession, LogLevel.Information, "Pool {PoolId} failed to connect redirected session {SessionId}")]
-	public static partial void FailedToConnectRedirectedSession(ILogger logger, Exception ex, int poolId, string sessionId);
+	[LoggerMessage(EventIds.FailedToConnectRedirectedSession, LogLevel.Information, "Session {SessionId} failed to connect redirected session {RedirectedSessionId}")]
+	public static partial void FailedToConnectRedirectedSession(ILogger logger, Exception ex, string sessionId, string redirectedSessionId);
 
-	[LoggerMessage(EventIds.ClosingSessionToUseRedirectedSession, LogLevel.Trace, "Pool {PoolId} closing session {SessionId} to use redirected session {RedirectedSessionId} instead")]
-	public static partial void ClosingSessionToUseRedirectedSession(ILogger logger, int poolId, string sessionId, string redirectedSessionId);
+	[LoggerMessage(EventIds.ClosingSessionToUseRedirectedSession, LogLevel.Trace, "Closing session {SessionId} to use redirected session {RedirectedSessionId} instead")]
+	public static partial void ClosingSessionToUseRedirectedSession(ILogger logger, string sessionId, string redirectedSessionId);
 
 	[LoggerMessage(EventIds.SessionAlreadyConnectedToServer, LogLevel.Trace, "Session {SessionId} is already connected to this server; ignoring redirection")]
 	public static partial void SessionAlreadyConnectedToServer(ILogger logger, string sessionId);
 
-	[LoggerMessage(EventIds.RequiresServerRedirection, LogLevel.Error, "Pool {PoolId} requires server redirection but server doesn't support it")]
-	public static partial void RequiresServerRedirection(ILogger logger, int poolId);
+	[LoggerMessage(EventIds.RequiresServerRedirection, LogLevel.Error, "Session {SessionId} requires server redirection but server doesn't support it")]
+	public static partial void RequiresServerRedirection(ILogger logger, string sessionId);
 
 	[LoggerMessage(EventIds.CreatedPoolWillNotBeUsed, LogLevel.Debug, "Pool {PoolId} was created but will not be used (due to race)")]
 	public static partial void CreatedPoolWillNotBeUsed(ILogger logger, int poolId);

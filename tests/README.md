@@ -7,7 +7,7 @@ It also verifies that MySqlConnector and MySQL Connector/NET (MySql.Data) have s
 
 The tests require a MySQL server. The simplest way to run one is with [Docker](https://www.docker.com/community-edition):
 
-    docker run -d --rm --name mysqlconnector -e MYSQL_ROOT_PASSWORD=pass -p 3306:3306 --tmpfs /var/lib/mysql mysql:9.0 --max-allowed-packet=96M --character-set-server=utf8mb4 --disable-log-bin --local-infile=1 --max-connections=250
+    docker run -d --rm --pull always --name mysqlconnector -e MYSQL_ROOT_PASSWORD=pass -p 3306:3306 --tmpfs /var/lib/mysql mysql:9.0 --max-allowed-packet=96M --character-set-server=utf8mb4 --disable-log-bin --local-infile=1 --max-connections=250
     docker exec mysqlconnector mysql -uroot -ppass -e "INSTALL COMPONENT 'file://component_query_attributes'; CREATE USER 'caching-sha2-user'@'%' IDENTIFIED WITH caching_sha2_password BY 'Cach!ng-Sh@2-Pa55'; GRANT ALL PRIVILEGES ON *.* TO 'caching-sha2-user'@'%';"
 
 Copy the file `IntegrationTests/config.json.example` to `IntegrationTests/config.json`, then edit
@@ -27,6 +27,7 @@ Otherwise, set the following options appropriately:
   * `ErrorCodes`: server returns error codes in error packet (some MySQL proxies do not)
   * `Json`: the `JSON` data type (MySQL 5.7 and later)
   * `LargePackets`: large packets (over 4MB)
+  * `Redirection`: server supports sending redirection information in a server variable in the first OK packet
   * `RoundDateTime`: server rounds `datetime` values to the specified precision (not implemented in MariaDB)
   * `RsaEncryption`: server supports RSA public key encryption (for `sha256_password` and `caching_sha2_password`)
   * `SessionTrack`: server supports `CLIENT_SESSION_TRACK` capability (MySQL 5.7 and later)
@@ -36,6 +37,7 @@ Otherwise, set the following options appropriately:
   * `Tls11`: server supports TLS 1.1
   * `Tls12`: server supports TLS 1.2
   * `Tls13`: server supports TLS 1.3
+  * `TlsFingerprintValidation`: server provides a hash of the TLS certificate fingerprint in the first OK packet
   * `UnixDomainSocket`: server is accessible via a Unix domain socket
   * `UuidToBin`: server supports `UUID_TO_BIN` (MySQL 8.0 and later)
 

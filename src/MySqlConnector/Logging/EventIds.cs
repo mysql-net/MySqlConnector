@@ -81,6 +81,11 @@ internal static class EventIds
 	public const int CreatingConnectionAttributes = 2153;
 	public const int ObtainingPasswordViaProvidePasswordCallback = 2154;
 	public const int FailedToObtainPassword = 2155;
+	public const int ConnectedTlsBasicPreliminary = 2156;
+	public const int ConnectedTlsDetailedPreliminary = 2157;
+	public const int CertificateErrorUnixSocket = 2158;
+	public const int CertificateErrorNoPassword = 2159;
+	public const int CertificateErrorValidThumbprint = 2160;
 
 	// Command execution events, 2200-2299
 	public const int CannotExecuteNewCommandInState = 2200;

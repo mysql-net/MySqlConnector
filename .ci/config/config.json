@@ -4,7 +4,7 @@
       "SocketPath": "./../../../../.ci/run/mysql/mysqld.sock",
       "PasswordlessUser": "no_password",
       "SecondaryDatabase": "testdb2",
-      "UnsupportedFeatures": "Ed25519,QueryAttributes,StreamingResults,Tls11,UnixDomainSocket,ZeroDateTime",
+      "UnsupportedFeatures": "Ed25519,QueryAttributes,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,UnixDomainSocket,ZeroDateTime",
       "MySqlBulkLoaderLocalCsvFile": "../../../../tests/TestData/LoadData_UTF8_BOM_Unix.CSV",
       "MySqlBulkLoaderLocalTsvFile": "../../../../tests/TestData/LoadData_UTF8_BOM_Unix.TSV"
     }
