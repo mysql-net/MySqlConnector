@@ -879,13 +879,14 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	internal void Cancel(ICancellableCommand command, int commandId, bool isCancel)
 	{
-		if (m_session?.Id is not string sessionId || State != ConnectionState.Open || m_session?.TryStartCancel(command) is not true)
+		// NOTE: read and cache m_session in a local variable because it can be set to null by CloseAsync on another thread
+		if (m_session is not { } session || State != ConnectionState.Open || !session.TryStartCancel(command))
 		{
 			Log.IgnoringCancellationForCommand(m_logger, commandId);
 			return;
 		}
 
-		Log.CommandHasBeenCanceled(m_logger, commandId, sessionId, isCancel ? "Cancel()" : "command timeout");
+		Log.CommandHasBeenCanceled(m_logger, commandId, session.Id, isCancel ? "Cancel()" : "command timeout");
 		try
 		{
 			// open a dedicated connection to the server to kill the active query
@@ -894,12 +895,12 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				AutoEnlist = false,
 				Pooling = false,
 			};
-			if (m_session.IPEndPoint is { Address: { } ipAddress, Port: { } port })
+			if (session.IPEndPoint is { Address: { } ipAddress, Port: { } port })
 			{
 				csb.Server = ipAddress.ToString();
 				csb.Port = (uint) port;
 			}
-			csb.UserID = m_session.UserID;
+			csb.UserID = session.UserID;
 			var cancellationTimeout = GetConnectionSettings().CancellationTimeout;
 			csb.ConnectionTimeout = cancellationTimeout < 1 ? 3u : (uint) cancellationTimeout;
 
@@ -912,20 +913,20 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 #endif
 			using var killCommand = new MySqlCommand(killQuerySql, connection);
 			killCommand.CommandTimeout = cancellationTimeout < 1 ? 3 : cancellationTimeout;
-			m_session?.DoCancel(command, killCommand);
+			session.DoCancel(command, killCommand);
 		}
 		catch (InvalidOperationException ex)
 		{
 			// ignore a rare race condition where the connection is open at the beginning of the method, but closed by the time
 			// KILL QUERY is executed: https://github.com/mysql-net/MySqlConnector/issues/1002
-			Log.IgnoringCancellationForClosedConnection(m_logger, ex, sessionId);
-			m_session?.AbortCancel(command);
+			Log.IgnoringCancellationForClosedConnection(m_logger, ex, session.Id);
+			session.AbortCancel(command);
 		}
 		catch (MySqlException ex)
 		{
 			// cancelling the query failed; setting the state back to 'Querying' will allow another call to 'Cancel' to try again
-			Log.CancelingCommandFailed(m_logger, ex, sessionId, command.CommandId);
-			m_session?.AbortCancel(command);
+			Log.CancelingCommandFailed(m_logger, ex, session.Id, command.CommandId);
+			session.AbortCancel(command);
 		}
 	}
 
