@@ -1,5 +1,4 @@
 #if !MYSQL_DATA
-using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 

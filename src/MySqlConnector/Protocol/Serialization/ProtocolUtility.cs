@@ -1,6 +1,5 @@
 using System.Buffers;
 using MySqlConnector.Protocol.Payloads;
-using MySqlConnector.Utilities;
 
 namespace MySqlConnector.Protocol.Serialization;
 
