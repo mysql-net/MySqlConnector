@@ -1178,12 +1178,10 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			// This connection is being closed, so create a new MySqlConnection that will own the ServerSession
 			// (which remains open). This ensures the ServerSession always has a valid OwningConnection (even
 			// if 'this' is GCed.
-			var connection = new MySqlConnection
+			var connection = new MySqlConnection(this, m_dataSource, m_connectionString, hasBeenOpened: true)
 			{
-				m_connectionString = m_connectionString,
 				m_connectionSettings = m_connectionSettings,
 				m_connectionState = m_connectionState,
-				m_hasBeenOpened = true,
 			};
 			connection.TakeSessionFrom(this);
 
