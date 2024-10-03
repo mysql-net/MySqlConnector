@@ -27,4 +27,4 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Component detection
-      uses: advanced-security/component-detection-dependency-submission-action@v0.0.2
+      uses: advanced-security/component-detection-dependency-submission-action@v0.0.3
