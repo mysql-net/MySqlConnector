@@ -254,6 +254,9 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 * [#115155](https://bugs.mysql.com/bug.php?id=115155): MySql.Data executes `SET NAMES` using an unsupported value
 * [#115168](https://bugs.mysql.com/bug.php?id=115168): `MySqlDataReader.GetX` performs culture-sensitive conversions
 * [#115222](https://bugs.mysql.com/bug.php?id=115222): `MySqlPool.ClearAsync` is not thread-safe
+* [#115937](https://bugs.mysql.com/bug.php?id=115937): Transaction isn't released after I/O timeout
+* [#116146](https://bugs.mysql.com/bug.php?id=116146): `MySqlConnection.OpenAsync` throws exception when `UseCompression = true`
+* [#116257](https://bugs.mysql.com/bug.php?id=116257): `NullReferenceException` thrown when using prepared statement under OpenTelemetry
 
 ### Fixed First by MySqlConnector
 
