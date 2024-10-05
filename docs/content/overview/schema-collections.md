@@ -1,6 +1,6 @@
 ---
-lastmod: 2023-12-15
 date: 2021-04-24
+lastmod: 2024-10-05
 title: Schema Collections
 customtitle: "Supported Schema Collections"
 description: Information about the schemas supported by MySqlConnection.GetSchema.
@@ -41,7 +41,6 @@ weight: 80
 * `Tables`—[information about tables](../schema/tables/)
 * `TableConstraints`
 * `TablePrivileges`
-* `TableSpaces`
 * `Triggers`
 * `UserPrivileges`
 * `Views`

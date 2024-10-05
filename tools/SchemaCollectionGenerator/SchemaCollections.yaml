@@ -652,28 +652,6 @@
   - name: IS_GRANTABLE
     type: string
 
-- name: TableSpaces
-  table: TABLESPACES
-  columns:
-  - name: TABLESPACE_NAME
-    type: string
-  - name: ENGINE
-    type: string
-  - name: TABLESPACE_TYPE
-    type: string
-  - name: LOGFILE_GROUP_NAME
-    type: string
-  - name: EXTENT_SIZE
-    type: long
-  - name: AUTOEXTEND_SIZE
-    type: long
-  - name: MAXIMUM_SIZE
-    type: long
-  - name: NODEGROUP_ID
-    type: long
-  - name: TABLESPACE_COMMENT
-    type: string
-
 - name: Triggers
   table: TRIGGERS
   identifierPartCount: 3

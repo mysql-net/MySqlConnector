@@ -67,8 +67,6 @@ internal sealed partial class SchemaProvider
 			await FillTableConstraintsAsync(ioBehavior, dataTable, "TableConstraints", restrictionValues, cancellationToken).ConfigureAwait(false);
 		else if (string.Equals(collectionName, "TablePrivileges", StringComparison.OrdinalIgnoreCase))
 			await FillTablePrivilegesAsync(ioBehavior, dataTable, "TablePrivileges", restrictionValues, cancellationToken).ConfigureAwait(false);
-		else if (string.Equals(collectionName, "TableSpaces", StringComparison.OrdinalIgnoreCase))
-			await FillTableSpacesAsync(ioBehavior, dataTable, "TableSpaces", restrictionValues, cancellationToken).ConfigureAwait(false);
 		else if (string.Equals(collectionName, "Triggers", StringComparison.OrdinalIgnoreCase))
 			await FillTriggersAsync(ioBehavior, dataTable, "Triggers", restrictionValues, cancellationToken).ConfigureAwait(false);
 		else if (string.Equals(collectionName, "UserPrivileges", StringComparison.OrdinalIgnoreCase))
@@ -125,7 +123,6 @@ internal sealed partial class SchemaProvider
 		dataTable.Rows.Add("Tables", 4, 3);
 		dataTable.Rows.Add("TableConstraints", 0, 3);
 		dataTable.Rows.Add("TablePrivileges", 0, 0);
-		dataTable.Rows.Add("TableSpaces", 0, 0);
 		dataTable.Rows.Add("Triggers", 0, 3);
 		dataTable.Rows.Add("UserPrivileges", 0, 0);
 		dataTable.Rows.Add("Views", 0, 3);
@@ -755,28 +752,6 @@ internal sealed partial class SchemaProvider
 		]);
 
 		await FillDataTableAsync(ioBehavior, dataTable, "TABLE_PRIVILEGES", null, cancellationToken).ConfigureAwait(false);
-	}
-
-	private async Task FillTableSpacesAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
-	{
-		if (restrictionValues is not null && restrictionValues.Length > 0)
-			throw new ArgumentException("restrictionValues is not supported for schema 'TableSpaces'.", nameof(restrictionValues));
-
-		dataTable.TableName = tableName;
-		dataTable.Columns.AddRange(
-		[
-			new("TABLESPACE_NAME", typeof(string)),
-			new("ENGINE", typeof(string)),
-			new("TABLESPACE_TYPE", typeof(string)),
-			new("LOGFILE_GROUP_NAME", typeof(string)),
-			new("EXTENT_SIZE", typeof(long)),
-			new("AUTOEXTEND_SIZE", typeof(long)),
-			new("MAXIMUM_SIZE", typeof(long)),
-			new("NODEGROUP_ID", typeof(long)),
-			new("TABLESPACE_COMMENT", typeof(string)),
-		]);
-
-		await FillDataTableAsync(ioBehavior, dataTable, "TABLESPACES", null, cancellationToken).ConfigureAwait(false);
 	}
 
 	private async Task FillTriggersAsync(IOBehavior ioBehavior, DataTable dataTable, string tableName, string?[]? restrictionValues, CancellationToken cancellationToken)
