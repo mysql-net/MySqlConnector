@@ -896,16 +896,27 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				AutoEnlist = false,
 				Pooling = false,
 			};
-			if (session.IPEndPoint is { Address: { } ipAddress, Port: { } port })
+
+			// connect directly to the session's IP address to ensure we're cancelling the query on the right server (in a load-balanced scenario)
+			IPAddress? ipAddress = null;
+			if (session.IPEndPoint is { Address: { } sessionIpAddress, Port: { } port })
 			{
-				csb.Server = ipAddress.ToString();
+				// set the hostname to the existing session's hostname (for SSL validation)
+				csb.Server = session.HostName;
 				csb.Port = (uint) port;
+				ipAddress = sessionIpAddress;
 			}
 			csb.UserID = session.UserID;
 			var cancellationTimeout = GetConnectionSettings().CancellationTimeout;
 			csb.ConnectionTimeout = cancellationTimeout < 1 ? 3u : (uint) cancellationTimeout;
 
+			// forcibly set the IP address the new connection should use
+			var connectionSettings = new ConnectionSettings(csb);
+			if (ipAddress is not null)
+				connectionSettings = connectionSettings.CloneWith(ipAddress);
+
 			using var connection = CloneWith(csb.ConnectionString);
+			connection.m_connectionSettings = connectionSettings;
 			connection.Open();
 #if NET6_0_OR_GREATER
 			var killQuerySql = string.Create(CultureInfo.InvariantCulture, $"KILL QUERY {command.Connection!.ServerThread}");

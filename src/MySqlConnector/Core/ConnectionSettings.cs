@@ -1,6 +1,7 @@
 #if NETCOREAPP3_0_OR_GREATER
 using System.Net.Security;
 #endif
+using System.Net;
 using System.Security.Authentication;
 using MySqlConnector.Utilities;
 
@@ -150,7 +151,9 @@ internal sealed class ConnectionSettings
 		static int ToSigned(uint value) => value >= int.MaxValue ? int.MaxValue : (int) value;
 	}
 
-	public ConnectionSettings CloneWith(string host, int port, string userId) => new(this, host, port, userId);
+	public ConnectionSettings CloneWith(string host, int port, string userId) => new(this, host, port, userId, null);
+
+	public ConnectionSettings CloneWith(IPAddress ipAddress) => new(this, HostNames![0], Port, UserID, ipAddress);
 
 	private static MySqlGuidFormat GetEffectiveGuidFormat(MySqlGuidFormat guidFormat, bool oldGuids)
 	{
@@ -182,6 +185,7 @@ internal sealed class ConnectionSettings
 	public string ConnectionString { get; }
 	public MySqlConnectionProtocol ConnectionProtocol { get; }
 	public IReadOnlyList<string>? HostNames { get; }
+	public IPAddress? IPAddress { get; }
 	public MySqlLoadBalance LoadBalance { get; }
 	public int Port { get; }
 	public string PipeName { get; }
@@ -268,10 +272,10 @@ internal sealed class ConnectionSettings
 		}
 	}
 
-	private ConnectionSettings(ConnectionSettings other, string host, int port, string userId)
+	private ConnectionSettings(ConnectionSettings other, string host, int port, string userId, IPAddress? ipAddress)
 	{
 		ConnectionStringBuilder = new MySqlConnectionStringBuilder(other.ConnectionString);
-		ConnectionStringBuilder.Port = (uint)port;
+		ConnectionStringBuilder.Port = (uint) port;
 		ConnectionStringBuilder.Server = host;
 		ConnectionStringBuilder.UserID = userId;
 
@@ -279,6 +283,7 @@ internal sealed class ConnectionSettings
 
 		ConnectionProtocol = MySqlConnectionProtocol.Sockets;
 		HostNames = [host];
+		IPAddress = ipAddress;
 		LoadBalance = other.LoadBalance;
 		Port = port;
 		PipeName = other.PipeName;

@@ -1164,13 +1164,20 @@ internal sealed partial class ServerSession : IServerCapabilities
 			IPAddress[] ipAddresses;
 			try
 			{
-				ipAddresses = ioBehavior == IOBehavior.Asynchronous
+				if (cs.IPAddress is { } ipAddress)
+				{
+					ipAddresses = [ipAddress];
+				}
+				else
+				{
+					ipAddresses = ioBehavior == IOBehavior.Asynchronous
 #if NET6_0_OR_GREATER
-					? await Dns.GetHostAddressesAsync(hostName, cancellationToken).ConfigureAwait(false)
+						? await Dns.GetHostAddressesAsync(hostName, cancellationToken).ConfigureAwait(false)
 #else
-					? await Dns.GetHostAddressesAsync(hostName).ConfigureAwait(false)
+						? await Dns.GetHostAddressesAsync(hostName).ConfigureAwait(false)
 #endif
-					: Dns.GetHostAddresses(hostName);
+						: Dns.GetHostAddresses(hostName);
+				}
 			}
 			catch (SocketException ex)
 			{
