@@ -430,7 +430,9 @@ internal static class Utility
 			seconds = -seconds;
 			microseconds = -microseconds;
 		}
-#if NET7_0_OR_GREATER
+#if NET9_0_OR_GREATER
+		return TimeSpan.FromHours(hours, minutes, seconds, microseconds: microseconds);
+#elif NET7_0_OR_GREATER
 		return new TimeSpan(0, hours, minutes, seconds, microseconds / 1000, microseconds % 1000);
 #else
 		return new TimeSpan(0, hours, minutes, seconds, microseconds / 1000) + TimeSpan.FromTicks(microseconds % 1000 * 10);

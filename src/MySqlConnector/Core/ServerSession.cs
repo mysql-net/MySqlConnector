@@ -1471,7 +1471,11 @@ internal sealed partial class ServerSession : IServerCapabilities
 		{
 			try
 			{
+#if NET9_0_OR_GREATER
+				var certificate = X509CertificateLoader.LoadPkcs12FromFile(cs.CertificateFile, cs.CertificatePassword, X509KeyStorageFlags.MachineKeySet);
+#else
 				var certificate = new X509Certificate2(cs.CertificateFile, cs.CertificatePassword, X509KeyStorageFlags.MachineKeySet);
+#endif
 				if (!certificate.HasPrivateKey)
 				{
 					certificate.Dispose();
@@ -1543,7 +1547,9 @@ internal sealed partial class ServerSession : IServerCapabilities
 					{
 						// load the certificate at this index; note that 'new X509Certificate' stops at the end of the first certificate it loads
 						Log.LoadingCaCertificate(m_logger, Id, index);
-#if NET5_0_OR_GREATER
+#if NET9_0_OR_GREATER
+						var caCertificate = X509CertificateLoader.LoadCertificate(certificateBytes.AsSpan(index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index));
+#elif NET5_0_OR_GREATER
 						var caCertificate = new X509Certificate2(certificateBytes.AsSpan(index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index), default(ReadOnlySpan<char>), X509KeyStorageFlags.MachineKeySet);
 #else
 						var caCertificate = new X509Certificate2(Utility.ArraySlice(certificateBytes, index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index), default(string), X509KeyStorageFlags.MachineKeySet);
@@ -1739,7 +1745,11 @@ internal sealed partial class ServerSession : IServerCapabilities
 				// Schannel has a bug where ephemeral keys can't be loaded: https://github.com/dotnet/runtime/issues/23749#issuecomment-485947319
 				// The workaround is to export the key (which may make it "Perphemeral"): https://github.com/dotnet/runtime/issues/23749#issuecomment-739895373
 				var oldCertificate = m_clientCertificate;
+#if NET9_0_OR_GREATER
+				m_clientCertificate = X509CertificateLoader.LoadPkcs12(m_clientCertificate.Export(X509ContentType.Pkcs12, default(string?)), null);
+#else
 				m_clientCertificate = new X509Certificate2(m_clientCertificate.Export(X509ContentType.Pkcs12));
+#endif
 				oldCertificate.Dispose();
 			}
 			return [m_clientCertificate];
@@ -1810,7 +1820,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				throw new MySqlException("Could not load the client key from " + sslCertificateFile, ex);
 			}
 #endif
-		}
+			}
 	}
 
 #if !NETCOREAPP2_1_OR_GREATER && !NETSTANDARD2_1_OR_GREATER
@@ -1867,15 +1877,12 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 			// first (and only) row
 			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
-			static void ReadRow(ReadOnlySpan<byte> span, out int? connectionId, out ServerVersion? serverVersion)
-			{
-				var reader = new ByteArrayReader(span);
-				var length = reader.ReadLengthEncodedIntegerOrNull();
-				connectionId = (length != -1 && Utf8Parser.TryParse(reader.ReadByteString(length), out int id, out _)) ? id : default(int?);
-				length = reader.ReadLengthEncodedIntegerOrNull();
-				serverVersion = length != -1 ? new ServerVersion(reader.ReadByteString(length)) : default;
-			}
-			ReadRow(payload.Span, out var connectionId, out var serverVersion);
+
+			var reader = new ByteArrayReader(payload.Span);
+			var length = reader.ReadLengthEncodedIntegerOrNull();
+			var connectionId = (length != -1 && Utf8Parser.TryParse(reader.ReadByteString(length), out int id, out _)) ? id : default(int?);
+			length = reader.ReadLengthEncodedIntegerOrNull();
+			var serverVersion = length != -1 ? new ServerVersion(reader.ReadByteString(length)) : default;
 
 			// OK/EOF payload
 			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);

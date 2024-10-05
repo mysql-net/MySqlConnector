@@ -8,9 +8,9 @@ steps:
 - bash: ${{ format('.ci/docker-run.sh {0} 3300 {1}', parameters.image, parameters.unsupportedFeatures) }}
   displayName: 'Start Docker container'
 - task: UseDotNet@2
-  displayName: 'Install .NET 6.0'
+  displayName: 'Install .NET 8.0'
   inputs:
-    version: 6.0.x
+    version: 8.0.x
     packageType: runtime
 - task: UseDotNet@2
   displayName: 'Install .NET'
@@ -33,19 +33,19 @@ steps:
     image: ${{ parameters.image }}
     unsupportedFeatures: ${{ parameters.unsupportedFeatures }}
     connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;UseCompression=True;DefaultCommandTimeout=3600;${{ parameters.connectionStringExtra }}'
-    platform: 'net6.0'
+    platform: 'net8.0'
     description: 'Compression'
 - template: 'integration-test-steps.yml'
   parameters:
     image: ${{ parameters.image }}
     unsupportedFeatures: ${{ parameters.unsupportedFeatures }}
     connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;${{ parameters.connectionStringExtra }}'
-    platform: 'net6.0'
+    platform: 'net9.0'
     description: 'No SSL'
 - template: 'integration-test-steps.yml'
   parameters:
     image: ${{ parameters.image }}
     unsupportedFeatures: ${{ parameters.unsupportedFeatures }}
     connectionString: server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=required;DefaultCommandTimeout=3600;certificate file=$(Build.Repository.LocalPath)/.ci/server/certs/ssl-client.pfx;${{ parameters.connectionStringExtra }}
-    platform: 'net6.0'
+    platform: 'net9.0'
     description: 'SSL'

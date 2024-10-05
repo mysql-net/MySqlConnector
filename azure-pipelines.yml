@@ -1,5 +1,5 @@
 variables:
-  DotNetCoreSdkVersion: '8.x'
+  DotNetCoreSdkVersion: '9.x'
   NUGET_PACKAGES: '$(Pipeline.Workspace)/.nuget/packages'
 
 jobs:
@@ -16,17 +16,6 @@ jobs:
     vmimage: 'windows-latest'
   steps:
   - template: '.ci/build-steps.yml'
-  - task: DotNetCoreCLI@2
-    displayName: 'Publish IntegrationTests (net472)'
-    inputs:
-      command: 'publish'
-      arguments: '-c Release -f net472 tests/IntegrationTests/IntegrationTests.csproj'
-      publishWebProjects: false
-      zipAfterPublish: false
-  - task: PublishPipelineArtifact@0
-    inputs:
-      artifactName: 'IntegrationTests-net472-$(Agent.OS)'
-      targetPath: 'artifacts/publish/IntegrationTests/release_net472'
 
 - job: windows_mysql_data
   displayName: 'MySql.Data Tests'
@@ -41,9 +30,9 @@ jobs:
       contents: 'config.json'
       targetFolder: 'tests/IntegrationTests'
   - task: UseDotNet@2
-    displayName: 'Install .NET 7.0'
+    displayName: 'Install .NET 8.0'
     inputs:
-      version: '7.0.x'
+      version: '8.0.x'
   - task: UseDotNet@2
     displayName: 'Install .NET'
     inputs:
@@ -91,11 +80,6 @@ jobs:
     vmimage: 'windows-2019'
   steps:
   - template: '.ci/install-mysql-windows.yml'
-  - task: UseDotNet@2
-    displayName: 'Install .NET Core 3.1'
-    inputs:
-      version: 3.1.x
-      packageType: runtime
   - template: '.ci/mysqlconnector-tests-steps.yml'
   - template: '.ci/conformance-test-steps.yml'
     parameters:
@@ -123,18 +107,18 @@ jobs:
     displayName: 'Remove target frameworks'
     inputs:
       targetType: 'inline'
-      script: '((Get-Content .\tests\IntegrationTests\IntegrationTests.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>net472;net8.0</TargetFrameworks>'')) | Set-Content .\tests\IntegrationTests\IntegrationTests.csproj'
+      script: '((Get-Content .\tests\IntegrationTests\IntegrationTests.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>net481;net9.0</TargetFrameworks>'')) | Set-Content .\tests\IntegrationTests\IntegrationTests.csproj'
   - task: DotNetCoreCLI@2
     displayName: 'Restore packages'
     inputs:
       command: 'restore'
   - task: DotNetCoreCLI@2
-    displayName: 'Integration tests (net472/net8.0)'
+    displayName: 'Integration tests (net481/net9.0)'
     inputs:
       command: 'test'
       projects: 'tests/IntegrationTests/IntegrationTests.csproj'
-      arguments: '-c Release --no-restore'
-      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net472/net8.0', 'No SSL') }}
+      arguments: '-c Release --no-restore -p:TestTfmsInParallel=false'
+      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net481/net9.0', 'No SSL') }}
     env:
       DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True;UseCompression=True'
@@ -146,9 +130,9 @@ jobs:
   steps:
   - template: '.ci/install-mysql-windows.yml'
   - task: UseDotNet@2
-    displayName: 'Install .NET 6.0'
+    displayName: 'Install .NET 8.0'
     inputs:
-      version: 6.0.x
+      version: 8.0.x
       packageType: runtime
   - task: UseDotNet@2
     displayName: 'Install .NET'
@@ -161,18 +145,18 @@ jobs:
     displayName: 'Remove target frameworks'
     inputs:
       targetType: 'inline'
-      script: '((Get-Content .\tests\IntegrationTests\IntegrationTests.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>net6.0</TargetFrameworks>'')) | Set-Content .\tests\IntegrationTests\IntegrationTests.csproj'
+      script: '((Get-Content .\tests\IntegrationTests\IntegrationTests.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>net8.0</TargetFrameworks>'')) | Set-Content .\tests\IntegrationTests\IntegrationTests.csproj'
   - task: DotNetCoreCLI@2
     displayName: 'Restore packages'
     inputs:
       command: 'restore'
   - task: DotNetCoreCLI@2
-    displayName: 'Integration tests (net6.0)'
+    displayName: 'Integration tests (net8.0)'
     inputs:
       command: 'test'
       projects: 'tests/IntegrationTests/IntegrationTests.csproj'
-      arguments: '-c Release --no-restore'
-      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net6.0', 'No SSL') }}
+      arguments: '-c Release --no-restore -p:TestTfmsInParallel=false'
+      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net8.0', 'No SSL') }}
     env:
       DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,UnixDomainSocket'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True'

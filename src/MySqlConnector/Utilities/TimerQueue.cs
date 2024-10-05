@@ -131,7 +131,11 @@ internal sealed class TimerQueue
 		public Action Action { get; }
 	}
 
+#if NET9_0_OR_GREATER
+	private readonly Lock m_lock;
+#else
 	private readonly object m_lock;
+#endif
 	private readonly Timer m_timer;
 	private readonly List<Data> m_timeoutActions;
 	private uint m_counter;
