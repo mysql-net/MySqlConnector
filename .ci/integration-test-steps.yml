@@ -10,9 +10,10 @@ steps:
   condition: always()
   inputs:
     contents: '**/*.trx'
-- task: DownloadPipelineArtifact@0
+- task: DownloadPipelineArtifact@2
   condition: always()
   inputs:
+    buildType: 'current'
     artifactName: ${{ format('IntegrationTests-{0}-$(Agent.OS)', parameters.platform) }}
     targetPath: ${{ format('$(Build.BinariesDirectory)/{0}', parameters.platform) }}
 - task: DotNetCoreCLI@2

@@ -7,9 +7,10 @@ steps:
   condition: always()
   inputs:
     contents: '**/*.trx'
-- task: DownloadPipelineArtifact@0
+- task: DownloadPipelineArtifact@2
   condition: always()
   inputs:
+    buildType: 'current'
     artifactName: 'Conformance.Tests-9.0-$(Agent.OS)'
     targetPath: '$(Build.BinariesDirectory)/9.0'
 - task: DotNetCoreCLI@2

@@ -4,8 +4,9 @@ steps:
   inputs:
     version: $(DotNetCoreSdkVersion)
     includePreviewVersions: true
-- task: DownloadPipelineArtifact@0
+- task: DownloadPipelineArtifact@2
   inputs:
+    buildType: 'current'
     artifactName: 'MySqlConnector.Tests-9.0-$(Agent.OS)'
     targetPath: $(System.DefaultWorkingDirectory)
 - task: DotNetCoreCLI@2
@@ -14,8 +15,9 @@ steps:
     command: 'custom'
     custom: 'vstest'
     arguments: 'MySqlConnector.Tests.dll /logger:trx'
-- task: DownloadPipelineArtifact@0
+- task: DownloadPipelineArtifact@2
   inputs:
+    buildType: 'current'
     artifactName: 'MySqlConnector.DependencyInjection.Tests-9.0-$(Agent.OS)'
     targetPath: $(System.DefaultWorkingDirectory)
 - task: DotNetCoreCLI@2
