@@ -2,6 +2,7 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 using MySqlConnector.Logging;
+using MySqlConnector.Plugins;
 
 namespace MySqlConnector;
 
@@ -102,7 +103,8 @@ public sealed class MySqlDataSourceBuilder
 			m_remoteCertificateValidationCallback,
 			m_periodicPasswordProvider,
 			m_periodicPasswordProviderSuccessRefreshInterval,
-			m_periodicPasswordProviderFailureRefreshInterval
+			m_periodicPasswordProviderFailureRefreshInterval,
+			ZstandardPlugin
 			);
 	}
 
@@ -110,6 +112,8 @@ public sealed class MySqlDataSourceBuilder
 	/// A <see cref="MySqlConnectionStringBuilder"/> that can be used to configure the connection string on this <see cref="MySqlDataSourceBuilder"/>.
 	/// </summary>
 	public MySqlConnectionStringBuilder ConnectionStringBuilder { get; }
+
+	internal ZstandardPlugin? ZstandardPlugin { get; set; }
 
 	private ILoggerFactory? m_loggerFactory;
 	private string? m_name;

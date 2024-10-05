@@ -129,6 +129,18 @@ internal enum ProtocolCapabilities : ulong
 	DeprecateEof = 0x100_0000,
 
 	/// <summary>
+	/// The client can handle optional metadata information in the resultset.
+	/// </summary>
+	/// <remarks>Corresponds to CLIENT_OPTIONAL_RESULTSET_METADATA.</remarks>
+	ClientOptionalResultsetMetadata = 0x200_0000,
+
+	/// <summary>
+	/// The client supports the Zstandard compression algorithm.
+	/// </summary>
+	/// <remarks>Corresponds to CLIENT_ZSTD_COMPRESSION_ALGORITHM.</remarks>
+	ZstandardCompressionAlgorithm = 0x400_0000,
+
+	/// <summary>
 	/// Supports query attributes (CLIENT_QUERY_ATTRIBUTES).
 	/// </summary>
 	QueryAttributes = 0x800_0000,

@@ -11,6 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 using MySqlConnector.Core;
 using MySqlConnector.Logging;
+using MySqlConnector.Plugins;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Payloads;
 using MySqlConnector.Protocol.Serialization;
@@ -979,6 +980,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	internal MySqlTransaction? CurrentTransaction { get; set; }
 	internal MySqlConnectorLoggingConfiguration LoggingConfiguration { get; }
+	internal ZstandardPlugin? ZstandardPlugin { get; set; }
 	internal bool AllowLoadLocalInfile => GetInitializedConnectionSettings().AllowLoadLocalInfile;
 	internal bool AllowUserVariables => GetInitializedConnectionSettings().AllowUserVariables;
 	internal bool AllowZeroDateTime => GetInitializedConnectionSettings().AllowZeroDateTime;

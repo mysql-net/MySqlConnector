@@ -451,7 +451,9 @@ internal sealed partial class ServerSession : IServerCapabilities
 			ServerVersion = new(initialHandshake.ServerVersion);
 			ConnectionId = initialHandshake.ConnectionId;
 			AuthPluginData = initialHandshake.AuthPluginData;
-			m_useCompression = cs.UseCompression && (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0;
+			m_compressionMethod = !cs.UseCompression ? CompressionMethod.None :
+				((initialHandshake.ProtocolCapabilities & ProtocolCapabilities.ZstandardCompressionAlgorithm) != 0 && connection.ZstandardPlugin is not null) ? CompressionMethod.Zstandard :
+				((initialHandshake.ProtocolCapabilities & ProtocolCapabilities.Compress) != 0) ? CompressionMethod.Zlib : CompressionMethod.None;
 			CancellationTimeout = cs.CancellationTimeout;
 			UserID = cs.UserID;
 
@@ -483,7 +485,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			else
 			{
 				// pipelining is not currently compatible with compression
-				m_supportsPipelining = !cs.UseCompression && cs.Pipelining is not false;
+				m_supportsPipelining = m_compressionMethod == CompressionMethod.None && cs.Pipelining is not false;
 
 				// for pipelining, concatenate reset connection and SET NAMES query into one buffer
 				if (m_supportsPipelining)
@@ -500,7 +502,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				}
 			}
 
-			Log.SessionMadeConnection(m_logger, Id, ServerVersion.OriginalString, ConnectionId, m_useCompression, m_supportsConnectionAttributes, SupportsDeprecateEof, SupportsCachedPreparedMetadata, serverSupportsSsl, SupportsSessionTrack, m_supportsPipelining, SupportsQueryAttributes);
+			Log.SessionMadeConnection(m_logger, Id, ServerVersion.OriginalString, ConnectionId, m_compressionMethod != CompressionMethod.None, m_supportsConnectionAttributes, SupportsDeprecateEof, SupportsCachedPreparedMetadata, serverSupportsSsl, SupportsSessionTrack, m_supportsPipelining, SupportsQueryAttributes);
 
 			if (cs.SslMode != MySqlSslMode.None && (cs.SslMode != MySqlSslMode.Preferred || serverSupportsSsl))
 			{
@@ -517,7 +519,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				cs.ConnectionAttributes = CreateConnectionAttributes(cs.ApplicationName);
 
 			var password = GetPassword(cs, connection);
-			using (var handshakeResponsePayload = HandshakeResponse41Payload.Create(initialHandshake, cs, password, m_useCompression, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
+			using (var handshakeResponsePayload = HandshakeResponse41Payload.Create(initialHandshake, cs, password, m_compressionMethod, connection.ZstandardPlugin?.CompressionLevel, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
 				await SendReplyAsync(handshakeResponsePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
@@ -570,8 +572,10 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 			var redirectionUrl = ok.RedirectionUrl;
 
-			if (m_useCompression)
+			if (m_compressionMethod == CompressionMethod.Zlib)
 				m_payloadHandler = new CompressedPayloadHandler(m_payloadHandler.ByteHandler);
+			else if (m_compressionMethod == CompressionMethod.Zstandard)
+				m_payloadHandler = connection.ZstandardPlugin!.CreatePayloadHandler(m_payloadHandler.ByteHandler);
 
 			// send 'SET NAMES' to set the character set and collation unless the server reports that it's already using the desired character set (e.g., MariaDB >= 11.5)
 			if (ok.NewCharacterSet != (ServerVersion.Version >= ServerVersions.SupportsUtf8Mb4 ? CharacterSet.Utf8Mb4Binary : CharacterSet.Utf8Mb3Binary))
@@ -1632,7 +1636,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 		var checkCertificateRevocation = cs.SslMode == MySqlSslMode.VerifyFull;
 
-		using (var initSsl = HandshakeResponse41Payload.CreateWithSsl(serverCapabilities, cs, m_useCompression, m_characterSet))
+		using (var initSsl = HandshakeResponse41Payload.CreateWithSsl(serverCapabilities, cs, m_compressionMethod, m_characterSet))
 			await SendReplyAsync(initSsl, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 		var clientAuthenticationOptions = new SslClientAuthenticationOptions
@@ -2129,7 +2133,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private SslStream? m_sslStream;
 	private X509Certificate2? m_clientCertificate;
 	private IPayloadHandler? m_payloadHandler;
-	private bool m_useCompression;
+	private CompressionMethod m_compressionMethod;
 	private bool m_isSecureConnection;
 	private bool m_supportsConnectionAttributes;
 	private bool m_supportsPipelining;

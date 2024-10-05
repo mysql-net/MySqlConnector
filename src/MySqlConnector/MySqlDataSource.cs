@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 using MySqlConnector.Core;
 using MySqlConnector.Logging;
+using MySqlConnector.Plugins;
 using MySqlConnector.Protocol.Serialization;
 
 namespace MySqlConnector;
@@ -18,7 +19,7 @@ public sealed class MySqlDataSource : DbDataSource
 	/// <param name="connectionString">The connection string for the MySQL Server. This parameter is required.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="connectionString"/> is <c>null</c>.</exception>
 	public MySqlDataSource(string connectionString)
-		: this(connectionString ?? throw new ArgumentNullException(nameof(connectionString)), MySqlConnectorLoggingConfiguration.NullConfiguration, null, null, null, null, default, default)
+		: this(connectionString ?? throw new ArgumentNullException(nameof(connectionString)), MySqlConnectorLoggingConfiguration.NullConfiguration, null, null, null, null, default, default, default)
 	{
 	}
 
@@ -29,7 +30,8 @@ public sealed class MySqlDataSource : DbDataSource
 		RemoteCertificateValidationCallback? remoteCertificateValidationCallback,
 		Func<MySqlProvidePasswordContext, CancellationToken, ValueTask<string>>? periodicPasswordProvider,
 		TimeSpan periodicPasswordProviderSuccessRefreshInterval,
-		TimeSpan periodicPasswordProviderFailureRefreshInterval)
+		TimeSpan periodicPasswordProviderFailureRefreshInterval,
+		ZstandardPlugin? zstandardPlugin)
 	{
 		m_connectionString = connectionString;
 		LoggingConfiguration = loggingConfiguration;
@@ -37,6 +39,7 @@ public sealed class MySqlDataSource : DbDataSource
 		m_clientCertificatesCallback = clientCertificatesCallback;
 		m_remoteCertificateValidationCallback = remoteCertificateValidationCallback;
 		m_logger = loggingConfiguration.DataSourceLogger;
+		m_zstandardPlugin = zstandardPlugin;
 
 		Pool = ConnectionPool.CreatePool(m_connectionString, LoggingConfiguration, name);
 		m_id = Interlocked.Increment(ref s_lastId);
@@ -221,6 +224,7 @@ public sealed class MySqlDataSource : DbDataSource
 	private readonly Func<MySqlProvidePasswordContext, CancellationToken, ValueTask<string>>? m_periodicPasswordProvider;
 	private readonly TimeSpan m_periodicPasswordProviderSuccessRefreshInterval;
 	private readonly TimeSpan m_periodicPasswordProviderFailureRefreshInterval;
+	private readonly ZstandardPlugin? m_zstandardPlugin;
 	private readonly MySqlProvidePasswordContext? m_providePasswordContext;
 	private readonly CancellationTokenSource? m_passwordProviderTimerCancellationTokenSource;
 	private readonly Timer? m_passwordProviderTimer;
