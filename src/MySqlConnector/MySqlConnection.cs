@@ -582,6 +582,9 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			if (m_connectionSettings.AutoEnlist && System.Transactions.Transaction.Current is not null)
 				EnlistTransaction(System.Transactions.Transaction.Current);
+
+			if (ConnectionOpenedCallback is { } connectionOpenedCallback)
+				await connectionOpenedCallback(this, m_session.Conditions).ConfigureAwait(false);
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
@@ -917,6 +920,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			using var connection = CloneWith(csb.ConnectionString);
 			connection.m_connectionSettings = connectionSettings;
+			connection.ConnectionOpenedCallback = null; // clear the callback because the user doesn't need to execute any setup logic on this connection
 			connection.Open();
 #if NET6_0_OR_GREATER
 			var killQuerySql = string.Create(CultureInfo.InvariantCulture, $"KILL QUERY {command.Connection!.ServerThread}");
@@ -992,6 +996,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	internal MySqlTransaction? CurrentTransaction { get; set; }
 	internal MySqlConnectorLoggingConfiguration LoggingConfiguration { get; }
 	internal ZstandardPlugin? ZstandardPlugin { get; set; }
+	internal MySqlConnectionOpenedCallback? ConnectionOpenedCallback { get; set; }
 	internal bool AllowLoadLocalInfile => GetInitializedConnectionSettings().AllowLoadLocalInfile;
 	internal bool AllowUserVariables => GetInitializedConnectionSettings().AllowUserVariables;
 	internal bool AllowZeroDateTime => GetInitializedConnectionSettings().AllowZeroDateTime;
@@ -1142,6 +1147,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		ProvideClientCertificatesCallback = other.ProvideClientCertificatesCallback;
 		ProvidePasswordCallback = other.ProvidePasswordCallback;
 		RemoteCertificateValidationCallback = other.RemoteCertificateValidationCallback;
+		ConnectionOpenedCallback = other.ConnectionOpenedCallback;
 	}
 
 	private void VerifyNotDisposed()

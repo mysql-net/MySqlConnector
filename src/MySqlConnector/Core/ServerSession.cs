@@ -65,10 +65,12 @@ internal sealed partial class ServerSession : IServerCapabilities
 	public bool ProcAccessDenied { get; set; }
 	public ICollection<KeyValuePair<string, object?>> ActivityTags => m_activityTags;
 	public MySqlDataReader DataReader { get; set; }
+	public MySqlConnectionOpenedConditions Conditions { get; private set; }
 
 	public ValueTask ReturnToPoolAsync(IOBehavior ioBehavior, MySqlConnection? owningConnection)
 	{
 		Log.ReturningToPool(m_logger, Id, Pool?.Id ?? 0);
+		Conditions = MySqlConnectionOpenedConditions.None;
 		LastReturnedTimestamp = Stopwatch.GetTimestamp();
 		if (Pool is null)
 			return default;
@@ -414,6 +416,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				}
 			}
 
+			Conditions = MySqlConnectionOpenedConditions.New;
 			var connected = cs.ConnectionProtocol switch
 			{
 				MySqlConnectionProtocol.Sockets => await OpenTcpSocketAsync(cs, loadBalancer ?? throw new ArgumentNullException(nameof(loadBalancer)), activity, ioBehavior, cancellationToken).ConfigureAwait(false),
@@ -747,6 +750,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 	public async Task<bool> TryResetConnectionAsync(ConnectionSettings cs, MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		VerifyState(State.Connected);
+		Conditions |= MySqlConnectionOpenedConditions.Reset;
 
 		try
 		{
@@ -829,6 +833,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			Log.IgnoringFailureInTryResetConnectionAsync(m_logger, ex, Id, "SocketException");
 		}
 
+		Conditions |= ~MySqlConnectionOpenedConditions.Reset;
 		return false;
 	}
 

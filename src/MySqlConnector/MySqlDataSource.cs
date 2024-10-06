@@ -19,7 +19,7 @@ public sealed class MySqlDataSource : DbDataSource
 	/// <param name="connectionString">The connection string for the MySQL Server. This parameter is required.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="connectionString"/> is <c>null</c>.</exception>
 	public MySqlDataSource(string connectionString)
-		: this(connectionString ?? throw new ArgumentNullException(nameof(connectionString)), MySqlConnectorLoggingConfiguration.NullConfiguration, null, null, null, null, default, default, default)
+		: this(connectionString ?? throw new ArgumentNullException(nameof(connectionString)), MySqlConnectorLoggingConfiguration.NullConfiguration, null, null, null, null, default, default, default, default)
 	{
 	}
 
@@ -31,7 +31,8 @@ public sealed class MySqlDataSource : DbDataSource
 		Func<MySqlProvidePasswordContext, CancellationToken, ValueTask<string>>? periodicPasswordProvider,
 		TimeSpan periodicPasswordProviderSuccessRefreshInterval,
 		TimeSpan periodicPasswordProviderFailureRefreshInterval,
-		ZstandardPlugin? zstandardPlugin)
+		ZstandardPlugin? zstandardPlugin,
+		MySqlConnectionOpenedCallback? connectionOpenedCallback)
 	{
 		m_connectionString = connectionString;
 		LoggingConfiguration = loggingConfiguration;
@@ -40,6 +41,7 @@ public sealed class MySqlDataSource : DbDataSource
 		m_remoteCertificateValidationCallback = remoteCertificateValidationCallback;
 		m_logger = loggingConfiguration.DataSourceLogger;
 		m_zstandardPlugin = zstandardPlugin;
+		m_connectionOpenedCallback = connectionOpenedCallback;
 
 		Pool = ConnectionPool.CreatePool(m_connectionString, LoggingConfiguration, name);
 		m_id = Interlocked.Increment(ref s_lastId);
@@ -142,6 +144,7 @@ public sealed class MySqlDataSource : DbDataSource
 			ProvideClientCertificatesCallback = m_clientCertificatesCallback,
 			ProvidePasswordCallback = m_providePasswordCallback,
 			RemoteCertificateValidationCallback = m_remoteCertificateValidationCallback,
+			ConnectionOpenedCallback = m_connectionOpenedCallback,
 		};
 	}
 
@@ -225,6 +228,7 @@ public sealed class MySqlDataSource : DbDataSource
 	private readonly TimeSpan m_periodicPasswordProviderSuccessRefreshInterval;
 	private readonly TimeSpan m_periodicPasswordProviderFailureRefreshInterval;
 	private readonly ZstandardPlugin? m_zstandardPlugin;
+	private readonly MySqlConnectionOpenedCallback? m_connectionOpenedCallback;
 	private readonly MySqlProvidePasswordContext? m_providePasswordContext;
 	private readonly CancellationTokenSource? m_passwordProviderTimerCancellationTokenSource;
 	private readonly Timer? m_passwordProviderTimer;
