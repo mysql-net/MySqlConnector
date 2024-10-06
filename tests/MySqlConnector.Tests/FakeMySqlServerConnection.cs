@@ -158,7 +158,7 @@ internal sealed class FakeMySqlServerConnection
 								m_server.CancelQuery(connectionId);
 								await SendAsync(stream, 1, WriteOk);
 							}
-							else if (query == "SELECT SLEEP(0) INTO @\uE001MySqlConnector\uE001Sleep;")
+							else if (query == "SELECT SLEEP(0) INTO @__MySqlConnector__Sleep;")
 							{
 								var wasSet = CancelQueryEvent.Wait(0, token);
 								await SendAsync(stream, 1, WriteOk);
