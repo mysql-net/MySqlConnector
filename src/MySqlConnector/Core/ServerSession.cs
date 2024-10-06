@@ -1595,7 +1595,11 @@ internal sealed partial class ServerSession : IServerCapabilities
 					var rootCertificate = caCertificateChain.ChainElements[^1].Certificate;
 					foreach (var sslCaCertificate in caCertificateChain.ChainPolicy.ExtraStore)
 					{
+#if NET7_0_OR_GREATER
+						if (rootCertificate.RawDataMemory.Span.SequenceEqual(sslCaCertificate.RawDataMemory.Span))
+#else
 						if (rootCertificate.RawData.AsSpan().SequenceEqual(sslCaCertificate.RawData))
+#endif
 						{
 							rcbPolicyErrors &= ~SslPolicyErrors.RemoteCertificateChainErrors;
 							break;
