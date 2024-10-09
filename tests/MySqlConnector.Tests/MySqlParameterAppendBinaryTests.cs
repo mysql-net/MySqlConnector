@@ -22,6 +22,6 @@ public class MySqlParameterAppendBinaryTests
 
 		Assert.Equal(parameter.MySqlDbType, expectedMySqlDbType);
 		Assert.Equal(writer.Position, expectedBinary.Length);
-		Assert.Equal(writer.ArraySegment, expectedBinary);
+		Assert.Equal(writer.ArraySegment.ToArray(), expectedBinary);
 	}
 }
