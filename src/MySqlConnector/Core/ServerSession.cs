@@ -833,7 +833,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			Log.IgnoringFailureInTryResetConnectionAsync(m_logger, ex, Id, "SocketException");
 		}
 
-		Conditions |= ~MySqlConnectionOpenedConditions.Reset;
+		Conditions &= ~MySqlConnectionOpenedConditions.Reset;
 		return false;
 	}
 
