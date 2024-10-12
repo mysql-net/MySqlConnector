@@ -920,7 +920,11 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			using var connection = CloneWith(csb.ConnectionString);
 			connection.m_connectionSettings = connectionSettings;
-			connection.ConnectionOpenedCallback = null; // clear the callback because the user doesn't need to execute any setup logic on this connection
+
+			// clear the callback because this is not intended to be a user-visible MySqlConnection that will execute setup logic; it's a
+			// non-pooled connection that will execute "KILL QUERY" then immediately be closed
+			connection.ConnectionOpenedCallback = null;
+
 			connection.Open();
 #if NET6_0_OR_GREATER
 			var killQuerySql = string.Create(CultureInfo.InvariantCulture, $"KILL QUERY {command.Connection!.ServerThread}");
