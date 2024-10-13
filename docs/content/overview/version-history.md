@@ -11,6 +11,20 @@ weight: 30
 
 # Version History
 
+### 2.4.0 Beta 1
+
+* Support .NET 9.0.
+* Add `MySqlDataSourceBuilder.UseConnectionOpenedCallback`: [#1508](https://github.com/mysql-net/MySqlConnector/issues/1508).
+* Rewrite server redirection logic based on latest MariaDB specification: [#1499](https://github.com/mysql-net/MySqlConnector/pull/1499).
+* Support `SET` data type in functions: [#1491](https://github.com/mysql-net/MySqlConnector/issues/1491).
+* Performance: Avoid `SET NAMES` commands when not necessary: [#1497](https://github.com/mysql-net/MySqlConnector/pull/1497).
+* Fix potential `NullReferenceException` in `MySqlConnection.Cancel`: [#1506](https://github.com/mysql-net/MySqlConnector/issues/1506).
+* Provide logger to new MySqlConnection: [#1510](https://github.com/mysql-net/MySqlConnector/issues/1510).
+* Use correct hostname when cancelling query: [#1514](https://github.com/mysql-net/MySqlConnector/issues/1514).
+* Remove `TABLESPACES` schema: [#1477](https://github.com/mysql-net/MySqlConnector/issues/1477).
+* Change variable name for better server compatibility: [#1502](https://github.com/mysql-net/MySqlConnector/issues/1502).
+* Thanks to [Diego Dupin](https://github.com/rusher) for contributions to this release.
+
 ### 2.3.7
 
 * Fix `NullReferenceException` in `MySqlDataReader.ActivateResultSet` and `MySqlDataReader.DisposeAsync`: [#1459](https://github.com/mysql-net/MySqlConnector/issues/1459).
