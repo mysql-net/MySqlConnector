@@ -18,6 +18,7 @@ public sealed class MySqlDataSourceBuilder
 | [ConnectionStringBuilder](../MySqlDataSourceBuilder/ConnectionStringBuilder/) { get; } | A [`MySqlConnectionStringBuilder`](../MySqlConnectionStringBuilderType/) that can be used to configure the connection string on this [`MySqlDataSourceBuilder`](../MySqlDataSourceBuilderType/). |
 | [Build](../MySqlDataSourceBuilder/Build/)() | Builds a [`MySqlDataSource`](../MySqlDataSourceType/) which is ready for use. |
 | [UseClientCertificatesCallback](../MySqlDataSourceBuilder/UseClientCertificatesCallback/)(…) | Sets the callback used to provide client certificates for connecting to a server. |
+| [UseConnectionOpenedCallback](../MySqlDataSourceBuilder/UseConnectionOpenedCallback/)(…) | Adds a callback that is invoked when a new [`MySqlConnection`](../MySqlConnectionType/) is opened. |
 | [UseLoggerFactory](../MySqlDataSourceBuilder/UseLoggerFactory/)(…) | Sets the ILoggerFactory that will be used for logging. |
 | [UseName](../MySqlDataSourceBuilder/UseName/)(…) | Sets the name of the [`MySqlDataSource`](../MySqlDataSourceType/) that will be created. |
 | [UsePeriodicPasswordProvider](../MySqlDataSourceBuilder/UsePeriodicPasswordProvider/)(…) | Configures a periodic password provider, which is automatically called by the data source at some regular interval. This is the recommended way to fetch a rotating access token. |

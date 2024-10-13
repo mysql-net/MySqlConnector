@@ -23,6 +23,9 @@ title: MySqlConnector
 | class [MySqlCommand](../MySqlConnector/MySqlCommandType/) | [`MySqlCommand`](../MySqlConnector/MySqlCommandType/) represents a SQL statement or stored procedure name to execute against a MySQL database. |
 | class [MySqlCommandBuilder](../MySqlConnector/MySqlCommandBuilderType/) |  |
 | class [MySqlConnection](../MySqlConnector/MySqlConnectionType/) | [`MySqlConnection`](../MySqlConnector/MySqlConnectionType/) represents a connection to a MySQL database. |
+| delegate [MySqlConnectionOpenedCallback](../MySqlConnector/MySqlConnectionOpenedCallbackType/) | A callback that is invoked when a new [`MySqlConnection`](../MySqlConnector/MySqlConnectionType/) is opened. |
+| [Flags] enum [MySqlConnectionOpenedConditions](../MySqlConnector/MySqlConnectionOpenedConditionsType/) | Bitflags giving the conditions under which a connection was opened. |
+| class [MySqlConnectionOpenedContext](../MySqlConnector/MySqlConnectionOpenedContextType/) | Contains information passed to [`MySqlConnectionOpenedCallback`](../MySqlConnector/MySqlConnectionOpenedCallbackType/) when a new [`MySqlConnection`](../MySqlConnector/MySqlConnectionType/) is opened. |
 | enum [MySqlConnectionProtocol](../MySqlConnector/MySqlConnectionProtocolType/) | Specifies the type of connection to make to the server. |
 | class [MySqlConnectionStringBuilder](../MySqlConnector/MySqlConnectionStringBuilderType/) | [`MySqlConnectionStringBuilder`](../MySqlConnector/MySqlConnectionStringBuilderType/) allows you to construct a MySQL connection string by setting properties on the builder then reading the ConnectionString property. |
 | class [MySqlConnectorFactory](../MySqlConnector/MySqlConnectorFactoryType/) | An implementation of DbProviderFactory that creates MySqlConnector objects. |
@@ -66,6 +69,7 @@ title: MySqlConnector
 | --- | --- |
 | static class [AuthenticationPlugins](../MySqlConnector.Authentication/AuthenticationPluginsType/) | A registry of known authentication plugins. |
 | interface [IAuthenticationPlugin](../MySqlConnector.Authentication/IAuthenticationPluginType/) | The primary interface implemented by an authentication plugin. |
+| interface [IAuthenticationPlugin2](../MySqlConnector.Authentication/IAuthenticationPlugin2Type/) | [`IAuthenticationPlugin2`](../MySqlConnector.Authentication/IAuthenticationPlugin2Type/) is an extension to [`IAuthenticationPlugin`](../MySqlConnector.Authentication/IAuthenticationPluginType/) that returns a hash of the client's password. |
 
 ## MySqlConnector.Logging namespace
 
