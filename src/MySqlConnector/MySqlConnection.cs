@@ -584,7 +584,10 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 				EnlistTransaction(System.Transactions.Transaction.Current);
 
 			if (ConnectionOpenedCallback is { } connectionOpenedCallback)
-				await connectionOpenedCallback(new(this, m_session.Conditions)).ConfigureAwait(false);
+			{
+				cancellationToken.ThrowIfCancellationRequested();
+				await connectionOpenedCallback(new(this, m_session.Conditions), cancellationToken).ConfigureAwait(false);
+			}
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{

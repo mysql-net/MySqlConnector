@@ -89,19 +89,14 @@ public sealed class MySqlDataSourceBuilder
 		return this;
 	}
 
+	/// <summary>
+	/// Adds a callback that is invoked when a new <see cref="MySqlConnection"/> is opened.
+	/// </summary>
+	/// <param name="callback">The callback to invoke.</param>
+	/// <returns>This builder, so that method calls can be chained.</returns>
 	public MySqlDataSourceBuilder UseConnectionOpenedCallback(MySqlConnectionOpenedCallback callback)
 	{
-		m_connectionOpenedCallback = callback;
-		return this;
-	}
-
-	public MySqlDataSourceBuilder UseConnectionOpenedCallback(Action<MySqlConnectionOpenedData> callback)
-	{
-		m_connectionOpenedCallback = data =>
-		{
-			callback(data);
-			return default;
-		};
+		m_connectionOpenedCallback += callback;
 		return this;
 	}
 

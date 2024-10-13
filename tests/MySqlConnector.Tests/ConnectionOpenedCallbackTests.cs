@@ -45,28 +45,6 @@ public class ConnectionOpenedCallbackTests : IDisposable
 	}
 
 	[Fact]
-	public void SyncCallbackIsInvoked()
-	{
-		var dataSource = new MySqlDataSourceBuilder(m_csb.ConnectionString)
-			.UseConnectionOpenedCallback(data =>
-			{
-				m_connectionOpenedCount++;
-				m_connectionOpenedConditions = data.Conditions;
-			})
-			.Build();
-		using (var connection = dataSource.CreateConnection())
-		{
-			Assert.Equal(0, m_connectionOpenedCount);
-			Assert.Equal(MySqlConnectionOpenedConditions.None, m_connectionOpenedConditions);
-
-			connection.Open();
-
-			Assert.Equal(1, m_connectionOpenedCount);
-			Assert.Equal(MySqlConnectionOpenedConditions.New, m_connectionOpenedConditions);
-		}
-	}
-
-	[Fact]
 	public void CallbackIsInvokedForPooledConnection()
 	{
 		using (var connection = m_dataSource.CreateConnection())
@@ -146,7 +124,7 @@ public class ConnectionOpenedCallbackTests : IDisposable
 		}
 	}
 
-	private ValueTask OnConnectionOpenedAsync(MySqlConnectionOpenedData data)
+	private ValueTask OnConnectionOpenedAsync(MySqlConnectionOpenedContext data, CancellationToken cancellationToken)
 	{
 		m_connectionOpenedCount++;
 		m_connectionOpenedConditions = data.Conditions;
