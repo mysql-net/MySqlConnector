@@ -124,10 +124,10 @@ public class ConnectionOpenedCallbackTests : IDisposable
 		}
 	}
 
-	private ValueTask OnConnectionOpenedAsync(MySqlConnectionOpenedContext data, CancellationToken cancellationToken)
+	private ValueTask OnConnectionOpenedAsync(MySqlConnectionOpenedContext context, CancellationToken cancellationToken)
 	{
 		m_connectionOpenedCount++;
-		m_connectionOpenedConditions = data.Conditions;
+		m_connectionOpenedConditions = context.Conditions;
 		return default;
 	}
 
