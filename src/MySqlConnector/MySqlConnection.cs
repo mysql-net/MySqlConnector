@@ -551,6 +551,13 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 					ActivitySourceHelper.CopyTags(m_session!.ActivityTags, activity);
 					m_hasBeenOpened = true;
 					SetState(ConnectionState.Open);
+
+					if (ConnectionOpenedCallback is { } autoEnlistConnectionOpenedCallback)
+					{
+						cancellationToken.ThrowIfCancellationRequested();
+						await autoEnlistConnectionOpenedCallback(new(this, MySqlConnectionOpenedConditions.None), cancellationToken).ConfigureAwait(false);
+					}
+
 					return;
 				}
 			}
@@ -582,6 +589,12 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			if (m_connectionSettings.AutoEnlist && System.Transactions.Transaction.Current is not null)
 				EnlistTransaction(System.Transactions.Transaction.Current);
+
+			if (ConnectionOpenedCallback is { } connectionOpenedCallback)
+			{
+				cancellationToken.ThrowIfCancellationRequested();
+				await connectionOpenedCallback(new(this, m_session.Conditions), cancellationToken).ConfigureAwait(false);
+			}
 		}
 		catch (Exception ex) when (activity is { IsAllDataRequested: true })
 		{
@@ -917,6 +930,11 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 			using var connection = CloneWith(csb.ConnectionString);
 			connection.m_connectionSettings = connectionSettings;
+
+			// clear the callback because this is not intended to be a user-visible MySqlConnection that will execute setup logic; it's a
+			// non-pooled connection that will execute "KILL QUERY" then immediately be closed
+			connection.ConnectionOpenedCallback = null;
+
 			connection.Open();
 #if NET6_0_OR_GREATER
 			var killQuerySql = string.Create(CultureInfo.InvariantCulture, $"KILL QUERY {command.Connection!.ServerThread}");
@@ -992,6 +1010,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	internal MySqlTransaction? CurrentTransaction { get; set; }
 	internal MySqlConnectorLoggingConfiguration LoggingConfiguration { get; }
 	internal ZstandardPlugin? ZstandardPlugin { get; set; }
+	internal MySqlConnectionOpenedCallback? ConnectionOpenedCallback { get; set; }
 	internal bool AllowLoadLocalInfile => GetInitializedConnectionSettings().AllowLoadLocalInfile;
 	internal bool AllowUserVariables => GetInitializedConnectionSettings().AllowUserVariables;
 	internal bool AllowZeroDateTime => GetInitializedConnectionSettings().AllowZeroDateTime;
@@ -1142,6 +1161,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		ProvideClientCertificatesCallback = other.ProvideClientCertificatesCallback;
 		ProvidePasswordCallback = other.ProvidePasswordCallback;
 		RemoteCertificateValidationCallback = other.RemoteCertificateValidationCallback;
+		ConnectionOpenedCallback = other.ConnectionOpenedCallback;
 	}
 
 	private void VerifyNotDisposed()

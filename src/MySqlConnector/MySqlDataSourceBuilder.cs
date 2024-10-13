@@ -90,6 +90,17 @@ public sealed class MySqlDataSourceBuilder
 	}
 
 	/// <summary>
+	/// Adds a callback that is invoked when a new <see cref="MySqlConnection"/> is opened.
+	/// </summary>
+	/// <param name="callback">The callback to invoke.</param>
+	/// <returns>This builder, so that method calls can be chained.</returns>
+	public MySqlDataSourceBuilder UseConnectionOpenedCallback(MySqlConnectionOpenedCallback callback)
+	{
+		m_connectionOpenedCallback += callback;
+		return this;
+	}
+
+	/// <summary>
 	/// Builds a <see cref="MySqlDataSource"/> which is ready for use.
 	/// </summary>
 	/// <returns>A new <see cref="MySqlDataSource"/> with the settings configured through this <see cref="MySqlDataSourceBuilder"/>.</returns>
@@ -104,7 +115,8 @@ public sealed class MySqlDataSourceBuilder
 			m_periodicPasswordProvider,
 			m_periodicPasswordProviderSuccessRefreshInterval,
 			m_periodicPasswordProviderFailureRefreshInterval,
-			ZstandardPlugin
+			ZstandardPlugin,
+			m_connectionOpenedCallback
 			);
 	}
 
@@ -122,4 +134,5 @@ public sealed class MySqlDataSourceBuilder
 	private Func<MySqlProvidePasswordContext, CancellationToken, ValueTask<string>>? m_periodicPasswordProvider;
 	private TimeSpan m_periodicPasswordProviderSuccessRefreshInterval;
 	private TimeSpan m_periodicPasswordProviderFailureRefreshInterval;
+	private MySqlConnectionOpenedCallback? m_connectionOpenedCallback;
 }

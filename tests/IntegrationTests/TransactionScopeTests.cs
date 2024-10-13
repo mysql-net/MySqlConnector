@@ -886,6 +886,38 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 
 		Assert.True(rollbacked, $"First branch transaction '{xid}1' not rolled back");
 	}
+
+	[Fact]
+	public void ConnectionOpenedCallbackAutoEnlistInTransaction()
+	{
+		var connectionOpenedCallbackCount = 0;
+		var connectionOpenedConditions = MySqlConnectionOpenedConditions.None;
+		using var dataSource = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
+			.UseConnectionOpenedCallback((ctx, token) =>
+			{
+				connectionOpenedCallbackCount++;
+				connectionOpenedConditions = ctx.Conditions;
+				return default;
+			})
+			.Build();
+
+		using (var transactionScope = new TransactionScope())
+		{
+			using (var conn = dataSource.OpenConnection())
+			{
+				Assert.Equal(1, connectionOpenedCallbackCount);
+				Assert.Equal(MySqlConnectionOpenedConditions.New, connectionOpenedConditions);
+			}
+
+			using (var conn = dataSource.OpenConnection())
+			{
+				Assert.Equal(2, connectionOpenedCallbackCount);
+				Assert.Equal(MySqlConnectionOpenedConditions.None, connectionOpenedConditions);
+			}
+
+			transactionScope.Complete();
+		}
+	}
 #endif
 
 	readonly DatabaseFixture m_database;
