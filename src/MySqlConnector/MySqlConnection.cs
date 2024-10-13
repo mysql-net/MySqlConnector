@@ -551,6 +551,13 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 					ActivitySourceHelper.CopyTags(m_session!.ActivityTags, activity);
 					m_hasBeenOpened = true;
 					SetState(ConnectionState.Open);
+
+					if (ConnectionOpenedCallback is { } autoEnlistConnectionOpenedCallback)
+					{
+						cancellationToken.ThrowIfCancellationRequested();
+						await autoEnlistConnectionOpenedCallback(new(this, MySqlConnectionOpenedConditions.None), cancellationToken).ConfigureAwait(false);
+					}
+
 					return;
 				}
 			}
