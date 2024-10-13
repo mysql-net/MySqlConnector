@@ -48,10 +48,10 @@ public class ConnectionOpenedCallbackTests : IDisposable
 	public void SyncCallbackIsInvoked()
 	{
 		var dataSource = new MySqlDataSourceBuilder(m_csb.ConnectionString)
-			.UseConnectionOpenedCallback((conn, cond) =>
+			.UseConnectionOpenedCallback(data =>
 			{
 				m_connectionOpenedCount++;
-				m_connectionOpenedConditions = cond;
+				m_connectionOpenedConditions = data.Conditions;
 			})
 			.Build();
 		using (var connection = dataSource.CreateConnection())
@@ -146,10 +146,10 @@ public class ConnectionOpenedCallbackTests : IDisposable
 		}
 	}
 
-	private ValueTask OnConnectionOpenedAsync(MySqlConnection connection, MySqlConnectionOpenedConditions conditions)
+	private ValueTask OnConnectionOpenedAsync(MySqlConnectionOpenedData data)
 	{
 		m_connectionOpenedCount++;
-		m_connectionOpenedConditions = conditions;
+		m_connectionOpenedConditions = data.Conditions;
 		return default;
 	}
 

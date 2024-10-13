@@ -95,11 +95,11 @@ public sealed class MySqlDataSourceBuilder
 		return this;
 	}
 
-	public MySqlDataSourceBuilder UseConnectionOpenedCallback(Action<MySqlConnection, MySqlConnectionOpenedConditions> callback)
+	public MySqlDataSourceBuilder UseConnectionOpenedCallback(Action<MySqlConnectionOpenedData> callback)
 	{
-		m_connectionOpenedCallback = (connection, conditions) =>
+		m_connectionOpenedCallback = data =>
 		{
-			callback(connection, conditions);
+			callback(data);
 			return default;
 		};
 		return this;
