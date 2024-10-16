@@ -5,6 +5,11 @@ parameters:
   DotNetCoreSdkVersion: ''
 
 steps:
+- task: Docker@2
+  displayName: Log in to Docker
+  inputs:
+    command: login
+    containerRegistry: DockerHub
 - bash: ${{ format('.ci/docker-run.sh {0} 3300 {1}', parameters.image, parameters.unsupportedFeatures) }}
   displayName: 'Start Docker container'
 - task: UseDotNet@2
