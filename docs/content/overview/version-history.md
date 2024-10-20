@@ -23,6 +23,7 @@ weight: 30
 ### 2.4.0 Beta 1
 
 * Support .NET 9.0.
+* Support [zero-configuration SSL](https://mariadb.org/mission-impossible-zero-configuration-ssl/) with MariaDB: [#1500](https://github.com/mysql-net/MySqlConnector/pull/1500).
 * Add `MySqlDataSourceBuilder.UseConnectionOpenedCallback`: [#1508](https://github.com/mysql-net/MySqlConnector/issues/1508).
 * Rewrite server redirection logic based on latest MariaDB specification: [#1499](https://github.com/mysql-net/MySqlConnector/pull/1499).
 * Support `SET` data type in functions: [#1491](https://github.com/mysql-net/MySqlConnector/issues/1491).
