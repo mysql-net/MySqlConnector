@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids -->
+<!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
@@ -18,7 +18,7 @@
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:System.Data.Common.DbDataSource</Target>
     <Left>lib/net6.0/MySqlConnector.dll</Left>
-    <Right>lib/net7.0/MySqlConnector.dll</Right>
+    <Right>lib/net8.0/MySqlConnector.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>

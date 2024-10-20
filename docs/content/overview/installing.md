@@ -30,11 +30,11 @@ Or, in Visual Studio, use the _NuGet Package Manager_ to browse for and install 
     <AssemblyTitle>My Application</AssemblyTitle>
     <Description>A great application</Description>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MySqlConnector" Version="2.2.5" />
+    <PackageReference Include="MySqlConnector" Version="2.3.7" />
   </ItemGroup>
 
 </Project>
