@@ -11,6 +11,15 @@ weight: 30
 
 # Version History
 
+### 2.4.0 Beta 2
+
+* Remove end-of-life .NET 7 target framework.
+  * Users who wish to use `DbDataSource` need to target .NET 8.0 or later.
+* Fix "Can't replace active reader": [#1469](https://github.com/mysql-net/MySqlConnector/issues/1469).
+* Update dependencies:
+  * Microsoft.Extensions.Logging.Abstractions from 7.0.1 to 8.0.2.
+  * System.Diagnostics.DiagnosticSource from 7.0.2 to 8.0.1.
+
 ### 2.4.0 Beta 1
 
 * Support .NET 9.0.
