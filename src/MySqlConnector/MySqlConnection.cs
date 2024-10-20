@@ -1248,6 +1248,9 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		{
 			if (m_session is not null)
 			{
+				// under exceptional circumstances, we may enter this code without having called FinishQuerying, which clears this field
+				m_activeReader = null;
+
 				if (GetInitializedConnectionSettings().Pooling)
 				{
 					await m_session.ReturnToPoolAsync(ioBehavior, this).ConfigureAwait(false);

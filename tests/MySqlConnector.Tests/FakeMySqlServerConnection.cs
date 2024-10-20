@@ -179,6 +179,20 @@ internal sealed class FakeMySqlServerConnection
 								for (var packetIndex = 0; packetIndex < packets.Length; packetIndex++)
 									await SendAsync(stream, packetIndex + 1, x => x.Write(packets[packetIndex]));
 							}
+							else if (query == "select disconnect")
+							{
+								var packets = new[]
+								{
+								new byte[] { 1 }, // one column
+								[3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x41, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 3, 0x01, 0, 0x1F, 0, 0], // column definition (int)
+								[0xFE, 0, 0, 2, 0], // EOF
+								[1, 0x31], // 1
+							};
+								for (var packetIndex = 0; packetIndex < packets.Length; packetIndex++)
+									await SendAsync(stream, packetIndex + 1, x => x.Write(packets[packetIndex]));
+								stream.Close();
+								client.Close();
+							}
 							else
 							{
 								await SendAsync(stream, 1, x => WriteError(x, "Unhandled query: " + query));

@@ -234,6 +234,49 @@ public class ConnectionTests : IDisposable
 		Assert.False(reader.Read());
 	}
 
+	[Fact]
+	public void ReplaceActiveReader()
+	{
+		var connection = new MySqlConnection(m_csb.ConnectionString);
+		connection.Open();
+		using (var command = connection.CreateCommand())
+		{
+			command.CommandText = "select disconnect";
+			command.CommandTimeout = 600;
+			var reader = command.ExecuteReader();
+			Assert.True(reader.Read());
+			Assert.Equal(1, reader.GetInt32(0));
+		}
+
+		try
+		{
+			connection.Close();
+		}
+		catch (MySqlEndOfStreamException)
+		{
+		}
+
+		connection.Open();
+		using (var command = connection.CreateCommand())
+		{
+			command.CommandText = "SELECT 1;";
+			var reader = command.ExecuteReader();
+			Assert.True(reader.Read());
+			Assert.Equal(1, reader.GetInt32(0));
+		}
+		connection.Close();
+
+		connection.Open();
+		using (var command = connection.CreateCommand())
+		{
+			command.CommandText = "SELECT 2;";
+			var reader = command.ExecuteReader();
+			Assert.True(reader.Read());
+			Assert.Equal(2, reader.GetInt32(0));
+		}
+		connection.Close();
+	}
+
 	private static async Task WaitForConditionAsync<T>(T expected, Func<T> getValue)
 	{
 		var sw = Stopwatch.StartNew();
