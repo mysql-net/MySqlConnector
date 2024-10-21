@@ -22,6 +22,7 @@ public sealed class MySqlDbColumn : DbColumn
 		BaseColumnName = column.PhysicalName;
 		BaseSchemaName = column.SchemaName;
 		BaseTableName = column.PhysicalTable;
+		TableName = column.Table;
 		ColumnName = column.Name;
 		ColumnOrdinal = ordinal;
 		ColumnSize = columnSize > int.MaxValue ? int.MaxValue : unchecked((int) columnSize);
@@ -50,5 +51,6 @@ public sealed class MySqlDbColumn : DbColumn
 		ProviderType = mySqlDbType;
 	}
 
+	public string TableName { get; }
 	public MySqlDbType ProviderType { get; }
 }
