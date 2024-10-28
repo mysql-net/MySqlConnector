@@ -48,7 +48,13 @@ public sealed class MySqlDbColumn : DbColumn
 		}
 		NumericScale = column.Decimals;
 		ProviderType = mySqlDbType;
+		TableName = column.Table;
 	}
 
 	public MySqlDbType ProviderType { get; }
+
+	/// <summary>
+	/// Gets the name of the table that the column belongs to. This will be the alias if the table is aliased in the query.
+	/// </summary>
+	public string TableName { get; }
 }
