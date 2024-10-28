@@ -22,7 +22,6 @@ public sealed class MySqlDbColumn : DbColumn
 		BaseColumnName = column.PhysicalName;
 		BaseSchemaName = column.SchemaName;
 		BaseTableName = column.PhysicalTable;
-		TableName = column.Table;
 		ColumnName = column.Name;
 		ColumnOrdinal = ordinal;
 		ColumnSize = columnSize > int.MaxValue ? int.MaxValue : unchecked((int) columnSize);
@@ -49,8 +48,13 @@ public sealed class MySqlDbColumn : DbColumn
 		}
 		NumericScale = column.Decimals;
 		ProviderType = mySqlDbType;
+		TableName = column.Table;
 	}
 
-	public string TableName { get; }
 	public MySqlDbType ProviderType { get; }
+
+	/// <summary>
+	/// Gets the name of the table that the column belongs to. This will be the alias if the table is aliased in the query.
+	/// </summary>
+	public string TableName { get; }
 }
