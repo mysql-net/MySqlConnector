@@ -296,13 +296,22 @@ internal sealed partial class ServerSession : IServerCapabilities
 	public void FinishQuerying()
 	{
 		EnteringFinishQuerying(m_logger, Id, m_state);
-		bool clearConnection = false;
+		var clearConnection = false;
 		lock (m_lock)
 		{
+			// entering this method, we expect to be in Querying, CancelingQuery, or Failed state
 			if (m_state == State.CancelingQuery)
 			{
 				m_state = State.ClearingPendingCancellation;
 				clearConnection = true;
+			}
+			else
+			{
+				if (m_state is State.Querying)
+					m_state = State.Connected;
+				else
+					VerifyState(State.Failed);
+				ActiveCommandId = 0;
 			}
 		}
 
@@ -318,15 +327,13 @@ internal sealed partial class ServerSession : IServerCapabilities
 			payload = ReceiveReplyAsync(IOBehavior.Synchronous, CancellationToken.None).GetAwaiter().GetResult();
 #pragma warning restore CA2012
 			OkPayload.Verify(payload.Span, this);
-		}
 
-		lock (m_lock)
-		{
-			if (m_state is State.Querying or State.ClearingPendingCancellation)
+			lock (m_lock)
+			{
+				VerifyState(State.ClearingPendingCancellation);
 				m_state = State.Connected;
-			else
-				VerifyState(State.Failed);
-			ActiveCommandId = 0;
+				ActiveCommandId = 0;
+			}
 		}
 	}
 
