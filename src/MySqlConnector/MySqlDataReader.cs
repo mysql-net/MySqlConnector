@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using MySqlConnector.Core;
 using MySqlConnector.Logging;
@@ -245,6 +246,10 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 	public override string GetDataTypeName(int ordinal) => GetResultSet().GetDataTypeName(ordinal);
 
 	public Type GetFieldType(string name) => GetFieldType(GetOrdinal(name));
+
+#if NET6_0_OR_GREATER
+	[UnconditionalSuppressMessage("ILLink", "IL2093", Justification = "This method is provided to implement the DbDataReader API. We do not want to retain all public methods of Types just used as sentinel values for field mapping.")]
+#endif
 	public override Type GetFieldType(int ordinal) => GetResultSet().GetFieldType(ordinal);
 
 	public override object GetValue(int ordinal) => GetResultSet().GetCurrentRow().GetValue(ordinal);

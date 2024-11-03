@@ -11,6 +11,7 @@
     <Authors>Bradley Grainger</Authors>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>mysqlconnector;dependency injection;iservicecollection</PackageTags>
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,14 +5,14 @@ on:
     branches: [ master, test ]
 
 jobs:
-  build:
-    name: Build
+  component-detection:
+    name: Component Detection
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-    - name: Checkout repository
+    - name: Check out repository
       uses: actions/checkout@v4
 
     - name: Set up .NET
@@ -26,3 +26,32 @@ jobs:
 
     - name: Component detection
       uses: advanced-security/component-detection-dependency-submission-action@v0.0.3
+
+  native-aot:
+    name: Native AOT
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tfm: [ 'net8.0', 'net9.0' ]
+    services:
+      mysql:
+        image: mysql:9.1
+        env:
+          MYSQL_DATABASE: testdb
+          MYSQL_ROOT_PASSWORD: pass
+        ports:
+          - 3306:3306
+          # Before continuing, verify the mysql container is reachable from the ubuntu host
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+
+      - name: Publish
+        run: dotnet publish -c Release -r linux-x64 -f ${{ matrix.tfm }} tests/MySqlConnector.NativeAot.Tests/MySqlConnector.NativeAot.Tests.csproj
+
+      - name: Test Native AOT
+        run: ./artifacts/publish/MySqlConnector.NativeAot.Tests/release_${{ matrix.tfm }}_linux-x64/MySqlConnector.NativeAot.Tests

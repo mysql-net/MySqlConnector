@@ -28,6 +28,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlConnector.DependencyIn
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlConnector.DependencyInjection.Tests", "tests\MySqlConnector.DependencyInjection.Tests\MySqlConnector.DependencyInjection.Tests.csproj", "{E41AD8B7-2F67-444F-A8DC-51C3C8B1FD16}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySqlConnector.NativeAot.Tests", "tests\MySqlConnector.NativeAot.Tests\MySqlConnector.NativeAot.Tests.csproj", "{F3A1E4DF-A5CC-4447-A0FC-C6971218EEDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -82,6 +84,10 @@ Global
 		{E41AD8B7-2F67-444F-A8DC-51C3C8B1FD16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E41AD8B7-2F67-444F-A8DC-51C3C8B1FD16}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E41AD8B7-2F67-444F-A8DC-51C3C8B1FD16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3A1E4DF-A5CC-4447-A0FC-C6971218EEDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3A1E4DF-A5CC-4447-A0FC-C6971218EEDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3A1E4DF-A5CC-4447-A0FC-C6971218EEDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3A1E4DF-A5CC-4447-A0FC-C6971218EEDE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
