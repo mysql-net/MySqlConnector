@@ -131,6 +131,7 @@
         }
       }
     },
+    ".NETFramework,Version=v4.6.2/win-x64": {},
     ".NETFramework,Version=v4.7.1": {
       "IndexRange": {
         "type": "Direct",
@@ -253,6 +254,7 @@
         }
       }
     },
+    ".NETFramework,Version=v4.7.1/win-x64": {},
     ".NETFramework,Version=v4.8": {
       "IndexRange": {
         "type": "Direct",
@@ -375,6 +377,7 @@
         }
       }
     },
+    ".NETFramework,Version=v4.8/win-x64": {},
     ".NETStandard,Version=v2.0": {
       "IndexRange": {
         "type": "Direct",
@@ -511,6 +514,7 @@
         }
       }
     },
+    ".NETStandard,Version=v2.0/win-x64": {},
     ".NETStandard,Version=v2.1": {
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "Direct",
@@ -606,6 +610,7 @@
         "contentHash": "3iE7UF7MQkCv1cxzCahz+Y/guQbTqieyxyaWKhrRO91itI9cOKO76OHeQDahqG4MmW5umr3CcCvGmK92lWNlbg=="
       }
     },
+    ".NETStandard,Version=v2.1/win-x64": {},
     "net6.0": {
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "Direct",
@@ -678,6 +683,7 @@
         "contentHash": "3iE7UF7MQkCv1cxzCahz+Y/guQbTqieyxyaWKhrRO91itI9cOKO76OHeQDahqG4MmW5umr3CcCvGmK92lWNlbg=="
       }
     },
+    "net6.0/win-x64": {},
     "net8.0": {
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "Direct",
@@ -690,9 +696,9 @@
       },
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",
-        "requested": "[8.0.10, )",
-        "resolved": "8.0.10",
-        "contentHash": "xT8jYjlroY7SLbGtoV9vUTVW/TPgodL4Egc31a444Xe0TMytLZ3UlKQ0kxMZsy/CrWsFB6wtKnSG1SsXcWreew=="
+        "requested": "[8.0.11, )",
+        "resolved": "8.0.11",
+        "contentHash": "zk5lnZrYJgtuJG8L4v17Ej8rZ3PUcR2iweNV08BaO5LbYHIi2wNaVNcJoLxvqgQdnjLlKnCCfVGLDr6QHeAarQ=="
       },
       "Microsoft.SourceLink.GitHub": {
         "type": "Direct",
@@ -741,6 +747,7 @@
         "contentHash": "3iE7UF7MQkCv1cxzCahz+Y/guQbTqieyxyaWKhrRO91itI9cOKO76OHeQDahqG4MmW5umr3CcCvGmK92lWNlbg=="
       }
     },
+    "net8.0/win-x64": {},
     "net9.0": {
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "Direct",
@@ -753,9 +760,9 @@
       },
       "Microsoft.NET.ILLink.Tasks": {
         "type": "Direct",
-        "requested": "[9.0.0-rc.2.24473.5, )",
-        "resolved": "9.0.0-rc.2.24473.5",
-        "contentHash": "mXyCgKqBIo/KOpY09FqjOU8d+LME2qowzzvBd1/viYmSpAKYfQ2w1WDOlh0FniY4xnrB/wmDiAo4frJvfCqT0w=="
+        "requested": "[9.0.0, )",
+        "resolved": "9.0.0",
+        "contentHash": "zAwp213evC3UkimtVXRb+Dlgc/40QG145nmZDtp2LO9zJJMfrp+i/87BnXN7tRXEA4liyzdFkjqG1HE8/RPb4A=="
       },
       "Microsoft.SourceLink.GitHub": {
         "type": "Direct",
@@ -803,6 +810,7 @@
         "resolved": "8.0.2",
         "contentHash": "3iE7UF7MQkCv1cxzCahz+Y/guQbTqieyxyaWKhrRO91itI9cOKO76OHeQDahqG4MmW5umr3CcCvGmK92lWNlbg=="
       }
-    }
+    },
+    "net9.0/win-x64": {}
   }
 }
