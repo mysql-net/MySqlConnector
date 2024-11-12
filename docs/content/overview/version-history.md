@@ -11,29 +11,30 @@ weight: 30
 
 # Version History
 
-### 2.4.0 Beta 2
+### 2.4.0
 
+* Support .NET 9.0.
+* **Possibly breaking** Mark `MySqlConnectorLogManager.Provider` as `[Obsolete]`: [#1397](https://github.com/mysql-net/MySqlConnector/issues/1397).
 * **Possibly breaking** Remove end-of-life .NET 7 target framework.
   * Users who wish to use `DbDataSource` need to target .NET 8.0 or later.
-* Fix "Can't replace active reader": [#1469](https://github.com/mysql-net/MySqlConnector/issues/1469).
 * **Possibly breaking** Update dependencies:
   * Microsoft.Extensions.Logging.Abstractions from 7.0.1 to 8.0.2.
   * System.Diagnostics.DiagnosticSource from 7.0.2 to 8.0.1.
-
-### 2.4.0 Beta 1
-
-* Support .NET 9.0.
-* Support [zero-configuration SSL](https://mariadb.org/mission-impossible-zero-configuration-ssl/) with MariaDB: [#1500](https://github.com/mysql-net/MySqlConnector/pull/1500).
+* Support trimming and native AOT: [#1265](https://github.com/mysql-net/MySqlConnector/issues/1265).
 * Add `MySqlDataSourceBuilder.UseConnectionOpenedCallback`: [#1508](https://github.com/mysql-net/MySqlConnector/issues/1508).
-* Rewrite server redirection logic based on latest MariaDB specification: [#1499](https://github.com/mysql-net/MySqlConnector/pull/1499).
+* Add `MySqlDbColumn.TableName`: [#1521](https://github.com/mysql-net/MySqlConnector/issues/1521).
+* Support [zero-configuration SSL](https://mariadb.org/mission-impossible-zero-configuration-ssl/) with MariaDB: [#1500](https://github.com/mysql-net/MySqlConnector/pull/1500).
 * Support `SET` data type in functions: [#1491](https://github.com/mysql-net/MySqlConnector/issues/1491).
+* Remove `TABLESPACES` schema: [#1477](https://github.com/mysql-net/MySqlConnector/issues/1477).
+* Rewrite server redirection logic based on latest MariaDB specification: [#1499](https://github.com/mysql-net/MySqlConnector/pull/1499).
+* Change variable name for better server compatibility: [#1502](https://github.com/mysql-net/MySqlConnector/issues/1502).
 * Performance: Avoid `SET NAMES` commands when not necessary: [#1497](https://github.com/mysql-net/MySqlConnector/pull/1497).
+* Fix "Can't replace active reader": [#1469](https://github.com/mysql-net/MySqlConnector/issues/1469).
 * Fix potential `NullReferenceException` in `MySqlConnection.Cancel`: [#1506](https://github.com/mysql-net/MySqlConnector/issues/1506).
+* Fix `InvalidOperationException` in `FinishQuerying`: [#1341](https://github.com/mysql-net/MySqlConnector/issues/1341).
 * Provide logger to new MySqlConnection: [#1510](https://github.com/mysql-net/MySqlConnector/issues/1510).
 * Use correct hostname when cancelling query: [#1514](https://github.com/mysql-net/MySqlConnector/issues/1514).
-* Remove `TABLESPACES` schema: [#1477](https://github.com/mysql-net/MySqlConnector/issues/1477).
-* Change variable name for better server compatibility: [#1502](https://github.com/mysql-net/MySqlConnector/issues/1502).
-* Thanks to [Diego Dupin](https://github.com/rusher) for contributions to this release.
+* Thanks to [Alex Kerman](https://github.com/AlexKerman) and [Diego Dupin](https://github.com/rusher) for contributions to this release.
 
 ### 2.3.7
 
