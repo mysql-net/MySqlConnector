@@ -131,7 +131,6 @@
         }
       }
     },
-    ".NETFramework,Version=v4.6.2/win-x64": {},
     ".NETFramework,Version=v4.7.1": {
       "IndexRange": {
         "type": "Direct",
@@ -254,7 +253,6 @@
         }
       }
     },
-    ".NETFramework,Version=v4.7.1/win-x64": {},
     ".NETFramework,Version=v4.8": {
       "IndexRange": {
         "type": "Direct",
@@ -377,7 +375,6 @@
         }
       }
     },
-    ".NETFramework,Version=v4.8/win-x64": {},
     ".NETStandard,Version=v2.0": {
       "IndexRange": {
         "type": "Direct",
@@ -514,7 +511,6 @@
         }
       }
     },
-    ".NETStandard,Version=v2.0/win-x64": {},
     ".NETStandard,Version=v2.1": {
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "Direct",
@@ -610,7 +606,6 @@
         "contentHash": "3iE7UF7MQkCv1cxzCahz+Y/guQbTqieyxyaWKhrRO91itI9cOKO76OHeQDahqG4MmW5umr3CcCvGmK92lWNlbg=="
       }
     },
-    ".NETStandard,Version=v2.1/win-x64": {},
     "net6.0": {
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "Direct",
@@ -683,7 +678,6 @@
         "contentHash": "3iE7UF7MQkCv1cxzCahz+Y/guQbTqieyxyaWKhrRO91itI9cOKO76OHeQDahqG4MmW5umr3CcCvGmK92lWNlbg=="
       }
     },
-    "net6.0/win-x64": {},
     "net8.0": {
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "Direct",
@@ -747,7 +741,6 @@
         "contentHash": "3iE7UF7MQkCv1cxzCahz+Y/guQbTqieyxyaWKhrRO91itI9cOKO76OHeQDahqG4MmW5umr3CcCvGmK92lWNlbg=="
       }
     },
-    "net8.0/win-x64": {},
     "net9.0": {
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "Direct",
@@ -810,7 +803,6 @@
         "resolved": "8.0.2",
         "contentHash": "3iE7UF7MQkCv1cxzCahz+Y/guQbTqieyxyaWKhrRO91itI9cOKO76OHeQDahqG4MmW5umr3CcCvGmK92lWNlbg=="
       }
-    },
-    "net9.0/win-x64": {}
+    }
   }
 }

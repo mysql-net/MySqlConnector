@@ -139,7 +139,6 @@
         }
       }
     },
-    ".NETStandard,Version=v2.0/win-x64": {},
     "net8.0": {
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "Direct",
@@ -208,7 +207,6 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2"
         }
       }
-    },
-    "net8.0/win-x64": {}
+    }
   }
 }
