@@ -54,6 +54,67 @@ This allows your endpoints to get injected with MySQL connections which log to t
 
 ## Global Logging
 
+### Migrating from Global Logging
+
+<blockquote class="highlight">
+In MySqlConnector 2.4.0, the <tt>MySqlConnectorLogManager.Provider</tt> API has been deprecated.
+Follow these instructions to migrate to the new logging API.
+</blockquote>
+
+With the deprecated logging framework, you may have had code that looked like this:
+
+```csharp
+log4net.Config.XmlConfigurator.Configure();
+MySqlConnectorLogManager.Provider = new Log4netLoggerProvider();
+using var connection = new MySqlConnection(connectionString);
+```
+
+To migrate to the new logging API, you will need to:
+
+* Create a `LoggerFactory`
+* Connect that `LoggerFactory` to your desired logging framework
+* Create a `MySqlDataSource` configurated with that `LoggerFactory`
+* Create new `MySqlConnection` objects using `MySqlDataSource.CreateConnection()` (or `OpenConnection[Async]()`).
+
+This will look like the following, depending on your exact configuration:
+
+```csharp
+// create a LoggerFactory and configure it with the desired logging framework
+// use ONLY ONE of the "Add" methods below, depending on your logging framework
+var loggerFactory = LoggerFactory.Create(builder =>
+  // if you just want console logging
+  builder.AddConsole();
+
+  // connect to log4net via Microsoft.Extensions.Logging.Log4Net.AspNetCore
+  builder.AddLog4Net(new Log4NetProviderOptions
+  {
+    UseWebOrAppConfig = true, // set this if you're storing your settings in Web.config instead of log4net.config
+    ExternalConfigurationSetup = true, // set this instead if you're initializing log4net yourself
+    // see other options at https://github.com/huorswords/Microsoft.Extensions.Logging.Log4Net.AspNetCore
+  }));
+
+  // connect to NLog via NLog.Extensions.Logging
+  builder.AddNLog();
+
+  // connect to Serilog via Serilog.Extensions.Logging
+  builder.AddSerilog(dispose: true);
+);
+
+// now create a MySqlDataSource and configure it with the LoggerFactory
+using var dataSource = new MySqlDataSourceBuilder(yourConnectionString)
+  .UseLoggerFactory(loggerFactory)
+  .Build();
+
+// create all MySqlConnection objects via the MySqlDataSource, not directly
+// DON'T: using var connection = new MySqlConnection(yourConnectionString);
+using var connection = dataSource.CreateConnection();
+
+// you can also create open connections
+using var connection = await dataSource.OpenConnectionAsync();
+```
+
+### Deprecated Logging Framework
+
 <blockquote class="warning">
 The following information is for MySqlConnector versions prior to 2.3.0.
 The global logging interface that is described is deprecated and shouldn't be used in new code.
