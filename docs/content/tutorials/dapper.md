@@ -32,7 +32,7 @@ You will need to install the following NuGet packages:
 
 Build your connection string by substituting the appropriate values in this template:
 
-```
+```txt
 Server=YOURSERVER; User ID=YOURUSERID; Password=YOURPASSWORD; Database=YOURDATABASE
 ```
 

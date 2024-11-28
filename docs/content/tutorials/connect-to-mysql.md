@@ -18,7 +18,7 @@ This tutorial will teach you how to connect to MySQL from .NET Core using C#.
 First, install the [MySqlConnector NuGet package](https://www.nuget.org/packages/MySqlConnector/). From
 a command prompt, run:
 
-```
+```txt
 dotnet add package MySqlConnector
 ```
 
