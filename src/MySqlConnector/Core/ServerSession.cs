@@ -2153,7 +2153,11 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private static readonly PayloadData s_selectConnectionIdVersionWithAttributesPayload = QueryPayload.Create(true, "SELECT CONNECTION_ID(), VERSION();"u8);
 
 	private readonly ILogger m_logger;
+#if NET9_0_OR_GREATER
+	private readonly Lock m_lock;
+#else
 	private readonly object m_lock;
+#endif
 	private readonly ArraySegmentHolder<byte> m_payloadCache;
 	private readonly ActivityTagsCollection m_activityTags;
 	private State m_state;
