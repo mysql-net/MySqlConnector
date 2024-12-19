@@ -63,6 +63,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 	public bool SupportsQueryAttributes { get; private set; }
 	public bool SupportsSessionTrack { get; private set; }
 	public bool ProcAccessDenied { get; set; }
+	public bool UseProcedureCache { get; private set; }
 	public ICollection<KeyValuePair<string, object?>> ActivityTags => m_activityTags;
 	public MySqlDataReader DataReader { get; set; }
 	public MySqlConnectionOpenedConditions Conditions { get; private set; }
@@ -607,6 +608,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			}
 
 			m_payloadHandler.ByteHandler.RemainingTimeout = Constants.InfiniteTimeout;
+			UseProcedureCache = cs.UseProcedureCache;
 			return redirectionUrl;
 		}
 		catch (ArgumentException ex)

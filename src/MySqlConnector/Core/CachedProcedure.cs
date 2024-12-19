@@ -12,6 +12,9 @@ internal sealed class CachedProcedure
 {
 	public static async Task<CachedProcedure?> FillAsync(IOBehavior ioBehavior, MySqlConnection connection, string schema, string component, ILogger logger, CancellationToken cancellationToken)
 	{
+		if (!connection.Session.UseProcedureCache)
+			return null;
+
 		// try to use mysql.proc first, as it is much faster
 		if (!connection.Session.ServerVersion.IsMariaDb &&
 			connection.Session.ServerVersion.Version < ServerVersions.RemovesMySqlProcTable &&
