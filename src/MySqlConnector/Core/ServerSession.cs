@@ -149,14 +149,20 @@ internal sealed partial class ServerSession : IServerCapabilities
 		string commandToPrepare;
 		if (command.CommandType == CommandType.StoredProcedure)
 		{
-			var cachedProcedure = await command.Connection!.GetCachedProcedure(commandText, revalidateMissing: false, ioBehavior, cancellationToken).ConfigureAwait(false);
-			if (cachedProcedure is null)
+			var parameterCount = command.RawParameters?.Count ?? 0;
+
+			if (UseProcedureCache)
 			{
-				var name = NormalizedSchema.MustNormalize(command.CommandText!, command.Connection.Database);
-				throw new MySqlException($"Procedure or function '{name.Component}' cannot be found in database '{name.Schema}'.");
+				var cachedProcedure = await command.Connection!.GetCachedProcedure(commandText, revalidateMissing: false, ioBehavior, cancellationToken).ConfigureAwait(false);
+				if (cachedProcedure is null)
+				{
+					var name = NormalizedSchema.MustNormalize(command.CommandText!, command.Connection.Database);
+					throw new MySqlException($"Procedure or function '{name.Component}' cannot be found in database '{name.Schema}, or procedure caching is disabled");
+				}
+
+				parameterCount = cachedProcedure.Parameters.Count;
 			}
 
-			var parameterCount = cachedProcedure.Parameters.Count;
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 			commandToPrepare = string.Create(commandText.Length + 7 + (parameterCount * 2) + (parameterCount == 0 ? 1 : 0), (commandText, parameterCount), static (buffer, state) =>
 			{
