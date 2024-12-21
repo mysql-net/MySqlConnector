@@ -31,7 +31,7 @@ public sealed class MySqlCommandBuilder : DbCommandBuilder
 		if (cachedProcedure is null)
 		{
 			var name = NormalizedSchema.MustNormalize(command.CommandText!, command.Connection.Database);
-			throw new MySqlException($"Procedure or function '{name.Component}' cannot be found in database '{name.Schema}'.");
+			throw new MySqlException($"Procedure or function '{name.Component}' cannot be found in database '{name.Schema}', or procedure caching is disabled");
 		}
 
 		command.Parameters.Clear();

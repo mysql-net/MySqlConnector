@@ -20,17 +20,21 @@ internal static class CommandExecutor
 
 			Log.CommandExecutorExecuteReader(command.Logger, connection.Session.Id, ioBehavior, commandListPosition.CommandCount);
 
-			Dictionary<string, CachedProcedure?>? cachedProcedures = null;
+			var cachedProcedures = new Dictionary<string, CachedProcedure?>();
 			for (var commandIndex = 0; commandIndex < commandListPosition.CommandCount; commandIndex++)
 			{
 				var command2 = commandListPosition.CommandAt(commandIndex);
-				if (command2.CommandType == CommandType.StoredProcedure)
+				if (command2.CommandType == CommandType.StoredProcedure && connection.Session.UseProcedureCache)
 				{
-					cachedProcedures ??= [];
 					var commandText = command2.CommandText!;
 					if (!cachedProcedures.ContainsKey(commandText))
 					{
-						cachedProcedures.Add(commandText, await connection.GetCachedProcedure(commandText, revalidateMissing: false, ioBehavior, cancellationToken).ConfigureAwait(false));
+						var cachedProcedure = await connection.GetCachedProcedure(commandText, revalidateMissing: false, ioBehavior, cancellationToken).ConfigureAwait(false);
+
+						if (cachedProcedure != null)
+						{
+							cachedProcedures.Add(commandText, cachedProcedure);
+						}
 
 						// because the connection was used to execute a MySqlDataReader with the connection's DefaultCommandTimeout,
 						// we need to reapply the command's CommandTimeout (even if some of the time has elapsed)
@@ -41,7 +45,7 @@ internal static class CommandExecutor
 
 			var writer = new ByteBufferWriter();
 			//// cachedProcedures will be non-null if there is a stored procedure, which is also the only time it will be read
-			if (!payloadCreator.WriteQueryCommand(ref commandListPosition, cachedProcedures!, writer, false))
+			if (!payloadCreator.WriteQueryCommand(ref commandListPosition, cachedProcedures, writer, false))
 				throw new InvalidOperationException("ICommandPayloadCreator failed to write query payload");
 
 			cancellationToken.ThrowIfCancellationRequested();
