@@ -351,7 +351,7 @@ internal static class Utility
 			var uri = new Uri(redirectUrl);
 			host = uri.Host;
 			if (string.IsNullOrEmpty(host)) return false;
-			if (host.StartsWith('[') && host.EndsWith("]", StringComparison.InvariantCulture)) host = host.Substring(1, host.Length - 2);
+			if (host.StartsWith('[') && host.EndsWith("]", StringComparison.Ordinal)) host = host.Substring(1, host.Length - 2);
 
 			port = uri.Port;
 			user = Uri.UnescapeDataString(uri.UserInfo.Split(':')[0]);
@@ -361,7 +361,7 @@ internal static class Utility
 				var q = uri.Query.Substring(1);
 				foreach (var token in q.Split('&'))
 				{
-					if (token.StartsWith("user=", StringComparison.InvariantCulture))
+					if (token.StartsWith("user=", StringComparison.Ordinal))
 					{
 						user = Uri.UnescapeDataString(token.Substring(5));
 					}
