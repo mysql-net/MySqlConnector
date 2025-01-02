@@ -1023,6 +1023,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	internal bool NoBackslashEscapes => GetInitializedConnectionSettings().NoBackslashEscapes;
 	internal bool TreatTinyAsBoolean => GetInitializedConnectionSettings().TreatTinyAsBoolean;
 	internal IOBehavior AsyncIOBehavior => GetConnectionSettings().ForceSynchronous ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
+	internal bool EnrichActivityWithReadResultSetHeader => GetInitializedConnectionSettings().EnrichActivityWithReadResultSetHeader;
 
 	// Defaults to IOBehavior.Synchronous if the connection hasn't been opened yet; only use if it's a no-op for a closed connection.
 	internal IOBehavior SimpleAsyncIOBehavior => (m_connectionSettings?.ForceSynchronous is true) ? IOBehavior.Synchronous : IOBehavior.Asynchronous;
