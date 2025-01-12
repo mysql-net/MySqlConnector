@@ -257,6 +257,8 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 * [#115937](https://bugs.mysql.com/bug.php?id=115937): Transaction isn't released after I/O timeout
 * [#116146](https://bugs.mysql.com/bug.php?id=116146): `MySqlConnection.OpenAsync` throws exception when `UseCompression = true`
 * [#116257](https://bugs.mysql.com/bug.php?id=116257): `NullReferenceException` thrown when using prepared statement under OpenTelemetry
+* [#116382](https://bugs.mysql.com/bug.php?id=116382): `ExecuteNonQueryAsync` hangs with DDL if `UseCompression=True`
+* [#117020](https://bugs.mysql.com/bug.php?id=117020): `MinPoolSize` configuration is not honored
 
 ### Fixed First by MySqlConnector
 
