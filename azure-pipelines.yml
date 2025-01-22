@@ -176,8 +176,8 @@ jobs:
         image: 'mysql:8.4'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
         unsupportedFeatures: 'Ed25519,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,ZeroDateTime'
-      'MySQL 9.1':
-        image: 'mysql:9.1'
+      'MySQL 9.2':
+        image: 'mysql:9.2'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
         unsupportedFeatures: 'Ed25519,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,ZeroDateTime'
       'MariaDB 10.6':
