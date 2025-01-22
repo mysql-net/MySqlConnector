@@ -124,5 +124,5 @@ public class MySqlParameterCollectionNameToIndexTests
 		Assert.Equal(1, m_collection.NormalizedIndexOf("D"));
 	}
 
-	readonly MySqlParameterCollection m_collection;
+	private readonly MySqlParameterCollection m_collection;
 }

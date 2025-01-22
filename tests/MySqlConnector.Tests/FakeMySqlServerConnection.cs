@@ -107,20 +107,20 @@ internal sealed class FakeMySqlServerConnection
 								var negativeOne = new byte[] { 2, 0x2D, 0x31 };
 								var packets = new[]
 								{
-								new byte[] { 0xFF, 0x25, 0x05, 0x23, 0x37, 0x30, 0x31, 0x30, 0x30 }.Concat(Encoding.ASCII.GetBytes("Query execution was interrupted")).ToArray(), // error
-								[1], // one column
-								[3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x5F, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 3, 0x81, 0, 0, 0, 0], // column definition
-								[0xFE, 0, 0, 2, 0], // EOF
-								data,
-								negativeOne,
-								negativeOne,
-								[0xFE, 0, 0, 10, 0], // EOF, more results exist
-								[1], // one column
-								[3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x5F, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 3, 0x81, 0, 0, 0, 0], // column definition
-								[0xFE, 0, 0, 2, 0], // EOF
-								negativeOne,
-								[0xFE, 0, 0, 2, 0], // EOF
-							};
+									new byte[] { 0xFF, 0x25, 0x05, 0x23, 0x37, 0x30, 0x31, 0x30, 0x30 }.Concat(Encoding.ASCII.GetBytes("Query execution was interrupted")).ToArray(), // error
+									[1], // one column
+									[3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x5F, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 3, 0x81, 0, 0, 0, 0], // column definition
+									[0xFE, 0, 0, 2, 0], // EOF
+									data,
+									negativeOne,
+									negativeOne,
+									[0xFE, 0, 0, 10, 0], // EOF, more results exist
+									[1], // one column
+									[3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x5F, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 3, 0x81, 0, 0, 0, 0], // column definition
+									[0xFE, 0, 0, 2, 0], // EOF
+									negativeOne,
+									[0xFE, 0, 0, 2, 0], // EOF
+								};
 
 								if (bufferOutput)
 								{
@@ -167,15 +167,15 @@ internal sealed class FakeMySqlServerConnection
 							{
 								var packets = new[]
 								{
-								new byte[] { 2 }, // two columns
-								[3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x46, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 4, 0x01, 0, 0x1F, 0, 0], // column definition (float)
-								[3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x44, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 5, 0x01, 0, 0x1F, 0, 0], // column definition (double)
-								[0xFE, 0, 0, 2, 0], // EOF
-								[3, 0x6e, 0x61, 0x6e, 3, 0x6e, 0x61, 0x6e], // nan
-								[3, 0x69, 0x6e, 0x66, 3, 0x69, 0x6e, 0x66], // inf
-								[4, 0x2d, 0x69, 0x6e, 0x66, 4, 0x2d, 0x69, 0x6e, 0x66], // -inf
-								[0xFE, 0, 0, 2, 0], // EOF
-							};
+									new byte[] { 2 }, // two columns
+									[3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x46, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 4, 0x01, 0, 0x1F, 0, 0], // column definition (float)
+									[3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x44, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 5, 0x01, 0, 0x1F, 0, 0], // column definition (double)
+									[0xFE, 0, 0, 2, 0], // EOF
+									[3, 0x6e, 0x61, 0x6e, 3, 0x6e, 0x61, 0x6e], // nan
+									[3, 0x69, 0x6e, 0x66, 3, 0x69, 0x6e, 0x66], // inf
+									[4, 0x2d, 0x69, 0x6e, 0x66, 4, 0x2d, 0x69, 0x6e, 0x66], // -inf
+									[0xFE, 0, 0, 2, 0], // EOF
+								};
 								for (var packetIndex = 0; packetIndex < packets.Length; packetIndex++)
 									await SendAsync(stream, packetIndex + 1, x => x.Write(packets[packetIndex]));
 							}
@@ -183,11 +183,11 @@ internal sealed class FakeMySqlServerConnection
 							{
 								var packets = new[]
 								{
-								new byte[] { 1 }, // one column
-								[3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x41, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 3, 0x01, 0, 0x1F, 0, 0], // column definition (int)
-								[0xFE, 0, 0, 2, 0], // EOF
-								[1, 0x31], // 1
-							};
+									new byte[] { 1 }, // one column
+									[3, 0x64, 0x65, 0x66, 0, 0, 0, 1, 0x41, 0, 0x0c, 0x3f, 0, 1, 0, 0, 0, 3, 0x01, 0, 0x1F, 0, 0], // column definition (int)
+									[0xFE, 0, 0, 2, 0], // EOF
+									[1, 0x31], // 1
+								};
 								for (var packetIndex = 0; packetIndex < packets.Length; packetIndex++)
 									await SendAsync(stream, packetIndex + 1, x => x.Write(packets[packetIndex]));
 								stream.Close();
@@ -308,6 +308,6 @@ internal sealed class FakeMySqlServerConnection
 		writer.WriteRaw(message);
 	}
 
-	readonly FakeMySqlServer m_server;
-	readonly int m_connectionId;
+	private readonly FakeMySqlServer m_server;
+	private readonly int m_connectionId;
 }

@@ -8,17 +8,17 @@ using MySql.Data.Types;
 // However, DbDataReader.GetString etc. are documented as throwing InvalidCastException: https://msdn.microsoft.com/en-us/library/system.data.common.dbdatareader.getstring.aspx
 // Additionally, that is what DbDataReader.GetFieldValue<T> throws. For consistency, we prefer InvalidCastException.
 #if MYSQL_DATA
-using GetValueWhenNullException = System.Data.SqlTypes.SqlNullValueException;
-using GetGuidWhenNullException = MySql.Data.MySqlClient.MySqlException;
 using GetBytesWhenNullException = System.NullReferenceException;
 using GetGeometryWhenNullException = System.Exception;
+using GetGuidWhenNullException = MySql.Data.MySqlClient.MySqlException;
 using GetStreamWhenNullException = System.ArgumentNullException;
+using GetValueWhenNullException = System.Data.SqlTypes.SqlNullValueException;
 #else
-using GetValueWhenNullException = System.InvalidCastException;
-using GetGuidWhenNullException = System.InvalidCastException;
 using GetBytesWhenNullException = System.InvalidCastException;
 using GetGeometryWhenNullException = System.InvalidCastException;
+using GetGuidWhenNullException = System.InvalidCastException;
 using GetStreamWhenNullException = System.InvalidCastException;
+using GetValueWhenNullException = System.InvalidCastException;
 #endif
 
 namespace IntegrationTests;
@@ -221,7 +221,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 		DoQuery("bools", column, dataTypeName, expected, reader => reader.GetSByte(0), mySqlDataCoercedNullValue: default(sbyte), connection: connection);
 	}
 
-	[Theory()]
+	[Theory]
 	[InlineData("TinyInt1U", "TINYINT", new object[] { null, (byte) 0, (byte) 1, (byte) 0, (byte) 1, (byte) 255, (byte) 123 })]
 	public void QueryTinyInt1Unsigned(string column, string dataTypeName, object[] expected)
 	{
@@ -313,8 +313,8 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 	[Theory]
 	[InlineData("SmallDecimal", new object[] { null, "0", "-999.99", "-0.01", "999.99", "0.01" })]
 	[InlineData("MediumDecimal", new object[] { null, "0", "-999999999999.99999999", "-0.00000001", "999999999999.99999999", "0.00000001" })]
-	// value exceeds the range of a decimal and cannot be deserialized
-	// [InlineData("BigDecimal", new object[] { null, "0", "-99999999999999999999.999999999999999999999999999999", "-0.000000000000000000000000000001", "99999999999999999999.999999999999999999999999999999", "0.000000000000000000000000000001" })]
+	//// value exceeds the range of a decimal and cannot be deserialized
+	//// [InlineData("BigDecimal", new object[] { null, "0", "-99999999999999999999.999999999999999999999999999999", "-0.000000000000000000000000000001", "99999999999999999999.999999999999999999999999999999", "0.000000000000000000000000000001" })]
 	public void QueryDecimal(string column, object[] expected)
 	{
 		for (int i = 0; i < expected.Length; i++)
@@ -340,7 +340,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 		}, getFieldValueType: typeof(TextReader));
 #endif
 	}
-	const string c_251ByteString = "This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating \"this field is null\". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.";
+	private const string c_251ByteString = "This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating \"this field is null\". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.";
 
 	[Theory]
 	[InlineData("guid", "CHAR(36)", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f", "6A0E0A40-6228-11D3-A996-0050041896C8" })]
@@ -448,7 +448,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 			Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guid = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
 			Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guidbin = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
 		}
-		catch (MySqlException ex) when (oldGuids && ex.Number is 1300 or 3854) // InvalidCharacterString, CannotConvertString
+		catch (MySqlException ex) when (oldGuids && ex.Number is 1300 or 3854) //// InvalidCharacterString, CannotConvertString
 		{
 			// new error in MySQL 8.0.24, MariaDB 10.5
 		}
@@ -562,14 +562,14 @@ UNHEX('33221100554477668899AABBCCDDEEFF'),
 				new() { Value = guidAsLittleEndianBinary16 },
 				new() { Value = guidAsChar36 },
 				new() { Value = isBinary16 ? guidAsBinary16 : isTimeSwapBinary16 ? guidAsTimeSwapBinary16 : guidAsLittleEndianBinary16 },
-				new() { Value = isChar36 ?  guid : guidAsChar36 },
-				new() { Value = isChar32 ?  guid : guidAsChar32 },
-				new() { Value = isBinary16 ?  guid : guidAsBinary16 },
-				new() { Value = isTimeSwapBinary16 ?  guid : guidAsTimeSwapBinary16 },
-				new() { Value = isLittleEndianBinary16 ?  guid : guidAsLittleEndianBinary16 },
+				new() { Value = isChar36 ? guid : guidAsChar36 },
+				new() { Value = isChar32 ? guid : guidAsChar32 },
+				new() { Value = isBinary16 ? guid : guidAsBinary16 },
+				new() { Value = isTimeSwapBinary16 ? guid : guidAsTimeSwapBinary16 },
+				new() { Value = isLittleEndianBinary16 ? guid : guidAsLittleEndianBinary16 },
 				new() { Value = guidAsChar32 },
 				new() { Value = isBinary16 ? guidAsBinary16 : isTimeSwapBinary16 ? guidAsTimeSwapBinary16 : guidAsLittleEndianBinary16 },
-			}
+			},
 		};
 		cmd.ExecuteNonQuery();
 		cmd.CommandText = "select c36, c32, b16, tsb16, leb16, t, b from guid_format;";
@@ -736,7 +736,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 				new() { Value = dateTimeIn },
 				new() { Value = dateTimeIn },
 				new() { Value = dateTimeIn },
-			}
+			},
 		};
 		if (success)
 		{
@@ -1069,6 +1069,7 @@ ORDER BY t.`Key`", Connection);
 			expected,
 		};
 
+#pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
 		DoQuery("geometry", columnName, dataTypeName, geometryData.ToArray(),
 #if !MYSQL_DATA
 			GetBytes
@@ -1091,6 +1092,7 @@ ORDER BY t.`Key`", Connection);
 			assertEqual: (x, y) => Assert.Equal(((MySqlGeometry) x)?.Value.ToArray(), ((MySqlGeometry) y)?.Value.ToArray())
 #endif
 			);
+#pragma warning restore SA1111 // Closing parenthesis should be on line of last parameter
 	}
 
 	private static object CreateGeometry(byte[] data)
@@ -1513,7 +1515,7 @@ end;";
 	[InlineData("DateTime", "datatypes_times", "DATETIME(6)")]
 	[InlineData("Timestamp", "datatypes_times", "TIMESTAMP(6)")]
 	[InlineData("Time", "datatypes_times", "TIME(6)")]
-	// [InlineData("Year", "datatypes_times", "YEAR")]
+	//// [InlineData("Year", "datatypes_times", "YEAR")]
 	[InlineData("value", "datatypes_json_core", "JSON")]
 	[InlineData("Geometry", "datatypes_geometry", "GEOMETRY")]
 	public void BulkCopyDataReader(string column, string table, string dataTypeName)
@@ -1848,4 +1850,3 @@ end;";
 
 	private MySqlConnectionStringBuilder CreateConnectionStringBuilder() => new(AppConfig.ConnectionString);
 }
-

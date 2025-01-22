@@ -3,7 +3,7 @@ namespace MySqlConnector.Tests;
 internal enum DummyEnum
 {
 	FirstValue,
-	SecondValue
+	SecondValue,
 }
 
 internal enum DummyByteEnum : byte

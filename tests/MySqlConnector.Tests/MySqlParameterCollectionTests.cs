@@ -19,5 +19,5 @@ public class MySqlParameterCollectionTests
 	[Fact]
 	public void RemoveAtEnd() => Assert.Throws<ArgumentOutOfRangeException>(() => m_collection.RemoveAt(0));
 
-	readonly MySqlParameterCollection m_collection;
+	private readonly MySqlParameterCollection m_collection;
 }

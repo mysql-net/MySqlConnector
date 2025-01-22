@@ -98,7 +98,7 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 			PipeName = "nonexistingpipe",
 			ConnectionProtocol = MySqlConnectionProtocol.NamedPipe,
 			Server = ".",
-			ConnectionTimeout = 1
+			ConnectionTimeout = 1,
 		};
 
 		var sw = Stopwatch.StartNew();
@@ -265,7 +265,11 @@ public class ConnectSync : IClassFixture<DatabaseFixture>
 		MySqlConnection.ClearPool(connection);
 
 		var wasCalled = false;
-		connection.ProvidePasswordCallback = _ => { wasCalled = true; return password; };
+		connection.ProvidePasswordCallback = _ =>
+		{
+			wasCalled = true;
+			return password;
+		};
 
 		connection.Open();
 		Assert.False(wasCalled);
@@ -598,5 +602,5 @@ create table `{AppConfig.SecondaryDatabase}`.changedb2(value int not null);");
 		Assert.Equal(1, disposedCount);
 	}
 
-	readonly DatabaseFixture m_database;
+	private readonly DatabaseFixture m_database;
 }

@@ -158,7 +158,7 @@ public class MySqlConnectionStringBuilderTests
 				"ssl mode=verifyca;" +
 				"tls version=Tls12, TLS v1.3;" +
 				"Uid=username;" +
-				"useaffectedrows=true"
+				"useaffectedrows=true",
 		};
 		Assert.True(csb.AllowLoadLocalInfile);
 		Assert.True(csb.AllowPublicKeyRetrieval);
@@ -167,7 +167,7 @@ public class MySqlConnectionStringBuilderTests
 		Assert.False(csb.AutoEnlist);
 #if !MYSQL_DATA
 		Assert.Equal(-1, csb.CancellationTimeout);
-		// Connector/NET treats "CertificateFile" (client certificate) and "SslCa" (server CA) as aliases
+		//// Connector/NET treats "CertificateFile" (client certificate) and "SslCa" (server CA) as aliases
 		Assert.Equal("file.pfx", csb.CertificateFile);
 #endif
 		Assert.Equal("Pass2345", csb.CertificatePassword);

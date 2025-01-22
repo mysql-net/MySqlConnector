@@ -449,6 +449,6 @@ public class Transaction : IClassFixture<TransactionFixture>
 		task2.GetAwaiter().GetResult();
 	}
 
-	readonly TransactionFixture m_database;
-	readonly MySqlConnection m_connection;
+	private readonly TransactionFixture m_database;
+	private readonly MySqlConnection m_connection;
 }

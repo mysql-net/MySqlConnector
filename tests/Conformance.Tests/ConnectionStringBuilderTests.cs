@@ -9,4 +9,3 @@ public sealed class ConnectionStringBuilderTests : ConnectionStringTestBase<DbFa
 	{
 	}
 }
-

@@ -1407,6 +1407,7 @@ FROM query_bit;", connection);
 		Assert.True(await reader.NextResultAsync());
 
 		Assert.True(await reader.ReadAsync());
+
 		// MySQL returns ulong, MariaDB returns decimal; GetBoolean will coerce both
 		Assert.True(reader.GetBoolean(0));
 		Assert.False(await reader.ReadAsync());
@@ -1687,13 +1688,13 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 	}
 #endif
 
-	class BoolTest
+	private class BoolTest
 	{
 		public int Id { get; set; }
 		public bool? IsBold { get; set; }
 	}
 
-	class UseReaderWithoutDisposingThreadData
+	private class UseReaderWithoutDisposingThreadData
 	{
 		public UseReaderWithoutDisposingThreadData(List<Exception> exceptions, MySqlConnectionStringBuilder csb)
 		{
@@ -1706,10 +1707,10 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 		public MySqlConnectionStringBuilder ConnectionStringBuilder { get; }
 	}
 
-	enum TestLongEnum : long
+	private enum TestLongEnum : long
 	{
 		Value = long.MaxValue,
 	}
 
-	readonly DatabaseFixture m_database;
+	private readonly DatabaseFixture m_database;
 }

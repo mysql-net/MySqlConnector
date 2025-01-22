@@ -179,7 +179,7 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		connection.Open();
 		MySqlBulkLoader bl = new MySqlBulkLoader(connection)
 		{
-			Timeout = 3, //Set a short timeout for this test because the file not found exception takes a long time otherwise, the timeout does not change the result
+			Timeout = 3, // Set a short timeout for this test because the file not found exception takes a long time otherwise, the timeout does not change the result
 			FileName = AppConfig.MySqlBulkLoaderLocalCsvFile + "-junk",
 			TableName = m_testTable,
 			CharacterSet = "UTF8",
@@ -216,7 +216,7 @@ public class BulkLoaderSync : IClassFixture<DatabaseFixture>
 		}
 		catch (Exception exception)
 		{
-			//We know that the exception is not a MySqlException, just use the assertion to fail the test
+			// We know that the exception is not a MySqlException, just use the assertion to fail the test
 			Assert.IsType<MySqlException>(exception);
 		}
 	}
@@ -1048,7 +1048,7 @@ create table bulk_load_data_table(a int, b text);", connection))
 				new object[] { 1, 100, "a", "A", new byte[] { 0x33, 0x30 } },
 				new object[] { 2, 200, "bb", "BB", new byte[] { 0x33, 0x31 } },
 				new object[] { 3, 300, "ccc", "CCC", new byte[] { 0x33, 0x32 } },
-			}
+			},
 		};
 
 		var result = bulkCopy.WriteToServer(dataTable);
@@ -1102,7 +1102,7 @@ create table bulk_load_data_table(a int, b text);", connection))
 				new object[] { 1 },
 				new object[] { 2 },
 				new object[] { 3 },
-			}
+			},
 		};
 
 		Assert.Throws<InvalidOperationException>(() => bulkCopy.WriteToServer(dataTable));
@@ -1139,7 +1139,7 @@ create table bulk_load_data_table(a int, b text);", connection))
 				new object[] { 1 },
 				new object[] { 2 },
 				new object[] { 3 },
-			}
+			},
 		};
 
 		Assert.Throws<InvalidOperationException>(() => bulkCopy.WriteToServer(dataTable));
@@ -1156,7 +1156,7 @@ create table bulk_copy_duplicate_pk(id integer primary key, value text not null)
 
 		var bcp = new MySqlBulkCopy(connection)
 		{
-			DestinationTableName = "bulk_copy_duplicate_pk"
+			DestinationTableName = "bulk_copy_duplicate_pk",
 		};
 
 		var dataTable = new DataTable()
@@ -1171,7 +1171,7 @@ create table bulk_copy_duplicate_pk(id integer primary key, value text not null)
 				new object[] { 1, "a" },
 				new object[] { 1, "b" },
 				new object[] { 3, "c" },
-			}
+			},
 		};
 
 		var ex = Assert.Throws<MySqlException>(() => bcp.WriteToServer(dataTable));
@@ -1295,6 +1295,6 @@ create table bulk_load_data_table(a int not null primary key auto_increment, b t
 		return csb.ConnectionString;
 	}
 
-	readonly string m_testTable;
-	readonly byte[] m_memoryStreamBytes;
+	private readonly string m_testTable;
+	private readonly byte[] m_memoryStreamBytes;
 }

@@ -278,6 +278,6 @@ end;", m_connection))
 		Assert.Equal(connectionState, m_connection.State);
 	}
 
-	readonly DatabaseFixture m_database;
-	readonly MySqlConnection m_connection;
+	private readonly DatabaseFixture m_database;
+	private readonly MySqlConnection m_connection;
 }

@@ -147,7 +147,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 			Assert.True(connection.SslIsMutuallyAuthenticated);
 #endif
 #endif
-            cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
+			cmd.CommandText = "SHOW SESSION STATUS LIKE 'Ssl_version'";
 			var sslVersion = (string) await cmd.ExecuteScalarAsync();
 			Assert.False(string.IsNullOrWhiteSpace(sslVersion));
 		}
@@ -306,5 +306,5 @@ public class SslTests : IClassFixture<DatabaseFixture>
 	}
 #endif
 
-	readonly DatabaseFixture m_database;
+	private readonly DatabaseFixture m_database;
 }

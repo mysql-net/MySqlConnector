@@ -205,7 +205,6 @@ insert into data_adapter(int_value, text_value) values
 		Assert.Equal(new[] { "two", "three", "four" }, m_connection.Query<string>("SELECT text_value FROM data_adapter ORDER BY id"));
 	}
 
-
 	[Fact]
 	public void BatchInsert()
 	{
@@ -341,5 +340,5 @@ insert into data_adapter(int_value, text_value) values
 	}
 #endif
 
-	readonly MySqlConnection m_connection;
+	private readonly MySqlConnection m_connection;
 }

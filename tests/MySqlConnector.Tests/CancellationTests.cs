@@ -18,7 +18,7 @@ public class CancellationTests : IDisposable
 
 	public void Dispose() => m_server.Stop();
 
-	// NOTE: Multiple nested classes in order to force tests to run in parallel against each other
+	//// NOTE: Multiple nested classes in order to force tests to run in parallel against each other
 
 	public class CancelWithCommandTimeout : CancellationTests
 	{
@@ -425,8 +425,19 @@ public class CancellationTests : IDisposable
 
 	private static int ExecuteScalar(MySqlCommand command) => (int) command.ExecuteScalar();
 	private static async Task<int> ExecuteScalarAsync(MySqlCommand command, CancellationToken token) => (int) await command.ExecuteScalarAsync(token);
-	private static int ExecuteNonQuery(MySqlCommand command) { command.ExecuteNonQuery(); return 0; }
-	private static async Task<int> ExecuteNonQueryAsync(MySqlCommand command, CancellationToken token) { await command.ExecuteNonQueryAsync(token); return 0; }
+
+	private static int ExecuteNonQuery(MySqlCommand command)
+	{
+		command.ExecuteNonQuery();
+		return 0;
+	}
+
+	private static async Task<int> ExecuteNonQueryAsync(MySqlCommand command, CancellationToken token)
+	{
+		await command.ExecuteNonQueryAsync(token);
+		return 0;
+	}
+
 	private static int ExecuteReader(MySqlCommand command)
 	{
 		using var reader = command.ExecuteReader();
@@ -450,6 +461,6 @@ public class CancellationTests : IDisposable
 		return value.Value;
 	}
 
-	readonly FakeMySqlServer m_server;
-	readonly MySqlConnectionStringBuilder m_csb;
+	private readonly FakeMySqlServer m_server;
+	private readonly MySqlConnectionStringBuilder m_csb;
 }

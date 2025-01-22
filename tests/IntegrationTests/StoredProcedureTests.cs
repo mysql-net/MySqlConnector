@@ -532,7 +532,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 			ParameterName = "high",
 			DbType = DbType.Int32,
 			Direction = ParameterDirection.InputOutput,
-			Value = 1
+			Value = 1,
 		};
 		while ((int) parameter.Value < 8)
 		{
@@ -676,11 +676,11 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 #endif
 	[InlineData("char(30)", 30)]
 	[InlineData("varchar(50)", 50)]
-	// These return nonzero sizes for some versions of MySQL Server 8.0
-	// [InlineData("bit", 0)]
-	// [InlineData("tinyint", 0)]
-	// [InlineData("bigint", 0)]
-	// [InlineData("bigint unsigned", 0)]
+	//// These return nonzero sizes for some versions of MySQL Server 8.0
+	//// [InlineData("bit", 0)]
+	//// [InlineData("tinyint", 0)]
+	//// [InlineData("bigint", 0)]
+	//// [InlineData("bigint unsigned", 0)]
 	public void DeriveParametersParameterSize(string parameterType, int expectedSize)
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
@@ -895,5 +895,5 @@ END;", connection))
 		return connection;
 	}
 
-	readonly DatabaseFixture m_database;
+	private readonly DatabaseFixture m_database;
 }

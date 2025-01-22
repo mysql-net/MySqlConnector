@@ -63,7 +63,7 @@ public class LoadDataInfileSync : IClassFixture<DatabaseFixture>
 		m_database.Connection.Close();
 	}
 
-	readonly DatabaseFixture m_database;
-	readonly string m_testTable;
-	readonly string m_loadDataInfileCommand;
+	private readonly DatabaseFixture m_database;
+	private readonly string m_testTable;
+	private readonly string m_loadDataInfileCommand;
 }

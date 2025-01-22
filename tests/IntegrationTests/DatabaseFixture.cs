@@ -53,6 +53,6 @@ public class DatabaseFixture : IDisposable
 		}
 	}
 
-	static readonly object s_lock = new();
-	static bool s_isInitialized;
+	private static readonly object s_lock = new();
+	private static bool s_isInitialized;
 }

@@ -24,7 +24,6 @@ public class ClientFactoryTests
 		Assert.IsType<MySqlConnectionStringBuilder>(MySqlConnectorFactory.Instance.CreateConnectionStringBuilder());
 	}
 
-
 	[Fact]
 	public void CreateParameter()
 	{

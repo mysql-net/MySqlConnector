@@ -718,6 +718,7 @@ create table cancel_completed_command (
 		Assert.False(await reader.NextResultAsync());
 	}
 #endif
+#endif
 
 	private static CancellationToken GetCanceledToken()
 	{
@@ -726,15 +727,14 @@ create table cancel_completed_command (
 		return cts.Token;
 	}
 
-	static readonly CancellationToken s_canceledToken = GetCanceledToken();
-#endif
-
 	// returns billions of rows
-	const string c_hugeQuery = @"select * from integers a join integers b join integers c join integers d join integers e join integers f join integers g join integers h;";
+	private const string c_hugeQuery = @"select * from integers a join integers b join integers c join integers d join integers e join integers f join integers g join integers h;";
 
 	// takes a long time to return any rows
-	const string c_slowQuery = @"select * from integers a join integers b join integers c join integers d join integers e join integers f join integers g join integers h
+	private const string c_slowQuery = @"select * from integers a join integers b join integers c join integers d join integers e join integers f join integers g join integers h
 where sqrt(a.value) + sqrt(b.value) + sqrt(c.value) + sqrt(d.value) + sqrt(e.value) + sqrt(f.value) + sqrt(g.value) + sqrt(h.value) = 20;";
 
-	readonly DatabaseFixture m_database;
+	private static readonly CancellationToken s_canceledToken = GetCanceledToken();
+
+	private readonly DatabaseFixture m_database;
 }

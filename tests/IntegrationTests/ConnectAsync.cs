@@ -191,7 +191,11 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		await MySqlConnection.ClearPoolAsync(connection);
 
 		var wasCalled = false;
-		connection.ProvidePasswordCallback = _ => { wasCalled = true; return password; };
+		connection.ProvidePasswordCallback = _ =>
+		{
+			wasCalled = true;
+			return password;
+		};
 
 		await connection.OpenAsync();
 		Assert.False(wasCalled);
@@ -473,6 +477,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 	{
 		var csb = AppConfig.CreateGSSAPIConnectionStringBuilder();
 		string serverSPN;
+
 		// Use server's variable gssapi_principal_name as SPN
 		using (var connection = new MySqlConnection(csb.ConnectionString))
 		{
@@ -542,5 +547,5 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		Assert.Equal(1, disposedCount);
 	}
 
-	readonly DatabaseFixture m_database;
+	private readonly DatabaseFixture m_database;
 }
