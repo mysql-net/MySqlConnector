@@ -996,7 +996,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			}
 		}
 
-		if (cs.AllowPublicKeyRetrieval)
+		if (cs.AllowPublicKeyRetrieval || m_isLoopbackConnection)
 		{
 			// request the RSA public key
 			var payloadContent = switchRequestName == "caching_sha2_password" ? (byte) 0x02 : (byte) 0x01;
