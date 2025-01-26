@@ -860,7 +860,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			case "mysql_clear_password":
-				if (!m_isSecureConnection)
+				if (!m_isSecureConnection && !m_isLoopbackConnection)
 				{
 					Log.NeedsSecureConnection(m_logger, Id, switchRequest.Name);
 					throw new MySqlException(MySqlErrorCode.UnableToConnectToHost, $"Authentication method '{switchRequest.Name}' requires a secure connection.");
@@ -1302,6 +1302,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 					m_socket.NoDelay = true;
 					m_stream = m_tcpClient.GetStream();
 					m_socket.SetKeepAlive(cs.Keepalive);
+					m_isLoopbackConnection = IPAddress.IsLoopback(ipAddress);
 				}
 				catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
 				{
@@ -2169,6 +2170,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private IPayloadHandler? m_payloadHandler;
 	private CompressionMethod m_compressionMethod;
 	private bool m_isSecureConnection;
+	private bool m_isLoopbackConnection;
 	private bool m_supportsConnectionAttributes;
 	private bool m_supportsPipelining;
 	private CharacterSet m_characterSet;
