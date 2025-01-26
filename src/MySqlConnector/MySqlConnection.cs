@@ -962,6 +962,9 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	internal async Task<CachedProcedure?> GetCachedProcedure(string name, bool revalidateMissing, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
+		if (!m_session!.UseProcedureCache)
+			return null;
+
 		Log.GettingCachedProcedure(m_logger, m_session!.Id, name);
 		if (State != ConnectionState.Open)
 			throw new InvalidOperationException("Connection is not open.");
