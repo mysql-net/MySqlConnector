@@ -147,6 +147,7 @@ internal sealed class ConnectionSettings
 		UseAffectedRows = csb.UseAffectedRows;
 		UseCompression = csb.UseCompression;
 		UseXaTransactions = csb.UseXaTransactions;
+		EnrichActivityWithReadResultSetHeader = csb.EnrichActivityWithReadResultSetHeader;
 
 		static int ToSigned(uint value) => value >= int.MaxValue ? int.MaxValue : (int) value;
 	}
@@ -245,6 +246,7 @@ internal sealed class ConnectionSettings
 	public bool UseAffectedRows { get; }
 	public bool UseCompression { get; }
 	public bool UseXaTransactions { get; }
+	public bool EnrichActivityWithReadResultSetHeader { get; }
 
 	public byte[]? ConnectionAttributes { get; set; }
 

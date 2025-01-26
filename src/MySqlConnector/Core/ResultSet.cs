@@ -166,7 +166,7 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 						ContainsCommandParameters = true;
 					WarningCount = 0;
 					State = ResultSetState.ReadResultSetHeader;
-					if (DataReader.Activity is { IsAllDataRequested: true })
+					if (DataReader.Activity is { IsAllDataRequested: true } && Connection.EnrichActivityWithReadResultSetHeader)
 						DataReader.Activity.AddEvent(new ActivityEvent("read-result-set-header"));
 					break;
 				}
