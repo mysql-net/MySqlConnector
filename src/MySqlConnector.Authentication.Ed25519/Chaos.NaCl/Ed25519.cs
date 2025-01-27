@@ -34,19 +34,6 @@ namespace Chaos.NaCl
             return signature;
         }
 
-        public static byte[] ExpandedPrivateKeyFromSeed(byte[] privateKeySeed)
-        {
-            byte[] privateKey;
-            byte[] publicKey;
-            KeyPairFromSeed(out publicKey, out privateKey, privateKeySeed);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-            CryptographicOperations.ZeroMemory(publicKey);
-#else
-            CryptoBytes.Wipe(publicKey);
-#endif
-            return privateKey;
-        }
-
         public static void KeyPairFromSeed(out byte[] publicKey, out byte[] expandedPrivateKey, byte[] privateKeySeed)
         {
             if (privateKeySeed == null)
