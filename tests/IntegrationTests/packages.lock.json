@@ -320,10 +320,7 @@
         }
       },
       "mysqlconnector.authentication.ed25519": {
-        "type": "Project",
-        "dependencies": {
-          "MySqlConnector": "[1.0.0, )"
-        }
+        "type": "Project"
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "CentralTransitive",

@@ -236,6 +236,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 	}
 
 #if !MYSQL_DATA
+#if NET472_OR_GREATER || NET6_0_OR_GREATER
 	[SkippableFact(ServerFeatures.TlsFingerprintValidation | ServerFeatures.Ed25519)]
 	public async Task ConnectZeroConfigurationSslEd25519()
 	{
@@ -249,6 +250,21 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		await connection.OpenAsync();
 	}
+
+	[SkippableFact(ServerFeatures.TlsFingerprintValidation | ServerFeatures.ParsecAuthentication)]
+	public async Task ConnectZeroConfigurationSslParsec()
+	{
+		MySqlConnector.Authentication.Ed25519.ParsecAuthenticationPlugin.Install();
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.CertificateFile = null;
+		csb.SslMode = MySqlSslMode.VerifyFull;
+		csb.SslCa = "";
+		csb.UserID = "parsec-user";
+		csb.Password = "P@rs3c-Pa55";
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		await connection.OpenAsync();
+	}
+#endif
 #endif
 
 	[SkippableFact(ConfigSettings.RequiresSsl)]
