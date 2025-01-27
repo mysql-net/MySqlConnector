@@ -11,6 +11,7 @@ project.lock.json
 _ReSharper.*
 TestResult.xml
 Thumbs.db
+.aider*
 *.csproj.user
 *.DotSettings.user
 .idea
