@@ -8,7 +8,7 @@ namespace MySqlConnector.Authentication.Ed25519;
 /// <summary>
 /// Provides an implementation of the Parsec authentication plugin for MariaDB.
 /// </summary>
-public sealed class ParsecAuthenticationPlugin : IAuthenticationPlugin
+public sealed class ParsecAuthenticationPlugin : IAuthenticationPlugin3
 {
 	/// <summary>
 	/// Registers the Parsec authentication plugin with MySqlConnector. You must call this method once before
@@ -29,6 +29,15 @@ public sealed class ParsecAuthenticationPlugin : IAuthenticationPlugin
 	/// Creates the authentication response.
 	/// </summary>
 	public byte[] CreateResponse(string password, ReadOnlySpan<byte> authenticationData)
+	{
+		CreateResponseAndPasswordHash(password, authenticationData, out var response, out _);
+		return response;
+	}
+
+	/// <summary>
+	/// Creates the authentication response.
+	/// </summary>
+	public void CreateResponseAndPasswordHash(string password, ReadOnlySpan<byte> authenticationData, out byte[] authenticationResponse, out byte[] passwordHash)
 	{
 		// first 32 bytes are server scramble
 		var serverScramble = authenticationData.Slice(0, 32);
@@ -54,32 +63,37 @@ public sealed class ParsecAuthenticationPlugin : IAuthenticationPlugin
 		var salt = extendedSalt.Slice(2);
 
 		// derive private key using PBKDF2-SHA512
-		byte[] privateKey;
+		byte[] privateKeySeed;
 #if NET6_0_OR_GREATER
-		privateKey = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, iterationCount, HashAlgorithmName.SHA512, 32);
+		privateKeySeed = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, iterationCount, HashAlgorithmName.SHA512, 32);
 #elif NET472_OR_GREATER || NETSTANDARD2_1_OR_GREATER
 		using (var pbkdf2 = new Rfc2898DeriveBytes(Encoding.UTF8.GetBytes(password), salt.ToArray(), iterationCount, HashAlgorithmName.SHA512))
-			privateKey = pbkdf2.GetBytes(32);
+			privateKeySeed = pbkdf2.GetBytes(32);
 #else
-		privateKey = Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivation.Pbkdf2(
+		privateKeySeed = Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivation.Pbkdf2(
 			password, salt.ToArray(), Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf.HMACSHA512,
 			iterationCount, numBytesRequested: 32);
 #endif
-		var expandedPrivateKey = Chaos.NaCl.Ed25519.ExpandedPrivateKeyFromSeed(privateKey);
+		Chaos.NaCl.Ed25519.KeyPairFromSeed(out var publicKey, out var privateKey, privateKeySeed);
 
 		// generate Ed25519 keypair and sign concatenated scrambles
 		var message = new byte[serverScramble.Length + clientScramble.Length];
 		serverScramble.CopyTo(message);
 		clientScramble.CopyTo(message.AsSpan(serverScramble.Length));
 
-		var signature = Chaos.NaCl.Ed25519.Sign(message, expandedPrivateKey);
+		var signature = Chaos.NaCl.Ed25519.Sign(message, privateKey);
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+		CryptographicOperations.ZeroMemory(privateKey);
+#endif
 
 		// return client scramble followed by signature
-		var response = new byte[clientScramble.Length + signature.Length];
-		clientScramble.CopyTo(response.AsSpan());
-		signature.CopyTo(response.AsSpan(clientScramble.Length));
-		
-		return response;
+		authenticationResponse = new byte[clientScramble.Length + signature.Length];
+		clientScramble.CopyTo(authenticationResponse.AsSpan());
+		signature.CopyTo(authenticationResponse.AsSpan(clientScramble.Length));
+
+		// "password hash" for parsec is the extended salt followed by the public key
+		passwordHash = [(byte) 'P', (byte) iterationCount, .. salt, .. publicKey];
 	}
 
 	private ParsecAuthenticationPlugin()

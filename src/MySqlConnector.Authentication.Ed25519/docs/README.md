@@ -7,7 +7,7 @@ This package implements the following authentication plugins for MariaDB:
 
 ## How to Use
 
-Call either the following methods from your application startup code to enable the corresponding authentication plugin:
+Call either of the following methods from your application startup code to enable the corresponding authentication plugin:
 
 * `Ed25519AuthenticationPlugin.Install()`
 * `ParsecAuthenticationPlugin.Install()`

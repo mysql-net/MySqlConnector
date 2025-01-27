@@ -448,13 +448,13 @@ internal sealed partial class ServerSession : IServerCapabilities
 			var initialHandshake = InitialHandshakePayload.Create(payload.Span);
 
 			// if PluginAuth is supported, then use the specified auth plugin; else, fall back to protocol capabilities to determine the auth type to use
-			m_currentAuthenticationMethod = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0 ? initialHandshake.AuthPluginName! :
+			var currentAuthenticationMethod = (initialHandshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0 ? initialHandshake.AuthPluginName! :
 				(initialHandshake.ProtocolCapabilities & ProtocolCapabilities.SecureConnection) == 0 ? "mysql_old_password" :
 				"mysql_native_password";
-			Log.ServerSentAuthPluginName(m_logger, Id, m_currentAuthenticationMethod);
-			if (m_currentAuthenticationMethod is not "mysql_native_password" and not "sha256_password" and not "caching_sha2_password")
+			Log.ServerSentAuthPluginName(m_logger, Id, currentAuthenticationMethod);
+			if (currentAuthenticationMethod is not "mysql_native_password" and not "sha256_password" and not "caching_sha2_password")
 			{
-				Log.UnsupportedAuthenticationMethod(m_logger, Id, m_currentAuthenticationMethod);
+				Log.UnsupportedAuthenticationMethod(m_logger, Id, currentAuthenticationMethod);
 				throw new NotSupportedException($"Authentication method '{initialHandshake.AuthPluginName}' is not supported.");
 			}
 
@@ -528,11 +528,17 @@ internal sealed partial class ServerSession : IServerCapabilities
 			if (m_supportsConnectionAttributes && cs.ConnectionAttributes is null)
 				cs.ConnectionAttributes = CreateConnectionAttributes(cs.ApplicationName);
 
+			var password = GetPassword(cs, connection);
+
 			// send a caching_sha2_password response if the server advertised support in the initial handshake
 			var useCachingSha2 = initialHandshake.AuthPluginName == "caching_sha2_password";
+			byte[] authenticationResponse;
+			if (useCachingSha2)
+				authenticationResponse = AuthenticationUtility.CreateScrambleResponse(Utility.TrimZeroByte(initialHandshake.AuthPluginData.AsSpan()), password);
+			else
+				AuthenticationUtility.CreateResponseAndPasswordHash(password, initialHandshake.AuthPluginData, out authenticationResponse, out m_passwordHash);
 
-			var password = GetPassword(cs, connection);
-			using (var handshakeResponsePayload = HandshakeResponse41Payload.Create(initialHandshake, cs, password, useCachingSha2, m_compressionMethod, connection.ZstandardPlugin?.CompressionLevel, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
+			using (var handshakeResponsePayload = HandshakeResponse41Payload.Create(initialHandshake, cs, authenticationResponse, m_compressionMethod, connection.ZstandardPlugin?.CompressionLevel, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
 				await SendReplyAsync(handshakeResponsePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
@@ -553,7 +559,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				}
 				else if (!m_isSecureConnection && password.Length != 0)
 				{
-					var publicKey = await GetRsaPublicKeyAsync(m_currentAuthenticationMethod, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+					var publicKey = await GetRsaPublicKeyAsync(currentAuthenticationMethod, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
 					payload = await SendEncryptedPasswordAsync(AuthPluginData, publicKey, password, ioBehavior, cancellationToken).ConfigureAwait(false);
 				}
 				else
@@ -583,7 +589,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 					// there is no shared secret that can be used to validate the certificate
 					Log.CertificateErrorNoPassword(m_logger, Id, m_sslPolicyErrors);
 				}
-				else if (ValidateFingerprint(ok.StatusInfo, initialHandshake.AuthPluginData.AsSpan(0, 20), password))
+				else if (ValidateFingerprint(ok.StatusInfo, initialHandshake.AuthPluginData.AsSpan(0, 20)))
 				{
 					Log.CertificateErrorValidThumbprint(m_logger, Id, m_sslPolicyErrors);
 					ignoreCertificateError = true;
@@ -649,36 +655,20 @@ internal sealed partial class ServerSession : IServerCapabilities
 	/// </summary>
 	/// <param name="validationHash">The validation hash received from the server.</param>
 	/// <param name="challenge">The auth plugin data from the initial handshake.</param>
-	/// <param name="password">The user's password.</param>
 	/// <returns><c>true</c> if the validation hash matches the locally-computed value; otherwise, <c>false</c>.</returns>
-	private bool ValidateFingerprint(byte[]? validationHash, ReadOnlySpan<byte> challenge, string password)
+	private bool ValidateFingerprint(byte[]? validationHash, ReadOnlySpan<byte> challenge)
 	{
 		// expect 0x01 followed by 64 hex characters giving a SHA2 hash
 		if (validationHash?.Length != 65 || validationHash[0] != 1)
 			return false;
 
-		byte[]? passwordHashResult = null;
-		switch (m_currentAuthenticationMethod)
-		{
-			case "mysql_native_password":
-				passwordHashResult = AuthenticationUtility.HashPassword([], password, onlyHashPassword: true);
-				break;
-
-			case "client_ed25519":
-				AuthenticationPlugins.TryGetPlugin(m_currentAuthenticationMethod, out var ed25519Plugin);
-				if (ed25519Plugin is IAuthenticationPlugin2 plugin2)
-					passwordHashResult = plugin2.CreatePasswordHash(password, challenge);
-				break;
-		}
-		if (passwordHashResult is null)
+		// the authentication plugin must have provided a password hash (via IAuthenticationPlugin3) that we saved for future use
+		if (m_passwordHash is null)
 			return false;
 
-		Span<byte> combined = stackalloc byte[32 + challenge.Length + passwordHashResult.Length];
-		passwordHashResult.CopyTo(combined);
-		challenge.CopyTo(combined[passwordHashResult.Length..]);
-		m_remoteCertificateSha2Thumbprint!.CopyTo(combined[(passwordHashResult.Length + challenge.Length)..]);
-
+		// hash password hash || scramble || certificate thumbprint
 		Span<byte> hashBytes = stackalloc byte[32];
+		Span<byte> combined = [.. m_passwordHash, .. challenge, .. m_remoteCertificateSha2Thumbprint!];
 #if NET5_0_OR_GREATER
 		SHA256.TryHashData(combined, hashBytes, out _);
 #else
@@ -827,8 +817,8 @@ internal sealed partial class ServerSession : IServerCapabilities
 					DatabaseOverride = null;
 				}
 				var password = GetPassword(cs, connection);
-				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData!, password);
-				using (var changeUserPayload = ChangeUserPayload.Create(cs.UserID, hashedPassword, cs.Database, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
+				AuthenticationUtility.CreateResponseAndPasswordHash(password, AuthPluginData, out var nativeResponse, out m_passwordHash);
+				using (var changeUserPayload = ChangeUserPayload.Create(cs.UserID, nativeResponse, cs.Database, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
 					await SendAsync(changeUserPayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				if (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
@@ -872,13 +862,12 @@ internal sealed partial class ServerSession : IServerCapabilities
 		// if the server didn't support the hashed password; rehash with the new challenge
 		var switchRequest = AuthenticationMethodSwitchRequestPayload.Create(payload.Span);
 		Log.SwitchingToAuthenticationMethod(m_logger, Id, switchRequest.Name);
-		m_currentAuthenticationMethod = switchRequest.Name;
 		switch (switchRequest.Name)
 		{
 			case "mysql_native_password":
 				AuthPluginData = switchRequest.Data;
-				var hashedPassword = AuthenticationUtility.CreateAuthenticationResponse(AuthPluginData, password);
-				payload = new(hashedPassword);
+				AuthenticationUtility.CreateResponseAndPasswordHash(password, AuthPluginData, out var nativeResponse, out m_passwordHash);
+				payload = new(nativeResponse);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
@@ -931,14 +920,15 @@ internal sealed partial class ServerSession : IServerCapabilities
 				throw new NotSupportedException("'MySQL Server is requesting the insecure pre-4.1 auth mechanism (mysql_old_password). The user password must be upgraded; see https://dev.mysql.com/doc/refman/5.7/en/account-upgrades.html.");
 
 			case "client_ed25519":
-				if (!AuthenticationPlugins.TryGetPlugin(switchRequest.Name, out var ed25519Plugin))
+				if (!AuthenticationPlugins.TryGetPlugin(switchRequest.Name, out var ed25519Plugin) || ed25519Plugin is not IAuthenticationPlugin3 ed25519Plugin3)
 					throw new NotSupportedException("You must install the MySqlConnector.Authentication.Ed25519 package and call Ed25519AuthenticationPlugin.Install to use client_ed25519 authentication.");
-				payload = new(ed25519Plugin.CreateResponse(password, switchRequest.Data));
+				ed25519Plugin3.CreateResponseAndPasswordHash(password, switchRequest.Data, out var ed25519Response, out m_passwordHash);
+				payload = new(ed25519Response);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			case "parsec":
-				if (!AuthenticationPlugins.TryGetPlugin(switchRequest.Name, out var parsecPlugin))
+				if (!AuthenticationPlugins.TryGetPlugin(switchRequest.Name, out var parsecPlugin) || parsecPlugin is not IAuthenticationPlugin3 parsecPlugin3)
 					throw new NotSupportedException("You must install the MySqlConnector.Authentication.Ed25519 package and call ParsecAuthenticationPlugin.Install to use parsec authentication.");
 				payload = new([]);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -948,7 +938,8 @@ internal sealed partial class ServerSession : IServerCapabilities
 				switchRequest.Data.CopyTo(combinedData);
 				payload.Span.CopyTo(combinedData.Slice(switchRequest.Data.Length));
 
-				payload = new(parsecPlugin.CreateResponse(password, combinedData));
+				parsecPlugin3.CreateResponseAndPasswordHash(password, combinedData, out var parsecResponse, out m_passwordHash);
+				payload = new(parsecResponse);
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
@@ -2216,7 +2207,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private PayloadData m_setNamesPayload;
 	private byte[]? m_pipelinedResetConnectionBytes;
 	private Dictionary<string, PreparedStatements>? m_preparedStatements;
-	private string? m_currentAuthenticationMethod;
+	private byte[]? m_passwordHash;
 	private byte[]? m_remoteCertificateSha2Thumbprint;
 	private SslPolicyErrors m_sslPolicyErrors;
 }
