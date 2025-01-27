@@ -1,7 +1,13 @@
 ## About
 
-This package implements the `client_ed25519` [authentication plugin for MariaDB](https://mariadb.com/kb/en/authentication-plugin-ed25519/).
+This package implements the following authentication plugins for MariaDB:
+
+* [`client_ed25519`](https://mariadb.com/kb/en/authentication-plugin-ed25519/).
+* [PARSEC](https://mariadb.com/kb/en/authentication-plugin-parsec/)
 
 ## How to Use
 
-Call `Ed25519AuthenticationPlugin.Install()` from your application startup code to enable it.
+Call either the following methods from your application startup code to enable the corresponding authentication plugin:
+
+* `Ed25519AuthenticationPlugin.Install()`
+* `ParsecAuthenticationPlugin.Install()`

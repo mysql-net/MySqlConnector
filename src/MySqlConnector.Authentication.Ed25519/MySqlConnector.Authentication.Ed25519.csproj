@@ -1,22 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net462;net472;netstandard2.0;netstandard2.1;net6.0</TargetFrameworks>
     <Title>MySqlConnector Ed25519 Authentication Plugin</Title>
-    <Description>Implements the client_ed25519 authentication plugin for MariaDB.</Description>
+    <Description>Implements the client_ed25519 and parsec authentication plugins for MariaDB.</Description>
     <Copyright>Copyright 2019–2024 Bradley Grainger</Copyright>
     <Authors>Bradley Grainger</Authors>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>mariadb;mysqlconnector;authentication;ed25519</PackageTags>
-    <NoWarn>SA1001;SA1002;SA1005;SA1011;SA1012;SA1021;SA1025;SA1106;SA1107;SA1111;SA1119;SA1121;SA1300;SA1307;SA1312;SA1401;SA1413;SA1501;SA1505;SA1507;SA1508;SA1512;SA1518;SA1601</NoWarn>
+    <PackageTags>mariadb;mysqlconnector;authentication;ed25519;parsec</PackageTags>
+    <NoWarn>CA1305;CA1507;CA1802;CA2208;CS0649;IDE0049;SA1001;SA1002;SA1005;SA1011;SA1012;SA1021;SA1025;SA1028;SA1106;SA1107;SA1111;SA1119;SA1121;SA1124;SA1137;SA1214;SA1300;SA1307;SA1309;SA1312;SA1313;SA1401;SA1413;SA1501;SA1505;SA1507;SA1508;SA1509;SA1512;SA1515;SA1518;SA1520;SA1601</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MySqlConnector\MySqlConnector.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'netstandard2.1' ">
+    <Compile Remove="Chaos.NaCl\CryptoBytes.cs" />
+  </ItemGroup>
+
   <ItemGroup>
-    <None Include="docs\README.md" Pack="true" PackagePath="\"/>
+    <None Include="docs\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

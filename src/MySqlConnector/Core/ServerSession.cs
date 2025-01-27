@@ -937,6 +937,21 @@ internal sealed partial class ServerSession : IServerCapabilities
 				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
+			case "parsec":
+				if (!AuthenticationPlugins.TryGetPlugin(switchRequest.Name, out var parsecPlugin))
+					throw new NotSupportedException("You must install the MySqlConnector.Authentication.Ed25519 package and call ParsecAuthenticationPlugin.Install to use parsec authentication.");
+				payload = new([]);
+				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
+				Span<byte> combinedData = stackalloc byte[switchRequest.Data.Length + payload.Span.Length];
+				switchRequest.Data.CopyTo(combinedData);
+				payload.Span.CopyTo(combinedData.Slice(switchRequest.Data.Length));
+
+				payload = new(parsecPlugin.CreateResponse(password, combinedData));
+				await SendReplyAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+				return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
 			default:
 				Log.AuthenticationMethodNotSupported(m_logger, Id, switchRequest.Name);
 				throw new NotSupportedException($"Authentication method '{switchRequest.Name}' is not supported.");
