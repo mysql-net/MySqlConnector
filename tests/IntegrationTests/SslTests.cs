@@ -236,6 +236,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 	}
 
 #if !MYSQL_DATA
+#if NET472_OR_GREATER || NET6_0_OR_GREATER
 	[SkippableFact(ServerFeatures.TlsFingerprintValidation | ServerFeatures.Ed25519)]
 	public async Task ConnectZeroConfigurationSslEd25519()
 	{
@@ -249,6 +250,7 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		await connection.OpenAsync();
 	}
+#endif
 #endif
 
 	[SkippableFact(ConfigSettings.RequiresSsl)]

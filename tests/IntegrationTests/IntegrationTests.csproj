@@ -53,8 +53,11 @@
 
   <ItemGroup Condition=" '$(Configuration)' != 'MySqlData' ">
     <ProjectReference Include="..\..\src\MySqlConnector\MySqlConnector.csproj" />
-    <ProjectReference Include="..\..\src\MySqlConnector.Authentication.Ed25519\MySqlConnector.Authentication.Ed25519.csproj" />
     <Using Include="MySqlConnector" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Configuration)' != 'MySqlData' and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net472')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0')))">
+    <ProjectReference Include="..\..\src\MySqlConnector.Authentication.Ed25519\MySqlConnector.Authentication.Ed25519.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'MySqlData' ">
