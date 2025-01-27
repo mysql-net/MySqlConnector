@@ -18,7 +18,7 @@ public static class TestUtilities
 	}
 
 	/// <summary>
-	/// Verifies that <paramref name="value"/> is an integer (<see cref="Int32"/> or <see cref="Int64"/>) with the value <code>1</code>.
+	/// Verifies that <paramref name="value"/> is an integer (<see cref="int"/> or <see cref="long"/>) with the value <code>1</code>.
 	/// </summary>
 	public static void AssertIsOne(object value)
 	{
