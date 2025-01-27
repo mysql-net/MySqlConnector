@@ -64,7 +64,7 @@ Server  | Versions | Notes
 Amazon Aurora RDS | 2.x, 3.x | Use `Pipelining=False` [for Aurora 2.x](https://mysqlconnector.net/troubleshooting/aurora-freeze/)
 Azure Database for MySQL | 5.7, 8.0 | Single Server and Flexible Server
 Google Cloud SQL for MySQL | 5.6, 5.7, 8.0 |
-MariaDB | 10.x (**10.6**, **10.11**), 11.x (**11.4**) |
+MariaDB | 10.x (**10.6**, **10.11**), 11.x (**11.4**, **11.6**) |
 MySQL | 5.5, 5.6, 5.7, 8.x (**8.0**, **8.4**), 9.x (**9.2**) | 5.5 is EOL and has some [compatibility issues](https://github.com/mysql-net/MySqlConnector/issues/1192); 5.6 and 5.7 are EOL
 Percona Server | 5.6, 5.7, 8.0 |
 PlanetScale | | See PlanetScale [MySQL compatibility notes](https://planetscale.com/docs/reference/mysql-compatibility)
