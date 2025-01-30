@@ -1731,7 +1731,8 @@ internal sealed partial class ServerSession : IServerCapabilities
 		}
 		catch (Exception ex)
 		{
-			Log.CouldNotInitializeTlsConnection(m_logger, ex, Id);
+			if (ex is not OperationCanceledException)
+				Log.CouldNotInitializeTlsConnection(m_logger, ex, Id);
 			sslStream.Dispose();
 			ShutdownSocket();
 			HostName = "";
