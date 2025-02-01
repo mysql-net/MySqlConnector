@@ -225,6 +225,7 @@ internal static class ProtocolUtility
 			case CharacterSet.Utf8Mb3CroatianCaseInsensitiveMariaDb:
 			case CharacterSet.Utf8Mb3MyanmarCaseInsensitive:
 			case CharacterSet.Utf8Mb3ThaiUnicode520Weight2:
+			case CharacterSet.Utf8Mb3General1400AccentSensitiveCaseInsensitive:
 			case CharacterSet.UjisJapaneseNoPadCaseInsensitive:
 			case CharacterSet.Utf8Mb3GeneralNoPadCaseInsensitive:
 			case CharacterSet.Utf8Mb3NoPadBinary:
@@ -384,6 +385,7 @@ internal static class ProtocolUtility
 			case CharacterSet.Utf8Mb4CroatianCaseInsensitiveMariaDb:
 			case CharacterSet.Utf8Mb4MyanmarCaseInsensitive:
 			case CharacterSet.Utf8Mb4ThaiUnicode520Weight2:
+			case CharacterSet.Utf8Mb4General1400AccentSensitiveCaseInsensitive:
 			case CharacterSet.Utf16CroatianCaseInsensitiveMariaDb:
 			case CharacterSet.Utf16MyanmarCaseInsensitive:
 			case CharacterSet.Utf16ThaiUnicode520Weight2:
