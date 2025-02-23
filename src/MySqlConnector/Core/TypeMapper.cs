@@ -56,7 +56,7 @@ internal sealed class TypeMapper
 		AddColumnTypeMetadata(new("FLOAT", typeFloat, MySqlDbType.Float));
 
 		 // vector
-		var typeFloatArray = AddDbTypeMapping(new(typeof(float[]), [DbType.Object], convert: static o => (float[])o));
+		var typeFloatArray = AddDbTypeMapping(new(typeof(float[]), [DbType.Object]));
 		AddColumnTypeMetadata(new("VECTOR", typeFloatArray, MySqlDbType.Vector, binary: true, simpleDataTypeName: "VECTOR", createFormat: "VECTOR({0})"));
 
 		// string

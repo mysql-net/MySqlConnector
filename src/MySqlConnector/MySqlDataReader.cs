@@ -428,14 +428,6 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 			return (T) (object) GetDateOnly(ordinal);
 		if (typeof(T) == typeof(TimeOnly))
 			return (T) (object) GetTimeOnly(ordinal);
-		if (typeof(T) == typeof(ReadOnlySpan<float>))
-		{
-			var value = GetValue(ordinal);
-			if (value is float[] floatArray)
-			{
-				return (T) (object) new ReadOnlySpan<float>(floatArray);
-			}
-		}
 #endif
 
 		return base.GetFieldValue<T>(ordinal);

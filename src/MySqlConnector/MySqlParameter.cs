@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 #if NET8_0_OR_GREATER
 using System.Text.Unicode;
@@ -282,7 +283,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		{
 			writer.WriteString(ulongValue);
 		}
-		else if (Value is byte[] or ReadOnlyMemory<byte> or Memory<byte> or ArraySegment<byte> or MySqlGeometry or MemoryStream)
+		else if (Value is byte[] or ReadOnlyMemory<byte> or Memory<byte> or ArraySegment<byte> or MySqlGeometry or MemoryStream or float[])
 		{
 			var inputSpan = Value switch
 			{
@@ -291,6 +292,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 				Memory<byte> memory => memory.Span,
 				MySqlGeometry geometry => geometry.ValueSpan,
 				MemoryStream memoryStream => memoryStream.TryGetBuffer(out var streamBuffer) ? streamBuffer.AsSpan() : memoryStream.ToArray().AsSpan(),
+				float[] floatArray => MemoryMarshal.AsBytes(floatArray.AsSpan()),
 				_ => ((ReadOnlyMemory<byte>) Value).Span,
 			};
 
@@ -554,17 +556,6 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		{
 			writer.WriteString((ulong) Value);
 		}
-		else if (Value is float[] floatArrayValue)
-		{
-			writer.Write((byte) '[');
-			for (int i = 0; i < floatArrayValue.Length; i++)
-			{
-				if (i > 0)
-					writer.Write((byte) ',');
-				writer.WriteString(floatArrayValue[i]);
-			}
-			writer.Write((byte) ']');
-		}
 		else
 		{
 			throw new NotSupportedException($"Parameter type {Value.GetType().Name} is not supported; see https://mysqlconnector.net/param-type. Value: {Value}");
@@ -740,6 +731,11 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		{
 			writer.Write(unchecked((ulong) BitConverter.DoubleToInt64Bits(doubleValue)));
 		}
+		else if (value is float[] floatArrayValue)
+		{
+			writer.WriteLengthEncodedInteger(unchecked((ulong) floatArrayValue.Length * 4));
+			writer.Write(MemoryMarshal.AsBytes(floatArrayValue.AsSpan()));
+		}
 		else if (value is decimal decimalValue)
 		{
 			writer.WriteLengthEncodedAsciiString(decimalValue.ToString(CultureInfo.InvariantCulture));
@@ -881,14 +877,6 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		else if (MySqlDbType == MySqlDbType.UInt64)
 		{
 			writer.Write((ulong) value);
-		}
-		else if (value is float[] floatArrayValue)
-		{
-			writer.WriteLengthEncodedInteger((ulong) (floatArrayValue.Length * 4));
-			foreach (var floatValue in floatArrayValue)
-			{
-				writer.Write(BitConverter.GetBytes(floatValue));
-			}
 		}
 		else
 		{
