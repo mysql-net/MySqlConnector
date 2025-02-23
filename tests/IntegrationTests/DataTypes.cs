@@ -1143,6 +1143,9 @@ ORDER BY t.`Key`", Connection);
 	[InlineData("Int64", "datatypes_integers", MySqlDbType.Int64, 20, typeof(long), "N", 0, 0)]
 	[InlineData("UInt64", "datatypes_integers", MySqlDbType.UInt64, 20, typeof(ulong), "N", 0, 0)]
 	[InlineData("value", "datatypes_json_core", MySqlDbType.JSON, int.MaxValue, typeof(string), "LN", 0, 0)]
+#if !MYSQL_DATA
+	[InlineData("value", "datatypes_vector", MySqlDbType.Vector, 3, typeof(float[]), "N", 0, 31)]
+#endif
 	[InlineData("Single", "datatypes_reals", MySqlDbType.Float, 12, typeof(float), "N", 0, 31)]
 	[InlineData("Double", "datatypes_reals", MySqlDbType.Double, 22, typeof(double), "N", 0, 31)]
 	[InlineData("SmallDecimal", "datatypes_reals", MySqlDbType.NewDecimal, 7, typeof(decimal), "N", 5, 2)]
@@ -1194,6 +1197,8 @@ create table schema_table({createColumn});");
 	private void DoGetSchemaTable(string column, string table, MySqlDbType mySqlDbType, int columnSize, Type dataType, string flags, int precision, int scale)
 	{
 		if (table == "datatypes_json_core" && !AppConfig.SupportsJson)
+			return;
+		if (table == "datatypes_vector" && !AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Vector))
 			return;
 
 		var isAutoIncrement = flags.IndexOf('A') != -1;
