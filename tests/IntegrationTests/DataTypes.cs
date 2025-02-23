@@ -1599,6 +1599,18 @@ end;";
 		DoQuery("json_core", column, dataTypeName, expected, reader => reader.GetString(0), omitWhereTest: true);
 	}
 
+#if !MYSQL_DATA
+	[SkippableTheory(ServerFeatures.Vector)]
+	[InlineData("value", new[] { null, "0,0,0", "1,1,1", "1,2,3", "3.40282347E+38,3.40282347E+38,3.40282347E+38" })]
+	public void QueryVector(string column, string[] expected)
+	{
+		string dataTypeName = "VECTOR";
+		DoQuery("vector", column, dataTypeName,
+			expected.Select(x => x?.Split(',').Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray()).ToArray(),
+			static x => (float[]) x.GetValue(0), omitWhereTest: true);
+	}
+#endif
+
 	[SkippableTheory(MySqlData = "https://bugs.mysql.com/bug.php?id=97067")]
 	[InlineData(false, "MIN", 0)]
 	[InlineData(false, "MAX", uint.MaxValue)]

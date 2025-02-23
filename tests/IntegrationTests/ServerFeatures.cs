@@ -45,4 +45,9 @@ public enum ServerFeatures
 	/// Server provides hash of TLS certificate in first OK packet.
 	/// </summary>
 	TlsFingerprintValidation = 0x100_0000,
+
+	/// <summary>
+	/// Server supports the <c>VECTOR</c> data type.
+	/// </summary>
+	Vector = 0x200_0000,
 }

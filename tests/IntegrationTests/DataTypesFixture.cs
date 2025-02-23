@@ -242,6 +242,24 @@ values
   ('{""a"": ""b""}');
 ");
 		}
+
+		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Vector))
+		{
+			Connection.Execute("""
+				drop table if exists datatypes_vector;
+				create table datatypes_vector (
+					rowid integer not null primary key auto_increment,
+					value vector(3) null
+				);
+				insert into datatypes_vector (value)
+				values
+					(null),
+					(STRING_TO_VECTOR('[0, 0, 0]')),
+					(STRING_TO_VECTOR('[1, 1, 1]')),
+					(STRING_TO_VECTOR('[1, 2, 3]')),
+					(STRING_TO_VECTOR('[3.40282347E+38, 3.40282347E+38, 3.40282347E+38]'));
+				""");
+		}
 		Connection.Close();
 	}
 }
