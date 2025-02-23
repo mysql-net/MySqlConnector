@@ -423,4 +423,37 @@ public class MySqlParameterTests
 		((IDbDataParameter) parameter).Scale = 12;
 		Assert.Equal((byte) 12, ((MySqlParameter) parameter).Scale);
 	}
+
+	[Fact]
+	public void SetValueToFloatArrayInfersType()
+	{
+		var parameter = new MySqlParameter { Value = new float[] { 1.0f, 2.0f, 3.0f } };
+		Assert.Equal(DbType.Object, parameter.DbType);
+		Assert.Equal(MySqlDbType.Vector, parameter.MySqlDbType);
+	}
+
+	[Fact]
+	public void ConstructorNameTypeVector()
+	{
+		var parameter = new MySqlParameter("@vector", MySqlDbType.Vector);
+		Assert.Equal("@vector", parameter.ParameterName);
+		Assert.Equal(MySqlDbType.Vector, parameter.MySqlDbType);
+		Assert.Equal(DbType.Object, parameter.DbType);
+		Assert.False(parameter.IsNullable);
+		Assert.Null(parameter.Value);
+		Assert.Equal(ParameterDirection.Input, parameter.Direction);
+		Assert.Equal(0, parameter.Precision);
+		Assert.Equal(0, parameter.Scale);
+		Assert.Equal(0, parameter.Size);
+#if MYSQL_DATA
+		Assert.Equal(DataRowVersion.Default, parameter.SourceVersion);
+#else
+		Assert.Equal(DataRowVersion.Current, parameter.SourceVersion);
+#endif
+#if MYSQL_DATA
+		Assert.Null(parameter.SourceColumn);
+#else
+		Assert.Equal("", parameter.SourceColumn);
+#endif
+	}
 }

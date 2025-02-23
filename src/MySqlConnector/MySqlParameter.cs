@@ -554,6 +554,17 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		{
 			writer.WriteString((ulong) Value);
 		}
+		else if (Value is float[] floatArrayValue)
+		{
+			writer.Write((byte) '[');
+			for (int i = 0; i < floatArrayValue.Length; i++)
+			{
+				if (i > 0)
+					writer.Write((byte) ',');
+				writer.WriteString(floatArrayValue[i]);
+			}
+			writer.Write((byte) ']');
+		}
 		else
 		{
 			throw new NotSupportedException($"Parameter type {Value.GetType().Name} is not supported; see https://mysqlconnector.net/param-type. Value: {Value}");
@@ -870,6 +881,14 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		else if (MySqlDbType == MySqlDbType.UInt64)
 		{
 			writer.Write((ulong) value);
+		}
+		else if (value is float[] floatArrayValue)
+		{
+			writer.WriteLengthEncodedInteger((ulong) (floatArrayValue.Length * 4));
+			foreach (var floatValue in floatArrayValue)
+			{
+				writer.Write(BitConverter.GetBytes(floatValue));
+			}
 		}
 		else
 		{

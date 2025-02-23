@@ -252,7 +252,15 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 #endif
 	public override Type GetFieldType(int ordinal) => GetResultSet().GetFieldType(ordinal);
 
-	public override object GetValue(int ordinal) => GetResultSet().GetCurrentRow().GetValue(ordinal);
+	public override object GetValue(int ordinal)
+	{
+		var resultSet = GetResultSet();
+		if (resultSet.GetDataTypeName(ordinal) == "VECTOR")
+		{
+			return resultSet.GetCurrentRow().GetValue(ordinal);
+		}
+		return resultSet.GetCurrentRow().GetValue(ordinal);
+	}
 
 	public override IEnumerator GetEnumerator() => new DbEnumerator(this, closeReader: false);
 
@@ -428,6 +436,14 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 			return (T) (object) GetDateOnly(ordinal);
 		if (typeof(T) == typeof(TimeOnly))
 			return (T) (object) GetTimeOnly(ordinal);
+		if (typeof(T) == typeof(ReadOnlySpan<float>))
+		{
+			var value = GetValue(ordinal);
+			if (value is float[] floatArray)
+			{
+				return (T) (object) new ReadOnlySpan<float>(floatArray);
+			}
+		}
 #endif
 
 		return base.GetFieldValue<T>(ordinal);

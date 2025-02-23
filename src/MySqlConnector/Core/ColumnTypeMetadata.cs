@@ -16,3 +16,8 @@ internal sealed class ColumnTypeMetadata(string dataTypeName, DbTypeMapping dbTy
 
 	public string CreateLookupKey() => CreateLookupKey(DataTypeName, IsUnsigned, Length);
 }
+
+internal static class ColumnTypeMetadataExtensions
+{
+	public static ColumnTypeMetadata Vector { get; } = new("VECTOR", new DbTypeMapping(typeof(float[]), new[] { DbType.Object }, convert: o => (float[])o), MySqlDbType.Vector, isUnsigned: false, binary: true, length: 0, simpleDataTypeName: "VECTOR", createFormat: "VECTOR({0})");
+}

@@ -2,6 +2,9 @@ namespace MySqlConnector;
 
 #pragma warning disable CA1720 // Identifier contains type name
 
+/// <summary>
+/// Specifies the MySQL data type of a field, property, for use in a <see cref="MySqlParameter"/>.
+/// </summary>
 public enum MySqlDbType
 {
 	Bool = -1,
@@ -37,6 +40,10 @@ public enum MySqlDbType
 	VarChar,
 	String,
 	Geometry,
+	/// <summary>
+	/// A MySQL VECTOR data type.
+	/// </summary>
+	Vector = 242,
 	UByte = 501,
 	UInt16,
 	UInt32,
