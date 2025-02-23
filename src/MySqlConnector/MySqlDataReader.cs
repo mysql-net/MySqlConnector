@@ -252,15 +252,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 #endif
 	public override Type GetFieldType(int ordinal) => GetResultSet().GetFieldType(ordinal);
 
-	public override object GetValue(int ordinal)
-	{
-		var resultSet = GetResultSet();
-		if (resultSet.GetDataTypeName(ordinal) == "VECTOR")
-		{
-			return resultSet.GetCurrentRow().GetValue(ordinal);
-		}
-		return resultSet.GetCurrentRow().GetValue(ordinal);
-	}
+	public override object GetValue(int ordinal) => GetResultSet().GetCurrentRow().GetValue(ordinal);
 
 	public override IEnumerator GetEnumerator() => new DbEnumerator(this, closeReader: false);
 
