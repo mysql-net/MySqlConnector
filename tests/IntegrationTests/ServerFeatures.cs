@@ -47,7 +47,12 @@ public enum ServerFeatures
 	TlsFingerprintValidation = 0x100_0000,
 
 	/// <summary>
-	/// Server supports the <c>VECTOR</c> data type.
+	/// Server supports the <c>VECTOR</c> SQL type.
 	/// </summary>
 	Vector = 0x200_0000,
+
+	/// <summary>
+	/// Server has a dedicated type on the wire for <c>VECTOR</c>.
+	/// </summary>
+	VectorType = 0x400_0000,
 }

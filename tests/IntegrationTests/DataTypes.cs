@@ -1205,6 +1205,15 @@ create table schema_table({createColumn});");
 		if (table == "datatypes_vector" && !AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Vector))
 			return;
 
+		// adjust for databases that don't have a dedicated on-the-wire type for VECTOR(n)
+		if (mySqlDbType == MySqlDbType.Vector && !AppConfig.SupportedFeatures.HasFlag(ServerFeatures.VectorType))
+		{
+			mySqlDbType = MySqlDbType.VarBinary;
+			columnSize *= 4;
+			dataType = typeof(byte[]);
+			scale = 0;
+		}
+
 		var isAutoIncrement = flags.IndexOf('A') != -1;
 		var isKey = flags.IndexOf('K') != -1;
 		var isLong = flags.IndexOf('L') != -1;
@@ -1609,26 +1618,32 @@ end;";
 	}
 
 	[SkippableTheory(ServerFeatures.Vector)]
-	[InlineData("value", new[] { null, "0,0,0", "1,1,1", "1,2,3", "3.40282347E+38,3.40282347E+38,3.40282347E+38" })]
+	[InlineData("value", new[] { null, "0,0,0", "1,1,1", "1,2,3", "-1,-1,-1" })]
 	public void QueryVector(string column, string[] expected)
 	{
-		string dataTypeName = "VECTOR";
+		var hasVectorType = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.VectorType);
+		string dataTypeName = hasVectorType ? "VECTOR" : "BLOB";
 		DoQuery("vector", column, dataTypeName,
 			expected.Select(x =>
-#if MYSQL_DATA
-				// Connector/NET returns the float array as a byte[]
-				x is null ? null : MemoryMarshal.AsBytes<float>(x.Split(',').Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray()).ToArray())
+#if !MYSQL_DATA
+				hasVectorType ? (object) GetFloatArray(x) : GetByteArray(x))
 #else
-				x?.Split(',').Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray())
+				// Connector/NET returns the float array as a byte[]
+				GetByteArray(x))
 #endif
 			.ToArray(),
 #if !MYSQL_DATA
-			static x => (float[]) x.GetValue(0),
+			x => hasVectorType ? (float[]) x.GetValue(0) : (byte[]) x.GetValue(0),
 #else
 			// NOTE: Connector/NET returns 'null' for NULL so simulate an exception for the tests
 			x => x.IsDBNull(0) ? throw new GetValueWhenNullException() : x.GetValue(0),
 #endif
 			omitWhereTest: true);
+
+		static float[] GetFloatArray(string value) => value?.Split(',').Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray();
+
+		static byte[] GetByteArray(string value) =>
+			GetFloatArray(value) is { } floats ? MemoryMarshal.AsBytes<float>(floats).ToArray() : null;
 	}
 
 	[SkippableTheory(MySqlData = "https://bugs.mysql.com/bug.php?id=97067")]

@@ -1700,7 +1700,7 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 
 		connection.Execute("""
 			drop table if exists test_vector;
-			create table test_vector(id int auto_increment not null primary key, vec vector not null);
+			create table test_vector(id int auto_increment not null primary key, vec vector(3) not null);
 			""");
 
 		using var cmd = m_database.Connection.CreateCommand();
@@ -1735,7 +1735,8 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 #if MYSQL_DATA
 		var result = MemoryMarshal.Cast<byte, float>((byte[]) value).ToArray();
 #else
-		var result = (float[]) value;
+		var result = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.VectorType) ? (float[]) value :
+			MemoryMarshal.Cast<byte, float>((byte[]) value).ToArray();
 #endif
 		Assert.Equal(floatArray, result);
 	}
