@@ -761,6 +761,44 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		Assert.False(reader.Read());
 	}
 
+#if false
+	[SkippableTheory(ServerFeatures.Vector)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void VectorOutputParameter(bool prepare)
+	{
+		using var cmd = m_database.Connection.CreateCommand();
+		cmd.CommandText = """
+			DROP PROCEDURE IF EXISTS sp_vector_out;
+			CREATE PROCEDURE sp_vector_out (OUT vec VECTOR)
+			BEGIN
+				SELECT STRING_TO_VECTOR('[1.2, 3.4, 5.6]') INTO vec;
+			END;
+			""";
+		cmd.ExecuteNonQuery();
+
+		cmd.CommandText = "sp_vector_out";
+		cmd.CommandType = CommandType.StoredProcedure;
+		cmd.Parameters.Add(new MySqlParameter
+		{
+			ParameterName = "@vec",
+			MySqlDbType = MySqlDbType.Vector,
+			Direction = ParameterDirection.Output,
+		});
+
+		if (prepare)
+			cmd.Prepare();
+		cmd.ExecuteNonQuery();
+
+		var value = cmd.Parameters[0].Value;
+		Assert.IsType<float[]>(value);
+
+		var result = (float[]) value;
+
+		Assert.Equal(new float[] { 1.2f, 3.4f, 5.6f }, result);
+	}
+#endif
+
 	private static Action<MySqlParameter> AssertParameter(string name, ParameterDirection direction, MySqlDbType mySqlDbType)
 	{
 		return x =>

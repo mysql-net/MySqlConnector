@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace IntegrationTests;
 
 public class QueryTests : IClassFixture<DatabaseFixture>, IDisposable
@@ -1687,6 +1689,56 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 		Assert.Equal(new byte[] { 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89 }, buffer);
 	}
 #endif
+
+	[SkippableTheory(ServerFeatures.Vector)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void QueryVector(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+
+		connection.Execute("""
+			drop table if exists test_vector;
+			create table test_vector(id int auto_increment not null primary key, vec vector not null);
+			""");
+
+		using var cmd = m_database.Connection.CreateCommand();
+		cmd.CommandText = "INSERT INTO test_vector(vec) VALUES(@vec)";
+		cmd.Parameters.Add(new MySqlParameter
+		{
+			ParameterName = "@vec",
+			MySqlDbType = MySqlDbType.Vector,
+		});
+
+		var floatArray = new[] { 1.2f, 3.4f, 5.6f };
+#if MYSQL_DATA
+		// Connector/NET requires the float vector to be passed as a byte array
+		cmd.Parameters[0].Value = MemoryMarshal.AsBytes<float>(floatArray).ToArray();
+#else
+		cmd.Parameters[0].Value = floatArray;
+#endif
+
+		if (prepare)
+			cmd.Prepare();
+		cmd.ExecuteNonQuery();
+
+		// Select and verify the value
+		cmd.CommandText = "SELECT vec FROM test_vector";
+		if (prepare)
+			cmd.Prepare();
+
+		using var reader = cmd.ExecuteReader();
+		Assert.True(reader.Read());
+		var value = reader.GetValue(0);
+
+#if MYSQL_DATA
+		var result = MemoryMarshal.Cast<byte, float>((byte[]) value).ToArray();
+#else
+		var result = (float[]) value;
+#endif
+		Assert.Equal(floatArray, result);
+	}
 
 	private class BoolTest
 	{

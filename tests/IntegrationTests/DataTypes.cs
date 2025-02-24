@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Runtime.InteropServices;
+
 #if MYSQL_DATA
 using MySql.Data.Types;
 #endif
@@ -1143,7 +1145,9 @@ ORDER BY t.`Key`", Connection);
 	[InlineData("Int64", "datatypes_integers", MySqlDbType.Int64, 20, typeof(long), "N", 0, 0)]
 	[InlineData("UInt64", "datatypes_integers", MySqlDbType.UInt64, 20, typeof(ulong), "N", 0, 0)]
 	[InlineData("value", "datatypes_json_core", MySqlDbType.JSON, int.MaxValue, typeof(string), "LN", 0, 0)]
-#if !MYSQL_DATA
+#if MYSQL_DATA
+	[InlineData("value", "datatypes_vector", MySqlDbType.Vector, 12, typeof(byte[]), "N", 0, 31)]
+#else
 	[InlineData("value", "datatypes_vector", MySqlDbType.Vector, 3, typeof(float[]), "N", 0, 31)]
 #endif
 	[InlineData("Single", "datatypes_reals", MySqlDbType.Float, 12, typeof(float), "N", 0, 31)]
@@ -1604,17 +1608,28 @@ end;";
 		DoQuery("json_core", column, dataTypeName, expected, reader => reader.GetString(0), omitWhereTest: true);
 	}
 
-#if !MYSQL_DATA
 	[SkippableTheory(ServerFeatures.Vector)]
 	[InlineData("value", new[] { null, "0,0,0", "1,1,1", "1,2,3", "3.40282347E+38,3.40282347E+38,3.40282347E+38" })]
 	public void QueryVector(string column, string[] expected)
 	{
 		string dataTypeName = "VECTOR";
 		DoQuery("vector", column, dataTypeName,
-			expected.Select(x => x?.Split(',').Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray()).ToArray(),
-			static x => (float[]) x.GetValue(0), omitWhereTest: true);
-	}
+			expected.Select(x =>
+#if MYSQL_DATA
+				// Connector/NET returns the float array as a byte[]
+				x is null ? null : MemoryMarshal.AsBytes<float>(x.Split(',').Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray()).ToArray())
+#else
+				x?.Split(',').Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray())
 #endif
+			.ToArray(),
+#if !MYSQL_DATA
+			static x => (float[]) x.GetValue(0),
+#else
+			// NOTE: Connector/NET returns 'null' for NULL so simulate an exception for the tests
+			x => x.IsDBNull(0) ? throw new GetValueWhenNullException() : x.GetValue(0),
+#endif
+			omitWhereTest: true);
+	}
 
 	[SkippableTheory(MySqlData = "https://bugs.mysql.com/bug.php?id=97067")]
 	[InlineData(false, "MIN", 0)]
