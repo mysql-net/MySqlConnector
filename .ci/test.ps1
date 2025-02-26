@@ -38,7 +38,7 @@ dotnet test -c Release -f net462
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
-dotnet test -c Release -f net9.0
+dotnet test -c Release -f net10.0
 if ($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE;
 }
