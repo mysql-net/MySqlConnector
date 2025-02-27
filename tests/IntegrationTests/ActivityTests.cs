@@ -140,6 +140,48 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		AssertTag(activity.Tags, "db.statement", "SELECT 1;");
 	}
 
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void ReadResultSetHeaderEvent(bool enableEvent)
+	{
+		var dataSourceBuilder = new MySqlDataSourceBuilder(AppConfig.ConnectionString)
+			.ConfigureTracing(o => o.EnableResultSetHeaderEvent(enableEvent));
+		using var dataSource = dataSourceBuilder.Build();
+		using var connection = dataSource.OpenConnection();
+
+		using var parentActivity = new Activity(nameof(ReadResultSetHeaderEvent));
+		parentActivity.Start();
+
+		Activity activity = null;
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = x => activity = x,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		using (var command = new MySqlCommand("SELECT 1;", connection))
+		{
+			command.ExecuteScalar();
+		}
+
+		Assert.NotNull(activity);
+		Assert.Equal(ActivityKind.Client, activity.Kind);
+		Assert.Equal("Execute", activity.OperationName);
+		if (enableEvent)
+		{
+			var activityEvent = Assert.Single(activity.Events);
+			Assert.Equal("read-result-set-header", activityEvent.Name);
+		}
+		else
+		{
+			Assert.Empty(activity.Events);
+		}
+	}
+
 	private void AssertTags(IEnumerable<KeyValuePair<string, string>> tags, MySqlConnectionStringBuilder csb)
 	{
 		AssertTag(tags, "db.system", "mysql");

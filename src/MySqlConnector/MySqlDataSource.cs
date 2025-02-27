@@ -19,12 +19,13 @@ public sealed class MySqlDataSource : DbDataSource
 	/// <param name="connectionString">The connection string for the MySQL Server. This parameter is required.</param>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="connectionString"/> is <c>null</c>.</exception>
 	public MySqlDataSource(string connectionString)
-		: this(connectionString ?? throw new ArgumentNullException(nameof(connectionString)), MySqlConnectorLoggingConfiguration.NullConfiguration, null, null, null, null, default, default, default, default)
+		: this(connectionString ?? throw new ArgumentNullException(nameof(connectionString)), MySqlConnectorLoggingConfiguration.NullConfiguration, null, null, null, null, null, default, default, default, default)
 	{
 	}
 
 	internal MySqlDataSource(string connectionString,
 		MySqlConnectorLoggingConfiguration loggingConfiguration,
+		MySqlConnectorTracingOptions? tracingOptions,
 		string? name,
 		Func<X509CertificateCollection, ValueTask>? clientCertificatesCallback,
 		RemoteCertificateValidationCallback? remoteCertificateValidationCallback,
@@ -36,6 +37,7 @@ public sealed class MySqlDataSource : DbDataSource
 	{
 		m_connectionString = connectionString;
 		LoggingConfiguration = loggingConfiguration;
+		TracingOptions = tracingOptions ?? MySqlConnectorTracingOptions.Default;
 		Name = name;
 		m_clientCertificatesCallback = clientCertificatesCallback;
 		m_remoteCertificateValidationCallback = remoteCertificateValidationCallback;
@@ -201,6 +203,8 @@ public sealed class MySqlDataSource : DbDataSource
 	internal ConnectionPool? Pool { get; }
 
 	internal MySqlConnectorLoggingConfiguration LoggingConfiguration { get; }
+
+	internal MySqlConnectorTracingOptions TracingOptions { get; }
 
 	internal string? Name { get; }
 
