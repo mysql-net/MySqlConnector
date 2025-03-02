@@ -39,11 +39,11 @@ internal sealed class CachedProcedure
 					object o => Encoding.UTF8.GetString((byte[]) o),
 				};
 
-				var parsedParameters = ParseParameters(parametersSql);
+				var parsedParameters = ParseParameters(parametersSql, connection.GuidFormat);
 				if (returnsSql.Length != 0)
 				{
 					var returnDataType = ParseDataType(returnsSql, out var unsigned, out var length);
-					parsedParameters.Insert(0, CreateCachedParameter(0, null, "", returnDataType, unsigned, length, returnsSql));
+					parsedParameters.Insert(0, CreateCachedParameter(0, null, "", returnDataType, unsigned, length, connection.GuidFormat, returnsSql));
 				}
 
 				return new CachedProcedure(schema, component, parsedParameters);
@@ -91,7 +91,8 @@ internal sealed class CachedProcedure
 					!reader.IsDBNull(2) ? reader.GetString(2) : "",
 					dataType,
 					unsigned,
-					length
+					length,
+					connection.GuidFormat
 				));
 			}
 		}
@@ -132,6 +133,10 @@ internal sealed class CachedProcedure
 			if (!alignParam.HasSetDbType)
 				alignParam.MySqlDbType = cachedParam.MySqlDbType;
 
+			// for a GUID column, pass along the length so the out parameter can be cast to the right size
+			if (alignParam.MySqlDbType == MySqlDbType.Guid && cachedParam.Direction is ParameterDirection.Output or ParameterDirection.InputOutput)
+				alignParam.Size = cachedParam.Length;
+
 			// cached parameters are ordered by ordinal position
 			alignedParams.Add(alignParam);
 		}
@@ -139,7 +144,7 @@ internal sealed class CachedProcedure
 		return alignedParams;
 	}
 
-	internal static List<CachedParameter> ParseParameters(string parametersSql)
+	internal static List<CachedParameter> ParseParameters(string parametersSql, MySqlGuidFormat guidFormat)
 	{
 		// strip comments
 		parametersSql = s_cStyleComments.Replace(parametersSql, "");
@@ -184,7 +189,7 @@ internal sealed class CachedProcedure
 			var name = parts.Groups[1].Success ? parts.Groups[1].Value.Replace("``", "`") : parts.Groups[2].Value;
 
 			var dataType = ParseDataType(parts.Groups[3].Value, out var unsigned, out var length);
-			cachedParameters.Add(CreateCachedParameter(i + 1, direction, name, dataType, unsigned, length, originalString));
+			cachedParameters.Add(CreateCachedParameter(i + 1, direction, name, dataType, unsigned, length, guidFormat, originalString));
 		}
 
 		return cachedParameters;
@@ -222,11 +227,11 @@ internal sealed class CachedProcedure
 		return type ?? list[0];
 	}
 
-	private static CachedParameter CreateCachedParameter(int ordinal, string? direction, string name, string dataType, bool unsigned, int length, string originalSql)
+	private static CachedParameter CreateCachedParameter(int ordinal, string? direction, string name, string dataType, bool unsigned, int length, MySqlGuidFormat guidFormat, string originalSql)
 	{
 		try
 		{
-			return new CachedParameter(ordinal, direction, name, dataType, unsigned, length);
+			return new CachedParameter(ordinal, direction, name, dataType, unsigned, length, guidFormat);
 		}
 		catch (NullReferenceException ex)
 		{

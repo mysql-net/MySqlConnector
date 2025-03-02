@@ -115,6 +115,9 @@ internal sealed class TypeMapper
 #endif
 		var typeGuid = AddDbTypeMapping(new(typeof(Guid), [DbType.Guid], convert: convertGuid));
 		AddColumnTypeMetadata(new("CHAR", typeGuid, MySqlDbType.Guid, length: 36, simpleDataTypeName: "CHAR(36)", createFormat: "CHAR(36)"));
+		AddColumnTypeMetadata(new("CHAR", typeGuid, MySqlDbType.Guid, length: 32, guidFormat: MySqlGuidFormat.Char32));
+		AddColumnTypeMetadata(new("CHAR", typeGuid, MySqlDbType.Guid, length: 36, guidFormat: MySqlGuidFormat.Char36));
+		AddColumnTypeMetadata(new("BINARY", typeGuid, MySqlDbType.Guid, binary: true, length: 16, guidFormat: MySqlGuidFormat.Binary16));
 
 		// null
 		var typeNull = AddDbTypeMapping(new(typeof(object), [DbType.Object]));
@@ -181,15 +184,20 @@ internal sealed class TypeMapper
 
 	public DbTypeMapping? GetDbTypeMapping(string columnTypeName, bool unsigned = false, int length = 0)
 	{
-		return GetColumnTypeMetadata(columnTypeName, unsigned, length)?.DbTypeMapping;
+		return GetColumnTypeMetadata(columnTypeName, unsigned, length, MySqlGuidFormat.Default)?.DbTypeMapping;
 	}
 
-	public MySqlDbType GetMySqlDbType(string typeName, bool unsigned, int length) => GetColumnTypeMetadata(typeName, unsigned, length)!.MySqlDbType;
+	public MySqlDbType GetMySqlDbType(string typeName, bool unsigned, int length, MySqlGuidFormat guidFormat) =>
+		GetColumnTypeMetadata(typeName, unsigned, length, guidFormat)!.MySqlDbType;
 
-	private ColumnTypeMetadata? GetColumnTypeMetadata(string columnTypeName, bool unsigned, int length)
+	private ColumnTypeMetadata? GetColumnTypeMetadata(string columnTypeName, bool unsigned, int length, MySqlGuidFormat guidFormat)
 	{
-		if (!m_columnTypeMetadataLookup.TryGetValue(ColumnTypeMetadata.CreateLookupKey(columnTypeName, unsigned, length), out var columnTypeMetadata) && length != 0)
-			m_columnTypeMetadataLookup.TryGetValue(ColumnTypeMetadata.CreateLookupKey(columnTypeName, unsigned, 0), out columnTypeMetadata);
+		if (m_columnTypeMetadataLookup.TryGetValue(ColumnTypeMetadata.CreateLookupKey(columnTypeName, unsigned, length, guidFormat), out var columnTypeMetadata))
+			return columnTypeMetadata;
+		if (guidFormat != MySqlGuidFormat.Default && m_columnTypeMetadataLookup.TryGetValue(ColumnTypeMetadata.CreateLookupKey(columnTypeName, unsigned, length, MySqlGuidFormat.Default), out columnTypeMetadata))
+			return columnTypeMetadata;
+		if (length != 0)
+			m_columnTypeMetadataLookup.TryGetValue(ColumnTypeMetadata.CreateLookupKey(columnTypeName, unsigned, 0, MySqlGuidFormat.Default), out columnTypeMetadata);
 		return columnTypeMetadata;
 	}
 

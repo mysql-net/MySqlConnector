@@ -2,7 +2,7 @@ namespace MySqlConnector.Core;
 
 internal sealed class CachedParameter
 {
-	public CachedParameter(int ordinalPosition, string? mode, string name, string dataType, bool unsigned, int length)
+	public CachedParameter(int ordinalPosition, string? mode, string name, string dataType, bool unsigned, int length, MySqlGuidFormat guidFormat)
 	{
 		Position = ordinalPosition;
 		if (Position == 0)
@@ -14,7 +14,7 @@ internal sealed class CachedParameter
 		else if (string.Equals(mode, "out", StringComparison.OrdinalIgnoreCase))
 			Direction = ParameterDirection.Output;
 		Name = name;
-		MySqlDbType = TypeMapper.Instance.GetMySqlDbType(dataType, unsigned, length);
+		MySqlDbType = TypeMapper.Instance.GetMySqlDbType(dataType, unsigned, length, guidFormat);
 		Length = length;
 	}
 
