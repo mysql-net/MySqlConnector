@@ -24,6 +24,7 @@ internal enum ColumnType
 	Bit = 16,
 	Timestamp2 = 17,
 	DateTime2 = 18,
+	Vector = 242,
 	Json = 0xF5,
 	NewDecimal = 0xF6,
 	Enum = 0xF7,

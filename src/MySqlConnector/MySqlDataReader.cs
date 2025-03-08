@@ -671,7 +671,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 			if (param.HasSetDbType && !row.IsDBNull(columnIndex))
 			{
 				var dbTypeMapping = TypeMapper.Instance.GetDbTypeMapping(param.DbType);
-				if (dbTypeMapping is not null)
+				if (dbTypeMapping is not null && param.DbType is not DbType.Object)
 				{
 					param.Value = dbTypeMapping.DoConversion(row.GetValue(columnIndex));
 					continue;
