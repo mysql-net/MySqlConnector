@@ -44,6 +44,7 @@ from Oracle.
 This library is compatible with popular .NET ORMs including:
 
 * [Dapper](https://dapperlib.github.io/Dapper/) ([GitHub](https://github.com/DapperLib/Dapper), [NuGet](https://www.nuget.org/packages/Dapper))
+* [Faithlife.Data](https://faithlife.github.io/FaithlifeData/) ([GitHub](https://github.com/Faithlife/FaithlifeData), [NuGet](https://www.nuget.org/packages/Faithlife.Data))
 * [FreeSql](https://freesql.net/) ([GitHub](https://github.com/dotnetcore/FreeSql), [NuGet](https://www.nuget.org/packages/FreeSql.Provider.MySqlConnector/))
 * [LINQ to DB](https://linq2db.github.io/) ([GitHub](https://github.com/linq2db/linq2db), [NuGet](https://www.nuget.org/packages/linq2db.MySqlConnector)) including ClickHouse support
 * [NHibernate](https://nhibernate.info/) ([GitHub](https://github.com/nhibernate/NHibernate.MySqlConnector), [NuGet](https://www.nuget.org/packages/NHibernate.Driver.MySqlConnector))

@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/tools/">
+    <Project Path="tools/SchemaCollectionGenerator/SchemaCollectionGenerator.csproj" />
+  </Folder>
+  <Project Path="src/MySqlConnector.Authentication.Ed25519/MySqlConnector.Authentication.Ed25519.csproj" />
+  <Project Path="src/MySqlConnector.DependencyInjection/MySqlConnector.DependencyInjection.csproj" />
+  <Project Path="src/MySqlConnector.Logging.log4net/MySqlConnector.Logging.log4net.csproj" />
+  <Project Path="src/MySqlConnector.Logging.Microsoft.Extensions.Logging/MySqlConnector.Logging.Microsoft.Extensions.Logging.csproj" />
+  <Project Path="src/MySqlConnector.Logging.NLog/MySqlConnector.Logging.NLog.csproj" />
+  <Project Path="src/MySqlConnector.Logging.Serilog/MySqlConnector.Logging.Serilog.csproj" />
+  <Project Path="src/MySqlConnector/MySqlConnector.csproj" />
+  <Project Path="tests/Conformance.Tests/Conformance.Tests.csproj" />
+  <Project Path="tests/IntegrationTests/IntegrationTests.csproj" />
+  <Project Path="tests/MySqlConnector.DependencyInjection.Tests/MySqlConnector.DependencyInjection.Tests.csproj" />
+  <Project Path="tests/MySqlConnector.NativeAot.Tests/MySqlConnector.NativeAot.Tests.csproj" />
+  <Project Path="tests/MySqlConnector.Tests/MySqlConnector.Tests.csproj" />
+</Solution>

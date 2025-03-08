@@ -87,9 +87,9 @@ public class UtilityTests
 
 	[Theory]
 	[InlineData("", "")]
-	[InlineData("pre", "")]
-	[InlineData("", "post")]
-	[InlineData("pre", "post")]
+	[InlineData("pre\n", "")]
+	[InlineData("", "\npost")]
+	[InlineData("pre\n", "\npost")]
 	public void DecodePublicKey(string pre, string post)
 	{
 #if NET5_0_OR_GREATER
@@ -105,9 +105,9 @@ public class UtilityTests
 
 	[Theory]
 	[InlineData("", "")]
-	[InlineData("pre", "")]
-	[InlineData("", "post")]
-	[InlineData("pre", "post")]
+	[InlineData("pre\n", "")]
+	[InlineData("", "\npost")]
+	[InlineData("pre\n", "\npost")]
 	public void DecodePrivateKey(string pre, string post)
 	{
 #if NET5_0_OR_GREATER
