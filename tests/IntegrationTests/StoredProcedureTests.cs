@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace IntegrationTests;
 
 public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
@@ -761,8 +763,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		Assert.False(reader.Read());
 	}
 
-#if false
-	[SkippableTheory(ServerFeatures.Vector)]
+	[SkippableTheory(ServerFeatures.Vector | ServerFeatures.VectorType)]
 	[InlineData(false)]
 	[InlineData(true)]
 	public void VectorOutputParameter(bool prepare)
@@ -781,9 +782,9 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		cmd.CommandType = CommandType.StoredProcedure;
 		cmd.Parameters.Add(new MySqlParameter
 		{
-			ParameterName = "@vec",
-			MySqlDbType = MySqlDbType.Vector,
 			Direction = ParameterDirection.Output,
+			MySqlDbType = MySqlDbType.Vector,
+			ParameterName = "@vec",
 		});
 
 		if (prepare)
@@ -791,13 +792,9 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		cmd.ExecuteNonQuery();
 
 		var value = cmd.Parameters[0].Value;
-		Assert.IsType<float[]>(value);
-
-		var result = (float[]) value;
-
-		Assert.Equal(new float[] { 1.2f, 3.4f, 5.6f }, result);
+		var result = Assert.IsType<byte[]>(value);
+		Assert.Equal(new float[] { 1.2f, 3.4f, 5.6f }, MemoryMarshal.Cast<byte, float>(result).ToArray());
 	}
-#endif
 
 	private static Action<MySqlParameter> AssertParameter(string name, ParameterDirection direction, MySqlDbType mySqlDbType)
 	{
