@@ -876,16 +876,19 @@ END;", connection))
 
 #if !MYSQL_DATA
 	[Theory]
-	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", null)]
-	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", MySqlDbType.Binary)]
-	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", MySqlDbType.Guid)]
-	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", null)]
-	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", MySqlDbType.Guid)]
-	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", MySqlDbType.String)]
-	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", null)]
-	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", MySqlDbType.Guid)]
-	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", MySqlDbType.VarChar)]
-	public void StoredProcedureReturnsGuid(MySqlGuidFormat guidFormat, string columnDefinition, string columnValue, MySqlDbType? mySqlDbType)
+	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", false, false)]
+	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", false, true)]
+	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", true, false)]
+	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", true, true)]
+	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", false, false)]
+	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", false, true)]
+	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", true, false)]
+	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", true, true)]
+	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", false, false)]
+	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", false, true)]
+	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", true, false)]
+	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", true, true)]
+	public void StoredProcedureReturnsGuid(MySqlGuidFormat guidFormat, string columnDefinition, string columnValue, bool setMySqlDbType, bool prepare)
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
 		csb.GuidFormat = guidFormat;
@@ -914,10 +917,12 @@ END;", connection))
 		{
 			command.CommandType = CommandType.StoredProcedure;
 			var param = new MySqlParameter("out_name", null) { Direction = ParameterDirection.Output };
-			if (mySqlDbType.HasValue && DateTime.UtcNow.Year == 2024)
-				param.MySqlDbType = mySqlDbType.Value;
+			if (setMySqlDbType)
+				param.MySqlDbType = MySqlDbType.Guid;
 			command.Parameters.Add(param);
 			command.ExecuteNonQuery();
+			if (prepare)
+				command.Prepare();
 			Assert.Equal(new Guid("BABD8384C908499C9D95C02ADA94A970"), param.Value);
 		}
 	}
