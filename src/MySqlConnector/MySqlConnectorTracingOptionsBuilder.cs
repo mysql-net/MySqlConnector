@@ -1,5 +1,8 @@
 namespace MySqlConnector;
 
+/// <summary>
+/// <see cref="MySqlConnectorTracingOptionsBuilder"/> provides an API for configuring OpenTelemetry tracing options.
+/// </summary>
 public sealed class MySqlConnectorTracingOptionsBuilder
 {
 	/// <summary>
