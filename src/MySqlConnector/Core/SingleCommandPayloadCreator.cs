@@ -214,8 +214,24 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 					break;
 				case ParameterDirection.Output:
 					outParameters.Add(param);
-					outParameterNames.Add(outName);
 					argParameterNames.Add(outName);
+
+					// special handling for GUIDs to ensure that the result set has a type and length that will be autodetected as a GUID
+					switch (param.MySqlDbType, param.Size)
+					{
+						case (MySqlDbType.Guid, 16):
+							outParameterNames.Add($"CAST({outName} AS BINARY(16))");
+							break;
+						case (MySqlDbType.Guid, 32):
+							outParameterNames.Add($"CAST({outName} AS CHAR(32))");
+							break;
+						case (MySqlDbType.Guid, 36):
+							outParameterNames.Add($"CAST({outName} AS CHAR(36))");
+							break;
+						default:
+							outParameterNames.Add(outName);
+							break;
+					}
 					break;
 				case ParameterDirection.ReturnValue:
 					returnParameter = param;
