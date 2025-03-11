@@ -113,6 +113,9 @@ internal abstract class ColumnReader
 			case ColumnType.Null:
 				return NullColumnReader.Instance;
 
+			case ColumnType.Vector:
+				return VectorColumnReader.Instance;
+
 			default:
 				throw new NotImplementedException($"Reading {columnDefinition.ColumnType} not implemented");
 		}
