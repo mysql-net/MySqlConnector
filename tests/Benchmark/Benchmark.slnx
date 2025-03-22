@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../../src/MySqlConnector/MySqlConnector.csproj" />
+  <Project Path="Benchmark.csproj" />
+</Solution>
