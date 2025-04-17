@@ -45,13 +45,13 @@ internal abstract class ColumnReader
 				return BitColumnReader.Instance;
 
 			case ColumnType.String:
-			case ColumnType.VarString:
 				if (connection.GuidFormat == MySqlGuidFormat.Char36 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 36)
 					return GuidChar36ColumnReader.Instance;
 				if (connection.GuidFormat == MySqlGuidFormat.Char32 && columnDefinition.ColumnLength / ProtocolUtility.GetBytesPerCharacter(columnDefinition.CharacterSet) == 32)
 					return GuidChar32ColumnReader.Instance;
-				goto case ColumnType.VarChar;
+				goto case ColumnType.VarString;
 
+			case ColumnType.VarString:
 			case ColumnType.VarChar:
 			case ColumnType.TinyBlob:
 			case ColumnType.Blob:
