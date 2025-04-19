@@ -329,6 +329,8 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 	[InlineData("latin1", new[] { null, "", "ASCII", "Lãtïñ", c_251ByteString })]
 	[InlineData("latin1bin", new[] { null, "", "ASCII", "Lãtïñ", c_251ByteString })]
 	[InlineData("cp1251", new[] { null, "", "ASCII", "АБВГабвг", c_251ByteString })]
+	[InlineData("nonguid_utf8", new[] { null, "", "ASCII", "Ũńıċōđĕ", "This string has 36 characters in it." })]
+	[InlineData("nonguid_latin1", new[] { null, "", "ASCII", "Lãtïñ", "This string has 36 characters in it." })]
 	public void QueryString(string column, string[] expected)
 	{
 		DoQuery("strings", column, "VARCHAR", expected, reader => reader.GetString(0));
@@ -1328,6 +1330,8 @@ create table schema_table({createColumn});");
 	[InlineData("cp1251", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR", 300, typeof(string), "N", -1, 0)]
 	[InlineData("guid", "datatypes_strings", MySqlDbType.Guid, "CHAR(36)", 36, typeof(Guid), "N", -1, 0)]
 	[InlineData("guidbin", "datatypes_strings", MySqlDbType.Guid, "CHAR(36)", 36, typeof(Guid), "N", -1, 0)]
+	[InlineData("nonguid_utf8", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR", 36, typeof(string), "N", -1, 0)]
+	[InlineData("nonguid_latin1", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR", 36, typeof(string), "N", -1, 0)]
 	[InlineData("Date", "datatypes_times", MySqlDbType.Date, "DATE", 10, typeof(DateTime), "N", -1, 0)]
 	[InlineData("DateTime", "datatypes_times", MySqlDbType.DateTime, "DATETIME", 26, typeof(DateTime), "N", -1, 6)]
 	[InlineData("Timestamp", "datatypes_times", MySqlDbType.Timestamp, "TIMESTAMP", 26, typeof(DateTime), "N", -1, 6)]
@@ -1420,6 +1424,8 @@ create table schema_table({createColumn});");
 	[InlineData("BigDecimal", "datatypes_reals", MySqlDbType.NewDecimal, "DECIMAL(50,30)", typeof(decimal), 3, null)]
 	[InlineData("utf8", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR(300)", typeof(string), 3, "ASCII")]
 	[InlineData("latin1", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR(300)", typeof(string), 3, "ASCII")]
+	[InlineData("nonguid_utf8", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR(36)", typeof(string), 3, "ASCII")]
+	[InlineData("nonguid_latin1", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR(36)", typeof(string), 3, "ASCII")]
 	[InlineData("Date", "datatypes_times", MySqlDbType.Date, "DATE", typeof(DateTime), 2, null)]
 	[InlineData("DateTime", "datatypes_times", MySqlDbType.DateTime, "DATETIME", typeof(DateTime), 2, null)]
 	[InlineData("Timestamp", "datatypes_times", MySqlDbType.Timestamp, "TIMESTAMP", typeof(DateTime), 2, null)]
