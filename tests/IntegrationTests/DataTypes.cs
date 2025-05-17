@@ -1148,7 +1148,7 @@ ORDER BY t.`Key`", Connection);
 #if MYSQL_DATA
 	[InlineData("value", "datatypes_vector", MySqlDbType.Vector, 12, typeof(byte[]), "N", 0, 31)]
 #else
-	[InlineData("value", "datatypes_vector", MySqlDbType.Vector, 3, typeof(float[]), "N", 0, 31)]
+	[InlineData("value", "datatypes_vector", MySqlDbType.Vector, 3, typeof(ReadOnlyMemory<float>), "N", 0, 31)]
 #endif
 	[InlineData("Single", "datatypes_reals", MySqlDbType.Float, 12, typeof(float), "N", 0, 31)]
 	[InlineData("Double", "datatypes_reals", MySqlDbType.Double, 22, typeof(double), "N", 0, 31)]
@@ -1626,18 +1626,26 @@ end;";
 		DoQuery("vector", column, dataTypeName,
 			expected.Select(x =>
 #if !MYSQL_DATA
-				hasVectorType ? (object) GetFloatArray(x) : GetByteArray(x))
+				hasVectorType ? (GetFloatArray(x) is float[] a ? (object) new ReadOnlyMemory<float>(a) : null) : GetByteArray(x))
 #else
 				// Connector/NET returns the float array as a byte[]
 				GetByteArray(x))
 #endif
 			.ToArray(),
 #if !MYSQL_DATA
-			x => hasVectorType ? (float[]) x.GetValue(0) : (byte[]) x.GetValue(0),
+			x => hasVectorType ? (ReadOnlyMemory<float>) x.GetValue(0) : (byte[]) x.GetValue(0),
 #else
 			// NOTE: Connector/NET returns 'null' for NULL so simulate an exception for the tests
 			x => x.IsDBNull(0) ? throw new GetValueWhenNullException() : x.GetValue(0),
 #endif
+			assertEqual: (l, r) =>
+			{
+				if (l is ReadOnlyMemory<float> roml)
+					l = roml.ToArray();
+				if (r is ReadOnlyMemory<float> romr)
+					r = romr.ToArray();
+				Assert.Equal(l, r);
+			},
 			omitWhereTest: true);
 
 		static float[] GetFloatArray(string value) => value?.Split(',').Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray();

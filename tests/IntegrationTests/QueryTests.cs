@@ -1735,7 +1735,7 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 #if MYSQL_DATA
 		var result = MemoryMarshal.Cast<byte, float>((byte[]) value).ToArray();
 #else
-		var result = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.VectorType) ? (float[]) value :
+		var result = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.VectorType) ? (ReadOnlyMemory<float>) value :
 			MemoryMarshal.Cast<byte, float>((byte[]) value).ToArray();
 #endif
 		Assert.Equal(floatArray, result);
