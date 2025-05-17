@@ -25,7 +25,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Component detection
-      uses: advanced-security/component-detection-dependency-submission-action@v0.0.4
+      uses: advanced-security/component-detection-dependency-submission-action@v0.0.6
 
   native-aot:
     name: Native AOT
@@ -35,7 +35,7 @@ jobs:
         tfm: [ 'net8.0', 'net9.0' ]
     services:
       mysql:
-        image: mysql:9.2
+        image: mysql:9.3
         env:
           MYSQL_DATABASE: testdb
           MYSQL_ROOT_PASSWORD: pass

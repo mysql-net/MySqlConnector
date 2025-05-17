@@ -1138,6 +1138,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	internal IPEndPoint? SessionEndPoint => m_session!.IPEndPoint;
 
+	internal MySqlDataSource? MySqlDataSource => m_dataSource;
+
 	internal void SetState(ConnectionState newState)
 	{
 		if (m_connectionState != newState)

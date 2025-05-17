@@ -909,6 +909,60 @@ END;", connection))
 		}
 	}
 
+#if !MYSQL_DATA
+	[Theory]
+	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", false, false)]
+	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", false, true)]
+	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", true, false)]
+	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", true, true)]
+	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", false, false)]
+	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", false, true)]
+	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", true, false)]
+	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", true, true)]
+	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", false, false)]
+	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", false, true)]
+	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", true, false)]
+	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", true, true)]
+	public void StoredProcedureReturnsGuid(MySqlGuidFormat guidFormat, string columnDefinition, string columnValue, bool setMySqlDbType, bool prepare)
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.GuidFormat = guidFormat;
+		csb.Pooling = false;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+
+		using (var command = new MySqlCommand($"""
+			DROP TABLE IF EXISTS out_guid_table;
+			CREATE TABLE out_guid_table (id INT PRIMARY KEY AUTO_INCREMENT, guid {columnDefinition});
+			INSERT INTO out_guid_table (guid) VALUES ({columnValue});
+			DROP PROCEDURE IF EXISTS out_guid;
+			CREATE PROCEDURE out_guid
+			(
+				OUT out_name {columnDefinition}
+			)
+			BEGIN
+				SELECT guid INTO out_name FROM out_guid_table;
+			END;
+			""", connection))
+		{
+			command.ExecuteNonQuery();
+		}
+
+		using (var command = new MySqlCommand("out_guid", connection))
+		{
+			command.CommandType = CommandType.StoredProcedure;
+			var param = new MySqlParameter("out_name", null) { Direction = ParameterDirection.Output };
+			if (setMySqlDbType)
+				param.MySqlDbType = MySqlDbType.Guid;
+			command.Parameters.Add(param);
+			command.ExecuteNonQuery();
+			if (prepare)
+				command.Prepare();
+			Assert.Equal(new Guid("BABD8384C908499C9D95C02ADA94A970"), param.Value);
+		}
+	}
+#endif
+
 	private static string NormalizeSpaces(string input)
 	{
 		input = input.Replace('\r', ' ');

@@ -528,8 +528,11 @@ internal sealed partial class ServerSession : IServerCapabilities
 			if (m_supportsConnectionAttributes && cs.ConnectionAttributes is null)
 				cs.ConnectionAttributes = CreateConnectionAttributes(cs.ApplicationName);
 
+			// send a caching_sha2_password response if the server advertised support in the initial handshake
+			var useCachingSha2 = initialHandshake.AuthPluginName == "caching_sha2_password";
+
 			var password = GetPassword(cs, connection);
-			using (var handshakeResponsePayload = HandshakeResponse41Payload.Create(initialHandshake, cs, password, m_compressionMethod, connection.ZstandardPlugin?.CompressionLevel, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
+			using (var handshakeResponsePayload = HandshakeResponse41Payload.Create(initialHandshake, cs, password, useCachingSha2, m_compressionMethod, connection.ZstandardPlugin?.CompressionLevel, m_characterSet, m_supportsConnectionAttributes ? cs.ConnectionAttributes : null))
 				await SendReplyAsync(handshakeResponsePayload, ioBehavior, cancellationToken).ConfigureAwait(false);
 			payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 
@@ -537,6 +540,26 @@ internal sealed partial class ServerSession : IServerCapabilities
 			while (payload.HeaderByte == AuthenticationMethodSwitchRequestPayload.Signature)
 			{
 				payload = await SwitchAuthenticationAsync(cs, password, payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+			}
+
+			// check if caching_sha2_password response was sent
+			if (useCachingSha2 && payload.HeaderByte == CachingSha2ServerResponsePayload.Signature)
+			{
+				// process a successful response, or fall back to sending the password if the server doesn't have it
+				var cachingSha2ServerResponsePayload = CachingSha2ServerResponsePayload.Create(payload.Span);
+				if (cachingSha2ServerResponsePayload.Succeeded)
+				{
+					payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
+				else if (!m_isSecureConnection && password.Length != 0)
+				{
+					var publicKey = await GetRsaPublicKeyAsync(m_currentAuthenticationMethod, cs, ioBehavior, cancellationToken).ConfigureAwait(false);
+					payload = await SendEncryptedPasswordAsync(AuthPluginData, publicKey, password, ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
+				else
+				{
+					payload = await SendClearPasswordAsync(password, ioBehavior, cancellationToken).ConfigureAwait(false);
+				}
 			}
 
 			var ok = OkPayload.Create(payload.Span, this);

@@ -1,4 +1,5 @@
 using System.Buffers.Text;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -73,6 +74,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		}
 	}
 
+	[DbProviderSpecificTypeProperty(true)]
 	public MySqlDbType MySqlDbType
 	{
 		get => m_mySqlDbType;
