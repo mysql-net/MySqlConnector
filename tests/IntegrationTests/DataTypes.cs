@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Runtime.InteropServices;
+
 #if MYSQL_DATA
 using MySql.Data.Types;
 #endif
@@ -1145,6 +1147,11 @@ ORDER BY t.`Key`", Connection);
 	[InlineData("Int64", "datatypes_integers", MySqlDbType.Int64, 20, typeof(long), "N", 0, 0)]
 	[InlineData("UInt64", "datatypes_integers", MySqlDbType.UInt64, 20, typeof(ulong), "N", 0, 0)]
 	[InlineData("value", "datatypes_json_core", MySqlDbType.JSON, int.MaxValue, typeof(string), "LN", 0, 0)]
+#if MYSQL_DATA
+	[InlineData("value", "datatypes_vector", MySqlDbType.Vector, 12, typeof(byte[]), "N", 0, 31)]
+#else
+	[InlineData("value", "datatypes_vector", MySqlDbType.Vector, 3, typeof(ReadOnlyMemory<float>), "N", 0, 31)]
+#endif
 	[InlineData("Single", "datatypes_reals", MySqlDbType.Float, 12, typeof(float), "N", 0, 31)]
 	[InlineData("Double", "datatypes_reals", MySqlDbType.Double, 22, typeof(double), "N", 0, 31)]
 	[InlineData("SmallDecimal", "datatypes_reals", MySqlDbType.NewDecimal, 7, typeof(decimal), "N", 5, 2)]
@@ -1197,6 +1204,17 @@ create table schema_table({createColumn});");
 	{
 		if (table == "datatypes_json_core" && !AppConfig.SupportsJson)
 			return;
+		if (table == "datatypes_vector" && !AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Vector))
+			return;
+
+		// adjust for databases that don't have a dedicated on-the-wire type for VECTOR(n)
+		if (mySqlDbType == MySqlDbType.Vector && !AppConfig.SupportedFeatures.HasFlag(ServerFeatures.VectorType))
+		{
+			mySqlDbType = MySqlDbType.VarBinary;
+			columnSize *= 4;
+			dataType = typeof(byte[]);
+			scale = 0;
+		}
 
 		var isAutoIncrement = flags.IndexOf('A') != -1;
 		var isKey = flags.IndexOf('K') != -1;
@@ -1603,6 +1621,43 @@ end;";
 		dataTypeName = "VARCHAR";
 #endif
 		DoQuery("json_core", column, dataTypeName, expected, reader => reader.GetString(0), omitWhereTest: true);
+	}
+
+	[SkippableTheory(ServerFeatures.Vector)]
+	[InlineData("value", new[] { null, "0,0,0", "1,1,1", "1,2,3", "-1,-1,-1" })]
+	public void QueryVector(string column, string[] expected)
+	{
+		var hasVectorType = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.VectorType);
+		string dataTypeName = hasVectorType ? "VECTOR" : "BLOB";
+		DoQuery("vector", column, dataTypeName,
+			expected.Select(x =>
+#if !MYSQL_DATA
+				hasVectorType ? (GetFloatArray(x) is float[] a ? (object) new ReadOnlyMemory<float>(a) : null) : GetByteArray(x))
+#else
+				// Connector/NET returns the float array as a byte[]
+				GetByteArray(x))
+#endif
+			.ToArray(),
+#if !MYSQL_DATA
+			x => hasVectorType ? (ReadOnlyMemory<float>) x.GetValue(0) : (byte[]) x.GetValue(0),
+#else
+			// NOTE: Connector/NET returns 'null' for NULL so simulate an exception for the tests
+			x => x.IsDBNull(0) ? throw new GetValueWhenNullException() : x.GetValue(0),
+#endif
+			assertEqual: (l, r) =>
+			{
+				if (l is ReadOnlyMemory<float> roml)
+					l = roml.ToArray();
+				if (r is ReadOnlyMemory<float> romr)
+					r = romr.ToArray();
+				Assert.Equal(l, r);
+			},
+			omitWhereTest: true);
+
+		static float[] GetFloatArray(string value) => value?.Split(',').Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray();
+
+		static byte[] GetByteArray(string value) =>
+			GetFloatArray(value) is { } floats ? MemoryMarshal.AsBytes<float>(floats).ToArray() : null;
 	}
 
 	[SkippableTheory(MySqlData = "https://bugs.mysql.com/bug.php?id=97067")]
