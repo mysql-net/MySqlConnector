@@ -6,21 +6,21 @@ jobs:
 - job: linux_build
   displayName: 'Linux Build'
   pool:
-    vmimage: 'ubuntu-20.04'
+    vmimage: 'ubuntu-24.04'
   steps:
   - template: '.ci/build-steps.yml'
 
 - job: windows_build
   displayName: 'Windows Build'
   pool:
-    vmimage: 'windows-latest'
+    vmimage: 'windows-2022'
   steps:
   - template: '.ci/build-steps.yml'
 
 - job: windows_mysql_data
   displayName: 'MySql.Data Tests'
   pool:
-    vmimage: 'windows-2019'
+    vmimage: 'windows-2022'
   steps:
   - template: '.ci/install-mysql-windows.yml'
   - task: CopyFiles@2
@@ -69,7 +69,7 @@ jobs:
   dependsOn: linux_build
   displayName: 'Linux Unit Tests'
   pool:
-    vmimage: 'ubuntu-20.04'
+    vmimage: 'ubuntu-24.04'
   steps:
   - template: '.ci/mysqlconnector-tests-steps.yml'
 
@@ -77,7 +77,7 @@ jobs:
   dependsOn: windows_build
   displayName: 'Windows Tests'
   pool:
-    vmimage: 'windows-2019'
+    vmimage: 'windows-2022'
   steps:
   - template: '.ci/install-mysql-windows.yml'
   - template: '.ci/mysqlconnector-tests-steps.yml'
@@ -89,7 +89,7 @@ jobs:
 - job: windows_integration_tests_1
   displayName: 'Windows Integration Tests (Part 1)'
   pool:
-    vmimage: 'windows-2019'
+    vmimage: 'windows-2022'
   steps:
   - template: '.ci/install-mysql-windows.yml'
   - task: UseDotNet@2
@@ -126,7 +126,7 @@ jobs:
 - job: windows_integration_tests_2
   displayName: 'Windows Integration Tests (Part 2)'
   pool:
-    vmimage: 'windows-2019'
+    vmimage: 'windows-2022'
   steps:
   - template: '.ci/install-mysql-windows.yml'
   - task: UseDotNet@2
@@ -165,7 +165,7 @@ jobs:
   dependsOn: linux_build
   displayName: 'Linux Tests'
   pool:
-    vmimage: 'ubuntu-20.04'
+    vmimage: 'ubuntu-24.04'
   strategy:
     matrix:
       'MySQL 8.0':
