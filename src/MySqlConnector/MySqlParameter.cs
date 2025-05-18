@@ -285,7 +285,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		{
 			writer.WriteString(ulongValue);
 		}
-		else if (Value is byte[] or ReadOnlyMemory<byte> or Memory<byte> or ArraySegment<byte> or MySqlGeometry or MemoryStream or float[])
+		else if (Value is byte[] or ReadOnlyMemory<byte> or Memory<byte> or ArraySegment<byte> or MySqlGeometry or MemoryStream or float[] or ReadOnlyMemory<float> or Memory<float>)
 		{
 			var inputSpan = Value switch
 			{
@@ -295,6 +295,8 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 				MySqlGeometry geometry => geometry.ValueSpan,
 				MemoryStream memoryStream => memoryStream.TryGetBuffer(out var streamBuffer) ? streamBuffer.AsSpan() : memoryStream.ToArray().AsSpan(),
 				float[] floatArray => MemoryMarshal.AsBytes(floatArray.AsSpan()),
+				Memory<float> memory => MemoryMarshal.AsBytes(memory.Span),
+				ReadOnlyMemory<float> memory => MemoryMarshal.AsBytes(memory.Span),
 				_ => ((ReadOnlyMemory<byte>) Value).Span,
 			};
 
@@ -737,6 +739,16 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		{
 			writer.WriteLengthEncodedInteger(unchecked((ulong) floatArrayValue.Length * 4));
 			writer.Write(MemoryMarshal.AsBytes(floatArrayValue.AsSpan()));
+		}
+		else if (value is Memory<float> floatMemory)
+		{
+			writer.WriteLengthEncodedInteger(unchecked((ulong) floatMemory.Length * 4));
+			writer.Write(MemoryMarshal.AsBytes(floatMemory.Span));
+		}
+		else if (value is ReadOnlyMemory<float> floatReadOnlyMemory)
+		{
+			writer.WriteLengthEncodedInteger(unchecked((ulong) floatReadOnlyMemory.Length * 4));
+			writer.Write(MemoryMarshal.AsBytes(floatReadOnlyMemory.Span));
 		}
 		else if (value is decimal decimalValue)
 		{

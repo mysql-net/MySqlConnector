@@ -1691,9 +1691,13 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 #endif
 
 	[SkippableTheory(ServerFeatures.Vector)]
-	[InlineData(false)]
-	[InlineData(true)]
-	public void QueryVector(bool prepare)
+	[InlineData(false, 0)]
+	[InlineData(false, 1)]
+	[InlineData(false, 2)]
+	[InlineData(true, 0)]
+	[InlineData(true, 1)]
+	[InlineData(true, 2)]
+	public void QueryVector(bool prepare, int dataFormat)
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
 		connection.Open();
@@ -1715,8 +1719,15 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 #if MYSQL_DATA
 		// Connector/NET requires the float vector to be passed as a byte array
 		cmd.Parameters[0].Value = MemoryMarshal.AsBytes<float>(floatArray).ToArray();
+		Assert.InRange(dataFormat, 0, 2);
 #else
-		cmd.Parameters[0].Value = floatArray;
+		cmd.Parameters[0].Value = dataFormat switch
+		{
+			0 => floatArray,
+			1 => new Memory<float>(floatArray),
+			2 => new ReadOnlyMemory<float>(floatArray),
+			_ => throw new NotSupportedException(),
+		};
 #endif
 
 		if (prepare)
