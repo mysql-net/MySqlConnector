@@ -88,8 +88,12 @@ public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin3, IAuthe
 			az[31] |= 64;
 		*/
 
+#if NET5_0_OR_GREATER
+		byte[] az = SHA512.HashData(passwordBytes);
+#else
 		using var sha512 = SHA512.Create();
 		byte[] az = sha512.ComputeHash(passwordBytes);
+#endif
 		ScalarOperations.sc_clamp(az, 0);
 
 		/*** Java
@@ -115,7 +119,11 @@ public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin3, IAuthe
 		byte[] sm = new byte[64 + authenticationData.Length];
 		authenticationData.CopyTo(sm.AsSpan().Slice(64));
 		Buffer.BlockCopy(az, 32, sm, 32, 32);
+#if NET5_0_OR_GREATER
+		byte[] nonce = SHA512.HashData(sm.AsSpan(32, authenticationData.Length + 32));
+#else
 		byte[] nonce = sha512.ComputeHash(sm, 32, authenticationData.Length + 32);
+#endif
 
 		/*** Java
 			ScalarOps scalar = new ScalarOps();
@@ -173,7 +181,11 @@ public sealed class Ed25519AuthenticationPlugin : IAuthenticationPlugin3, IAuthe
 
 			return 0;
 		*/
+#if NET5_0_OR_GREATER
+		var hram = SHA512.HashData(sm);
+#else
 		var hram = sha512.ComputeHash(sm);
+#endif
 		ScalarOperations.sc_reduce(hram);
 		var temp = new byte[32];
 		ScalarOperations.sc_muladd(temp, hram, az, nonce);
