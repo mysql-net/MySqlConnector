@@ -45,4 +45,9 @@ public enum ServerFeatures
 	/// Server provides hash of TLS certificate in first OK packet.
 	/// </summary>
 	TlsFingerprintValidation = 0x100_0000,
+
+	/// <summary>
+	/// Server supports the 'parsec' authentication plugin.
+	/// </summary>
+	ParsecAuthentication = 0x200_0000,
 }
