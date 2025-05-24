@@ -56,14 +56,12 @@ internal static class HandshakeResponse41Payload
 	public static PayloadData CreateWithSsl(ProtocolCapabilities serverCapabilities, ConnectionSettings cs, CompressionMethod compressionMethod, CharacterSet characterSet) =>
 		CreateCapabilitiesPayload(serverCapabilities, cs, compressionMethod, characterSet, ProtocolCapabilities.Ssl).ToPayloadData();
 
-	public static PayloadData Create(InitialHandshakePayload handshake, ConnectionSettings cs, string password, bool useCachingSha2, CompressionMethod compressionMethod, int? compressionLevel, CharacterSet characterSet, byte[]? connectionAttributes)
+	public static PayloadData Create(InitialHandshakePayload handshake, ConnectionSettings cs, byte[] authenticationResponse, CompressionMethod compressionMethod, int? compressionLevel, CharacterSet characterSet, byte[]? connectionAttributes)
 	{
 		// TODO: verify server capabilities
 		var writer = CreateCapabilitiesPayload(handshake.ProtocolCapabilities, cs, compressionMethod, characterSet);
 		writer.WriteNullTerminatedString(cs.UserID);
 
-		var authenticationResponse = useCachingSha2 ? AuthenticationUtility.CreateScrambleResponse(Utility.TrimZeroByte(handshake.AuthPluginData.AsSpan()), password) :
-			AuthenticationUtility.CreateAuthenticationResponse(handshake.AuthPluginData, password);
 		writer.Write((byte) authenticationResponse.Length);
 		writer.Write(authenticationResponse);
 
@@ -71,7 +69,7 @@ internal static class HandshakeResponse41Payload
 			writer.WriteNullTerminatedString(cs.Database);
 
 		if ((handshake.ProtocolCapabilities & ProtocolCapabilities.PluginAuth) != 0)
-			writer.Write(useCachingSha2 ? "caching_sha2_password\0"u8 : "mysql_native_password\0"u8);
+			writer.Write(handshake.AuthPluginName == "caching_sha2_password" ? "caching_sha2_password\0"u8 : "mysql_native_password\0"u8);
 
 		if (connectionAttributes is not null)
 			writer.Write(connectionAttributes);

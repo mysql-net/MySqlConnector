@@ -79,6 +79,12 @@ for i in `seq 1 120`; do
 		if [ $? -ne 0 ]; then exit $?; fi
 	fi
 
+	if [[ $OMIT_FEATURES != *"ParsecAuthentication"* ]]; then
+		echo "Installing auth_parsec component"
+		docker exec mysql bash -c "$MYSQL -uroot -ptest < /etc/mysql/conf.d/init_parsec.sql"
+		if [ $? -ne 0 ]; then exit $?; fi
+	fi
+
 	if [[ $OMIT_FEATURES != *"QueryAttributes"* ]]; then
 		echo "Installing query_attributes component"
 		docker exec mysql $MYSQL -uroot -ptest -e "INSTALL COMPONENT 'file://component_query_attributes';"
