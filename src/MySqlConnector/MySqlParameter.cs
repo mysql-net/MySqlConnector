@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Buffers.Text;
 using System.Data.Common;
 using System.Diagnostics;
@@ -294,9 +295,9 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 				Memory<byte> memory => memory.Span,
 				MySqlGeometry geometry => geometry.ValueSpan,
 				MemoryStream memoryStream => memoryStream.TryGetBuffer(out var streamBuffer) ? streamBuffer.AsSpan() : memoryStream.ToArray().AsSpan(),
-				float[] floatArray => MemoryMarshal.AsBytes(floatArray.AsSpan()),
-				Memory<float> memory => MemoryMarshal.AsBytes(memory.Span),
-				ReadOnlyMemory<float> memory => MemoryMarshal.AsBytes(memory.Span),
+				float[] floatArray => ConvertFloatsToBytes(floatArray.AsSpan()),
+				Memory<float> memory => ConvertFloatsToBytes(memory.Span),
+				ReadOnlyMemory<float> memory => ConvertFloatsToBytes(memory.Span),
 				_ => ((ReadOnlyMemory<byte>) Value).Span,
 			};
 
@@ -729,26 +730,52 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		}
 		else if (value is float floatValue)
 		{
-			writer.Write(BitConverter.GetBytes(floatValue));
+#if NET5_0_OR_GREATER
+			Span<byte> bytes = stackalloc byte[4];
+			BinaryPrimitives.WriteSingleLittleEndian(bytes, floatValue);
+			writer.Write(bytes);
+#else
+			// convert float to bytes with correct endianness (MySQL uses little-endian)
+			var bytes = BitConverter.GetBytes(floatValue);
+			if (!BitConverter.IsLittleEndian)
+				Array.Reverse(bytes);
+			writer.Write(bytes);
+#endif
 		}
 		else if (value is double doubleValue)
 		{
-			writer.Write(unchecked((ulong) BitConverter.DoubleToInt64Bits(doubleValue)));
+#if NET5_0_OR_GREATER
+			Span<byte> bytes = stackalloc byte[8];
+			BinaryPrimitives.WriteDoubleLittleEndian(bytes, doubleValue);
+			writer.Write(bytes);
+#else
+			if (BitConverter.IsLittleEndian)
+			{
+				writer.Write(unchecked((ulong) BitConverter.DoubleToInt64Bits(doubleValue)));
+			}
+			else
+			{
+				// convert double to bytes with correct endianness (MySQL uses little-endian)
+				var bytes = BitConverter.GetBytes(doubleValue);
+				Array.Reverse(bytes);
+				writer.Write(bytes);
+			}
+#endif
 		}
 		else if (value is float[] floatArrayValue)
 		{
 			writer.WriteLengthEncodedInteger(unchecked((ulong) floatArrayValue.Length * 4));
-			writer.Write(MemoryMarshal.AsBytes(floatArrayValue.AsSpan()));
+			writer.Write(ConvertFloatsToBytes(floatArrayValue.AsSpan()));
 		}
 		else if (value is Memory<float> floatMemory)
 		{
 			writer.WriteLengthEncodedInteger(unchecked((ulong) floatMemory.Length * 4));
-			writer.Write(MemoryMarshal.AsBytes(floatMemory.Span));
+			writer.Write(ConvertFloatsToBytes(floatMemory.Span));
 		}
 		else if (value is ReadOnlyMemory<float> floatReadOnlyMemory)
 		{
 			writer.WriteLengthEncodedInteger(unchecked((ulong) floatReadOnlyMemory.Length * 4));
-			writer.Write(MemoryMarshal.AsBytes(floatReadOnlyMemory.Span));
+			writer.Write(ConvertFloatsToBytes(floatReadOnlyMemory.Span));
 		}
 		else if (value is decimal decimalValue)
 		{
@@ -964,6 +991,32 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			writer.Write((byte) timeSpan.Seconds);
 			if (microseconds != 0)
 				writer.Write(microseconds);
+		}
+	}
+
+	private static ReadOnlySpan<byte> ConvertFloatsToBytes(ReadOnlySpan<float> floats)
+	{
+		if (BitConverter.IsLittleEndian)
+		{
+			return MemoryMarshal.AsBytes(floats);
+		}
+		else
+		{
+			// for big-endian platforms, we need to convert each float individually
+			var bytes = new byte[floats.Length * 4];
+
+			for (var i = 0; i < floats.Length; i++)
+			{
+#if NET5_0_OR_GREATER
+				BinaryPrimitives.WriteSingleLittleEndian(bytes.AsSpan(i * 4), floats[i]);
+#else
+				var floatBytes = BitConverter.GetBytes(floats[i]);
+				Array.Reverse(floatBytes);
+				floatBytes.CopyTo(bytes, i * 4);
+#endif
+			}
+
+			return bytes;
 		}
 	}
 
