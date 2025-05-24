@@ -165,6 +165,10 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 				mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbType(dbType);
 			}
 
+			// HACK: MariaDB doesn't have a dedicated Vector type so mark it as binary data
+			if (mySqlDbType == MySqlDbType.Vector && command.Connection!.Session.ServerVersion.IsMariaDb)
+				mySqlDbType = MySqlDbType.LongBlob;
+
 			writer.Write(TypeMapper.ConvertToColumnTypeAndFlags(mySqlDbType, command.Connection!.GuidFormat));
 
 			if (supportsQueryAttributes)

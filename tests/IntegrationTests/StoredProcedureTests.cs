@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace IntegrationTests;
 
 public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
@@ -759,6 +761,39 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		Assert.True(reader.Read());
 		Assert.Equal(json, reader.GetString(0).Replace(" ", ""));
 		Assert.False(reader.Read());
+	}
+
+	[SkippableTheory(ServerFeatures.Vector | ServerFeatures.VectorType)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void VectorOutputParameter(bool prepare)
+	{
+		using var cmd = m_database.Connection.CreateCommand();
+		cmd.CommandText = """
+			DROP PROCEDURE IF EXISTS sp_vector_out;
+			CREATE PROCEDURE sp_vector_out (OUT vec VECTOR)
+			BEGIN
+				SELECT STRING_TO_VECTOR('[1.2, 3.4, 5.6]') INTO vec;
+			END;
+			""";
+		cmd.ExecuteNonQuery();
+
+		cmd.CommandText = "sp_vector_out";
+		cmd.CommandType = CommandType.StoredProcedure;
+		cmd.Parameters.Add(new MySqlParameter
+		{
+			Direction = ParameterDirection.Output,
+			MySqlDbType = MySqlDbType.Vector,
+			ParameterName = "@vec",
+		});
+
+		if (prepare)
+			cmd.Prepare();
+		cmd.ExecuteNonQuery();
+
+		var value = cmd.Parameters[0].Value;
+		var result = Assert.IsType<byte[]>(value);
+		Assert.Equal(new float[] { 1.2f, 3.4f, 5.6f }, MemoryMarshal.Cast<byte, float>(result).ToArray());
 	}
 
 	private static Action<MySqlParameter> AssertParameter(string name, ParameterDirection direction, MySqlDbType mySqlDbType)

@@ -50,4 +50,14 @@ public enum ServerFeatures
 	/// Server supports the 'parsec' authentication plugin.
 	/// </summary>
 	ParsecAuthentication = 0x200_0000,
+
+	/// <summary>
+	/// Server supports the <c>VECTOR</c> SQL type.
+	/// </summary>
+	Vector = 0x400_0000,
+
+	/// <summary>
+	/// Server has a dedicated type on the wire for <c>VECTOR</c>.
+	/// </summary>
+	VectorType = 0x800_0000,
 }
