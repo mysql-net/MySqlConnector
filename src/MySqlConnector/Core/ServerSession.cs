@@ -47,6 +47,8 @@ internal sealed partial class ServerSession : IServerCapabilities
 	public int ActiveCommandId { get; private set; }
 	public int CancellationTimeout { get; private set; }
 	public int ConnectionId { get; set; }
+	public string? ServerUuid { get; set; }
+	public long? ServerId { get; set; }
 	public byte[]? AuthPluginData { get; set; }
 	public long CreatedTimestamp { get; }
 	public ConnectionPool? Pool { get; }
@@ -117,6 +119,14 @@ internal sealed partial class ServerSession : IServerCapabilities
 				return;
 			}
 
+			// Verify server identity before executing KILL QUERY to prevent cancelling on the wrong server
+			var killSession = killCommand.Connection!.Session;
+			if (!VerifyServerIdentity(killSession))
+			{
+				Log.IgnoringCancellationForDifferentServer(m_logger, Id, killSession.Id, ServerUuid, killSession.ServerUuid, ServerId, killSession.ServerId);
+				return;
+			}
+
 			// NOTE: This command is executed while holding the lock to prevent race conditions during asynchronous cancellation.
 			// For example, if the lock weren't held, the current command could finish and the other thread could set ActiveCommandId
 			// to zero, then start executing a new command. By the time this "KILL QUERY" command reached the server, the wrong
@@ -135,6 +145,26 @@ internal sealed partial class ServerSession : IServerCapabilities
 			if (ActiveCommandId == command.CommandId && m_state == State.CancelingQuery)
 				m_state = State.Querying;
 		}
+	}
+
+	private bool VerifyServerIdentity(ServerSession otherSession)
+	{
+		// If server UUID is available, use it as the primary identifier (most unique)
+		if (!string.IsNullOrEmpty(ServerUuid) && !string.IsNullOrEmpty(otherSession.ServerUuid))
+		{
+			return string.Equals(ServerUuid, otherSession.ServerUuid, StringComparison.Ordinal);
+		}
+
+		// Fall back to server ID if UUID is not available
+		if (ServerId.HasValue && otherSession.ServerId.HasValue)
+		{
+			return ServerId.Value == otherSession.ServerId.Value;
+		}
+
+		// If no server identification is available, allow the operation to proceed
+		// This maintains backward compatibility with older MySQL versions
+		Log.NoServerIdentificationForVerification(m_logger, Id, otherSession.Id);
+		return true;
 	}
 
 	public bool IsCancelingQuery => m_state == State.CancelingQuery;
@@ -634,6 +664,9 @@ internal sealed partial class ServerSession : IServerCapabilities
 				Log.ChangingConnectionId(m_logger, Id, ConnectionId, newConnectionId, ServerVersion.OriginalString, ServerVersion.OriginalString);
 				ConnectionId = newConnectionId;
 			}
+
+			// Get server identification for KILL QUERY verification
+			await GetServerIdentificationAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 
 			m_payloadHandler.ByteHandler.RemainingTimeout = Constants.InfiniteTimeout;
 			return redirectionUrl;
@@ -1951,6 +1984,90 @@ internal sealed partial class ServerSession : IServerCapabilities
 		}
 	}
 
+	private async Task GetServerIdentificationAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+	{
+		Log.GettingServerIdentification(m_logger, Id);
+		try
+		{
+			PayloadData payload;
+			
+			// Try to get both server_uuid and server_id if server supports server_uuid (MySQL 5.6+)
+			if (!ServerVersion.IsMariaDb && ServerVersion.Version >= ServerVersions.SupportsServerUuid)
+			{
+				payload = SupportsQueryAttributes ? s_selectServerIdWithAttributesPayload : s_selectServerIdNoAttributesPayload;
+				await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+
+				// column count: 2
+				_ = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
+				// @@server_uuid and @@server_id columns
+				_ = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+				_ = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+
+				if (!SupportsDeprecateEof)
+				{
+					payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+					_ = EofPayload.Create(payload.Span);
+				}
+
+				// first (and only) row
+				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+
+				var reader = new ByteArrayReader(payload.Span);
+				var length = reader.ReadLengthEncodedIntegerOrNull();
+				var serverUuid = length != -1 ? Encoding.UTF8.GetString(reader.ReadByteString(length)) : null;
+				length = reader.ReadLengthEncodedIntegerOrNull();
+				var serverId = (length != -1 && Utf8Parser.TryParse(reader.ReadByteString(length), out long id, out _)) ? id : default(long?);
+
+				ServerUuid = serverUuid;
+				ServerId = serverId;
+
+				Log.RetrievedServerIdentification(m_logger, Id, serverUuid, serverId);
+			}
+			else
+			{
+				// Fall back to just server_id for older versions or MariaDB
+				payload = SupportsQueryAttributes ? s_selectServerIdOnlyWithAttributesPayload : s_selectServerIdOnlyNoAttributesPayload;
+				await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+
+				// column count: 1
+				_ = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
+				// @@server_id column
+				_ = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+
+				if (!SupportsDeprecateEof)
+				{
+					payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+					_ = EofPayload.Create(payload.Span);
+				}
+
+				// first (and only) row
+				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+
+				var reader = new ByteArrayReader(payload.Span);
+				var length = reader.ReadLengthEncodedIntegerOrNull();
+				var serverId = (length != -1 && Utf8Parser.TryParse(reader.ReadByteString(length), out long id, out _)) ? id : default(long?);
+
+				ServerUuid = null;
+				ServerId = serverId;
+
+				Log.RetrievedServerIdentification(m_logger, Id, null, serverId);
+			}
+
+			// OK/EOF payload
+			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+			if (OkPayload.IsOk(payload.Span, this))
+				OkPayload.Verify(payload.Span, this);
+			else
+				EofPayload.Create(payload.Span);
+		}
+		catch (MySqlException ex)
+		{
+			Log.FailedToGetServerIdentification(m_logger, ex, Id);
+		}
+	}
+
 	private void ShutdownSocket()
 	{
 		Log.ClosingStreamSocket(m_logger, Id);
@@ -2182,6 +2299,10 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private static readonly PayloadData s_sleepWithAttributesPayload = QueryPayload.Create(true, "SELECT SLEEP(0) INTO @__MySqlConnector__Sleep;"u8);
 	private static readonly PayloadData s_selectConnectionIdVersionNoAttributesPayload = QueryPayload.Create(false, "SELECT CONNECTION_ID(), VERSION();"u8);
 	private static readonly PayloadData s_selectConnectionIdVersionWithAttributesPayload = QueryPayload.Create(true, "SELECT CONNECTION_ID(), VERSION();"u8);
+	private static readonly PayloadData s_selectServerIdNoAttributesPayload = QueryPayload.Create(false, "SELECT @@server_uuid, @@server_id;"u8);
+	private static readonly PayloadData s_selectServerIdWithAttributesPayload = QueryPayload.Create(true, "SELECT @@server_uuid, @@server_id;"u8);
+	private static readonly PayloadData s_selectServerIdOnlyNoAttributesPayload = QueryPayload.Create(false, "SELECT @@server_id;"u8);
+	private static readonly PayloadData s_selectServerIdOnlyWithAttributesPayload = QueryPayload.Create(true, "SELECT @@server_id;"u8);
 
 	private readonly ILogger m_logger;
 #if NET9_0_OR_GREATER

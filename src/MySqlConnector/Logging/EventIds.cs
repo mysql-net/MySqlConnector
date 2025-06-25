@@ -78,14 +78,17 @@ internal static class EventIds
 	public const int DetectedProxy = 2150;
 	public const int ChangingConnectionId = 2151;
 	public const int FailedToGetConnectionId = 2152;
-	public const int CreatingConnectionAttributes = 2153;
-	public const int ObtainingPasswordViaProvidePasswordCallback = 2154;
-	public const int FailedToObtainPassword = 2155;
-	public const int ConnectedTlsBasicPreliminary = 2156;
-	public const int ConnectedTlsDetailedPreliminary = 2157;
-	public const int CertificateErrorUnixSocket = 2158;
-	public const int CertificateErrorNoPassword = 2159;
-	public const int CertificateErrorValidThumbprint = 2160;
+	public const int GettingServerIdentification = 2153;
+	public const int RetrievedServerIdentification = 2154;
+	public const int FailedToGetServerIdentification = 2155;
+	public const int CreatingConnectionAttributes = 2156;
+	public const int ObtainingPasswordViaProvidePasswordCallback = 2157;
+	public const int FailedToObtainPassword = 2158;
+	public const int ConnectedTlsBasicPreliminary = 2159;
+	public const int ConnectedTlsDetailedPreliminary = 2160;
+	public const int CertificateErrorUnixSocket = 2161;
+	public const int CertificateErrorNoPassword = 2162;
+	public const int CertificateErrorValidThumbprint = 2163;
 
 	// Command execution events, 2200-2299
 	public const int CannotExecuteNewCommandInState = 2200;
@@ -108,6 +111,8 @@ internal static class EventIds
 	public const int IgnoringCancellationForInactiveCommand = 2306;
 	public const int CancelingCommand = 2307;
 	public const int SendingSleepToClearPendingCancellation = 2308;
+	public const int IgnoringCancellationForDifferentServer = 2309;
+	public const int NoServerIdentificationForVerification = 2310;
 
 	// Cached procedure events, 2400-2499
 	public const int GettingCachedProcedure = 2400;

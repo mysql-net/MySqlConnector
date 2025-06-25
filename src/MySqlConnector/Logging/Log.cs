@@ -189,6 +189,21 @@ internal static partial class Log
 	[LoggerMessage(EventIds.FailedToGetConnectionId, LogLevel.Information, "Session {SessionId} failed to get CONNECTION_ID(), VERSION()")]
 	public static partial void FailedToGetConnectionId(ILogger logger, Exception exception, string sessionId);
 
+	[LoggerMessage(EventIds.GettingServerIdentification, LogLevel.Debug, "Session {SessionId} getting server identification")]
+	public static partial void GettingServerIdentification(ILogger logger, string sessionId);
+
+	[LoggerMessage(EventIds.RetrievedServerIdentification, LogLevel.Debug, "Session {SessionId} retrieved server identification: UUID={ServerUuid}, ID={ServerId}")]
+	public static partial void RetrievedServerIdentification(ILogger logger, string sessionId, string? serverUuid, long? serverId);
+
+	[LoggerMessage(EventIds.FailedToGetServerIdentification, LogLevel.Information, "Session {SessionId} failed to get server identification")]
+	public static partial void FailedToGetServerIdentification(ILogger logger, Exception exception, string sessionId);
+
+	[LoggerMessage(EventIds.IgnoringCancellationForDifferentServer, LogLevel.Warning, "Session {SessionId} ignoring cancellation from session {KillSessionId}: server identity mismatch (this UUID={ServerUuid}, kill UUID={KillServerUuid}, this ID={ServerId}, kill ID={KillServerId})")]
+	public static partial void IgnoringCancellationForDifferentServer(ILogger logger, string sessionId, string killSessionId, string? serverUuid, string? killServerUuid, long? serverId, long? killServerId);
+
+	[LoggerMessage(EventIds.NoServerIdentificationForVerification, LogLevel.Debug, "Session {SessionId} and kill session {KillSessionId} have no server identification available for verification")]
+	public static partial void NoServerIdentificationForVerification(ILogger logger, string sessionId, string killSessionId);
+
 	[LoggerMessage(EventIds.ClosingStreamSocket, LogLevel.Debug, "Session {SessionId} closing stream/socket")]
 	public static partial void ClosingStreamSocket(ILogger logger, string sessionId);
 
