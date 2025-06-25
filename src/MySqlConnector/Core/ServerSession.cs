@@ -2015,9 +2015,9 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 				var reader = new ByteArrayReader(payload.Span);
 				var length = reader.ReadLengthEncodedIntegerOrNull();
-				var serverUuid = length != -1 ? Encoding.UTF8.GetString(reader.ReadByteString(length)) : null;
+				var serverUuid = length > 0 ? Encoding.UTF8.GetString(reader.ReadByteString(length)) : null;
 				length = reader.ReadLengthEncodedIntegerOrNull();
-				var serverId = (length != -1 && Utf8Parser.TryParse(reader.ReadByteString(length), out long id, out _)) ? id : default(long?);
+				var serverId = (length > 0 && Utf8Parser.TryParse(reader.ReadByteString(length), out long id, out _)) ? id : default(long?);
 
 				ServerUuid = serverUuid;
 				ServerId = serverId;
@@ -2047,7 +2047,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 				var reader = new ByteArrayReader(payload.Span);
 				var length = reader.ReadLengthEncodedIntegerOrNull();
-				var serverId = (length != -1 && Utf8Parser.TryParse(reader.ReadByteString(length), out long id, out _)) ? id : default(long?);
+				var serverId = (length > 0 && Utf8Parser.TryParse(reader.ReadByteString(length), out long id, out _)) ? id : default(long?);
 
 				ServerUuid = null;
 				ServerId = serverId;
@@ -2065,6 +2065,9 @@ internal sealed partial class ServerSession : IServerCapabilities
 		catch (MySqlException ex)
 		{
 			Log.FailedToGetServerIdentification(m_logger, ex, Id);
+			// Set fallback values to ensure operation can continue
+			ServerUuid = null;
+			ServerId = null;
 		}
 	}
 
