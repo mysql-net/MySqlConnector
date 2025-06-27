@@ -19,7 +19,4 @@ internal static class ServerVersions
 
 	// https://mariadb.com/kb/en/set-statement/
 	public static readonly Version MariaDbSupportsPerQueryVariables = new(10, 1, 2);
-
-	// https://dev.mysql.com/doc/refman/5.6/en/replication-options.html#sysvar_server_uuid
-	public static readonly Version SupportsServerUuid = new(5, 6, 0);
 }

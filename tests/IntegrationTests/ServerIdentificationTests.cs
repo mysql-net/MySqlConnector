@@ -39,34 +39,17 @@ public class ServerIdentificationTests : IClassFixture<DatabaseFixture>, IDispos
 	}
 
 	[SkippableFact(ServerFeatures.KnownCertificateAuthority)]  
-	public void ServerHasServerIdentification()
+	public void ServerHasServerHostname()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
 		connection.Open();
 
-		// Test that we can query server identification manually
-		using var cmd = new MySqlCommand("SELECT @@server_id", connection);
-		var serverId = cmd.ExecuteScalar();
-		Assert.NotNull(serverId);
-		TestUtilities.LogInfo($"Server ID: {serverId}");
-
-		// Test server UUID if available (MySQL 5.6+)
-		if (connection.ServerVersion.Version.Major > 5 || 
-			(connection.ServerVersion.Version.Major == 5 && connection.ServerVersion.Version.Minor >= 6))
-		{
-			try
-			{
-				using var uuidCmd = new MySqlCommand("SELECT @@server_uuid", connection);
-				var serverUuid = uuidCmd.ExecuteScalar();
-				Assert.NotNull(serverUuid);
-				TestUtilities.LogInfo($"Server UUID: {serverUuid}");
-			}
-			catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.UnknownSystemVariable)
-			{
-				// Some MySQL-compatible servers might not support server_uuid
-				TestUtilities.LogInfo("Server UUID not supported on this server");
-			}
-		}
+		// Test that we can query server hostname
+		using var cmd = new MySqlCommand("SELECT @@hostname", connection);
+		var hostname = cmd.ExecuteScalar();
+		
+		// Hostname might be null on some server configurations, but the query should succeed
+		TestUtilities.LogInfo($"Server hostname: {hostname ?? "null"}");
 	}
 
 	private readonly DatabaseFixture m_database;

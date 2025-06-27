@@ -86,9 +86,9 @@ internal static class EventIds
 	public const int CertificateErrorUnixSocket = 2158;
 	public const int CertificateErrorNoPassword = 2159;
 	public const int CertificateErrorValidThumbprint = 2160;
-	public const int GettingServerIdentification = 2161;
-	public const int RetrievedServerIdentification = 2162;
-	public const int FailedToGetServerIdentification = 2163;
+	public const int GettingServerHostname = 2161;
+	public const int RetrievedServerHostname = 2162;
+	public const int FailedToGetServerHostname = 2163;
 
 	// Command execution events, 2200-2299
 	public const int CannotExecuteNewCommandInState = 2200;
@@ -112,7 +112,6 @@ internal static class EventIds
 	public const int CancelingCommand = 2307;
 	public const int SendingSleepToClearPendingCancellation = 2308;
 	public const int IgnoringCancellationForDifferentServer = 2309;
-	public const int NoServerIdentificationForVerification = 2310;
 
 	// Cached procedure events, 2400-2499
 	public const int GettingCachedProcedure = 2400;
