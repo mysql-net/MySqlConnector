@@ -34,8 +34,6 @@ public class ServerIdentificationTests : IClassFixture<DatabaseFixture>, IDispos
 #pragma warning disable xUnit1031 // Do not use blocking task operations in test method
 		task.Wait(); // shouldn't throw
 #pragma warning restore xUnit1031 // Do not use blocking task operations in test method
-
-		TestUtilities.LogInfo("Cancellation with server verification completed successfully");
 	}
 
 	[SkippableFact(ServerFeatures.KnownCertificateAuthority)]  
@@ -49,7 +47,6 @@ public class ServerIdentificationTests : IClassFixture<DatabaseFixture>, IDispos
 		var hostname = cmd.ExecuteScalar();
 		
 		// Hostname might be null on some server configurations, but the query should succeed
-		TestUtilities.LogInfo($"Server hostname: {hostname ?? "null"}");
 	}
 
 	private readonly DatabaseFixture m_database;
