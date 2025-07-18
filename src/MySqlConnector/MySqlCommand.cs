@@ -1,6 +1,8 @@
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using MySqlConnector.Core;
+using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
 
@@ -357,15 +359,52 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		return await ExecuteReaderNoResetTimeoutAsync(behavior, ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
 
-	internal ValueTask<MySqlDataReader> ExecuteReaderNoResetTimeoutAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	internal async ValueTask<MySqlDataReader> ExecuteReaderNoResetTimeoutAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (!IsValid(out var exception))
-			return ValueTaskExtensions.FromException<MySqlDataReader>(exception);
+			return await ValueTaskExtensions.FromException<MySqlDataReader>(exception).ConfigureAwait(false);
+
+		if (((IMySqlCommand) this).TryGetPreparedStatements() is { Statements.Count: 1 } statements)
+		{
+			for (var i = 0; i < Parameters.Count; i++)
+			{
+				if (Parameters[i].Value is Stream stream)
+				{
+					var writer = new ByteBufferWriter();
+					writer.Write((byte) CommandKind.StatementSendLongData);
+					writer.Write(statements.Statements[0].StatementId);
+					writer.Write((ushort) i);
+
+					var buffer = ArrayPool<byte>.Shared.Rent(ProtocolUtility.MaxPacketSize);
+					var dataLength = ProtocolUtility.MaxPacketSize - 7;
+
+					var bytesRead = stream.Read(buffer, 0, dataLength);
+					writer.Write(buffer.AsSpan(0, bytesRead));
+
+					await Connection!.Session.SendAsync(writer.ToPayloadData(), ioBehavior, cancellationToken).ConfigureAwait(false);
+
+					if (bytesRead == dataLength)
+					{
+						dataLength = ProtocolUtility.MaxPacketSize;
+
+						do
+						{
+							bytesRead = stream.Read(buffer, 0, dataLength);
+
+							writer = new ByteBufferWriter();
+							writer.Write(buffer.AsSpan(0, bytesRead));
+							await Connection!.Session.SendReplyAsync(writer.ToPayloadData(), ioBehavior, cancellationToken).ConfigureAwait(false);
+						}
+						while (bytesRead == dataLength);
+					}
+				}
+			}
+		}
 
 		var activity = NoActivity ? null : Connection!.Session.StartActivity(ActivitySourceHelper.ExecuteActivityName,
 			ActivitySourceHelper.DatabaseStatementTagName, CommandText);
 		m_commandBehavior = behavior;
-		return CommandExecutor.ExecuteReaderAsync(new(this), SingleCommandPayloadCreator.Instance, behavior, activity, ioBehavior, cancellationToken);
+		return await CommandExecutor.ExecuteReaderAsync(new(this), SingleCommandPayloadCreator.Instance, behavior, activity, ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
 
 	public MySqlCommand Clone() => new(this);
