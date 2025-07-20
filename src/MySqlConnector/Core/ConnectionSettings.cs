@@ -147,6 +147,7 @@ internal sealed class ConnectionSettings
 		UseAffectedRows = csb.UseAffectedRows;
 		UseCompression = csb.UseCompression;
 		UseXaTransactions = csb.UseXaTransactions;
+		UseProcedureCache = csb.UseProcedureCache;
 
 		static int ToSigned(uint value) => value >= int.MaxValue ? int.MaxValue : (int) value;
 	}
@@ -245,6 +246,7 @@ internal sealed class ConnectionSettings
 	public bool UseAffectedRows { get; }
 	public bool UseCompression { get; }
 	public bool UseXaTransactions { get; }
+	public bool UseProcedureCache { get; }
 
 	public byte[]? ConnectionAttributes { get; set; }
 
@@ -335,6 +337,7 @@ internal sealed class ConnectionSettings
 		UseAffectedRows = other.UseAffectedRows;
 		UseCompression = other.UseCompression;
 		UseXaTransactions = other.UseXaTransactions;
+		UseProcedureCache = other.UseProcedureCache;
 	}
 
 	private static readonly string[] s_localhostPipeServer = ["."];
