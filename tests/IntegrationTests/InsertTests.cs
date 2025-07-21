@@ -475,7 +475,6 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 		var val = ((decimal) reader.GetValue(0)).ToString(CultureInfo.InvariantCulture);
 		Assert.Equal(value, val);
 	}
-#endif
 
 	[Theory]
 	[InlineData(1_000_000, 1024, true)]
@@ -544,6 +543,7 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 			Assert.True(data.AsSpan().SequenceEqual(readData)); // much faster than Assert.Equal
 		}
 	}
+#endif
 
 	[Theory]
 	[InlineData(false)]
