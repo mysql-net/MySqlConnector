@@ -81,10 +81,10 @@ public sealed class FakeMySqlServer
 		}
 	}
 
-	readonly object m_lock;
-	readonly TcpListener m_tcpListener;
-	readonly List<FakeMySqlServerConnection> m_connections;
-	readonly List<Task> m_tasks;
-	CancellationTokenSource m_cts;
-	int m_activeConnections;
+	private readonly object m_lock;
+	private readonly TcpListener m_tcpListener;
+	private readonly List<FakeMySqlServerConnection> m_connections;
+	private readonly List<Task> m_tasks;
+	private CancellationTokenSource m_cts;
+	private int m_activeConnections;
 }

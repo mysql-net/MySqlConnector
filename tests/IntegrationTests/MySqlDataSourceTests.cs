@@ -3,7 +3,7 @@ namespace IntegrationTests;
 
 public class MySqlDataSourceTests : IClassFixture<DatabaseFixture>
 {
-	public MySqlDataSourceTests(DatabaseFixture _)
+	public MySqlDataSourceTests(DatabaseFixture ignoredFixture)
 	{
 	}
 

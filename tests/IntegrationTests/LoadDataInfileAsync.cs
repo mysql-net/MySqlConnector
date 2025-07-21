@@ -66,7 +66,7 @@ public class LoadDataInfileAsync : IClassFixture<DatabaseFixture>
 		await Assert.ThrowsAsync<MySqlException>(async () => await command.ExecuteNonQueryAsync());
 	}
 
-	readonly DatabaseFixture m_database;
-	readonly string m_testTable;
-	readonly string m_loadDataInfileCommand;
+	private readonly DatabaseFixture m_database;
+	private readonly string m_testTable;
+	private readonly string m_loadDataInfileCommand;
 }

@@ -22,6 +22,23 @@ public sealed class MySqlDataSourceBuilder
 	}
 
 	/// <summary>
+	/// Configures OpenTelemetry tracing options.
+	/// </summary>
+	/// <returns>This builder, so that method calls can be chained.</returns>
+	public MySqlDataSourceBuilder ConfigureTracing(Action<MySqlConnectorTracingOptionsBuilder> configureAction)
+	{
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(configureAction);
+#else
+		if (configureAction is null)
+			throw new ArgumentNullException(nameof(configureAction));
+#endif
+		m_tracingOptionsBuilderCallbacks ??= [];
+		m_tracingOptionsBuilderCallbacks.Add(configureAction);
+		return this;
+	}
+
+	/// <summary>
 	/// Sets the <see cref="ILoggerFactory"/> that will be used for logging.
 	/// </summary>
 	/// <param name="loggerFactory">The logger factory.</param>
@@ -107,8 +124,15 @@ public sealed class MySqlDataSourceBuilder
 	public MySqlDataSource Build()
 	{
 		var loggingConfiguration = m_loggerFactory is null ? MySqlConnectorLoggingConfiguration.NullConfiguration : new(m_loggerFactory);
+
+		var tracingOptionsBuilder = new MySqlConnectorTracingOptionsBuilder();
+		foreach (var callback in m_tracingOptionsBuilderCallbacks ?? (IEnumerable<Action<MySqlConnectorTracingOptionsBuilder>>) [])
+			callback.Invoke(tracingOptionsBuilder);
+		var tracingOptions = tracingOptionsBuilder.Build();
+
 		return new(ConnectionStringBuilder.ConnectionString,
 			loggingConfiguration,
+			tracingOptions,
 			m_name,
 			m_clientCertificatesCallback,
 			m_remoteCertificateValidationCallback,
@@ -135,4 +159,5 @@ public sealed class MySqlDataSourceBuilder
 	private TimeSpan m_periodicPasswordProviderSuccessRefreshInterval;
 	private TimeSpan m_periodicPasswordProviderFailureRefreshInterval;
 	private MySqlConnectionOpenedCallback? m_connectionOpenedCallback;
+	private List<Action<MySqlConnectorTracingOptionsBuilder>>? m_tracingOptionsBuilderCallbacks;
 }

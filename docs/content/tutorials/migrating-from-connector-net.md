@@ -41,7 +41,7 @@ In a .NET Framework application, make the following `app.config` change to regis
     <!-- add name="MySQL Data Provider"
       invariant="MySql.Data.MySqlClient"
       description=".Net Framework Data Provider for MySQL"
-      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=9.1.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
+      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=9.3.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
 
     <!-- ADD THIS -->
     <add name="MySqlConnector"
@@ -257,6 +257,8 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 * [#115937](https://bugs.mysql.com/bug.php?id=115937): Transaction isn't released after I/O timeout
 * [#116146](https://bugs.mysql.com/bug.php?id=116146): `MySqlConnection.OpenAsync` throws exception when `UseCompression = true`
 * [#116257](https://bugs.mysql.com/bug.php?id=116257): `NullReferenceException` thrown when using prepared statement under OpenTelemetry
+* [#116382](https://bugs.mysql.com/bug.php?id=116382): `ExecuteNonQueryAsync` hangs with DDL if `UseCompression=True`
+* [#117020](https://bugs.mysql.com/bug.php?id=117020): `MinPoolSize` configuration is not honored
 
 ### Fixed First by MySqlConnector
 

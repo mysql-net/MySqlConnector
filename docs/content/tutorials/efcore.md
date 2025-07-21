@@ -22,7 +22,7 @@ It uses MySqlConnector to provide the core database connectivity.
 In this tutorial, we'll use a console application to demonstrate the core concepts.
 Create a console application, then add the Pomelo.EntityFrameworkCore.MySql NuGet package:
 
-```
+```txt
 dotnet new console -o EFCoreMySQL
 cd EFCoreMySQL
 dotnet add package Pomelo.EntityFrameworkCore.MySql
@@ -32,7 +32,7 @@ dotnet add package Pomelo.EntityFrameworkCore.MySql
 
 Build your connection string by substituting the appropriate values in this template:
 
-```
+```txt
 Server=YOURSERVER; User ID=YOURUSERID; Password=YOURPASSWORD; Database=YOURDATABASE
 ```
 

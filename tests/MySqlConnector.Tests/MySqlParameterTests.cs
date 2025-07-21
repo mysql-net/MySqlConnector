@@ -319,7 +319,6 @@ public class MySqlParameterTests
 		Assert.Equal(MySqlDbType.Blob, parameter.MySqlDbType);
 	}
 
-
 	[Fact]
 	public void SetValueDoesNotInferType()
 	{

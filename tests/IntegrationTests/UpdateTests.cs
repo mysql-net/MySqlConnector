@@ -161,5 +161,5 @@ insert into update_rows_reader (value) VALUES ('one'), ('two'), ('one'), ('four'
 		}
 	}
 
-	readonly DatabaseFixture m_database;
+	private readonly DatabaseFixture m_database;
 }

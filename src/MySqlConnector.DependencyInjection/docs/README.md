@@ -51,7 +51,7 @@ builder.Services.AddMySqlDataSource("Server=server;User ID=test;Password=test;Da
 
 ## Keyed Services
 
-Use the `AddKeyedMySqlDataSource` method to register a `MySqlDataSource` as a [keyed service](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8#keyed-di-services).
+Use the `AddKeyedMySqlDataSource` method to register a `MySqlDataSource` as a [keyed service](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8/runtime#keyed-di-services).
 This is useful if you have multiple connection strings or need to connect to multiple databases.
 If the service key is a string, it will automatically be used as the `MySqlDataSource` name;
 to customize this, call the `AddKeyedMySqlDataSource(object?, string, Action<MySqlDataSourceBuilder>)` overload and call `MySqlDataSourceBuilder.UseName`.

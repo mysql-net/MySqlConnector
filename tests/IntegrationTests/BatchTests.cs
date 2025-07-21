@@ -278,7 +278,6 @@ insert into batch_single_row(id) values(1),(2),(3);", connection))
 			Assert.Equal(3, reader.GetInt32(0));
 			Assert.False(reader.Read());
 		}
-
 	}
 
 	[Fact]
@@ -344,7 +343,7 @@ insert into batch_single_row(id) values(1),(2),(3);", connection))
 	private static string GetIgnoreCommandTransactionConnectionString() =>
 		new MySqlConnectionStringBuilder(AppConfig.ConnectionString)
 		{
-			IgnoreCommandTransaction = true
+			IgnoreCommandTransaction = true,
 		}.ConnectionString;
 }
 #endif

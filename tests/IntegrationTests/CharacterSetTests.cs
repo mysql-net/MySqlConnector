@@ -79,10 +79,10 @@ VALUES ('a'), ('b'), ('c'), ('d'), ('e'), ('f'), ('g'), ('h'), ('i'), ('j');");
 
 		var collation = connection.Query<string>(@"select @@collation_connection;").Single();
 		var expected = connection.ServerVersion.Substring(0, 2) is "8." or "9." ? "utf8mb4_0900_ai_ci" :
-			connection.ServerVersion.StartsWith("11.4.", StringComparison.Ordinal) ? "utf8mb4_uca1400_ai_ci" :
+			connection.ServerVersion.StartsWith("11.4.", StringComparison.Ordinal) || connection.ServerVersion.StartsWith("11.7.", StringComparison.Ordinal) ? "utf8mb4_uca1400_ai_ci" :
 			"utf8mb4_general_ci";
 		Assert.Equal(expected, collation);
 	}
 
-	readonly DatabaseFixture m_database;
+	private readonly DatabaseFixture m_database;
 }

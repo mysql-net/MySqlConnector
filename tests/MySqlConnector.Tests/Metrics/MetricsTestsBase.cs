@@ -20,7 +20,7 @@ public abstract class MetricsTestsBase : IDisposable
 			{
 				if (instrument.Meter.Name == "MySqlConnector")
 					listener.EnableMeasurementEvents(instrument);
-			}
+			},
 		};
 		m_meterListener.SetMeasurementEventCallback<int>(OnMeasurementRecorded);
 		m_meterListener.SetMeasurementEventCallback<double>(OnMeasurementRecorded);
@@ -123,7 +123,6 @@ public abstract class MetricsTestsBase : IDisposable
 		}
 		return (poolName, state);
 	}
-
 
 	private readonly Dictionary<string, int> m_measurements;
 	private readonly Dictionary<string, List<double>> m_timeMeasurements;

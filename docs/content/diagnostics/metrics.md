@@ -73,7 +73,7 @@ builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("D
 
 ### Keyed Services
 
-Use the `AddKeyedMySqlDataSource` method to register a `MySqlDataSource` as a [keyed service](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8#keyed-di-services).
+Use the `AddKeyedMySqlDataSource` method to register a `MySqlDataSource` as a [keyed service](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8/runtime#keyed-di-services).
 If the service key is a string, it will automatically be used as the `MySqlDataSource` name.
 
 ```csharp

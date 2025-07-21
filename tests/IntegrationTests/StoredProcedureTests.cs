@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace IntegrationTests;
 
 public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
@@ -532,7 +534,7 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 			ParameterName = "high",
 			DbType = DbType.Int32,
 			Direction = ParameterDirection.InputOutput,
-			Value = 1
+			Value = 1,
 		};
 		while ((int) parameter.Value < 8)
 		{
@@ -676,11 +678,11 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 #endif
 	[InlineData("char(30)", 30)]
 	[InlineData("varchar(50)", 50)]
-	// These return nonzero sizes for some versions of MySQL Server 8.0
-	// [InlineData("bit", 0)]
-	// [InlineData("tinyint", 0)]
-	// [InlineData("bigint", 0)]
-	// [InlineData("bigint unsigned", 0)]
+	//// These return nonzero sizes for some versions of MySQL Server 8.0
+	//// [InlineData("bit", 0)]
+	//// [InlineData("tinyint", 0)]
+	//// [InlineData("bigint", 0)]
+	//// [InlineData("bigint unsigned", 0)]
 	public void DeriveParametersParameterSize(string parameterType, int expectedSize)
 	{
 		var csb = AppConfig.CreateConnectionStringBuilder();
@@ -759,6 +761,39 @@ public class StoredProcedureTests : IClassFixture<StoredProcedureFixture>
 		Assert.True(reader.Read());
 		Assert.Equal(json, reader.GetString(0).Replace(" ", ""));
 		Assert.False(reader.Read());
+	}
+
+	[SkippableTheory(ServerFeatures.Vector | ServerFeatures.VectorType)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void VectorOutputParameter(bool prepare)
+	{
+		using var cmd = m_database.Connection.CreateCommand();
+		cmd.CommandText = """
+			DROP PROCEDURE IF EXISTS sp_vector_out;
+			CREATE PROCEDURE sp_vector_out (OUT vec VECTOR)
+			BEGIN
+				SELECT STRING_TO_VECTOR('[1.2, 3.4, 5.6]') INTO vec;
+			END;
+			""";
+		cmd.ExecuteNonQuery();
+
+		cmd.CommandText = "sp_vector_out";
+		cmd.CommandType = CommandType.StoredProcedure;
+		cmd.Parameters.Add(new MySqlParameter
+		{
+			Direction = ParameterDirection.Output,
+			MySqlDbType = MySqlDbType.Vector,
+			ParameterName = "@vec",
+		});
+
+		if (prepare)
+			cmd.Prepare();
+		cmd.ExecuteNonQuery();
+
+		var value = cmd.Parameters[0].Value;
+		var result = Assert.IsType<byte[]>(value);
+		Assert.Equal(new float[] { 1.2f, 3.4f, 5.6f }, MemoryMarshal.Cast<byte, float>(result).ToArray());
 	}
 
 	private static Action<MySqlParameter> AssertParameter(string name, ParameterDirection direction, MySqlDbType mySqlDbType)
@@ -874,6 +909,60 @@ END;", connection))
 		}
 	}
 
+#if !MYSQL_DATA
+	[Theory]
+	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", false, false)]
+	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", false, true)]
+	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", true, false)]
+	[InlineData(MySqlGuidFormat.Binary16, "BINARY(16)", "X'BABD8384C908499C9D95C02ADA94A970'", true, true)]
+	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", false, false)]
+	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", false, true)]
+	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", true, false)]
+	[InlineData(MySqlGuidFormat.Char32, "CHAR(32)", "'BABD8384C908499C9D95C02ADA94A970'", true, true)]
+	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", false, false)]
+	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", false, true)]
+	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", true, false)]
+	[InlineData(MySqlGuidFormat.Char36, "CHAR(36)", "'BABD8384-C908-499C-9D95-C02ADA94A970'", true, true)]
+	public void StoredProcedureReturnsGuid(MySqlGuidFormat guidFormat, string columnDefinition, string columnValue, bool setMySqlDbType, bool prepare)
+	{
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.GuidFormat = guidFormat;
+		csb.Pooling = false;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		connection.Open();
+
+		using (var command = new MySqlCommand($"""
+			DROP TABLE IF EXISTS out_guid_table;
+			CREATE TABLE out_guid_table (id INT PRIMARY KEY AUTO_INCREMENT, guid {columnDefinition});
+			INSERT INTO out_guid_table (guid) VALUES ({columnValue});
+			DROP PROCEDURE IF EXISTS out_guid;
+			CREATE PROCEDURE out_guid
+			(
+				OUT out_name {columnDefinition}
+			)
+			BEGIN
+				SELECT guid INTO out_name FROM out_guid_table;
+			END;
+			""", connection))
+		{
+			command.ExecuteNonQuery();
+		}
+
+		using (var command = new MySqlCommand("out_guid", connection))
+		{
+			command.CommandType = CommandType.StoredProcedure;
+			var param = new MySqlParameter("out_name", null) { Direction = ParameterDirection.Output };
+			if (setMySqlDbType)
+				param.MySqlDbType = MySqlDbType.Guid;
+			command.Parameters.Add(param);
+			command.ExecuteNonQuery();
+			if (prepare)
+				command.Prepare();
+			Assert.Equal(new Guid("BABD8384C908499C9D95C02ADA94A970"), param.Value);
+		}
+	}
+#endif
+
 	private static string NormalizeSpaces(string input)
 	{
 		input = input.Replace('\r', ' ');
@@ -895,5 +984,5 @@ END;", connection))
 		return connection;
 	}
 
-	readonly DatabaseFixture m_database;
+	private readonly DatabaseFixture m_database;
 }

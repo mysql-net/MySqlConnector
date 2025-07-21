@@ -55,6 +55,10 @@ internal sealed class TypeMapper
 		AddColumnTypeMetadata(new("DOUBLE", typeDouble, MySqlDbType.Double));
 		AddColumnTypeMetadata(new("FLOAT", typeFloat, MySqlDbType.Float));
 
+		 // vector
+		var typeFloatReadOnlyMemory = AddDbTypeMapping(new(typeof(ReadOnlyMemory<float>), [DbType.Object]));
+		AddColumnTypeMetadata(new("VECTOR", typeFloatReadOnlyMemory, MySqlDbType.Vector, binary: true, simpleDataTypeName: "VECTOR", createFormat: "VECTOR({0})"));
+
 		// string
 		var typeFixedString = AddDbTypeMapping(new(typeof(string), [DbType.StringFixedLength, DbType.AnsiStringFixedLength], convert: Convert.ToString!));
 		var typeString = AddDbTypeMapping(new(typeof(string), [DbType.String, DbType.AnsiString, DbType.Xml], convert: Convert.ToString!));
@@ -115,6 +119,9 @@ internal sealed class TypeMapper
 #endif
 		var typeGuid = AddDbTypeMapping(new(typeof(Guid), [DbType.Guid], convert: convertGuid));
 		AddColumnTypeMetadata(new("CHAR", typeGuid, MySqlDbType.Guid, length: 36, simpleDataTypeName: "CHAR(36)", createFormat: "CHAR(36)"));
+		AddColumnTypeMetadata(new("CHAR", typeGuid, MySqlDbType.Guid, length: 32, guidFormat: MySqlGuidFormat.Char32));
+		AddColumnTypeMetadata(new("CHAR", typeGuid, MySqlDbType.Guid, length: 36, guidFormat: MySqlGuidFormat.Char36));
+		AddColumnTypeMetadata(new("BINARY", typeGuid, MySqlDbType.Guid, binary: true, length: 16, guidFormat: MySqlGuidFormat.Binary16));
 
 		// null
 		var typeNull = AddDbTypeMapping(new(typeof(object), [DbType.Object]));
@@ -181,15 +188,20 @@ internal sealed class TypeMapper
 
 	public DbTypeMapping? GetDbTypeMapping(string columnTypeName, bool unsigned = false, int length = 0)
 	{
-		return GetColumnTypeMetadata(columnTypeName, unsigned, length)?.DbTypeMapping;
+		return GetColumnTypeMetadata(columnTypeName, unsigned, length, MySqlGuidFormat.Default)?.DbTypeMapping;
 	}
 
-	public MySqlDbType GetMySqlDbType(string typeName, bool unsigned, int length) => GetColumnTypeMetadata(typeName, unsigned, length)!.MySqlDbType;
+	public MySqlDbType GetMySqlDbType(string typeName, bool unsigned, int length, MySqlGuidFormat guidFormat) =>
+		GetColumnTypeMetadata(typeName, unsigned, length, guidFormat)!.MySqlDbType;
 
-	private ColumnTypeMetadata? GetColumnTypeMetadata(string columnTypeName, bool unsigned, int length)
+	private ColumnTypeMetadata? GetColumnTypeMetadata(string columnTypeName, bool unsigned, int length, MySqlGuidFormat guidFormat)
 	{
-		if (!m_columnTypeMetadataLookup.TryGetValue(ColumnTypeMetadata.CreateLookupKey(columnTypeName, unsigned, length), out var columnTypeMetadata) && length != 0)
-			m_columnTypeMetadataLookup.TryGetValue(ColumnTypeMetadata.CreateLookupKey(columnTypeName, unsigned, 0), out columnTypeMetadata);
+		if (m_columnTypeMetadataLookup.TryGetValue(ColumnTypeMetadata.CreateLookupKey(columnTypeName, unsigned, length, guidFormat), out var columnTypeMetadata))
+			return columnTypeMetadata;
+		if (guidFormat != MySqlGuidFormat.Default && m_columnTypeMetadataLookup.TryGetValue(ColumnTypeMetadata.CreateLookupKey(columnTypeName, unsigned, length, MySqlGuidFormat.Default), out columnTypeMetadata))
+			return columnTypeMetadata;
+		if (length != 0)
+			m_columnTypeMetadataLookup.TryGetValue(ColumnTypeMetadata.CreateLookupKey(columnTypeName, unsigned, 0, MySqlGuidFormat.Default), out columnTypeMetadata);
 		return columnTypeMetadata;
 	}
 
@@ -303,6 +315,9 @@ internal sealed class TypeMapper
 			case ColumnType.Set:
 				return MySqlDbType.Set;
 
+			case ColumnType.Vector:
+				return MySqlDbType.Vector;
+
 			default:
 				throw new NotImplementedException($"ConvertToMySqlDbType for {columnDefinition.ColumnType} is not implemented");
 		}
@@ -339,6 +354,7 @@ internal sealed class TypeMapper
 			MySqlDbType.NewDecimal => ColumnType.NewDecimal,
 			MySqlDbType.Geometry => ColumnType.Geometry,
 			MySqlDbType.Null => ColumnType.Null,
+			MySqlDbType.Vector => ColumnType.Vector,
 			_ => throw new NotImplementedException($"ConvertToColumnTypeAndFlags for {dbType} is not implemented"),
 		};
 		return (ushort) ((byte) columnType | (isUnsigned ? 0x8000 : 0));

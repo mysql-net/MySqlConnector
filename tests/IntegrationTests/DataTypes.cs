@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Runtime.InteropServices;
+
 #if MYSQL_DATA
 using MySql.Data.Types;
 #endif
@@ -8,17 +10,17 @@ using MySql.Data.Types;
 // However, DbDataReader.GetString etc. are documented as throwing InvalidCastException: https://msdn.microsoft.com/en-us/library/system.data.common.dbdatareader.getstring.aspx
 // Additionally, that is what DbDataReader.GetFieldValue<T> throws. For consistency, we prefer InvalidCastException.
 #if MYSQL_DATA
-using GetValueWhenNullException = System.Data.SqlTypes.SqlNullValueException;
-using GetGuidWhenNullException = MySql.Data.MySqlClient.MySqlException;
 using GetBytesWhenNullException = System.NullReferenceException;
 using GetGeometryWhenNullException = System.Exception;
+using GetGuidWhenNullException = MySql.Data.MySqlClient.MySqlException;
 using GetStreamWhenNullException = System.ArgumentNullException;
+using GetValueWhenNullException = System.Data.SqlTypes.SqlNullValueException;
 #else
-using GetValueWhenNullException = System.InvalidCastException;
-using GetGuidWhenNullException = System.InvalidCastException;
 using GetBytesWhenNullException = System.InvalidCastException;
 using GetGeometryWhenNullException = System.InvalidCastException;
+using GetGuidWhenNullException = System.InvalidCastException;
 using GetStreamWhenNullException = System.InvalidCastException;
+using GetValueWhenNullException = System.InvalidCastException;
 #endif
 
 namespace IntegrationTests;
@@ -221,7 +223,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 		DoQuery("bools", column, dataTypeName, expected, reader => reader.GetSByte(0), mySqlDataCoercedNullValue: default(sbyte), connection: connection);
 	}
 
-	[Theory()]
+	[Theory]
 	[InlineData("TinyInt1U", "TINYINT", new object[] { null, (byte) 0, (byte) 1, (byte) 0, (byte) 1, (byte) 255, (byte) 123 })]
 	public void QueryTinyInt1Unsigned(string column, string dataTypeName, object[] expected)
 	{
@@ -313,8 +315,8 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 	[Theory]
 	[InlineData("SmallDecimal", new object[] { null, "0", "-999.99", "-0.01", "999.99", "0.01" })]
 	[InlineData("MediumDecimal", new object[] { null, "0", "-999999999999.99999999", "-0.00000001", "999999999999.99999999", "0.00000001" })]
-	// value exceeds the range of a decimal and cannot be deserialized
-	// [InlineData("BigDecimal", new object[] { null, "0", "-99999999999999999999.999999999999999999999999999999", "-0.000000000000000000000000000001", "99999999999999999999.999999999999999999999999999999", "0.000000000000000000000000000001" })]
+	//// value exceeds the range of a decimal and cannot be deserialized
+	//// [InlineData("BigDecimal", new object[] { null, "0", "-99999999999999999999.999999999999999999999999999999", "-0.000000000000000000000000000001", "99999999999999999999.999999999999999999999999999999", "0.000000000000000000000000000001" })]
 	public void QueryDecimal(string column, object[] expected)
 	{
 		for (int i = 0; i < expected.Length; i++)
@@ -329,6 +331,8 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 	[InlineData("latin1", new[] { null, "", "ASCII", "Lãtïñ", c_251ByteString })]
 	[InlineData("latin1bin", new[] { null, "", "ASCII", "Lãtïñ", c_251ByteString })]
 	[InlineData("cp1251", new[] { null, "", "ASCII", "АБВГабвг", c_251ByteString })]
+	[InlineData("nonguid_utf8", new[] { null, "", "ASCII", "Ũńıċōđĕ", "This string has 36 characters in it." })]
+	[InlineData("nonguid_latin1", new[] { null, "", "ASCII", "Lãtïñ", "This string has 36 characters in it." })]
 	public void QueryString(string column, string[] expected)
 	{
 		DoQuery("strings", column, "VARCHAR", expected, reader => reader.GetString(0));
@@ -340,7 +344,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 		}, getFieldValueType: typeof(TextReader));
 #endif
 	}
-	const string c_251ByteString = "This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating \"this field is null\". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.";
+	private const string c_251ByteString = "This string has exactly 251 characters in it. The encoded length is stored as 0xFC 0xFB 0x00. 0xFB (i.e., 251) is the sentinel byte indicating \"this field is null\". Incorrectly interpreting the (decoded) length as the sentinel byte would corrupt data.";
 
 	[Theory]
 	[InlineData("guid", "CHAR(36)", new object[] { null, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-c000-000000000046", "fd24a0e8-c3f2-4821-a456-35da2dc4bb8f", "6A0E0A40-6228-11D3-A996-0050041896C8" })]
@@ -448,7 +452,7 @@ public sealed class DataTypes : IClassFixture<DataTypesFixture>, IDisposable
 			Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guid = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
 			Assert.Equal(oldGuids ? 0L : 1L, (await connection.QueryAsync<long>(@"select count(*) from datatypes_strings where guidbin = @guid", new { guid = new Guid("fd24a0e8-c3f2-4821-a456-35da2dc4bb8f") }).ConfigureAwait(false)).SingleOrDefault());
 		}
-		catch (MySqlException ex) when (oldGuids && ex.Number is 1300 or 3854) // InvalidCharacterString, CannotConvertString
+		catch (MySqlException ex) when (oldGuids && ex.Number is 1300 or 3854) //// InvalidCharacterString, CannotConvertString
 		{
 			// new error in MySQL 8.0.24, MariaDB 10.5
 		}
@@ -562,14 +566,14 @@ UNHEX('33221100554477668899AABBCCDDEEFF'),
 				new() { Value = guidAsLittleEndianBinary16 },
 				new() { Value = guidAsChar36 },
 				new() { Value = isBinary16 ? guidAsBinary16 : isTimeSwapBinary16 ? guidAsTimeSwapBinary16 : guidAsLittleEndianBinary16 },
-				new() { Value = isChar36 ?  guid : guidAsChar36 },
-				new() { Value = isChar32 ?  guid : guidAsChar32 },
-				new() { Value = isBinary16 ?  guid : guidAsBinary16 },
-				new() { Value = isTimeSwapBinary16 ?  guid : guidAsTimeSwapBinary16 },
-				new() { Value = isLittleEndianBinary16 ?  guid : guidAsLittleEndianBinary16 },
+				new() { Value = isChar36 ? guid : guidAsChar36 },
+				new() { Value = isChar32 ? guid : guidAsChar32 },
+				new() { Value = isBinary16 ? guid : guidAsBinary16 },
+				new() { Value = isTimeSwapBinary16 ? guid : guidAsTimeSwapBinary16 },
+				new() { Value = isLittleEndianBinary16 ? guid : guidAsLittleEndianBinary16 },
 				new() { Value = guidAsChar32 },
 				new() { Value = isBinary16 ? guidAsBinary16 : isTimeSwapBinary16 ? guidAsTimeSwapBinary16 : guidAsLittleEndianBinary16 },
-			}
+			},
 		};
 		cmd.ExecuteNonQuery();
 		cmd.CommandText = "select c36, c32, b16, tsb16, leb16, t, b from guid_format;";
@@ -736,7 +740,7 @@ insert into date_time_kind(d, dt0, dt1, dt2, dt3, dt4, dt5, dt6) values(?, ?, ?,
 				new() { Value = dateTimeIn },
 				new() { Value = dateTimeIn },
 				new() { Value = dateTimeIn },
-			}
+			},
 		};
 		if (success)
 		{
@@ -1069,6 +1073,7 @@ ORDER BY t.`Key`", Connection);
 			expected,
 		};
 
+#pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
 		DoQuery("geometry", columnName, dataTypeName, geometryData.ToArray(),
 #if !MYSQL_DATA
 			GetBytes
@@ -1091,6 +1096,7 @@ ORDER BY t.`Key`", Connection);
 			assertEqual: (x, y) => Assert.Equal(((MySqlGeometry) x)?.Value.ToArray(), ((MySqlGeometry) y)?.Value.ToArray())
 #endif
 			);
+#pragma warning restore SA1111 // Closing parenthesis should be on line of last parameter
 	}
 
 	private static object CreateGeometry(byte[] data)
@@ -1141,6 +1147,11 @@ ORDER BY t.`Key`", Connection);
 	[InlineData("Int64", "datatypes_integers", MySqlDbType.Int64, 20, typeof(long), "N", 0, 0)]
 	[InlineData("UInt64", "datatypes_integers", MySqlDbType.UInt64, 20, typeof(ulong), "N", 0, 0)]
 	[InlineData("value", "datatypes_json_core", MySqlDbType.JSON, int.MaxValue, typeof(string), "LN", 0, 0)]
+#if MYSQL_DATA
+	[InlineData("value", "datatypes_vector", MySqlDbType.Vector, 12, typeof(byte[]), "N", 0, 31)]
+#else
+	[InlineData("value", "datatypes_vector", MySqlDbType.Vector, 3, typeof(ReadOnlyMemory<float>), "N", 0, 31)]
+#endif
 	[InlineData("Single", "datatypes_reals", MySqlDbType.Float, 12, typeof(float), "N", 0, 31)]
 	[InlineData("Double", "datatypes_reals", MySqlDbType.Double, 22, typeof(double), "N", 0, 31)]
 	[InlineData("SmallDecimal", "datatypes_reals", MySqlDbType.NewDecimal, 7, typeof(decimal), "N", 5, 2)]
@@ -1193,6 +1204,17 @@ create table schema_table({createColumn});");
 	{
 		if (table == "datatypes_json_core" && !AppConfig.SupportsJson)
 			return;
+		if (table == "datatypes_vector" && !AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Vector))
+			return;
+
+		// adjust for databases that don't have a dedicated on-the-wire type for VECTOR(n)
+		if (mySqlDbType == MySqlDbType.Vector && !AppConfig.SupportedFeatures.HasFlag(ServerFeatures.VectorType))
+		{
+			mySqlDbType = MySqlDbType.VarBinary;
+			columnSize *= 4;
+			dataType = typeof(byte[]);
+			scale = 0;
+		}
 
 		var isAutoIncrement = flags.IndexOf('A') != -1;
 		var isKey = flags.IndexOf('K') != -1;
@@ -1326,6 +1348,8 @@ create table schema_table({createColumn});");
 	[InlineData("cp1251", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR", 300, typeof(string), "N", -1, 0)]
 	[InlineData("guid", "datatypes_strings", MySqlDbType.Guid, "CHAR(36)", 36, typeof(Guid), "N", -1, 0)]
 	[InlineData("guidbin", "datatypes_strings", MySqlDbType.Guid, "CHAR(36)", 36, typeof(Guid), "N", -1, 0)]
+	[InlineData("nonguid_utf8", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR", 36, typeof(string), "N", -1, 0)]
+	[InlineData("nonguid_latin1", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR", 36, typeof(string), "N", -1, 0)]
 	[InlineData("Date", "datatypes_times", MySqlDbType.Date, "DATE", 10, typeof(DateTime), "N", -1, 0)]
 	[InlineData("DateTime", "datatypes_times", MySqlDbType.DateTime, "DATETIME", 26, typeof(DateTime), "N", -1, 6)]
 	[InlineData("Timestamp", "datatypes_times", MySqlDbType.Timestamp, "TIMESTAMP", 26, typeof(DateTime), "N", -1, 6)]
@@ -1418,6 +1442,8 @@ create table schema_table({createColumn});");
 	[InlineData("BigDecimal", "datatypes_reals", MySqlDbType.NewDecimal, "DECIMAL(50,30)", typeof(decimal), 3, null)]
 	[InlineData("utf8", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR(300)", typeof(string), 3, "ASCII")]
 	[InlineData("latin1", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR(300)", typeof(string), 3, "ASCII")]
+	[InlineData("nonguid_utf8", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR(36)", typeof(string), 3, "ASCII")]
+	[InlineData("nonguid_latin1", "datatypes_strings", MySqlDbType.VarChar, "VARCHAR(36)", typeof(string), 3, "ASCII")]
 	[InlineData("Date", "datatypes_times", MySqlDbType.Date, "DATE", typeof(DateTime), 2, null)]
 	[InlineData("DateTime", "datatypes_times", MySqlDbType.DateTime, "DATETIME", typeof(DateTime), 2, null)]
 	[InlineData("Timestamp", "datatypes_times", MySqlDbType.Timestamp, "TIMESTAMP", typeof(DateTime), 2, null)]
@@ -1513,7 +1539,7 @@ end;";
 	[InlineData("DateTime", "datatypes_times", "DATETIME(6)")]
 	[InlineData("Timestamp", "datatypes_times", "TIMESTAMP(6)")]
 	[InlineData("Time", "datatypes_times", "TIME(6)")]
-	// [InlineData("Year", "datatypes_times", "YEAR")]
+	//// [InlineData("Year", "datatypes_times", "YEAR")]
 	[InlineData("value", "datatypes_json_core", "JSON")]
 	[InlineData("Geometry", "datatypes_geometry", "GEOMETRY")]
 	public void BulkCopyDataReader(string column, string table, string dataTypeName)
@@ -1595,6 +1621,43 @@ end;";
 		dataTypeName = "VARCHAR";
 #endif
 		DoQuery("json_core", column, dataTypeName, expected, reader => reader.GetString(0), omitWhereTest: true);
+	}
+
+	[SkippableTheory(ServerFeatures.Vector)]
+	[InlineData("value", new[] { null, "0,0,0", "1,1,1", "1,2,3", "-1,-1,-1" })]
+	public void QueryVector(string column, string[] expected)
+	{
+		var hasVectorType = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.VectorType);
+		string dataTypeName = hasVectorType ? "VECTOR" : "BLOB";
+		DoQuery("vector", column, dataTypeName,
+			expected.Select(x =>
+#if !MYSQL_DATA
+				hasVectorType ? (GetFloatArray(x) is float[] a ? (object) new ReadOnlyMemory<float>(a) : null) : GetByteArray(x))
+#else
+				// Connector/NET returns the float array as a byte[]
+				GetByteArray(x))
+#endif
+			.ToArray(),
+#if !MYSQL_DATA
+			x => hasVectorType ? (ReadOnlyMemory<float>) x.GetValue(0) : (byte[]) x.GetValue(0),
+#else
+			// NOTE: Connector/NET returns 'null' for NULL so simulate an exception for the tests
+			x => x.IsDBNull(0) ? throw new GetValueWhenNullException() : x.GetValue(0),
+#endif
+			assertEqual: (l, r) =>
+			{
+				if (l is ReadOnlyMemory<float> roml)
+					l = roml.ToArray();
+				if (r is ReadOnlyMemory<float> romr)
+					r = romr.ToArray();
+				Assert.Equal(l, r);
+			},
+			omitWhereTest: true);
+
+		static float[] GetFloatArray(string value) => value?.Split(',').Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray();
+
+		static byte[] GetByteArray(string value) =>
+			GetFloatArray(value) is { } floats ? MemoryMarshal.AsBytes<float>(floats).ToArray() : null;
 	}
 
 	[SkippableTheory(MySqlData = "https://bugs.mysql.com/bug.php?id=97067")]
@@ -1848,4 +1911,3 @@ end;";
 
 	private MySqlConnectionStringBuilder CreateConnectionStringBuilder() => new(AppConfig.ConnectionString);
 }
-

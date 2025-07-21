@@ -285,6 +285,6 @@ public class ConnectionTests : IDisposable
 		Assert.Equal(expected, getValue());
 	}
 
-	readonly FakeMySqlServer m_server;
-	readonly MySqlConnectionStringBuilder m_csb;
+	private readonly FakeMySqlServer m_server;
+	private readonly MySqlConnectionStringBuilder m_csb;
 }

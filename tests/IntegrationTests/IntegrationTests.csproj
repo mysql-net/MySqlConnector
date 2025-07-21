@@ -17,6 +17,7 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <AssemblyOriginatorKeyFile>..\..\MySqlConnector.snk</AssemblyOriginatorKeyFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <AssemblyName>IntegrationTests</AssemblyName>
     <ServerGarbageCollection>true</ServerGarbageCollection>
@@ -24,7 +25,7 @@
     <ThreadPoolMinThreads>64</ThreadPoolMinThreads>
     <LangVersion>11.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
-    <NoWarn>$(NoWarn);xUnit1030</NoWarn>
+    <NoWarn>$(NoWarn);SA0001;SA1021;SA1133;xUnit1030</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -160,7 +160,7 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		await connection.OpenAsync();
 		MySqlBulkLoader bl = new MySqlBulkLoader(connection)
 		{
-			Timeout = 3, //Set a short timeout for this test because the file not found exception takes a long time otherwise, the timeout does not change the result
+			Timeout = 3, // Set a short timeout for this test because the file not found exception takes a long time otherwise, the timeout does not change the result
 			FileName = AppConfig.MySqlBulkLoaderLocalCsvFile + "-junk",
 			TableName = m_testTable,
 			CharacterSet = "UTF8",
@@ -197,7 +197,7 @@ public class BulkLoaderAsync : IClassFixture<DatabaseFixture>
 		}
 		catch (Exception exception)
 		{
-			//We know that the exception is not a MySqlException, just use the assertion to fail the test
+			// We know that the exception is not a MySqlException, just use the assertion to fail the test
 			Assert.IsType<MySqlException>(exception);
 		}
 	}
@@ -640,6 +640,6 @@ create table bulk_load_data_table(str varchar(5), number tinyint);", connection)
 	private static string GetConnectionString() => BulkLoaderSync.GetConnectionString();
 	private static string GetLocalConnectionString() => BulkLoaderSync.GetLocalConnectionString();
 
-	readonly string m_testTable;
-	readonly byte[] m_memoryStreamBytes;
+	private readonly string m_testTable;
+	private readonly byte[] m_memoryStreamBytes;
 }

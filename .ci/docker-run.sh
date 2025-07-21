@@ -26,9 +26,9 @@ MYSQL_EXTRA=
 MYSQL=mysql
 
 if [[ "$IMAGE" == mariadb* ]]; then
-  MYSQL_EXTRA='--in-predicate-conversion-threshold=100000'
+  MYSQL_EXTRA='--in-predicate-conversion-threshold=100000 --plugin-maturity=beta'
 fi
-if [ "$IMAGE" == "mariadb:11.4" ]; then
+if [ "$IMAGE" == "mariadb:11.4" ] || [ "$IMAGE" == "mariadb:11.7" ]; then
   MYSQL='mariadb'
 fi
 
@@ -76,6 +76,12 @@ for i in `seq 1 120`; do
 	if [[ $OMIT_FEATURES != *"Ed25519"* ]]; then
 		echo "Installing auth_ed25519 component"
 		docker exec mysql bash -c "$MYSQL -uroot -ptest < /etc/mysql/conf.d/init_ed25519.sql"
+		if [ $? -ne 0 ]; then exit $?; fi
+	fi
+
+	if [[ $OMIT_FEATURES != *"ParsecAuthentication"* ]]; then
+		echo "Installing auth_parsec component"
+		docker exec mysql bash -c "$MYSQL -uroot -ptest < /etc/mysql/conf.d/init_parsec.sql"
 		if [ $? -ne 0 ]; then exit $?; fi
 	fi
 

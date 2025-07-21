@@ -18,7 +18,7 @@ public static class TestUtilities
 	}
 
 	/// <summary>
-	/// Verifies that <paramref name="value"/> is an integer (<see cref="Int32"/> or <see cref="Int64"/>) with the value <code>1</code>.
+	/// Verifies that <paramref name="value"/> is an integer (<see cref="int"/> or <see cref="long"/>) with the value <code>1</code>.
 	/// </summary>
 	public static void AssertIsOne(object value)
 	{
@@ -79,11 +79,18 @@ public static class TestUtilities
 		}
 		else
 		{
-			var ex = await Assert.ThrowsAsync<MySqlException>(async () => await command.ExecuteScalarAsync(token));
+			var ex = await Assert.ThrowsAnyAsync<Exception>(async () => await command.ExecuteScalarAsync(token));
+			MySqlException exception = ex as MySqlException;
+			while (exception is null && ex is not null)
+			{
+				ex = ex.InnerException;
+				exception = ex as MySqlException;
+			}
+			Assert.NotNull(exception);
 #if MYSQL_DATA
-			Assert.Equal((int) expectedCode, ex.Number);
+			Assert.Equal((int) expectedCode, exception.Number);
 #else
-			Assert.Equal(expectedCode, ex.ErrorCode);
+			Assert.Equal(expectedCode, exception.ErrorCode);
 #endif
 		}
 	}

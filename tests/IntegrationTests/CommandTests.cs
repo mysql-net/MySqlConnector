@@ -267,7 +267,7 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 	{
 		using var connection = new MySqlConnection(GetIgnoreCommandTransactionConnectionString());
 		connection.Open();
-		using var _ = connection.BeginTransaction();
+		using var ignoredTransaction = connection.BeginTransaction();
 		using var command = connection.CreateCommand();
 		command.CommandText = "SELECT 1;";
 		TestUtilities.AssertIsOne(command.ExecuteScalar());
@@ -467,10 +467,10 @@ create table execute_non_query(id integer not null primary key auto_increment, v
 #else
 		return new MySqlConnectionStringBuilder(AppConfig.ConnectionString)
 		{
-			IgnoreCommandTransaction = true
+			IgnoreCommandTransaction = true,
 		}.ConnectionString;
 #endif
 	}
 
-	readonly DatabaseFixture m_database;
+	private readonly DatabaseFixture m_database;
 }

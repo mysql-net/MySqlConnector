@@ -1,7 +1,4 @@
 using System.Security.Authentication;
-#if !MYSQL_DATA
-using MySqlConnector.Authentication.Ed25519;
-#endif
 
 namespace IntegrationTests;
 
@@ -191,7 +188,11 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		await MySqlConnection.ClearPoolAsync(connection);
 
 		var wasCalled = false;
-		connection.ProvidePasswordCallback = _ => { wasCalled = true; return password; };
+		connection.ProvidePasswordCallback = _ =>
+		{
+			wasCalled = true;
+			return password;
+		};
 
 		await connection.OpenAsync();
 		Assert.False(wasCalled);
@@ -425,7 +426,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 	[SkippableFact(ServerFeatures.Ed25519)]
 	public async Task Ed25519Authentication()
 	{
-		Ed25519AuthenticationPlugin.Install();
+		MySqlConnector.Authentication.Ed25519.Ed25519AuthenticationPlugin.Install();
 
 		var csb = AppConfig.CreateConnectionStringBuilder();
 		csb.UserID = "ed25519user";
@@ -438,10 +439,22 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 	[SkippableFact(ServerFeatures.Ed25519)]
 	public async Task MultiAuthentication()
 	{
-		Ed25519AuthenticationPlugin.Install();
+		MySqlConnector.Authentication.Ed25519.Ed25519AuthenticationPlugin.Install();
 		var csb = AppConfig.CreateConnectionStringBuilder();
 		csb.UserID = "multiAuthUser";
 		csb.Password = "secret";
+		csb.Database = null;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		await connection.OpenAsync();
+	}
+
+	[SkippableFact(ServerFeatures.ParsecAuthentication)]
+	public async Task Parsec()
+	{
+		MySqlConnector.Authentication.Ed25519.ParsecAuthenticationPlugin.Install();
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.UserID = "parsec-user";
+		csb.Password = "P@rs3c-Pa55";
 		csb.Database = null;
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		await connection.OpenAsync();
@@ -473,6 +486,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 	{
 		var csb = AppConfig.CreateGSSAPIConnectionStringBuilder();
 		string serverSPN;
+
 		// Use server's variable gssapi_principal_name as SPN
 		using (var connection = new MySqlConnection(csb.ConnectionString))
 		{
@@ -542,5 +556,5 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		Assert.Equal(1, disposedCount);
 	}
 
-	readonly DatabaseFixture m_database;
+	private readonly DatabaseFixture m_database;
 }

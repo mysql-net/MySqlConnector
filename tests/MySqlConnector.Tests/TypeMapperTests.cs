@@ -36,13 +36,13 @@ public class TypeMapperTests
 	[InlineData((byte) 1, DbType.Int16, (short) 1)]
 	[InlineData((short) 1, DbType.UInt16, (ushort) 1)]
 	[InlineData((ushort) 1, DbType.Int32, 1)]
-	[InlineData(1, DbType.UInt32, (uint) 1)]
-	[InlineData((uint) 1, DbType.Int64, (long) 1)]
-	[InlineData((long) 1, DbType.UInt64, (ulong) 1)]
-	[InlineData((ulong) 1, DbType.String, "1")]
-	[InlineData((ulong) 1, DbType.StringFixedLength, "1")]
-	[InlineData((ulong) 1, DbType.AnsiString, "1")]
-	[InlineData((ulong) 1, DbType.AnsiStringFixedLength, "1")]
+	[InlineData(1, DbType.UInt32, 1U)]
+	[InlineData(1U, DbType.Int64, 1L)]
+	[InlineData(1L, DbType.UInt64, 1UL)]
+	[InlineData(1UL, DbType.String, "1")]
+	[InlineData(1UL, DbType.StringFixedLength, "1")]
+	[InlineData(1UL, DbType.AnsiString, "1")]
+	[InlineData(1UL, DbType.AnsiStringFixedLength, "1")]
 	public void ConversionTest(object original, DbType dbType, object expected)
 	{
 		Assert.Equal(expected, TypeMapper.Instance.GetDbTypeMapping(dbType).DoConversion(original));

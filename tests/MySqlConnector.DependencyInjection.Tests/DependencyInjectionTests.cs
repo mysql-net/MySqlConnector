@@ -215,5 +215,5 @@ public class DependencyInjectionTests
 		Assert.Equal(c_connectionString, connection.ConnectionString);
 	}
 
-	const string c_connectionString = "Server=localhost;User ID=root;Password=pass";
+	private const string c_connectionString = "Server=localhost;User ID=root;Password=pass";
 }

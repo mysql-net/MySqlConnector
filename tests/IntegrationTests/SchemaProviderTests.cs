@@ -121,10 +121,10 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 	[InlineData("datatypes", "DataTypes")]
 	[InlineData("Indexes")]
 	[InlineData("IndexColumns")]
-	// only in 8.0 - [InlineData("KeyWords")]
+	//// only in 8.0 - [InlineData("KeyWords")]
 	[InlineData("MetaDataCollections")]
 	[InlineData("Procedures")]
-	// only in 8.0 - [InlineData("ResourceGroups")]
+	//// only in 8.0 - [InlineData("ResourceGroups")]
 	[InlineData("Tables")]
 	[InlineData("Triggers")]
 	[InlineData("Views")]
@@ -258,5 +258,5 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 		Assert.Equal(expected, actual);
 	}
 
-	readonly DatabaseFixture m_database;
+	private readonly DatabaseFixture m_database;
 }

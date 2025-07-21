@@ -9,7 +9,7 @@ public class TransactionScopeTests : IClassFixture<DatabaseFixture>
 		m_database = database;
 	}
 
-	public static IEnumerable<object[]> ConnectionStrings = new[]
+	public static IEnumerable<object[]> ConnectionStrings { get; } = new[]
 	{
 #if MYSQL_DATA
 		new object[] { "" },
@@ -274,7 +274,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		var transactionOptions = new TransactionOptions
 		{
 			IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
-			Timeout = TransactionManager.MaximumTimeout
+			Timeout = TransactionManager.MaximumTimeout,
 		};
 		using (var scope = new TransactionScope(TransactionScopeOption.Required, transactionOptions, TransactionScopeAsyncFlowOption.Enabled))
 		{
@@ -316,7 +316,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		var transactionOptions = new TransactionOptions
 		{
 			IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
-			Timeout = TransactionManager.MaximumTimeout
+			Timeout = TransactionManager.MaximumTimeout,
 		};
 		using (new TransactionScope(TransactionScopeOption.Required, transactionOptions, TransactionScopeAsyncFlowOption.Enabled))
 		{
@@ -454,7 +454,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		var transactionOptions = new TransactionOptions
 		{
 			IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
-			Timeout = TransactionManager.MaximumTimeout
+			Timeout = TransactionManager.MaximumTimeout,
 		};
 		using (var scope = new TransactionScope(TransactionScopeOption.Required, transactionOptions, TransactionScopeAsyncFlowOption.Enabled))
 		{
@@ -494,7 +494,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		var transactionOptions = new TransactionOptions
 		{
 			IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
-			Timeout = TransactionManager.MaximumTimeout
+			Timeout = TransactionManager.MaximumTimeout,
 		};
 		using (new TransactionScope(TransactionScopeOption.Required, transactionOptions, TransactionScopeAsyncFlowOption.Enabled))
 		{
@@ -847,6 +847,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 	public void Bug1348()
 	{
 		var xid = string.Empty;
+
 		// TransactionAbortedException、MySqlException
 		Assert.ThrowsAny<Exception>(() =>
 		{
@@ -858,6 +859,7 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 
 				using var conn2 = new MySqlConnection(AppConfig.ConnectionString);
 				conn2.Open();
+
 				// Rolling back the second branch transaction early so that it has an exception in the preparation phase
 				var command2 = conn2.CreateCommand();
 				command2.CommandText = $"XA END '{xid}','2';XA ROLLBACK '{xid}','2'";
@@ -920,6 +922,5 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 	}
 #endif
 
-	readonly DatabaseFixture m_database;
+	private readonly DatabaseFixture m_database;
 }
-

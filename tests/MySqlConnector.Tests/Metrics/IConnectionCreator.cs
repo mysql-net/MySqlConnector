@@ -45,7 +45,10 @@ internal sealed class PlainConnectionCreator : IConnectionCreator
 	}
 
 	public string PoolName { get; }
-	public void Dispose() { }
+
+	public void Dispose()
+	{
+	}
 
 	private readonly string m_connectionString;
 }
