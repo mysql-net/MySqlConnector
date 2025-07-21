@@ -478,6 +478,58 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 #endif
 
 	[Theory]
+	[InlineData(1_000_000, 1024, true)]
+	[InlineData(1_000_000, 1024, false)]
+	[InlineData(1_000_000, int.MaxValue, true)]
+	[InlineData(1_000_000, int.MaxValue, false)]
+	[InlineData(0xff_fff8, 299593, true)]
+	[InlineData(0xff_fff8, 299593, false)]
+	[InlineData(0xff_fff8, 300000, true)]
+	[InlineData(0xff_fff8, 300000, false)]
+	[InlineData(0xff_fff8, int.MaxValue, true)]
+	[InlineData(0xff_fff8, int.MaxValue, false)]
+	[InlineData(0xff_fff9, int.MaxValue, true)]
+	[InlineData(0xff_fff9, int.MaxValue, false)]
+	[InlineData(0x1ff_fff0, 299593, true)]
+	[InlineData(0x1ff_fff0, 299593, false)]
+	[InlineData(0x1ff_fff0, 300000, true)]
+	[InlineData(0x1ff_fff0, 300000, false)]
+	[InlineData(15_999_999, int.MaxValue, true)]
+	[InlineData(15_999_999, int.MaxValue, false)]
+	[InlineData(16_000_000, int.MaxValue, true)]
+	[InlineData(16_000_000, int.MaxValue, false)]
+	[InlineData(16_000_001, int.MaxValue, true)]
+	[InlineData(16_000_001, int.MaxValue, false)]
+	[InlineData(31_999_999, 999_999, true)]
+	[InlineData(31_999_999, 1_000_000, false)]
+	[InlineData(32_000_000, 1_000_001, true)]
+	[InlineData(32_000_000, 1_000_002, false)]
+	[InlineData(32_000_001, 1_000_003, true)]
+	[InlineData(32_000_001, 1_000_004, false)]
+	public async Task SendLongData(int dataLength, int chunkLength, bool isAsync)
+	{
+		using MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+		connection.Execute("""
+			drop table if exists insert_mysql_long_data;
+			create table insert_mysql_long_data(rowid integer not null primary key auto_increment, value longblob);
+			""");
+
+		using var chunkStream = new ChunkStream(dataLength, chunkLength);
+
+		using var writeCommand = new MySqlCommand("insert into insert_mysql_long_data(value) values(@value);", connection);
+		writeCommand.Parameters.AddWithValue("@value", chunkStream);
+		writeCommand.Prepare();
+		if (isAsync)
+			await writeCommand.ExecuteNonQueryAsync().ConfigureAwait(true);
+		else
+			writeCommand.ExecuteNonQuery();
+
+		using var readLengthCommand = new MySqlCommand("select length(value) from insert_mysql_long_data order by rowid;", connection);
+		Assert.Equal(chunkStream.Length, readLengthCommand.ExecuteScalar());
+	}
+
+	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
 	public void ReadMySqlDecimalUsingReader(bool prepare)

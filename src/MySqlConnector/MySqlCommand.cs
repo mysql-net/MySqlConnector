@@ -1,5 +1,5 @@
-using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol;
@@ -368,34 +368,50 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		{
 			for (var i = 0; i < Parameters.Count; i++)
 			{
-				if (Parameters[i].Value is Stream stream)
+				if (Parameters[i].Value is Stream stream and not MemoryStream)
 				{
-					var writer = new ByteBufferWriter();
-					writer.Write((byte) CommandKind.StatementSendLongData);
-					writer.Write(statements.Statements[0].StatementId);
-					writer.Write((ushort) i);
-
-					var buffer = ArrayPool<byte>.Shared.Rent(ProtocolUtility.MaxPacketSize);
-					var dataLength = ProtocolUtility.MaxPacketSize - 7;
-
-					var bytesRead = stream.Read(buffer, 0, dataLength);
-					writer.Write(buffer.AsSpan(0, bytesRead));
-
-					await Connection!.Session.SendAsync(writer.ToPayloadData(), ioBehavior, cancellationToken).ConfigureAwait(false);
-
-					if (bytesRead == dataLength)
+					// send almost-full packets, but don't send exactly ProtocolUtility.MaxPacketSize bytes in one payload (as that's ambiguous to whether another packet follows).
+					const int maxDataSize = 16_000_000;
+					int totalBytesRead;
+					while (true)
 					{
-						dataLength = ProtocolUtility.MaxPacketSize;
+						// write seven-byte COM_STMT_SEND_LONG_DATA header: https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_com_stmt_send_long_data.html
+						var writer = new ByteBufferWriter(maxDataSize);
+						writer.Write((byte) CommandKind.StatementSendLongData);
+						writer.Write(statements.Statements[0].StatementId);
+						writer.Write((ushort) i);
 
+						// keep reading from the stream until we've filled the buffer to send
+#if NET7_0_OR_GREATER
+						if (ioBehavior == IOBehavior.Synchronous)
+							totalBytesRead = stream.ReadAtLeast(writer.GetSpan(maxDataSize).Slice(0, maxDataSize), maxDataSize, throwOnEndOfStream: false);
+						else
+							totalBytesRead = await stream.ReadAtLeastAsync(writer.GetMemory(maxDataSize).Slice(0, maxDataSize), maxDataSize, throwOnEndOfStream: false, cancellationToken).ConfigureAwait(false);
+						writer.Advance(totalBytesRead);
+#else
+						totalBytesRead = 0;
+						int bytesRead;
 						do
 						{
-							bytesRead = stream.Read(buffer, 0, dataLength);
+							var sizeToRead = maxDataSize - totalBytesRead;
+							ReadOnlyMemory<byte> bufferMemory = writer.GetMemory(sizeToRead);
+							if (!MemoryMarshal.TryGetArray(bufferMemory, out var arraySegment))
+								throw new InvalidOperationException("Failed to get array segment from buffer memory.");
+							if (ioBehavior == IOBehavior.Synchronous)
+								bytesRead = stream.Read(arraySegment.Array!, arraySegment.Offset, sizeToRead);
+							else
+								bytesRead = await stream.ReadAsync(arraySegment.Array!, arraySegment.Offset, sizeToRead, cancellationToken).ConfigureAwait(false);
+							totalBytesRead += bytesRead;
+							writer.Advance(bytesRead);
+						} while (bytesRead > 0);
+#endif
 
-							writer = new ByteBufferWriter();
-							writer.Write(buffer.AsSpan(0, bytesRead));
-							await Connection!.Session.SendReplyAsync(writer.ToPayloadData(), ioBehavior, cancellationToken).ConfigureAwait(false);
-						}
-						while (bytesRead == dataLength);
+						if (totalBytesRead == 0)
+							break;
+
+						// send StatementSendLongData; MySQL Server will keep appending the sent data to the parameter value
+						using var payload = writer.ToPayloadData();
+						await Connection!.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
 					}
 				}
 			}
