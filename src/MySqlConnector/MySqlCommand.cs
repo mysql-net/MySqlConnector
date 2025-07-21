@@ -362,7 +362,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 	internal async ValueTask<MySqlDataReader> ExecuteReaderNoResetTimeoutAsync(CommandBehavior behavior, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (!IsValid(out var exception))
-			return await ValueTaskExtensions.FromException<MySqlDataReader>(exception).ConfigureAwait(false);
+			throw exception;
 
 		if (((IMySqlCommand) this).TryGetPreparedStatements() is { Statements.Count: 1 } statements)
 		{
