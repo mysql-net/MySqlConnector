@@ -526,7 +526,9 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 			writeCommand.ExecuteNonQuery();
 
 		using var readLengthCommand = new MySqlCommand("select length(value) from insert_mysql_long_data order by rowid;", connection);
-		Assert.Equal(chunkStream.Length, readLengthCommand.ExecuteScalar());
+		using var reader = readLengthCommand.ExecuteReader();
+		Assert.True(reader.Read());
+		Assert.Equal(chunkStream.Length, reader.GetInt32(0));
 	}
 
 	[Theory]
