@@ -515,7 +515,11 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 			create table insert_mysql_long_data(rowid integer not null primary key auto_increment, value longblob);
 			""");
 
-		using var chunkStream = new ChunkStream(dataLength, chunkLength);
+		var random = new Random(dataLength);
+		var data = new byte[dataLength];
+		random.NextBytes(data);
+
+		using var chunkStream = new ChunkStream(data, chunkLength);
 
 		using var writeCommand = new MySqlCommand("insert into insert_mysql_long_data(value) values(@value);", connection);
 		writeCommand.Parameters.AddWithValue("@value", chunkStream);
@@ -525,10 +529,20 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 		else
 			writeCommand.ExecuteNonQuery();
 
-		using var readLengthCommand = new MySqlCommand("select length(value) from insert_mysql_long_data order by rowid;", connection);
-		using var reader = readLengthCommand.ExecuteReader();
-		Assert.True(reader.Read());
-		Assert.Equal(chunkStream.Length, reader.GetInt32(0));
+		using var readCommand = new MySqlCommand("select length(value) from insert_mysql_long_data order by rowid;", connection);
+		using (var reader = readCommand.ExecuteReader())
+		{
+			Assert.True(reader.Read());
+			Assert.Equal(chunkStream.Length, reader.GetInt32(0));
+		}
+
+		readCommand.CommandText = "select value from insert_mysql_long_data order by rowid;";
+		using (var reader = readCommand.ExecuteReader())
+		{
+			Assert.True(reader.Read());
+			var readData = (byte[]) reader.GetValue(0);
+			Assert.True(data.AsSpan().SequenceEqual(readData)); // much faster than Assert.Equal
+		}
 	}
 
 	[Theory]

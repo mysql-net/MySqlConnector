@@ -2,9 +2,14 @@ namespace IntegrationTests;
 
 internal sealed class ChunkStream : Stream
 {
-	public ChunkStream(int dataLength, int chunkLength)
+	public ChunkStream(byte[] data, int chunkLength)
 	{
-		m_dataLength = dataLength;
+		if (data is null)
+			throw new ArgumentNullException(nameof(data));
+		if (chunkLength <= 0)
+			throw new ArgumentOutOfRangeException(nameof(chunkLength));
+
+		m_data = data;
 		m_chunkLength = chunkLength;
 		m_position = 0;
 	}
@@ -12,7 +17,7 @@ internal sealed class ChunkStream : Stream
 	public override bool CanRead => true;
 	public override bool CanSeek => false;
 	public override bool CanWrite => false;
-	public override long Length => m_dataLength;
+	public override long Length => m_data.Length;
 	public override long Position
 	{
 		get => m_position;
@@ -37,17 +42,14 @@ internal sealed class ChunkStream : Stream
 #endif
 		int Read(Span<byte> buffer)
 	{
-		if (m_position >= m_dataLength)
+		if (m_position >= m_data.Length)
 			return 0;
 
 		// Read at most chunkLength bytes
-		var bytesToRead = Math.Min(buffer.Length, Math.Min(m_chunkLength, m_dataLength - m_position));
+		var bytesToRead = Math.Min(buffer.Length, Math.Min(m_chunkLength, m_data.Length - m_position));
 
-		// Fill with dummy data (repeating pattern based on position)
-		for (var i = 0; i < bytesToRead; i++)
-		{
-			buffer[i] = (byte) ((m_position + i) % 256);
-		}
+		// Copy data from the actual data array
+		m_data.AsSpan(m_position, bytesToRead).CopyTo(buffer);
 
 		m_position += bytesToRead;
 		return bytesToRead;
@@ -122,7 +124,7 @@ internal sealed class ChunkStream : Stream
 	public override Task FlushAsync(CancellationToken cancellationToken) =>
 		throw new NotSupportedException();
 
-	private readonly int m_dataLength;
+	private readonly byte[] m_data;
 	private readonly int m_chunkLength;
 	private int m_position;
 }
