@@ -28,9 +28,10 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 				for (var i = 0; i < parameters.Length; i++)
 				{
 					// look up this parameter in the command's parameter collection and check if it is a Stream
+					// NOTE: full parameter checks will be performed (and throw any necessary exceptions) in WritePreparedStatement
 					var parameterName = preparedStatement.Statement.NormalizedParameterNames![i];
 					var parameterIndex = parameterName is not null ? (command.RawParameters?.UnsafeIndexOf(parameterName) ?? -1) : preparedStatement.Statement.ParameterIndexes[i];
-					if (parameterIndex != -1 && command.RawParameters![parameterIndex] is { Value: Stream stream and not MemoryStream })
+					if (command.RawParameters is { } rawParameters && parameterIndex >= 0 && parameterIndex  < rawParameters.Count && rawParameters[parameterIndex] is { Value: Stream stream and not MemoryStream })
 					{
 						// send almost-full packets, but don't send exactly ProtocolUtility.MaxPacketSize bytes in one payload (as that's ambiguous to whether another packet follows).
 						const int maxDataSize = 16_000_000;
