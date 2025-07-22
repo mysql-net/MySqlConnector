@@ -68,7 +68,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 									else
 										bytesRead = await stream.ReadAsync(buffer, packetHeaderLength + totalBytesRead, sizeToRead, cancellationToken).ConfigureAwait(false);
 									totalBytesRead += bytesRead;
-								} while (bytesRead > 0);
+								} while (bytesRead > 0 && totalBytesRead < maxDataSize);
 #endif
 
 								if (totalBytesRead == 0)
