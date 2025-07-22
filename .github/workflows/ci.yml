@@ -35,7 +35,7 @@ jobs:
         tfm: [ 'net8.0', 'net9.0' ]
     services:
       mysql:
-        image: mysql:9.3
+        image: mysql:9.4
         env:
           MYSQL_DATABASE: testdb
           MYSQL_ROOT_PASSWORD: pass
