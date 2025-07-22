@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
@@ -11,6 +12,74 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	// This is chosen to be something very unlikely to appear as a column name in a user's query. If a result set is read
 	// with this as the first column name, the result set will be treated as 'out' parameters for the previous command.
 	public static string OutParameterSentinelColumnName => "\uE001\b\x0B";
+
+	public async ValueTask WritePrologueAsync(MySqlConnection connection, CommandListPosition commandListPosition, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	{
+		// get the current command and check for prepared statements
+		var command = commandListPosition.CommandAt(commandListPosition.CommandIndex);
+		var preparedStatements = commandListPosition.PreparedStatements ?? command.TryGetPreparedStatements();
+		if (preparedStatements is not null)
+		{
+			// get the current prepared statement; WriteQueryCommand will advance this
+			var preparedStatement = preparedStatements.Statements[commandListPosition.PreparedStatementIndex];
+			if (preparedStatement.Parameters is { } parameters)
+			{
+				// check each parameter
+				for (var i = 0; i < parameters.Length; i++)
+				{
+					// look up this parameter in the command's parameter collection and check if it is a Stream
+					var parameterName = preparedStatement.Statement.NormalizedParameterNames![i];
+					var parameterIndex = parameterName is not null ? (command.RawParameters?.UnsafeIndexOf(parameterName) ?? -1) : preparedStatement.Statement.ParameterIndexes[i];
+					if (parameterIndex != -1 && command.RawParameters![parameterIndex] is { Value: Stream stream and not MemoryStream })
+					{
+						// send almost-full packets, but don't send exactly ProtocolUtility.MaxPacketSize bytes in one payload (as that's ambiguous to whether another packet follows).
+						const int maxDataSize = 16_000_000;
+						int totalBytesRead;
+						while (true)
+						{
+							// write seven-byte COM_STMT_SEND_LONG_DATA header: https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_com_stmt_send_long_data.html
+							var writer = new ByteBufferWriter(maxDataSize);
+							writer.Write((byte) CommandKind.StatementSendLongData);
+							writer.Write(preparedStatement.StatementId);
+							writer.Write((ushort) i);
+
+							// keep reading from the stream until we've filled the buffer to send
+#if NET7_0_OR_GREATER
+							if (ioBehavior == IOBehavior.Synchronous)
+								totalBytesRead = stream.ReadAtLeast(writer.GetSpan(maxDataSize).Slice(0, maxDataSize), maxDataSize, throwOnEndOfStream: false);
+							else
+								totalBytesRead = await stream.ReadAtLeastAsync(writer.GetMemory(maxDataSize).Slice(0, maxDataSize), maxDataSize, throwOnEndOfStream: false, cancellationToken).ConfigureAwait(false);
+							writer.Advance(totalBytesRead);
+#else
+							totalBytesRead = 0;
+							int bytesRead;
+							do
+							{
+								var sizeToRead = maxDataSize - totalBytesRead;
+								ReadOnlyMemory<byte> bufferMemory = writer.GetMemory(sizeToRead);
+								if (!MemoryMarshal.TryGetArray(bufferMemory, out var arraySegment))
+									throw new InvalidOperationException("Failed to get array segment from buffer memory.");
+								if (ioBehavior == IOBehavior.Synchronous)
+									bytesRead = stream.Read(arraySegment.Array!, arraySegment.Offset, sizeToRead);
+								else
+									bytesRead = await stream.ReadAsync(arraySegment.Array!, arraySegment.Offset, sizeToRead, cancellationToken).ConfigureAwait(false);
+								totalBytesRead += bytesRead;
+								writer.Advance(bytesRead);
+							} while (bytesRead > 0);
+#endif
+
+							if (totalBytesRead == 0)
+								break;
+
+							// send StatementSendLongData; MySQL Server will keep appending the sent data to the parameter value
+							using var payload = writer.ToPayloadData();
+							await connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+						}
+					}
+				}
+			}
+		}
+	}
 
 	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon)
 	{
@@ -58,6 +127,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			{
 				commandListPosition.CommandIndex++;
 				commandListPosition.PreparedStatementIndex = 0;
+				commandListPosition.PreparedStatements = null;
 			}
 		}
 		return true;

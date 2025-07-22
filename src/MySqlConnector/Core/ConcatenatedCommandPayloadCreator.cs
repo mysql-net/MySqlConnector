@@ -8,6 +8,9 @@ internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
 {
 	public static ICommandPayloadCreator Instance { get; } = new ConcatenatedCommandPayloadCreator();
 
+	public ValueTask WritePrologueAsync(MySqlConnection connection, CommandListPosition commandListPosition, IOBehavior ioBehavior, CancellationToken cancellationToken) =>
+		throw new NotSupportedException();
+
 	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon)
 	{
 		if (commandListPosition.CommandIndex == commandListPosition.CommandCount)

@@ -8,6 +8,16 @@ namespace MySqlConnector.Core;
 internal interface ICommandPayloadCreator
 {
 	/// <summary>
+	/// Writes any prologue data that needs to be sent before the current command in the command list.
+	/// </summary>
+	/// <param name="connection">The <see cref="MySqlConnection"/>.</param>
+	/// <param name="commandListPosition">The <see cref="CommandListPosition"/> giving the current command and current prepared statement.</param>
+	/// <param name="ioBehavior">The IO behavior.</param>
+	/// <param name="cancellationToken">A cancellation token to cancel the asynchronous operation.</param>
+	/// <returns>A <see cref="ValueTask"/> representing the potentially-asynchronous operation.</returns>
+	ValueTask WritePrologueAsync(MySqlConnection connection, CommandListPosition commandListPosition, IOBehavior ioBehavior, CancellationToken cancellationToken);
+
+	/// <summary>
 	/// Writes the payload for an "execute query" command to <paramref name="writer"/>.
 	/// </summary>
 	/// <param name="commandListPosition">The command list and its current position. This will be updated to the position of the next command to write (or past the end if there are no more commands).</param>

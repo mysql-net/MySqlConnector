@@ -520,22 +520,21 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 
 		using var chunkStream = new ChunkStream(data, chunkLength);
 
-		using var writeCommand = new MySqlCommand("insert into insert_mysql_long_data(value) values(@value);", connection);
+		using var writeCommand = new MySqlCommand("""
+			insert into insert_mysql_long_data(value) values(@value);
+			select length(value) from insert_mysql_long_data order by rowid;
+			""", connection);
 		writeCommand.Parameters.AddWithValue("@value", chunkStream);
 		writeCommand.Prepare();
-		if (isAsync)
-			await writeCommand.ExecuteNonQueryAsync().ConfigureAwait(true);
-		else
-			writeCommand.ExecuteNonQuery();
-
-		using var readCommand = new MySqlCommand("select length(value) from insert_mysql_long_data order by rowid;", connection);
-		using (var reader = readCommand.ExecuteReader())
+		using (var reader = isAsync ? await writeCommand.ExecuteReaderAsync().ConfigureAwait(true) : writeCommand.ExecuteReader())
 		{
 			Assert.True(reader.Read());
-			Assert.Equal(chunkStream.Length, reader.GetInt32(0));
+			Assert.Equal(1, reader.FieldCount);
+			Assert.Equal(dataLength, reader.GetInt32(0));
+			Assert.False(reader.Read());
 		}
 
-		readCommand.CommandText = "select value from insert_mysql_long_data order by rowid;";
+		using var readCommand = new MySqlCommand("select value from insert_mysql_long_data order by rowid;", connection);
 		using (var reader = readCommand.ExecuteReader())
 		{
 			Assert.True(reader.Read());
