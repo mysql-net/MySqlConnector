@@ -39,7 +39,7 @@ internal static class CommandExecutor
 				}
 			}
 
-			await payloadCreator.WritePrologueAsync(connection, commandListPosition, ioBehavior, cancellationToken).ConfigureAwait(false);
+			await payloadCreator.SendCommandPrologueAsync(connection, commandListPosition, ioBehavior, cancellationToken).ConfigureAwait(false);
 
 			var writer = new ByteBufferWriter();
 			//// cachedProcedures will be non-null if there is a stored procedure, which is also the only time it will be read

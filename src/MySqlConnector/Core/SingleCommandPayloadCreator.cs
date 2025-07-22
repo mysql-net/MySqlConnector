@@ -15,7 +15,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	// with this as the first column name, the result set will be treated as 'out' parameters for the previous command.
 	public static string OutParameterSentinelColumnName => "\uE001\b\x0B";
 
-	public async ValueTask WritePrologueAsync(MySqlConnection connection, CommandListPosition commandListPosition, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	public async ValueTask SendCommandPrologueAsync(MySqlConnection connection, CommandListPosition commandListPosition, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		// get the current command and check for prepared statements
 		var command = commandListPosition.CommandAt(commandListPosition.CommandIndex);
