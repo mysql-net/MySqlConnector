@@ -1,3 +1,5 @@
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
@@ -24,59 +26,65 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			var preparedStatement = preparedStatements.Statements[commandListPosition.PreparedStatementIndex];
 			if (preparedStatement.Parameters is { } parameters)
 			{
-				// check each parameter
-				for (var i = 0; i < parameters.Length; i++)
+				byte[]? buffer = null;
+				try
 				{
-					// look up this parameter in the command's parameter collection and check if it is a Stream
-					// NOTE: full parameter checks will be performed (and throw any necessary exceptions) in WritePreparedStatement
-					var parameterName = preparedStatement.Statement.NormalizedParameterNames![i];
-					var parameterIndex = parameterName is not null ? (command.RawParameters?.UnsafeIndexOf(parameterName) ?? -1) : preparedStatement.Statement.ParameterIndexes[i];
-					if (command.RawParameters is { } rawParameters && parameterIndex >= 0 && parameterIndex  < rawParameters.Count && rawParameters[parameterIndex] is { Value: Stream stream and not MemoryStream })
+					// check each parameter
+					for (var i = 0; i < parameters.Length; i++)
 					{
-						// send almost-full packets, but don't send exactly ProtocolUtility.MaxPacketSize bytes in one payload (as that's ambiguous to whether another packet follows).
-						const int maxDataSize = 16_000_000;
-						int totalBytesRead;
-						while (true)
+						// look up this parameter in the command's parameter collection and check if it is a Stream
+						// NOTE: full parameter checks will be performed (and throw any necessary exceptions) in WritePreparedStatement
+						var parameterName = preparedStatement.Statement.NormalizedParameterNames![i];
+						var parameterIndex = parameterName is not null ? (command.RawParameters?.UnsafeIndexOf(parameterName) ?? -1) : preparedStatement.Statement.ParameterIndexes[i];
+						if (command.RawParameters is { } rawParameters && parameterIndex >= 0 && parameterIndex < rawParameters.Count && rawParameters[parameterIndex] is { Value: Stream stream and not MemoryStream })
 						{
-							// write seven-byte COM_STMT_SEND_LONG_DATA header: https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_com_stmt_send_long_data.html
-							var writer = new ByteBufferWriter(maxDataSize);
-							writer.Write((byte) CommandKind.StatementSendLongData);
-							writer.Write(preparedStatement.StatementId);
-							writer.Write((ushort) i);
+							// seven-byte COM_STMT_SEND_LONG_DATA header: https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_com_stmt_send_long_data.html
+							const int packetHeaderLength = 7;
 
-							// keep reading from the stream until we've filled the buffer to send
-#if NET7_0_OR_GREATER
-							if (ioBehavior == IOBehavior.Synchronous)
-								totalBytesRead = stream.ReadAtLeast(writer.GetSpan(maxDataSize).Slice(0, maxDataSize), maxDataSize, throwOnEndOfStream: false);
-							else
-								totalBytesRead = await stream.ReadAtLeastAsync(writer.GetMemory(maxDataSize).Slice(0, maxDataSize), maxDataSize, throwOnEndOfStream: false, cancellationToken).ConfigureAwait(false);
-							writer.Advance(totalBytesRead);
-#else
-							totalBytesRead = 0;
-							int bytesRead;
-							do
+							// send almost-full packets, but don't send exactly ProtocolUtility.MaxPacketSize bytes in one payload (as that's ambiguous to whether another packet follows).
+							const int maxDataSize = 16_000_000;
+							int totalBytesRead;
+							while (true)
 							{
-								var sizeToRead = maxDataSize - totalBytesRead;
-								ReadOnlyMemory<byte> bufferMemory = writer.GetMemory(sizeToRead);
-								if (!MemoryMarshal.TryGetArray(bufferMemory, out var arraySegment))
-									throw new InvalidOperationException("Failed to get array segment from buffer memory.");
+								buffer ??= ArrayPool<byte>.Shared.Rent(packetHeaderLength + maxDataSize);
+								buffer[0] = (byte) CommandKind.StatementSendLongData;
+								BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(1), preparedStatement.StatementId);
+								BinaryPrimitives.WriteUInt16LittleEndian(buffer.AsSpan(5), (ushort) i);
+
+								// keep reading from the stream until we've filled the buffer to send
+#if NET7_0_OR_GREATER
 								if (ioBehavior == IOBehavior.Synchronous)
-									bytesRead = stream.Read(arraySegment.Array!, arraySegment.Offset, sizeToRead);
+									totalBytesRead = stream.ReadAtLeast(buffer.AsSpan(packetHeaderLength, maxDataSize), maxDataSize, throwOnEndOfStream: false);
 								else
-									bytesRead = await stream.ReadAsync(arraySegment.Array!, arraySegment.Offset, sizeToRead, cancellationToken).ConfigureAwait(false);
-								totalBytesRead += bytesRead;
-								writer.Advance(bytesRead);
-							} while (bytesRead > 0);
+									totalBytesRead = await stream.ReadAtLeastAsync(buffer.AsMemory(packetHeaderLength, maxDataSize), maxDataSize, throwOnEndOfStream: false, cancellationToken).ConfigureAwait(false);
+#else
+								totalBytesRead = 0;
+								int bytesRead;
+								do
+								{
+									var sizeToRead = maxDataSize - totalBytesRead;
+									if (ioBehavior == IOBehavior.Synchronous)
+										bytesRead = stream.Read(buffer, packetHeaderLength + totalBytesRead, sizeToRead);
+									else
+										bytesRead = await stream.ReadAsync(buffer, packetHeaderLength + totalBytesRead, sizeToRead, cancellationToken).ConfigureAwait(false);
+									totalBytesRead += bytesRead;
+								} while (bytesRead > 0);
 #endif
 
-							if (totalBytesRead == 0)
-								break;
+								if (totalBytesRead == 0)
+									break;
 
-							// send StatementSendLongData; MySQL Server will keep appending the sent data to the parameter value
-							using var payload = writer.ToPayloadData();
-							await connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+								// send StatementSendLongData; MySQL Server will keep appending the sent data to the parameter value
+								using var payload = new PayloadData(buffer.AsMemory(0, packetHeaderLength + totalBytesRead), isPooled: false);
+								await connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+							}
 						}
 					}
+				}
+				finally
+				{
+					if (buffer is not null)
+						ArrayPool<byte>.Shared.Return(buffer);
 				}
 			}
 		}
