@@ -542,6 +542,63 @@ create table insert_big_integer(rowid integer not null primary key auto_incremen
 			Assert.True(data.AsSpan().SequenceEqual(readData)); // much faster than Assert.Equal
 		}
 	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task SendLongDataMultipleStatements(bool isAsync)
+	{
+		using MySqlConnection connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+		connection.Execute("""
+			drop table if exists insert_mysql_long_data;
+			create table insert_mysql_long_data(rowid integer not null primary key auto_increment, value longblob);
+			""");
+
+		var data1 = new byte[1000];
+		var data2 = new byte[2000];
+		var data3 = new byte[3000];
+		var random = new Random(1);
+		random.NextBytes(data1);
+		random.NextBytes(data2);
+		random.NextBytes(data3);
+
+		using var chunkStream1 = new ChunkStream(data1, int.MaxValue);
+		using var chunkStream2 = new ChunkStream(data2, int.MaxValue);
+		using var chunkStream3 = new ChunkStream(data3, int.MaxValue);
+
+		using var writeCommand = new MySqlCommand("""
+			insert into insert_mysql_long_data(rowid, value) values(1, @value1);
+			insert into insert_mysql_long_data(rowid, value) values(2, @value2);
+			insert into insert_mysql_long_data(rowid, value) values(3, @value3);
+			""", connection);
+		writeCommand.Parameters.AddWithValue("@value1", chunkStream1);
+		writeCommand.Parameters.AddWithValue("@value2", chunkStream2);
+		writeCommand.Parameters.AddWithValue("@value3", chunkStream3);
+		writeCommand.Prepare();
+		if (isAsync)
+			await writeCommand.ExecuteNonQueryAsync();
+		else
+			writeCommand.ExecuteNonQuery();
+
+		using var readCommand = new MySqlCommand("select value from insert_mysql_long_data order by rowid;", connection);
+		using (var reader = readCommand.ExecuteReader())
+		{
+			Assert.True(reader.Read());
+			var readData = (byte[]) reader.GetValue(0);
+			Assert.True(data1.AsSpan().SequenceEqual(readData));
+
+			Assert.True(reader.Read());
+			readData = (byte[]) reader.GetValue(0);
+			Assert.True(data2.AsSpan().SequenceEqual(readData));
+
+			Assert.True(reader.Read());
+			readData = (byte[]) reader.GetValue(0);
+			Assert.True(data3.AsSpan().SequenceEqual(readData));
+
+			Assert.False(reader.Read());
+		}
+	}
 #endif
 
 	[Theory]
