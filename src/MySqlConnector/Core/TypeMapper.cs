@@ -55,6 +55,10 @@ internal sealed class TypeMapper
 		AddColumnTypeMetadata(new("DOUBLE", typeDouble, MySqlDbType.Double));
 		AddColumnTypeMetadata(new("FLOAT", typeFloat, MySqlDbType.Float));
 
+		 // vector
+		var typeFloatReadOnlyMemory = AddDbTypeMapping(new(typeof(ReadOnlyMemory<float>), [DbType.Object]));
+		AddColumnTypeMetadata(new("VECTOR", typeFloatReadOnlyMemory, MySqlDbType.Vector, binary: true, simpleDataTypeName: "VECTOR", createFormat: "VECTOR({0})"));
+
 		// string
 		var typeFixedString = AddDbTypeMapping(new(typeof(string), [DbType.StringFixedLength, DbType.AnsiStringFixedLength], convert: Convert.ToString!));
 		var typeString = AddDbTypeMapping(new(typeof(string), [DbType.String, DbType.AnsiString, DbType.Xml], convert: Convert.ToString!));
@@ -311,6 +315,9 @@ internal sealed class TypeMapper
 			case ColumnType.Set:
 				return MySqlDbType.Set;
 
+			case ColumnType.Vector:
+				return MySqlDbType.Vector;
+
 			default:
 				throw new NotImplementedException($"ConvertToMySqlDbType for {columnDefinition.ColumnType} is not implemented");
 		}
@@ -347,6 +354,7 @@ internal sealed class TypeMapper
 			MySqlDbType.NewDecimal => ColumnType.NewDecimal,
 			MySqlDbType.Geometry => ColumnType.Geometry,
 			MySqlDbType.Null => ColumnType.Null,
+			MySqlDbType.Vector => ColumnType.Vector,
 			_ => throw new NotImplementedException($"ConvertToColumnTypeAndFlags for {dbType} is not implemented"),
 		};
 		return (ushort) ((byte) columnType | (isUnsigned ? 0x8000 : 0));

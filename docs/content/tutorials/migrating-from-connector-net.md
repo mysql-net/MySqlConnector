@@ -41,7 +41,7 @@ In a .NET Framework application, make the following `app.config` change to regis
     <!-- add name="MySQL Data Provider"
       invariant="MySql.Data.MySqlClient"
       description=".Net Framework Data Provider for MySQL"
-      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=9.3.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
+      type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data, Version=9.4.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d" / -->
 
     <!-- ADD THIS -->
     <add name="MySqlConnector"
@@ -245,7 +245,6 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 * [#109331](https://bugs.mysql.com/bug.php?id=109331): MySQL Connector/NET is incompatible with MariaDB 10.10 and later
 * [#109390](https://bugs.mysql.com/bug.php?id=109390): Transaction lock held after connection timeout exception
 * [#109476](https://bugs.mysql.com/bug.php?id=109476): `TransactionScope.Dispose` throws "Connection must be valid and open to rollback"
-* [#110789](https://bugs.mysql.com/bug.php?id=110789): `OpenAsync` throws unhandled exception from thread pool
 * [#110790](https://bugs.mysql.com/bug.php?id=110790): `ExecuteReaderAsync` hangs instead of cancelling query after `CommandTimeout`
 * [#110791](https://bugs.mysql.com/bug.php?id=110791): `OpenAsync(CancellationToken)` doesn't throw for cancelled token
 * [#111797](https://bugs.mysql.com/bug.php?id=111797): Certain sequence of special characters can break connection string validation
@@ -258,7 +257,6 @@ The following bugs in Connector/NET are fixed by switching to MySqlConnector.
 * [#116146](https://bugs.mysql.com/bug.php?id=116146): `MySqlConnection.OpenAsync` throws exception when `UseCompression = true`
 * [#116257](https://bugs.mysql.com/bug.php?id=116257): `NullReferenceException` thrown when using prepared statement under OpenTelemetry
 * [#116382](https://bugs.mysql.com/bug.php?id=116382): `ExecuteNonQueryAsync` hangs with DDL if `UseCompression=True`
-* [#117020](https://bugs.mysql.com/bug.php?id=117020): `MinPoolSize` configuration is not honored
 
 ### Fixed First by MySqlConnector
 
@@ -346,4 +344,6 @@ These bugs are fixed in the latest version of MySQL Connector/NET, but were fixe
 * [#109683](https://bugs.mysql.com/bug.php?id=109683): `MySqlCommand.LastInsertedId` is incorrect if multiple rows are inserted.
 * [#109716](https://bugs.mysql.com/bug.php?id=109716), [#109727](https://bugs.mysql.com/bug.php?id=109727): Failed to add reference to 'comerr64'
 * [#110717](https://bugs.mysql.com/bug.php?id=110717), [#111759](https://bugs.mysql.com/bug.php?id=111759): MySql.Data is not thread-safe
+* [#110789](https://bugs.mysql.com/bug.php?id=110789): `OpenAsync` throws unhandled exception from thread pool
 * [#114527](https://bugs.mysql.com/bug.php?id=114527): Connector/NET hangs on second connection attempt to non-running database
+* [#117020](https://bugs.mysql.com/bug.php?id=117020): `MinPoolSize` configuration is not honored

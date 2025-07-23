@@ -244,6 +244,28 @@ values
   ('{""a"": ""b""}');
 ");
 		}
+
+		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Vector))
+		{
+			// create a helper function for MariaDB 11.7+
+			if (Connection.ServerVersion.StartsWith("11.8.", StringComparison.Ordinal))
+				Connection.Execute("create function if not exists STRING_TO_VECTOR(s text) returns vector(3) deterministic return Vec_FromText(s);");
+
+			Connection.Execute("""
+				drop table if exists datatypes_vector;
+				create table datatypes_vector (
+					rowid integer not null primary key auto_increment,
+					value vector(3) null
+				);
+				insert into datatypes_vector (value)
+				values
+					(null),
+					(STRING_TO_VECTOR('[0, 0, 0]')),
+					(STRING_TO_VECTOR('[1, 1, 1]')),
+					(STRING_TO_VECTOR('[1, 2, 3]')),
+					(STRING_TO_VECTOR('[-1, -1, -1]'));
+				""");
+		}
 		Connection.Close();
 	}
 }

@@ -74,8 +74,10 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 						Command = m_commandListPosition.CommandAt(m_commandListPosition.CommandIndex);
 						using (Command.CancellableCommand.RegisterCancel(cancellationToken))
 						{
+							await m_payloadCreator!.SendCommandPrologueAsync(Command.Connection!, m_commandListPosition, ioBehavior, cancellationToken).ConfigureAwait(false);
+
 							var writer = new ByteBufferWriter();
-							if (!Command.Connection!.Session.IsCancelingQuery && m_payloadCreator!.WriteQueryCommand(ref m_commandListPosition, m_cachedProcedures!, writer, false))
+							if (!Command.Connection!.Session.IsCancelingQuery && m_payloadCreator.WriteQueryCommand(ref m_commandListPosition, m_cachedProcedures!, writer, false))
 							{
 								using var payload = writer.ToPayloadData();
 								await Command.Connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
@@ -671,7 +673,7 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 			if (param.HasSetDbType && !row.IsDBNull(columnIndex))
 			{
 				var dbTypeMapping = TypeMapper.Instance.GetDbTypeMapping(param.DbType);
-				if (dbTypeMapping is not null)
+				if (dbTypeMapping is not null && param.DbType is not DbType.Object)
 				{
 					param.Value = dbTypeMapping.DoConversion(row.GetValue(columnIndex));
 					continue;

@@ -249,6 +249,20 @@ public class SslTests : IClassFixture<DatabaseFixture>
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		await connection.OpenAsync();
 	}
+
+	[SkippableFact(ServerFeatures.TlsFingerprintValidation | ServerFeatures.ParsecAuthentication)]
+	public async Task ConnectZeroConfigurationSslParsec()
+	{
+		MySqlConnector.Authentication.Ed25519.ParsecAuthenticationPlugin.Install();
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.CertificateFile = null;
+		csb.SslMode = MySqlSslMode.VerifyFull;
+		csb.SslCa = "";
+		csb.UserID = "parsec-user";
+		csb.Password = "P@rs3c-Pa55";
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		await connection.OpenAsync();
+	}
 #endif
 
 	[SkippableFact(ConfigSettings.RequiresSsl)]

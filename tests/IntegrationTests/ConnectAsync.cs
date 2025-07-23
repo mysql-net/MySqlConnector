@@ -1,7 +1,4 @@
 using System.Security.Authentication;
-#if !MYSQL_DATA
-using MySqlConnector.Authentication.Ed25519;
-#endif
 
 namespace IntegrationTests;
 
@@ -113,7 +110,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		await Task.Delay(3000);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout, MySqlData = "https://bugs.mysql.com/bug.php?id=110789")]
+	[SkippableFact(ServerFeatures.Timeout)]
 	public async Task ConnectTimeoutAsync()
 	{
 		var csb = new MySqlConnectionStringBuilder
@@ -429,7 +426,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 	[SkippableFact(ServerFeatures.Ed25519)]
 	public async Task Ed25519Authentication()
 	{
-		Ed25519AuthenticationPlugin.Install();
+		MySqlConnector.Authentication.Ed25519.Ed25519AuthenticationPlugin.Install();
 
 		var csb = AppConfig.CreateConnectionStringBuilder();
 		csb.UserID = "ed25519user";
@@ -442,10 +439,22 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 	[SkippableFact(ServerFeatures.Ed25519)]
 	public async Task MultiAuthentication()
 	{
-		Ed25519AuthenticationPlugin.Install();
+		MySqlConnector.Authentication.Ed25519.Ed25519AuthenticationPlugin.Install();
 		var csb = AppConfig.CreateConnectionStringBuilder();
 		csb.UserID = "multiAuthUser";
 		csb.Password = "secret";
+		csb.Database = null;
+		using var connection = new MySqlConnection(csb.ConnectionString);
+		await connection.OpenAsync();
+	}
+
+	[SkippableFact(ServerFeatures.ParsecAuthentication)]
+	public async Task Parsec()
+	{
+		MySqlConnector.Authentication.Ed25519.ParsecAuthenticationPlugin.Install();
+		var csb = AppConfig.CreateConnectionStringBuilder();
+		csb.UserID = "parsec-user";
+		csb.Password = "P@rs3c-Pa55";
 		csb.Database = null;
 		using var connection = new MySqlConnection(csb.ConnectionString);
 		await connection.OpenAsync();

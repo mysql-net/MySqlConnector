@@ -1,3 +1,6 @@
+using System.Buffers;
+using System.Buffers.Binary;
+using System.Runtime.InteropServices;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
@@ -11,6 +14,81 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	// This is chosen to be something very unlikely to appear as a column name in a user's query. If a result set is read
 	// with this as the first column name, the result set will be treated as 'out' parameters for the previous command.
 	public static string OutParameterSentinelColumnName => "\uE001\b\x0B";
+
+	public async ValueTask SendCommandPrologueAsync(MySqlConnection connection, CommandListPosition commandListPosition, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	{
+		// get the current command and check for prepared statements
+		var command = commandListPosition.CommandAt(commandListPosition.CommandIndex);
+		var preparedStatements = commandListPosition.PreparedStatements ?? command.TryGetPreparedStatements();
+		if (preparedStatements is not null)
+		{
+			// get the current prepared statement; WriteQueryCommand will advance this
+			var preparedStatement = preparedStatements.Statements[commandListPosition.PreparedStatementIndex];
+			if (preparedStatement.Parameters is { } parameters)
+			{
+				byte[]? buffer = null;
+				try
+				{
+					// check each parameter
+					for (var i = 0; i < parameters.Length; i++)
+					{
+						// look up this parameter in the command's parameter collection and check if it is a Stream
+						// NOTE: full parameter checks will be performed (and throw any necessary exceptions) in WritePreparedStatement
+						var parameterName = preparedStatement.Statement.NormalizedParameterNames![i];
+						var parameterIndex = parameterName is not null ? (command.RawParameters?.UnsafeIndexOf(parameterName) ?? -1) : preparedStatement.Statement.ParameterIndexes[i];
+						if (command.RawParameters is { } rawParameters && parameterIndex >= 0 && parameterIndex < rawParameters.Count && rawParameters[parameterIndex] is { Value: Stream stream and not MemoryStream })
+						{
+							// seven-byte COM_STMT_SEND_LONG_DATA header: https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_com_stmt_send_long_data.html
+							const int packetHeaderLength = 7;
+
+							// send almost-full packets, but don't send exactly ProtocolUtility.MaxPacketSize bytes in one payload (as that's ambiguous to whether another packet follows).
+							const int maxDataSize = 16_000_000;
+							int totalBytesRead;
+							while (true)
+							{
+								buffer ??= ArrayPool<byte>.Shared.Rent(packetHeaderLength + maxDataSize);
+								buffer[0] = (byte) CommandKind.StatementSendLongData;
+								BinaryPrimitives.WriteInt32LittleEndian(buffer.AsSpan(1), preparedStatement.StatementId);
+								BinaryPrimitives.WriteUInt16LittleEndian(buffer.AsSpan(5), (ushort) i);
+
+								// keep reading from the stream until we've filled the buffer to send
+#if NET7_0_OR_GREATER
+								if (ioBehavior == IOBehavior.Synchronous)
+									totalBytesRead = stream.ReadAtLeast(buffer.AsSpan(packetHeaderLength, maxDataSize), maxDataSize, throwOnEndOfStream: false);
+								else
+									totalBytesRead = await stream.ReadAtLeastAsync(buffer.AsMemory(packetHeaderLength, maxDataSize), maxDataSize, throwOnEndOfStream: false, cancellationToken).ConfigureAwait(false);
+#else
+								totalBytesRead = 0;
+								int bytesRead;
+								do
+								{
+									var sizeToRead = maxDataSize - totalBytesRead;
+									if (ioBehavior == IOBehavior.Synchronous)
+										bytesRead = stream.Read(buffer, packetHeaderLength + totalBytesRead, sizeToRead);
+									else
+										bytesRead = await stream.ReadAsync(buffer, packetHeaderLength + totalBytesRead, sizeToRead, cancellationToken).ConfigureAwait(false);
+									totalBytesRead += bytesRead;
+								} while (bytesRead > 0 && totalBytesRead < maxDataSize);
+#endif
+
+								if (totalBytesRead == 0)
+									break;
+
+								// send StatementSendLongData; MySQL Server will keep appending the sent data to the parameter value
+								using var payload = new PayloadData(buffer.AsMemory(0, packetHeaderLength + totalBytesRead), isPooled: false);
+								await connection.Session.SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+							}
+						}
+					}
+				}
+				finally
+				{
+					if (buffer is not null)
+						ArrayPool<byte>.Shared.Return(buffer);
+				}
+			}
+		}
+	}
 
 	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon)
 	{
@@ -58,6 +136,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			{
 				commandListPosition.CommandIndex++;
 				commandListPosition.PreparedStatementIndex = 0;
+				commandListPosition.PreparedStatements = null;
 			}
 		}
 		return true;
@@ -164,6 +243,10 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 				var dbType = typeMapping.DbTypes[0];
 				mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbType(dbType);
 			}
+
+			// HACK: MariaDB doesn't have a dedicated Vector type so mark it as binary data
+			if (mySqlDbType == MySqlDbType.Vector && command.Connection!.Session.ServerVersion.IsMariaDb)
+				mySqlDbType = MySqlDbType.LongBlob;
 
 			writer.Write(TypeMapper.ConvertToColumnTypeAndFlags(mySqlDbType, command.Connection!.GuidFormat));
 

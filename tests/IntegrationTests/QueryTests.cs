@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace IntegrationTests;
 
 public class QueryTests : IClassFixture<DatabaseFixture>, IDisposable
@@ -1687,6 +1689,68 @@ select mysql_query_attribute_string('attr2') as attribute, @param2 as parameter;
 		Assert.Equal(new byte[] { 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67, 0x89 }, buffer);
 	}
 #endif
+
+	[SkippableTheory(ServerFeatures.Vector)]
+	[InlineData(false, 0)]
+	[InlineData(false, 1)]
+	[InlineData(false, 2)]
+	[InlineData(true, 0)]
+	[InlineData(true, 1)]
+	[InlineData(true, 2)]
+	public void QueryVector(bool prepare, int dataFormat)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+
+		connection.Execute("""
+			drop table if exists test_vector;
+			create table test_vector(id int auto_increment not null primary key, vec vector(3) not null);
+			""");
+
+		using var cmd = m_database.Connection.CreateCommand();
+		cmd.CommandText = "INSERT INTO test_vector(vec) VALUES(@vec)";
+		cmd.Parameters.Add(new MySqlParameter
+		{
+			ParameterName = "@vec",
+			MySqlDbType = MySqlDbType.Vector,
+		});
+
+		var floatArray = new[] { 1.2f, 3.4f, 5.6f };
+#if MYSQL_DATA
+		// Connector/NET requires the float vector to be passed as a byte array
+		cmd.Parameters[0].Value = MemoryMarshal.AsBytes<float>(floatArray).ToArray();
+		Assert.InRange(dataFormat, 0, 2);
+#else
+		cmd.Parameters[0].Value = dataFormat switch
+		{
+			0 => floatArray,
+			1 => new Memory<float>(floatArray),
+			2 => new ReadOnlyMemory<float>(floatArray),
+			_ => throw new NotSupportedException(),
+		};
+#endif
+
+		if (prepare)
+			cmd.Prepare();
+		cmd.ExecuteNonQuery();
+
+		// Select and verify the value
+		cmd.CommandText = "SELECT vec FROM test_vector";
+		if (prepare)
+			cmd.Prepare();
+
+		using var reader = cmd.ExecuteReader();
+		Assert.True(reader.Read());
+		var value = reader.GetValue(0);
+
+#if MYSQL_DATA
+		var result = MemoryMarshal.Cast<byte, float>((byte[]) value).ToArray();
+#else
+		var result = AppConfig.SupportedFeatures.HasFlag(ServerFeatures.VectorType) ? (ReadOnlyMemory<float>) value :
+			MemoryMarshal.Cast<byte, float>((byte[]) value).ToArray();
+#endif
+		Assert.Equal(floatArray, result);
+	}
 
 	private class BoolTest
 	{
