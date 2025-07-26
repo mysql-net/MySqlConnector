@@ -101,16 +101,16 @@ var loggerFactory = LoggerFactory.Create(builder =>
 );
 
 // now create a MySqlDataSource and configure it with the LoggerFactory
-using var dataSource = new MySqlDataSourceBuilder(yourConnectionString)
+await using var dataSource = new MySqlDataSourceBuilder(yourConnectionString)
   .UseLoggerFactory(loggerFactory)
   .Build();
 
 // create all MySqlConnection objects via the MySqlDataSource, not directly
-// DON'T: using var connection = new MySqlConnection(yourConnectionString);
-using var connection = dataSource.CreateConnection();
+// DON'T: await using var connection = new MySqlConnection(yourConnectionString);
+await using var connection = dataSource.CreateConnection();
 
 // you can also create open connections
-using var connection = await dataSource.OpenConnectionAsync();
+await using var connection = await dataSource.OpenConnectionAsync();
 ```
 
 ### Deprecated Logging Framework

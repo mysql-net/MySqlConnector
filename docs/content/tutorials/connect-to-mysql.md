@@ -72,7 +72,7 @@ In ASP.NET Core, the `MySqlConnection` object will be dependency-injected into y
 other kinds of projects, you may need to explicitly create the connection:
 
 ```csharp
-using var connection = new MySqlConnection(yourConnectionString);
+await using var connection = new MySqlConnection(yourConnectionString);
 ```
 
 You can then open the connection and execute a query:
@@ -80,8 +80,8 @@ You can then open the connection and execute a query:
 ```csharp
 await connection.OpenAsync();
 
-using var command = new MySqlCommand("SELECT field FROM table;", connection);
-using var reader = await command.ExecuteReaderAsync();
+await using var command = new MySqlCommand("SELECT field FROM table;", connection);
+await using var reader = await command.ExecuteReaderAsync();
 while (await reader.ReadAsync())
 {
     var value = reader.GetValue(0);

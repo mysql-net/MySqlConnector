@@ -30,11 +30,10 @@ using (var cmd = new MySqlCommand())
 }
 
 // Retrieve all rows
-using var command = new MySqlCommand("SELECT some_field FROM data", connection);
-using var reader = await cmd.ExecuteReaderAsync();
+await using var command = new MySqlCommand("SELECT some_field FROM data", connection);
+await using var reader = await cmd.ExecuteReaderAsync();
 while (await reader.ReadAsync())
     Console.WriteLine(reader.GetString(0));
 ```
 
 You can find more info about the ADO.NET API in the [MSDN documentation](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/ado-net-overview) or in many tutorials on the Internet.
-

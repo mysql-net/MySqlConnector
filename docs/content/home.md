@@ -48,7 +48,7 @@ MySqlConnector also fully supports asynchronous I/O. The C# example above can be
 await using var connection = new MySqlConnection("Server=myserver;User ID=mylogin;Password=mypass;Database=mydatabase");
 await connection.OpenAsync();
 
-using var command = new MySqlCommand("SELECT field FROM table;", connection);
+await using var command = new MySqlCommand("SELECT field FROM table;", connection);
 await using var reader = await command.ExecuteReaderAsync();
 while (await reader.ReadAsync())
     Console.WriteLine(reader.GetString(0));

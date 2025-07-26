@@ -59,7 +59,7 @@ A connection pool name can be specified by one of the following means:
 The `MySqlDataSourceBuilder.UseName` method can be used to specify a name for the connection pool:
 
 ```csharp
-using var dataSource = new MySqlDataSourceBuilder("...connection string...")
+await using var dataSource = new MySqlDataSourceBuilder("...connection string...")
     .UseName("MyPoolName")
     .Build();
 ```
@@ -86,7 +86,7 @@ builder.Services.AddKeyedMySqlDataSource("MyPoolName",
 Finally, the connection pool name can be specified by setting the `Application Name` connection string option:
 
 ```csharp
-using var connection = new MySqlConnection("server=dbserver;...;Application Name=MyPoolName");
+await using var connection = new MySqlConnection("server=dbserver;...;Application Name=MyPoolName");
 ```
 
 If `UseName` is used, it will override the `Application Name` connection string option.
