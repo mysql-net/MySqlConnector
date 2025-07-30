@@ -11,7 +11,7 @@ When using MariaDB (10.2 or later), the commands will be sent in a single batch,
 Example usage:
 
 ```csharp
-using var connection = new MySqlConnection("...connection string...");
+await using var connection = new MySqlConnection("...connection string...");
 await connection.OpenAsync();
 
 using var batch = new MySqlBatch(connection)
