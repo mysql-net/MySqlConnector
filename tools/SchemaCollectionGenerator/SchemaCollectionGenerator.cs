@@ -271,3 +271,46 @@ internal sealed partial class Regexes
 	[GeneratedRegex("[^a-z0-9]", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
 	public static partial Regex NonAsciiAlphaNumeric();
 }
+internal static class DatabaseTelemetry
+{
+    private static readonly ActivitySource ActivitySource = new("MySqlConnector");
+
+    private static readonly string? SemConvOptIn =
+        Environment.GetEnvironmentVariable("OTEL_SEMCONV_STABILITY_OPT_IN");
+
+    public static Activity? StartSchemaActivity(string collectionName, string? instanceId, string? peerAddress, int? peerPort)
+    {
+        var activity = ActivitySource.StartActivity("db.mysql.get_schema", ActivityKind.Client);
+
+        if (activity is null)
+            return null;
+
+        // New attributes (2024+ spec)
+        if (UseNew || UseBoth)
+        {
+            activity.SetTag("db.system", "mysql");
+            activity.SetTag("db.instance.id", instanceId);
+            activity.SetTag("network.peer.address", peerAddress);
+            activity.SetTag("network.peer.port", peerPort);
+            activity.SetTag("network.transport", "tcp");
+        }
+
+        // Old attributes (pre-2024 spec)
+        if (UseOld || UseBoth)
+        {
+            activity.SetTag("db.name", instanceId); // old-style
+            activity.SetTag("net.peer.name", peerAddress);
+            activity.SetTag("net.peer.port", peerPort);
+            activity.SetTag("net.transport", "ip_tcp");
+        }
+
+        activity.SetTag("db.operation", "GetSchema");
+        activity.SetTag("db.sql.table", collectionName);
+
+        return activity;
+    }
+
+    private static bool UseOld => SemConvOptIn?.Equals("old", StringComparison.OrdinalIgnoreCase) ?? false;
+    private static bool UseNew => SemConvOptIn?.Equals("new", StringComparison.OrdinalIgnoreCase) ?? false;
+    private static bool UseBoth => SemConvOptIn?.Equals("both", StringComparison.OrdinalIgnoreCase) ?? true;
+}
