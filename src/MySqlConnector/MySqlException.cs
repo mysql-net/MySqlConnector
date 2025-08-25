@@ -113,6 +113,7 @@ public sealed class MySqlException : DbException
 		ErrorCode = errorCode;
 		Number = (int) errorCode;
 		SqlState = sqlState;
+		HResult = (int) errorCode;
 	}
 
 	internal static MySqlException CreateForTimeout() => CreateForTimeout(null);
