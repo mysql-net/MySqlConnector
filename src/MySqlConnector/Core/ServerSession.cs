@@ -1905,7 +1905,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 		// detect AWS RDS Proxy, if hostname like <name>.proxy-<random-chars>.<region>.rds.amazonaws.com
 		if (HostName.EndsWith(".rds.amazonaws.com", StringComparison.OrdinalIgnoreCase) &&
-			HostName.Contains(".proxy-", StringComparison.OrdinalIgnoreCase))
+			HostName.AsSpan().Contains(".proxy-".AsSpan(), StringComparison.OrdinalIgnoreCase))
 		{
 			return true;
 		}
