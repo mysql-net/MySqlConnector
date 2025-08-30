@@ -9,7 +9,7 @@ title: MySqlBulkLoader
 Example code:
 
 ```csharp
-using var connection = new MySqlConnection("...;AllowLoadLocalInfile=True");
+await using var connection = new MySqlConnection("...;AllowLoadLocalInfile=True");
 await connection.OpenAsync();
 var bulkLoader = new MySqlBulkLoader(connection)
 {

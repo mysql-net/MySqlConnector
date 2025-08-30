@@ -93,8 +93,8 @@ public class BlogPostRepository(MySqlDataSource database)
 {
     public async Task<BlogPost?> FindOneAsync(int id)
     {
-        using var connection = await database.OpenConnectionAsync();
-        using var command = connection.CreateCommand();
+        await using var connection = await database.OpenConnectionAsync();
+        await using var command = connection.CreateCommand();
         command.CommandText = @"SELECT `Id`, `Title`, `Content` FROM `BlogPost` WHERE `Id` = @id";
         command.Parameters.AddWithValue("@id", id);
         var result = await ReadAllAsync(await command.ExecuteReaderAsync());
@@ -103,24 +103,24 @@ public class BlogPostRepository(MySqlDataSource database)
 
     public async Task<IReadOnlyList<BlogPost>> LatestPostsAsync()
     {
-        using var connection = await database.OpenConnectionAsync();
-        using var command = connection.CreateCommand();
+        await using var connection = await database.OpenConnectionAsync();
+        await using var command = connection.CreateCommand();
         command.CommandText = @"SELECT `Id`, `Title`, `Content` FROM `BlogPost` ORDER BY `Id` DESC LIMIT 10;";
         return await ReadAllAsync(await command.ExecuteReaderAsync());
     }
 
     public async Task DeleteAllAsync()
     {
-        using var connection = await database.OpenConnectionAsync();
-        using var command = connection.CreateCommand();
+        await using var connection = await database.OpenConnectionAsync();
+        await using var command = connection.CreateCommand();
         command.CommandText = @"DELETE FROM `BlogPost`";
         await command.ExecuteNonQueryAsync();
     }
 
     public async Task InsertAsync(BlogPost blogPost)
     {
-        using var connection = await database.OpenConnectionAsync();
-        using var command = connection.CreateCommand();
+        await using var connection = await database.OpenConnectionAsync();
+        await using var command = connection.CreateCommand();
         command.CommandText = @"INSERT INTO `BlogPost` (`Title`, `Content`) VALUES (@title, @content);";
         BindParams(command, blogPost);
         await command.ExecuteNonQueryAsync();
@@ -129,8 +129,8 @@ public class BlogPostRepository(MySqlDataSource database)
 
     public async Task UpdateAsync(BlogPost blogPost)
     {
-        using var connection = await database.OpenConnectionAsync();
-        using var command = connection.CreateCommand();
+        await using var connection = await database.OpenConnectionAsync();
+        await using var command = connection.CreateCommand();
         command.CommandText = @"UPDATE `BlogPost` SET `Title` = @title, `Content` = @content WHERE `Id` = @id;";
         BindParams(command, blogPost);
         BindId(command, blogPost);
@@ -139,8 +139,8 @@ public class BlogPostRepository(MySqlDataSource database)
 
     public async Task DeleteAsync(BlogPost blogPost)
     {
-        using var connection = await database.OpenConnectionAsync();
-        using var command = connection.CreateCommand();
+        await using var connection = await database.OpenConnectionAsync();
+        await using var command = connection.CreateCommand();
         command.CommandText = @"DELETE FROM `BlogPost` WHERE `Id` = @id;";
         BindId(command, blogPost);
         await command.ExecuteNonQueryAsync();
