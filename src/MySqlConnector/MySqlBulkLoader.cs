@@ -9,7 +9,7 @@ namespace MySqlConnector;
 /// <para><see cref="MySqlBulkLoader"/> lets you efficiently load a MySQL Server Table with data from a CSV or TSV file or <see cref="Stream"/>.</para>
 /// <para>Example code:</para>
 /// <code>
-/// using var connection = new MySqlConnection("...;AllowLoadLocalInfile=True");
+/// await using var connection = new MySqlConnection("...;AllowLoadLocalInfile=True");
 /// await connection.OpenAsync();
 /// var bulkLoader = new MySqlBulkLoader(connection)
 /// {
