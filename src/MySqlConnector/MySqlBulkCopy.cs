@@ -27,7 +27,7 @@ namespace MySqlConnector;
 /// var dataTable = GetDataTableFromExternalSource();
 ///
 /// // open the connection
-/// using var connection = new MySqlConnection("...;AllowLoadLocalInfile=True");
+/// await using var connection = new MySqlConnection("...;AllowLoadLocalInfile=True");
 /// await connection.OpenAsync();
 ///
 /// // bulk copy the data

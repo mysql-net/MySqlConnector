@@ -74,6 +74,11 @@ internal sealed partial class ServerSession : IServerCapabilities
 		LastReturnedTimestamp = Stopwatch.GetTimestamp();
 		if (Pool is null)
 			return default;
+
+		// if the payload cache is too large, discard it rather than keeping it alive in the pool; see https://github.com/mysql-net/MySqlConnector/issues/1587
+		if (m_payloadCache.Array?.Length > ProtocolUtility.MaxPacketSize + 1)
+			m_payloadCache.ArraySegment = default;
+
 		MetricsReporter.RecordUseTime(Pool, Utility.GetElapsedSeconds(LastLeasedTimestamp, LastReturnedTimestamp));
 		LastLeasedTimestamp = 0;
 		return Pool.ReturnAsync(ioBehavior, this);
@@ -1896,6 +1901,13 @@ internal sealed partial class ServerSession : IServerCapabilities
 			return HostName.EndsWith(".mysql.database.azure.com", StringComparison.OrdinalIgnoreCase) ||
 				HostName.EndsWith(".database.windows.net", StringComparison.OrdinalIgnoreCase) ||
 				HostName.EndsWith(".mysql.database.chinacloudapi.cn", StringComparison.OrdinalIgnoreCase);
+		}
+
+		// detect AWS RDS Proxy, if hostname like <name>.proxy-<random-chars>.<region>.rds.amazonaws.com
+		if (HostName.EndsWith(".rds.amazonaws.com", StringComparison.OrdinalIgnoreCase) &&
+			HostName.Contains(".proxy-", StringComparison.OrdinalIgnoreCase))
+		{
+			return true;
 		}
 
 		return false;
