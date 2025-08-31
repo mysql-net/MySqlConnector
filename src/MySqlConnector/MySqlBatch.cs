@@ -14,7 +14,7 @@ namespace MySqlConnector;
 /// individually.</para>
 /// <para>Example usage:</para>
 /// <code>
-/// using var connection = new MySqlConnection("...connection string...");
+/// await using var connection = new MySqlConnection("...connection string...");
 /// await connection.OpenAsync();
 ///
 /// using var batch = new MySqlBatch(connection)

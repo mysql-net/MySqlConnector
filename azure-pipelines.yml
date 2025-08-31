@@ -176,8 +176,8 @@ jobs:
         image: 'mysql:8.4'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
         unsupportedFeatures: 'Ed25519,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
-      'MySQL 9.3':
-        image: 'mysql:9.3'
+      'MySQL 9.4':
+        image: 'mysql:9.4'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
         unsupportedFeatures: 'Ed25519,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
       'MariaDB 10.6':
@@ -192,8 +192,8 @@ jobs:
         image: 'mariadb:11.4'
         connectionStringExtra: ''
         unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,ParsecAuthentication,Redirection,Sha256Password,Tls11,UuidToBin,Vector'
-      'MariaDB 11.7':
-        image: 'mariadb:11.7'
+      'MariaDB 11.8':
+        image: 'mariadb:11.8'
         connectionStringExtra: ''
         unsupportedFeatures: 'CachingSha2Password,CancelSleepSuccessfully,Json,RoundDateTime,QueryAttributes,Redirection,Sha256Password,Tls11,UuidToBin,VectorType'
   steps:

@@ -22,7 +22,7 @@ an open `MySqlDataReader`.
 You may not execute multiple operations in parallel, for example:
 
 ```csharp
-using var connection = new MySqlConnection("...");
+await using var connection = new MySqlConnection("...");
 await connection.OpenAsync();
 await Task.WhenAll( // don't do this
     connection.ExecuteAsync("SELECT 1;"),

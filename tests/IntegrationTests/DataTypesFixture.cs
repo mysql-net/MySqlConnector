@@ -248,7 +248,7 @@ values
 		if (AppConfig.SupportedFeatures.HasFlag(ServerFeatures.Vector))
 		{
 			// create a helper function for MariaDB 11.7+
-			if (Connection.ServerVersion.StartsWith("11.7.", StringComparison.Ordinal))
+			if (Connection.ServerVersion.StartsWith("11.8.", StringComparison.Ordinal))
 				Connection.Execute("create function if not exists STRING_TO_VECTOR(s text) returns vector(3) deterministic return Vec_FromText(s);");
 
 			Connection.Execute("""

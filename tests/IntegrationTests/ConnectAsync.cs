@@ -110,7 +110,7 @@ public class ConnectAsync : IClassFixture<DatabaseFixture>
 		await Task.Delay(3000);
 	}
 
-	[SkippableFact(ServerFeatures.Timeout, MySqlData = "https://bugs.mysql.com/bug.php?id=110789")]
+	[SkippableFact(ServerFeatures.Timeout)]
 	public async Task ConnectTimeoutAsync()
 	{
 		var csb = new MySqlConnectionStringBuilder

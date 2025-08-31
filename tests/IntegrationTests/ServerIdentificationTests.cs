@@ -19,7 +19,7 @@ public class ServerIdentificationTests : IClassFixture<DatabaseFixture>, IDispos
 		// This test verifies that cancellation still works with server verification
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
 		connection.Open();
-		
+
 		using var cmd = new MySqlCommand("SELECT SLEEP(5)", connection);
 		var task = Task.Run(async () =>
 		{
@@ -36,7 +36,7 @@ public class ServerIdentificationTests : IClassFixture<DatabaseFixture>, IDispos
 #pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 	}
 
-	[SkippableFact(ServerFeatures.KnownCertificateAuthority)]  
+	[SkippableFact(ServerFeatures.KnownCertificateAuthority)]
 	public void ServerHasServerHostname()
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);
@@ -45,7 +45,7 @@ public class ServerIdentificationTests : IClassFixture<DatabaseFixture>, IDispos
 		// Test that we can query server hostname
 		using var cmd = new MySqlCommand("SELECT @@hostname", connection);
 		var hostname = cmd.ExecuteScalar();
-		
+
 		// Hostname might be null on some server configurations, but the query should succeed
 	}
 

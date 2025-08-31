@@ -331,6 +331,10 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 			Debug.Assert(index == length, "index == length");
 			writer.Advance(index);
 		}
+		else if (Value is Stream)
+		{
+			throw new NotSupportedException($"Parameter type {Value.GetType().Name} can only be used after calling MySqlCommand.Prepare.");
+		}
 		else if (Value is bool boolValue)
 		{
 			writer.Write(boolValue ? "true"u8 : "false"u8);
@@ -727,6 +731,10 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 				streamBuffer = new ArraySegment<byte>(memoryStream.ToArray());
 			writer.WriteLengthEncodedInteger(unchecked((ulong) streamBuffer.Count));
 			writer.Write(streamBuffer);
+		}
+		else if (value is Stream)
+		{
+			// do nothing; this will be sent via CommandKind.StatementSendLongData
 		}
 		else if (value is float floatValue)
 		{
