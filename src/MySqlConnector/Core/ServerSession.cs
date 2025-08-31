@@ -125,13 +125,10 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 			// Verify server identity before executing KILL QUERY to prevent cancelling on the wrong server
 			var killSession = killCommand.Connection!.Session;
-			if (!string.IsNullOrEmpty(ServerHostname) && !string.IsNullOrEmpty(killSession.ServerHostname))
+			if (!string.IsNullOrEmpty(ServerHostname) && !string.IsNullOrEmpty(killSession.ServerHostname) && ServerHostname != killSession.ServerHostname)
 			{
-				if (!string.Equals(ServerHostname, killSession.ServerHostname, StringComparison.Ordinal))
-				{
-					Log.IgnoringCancellationForDifferentServer(m_logger, Id, killSession.Id, ServerHostname, killSession.ServerHostname);
-					return;
-				}
+				Log.IgnoringCancellationForDifferentServer(m_logger, Id, killSession.Id, ServerHostname, killSession.ServerHostname);
+				return;
 			}
 			else if (!string.IsNullOrEmpty(ServerHostname) || !string.IsNullOrEmpty(killSession.ServerHostname))
 			{
@@ -139,7 +136,6 @@ internal sealed partial class ServerSession : IServerCapabilities
 				Log.IgnoringCancellationForDifferentServer(m_logger, Id, killSession.Id, ServerHostname, killSession.ServerHostname);
 				return;
 			}
-			// If both sessions have no hostname, allow the operation for backward compatibility
 
 			// NOTE: This command is executed while holding the lock to prevent race conditions during asynchronous cancellation.
 			// For example, if the lock weren't held, the current command could finish and the other thread could set ActiveCommandId
@@ -659,7 +655,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				ConnectionId = newConnectionId;
 			}
 
-			// Get server hostname for KILL QUERY verification
+			// get server hostname for KILL QUERY verification
 			await GetServerHostnameAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 
 			m_payloadHandler.ByteHandler.RemainingTimeout = Constants.InfiniteTimeout;
@@ -2026,7 +2022,6 @@ internal sealed partial class ServerSession : IServerCapabilities
 		catch (MySqlException ex)
 		{
 			Log.FailedToGetServerHostname(m_logger, ex, Id);
-			// Set fallback value to ensure operation can continue
 			ServerHostname = null;
 		}
 	}

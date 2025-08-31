@@ -189,17 +189,14 @@ internal static partial class Log
 	[LoggerMessage(EventIds.FailedToGetConnectionId, LogLevel.Information, "Session {SessionId} failed to get CONNECTION_ID(), VERSION()")]
 	public static partial void FailedToGetConnectionId(ILogger logger, Exception exception, string sessionId);
 
-	[LoggerMessage(EventIds.GettingServerHostname, LogLevel.Debug, "Session {SessionId} getting server hostname")]
+	[LoggerMessage(EventIds.GettingServerHostname, LogLevel.Trace, "Session {SessionId} getting server hostname")]
 	public static partial void GettingServerHostname(ILogger logger, string sessionId);
 
-	[LoggerMessage(EventIds.RetrievedServerHostname, LogLevel.Debug, "Session {SessionId} retrieved server hostname: {ServerHostname}")]
-	public static partial void RetrievedServerHostname(ILogger logger, string sessionId, string? serverHostname);
+	[LoggerMessage(EventIds.RetrievedServerHostname, LogLevel.Debug, "Session {SessionId} retrieved server hostname: {Hostname}")]
+	public static partial void RetrievedServerHostname(ILogger logger, string sessionId, string? hostname);
 
 	[LoggerMessage(EventIds.FailedToGetServerHostname, LogLevel.Information, "Session {SessionId} failed to get server hostname")]
 	public static partial void FailedToGetServerHostname(ILogger logger, Exception exception, string sessionId);
-
-	[LoggerMessage(EventIds.IgnoringCancellationForDifferentServer, LogLevel.Warning, "Session {SessionId} ignoring cancellation from session {KillSessionId}: server hostname mismatch (this hostname={ServerHostname}, kill hostname={KillServerHostname})")]
-	public static partial void IgnoringCancellationForDifferentServer(ILogger logger, string sessionId, string killSessionId, string? serverHostname, string? killServerHostname);
 
 	[LoggerMessage(EventIds.ClosingStreamSocket, LogLevel.Debug, "Session {SessionId} closing stream/socket")]
 	public static partial void ClosingStreamSocket(ILogger logger, string sessionId);
@@ -256,6 +253,9 @@ internal static partial class Log
 
 	[LoggerMessage(EventIds.SendingSleepToClearPendingCancellation, LogLevel.Debug, "Session {SessionId} sending 'SLEEP(0)' command to clear pending cancellation")]
 	public static partial void SendingSleepToClearPendingCancellation(ILogger logger, string sessionId);
+
+	[LoggerMessage(EventIds.IgnoringCancellationForDifferentServer, LogLevel.Information, "Session {SessionId} ignoring cancellation from session {CancelingSessionId}: server hostname mismatch (this hostname={ServerHostname}, canceling hostname={CancelingServerHostname})")]
+	public static partial void IgnoringCancellationForDifferentServer(ILogger logger, string sessionId, string cancelingSessionId, string? serverHostname, string? cancelingServerHostname);
 
 	[LoggerMessage(EventIds.GettingCachedProcedure, LogLevel.Trace, "Session {SessionId} getting cached procedure named {ProcedureName}")]
 	public static partial void GettingCachedProcedure(ILogger logger, string sessionId, string procedureName);
