@@ -30,23 +30,23 @@ internal sealed class XaEnlistedTransaction(Transaction transaction, MySqlConnec
 
 	protected override void OnRollback(Enlistment enlistment)
 	{
-		try
-		{
+		if (!IsPrepared)
 			try
 			{
-				if (!IsPrepared)
-					ExecuteXaCommand("END");
+				ExecuteXaCommand("END");
 			}
-			catch (MySqlException ex) when (ex.ErrorCode is MySqlErrorCode.XAERRemoveFail && ex.Message.Contains("ROLLBACK ONLY"))
+			catch (MySqlException ex) when (ex.ErrorCode is MySqlErrorCode.XARBDeadlock || (ex.ErrorCode is MySqlErrorCode.XAERRemoveFail && ex.Message.Contains("ROLLBACK ONLY")))
 			{
-				// ignore unprepared end failure when XAERRemoveFail is returned telling us the XA state is ROLLBACK ONLY.
+				// ignore deadlock notification AND any unprepared end failure when XAERRemoveFail is returned telling us the XA state is ROLLBACK ONLY.
 			}
 
+		try
+		{
 			ExecuteXaCommand("ROLLBACK");
 		}
 		catch (MySqlException ex) when (ex.ErrorCode is MySqlErrorCode.XARBDeadlock)
 		{
-			// ignore deadlock when rolling back
+			// ignore deadlock notification when rolling back.
 		}
 	}
 
