@@ -31,6 +31,7 @@ internal sealed class XaEnlistedTransaction(Transaction transaction, MySqlConnec
 	protected override void OnRollback(Enlistment enlistment)
 	{
 		if (!IsPrepared)
+		{
 			try
 			{
 				ExecuteXaCommand("END");
@@ -39,6 +40,7 @@ internal sealed class XaEnlistedTransaction(Transaction transaction, MySqlConnec
 			{
 				// ignore deadlock notification AND any unprepared end failure when XAERRemoveFail is returned telling us the XA state is ROLLBACK ONLY.
 			}
+		}
 
 		try
 		{
