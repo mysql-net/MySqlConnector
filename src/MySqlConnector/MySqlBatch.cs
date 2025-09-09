@@ -199,10 +199,10 @@ public sealed class MySqlBatch :
 #endif
 		int Timeout
 	{
-		get => m_timeout;
+		get;
 		set
 		{
-			m_timeout = value;
+			field = value;
 			((ICancellableCommand) this).EffectiveCommandTimeout = null;
 		}
 	}
@@ -412,7 +412,6 @@ public sealed class MySqlBatch :
 
 	private readonly int m_commandId;
 	private bool m_isDisposed;
-	private int m_timeout;
 	private Action? m_cancelAction;
 	private Action? m_cancelForCommandTimeoutAction;
 	private uint m_cancelTimerId;
