@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Buffers.Text;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -686,6 +687,9 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 		static bool TryConvertFromHexString(ReadOnlySpan<byte> hexChars, Span<byte> data)
 		{
+#if NET10_0_OR_GREATER
+			return Convert.FromHexString(hexChars, data, out _, out _) == OperationStatus.Done;
+#else
 			ReadOnlySpan<byte> hexDigits = "0123456789ABCDEFabcdef"u8;
 			for (var i = 0; i < hexChars.Length; i += 2)
 			{
@@ -700,6 +704,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				data[i / 2] = (byte) ((high << 4) | low);
 			}
 			return true;
+#endif
 		}
 	}
 
