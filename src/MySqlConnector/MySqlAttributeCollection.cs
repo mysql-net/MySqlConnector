@@ -20,12 +20,7 @@ namespace MySqlConnector
 		public void Add(MySqlAttribute attribute)
 		{
 			ArgumentNullException.ThrowIfNull(attribute);
-#if NET8_0_OR_GREATER
 			ArgumentException.ThrowIfNullOrEmpty(attribute.AttributeName);
-#else
-			if (string.IsNullOrEmpty(attribute.AttributeName))
-				throw new ArgumentException("Attribute name must not be empty", nameof(attribute));
-#endif
 			foreach (var existingAttribute in m_attributes)
 			{
 				if (existingAttribute.AttributeName == attribute.AttributeName)
@@ -41,12 +36,7 @@ namespace MySqlConnector
 		/// <param name="value">The attribute value.</param>
 		public void SetAttribute(string attributeName, object? value)
 		{
-#if NET8_0_OR_GREATER
 			ArgumentException.ThrowIfNullOrEmpty(attributeName);
-#else
-			if (string.IsNullOrEmpty(attributeName))
-				throw new ArgumentException("Attribute name must not be empty", nameof(attributeName));
-#endif
 			for (var i = 0; i < m_attributes.Count; i++)
 			{
 				if (m_attributes[i].AttributeName == attributeName)

@@ -14,12 +14,7 @@ public static class AuthenticationPlugins
 	public static void Register(IAuthenticationPlugin plugin)
 	{
 		ArgumentNullException.ThrowIfNull(plugin);
-#if NET8_0_OR_GREATER
 		ArgumentException.ThrowIfNullOrEmpty(plugin.Name);
-#else
-		if (string.IsNullOrEmpty(plugin.Name))
-			throw new ArgumentException("Invalid plugin name.", nameof(plugin));
-#endif
 		lock (s_lock)
 			s_plugins.Add(plugin.Name, plugin);
 	}
