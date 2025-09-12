@@ -19,12 +19,7 @@ namespace MySqlConnector
 		/// <remarks>The attribute name must not be empty, and must not already exist in the collection.</remarks>
 		public void Add(MySqlAttribute attribute)
 		{
-#if NET6_0_OR_GREATER
 			ArgumentNullException.ThrowIfNull(attribute);
-#else
-			if (attribute is null)
-				throw new ArgumentNullException(nameof(attribute));
-#endif
 #if NET8_0_OR_GREATER
 			ArgumentException.ThrowIfNullOrEmpty(attribute.AttributeName);
 #else

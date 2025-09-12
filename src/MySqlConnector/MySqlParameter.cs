@@ -183,12 +183,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 	private MySqlParameter(MySqlParameter other, string parameterName)
 		: this(other)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(parameterName);
-#else
-		if (parameterName is null)
-			throw new ArgumentNullException(nameof(parameterName));
-#endif
 		ParameterName = parameterName;
 	}
 

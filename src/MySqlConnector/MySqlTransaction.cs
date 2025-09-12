@@ -153,12 +153,7 @@ public sealed class MySqlTransaction : DbTransaction
 	{
 		VerifyValid();
 
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(savepointName);
-#else
-		if (savepointName is null)
-			throw new ArgumentNullException(nameof(savepointName));
-#endif
 #if NET8_0_OR_GREATER
 		ArgumentException.ThrowIfNullOrEmpty(savepointName);
 #else

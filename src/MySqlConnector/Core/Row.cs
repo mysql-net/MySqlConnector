@@ -424,12 +424,7 @@ internal sealed class Row
 
 	public int GetValues(object[] values)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(values);
-#else
-		if (values is null)
-			throw new ArgumentNullException(nameof(values));
-#endif
 		int count = Math.Min(values.Length, ResultSet.ColumnDefinitions!.Length);
 		for (int i = 0; i < count; i++)
 			values[i] = GetValue(i);
