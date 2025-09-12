@@ -39,4 +39,60 @@ internal static class ExceptionExtensions
 		}
 	}
 #endif
+
+#if !NET8_0_OR_GREATER
+	extension (ArgumentOutOfRangeException)
+	{
+		/// <summary>Throws an <see cref="ArgumentOutOfRangeException"/> if <paramref name="value"/> is negative.</summary>
+		/// <param name="value">The argument to validate as non-negative.</param>
+		/// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
+		public static void ThrowIfNegative(int value, [CallerArgumentExpression("value")] string? paramName = null)
+		{
+			if (value < 0)
+				throw new ArgumentOutOfRangeException(paramName, "The value must not be negative.");
+		}
+
+		/// <summary>Throws an <see cref="ArgumentOutOfRangeException"/> if <paramref name="value"/> is negative.</summary>
+		/// <param name="value">The argument to validate as non-negative.</param>
+		/// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
+		public static void ThrowIfNegative(long value, [CallerArgumentExpression("value")] string? paramName = null)
+		{
+			if (value < 0L)
+				throw new ArgumentOutOfRangeException(paramName, "The value must not be negative.");
+		}
+
+		/// <summary>Throws an <see cref="ArgumentOutOfRangeException"/> if <paramref name="value"/> is greater than <paramref name="other"/>.</summary>
+		/// <param name="value">The argument to validate as less or equal than <paramref name="other"/>.</param>
+		/// <param name="other">The value to compare with <paramref name="value"/>.</param>
+		/// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
+		public static void ThrowIfGreaterThan<T>(T value, T other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+			where T : IComparable<T>
+		{
+			if (value.CompareTo(other) > 0)
+				throw new ArgumentOutOfRangeException(paramName, $"The value must be less than or equal to {other}.");
+		}
+
+		/// <summary>Throws an <see cref="ArgumentOutOfRangeException"/> if <paramref name="value"/> is greater than or equal <paramref name="other"/>.</summary>
+		/// <param name="value">The argument to validate as less than <paramref name="other"/>.</param>
+		/// <param name="other">The value to compare with <paramref name="value"/>.</param>
+		/// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
+		public static void ThrowIfGreaterThanOrEqual<T>(T value, T other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+			where T : IComparable<T>
+		{
+			if (value.CompareTo(other) >= 0)
+				throw new ArgumentOutOfRangeException(paramName, $"The value must be less than {other}.");
+		}
+
+		/// <summary>Throws an <see cref="ArgumentOutOfRangeException"/> if <paramref name="value"/> is less than or equal <paramref name="other"/>.</summary>
+		/// <param name="value">The argument to validate as greater than than <paramref name="other"/>.</param>
+		/// <param name="other">The value to compare with <paramref name="value"/>.</param>
+		/// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
+		public static void ThrowIfLessThanOrEqual<T>(T value, T other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+			where T : IComparable<T>
+		{
+			if (value.CompareTo(other) <= 0)
+				throw new ArgumentOutOfRangeException(paramName, $"The value must be greater than {other}.");
+		}
+	}
+#endif
 }

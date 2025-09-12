@@ -230,12 +230,7 @@ public sealed class MySqlCommand : DbCommand, IMySqlCommand, ICancellableCommand
 		get => Math.Min(m_commandTimeout ?? Connection?.DefaultCommandTimeout ?? 0, int.MaxValue / 1000);
 		set
 		{
-#if NET8_0_OR_GREATER
 			ArgumentOutOfRangeException.ThrowIfNegative(value);
-#else
-			if (value < 0)
-				throw new ArgumentOutOfRangeException(nameof(value), "CommandTimeout must be greater than or equal to zero.");
-#endif
 			m_commandTimeout = value;
 			((ICancellableCommand) this).EffectiveCommandTimeout = null;
 		}
