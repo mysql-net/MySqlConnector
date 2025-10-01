@@ -1,5 +1,5 @@
 variables:
-  DotNetCoreSdkVersion: '9.x'
+  DotNetCoreSdkVersion: '10.x'
   NUGET_PACKAGES: '$(Pipeline.Workspace)/.nuget/packages'
 
 jobs:
@@ -107,18 +107,18 @@ jobs:
     displayName: 'Remove target frameworks'
     inputs:
       targetType: 'inline'
-      script: '((Get-Content .\tests\IntegrationTests\IntegrationTests.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>net481;net9.0</TargetFrameworks>'')) | Set-Content .\tests\IntegrationTests\IntegrationTests.csproj'
+      script: '((Get-Content .\tests\IntegrationTests\IntegrationTests.csproj -Raw) -replace(''<TargetFrameworks>.*</TargetFrameworks>'', ''<TargetFrameworks>net481;net10.0</TargetFrameworks>'')) | Set-Content .\tests\IntegrationTests\IntegrationTests.csproj'
   - task: DotNetCoreCLI@2
     displayName: 'Restore packages'
     inputs:
       command: 'restore'
   - task: DotNetCoreCLI@2
-    displayName: 'Integration tests (net481/net9.0)'
+    displayName: 'Integration tests (net481/net10.0)'
     inputs:
       command: 'test'
       projects: 'tests/IntegrationTests/IntegrationTests.csproj'
       arguments: '-c Release --no-restore -p:TestTfmsInParallel=false'
-      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net481/net9.0', 'No SSL') }}
+      testRunTitle: ${{ format('{0}, $(Agent.OS), {1}, {2}', 'mysql:8.0', 'net481/net10.0', 'No SSL') }}
     env:
       DATA__UNSUPPORTEDFEATURES: 'Ed25519,QueryAttributes,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,UnixDomainSocket,Vector'
       DATA__CONNECTIONSTRING: 'server=localhost;port=3306;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=True;UseCompression=True'

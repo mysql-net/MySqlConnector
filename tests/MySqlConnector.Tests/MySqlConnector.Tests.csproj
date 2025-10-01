@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Condition=" '$(Configuration)' != 'MySqlData' ">
-    <TargetFrameworks>net481;net9.0</TargetFrameworks>
+    <TargetFrameworks>net481;net8.0;net10.0</TargetFrameworks>
   </PropertyGroup>
 
  <PropertyGroup Condition=" '$(Configuration)' == 'MySqlData' ">
@@ -15,7 +15,6 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <AssemblyOriginatorKeyFile>..\..\MySqlConnector.snk</AssemblyOriginatorKeyFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <LangVersion>12.0</LangVersion>
     <NoWarn>$(NoWarn);SA1021</NoWarn>
   </PropertyGroup>
 

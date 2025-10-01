@@ -25,24 +25,14 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 
 	public override int Add(object value)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(value);
-#else
-		if (value is null)
-			throw new ArgumentNullException(nameof(value));
-#endif
 		AddParameter((MySqlParameter) value, m_parameters.Count);
 		return m_parameters.Count - 1;
 	}
 
 	public MySqlParameter Add(MySqlParameter parameter)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(parameter);
-#else
-		if (parameter is null)
-			throw new ArgumentNullException(nameof(parameter));
-#endif
 		AddParameter(parameter, m_parameters.Count);
 		return parameter;
 	}
@@ -135,12 +125,7 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 
 	protected override void SetParameter(int index, DbParameter value)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(value);
-#else
-		if (value is null)
-			throw new ArgumentNullException(nameof(value));
-#endif
 		var newParameter = (MySqlParameter) value;
 		var oldParameter = m_parameters[index];
 		if (oldParameter.NormalizedParameterName is not null)

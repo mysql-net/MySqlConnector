@@ -8,12 +8,7 @@ internal abstract class SqlParser(StatementPreparer preparer)
 
 	public void Parse(string sql)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(sql);
-#else
-		if (sql is null)
-			throw new ArgumentNullException(nameof(sql));
-#endif
 		OnBeforeParse(sql);
 
 		int parameterStartIndex = -1;

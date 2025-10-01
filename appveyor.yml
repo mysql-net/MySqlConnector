@@ -9,7 +9,7 @@ install:
   - ps: Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "install-dotnet.ps1"
   - ps: .\install-dotnet.ps1 -Channel 6.0 -InstallDir "dotnetcli"
   - ps: .\install-dotnet.ps1 -Channel 8.0 -InstallDir "dotnetcli"
-  - ps: .\install-dotnet.ps1 -Channel 9.0 -InstallDir "dotnetcli"
+  - ps: .\install-dotnet.ps1 -Channel 10.0 -InstallDir "dotnetcli"
 build_script:
 - dotnet --info
 before_test:

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>14.0</LangVersion>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
     <NoWarn>$(NoWarn);1591;CA1708;CA1835;CA2215;CA5397;NU5105;SYSLIB0039</NoWarn>
     <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>

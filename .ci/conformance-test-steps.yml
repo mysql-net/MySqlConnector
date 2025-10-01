@@ -11,7 +11,7 @@ steps:
   condition: always()
   inputs:
     buildType: 'current'
-    artifactName: 'Conformance.Tests-9.0-$(Agent.OS)'
+    artifactName: 'Conformance.Tests-10.0-$(Agent.OS)'
     targetPath: '$(Build.BinariesDirectory)/9.0'
 - task: DotNetCoreCLI@2
   displayName: 'Conformance Tests'

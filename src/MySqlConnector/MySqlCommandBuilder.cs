@@ -12,12 +12,7 @@ public sealed class MySqlCommandBuilder : DbCommandBuilder
 
 	private static async Task DeriveParametersAsync(IOBehavior ioBehavior, MySqlCommand command, CancellationToken cancellationToken)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(command);
-#else
-		if (command is null)
-			throw new ArgumentNullException(nameof(command));
-#endif
 		if (command.CommandType != CommandType.StoredProcedure)
 			throw new ArgumentException($"MySqlCommand.CommandType must be StoredProcedure not {command.CommandType}", nameof(command));
 		if (string.IsNullOrWhiteSpace(command.CommandText))

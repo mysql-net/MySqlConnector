@@ -331,12 +331,7 @@ internal sealed class ResultSet(MySqlDataReader dataReader)
 
 	public int GetOrdinal(string name)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(name);
-#else
-		if (name is null)
-			throw new ArgumentNullException(nameof(name));
-#endif
 		if (!HasResultSet)
 			throw new InvalidOperationException("There is no current result set.");
 

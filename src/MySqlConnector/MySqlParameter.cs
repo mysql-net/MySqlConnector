@@ -29,7 +29,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		m_name = name ?? "";
 		NormalizedParameterName = NormalizeParameterName(m_name);
 		Value = value;
-		m_sourceColumn = "";
+		SourceColumn = "";
 		SourceVersion = DataRowVersion.Current;
 	}
 
@@ -49,7 +49,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		NormalizedParameterName = NormalizeParameterName(m_name);
 		MySqlDbType = mySqlDbType;
 		Size = size;
-		m_sourceColumn = sourceColumn ?? "";
+		SourceColumn = sourceColumn ?? "";
 		SourceVersion = DataRowVersion.Current;
 	}
 
@@ -123,8 +123,8 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 	[AllowNull]
 	public override string SourceColumn
 	{
-		get => m_sourceColumn;
-		set => m_sourceColumn = value ?? "";
+		get;
+		set => field = value ?? "";
 	}
 
 	public override bool SourceColumnNullMapping { get; set; }
@@ -175,7 +175,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		m_value = other.m_value;
 		Precision = other.Precision;
 		Scale = other.Scale;
-		m_sourceColumn = other.m_sourceColumn;
+		SourceColumn = other.SourceColumn;
 		SourceColumnNullMapping = other.SourceColumnNullMapping;
 		SourceVersion = other.SourceVersion;
 	}
@@ -183,12 +183,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 	private MySqlParameter(MySqlParameter other, string parameterName)
 		: this(other)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(parameterName);
-#else
-		if (parameterName is null)
-			throw new ArgumentNullException(nameof(parameterName));
-#endif
 		ParameterName = parameterName;
 	}
 
@@ -1034,6 +1029,5 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 	private MySqlDbType m_mySqlDbType;
 	private string m_name;
 	private ParameterDirection? m_direction;
-	private string m_sourceColumn;
 	private object? m_value;
 }

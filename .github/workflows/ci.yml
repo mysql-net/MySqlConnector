@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tfm: [ 'net8.0', 'net9.0' ]
+        tfm: [ 'net8.0', 'net10.0' ]
     services:
       mysql:
         image: mysql:9.4

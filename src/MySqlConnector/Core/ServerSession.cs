@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Buffers.Text;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -686,6 +687,9 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 		static bool TryConvertFromHexString(ReadOnlySpan<byte> hexChars, Span<byte> data)
 		{
+#if NET10_0_OR_GREATER
+			return Convert.FromHexString(hexChars, data, out _, out _) == OperationStatus.Done;
+#else
 			ReadOnlySpan<byte> hexDigits = "0123456789ABCDEFabcdef"u8;
 			for (var i = 0; i < hexChars.Length; i += 2)
 			{
@@ -700,6 +704,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 				data[i / 2] = (byte) ((high << 4) | low);
 			}
 			return true;
+#endif
 		}
 	}
 
@@ -967,7 +972,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 	private async Task<PayloadData> SendEncryptedPasswordAsync(
 		byte[] switchRequestData,
-		string rsaPublicKey,
+		byte[] rsaPublicKey,
 		string password,
 		IOBehavior ioBehavior,
 		CancellationToken cancellationToken)
@@ -988,7 +993,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 		RSAParameters rsaParameters;
 		try
 		{
-			rsaParameters = Utility.GetRsaParameters(rsaPublicKey);
+			rsaParameters = Utility.GetRsaParameters(Encoding.ASCII.GetString(rsaPublicKey));
 		}
 		catch (Exception ex)
 		{
@@ -1015,13 +1020,13 @@ internal sealed partial class ServerSession : IServerCapabilities
 		return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task<string> GetRsaPublicKeyAsync(string switchRequestName, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task<byte[]> GetRsaPublicKeyAsync(string switchRequestName, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (cs.ServerRsaPublicKeyFile.Length != 0)
 		{
 			try
 			{
-				return File.ReadAllText(cs.ServerRsaPublicKeyFile);
+				return File.ReadAllBytes(cs.ServerRsaPublicKeyFile);
 			}
 			catch (IOException ex)
 			{
@@ -1037,7 +1042,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			await SendReplyAsync(new PayloadData([payloadContent]), ioBehavior, cancellationToken).ConfigureAwait(false);
 			var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload.Span);
-			return Encoding.ASCII.GetString(publicKeyPayload.Data);
+			return publicKeyPayload.Data;
 		}
 
 		Log.CouldNotUseAuthenticationMethodForRsa(m_logger, Id, switchRequestName);
@@ -1905,7 +1910,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 		// detect AWS RDS Proxy, if hostname like <name>.proxy-<random-chars>.<region>.rds.amazonaws.com
 		if (HostName.EndsWith(".rds.amazonaws.com", StringComparison.OrdinalIgnoreCase) &&
-			HostName.Contains(".proxy-", StringComparison.OrdinalIgnoreCase))
+			HostName.AsSpan().Contains(".proxy-".AsSpan(), StringComparison.OrdinalIgnoreCase))
 		{
 			return true;
 		}

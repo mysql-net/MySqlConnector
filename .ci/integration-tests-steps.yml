@@ -45,12 +45,12 @@ steps:
     image: ${{ parameters.image }}
     unsupportedFeatures: ${{ parameters.unsupportedFeatures }}
     connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;${{ parameters.connectionStringExtra }}'
-    platform: 'net9.0'
+    platform: 'net10.0'
     description: 'No SSL'
 - template: 'integration-test-steps.yml'
   parameters:
     image: ${{ parameters.image }}
     unsupportedFeatures: ${{ parameters.unsupportedFeatures }}
     connectionString: server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=required;DefaultCommandTimeout=3600;certificate file=$(Build.Repository.LocalPath)/.ci/server/certs/ssl-client.pfx;${{ parameters.connectionStringExtra }}
-    platform: 'net9.0'
+    platform: 'net10.0'
     description: 'SSL'

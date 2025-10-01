@@ -433,12 +433,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	private void TakeSessionFrom(MySqlConnection other)
 	{
 #if DEBUG
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(other);
-#else
-		if (other is null)
-			throw new ArgumentNullException(nameof(other));
-#endif
 		if (m_session is not null)
 			throw new InvalidOperationException("This connection must not have a session");
 		if (other.m_session is null)
@@ -713,12 +708,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	private static async Task ClearPoolAsync(MySqlConnection connection, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(connection);
-#else
-		if (connection is null)
-			throw new ArgumentNullException(nameof(connection));
-#endif
 
 		var pool = ConnectionPool.GetPool(connection.m_connectionString, null, createIfNotFound: false);
 		if (pool is not null)
@@ -1036,12 +1026,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	internal void SetActiveReader(MySqlDataReader dataReader)
 	{
-#if NET6_0_OR_GREATER
 		ArgumentNullException.ThrowIfNull(dataReader);
-#else
-		if (dataReader is null)
-			throw new ArgumentNullException(nameof(dataReader));
-#endif
 		if (m_activeReader is not null)
 			throw new InvalidOperationException("Can't replace active reader.");
 		m_activeReader = dataReader;

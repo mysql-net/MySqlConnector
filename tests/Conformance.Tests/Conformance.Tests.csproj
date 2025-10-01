@@ -1,13 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
  <PropertyGroup>
-    <TargetFrameworks>net9.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <VersionPrefix>0.1.0</VersionPrefix>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <AssemblyOriginatorKeyFile>..\..\MySqlConnector.snk</AssemblyOriginatorKeyFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-   <LangVersion>11.0</LangVersion>
   </PropertyGroup>
 
  <ItemGroup>
