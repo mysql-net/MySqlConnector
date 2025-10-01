@@ -1284,6 +1284,45 @@ create table bulk_load_data_table(a int not null primary key auto_increment, b t
 		using (var cmd = new MySqlCommand("select b from bulk_load_data_table;", connection))
 			Assert.Equal(expected, cmd.ExecuteScalar());
 	}
+
+	[Fact]
+	public void BulkCopyGeometry()
+	{
+		var dataTable = new DataTable()
+		{
+			Columns =
+			{
+				new DataColumn("geo_data", typeof(MySqlGeometry)),
+			},
+			Rows =
+			{
+				new object[] { MySqlGeometry.FromWkb(0, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63]) },
+			},
+		};
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(id BIGINT UNIQUE NOT NULL AUTO_INCREMENT, geo_data GEOMETRY NOT NULL);", connection))
+		{
+			cmd.ExecuteNonQuery();
+		}
+
+		var bc = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_load_data_table",
+			ColumnMappings =
+			{
+				new()
+				{
+					SourceOrdinal = 0,
+					DestinationColumn = "geo_data",
+				},
+			},
+		};
+
+		bc.WriteToServer(dataTable);
+	}
 #endif
 
 	internal static string GetConnectionString() => AppConfig.ConnectionString;

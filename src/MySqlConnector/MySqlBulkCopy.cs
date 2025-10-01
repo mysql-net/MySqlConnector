@@ -231,7 +231,7 @@ public sealed class MySqlBulkCopy
 		using (var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SchemaOnly, ioBehavior, cancellationToken).ConfigureAwait(false))
 		{
 			var schema = reader.GetColumnSchema();
-			for (var i = 0; i < Math.Min(m_valuesEnumerator!.FieldCount, schema.Count); i++)
+			for (var i = 0; i < schema.Count; i++)
 			{
 				var destinationColumn = reader.GetName(i);
 				if (schema[i].DataTypeName == "BIT")
@@ -260,7 +260,7 @@ public sealed class MySqlBulkCopy
 		}
 
 		// set columns and expressions from the column mappings
-		for (var i = 0; i < m_valuesEnumerator.FieldCount; i++)
+		for (var i = 0; i < m_valuesEnumerator!.FieldCount; i++)
 		{
 			var columnMapping = columnMappings.FirstOrDefault(x => x.SourceOrdinal == i);
 			if (columnMapping is null)
