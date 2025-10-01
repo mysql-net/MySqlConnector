@@ -83,7 +83,6 @@ dotnet_diagnostic.CA1510.severity = none # Use ArgumentNullException.ThrowIfNull
 dotnet_diagnostic.CA1513.severity = none # Use ObjectDisposedException.ThrowIf.
 dotnet_diagnostic.CA1849.severity = none # Call async methods when in an async method.
 dotnet_diagnostic.CA2000.severity = none # Use recommended Dispose pattern.
-dotnet_diagnostic.CA2025.severity = none # Do not pass 'IDisposable' instances into unawaited tasks - https://github.com/dotnet/roslyn-analyzers/issues/7652#issuecomment-2961614195
 dotnet_diagnostic.CA2100.severity = none # Review SQL queries for security vulnerabilities.
 dotnet_diagnostic.CA2213.severity = silent # Disposable fields should be disposed.
 dotnet_diagnostic.CA5398.severity = none # Avoid hardcoded SslProtocols values.
