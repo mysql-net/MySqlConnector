@@ -647,14 +647,14 @@ create table bulk_load_data_table(str varchar(5), number tinyint);", connection)
 			},
 			Rows =
 			{
-				new object[] { MySqlGeometry.FromWkb(4326, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63]) },
+				new object[] { MySqlGeometry.FromWkb(0, [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 240, 63]) },
 			},
 		};
 
 		using var connection = new MySqlConnection(GetLocalConnectionString());
 		await connection.OpenAsync();
 		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
-create table bulk_load_data_table(id BIGINT UNIQUE NOT NULL AUTO_INCREMENT, geo_data GEOMETRY SRID 4326 NOT NULL);", connection))
+create table bulk_load_data_table(id BIGINT UNIQUE NOT NULL AUTO_INCREMENT, geo_data GEOMETRY NOT NULL);", connection))
 		{
 			await cmd.ExecuteNonQueryAsync();
 		}
