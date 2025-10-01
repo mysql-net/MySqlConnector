@@ -972,7 +972,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 	private async Task<PayloadData> SendEncryptedPasswordAsync(
 		byte[] switchRequestData,
-		string rsaPublicKey,
+		byte[] rsaPublicKey,
 		string password,
 		IOBehavior ioBehavior,
 		CancellationToken cancellationToken)
@@ -993,7 +993,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 		RSAParameters rsaParameters;
 		try
 		{
-			rsaParameters = Utility.GetRsaParameters(rsaPublicKey);
+			rsaParameters = Utility.GetRsaParameters(Encoding.ASCII.GetString(rsaPublicKey));
 		}
 		catch (Exception ex)
 		{
@@ -1020,13 +1020,13 @@ internal sealed partial class ServerSession : IServerCapabilities
 		return await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 	}
 
-	private async Task<string> GetRsaPublicKeyAsync(string switchRequestName, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
+	private async Task<byte[]> GetRsaPublicKeyAsync(string switchRequestName, ConnectionSettings cs, IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
 		if (cs.ServerRsaPublicKeyFile.Length != 0)
 		{
 			try
 			{
-				return File.ReadAllText(cs.ServerRsaPublicKeyFile);
+				return File.ReadAllBytes(cs.ServerRsaPublicKeyFile);
 			}
 			catch (IOException ex)
 			{
@@ -1042,7 +1042,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			await SendReplyAsync(new PayloadData([payloadContent]), ioBehavior, cancellationToken).ConfigureAwait(false);
 			var payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 			var publicKeyPayload = AuthenticationMoreDataPayload.Create(payload.Span);
-			return Encoding.ASCII.GetString(publicKeyPayload.Data);
+			return publicKeyPayload.Data;
 		}
 
 		Log.CouldNotUseAuthenticationMethodForRsa(m_logger, Id, switchRequestName);
