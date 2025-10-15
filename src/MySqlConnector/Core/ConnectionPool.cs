@@ -16,7 +16,7 @@ internal sealed class ConnectionPool : IConnectionPoolMetadata, IDisposable
 
 	int IConnectionPoolMetadata.Generation => m_generation;
 
-	int IConnectionPoolMetadata.GetNewSessionId() => Interlocked.Increment(ref m_lastSessionId); 
+	int IConnectionPoolMetadata.GetNewSessionId() => Interlocked.Increment(ref m_lastSessionId);
 
 	public string? Name { get; }
 
@@ -274,7 +274,7 @@ internal sealed class ConnectionPool : IConnectionPoolMetadata, IDisposable
 	/// </summary>
 	private async Task RecoverLeakedSessionsAsync(IOBehavior ioBehavior)
 	{
-		var recoveredSessions = new List<(ServerSession Session, MySqlConnection Connection)>();
+		var recoveredSessions = new List<SessionConnection>();
 		lock (m_leasedSessions)
 		{
 			m_lastRecoveryTime = unchecked((uint) Environment.TickCount);
@@ -285,7 +285,7 @@ internal sealed class ConnectionPool : IConnectionPoolMetadata, IDisposable
 					// create a dummy MySqlConnection so that any thread running RecoverLeakedSessionsAsync doesn't process this one
 					var connection = new MySqlConnection();
 					session.OwningConnection = new(connection);
-					recoveredSessions.Add((session, connection));
+					recoveredSessions.Add(new(session, connection));
 				}
 			}
 		}
@@ -739,6 +739,18 @@ internal sealed class ConnectionPool : IConnectionPoolMetadata, IDisposable
 	{
 		AppDomain.CurrentDomain.DomainUnload += OnAppDomainShutDown;
 		AppDomain.CurrentDomain.ProcessExit += OnAppDomainShutDown;
+	}
+
+	private readonly struct SessionConnection(ServerSession session, MySqlConnection connection)
+	{
+		public ServerSession Session { get; } = session;
+		public MySqlConnection Connection { get; } = connection;
+
+		public void Deconstruct(out ServerSession session, out MySqlConnection connection)
+		{
+			session = Session;
+			connection = Connection;
+		}
 	}
 
 	private static void OnAppDomainShutDown(object? sender, EventArgs e) =>

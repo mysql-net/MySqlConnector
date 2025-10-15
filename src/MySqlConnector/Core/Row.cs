@@ -34,7 +34,7 @@ internal sealed class Row
 				if ((data.Span[((column + 2) / 8) + 1] & (1 << ((column + 2) % 8))) != 0)
 				{
 					// column is NULL
-					m_dataOffsetLengths[column] = (-1, 0);
+					m_dataOffsetLengths[column] = new(-1, 0);
 				}
 			}
 
@@ -58,7 +58,7 @@ internal sealed class Row
 						_ => checked((int) reader.ReadLengthEncodedInteger()),
 					};
 
-					m_dataOffsetLengths[column] = (reader.Offset, length);
+					m_dataOffsetLengths[column] = new(reader.Offset, length);
 					reader.Offset += length;
 				}
 			}
@@ -69,7 +69,7 @@ internal sealed class Row
 			for (var column = 0; column < m_dataOffsetLengths.Length; column++)
 			{
 				var length = reader.ReadLengthEncodedIntegerOrNull();
-				m_dataOffsetLengths[column] = length == -1 ? (-1, 0) : (reader.Offset, length);
+				m_dataOffsetLengths[column] = length == -1 ? new(-1, 0) : new(reader.Offset, length);
 				reader.Offset += m_dataOffsetLengths[column].Length;
 			}
 		}
@@ -464,8 +464,6 @@ internal sealed class Row
 
 	private readonly struct OffsetLength(int offset, int length)
 	{
-		public static implicit operator OffsetLength((int Offset, int Length) x) => new(x.Offset, x.Length);
-
 		public void Deconstruct(out int offset, out int length)
 		{
 			offset = Offset;

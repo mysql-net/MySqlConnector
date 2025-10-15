@@ -41,7 +41,11 @@ internal sealed class RandomLoadBalancer : ILoadBalancer
 			lock (m_lock)
 				j = m_random.Next(i + 1);
 			if (i != j)
-				(shuffled[j], shuffled[i]) = (shuffled[i], shuffled[j]);
+			{
+				var swap = shuffled[i];
+				shuffled[i] = shuffled[j];
+				shuffled[j] = swap;
+			}
 		}
 		return shuffled;
 #endif
