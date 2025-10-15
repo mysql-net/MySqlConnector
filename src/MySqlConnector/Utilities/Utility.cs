@@ -553,13 +553,7 @@ internal static class Utility
 #else
 		ref var first = ref Unsafe.AsRef(bytes[0]);
 #endif
-#if NET462
-		var swap = bytes[offset1];
-		bytes[offset1] = bytes[offset2];
-		bytes[offset2] = swap;
-#else
 		(Unsafe.Add(ref first, offset2), Unsafe.Add(ref first, offset1)) = (Unsafe.Add(ref first, offset1), Unsafe.Add(ref first, offset2));
-#endif
 	}
 
 #if NET462

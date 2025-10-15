@@ -180,7 +180,6 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 	}
 #endif
 
-#if !NET462 // https://github.com/dotnet/sdk/issues/51265
 	[Fact]
 	public void ForeignKeys()
 	{
@@ -258,7 +257,6 @@ public class SchemaProviderTests : IClassFixture<SchemaProviderFixture>, IDispos
 		};
 		Assert.Equal(expected, actual);
 	}
-#endif
 
 	private readonly DatabaseFixture m_database;
 }

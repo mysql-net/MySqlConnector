@@ -14,31 +14,31 @@ internal abstract class ColumnReader
 			case ColumnType.Tiny:
 				if (connection.TreatTinyAsBoolean && columnDefinition.ColumnLength == 1 && !isUnsigned)
 					return isBinary ? BinaryBooleanColumnReader.Instance : TextBooleanColumnReader.Instance;
-				return ((isBinary ? 2 : 0) + (isUnsigned ? 1 : 0)) switch
+				return (isBinary, isUnsigned) switch
 				{
-					0 => TextSignedInt8ColumnReader.Instance,
-					1 => TextUnsignedInt8ColumnReader.Instance,
-					2 => BinarySignedInt8ColumnReader.Instance,
-					_ => BinaryUnsignedInt8ColumnReader.Instance,
+					(false, false) => TextSignedInt8ColumnReader.Instance,
+					(false, true) => TextUnsignedInt8ColumnReader.Instance,
+					(true, false) => BinarySignedInt8ColumnReader.Instance,
+					(true, true) => BinaryUnsignedInt8ColumnReader.Instance,
 				};
 
 			case ColumnType.Int24:
 			case ColumnType.Long:
-				return ((isBinary ? 2 : 0) + (isUnsigned ? 1 : 0)) switch
+				return (isBinary, isUnsigned) switch
 				{
-					0 => TextSignedInt32ColumnReader.Instance,
-					1 => TextUnsignedInt32ColumnReader.Instance,
-					2 => BinarySignedInt32ColumnReader.Instance,
-					_ => BinaryUnsignedInt32ColumnReader.Instance,
+					(false, false) => TextSignedInt32ColumnReader.Instance,
+					(false, true) => TextUnsignedInt32ColumnReader.Instance,
+					(true, false) => BinarySignedInt32ColumnReader.Instance,
+					(true, true) => BinaryUnsignedInt32ColumnReader.Instance,
 				};
 
 			case ColumnType.Longlong:
-				return ((isBinary ? 2 : 0) + (isUnsigned ? 1 : 0)) switch
+				return (isBinary, isUnsigned) switch
 				{
-					0 => TextSignedInt64ColumnReader.Instance,
-					1 => TextUnsignedInt64ColumnReader.Instance,
-					2 => BinarySignedInt64ColumnReader.Instance,
-					_ => BinaryUnsignedInt64ColumnReader.Instance,
+					(false, false) => TextSignedInt64ColumnReader.Instance,
+					(false, true) => TextUnsignedInt64ColumnReader.Instance,
+					(true, false) => BinarySignedInt64ColumnReader.Instance,
+					(true, true) => BinaryUnsignedInt64ColumnReader.Instance,
 				};
 
 			case ColumnType.Bit:
@@ -77,12 +77,12 @@ internal abstract class ColumnReader
 				return StringColumnReader.Instance;
 
 			case ColumnType.Short:
-				return ((isBinary ? 2 : 0) + (isUnsigned ? 1 : 0)) switch
+				return (isBinary, isUnsigned) switch
 				{
-					0 => TextSignedInt16ColumnReader.Instance,
-					1 => TextUnsignedInt16ColumnReader.Instance,
-					2 => BinarySignedInt16ColumnReader.Instance,
-					_ => BinaryUnsignedInt16ColumnReader.Instance,
+					(false, false) => TextSignedInt16ColumnReader.Instance,
+					(false, true) => TextUnsignedInt16ColumnReader.Instance,
+					(true, false) => BinarySignedInt16ColumnReader.Instance,
+					(true, true) => BinaryUnsignedInt16ColumnReader.Instance,
 				};
 
 			case ColumnType.Date:

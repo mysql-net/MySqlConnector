@@ -300,15 +300,15 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 					argParameterNames.Add(outName);
 
 					// special handling for GUIDs to ensure that the result set has a type and length that will be autodetected as a GUID
-					switch (param.MySqlDbType)
+					switch (param.MySqlDbType, param.Size)
 					{
-						case MySqlDbType.Guid when param.Size == 16:
+						case (MySqlDbType.Guid, 16):
 							outParameterNames.Add($"CAST({outName} AS BINARY(16))");
 							break;
-						case MySqlDbType.Guid when param.Size == 32:
+						case (MySqlDbType.Guid, 32):
 							outParameterNames.Add($"CAST({outName} AS CHAR(32))");
 							break;
-						case MySqlDbType.Guid when param.Size == 36:
+						case (MySqlDbType.Guid, 36):
 							outParameterNames.Add($"CAST({outName} AS CHAR(36))");
 							break;
 						default:
@@ -349,15 +349,15 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		var isSingleRow = (command.CommandBehavior & CommandBehavior.SingleRow) != 0;
 		if ((isSchemaOnly || isSingleRow) && isFirstCommand)
 		{
-			writer.Write(((command.Connection!.SupportsPerQueryVariables ? 2 : 0) + (isSingleRow ? 1 : 0)) switch
+			writer.Write((command.Connection!.SupportsPerQueryVariables, isSingleRow) switch
 			{
 				// server doesn't support per-query variables; use multi-statements
-				0 => "SET sql_select_limit=0;\n"u8,
-				1 => "SET sql_select_limit=1;\n"u8,
+				(false, false) => "SET sql_select_limit=0;\n"u8,
+				(false, true) => "SET sql_select_limit=1;\n"u8,
 
 				// server supports per-query variables; use SET STATEMENT
-				2 => "SET STATEMENT sql_select_limit=0 FOR "u8,
-				_ => "SET STATEMENT sql_select_limit=1 FOR "u8,
+				(true, false) => "SET STATEMENT sql_select_limit=0 FOR "u8,
+				(true, true) => "SET STATEMENT sql_select_limit=1 FOR "u8,
 			});
 		}
 
