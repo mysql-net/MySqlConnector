@@ -27,6 +27,10 @@
     <NoWarn>$(NoWarn);SA0001;SA1021;SA1133;xUnit1030</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net481' ">
+    <RestoreEnablePackagePruning>false</RestoreEnablePackagePruning>
+  </PropertyGroup>
+
   <ItemGroup>
     <!--testing packages-->
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
