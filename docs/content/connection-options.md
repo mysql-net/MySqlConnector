@@ -451,6 +451,11 @@ These are the other options that MySqlConnector supports. They are set to sensib
     distributed transactions, but may not be compatible with server replication; there are <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-restrictions.html">other limitations</a>.
     When set to <code>false</code>, regular MySQL transactions are used, just like Connector/NET.</td>
   </tr>
+  <tr id="UseProcedureCache">
+    <td>Use Procedure Cache, UseProcedureCache</td>
+    <td>true</td>
+    <td>When <code>false</code> disables the procedure cache</td>
+  </tr>
 </table>
 
 ## Unsupported Options

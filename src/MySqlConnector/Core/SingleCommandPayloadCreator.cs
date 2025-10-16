@@ -267,8 +267,8 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	private static bool WriteStoredProcedure(IMySqlCommand command, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer)
 	{
 		var parameterCollection = command.RawParameters;
-		var cachedProcedure = cachedProcedures[command.CommandText!];
-		if (cachedProcedure is not null)
+		var cachedProcedureExist = cachedProcedures.TryGetValue(command.CommandText!, out var cachedProcedure);
+		if (cachedProcedureExist && cachedProcedure is not null)
 			parameterCollection = cachedProcedure.AlignParamsWithDb(parameterCollection);
 
 		MySqlParameter? returnParameter = null;
