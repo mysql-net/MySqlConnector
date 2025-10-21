@@ -446,15 +446,14 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 			command.CommandText = """
 				SELECT rc.constraint_catalog, rc.constraint_schema, rc.constraint_name,
 					kcu.table_catalog, kcu.table_schema,
-					rc.table_name, rc.match_option, rc.update_rule, rc.delete_rule, 
-					NULL as referenced_table_catalog, kcu.referenced_table_schema, rc.referenced_table_name 
+					rc.table_name, rc.match_option, rc.update_rule, rc.delete_rule,
+					NULL as referenced_table_catalog, kcu.referenced_table_schema, rc.referenced_table_name
 				FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
-					LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu ON 
-					(
-						(kcu.constraint_catalog = rc.constraint_catalog OR (kcu.constraint_catalog IS NULL AND rc.constraint_catalog IS NULL)) AND
-						(kcu.constraint_schema = rc.constraint_schema OR (kcu.constraint_schema IS NULL AND rc.constraint_schema IS NULL)) AND
-						(kcu.constraint_name = rc.constraint_name OR (kcu.constraint_name IS NULL AND rc.constraint_name IS NULL))
-					)
+				LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu
+					ON kcu.constraint_catalog = rc.constraint_catalog
+					AND kcu.constraint_schema = rc.constraint_schema
+					AND kcu.table_name = rc.table_name
+					AND kcu.constraint_name = rc.constraint_name
 				WHERE kcu.ORDINAL_POSITION = 1
 				""";
 
@@ -481,9 +480,9 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 			command.CommandText = """
 				SELECT null AS INDEX_CATALOG, INDEX_SCHEMA,
 					INDEX_NAME, TABLE_NAME,
-					!NON_UNIQUE as `UNIQUE`, 
+					!NON_UNIQUE as `UNIQUE`,
 					INDEX_NAME='PRIMARY' as `PRIMARY`,
-					INDEX_TYPE as TYPE, COMMENT 
+					INDEX_TYPE as TYPE, COMMENT
 				FROM INFORMATION_SCHEMA.STATISTICS
 				WHERE SEQ_IN_INDEX=1
 				""";
