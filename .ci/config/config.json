@@ -1,6 +1,6 @@
 {
     "Data": {
-      "ConnectionString": "server=127.0.0.1;user id=mysqltest;password=test;port=3306;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=true",
+      "ConnectionString": "server=127.0.0.1;user id=mysqltest;password=test;port=3306;database=mysqltest;ssl mode=disabled;DefaultCommandTimeout=3600;AllowPublicKeyRetrieval=true",
       "SocketPath": "./../../../../.ci/run/mysql/mysqld.sock",
       "PasswordlessUser": "no_password",
       "SecondaryDatabase": "testdb2",

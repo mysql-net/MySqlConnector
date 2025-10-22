@@ -25,7 +25,7 @@ steps:
 - template: 'conformance-test-steps.yml'
   parameters:
     image: ${{ parameters.image }}
-    connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=conformance;ssl mode=none;DefaultCommandTimeout=3600;${{ parameters.connectionStringExtra }}'
+    connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=conformance;ssl mode=disabled;DefaultCommandTimeout=3600;${{ parameters.connectionStringExtra }}'
 - template: 'integration-test-steps.yml'
   parameters:
     image: ${{ parameters.image }}
@@ -37,14 +37,14 @@ steps:
   parameters:
     image: ${{ parameters.image }}
     unsupportedFeatures: ${{ parameters.unsupportedFeatures }}
-    connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;UseCompression=True;DefaultCommandTimeout=3600;${{ parameters.connectionStringExtra }}'
+    connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=disabled;UseCompression=True;DefaultCommandTimeout=3600;${{ parameters.connectionStringExtra }}'
     platform: 'net8.0'
     description: 'Compression'
 - template: 'integration-test-steps.yml'
   parameters:
     image: ${{ parameters.image }}
     unsupportedFeatures: ${{ parameters.unsupportedFeatures }}
-    connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=none;DefaultCommandTimeout=3600;${{ parameters.connectionStringExtra }}'
+    connectionString: 'server=localhost;port=3300;user id=mysqltest;password=test;database=mysqltest;ssl mode=disabled;DefaultCommandTimeout=3600;${{ parameters.connectionStringExtra }}'
     platform: 'net10.0'
     description: 'No SSL'
 - template: 'integration-test-steps.yml'

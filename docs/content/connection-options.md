@@ -128,7 +128,7 @@ These are the options that need to be used in order to configure a connection to
     <td>This option has the following values:
       <ul>
         <li><b>Preferred</b> - (this is the default). Use SSL if the server supports it.</li>
-        <li><b>None</b> - Do not use SSL.</li>
+        <li><b>Disabled</b> (or <b>None</b>) - Do not use SSL.</li>
         <li><b>Required</b> - Always use SSL. Deny connection if server does not support SSL. Does not validate CA or hostname.</li>
         <li><b>VerifyCA</b> - Always use SSL. Validates the CA but tolerates hostname mismatch.</li>
         <li><b>VerifyFull</b> - Always use SSL. Validates CA and hostname.</li>

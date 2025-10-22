@@ -7,7 +7,7 @@ It also verifies that MySqlConnector and MySQL Connector/NET (MySql.Data) have s
 
 The tests require a MySQL server. The simplest way to run one is with [Docker](https://www.docker.com/community-edition):
 
-    docker run -d --rm --pull always --name mysqlconnector -e MYSQL_ROOT_PASSWORD=pass -p 3306:3306 --tmpfs /var/lib/mysql mysql:9.4 --max-allowed-packet=96M --character-set-server=utf8mb4 --disable-log-bin --local-infile=1 --max-connections=250
+    docker run -d --rm --pull always --name mysqlconnector -e MYSQL_ROOT_PASSWORD=pass -p 3306:3306 --tmpfs /var/lib/mysql mysql:9.5 --max-allowed-packet=96M --character-set-server=utf8mb4 --disable-log-bin --local-infile=1 --max-connections=250
     docker exec mysqlconnector mysql -uroot -ppass -e "INSTALL COMPONENT 'file://component_query_attributes'; CREATE USER 'caching-sha2-user'@'%' IDENTIFIED WITH caching_sha2_password BY 'Cach!ng-Sh@2-Pa55'; GRANT ALL PRIVILEGES ON *.* TO 'caching-sha2-user'@'%';"
 
 Copy the file `IntegrationTests/config.json.example` to `IntegrationTests/config.json`, then edit
