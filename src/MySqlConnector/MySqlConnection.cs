@@ -510,7 +510,7 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		{
 		}
 
-		SetState(ConnectionState.Closed);
+		SetState(ConnectionState.Broken);
 		return false;
 	}
 

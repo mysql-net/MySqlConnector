@@ -166,14 +166,14 @@ public class ConnectionTests : IDisposable
 	}
 
 	[Fact]
-	public void PingWhenClosed()
+	public void PingWhenReset()
 	{
 		using var connection = new MySqlConnection(m_csb.ConnectionString);
 		connection.Open();
 		Assert.Equal(ConnectionState.Open, connection.State);
-		m_server.Stop();
+		m_server.Reset();
 		Assert.False(connection.Ping());
-		Assert.Equal(ConnectionState.Closed, connection.State);
+		Assert.Equal(ConnectionState.Broken, connection.State);
 	}
 
 	[Fact]
@@ -275,6 +275,72 @@ public class ConnectionTests : IDisposable
 			Assert.Equal(2, reader.GetInt32(0));
 		}
 		connection.Close();
+	}
+
+	[Fact]
+	public async Task ResetServerConnectionWhileOpen()
+	{
+		var csb = new MySqlConnectionStringBuilder(m_csb.ConnectionString)
+		{
+			MaximumPoolSize = 5,
+			ConnectionTimeout = 5,
+		};
+
+		List<Task> tasks = [];
+		using var barrier = new Barrier((int) csb.MaximumPoolSize);
+		for (var i = 0; i < csb.MaximumPoolSize - 1; i++)
+		{
+			var threadId = i;
+			tasks.Add(Task.Run(async () =>
+			{
+				using var connection = new MySqlConnection(csb.ConnectionString);
+				await connection.OpenAsync().ConfigureAwait(false);
+
+				barrier.SignalAndWait();
+				//// wait for reset
+				barrier.SignalAndWait();
+
+				switch (threadId % 3)
+				{
+					case 0:
+					{
+						using (var command = connection.CreateCommand())
+						{
+							command.CommandText = "SELECT 1;";
+							var exception = Assert.Throws<MySqlException>(() => command.ExecuteScalar());
+							Assert.Equal("Failed to read the result set.", exception.Message);
+						}
+						break;
+					}
+					case 1:
+					{
+						// NOTE: duplicate of PingWhenReset, but included here for completeness
+						var ping = await connection.PingAsync().ConfigureAwait(false);
+						Assert.False(ping);
+						break;
+					}
+					case 2:
+					{
+						await Assert.ThrowsAnyAsync<Exception>(async () => await connection.ResetConnectionAsync().ConfigureAwait(false));
+						break;
+					}
+				}
+
+				Assert.Equal(ConnectionState.Broken, connection.State);
+
+				await connection.CloseAsync().ConfigureAwait(false);
+				Assert.Equal(ConnectionState.Closed, connection.State);
+
+				await connection.OpenAsync().ConfigureAwait(false);
+				Assert.Equal(ConnectionState.Open, connection.State);
+			}));
+		}
+
+		barrier.SignalAndWait();
+		m_server.Reset();
+		barrier.SignalAndWait();
+
+		await Task.WhenAll(tasks);
 	}
 
 	private static async Task WaitForConditionAsync<T>(T expected, Func<T> getValue)

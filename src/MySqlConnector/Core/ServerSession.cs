@@ -2010,7 +2010,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 		lock (m_lock)
 			m_state = State.Failed;
 		if (OwningConnection is not null && OwningConnection.TryGetTarget(out var connection))
-			connection.SetState(ConnectionState.Closed);
+			connection.SetState(ConnectionState.Broken);
 	}
 
 	private void VerifyState(State state)

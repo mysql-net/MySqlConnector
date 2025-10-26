@@ -21,6 +21,22 @@ public sealed class FakeMySqlServer
 		m_tasks.Add(AcceptConnectionsAsync());
 	}
 
+	public void Reset()
+	{
+		m_cts.Cancel();
+		try
+		{
+			Task.WaitAll(m_tasks.Skip(1).ToArray());
+		}
+		catch (AggregateException)
+		{
+		}
+		m_connections.Clear();
+		m_tasks.Clear();
+		m_cts.Dispose();
+		m_cts = new();
+	}
+
 	public void Stop()
 	{
 		if (m_cts is not null)
