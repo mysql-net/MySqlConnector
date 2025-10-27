@@ -1,5 +1,4 @@
----
-lastmod: 2024-04-22
+lastmod: 2025-10-26
 date: 2017-03-27
 menu:
   main:
@@ -10,6 +9,33 @@ weight: 30
 ---
 
 # Version History
+
+### 2.5.0 Beta 1
+
+* Support .NET 10: [#1595](https://github.com/mysql-net/MySqlConnector/pull/1595).
+* **Possibly breaking** `MySqlConnection.State` will be set to `ConnectionState.Broken` when there is a network error: [#1599](https://github.com/mysql-net/MySqlConnector/issues/1599).
+  * Previously it would have been set to `ConnectionState.Closed` but the connection wasn't truly closed.
+  * Call `MySqlConnection.Close()` to fully close the connection before calling `Open()` again.
+  * Better yet, call `.Dispose()` (ideally with a `using` declaration) and create a new `MySqlConnection` instance to recover from failure.
+* **Possibly breaking** `MySqlConnection.ResetConnectionAsync` will consistently throw a `MySqlException`: [#1602](https://github.com/mysql-net/MySqlConnector/issues/1602).
+* Implement MariaDB `PARSEC` authentication: [#1540](https://github.com/mysql-net/MySqlConnector/issues/1540).
+* Support the `VECTOR` data type: [#1549](https://github.com/mysql-net/MySqlConnector/issues/1549).
+* Implement `COM_STMT_SEND_LONG_DATA` to stream large parameter values: [#943](https://github.com/mysql-net/MySqlConnector/issues/943).
+* Add `MySqlConnectorTracingOptions` and builder APIs to configure tracing output: [#1524](https://github.com/mysql-net/MySqlConnector/issues/1524).
+* Read `Guid` values from stored procedure out parameters: [#1528](https://github.com/mysql-net/MySqlConnector/issues/1528).
+* Mark `MySqlDbType` with `[DbProviderSpecificTypeProperty(true)]`: [#1557](https://github.com/mysql-net/MySqlConnector/issues/1557).
+* Allow loopback connections (e.g., Google Cloud SQL Proxy) to use clear-text password or public key retrieval: [#1534](https://github.com/mysql-net/MySqlConnector/issues/1534), [#1542](https://github.com/mysql-net/MySqlConnector/issues/1542).
+* Improve schema metadata with MariaDB by reading stored procedure metadata from `mysql.proc`: [#1547](https://github.com/mysql-net/MySqlConnector/issues/1547)
+* Improve XA transaction rollback handling: [#1585](https://github.com/mysql-net/MySqlConnector/issues/1585), [#1589](https://github.com/mysql-net/MySqlConnector/pull/1589).
+* Free large cached payload buffers when returning sessions to the pool to reduce memory usage: [#1587](https://github.com/mysql-net/MySqlConnector/issues/1587).
+* Suppress error-level logging when a command is canceled: [#1544](https://github.com/mysql-net/MySqlConnector/issues/1544).
+* Fix `MySqlBulkCopy` auto-detected column mappings: [#1568](https://github.com/mysql-net/MySqlConnector/issues/1568).
+* Fix `Foreign Keys` schema SQL syntax: [#1601](https://github.com/mysql-net/MySqlConnector/pull/1601).
+* Fix extra roundtrip for `caching_sha2_password`: [#1562](https://github.com/mysql-net/MySqlConnector/issues/1562).
+* Fix cancellation with AWS RDS Proxy: [#1581](https://github.com/mysql-net/MySqlConnector/issues/1581).
+* Optimization: Use `System.Threading.Lock` for .NET 9.0+.
+* Optimization: Use `PemEncoding` in .NET 5.0+ and UTF-8 methods in .NET 10.0+.
+* Thanks to [Didier Fracassi](https://github.com/djeman), [Jesper Noordsij](https://github.com/jnoordsij), [Holger Boskugel](https://github.com/NETSphereSoft), [Patrick le Duc](https://github.com/PatrickMNL), [Pete Dishman](https://github.com/petedishman), and [Diego Dupin](https://github.com/rusher) for contributions to this release.
 
 ### 2.4.0
 
