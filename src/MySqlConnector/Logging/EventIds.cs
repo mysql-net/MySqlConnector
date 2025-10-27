@@ -25,6 +25,8 @@ internal static class EventIds
 	public const int ExpectedToReadMoreBytes = 2010;
 	public const int ExpectedSessionState1 = 2011;
 	public const int ExpectedSessionState6 = 2016;
+	public const int ResettingConnectionFailed = 2017;
+	public const int ResetConnection = 2018;
 
 	// Session connecting events, 2100-2199
 	public const int ConnectingFailed = 2100;

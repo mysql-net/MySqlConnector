@@ -613,9 +613,21 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 	{
 		var session = Session;
 		Log.ResettingConnection(m_logger, session.Id);
-		await session.SendAsync(ResetConnectionPayload.Instance, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
-		var payload = await session.ReceiveReplyAsync(AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
-		OkPayload.Verify(payload.Span, session);
+		try
+		{
+			await session.SendAsync(ResetConnectionPayload.Instance, AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
+			var payload = await session.ReceiveReplyAsync(AsyncIOBehavior, cancellationToken).ConfigureAwait(false);
+			OkPayload.Verify(payload.Span, session);
+			Log.ResetConnection(m_logger, session.Id);
+		}
+		catch (Exception ex)
+		{
+			Log.ResettingConnectionFailed(m_logger, session.Id, ex.Message);
+			if (ex is MySqlException)
+				throw;
+			else
+				throw new MySqlException("Failed to reset connection", ex);
+		}
 	}
 
 	[AllowNull]

@@ -28,6 +28,12 @@ internal static partial class Log
 	[LoggerMessage(EventIds.ResettingConnection, LogLevel.Debug, "Session {SessionId} resetting connection")]
 	public static partial void ResettingConnection(ILogger logger, string sessionId);
 
+	[LoggerMessage(EventIds.ResettingConnectionFailed, LogLevel.Warning, "Session {SessionId} failed to reset connection: {Message}")]
+	public static partial void ResettingConnectionFailed(ILogger logger, string sessionId, string message);
+
+	[LoggerMessage(EventIds.ResetConnection, LogLevel.Debug, "Session {SessionId} reset connection")]
+	public static partial void ResetConnection(ILogger logger, string sessionId);
+
 	[LoggerMessage(EventIds.ReturningToPool, LogLevel.Trace, "Session {SessionId} returning to pool {PoolId}")]
 	public static partial void ReturningToPool(ILogger logger, string sessionId, int poolId);
 

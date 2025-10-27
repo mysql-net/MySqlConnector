@@ -321,7 +321,7 @@ public class ConnectionTests : IDisposable
 					}
 					case 2:
 					{
-						await Assert.ThrowsAnyAsync<Exception>(async () => await connection.ResetConnectionAsync().ConfigureAwait(false));
+						await Assert.ThrowsAsync<MySqlException>(async () => await connection.ResetConnectionAsync().ConfigureAwait(false));
 						break;
 					}
 				}
