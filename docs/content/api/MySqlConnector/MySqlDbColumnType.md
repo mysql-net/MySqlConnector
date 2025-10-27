@@ -13,6 +13,7 @@ public sealed class MySqlDbColumn : DbColumn
 | name | description |
 | --- | --- |
 | [ProviderType](../MySqlDbColumn/ProviderType/) { get; } |  |
+| [TableName](../MySqlDbColumn/TableName/) { get; } | Gets the name of the table that the column belongs to. This will be the alias if the table is aliased in the query. |
 
 ## See Also
 

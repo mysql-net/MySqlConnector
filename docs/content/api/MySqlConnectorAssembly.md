@@ -29,6 +29,7 @@ title: MySqlConnector
 | enum [MySqlConnectionProtocol](../MySqlConnector/MySqlConnectionProtocolType/) | Specifies the type of connection to make to the server. |
 | class [MySqlConnectionStringBuilder](../MySqlConnector/MySqlConnectionStringBuilderType/) | [`MySqlConnectionStringBuilder`](../MySqlConnector/MySqlConnectionStringBuilderType/) allows you to construct a MySQL connection string by setting properties on the builder then reading the ConnectionString property. |
 | class [MySqlConnectorFactory](../MySqlConnector/MySqlConnectorFactoryType/) | An implementation of DbProviderFactory that creates MySqlConnector objects. |
+| class [MySqlConnectorTracingOptionsBuilder](../MySqlConnector/MySqlConnectorTracingOptionsBuilderType/) | [`MySqlConnectorTracingOptionsBuilder`](../MySqlConnector/MySqlConnectorTracingOptionsBuilderType/) provides an API for configuring OpenTelemetry tracing options. |
 | class [MySqlConversionException](../MySqlConnector/MySqlConversionExceptionType/) | [`MySqlConversionException`](../MySqlConnector/MySqlConversionExceptionType/) is thrown when a MySQL value can't be converted to another type. |
 | class [MySqlDataAdapter](../MySqlConnector/MySqlDataAdapterType/) |  |
 | class [MySqlDataReader](../MySqlConnector/MySqlDataReaderType/) |  |
@@ -69,7 +70,7 @@ title: MySqlConnector
 | --- | --- |
 | static class [AuthenticationPlugins](../MySqlConnector.Authentication/AuthenticationPluginsType/) | A registry of known authentication plugins. |
 | interface [IAuthenticationPlugin](../MySqlConnector.Authentication/IAuthenticationPluginType/) | The primary interface implemented by an authentication plugin. |
-| interface [IAuthenticationPlugin2](../MySqlConnector.Authentication/IAuthenticationPlugin2Type/) | [`IAuthenticationPlugin2`](../MySqlConnector.Authentication/IAuthenticationPlugin2Type/) is an extension to [`IAuthenticationPlugin`](../MySqlConnector.Authentication/IAuthenticationPluginType/) that returns a hash of the client's password. |
+| interface [IAuthenticationPlugin3](../MySqlConnector.Authentication/IAuthenticationPlugin3Type/) | [`IAuthenticationPlugin3`](../MySqlConnector.Authentication/IAuthenticationPlugin3Type/) is an extension to [`IAuthenticationPlugin`](../MySqlConnector.Authentication/IAuthenticationPluginType/) that also returns a hash of the client's password. |
 
 ## MySqlConnector.Logging namespace
 

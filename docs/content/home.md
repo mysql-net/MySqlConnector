@@ -1,5 +1,5 @@
 ---
-lastmod: 2023-11-19
+lastmod: 2025-10-26
 date: 2016-10-16
 title: Home
 weight: 10
