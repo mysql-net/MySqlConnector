@@ -7,7 +7,7 @@
     <EnablePackageValidation>false</EnablePackageValidation>
     <Title>MySqlConnector Dependency Injection Helpers</Title>
     <Description>Provides extension methods for integrating MySqlConnector with .NET dependency injection.</Description>
-    <Copyright>Copyright 2024 Bradley Grainger</Copyright>
+    <Copyright>Copyright 2024–2025 Bradley Grainger</Copyright>
     <Authors>Bradley Grainger</Authors>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>mysqlconnector;dependency injection;iservicecollection</PackageTags>

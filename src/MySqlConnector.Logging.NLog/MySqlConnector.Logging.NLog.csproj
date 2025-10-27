@@ -4,7 +4,7 @@
     <TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
     <Title>MySqlConnector Logging Adapter for NLog</Title>
     <Description>Writes lightly-structured MySqlConnector logging output to NLog.</Description>
-    <Copyright>Copyright 2018–2024 Bradley Grainger</Copyright>
+    <Copyright>Copyright 2018–2025 Bradley Grainger</Copyright>
     <Authors>Rolf Kristensen</Authors>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>mysql;mysqlconnector;async;ado.net;database;netcore;NLog;logging</PackageTags>

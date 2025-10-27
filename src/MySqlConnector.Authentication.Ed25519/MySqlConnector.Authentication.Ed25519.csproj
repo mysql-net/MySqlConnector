@@ -4,7 +4,7 @@
     <TargetFrameworks>net462;net472;netstandard2.0;netstandard2.1;net6.0</TargetFrameworks>
     <Title>MySqlConnector Ed25519 Authentication Plugin</Title>
     <Description>Implements the client_ed25519 and parsec authentication plugins for MariaDB.</Description>
-    <Copyright>Copyright 2019–2024 Bradley Grainger</Copyright>
+    <Copyright>Copyright 2019–2025 Bradley Grainger</Copyright>
     <Authors>Bradley Grainger</Authors>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>mariadb;mysqlconnector;authentication;ed25519;parsec</PackageTags>
