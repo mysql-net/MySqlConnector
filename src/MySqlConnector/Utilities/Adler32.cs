@@ -9,8 +9,6 @@ using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 #endif
 
-#pragma warning disable IDE0007 // Use implicit type
-
 namespace MySqlConnector.Utilities;
 
 /// <summary>

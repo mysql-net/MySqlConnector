@@ -387,9 +387,7 @@ internal sealed partial class SchemaProvider(MySqlConnection connection)
 	{
 		await FillDataTableAsync(ioBehavior, dataTable, command =>
 		{
-#pragma warning disable CA2100
 			command.CommandText = "SELECT " + string.Join(", ", dataTable.Columns.Cast<DataColumn>().Select(static x => x!.ColumnName)) + " FROM INFORMATION_SCHEMA." + tableName;
-#pragma warning restore CA2100
 			if (columns is { Count: > 0 })
 			{
 				command.CommandText += " WHERE " + string.Join(" AND ", columns.Select(static x => $@"{x.Key} = @{x.Key}"));
