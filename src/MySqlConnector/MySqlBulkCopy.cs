@@ -238,11 +238,6 @@ public sealed class MySqlBulkCopy
 				{
 					AddColumnMapping(m_logger, columnMappings, addDefaultMappings, i, destinationColumn, $"@`\uE002\bcol{i}`", $"%COL% = CAST(%VAR% AS UNSIGNED)");
 				}
-				else if (schema[i].DataTypeName == "YEAR")
-				{
-					// the current code can't distinguish between 0 = 0000 and 0 = 2000
-					throw new NotSupportedException("'YEAR' columns are not supported by MySqlBulkLoader.");
-				}
 				else
 				{
 					var type = schema[i].DataType;
@@ -252,6 +247,12 @@ public sealed class MySqlBulkCopy
 					}
 					else if (addDefaultMappings)
 					{
+						if (schema[i].DataTypeName == "YEAR")
+						{
+							// the current code can't distinguish between 0 = 0000 and 0 = 2000
+							throw new NotSupportedException("'YEAR' columns are not supported by MySqlBulkCopy.");
+						}
+
 						Log.AddingDefaultColumnMapping(m_logger, i, destinationColumn);
 						columnMappings.Add(new(i, destinationColumn));
 					}

@@ -1146,6 +1146,66 @@ create table bulk_load_data_table(a int, b text);", connection))
 	}
 
 	[Fact]
+	public void BulkCopyToTableWithYear()
+	{
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+
+		using var cmd = connection.CreateCommand();
+		cmd.CommandText = """
+			DROP TABLE IF EXISTS bulk_copy_year;
+			CREATE TABLE bulk_copy_year(int_value int NULL, year_value year NULL)
+			""";
+		cmd.ExecuteNonQuery();
+
+		var bulkCopy = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_copy_year",
+			ColumnMappings =
+			{
+				new MySqlBulkCopyColumnMapping(0, "int_value", null),
+			},
+		};
+
+		var dt = new DataTable();
+		dt.Columns.Add("numbers");
+		dt.Rows.Add(1);
+		dt.Rows.Add(2);
+
+		var result = bulkCopy.WriteToServer(dt);
+		Assert.Equal(2, result.RowsInserted);
+		Assert.Empty(result.Warnings);
+	}
+
+	[Fact]
+	public void BulkCopyToTableWithYearNotSupported()
+	{
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+
+		using var cmd = connection.CreateCommand();
+		cmd.CommandText = """
+			DROP TABLE IF EXISTS bulk_copy_year;
+			CREATE TABLE bulk_copy_year(int_value int NULL, year_value year NULL)
+			""";
+		cmd.ExecuteNonQuery();
+
+		var bulkCopy = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_copy_year",
+		};
+
+		var dt = new DataTable();
+		dt.Columns.Add("numbers");
+		dt.Columns.Add("year");
+		dt.Rows.Add(1, 2000);
+		dt.Rows.Add(2, 2001);
+
+		var exception = Assert.Throws<NotSupportedException>(() => bulkCopy.WriteToServer(dt));
+		Assert.Equal("'YEAR' columns are not supported by MySqlBulkCopy.", exception.Message);
+	}
+
+	[Fact]
 	public void BulkCopyDoesNotInsertAllRows()
 	{
 		using var connection = new MySqlConnection(GetLocalConnectionString());
