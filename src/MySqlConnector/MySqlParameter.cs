@@ -997,7 +997,7 @@ public sealed class MySqlParameter : DbParameter, IDbDataParameter, ICloneable
 		}
 	}
 
-	private static ReadOnlySpan<byte> ConvertFloatsToBytes(ReadOnlySpan<float> floats)
+	internal static ReadOnlySpan<byte> ConvertFloatsToBytes(ReadOnlySpan<float> floats)
 	{
 		if (BitConverter.IsLittleEndian)
 		{

@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Xunit.Sdk;
 
 namespace IntegrationTests;
@@ -586,6 +587,71 @@ create table bulk_load_data_table(a int, b decimal(20, 10));", connection))
 			Assert.Equal(3.579m, reader.GetValue(0));
 			Assert.Equal("3.579", reader.GetMySqlDecimal(0).ToString().TrimEnd('0'));
 		}
+	}
+
+	[SkippableTheory(ServerFeatures.Vector)]
+	[InlineData("byte[]")]
+	[InlineData("float[]")]
+	public void BulkCopyDataTableWithVector(string dataType)
+	{
+		var dataTable = new DataTable()
+		{
+			Columns =
+			{
+				new DataColumn("id", typeof(int)),
+				new DataColumn("data",
+#pragma warning disable SA1118 // Parameter should not span multiple lines
+					dataType switch
+					{
+						"byte[]" => typeof(byte[]),
+						"float[]" => typeof(float[]),
+						_ => throw new ArgumentOutOfRangeException(nameof(dataType)),
+					}),
+#pragma warning restore SA1118 // Parameter should not span multiple lines
+			},
+			Rows =
+			{
+				new object[] { 1, GetDataRowValue([0, 0, 0], dataType) },
+				new object[] { 2, GetDataRowValue([1f, 2f, 3f], dataType) },
+			},
+		};
+
+		using var connection = new MySqlConnection(GetLocalConnectionString());
+		connection.Open();
+		using (var cmd = new MySqlCommand(@"drop table if exists bulk_load_data_table;
+create table bulk_load_data_table(a int, b vector(3));", connection))
+		{
+			cmd.ExecuteNonQuery();
+		}
+
+		var bulkCopy = new MySqlBulkCopy(connection)
+		{
+			DestinationTableName = "bulk_load_data_table",
+		};
+		var result = bulkCopy.WriteToServer(dataTable);
+		Assert.Equal(2, result.RowsInserted);
+		Assert.Empty(result.Warnings);
+
+		using (var cmd = new MySqlCommand(@"select b from bulk_load_data_table order by a;", connection))
+		{
+			using var reader = cmd.ExecuteReader();
+			Assert.True(reader.Read());
+			Assert.Equal(new float[3], GetFloatArray(reader, 0));
+			Assert.True(reader.Read());
+			Assert.Equal([1f, 2f, 3f], GetFloatArray(reader, 0));
+			Assert.False(reader.Read());
+		}
+
+		static object GetDataRowValue(float[] data, string dataType) =>
+			dataType == "byte[]" ? MemoryMarshal.Cast<float, byte>(data).ToArray() : data;
+
+		static float[] GetFloatArray(MySqlDataReader reader, int ordinal) =>
+			reader.GetValue(ordinal) switch
+			{
+				ReadOnlyMemory<float> romf => romf.ToArray(),
+				byte[] b => MemoryMarshal.Cast<byte, float>(b).ToArray(),
+				{ } x => throw new NotSupportedException(x.GetType().Name),
+			};
 	}
 
 #if NET6_0_OR_GREATER
