@@ -592,8 +592,6 @@ public class MySqlConnectionStringBuilderTests
 			Password = "foo;=bar,baz",
 		};
 		Assert.Equal("Password=\"foo;=bar,baz\"", builder.ConnectionString, StringComparer.OrdinalIgnoreCase);
-#if !MYSQL_DATA // https://bugs.mysql.com/bug.php?id=111797
 		using var connection = new MySqlConnection(builder.ConnectionString);
-#endif
 	}
 }
