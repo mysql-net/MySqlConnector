@@ -1,4 +1,4 @@
-lastmod: 2025-10-26
+lastmod: 2025-11-11
 date: 2017-03-27
 menu:
   main:
@@ -10,7 +10,7 @@ weight: 30
 
 # Version History
 
-### 2.5.0 Beta 1
+### 2.5.0
 
 * Support .NET 10: [#1595](https://github.com/mysql-net/MySqlConnector/pull/1595).
 * **Possibly breaking** `MySqlConnection.State` will be set to `ConnectionState.Broken` when there is a network error: [#1599](https://github.com/mysql-net/MySqlConnector/issues/1599).
@@ -18,7 +18,7 @@ weight: 30
   * Call `MySqlConnection.Close()` to fully close the connection before calling `Open()` again.
   * Better yet, call `.Dispose()` (ideally with a `using` declaration) and create a new `MySqlConnection` instance to recover from failure.
 * **Possibly breaking** `MySqlConnection.ResetConnectionAsync` will consistently throw a `MySqlException`: [#1602](https://github.com/mysql-net/MySqlConnector/issues/1602).
-* Implement MariaDB `PARSEC` authentication: [#1540](https://github.com/mysql-net/MySqlConnector/issues/1540).
+* Implement MariaDB `PARSEC` authentication: [#1540](https://github.com/mysql-net/MySqlConnector/issues/1540), [#1606](https://github.com/mysql-net/MySqlConnector/issues/1606)
 * Support the `VECTOR` data type: [#1549](https://github.com/mysql-net/MySqlConnector/issues/1549).
 * Implement `COM_STMT_SEND_LONG_DATA` to stream large parameter values: [#943](https://github.com/mysql-net/MySqlConnector/issues/943).
 * Add `MySqlConnectorTracingOptions` and builder APIs to configure tracing output: [#1524](https://github.com/mysql-net/MySqlConnector/issues/1524).
