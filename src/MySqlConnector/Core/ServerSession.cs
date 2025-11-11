@@ -945,8 +945,8 @@ internal sealed partial class ServerSession : IServerCapabilities
 				payload = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 				var extendedSalt = payload.Span;
 
-				// MariaDB 11.8.4 sends an extra 0x01 byte at the beginning of ext-salt; cf. https://mariadb.com/docs/server/reference/clientserver-protocol/1-connecting/connection#parsec-plugin
-				if (extendedSalt.Length == 21 && extendedSalt[0] == 1 && extendedSalt[1] == 'P')
+				// MariaDB 11.8.4 sends an extra 0x01 byte at the beginning of ext-salt: https://github.com/mysql-net/MySqlConnector/issues/1606
+				if (extendedSalt.Length > 2 && extendedSalt[0] == 1 && extendedSalt[1] == 'P')
 					extendedSalt = extendedSalt[1..];
 
 				Span<byte> combinedData = stackalloc byte[switchRequest.Data.Length + extendedSalt.Length];
