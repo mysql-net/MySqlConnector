@@ -13,6 +13,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <TrimmerRootAssembly Include="MySqlConnector" />
+    <TrimmerRootAssembly Include="MySqlConnector.DependencyInjection" />
     <ProjectReference Include="..\..\src\MySqlConnector\MySqlConnector.csproj" />
     <ProjectReference Include="..\..\src\MySqlConnector.DependencyInjection\MySqlConnector.DependencyInjection.csproj" />
   </ItemGroup>
