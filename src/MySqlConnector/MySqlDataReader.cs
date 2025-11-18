@@ -510,6 +510,9 @@ public sealed class MySqlDataReader : DbDataReader, IDbColumnSchemaGenerator
 		}
 	}
 
+#if NET6_0_OR_GREATER
+	[UnconditionalSuppressMessage("Trimming", "IL2111", Justification = "typeof(Type).TypeInitializer is not used.")]
+#endif
 	internal DataTable? BuildSchemaTable()
 	{
 		if (!m_resultSet.HasResultSet || m_resultSet.ContainsCommandParameters)
