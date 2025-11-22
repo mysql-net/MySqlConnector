@@ -48,6 +48,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 	public int ActiveCommandId { get; private set; }
 	public int CancellationTimeout { get; private set; }
 	public int ConnectionId { get; set; }
+	public string? ServerHostname { get; set; }
 	public byte[]? AuthPluginData { get; set; }
 	public long CreatedTimestamp { get; }
 	public ConnectionPool? Pool { get; }
@@ -122,6 +123,24 @@ internal sealed partial class ServerSession : IServerCapabilities
 				Log.IgnoringCancellationForInactiveCommand(m_logger, Id, ActiveCommandId, commandToCancel.CommandId);
 				return;
 			}
+
+			// Verify server identity before executing KILL QUERY to prevent cancelling on the wrong server
+			var killSession = killCommand.Connection!.Session;
+			if (!string.IsNullOrEmpty(ServerHostname) && !string.IsNullOrEmpty(killSession.ServerHostname))
+			{
+				if (!string.Equals(ServerHostname, killSession.ServerHostname, StringComparison.Ordinal))
+				{
+					Log.IgnoringCancellationForDifferentServer(m_logger, Id, killSession.Id, ServerHostname, killSession.ServerHostname);
+					return;
+				}
+			}
+			else if (!string.IsNullOrEmpty(ServerHostname) || !string.IsNullOrEmpty(killSession.ServerHostname))
+			{
+				// One session has hostname, the other doesn't - this is a potential mismatch
+				Log.IgnoringCancellationForDifferentServer(m_logger, Id, killSession.Id, ServerHostname, killSession.ServerHostname);
+				return;
+			}
+			// If both sessions have no hostname, allow the operation for backward compatibility
 
 			// NOTE: This command is executed while holding the lock to prevent race conditions during asynchronous cancellation.
 			// For example, if the lock weren't held, the current command could finish and the other thread could set ActiveCommandId
@@ -640,6 +659,9 @@ internal sealed partial class ServerSession : IServerCapabilities
 				Log.ChangingConnectionId(m_logger, Id, ConnectionId, newConnectionId, ServerVersion.OriginalString, ServerVersion.OriginalString);
 				ConnectionId = newConnectionId;
 			}
+
+			// Get server hostname for KILL QUERY verification
+			await GetServerHostnameAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
 
 			m_payloadHandler.ByteHandler.RemainingTimeout = Constants.InfiniteTimeout;
 			return redirectionUrl;
@@ -1973,6 +1995,52 @@ internal sealed partial class ServerSession : IServerCapabilities
 		}
 	}
 
+	private async Task GetServerHostnameAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
+	{
+		Log.GettingServerHostname(m_logger, Id);
+		try
+		{
+			var payload = SupportsQueryAttributes ? s_selectHostnameWithAttributesPayload : s_selectHostnameNoAttributesPayload;
+			await SendAsync(payload, ioBehavior, cancellationToken).ConfigureAwait(false);
+
+			// column count: 1
+			_ = await ReceiveReplyAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
+
+			// @@hostname column
+			_ = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+
+			if (!SupportsDeprecateEof)
+			{
+				payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+				_ = EofPayload.Create(payload.Span);
+			}
+
+			// first (and only) row
+			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+
+			var reader = new ByteArrayReader(payload.Span);
+			var length = reader.ReadLengthEncodedIntegerOrNull();
+			var hostname = length > 0 ? Encoding.UTF8.GetString(reader.ReadByteString(length)) : null;
+
+			ServerHostname = hostname;
+
+			Log.RetrievedServerHostname(m_logger, Id, hostname);
+
+			// OK/EOF payload
+			payload = await ReceiveReplyAsync(ioBehavior, CancellationToken.None).ConfigureAwait(false);
+			if (OkPayload.IsOk(payload.Span, this))
+				OkPayload.Verify(payload.Span, this);
+			else
+				EofPayload.Create(payload.Span);
+		}
+		catch (MySqlException ex)
+		{
+			Log.FailedToGetServerHostname(m_logger, ex, Id);
+			// Set fallback value to ensure operation can continue
+			ServerHostname = null;
+		}
+	}
+
 	private void ShutdownSocket()
 	{
 		Log.ClosingStreamSocket(m_logger, Id);
@@ -2204,6 +2272,8 @@ internal sealed partial class ServerSession : IServerCapabilities
 	private static readonly PayloadData s_sleepWithAttributesPayload = QueryPayload.Create(true, "SELECT SLEEP(0) INTO @__MySqlConnector__Sleep;"u8);
 	private static readonly PayloadData s_selectConnectionIdVersionNoAttributesPayload = QueryPayload.Create(false, "SELECT CONNECTION_ID(), VERSION();"u8);
 	private static readonly PayloadData s_selectConnectionIdVersionWithAttributesPayload = QueryPayload.Create(true, "SELECT CONNECTION_ID(), VERSION();"u8);
+	private static readonly PayloadData s_selectHostnameNoAttributesPayload = QueryPayload.Create(false, "SELECT @@hostname;"u8);
+	private static readonly PayloadData s_selectHostnameWithAttributesPayload = QueryPayload.Create(true, "SELECT @@hostname;"u8);
 
 	private readonly ILogger m_logger;
 #if NET9_0_OR_GREATER
