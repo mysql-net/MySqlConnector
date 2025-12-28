@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="AdoNet.Specification.Tests" Version="2.0.0-beta.2" />
+    <PackageVersion Include="AdoNet.Specification.Tests" Version="3.0.0-beta.1" />
     <PackageVersion Include="Dapper.StrongName" Version="2.1.35" />
     <PackageVersion Include="IndexRange" Version="1.0.3" />
     <PackageVersion Include="log4net" Version="2.0.17" />
@@ -24,6 +24,7 @@
     <PackageVersion Include="System.Text.Json" Version="9.0.1" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.v3" Version="3.2.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
