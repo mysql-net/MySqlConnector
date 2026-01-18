@@ -656,6 +656,21 @@ insert into transaction_scope_test(value) values('one'),('two'),('three');");
 		await command.ExecuteNonQueryAsync(tokenSource.Token);
 	}
 
+	[Theory]
+	[MemberData(nameof(ConnectionStrings))]
+	public void TransactionScopeTimeout(string connectionString)
+	{
+		connectionString = AppConfig.ConnectionString + ";" + connectionString;
+
+		using var transaction = new TransactionScope(TransactionScopeOption.Required, TimeSpan.FromSeconds(2));
+		using var connection = new MySqlConnection(connectionString);
+
+		Thread.Sleep(4000); // Sleep for 4 seconds to exceed the 2 second timeout
+
+		var transactionException = Assert.Throws<TransactionException>(connection.Open);
+		Assert.IsType<TimeoutException>(transactionException.InnerException);
+	}
+
 	[SkippableFact(MySqlData = "Multiple simultaneous connections or connections with different connection strings inside the same transaction are not currently supported.")]
 	public void CommitTwoTransactions()
 	{

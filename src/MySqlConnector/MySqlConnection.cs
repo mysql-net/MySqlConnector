@@ -1220,13 +1220,16 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 			// put the new, idle, connection into the list of sessions for this transaction (replacing this MySqlConnection)
 			lock (s_lock)
 			{
-				foreach (var enlistedTransaction in s_transactionConnections[connection.m_enlistedTransaction!.Transaction])
+				if (s_transactionConnections.TryGetValue(connection.m_enlistedTransaction!.Transaction, out var transactionConnections))
 				{
-					if (enlistedTransaction.Connection == this)
+					foreach (var enlistedTransaction in transactionConnections)
 					{
-						enlistedTransaction.Connection = connection;
-						enlistedTransaction.IsIdle = true;
-						break;
+						if (enlistedTransaction.Connection == this)
+						{
+							enlistedTransaction.Connection = connection;
+							enlistedTransaction.IsIdle = true;
+							break;
+						}
 					}
 				}
 			}
