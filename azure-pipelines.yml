@@ -180,8 +180,8 @@ jobs:
         image: 'mysql:9.4'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
         unsupportedFeatures: 'Ed25519,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
-      'MySQL 9.5':
-        image: 'mysql:9.5'
+      'MySQL 9.6':
+        image: 'mysql:9.6'
         connectionStringExtra: 'AllowPublicKeyRetrieval=True'
         unsupportedFeatures: 'Ed25519,ParsecAuthentication,Redirection,StreamingResults,Tls11,TlsFingerprintValidation,Vector,ZeroDateTime'
       'MariaDB 10.6':
