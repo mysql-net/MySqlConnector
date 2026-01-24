@@ -803,6 +803,19 @@ public sealed class MySqlConnectionStringBuilder : DbConnectionStringBuilder
 		set => MySqlConnectionStringOption.UseXaTransactions.SetValue(this, value);
 	}
 
+	/// <summary>
+	/// Enables procedure cache.
+	/// </summary>
+	[Category("Other")]
+	[DefaultValue(true)]
+	[Description("Enables procedure cache.")]
+	[DisplayName("Use Procedure Cache")]
+	public bool UseProcedureCache
+	{
+		get => MySqlConnectionStringOption.UseProcedureCache.GetValue(this);
+		set => MySqlConnectionStringOption.UseProcedureCache.SetValue(this, value);
+	}
+
 	// Other Methods
 
 	/// <summary>
@@ -963,6 +976,7 @@ internal abstract partial class MySqlConnectionStringOption
 	public static readonly MySqlConnectionStringValueOption<bool> UseAffectedRows;
 	public static readonly MySqlConnectionStringValueOption<bool> UseCompression;
 	public static readonly MySqlConnectionStringValueOption<bool> UseXaTransactions;
+	public static readonly MySqlConnectionStringValueOption<bool> UseProcedureCache;
 
 	public static MySqlConnectionStringOption? TryGetOptionForKey(string key) =>
 		s_options.TryGetValue(key, out var option) ? option : null;
@@ -1266,6 +1280,10 @@ internal abstract partial class MySqlConnectionStringOption
 
 		AddOption(options, UseXaTransactions = new(
 			keys: ["Use XA Transactions", "UseXaTransactions"],
+			defaultValue: true));
+
+		AddOption(options, UseProcedureCache = new(
+			keys: ["Use Procedure Cache", "UseProcedureCache"],
 			defaultValue: true));
 #pragma warning restore SA1118 // Parameter should not span multiple lines
 
