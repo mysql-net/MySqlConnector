@@ -1718,7 +1718,7 @@ internal sealed partial class ServerSession : IServerCapabilities
 			EnabledSslProtocols = sslProtocols,
 			ClientCertificates = clientCertificates,
 			TargetHost = HostName,
-			CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
+			CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Offline : X509RevocationMode.NoCheck,
 		};
 
 #if NETCOREAPP3_0_OR_GREATER
