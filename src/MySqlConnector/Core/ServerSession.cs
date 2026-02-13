@@ -1635,6 +1635,25 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 		bool ValidateRemoteCertificate(object rcbSender, X509Certificate? rcbCertificate, X509Chain? rcbChain, SslPolicyErrors rcbPolicyErrors)
 		{
+			if (rcbPolicyErrors != SslPolicyErrors.None && rcbChain != null)
+			{
+				var builder = new StringBuilder($"Found errors in remote certificate validation: {rcbPolicyErrors}");
+
+				for (var index = 0; index < rcbChain.ChainElements.Count; index++)
+				{
+					var element = rcbChain.ChainElements[index];
+					builder.AppendLine($"Element {index}: {element.Certificate.GetNameInfo(X509NameType.SimpleName, false)}");
+					builder.AppendLine("  Status:");
+
+					foreach (var status in element.ChainElementStatus)
+					{
+						builder.AppendLine($"  {status.Status}: {status.StatusInformation}");
+					}
+				}
+
+				Log.RemoteCertificateValidationTrace(m_logger, builder.ToString());
+			}
+
 			// if no CA verification is required, then we trust any remote certificate
 			if (cs.SslMode is MySqlSslMode.Preferred or MySqlSslMode.Required)
 				return true;
