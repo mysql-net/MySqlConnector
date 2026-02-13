@@ -1603,7 +1603,6 @@ internal sealed partial class ServerSession : IServerCapabilities
 					try
 					{
 						// load the certificate at this index; note that 'new X509Certificate' stops at the end of the first certificate it loads
-						Log.LoadingCaCertificate(m_logger, Id, index);
 #if NET9_0_OR_GREATER
 						var caCertificate = X509CertificateLoader.LoadCertificate(certificateBytes.AsSpan(index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index));
 #elif NET5_0_OR_GREATER
