@@ -247,18 +247,18 @@ Congratulations, you should have a fully functional app at this point!  You shou
 The following API Endpoints should work:
 
 ```http
-@BlostPostApi_HostAddress = http://localhost:5001
+@BlogPostApi_HostAddress = http://localhost:5001
 
-GET {{BlostPostApi_HostAddress}}/api/blog
+GET {{BlogPostApi_HostAddress}}/api/blog
 Accept: application/json
 ###
-POST {{BlostPostApi_HostAddress}}/api/blog
+POST {{BlogPostApi_HostAddress}}/api/blog
 Accept: application/json
 Content-Type: application/json
 
 {"title":"test", "content":"test content"}
 ###
-PUT {{BlostPostApi_HostAddress}}/api/blog/1
+PUT {{BlogPostApi_HostAddress}}/api/blog/1
 Accept: application/json
 Content-Type: application/json
 
