@@ -361,7 +361,7 @@ These are the other options that MySqlConnector supports. They are set to sensib
     <td>Ignore Command Transaction, IgnoreCommandTransaction</td>
     <td>false</td>
     <td>If <code>true</code>, the value of <code>MySqlCommand.Transaction</code> is ignored when commands are executed.
-    This matches the Connector/NET behaviour and can make porting code easier. For more information, see <a href="troubleshooting/transaction-usage/">Transaction Usage</a>.</td>
+    This matches the Connector/NET behaviour and can make porting code easier. For more information, see <a href="/troubleshooting/transaction-usage/">Transaction Usage</a>.</td>
   </tr>
   <tr id="IgnorePrepare">
     <td>Ignore Prepare, IgnorePrepare</td>
@@ -512,7 +512,7 @@ from your connection string when migrating from Connector/NET to MySqlConnector.
   <tr id="Logging">
     <td>Logging</td>
     <td>false</td>
-    <td>Use <a href="/overview/logging/">MySqlConnector logging</a> (which is more flexible) instead.</td>
+    <td>Use <a href="/diagnostics/logging/">MySqlConnector logging</a> (which is more flexible) instead.</td>
   </tr>
   <tr id="OldGetStringBehavior">
     <td>OldGetStringBehavior</td>

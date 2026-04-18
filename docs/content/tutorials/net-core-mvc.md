@@ -156,8 +156,8 @@ public class BlogPostRepository(MySqlDataSource database)
                 var post = new BlogPost
                 {
                     Id = reader.GetInt32(0),
-                    Title = reader.GetString(1),
-                    Content = reader.GetString(2),
+                    Title = reader.IsDBNull(1) ? null : reader.GetString(1),
+                    Content = reader.IsDBNull(2) ? null : reader.GetString(2),
                 };
                 posts.Add(post);
             }

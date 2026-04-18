@@ -37,7 +37,7 @@ public static (SshClient SshClient, uint Port) ConnectSsh(string sshHostName, st
 	// check arguments
 	if (string.IsNullOrEmpty(sshHostName))
 		throw new ArgumentException($"{nameof(sshHostName)} must be specified.", nameof(sshHostName));
-	if (string.IsNullOrEmpty(sshHostName))
+	if (string.IsNullOrEmpty(sshUserName))
 		throw new ArgumentException($"{nameof(sshUserName)} must be specified.", nameof(sshUserName));
 	if (string.IsNullOrEmpty(sshPassword) && string.IsNullOrEmpty(sshKeyFile))
 		throw new ArgumentException($"One of {nameof(sshPassword)} and {nameof(sshKeyFile)} must be specified.");

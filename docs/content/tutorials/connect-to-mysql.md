@@ -60,8 +60,8 @@ builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("D
 Alternatively, register a transient `MySqlConnection` object explicitly:
 
 ```csharp
-builder.services.AddTransient<MySqlConnection>(_ =>
-    new MySqlConnection(builder.Configuration.GetConnectionString["Default"]));
+builder.Services.AddTransient<MySqlConnection>(_ =>
+    new MySqlConnection(builder.Configuration.GetConnectionString("Default")));
 ```
 
 The advantage of using `AddMySqlDataSource` is that it will automatically integrate with logging, and also register `DbDataSource` and `DbConnection` with the service collection.

@@ -82,6 +82,7 @@ This will look like the following, depending on your exact configuration:
 // create a LoggerFactory and configure it with the desired logging framework
 // use ONLY ONE of the "Add" methods below, depending on your logging framework
 var loggerFactory = LoggerFactory.Create(builder =>
+{
   // if you just want console logging
   builder.AddConsole();
 
@@ -91,14 +92,14 @@ var loggerFactory = LoggerFactory.Create(builder =>
     UseWebOrAppConfig = true, // set this if you're storing your settings in Web.config instead of log4net.config
     ExternalConfigurationSetup = true, // set this instead if you're initializing log4net yourself
     // see other options at https://github.com/huorswords/Microsoft.Extensions.Logging.Log4Net.AspNetCore
-  }));
+  });
 
   // connect to NLog via NLog.Extensions.Logging
   builder.AddNLog();
 
   // connect to Serilog via Serilog.Extensions.Logging
   builder.AddSerilog(dispose: true);
-);
+});
 
 // now create a MySqlDataSource and configure it with the LoggerFactory
 await using var dataSource = new MySqlDataSourceBuilder(yourConnectionString)
