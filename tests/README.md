@@ -41,7 +41,7 @@ Otherwise, set the following options appropriately:
   * `UnixDomainSocket`: server is accessible via a Unix domain socket
   * `UuidToBin`: server supports `UUID_TO_BIN` (MySQL 8.0 and later)
   * `CancelSleepSuccessfully`: A `SLEEP` command produces a result set when it is cancelled, not an error payload.
-  * `GlobalLog`: The server `general_log` is global.
+  * `GlobalLog`: Server supports `set global general_log`.
   * `KnownCertificateAuthority`: The certificates used by the database server are trusted by the client.
   * `ParsecAuthentication`: Server supports the 'parsec' authentication plugin.
   * `QueryAttributes`: Server supports query attributes (MySQL 8.4 and later).
