@@ -40,6 +40,16 @@ Otherwise, set the following options appropriately:
   * `TlsFingerprintValidation`: server provides a hash of the TLS certificate fingerprint in the first OK packet
   * `UnixDomainSocket`: server is accessible via a Unix domain socket
   * `UuidToBin`: server supports `UUID_TO_BIN` (MySQL 8.0 and later)
+  * `CancelSleepSuccessfully`: A `SLEEP` command produces a result set when it is cancelled, not an error payload.
+  * `GlobalLog`: The server `general_log` is global.
+  * `KnownCertificateAuthority`: The certificates used by the database server are trusted by the client.
+  * `ParsecAuthentication`: Server supports the 'parsec' authentication plugin.
+  * `QueryAttributes`: Server supports query attributes (MySQL 8.4 and later).
+  * `ResetConnection`: Server supports the `COM_RESET_CONNECTION` command.
+  * `StreamingResults`: The MySQL server can start streaming rows back as soon as they are available, as opposed to buffering the entire result set in memory.
+  * `Vector`: Server supports the `VECTOR` SQL type.
+  * `VectorType`: Server has a dedicated type on the wire for `VECTOR`.
+  * `ZeroDateTime`: Server does not support a zero `DATE` or `DATETIME` value.
 
 ## Running Tests
 
