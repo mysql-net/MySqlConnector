@@ -140,6 +140,37 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		AssertTag(activity.Tags, "db.statement", "SELECT 1;");
 	}
 
+	[SkippableTheory(ServerFeatures.QueryAttributes)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void ExecuteTraceparentQueryAttribute(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+
+		using var parentActivity = new Activity(nameof(ExecuteTraceparentQueryAttribute));
+		parentActivity.Start();
+
+		Activity activity = null;
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = x => activity = x,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		using var command = new MySqlCommand("SELECT mysql_query_attribute_string('traceparent');", connection);
+		if (prepare)
+			command.Prepare();
+
+		var traceparent = command.ExecuteScalar();
+
+		Assert.NotNull(activity);
+		Assert.Equal(activity.Id, traceparent);
+	}
+
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]

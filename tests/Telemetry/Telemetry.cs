@@ -1,0 +1,107 @@
+#:property TargetFramework=net10.0
+#:property ManagePackageVersionsCentrally=false
+#:property PackAsTool=false
+#:property PublishAot=false
+#:package OpenTelemetry@1.9.0
+#:package OpenTelemetry.Exporter.OpenTelemetryProtocol@1.9.0
+#:project ../../src/MySqlConnector/MySqlConnector.csproj
+
+using System.Diagnostics;
+using MySqlConnector;
+using OpenTelemetry;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+
+const string defaultServerConnectionString = "Server=127.0.0.1;Port=3306;User ID=root;Password=pass;";
+const string defaultDatabaseName = "telemetry_demo";
+const string otlpBaseEndpoint = "http://localhost:4318";
+
+Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+Activity.ForceDefaultIdFormat = true;
+
+var configuredConnectionString = Environment.GetEnvironmentVariable("MYSQL_CONNECTION_STRING") ?? defaultServerConnectionString;
+var bootstrapConnectionStringBuilder = new MySqlConnectionStringBuilder(configuredConnectionString);
+var databaseName = string.IsNullOrWhiteSpace(bootstrapConnectionStringBuilder.Database) ? defaultDatabaseName : bootstrapConnectionStringBuilder.Database;
+bootstrapConnectionStringBuilder.Database = "";
+
+var applicationConnectionStringBuilder = new MySqlConnectionStringBuilder(bootstrapConnectionStringBuilder.ConnectionString)
+{
+	Database = databaseName,
+};
+
+var bootstrapConnectionString = bootstrapConnectionStringBuilder.ConnectionString;
+var applicationConnectionString = applicationConnectionStringBuilder.ConnectionString;
+
+using var activitySource = new ActivitySource("MySqlConnector.TelemetrySample");
+using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+	.SetSampler(new AlwaysOnSampler())
+	.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("MySqlConnector.TelemetrySample"))
+	.AddSource("MySqlConnector")
+	.AddSource(activitySource.Name)
+	.AddOtlpExporter(options =>
+	{
+		options.Endpoint = new Uri($"{otlpBaseEndpoint}/v1/traces");
+		options.Protocol = OtlpExportProtocol.HttpProtobuf;
+	})
+	.Build();
+
+using var rootActivity = activitySource.StartActivity("TelemetryScenario", ActivityKind.Internal);
+
+await using var connection = new MySqlConnection(bootstrapConnectionString);
+await connection.OpenAsync().ConfigureAwait(false);
+
+await using (var createDatabaseCommand = new MySqlCommand($"CREATE DATABASE IF NOT EXISTS {QuoteIdentifier(databaseName)};", connection))
+{
+	await createDatabaseCommand.ExecuteNonQueryAsync().ConfigureAwait(false);
+}
+
+await connection.ChangeDatabaseAsync(databaseName).ConfigureAwait(false);
+
+await using (var setupCommand = new MySqlCommand(
+	"""
+	CREATE TABLE IF NOT EXISTS trace_demo (
+		id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+		message VARCHAR(100) NOT NULL,
+		created_utc TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	);
+	""",
+	connection))
+{
+	await setupCommand.ExecuteNonQueryAsync().ConfigureAwait(false);
+}
+
+string? queryTraceparent;
+await using (var queryCommand = new MySqlCommand("SELECT mysql_query_attribute_string('traceparent');", connection))
+{
+	queryTraceparent = (string?) await queryCommand.ExecuteScalarAsync().ConfigureAwait(false);
+}
+
+string? preparedTraceparent;
+await using (var preparedCommand = new MySqlCommand(
+	"SELECT @message AS message, mysql_query_attribute_string('traceparent') AS traceparent;",
+	connection))
+{
+	preparedCommand.Parameters.AddWithValue("@message", $"prepared at {DateTimeOffset.UtcNow:O}");
+	await preparedCommand.PrepareAsync().ConfigureAwait(false);
+
+	await using var reader = await preparedCommand.ExecuteReaderAsync().ConfigureAwait(false);
+	if (await reader.ReadAsync().ConfigureAwait(false))
+	{
+		preparedTraceparent = reader.GetString(reader.GetOrdinal("traceparent"));
+	}
+	else
+		preparedTraceparent = null;
+}
+
+Console.WriteLine($"OTLP base endpoint: {otlpBaseEndpoint}");
+Console.WriteLine($"MySQL bootstrap connection: {bootstrapConnectionString}");
+Console.WriteLine($"MySQL application connection: {applicationConnectionString}");
+Console.WriteLine($"COM_QUERY traceparent: {queryTraceparent ?? "<null>"}");
+Console.WriteLine($"COM_STMT_EXECUTE traceparent: {preparedTraceparent ?? "<null>"}");
+Console.WriteLine("Waiting 5 seconds for client and server spans to export to Aspire...");
+
+await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+tracerProvider.ForceFlush();
+
+static string QuoteIdentifier(string value) => $"`{value.Replace("`", "``")}`";

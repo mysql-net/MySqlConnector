@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
@@ -11,7 +12,7 @@ internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
 	public ValueTask SendCommandPrologueAsync(MySqlConnection connection, CommandListPosition commandListPosition, IOBehavior ioBehavior, CancellationToken cancellationToken) =>
 		default;
 
-	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon)
+	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon, Activity? activity)
 	{
 		if (commandListPosition.CommandIndex == commandListPosition.CommandCount)
 			return false;

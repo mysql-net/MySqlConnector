@@ -1,5 +1,7 @@
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
@@ -90,7 +92,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		}
 	}
 
-	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon)
+	public bool WriteQueryCommand(ref CommandListPosition commandListPosition, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon, Activity? activity)
 	{
 		if (commandListPosition.CommandIndex == commandListPosition.CommandCount)
 			return false;
@@ -105,15 +107,14 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
 			if (supportsQueryAttributes)
 			{
-				// attribute count
-				var attributes = command.RawAttributes;
-				writer.WriteLengthEncodedInteger((uint) (attributes?.Count ?? 0));
+				var attributes = CreateQueryAttributes(command.RawAttributes, activity);
+				writer.WriteLengthEncodedInteger((uint) attributes.Length);
 
 				// attribute set count (always 1)
 				writer.Write((byte) 1);
 
-				if (attributes?.Count > 0)
-					WriteBinaryParameters(writer, attributes.Select(static x => x.ToParameter()).ToArray(), command, true, 0);
+				if (attributes.Length > 0)
+					WriteBinaryParameters(writer, attributes, command, true, 0);
 			}
 			else if (command.RawAttributes?.Count > 0)
 			{
@@ -129,7 +130,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			writer.Write((byte) CommandKind.StatementExecute);
 			commandListPosition.LastUsedPreparedStatement =
 				commandListPosition.PreparedStatements.Statements[commandListPosition.PreparedStatementIndex];
-			WritePreparedStatement(command, commandListPosition.LastUsedPreparedStatement, writer);
+			WritePreparedStatement(command, commandListPosition.LastUsedPreparedStatement, writer, activity);
 
 			// advance to next prepared statement or next command
 			if (++commandListPosition.PreparedStatementIndex == commandListPosition.PreparedStatements.Statements.Count)
@@ -155,13 +156,13 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	public static bool WriteQueryPayload(IMySqlCommand command, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon, bool isFirstCommand, bool isLastCommand) =>
 		(command.CommandType == CommandType.StoredProcedure) ? WriteStoredProcedure(command, cachedProcedures, writer) : WriteCommand(command, writer, appendSemicolon, isFirstCommand, isLastCommand);
 
-	private static void WritePreparedStatement(IMySqlCommand command, PreparedStatement preparedStatement, ByteBufferWriter writer)
+	private static void WritePreparedStatement(IMySqlCommand command, PreparedStatement preparedStatement, ByteBufferWriter writer, Activity? activity)
 	{
 		var parameterCollection = command.RawParameters;
 
 		Log.PreparingCommandPayloadWithId(command.Logger, command.Connection!.Session.Id, preparedStatement.StatementId, command.CommandText!);
 
-		var attributes = command.RawAttributes;
+		var attributes = CreateQueryAttributes(command.RawAttributes, activity);
 		var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
 		writer.Write(preparedStatement.StatementId);
 
@@ -172,7 +173,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		writer.Write(1);
 
 		var commandParameterCount = preparedStatement.Statement.ParameterNames?.Count ?? 0;
-		var attributeCount = attributes?.Count ?? 0;
+		var attributeCount = attributes.Length;
 		if (sendQueryAttributes)
 		{
 			writer.WriteLengthEncodedInteger((uint) (commandParameterCount + attributeCount));
@@ -181,11 +182,11 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		{
 			if (supportsQueryAttributes && commandParameterCount > 0)
 				writer.WriteLengthEncodedInteger((uint) commandParameterCount);
-			if (attributeCount > 0)
+			if (command.RawAttributes?.Count > 0)
 			{
 				Log.QueryAttributesNotSupportedWithId(command.Logger, command.Connection!.Session.Id, preparedStatement.StatementId);
-				attributeCount = 0;
 			}
+			attributeCount = 0;
 		}
 
 		if (commandParameterCount > 0 || attributeCount > 0)
@@ -205,10 +206,82 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 				parameters[i] = parameterCollection![parameterIndex];
 			}
 			for (var i = 0; i < attributeCount; i++)
-				parameters[commandParameterCount + i] = attributes![i].ToParameter();
+				parameters[commandParameterCount + i] = attributes[i];
 			WriteBinaryParameters(writer, parameters, command, supportsQueryAttributes, commandParameterCount);
 		}
 	}
+
+	private static MySqlParameter[] CreateQueryAttributes(MySqlAttributeCollection? attributes, Activity? activity)
+	{
+		var attributeCount = attributes?.Count ?? 0;
+		var telemetryAttributes = CreateTelemetryQueryAttributes(attributes, activity);
+		if (telemetryAttributes.Length == 0)
+		{
+			if (attributeCount == 0)
+				return [];
+
+			var parameters = new MySqlParameter[attributeCount];
+			for (var i = 0; i < attributeCount; i++)
+				parameters[i] = attributes![i].ToParameter();
+			return parameters;
+		}
+
+		var parametersWithTelemetry = new MySqlParameter[attributeCount + telemetryAttributes.Length];
+		for (var i = 0; i < attributeCount; i++)
+			parametersWithTelemetry[i] = attributes![i].ToParameter();
+		for (var i = 0; i < telemetryAttributes.Length; i++)
+			parametersWithTelemetry[attributeCount + i] = telemetryAttributes[i];
+		return parametersWithTelemetry;
+	}
+
+	private static MySqlParameter[] CreateTelemetryQueryAttributes(MySqlAttributeCollection? attributes, Activity? activity)
+	{
+		if (activity?.IdFormat != ActivityIdFormat.W3C || activity.Id is not { Length: > 0 } traceparentValue)
+			return [];
+
+		var hasTraceparent = false;
+		var hasTracestate = false;
+		if (attributes is not null)
+		{
+			foreach (var attribute in attributes)
+			{
+				if (attribute.AttributeName.Equals("traceparent", StringComparison.OrdinalIgnoreCase))
+					hasTraceparent = true;
+				else if (attribute.AttributeName.Equals("tracestate", StringComparison.OrdinalIgnoreCase))
+					hasTracestate = true;
+			}
+		}
+
+		MySqlParameter[]? telemetryAttributes = null;
+		var telemetryAttributeCount = 0;
+		if (!hasTraceparent)
+		{
+			telemetryAttributes ??= new MySqlParameter[2];
+			telemetryAttributes[telemetryAttributeCount++] = CreateTelemetryQueryAttribute("traceparent", traceparentValue);
+		}
+
+		if (!hasTracestate && activity.TraceStateString is { Length: > 0 } tracestateValue)
+		{
+			telemetryAttributes ??= new MySqlParameter[2];
+			telemetryAttributes[telemetryAttributeCount++] = CreateTelemetryQueryAttribute("tracestate", tracestateValue);
+		}
+
+		if (telemetryAttributeCount == 0)
+			return [];
+
+		if (telemetryAttributeCount == telemetryAttributes!.Length)
+			return telemetryAttributes;
+
+		var trimmedTelemetryAttributes = new MySqlParameter[telemetryAttributeCount];
+		Array.Copy(telemetryAttributes!, trimmedTelemetryAttributes, telemetryAttributeCount);
+		return trimmedTelemetryAttributes;
+	}
+
+	private static MySqlParameter CreateTelemetryQueryAttribute(string name, string value) =>
+		new(name, MySqlDbType.String)
+		{
+			Value = value,
+		};
 
 	private static void WriteBinaryParameters(ByteBufferWriter writer, MySqlParameter[] parameters, IMySqlCommand command, bool supportsQueryAttributes, int parameterCount)
 	{
@@ -234,10 +307,9 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 
 		for (var index = 0; index < parameters.Length; index++)
 		{
-			// override explicit MySqlDbType with inferred type from the Value
 			var parameter = parameters[index];
 			var mySqlDbType = parameter.MySqlDbType;
-			var typeMapping = (parameter.Value is null || parameter.Value == DBNull.Value) ? null : TypeMapper.Instance.GetDbTypeMapping(parameter.Value.GetType());
+			var typeMapping = parameter.HasSetDbType || parameter.Value is null || parameter.Value == DBNull.Value ? null : TypeMapper.Instance.GetDbTypeMapping(parameter.Value.GetType());
 			if (typeMapping is not null)
 			{
 				var dbType = typeMapping.DbTypes[0];
