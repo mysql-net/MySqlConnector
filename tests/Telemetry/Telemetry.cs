@@ -46,52 +46,53 @@ using var tracerProvider = Sdk.CreateTracerProviderBuilder()
 	})
 	.Build();
 
-using var rootActivity = activitySource.StartActivity("TelemetryScenario", ActivityKind.Internal);
-
-await using var connection = new MySqlConnection(bootstrapConnectionString);
-await connection.OpenAsync().ConfigureAwait(false);
-
-await using (var createDatabaseCommand = new MySqlCommand($"CREATE DATABASE IF NOT EXISTS {QuoteIdentifier(databaseName)};", connection))
-{
-	await createDatabaseCommand.ExecuteNonQueryAsync().ConfigureAwait(false);
-}
-
-await connection.ChangeDatabaseAsync(databaseName).ConfigureAwait(false);
-
-await using (var setupCommand = new MySqlCommand(
-	"""
-	CREATE TABLE IF NOT EXISTS trace_demo (
-		id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-		message VARCHAR(100) NOT NULL,
-		created_utc TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-	);
-	""",
-	connection))
-{
-	await setupCommand.ExecuteNonQueryAsync().ConfigureAwait(false);
-}
-
 string? queryTraceparent;
-await using (var queryCommand = new MySqlCommand("SELECT mysql_query_attribute_string('traceparent');", connection))
-{
-	queryTraceparent = (string?) await queryCommand.ExecuteScalarAsync().ConfigureAwait(false);
-}
-
 string? preparedTraceparent;
-await using (var preparedCommand = new MySqlCommand(
-	"SELECT @message AS message, mysql_query_attribute_string('traceparent') AS traceparent;",
-	connection))
+using (var rootActivity = activitySource.StartActivity("TelemetryScenario", ActivityKind.Internal))
 {
-	preparedCommand.Parameters.AddWithValue("@message", $"prepared at {DateTimeOffset.UtcNow:O}");
-	await preparedCommand.PrepareAsync().ConfigureAwait(false);
+	await using var connection = new MySqlConnection(bootstrapConnectionString);
+	await connection.OpenAsync().ConfigureAwait(false);
 
-	await using var reader = await preparedCommand.ExecuteReaderAsync().ConfigureAwait(false);
-	if (await reader.ReadAsync().ConfigureAwait(false))
+	await using (var createDatabaseCommand = new MySqlCommand($"CREATE DATABASE IF NOT EXISTS {QuoteIdentifier(databaseName)};", connection))
 	{
-		preparedTraceparent = reader.GetString(reader.GetOrdinal("traceparent"));
+		await createDatabaseCommand.ExecuteNonQueryAsync().ConfigureAwait(false);
 	}
-	else
-		preparedTraceparent = null;
+
+	await connection.ChangeDatabaseAsync(databaseName).ConfigureAwait(false);
+
+	await using (var setupCommand = new MySqlCommand(
+		"""
+		CREATE TABLE IF NOT EXISTS trace_demo (
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			message VARCHAR(100) NOT NULL,
+			created_utc TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+		);
+		""",
+		connection))
+	{
+		await setupCommand.ExecuteNonQueryAsync().ConfigureAwait(false);
+	}
+
+	await using (var queryCommand = new MySqlCommand("SELECT mysql_query_attribute_string('traceparent');", connection))
+	{
+		queryTraceparent = (string?) await queryCommand.ExecuteScalarAsync().ConfigureAwait(false);
+	}
+
+	await using (var preparedCommand = new MySqlCommand(
+		"SELECT @message AS message, mysql_query_attribute_string('traceparent') AS traceparent;",
+		connection))
+	{
+		preparedCommand.Parameters.AddWithValue("@message", $"prepared at {DateTimeOffset.UtcNow:O}");
+		await preparedCommand.PrepareAsync().ConfigureAwait(false);
+
+		await using var reader = await preparedCommand.ExecuteReaderAsync().ConfigureAwait(false);
+		if (await reader.ReadAsync().ConfigureAwait(false))
+		{
+			preparedTraceparent = reader.GetString(reader.GetOrdinal("traceparent"));
+		}
+		else
+			preparedTraceparent = null;
+	}
 }
 
 Console.WriteLine($"OTLP base endpoint: {otlpBaseEndpoint}");
