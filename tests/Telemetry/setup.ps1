@@ -7,6 +7,7 @@ $ErrorActionPreference = 'Stop'
 $mysqlContainer = 'mysqlconnector-telemetry'
 $dashboardContainer = 'aspire-dashboard'
 $mysqlRootPassword = 'pass'
+$dashboardTelemetryApi = 'http://localhost:18888/api/telemetry'
 $telemetryInitScript = Join-Path $PSScriptRoot 'mysql-telemetry-init.sql'
 $telemetryApp = Join-Path $PSScriptRoot 'Telemetry.cs'
 
@@ -86,6 +87,8 @@ docker run --rm -d --pull always `
 	-p 18888:18888 `
 	-p 4318:18890 `
 	--name $dashboardContainer `
+	-e DASHBOARD__API__ENABLED='true' `
+	-e DASHBOARD__API__AUTHMODE='Unsecured' `
 	mcr.microsoft.com/dotnet/aspire-dashboard:latest | Out-Null
 
 $dashboardLoginUrl = $null
@@ -196,6 +199,8 @@ else
 	Write-Warning 'Could not extract the Aspire Dashboard login URL from container logs.'
 	Write-Host 'Aspire Dashboard UI: http://localhost:18888'
 }
+Write-Host "Aspire telemetry API: $dashboardTelemetryApi"
 Write-Host 'Aspire OTLP endpoint: http://localhost:4318'
 Write-Host 'MySQL connection string: Server=127.0.0.1;Port=3306;User ID=root;Password=pass;Database=telemetry_demo;'
 Write-Host 'Run: dotnet .\tests\Telemetry\Telemetry.cs'
+Write-Host 'Verify: .\tests\Telemetry\verify.ps1'

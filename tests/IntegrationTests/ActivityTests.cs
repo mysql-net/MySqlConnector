@@ -171,6 +171,42 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 		Assert.Equal(activity.Id, traceparent);
 	}
 
+	[SkippableTheory(ServerFeatures.QueryAttributes)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void ExecuteTraceContextQueryAttributes(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+
+		using var parentActivity = new Activity(nameof(ExecuteTraceContextQueryAttributes));
+		parentActivity.SetIdFormat(ActivityIdFormat.W3C);
+		parentActivity.TraceStateString = "test=value";
+		parentActivity.Start();
+
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllData,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		using var command = new MySqlCommand(
+			"SELECT mysql_query_attribute_string('traceparent') AS traceparent, mysql_query_attribute_string('tracestate') AS tracestate;",
+			connection);
+		if (prepare)
+			command.Prepare();
+
+		using var reader = command.ExecuteReader();
+		Assert.True(reader.Read());
+		var traceparent = reader.GetString(reader.GetOrdinal("traceparent"));
+		var tracestate = reader.GetString(reader.GetOrdinal("tracestate"));
+		Assert.False(reader.Read());
+
+		Assert.Matches($"^00-{parentActivity.TraceId.ToString()}-[0-9a-f]{{16}}-[0-9a-f]{{2}}$", traceparent);
+		Assert.Equal(parentActivity.TraceStateString, tracestate);
+	}
+
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]

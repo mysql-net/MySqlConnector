@@ -15,6 +15,14 @@ MySQL Server 5.7 cannot satisfy this demo because it does not provide the query-
 
 ```powershell
 .\tests\Telemetry\setup.ps1
+.\tests\Telemetry\verify.ps1
+```
+
+`setup.ps1` enables the Aspire telemetry API in unsecured mode for local use. `verify.ps1` reuses the running containers, runs `Telemetry.cs`, reads `TRACE_ID=...` from the sample output, and checks the corresponding trace from the Aspire Dashboard API for MySqlConnector spans with MySQL child spans.
+
+To inspect the trace manually in the dashboard, run:
+
+```powershell
 dotnet .\tests\Telemetry\Telemetry.cs
 ```
 

@@ -46,10 +46,13 @@ using var tracerProvider = Sdk.CreateTracerProviderBuilder()
 	})
 	.Build();
 
+string? traceId;
 string? queryTraceparent;
 string? preparedTraceparent;
 using (var rootActivity = activitySource.StartActivity("TelemetryScenario", ActivityKind.Internal))
 {
+	traceId = rootActivity?.TraceId.ToString();
+
 	await using var connection = new MySqlConnection(bootstrapConnectionString);
 	await connection.OpenAsync().ConfigureAwait(false);
 
@@ -98,6 +101,7 @@ using (var rootActivity = activitySource.StartActivity("TelemetryScenario", Acti
 Console.WriteLine($"OTLP base endpoint: {otlpBaseEndpoint}");
 Console.WriteLine($"MySQL bootstrap connection: {bootstrapConnectionString}");
 Console.WriteLine($"MySQL application connection: {applicationConnectionString}");
+Console.WriteLine($"TRACE_ID={traceId ?? "<null>"}");
 Console.WriteLine($"COM_QUERY traceparent: {queryTraceparent ?? "<null>"}");
 Console.WriteLine($"COM_STMT_EXECUTE traceparent: {preparedTraceparent ?? "<null>"}");
 Console.WriteLine("Waiting 5 seconds for client and server spans to export to Aspire...");

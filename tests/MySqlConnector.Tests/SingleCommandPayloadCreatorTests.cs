@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
@@ -44,6 +45,97 @@ public class SingleCommandPayloadCreatorTests
 		}
 	}
 
+	[Fact]
+	public void CreateQueryAttributesWithoutActivityDoesNotAddTelemetryAttributes()
+	{
+		var attributes = new MySqlAttributeCollection();
+		attributes.SetAttribute("custom", "value");
+
+		var parameters = CreateQueryAttributes(attributes, activity: null);
+
+		var parameter = Assert.Single(parameters);
+		Assert.Equal("custom", parameter.ParameterName);
+		Assert.Equal("value", parameter.Value);
+	}
+
+	[Fact]
+	public void CreateQueryAttributesWithNonW3CActivityDoesNotAddTelemetryAttributes()
+	{
+		var attributes = new MySqlAttributeCollection();
+		attributes.SetAttribute("custom", "value");
+
+		using var activity = new Activity("HierarchicalActivity");
+		activity.SetIdFormat(ActivityIdFormat.Hierarchical);
+		activity.Start();
+
+		var parameters = CreateQueryAttributes(attributes, activity);
+
+		var parameter = Assert.Single(parameters);
+		Assert.Equal("custom", parameter.ParameterName);
+		Assert.Equal("value", parameter.Value);
+	}
+
+	[Fact]
+	public void CreateQueryAttributesAddsTraceparentAndTracestate()
+	{
+		using var activity = new Activity("W3CActivity");
+		activity.SetIdFormat(ActivityIdFormat.W3C);
+		activity.TraceStateString = "test=value";
+		activity.Start();
+
+		var parameters = CreateQueryAttributes(attributes: null, activity);
+
+		Assert.Collection(parameters,
+			x =>
+			{
+				Assert.Equal("traceparent", x.ParameterName);
+				Assert.Equal(activity.Id, x.Value);
+			},
+			x =>
+			{
+				Assert.Equal("tracestate", x.ParameterName);
+				Assert.Equal(activity.TraceStateString, x.Value);
+			});
+	}
+
+	[Fact]
+	public void CreateQueryAttributesUsesExplicitTelemetryAttributesCaseInsensitively()
+	{
+		var attributes = new MySqlAttributeCollection();
+		attributes.SetAttribute("TRACEPARENT", "explicit-traceparent");
+		attributes.SetAttribute("TraceState", "explicit-tracestate");
+		attributes.SetAttribute("custom", "value");
+
+		using var activity = new Activity("W3CActivity");
+		activity.SetIdFormat(ActivityIdFormat.W3C);
+		activity.TraceStateString = "test=value";
+		activity.Start();
+
+		var parameters = CreateQueryAttributes(attributes, activity);
+
+		Assert.Collection(parameters,
+			x =>
+			{
+				Assert.Equal("TRACEPARENT", x.ParameterName);
+				Assert.Equal("explicit-traceparent", x.Value);
+			},
+			x =>
+			{
+				Assert.Equal("TraceState", x.ParameterName);
+				Assert.Equal("explicit-tracestate", x.Value);
+			},
+			x =>
+			{
+				Assert.Equal("custom", x.ParameterName);
+				Assert.Equal("value", x.Value);
+			});
+	}
+
+	private static MySqlParameter[] CreateQueryAttributes(MySqlAttributeCollection attributes, Activity activity) =>
+		(MySqlParameter[]) CreateQueryAttributesMethod.Invoke(null, [attributes, activity])!;
+
+	private static MethodInfo CreateQueryAttributesMethod { get; } = typeof(SingleCommandPayloadCreator)
+		.GetMethod("CreateQueryAttributes", BindingFlags.NonPublic | BindingFlags.Static)!;
 	private static MethodInfo WriteBinaryParametersMethod { get; } = typeof(SingleCommandPayloadCreator)
 		.GetMethod("WriteBinaryParameters", BindingFlags.NonPublic | BindingFlags.Static)!;
 }
