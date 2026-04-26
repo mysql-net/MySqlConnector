@@ -17,9 +17,6 @@ const string defaultServerConnectionString = "Server=127.0.0.1;Port=3306;User ID
 const string defaultDatabaseName = "telemetry_demo";
 const string otlpBaseEndpoint = "http://localhost:4318";
 
-Activity.DefaultIdFormat = ActivityIdFormat.W3C;
-Activity.ForceDefaultIdFormat = true;
-
 var configuredConnectionString = Environment.GetEnvironmentVariable("MYSQL_CONNECTION_STRING") ?? defaultServerConnectionString;
 var bootstrapConnectionStringBuilder = new MySqlConnectionStringBuilder(configuredConnectionString);
 var databaseName = string.IsNullOrWhiteSpace(bootstrapConnectionStringBuilder.Database) ? defaultDatabaseName : bootstrapConnectionStringBuilder.Database;
