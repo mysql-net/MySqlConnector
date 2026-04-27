@@ -255,9 +255,9 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		{
 			foreach (var attribute in attributes)
 			{
-				if (string.Equals(attribute.AttributeName, "traceparent", StringComparison.OrdinalIgnoreCase))
+				if (attribute.AttributeName == "traceparent")
 					kinds &= ~TelemetryAttributeKind.TraceParent;
-				else if (string.Equals(attribute.AttributeName, "tracestate", StringComparison.OrdinalIgnoreCase))
+				else if (attribute.AttributeName == "tracestate")
 					kinds &= ~TelemetryAttributeKind.TraceState;
 			}
 		}
@@ -269,21 +269,15 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	{
 		if ((kinds & TelemetryAttributeKind.TraceParent) != 0)
 		{
-			span[0] = CreateTelemetryQueryAttribute("traceparent", activity!.Id!);
+			span[0] = new("traceparent", MySqlDbType.String) { Value = activity!.Id! };
 			span = span.Slice(1);
 		}
 		if ((kinds & TelemetryAttributeKind.TraceState) != 0)
 		{
-			span[0] = CreateTelemetryQueryAttribute("tracestate", activity!.TraceStateString!);
+			span[0] = new("tracestate", MySqlDbType.String) { Value = activity!.TraceStateString! };
 			span = span.Slice(1);
 		}
 	}
-
-	private static MySqlParameter CreateTelemetryQueryAttribute(string name, string value) =>
-		new(name, MySqlDbType.String)
-		{
-			Value = value,
-		};
 
 	private static void WriteBinaryParameters(ByteBufferWriter writer, ReadOnlySpan<MySqlParameter> parameters, IMySqlCommand command, bool supportsQueryAttributes, int parameterCount)
 	{
@@ -309,10 +303,11 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 
 		for (var index = 0; index < parameters.Length; index++)
 		{
+			// override explicit MySqlDbType with inferred type from the Value (but keep MySqlDbType.String, e.g., for W3C trace propagation attributes where it's required: https://github.com/mysql/mysql-server/blob/9.7/components/telemetry/tm_propagation.cc#L72-L74 )
 			var parameter = parameters[index];
 			var mySqlDbType = parameter.MySqlDbType;
-			var typeMapping = parameter.HasSetDbType || parameter.Value is null || parameter.Value == DBNull.Value ? null : TypeMapper.Instance.GetDbTypeMapping(parameter.Value.GetType());
-			if (typeMapping is not null)
+			var typeMapping = (parameter.Value is null || parameter.Value == DBNull.Value) ? null : TypeMapper.Instance.GetDbTypeMapping(parameter.Value.GetType());
+			if (typeMapping is not null && mySqlDbType != MySqlDbType.String)
 			{
 				var dbType = typeMapping.DbTypes[0];
 				mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbType(dbType);
