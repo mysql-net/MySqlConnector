@@ -1,8 +1,7 @@
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
+using System.Numerics;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
@@ -107,14 +106,31 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
 			if (supportsQueryAttributes)
 			{
-				var attributes = CreateQueryAttributes(command.RawAttributes, activity);
-				writer.WriteLengthEncodedInteger((uint) attributes.Length);
+				// compute total attribute count from the command and the auto-generated attributes for telemetry
+				var attributes = command.RawAttributes;
+				var telemetryKinds = GetTelemetryAttributeKinds(attributes, activity);
+				var totalAttributeCount = attributes?.Count ?? 0;
+#if NET6_0_OR_GREATER
+				totalAttributeCount += BitOperations.PopCount((uint) telemetryKinds);
+#else
+				totalAttributeCount +=
+					(((telemetryKinds & TelemetryAttributeKind.TraceParent) != TelemetryAttributeKind.None) ? 1 : 0) +
+					(((telemetryKinds & TelemetryAttributeKind.TraceState) != TelemetryAttributeKind.None) ? 1 : 0);
+#endif
+				writer.WriteLengthEncodedInteger((uint) totalAttributeCount);
 
 				// attribute set count (always 1)
 				writer.Write((byte) 1);
 
-				if (attributes.Length > 0)
-					WriteBinaryParameters(writer, attributes, command, true, 0);
+				if (totalAttributeCount > 0)
+				{
+					Span<MySqlParameter> attributeParameters = new MySqlParameter[totalAttributeCount];
+					var index = 0;
+					for (; index < (attributes?.Count ?? 0); index++)
+						attributeParameters[index] = attributes![index].ToParameter();
+					WriteTelemetryAttributes(attributeParameters.Slice(index), activity, telemetryKinds);
+					WriteBinaryParameters(writer, attributeParameters, command, true, 0);
+				}
 			}
 			else if (command.RawAttributes?.Count > 0)
 			{
@@ -234,6 +250,45 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		return parametersWithTelemetry;
 	}
 
+	private static TelemetryAttributeKind GetTelemetryAttributeKinds(MySqlAttributeCollection? attributes, Activity? activity)
+	{
+		// we required W3C IdFormat (default since .NET 5) in order to send a correct traceparent attribute
+		if (activity is not { IdFormat: ActivityIdFormat.W3C, Id: { Length: > 0 } })
+			return TelemetryAttributeKind.None;
+
+		// start with both attributes and eliminate based on activity content and user-provided attributes
+		var kinds = TelemetryAttributeKind.TraceParent |
+			(activity.TraceStateString is { Length: > 0 } ? TelemetryAttributeKind.TraceState : TelemetryAttributeKind.None);
+
+		// check for edge case of user already providing attributes with these names on the command
+		if (attributes is not null)
+		{
+			foreach (var attribute in attributes)
+			{
+				if (string.Equals(attribute.AttributeName, "traceparent", StringComparison.OrdinalIgnoreCase))
+					kinds &= ~TelemetryAttributeKind.TraceParent;
+				else if (string.Equals(attribute.AttributeName, "tracestate", StringComparison.OrdinalIgnoreCase))
+					kinds &= ~TelemetryAttributeKind.TraceState;
+			}
+		}
+
+		return kinds;
+	}
+
+	private static void WriteTelemetryAttributes(Span<MySqlParameter> span, Activity? activity, TelemetryAttributeKind kinds)
+	{
+		if ((kinds & TelemetryAttributeKind.TraceParent) != 0)
+		{
+			span[0] = CreateTelemetryQueryAttribute("traceparent", activity!.Id!);
+			span = span.Slice(1);
+		}
+		if ((kinds & TelemetryAttributeKind.TraceState) != 0)
+		{
+			span[0] = CreateTelemetryQueryAttribute("tracestate", activity!.TraceStateString!);
+			span = span.Slice(1);
+		}
+	}
+
 	private static MySqlParameter[] CreateTelemetryQueryAttributes(MySqlAttributeCollection? attributes, Activity? activity)
 	{
 		if (activity?.IdFormat != ActivityIdFormat.W3C || activity.Id is not { Length: > 0 } traceparentValue)
@@ -283,7 +338,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			Value = value,
 		};
 
-	private static void WriteBinaryParameters(ByteBufferWriter writer, MySqlParameter[] parameters, IMySqlCommand command, bool supportsQueryAttributes, int parameterCount)
+	private static void WriteBinaryParameters(ByteBufferWriter writer, ReadOnlySpan<MySqlParameter> parameters, IMySqlCommand command, bool supportsQueryAttributes, int parameterCount)
 	{
 		// write null bitmap
 		byte nullBitmap = 0;
@@ -440,5 +495,13 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			writer.Write("\nSET sql_select_limit=default;"u8);
 
 		return isComplete;
+	}
+
+	[Flags]
+	private enum TelemetryAttributeKind
+	{
+		None = 0,
+		TraceParent = 1,
+		TraceState = 2,
 	}
 }
