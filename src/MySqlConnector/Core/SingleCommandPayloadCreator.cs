@@ -178,7 +178,6 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 
 		Log.PreparingCommandPayloadWithId(command.Logger, command.Connection!.Session.Id, preparedStatement.StatementId, command.CommandText!);
 
-		var attributes = CreateQueryAttributes(command.RawAttributes, activity);
 		var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
 		writer.Write(preparedStatement.StatementId);
 
@@ -189,10 +188,23 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		writer.Write(1);
 
 		var commandParameterCount = preparedStatement.Statement.ParameterNames?.Count ?? 0;
-		var attributeCount = attributes.Length;
+
+		// compute total attribute count from the command and the auto-generated attributes for telemetry
+		var attributes = command.RawAttributes;
+		var commandAttributeCount = attributes?.Count ?? 0;
+		var telemetryKinds = GetTelemetryAttributeKinds(attributes, activity);
+		var totalAttributeCount = commandAttributeCount;
+#if NET6_0_OR_GREATER
+		totalAttributeCount += BitOperations.PopCount((uint) telemetryKinds);
+#else
+		totalAttributeCount +=
+			(((telemetryKinds & TelemetryAttributeKind.TraceParent) != TelemetryAttributeKind.None) ? 1 : 0) +
+			(((telemetryKinds & TelemetryAttributeKind.TraceState) != TelemetryAttributeKind.None) ? 1 : 0);
+#endif
+
 		if (sendQueryAttributes)
 		{
-			writer.WriteLengthEncodedInteger((uint) (commandParameterCount + attributeCount));
+			writer.WriteLengthEncodedInteger((uint) (commandParameterCount + totalAttributeCount));
 		}
 		else
 		{
@@ -202,15 +214,15 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			{
 				Log.QueryAttributesNotSupportedWithId(command.Logger, command.Connection!.Session.Id, preparedStatement.StatementId);
 			}
-			attributeCount = 0;
+			totalAttributeCount = 0;
 		}
 
-		if (commandParameterCount > 0 || attributeCount > 0)
+		if (commandParameterCount > 0 || totalAttributeCount > 0)
 		{
 			// TODO: How to handle incorrect number of parameters?
 
 			// build subset of parameters for this statement
-			var parameters = new MySqlParameter[commandParameterCount + attributeCount];
+			Span<MySqlParameter> parameters = new MySqlParameter[commandParameterCount + totalAttributeCount];
 			for (var i = 0; i < commandParameterCount; i++)
 			{
 				var parameterName = preparedStatement.Statement.NormalizedParameterNames![i];
@@ -221,33 +233,11 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 					throw new MySqlException($"Parameter index {parameterIndex} is invalid when only {parameterCollection?.Count ?? 0} parameter{(parameterCollection?.Count == 1 ? " is" : "s are")} defined.");
 				parameters[i] = parameterCollection![parameterIndex];
 			}
-			for (var i = 0; i < attributeCount; i++)
-				parameters[commandParameterCount + i] = attributes[i];
+			for (var i = 0; i < commandAttributeCount; i++)
+				parameters[commandParameterCount + i] = attributes![i].ToParameter();
+			WriteTelemetryAttributes(parameters.Slice(commandParameterCount + commandAttributeCount), activity, telemetryKinds);
 			WriteBinaryParameters(writer, parameters, command, supportsQueryAttributes, commandParameterCount);
 		}
-	}
-
-	private static MySqlParameter[] CreateQueryAttributes(MySqlAttributeCollection? attributes, Activity? activity)
-	{
-		var attributeCount = attributes?.Count ?? 0;
-		var telemetryAttributes = CreateTelemetryQueryAttributes(attributes, activity);
-		if (telemetryAttributes.Length == 0)
-		{
-			if (attributeCount == 0)
-				return [];
-
-			var parameters = new MySqlParameter[attributeCount];
-			for (var i = 0; i < attributeCount; i++)
-				parameters[i] = attributes![i].ToParameter();
-			return parameters;
-		}
-
-		var parametersWithTelemetry = new MySqlParameter[attributeCount + telemetryAttributes.Length];
-		for (var i = 0; i < attributeCount; i++)
-			parametersWithTelemetry[i] = attributes![i].ToParameter();
-		for (var i = 0; i < telemetryAttributes.Length; i++)
-			parametersWithTelemetry[attributeCount + i] = telemetryAttributes[i];
-		return parametersWithTelemetry;
 	}
 
 	private static TelemetryAttributeKind GetTelemetryAttributeKinds(MySqlAttributeCollection? attributes, Activity? activity)
@@ -287,49 +277,6 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			span[0] = CreateTelemetryQueryAttribute("tracestate", activity!.TraceStateString!);
 			span = span.Slice(1);
 		}
-	}
-
-	private static MySqlParameter[] CreateTelemetryQueryAttributes(MySqlAttributeCollection? attributes, Activity? activity)
-	{
-		if (activity?.IdFormat != ActivityIdFormat.W3C || activity.Id is not { Length: > 0 } traceparentValue)
-			return [];
-
-		var hasTraceparent = false;
-		var hasTracestate = false;
-		if (attributes is not null)
-		{
-			foreach (var attribute in attributes)
-			{
-				if (attribute.AttributeName.Equals("traceparent", StringComparison.OrdinalIgnoreCase))
-					hasTraceparent = true;
-				else if (attribute.AttributeName.Equals("tracestate", StringComparison.OrdinalIgnoreCase))
-					hasTracestate = true;
-			}
-		}
-
-		MySqlParameter[]? telemetryAttributes = null;
-		var telemetryAttributeCount = 0;
-		if (!hasTraceparent)
-		{
-			telemetryAttributes ??= new MySqlParameter[2];
-			telemetryAttributes[telemetryAttributeCount++] = CreateTelemetryQueryAttribute("traceparent", traceparentValue);
-		}
-
-		if (!hasTracestate && activity.TraceStateString is { Length: > 0 } tracestateValue)
-		{
-			telemetryAttributes ??= new MySqlParameter[2];
-			telemetryAttributes[telemetryAttributeCount++] = CreateTelemetryQueryAttribute("tracestate", tracestateValue);
-		}
-
-		if (telemetryAttributeCount == 0)
-			return [];
-
-		if (telemetryAttributeCount == telemetryAttributes!.Length)
-			return telemetryAttributes;
-
-		var trimmedTelemetryAttributes = new MySqlParameter[telemetryAttributeCount];
-		Array.Copy(telemetryAttributes!, trimmedTelemetryAttributes, telemetryAttributeCount);
-		return trimmedTelemetryAttributes;
 	}
 
 	private static MySqlParameter CreateTelemetryQueryAttribute(string name, string value) =>
