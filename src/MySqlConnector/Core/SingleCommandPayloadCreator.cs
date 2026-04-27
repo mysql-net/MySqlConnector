@@ -269,12 +269,12 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	{
 		if ((kinds & TelemetryAttributeKind.TraceParent) != 0)
 		{
-			span[0] = new("traceparent", MySqlDbType.String) { Value = activity!.Id! };
+			span[0] = new("traceparent", activity!.Id!);
 			span = span.Slice(1);
 		}
 		if ((kinds & TelemetryAttributeKind.TraceState) != 0)
 		{
-			span[0] = new("tracestate", MySqlDbType.String) { Value = activity!.TraceStateString! };
+			span[0] = new("tracestate", activity!.TraceStateString!);
 			span = span.Slice(1);
 		}
 	}
@@ -303,15 +303,19 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 
 		for (var index = 0; index < parameters.Length; index++)
 		{
-			// override explicit MySqlDbType with inferred type from the Value (but keep MySqlDbType.String, e.g., for W3C trace propagation attributes where it's required: https://github.com/mysql/mysql-server/blob/9.7/components/telemetry/tm_propagation.cc#L72-L74 )
+			// override explicit MySqlDbType with inferred type from the Value
 			var parameter = parameters[index];
 			var mySqlDbType = parameter.MySqlDbType;
 			var typeMapping = (parameter.Value is null || parameter.Value == DBNull.Value) ? null : TypeMapper.Instance.GetDbTypeMapping(parameter.Value.GetType());
-			if (typeMapping is not null && mySqlDbType != MySqlDbType.String)
+			if (typeMapping is not null)
 			{
 				var dbType = typeMapping.DbTypes[0];
 				mySqlDbType = TypeMapper.Instance.GetMySqlDbTypeForDbType(dbType);
 			}
+
+			// MYSQL_TYPE_STRING is required for W3C trace propagation attributes: https://github.com/mysql/mysql-server/blob/9.7/components/telemetry/tm_propagation.cc#L72-L74
+			if (mySqlDbType == MySqlDbType.VarChar && parameter.ParameterName is "traceparent" or "tracestate")
+				mySqlDbType = MySqlDbType.String;
 
 			// HACK: MariaDB doesn't have a dedicated Vector type so mark it as binary data
 			if (mySqlDbType == MySqlDbType.Vector && command.Connection!.Session.ServerVersion.IsMariaDb)
