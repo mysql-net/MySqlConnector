@@ -24,6 +24,7 @@ internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
 		if (commandListPosition.CommandAt(commandListPosition.CommandIndex).Connection!.Session.SupportsQueryAttributes)
 		{
 			// attribute count
+			// TODO: This needs to write query attributes for telemetry if activity is not null
 			writer.WriteLengthEncodedInteger(0);
 
 			// attribute set count (always 1)
