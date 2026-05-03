@@ -1275,10 +1275,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 		if (m_activeReader is not null)
 			await m_activeReader.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
 		if (CurrentTransaction is not null && m_session!.IsConnected)
-		{
 			await CurrentTransaction.DisposeAsync(ioBehavior, cancellationToken).ConfigureAwait(false);
-			CurrentTransaction = null;
-		}
+		CurrentTransaction = null;
 	}
 
 	private ConnectionSettings GetConnectionSettings() =>
