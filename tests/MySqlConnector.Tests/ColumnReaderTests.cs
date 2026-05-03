@@ -75,6 +75,7 @@ public class ColumnReaderTests
 	[InlineData("2000-01-01 01:01:60")]
 	[InlineData("2000-01-01 01:01:01 ")]
 	[InlineData("2000-01-01 01:01:01.")]
+	[InlineData("2000-01-01 01:01:01.-1")]
 	[InlineData("2000-01-01 01:01:01.a")]
 	[InlineData("2000-01-01 01:01:01.123456a")]
 	[InlineData("2000-01-01 01:01:01.12345678")]
