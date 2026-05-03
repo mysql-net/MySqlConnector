@@ -6,6 +6,6 @@ internal sealed class MySqlConnectorTracingOptions
 
 	public static MySqlConnectorTracingOptions Default { get; } = new()
 	{
-		EnableResultSetHeaderEvent = true,
+		EnableResultSetHeaderEvent = false,
 	};
 }
