@@ -4,8 +4,5 @@ internal sealed class MySqlConnectorTracingOptions
 {
 	public bool EnableResultSetHeaderEvent { get; set; }
 
-	public static MySqlConnectorTracingOptions Default { get; } = new()
-	{
-		EnableResultSetHeaderEvent = false,
-	};
+	public static MySqlConnectorTracingOptions Default { get; } = new();
 }
