@@ -1,0 +1,8 @@
+FROM mysql:9.7
+
+COPY .ci/server/server.cnf /etc/mysql/conf.d/server.cnf
+COPY .ci/server/certs /etc/mysql/conf.d/certs
+COPY .ci/server/init.sql /docker-entrypoint-initdb.d/010-init.sql
+COPY .ci/server/init_sha256.sql /docker-entrypoint-initdb.d/020-init_sha256.sql
+COPY .ci/server/init_caching_sha2.sql /docker-entrypoint-initdb.d/030-init_caching_sha2.sql
+COPY .ci/server/init_query_attributes.sql /docker-entrypoint-initdb.d/040-query-attributes.sql
