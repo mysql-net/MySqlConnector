@@ -119,6 +119,19 @@ public class StatementPreparerTests
 	}
 
 	[Theory]
+	[InlineData("SELECT @var, 'test';")]
+	[InlineData("SELECT @`var`, 'test';")]
+	[InlineData("SELECT @'var', 'test';")]
+	[InlineData("SELECT @\"var\", 'test';")]
+	public void QuotedParametersFollowedByString(string sql)
+	{
+		var parameters = new MySqlParameterCollection();
+		parameters.AddWithValue("@var", 123);
+		var parsedSql = GetParsedSql(sql, parameters);
+		Assert.Equal("SELECT 123, 'test';", parsedSql);
+	}
+
+	[Theory]
 	[InlineData(@"SET @'var':=1;
 SELECT @foo+@'var' as R")]
 	[InlineData(@"SET @'var':=1;
@@ -272,6 +285,9 @@ SELECT @'var' as R")]
 	[InlineData("SELECT ?, ?; SELECT ?, ?;", new[] { "SELECT ?, ?", "SELECT ?, ?" }, "0,1;2,3")]
 	[InlineData("SELECT @one, @two;", new[] { "SELECT ?, ?" }, "@one,@two")]
 	[InlineData("SELECT @one, @two; SELECT @zero, @three", new[] { "SELECT ?, ?", "SELECT ?, ?" }, "@one,@two;@zero,@three")]
+	[InlineData("SELECT @`one`, 'two';", new[] { "SELECT ?, 'two'" }, "@`one`")]
+	[InlineData("SELECT @'one', 'two';", new[] { "SELECT ?, 'two'" }, "@'one'")]
+	[InlineData("SELECT @\"one\", 'two';", new[] { "SELECT ?, 'two'" }, "@\"one\"")]
 	[InlineData("SELECT ?, ?; SELECT ?, ?", new[] { "SELECT ?, ?", "SELECT ?, ?" }, "0,1;2,3")]
 	[InlineData("SELECT '@one' FROM `@three` WHERE `@zero` = @two;", new[] { "SELECT '@one' FROM `@three` WHERE `@zero` = ?" }, "@two")]
 	public void SplitStatement(string sql, string[] expectedStatements, string expectedStatementParametersString)

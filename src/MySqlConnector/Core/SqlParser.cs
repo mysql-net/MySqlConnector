@@ -70,7 +70,10 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				else
 				{
 					if (isNamedParameter)
+					{
 						OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
+						isNamedParameter = false;
+					}
 					if (ch == ';')
 					{
 						OnStatementEnd(index);
@@ -91,7 +94,10 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				else
 				{
 					if (isNamedParameter)
+					{
 						OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
+						isNamedParameter = false;
+					}
 					if (ch == ';')
 					{
 						OnStatementEnd(index);
@@ -112,7 +118,10 @@ internal abstract class SqlParser(StatementPreparer preparer)
 				else
 				{
 					if (isNamedParameter)
+					{
 						OnNamedParameter(parameterStartIndex, index - parameterStartIndex);
+						isNamedParameter = false;
+					}
 					if (ch == ';')
 					{
 						OnStatementEnd(index);
