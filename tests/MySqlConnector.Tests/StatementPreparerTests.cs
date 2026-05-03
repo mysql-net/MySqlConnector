@@ -48,6 +48,8 @@ public class StatementPreparerTests
 	[InlineData(@"SELECT /* * / @param */ 1;")]
 	[InlineData("SELECT # @param \n1;")]
 	[InlineData("SELECT -- @param \n1;")]
+	[InlineData("SELECT --\t@param \n1;")]
+	[InlineData("SELECT --\x7F@param \n1;")]
 	public void ParametersIgnoredInComments(string sql)
 	{
 		Assert.Equal(sql, GetParsedSql(sql));
