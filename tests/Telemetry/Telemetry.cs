@@ -2,8 +2,8 @@
 #:property ManagePackageVersionsCentrally=false
 #:property PackAsTool=false
 #:property PublishAot=false
-#:package OpenTelemetry@1.9.0
-#:package OpenTelemetry.Exporter.OpenTelemetryProtocol@1.9.0
+#:package OpenTelemetry@1.15.3
+#:package OpenTelemetry.Exporter.OpenTelemetryProtocol@1.15.3
 #:project ../../src/MySqlConnector/MySqlConnector.csproj
 
 using System.Diagnostics;
