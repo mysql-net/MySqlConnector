@@ -2,7 +2,6 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Numerics;
-using System.Xml.Linq;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
@@ -147,15 +146,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	public static void WriteAttributes(ByteBufferWriter writer, IMySqlCommand command, Activity? activity)
 	{
 		var attributes = command.RawAttributes;
-		var telemetryKinds = GetTelemetryAttributeKinds(attributes, activity);
-		var totalAttributeCount = attributes?.Count ?? 0;
-#if NET6_0_OR_GREATER
-		totalAttributeCount += BitOperations.PopCount((uint) telemetryKinds);
-#else
-		totalAttributeCount +=
-			(((telemetryKinds & TelemetryAttributeKind.TraceParent) != TelemetryAttributeKind.None) ? 1 : 0) +
-			(((telemetryKinds & TelemetryAttributeKind.TraceState) != TelemetryAttributeKind.None) ? 1 : 0);
-#endif
+		var (totalAttributeCount, telemetryKinds) = GetAttributeCountAndKinds(attributes, activity);
 		writer.WriteLengthEncodedInteger((uint) totalAttributeCount);
 
 		// attribute set count (always 1)
@@ -189,18 +180,8 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 
 		var commandParameterCount = preparedStatement.Statement.ParameterNames?.Count ?? 0;
 
-		// compute total attribute count from the command and the auto-generated attributes for telemetry
 		var attributes = command.RawAttributes;
-		var commandAttributeCount = attributes?.Count ?? 0;
-		var telemetryKinds = GetTelemetryAttributeKinds(attributes, activity);
-		var totalAttributeCount = commandAttributeCount;
-#if NET6_0_OR_GREATER
-		totalAttributeCount += BitOperations.PopCount((uint) telemetryKinds);
-#else
-		totalAttributeCount +=
-			(((telemetryKinds & TelemetryAttributeKind.TraceParent) != TelemetryAttributeKind.None) ? 1 : 0) +
-			(((telemetryKinds & TelemetryAttributeKind.TraceState) != TelemetryAttributeKind.None) ? 1 : 0);
-#endif
+		var (totalAttributeCount, telemetryKinds) = GetAttributeCountAndKinds(attributes, activity);
 
 		if (sendQueryAttributes)
 		{
@@ -233,6 +214,7 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 					throw new MySqlException($"Parameter index {parameterIndex} is invalid when only {parameterCollection?.Count ?? 0} parameter{(parameterCollection?.Count == 1 ? " is" : "s are")} defined.");
 				parameters[i] = parameterCollection![parameterIndex];
 			}
+			var commandAttributeCount = attributes?.Count ?? 0;
 			for (var i = 0; i < commandAttributeCount; i++)
 				parameters[commandParameterCount + i] = attributes![i].ToParameter();
 			WriteTelemetryAttributes(parameters.Slice(commandParameterCount + commandAttributeCount), activity, telemetryKinds);
@@ -240,29 +222,41 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 		}
 	}
 
-	private static TelemetryAttributeKind GetTelemetryAttributeKinds(MySqlAttributeCollection? attributes, Activity? activity)
+	// Counts the number of attributes, combining command attributes and the required attributes needed to send the telemetry context.
+	private static (int AttributeCount, TelemetryAttributeKind Kinds) GetAttributeCountAndKinds(MySqlAttributeCollection? attributes, Activity? activity)
 	{
-		// we required W3C IdFormat (default since .NET 5) in order to send a correct traceparent attribute
-		if (activity is not { IdFormat: ActivityIdFormat.W3C, Id: { Length: > 0 } })
-			return TelemetryAttributeKind.None;
+		var totalAttributeCount = attributes?.Count ?? 0;
 
-		// start with both attributes and eliminate based on activity content and user-provided attributes
-		var kinds = TelemetryAttributeKind.TraceParent |
-			(activity.TraceStateString is { Length: > 0 } ? TelemetryAttributeKind.TraceState : TelemetryAttributeKind.None);
-
-		// check for edge case of user already providing attributes with these names on the command
-		if (attributes is not null)
+		// we require W3C IdFormat (which is the default since .NET 5) in order to send a correct traceparent attribute
+		var telemetryKinds = TelemetryAttributeKind.None;
+		if (activity is { IdFormat: ActivityIdFormat.W3C, Id: { Length: > 0 } })
 		{
-			foreach (var attribute in attributes)
+			// start with both attributes and eliminate based on activity content and user-provided attributes
+			telemetryKinds = TelemetryAttributeKind.TraceParent |
+				(activity.TraceStateString is { Length: > 0 } ? TelemetryAttributeKind.TraceState : TelemetryAttributeKind.None);
+
+			// check for edge case of user already providing attributes with these names on the command
+			if (attributes is not null)
 			{
-				if (attribute.AttributeName == "traceparent")
-					kinds &= ~TelemetryAttributeKind.TraceParent;
-				else if (attribute.AttributeName == "tracestate")
-					kinds &= ~TelemetryAttributeKind.TraceState;
+				foreach (var attribute in attributes)
+				{
+					if (attribute.AttributeName == "traceparent")
+						telemetryKinds &= ~TelemetryAttributeKind.TraceParent;
+					else if (attribute.AttributeName == "tracestate")
+						telemetryKinds &= ~TelemetryAttributeKind.TraceState;
+				}
 			}
+
+#if NET6_0_OR_GREATER
+			totalAttributeCount += BitOperations.PopCount((uint) telemetryKinds);
+#else
+			totalAttributeCount +=
+				(((telemetryKinds & TelemetryAttributeKind.TraceParent) != TelemetryAttributeKind.None) ? 1 : 0) +
+				(((telemetryKinds & TelemetryAttributeKind.TraceState) != TelemetryAttributeKind.None) ? 1 : 0);
+#endif
 		}
 
-		return kinds;
+		return (totalAttributeCount, telemetryKinds);
 	}
 
 	private static void WriteTelemetryAttributes(Span<MySqlParameter> span, Activity? activity, TelemetryAttributeKind kinds)
