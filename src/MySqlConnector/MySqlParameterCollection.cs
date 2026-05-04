@@ -128,6 +128,15 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 		ArgumentNullException.ThrowIfNull(value);
 		var newParameter = (MySqlParameter) value;
 		var oldParameter = m_parameters[index];
+		if (ReferenceEquals(oldParameter, newParameter))
+			return;
+		if (ReferenceEquals(newParameter.ParameterCollection, this))
+			throw new ArgumentException("The parameter is already contained by this MySqlParameterCollection", nameof(value));
+		if (newParameter.ParameterCollection is not null)
+			throw new ArgumentException("The parameter is already contained by another MySqlParameterCollection", nameof(value));
+		if (!string.IsNullOrEmpty(newParameter.NormalizedParameterName) && NormalizedIndexOf(newParameter.NormalizedParameterName) != -1)
+			throw new ArgumentException($"Parameter '{newParameter.ParameterName}' has already been defined", nameof(value));
+
 		if (oldParameter.NormalizedParameterName is not null)
 			m_nameToIndex.Remove(oldParameter.NormalizedParameterName);
 		oldParameter.ParameterCollection = null;
@@ -165,15 +174,20 @@ public sealed class MySqlParameterCollection : DbParameterCollection, IEnumerabl
 		if (newName.Length != 0)
 		{
 			if (m_nameToIndex.ContainsKey(newName))
-				throw new MySqlException($"There is already a parameter with the name '{parameter.ParameterName}' in this collection.");
+				throw new ArgumentException($"There is already a parameter with the name '{parameter.ParameterName}' in this collection");
 			m_nameToIndex[newName] = index;
 		}
 	}
 
 	private void AddParameter(MySqlParameter parameter, int index)
 	{
+		if (ReferenceEquals(parameter.ParameterCollection, this))
+			throw new ArgumentException("The parameter is already contained by this MySqlParameterCollection", nameof(parameter));
+		if (parameter.ParameterCollection is not null)
+			throw new ArgumentException("The parameter is already contained by another MySqlParameterCollection", nameof(parameter));
 		if (!string.IsNullOrEmpty(parameter.NormalizedParameterName) && NormalizedIndexOf(parameter.NormalizedParameterName) != -1)
-			throw new MySqlException($"Parameter '{parameter.ParameterName}' has already been defined.");
+			throw new ArgumentException($"Parameter '{parameter.ParameterName}' has already been defined", nameof(parameter));
+
 		if (index < m_parameters.Count)
 		{
 			foreach (var pair in m_nameToIndex.ToList())

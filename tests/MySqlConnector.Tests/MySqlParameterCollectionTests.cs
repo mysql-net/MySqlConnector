@@ -5,12 +5,192 @@ public class MySqlParameterCollectionTests : IDisposable
 	public MySqlParameterCollectionTests()
 	{
 		m_command = new();
-		m_parameterCollection = new MySqlCommand().Parameters;
+		m_parameterCollection = m_command.Parameters;
 	}
 
 	public void Dispose()
 	{
 		m_command.Dispose();
+	}
+
+	[Fact]
+	public void AddNullObject()
+	{
+#if MYSQL_DATA
+		Assert.Throws<MySqlException>(() => m_parameterCollection.Add((object) null!));
+#else
+		Assert.Throws<ArgumentNullException>(() => m_parameterCollection.Add((object) null!));
+#endif
+	}
+
+	[Fact]
+	public void AddNullParameter()
+	{
+#if MYSQL_DATA
+		Assert.Throws<MySqlException>(() => m_parameterCollection.Add((object) null!));
+#else
+		Assert.Throws<ArgumentNullException>(() => m_parameterCollection.Add((MySqlParameter) null!));
+#endif
+	}
+
+	[Fact]
+	public void AddDuplicateParameterName()
+	{
+		var parameter1 = new MySqlParameter("@name", 1);
+		var parameter2 = new MySqlParameter("name", 2);
+
+		Assert.Same(parameter1, m_parameterCollection.Add(parameter1));
+#if MYSQL_DATA
+		var exception = Assert.Throws<MySqlException>(() => m_parameterCollection.Add(parameter2));
+#else
+		var exception = Assert.Throws<ArgumentException>(() => m_parameterCollection.Add(parameter2));
+#endif
+		Assert.StartsWith("Parameter 'name' has already been defined", exception.Message);
+
+		Assert.Equal(1, m_parameterCollection.Count);
+		Assert.Same(parameter1, m_parameterCollection[0]);
+	}
+
+	[Fact]
+	public void AddSameNamedParameterTwice()
+	{
+		var parameter = new MySqlParameter("@name", 1);
+
+		Assert.Same(parameter, m_parameterCollection.Add(parameter));
+#if MYSQL_DATA
+		Assert.Throws<MySqlException>(() => m_parameterCollection.Add(parameter));
+#else
+		var exception = Assert.Throws<ArgumentException>(() => m_parameterCollection.Add(parameter));
+		Assert.StartsWith("The parameter is already contained by this MySqlParameterCollection", exception.Message);
+#endif
+
+		Assert.Equal(1, m_parameterCollection.Count);
+		Assert.Same(parameter, m_parameterCollection[0]);
+	}
+
+	[Fact]
+	public void AddSameUnnamedParameterTwice()
+	{
+		var parameter = new MySqlParameter();
+
+		Assert.Same(parameter, m_parameterCollection.Add(parameter));
+#if MYSQL_DATA
+		Assert.Throws<MySqlException>(() => m_parameterCollection.Add(parameter));
+#else
+		var exception = Assert.Throws<ArgumentException>(() => m_parameterCollection.Add(parameter));
+		Assert.StartsWith("The parameter is already contained by this MySqlParameterCollection", exception.Message);
+#endif
+
+		Assert.Equal(1, m_parameterCollection.Count);
+		Assert.Same(parameter, m_parameterCollection[0]);
+	}
+
+	[Fact]
+	public void AddDistinctUnnamedParameters()
+	{
+		var parameter1 = new MySqlParameter();
+		var parameter2 = new MySqlParameter();
+
+		Assert.Same(parameter1, m_parameterCollection.Add(parameter1));
+		Assert.Same(parameter2, m_parameterCollection.Add(parameter2));
+
+		Assert.Equal(2, m_parameterCollection.Count);
+		Assert.Same(parameter1, m_parameterCollection[0]);
+		Assert.Same(parameter2, m_parameterCollection[1]);
+	}
+
+	[Fact]
+	public void AddParameterFromAnotherCollection()
+	{
+		var parameter = new MySqlParameter("@name", 1);
+		var otherCollection = new MySqlCommand().Parameters;
+		otherCollection.Add(parameter);
+
+#if !MYSQL_DATA
+		var exception = Assert.Throws<ArgumentException>(() => m_parameterCollection.Add(parameter));
+		Assert.StartsWith("The parameter is already contained by another MySqlParameterCollection", exception.Message);
+#endif
+
+		Assert.Equal(0, m_parameterCollection.Count);
+		Assert.Equal(1, otherCollection.Count);
+		Assert.Same(parameter, otherCollection[0]);
+	}
+
+	[Fact]
+	public void SetParameterByIndexDuplicateParameterLeavesCollectionUnchanged()
+	{
+		var parameter1 = m_parameterCollection.AddWithValue("@one", 1);
+		var parameter2 = m_parameterCollection.AddWithValue("@two", 2);
+
+		Action action = () => m_parameterCollection[0] = parameter2;
+		var exception = Assert.Throws<ArgumentException>(action);
+#if !MYSQL_DATA
+		Assert.StartsWith("The parameter is already contained by this MySqlParameterCollection", exception.Message);
+#endif
+
+		Assert.Equal(2, m_parameterCollection.Count);
+#if !MYSQL_DATA
+		Assert.Same(parameter1, m_parameterCollection[0]);
+		Assert.Equal(0, m_parameterCollection.IndexOf("@one"));
+#endif
+		Assert.Same(parameter2, m_parameterCollection[1]);
+		Assert.Equal(1, m_parameterCollection.IndexOf("@two"));
+	}
+
+	[Fact]
+	public void SetParameterByIndexDuplicateNameLeavesCollectionUnchanged()
+	{
+		var parameter1 = m_parameterCollection.AddWithValue("@one", 1);
+		var parameter2 = m_parameterCollection.AddWithValue("@two", 2);
+		var replacement = new MySqlParameter("@two", 3);
+
+		Action action = () => m_parameterCollection[0] = replacement;
+		var exception = Assert.Throws<ArgumentException>(action);
+#if !MYSQL_DATA
+		Assert.StartsWith("Parameter '@two' has already been defined", exception.Message);
+#endif
+
+		Assert.Equal(2, m_parameterCollection.Count);
+#if !MYSQL_DATA
+		Assert.Same(parameter1, m_parameterCollection[0]);
+		Assert.Equal(0, m_parameterCollection.IndexOf("@one"));
+#endif
+		Assert.Same(parameter2, m_parameterCollection[1]);
+		Assert.Equal(1, m_parameterCollection.IndexOf("@two"));
+	}
+
+	[Fact]
+	public void SetParameterByIndexSameParameterIsNoOp()
+	{
+		var parameter = m_parameterCollection.AddWithValue("@one", 1);
+
+		m_parameterCollection[0] = parameter;
+
+		Assert.Equal(1, m_parameterCollection.Count);
+		Assert.Same(parameter, m_parameterCollection[0]);
+		Assert.Equal(0, m_parameterCollection.IndexOf("@one"));
+	}
+
+	[Fact]
+	public void SetParameterByNameDuplicateNameLeavesCollectionUnchanged()
+	{
+		var parameter1 = m_parameterCollection.AddWithValue("@one", 1);
+		var parameter2 = m_parameterCollection.AddWithValue("@two", 2);
+		var replacement = new MySqlParameter("@two", 3);
+
+		Action action = () => m_parameterCollection["@one"] = replacement;
+		var exception = Assert.Throws<ArgumentException>(action);
+#if !MYSQL_DATA
+		Assert.StartsWith("Parameter '@two' has already been defined", exception.Message);
+#endif
+
+		Assert.Equal(2, m_parameterCollection.Count);
+#if !MYSQL_DATA
+		Assert.Same(parameter1, m_parameterCollection[0]);
+		Assert.Equal(0, m_parameterCollection.IndexOf("@one"));
+#endif
+		Assert.Same(parameter2, m_parameterCollection[1]);
+		Assert.Equal(1, m_parameterCollection.IndexOf("@two"));
 	}
 
 	[Fact]
@@ -105,7 +285,11 @@ public class MySqlParameterCollectionTests : IDisposable
 	public void AddDuplicateParameter(string parameterName)
 	{
 		m_parameterCollection.AddWithValue("@test", 1);
+#if MYSQL_DATA
 		Assert.Throws<MySqlException>(() => { m_parameterCollection.AddWithValue(parameterName, 2); });
+#else
+		Assert.Throws<ArgumentException>(() => { m_parameterCollection.AddWithValue(parameterName, 2); });
+#endif
 	}
 
 	[Fact]
@@ -267,48 +451,35 @@ public class MySqlParameterCollectionTests : IDisposable
 	[Fact]
 	public void ChangeParameterNameAfterAdd()
 	{
-		using var cmd = new MySqlCommand();
-		using var cmd2 = new MySqlCommand();
-		var parameter = cmd.CreateParameter();
+		var parameter = m_command.CreateParameter();
 		parameter.ParameterName = "@a";
 
-		cmd2.Parameters.Add(parameter);
-		cmd.Parameters.Add(parameter);
+		m_parameterCollection.Add(parameter);
 
 		parameter.ParameterName = "@b";
 
-		Assert.Equal(parameter, cmd.Parameters["@b"]);
-		Assert.Throws<ArgumentException>(() => cmd.Parameters["@a"]);
-
-		// only works for the last collection that contained the parameter
-		Assert.Throws<ArgumentException>(() => cmd2.Parameters["@b"]);
-		Assert.Equal(parameter, cmd2.Parameters["@a"]);
+		Assert.Equal(parameter, m_parameterCollection["@b"]);
+		Assert.Throws<ArgumentException>(() => m_parameterCollection["@a"]);
 	}
 
 	[Fact]
 	public void SetParameterNameAfterAdd()
 	{
-		using var cmd = new MySqlCommand();
-		var parameter = cmd.CreateParameter();
-		cmd.Parameters.Add(parameter);
+		var parameter = m_command.CreateParameter();
+		m_parameterCollection.Add(parameter);
 		parameter.ParameterName = "@a";
-		Assert.Equal(parameter, cmd.Parameters["@a"]);
+		Assert.Equal(parameter, m_parameterCollection["@a"]);
 	}
 
 	[Fact]
-	public void SetTwoParametersToSameNAme()
+	public void SetTwoParametersToSameName()
 	{
-		using var cmd = new MySqlCommand();
-		var parameter1 = cmd.CreateParameter();
-		cmd.Parameters.Add(parameter1);
-		var parameter2 = cmd.CreateParameter();
-		cmd.Parameters.Add(parameter2);
+		var parameter1 = m_command.CreateParameter();
+		m_parameterCollection.Add(parameter1);
+		var parameter2 = m_command.CreateParameter();
+		m_parameterCollection.Add(parameter2);
 		parameter1.ParameterName = "@a";
-#if !MYSQL_DATA
-		Assert.Throws<MySqlException>(() => parameter2.ParameterName = "@a");
-#else
 		Assert.Throws<ArgumentException>(() => parameter2.ParameterName = "@a");
-#endif
 	}
 
 	private readonly MySqlCommand m_command;
