@@ -102,7 +102,7 @@ function Test-TraceGraph
 	param(
 		[object] $TraceResponse,
 		[string] $TraceId,
-		[string[]] $ClientSpanIds
+		[object[]] $ClientSpans
 	)
 
 	$spans = Get-TraceSpanRecords -TraceResponse $TraceResponse
@@ -119,8 +119,9 @@ function Test-TraceGraph
 		$issues.Add("Expected 1 TelemetryScenario root span but found $($rootSpans.Count).")
 	}
 
-	foreach ($clientSpanId in $ClientSpanIds)
+	foreach ($clientSpan in $ClientSpans)
 	{
+		$clientSpanId = $clientSpan.SpanId
 		$clientSpans = @($spans | Where-Object {
 			$_.TraceId -eq $TraceId -and
 			$_.ServiceName -eq 'MySqlConnector.TelemetrySample' -and
@@ -129,7 +130,7 @@ function Test-TraceGraph
 		})
 		if ($clientSpans.Count -ne 1)
 		{
-			$issues.Add("Expected 1 MySqlConnector Execute span with SpanId '$clientSpanId' but found $($clientSpans.Count).")
+			$issues.Add("Expected 1 MySqlConnector Execute span for $($clientSpan.Description) with SpanId '$clientSpanId' but found $($clientSpans.Count).")
 			continue
 		}
 
@@ -139,9 +140,9 @@ function Test-TraceGraph
 			$_.Name -eq 'stmt' -and
 			$_.ParentSpanId -eq $clientSpanId
 		})
-		if ($mysqlChildren.Count -lt 1)
+		if ($mysqlChildren.Count -ne $clientSpan.ExpectedChildCount)
 		{
-			$issues.Add("Expected a MySQL stmt child span for Execute span '$clientSpanId'.")
+			$issues.Add("Expected $($clientSpan.ExpectedChildCount) MySQL stmt child span(s) for $($clientSpan.Description) Execute span '$clientSpanId' but found $($mysqlChildren.Count).")
 		}
 	}
 
@@ -185,14 +186,41 @@ if ($traceId -eq '<null>')
 
 $comQueryMatch = Get-RequiredMatch -Text $telemetryText -Pattern '^COM_QUERY traceparent: 00-(?<TraceId>[0-9a-f]{32})-(?<SpanId>[0-9a-f]{16})-01$' -Description 'COM_QUERY traceparent'
 $preparedMatch = Get-RequiredMatch -Text $telemetryText -Pattern '^COM_STMT_EXECUTE traceparent: 00-(?<TraceId>[0-9a-f]{32})-(?<SpanId>[0-9a-f]{16})-01$' -Description 'COM_STMT_EXECUTE traceparent'
-if ($comQueryMatch.Groups['TraceId'].Value -ne $traceId -or $preparedMatch.Groups['TraceId'].Value -ne $traceId)
+$normalizedTelemetryText = $telemetryText -replace "\r\n?", "`n"
+$batchMatches = [regex]::Matches($normalizedTelemetryText, '^BATCH\[(?<Index>\d+)\] traceparent: 00-(?<TraceId>[0-9a-f]{32})-(?<SpanId>[0-9a-f]{16})-01$', [Text.RegularExpressions.RegexOptions]::Multiline)
+if ($batchMatches.Count -ne 2)
+{
+	throw "Could not find both batch traceparent lines in Telemetry.cs output."
+}
+
+if ($comQueryMatch.Groups['TraceId'].Value -ne $traceId -or $preparedMatch.Groups['TraceId'].Value -ne $traceId -or @($batchMatches | Where-Object { $_.Groups['TraceId'].Value -ne $traceId }).Count -ne 0)
 {
 	throw "Telemetry.cs printed mismatched trace IDs. Expected '$traceId'."
 }
 
-$clientSpanIds = @(
-	$comQueryMatch.Groups['SpanId'].Value
-	$preparedMatch.Groups['SpanId'].Value
+$batchSpanIds = @($batchMatches | ForEach-Object { $_.Groups['SpanId'].Value })
+$distinctBatchSpanIds = @($batchSpanIds | Sort-Object -Unique)
+if ($distinctBatchSpanIds.Count -ne 1)
+{
+	throw "Expected both batch commands to use the same client span, but found span IDs: $($distinctBatchSpanIds -join ', ')."
+}
+
+$clientSpans = @(
+	[pscustomobject]@{
+		Description = 'COM_QUERY'
+		SpanId = $comQueryMatch.Groups['SpanId'].Value
+		ExpectedChildCount = 1
+	},
+	[pscustomobject]@{
+		Description = 'COM_STMT_EXECUTE'
+		SpanId = $preparedMatch.Groups['SpanId'].Value
+		ExpectedChildCount = 1
+	},
+	[pscustomobject]@{
+		Description = 'Batch'
+		SpanId = $distinctBatchSpanIds[0]
+		ExpectedChildCount = $batchMatches.Count
+	}
 )
 
 $deadline = [DateTimeOffset]::UtcNow.AddSeconds($TimeoutSeconds)
@@ -202,7 +230,7 @@ do
 	try
 	{
 		$traceResponse = Invoke-RestMethod -Uri "$dashboardTelemetryApi/traces/$traceId" -UseBasicParsing
-		$lastResult = Test-TraceGraph -TraceResponse $traceResponse -TraceId $traceId -ClientSpanIds $clientSpanIds
+		$lastResult = Test-TraceGraph -TraceResponse $traceResponse -TraceId $traceId -ClientSpans $clientSpans
 		if ($lastResult.Passed)
 		{
 			break
@@ -235,15 +263,15 @@ if ($null -eq $lastResult -or -not $lastResult.Passed)
 
 Write-Host ''
 Write-Host "Verified trace $traceId."
-foreach ($clientSpanId in $clientSpanIds)
+foreach ($clientSpan in $clientSpans)
 {
 	$mysqlChildCount = @($lastResult.Spans | Where-Object {
 		$_.TraceId -eq $traceId -and
 		$_.ServiceName -eq 'mysql-telemetry-demo' -and
 		$_.Name -eq 'stmt' -and
-		$_.ParentSpanId -eq $clientSpanId
+		$_.ParentSpanId -eq $clientSpan.SpanId
 	}).Count
-	Write-Host "Execute span $clientSpanId has $mysqlChildCount MySQL child span(s)."
+	Write-Host "$($clientSpan.Description) Execute span $($clientSpan.SpanId) has $mysqlChildCount MySQL child span(s)."
 }
 Write-Host ''
 Write-Host ($lastResult.Spans | Where-Object { $_.TraceId -eq $traceId } | Sort-Object ServiceName, Name, SpanId | Format-Table -AutoSize | Out-String -Width 220)

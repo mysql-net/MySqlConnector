@@ -174,6 +174,56 @@ public class ActivityTests : IClassFixture<DatabaseFixture>
 	[SkippableTheory(ServerFeatures.QueryAttributes)]
 	[InlineData(false)]
 	[InlineData(true)]
+	public void ExecuteTraceparentQueryAttributeBatch(bool prepare)
+	{
+		using var connection = new MySqlConnection(AppConfig.ConnectionString);
+		connection.Open();
+
+		using var parentActivity = new Activity(nameof(ExecuteTraceparentQueryAttributeBatch));
+		parentActivity.Start();
+
+		var activities = new List<Activity>();
+		using var listener = new ActivityListener
+		{
+			ShouldListenTo = x => x.Name == "MySqlConnector",
+			Sample = (ref ActivityCreationOptions<ActivityContext> options) =>
+				options.TraceId == parentActivity.TraceId ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+			ActivityStopped = activities.Add,
+		};
+		ActivitySource.AddActivityListener(listener);
+
+		using var batch = new MySqlBatch(connection)
+		{
+			BatchCommands =
+			{
+				new MySqlBatchCommand("SELECT mysql_query_attribute_string('traceparent');"),
+				new MySqlBatchCommand("SELECT mysql_query_attribute_string('traceparent');"),
+			},
+		};
+		if (prepare)
+			batch.Prepare();
+
+		var traceparents = new List<string>();
+		using (var reader = batch.ExecuteReader())
+		{
+			do
+			{
+				Assert.True(reader.Read());
+				traceparents.Add(reader.GetString(0));
+				Assert.False(reader.Read());
+			} while (reader.NextResult());
+		}
+
+		var activity = Assert.Single(activities);
+		Assert.Equal(ActivityKind.Client, activity.Kind);
+		Assert.Equal("Execute", activity.OperationName);
+		AssertTag(activity.Tags, "db.statement", "SELECT mysql_query_attribute_string('traceparent');\nSELECT mysql_query_attribute_string('traceparent');");
+		Assert.All(traceparents, x => Assert.Equal(activity.Id, x));
+	}
+
+	[SkippableTheory(ServerFeatures.QueryAttributes)]
+	[InlineData(false)]
+	[InlineData(true)]
 	public void ExecuteTraceContextQueryAttributes(bool prepare)
 	{
 		using var connection = new MySqlConnection(AppConfig.ConnectionString);

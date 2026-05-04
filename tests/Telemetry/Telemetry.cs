@@ -46,6 +46,7 @@ using var tracerProvider = Sdk.CreateTracerProviderBuilder()
 string? traceId;
 string? queryTraceparent;
 string? preparedTraceparent;
+string?[] batchTraceparents = [null, null];
 using (var rootActivity = activitySource.StartActivity("TelemetryScenario", ActivityKind.Internal))
 {
 	traceId = rootActivity?.TraceId.ToString();
@@ -93,6 +94,30 @@ using (var rootActivity = activitySource.StartActivity("TelemetryScenario", Acti
 		else
 			preparedTraceparent = null;
 	}
+
+	await using (var batch = new MySqlBatch(connection)
+	{
+		BatchCommands =
+		{
+			new MySqlBatchCommand("SELECT mysql_query_attribute_string('traceparent') AS traceparent;"),
+			new MySqlBatchCommand("SELECT mysql_query_attribute_string('traceparent') AS traceparent;"),
+		},
+	})
+	{
+		await using var reader = await batch.ExecuteReaderAsync().ConfigureAwait(false);
+		var batchResultIndex = 0;
+		do
+		{
+			string? batchTraceparent = null;
+			if (await reader.ReadAsync().ConfigureAwait(false))
+				batchTraceparent = reader.GetString(reader.GetOrdinal("traceparent"));
+
+			if (batchResultIndex < batchTraceparents.Length)
+				batchTraceparents[batchResultIndex] = batchTraceparent;
+
+			batchResultIndex++;
+		} while (await reader.NextResultAsync().ConfigureAwait(false));
+	}
 }
 
 Console.WriteLine($"OTLP base endpoint: {otlpBaseEndpoint}");
@@ -101,6 +126,8 @@ Console.WriteLine($"MySQL application connection: {applicationConnectionString}"
 Console.WriteLine($"TRACE_ID={traceId ?? "<null>"}");
 Console.WriteLine($"COM_QUERY traceparent: {queryTraceparent ?? "<null>"}");
 Console.WriteLine($"COM_STMT_EXECUTE traceparent: {preparedTraceparent ?? "<null>"}");
+Console.WriteLine($"BATCH[0] traceparent: {batchTraceparents[0] ?? "<null>"}");
+Console.WriteLine($"BATCH[1] traceparent: {batchTraceparents[1] ?? "<null>"}");
 Console.WriteLine("Waiting 5 seconds for client and server spans to export to Aspire...");
 
 await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);

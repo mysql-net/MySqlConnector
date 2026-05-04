@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
@@ -160,9 +162,13 @@ public sealed class MySqlBatch :
 		foreach (MySqlBatchCommand batchCommand in BatchCommands)
 			batchCommand.Batch = this;
 
+		var activity = Connection!.Session.StartActivity(ActivitySourceHelper.ExecuteActivityName);
+		if (activity is { IsAllDataRequested: true })
+			activity.SetTag(ActivitySourceHelper.DatabaseStatementTagName, CreateActivityStatement());
+
 		var payloadCreator = IsPrepared ? SingleCommandPayloadCreator.Instance :
 			ConcatenatedCommandPayloadCreator.Instance;
-		return CommandExecutor.ExecuteReaderAsync(new(BatchCommands!.Commands), payloadCreator, behavior, default, ioBehavior, cancellationToken);
+		return CommandExecutor.ExecuteReaderAsync(new(BatchCommands!.Commands), payloadCreator, behavior, activity, ioBehavior, cancellationToken);
 	}
 
 #if NET6_0_OR_GREATER
@@ -379,6 +385,21 @@ public sealed class MySqlBatch :
 			return exception is null ? Task.CompletedTask : Task.FromException(exception);
 
 		return DoPrepareAsync(ioBehavior, cancellationToken);
+	}
+
+	private string CreateActivityStatement()
+	{
+		if (BatchCommands.Count == 1)
+			return BatchCommands[0].CommandText!;
+
+		var builder = new StringBuilder();
+		for (var index = 0; index < BatchCommands.Count; index++)
+		{
+			if (index != 0)
+				builder.Append('\n');
+			builder.Append(BatchCommands[index].CommandText);
+		}
+		return builder.ToString();
 	}
 
 	private async Task DoPrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
