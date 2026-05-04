@@ -20,21 +20,15 @@ internal sealed class ConcatenatedCommandPayloadCreator : ICommandPayloadCreator
 		writer.Write((byte) CommandKind.Query);
 
 		// ConcatenatedCommandPayloadCreator is only used by MySqlBatch, and MySqlBatchCommand doesn't expose attributes,
-		// so just write an empty attribute set if the server needs it.
-		if (commandListPosition.CommandAt(commandListPosition.CommandIndex).Connection!.Session.SupportsQueryAttributes)
-		{
-			// attribute count
-			// TODO: This needs to write query attributes for telemetry if activity is not null
-			writer.WriteLengthEncodedInteger(0);
-
-			// attribute set count (always 1)
-			writer.Write((byte) 1);
-		}
+		// but we need to write query attributes if there is a current Activity (otherwise WriteAttributes will just write an empty collection)
+		var command = commandListPosition.CommandAt(commandListPosition.CommandIndex);
+		if (command.Connection!.Session.SupportsQueryAttributes)
+			SingleCommandPayloadCreator.WriteAttributes(writer, command, activity);
 
 		bool isComplete;
 		do
 		{
-			var command = commandListPosition.CommandAt(commandListPosition.CommandIndex);
+			command = commandListPosition.CommandAt(commandListPosition.CommandIndex);
 			Log.PreparingCommandPayload(command.Logger, command.Connection!.Session.Id, command.CommandText!);
 
 			isComplete = SingleCommandPayloadCreator.WriteQueryPayload(command, cachedProcedures, writer,

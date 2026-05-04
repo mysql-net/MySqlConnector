@@ -2,6 +2,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Numerics;
+using System.Xml.Linq;
 using MySqlConnector.Logging;
 using MySqlConnector.Protocol;
 using MySqlConnector.Protocol.Serialization;
@@ -103,39 +104,10 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			Log.PreparingCommandPayload(command.Logger, command.Connection!.Session.Id, command.CommandText!);
 
 			writer.Write((byte) CommandKind.Query);
-			var supportsQueryAttributes = command.Connection!.Session.SupportsQueryAttributes;
-			if (supportsQueryAttributes)
-			{
-				// compute total attribute count from the command and the auto-generated attributes for telemetry
-				var attributes = command.RawAttributes;
-				var telemetryKinds = GetTelemetryAttributeKinds(attributes, activity);
-				var totalAttributeCount = attributes?.Count ?? 0;
-#if NET6_0_OR_GREATER
-				totalAttributeCount += BitOperations.PopCount((uint) telemetryKinds);
-#else
-				totalAttributeCount +=
-					(((telemetryKinds & TelemetryAttributeKind.TraceParent) != TelemetryAttributeKind.None) ? 1 : 0) +
-					(((telemetryKinds & TelemetryAttributeKind.TraceState) != TelemetryAttributeKind.None) ? 1 : 0);
-#endif
-				writer.WriteLengthEncodedInteger((uint) totalAttributeCount);
-
-				// attribute set count (always 1)
-				writer.Write((byte) 1);
-
-				if (totalAttributeCount > 0)
-				{
-					Span<MySqlParameter> attributeParameters = new MySqlParameter[totalAttributeCount];
-					var index = 0;
-					for (; index < (attributes?.Count ?? 0); index++)
-						attributeParameters[index] = attributes![index].ToParameter();
-					WriteTelemetryAttributes(attributeParameters.Slice(index), activity, telemetryKinds);
-					WriteBinaryParameters(writer, attributeParameters, command, true, 0);
-				}
-			}
+			if (command.Connection!.Session.SupportsQueryAttributes)
+				WriteAttributes(writer, command, activity);
 			else if (command.RawAttributes?.Count > 0)
-			{
 				Log.QueryAttributesNotSupported(command.Logger, command.Connection!.Session.Id, command.CommandText!);
-			}
 
 			WriteQueryPayload(command, cachedProcedures, writer, appendSemicolon, isFirstCommand: true, isLastCommand: true);
 			commandListPosition.LastUsedPreparedStatement = null;
@@ -171,6 +143,34 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	/// <returns><c>true</c> if a complete command was written; otherwise, <c>false</c>.</returns>
 	public static bool WriteQueryPayload(IMySqlCommand command, IDictionary<string, CachedProcedure?> cachedProcedures, ByteBufferWriter writer, bool appendSemicolon, bool isFirstCommand, bool isLastCommand) =>
 		(command.CommandType == CommandType.StoredProcedure) ? WriteStoredProcedure(command, cachedProcedures, writer) : WriteCommand(command, writer, appendSemicolon, isFirstCommand, isLastCommand);
+
+	public static void WriteAttributes(ByteBufferWriter writer, IMySqlCommand command, Activity? activity)
+	{
+		var attributes = command.RawAttributes;
+		var telemetryKinds = GetTelemetryAttributeKinds(attributes, activity);
+		var totalAttributeCount = attributes?.Count ?? 0;
+#if NET6_0_OR_GREATER
+		totalAttributeCount += BitOperations.PopCount((uint) telemetryKinds);
+#else
+		totalAttributeCount +=
+			(((telemetryKinds & TelemetryAttributeKind.TraceParent) != TelemetryAttributeKind.None) ? 1 : 0) +
+			(((telemetryKinds & TelemetryAttributeKind.TraceState) != TelemetryAttributeKind.None) ? 1 : 0);
+#endif
+		writer.WriteLengthEncodedInteger((uint) totalAttributeCount);
+
+		// attribute set count (always 1)
+		writer.Write((byte) 1);
+
+		if (totalAttributeCount > 0)
+		{
+			Span<MySqlParameter> attributeParameters = new MySqlParameter[totalAttributeCount];
+			var index = 0;
+			for (; index < (attributes?.Count ?? 0); index++)
+				attributeParameters[index] = attributes![index].ToParameter();
+			WriteTelemetryAttributes(attributeParameters.Slice(index), activity, telemetryKinds);
+			WriteBinaryParameters(writer, attributeParameters, command, true, 0);
+		}
+	}
 
 	private static void WritePreparedStatement(IMySqlCommand command, PreparedStatement preparedStatement, ByteBufferWriter writer, Activity? activity)
 	{
