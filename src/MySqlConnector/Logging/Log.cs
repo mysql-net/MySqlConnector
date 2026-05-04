@@ -463,4 +463,7 @@ internal static partial class Log
 
 	[LoggerMessage(EventIds.ClearingPoolDueToDnsChanges, LogLevel.Information, "Pool {PoolId} clearing pool due to DNS changes")]
 	public static partial void ClearingPoolDueToDnsChanges(ILogger logger, int poolId);
+
+	[LoggerMessage(LogLevel.Trace, "{Message}")]
+	public static partial void RemoteCertificateValidationTrace(ILogger logger, string message);
 }

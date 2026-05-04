@@ -1575,7 +1575,11 @@ internal sealed partial class ServerSession : IServerCapabilities
 				ChainPolicy =
 				{
 					RevocationMode = X509RevocationMode.NoCheck,
-					VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority,
+					VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority |
+					                    X509VerificationFlags.IgnoreEndRevocationUnknown |
+					                    X509VerificationFlags.IgnoreCtlSignerRevocationUnknown |
+					                    X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown |
+					                    X509VerificationFlags.IgnoreRootRevocationUnknown,
 				},
 			};
 
@@ -1603,7 +1607,6 @@ internal sealed partial class ServerSession : IServerCapabilities
 					try
 					{
 						// load the certificate at this index; note that 'new X509Certificate' stops at the end of the first certificate it loads
-						Log.LoadingCaCertificate(m_logger, Id, index);
 #if NET9_0_OR_GREATER
 						var caCertificate = X509CertificateLoader.LoadCertificate(certificateBytes.AsSpan(index, (nextIndex == -1 ? certificateBytes.Length : nextIndex) - index));
 #elif NET5_0_OR_GREATER
@@ -1635,6 +1638,25 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 		bool ValidateRemoteCertificate(object rcbSender, X509Certificate? rcbCertificate, X509Chain? rcbChain, SslPolicyErrors rcbPolicyErrors)
 		{
+			if (rcbPolicyErrors != SslPolicyErrors.None && rcbChain != null)
+			{
+				var builder = new StringBuilder($"Found errors in remote certificate validation: {rcbPolicyErrors}");
+
+				for (var index = 0; index < rcbChain.ChainElements.Count; index++)
+				{
+					var element = rcbChain.ChainElements[index];
+					builder.AppendLine($"Element {index}: {element.Certificate.GetNameInfo(X509NameType.SimpleName, false)}");
+					builder.AppendLine("  Status:");
+
+					foreach (var status in element.ChainElementStatus)
+					{
+						builder.AppendLine($"  {status.Status}: {status.StatusInformation}");
+					}
+				}
+
+				Log.RemoteCertificateValidationTrace(m_logger, builder.ToString());
+			}
+
 			// if no CA verification is required, then we trust any remote certificate
 			if (cs.SslMode is MySqlSslMode.Preferred or MySqlSslMode.Required)
 				return true;
@@ -1718,8 +1740,17 @@ internal sealed partial class ServerSession : IServerCapabilities
 			EnabledSslProtocols = sslProtocols,
 			ClientCertificates = clientCertificates,
 			TargetHost = HostName,
-			CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
+			CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Offline : X509RevocationMode.NoCheck,
 		};
+
+#if NET7_0_OR_GREATER
+		clientAuthenticationOptions.CertificateChainPolicy ??= new();
+		clientAuthenticationOptions.CertificateChainPolicy.VerificationFlags =
+			X509VerificationFlags.IgnoreEndRevocationUnknown |
+			X509VerificationFlags.IgnoreCtlSignerRevocationUnknown |
+			X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown |
+			X509VerificationFlags.IgnoreRootRevocationUnknown;
+#endif
 
 #if NETCOREAPP3_0_OR_GREATER
 #pragma warning disable CA1416 // Validate platform compatibility
