@@ -1,141 +1,91 @@
-using System.Diagnostics;
-using System.Reflection;
-using MySqlConnector.Protocol;
-using MySqlConnector.Protocol.Serialization;
-
 namespace MySqlConnector.Tests;
 
 public class SingleCommandPayloadCreatorTests
 {
 	[Fact]
-	public void WriteBinaryParametersPreservesExplicitStringType()
+	public void NoAttributesNoActivity()
 	{
-		var server = new FakeMySqlServer();
-		server.Start();
-
-		try
-		{
-			var parameter = new MySqlParameter("traceparent", MySqlDbType.String)
-			{
-				Value = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
-			};
-			var connectionStringBuilder = new MySqlConnectionStringBuilder
-			{
-				Server = "localhost",
-				Port = (uint) server.Port,
-			};
-			using var connection = new MySqlConnection(connectionStringBuilder.ConnectionString);
-			connection.Open();
-			var command = new MySqlCommand
-			{
-				Connection = connection,
-			};
-			var writer = new ByteBufferWriter();
-
-			WriteBinaryParametersMethod.Invoke(null, [writer, new[] { parameter }, command, true, 0]);
-
-			Assert.True(parameter.HasSetDbType);
-			Assert.True(writer.Position > 3);
-			Assert.Equal((byte) ColumnType.String, writer.ArraySegment.Array![writer.ArraySegment.Offset + 2]);
-			Assert.Equal(0, writer.ArraySegment.Array![writer.ArraySegment.Offset + 3]);
-		}
-		finally
-		{
-			server.Stop();
-		}
+		var (count, kinds) = SingleCommandPayloadCreator.GetAttributeCountAndKinds(null, null);
+		Assert.Equal(0, count);
+		Assert.Equal(TelemetryAttributeKind.None, kinds);
 	}
 
 	[Fact]
-	public void CreateQueryAttributesWithoutActivityDoesNotAddTelemetryAttributes()
+	public void NoAttributesActivity()
 	{
-		var attributes = new MySqlAttributeCollection();
-		attributes.SetAttribute("custom", "value");
-
-		var parameters = CreateQueryAttributes(attributes, activity: null);
-
-		var parameter = Assert.Single(parameters);
-		Assert.Equal("custom", parameter.ParameterName);
-		Assert.Equal("value", parameter.Value);
-	}
-
-	[Fact]
-	public void CreateQueryAttributesWithNonW3CActivityDoesNotAddTelemetryAttributes()
-	{
-		var attributes = new MySqlAttributeCollection();
-		attributes.SetAttribute("custom", "value");
-
-		using var activity = new Activity("HierarchicalActivity");
-		activity.SetIdFormat(ActivityIdFormat.Hierarchical);
-		activity.Start();
-
-		var parameters = CreateQueryAttributes(attributes, activity);
-
-		var parameter = Assert.Single(parameters);
-		Assert.Equal("custom", parameter.ParameterName);
-		Assert.Equal("value", parameter.Value);
-	}
-
-	[Fact]
-	public void CreateQueryAttributesAddsTraceparentAndTracestate()
-	{
-		using var activity = new Activity("W3CActivity");
+		using var activity = new Activity("test");
+#if !NET5_0_OR_GREATER
 		activity.SetIdFormat(ActivityIdFormat.W3C);
-		activity.TraceStateString = "test=value";
+#endif
 		activity.Start();
-
-		var parameters = CreateQueryAttributes(attributes: null, activity);
-
-		Assert.Collection(parameters,
-			x =>
-			{
-				Assert.Equal("traceparent", x.ParameterName);
-				Assert.Equal(activity.Id, x.Value);
-			},
-			x =>
-			{
-				Assert.Equal("tracestate", x.ParameterName);
-				Assert.Equal(activity.TraceStateString, x.Value);
-			});
+		var (count, kinds) = SingleCommandPayloadCreator.GetAttributeCountAndKinds(null, activity);
+		Assert.Equal(1, count);
+		Assert.Equal(TelemetryAttributeKind.TraceParent, kinds);
 	}
 
 	[Fact]
-	public void CreateQueryAttributesUsesExplicitTelemetryAttributesCaseInsensitively()
+	public void AttributesNoActivity()
 	{
-		var attributes = new MySqlAttributeCollection();
-		attributes.SetAttribute("TRACEPARENT", "explicit-traceparent");
-		attributes.SetAttribute("TraceState", "explicit-tracestate");
-		attributes.SetAttribute("custom", "value");
-
-		using var activity = new Activity("W3CActivity");
-		activity.SetIdFormat(ActivityIdFormat.W3C);
-		activity.TraceStateString = "test=value";
-		activity.Start();
-
-		var parameters = CreateQueryAttributes(attributes, activity);
-
-		Assert.Collection(parameters,
-			x =>
-			{
-				Assert.Equal("TRACEPARENT", x.ParameterName);
-				Assert.Equal("explicit-traceparent", x.Value);
-			},
-			x =>
-			{
-				Assert.Equal("TraceState", x.ParameterName);
-				Assert.Equal("explicit-tracestate", x.Value);
-			},
-			x =>
-			{
-				Assert.Equal("custom", x.ParameterName);
-				Assert.Equal("value", x.Value);
-			});
+		var attributes = new MySqlAttributeCollection()
+		{
+			new("test", "value"),
+		};
+		var (count, kinds) = SingleCommandPayloadCreator.GetAttributeCountAndKinds(attributes, null);
+		Assert.Equal(1, count);
+		Assert.Equal(TelemetryAttributeKind.None, kinds);
 	}
 
-	private static MySqlParameter[] CreateQueryAttributes(MySqlAttributeCollection attributes, Activity activity) =>
-		(MySqlParameter[]) CreateQueryAttributesMethod.Invoke(null, [attributes, activity])!;
+	[Fact]
+	public void AttributesActivity()
+	{
+		var attributes = new MySqlAttributeCollection()
+		{
+			new("test", "value"),
+		};
+		using var activity = new Activity("test");
+#if !NET5_0_OR_GREATER
+		activity.SetIdFormat(ActivityIdFormat.W3C);
+#endif
+		activity.Start();
+		var (count, kinds) = SingleCommandPayloadCreator.GetAttributeCountAndKinds(attributes, activity);
+		Assert.Equal(2, count);
+		Assert.Equal(TelemetryAttributeKind.TraceParent, kinds);
+	}
 
-	private static MethodInfo CreateQueryAttributesMethod { get; } = typeof(SingleCommandPayloadCreator)
-		.GetMethod("CreateQueryAttributes", BindingFlags.NonPublic | BindingFlags.Static)!;
-	private static MethodInfo WriteBinaryParametersMethod { get; } = typeof(SingleCommandPayloadCreator)
-		.GetMethod("WriteBinaryParameters", BindingFlags.NonPublic | BindingFlags.Static)!;
+	[Fact]
+	public void AttributesActivityTraceState()
+	{
+		var attributes = new MySqlAttributeCollection()
+		{
+			new("test", "value"),
+		};
+		using var activity = new Activity("test");
+#if !NET5_0_OR_GREATER
+		activity.SetIdFormat(ActivityIdFormat.W3C);
+#endif
+		activity.Start();
+		activity.TraceStateString = "key=value";
+		var (count, kinds) = SingleCommandPayloadCreator.GetAttributeCountAndKinds(attributes, activity);
+		Assert.Equal(3, count);
+		Assert.Equal(TelemetryAttributeKind.TraceParent | TelemetryAttributeKind.TraceState, kinds);
+	}
+
+	[Fact]
+	public void AttributesDuplicateActivity()
+	{
+		var attributes = new MySqlAttributeCollection()
+		{
+			new("traceparent", "duplicate"),
+			new("tracestate", "duplicate"),
+		};
+		using var activity = new Activity("test");
+#if !NET5_0_OR_GREATER
+		activity.SetIdFormat(ActivityIdFormat.W3C);
+#endif
+		activity.Start();
+		activity.TraceStateString = "key=value";
+		var (count, kinds) = SingleCommandPayloadCreator.GetAttributeCountAndKinds(attributes, activity);
+		Assert.Equal(2, count);
+		Assert.Equal(TelemetryAttributeKind.None, kinds);
+	}
 }

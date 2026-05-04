@@ -223,13 +223,13 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 	}
 
 	// Counts the number of attributes, combining command attributes and the required attributes needed to send the telemetry context.
-	private static (int AttributeCount, TelemetryAttributeKind Kinds) GetAttributeCountAndKinds(MySqlAttributeCollection? attributes, Activity? activity)
+	internal static (int AttributeCount, TelemetryAttributeKind Kinds) GetAttributeCountAndKinds(MySqlAttributeCollection? attributes, Activity? activity)
 	{
 		var totalAttributeCount = attributes?.Count ?? 0;
 
 		// we require W3C IdFormat (which is the default since .NET 5) in order to send a correct traceparent attribute
 		var telemetryKinds = TelemetryAttributeKind.None;
-		if (activity is { IdFormat: ActivityIdFormat.W3C, Id: { Length: > 0 } })
+		if (activity is { IdFormat: ActivityIdFormat.W3C, Id.Length: > 0 })
 		{
 			// start with both attributes and eliminate based on activity content and user-provided attributes
 			telemetryKinds = TelemetryAttributeKind.TraceParent |
@@ -435,13 +435,5 @@ internal sealed class SingleCommandPayloadCreator : ICommandPayloadCreator
 			writer.Write("\nSET sql_select_limit=default;"u8);
 
 		return isComplete;
-	}
-
-	[Flags]
-	private enum TelemetryAttributeKind
-	{
-		None = 0,
-		TraceParent = 1,
-		TraceState = 2,
 	}
 }
