@@ -1575,7 +1575,11 @@ internal sealed partial class ServerSession : IServerCapabilities
 				ChainPolicy =
 				{
 					RevocationMode = X509RevocationMode.NoCheck,
-					VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority,
+					VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority |
+					                    X509VerificationFlags.IgnoreEndRevocationUnknown |
+					                    X509VerificationFlags.IgnoreCtlSignerRevocationUnknown |
+					                    X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown |
+					                    X509VerificationFlags.IgnoreRootRevocationUnknown,
 				},
 			};
 
@@ -1738,6 +1742,15 @@ internal sealed partial class ServerSession : IServerCapabilities
 			TargetHost = HostName,
 			CertificateRevocationCheckMode = checkCertificateRevocation ? X509RevocationMode.Offline : X509RevocationMode.NoCheck,
 		};
+
+#if NET7_0_OR_GREATER
+		clientAuthenticationOptions.CertificateChainPolicy ??= new();
+		clientAuthenticationOptions.CertificateChainPolicy.VerificationFlags =
+			X509VerificationFlags.IgnoreEndRevocationUnknown |
+			X509VerificationFlags.IgnoreCtlSignerRevocationUnknown |
+			X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown |
+			X509VerificationFlags.IgnoreRootRevocationUnknown;
+#endif
 
 #if NETCOREAPP3_0_OR_GREATER
 #pragma warning disable CA1416 // Validate platform compatibility
