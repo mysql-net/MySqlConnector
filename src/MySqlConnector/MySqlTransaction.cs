@@ -31,7 +31,7 @@ public sealed class MySqlTransaction : DbTransaction
 	{
 		VerifyValid();
 
-		using var activity = Connection!.Session.StartActivity("Commit");
+		using var activity = Connection!.Session.StartActivity(Connection.TracingOptions.SemanticConventionsKinds, "Commit");
 		Log.CommittingTransaction(m_logger, Connection.Session.Id);
 		try
 		{
@@ -259,7 +259,7 @@ public sealed class MySqlTransaction : DbTransaction
 
 	private async Task DoRollback(IOBehavior ioBehavior, CancellationToken cancellationToken)
 	{
-		using var activity = Connection!.Session.StartActivity("Rollback");
+		using var activity = Connection!.Session.StartActivity(Connection.TracingOptions.SemanticConventionsKinds, "Rollback");
 		Log.RollingBackTransaction(m_logger, Connection.Session.Id);
 		try
 		{

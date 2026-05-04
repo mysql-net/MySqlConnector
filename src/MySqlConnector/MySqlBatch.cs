@@ -160,7 +160,7 @@ public sealed class MySqlBatch :
 		foreach (MySqlBatchCommand batchCommand in BatchCommands)
 			batchCommand.Batch = this;
 
-		var activity = Connection!.Session.StartActivity(ActivitySourceHelper.ExecuteActivityName);
+		var activity = Connection!.Session.StartActivity(Connection.TracingOptions.SemanticConventionsKinds, ActivitySourceHelper.ExecuteActivityName);
 
 		var payloadCreator = IsPrepared ? SingleCommandPayloadCreator.Instance :
 			ConcatenatedCommandPayloadCreator.Instance;

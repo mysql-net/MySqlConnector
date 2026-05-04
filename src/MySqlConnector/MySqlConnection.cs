@@ -1137,6 +1137,8 @@ public sealed class MySqlConnection : DbConnection, ICloneable
 
 	internal MySqlDataSource? MySqlDataSource => m_dataSource;
 
+	internal MySqlConnectorTracingOptions TracingOptions => m_dataSource?.TracingOptions ?? MySqlConnectorTracingOptions.Default;
+
 	internal void SetState(ConnectionState newState)
 	{
 		if (m_connectionState != newState)

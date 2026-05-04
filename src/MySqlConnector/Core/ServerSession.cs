@@ -345,13 +345,18 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 	public void SetTimeout(int timeoutMilliseconds) => m_payloadHandler!.ByteHandler.RemainingTimeout = timeoutMilliseconds;
 
-	public Activity? StartActivity(string name, string? tagName1 = null, object? tagValue1 = null)
+	public Activity? StartActivity(MySqlConnectorSemanticConventionsKinds conventionsKinds, string name, string? tagName1 = null, object? tagValue1 = null)
 	{
 		var activity = ActivitySourceHelper.StartActivity(name, m_activityTags);
 		if (activity is { IsAllDataRequested: true })
 		{
 			if (DatabaseOverride is not null)
-				activity.SetTag(ActivitySourceHelper.DatabaseNameTagName, DatabaseOverride);
+			{
+				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
+					activity.SetTag(ActivitySourceHelper.DatabaseNamespaceTagNameExperimental, DatabaseOverride);
+				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
+					activity.SetTag(ActivitySourceHelper.DatabaseNamespaceTagNameStable, DatabaseOverride);
+			}
 			if (tagName1 is not null)
 				activity.SetTag(tagName1, tagValue1);
 		}
@@ -413,19 +418,38 @@ internal sealed partial class ServerSession : IServerCapabilities
 
 			// set activity tags
 			{
+				var conventionsKinds = connection.TracingOptions.SemanticConventionsKinds;
+
 				var connectionString = cs.ConnectionStringBuilder.GetConnectionString(cs.ConnectionStringBuilder.PersistSecurityInfo);
-				m_activityTags.Add(ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue);
+				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
+					m_activityTags.Add(ActivitySourceHelper.DatabaseSystemTagNameExperimental, ActivitySourceHelper.DatabaseSystemValue);
+				if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
+					m_activityTags.Add(ActivitySourceHelper.DatabaseSystemTagNameStable, ActivitySourceHelper.DatabaseSystemValue);
 				m_activityTags.Add(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionString);
 				m_activityTags.Add(ActivitySourceHelper.DatabaseUserTagName, cs.UserID);
 				if (cs.Database.Length != 0)
-					m_activityTags.Add(ActivitySourceHelper.DatabaseNameTagName, cs.Database);
+				{
+					if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
+						m_activityTags.Add(ActivitySourceHelper.DatabaseNamespaceTagNameExperimental, cs.Database);
+					if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
+						m_activityTags.Add(ActivitySourceHelper.DatabaseNamespaceTagNameStable, cs.Database);
+				}
 				if (activity is { IsAllDataRequested: true })
 				{
-					activity.SetTag(ActivitySourceHelper.DatabaseSystemTagName, ActivitySourceHelper.DatabaseSystemValue)
+					if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
+						activity.SetTag(ActivitySourceHelper.DatabaseSystemTagNameExperimental, ActivitySourceHelper.DatabaseSystemValue);
+					if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
+						activity.SetTag(ActivitySourceHelper.DatabaseSystemTagNameStable, ActivitySourceHelper.DatabaseSystemValue);
+					activity
 						.SetTag(ActivitySourceHelper.DatabaseConnectionStringTagName, connectionString)
 						.SetTag(ActivitySourceHelper.DatabaseUserTagName, cs.UserID);
 					if (cs.Database.Length != 0)
-						activity.SetTag(ActivitySourceHelper.DatabaseNameTagName, cs.Database);
+					{
+						if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Experimental))
+							activity.SetTag(ActivitySourceHelper.DatabaseNamespaceTagNameExperimental, cs.Database);
+						if (conventionsKinds.HasFlag(MySqlConnectorSemanticConventionsKinds.Stable))
+							activity.SetTag(ActivitySourceHelper.DatabaseNamespaceTagNameStable, cs.Database);
+					}
 				}
 			}
 

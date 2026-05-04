@@ -9,14 +9,18 @@ internal static class ActivitySourceHelper
 {
 	public const string DatabaseConnectionIdTagName = "db.connection_id";
 	public const string DatabaseConnectionStringTagName = "db.connection_string";
-	public const string DatabaseNameTagName = "db.name";
+	public const string DatabaseNamespaceTagNameExperimental = "db.name"; // Y
+	public const string DatabaseNamespaceTagNameStable = "db.namespace"; // Y
 	public const string DatabaseStatementTagName = "db.statement";
-	public const string DatabaseSystemTagName = "db.system";
+	public const string DatabaseSystemTagNameExperimental = "db.system"; // Y
+	public const string DatabaseSystemTagNameStable = "db.system.name"; // Y
 	public const string DatabaseUserTagName = "db.user";
+	public const string ErrorTypeTagName = "error.type";
 	public const string NetPeerIpTagName = "net.peer.ip";
 	public const string NetPeerNameTagName = "net.peer.name";
 	public const string NetPeerPortTagName = "net.peer.port";
 	public const string NetTransportTagName = "net.transport";
+	public const string ResponseStatusCodeTagName = "db.response.status_code";
 	public const string ThreadIdTagName = "thread.id";
 
 	public const string DatabaseSystemValue = "mysql";
@@ -24,8 +28,8 @@ internal static class ActivitySourceHelper
 	public const string NetTransportTcpIpValue = "ip_tcp";
 	public const string NetTransportUnixValue = "unix";
 
-	public const string ExecuteActivityName = "Execute";
-	public const string OpenActivityName = "Open";
+	public const string ExecuteActivityName = "Execute"; // TODO
+	public const string OpenActivityName = "Open"; // TODO
 
 	public static Activity? StartActivity(string name, IEnumerable<KeyValuePair<string, object?>>? activityTags = null)
 	{
@@ -37,9 +41,19 @@ internal static class ActivitySourceHelper
 
 	public static void SetException(this Activity activity, Exception exception)
 	{
-		var description = exception is MySqlException mySqlException ? mySqlException.ErrorCode.ToString() : exception.Message;
+		string description;
+		if (exception is MySqlException mySqlException)
+		{
+			description = mySqlException.ErrorCode.ToString();
+			activity.SetTag(ResponseStatusCodeTagName, (int) mySqlException.ErrorCode);
+		}
+		else
+		{
+			description = exception.Message;
+		}
+		activity.SetTag(ErrorTypeTagName, exception.GetType().FullName);
 		activity.SetStatus(ActivityStatusCode.Error, description);
-		activity.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+		activity.AddEvent(new ActivityEvent("db.client.operation.exception", tags: new ActivityTagsCollection
 		{
 			{ "exception.type", exception.GetType().FullName },
 			{ "exception.message", exception.Message },
