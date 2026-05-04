@@ -1,6 +1,4 @@
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using MySqlConnector.Core;
 using MySqlConnector.Protocol.Serialization;
 using MySqlConnector.Utilities;
