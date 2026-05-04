@@ -74,7 +74,3 @@ To run the tests against MySql.Data:
 cd tests\IntegrationTests
 dotnet restore /p:Configuration=MySqlData && dotnet test -c MySqlData
 ```
-
-## Telemetry Demo
-
-For an end-to-end OpenTelemetry demo wired to the Aspire Dashboard, see `tests/Telemetry`.
