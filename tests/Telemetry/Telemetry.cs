@@ -120,6 +120,8 @@ using (var rootActivity = activitySource.StartActivity("TelemetryScenario", Acti
 	}
 }
 
+await MySqlConnection.ClearAllPoolsAsync();
+
 Console.WriteLine($"OTLP base endpoint: {otlpBaseEndpoint}");
 Console.WriteLine($"MySQL bootstrap connection: {bootstrapConnectionString}");
 Console.WriteLine($"MySQL application connection: {applicationConnectionString}");
