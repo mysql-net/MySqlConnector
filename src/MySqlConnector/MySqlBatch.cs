@@ -163,8 +163,6 @@ public sealed class MySqlBatch :
 			batchCommand.Batch = this;
 
 		var activity = Connection!.Session.StartActivity(ActivitySourceHelper.ExecuteActivityName);
-		if (activity is { IsAllDataRequested: true })
-			activity.SetTag(ActivitySourceHelper.DatabaseStatementTagName, CreateActivityStatement());
 
 		var payloadCreator = IsPrepared ? SingleCommandPayloadCreator.Instance :
 			ConcatenatedCommandPayloadCreator.Instance;
@@ -385,21 +383,6 @@ public sealed class MySqlBatch :
 			return exception is null ? Task.CompletedTask : Task.FromException(exception);
 
 		return DoPrepareAsync(ioBehavior, cancellationToken);
-	}
-
-	private string CreateActivityStatement()
-	{
-		if (BatchCommands.Count == 1)
-			return BatchCommands[0].CommandText!;
-
-		var builder = new StringBuilder();
-		for (var index = 0; index < BatchCommands.Count; index++)
-		{
-			if (index != 0)
-				builder.Append('\n');
-			builder.Append(BatchCommands[index].CommandText);
-		}
-		return builder.ToString();
 	}
 
 	private async Task DoPrepareAsync(IOBehavior ioBehavior, CancellationToken cancellationToken)
